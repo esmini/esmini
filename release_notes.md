@@ -1,5 +1,32 @@
 ## esmini release notes
 
+### 2022-03-14 Version 2.21.0
+
+- New feature: Trailer support
+  - Extend OpenSCENARIO vehicle class with trailer connection elements (experimental)
+  - Extension noted in [osg_coverage.txt](https://github.com/esmini/esmini/blob/master/osc_coverage.txt) and briefly described [here](https://docs.google.com/document/u/1/d/e/2PACX-1vR7jXggp_LaEIzNyKsFEpJxWrYdC_W2GEDayQIeeCBU4fzyrEyJ22Ihbq4Ra7JXmbWqgPOydfB6WZ0j/pub)
+  - Simplified trailer mathematics and dynamics, good enough for basic scenarios
+  - Provided examples:
+    - [trailer.xosc](https://github.com/esmini/esmini/blob/master/resources/xosc/trailers.xosc) / [video clip](https://youtu.be/15QlPBrF4Ro) / run script: [run/esmini/run_trailers.bat](https://github.com/esmini/esmini/blob/master/run/esmini/run_trailers.bat)
+    - [parking_lot_.xosc](https://github.com/esmini/esmini/blob/master/resources/xosc/parking_lot_.xosc) / [video clip](https://youtu.be/iDWurUhesSc) / run script: [run/esmini/run_parking_lot.bat](https://github.com/esmini/esmini/blob/master/run/esmini/run_parking_lot.bat)
+  - Demo showing capabilites and limitations: [video clip](https://youtu.be/9BTNEhU_V9c)
+  - New vehicle 3D models: Semi-truck tractor, semi-trailer, truck trailer and car trailer  
+    **Note:** To fetch updated models, remove resources/models folder and run `cmake ..` again, or just get the package from [here](https://dl.dropboxusercontent.com/s/5gk8bvgzqiaaoco/models.7z?dl=1)
+- Support for multiple Repeat objects ([PR #251](https://github.com/esmini/esmini/issues/251))
+- Support simple OpenDRIVE bounding box objects (when no osgb filename or outline specified)
+- SwarmAction updated to spawn only relevant, specified vehicle types
+- Respect vehicle acceleration and deceleration constraints in InteractiveDriver controller
+- Add lib method to set SimpleVehicle wheel status
+- Add lib API for pause flag
+- Parameterize steering rate for InteractiveDriver controller
+- Add C# API to get parameter names ([PR #252](https://github.com/esmini/esmini/issues/252))
+- Optimize muli-replayer feature, now supporting much larger and/or more scenarios
+- Generalize 3D model wheel handling
+  - Support any number of front and rear wheels
+  - Identify front wheels as wheel_f*
+  - Identity rear wheels as wheel_r*
+  - All wheels will roll, only front wheels will change heading/steer
+  
 ### 2022-03-07 Version 2.20.10
 
 - Add methods to [register callbacks](https://github.com/esmini/esmini/blob/4da56f080b8ccdbb41372353d435c4438e4ce394/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L816) for triggered conditions and event start/end ([PR #249](https://github.com/esmini/esmini/issues/249))
