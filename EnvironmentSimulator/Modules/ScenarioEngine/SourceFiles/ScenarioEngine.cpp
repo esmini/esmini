@@ -501,7 +501,8 @@ int ScenarioEngine::step(double deltaSimTime)
 		// and only ghosts allowed to execute before time == 0
 		if (!(obj->IsControllerActiveOnDomains(ControlDomains::DOMAIN_BOTH) && obj->GetControllerMode() == Controller::Mode::MODE_OVERRIDE) &&
 			fabs(obj->speed_) > SMALL_NUMBER &&
-			(ghost_mode_ == GhostMode::NORMAL || obj->IsGhost()))
+			(ghost_mode_ == GhostMode::NORMAL || obj->IsGhost()) &&
+			!obj->TowVehicle())  // update trailers later
 		{
 			defaultController(obj, deltaSimTime);
 		}
@@ -558,21 +559,30 @@ int ScenarioEngine::step(double deltaSimTime)
 	for (size_t i = 0; i < entities_.object_.size(); i++)
 	{
 		Object* obj = entities_.object_[i];
-		Vehicle* tow_vehicle = (Vehicle*)obj->TowVehicle();
-		if (tow_vehicle != nullptr)
-		{
-			// Calculate new trailer position and orientation
-			ObjectState* o = scenarioGateway.getObjectStatePtrById(tow_vehicle->id_);
-			SE_Vector v0(tow_vehicle->trailer_hitch_->dx_, 0.0);
+		Vehicle* trailer = (Vehicle*)obj->TrailerVehicle();
 
-			// Fetch updated state of tow vehicle from gateway
-			roadmanager::Position* tow_pos = &o->state_.pos;
-			v0 = v0.Rotate(tow_pos->GetH()) + SE_Vector(tow_pos->GetX(), tow_pos->GetY());
-			SE_Vector v1 = SE_Vector(obj->pos_.GetX(), obj->pos_.GetY()) - v0;
-			v1.SetLength(((Vehicle*)obj)->trailer_coupler_->dx_);
-			scenarioGateway.updateObjectWorldPosXYH(obj->GetId(), getSimulationTime(), v0.x() + v1.x(), v0.y() + v1.y(),
-				GetAngleInInterval2PI(atan2(v1.y(), v1.x()) + M_PI));
-			obj->SetSpeed(tow_vehicle->GetSpeed());
+		if (!obj->TowVehicle() && obj->TrailerVehicle())
+		{
+			// Found a front tow vehicle, update trailers
+			Vehicle* tow_vehicle = (Vehicle*)obj;
+			while (trailer)
+			{
+				// Calculate new trailer position and orientation
+				ObjectState* o = scenarioGateway.getObjectStatePtrById(tow_vehicle->id_);
+				SE_Vector v0(tow_vehicle->trailer_hitch_->dx_, 0.0);
+
+				// Fetch updated state of tow vehicle from gateway
+				roadmanager::Position* tow_pos = &o->state_.pos;
+				v0 = v0.Rotate(tow_pos->GetH()) + SE_Vector(tow_pos->GetX(), tow_pos->GetY());
+				SE_Vector v1 = SE_Vector(trailer->pos_.GetX(), trailer->pos_.GetY()) - v0;
+				v1.SetLength(trailer->trailer_coupler_->dx_);
+				scenarioGateway.updateObjectWorldPosXYH(trailer->GetId(), getSimulationTime(), v0.x() + v1.x(), v0.y() + v1.y(),
+					GetAngleInInterval2PI(atan2(v1.y(), v1.x()) + M_PI));
+				trailer->SetSpeed(tow_vehicle->GetSpeed());
+
+				tow_vehicle = trailer;
+				trailer = (Vehicle*)trailer->TrailerVehicle();
+			}
 		}
 	}
 
@@ -718,7 +728,7 @@ void ScenarioEngine::parseScenario()
 	scenarioReader->parseStoryBoard(storyBoard);
 	storyBoard.entities_ = &entities_;
 
-	// Finally, now when all entities have been loaded, initialize the controllers
+	// Now when all entities have been loaded, initialize the controllers
 	if (!disable_controllers_)
 	{
 		for (size_t i = 0; i < scenarioReader->controller_.size(); i++)
@@ -750,6 +760,17 @@ void ScenarioEngine::parseScenario()
 					}
 				}
 			}
+		}
+	}
+
+	// Align trailers
+	for (size_t i = 0; i < entities_.object_.size(); i++)
+	{
+		Object* obj = entities_.object_[i];
+		if (!obj->TowVehicle() && obj->TrailerVehicle())
+		{
+			// Found a front tow vehicle, update trailers
+			((Vehicle*)obj)->AlignTrailers();
 		}
 	}
 }

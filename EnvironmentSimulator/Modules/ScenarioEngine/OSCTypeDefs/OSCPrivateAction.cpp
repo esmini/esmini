@@ -1109,8 +1109,13 @@ void TeleportAction::Start(double simTime, double dt)
 		return;
 	}
 
+	if (object_->TowVehicle())
+	{
+		return;  // position controlled by tow vehicle
+	}
+
 	object_->pos_.TeleportTo(position_);
-	if (object_->type_ == Object::Type::VEHICLE)
+	if (!object_->TowVehicle() && object_->TrailerVehicle())
 	{
 		((Vehicle*)object_)->AlignTrailers();
 	}

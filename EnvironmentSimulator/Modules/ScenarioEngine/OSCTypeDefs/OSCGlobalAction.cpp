@@ -531,7 +531,7 @@ void SwarmTrafficAction::spawn(Solutions sols, int replace, double simTime)
 
             // align trailers
             Vehicle* v = vehicle;
-            if (v)
+            if (!v->TowVehicle() && v->TrailerVehicle())
             {
                 v->AlignTrailers();
             }
