@@ -62,6 +62,7 @@ double color_black[3] = { 0.2, 0.2, 0.2 };
 double color_blue[3] = { 0.25, 0.38, 0.7 };
 double color_yellow[3] = { 0.75, 0.7, 0.4 };
 double color_white[3] = { 0.90, 0.90, 0.85 };
+double color_object[3] = { 0.5, 0.5, 0.5 };
 
 //USE_OSGPLUGIN(fbx)
 //USE_OSGPLUGIN(obj)
@@ -2534,7 +2535,7 @@ int Viewer::CreateOutlineObject(roadmanager::Outline* outline)
 	int nrPoints = outline->closed_ ? outline->corner_.size() + 1 : outline->corner_.size();
 
 	osg::ref_ptr<osg::Group> group = new osg::Group();
-	osg::Vec4 color = osg::Vec4(0.5f, 0.5f, 0.5f, 1.0f);  // outline objects will be gray
+	osg::Vec4 color = osg::Vec4(color_object[0], color_object[1], color_object[2], 1.0f);
 
 	osg::ref_ptr<osg::Vec3Array> vertices_sides = new osg::Vec3Array(nrPoints * 2);  // one set at bottom and one at top
 	osg::ref_ptr<osg::Vec3Array> vertices_top = new osg::Vec3Array(nrPoints);  // one set at bottom and one at top
@@ -2675,24 +2676,41 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
 			}
 			else
 			{
-				// Assume name is representing a 3D model filename
 				double orientation = object->GetOrientation() == roadmanager::Signal::Orientation::NEGATIVE ? M_PI : 0.0;
-
-				std::vector<std::string> file_name_candidates;
 
 				// absolute path or relative to current directory
 				std::string filename = object->GetName();
-				if (FileNameExtOf(filename) == "")
+
+				// Assume name is representing a 3D model filename
+				if (!filename.empty())
 				{
-					filename += ".osgb";  // add missing extension
+					std::vector<std::string> file_name_candidates;
+
+					if (FileNameExtOf(filename) == "")
+					{
+						filename += ".osgb";  // add missing extension
+					}
+
+					tx = LoadRoadFeature(road, filename);
+
+					if (tx == nullptr)
+					{
+						LOG("Failed to load road object model file: %s (%s). Creating a bounding box as stand in.", filename.c_str(), object->GetName().c_str());
+					}
 				}
 
-				tx = LoadRoadFeature(road, filename);
-
-				if (tx == 0)
+				if (tx == nullptr)
 				{
-					LOG("Failed to load road object model file: %s (%s)", filename.c_str(), object->GetName().c_str());
-					return -1;
+					// create a bounding box to represent the object
+					osg::ref_ptr<osg::ShapeDrawable> shape = new osg::ShapeDrawable(new osg::Box(osg::Vec3(0, 0, 0.5 * object->GetHeight()),
+						object->GetLength(),
+						object->GetWidth(),
+						object->GetHeight()));
+
+					shape->setColor(osg::Vec4(color_object[0], color_object[1], color_object[2], 1.0));
+
+					tx = new osg::PositionAttitudeTransform;
+					tx->addChild(shape);
 				}
 
 				roadmanager::Repeat* rep = object->GetRepeat();

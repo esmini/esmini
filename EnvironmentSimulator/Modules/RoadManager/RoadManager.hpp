@@ -2658,7 +2658,7 @@ namespace roadmanager
 			@param yin Y coordinate of input position
 			@param pos Output parameter: Closest trajectory position
 			@param index Output parameter: Index of closest underlying polyline segment, can be used as start index in next call
-			@param startAtIndex: <= 0: Search global minimum along the whole path, > 0: Look for local minimum around this index. 
+			@param startAtIndex: <= 0: Search global minimum along the whole path, > 0: Look for local minimum around this index.
 			@return true if connection exist, else false
 		*/
 		int FindClosestPoint(double xin, double yin, TrajVertex& pos, int& index, int startAtIndex = 0) { return -1; };
