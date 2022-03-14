@@ -8,16 +8,17 @@
   - Simplified trailer mathematics and dynamics, good enough for basic scenarios
   - Provided examples:
     - [trailer.xosc](https://github.com/esmini/esmini/blob/master/resources/xosc/trailers.xosc) / [video clip](https://youtu.be/15QlPBrF4Ro) / run script: [run/esmini/run_trailers.bat](https://github.com/esmini/esmini/blob/master/run/esmini/run_trailers.bat)
-    - [parking_lot_.xosc](https://github.com/esmini/esmini/blob/master/resources/xosc/parking_lot_.xosc) / [video clip](https://youtu.be/iDWurUhesSc) / run script: [run/esmini/run_parking_lot.bat](https://github.com/esmini/esmini/blob/master/run/esmini/run_parking_lot.bat)
+    - [parking_lot.xosc](https://github.com/esmini/esmini/blob/master/resources/xosc/parking_lot.xosc) / [video clip](https://youtu.be/iDWurUhesSc) / run script: [run/esmini/run_parking_lot.bat](https://github.com/esmini/esmini/blob/master/run/esmini/run_parking_lot.bat)
   - Demo showing capabilites and limitations: [video clip](https://youtu.be/9BTNEhU_V9c)
   - New vehicle 3D models: Semi-truck tractor, semi-trailer, truck trailer and car trailer  
     **Note:** To fetch updated models, remove resources/models folder and run `cmake ..` again, or just get the package from [here](https://dl.dropboxusercontent.com/s/5gk8bvgzqiaaoco/models.7z?dl=1)
 - Support for multiple Repeat objects ([PR #251](https://github.com/esmini/esmini/issues/251))
 - Support simple OpenDRIVE bounding box objects (when no osgb filename or outline specified)
+  - [xodr/crest-curve.xodr](https://github.com/esmini/esmini/blob/master/resources/xodr/crest-curve.xodr) updated with an example (see object with ID 0)
 - SwarmAction updated to spawn only relevant, specified vehicle types
 - Respect vehicle acceleration and deceleration constraints in InteractiveDriver controller
-- Add lib method to set SimpleVehicle wheel status
-- Add lib API for pause flag
+- Add lib method to set SimpleVehicle wheel status: [SE_ReportObjectWheelStatus()](https://github.com/esmini/esmini/blob/aed36300e603e25aee9a910af3f6ec7bdc32593a/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L657)
+- Add lib API for pause flag: [SE_GetPauseFlag()](https://github.com/esmini/esmini/blob/aed36300e603e25aee9a910af3f6ec7bdc32593a/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L341)
 - Parameterize steering rate for InteractiveDriver controller
 - Add C# API to get parameter names ([PR #252](https://github.com/esmini/esmini/issues/252))
 - Optimize muli-replayer feature, now supporting much larger and/or more scenarios
