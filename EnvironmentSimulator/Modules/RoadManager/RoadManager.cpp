@@ -3939,7 +3939,14 @@ LaneRoadLaneConnection Junction::GetRoadConnectionByIdx(int roadId, int laneId, 
 						{
 							laneSectionId = connection->GetConnectingRoad()->GetNumberOfLaneSections() - 1;
 						}
-						if (!(connection->GetConnectingRoad()->GetLaneSectionByIdx(laneSectionId)->GetLaneById(lane_link->to_)->GetLaneType() & laneTypeMask))
+						Lane* lane = connection->GetConnectingRoad()->GetLaneSectionByIdx(laneSectionId)->GetLaneById(lane_link->to_);
+
+						if (lane == nullptr)
+						{
+							LOG("Error: OpenDrive::GetJunctionConnection target lane not found! from %d, %d to %d, %d\n",
+								roadId, laneId, connection->GetConnectingRoad()->GetId(), lane_link->to_);
+						}
+						else if (!(lane->GetLaneType() & laneTypeMask))
 						{
 							LOG("OpenDrive::GetJunctionConnection target lane not driving! from %d, %d to %d, %d\n",
 								roadId, laneId, connection->GetConnectingRoad()->GetId(), lane_link->to_);
