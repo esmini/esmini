@@ -252,11 +252,13 @@ TEST(OSIintersections, multilane)
 
 TEST(GetOSIRoadLaneTest, lane_no_obj)
 {
-
+	struct stat fileStatus;
 	std::string scenario_file = "../../../resources/xosc/cut-in.xosc";
 	const char *Scenario_file = scenario_file.c_str();
 
 	SE_Init(Scenario_file, 0, 0, 0, 0);
+	SE_OSIFileOpen("gt.osi");
+
 	SE_StepDT(0.001f);
 	SE_UpdateOSIGroundTruth();
 
@@ -267,7 +269,12 @@ TEST(GetOSIRoadLaneTest, lane_no_obj)
 	EXPECT_EQ(road_lane_size, 0);
 	EXPECT_EQ(road_lane, nullptr);
 
+	SE_StepDT(0.001f);  // Step for write another frame to osi file
+
 	SE_Close();
+
+	ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
+	EXPECT_EQ(fileStatus.st_size, 69725);  // slight growth due to only dynamic updates
 }
 
 TEST(GetOSIRoadLaneTest, lane_id)
@@ -2584,8 +2591,8 @@ int main(int argc, char **argv)
 {
 	testing::InitGoogleTest(&argc, argv);
 
-#if 0   // set to 1 and modify filter to run one single test
-	testing::GTEST_FLAG(filter) = "*TestExternalDriver*";
+#if 0  // set to 1 and modify filter to run one single test
+	testing::GTEST_FLAG(filter) = "*lane_no_obj*";
 #else
 	SE_LogToConsole(false);
 #endif

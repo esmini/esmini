@@ -272,7 +272,7 @@ void ScenarioPlayer::ScenarioPostFrame()
 			if (osiReporter->GetCounter() % osi_freq_ == 0)
 			{
 				osiReporter->UpdateOSIGroundTruth(scenarioGateway->objectState_);
-				if (osiReporter->GetCounter() == 0)
+				if (osiReporter->GetCounter() == 1)
 				{
 					// Clear the static data now when it has been reported once
 					osiReporter->ClearOSIGroundTruth();
