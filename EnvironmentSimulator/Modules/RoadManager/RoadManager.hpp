@@ -1122,9 +1122,9 @@ namespace roadmanager
 		void SetWidthStart(double widthStart) { widthStart_ = widthStart; }
 		void SetWidthEnd(double widthEnd) { widthEnd_ = widthEnd; }
 		void SetLengthStart(double lengthStart) { lengthStart_ = lengthStart; }
-		void SetLengthEnd(double lengthEnd) { lengthStart_ = lengthEnd; }
+		void SetLengthEnd(double lengthEnd) { lengthEnd_ = lengthEnd; }
 		void SetHeightStart(double heightStart) { heightStart_ = heightStart; }
-		void SeHeightEnd(double heightStart) { heightStart_ = heightStart; }
+		void SeHeightEnd(double heightEnd) { heightEnd_ = heightEnd; }
 		double GetS() { return s_; }
 		double GetLength() { return length_; }
 		double GetDistance() { return distance_; }
