@@ -4,14 +4,11 @@ set ( FILE_STORAGE "google" ) # "dropbox" or "google"  (Dropbox limited GB/Day)
 set ( VIEWER_BASE_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Modules/ViewerBase" )
 set ( PLAYER_BASE_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Modules/PlayerBase" )
 set ( ROADMANAGER_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Modules/RoadManager" )
-set ( SCENARIOENGINE_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Modules/ScenarioEngine/SourceFiles")
 set ( ROADMANAGER_DLL_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Libraries/esminiRMLib" )
 set ( SCENARIOENGINE_DLL_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Libraries/esminiLib" )
 set ( REPLAY_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Applications/replayer" )
 set ( SCENARIOENGINE_INCLUDE_DIRS
- "${SCENARIOENGINE_INCLUDE_DIR}"
- "${CMAKE_CURRENT_SOURCE_DIR}/Modules/ScenarioEngine/Actions"
- "${CMAKE_CURRENT_SOURCE_DIR}/Modules/ScenarioEngine/Conditions"
+ "${CMAKE_CURRENT_SOURCE_DIR}/Modules/ScenarioEngine/SourceFiles"
  "${CMAKE_CURRENT_SOURCE_DIR}/Modules/ScenarioEngine/OSCTypeDefs"
  )
 set ( COMMON_MINI_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Modules/CommonMini")
