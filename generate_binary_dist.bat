@@ -108,6 +108,9 @@ copy resources\models\car_trailer.osgb %target_dir%\resources\models /y
 copy resources\models\semi_tractor.osgb %target_dir%\resources\models /y
 copy resources\models\semi_trailer.osgb %target_dir%\resources\models /y
 copy resources\models\truck_trailer.osgb %target_dir%\resources\models /y
+copy resources\models\hedge.osgb %target_dir%\resources\models /y
+copy resources\models\fence_plank.osgb %target_dir%\resources\models /y
+copy resources\models\fence_pole.osgb %target_dir%\resources\models /y
 
 copy resources\sumo_inputs\e6mini* %target_dir%\resources\sumo_inputs /y
 copy resources\sumo_inputs\multi_intersections* %target_dir%\resources\sumo_inputs /y

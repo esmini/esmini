@@ -85,6 +85,9 @@ resources/models/car_trailer.osgb \
 resources/models/semi_tractor.osgb \
 resources/models/semi_trailer.osgb \
 resources/models/truck_trailer.osgb \
+resources/models/hedge.osgb \
+resources/models/fence_plank.osgb \
+resources/models/fence_pole.osgb \
 resources/sumo_inputs/e6mini* \
 resources/sumo_inputs/multi_intersections* \
 run/esmini/run_follow_ghost.* \
