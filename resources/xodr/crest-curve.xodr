@@ -71,8 +71,9 @@
             </laneSection>
         </lanes>
         <objects>
-            <object type="" name="" id="0" s="210" t="-12" zOffset="0.00" orientation="none" length="15.0" width="5.0" height="3.0" hdg="0.3" pitch="0.0" roll="0.00"/>
-            <object type="" name="Building1" id="1" s="250" t="-5" zOffset="0.00" orientation="none" length="25.0" width="10.0" height="10.0" hdg="-0.15" pitch="0.0" roll="0.00">
+            <object type="vegetation" name="" id="0" s="210" t="-12" zOffset="0.00" orientation="none" length="15.0" width="5.0" height="3.0" hdg="0.3" pitch="0.0" roll="0.00"/>
+            <object type="obstacle" name="" id="1" s="190" t="7.5" zOffset="0.00" orientation="none" length="5.0" width="1.0" height="1.0" hdg="1.57" pitch="0.0" roll="0.00"/>
+            <object type="building" name="Building1" id="2" s="250" t="-5" zOffset="0.00" orientation="none" length="25.0" width="10.0" height="10.0" hdg="-0.15" pitch="0.0" roll="0.00">
 				<outlines>
 				  <outline id="52" fillType="" closed="true">
 					<cornerLocal u="0.0" v="0.0" z="-0.5" height="10.0" />
@@ -82,7 +83,7 @@
 				  </outline>
 				</outlines>
             </object>		
-            <object type="" name="Building2" id="2" s="220" t="15" zOffset="0.00" orientation="none" length="30.0" width="10.0" height="8.0" hdg="-0.15" pitch="0.0" roll="0.00">
+            <object type="none" name="Building2" id="3" s="220" t="15" zOffset="0.00" orientation="none" length="30.0" width="10.0" height="8.0" hdg="-0.15" pitch="0.0" roll="0.00">
 				<outlines>
 				  <outline id="53" fillType="grass" closed="true">
 					<cornerRoad s="220.0" t="10.0" dz="0.0" height="3.1" />
@@ -96,16 +97,16 @@
 				  </outline>
 				</outlines>
             </object>				
-            <object type="fence-pole" name="../models/fence_pole.osgb" id="3" s="120" t="1.35" orientation="none" hdg="0.0" pitch="0.0" roll="0.0">
+            <object type="obstacle" name="../models/fence_pole.osgb" id="4" s="120" t="1.35" orientation="none" hdg="0.0" pitch="0.0" roll="0.0">
                 <repeat s="200" length="104.0" distance="4.0" tStart="5.0" tEnd="5.0" heightStart="2.0" heightEnd="2.0" zOffsetStart="0.0" zOffsetEnd="0.0" />
             </object>
-            <object type="fence-plank" name="../models/fence_plank.osgb" id="4" s="120.0" t="1.35" orientation="none" hdg="0.0" pitch="0.0" roll="0.0">
+            <object type="barrier" name="../models/fence_plank.osgb" id="5" s="120.0" t="1.35" orientation="none" hdg="0.0" pitch="0.0" roll="0.0">
                 <repeat s="200" length="100" distance="4.0" tStart="5.0" tEnd="5.0" heightStart="2.0" heightEnd="2.0" zOffsetStart="0.0" zOffsetEnd="0.0" lengthStart="4.1" lengthEnd="4.1"/>
             </object>
-            <object type="hedge" name="../models/hedge.osgb" id="3" s="40" t="1.35" orientation="none" hdg="3.14159" pitch="0.0" roll="0.0">
+            <object type="vegetation" name="../models/hedge.osgb" id="6" s="40" t="1.35" orientation="none" hdg="3.14159" pitch="0.0" roll="0.0">
                 <repeat s="180" length="50" distance="2.0" tStart="-5.0" tEnd="-5.0" heightStart="1.5" heightEnd="1.5" zOffsetStart="0.0" zOffsetEnd="0.0" lengthStart="2.0" lengthEnd="2.0"/>
             </object>
-            <object type="" name="cone-100" id="5" s="185" t="4"/>
+            <object type="obstacle" name="cone-100" id="7" s="180" t="4"/>
         </objects>        
         <signals/>
         <surface/>

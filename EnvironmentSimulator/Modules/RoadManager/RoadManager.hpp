@@ -1146,8 +1146,37 @@ namespace roadmanager
 	class RMObject : public RoadObject
 	{
 	public:
+		enum class ObjectType
+		{
+			BARRIER,
+			BIKE,
+			BUILDING,
+			BUS,
+			CAR,
+			CROSSWALK,
+			GANTRY,
+			MOTORBIKE,
+			NONE,
+			OBSTACLE,
+			PARKINGSPACE,
+			PATCH,
+			PEDESTRIAN,
+			POLE,
+			RAILING,
+			ROADMARK,
+			SOUNDBARRIER,
+			STREETLAMP,
+			TRAFFICISLAND,
+			TRAILER,
+			TRAIN,
+			TRAM,
+			TREE,
+			VAN,
+			VEGETATION,
+			WIND
+		};
 
-		RMObject(double s, double t, int id, std::string name, Orientation orientation, double z_offset, std::string type,
+		RMObject(double s, double t, int id, std::string name, Orientation orientation, double z_offset, ObjectType type,
 			double length, double height, double width, double heading, double pitch, double roll) :
 			s_(s), t_(t), id_(id), name_(name), orientation_(orientation), z_offset_(z_offset), type_(type),
 			length_(length), height_(height), width_(width), heading_(heading), pitch_(pitch), roll_(roll), repeat_(0) {}
@@ -1161,8 +1190,12 @@ namespace roadmanager
 			repeats_.clear();
 		}
 
+		static std::string Type2Str(ObjectType type);
+		static ObjectType Str2Type(std::string type);
+
 		std::string GetName() { return name_; }
-		std::string GetType() { return type_; }
+		std::string GetTypeStr() { return Type2Str(type_); }
+		ObjectType GetType() { return type_; }
 		int GetId() { return id_; }
 		double GetS() { return s_; }
 		double GetT() { return t_; }
@@ -1190,8 +1223,8 @@ namespace roadmanager
 
 
 	private:
-		std::string type_;
 		std::string name_;
+		ObjectType type_;
 		int id_;
 		double s_;
 		double t_;

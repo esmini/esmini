@@ -77,6 +77,36 @@ using namespace roadmanager;
 static int g_Lane_id;
 static int g_Laneb_id;
 
+const char* object_type_str[] =
+{
+	"barrier",
+	"bike",
+	"building",
+	"bus",
+	"car",
+	"crosswalk",
+	"gantry",
+	"motorbike",
+	"none",
+	"obstacle",
+	"parkingspace",
+	"patch",
+	"pedestrian",
+	"pole",
+	"railing",
+	"roadmark",
+	"soundbarrier",
+	"streetlamp",
+	"trafficisland",
+	"trailer",
+	"train",
+	"tram",
+	"tree",
+	"van",
+	"vegetation",
+	"wind"
+};
+
 const std::map<std::string, Signal::Type> Signal::types_mapping_ = {
 	{"TYPE_UNKNOWN", Signal::TYPE_UNKNOWN},
 	{"TYPE_OTHER", Signal::TYPE_OTHER},
@@ -2088,6 +2118,38 @@ void OutlineCornerLocal::GetPos(double& x, double& y, double& z)
 	z = pref.GetZ() + zLocal_;
 }
 
+std::string RMObject::Type2Str(RMObject::ObjectType type)
+{
+	int t = static_cast<int>(type);
+	if (t < sizeof(object_type_str) / sizeof(char*))
+	{
+		return object_type_str[t];
+	}
+	else
+	{
+		LOG("Unsupported object type: %d", t);
+	}
+
+	return "";
+}
+
+RMObject::ObjectType RMObject::Str2Type(std::string type)
+{
+	int n_types = static_cast<int>(sizeof(object_type_str) / sizeof(char*));
+
+	for (int i = 0; i < n_types;i++)
+	{
+		if (type == object_type_str[i])
+		{
+			return static_cast<ObjectType>(i);
+		}
+	}
+
+	LOG("Unsupported object type: %s - interpret as NONE", type.c_str());
+
+	return RMObject::ObjectType::NONE;
+}
+
 double Road::GetLaneOffset(double s)
 {
 	int i = 0;
@@ -3628,7 +3690,8 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 						LOG("unknown road object orientation: %s (road ids=%d)\n", object.attribute("orientation").value(), r->GetId());
 					}
 				}
-				std::string type = object.attribute("type").value();
+				std::string type_str = object.attribute("type").value();
+				RMObject::ObjectType type = RMObject::Str2Type(type_str);
 				double z_offset = atof(object.attribute("zOffset").value());
 				double length = atof(object.attribute("length").value());
 				double height = atof(object.attribute("height").value());

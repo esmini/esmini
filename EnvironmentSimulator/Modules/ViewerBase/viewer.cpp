@@ -62,7 +62,6 @@ double color_black[3] = { 0.2, 0.2, 0.2 };
 double color_blue[3] = { 0.25, 0.38, 0.7 };
 double color_yellow[3] = { 0.75, 0.7, 0.4 };
 double color_white[3] = { 0.90, 0.90, 0.85 };
-double color_object[3] = { 0.5, 0.5, 0.5 };
 
 //USE_OSGPLUGIN(fbx)
 //USE_OSGPLUGIN(obj)
@@ -2595,7 +2594,7 @@ bool Viewer::CreateRoadLines(roadmanager::OpenDrive* od)
 	return true;
 }
 
-int Viewer::CreateOutlineObject(roadmanager::Outline* outline)
+int Viewer::CreateOutlineObject(roadmanager::Outline* outline, osg::Vec4 color)
 {
 	if (outline == 0) return -1;
 	bool roof = outline->closed_ ? true : false;
@@ -2604,7 +2603,6 @@ int Viewer::CreateOutlineObject(roadmanager::Outline* outline)
 	int nrPoints = outline->closed_ ? outline->corner_.size() + 1 : outline->corner_.size();
 
 	osg::ref_ptr<osg::Group> group = new osg::Group();
-	osg::Vec4 color = osg::Vec4(color_object[0], color_object[1], color_object[2], 1.0f);
 
 	osg::ref_ptr<osg::Vec3Array> vertices_sides = new osg::Vec3Array(nrPoints * 2);  // one set at bottom and one at top
 	osg::ref_ptr<osg::Vec3Array> vertices_top = new osg::Vec3Array(nrPoints);  // one set at bottom and one at top
@@ -2700,7 +2698,7 @@ osg::ref_ptr<osg::PositionAttitudeTransform> Viewer::LoadRoadFeature(roadmanager
 int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
 {
 	osg::ref_ptr<osg::Group> objGroup = new osg::Group;
-	osg::ref_ptr<osg::PositionAttitudeTransform> tx = 0;
+	osg::ref_ptr<osg::PositionAttitudeTransform> tx = nullptr;
 
 	roadmanager::Position pos;
 
@@ -2709,6 +2707,7 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
 		roadmanager::Road* road = od->GetRoadByIdx(r);
 		for (size_t s = 0; s < road->GetNumberOfSignals(); s++)
 		{
+			tx = nullptr;
 			roadmanager::Signal* signal = road->GetSignal(s);
 			double orientation = signal->GetOrientation() == roadmanager::Signal::Orientation::NEGATIVE ? M_PI : 0.0;
 
@@ -2731,13 +2730,35 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
 		for (size_t o = 0; o < road->GetNumberOfObjects(); o++)
 		{
 			roadmanager::RMObject* object = road->GetObject(o);
+			osg::Vec4 color;
+			tx = nullptr;
+
+			// Set color based on object type
+			if (object->GetType() == roadmanager::RMObject::ObjectType::BUILDING ||
+				object->GetType() == roadmanager::RMObject::ObjectType::BARRIER)
+			{
+				color = osg::Vec4(0.6, 0.6, 0.6, 1.0);
+			}
+			else if (object->GetType() == roadmanager::RMObject::ObjectType::OBSTACLE)
+			{
+				color = osg::Vec4(0.5, 0.3, 0.3, 1.0);
+			}
+			else if (object->GetType() == roadmanager::RMObject::ObjectType::TREE ||
+				object->GetType() == roadmanager::RMObject::ObjectType::VEGETATION)
+			{
+				color = osg::Vec4(0.22, 0.32, 0.22, 1.0);
+			}
+			else
+			{
+				color = osg::Vec4(0.4, 0.4, 0.4, 1.0);
+			}
 
 			if (object->GetNumberOfOutlines() > 0)
 			{
 				for (size_t j = 0; j < object->GetNumberOfOutlines(); j++)
 				{
 					roadmanager::Outline* outline = object->GetOutline(j);
-					CreateOutlineObject(outline);
+					CreateOutlineObject(outline, color);
 				}
 				LOG("Created outline geometry for object %s.", object->GetName().c_str());
 				LOG("  if it looks strange, e.g.faces too dark or light color, ");
@@ -2776,7 +2797,7 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
 						object->GetWidth(),
 						object->GetHeight()));
 
-					shape->setColor(osg::Vec4(color_object[0], color_object[1], color_object[2], 1.0));
+					shape->setColor(color);
 
 					tx = new osg::PositionAttitudeTransform;
 					tx->addChild(shape);
