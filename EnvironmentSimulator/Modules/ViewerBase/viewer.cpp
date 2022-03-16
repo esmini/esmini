@@ -1591,13 +1591,13 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 			// Since the generated 3D model is based on OSI features, let's hide those
 			ClearNodeMaskBits(NodeMask::NODE_MASK_ODR_FEATURES);
 			ClearNodeMaskBits(NodeMask::NODE_MASK_OSI_LINES);
-
-			// Add an optional large ground surface
-			if (opt->GetOptionSet("ground_plane"))
-			{
-				AddGroundSurface();
-			}
 		}
+	}
+
+	// Add an optional large ground surface
+	if (opt->GetOptionSet("ground_plane"))
+	{
+		AddGroundSurface();
 	}
 
 	//const osg::BoundingSphere bs = environment_->getBound();

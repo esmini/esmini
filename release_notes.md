@@ -1,5 +1,25 @@
 ## esmini release notes
 
+### 2022-03-16 Version 2.21.1
+
+- Add ground plane option
+  - add launch flag `--ground_plane` to put a large gray surface under the roads 
+- Fix and improve road object handling
+  - Fix repeat object lengthStart/End bug
+  - Fix inter-distance affected by road curvature and lateral position
+  - Populate length, width and height from bounding box if attributes not set
+  - Add hedge and fence models
+    Note: To fetch updated models, remove resources/models folder and run `cmake ..` again, or get the package from [here](https://dl.dropboxusercontent.com/s/5gk8bvgzqiaaoco/models.7z?dl=1)
+  - Set color of based on type (for objects lacking explicit 3D model)
+    - building, barrier: light gray
+    - tree, vegetation: green
+    - obstacle: red
+    - all other: dark gray
+  - [xodr/crest-curve.xodr](https://github.com/esmini/esmini/blob/master/resources/xodr/crest-curve.xodr) updated to show some of the features
+- Reduce OSI file size (again)
+  - Save size by save static data only first frame
+  - This was implemented in v2.17.4 but unfortunately disabled by a bug introduced in v2.20.6
+
 ### 2022-03-14 Version 2.21.0
 
 - New feature: Trailer support
