@@ -1173,6 +1173,9 @@ namespace roadmanager
 		double GetHeight() { return height_; }
 		double GetLength() { return length_; }
 		double GetWidth() { return width_; }
+		void SetHeight(double height) { height_ = height; }
+		void SetLength(double length) { length_ = length; }
+		void SetWidth(double width) { width_ = width; }
 		Orientation GetOrientation() { return orientation_; }
 		void AddOutline(Outline* outline) { outlines_.push_back(outline); }
 		void SetRepeat(Repeat* repeat);

@@ -2750,11 +2750,8 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
 				}
 
 				roadmanager::Repeat* rep = object->GetRepeat();
-				int nCopies = 1;
-				if (rep && rep->GetDistance() > SMALL_NUMBER)
-				{
-					nCopies = rep->length_ / rep->distance_;
-				}
+				int nCopies = 0;
+				double cur_s = 0.0;
 
 				osg::ComputeBoundsVisitor cbv;
 				tx->accept(cbv);
@@ -2763,17 +2760,38 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
 				double dim_x = boundingBox._max.x() - boundingBox._min.x();
 				double dim_y = boundingBox._max.y() - boundingBox._min.y();
 				double dim_z = boundingBox._max.z() - boundingBox._min.z();
+				if (object->GetLength() < SMALL_NUMBER && dim_x > SMALL_NUMBER)
+				{
+					LOG("Object %s missing length, set to bounding box length %.2f", object->GetName().c_str(), dim_x);
+					object->SetLength(dim_x);
+				}
+				if (object->GetWidth() < SMALL_NUMBER && dim_y > SMALL_NUMBER)
+				{
+					LOG("Object %s missing width, set to bounding box width %.2f", object->GetName().c_str(), dim_y);
+					object->SetWidth(dim_y);
+				}
+				if (object->GetHeight() < SMALL_NUMBER && dim_z > SMALL_NUMBER)
+				{
+					LOG("Object %s missing height, set to bounding box height %.2f", object->GetName().c_str(), dim_z);
+					object->SetHeight(dim_z);
+				}
 
 				double lastLODs = 0.0;  // used for putting object copies in LOD groups
 				osg::ref_ptr<osg::Group> LODGroup = 0;
 				osg::ref_ptr<osg::PositionAttitudeTransform> clone = 0;
 
-				for (size_t i = 0; i < nCopies; i++)
+				for (; nCopies < 1 || rep && rep->length_ > SMALL_NUMBER && cur_s < rep->GetLength() &&
+					cur_s + rep->GetS() < road->GetLength(); nCopies++)
 				{
 					double factor, t, s, zOffset;
 					double scale_x = 1.0;
 					double scale_y = 1.0;
 					double scale_z = 1.0;
+
+					if (rep && cur_s + rep->GetS() + (object->GetLength() * scale_x) * cos(object->GetHOffset()) > road->GetLength())
+					{
+						break;  // object would reach outside specified total length
+					}
 
 					clone = dynamic_cast<osg::PositionAttitudeTransform*>(tx->clone(osg::CopyOp::SHALLOW_COPY));
 
@@ -2811,9 +2829,9 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
 					}
 					else
 					{
-						factor = (double)i / nCopies;
+						factor = (double)cur_s / rep->GetLength();
 						t = rep->GetTStart() + factor * (rep->GetTEnd() - rep->GetTStart());
-						s = rep->GetS() + i * rep->GetDistance();
+						s = rep->GetS() + cur_s;
 						zOffset = rep->GetZOffsetStart() + factor * (rep->GetZOffsetEnd() - rep->GetZOffsetStart());
 
 						if (rep->GetLengthStart() > SMALL_NUMBER || rep->GetLengthEnd() > SMALL_NUMBER)
@@ -2839,7 +2857,10 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
 						// Specified local rotation
 						osg::Quat quatLocal(object->GetHOffset(), osg::Vec3(osg::Z_AXIS));  // Heading
 						// Combine
-						clone->setAttitude(quatLocal * quatRoad);
+						clone->setAttitude(quatLocal* quatRoad);
+
+						// increase current s distance according to road curvature
+						cur_s += pos.DistanceToDS(rep->distance_);
 					}
 
 					clone->setDataVariance(osg::Object::STATIC);

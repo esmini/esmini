@@ -96,7 +96,16 @@
 				  </outline>
 				</outlines>
             </object>				
-            <object type="" name="cone-100" id="3" s="165" t="-4"/>
+            <object type="fence-pole" name="../models/fence_pole.osgb" id="3" s="120" t="1.35" orientation="none" hdg="0.0" pitch="0.0" roll="0.0">
+                <repeat s="200" length="104.0" distance="4.0" tStart="5.0" tEnd="5.0" heightStart="2.0" heightEnd="2.0" zOffsetStart="0.0" zOffsetEnd="0.0" />
+            </object>
+            <object type="fence-plank" name="../models/fence_plank.osgb" id="4" s="120.0" t="1.35" orientation="none" hdg="0.0" pitch="0.0" roll="0.0">
+                <repeat s="200" length="100" distance="4.0" tStart="5.0" tEnd="5.0" heightStart="2.0" heightEnd="2.0" zOffsetStart="0.0" zOffsetEnd="0.0" lengthStart="4.1" lengthEnd="4.1"/>
+            </object>
+            <object type="hedge" name="../models/hedge.osgb" id="3" s="40" t="1.35" orientation="none" hdg="3.14159" pitch="0.0" roll="0.0">
+                <repeat s="180" length="50" distance="2.0" tStart="-5.0" tEnd="-5.0" heightStart="1.5" heightEnd="1.5" zOffsetStart="0.0" zOffsetEnd="0.0" lengthStart="2.0" lengthEnd="2.0"/>
+            </object>
+            <object type="" name="cone-100" id="5" s="185" t="4"/>
         </objects>        
         <signals/>
         <surface/>
