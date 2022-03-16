@@ -26,6 +26,8 @@ Options:
       Run simulation decoupled from realtime, with specified timesteps
   --generate_no_road_objects
       Do not generate any OpenDRIVE road objects (e.g. when part of referred 3D model)
+  --ground_plane
+      Add a large flat ground surface
   --logfile_path <path>
       logfile path/filename, e.g. "../esmini.log" (default: log.txt)
   --model <model_filename>

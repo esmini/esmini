@@ -1351,6 +1351,32 @@ int Viewer::InitTraits(osg::ref_ptr<osg::GraphicsContext::Traits> traits,
 	return 0;
 }
 
+int Viewer::AddGroundSurface()
+{
+	const double margin = 1E4;
+	const double z_offset = -1.0;
+	const osg::BoundingSphere bs = environment_->getBound();
+
+	osg::ComputeBoundsVisitor cbv;
+	environment_->accept(cbv);
+	osg::BoundingBox bb = cbv.getBoundingBox();
+
+	osg::ref_ptr<osg::Geode> ground = new osg::Geode;
+	osg::ref_ptr<osg::Geometry> geom = osg::createTexturedQuadGeometry(
+		osg::Vec3(bb.xMin() - margin, bb.yMin() - margin, bb.zMin() + z_offset),
+		osg::Vec3(0, 2 * margin + (bb.yMax() - bb.yMin()), bb.zMin() + z_offset),
+		osg::Vec3(2 * margin + (bb.xMax() - bb.xMin()), 0, bb.zMin() + z_offset));
+	osg::ref_ptr<osg::Vec4Array> color = new osg::Vec4Array;
+	color->push_back(osg::Vec4(0.8, 0.8, 0.8, 1.0));
+	geom->setColorArray(color.get());
+	geom->setColorBinding(osg::Geometry::BIND_PER_PRIMITIVE_SET);
+	ground->addDrawable(geom);
+
+	envTx_->addChild(ground.get());
+
+	return 0;
+}
+
 Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, const char* scenarioFilename, const char* exe_path, osg::ArgumentParser arguments, SE_Options* opt)
 {
 	odrManager_ = odrManager;
@@ -1466,7 +1492,8 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 	{
 		camera->setClearColor(osg::Vec4(0.5f, 0.75f, 1.0f, 1.0f));
 	}
-	camera->setProjectionMatrixAsPerspective(30.0f, (double)traits->width / (double)traits->height, 0.5, 100.0);
+	camera->setComputeNearFarMode(osg::CullSettings::DO_NOT_COMPUTE_NEAR_FAR);
+	camera->setProjectionMatrixAsPerspective(30.0f, (double)traits->width / (double)traits->height, 0.5, 1E5);
 	camera->setViewport(new osg::Viewport(0, 0, traits->width, traits->height));
 	camera->getOrCreateStateSet()->setMode(GL_DEPTH_TEST, osg::StateAttribute::ON);
 	camera->setLODScale(lodScale_);
@@ -1565,6 +1592,12 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 			// Since the generated 3D model is based on OSI features, let's hide those
 			ClearNodeMaskBits(NodeMask::NODE_MASK_ODR_FEATURES);
 			ClearNodeMaskBits(NodeMask::NODE_MASK_OSI_LINES);
+
+			// Add an optional large ground surface
+			if (opt->GetOptionSet("ground_plane"))
+			{
+				AddGroundSurface();
+			}
 		}
 	}
 

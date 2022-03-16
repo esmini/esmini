@@ -353,6 +353,7 @@ int main(int argc, char** argv)
 	opt.AddOption("disable_stdout", "Prevent messages to stdout");
 	opt.AddOption("fixed_timestep", "Run simulation decoupled from realtime, with specified timesteps", "timestep");
 	opt.AddOption("generate_no_road_objects", "Do not generate any OpenDRIVE road objects (e.g. when part of referred 3D model)");
+	opt.AddOption("ground_plane", "Add a large flat ground surface");
 	opt.AddOption("logfile_path", "logfile path/filename, e.g. \"../esmini.log\" (default: log.txt)", "path");
 	opt.AddOption("model", "3D Model filename", "model_filename");
 	opt.AddOption("osi_lines", "Show OSI road lines (toggle during simulation by press 'u') ");

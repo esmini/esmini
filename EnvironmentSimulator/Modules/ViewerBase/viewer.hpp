@@ -474,6 +474,7 @@ namespace viewer
 		int CreateRoadSignsAndObjects(roadmanager::OpenDrive* od);
 		int InitTraits(osg::ref_ptr<osg::GraphicsContext::Traits> traits, int x, int y, int w, int h, int samples,
 			bool decoration, int screenNum, bool headless);
+		int AddGroundSurface();
 		bool keyUp_;
 		bool keyDown_;
 		bool keyLeft_;
