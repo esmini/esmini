@@ -6091,7 +6091,7 @@ void Position::Track2Lane()
 	lane_section_idx_ = lane_section_idx;
 }
 
-Position::ErrorCode Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool connectedOnly, int roadId)
+Position::ErrorCode Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool connectedOnly, int roadId, bool check_overlapping_roads)
 {
 	// Overall method:
 	//   1. Iterate over all roads, looking at OSI points of each lane sections center line (lane 0)
@@ -6114,7 +6114,7 @@ Position::ErrorCode Position::XYZH2TrackPos(double x3, double y3, double z3, dou
 	bool insideCurrentRoad = false;  // current postion projects on current road
 	double headingDiffMin = INFINITY;
 	bool closestPointDirectlyConnected = false;
-
+	overlapping_roads.clear();
 
 	if (GetOpenDrive()->GetNumOfRoads() == 0)
 	{
@@ -6238,7 +6238,6 @@ Position::ErrorCode Position::XYZH2TrackPos(double x3, double y3, double z3, dou
 				lsec_idx = j;
 			}
 			osiPoints = road->GetLaneSectionByIdx(lsec_idx)->GetLaneById(0)->GetOSIPoints();
-			double sLocal = -1;
 
 			// skip last point on last lane section
 			int numPoints = osiPoints->GetNumOfOSIPoints();
@@ -6262,9 +6261,12 @@ Position::ErrorCode Position::XYZH2TrackPos(double x3, double y3, double z3, dou
 				pointIdxEnd = numPoints;
 			}
 
+			double sLocal = -1.0;
+			bool inside_previous = false;
 			for (int k = pointIdxStart; k < pointIdxEnd; k++)
 			{
-				double distTmp = 0;
+				double distTmp = 0.0;
+				double weightedDist = 0.0;
 				PointStruct& osi_point = osiPoints->GetPoint(k);
 				double z = osi_point.z;
 				bool inside = false;
@@ -6366,7 +6368,7 @@ Position::ErrorCode Position::XYZH2TrackPos(double x3, double y3, double z3, dou
 					distTmp = PointDistance2D(x3, y3, px, py);
 
 					inside = PointInBetweenVectorEndpoints(px, py, osi_point.x, osi_point.y, x2, y2, sLocalTmp);
-					if (!inside && k > pointIdxStart && (SIGN(sLocalTmp) != SIGN(sLocal)))
+					if (!inside_previous && !inside && k > pointIdxStart && SIGN(sLocalTmp) != SIGN(sLocal))
 					{
 						// In between two line segments, or more precisely in the triangle area outside a
 						// convex vertex corner between two line segments. Consider beeing inside road segment.
@@ -6409,25 +6411,27 @@ Position::ErrorCode Position::XYZH2TrackPos(double x3, double y3, double z3, dou
 					distTmp = sqrt(distTmp * distTmp + sLocal * sLocal);
 				}
 
+				weightedDist = distTmp;
+
 				if (fabs(z3 - z) > 2.0)
 				{
 					// Add threshold for considering z - to avoid noise in co-planar distance calculations
-					distTmp += fabs(z3 - z);
+					weightedDist += fabs(z3 - z);
 				}
 
 				if (!insideCurrentRoad && road == current_road)
 				{
 					// Register whether current position is on current road
 					// Allow for 2 meter lateral slack outside road edges
-					insideCurrentRoad = inside && distTmp < 2;
+					insideCurrentRoad = inside && weightedDist < 2;
 				}
 				else if (insideCurrentRoad)
 				{
 					// Only add weight if position inside current road
 					// longitudinal (end points) and lateral (road width)
-					distTmp += weight;
+					weightedDist += weight;
 				}
-				if (distTmp < closestPointDist + SMALL_NUMBER)
+				if (weightedDist < closestPointDist + SMALL_NUMBER)
 				{
 					bool directlyConnectedCandidate = false;
 
@@ -6435,7 +6439,7 @@ Position::ErrorCode Position::XYZH2TrackPos(double x3, double y3, double z3, dou
 					{
 						// For directly connected roads (junction), we might have options
 						// among equally close ones, find the one which goes the most straight forward
-						if (fabs(distTmp - closestPointDist) < SMALL_NUMBER)
+						if (fabs(weightedDist - closestPointDist) < SMALL_NUMBER)
 						{
 							if (angle < headingDiffMin)
 							{
@@ -6444,9 +6448,9 @@ Position::ErrorCode Position::XYZH2TrackPos(double x3, double y3, double z3, dou
 						}
 					}
 
-					if (directlyConnectedCandidate || distTmp < closestPointDist)
+					if (directlyConnectedCandidate || weightedDist < closestPointDist)
 					{
-						closestPointDist = distTmp;
+						closestPointDist = weightedDist;
 						roadMin = road;
 						jMin = jMinLocal;
 						kMin = kMinLocal;
@@ -6463,12 +6467,19 @@ Position::ErrorCode Position::XYZH2TrackPos(double x3, double y3, double z3, dou
 				else if (startLaneSecIdx == -1)
 				{
 					// distance is now increasing, indicating that we already passed the closest point
-					if (closestPointInside && closestPointDist < SMALL_NUMBER)
+					if (closestPointInside && closestPointDist < SMALL_NUMBER && !check_overlapping_roads)
 					{
 						search_done = true;
 						break;
 					}
 				}
+
+				if (inside && distTmp < SMALL_NUMBER && (overlapping_roads.size() == 0 || overlapping_roads.back() != road->GetId()))
+				{
+					overlapping_roads.push_back(road->GetId());  // add overlap candidate
+				}
+
+				inside_previous = inside;
 			}
 		}
 	}
@@ -8131,6 +8142,23 @@ bool Position::IsInJunction()
 	}
 
 	return false;
+}
+
+int Position::GetNumberOfRoadsOverlapping()
+{
+	XYZH2TrackPos(GetX(), GetY(), GetZ(), GetH(), false, -1, true);
+
+	return static_cast<int>(overlapping_roads.size());
+}
+
+int Position::GetOverlappingRoadId(int index)
+{
+	if (overlapping_roads.size() == 0 || index >= overlapping_roads.size())
+	{
+		return -1;
+	}
+
+	return overlapping_roads[index];
 }
 
 double Position::getRelativeDistance(double targetX, double targetY, double &x, double &y) const

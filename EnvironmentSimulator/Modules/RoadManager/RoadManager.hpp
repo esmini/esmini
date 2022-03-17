@@ -1881,9 +1881,10 @@ namespace roadmanager
 		@param h Heading
 		@param conenctedOnly If true only roads that can be reached from current position will be considered, if false all roads will be considered
 		@param roadId If != -1 only this road will be considered else all roads will be searched
+		@param check_overlapping_roads If true all roads ovlerapping the position will be registered (with some performance penalty)
 		@return Non zero return value indicates error of some kind
 		*/
-		ErrorCode XYZH2TrackPos(double x, double y, double z, double h, bool connectedOnly = false, int roadId = -1);
+		ErrorCode XYZH2TrackPos(double x, double y, double z, double h, bool connectedOnly = false, int roadId = -1, bool check_overlapping_roads = false);
 
 		int TeleportTo(Position* pos);
 
@@ -2375,6 +2376,19 @@ namespace roadmanager
 		bool IsOffRoad();
 		bool IsInJunction();
 
+		/**
+		Get the number of roads overlapping the position
+		@return Number of roads overlapping the position
+		*/
+		int GetNumberOfRoadsOverlapping();
+
+		/**
+		Get the id of an overlapping road
+		@parameter index Index of the total returned by GetNumberOfRoadsOverlapping()
+		@return Id of specified overlapping road
+		*/
+		int GetOverlappingRoadId(int index);
+
 		void ReplaceObjectRefs(Position* pos1, Position* pos2)
 		{
 			if (rel_pos_ == pos1)
@@ -2474,6 +2488,9 @@ namespace roadmanager
 		int		elevation_idx_;			// index of the current elevation entry
 		int		super_elevation_idx_;   // index of the current super elevation entry
 		int     osi_point_idx_;			// index of the current closest OSI road point
+
+		// Store roads overlapping position, updated by XYZH2TrackPos()
+		std::vector<int> overlapping_roads;  // road ids overlapping position evaluated by XYZH2TrackPos()
 	};
 
 

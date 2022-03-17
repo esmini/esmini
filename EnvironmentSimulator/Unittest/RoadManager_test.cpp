@@ -2130,6 +2130,69 @@ TEST(LaneInfoTest, TestLaneWidthAndType)
     EXPECT_NEAR(road->GetLaneWidthByS(150, -3), 3.000, 1e-3);
 }
 
+TEST(RoadInfoTest, TestGetNrRoadsOverlappingPos)
+{
+    int road_id_0[] = { 5, 9, 10, 12, 15 };
+    int road_id_1[] = { 16, 7, 10 };
+    int road_id_2[] = { 2 };
+    int n = 0;
+
+    Position::GetOpenDrive()->LoadOpenDriveFile("../../../resources/xodr/fabriksgatan.xodr");
+    OpenDrive* odr = Position::GetOpenDrive();
+    ASSERT_NE(odr, nullptr);
+    EXPECT_EQ(odr->GetNumOfRoads(), 16);
+
+    Position pos;
+
+    pos.SetLanePos(5, -1, 7.2, -0.2);
+    n = pos.GetNumberOfRoadsOverlapping();
+    EXPECT_EQ(n, sizeof(road_id_0) / sizeof(int));
+    for (int i = 0; i < n; i++)
+    {
+        EXPECT_EQ(pos.GetOverlappingRoadId(i), road_id_0[i]);
+    }
+
+    pos.SetLanePos(16, -1, 9.0, -0.2);
+    n = pos.GetNumberOfRoadsOverlapping();
+    EXPECT_EQ(n, sizeof(road_id_1) / sizeof(int));
+    for (int i = 0; i < n; i++)
+    {
+        EXPECT_EQ(pos.GetOverlappingRoadId(i), road_id_1[i]);
+    }
+
+    pos.SetLanePos(2, 1, 50.0, 0.5);
+    n = pos.GetNumberOfRoadsOverlapping();
+    EXPECT_EQ(n, sizeof(road_id_2) / sizeof(int));
+    for (int i = 0; i < n; i++)
+    {
+        EXPECT_EQ(pos.GetOverlappingRoadId(i), road_id_2[i]);
+    }
+
+    pos.SetLanePos(2, 3, 50.0, 0.95);
+    n = pos.GetNumberOfRoadsOverlapping();
+    EXPECT_EQ(n, sizeof(road_id_2) / sizeof(int));
+    for (int i = 0; i < n; i++)
+    {
+        EXPECT_EQ(pos.GetOverlappingRoadId(i), road_id_2[i]);
+    }
+
+    double right_side_width = 5.8;
+    pos.SetTrackPos(2, 50.0, right_side_width - 0.05);
+    n = pos.GetNumberOfRoadsOverlapping();
+    EXPECT_EQ(n, sizeof(road_id_2) / sizeof(int));
+    for (int i = 0; i < n; i++)
+    {
+        EXPECT_EQ(pos.GetOverlappingRoadId(i), road_id_2[i]);
+    }
+
+    pos.SetTrackPos(2, 55.0, right_side_width + 0.05);
+    EXPECT_EQ(pos.GetNumberOfRoadsOverlapping(), 0);
+
+    double lane_width = 2.0;
+    pos.SetLanePos(2, 3, 50.0, lane_width / 2 + 0.05);
+    EXPECT_EQ(pos.GetNumberOfRoadsOverlapping(), 0);
+}
+
 // Uncomment to print log output to console
 //#define LOG_TO_CONSOLE
 
@@ -2149,7 +2212,7 @@ int main(int argc, char **argv)
     }
 #endif
 
-    //testing::GTEST_FLAG(filter) = "*TestLaneWidthAndType*";
+    //testing::GTEST_FLAG(filter) = "*TestGetNrRoadsOverlappingPos*";
 
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
