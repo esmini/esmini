@@ -2110,6 +2110,26 @@ TEST(EdgeCaseTest, TestSTruncation)
     EXPECT_NEAR(pos.GetY(), 0.2751, 1e-4);
 }
 
+TEST(LaneInfoTest, TestLaneWidthAndType)
+{
+    Position::GetOpenDrive()->LoadOpenDriveFile("../../../EnvironmentSimulator/Unittest/xodr/highway_exit.xodr");
+    OpenDrive* odr = Position::GetOpenDrive();
+    ASSERT_NE(odr, nullptr);
+    EXPECT_EQ(odr->GetNumOfRoads(), 5);
+
+    Road* road = odr->GetRoadById(0);
+    EXPECT_NE(road, nullptr);
+
+    EXPECT_NEAR(road->GetLaneWidthByS(80, -2), 3.000, 1e-3); ;
+    EXPECT_EQ(road->GetLaneTypeByS(80, 0), 1);
+    EXPECT_EQ(road->GetLaneTypeByS(80, -2), 2);
+
+    EXPECT_NEAR(road->GetLaneWidthByS(100, -3), 0.000, 1e-3);
+    EXPECT_NEAR(road->GetLaneWidthByS(105, -3), 0.084, 1e-3);
+    EXPECT_NEAR(road->GetLaneWidthByS(140, -3), 2.688, 1e-3);
+    EXPECT_NEAR(road->GetLaneWidthByS(150, -3), 3.000, 1e-3);
+}
+
 // Uncomment to print log output to console
 //#define LOG_TO_CONSOLE
 
@@ -2129,7 +2149,7 @@ int main(int argc, char **argv)
     }
 #endif
 
-    //testing::GTEST_FLAG(filter) = "*TestEvaluateCurvatureDS*";
+    //testing::GTEST_FLAG(filter) = "*TestLaneWidthAndType*";
 
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

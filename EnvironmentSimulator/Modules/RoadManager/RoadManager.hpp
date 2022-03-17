@@ -1325,6 +1325,7 @@ namespace roadmanager
 		LaneInfo GetLaneInfoByS(double s, int start_lane_link_idx, int start_lane_id, int laneTypeMask = Lane::LaneType::LANE_TYPE_ANY_DRIVING);
 		int GetConnectingLaneId(RoadLink* road_link, int fromLaneId, int connectingRoadId);
 		double GetLaneWidthByS(double s, int lane_id);
+		Lane::LaneType GetLaneTypeByS(double s, int lane_id);
 		double GetSpeedByS(double s);
 		bool GetZAndPitchByS(double s, double *z, double* z_prim, double *z_primPrim, double *pitch, int *index);
 		bool UpdateZAndRollBySAndT(double s, double t, double *z, double* roadSuperElevationPrim, double *roll, int *index);

@@ -373,6 +373,42 @@ extern "C"
 	RM_DLL_API int RM_GetProbeInfo(int handle, float lookahead_distance, RM_RoadProbeInfo *data, int lookAheadMode, bool inRoadDrivingDirection);
 
 	/**
+	Get width of lane with specified lane id, at current longitudinal position
+	@param handle Handle to the position object from which to measure
+	@param lane_id Id of the lane to measure
+	@return Lane width or 0.0 if lane does not exists or any other error
+	*/
+	RM_DLL_API float RM_GetLaneWidth(int handle, int lane_id);
+
+	/**
+	Get width of lane with specified lane id, at specified road and longitudinal position
+	@param road_id Id of the road
+	@param lane_id Id of the lane to measure
+	@param s Longitudinal position along the road
+	@return Lane width or 0.0 if lane does not exists or any other error
+	*/
+	RM_DLL_API float RM_GetLaneWidthByRoadId(int road_id, int lane_id, float s);
+
+	/**
+	Get type of lane with specified lane id, at current longitudinal position
+	For valid types, see RoadManager.hpp::Lane::LaneType enum
+	@param handle Handle to the position object from which to measure
+	@param lane_id Id of the lane
+	@return Lane type or 0 if lane does not exists or any other error
+	*/
+	RM_DLL_API int RM_GetLaneType(int handle, int lane_id);
+
+	/**
+	Get type of lane with specified lane id, at specified road and longitudinal position
+	For valid types, see RoadManager.hpp::Lane::LaneType enum
+	@param road_id Id of the road
+	@param lane_id Id of the lane
+	@param s Longitudinal position along the road
+	@return Lane type or 0 if lane does not exists or any other error
+	*/
+	RM_DLL_API int RM_GetLaneTypeByRoadId(int road_id, int lane_id, float s);
+
+	/**
 	Find out the difference between two position objects, i.e. delta distance (long and lat) and delta laneId
 	@param handleA Handle to the position object from which to measure
 	@param handleB Handle to the position object to which the distance is measured

@@ -1360,28 +1360,32 @@ int Road::GetConnectingLaneId(RoadLink* road_link, int fromLaneId, int connectin
 
 double Road::GetLaneWidthByS(double s, int lane_id)
 {
-	LaneSection *lsec;
+	LaneSection* lsec = GetLaneSectionByS(s, 0);
 
-	if (GetNumberOfLaneSections() < 1)
+	if (lsec == nullptr)
 	{
 		return 0.0;
 	}
 
-	for (size_t i = 0; i < GetNumberOfLaneSections(); i++)
+	return lsec->GetWidth(s, lane_id);
+}
+
+Lane::LaneType Road::GetLaneTypeByS(double s, int lane_id)
+{
+	LaneSection* lsec = GetLaneSectionByS(s, 0);
+
+	if (lsec == nullptr)
 	{
-		lsec = GetLaneSectionByIdx((int)i);
-		if (s < lsec->GetS() + lsec->GetLength())
-		{
-			return lsec->GetWidth(s, lane_id);
-		}
-		else if (i == GetNumberOfLaneSections() - 1)
-		{
-			// Passed end of road - pick width at road endpoint
-			return lsec->GetWidth(s, lane_id);
-		}
+		return Lane::LaneType::LANE_TYPE_ANY;
 	}
 
-	return 0.0;
+	Lane* lane = lsec->GetLaneById(lane_id);
+	if (lane == nullptr)
+	{
+		return Lane::LaneType::LANE_TYPE_ANY;
+	}
+
+	return lane->GetLaneType();
 }
 
 double Road::GetSpeedByS(double s)

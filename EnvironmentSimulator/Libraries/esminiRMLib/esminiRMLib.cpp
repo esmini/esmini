@@ -563,6 +563,70 @@ extern "C"
 		return GetProbeInfo(handle, lookahead_distance, data, lookAheadMode, inRoadDrivingDirection);
 	}
 
+	RM_DLL_API float RM_GetLaneWidth(int handle, int lane_id)
+	{
+		if (odrManager == nullptr || handle < 0 || handle >= position.size())
+		{
+			return 0.0;
+		}
+
+		roadmanager::Road* road = odrManager->GetRoadById(position[handle].GetTrackId());
+		if (road == nullptr)
+		{
+			return 0.0;
+		}
+
+		return road->GetLaneWidthByS(position[handle].GetS(), lane_id);
+	}
+
+	RM_DLL_API float RM_GetLaneWidthByRoadId(int road_id, int lane_id, float s)
+	{
+		if (odrManager == nullptr)
+		{
+			return 0.0;
+		}
+
+		roadmanager::Road* road = odrManager->GetRoadById(road_id);
+		if (road == nullptr)
+		{
+			return 0.0;
+		}
+
+		return road->GetLaneWidthByS(s, lane_id);
+	}
+
+	RM_DLL_API int RM_GetLaneType(int handle, int lane_id)
+	{
+		if (odrManager == nullptr || handle < 0 || handle >= position.size())
+		{
+			return -1;
+		}
+
+		roadmanager::Road* road = odrManager->GetRoadById(position[handle].GetTrackId());
+		if (road == nullptr)
+		{
+			return -1;
+		}
+
+		return road->GetLaneTypeByS(position[handle].GetS(), lane_id);
+	}
+
+	RM_DLL_API int RM_GetLaneTypeByRoadId(int road_id, int lane_id, float s)
+	{
+		if (odrManager == nullptr)
+		{
+			return -1;
+		}
+
+		roadmanager::Road* road = odrManager->GetRoadById(road_id);
+		if (road == nullptr)
+		{
+			return -1;
+		}
+
+		return road->GetLaneTypeByS(s, lane_id);
+	}
+
 	RM_DLL_API int RM_SubtractAFromB(int handleA, int handleB, RM_PositionDiff *pos_diff)
 	{
 		if (odrManager == nullptr || handleA >= position.size() || handleB >= position.size())
