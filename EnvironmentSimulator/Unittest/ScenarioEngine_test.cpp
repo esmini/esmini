@@ -1068,6 +1068,32 @@ TEST(ActionDynamicsTest, TestDynamicsRateDimension)
     EXPECT_NEAR(td.Evaluate(), 50.0000, 1e-5);
 }
 
+TEST(OrientationTest, TestRelativeRoadHeading)
+{
+    ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/four_roads.xosc");
+    ASSERT_NE(se, nullptr);
+
+    se->step(0.1);
+    se->prepareGroundTruth(0.1);
+
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetX(), 5.000, 1e-3);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetY(), 1.535, 1e-3);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetH(), 0.000, 1e-3);
+
+    ASSERT_NEAR(se->entities_.object_[1]->pos_.GetX(), -1.531, 1e-3);
+    ASSERT_NEAR(se->entities_.object_[1]->pos_.GetY(), -24.999, 1e-3);
+    ASSERT_NEAR(se->entities_.object_[1]->pos_.GetH(), 1.570, 1e-3);
+
+    ASSERT_NEAR(se->entities_.object_[2]->pos_.GetX(), -5.000, 1e-3);
+    ASSERT_NEAR(se->entities_.object_[2]->pos_.GetY(), -41.535, 1e-3);
+    ASSERT_NEAR(se->entities_.object_[2]->pos_.GetH(), 3.142, 1e-3);
+
+    ASSERT_NEAR(se->entities_.object_[3]->pos_.GetX(), 1.539, 1e-3);
+    ASSERT_NEAR(se->entities_.object_[3]->pos_.GetY(), -54.999, 1e-3);
+    ASSERT_NEAR(se->entities_.object_[3]->pos_.GetH(), 4.713, 1e-3);
+}
+
+
 // Uncomment to print log output to console
 //#define LOG_TO_CONSOLE
 
@@ -1078,7 +1104,7 @@ static void log_callback(const char* str)
 }
 #endif
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
 #ifdef LOG_TO_CONSOLE
     if (!(Logger::Inst().IsCallbackSet()))
@@ -1087,7 +1113,7 @@ int main(int argc, char **argv)
     }
 #endif
 
-    //testing::GTEST_FLAG(filter) = "*TestOptionHandling*";
+    //testing::GTEST_FLAG(filter) = "*TestRelativeRoadHeading*";
 
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

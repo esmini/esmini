@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<OpenSCENARIO xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="OpenScenario.xsd">
+    <FileHeader description="Trailer demo" author="Knabe" revMajor="1" revMinor="1" date="2022-03-11T08:10:42.217875"/>
+    <ParameterDeclarations>
+        <ParameterDeclaration name="LaneID" parameterType="integer" value="1"/>
+        <ParameterDeclaration name="Heading" parameterType="double" value="0.0"/>
+        <ParameterDeclaration name="RelHeading" parameterType="double" value="0.0"/>
+    </ParameterDeclarations>
+    <CatalogLocations>
+        <VehicleCatalog>
+            <Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
+        </VehicleCatalog>
+    </CatalogLocations>
+    <RoadNetwork>
+        <LogicFile filepath="../xodr/straight_20m.xodr"/>
+    </RoadNetwork>
+    <Entities>
+        <ScenarioObject name="car_0">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="car_1">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>
+        </ScenarioObject>
+        <ScenarioObject name="car_2">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_blue"/>
+        </ScenarioObject>
+        <ScenarioObject name="car_3">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_yellow"/>
+        </ScenarioObject>
+    </Entities>
+    <Storyboard>
+        <Init>
+            <Actions>
+                <Private entityRef="car_0">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="0" laneId="$LaneID" s="5" offset="0.0">
+                                    <Orientation type="relative" h="$Heading"/>
+                                </LanePosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <RelativeRoadPosition entityRef="car_0">
+                                    <Orientation type="relative" h="$RelHeading"/>
+                                </RelativeRoadPosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="car_1">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="1" laneId="$LaneID" s="5" offset="0.0">
+                                    <Orientation type="relative" h="$Heading"/>
+                                </LanePosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <RelativeRoadPosition entityRef="car_1">
+                                    <Orientation type="relative" h="$RelHeading"/>
+                                </RelativeRoadPosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="car_2">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="2" laneId="$LaneID" s="5" offset="0.0">
+                                    <Orientation type="relative" h="$Heading"/>
+                                </LanePosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <RelativeRoadPosition entityRef="car_2">
+                                    <Orientation type="relative" h="$RelHeading"/>
+                                </RelativeRoadPosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="car_3">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="3" laneId="$LaneID" s="5" offset="0.0">
+                                    <Orientation type="relative" h="$Heading"/>
+                                </LanePosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <RelativeRoadPosition entityRef="car_3">
+                                    <Orientation type="relative" h="$RelHeading"/>
+                                </RelativeRoadPosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                </Private>
+            </Actions>
+        </Init>
+        <Story name="story_act_empty">
+            <ParameterDeclarations/>
+            <Act name="act_empty">
+                <ManeuverGroup name="empty" maximumExecutionCount="1">
+                    <Actors selectTriggeringEntities="false"/>
+                </ManeuverGroup>
+                <StartTrigger/>
+                <StopTrigger/>
+            </Act>
+        </Story>
+        <StopTrigger/>
+    </Storyboard>
+</OpenSCENARIO>

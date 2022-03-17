@@ -10030,7 +10030,6 @@ void Position::ReleaseRelation()
 			// Resolve requested position
 			SetTrackPos(roadId, s, t);
 
-			hRel = GetAngleSum(hRel, GetHRoad());
 			SetHeadingRelative(hRel);
 			SetPitchRelative(pRel);
 			SetRollRelative(rRel);
