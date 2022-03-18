@@ -331,7 +331,7 @@ extern "C"
 	@param handle Handle to the position object
 	@param dist Distance (meter) to move
 	@param junctionSelectorAngle Desired direction [0:2pi] from incoming road direction (angle = 0), set -1 to randomize
-	@return 0 if successful, for other codes see esmini roadmanager::Position::enum class ErrorCode
+	@return 0 if successful, for other codes see esmini roadmanager::Position::enum class ReturnCode
 	*/
 	RM_DLL_API int RM_PositionMoveForward(int handle, float dist, float junctionSelectorAngle);
 

@@ -131,9 +131,6 @@ namespace OpenDRIVE
     }
 
 
-    enum JunctionStrategy { Random, Straight };  // must correlate to RoadManager::Junction::JunctionStrategyType
-
-
     public static class RoadManagerLibraryCS
     {
 #if UNITY_EDITOR_LINUX || UNITY_STANDALONE_LINUX
@@ -348,10 +345,10 @@ namespace OpenDRIVE
         /// </summary>
         /// <param name="index">Handle to the position object</param>
         /// <param name="dist">Distance (in meter) to move</param>
-        /// <param name="strategy">How to move in a junction where multiple route options appear, use enum JunctionStrategy</param>
+        /// <param name="junctionSelectorAngle">Desired direction [0:2pi] from incoming road direction (angle = 0), set -1 to randomize</param>
         /// <returns>0 if successful, -1 if not</returns>
         [DllImport(LIB_NAME, EntryPoint = "RM_PositionMoveForward")]
-        public static extern int PositionMoveForward(int index, float dist, int strategy);
+        public static extern int PositionMoveForward(int index, float dist, float junctionSelectorAngle);
 
         /// <summary>
         /// Get the fields of the position of specified index

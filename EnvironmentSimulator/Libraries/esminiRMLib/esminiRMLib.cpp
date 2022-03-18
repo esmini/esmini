@@ -48,7 +48,7 @@ static int GetProbeInfo(int index, float lookahead_distance, RM_RoadProbeInfo *r
 		}
 	}
 
-	if (position[index].GetProbeInfo(adjustedLookaheadDistance, &s_data, (roadmanager::Position::LookAheadMode)lookAheadMode) != roadmanager::Position::ErrorCode::ERROR_GENERIC)
+	if (position[index].GetProbeInfo(adjustedLookaheadDistance, &s_data, (roadmanager::Position::LookAheadMode)lookAheadMode) != roadmanager::Position::ReturnCode::ERROR_GENERIC)
 	{
 		// Copy data
 		r_data->road_lane_info.pos.x = (float)s_data.road_lane_info.pos[0];
@@ -73,11 +73,11 @@ static int GetProbeInfo(int index, float lookahead_distance, RM_RoadProbeInfo *r
 
 		if (position[index].GetStatusBitMask() & static_cast<int>(roadmanager::Position::PositionStatusMode::POS_STATUS_END_OF_ROAD))
 		{
-			return static_cast<int>(roadmanager::Position::ErrorCode::ERROR_END_OF_ROAD);
+			return static_cast<int>(roadmanager::Position::ReturnCode::ERROR_END_OF_ROAD);
 		}
 		else if (position[index].GetStatusBitMask() & static_cast<int>(roadmanager::Position::PositionStatusMode::POS_STATUS_END_OF_ROUTE))
 		{
-			return static_cast<int>(roadmanager::Position::ErrorCode::ERROR_END_OF_ROUTE);
+			return static_cast<int>(roadmanager::Position::ReturnCode::ERROR_END_OF_ROUTE);
 		}
 		else
 		{

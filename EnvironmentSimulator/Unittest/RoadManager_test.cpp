@@ -1937,7 +1937,7 @@ TEST(ProbeTest, TestProbeComplexRoad)
     Position pos_pivot = Position(3, 1, 5.0, 0.0);
     pos_pivot.SetHeadingRelative(M_PI);
 
-    EXPECT_EQ(pos_pivot.GetProbeInfo(20.0, &probe_data, roadmanager::Position::LookAheadMode::LOOKAHEADMODE_AT_LANE_CENTER), Position::ErrorCode::ERROR_END_OF_ROAD);
+    EXPECT_EQ(pos_pivot.GetProbeInfo(20.0, &probe_data, roadmanager::Position::LookAheadMode::LOOKAHEADMODE_AT_LANE_CENTER), Position::ReturnCode::ERROR_END_OF_ROAD);
     EXPECT_EQ(probe_data.road_lane_info.roadId, 3);
     EXPECT_EQ(probe_data.road_lane_info.laneId, 1);
     EXPECT_NEAR(probe_data.road_lane_info.heading, GetAngleSum(pos_pivot.GetH(), M_PI), 1E-5);
@@ -1946,7 +1946,7 @@ TEST(ProbeTest, TestProbeComplexRoad)
     // Position on right side, looking through the intersection
     pos_pivot.SetLanePos(3, -1, 5.0, 0.0);
     pos_pivot.SetHeadingRelative(0.0);
-    EXPECT_EQ(pos_pivot.GetProbeInfo(130.0, &probe_data, roadmanager::Position::LookAheadMode::LOOKAHEADMODE_AT_LANE_CENTER), Position::ErrorCode::ERROR_NO_ERROR);
+    EXPECT_EQ(pos_pivot.GetProbeInfo(130.0, &probe_data, roadmanager::Position::LookAheadMode::LOOKAHEADMODE_AT_LANE_CENTER), Position::ReturnCode::ENTERED_NEW_ROAD);
     EXPECT_EQ(probe_data.road_lane_info.roadId, 1);
     EXPECT_EQ(probe_data.road_lane_info.laneId, -1);
     EXPECT_NEAR(probe_data.road_lane_info.heading, 0.192980, 1E-5);
@@ -2202,15 +2202,21 @@ TEST(RoadPosTest, TestPrioStraightRoadInJunction)
 
     Position pos;
     pos.SetLanePos(0, 1, 0, 0.0);
+    pos.SetHeadingRelative(3.1415);
     EXPECT_NEAR(pos.GetX(), 28.956, 1E-3);
     EXPECT_NEAR(pos.GetY(), -9.821, 1E-3);
-    EXPECT_NEAR(pos.GetH(), 4.924, 1E-3);
+    EXPECT_NEAR(pos.GetH(), 1.783, 1E-3);
 
     pos.SetInertiaPos(28.55, -7.96, 1.78);
     EXPECT_EQ(pos.GetTrackId(), 9);
     EXPECT_EQ(pos.GetLaneId(), -1);
     EXPECT_NEAR(pos.GetOffset(), 0.009, 1E-3);
     EXPECT_NEAR(pos.GetH(), 1.780, 1E-3);
+
+    pos.SetLanePos(0, 1, 1.0, 0.0);
+    pos.SetHeadingRelative(3.1415);
+    EXPECT_EQ(pos.MoveAlongS(0.5), roadmanager::Position::ReturnCode::OK);
+    EXPECT_EQ(pos.MoveAlongS(1.0), roadmanager::Position::ReturnCode::MADE_JUNCTION_CHOICE);
 }
 
 // Uncomment to print log output to console
@@ -2232,7 +2238,7 @@ int main(int argc, char **argv)
     }
 #endif
 
-    //testing::GTEST_FLAG(filter) = "*TestPrioStraightRoadInJunction*";
+    //testing::GTEST_FLAG(filter) = "*TestProbeComplexRoad*";
 
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

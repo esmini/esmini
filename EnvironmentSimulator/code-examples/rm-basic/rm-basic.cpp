@@ -55,7 +55,7 @@ int main(int argc, char* argv[])
 		posData.s, laneInfo.laneId, laneInfo.laneOffset, posData.x, posData.y, posData.z);
 
 	// Move forward in current lane
-	RM_PositionMoveForward(p0, 950, 0); // Junction strategy 0 = random choice
+	int ret_val = RM_PositionMoveForward(p0, 950, -1); // Junction selector angle -1 = random choice
 	RM_GetLaneInfo(p0, 0.0, &laneInfo, 2, false);  // LookAheadMode = 2 looks at current lane offset
 	RM_GetPositionData(p0, &posData);
 	printf("current pos: s %.2f laneId %d offset %.2f x %.2f y %.2f z %.2f \n",

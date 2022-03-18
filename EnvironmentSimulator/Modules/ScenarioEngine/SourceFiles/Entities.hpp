@@ -170,7 +170,7 @@ namespace scenarioengine
 			@param actualDistance if true ds will adjusted for curvature and lat offset
 			@return Non zero return value indicates error of some kind
 		*/
-		int MoveAlongS(double ds, bool actualDistance = true);
+		roadmanager::Position::ReturnCode MoveAlongS(double ds, bool actualDistance = true);
 
 		/**
 		    Returns the timestamp from which the entity has not moved.

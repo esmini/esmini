@@ -205,7 +205,7 @@ static int GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_Roa
 
 	roadmanager::Position *pos = &player->scenarioGateway->getObjectStatePtrByIdx(object_id)->state_.pos;
 
-	if (pos->GetProbeInfo(lookahead_distance, &s_data, (roadmanager::Position::LookAheadMode)lookAheadMode) != roadmanager::Position::ErrorCode::ERROR_GENERIC)
+	if (pos->GetProbeInfo(lookahead_distance, &s_data, (roadmanager::Position::LookAheadMode)lookAheadMode) != roadmanager::Position::ReturnCode::ERROR_GENERIC)
 	{
 		// Copy data
 		r_data->local_pos_x = (float)s_data.relative_pos[0];
@@ -245,11 +245,11 @@ static int GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_Roa
 
 		if (pos->GetStatusBitMask() & static_cast<int>(roadmanager::Position::PositionStatusMode::POS_STATUS_END_OF_ROAD))
 		{
-			return static_cast<int>(roadmanager::Position::ErrorCode::ERROR_END_OF_ROAD);
+			return static_cast<int>(roadmanager::Position::ReturnCode::ERROR_END_OF_ROAD);
 		}
 		else if (pos->GetStatusBitMask() & static_cast<int>(roadmanager::Position::PositionStatusMode::POS_STATUS_END_OF_ROUTE))
 		{
-			return static_cast<int>(roadmanager::Position::ErrorCode::ERROR_END_OF_ROUTE);
+			return static_cast<int>(roadmanager::Position::ReturnCode::ERROR_END_OF_ROUTE);
 		}
 		else
 		{

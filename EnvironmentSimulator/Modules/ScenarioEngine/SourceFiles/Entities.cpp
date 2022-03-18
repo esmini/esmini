@@ -92,21 +92,20 @@ void  Object::SetStandStill(bool state, double time)
 	}
 }
 
-int Object::MoveAlongS(double ds, bool actualDistance)
+Position::ReturnCode Object::MoveAlongS(double ds, bool actualDistance)
 {
-	int retval = 0;
-
+	Position::ReturnCode ret_val = Position::ReturnCode::OK;
 
 	if (pos_.GetRoute() && pos_.GetRoute()->IsValid())
 	{
-		retval = static_cast<int>(pos_.MoveRouteDS(ds, actualDistance));
+		ret_val = pos_.MoveRouteDS(ds, actualDistance);
 	}
 	else
 	{
-		retval = static_cast<int>(pos_.MoveAlongS(ds, 0.0, GetJunctionSelectorAngle(), actualDistance));
+		ret_val = pos_.MoveAlongS(ds, 0.0, GetJunctionSelectorAngle(), actualDistance);
 	}
 
-	return retval;
+	return ret_val;
 }
 
 int Object::GetAssignedControllerType()
@@ -671,7 +670,7 @@ int Object::FreeSpaceDistancePointRoadLane(double x, double y, double* latDist, 
 
 	// Map XY point to road coordinates, but consider only roads reachable from point
 	Position pointPos = pos_;
-	if (pointPos.XYZH2TrackPos(x, y, 0, 0, true) != Position::ErrorCode::ERROR_NO_ERROR)
+	if (pointPos.XYZH2TrackPos(x, y, 0, 0, true) != Position::ReturnCode::OK)
 	{
 		return -1;
 	}
@@ -687,7 +686,7 @@ int Object::FreeSpaceDistancePointRoadLane(double x, double y, double* latDist, 
 	{
 		pos[j] = pos_;
 		// Map bounding box points to road coordinates, consider only roads reachable from current position
-		if (pos[j].XYZH2TrackPos(vertices[j][0], vertices[j][1], 0, vertices[j][2], true) != Position::ErrorCode::ERROR_NO_ERROR)
+		if (pos[j].XYZH2TrackPos(vertices[j][0], vertices[j][1], 0, vertices[j][2], true) != Position::ReturnCode::OK)
 		{
 			return -1;
 		}
@@ -799,7 +798,7 @@ int Object::FreeSpaceDistanceObjectRoadLane(Object* target, double* latDist, dou
 
 			// Map XY points to road coordinates, but consider only roads reachable from point
 			pos[i][j] = pos_;
-			if (pos[i][j].XYZH2TrackPos(vertices[i][j][0], vertices[i][j][1], 0, vertices[i][j][2], true) != Position::ErrorCode::ERROR_NO_ERROR)
+			if (pos[i][j].XYZH2TrackPos(vertices[i][j][0], vertices[i][j][1], 0, vertices[i][j][2], true) != Position::ReturnCode::OK)
 			{
 				return -1;
 			}

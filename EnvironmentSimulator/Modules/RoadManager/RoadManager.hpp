@@ -1783,13 +1783,15 @@ namespace roadmanager
 			LOOKAHEADMODE_AT_CURRENT_LATERAL_OFFSET,
 		};
 
-		enum class ErrorCode
+		enum class ReturnCode
 		{
-			ERROR_NO_ERROR = 0,
-			ERROR_GENERIC = -1,
-			ERROR_END_OF_ROAD = -2,
-			ERROR_END_OF_ROUTE = -3,
 			ERROR_OFF_ROAD = -4,
+			ERROR_END_OF_ROUTE = -3,
+			ERROR_END_OF_ROAD = -2,
+			ERROR_GENERIC = -1,
+			OK = 0,
+			ENTERED_NEW_ROAD = 1,     // position moved into a new road segment
+			MADE_JUNCTION_CHOICE = 2,  // position moved into a junction and made a choice
 		};
 
 		enum class UpdateTrackPosMode
@@ -1831,9 +1833,9 @@ namespace roadmanager
 		@param updateXY update world coordinates x, y... as well - or not
 		@return Non zero return value indicates error of some kind
 		*/
-		ErrorCode SetTrackPos(int track_id, double s, double t, bool UpdateXY = true);
+		ReturnCode SetTrackPos(int track_id, double s, double t, bool UpdateXY = true);
 		void ForceLaneId(int lane_id);
-		ErrorCode SetLanePos(int track_id, int lane_id, double s, double offset, int lane_section_idx = -1);
+		ReturnCode SetLanePos(int track_id, int lane_id, double s, double offset, int lane_section_idx = -1);
 		void SetLaneBoundaryPos(int track_id, int lane_id, double s, double offset, int lane_section_idx = -1);
 		void SetRoadMarkPos(int track_id, int lane_id, int roadmark_idx, int roadmarktype_idx, int roadmarkline_idx, double s, double offset, int lane_section_idx = -1);
 
@@ -1885,11 +1887,11 @@ namespace roadmanager
 		@param check_overlapping_roads If true all roads ovlerapping the position will be registered (with some performance penalty)
 		@return Non zero return value indicates error of some kind
 		*/
-		ErrorCode XYZH2TrackPos(double x, double y, double z, double h, bool connectedOnly = false, int roadId = -1, bool check_overlapping_roads = false);
+		ReturnCode XYZH2TrackPos(double x, double y, double z, double h, bool connectedOnly = false, int roadId = -1, bool check_overlapping_roads = false);
 
 		int TeleportTo(Position* pos);
 
-		int MoveToConnectingRoad(RoadLink *road_link, ContactPointType &contact_point_type, double junctionSelectorAngle = -1.0);
+		ReturnCode MoveToConnectingRoad(RoadLink *road_link, ContactPointType &contact_point_type, double junctionSelectorAngle = -1.0);
 
 		void SetRelativePosition(Position* rel_pos, PositionType type)
 		{
@@ -1927,14 +1929,14 @@ namespace roadmanager
 		@param actualDistance Distance considering lateral offset and curvature (true/default) or along centerline (false)
 		@return Non zero return value indicates error of some kind, most likely End Of Route
 		*/
-		ErrorCode MoveRouteDS(double ds, bool actualDistance = true);
+		ReturnCode MoveRouteDS(double ds, bool actualDistance = true);
 
 		/**
 		Move current position to specified S-value along the route
 		@param route_s Distance to move, negative will move backwards
 		@return Non zero return value indicates error of some kind, most likely End Of Route
 		*/
-		ErrorCode SetRouteS(double route_s);
+		ReturnCode SetRouteS(double route_s);
 
 		/**
 		Move current position along the route
@@ -2027,7 +2029,7 @@ namespace roadmanager
 		@param lookAheadMode Measurement strategy: Along reference lane, lane center or current lane offset. See roadmanager::Position::LookAheadMode enum
 		@return 0 if successful, other codes see Position::ErrorCode
 		*/
-		ErrorCode GetProbeInfo(double lookahead_distance, RoadProbeInfo *data, LookAheadMode lookAheadMode);
+		ReturnCode GetProbeInfo(double lookahead_distance, RoadProbeInfo *data, LookAheadMode lookAheadMode);
 
 		/**
 		Get information suitable for driver modeling of a point at a specified distance from object along the road ahead
@@ -2035,7 +2037,7 @@ namespace roadmanager
 		@param data Struct to fill in calculated values, see typdef for details
 		@return 0 if successful, other codes see Position::ErrorCode
 		*/
-		ErrorCode GetProbeInfo(Position *target_pos, RoadProbeInfo *data);
+		ReturnCode GetProbeInfo(Position *target_pos, RoadProbeInfo *data);
 
 		/**
 		Get information of current lane at a specified distance from object along the road ahead
@@ -2067,7 +2069,7 @@ namespace roadmanager
 		@param actualDistance Distance considering lateral offset and curvature (true/default) or along centerline (false)
 		@return 0 if successful, other codes see Position::ErrorCode
 		*/
-		ErrorCode MoveAlongS(double ds, double dLaneOffset, double junctionSelectorAngle, bool actualDistance = true);
+		ReturnCode MoveAlongS(double ds, double dLaneOffset, double junctionSelectorAngle, bool actualDistance = true);
 
 		/**
 		Move position along the road network, forward or backward, from the current position
@@ -2076,7 +2078,7 @@ namespace roadmanager
 		@param ds distance to move from current position
 		@return 0 if successful, other codes see Position::ErrorCode
 		*/
-		ErrorCode MoveAlongS(double ds, bool actualDistance = true)
+		ReturnCode MoveAlongS(double ds, bool actualDistance = true)
 		{
 			return MoveAlongS(ds, 0.0, -1.0, actualDistance);
 		}
@@ -2406,7 +2408,7 @@ namespace roadmanager
 
 	protected:
 		void Track2Lane();
-		ErrorCode Track2XYZ();
+		ReturnCode Track2XYZ();
 		void Lane2Track();
 		void RoadMark2Track();
 		/**
@@ -2414,7 +2416,7 @@ namespace roadmanager
 		*/
 		void LaneBoundary2Track();
 		void XYZ2Track();
-		ErrorCode SetLongitudinalTrackPos(int track_id, double s);
+		ReturnCode SetLongitudinalTrackPos(int track_id, double s);
 		bool EvaluateRoadZPitchRoll();
 
 		// Control lane belonging
@@ -2529,7 +2531,7 @@ namespace roadmanager
 		Specify route position in terms of a track ID and track S value
 		@return Non zero return value indicates error of some kind
 		*/
-		Position::ErrorCode SetTrackS(int trackId, double s);
+		Position::ReturnCode SetTrackS(int trackId, double s);
 
 		/**
 		Move current position forward, or backwards, ds meters along the route
@@ -2537,16 +2539,16 @@ namespace roadmanager
 		@param actualDistance Distance considering lateral offset and curvature (true/default) or along centerline (false)
 		@return Non zero return value indicates error of some kind, most likely End Of Route
 		*/
-		Position::ErrorCode MovePathDS(double ds);
+		Position::ReturnCode MovePathDS(double ds);
 
 		/**
 		Move current position to specified S-value along the route
 		@param route_s Distance to move, negative will move backwards
 		@return Non zero return value indicates error of some kind, most likely End Of Route
 		*/
-		Position::ErrorCode SetPathS(double s);
+		Position::ReturnCode SetPathS(double s);
 
-		Position::ErrorCode CopySFractionOfLength(Position* pos);
+		Position::ReturnCode CopySFractionOfLength(Position* pos);
 
 		std::vector<Position> minimal_waypoints_; // used only for the default controllers
 		std::vector<Position> all_waypoints_; // used for user-defined controllers

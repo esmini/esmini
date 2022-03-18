@@ -81,7 +81,8 @@ void ControllerInteractive::Step(double timeStep)
 		// Only longitudinal control, move along road
 		double steplen = vehicle_.speed_* timeStep;
 
-		object_->MoveAlongS(steplen);
+		roadmanager::Position::ReturnCode ret_val = object_->MoveAlongS(steplen);
+		printf("ret_val %d\n", ret_val);
 
 		// Fetch updated position
 		vehicle_.posX_ = object_->pos_.GetX();
