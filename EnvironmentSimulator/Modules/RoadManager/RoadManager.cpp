@@ -2342,10 +2342,37 @@ bool Road::IsPredecessor(Road* road, ContactPointType* contact_point)
 	return IsDirectlyConnected(road, LinkType::PREDECESSOR, contact_point) != 0;
 }
 
-bool Road::IsDirectlyConnected(Road* road)
+bool Road::IsDirectlyConnected(Road* road, double* curvature)
 {
+	ContactPointType contact_point;
+
 	// Unspecified link, check both ends
-	return IsSuccessor(road) || IsPredecessor(road);
+	if (IsSuccessor(road, &contact_point) || IsPredecessor(road, &contact_point))
+	{
+		// Find out curvature
+		if (contact_point == ContactPointType::CONTACT_POINT_START && road->geometry_.size() > 0)
+		{
+			if (curvature)
+			{
+				*curvature = road->geometry_[0]->EvaluateCurvatureDS(0);
+			}
+		}
+		else if (contact_point == ContactPointType::CONTACT_POINT_END && road->geometry_.size() > 0)
+		{
+			Geometry* geom = road->geometry_.back();
+			if (curvature)
+			{
+				*curvature = geom->EvaluateCurvatureDS(geom->GetLength());
+			}
+		}
+		else
+		{
+			LOG("Unexpected contact type %d between roads %d and %d", contact_point, GetId(), road->GetId());
+		}
+		return true;
+	}
+
+	return false;
 }
 
 double Road::GetWidth(double s, int side, int laneTypeMask)
@@ -6105,14 +6132,14 @@ Position::ErrorCode Position::XYZH2TrackPos(double x3, double y3, double z3, dou
 	Road *roadMin = 0;
 	bool directlyConnected = false;
 	double weight = 0; // Add some resistance to switch from current road, applying a stronger bound to current road
-	double angle = 0;
+	double curvature = 0;
 	bool search_done = false;
 	double closestS = 0;
 	int j2, k2, jMin=-1, kMin=-1, jMinLocal, kMinLocal;
 	double closestPointDist = INFINITY;
 	bool closestPointInside = false;
 	bool insideCurrentRoad = false;  // current postion projects on current road
-	double headingDiffMin = INFINITY;
+	double curvatureAbsMin = INFINITY;
 	bool closestPointDirectlyConnected = false;
 	overlapping_roads.clear();
 
@@ -6199,12 +6226,13 @@ Position::ErrorCode Position::XYZH2TrackPos(double x3, double y3, double z3, dou
 		}
 
 		weight = 0;
+		curvature = INFINITY;
 
 		// Add resistance to leave current road or directly connected ones
 		// actual weights are totally unscientific... up to tuning
 		if (road != current_road)
 		{
-			if (current_road && current_road->IsDirectlyConnected(road))
+			if (current_road && current_road->IsDirectlyConnected(road, &curvature))
 			{
 				directlyConnected = true;
 			}
@@ -6441,7 +6469,7 @@ Position::ErrorCode Position::XYZH2TrackPos(double x3, double y3, double z3, dou
 						// among equally close ones, find the one which goes the most straight forward
 						if (fabs(weightedDist - closestPointDist) < SMALL_NUMBER)
 						{
-							if (angle < headingDiffMin)
+							if (abs(curvature) < curvatureAbsMin)
 							{
 								directlyConnectedCandidate = true;
 							}
@@ -6460,7 +6488,7 @@ Position::ErrorCode Position::XYZH2TrackPos(double x3, double y3, double z3, dou
 
 						if (directlyConnected)
 						{
-							headingDiffMin = angle;
+							curvatureAbsMin = abs(curvature);
 						}
 					}
 				}

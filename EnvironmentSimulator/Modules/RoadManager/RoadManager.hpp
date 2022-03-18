@@ -1379,9 +1379,10 @@ namespace roadmanager
 		/**
 			Check if specified road is directly connected, at least in one end of current one (this)
 			@param road Road to check if connected with current one
+			@param curvature Optional return parameter for curvature of checked road at connection point
 			@return true if connection exist, else false
 		*/
-		bool IsDirectlyConnected(Road* road);
+		bool IsDirectlyConnected(Road* road, double* curvature = 0);
 
 		/**
 			Check if specified road is directly connected as successor to current one (this)

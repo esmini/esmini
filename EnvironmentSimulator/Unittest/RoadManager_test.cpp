@@ -2193,6 +2193,26 @@ TEST(RoadInfoTest, TestGetNrRoadsOverlappingPos)
     EXPECT_EQ(pos.GetNumberOfRoadsOverlapping(), 0);
 }
 
+TEST(RoadPosTest, TestPrioStraightRoadInJunction)
+{
+    Position::GetOpenDrive()->LoadOpenDriveFile("../../../resources/xodr/fabriksgatan.xodr");
+    OpenDrive* odr = Position::GetOpenDrive();
+    ASSERT_NE(odr, nullptr);
+    EXPECT_EQ(odr->GetNumOfRoads(), 16);
+
+    Position pos;
+    pos.SetLanePos(0, 1, 0, 0.0);
+    EXPECT_NEAR(pos.GetX(), 28.956, 1E-3);
+    EXPECT_NEAR(pos.GetY(), -9.821, 1E-3);
+    EXPECT_NEAR(pos.GetH(), 4.924, 1E-3);
+
+    pos.SetInertiaPos(28.55, -7.96, 1.78);
+    EXPECT_EQ(pos.GetTrackId(), 9);
+    EXPECT_EQ(pos.GetLaneId(), -1);
+    EXPECT_NEAR(pos.GetOffset(), 0.009, 1E-3);
+    EXPECT_NEAR(pos.GetH(), 1.780, 1E-3);
+}
+
 // Uncomment to print log output to console
 //#define LOG_TO_CONSOLE
 
@@ -2212,7 +2232,7 @@ int main(int argc, char **argv)
     }
 #endif
 
-    //testing::GTEST_FLAG(filter) = "*TestGetNrRoadsOverlappingPos*";
+    //testing::GTEST_FLAG(filter) = "*TestPrioStraightRoadInJunction*";
 
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
