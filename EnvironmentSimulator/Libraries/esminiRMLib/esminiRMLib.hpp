@@ -264,6 +264,21 @@ extern "C"
 	RM_DLL_API int RM_GetRoadNumberOfLanes(int roadId, float s);
 
 	/**
+	Get the number of roads overlapping the given position
+	@param handle Handle to the position object
+	@return Number of roads overlapping the given position
+	*/
+	RM_DLL_API int RM_GetNumberOfRoadsOverlapping(int handle);
+
+	/**
+	Get the id of an overlapping road according to given position and index
+	@param handle Handle to the position object
+	@parameter index Index of the total returned by GetNumberOfRoadsOverlapping()
+	@return Id of specified overlapping road
+	*/
+	RM_DLL_API int RM_GetOverlappingRoadId(int handle, int index);
+
+	/**
 	Get the ID of the lane given by index
 	@param roadId The road ID
 	@param laneIndex The index of the lane
@@ -331,7 +346,7 @@ extern "C"
 	@param handle Handle to the position object
 	@param dist Distance (meter) to move
 	@param junctionSelectorAngle Desired direction [0:2pi] from incoming road direction (angle = 0), set -1 to randomize
-	@return 0 if successful, for other codes see esmini roadmanager::Position::enum class ReturnCode
+	@return >= 0 on success, < 0 on error. For all codes see esmini roadmanager::Position::enum class ReturnCode
 	*/
 	RM_DLL_API int RM_PositionMoveForward(int handle, float dist, float junctionSelectorAngle);
 

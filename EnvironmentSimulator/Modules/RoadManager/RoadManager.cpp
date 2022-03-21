@@ -6118,6 +6118,17 @@ void Position::Track2Lane()
 	lane_section_idx_ = lane_section_idx;
 }
 
+typedef struct
+{
+	int lsec_idx;            // lane section index
+	int k;                   // osi point index (on given lane section)
+	SE_Vector p;             // position (x, y)
+	SE_Vector n;             // normal
+	double h;                // heading
+	double z;                // height
+	PointStruct* osi_point;  // osi point reference
+} XYZHVertex;
+
 Position::ReturnCode Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool connectedOnly, int roadId, bool check_overlapping_roads)
 {
 	// Overall method:
@@ -6135,7 +6146,7 @@ Position::ReturnCode Position::XYZH2TrackPos(double x3, double y3, double z3, do
 	double curvature = 0;
 	bool search_done = false;
 	double closestS = 0;
-	int j2, k2, jMin=-1, kMin=-1, jMinLocal, kMinLocal;
+	int jMin=-1, kMin=-1;
 	double closestPointDist = INFINITY;
 	bool closestPointInside = false;
 	bool insideCurrentRoad = false;  // current postion projects on current road
@@ -6174,9 +6185,12 @@ Position::ReturnCode Position::XYZH2TrackPos(double x3, double y3, double z3, do
 		nrOfRoads = 0;
 	}
 
-	for (int i = -1; !search_done && i < (int)nrOfRoads; i++)
+	for (int i = -2; !search_done && i < (int)nrOfRoads; i++)
 	{
-		if (i == -1)
+		// i == -2: Check limited point window around last known point
+		// i == -1: Check current road
+		// i > 0: Check all other roads
+		if (i < 0)
 		{
 			// First check current road (from last known position).
 			if (current_road)
@@ -6245,178 +6259,158 @@ Position::ReturnCode Position::XYZH2TrackPos(double x3, double y3, double z3, do
 
 		// First find distance from current position
 		double distFromCurrentPos = GetLengthOfLine2D(x3, y3, GetX(), GetY());
+
 		int startLaneSecIdx = 0;
-		if (road == current_road && distFromCurrentPos < 5)
+		int startOSIPointIdx = 0;
+		int search_win = 10;
+
+		// If new point is close to current/old, then look at the 10 closest osi points surrounding current one
+		if (i == -2)
 		{
-			// If new point is close to current/old, then start look from current OSI points
-			startLaneSecIdx = -1;
+			if (osi_point_idx_ > -1 && distFromCurrentPos < 5.0 && lane_section_idx_ > -1)
+			{
+				startLaneSecIdx = lane_section_idx_;
+				startOSIPointIdx = osi_point_idx_ - search_win / 2;
+				int n_points = search_win / 2;
+
+				if (startOSIPointIdx < 0)
+				{
+					n_points = -startOSIPointIdx;
+					if (startLaneSecIdx > 0)
+					{
+						// look in previous lane sections
+						for (size_t j = 0; n_points > 0 && startLaneSecIdx > 0 && j < search_win / 2; j++)
+						{
+							startLaneSecIdx--;
+							startOSIPointIdx = road->GetLaneSectionByIdx(startLaneSecIdx)->GetLaneById(0)->GetOSIPoints()->GetNumOfOSIPoints() - n_points;
+							if (startOSIPointIdx < 0)
+							{
+								n_points = -startOSIPointIdx;
+								startOSIPointIdx = 0;
+							}
+							else
+							{
+								break;
+							}
+						}
+					}
+					else
+					{
+						startOSIPointIdx = 0;
+					}
+				}
+			}
+			else
+			{
+				continue;
+			}
 		}
 
-		for (int j = startLaneSecIdx; j < road->GetNumberOfLaneSections() && !search_done; j++)
+		XYZHVertex v[3];  // circular buffer for osi points and additional info
+		int l0 = -1, l1 = -2, l2 = -3;  // circular buffer indices
+		int counter = 0;  // only for potential first (i==-2) limited search round
+		double s_norm = -1.0;
+		int jMinLocal = startLaneSecIdx;   // keep track of "best" lane section candidate
+		int kMinLocal = startOSIPointIdx;  // keep track of "best" osi point candidate (on given lane section)
+
+		for (int j = startLaneSecIdx; (i != -2 || counter < search_win) && j < road->GetNumberOfLaneSections() && !search_done; j++)
 		{
-			int lsec_idx;
-			OSIPoints* osiPoints;
-			if (j == -1)
-			{
-				// new point is close, start look at current/old lane section
-				lsec_idx = MAX(0, lane_section_idx_);
-			}
-			else
-			{
-				lsec_idx = j;
-			}
-			osiPoints = road->GetLaneSectionByIdx(lsec_idx)->GetLaneById(0)->GetOSIPoints();
+			OSIPoints* osiPoints = road->GetLaneSectionByIdx(j)->GetLaneById(0)->GetOSIPoints();
 
-			// skip last point on last lane section
-			int numPoints = osiPoints->GetNumOfOSIPoints();
-			if (lsec_idx == road->GetNumberOfLaneSections() - 1)
-			{
-				numPoints--;
-			}
-
-			// Find closest line or point
-			int pointIdxStart, pointIdxEnd;
-			if (j == -1)
-			{
-				// Start looking in neigborhood of current pos
-				pointIdxStart = MAX(0, osi_point_idx_ - 10);
-				pointIdxEnd = MIN(numPoints, osi_point_idx_ + 10);
-			}
-			else
-			{
-				// Then look all over
-				pointIdxStart = 0;
-				pointIdxEnd = numPoints;
-			}
-
-			double sLocal = -1.0;
-			bool inside_previous = false;
-			for (int k = pointIdxStart; k < pointIdxEnd; k++)
+			// add two loops at last lane section to handle calculations at last segments. Skip last point on intermediate segments, since
+			// it's duplicated by first in following segment
+			int n_iter = (j == road->GetNumberOfLaneSections() - 1) ? osiPoints->GetNumOfOSIPoints() + 2 : osiPoints->GetNumOfOSIPoints() - 1;
+			for (int k = (j == startLaneSecIdx ? startOSIPointIdx : 0); (i != -2 || counter < search_win) && k < n_iter; k++, counter++)
 			{
 				double distTmp = 0.0;
 				double weightedDist = 0.0;
-				PointStruct& osi_point = osiPoints->GetPoint(k);
-				double z = osi_point.z;
 				bool inside = false;
+
+				// OSI points is an approximation of actual geometry
+				// To find out whether a point is within a road (segment), check if the point is within the
+				// area formed by extending normals at OSI segment endpoints.
+				// Normal at endpoints is calculate as mean normal between the two neighbor OSI segments.
+				Position pos;
+				l2 = l1;
+				l1 = l0;
+
+				if (k < osiPoints->GetNumOfOSIPoints())
+				{
+					l0 = (l0 + 1) % 3;
+
+					v[l0].k = k;
+					v[l0].lsec_idx = j;
+					v[l0].osi_point = &(osiPoints->GetPoint(k));
+
+					if (j == 0 && k == 0 ||  // first segment
+						(j == road->GetNumberOfLaneSections() - 1) && (k == osiPoints->GetNumOfOSIPoints() - 1)) // last segment
+					{
+						if (j == 0 && k == 0)
+						{
+							// road startpoint, pick actual heading
+							pos.SetTrackPos(road->GetId(), 0, 0.0);
+						}
+						else
+						{
+							// road endpoint, pick actual heading
+							pos.SetTrackPos(road->GetId(), road->GetLength(), 0.0);
+							v[l0].h = pos.GetH();
+						}
+						v[l0].p.Set(pos.GetX(), pos.GetY());
+						v[l0].z = pos.GetZ();
+						v[l0].n = SE_Vector(1.0, 0.0).Rotate(GetAngleSum(pos.GetH(), M_PI_2));  // +90 degree from heading
+					}
+					else
+					{
+						// intermediate point
+						v[l0].p.Set(v[l0].osi_point->x, v[l0].osi_point->y);
+						v[l0].z = v[l0].osi_point->z;
+					}
+
+				}
+
+				if (counter > 0 && !((j == road->GetNumberOfLaneSections() - 1) && (k > osiPoints->GetNumOfOSIPoints() - 1)))
+				{
+					// All vertex headings, except the last one, are based on osi points
+					v[l1].h = GetAngleOfVector(v[l0].p.x() - v[l1].p.x(), v[l0].p.y() - v[l1].p.y());
+				}
+
+				if (counter < 2)
+				{
+					continue;  // skip first two rounds, wait until needed data collected
+				}
+				else if (!((j == road->GetNumberOfLaneSections() - 1) && (k > osiPoints->GetNumOfOSIPoints() - 1)))
+				{
+					// Calculate normal of previous segment based on mean heading of previous two osi segments.
+					// Except last vertex where actual normal is used
+					double h_mean = GetAngleInInterval2PI(v[l2].h + 0.5 * GetAngleDifference(v[l1].h, v[l2].h));
+					v[l1].n = SE_Vector(1.0, 0.0).Rotate(GetAngleSum(h_mean, M_PI_2));  // +90 degree from heading
+				}
 
 				// in case of multiple roads with the same reference line, also look at width of the road of relevant side
 				// side of road is determined by cross product of position (relative OSI point) and road heading
-				double cp = GetCrossProduct2D(cos(osi_point.h), sin(osi_point.h), x3 - osi_point.x, y3 - osi_point.y);
-				double width = road->GetWidth(osi_point.s, SIGN(cp), ~Lane::LaneType::LANE_TYPE_NONE);
+				double cp = GetCrossProduct2D(cos(v[l2].osi_point->h), sin(v[l2].osi_point->h), x3 - v[l2].p.x(), y3 - v[l2].p.y());
+				double width = road->GetWidth(v[l2].osi_point->s, SIGN(cp), ~Lane::LaneType::LANE_TYPE_NONE);
 
-				double x2, y2, z2, sLocalTmp;
+				// Now check if the point is  between extended normals
+				inside = IsPointWithinSectorBetweenTwoLines(SE_Vector(x3, y3), v[l2].p, v[l2].p + v[l2].n, v[l1].p, v[l1].p + v[l1].n, s_norm);
+				// Also require that the point is on the positive side of the first vector
+				inside = (inside && s_norm >= 0.0);
 
-				jMinLocal = lsec_idx;
-				kMinLocal = k;
+				// Find out distance from the point projected at (extended) osi segment. We're only interested in the orthogonal distance
+				distTmp = DistanceFromPointToLine2D(x3, y3, v[l2].p.x(), v[l2].p.y(), v[l1].p.x(), v[l1].p.y(), 0, 0);
 
-				double px, py;
-
-				if (k == osiPoints->GetNumOfOSIPoints() - 1)
+				// Find closest point of the two
+				if (PointSquareDistance2D(x3, y3, v[l2].p.x(), v[l2].p.y()) <
+					PointSquareDistance2D(x3, y3, v[l1].p.x(), v[l1].p.y()))
 				{
-					// End of lane section, look into next one
-					j2 = MIN(lsec_idx + 1, road->GetNumberOfLaneSections() - 1);
-					k2 = MIN(1, road->GetLaneSectionByIdx(j2)->GetLaneById(0)->GetOSIPoints()->GetNumOfOSIPoints() - 1);
+					kMinLocal = v[l2].k;
+					jMinLocal = v[l2].lsec_idx;
 				}
 				else
 				{
-					k2 = k + 1;
-					j2 = lsec_idx;
-				}
-				x2 = road->GetLaneSectionByIdx(j2)->GetLaneById(0)->GetOSIPoints()->GetPoint(k2).x;
-				y2 = road->GetLaneSectionByIdx(j2)->GetLaneById(0)->GetOSIPoints()->GetPoint(k2).y;
-				z2 = road->GetLaneSectionByIdx(j2)->GetLaneById(0)->GetOSIPoints()->GetPoint(k2).z;
-
-				// OSI points is an approximation of actual geometry
-				// Check potential additional area formed by actual normal and OSI points normal
-				// at start and end
-				if ((lsec_idx == 0 && k == 0) || ((lsec_idx > 1 || k > 1) &&
-					(lsec_idx == road->GetNumberOfLaneSections() - 1 && k == osiPoints->GetNumOfOSIPoints() - 2)))
-				{
-					double x, y, h;
-					Position pos;
-
-					if (lsec_idx == 0 && k == 0)
-					{
-						// road startpoint
-						pos.SetLanePos(road->GetId(), 0, 0, 0);
-					}
-					else
-					{
-						// road endpoint
-						pos.SetLanePos(road->GetId(), 0, road->GetLength(), 0);
-					}
-					x = pos.GetX();
-					y = pos.GetY();
-					h = pos.GetH();
-
-					// Calculate actual normal
-					double n_actual_angle = GetAngleSum(h, M_PI_2);
-					double n_actual_x, n_actual_y;
-					RotateVec2D(1, 0, n_actual_angle, n_actual_x, n_actual_y);
-
-					// Calculate normal of OSI line
-					double h_osi = GetAngleOfVector(x2 - osi_point.x, y2 - osi_point.y);
-					double n_osi_angle = GetAngleSum(h_osi, M_PI_2);
-					double n_osi_x, n_osi_y;
-					RotateVec2D(1, 0, n_osi_angle, n_osi_x, n_osi_y);
-
-					// Calculate vector from road endpoint (first or last) to obj pos
-					double vx = x3 - x;
-					double vy = y3 - y;
-
-					// make sure normals points same side as point
-					double forward_x = 1.0;
-					double forward_y = 0.0;
-					RotateVec2D(1.0, 0.0, h, forward_x, forward_y);
-					if (GetCrossProduct2D(forward_x, forward_y, vx, vy) < 0)
-					{
-						n_actual_x = -n_actual_x;
-						n_actual_y = -n_actual_y;
-						n_osi_x = -n_osi_x;
-						n_osi_y = -n_osi_y;
-					}
-
-					double cp_actual = GetCrossProduct2D(vx, vy, n_actual_x, n_actual_y);
-					double cp_osi = GetCrossProduct2D(vx, vy, n_osi_x, n_osi_y);
-
-					if (SIGN(cp_actual) != SIGN(cp_osi))
-					{
-						inside = true;
-						distTmp = GetLengthOfLine2D(vx, vy, 0, 0);
-						jMinLocal = lsec_idx;
-						kMinLocal = k;
-					}
-				}
-
-				if (!inside)
-				{
-					// Ok, now look along the OSI lines, between the OSI points along the road centerline
-
-					ProjectPointOnVector2D(x3, y3, osi_point.x, osi_point.y, x2, y2, px, py);
-					distTmp = PointDistance2D(x3, y3, px, py);
-
-					inside = PointInBetweenVectorEndpoints(px, py, osi_point.x, osi_point.y, x2, y2, sLocalTmp);
-					if (!inside_previous && !inside && k > pointIdxStart && SIGN(sLocalTmp) != SIGN(sLocal))
-					{
-						// In between two line segments, or more precisely in the triangle area outside a
-						// convex vertex corner between two line segments. Consider beeing inside road segment.
-						inside = true;
-					}
-					sLocal = sLocalTmp;
-
-					// Find closest point of the two
-					if (PointSquareDistance2D(x3, y3, osi_point.x, osi_point.y) <
-						PointSquareDistance2D(x3, y3, x2, y2))
-					{
-						jMinLocal = lsec_idx;
-						kMinLocal = k;
-					}
-					else
-					{
-						jMinLocal = j2;
-						kMinLocal = k2;
-					}
-
+					kMinLocal = v[l1].k;
+					jMinLocal = v[l1].lsec_idx;
 				}
 
 				// subtract width of the road
@@ -6428,15 +6422,15 @@ Position::ReturnCode Position::XYZH2TrackPos(double x3, double y3, double z3, do
 					distTmp = 0;
 				}
 
+				double z = v[l1].z;
 				if (inside)
 				{
-					z = (1 - sLocal) * osi_point.z + sLocal * z2;
+					z = (1 - s_norm) * v[l2].z + s_norm * v[l1].z;
 				}
 				else
 				{
-					// Find combined longitudinal and lateral distance to line endpoint
-					// sLocal represent now (outside line segment) distance to closest line segment end point
-					distTmp = sqrt(distTmp * distTmp + sLocal * sLocal);
+					// Find distance to line endpoint
+					distTmp = sqrt(distTmp * distTmp + s_norm * s_norm);
 				}
 
 				weightedDist = distTmp;
@@ -6492,7 +6486,7 @@ Position::ReturnCode Position::XYZH2TrackPos(double x3, double y3, double z3, do
 						}
 					}
 				}
-				else if (startLaneSecIdx == -1)
+				else if (i == -2)
 				{
 					// distance is now increasing, indicating that we already passed the closest point
 					if (closestPointInside && closestPointDist < SMALL_NUMBER && !check_overlapping_roads)
@@ -6506,8 +6500,6 @@ Position::ReturnCode Position::XYZH2TrackPos(double x3, double y3, double z3, do
 				{
 					overlapping_roads.push_back(road->GetId());  // add overlap candidate
 				}
-
-				inside_previous = inside;
 			}
 		}
 	}
@@ -6622,6 +6614,7 @@ Position::ReturnCode Position::XYZH2TrackPos(double x3, double y3, double z3, do
 		{
 			// Same point
 			closestS = osip_first.s;
+			closestPointInside = false;
 		}
 		else
 		{
@@ -6629,6 +6622,8 @@ Position::ReturnCode Position::XYZH2TrackPos(double x3, double y3, double z3, do
 			double angleBetweenNormals, angleToPosition;
 			double normalIntersectionX, normalIntersectionY;
 			double sNorm = 0;
+
+			closestPointInside = true;
 
 			// Check for straight line
 			if (fabs(osip_first.h - osip_second.h) < 1e-5)  // Select threshold to avoid precision issues in calculations
@@ -6973,7 +6968,8 @@ Position::ReturnCode Position::SetLongitudinalTrackPos(int track_id, double s)
 		s_ = s;
 	}
 
-	if (s < SMALL_NUMBER || s > road->GetLength() - SMALL_NUMBER)
+	if (s_ < SMALL_NUMBER && road->GetLink(LinkType::PREDECESSOR) == nullptr ||
+		s_ > road->GetLength() - SMALL_NUMBER && road->GetLink(LinkType::SUCCESSOR) == nullptr)
 	{
 		status_ |= static_cast<int>(PositionStatusMode::POS_STATUS_END_OF_ROAD);
 	}
@@ -6996,7 +6992,7 @@ Position::ReturnCode Position::SetTrackPos(int track_id, double s, double t, boo
 		if (UpdateXY)
 		{
 			ReturnCode retval_lat = Track2XYZ();
-			if (retval_lat != ReturnCode::OK)
+			if ((int)retval_lat < 0)
 			{
 				return retval_lat;
 			}
@@ -7449,8 +7445,8 @@ Position::ReturnCode Position::MoveAlongS(double ds, double dLaneOffset, double 
 		}
 
 		// If link is OK then move to the start- or endpoint of the connected road, depending on contact point
-		ret_val = MoveToConnectingRoad(link, contact_point_type, junctionSelectorAngle);
-		if (static_cast<int>(ret_val) < 0)
+		if (link == 0 || link->GetElementId() == -1 ||
+			static_cast<int>((ret_val = MoveToConnectingRoad(link, contact_point_type, junctionSelectorAngle))) < 0)
 		{
 			// Failed to find a connection, stay at end of current road
 			SetLanePos(track_id_, lane_id_, s_stop, offset_);
@@ -7488,7 +7484,8 @@ Position::ReturnCode Position::MoveAlongS(double ds, double dLaneOffset, double 
 		LOG("Lane %d on road %d is or became zero width, moved to closest available lane: %d", road->GetId(), old_lane_id, GetLaneId());
 	}
 
-	if (s_ < SMALL_NUMBER || s_ > road->GetLength() - SMALL_NUMBER)
+	if (s_ < SMALL_NUMBER && road->GetLink(LinkType::PREDECESSOR) == nullptr  ||
+		s_ > road->GetLength() - SMALL_NUMBER && road->GetLink(LinkType::SUCCESSOR) == nullptr)
 	{
 		status_ |= static_cast<int>(Position::PositionStatusMode::POS_STATUS_END_OF_ROAD);
 	}
@@ -7572,7 +7569,7 @@ void Position::SetLaneBoundaryPos(int track_id, int lane_id, double s, double of
 	int old_track_id = track_id_;
 	ReturnCode retval;
 
-	if ((retval = SetLongitudinalTrackPos(track_id, s)) != Position::ReturnCode::OK)
+	if ((int)(retval = SetLongitudinalTrackPos(track_id, s)) < 0)
 	{
 		lane_id_ = lane_id;
 		offset_ = offset;
@@ -7666,7 +7663,7 @@ void Position::SetRoadMarkPos(int track_id, int lane_id, int roadmark_idx, int r
 		s = road->GetLength();
 	}
 
-	if (SetLongitudinalTrackPos(track_id, s) != Position::ReturnCode::OK)
+	if ((int)SetLongitudinalTrackPos(track_id, s) < 0)
 	{
 		lane_id_ = lane_id;
 		offset_ = offset;
@@ -8194,7 +8191,7 @@ int Position::GetNumberOfRoadsOverlapping()
 
 int Position::GetOverlappingRoadId(int index)
 {
-	if (overlapping_roads.size() == 0 || index >= overlapping_roads.size())
+	if (overlapping_roads.size() == 0 || index >= overlapping_roads.size() || index < 0)
 	{
 		return -1;
 	}
@@ -8234,7 +8231,7 @@ int Position::CalcRoutePosition()
 		return -1;
 	}
 
-	if (route_->SetTrackS(GetTrackId(), GetS()) == ReturnCode::OK)
+	if ((int)route_->SetTrackS(GetTrackId(), GetS()) >= 0)
 	{
 		return 0;
 	}
@@ -8501,7 +8498,7 @@ int Position::GetRoadLaneInfo(double lookahead_distance, RoadLaneInfo *data, Loo
 
 	if (fabs(lookahead_distance) > SMALL_NUMBER)
 	{
-		if (target.MoveAlongS(lookahead_distance, 0.0, 0.0) != Position::ReturnCode::OK)
+		if ((int)target.MoveAlongS(lookahead_distance, 0.0, 0.0) < 0)
 		{
 			return -1;
 		}
@@ -9125,7 +9122,7 @@ Position::ReturnCode Position::MoveRouteDS(double ds, bool actualDistance)
 
 		if (Position::GetOpenDrive()->GetRoadById(GetTrackId())->GetJunction() > -1)
 		{
-			if (route_->CopySFractionOfLength(this) != ReturnCode::OK)
+			if ((int)route_->CopySFractionOfLength(this) < 0)
 			{
 				route_->SetTrackS(GetTrackId(), GetS());
 			}
@@ -9146,7 +9143,7 @@ Position::ReturnCode Position::MoveRouteDS(double ds, bool actualDistance)
 
 		if (entity_road2->GetJunction() > -1 && route_road2->GetJunction() > -1)
 		{
-			if (route_->CopySFractionOfLength(this) != ReturnCode::OK)
+			if ((int)route_->CopySFractionOfLength(this) < 0)
 			{
 				route_->SetTrackS(GetTrackId(), GetS());
 			}
@@ -10046,7 +10043,7 @@ Position::ReturnCode Position::SetRouteS(double route_s)
 	}
 
 	retval = route_->SetPathS(route_s);
-	if (retval != ReturnCode::OK && retval != ReturnCode::ERROR_END_OF_ROUTE)
+	if ((int)retval < 0 && retval != ReturnCode::ERROR_END_OF_ROUTE)
 	{
 		return retval;
 	}

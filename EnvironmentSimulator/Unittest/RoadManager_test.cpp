@@ -2215,8 +2215,12 @@ TEST(RoadPosTest, TestPrioStraightRoadInJunction)
 
     pos.SetLanePos(0, 1, 1.0, 0.0);
     pos.SetHeadingRelative(3.1415);
-    EXPECT_EQ(pos.MoveAlongS(0.5), roadmanager::Position::ReturnCode::OK);
-    EXPECT_EQ(pos.MoveAlongS(1.0), roadmanager::Position::ReturnCode::MADE_JUNCTION_CHOICE);
+    EXPECT_EQ(pos.MoveAlongS(0.5, 0.0, 0.0), roadmanager::Position::ReturnCode::OK);
+    EXPECT_EQ(pos.GetTrackId(), 0);
+    EXPECT_EQ(pos.MoveAlongS(1.0, 0.0, 0.0), roadmanager::Position::ReturnCode::MADE_JUNCTION_CHOICE);
+    EXPECT_EQ(pos.GetTrackId(), 9);
+    EXPECT_EQ(pos.MoveAlongS(0.1, 0.0, 0.0), roadmanager::Position::ReturnCode::OK);
+    EXPECT_EQ(pos.GetTrackId(), 9);
 }
 
 // Uncomment to print log output to console
@@ -2238,7 +2242,7 @@ int main(int argc, char **argv)
     }
 #endif
 
-    //testing::GTEST_FLAG(filter) = "*TestProbeComplexRoad*";
+    //testing::GTEST_FLAG(filter) = "*TestPrioStraightRoadInJunction*";
 
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

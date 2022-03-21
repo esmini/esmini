@@ -146,6 +146,88 @@ struct OffScreenImage
 	unsigned char* data;
 };
 
+class SE_Vector
+{
+public:
+	SE_Vector() : x_(0.0), y_(0.0) {}
+	SE_Vector(double x, double y) : x_(x), y_(y) {}
+
+	void SetX(double x) { x_ = x; }
+	void SetY(double y) { y_ = y; }
+	void Set(double x, double y) { x_ = x, y_ = y; }
+
+	SE_Vector operator + (SE_Vector const& p) const {
+		SE_Vector res;
+		res.x_ = x_ + p.x_;
+		res.y_ = y_ + p.y_;
+		return res;
+	}
+
+	SE_Vector operator - (SE_Vector const& p) const {
+		SE_Vector res;
+		res.x_ = x_ - p.x_;
+		res.y_ = y_ - p.y_;
+		return res;
+	}
+
+	SE_Vector Rotate(double angle) {
+		SE_Vector res;
+		res.x_ = x_ * cos(angle) - y_ * sin(angle);
+		res.y_ = x_ * sin(angle) + y_ * cos(angle);
+		return res;
+	}
+
+	double Dot(const SE_Vector& corner) const {
+		return x_ * corner.x_ + y_ * corner.y_;
+	}
+
+	double Cross(const SE_Vector& vec) const {
+		return x_ * vec.y_ - vec.x_ * y_;
+	}
+
+	double GetLength() {
+		double l2 = x_ * x_ + y_ * y_;
+		if (l2 > SMALL_NUMBER)
+		{
+			return sqrt(l2);
+		}
+
+		return 0.0;
+	}
+
+	void SetLength(double length) {
+		double current_length = GetLength();
+		if (current_length > SMALL_NUMBER)
+		{
+			x_ *= length / current_length;
+			y_ *= length / current_length;
+		}
+		else
+		{
+			x_ = 0.0;
+			y_ = 0.0;
+		}
+	}
+
+	void Normalize()
+	{
+		double len = GetLength();
+		if (len < SMALL_NUMBER)
+		{
+			len = SMALL_NUMBER;
+		}
+		x_ = x_ / len;
+		y_ = y_ / len;
+	}
+
+	double x() const { return x_; }
+	double y() const { return y_; }
+
+private:
+	double x_;
+	double y_;
+};
+
 // Useful operations
 
 /**
@@ -246,6 +328,20 @@ double PointSquareDistance2D(double x0, double y0, double x1, double y1);
 void ProjectPointOnVector2D(double x, double y, double vx1, double vy1, double vx2, double vy2, double& px, double& py);
 
 /**
+	Check whether projected point is in area formed by the two given vectors
+	@param p Point to check
+	@param l0p0 First point of the first vector
+	@param l0p1 Second point of the first vector
+	@param l1p0 First point of the second vector
+	@param l1p1 Second point of the second vector
+	@param sNorm Reference parameter will contain normalized s value (0:1) in case of point inside the area, positive
+	if the point is on the right hemisphere from the first vector, else negative. If point is not between vectors
+	the distance to closest vector. Negative if closer to first vector, positive if closer to the second vector.
+	@return true if projected point is inside the area, else false
+*/
+bool IsPointWithinSectorBetweenTwoLines(SE_Vector p, SE_Vector l0p0, SE_Vector l0p1, SE_Vector l1p0, SE_Vector l1p1, double& sNorm);
+
+/**
 	Check whether projected point is in between vector endpoints, or outside
 	@param x3 X-coordinate of the point to check
 	@param y3 Y-coordinate of the point to check
@@ -267,8 +363,8 @@ bool PointInBetweenVectorEndpoints(double x3, double y3, double x1, double y1, d
 	@param y1 Y-coordinate of the first endpoint of the edge
 	@param x2 X-coordinate of the second endpoint of the edge
 	@param y2 Y-coordinate of the second endpoint of the edge
-	@param x Return the X-coordinate of closest point on edge
-	@param y Return the Y-coordinate of closest point on edge
+	@param x Return the X-coordinate of closest point on edge (set = 0 to skip)
+	@param y Return the Y-coordinate of closest point on edge (set = 0 to skip)
 	@return the distance
 */
 double DistanceFromPointToEdge2D(double x3, double y3, double x1, double y1, double x2, double y2, double* x, double* y);
@@ -786,65 +882,3 @@ int SE_WritePPM(const char* filename, int width, int height, const unsigned char
 */
 int SE_WriteTGA(const char* filename, int width, int height, const unsigned char* data, int pixelSize, int pixelFormat, bool upsidedown);
 
-class SE_Vector
-{
-public:
-	SE_Vector() : x_(0), y_(0) {}
-	SE_Vector(double x, double y) : x_(x), y_(y) {}
-
-	SE_Vector operator + (SE_Vector const& p) const {
-		SE_Vector res;
-		res.x_ = x_ + p.x_;
-		res.y_ = y_ + p.y_;
-		return res;
-	}
-
-	SE_Vector operator - (SE_Vector const& p) const {
-		SE_Vector res;
-		res.x_ = x_ - p.x_;
-		res.y_ = y_ - p.y_;
-		return res;
-	}
-
-	SE_Vector Rotate(double angle) {
-		SE_Vector res;
-		res.x_ = x_ * cos(angle) - y_ * sin(angle);
-		res.y_ = x_ * sin(angle) + y_ * cos(angle);
-		return res;
-	}
-
-	double Dot(const SE_Vector& corner) const {
-		return x_ * corner.x_ + y_ * corner.y_;
-	}
-
-	double GetLength() {
-		double l2 = x_ * x_ + y_ * y_;
-		if (l2 > SMALL_NUMBER)
-		{
-			return sqrt(l2);
-		}
-
-		return 0.0;
-	}
-
-	void SetLength(double length) {
-		double current_length = GetLength();
-		if (current_length > SMALL_NUMBER)
-		{
-			x_ *= length / current_length;
-			y_ *= length / current_length;
-		}
-		else
-		{
-			x_ = 0.0;
-			y_ = 0.0;
-		}
-	}
-
-	double x() const { return x_; }
-	double y() const { return y_; }
-
-private:
-	double x_;
-	double y_;
-};

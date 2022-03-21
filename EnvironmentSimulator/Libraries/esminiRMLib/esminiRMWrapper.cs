@@ -271,6 +271,21 @@ namespace OpenDRIVE
         public static extern int GetRoadNumberOfLanes(int roadId, float s);
 
         /// <summary>
+        /// Get the number of roads overlapping the given position
+        /// </summary>
+        /// <param name="handle">Handle to the position object</param>
+        /// <returns>Number of roads overlapping the given position</returns>
+        RM_DLL_API int RM_GetNumberOfRoadsOverlapping(int handle);
+
+        /// <summary>
+        /// Get the id of an overlapping road according to given position and index
+        /// </summary>
+        /// <param name="handle">Handle to the position object</param>
+        /// <param name="index">Index of the total returned by GetNumberOfRoadsOverlapping()</param>        
+        /// <returns>Id of specified overlapping road</returns>
+        RM_DLL_API int RM_GetOverlappingRoadId(int handle, int index);
+    
+        /// <summary>
         /// Get the OpenDRIVE ID of the lane given by index
         /// </summary>
         /// <param name="roadId">The OpenDRIVE road ID</param>
@@ -346,7 +361,7 @@ namespace OpenDRIVE
         /// <param name="index">Handle to the position object</param>
         /// <param name="dist">Distance (in meter) to move</param>
         /// <param name="junctionSelectorAngle">Desired direction [0:2pi] from incoming road direction (angle = 0), set -1 to randomize</param>
-        /// <returns>0 if successful, -1 if not</returns>
+        /// <returns>@return >= 0 if successful, < 0 on error. For all codes see esmini roadmanager::Position::enum class ReturnCode</returns>
         [DllImport(LIB_NAME, EntryPoint = "RM_PositionMoveForward")]
         public static extern int PositionMoveForward(int index, float dist, float junctionSelectorAngle);
 

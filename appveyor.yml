@@ -121,6 +121,11 @@ for:
                 throw "OperatingSystem_test failed"
             }
 
+            ./CommonMini_test
+            if ($lastExitCode -ne 0) {
+                throw "CommonMini_test failed"
+            }
+
             ./RoadManager_test
             if ($lastExitCode -ne 0) {
                 throw "RoadManager_test failed"
@@ -314,6 +319,11 @@ for:
             ./Release/OperatingSystem_test
             if ($lastExitCode -ne 0) {
                 throw "OperatingSystem_test failed"
+            }
+
+            ./Release/CommonMini_test
+            if ($lastExitCode -ne 0) {
+                throw "CommonMini_test failed"
             }
 
             ./Release/RoadManager_test

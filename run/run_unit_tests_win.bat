@@ -7,6 +7,9 @@ set PATH=%PATH%;..\Libraries\esminiLib\Release
 Release\OperatingSystem_test.exe
 pause
 
+Release\CommonMini_test.exe
+pause
+
 Release\RoadManager_test.exe
 pause
 

@@ -373,6 +373,30 @@ extern "C"
 		return numberOfDrivableLanes;
 	}
 
+	RM_DLL_API int RM_GetNumberOfRoadsOverlapping(int handle)
+	{
+		if (odrManager == nullptr || handle >= position.size() || handle < 0)
+		{
+			return -1;
+		}
+
+		roadmanager::Position* pos = &position[handle];
+
+		return pos->GetNumberOfRoadsOverlapping();
+	}
+
+	RM_DLL_API int RM_GetOverlappingRoadId(int handle, int index)
+	{
+		if (odrManager == nullptr || handle >= position.size() || handle < 0)
+		{
+			return -1;
+		}
+
+		roadmanager::Position* pos = &position[handle];
+
+		return pos->GetOverlappingRoadId(index);
+	}
+
 	RM_DLL_API int RM_GetLaneIdByIndex(int roadId, int laneIndex, float s)
 	{
 		int numberOfDrivableLanes = 0;
@@ -576,7 +600,7 @@ extern "C"
 			return 0.0;
 		}
 
-		return road->GetLaneWidthByS(position[handle].GetS(), lane_id);
+		return (float)road->GetLaneWidthByS(position[handle].GetS(), lane_id);
 	}
 
 	RM_DLL_API float RM_GetLaneWidthByRoadId(int road_id, int lane_id, float s)
@@ -592,7 +616,7 @@ extern "C"
 			return 0.0;
 		}
 
-		return road->GetLaneWidthByS(s, lane_id);
+		return (float)road->GetLaneWidthByS(s, lane_id);
 	}
 
 	RM_DLL_API int RM_GetLaneType(int handle, int lane_id)

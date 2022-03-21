@@ -81,8 +81,7 @@ void ControllerInteractive::Step(double timeStep)
 		// Only longitudinal control, move along road
 		double steplen = vehicle_.speed_* timeStep;
 
-		roadmanager::Position::ReturnCode ret_val = object_->MoveAlongS(steplen);
-		printf("ret_val %d\n", ret_val);
+		object_->MoveAlongS(steplen);
 
 		// Fetch updated position
 		vehicle_.posX_ = object_->pos_.GetX();
@@ -127,6 +126,9 @@ void ControllerInteractive::Activate(ControlDomains domainMask)
 
 	object_->pos_.SetAlignModeZ(roadmanager::Position::ALIGN_MODE::ALIGN_HARD);
 	object_->pos_.SetAlignModeP(roadmanager::Position::ALIGN_MODE::ALIGN_HARD);
+
+	object_->SetJunctionSelectorStrategy(roadmanager::Junction::JunctionStrategyType::SELECTOR_ANGLE);
+	object_->SetJunctionSelectorAngle(0.0);
 
 	Controller::Activate(domainMask);
 }

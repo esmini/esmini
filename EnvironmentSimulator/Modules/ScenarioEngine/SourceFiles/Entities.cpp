@@ -670,7 +670,7 @@ int Object::FreeSpaceDistancePointRoadLane(double x, double y, double* latDist, 
 
 	// Map XY point to road coordinates, but consider only roads reachable from point
 	Position pointPos = pos_;
-	if (pointPos.XYZH2TrackPos(x, y, 0, 0, true) != Position::ReturnCode::OK)
+	if ((int)pointPos.XYZH2TrackPos(x, y, 0, 0, true) < 0)
 	{
 		return -1;
 	}
@@ -686,7 +686,7 @@ int Object::FreeSpaceDistancePointRoadLane(double x, double y, double* latDist, 
 	{
 		pos[j] = pos_;
 		// Map bounding box points to road coordinates, consider only roads reachable from current position
-		if (pos[j].XYZH2TrackPos(vertices[j][0], vertices[j][1], 0, vertices[j][2], true) != Position::ReturnCode::OK)
+		if ((int)pos[j].XYZH2TrackPos(vertices[j][0], vertices[j][1], 0, vertices[j][2], true) < 0)
 		{
 			return -1;
 		}
@@ -798,7 +798,7 @@ int Object::FreeSpaceDistanceObjectRoadLane(Object* target, double* latDist, dou
 
 			// Map XY points to road coordinates, but consider only roads reachable from point
 			pos[i][j] = pos_;
-			if (pos[i][j].XYZH2TrackPos(vertices[i][j][0], vertices[i][j][1], 0, vertices[i][j][2], true) != Position::ReturnCode::OK)
+			if ((int)pos[i][j].XYZH2TrackPos(vertices[i][j][0], vertices[i][j][1], 0, vertices[i][j][2], true) < 0)
 			{
 				return -1;
 			}

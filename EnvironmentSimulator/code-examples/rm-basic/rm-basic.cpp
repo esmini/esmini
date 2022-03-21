@@ -55,7 +55,7 @@ int main(int argc, char* argv[])
 		posData.s, laneInfo.laneId, laneInfo.laneOffset, posData.x, posData.y, posData.z);
 
 	// Move forward in current lane
-	int ret_val = RM_PositionMoveForward(p0, 950, -1); // Junction selector angle -1 = random choice
+	RM_PositionMoveForward(p0, 950, -1); // Junction selector angle -1 = random choice
 	RM_GetLaneInfo(p0, 0.0, &laneInfo, 2, false);  // LookAheadMode = 2 looks at current lane offset
 	RM_GetPositionData(p0, &posData);
 	printf("current pos: s %.2f laneId %d offset %.2f x %.2f y %.2f z %.2f \n",
@@ -75,6 +75,13 @@ int main(int argc, char* argv[])
 	RM_SetLanePosition(p0, 9, -1, 0.0f, 1.0f, false);
 	RM_GetPositionData(p0, &posData);
 	printf("Junction Id: %d\n", posData.junctionId);
+
+	printf("Nr overlapping roads: %d\n", RM_GetNumberOfRoadsOverlapping(p0));
+	for (size_t i = 0; i < RM_GetNumberOfRoadsOverlapping(p0); i++)
+	{
+		printf("  road_id %d\n", RM_GetOverlappingRoadId(p0, (int)i));
+	}
+
 
 	return 0;
 }

@@ -361,22 +361,22 @@ double DistanceFromPointToEdge2D(double x3, double y3, double x1, double y1, dou
 	if (PointInBetweenVectorEndpoints(px, py, x1, y1, x2, y2, sNorm))
 	{
 		// Point within edge interior
-		*x = px;
-		*y = py;
+		if (x) *x = px;
+		if (y) *y = py;
 	}
 	else if (sNorm < 0)
 	{
 		// measure to first endpoint
 		distance = PointDistance2D(x3, y3, x1, y1);
-		*x = x1;
-		*y = y1;
+		if (x) *x = x1;
+		if (y) *y = y1;
 	}
 	else
 	{
 		// measure to other (2:nd) endpoint
 		distance = PointDistance2D(x3, y3, x2, y2);
-		*x = x2;
-		*y = y2;
+		if (x) *x = x2;
+		if (y) *y = y2;
 	}
 
 	return distance;
@@ -385,8 +385,11 @@ double DistanceFromPointToEdge2D(double x3, double y3, double x1, double y1, dou
 double DistanceFromPointToLine2D(double x3, double y3, double x1, double y1, double x2, double y2, double* x, double* y)
 {
 	double distance = 0;
+	double xp = 0.0, yp = 0.0;
 
 	// project point on edge, and measure distance to that point
+	if (x == nullptr) x = &xp;
+	if (y == nullptr) y = &yp;
 	ProjectPointOnVector2D(x3, y3, x1, y1, x2, y2, *x, *y);
 	distance = PointDistance2D(x3, y3, *x, *y);
 
@@ -442,6 +445,44 @@ void ProjectPointOnVector2D(double x, double y, double vx1, double vy1, double v
 		double k = (dy * (x - vx1) - dx * (y - vy1)) / (dy*dy + dx*dx);
 		px = x - k * dy;
 		py = y + k * dx;
+	}
+}
+
+bool IsPointWithinSectorBetweenTwoLines(SE_Vector p, SE_Vector l0p0, SE_Vector l0p1, SE_Vector l1p0, SE_Vector l1p1, double& sNorm)
+{
+	// If point is on the right side of first normal and to the left side of the second normal, then it's in between else not
+	double d0 = (p - l0p0).Cross(l0p1 - l0p0);
+	double d1 = (p - l1p0).Cross(l1p1 - l1p0);
+
+	double x = 0.0, y = 0.0;
+
+	// Find factor between 0,1 how close the point is the first (0) vs second point (1)
+	double dist0 = DistanceFromPointToLine2D(p.x(), p.y(), l0p0.x(), l0p0.y(), l0p1.x(), l0p1.y(), &x, &y);
+	double dist1 = DistanceFromPointToLine2D(p.x(), p.y(), l1p0.x(), l1p0.y(), l1p1.x(), l1p1.y(), &x, &y);
+
+	sNorm = dist0 / MAX(SMALL_NUMBER, dist0 + dist1);
+
+	if (d0 > 0 && d1 < 0)
+	{
+		return true;
+	}
+	else if (d0 < 0 && d1 > 0)
+	{
+		sNorm = -sNorm;
+		return true;
+	}
+	else
+	{
+		if (dist0 < dist1)
+		{
+			sNorm = -dist0;
+		}
+		else
+		{
+			sNorm = dist1;
+		}
+
+		return false;
 	}
 }
 

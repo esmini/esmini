@@ -2067,7 +2067,7 @@ namespace roadmanager
 		@param dLaneOffset delta lane offset (adding to current position lane offset)
 		@param junctionSelectorAngle Desired direction [0:2pi] from incoming road direction (angle = 0), set -1 to randomize
 		@param actualDistance Distance considering lateral offset and curvature (true/default) or along centerline (false)
-		@return 0 if successful, other codes see Position::ErrorCode
+		@return >= 0 on success, < 0 on error. For all codes see esmini roadmanager::Position::enum class ReturnCode
 		*/
 		ReturnCode MoveAlongS(double ds, double dLaneOffset, double junctionSelectorAngle, bool actualDistance = true);
 
@@ -2076,7 +2076,7 @@ namespace roadmanager
 		It will automatically follow connecting lanes between connected roads
 		If multiple options (only possible in junctions) it will choose randomly
 		@param ds distance to move from current position
-		@return 0 if successful, other codes see Position::ErrorCode
+		@return 0 if successful, other codes see Position::ReturnCode
 		*/
 		ReturnCode MoveAlongS(double ds, bool actualDistance = true)
 		{
