@@ -299,9 +299,6 @@ void ScenarioReader::parseRoadNetwork(RoadNetwork &roadNetwork)
 			parseOSCFile(roadNetwork.sceneGraphFile, roadNetworkChild);
 		}
 	}
-
-	LOG("OpenDRIVE: %s", roadNetwork.logicFile.filepath.empty() ? "None" : roadNetwork.logicFile.filepath.c_str());
-	LOG("Scenegraph: %s", roadNetwork.sceneGraphFile.filepath.empty() ? "None" : roadNetwork.sceneGraphFile.filepath.c_str());
 }
 
 void ScenarioReader::ParseOSCProperties(OSCProperties &properties, pugi::xml_node &xml_node)

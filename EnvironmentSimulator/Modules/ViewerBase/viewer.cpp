@@ -1565,6 +1565,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 			{
 				if (AddEnvironment(file_name_candidates[i].c_str()) == 0)
 				{
+					LOG("Loaded scenegraph: %s", file_name_candidates[i].c_str());
 					break;
 				}
 			}

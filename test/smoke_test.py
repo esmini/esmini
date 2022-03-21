@@ -13,7 +13,7 @@ class TestSuite(unittest.TestCase):
         log = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/cut-in.xosc'), COMMON_ARGS)
         
         # Check some initialization steps
-        self.assertTrue(re.search('.*Loading cut-in.xosc', log)  is not None)
+        self.assertTrue(re.search('Loading .*cut-in.xosc', log)  is not None)
         
         # Check some scenario events
         self.assertTrue(re.search('0.010.* CutInActStart == true, 0.0100 > 0.00 edge: none', log)  is not None)
@@ -25,7 +25,7 @@ class TestSuite(unittest.TestCase):
             + '--disable_controllers')
         
         # Check some initialization steps
-        self.assertTrue(re.search('.*Loading ltap-od.xosc', log)  is not None)
+        self.assertTrue(re.search('Loading .*ltap-od.xosc', log)  is not None)
         self.assertTrue(re.search('.*Route::AddWaypoint Added intermediate waypoint 1 roadId 15 laneId -1', log)  is not None)
 
         # Check some scenario events
@@ -42,7 +42,7 @@ class TestSuite(unittest.TestCase):
             + '--disable_controllers')
         
         # Check some initialization steps
-        self.assertTrue(re.search('.*Loading trajectory-test.xosc', log)  is not None)
+        self.assertTrue(re.search('Loading .*trajectory-test.xosc', log)  is not None)
 
         # Check some scenario events
         self.assertTrue(re.search('\n8.00.*FollowTrajectoryClothoidTrigger == true, element: FollowTrajectoryPLineEvent state: END_TRANSITION', log)  is not None)
@@ -64,7 +64,7 @@ class TestSuite(unittest.TestCase):
             + '--disable_controllers')
         
         # Check some initialization steps
-        self.assertTrue(re.search('.*Loading synchronize.xosc', log)  is not None)
+        self.assertTrue(re.search('Loading .*synchronize.xosc', log)  is not None)
 
         # Check some scenario events
         self.assertTrue(re.search('\n9.9.* Synchronize dist \(0.92\) < tolerance \(1.00\)', log)  is not None)
@@ -94,7 +94,7 @@ class TestSuite(unittest.TestCase):
             + '--disable_controllers')
 
         # Check some initialization steps
-        self.assertTrue(re.search('.*Loading left-hand-traffic_by_heading.xosc', log)  is not None)
+        self.assertTrue(re.search('Loading .*left-hand-traffic_by_heading.xosc', log)  is not None)
 
         # Check some scenario events
         self.assertTrue(re.search('\n3.75.* Lane change == true, rel_dist: 10.02 > 10.00, edge: rising', log)  is not None)
@@ -117,7 +117,7 @@ class TestSuite(unittest.TestCase):
             + '--disable_controllers')
 
         # Check some initialization steps
-        self.assertTrue(re.search('.*Loading left-hand-traffic_using_road_rule.xosc', log)  is not None)
+        self.assertTrue(re.search('Loading .*left-hand-traffic_using_road_rule.xosc', log)  is not None)
 
         # Check some scenario events
         self.assertTrue(re.search('\n3.75.* Lane change == true, rel_dist: 10.02 > 10.00, edge: rising', log)  is not None)
@@ -139,7 +139,7 @@ class TestSuite(unittest.TestCase):
         log = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/routing-test.xosc'), COMMON_ARGS)
         
         # Check some initialization steps
-        self.assertTrue(re.search('.*Loading routing-test.xosc', log)  is not None)
+        self.assertTrue(re.search('Loading .*routing-test.xosc', log)  is not None)
         self.assertTrue(re.search('.*Route::AddWaypoint Added waypoint 6: 261, 1, 50.00', log)  is not None)
         self.assertTrue(re.search('.*Route::AddWaypoint Added intermediate waypoint 7 roadId 260 laneId -1', log)  is not None)
         self.assertTrue(re.search('.*Route::AddWaypoint Added intermediate waypoint 11 roadId 220 laneId -1', log)  is not None)
@@ -163,7 +163,7 @@ class TestSuite(unittest.TestCase):
         log = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/acc-test.xosc'), COMMON_ARGS)
         
         # Check some initialization steps
-        self.assertTrue(re.search('.*Loading acc-test.xosc', log)  is not None)
+        self.assertTrue(re.search('Loading .*acc-test.xosc', log)  is not None)
         self.assertTrue(re.search('.*Ego New position:.*$\n^.*Pos\(20.00, -1.53, 0.00\) Rot\(0.00, 0.00, 0.00\) roadId 1 laneId -1 offset 0.00 t -1.53', log, re.MULTILINE))
         self.assertTrue(re.search('.*Target New position:.*$\n^.*Pos\(100.00, -1.53, 0.00\) Rot\(0.00, 0.00, 0.00\) roadId 1 laneId -1 offset 0.00 t -1.53', log, re.MULTILINE))
 
@@ -197,7 +197,7 @@ class TestSuite(unittest.TestCase):
         log = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/swarm.xosc'), COMMON_ARGS + ' --seed 2426643349' + ' --fixed_timestep 0.05')
         
         # Check some initialization steps
-        self.assertTrue(re.search('.*Loading swarm.xosc', log)  is not None)
+        self.assertTrue(re.search('Loading .*swarm.xosc', log)  is not None)
         self.assertTrue(re.search('Using specified seed 2426643349', log)  is not None)
         self.assertTrue(re.search('^0.00.*Ego New position:.*$\n^.*Pos\(10.20, 299.87, -0.53\) Rot\(1.56, 0.00, 0.00\) roadId 0 laneId -3 offset 0.00 t -8.00', log, re.MULTILINE))
         self.assertTrue(re.search('^0.00.*Init Ego TeleportAction standbyState -> startTransition -> runningState', log, re.MULTILINE))
@@ -233,7 +233,7 @@ class TestSuite(unittest.TestCase):
         log = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/conflicting-domains.xosc'), COMMON_ARGS)
         
         # Check some initialization steps
-        self.assertTrue(re.search('.*Loading conflicting-domains.xosc', log))
+        self.assertTrue(re.search('Loading .*conflicting-domains.xosc', log))
         self.assertTrue(re.search('^0.00.*Ego New position:.*$\n^.*Pos\(20.00, -1.53, 0.00\) Rot\(0.00, 0.00, 0.00\) roadId 0 laneId -1 offset 0.00 t -1.53', log, re.MULTILINE))
         self.assertTrue(re.search('^0.00.*Init Ego TeleportAction standbyState -> startTransition -> runningState', log, re.MULTILINE))
         self.assertTrue(re.search('^0.00.*Init Ego LongitudinalAction standbyState -> startTransition -> runningState', log, re.MULTILINE))
@@ -265,7 +265,7 @@ class TestSuite(unittest.TestCase):
         log = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/follow_ghost.xosc'), COMMON_ARGS)
         
         # Check some initialization steps
-        self.assertTrue(re.search('.*Loading follow_ghost.xosc', log)  is not None)
+        self.assertTrue(re.search('Loading .*follow_ghost.xosc', log)  is not None)
         
         # Check some scenario events
         self.assertTrue(re.search('^2.560.* SpeedEvent1 complete after 1 execution', log, re.MULTILINE)  is not None)
@@ -285,7 +285,7 @@ class TestSuite(unittest.TestCase):
         log = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/traj-heading-trig.xosc'), COMMON_ARGS)
         
         # Check some initialization steps
-        self.assertTrue(re.search('.*traj-heading-trig.xosc', log)  is not None)
+        self.assertTrue(re.search('Loading .*traj-heading-trig.xosc', log)  is not None)
         
         # Check some scenario events
         self.assertTrue(re.search('^0.020: MyLaneChangeEvent standbyState -> startTransition -> runningState', log, re.MULTILINE)  is not None)
@@ -302,7 +302,7 @@ class TestSuite(unittest.TestCase):
         log = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/highway_exit.xosc'), COMMON_ARGS)
 
         # Check some initialization steps
-        self.assertTrue(re.search('.*highway_exit.xosc', log)  is not None)
+        self.assertTrue(re.search('Loading .*highway_exit.xosc', log)  is not None)
 
         # Check some scenario events
         self.assertTrue(re.search('^3.380: position trigger == true, distance 1.70 < tolerance \(2.00\), edge: none', log, re.MULTILINE)  is not None)
@@ -325,7 +325,7 @@ class TestSuite(unittest.TestCase):
         log = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/lane-change_clothoid_based_trajectory.xosc'), COMMON_ARGS)
 
         # Check some initialization steps
-        self.assertTrue(re.search('.*lane-change_clothoid_based_trajectory.xosc', log)  is not None)
+        self.assertTrue(re.search('Loading .*lane-change_clothoid_based_trajectory.xosc', log)  is not None)
         self.assertTrue(re.search('^Adding clothoid\(x=0.00 y=0.00 h=0.00 curv=0.01 curvDot=0.00 len=15.00 startTime=0.00 stopTime=0.00\)', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('^Adding clothoid\(x=0.00 y=0.00 h=0.00 curv=0.00 curvDot=0.00 len=5.00 startTime=0.00 stopTime=0.00\)', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('^Adding clothoid\(x=0.00 y=0.00 h=0.00 curv=-0.01 curvDot=0.00 len=15.00 startTime=0.00 stopTime=0.00\)', log, re.MULTILINE)  is not None)
@@ -350,7 +350,7 @@ class TestSuite(unittest.TestCase):
         log = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/test_action_dynamics.xosc'), COMMON_ARGS)
 
         # Check some initialization steps
-        self.assertTrue(re.search('.*test_action_dynamics.xosc', log)  is not None)
+        self.assertTrue(re.search('Loading .*test_action_dynamics.xosc', log)  is not None)
 
         # Check some scenario events
         self.assertTrue(re.search('2.010: LaneChange1Condition == true, 2.0100 > 2.00 edge: none', log, re.MULTILINE)  is not None)
@@ -378,7 +378,7 @@ class TestSuite(unittest.TestCase):
         log = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/route_lane_change.xosc'), COMMON_ARGS)
 
         # Check some initialization steps
-        self.assertTrue(re.search('.*route_lane_change.xosc', log)  is not None)
+        self.assertTrue(re.search('Loading .*route_lane_change.xosc', log)  is not None)
 
         # Check some scenario events
         self.assertTrue(re.search('Route::AddWaypoint Added waypoint 0: 2, -1, 100.00', log, re.MULTILINE)  is not None)
@@ -408,7 +408,7 @@ class TestSuite(unittest.TestCase):
         log = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/drop-bike.xosc'), COMMON_ARGS)
 
         # Check some initialization steps
-        self.assertTrue(re.search('.*drop-bike.xosc', log)  is not None)
+        self.assertTrue(re.search('Loading .*drop-bike.xosc', log)  is not None)
 
         # Check some scenario events
         self.assertTrue(re.search('5.010: drop trigger == true, 5.0100 > 5.00 edge: none', log, re.MULTILINE)  is not None)
@@ -424,7 +424,7 @@ class TestSuite(unittest.TestCase):
         log = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/speed_over_distance.xosc'), COMMON_ARGS)
 
         # Check some initialization steps
-        self.assertTrue(re.search('.*speed_over_distance.xosc', log)  is not None)
+        self.assertTrue(re.search('Loading .*speed_over_distance.xosc', log)  is not None)
 
         # Check some scenario events
         self.assertTrue(re.search('^10.080: SpeedChangeCondition2 == true, distance 0.93 < tolerance \(1.00\), edge: none', log, re.MULTILINE)  is not None)
@@ -443,7 +443,7 @@ class TestSuite(unittest.TestCase):
             '--disable_controllers')
 
         # Check some initialization steps
-        self.assertTrue(re.search('.*test-collision-detection.xosc', log)  is not None)
+        self.assertTrue(re.search('Loading .*test-collision-detection.xosc', log)  is not None)
 
         # Check some scenario events
         self.assertFalse(re.search('^6.260: Collision between Ego and NPC1', log, re.MULTILINE)  is not None)
@@ -464,7 +464,7 @@ class TestSuite(unittest.TestCase):
         # Same as previous, but confirms explicit collision  detection in condition when global collision detection is disabled
 
         # Check some initialization steps
-        self.assertTrue(re.search('.*test-collision-detection.xosc', log)  is not None)
+        self.assertTrue(re.search('Loading .*test-collision-detection.xosc', log)  is not None)
 
         # Check some scenario events
         self.assertTrue(re.search('^5.250: Collision between Ego and NPC2', log, re.MULTILINE)  is not None)
@@ -483,7 +483,7 @@ class TestSuite(unittest.TestCase):
         log = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/add_delete_entity.xosc'), COMMON_ARGS)
 
         # Check some initialization steps
-        self.assertTrue(re.search('.*add_delete_entity.xosc', log)  is not None)
+        self.assertTrue(re.search('Loading .*add_delete_entity.xosc', log)  is not None)
 
         # Check some scenario events
         self.assertTrue(re.search('^2.000: Failed to activate obj Car1. Already active \(1 instances in active list\)', log, re.MULTILINE)  is not None)
@@ -509,7 +509,7 @@ class TestSuite(unittest.TestCase):
         log = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/multi_lane_changes.xosc'), COMMON_ARGS)
 
         # Check some initialization steps
-        self.assertTrue(re.search('.*multi_lane_changes.xosc', log)  is not None)
+        self.assertTrue(re.search('Loading .*multi_lane_changes.xosc', log)  is not None)
 
         # Check some scenario events
         self.assertTrue(re.search('^0.010: act_start == true, 0.0100 > 0.00 edge: none', log, re.MULTILINE)  is not None)
@@ -537,7 +537,7 @@ class TestSuite(unittest.TestCase):
         log = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/init_test.xosc'), COMMON_ARGS)
 
         # Check some initialization steps
-        self.assertTrue(re.search('.*init_test.xosc', log)  is not None)
+        self.assertTrue(re.search('Loading .*init_test.xosc', log)  is not None)
 
         # Check some scenario events
         self.assertTrue(re.search('^-2.000: Ego New position:\n-2.000: Pos\(200.00, -1.53, 0.00\) '\
@@ -585,7 +585,7 @@ class TestSuite(unittest.TestCase):
         log = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/reverse_lane_change.xosc'), COMMON_ARGS)
 
         # Check some initialization steps
-        self.assertTrue(re.search('.*reverse_lane_change.xosc', log)  is not None)
+        self.assertTrue(re.search('Loading .*reverse_lane_change.xosc', log)  is not None)
 
         # Check some scenario events
         self.assertTrue(re.search('^1.010: reverse_trigger == true, 1.0100 > 1.00 edge: none', log, re.MULTILINE)  is not None)
@@ -605,7 +605,7 @@ class TestSuite(unittest.TestCase):
         log = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/ghost_restart.xosc'), COMMON_ARGS)
 
         # Check some initialization steps
-        self.assertTrue(re.search('.*ghost_restart.xosc', log)  is not None)
+        self.assertTrue(re.search('Loading .*ghost_restart.xosc', log)  is not None)
 
         # Check some scenario events
         self.assertTrue(re.search('^-0.500: Pos\(50.00, -11.70, 0.00\) Rot\(0.00, 0.00, 0.00\) roadId 1 laneId -4 offset 0.00 t -11.70', log, re.MULTILINE)  is not None)
@@ -630,6 +630,6 @@ if __name__ == "__main__":
     # execute only if run as a script
 
     # Run next line instead to execute only one test
-    # unittest.main(argv=['ignored', '-v', 'TestSuite.test_swarm'])
+    # unittest.main(argv=['ignored', '-v', 'TestSuite.test_acc'])
     
     unittest.main(verbosity=2)

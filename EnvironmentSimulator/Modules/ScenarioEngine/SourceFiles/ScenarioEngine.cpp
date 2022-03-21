@@ -658,7 +658,7 @@ void ScenarioEngine::parseScenario()
 		LOG_AND_QUIT("OpenSCENARIO v%d.%d not supported. Please migrate scenario to v1.0 or v1.1 and try again.",
 			scenarioReader->GetVersionMajor(), scenarioReader->GetVersionMinor());
 	}
-	LOG("Loading %s (v%d.%d)", FileNameOf(scenarioReader->getScenarioFilename()).c_str(), scenarioReader->GetVersionMajor(), scenarioReader->GetVersionMinor());
+	LOG("Loading %s (v%d.%d)", scenarioReader->getScenarioFilename().c_str(), scenarioReader->GetVersionMajor(), scenarioReader->GetVersionMinor());
 
 	scenarioReader->parseGlobalParameterDeclarations();
 
@@ -699,6 +699,7 @@ void ScenarioEngine::parseScenario()
 				located = true;
 				if (roadmanager::Position::LoadOpenDrive(file_name_candidates[i].c_str()) == true)
 				{
+					LOG("Loaded OpenDRIVE: %s", file_name_candidates[i].c_str());
 					break;
 				}
 				else
