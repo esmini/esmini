@@ -1023,6 +1023,10 @@ void ScenarioEngine::ReplaceObjectInTrigger(Trigger* trigger, Object* obj1, Obje
 						{
 							trig->triggering_entities_.entity_[k].object_ = obj2;
 						}
+						else
+						{
+							CreateGhostTeleport(obj1, obj2, event);
+						}
 					}
 				}
 				else if(event != nullptr)
