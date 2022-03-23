@@ -2882,6 +2882,10 @@ static StoryBoardElement::ElementType ParseElementType(std::string element_type)
 	{
 		return StoryBoardElement::ElementType::MANEUVER;
 	}
+	else if (element_type == "maneuverGroup")
+	{
+		return StoryBoardElement::ElementType::MANEUVER_GROUP;
+	}
 	else if (element_type == "event")
 	{
 		return StoryBoardElement::ElementType::EVENT;

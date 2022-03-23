@@ -60,6 +60,7 @@ namespace scenarioengine
 		std::string name_;
 
 		bool IsAnyEventActive();
+		bool AreAllEventsComplete();
 		void UpdateState();
 
 		void Print()

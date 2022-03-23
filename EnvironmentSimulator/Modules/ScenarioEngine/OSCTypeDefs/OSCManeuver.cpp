@@ -140,6 +140,18 @@ bool OSCManeuver::IsAnyEventActive()
 	return false;
 }
 
+bool OSCManeuver::AreAllEventsComplete()
+{
+	for (size_t i = 0; i < event_.size(); i++)
+	{
+		if (event_[i]->state_ != StoryBoardElement::State::COMPLETE)
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
 void OSCManeuver::UpdateState()
 {
 	// Update state of sub elements - moving from transitions to stable states

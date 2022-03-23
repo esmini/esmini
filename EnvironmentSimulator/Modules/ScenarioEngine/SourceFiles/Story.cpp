@@ -29,6 +29,23 @@ Act* Story::FindActByName(std::string name)
 	return nullptr;
 }
 
+ManeuverGroup* Story::FindManeuverGroupByName(std::string name)
+{
+	for (size_t i = 0; i < act_.size(); i++)
+	{
+		for (size_t j = 0; j < act_[i]->maneuverGroup_.size(); j++)
+		{
+			ManeuverGroup *mg = act_[i]->maneuverGroup_[j];
+			if (name == mg->name_)
+			{
+				return mg;
+			}
+		}
+	}
+
+	return nullptr;
+}
+
 Event* Story::FindEventByName(std::string name)
 {
 	for (size_t i = 0; i < act_.size(); i++)
@@ -97,6 +114,20 @@ Act* StoryBoard::FindActByName(std::string name)
 	return 0;
 }
 
+ManeuverGroup* StoryBoard::FindManeuverGroupByName(std::string name)
+{
+	ManeuverGroup* mg = 0;
+	for (size_t i = 0; i < story_.size(); i++)
+	{
+		if ((mg = story_[i]->FindManeuverGroupByName(name)) != 0)
+		{
+			return mg;
+		}
+	}
+
+	return 0;
+}
+
 Event* StoryBoard::FindEventByName(std::string name)
 {
 	Event *event = 0;
@@ -143,6 +174,18 @@ void Act::UpdateState()
 	}
 
 	StoryBoardElement::UpdateState();
+}
+
+bool ManeuverGroup::AreAllManeuversComplete()
+{
+	for (size_t i = 0; i < maneuver_.size(); i++)
+	{
+		if (!maneuver_[i]->AreAllEventsComplete())
+		{
+			return false;
+		}
+	}
+	return true;
 }
 
 void ManeuverGroup::UpdateState()

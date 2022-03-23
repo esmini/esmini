@@ -409,6 +409,10 @@ bool TrigByState::CheckCondition(StoryBoard *storyBoard, double sim_time)
 		{
 			element = storyBoard->FindActByName(element_name_);
 		}
+		else if (element_type_ == StoryBoardElement::ElementType::MANEUVER_GROUP)
+		{
+			element = storyBoard->FindManeuverGroupByName(element_name_);
+		}
 		else if (element_type_ == StoryBoardElement::ElementType::EVENT)
 		{
 			element = storyBoard->FindEventByName(element_name_);
