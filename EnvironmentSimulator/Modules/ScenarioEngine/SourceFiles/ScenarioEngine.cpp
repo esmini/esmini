@@ -909,17 +909,11 @@ void ScenarioEngine::prepareGroundTruth(double dt)
 					// An improvised calculation of a steering angle based on yaw rate and enitity speed
 					double steeringAngleTarget = SIGN(obj->GetSpeed()) * M_PI * heading_rate_new / MAX(fabs(obj->GetSpeed()), SMALL_NUMBER);
 					double steeringAngleDiff = steeringAngleTarget - obj->wheel_angle_;
-					// Turn wheel gradually towards target
-					double steeringAngleStep = SIGN(steeringAngleDiff) * 0.5 * dt;
 
-					if (abs(steeringAngleStep) > abs(obj->wheel_angle_))
-					{
-						obj->wheel_angle_ = 0.0;
-					}
-					else
-					{
-						obj->wheel_angle_ += steeringAngleStep;
-					}
+					// Turn wheel gradually towards target
+					double steeringAngleStep = SIGN(steeringAngleDiff) * MIN(abs(steeringAngleDiff), 0.5 * dt);
+
+					obj->wheel_angle_ += steeringAngleStep;
 					obj->SetDirtyBits(Object::DirtyBit::WHEEL_ANGLE);
 				}
 
@@ -1026,6 +1020,8 @@ void ScenarioEngine::ReplaceObjectInTrigger(Trigger* trigger, Object* obj1, Obje
 						else
 						{
 							CreateGhostTeleport(obj1, obj2, event);
+							LOG("Created new teleport action for ghost and %s trigger (entity %s)",
+								cond->name_.c_str(), trig->triggering_entities_.entity_[k].object_->GetName().c_str());
 						}
 					}
 				}
