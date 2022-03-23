@@ -2926,7 +2926,7 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
 						osg::ref_ptr<osg::LOD> lod = new osg::LOD();
 						LODGroup = new osg::Group();
 						lod->addChild(LODGroup);
-						lod->setRange(0, 0, LOD_DIST_ROAD_FEATURES);
+						lod->setRange(0, 0, LOD_DIST_ROAD_FEATURES + MAX(boundingBox.xMax() - boundingBox.xMin(), boundingBox.yMax() - boundingBox.yMin()));
 						objGroup->addChild(lod);
 						lastLODs = s;
 					}
