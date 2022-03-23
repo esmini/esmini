@@ -29,6 +29,14 @@ namespace scenarioengine
 	class ControllerFollowGhost: public Controller
 	{
 	public:
+
+		enum class FollowMode
+		{
+			FOLLOW_MODE_NONE,
+			FOLLOW_MODE_TIME,
+			FOLLOW_MODE_POSITION,
+		};
+
 		ControllerFollowGhost(InitArgs *args);
 
 		static const char* GetTypeNameStatic() { return CONTROLLER_FOLLOW_GHOST_TYPE_NAME; }
@@ -45,6 +53,7 @@ namespace scenarioengine
 		vehicle::Vehicle vehicle_;
 		double headstart_time_;
 		double elapsed_time_;
+		FollowMode follow_mode_;
 	};
 
 	Controller* InstantiateControllerFollowGhost(void* args);

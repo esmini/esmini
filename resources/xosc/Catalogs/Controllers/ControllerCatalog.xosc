@@ -88,10 +88,13 @@
         <Controller name="followGhost">
             <ParameterDeclarations>
                 <ParameterDeclaration name="HeadStartTime" parameterType="double" value="6" />
+                <!-- FollowModes: time, position -->
+                <ParameterDeclaration name="FollowMode" parameterType="string" value="time" />
             </ParameterDeclarations>
             <Properties>
                 <Property name="esminiController" value="FollowGhostController" />
                 <Property name="headstartTime"  value="$HeadStartTime" />
+                <Property name="followMode"  value="$FollowMode" />
             </Properties>
         </Controller>
         <Controller name="sumoController">

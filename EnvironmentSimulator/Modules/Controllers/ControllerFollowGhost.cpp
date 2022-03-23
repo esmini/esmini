@@ -33,11 +33,30 @@ Controller* scenarioengine::InstantiateControllerFollowGhost(void* args)
 	return new ControllerFollowGhost(initArgs);
 }
 
-ControllerFollowGhost::ControllerFollowGhost(InitArgs* args) : elapsed_time_(0.0), Controller(args)
+ControllerFollowGhost::ControllerFollowGhost(InitArgs* args) :
+	elapsed_time_(0.0), follow_mode_(FollowMode::FOLLOW_MODE_TIME), Controller(args)
 {
 	if (args->properties->ValueExists("headstartTime"))
 	{
 		headstart_time_ = strtod(args->properties->GetValueStr("headstartTime"));
+	}
+
+	if (args->properties->ValueExists("followMode"))
+	{
+		std::string follow_mode = args->properties->GetValueStr("followMode");
+		if (follow_mode == "time")
+		{
+			follow_mode_ = FollowMode::FOLLOW_MODE_TIME;
+		}
+		else if (follow_mode == "position")
+		{
+			follow_mode_ = FollowMode::FOLLOW_MODE_POSITION;
+		}
+		else
+		{
+			LOG("Unexpected follow mode \"%s\", falling back to default \"time\"", follow_mode.c_str());
+			follow_mode_ = FollowMode::FOLLOW_MODE_TIME;
+		}
 	}
 
 	// FollowGhost controller forced into override mode - will not perform any scenario actions
@@ -63,48 +82,53 @@ void ControllerFollowGhost::Step(double timeStep)
 		return;
 	}
 
-#ifdef FOLLOW_GHOST_BY_POSITION
-	// Set steering target point at a distance ahead proportional to the speed
-	double probe_target_distance = MAX(7, 0.5 * object_->speed_);
-
-	if (object_->GetGhost()->trail_.FindClosestPoint(object_->pos_.GetX(), object_->pos_.GetY(),
-		object_->trail_closest_pos_, object_->trail_follow_index_, object_->trail_follow_index_) == 0)
+	if (follow_mode_ == FollowMode::FOLLOW_MODE_POSITION)
 	{
-		object_->trail_closest_pos_.z = object_->pos_.GetZ();
+		if (object_->GetGhost()->trail_.FindClosestPoint(object_->pos_.GetX(), object_->pos_.GetY(),
+			object_->trail_closest_pos_, object_->trail_follow_index_, object_->trail_follow_index_) == 0)
+		{
+			object_->trail_closest_pos_.z = object_->pos_.GetZ();
+		}
+		else
+		{
+			// Failed find point along trail, copy entity position
+			object_->trail_closest_pos_.x = object_->pos_.GetX();
+			object_->trail_closest_pos_.y = object_->pos_.GetY();
+			object_->trail_closest_pos_.z = object_->pos_.GetZ();
+		}
 	}
-	else
-	{
-		// Failed find point along trail, copy entity position
-		object_->trail_closest_pos_.x = object_->pos_.GetX();
-		object_->trail_closest_pos_.y = object_->pos_.GetY();
-		object_->trail_closest_pos_.z = object_->pos_.GetZ();
-	}
-#endif
 
 	// Find out a steering target along ghost vehicle trail
 	int index_out;
 	roadmanager::TrajVertex point;
 
 	// Locate a point at given distance from own vehicle along the ghost trajectory
-#ifdef FOLLOW_GHOST_BY_POSITION
-	if (object_->GetGhost()->trail_.FindPointAhead(
-		object_->trail_closest_pos_.s, probe_target_distance, point, index_out, object_->trail_follow_index_) != 0)
-#else  // follow by time
-	if (object_->GetGhost()->trail_.FindPointAtTime(elapsed_time_ - headstart_time_ + 1.7,  // look ahead 1.7 seconds
-		point, index_out, object_->trail_follow_index_) != 0)
-#endif
+	int ret_val = 0;
+	if (follow_mode_ == FollowMode::FOLLOW_MODE_POSITION)
+	{
+		// Set steering target point at a distance ahead proportional to the speed
+		double probe_target_distance = MAX(7, 0.5 * object_->speed_);
+
+		ret_val = object_->GetGhost()->trail_.FindPointAhead(
+			object_->trail_closest_pos_.s, probe_target_distance, point, index_out, object_->trail_follow_index_);
+	}
+	else
+	{
+		ret_val = object_->GetGhost()->trail_.FindPointAtTime(elapsed_time_ - headstart_time_ + 1.7,  // look ahead 1.7 seconds
+			point, index_out, object_->trail_follow_index_);
+	}
+
+	if (ret_val != 0)
 	{
 		point.x = (float)object_->pos_.GetX();
 		point.y = (float)object_->pos_.GetY();
 		point.z = (float)object_->pos_.GetZ();
 		point.speed = 0;
 	}
-	else
+	else if(follow_mode_ == FollowMode::FOLLOW_MODE_TIME)
 	{
-#ifndef FOLLOW_GHOST_BY_POSITION
 		// For time based ghost follow, register last trail index for next search
 		object_->trail_follow_index_ = index_out;
-#endif
 	}
 
 	// Update object sensor position for visualization
