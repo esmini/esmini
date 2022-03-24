@@ -8,8 +8,8 @@
 using namespace roadmanager;
 
 LaneIndependentRouter::LaneIndependentRouter(OpenDrive* odr): odr_(odr){
-    
-}   
+
+}
 
 // Gets the next pathnode for the nextroad based on current srcnode
 std::vector<Node *> LaneIndependentRouter::GetNextNodes(Road *nextRoad, Road *targetRoad, Node *currentNode, RouteStrategy routeStrategy)
@@ -117,7 +117,7 @@ std::vector<int> LaneIndependentRouter::GetConnectingLanes(Node *srcNode, Road *
 	int nrOfLanes = lanesection->GetNumberOfLanes();
 	for (size_t i = 0; i < nrOfLanes; i++)
 	{
-		Lane *lane = lanesection->GetLaneByIdx(i);
+		Lane *lane = lanesection->GetLaneByIdx((int)i);
 		int currentlaneId = lane->GetId();
 		if (lane->IsDriving() && SIGN(currentlaneId) == SIGN(srcNode->laneId) && lane->GetId() != 0)
 		{
@@ -186,7 +186,7 @@ double LaneIndependentRouter::CalcAverageSpeed(Road *road)
 	double totalSpeed = 0;
 	for (size_t i = 0; i < roadTypeCount; i++)
 	{
-		totalSpeed += road->GetRoadType(i)->speed_;
+		totalSpeed += road->GetRoadType((int)i)->speed_;
 	}
 	if (totalSpeed == 0 || roadTypeCount == 0)
 	{
@@ -249,7 +249,7 @@ bool LaneIndependentRouter::FindGoal(RouteStrategy routeStrategy)
 		}
 		RoadLink *link = currentNode->link;
 		Road *pivotRoad = currentNode->road;
-		int pivotLaneId = currentNode->laneId;
+
 		std::vector<Road *> nextRoads;
 		if (link->GetElementType() == RoadLink::ElementType::ELEMENT_TYPE_ROAD)
 		{
@@ -281,7 +281,6 @@ bool LaneIndependentRouter::FindGoal(RouteStrategy routeStrategy)
 
 bool LaneIndependentRouter::IsTargetValid(Position target)
 {
-	int roadId = target.GetTrackId();
 	Road *targetRoad = odr_->GetRoadById(target.GetTrackId());
 	if (!targetRoad)
 	{

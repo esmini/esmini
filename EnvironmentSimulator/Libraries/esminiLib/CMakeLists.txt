@@ -34,17 +34,17 @@ if (USE_OSI)
 endif (USE_OSI)
 
 target_link_libraries (
-	${TARGET}
-    PRIVATE PlayerBase
-	PRIVATE ScenarioEngine
-	PRIVATE RoadManager
-	PRIVATE CommonMini
-    PRIVATE Controllers
-    PRIVATE ${osi_libs}
-    PRIVATE ${sumo_libs}
-	PRIVATE ${TIME_LIB}
-    PRIVATE ${SOCK_LIB}
-    ${viewer_libs}
+  ${TARGET}
+  PRIVATE PlayerBase
+  PRIVATE ScenarioEngine
+  PRIVATE CommonMini
+  PRIVATE Controllers
+  PRIVATE RoadManager
+  PRIVATE ${osi_libs}
+  PRIVATE ${sumo_libs}
+  PRIVATE ${TIME_LIB}
+  PRIVATE ${SOCK_LIB}
+  ${viewer_libs}
 )
 
 install ( TARGETS ${TARGET} DESTINATION "${INSTALL_DIRECTORY}")
@@ -53,5 +53,3 @@ if (WIN32)
 else ()
   install ( TARGETS ${TARGET} LIBRARY DESTINATION "${INSTALL_DIRECTORY_CODE_EXAMPLES}")
 endif ()
-
-
