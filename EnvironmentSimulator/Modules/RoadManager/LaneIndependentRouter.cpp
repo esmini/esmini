@@ -286,7 +286,7 @@ bool LaneIndependentRouter::IsTargetValid(Position target)
 	{
 		return false;
 	}
-	if (target.GetS() > targetRoad->GetLength() && target.GetS() < 0)
+	if (target.GetS() > targetRoad->GetLength() || target.GetS() < 0)
 	{
 		return false;
 	}
@@ -371,34 +371,10 @@ std::vector<Node *> LaneIndependentRouter::CalculatePath(Position start, Positio
 			pathToGoal.push_back(nodeIterator);
 			nodeIterator = nodeIterator->previous;
 		}
-		// LOG("distance_ VECTOR:");
-		// for (size_t i = 0; i < distance_.size(); i++)
-		// {
-		// 	LOG("Idx: %d Road:%d Lane: %d Dist:%f Prev: %d",
-		// 		i, distance_[i]->road->GetId(), distance_[i]->laneId, distance_[i]->weight, distance_[i]->previous->road->GetId());
-		// }
-		// LOG("visited_ VECTOR:");
-		// for (size_t i = 0; i < visited_.size(); i++)
-		// {
-		// 	LOG("Idx: %d Road:%d Dist:%f ",
-		// 		i, visited_[i]->road->GetId(), visited_[i]->weight);
-		// }
 	}
 	else
 	{
 		LOG("Path to target not found");
-		// LOG("distance_ VECTOR:");
-		// for (size_t i = 0; i < distance_.size(); i++)
-		// {
-		// 	LOG("Idx: %d Road:%d Lane: %d Dist:%f PrevR: %d PrevL: %d",
-		// 		i, distance_[i]->road->GetId(), distance_[i]->laneId, distance_[i]->weight, distance_[i]->previous->road->GetId(), distance_[i]->previous->laneId);
-		// }
-		// LOG("visited_ VECTOR:");
-		// for (size_t i = 0; i < visited_.size(); i++)
-		// {
-		// 	LOG("Idx: %d Road:%d Dist:%f ",
-		// 		i, visited_[i]->road->GetId(), visited_[i]->weight);
-		// }
 	}
 
 	return pathToGoal;

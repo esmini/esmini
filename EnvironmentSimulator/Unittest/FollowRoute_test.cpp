@@ -2,8 +2,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include <vector>
-#include <stdexcept>
-#include <filesystem>
+#include <chrono>
 
 #include "pugixml.hpp"
 #include "simple_expr.h"
@@ -17,7 +16,7 @@ static void log_callback(const char *str);
 
 TEST(PathfinderTest, FindPathTest1)
 {
-    Position::GetOpenDrive()->LoadOpenDriveFile("~/esmini/resources/xodr/multi_intersections.xodr");
+    Position::GetOpenDrive()->LoadOpenDriveFile("../../../../esmini/resources/xodr/multi_intersections.xodr");
     OpenDrive *odr = Position::GetOpenDrive();
     ASSERT_NE(odr, nullptr);
 
@@ -28,41 +27,119 @@ TEST(PathfinderTest, FindPathTest1)
     std::vector<Node *> path = router.CalculatePath(start, target);
 
     ASSERT_FALSE(path.empty());
-    ASSERT_EQ(path.back()->road->GetId(), 209);
+    ASSERT_EQ(path[0]->road->GetId(), 209);
 }
 
-// TEST(PathfinderTest, FindPathTest2)
-// {
-//     Position::GetOpenDrive()->LoadOpenDriveFile("~/esmini/resources/xodr/multi_intersections.xodr");
-//     OpenDrive *odr = Position::GetOpenDrive();
+TEST(PathfinderTest, FindPathTest2)
+{
+    Position::GetOpenDrive()->LoadOpenDriveFile("../../../../esmini/resources/xodr/multi_intersections.xodr");
+    OpenDrive *odr = Position::GetOpenDrive();
+    ASSERT_NE(odr, nullptr);
 
-//     ASSERT_NE(odr, nullptr);
+    Position start(217, -1, 50, 0);
+    Position target(275, -1, 50, 0);
 
-//     ScenarioEngine *se = new ScenarioEngine("../../controller_follow_route_test.xosc");
-//     ASSERT_NE(se, nullptr);
+    LaneIndependentRouter router(odr);
+    std::vector<Node *> path = router.CalculatePath(start, target);
 
-//     Position start(217, -1, 50, 0);
-//     Position target(275, -1, 50, 0);
+    ASSERT_FALSE(path.empty());
+    ASSERT_EQ(path[0]->road->GetId(), 275);
+}
 
-//     scenarioengine::Controller::InitArgs args;
-//     args.name = "ControllerFollowRoute";
-//     args.type = ControllerFollowRoute::GetTypeNameStatic();
-//     args.parameters = 0;
-//     args.properties = new OSCProperties();
-//     args.gateway = se->getScenarioGateway();
-//     ControllerFollowRoute *controllerFollowRoute = (ControllerFollowRoute *)InstantiateControllerFollowRoute(&args);
-//     delete se->entities_.object_[0]->controller_;
-//     delete args.properties;
+TEST(PathfinderTest, FindPathShortest)
+{
+    Position::GetOpenDrive()->LoadOpenDriveFile("../../../../esmini/resources/xodr/multi_intersections.xodr");
+    OpenDrive *odr = Position::GetOpenDrive();
+    ASSERT_NE(odr, nullptr);
 
-//     controllerFollowRoute->Assign(se->entities_.object_[0]);
-//     se->scenarioReader->controller_[0] = controllerFollowRoute;
-//     se->entities_.object_[0]->controller_ = controllerFollowRoute;
+    Position start(202, 2, 100, 0);
+    Position target(209, 1, 20, 0);
 
-//     std::vector<Node *> path = controllerFollowRoute->CalculatePath(start, target);
+    LaneIndependentRouter router(odr);
+    std::vector<Node *> path = router.CalculatePath(start, target, RouteStrategy::SHORTEST);
 
-//     ASSERT_FALSE(path.empty());
-//     ASSERT_EQ(path.back()->road->GetId(), 275);
-// }
+    ASSERT_FALSE(path.empty());
+    ASSERT_EQ(path[0]->road->GetId(), 209);
+}
+
+TEST(PathfinderTest, FindPathFastest)
+{
+    Position::GetOpenDrive()->LoadOpenDriveFile("../../../../esmini/resources/xodr/multi_intersections.xodr");
+    OpenDrive *odr = Position::GetOpenDrive();
+    ASSERT_NE(odr, nullptr);
+
+    Position start(202, 2, 100, 0);
+    Position target(209, 1, 20, 0);
+
+    LaneIndependentRouter router(odr);
+    std::vector<Node *> path = router.CalculatePath(start, target, RouteStrategy::FASTEST);
+
+    ASSERT_FALSE(path.empty());
+    ASSERT_EQ(path[0]->road->GetId(), 209);
+}
+
+TEST(PathfinderTest, FindPathMinIntersections)
+{
+    Position::GetOpenDrive()->LoadOpenDriveFile("../../../../esmini/resources/xodr/multi_intersections.xodr");
+    OpenDrive *odr = Position::GetOpenDrive();
+    ASSERT_NE(odr, nullptr);
+
+    Position start(202, 2, 100, 0);
+    Position target(209, 1, 20, 0);
+
+    LaneIndependentRouter router(odr);
+    // std::vector<Node *> path = router.CalculatePath(start, target, RouteStrategy::MIN_INTERSECTIONS);
+    std::vector<Node *> path = {};
+
+    ASSERT_FALSE(path.empty());
+    ASSERT_EQ(path[0]->road->GetId(), 209);
+}
+
+TEST(PathfinderTest, FindPathTimeSmall)
+{
+    Position::GetOpenDrive()->LoadOpenDriveFile("../../../../esmini/resources/xodr/multi_intersections.xodr");
+    OpenDrive *odr = Position::GetOpenDrive();
+    ASSERT_NE(odr, nullptr);
+
+    Position start(202, 2, 100, 0);
+    Position target(209, 1, 20, 0);
+
+    LaneIndependentRouter router(odr);
+    auto startTime = std::chrono::high_resolution_clock::now();
+    std::vector<Node *> path = router.CalculatePath(start, target, RouteStrategy::MIN_INTERSECTIONS);
+    auto endTime = std::chrono::high_resolution_clock::now();
+    auto elapsedTime = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime).count();
+
+    ASSERT_FALSE(path.empty());
+    ASSERT_EQ(path[0]->road->GetId(), 209);
+
+    int maxMicroseconds = 5000;
+    ASSERT_LT((int)elapsedTime, maxMicroseconds);
+}
+
+TEST(PathfinderTest, FindPathTimeLarge)
+{
+    Position::GetOpenDrive()->LoadOpenDriveFile("../../../../large.xodr");
+    OpenDrive *odr = Position::GetOpenDrive();
+    ASSERT_NE(odr, nullptr);
+
+    Position start(2291, -1, 1100, 0);
+    Position target(2502, 1, 50, 0);
+
+    LaneIndependentRouter router(odr);
+    auto startTime = std::chrono::high_resolution_clock::now();
+    std::vector<Node *> path = router.CalculatePath(start, target, RouteStrategy::MIN_INTERSECTIONS);
+    auto endTime = std::chrono::high_resolution_clock::now();
+    auto elapsedTime = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime).count();
+
+    ASSERT_FALSE(path.empty());
+    ASSERT_EQ(path[0]->road->GetId(), 2502);
+
+    int maxMicroseconds = 15000;
+    ASSERT_LT((int)elapsedTime, maxMicroseconds);
+}
+
+
 
 // Uncomment to print log output to console
 #define LOG_TO_CONSOLE
