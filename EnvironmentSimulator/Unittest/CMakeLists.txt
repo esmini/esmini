@@ -69,3 +69,12 @@ set (sources ScenarioEngineDll_test.cpp  "../Applications/replayer/Replay.cpp")
 package_add_test_with_libraries(ScenarioEngineDll_test "${sources}" esminiLib CommonMini ${OSI_LIBRARIES})
 package_add_test_with_libraries(RoadManagerDll_test RoadManagerDll_test.cpp esminiRMLib CommonMini)
 package_add_test_with_libraries(CommonMini_test CommonMini_test.cpp CommonMini)
+package_add_test_with_libraries(FollowRoute_test FollowRoute_test.cpp
+    ScenarioEngine
+    Controllers
+  RoadManager
+  CommonMini
+    ${viewer_libs}
+	${SUMO_LIBRARIES}
+	${SOCK_LIB}
+)

@@ -27,31 +27,6 @@ namespace scenarioengine
 	class ScenarioPlayer;
 	class ScenarioEngine;
 
-	typedef enum
-	{
-		SHORTEST,
-		FASTEST,
-		MIN_INTERSECTIONS
-	} RouteStrategy;
-
-	typedef struct Node
-	{
-		roadmanager::Road *road;
-		int laneId;
-		double weight;
-		roadmanager::RoadLink *link;
-		Node *previous;
-	} Node;
-
-	struct WeightCompare
-	{
-	public:
-		bool operator()(Node *a, Node *b) // overloading both operators
-		{
-			return a->weight > b->weight;
-		}
-	};
-
 	// base class for controllers
 	class ControllerFollowRoute : public Controller
 	{
@@ -68,30 +43,13 @@ namespace scenarioengine
 		void Activate(ControlDomains domainMask);
 		void ReportKeyEvent(int key, bool down);
 		void SetScenarioEngine(ScenarioEngine *scenarioEngine) { scenarioEngine_ = scenarioEngine; };
+		void ChangeLane(int lane, double time);
 
 	private:
-		std::vector<Node *> CalculatePath(RouteStrategy routeStrategy);
-		void ChangeLane(int lane, double time);
-		Node *CreateTargetNode(Node *currentNode, roadmanager::Road *nextRoad, RouteStrategy routeStrategy);
-		void UpdateDistanceVector(std::vector<Node *> nextNodes);
-		bool TargetLaneIsInDrivingDirection(Node *pNode, roadmanager::Road *nextRoad);
-		std::vector<Node *> GetNextNodes(roadmanager::Road *nextRoad,roadmanager::Road *targetRoad, Node *srcNode, RouteStrategy routeStrategy);
-		std::vector<int> GetConnectingLanes(Node *srcNode, roadmanager::Road *nextRoad);
-		bool FindGoal(roadmanager::OpenDrive *odr, RouteStrategy routeStrategy);
-		double CalcAverageSpeed(roadmanager::Road *road);
-		double CalcWeight(RouteStrategy routeStrategy, double roadLength,roadmanager::Road *road);
-		double CalcWeightWithPos(roadmanager::ContactPointType contactPointType, roadmanager::Position pos, roadmanager::Road *road,RouteStrategy routeStrategy);
-		bool IsTargetValid(roadmanager::OpenDrive *odr);
-		template <class Q>
-		void clearQueue(Q &q) { q = Q(); }
-
-		vehicle::Vehicle vehicle_;
 		ScenarioEngine *scenarioEngine_;
+		vehicle::Vehicle vehicle_;
 		std::vector<OSCPrivateAction *> actions_;
-		std::priority_queue<Node *, std::vector<Node *>, WeightCompare> unvisited_;
-		std::vector<Node *> visited_;
-		std::vector<Node *> distance_;
-		roadmanager::Position targetWaypoint_;
+		roadmanager::OpenDrive* odr_;
 	};
 
 	Controller *InstantiateControllerFollowRoute(void *args);
