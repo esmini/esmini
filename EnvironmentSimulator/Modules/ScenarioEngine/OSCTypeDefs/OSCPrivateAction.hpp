@@ -619,7 +619,16 @@ namespace scenarioengine
 		AssignRouteAction(const AssignRouteAction&action) : OSCPrivateAction(OSCPrivateAction::ActionType::ASSIGN_ROUTE, ControlDomains::DOMAIN_NONE)
 		{
 			name_ = action.name_;
-			route_ = action.route_;
+			route_ = new roadmanager::Route(*action.route_);
+		}
+
+		~AssignRouteAction()
+		{
+			if (route_ != nullptr)
+			{
+				delete route_;
+				route_ = nullptr;
+			}
 		}
 
 		OSCPrivateAction* Copy()
