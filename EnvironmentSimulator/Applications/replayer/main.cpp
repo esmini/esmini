@@ -300,6 +300,7 @@ int main(int argc, char** argv)
 	viewer::Viewer* viewer;
 	Replay* player;
 	double simTime = 0;
+	double prevSimTime = simTime;
 	double view_mode = viewer::NodeMask::NODE_MASK_ENTITY_MODEL;
 	bool overlap = false;
 	static char info_str_buf[256];
@@ -649,7 +650,6 @@ int main(int argc, char** argv)
 			col_analysis = true;
 		}
 
-
 		while (!(viewer->osgViewer_->done() || (opt.GetOptionSet("quit_at_end") && simTime >= (player->GetStopTime() - SMALL_NUMBER))))
 		{
 			simTime = player->GetTime();  // potentially wrapped for repeat
@@ -680,7 +680,6 @@ int main(int argc, char** argv)
 					targetSimTime = simTime + deltaSimTime;
 				}
 			}
-
 			do
 			{
 				if (!(pause || viewer->GetSaveImagesToFile()))
@@ -694,6 +693,7 @@ int main(int argc, char** argv)
 				for (int index = 0; index < scenarioEntity.size(); index++)
 				{
 					ScenarioEntity* sc = &scenarioEntity[index];
+
 
 					state = player->GetState(sc->id);
 					if (state == nullptr || (state->info.visibilityMask & 0x01) == 0)  // no state for given object (index) at this timeframe
@@ -716,21 +716,43 @@ int main(int argc, char** argv)
 					{
 						throw std::runtime_error(std::string("Unexpected entity found: ").append(std::to_string(state->info.id)));
 					}
-
+					
 					sc->pos = state->pos;
 					sc->wheel_angle = state->info.wheel_angle;
 					sc->wheel_rotation = state->info.wheel_rot;
 
+					// Odometer inspired by ScenarioEnginine odometer (.cpp line 968)
+					// Shows wrong value if ctrl+rightarrow to end, measure distance from start in global coords.
+
+					if (simTime <= 0 + maxStepSize)
+					{
+						sc->old_x = sc->pos.x;
+						sc->old_y = sc->pos.y;
+						sc->odometer = 0;
+					}
+
+					if (simTime > prevSimTime)
+					{
+						sc->odometer += sqrt(pow(sc->pos.x - sc->old_x, 2) + pow(sc->pos.y - sc->old_y, 2));
+					}					
+					else
+					{
+						sc->odometer -= sqrt(pow(sc->pos.x - sc->old_x, 2) + pow(sc->pos.y - sc->old_y, 2));
+					}
+
+					sc->old_x = sc->pos.x;
+					sc->old_y = sc->pos.y;
+					// Odometer end
+
 					if (index == viewer->currentCarInFocus_)
 					{
 						// Update overlay info text
-						snprintf(info_str_buf, sizeof(info_str_buf), "%.2fs entity[%d]: %s (%d) %.2fs %.2fkm/h (%d, %d, %.2f, %.2f)/(%.2f, %.2f %.2f) tScale: %.2f ",
-							simTime, viewer->currentCarInFocus_, state->info.name, state->info.id, state->info.timeStamp, 3.6 * state->info.speed, sc->pos.roadId, sc->pos.laneId,
+						snprintf(info_str_buf, sizeof(info_str_buf), "%.2fs entity[%d]: %s (%d) %.2fs %.2fkm/h %.2fm (%d, %d, %.2f, %.2f)/(%.2f, %.2f %.2f) tScale: %.2f",
+							simTime, viewer->currentCarInFocus_, state->info.name, state->info.id, state->info.timeStamp, 3.6 * state->info.speed, sc->odometer, sc->pos.roadId, sc->pos.laneId,
 							fabs(sc->pos.offset) < SMALL_NUMBER ? 0 : sc->pos.offset, sc->pos.s, sc->pos.x, sc->pos.y, sc->pos.h, time_scale);
 						viewer->SetInfoText(info_str_buf);
 					}
 				}
-
 				if (col_analysis && scenarioEntity.size() > 1)
 				{
 					state = player->GetState(scenarioEntity[0].id);
@@ -773,6 +795,7 @@ int main(int argc, char** argv)
 						}
 					}
 				}
+				prevSimTime = simTime;
 
 			} while (!pause &&
 				simTime < player->GetStopTime() - SMALL_NUMBER &&  // As long as time is < end
