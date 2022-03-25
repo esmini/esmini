@@ -1861,6 +1861,7 @@ namespace roadmanager
 
 		void Init();
 		static bool LoadOpenDrive(const char *filename);
+		static bool LoadOpenDrive(OpenDrive* odr);
 		static OpenDrive* GetOpenDrive();
 		int GotoClosestDrivingLaneAtCurrentPosition();
 

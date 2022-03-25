@@ -5542,6 +5542,13 @@ bool Position::LoadOpenDrive(const char *filename)
 	return(GetOpenDrive()->LoadOpenDriveFile(filename));
 }
 
+bool Position::LoadOpenDrive(OpenDrive* odr)
+{
+	*GetOpenDrive() = *odr;
+	return(GetOpenDrive());
+}
+
+
 OpenDrive* Position::GetOpenDrive()
 {
 	static OpenDrive od;

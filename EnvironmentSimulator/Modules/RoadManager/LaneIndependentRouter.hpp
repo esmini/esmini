@@ -19,7 +19,9 @@ namespace roadmanager
     typedef struct Node
     {
         Road *road;
-        int laneId;
+        int currentLaneId;
+        int fromLaneId;
+        //std::pair<int,int> connectingLanes;
         double weight;
         RoadLink *link;
         Node *previous;
@@ -30,7 +32,15 @@ namespace roadmanager
     public:
         bool operator()(Node *a, Node *b) // overloading both operators
         {
-            return a->weight > b->weight;
+            if(a->weight == b->weight){
+                int aAbs = abs(a->currentLaneId - a->previous->currentLaneId);
+                int bAbs = abs(b->currentLaneId - b->previous->currentLaneId);
+                //int aAbs = abs(a->currentLaneId);
+                //int bAbs = abs(b->currentLaneId);
+                return aAbs > bAbs;
+            }else{
+                return a->weight > b->weight;
+            }
         }
     };
 
@@ -39,13 +49,14 @@ namespace roadmanager
     public:
         LaneIndependentRouter(OpenDrive* odr);
         std::vector<Node *> CalculatePath(Position start, Position target, RouteStrategy routeStrategy = RouteStrategy::SHORTEST);
-
+        std::vector<Position> GetWaypoints(std::vector<Node *> path,Position target);
     private:
-        Node *CreateTargetNode(Node *currentNode, Road *nextRoad, RouteStrategy routeStrategy);
+        RoadLink* GetNextLink(Node *currentNode, Road *nextRoad);
+        Node *CreateTargetNode(Node *currentNode, Road *nextRoad, std::pair<int,int> laneIds, RouteStrategy routeStrategy);
         void UpdateDistanceVector(std::vector<Node *> nextNodes);
         bool TargetLaneIsInDrivingDirection(Node *pNode, Road *nextRoad);
         std::vector<Node *> GetNextNodes(Road *nextRoad, Road *targetRoad, Node *srcNode, RouteStrategy routeStrategy);
-        std::vector<int> GetConnectingLanes(Node *srcNode, Road *nextRoad);
+        std::vector<std::pair<int,int>> GetConnectingLanes(Node *srcNode, Road *nextRoad);
         bool FindGoal(RouteStrategy routeStrategy);
         double CalcAverageSpeed(Road *road);
         double CalcWeight(RouteStrategy routeStrategy, double roadLength, Road *road);
