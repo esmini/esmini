@@ -1,5 +1,30 @@
 ## esmini release notes
 
+### 2022-03-28 Version 2.21.2
+
+- Add RMLib methods to get road lane width and type
+  - See API [here](https://github.com/esmini/esmini/blob/fe9a582c29af7bb31aed299b517ea3fde451d125/EnvironmentSimulator/Libraries/esminiRMLib/esminiRMLib.hpp#L396).
+- Add roadmanager API to fetch all roads overlapping current position (can be useful in junctions)
+- Extend roadmanager return code to indicate whenever
+  - moved into a new road segment (return code 1)
+  - moved into a junction and made a choice (return code 2)
+  - See full list of return codes [here](https://github.com/esmini/esmini/blob/fe9a582c29af7bb31aed299b517ea3fde451d125/EnvironmentSimulator/Modules/RoadManager/RoadManager.hpp#L1786)
+  - **NOTE:** This change might need code updates. Previously only 0 meant OK and negative return values indicated some error. If `code == 0` is used to check OK, it should be changed to `code >= 0`.
+- Add state handling to ManeuverGroups
+  - supporting storyBoardState condition on ManeuverGroup level
+- Improve xy -> trackpos mapping at road endpoints (using actual road normals instead of OSI points to ensure continuity between roads)
+- Fix relativeRoadPos relative heading bug ([issue #253](https://github.com/esmini/esmini/issues/253))
+- Log complete path for loaded files (OpenSCENARIO, OpenDRIVE and scenegraph)
+- Ghost controller improvements:
+  - move any AssignRouteAction to ghost. Enables routing for ghost controllers.
+  - restart ghost from Ego after triggered events from other entities
+  - parameterize followGhost mode: position (default) or time
+  - assign unique route object to ghost, solving issue with FollowRoute actions defined in Init
+- Fix wheel-angle calculation
+  - also update some car models fixing right front wheel issue 
+  - grab updated model package from [here](https://dl.dropboxusercontent.com/s/5gk8bvgzqiaaoco/models.7z?dl=1)
+- Make road object LOD distance dependent also on object size
+
 ### 2022-03-16 Version 2.21.1
 
 - Add ground plane option
