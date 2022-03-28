@@ -275,16 +275,18 @@ namespace OpenDRIVE
         /// </summary>
         /// <param name="handle">Handle to the position object</param>
         /// <returns>Number of roads overlapping the given position</returns>
-        RM_DLL_API int RM_GetNumberOfRoadsOverlapping(int handle);
+        [DllImport(LIB_NAME, EntryPoint = "RM_GetNumberOfRoadsOverlapping")]
+        public static extern int GetNumberOfRoadsOverlapping(int handle);
 
         /// <summary>
         /// Get the id of an overlapping road according to given position and index
         /// </summary>
         /// <param name="handle">Handle to the position object</param>
-        /// <param name="index">Index of the total returned by GetNumberOfRoadsOverlapping()</param>        
+        /// <param name="index">Index of the total returned by GetNumberOfRoadsOverlapping()</param>
         /// <returns>Id of specified overlapping road</returns>
-        RM_DLL_API int RM_GetOverlappingRoadId(int handle, int index);
-    
+        [DllImport(LIB_NAME, EntryPoint = "RM_GetOverlappingRoadId")]
+        public static extern int GetOverlappingRoadId(int handle, int index);
+
         /// <summary>
         /// Get the OpenDRIVE ID of the lane given by index
         /// </summary>
@@ -356,7 +358,7 @@ namespace OpenDRIVE
         public static extern int SetWorldXYZHPosition(int index, float x, float y, float z, float h);
 
         /// <summary>
-        /// Move position forward along the road. Choose way randomly though any junctions.
+        /// Move position forward along the road network
         /// </summary>
         /// <param name="index">Handle to the position object</param>
         /// <param name="dist">Distance (in meter) to move</param>
@@ -407,6 +409,35 @@ namespace OpenDRIVE
         public static extern int GetProbeInfo(int index, float lookahead_distance, ref RoadProbeInfo data, int lookAheadMode, bool inRoadDrivingDirection);
 
         /// <summary>
+        /// Get width of lane with specified lane id, at current longitudinal position
+        /// </summary>
+        /// <param name="handle">Handle to the position object from which to measure</param>
+        /// <param name="lane_id">Id of the lane to measure</param>
+        /// <returns>Lane width or 0.0 if lane does not exists or any other error</returns>
+        [DllImport(LIB_NAME, EntryPoint = "RM_GetLaneWidth")]
+        public static extern float GetLaneWidth(int handle, int lane_id);
+
+        /// <summary>
+        /// Get width of lane with specified lane id, at specified road and longitudinal position
+        /// </summary>
+        /// <param name="handle">Handle to the position object from which to measure</param>
+        /// <param name="road_id">Id of the road</param>
+        /// <param name="lane_id">Id of the lane to measure</param>
+        /// <param name="s">Longitudinal position along the road</param>
+        /// <returns>Lane width or 0.0 if lane does not exists or any other error</returns>
+        [DllImport(LIB_NAME, EntryPoint = "RM_GetLaneWidthByRoadId")]
+        public static extern float GetLaneWidthByRoadId(int road_id, int lane_id, float s);
+
+        /// <summary>
+        /// Get type of lane with specified lane id, at current longitudinal position
+        /// </summary>
+        /// <param name="handle">Handle to the position object from which to measure</param>
+        /// <param name="lane_id">Id of the lane</param>
+        /// <returns>Lane type or 0 if lane does not exists or any other error</returns>
+        [DllImport(LIB_NAME, EntryPoint = "RM_GetLaneType")]
+        public static extern int GetLaneType(int handle, int lane_id);
+
+        /// <summary>
         /// Find out the difference between two position objects, i.e. delta distance (long and lat) and delta laneId
         /// </summary>
         /// <param name="handleA">Handle to the position object from which to measure</param>
@@ -442,9 +473,6 @@ namespace OpenDRIVE
         [DllImport(LIB_NAME, EntryPoint = "RM_GetOpenDriveGeoReference")]
         public static extern int GetOpenDriveGeoReference(ref GeoReference geo_reference);
 
-
-
     }
-
 
 }
