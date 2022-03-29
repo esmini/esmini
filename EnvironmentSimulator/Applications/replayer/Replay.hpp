@@ -29,11 +29,17 @@ namespace scenarioengine
 		char model_filename[REPLAY_FILENAME_SIZE];
 	} ReplayHeader;
 
+	typedef struct
+	{
+		ObjectStateStructDat state;
+		double odometer;
+	} ReplayEntry;
+
 	class Replay
 	{
 	public:
 		ReplayHeader header_;
-		std::vector<ObjectStateStructDat> data_;
+		std::vector<ReplayEntry> data_;
 
 		Replay(std::string filename);
 		Replay(const std::string directory, const std::string scenario);
@@ -54,7 +60,8 @@ namespace scenarioengine
 		void GoToPreviousFrame();
 		int FindNextTimestamp(bool wrap = false);
 		int FindPreviousTimestamp(bool wrap = false);
-		ObjectStateStructDat * GetState(int id);
+		ReplayEntry* GetEntry(int id);
+		ObjectStateStructDat* GetState(int id);
 		void SetStartTime(double time);
 		void SetStopTime(double time);
 		double GetStartTime() { return startTime_; }
@@ -62,8 +69,8 @@ namespace scenarioengine
 		double GetTime() { return time_; }
 		int GetIndex() { return index_; }
 		void SetRepeat(bool repeat) { repeat_ = repeat; }
-		void CleanEntries(std::vector<ObjectStateStructDat>& entries);
-		void BuildData(std::vector<std::pair<std::string, std::vector<ObjectStateStructDat>>>& scenarios);
+		void CleanEntries(std::vector<ReplayEntry>& entries);
+		void BuildData(std::vector<std::pair<std::string, std::vector<ReplayEntry>>>& scenarios);
 
 private:
 		std::ifstream file_;

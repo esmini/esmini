@@ -45,9 +45,9 @@ Replay::Replay(std::string filename) : time_(0.0), index_(0), repeat_(false)
 
 	while (!file_.eof())
 	{
-		ObjectStateStructDat data;
+		ReplayEntry data;
 
-		file_.read((char*)&data, sizeof(data));
+		file_.read((char*)&data.state, sizeof(data.state));
 
 		if (!file_.eof())
 		{
@@ -60,12 +60,12 @@ Replay::Replay(std::string filename) : time_(0.0), index_(0), repeat_(false)
 	if (data_.size() > 0)
 	{
 		// Register first entry timestamp as starting time
-		time_ = data_[0].info.timeStamp;
+		time_ = data_[0].state.info.timeStamp;
 		startTime_ = time_;
 		startIndex_ = 0;
 
 		// Register last entry timestamp as stop time
-		stopTime_ = data_[data_.size() - 1].info.timeStamp;
+		stopTime_ = data_.back().state.info.timeStamp;
 		stopIndex_ = FindIndexAtTimestamp(stopTime_);
 	}
 }
@@ -73,7 +73,7 @@ Replay::Replay(std::string filename) : time_(0.0), index_(0), repeat_(false)
 Replay::Replay(const std::string directory, const std::string scenario) : time_(0.0), index_(0), repeat_(false)
 {
 	GetReplaysFromDirectory(directory, scenario);
-	std::vector<std::pair<std::string, std::vector<ObjectStateStructDat>>> scenarioData;
+	std::vector<std::pair<std::string, std::vector<ReplayEntry>>> scenarioData;
 
 	for (size_t i = 0; i < scenarios_.size(); i++)
 	{
@@ -94,13 +94,13 @@ Replay::Replay(const std::string directory, const std::string scenario) : time_(
 		}
 		while (!file_.eof())
 		{
-			ObjectStateStructDat data;
+			ReplayEntry entry;
 
-			file_.read((char*)&data, sizeof(data));
+			file_.read((char*)&entry.state, sizeof(entry.state));
 
 			if (!file_.eof())
 			{
-				data_.push_back(data);
+				data_.push_back(entry);
 			}
 		}
 		// pair <scenario name, scenario data>
@@ -140,12 +140,12 @@ Replay::Replay(const std::string directory, const std::string scenario) : time_(
 	if (data_.size() > 0)
 	{
 		// Register first entry timestamp as starting time
-		time_ = data_[0].info.timeStamp;
+		time_ = data_[0].state.info.timeStamp;
 		startTime_ = time_;
 		startIndex_ = 0;
 
 		// Register last entry timestamp as stop time
-		stopTime_ = data_[data_.size() - 1].info.timeStamp;
+		stopTime_ = data_.back().state.info.timeStamp;
 		stopIndex_ = FindIndexAtTimestamp(stopTime_);
 	}
 }
@@ -255,10 +255,10 @@ void Replay::GoToTime(double time, bool stop_at_next_frame)
 		if (time > time_)
 		{
 			next_index = FindNextTimestamp();
-			if (next_index > (int)index_ && time > data_[next_index].info.timeStamp)
+			if (next_index > (int)index_ && time > data_[next_index].state.info.timeStamp)
 			{
 				index_ = next_index;
-				time_ = data_[index_].info.timeStamp;
+				time_ = data_[index_].state.info.timeStamp;
 			}
 			else
 			{
@@ -275,10 +275,10 @@ void Replay::GoToTime(double time, bool stop_at_next_frame)
 		else if (time < time_)
 		{
 			next_index = FindPreviousTimestamp();
-			if (next_index < (int)index_ && time < data_[next_index].info.timeStamp)
+			if (next_index < (int)index_ && time < data_[next_index].state.info.timeStamp)
 			{
 				index_ = next_index;
-				time_ = data_[index_].info.timeStamp;
+				time_ = data_[index_].state.info.timeStamp;
 			}
 			else
 			{
@@ -302,12 +302,12 @@ void Replay::GoToDeltaTime(double dt, bool stop_at_next_frame)
 
 void Replay::GoToNextFrame()
 {
-	double ctime = data_[index_].info.timeStamp;
+	double ctime = data_[index_].state.info.timeStamp;
 	for (size_t i = index_+1; i < data_.size(); i++)
 	{
-		if (data_[i].info.timeStamp > ctime)
+		if (data_[i].state.info.timeStamp > ctime)
 		{
-			GoToTime(data_[i].info.timeStamp);
+			GoToTime(data_[i].state.info.timeStamp);
 			break;
 		}
 	}
@@ -317,7 +317,7 @@ void Replay::GoToPreviousFrame()
 {
 	if (index_ > 0)
 	{
-		GoToTime(data_[index_ -1].info.timeStamp);
+		GoToTime(data_[index_ -1].state.info.timeStamp);
 	}
 }
 
@@ -343,7 +343,7 @@ int Replay::FindIndexAtTimestamp(double timestamp, int startSearchIndex)
 
 	for (i = startSearchIndex; i < (int)data_.size(); i++)
 	{
-		if (data_[i].info.timeStamp >= timestamp)
+		if (data_[i].state.info.timeStamp >= timestamp)
 		{
 			break;
 		}
@@ -357,7 +357,7 @@ int Replay::FindNextTimestamp(bool wrap)
 	int index = index_ + 1;
 	for (; index < data_.size(); index++)
 	{
-		if (data_[index].info.timeStamp > data_[index_].info.timeStamp)
+		if (data_[index].state.info.timeStamp > data_[index_].state.info.timeStamp)
 		{
 			break;
 		}
@@ -397,7 +397,7 @@ int Replay::FindPreviousTimestamp(bool wrap)
 	for (int i = index - 1; i >= 0; i--)
 	{
 		// go backwards until we identify the first entry with same timestamp
-		if (data_[i].info.timeStamp < data_[index].info.timeStamp)
+		if (data_[i].state.info.timeStamp < data_[index].state.info.timeStamp)
 		{
 			break;
 		}
@@ -407,14 +407,14 @@ int Replay::FindPreviousTimestamp(bool wrap)
 	return index;
 }
 
-ObjectStateStructDat* Replay::GetState(int id)
+ReplayEntry* Replay::GetEntry(int id)
 {
 	// Read all vehicles at current timestamp
-	float timestamp = data_[index_].info.timeStamp;
+	float timestamp = data_[index_].state.info.timeStamp;
 	int i = 0;
-	while (index_ + i < data_.size() && !(data_[index_ + i].info.timeStamp > timestamp))
+	while (index_ + i < data_.size() && !(data_[index_ + i].state.info.timeStamp > timestamp))
 	{
-		if (data_[index_ + i].info.id == id)
+		if (data_[index_ + i].state.info.id == id)
 		{
 			return &data_[index_ + i];
 		}
@@ -422,6 +422,19 @@ ObjectStateStructDat* Replay::GetState(int id)
 	}
 
 	return nullptr;
+}
+
+ObjectStateStructDat* Replay::GetState(int id)
+{
+	ReplayEntry* entry = GetEntry(id);
+	if (entry != nullptr)
+	{
+		return &entry->state;
+	}
+	else
+	{
+		return nullptr;
+	}
 }
 
 void Replay::SetStartTime(double time)
@@ -446,20 +459,20 @@ void Replay::SetStopTime(double time)
 	stopIndex_ = FindIndexAtTimestamp(stopTime_);
 }
 
-void Replay::CleanEntries(std::vector<ObjectStateStructDat>& entries)
+void Replay::CleanEntries(std::vector<ReplayEntry>& entries)
 {
 	for (size_t i = 0; i < entries.size() - 1; i++)
 	{
-		if (entries[i + 1].info.timeStamp < entries[i].info.timeStamp)
+		if (entries[i + 1].state.info.timeStamp < entries[i].state.info.timeStamp)
 		{
 			entries.erase(entries.begin() + i + 1);
 			i--;
 		}
 
-		for (int j = 1; (i + j < entries.size()) && NEAR_NUMBERS(entries[i + j].info.timeStamp, entries[i].info.timeStamp); j++)
+		for (int j = 1; (i + j < entries.size()) && NEAR_NUMBERS(entries[i + j].state.info.timeStamp, entries[i].state.info.timeStamp); j++)
 		{
 			// Keep the latest instance of entries with same timestamp
-			if (entries[i + j].info.id == entries[i].info.id)
+			if (entries[i + j].state.info.id == entries[i].state.info.id)
 			{
 				entries.erase(entries.begin() + i);
 				i--;
@@ -469,7 +482,7 @@ void Replay::CleanEntries(std::vector<ObjectStateStructDat>& entries)
 	}
 }
 
-void Replay::BuildData(std::vector<std::pair<std::string, std::vector<ObjectStateStructDat>>>& scenarios)
+void Replay::BuildData(std::vector<std::pair<std::string, std::vector<ReplayEntry>>>& scenarios)
 {
 	// Keep track of current index of each scenario
 	std::vector<int> cur_idx;
@@ -488,10 +501,10 @@ void Replay::BuildData(std::vector<std::pair<std::string, std::vector<ObjectStat
 		for (size_t j = 1; j < scenarios.size(); j++)
 		{
 			// pick entries until timestamp reach next frame
-			while(cur_idx[j] < scenarios[j].second.size() && scenarios[j].second[cur_idx[j]].info.timeStamp < scenarios[0].second[i + 1].info.timeStamp)
+			while(cur_idx[j] < scenarios[j].second.size() && scenarios[j].second[cur_idx[j]].state.info.timeStamp < scenarios[0].second[i + 1].state.info.timeStamp)
 			{
 				// Set scenario ID-group (0, 100, 200 etc.)
-				scenarios[j].second[cur_idx[j]].info.id += static_cast<int>(j) * 100;
+				scenarios[j].second[cur_idx[j]].state.info.id += static_cast<int>(j) * 100;
 
 				// push entry
 				data_.push_back(scenarios[j].second[cur_idx[j]]);

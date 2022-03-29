@@ -14,9 +14,6 @@ typedef struct
 	float wheel_angle;
 	float wheel_rotation;
 	bool visible;
-    float odometer;
-    float old_x; // For odometer
-    float old_y; // For odometer
     OSCBoundingBox bounding_box;
 	std::vector<SE_Vector> corners;
 } ScenarioEntity;

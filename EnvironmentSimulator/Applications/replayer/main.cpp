@@ -106,9 +106,18 @@ int ParseEntities(viewer::Viewer* viewer, Replay* player)
 	double minTrajPointDist = 1;
 	double z_offset = 0.2;
 	double width = 1.75;
+
+	struct OdoInfo
+	{
+		double x, y, odometer;
+	};
+	std::map<int, OdoInfo> odo_info;  // temporary keep track of entity odometers
+
 	for (int i = 0; i < player->data_.size(); i++)
 	{
-		ObjectStateStructDat* state = &player->data_[i];
+		ReplayEntry* entry = &player->data_[i];
+		ObjectStateStructDat* state = &entry->state;
+		OdoInfo odo_entry;
 
 		if (no_ghost && state->info.ctrl_type == GHOST_CTRL_TYPE)
 		{
@@ -166,6 +175,12 @@ int ParseEntities(viewer::Viewer* viewer, Replay* player)
 			scenarioEntity.push_back(new_sc);
 
 			sc = &scenarioEntity.back();
+
+			odo_entry.x = state->pos.x;
+			odo_entry.y = state->pos.y;
+			odo_entry.odometer = 0.0;
+
+			odo_info.insert(std::make_pair(new_sc.id, odo_entry));  // Set inital odometer value for the entity
 		}
 
 		if (sc->trajPoints == 0)
@@ -190,6 +205,16 @@ int ParseEntities(viewer::Viewer* viewer, Replay* player)
 				sc->trajPoints->push_back(osg::Vec3d(state->pos.x, state->pos.y, state->pos.z + z_offset));
 			}
 		}
+
+		// calculate odometer
+		odo_entry = odo_info[sc->id];
+		double delta = GetLengthOfLine2D(odo_entry.x, odo_entry.y, state->pos.x, state->pos.y);
+		odo_entry.x = state->pos.x;
+		odo_entry.y = state->pos.y;
+		odo_entry.odometer += delta;
+		odo_info[sc->id] = odo_entry;  // save updated odo info for next calculation
+
+		entry->odometer = odo_entry.odometer;  // update odometer
 	}
 
 	for (int i = 0; i < scenarioEntity.size(); i++)
@@ -300,7 +325,6 @@ int main(int argc, char** argv)
 	viewer::Viewer* viewer;
 	Replay* player;
 	double simTime = 0;
-	double prevSimTime = simTime;
 	double view_mode = viewer::NodeMask::NODE_MASK_ENTITY_MODEL;
 	bool overlap = false;
 	static char info_str_buf[256];
@@ -614,15 +638,15 @@ int main(int argc, char** argv)
 		if (!start_time_str.empty())
 		{
 			double startTime = 1E-3 * strtod(start_time_str);
-			if (startTime < player->data_[0].info.timeStamp)
+			if (startTime < player->data_[0].state.info.timeStamp)
 			{
-				printf("Specified start time (%.2f) < first timestamp (%.2f), adapting.\n", startTime, player->data_[0].info.timeStamp);
-				startTime = player->data_[0].info.timeStamp;
+				printf("Specified start time (%.2f) < first timestamp (%.2f), adapting.\n", startTime, player->data_[0].state.info.timeStamp);
+				startTime = player->data_[0].state.info.timeStamp;
 			}
-			else if (startTime > player->data_[player->data_.size() - 1].info.timeStamp)
+			else if (startTime > player->data_.back().state.info.timeStamp)
 			{
-				printf("Specified start time (%.2f) > first timestamp (%.2f), adapting.\n", startTime, player->data_[0].info.timeStamp);
-				startTime = player->data_[player->data_.size() - 1].info.timeStamp;
+				printf("Specified start time (%.2f) > first timestamp (%.2f), adapting.\n", startTime, player->data_[0].state.info.timeStamp);
+				startTime = player->data_.back().state.info.timeStamp;
 			}
 			player->SetStartTime(startTime);
 		}
@@ -631,15 +655,15 @@ int main(int argc, char** argv)
 		if (!stop_time_str.empty())
 		{
 			double stopTime = 1E-3 * strtod(stop_time_str);
-			if (stopTime > player->data_[player->data_.size()-1].info.timeStamp)
+			if (stopTime > player->data_.back().state.info.timeStamp)
 			{
-				printf("Specified stop time (%.2f) > last timestamp (%.2f), adapting.\n", stopTime, player->data_[0].info.timeStamp);
-				stopTime = player->data_[player->data_.size() - 1].info.timeStamp;
+				printf("Specified stop time (%.2f) > last timestamp (%.2f), adapting.\n", stopTime, player->data_[0].state.info.timeStamp);
+				stopTime = player->data_.back().state.info.timeStamp;
 			}
-			else if (stopTime < player->data_[0].info.timeStamp)
+			else if (stopTime < player->data_[0].state.info.timeStamp)
 			{
-				printf("Specified stop time (%.2f) < first timestamp (%.2f), adapting.\n", simTime, player->data_[0].info.timeStamp);
-				stopTime = player->data_[0].info.timeStamp;
+				printf("Specified stop time (%.2f) < first timestamp (%.2f), adapting.\n", simTime, player->data_[0].state.info.timeStamp);
+				stopTime = player->data_[0].state.info.timeStamp;
 			}
 			player->SetStopTime(stopTime);
 		}
@@ -649,6 +673,7 @@ int main(int argc, char** argv)
 		{
 			col_analysis = true;
 		}
+
 
 		while (!(viewer->osgViewer_->done() || (opt.GetOptionSet("quit_at_end") && simTime >= (player->GetStopTime() - SMALL_NUMBER))))
 		{
@@ -680,6 +705,7 @@ int main(int argc, char** argv)
 					targetSimTime = simTime + deltaSimTime;
 				}
 			}
+
 			do
 			{
 				if (!(pause || viewer->GetSaveImagesToFile()))
@@ -689,13 +715,22 @@ int main(int argc, char** argv)
 				}
 
 				// Fetch states of scenario objects
-				ObjectStateStructDat* state = 0;
+				ReplayEntry* entry = nullptr;
+				ObjectStateStructDat* state = nullptr;
 				for (int index = 0; index < scenarioEntity.size(); index++)
 				{
 					ScenarioEntity* sc = &scenarioEntity[index];
 
+					entry = player->GetEntry(sc->id);
+					if (entry)
+					{
+						state = &entry->state;
+					}
+					else
+					{
+						state = nullptr;
+					}
 
-					state = player->GetState(sc->id);
 					if (state == nullptr || (state->info.visibilityMask & 0x01) == 0)  // no state for given object (index) at this timeframe
 					{
 						setEntityVisibility(index, false);
@@ -716,43 +751,21 @@ int main(int argc, char** argv)
 					{
 						throw std::runtime_error(std::string("Unexpected entity found: ").append(std::to_string(state->info.id)));
 					}
-					
+
 					sc->pos = state->pos;
 					sc->wheel_angle = state->info.wheel_angle;
 					sc->wheel_rotation = state->info.wheel_rot;
 
-					// Odometer inspired by ScenarioEnginine odometer (.cpp line 968)
-					// Shows wrong value if ctrl+rightarrow to end, measure distance from start in global coords.
-
-					if (simTime <= 0 + maxStepSize)
-					{
-						sc->old_x = sc->pos.x;
-						sc->old_y = sc->pos.y;
-						sc->odometer = 0;
-					}
-
-					if (simTime > prevSimTime)
-					{
-						sc->odometer += sqrt(pow(sc->pos.x - sc->old_x, 2) + pow(sc->pos.y - sc->old_y, 2));
-					}					
-					else
-					{
-						sc->odometer -= sqrt(pow(sc->pos.x - sc->old_x, 2) + pow(sc->pos.y - sc->old_y, 2));
-					}
-
-					sc->old_x = sc->pos.x;
-					sc->old_y = sc->pos.y;
-					// Odometer end
-
 					if (index == viewer->currentCarInFocus_)
 					{
 						// Update overlay info text
-						snprintf(info_str_buf, sizeof(info_str_buf), "%.2fs entity[%d]: %s (%d) %.2fs %.2fkm/h %.2fm (%d, %d, %.2f, %.2f)/(%.2f, %.2f %.2f) tScale: %.2f",
-							simTime, viewer->currentCarInFocus_, state->info.name, state->info.id, state->info.timeStamp, 3.6 * state->info.speed, sc->odometer, sc->pos.roadId, sc->pos.laneId,
-							fabs(sc->pos.offset) < SMALL_NUMBER ? 0 : sc->pos.offset, sc->pos.s, sc->pos.x, sc->pos.y, sc->pos.h, time_scale);
+						snprintf(info_str_buf, sizeof(info_str_buf), "%.2fs entity[%d]: %s (%d) %.2fs %.2fkm/h %.2fm (%d, %d, %.2f, %.2f)/(%.2f, %.2f %.2f) tScale: %.2f ",
+							simTime, viewer->currentCarInFocus_, state->info.name, state->info.id, state->info.timeStamp, 3.6 * state->info.speed, entry->odometer, sc->pos.roadId,
+							sc->pos.laneId, fabs(sc->pos.offset) < SMALL_NUMBER ? 0 : sc->pos.offset, sc->pos.s, sc->pos.x, sc->pos.y, sc->pos.h, time_scale);
 						viewer->SetInfoText(info_str_buf);
 					}
 				}
+
 				if (col_analysis && scenarioEntity.size() > 1)
 				{
 					state = player->GetState(scenarioEntity[0].id);
@@ -795,7 +808,6 @@ int main(int argc, char** argv)
 						}
 					}
 				}
-				prevSimTime = simTime;
 
 			} while (!pause &&
 				simTime < player->GetStopTime() - SMALL_NUMBER &&  // As long as time is < end
