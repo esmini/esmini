@@ -152,7 +152,7 @@ OSCTypeDefs
             Parameter                        Yes
             TimeOfDay                        No
             SimulationTime                   Yes
-            StoryBoardElementState           Partly (Story, Act, Event, Action. Not all transitions supported)
+            StoryBoardElementState           Partly (Story, Act, ManeuverGroup, Event, Action. Not all transitions supported)
             UserDefinedValue                 No
             TrafficSignal                    No
             TrafficSignalController          No
