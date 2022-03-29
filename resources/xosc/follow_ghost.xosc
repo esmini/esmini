@@ -30,7 +30,7 @@
             <ObjectController>
                 <CatalogReference catalogName="ControllerCatalog" entryName="followGhost" >
                     <ParameterAssignments>
-                        <ParameterAssignment parameterRef="$HeadStartTime" value="3" />
+                        <ParameterAssignment parameterRef="$HeadStartTime" value="2.5" />
                         <ParameterAssignment parameterRef="$FollowMode" value="position" />
                     </ParameterAssignments>
                 </CatalogReference>

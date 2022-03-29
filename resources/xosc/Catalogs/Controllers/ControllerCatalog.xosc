@@ -87,7 +87,7 @@
         </Controller>
         <Controller name="followGhost">
             <ParameterDeclarations>
-                <ParameterDeclaration name="HeadStartTime" parameterType="double" value="6" />
+                <ParameterDeclaration name="HeadStartTime" parameterType="double" value="3" />
                 <!-- FollowModes: time, position -->
                 <ParameterDeclaration name="FollowMode" parameterType="string" value="time" />
             </ParameterDeclarations>
