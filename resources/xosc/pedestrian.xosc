@@ -30,7 +30,6 @@
            <CatalogReference catalogName="VehicleCatalog" entryName="$HostVehicle"/>
        </ScenarioObject>
        <ScenarioObject name="pedestrian_adult">
-           <CatalogReference catalogName="VehicleCatalog" entryName="$HostVehicle"/>
           <Pedestrian mass="80" model="EPTa" name="pedestrian_adult" pedestrianCategory="pedestrian" model3d="../models/walkman.osgb">
              <ParameterDeclarations/>
              <BoundingBox>
