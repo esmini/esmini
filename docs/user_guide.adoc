@@ -1,0 +1,893 @@
+= esmini user guide
+:numbered:
+:toc: left
+:toclevels: 3
+:source-highlighter: coderay
+:src-local-root: ../
+:src-remote-root: https://github.com/esmini/esmini/tree/master
+// :imagesdir: https://github.com/esmini/esmini.github.io/blob/main/images
+//:imagesdir: https://media.githubusercontent.com/media/esmini/esmini.github.io/main/images/
+:imagesdir: https://github.com/esmini/esmini.github.io/raw/main/images/
+
+
+image:https://avatars.githubusercontent.com/u/49203938[160, 160]
+
+== Introduction
+esmini is a software tool to play OpenSCENARIO files. It's provided both as a stand alone application and as a shared library for linking with custom applications. In addition some tools have been developed to support design and analysis of traffic scenarios.
+
+The scope of this user guide is to provide examples on how to use the tools. It also includes a programming tutorial on how to use esmini in custom applications.
+
+== Getting started
+Download latest release from here: https://github.com/esmini/esmini/releases/latest
+
+First time make sure to pick the demo package for your platform (Windows, Linux or Mac). In addition to application binaries it also includes some content like example scenarios and basic 3D models. The binary (bin) packages includes only executables and libraries.
+
+To install the package, just unzip it anywhere. A single subfolder named `esmini` is created. This is the root folder for esmini. No files are stored outside this folder structure and no system files or registry is modified in any way.
+
+=== Run esmini
+
+Try to run one of the examples:
+
+* go to folder esmini/run/esmini
+* double click on a .bat file, e.g. `run_cut-in.bat` or run it from a command line. 
+
+These scripts should work on all platforms (in spite extension ".bat").
+
+You can also run the examples explicitly from a command line:
+
+``./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in.xosc``
+
+For common Mac issues, please see <<Mac issues and limitations>>.
+
+=== Get complete esmini
+The demo package contains only a subset of esmini tools and content (e.g. scenario examples, scripts and models). 
+
+To get the complete content, first download or clone the project from GitHub: https://github.com/esmini/esmini.
+
+Then either build yourself, see step 2 in next chapter <<Build esmini - quick guide>>, or:
+
+. Download pre-built binary package for your system (e.g. esmini-bin_win_x64.zip) from latest release: 
+https://github.com/esmini/esmini/releases. Copy the content into the esmini-demo folder.
+. Download the complete 3D model package from https://dl.dropboxusercontent.com/s/5gk8bvgzqiaaoco/models.7z?dl=0[here]. Unpack into esmini/resources (it should end up in a `models` subfolder). These assets work on all platforms. The environment models (roads, landscape, buildings...) have been created using https://vires.mscsoftware.com/solutions/3d-environment-road-network[VIRES Road Network Editor].
+
+=== Build esmini - quick guide 
+
+Supported systems: Windows, Linux and Mac.
+
+Make sure you have a C++ compiler and https://cmake.org/[CMake] installed. 
+
+On Linux, e.g. Ubunti, some additional system tools and libraries are needed. Run the following command:
+
+[source]
+----
+sudo apt install build-essential git pkg-config libgl1-mesa-dev libpthread-stubs0-dev libjpeg-dev libxml2-dev libpng-dev libtiff5-dev libgdal-dev libpoppler-dev libdcmtk-dev libgstreamer1.0-dev libgtk2.0-dev libcairo2-dev libpoppler-glib-dev libxrandr-dev libxinerama-dev curl cmake
+----
+
+Now we're ready to build esmini. From esmini root folder:
+[source]
+----
+mkdir build
+cd build
+cmake ..
+cmake --build . --config Release --target install
+----
+
+The build process automatically downloads 3rd party library binaries and the complete 3D model package.
+
+After successful build, the binaries will be copied into `esmini/bin` folder. Try from command line:
+
+``./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in.xosc``
+
+That's all. Details and variants, see <<Build guide>>.
+
+== Tools overview
+Applications:
+
+[horizontal]
+*esmini*:: Play OpenSCENARIO file. Many options, e.g. view on screen, save images to file or just save log data for post processing. +
+Example: +
+``./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in.xosc`` +
++
+image::cut-in.png[]
+
+*replayer*:: Replay recorded esmini scenarios. Main difference from esmini is the ability to freely move forward and backward in the scenario at various speeds. +
+Example: +
+``./bin/replayer --window 60 60 800 400 --file sim.dat`` +
++
+See <<Use cases>> how to create recordings (``.dat`` files) from esmini.
+
+*odrviewer*:: Visualize and verify OpenDRIVE road networks. Draw road features, like reference line and lanes, on top of a 3D model (provided or generated). Optionally populate with random traffic that will randomly find its way through the road network. +
+Example: +
+``./bin/odrviewer --window 60 60 800 400 --odr ./resources/xodr/fabriksgatan.xodr``
++
+image::odrviewer.png[]
+
+*odrplot*:: Simple 2D plot of OpenDRIVE road lanes with indicated road IDs, in a two step process. +
+Prerequisites: Python + https://matplotlib.org/[matplotlib] +
+Example: +
+``./bin/odrplot ./resources/xodr/fabriksgatan.xodr`` (will create a track.csv file) +
+``python ./EnvironmentSimulator/Applications/odrplot/xodr.py track.csv``
++
+
+image::odrplot.png[]
+
+*plot_dat*:: Simple 2D plot of scenario data +
+Prerequisites: Python + https://matplotlib.org/[matplotlib] +
+Example: +
+``./bin/esmini --headless --osc ./resources/xosc/acc-test.xosc --record sim.dat`` (will create the .dat file) +
+``./scripts/plot_dat.py sim.dat --param speed``
++
+image::plot_dat.png[]
+
+*dat2csv*:: Convert esmini recording (.dat) file to standard .csv format +
+Example: +
+``./scripts/dat2csv sim.dat`` +
+will create sim.csv.
+
+*osi2csv.py*:: Convert OSI trace file (from esmini) to .csv format +
+Example: +
+``./scripts/osi2csv.py ./ground_truth.osi`` +
+will create ground_truth.csv
++
+See <<Save OSI data>> how to create OSI groundtruth trace (``.osi`` file) from esmini.
+
+Shared libraries:
+[horizontal]
+*esminiLib*:: High level API for running, controlling and monitoring scenarios +
++
+See headerfile {src-root}/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp[esminiLib.hpp]
+and <<Hello World programming tutorial>>
+
+*esminiRMLib*:: High level API for parsing and query road networks (only road manager) +
++
+See headerfile {src-root}/EnvironmentSimulator/Libraries/esminiRMLib/esminiRMLib.hpp[esminiRMLib.hpp]
+and code example {src-root}/EnvironmentSimulator/code-examples/rm-basic[rm-basic]
+
+== Use cases
+Here follows basic examples showing some, but not all, features in esmini and companion tools. It should give an idea of the possibilities and limitations. For a full list of features and functions, see <<Command reference>>.
+
+To quickly see available launch options, simply run the corresponding application with no arguments, for example:
+
+``./bin/odrviewer``
+
+=== View a scenario
+==== Basic features
+Specify a window and scenario file. Example: +
+`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in.xosc`
+
+Visualize trails from moving entities: +
+`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in.xosc --trail_mode 3`
+
+Show entities as bounding boxes: +
+`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in.xosc --bounding_boxes`
+
+.Trail and bounding box in combination
+image::cut-in_trail_and_bb.png[]
+
+==== Camera control
+
+In addition to several OSG standard camera models esmini adds a set of special purpose camera modes that follows following scenario entities in various ways. Further, the user can add custom cameras via API or launch arguments.
+
+Top level camera mode is selected on keys '1' to '8'. Mode 2-8 are OpenSceneGraph standard cameras. Mode 1 hands over camera control to esmini. In this mode, switch camera model by pressing 'k' which will toggle between all available esmini camera model. 
+
+The default camera model is esmini "orbit" which allows for rotating (left-mouse button), zooming (right-mouse button) and panning (scroll wheel / middle mouse button) while following the first entity.
+
+To follow another vehicle press `Tab` (next vehicle) or `Shift TAB` (previous vehicle). Also `Backspace` is mapped to previous vehicle, since shift-TAB do not work on all platforms.
+
+For a complete list of cameras and functions, see <<Command reference>>.
+
+esmini camera mode can be selected by launch argument. Here are a few common use cases:
+
+Follow exact behind vehicle: +
+`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/slow-lead-vehicle.xosc --camera_mode fixed`
+
+Orthogonal (no perspective) top view follow vehicle: +
+`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/slow-lead-vehicle.xosc --camera_mode top`
+
+Follow vehicle from inside "driver" point of view: +
+`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/slow-lead-vehicle.xosc --camera_mode driver`
+
+Follow vehicle with some flex and allow rotate, pan and zoom: +
+`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/slow-lead-vehicle.xosc --camera_mode flex-orbit`
+
+In addition to pre-defined camera modes, the user can add custom cameras from API or via launch argument. Custom cameras can be fixed, semi-fixed (fixed position but unconstrained orientation) or relative current vehicle. Here is a few examples:
+
+Custom camera in front of vehicle, e.g. sensor mount position:
+`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/slow-lead-vehicle.xosc --custom_camera 3,0,0.6,0,0`
+
+Custom camera with fixed position but dynamic orientation, always pointing at current vehicle: +
+`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/slow-lead-vehicle.xosc --custom_fixed_camera 170,10,5`
+
+video::custom_camera_fixed_pos.mp4?raw=true[opts="loop,autoplay"]
+//video::https://github.com/esmini/resources/blob/explore/doc/images/custom_camera_fixed_pos.mp4?raw=true[opts="loop"]
+// video::JLrxu2CdX3A[youtube,width=640,height=360,opts="autoplay,nocontrols,loop"]
+
+Custom fixed camera: +
+`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/slow-lead-vehicle.xosc --custom_fixed_camera 240,15,10,3.5,0.2`
+
+video::custom_camera_fixed_pos_and_rot.mp4?raw=true[opts="loop,autoplay"]
+// video::EWsiYcovCYQ[youtube,width=640,height=360,opts="autoplay,nocontrols,loop"]
+
+Custom fixed top view camera: +
+`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/slow-lead-vehicle.xosc --custom_fixed_top_camera 180,-1.54,2301,4.71239`
+
+video::custom_camera_fixed_top_view.mp4?raw=true[opts="loop,autoplay"]
+// video::1Z_pCCbdxBU[youtube,width=640,height=360,opts="autoplay,nocontrols,loop"]
+
+
+==== Some key shortcut commands
+
+[horizontal]
+*Space*:: Toggle pause/play simulation
+*Enter*:: Step simulation one frame forward
+*Tab*:: Move camera to next vehicle
+*Shift-Tab or Backspace*:: Move camera to previous vehicle
+*'j'*:: Toggle show entity trail points and lines (press mulitpe times to switch modes) 
+*','*:: Toggle bounding box modes
+*Esc*:: Quit
+
+See <<Command reference>> for a complete list of key shortcut commands.
+
+==== Road network visualization
+Visualize OpenDRIVE road features: +
+`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in.xosc --road_features on`
+
+If a 3D model representation of the road network is missing (i.e. empty or missing SceneGraphFile element of the https://www.asam.net/static_downloads/ASAM_OpenSCENARIO_V1.1.1_Model_Documentation/modelDocumentation/content/RoadNetwork.html[OpenSCENARIO RoadNetwork class]), then esmini will generate a _very_ simple model. 
+
+Example: +
+``./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/slow-lead-vehicle.xosc``
+
+Add optional flat ground plane: +
+``./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/slow-lead-vehicle.xosc --ground_plane``
+
+The generated model can be saved: +
+``./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/slow-lead-vehicle.xosc --save_generated_model`` +
+Then look for `generated_road.osgb` in the current directory.
+
+==== Background color
+esmini default background color is skyish, light blue. Change by launch argument --clear-color <r,g,b>, where r, g, b are the red, green, blue components as floating numbers in the range (0:1). Some examples: 
+
+Black background: +
+``./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/slow-lead-vehicle.xosc --clear-color 0,0,0``
+
+White background: +
+``./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/slow-lead-vehicle.xosc --clear-color 1,1,1``
+
+Gray background: +
+``./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/slow-lead-vehicle.xosc --clear-color 0.3,0.3,0.3``
+
+==== Anti-alias
+esmini make use of OpenSceneGraph subsampling method for anti-alias. Default setting is 4 (samples). This can be controlled by the launch argument `--aa_mode <samples>`. To disable anti-alias: +
+``./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/slow-lead-vehicle.xosc --aa_mode 0``
+
+=== Screenshots and video clips 
+esmini can save screenshots in uncompressed https://en.wikipedia.org/wiki/Truevision_TGA[TGA] format. These images can be converted into other image formats or even video clips in a post process.
+
+esminiLib also supports grabbing screenshots via API, also from a pure off-screen rendering setup (requireing neither monitor nor graphics hardware). See https://github.com/esmini/esmini/tree/master/EnvironmentSimulator/code-examples/image-capture[image-capture] code example.
+
+Here follows a few examples using launch arguments and runtime key commands.
+
+==== Save screenshots
+Press 'c' at any time to store a single screenshot.
+
+Press 'C' at any time to start storing screen shot for every frame onward. Press 'C' again to stop.
+
+==== Create video clip of a scenario
+First, run the scenario and automatically save screenshots for all frames: +
+``./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in.xosc --fixed_timestep 0.033 --capture_screen``
+
+[Note]
+==== 
+**Note** We added the --fixed_timestep argument to make sure we get a smooth video with constant delta-time for a smooth and continuous video clip. If --fixed_timestep is skipped esmini will progress time between frames according to actual system time passed since last frame, which can vary over time for many reasons (e.g. due to esmini or other processes CPU load).
+====
+
+Then, create a video clip using ffmpeg: +
+``ffmpeg -f image2 -vf format=yuv420p -framerate 30 -i screen_shot_%5d.tga -c:v libx264 -crf 20 out.mp4``
+
+The above ffmpeg command will create a MPEG4 video with reasonable compression (crf 20). To create a lossless, but still compressed, video e.g. for further post processing:
+
+``ffmpeg -f image2 -framerate 30 -i screen_shot_%5d.tga -c:v libx264 -qp 0 out.mp4``
+
+Get ffmpeg: http://ffmpeg.org/download.html
+
+Some details regarding H.264 encoding can be found https://trac.ffmpeg.org/wiki/Encode/H.264[here].
+
+
+=== Logging
+esmini can produce log files in different formats and for different purposes, explained next.
+
+==== The basic text log file
+By default esmini is creating a `log.txt` in the folder from which esmini is launched. In case of esminiLib it will end up in the folder that the application linking esminiLib was launched from.
+
+The log.txt includes the same information normally seen in the terminal window (stdout). 
+
+To disable output to terminal: +
+``./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/slow-lead-vehicle.xosc --disable_stdout``
+
+To disable creation of the logfile (`log.txt`): +
+``./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/slow-lead-vehicle.xosc --disable_log``
+
+Developer info: Define the symbol DEBUG_TRACE (either as compile flag or by uncomment https://github.com/esmini/esmini/blob/73390cc2c1b8cbb8403950c905515e304c861b8c/EnvironmentSimulator/Modules/CommonMini/CommonMini.cpp#L34[this code line]) to log more details, like what code module and line number is the origin of the log entry.
+
+==== Scenario recording (.dat)
+In addition esmini can save a `.dat` file which captures the state of all entities. This file can later be used either to replay (see <<Replay scenario>>) the scenario or converted to `.csv` for further analysis, e.g. in Excel.
+
+To create a recording with regular timesteps: +
+``./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/slow-lead-vehicle.xosc --fixed_timestep 0.05 --record sim.dat``
+
+To convert the .dat file into .csv, do either of: +
+``./bin/dat2csv sim.dat`` +
+or +
+``python ./scripts/dat2csv.py sim.dat``
+
+==== CSV logger
+To create a more complete csv logfile, compared to the content of the .dat file, activate the CSV_Logger:
+
+``./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in.xosc --fixed_timestep 0.05 --csv_logger full_log.csv``
+
+full_log.csv will contain more detailed states for all scenario entities. To also include collision detection: +
+
+``./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in.xosc --fixed_timestep 0.05 --csv_logger full_log.csv --collision``
+
+All collisions (overlap) between entity bounding boxes will be registered in the `collision_ids` column of each entity. It will contain the IDs of any entities overlapping at given frame.
+
+=== Replay scenario
+
+Replay a scenario recording (.dat file): +
+``./bin/replayer --window 60 60 800 400 --res_path ./resources --file sim.dat``
+
+The `--res_path` is a special path directive should normally point to esmini/resources folder, where it will look for the OpenDRIVE file, 3D models and model_ids table (model_ids.txt). It also works to add one or multiple --path <path> directives, like for esmini.
+
+Once loaded the scenario recording will start playing in normal speed. Here are a few key commands:
+
+[horizontal]
+*Space*:: Toggle pause/play simulation
+*Tab*:: Move camera to next vehicle
+*Shift-Tab or Backspace*:: Move camera to previous vehicle
+*'n'*:: Toggle show active trajectories
+*','*:: Toggle bounding box modes
+*Esc*:: Quit
+
+Arrow keys:
+[horizontal]
+*Left*:: Pause and move to previous frame
+*Right*:: Pause and move to next frame
+*Shift + Left*:: Pause and jump 10 frames back
+*Shift + Right*:: Pause and jump 10 frames forward
+*Ctrl + Left*:: Jump to beginning
+*Ctrl + Right*:: Jump to end
+
+See <<Command reference>> for a complete list of key shortcut commands.
+
+Some launch arguments:
+[horizontal]
+*--collision*:: Pause and move to previous frame
+*--quit_at_end*:: Quit application when reaching end of scenario
+*--repeat*:: Loop scenario
+*--dir <path>*:: Directory containing replays to overlay, pair with "file" argument, where "file" is .dat filename match substring
+
+Examples:
+
+Enable collision detection and pause playing at every occasion of collision:  +
+``./bin/replayer --window 60 60 800 400 --file sim.dat --res_path ./resources --collision``
+
+.Video clip demonstrating some featuers in replayer
+video::ltap-od_collision.mp4?raw=true[opts="loop,autoplay"]
+// video::54NWtG1MsRk[youtube,width=800,height=400,opts="autoplay,nocontrols,loop"]
+
+The .dat file in the clip above was created with the command: +
+``./bin/esmini --headless --osc ./resources/xosc/ltap-od.xosc --disable_controllers --fixed_timestep 0.033 --record sim.dat ``
+
+and then launched in replayer:
+
+``./bin/replayer --window 60 60 800 400 --file sim.dat --res_path ./resources --collision``
+
+*Note:* The --disable_controllers flag is just specified to disable the interactive controller that normally is activated in that specific scenario. For more information about controllers, see https://github.com/esmini/esmini/blob/master/docs/Controllers.md[Controllers in esmini].
+
+Next example, play multiple variants of a scenario in parallel: +
+``./bin/replayer --window 60 60 800 400 --file sim --res_path ./resources --capture_screen --dir tmp``
+
+The `--dir` argument points to a folder contaning sim1.dat, sim2.dat and sim3.dat.
+
+.Video clip demonstrating parallel scenarios and some other featuers in replayer
+video::replay_multiple_scenario_variants.mp4?raw=true[opts="loop,autoplay"]
+// video::KqoTmAE9NmI[youtube,width=800,height=400,opts="autoplay,nocontrols,loop"]
+
+Combine esmini and replayer in a one-liner command:
+``./bin/esmini --headless --fixed_timestep 0.05 --record sim.dat --osc ./resources/xosc/cut-in.xosc;./bin/replayer --window 60 60 800 400 --res_path ./resources --file sim.dat``
+
+=== View road network
+
+==== Visualize OpenDRIVE geometry
+
+By default odrviewer will create a simple 3D model of the OpenDRIVE description and populate it with sparse traffic: +
+``./bin/odrviewer --window 60 60 800 400 --odr ./resources/xodr/fabriksgatan.xodr``
+
+Add OpenDRIVE features, like reference line and lanes, on top (toggle on 'o'): +
+``./bin/odrviewer --window 60 60 800 400 --odr ./resources/xodr/fabriksgatan.xodr --road_features``
+
+Remove all traffic, just visualize the road geometry: +
+``./bin/odrviewer --window 60 60 800 400 --odr ./resources/xodr/fabriksgatan.xodr --density 0``
+
+==== Evaluate OpenDRIVE connectivity
+
+Increase traffic to exercise all junctions and lanes of the road network: +
+``./bin/odrviewer --window 60 60 800 400 --odr ./resources/xodr/fabriksgatan.xodr --density 7 --road_features``
+
+Use custom 3D model: +
+``./bin/odrviewer --window 60 60 800 400 --odr ./resources/xodr/fabriksgatan.xodr --model ./resources/models/fabriksgatan.osgb --density 5``
+
+Slow down traffic: +
+``./bin/odrviewer --window 60 60 800 400 --odr ./resources/xodr/fabriksgatan.xodr --model ./resources/models/fabriksgatan.osgb --density 3 --speed_factor 0.6``
+
+==== Inspect OpenDRIVE geometry and road IDs 
+
+esmini odrplot is a small application that creates a track.csv file that can be plotted with another small Python script xodr.py: +
+``./bin/odrplot ./resources/xodr/fabriksgatan.xodr`` +
+``./EnvironmentSimulator/Applications/odrplot/xodr.py track.csv``
+
+Combine in a one-liner: +
+``./bin/odrplot ./resources/xodr/fabriksgatan.xodr;./EnvironmentSimulator/Applications/odrplot/xodr.py track.csv``
+
+To navigate in the plot, click the four-arrow icon (see image below) and then use mouse according to:
+[horizontal]
+*Left button*:: Pan (move left, right, up, down)
+*Right button*:: Zoom
+
+image::odrplot_help.png[]
+
+=== Plot scenario data
+esmini provides a Python based script, plot_dat.py, to plot information in .dat files.
+
+First, create a .dat file. For that we don't need a window. Run esmini headless: +
+``./bin/esmini --headless --fixed_timestep 0.05 --osc ./resources/xosc/acc-test.xosc --record sim.dat``
+
+The scenario looks like this: +
+
+video::acc-test.mp4?raw=true[opts="loop,autoplay"]
+
+Next, plot speed over time: +
+``./scripts/plot_dat.py sim.dat --param speed``
+
+image::plot_dat.png[]
+
+To see what parameters are available for plot: +
+``./scripts/plot_dat.py sim.dat --list_params``
+
+will output a list similar to: +
+``
+Plottable parameters: +
+id, model_id, obj_type, obj_category, ctrl_type, time, speed, wheel_angle, wheel_rot, centerOffsetX, centerOffsetY, centerOffsetZ, width, length, height, scaleMode, visibilityMask, x, y, z, h, p, r, roadId, laneId, offset, t, s
+``
+
+Most parameters does normally not make sense to plot, but it depends on the test case. Maybe it's interesting to see when a car makes a lane chage. Plot laneId over time: +
+``./scripts/plot_dat.py sim.dat --param laneId``
+
+image::plot_dat_lane_id.png[]
+
+A plot can show multiple parameters: +
+``./scripts/plot_dat.py sim.dat --param laneId --param speed``
+
+image::plot_dat_lane_speed.png[]
+
+To plot trajectories, change X-axis parameter from `time` to `x` and plot `y` parameter (over x): +
+``./scripts/plot_dat.py sim.dat --x_axis x --param y``
+
+image::plot_dat_x_y.png[]
+
+Lock axis aspect ratio, i.e. make axis scale equal: +
+``./scripts/plot_dat.py sim.dat --x_axis x --param y --equal_axis_aspect``
+
+image::plot_dat_x_y_eq_axis.png[]
+
+=== Save OSI data
+esmini can provide OSI groundtruth data in three ways:
+
+. Send over UDP
+. API to fetch via function call from a custom application
+. Save to OSI trace file
+
+Only tracefile way is described here. To save OSI data, add argument `--osi_file [filename]`. The filename is optional. If omitted it will be named `ground_truth.osi`. Example:
+
+``./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in.xosc --osi_file``
+
+will create `ground_truth.osi`` in the current folder. The format is according to the OSI standard "Binary trace file", see OSI documentation https://opensimulationinterface.github.io/osi-documentation/index.html#_osi_trace_files[2.2.6 OSI trace files].
+
+esmini provides a script, osi2csv.py, that converts an OSI tracefile into .csv format. The script can also serve as example how to parse and extract data from an OSI trace file:
+
+``./scripts/osi2csv.py ground_truth.osi``
+
+will create ground_truth.csv.
+
+(if file type association is not setup, try: ``python ./scripts/osi2csv.py ground_truth.osi``)
+
+== OpenSceneGraph and 3D models
+
+http://www.openscenegraph.org/[OpenSceneGraph] (osg) includes readers and writers for quite a few 3D file formats. It comes with a demo application, http://www.openscenegraph.org/index.php/documentation/user-guides/55-osgconv[osgconv], a command line tool that simply takes one file as input and outputs the same content in a different format. 
+
+Examples:
+
+Convert from fbx to osgb format: +
+`osgconv car.fbx car.osgb`
+
+Convert from osgb to https://www.autodesk.com/products/fbx/overview[fbx] format: +
+`osgconv car.osgb car.fbx`
+
+osgconv has a lot of useful options. Run `osgconv -h` for more info. Here's a few examples:
+
+``osgconv in.fbx out.osgb --compressed`` will compress and embed textures +
+``osgconv in.fbx out.osgb -t 1,5,7`` will translate the model (x=1, y=5, z=7) +
+``osgconv in.fbx out.osgb -o -90-1,0,0`` will rotate the model (rotate -90 deg around X-axis) +
+``osgconv in.fbx out.osgb -o -90-1,0,0 --use-world-frame`` as above but pivot point world origin +
+
+osg native format is `osgb` which stands for OpenSceneGraph binary format. It's a stable and compact (quick to load) format, which also can embed textures and animations. Thanks to the osgconv tool, esmini can get away with only supporting the .osgb format and still indirectly support many other 3D formats.
+
+=== Get osgconv
+On Linux and Mac its recommended to build osg yourself. You can try this script: https://github.com/esmini/esmini/blob/master/scripts/compile_osg_apps_linux.sh[compile_osg_apps_linux.sh]. It will first fetch and install https://www.autodesk.com/developer-network/platform-technologies/fbx-sdk-2020-0[FBX SDK] and then build OSG with FBX support. Find more details and instructions in the header of the script.
+
+For more info regarding building OSG for Linux, here's a great guide: +
+https://vicrucann.github.io/tutorials/osg-linux-quick-install/  +
+But note that it does not consider FBX support.
+
+For Windows there's an option to grab pre-built binaries including FBX support from here: +
+https://objexx.com/OpenSceneGraph.html
+
+Here follows an example of how to convert .osgb models into .fbx format for use in the Unity3D framework.
+
+=== Convert osgb models for use in Unity
+. Open a command prompt in the folder where your model.osgb is
+. Run command: +
+   `osgconv model.osgb out/model.fbx -s 100,100,100` +
+   "-s ..." is for scaling which typically is needed for fbx files. 
+   Potentially it also needs to be oriented according to Unity coordinate system. In that case try: +
+   `osgconv model.osgb out/model.fbx -s 100,100,100 --use-world-frame -o 120--0.5773503,-0.5773503,-0.5773503`
+
+A folder named "out" should have been created and including the model.fbx plus any texture files
+
+=== Import into Unity
+. Drag the resulting fbx file, and all textures, into a unity project, preferably an empty folder
+. Add the model to the Scene hierarchy
+. Select the model and int the "Inspector", select the "Materials" tab
+. Change the "Location" to "Use External Materials (Legacy)" and click "Apply"
+. Open the automcatically created "Materials" folder (next to the model file)
+. Select all materials and change +
+   for standard template: "Rendering Mode" to "Cutout" (good default option)  +
+   for HDRP template: "Surface type" to "Transparent" and check "alpha clipping"
+
+That should basically be it.
+
+== Support / Q&A
+
+=== Resources not found
+There are no fixed structure where scenario resources, e.g. vehicle 3D model or controller catalog, needs to be stored. Instead, additional search paths can be added by launch argument `--path <path>`. For example: +
+
+``./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/slow-lead-vehicle.xosc --path ../../ --path c:/tmp/my_models``
+
+will add the relative path `../../` and absolute path `c:/tmp/my_models` to the list of places where to look for resources referred to by the scenario.
+
+=== Mac issues and limitations
+* Window can't be located in the upper part of the screen. If window won't open, try to adjust the y value (second entry) of the window argument. 60 pixels usually works fine, e.g: `./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in.xosc`
+
+* Graphics can not run in separate thread. Hence the `--thread` launch flag will have no effect. 
+
+* On Mac the zip-package might be put in quarantine, to release it: `xattr -d com.apple.quarantine file.zip` or even better: `xattr -c file.zip`
+
+* If you get the "damaged file" message: Please open a terminal in the folder where the esmini-demo was extracted, and run the following command: `xattr -c -r esmini-demo`
+
+=== Issues at esmini GitHub page
+The https://github.com/esmini/esmini/issues[Issues tab at esmini GitHub page] is a valuable source of questions and answers. To search in all issues, make sure to set filter: `is:issue`.
+
+== Build guide 
+
+=== Build configurations
+https://cmake.org/[CMake] tool is used to create standard make configurations. A few example "create..." batch scripts are supplied as examples how to generate desired build setup. 
+
+- VisualStudio / win64 / Windows SDK v10 / Release and Debug
+- Ubuntu and Kubuntu (tested on 18.04) / gcc / Release and Debug
+
+However, it should be possible to configure custom variants using cmake. For example to use Visual Studio 2019 run the following commands from command prompt (CMD or PowerShell), assuming starting point is esmini root folder:
+
+....
+mkdir build
+cd build
+cmake -G "Visual Studio 16 2019" ..
+cmake --build . --config Release --target install
+....
+
+This will first generate Visual Studio solution and then compile esmini using MSVC toolset v142 (default with Visual Studio 2019). Default architecture is x64.
+
+If you want to compile with MSVC 2017 toolset just add directive to the generator as follows:
+
+``
+cmake -G "Visual Studio 16 2019" -T v141 .. 
+``
+
+A complete list of supported toolsets are available https://cmake.org/cmake/help/v3.17/variable/MSVC_TOOLSET_VERSION.html[here].
+
+If you want to specify architecture you simply add -A x64 or -A Win32. So for example, if you want to compile with MSVC 2015 toolset and for win32 use the following generator command:
+
+``
+cmake -G "Visual Studio 16 2019" -T v140 -A Win32 .. 
+``
+
+Of course, building with a specific toolset requires it to be installed. Use https://docs.microsoft.com/en-us/visualstudio/install/install-visual-studio?view=vs-2019[Visual Studio Installer]. Steps:
+
+- choose "Modify"
+- make sure Desktop Development with C++ is checked
+- go to tab "Individual components" 
+- scroll down to "Compilers, build tools, and runtimes"
+- check the MSVC versions you need, e.g. "MSVC v140 - VS 2015 C++ build tools (v14.00)" and "MSVC v141 - VS 2017 C++ x64/x86 build tools (v14.16)"
+
+All configurations defines an "Install" build target that compiles (if needed) and copies relevant binaries into a common "esmini/bin" folder recognized by the example scripts under the "esmini/run" folder.
+
+*Note:*
+
+- For automatic downloading of external dependencies (OSG binaries) and 3D models, CMake version 3.11.4 or above is required (FetchContent_MakeAvailable was introduced). +
+
+- In Windows, if you get an error like "the c compiler identification is unknown", then please make sure to install "Windows Universal CRT SDK" from the Visual Studio Installer tool.
+
+=== External dependencies
+
+esmini is designed to link all dependencies statically. Main reason is to have a all-inclusive library for easy integration either as a shared library/DLL (e.g. plugin in Unity, or S-function in Simulink) or statically linked into a native application.
+
+*Note:* Nothing stops you from going with all dynamic linking, it's just that provided build scripts are not prepared for it.
+
+CMake scripts will download several pre-compiled 3rd party packages and 3D model resource files. 
+
+Default location for these resources is Google drive. If there is an issue, try switch to the backup location at Dropbox by changing the following line in https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/CMakeLists.txt[EnvironmentSimulator/CMakeLists.txt]:
+
+``set ( FILE_STORAGE "google" )`` + 
+to + 
+``set ( FILE_STORAGE "dropbox" )`` +
+
+Links to all packages can be found in https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/CMakeLists.txt[EnvironmentSimulator/CMakeLists.txt].
+
+If you need to (re)build a 3rd party lib for some reason, e.g. for an yet unsupported system or need for a specific version, these build scripts might be a starting point:
+
+- https://github.com/esmini/esmini/blob/master/scripts/generate_osg_libs.sh[scripts/generate_osg_libs.sh]
+- https://github.com/esmini/esmini/blob/master/scripts/generate_osi_libs.sh[scripts/generate_osi_libs.sh]
+- https://github.com/esmini/esmini/blob/master/scripts/generate_sumo_libs.sh[scripts/generate_sumo_libs.sh]
+
+or this script that builds all three libs, combining the above ones:
+
+https://github.com/esmini/esmini/blob/master/scripts/generate_osi_sumo_osg_libs.sh[scripts/generate_osi_sumo_osg_libs.sh]
+
+=== Additional platform dependencies
+
+Linux Ubuntu 18.04
+
+[source]
+----
+sudo apt install build-essential git pkg-config libgl1-mesa-dev libpthread-stubs0-dev libjpeg-dev libxml2-dev libpng-dev libtiff5-dev libgdal-dev libpoppler-dev libdcmtk-dev libgstreamer1.0-dev libgtk2.0-dev libcairo2-dev libpoppler-glib-dev libxrandr-dev libxinerama-dev curl cmake
+----
+
+Also, g++ version >= 5 is needed for c++14 code support.
+
+Windows and Mac: Install the https://cmake.org/[cmake] application
+
+=== Dynamic protobuf linking
+When linking esmini with software already dependent on Google protobuf there might be need for dynamic linking of shared protobuf library. This can be achieved by defining cmake symbol DYN_PROTOBUF as following example:
+
+``cmake -D DYN_PROTOBUF=True ..``
+
+Then build as usual. It will link with protobuf shared library instead of linking with a static library.
+
+When running esmini protobuf shared library need to be available. Set LD_LIBRARY_PATH to point to the folder where the library is, example:
+
+``export LD_LIBRARY_PATH=./externals/OSI/linux/lib-dyn``
+
+*Note:* +
+The dynamic versions of protobuf were added Aug 31 2021. So you might need to update the OSI library package. Get the latest from following links:
+
+- https://dl.dropboxusercontent.com/s/an58ckp2qfx5069/osi_v10.7z?dl=0[OSI Windows]
+- https://dl.dropboxusercontent.com/s/kwtdg0c1c8pawa1/osi_linux.7z?dl=0[OSI Linux]
+- https://dl.dropboxusercontent.com/s/m62v19gp0m73dte/osi_mac.7z?dl=0[OSI Mac]
+
+=== Slim esmini - customize configration
+
+The external dependencies OSG, OSI and SUMO are optional. Also the unit test suite is optional, in effect making the dependecy to googletest framework optional as well. All these options are simply controlled by the following cmake options:
+
+- USE_OSG
+- USE_OSI
+- USE_SUMO
+- USE_GTEST
+
+So, for example, to cut dependency to OSG and SUMO, run:  +
+``cmake -D USE_OSG=False -D USE_SUMO=False ..``
+
+To disable OSG, SUMO, OSI and googletest, run:  +
+``cmake -D USE_OSG=False -D USE_SUMO=False -D USE_OSI=False -D USE_GTEST=False ..``
+
+All options are enabled/True as default.
+
+*Note:* +
+Disabling an external dependency will disable corresponding functionality. So, for example, disabling OSI means that no OSI data can be created by esmini. Disabling OSG means that esmini can't visualize the scenario. However it can still run the scenario and create a .dat file, which can be played and visualized later in another esmini build in which OSG is enabled (even on another platform).
+
+=== MSYS2 / MinGW-w64 support
+
+esmini slim can be compiled and executed in the MSYS2 environment. Try following steps:
+
+* Download MSYS2 from: https://www.msys2.org
+* Install with default options  
+* Start MSYS2 MinGW x64 (e.g. from start menu)
+* Update MSYS2 packages, run: +
+  ``
+  pacman -Syu --disable-download-timeout --noconfirm 
+  `` +
+  (MSYS2 should close automatically)
+* Restart MSYS2
+* Finalize update and install needed packages, run:
+
+[source]
+----
+pacman -Su --disable-download-timeout --noconfirm 
+pacman -S --needed base-devel mingw-w64-x86_64-toolchain --disable-download-timeout --noconfirm 
+pacman -S mingw-w64-x86_64-cmake --disable-download-timeout --noconfirm 
+----
+
+* Optional (not needed to compile or run esmini): +
+  ``pacman -S git --disable-download-timeout --noconfirm``
+
+* Build esmini (from MSYS2 MinGW x64 command line):
+
+[source]
+----    
+cmake -G "MSYS Makefiles" -D USE_OSG=False -D USE_SUMO=False -D USE_OSI=False -D USE_GTEST=False ..
+cmake --build . --config Release --target install
+----
+
+=== Build esmini project
+First generate build configuration (see above)
+
+Then it should work on all platform to build using cmake as follows: +
+``cmake --build . --config Release --target install``
+
+Or you can go with platform specific ways of building:
+
+*Windows/Visual Studio* 
+
+. Open generated solution, build*/EnvironmentSimulator.sln
+. Select configuration, Debug or Release
+. Build CMakePredefinedTargets/INSTALL (right-click and select build)
+
+*macOS*
+
+To generate a Xcode project file, run the initial cmake command as follows: +
+``cmake -G Xcode ..``
+
+Then build as usual: +
+``cmake --build . --config Release --target install``
+
+or using Xcode directly: +
+``xcodebuild -scheme install -configuration Release build``
+
+or open the generated project file in Xcode, and build from there.
+
+To create bundles (shared library container), do from esmini root folder: +
+
+[source]
+----
+lipo -create bin/libesminiRMLib.dylib -output bin/esminiRMLib.bundle
+lipo -create bin/libesminiLib.dylib -output bin/esminiLib.bundle
+----
+
+*Linux*
+
+Once `cmake ..` has created the build configuration, of course you can build by calling the gnu `make` applciation directly instead of going via `cmake --build` as described above.
+
+[source]
+----
+cd build
+make -j4 install
+----
+
+This will build all projects, in four parallel jobs, and copy the binaries into a dedicated folder found by the demo batch scripts. 
+
+=== CentOS 7 (Linux)
+
+CentOS 7 has some limitations, e.g. old versions of C/C\++ compiler toolkits and runtimes. So it's not possible to link with provided 3rd party binary libraries targeting Ubuntu 18++.
+However, by disabling some featuers in esmini, e.g. OSI and SUMO, it can still be used for previewing scenarios.
+
+VirtualBox image for Windows host here: +
+https://www.linuxvmimages.com/images/centos-7/
+
+
+Follow steps below to build and run esmini on CentOS 7.
+
+[source]
+----
+sudo yum install git
+sudo yum install cmake
+sudo yum install gcc-c++
+
+sudo yum install freeglut-devel
+sudo yum install fontconfig-devel
+sudo yum install libXrandr-devel
+sudo yum install libXinerama-devel
+
+sudo yum install epel-release
+sudo yum install p7zip
+
+git clone https://github.com/esmini/esmini
+
+cd esmini
+
+cd externals
+mkdir OpenSceneGraph
+cd OpenSceneGraph
+curl -L "https://www.dropbox.com/s/mxztf6zbgojyntp/osg_centos.7z?dl=1" -o osg_centos.7z
+7za x osg_centos.7z
+rm osg_centos.7z
+
+cd ../..
+mkdir build
+cd build
+cmake -D USE_OSG=True -D USE_SUMO=False -D USE_OSI=False -D USE_GTEST=False ..
+cmake --build . --target install --config Release
+cd ..
+./bin/esmini.exe --headless --fixed_timestep 0.01 --record sim.dat --osc ./resources/xosc/cut-in.xosc
+----
+
+
+== Command reference
+=== esmini
+==== Launch commands
+[source]
+----
+include::commands.txt[]
+----
+
+==== Runtime key shortcut commands
+[source]
+----
+include::readme.txt[lines=9..-1]
+----
+
+=== replayer
+[source]
+----
+include::../EnvironmentSimulator/Applications/replayer/readme.txt[lines=5..-1]
+----
+
+=== odrviewer
+[source]
+----
+include::../EnvironmentSimulator/Applications/odrviewer/readme.txt[lines=7..-1]
+----
+
+== Hello World programming tutorial
+include::../Hello-World_coding-example/tutorial.adoc[leveloffset=+1, lines=5..-1]
+
+== Run ASAM OpenSCENARIO examples
+
+With some limitations (see details https://github.com/esmini/esmini/blob/master/osc_coverage.txt[here]) esmini can play the example scenarios provided with the ASAM OpenSCENARIO v1.1 release bundle.
+
+* If you don't have esmini already, download latest demo package for your platform from https://github.com/esmini/esmini/releases/latest[here].
+* Download the standard from ASAM https://www.asam.net/standards/detail/openscenario[here] (register and download is free of charge).
+* Extract to any folder.
+* Run the examples from command line in esmini root folder, for example:  +
+``./bin/esmini --window 60 60 800 400 --osc ../../openscenario-v1.1.0/Examples/DoubleLaneChanger.xosc`` +
+  or with absolute path:  +
+``./bin/esmini --window 60 60 800 400 --osc c:/stuff/openscenario-v1.1.0/Examples/DoubleLaneChanger.xosc``
+
+== About this document
+The https://github.com/esmini/esmini/blob/user_guide/docs/user_guide.adoc[source] of this document is written in the https://asciidoc-py.github.io/index.html[asciidoc] format. The html is generated with https://asciidoctor.org/[asciidoctor]. Code snippets, images and other resources are included in the process. Also the version numbers are automatically inserted to avoid "human errors".
+
+Install tools:
+[horizontal]
+*Linux*::
+``sudo apt install asciidoctor`` +
+``sudo apt install ruby-coderay``
+
+*Windows*::
+First, if not already done, install ruby: https://rubyinstaller.org/downloads/ +
+Then: +
+``gem install asciidoctor`` +
+``gem install coderay`` +
+
+Generate html: ``asciidoctor user_guide.adoc``
+
+== Version
+[%hardbreaks]
+include::../version.txt[lines=2..2]
+include::../version.txt[lines=1..1]

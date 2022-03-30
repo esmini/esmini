@@ -21,6 +21,7 @@
    <Entities>
       <ScenarioObject name="Ego">
           <CatalogReference catalogName="VehicleCatalog" entryName="$EgoVehicle"/>
+          <!-- asciidoc tag::ObjectController[] -->
           <ObjectController>
                 <Controller name="MyExternalControllerWithGhost">
                     <Properties>
@@ -30,6 +31,7 @@
                     </Properties>
                 </Controller>
           </ObjectController>      
+          <!-- asciidoc end::ObjectController[] -->
       </ScenarioObject>
       <ScenarioObject name="Target">
          <CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>
@@ -39,6 +41,7 @@
       <Init>
          <Actions>
             <Private entityRef="Ego">
+                <!-- asciidoc tag::TeleportAction[] -->
                 <PrivateAction>
                     <TeleportAction>
                         <Position>
@@ -46,6 +49,7 @@
                         </Position>
                     </TeleportAction>
                 </PrivateAction>
+                <!-- asciidoc end::TeleportAction[] -->
                 <PrivateAction>
                     <LongitudinalAction>
                         <SpeedAction>
@@ -56,9 +60,11 @@
                         </SpeedAction>
                     </LongitudinalAction>
                 </PrivateAction>            
+                <!-- asciidoc tag::ActivateController[] -->
                 <PrivateAction>
                       <ActivateControllerAction longitudinal="true" lateral="true" />
                 </PrivateAction>
+                <!-- asciidoc end::ActivateController[] -->
             </Private>
             <Private entityRef="Target">
                <PrivateAction>

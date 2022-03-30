@@ -16,10 +16,10 @@ class OSIFile():
         except OSError:
             print('ERROR: Could not open file {} for reading'.format(filename))
             raise
-        
+
         self.filename = filename
         self.osi_msg = GroundTruth()
-    
+
     def save_csv(self):
         csvfile = os.path.splitext(self.filename)[0] + '.csv'
         try:
@@ -27,10 +27,10 @@ class OSIFile():
         except OSError:
             print('ERROR: Could not open file {} for writing'.format(csvfile))
             raise
-        
+
         # write header
         fcsv.write('time, id, name, x, y, z, vx, vy, vz, h, p, r, speed, wheel_angle, wheel_rot\n')
-        
+
         # write data
         while self.read_next_message():
             t = self.osi_msg.timestamp.seconds + self.osi_msg.timestamp.nanos * 1e-9
@@ -39,21 +39,21 @@ class OSIFile():
                     t,
                     o.id.value,
                     'obj' + str(o.id.value),
-                    o.base.position.x, 
-                    o.base.position.y, 
-                    o.base.position.z, 
-                    o.base.velocity.x, 
-                    o.base.velocity.y, 
-                    o.base.velocity.z, 
-                    o.base.orientation.yaw, 
-                    o.base.orientation.pitch, 
+                    o.base.position.x,
+                    o.base.position.y,
+                    o.base.position.z,
+                    o.base.velocity.x,
+                    o.base.velocity.y,
+                    o.base.velocity.z,
+                    o.base.orientation.yaw,
+                    o.base.orientation.pitch,
                     o.base.orientation.roll,
                     math.sqrt(o.base.velocity.x**2 + o.base.velocity.x**2),
                     0.0,  # wheel rotation not available
                     0.0   # wheel angle not available
                     )
                 )
-   
+
     def close(self):
         self.file.close()
 
@@ -66,7 +66,7 @@ class OSIFile():
             msg = self.file.read(msg_size)
             self.osi_msg.ParseFromString(msg)
         return True
-        
+
 if __name__ == "__main__":
     # Create the parser
     parser = argparse.ArgumentParser(description='Read .osi file')
@@ -80,4 +80,3 @@ if __name__ == "__main__":
     osi = OSIFile(args.filename)
     osi.save_csv()
     osi.close()
-    

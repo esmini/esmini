@@ -474,7 +474,9 @@ SUBDIRLIST(SUBDIRS ${CMAKE_CURRENT_SOURCE_DIR}/code-examples)
 
 FOREACH(subdir ${SUBDIRS})
     add_subdirectory(code-examples/${subdir})
-    set_target_properties (${subdir} PROPERTIES FOLDER ${CodeExamplesFolder} )
+    if (NOT ${subdir} STREQUAL "hello_world")
+        set_target_properties (${subdir} PROPERTIES FOLDER ${CodeExamplesFolder} )
+    endif ()
 ENDFOREACH()
 
 

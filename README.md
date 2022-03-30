@@ -23,7 +23,7 @@ and a few applications that can be used as is or provide ideas for customized so
 
 Repository: <https://github.com/esmini/esmini>
 
-Pre-built demo packages are available [here](https://github.com/esmini/esmini/releases/latest). Unzip, navigate to "esmini\run\esmini" and run any of the example scripts. See more info below under "Binaries and demos".
+Pre-built demo packages are available [here](https://github.com/esmini/esmini/releases/latest). Unzip, navigate to "esmini\run\esmini" and run any of the example scripts. See more info below under [Binaries and demos](#binaries-and-demos).
 
 esmini supports OpenSCENARIO v1.1 (from esmini v2.7) and v1.0 (from esmini v1.5). In order to run older versions (i.e. v0.9.1) ASAM provides a transformation scheme (migration0_9_1to1_0.xslt, part of the OpenSCENARIO release bundle) that can be used with tools for automatic migration of XML files.
 
@@ -31,7 +31,9 @@ Please note that the OpenSCENARIO [coverage](https://github.com/esmini/esmini/bl
 
 The code was initially a result from the Swedish collaborative research project [Simulation Scenarios](https://sites.google.com/view/simulationscenarios), and is now further developed based on users need and OpenSCENARIO development.
 
-For more information about the esmini software parts, please see [Inner Workings of esmini](https://github.com/esmini/esmini/blob/master/docs/InnerWorkings.md).
+User guide: https://esmini.github.io
+
+For more information about the esmini software parts, see [Inner Workings of esmini](https://github.com/esmini/esmini/blob/master/docs/InnerWorkings.md).
 
 ## Background
 
@@ -51,61 +53,18 @@ Latest release including source, binaries and demo packages is found here: https
 3D models used by the example scenarios are included in the demo packages. They are also available [here](https://dl.dropboxusercontent.com/s/5gk8bvgzqiaaoco/models.7z?dl=0). Unpack into esmini/resources. These assets works on all platforms.
 Environment models (roads, landscape, buildings...) have been created using [VIRES Road Network Editor](https://vires.mscsoftware.com/solutions/3d-environment-road-network).
 
-#### Mac specifics tips
-On Mac the zip-package might be put in quarantine, to release it:
-`xattr -d com.apple.quarantine file.zip`
-or even better:
-`xattr -c file.zip`
-
-If you get the "damaged file" message, please open a terminal in the folder where the esmini-demo was extracted, and run the following command:
-`xattr -c -r esmini-demo`
-
-## Build
-If you want to build yourself, please find some instructions [here](https://github.com/esmini/esmini/blob/master/docs/BuildInstructions.md).
-
-## Run esmini
-Either get the demo or build yourself. To run demo scenarios:
-1. Navigate to run/esmini
-2. Run any of the provided batch-script examples (double click on or run from command line)
-
-Or launch esmini from command prompt. There are many options but a few typical examples, assuming current directory is esmini root folder:  
-
-* Just run a scenario:  
-```./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in.xosc```
-
-* Execute and record a scenario with fixed timesteps and no viewer:  
-```./bin/esmini --headless --fixed_timestep 0.01 --record sim.dat --osc ./resources/xosc/cut-in.xosc```
-
-* Replay a recorded scenario:  
-```./bin/replayer --window 60 60 800 400 --res_path ./resources --file sim.dat```
-
-Further info:
-* [esmini launch commands](https://github.com/esmini/esmini/blob/master/docs/commands.txt)
-* [esmini runtime control](https://github.com/esmini/esmini/blob/master/docs/readme.txt)
-* [replayer launch and key shortcut commands](https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/Applications/replayer/readme.txt)
-
-## Run ASAM OpenSCENARIO examples
-
-With some limitations (see details [here](https://github.com/esmini/esmini/blob/master/osc_coverage.txt)) esmini can play the example scenarios provided with the ASAM OpenSCENARIO v1.1 release bundle.
-* If you don't have esmini already, download latest demo package for your platform from [here](https://github.com/esmini/esmini/releases/latest).
-* Download the standard from ASAM [here](https://www.asam.net/standards/detail/openscenario/) (register and download is free of charge).
-* Extract to any folder.
-* Run the examples from command line in esmini root folder, for example:  
-```./bin/esmini --window 60 60 800 400 --osc ../../openscenario-v1.1.0/Examples/DoubleLaneChanger.xosc```  
-  or with absolute path:  
-```./bin/esmini --window 60 60 800 400 --osc c:/stuff/openscenario-v1.1.0/Examples/DoubleLaneChanger.xosc```
-
+See [User Guide](https://esmini.github.io) for more information.
 
 ## esmini shared library
 The easiest way of integrating esmini in your custom application is to link the all inclusive shared library ScenarioEngineDLL. In spite of the name it's available also on Linux and Mac.
-See [this "Hello World" tutorial](https://github.com/esmini/esmini/blob/master/Hello-World_coding-example/README.md) on how to create a minimalistic application based on it.
+See [User Guide "Hello World" tutorial](https://esmini.github.io/#_hello_world_programming_tutorial) on how to create a minimalistic application based on it.
 
 ### OSI support
-In addition to internal API ([example](https://github.com/esmini/esmini/tree/master/Hello-World_coding-example#fetch-state-of-scenario-objects)) for getting information about the ongoing simulation, e.g. road width and road user position, esmini collects everything into an [OSI](https://opensimulationinterface.github.io/osi-documentation/index.html) [groundtruth structure](https://opensimulationinterface.github.io/open-simulation-interface/structosi3_1_1GroundTruth.html). This structure can be 1. stored in an OSI trace-file, 2. retrieved via UDP and/or 3. retrieved directly via API (see [esminiLib.hpp](https://github.com/esmini/esmini/blob/3af727a3f95825bfcf8b1cbd7becf68ea26cf08e/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L473)).
+In addition to internal API ([example](https://esmini.github.io/#_fetch_state_of_scenario_objects)) for getting information about the ongoing simulation, e.g. road width and road user position, esmini collects everything into an [OSI](https://opensimulationinterface.github.io/osi-documentation/index.html) [groundtruth structure](https://opensimulationinterface.github.io/open-simulation-interface/structosi3_1_1GroundTruth.html). This structure can be 1. stored in an OSI trace-file, 2. retrieved via UDP and/or 3. retrieved directly via API (see [esminiLib.hpp](https://github.com/esmini/esmini/blob/3af727a3f95825bfcf8b1cbd7becf68ea26cf08e/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L473)).
     
   **Note**: Only parts of OSI groundthruth is populated.
 
-  Hello World tutorial includes an [example of how to fetch OSI groundtruth](https://github.com/esmini/esmini/tree/master/Hello-World_coding-example#OSI-groundtruth).
+  Hello World tutorial includes an [example of how to fetch OSI groundtruth](https://esmini.github.io/#_osi_groundtruth).
 
   Current versions used by esmini:  
    - OSI version: v3.3.1 
@@ -131,7 +90,7 @@ Select (click on) esmini-player in Hierarchy to show up in Inspector, where you 
 Plugins can be updated, but NOTE that you need to restart Unity to (re)load shared library plugins. And, of course, scenario files and other content can be added or replaced.
 
 ### esmini & Python
-see last section in [Hello-World_coding-example](https://github.com/esmini/esmini/tree/master/Hello-World_coding-example#python-binding).
+see [User Guide Hello-World tutorial](https://esmini.github.io/#_python_binding).
 
 ## esmini controllers
 
@@ -162,49 +121,18 @@ Currently esmini only supports OSG native .osgb 3D file format. However, there a
 ### OpenDRIVE plugin for Unreal Engine
 [brifsttar/OpenDRIVE](https://github.com/brifsttar/OpenDRIVE) plugin allows you to manipulate OpenDRIVE road networks in Unreal Engine. It's based on esmini RoadManager (esminiRMLib).
 
-### Scenario video clip generator
-[esmini-visualizer](https://github.com/matthewcoyle-cpc/esmini-visualiser) is a tool to automatically generate video visualizations of scenarios.
+https://github.com/johschmitz/blender-driving-scenario-creator
 
-Note that it does not seem to work with Anti-Alias filtering. Therefore make sure to run `esmini` without Anti-Alias by providing argument `--aa_mode 0`.
+### Editors
 
-### Scenario editors
+[Blender Driving Scenario Creator add-on](https://github.com/johschmitz/blender-driving-scenario-creator) lets you create OpenDRIVE and OpenSCENARIO based scenarios.
 
-**[OpenScenarioEditor](https://github.com/ebadi/OpenScenarioEditor).** A simple ASAM OpenSCENARIO editor developed by Infotiv AB under VALU3S project. 
-
-**[RControlStation scenario editor](https://github.com/vedderb/rise_sdvp).** Another embryo to an OpenSCENARIO editor, part of Self-Driving Model Vehicle Platform (SDVP).
-
-The implementation is very limited at this point, but some things can be edited and the scenario can be executed and observed from above, as well as exported to the other tools. You have to start by importing one of the existing scenarios into the editor, as it cannot make a scenario from scratch.
-
-Instruction:
-
-* Get RControlStation source code
-
-```
-git clone https://github.com/vedderb/rise_sdvp
-```
-
-* Build esmini:
-```
-cd rise_sdvp/Linux/RControlStation
-git clone https://github.com/esmini/esmini
-cd esmini
-mkdir build
-cd build
-cmake ../ -DUSE_OSG=true -DCMAKE_BUILD_TYPE=Release
-cmake --build . --config Release --target install
-cd ../../
-```
-* Edit RControlStation.pro and uncomment the line: #DEFINES += HAS_SIM_SCEN
-* Build and run RControlCenter:
-```
-./build_lin
-export LD_LIBRARY_PATH=esmini/bin
-./build/lin/RControlStation
-```
-The editor is the last tab in RControlStation.
+[OpenScenarioEditor](https://github.com/ebadi/OpenScenarioEditor) is a simple ASAM OpenSCENARIO editor developed by Infotiv AB under VALU3S project. 
 
 ### python-esmini
-[python-esmini](https://github.com/ebadi/python-esmini) is a Python wrapper for esmini internal API (not limited by the interfaces of esminiLib and esminiRMLib). Most of the important modules are supported. Currently available for Linux only.
+[python-esmini](https://github.com/ebadi/python-esmini) is a Python wrapper for esmini internal API (not limited by the interfaces of esminiLib and esminiRMLib). Most of the important modules are supported. Currently available for Linux only. 
+
+**Note:** For most use cases the esminiLib basic Python binding is enough, see example in [User guide](https://esmini.github.io/#_python_binding). But if you need access to esmini internal API this project is worth to check out.
 
 ### Carla Simulator
 [Carla](http://carla.org/) is an [Unreal](https://www.unrealengine.com/) based open source simulator worth to check out.
