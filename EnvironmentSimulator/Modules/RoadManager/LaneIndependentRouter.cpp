@@ -5,7 +5,7 @@
 
 using namespace roadmanager;
 
-LaneIndependentRouter::LaneIndependentRouter(OpenDrive *odr) : odr_(odr)
+LaneIndependentRouter::LaneIndependentRouter(OpenDrive *odr) : odr_(odr), roadCalculations_(RoadCalculations())
 {
 }
 
@@ -21,10 +21,11 @@ std::vector<Node *> LaneIndependentRouter::GetNextNodes(Road *nextRoad, Road *ta
 	}
 
 	std::vector<Node *> nextNodes;
-	//LOG("Road: %d", currentNode->road->GetId());
-	//LOG("Lane: %d", currentNode->laneId);
-	//LOG("NextRoad: %d", nextRoad->GetId())
-	int targetLaneId = targetWaypoint_.GetLaneId();;
+	// LOG("Road: %d", currentNode->road->GetId());
+	// LOG("Lane: %d", currentNode->laneId);
+	// LOG("NextRoad: %d", nextRoad->GetId())
+	int targetLaneId = targetWaypoint_.GetLaneId();
+	;
 	for (std::pair<int, int> lanePair : connectingLaneIds)
 	{
 		Node *pNode = new Node;
@@ -44,14 +45,14 @@ std::vector<Node *> LaneIndependentRouter::GetNextNodes(Road *nextRoad, Road *ta
 			}
 			// create next non target node
 
-			//LOG("clID = %d, lID = %d", lanePair.first, lanePair.second);
+			// LOG("clID = %d, lID = %d", lanePair.first, lanePair.second);
 			pNode->link = nextLink;
 			pNode->road = nextRoad;
 			pNode->currentLaneId = lanePair.second;
 			pNode->fromLaneId = lanePair.first;
 			pNode->previous = currentNode;
-			// FIX TARGETWAYPOINT_ ....
-			double nextWeight = CalcWeight(routeStrategy, nextRoad->GetLength(), nextRoad);
+
+			double nextWeight = roadCalculations_.CalcWeight(currentNode, routeStrategy, nextRoad->GetLength(), nextRoad);
 			pNode->weight = currentNode->weight + nextWeight;
 		}
 		if (pNode)
@@ -151,94 +152,9 @@ Node *LaneIndependentRouter::CreateTargetNode(Node *currentNode, Road *nextRoad,
 	targetNode->currentLaneId = laneIds.second;
 	targetNode->fromLaneId = laneIds.first;
 	targetNode->link = nullptr;
-	double nextWeight = CalcWeightWithPos(currentNode->link->GetContactPointType(), targetWaypoint_, nextRoad, routeStrategy);
+	double nextWeight = roadCalculations_.CalcWeightWithPos(currentNode, targetWaypoint_, nextRoad, routeStrategy);
 	targetNode->weight = currentNode->weight + nextWeight;
 	return targetNode;
-}
-
-void LaneIndependentRouter::UpdateDistanceVector(std::vector<Node *> nextNodes)
-{
-
-	for (Node *nextNode : nextNodes)
-	{
-		// Check if next node is already in distance_ vector
-		size_t i;
-		for (i = 0; i < distance_.size(); i++)
-		{
-			bool sameRoadId = distance_[i]->road->GetId() == nextNode->road->GetId();
-			bool sameLaneId = distance_[i]->currentLaneId == nextNode->currentLaneId;
-			bool sameFromLaneId = distance_[i]->fromLaneId == nextNode->fromLaneId;
-			bool sameLink = distance_[i]->link == nextNode->link;
-			if (sameRoadId && sameLaneId && sameLink && sameFromLaneId)
-			{
-				// Consider it, i.e. calc distance_ and potentially store it (if less than old)
-				if (nextNode->weight < distance_[i]->weight)
-				{
-					// Replace current node with updated node
-					LOG("UpdateVector: r=%d,cl=%d,fl=%d", nextNode->road->GetId(), nextNode->currentLaneId,nextNode->fromLaneId);
-					distance_[i] = nextNode;
-				}
-				break;
-			}
-		}
-		if (i == distance_.size())
-		{
-			distance_.push_back(nextNode);
-			unvisited_.push(nextNode);
-		}
-	}
-}
-
-double LaneIndependentRouter::CalcAverageSpeed(Road *road)
-{
-	int roadTypeCount = road->GetNumberOfRoadTypes();
-	double totalSpeed = 0;
-	for (size_t i = 0; i < roadTypeCount; i++)
-	{
-		totalSpeed += road->GetRoadType((int)i)->speed_;
-	}
-	if (totalSpeed == 0 || roadTypeCount == 0)
-	{
-		// Default arbitrary speed is 20 m/s (72 km/h)
-		return 20;
-	}
-
-	return totalSpeed / roadTypeCount;
-}
-
-double LaneIndependentRouter::CalcWeightWithPos(ContactPointType contactPointType, Position pos, Road *road, RouteStrategy routeStrategy)
-{
-	double roadLength = 0;
-
-	if (contactPointType == ContactPointType::CONTACT_POINT_START)
-	{
-		roadLength = pos.GetS();
-	}
-	else if (contactPointType == ContactPointType::CONTACT_POINT_END)
-	{
-		roadLength = road->GetLength() - pos.GetS();
-	}
-
-	return CalcWeight(routeStrategy, roadLength, road);
-}
-
-double LaneIndependentRouter::CalcWeight(RouteStrategy routeStrategy, double roadLength, Road *road)
-{
-	if (routeStrategy == RouteStrategy::SHORTEST)
-	{
-		return roadLength;
-	}
-	else if (routeStrategy == RouteStrategy::FASTEST)
-	{
-		double averageSpeed = CalcAverageSpeed(road);
-
-		return roadLength / averageSpeed;
-	}
-	else
-	{
-		LOG("RouteStrategy does not exist");
-		return 0;
-	}
 }
 
 bool LaneIndependentRouter::FindGoal(RouteStrategy routeStrategy)
@@ -247,8 +163,8 @@ bool LaneIndependentRouter::FindGoal(RouteStrategy routeStrategy)
 	{
 		Node *currentNode = unvisited_.top();
 		unvisited_.pop();
-		bool nodeIsVisited = std::find(visited_.begin(), visited_.end(), currentNode) != visited_.end();
-		if (nodeIsVisited)
+		bool nodeIsVisited = std::find_if(visited_.begin(), visited_.end(), [currentNode](Node* n) {return *n == *currentNode; }) != visited_.end();
+		if(nodeIsVisited)
 		{
 			continue;
 		}
@@ -290,30 +206,33 @@ bool LaneIndependentRouter::FindGoal(RouteStrategy routeStrategy)
 				continue;
 			}
 			std::vector<Node *> nextNodes = GetNextNodes(nextRoad, targetRoad, currentNode, routeStrategy);
-			UpdateDistanceVector(nextNodes);
+			for(Node* n : nextNodes)
+			{	
+				unvisited_.push(n);
+			}
 		}
 	}
 	return false;
 }
 
-bool LaneIndependentRouter::IsTargetValid(Position target)
+bool LaneIndependentRouter::IsPositionValid(Position pos)
 {
-	Road *targetRoad = odr_->GetRoadById(target.GetTrackId());
-	if (!targetRoad)
+	Road *road = odr_->GetRoadById(pos.GetTrackId());
+	if (!road)
 	{
-		//LOG("1");
+		// LOG("1");
 		return false;
 	}
-	if (target.GetS() > targetRoad->GetLength() || target.GetS() < 0)
+	if (pos.GetS() > road->GetLength() || pos.GetS() < 0)
 	{
-		//LOG("2");
+		// LOG("2");
 		return false;
 	}
-	LaneSection *laneSection = targetRoad->GetLaneSectionByS(target.GetS());
-	Lane *lane = laneSection->GetLaneById(target.GetLaneId());
+	LaneSection *laneSection = road->GetLaneSectionByS(pos.GetS());
+	Lane *lane = laneSection->GetLaneById(pos.GetLaneId());
 	if (!lane)
 	{
-		//LOG("3");
+		// LOG("3");
 		return false;
 	}
 	return lane->IsDriving();
@@ -323,17 +242,16 @@ bool LaneIndependentRouter::IsTargetValid(Position target)
 std::vector<Node *> LaneIndependentRouter::CalculatePath(Position start, Position target, RouteStrategy routeStrategy)
 {
 	visited_.clear();
-	distance_.clear();
 	clearQueue(unvisited_);
 
-	if (!IsTargetValid(target))
+	if (!IsPositionValid(start))
 	{
-		LOG("Targetwaypoint is invalid");
+		LOG("Start position is invalid");
 		return {};
 	}
-	if (routeStrategy == RouteStrategy::MIN_INTERSECTIONS)
+	if (!IsPositionValid(target))
 	{
-		LOG("MIN_INTERSECTION not yet implemented");
+		LOG("Target position is invalid");
 		return {};
 	}
 
@@ -382,7 +300,33 @@ std::vector<Node *> LaneIndependentRouter::CalculatePath(Position start, Positio
 	startNode->currentLaneId = startLaneId;
 	startNode->fromLaneId = 0;
 	startNode->previous = 0;
-	double nextWeight = CalcWeightWithPos(contactPoint, start, startRoad, routeStrategy);
+
+	double roadLength = 0;
+
+	if (contactPoint == ContactPointType::CONTACT_POINT_START)
+	{
+		roadLength = start.GetS();
+	}
+	else if (contactPoint == ContactPointType::CONTACT_POINT_END)
+	{
+		roadLength = startRoad->GetLength() - start.GetS();
+	}
+
+	double nextWeight = 0;
+	if (routeStrategy == RouteStrategy::SHORTEST)
+	{
+		nextWeight = roadLength;
+	}
+	else if (routeStrategy == RouteStrategy::FASTEST)
+	{
+		double averageSpeed = roadCalculations_.CalcAverageSpeed(startRoad);
+		nextWeight = roadLength / averageSpeed;
+	}
+	else if (routeStrategy == RouteStrategy::MIN_INTERSECTIONS)
+	{
+		nextWeight = 0;
+	}
+
 	startNode->weight = nextWeight;
 
 	unvisited_.push(startNode);
@@ -405,20 +349,10 @@ std::vector<Node *> LaneIndependentRouter::CalculatePath(Position start, Positio
 		LOG("Path to target not found");
 	}
 	std::reverse(pathToGoal.begin(), pathToGoal.end());
-	LOG("Path to goal:");
-	for (Node *n : pathToGoal)
-	{
-		LOG("r=%d,cl=%d,fl=%d", n->road->GetId(), n->currentLaneId,n->fromLaneId);
-	}
-	LOG("Distance:");
-	for (Node *n : distance_)
-	{
-		LOG("r=%d,cl=%d,fl=%d", n->road->GetId(), n->currentLaneId,n->fromLaneId);
-	}
 	LOG("Visited:");
 	for (Node *n : visited_)
 	{
-		LOG("r=%d,cl=%d,fl=%d", n->road->GetId(), n->currentLaneId,n->fromLaneId);
+		n->Print();
 	}
 	return pathToGoal;
 }
@@ -426,5 +360,125 @@ std::vector<Node *> LaneIndependentRouter::CalculatePath(Position start, Positio
 std::vector<Position> LaneIndependentRouter::GetWaypoints(std::vector<Node *> path, Position target)
 {
 	std::vector<Position> waypoints;
+	for (int idx = 0; idx < path.size() - 1; idx++)
+	{
+		Node *current = path[idx];
+		Node *next = path[idx + 1];
+		double s = 0;
+		if (current->link->GetType() == LinkType::SUCCESSOR)
+		{
+			for (int i = current->road->GetNumberOfLaneSections() - 1; i >= 0; i--)
+			{
+				Lane *lane = current->road->GetLaneSectionByIdx(i)->GetLaneById(next->fromLaneId);
+				if (!lane || !lane->IsDriving())
+				{
+					break;
+				}
+				s += current->road->GetLaneSectionByIdx(i)->GetLength();
+			}
+
+			waypoints.push_back(Position(current->road->GetId(), next->fromLaneId, (current->road->GetLength() - (s / 2)), 0.0));
+		}
+		else if (current->link->GetType() == LinkType::PREDECESSOR)
+		{
+			for (int i = 0; i < current->road->GetNumberOfLaneSections(); i++)
+			{
+				Lane *lane = current->road->GetLaneSectionByIdx(i)->GetLaneById(next->fromLaneId);
+				if (!lane || !lane->IsDriving())
+				{
+					break;
+				}
+				s += current->road->GetLaneSectionByIdx(i)->GetLength();
+			}
+			waypoints.push_back(Position(current->road->GetId(), next->fromLaneId, (s / 2), 0.0));
+		}
+	}
+	waypoints.push_back(target);
+	// for (Position p : waypoints)
+	// {
+	// 	LOG("r=%d,l=%d,s=%f,o=%f", p.GetTrackId(), p.GetLaneId(), p.GetS(), p.GetOffset());
+	// }
 	return waypoints;
+}
+
+double RoadCalculations::CalcAverageSpeed(Road *road)
+{
+	int roadTypeCount = road->GetNumberOfRoadTypes();
+	if (roadTypeCount == 0)
+	{
+		// Assume road is rural
+		LOG("Road %d has no road types", road->GetId());
+		return roadTypeToSpeed[Road::RoadType::ROADTYPE_RURAL];
+	}
+
+	double totalSpeed = 0;
+	for (size_t i = 0; i < roadTypeCount; i++)
+	{
+		if (road->GetRoadType((int)i)->speed_ > SMALL_NUMBER)
+		{
+			totalSpeed += road->GetRoadType((int)i)->speed_;
+		}
+		else
+		{
+			bool hasDefinedSpeedForRoadType = roadTypeToSpeed.find(road->GetRoadType((int)i)->road_type_) != roadTypeToSpeed.end();
+			if (hasDefinedSpeedForRoadType)
+			{
+				totalSpeed += roadTypeToSpeed[road->GetRoadType((int)i)->road_type_];
+			}
+			else
+			{
+				LOG("Road %d has undefined road type", road->GetId());
+			}
+		}
+	}
+
+	return totalSpeed / (double)roadTypeCount;
+}
+
+double RoadCalculations::CalcWeightWithPos(Node *previousNode, Position pos, Road *road, RouteStrategy routeStrategy)
+{
+	double roadLength = 0;
+
+	if (previousNode->link->GetContactPointType() == ContactPointType::CONTACT_POINT_START)
+	{
+		roadLength = pos.GetS();
+	}
+	else if (previousNode->link->GetContactPointType() == ContactPointType::CONTACT_POINT_END)
+	{
+		roadLength = road->GetLength() - pos.GetS();
+	}
+
+	return CalcWeight(previousNode, routeStrategy, roadLength, road);
+}
+
+double RoadCalculations::CalcWeight(Node *previousNode, RouteStrategy routeStrategy, double roadLength, Road *road)
+{
+	if (routeStrategy == RouteStrategy::SHORTEST)
+	{
+		return roadLength;
+	}
+	else if (routeStrategy == RouteStrategy::FASTEST)
+	{
+		double averageSpeed = CalcAverageSpeed(road);
+		if (averageSpeed == 0)
+		{
+			// If average speed is 0, road can't be traveled on
+			return LARGE_NUMBER;
+		}
+
+		return roadLength / averageSpeed;
+	}
+	else if (routeStrategy == RouteStrategy::MIN_INTERSECTIONS)
+	{
+		if (previousNode->link->GetElementType() == RoadLink::ELEMENT_TYPE_JUNCTION)
+		{
+			return 1;
+		}
+		return 0;
+	}
+	else
+	{
+		LOG("RouteStrategy does not exist");
+		return 0;
+	}
 }
