@@ -4510,7 +4510,7 @@ int RoadPath::Calculate(double &dist, bool bothDirections, double maxDist)
 					if ((node->link == startRoad->GetLink(LinkType::PREDECESSOR) &&
 						abs(startPos_->GetHRelative()) > M_PI_2 && abs(startPos_->GetHRelative()) < 3 * M_PI / 2) ||
 						((node->link == startRoad->GetLink(LinkType::SUCCESSOR) &&
-						abs(startPos_->GetHRelative()) < M_PI_2 || abs(startPos_->GetHRelative()) > 3 * M_PI / 2)))
+						(abs(startPos_->GetHRelative()) < M_PI_2 || abs(startPos_->GetHRelative()) > 3 * M_PI / 2))))
 					{
 						direction_ = 1;
 					}
