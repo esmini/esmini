@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <OpenSCENARIO>
-    <FileHeader revMajor="1" revMinor="0" date="2018-11-8T17:00:00" author="Erik Gunnarsson"/>
+    <FileHeader revMajor="1" 
+                revMinor="1" 
+                date="2022-03-30T10:00:00" 
+                description="Vehicle catalog - using some esmini specific OSC extensions to support (semi)trailers"
+                author="esmini team"/>
 
     <!-- Cars -->
 
@@ -42,7 +46,6 @@
                 <RearAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="0" positionZ="0.4"/>
             </Axles>
             <Properties>
-                <File filepath="../models/car_blue.osgb"/>
                 <Property name="model_id" value="1"/>
                 <!-- Scale modes: None, BBToModel, ModelToBB -->
                 <Property name="scaleMode" value="ModelToBB"/>
@@ -68,7 +71,7 @@
             </Properties>
         </Vehicle>
 
-        <Vehicle name="car_yellow" vehicleCategory="car">
+        <Vehicle name="car_yellow" vehicleCategory="car" model3d="../models/car_yellow.osgb">
             <BoundingBox>
                 <Center x="1.6" y="0.0" z="0.75"/>
                 <Dimensions width="2.5" length="6.04" height="1.5"/>
@@ -79,7 +82,6 @@
                 <RearAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="0" positionZ="0.4"/>
             </Axles>
             <Properties>
-                <File filepath="../models/car_yellow.osgb"/>
                 <!-- Scale modes: None, BBToModel, ModelToBB -->
                 <Property name="scaleMode" value="ModelToBB"/>
                 <Property name="model_id" value="3"/>

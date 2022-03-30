@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <OpenSCENARIO>
    <FileHeader revMajor="1"
-               revMinor="0"
+               revMinor="1"
                date="2020-10-06T17:00:00"
+               description="Pedestrian catalog"
                author="esmini"/>
    <Catalog name="PedestrianCatalog">
       <Pedestrian mass="80" model="EPTa" name="pedestrian_adult" pedestrianCategory="pedestrian" model3d="../models/walkman.osgb">
