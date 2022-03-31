@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Demonstrate switching between two controllers -->
+<OpenSCENARIO>
+    <FileHeader revMajor="1" revMinor="1" date="2022-03-31T10:00:00" description="Demonstrate switching between two controllers" author="esmini-team"/>
+    <ParameterDeclarations>
+        <ParameterDeclaration name="HWTACCOn" parameterType="double" value="3.0"/>
+        <ParameterDeclaration name="HWTACCOff" parameterType="string" value="5.0"/>
+        <ParameterDeclaration name="ACCTimeGap" parameterType="string" value="3.0"/>
+        <ParameterDeclaration name="TargetSpeed1KmH" parameterType="double" value="30"/>
+        <ParameterDeclaration name="TargetSpeed2KmH" parameterType="double" value="70"/>
+        <ParameterDeclaration name="RoadId" parameterType="integer" value="1"/>
+        <ParameterDeclaration name="LaneId" parameterType="integer" value="-1"/>
+    </ParameterDeclarations>
+    <CatalogLocations>
+        <VehicleCatalog>
+            <Directory path="../xosc/Catalogs/Vehicles"/>
+        </VehicleCatalog>
+        <ControllerCatalog>
+            <Directory path="../xosc/Catalogs/Controllers"/>
+        </ControllerCatalog>
+    </CatalogLocations>
+    <RoadNetwork>
+        <LogicFile filepath="../xodr/curves_elevation.xodr"/>
+    </RoadNetwork>
+    <Entities>
+        <ScenarioObject name="Ego">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+            <ObjectController>
+                <CatalogReference catalogName="ControllerCatalog" entryName="interactiveDriver"/>
+            </ObjectController>
+        </ScenarioObject>
+        <ScenarioObject name="Target">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>
+        </ScenarioObject>
+    </Entities>
+    <Storyboard>
+        <Init>
+            <Actions>
+                <Private entityRef="Ego">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="$RoadId" laneId="$LaneId" offset="0" s="40"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="${($TargetSpeed1KmH * 0.8) / 3.6}"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>                    
+                    <PrivateAction>
+                        <ControllerAction>
+                            <ActivateControllerAction longitudinal="true" lateral="true"/>
+                        </ControllerAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Target">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="$RoadId" laneId="$LaneId" offset="0" s="80"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="${$TargetSpeed1KmH / 3.6}"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                </Private>
+            </Actions>
+        </Init>
+        <Story name="ControllerStory">
+            <ParameterDeclarations/>
+            <Act name="ControllerAct">
+                <ManeuverGroup maximumExecutionCount="1" name="ControllerMG">
+                    <Actors selectTriggeringEntities="false">
+                        <EntityRef entityRef="Ego"/>
+                    </Actors>
+                    <Maneuver name="ControllerManeuver">
+                        <Event name="ActivateACCEvent" priority="overwrite" maximumExecutionCount="-1">
+                            <Action name="AssignACCAction">
+                                <PrivateAction>
+                                    <ControllerAction>
+                                        <AssignControllerAction>
+                                            <CatalogReference catalogName="ControllerCatalog" entryName="ACCController">
+                                                <ParameterAssignments>
+                                                    <ParameterAssignment parameterRef="TimeGap" value="$ACCTimeGap"/>
+                                                    <ParameterAssignment parameterRef="SetSpeed" value="${40.0/3.6}"/>
+                                                </ParameterAssignments>
+                                            </CatalogReference>
+                                        </AssignControllerAction>
+                                    </ControllerAction>
+                                </PrivateAction>
+                            </Action>
+                            <Action name="ActivateACCAction">
+                                <PrivateAction>
+                                    <ActivateControllerAction longitudinal="true" lateral="true"/>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="ActivateACCCondition" delay="0" conditionEdge="rising">
+                                        <ByEntityCondition>
+                                            <TriggeringEntities triggeringEntitiesRule="any">
+                                                <EntityRef entityRef="Ego"/>
+                                            </TriggeringEntities>
+                                            <EntityCondition>
+                                                <TimeHeadwayCondition entityRef="Target" value="$HWTACCOn" freespace="false" coordinateSystem="road" relativeDistanceType="longitudinal" rule="lessThan"/>
+                                            </EntityCondition>
+                                        </ByEntityCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event name="ActivateInteractiveDriverEvent" priority="overwrite" maximumExecutionCount="-1">
+                            <Action name="AssignInteractiveDriverAction">
+                                <PrivateAction>
+                                    <ControllerAction>
+                                        <AssignControllerAction>
+                                            <CatalogReference catalogName="ControllerCatalog" entryName="interactiveDriver"/>
+                                        </AssignControllerAction>
+                                    </ControllerAction>
+                                </PrivateAction>
+                            </Action>
+                            <Action name="ActivateInteractiveDriverAction">
+                                <PrivateAction>
+                                    <ControllerAction>
+                                        <ActivateControllerAction longitudinal="true" lateral="true"/>
+                                    </ControllerAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="ActivateInteractiveDriverCondition" delay="0" conditionEdge="rising">
+                                        <ByEntityCondition>
+                                            <TriggeringEntities triggeringEntitiesRule="any">
+                                                <EntityRef entityRef="Ego"/>
+                                            </TriggeringEntities>
+                                            <EntityCondition>
+                                                <TimeHeadwayCondition entityRef="Target" value="$HWTACCOff" freespace="false" coordinateSystem="road" relativeDistanceType="longitudinal" rule="greaterThan"/>
+                                            </EntityCondition>
+                                        </ByEntityCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                    </Maneuver>
+                </ManeuverGroup>
+                <ManeuverGroup maximumExecutionCount="1" name="TargetChangeSpeedMG" maximumExecutionCount="1">
+                    <Actors selectTriggeringEntities="false">
+                        <EntityRef entityRef="Target"/>
+                    </Actors>
+                    <Maneuver name="TargetChangeSpeedManeuver">
+                        <Event name="TargetChangeSpeedEvent" priority="overwrite">
+                            <Action name="TargetChangeSpeedAction">
+                                <PrivateAction>
+                                    <LongitudinalAction>
+                                        <SpeedAction>
+                                            <SpeedActionDynamics dynamicsShape="cubic" dynamicsDimension="time" value="3.0"/>
+                                            <SpeedActionTarget>
+                                                <AbsoluteTargetSpeed value="${$TargetSpeed2KmH/3.6}"/>
+                                            </SpeedActionTarget>
+                                        </SpeedAction>
+                                    </LongitudinalAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="TargetChangeSpeedCondition" delay="0" conditionEdge="rising">
+                                         <ByValueCondition>
+                                            <SimulationTimeCondition value="10" rule="greaterThan"/>
+                                         </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event name="TargetChangeSpeedEvent2" priority="overwrite">
+                            <Action name="TargetChangeSpeedAction2">
+                                <PrivateAction>
+                                    <LongitudinalAction>
+                                        <SpeedAction>
+                                            <SpeedActionDynamics dynamicsShape="cubic" dynamicsDimension="time" value="3.0"/>
+                                            <SpeedActionTarget>
+                                                <AbsoluteTargetSpeed value="${$TargetSpeed1KmH/3.6}"/>
+                                            </SpeedActionTarget>
+                                        </SpeedAction>
+                                    </LongitudinalAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="TargetChangeSpeedCondition2" delay="0" conditionEdge="rising">
+                                         <ByValueCondition>
+                                            <SimulationTimeCondition value="20" rule="greaterThan"/>
+                                         </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>                        
+                    </Maneuver>
+                </ManeuverGroup>
+                <StartTrigger/>
+                <StopTrigger>
+                    <ConditionGroup>
+                        <Condition name="EndOfRoadCondition" delay="0" conditionEdge="rising">
+                            <ByEntityCondition>
+                                <TriggeringEntities triggeringEntitiesRule="any">
+                                    <EntityRef entityRef="Target"/>
+                                </TriggeringEntities>
+                                <EntityCondition>
+                                    <EndOfRoadCondition duration="2.5" rule="greaterThan"/>
+                                </EntityCondition>
+                            </ByEntityCondition>
+                        </Condition>
+                    </ConditionGroup>
+                </StopTrigger>
+            </Act>
+        </Story>
+        <StopTrigger/>
+    </Storyboard>
+</OpenSCENARIO>
