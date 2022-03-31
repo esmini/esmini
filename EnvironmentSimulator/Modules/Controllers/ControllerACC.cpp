@@ -191,7 +191,14 @@ void ControllerACC::Activate(ControlDomains domainMask)
 	{
 		setSpeed_ = object_->GetSpeed();
 	}
+
 	Controller::Activate(domainMask);
+
+	if (IsActiveOnDomains(ControlDomains::DOMAIN_LAT))
+	{
+		// Make sure heading is aligned with road driving direction
+		object_->pos_.SetHeadingRelative((object_->pos_.GetHRelative() > M_PI_2 && object_->pos_.GetHRelative() < 3 * M_PI_2) ? M_PI : 0.0);
+	}
 }
 
 void ControllerACC::ReportKeyEvent(int key, bool down)
