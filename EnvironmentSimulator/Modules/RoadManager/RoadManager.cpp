@@ -4507,10 +4507,15 @@ int RoadPath::Calculate(double &dist, bool bothDirections, double maxDist)
 				if (node->previous == 0)
 				{
 					// This is the first node - inspect whether it is in front or behind start position
-					if ((node->link == startRoad->GetLink(LinkType::PREDECESSOR) &&
-						abs(startPos_->GetHRelative()) > M_PI_2 && abs(startPos_->GetHRelative()) < 3 * M_PI / 2) ||
-						((node->link == startRoad->GetLink(LinkType::SUCCESSOR) &&
-						(abs(startPos_->GetHRelative()) < M_PI_2 || abs(startPos_->GetHRelative()) > 3 * M_PI / 2))))
+					bool isPred = node->link == startRoad->GetLink(LinkType::PREDECESSOR);
+					bool isGTPi2 = abs(startPos_->GetHRelative()) > M_PI_2;
+					bool isLT3Pi2 = abs(startPos_->GetHRelative()) < 3 * M_PI / 2;
+					bool isSucc = node->link == startRoad->GetLink(LinkType::SUCCESSOR);
+					bool isLTPi2 = !isGTPi2;
+					bool isGT3Pi2 = !isLT3Pi2;
+					bool isPredAndBack = isPred && isGTPi2 && isLT3Pi2;
+					bool isSuccAndFront = isSucc && (isLTPi2 || isGT3Pi2);
+					if (isPredAndBack || isSuccAndFront)
 					{
 						direction_ = 1;
 					}
