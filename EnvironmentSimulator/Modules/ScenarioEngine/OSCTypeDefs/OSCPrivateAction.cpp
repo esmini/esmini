@@ -504,17 +504,19 @@ void AcquirePositionAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
 
 void AssignControllerAction::Start(double simTime, double dt)
 {
-	if (controller_ == 0)
+	if (controller_ == 0 || object_->controller_ != controller_)
 	{
-		// Detach any controller from object
+		// Detach any other controller from object
 		if (object_->controller_)
 		{
 			Controller* ctrl = (Controller*)object_->controller_;
 			ctrl->Assign(0);
+			ctrl->Deactivate();
 			object_->SetAssignedController(0);
 		}
 	}
-	else
+
+	if (controller_)
 	{
 		controller_->Assign(object_);
 
