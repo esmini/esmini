@@ -163,8 +163,9 @@ bool LaneIndependentRouter::FindGoal(RouteStrategy routeStrategy)
 	{
 		Node *currentNode = unvisited_.top();
 		unvisited_.pop();
-		bool nodeIsVisited = std::find_if(visited_.begin(), visited_.end(), [currentNode](Node* n) {return *n == *currentNode; }) != visited_.end();
-		if(nodeIsVisited)
+		bool nodeIsVisited = std::find_if(visited_.begin(), visited_.end(), [currentNode](Node *n)
+										  { return *n == *currentNode; }) != visited_.end();
+		if (nodeIsVisited)
 		{
 			continue;
 		}
@@ -206,8 +207,8 @@ bool LaneIndependentRouter::FindGoal(RouteStrategy routeStrategy)
 				continue;
 			}
 			std::vector<Node *> nextNodes = GetNextNodes(nextRoad, targetRoad, currentNode, routeStrategy);
-			for(Node* n : nextNodes)
-			{	
+			for (Node *n : nextNodes)
+			{
 				unvisited_.push(n);
 			}
 		}
@@ -236,6 +237,44 @@ bool LaneIndependentRouter::IsPositionValid(Position pos)
 		return false;
 	}
 	return lane->IsDriving();
+}
+
+Node *LaneIndependentRouter::CreateStartNode(RoadLink *link, Road *road, int laneId, ContactPointType contactPoint, RouteStrategy routeStrategy, Position pos)
+{
+	Node *startNode = new Node;
+	startNode->link = link;
+	startNode->road = road;
+	startNode->currentLaneId = laneId;
+	startNode->fromLaneId = 0;
+	startNode->previous = 0;
+
+	double roadLength = 0;
+
+	if (contactPoint == ContactPointType::CONTACT_POINT_START)
+	{
+		roadLength = pos.GetS();
+	}
+	else if (contactPoint == ContactPointType::CONTACT_POINT_END)
+	{
+		roadLength = road->GetLength() - pos.GetS();
+	}
+
+	double nextWeight = 0;
+	if (routeStrategy == RouteStrategy::SHORTEST)
+	{
+		nextWeight = roadLength;
+	}
+	else if (routeStrategy == RouteStrategy::FASTEST)
+	{
+		double averageSpeed = roadCalculations_.CalcAverageSpeed(road);
+		nextWeight = roadLength / averageSpeed;
+	}
+	else if (routeStrategy == RouteStrategy::MIN_INTERSECTIONS)
+	{
+		nextWeight = 0;
+	}
+	startNode->weight = nextWeight;
+	return startNode;
 }
 
 // Calculate path to target and returns it as a vector of pathnodes
@@ -294,41 +333,7 @@ std::vector<Node *> LaneIndependentRouter::CalculatePath(Position start, Positio
 		return {};
 	}
 
-	Node *startNode = new Node;
-	startNode->link = nextElement;
-	startNode->road = startRoad;
-	startNode->currentLaneId = startLaneId;
-	startNode->fromLaneId = 0;
-	startNode->previous = 0;
-
-	double roadLength = 0;
-
-	if (contactPoint == ContactPointType::CONTACT_POINT_START)
-	{
-		roadLength = start.GetS();
-	}
-	else if (contactPoint == ContactPointType::CONTACT_POINT_END)
-	{
-		roadLength = startRoad->GetLength() - start.GetS();
-	}
-
-	double nextWeight = 0;
-	if (routeStrategy == RouteStrategy::SHORTEST)
-	{
-		nextWeight = roadLength;
-	}
-	else if (routeStrategy == RouteStrategy::FASTEST)
-	{
-		double averageSpeed = roadCalculations_.CalcAverageSpeed(startRoad);
-		nextWeight = roadLength / averageSpeed;
-	}
-	else if (routeStrategy == RouteStrategy::MIN_INTERSECTIONS)
-	{
-		nextWeight = 0;
-	}
-
-	startNode->weight = nextWeight;
-
+	Node* startNode = CreateStartNode(nextElement,startRoad,startLaneId,contactPoint,routeStrategy,start);
 	unvisited_.push(startNode);
 
 	bool found = FindGoal(routeStrategy);
@@ -349,11 +354,11 @@ std::vector<Node *> LaneIndependentRouter::CalculatePath(Position start, Positio
 		LOG("Path to target not found");
 	}
 	std::reverse(pathToGoal.begin(), pathToGoal.end());
-	LOG("Visited:");
-	for (Node *n : visited_)
-	{
-		n->Print();
-	}
+	// LOG("Visited:");
+	// for (Node *n : visited_)
+	// {
+	// 	n->Print();
+	// }
 	return pathToGoal;
 }
 

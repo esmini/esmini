@@ -89,7 +89,7 @@ namespace roadmanager
     private:
         RoadLink *GetNextLink(Node *currentNode, Road *nextRoad);
         Node *CreateTargetNode(Node *currentNode, Road *nextRoad, std::pair<int, int> laneIds, RouteStrategy routeStrategy);
-        bool TargetLaneIsInDrivingDirection(Node *pNode, Road *nextRoad);
+        Node *CreateStartNode(RoadLink* link,Road* road, int laneId,ContactPointType contactPoint,RouteStrategy routeStrategy,Position pos);
         std::vector<Node *> GetNextNodes(Road *nextRoad, Road *targetRoad, Node *srcNode, RouteStrategy routeStrategy);
         std::vector<std::pair<int, int>> GetConnectingLanes(Node *srcNode, Road *nextRoad);
         bool FindGoal(RouteStrategy routeStrategy);
