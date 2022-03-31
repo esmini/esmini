@@ -194,7 +194,7 @@ bool OSCCondition::CheckEdge(bool new_value, bool old_value, OSCCondition::Condi
 	{
 		return new_value;
 	}
-	else if (state_ == ConditionState::EVALUATED)
+	else if (state_ >= ConditionState::EVALUATED)
 	{
 		if (edge == OSCCondition::ConditionEdge::RISING_OR_FALLING)
 		{
