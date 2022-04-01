@@ -8274,15 +8274,24 @@ bool Position::Delta(Position* pos_b, PositionDiff &diff, bool bothDirections, d
 		int laneIdB = pos_b->GetLaneId();
 		double tB = pos_b->GetT();
 
-		// If start and end roads are oppotite directed, inverse one side for delta calculations
-		if (path->visited_.size() > 0 &&
-			((path->visited_[0]->link->GetType() == LinkType::SUCCESSOR &&
-				path->visited_.back()->link->GetContactPointType() == ContactPointType::CONTACT_POINT_END) ||
-			 (path->visited_[0]->link->GetType() == LinkType::PREDECESSOR &&
-				path->visited_.back()->link->GetContactPointType() == ContactPointType::CONTACT_POINT_START)))
-		{
-			laneIdB = -laneIdB;
-			tB = -tB;
+		if (path->visited_.size() > 0) {
+			RoadPath::PathNode* lastNode = path->visited_.back();
+			RoadPath::PathNode* firstNode = lastNode;
+			while (firstNode->previous) {
+				firstNode = firstNode->previous;
+			}
+			bool isPathForward = firstNode->link->GetType() == LinkType::SUCCESSOR;
+			bool isPathBackward = firstNode->link->GetType() == LinkType::PREDECESSOR;
+			bool isConnectedToEnd = lastNode->link->GetContactPointType() == ContactPointType::CONTACT_POINT_END;
+			bool isConnectedToStart = lastNode->link->GetContactPointType() == ContactPointType::CONTACT_POINT_START;
+			bool isHeadToToe = isPathForward && isConnectedToEnd;
+			bool isToeToHead = isPathBackward && isConnectedToStart;
+
+			// If start and end roads are oppotite directed, inverse one side for delta calculations
+			if (isHeadToToe || isToeToHead) {
+				laneIdB = -laneIdB;
+				tB = -tB;
+			}
 		}
 
 		// calculate delta lane id and lateral position
