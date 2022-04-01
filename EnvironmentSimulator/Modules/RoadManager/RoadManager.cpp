@@ -8284,11 +8284,11 @@ bool Position::Delta(Position* pos_b, PositionDiff &diff, bool bothDirections, d
 			bool isPathBackward = firstNode->link->GetType() == LinkType::PREDECESSOR;
 			bool isConnectedToEnd = lastNode->link->GetContactPointType() == ContactPointType::CONTACT_POINT_END;
 			bool isConnectedToStart = lastNode->link->GetContactPointType() == ContactPointType::CONTACT_POINT_START;
-			bool isHeadToToe = isPathForward && isConnectedToEnd;
-			bool isToeToHead = isPathBackward && isConnectedToStart;
+			bool isHeadToHead = isPathForward && isConnectedToEnd;
+			bool isToeToToe = isPathBackward && isConnectedToStart;
 
 			// If start and end roads are oppotite directed, inverse one side for delta calculations
-			if (isHeadToToe || isToeToHead) {
+			if (isHeadToHead || isToeToToe) {
 				laneIdB = -laneIdB;
 				tB = -tB;
 			}
