@@ -136,6 +136,11 @@ for:
                 throw "ScenarioEngine_test failed"
             }
 
+            ./ScenarioPlayer_test
+            if ($lastExitCode -ne 0) {
+                throw "ScenarioPlayer_test failed"
+            }
+
             ./ScenarioEngineDll_test
             if ($lastExitCode -ne 0) {
                 throw "ScenarioEngineDll_test failed"
@@ -334,6 +339,11 @@ for:
             ./Release/ScenarioEngine_test
             if ($lastExitCode -ne 0) {
                 throw "ScenarioEngine_test failed"
+            }
+
+            ./Release/ScenarioPlayer_test
+            if ($lastExitCode -ne 0) {
+                throw "ScenarioPlayer_test failed"
             }
 
             ./Release/ScenarioEngineDll_test

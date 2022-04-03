@@ -144,6 +144,9 @@ public:
 
 	OffScreenImage *FetchCapturedImagePtr();
 	void AddCustomCamera(double x, double y, double z, double h, double p);
+	void AddCustomFixedCamera(double x, double y, double z, double h, double p);
+	void AddCustomSemiFixedCamera(double x, double y, double z);
+	void AddCustomFixedTopCamera(double x, double y, double z, double rot);
 #else
 	void* viewer_;
 #endif

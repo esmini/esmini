@@ -19,6 +19,9 @@
 #include <osg/Quat>
 #include <osg/observer_ptr>
 
+#define _USE_MATH_DEFINES
+#include <math.h>
+
 namespace osgGA{
 
 class RubberbandManipulator : public osgGA::CameraManipulator
@@ -37,14 +40,30 @@ class RubberbandManipulator : public osgGA::CameraManipulator
             RB_NUM_MODES
 		};
 
-        typedef struct
+        class CustomCamera
         {
-            double x;
-            double y;
-            double z;
-            double h;
-            double p;
-        } CustomCameraPos;
+        public:
+            CustomCamera(osg::Vec3 pos, osg::Vec3 rot, bool fixed_pos = false) :
+                pos_(pos), rot_(rot), fixed_pos_(fixed_pos), ortho_(false), fixed_rot_(true) {}
+            CustomCamera(osg::Vec3 pos, bool fixed_pos = false) :
+                pos_(pos), fixed_pos_(fixed_pos), fixed_rot_(false), ortho_(false) {}
+            CustomCamera(osg::Vec3 pos, double rot) :
+                pos_(pos), rot_(osg::Vec3(rot, M_PI_2 - 1e-5, 0.0)),
+                fixed_pos_(true), fixed_rot_(true), ortho_(true) {}
+
+            bool GetFixPos() { return fixed_pos_; }
+            bool GetFixRot() { return fixed_rot_; }
+            bool GetOrtho() { return ortho_; }
+            osg::Vec3 GetPos() { return pos_; }
+            osg::Vec3 GetRot() { return rot_; }
+
+        private:
+            osg::Vec3 pos_;
+            osg::Vec3 rot_;
+            bool fixed_pos_;
+            bool fixed_rot_;
+            bool ortho_;
+        };
 
 		RubberbandManipulator(unsigned int mode = RB_MODE_RUBBER_BAND_ORBIT);
 
@@ -83,9 +102,11 @@ class RubberbandManipulator : public osgGA::CameraManipulator
 
 		void calculateCameraDistance();
 
-        void AddCustomCamera(CustomCameraPos customCameraPos) { customCamera_.push_back(customCameraPos); }
+        void AddCustomCamera(CustomCamera customCamera) { customCamera_.push_back(customCamera); }
 
         unsigned int GetNumberOfCameraModes() { return CAMERA_MODE::RB_NUM_MODES + customCamera_.size() - 1; }
+
+        CustomCamera* GetCurrentCustomCamera();
 
     protected:
 
@@ -117,8 +138,9 @@ class RubberbandManipulator : public osgGA::CameraManipulator
 		float _cameraRotation;
 
 		unsigned int _mode;
+        bool fix_camera_;
 
-        std::vector<CustomCameraPos> customCamera_;
+        std::vector<CustomCamera> customCamera_;
 };
 
 }

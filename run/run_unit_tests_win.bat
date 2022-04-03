@@ -16,6 +16,9 @@ pause
 Release\ScenarioEngine_test.exe
 pause
 
+Release\ScenarioPlayer_test.exe
+pause
+
 Release\ScenarioEngineDll_test.exe
 pause
 

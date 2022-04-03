@@ -2041,6 +2041,61 @@ extern "C"
 #endif
 	}
 
+	SE_DLL_API int SE_AddCustomFixedCamera(double x, double y, double z, double h, double p)
+	{
+#ifdef _USE_OSG
+		if (player)
+		{
+			player->AddCustomFixedCamera(x, y, z, h, p);
+		}
+		else
+		{
+			return -1;
+		}
+
+		return 0;
+#else
+		return -1;
+#endif
+	}
+
+	SE_DLL_API int SE_AddCustomSemiFixedCamera(double x, double y, double z)
+	{
+#ifdef _USE_OSG
+		if (player)
+		{
+			player->AddCustomSemiFixedCamera(x, y, z);
+		}
+		else
+		{
+			return -1;
+		}
+
+		return 0;
+#else
+		return -1;
+#endif
+	}
+
+	SE_DLL_API int SE_AddCustomFixedTopCamera(double x, double y, double z, double rot)
+	{
+#ifdef _USE_OSG
+		if (player)
+		{
+			player->AddCustomFixedTopCamera(x, y, z, rot);
+		}
+		else
+		{
+			return -1;
+		}
+
+		return 0;
+#else
+		return -1;
+#endif
+	}
+
+
 	SE_DLL_API int SE_SetCameraMode(int mode)
 	{
 #ifdef _USE_OSG

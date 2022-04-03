@@ -12,6 +12,12 @@ Options:
       Continuous screen capture. Warning: Many jpeg files will be created
   --collision
       Pauses the replay if the ego collides with another entity
+  --custom_camera <position>
+      Additional custom fixed camera position <x,y,z,h,p> (multiple occurrences supported)
+  --custom_fixed_camera <position and optional orientation>
+      Additional custom camera position <x,y,z>[,h,p] (multiple occurrences supported)
+  --custom_fixed_top_camera <position and rotation>
+      Additional custom top camera <x,y,z,rot> (multiple occurrences supported)
   --dir <path>
       Directory containing replays to overlay, pair with "file" argument, where "file" is .dat filename match substring
   --disable_off_screen
@@ -22,6 +28,8 @@ Options:
       Remove ghost entities
   --no_ghost_model
       Remove only ghost model, show trajectory (toggle with key 'g')
+  --path <path>
+      Search path prefix for assets, e.g. model_ids.txt file (multiple occurrences supported)
   --quit_at_end
       Quit application when reaching end of scenario
   --remove_object <id>

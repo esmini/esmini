@@ -34,8 +34,6 @@
 #include <osgUtil/Tessellator> // to tessellate multiple contours
 #include <osgUtil/Optimizer>   // to flatten transform nodes
 
-#include "CommonMini.hpp"
-
 #define SHADOW_SCALE 1.20
 #define SHADOW_MODEL_FILEPATH "shadow_face.osgb"
 #define ARROW_MODEL_FILEPATH "arrow.osgb"
@@ -1838,10 +1836,57 @@ void Viewer::PrintUsage()
 	printf("\n");
 }
 
-void Viewer::AddCustomCamera(double x, double y, double z, double h, double p)
+void Viewer::AddCustomCamera(double x, double y, double z, double h, double p, bool fixed_pos)
 {
-	rubberbandManipulator_->AddCustomCamera(osgGA::RubberbandManipulator::CustomCameraPos({ x,y,z,h,p }));
+	osgGA::RubberbandManipulator::CustomCamera cam(osg::Vec3(x, y, z), osg::Vec3(h, p, 0.0), fixed_pos);
+	rubberbandManipulator_->AddCustomCamera(cam);
+
 	UpdateCameraFOV();
+}
+
+void Viewer::AddCustomCamera(double x, double y, double z, bool fixed_pos)
+{
+	osgGA::RubberbandManipulator::CustomCamera cam(osg::Vec3(x, y, z), fixed_pos);
+	rubberbandManipulator_->AddCustomCamera(cam);
+
+	UpdateCameraFOV();
+}
+
+void Viewer::AddCustomFixedTopCamera(double x, double y, double z, double rot)
+{
+	osgGA::RubberbandManipulator::CustomCamera cam(osg::Vec3(x, y, z), rot);
+	rubberbandManipulator_->AddCustomCamera(cam);
+
+	UpdateCameraFOV();
+}
+
+int Viewer::GetCameraPosAndRot(osg::Vec3 &pos, osg::Vec3 &rot)
+{
+	osg::Matrix m = osgViewer_->getCamera()->getInverseViewMatrix();
+	osg::Quat quat = m.getRotate();
+	pos = m.getTrans();
+
+	double qx = quat.x();
+	double qy = quat.y();
+	double qz = quat.z();
+	double qw = quat.w();
+
+	double sqx = qx * qx;
+	double sqy = qy * qy;
+	double sqz = qz * qz;
+	double sqw = qw * qw;
+
+	double term1 = 2 * (qx * qy + qw * qz);
+	double term2 = sqw + sqx - sqy - sqz;
+	double term3 = -2 * (qx * qz - qw * qy);
+	double term4 = 2 * (qw * qx + qy * qz);
+	double term5 = sqw - sqx - sqy + sqz;
+
+	rot[0] = GetAngleInInterval2PI(M_PI_2 + atan2(term1, term2));
+	rot[1] = GetAngleInInterval2PI(M_PI_2 - atan2(term4, term5));
+	rot[2] = asin(term3);
+
+	return 0;
 }
 
 void Viewer::SetCameraMode(int mode)
@@ -1865,8 +1910,9 @@ int Viewer::GetNumberOfCameraModes()
 void Viewer::UpdateCameraFOV()
 {
 	double fov;
+	osgGA::RubberbandManipulator::CustomCamera* custom_cam = rubberbandManipulator_->GetCurrentCustomCamera();
 
-	if (camMode_ == osgGA::RubberbandManipulator::RB_MODE_TOP)
+	if (camMode_ == osgGA::RubberbandManipulator::RB_MODE_TOP || custom_cam && custom_cam->GetOrtho())
 	{
 		fov = ORTHO_FOV;
 	}
@@ -3170,12 +3216,22 @@ void Viewer::SetInfoTextProjection(int width, int height)
 
 void Viewer::SetVehicleInFocus(int idx)
 {
-	currentCarInFocus_ = idx;
-	if (entities_.size() > idx)
+	if (idx >= 0 && idx < entities_.size())
 	{
+		currentCarInFocus_ = idx;
 		rubberbandManipulator_->setTrackNode(entities_[currentCarInFocus_]->txNode_, false);
 		nodeTrackerManipulator_->setTrackNode(entities_[currentCarInFocus_]->txNode_);
 	}
+}
+
+void SetFixCameraFlag(bool fixed)
+{
+
+}
+
+void SetFixCameraPosition(osg::Vec3 pos, osg::Vec3 rot)
+{
+
 }
 
 void Viewer::SetWindowTitle(std::string title)
@@ -3311,12 +3367,23 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
 			}
 		}
 		break;
-	case(osgGA::GUIEventAdapter::KEY_K):
+	case('k'):
 		if (ea.getEventType() & osgGA::GUIEventAdapter::KEYDOWN)
 		{
 			viewer_->SetCameraMode((viewer_->camMode_ + 1) % viewer_->rubberbandManipulator_->GetNumberOfCameraModes());
 		}
 		break;
+	case('K'):
+	{
+		if (ea.getEventType() & osgGA::GUIEventAdapter::KEYDOWN)
+		{
+			// Print current camera position
+			osg::Vec3 pos, rot;
+			viewer_->GetCameraPosAndRot(pos, rot);
+			printf("Camera pos: %.5f, %.5f, %.5f rot: %.5f, %.5f, %.5f\n", pos[0], pos[1], pos[2], rot[0], rot[1], rot[2]);
+		}
+	}
+	break;
 	case(osgGA::GUIEventAdapter::KEY_O):
 	{
 		if (ea.getEventType() & osgGA::GUIEventAdapter::KEYDOWN)

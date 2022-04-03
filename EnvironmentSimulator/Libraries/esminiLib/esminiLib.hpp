@@ -1159,15 +1159,46 @@ extern "C"
 	SE_DLL_API int SE_WriteTGAImage(const char* filename, int width, int height, const unsigned char* data, int pixelSize, int pixelFormat, bool upsidedown);
 
 	/**
-	Add a camera mode with custom position and orientation (heading and pitch)
-	@param x X coordinate relative vehicle curerntly in focus
-	@param y Y coordinate relative vehicle curerntly in focus
-	@param z Z coordinate relative vehicle curerntly in focus
-	@param h H Heading (yaw) relative vehicle curerntly in focus
-	@param p P Pitch relative vehicle curerntly in focus
+	Add a camera with relative position and orientation (heading and pitch)
+	@param x X coordinate relative vehicle currently in focus
+	@param y Y coordinate relative vehicle currently in focus
+	@param z Z coordinate relative vehicle currently in focus
+	@param h Heading (yaw) (radians) relative vehicle currently in focus
+	@param p Pitch (radians) relative vehicle currently in focus
 	@return 0 if successful, -1 if not
 	*/
 	SE_DLL_API int SE_AddCustomCamera(double x, double y, double z, double h, double p);
+
+	/**
+	Add a fixed camera at custom global position and orientation (heading and pitch)
+	@param x X coordinate
+	@param y Y coordinate
+	@param z Z coordinate
+	@param h Heading (yaw) (radians)
+	@param p P Pitch (radians)
+	@return 0 if successful, -1 if not
+	*/
+	SE_DLL_API int SE_AddCustomFixedCamera(double x, double y, double z, double h, double p);
+
+	/**
+	Add a camera with fixed position but continuously looking at current entity
+	@param x X coordinate
+	@param y Y coordinate
+	@param z Z coordinate
+	@return 0 if successful, -1 if not
+	*/
+	SE_DLL_API int SE_AddCustomSemiFixedCamera(double x, double y, double z);
+
+	/**
+	Add a top view camera with fixed position and rotation
+	@param x X coordinate
+	@param y Y coordinate
+	@param z Z coordinate
+	@param rot Rotation (radians)
+	@return 0 if successful, -1 if not
+	*/
+	SE_DLL_API int SE_AddCustomFixedTopCamera(double x, double y, double z, double rot);
+
 
 	/**
 	Select camera mode

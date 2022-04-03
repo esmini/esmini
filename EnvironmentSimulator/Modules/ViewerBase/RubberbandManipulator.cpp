@@ -53,6 +53,26 @@ RubberbandManipulator::~RubberbandManipulator()
 {
 }
 
+RubberbandManipulator::CustomCamera* RubberbandManipulator::RubberbandManipulator::GetCurrentCustomCamera()
+{
+	if (customCamera_.size() == 0)
+	{
+		return nullptr;
+	}
+
+	int index = _mode - RB_MODE_CUSTOM;
+	if (index > customCamera_.size())
+	{
+		index = customCamera_.size() - 1;
+	}
+	else if (index < 0)
+	{
+		index = 0;
+	}
+
+	return &customCamera_[index];
+}
+
 void RubberbandManipulator::setMode(unsigned int mode)
 {
 	if (mode > GetNumberOfCameraModes())
@@ -368,35 +388,50 @@ bool RubberbandManipulator::calcMovement(double dt, bool reset)
 	// Create the view matrix
 	if (_mode >= RB_MODE_CUSTOM)
 	{
-		int index = _mode - RB_MODE_CUSTOM;
-		if (index > customCamera_.size())
+		CustomCamera* cam = GetCurrentCustomCamera();
+		if (cam)
 		{
-			index = customCamera_.size() - 1;
+			osg::Vec3 cam_pos = cam->GetPos();
+			osg::Vec3 cam_rot = cam->GetRot();
+
+			// Create a view matrix for custom position, or center Front Looking Camrera (FLC)
+			osg::Quat rot;
+
+			if (cam->GetFixPos() && !cam->GetFixRot())
+			{
+				_matrix.makeLookAt(cam_pos, nodeFocusPoint, osg::Vec3(0, 0, 1));
+			}
+			else
+			{
+				rot.makeRotate(
+					-M_PI_2, osg::Vec3(osg::X_AXIS), // rotate so that Z axis points up
+					M_PI_2 - cam_rot[0], osg::Vec3(osg::Y_AXIS),  // rotate so that X is forward and apply heading
+					cam_rot[1], osg::Vec3(osg::X_AXIS)  // apply pitch
+				);
+
+				osg::Matrix localRotation;
+				localRotation.setRotate(rot);
+
+				osg::Matrix localTranslate;
+				localTranslate.setTrans(-cam_pos[0], -cam_pos[1], -cam_pos[2]);
+
+				if (cam->GetFixPos())
+				{
+					_matrix = localTranslate * localRotation;
+				}
+				else
+				{
+					// Camera transform is the inverse of focus object rotation and position
+					_matrix.makeRotate(nodeRotation.inverse());
+					osg::Matrix trans;
+					trans.makeTranslate(-nodeCenter);
+					_matrix.preMult(trans);
+
+					// Combine driver and camera transform
+					_matrix = _matrix * localTranslate * localRotation;
+				}
+			}
 		}
-		CustomCameraPos* camPos = &customCamera_[index];
-
-		// Create a view matrix for custom position, or center Front Looking Camrera (FLC)
-		osg::Quat rot;
-		rot.makeRotate(
-			-M_PI_2, osg::Vec3(osg::X_AXIS), // rotate so that Z axis points up
-			M_PI_2 - camPos->h, osg::Vec3(osg::Y_AXIS),  // rotate so that X is forward and apply heading
-			camPos->p, osg::Vec3(osg::X_AXIS)  // apply pitch
-		);
-		osg::Matrix localRotation;
-		localRotation.setRotate(rot);
-
-		osg::Matrix localTranslate;
-		localTranslate.makeIdentity();  // make sure no rotation
-		localTranslate.setTrans(-camPos->x, -camPos->y, -camPos->z);
-
-		// Camera transform is the inverse of focus object rotation and position
-		_matrix.makeRotate(nodeRotation.inverse());
-		osg::Matrix trans;
-		trans.makeTranslate(-nodeCenter);
-		_matrix.preMult(trans);
-
-		// Combine driver and camera transform
-		_matrix = _matrix * localTranslate * localRotation;
 	}
 	else if (_mode == RB_MODE_DRIVER)
 	{

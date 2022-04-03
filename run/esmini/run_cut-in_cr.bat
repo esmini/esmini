@@ -1,1 +1,1 @@
-"../../bin/esmini" --window 60 60 800 400 --osc ../../resources/xosc/cut-in_cr.xosc
+"../../bin/esmini" --window 60 60 800 400 --osc ../../resources/xosc/cut-in_cr.xosc --custom_fixed_camera 200,120,20

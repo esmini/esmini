@@ -520,6 +520,33 @@ void ScenarioPlayer::AddCustomCamera(double x, double y, double z, double h, dou
 	}
 }
 
+void ScenarioPlayer::AddCustomFixedCamera(double x, double y, double z, double h, double p)
+{
+	if (viewer_)
+	{
+		viewer_->AddCustomCamera(x, y, z, h, p, true);
+		viewer_->SetCameraMode(-1);  // activate last camera which is the one just added
+	}
+}
+
+void ScenarioPlayer::AddCustomSemiFixedCamera(double x, double y, double z)
+{
+	if (viewer_)
+	{
+		viewer_->AddCustomCamera(x, y, z, true);
+		viewer_->SetCameraMode(-1);  // activate last camera which is the one just added
+	}
+}
+
+void ScenarioPlayer::AddCustomFixedTopCamera(double x, double y, double z, double rot)
+{
+	if (viewer_)
+	{
+		viewer_->AddCustomFixedTopCamera(x, y, z, rot);
+		viewer_->SetCameraMode(-1);  // activate last camera which is the one just added
+	}
+}
+
 void ScenarioPlayer::CloseViewer()
 {
 	if (viewer_ != nullptr)
@@ -618,7 +645,7 @@ int ScenarioPlayer::InitViewer()
 		while ((arg_str = opt.GetOptionArg("custom_camera", counter)) != "")
 		{
 			size_t pos = 0;
-			double v[5];
+			double v[5] = { 0.0, 0.0, 0.0, 0.0, 0.0 };
 			for (int i = 0; i < 5; i++)
 			{
 				pos = arg_str.find(",");
@@ -631,11 +658,89 @@ int ScenarioPlayer::InitViewer()
 			}
 			if (!arg_str.empty())
 			{
-				LOG_AND_QUIT("Expected custom_camera <x,y,z,h,p>, got too many values. Make sure only five values is specified");
+				LOG_AND_QUIT("Expected custom_camera <x,y,z,h,p>, got too many values. Make sure only 5 values is specified");
+			}
+			AddCustomCamera(v[0], v[1], v[2], v[3], v[4]);
+			LOG("Created custom camera %d (%.2f, %.2f, %.2f, %.2f, %.2f)", counter, v[0], v[1], v[2], v[3], v[4]);
+			counter++;
+		}
+	}
+
+	if (opt.GetOptionSet("custom_fixed_camera") == true)
+	{
+		int counter = 0;
+
+		while ((arg_str = opt.GetOptionArg("custom_fixed_camera", counter)) != "")
+		{
+			size_t pos = 0;
+			double v[5] = { 0.0, 0.0, 0.0, 0.0, 0.0 };
+			int i = 0;
+			for (i = 0; i < 5; i++)
+			{
+				pos = arg_str.find(",");
+
+				if (i < 2 && pos == std::string::npos)
+				{
+					LOG_AND_QUIT("Expected custom_fixed_camera <x,y,z>[,h,p], got only %d values", i + 1);
+				}
+				else if (i == 3 && pos == std::string::npos)
+				{
+					LOG_AND_QUIT("Expected custom_fixed_camera <x,y,z>[,h,p], got %d values", i + 1);
+				}
+				v[i] = strtod(arg_str.substr(0, pos));
+				arg_str.erase(0, pos == std::string::npos ? pos : pos + 1);
+
+				if (i == 2 && pos == std::string::npos)
+				{
+					// Only position specified, stop now
+
+					break;
+				}
+			}
+			if (!arg_str.empty())
+			{
+				LOG_AND_QUIT("Expected custom_fixed_camera <x,y,z>[,h,p], got too many values. Make sure only 3 or 5 values is specified");
 			}
 
-			viewer_->AddCustomCamera(v[0], v[1], v[2], v[3], v[4]);
-			LOG("Created custom camera %d (%.2f, %.2f, %.2f, %.2f, %.2f)", counter, v[0], v[1], v[2], v[3], v[4]);
+			if (i == 2)
+			{
+				AddCustomSemiFixedCamera(v[0], v[1], v[2]);
+				LOG("Created custom fixed camera %d (%.2f, %.2f, %.2f)", counter, v[0], v[1], v[2]);
+			}
+			else
+			{
+				AddCustomFixedCamera(v[0], v[1], v[2], v[3], v[4]);
+				LOG("Created custom fixed camera %d (%.2f, %.2f, %.2f, %.2f, %.2f)", counter, v[0], v[1], v[2], v[3], v[4]);
+			}
+			counter++;
+		}
+	}
+
+	if (opt.GetOptionSet("custom_fixed_top_camera") == true)
+	{
+		int counter = 0;
+
+		while ((arg_str = opt.GetOptionArg("custom_fixed_top_camera", counter)) != "")
+		{
+			size_t pos = 0;
+			double v[4] = { 0.0, 0.0, 0.0, 0.0 };
+			for (int i = 0; i < 4; i++)
+			{
+				pos = arg_str.find(",");
+				if (i < 3 && pos == std::string::npos)
+				{
+					LOG_AND_QUIT("Expected custom_fixed_top_camera <x,y,z,rot>, got only %d values", i + 1);
+				}
+				v[i] = strtod(arg_str.substr(0, pos));
+				arg_str.erase(0, pos == std::string::npos ? pos : pos + 1);
+			}
+			if (!arg_str.empty())
+			{
+				LOG_AND_QUIT("Expected custom_fixed_top_camera <x,y,z,rot>, got too many values. Make sure only 4 values is specified");
+			}
+
+			AddCustomFixedTopCamera(v[0], v[1], v[2], v[3]);
+			LOG("Created custom fixed top camera %d (%.2f, %.2f, %.2f, %.2f)", counter, v[0], v[1], v[2], v[3]);
 			counter++;
 		}
 	}
@@ -883,9 +988,11 @@ int ScenarioPlayer::Init()
 	opt.AddOption("bounding_boxes", "Show entities as bounding boxes (toggle modes on key ',') ");
 	opt.AddOption("capture_screen", "Continuous screen capture. Warning: Many jpeg files will be created");
 	opt.AddOption("camera_mode", "Initial camera mode (\"orbit\" (default), \"fixed\", \"flex\", \"flex-orbit\", \"top\", \"driver\", \"custom\") (swith with key 'k') ", "mode");
-	opt.AddOption("custom_camera", "Additional custom camera position <x,y,z,h,p,r> (multiple occurrences supported)", "position");
 	opt.AddOption("csv_logger", "Log data for each vehicle in ASCII csv format", "csv_filename");
 	opt.AddOption("collision", "Enable global collision detection, potentially reducing performance");
+	opt.AddOption("custom_camera", "Additional custom fixed camera position <x,y,z,h,p> (multiple occurrences supported)", "position");
+	opt.AddOption("custom_fixed_camera", "Additional custom camera position <x,y,z>[,h,p] (multiple occurrences supported)", "position and optional orientation");
+	opt.AddOption("custom_fixed_top_camera", "Additional custom top camera <x,y,z,rot> (multiple occurrences supported)", "position and rotation");
 	opt.AddOption("disable_controllers", "Disable controllers");
 	opt.AddOption("disable_log", "Prevent logfile from being created");
 	opt.AddOption("disable_off_screen", "Disable off-screen rendering, potentially gaining performance");
