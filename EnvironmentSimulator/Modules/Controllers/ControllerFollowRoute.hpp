@@ -27,6 +27,13 @@ namespace scenarioengine
 	class ScenarioPlayer;
 	class ScenarioEngine;
 
+	typedef enum
+	{
+		MISSED_WAYPOINT,
+		PASSED_WAYPOINT,
+		WAYPOINT_NOT_REACHED
+	} WaypointStatus;
+
 	// base class for controllers
 	class ControllerFollowRoute : public Controller
 	{
@@ -43,13 +50,23 @@ namespace scenarioengine
 		void Activate(ControlDomains domainMask);
 		void ReportKeyEvent(int key, bool down);
 		void SetScenarioEngine(ScenarioEngine *scenarioEngine) { scenarioEngine_ = scenarioEngine; };
-		void ChangeLane(int lane, double time);
 
 	private:
+		void ChangeLane(int lane, double time);
+		void CalculateWaypoints();
+		bool CanChangeLane(int lane);
+		double DistanceBetween(roadmanager::Position p1, roadmanager::Position p2);
+		WaypointStatus GetWaypointStatus(roadmanager::Position vehiclePos, roadmanager::Position waypoint);
 		ScenarioEngine *scenarioEngine_;
 		vehicle::Vehicle vehicle_;
 		std::vector<OSCPrivateAction *> actions_;
-		roadmanager::OpenDrive* odr_;
+		roadmanager::OpenDrive *odr_;
+		std::vector<roadmanager::Position> waypoints_;
+		int currentWaypointIndex_;
+		bool changingLane_;
+		bool pathCalculated_;
+		const double MIN_DIST_TO_WAYPOINT_LANE_CHANGE = 25;
+		const double MIN_DIST_FOR_COLLISION = 20;
 	};
 
 	Controller *InstantiateControllerFollowRoute(void *args);

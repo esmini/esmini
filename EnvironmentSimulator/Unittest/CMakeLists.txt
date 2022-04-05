@@ -78,3 +78,12 @@ package_add_test_with_libraries(FollowRoute_test FollowRoute_test.cpp
 	${SUMO_LIBRARIES}
 	${SOCK_LIB}
 )
+package_add_test_with_libraries(FollowRouteController_test FollowRouteController_test.cpp
+    ScenarioEngine
+    Controllers
+  RoadManager
+  CommonMini
+    ${viewer_libs}
+	${SUMO_LIBRARIES}
+	${SOCK_LIB}
+)

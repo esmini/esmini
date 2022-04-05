@@ -341,7 +341,7 @@ TEST_F(FollowRouteTest, CreateWaypointSmall1)
     std::vector<Node *> path = router.CalculatePath(start, target);
     ASSERT_FALSE(path.empty());
 
-    std::vector<Position> calcWaypoints = router.GetWaypoints(path, target);
+    std::vector<Position> calcWaypoints = router.GetWaypoints(path, start, target);
     ASSERT_FALSE(calcWaypoints.empty());
     ASSERT_EQ(calcWaypoints.size(), expectedWaypoints.size());
     for (int i = 0; i < expectedWaypoints.size(); i++)
@@ -359,7 +359,7 @@ TEST_F(FollowRouteTest, CreateWaypointSmall2)
     ASSERT_NE(odrSmall, nullptr);
 
     std::vector<Position> expectedWaypoints = {
-        Position(0, -3, 100, 0),
+        Position(0, -3, 105, 0),
         Position(3, -3, 25, 0),
         Position(1, -3, 57.5, 0),
         Position(6, -3, 15, 0),
@@ -375,7 +375,7 @@ TEST_F(FollowRouteTest, CreateWaypointSmall2)
     std::vector<Node *> path = router.CalculatePath(start, target);
     ASSERT_FALSE(path.empty());
 
-    std::vector<Position> calcWaypoints = router.GetWaypoints(path, target);
+    std::vector<Position> calcWaypoints = router.GetWaypoints(path, start, target);
     ASSERT_FALSE(calcWaypoints.empty());
     ASSERT_EQ(calcWaypoints.size(), expectedWaypoints.size());
     for (int i = 0; i < expectedWaypoints.size(); i++)
@@ -393,7 +393,7 @@ TEST_F(FollowRouteTest, CreateWaypointMedium)
     ASSERT_NE(odrMedium, nullptr);
 
     std::vector<Position> expectedWaypoints = {
-        Position(266, 1, 54.5, 0),
+        Position(266, 1, 25, 0),
         Position(258, -1, 8.85, 0),
         Position(261, -1, 54.5, 0),
         Position(196, 1, 54.5, 0),
@@ -411,7 +411,7 @@ TEST_F(FollowRouteTest, CreateWaypointMedium)
     std::vector<Node *> path = router.CalculatePath(start, target);
     ASSERT_FALSE(path.empty());
 
-    std::vector<Position> calcWaypoints = router.GetWaypoints(path, target);
+    std::vector<Position> calcWaypoints = router.GetWaypoints(path, start, target);
     ASSERT_FALSE(calcWaypoints.empty());
     ASSERT_EQ(calcWaypoints.size(), expectedWaypoints.size());
     for (int i = 0; i < expectedWaypoints.size(); i++)
@@ -448,7 +448,7 @@ TEST_F(FollowRouteTest, CreateWaypointLarge)
     std::vector<Node *> path = router.CalculatePath(start, target);
     ASSERT_FALSE(path.empty());
 
-    std::vector<Position> calcWaypoints = router.GetWaypoints(path, target);
+    std::vector<Position> calcWaypoints = router.GetWaypoints(path, start, target);
     ASSERT_FALSE(calcWaypoints.empty());
     ASSERT_EQ(calcWaypoints.size(), expectedWaypoints.size());
     for (int i = 0; i < expectedWaypoints.size(); i++)

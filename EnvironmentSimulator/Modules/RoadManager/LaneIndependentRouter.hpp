@@ -84,7 +84,7 @@ namespace roadmanager
     public:
         LaneIndependentRouter(OpenDrive *odr);
         std::vector<Node *> CalculatePath(Position start, Position target, RouteStrategy routeStrategy = RouteStrategy::SHORTEST);
-        std::vector<Position> GetWaypoints(std::vector<Node *> path, Position target);
+        std::vector<Position> GetWaypoints(std::vector<Node *> path, Position start, Position target);
 
     private:
         RoadLink *GetNextLink(Node *currentNode, Road *nextRoad);

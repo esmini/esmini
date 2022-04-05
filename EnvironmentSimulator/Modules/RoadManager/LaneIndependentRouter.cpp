@@ -333,7 +333,7 @@ std::vector<Node *> LaneIndependentRouter::CalculatePath(Position start, Positio
 		return {};
 	}
 
-	Node* startNode = CreateStartNode(nextElement,startRoad,startLaneId,contactPoint,routeStrategy,start);
+	Node *startNode = CreateStartNode(nextElement, startRoad, startLaneId, contactPoint, routeStrategy, start);
 	unvisited_.push(startNode);
 
 	bool found = FindGoal(routeStrategy);
@@ -362,14 +362,15 @@ std::vector<Node *> LaneIndependentRouter::CalculatePath(Position start, Positio
 	return pathToGoal;
 }
 
-std::vector<Position> LaneIndependentRouter::GetWaypoints(std::vector<Node *> path, Position target)
+std::vector<Position> LaneIndependentRouter::GetWaypoints(std::vector<Node *> path, Position start, Position target)
 {
 	std::vector<Position> waypoints;
 	for (int idx = 0; idx < path.size() - 1; idx++)
 	{
 		Node *current = path[idx];
 		Node *next = path[idx + 1];
-		double s = 0;
+		double laneLength = 0;
+		double sPos = 0;
 		if (current->link->GetType() == LinkType::SUCCESSOR)
 		{
 			for (int i = current->road->GetNumberOfLaneSections() - 1; i >= 0; i--)
@@ -379,10 +380,14 @@ std::vector<Position> LaneIndependentRouter::GetWaypoints(std::vector<Node *> pa
 				{
 					break;
 				}
-				s += current->road->GetLaneSectionByIdx(i)->GetLength();
+				laneLength += current->road->GetLaneSectionByIdx(i)->GetLength();
 			}
 
-			waypoints.push_back(Position(current->road->GetId(), next->fromLaneId, (current->road->GetLength() - (s / 2)), 0.0));
+			sPos = current->road->GetLength() - (laneLength / 2);
+			if (idx == 0 && start.GetS() > current->road->GetLength() - laneLength)
+			{
+				sPos = (start.GetS() + current->road->GetLength()) / 2;
+			}
 		}
 		else if (current->link->GetType() == LinkType::PREDECESSOR)
 		{
@@ -393,11 +398,18 @@ std::vector<Position> LaneIndependentRouter::GetWaypoints(std::vector<Node *> pa
 				{
 					break;
 				}
-				s += current->road->GetLaneSectionByIdx(i)->GetLength();
+				laneLength += current->road->GetLaneSectionByIdx(i)->GetLength();
 			}
-			waypoints.push_back(Position(current->road->GetId(), next->fromLaneId, (s / 2), 0.0));
+			sPos = laneLength / 2;
+			if (idx == 0 && start.GetS() < laneLength)
+			{
+				sPos = start.GetS() / 2;
+			}
 		}
+
+		waypoints.push_back(Position(current->road->GetId(), next->fromLaneId, sPos, 0.0));
 	}
+	
 	waypoints.push_back(target);
 	// for (Position p : waypoints)
 	// {
