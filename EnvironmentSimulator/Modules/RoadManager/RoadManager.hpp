@@ -1730,8 +1730,6 @@ namespace roadmanager
 		int dLaneId;			// delta laneId (increasing left and decreasing to the right)
 		double dx;              // delta x (world coordinate system)
 		double dy;              // delta y (world coordinate system)
-		double dxLocal;         // delta x (local coordinate system)
-		double dyLocal;         // delta y (local coordinate system)
 	} PositionDiff;
 
 	enum class CoordinateSystem
@@ -1991,6 +1989,7 @@ namespace roadmanager
 		Find out the difference between two position objects, in effect subtracting the values
 		It can be used to calculate the distance from current position to another one (pos_b)
 		@param pos_b The position from which to subtract the current position (this position object)
+		@param diff Return argument, a struct that will contain the result. dx and dy will only be set when no route found.
 		@param bothDirections Set to true in order to search also backwards from object
 		@param maxDist Don't look further than this
 		@return true if position found and parameter values are valid, else false
@@ -2582,8 +2581,10 @@ namespace roadmanager
 		const Position *startPos_;
 		const Position *targetPos_;
 		int direction_;  // direction of path from starting pos. 0==not set, 1==forward, 2==backward
+		PathNode* firstNode_;
 
-		RoadPath(const Position* startPos, const Position* targetPos) : startPos_(startPos), targetPos_(targetPos) {};
+		RoadPath(const Position* startPos, const Position* targetPos) : startPos_(startPos), targetPos_(targetPos),
+			direction_(0), firstNode_(nullptr) {};
 		~RoadPath();
 
 		/**
