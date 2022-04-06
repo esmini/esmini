@@ -86,8 +86,10 @@ static void resetScenario(void)
 	}
 	args_v.clear();
 
-	// Reset (global) condition callback
+	// Reset (global) callbacks
 	OSCCondition::conditionCallback = nullptr;
+	Event::eventCallback = nullptr;
+
 	time_stamp = 0;
 }
 
