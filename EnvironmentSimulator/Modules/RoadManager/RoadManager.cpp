@@ -4523,6 +4523,7 @@ int RoadPath::Calculate(double &dist, bool bothDirections, double maxDist)
 					{
 						direction_ = -1;
 					}
+					firstNode_ = node;
 				}
 				node = node->previous;
 			}
@@ -4536,7 +4537,7 @@ int RoadPath::Calculate(double &dist, bool bothDirections, double maxDist)
 	{
 		dist *= -1;
 	}
-	
+
 	return found ? 0 : -1;
 }
 
@@ -8277,8 +8278,19 @@ bool Position::Delta(Position* pos_b, PositionDiff &diff, bool bothDirections, d
 
 		if (path->visited_.size() > 0) {
 			RoadPath::PathNode* lastNode = path->visited_.back();
-			bool isPathForward = path->direction_ == 1;
-			bool isPathBackward = path->direction_ == -1;
+			RoadPath::PathNode* firstNode = path->firstNode_;
+			if (firstNode == nullptr)
+			{
+				LOG("Missing first node in path");
+				return false;
+			}
+			if (lastNode == nullptr)
+			{
+				LOG("Missing last node in path");
+				return false;
+			}
+			bool isPathForward = firstNode->link->GetType() == LinkType::SUCCESSOR;
+			bool isPathBackward = firstNode->link->GetType() == LinkType::PREDECESSOR;
 			bool isConnectedToEnd = lastNode->link->GetContactPointType() == ContactPointType::CONTACT_POINT_END;
 			bool isConnectedToStart = lastNode->link->GetContactPointType() == ContactPointType::CONTACT_POINT_START;
 			bool isHeadToHead = isPathForward && isConnectedToEnd;
@@ -8323,7 +8335,7 @@ bool Position::Delta(Position* pos_b, PositionDiff &diff, bool bothDirections, d
 	}
 
 	getRelativeDistance(pos_b->GetX(), pos_b->GetY(), diff.dx, diff.dy);
-	
+
 	delete path;
 
 	return found;
