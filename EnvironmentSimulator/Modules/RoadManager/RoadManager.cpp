@@ -4529,13 +4529,14 @@ int RoadPath::Calculate(double &dist, bool bothDirections, double maxDist)
 		}
 	}
 
-	// Compensate for heading of the start position
-	if (startPos_->GetHRelativeDrivingDirection() > M_PI_2 && startPos_->GetHRelativeDrivingDirection() < 3 * M_PI_2)
-	{
-		direction_ *= -1;
-	}
 	dist = direction_ * tmpDist;
 
+	// Also take intial heading of the start position into consideration for the sign of the distance
+	if (startPos_->GetHRelativeDrivingDirection() > M_PI_2 && startPos_->GetHRelativeDrivingDirection() < 3 * M_PI_2)
+	{
+		dist *= -1;
+	}
+	
 	return found ? 0 : -1;
 }
 
@@ -8276,12 +8277,8 @@ bool Position::Delta(Position* pos_b, PositionDiff &diff, bool bothDirections, d
 
 		if (path->visited_.size() > 0) {
 			RoadPath::PathNode* lastNode = path->visited_.back();
-			RoadPath::PathNode* firstNode = lastNode;
-			while (firstNode->previous) {
-				firstNode = firstNode->previous;
-			}
-			bool isPathForward = firstNode->link->GetType() == LinkType::SUCCESSOR;
-			bool isPathBackward = firstNode->link->GetType() == LinkType::PREDECESSOR;
+			bool isPathForward = path->direction_ == 1;
+			bool isPathBackward = path->direction_ == -1;
 			bool isConnectedToEnd = lastNode->link->GetContactPointType() == ContactPointType::CONTACT_POINT_END;
 			bool isConnectedToStart = lastNode->link->GetContactPointType() == ContactPointType::CONTACT_POINT_START;
 			bool isHeadToHead = isPathForward && isConnectedToEnd;
@@ -8323,9 +8320,10 @@ bool Position::Delta(Position* pos_b, PositionDiff &diff, bool bothDirections, d
 		diff.dLaneId = 0;
 		diff.ds = LARGE_NUMBER;
 		diff.dt = LARGE_NUMBER;
-		getRelativeDistance(pos_b->GetX(), pos_b->GetY(), diff.dx, diff.dy);
 	}
 
+	getRelativeDistance(pos_b->GetX(), pos_b->GetY(), diff.dx, diff.dy);
+	
 	delete path;
 
 	return found;
