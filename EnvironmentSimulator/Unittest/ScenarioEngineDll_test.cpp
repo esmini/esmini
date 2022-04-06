@@ -738,6 +738,75 @@ TEST(GetGroundTruthTests, receive_GroundTruth_no_init)
 	EXPECT_EQ(sv, nullptr);
 }
 
+TEST(GroundTruthTests, check_GroundTruth_including_init_state)
+{
+	osi3::GroundTruth* osi_gt_ptr;
+	osi3::GroundTruth osi_gt;
+	struct stat fileStatus;
+	double seconds = 0.0, obj_x, obj_y, obj_z;
+	double x_vals[] = { 51.400, 51.600, 51.800 };
+	double time_stamps[] = { 0.00, 0.01, 0.02 };
+
+	SE_Init("../../../resources/xosc/cut-in_simple.xosc", 0, 0, 0, 0);
+	SE_OSIFileOpen("gt.osi");
+	SE_UpdateOSIGroundTruth();
+
+	osi_gt_ptr = (osi3::GroundTruth*)SE_GetOSIGroundTruthRaw();
+
+	for (int i = 0; i < 3; i++)
+	{
+		EXPECT_EQ(osi_gt_ptr->mutable_moving_object()->size(), 2);
+		seconds = osi_gt_ptr->mutable_timestamp()->seconds() + 1E-9 * osi_gt_ptr->mutable_timestamp()->nanos();
+		EXPECT_NEAR(seconds, time_stamps[i], 1E-5);
+		obj_x = osi_gt_ptr->mutable_moving_object(0)->mutable_base()->mutable_position()->x();
+		obj_y = osi_gt_ptr->mutable_moving_object(0)->mutable_base()->mutable_position()->y();
+		obj_z = osi_gt_ptr->mutable_moving_object(0)->mutable_base()->mutable_position()->z();
+		EXPECT_NEAR(obj_x, x_vals[i], 1E-5);
+		EXPECT_NEAR(obj_y, -1.535, 1E-5);
+		EXPECT_NEAR(obj_z, 0.0, 1E-5);
+
+		if (i < 2)  // skip step of the last round
+		{
+			SE_StepDT(0.01f);
+		}
+	}
+
+	SE_Close();
+
+	ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
+	EXPECT_EQ(fileStatus.st_size, 19807);
+
+	// Read OSI file
+	FILE* file = fopen("gt.osi", "rb");
+	ASSERT_NE(file, nullptr);
+
+	const int max_msg_size = 10000;
+	int msg_size;
+	char msg_buf[max_msg_size];
+
+	for (int i = 0; i < 3; i++)
+	{
+		ASSERT_EQ(fread((char*)(&msg_size), 1, sizeof(msg_size), file), sizeof(msg_size));
+
+		// Read OSI message
+		ASSERT_LE(msg_size, max_msg_size);
+		EXPECT_EQ(fread(msg_buf, 1, msg_size, file), msg_size);
+		osi_gt.ParseFromArray(msg_buf, msg_size);
+
+		EXPECT_EQ(osi_gt.mutable_moving_object()->size(), 2);
+		seconds = osi_gt.mutable_timestamp()->seconds() + 1E-9 * osi_gt.mutable_timestamp()->nanos();
+		EXPECT_NEAR(seconds, time_stamps[i], 1E-5);
+		obj_x = osi_gt.mutable_moving_object(0)->mutable_base()->mutable_position()->x();
+		obj_y = osi_gt.mutable_moving_object(0)->mutable_base()->mutable_position()->y();
+		obj_z = osi_gt.mutable_moving_object(0)->mutable_base()->mutable_position()->z();
+		EXPECT_NEAR(obj_x, x_vals[i], 1E-5);
+		EXPECT_NEAR(obj_y, -1.535, 1E-5);
+		EXPECT_NEAR(obj_z, 0.0, 1E-5);
+	}
+
+	fclose(file);
+}
+
 TEST(GetMiscObjFromGroundTruth, receive_miscobj)
 {
 
@@ -2592,7 +2661,7 @@ int main(int argc, char **argv)
 	testing::InitGoogleTest(&argc, argv);
 
 #if 0  // set to 1 and modify filter to run one single test
-	testing::GTEST_FLAG(filter) = "*lane_no_obj*";
+	testing::GTEST_FLAG(filter) = "*check_GroundTruth_including_init_state*";
 #else
 	SE_LogToConsole(false);
 #endif

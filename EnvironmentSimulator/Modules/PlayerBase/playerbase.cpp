@@ -1217,6 +1217,9 @@ int ScenarioPlayer::Init()
 	// Step scenario engine - zero time - just to reach and report init state of all vehicles
 	ScenarioFrame(0.0, true);
 
+	// And report initial states to OSI
+	ScenarioPostFrame();
+
 	if (opt.IsInOriginalArgs("--window") || opt.IsInOriginalArgs("--borderless-window"))
 	{
 #ifdef _USE_OSG
