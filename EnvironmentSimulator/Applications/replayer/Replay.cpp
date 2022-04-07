@@ -255,7 +255,7 @@ void Replay::GoToTime(double time, bool stop_at_next_frame)
 		if (time > time_)
 		{
 			next_index = FindNextTimestamp();
-			if (next_index > (int)index_ && time > data_[next_index].state.info.timeStamp)
+			if (next_index > (int)index_ && time > data_[next_index].state.info.timeStamp && data_[next_index].state.info.timeStamp <= GetStopTime())
 			{
 				index_ = next_index;
 				time_ = data_[index_].state.info.timeStamp;

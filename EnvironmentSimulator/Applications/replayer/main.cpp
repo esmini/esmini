@@ -758,10 +758,11 @@ int main(int argc, char** argv)
 			}
 			else if (startTime > player->data_.back().state.info.timeStamp)
 			{
-				printf("Specified start time (%.2f) > first timestamp (%.2f), adapting.\n", startTime, player->data_[0].state.info.timeStamp);
+				printf("Specified start time (%.2f) > last timestamp (%.2f), adapting.\n", startTime, player->data_.back().state.info.timeStamp);
 				startTime = player->data_.back().state.info.timeStamp;
 			}
 			player->SetStartTime(startTime);
+			player->GoToTime(startTime);
 		}
 
 		std::string stop_time_str = opt.GetOptionArg("stop_time");
@@ -770,7 +771,7 @@ int main(int argc, char** argv)
 			double stopTime = 1E-3 * strtod(stop_time_str);
 			if (stopTime > player->data_.back().state.info.timeStamp)
 			{
-				printf("Specified stop time (%.2f) > last timestamp (%.2f), adapting.\n", stopTime, player->data_[0].state.info.timeStamp);
+				printf("Specified stop time (%.2f) > last timestamp (%.2f), adapting.\n", stopTime, player->data_.back().state.info.timeStamp);
 				stopTime = player->data_.back().state.info.timeStamp;
 			}
 			else if (stopTime < player->data_[0].state.info.timeStamp)
