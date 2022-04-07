@@ -3391,6 +3391,7 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
 			viewer_->ToggleNodeMaskBits(viewer::NodeMask::NODE_MASK_ODR_FEATURES);
 		}
 	}
+	break;
 	case('R'):
 	{
 		if (ea.getEventType() & osgGA::GUIEventAdapter::KEYDOWN)
