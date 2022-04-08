@@ -137,7 +137,7 @@ public:
 	ViewerState viewerState_;
 	int InitViewer();
 	void CloseViewer();
-	void ViewerFrame();
+	void ViewerFrame(bool init = false);
 
 	int SaveImagesToRAM(bool state);
 	int SaveImagesToFile(int nrOfFrames);

@@ -295,8 +295,13 @@ void ScenarioPlayer::ScenarioPostFrame()
 }
 
 #ifdef _USE_OSG
-void ScenarioPlayer::ViewerFrame()
+void ScenarioPlayer::ViewerFrame(bool init)
 {
+	if (viewer_ == nullptr)
+	{
+		return;
+	}
+
 	static double last_dot_time = scenarioEngine->getSimulationTime();
 
 	mutex.Lock();
@@ -335,104 +340,109 @@ void ScenarioPlayer::ViewerFrame()
 		viewer_->RemoveCar(viewer_->entities_.size() - 1);
 	}
 
-	// Visualize entities
-	for (size_t i = 0; i < scenarioEngine->entities_.object_.size(); i++)
+	if (!init)
 	{
-		viewer::EntityModel *entity = viewer_->entities_[i];
-		Object* obj = scenarioEngine->entities_.object_[i];
-
-		entity->SetPosition(obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
-		entity->SetRotation(obj->pos_.GetH(), obj->pos_.GetP(), obj->pos_.GetR());
-
-		if (obj->pos_.GetTrajectory() && obj->pos_.GetTrajectory() != entity->trajectory_->activeRMTrajectory_)
+		// Visualize entities
+		for (size_t i = 0; i < scenarioEngine->entities_.object_.size(); i++)
 		{
-			entity->trajectory_->SetActiveRMTrajectory(obj->pos_.GetTrajectory());
-		}
-		else if (entity->trajectory_->activeRMTrajectory_ && !obj->pos_.GetTrajectory())
-		{
-			// Trajectory has been deactivated on the entity, disable visualization
-			entity->trajectory_->Disable();
-		}
+			viewer::EntityModel* entity = viewer_->entities_[i];
+			Object* obj = scenarioEngine->entities_.object_[i];
 
-		if (obj->CheckDirtyBits(Object::DirtyBit::ROUTE))
-		{
-			entity->routewaypoints_->SetWayPoints(obj->pos_.GetRoute());
-			obj->ClearDirtyBits(Object::DirtyBit::ROUTE);
-		}
-		else if (entity->routewaypoints_->group_->getNumChildren() && obj->pos_.GetRoute() == nullptr)
-		{
-			entity->routewaypoints_->SetWayPoints(nullptr);
-		}
+			entity->SetPosition(obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
+			entity->SetRotation(obj->pos_.GetH(), obj->pos_.GetP(), obj->pos_.GetR());
 
-
-		if (entity->GetType() == viewer::EntityModel::EntityType::VEHICLE)
-		{
-			viewer::CarModel* car = (viewer::CarModel*)entity;
-			car->UpdateWheels(obj->wheel_angle_, obj->wheel_rot_);
-
-			if (obj->GetGhost())
+			if (obj->pos_.GetTrajectory() && obj->pos_.GetTrajectory() != entity->trajectory_->activeRMTrajectory_)
 			{
-				if (car->steering_sensor_)
+				entity->trajectory_->SetActiveRMTrajectory(obj->pos_.GetTrajectory());
+			}
+			else if (entity->trajectory_->activeRMTrajectory_ && !obj->pos_.GetTrajectory())
+			{
+				// Trajectory has been deactivated on the entity, disable visualization
+				entity->trajectory_->Disable();
+			}
+
+			if (obj->CheckDirtyBits(Object::DirtyBit::ROUTE))
+			{
+				entity->routewaypoints_->SetWayPoints(obj->pos_.GetRoute());
+				obj->ClearDirtyBits(Object::DirtyBit::ROUTE);
+			}
+			else if (entity->routewaypoints_->group_->getNumChildren() && obj->pos_.GetRoute() == nullptr)
+			{
+				entity->routewaypoints_->SetWayPoints(nullptr);
+			}
+
+
+			if (entity->GetType() == viewer::EntityModel::EntityType::VEHICLE)
+			{
+				viewer::CarModel* car = (viewer::CarModel*)entity;
+				car->UpdateWheels(obj->wheel_angle_, obj->wheel_rot_);
+
+				if (obj->GetGhost())
 				{
-					viewer_->SensorSetPivotPos(car->steering_sensor_, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
-					viewer_->SensorSetTargetPos(car->steering_sensor_, obj->sensor_pos_[0], obj->sensor_pos_[1], obj->sensor_pos_[2]);
-					viewer_->UpdateSensor(car->steering_sensor_);
+					if (car->steering_sensor_)
+					{
+						viewer_->SensorSetPivotPos(car->steering_sensor_, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
+						viewer_->SensorSetTargetPos(car->steering_sensor_, obj->sensor_pos_[0], obj->sensor_pos_[1], obj->sensor_pos_[2]);
+						viewer_->UpdateSensor(car->steering_sensor_);
+					}
+					if (car->trail_sensor_)
+					{
+						viewer_->SensorSetPivotPos(car->trail_sensor_, obj->trail_closest_pos_.x, obj->trail_closest_pos_.y, obj->trail_closest_pos_.z);
+						viewer_->SensorSetTargetPos(car->trail_sensor_, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
+						viewer_->UpdateSensor(car->trail_sensor_);
+					}
 				}
-				if (car->trail_sensor_)
+
+				if (odr_manager->GetNumOfRoads() > 0 && car->road_sensor_)
 				{
-					viewer_->SensorSetPivotPos(car->trail_sensor_, obj->trail_closest_pos_.x, obj->trail_closest_pos_.y, obj->trail_closest_pos_.z);
-					viewer_->SensorSetTargetPos(car->trail_sensor_, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
-					viewer_->UpdateSensor(car->trail_sensor_);
+					car->ShowRouteSensor(obj->pos_.GetRoute() ? true : false);
+					viewer_->UpdateRoadSensors(car->road_sensor_, car->route_sensor_, car->lane_sensor_, &obj->pos_);
 				}
 			}
 
-			if (odr_manager->GetNumOfRoads() > 0 && car->road_sensor_)
+			if (entity->trail_->pline_vertex_data_->size() > obj->trail_.GetNumberOfVertices())
 			{
-				car->ShowRouteSensor(obj->pos_.GetRoute() ? true : false);
-				viewer_->UpdateRoadSensors(car->road_sensor_, car->route_sensor_, car->lane_sensor_, &obj->pos_);
+				// Reset the trail, probably there has been a ghost restart
+				entity->trail_->Reset();
+				for (size_t j = 0; j < obj->trail_.GetNumberOfVertices(); j++)
+				{
+					entity->trail_->AddPoint(osg::Vec3(obj->trail_.vertex_[j].x, obj->trail_.vertex_[j].y, obj->trail_.vertex_[j].z + (obj->GetId() + 1) * TRAIL_Z_OFFSET));
+				}
+			}
+
+			if (obj->trail_.GetNumberOfVertices() > entity->trail_->pline_vertex_data_->size())
+			{
+				entity->trail_->AddPoint(osg::Vec3(obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ() + (obj->GetId() + 1) * TRAIL_Z_OFFSET));
 			}
 		}
 
-		if (entity->trail_->pline_vertex_data_->size() > obj->trail_.GetNumberOfVertices())
+		for (size_t i = 0; i < sensorFrustum.size(); i++)
 		{
-			// Reset the trail, probably there has been a ghost restart
-			entity->trail_->Reset();
-			for (size_t j = 0; j < obj->trail_.GetNumberOfVertices(); j++)
-			{
-				entity->trail_->AddPoint(osg::Vec3(obj->trail_.vertex_[j].x, obj->trail_.vertex_[j].y, obj->trail_.vertex_[j].z + (obj->GetId() + 1) * TRAIL_Z_OFFSET));
-			}
+			sensorFrustum[i]->Update();
 		}
 
-		if (obj->trail_.GetNumberOfVertices() > entity->trail_->pline_vertex_data_->size())
+		// Update info text
+		static char str_buf[128];
+		if (viewer_->currentCarInFocus_ >= 0 && viewer_->currentCarInFocus_ < viewer_->entities_.size())
 		{
-			entity->trail_->AddPoint(osg::Vec3(obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ() + (obj->GetId() + 1) * TRAIL_Z_OFFSET));
+			Object* obj = scenarioEngine->entities_.object_[viewer_->currentCarInFocus_];
+			snprintf(str_buf, sizeof(str_buf), "%.2fs entity[%d]: %s (%d) %.2fkm/h %.2fm (%d, %d, %.2f, %.2f) / (%.2f, %.2f %.2f)", scenarioEngine->getSimulationTime(),
+				viewer_->currentCarInFocus_, obj->name_.c_str(), obj->GetId(), 3.6 * obj->speed_, obj->odometer_,
+				obj->pos_.GetTrackId(), obj->pos_.GetLaneId(), fabs(obj->pos_.GetOffset()) < SMALL_NUMBER ? 0 : obj->pos_.GetOffset(),
+				obj->pos_.GetS(), obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetH());
 		}
+		else
+		{
+			snprintf(str_buf, sizeof(str_buf), "%.2fs No entity in focus...", scenarioEngine->getSimulationTime());
+		}
+		viewer_->SetInfoText(str_buf);
 	}
-
-	for (size_t i = 0; i < sensorFrustum.size(); i++)
-	{
-		sensorFrustum[i]->Update();
-	}
-
-	// Update info text
-	static char str_buf[128];
-	if (viewer_->currentCarInFocus_ >= 0 && viewer_->currentCarInFocus_ < viewer_->entities_.size())
-	{
-		Object* obj = scenarioEngine->entities_.object_[viewer_->currentCarInFocus_];
-		snprintf(str_buf, sizeof(str_buf), "%.2fs entity[%d]: %s (%d) %.2fkm/h %.2fm (%d, %d, %.2f, %.2f) / (%.2f, %.2f %.2f)", scenarioEngine->getSimulationTime(),
-			viewer_->currentCarInFocus_, obj->name_.c_str(), obj->GetId(), 3.6 * obj->speed_, obj->odometer_,
-			obj->pos_.GetTrackId(), obj->pos_.GetLaneId(), fabs(obj->pos_.GetOffset()) < SMALL_NUMBER ? 0 : obj->pos_.GetOffset(),
-			obj->pos_.GetS(), obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetH());
-	}
-	else
-	{
-		snprintf(str_buf, sizeof(str_buf), "%.2fs No entity in focus...", scenarioEngine->getSimulationTime());
-	}
-	viewer_->SetInfoText(str_buf);
-
 	mutex.Unlock();
 
-	viewer_->Frame();
+	if (!init)
+	{
+		viewer_->Frame();
+	}
 }
 
 int ScenarioPlayer::SaveImagesToRAM(bool state)
@@ -887,8 +897,8 @@ int ScenarioPlayer::InitViewer()
 		}
 	}
 
-	// Trig first viewer frame, it typically takes extra long due to initial loading of gfx content
-	ViewerFrame();
+	// Trig first viewer frame, just to config graphics and load objects
+	ViewerFrame(true);
 
 	viewerState_ = ViewerState::VIEWER_STATE_STARTED;
 
@@ -1214,12 +1224,6 @@ int ScenarioPlayer::Init()
 		scenarioGateway->RecordToFile(arg_str, scenarioEngine->getOdrFilename(), scenarioEngine->getSceneGraphFilename());
 	}
 
-	// Step scenario engine - zero time - just to reach and report init state of all vehicles
-	ScenarioFrame(0.0, true);
-
-	// And report initial states to OSI
-	ScenarioPostFrame();
-
 	if (opt.IsInOriginalArgs("--window") || opt.IsInOriginalArgs("--borderless-window"))
 	{
 #ifdef _USE_OSG
@@ -1263,6 +1267,7 @@ int ScenarioPlayer::Init()
 		viewer_->SetWindowTitleFromArgs(opt.GetOriginalArgs());
 
 		viewer_->RegisterKeyEventCallback(ReportKeyEvent, this);
+
 #else
 		LOG("window requested, but esmini compiled without OSG capabilities");
 #endif
@@ -1284,6 +1289,17 @@ int ScenarioPlayer::Init()
 		// Launch UDP server to receive external Ego state
 		StartServer(scenarioEngine);
 	}
+
+	// Step scenario engine - zero time - just to reach and report init state of all vehicles
+	ScenarioFrame(0.0, true);
+
+	// And report initial states to OSI
+	ScenarioPostFrame();
+
+#ifdef _USE_OSG
+	// render initial frame, it typically takes extra long due to initial loading of gfx content
+	ViewerFrame();
+#endif
 
 	return 0;
 }
