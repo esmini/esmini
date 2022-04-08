@@ -139,7 +139,6 @@ bin/replayer \
 bin/dat2csv \
 esmini-demo
 
-cp bin/esmini esmini-demo/bin/EgoSimulator
 cp -r Hello-World_coding-example esmini-demo
 cp bin/libesminiLib.* esmini-demo/Hello-World_coding-example
 cp EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp esmini-demo/Hello-World_coding-example

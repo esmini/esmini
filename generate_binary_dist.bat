@@ -168,7 +168,6 @@ copy version.txt %target_dir% /y
 copy bin\esmini.exe %target_dir%\bin /y
 copy bin\replayer.exe %target_dir%\bin /y
 copy bin\dat2csv.exe %target_dir%\bin /y
-copy bin\esmini.exe %target_dir%\bin\EgoSimulator.exe /y
 copy bin\odrviewer.exe %target_dir%\bin /y
 copy bin\esminiLib.* %target_dir%\lib /y
 copy EnvironmentSimulator\Libraries\esminiLib\esminiLib.hpp %target_dir%\include /y
