@@ -21,7 +21,7 @@
 - Update RMLib C# wrapper
 - Propagate scaled bounding box to .dat file
 - Align and change default headstart in ghost controllers to 3s
-- Add exeample scenario [acc-toggle.xosc](https://github.com/esmini/esmini/blob/propagate_bb/resources/xosc/acc-toggle.xosc) to demonstrate switching between controllers ([issue #259](https://github.com/esmini/esmini/issues/259))
+- Add example scenario [acc-toggle.xosc](https://github.com/esmini/esmini/blob/master/resources/xosc/acc-toggle.xosc) to demonstrate switching between controllers ([issue #259](https://github.com/esmini/esmini/issues/259))
 - Add odrplot to demo package
 - Fix bug in route path calculation ([issue #265](https://github.com/esmini/esmini/issues/265))
 - Fix condition edge check bug that in some cases prevented multiple story element executions
