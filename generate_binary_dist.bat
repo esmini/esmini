@@ -24,6 +24,9 @@ IF NOT EXIST %target_dir%\scripts\udp_driver\osi3 ( mkdir %target_dir%\scripts\u
 IF NOT EXIST %target_dir%\include ( mkdir %target_dir%\include )
 IF NOT EXIST %target_dir%\3rd_party_terms_and_licenses ( mkdir %target_dir%\3rd_party_terms_and_licenses )
 IF NOT EXIST %target_dir%\Hello-World_coding-example ( mkdir %target_dir%\Hello-World_coding-example )
+IF NOT EXIST %target_dir%\EnvironmentSimulator ( mkdir %target_dir%\EnvironmentSimulator )
+IF NOT EXIST %target_dir%\EnvironmentSimulator\Applications ( mkdir %target_dir%\EnvironmentSimulator\Applications )
+IF NOT EXIST %target_dir%\EnvironmentSimulator\Applications\odrplot ( mkdir %target_dir%\EnvironmentSimulator\Applications\odrplot )
 
 copy resources\xosc\follow_ghost.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\cut-in.xosc %target_dir%\resources\xosc /y
@@ -169,8 +172,10 @@ copy bin\esmini.exe %target_dir%\bin /y
 copy bin\replayer.exe %target_dir%\bin /y
 copy bin\dat2csv.exe %target_dir%\bin /y
 copy bin\odrviewer.exe %target_dir%\bin /y
+copy bin\odrplot.exe %target_dir%\bin /y
 copy bin\esminiLib.* %target_dir%\lib /y
 copy EnvironmentSimulator\Libraries\esminiLib\esminiLib.hpp %target_dir%\include /y
+copy EnvironmentSimulator\Applications\odrplot\xodr.py %target_dir%\EnvironmentSimulator\Applications\odrplot /y
 
 copy Hello-World_coding-example esmini-demo\Hello-World_coding-example
 copy bin\esminiLib.* esmini-demo\Hello-World_coding-example

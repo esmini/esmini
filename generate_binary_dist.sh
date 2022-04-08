@@ -137,6 +137,8 @@ bin/esmini \
 bin/odrviewer \
 bin/replayer \
 bin/dat2csv \
+bin/odrplot \
+EnvironmentSimulator/Applications/odrplot/xodr.py \
 esmini-demo
 
 cp -r Hello-World_coding-example esmini-demo
