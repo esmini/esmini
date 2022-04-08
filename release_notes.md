@@ -1,5 +1,36 @@
 ## esmini release notes
 
+### 2022-04-08 Version 2.22.0
+
+- User guide published: https://esmini.github.io
+  - Initial experimental embryo version
+  - Focus on use cases
+  - Hello World code tutorial moved to User guide
+  - Build guides moved to User guide
+- New feature: Custom cameras with fixed position and optionally fixed orientation ([issue #264](https://github.com/esmini/esmini/issues/264))
+  ```  
+  --custom_camera <position>
+      Additional custom fixed camera position <x,y,z,h,p> (multiple occurrences supported)
+  --custom_fixed_camera <position and optional orientation>
+      Additional custom camera position <x,y,z>[,h,p] (multiple occurrences supported)
+  --custom_fixed_top_camera <position and rotation>
+      Additional custom top camera <x,y,z,rot> (multiple occurrences supported)
+  ```
+  - see examples in User guide: https://esmini.github.io/#_camera_control
+- Add odometer to replayer
+- Update RMLib C# wrapper
+- Propagate scaled bounding box to .dat file
+- Align and change default headstart in ghost controllers to 3s
+- Add exeample scenario [acc-toggle.xosc](https://github.com/esmini/esmini/blob/propagate_bb/resources/xosc/acc-toggle.xosc) to demonstrate switching between controllers ([issue #259](https://github.com/esmini/esmini/issues/259))
+- Add odrplot to demo package
+- Fix bug in route path calculation ([issue #265](https://github.com/esmini/esmini/issues/265))
+- Fix condition edge check bug that in some cases prevented multiple story element executions
+- Fix bug in position delta calculation sometimes flipping dLaneId ([PR #266](https://github.com/esmini/esmini/issues/266))
+- Bugfix: Add missing initial frame (t=0) to OSI trace file
+- Fix malfunctioning replayer start and stop time options
+- Fix unintentional toggling of route waypoints (toggle key 'R')
+- Remove obsolete EgoSimulator (it was just a duplicate of esmini application)
+
 ### 2022-03-28 Version 2.21.2
 
 - Add RMLib methods to get road lane width and type
