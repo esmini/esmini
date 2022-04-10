@@ -257,7 +257,7 @@ Gray background: +
 ``./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/slow-lead-vehicle.xosc --clear-color 0.3,0.3,0.3``
 
 ==== Anti-alias
-esmini make use of OpenSceneGraph subsampling method for anti-alias. Default setting is 4 (samples). This can be controlled by the launch argument `--aa_mode <samples>`. To disable anti-alias: +
+esmini make use of OpenSceneGraph sub-sampling method for anti-alias. Default setting is 4 (samples). This can be controlled by the launch argument `--aa_mode <samples>`. To disable anti-alias: +
 ``./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/slow-lead-vehicle.xosc --aa_mode 0``
 
 === Screenshots and video clips 
@@ -371,7 +371,7 @@ Examples:
 Enable collision detection and pause playing at every occasion of collision:  +
 ``./bin/replayer --window 60 60 800 400 --file sim.dat --res_path ./resources --collision``
 
-.Video clip demonstrating some featuers in replayer
+.Video clip demonstrating some features in replayer
 video::ltap-od_collision.mp4?raw=true[opts="loop,autoplay"]
 // video::54NWtG1MsRk[youtube,width=800,height=400,opts="autoplay,nocontrols,loop"]
 
@@ -387,9 +387,9 @@ and then launched in replayer:
 Next example, play multiple variants of a scenario in parallel: +
 ``./bin/replayer --window 60 60 800 400 --file sim --res_path ./resources --capture_screen --dir tmp``
 
-The `--dir` argument points to a folder contaning sim1.dat, sim2.dat and sim3.dat.
+The `--dir` argument points to a folder containing sim1.dat, sim2.dat and sim3.dat.
 
-.Video clip demonstrating parallel scenarios and some other featuers in replayer
+.Video clip demonstrating parallel scenarios in replayer
 video::replay_multiple_scenario_variants.mp4?raw=true[opts="loop,autoplay"]
 // video::KqoTmAE9NmI[youtube,width=800,height=400,opts="autoplay,nocontrols,loop"]
 
@@ -460,7 +460,7 @@ Plottable parameters: +
 id, model_id, obj_type, obj_category, ctrl_type, time, speed, wheel_angle, wheel_rot, centerOffsetX, centerOffsetY, centerOffsetZ, width, length, height, scaleMode, visibilityMask, x, y, z, h, p, r, roadId, laneId, offset, t, s
 ``
 
-Most parameters does normally not make sense to plot, but it depends on the test case. Maybe it's interesting to see when a car makes a lane chage. Plot laneId over time: +
+Most parameters does normally not make sense to plot, but it depends on the test case. Maybe it's interesting to see when a car makes a lane change. Plot laneId over time: +
 ``./scripts/plot_dat.py sim.dat --param laneId``
 
 image::plot_dat_lane_id.png[]
@@ -487,13 +487,13 @@ esmini can provide OSI groundtruth data in three ways:
 . API to fetch via function call from a custom application
 . Save to OSI trace file
 
-Only tracefile way is described here. To save OSI data, add argument `--osi_file [filename]`. The filename is optional. If omitted it will be named `ground_truth.osi`. Example:
+Only trace file way is described here. To save OSI data, add argument `--osi_file [filename]`. The filename is optional. If omitted it will be named `ground_truth.osi`. Example:
 
 ``./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in.xosc --osi_file``
 
 will create `ground_truth.osi`` in the current folder. The format is according to the OSI standard "Binary trace file", see OSI documentation https://opensimulationinterface.github.io/osi-documentation/index.html#_osi_trace_files[2.2.6 OSI trace files].
 
-esmini provides a script, osi2csv.py, that converts an OSI tracefile into .csv format. The script can also serve as example how to parse and extract data from an OSI trace file:
+esmini provides a script, osi2csv.py, that converts an OSI trace file into .csv format. The script can also serve as example how to parse and extract data from an OSI trace file:
 
 ``./scripts/osi2csv.py ground_truth.osi``
 
@@ -549,7 +549,7 @@ A folder named "out" should have been created and including the model.fbx plus a
 . Add the model to the Scene hierarchy
 . Select the model and int the "Inspector", select the "Materials" tab
 . Change the "Location" to "Use External Materials (Legacy)" and click "Apply"
-. Open the automcatically created "Materials" folder (next to the model file)
+. Open the automatically created "Materials" folder (next to the model file)
 . Select all materials and change +
    for standard template: "Rendering Mode" to "Cutout" (good default option)  +
    for HDRP template: "Surface type" to "Transparent" and check "alpha clipping"
