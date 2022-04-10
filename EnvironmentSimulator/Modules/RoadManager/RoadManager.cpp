@@ -9150,6 +9150,11 @@ Position::ReturnCode Position::MoveRouteDS(double ds, bool actualDistance)
 			{
 				route_->SetTrackS(GetTrackId(), GetS());
 			}
+			else
+			{
+				// Update route s value
+				route_->SetPathS(route_->GetPathS() + ds);
+			}
 		}
 		else
 		{
@@ -10412,7 +10417,7 @@ Position::ReturnCode Route::SetTrackS(int trackId, double s)
 				dist -= s;
 			}
 
-			path_s_ = MAX(dist, 0.0);
+			path_s_ = dist;
 			local_s = s;
 			waypoint_idx_ = (int)i;
 			currentPos_.SetLanePos(GetWaypoint(waypoint_idx_)->GetTrackId(), GetWaypoint(waypoint_idx_)->GetLaneId(), local_s, 0.0);
@@ -10444,7 +10449,7 @@ Position::ReturnCode Route::SetPathS(double s)
 	double dist = 0;
 	double local_s = 0.0;
 
-	if (s < 0 || minimal_waypoints_.size() == 0)
+	if (minimal_waypoints_.size() == 0)
 	{
 		path_s_ = 0.0;
 		waypoint_idx_ = 0;
@@ -10471,7 +10476,6 @@ Position::ReturnCode Route::SetPathS(double s)
 			if (route_direction > 0)  // route in waypoint road direction
 			{
 				dist -= minimal_waypoints_[0].GetS();
-				dist = MAX(dist, 0.0);
 			}
 			else
 			{
