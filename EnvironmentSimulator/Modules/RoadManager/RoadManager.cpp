@@ -4063,7 +4063,7 @@ void Junction::SetGlobalId()
 
 bool Junction::IsOsiIntersection()
 {
-	if (connection_[0]->GetIncomingRoad()->GetRoadType(0) != 0)
+	if (connection_[0]->GetIncomingRoad() && connection_[0]->GetIncomingRoad() && connection_[0]->GetIncomingRoad()->GetRoadType(0) != 0)
 	{
 		if (connection_[0]->GetIncomingRoad()->GetRoadType(0)->road_type_ == Road::RoadType::ROADTYPE_MOTORWAY)
 		{
