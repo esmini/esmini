@@ -62,6 +62,7 @@ namespace scenarioengine
 		bool IsAnyEventActive();
 		bool AreAllEventsComplete();
 		void UpdateState();
+		void Reset();
 
 		void Print()
 		{

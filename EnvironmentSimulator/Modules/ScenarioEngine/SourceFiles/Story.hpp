@@ -58,11 +58,10 @@ namespace scenarioengine
 		bool AreAllManeuversComplete();
 
 		void UpdateState();
+		void Start(double simTime, double dt);
 
 		std::vector<Actor*> actor_;
 		std::vector<OSCManeuver*> maneuver_;
-
-		std::string name_;
 	};
 
 	class Act: public StoryBoardElement

@@ -161,3 +161,12 @@ void OSCManeuver::UpdateState()
 	}
 }
 
+void OSCManeuver::Reset()
+{
+	// Reset child events
+	for (size_t k = 0; k < event_.size(); k++)
+	{
+		event_[k]->Reset();
+	}
+}
+

@@ -272,18 +272,25 @@ int ScenarioEngine::step(double deltaSimTime)
 					act->start_trigger_->Evaluate(&storyBoard, simulationTime_) == true)
 				{
 					act->Start(simulationTime_, deltaSimTime);
-					for (size_t k = 0; k < act->maneuverGroup_.size(); k++)
-					{
-						act->maneuverGroup_[k]->Start(simulationTime_, deltaSimTime);
-					}
 				}
 			}
 
-			if (act->IsActive() && act->stop_trigger_)
+			if (act->IsActive())
 			{
-				if (act->stop_trigger_->Evaluate(&storyBoard, simulationTime_) == true)
+				for (size_t k = 0; k < act->maneuverGroup_.size(); k++)
 				{
-					act->End(simulationTime_);
+					ManeuverGroup* mg = act->maneuverGroup_[k];
+					if (mg && mg->IsTriggable())
+					{
+						mg->Start(simulationTime_, deltaSimTime);
+					}
+				}
+				if (act->stop_trigger_)
+				{
+					if (act->stop_trigger_->Evaluate(&storyBoard, simulationTime_) == true)
+					{
+						act->End(simulationTime_);
+					}
 				}
 			}
 

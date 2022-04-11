@@ -198,3 +198,15 @@ void ManeuverGroup::UpdateState()
 
 	StoryBoardElement::UpdateState();
 }
+
+void ManeuverGroup::Start(double simTime, double dt)
+{
+	// Reset all child manuevers, getting them ready for (re)start
+	for (size_t k = 0; k < maneuver_.size(); k++)
+	{
+		maneuver_[k]->Reset();
+	}
+
+	// Make sure to call base class Start method
+	StoryBoardElement::Start(simTime, dt);
+}
