@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSCENARIO>
+    <FileHeader revMajor="1" revMinor="1" date="2022-04-11T10:00:00" description="RepeatManeuvergroup test" author="esmini-team"/>
+    <ParameterDeclarations/>
+    <CatalogLocations>
+        <VehicleCatalog>
+            <Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
+        </VehicleCatalog>
+    </CatalogLocations>
+    <RoadNetwork>
+        <LogicFile filepath="../../../resources/xodr/straight_500m.xodr"/>
+    </RoadNetwork>
+    <Entities>
+        <ScenarioObject name="Target">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>
+        </ScenarioObject>
+    </Entities>
+    <Storyboard>
+        <Init>
+            <Actions>
+                <Private entityRef="Target">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="1" laneId="-1" offset="0" s="40"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="5"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                </Private>
+            </Actions>
+        </Init>
+        <Story name="MyStory">
+            <ParameterDeclarations/>
+            <Act name="MyAct">
+                <ManeuverGroup maximumExecutionCount="3" name="MyMG">
+                    <Actors selectTriggeringEntities="false">
+                        <EntityRef entityRef="Target"/>
+                    </Actors>
+                    <Maneuver name="MyManuever">
+                        <Event name="MyEvent1" priority="overwrite">
+                            <Action name="MyAction1">
+                                <PrivateAction>
+                                    <LateralAction>
+                                        <LaneOffsetAction continuous="true">
+                                            <LaneOffsetActionDynamics dynamicsShape="sinusoidal" maxLateralAcc="2"/>
+                                            <LaneOffsetTarget>
+                                                <AbsoluteTargetLaneOffset value="0.5"/>
+                                            </LaneOffsetTarget>
+                                        </LaneOffsetAction>
+                                    </LateralAction>
+                                </PrivateAction>
+                            </Action>
+                        </Event>
+                        <Event name="MyEvent2" priority="overwrite">
+                            <Action name="MyAction2">
+                                <PrivateAction>
+                                    <LateralAction>
+                                        <LaneOffsetAction continuous="true">
+                                            <LaneOffsetActionDynamics dynamicsShape="sinusoidal" maxLateralAcc="2"/>
+                                            <LaneOffsetTarget>
+                                                <AbsoluteTargetLaneOffset value="0.0"/>
+                                            </LaneOffsetTarget>
+                                        </LaneOffsetAction>
+                                    </LateralAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition conditionEdge="none" delay="0" name="MyAction2Trigger">
+                                        <ByValueCondition>
+                                            <StoryboardElementStateCondition state="endTransition" storyboardElementRef="MyEvent1" storyboardElementType="event"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                    </Maneuver>
+                </ManeuverGroup>
+                <StartTrigger>
+                    <ConditionGroup>
+                        <Condition name="StartCondition" delay="0" conditionEdge="none">
+                            <ByValueCondition>
+                                <SimulationTimeCondition value="0" rule="greaterThan"/>
+                            </ByValueCondition>
+                        </Condition>
+                    </ConditionGroup>
+                </StartTrigger>
+                <StopTrigger>
+                    <ConditionGroup>
+                        <Condition name="StopCondition" delay="0">
+                            <ByValueCondition>
+                                <SimulationTimeCondition value="8" rule="greaterThan"/>
+                            </ByValueCondition>
+                        </Condition>
+                    </ConditionGroup>
+                </StopTrigger>
+            </Act>
+        </Story>
+        <StopTrigger/>
+    </Storyboard>
+</OpenSCENARIO>
