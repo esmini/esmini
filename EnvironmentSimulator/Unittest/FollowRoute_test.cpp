@@ -39,7 +39,6 @@ OpenDrive *FollowRouteTest::odrLarge = nullptr;
 
 static void log_callback(const char *str);
 
-
 TEST_F(FollowRouteTest, FindPathSmallInvalidPosition)
 {
     Position::LoadOpenDrive(odrSmall);
@@ -449,6 +448,7 @@ TEST_F(FollowRouteTest, CreateWaypointLarge)
     ASSERT_FALSE(path.empty());
 
     std::vector<Position> calcWaypoints = router.GetWaypoints(path, start, target);
+
     ASSERT_FALSE(calcWaypoints.empty());
     ASSERT_EQ(calcWaypoints.size(), expectedWaypoints.size());
     for (int i = 0; i < expectedWaypoints.size(); i++)
@@ -459,7 +459,6 @@ TEST_F(FollowRouteTest, CreateWaypointLarge)
         ASSERT_NEAR(calcWaypoints[i].GetOffset(), expectedWaypoints[i].GetOffset(), 0.5);
     }
 }
-
 
 TEST_F(FollowRouteTest, CalcAverageSpeedForRoadsWithoutSpeed)
 {
@@ -567,7 +566,6 @@ TEST_F(FollowRouteTest, CalcAverageSpeedForTwoRoadTypes)
     expectedSpeed = 15;
     ASSERT_NEAR(averageSpeed, expectedSpeed, 0.01);
 }
-
 
 // Uncomment to print log output to console
 #define LOG_TO_CONSOLE

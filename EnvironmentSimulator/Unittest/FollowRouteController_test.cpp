@@ -100,6 +100,30 @@ TEST_F(FollowRouteControllerTest, FollowRouteWithCollisionRisk)
     ASSERT_NEAR(target.GetS(), finalPos.GetS(), 10);
 }
 
+TEST_F(FollowRouteControllerTest, FollowRouteMedium)
+{
+    ScenarioEngine *se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/follow_route_controller_test_medium.xosc");
+    ASSERT_NE(se, nullptr);
+
+    Position start(202, 2, 80, 0);
+    Position target(196, 1, 50, 0);
+
+    double dt = 0.1;
+
+    // Fast forward
+    while (se->getSimulationTime() < (100 - SMALL_NUMBER))
+    {
+        Position p = se->entities_.object_[0]->pos_;
+        // LOG("s=%f, r=%d, l=%d", p.GetS(), p.GetTrackId(), p.GetLaneId());
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }
+
+    Position finalPos = se->entities_.object_[0]->pos_;
+    ASSERT_EQ(target.GetTrackId(), finalPos.GetTrackId());
+    ASSERT_EQ(target.GetLaneId(), finalPos.GetLaneId());
+    ASSERT_NEAR(target.GetS(), finalPos.GetS(), 10);
+}
 
 
 // Uncomment to print log output to console

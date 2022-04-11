@@ -24,7 +24,7 @@ namespace roadmanager
         // std::pair<int,int> connectingLanes;
         double weight;
         RoadLink *link;
-        Node *previous;
+        Node *previous; 
         void Print()
         {
             LOG("road=%d, cl=%d, fl=%d, w=%f", road->GetId(), currentLaneId, fromLaneId, weight);
@@ -85,6 +85,7 @@ namespace roadmanager
         LaneIndependentRouter(OpenDrive *odr);
         std::vector<Node *> CalculatePath(Position start, Position target, RouteStrategy routeStrategy = RouteStrategy::SHORTEST);
         std::vector<Position> GetWaypoints(std::vector<Node *> path, Position start, Position target);
+        std::vector<std::vector<Position>> GetWaypointsForLanes(std::vector<Node *> path, Position start, Position target);
 
     private:
         RoadLink *GetNextLink(Node *currentNode, Road *nextRoad);
