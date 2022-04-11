@@ -370,6 +370,7 @@ std::vector<Position> LaneIndependentRouter::GetWaypoints(std::vector<Node *> pa
 		Node *next = path[idx + 1];
 		double laneLength = 0;
 		double sPos = 0;
+		double heading = 0;
 		if (current->link->GetType() == LinkType::SUCCESSOR)
 		{
 			for (int i = current->road->GetNumberOfLaneSections() - 1; i >= 0; i--)
@@ -382,6 +383,7 @@ std::vector<Position> LaneIndependentRouter::GetWaypoints(std::vector<Node *> pa
 				laneLength += current->road->GetLaneSectionByIdx(i)->GetLength();
 			}
 
+			heading = 0;
 			sPos = current->road->GetLength() - (laneLength / 2);
 			if (idx == 0 && start.GetS() > current->road->GetLength() - laneLength)
 			{
@@ -399,58 +401,21 @@ std::vector<Position> LaneIndependentRouter::GetWaypoints(std::vector<Node *> pa
 				}
 				laneLength += current->road->GetLaneSectionByIdx(i)->GetLength();
 			}
+
+			heading = M_PI;
 			sPos = laneLength / 2;
 			if (idx == 0 && start.GetS() < laneLength)
 			{
 				sPos = start.GetS() / 2;
 			}
 		}
-		waypoints.push_back(Position(current->road->GetId(), next->fromLaneId, sPos, 0.0));
+		Position p(current->road->GetId(), next->fromLaneId, sPos, 0.0);
+		p.SetHeadingRelativeRoadDirection(heading);
+		waypoints.push_back(p);
 	}
 
 	waypoints.push_back(target);
 	return waypoints;
-}
-
-std::vector<std::vector<Position>> LaneIndependentRouter::GetWaypointsForLanes(std::vector<Node *> path, Position start, Position target)
-{
-	std::vector<std::vector<Position>> waypointsSplitAfterLanes;
-	std::vector<Position> waypoints = GetWaypoints(path, start, target);
-
-	int index = 0;
-	int incommingLaneId = start.GetLaneId();
-	Road *currentRoad = odr_->GetRoadById(start.GetTrackId());
-	LaneSection *currentLaneSection = currentRoad->GetLaneSectionByS(start.GetS());
-	LinkType currentdirection = path[index]->link->GetType();
-	int laneSectionIdx = currentRoad->GetLaneSectionIdxByS(start.GetS());
-
-	while (currentLaneSection != odr_->GetRoadById(target.GetTrackId())->GetLaneSectionByS(target.GetS()))
-	{
-		int connectingLane = currentLaneSection->GetConnectingLaneId(incommingLaneId, currentdirection);
-
-		if (currentdirection == LinkType::SUCCESSOR)
-		{
-			if (laneSectionIdx == currentRoad->GetNumberOfLaneSections() - 1)
-			{
-				index++;
-				currentRoad = odr_->GetRoadById(waypoints[index].GetTrackId());
-				currentdirection = path[index]->link->GetType();
-			}
-			laneSectionIdx++;
-		}
-		else if (currentdirection == LinkType::PREDECESSOR)
-		{
-			if (laneSectionIdx == 0)
-			{
-				index++;
-				currentRoad = odr_->GetRoadById(waypoints[index].GetTrackId());
-				currentdirection = path[index]->link->GetType();
-			}
-			laneSectionIdx--;
-		}
-		currentLaneSection = currentRoad->GetLaneSectionByIdx(laneSectionIdx);
-		incommingLaneId = connectingLane;
-	}
 }
 
 double RoadCalculations::CalcAverageSpeed(Road *road)

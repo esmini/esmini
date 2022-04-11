@@ -84,14 +84,6 @@ void ControllerFollowRoute::Step(double timeStep)
 		roadmanager::Position nextWaypoint = waypoints_[currentWaypointIndex_];
 		roadmanager::Road *nextRoad = odr_->GetRoadById(nextWaypoint.GetTrackId());
 
-		// Check if road has enough length for lanechange left.
-		if ((drivingWithRoadDirection && nextRoad->GetLength() - nextWaypoint.GetS() < MIN_DIST_TO_WAYPOINT_LANE_CHANGE) ||
-			(!drivingWithRoadDirection && nextWaypoint.GetS() < MIN_DIST_TO_WAYPOINT_LANE_CHANGE))
-		{
-			currentWaypointIndex_++;
-			nextWaypoint = waypoints_[currentWaypointIndex_];
-		}
-
 		// LOG("nextWaypoint: r=%d, l=%d, s=%f", nextWaypoint.GetTrackId(), nextWaypoint.GetLaneId(), nextWaypoint.GetS());
 		//  LOG("vehiclePos: r=%d, l=%d, s=%f", vehiclePos.GetTrackId(), vehiclePos.GetLaneId(), vehiclePos.GetS());
 
@@ -100,7 +92,7 @@ void ControllerFollowRoute::Step(double timeStep)
 		if (sameRoad)
 		{
 			bool nearSPos = abs(vehiclePos.GetS() - nextWaypoint.GetS()) < MIN_DIST_TO_WAYPOINT_LANE_CHANGE;
-			if (!sameLane && nearSPos && CanChangeLane(nextWaypoint.GetLaneId()))
+			if (!sameLane && nearSPos && CanChangeLane(nextWaypoint.GetLaneId()) && !changingLane_)
 			{
 				ChangeLane(nextWaypoint.GetLaneId(), 1);
 				changingLane_ = true;
@@ -114,6 +106,7 @@ void ControllerFollowRoute::Step(double timeStep)
 		{
 			LOG("Passed waypoint:");
 			currentWaypointIndex_++;
+			LOG("currentWaypointIndex_: %d", currentWaypointIndex_);
 			if (nextWaypoint.GetTrackId() == waypoints_.back().GetTrackId())
 			{
 				break;
@@ -121,7 +114,8 @@ void ControllerFollowRoute::Step(double timeStep)
 			LOG("Previous waypoint, r: %d l: %d s: %f", waypoints_[currentWaypointIndex_ - 1].GetTrackId(), waypoints_[currentWaypointIndex_ - 1].GetLaneId(), waypoints_[currentWaypointIndex_ - 1].GetS());
 			LOG("Next waypoint, r: %d l: %d s: %f", waypoints_[currentWaypointIndex_].GetTrackId(), waypoints_[currentWaypointIndex_].GetLaneId(), waypoints_[currentWaypointIndex_].GetS());
 			object_->pos_.GetRoute()->minimal_waypoints_.clear();
-			object_->pos_.GetRoute()->minimal_waypoints_ = {waypoints_[currentWaypointIndex_-1], waypoints_[currentWaypointIndex_]};
+			object_->pos_.GetRoute()->minimal_waypoints_ = {vehiclePos, waypoints_[currentWaypointIndex_]};
+			LOG("waypoint_idx: %d", object_->pos_.GetRoute()->waypoint_idx_);
 			LOG("Updated minimal waypoints");
 			LOG("MINIMAL WAYPOINT LIST:");
 			for (roadmanager::Position p : object_->pos_.GetRoute()->minimal_waypoints_)
@@ -136,7 +130,6 @@ void ControllerFollowRoute::Step(double timeStep)
 			{
 				LOG("Calculating new path...");
 				pathCalculated_ = false;
-				changingLane_ = false;
 				CalculateWaypoints();
 				currentWaypointIndex_ = 0;
 			}
@@ -165,6 +158,12 @@ void ControllerFollowRoute::Step(double timeStep)
 			{
 				action->UpdateState();
 			}
+			// Fetch updated position
+			vehicle_.posX_ = object_->pos_.GetX();
+			vehicle_.posY_ = object_->pos_.GetY();
+			vehicle_.heading_ = object_->pos_.GetH();
+
+			gateway_->updateObjectWorldPosXYH(object_->id_, 0.0, vehicle_.posX_, vehicle_.posY_, vehicle_.heading_);
 		}
 
 		if (action->state_ == OSCAction::State::COMPLETE)
@@ -236,6 +235,7 @@ void ControllerFollowRoute::CalculateWaypoints()
 
 void ControllerFollowRoute::ChangeLane(int lane, double time)
 {
+	LOG("Add changing lane event to lane %d", lane);
 	LatLaneChangeAction *action_lanechange = new LatLaneChangeAction();
 	action_lanechange->name_ = "LaneChange";
 	action_lanechange->object_ = object_;
