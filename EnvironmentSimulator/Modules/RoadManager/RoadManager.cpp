@@ -10222,8 +10222,8 @@ int Route::AddWaypoint(Position* position)
 				// Add internal waypoints, one for each road along the path
 				for (int i = (int)nodes.size() - 1; i >= 1; i--)
 				{
-					// Find out lane ID of the connecting road
-					Position connected_pos = Position(nodes[i - 1]->fromRoad->GetId(), nodes[i - 1]->fromLaneId, 0, 0);
+					// Find out lane ID of the connecting road and add the waypoint at 1/3 of the road length
+					Position connected_pos = Position(nodes[i - 1]->fromRoad->GetId(), nodes[i - 1]->fromLaneId, nodes[i - 1]->fromRoad->GetLength() * 0.33, 0.0);
 					if (connected_pos.GetLaneId() < 0)
 					{
 						connected_pos.SetHeadingRelative(0.0);
