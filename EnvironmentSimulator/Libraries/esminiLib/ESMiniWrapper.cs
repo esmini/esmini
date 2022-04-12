@@ -128,6 +128,28 @@ public static class ESMiniLib
         /// Set 0/NULL if not needed.</param>
         public static extern void SE_RegisterParameterDeclarationCallback(Action<IntPtr> callback, IntPtr user_data);
 
+        public delegate void ConditionCallback(string name, double timestamp);
+        [DllImport(LIB_NAME, EntryPoint = "SE_RegisterConditionCallback")]
+        /// <summary>
+        /// Registers a function to be called back from esmini every time a condition is triggered.
+        /// The name of the respective condition and the current timestamp will be returned.
+        /// Registered callbacks will be cleared between SE_Init calls.
+        /// </summary>
+        /// <param name="cc">The callback function to be invoked</param>
+        public static extern void SE_RegisterConditionCallback(ConditionCallback cc);
+
+        public delegate void EventCallback(string name, double timeStamp, bool isStart);
+        [DllImport(LIB_NAME, EntryPoint = "SE_RegisterEventCallback")]
+        /// <summary>
+        /// Registers a function to be called back from esmini every time an event starts or ends.
+        /// The name of the respective event, the current timestamp and whether the event
+        /// starts(true) or ends(false) will be returned.
+        /// In case an event starts and ends within the same simulation step, only the end-transition may occur.
+        /// Registered callbacks will be cleared between SE_Init calls.
+        /// </summary>
+        /// <param name="cc">The callback function to be invoked</param>
+        public static extern void SE_RegisterEventCallback(EventCallback ec);
+
         [DllImport(LIB_NAME, EntryPoint = "SE_Init")]
         /// <summary>Initialize the scenario engine</summary>
         /// <param name="oscFilename">Path to the OpenSCEANRIO file</param>
