@@ -543,3 +543,13 @@ void Parameters::Clear()
 	}
 	catalog_param_assignments.clear();
 }
+
+void Parameters::Print()
+{
+	LOG("%d parameters%s", parameterDeclarations_.Parameter.size(), parameterDeclarations_.Parameter.size() > 0 ? ":" : "");
+
+	for (size_t i = 0; i < parameterDeclarations_.Parameter.size(); i++)
+	{
+		LOG("   %s = %s", parameterDeclarations_.Parameter[i].name.c_str(), parameterDeclarations_.Parameter[i].value._string.c_str());
+	}
+}

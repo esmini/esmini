@@ -3639,5 +3639,8 @@ int ScenarioReader::parseStoryBoard(StoryBoard &storyBoard)
 		}
 	}
 
+	// Log parameter declarations
+	parameters.Print();
+
 	return 0;
 }

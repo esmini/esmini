@@ -63,5 +63,8 @@ namespace scenarioengine
 
 		// Will clear all parameter declarations and assignements
 		void Clear();
+
+		// Log current set of parameter names and values
+		void Print();
 	};
 }
