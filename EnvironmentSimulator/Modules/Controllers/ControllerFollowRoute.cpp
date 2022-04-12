@@ -115,6 +115,7 @@ void ControllerFollowRoute::Step(double timeStep)
 			LOG("Next waypoint, r: %d l: %d s: %f", waypoints_[currentWaypointIndex_].GetTrackId(), waypoints_[currentWaypointIndex_].GetLaneId(), waypoints_[currentWaypointIndex_].GetS());
 			object_->pos_.GetRoute()->minimal_waypoints_.clear();
 			object_->pos_.GetRoute()->minimal_waypoints_ = {vehiclePos, waypoints_[currentWaypointIndex_]};
+			object_->pos_.CalcRoutePosition();   // Reset route object according to new route waypoints and current position
 			LOG("waypoint_idx: %d", object_->pos_.GetRoute()->waypoint_idx_);
 			LOG("Updated minimal waypoints");
 			LOG("MINIMAL WAYPOINT LIST:");
