@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <OpenSCENARIO xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="OpenScenario.xsd">
-    <FileHeader description="adaptspeed_example" author="User" revMajor="1" revMinor="1" date="2022-04-08T09:46:29.329368"/>
+    <FileHeader description="adaptspeed_example" author="User" revMajor="1" revMinor="1" date="2022-04-06T11:15:01.327437"/>
     <ParameterDeclarations/>
     <CatalogLocations>
         <VehicleCatalog>
@@ -11,7 +11,7 @@
         </ControllerCatalog>
     </CatalogLocations>
     <RoadNetwork>
-        <LogicFile filepath="../xodr/multi_intersections.xodr"/>
+        <LogicFile filepath="../xodr/highway_example_with_merge_and_split.xodr"/>
     </RoadNetwork>
     <Entities>
         <ScenarioObject name="Ego">
@@ -19,6 +19,9 @@
             <ObjectController>
                 <CatalogReference catalogName="ControllerCatalog" entryName="followRoute"/>
             </ObjectController>
+        </ScenarioObject>
+        <ScenarioObject name="Kalle">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_blue"/>
         </ScenarioObject>
     </Entities>
     <Storyboard>
@@ -28,7 +31,7 @@
                     <PrivateAction>
                         <TeleportAction>
                             <Position>
-                                <LanePosition roadId="202" laneId="1" s="80.0" offset="0.0"/>
+                                <LanePosition roadId="0" laneId="-1" s="10.0" offset="0.0"/>
                             </Position>
                         </TeleportAction>
                     </PrivateAction>
@@ -46,6 +49,25 @@
                         <ControllerAction>
                             <ActivateControllerAction lateral="true" longitudinal="true"/>
                         </ControllerAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Kalle">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="0" laneId="-2" s="10.0" offset="0.0"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="30"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
                     </PrivateAction>
                 </Private>
             </Actions>
@@ -67,12 +89,12 @@
                                                 <ParameterDeclarations/>
                                                 <Waypoint routeStrategy="fastest">
                                                     <Position>
-                                                        <LanePosition roadId="202" laneId="2" s="80.0" offset="0.0"/>
+                                                        <LanePosition roadId="0" laneId="-1" s="10.0" offset="0.0"/>
                                                     </Position>
                                                 </Waypoint>
                                                 <Waypoint routeStrategy="fastest">
                                                     <Position>
-                                                        <LanePosition roadId="196" laneId="1" s="50.0" offset="0.0"/>
+                                                        <LanePosition roadId="5" laneId="-3" s="20.0" offset="0.0"/>
                                                     </Position>
                                                 </Waypoint>
                                             </Route>
@@ -108,7 +130,7 @@
             <ConditionGroup>
                 <Condition name="stop_simulation" delay="0" conditionEdge="rising">
                     <ByValueCondition>
-                        <SimulationTimeCondition value="500" rule="greaterThan"/>
+                        <SimulationTimeCondition value="20" rule="greaterThan"/>
                     </ByValueCondition>
                 </Condition>
             </ConditionGroup>

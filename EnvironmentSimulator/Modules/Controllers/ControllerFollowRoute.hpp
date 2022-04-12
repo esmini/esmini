@@ -52,23 +52,26 @@ namespace scenarioengine
 		void SetScenarioEngine(ScenarioEngine *scenarioEngine) { scenarioEngine_ = scenarioEngine; };
 
 	private:
-		void ChangeLane(int lane, double time);
+		void CreateLaneChange(int lane, double time);
 		void CalculateWaypoints();
 		bool CanChangeLane(int lane);
+		void ChangeLane(double timeStep);
+		void UpdateWaypoints(roadmanager::Position vehiclePos, roadmanager::Position nextWaypoint);
 		double DistanceBetween(roadmanager::Position p1, roadmanager::Position p2);
+
 		WaypointStatus GetWaypointStatus(roadmanager::Position vehiclePos, roadmanager::Position waypoint);
 		ScenarioEngine *scenarioEngine_;
 		vehicle::Vehicle vehicle_;
-		std::vector<OSCPrivateAction *> actions_;
+		OSCPrivateAction *laneChangeAction_;
 		roadmanager::OpenDrive *odr_;
 		std::vector<roadmanager::Position> waypoints_;
 		int currentWaypointIndex_;
+		int scenarioWaypointIndex_;
 		bool changingLane_;
 		bool pathCalculated_;
 		std::vector<roadmanager::Position> allWaypoints_;
 		const double MIN_DIST_TO_WAYPOINT_LANE_CHANGE = 25;
 		const double MIN_DIST_FOR_COLLISION = 20;
-		bool temp = false;
 	};
 
 	Controller *InstantiateControllerFollowRoute(void *args);

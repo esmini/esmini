@@ -2600,6 +2600,7 @@ namespace roadmanager
 
 		Position::ReturnCode CopySFractionOfLength(Position* pos);
 
+		std::vector<Position> scenario_waypoints_; // contains waypoints defined in .xosc file
 		std::vector<Position> minimal_waypoints_; // used only for the default controllers
 		std::vector<Position> all_waypoints_; // used for user-defined controllers
 		std::string name_;

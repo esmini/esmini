@@ -1,4 +1,4 @@
-/*
+﻿/*
  * esmini - Environment Simulator Minimalistic
  * https://github.com/esmini/esmini
  *
@@ -10509,6 +10509,9 @@ int Route::AddWaypoint(Position* position)
 	}
 	if (retval >= -1)
 	{
+		// Add waypoint defined by scenario
+		scenario_waypoints_.push_back(*position);
+
 		// Add all waypoints including a valid road ID (retval == -2 indicates invalid road ID)
 		all_waypoints_.push_back(*position);
 		LOG("Route::AddWaypoint Added waypoint %d: %d, %d, %.2f", (int)all_waypoints_.size() - 1, position->GetTrackId(), position->GetLaneId(), position->GetS());

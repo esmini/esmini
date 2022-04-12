@@ -13,6 +13,7 @@
 using namespace roadmanager;
 OpenDrive *odrSmall = nullptr;
 OpenDrive *odrMedium = nullptr;
+OpenDrive *odrMediumChangedSpeeds = nullptr;
 OpenDrive *odrLarge = nullptr;
 class FollowRouteTest : public ::testing::Test
 {
@@ -25,17 +26,21 @@ public:
         // Position::GetOpenDrive()->LoadOpenDriveFile("../../../../esmini/resources/xodr/multi_intersections.xodr");
         odrMedium = new OpenDrive("../../../../esmini/resources/xodr/multi_intersections.xodr");
 
+        odrMediumChangedSpeeds = new OpenDrive("../../../EnvironmentSimulator/Unittest/xodr/multi_intersections_changed_speeds.xodr");
+
         // Position::GetOpenDrive()->LoadOpenDriveFile("../../../../large.xodr");
         odrLarge = new OpenDrive("../../../../large.xodr");
     }
     static OpenDrive *odrSmall;
     static OpenDrive *odrMedium;
+    static OpenDrive *odrMediumChangedSpeeds;
     static OpenDrive *odrLarge;
 };
 
 OpenDrive *FollowRouteTest::odrSmall = nullptr;
 OpenDrive *FollowRouteTest::odrMedium = nullptr;
 OpenDrive *FollowRouteTest::odrLarge = nullptr;
+OpenDrive *FollowRouteTest::odrMediumChangedSpeeds = nullptr;
 
 static void log_callback(const char *str);
 
@@ -565,6 +570,78 @@ TEST_F(FollowRouteTest, CalcAverageSpeedForTwoRoadTypes)
     averageSpeed = roadCalc.CalcAverageSpeed(&road);
     expectedSpeed = 15;
     ASSERT_NEAR(averageSpeed, expectedSpeed, 0.01);
+}
+
+TEST_F(FollowRouteTest, LogWaypointMedium)
+{
+    Position::LoadOpenDrive(odrMediumChangedSpeeds);
+    ASSERT_NE(odrMediumChangedSpeeds, nullptr);
+
+    std::vector<RouteStrategy> routeStrategies = {
+        RouteStrategy::SHORTEST,
+        RouteStrategy::FASTEST,
+        RouteStrategy::MIN_INTERSECTIONS};
+
+    // {start, target}
+    std::vector<std::pair<Position, Position>> startTargetPairs = {
+        {Position(266, 1, 29, 0), Position(275, 1, 55, 0)},
+        {Position(202, 2, 33, 0), Position(196, 1, 49, 0)},
+        {Position(197, -1, 52, 0), Position(267, 1, 32, 0)},
+        {Position(227, 1, 55, 0), Position(242, -1, 50, 0)},
+        {Position(242, 1, 50, 0), Position(197, -1, 51, 0)}};
+
+    for (auto &pair : startTargetPairs)
+    {
+        if (pair.first.GetLaneId() < 0)
+        {
+            pair.first.SetHeadingRelativeRoadDirection(0);
+        }
+        else
+        {
+            pair.first.SetHeadingRelativeRoadDirection(M_PI);
+        }
+    }
+
+    std::ofstream ofs;
+    ofs.open("../../../follow_route_log.csv", std::ofstream::trunc);
+
+    LaneIndependentRouter router(odrMediumChangedSpeeds);
+
+    for (RouteStrategy rs : routeStrategies)
+    {
+        std::string rsText = "Unknown";
+        if (rs == RouteStrategy::SHORTEST)
+        {
+            rsText = "Shortest";
+        }
+        else if (rs == RouteStrategy::FASTEST)
+        {
+            rsText = "Fastest";
+        }
+        else if (rs == RouteStrategy::MIN_INTERSECTIONS)
+        {
+            rsText = "MinIntersections";
+        }
+
+        for (auto &pair : startTargetPairs)
+        {
+            Position start = pair.first;
+            Position target = pair.second;
+
+            char buffer[100];
+            sprintf(buffer, "Start, %d, %d, %f, Target, %d, %d, %f, RouteStrategy, %s", start.GetTrackId(), start.GetLaneId(), start.GetS(), target.GetTrackId(), target.GetLaneId(), target.GetS(), rsText.c_str());
+            ofs << buffer << "\n";
+            std::vector<Node *> calculatedPath = router.CalculatePath(start, target, rs);
+            std::vector<Position> calculatedWaypoints = router.GetWaypoints(calculatedPath, start, target);
+            for (Position &wp : calculatedWaypoints)
+            {
+                memset(buffer, 0, sizeof buffer); // Clear buffer
+                sprintf(buffer, "Waypoint, %d, %d, %f", wp.GetTrackId(), wp.GetLaneId(), wp.GetS());
+                ofs << buffer << "\n";
+            }
+        }
+    }
+    ofs.close();
 }
 
 // Uncomment to print log output to console
