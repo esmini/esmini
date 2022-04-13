@@ -9,6 +9,7 @@
 - Support ManeuverGroup multiple executions ([issue #269](https://github.com/esmini/esmini/issues/269))
 - Log scenario parameter names and values
 - Add event and condition callbacks to C# wrapper ([issue #257](https://github.com/esmini/esmini/issues/257))
+- Fix wrong condition delay by relaxing floating point tolerance ([issue #270](https://github.com/esmini/esmini/issues/270))
 - Place intermediate waypoints at 1/3 road length instead of at s=0
 - Bugfix: Avoid crash on missing incoming road in junctions
 - Tolerate init position at waypoint road but outside route s range
