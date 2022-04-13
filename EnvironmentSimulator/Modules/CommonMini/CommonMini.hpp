@@ -41,7 +41,7 @@
    #define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
 #endif
 
-#define SMALL_NUMBER (1E-10)
+#define SMALL_NUMBER (1E-8)
 #define LARGE_NUMBER (1E+10)
 #define SIGN(X) ((X<0)?-1:1)
 #define MAX(x, y) ((y) > (x) ? (y) : (x))
@@ -738,7 +738,7 @@ public:
 
 	bool Started() { return duration_ > SMALL_NUMBER; }
 	double Elapsed(double timestamp_s) { return timestamp_s - start_time_; }
-	double Expired(double timestamp_s) { return timestamp_s - start_time_ > duration_ - SMALL_NUMBER; }
+	bool Expired(double timestamp_s) { return timestamp_s - start_time_ > duration_ - SMALL_NUMBER; }
 	double GetDuration() { return duration_; }
 };
 
