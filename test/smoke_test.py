@@ -55,9 +55,9 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\n11.100.*, 0, Ego, 200.713, 72.600, -2.443, 1.057, 6.263, 0.000, 16.000', csv))
         self.assertTrue(re.search('\n11.100, 1, Target, 205.945, 66.378, -2.497, 2.507, 6.281, 6.263, 17.500', csv))
         self.assertTrue(re.search('\n17.250.*, 0, Ego, 217.345, 167.663, 1.989, 1.738, 6.209, 0.000, 16.000', csv))
-        self.assertTrue(re.search('\n17.250, 1, Target, 210.661, 157.753, 1.314, 1.228, 6.216, 0.032, 14.839', csv))
+        self.assertTrue(re.search('\n17.250, 1, Target, 210.753, 157.759, 1.314, 1.228, 6.216, 0.032, 14.845, 0.049, 3.723', csv))
         self.assertTrue(re.search('\n25.000.*, 0, Ego, 206.081, 288.506, 5.436, 1.188, 6.238, 0.000, 16.000', csv))
-        self.assertTrue(re.search('\n25.000, 1, Target, 216.140, 307.534, 6.701, 0.969, 6.214, 0.000, 21.125', csv))
+        self.assertTrue(re.search('\n25.000, 1, Target, 216.249, 307.467, 6.701, 0.969, 6.214, 0.000, 21.105, -0.032, 5.573', csv))
 
     def test_synchronize(self):
         log = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/synchronize.xosc'), COMMON_ARGS \
@@ -650,6 +650,6 @@ if __name__ == "__main__":
     # execute only if run as a script
 
     # Run next line instead to execute only one test
-    # unittest.main(argv=['ignored', '-v', 'TestSuite.test_maneuver_groups_x_3'])
+    # unittest.main(argv=['ignored', '-v', 'TestSuite.test_trajectory'])
 
     unittest.main(verbosity=2)

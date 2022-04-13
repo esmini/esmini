@@ -92,9 +92,7 @@
                                 <PrivateAction>
                                     <TeleportAction>
                                         <Position>
-                                            <RelativeLanePosition entityRef="Car0" >
-                                                <Orientation type="relative" h="0.0" p="0.0" r="0.0" />
-                                            </RelativeLanePosition>
+                                            <RelativeRoadPosition entityRef="Car0" />
                                         </Position>
                                     </TeleportAction>
                                 </PrivateAction>

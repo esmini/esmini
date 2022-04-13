@@ -173,7 +173,7 @@
                                                 <Shape>
                                                     <Clothoid curvature="-0.1" curvatureDot="0.00036" length="70" startTime="0" stopTime="4">
                                                         <Position>
-                                                            <RelativeLanePosition dLane="0" ds="0" entityRef="Target" offset="0.0"/>
+                                                            <RelativeRoadPosition dt="0" ds="0" entityRef="Target"/>
                                                         </Position>
                                                     </Clothoid>
                                                 </Shape>
@@ -209,7 +209,7 @@
                                                     <Nurbs order="3">
                                                         <ControlPoint time="0" weight="1">
                                                             <Position>
-                                                                <RelativeLanePosition dLane="0" ds="0" entityRef="Target" offset="0.0"/>
+                                                                <RelativeRoadPosition dt="0" ds="0" entityRef="Target"/>
                                                             </Position>
                                                         </ControlPoint>
                                                         <ControlPoint time="3" weight="1.2">

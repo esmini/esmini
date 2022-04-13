@@ -8725,8 +8725,7 @@ double Position::GetS() const
 
 double Position::GetT() const
 {
-	if (rel_pos_ && rel_pos_ != this &&
-		(type_ == PositionType::RELATIVE_LANE || type_ == PositionType::RELATIVE_ROAD))
+	if (rel_pos_ && rel_pos_ != this && type_ == PositionType::RELATIVE_ROAD)
 	{
 		return rel_pos_->GetT() + t_;
 	}
@@ -8736,8 +8735,7 @@ double Position::GetT() const
 
 double Position::GetOffset()
 {
-	if (rel_pos_ && rel_pos_ != this &&
-		(type_ == PositionType::RELATIVE_LANE || type_ == PositionType::RELATIVE_ROAD))
+	if (rel_pos_ && rel_pos_ != this &&	type_ == PositionType::RELATIVE_ROAD)
 	{
 		return rel_pos_->GetOffset() + offset_;
 	}
