@@ -1,5 +1,19 @@
 ## esmini release notes
 
+### 2022-04-13 Version 2.22.1
+
+- Fix wrong RelativeLanePos interpretation ([issue #267](https://github.com/esmini/esmini/issues/267))
+  - `offset` should be relative to center of new lane, not relative `offset` of the related position
+  - in contrast to `dt` in RelativeRoadPosition which is relative `t` of the related position  
+  **Note:** This can affect existing scenarios. Use RelativeRoadPosition with ds="0.0" and dt="0.0" to get same longitudinal and lateral position as the related entity.
+- Support ManeuverGroup multiple executions ([issue #269](https://github.com/esmini/esmini/issues/269))
+- Log scenario parameter names and values
+- Add event and condition callbacks to C# wrapper ([issue #257](https://github.com/esmini/esmini/issues/257))
+- Place intermediate waypoints at 1/3 road length instead of at s=0
+- Bugfix: Avoid crash on missing incoming road in junctions
+- Tolerate init position at waypoint road but outside route s range
+  - internal route s value will simply be < 0 or > length_of_route
+
 ### 2022-04-08 Version 2.22.0
 
 - User guide published: https://esmini.github.io
