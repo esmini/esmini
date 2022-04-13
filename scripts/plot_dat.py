@@ -45,6 +45,7 @@ if __name__ == "__main__":
     objs = []
     x = []
     y = []
+    id2idx = {}
 
     if args.x_axis is None:
         x_axis = 'time'
@@ -55,18 +56,19 @@ if __name__ == "__main__":
     print('parameters:', ', '.join(parameter))
 
     for data in dat.data:
-        i = int(data.id)
-        if i >= len(objs):
-            print('adding object {} {}'.format(i, data.name.decode('utf-8')))
+        id = int(data.id)
+        if id not in id2idx:
+            print('adding object {} {}'.format(id, data.name.decode('utf-8')))
+            id2idx[id] = len(objs)
             objs.append(data.name.decode('utf-8'))
             x.append([])
             y.append([])
             for p in parameter:
-                y[i].append([])
+                y[id2idx[id]].append([])
 
         for j, p in enumerate(parameter):
-            y[i][j].append(float(getattr(data, p)))
-        x[i].append(float(getattr(data, x_axis)))
+            y[id2idx[id]][j].append(float(getattr(data, p)))
+        x[id2idx[id]].append(float(getattr(data, x_axis)))
 
     p1 = plt.figure(1)
     for i in range(len(x)):
