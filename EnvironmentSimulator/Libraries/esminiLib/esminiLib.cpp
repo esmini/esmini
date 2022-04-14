@@ -1030,9 +1030,7 @@ extern "C"
 		{
 			return -1;
 		}
-		player->scenarioGateway->reportObject(object_id, obj->name_, obj->type_, obj->category_, obj->model_id_,
-			obj->GetActivatedControllerType(), obj->boundingbox_, static_cast<int>(obj->scaleMode_),
-			obj->visibilityMask_, 0.0, speed, obj->wheel_angle_, obj->wheel_rot_, &obj->pos_);
+		player->scenarioGateway->updateObjectSpeed(object_id, 0.0, speed);
 
 		return 0;
 	}
@@ -1075,7 +1073,7 @@ extern "C"
 			return -1;
 		}
 		player->scenarioGateway->updateObjectVel(object_id, 0.0, x_vel, y_vel, z_vel);
-		// Also update accelerations directly in scenario object, in case we're in a callback
+		// Also update velocities directly in scenario object, in case we're in a callback
 		obj->SetVel(x_vel, y_vel, z_vel);
 
 
