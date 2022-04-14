@@ -48,7 +48,7 @@ Then either build yourself, see step 2 in next chapter <<Build esmini - quick gu
 
 . Download pre-built binary package for your system (e.g. esmini-bin_win_x64.zip) from latest release: 
 https://github.com/esmini/esmini/releases. Copy the content into the esmini-demo folder.
-. Download the complete 3D model package from https://dl.dropboxusercontent.com/s/5gk8bvgzqiaaoco/models.7z?dl=0[here]. Unpack into esmini/resources (it should end up in a `models` subfolder). These assets work on all platforms. The environment models (roads, landscape, buildings...) have been created using https://vires.mscsoftware.com/solutions/3d-environment-road-network[VIRES Road Network Editor].
+. Download the complete 3D model package from https://dl.dropboxusercontent.com/s/5gk8bvgzqiaaoco/models.7z?dl=1[here]. Unpack into esmini/resources (it should end up in a `models` subfolder). These assets work on all platforms. The environment models (roads, landscape, buildings...) have been created using https://vires.mscsoftware.com/solutions/3d-environment-road-network[VIRES Road Network Editor].
 
 === Build esmini - quick guide 
 
@@ -135,13 +135,13 @@ Shared libraries:
 [horizontal]
 *esminiLib*:: High level API for running, controlling and monitoring scenarios +
 +
-See headerfile {src-root}/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp[esminiLib.hpp]
+See headerfile {src-remote-root}/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp[esminiLib.hpp]
 and <<Hello World programming tutorial>>
 
 *esminiRMLib*:: High level API for parsing and query road networks (only road manager) +
 +
-See headerfile {src-root}/EnvironmentSimulator/Libraries/esminiRMLib/esminiRMLib.hpp[esminiRMLib.hpp]
-and code example {src-root}/EnvironmentSimulator/code-examples/rm-basic[rm-basic]
+See headerfile {src-remote-root}/EnvironmentSimulator/Libraries/esminiRMLib/esminiRMLib.hpp[esminiRMLib.hpp]
+and code example {src-remote-root}/EnvironmentSimulator/code-examples/rm-basic[rm-basic]
 
 == Use cases
 Here follows basic examples showing some, but not all, features in esmini and companion tools. It should give an idea of the possibilities and limitations. For a full list of features and functions, see <<Command reference>>.
