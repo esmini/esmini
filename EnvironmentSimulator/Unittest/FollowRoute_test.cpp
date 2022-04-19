@@ -231,9 +231,10 @@ TEST_F(FollowRouteTest, FindPathShortest)
     start.SetHeadingRelativeRoadDirection(M_PI);
 
     Position target(209, 1, 20, 0);
+    target.SetRouteStrategy(Position::RouteStrategy::SHORTEST);
 
     LaneIndependentRouter router(odrMedium);
-    std::vector<Node *> path = router.CalculatePath(start, target, RouteStrategy::SHORTEST);
+    std::vector<Node *> path = router.CalculatePath(start, target);
 
     ASSERT_FALSE(path.empty());
     ASSERT_EQ(path.back()->road->GetId(), 209);
@@ -250,9 +251,10 @@ TEST_F(FollowRouteTest, FindPathFastest)
     start.SetHeadingRelativeRoadDirection(M_PI);
 
     Position target(209, 1, 20, 0);
+    target.SetRouteStrategy(Position::RouteStrategy::FASTEST);
 
     LaneIndependentRouter router(odrMedium);
-    std::vector<Node *> path = router.CalculatePath(start, target, RouteStrategy::FASTEST);
+    std::vector<Node *> path = router.CalculatePath(start, target);
 
     ASSERT_FALSE(path.empty());
     ASSERT_EQ(path.back()->road->GetId(), 209);
@@ -269,9 +271,10 @@ TEST_F(FollowRouteTest, FindPathMinIntersections)
     start.SetHeadingRelativeRoadDirection(M_PI);
 
     Position target(209, 1, 20, 0);
+    target.SetRouteStrategy(Position::RouteStrategy::MIN_INTERSECTIONS);
 
     LaneIndependentRouter router(odrMedium);
-    std::vector<Node *> path = router.CalculatePath(start, target, RouteStrategy::MIN_INTERSECTIONS);
+    std::vector<Node *> path = router.CalculatePath(start, target);
     ASSERT_FALSE(path.empty());
     ASSERT_EQ(path.back()->road->GetId(), 209);
 }
@@ -290,7 +293,7 @@ TEST_F(FollowRouteTest, FindPathTimeMedium)
 
     LaneIndependentRouter router(odrMedium);
     auto startTime = std::chrono::high_resolution_clock::now();
-    std::vector<Node *> path = router.CalculatePath(start, target, RouteStrategy::SHORTEST);
+    std::vector<Node *> path = router.CalculatePath(start, target);
     auto endTime = std::chrono::high_resolution_clock::now();
     auto elapsedTime = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime).count();
 
@@ -315,7 +318,7 @@ TEST_F(FollowRouteTest, FindPathTimeLarge)
 
     LaneIndependentRouter router(odrLarge);
     auto startTime = std::chrono::high_resolution_clock::now();
-    std::vector<Node *> path = router.CalculatePath(start, target, RouteStrategy::SHORTEST);
+    std::vector<Node *> path = router.CalculatePath(start, target);
     auto endTime = std::chrono::high_resolution_clock::now();
     auto elapsedTime = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime).count();
 
@@ -577,10 +580,10 @@ TEST_F(FollowRouteTest, LogWaypointMedium)
     Position::LoadOpenDrive(odrMediumChangedSpeeds);
     ASSERT_NE(odrMediumChangedSpeeds, nullptr);
 
-    std::vector<RouteStrategy> routeStrategies = {
-        RouteStrategy::SHORTEST,
-        RouteStrategy::FASTEST,
-        RouteStrategy::MIN_INTERSECTIONS};
+    std::vector<Position::RouteStrategy> routeStrategies = {
+        Position::RouteStrategy::SHORTEST,
+        Position::RouteStrategy::FASTEST,
+        Position::RouteStrategy::MIN_INTERSECTIONS};
 
     // {start, target}
     std::vector<std::pair<Position, Position>> startTargetPairs = {
@@ -607,18 +610,18 @@ TEST_F(FollowRouteTest, LogWaypointMedium)
 
     LaneIndependentRouter router(odrMediumChangedSpeeds);
 
-    for (RouteStrategy rs : routeStrategies)
+    for (Position::RouteStrategy rs : routeStrategies)
     {
         std::string rsText = "Unknown";
-        if (rs == RouteStrategy::SHORTEST)
+        if (rs == Position::RouteStrategy::SHORTEST)
         {
             rsText = "Shortest";
         }
-        else if (rs == RouteStrategy::FASTEST)
+        else if (rs == Position::RouteStrategy::FASTEST)
         {
             rsText = "Fastest";
         }
-        else if (rs == RouteStrategy::MIN_INTERSECTIONS)
+        else if (rs == Position::RouteStrategy::MIN_INTERSECTIONS)
         {
             rsText = "MinIntersections";
         }
@@ -627,16 +630,17 @@ TEST_F(FollowRouteTest, LogWaypointMedium)
         {
             Position start = pair.first;
             Position target = pair.second;
+            target.SetRouteStrategy(rs);
 
             char buffer[100];
-            sprintf(buffer, "Start, %d, %d, %f, Target, %d, %d, %f, RouteStrategy, %s", start.GetTrackId(), start.GetLaneId(), start.GetS(), target.GetTrackId(), target.GetLaneId(), target.GetS(), rsText.c_str());
+            sprintf(buffer, "Start, %d, %d, %.2f, Target, %d, %d, %.2f, RouteStrategy, %s", start.GetTrackId(), start.GetLaneId(), start.GetS(), target.GetTrackId(), target.GetLaneId(), target.GetS(), rsText.c_str());
             ofs << buffer << "\n";
-            std::vector<Node *> calculatedPath = router.CalculatePath(start, target, rs);
+            std::vector<Node *> calculatedPath = router.CalculatePath(start, target);
             std::vector<Position> calculatedWaypoints = router.GetWaypoints(calculatedPath, start, target);
             for (Position &wp : calculatedWaypoints)
             {
                 memset(buffer, 0, sizeof buffer); // Clear buffer
-                sprintf(buffer, "Waypoint, %d, %d, %f", wp.GetTrackId(), wp.GetLaneId(), wp.GetS());
+                sprintf(buffer, "Waypoint, %d, %d, %.2f", wp.GetTrackId(), wp.GetLaneId(), wp.GetS());
                 ofs << buffer << "\n";
             }
         }

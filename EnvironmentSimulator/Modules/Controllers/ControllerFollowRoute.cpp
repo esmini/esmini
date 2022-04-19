@@ -176,7 +176,7 @@ void ControllerFollowRoute::CalculateWaypoints()
 		targetPos = object_->pos_.GetRoute()->scenario_waypoints_[scenarioWaypointIndex_];
 	}
 
-	std::vector<roadmanager::Node *> pathToGoal = router.CalculatePath(startPos, targetPos, roadmanager::RouteStrategy::SHORTEST);
+	std::vector<roadmanager::Node *> pathToGoal = router.CalculatePath(startPos, targetPos);
 	LOG("Path calculated");
 	if (pathToGoal.empty())
 	{

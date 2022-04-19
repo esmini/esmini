@@ -932,10 +932,22 @@ roadmanager::Route *ScenarioReader::parseOSCRoute(pugi::xml_node routeNode)
 		}
 		else if (routeChildName == "Waypoint")
 		{
+			roadmanager::Position::RouteStrategy rs = roadmanager::Position::RouteStrategy::SHORTEST;
+			std::string routeStrategy = routeChild.attribute("routeStrategy").value();
+			if(routeStrategy == "leastIntersections"){
+				rs = roadmanager::Position::RouteStrategy::MIN_INTERSECTIONS;
+			}else if(routeStrategy == "fastest"){
+				rs = roadmanager::Position::RouteStrategy::FASTEST;
+			}else{// If shortest or unknown
+				rs = roadmanager::Position::RouteStrategy::SHORTEST;
+			}
+			
 			OSCPosition *pos = parseOSCPosition(routeChild.first_child());
 			if (pos)
 			{
-				route->AddWaypoint(pos->GetRMPos());
+				roadmanager::Position *p = pos->GetRMPos();
+				p->SetRouteStrategy(rs);
+				route->AddWaypoint(p);
 			}
 			else
 			{

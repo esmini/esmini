@@ -9,13 +9,7 @@
 
 namespace roadmanager
 {
-    typedef enum
-    {
-        SHORTEST,
-        FASTEST,
-        MIN_INTERSECTIONS
-    } RouteStrategy;
-
+   
     typedef struct Node
     {
         Road *road;
@@ -62,8 +56,8 @@ namespace roadmanager
     {
     public:
         double CalcAverageSpeed(Road *road);
-        double CalcWeight(Node *previousNode, RouteStrategy routeStrategy, double roadLength, Road *road);
-        double CalcWeightWithPos(Node *previousNode, Position pos, Road *road, RouteStrategy routeStrategy);
+        double CalcWeight(Node *previousNode, Position::RouteStrategy routeStrategy, double roadLength, Road *road);
+        double CalcWeightWithPos(Node *previousNode, Position pos, Road *road, Position::RouteStrategy routeStrategy);
 
     private:
         // roadTypeToSpeed gives speed in m/s for a specific road type
@@ -83,16 +77,16 @@ namespace roadmanager
     {
     public:
         LaneIndependentRouter(OpenDrive *odr);
-        std::vector<Node *> CalculatePath(Position start, Position target, RouteStrategy routeStrategy = RouteStrategy::SHORTEST);
+        std::vector<Node *> CalculatePath(Position start, Position target);
         std::vector<Position> GetWaypoints(std::vector<Node *> path, Position start, Position target);
 
     private:
         RoadLink *GetNextLink(Node *currentNode, Road *nextRoad);
-        Node *CreateTargetNode(Node *currentNode, Road *nextRoad, std::pair<int, int> laneIds, RouteStrategy routeStrategy);
-        Node *CreateStartNode(RoadLink* link,Road* road, int laneId,ContactPointType contactPoint,RouteStrategy routeStrategy,Position pos);
-        std::vector<Node *> GetNextNodes(Road *nextRoad, Road *targetRoad, Node *srcNode, RouteStrategy routeStrategy);
+        Node *CreateTargetNode(Node *currentNode, Road *nextRoad, std::pair<int, int> laneIds);
+        Node *CreateStartNode(RoadLink* link,Road* road, int laneId,ContactPointType contactPoint,Position pos);
+        std::vector<Node *> GetNextNodes(Road *nextRoad, Road *targetRoad, Node *srcNode);
         std::vector<std::pair<int, int>> GetConnectingLanes(Node *srcNode, Road *nextRoad);
-        bool FindGoal(RouteStrategy routeStrategy);
+        bool FindGoal();
         bool IsPositionValid(Position pos);
         template <class Q>
         void clearQueue(Q &q) { q = Q(); }
@@ -102,6 +96,7 @@ namespace roadmanager
         Position targetWaypoint_;
         OpenDrive *odr_;
         RoadCalculations roadCalculations_;
+        Position::RouteStrategy routeStrategy_;
     };
 
 }

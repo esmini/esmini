@@ -10,7 +10,7 @@ LaneIndependentRouter::LaneIndependentRouter(OpenDrive *odr) : odr_(odr), roadCa
 }
 
 // Gets the next pathnode for the nextroad based on current srcnode
-std::vector<Node *> LaneIndependentRouter::GetNextNodes(Road *nextRoad, Road *targetRoad, Node *currentNode, RouteStrategy routeStrategy)
+std::vector<Node *> LaneIndependentRouter::GetNextNodes(Road *nextRoad, Road *targetRoad, Node *currentNode)
 {
 	std::vector<std::pair<int, int>> connectingLaneIds = GetConnectingLanes(currentNode, nextRoad);
 	if (connectingLaneIds.empty())
@@ -33,7 +33,7 @@ std::vector<Node *> LaneIndependentRouter::GetNextNodes(Road *nextRoad, Road *ta
 		if (nextRoad == targetRoad && lanePair.second == targetLaneId)
 		{
 			// Target road found and driving in same direction, create a target node.
-			pNode = CreateTargetNode(currentNode, nextRoad, lanePair, routeStrategy);
+			pNode = CreateTargetNode(currentNode, nextRoad, lanePair);
 		}
 		else
 		{
@@ -51,7 +51,7 @@ std::vector<Node *> LaneIndependentRouter::GetNextNodes(Road *nextRoad, Road *ta
 			pNode->currentLaneId = lanePair.second;
 			pNode->fromLaneId = lanePair.first;
 			pNode->previous = currentNode;
-			double nextWeight = roadCalculations_.CalcWeight(currentNode, routeStrategy, nextRoad->GetLength(), nextRoad);
+			double nextWeight = roadCalculations_.CalcWeight(currentNode, routeStrategy_, nextRoad->GetLength(), nextRoad);
 			pNode->weight = currentNode->weight + nextWeight;
 		}
 		if (pNode)
@@ -142,7 +142,7 @@ std::vector<std::pair<int, int>> LaneIndependentRouter::GetConnectingLanes(Node 
 	return connectingLaneIds;
 }
 
-Node *LaneIndependentRouter::CreateTargetNode(Node *currentNode, Road *nextRoad, std::pair<int, int> laneIds, RouteStrategy routeStrategy)
+Node *LaneIndependentRouter::CreateTargetNode(Node *currentNode, Road *nextRoad, std::pair<int, int> laneIds)
 {
 	// Create last node (targetnode)
 	Node *targetNode = new Node;
@@ -151,12 +151,12 @@ Node *LaneIndependentRouter::CreateTargetNode(Node *currentNode, Road *nextRoad,
 	targetNode->currentLaneId = laneIds.second;
 	targetNode->fromLaneId = laneIds.first;
 	targetNode->link = nullptr;
-	double nextWeight = roadCalculations_.CalcWeightWithPos(currentNode, targetWaypoint_, nextRoad, routeStrategy);
+	double nextWeight = roadCalculations_.CalcWeightWithPos(currentNode, targetWaypoint_, nextRoad, routeStrategy_);
 	targetNode->weight = currentNode->weight + nextWeight;
 	return targetNode;
 }
 
-bool LaneIndependentRouter::FindGoal(RouteStrategy routeStrategy)
+bool LaneIndependentRouter::FindGoal()
 {
 	while (!unvisited_.empty())
 	{
@@ -205,7 +205,7 @@ bool LaneIndependentRouter::FindGoal(RouteStrategy routeStrategy)
 			{
 				continue;
 			}
-			std::vector<Node *> nextNodes = GetNextNodes(nextRoad, targetRoad, currentNode, routeStrategy);
+			std::vector<Node *> nextNodes = GetNextNodes(nextRoad, targetRoad, currentNode);
 			for (Node *n : nextNodes)
 			{
 				unvisited_.push(n);
@@ -238,7 +238,7 @@ bool LaneIndependentRouter::IsPositionValid(Position pos)
 	return lane->IsDriving();
 }
 
-Node *LaneIndependentRouter::CreateStartNode(RoadLink *link, Road *road, int laneId, ContactPointType contactPoint, RouteStrategy routeStrategy, Position pos)
+Node *LaneIndependentRouter::CreateStartNode(RoadLink *link, Road *road, int laneId, ContactPointType contactPoint, Position pos)
 {
 	Node *startNode = new Node;
 	startNode->link = link;
@@ -259,16 +259,16 @@ Node *LaneIndependentRouter::CreateStartNode(RoadLink *link, Road *road, int lan
 	}
 
 	double nextWeight = 0;
-	if (routeStrategy == RouteStrategy::SHORTEST)
+	if (routeStrategy_ == Position::RouteStrategy::SHORTEST)
 	{
 		nextWeight = roadLength;
 	}
-	else if (routeStrategy == RouteStrategy::FASTEST)
+	else if (routeStrategy_ == Position::RouteStrategy::FASTEST)
 	{
 		double averageSpeed = roadCalculations_.CalcAverageSpeed(road);
 		nextWeight = roadLength / averageSpeed;
 	}
-	else if (routeStrategy == RouteStrategy::MIN_INTERSECTIONS)
+	else if (routeStrategy_ == Position::RouteStrategy::MIN_INTERSECTIONS)
 	{
 		nextWeight = 0;
 	}
@@ -277,7 +277,7 @@ Node *LaneIndependentRouter::CreateStartNode(RoadLink *link, Road *road, int lan
 }
 
 // Calculate path to target and returns it as a vector of pathnodes
-std::vector<Node *> LaneIndependentRouter::CalculatePath(Position start, Position target, RouteStrategy routeStrategy)
+std::vector<Node *> LaneIndependentRouter::CalculatePath(Position start, Position target)
 {
 	visited_.clear();
 	clearQueue(unvisited_);
@@ -299,6 +299,10 @@ std::vector<Node *> LaneIndependentRouter::CalculatePath(Position start, Positio
 	targetWaypoint_ = target;
 	Road *targetRoad = odr_->GetRoadById(targetWaypoint_.GetTrackId());
 	int targetLaneId = targetWaypoint_.GetLaneId();
+
+	//Get routestrategy from traget position
+	routeStrategy_ = target.GetRouteStrategy();
+
 
 	ContactPointType contactPoint = ContactPointType::CONTACT_POINT_UNDEFINED;
 	RoadLink *nextElement = nullptr;
@@ -332,10 +336,10 @@ std::vector<Node *> LaneIndependentRouter::CalculatePath(Position start, Positio
 		return {};
 	}
 
-	Node *startNode = CreateStartNode(nextElement, startRoad, startLaneId, contactPoint, routeStrategy, start);
+	Node *startNode = CreateStartNode(nextElement, startRoad, startLaneId, contactPoint, start);
 	unvisited_.push(startNode);
 
-	bool found = FindGoal(routeStrategy);
+	bool found = FindGoal();
 	std::vector<Node *> pathToGoal;
 	if (found)
 	{
@@ -452,7 +456,7 @@ double RoadCalculations::CalcAverageSpeed(Road *road)
 	return totalSpeed / (double)roadTypeCount;
 }
 
-double RoadCalculations::CalcWeightWithPos(Node *previousNode, Position pos, Road *road, RouteStrategy routeStrategy)
+double RoadCalculations::CalcWeightWithPos(Node *previousNode, Position pos, Road *road, Position::RouteStrategy routeStrategy)
 {
 	double roadLength = 0;
 
@@ -468,13 +472,13 @@ double RoadCalculations::CalcWeightWithPos(Node *previousNode, Position pos, Roa
 	return CalcWeight(previousNode, routeStrategy, roadLength, road);
 }
 
-double RoadCalculations::CalcWeight(Node *previousNode, RouteStrategy routeStrategy, double roadLength, Road *road)
+double RoadCalculations::CalcWeight(Node *previousNode, Position::RouteStrategy routeStrategy, double roadLength, Road *road)
 {
-	if (routeStrategy == RouteStrategy::SHORTEST)
+	if (routeStrategy == Position::RouteStrategy::SHORTEST)
 	{
 		return roadLength;
 	}
-	else if (routeStrategy == RouteStrategy::FASTEST)
+	else if (routeStrategy == Position::RouteStrategy::FASTEST)
 	{
 		double averageSpeed = CalcAverageSpeed(road);
 		if (averageSpeed == 0)
@@ -485,7 +489,7 @@ double RoadCalculations::CalcWeight(Node *previousNode, RouteStrategy routeStrat
 
 		return roadLength / averageSpeed;
 	}
-	else if (routeStrategy == RouteStrategy::MIN_INTERSECTIONS)
+	else if (routeStrategy == Position::RouteStrategy::MIN_INTERSECTIONS)
 	{
 		if (previousNode->link->GetElementType() == RoadLink::ELEMENT_TYPE_JUNCTION)
 		{
@@ -495,7 +499,7 @@ double RoadCalculations::CalcWeight(Node *previousNode, RouteStrategy routeStrat
 	}
 	else
 	{
-		LOG("RouteStrategy does not exist");
+		LOG("Position::RouteStrategy does not exist");
 		return 0;
 	}
 }
