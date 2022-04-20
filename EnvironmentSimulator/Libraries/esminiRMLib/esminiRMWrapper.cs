@@ -358,6 +358,15 @@ namespace OpenDRIVE
         public static extern int SetWorldXYZHPosition(int index, float x, float y, float z, float h);
 
         /// <summary>
+        /// Change road belonging of position object, keeping actual x,y location, regardless other roads being closer
+        /// </summary>
+        /// <param name="index">Handle to the position object</param>
+        /// <param name="roadId">Id of the road to belong to</param>
+        /// <returns>0 if successful, -1 if not</returns>
+        [DllImport(LIB_NAME, EntryPoint = "RM_SetRoadId")]
+        public static extern int SetRoadId(int index, int roadId);
+
+        /// <summary>
         /// Move position forward along the road network
         /// </summary>
         /// <param name="index">Handle to the position object</param>

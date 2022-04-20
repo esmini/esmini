@@ -1,6 +1,7 @@
 include_directories (
   ${SCENARIOENGINE_INCLUDE_DIRS}
   ${SCENARIOENGINE_DLL_INCLUDE_DIR}
+  ${ROADMANAGER_DLL_INCLUDE_DIR}
   ${COMMON_MINI_INCLUDE_DIR}
   ${ROADMANAGER_INCLUDE_DIR}
   ${VIEWER_BASE_INCLUDE_DIR}
@@ -63,4 +64,5 @@ package_add_test_with_libraries(ScenarioPlayer_test ScenarioPlayer_test.cpp
 	${SOCK_LIB}
 )
 package_add_test_with_libraries(ScenarioEngineDll_test ScenarioEngineDll_test.cpp esminiLib CommonMini ${OSI_LIBRARIES})
+package_add_test_with_libraries(RoadManagerDll_test RoadManagerDll_test.cpp esminiRMLib CommonMini)
 package_add_test_with_libraries(CommonMini_test CommonMini_test.cpp CommonMini)

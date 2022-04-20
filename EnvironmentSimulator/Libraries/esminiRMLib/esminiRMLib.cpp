@@ -501,6 +501,21 @@ extern "C"
 		return 0;
 	}
 
+	RM_DLL_API int RM_SetRoadId(int handle, int roadId)
+	{
+		if (odrManager == nullptr || handle >= position.size())
+		{
+			return -1;
+		}
+		else
+		{
+			roadmanager::Position* pos = &position[handle];
+			pos->XYZH2TrackPos(pos->GetX(), pos->GetY(), pos->GetZ(), pos->GetH(), false, roadId, false);
+		}
+
+		return 0;
+	}
+
 	RM_DLL_API int RM_SetS(int handle, float s)
 	{
 		if (odrManager == nullptr || handle >= position.size())

@@ -145,8 +145,12 @@ for:
             if ($lastExitCode -ne 0) {
                 throw "ScenarioEngineDll_test failed"
             }
-
             dir *.tga, *.ppm
+
+            ./RoadManagerDll_test
+            if ($lastExitCode -ne 0) {
+                throw "RoadManagerDll_test failed"
+            }
 
             cd ../../../test
 
@@ -350,8 +354,12 @@ for:
             if ($lastExitCode -ne 0) {
                 throw "ScenarioEngineDll_test failed"
             }
-
             dir *.tga, *.ppm
+
+            ./Release/RoadManagerDll_test
+            if ($lastExitCode -ne 0) {
+                throw "RoadManagerDll_test failed"
+            }
 
       - cmd:
             cd ../../../test

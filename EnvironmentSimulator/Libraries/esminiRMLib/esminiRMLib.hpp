@@ -342,6 +342,14 @@ extern "C"
 	RM_DLL_API int RM_SetWorldXYZHPosition(int handle, float x, float y, float z, float h);
 
 	/**
+	Change road belonging of position object, keeping actual x,y location, regardless other roads being closer
+	@param handle Handle to the position object
+	@param roadId Id of the road to belong to
+	@return 0 if successful, -1 if not
+	*/
+	RM_DLL_API int RM_SetRoadId(int handle, int roadId);
+
+	/**
 	Move position forward along the road. Choose way randomly though any junctions.
 	@param handle Handle to the position object
 	@param dist Distance (meter) to move
