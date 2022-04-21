@@ -82,6 +82,7 @@ namespace roadmanager
 
     private:
         RoadLink *GetNextLink(Node *currentNode, Road *nextRoad);
+        std::vector<Road *> GetNextRoads(RoadLink *link, Road *currentRoad);
         Node *CreateTargetNode(Node *currentNode, Road *nextRoad, std::pair<int, int> laneIds);
         Node *CreateStartNode(RoadLink* link,Road* road, int laneId,ContactPointType contactPoint,Position pos);
         std::vector<Node *> GetNextNodes(Road *nextRoad, Road *targetRoad, Node *srcNode);

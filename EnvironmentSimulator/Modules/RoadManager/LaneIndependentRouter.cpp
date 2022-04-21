@@ -62,6 +62,35 @@ std::vector<Node *> LaneIndependentRouter::GetNextNodes(Road *nextRoad, Road *ta
 	return nextNodes;
 }
 
+std::vector<Road *> LaneIndependentRouter::GetNextRoads(RoadLink *link, Road *currentRoad)
+{
+	std::vector<Road *> nextRoads;
+	Road *nextRoad;
+	if (link->GetElementType() == RoadLink::ElementType::ELEMENT_TYPE_ROAD)
+	{
+		nextRoad = odr_->GetRoadById(link->GetElementId());
+		if (nextRoad) // Dont push nullptr
+		{
+			nextRoads.push_back(nextRoad);
+		}
+	}
+	else if (link->GetElementType() == RoadLink::ElementType::ELEMENT_TYPE_JUNCTION)
+	{
+		// check all junction links (connecting roads) that has pivot road as incoming road
+		Junction *junction = odr_->GetJunctionById(link->GetElementId());
+		for (size_t j = 0; j < junction->GetNoConnectionsFromRoadId(currentRoad->GetId()); j++)
+		{
+			int roadId = junction->GetConnectingRoadIdFromIncomingRoadId(currentRoad->GetId(), (int)j);
+			nextRoad = odr_->GetRoadById(roadId);
+			if (nextRoad) // Dont push nullptr
+			{
+				nextRoads.push_back(nextRoad);
+			}
+		}
+	}
+	return nextRoads;
+}
+
 RoadLink *LaneIndependentRouter::GetNextLink(Node *currentNode, Road *nextRoad)
 {
 	if (currentNode->link->GetElementType() == RoadLink::ELEMENT_TYPE_ROAD)
@@ -181,30 +210,9 @@ bool LaneIndependentRouter::FindGoal()
 		{
 			continue;
 		}
-		RoadLink *link = currentNode->link;
-		Road *currentRoad = currentNode->road;
-		std::vector<Road *> nextRoads;
-		if (link->GetElementType() == RoadLink::ElementType::ELEMENT_TYPE_ROAD)
-		{
-			nextRoads.push_back(odr_->GetRoadById(link->GetElementId()));
-		}
-		else if (link->GetElementType() == RoadLink::ElementType::ELEMENT_TYPE_JUNCTION)
-		{
-			// check all junction links (connecting roads) that has pivot road as incoming road
-			Junction *junction = odr_->GetJunctionById(link->GetElementId());
-			for (size_t j = 0; j < junction->GetNoConnectionsFromRoadId(currentRoad->GetId()); j++)
-			{
-				int roadId = junction->GetConnectingRoadIdFromIncomingRoadId(currentRoad->GetId(), (int)j);
-				nextRoads.push_back(odr_->GetRoadById(roadId));
-			}
-		}
-
+		std::vector<Road *> nextRoads = GetNextRoads(currentNode->link,currentNode->road);
 		for (Road *nextRoad : nextRoads)
 		{
-			if (!nextRoad)
-			{
-				continue;
-			}
 			std::vector<Node *> nextNodes = GetNextNodes(nextRoad, targetRoad, currentNode);
 			for (Node *n : nextNodes)
 			{

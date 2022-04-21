@@ -16,6 +16,7 @@ OpenDrive *odrMedium = nullptr;
 OpenDrive *odrMediumChangedSpeeds = nullptr;
 OpenDrive *odrLarge = nullptr;
 OpenDrive *odrRouteTest = nullptr;
+OpenDrive *odrRouteTestLHT = nullptr;
 class FollowRouteTest : public ::testing::Test
 {
 public:
@@ -33,12 +34,14 @@ public:
         odrLarge = new OpenDrive("../../../../large.xodr");
 
         odrRouteTest = new OpenDrive("../../../EnvironmentSimulator/Unittest/xodr/route_strategy_test_road.xodr");
+        odrRouteTestLHT = new OpenDrive("../../../EnvironmentSimulator/Unittest/xodr/route_strategy_test_road_LHT.xodr");
     }
     static OpenDrive *odrSmall;
     static OpenDrive *odrMedium;
     static OpenDrive *odrMediumChangedSpeeds;
     static OpenDrive *odrLarge;
     static OpenDrive *odrRouteTest;
+    static OpenDrive *odrRouteTestLHT;
 };
 
 OpenDrive *FollowRouteTest::odrSmall = nullptr;
@@ -46,6 +49,7 @@ OpenDrive *FollowRouteTest::odrMedium = nullptr;
 OpenDrive *FollowRouteTest::odrLarge = nullptr;
 OpenDrive *FollowRouteTest::odrMediumChangedSpeeds = nullptr;
 OpenDrive *FollowRouteTest::odrRouteTest = nullptr;
+OpenDrive *FollowRouteTest::odrRouteTestLHT = nullptr;
 
 static void log_callback(const char *str);
 
@@ -232,7 +236,7 @@ TEST_F(FollowRouteTest, FindPathShortest)
 
     // Set start pos and the driving direction (heading)
     // PI = against road dir,   0 = road dir
-    Position start(1, -1, 220, 0);
+    Position start(1, -1, 100, 0);
     start.SetHeadingRelativeRoadDirection(0);
     Position target(7, -2, 10, 0);
     target.SetRouteStrategy(Position::RouteStrategy::SHORTEST);
@@ -250,6 +254,31 @@ TEST_F(FollowRouteTest, FindPathShortest)
     }
 }
 
+TEST_F(FollowRouteTest, FindPathShortestLHT)
+{
+    Position::LoadOpenDrive(odrRouteTestLHT);
+    ASSERT_NE(odrRouteTestLHT, nullptr);
+
+    // Set start pos and the driving direction (heading)
+    // PI = against road dir,   0 = road dir
+    Position start(1, 1, 100, 0);
+    start.SetHeadingRelativeRoadDirection(0);
+    Position target(7, 2, 10, 0);
+    target.SetRouteStrategy(Position::RouteStrategy::SHORTEST);
+
+    std::vector<int> expectedRoadIds = {
+        1, 100, 2, 200, 3, 301, 6, 400, 7};
+
+    LaneIndependentRouter router(odrRouteTestLHT);
+    std::vector<Node *> path = router.CalculatePath(start, target);
+    ASSERT_FALSE(path.empty());
+
+    for (int i = 0; i < expectedRoadIds.size(); i++)
+    {
+        ASSERT_EQ(path[i]->road->GetId(), expectedRoadIds[i]);
+    }
+}
+
 TEST_F(FollowRouteTest, FindPathFastest)
 {
     Position::LoadOpenDrive(odrRouteTest);
@@ -257,7 +286,7 @@ TEST_F(FollowRouteTest, FindPathFastest)
 
     // Set start pos and the driving direction (heading)
     // PI = against road dir,   0 = road dir
-    Position start(1, -1, 220, 0);
+    Position start(1, -1, 100, 0);
     start.SetHeadingRelativeRoadDirection(0);
     Position target(7, -2, 10, 0);
     target.SetRouteStrategy(Position::RouteStrategy::FASTEST);
@@ -282,7 +311,7 @@ TEST_F(FollowRouteTest, FindPathMinIntersections)
 
     // Set start pos and the driving direction (heading)
     // PI = against road dir,   0 = road dir
-    Position start(1, -1, 220, 0);
+    Position start(1, -1, 100, 0);
     start.SetHeadingRelativeRoadDirection(0);
     Position target(7, -2, 10, 0);
     target.SetRouteStrategy(Position::RouteStrategy::MIN_INTERSECTIONS);
@@ -487,6 +516,48 @@ TEST_F(FollowRouteTest, CreateWaypointLarge)
         ASSERT_NEAR(calcWaypoints[i].GetS(), expectedWaypoints[i].GetS(), 0.5);
         ASSERT_NEAR(calcWaypoints[i].GetOffset(), expectedWaypoints[i].GetOffset(), 0.5);
     }
+}
+TEST_F(FollowRouteTest, CalcWeightShortest)
+{
+    RoadCalculations roadCalc;
+    Road road1(1,"test");
+    road1.SetLength(200);
+    double weigth = roadCalc.CalcWeight(nullptr,Position::RouteStrategy::SHORTEST,road1.GetLength(),&road1);
+    ASSERT_NEAR(200,weigth,0.01);
+}
+
+TEST_F(FollowRouteTest, CalcWeightFastest)
+{
+    RoadCalculations roadCalc;
+    Road road1(1,"test");
+    road1.SetLength(200);
+    Road::RoadTypeEntry motorway;
+    motorway.road_type_ = Road::RoadType::ROADTYPE_MOTORWAY;
+    motorway.speed_ = 25;
+    road1.AddRoadType(&motorway);
+    double weigth = roadCalc.CalcWeight(nullptr,Position::RouteStrategy::FASTEST,road1.GetLength(),&road1);
+    // 200 / 25 = 8
+    ASSERT_NEAR(8,weigth,0.01);
+}
+
+TEST_F(FollowRouteTest, CalcWeightMinIntersections)
+{
+    RoadCalculations roadCalc;
+    Road road1(1,"test");
+    road1.SetLength(200);
+    RoadLink plink(LinkType::SUCCESSOR,RoadLink::ELEMENT_TYPE_JUNCTION,1,ContactPointType::CONTACT_POINT_UNDEFINED);
+    Node pNode;
+    pNode.link = &plink;
+    double weigth = roadCalc.CalcWeight(&pNode,Position::RouteStrategy::MIN_INTERSECTIONS,road1.GetLength(),&road1);
+    ASSERT_NEAR(1,weigth,0.01);
+
+    Road road2(2,"test");
+    road1.SetLength(200);
+    RoadLink plink2(LinkType::SUCCESSOR,RoadLink::ELEMENT_TYPE_ROAD,1,ContactPointType::CONTACT_POINT_UNDEFINED);
+    Node pNode2;
+    pNode2.link = &plink2;
+    double weigth2 = roadCalc.CalcWeight(&pNode2,Position::RouteStrategy::MIN_INTERSECTIONS,road1.GetLength(),&road1);
+    ASSERT_NEAR(0,weigth2,0.01);
 }
 
 TEST_F(FollowRouteTest, CalcAverageSpeedForRoadsWithoutSpeed)

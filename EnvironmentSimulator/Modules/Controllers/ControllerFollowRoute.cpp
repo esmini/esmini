@@ -77,16 +77,20 @@ void ControllerFollowRoute::Step(double timeStep)
 	bool sameLane = nextWaypoint.GetLaneId() == vehiclePos.GetLaneId();
 	if (sameRoad)
 	{
-		bool nearSPos = abs(vehiclePos.GetS() - nextWaypoint.GetS()) < MIN_DIST_TO_WAYPOINT_LANE_CHANGE;
+		double distToLaneChange = MAX(LANE_CHANGE_TIME * object_->GetSpeed(),25);
+		bool nearSPos = abs(vehiclePos.GetS() - nextWaypoint.GetS()) < distToLaneChange;
 		if (!sameLane && nearSPos && CanChangeLane(nextWaypoint.GetLaneId()))
 		{
-			CreateLaneChange(nextWaypoint.GetLaneId(), 1);
+			CreateLaneChange(nextWaypoint.GetLaneId(), LANE_CHANGE_TIME);
 			changingLane_ = true;
 		}
 	}
 
-	UpdateWaypoints(vehiclePos, nextWaypoint);
 	ChangeLane(timeStep);
+	UpdateWaypoints(vehiclePos, nextWaypoint);
+	
+	
+	
 
 	Controller::Step(timeStep);
 }
@@ -204,7 +208,7 @@ void ControllerFollowRoute::CreateLaneChange(int lane, double time)
 	action_lanechange->transition_.shape_ = OSCPrivateAction::DynamicsShape::SINUSOIDAL;
 	action_lanechange->transition_.dimension_ = OSCPrivateAction::DynamicsDimension::TIME;
 	action_lanechange->transition_.SetParamTargetVal(time);
-	action_lanechange->max_num_executions_ = 1;
+	action_lanechange->max_num_executions_ = 10;
 
 	LatLaneChangeAction::TargetAbsolute *target = new LatLaneChangeAction::TargetAbsolute;
 	target->value_ = lane;
@@ -253,6 +257,11 @@ bool ControllerFollowRoute::CanChangeLane(int lane)
 	std::vector<Object *> allVehicles = scenarioEngine_->entities_.object_;
 	if (changingLane_)
 	{
+		return false;
+	}
+	roadmanager::Road *road = odr_->GetRoadById(vehiclePos.GetTrackId());
+	roadmanager::LaneSection *ls = road->GetLaneSectionByS(vehiclePos.GetS());
+	if(ls->GetLaneById(lane) == 0){
 		return false;
 	}
 
