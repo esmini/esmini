@@ -547,8 +547,7 @@ namespace roadmanager
 			                          LANE_TYPE_ENTRY |
 			                          LANE_TYPE_EXIT |
 			                          LANE_TYPE_OFF_RAMP |
-			                          LANE_TYPE_ON_RAMP |
-			                          LANE_TYPE_PARKING,
+			                          LANE_TYPE_ON_RAMP,
 			LANE_TYPE_ANY_ROAD =      LANE_TYPE_ANY_DRIVING |
 			                          LANE_TYPE_RESTRICTED |
 			                          LANE_TYPE_STOP,
