@@ -1289,13 +1289,11 @@ LaneTestFixture::~LaneTestFixture()
 TEST_F(LaneTestFixture, TestLaneBaseGetConstructor)
 {
     ASSERT_EQ(lane.GetId(), 0);
-    ASSERT_EQ(lane.GetOffsetFromRef(), 0.0);
     ASSERT_EQ(lane.GetLaneType(), Lane::LaneType::LANE_TYPE_NONE);
     ASSERT_EQ(lane.GetGlobalId(), 0.0);
 
     Lane lane_second = Lane(1, Lane::LaneType::LANE_TYPE_DRIVING);
     ASSERT_EQ(lane_second.GetId(), 1);
-    ASSERT_EQ(lane_second.GetOffsetFromRef(), 0.0);
     ASSERT_EQ(lane_second.GetLaneType(), Lane::LaneType::LANE_TYPE_DRIVING);
     ASSERT_EQ(lane_second.GetGlobalId(), 0.0);
 }

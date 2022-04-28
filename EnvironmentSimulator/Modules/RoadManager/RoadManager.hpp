@@ -555,13 +555,12 @@ namespace roadmanager
 		} LaneType;
 
 		// Construct & Destruct
-		Lane() : id_(0), type_(LaneType::LANE_TYPE_NONE), level_(0), offset_from_ref_(0.0), global_id_(0), lane_boundary_(0) {}
-		Lane(int id, Lane::LaneType type) : id_(id), type_(type), level_(1), offset_from_ref_(0), global_id_(0), lane_boundary_(0) {}
+		Lane() : id_(0), type_(LaneType::LANE_TYPE_NONE), level_(0), global_id_(0), lane_boundary_(0) {}
+		Lane(int id, Lane::LaneType type) : id_(id), type_(type), level_(1), global_id_(0), lane_boundary_(0) {}
 		~Lane() {}
 
 		// Base Get Functions
 		int GetId() { return id_; }
-		double GetOffsetFromRef() { return offset_from_ref_; }
 		LaneType GetLaneType() { return type_; }
 		int GetGlobalId() { return global_id_; }
 
@@ -589,7 +588,6 @@ namespace roadmanager
 		// Set Functions
 		void SetGlobalId();
 		void SetLaneBoundary(LaneBoundaryOSI *lane_boundary);
-		void SetOffsetFromRef(double offset) { offset_from_ref_ = offset; }
 
 		// Others
 		bool IsType(Lane::LaneType type);
@@ -607,7 +605,6 @@ namespace roadmanager
 		int osiintersection_; // flag to see if the lane is part of an osi-lane section or not
 		LaneType type_;
 		int level_;	// boolean, true = keep lane on level
-		double offset_from_ref_;
 		std::vector<LaneLink*> link_;
 		std::vector<LaneWidth*> lane_width_;
 		std::vector<LaneRoadMark*> lane_roadMark_;

@@ -1274,7 +1274,7 @@ LaneInfo Road::GetLaneInfoByS(double s, int start_lane_section_idx, int start_la
 				}
 				else
 				{
-					t = lane->GetOffsetFromRef() + GetLaneWidthByS(s, lane->GetId());
+					t = SIGN(lane_info.lane_id_) * GetCenterOffset(s, lane_info.lane_id_);
 				}
 				lane_info.lane_id_ = lane_section->GetLaneByIdx(lane_section->GetClosestLaneIdx(s, t, offset, true, laneTypeMask))->GetId();
 				if (lane_info.lane_id_ == 0)
