@@ -659,7 +659,7 @@ double Spiral::EvaluateCurvatureDS(double ds)
 {
 	if (line_ != 0)
 	{
-		return LARGE_NUMBER;
+		return 0.0;
 	}
 	else if (arc_ != 0)
 	{
@@ -6941,6 +6941,11 @@ Position::ReturnCode Position::SetLongitudinalTrackPos(int track_id, double s)
 
 
 	Geometry *geometry = road->GetGeometry(geometry_idx_);
+	if (geometry == nullptr)
+	{
+		return ReturnCode::ERROR_GENERIC;
+	}
+
 	// check if still on same geometry
 	if (s > geometry->GetS() + geometry->GetLength())
 	{
@@ -7375,7 +7380,7 @@ double Position::DistanceToDS(double ds)
 			curvature = GetCurvature();
 			offset = GetT();
 		}
-		double stepScaleFactor = 1 / (1 - curvature * offset);
+		double stepScaleFactor = 1.0 / (1.0 - curvature * offset);
 		ds *= stepScaleFactor;
 	}
 
