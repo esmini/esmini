@@ -1,5 +1,19 @@
 ## esmini release notes
 
+### 2022-04-29 Version 2.23.0
+
+- New feature: Speed profile 
+  - specify multiple speed targets over time in one single action
+  - optional dynamic constraints
+  - more info in [User guide - Speed profile](https://esmini.github.io/#_speed_profile)
+  - preliminary and experimental implementation
+- Add RMlib method to enforce road ID ([RM_SetRoadId()](https://github.com/esmini/esmini/blob/902dec1ca379d817ca27d065b825d23c262a1bc3/EnvironmentSimulator/Libraries/esminiRMLib/esminiRMLib.hpp#L350))
+- Remove `Parking` from set of drivable lane types
+- Fix handling of entering non drivable lane
+  - when switching lane section and valid driving lane or link is missing, snap to closest valid lane.
+- Bugfix: updateObjectSpeed() only affect longitudinal domain
+- Bugfix: Fix wrong reported curvature of perfectly straight clothoids
+
 ### 2022-04-13 Version 2.22.1
 
 - Fix wrong RelativeLanePos interpretation ([issue #267](https://github.com/esmini/esmini/issues/267))

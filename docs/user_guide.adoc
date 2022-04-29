@@ -5,9 +5,9 @@
 :source-highlighter: coderay
 :src-local-root: ../
 :src-remote-root: https://github.com/esmini/esmini/tree/master
-// :imagesdir: https://github.com/esmini/esmini.github.io/blob/main/images
-//:imagesdir: https://media.githubusercontent.com/media/esmini/esmini.github.io/main/images/
 :imagesdir: https://github.com/esmini/esmini.github.io/raw/main/images/
+// :imagesdir: https://media.githubusercontent.com/media/esmini/esmini.github.io/main/images/
+
 
 
 image:https://avatars.githubusercontent.com/u/49203938[160, 160]
@@ -500,6 +500,107 @@ esmini provides a script, osi2csv.py, that converts an OSI trace file into .csv 
 will create ground_truth.csv.
 
 (if file type association is not setup, try: ``python ./scripts/osi2csv.py ground_truth.osi``)
+
+== Scenario features
+=== Speed profile
+The OpenSCENARIO https://www.asam.net/static_downloads/ASAM_OpenSCENARIO_V1.1.1_Model_Documentation/modelDocumentation/content/SpeedAction.html[SpeedAction] will reach a specified speed in a way described by additional attributes, e.g. shape and duration. To achieve multiple speed target over time you would need to add multiple SpeedAction events to the scenario. Moreover, there is no way to explicitly control the jerk (acceleration/deceleration rates). 
+
+However with the SpeedProfileAction (OpenSCENARIO extension) you can specify a series of speed targets over time, in one action. Optionally you can also specify dynamic constraints for jerk (gradually changing acceleration and deceleration), acceleration and speed.
+
+If you run the example scenario https://github.com/esmini/esmini/blob/master/resources/xosc/speed-profile.xosc[speed-profile.xosc] as follows:
+
+[source]
+----
+./bin/esmini.exe --window 60 60 800 400 --osc ./resources/xosc/speed-profile.xosc --fixed_timestep 0.01 --record sim.dat
+./scripts/plot_dat.py sim.dat --param speed
+----
+you should get the following plotted speed curves:
+
+image::speed-profile1.png[]
+
+*Note:* You might need to add ``python`` or ``python2`` in front of the python command. And matplotlib is needed, see odrplot in <<Tools overview>>.
+
+*Tip:* For quick experiments, skip the visualization and bring the plot asap by replacing the two commands with: 
+[source]
+----
+./bin/esmini.exe --headless --osc ./resources/xosc/speed-profile.xosc --fixed_timestep 0.01 --record sim.dat;./scripts/plot_dat.py sim.dat --param speed
+----
+
+The scenario includes two cars with identical speed profiles with one exception: The white Car1 use activate dynamic constraints by setting FollowingMode="follow" while the red Car2 will apply constant acceleration (linear interpolation) between speed targets by setting FollowingMode="position".
+
+The action for white car:
+
+[source,xml]
+----
+<SpeedProfileAction followingMode="follow">
+    <DynamicConstraints
+        maxAcceleration = "5.0"
+        maxDeceleration = "10.0"
+        maxAccelerationRate = "4.0"
+        maxDecelerationRate = "3.0"
+        maxSpeed = "50"
+    />
+    <SpeedProfileEntry time="0.0" speed="0.0"/>
+    <SpeedProfileEntry time="4.0" speed="10.0"/>
+    <SpeedProfileEntry time="4.0" speed="4.0"/>
+    <SpeedProfileEntry time="2.0" speed="8.0"/>
+</SpeedProfileAction>
+----
+
+The time values are relative each other and start of the action. In this case the action is triggered at simulation time = 2 seconds. Initial speed for both cars is 0. First entry has therefor no effect since it applies speed = 0 at time = 2 (2 + 0). After additional 4 seconds (sim time = 6s) the speed target is 10 m/s. At sim time 10s the speed target is 4 m/s and finally after 2 more seconds the final speed target value is 8.0 m/s.
+
+The "follow" mode deserves some additional explanation. As shown in the figure, it start and ends with zero acceleration. Then is basically will try to match the acceleration "lines" but cutting the corners according to acceleration and deceleration rate constraints. This way the intermediate speed values will not always be reached. However, the final speed value will be reached. 
+
+If the target speed or accelerations can't be reached with given constraints the action will revert to linear mode (FollowingMode="position") for the remainder of the profile. This "failure" is logged. 
+
+Another approach would be to try to perform a best effort, but that would require additional input to decide whether to prioritize reaching specified speed targets or respect time stamps...
+
+[Note]
+====
+**Note**: The implementation of this feature is preliminary and experimental. Behavior and details might change. 
+====
+
+Let's manipulate the scenario in different ways to illustrate some special cases of the speed-profile feature.
+
+==== What if current speed differ from the first entry?
+Replace the four entries with the following ones:
+
+[source,xml]
+----
+    <SpeedProfileEntry time="0.0" speed="3.0"/>
+    <SpeedProfileEntry time="4.0" speed="10.0"/>
+----
+
+image::speed-profile2.png[]
+
+What we see here is that for linear mode (FollowingMode="position") the speed of the first entry will apply immediately regardless of the current speed at the time of the action being triggered. For constrained mode (FollowingMode="follow") we see that the initial speed value (3.0) is overridden by the current speed (0.0). From there it will strive for the second entry, obeying the constraints. 
+
+The overall idea with the "follow" mode is to maintain continuity in the speed profile, up to jerk degree.
+
+==== What if time is missing in entry?
+
+Replace any entries with the following ones:
+
+[source,xml]
+----
+    <SpeedProfileEntry speed="10.0"/>
+----
+
+image::speed-profile3.png[]
+
+Specified max acceleration will be applied until target speed is reached. Note: In the non linear case, the function will fail if the specified acceleration can't be reached with given jerk constraints (maxAcceleration and maxDeceleration). Try to lower the maxAcceleration/deceleration in this case.
+
+You can also combine entries with and without time constraint, like in following example:
+
+[source,xml]
+----
+    <SpeedProfileEntry speed="10.0"/>
+    <SpeedProfileEntry time="3.0" speed="15.0"/>
+----
+
+image::speed-profile4.png[]
+
+Car will accelerate until speed 10 m/s is reached, then spend 3 seconds to reach 15 m/s.
 
 == OpenSceneGraph and 3D models
 
