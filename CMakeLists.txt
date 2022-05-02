@@ -8,10 +8,6 @@ else()
   cmake_minimum_required (VERSION 2.8.12 FATAL_ERROR)
 endif()
 
-if(${CMAKE_VERSION} VERSION_LESS "3.14.0")
-    message("Consider CMake 3.14.0 or newer for better checking of libs and models download operations")
-endif()
-
 
 project (EnvironmentSimulator)
 
