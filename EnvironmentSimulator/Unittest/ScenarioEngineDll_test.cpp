@@ -2201,7 +2201,7 @@ TEST(ExternalController, TestExternalDriver)
 			double throttle = throttleWeight * (targetSpeed - vehicleState.speed);
 
 			// Step vehicle model with driver input, but wait until time > 0
-			if (SE_GetSimulationTime() > 0 && !SE_GetPauseFlag())
+			if (SE_GetSimulationTime() > SMALL_NUMBER && !SE_GetPauseFlag())
 			{
 				SE_SimpleVehicleControlAnalog(vehicleHandle, dt, throttle, steerAngle);
 			}
@@ -2234,31 +2234,31 @@ TEST(ExternalController, TestExternalDriver)
 				if (abs(SE_GetSimulationTime() - 11.0f) < SMALL_NUMBER)
 				{
 					SE_GetObjectState(0, &objectState);
-					EXPECT_NEAR(objectState.x, 202.6710, 1e-3);
-					EXPECT_NEAR(objectState.y, 83.453, 1e-3);
-					EXPECT_NEAR(objectState.h, 1.137, 1e-3);
+					EXPECT_NEAR(objectState.x, 202.461, 1e-3);
+					EXPECT_NEAR(objectState.y, 83.000, 1e-3);
+					EXPECT_NEAR(objectState.h, 1.134, 1e-3);
 					EXPECT_NEAR(objectState.p, 6.262, 1e-3);
 					if (ghostMode[i] == true)
 					{
 						SE_RoadInfo road_info2;
 						SE_GetRoadInfoGhostTrailTime(0, SE_GetSimulationTime(), &road_info2, &speed2);
-						EXPECT_NEAR(road_info2.global_pos_x, 206.761, 1e-3);
-						EXPECT_NEAR(road_info2.global_pos_y, 92.555, 1e-3);
+						EXPECT_NEAR(road_info2.global_pos_x, 206.759, 1e-3);
+						EXPECT_NEAR(road_info2.global_pos_y, 92.556, 1e-3);
 					}
 				}
 				else if (abs(SE_GetSimulationTime() - 30.0f) < SMALL_NUMBER)
 				{
 					SE_GetObjectState(0, &objectState);
-					EXPECT_NEAR(objectState.x, 383.001, 1e-3);
-					EXPECT_NEAR(objectState.y, 300.194, 1e-3);
-					EXPECT_NEAR(objectState.h, 5.259, 1e-3);
+					EXPECT_NEAR(objectState.x, 382.366, 1e-3);
+					EXPECT_NEAR(objectState.y, 301.228, 1e-3);
+					EXPECT_NEAR(objectState.h, 5.268, 1e-3);
 					EXPECT_NEAR(objectState.p, 0.025, 1e-3);
 					if (ghostMode[i] == true)
 					{
 						SE_RoadInfo road_info3;
 						SE_GetRoadInfoGhostTrailTime(0, SE_GetSimulationTime(), &road_info3, &speed2);
-						EXPECT_NEAR(road_info3.global_pos_x, 388.722, 1e-3);
-						EXPECT_NEAR(road_info3.global_pos_y, 290.307, 1e-3);
+						EXPECT_NEAR(road_info3.global_pos_x, 388.710, 1e-3);
+						EXPECT_NEAR(road_info3.global_pos_y, 290.301, 1e-3);
 					}
 				}
 			}
@@ -2269,29 +2269,29 @@ TEST(ExternalController, TestExternalDriver)
 				if (abs(SE_GetSimulationTime() - 11.0f) < SMALL_NUMBER)
 				{
 					SE_GetObjectState(0, &objectState);
-					EXPECT_NEAR(objectState.x, 203.726, 1e-3);
-					EXPECT_NEAR(objectState.y, 85.548, 1e-3);
-					EXPECT_NEAR(objectState.h, 1.148, 1e-3);
+					EXPECT_NEAR(objectState.x, 203.203, 1e-3);
+					EXPECT_NEAR(objectState.y, 84.494, 1e-3);
+					EXPECT_NEAR(objectState.h, 1.142, 1e-3);
 					EXPECT_NEAR(objectState.p, 6.262, 1e-3);
 					if (ghostMode[i] == true)
 					{
 						SE_GetRoadInfoGhostTrailTime(0, SE_GetSimulationTime(), &road_info2, &speed3);
-						EXPECT_NEAR(road_info2.global_pos_x, 207.471, 1e-3);
-						EXPECT_NEAR(road_info2.global_pos_y, 94.426, 1e-3);
+						EXPECT_NEAR(road_info2.global_pos_x, 206.759, 1e-3);
+						EXPECT_NEAR(road_info2.global_pos_y, 92.556, 1e-3);
 					}
 				}
 				else if (abs(SE_GetSimulationTime() - 30.0f) < SMALL_NUMBER)
 				{
 					SE_GetObjectState(0, &objectState);
-					EXPECT_NEAR(objectState.x, 383.025, 1e-3);
-					EXPECT_NEAR(objectState.y, 301.087, 1e-3);
-					EXPECT_NEAR(objectState.h, 5.257, 1e-3);
-					EXPECT_NEAR(objectState.p, 0.025, 1e-3);
+					EXPECT_NEAR(objectState.x, 382.507, 1e-3);
+					EXPECT_NEAR(objectState.y, 301.811, 1e-3);
+					EXPECT_NEAR(objectState.h, 5.265, 1e-3);
+					EXPECT_NEAR(objectState.p, 0.026, 1e-3);
 					if (ghostMode[i] == true)
 					{
 						SE_GetRoadInfoGhostTrailTime(0, SE_GetSimulationTime(), &road_info2, &speed3);
-						EXPECT_NEAR(road_info2.global_pos_x, 390.909, 1e-3);
-						EXPECT_NEAR(road_info2.global_pos_y, 285.810, 1e-3);
+						EXPECT_NEAR(road_info2.global_pos_x, 388.710, 1e-3);
+						EXPECT_NEAR(road_info2.global_pos_y, 290.301, 1e-3);
 					}
 				}
 			}
@@ -2661,7 +2661,7 @@ int main(int argc, char **argv)
 	testing::InitGoogleTest(&argc, argv);
 
 #if 0  // set to 1 and modify filter to run one single test
-	testing::GTEST_FLAG(filter) = "*check_GroundTruth_including_init_state*";
+	testing::GTEST_FLAG(filter) = "*TestExternalDriver*";
 #else
 	SE_LogToConsole(false);
 #endif

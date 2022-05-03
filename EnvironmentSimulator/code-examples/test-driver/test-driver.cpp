@@ -45,6 +45,7 @@ int main(int argc, char* argv[])
 		// Initialize the vehicle model, fetch initial state from the scenario
 		SE_GetObjectState(0, &objectState);
 		vehicleHandle = SE_SimpleVehicleCreate(objectState.x, objectState.y, objectState.h, 4.0, 0.0);
+		SE_SimpleVehicleSteeringRate(vehicleHandle, 6.0f);
 
 		// show some road features, including road sensor
 		SE_ViewerShowFeature(4 + 8, true);  // NODE_MASK_TRAIL_DOTS (1 << 2) & NODE_MASK_ODR_FEATURES (1 << 3),

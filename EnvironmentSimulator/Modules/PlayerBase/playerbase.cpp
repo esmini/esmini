@@ -151,31 +151,31 @@ void ScenarioPlayer::Frame(double timestep_s)
 
 	if (!IsPaused())
 	{
-		if (ScenarioFrame(timestep_s, true) == 0)
+		while (retval == 0 && scenarioEngine->GetGhostMode() != GhostMode::NORMAL)
 		{
-			while (retval == 0 && scenarioEngine->GetGhostMode() != GhostMode::NORMAL)
+			if (GetFixedTimestep() > SMALL_NUMBER)
 			{
-				// Main simulation is paused during ghost headstart or restart
-
-				Draw();
-				retval = ScenarioFrame(dt, false);
-
-				if (GetFixedTimestep() > SMALL_NUMBER)
-				{
-					dt = MAX(GetFixedTimestep(), minStepSize);
-				}
-				else
-				{
-					dt = SE_getSimTimeStep(time_stamp, minStepSize, maxStepSize);
-				}
+				dt = MAX(GetFixedTimestep(), minStepSize);
+			}
+			else
+			{
+				dt = SE_getSimTimeStep(time_stamp, minStepSize, maxStepSize);
 			}
 
-			if (retval == 0)
+
+			if (scenarioEngine->getSimulationTime() + dt > scenarioEngine->GetTrueTime() - SMALL_NUMBER)
 			{
-				ScenarioPostFrame();
+				dt = MAX(0.0, scenarioEngine->GetTrueTime() - scenarioEngine->getSimulationTime());
 			}
+
+			retval = ScenarioFrame(dt, false);
+			Draw();
 		}
 
+		if (ScenarioFrame(timestep_s, true) == 0)
+		{
+			ScenarioPostFrame();
+		}
 
 		if (GetState() == PlayerState::PLAYER_STATE_STEP)
 		{
