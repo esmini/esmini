@@ -496,19 +496,6 @@ int ScenarioEngine::step(double deltaSimTime)
 
 	simulationTime_ += deltaSimTime;
 
-	if (ghost_mode_ == GhostMode::RESTARTING)
-	{
-		if (simulationTime_ > trueTime_ - SMALL_NUMBER)
-		{
-			ghost_mode_ = GhostMode::NORMAL;
-		}
-	}
-
-	if (ghost_mode_ == GhostMode::NORMAL)
-	{
-		trueTime_ = simulationTime_;
-	}
-
 	for (size_t i = 0; i < entities_.object_.size(); i++)
 	{
 		Object* obj = entities_.object_[i];
@@ -643,6 +630,20 @@ int ScenarioEngine::step(double deltaSimTime)
 	{
 		LOG("All acts are done, quit now");
 		quit_flag = true;
+	}
+
+
+	if (ghost_mode_ == GhostMode::RESTARTING)
+	{
+		if (simulationTime_ > trueTime_ - SMALL_NUMBER)
+		{
+			ghost_mode_ = GhostMode::NORMAL;
+		}
+	}
+
+	if (ghost_mode_ == GhostMode::NORMAL)
+	{
+		trueTime_ = simulationTime_;
 	}
 
 	return 0;
