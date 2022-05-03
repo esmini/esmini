@@ -9401,13 +9401,17 @@ int PolyLineBase::Evaluate(double s, TrajVertex& pos, double cornerRadius, int s
 		s_local = 0;
 		i = GetNumberOfVertices() - 1;
 	}
-	else
+	else if (s >= vertex_[i].s)
 	{
-		for (; i < GetNumberOfVertices() - 1 && vertex_[i+1].s <= s; i++);
-
-		double s0 = vertex_[i].s;
-		s_local = s - s0;
+		for (; i < GetNumberOfVertices() - 1 && s >= vertex_[i + 1].s; i++);
 	}
+	else if (s < vertex_[i].s)
+	{
+		for (; i > 0 && s < vertex_[i].s; i--);
+	}
+
+	double s0 = vertex_[i].s;
+	s_local = s - s0;
 
 	EvaluateSegmentByLocalS(i, s_local, cornerRadius, pos);
 	pos.s = s;
