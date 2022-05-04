@@ -274,7 +274,7 @@ TEST(GetOSIRoadLaneTest, lane_no_obj)
 	SE_Close();
 
 	ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-	EXPECT_EQ(fileStatus.st_size, 69725);  // slight growth due to only dynamic updates
+	EXPECT_EQ(fileStatus.st_size, 69787);  // slight growth due to only dynamic updates
 }
 
 TEST(GetOSIRoadLaneTest, lane_id)
@@ -774,7 +774,7 @@ TEST(GroundTruthTests, check_GroundTruth_including_init_state)
 	SE_Close();
 
 	ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-	EXPECT_EQ(fileStatus.st_size, 19807);
+	EXPECT_EQ(fileStatus.st_size, 19831);
 
 	// Read OSI file
 	FILE* file = fopen("gt.osi", "rb");
