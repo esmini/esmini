@@ -9,6 +9,7 @@
 #include "LaneIndependentRouter.hpp"
 #include "ScenarioEngine.hpp"
 #include "ScenarioReader.hpp"
+#include "ControllerFollowRoute.hpp"
 
 #define TRIG_ERR_MARGIN 0.001
 
@@ -203,6 +204,16 @@ TEST_F(FollowRouteControllerTest, FollowRouteMultipleScenarioWaypoints)
     ASSERT_EQ(scenarioWaypoints.back().GetTrackId(), finalPos.GetTrackId());
     ASSERT_EQ(scenarioWaypoints.back().GetLaneId(), finalPos.GetLaneId());
     ASSERT_NEAR(scenarioWaypoints.back().GetS(), finalPos.GetS(), 10);
+}
+
+TEST_F(FollowRouteControllerTest, FollowRouteSetParameters)
+{
+    ScenarioEngine *se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/follow_route_set_parameters.xosc");
+    ASSERT_NE(se, nullptr);
+
+    scenarioengine::ControllerFollowRoute *controller = static_cast<scenarioengine::ControllerFollowRoute *>(se->entities_.object_[0]->controller_);
+    ASSERT_NEAR(controller->GetMinDistForCollision(), 69, 0.01);
+    ASSERT_NEAR(controller->GetLaneChangeTime(), 420, 0.01);
 }
 
 // Uncomment to print log output to console

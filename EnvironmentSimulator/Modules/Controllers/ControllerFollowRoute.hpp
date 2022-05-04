@@ -54,6 +54,8 @@ namespace scenarioengine
 		void Activate(ControlDomains domainMask);
 		void ReportKeyEvent(int key, bool down);
 		void SetScenarioEngine(ScenarioEngine *scenarioEngine) { scenarioEngine_ = scenarioEngine; };
+		double GetLaneChangeTime(){ return laneChangeTime_; };
+		double GetMinDistForCollision(){ return minDistForCollision_; };
 
 	private:
 		void CreateLaneChange(int lane, double time);
@@ -80,9 +82,8 @@ namespace scenarioengine
 		bool changingLane_;
 		bool pathCalculated_;
 		std::vector<roadmanager::Position> allWaypoints_;
-		const double LANE_CHANGE_TIME = 6;
-		const double MIN_DIST_FOR_COLLISION = 10;
-		
+		double laneChangeTime_ = 5;
+		double minDistForCollision_ = 10;
 	};
 
 	Controller *InstantiateControllerFollowRoute(void *args);

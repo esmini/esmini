@@ -101,11 +101,13 @@
         </Controller>
         <Controller name="followRoute">
             <ParameterDeclarations>
-                <ParameterDeclaration name="Placeholder" parameterType="double" value="0" /> 
+                <ParameterDeclaration name="MinDistForCollision" parameterType="double" value="10" /> 
+                <ParameterDeclaration name="LaneChangeTime" parameterType="double" value="5" /> 
             </ParameterDeclarations>
             <Properties>
                 <Property name="esminiController" value="FollowRouteController" />
-                <Property name="placeholder"  value="$Placeholder" />
+                <Property name="minDistForCollision"  value="$MinDistForCollision" />
+                <Property name="laneChangeTime"  value="$LaneChangeTime" />
             </Properties>
         </Controller>
         <Controller name="sumoController">

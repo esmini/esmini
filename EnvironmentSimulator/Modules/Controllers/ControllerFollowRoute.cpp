@@ -37,6 +37,14 @@ Controller *scenarioengine::InstantiateControllerFollowRoute(void *args)
 
 ControllerFollowRoute::ControllerFollowRoute(InitArgs *args) : Controller(args)
 {
+	if (args->properties->ValueExists("minDistForCollision"))
+	{
+		minDistForCollision_ = strtod(args->properties->GetValueStr("minDistForCollision"));
+	}
+	if (args->properties->ValueExists("laneChangeTime"))
+	{
+		laneChangeTime_ = strtod(args->properties->GetValueStr("laneChangeTime"));
+	}
 }
 
 void ControllerFollowRoute::Init()
@@ -76,11 +84,11 @@ void ControllerFollowRoute::Step(double timeStep)
 	bool sameLane = nextWaypoint.GetLaneId() == vehiclePos.GetLaneId();
 	if (sameRoad)
 	{
-		double distToLaneChange = MAX(LANE_CHANGE_TIME * object_->GetSpeed(), 25);
+		double distToLaneChange = MAX(laneChangeTime_ * object_->GetSpeed(), 25);
 		bool nearSPos = abs(vehiclePos.GetS() - nextWaypoint.GetS()) < distToLaneChange;
 		if (!sameLane && nearSPos && CanChangeLane(nextWaypoint.GetLaneId()))
 		{
-			CreateLaneChange(nextWaypoint.GetLaneId(), LANE_CHANGE_TIME);
+			CreateLaneChange(nextWaypoint.GetLaneId(), laneChangeTime_);
 			changingLane_ = true;
 		}
 	}
@@ -260,6 +268,12 @@ bool ControllerFollowRoute::CanChangeLane(int lane)
 		return false;
 	}
 
+	// Disable collision handling
+	if (minDistForCollision_ <= 0)
+	{
+		return true;
+	}
+
 	for (Object *otherVehicle : allVehicles)
 	{
 		bool sameRoad = otherVehicle->pos_.GetTrackId() == vehiclePos.GetTrackId();
@@ -268,7 +282,7 @@ bool ControllerFollowRoute::CanChangeLane(int lane)
 		{
 			continue;
 		}
-		bool collisionRisk = DistanceBetween(vehiclePos, otherVehicle->pos_) < MIN_DIST_FOR_COLLISION;
+		bool collisionRisk = DistanceBetween(vehiclePos, otherVehicle->pos_) < minDistForCollision_;
 		bool sameSideOfRoad = SIGN(vehiclePos.GetLaneId()) == SIGN(otherVehicle->pos_.GetLaneId());
 
 		if (!sameLane && collisionRisk && sameSideOfRoad)

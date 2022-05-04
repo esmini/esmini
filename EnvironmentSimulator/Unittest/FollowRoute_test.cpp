@@ -8,6 +8,9 @@
 #include "simple_expr.h"
 #include "LaneIndependentRouter.hpp"
 
+// Enable testing of the mega road network
+//#define ENABLE_LARGE_ROAD_NETWORK
+
 #define TRIG_ERR_MARGIN 0.001
 
 using namespace roadmanager;
@@ -31,7 +34,9 @@ public:
         odrMediumChangedSpeeds = new OpenDrive("../../../EnvironmentSimulator/Unittest/xodr/multi_intersections_changed_speeds.xodr");
 
         // Position::GetOpenDrive()->LoadOpenDriveFile("../../../../large.xodr");
+        #ifdef ENABLE_LARGE_ROAD_NETWORK
         odrLarge = new OpenDrive("../../../../large.xodr");
+        #endif
 
         odrRouteTest = new OpenDrive("../../../EnvironmentSimulator/Unittest/xodr/route_strategy_test_road.xodr");
         odrRouteTestLHT = new OpenDrive("../../../EnvironmentSimulator/Unittest/xodr/route_strategy_test_road_LHT.xodr");
@@ -153,6 +158,7 @@ TEST_F(FollowRouteTest, FindPathMedium2)
     ASSERT_EQ(path.back()->road->GetId(), 275);
 }
 
+#ifdef ENABLE_LARGE_ROAD_NETWORK
 TEST_F(FollowRouteTest, FindPathLarge1)
 {
     Position::LoadOpenDrive(odrLarge);
@@ -228,6 +234,7 @@ TEST_F(FollowRouteTest, FindPathLarge4)
     ASSERT_FALSE(path.empty());
     ASSERT_EQ(path.back()->road->GetId(), 2503);
 }
+#endif
 
 TEST_F(FollowRouteTest, FindPathShortest)
 {
@@ -354,6 +361,7 @@ TEST_F(FollowRouteTest, FindPathTimeMedium)
     ASSERT_LT((int)elapsedTime, maxMicroseconds);
 }
 
+#ifdef ENABLE_LARGE_ROAD_NETWORK
 TEST_F(FollowRouteTest, FindPathTimeLarge)
 {
     Position::LoadOpenDrive(odrLarge);
@@ -378,6 +386,7 @@ TEST_F(FollowRouteTest, FindPathTimeLarge)
     int maxMicroseconds = 15000;
     ASSERT_LT((int)elapsedTime, maxMicroseconds);
 }
+#endif
 
 TEST_F(FollowRouteTest, CreateWaypointSmall1)
 {
@@ -480,6 +489,7 @@ TEST_F(FollowRouteTest, CreateWaypointMedium)
     }
 }
 
+#ifdef ENABLE_LARGE_ROAD_NETWORK
 TEST_F(FollowRouteTest, CreateWaypointLarge)
 {
     Position::LoadOpenDrive(odrLarge);
@@ -517,6 +527,8 @@ TEST_F(FollowRouteTest, CreateWaypointLarge)
         ASSERT_NEAR(calcWaypoints[i].GetOffset(), expectedWaypoints[i].GetOffset(), 0.5);
     }
 }
+#endif
+
 TEST_F(FollowRouteTest, CalcWeightShortest)
 {
     RoadCalculations roadCalc;
