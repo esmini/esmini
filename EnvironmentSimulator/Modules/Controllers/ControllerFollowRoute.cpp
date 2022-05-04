@@ -63,8 +63,7 @@ void ControllerFollowRoute::Step(double timeStep)
 	// Check if all waypoints have been passed
 	if (currentWaypointIndex_ >= waypoints_.size())
 	{
-		object_->SetSpeed(0);
-		Controller::Step(timeStep);
+		Deactivate();
 		return;
 	}
 
@@ -77,7 +76,7 @@ void ControllerFollowRoute::Step(double timeStep)
 	bool sameLane = nextWaypoint.GetLaneId() == vehiclePos.GetLaneId();
 	if (sameRoad)
 	{
-		double distToLaneChange = MAX(LANE_CHANGE_TIME * object_->GetSpeed(),25);
+		double distToLaneChange = MAX(LANE_CHANGE_TIME * object_->GetSpeed(), 25);
 		bool nearSPos = abs(vehiclePos.GetS() - nextWaypoint.GetS()) < distToLaneChange;
 		if (!sameLane && nearSPos && CanChangeLane(nextWaypoint.GetLaneId()))
 		{
@@ -88,9 +87,6 @@ void ControllerFollowRoute::Step(double timeStep)
 
 	ChangeLane(timeStep);
 	UpdateWaypoints(vehiclePos, nextWaypoint);
-	
-	
-	
 
 	Controller::Step(timeStep);
 }
@@ -173,8 +169,7 @@ void ControllerFollowRoute::CalculateWaypoints()
 		if (scenarioWaypointIndex_ >= object_->pos_.GetRoute()->scenario_waypoints_.size())
 		{
 			LOG("Error: start and target on same road, scenarioWaypointIndex out of bounds, deactivating controller");
-			object_->SetSpeed(0);
-			Controller::Deactivate();
+			Deactivate();
 			return;
 		}
 		targetPos = object_->pos_.GetRoute()->scenario_waypoints_[scenarioWaypointIndex_];
@@ -185,8 +180,7 @@ void ControllerFollowRoute::CalculateWaypoints()
 	if (pathToGoal.empty())
 	{
 		LOG("Error: Path not found, deactivating controller");
-		object_->SetSpeed(0);
-		Controller::Deactivate();
+		Deactivate();
 	}
 	else
 	{
@@ -261,7 +255,8 @@ bool ControllerFollowRoute::CanChangeLane(int lane)
 	}
 	roadmanager::Road *road = odr_->GetRoadById(vehiclePos.GetTrackId());
 	roadmanager::LaneSection *ls = road->GetLaneSectionByS(vehiclePos.GetS());
-	if(ls->GetLaneById(lane) == 0){
+	if (ls->GetLaneById(lane) == 0)
+	{
 		return false;
 	}
 

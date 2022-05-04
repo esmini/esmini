@@ -20,6 +20,10 @@
 #include "vehicle.hpp"
 #include <queue>
 
+// Enable test mode, which stops the vehicle when reaching a target
+// or in case of path not found
+#define TEST_MODE
+
 #define CONTROLLER_FOLLOW_ROUTE_TYPE_NAME "FollowRouteController"
 
 namespace scenarioengine
@@ -58,6 +62,12 @@ namespace scenarioengine
 		void ChangeLane(double timeStep);
 		void UpdateWaypoints(roadmanager::Position vehiclePos, roadmanager::Position nextWaypoint);
 		double DistanceBetween(roadmanager::Position p1, roadmanager::Position p2);
+		void Deactivate(){ 
+			#ifdef TEST_MODE
+				object_->SetSpeed(0);
+			#endif 
+			Controller::Deactivate(); 
+		};
 
 		WaypointStatus GetWaypointStatus(roadmanager::Position vehiclePos, roadmanager::Position waypoint);
 		ScenarioEngine *scenarioEngine_;
