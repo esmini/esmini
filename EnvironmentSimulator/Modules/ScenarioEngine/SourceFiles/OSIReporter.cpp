@@ -649,6 +649,9 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState *objectState)
 	// Set ego lane
 	obj_osi_internal.mobj->add_assigned_lane_id()->set_value(objectState->state_.pos.GetLaneGlobalId());
 
+	// Set OSI Wheel Angle Data (Yaw)
+	obj_osi_internal.mobj->mutable_vehicle_attributes()->add_wheel_data()->mutable_orientation()->set_yaw(objectState->state_.info.wheel_angle);
+
 	return 0;
 }
 
