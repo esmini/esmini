@@ -159,7 +159,6 @@ int ScenarioEngine::step(double deltaSimTime)
 		for (size_t i = 0; i < entities_.object_.size(); i++)
 		{
 			Object* obj = entities_.object_[i];
-			ObjectState *o;
 
 			obj->ClearDirtyBits(
 				Object::DirtyBit::LATERAL |
@@ -170,8 +169,8 @@ int ScenarioEngine::step(double deltaSimTime)
 			);
 			obj->reset_ = false;
 
-			// Fetch states from gateway, in case external reports
-			o = scenarioGateway.getObjectStatePtrById(obj->id_);
+			// Fetch dirty bits from gateway, indicating what has been reported externally and needs to be protected
+			ObjectState* o = scenarioGateway.getObjectStatePtrById(obj->id_);
 			if (o == nullptr)
 			{
 				LOG("Gateway did not provide state for external car %d", obj->id_);
@@ -180,36 +179,19 @@ int ScenarioEngine::step(double deltaSimTime)
 			{
 				if (o->dirty_ & (Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL))
 				{
-					obj->pos_ = o->state_.pos;
 					obj->SetDirtyBits(o->dirty_ & (Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL));
 				}
 				if (o->dirty_ & Object::DirtyBit::SPEED)
 				{
-					obj->speed_ = o->state_.info.speed;
 					obj->SetDirtyBits(Object::DirtyBit::SPEED);
 				}
 				if (o->dirty_ & Object::DirtyBit::WHEEL_ANGLE)
 				{
-					obj->wheel_angle_ = o->state_.info.wheel_angle;
 					obj->SetDirtyBits(Object::DirtyBit::WHEEL_ANGLE);
 				}
 				if (o->dirty_ & Object::DirtyBit::WHEEL_ROTATION)
 				{
-					obj->wheel_rot_ = o->state_.info.wheel_rot;
 					obj->SetDirtyBits(Object::DirtyBit::WHEEL_ROTATION);
-				}
-				o->clearDirtyBits();
-
-				if (obj->pos_.GetStatusBitMask() & static_cast<int>(roadmanager::Position::PositionStatusMode::POS_STATUS_END_OF_ROAD))
-				{
-					if (!obj->IsEndOfRoad())
-					{
-						obj->SetEndOfRoad(true, simulationTime_);
-					}
-				}
-				else
-				{
-					obj->SetEndOfRoad(false);
 				}
 			}
 		}
@@ -495,6 +477,49 @@ int ScenarioEngine::step(double deltaSimTime)
 	}
 
 	simulationTime_ += deltaSimTime;
+
+	// Fetch states from gateway, indicated by dirty bits
+	for (size_t i = 0; i < entities_.object_.size(); i++)
+	{
+		Object* obj = entities_.object_[i];
+		ObjectState* o = scenarioGateway.getObjectStatePtrById(obj->id_);
+		if (o == nullptr)
+		{
+			LOG("Gateway did not provide state for external car %d", obj->id_);
+		}
+		else
+		{
+			if (o->dirty_ & (Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL))
+			{
+				obj->pos_ = o->state_.pos;
+			}
+			if (o->dirty_ & Object::DirtyBit::SPEED)
+			{
+				obj->speed_ = o->state_.info.speed;
+			}
+			if (o->dirty_ & Object::DirtyBit::WHEEL_ANGLE)
+			{
+				obj->wheel_angle_ = o->state_.info.wheel_angle;
+			}
+			if (o->dirty_ & Object::DirtyBit::WHEEL_ROTATION)
+			{
+				obj->wheel_rot_ = o->state_.info.wheel_rot;
+			}
+			o->clearDirtyBits();
+
+			if (obj->pos_.GetStatusBitMask() & static_cast<int>(roadmanager::Position::PositionStatusMode::POS_STATUS_END_OF_ROAD))
+			{
+				if (!obj->IsEndOfRoad())
+				{
+					obj->SetEndOfRoad(true, simulationTime_);
+				}
+			}
+			else
+			{
+				obj->SetEndOfRoad(false);
+			}
+		}
+	}
 
 	for (size_t i = 0; i < entities_.object_.size(); i++)
 	{
