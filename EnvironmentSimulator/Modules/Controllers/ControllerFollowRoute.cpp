@@ -11,12 +11,9 @@
  */
 
 /*
- * This controller simulates a bad or dizzy driver by manipulating
- * the speed and lateral offset in a random way.
- * The purpose is purely to demonstrate how to implement a controller.
+ * This controller enables a lane independent pathfinder and the lanechanges necessary for following the path
  */
 
-//#include "playerbase.hpp"
 #include <algorithm>
 #include "ControllerFollowRoute.hpp"
 #include "CommonMini.hpp"
@@ -58,7 +55,7 @@ void ControllerFollowRoute::Step(double timeStep)
 {
 	if (object_->pos_.GetRoute() == nullptr)
 	{
-		LOG("Route = nullptr");
+		//LOG("Route = nullptr");
 		Controller::Step(timeStep);
 		return;
 	}
@@ -88,7 +85,7 @@ void ControllerFollowRoute::Step(double timeStep)
 		bool nearSPos = abs(vehiclePos.GetS() - nextWaypoint.GetS()) < distToLaneChange;
 		if (!sameLane && nearSPos && CanChangeLane(nextWaypoint.GetLaneId()))
 		{
-			CreateLaneChange(nextWaypoint.GetLaneId(), laneChangeTime_);
+			CreateLaneChange(nextWaypoint.GetLaneId());
 			changingLane_ = true;
 		}
 	}
@@ -121,14 +118,15 @@ void ControllerFollowRoute::ReportKeyEvent(int key, bool down)
 {
 }
 
+
 void ControllerFollowRoute::UpdateWaypoints(roadmanager::Position vehiclePos, roadmanager::Position nextWaypoint)
 {
 	WaypointStatus waypointStatus = GetWaypointStatus(vehiclePos, nextWaypoint);
 	switch (waypointStatus)
 	{
-	case PASSED_WAYPOINT:
+	case PASSED_WAYPOINT: // Get next waypoint and calculate path to it
 	{
-		LOG("Passed waypoint: r=%d, l=%d, s=%f", nextWaypoint.GetTrackId(), nextWaypoint.GetLaneId(), nextWaypoint.GetS());
+		//LOG("Passed waypoint: r=%d, l=%d, s=%f", nextWaypoint.GetTrackId(), nextWaypoint.GetLaneId(), nextWaypoint.GetS());
 		currentWaypointIndex_++;
 		if (nextWaypoint.GetTrackId() == waypoints_.back().GetTrackId())
 		{
@@ -149,8 +147,8 @@ void ControllerFollowRoute::UpdateWaypoints(roadmanager::Position vehiclePos, ro
 
 		return;
 	}
-	case MISSED_WAYPOINT:
-		LOG("Missed waypoint: r=%d, l=%d, s=%f", nextWaypoint.GetTrackId(), nextWaypoint.GetLaneId(), nextWaypoint.GetS());
+	case MISSED_WAYPOINT: // Missed waypoint, re-calculate path to waypoint
+		//LOG("Missed waypoint: r=%d, l=%d, s=%f", nextWaypoint.GetTrackId(), nextWaypoint.GetLaneId(), nextWaypoint.GetS());
 		if (object_->pos_.GetRoute() != nullptr)
 		{
 			pathCalculated_ = false;
@@ -184,7 +182,6 @@ void ControllerFollowRoute::CalculateWaypoints()
 	}
 
 	std::vector<roadmanager::Node *> pathToGoal = router.CalculatePath(startPos, targetPos);
-	LOG("Path calculated");
 	if (pathToGoal.empty())
 	{
 		LOG("Error: Path not found, deactivating controller");
@@ -192,7 +189,6 @@ void ControllerFollowRoute::CalculateWaypoints()
 	}
 	else
 	{
-		LOG("Path found");
 		waypoints_ = router.GetWaypoints(pathToGoal, startPos, targetPos);
 
 		object_->pos_.GetRoute()->minimal_waypoints_.clear();
@@ -202,14 +198,14 @@ void ControllerFollowRoute::CalculateWaypoints()
 	}
 }
 
-void ControllerFollowRoute::CreateLaneChange(int lane, double time)
+void ControllerFollowRoute::CreateLaneChange(int lane)
 {
 	LatLaneChangeAction *action_lanechange = new LatLaneChangeAction;
 	action_lanechange->name_ = "LaneChange";
 	action_lanechange->object_ = object_;
 	action_lanechange->transition_.shape_ = OSCPrivateAction::DynamicsShape::SINUSOIDAL;
 	action_lanechange->transition_.dimension_ = OSCPrivateAction::DynamicsDimension::TIME;
-	action_lanechange->transition_.SetParamTargetVal(time);
+	action_lanechange->transition_.SetParamTargetVal(laneChangeTime_);
 	action_lanechange->max_num_executions_ = 10;
 
 	LatLaneChangeAction::TargetAbsolute *target = new LatLaneChangeAction::TargetAbsolute;
@@ -263,7 +259,7 @@ bool ControllerFollowRoute::CanChangeLane(int lane)
 	}
 	roadmanager::Road *road = odr_->GetRoadById(vehiclePos.GetTrackId());
 	roadmanager::LaneSection *ls = road->GetLaneSectionByS(vehiclePos.GetS());
-	if (ls->GetLaneById(lane) == 0)
+	if (ls->GetLaneById(lane) == 0) // lane does not exist on road in current lanesection
 	{
 		return false;
 	}
@@ -273,7 +269,7 @@ bool ControllerFollowRoute::CanChangeLane(int lane)
 	{
 		return true;
 	}
-
+	// Check collision risk to every other vehicle on the same side of road.
 	for (Object *otherVehicle : allVehicles)
 	{
 		bool sameRoad = otherVehicle->pos_.GetTrackId() == vehiclePos.GetTrackId();
@@ -285,7 +281,7 @@ bool ControllerFollowRoute::CanChangeLane(int lane)
 		bool collisionRisk = DistanceBetween(vehiclePos, otherVehicle->pos_) < minDistForCollision_;
 		bool sameSideOfRoad = SIGN(vehiclePos.GetLaneId()) == SIGN(otherVehicle->pos_.GetLaneId());
 
-		if (!sameLane && collisionRisk && sameSideOfRoad)
+		if (!sameLane && collisionRisk && sameSideOfRoad && sameRoad)
 		{
 			int n = vehiclePos.GetLaneId();
 			auto inc = [&n]
