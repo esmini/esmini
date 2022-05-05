@@ -1226,19 +1226,17 @@ TEST(SpeedProfileTest, TestSpeedProfileSingleEntry)
 {
     LongSpeedProfileAction sp_action;
     LongSpeedProfileAction::Entry entry;
-    DynamicConstraints dynamics;
 
-    dynamics.max_acceleration_ = 4.0;
-    dynamics.max_acceleration_rate_ = 1.0;
-    dynamics.max_deceleration_ = 5.0;
-    dynamics.max_deceleration_rate_ = 2.0;
-    dynamics.max_speed_ = 30.0;
+    sp_action.dynamics_.max_acceleration_ = 4.0;
+    sp_action.dynamics_.max_acceleration_rate_ = 1.0;
+    sp_action.dynamics_.max_deceleration_ = 5.0;
+    sp_action.dynamics_.max_deceleration_rate_ = 2.0;
+    sp_action.dynamics_.max_speed_ = 30.0;
 
     Object obj(Object::Type::VEHICLE);
     obj.SetSpeed(1.0);
 
     sp_action.following_mode_ = FollowingMode::FOLLOW;
-    sp_action.dynamics_ = dynamics;
     sp_action.object_ = &obj;
 
     ASSERT_EQ(sp_action.entity_ref_, nullptr);
@@ -1250,9 +1248,34 @@ TEST(SpeedProfileTest, TestSpeedProfileSingleEntry)
     sp_action.Step(0.0);
     EXPECT_NEAR(sp_action.GetSpeed(), 1.0, 1E-5);
     sp_action.Step(9.0);
-    EXPECT_NEAR(sp_action.GetSpeed(), 16.2950, 1E-5);
+    EXPECT_NEAR(sp_action.GetSpeed(), 19.0, 1E-5);
     sp_action.Step(12.0);
-    EXPECT_NEAR(sp_action.GetSpeed(), 20.00, 1E-5);
+    EXPECT_NEAR(sp_action.GetSpeed(), 20.0, 1E-5);
+
+    sp_action.dynamics_.max_acceleration_ = 1.0;
+    obj.SetSpeed(1.0);
+    sp_action.Start(0.0);
+    sp_action.Step(0.0);
+    EXPECT_NEAR(sp_action.GetSpeed(), 1.0, 1E-5);
+    sp_action.Step(9.0);
+    EXPECT_NEAR(sp_action.GetSpeed(), 9.5, 1E-5);
+    sp_action.Step(17.0);
+    EXPECT_NEAR(sp_action.GetSpeed(), 17.5, 1E-5);
+    sp_action.Step(20.0);
+    EXPECT_NEAR(sp_action.GetSpeed(), 20.0, 1E-5);
+
+    sp_action.entry_[0].speed_ = 0.0;
+
+    obj.SetSpeed(19.0);
+    sp_action.Start(0.0);
+    sp_action.Step(0.0);
+    EXPECT_NEAR(sp_action.GetSpeed(), 19.0, 1E-5);
+    sp_action.Step(4.0);
+    EXPECT_NEAR(sp_action.GetSpeed(), 11.13664, 1E-5);
+    sp_action.Step(8.0);
+    EXPECT_NEAR(sp_action.GetSpeed(), 2.0, 1E-5);
+    sp_action.Step(10.0);
+    EXPECT_NEAR(sp_action.GetSpeed(), 0.0, 1E-5);
 }
 
 TEST(SpeedProfileTest, TestSpeedProfileNoTime)
@@ -1341,9 +1364,11 @@ TEST(SpeedProfileTest, TestSpeedProfileFromNonZeroTime)
         sp_action.Step(3.2);
         EXPECT_NEAR(sp_action.GetSpeed(), i == 0 ? 0.3 : 0.1, 1E-5);
         sp_action.Step(4.0);
-        EXPECT_NEAR(sp_action.GetSpeed(), i == 0 ? 1.5 : 1.275, 1E-5);
+        EXPECT_NEAR(sp_action.GetSpeed(), i == 0 ? 1.5 : 1.38033, 1E-5);
+        sp_action.Step(5.0);
+        EXPECT_NEAR(sp_action.GetSpeed(), i == 0 ? 3.0 : 3.03419, 1E-5);
         sp_action.Step(6.0);
-        EXPECT_NEAR(sp_action.GetSpeed(), i == 0 ? 4.5 : 4.275, 1E-5);
+        EXPECT_NEAR(sp_action.GetSpeed(), i == 0 ? 4.5 : 4.68805, 1E-5);
         sp_action.Step(8.0);
         EXPECT_NEAR(sp_action.GetSpeed(), 6.0, 1E-5);
     }
@@ -1368,7 +1393,7 @@ int main(int argc, char** argv)
     }
 #endif
 
-    //testing::GTEST_FLAG(filter) = "*TestSpeedProfileNoTime*";
+    //testing::GTEST_FLAG(filter) = "*TestSpeedProfileFromNonZeroTime";
 
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

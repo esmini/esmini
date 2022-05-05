@@ -59,6 +59,7 @@ copy resources\xosc\alks-test.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\swarm.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\lane-change_clothoid_based_trajectory.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\trailers.xosc %target_dir%\resources\xosc /y
+copy resources\xosc\speed-profile.xosc %target_dir%\resources\xosc /y
 
 copy resources\xosc\Catalogs\Maneuvers\*.* %target_dir%\resources\xosc\Catalogs\Maneuvers /y
 copy resources\xosc\Catalogs\Routes\*.* %target_dir%\resources\xosc\Catalogs\Routes /y

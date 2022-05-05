@@ -503,6 +503,8 @@ will create ground_truth.csv.
 
 == Scenario features
 === Speed profile
+(introduced in esmini v2.23.0)
+
 The OpenSCENARIO https://www.asam.net/static_downloads/ASAM_OpenSCENARIO_V1.1.1_Model_Documentation/modelDocumentation/content/SpeedAction.html[SpeedAction] will reach a specified speed in a way described by additional attributes, e.g. shape and duration. To achieve multiple speed target over time you would need to add multiple SpeedAction events to the scenario. Moreover, there is no way to explicitly control the jerk (acceleration/deceleration rates). 
 
 However with the SpeedProfileAction (OpenSCENARIO extension) you can specify a series of speed targets over time, in one action. Optionally you can also specify dynamic constraints for jerk (gradually changing acceleration and deceleration), acceleration and speed.
@@ -555,12 +557,86 @@ If the target speed or accelerations can't be reached with given constraints the
 
 Another approach would be to try to perform a best effort, but that would require additional input to decide whether to prioritize reaching specified speed targets or respect time stamps...
 
+
 [Note]
 ====
 **Note**: The implementation of this feature is preliminary and experimental. Behavior and details might change. 
 ====
 
 Let's manipulate the scenario in different ways to illustrate some special cases of the speed-profile feature.
+
+==== Special case: Single entry
+(Special case implementation introduced in esmini v2.23.1)
+
+Compared to SpeedAction, the SpeedProfileAction offers more tools in terms of dynamic constraints. Hence it can be actually be useful also for single entry, i.e. reach a single target speed. 
+
+The implementation differs for the single entry case. Target speed will be reached if constraints allows for it. If not, the speed will still be reached, but later than specified. 
+
+There are three sub cases:
+
+*1. Speed can be reached within time*
+
+The speed profile will contain three phases: Jerk, constant acceleration, jerk.
+
+Example: +
+Replace the four entries in speed-profile.xosc with the following ones:
+
+[source,xml]
+----
+    <SpeedProfileEntry time="0.0" speed="0.0"/>
+    <SpeedProfileEntry time="4.0" speed="10.0"/>
+----
+
+image::speed-profile5.png[]
+
+Initial positive jerk will be applied until necessary acceleration is reached. Keep constant acceleration (linear segment in the speed profile) until negative jerk needs to be applied in order to reach target speed on time and at zero acceleration.
+
+*2. Speed can't be reached in time due to acceleration constraints*
+
+This speed profile will also contain three phases: Jerk, constant acceleration, jerk.
+
+Example: +
+Replace the four entries in speed-profile.xosc with the following ones:
+
+[source,xml]
+----
+    <SpeedProfileEntry time="0.0" speed="0.0"/>
+    <SpeedProfileEntry time="3.0" speed="10.0"/>
+----
+
+image::speed-profile6.png[]
+
+Initial positive jerk will be applied until maximum acceleration is reached (or maximum deceleration). Keep constant acceleration (linear segment in the speed profile) until negative jerk needs to be applied in order to reach target speed at zero acceleration. Due to the acceleration limitation there will be a delay as well. The log file will include something like:
+
+[source]
+----
+SpeedProfile: Constraining acceleration from 5.86 to 5.00
+SpeedProfile: Extend 0.46 s
+----
+
+*3. Speed can't be reached in time due to jerk constraints*
+
+This speed profile will contain only two jerk phases.
+
+Example: +
+Keep entries from last case, but change jerk settings as follows:
+
+[source,xml]
+----
+  maxAccelerationRate="3.0" 
+  maxDecelerationRate="2.0" 
+----
+
+image::speed-profile7.png[]
+
+In this case the jerk settings are too weak to reach target speed in time. Not enough acceleration can be achieved in the given time window. 
+
+Positive jerk will be applied until negative jerk has to be applied in order to reach target speed at zero acceleration. Hence there is no room for a phase of constant acceleration. Due to the jerk limitation there will be a delay. The log file will include something like:
+
+[source]
+----
+SpeedProfile: Can't reach target speed 10.00 on target time 3.00s with given jerk constraints, extend to 4.08s
+----
 
 ==== What if current speed differ from the first entry?
 Replace the four entries with the following ones:
@@ -588,7 +664,7 @@ Replace any entries with the following ones:
 
 image::speed-profile3.png[]
 
-Specified max acceleration will be applied until target speed is reached. Note: In the non linear case, the function will fail if the specified acceleration can't be reached with given jerk constraints (maxAcceleration and maxDeceleration). Try to lower the maxAcceleration/deceleration in this case.
+Specified max acceleration will be applied until target speed is reached. Note: In the non-linear case and with multiple entries, the function will fail if the specified acceleration can't be reached with given jerk constraints (maxAcceleration and maxDeceleration). Try to lower the maxAcceleration/deceleration in this case.
 
 You can also combine entries with and without time constraint, like in following example:
 
@@ -601,6 +677,9 @@ You can also combine entries with and without time constraint, like in following
 image::speed-profile4.png[]
 
 Car will accelerate until speed 10 m/s is reached, then spend 3 seconds to reach 15 m/s.
+
+==== More info
+To get more understanding of the implementation, see a few slides https://drive.google.com/file/d/1DmjVHftcsbU71Ce_GASZ6IArcPA6teNF/view?usp=sharing[here].
 
 == OpenSceneGraph and 3D models
 

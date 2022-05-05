@@ -1019,105 +1019,207 @@ void LongSpeedProfileAction::Start(double simTime, double timestep)
 		}
 	}
 
-	// set first segment
 	EntryVertex vtx = vertex[0];
 	double t0, t1, t3 = vtx.t_, v0, v3 = 0.0, m0, m1 = 0.0, k1 = 0.0;
 
 	segment_.clear();
 
-	if (following_mode_ == FollowingMode::FOLLOW)
+	if (following_mode_ == FollowingMode::FOLLOW && vertex.size() == 2)
 	{
-		if (abs(vtx.k_) > SMALL_NUMBER)
-		{
-			j = vertex[0].k_ < 0 ? -dynamics_.max_deceleration_rate_ : dynamics_.max_acceleration_rate_;
-			segment_.push_back({ vtx.t_, vtx.v_, 0.0, j });
+		// Special case: Single speed target, following mode = follow
+		// Reach target speed with given jerk contraint. Add linear segment if needed.
 
-			t3 = vtx.t_ + (abs(j) > SMALL_NUMBER ? vtx.k_ / j : 0.0);  // duration of first jerk t = a / j
+		// Set first jerk segment
+		j = vertex[0].k_ < 0 ? -dynamics_.max_deceleration_rate_ : dynamics_.max_acceleration_rate_;
+		AddSpeedSegment(vtx.t_, vtx.v_, 0.0, j);
+
+		double j0 = 0.0, j1 = 0.0, t2 = 0.0, v1 = 0.0, v2 = 0.0;
+		if (vertex[0].k_ < 0.0)
+		{
+			j0 = -dynamics_.max_deceleration_rate_;
+			j1 = dynamics_.max_acceleration_rate_;
+		}
+		else
+		{
+			j0 = dynamics_.max_acceleration_rate_ ;
+			j1 = -dynamics_.max_deceleration_rate_;
 		}
 
-		v3 = vtx.v_ + 0.5 * j * pow((t3-simTime), 2);  // speed after initial jerk
-		k1 = vtx.k_;  // slope of first linear segment
-		m1 = v3 - k1 * t3;  // eq constant for second acceleration line
+		t0 = vertex[0].t_;
+		v0 = vertex[0].v_;
+		t3 = vertex[1].t_;
+		v3 = vertex[1].v_;
 
-		// add first linear segment
-		AddSpeedSegment(t3, v3, k1, 0.0);
-	}
+		double factor = j0 * j1 * (2 * v0 * (j1 - j0) + j0 * j1 * pow(t0 - t3, 2) + 2 * v3 * (j0 - j1));
 
-	for (index = 0; index < vertex.size(); index++)
-	{
-		if (following_mode_ == FollowingMode::POSITION)
+		if (factor < 0.0)
 		{
-			vtx = vertex[index];
-			AddSpeedSegment(vtx.t_, vtx.v_, vtx.k_, 0.0);
+			// no room or time for linear segment of constant acceleration
+			t2 = (sqrt(2 * j0 * j1 * (v3 - v0) * (j1 - j0))) / (j0 * (j0 - j1)) + t0;
+			v2 = v0 + j0 * 0.5 * pow(t2 - t0, 2);
+			k1 = j0 * (t2 - t0);
+			t3 = t2 - k1 / j1;
+
+			if (IS_IN_SPAN(k1, -dynamics_.max_deceleration_, dynamics_.max_acceleration_) && t3 > vertex[1].t_)
+			{
+				LOG("SpeedProfile: Can't reach target speed %.2f on target time %.2fs with given jerk constraints, extend to %.2fs",
+					v3, vertex[1].t_, t3);
+			}
 		}
-		else if (index < vertex.size() - 1)
+		else
 		{
-			double k0 = k1;
-			vtx = vertex[index + 1];
-			t0 = t3;
-			v0 = v3;
-			m0 = m1;
-			k1 = vtx.k_;
-			m1 = vtx.m_;
+			// need a linear segment to reach speed at specified time
+			LOG("SpeedProfile: Add linear segment to reach target speed on time.");
+			t1 = -(sqrt(factor) - t0 * pow(j0, 2) + t3 * j0 * j1) / (j0 * (j0 - j1));
+			v1 = v0 + j0 * 0.5 * pow(t1 - t0, 2);
+			k1 = j0 * (t1 - t0);
+			t2 = (k1 / j1) + t3;
+			v2 = v1 + k1 * (t2 - t1);
 
-			if (index < vertex.size() - 1)
+			if (IS_IN_SPAN(k1, -dynamics_.max_deceleration_, dynamics_.max_acceleration_))
 			{
-				j = vtx.k_ - k0 < 0 ? -dynamics_.max_deceleration_rate_ : dynamics_.max_acceleration_rate_;
+				// add linear segment
+				AddSpeedSegment(t1, v1, k1, 0.0);
+			}
+		}
+
+		if (IS_IN_SPAN(k1, -dynamics_.max_deceleration_, dynamics_.max_acceleration_))
+		{
+			// add second jerk segment
+			AddSpeedSegment(t2, v2, k1, j1);
+			// add end segment
+			AddSpeedSegment(t3, v3, 0.0, 0.0);
+		}
+		else
+		{
+			if (k1 > dynamics_.max_acceleration_)
+			{
+				LOG("SpeedProfile: Constraining acceleration from %.2f to %.2f", k1, dynamics_.max_acceleration_);
+				k1 = dynamics_.max_acceleration_;
+			}
+			else if (k1 < -dynamics_.max_deceleration_)
+			{
+				LOG("SpeedProfile: Constraining deceleration from %.2f to %.2f", -k1, dynamics_.max_deceleration_);
+				k1 = -dynamics_.max_deceleration_;
 			}
 
-			if (abs(k0 - k1) < SMALL_NUMBER)
-			{
-				// no change in acceleration, skip jerk segment
-				t3 = t0;
-				v3 = v0;
-			}
-			else
-			{
-				// find time for next jerk
-				// https://www.wolframalpha.com/input?i=solve+b%3Dk*g%2Bn%2Cd%3Dl*j%2Bo%2Cd%3Db%2Bk*%28j-g%29%2Bm*%28j-g%29%5E2%2F2%2Cl%3Dk%2Bm*%28j-g%29+for+b%2Cd%2Cg%2Cj
-				// solve b = k * g + n, d = l * j + o, d = b + k * (j - g) + m * (j - g) ^ 2 / 2, l = k + m * (j - g) for b, d, g, j
-				// substitutions: a = v0, b = v1, c = v2, d = v3, f = t0, g = t1, h = t2, j = t3, k = k0, l = k1, m = j, n = m0, o = m1
-				// g = (k ^ 2 - 2 k l + l ^ 2 - 2 m(n - o)) / (2 m(k - l))
-				t1 = (pow(k0, 2) - 2 * k0 * k1 + pow(k1, 2) - 2 * j * (m0 - m1)) / (2 * j * (k0 - k1));
+			t1 = t0 + k1 / j0;
+			v1 = v0 + j0 * 0.5 * pow(t1 - t0, 2);
+			t2 = -v0 / k1 + t1 - k1 / (2 * j0) + v3 / k1 + k1 / (2 * j1);
+			v2 = v1 + k1 * (t2 - t1);
+			t3 = -v0 / k1 + t1 - k1 / (2 * j0) + v3 / k1 - k1 / (2 * j1);
 
-				if (t1 < t0)
-				{
-					LOG("LongSpeedProfileAction failed at point %d (time=%.2f). Falling back to linear (Position) mode.", index, vertex[index].t_);
-					following_mode_ = FollowingMode::POSITION;
-					continue;
-				}
-
-				double v1 = v0 + k0 * (t1 - t0);
-				t3 = t1 + (vtx.k_ - k0) / j;
-				v3 = v1 + k0 * (t3 - t1) + 0.5 * j * pow(t3 - t1, 2);
-
-				// add jerk segment
-				AddSpeedSegment(t1, v1, k0, j);
-			}
+			LOG("SpeedProfile: Extend %.2f s", t3 - vertex.back().t_);
 
 			// add linear segment
-			AddSpeedSegment(t3, v3, vtx.k_, 0.0);
+			AddSpeedSegment(t1, v1, k1, 0.0);
+			// add second jerk segment
+			AddSpeedSegment(t2, v2, k1, j1);
+			// add end segment
+			AddSpeedSegment(t3, v3, 0.0, 0.0);
 		}
 	}
+	else
+	{
+		// Normal case: Follow acceleration (slopes) of multiple speed targets over time
+
+		if (following_mode_ == FollowingMode::FOLLOW)
+		{
+			if (abs(vtx.k_) > SMALL_NUMBER)
+			{
+				j = vertex[0].k_ < 0 ? -dynamics_.max_deceleration_rate_ : dynamics_.max_acceleration_rate_;
+				AddSpeedSegment(vtx.t_, vtx.v_, 0.0, j);
+
+				t3 = vtx.t_ + (abs(j) > SMALL_NUMBER ? vtx.k_ / j : 0.0);  // duration of first jerk t = a / j
+			}
+
+			v3 = vtx.v_ + 0.5 * j * pow((t3 - simTime), 2);  // speed after initial jerk
+			k1 = vtx.k_;  // slope of first linear segment
+			m1 = v3 - k1 * t3;  // eq constant for second acceleration line
+
+			// add first linear segment
+			AddSpeedSegment(t3, v3, k1, 0.0);
+		}
+
+		for (index = 0; index < vertex.size(); index++)
+		{
+			if (following_mode_ == FollowingMode::POSITION)
+			{
+				vtx = vertex[index];
+				AddSpeedSegment(vtx.t_, vtx.v_, vtx.k_, 0.0);
+			}
+			else if (index < vertex.size() - 1)
+			{
+				double k0 = k1;
+				vtx = vertex[index + 1];
+				t0 = t3;
+				v0 = v3;
+				m0 = m1;
+				k1 = vtx.k_;
+				m1 = vtx.m_;
+
+				if (index < vertex.size() - 1)
+				{
+					j = vtx.k_ - k0 < 0 ? -dynamics_.max_deceleration_rate_ : dynamics_.max_acceleration_rate_;
+				}
+
+				if (abs(k0 - k1) < SMALL_NUMBER)
+				{
+					// no change in acceleration, skip jerk segment
+					t3 = t0;
+					v3 = v0;
+				}
+				else
+				{
+					// find time for next jerk
+					// https://www.wolframalpha.com/input?i=solve+b%3Dk*g%2Bn%2Cd%3Dl*j%2Bo%2Cd%3Db%2Bk*%28j-g%29%2Bm*%28j-g%29%5E2%2F2%2Cl%3Dk%2Bm*%28j-g%29+for+b%2Cd%2Cg%2Cj
+					// solve b = k * g + n, d = l * j + o, d = b + k * (j - g) + m * (j - g) ^ 2 / 2, l = k + m * (j - g) for b, d, g, j
+					// substitutions: a = v0, b = v1, c = v2, d = v3, f = t0, g = t1, h = t2, j = t3, k = k0, l = k1, m = j, n = m0, o = m1
+					// g = (k ^ 2 - 2 k l + l ^ 2 - 2 m(n - o)) / (2 m(k - l))
+					t1 = (pow(k0, 2) - 2 * k0 * k1 + pow(k1, 2) - 2 * j * (m0 - m1)) / (2 * j * (k0 - k1));
+
+					if (t1 < t0)
+					{
+						LOG("LongSpeedProfileAction failed at point %d (time=%.2f). Falling back to linear (Position) mode.", index, vertex[index].t_);
+						following_mode_ = FollowingMode::POSITION;
+						continue;
+					}
+
+					double v1 = v0 + k0 * (t1 - t0);
+					t3 = t1 + (vtx.k_ - k0) / j;
+					v3 = v1 + k0 * (t3 - t1) + 0.5 * j * pow(t3 - t1, 2);
+
+					// add jerk segment
+					AddSpeedSegment(t1, v1, k0, j);
+				}
+
+				// add linear segment
+				AddSpeedSegment(t3, v3, vtx.k_, 0.0);
+			}
+		}
+	}
+
 	cur_index_ = 0;
 	speed_ = object_->GetSpeed();
 }
 
 void LongSpeedProfileAction::Step(double simTime, double dt)
 {
-	if (simTime < segment_.back().t + 10 && !(simTime > segment_.back().t and abs(speed_ - segment_.back().v) < SMALL_NUMBER))
+	double time = simTime + dt;
+
+	if (time < segment_.back().t + 10 && !(time > segment_.back().t and abs(speed_ - segment_.back().v) < SMALL_NUMBER))
 	{
-		while (cur_index_ < segment_.size() - 1 && simTime > segment_[cur_index_ + 1].t - SMALL_NUMBER)
+		while (cur_index_ < segment_.size() - 1 && time > segment_[cur_index_ + 1].t - SMALL_NUMBER)
 		{
 			cur_index_++;
 		}
 
 		SpeedSegment* s = &segment_[cur_index_];
 
-		speed_ = s->v + s->k * (simTime - s->t) + 0.5 * s->j * pow(simTime - s->t, 2);
+		speed_ = s->v + s->k * (time - s->t) + 0.5 * s->j * pow(time - s->t, 2);
 	}
 
-	elapsed_ = MAX(0.0, simTime + dt - segment_[0].t);
+	elapsed_ = MAX(0.0, time - segment_[0].t);
 
 	if (cur_index_ > entry_.size() - 1 && fabs(speed_ - entry_.back().speed_) < SMALL_NUMBER)
 	{

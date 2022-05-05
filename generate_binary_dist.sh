@@ -36,6 +36,7 @@ resources/xosc/alks-test.xosc \
 resources/xosc/swarm.xosc \
 resources/xosc/lane-change_clothoid_based_trajectory.xosc \
 resources/xosc/trailers.xosc \
+resources/xosc/speed-profile.xosc \
 resources/xosc/Catalogs/Maneuvers/*.* \
 resources/xosc/Catalogs/Routes/*.* \
 resources/xosc/Catalogs/Vehicles/*.* \

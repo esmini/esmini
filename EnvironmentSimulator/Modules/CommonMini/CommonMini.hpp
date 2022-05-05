@@ -52,6 +52,7 @@
 #define AVOID_ZERO(x) (SIGN(x)*MAX(SMALL_NUMBER, fabs(x)))
 #define NEAR_ZERO(x) (abs(x) < SMALL_NUMBER)
 #define NEAR_NUMBERS(x, y) (abs(x - y) < SMALL_NUMBER)
+#define IS_IN_SPAN(x, y, z) ((x) >= (y) && (x) <= (z))
 #define OSI_MAX_LONGITUDINAL_DISTANCE 50
 #define OSI_MAX_LATERAL_DEVIATION 0.05
 #define LOG_FILENAME "log.txt"
