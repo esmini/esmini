@@ -115,17 +115,41 @@ ScenarioEngine::~ScenarioEngine()
 	LOG("Closing");
 }
 
-int ScenarioEngine::step(double deltaSimTime)
+void ScenarioEngine::UpdateGhostMode()
 {
 	if (ghost_mode_ == GhostMode::RESTART)
 	{
-		trueTime_ = simulationTime_;
 		simulationTime_ -= headstart_time_;
 		ghost_mode_ = GhostMode::RESTARTING;
 	}
+	else if (ghost_mode_ == GhostMode::RESTARTING)
+	{
+		if (simulationTime_ > trueTime_ - SMALL_NUMBER)
+		{
+			ghost_mode_ = GhostMode::NORMAL;
+		}
+	}
+}
+
+int ScenarioEngine::step(double deltaSimTime)
+{
+	UpdateGhostMode();
 
 	if (!initialized_)
 	{
+		// kick off init actions
+		for (size_t i = 0; i < init.private_action_.size(); i++)
+		{
+			init.private_action_[i]->Start(simulationTime_, deltaSimTime);
+			init.private_action_[i]->UpdateState();
+		}
+		for (size_t i = 0; i < init.global_action_.size(); i++)
+		{
+			init.global_action_[i]->Start(simulationTime_, deltaSimTime);
+			init.global_action_[i]->UpdateState();
+		}
+		initialized_ = true;
+
 		// Set initial values for speed and acceleration derivation
 		for (size_t i = 0; i < entities_.object_.size(); i++)
 		{
@@ -139,19 +163,6 @@ int ScenarioEngine::step(double deltaSimTime)
 			obj->state_old.h_rate = obj->pos_.GetHRate();
 			obj->reset_ = true;
 		}
-
-		// kick off init actions
-		for (size_t i = 0; i < init.private_action_.size(); i++)
-		{
-			init.private_action_[i]->Start(simulationTime_, deltaSimTime);
-			init.private_action_[i]->UpdateState();
-		}
-		for (size_t i = 0; i < init.global_action_.size(); i++)
-		{
-			init.global_action_[i]->Start(simulationTime_, deltaSimTime);
-			init.global_action_[i]->UpdateState();
-		}
-		initialized_ = true;
 	}
 	else
 	{
@@ -435,7 +446,6 @@ int ScenarioEngine::step(double deltaSimTime)
 								{
 									if (event->action_[n]->IsActive())
 									{
-										// Try one
 										OSCAction* action = event->action_[n];
 										OSCPrivateAction* pa = (OSCPrivateAction*)action;
 										if (ghost_mode_ != GhostMode::RESTARTING ||
@@ -476,7 +486,17 @@ int ScenarioEngine::step(double deltaSimTime)
 		}
 	}
 
+	// This timestep calculation is due to the Ghost vehicle
+	// If both times are equal, it is a normal scenario, or no Ghost teleportation is ongoing -> Step as usual
+	// Else if we can take a step, and still not reach the point of teleportation -> Step only simulationTime (That the Ghost runs on)
+	// Else, the only thing left is that the next step will take us above the point of teleportation -> Step to that point instead and go on from there
+
 	simulationTime_ += deltaSimTime;
+
+	if (simulationTime_ > trueTime_)
+	{
+		trueTime_ = simulationTime_;
+	}
 
 	// Fetch states from gateway, indicated by dirty bits
 	for (size_t i = 0; i < entities_.object_.size(); i++)
@@ -525,10 +545,10 @@ int ScenarioEngine::step(double deltaSimTime)
 	{
 		Object* obj = entities_.object_[i];
 		// Do not move objects when speed is zero,
-		// and only ghosts allowed to execute before time == 0
+		// and only ghosts allowed to execute during ghost (restart
 		if (!(obj->IsControllerActiveOnDomains(ControlDomains::DOMAIN_BOTH) && obj->GetControllerMode() == Controller::Mode::MODE_OVERRIDE) &&
 			fabs(obj->speed_) > SMALL_NUMBER &&
-			(ghost_mode_ == GhostMode::NORMAL || obj->IsGhost()) &&
+			(obj->IsGhost() && ghost_mode_ != GhostMode::RESTART || ghost_mode_ != GhostMode::RESTARTING)  &&
 			!obj->TowVehicle())  // update trailers later
 		{
 			defaultController(obj, deltaSimTime);
@@ -581,6 +601,7 @@ int ScenarioEngine::step(double deltaSimTime)
 			}
 		}
 	}
+
 
 	// Update any trailers now that tow vehicles have been updated by Default or custom controllers
 	for (size_t i = 0; i < entities_.object_.size(); i++)
@@ -645,30 +666,10 @@ int ScenarioEngine::step(double deltaSimTime)
 		}
 	}
 
-	// This timestep calculation is due to the Ghost vehicle
-	// If both times are equal, it is a normal scenario, or no Ghost teleportation is ongoing -> Step as usual
-	// Else if we can take a step, and still not reach the point of teleportation -> Step only simulationTime (That the Ghost runs on)
-	// Else, the only thing left is that the next step will take us above the point of teleportation -> Step to that point instead and go on from there
-
-
 	if (all_done)
 	{
 		LOG("All acts are done, quit now");
 		quit_flag = true;
-	}
-
-
-	if (ghost_mode_ == GhostMode::RESTARTING)
-	{
-		if (simulationTime_ > trueTime_ - SMALL_NUMBER)
-		{
-			ghost_mode_ = GhostMode::NORMAL;
-		}
-	}
-
-	if (ghost_mode_ == GhostMode::NORMAL)
-	{
-		trueTime_ = simulationTime_;
 	}
 
 	return 0;
@@ -879,11 +880,11 @@ void ScenarioEngine::prepareGroundTruth(double dt)
 {
 	for (size_t i = 0; i < entities_.object_.size(); i++)
 	{
-		Object *obj = entities_.object_[i];
-		ObjectState *o;
-
 		// Fetch external states from gateway
-		o = scenarioGateway.getObjectStatePtrById(obj->id_);
+		Object* obj = entities_.object_[i];
+		ObjectState* o = scenarioGateway.getObjectStatePtrById(obj->id_);
+
+
 		if (o == nullptr)
 		{
 			LOG("Gateway did not provide state for external car %d", obj->id_);
@@ -911,14 +912,17 @@ void ScenarioEngine::prepareGroundTruth(double dt)
 				obj->SetDirtyBits(Object::DirtyBit::WHEEL_ROTATION);
 			}
 		}
+
 		// Calculate resulting updated velocity, acceleration and heading rate (rad/s) NOTE: in global coordinate sys
 		double dx = obj->pos_.GetX() - obj->state_old.pos_x;
 		double dy = obj->pos_.GetY() - obj->state_old.pos_y;
 
-		if (dt > SMALL_NUMBER)
+		if (NEAR_ZERO(dt) || obj->IsGhost() && ghost_mode_ != GhostMode::RESTART || !obj->IsGhost() && ghost_mode_ != GhostMode::RESTARTING)
 		{
-			if (obj->IsGhost() || (getSimulationTime() > SMALL_NUMBER && ghost_mode_ == GhostMode::NORMAL)) // For non ghost vehicles, update only when no ghost restart is ongoing
+			// dt ~ 0.0 indicates initial frame
+			if (dt > SMALL_NUMBER)
 			{
+
 				if (!obj->CheckDirtyBits(Object::DirtyBit::VELOCITY))
 				{
 					// If not already reported, calculate linear velocity
@@ -964,54 +968,54 @@ void ScenarioEngine::prepareGroundTruth(double dt)
 					obj->SetDirtyBits(Object::DirtyBit::WHEEL_ROTATION);
 				}
 			}
-		}
-		else
-		{
-			// calculate approximated velocity vector based on current heading
-			if (!obj->CheckDirtyBits(Object::DirtyBit::VELOCITY))
+			else
 			{
-				// If not already reported, calculate approximated velocity vector based on current heading
-				obj->SetVel(obj->speed_ * cos(obj->pos_.GetH()), obj->speed_ * sin(obj->pos_.GetH()), 0.0);
+				// calculate approximated velocity vector based on current heading
+				if (!obj->CheckDirtyBits(Object::DirtyBit::VELOCITY))
+				{
+					// If not already reported, calculate approximated velocity vector based on current heading
+					obj->SetVel(obj->speed_ * cos(obj->pos_.GetH()), obj->speed_ * sin(obj->pos_.GetH()), 0.0);
+				}
+			}
+
+			if (obj->CheckDirtyBits(Object::DirtyBit::WHEEL_ANGLE))
+			{
+				scenarioGateway.updateObjectWheelAngle(obj->id_, simulationTime_, obj->wheel_angle_);
+			}
+
+			if (obj->CheckDirtyBits(Object::DirtyBit::WHEEL_ROTATION))
+			{
+				scenarioGateway.updateObjectWheelRotation(obj->id_, simulationTime_, obj->wheel_rot_);
+			}
+
+			// store current values for next loop
+			obj->state_old.pos_x = obj->pos_.GetX();
+			obj->state_old.pos_y = obj->pos_.GetY();
+			obj->state_old.vel_x = obj->pos_.GetVelX();
+			obj->state_old.vel_y = obj->pos_.GetVelY();
+			obj->state_old.h = obj->pos_.GetH();
+			obj->state_old.h_rate = obj->pos_.GetHRate();
+
+			if (!obj->reset_)
+			{
+				obj->odometer_ += abs(sqrt(dx * dx + dy * dy));  // odometer always measure all movements as positive, I guess...
+			}
+
+			if (!(obj->IsGhost() && GetGhostMode() == GhostMode::RESTART))  // skip ghost sample during restart
+			{
+				if (obj->trail_.GetNumberOfVertices() == 0 || simulationTime_ - obj->trail_.GetVertex(-1)->time > GHOST_TRAIL_SAMPLE_TIME)
+				{
+					// Only add trail vertex when speed is not stable at 0
+					if (obj->trail_.GetNumberOfVertices() == 0 || fabs(obj->trail_.GetVertex(-1)->speed) > SMALL_NUMBER || fabs(obj->GetSpeed()) > SMALL_NUMBER)
+					{
+						obj->trail_.AddVertex({ 0.0, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ(), obj->pos_.GetH(), simulationTime_, obj->GetSpeed(), 0.0, false });
+					}
+				}
 			}
 		}
 
 		// Report updated pos values to the gateway
 		scenarioGateway.updateObjectPos(obj->id_, simulationTime_, &obj->pos_);
-
-		if (obj->CheckDirtyBits(Object::DirtyBit::WHEEL_ANGLE))
-		{
-			scenarioGateway.updateObjectWheelAngle(obj->id_, simulationTime_, obj->wheel_angle_);
-		}
-
-		if (obj->CheckDirtyBits(Object::DirtyBit::WHEEL_ROTATION))
-		{
-			scenarioGateway.updateObjectWheelRotation(obj->id_, simulationTime_, obj->wheel_rot_);
-		}
-
-		// store current values for next loop
-		obj->state_old.pos_x = obj->pos_.GetX();
-		obj->state_old.pos_y = obj->pos_.GetY();
-		obj->state_old.vel_x = obj->pos_.GetVelX();
-		obj->state_old.vel_y = obj->pos_.GetVelY();
-		obj->state_old.h = obj->pos_.GetH();
-		obj->state_old.h_rate = obj->pos_.GetHRate();
-
-		if (!obj->reset_)
-		{
-			obj->odometer_ += abs(sqrt(dx * dx + dy * dy));  // odometer always measure all movements as positive, I guess...
-		}
-
-		if (!(obj->IsGhost() && GetGhostMode() == GhostMode::RESTART))  // skip ghost sample during restart
-		{
-			if (obj->trail_.GetNumberOfVertices() == 0 || simulationTime_ - obj->trail_.GetVertex(-1)->time > GHOST_TRAIL_SAMPLE_TIME)
-			{
-				// Only add trail vertex when speed is not stable at 0
-				if (obj->trail_.GetNumberOfVertices() == 0 || fabs(obj->trail_.GetVertex(-1)->speed) > SMALL_NUMBER || fabs(obj->GetSpeed()) > SMALL_NUMBER)
-				{
-					obj->trail_.AddVertex({ 0.0, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ(), obj->pos_.GetH(), simulationTime_, obj->GetSpeed(), 0.0, false });
-				}
-			}
-		}
 
 		// Now that frame is complete, reset dirty bits to avoid circulation
 		if (o) o->clearDirtyBits();

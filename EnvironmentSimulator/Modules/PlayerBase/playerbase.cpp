@@ -121,6 +121,7 @@ void ScenarioPlayer::SetOSIFileStatus(bool is_on, const char* filename)
 	}
 #endif // USE_OSI
 }
+
 void ScenarioPlayer::Draw()
 {
 	if (viewer_)
@@ -145,34 +146,23 @@ void ScenarioPlayer::Draw()
 void ScenarioPlayer::Frame(double timestep_s)
 {
 	static bool messageShown = false;
-	double dt = timestep_s;
-	__int64 time_stamp = 0;
 	int retval = 0;
+	double ghost_solo_dt = 0.05;
 
 	if (!IsPaused())
 	{
-		while (retval == 0 && scenarioEngine->GetGhostMode() != GhostMode::NORMAL)
+		retval = ScenarioFrame(timestep_s, true);
+
+		if (scenarioEngine->GetGhostMode() != GhostMode::NORMAL)
 		{
-			if (GetFixedTimestep() > SMALL_NUMBER)
+			while (retval == 0 && scenarioEngine->GetGhostMode() != GhostMode::NORMAL)
 			{
-				dt = MAX(GetFixedTimestep(), minStepSize);
+				Draw();
+				retval = ScenarioFrame(ghost_solo_dt, false);
 			}
-			else
-			{
-				dt = SE_getSimTimeStep(time_stamp, minStepSize, maxStepSize);
-			}
-
-
-			if (scenarioEngine->getSimulationTime() + dt > scenarioEngine->GetTrueTime() - SMALL_NUMBER)
-			{
-				dt = MAX(0.0, scenarioEngine->GetTrueTime() - scenarioEngine->getSimulationTime());
-			}
-
-			retval = ScenarioFrame(dt, false);
-			Draw();
 		}
 
-		if (ScenarioFrame(timestep_s, true) == 0)
+		if (retval == 0)
 		{
 			ScenarioPostFrame();
 		}
@@ -232,15 +222,21 @@ int ScenarioPlayer::ScenarioFrame(double timestep_s, bool keyframe)
 
 		scenarioEngine->prepareGroundTruth(timestep_s);
 
-		scenarioGateway->WriteStatesToFile();
-
-		if (CSV_Log)
+		if (scenarioEngine->GetGhostMode() != GhostMode::RESTART)
 		{
-			UpdateCSV_Log();
+
+			scenarioGateway->WriteStatesToFile();
+
+			if (CSV_Log)
+			{
+				UpdateCSV_Log();
+			}
 		}
 
 		if (keyframe) frame_counter_++;
 	}
+
+	scenarioEngine->UpdateGhostMode();
 
 	mutex.Unlock();
 
@@ -1290,16 +1286,7 @@ int ScenarioPlayer::Init()
 		StartServer(scenarioEngine);
 	}
 
-	// Step scenario engine - zero time - just to reach and report init state of all vehicles
-	ScenarioFrame(0.0, true);
-
-	// And report initial states to OSI
-	ScenarioPostFrame();
-
-#ifdef _USE_OSG
-	// render initial frame, it typically takes extra long due to initial loading of gfx content
-	ViewerFrame();
-#endif
+	Frame(0.0);
 
 	return 0;
 }

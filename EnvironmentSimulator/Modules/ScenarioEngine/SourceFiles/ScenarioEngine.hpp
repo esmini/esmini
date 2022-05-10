@@ -48,7 +48,7 @@ namespace scenarioengine
 	{
 		NORMAL,
 		RESTART,     // the frame ghost is requested to restart
-		RESTARTING,  // ghost restart is ongoing, including the final restart timestep
+		RESTARTING  // ghost restart is ongoing, including the final restart timestep
 	};
 
 	class ScenarioEngine
@@ -96,6 +96,7 @@ namespace scenarioengine
 		void CreateGhostTeleport(Object* obj1, Object* obj2, Event* event);
 		void SetGhostRestart() { ghost_mode_ = GhostMode::RESTART; }
 		GhostMode GetGhostMode() { return ghost_mode_; }
+		void UpdateGhostMode();
 
 		double trueTime_;
 		bool doOnce = true;

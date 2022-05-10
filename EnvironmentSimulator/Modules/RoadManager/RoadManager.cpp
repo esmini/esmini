@@ -8135,11 +8135,23 @@ void Position::GetAccTS(double& at, double& as)
 
 void Position::CopyRMPos(Position *from)
 {
-	// Preserve route field
-	Route* route_tmp = route_;
+	// Use a temporary pos object to preserve some fields
+	Position tmp_pos = *this;
 
 	*this = *from;
-	route_ = route_tmp;
+	route_ = tmp_pos.route_;
+	velX_ = tmp_pos.velX_;
+	velY_ = tmp_pos.velY_;
+	velZ_ = tmp_pos.velZ_;
+	accX_ = tmp_pos.accX_;
+	accY_ = tmp_pos.accY_;
+	accZ_ = tmp_pos.accZ_;
+	h_rate_ = tmp_pos.h_rate_;
+	p_rate_ = tmp_pos.p_rate_;
+	r_rate_ = tmp_pos.r_rate_;
+	h_acc_ = tmp_pos.h_acc_;
+	p_acc_ = tmp_pos.p_acc_;
+	r_acc_ = tmp_pos.r_acc_;
 }
 
 void Position::PrintTrackPos()
@@ -9387,7 +9399,7 @@ TrajVertex* PolyLineBase::UpdateVertex(int i, double x, double y, double z, doub
 int PolyLineBase::Evaluate(double s, TrajVertex& pos, double cornerRadius, int startAtIndex)
 {
 	double s_local = 0;
-	int i = startAtIndex;
+	int i = CLAMP(0, startAtIndex, GetNumberOfVertices() - 1);
 
 	if (GetNumberOfVertices() < 1)
 	{

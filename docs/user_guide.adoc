@@ -1035,6 +1035,35 @@ include::../EnvironmentSimulator/Applications/replayer/readme.txt[lines=5..-1]
 include::../EnvironmentSimulator/Applications/odrviewer/readme.txt[lines=7..-1]
 ----
 
+== esmini lib programming
+
+=== About the lib itself
+
+The main idea with esmini lib is to provide a limited, simplifed but useful API to the complex world of esmini, OpenSCENARIO and traffic simulation. By making use of only standard C types it has been possible to wrap and use the library in numerous environments, like for example MATLAB, Simulink and Unity (C#).
+
+esmini lib is a, so called, shared library which is linked dynamically with a custom application. This means that it's not linked statically with the application, instead it's loaded whenever the application is launched. An obvious advantage with shared libraries is that they can be shared between multiple applications, reducing size and potentially simplify maintenance. 
+
+An additional important advantage with dynamic linking is that the library can be updated without need to recompile the custom application making use of the library (however it can't be updated during runtime, only in between launches). An obvious requirement is that the API is compatible when replacing a library with a different version, since the API is established at link-time. On the other side of the "same coin", a disadvantage with dynamic linking is that you need to have the shared library present at run-time. 
+
+Although esmini lib is a shared library itself, it includes everything needed in terms of 3rd party functionality. It's actally linking all dependencies statically. Think about it as a single container including everything needed, e.g. support for 3D graphics, XML, expressions, and SUMO traffic simulation. There are two advantages with this approach: 1. Getting rid of dependency to hundreds of 3rd party shared libraries and 2. The linker makes sure to only include relevant functions which reduce the size by extreme (compared to include individual and complete shared libraries).
+
+=== How to interact with esmini lib API
+
+Below is a typical interaction between a custom application (e.g. vehicle simulator) and esmini (providing simulation of the environment, like road and traffic).
+
+[cols="1,2"]
+|===
+|Cell in column 1, row 1 
+|Cell in column 2, row 1 
+
+|Cell in column 1, row 2
+|Cell in column 2, row 2
+
+|Cell in column 1, row 3
+|Cell in column 2, row 3 
+|=== 
+
+
 == Hello World programming tutorial
 include::../Hello-World_coding-example/tutorial.adoc[leveloffset=+1, lines=5..-1]
 

@@ -1752,12 +1752,12 @@ TEST(NurbsTest, TestNurbsPosition)
     EXPECT_DOUBLE_EQ(v.y, -4.0);
 
     n.Evaluate(0.5 * n.GetLength(), Shape::TrajectoryParamType::TRAJ_PARAM_TYPE_S, v);
-    EXPECT_NEAR(v.x, 0.0, 1e-5);
-    EXPECT_NEAR(v.y, 0.0, 1e-5);
+    EXPECT_NEAR(v.x, 0.0, 1e-3);
+    EXPECT_NEAR(v.y, 0.0, 1e-3);
 
     n.Evaluate(1.0 * n.GetLength(), Shape::TrajectoryParamType::TRAJ_PARAM_TYPE_S, v);
-    EXPECT_NEAR(v.x, 4.0, 1e-5);
-    EXPECT_NEAR(v.y, 4.0, 1e-5);
+    EXPECT_NEAR(v.x, 4.0, 1e-3);
+    EXPECT_NEAR(v.y, 4.0, 1e-3);
 
     n.Evaluate(0.40045 * n.GetLength(), Shape::TrajectoryParamType::TRAJ_PARAM_TYPE_S, v);
     EXPECT_NEAR(v.x, -1.248623, 1e-5);
@@ -2240,7 +2240,7 @@ int main(int argc, char **argv)
     }
 #endif
 
-    //testing::GTEST_FLAG(filter) = "*TestPrioStraightRoadInJunction*";
+    //testing::GTEST_FLAG(filter) = "*TestNurbsPosition*";
 
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

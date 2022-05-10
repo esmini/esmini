@@ -1615,10 +1615,12 @@ extern "C"
 
 	SE_DLL_API void SE_FlushOSIFile()
 	{
+#ifdef _USE_OSI
 		if (player != nullptr && player->osiReporter != nullptr)
 		{
 			player->osiReporter->FlushOSIFile();
 		}
+#endif // _USE_OSI
 	}
 
 	SE_DLL_API int SE_FetchSensorObjectList(int sensor_id, int *list)

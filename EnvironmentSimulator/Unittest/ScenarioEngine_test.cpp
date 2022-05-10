@@ -500,7 +500,7 @@ TEST(JunctionTest, JunctionSelectorTest)
 TEST(ConditionTest, CollisionTest)
 {
     double dt = 0.01;
-    double timestamps[] = { 5.25, 5.26, 6.26, 6.27, 7.10, 8.79 };
+    double timestamps[] = { 5.24, 5.26, 6.26, 6.27, 7.10, 8.79 };
 
     ASSERT_EQ(SE_Env::Inst().GetCollisionDetection(), false);  // Should be disabled by default
 
@@ -518,68 +518,68 @@ TEST(ConditionTest, CollisionTest)
         se->step(dt);
         se->prepareGroundTruth(dt);
     }
-    ASSERT_EQ(se->entities_.object_[0]->collisions_.size(), 0);
-    ASSERT_EQ(se->entities_.object_[1]->collisions_.size(), 0);
-    ASSERT_EQ(se->entities_.object_[2]->collisions_.size(), 0);
+    EXPECT_EQ(se->entities_.object_[0]->collisions_.size(), 0);
+    EXPECT_EQ(se->entities_.object_[1]->collisions_.size(), 0);
+    EXPECT_EQ(se->entities_.object_[2]->collisions_.size(), 0);
 
     while (se->getSimulationTime() < timestamps[1] - SMALL_NUMBER && se->GetQuitFlag() != true)
     {
         se->step(dt);
         se->prepareGroundTruth(dt);
     }
-    ASSERT_EQ(se->entities_.object_[0]->collisions_.size(), 1);
-    ASSERT_EQ(se->entities_.object_[0]->collisions_[0], se->entities_.object_[2]);
-    ASSERT_EQ(se->entities_.object_[1]->collisions_.size(), 0);
-    ASSERT_EQ(se->entities_.object_[2]->collisions_.size(), 1);
-    ASSERT_EQ(se->entities_.object_[2]->collisions_[0], se->entities_.object_[0]);
+    EXPECT_EQ(se->entities_.object_[0]->collisions_.size(), 1);
+    EXPECT_EQ(se->entities_.object_[0]->collisions_[0], se->entities_.object_[2]);
+    EXPECT_EQ(se->entities_.object_[1]->collisions_.size(), 0);
+    EXPECT_EQ(se->entities_.object_[2]->collisions_.size(), 1);
+    EXPECT_EQ(se->entities_.object_[2]->collisions_[0], se->entities_.object_[0]);
 
     while (se->getSimulationTime() < timestamps[2] - SMALL_NUMBER && se->GetQuitFlag() != true)
     {
         se->step(dt);
         se->prepareGroundTruth(dt);
     }
-    ASSERT_EQ(se->entities_.object_[0]->collisions_.size(), 1);
-    ASSERT_EQ(se->entities_.object_[0]->collisions_[0], se->entities_.object_[2]);
-    ASSERT_EQ(se->entities_.object_[1]->collisions_.size(), 0);
-    ASSERT_EQ(se->entities_.object_[2]->collisions_.size(), 1);
-    ASSERT_EQ(se->entities_.object_[2]->collisions_[0], se->entities_.object_[0]);
+    EXPECT_EQ(se->entities_.object_[0]->collisions_.size(), 1);
+    EXPECT_EQ(se->entities_.object_[0]->collisions_[0], se->entities_.object_[2]);
+    EXPECT_EQ(se->entities_.object_[1]->collisions_.size(), 0);
+    EXPECT_EQ(se->entities_.object_[2]->collisions_.size(), 1);
+    EXPECT_EQ(se->entities_.object_[2]->collisions_[0], se->entities_.object_[0]);
 
     while (se->getSimulationTime() < timestamps[3] - SMALL_NUMBER && se->GetQuitFlag() != true)
     {
         se->step(dt);
         se->prepareGroundTruth(dt);
     }
-    ASSERT_EQ(se->entities_.object_[0]->collisions_.size(), 2);
-    ASSERT_EQ(se->entities_.object_[0]->collisions_[0], se->entities_.object_[2]);
-    ASSERT_EQ(se->entities_.object_[0]->collisions_[1], se->entities_.object_[1]);
-    ASSERT_EQ(se->entities_.object_[1]->collisions_.size(), 1);
-    ASSERT_EQ(se->entities_.object_[1]->collisions_[0], se->entities_.object_[0]);
-    ASSERT_EQ(se->entities_.object_[2]->collisions_.size(), 1);
-    ASSERT_EQ(se->entities_.object_[2]->collisions_[0], se->entities_.object_[0]);
+    EXPECT_EQ(se->entities_.object_[0]->collisions_.size(), 2);
+    EXPECT_EQ(se->entities_.object_[0]->collisions_[0], se->entities_.object_[2]);
+    EXPECT_EQ(se->entities_.object_[0]->collisions_[1], se->entities_.object_[1]);
+    EXPECT_EQ(se->entities_.object_[1]->collisions_.size(), 1);
+    EXPECT_EQ(se->entities_.object_[1]->collisions_[0], se->entities_.object_[0]);
+    EXPECT_EQ(se->entities_.object_[2]->collisions_.size(), 1);
+    EXPECT_EQ(se->entities_.object_[2]->collisions_[0], se->entities_.object_[0]);
 
     while (se->getSimulationTime() < timestamps[4] - SMALL_NUMBER && se->GetQuitFlag() != true)
     {
         se->step(dt);
         se->prepareGroundTruth(dt);
     }
-    ASSERT_EQ(se->entities_.object_[0]->Collision(se->entities_.object_[1]), true);
-    ASSERT_EQ(se->entities_.object_[0]->Collision(se->entities_.object_[2]), false);
-    ASSERT_EQ(se->entities_.object_[0]->collisions_.size(), 1);
-    ASSERT_EQ(se->entities_.object_[0]->collisions_[0], se->entities_.object_[1]);
-    ASSERT_EQ(se->entities_.object_[1]->collisions_.size(), 1);
-    ASSERT_EQ(se->entities_.object_[1]->collisions_[0], se->entities_.object_[0]);
-    ASSERT_EQ(se->entities_.object_[2]->collisions_.size(), 0);
+    EXPECT_EQ(se->entities_.object_[0]->Collision(se->entities_.object_[1]), true);
+    EXPECT_EQ(se->entities_.object_[0]->Collision(se->entities_.object_[2]), false);
+    EXPECT_EQ(se->entities_.object_[0]->collisions_.size(), 1);
+    EXPECT_EQ(se->entities_.object_[0]->collisions_[0], se->entities_.object_[1]);
+    EXPECT_EQ(se->entities_.object_[1]->collisions_.size(), 1);
+    EXPECT_EQ(se->entities_.object_[1]->collisions_[0], se->entities_.object_[0]);
+    EXPECT_EQ(se->entities_.object_[2]->collisions_.size(), 0);
 
     while (se->getSimulationTime() < timestamps[5] - SMALL_NUMBER && se->GetQuitFlag() != true)
     {
         se->step(dt);
         se->prepareGroundTruth(dt);
     }
-    ASSERT_EQ(se->entities_.object_[0]->Collision(se->entities_.object_[1]), false);
-    ASSERT_EQ(se->entities_.object_[0]->Collision(se->entities_.object_[2]), false);
-    ASSERT_EQ(se->entities_.object_[0]->collisions_.size(), 0);
-    ASSERT_EQ(se->entities_.object_[1]->collisions_.size(), 0);
-    ASSERT_EQ(se->entities_.object_[2]->collisions_.size(), 0);
+    EXPECT_EQ(se->entities_.object_[0]->Collision(se->entities_.object_[1]), false);
+    EXPECT_EQ(se->entities_.object_[0]->Collision(se->entities_.object_[2]), false);
+    EXPECT_EQ(se->entities_.object_[0]->collisions_.size(), 0);
+    EXPECT_EQ(se->entities_.object_[1]->collisions_.size(), 0);
+    EXPECT_EQ(se->entities_.object_[2]->collisions_.size(), 0);
 
     delete se;
 }
@@ -1393,7 +1393,7 @@ int main(int argc, char** argv)
     }
 #endif
 
-    //testing::GTEST_FLAG(filter) = "*TestSpeedProfileFromNonZeroTime";
+    //testing::GTEST_FLAG(filter) = "*EnsureContinuation";
 
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

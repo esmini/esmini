@@ -5,6 +5,7 @@
 #include "osi_object.pb.h"
 #include "osi_sensorview.pb.h"
 #include "osi_version.pb.h"
+#include "Replay.hpp"
 #include "esminiLib.hpp"
 #include "RoadManager.hpp"
 #include <vector>
@@ -2666,12 +2667,454 @@ TEST(DirectJunctionTest, TestVariousRoutes)
 	}
 }
 
+static void ReadDat(std::string filename, std::vector<scenarioengine::ReplayEntry>& entries)
+{
+	std::ifstream file;
+	scenarioengine::ReplayHeader header;
+
+	file.open(filename, std::ofstream::binary);
+	ASSERT_EQ(file.fail(), false);
+
+	file.read((char*)&header, sizeof(header));
+
+	scenarioengine::ReplayEntry entry;
+
+	while (!file.eof())
+	{
+		file.read((char*)&entry.state, sizeof(entry.state));
+
+		if (!file.eof())
+		{
+			entries.push_back(entry);
+		}
+	}
+	file.close();
+}
+
+TEST(ExternalControlTest, TestTimings)
+{
+	// This test case imitates a custom application controlling the Ego vehicle
+	// It makes use of the esmini ghost feature to provide input to a driver model
+	// Ego vehicle state is reported for each time step.
+
+	SE_ScenarioObjectState ego_state;
+	SE_RoadInfo road_info;
+	double duration = 10.0;
+	float dt = 0.1f;
+	float ghost_speed;
+
+	const char* args[2][5] =
+	{
+		{
+			"--osc ../../../EnvironmentSimulator/Unittest/xosc/timing_scenario0.xosc",
+			"--record sim.dat",
+			"--fixed_timestep 0.1",
+			//"--window 60 60 800 400",
+			"--csv_logger csv_log.csv",
+			"--osi_file gt.osi"
+		},
+		{
+			"--osc ../../../EnvironmentSimulator/Unittest/xosc/timing_scenario_with_restarts.xosc",
+			"--record sim.dat",
+			"--fixed_timestep 0.1",
+			//"--window 60 60 800 400",
+			"--csv_logger csv_log.csv",
+			"--osi_file gt.osi"
+		}
+	};
+
+	SE_AddPath("../../../resources/xodr");
+
+	for (int j = 1; j < 2; j++)
+	{
+		ASSERT_EQ(SE_InitWithArgs(sizeof(args[j]) / sizeof(char*), args[j]), 0);
+		ASSERT_EQ(SE_GetNumberOfObjects(), 3);
+
+		// show some road features, including road sensor
+		SE_ViewerShowFeature(4 + 8, true);  // NODE_MASK_TRAIL_DOTS (1 << 2) & NODE_MASK_ODR_FEATURES (1 << 3),
+
+		// Initialize the vehicle model, fetch initial state from the scenario
+		SE_GetObjectState(0, &ego_state);
+
+		while (SE_GetSimulationTime() < duration && SE_GetQuitFlag() != 1)
+		{
+			// Copy position and heading from ghost at next timestamp
+			SE_GetRoadInfoGhostTrailTime(0, SE_GetSimulationTime() + dt, &road_info, &ghost_speed);
+			ego_state.x = road_info.global_pos_x + 100;
+			ego_state.y = road_info.global_pos_y;
+			ego_state.h = road_info.trail_heading;
+
+			SE_ReportObjectPosXYH(0, 0, ego_state.x, ego_state.y, ego_state.h, ghost_speed);
+
+			// Finally, update scenario using same time step as for vehicle model
+			SE_StepDT(dt);
+		}
+
+		SE_Close();
+
+		// Check .dat file
+		std::vector<scenarioengine::ReplayEntry> entries;
+		ReadDat("sim.dat", entries);
+
+		// Check first timestep (-3.0)
+		int i = 0;
+		EXPECT_NEAR(entries[i].state.info.timeStamp, -3.0, 1E-3);
+		EXPECT_STREQ(entries[i].state.info.name, "Ego");
+		EXPECT_NEAR(entries[i].state.pos.x, 10.0, 1E-3);
+		EXPECT_NEAR(entries[i].state.pos.y, -1.5, 1E-3);
+		i++;
+		EXPECT_NEAR(entries[i].state.info.timeStamp, -3.0, 1E-3);
+		EXPECT_STREQ(entries[i].state.info.name, "Target");
+		EXPECT_NEAR(entries[i].state.pos.x, 10.0, 1E-3);
+		EXPECT_NEAR(entries[i].state.pos.y, -4.5, 1E-3);
+		i++;
+		EXPECT_NEAR(entries[i].state.info.timeStamp, -3.0, 1E-3);
+		EXPECT_STREQ(entries[i].state.info.name, "Ego_ghost");
+		EXPECT_NEAR(entries[i].state.pos.x, 10.0, 1E-3);
+		EXPECT_NEAR(entries[i].state.pos.y, -1.5, 1E-3);
+
+		// Check timestep before 0.0
+		while (i < entries.size() - 1 && entries[i].state.info.timeStamp < -SMALL_NUMBER) i++;
+		i -= 3;
+		EXPECT_NEAR(entries[i].state.info.timeStamp, -0.05, 1E-3);
+		EXPECT_STREQ(entries[i].state.info.name, "Ego");
+		EXPECT_NEAR(entries[i].state.pos.x, 10.0, 1E-3);
+		EXPECT_NEAR(entries[i].state.pos.y, -1.5, 1E-3);
+		i++;
+		EXPECT_NEAR(entries[i].state.info.timeStamp, -0.05, 1E-3);
+		EXPECT_STREQ(entries[i].state.info.name, "Target");
+		EXPECT_NEAR(entries[i].state.pos.x, 10.0, 1E-3);
+		EXPECT_NEAR(entries[i].state.pos.y, -4.5, 1E-3);
+		i++;
+		EXPECT_NEAR(entries[i].state.info.timeStamp, -0.05, 1E-3);
+		EXPECT_STREQ(entries[i].state.info.name, "Ego_ghost");
+		EXPECT_NEAR(entries[i].state.pos.x, 39.5, 1E-3);
+		EXPECT_NEAR(entries[i].state.pos.y, -1.5, 1E-3);
+
+		// Check timestep 0.0
+		i++;
+		EXPECT_NEAR(entries[i].state.info.timeStamp, 0.0, 1E-3);
+		EXPECT_STREQ(entries[i].state.info.name, "Ego");
+		EXPECT_NEAR(entries[i].state.pos.x, 10.0, 1E-3);
+		EXPECT_NEAR(entries[i].state.pos.y, -1.5, 1E-3);
+		i++;
+		EXPECT_NEAR(entries[i].state.info.timeStamp, 0.0, 1E-3);
+		EXPECT_STREQ(entries[i].state.info.name, "Target");
+		EXPECT_NEAR(entries[i].state.pos.x, 10.0, 1E-3);
+		EXPECT_NEAR(entries[i].state.pos.y, -4.5, 1E-3);
+		i++;
+		EXPECT_NEAR(entries[i].state.info.timeStamp, 0.0, 1E-3);
+		EXPECT_STREQ(entries[i].state.info.name, "Ego_ghost");
+		EXPECT_NEAR(entries[i].state.pos.x, 40.0, 1E-3);
+		EXPECT_NEAR(entries[i].state.pos.y, -1.5, 1E-3);
+
+		// Check timestep after 0.0
+		i++;
+		EXPECT_NEAR(entries[i].state.info.timeStamp, dt, 1E-3);
+		EXPECT_STREQ(entries[i].state.info.name, "Ego");
+		EXPECT_NEAR(entries[i].state.pos.x, 111.0, 1E-3);
+		EXPECT_NEAR(entries[i].state.pos.y, -1.5, 1E-3);
+		i++;
+		EXPECT_NEAR(entries[i].state.info.timeStamp, dt, 1E-3);
+		EXPECT_STREQ(entries[i].state.info.name, "Target");
+		EXPECT_NEAR(entries[i].state.pos.x, 12.0, 1E-3);
+		EXPECT_NEAR(entries[i].state.pos.y, -4.5, 1E-3);
+		i++;
+		EXPECT_NEAR(entries[i].state.info.timeStamp, dt, 1E-3);
+		EXPECT_STREQ(entries[i].state.info.name, "Ego_ghost");
+		EXPECT_NEAR(entries[i].state.pos.x, 41.0, 1E-3);
+		EXPECT_NEAR(entries[i].state.pos.y, -1.5, 1E-3);
+
+		if (j == 1)  // additional restart tests
+		{
+			// Check first restart
+			i = 243;
+			EXPECT_NEAR(entries[i].state.info.timeStamp, 2.1, 1E-3);
+			EXPECT_STREQ(entries[i].state.info.name, "Ego");
+			EXPECT_NEAR(entries[i].state.pos.x, 131.0, 1E-3);
+			EXPECT_NEAR(entries[i].state.pos.y, -1.5, 1E-3);
+			i++;
+			EXPECT_NEAR(entries[i].state.info.timeStamp, 2.1, 1E-3);
+			EXPECT_STREQ(entries[i].state.info.name, "Target");
+			EXPECT_NEAR(entries[i].state.pos.x, 52.0, 1E-3);
+			EXPECT_NEAR(entries[i].state.pos.y, -4.5, 1E-3);
+			i++;
+			EXPECT_NEAR(entries[i].state.info.timeStamp, 2.1, 1E-3);
+			EXPECT_STREQ(entries[i].state.info.name, "Ego_ghost");
+			EXPECT_NEAR(entries[i].state.pos.x, 61.0, 1E-3);
+			EXPECT_NEAR(entries[i].state.pos.y, -1.5, 1E-3);
+
+			i++;
+			EXPECT_NEAR(entries[i].state.info.timeStamp, -0.75, 1E-3);
+			EXPECT_STREQ(entries[i].state.info.name, "Ego");
+			EXPECT_NEAR(entries[i].state.pos.x, 132.0, 1E-3);
+			EXPECT_NEAR(entries[i].state.pos.y, -1.5, 1E-3);
+			i++;
+			EXPECT_NEAR(entries[i].state.info.timeStamp, -0.75, 1E-3);
+			EXPECT_STREQ(entries[i].state.info.name, "Target");
+			EXPECT_NEAR(entries[i].state.pos.x, 54.0, 1E-3);
+			EXPECT_NEAR(entries[i].state.pos.y, -4.5, 1E-3);
+			i++;
+			EXPECT_NEAR(entries[i].state.info.timeStamp, -0.75, 1E-3);
+			EXPECT_STREQ(entries[i].state.info.name, "Ego_ghost");
+			EXPECT_NEAR(entries[i].state.pos.x, 131.502, 1E-3);
+			EXPECT_NEAR(entries[i].state.pos.y, -1.5, 1E-3);
+
+			i++;
+			EXPECT_NEAR(entries[i].state.info.timeStamp, -0.70, 1E-3);
+			EXPECT_STREQ(entries[i].state.info.name, "Ego");
+			EXPECT_NEAR(entries[i].state.pos.x, 132.0, 1E-3);
+			EXPECT_NEAR(entries[i].state.pos.y, -1.5, 1E-3);
+			i++;
+			EXPECT_NEAR(entries[i].state.info.timeStamp, -0.70, 1E-3);
+			EXPECT_STREQ(entries[i].state.info.name, "Target");
+			EXPECT_NEAR(entries[i].state.pos.x, 54.0, 1E-3);
+			EXPECT_NEAR(entries[i].state.pos.y, -4.5, 1E-3);
+			i++;
+			EXPECT_NEAR(entries[i].state.info.timeStamp, -0.70, 1E-3);
+			EXPECT_STREQ(entries[i].state.info.name, "Ego_ghost");
+			EXPECT_NEAR(entries[i].state.pos.x, 132.005, 1E-3);
+			EXPECT_NEAR(entries[i].state.pos.y, -1.5, 1E-3);
+
+			i = 423;
+			EXPECT_NEAR(entries[i].state.info.timeStamp, 2.2, 1E-3);
+			EXPECT_STREQ(entries[i].state.info.name, "Ego");
+			EXPECT_NEAR(entries[i].state.pos.x, 132.0, 1E-3);
+			EXPECT_NEAR(entries[i].state.pos.y, -1.5, 1E-3);
+			i++;
+			EXPECT_NEAR(entries[i].state.info.timeStamp, 2.2, 1E-3);
+			EXPECT_STREQ(entries[i].state.info.name, "Target");
+			EXPECT_NEAR(entries[i].state.pos.x, 54.0, 1E-3);
+			EXPECT_NEAR(entries[i].state.pos.y, -4.5, 1E-3);
+			i++;
+			EXPECT_NEAR(entries[i].state.info.timeStamp, 2.2, 1E-3);
+			EXPECT_STREQ(entries[i].state.info.name, "Ego_ghost");
+			EXPECT_NEAR(entries[i].state.pos.x, 169.124, 1E-3);
+			EXPECT_NEAR(entries[i].state.pos.y, -1.5, 1E-3);
+
+			i++;
+			EXPECT_NEAR(entries[i].state.info.timeStamp, 2.3, 1E-3);
+			EXPECT_STREQ(entries[i].state.info.name, "Ego");
+			EXPECT_NEAR(entries[i].state.pos.x, 232.008, 1E-3);
+			EXPECT_NEAR(entries[i].state.pos.y, -1.5, 1E-3);
+			i++;
+			EXPECT_NEAR(entries[i].state.info.timeStamp, 2.3, 1E-3);
+			EXPECT_STREQ(entries[i].state.info.name, "Target");
+			EXPECT_NEAR(entries[i].state.pos.x, 56.0, 1E-3);
+			EXPECT_NEAR(entries[i].state.pos.y, -4.5, 1E-3);
+			i++;
+			EXPECT_NEAR(entries[i].state.info.timeStamp, 2.3, 1E-3);
+			EXPECT_STREQ(entries[i].state.info.name, "Ego_ghost");
+			EXPECT_NEAR(entries[i].state.pos.x, 170.624, 1E-3);
+			EXPECT_NEAR(entries[i].state.pos.y, -1.5, 1E-3);
+
+			i = 600;
+			EXPECT_NEAR(entries[i].state.info.timeStamp, 8.1, 1E-3);
+			EXPECT_STREQ(entries[i].state.info.name, "Ego");
+			EXPECT_NEAR(entries[i].state.pos.x, 312.624, 1E-3);
+			EXPECT_NEAR(entries[i].state.pos.y, -1.5, 1E-3);
+			i++;
+			EXPECT_NEAR(entries[i].state.info.timeStamp, 8.1, 1E-3);
+			EXPECT_STREQ(entries[i].state.info.name, "Target");
+			EXPECT_NEAR(entries[i].state.pos.x, 172.000, 1E-3);
+			EXPECT_NEAR(entries[i].state.pos.y, -4.5, 1E-3);
+			i++;
+			EXPECT_NEAR(entries[i].state.info.timeStamp, 8.1, 1E-3);
+			EXPECT_STREQ(entries[i].state.info.name, "Ego_ghost");
+			EXPECT_NEAR(entries[i].state.pos.x, 257.624, 1E-3);
+			EXPECT_NEAR(entries[i].state.pos.y, -1.5, 1E-3);
+
+			i++;
+			EXPECT_NEAR(entries[i].state.info.timeStamp, 5.25, 1E-3);
+			EXPECT_STREQ(entries[i].state.info.name, "Ego");
+			EXPECT_NEAR(entries[i].state.pos.x, 314.124, 1E-3);
+			EXPECT_NEAR(entries[i].state.pos.y, -1.5, 1E-3);
+			i++;
+			EXPECT_NEAR(entries[i].state.info.timeStamp, 5.25, 1E-3);
+			EXPECT_STREQ(entries[i].state.info.name, "Target");
+			EXPECT_NEAR(entries[i].state.pos.x, 174.000, 1E-3);
+			EXPECT_NEAR(entries[i].state.pos.y, -4.5, 1E-3);
+			i++;
+			EXPECT_NEAR(entries[i].state.info.timeStamp, 5.25, 1E-3);
+			EXPECT_STREQ(entries[i].state.info.name, "Ego_ghost");
+			EXPECT_NEAR(entries[i].state.pos.x, 313.376, 1E-3);
+			EXPECT_NEAR(entries[i].state.pos.y, -1.5, 1E-3);
+
+			i = 774;
+			EXPECT_NEAR(entries[i].state.info.timeStamp, 8.1, 1E-3);
+			EXPECT_STREQ(entries[i].state.info.name, "Ego");
+			EXPECT_NEAR(entries[i].state.pos.x, 314.124, 1E-3);
+			EXPECT_NEAR(entries[i].state.pos.y, -1.5, 1E-3);
+			i++;
+			EXPECT_NEAR(entries[i].state.info.timeStamp, 8.1, 1E-3);
+			EXPECT_STREQ(entries[i].state.info.name, "Target");
+			EXPECT_NEAR(entries[i].state.pos.x, 174.000, 1E-3);
+			EXPECT_NEAR(entries[i].state.pos.y, -4.5, 1E-3);
+			i++;
+			EXPECT_NEAR(entries[i].state.info.timeStamp, 8.1, 1E-3);
+			EXPECT_STREQ(entries[i].state.info.name, "Ego_ghost");
+			EXPECT_NEAR(entries[i].state.pos.x, 363.748, 1E-3);
+			EXPECT_NEAR(entries[i].state.pos.y, -1.5, 1E-3);
+
+			i = 780;
+			EXPECT_NEAR(entries[i].state.info.timeStamp, 8.2, 1E-3);
+			EXPECT_STREQ(entries[i].state.info.name, "Ego");
+			EXPECT_NEAR(entries[i].state.pos.x, 314.124, 1E-3);
+			EXPECT_NEAR(entries[i].state.pos.y, -1.5, 1E-3);
+			i++;
+			EXPECT_NEAR(entries[i].state.info.timeStamp, 8.2, 1E-3);
+			EXPECT_STREQ(entries[i].state.info.name, "Target");
+			EXPECT_NEAR(entries[i].state.pos.x, 174.000, 1E-3);
+			EXPECT_NEAR(entries[i].state.pos.y, -4.5, 1E-3);
+			i++;
+			EXPECT_NEAR(entries[i].state.info.timeStamp, 8.2, 1E-3);
+			EXPECT_STREQ(entries[i].state.info.name, "Ego_ghost");
+			EXPECT_NEAR(entries[i].state.pos.x, 365.748, 1E-3);
+			EXPECT_NEAR(entries[i].state.pos.y, -1.5, 1E-3);
+
+			i++;
+			EXPECT_NEAR(entries[i].state.info.timeStamp, 8.3, 1E-3);
+			EXPECT_STREQ(entries[i].state.info.name, "Ego");
+			EXPECT_NEAR(entries[i].state.pos.x, 414.133, 1E-3);
+			EXPECT_NEAR(entries[i].state.pos.y, -1.5, 1E-3);
+			i++;
+			EXPECT_NEAR(entries[i].state.info.timeStamp, 8.3, 1E-3);
+			EXPECT_STREQ(entries[i].state.info.name, "Target");
+			EXPECT_NEAR(entries[i].state.pos.x, 176.000, 1E-3);
+			EXPECT_NEAR(entries[i].state.pos.y, -4.5, 1E-3);
+			i++;
+			EXPECT_NEAR(entries[i].state.info.timeStamp, 8.3, 1E-3);
+			EXPECT_STREQ(entries[i].state.info.name, "Ego_ghost");
+			EXPECT_NEAR(entries[i].state.pos.x, 367.748, 1E-3);
+			EXPECT_NEAR(entries[i].state.pos.y, -1.5, 1E-3);
+
+			// Also check a few entries in the csv log file, focus on scenario controlled entity "Target"
+			std::vector<std::vector<std::string>> csv;
+			ASSERT_EQ(SE_ReadCSVFile("csv_log.csv", csv, 6), 0);
+			EXPECT_NEAR(std::stod(csv[1][1]), -3.0, 1E-3);
+			EXPECT_NEAR(std::stod(csv[61][30]), 10.0, 1E-3);
+			EXPECT_NEAR(std::stod(csv[61][33]), 20.0, 1E-3);
+			EXPECT_NEAR(std::stod(csv[61][36]), 0.0, 1E-3);
+			EXPECT_NEAR(std::stod(csv[82][1]), 2.1, 1E-3);
+			EXPECT_NEAR(std::stod(csv[82][30]), 52.0, 1E-3);
+			EXPECT_NEAR(std::stod(csv[82][33]), 20.0, 1E-3);
+			EXPECT_NEAR(std::stod(csv[82][36]), 0.0, 1E-3);
+			EXPECT_NEAR(std::stod(csv[83][1]), -0.75, 1E-3);
+			EXPECT_NEAR(std::stod(csv[83][30]), 54.0, 1E-3);
+			EXPECT_NEAR(std::stod(csv[83][33]), 20.0, 1E-3);
+			EXPECT_NEAR(std::stod(csv[83][36]), 0.0, 1E-3);
+			EXPECT_NEAR(std::stod(csv[142][1]), 2.2, 1E-3);
+			EXPECT_NEAR(std::stod(csv[142][30]), 54.0, 1E-3);
+			EXPECT_NEAR(std::stod(csv[142][33]), 20.0, 1E-3);
+			EXPECT_NEAR(std::stod(csv[142][36]), 0.0, 1E-3);
+
+			// Read OSI file
+			FILE* file = fopen("gt.osi", "rb");
+			ASSERT_NE(file, nullptr);
+
+			const int max_msg_size = 10000;
+			char msg_buf[max_msg_size];
+			int msg_size;
+			osi3::GroundTruth osi_gt;
+			double seconds = -1.0;
+
+			double time_stamps[] = { 0.0, 2.1, 2.2 };
+
+			// Focus on position and acceleration
+			double pos_x[3][3] = {   // for three timestamps and three entities
+				{ 11.4, 11.3, 41.4 },
+				{ 132.4, 53.3, 62.4 },
+				{ 133.4, 55.3, 170.524 }
+			};
+
+			double acc_x[3][3] = {   // for three timestamps and three entities
+				{ 0.0, 0.0, 0.0 },
+				{ 0.0, 0.0, 0.0 },
+				{ 0.0, 0.0, 0.0 }
+			};
+
+
+			// Read OSI message size
+			ASSERT_EQ(fread((char*)(&msg_size), 1, sizeof(msg_size), file), sizeof(msg_size));
+			ASSERT_LE(msg_size, max_msg_size);
+
+			// Read first OSI message
+			EXPECT_EQ(fread(msg_buf, 1, msg_size, file), msg_size);
+			osi_gt.ParseFromArray(msg_buf, msg_size);
+
+			seconds = osi_gt.mutable_timestamp()->seconds() + 1E-9 * osi_gt.mutable_timestamp()->nanos();
+
+			EXPECT_NEAR(seconds, time_stamps[0], 1E-3);
+
+			EXPECT_EQ(osi_gt.mutable_moving_object()->size(), 3);
+			EXPECT_NEAR(osi_gt.mutable_moving_object(0)->mutable_base()->mutable_position()->x(), pos_x[0][0], 1E-3);
+			EXPECT_NEAR(osi_gt.mutable_moving_object(1)->mutable_base()->mutable_position()->x(), pos_x[0][1], 1E-3);
+			EXPECT_NEAR(osi_gt.mutable_moving_object(2)->mutable_base()->mutable_position()->x(), pos_x[0][2], 1E-3);
+			EXPECT_NEAR(osi_gt.mutable_moving_object(0)->mutable_base()->mutable_acceleration()->x(), acc_x[0][0], 1E-3);
+			EXPECT_NEAR(osi_gt.mutable_moving_object(1)->mutable_base()->mutable_acceleration()->x(), acc_x[0][1], 1E-3);
+			EXPECT_NEAR(osi_gt.mutable_moving_object(2)->mutable_base()->mutable_acceleration()->x(), acc_x[0][2], 1E-3);
+
+			// fast forward until 2.0 seconds
+			while (seconds < 2.0 - SMALL_NUMBER)
+			{
+				// Read OSI message size
+				ASSERT_EQ(fread((char*)(&msg_size), 1, sizeof(msg_size), file), sizeof(msg_size));
+				ASSERT_LE(msg_size, max_msg_size);
+
+				// Read OSI message
+				EXPECT_EQ(fread(msg_buf, 1, msg_size, file), msg_size);
+				osi_gt.ParseFromArray(msg_buf, msg_size);
+
+				seconds = osi_gt.mutable_timestamp()->seconds() + 1E-9 * osi_gt.mutable_timestamp()->nanos();
+			}
+
+			// Read second OSI message (should be at 2.1s)
+			ASSERT_EQ(fread((char*)(&msg_size), 1, sizeof(msg_size), file), sizeof(msg_size));
+			ASSERT_LE(msg_size, max_msg_size);
+			EXPECT_EQ(fread(msg_buf, 1, msg_size, file), msg_size);
+			osi_gt.ParseFromArray(msg_buf, msg_size);
+
+			seconds = osi_gt.mutable_timestamp()->seconds() + 1E-9 * osi_gt.mutable_timestamp()->nanos();
+
+			EXPECT_NEAR(seconds, time_stamps[1], 1E-3);
+
+			EXPECT_EQ(osi_gt.mutable_moving_object()->size(), 3);
+			EXPECT_NEAR(osi_gt.mutable_moving_object(0)->mutable_base()->mutable_position()->x(), pos_x[1][0], 1E-3);
+			EXPECT_NEAR(osi_gt.mutable_moving_object(1)->mutable_base()->mutable_position()->x(), pos_x[1][1], 1E-3);
+			EXPECT_NEAR(osi_gt.mutable_moving_object(2)->mutable_base()->mutable_position()->x(), pos_x[1][2], 1E-3);
+			EXPECT_NEAR(osi_gt.mutable_moving_object(0)->mutable_base()->mutable_acceleration()->x(), acc_x[1][0], 1E-3);
+			EXPECT_NEAR(osi_gt.mutable_moving_object(1)->mutable_base()->mutable_acceleration()->x(), acc_x[1][1], 1E-3);
+			EXPECT_NEAR(osi_gt.mutable_moving_object(2)->mutable_base()->mutable_acceleration()->x(), acc_x[1][2], 1E-3);
+
+			// Read third OSI message (should be at 2.2s)
+			ASSERT_EQ(fread((char*)(&msg_size), 1, sizeof(msg_size), file), sizeof(msg_size));
+			ASSERT_LE(msg_size, max_msg_size);
+			EXPECT_EQ(fread(msg_buf, 1, msg_size, file), msg_size);
+			osi_gt.ParseFromArray(msg_buf, msg_size);
+
+			seconds = osi_gt.mutable_timestamp()->seconds() + 1E-9 * osi_gt.mutable_timestamp()->nanos();
+
+			EXPECT_NEAR(seconds, time_stamps[2], 1E-3);
+
+			EXPECT_EQ(osi_gt.mutable_moving_object()->size(), 3);
+			EXPECT_NEAR(osi_gt.mutable_moving_object(0)->mutable_base()->mutable_position()->x(), pos_x[2][0], 1E-3);
+			EXPECT_NEAR(osi_gt.mutable_moving_object(1)->mutable_base()->mutable_position()->x(), pos_x[2][1], 1E-3);
+			EXPECT_NEAR(osi_gt.mutable_moving_object(2)->mutable_base()->mutable_position()->x(), pos_x[2][2], 1E-3);
+			EXPECT_NEAR(osi_gt.mutable_moving_object(0)->mutable_base()->mutable_acceleration()->x(), acc_x[2][0], 1E-3);
+			EXPECT_NEAR(osi_gt.mutable_moving_object(1)->mutable_base()->mutable_acceleration()->x(), acc_x[2][1], 1E-3);
+			EXPECT_NEAR(osi_gt.mutable_moving_object(2)->mutable_base()->mutable_acceleration()->x(), acc_x[2][2], 1E-3);
+
+			fclose(file);
+		}
+	}
+}
+
 int main(int argc, char **argv)
 {
 	testing::InitGoogleTest(&argc, argv);
 
 #if 0  // set to 1 and modify filter to run one single test
-	testing::GTEST_FLAG(filter) = "*TestFetchImage*";
+	testing::GTEST_FLAG(filter) = "*TestTimings*";
 #else
 	SE_LogToConsole(false);
 #endif

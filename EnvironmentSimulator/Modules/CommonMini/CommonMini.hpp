@@ -41,7 +41,7 @@
    #define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
 #endif
 
-#define SMALL_NUMBER (1E-8)
+#define SMALL_NUMBER (1E-6)
 #define LARGE_NUMBER (1E+10)
 #define SIGN(X) ((X<0)?-1:1)
 #define MAX(x, y) ((y) > (x) ? (y) : (x))
