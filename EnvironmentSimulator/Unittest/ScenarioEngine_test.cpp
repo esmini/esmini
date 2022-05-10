@@ -500,7 +500,7 @@ TEST(JunctionTest, JunctionSelectorTest)
 TEST(ConditionTest, CollisionTest)
 {
     double dt = 0.01;
-    double timestamps[] = { 5.24, 5.26, 6.26, 6.27, 7.10, 8.79 };
+    double timestamps[] = { 5.24, 5.25, 6.25, 6.26, 7.10, 8.78 };
 
     ASSERT_EQ(SE_Env::Inst().GetCollisionDetection(), false);  // Should be disabled by default
 

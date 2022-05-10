@@ -119,7 +119,7 @@ namespace scenarioengine
 
 		// execution control flags
 		bool quit_flag;
-		bool initialized_;
+		unsigned int frame_nr_;
 
 		void parseScenario();
 	};

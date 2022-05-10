@@ -7,8 +7,8 @@ int main(int argc, char* argv[])
 {
 	SE_Init("../resources/xosc/cut-in.xosc", 0, 1, 0, 0);
 
-	SE_AddObjectSensor(0, 2.0, 1.0, 0.5, 1.57, 1.0, 50.0, 1.57, MAX_HITS);
-	SE_AddObjectSensor(0, -1.0, 0.0, 0.5, 3.14, 0.5, 20.0, 1.57, MAX_HITS);
+	SE_AddObjectSensor(0, 2.0f, 1.0f, 0.5f, 1.57f, 1.0f, 50.0f, 1.57f, MAX_HITS);
+	SE_AddObjectSensor(0, -1.0f, 0.0f, 0.5f, 3.14f, 0.5f, 20.0f, 1.57f, MAX_HITS);
 
 	// Turn on visualization of object sensors, toggle key 'r'
 	SE_ViewerShowFeature(1, true);

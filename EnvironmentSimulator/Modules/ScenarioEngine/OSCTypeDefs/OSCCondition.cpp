@@ -957,11 +957,12 @@ bool TrigByCollision::CheckCondition(StoryBoard* storyBoard, double sim_time)
 					storyBoard->entities_->object_[j]->type_ == type_ &&
 					storyBoard->entities_->object_[j]->IsActive())
 				{
+					bool local_result = false;
 					if (SE_Env::Inst().GetCollisionDetection() == false)
 					{
 						if (trigObj->Collision(storyBoard->entities_->object_[j]))
 						{
-							result = true;
+							local_result = true;
 						}
 					}
 					else
@@ -971,14 +972,15 @@ bool TrigByCollision::CheckCondition(StoryBoard* storyBoard, double sim_time)
 						{
 							if (trigObj->collisions_[k] == storyBoard->entities_->object_[j])
 							{
-								result = true;
+								local_result = true;
 							}
 						}
 					}
-					if (result == true)
+					if (local_result == true)
 					{
 						CollisionPair p = { trigObj, storyBoard->entities_->object_[j] };
 						collision_pair_.push_back(p);
+						result = true;
 					}
 				}
 			}

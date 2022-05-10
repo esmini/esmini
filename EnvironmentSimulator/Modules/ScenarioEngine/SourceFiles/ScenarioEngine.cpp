@@ -47,7 +47,7 @@ void ScenarioEngine::InitScenarioCommon(bool disable_controllers)
 	headstart_time_ = 0;
 	simulationTime_ = 0;
 	trueTime_ = 0;
-	initialized_ = false;
+	frame_nr_ = 0;
 	ghost_mode_ = GhostMode::NORMAL;
 	scenarioReader = new ScenarioReader(&entities_, &catalogs, disable_controllers);
 }
@@ -135,7 +135,7 @@ int ScenarioEngine::step(double deltaSimTime)
 {
 	UpdateGhostMode();
 
-	if (!initialized_)
+	if (frame_nr_ == 0)
 	{
 		// kick off init actions
 		for (size_t i = 0; i < init.private_action_.size(); i++)
@@ -148,7 +148,6 @@ int ScenarioEngine::step(double deltaSimTime)
 			init.global_action_[i]->Start(simulationTime_, deltaSimTime);
 			init.global_action_[i]->UpdateState();
 		}
-		initialized_ = true;
 
 		// Set initial values for speed and acceleration derivation
 		for (size_t i = 0; i < entities_.object_.size(); i++)
@@ -208,12 +207,6 @@ int ScenarioEngine::step(double deltaSimTime)
 		}
 	}
 
-	// Check for collisions
-	if (SE_Env::Inst().GetCollisionDetection())
-	{
-		DetectCollisions();
-	}
-
 	// Step inital actions - might be extened in time (more than one step)
 	for (size_t i = 0; i < init.private_action_.size(); i++)
 	{
@@ -238,6 +231,12 @@ int ScenarioEngine::step(double deltaSimTime)
 			init.global_action_[i]->Step(getSimulationTime(), deltaSimTime);
 		}
 		init.global_action_[i]->UpdateState();
+	}
+
+	// Check for collisions/overlap after first initialization
+	if (SE_Env::Inst().GetCollisionDetection() && frame_nr_ == 0)
+	{
+		DetectCollisions();
 	}
 
 	// Story
@@ -666,11 +665,19 @@ int ScenarioEngine::step(double deltaSimTime)
 		}
 	}
 
+	// Check for collisions
+	if (SE_Env::Inst().GetCollisionDetection() && frame_nr_ > 0)
+	{
+		DetectCollisions();
+	}
+
 	if (all_done)
 	{
 		LOG("All acts are done, quit now");
 		quit_flag = true;
 	}
+
+	frame_nr_++;
 
 	return 0;
 }
@@ -917,9 +924,8 @@ void ScenarioEngine::prepareGroundTruth(double dt)
 		double dx = obj->pos_.GetX() - obj->state_old.pos_x;
 		double dy = obj->pos_.GetY() - obj->state_old.pos_y;
 
-		if (NEAR_ZERO(dt) || obj->IsGhost() && ghost_mode_ != GhostMode::RESTART || !obj->IsGhost() && ghost_mode_ != GhostMode::RESTARTING)
+		if (frame_nr_ == 1 || obj->IsGhost() && ghost_mode_ != GhostMode::RESTART || !obj->IsGhost() && ghost_mode_ != GhostMode::RESTARTING)
 		{
-			// dt ~ 0.0 indicates initial frame
 			if (dt > SMALL_NUMBER)
 			{
 
