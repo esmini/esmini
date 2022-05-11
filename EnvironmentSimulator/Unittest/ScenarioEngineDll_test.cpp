@@ -2725,7 +2725,7 @@ TEST(ExternalControlTest, TestTimings)
 
 	SE_AddPath("../../../resources/xodr");
 
-	for (int j = 1; j < 2; j++)
+	for (int j = 0; j < 2; j++)
 	{
 		ASSERT_EQ(SE_InitWithArgs(sizeof(args[j]) / sizeof(char*), args[j]), 0);
 		ASSERT_EQ(SE_GetNumberOfObjects(), 3);

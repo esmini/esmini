@@ -584,8 +584,7 @@ public:
 	typedef void(*FuncPtr)(const char*);
 
 	//Instantiator
-	static CSV_Logger& InstVehicleLog(std::string scenario_filename,
-		int numvehicles, std::string csv_filename);
+	static CSV_Logger& Inst();
 
 	//Logging function called by VehicleLogger object using pass by value
 	void LogVehicleData(bool isendline, double timestamp, char const* name, int id, double speed,
@@ -595,10 +594,11 @@ public:
 		char const* collisions, ...);
 
 	void SetCallback(FuncPtr callback);
+	void Open(std::string scenario_filename, int numvehicles, std::string csv_filename);
 
 private:
 	//Constructor to be called by instantiator
-	CSV_Logger(std::string scenario_filename, int numvehicles, std::string csv_filename);
+	CSV_Logger();
 
 	//Destructor
 	~CSV_Logger();
@@ -883,3 +883,11 @@ int SE_WritePPM(const char* filename, int width, int height, const unsigned char
 */
 int SE_WriteTGA(const char* filename, int width, int height, const unsigned char* data, int pixelSize, int pixelFormat, bool upsidedown);
 
+/**
+	Read a CSV file (comma separated values)
+	@param filename File name including extension
+	@param content Reference to variable where to put the entries (vector of vector of entries - per line)
+	@param skip_lines Number of initial lines to skip (e.g. header). Optional (default = 0)
+	@return 0 if OK, -1 if failed to open file
+*/
+int SE_ReadCSVFile(const char* filename, std::vector<std::vector<std::string>>& content, int skip_lines = 0);

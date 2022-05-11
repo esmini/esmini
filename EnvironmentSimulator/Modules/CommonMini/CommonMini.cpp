@@ -13,8 +13,10 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <iostream>
-#include <random>
 #include <algorithm>
+#include <vector>
+#include <sstream>
+
 
 // UDP network includes
 #ifndef _WIN32
@@ -1018,8 +1020,89 @@ void SE_Env::SetLogFilePath(std::string logFilePath)
  * in columnar format, with time running from top to bottom and
  * vehicles running from left to right, starting with the Ego vehicle
  */
-CSV_Logger::CSV_Logger(std::string scenario_filename, int numvehicles, std::string csv_filename)
+CSV_Logger::CSV_Logger() : data_index_(0), callback_(nullptr)
 {
+
+}
+
+CSV_Logger::~CSV_Logger()
+{
+	if (file_.is_open())
+	{
+		file_.close();
+	}
+
+	callback_ = 0;
+}
+
+void CSV_Logger::LogVehicleData(bool isendline, double timestamp, char const* name, int id, double speed,
+	double wheel_angle, double wheel_rot, double posX, double posY, double posZ, double velX, double velY,
+	double velZ, double accX, double accY, double accZ, double distance_road, double distance_lanem, double heading,
+	double heading_rate, double heading_angle, double heading_angle_driving_direction, double pitch, double curvature,
+	const char* collisions, ...)
+{
+	static char data_entry[max_csv_entry_length];
+
+	//If this data is for Ego (position 0 in the Entities vector) print using the first format
+	//Otherwise use the second format
+	if (id == 0)
+		snprintf(data_entry, max_csv_entry_length,
+			"%d, %f, %s, %d, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %s, ",
+			data_index_, timestamp, name, id, speed, wheel_angle, wheel_rot, posX, posY, posZ, velX,
+			velY, velZ, accX, accY, accZ, distance_road, distance_lanem, heading, heading_rate,
+			heading_angle, heading_angle_driving_direction, pitch, curvature, collisions);
+	else
+		snprintf(data_entry, max_csv_entry_length,
+			"%s, %d, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %s, ",
+			name, id, speed, wheel_angle, wheel_rot, posX, posY, posZ, velX, velY, velZ, accX, accY, accZ,
+			distance_road, distance_lanem, heading, heading_rate, heading_angle, heading_angle_driving_direction,
+			pitch, curvature, collisions);
+
+	//Add lines horizontally until the endline is reached
+	if (isendline == false)
+	{
+		file_ << data_entry;
+	}
+	else if (file_.is_open())
+	{
+
+		file_ << data_entry << std::endl;
+		file_.flush();
+
+		data_index_++;
+	}
+
+
+	if (callback_)
+	{
+		callback_(data_entry);
+	}
+}
+
+void CSV_Logger::SetCallback(FuncPtr callback)
+{
+	callback_ = callback;
+
+	static char message[1024];
+
+	snprintf(message, 1024, "esmini GIT REV: %s", esmini_git_rev());
+	callback_(message);
+	snprintf(message, 1024, "esmini GIT TAG: %s", esmini_git_tag());
+	callback_(message);
+	snprintf(message, 1024, "esmini GIT BRANCH: %s", esmini_git_branch());
+	callback_(message);
+	snprintf(message, 1024, "esmini BUILD VERSION: %s", esmini_build_version());
+	callback_(message);
+}
+
+//instantiator
+//Filename and vehicle number are used for dynamic header creation
+void CSV_Logger::Open(std::string scenario_filename, int numvehicles, std::string csv_filename)
+{
+	if (file_.is_open())
+	{
+		file_.close();
+	}
 
 	file_.open(csv_filename);
 	if (file_.fail())
@@ -1079,83 +1162,10 @@ CSV_Logger::CSV_Logger(std::string scenario_filename, int numvehicles, std::stri
 	callback_ = 0;
 }
 
-CSV_Logger::~CSV_Logger()
+CSV_Logger& CSV_Logger::Inst()
 {
-	if (file_.is_open())
-	{
-		file_.close();
-	}
-
-	callback_ = 0;
-}
-
-void CSV_Logger::LogVehicleData(bool isendline, double timestamp, char const* name, int id, double speed,
-	double wheel_angle, double wheel_rot, double posX, double posY, double posZ, double velX, double velY,
-	double velZ, double accX, double accY, double accZ, double distance_road, double distance_lanem, double heading,
-	double heading_rate, double heading_angle, double heading_angle_driving_direction, double pitch, double curvature,
-	const char* collisions, ...)
-{
-	static char data_entry[max_csv_entry_length];
-
-	//If this data is for Ego (position 0 in the Entities vector) print using the first format
-	//Otherwise use the second format
-	if (id == 0)
-		snprintf(data_entry, max_csv_entry_length,
-			"%d, %f, %s, %d, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %s, ",
-			data_index_, timestamp, name, id, speed, wheel_angle, wheel_rot, posX, posY, posZ, velX,
-			velY, velZ, accX, accY, accZ, distance_road, distance_lanem, heading, heading_rate,
-			heading_angle, heading_angle_driving_direction, pitch, curvature, collisions);
-	else
-		snprintf(data_entry, max_csv_entry_length,
-			"%s, %d, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %s, ",
-			name, id, speed, wheel_angle, wheel_rot, posX, posY, posZ, velX, velY, velZ, accX, accY, accZ,
-			distance_road, distance_lanem, heading, heading_rate, heading_angle, heading_angle_driving_direction,
-			pitch, curvature, collisions);
-
-	//Add lines horizontally until the endline is reached
-	if (isendline == false)
-	{
-		file_ << data_entry;
-	}
-	else if (file_.is_open())
-	{
-
-		file_ << data_entry << std::endl;
-		file_.flush();
-
-		data_index_++;
-	}
-
-
-
-	if (callback_)
-	{
-		callback_(data_entry);
-	}
-}
-
-void CSV_Logger::SetCallback(FuncPtr callback)
-{
-	callback_ = callback;
-
-	static char message[1024];
-
-	snprintf(message, 1024, "esmini GIT REV: %s", esmini_git_rev());
-	callback_(message);
-	snprintf(message, 1024, "esmini GIT TAG: %s", esmini_git_tag());
-	callback_(message);
-	snprintf(message, 1024, "esmini GIT BRANCH: %s", esmini_git_branch());
-	callback_(message);
-	snprintf(message, 1024, "esmini BUILD VERSION: %s", esmini_build_version());
-	callback_(message);
-}
-
-//instantiator
-//Filename and vehicle number are used for dynamic header creation
-CSV_Logger& CSV_Logger::InstVehicleLog(std::string scenario_filename, int numvehicles, std::string csv_filename)
-{
-	static CSV_Logger instance(scenario_filename, numvehicles, csv_filename);
-	return instance;
+	static CSV_Logger instance_;
+	return instance_;
 }
 
 SE_Thread::~SE_Thread()
@@ -1535,6 +1545,43 @@ int SE_WriteTGA(const char* filename, int width, int height, const unsigned char
 	}
 
 	fclose(file);
+
+	return 0;
+}
+
+int SE_ReadCSVFile(const char* filename, std::vector<std::vector<std::string>>& content, int skip_lines)
+{
+	// Cred: https://java2blog.com/read-csv-file-in-cpp/
+	std::vector<std::string> row;
+	std::string line, word;
+
+	std::fstream file(filename, std::ios::in);
+	if (file.is_open())
+	{
+		for (int i = 0; i < skip_lines; i++)
+		{
+			if (!getline(file, line))
+			{
+				LOG("Failed to skip %d lines in CSV file %s", skip_lines, filename);
+				return -1;
+			}
+		}
+		while (getline(file, line))
+		{
+			row.clear();
+
+			std::stringstream str(line);
+
+			while (getline(str, word, ','))
+				row.push_back(word);
+			content.push_back(row);
+		}
+	}
+	else
+	{
+		LOG("Failed to open CSV file %s", filename);
+		return -1;
+	}
 
 	return 0;
 }

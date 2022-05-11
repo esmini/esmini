@@ -1208,9 +1208,17 @@ int ScenarioPlayer::Init()
 	// Initialize CSV logger for recording vehicle data
 	if (opt.GetOptionSet("csv_logger"))
 	{
-		CSV_Log = &CSV_Logger::InstVehicleLog(scenarioEngine->getScenarioFilename(),
-			(int)scenarioEngine->entities_.object_.size(), opt.GetOptionArg("csv_logger"));
-		LOG("Log all vehicle data in csv file");
+		CSV_Log = &CSV_Logger::Inst();
+		if (CSV_Log)
+		{
+			CSV_Log->Open(scenarioEngine->getScenarioFilename(),
+				(int)scenarioEngine->entities_.object_.size(), opt.GetOptionArg("csv_logger"));
+			LOG("Log all vehicle data in csv file");
+		}
+		else
+		{
+			LOG("Failed to open CSV log %s");
+		}
 	}
 
 	// Create a data file for later replay?
