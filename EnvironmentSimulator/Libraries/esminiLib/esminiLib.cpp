@@ -1613,6 +1613,14 @@ extern "C"
 		}
 	}
 
+	SE_DLL_API void SE_FlushOSIFile()
+	{
+		if (player != nullptr && player->osiReporter != nullptr)
+		{
+			player->osiReporter->FlushOSIFile();
+		}
+	}
+
 	SE_DLL_API int SE_FetchSensorObjectList(int sensor_id, int *list)
 	{
 		if (player != nullptr)

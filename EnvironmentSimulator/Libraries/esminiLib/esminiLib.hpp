@@ -898,6 +898,12 @@ extern "C"
 	SE_DLL_API void SE_EnableOSIFile(const char *filename);
 
 	/**
+		Enforce flushing OSI file (save all buffered data to file)
+		@return 0
+	*/
+	SE_DLL_API void SE_FlushOSIFile();
+
+	/**
 		The SE_ClearOSIGroundTruth clears the certain groundtruth data
 		This function should only be used together with SE_UpdateOSIStaticGroundTruth and SE_UpdateOSIDynamicGroundTruth
 		@return 0

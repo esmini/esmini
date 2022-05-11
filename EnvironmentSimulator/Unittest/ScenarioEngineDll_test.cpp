@@ -258,9 +258,13 @@ TEST(GetOSIRoadLaneTest, lane_no_obj)
 
 	SE_Init(Scenario_file, 0, 0, 0, 0);
 	SE_OSIFileOpen("gt.osi");
+	ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
+	EXPECT_EQ(fileStatus.st_size, 0);  // so far, nothing has been saved
 
 	SE_StepDT(0.001f);
-	SE_UpdateOSIGroundTruth();
+	SE_FlushOSIFile();
+	ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
+	EXPECT_EQ(fileStatus.st_size, 68925);  // initial OSI size, including static content
 
 	int road_lane_size;
 
@@ -270,11 +274,16 @@ TEST(GetOSIRoadLaneTest, lane_no_obj)
 	EXPECT_EQ(road_lane, nullptr);
 
 	SE_StepDT(0.001f);  // Step for write another frame to osi file
+	SE_FlushOSIFile();
+	ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
+	EXPECT_EQ(fileStatus.st_size, 69388);  // slight growth due to only dynamic updates
+
+	SE_StepDT(0.001f);  // Step for write another frame to osi file
+	SE_FlushOSIFile();
+	ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
+	EXPECT_EQ(fileStatus.st_size, 69852);  // slight growth due to only dynamic updates
 
 	SE_Close();
-
-	ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-	EXPECT_EQ(fileStatus.st_size, 69787);  // slight growth due to only dynamic updates
 }
 
 TEST(GetOSIRoadLaneTest, lane_id)
@@ -2214,16 +2223,16 @@ TEST(ExternalController, TestExternalDriver)
 				if (abs(SE_GetSimulationTime() - 11.0f) < SMALL_NUMBER)
 				{
 					SE_GetObjectState(0, &objectState);
-					EXPECT_NEAR(objectState.x, 215.891, 1e-3);
-					EXPECT_NEAR(objectState.y, 113.789, 1e-3);
+					EXPECT_NEAR(objectState.x, 215.889, 1e-3);
+					EXPECT_NEAR(objectState.y, 113.779, 1e-3);
 					EXPECT_NEAR(objectState.h, 1.362, 1e-3);
 					EXPECT_NEAR(objectState.p, 6.246, 1e-3);
 				}
 				else if (abs(SE_GetSimulationTime() - 30.0f) < SMALL_NUMBER)
 				{
 					SE_GetObjectState(0, &objectState);
-					EXPECT_NEAR(objectState.x, 356.204, 1e-3);
-					EXPECT_NEAR(objectState.y, 330.068, 1e-3);
+					EXPECT_NEAR(objectState.x, 356.184, 1e-3);
+					EXPECT_NEAR(objectState.y, 330.082, 1e-3);
 					EXPECT_NEAR(objectState.h, 5.641, 1e-3);
 					EXPECT_NEAR(objectState.p, 0.046, 1e-3);
 				}
@@ -2234,31 +2243,31 @@ TEST(ExternalController, TestExternalDriver)
 				if (abs(SE_GetSimulationTime() - 11.0f) < SMALL_NUMBER)
 				{
 					SE_GetObjectState(0, &objectState);
-					EXPECT_NEAR(objectState.x, 202.461, 1e-3);
-					EXPECT_NEAR(objectState.y, 83.000, 1e-3);
+					EXPECT_NEAR(objectState.x, 202.458, 1e-3);
+					EXPECT_NEAR(objectState.y, 82.981, 1e-3);
 					EXPECT_NEAR(objectState.h, 1.134, 1e-3);
 					EXPECT_NEAR(objectState.p, 6.262, 1e-3);
 					if (ghostMode[i] == true)
 					{
 						SE_RoadInfo road_info2;
 						SE_GetRoadInfoGhostTrailTime(0, SE_GetSimulationTime(), &road_info2, &speed2);
-						EXPECT_NEAR(road_info2.global_pos_x, 206.759, 1e-3);
-						EXPECT_NEAR(road_info2.global_pos_y, 92.556, 1e-3);
+						EXPECT_NEAR(road_info2.global_pos_x, 206.755, 1e-3);
+						EXPECT_NEAR(road_info2.global_pos_y, 92.547, 1e-3);
 					}
 				}
 				else if (abs(SE_GetSimulationTime() - 30.0f) < SMALL_NUMBER)
 				{
 					SE_GetObjectState(0, &objectState);
-					EXPECT_NEAR(objectState.x, 382.366, 1e-3);
-					EXPECT_NEAR(objectState.y, 301.228, 1e-3);
-					EXPECT_NEAR(objectState.h, 5.268, 1e-3);
+					EXPECT_NEAR(objectState.x, 381.951, 1e-3);
+					EXPECT_NEAR(objectState.y, 301.892, 1e-3);
+					EXPECT_NEAR(objectState.h, 5.274, 1e-3);
 					EXPECT_NEAR(objectState.p, 0.025, 1e-3);
 					if (ghostMode[i] == true)
 					{
 						SE_RoadInfo road_info3;
 						SE_GetRoadInfoGhostTrailTime(0, SE_GetSimulationTime(), &road_info3, &speed2);
-						EXPECT_NEAR(road_info3.global_pos_x, 388.710, 1e-3);
-						EXPECT_NEAR(road_info3.global_pos_y, 290.301, 1e-3);
+						EXPECT_NEAR(road_info3.global_pos_x, 388.369, 1e-3);
+						EXPECT_NEAR(road_info3.global_pos_y, 290.966, 1e-3);
 					}
 				}
 			}
@@ -2269,29 +2278,29 @@ TEST(ExternalController, TestExternalDriver)
 				if (abs(SE_GetSimulationTime() - 11.0f) < SMALL_NUMBER)
 				{
 					SE_GetObjectState(0, &objectState);
-					EXPECT_NEAR(objectState.x, 203.203, 1e-3);
-					EXPECT_NEAR(objectState.y, 84.494, 1e-3);
+					EXPECT_NEAR(objectState.x, 203.196, 1e-3);
+					EXPECT_NEAR(objectState.y, 84.473, 1e-3);
 					EXPECT_NEAR(objectState.h, 1.142, 1e-3);
 					EXPECT_NEAR(objectState.p, 6.262, 1e-3);
 					if (ghostMode[i] == true)
 					{
 						SE_GetRoadInfoGhostTrailTime(0, SE_GetSimulationTime(), &road_info2, &speed3);
-						EXPECT_NEAR(road_info2.global_pos_x, 206.759, 1e-3);
-						EXPECT_NEAR(road_info2.global_pos_y, 92.556, 1e-3);
+						EXPECT_NEAR(road_info2.global_pos_x, 206.755, 1e-3);
+						EXPECT_NEAR(road_info2.global_pos_y, 92.547, 1e-3);
 					}
 				}
 				else if (abs(SE_GetSimulationTime() - 30.0f) < SMALL_NUMBER)
 				{
 					SE_GetObjectState(0, &objectState);
-					EXPECT_NEAR(objectState.x, 382.507, 1e-3);
-					EXPECT_NEAR(objectState.y, 301.811, 1e-3);
-					EXPECT_NEAR(objectState.h, 5.265, 1e-3);
+					EXPECT_NEAR(objectState.x, 382.099, 1e-3);
+					EXPECT_NEAR(objectState.y, 302.463, 1e-3);
+					EXPECT_NEAR(objectState.h, 5.271, 1e-3);
 					EXPECT_NEAR(objectState.p, 0.026, 1e-3);
 					if (ghostMode[i] == true)
 					{
 						SE_GetRoadInfoGhostTrailTime(0, SE_GetSimulationTime(), &road_info2, &speed3);
-						EXPECT_NEAR(road_info2.global_pos_x, 388.710, 1e-3);
-						EXPECT_NEAR(road_info2.global_pos_y, 290.301, 1e-3);
+						EXPECT_NEAR(road_info2.global_pos_x, 388.369, 1e-3);
+						EXPECT_NEAR(road_info2.global_pos_y, 290.966, 1e-3);
 					}
 				}
 			}
@@ -2529,6 +2538,7 @@ TEST(APITest, TestFetchImage)
 	// Verify that any screenshot file is old, since that feature has not been enabled yet
 	EXPECT_EQ(CheckFileExists(screenshotFilename0, oldModTime), false);
 
+	//SE_sleep(500);
 	SE_StepDT(0.1f);  // Step once to create another image
 	SE_FetchImage(&image);
 	SE_WritePPM("offscreen1.ppm", image.width, image.height, image.data, image.pixelSize, image.pixelFormat, true);
@@ -2661,7 +2671,7 @@ int main(int argc, char **argv)
 	testing::InitGoogleTest(&argc, argv);
 
 #if 0  // set to 1 and modify filter to run one single test
-	testing::GTEST_FLAG(filter) = "*TestExternalDriver*";
+	testing::GTEST_FLAG(filter) = "*TestFetchImage*";
 #else
 	SE_LogToConsole(false);
 #endif
