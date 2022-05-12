@@ -9,6 +9,11 @@ LaneIndependentRouter::LaneIndependentRouter(OpenDrive *odr) : odr_(odr), roadCa
 {
 }
 
+LaneIndependentRouter::~LaneIndependentRouter(){
+	clearVector(visited_);
+	clearQueue(unvisited_);
+}
+
 // Gets the next pathnode for the nextroad based on current srcnode
 std::vector<Node *> LaneIndependentRouter::GetNextNodes(Road *nextRoad, Road *targetRoad, Node *currentNode)
 {
@@ -266,9 +271,9 @@ Node *LaneIndependentRouter::CreateStartNode(RoadLink *link, Road *road, int lan
 	return startNode;
 }
 
-std::vector<Node *> LaneIndependentRouter::CalculatePath(Position start, Position target)
+std::vector<Node> LaneIndependentRouter::CalculatePath(Position start, Position target)
 {
-	visited_.clear();
+	clearVector(visited_);
 	clearQueue(unvisited_);
 
 	if (!IsPositionValid(start))
@@ -329,13 +334,13 @@ std::vector<Node *> LaneIndependentRouter::CalculatePath(Position start, Positio
 	unvisited_.push(startNode);
 
 	bool found = FindGoal();
-	std::vector<Node *> pathToGoal;
+	std::vector<Node> pathToGoal;
 	if (found)
 	{
 		Node *nodeIterator = visited_.back();
 		while (nodeIterator != 0)
 		{
-			pathToGoal.push_back(nodeIterator);
+			pathToGoal.push_back(*nodeIterator);
 			nodeIterator = nodeIterator->previous;
 		}
 	}
@@ -347,13 +352,13 @@ std::vector<Node *> LaneIndependentRouter::CalculatePath(Position start, Positio
 	return pathToGoal;
 }
 
-std::vector<Position> LaneIndependentRouter::GetWaypoints(std::vector<Node *> path, Position start, Position target)
+std::vector<Position> LaneIndependentRouter::GetWaypoints(std::vector<Node> path, Position start, Position target)
 {
 	std::vector<Position> waypoints;
 	for (int idx = 0; idx < path.size() - 1; idx++)
 	{
-		Node *current = path[idx];
-		Node *next = path[idx + 1];
+		Node *current = &path[idx];
+		Node *next = &path[idx + 1];
 		double laneLength = 0;
 		double sPos = 0;
 		double heading = 0;

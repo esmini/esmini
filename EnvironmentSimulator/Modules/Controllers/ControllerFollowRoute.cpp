@@ -76,9 +76,13 @@ void ControllerFollowRoute::Step(double timeStep)
 	roadmanager::Position nextWaypoint = waypoints_[currentWaypointIndex_];
 	roadmanager::Road *nextRoad = odr_->GetRoadById(nextWaypoint.GetTrackId());
 
-	bool drivingWithRoadDirection = vehiclePos.GetDrivingDirectionRelativeRoad() == 1;
 	bool sameRoad = nextWaypoint.GetTrackId() == vehiclePos.GetTrackId();
-	bool sameLane = nextWaypoint.GetLaneId() == vehiclePos.GetLaneId();
+	
+	// Check if lane with different ids are connected between lane sections
+	int connectedLaneID = odr_->GetRoadById(vehiclePos.GetTrackId())->GetConnectedLaneIdAtS(vehiclePos.GetLaneId(),vehiclePos.GetS(),nextWaypoint.GetS());
+	bool lsecConnectedLane = connectedLaneID == nextWaypoint.GetLaneId();
+
+	bool sameLane = (nextWaypoint.GetLaneId() == vehiclePos.GetLaneId()) || lsecConnectedLane;
 	if (sameRoad)
 	{
 		double distToLaneChange = MAX(laneChangeTime_ * object_->GetSpeed(), 25);
@@ -181,7 +185,7 @@ void ControllerFollowRoute::CalculateWaypoints()
 		targetPos = object_->pos_.GetRoute()->scenario_waypoints_[scenarioWaypointIndex_];
 	}
 
-	std::vector<roadmanager::Node *> pathToGoal = router.CalculatePath(startPos, targetPos);
+	std::vector<roadmanager::Node> pathToGoal = router.CalculatePath(startPos, targetPos);
 	if (pathToGoal.empty())
 	{
 		LOG("Error: Path not found, deactivating controller");
@@ -226,6 +230,8 @@ void ControllerFollowRoute::ChangeLane(double timeStep)
 	if (laneChangeAction_->state_ == OSCAction::State::COMPLETE)
 	{
 		changingLane_ = false;
+		delete laneChangeAction_;
+		laneChangeAction_ = nullptr;
 		return;
 	}
 

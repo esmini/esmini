@@ -118,6 +118,7 @@ namespace scenarioengine
 			#ifdef TEST_MODE
 				object_->SetSpeed(0);
 			#endif 
+			LOG("WARNING: ControllerFollowRoute - Deactivated");
 			Controller::Deactivate(); 
 		};
 
