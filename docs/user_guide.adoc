@@ -1045,24 +1045,53 @@ esmini lib is a, so called, shared library which is linked dynamically with a cu
 
 An additional important advantage with dynamic linking is that the library can be updated without need to recompile the custom application making use of the library (however it can't be updated during runtime, only in between launches). An obvious requirement is that the API is compatible when replacing a library with a different version, since the API is established at link-time. On the other side of the "same coin", a disadvantage with dynamic linking is that you need to have the shared library present at run-time. 
 
-Although esmini lib is a shared library itself, it includes everything needed in terms of 3rd party functionality. It's actally linking all dependencies statically. Think about it as a single container including everything needed, e.g. support for 3D graphics, XML, expressions, and SUMO traffic simulation. There are two advantages with this approach: 1. Getting rid of dependency to hundreds of 3rd party shared libraries and 2. The linker makes sure to only include relevant functions which reduce the size by extreme (compared to include individual and complete shared libraries).
+Although esmini lib is a shared library itself, it includes everything needed in terms of 3rd party functionality. It's actally linking all dependencies statically. Think about it as a single container including everything needed, e.g. support for 3D graphics, XML, expressions, and SUMO traffic simulation. There are two advantages with this approach: 1. Getting rid of dependency to hundreds of 3rd party shared libraries and 2. The linker makes sure to only include relevant functions which reduce the size by extreme (compared to bundle individual and complete shared libraries).
 
 === How to interact with esmini lib API
 
 Below is a typical interaction between a custom application (e.g. vehicle simulator) and esmini (providing simulation of the environment, like road and traffic).
 
-[cols="1,2"]
+[%header, cols="2,1,5,1,5"]
 |===
-|Cell in column 1, row 1 
-|Cell in column 2, row 1 
+|Frame|app time|app events|esmini time|esmini events
+|0 (t=0.0)|0.0|Init esmini("scenario.xosc") =>|0.0|
+||0.0||0.0|Step(dt=0.0)
+||0.0||0.0 a|- check conditions
+||0.0||0.0 a|- update actions
+||0.0||0.0 a|- step default controller (establish initial positions and speed)
+||0.0||0.0 a|- save to dat, send OSI
+||0.0||0.0 a|- Draw()
+||0.0|Get Ego state (initial position, speed...) =>|0.0|
+||0.0||0.0|<= Return Ego initial state
+|1 (t=0.0->0.1)|0.1|Update Ego(dt=0.1)|0.0|
+||0.1 a|- Do internal stuff, like vehicle dynamics|0.0|
+||0.1|Report Ego state(state) =>|0.0|
+||0.1||0.0|Register state of Ego, protect it from default controller (but do not apply state yet)
+||0.1|Step esmini(dt=0.1) =>|0.0|
+||0.1||0.0|Step(dt=0.1)
+||0.1||0.0 a|- check conditions
+||0.1||0.0 a|- update actions
+||0.1||0.0 a|- step default controller (move entities, except Ego)
+||0.1||0.1 a|- update simulation time
+||0.1||0.1 a|- apply states from external entities (Ego)
+||0.1||0.1 a|- save to dat, send OSI
+||0.1||0.1 a|- Draw()
+|2 (t=0.1->0.2)|0.2|Update Ego(dt=0.1)|0.0|
+||0.2 a|- Do internal stuff, like vehicle dynamics|0.0|
+||0.2|Report Ego state(state) =>|0.0|
+||0.2||0.0|Register state of Ego, protect it from default controller (but do not apply state yet)
+||0.2|Step esmini(dt=0.1) =>|0.0|
+||0.2||0.1|Step(dt=0.1)
+||0.2||0.1 a|- check conditions
+||0.2||0.1 a|- update actions
+||0.2||0.1 a|- step default controller (move entities, except Ego)
+||0.2||0.2 a|- update simulation time
+||0.2||0.2 a|- apply states from external entities (Ego)
+||0.2||0.2 a|- save to dat, send OSI
+||0.2||0.2 a|- Draw()
+|and so on...||||
 
-|Cell in column 1, row 2
-|Cell in column 2, row 2
-
-|Cell in column 1, row 3
-|Cell in column 2, row 3 
-|=== 
-
+|===
 
 == Hello World programming tutorial
 include::../Hello-World_coding-example/tutorial.adoc[leveloffset=+1, lines=5..-1]
