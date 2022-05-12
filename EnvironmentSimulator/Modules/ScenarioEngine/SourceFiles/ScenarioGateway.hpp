@@ -29,11 +29,11 @@ namespace scenarioengine
 		int obj_type; // 0=None, 1=Vehicle, 2=Pedestrian, 3=MiscObj (see Object::Type enum)
 		int obj_category; // sub type for vehicle, pedestrian and miscobj
 		int ctrl_type;  // See Controller::Type enum
-		float timeStamp;
+		double timeStamp;
 		char name[NAME_LEN];
-		float speed;
-		float wheel_angle; // Only used for vehicle
-		float wheel_rot; // Only used for vehicle
+		double speed;
+		double wheel_angle; // Only used for vehicle
+		double wheel_rot; // Only used for vehicle
 		OSCBoundingBox boundingbox;
 		int scaleMode; // 0=None, 1=BoundingBoxToModel, 2=ModelToBoundingBox (see enum EntityScaleMode)
 		int visibilityMask;  // bitmask according to Object::Visibility (1 = Graphics, 2 = Traffic, 4 = Sensors)
@@ -45,7 +45,24 @@ namespace scenarioengine
 		roadmanager::Position pos;
 	};
 
-	struct ObjectPositionStruct
+	struct ObjectInfoStructDat
+	{
+		int id;
+		int model_id;
+		int obj_type; // 0=None, 1=Vehicle, 2=Pedestrian, 3=MiscObj (see Object::Type enum)
+		int obj_category; // sub type for vehicle, pedestrian and miscobj
+		int ctrl_type;  // See Controller::Type enum
+		float timeStamp;
+		char name[NAME_LEN];
+		float speed;
+		float wheel_angle; // Only used for vehicle
+		float wheel_rot; // Only used for vehicle
+		OSCBoundingBox boundingbox;
+		int scaleMode; // 0=None, 1=BoundingBoxToModel, 2=ModelToBoundingBox (see enum EntityScaleMode)
+		int visibilityMask;  // bitmask according to Object::Visibility (1 = Graphics, 2 = Traffic, 4 = Sensors)
+	};
+
+	struct ObjectPositionStructDat
 	{
 		float x;
 		float y;
@@ -62,8 +79,8 @@ namespace scenarioengine
 
 	struct ObjectStateStructDat
 	{
-		struct ObjectInfoStruct info;
-		struct ObjectPositionStruct pos;
+		struct ObjectInfoStructDat info;
+		struct ObjectPositionStructDat pos;
 	};
 
 	class ObjectState

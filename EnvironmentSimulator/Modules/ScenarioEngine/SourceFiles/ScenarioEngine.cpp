@@ -491,6 +491,11 @@ int ScenarioEngine::step(double deltaSimTime)
 	// Else, the only thing left is that the next step will take us above the point of teleportation -> Step to that point instead and go on from there
 
 	simulationTime_ += deltaSimTime;
+	if (simulationTime_ < 0.0 && simulationTime_ > -SMALL_NUMBER)
+	{
+		// Avoid -0.000
+		simulationTime_ = 0.0;
+	}
 
 	if (simulationTime_ > trueTime_)
 	{

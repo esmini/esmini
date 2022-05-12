@@ -8,7 +8,7 @@ typedef struct
 	int id;
 	std::string name;
 	viewer::EntityModel* entityModel;
-	struct ObjectPositionStruct pos;
+	struct ObjectPositionStructDat pos;
 	osg::ref_ptr<osg::Vec3Array> trajPoints;
 	viewer::PolyLine* trajectory;
 	float wheel_angle;

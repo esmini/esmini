@@ -276,10 +276,10 @@ class TestSuite(unittest.TestCase):
         csv = generate_csv()
         self.assertTrue(re.search('^-0.500, 1, Ego_ghost, 8.210, 59.720, -0.056, 1.567, 0.002, 0.000, 9.750, -0.000, 2.724', csv, re.MULTILINE))
         self.assertTrue(re.search('^2.060, 1, Ego_ghost, 8.386, 101.178, -0.139, 1.566, 0.002, 0.000, 22.550, -0.000, 1.795', csv, re.MULTILINE))
-        self.assertTrue(re.search('^2.550, 0, Ego, 8.279, 77.041, -0.088, 1.567, 0.002, 0.000, 18.389, -0.000, 1.949', csv, re.MULTILINE))
-        self.assertTrue(re.search('^6.500, 0, Ego, 6.080, 178.711, -0.308, 1.634, 0.002, 0.000, 27.778, -0.014, 3.644', csv, re.MULTILINE))
+        self.assertTrue(re.search('^2.550, 0, Ego, 8.279, 77.042, -0.088, 1.567, 0.002, 0.000, 18.389, -0.000, 1.950', csv, re.MULTILINE))
+        self.assertTrue(re.search('^6.500, 0, Ego, 6.079, 178.716, -0.308, 1.634, 0.002, 0.000, 27.778, -0.014, 3.658', csv, re.MULTILINE))
         self.assertTrue(re.search('^13.000, 1, Ego_ghost, 11.237, 356.783, -0.639, 1.549, 0.002, 0.000, 5.100, -0.000, 3.236', csv, re.MULTILINE))
-        self.assertTrue(re.search('^15.350, 0, Ego, 11.131, 351.845, -0.629, 1.550, 0.002, 0.000, 0.003, -0.001, 2.468', csv, re.MULTILINE))
+        self.assertTrue(re.search('^15.350, 0, Ego, 11.131, 351.850, -0.629, 1.550, 0.002, 0.000, 0.003, -0.001, 2.482', csv, re.MULTILINE))
 
     def test_heading_trig(self):
         log = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/traj-heading-trig.xosc'), COMMON_ARGS)
@@ -653,6 +653,6 @@ if __name__ == "__main__":
     # execute only if run as a script
 
     # Run next line instead to execute only one test
-    # unittest.main(argv=['ignored', '-v', 'TestSuite.test_init_cases'])
+    # unittest.main(argv=['ignored', '-v', 'TestSuite.test_follow_ghost'])
 
     unittest.main(verbosity=2)

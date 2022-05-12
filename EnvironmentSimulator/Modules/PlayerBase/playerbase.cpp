@@ -1097,7 +1097,7 @@ int ScenarioPlayer::Init()
 
 	for (int index = 0; (arg_str = opt.GetOptionArg("fixed_timestep", index)) != ""; index++)
 	{
-		SetFixedTimestep(atof(arg_str.c_str()));
+		SetFixedTimestep(std::stod(arg_str));
 		LOG("Run simulation decoupled from realtime, with fixed timestep: %.2f", GetFixedTimestep());
 	}
 

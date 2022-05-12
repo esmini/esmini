@@ -44,12 +44,12 @@ ObjectState::ObjectState(int id, std::string name, int obj_type, int obj_categor
 	state_.info.obj_category = obj_category;
 	state_.info.model_id = model_id;
 	state_.info.ctrl_type = ctrl_type;
-	state_.info.timeStamp = (float)timestamp;
+	state_.info.timeStamp = timestamp;
 	strncpy(state_.info.name, name.c_str(), NAME_LEN);
 	state_.pos = *pos;
-	state_.info.speed = (float)speed;
-	state_.info.wheel_angle = (float)wheel_angle;
-	state_.info.wheel_rot = (float)wheel_rot;
+	state_.info.speed = speed;
+	state_.info.wheel_angle = wheel_angle;
+	state_.info.wheel_rot = wheel_rot;
 	state_.info.boundingbox = boundingbox;
 	state_.info.scaleMode = scaleMode;
 	state_.info.visibilityMask = visibilityMask;
@@ -74,13 +74,13 @@ ObjectState::ObjectState(int id, std::string name, int obj_type, int obj_categor
 	state_.info.model_id = model_id;
 	state_.info.ctrl_type = ctrl_type;
 	state_.info.name[0] = 0;
-	state_.info.timeStamp = (float)timestamp;
+	state_.info.timeStamp = timestamp;
 	strncpy(state_.info.name, name.c_str(), NAME_LEN);
 	state_.pos.Init();
 	state_.pos.SetInertiaPos(x, y, z, h, p, r);
-	state_.info.speed = (float)speed;
-	state_.info.wheel_angle = (float)wheel_angle;
-	state_.info.wheel_rot = (float)wheel_rot;
+	state_.info.speed = speed;
+	state_.info.wheel_angle = wheel_angle;
+	state_.info.wheel_rot = wheel_rot;
 	state_.info.boundingbox = boundingbox;
 	state_.info.scaleMode = scaleMode;
 	state_.info.visibilityMask = visibilityMask;
@@ -104,12 +104,12 @@ ObjectState::ObjectState(int id, std::string name, int obj_type, int obj_categor
 	state_.info.obj_category = obj_category;
 	state_.info.model_id = model_id;
 	state_.info.ctrl_type = ctrl_type;
-	state_.info.timeStamp = (float)timestamp;
+	state_.info.timeStamp = timestamp;
 	strncpy(state_.info.name, name.c_str(), NAME_LEN);
 	state_.pos.SetLanePos(roadId, laneId, s, laneOffset);
-	state_.info.speed = (float)speed;
-	state_.info.wheel_angle = (float)wheel_angle;
-	state_.info.wheel_rot = (float)wheel_rot;
+	state_.info.speed = speed;
+	state_.info.wheel_angle = wheel_angle;
+	state_.info.wheel_rot = wheel_rot;
 	state_.info.boundingbox = boundingbox;
 	state_.info.scaleMode = scaleMode;
 	state_.info.visibilityMask = visibilityMask;
@@ -133,12 +133,12 @@ ObjectState::ObjectState(int id, std::string name, int obj_type, int obj_categor
 	state_.info.obj_category = obj_category;
 	state_.info.model_id = model_id;
 	state_.info.ctrl_type = ctrl_type;
-	state_.info.timeStamp = (float)timestamp;
+	state_.info.timeStamp = timestamp;
 	strncpy(state_.info.name, name.c_str(), NAME_LEN);
 	state_.pos.SetTrackPos(roadId, s, lateralOffset);
-	state_.info.speed = (float)speed;
-	state_.info.wheel_angle = (float)wheel_angle;
-	state_.info.wheel_rot = (float)wheel_rot;
+	state_.info.speed = speed;
+	state_.info.wheel_angle = wheel_angle;
+	state_.info.wheel_rot = wheel_rot;
 	state_.info.boundingbox = boundingbox;
 	state_.info.scaleMode = scaleMode;
 	state_.info.visibilityMask = visibilityMask;
@@ -234,10 +234,10 @@ int ScenarioGateway::updateObjectInfo(ObjectState* obj_state, double timestamp, 
 		return -1;
 	}
 
-	obj_state->state_.info.speed = (float)speed;
-	obj_state->state_.info.timeStamp = (float)timestamp;
-	obj_state->state_.info.wheel_angle = (float)wheel_angle;
-	obj_state->state_.info.wheel_rot = (float)wheel_rot;
+	obj_state->state_.info.speed = speed;
+	obj_state->state_.info.timeStamp = timestamp;
+	obj_state->state_.info.wheel_angle = wheel_angle;
+	obj_state->state_.info.wheel_rot = wheel_rot;
 	obj_state->state_.info.visibilityMask = visibilityMask;
 
 	obj_state->dirty_ |=
@@ -414,7 +414,7 @@ int ScenarioGateway::updateObjectPos(int id, double timestamp, roadmanager::Posi
 	{
 		// Update status
 		obj_state->state_.pos = *pos;
-		obj_state->state_.info.timeStamp = (float)timestamp;
+		obj_state->state_.info.timeStamp = timestamp;
 		obj_state->dirty_ |=
 			Object::DirtyBit::LONGITUDINAL |
 			Object::DirtyBit::LATERAL;
@@ -437,7 +437,7 @@ int ScenarioGateway::updateObjectRoadPos(int id, double timestamp, int roadId, d
 	{
 		// Update status
 		obj_state->state_.pos.SetTrackPos(roadId, s, lateralOffset);
-		obj_state->state_.info.timeStamp = (float)timestamp;
+		obj_state->state_.info.timeStamp = timestamp;
 		obj_state->dirty_ |=
 			Object::DirtyBit::LONGITUDINAL |
 			Object::DirtyBit::LATERAL;
@@ -459,7 +459,7 @@ int ScenarioGateway::updateObjectLanePos(int id, double timestamp, int roadId, i
 	{
 		// Update status
 		obj_state->state_.pos.SetLanePos(roadId, laneId, s, offset);
-		obj_state->state_.info.timeStamp = (float)timestamp;
+		obj_state->state_.info.timeStamp = timestamp;
 		obj_state->dirty_ |=
 			Object::DirtyBit::LONGITUDINAL |
 			Object::DirtyBit::LATERAL;
@@ -481,7 +481,7 @@ int ScenarioGateway::updateObjectWorldPosXYH(int id, double timestamp, double x,
 	{
 		// Update status
 		obj_state->state_.pos.SetInertiaPos(x, y, h);
-		obj_state->state_.info.timeStamp = (float)timestamp;
+		obj_state->state_.info.timeStamp = timestamp;
 		obj_state->dirty_ |=
 			Object::DirtyBit::LONGITUDINAL |
 			Object::DirtyBit::LATERAL;
@@ -503,7 +503,7 @@ int ScenarioGateway::updateObjectWorldPos(int id, double timestamp, double x, do
 	{
 		// Update status
 		obj_state->state_.pos.SetInertiaPos(x, y, z, h, p, r);
-		obj_state->state_.info.timeStamp = (float)timestamp;
+		obj_state->state_.info.timeStamp = timestamp;
 		obj_state->dirty_ |=
 			Object::DirtyBit::LONGITUDINAL |
 			Object::DirtyBit::LATERAL;
@@ -522,7 +522,7 @@ int ScenarioGateway::updateObjectSpeed(int id, double timestamp, double speed)
 		return -1;
 	}
 
-	obj_state->state_.info.speed = (float)speed;
+	obj_state->state_.info.speed = speed;
 	obj_state->dirty_ |= Object::DirtyBit::SPEED;
 
 	return 0;
@@ -602,7 +602,7 @@ int ScenarioGateway::updateObjectWheelAngle(int id, double timestamp, double whe
 		return -1;
 	}
 
-	obj_state->state_.info.wheel_angle = (float)wheelAngle;
+	obj_state->state_.info.wheel_angle = wheelAngle;
 	obj_state->dirty_ |= Object::DirtyBit::WHEEL_ANGLE;
 
 	return 0;
@@ -618,7 +618,7 @@ int ScenarioGateway::updateObjectWheelRotation(int id, double timestamp, double 
 		return -1;
 	}
 
-	obj_state->state_.info.wheel_rot = (float)wheelRotation;
+	obj_state->state_.info.wheel_rot = wheelRotation;
 	obj_state->dirty_ |= Object::DirtyBit::WHEEL_ROTATION;
 
 	return 0;
@@ -684,7 +684,21 @@ void ScenarioGateway::WriteStatesToFile()
 		{
 			struct ObjectStateStructDat datState;
 
-			datState.info = objectState_[i]->state_.info;
+			datState.info.boundingbox = objectState_[i]->state_.info.boundingbox;
+			datState.info.ctrl_type = objectState_[i]->state_.info.ctrl_type;
+			datState.info.ctrl_type = objectState_[i]->state_.info.ctrl_type;
+			datState.info.id = objectState_[i]->state_.info.id;
+			datState.info.model_id = objectState_[i]->state_.info.model_id;
+			memcpy(datState.info.name, objectState_[i]->state_.info.name, sizeof(datState.info.name));
+			datState.info.obj_category = objectState_[i]->state_.info.obj_category;
+			datState.info.obj_type = objectState_[i]->state_.info.ctrl_type;
+			datState.info.scaleMode = objectState_[i]->state_.info.scaleMode;
+			datState.info.speed = (float)objectState_[i]->state_.info.speed;
+			datState.info.timeStamp = (float)objectState_[i]->state_.info.timeStamp;
+			datState.info.visibilityMask = objectState_[i]->state_.info.visibilityMask;
+			datState.info.wheel_angle = (float)objectState_[i]->state_.info.wheel_angle;
+			datState.info.wheel_rot = (float)objectState_[i]->state_.info.wheel_rot;
+
 			datState.pos.x = (float)objectState_[i]->state_.pos.GetX();
 			datState.pos.y = (float)objectState_[i]->state_.pos.GetY();
 			datState.pos.z = (float)objectState_[i]->state_.pos.GetZ();
