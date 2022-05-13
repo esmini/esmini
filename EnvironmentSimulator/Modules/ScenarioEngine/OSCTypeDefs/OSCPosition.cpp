@@ -16,7 +16,7 @@ using namespace scenarioengine;
 
 OSCPositionWorld::OSCPositionWorld(double x, double y, double z, double h, double p, double r, OSCPosition* base_on_pos) : OSCPosition(PositionType::WORLD)
 {
-	if (base_on_pos != nullptr)
+	if (base_on_pos != nullptr && base_on_pos->type_ == PositionType::WORLD)
 	{
 		this->position_ = *base_on_pos->GetRMPos();
 	}
