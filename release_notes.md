@@ -1,5 +1,19 @@
 ## esmini release notes
 
+### 2022-05-13 Version 2.23.1
+
+- Updated SpeedProfileAction handling of single entry cases
+  - See more info in [User guide - Special case: Single entry](https://esmini.github.io/#_special_case_single_entry)
+- Populate OSI wheel angle (yaw/heading)
+- Increase internal precision for time and positions (float -> double)
+- Improve stepping, avoid one step diff between external and internal entities
+  - info for esmini lib users in [User guide - How to interact with esmini lib API](https://esmini.github.io/#_how_to_interact_with_esmini_lib_api)
+- Add API to flush OSI file
+- Refactor csv_logger to support multiple runs with different sets of entities
+- Fix a few ghost controller bugs
+- Fix pline interpolation bug
+- Fix collision log bug and align collision timestamps
+
 ### 2022-04-29 Version 2.23.0
 
 - New feature: Speed profile 
