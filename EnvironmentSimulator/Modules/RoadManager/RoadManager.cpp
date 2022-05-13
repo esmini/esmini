@@ -8310,6 +8310,16 @@ bool Position::Delta(Position* pos_b, PositionDiff &diff, bool bothDirections, d
 			bool isPathBackward = firstNode->link->GetType() == LinkType::PREDECESSOR;
 			bool isConnectedToEnd = lastNode->link->GetContactPointType() == ContactPointType::CONTACT_POINT_END;
 			bool isConnectedToStart = lastNode->link->GetContactPointType() == ContactPointType::CONTACT_POINT_START;
+			bool isConnectedToJunction = lastNode->link->GetContactPointType() == ContactPointType::CONTACT_POINT_JUNCTION;
+			if (isConnectedToJunction) {
+				Road* lastNodeRoad = lastNode->fromRoad;
+				Road* lastRoad = GetRoadById(pos_b->GetTrackId());
+				RoadLink* linkPred = lastRoad->GetLink(LinkType::PREDECESSOR);
+				RoadLink* linkSucc = lastRoad->GetLink(LinkType::SUCCESSOR);
+				isConnectedToStart = linkPred && lastNodeRoad && lastNodeRoad->GetId() == linkPred->GetElementId();
+				isConnectedToEnd   = linkSucc && lastNodeRoad && lastNodeRoad->GetId() == linkSucc->GetElementId();
+			}
+
 			bool isHeadToHead = isPathForward && isConnectedToEnd;
 			bool isToeToToe = isPathBackward && isConnectedToStart;
 
