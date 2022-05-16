@@ -1076,11 +1076,11 @@ Below is a typical interaction between a custom application (e.g. vehicle simula
 ||0.1||0.1 a|- apply states from external entities (Ego)
 ||0.1||0.1 a|- save to dat, send OSI
 ||0.1||0.1 a|- Draw()
-|2 (t=0.1->0.2)|0.2|Update Ego(dt=0.1)|0.0|
-||0.2 a|- Do internal stuff, like vehicle dynamics|0.0|
-||0.2|Report Ego state(state) =>|0.0|
-||0.2||0.0|Register state of Ego, protect it from default controller (but do not apply state yet)
-||0.2|Step esmini(dt=0.1) =>|0.0|
+|2 (t=0.1->0.2)|0.2|Update Ego(dt=0.1)|0.1|
+||0.2 a|- Do internal stuff, like vehicle dynamics|0.1|
+||0.2|Report Ego state(state) =>|0.1|
+||0.2||0.1|Register state of Ego, protect it from default controller (but do not apply state yet)
+||0.2|Step esmini(dt=0.1) =>|0.1|
 ||0.2||0.1|Step(dt=0.1)
 ||0.2||0.1 a|- check conditions
 ||0.2||0.1 a|- update actions
