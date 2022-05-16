@@ -3159,7 +3159,6 @@ TEST(ReplayTest, TestMultiReplayDifferentTimeSteps)
 			}
 
 			SE_Close();
-
 		}
 
 		// Check multi replay
@@ -3197,13 +3196,13 @@ TEST(ReplayTest, TestMultiReplayDifferentTimeSteps)
 		if (k == 0)
 		{
 			EXPECT_NEAR(replay->data_[2012].state.pos.y, 130.995, 1E-3);
-			EXPECT_NEAR(replay->data_[2015].state.pos.y, 211.615, 1E-3);
+			EXPECT_NEAR(replay->data_[2015].state.pos.y, 207.414, 1E-3);
 			EXPECT_NEAR(replay->data_[6009].state.info.timeStamp, 19.53, 1E-3);
 			EXPECT_NEAR(replay->data_[6009].state.info.id, 1, 1E-3);
 		}
 		else
 		{
-			EXPECT_NEAR(replay->data_[2012].state.pos.y, 133.701, 1E-3);
+			EXPECT_NEAR(replay->data_[2012].state.pos.y, 130.924, 1E-3);
 			EXPECT_NEAR(replay->data_[2015].state.pos.y, 210.776, 1E-3);
 			EXPECT_NEAR(replay->data_[4213].state.info.timeStamp, 19.8, 1E-3);
 			EXPECT_NEAR(replay->data_[4213].state.info.id, 1, 1E-3);

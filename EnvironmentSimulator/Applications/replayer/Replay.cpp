@@ -486,11 +486,12 @@ void Replay::BuildData(std::vector<std::pair<std::string, std::vector<ReplayEntr
 {
 	// Keep track of current index of each scenario
 	std::vector<int> cur_idx;
-	std::vector<bool> done;
+	std::vector<int> next_idx;
+
 	for (size_t j = 0; j < scenarios.size(); j++)
 	{
 		cur_idx.push_back(0);
-		done.push_back(false);
+		next_idx.push_back(0);
 	}
 
 	// Set scenario ID-group (0, 100, 200 etc.)
@@ -507,51 +508,42 @@ void Replay::BuildData(std::vector<std::pair<std::string, std::vector<ReplayEntr
 	double cur_timestamp = scenarios[0].second[0].state.info.timeStamp;
 	while (cur_timestamp < LARGE_NUMBER - SMALL_NUMBER)
 	{
-		// populate entries from other scenarios at current time step
-		for (size_t j = 0; j < scenarios.size(); j++)
+		// populate entries if all scenarios at current time step
+		double min_time_stamp = LARGE_NUMBER;
+		for (size_t j = 0; j < scenarios.size() && next_idx[j] != -1; j++)
 		{
-			if (!done[j] && scenarios[j].second[cur_idx[j]].state.info.timeStamp < cur_timestamp + SMALL_NUMBER)
+			int k = cur_idx[j];
+			for(; k < scenarios[j].second.size() &&
+				scenarios[j].second[k].state.info.timeStamp < cur_timestamp + SMALL_NUMBER; k++)
 			{
-				// pick entries until timestamp reach next frame
-				int k = cur_idx[j];
-				for(; k < scenarios[j].second.size() &&
-					scenarios[j].second[k].state.info.timeStamp < cur_timestamp + SMALL_NUMBER;k++)
+				// push entry with modified timestamp
+				scenarios[j].second[k].state.info.timeStamp = (float)cur_timestamp;
+				data_.push_back(scenarios[j].second[k]);
+			}
+
+			if (k < scenarios[j].second.size())
+			{
+				next_idx[j] = k;
+				if (scenarios[j].second[k].state.info.timeStamp < min_time_stamp)
 				{
-					// push entry
-					data_.push_back(scenarios[j].second[k]);
-				}
-				if (k < scenarios[j].second.size())
-				{
-					cur_idx[j] = k;
-				}
-				else
-				{
-					done[j] = true;
+					min_time_stamp = scenarios[j].second[k].state.info.timeStamp;
 				}
 			}
-			else if (cur_timestamp > scenarios[j].second[0].state.info.timeStamp - SMALL_NUMBER &&
-				cur_timestamp < scenarios[j].second.back().state.info.timeStamp + SMALL_NUMBER)
+			else
 			{
-				// No entry within given time window, reuse entries from last timestep
-				for (int k = cur_idx[j]; k < scenarios[j].second.size() &&
-					scenarios[j].second[k].state.info.timeStamp < scenarios[j].second[cur_idx[j]].state.info.timeStamp + SMALL_NUMBER; k++)
-				{
-					ReplayEntry entry = scenarios[j].second[k];
-					entry.state.info.timeStamp = (float)cur_timestamp;
-
-					// push entry
-					data_.push_back(entry);
-				}
+				next_idx[j] = -1;
 			}
 		}
 
-		// Find next timestamp, check all files
-		double min_time_stamp = LARGE_NUMBER;
-		for (size_t j = 0; j < scenarios.size(); j++)
+		if (min_time_stamp < LARGE_NUMBER - SMALL_NUMBER)
 		{
-			if (!done[j] && scenarios[j].second[cur_idx[j]].state.info.timeStamp < min_time_stamp)
+			for (size_t j = 0; j < scenarios.size(); j++)
 			{
-				min_time_stamp = scenarios[j].second[cur_idx[j]].state.info.timeStamp;
+				if (next_idx[j] > 0 && scenarios[j].second[next_idx[j]].state.info.timeStamp < min_time_stamp + SMALL_NUMBER)
+				{
+					// time has reached next entry, step this scenario
+					cur_idx[j] = next_idx[j];
+				}
 			}
 		}
 
