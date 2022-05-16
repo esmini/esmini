@@ -3109,12 +3109,117 @@ TEST(ExternalControlTest, TestTimings)
 	}
 }
 
+TEST(ReplayTest, TestMultiReplayDifferentTimeSteps)
+{
+	const char* args[2][2][3] =
+	{
+		// First run with smaller timsteps in first scenario
+		{
+			{
+				"--osc ../../../resources/xosc/follow_ghost.xosc",
+				"--record multirep_test1.dat",
+				"--fixed_timestep 0.01"
+			},
+			{
+				"--osc ../../../resources/xosc/left-hand-traffic_using_road_rule.xosc",
+				"--record multirep_test2.dat",
+				"--fixed_timestep 0.1"
+			}
+		},
+		// Then run with smaller timsteps in second scenario
+		{
+			{
+				"--osc ../../../resources/xosc/follow_ghost.xosc",
+				"--record multirep_test1.dat",
+				"--fixed_timestep 0.1"
+			},
+			{
+				"--osc ../../../resources/xosc/left-hand-traffic_using_road_rule.xosc",
+				"--record multirep_test2.dat",
+				"--fixed_timestep 0.01"
+			}
+		}
+	};
+
+	SE_AddPath("../../../resources/models");
+
+	for (int k = 0; k < 2; k++)
+	{
+		// Run the two scenarios, create dat files
+		for (int i = 0; i < 2; i++)
+		{
+			ASSERT_EQ(SE_InitWithArgs(sizeof(args[k][i]) / sizeof(char*), args[k][i]), 0);
+
+			while (SE_GetQuitFlag() != 1)
+			{
+				if (k == 0 && i == 0) SE_StepDT(0.01f);
+				else if (k == 0 && i == 1) SE_StepDT(0.1f);
+				else if (k == 1 && i == 0) SE_StepDT(0.1f);
+				else if (k == 1 && i == 1) SE_StepDT(0.01f);
+			}
+
+			SE_Close();
+
+		}
+
+		// Check multi replay
+		scenarioengine::Replay* replay = new scenarioengine::Replay(".", "multirep_test");
+		EXPECT_EQ(replay->GetNumberOfScenarios(), 2);
+
+		EXPECT_NEAR(replay->data_[0].state.info.timeStamp, -2.5, 1E-3);
+		EXPECT_STREQ(replay->data_[0].state.info.name, "Ego");
+		EXPECT_STREQ(replay->data_[1].state.info.name, "Ego_ghost");
+		EXPECT_STREQ(replay->data_[2].state.info.name, "Ego");
+		EXPECT_NEAR(replay->data_[2].state.info.timeStamp, -2.45, 1E-3);
+		EXPECT_NEAR(replay->data_[4].state.info.timeStamp, -2.40, 1E-3);
+		EXPECT_NEAR(replay->data_[100].state.info.timeStamp, 0.0, 1E-3);
+		EXPECT_NEAR(replay->data_[100].state.info.id, 0, 1E-3);
+		EXPECT_NEAR(replay->data_[101].state.info.timeStamp, 0.0, 1E-3);
+		EXPECT_NEAR(replay->data_[101].state.info.id, 1, 1E-3);
+		EXPECT_NEAR(replay->data_[102].state.info.timeStamp, 0.0, 1E-3);
+		EXPECT_NEAR(replay->data_[102].state.info.id, 100, 1E-3);
+		EXPECT_NEAR(replay->data_[103].state.info.timeStamp, 0.0, 1E-3);
+		EXPECT_NEAR(replay->data_[103].state.info.id, 101, 1E-3);
+		EXPECT_NEAR(replay->data_[104].state.info.timeStamp, 0.01, 1E-3);
+		EXPECT_NEAR(replay->data_[104].state.info.id, 0, 1E-3);
+		EXPECT_NEAR(replay->data_[108].state.info.timeStamp, 0.02, 1E-3);
+		EXPECT_NEAR(replay->data_[108].state.info.id, 0, 1E-3);
+		EXPECT_NEAR(replay->data_[139].state.info.timeStamp, 0.09, 1E-3);
+		EXPECT_NEAR(replay->data_[139].state.info.id, 101, 1E-3);
+		EXPECT_NEAR(replay->data_[140].state.info.timeStamp, 0.1, 1E-3);
+		EXPECT_NEAR(replay->data_[140].state.info.id, 0, 1E-3);
+
+		EXPECT_NEAR(replay->data_[2012].state.info.timeStamp, 4.78, 1E-3);
+		EXPECT_NEAR(replay->data_[2012].state.info.id, 0, 1E-3);
+		EXPECT_NEAR(replay->data_[2015].state.info.timeStamp, 4.78, 1E-3);
+		EXPECT_NEAR(replay->data_[2015].state.info.id, 101, 1E-3);
+
+		if (k == 0)
+		{
+			EXPECT_NEAR(replay->data_[2012].state.pos.y, 130.995, 1E-3);
+			EXPECT_NEAR(replay->data_[2015].state.pos.y, 211.615, 1E-3);
+			EXPECT_NEAR(replay->data_[6009].state.info.timeStamp, 19.53, 1E-3);
+			EXPECT_NEAR(replay->data_[6009].state.info.id, 1, 1E-3);
+		}
+		else
+		{
+			EXPECT_NEAR(replay->data_[2012].state.pos.y, 133.701, 1E-3);
+			EXPECT_NEAR(replay->data_[2015].state.pos.y, 210.776, 1E-3);
+			EXPECT_NEAR(replay->data_[4213].state.info.timeStamp, 19.8, 1E-3);
+			EXPECT_NEAR(replay->data_[4213].state.info.id, 1, 1E-3);
+		}
+
+		delete replay;
+	}
+}
+
+
 int main(int argc, char **argv)
 {
 	testing::InitGoogleTest(&argc, argv);
 
 #if 0  // set to 1 and modify filter to run one single test
-	testing::GTEST_FLAG(filter) = "*TestTimings*";
+	testing::GTEST_FLAG(filter) = "*TestMultiReplayDifferentTimeSteps*";
 #else
 	SE_LogToConsole(false);
 #endif

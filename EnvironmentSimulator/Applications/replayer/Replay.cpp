@@ -114,10 +114,10 @@ Replay::Replay(const std::string directory, const std::string scenario) : time_(
 		LOG_AND_QUIT("Too few scenarios loaded, use single replay feature instead\n");
 	}
 
-	// Longest scenario first
+	// Scenario with smallest start time first
 	std::sort(scenarioData.begin(), scenarioData.end(), [](const auto& sce1, const auto& sce2)
 	{
-		return sce1.second.size() > sce2.second.size();
+		return sce1.second[0].state.info.timeStamp < sce2.second[0].state.info.timeStamp;
 	});
 
 	// Log which scenario belongs to what ID-group (0, 100, 200 etc.)
@@ -486,32 +486,75 @@ void Replay::BuildData(std::vector<std::pair<std::string, std::vector<ReplayEntr
 {
 	// Keep track of current index of each scenario
 	std::vector<int> cur_idx;
+	std::vector<bool> done;
 	for (size_t j = 0; j < scenarios.size(); j++)
 	{
 		cur_idx.push_back(0);
+		done.push_back(false);
 	}
 
-	// Populate data_ based on first (longest) scenario
-	for (size_t i = 0; i < scenarios[0].second.size() - 1; i++)
+	// Set scenario ID-group (0, 100, 200 etc.)
+	for (size_t j = 0; j < scenarios.size(); j++)
 	{
-		// push entry from pivot scenario
-		data_.push_back(scenarios[0].second[i]);
-
-		// populate entries from other scenarios within the same time frame
-		for (size_t j = 1; j < scenarios.size(); j++)
+		for (size_t k = 0; k < scenarios[j].second.size(); k++)
 		{
-			// pick entries until timestamp reach next frame
-			while(cur_idx[j] < scenarios[j].second.size() && scenarios[j].second[cur_idx[j]].state.info.timeStamp < scenarios[0].second[i + 1].state.info.timeStamp)
+			// Set scenario ID-group (0, 100, 200 etc.)
+			scenarios[j].second[k].state.info.id += static_cast<int>(j) * 100;
+		}
+	}
+
+	// Populate data_ based on first (with lowest timestamp) scenario
+	double cur_timestamp = scenarios[0].second[0].state.info.timeStamp;
+	while (cur_timestamp < LARGE_NUMBER - SMALL_NUMBER)
+	{
+		// populate entries from other scenarios at current time step
+		for (size_t j = 0; j < scenarios.size(); j++)
+		{
+			if (!done[j] && scenarios[j].second[cur_idx[j]].state.info.timeStamp < cur_timestamp + SMALL_NUMBER)
 			{
-				// Set scenario ID-group (0, 100, 200 etc.)
-				scenarios[j].second[cur_idx[j]].state.info.id += static_cast<int>(j) * 100;
+				// pick entries until timestamp reach next frame
+				int k = cur_idx[j];
+				for(; k < scenarios[j].second.size() &&
+					scenarios[j].second[k].state.info.timeStamp < cur_timestamp + SMALL_NUMBER;k++)
+				{
+					// push entry
+					data_.push_back(scenarios[j].second[k]);
+				}
+				if (k < scenarios[j].second.size())
+				{
+					cur_idx[j] = k;
+				}
+				else
+				{
+					done[j] = true;
+				}
+			}
+			else if (cur_timestamp > scenarios[j].second[0].state.info.timeStamp - SMALL_NUMBER &&
+				cur_timestamp < scenarios[j].second.back().state.info.timeStamp + SMALL_NUMBER)
+			{
+				// No entry within given time window, reuse entries from last timestep
+				for (int k = cur_idx[j]; k < scenarios[j].second.size() &&
+					scenarios[j].second[k].state.info.timeStamp < scenarios[j].second[cur_idx[j]].state.info.timeStamp + SMALL_NUMBER; k++)
+				{
+					ReplayEntry entry = scenarios[j].second[k];
+					entry.state.info.timeStamp = (float)cur_timestamp;
 
-				// push entry
-				data_.push_back(scenarios[j].second[cur_idx[j]]);
-
-				// Fast forward j:th scenario passed current time frame
-				cur_idx[j]++;
+					// push entry
+					data_.push_back(entry);
+				}
 			}
 		}
+
+		// Find next timestamp, check all files
+		double min_time_stamp = LARGE_NUMBER;
+		for (size_t j = 0; j < scenarios.size(); j++)
+		{
+			if (!done[j] && scenarios[j].second[cur_idx[j]].state.info.timeStamp < min_time_stamp)
+			{
+				min_time_stamp = scenarios[j].second[cur_idx[j]].state.info.timeStamp;
+			}
+		}
+
+		cur_timestamp = min_time_stamp;
 	}
 }

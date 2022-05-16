@@ -11,12 +11,13 @@ include_directories (
   ${GTEST_INCLUDE_DIR}
   ${OSI_INCLUDE_DIR}
   ${OSG_INCLUDE_DIR}
+  ${DIRENT_INCLUDE_DIR}
 )
 
 add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 
 macro(package_add_test_with_libraries TESTNAME FILES LIBRARIES)
-    add_executable(${TESTNAME} ${FILES} ${SRC})
+    add_executable(${TESTNAME} ${FILES})
 
     target_link_libraries(${TESTNAME} ${GTEST_LIBRARIES} ${LIBRARIES} ${ARGN})
 
@@ -64,6 +65,7 @@ package_add_test_with_libraries(ScenarioPlayer_test ScenarioPlayer_test.cpp
 	${sumo_libs}
 	${SOCK_LIB}
 )
-package_add_test_with_libraries(ScenarioEngineDll_test ScenarioEngineDll_test.cpp esminiLib CommonMini ${OSI_LIBRARIES})
+set (sources ScenarioEngineDll_test.cpp  "../Applications/replayer/Replay.cpp")
+package_add_test_with_libraries(ScenarioEngineDll_test "${sources}" esminiLib CommonMini ${OSI_LIBRARIES})
 package_add_test_with_libraries(RoadManagerDll_test RoadManagerDll_test.cpp esminiRMLib CommonMini)
 package_add_test_with_libraries(CommonMini_test CommonMini_test.cpp CommonMini)
