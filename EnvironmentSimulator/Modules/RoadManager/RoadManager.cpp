@@ -4824,7 +4824,8 @@ int OpenDrive::CheckJunctionConnection(Junction *junction, Connection *connectio
 				Connection* new_connection = 0;
 				for (size_t k = 0; k < junction->GetNumberOfConnections(); k++)
 				{
-					if (junction->GetConnectionByIdx((int)k)->GetIncomingRoad() == connection->GetConnectingRoad())
+					if (junction->GetConnectionByIdx((int)k)->GetIncomingRoad() == connection->GetConnectingRoad() &&
+						junction->GetConnectionByIdx((int)k)->GetConnectingRoad() == road)
 					{
 						new_connection = junction->GetConnectionByIdx((int)k);
 						break;
