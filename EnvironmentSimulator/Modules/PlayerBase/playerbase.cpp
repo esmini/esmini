@@ -915,6 +915,7 @@ void viewer_thread(void *args)
 		player->ViewerFrame();
 	}
 
+	player->viewer_->renderSemaphore.Wait();
 	player->SetQuitRequest(true);
 	player->CloseViewer();
 }
