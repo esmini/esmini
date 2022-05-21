@@ -391,9 +391,9 @@ class TestSuite(unittest.TestCase):
         # Check vehicle key positions
         csv = generate_csv()
         self.assertTrue(re.search('^1.000, 0, Car, 28.935, -2.210, 0.000, 6.016, 0.000, 0.000, 10.000', csv, re.MULTILINE))
-        self.assertTrue(re.search('^3.140, 0, Car, 49.771, 1.806, 0.000, 0.243, 0.000, 0.000, 10.000', csv, re.MULTILINE))
-        self.assertTrue(re.search('^3.150, 0, Car, 49.770, 1.811, 0.000, 0.243, 0.000, 0.000, 0.000', csv, re.MULTILINE))
-        self.assertTrue(re.search('^3.160, 0, Car, 49.770, 1.811, 0.000, 0.243, 0.000, 0.000, 0.000', csv, re.MULTILINE))
+        self.assertTrue(re.search('^3.130, 0, Car, 49.700, 1.787, 0.000, 0.243, 0.000, 0.000, 10.000, 0.000, 1.464', csv, re.MULTILINE))
+        self.assertTrue(re.search('^3.140, 0, Car, 49.771, 1.806, 0.000, 0.243, 0.000, 0.000, 0.000, 0.000, 1.464', csv, re.MULTILINE))
+        self.assertTrue(re.search('^3.150, 0, Car, 49.771, 1.806, 0.000, 0.243, 0.000, 0.000, 0.000, 0.000, 1.464', csv, re.MULTILINE))
         self.assertTrue(re.search('^7.000, 0, Car, 27.534, 0.457, 0.000, 5.755, 0.000, 0.000, 10.000', csv, re.MULTILINE))
         self.assertTrue(re.search('^8.600, 0, Car, 43.039, 2.396, 0.000, 0.225, 0.000, 0.000, 10.000', csv, re.MULTILINE))
         self.assertTrue(re.search('^14.500, 0, Car, 20.277, -4.169, 0.000, 3.647, 0.000, 0.000, 10.000', csv, re.MULTILINE))
@@ -653,6 +653,6 @@ if __name__ == "__main__":
     # execute only if run as a script
 
     # Run next line instead to execute only one test
-    # unittest.main(argv=['ignored', '-v', 'TestSuite.test_follow_ghost'])
+    # unittest.main(argv=['ignored', '-v', 'TestSuite.test_route_lane_change'])
 
     unittest.main(verbosity=2)

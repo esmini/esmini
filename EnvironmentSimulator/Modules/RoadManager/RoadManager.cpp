@@ -9271,18 +9271,18 @@ Position::ReturnCode Position::MoveRouteDS(double ds, bool actualDistance)
 		{
 			if ((int)route_->CopySFractionOfLength(this) < 0)
 			{
-				route_->SetTrackS(GetTrackId(), GetS());
+				retval = route_->SetTrackS(GetTrackId(), GetS());
 			}
 			else
 			{
 				// Update route s value
-				route_->SetPathS(route_->GetPathS() + ds);
+				retval = route_->SetPathS(route_->GetPathS() + ds);
 			}
 		}
 		else
 		{
 			// If out of junction, sync positions again
-			route_->SetTrackS(GetTrackId(), GetS());
+			retval = route_->SetTrackS(GetTrackId(), GetS());
 		}
 	}
 	else
@@ -9297,7 +9297,7 @@ Position::ReturnCode Position::MoveRouteDS(double ds, bool actualDistance)
 		{
 			if ((int)route_->CopySFractionOfLength(this) < 0)
 			{
-				route_->SetTrackS(GetTrackId(), GetS());
+				retval = route_->SetTrackS(GetTrackId(), GetS());
 			}
 		}
 		else if (entity_road2->GetJunction() > -1 || route_road2->GetJunction() > -1)
@@ -10369,7 +10369,7 @@ int Route::AddWaypoint(Position* position)
 				}
 			}
 
-			length_ += dist;
+			length_ += fabs(dist);
 		}
 		else if (retval < 0)
 		{
@@ -10503,7 +10503,8 @@ Position::ReturnCode Route::SetTrackS(int trackId, double s)
 		{
 			currentPos_.SetTrackPos(-1, 0.0, 0.0);
 		}
-		return Position::ReturnCode::OK;
+
+		return Position::ReturnCode::ERROR_END_OF_ROUTE;
 	}
 
 	for (size_t i = 0; i < minimal_waypoints_.size(); i++)
@@ -10552,7 +10553,14 @@ Position::ReturnCode Route::SetTrackS(int trackId, double s)
 			waypoint_idx_ = (int)i;
 			currentPos_.SetLanePos(GetWaypoint(waypoint_idx_)->GetTrackId(), GetWaypoint(waypoint_idx_)->GetLaneId(), local_s, 0.0);
 
-			return Position::ReturnCode::OK;
+			if (path_s_ < 0 || path_s_ > GetLength())
+			{
+				return Position::ReturnCode::ERROR_END_OF_ROUTE;
+			}
+			else
+			{
+				return Position::ReturnCode::OK;
+			}
 		}
 	}
 
@@ -10627,11 +10635,19 @@ Position::ReturnCode Route::SetPathS(double s)
 				local_s = dist - s;
 			}
 
-			path_s_ = s;
 			waypoint_idx_ = (int)i;
 			currentPos_.SetLanePos(GetWaypoint(waypoint_idx_)->GetTrackId(), GetWaypoint(waypoint_idx_)->GetLaneId(), local_s, 0.0);
 
-			return Position::ReturnCode::OK;
+			if (s < GetLength())
+			{
+				path_s_ = s;
+				return Position::ReturnCode::OK;
+			}
+			else
+			{
+				path_s_ = GetLength();
+				return Position::ReturnCode::ERROR_END_OF_ROUTE;
+			}
 		}
 		else if (i == minimal_waypoints_.size() - 1)
 		{
