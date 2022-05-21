@@ -1365,6 +1365,16 @@ namespace roadmanager
 		int GetNumberOfDrivingLanesSide(double s, int side);  // side = -1 right, 1 left
 
 		/**
+			Given a lane id, get connected lane id at another longitudinal location at the same road
+			taking lane sections into account
+			@param lane_id Start at this lane id
+			@param s_start Start from this s value
+			@param s_target Stop at this s value
+			@return connected lane_id if found, else 0
+		*/
+		int GetConnectedLaneIdAtS(int lane_id, double s_start, double s_target);
+
+		/**
 			Check if specified road is directly connected to at specified end of current one (this)
 			@param road Road to check if connected with current one
 			@param contact_point If not null it will contain the contact point of specified road
