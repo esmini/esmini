@@ -507,7 +507,7 @@ will create ground_truth.csv.
 
 The OpenSCENARIO https://www.asam.net/static_downloads/ASAM_OpenSCENARIO_V1.1.1_Model_Documentation/modelDocumentation/content/SpeedAction.html[SpeedAction] will reach a specified speed in a way described by additional attributes, e.g. shape and duration. To achieve multiple speed target over time you would need to add multiple SpeedAction events to the scenario. Moreover, there is no way to explicitly control the jerk (acceleration/deceleration rates). 
 
-However with the SpeedProfileAction (OpenSCENARIO extension) you can specify a series of speed targets over time, in one action. Optionally you can also specify dynamic constraints for jerk (gradually changing acceleration and deceleration), acceleration and speed.
+However with the SpeedProfileAction (introduced in OpenSCENARIO v1.2) you can specify a series of speed targets over time, in one action. Optionally you can also specify dynamic constraints for jerk (gradually changing acceleration and deceleration), acceleration and speed.
 
 If you run the example scenario https://github.com/esmini/esmini/blob/master/resources/xosc/speed-profile.xosc[speed-profile.xosc] as follows:
 
@@ -677,6 +677,39 @@ You can also combine entries with and without time constraint, like in following
 image::speed-profile4.png[]
 
 Car will accelerate until speed 10 m/s is reached, then spend 3 seconds to reach 15 m/s.
+
+==== Initial acceleration taken into account
+(from release v2.23.2)
+
+What if the acceleration is not zero when the SpeedProfileAction is started, for example interrupting an ongoing SpeedAction in Follow mode?
+
+To maintain a continuous acceleration profile the action will use current acceleration as initial value. The standard states that the acceleration is expected to be zero at start and end of the action. The esmini interpretation is that the CHANGE is zero at start while the ACTUAL value is zero at end (since the action can only control acceleration while being active, not before).
+
+Example:
+Once again starting from https://github.com/esmini/esmini/blob/master/resources/xosc/speed-profile.xosc[speed-profile.xosc], instead of setting an instant initial speed make it ramp up from 0 to 5 m/s over a duration of 4 seconds by tweaking the initial speed actions, for both entities, as below:
+
+[source,xml]
+----
+    <SpeedActionDynamics dynamicsShape="linear" value="5.0" dynamicsDimension="time"/>
+    <SpeedActionTarget>
+        <AbsoluteTargetSpeed value="4.0"/>
+    </SpeedActionTarget>
+----
+
+image::speed-profile8.png[]
+
+The initial speed action will apply constant acceleration until time = 2.0 seconds, when the SpeedProfileAction is triggered. While the linear profile will jump to 0 m/s (as specified in first entry) the follow mode profile will just apply necessary jerk to reach target acceleration with respect to following entries.
+
+Initial acceleration is also respected for the special case of a single entry, for example:
+
+[source,xml]
+----
+    <SpeedProfileEntry time="3.0" speed="10.0"/>
+----
+
+the result becomes:
+
+image::speed-profile9.png[]
 
 ==== More info
 To get more understanding of the implementation, see a few slides https://drive.google.com/file/d/1DmjVHftcsbU71Ce_GASZ6IArcPA6teNF/view?usp=sharing[here].

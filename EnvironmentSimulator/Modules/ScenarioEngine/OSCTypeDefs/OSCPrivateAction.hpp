@@ -352,6 +352,7 @@ namespace scenarioengine
 		double elapsed_;
 		double speed_;
 		double acc_;
+		double init_acc_;  // initial acceleration at start of the action
 	};
 
 	class LongDistanceAction : public OSCPrivateAction

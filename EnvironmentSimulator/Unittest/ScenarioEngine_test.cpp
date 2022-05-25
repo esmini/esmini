@@ -1119,7 +1119,7 @@ TEST(SpeedProfileTest, TestSpeedProfileFirstEntryOffset)
 
     // Evaluate at a time before first entry time, speed should interpolate towards first entry
     sp_action.Step(1.0);
-    EXPECT_NEAR(sp_action.GetSpeed(), 7.0, 1E-5);
+    EXPECT_NEAR(sp_action.GetSpeed(), 7.30, 1E-5);
     sim_time += dt;
 }
 
@@ -1374,6 +1374,51 @@ TEST(SpeedProfileTest, TestSpeedProfileFromNonZeroTime)
     }
 }
 
+TEST(SpeedProfileTest, TestSpeedProfileNonZeroInitalAcc)
+{
+    LongSpeedProfileAction sp_action;
+    DynamicConstraints dynamics; // initalized with default values
+    LongSpeedProfileAction::Entry entry;
+
+    Object obj(Object::Type::VEHICLE);
+    obj.SetSpeed(10.0);
+    obj.SetAcc(1.0, 0.0, 0.0);
+
+    sp_action.following_mode_ = FollowingMode::FOLLOW;
+    sp_action.dynamics_ = dynamics;
+    sp_action.object_ = &obj;
+
+    sp_action.dynamics_.max_acceleration_ = 4.0;
+    sp_action.dynamics_.max_deceleration_ = 10.0;
+    sp_action.dynamics_.max_acceleration_rate_ = 5.0;
+    sp_action.dynamics_.max_deceleration_rate_ = 4.0;
+    sp_action.dynamics_.max_speed_ = 30.0;
+
+
+    ASSERT_EQ(sp_action.entity_ref_, nullptr);
+    ASSERT_EQ(sp_action.segment_.size(), 0);
+
+    // Add entries
+    entry.speed_ = 4.0;
+    entry.time_ = 5.0;
+    sp_action.AddEntry(entry);
+
+    sp_action.Start(0.0, 0.1);
+
+    // Evaluate small time step ahead. Although the speed profile entry slope is negative,
+    // the speed is still increasing due to inital positive acceleration.
+    sp_action.Step(0.4);
+    EXPECT_NEAR(sp_action.GetSpeed(), 10.12, 1E-5);
+
+    // Evaluate at end of the speed profile. Acceleration should approach target value.
+    sp_action.Step(5.0);
+    EXPECT_NEAR(sp_action.GetSpeed(), 4.025, 1E-3);
+
+    // Evaluate slightly past end of the speed profile. Acceleration should have reached the target value.
+    sp_action.Step(5.2);
+    EXPECT_NEAR(sp_action.GetSpeed(), 4.0, 1E-3);
+}
+
 // Uncomment to print log output to console
 //#define LOG_TO_CONSOLE
 
@@ -1393,7 +1438,7 @@ int main(int argc, char** argv)
     }
 #endif
 
-    //testing::GTEST_FLAG(filter) = "*EnsureContinuation";
+    //testing::GTEST_FLAG(filter) = "*TestSpeedProfileNonZeroInitalAcc";
 
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

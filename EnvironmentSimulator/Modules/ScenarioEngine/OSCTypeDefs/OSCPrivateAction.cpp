@@ -919,12 +919,21 @@ void LongSpeedProfileAction::Start(double simTime, double timestep)
 {
 	OSCAction::Start(simTime, timestep);
 
-	if (entry_.size() == 0)
+	if (entry_.size() == 0 || object_ == nullptr)
 	{
 		return;
 	}
 
 	double speed_offset = entity_ref_ != nullptr ? entity_ref_->GetSpeed() : 0.0;
+	double init_time_ = simTime;
+
+	if (object_->GetDirtyBitMask() & Object::DirtyBit::SPEED)
+	{
+		// Speed has already been updated by another action, set start time at end of this timestep
+		init_time_ += timestep;
+	}
+
+	init_acc_ = object_->pos_.GetAccLong();
 
 	std::vector<EntryVertex> vertex;
 	int index = 0;
@@ -933,30 +942,30 @@ void LongSpeedProfileAction::Start(double simTime, double timestep)
 	if (entry_[0].time_ > SMALL_NUMBER)
 	{
 		// insert initial entry at time = 0 with initial/current speed
-		vertex.push_back(EntryVertex(simTime, object_->GetSpeed()));
+		vertex.push_back(EntryVertex(init_time_, object_->GetSpeed()));
 	}
 	else if (entry_[0].time_ > -SMALL_NUMBER)
 	{
 		if (following_mode_ == FollowingMode::FOLLOW)
 		{
 			// replace first entry at time = 0.0 with current speed
-			vertex.push_back(EntryVertex(simTime, object_->GetSpeed()));
+			vertex.push_back(EntryVertex(init_time_, object_->GetSpeed()));
 			index = 1;  // Skip first entry
 		}
 		else
 		{
 			// in linear mode use specified initial speed
-			vertex.push_back(EntryVertex(simTime, entry_[0].speed_));
+			vertex.push_back(EntryVertex(init_time_, entry_[0].speed_));
 		}
 	}
 	else  // negative time indicating time attribute omitted
 	{
 		// Create a first entry at current time and speed
-		vertex.push_back(EntryVertex(simTime, object_->GetSpeed()));
+		vertex.push_back(EntryVertex(init_time_, object_->GetSpeed()));
 	}
 
 	// First filter out any obsolete middle points on straight acceleration lines
-	double delta_k, j = 0.0, time = simTime;
+	double delta_k, j = 0.0, time = init_time_;
 	for (; index < entry_.size(); index++)
 	{
 		if (entry_[index].time_ < -SMALL_NUMBER)
@@ -993,11 +1002,11 @@ void LongSpeedProfileAction::Start(double simTime, double timestep)
 
 		if (index > 1)
 		{
-			delta_k = vertex.back().k_ - (vertex.rbegin()+1)->k_;
+			delta_k = vertex.back().k_ - (vertex.rbegin()+1)->k_; // last - second last
 		}
 		else
 		{
-			delta_k = vertex.back().k_;  // slope is zero at start - no delta
+			delta_k = vertex.back().k_ - init_acc_;  // slope is zero at start - no delta
 		}
 
 		if (abs(delta_k) < SMALL_NUMBER && index > 1)
@@ -1021,6 +1030,7 @@ void LongSpeedProfileAction::Start(double simTime, double timestep)
 
 	EntryVertex vtx = vertex[0];
 	double t0, t1, t3 = vtx.t_, v0, v3 = 0.0, m0, m1 = 0.0, k1 = 0.0;
+	double k0 = init_acc_;
 
 	segment_.clear();
 
@@ -1030,11 +1040,12 @@ void LongSpeedProfileAction::Start(double simTime, double timestep)
 		// Reach target speed with given jerk contraint. Add linear segment if needed.
 
 		// Set first jerk segment
-		j = vertex[0].k_ < 0 ? -dynamics_.max_deceleration_rate_ : dynamics_.max_acceleration_rate_;
-		AddSpeedSegment(vtx.t_, vtx.v_, 0.0, j);
+
+		j = (vertex[0].k_ - k0) < 0 ? -dynamics_.max_deceleration_rate_ : dynamics_.max_acceleration_rate_;
+		AddSpeedSegment(vtx.t_, vtx.v_, k0, j);
 
 		double j0 = 0.0, j1 = 0.0, t2 = 0.0, v1 = 0.0, v2 = 0.0;
-		if (vertex[0].k_ < 0.0)
+		if (vertex[0].k_ - k0 < 0.0)
 		{
 			j0 = -dynamics_.max_deceleration_rate_;
 			j1 = dynamics_.max_acceleration_rate_;
@@ -1050,14 +1061,14 @@ void LongSpeedProfileAction::Start(double simTime, double timestep)
 		t3 = vertex[1].t_;
 		v3 = vertex[1].v_;
 
-		double factor = j0 * j1 * (2 * v0 * (j1 - j0) + j0 * j1 * pow(t0 - t3, 2) + 2 * v3 * (j0 - j1));
+		double factor = j0 * j1 * (2 * v0 * (j1 - j0) + pow(k0, 2) + 2 * k0 * j1 * (t3 - t0) + j0 * j1 * pow(t0 - t3, 2) + 2 * v3 * (j0 - j1));
 
 		if (factor < 0.0)
 		{
 			// no room or time for linear segment of constant acceleration
-			t2 = (sqrt(2 * j0 * j1 * (v3 - v0) * (j1 - j0))) / (j0 * (j0 - j1)) + t0;
-			v2 = v0 + j0 * 0.5 * pow(t2 - t0, 2);
-			k1 = j0 * (t2 - t0);
+			t2 = (sqrt(j1 * (-(j0 - j1)) * (j0 * (2 * v3 - 2 * v0) + pow(k0, 2))) + (j0 - j1) * (t0 * j0 - k0)) / (j0 * (j0 - j1));
+			v2 = v0 + k0 * (t2 - t0) + j0 * 0.5 * pow(t2 - t0, 2);
+			k1 = k0 + j0 * (t2 - t0);
 			t3 = t2 - k1 / j1;
 
 			if (IS_IN_SPAN(k1, -dynamics_.max_deceleration_, dynamics_.max_acceleration_) && t3 > vertex[1].t_)
@@ -1070,9 +1081,9 @@ void LongSpeedProfileAction::Start(double simTime, double timestep)
 		{
 			// need a linear segment to reach speed at specified time
 			LOG("SpeedProfile: Add linear segment to reach target speed on time.");
-			t1 = -(sqrt(factor) - t0 * pow(j0, 2) + t3 * j0 * j1) / (j0 * (j0 - j1));
-			v1 = v0 + j0 * 0.5 * pow(t1 - t0, 2);
-			k1 = j0 * (t1 - t0);
+			t1 = (-sqrt(factor) - j0 * (k0 + t3 * j1) + t0 * pow(j0, 2)) / (j0 * (j0 - j1));
+			v1 = v0 + k0 * (t1 - t0) + j0 * 0.5 * pow(t1 - t0, 2);
+			k1 = init_acc_ + j0 * (t1 - t0);
 			t2 = (k1 / j1) + t3;
 			v2 = v1 + k1 * (t2 - t1);
 
@@ -1103,8 +1114,8 @@ void LongSpeedProfileAction::Start(double simTime, double timestep)
 				k1 = -dynamics_.max_deceleration_;
 			}
 
-			t1 = t0 + k1 / j0;
-			v1 = v0 + j0 * 0.5 * pow(t1 - t0, 2);
+			t1 = t0 + (k1 - k0) / j0;
+			v1 = v0 + k0 * (t1 - t0) + 0.5 * j0 * pow(t1 - t0, 2);
 			t2 = -v0 / k1 + t1 - k1 / (2 * j0) + v3 / k1 + k1 / (2 * j1);
 			v2 = v1 + k1 * (t2 - t1);
 			t3 = -v0 / k1 + t1 - k1 / (2 * j0) + v3 / k1 - k1 / (2 * j1);
@@ -1127,13 +1138,13 @@ void LongSpeedProfileAction::Start(double simTime, double timestep)
 		{
 			if (abs(vtx.k_) > SMALL_NUMBER)
 			{
-				j = vertex[0].k_ < 0 ? -dynamics_.max_deceleration_rate_ : dynamics_.max_acceleration_rate_;
-				AddSpeedSegment(vtx.t_, vtx.v_, 0.0, j);
+				j = (vertex[0].k_ - k0) < 0 ? -dynamics_.max_deceleration_rate_ : dynamics_.max_acceleration_rate_;
+				AddSpeedSegment(vtx.t_, vtx.v_, k0, j);
 
-				t3 = vtx.t_ + (abs(j) > SMALL_NUMBER ? vtx.k_ / j : 0.0);  // duration of first jerk t = a / j
+				t3 = vtx.t_ + (abs(j) > SMALL_NUMBER ? (vtx.k_ - k0) / j : 0.0);  // duration of first jerk t = a / j
 			}
 
-			v3 = vtx.v_ + 0.5 * j * pow((t3 - simTime), 2);  // speed after initial jerk
+			v3 = vtx.v_ + k0 * (t3 - init_time_) + 0.5 * j * pow((t3 - init_time_), 2);  // speed after initial jerk
 			k1 = vtx.k_;  // slope of first linear segment
 			m1 = v3 - k1 * t3;  // eq constant for second acceleration line
 
@@ -1150,7 +1161,7 @@ void LongSpeedProfileAction::Start(double simTime, double timestep)
 			}
 			else if (index < vertex.size() - 1)
 			{
-				double k0 = k1;
+				k0 = k1;
 				vtx = vertex[index + 1];
 				t0 = t3;
 				v0 = v3;
