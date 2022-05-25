@@ -73,5 +73,8 @@ int main(int argc, char* argv[])
 		}
 #endif
 	}
+
+	SE_Close();
+
 	return 0;
 }

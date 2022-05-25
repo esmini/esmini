@@ -34,5 +34,7 @@ int main(int argc, char* argv[])
 		}
 	}
 
+	SE_Close();
+
 	return 0;
 }

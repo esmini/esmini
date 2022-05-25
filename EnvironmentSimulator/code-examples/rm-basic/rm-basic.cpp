@@ -82,6 +82,7 @@ int main(int argc, char* argv[])
 		printf("  road_id %d\n", RM_GetOverlappingRoadId(p0, (int)i));
 	}
 
+	RM_Close();
 
 	return 0;
 }

@@ -12,5 +12,7 @@ int main(int argc, char* argv[])
 		SE_Step();
 	}
 
+	SE_Close();
+
 	return 0;
 }
