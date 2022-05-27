@@ -1,5 +1,17 @@
 ## esmini release notes
 
+### 2022-05-27 Version 2.23.2
+
+- Updated SpeedProfileAction to respect initial acceleration
+  - See more info in [User guide - Initial acceleration taken into account](https://esmini.github.io/#_initial_acceleration_taken_into_account)
+- Improve multi-replayer support for different timesteps
+- Fix direct junction bug missing some counter connections
+- Fix route finding failure due to changing lane id
+  - consider that lane ids might change over lane sections
+- Improve route end checks
+  - Detect route end in junctions
+  - Fix bug in route length calculation
+
 ### 2022-05-13 Version 2.23.1
 
 - Updated SpeedProfileAction handling of single entry cases
