@@ -6296,7 +6296,7 @@ Position::ReturnCode Position::XYZH2TrackPos(double x3, double y3, double z3, do
 	else
 	{
 		// Look only at specified road
-		current_road = GetOpenDrive()->GetRoadByIdx(roadId);
+		current_road = GetOpenDrive()->GetRoadById(roadId);
 		nrOfRoads = 0;
 	}
 
