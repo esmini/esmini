@@ -410,6 +410,19 @@ void ScenarioPlayer::ViewerFrame(bool init)
 			{
 				entity->trail_->AddPoint(osg::Vec3(obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ() + (obj->GetId() + 1) * TRAIL_Z_OFFSET));
 			}
+
+			// on screen text following each entity
+			snprintf(entity->on_screen_info_.string_, sizeof(entity->on_screen_info_.string_),
+				" %s (%d) %.2fm\n %.2fkm/h road %d lane %d/%.2f s %.2f\n x %.2f y %.2f hdg %.2f\n osi x %.2f y %.2f \n|",
+				obj->name_.c_str(), obj->GetId(), obj->odometer_,
+				3.6 * obj->speed_, obj->pos_.GetTrackId(), obj->pos_.GetLaneId(), fabs(obj->pos_.GetOffset()) < SMALL_NUMBER ? 0 : obj->pos_.GetOffset(),
+				obj->pos_.GetS(),
+				obj->pos_.GetX(),
+				obj->pos_.GetY(),
+				obj->pos_.GetH(),
+				obj->pos_.GetX() + obj->boundingbox_.center_.x_ * cos(obj->pos_.GetH()),
+				obj->pos_.GetY() + obj->boundingbox_.center_.x_ * sin(obj->pos_.GetH()));
+			entity->on_screen_info_.osg_text_->setText(entity->on_screen_info_.string_);
 		}
 
 		for (size_t i = 0; i < sensorFrustum.size(); i++)
@@ -584,9 +597,15 @@ int ScenarioPlayer::InitViewer()
 
 	viewer_->osgViewer_->setKeyEventSetsDone(0);  // Disable default Escape key event handler, take over control
 
-	if (opt.GetOptionArg("info_text") == "off")
+	if ((arg_str = opt.GetOptionArg("info_text")) != "")
 	{
-		viewer_->ClearNodeMaskBits(viewer::NodeMask::NODE_MASK_INFO);
+		int mask = strtoi(arg_str);
+		if (mask < 0 || mask > 3)
+		{
+			LOG_AND_QUIT("Invalid on-screen info mode %d. Valid range is 0-3", mask);
+		}
+		viewer_->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_INFO |
+			viewer::NodeMask::NODE_MASK_INFO_PER_OBJ, mask * viewer::NodeMask::NODE_MASK_INFO);
 	}
 
 	viewer_->RegisterImageCallback(imageCallback.func, imageCallback.data);
@@ -1012,7 +1031,7 @@ int ScenarioPlayer::Init()
 	opt.AddOption("help", "Show this help message");
 	opt.AddOption("hide_route_waypoints", "Disable route waypoint visualization (toggle with key 'R')");
 	opt.AddOption("hide_trajectories", "Hide trajectories from start (toggle with key 'n')");
-	opt.AddOption("info_text", "Show info text HUD (\"on\" (default), \"off\")", "mode");
+	opt.AddOption("info_text", "Show on-screen info text (toggle key 'i') mode 0=None 1=current (default) 2=per_object 3=both", "mode");
 	opt.AddOption("logfile_path", "logfile path/filename, e.g. \"../esmini.log\" (default: log.txt)", "path");
 	opt.AddOption("osc_str", "OpenSCENARIO XML string", "string");
 #ifdef _USE_OSI

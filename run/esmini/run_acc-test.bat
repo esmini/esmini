@@ -1,1 +1,1 @@
-"../../bin/esmini" --window 60 60 1024 576 --osc ../../resources/xosc/acc-test.xosc 
+"../../bin/esmini" --window 60 60 1024 576 --osc ../../resources/xosc/acc-test.xosc --info_text 2

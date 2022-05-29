@@ -24,7 +24,7 @@ Key shortcuts \n\
     u:             Toggle show / hide OSI road lines \n\
     y:             Toggle show / hide OSI road points \n\
     p:             Toggle show / hide environment 3D model \n\
-    i:             Toggle info text showing time and speed \n\
+    i:             Toggle on-screen info text modes \n\
     n:             Toggle show active trajectories \n\
     , (comma):     Switch entity view : Model only / Bounding box / Model + Bounding box / None \n\
     ESC:           quit \n\

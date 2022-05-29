@@ -1511,6 +1511,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 	ClearNodeMaskBits(NodeMask::NODE_MASK_OBJECT_SENSORS);
 	ClearNodeMaskBits(NodeMask::NODE_MASK_ODR_FEATURES);
 	ClearNodeMaskBits(NodeMask::NODE_MASK_ENTITY_BB);
+	ClearNodeMaskBits(NodeMask::NODE_MASK_INFO_PER_OBJ);
 	SetNodeMaskBits(NodeMask::NODE_MASK_ENTITY_MODEL);
 	SetNodeMaskBits(NodeMask::NODE_MASK_INFO);
 	SetNodeMaskBits(NodeMask::NODE_MASK_TRAJECTORY_LINES);
@@ -1753,12 +1754,9 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 
 	// Overlay text
 	osg::ref_ptr<osg::Geode> textGeode = new osg::Geode;
-	osg::Vec4 layoutColor(0.9f, 0.9f, 0.9f, 1.0f);
-	float layoutCharacterSize = 12.0f;
-
 	infoText = new osgText::Text;
-	infoText->setColor(layoutColor);
-	infoText->setCharacterSize(layoutCharacterSize);
+	infoText->setColor(osg::Vec4(0.9f, 0.9f, 0.9f, 1.0f));
+	infoText->setCharacterSize(12.0f);
 	infoText->setAxisAlignment(osgText::Text::SCREEN);
 	infoText->setPosition(osg::Vec3(10, 10, 0));
 	infoText->setDataVariance(osg::Object::DYNAMIC);
@@ -1779,9 +1777,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 	infoTextCamera->setAllowEventFocus(false);
 	infoTextCamera->addChild(textGeode.get());
 	infoTextCamera->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF);
-
-	SetInfoTextProjection(traits->width, traits->height);
-
+	infoTextCamera->setProjectionMatrix(osg::Matrix::ortho2D(0, traits->width, 0, traits->height));
 	rootnode_->addChild(infoTextCamera);
 
 	// Register callback for fetch rendered image into RAM buffer
@@ -2140,10 +2136,6 @@ EntityModel* Viewer::CreateEntityModel(std::string modelFilepath, osg::Vec4 trai
 	bbGroup->getOrCreateStateSet()->setAttribute(material);
 	bbGroup->setName("BoundingBox");
 
-	group->addChild(modeltx);
-	group->addChild(bbGroup);
-	group->setName(name);
-
 	EntityModel* emodel;
 	if (type == EntityModel::EntityType::VEHICLE)
 	{
@@ -2157,15 +2149,15 @@ EntityModel* Viewer::CreateEntityModel(std::string modelFilepath, osg::Vec4 trai
 	}
 	emodel->filename_ = modelFilepath;
 
-	emodel->state_set_ = emodel->lod_->getOrCreateStateSet(); // Creating material
 	emodel->blend_color_ = new osg::BlendColor(osg::Vec4(1, 1, 1, 1));
-	emodel->state_set_->setAttributeAndModes(emodel->blend_color_);
 	emodel->blend_color_->setDataVariance(osg::Object::DYNAMIC);
-
+	emodel->state_set_ = emodel->lod_->getOrCreateStateSet(); // Creating material
 	osg::BlendFunc* bf = new osg::BlendFunc(osg::BlendFunc::CONSTANT_ALPHA, osg::BlendFunc::ONE_MINUS_CONSTANT_ALPHA);
+	emodel->state_set_->setAttributeAndModes(emodel->blend_color_);
 	emodel->state_set_->setAttributeAndModes(bf);
 	emodel->state_set_->setMode(GL_DEPTH_TEST, osg::StateAttribute::ON);
 	emodel->state_set_->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
+
 	emodel->modelBB_ = modelBB;
 
 	if (type == EntityModel::EntityType::VEHICLE)
@@ -2182,6 +2174,34 @@ EntityModel* Viewer::CreateEntityModel(std::string modelFilepath, osg::Vec4 trai
 			vehicle->road_sensor_->Hide();
 		}
 	}
+
+	group->addChild(modeltx);
+	group->addChild(bbGroup);
+	group->setName(name);
+
+	// on-screen text
+	emodel->on_screen_info_.geode_ = new osg::Geode;
+	emodel->on_screen_info_.osg_text_ = new osgText::Text;
+	emodel->on_screen_info_.osg_text_->setColor(osg::Vec4(1.0f, 1.0f, 0.1f, 1.0f));
+	emodel->on_screen_info_.osg_text_->setCharacterSize(10.0);
+	emodel->on_screen_info_.osg_text_->setCharacterSizeMode(osgText::TextBase::CharacterSizeMode::SCREEN_COORDS);
+	emodel->on_screen_info_.osg_text_->setAxisAlignment(osgText::Text::SCREEN);
+	emodel->on_screen_info_.osg_text_->setDrawMode(osgText::Text::TEXT);
+	emodel->on_screen_info_.osg_text_->setPosition(osg::Vec3(0.0, 0.0, boundingBox->dimensions_.height_ + 0.5));
+	emodel->on_screen_info_.osg_text_->setDataVariance(osg::Object::DYNAMIC);
+	emodel->on_screen_info_.osg_text_->setNodeMask(NodeMask::NODE_MASK_INFO_PER_OBJ);
+	emodel->on_screen_info_.osg_text_->setAlignment(osgText::Text::LEFT_BOTTOM);
+
+	osg::StateSet* text_state = emodel->on_screen_info_.osg_text_->getOrCreateStateSet();
+	text_state->setMode(GL_DEPTH_TEST, osg::StateAttribute::OFF | osg::StateAttribute::PROTECTED | osg::StateAttribute::OVERRIDE);
+	osg::ref_ptr<osg::BlendFunc> bf2 = new osg::BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	text_state->setAttributeAndModes(bf2);
+	text_state->setAttributeAndModes(emodel->blend_color_);
+	text_state->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::PROTECTED | osg::StateAttribute::OVERRIDE);
+	text_state->setRenderBinDetails(INT_MAX-1, "RenderBin", osg::StateSet::RenderBinMode::OVERRIDE_RENDERBIN_DETAILS);
+
+	emodel->on_screen_info_.geode_->addDrawable(emodel->on_screen_info_.osg_text_);
+	group->addChild(emodel->on_screen_info_.geode_.get());
 
 	return emodel;
 }
@@ -3209,11 +3229,6 @@ int Viewer::GetNodeMaskBit(int mask)
 	return osgViewer_->getCamera()->getCullMask() & mask;
 }
 
-void Viewer::SetInfoTextProjection(int width, int height)
-{
-	infoTextCamera->setProjectionMatrix(osg::Matrix::ortho2D(0, width, 0, height));
-}
-
 void Viewer::SetVehicleInFocus(int idx)
 {
 	if (idx >= 0 && idx < entities_.size())
@@ -3336,7 +3351,7 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
 	switch (ea.getEventType())
 	{
 	case(osgGA::GUIEventAdapter::RESIZE):
-		viewer_->SetInfoTextProjection(ea.getWindowWidth(), ea.getWindowHeight());
+		viewer_->infoTextCamera->setProjectionMatrix(osg::Matrix::ortho2D(0, ea.getWindowWidth(), 0, ea.getWindowHeight()));
 		break;
 	case(osgGA::GUIEventAdapter::CLOSE_WINDOW):
 	case(osgGA::GUIEventAdapter::QUIT_APPLICATION):
@@ -3498,7 +3513,16 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
 	{
 		if (ea.getEventType() & osgGA::GUIEventAdapter::KEYDOWN)
 		{
-			viewer_->ToggleNodeMaskBits(viewer::NodeMask::NODE_MASK_INFO);
+			int mask = viewer_->GetNodeMaskBit(
+				viewer::NodeMask::NODE_MASK_INFO |
+				viewer::NodeMask::NODE_MASK_INFO_PER_OBJ) / viewer::NodeMask::NODE_MASK_INFO;
+
+			// Toggle between modes: 0: none, 1: global info, 2: per object only, 3. both
+			mask = ((mask + 1) % 4) * viewer::NodeMask::NODE_MASK_INFO;
+
+			viewer_->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_INFO |
+				viewer::NodeMask::NODE_MASK_INFO_PER_OBJ, mask);
+
 		}
 	}
 	break;

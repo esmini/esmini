@@ -1,1 +1,1 @@
-"../../bin/esmini" --window 60 60 1024 576  --clear-color 1.0,1.0,1.0 --osc ../../resources/xosc/distance_test.xosc --info_text off
+"../../bin/esmini" --window 60 60 1024 576  --clear-color 1.0,1.0,1.0 --osc ../../resources/xosc/distance_test.xosc --info_text 0

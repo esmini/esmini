@@ -346,6 +346,7 @@ int main(int argc, char** argv)
 	opt.AddOption("dir", "Directory containing replays to overlay, pair with \"file\" argument, where \"file\" is .dat filename match substring","path");
 	opt.AddOption("disable_off_screen", "Disable off-screen rendering, potentially gaining performance");
 	opt.AddOption("hide_trajectories", "Hide trajectories from start (toggle with key 'n')");
+	opt.AddOption("info_text", "Show on-screen info text (toggle key 'i') mode 0=None 1=current (default) 2=per_object 3=both", "mode");
 	opt.AddOption("no_ghost", "Remove ghost entities");
 	opt.AddOption("no_ghost_model", "Remove only ghost model, show trajectory (toggle with key 'g')");
 	opt.AddOption("path", "Search path prefix for assets, e.g. model_ids.txt file (multiple occurrences supported)", "path");
@@ -628,6 +629,17 @@ int main(int argc, char** argv)
 			}
 		}
 
+		if ((arg_str = opt.GetOptionArg("info_text")) != "")
+		{
+			int mask = strtoi(arg_str);
+			if (mask < 0 || mask > 3)
+			{
+				LOG_AND_QUIT("Invalid on-screen info mode %d. Valid range is 0-3", mask);
+			}
+			viewer->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_INFO |
+				viewer::NodeMask::NODE_MASK_INFO_PER_OBJ, mask * viewer::NodeMask::NODE_MASK_INFO);
+		}
+
 		viewer->RegisterKeyEventCallback(ReportKeyEvent, player);
 
 		if (argc > 1)
@@ -869,6 +881,17 @@ int main(int argc, char** argv)
 					sc->pos = state->pos;
 					sc->wheel_angle = state->info.wheel_angle;
 					sc->wheel_rotation = state->info.wheel_rot;
+
+					// on screen text following each entity
+					snprintf(sc->entityModel->on_screen_info_.string_, sizeof(sc->entityModel->on_screen_info_.string_),
+						" %s (%d) %.2fm\n %.2fkm/h road %d lane %d/%.2f s %.2f\n x %.2f y %.2f hdg %.2f\n osi x %.2f y %.2f \n|",
+						state->info.name, state->info.id, entry->odometer,
+						3.6 * state->info.speed, sc->pos.roadId,
+						sc->pos.laneId, fabs(sc->pos.offset) < SMALL_NUMBER ? 0 : sc->pos.offset, sc->pos.s,
+						sc->pos.x, sc->pos.y, sc->pos.h,
+						sc->pos.x + sc->bounding_box.center_.x_ * cos(sc->pos.h),
+						sc->pos.y + sc->bounding_box.center_.x_ * sin(sc->pos.h));
+					sc->entityModel->on_screen_info_.osg_text_->setText(sc->entityModel->on_screen_info_.string_);
 
 					if (index == viewer->currentCarInFocus_)
 					{

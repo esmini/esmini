@@ -59,9 +59,10 @@ namespace viewer
 		NODE_MASK_ENTITY_MODEL =     (1 << 7),
 		NODE_MASK_ENTITY_BB =        (1 << 8),
 		NODE_MASK_INFO =             (1 << 9),
-		NODE_MASK_ROAD_SENSORS =     (1 << 10),
-		NODE_MASK_TRAJECTORY_LINES = (1 << 11),
-		NODE_MASK_ROUTE_WAYPOINTS  = (1 << 12),
+		NODE_MASK_INFO_PER_OBJ =     (1 << 10),
+		NODE_MASK_ROAD_SENSORS =     (1 << 11),
+		NODE_MASK_TRAJECTORY_LINES = (1 << 12),
+		NODE_MASK_ROUTE_WAYPOINTS  = (1 << 13),
 	} NodeMask;
 
 	class PolyLine
@@ -243,6 +244,15 @@ namespace viewer
 		void Hide() { group_->setNodeMask(0x0); };
 	};
 
+	class OnScreenText
+	{
+	public:
+		OnScreenText() { string_[0] = 0; }
+		char string_[256];
+		osg::ref_ptr<osg::Geode> geode_;
+		osg::ref_ptr<osgText::Text> osg_text_;
+	};
+
 	class EntityModel
 	{
 	public:
@@ -285,6 +295,7 @@ namespace viewer
 		PolyLine* trail_;
 		RouteWayPoints* routewaypoints_;
 		osgViewer::Viewer* viewer_;
+		OnScreenText on_screen_info_;
 	};
 
 	class CarModel : public EntityModel
@@ -395,6 +406,7 @@ namespace viewer
 
 		osg::ref_ptr<osg::Camera> infoTextCamera;
 		osg::ref_ptr<osgText::Text> infoText;
+		osg::ref_ptr<osg::Camera> onScreenTextCamera;
 
 		std::vector<PolyLine*> polyLine_;
 		OffScreenImage capturedImage_;
@@ -443,7 +455,6 @@ namespace viewer
 		bool getKeyRight() { return keyRight_; }
 		void SetQuitRequest(bool value) { quit_request_ = value; }
 		bool GetQuitRequest() { return quit_request_; }
-		void SetInfoTextProjection(int width, int height);
 		void SetInfoText(const char* text);
 		void SetNodeMaskBits(int bits);
 		void SetNodeMaskBits(int mask, int bits);

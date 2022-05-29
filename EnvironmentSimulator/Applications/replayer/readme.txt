@@ -2,7 +2,7 @@ replayer is a simple application for re-playing .dat files recorded by esmini.
 
 Application is launched from command line (or batch file). 
 
-Usage:  [options]
+Usage: replayer [options]
 Options:
   --file <filename>
       Simulation recording data file
@@ -24,6 +24,8 @@ Options:
       Disable off-screen rendering, potentially gaining performance
   --hide_trajectories
       Hide trajectories from start (toggle with key 'n')
+  --info_text <mode>
+      Show on-screen info text (toggle key 'i') mode 0=None 1=current (default) 2=per_object 3=both
   --no_ghost
       Remove ghost entities
   --no_ghost_model
@@ -58,19 +60,20 @@ Additional OSG graphics options:
 
 Key shortcuts
 
-    H (shift h): This help text
-    TAB:         Move camera to next vehicle
-    Shift - TAB: Move camera to previoius vehicle
-    Space:       Toggle pause / play
-    g:           Toggle show / hide ghost models
-    o:           Toggle show / hide OpenDRIVE road feature lines
-    u:           Toggle show / hide OSI road lines
-    y:           Toggle show / hide OSI road points
-    p:           Toggle show / hide environment 3D model
-    i:           Toggle info text showing time and speed
-    n:           Toggle show active trajectories
-    , (comma):   Switch entity view : Model only / Bounding box / Model + Bounding box / None
-    ESC:         quit
+    H (shift + h): This help text
+    TAB:           Move camera to next vehicle
+    Shift + TAB:   Move camera to previoius vehicle
+    Delete:        Same as above (Shift + TAB)
+    Space:         Toggle pause / play
+    g:             Toggle show / hide ghost models
+    o:             Toggle show / hide OpenDRIVE road feature lines
+    u:             Toggle show / hide OSI road lines
+    y:             Toggle show / hide OSI road points
+    p:             Toggle show / hide environment 3D model
+    i:             Toggle on-screen info text modes
+    n:             Toggle show active trajectories
+    , (comma):     Switch entity view : Model only / Bounding box / Model + Bounding box / None
+    ESC:           quit
 
     Arrow keys
         Left:          Pause and move to previous frame(+Shift to skip 10 frames)
