@@ -2143,6 +2143,10 @@ EntityModel* Viewer::CreateEntityModel(std::string modelFilepath, osg::Vec4 trai
 	bbGroup->getOrCreateStateSet()->setAttribute(material);
 	bbGroup->setName("BoundingBox");
 
+	group->addChild(modeltx);
+	group->addChild(bbGroup);
+	group->setName(name);
+
 	EntityModel* emodel;
 	if (type == EntityModel::EntityType::VEHICLE)
 	{
@@ -2181,10 +2185,6 @@ EntityModel* Viewer::CreateEntityModel(std::string modelFilepath, osg::Vec4 trai
 			vehicle->road_sensor_->Hide();
 		}
 	}
-
-	group->addChild(modeltx);
-	group->addChild(bbGroup);
-	group->setName(name);
 
 	// on-screen text
 	emodel->on_screen_info_.geode_ = new osg::Geode;
