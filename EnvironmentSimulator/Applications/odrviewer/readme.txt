@@ -19,7 +19,7 @@ Options:
   --disable_log
       Prevent logfile from being created
   --disable_off_screen
-      Disable off-screen rendering, potentially gaining performance
+      Disable esmini off-screen rendering, revert to OSG viewer default handling
   --disable_stdout
       Prevent messages to stdout
   --fixed_timestep <timestep>

@@ -1250,9 +1250,10 @@ struct FetchImage : public osg::Camera::DrawCallback
 	virtual void operator() (osg::RenderInfo& renderInfo) const
 	{
 		if (viewer_ != nullptr &&
-			!viewer_->GetDisableOffScreen() &&
+			SE_Env::Inst().GetOffScreenRendering() &&
 			!viewer_->GetQuitRequest() &&
 			(viewer_->GetSaveImagesToRAM() ||
+				viewer_->frameCounter_ == 0 ||
 				viewer_->GetSaveImagesToFile() != 0 ||
 				viewer_->imgCallback_.func != nullptr))
 		{
@@ -1304,6 +1305,12 @@ struct FetchImage : public osg::Camera::DrawCallback
 				viewer_->imageMutex.Unlock();
 			}
 		}
+		else
+		{
+			viewer_->capturedImage_.data = nullptr;
+		}
+
+		viewer_->frameCounter_++;
 
 		viewer_->renderSemaphore.Release(); // Lower flag to indicate rendering done
 	}
@@ -1410,13 +1417,13 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 	environment_ = NULL;
 	roadGeom = NULL;
 	captureCounter_ = 0;
-	saveImagesToRAM_ = true;  // Default is to read back rendered image for possible fetch via API
+	frameCounter_ = 0;
+	saveImagesToRAM_ = false;  // Default is to read back rendered image for possible fetch via API
 	saveImagesToFile_ = 0;
 	imgCallback_ = { nullptr, nullptr };
 	winDim_ = { -1, -1, -1, -1 };
 	bool decoration = true;
 	int screenNum = -1;
-	disable_off_screen_ = SE_Env::Inst().GetDisableOffScreen();
 
 	int aa_mode = DEFAULT_AA_MULTISAMPLES;
 	if (opt && (arg_str = opt->GetOptionArg("aa_mode")) != "")
@@ -1781,7 +1788,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 	rootnode_->addChild(infoTextCamera);
 
 	// Register callback for fetch rendered image into RAM buffer
-	if (!GetDisableOffScreen())
+	if (SE_Env::Inst().GetOffScreenRendering())
 	{
 		osgViewer_->getCamera()->setFinalDrawCallback(new FetchImage(this));
 	}
@@ -3339,11 +3346,17 @@ void Viewer::SaveImagesToFile(int nrOfFrames)
 
 void Viewer::Frame()
 {
-	if (!GetDisableOffScreen())
+	if (SE_Env::Inst().GetOffScreenRendering())
 	{
 		renderSemaphore.Set();  // Raise semaphore to flag rendering ongoing
 	}
+
 	osgViewer_->frame();
+
+	if (!SE_Env::Inst().GetOffScreenRendering())
+	{
+		frameCounter_++;
+	}
 }
 
 bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter&)

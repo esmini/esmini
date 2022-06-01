@@ -814,8 +814,8 @@ public:
 	void SetOSIMaxLateralDeviation(double maxLateralDeviation) { osiMaxLateralDeviation_ = maxLateralDeviation; }
 	double GetOSIMaxLongitudinalDistance() { return osiMaxLongitudinalDistance_; }
 	double GetOSIMaxLateralDeviation() { return osiMaxLateralDeviation_; }
-	void SetDisableOffScreen(bool disable) { disableOffScreen_ = disable; }
-	bool GetDisableOffScreen() { return disableOffScreen_; }
+	void SetOffScreenRendering(bool enable) { offScreenRendering_ = enable; }
+	bool GetOffScreenRendering() { return offScreenRendering_; }
 	void SetCollisionDetection(bool enable) { collisionDetection_ = enable; }
 	bool GetCollisionDetection() { return collisionDetection_; }
 	std::vector<std::string>& GetPaths() { return paths_; }
@@ -849,7 +849,7 @@ private:
 	SE_SystemTime systemTime_;
 	unsigned int seed_;
 	std::mt19937 gen_;
-	bool disableOffScreen_;
+	bool offScreenRendering_;
 	bool collisionDetection_;
 	std::map<int, std::string> entity_model_map;
 };

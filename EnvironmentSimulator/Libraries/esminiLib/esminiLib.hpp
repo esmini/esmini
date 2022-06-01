@@ -1105,6 +1105,12 @@ extern "C"
 	*/
 	SE_DLL_API void SE_SimpleVehicleGetState(void *handleSimpleVehicle, SE_SimpleVehicleState *state);
 
+	/**
+	Enable (default) or disable callback that handles framebuffer image capturing. NOTE: Needs to be called before SE_Init()
+	@param state true (default) = enable off-screen rendering callback, false = disable off-screen rendering callback
+	@return 0 if successful, -1 if not
+	*/
+	SE_DLL_API int SE_SetOffScreenRendering(bool state);
 
 	/**
 	Capture rendered image to RAM for possible fetch via API, e.g. SE_FetchImage()

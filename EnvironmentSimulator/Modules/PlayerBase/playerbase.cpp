@@ -484,15 +484,15 @@ OffScreenImage* ScenarioPlayer::FetchCapturedImagePtr()
 {
 	static OffScreenImage img;
 
-	if (viewer_ && !viewer_->GetDisableOffScreen())
+	if (viewer_ && SE_Env::Inst().GetOffScreenRendering())
 	{
-		if (viewer_->GetSaveImagesToRAM() == false)
+		viewer_->renderSemaphore.Wait();  // Wait until rendering is done
+
+		if (viewer_->capturedImage_.data == nullptr)
 		{
-			LOG("FetchCapturedImagePtr Error: Activate save images to RAM (SaveImagesToRAM(true)) in order to fetch images\n");
+			LOG("FetchCapturedImagePtr Error: No image data");
 			return nullptr;
 		}
-
-		viewer_->renderSemaphore.Wait();  // Wait until rendering is done
 
 		viewer_->imageMutex.Lock();
 
@@ -1021,7 +1021,7 @@ int ScenarioPlayer::Init()
 	opt.AddOption("custom_fixed_top_camera", "Additional custom top camera <x,y,z,rot> (multiple occurrences supported)", "position and rotation");
 	opt.AddOption("disable_controllers", "Disable controllers");
 	opt.AddOption("disable_log", "Prevent logfile from being created");
-	opt.AddOption("disable_off_screen", "Disable off-screen rendering, potentially gaining performance");
+	opt.AddOption("disable_off_screen", "Disable esmini off-screen rendering, revert to OSG viewer default handling");
 	opt.AddOption("disable_stdout", "Prevent messages to stdout");
 	opt.AddOption("enforce_generate_model", "Generate road 3D model even if SceneGraphFile is specified");
 	opt.AddOption("fixed_timestep", "Run simulation decoupled from realtime, with specified timesteps", "timestep");
@@ -1150,14 +1150,14 @@ int ScenarioPlayer::Init()
 		LOG("Generated seed %u", SE_Env::Inst().GetSeed());
 	}
 
-	if (opt.GetOptionSet("disable_off_screen"))
-	{
-		SE_Env::Inst().SetDisableOffScreen(true);
-	}
-
 	if (opt.GetOptionSet("collision"))
 	{
 		SE_Env::Inst().SetCollisionDetection(true);
+	}
+
+	if (opt.GetOptionSet("disable_off_screen"))
+	{
+		SE_Env::Inst().SetOffScreenRendering(false);
 	}
 
 	// Create scenario engine

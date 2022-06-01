@@ -344,7 +344,7 @@ int main(int argc, char** argv)
 	opt.AddOption("custom_fixed_camera", "Additional custom camera position <x,y,z>[,h,p] (multiple occurrences supported)", "position and optional orientation");
 	opt.AddOption("custom_fixed_top_camera", "Additional custom top camera <x,y,z,rot> (multiple occurrences supported)", "position and rotation");
 	opt.AddOption("dir", "Directory containing replays to overlay, pair with \"file\" argument, where \"file\" is .dat filename match substring","path");
-	opt.AddOption("disable_off_screen", "Disable off-screen rendering, potentially gaining performance");
+	opt.AddOption("disable_off_screen", "Disable esmini off-screen rendering, revert to OSG viewer default handling");
 	opt.AddOption("hide_trajectories", "Hide trajectories from start (toggle with key 'n')");
 	opt.AddOption("info_text", "Show on-screen info text (toggle key 'i') mode 0=None 1=current (default) 2=per_object 3=both", "mode");
 	opt.AddOption("no_ghost", "Remove ghost entities");
@@ -400,7 +400,7 @@ int main(int argc, char** argv)
 
 	if (opt.GetOptionSet("disable_off_screen"))
 	{
-		SE_Env::Inst().SetDisableOffScreen(true);
+		SE_Env::Inst().SetOffScreenRendering(false);
 	}
 
 	// Create player

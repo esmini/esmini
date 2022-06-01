@@ -2,7 +2,7 @@ replayer is a simple application for re-playing .dat files recorded by esmini.
 
 Application is launched from command line (or batch file). 
 
-Usage: replayer [options]
+Usage:  [options]
 Options:
   --file <filename>
       Simulation recording data file
@@ -21,7 +21,7 @@ Options:
   --dir <path>
       Directory containing replays to overlay, pair with "file" argument, where "file" is .dat filename match substring
   --disable_off_screen
-      Disable off-screen rendering, potentially gaining performance
+      Disable esmini off-screen rendering, revert to OSG viewer default handling
   --hide_trajectories
       Hide trajectories from start (toggle with key 'n')
   --info_text <mode>

@@ -2516,6 +2516,7 @@ TEST(APITest, TestFetchImage)
 	};
 
 	ASSERT_EQ(SE_InitWithArgs(sizeof(args)/sizeof(char*), args), 0);
+	SE_SaveImagesToRAM(true);
 
 	ASSERT_EQ(SE_GetNumberOfObjects(), 2);
 
@@ -3218,7 +3219,7 @@ int main(int argc, char **argv)
 	testing::InitGoogleTest(&argc, argv);
 
 #if 0  // set to 1 and modify filter to run one single test
-	testing::GTEST_FLAG(filter) = "*TestMultiReplayDifferentTimeSteps*";
+	testing::GTEST_FLAG(filter) = "*TestFetchImage*";
 #else
 	SE_LogToConsole(false);
 #endif

@@ -411,6 +411,7 @@ namespace viewer
 		std::vector<PolyLine*> polyLine_;
 		OffScreenImage capturedImage_;
 		int captureCounter_;
+		int frameCounter_;
 
 		SE_Semaphore renderSemaphore;
 		SE_Mutex imageMutex;
@@ -473,7 +474,6 @@ namespace viewer
 
 		void SaveImagesToFile(int nrOfFrames);
 		int GetSaveImagesToFile() { return saveImagesToFile_; }
-		bool GetDisableOffScreen() { return disable_off_screen_; }
 
 		void SaveImagesToRAM(bool state) { saveImagesToRAM_ = state; };
 		bool GetSaveImagesToRAM() { return saveImagesToRAM_; }

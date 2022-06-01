@@ -1959,6 +1959,12 @@ extern "C"
 		state->whee_angle = (float)((vehicle::Vehicle*)handleSimpleVehicle)->wheelAngle_;
 	}
 
+	SE_DLL_API int SE_SetOffScreenRendering(bool state)
+	{
+		SE_Env::Inst().SetOffScreenRendering(state);
+		return 0;
+	}
+
 	SE_DLL_API int SE_SaveImagesToRAM (bool state)
 	{
 #ifdef _USE_OSG
