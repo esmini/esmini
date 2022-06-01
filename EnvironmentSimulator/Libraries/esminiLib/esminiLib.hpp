@@ -1114,7 +1114,7 @@ extern "C"
 
 	/**
 	Capture rendered image to RAM for possible fetch via API, e.g. SE_FetchImage()
-	@param state true=capture images (default), false=don't capture (might improve performance on some systems)
+	@param state true=capture images, false=don't capture (default, might improve performance on some systems)
 	@return 0 if successful, -1 if not
 	*/
 	SE_DLL_API int SE_SaveImagesToRAM(bool state);

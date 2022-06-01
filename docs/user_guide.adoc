@@ -263,7 +263,7 @@ esmini make use of OpenSceneGraph sub-sampling method for anti-alias. Default se
 === Screenshots and video clips 
 esmini can save screenshots in uncompressed https://en.wikipedia.org/wiki/Truevision_TGA[TGA] format. These images can be converted into other image formats or even video clips in a post process.
 
-esminiLib also supports grabbing screenshots via API, also from a pure off-screen rendering setup (requireing neither monitor nor graphics hardware). See https://github.com/esmini/esmini/tree/master/EnvironmentSimulator/code-examples/image-capture[image-capture] code example.
+esminiLib also supports grabbing screenshots via API, also from a pure off-screen rendering setup (requiring neither monitor nor graphics hardware). See https://github.com/esmini/esmini/tree/master/EnvironmentSimulator/code-examples/image-capture[image-capture] code example.
 
 Here follows a few examples using launch arguments and runtime key commands.
 
@@ -292,6 +292,45 @@ Get ffmpeg: http://ffmpeg.org/download.html
 
 Some details regarding H.264 encoding can be found https://trac.ffmpeg.org/wiki/Encode/H.264[here].
 
+==== Off-screen rendering
+
+Whenever esmini is launched with the `--window <x-pos> <y-pos> <width> <height>` argument a viewer will be created with specified window. The `--headless` flag controls whether any window will be "on screen" or only off-screen. Of course, `--headless` in combination with no window (no --window argument) will skip rendering altogether, which is a very performance-saving mode to use when possible.
+
+Example: +
+``./bin/esmini.exe --window 60 60 4000 2000 --headless --capture_screen --osc .\resources\xosc\cut-in.xosc`` +
+will render images into a virtual frame buffer of size 4k x 2k pixels and then store to file. Note: The size of the virtual frame buffer is not limited by size of any connected display.
+
+To run esmini completely without rendering, just omit the --window argument: +
+``./bin/esmini.exe --osc .\resources\xosc\cut-in.xosc`` --fixed_timestep 0.01 --record sim.dat +
+will run the specified scenario quickly and store a .dat file for later analysis or viewing (with replayer).
+
+*Note:* If --fixed_timestep is omitted esmini will adapt timesteps to actual frametime, so a 30 seconds scenario will take 30 seconds - i.e. no performance gain.
+
+==== Software rendering (no gfx hw)
+
+By default any available 3D graphics hardware will be utilized. As fallback esmini (via OSG) will utilize https://www.mesa3d.org[Mesa3D] which is a software implementation of the OpenGL graphics stack including parts normally hosted in the graphics hardware system. The Mesa3D approach is useful when running on cloud/cluster machines lacking graphics hardware, perhaps even lacking a window system (like slimmed and headless Ubuntu without X11 support). 
+
+*Mesa3D on Linux* +
+Mesa3D is normally installed with Linux distributions. Check OpenGL support with the following command: + 
+``glxinfo -B`` 
+
+If the command is not available, then Mesa3D utility package is probably missing. Install as: +
+``sudo apt install mesa-utils``
+
+To run headless with a virtual frame buffer: 
+
+- Activate https://en.wikipedia.org/wiki/Xvfb[xvfb]: +
+``Xvfb :99 -screen 0 1920x1080x24+32 & export DISPLAY=:99`` +
+- Then run esmini as usual
+
+For troubleshooting, the following command might give information about the graphics system: +
+``lspci -vnn | grep VGA -A 12``
+
+*Mesa3D on Windows* +
+
+- Grab the Mesa3D binary from https://downloads.fdossena.com/geth.php?r=mesa64-latest[here]. 
+- Unpack and place opengl32.dll in the same folder as esmini executable.
+- Then run esmini as usual
 
 === Logging
 esmini can produce log files in different formats and for different purposes, explained next.
@@ -1125,6 +1164,55 @@ Below is a typical interaction between a custom application (e.g. vehicle simula
 |and so on...||||
 
 |===
+
+=== Functionality
+No systematic documentation available. See header files https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp[esminiLib.hpp] and https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/Libraries/esminiRMLib/esminiRMLib.hpp[esminiRMLib.hpp] for API details.
+
+The following section covers some specific use cases of the library.
+
+==== Save or grab images
+
+Screenshots can be controlled via the API:
+
+[source, c++]
+----
+int SE_SaveImagesToFile(int nrOfFrames);
+----
+nrOfFrames: -1 => continuously, 0 => stop, > 0 => number of frames, e.g. 1=next frame only, 2=next two frames
+
+Images will be stored in current folder with name `screen_shot_*.tga` (* = counter) for post processing.
+
+Images can also be saved to memory for instant processing. Control the feature with:
+
+[source, c++]
+----
+int SE_SaveImagesToRAM(bool state);
+----
+state: true => capture images, false => don't capture (default, might improve performance on some systems)
+
+Grab image with:
+
+[source, c++]
+----
+int SE_FetchImage(SE_Image *image);
+----
+image is a reference to a SE_Image struct which will contain the image meta and image data
+
+See https://github.com/esmini/esmini/tree/master/EnvironmentSimulator/code-examples/image-capture[image-capture] code example.
+
+[Note]
+==== 
+**Note:** In order to grab a rendered frame image, it must have been saved to RAM during the post rendering phase. First frame will be saved to RAM by default. The SE_SaveImagesToRAM() function must be used to enable the feature for frames > 0. 
+
+The reason for not enable always by default is performance savings. On some system the operation to read back rendered pixels from graphics frame buffer to application RAM memory is not neglectable (depending on whether color coding or byte order transformation is needed). So a compromize is to have the feature enabled for the first init frame, and then activate by user when needed.
+====
+
+Finally, to disable esmini image handling altogether and revert to OSG default handling, make the following call before SE_Init():
+
+``SE_SetOffScreenRendering(false);``
+
+Note that disabling the this will permanently disable the callback mechanism for the complete esmini session (overriding any SE_SaveImagesToRAM() call).
+
 
 == Hello World programming tutorial
 include::../Hello-World_coding-example/tutorial.adoc[leveloffset=+1, lines=5..-1]
