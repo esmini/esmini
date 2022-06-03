@@ -912,8 +912,7 @@ int ScenarioPlayer::InitViewer()
 		}
 	}
 
-	// Trig first viewer frame, just to config graphics and load objects
-	ViewerFrame(true);
+	DecorateViewer();
 
 	viewerState_ = ViewerState::VIEWER_STATE_STARTED;
 
@@ -928,6 +927,9 @@ void viewer_thread(void *args)
 	{
 		return;
 	}
+
+	player->viewer_init_semaphore.Release();
+	player->player_init_semaphore.Wait();
 
 	while (!player->viewer_->GetQuitRequest())
 	{
@@ -996,6 +998,14 @@ void ScenarioPlayer::PrintUsage()
 #ifdef _USE_OSG
 	viewer::Viewer::PrintUsage();
 #endif
+}
+
+void ScenarioPlayer::DecorateViewer()
+{
+	// Decorate window border with application name and arguments
+	viewer_->SetWindowTitleFromArgs(opt.GetOriginalArgs());
+
+	viewer_->RegisterKeyEventCallback(ReportKeyEvent, this);
 }
 
 int ScenarioPlayer::Init()
@@ -1248,20 +1258,26 @@ int ScenarioPlayer::Init()
 		scenarioGateway->RecordToFile(arg_str, scenarioEngine->getOdrFilename(), scenarioEngine->getSceneGraphFilename());
 	}
 
+	if (launch_server)
+	{
+		// Launch UDP server to receive external Ego state
+		StartServer(scenarioEngine);
+	}
+
+	player_init_semaphore.Set();
+
 	if (opt.IsInOriginalArgs("--window") || opt.IsInOriginalArgs("--borderless-window"))
 	{
 #ifdef _USE_OSG
 
 		if (threads)
 		{
+			viewer_init_semaphore.Set();
+
 			// Launch Viewer in a separate thread
 			thread.Start(viewer_thread, (void*)this);
 
-			// Wait for viewer to initialize
-			for (int i = 0; i < 60 && viewerState_ == VIEWER_STATE_NOT_STARTED; i++)
-			{
-				SE_sleep(100);
-			}
+			viewer_init_semaphore.Wait();
 
 			if (viewerState_ == ViewerState::VIEWER_STATE_NOT_STARTED)
 			{
@@ -1287,11 +1303,6 @@ int ScenarioPlayer::Init()
 			}
 		}
 
-		// Decorate window border with application name and arguments
-		viewer_->SetWindowTitleFromArgs(opt.GetOriginalArgs());
-
-		viewer_->RegisterKeyEventCallback(ReportKeyEvent, this);
-
 #else
 		LOG("window requested, but esmini compiled without OSG capabilities");
 #endif
@@ -1308,13 +1319,9 @@ int ScenarioPlayer::Init()
 		PrintUsage();
 	}
 
-	if (launch_server)
-	{
-		// Launch UDP server to receive external Ego state
-		StartServer(scenarioEngine);
-	}
-
 	Frame(0.0);
+
+	player_init_semaphore.Release();
 
 	return 0;
 }

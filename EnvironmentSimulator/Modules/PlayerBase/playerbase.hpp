@@ -136,6 +136,7 @@ public:
 	viewer::OSISensorDetection* OSISensorDetection;
 	ViewerState viewerState_;
 	int InitViewer();
+	void DecorateViewer();
 	void CloseViewer();
 	void ViewerFrame(bool init = false);
 
@@ -157,6 +158,8 @@ public:
 	SE_Options opt;
 	std::vector<ObjCallback> objCallback;
 	std::string exe_path_;
+	SE_Semaphore player_init_semaphore;
+	SE_Semaphore viewer_init_semaphore;
 
 private:
 	int Init();
