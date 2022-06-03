@@ -2194,7 +2194,7 @@ EntityModel* Viewer::CreateEntityModel(std::string modelFilepath, osg::Vec4 trai
 	emodel->on_screen_info_.osg_text_->setCharacterSizeMode(osgText::TextBase::CharacterSizeMode::SCREEN_COORDS);
 	emodel->on_screen_info_.osg_text_->setAxisAlignment(osgText::Text::SCREEN);
 	emodel->on_screen_info_.osg_text_->setDrawMode(osgText::Text::TEXT);
-	emodel->on_screen_info_.osg_text_->setPosition(osg::Vec3(0.0, 0.0, boundingBox->dimensions_.height_ + 0.5));
+	emodel->on_screen_info_.osg_text_->setPosition(osg::Vec3(0.0, 0.0, (boundingBox ? boundingBox->dimensions_.height_ : modelBB.zMax()) + 0.5));
 	emodel->on_screen_info_.osg_text_->setDataVariance(osg::Object::DYNAMIC);
 	emodel->on_screen_info_.osg_text_->setNodeMask(NodeMask::NODE_MASK_INFO_PER_OBJ);
 	emodel->on_screen_info_.osg_text_->setAlignment(osgText::Text::LEFT_BOTTOM);
