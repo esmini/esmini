@@ -136,7 +136,6 @@ public:
 	viewer::OSISensorDetection* OSISensorDetection;
 	ViewerState viewerState_;
 	int InitViewer();
-	void DecorateViewer();
 	void CloseViewer();
 	void ViewerFrame(bool init = false);
 

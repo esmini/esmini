@@ -912,7 +912,9 @@ int ScenarioPlayer::InitViewer()
 		}
 	}
 
-	DecorateViewer();
+	// Decorate window border with application name and arguments
+	viewer_->SetWindowTitleFromArgs(opt.GetOriginalArgs());
+	viewer_->RegisterKeyEventCallback(ReportKeyEvent, this);
 
 	viewerState_ = ViewerState::VIEWER_STATE_STARTED;
 
@@ -998,14 +1000,6 @@ void ScenarioPlayer::PrintUsage()
 #ifdef _USE_OSG
 	viewer::Viewer::PrintUsage();
 #endif
-}
-
-void ScenarioPlayer::DecorateViewer()
-{
-	// Decorate window border with application name and arguments
-	viewer_->SetWindowTitleFromArgs(opt.GetOriginalArgs());
-
-	viewer_->RegisterKeyEventCallback(ReportKeyEvent, this);
 }
 
 int ScenarioPlayer::Init()
