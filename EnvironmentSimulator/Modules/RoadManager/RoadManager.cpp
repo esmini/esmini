@@ -7217,8 +7217,11 @@ int Position::TeleportTo(Position* position)
 
 	CopyRMPos(position);
 
-	// Resolve any relative positions
-	ReleaseRelation();
+	if (position->GetRelativePosition() != nullptr)
+	{
+		// Resolve any relative positions
+		ReleaseRelation();
+	}
 
 	if (GetRoute())   // on a route
 	{
@@ -10243,27 +10246,17 @@ void Position::ReleaseRelation()
 	double hAbs = h_;
 	double hRel = h_relative_;
 	double pAbs = p_;
-	double pRel = p_relative_;
 	double rAbs = r_;
-	double rRel = r_relative_;
 	PositionType type = type_;
 
 	SetRelativePosition(0, PositionType::NORMAL);
 
 	if (type == Position::PositionType::RELATIVE_ROAD)
 	{
-		if (orientation_type_ == OrientationType::ORIENTATION_RELATIVE)
+		// Resolve requested position
+		SetTrackPos(roadId, s, t);
+		if (orientation_type_ == OrientationType::ORIENTATION_ABSOLUTE)
 		{
-			// Resolve requested position
-			SetTrackPos(roadId, s, t);
-
-			SetHeadingRelative(hRel);
-			SetPitchRelative(pRel);
-			SetRollRelative(rRel);
-		}
-		else
-		{
-			SetTrackPos(roadId, s, t);
 			SetHeading(hAbs);
 			SetPitch(pAbs);
 			SetRoll(rAbs);
@@ -10271,19 +10264,13 @@ void Position::ReleaseRelation()
 	}
 	else if (type == Position::PositionType::RELATIVE_LANE)
 	{
+		SetLanePos(roadId, laneId, s, offset);
 		if (orientation_type_ == OrientationType::ORIENTATION_RELATIVE)
 		{
-			SetLanePos(roadId, laneId, s, offset);
-
-			hRel = GetAngleSum(hRel, GetDrivingDirectionRelativeRoad() < 0 ? M_PI : 0.0);
-
-			SetHeadingRelative(hRel);
-			SetPitchRelative(pRel);
-			SetRollRelative(rRel);
+			SetHeadingRelative(GetAngleSum(hRel, GetDrivingDirectionRelativeRoad() < 0 ? M_PI : 0.0));
 		}
 		else
 		{
-			SetLanePos(roadId, laneId, s, offset);
 			SetHeading(hAbs);
 			SetPitch(pAbs);
 			SetRoll(rAbs);

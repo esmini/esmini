@@ -106,17 +106,18 @@ OSCPositionRoad::OSCPositionRoad(int roadId, double s, double t, OSCOrientation 
 			position_.SetPitchRelative(orientation.p_);
 			position_.SetRollRelative(orientation.r_);
 		}
+		position_.EvaluateOrientation();
 	}
 	else if (orientation.type_ == roadmanager::Position::OrientationType::ORIENTATION_ABSOLUTE)
 	{
 		position_.SetHeading(orientation.h_);
+		position_.SetPitch(orientation.p_);
+		position_.SetRoll(orientation.r_);
 	}
 	else
 	{
 		LOG("Unexpected orientation type: %d", orientation.type_);
 	}
-	position_.SetP(orientation.p_);
-	position_.SetR(orientation.r_);
 }
 
 OSCPositionRelativeObject::OSCPositionRelativeObject(Object *object, double dx, double dy, double dz, OSCOrientation orientation) :
@@ -169,13 +170,16 @@ OSCPositionRelativeLane::OSCPositionRelativeLane(Object *object, int dLane, doub
 	if (orientation.type_ == roadmanager::Position::OrientationType::ORIENTATION_RELATIVE)
 	{
 		position_.SetHeadingRelative(orientation.h_);
+		position_.SetPitchRelative(orientation.p_);
+		position_.SetRollRelative(orientation.r_);
+		position_.EvaluateOrientation();
 	}
 	else
 	{
-		position_.SetH(orientation.h_);
+		position_.SetHeading(orientation.h_);
+		position_.SetPitch(orientation.p_);
+		position_.SetRoll(orientation.r_);
 	}
-	position_.SetP(orientation.p_);
-	position_.SetR(orientation.r_);
 
 	position_.SetRelativePosition(&object->pos_, roadmanager::Position::PositionType::RELATIVE_LANE);
 }
@@ -195,13 +199,16 @@ OSCPositionRelativeRoad::OSCPositionRelativeRoad(Object* object, double ds, doub
 	if (orientation.type_ == roadmanager::Position::OrientationType::ORIENTATION_RELATIVE)
 	{
 		position_.SetHeadingRelative(orientation.h_);
+		position_.SetPitchRelative(orientation.p_);
+		position_.SetRollRelative(orientation.r_);
+		position_.EvaluateOrientation();
 	}
 	else
 	{
-		position_.SetH(orientation.h_);
+		position_.SetHeading(orientation.h_);
+		position_.SetPitch(orientation.p_);
+		position_.SetRoll(orientation.r_);
 	}
-	position_.SetP(orientation.p_);
-	position_.SetR(orientation.r_);
 
 	position_.SetRelativePosition(&object->pos_, roadmanager::Position::PositionType::RELATIVE_ROAD);
 }

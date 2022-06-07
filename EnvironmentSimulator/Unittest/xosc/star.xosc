@@ -1,0 +1,2104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<OpenSCENARIO xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="OpenScenario.xsd">
+    <FileHeader description="my scenario" author="esmini team" revMajor="1" revMinor="1" date="2022-06-07T16:47:45.580112"/>
+    <ParameterDeclarations/>
+    <CatalogLocations>
+        <VehicleCatalog>
+            <Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
+        </VehicleCatalog>
+    </CatalogLocations>
+    <RoadNetwork>
+        <LogicFile filepath="../xodr/star.xodr"/>
+    </RoadNetwork>
+    <Entities>
+        <ScenarioObject name="Ego_0_-1">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="Ego_0_1">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="Ego_1_-1">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="Ego_1_1">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="Ego_2_-1">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="Ego_2_1">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="Ego_3_-1">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="Ego_3_1">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="Ego_4_-1">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="Ego_4_1">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="Ego_5_-1">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="Ego_5_1">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="Ego_6_-1">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="Ego_6_1">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="Ego_7_-1">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="Ego_7_1">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="Ego_8_-1">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="Ego_8_1">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="Ego_9_-1">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="Ego_9_1">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="Ego_10_-1">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="Ego_10_1">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="Ego_11_-1">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="Ego_11_1">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="Ego_12_-1">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="Ego_12_1">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="Ego_13_-1">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="Ego_13_1">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="Ego_14_-1">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="Ego_14_1">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="Ego_15_-1">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="Ego_15_1">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="Ego_16_-1">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="Ego_16_1">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="Ego_17_-1">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="Ego_17_1">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="Ego_18_-1">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="Ego_18_1">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="Ego_19_-1">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="Ego_19_1">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="Ego_20_-1">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="Ego_20_1">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="Ego_21_-1">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="Ego_21_1">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="Ego_22_-1">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="Ego_22_1">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="Ego_23_-1">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="Ego_23_1">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+    </Entities>
+    <Storyboard>
+        <Init>
+            <Actions>
+                <Private entityRef="Ego_0_-1">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="0" laneId="-1" s="25.0" offset="0.0">
+                                    <Orientation h="0.0" p="0.0" type="relative"/>
+                                </LanePosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <RelativeRoadPosition entityRef="Ego_0_-1" ds="0.0" dt="0.0">
+                                    <Orientation h="3.141592653589793" p="0.0" r="0.0" type="relative"/>
+                                </RelativeRoadPosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="2.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LateralAction>
+                            <LaneChangeAction>
+                                <LaneChangeActionDynamics dynamicsShape="linear" value="1.0" dynamicsDimension="time"/>
+                                <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="1"/>
+                                </LaneChangeTarget>
+                            </LaneChangeAction>
+                        </LateralAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Ego_0_1">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="0" laneId="1" s="25.0" offset="0.0">
+                                    <Orientation h="0.0" p="0.0" type="relative"/>
+                                </LanePosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <RelativeRoadPosition entityRef="Ego_0_1" ds="0.0" dt="0.0">
+                                    <Orientation h="3.141592653589793" p="0.0" r="0.0" type="relative"/>
+                                </RelativeRoadPosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="2.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LateralAction>
+                            <LaneChangeAction>
+                                <LaneChangeActionDynamics dynamicsShape="linear" value="1.0" dynamicsDimension="time"/>
+                                <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="-1"/>
+                                </LaneChangeTarget>
+                            </LaneChangeAction>
+                        </LateralAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Ego_1_-1">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="1" laneId="-1" s="25.0" offset="0.0">
+                                    <Orientation h="0.0" p="0.0" type="relative"/>
+                                </LanePosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <RelativeRoadPosition entityRef="Ego_1_-1" ds="0.0" dt="0.0">
+                                    <Orientation h="3.141592653589793" p="0.0" r="0.0" type="relative"/>
+                                </RelativeRoadPosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="2.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LateralAction>
+                            <LaneChangeAction>
+                                <LaneChangeActionDynamics dynamicsShape="linear" value="1.0" dynamicsDimension="time"/>
+                                <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="1"/>
+                                </LaneChangeTarget>
+                            </LaneChangeAction>
+                        </LateralAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Ego_1_1">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="1" laneId="1" s="25.0" offset="0.0">
+                                    <Orientation h="0.0" p="0.0" type="relative"/>
+                                </LanePosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <RelativeRoadPosition entityRef="Ego_1_1" ds="0.0" dt="0.0">
+                                    <Orientation h="3.141592653589793" p="0.0" r="0.0" type="relative"/>
+                                </RelativeRoadPosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="2.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LateralAction>
+                            <LaneChangeAction>
+                                <LaneChangeActionDynamics dynamicsShape="linear" value="1.0" dynamicsDimension="time"/>
+                                <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="-1"/>
+                                </LaneChangeTarget>
+                            </LaneChangeAction>
+                        </LateralAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Ego_2_-1">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="2" laneId="-1" s="25.0" offset="0.0">
+                                    <Orientation h="0.0" p="0.0" type="relative"/>
+                                </LanePosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <RelativeRoadPosition entityRef="Ego_2_-1" ds="0.0" dt="0.0">
+                                    <Orientation h="3.141592653589793" p="0.0" r="0.0" type="relative"/>
+                                </RelativeRoadPosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="2.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LateralAction>
+                            <LaneChangeAction>
+                                <LaneChangeActionDynamics dynamicsShape="linear" value="1.0" dynamicsDimension="time"/>
+                                <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="1"/>
+                                </LaneChangeTarget>
+                            </LaneChangeAction>
+                        </LateralAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Ego_2_1">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="2" laneId="1" s="25.0" offset="0.0">
+                                    <Orientation h="0.0" p="0.0" type="relative"/>
+                                </LanePosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <RelativeRoadPosition entityRef="Ego_2_1" ds="0.0" dt="0.0">
+                                    <Orientation h="3.141592653589793" p="0.0" r="0.0" type="relative"/>
+                                </RelativeRoadPosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="2.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LateralAction>
+                            <LaneChangeAction>
+                                <LaneChangeActionDynamics dynamicsShape="linear" value="1.0" dynamicsDimension="time"/>
+                                <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="-1"/>
+                                </LaneChangeTarget>
+                            </LaneChangeAction>
+                        </LateralAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Ego_3_-1">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="3" laneId="-1" s="25.0" offset="0.0">
+                                    <Orientation h="0.0" p="0.0" type="relative"/>
+                                </LanePosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <RelativeRoadPosition entityRef="Ego_3_-1" ds="0.0" dt="0.0">
+                                    <Orientation h="3.141592653589793" p="0.0" r="0.0" type="relative"/>
+                                </RelativeRoadPosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="2.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LateralAction>
+                            <LaneChangeAction>
+                                <LaneChangeActionDynamics dynamicsShape="linear" value="1.0" dynamicsDimension="time"/>
+                                <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="1"/>
+                                </LaneChangeTarget>
+                            </LaneChangeAction>
+                        </LateralAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Ego_3_1">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="3" laneId="1" s="25.0" offset="0.0">
+                                    <Orientation h="0.0" p="0.0" type="relative"/>
+                                </LanePosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <RelativeRoadPosition entityRef="Ego_3_1" ds="0.0" dt="0.0">
+                                    <Orientation h="3.141592653589793" p="0.0" r="0.0" type="relative"/>
+                                </RelativeRoadPosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="2.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LateralAction>
+                            <LaneChangeAction>
+                                <LaneChangeActionDynamics dynamicsShape="linear" value="1.0" dynamicsDimension="time"/>
+                                <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="-1"/>
+                                </LaneChangeTarget>
+                            </LaneChangeAction>
+                        </LateralAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Ego_4_-1">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="4" laneId="-1" s="25.0" offset="0.0">
+                                    <Orientation h="0.0" p="0.0" type="relative"/>
+                                </LanePosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <RelativeRoadPosition entityRef="Ego_4_-1" ds="0.0" dt="0.0">
+                                    <Orientation h="3.141592653589793" p="0.0" r="0.0" type="relative"/>
+                                </RelativeRoadPosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="2.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LateralAction>
+                            <LaneChangeAction>
+                                <LaneChangeActionDynamics dynamicsShape="linear" value="1.0" dynamicsDimension="time"/>
+                                <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="1"/>
+                                </LaneChangeTarget>
+                            </LaneChangeAction>
+                        </LateralAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Ego_4_1">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="4" laneId="1" s="25.0" offset="0.0">
+                                    <Orientation h="0.0" p="0.0" type="relative"/>
+                                </LanePosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <RelativeRoadPosition entityRef="Ego_4_1" ds="0.0" dt="0.0">
+                                    <Orientation h="3.141592653589793" p="0.0" r="0.0" type="relative"/>
+                                </RelativeRoadPosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="2.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LateralAction>
+                            <LaneChangeAction>
+                                <LaneChangeActionDynamics dynamicsShape="linear" value="1.0" dynamicsDimension="time"/>
+                                <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="-1"/>
+                                </LaneChangeTarget>
+                            </LaneChangeAction>
+                        </LateralAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Ego_5_-1">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="5" laneId="-1" s="25.0" offset="0.0">
+                                    <Orientation h="0.0" p="0.0" type="relative"/>
+                                </LanePosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <RelativeRoadPosition entityRef="Ego_5_-1" ds="0.0" dt="0.0">
+                                    <Orientation h="3.141592653589793" p="0.0" r="0.0" type="relative"/>
+                                </RelativeRoadPosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="2.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LateralAction>
+                            <LaneChangeAction>
+                                <LaneChangeActionDynamics dynamicsShape="linear" value="1.0" dynamicsDimension="time"/>
+                                <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="1"/>
+                                </LaneChangeTarget>
+                            </LaneChangeAction>
+                        </LateralAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Ego_5_1">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="5" laneId="1" s="25.0" offset="0.0">
+                                    <Orientation h="0.0" p="0.0" type="relative"/>
+                                </LanePosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <RelativeRoadPosition entityRef="Ego_5_1" ds="0.0" dt="0.0">
+                                    <Orientation h="3.141592653589793" p="0.0" r="0.0" type="relative"/>
+                                </RelativeRoadPosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="2.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LateralAction>
+                            <LaneChangeAction>
+                                <LaneChangeActionDynamics dynamicsShape="linear" value="1.0" dynamicsDimension="time"/>
+                                <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="-1"/>
+                                </LaneChangeTarget>
+                            </LaneChangeAction>
+                        </LateralAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Ego_6_-1">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="6" laneId="-1" s="25.0" offset="0.0">
+                                    <Orientation h="0.0" p="0.0" type="relative"/>
+                                </LanePosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <RelativeRoadPosition entityRef="Ego_6_-1" ds="0.0" dt="0.0">
+                                    <Orientation h="3.141592653589793" p="0.0" r="0.0" type="relative"/>
+                                </RelativeRoadPosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="2.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LateralAction>
+                            <LaneChangeAction>
+                                <LaneChangeActionDynamics dynamicsShape="linear" value="1.0" dynamicsDimension="time"/>
+                                <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="1"/>
+                                </LaneChangeTarget>
+                            </LaneChangeAction>
+                        </LateralAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Ego_6_1">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="6" laneId="1" s="25.0" offset="0.0">
+                                    <Orientation h="0.0" p="0.0" type="relative"/>
+                                </LanePosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <RelativeRoadPosition entityRef="Ego_6_1" ds="0.0" dt="0.0">
+                                    <Orientation h="3.141592653589793" p="0.0" r="0.0" type="relative"/>
+                                </RelativeRoadPosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="2.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LateralAction>
+                            <LaneChangeAction>
+                                <LaneChangeActionDynamics dynamicsShape="linear" value="1.0" dynamicsDimension="time"/>
+                                <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="-1"/>
+                                </LaneChangeTarget>
+                            </LaneChangeAction>
+                        </LateralAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Ego_7_-1">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="7" laneId="-1" s="25.0" offset="0.0">
+                                    <Orientation h="0.0" p="0.0" type="relative"/>
+                                </LanePosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <RelativeRoadPosition entityRef="Ego_7_-1" ds="0.0" dt="0.0">
+                                    <Orientation h="3.141592653589793" p="0.0" r="0.0" type="relative"/>
+                                </RelativeRoadPosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="2.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LateralAction>
+                            <LaneChangeAction>
+                                <LaneChangeActionDynamics dynamicsShape="linear" value="1.0" dynamicsDimension="time"/>
+                                <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="1"/>
+                                </LaneChangeTarget>
+                            </LaneChangeAction>
+                        </LateralAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Ego_7_1">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="7" laneId="1" s="25.0" offset="0.0">
+                                    <Orientation h="0.0" p="0.0" type="relative"/>
+                                </LanePosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <RelativeRoadPosition entityRef="Ego_7_1" ds="0.0" dt="0.0">
+                                    <Orientation h="3.141592653589793" p="0.0" r="0.0" type="relative"/>
+                                </RelativeRoadPosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="2.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LateralAction>
+                            <LaneChangeAction>
+                                <LaneChangeActionDynamics dynamicsShape="linear" value="1.0" dynamicsDimension="time"/>
+                                <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="-1"/>
+                                </LaneChangeTarget>
+                            </LaneChangeAction>
+                        </LateralAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Ego_8_-1">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="8" laneId="-1" s="25.0" offset="0.0">
+                                    <Orientation h="0.0" p="0.0" type="relative"/>
+                                </LanePosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <RelativeRoadPosition entityRef="Ego_8_-1" ds="0.0" dt="0.0">
+                                    <Orientation h="3.141592653589793" p="0.0" r="0.0" type="relative"/>
+                                </RelativeRoadPosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="2.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LateralAction>
+                            <LaneChangeAction>
+                                <LaneChangeActionDynamics dynamicsShape="linear" value="1.0" dynamicsDimension="time"/>
+                                <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="1"/>
+                                </LaneChangeTarget>
+                            </LaneChangeAction>
+                        </LateralAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Ego_8_1">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="8" laneId="1" s="25.0" offset="0.0">
+                                    <Orientation h="0.0" p="0.0" type="relative"/>
+                                </LanePosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <RelativeRoadPosition entityRef="Ego_8_1" ds="0.0" dt="0.0">
+                                    <Orientation h="3.141592653589793" p="0.0" r="0.0" type="relative"/>
+                                </RelativeRoadPosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="2.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LateralAction>
+                            <LaneChangeAction>
+                                <LaneChangeActionDynamics dynamicsShape="linear" value="1.0" dynamicsDimension="time"/>
+                                <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="-1"/>
+                                </LaneChangeTarget>
+                            </LaneChangeAction>
+                        </LateralAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Ego_9_-1">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="9" laneId="-1" s="25.0" offset="0.0">
+                                    <Orientation h="0.0" p="0.0" type="relative"/>
+                                </LanePosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <RelativeRoadPosition entityRef="Ego_9_-1" ds="0.0" dt="0.0">
+                                    <Orientation h="3.141592653589793" p="0.0" r="0.0" type="relative"/>
+                                </RelativeRoadPosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="2.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LateralAction>
+                            <LaneChangeAction>
+                                <LaneChangeActionDynamics dynamicsShape="linear" value="1.0" dynamicsDimension="time"/>
+                                <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="1"/>
+                                </LaneChangeTarget>
+                            </LaneChangeAction>
+                        </LateralAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Ego_9_1">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="9" laneId="1" s="25.0" offset="0.0">
+                                    <Orientation h="0.0" p="0.0" type="relative"/>
+                                </LanePosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <RelativeRoadPosition entityRef="Ego_9_1" ds="0.0" dt="0.0">
+                                    <Orientation h="3.141592653589793" p="0.0" r="0.0" type="relative"/>
+                                </RelativeRoadPosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="2.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LateralAction>
+                            <LaneChangeAction>
+                                <LaneChangeActionDynamics dynamicsShape="linear" value="1.0" dynamicsDimension="time"/>
+                                <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="-1"/>
+                                </LaneChangeTarget>
+                            </LaneChangeAction>
+                        </LateralAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Ego_10_-1">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="10" laneId="-1" s="25.0" offset="0.0">
+                                    <Orientation h="0.0" p="0.0" type="relative"/>
+                                </LanePosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <RelativeRoadPosition entityRef="Ego_10_-1" ds="0.0" dt="0.0">
+                                    <Orientation h="3.141592653589793" p="0.0" r="0.0" type="relative"/>
+                                </RelativeRoadPosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="2.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LateralAction>
+                            <LaneChangeAction>
+                                <LaneChangeActionDynamics dynamicsShape="linear" value="1.0" dynamicsDimension="time"/>
+                                <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="1"/>
+                                </LaneChangeTarget>
+                            </LaneChangeAction>
+                        </LateralAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Ego_10_1">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="10" laneId="1" s="25.0" offset="0.0">
+                                    <Orientation h="0.0" p="0.0" type="relative"/>
+                                </LanePosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <RelativeRoadPosition entityRef="Ego_10_1" ds="0.0" dt="0.0">
+                                    <Orientation h="3.141592653589793" p="0.0" r="0.0" type="relative"/>
+                                </RelativeRoadPosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="2.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LateralAction>
+                            <LaneChangeAction>
+                                <LaneChangeActionDynamics dynamicsShape="linear" value="1.0" dynamicsDimension="time"/>
+                                <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="-1"/>
+                                </LaneChangeTarget>
+                            </LaneChangeAction>
+                        </LateralAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Ego_11_-1">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="11" laneId="-1" s="25.0" offset="0.0">
+                                    <Orientation h="0.0" p="0.0" type="relative"/>
+                                </LanePosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <RelativeRoadPosition entityRef="Ego_11_-1" ds="0.0" dt="0.0">
+                                    <Orientation h="3.141592653589793" p="0.0" r="0.0" type="relative"/>
+                                </RelativeRoadPosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="2.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LateralAction>
+                            <LaneChangeAction>
+                                <LaneChangeActionDynamics dynamicsShape="linear" value="1.0" dynamicsDimension="time"/>
+                                <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="1"/>
+                                </LaneChangeTarget>
+                            </LaneChangeAction>
+                        </LateralAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Ego_11_1">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="11" laneId="1" s="25.0" offset="0.0">
+                                    <Orientation h="0.0" p="0.0" type="relative"/>
+                                </LanePosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <RelativeRoadPosition entityRef="Ego_11_1" ds="0.0" dt="0.0">
+                                    <Orientation h="3.141592653589793" p="0.0" r="0.0" type="relative"/>
+                                </RelativeRoadPosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="2.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LateralAction>
+                            <LaneChangeAction>
+                                <LaneChangeActionDynamics dynamicsShape="linear" value="1.0" dynamicsDimension="time"/>
+                                <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="-1"/>
+                                </LaneChangeTarget>
+                            </LaneChangeAction>
+                        </LateralAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Ego_12_-1">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="12" laneId="-1" s="25.0" offset="0.0">
+                                    <Orientation h="0.0" p="0.0" type="relative"/>
+                                </LanePosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <RelativeRoadPosition entityRef="Ego_12_-1" ds="0.0" dt="0.0">
+                                    <Orientation h="3.141592653589793" p="0.0" r="0.0" type="relative"/>
+                                </RelativeRoadPosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="2.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LateralAction>
+                            <LaneChangeAction>
+                                <LaneChangeActionDynamics dynamicsShape="linear" value="1.0" dynamicsDimension="time"/>
+                                <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="1"/>
+                                </LaneChangeTarget>
+                            </LaneChangeAction>
+                        </LateralAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Ego_12_1">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="12" laneId="1" s="25.0" offset="0.0">
+                                    <Orientation h="0.0" p="0.0" type="relative"/>
+                                </LanePosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <RelativeRoadPosition entityRef="Ego_12_1" ds="0.0" dt="0.0">
+                                    <Orientation h="3.141592653589793" p="0.0" r="0.0" type="relative"/>
+                                </RelativeRoadPosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="2.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LateralAction>
+                            <LaneChangeAction>
+                                <LaneChangeActionDynamics dynamicsShape="linear" value="1.0" dynamicsDimension="time"/>
+                                <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="-1"/>
+                                </LaneChangeTarget>
+                            </LaneChangeAction>
+                        </LateralAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Ego_13_-1">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="13" laneId="-1" s="25.0" offset="0.0">
+                                    <Orientation h="0.0" p="0.0" type="relative"/>
+                                </LanePosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <RelativeRoadPosition entityRef="Ego_13_-1" ds="0.0" dt="0.0">
+                                    <Orientation h="3.141592653589793" p="0.0" r="0.0" type="relative"/>
+                                </RelativeRoadPosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="2.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LateralAction>
+                            <LaneChangeAction>
+                                <LaneChangeActionDynamics dynamicsShape="linear" value="1.0" dynamicsDimension="time"/>
+                                <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="1"/>
+                                </LaneChangeTarget>
+                            </LaneChangeAction>
+                        </LateralAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Ego_13_1">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="13" laneId="1" s="25.0" offset="0.0">
+                                    <Orientation h="0.0" p="0.0" type="relative"/>
+                                </LanePosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <RelativeRoadPosition entityRef="Ego_13_1" ds="0.0" dt="0.0">
+                                    <Orientation h="3.141592653589793" p="0.0" r="0.0" type="relative"/>
+                                </RelativeRoadPosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="2.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LateralAction>
+                            <LaneChangeAction>
+                                <LaneChangeActionDynamics dynamicsShape="linear" value="1.0" dynamicsDimension="time"/>
+                                <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="-1"/>
+                                </LaneChangeTarget>
+                            </LaneChangeAction>
+                        </LateralAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Ego_14_-1">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="14" laneId="-1" s="25.0" offset="0.0">
+                                    <Orientation h="0.0" p="0.0" type="relative"/>
+                                </LanePosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <RelativeRoadPosition entityRef="Ego_14_-1" ds="0.0" dt="0.0">
+                                    <Orientation h="3.141592653589793" p="0.0" r="0.0" type="relative"/>
+                                </RelativeRoadPosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="2.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LateralAction>
+                            <LaneChangeAction>
+                                <LaneChangeActionDynamics dynamicsShape="linear" value="1.0" dynamicsDimension="time"/>
+                                <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="1"/>
+                                </LaneChangeTarget>
+                            </LaneChangeAction>
+                        </LateralAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Ego_14_1">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="14" laneId="1" s="25.0" offset="0.0">
+                                    <Orientation h="0.0" p="0.0" type="relative"/>
+                                </LanePosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <RelativeRoadPosition entityRef="Ego_14_1" ds="0.0" dt="0.0">
+                                    <Orientation h="3.141592653589793" p="0.0" r="0.0" type="relative"/>
+                                </RelativeRoadPosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="2.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LateralAction>
+                            <LaneChangeAction>
+                                <LaneChangeActionDynamics dynamicsShape="linear" value="1.0" dynamicsDimension="time"/>
+                                <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="-1"/>
+                                </LaneChangeTarget>
+                            </LaneChangeAction>
+                        </LateralAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Ego_15_-1">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="15" laneId="-1" s="25.0" offset="0.0">
+                                    <Orientation h="0.0" p="0.0" type="relative"/>
+                                </LanePosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <RelativeRoadPosition entityRef="Ego_15_-1" ds="0.0" dt="0.0">
+                                    <Orientation h="3.141592653589793" p="0.0" r="0.0" type="relative"/>
+                                </RelativeRoadPosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="2.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LateralAction>
+                            <LaneChangeAction>
+                                <LaneChangeActionDynamics dynamicsShape="linear" value="1.0" dynamicsDimension="time"/>
+                                <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="1"/>
+                                </LaneChangeTarget>
+                            </LaneChangeAction>
+                        </LateralAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Ego_15_1">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="15" laneId="1" s="25.0" offset="0.0">
+                                    <Orientation h="0.0" p="0.0" type="relative"/>
+                                </LanePosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <RelativeRoadPosition entityRef="Ego_15_1" ds="0.0" dt="0.0">
+                                    <Orientation h="3.141592653589793" p="0.0" r="0.0" type="relative"/>
+                                </RelativeRoadPosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="2.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LateralAction>
+                            <LaneChangeAction>
+                                <LaneChangeActionDynamics dynamicsShape="linear" value="1.0" dynamicsDimension="time"/>
+                                <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="-1"/>
+                                </LaneChangeTarget>
+                            </LaneChangeAction>
+                        </LateralAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Ego_16_-1">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="16" laneId="-1" s="25.0" offset="0.0">
+                                    <Orientation h="0.0" p="0.0" type="relative"/>
+                                </LanePosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <RelativeRoadPosition entityRef="Ego_16_-1" ds="0.0" dt="0.0">
+                                    <Orientation h="3.141592653589793" p="0.0" r="0.0" type="relative"/>
+                                </RelativeRoadPosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="2.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LateralAction>
+                            <LaneChangeAction>
+                                <LaneChangeActionDynamics dynamicsShape="linear" value="1.0" dynamicsDimension="time"/>
+                                <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="1"/>
+                                </LaneChangeTarget>
+                            </LaneChangeAction>
+                        </LateralAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Ego_16_1">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="16" laneId="1" s="25.0" offset="0.0">
+                                    <Orientation h="0.0" p="0.0" type="relative"/>
+                                </LanePosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <RelativeRoadPosition entityRef="Ego_16_1" ds="0.0" dt="0.0">
+                                    <Orientation h="3.141592653589793" p="0.0" r="0.0" type="relative"/>
+                                </RelativeRoadPosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="2.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LateralAction>
+                            <LaneChangeAction>
+                                <LaneChangeActionDynamics dynamicsShape="linear" value="1.0" dynamicsDimension="time"/>
+                                <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="-1"/>
+                                </LaneChangeTarget>
+                            </LaneChangeAction>
+                        </LateralAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Ego_17_-1">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="17" laneId="-1" s="25.0" offset="0.0">
+                                    <Orientation h="0.0" p="0.0" type="relative"/>
+                                </LanePosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <RelativeRoadPosition entityRef="Ego_17_-1" ds="0.0" dt="0.0">
+                                    <Orientation h="3.141592653589793" p="0.0" r="0.0" type="relative"/>
+                                </RelativeRoadPosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="2.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LateralAction>
+                            <LaneChangeAction>
+                                <LaneChangeActionDynamics dynamicsShape="linear" value="1.0" dynamicsDimension="time"/>
+                                <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="1"/>
+                                </LaneChangeTarget>
+                            </LaneChangeAction>
+                        </LateralAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Ego_17_1">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="17" laneId="1" s="25.0" offset="0.0">
+                                    <Orientation h="0.0" p="0.0" type="relative"/>
+                                </LanePosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <RelativeRoadPosition entityRef="Ego_17_1" ds="0.0" dt="0.0">
+                                    <Orientation h="3.141592653589793" p="0.0" r="0.0" type="relative"/>
+                                </RelativeRoadPosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="2.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LateralAction>
+                            <LaneChangeAction>
+                                <LaneChangeActionDynamics dynamicsShape="linear" value="1.0" dynamicsDimension="time"/>
+                                <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="-1"/>
+                                </LaneChangeTarget>
+                            </LaneChangeAction>
+                        </LateralAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Ego_18_-1">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="18" laneId="-1" s="25.0" offset="0.0">
+                                    <Orientation h="0.0" p="0.0" type="relative"/>
+                                </LanePosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <RelativeRoadPosition entityRef="Ego_18_-1" ds="0.0" dt="0.0">
+                                    <Orientation h="3.141592653589793" p="0.0" r="0.0" type="relative"/>
+                                </RelativeRoadPosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="2.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LateralAction>
+                            <LaneChangeAction>
+                                <LaneChangeActionDynamics dynamicsShape="linear" value="1.0" dynamicsDimension="time"/>
+                                <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="1"/>
+                                </LaneChangeTarget>
+                            </LaneChangeAction>
+                        </LateralAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Ego_18_1">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="18" laneId="1" s="25.0" offset="0.0">
+                                    <Orientation h="0.0" p="0.0" type="relative"/>
+                                </LanePosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <RelativeRoadPosition entityRef="Ego_18_1" ds="0.0" dt="0.0">
+                                    <Orientation h="3.141592653589793" p="0.0" r="0.0" type="relative"/>
+                                </RelativeRoadPosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="2.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LateralAction>
+                            <LaneChangeAction>
+                                <LaneChangeActionDynamics dynamicsShape="linear" value="1.0" dynamicsDimension="time"/>
+                                <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="-1"/>
+                                </LaneChangeTarget>
+                            </LaneChangeAction>
+                        </LateralAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Ego_19_-1">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="19" laneId="-1" s="25.0" offset="0.0">
+                                    <Orientation h="0.0" p="0.0" type="relative"/>
+                                </LanePosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <RelativeRoadPosition entityRef="Ego_19_-1" ds="0.0" dt="0.0">
+                                    <Orientation h="3.141592653589793" p="0.0" r="0.0" type="relative"/>
+                                </RelativeRoadPosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="2.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LateralAction>
+                            <LaneChangeAction>
+                                <LaneChangeActionDynamics dynamicsShape="linear" value="1.0" dynamicsDimension="time"/>
+                                <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="1"/>
+                                </LaneChangeTarget>
+                            </LaneChangeAction>
+                        </LateralAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Ego_19_1">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="19" laneId="1" s="25.0" offset="0.0">
+                                    <Orientation h="0.0" p="0.0" type="relative"/>
+                                </LanePosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <RelativeRoadPosition entityRef="Ego_19_1" ds="0.0" dt="0.0">
+                                    <Orientation h="3.141592653589793" p="0.0" r="0.0" type="relative"/>
+                                </RelativeRoadPosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="2.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LateralAction>
+                            <LaneChangeAction>
+                                <LaneChangeActionDynamics dynamicsShape="linear" value="1.0" dynamicsDimension="time"/>
+                                <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="-1"/>
+                                </LaneChangeTarget>
+                            </LaneChangeAction>
+                        </LateralAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Ego_20_-1">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="20" laneId="-1" s="25.0" offset="0.0">
+                                    <Orientation h="0.0" p="0.0" type="relative"/>
+                                </LanePosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <RelativeRoadPosition entityRef="Ego_20_-1" ds="0.0" dt="0.0">
+                                    <Orientation h="3.141592653589793" p="0.0" r="0.0" type="relative"/>
+                                </RelativeRoadPosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="2.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LateralAction>
+                            <LaneChangeAction>
+                                <LaneChangeActionDynamics dynamicsShape="linear" value="1.0" dynamicsDimension="time"/>
+                                <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="1"/>
+                                </LaneChangeTarget>
+                            </LaneChangeAction>
+                        </LateralAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Ego_20_1">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="20" laneId="1" s="25.0" offset="0.0">
+                                    <Orientation h="0.0" p="0.0" type="relative"/>
+                                </LanePosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <RelativeRoadPosition entityRef="Ego_20_1" ds="0.0" dt="0.0">
+                                    <Orientation h="3.141592653589793" p="0.0" r="0.0" type="relative"/>
+                                </RelativeRoadPosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="2.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LateralAction>
+                            <LaneChangeAction>
+                                <LaneChangeActionDynamics dynamicsShape="linear" value="1.0" dynamicsDimension="time"/>
+                                <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="-1"/>
+                                </LaneChangeTarget>
+                            </LaneChangeAction>
+                        </LateralAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Ego_21_-1">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="21" laneId="-1" s="25.0" offset="0.0">
+                                    <Orientation h="0.0" p="0.0" type="relative"/>
+                                </LanePosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <RelativeRoadPosition entityRef="Ego_21_-1" ds="0.0" dt="0.0">
+                                    <Orientation h="3.141592653589793" p="0.0" r="0.0" type="relative"/>
+                                </RelativeRoadPosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="2.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LateralAction>
+                            <LaneChangeAction>
+                                <LaneChangeActionDynamics dynamicsShape="linear" value="1.0" dynamicsDimension="time"/>
+                                <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="1"/>
+                                </LaneChangeTarget>
+                            </LaneChangeAction>
+                        </LateralAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Ego_21_1">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="21" laneId="1" s="25.0" offset="0.0">
+                                    <Orientation h="0.0" p="0.0" type="relative"/>
+                                </LanePosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <RelativeRoadPosition entityRef="Ego_21_1" ds="0.0" dt="0.0">
+                                    <Orientation h="3.141592653589793" p="0.0" r="0.0" type="relative"/>
+                                </RelativeRoadPosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="2.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LateralAction>
+                            <LaneChangeAction>
+                                <LaneChangeActionDynamics dynamicsShape="linear" value="1.0" dynamicsDimension="time"/>
+                                <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="-1"/>
+                                </LaneChangeTarget>
+                            </LaneChangeAction>
+                        </LateralAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Ego_22_-1">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="22" laneId="-1" s="25.0" offset="0.0">
+                                    <Orientation h="0.0" p="0.0" type="relative"/>
+                                </LanePosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <RelativeRoadPosition entityRef="Ego_22_-1" ds="0.0" dt="0.0">
+                                    <Orientation h="3.141592653589793" p="0.0" r="0.0" type="relative"/>
+                                </RelativeRoadPosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="2.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LateralAction>
+                            <LaneChangeAction>
+                                <LaneChangeActionDynamics dynamicsShape="linear" value="1.0" dynamicsDimension="time"/>
+                                <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="1"/>
+                                </LaneChangeTarget>
+                            </LaneChangeAction>
+                        </LateralAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Ego_22_1">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="22" laneId="1" s="25.0" offset="0.0">
+                                    <Orientation h="0.0" p="0.0" type="relative"/>
+                                </LanePosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <RelativeRoadPosition entityRef="Ego_22_1" ds="0.0" dt="0.0">
+                                    <Orientation h="3.141592653589793" p="0.0" r="0.0" type="relative"/>
+                                </RelativeRoadPosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="2.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LateralAction>
+                            <LaneChangeAction>
+                                <LaneChangeActionDynamics dynamicsShape="linear" value="1.0" dynamicsDimension="time"/>
+                                <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="-1"/>
+                                </LaneChangeTarget>
+                            </LaneChangeAction>
+                        </LateralAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Ego_23_-1">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="23" laneId="-1" s="25.0" offset="0.0">
+                                    <Orientation h="0.0" p="0.0" type="relative"/>
+                                </LanePosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <RelativeRoadPosition entityRef="Ego_23_-1" ds="0.0" dt="0.0">
+                                    <Orientation h="3.141592653589793" p="0.0" r="0.0" type="relative"/>
+                                </RelativeRoadPosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="2.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LateralAction>
+                            <LaneChangeAction>
+                                <LaneChangeActionDynamics dynamicsShape="linear" value="1.0" dynamicsDimension="time"/>
+                                <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="1"/>
+                                </LaneChangeTarget>
+                            </LaneChangeAction>
+                        </LateralAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Ego_23_1">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="23" laneId="1" s="25.0" offset="0.0">
+                                    <Orientation h="0.0" p="0.0" type="relative"/>
+                                </LanePosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <RelativeRoadPosition entityRef="Ego_23_1" ds="0.0" dt="0.0">
+                                    <Orientation h="3.141592653589793" p="0.0" r="0.0" type="relative"/>
+                                </RelativeRoadPosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="2.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LateralAction>
+                            <LaneChangeAction>
+                                <LaneChangeActionDynamics dynamicsShape="linear" value="1.0" dynamicsDimension="time"/>
+                                <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="-1"/>
+                                </LaneChangeTarget>
+                            </LaneChangeAction>
+                        </LateralAction>
+                    </PrivateAction>
+                </Private>
+            </Actions>
+        </Init>
+        <Story name="story_act_empty">
+            <ParameterDeclarations/>
+            <Act name="act_empty">
+                <ManeuverGroup name="empty" maximumExecutionCount="1">
+                    <Actors selectTriggeringEntities="false"/>
+                </ManeuverGroup>
+                <StartTrigger/>
+                <StopTrigger/>
+            </Act>
+        </Story>
+        <StopTrigger>
+            <ConditionGroup>
+                <Condition name="start_trigger " delay="0" conditionEdge="none">
+                    <ByValueCondition>
+                        <SimulationTimeCondition value="13" rule="greaterThan"/>
+                    </ByValueCondition>
+                </Condition>
+            </ConditionGroup>
+        </StopTrigger>
+    </Storyboard>
+</OpenSCENARIO>

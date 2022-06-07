@@ -571,6 +571,12 @@ void LatLaneChangeAction::Start(double simTime, double dt)
 		}
 	}
 
+	// Reset orientation, align to road
+	object_->pos_.SetHeadingRelativeRoadDirection(0.0);
+	object_->pos_.SetPitchRelative(0.0);
+	object_->pos_.SetRollRelative(0.0);
+	object_->pos_.EvaluateOrientation();
+
 	// Switch internal position to the target lane
 	internal_pos_ = object_->pos_;
 	internal_pos_.ForceLaneId(target_lane_id_);
@@ -675,6 +681,7 @@ void LatLaneChangeAction::Step(double simTime, double dt)
 		}
 		object_->pos_.SetHeadingRelativeRoadDirection((IsAngleForward(internal_pos_.GetHRelative()) ? 1 : -1) * SIGN(internal_pos_.GetLaneId()) * angle);
 	}
+	object_->pos_.EvaluateOrientation();
 
 	if (transition_.dimension_ == DynamicsDimension::DISTANCE)
 	{
@@ -1554,7 +1561,7 @@ void TeleportAction::Start(double simTime, double dt)
 		return;  // position controlled by tow vehicle
 	}
 
-	object_->pos_.TeleportTo(position_);
+ 	object_->pos_.TeleportTo(position_);
 	if (!object_->TowVehicle() && object_->TrailerVehicle())
 	{
 		((Vehicle*)object_)->AlignTrailers();

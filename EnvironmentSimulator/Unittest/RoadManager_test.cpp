@@ -2221,6 +2221,73 @@ TEST(RoadPosTest, TestPrioStraightRoadInJunction)
     EXPECT_EQ(pos.GetTrackId(), 9);
 }
 
+class StarRoadTestFixture : public testing::Test
+{
+public:
+    StarRoadTestFixture();
+    void Check(double a, double b, double c, double d, double e);
+protected:
+    OpenDrive* odr;
+    Position pos;
+    double lane_width;
+};
+
+StarRoadTestFixture::StarRoadTestFixture() : lane_width(3.5)
+{
+    Position::GetOpenDrive()->LoadOpenDriveFile("../../../EnvironmentSimulator/Unittest/xodr/star.xodr");
+}
+
+void StarRoadTestFixture::Check(double x, double y, double h, double p_road, double p)
+{
+    EXPECT_NEAR(pos.GetX(), x, 1E-3);
+    EXPECT_NEAR(pos.GetY(), y, 1E-3);
+    EXPECT_NEAR(pos.GetH(), h, 1E-3);
+    EXPECT_NEAR(pos.GetPRoad(), p_road, 1E-3);
+    EXPECT_NEAR(pos.GetP(), p, 1E-3);
+    EXPECT_NEAR(pos.GetR(), 0.0, 1E-3);
+}
+
+TEST_F(StarRoadTestFixture, TestRelativeRoadPos)
+{
+    odr = Position::GetOpenDrive();
+    ASSERT_NE(odr, nullptr);
+    EXPECT_EQ(odr->GetNumOfRoads(), 24);
+
+    // Road heading pi/2 downhill - RHT
+    // right side
+    pos.SetHeadingRelative(0.0);
+    pos.SetTrackPos(7, 10.0, -lane_width/2.0);
+    Check(lane_width / 2.0, 20.0, M_PI / 2, 0.55, 0.55);
+    pos.SetLanePos(7, -1, 10.0, 0.0);
+    Check(lane_width / 2.0, 20.0, M_PI / 2, 0.55, 0.55);
+    // left side (facing uphill)
+    pos.SetHeadingRelative(M_PI);
+    pos.SetTrackPos(7, 10.0, lane_width / 2.0);
+    Check(-lane_width / 2.0, 20.0, 3 * M_PI / 2, 0.55, 2 * M_PI - 0.55);
+    pos.SetLanePos(7, 1, 10.0, 0.0);
+    Check(-lane_width / 2.0, 20.0, 3 * M_PI / 2, 0.55, 2 * M_PI - 0.55);
+
+    // Road heading pi/2 downhill - LHT
+    // right side
+    pos.SetHeadingRelative(M_PI);
+    pos.SetTrackPos(7, 10.0, -lane_width / 2.0);
+    Check(lane_width / 2.0, 20.0, 3 * M_PI / 2, 0.55, 2 * M_PI - 0.55);
+    // left side (facing uphill)
+    pos.SetHeadingRelative(0.0);
+    pos.SetTrackPos(7, 10.0, lane_width / 2.0);
+    Check(-lane_width / 2.0, 20.0, M_PI / 2, 0.55, 0.55);
+
+    // Road heading 3pi/2 uphill - LHT
+    // right side
+    pos.SetHeadingRelative(0.0);
+    pos.SetTrackPos(20, 10.0, -lane_width / 2.0);
+    Check(-lane_width / 2.0, -20.0, 3 * M_PI / 2, -0.55, 2 * M_PI - 0.55);
+    // left side (facing uphill)
+    pos.SetHeadingRelative(M_PI);
+    pos.SetTrackPos(20, 10.0, lane_width / 2.0);
+    Check(lane_width / 2.0, -20.0, M_PI / 2, -0.55, 0.55);
+}
+
 // Uncomment to print log output to console
 //#define LOG_TO_CONSOLE
 
@@ -2240,7 +2307,7 @@ int main(int argc, char **argv)
     }
 #endif
 
-    //testing::GTEST_FLAG(filter) = "*TestNurbsPosition*";
+    //testing::GTEST_FLAG(filter) = "*TestRelativeRoadPos*";
 
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
