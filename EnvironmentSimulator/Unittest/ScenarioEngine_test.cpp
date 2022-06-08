@@ -609,7 +609,7 @@ TEST(ControllerTest, UDPDriverModelTestAsynchronous)
         property.value_ = std::to_string(61900);
         args.properties->property_.push_back(property);
         property.name_ = "inputMode";
-        property.value_ = "vehicleStateXYZHPR";
+        property.value_ = "vehicleStateXYH";
         args.properties->property_.push_back(property);
         ControllerUDPDriver* controller = (ControllerUDPDriver*)InstantiateControllerUDPDriver(&args);
 
@@ -634,9 +634,12 @@ TEST(ControllerTest, UDPDriverModelTestAsynchronous)
     msg.header.objectId = 0;
     msg.header.inputMode = static_cast<int>(ControllerUDPDriver::InputMode::VEHICLE_STATE_XYH);
 
-    msg.message.stateXYZHPR.h = 0.3;
-    msg.message.stateXYZHPR.x = 20.0;
-    msg.message.stateXYZHPR.y = 30.0;
+    msg.message.stateXYH.x = 20.0;
+    msg.message.stateXYH.y = 30.0;
+    msg.message.stateXYH.h = 0.3;
+    msg.message.stateXYH.speed = 30.0;
+    msg.message.stateXYH.wheelAngle = 0.1;
+    msg.message.stateXYH.deadReckon = 0;
 
     udpClient->Send((char*)&msg, sizeof(msg));
 
@@ -650,6 +653,22 @@ TEST(ControllerTest, UDPDriverModelTestAsynchronous)
     se->step(dt);
 
     EXPECT_DOUBLE_EQ(se->entities_.object_[0]->pos_.GetY(), 40.0);
+
+    // another step, make sure no dead-reckoning happen
+    se->step(dt);
+    EXPECT_DOUBLE_EQ(se->entities_.object_[0]->pos_.GetX(), 20.0);
+    EXPECT_DOUBLE_EQ(se->entities_.object_[0]->pos_.GetY(), 40.0);
+
+    // now, do not update position but enable dead reckoning
+    msg.message.stateXYH.deadReckon = 1;
+    udpClient->Send((char*)&msg, sizeof(msg));
+    se->step(dt);
+    se->step(dt);
+    EXPECT_DOUBLE_EQ(se->entities_.object_[0]->pos_.GetX(), 20.0);
+    se->step(dt);
+    // Now, the dead reckoning should have kicked in
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 20.287, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), 40.089, 1E-3);
 
     delete se;
     delete udpClient;
@@ -714,6 +733,7 @@ TEST(ControllerTest, UDPDriverModelTestSynchronous)
     msg.message.stateXYZHPR.h = 0.3;
     msg.message.stateXYZHPR.x = 20.0;
     msg.message.stateXYZHPR.y = 30.0;
+    msg.message.stateXYZHPR.deadReckon = 0;
 
     udpClient->Send((char*)&msg, sizeof(msg));
 
@@ -752,6 +772,7 @@ TEST(ControllerTest, UDPDriverModelTestSynchronous)
     msg.message.stateXYZHPR.h = 0.3;
     msg.message.stateXYZHPR.x = 90.0;
     msg.message.stateXYZHPR.y = -10.0;
+    msg.message.stateXYZHPR.deadReckon = 0;
 
     udpClient2->Send((char*)&msg, sizeof(msg));
 
@@ -1438,7 +1459,7 @@ int main(int argc, char** argv)
     }
 #endif
 
-    //testing::GTEST_FLAG(filter) = "*TestSpeedProfileNonZeroInitalAcc";
+    //testing::GTEST_FLAG(filter) = "*UDPDriverModelTestAsynchronous";
 
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

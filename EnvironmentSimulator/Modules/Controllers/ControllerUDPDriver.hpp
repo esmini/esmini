@@ -61,6 +61,7 @@ namespace scenarioengine
 			double h;
 			double speed;
 			double wheelAngle;
+			unsigned char deadReckon;
 		} DMMSGVehicleStateXYH;
 
 		typedef struct
@@ -73,6 +74,7 @@ namespace scenarioengine
 			double r;
 			double speed;
 			double wheelAngle;
+			unsigned char deadReckon;
 		} DMMSGVehicleStateXYZHPR;
 
 		typedef struct

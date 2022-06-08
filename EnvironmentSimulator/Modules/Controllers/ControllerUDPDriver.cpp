@@ -256,6 +256,23 @@ void ControllerUDPDriver::Step(double timeStep)
 			LOG("ControllerExternalDriverModel received %d bytes and unexpected input mode %d", retval, msg.header.inputMode);
 		}
 	}
+	else if (timeStep > SMALL_NUMBER &&
+		(lastMsg.header.inputMode == static_cast<int>(InputMode::VEHICLE_STATE_XYH) &&
+			lastMsg.message.stateXYH.deadReckon == 1 ||
+			lastMsg.header.inputMode == static_cast<int>(InputMode::VEHICLE_STATE_XYZHPR) &&
+			lastMsg.message.stateXYZHPR.deadReckon == 1))
+	{
+		double speed = lastMsg.header.inputMode == static_cast<int>(InputMode::VEHICLE_STATE_XYH) ?
+			lastMsg.message.stateXYH.speed : lastMsg.message.stateXYZHPR.speed;
+		double h = lastMsg.header.inputMode == static_cast<int>(InputMode::VEHICLE_STATE_XYH) ?
+			lastMsg.message.stateXYH.h : lastMsg.message.stateXYZHPR.h;
+		double ds = speed * timeStep;
+
+		double dx = ds * cos(h);
+		double dy = ds * sin(h);
+
+		gateway_->updateObjectWorldPosXYH(object_->id_, 0.0, object_->pos_.GetX() + dx, object_->pos_.GetY() + dy, vehicle_.heading_);
+	}
 
 	if (lastMsg.header.inputMode == static_cast<int>(InputMode::DRIVER_INPUT))
 	{
