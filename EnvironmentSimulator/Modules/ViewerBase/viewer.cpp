@@ -2801,7 +2801,7 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
 
 		for (size_t o = 0; o < road->GetNumberOfObjects(); o++)
 		{
-			roadmanager::RMObject* object = road->GetObject(o);
+			roadmanager::RMObject* object = road->GetRoadObject(o);
 			osg::Vec4 color;
 			tx = nullptr;
 

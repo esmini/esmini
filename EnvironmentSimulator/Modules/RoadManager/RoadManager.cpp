@@ -2134,7 +2134,7 @@ void Road::AddObject(RMObject* object)
 	object_.push_back(object);
 }
 
-RMObject* Road::GetObject(int idx)
+RMObject* Road::GetRoadObject(int idx)
 {
 	if (idx < 0 || idx >= object_.size())
 	{

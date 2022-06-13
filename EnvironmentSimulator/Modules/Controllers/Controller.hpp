@@ -97,7 +97,7 @@ namespace scenarioengine
 		ControlDomains GetDomain() { return domain_; }
 		int GetMode() { return mode_; }
 		std::string Mode2Str(int mode);
-		Object* GetObject() { return object_; }
+		Object* GetRoadObject() { return object_; }
 
 		bool IsActiveOnDomains(ControlDomains domainMask);
 		bool IsActiveOnAnyOfDomains(ControlDomains domainMask);
