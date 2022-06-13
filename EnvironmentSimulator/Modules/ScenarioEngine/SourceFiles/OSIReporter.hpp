@@ -89,6 +89,10 @@ public:
 	*/
 	int UpdateOSIDynamicGroundTruth(std::vector<ObjectState*> objectState, bool reportGhost = true);
 	/**
+	Fills up the osi message with Stationary Object from the OpenDRIVE description
+	*/
+	int UpdateOSIStationaryObjectODR(int road_id, roadmanager::RMObject* object);
+	/**
 	Fills up the osi message with Stationary Object
 	*/
 	int UpdateOSIStationaryObject(ObjectState* objectState);

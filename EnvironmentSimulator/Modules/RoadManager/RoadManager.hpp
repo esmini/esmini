@@ -1352,7 +1352,7 @@ namespace roadmanager
 		int GetNumberOfSignals();
 		Signal* GetSignal(int idx);
 		int GetNumberOfObjects() { return (int)object_.size(); }
-		RMObject* GetObject(int idx);
+		RMObject* GetRoadObject(int idx);
 		int GetNumberOfElevations() { return (int)elevation_profile_.size(); }
 		int GetNumberOfSuperElevations() { return (int)super_elevation_profile_.size(); }
 		double GetLaneOffset(double s);
