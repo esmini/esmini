@@ -113,7 +113,7 @@ TEST(CustomCameraTest, TestCustomCameraVariants)
     delete player;
 }
 
-#endif _USE_OSG
+#endif // _USE_OSG
 
 int main(int argc, char** argv)
 {

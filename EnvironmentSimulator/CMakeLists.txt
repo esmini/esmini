@@ -149,17 +149,16 @@ if(APPLE)
   SET(CMAKE_CXX_FLAGS "-std=c++14 -pthread -flto -Wl,-dead_strip")
 
   set ( OSG_LIBRARIES
-    osgdb_serializers_osgsim
+    osg
+    osgViewer
+    osgDB
     osgdb_serializers_osg
+    osgGA
+    osgText
     osgdb_osg
     osgdb_jpeg
-    osgAnimation
-    osgText
-    osgSim
-    osgViewer
     osgUtil
-    osgDB
-    osgGA
+    osgAnimation
     osg
     OpenThreads
     jpeg
@@ -168,7 +167,6 @@ if(APPLE)
     "-framework Cocoa"
     dl
     z
-    #db_fbx
   )
 
   if (DYN_PROTOBUF)
@@ -245,17 +243,16 @@ elseif(LINUX)
   endif()
 
   set ( OSG_LIBRARIES
-    optimized osgdb_serializers_osgsim debug osgdb_serializers_osgsimd
+    optimized osg debug osgd
+    optimized osgViewer debug osgViewerd
+    optimized osgDB debug osgDBd
     optimized osgdb_serializers_osg debug osgdb_serializers_osgd
+    optimized osgGA debug osgGAd
+    optimized osgText debug osgTextd
     optimized osgdb_osg debug osgdb_osgd
     optimized osgdb_jpeg debug osgdb_jpegd
-    optimized osgAnimation debug osgAnimationd
-    optimized osgText debug osgTextd
-    optimized osgSim debug osgSimd
-    optimized osgViewer debug osgViewerd
     optimized osgUtil debug osgUtild
-    optimized osgDB debug osgDBd
-    optimized osgGA debug osgGAd
+    optimized osgAnimation debug osgAnimationd
     optimized osg debug osgd
     optimized OpenThreads debug OpenThreadsd
     optimized jpeg debug jpegd
@@ -267,7 +264,6 @@ elseif(LINUX)
     z
     Xinerama
     fontconfig
-    #db_fbx
   )
 
   if (DYN_PROTOBUF)
@@ -343,12 +339,9 @@ elseif(MSVC)
       optimized ${OSG_VERSION}-osgViewer.lib debug ${OSG_VERSION}-osgViewerd.lib
       optimized ${OSG_VERSION}-osgText.lib debug ${OSG_VERSION}-osgTextd.lib
       optimized ${OSG_VERSION}-osgUtil.lib debug ${OSG_VERSION}-osgUtild.lib
-      optimized ${OSG_VERSION}-osgSim.lib debug ${OSG_VERSION}-osgSimd.lib
       optimized ot21-OpenThreads.lib debug ot21-OpenThreadsd.lib
-      optimized osgdb_serializers_osgsim.lib debug osgdb_serializers_osgsimd.lib
       optimized osgdb_serializers_osg.lib debug osgdb_serializers_osgd.lib
       optimized osgdb_osg.lib debug osgdb_osgd.lib
-      optimized osgdb_fbx.lib debug osgdb_fbxd.lib
       optimized osgdb_jpeg.lib debug osgdb_jpegd.lib
   )
 
@@ -433,12 +426,10 @@ elseif(MINGW)
       optimized ${OSG_VERSION}-osgViewer.lib debug ${OSG_VERSION}-osgViewerd.lib
       optimized ${OSG_VERSION}-osgText.lib debug ${OSG_VERSION}-osgTextd.lib
       optimized ${OSG_VERSION}-osgUtil.lib debug ${OSG_VERSION}-osgUtild.lib
-      optimized ${OSG_VERSION}-osgSim.lib debug ${OSG_VERSION}-osgSimd.lib
+      optimized ${OSG_VERSION}-osg.lib debug ${OSG_VERSION}-osgd.lib
       optimized ot21-OpenThreads.lib debug ot21-OpenThreadsd.lib
-      optimized osgdb_serializers_osgsim.lib debug osgdb_serializers_osgsimd.lib
       optimized osgdb_serializers_osg.lib debug osgdb_serializers_osgd.lib
       optimized osgdb_osg.lib debug osgdb_osgd.lib
-      optimized osgdb_fbx.lib debug osgdb_fbxd.lib
       optimized osgdb_jpeg.lib debug osgdb_jpegd.lib
   )
 

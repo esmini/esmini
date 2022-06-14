@@ -61,12 +61,9 @@ double color_blue[3] = { 0.25, 0.38, 0.7 };
 double color_yellow[3] = { 0.75, 0.7, 0.4 };
 double color_white[3] = { 0.90, 0.90, 0.85 };
 
-//USE_OSGPLUGIN(fbx)
-//USE_OSGPLUGIN(obj)
 USE_OSGPLUGIN(osg2)
 USE_OSGPLUGIN(jpeg)
 USE_SERIALIZER_WRAPPER_LIBRARY(osg)
-USE_SERIALIZER_WRAPPER_LIBRARY(osgSim)
 USE_COMPRESSOR_WRAPPER(ZLibCompressor)
 USE_GRAPHICSWINDOW()
 

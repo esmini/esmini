@@ -307,7 +307,7 @@ for:
       - cmd:
           cd ..
 
-          curl -L "https://downloads.fdossena.com/geth.php?r=mesa64-latest" -o mesa_win64.7z
+          curl -kL "https://downloads.fdossena.com/geth.php?r=mesa64-latest" -o mesa_win64.7z
 
           7z x mesa_win64.7z -omesa
 
