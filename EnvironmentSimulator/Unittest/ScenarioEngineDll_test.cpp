@@ -265,7 +265,7 @@ TEST(GetOSIRoadLaneTest, lane_no_obj)
 	SE_StepDT(0.001f);
 	SE_FlushOSIFile();
 	ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-	EXPECT_EQ(fileStatus.st_size, 68925);  // initial OSI size, including static content
+	EXPECT_EQ(fileStatus.st_size, 69257);  // initial OSI size, including static content
 
 	int road_lane_size;
 
@@ -277,12 +277,12 @@ TEST(GetOSIRoadLaneTest, lane_no_obj)
 	SE_StepDT(0.001f);  // Step for write another frame to osi file
 	SE_FlushOSIFile();
 	ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-	EXPECT_EQ(fileStatus.st_size, 69388);  // slight growth due to only dynamic updates
+	EXPECT_EQ(fileStatus.st_size, 69720);  // slight growth due to only dynamic updates
 
 	SE_StepDT(0.001f);  // Step for write another frame to osi file
 	SE_FlushOSIFile();
 	ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-	EXPECT_EQ(fileStatus.st_size, 69852);  // slight growth due to only dynamic updates
+	EXPECT_EQ(fileStatus.st_size, 70184);  // slight growth due to only dynamic updates
 
 	SE_Close();
 }
@@ -3219,7 +3219,7 @@ int main(int argc, char **argv)
 	testing::InitGoogleTest(&argc, argv);
 
 #if 0  // set to 1 and modify filter to run one single test
-	testing::GTEST_FLAG(filter) = "*TestFetchImage*";
+	testing::GTEST_FLAG(filter) = "*GetOSIRoadLaneTest*";
 #else
 	SE_LogToConsole(false);
 #endif
