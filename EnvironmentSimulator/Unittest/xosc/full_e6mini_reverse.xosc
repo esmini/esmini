@@ -4,12 +4,12 @@
 	<ParameterDeclarations/>
 	<CatalogLocations>
 		<VehicleCatalog>
-			<Directory path="../xosc/Catalogs/Vehicles"/>
+			<Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
 		</VehicleCatalog>
 	</CatalogLocations>
 	<RoadNetwork>
-		<LogicFile filepath="../xodr/e6mini.xodr"/>
-		<SceneGraphFile filepath="../models/e6mini.osgb"/>
+		<LogicFile filepath="../../../resources/xodr/e6mini.xodr"/>
+		<SceneGraphFile filepath="../../../resources/models/e6mini.osgb"/>
 	</RoadNetwork>
 	<Entities>
 		<ScenarioObject name="vehicle0">

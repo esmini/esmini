@@ -9262,6 +9262,11 @@ Position::ReturnCode Position::MoveRouteDS(double ds, bool actualDistance)
 	}
 
 	Road* entity_road = Position::GetOpenDrive()->GetRoadById(GetTrackId());
+	if (entity_road == nullptr)
+	{
+		return ReturnCode::ERROR_GENERIC;
+	}
+
 	double s_route = route_->GetTrackS();
 	double s_entity = GetS();
 	double t_entity = GetT();
