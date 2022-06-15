@@ -113,6 +113,7 @@ public:
 	void SetState(PlayerState state) { state_ = state; }
 	PlayerState GetState() { return state_; }
 	bool IsPaused() { return GetState() == PlayerState::PLAYER_STATE_PAUSE; }
+	int GetCounter() { return frame_counter_; }
 
 	//TODO
 	//int GetNumberOfVehicleProperties(){return 4;};

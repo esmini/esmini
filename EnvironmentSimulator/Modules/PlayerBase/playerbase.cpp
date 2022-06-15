@@ -265,7 +265,7 @@ void ScenarioPlayer::ScenarioPostFrame()
 		// Update OSI info
 		if (osiReporter->IsFileOpen() || osiReporter->GetSocket())
 		{
-			if (osiReporter->GetCounter() % osi_freq_ == 0)
+			if ((GetCounter()-1) % osi_freq_ == 0)
 			{
 				osiReporter->UpdateOSIGroundTruth(scenarioGateway->objectState_);
 				if (osiReporter->GetCounter() == 1)
