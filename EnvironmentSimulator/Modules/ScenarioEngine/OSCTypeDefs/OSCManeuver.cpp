@@ -50,11 +50,10 @@ void Event::Start(double simTime, double dt)
 				{
 					for (size_t k = 0; k < obj->objectEvents_[j]->action_.size(); k++)
 					{
-						if (pa->object_->objectEvents_[j]->action_[k] != pa &&
-							pa->object_->objectEvents_[j]->action_[k]->IsActive() &&
-							pa->object_->objectEvents_[j]->action_[k]->base_type_ == OSCAction::BaseType::PRIVATE)
+						OSCPrivateAction* pa2 = (OSCPrivateAction*)obj->objectEvents_[j]->action_[k];
+						if (pa2 != pa && pa2->object_->name_ == pa->object_->name_ && pa2->IsActive() &&
+							pa2->base_type_ == OSCAction::BaseType::PRIVATE)
 						{
-							OSCPrivateAction* pa2 = (OSCPrivateAction*)obj->objectEvents_[j]->action_[k];
 							if (static_cast<int>(pa2->GetDomain()) & static_cast<int>(pa->GetDomain()))
 							{
 								// Domains overlap, at least one domain in common. Terminate old action.
