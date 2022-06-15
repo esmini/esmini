@@ -51,7 +51,7 @@ void Event::Start(double simTime, double dt)
 					for (size_t k = 0; k < obj->objectEvents_[j]->action_.size(); k++)
 					{
 						OSCPrivateAction* pa2 = (OSCPrivateAction*)obj->objectEvents_[j]->action_[k];
-						if (pa2 != pa && pa2->object_->name_ == pa->object_->name_ && pa2->IsActive() &&
+						if (pa2 != pa && pa2->object_->GetId() == pa->object_->GetId() && pa2->IsActive() &&
 							pa2->base_type_ == OSCAction::BaseType::PRIVATE)
 						{
 							if (static_cast<int>(pa2->GetDomain()) & static_cast<int>(pa->GetDomain()))
