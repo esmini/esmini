@@ -152,9 +152,11 @@ if(APPLE)
     osg
     osgViewer
     osgDB
+    osgdb_serializers_osgsim
     osgdb_serializers_osg
     osgGA
     osgText
+    osgSim
     osgdb_osg
     osgdb_jpeg
     osgUtil
@@ -246,9 +248,11 @@ elseif(LINUX)
     optimized osg debug osgd
     optimized osgViewer debug osgViewerd
     optimized osgDB debug osgDBd
+    optimized osgdb_serializers_osgsim debug osgdb_serializers_osgsimd
     optimized osgdb_serializers_osg debug osgdb_serializers_osgd
     optimized osgGA debug osgGAd
     optimized osgText debug osgTextd
+    optimized osgSim debug osgSimd
     optimized osgdb_osg debug osgdb_osgd
     optimized osgdb_jpeg debug osgdb_jpegd
     optimized osgUtil debug osgUtild
@@ -339,7 +343,9 @@ elseif(MSVC)
       optimized ${OSG_VERSION}-osgViewer.lib debug ${OSG_VERSION}-osgViewerd.lib
       optimized ${OSG_VERSION}-osgText.lib debug ${OSG_VERSION}-osgTextd.lib
       optimized ${OSG_VERSION}-osgUtil.lib debug ${OSG_VERSION}-osgUtild.lib
+      optimized ${OSG_VERSION}-osgSim.lib debug ${OSG_VERSION}-osgSimd.lib
       optimized ot21-OpenThreads.lib debug ot21-OpenThreadsd.lib
+      optimized osgdb_serializers_osgsim.lib debug osgdb_serializers_osgsimd.lib
       optimized osgdb_serializers_osg.lib debug osgdb_serializers_osgd.lib
       optimized osgdb_osg.lib debug osgdb_osgd.lib
       optimized osgdb_jpeg.lib debug osgdb_jpegd.lib
@@ -427,7 +433,9 @@ elseif(MINGW)
       optimized ${OSG_VERSION}-osgText.lib debug ${OSG_VERSION}-osgTextd.lib
       optimized ${OSG_VERSION}-osgUtil.lib debug ${OSG_VERSION}-osgUtild.lib
       optimized ${OSG_VERSION}-osg.lib debug ${OSG_VERSION}-osgd.lib
+      optimized ${OSG_VERSION}-osgSim.lib debug ${OSG_VERSION}-osgSimd.lib
       optimized ot21-OpenThreads.lib debug ot21-OpenThreadsd.lib
+      optimized osgdb_serializers_osgsim.lib debug osgdb_serializers_osgsimd.lib
       optimized osgdb_serializers_osg.lib debug osgdb_serializers_osgd.lib
       optimized osgdb_osg.lib debug osgdb_osgd.lib
       optimized osgdb_jpeg.lib debug osgdb_jpegd.lib
