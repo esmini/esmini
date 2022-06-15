@@ -1,5 +1,22 @@
 ## esmini release notes
 
+### 2022-06-15 Version 2.23.3
+
+- Add dead-reckoning option to UDP controller
+  - see (or run) updated example [testUDPDriver.py](https://github.com/esmini/esmini/blob/master/scripts/udp_driver/testUDPDriver.py)
+- Add optional on-screen info per entity
+  - activate with `--info_text 2` or `--info_text 3`
+  - toogle info_text mode on key 'i'
+  - **Note**: OSG libs for linux update needed. Either pick from [here](https://github.com/esmini/resources/raw/main/models/models.7z) or delete externals/OpenSceneGraph and re-run `cmake ..` to download.
+- Populate wheel angle in osi2csv.py script
+- Disable off-screen rendering by default
+  - see more info in [User guide - save_or_grab_images](https://esmini.github.io/#_save_or_grab_images)
+- Bugfix: Cancel conflicting actions only for same entity ([issue #289](https://github.com/esmini/esmini/issues/289), [pr #290](https://github.com/esmini/esmini/issues/290))
+- Fix esminiRMLib `SetRoadId()` bug sometimes resulting in wrong road
+- Fix intermittent crash at viewer initialization  Refactor viewer thread initialization using semaphores
+- Fix relative road position issue #253
+  - consider road plane in lane change action
+
 ### 2022-05-27 Version 2.23.2
 
 - Updated SpeedProfileAction to respect initial acceleration
