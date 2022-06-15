@@ -43,7 +43,7 @@ static void log_callback(const char *str)
 }
 
 ScenarioPlayer::ScenarioPlayer(int &argc, char *argv[]) :
-	maxStepSize(0.1), minStepSize(0.01), argc_(argc), argv_(argv), state_(PlayerState::PLAYER_STATE_PLAYING)
+	maxStepSize(0.1), minStepSize(0.001), argc_(argc), argv_(argv), state_(PlayerState::PLAYER_STATE_PLAYING)
 {
 	quit_request = false;
 	threads = false;
