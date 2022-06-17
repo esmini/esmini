@@ -7334,7 +7334,7 @@ Position::ReturnCode Position::MoveToConnectingRoad(RoadLink *road_link, Contact
 					if (connecting_road)
 					{
 						Road* outgoing_road = junction->GetRoadAtOtherEndOfConnectingRoad(connecting_road, road);
-						if (outgoing_road == outgoing_road_target)
+						if (outgoing_road == outgoing_road_target && connecting_road->GetId() == r->GetTrackId())
 						{
 							connection_idx = i;
 						}
