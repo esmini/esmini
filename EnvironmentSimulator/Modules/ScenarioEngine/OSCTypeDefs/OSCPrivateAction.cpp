@@ -1664,8 +1664,6 @@ void SynchronizeAction::PrintStatus(const char* custom_msg)
 
 void SynchronizeAction::Start(double simTime, double dt)
 {
-	sim_time_ = simTime;
-
 	// resolve steady state -> translate into dist
 	if (steadyState_.type_ == SteadyStateType::STEADY_STATE_TIME)
 	{
@@ -1691,12 +1689,9 @@ void SynchronizeAction::Start(double simTime, double dt)
 	}
 }
 
-void SynchronizeAction::Step(double simTime, double)
+void SynchronizeAction::Step(double simTime, double dt)
 {
 	bool done = false;
-
-	double dt = simTime - sim_time_;
-	sim_time_ = simTime;
 
 	if (object_->GetControllerMode() == Controller::Mode::MODE_OVERRIDE &&
 		object_->IsControllerActiveOnDomains(ControlDomains::DOMAIN_LONG))
@@ -1729,19 +1724,11 @@ void SynchronizeAction::Step(double simTime, double)
 	if (dist < tolerance_ + SMALL_NUMBER)
 	{
 		LOG("Synchronize dist (%.2f) < tolerance (%.2f)", dist, tolerance_);
-		if (final_speed_)
-		{
-			object_->SetSpeed(final_speed_->GetValue());
-		}
 		done = true;
 	}
 	else if (masterDist < tolerance_master_ + SMALL_NUMBER)
 	{
 		LOG("Synchronize masterDist (%.2f) < tolerance (%.2f)", masterDist, tolerance_master_);
-		if (final_speed_)
-		{
-			object_->SetSpeed(final_speed_->GetValue());
-		}
 		done = true;
 	}
 	else if (dist > lastDist_)
@@ -1762,17 +1749,28 @@ void SynchronizeAction::Step(double simTime, double)
 	dist = MAX(dist - tolerance_, SMALL_NUMBER);
 	masterDist = MAX(masterDist - tolerance_master_, SMALL_NUMBER);
 
+	double masterTimeToDest = LARGE_NUMBER;
+	if (master_object_->speed_ > SMALL_NUMBER)
+	{
+		masterTimeToDest = masterDist / master_object_->speed_;
+
+		if (masterTimeToDest < dt)
+		{
+			LOG("Synchronize masterTimeToDest (%.3f) reached within this timestep (%.3f)", masterTimeToDest, dt);
+			done = true;
+		}
+	}
+
 	if (done)
 	{
+		if (final_speed_)
+		{
+			object_->SetSpeed(final_speed_->GetValue());
+		}
 		OSCAction::End(simTime);
 	}
 	else
 	{
-		double masterTimeToDest = LARGE_NUMBER;
-		if (master_object_->speed_ > SMALL_NUMBER)
-		{
-			masterTimeToDest = masterDist / master_object_->speed_;
-		}
 		double average_speed = dist / masterTimeToDest;
 		double acc = 0;
 
@@ -1930,6 +1928,7 @@ void SynchronizeAction::Step(double simTime, double)
 				{
 					// Passed apex. Switch to linear mode (constant acc) to reach final destination and speed
 					mode_ = SynchMode::MODE_LINEAR;
+					//PrintStatus("Passed apex");
 
 					// Keep current speed for this time step
 					return;

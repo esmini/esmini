@@ -608,7 +608,6 @@ namespace scenarioengine
 		LongSpeedAction::Target *final_speed_;
 		double tolerance_;
 		double tolerance_master_;
-		double sim_time_;
 
 		// Store calculated distances to use for comparison
 		double lastDist_;

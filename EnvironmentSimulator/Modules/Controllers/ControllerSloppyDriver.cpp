@@ -173,6 +173,10 @@ void ControllerSloppyDriver::Step(double timeStep)
 	}
 
 	gateway_->updateObjectPos(object_->id_, 0.0, &object_->pos_);
+	if (mode_ == Mode::MODE_OVERRIDE)
+	{
+		gateway_->updateObjectSpeed(object_->id_, 0.0, object_->GetSpeed());
+	}
 
 	Controller::Step(timeStep);
 }
@@ -185,7 +189,7 @@ void ControllerSloppyDriver::Activate(ControlDomains domainMask)
 		{
 			LOG("Warning, sloppiness is %.2f recommended range is [0:1]", sloppiness_);
 		}
-		speedTimerAverage_ = 3;
+		speedTimerAverage_ = 3.0;
 		speedTimer_.Start(0, speedTimerAverage_);
 		targetFactor_ = 1;
 		currentSpeed_ = initSpeed_ = referenceSpeed_ = object_->GetSpeed();

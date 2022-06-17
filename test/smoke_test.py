@@ -29,7 +29,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('.*Route::AddWaypoint Added intermediate waypoint 1 roadId 15 laneId -1', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('\n5.5.*Synchronize dist \(0.95\) < tolerance \(1.00\)', log)  is not None)
+        self.assertTrue(re.search('\n5.500: Synchronize masterTimeToDest \(0.003\) reached within this timestep \(0.010\)', log)  is not None)
         self.assertTrue(re.search('\n9.5.* QuitCondition timer expired at 4.0. seconds', log)  is not None)
 
         # Check vehicle key positions
@@ -67,7 +67,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('Loading .*synchronize.xosc', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('\n9.9.* Synchronize dist \(0.92\) < tolerance \(1.00\)', log)  is not None)
+        self.assertTrue(re.search('9.940: Synchronize masterTimeToDest \(0.006\) reached within this timestep \(0.010\)', log)  is not None)
         self.assertTrue(re.search('\n9.9.* Synchronize_NPC_Event complete after 1 execution', log)  is not None)
         self.assertTrue(re.search('\n19.74.* Free_Speed_Condition_NPC == true, distance 4.81 < tolerance \(5.00\), edge: rising', log)  is not None)
         self.assertTrue(re.search('\n19.74.* Triggering entity 0: Ego', log)  is not None)
@@ -86,7 +86,7 @@ class TestSuite(unittest.TestCase):
 
         self.assertTrue(re.search('\n25.000, 1, NPC1, 22.644, 630.990, -0.831, 1.476, 0.001, 0.000, 30.000', csv))
         self.assertTrue(re.search('\n25.000, 2, NPC2, 20.598, 565.401, -0.839, 1.495, 6.283, 0.000, 9.928', csv))
-        self.assertTrue(re.search('\n25.000, 3, NPC3, 25.708, 583.161, -0.832, 1.489, 6.283, 0.000, 17.000', csv))
+        self.assertTrue(re.search('\n25.000, 3, NPC3, 25.708, 583.162, -0.832, 1.489, 6.283, 0.000, 17.000, -0.001, 3.212', csv))
         self.assertTrue(re.search('\n25.000, 4, NPC4, 24.312, 610.213, -0.826, 1.481, 6.283, 0.000, 9.928', csv))
 
     def test_left_hand_by_heading(self):
@@ -860,6 +860,6 @@ if __name__ == "__main__":
     # execute only if run as a script
 
     # Run next line instead to execute only one test
-    # unittest.main(argv=['ignored', '-v', 'TestSuite.test_star'])
+    # unittest.main(argv=['ignored', '-v', 'TestSuite.test_synchronize'])
 
     unittest.main(verbosity=2)
