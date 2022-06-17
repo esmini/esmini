@@ -9,7 +9,7 @@ configuration: Release
 platform:
 - x64
 
-cache:
+cache: 
 - externals/googletest -> appveyor.yml
 - externals/OpenSceneGraph -> appveyor.yml
 - externals/OSI -> appveyor.yml
