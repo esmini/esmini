@@ -7326,6 +7326,7 @@ Position::ReturnCode Position::MoveToConnectingRoad(RoadLink *road_link, Contact
 
 				// Find next road in route
 				Road* outgoing_road_target = r->GetRoadAtOtherEndOfConnectingRoad(road);
+				int optimal_connection_idx = -1;
 				for (int i = 0; i < n_connections; i++)
 				{
 					LaneRoadLaneConnection lane_road_lane_connection =
@@ -7334,11 +7335,17 @@ Position::ReturnCode Position::MoveToConnectingRoad(RoadLink *road_link, Contact
 					if (connecting_road)
 					{
 						Road* outgoing_road = junction->GetRoadAtOtherEndOfConnectingRoad(connecting_road, road);
-						if (outgoing_road == outgoing_road_target && connecting_road->GetId() == r->GetTrackId())
+						if (outgoing_road == outgoing_road_target)
 						{
 							connection_idx = i;
+							if (connecting_road->GetId() == r->GetTrackId()) {
+								optimal_connection_idx = connection_idx;
+							}
 						}
 					}
+				}
+				if (optimal_connection_idx != -1) {
+					connection_idx = optimal_connection_idx;
 				}
 			}
 			else if (junctionSelectorAngle >= 0.0)
