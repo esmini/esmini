@@ -1,5 +1,14 @@
 ## esmini release notes
 
+### 2022-06-20 Version 2.23.4
+
+- Fix wrong successor selection at junction on route ([pr #292](https://github.com/esmini/esmini/issues/292))
+- Fix intermittent speed spike at end of synchronize action
+- Updated Linux OSG libs for increased compatibility
+  - previous version, updated for esmini v2.23.3, was compiled with g++ v9.4
+  - current version is compiled with g++ v7.5
+  - either pick from [here](https://dl.dropboxusercontent.com/s/3dlev34kj94lir5/OpenSceneGraph_linux.7z?dl=1) or delete externals/OpenSceneGraph and re-run `cmake ..` to download
+
 ### 2022-06-15 Version 2.23.3
 
 - Add dead-reckoning option to UDP controller
@@ -7,7 +16,7 @@
 - Add optional on-screen info per entity
   - activate with `--info_text 2` or `--info_text 3`
   - toogle info_text mode on key 'i'
-  - **Note**: OSG libs for linux update needed. Either pick from [here](https://github.com/esmini/resources/raw/main/models/models.7z) or delete externals/OpenSceneGraph and re-run `cmake ..` to download.
+  - **Note**: OSG libs for linux update needed. Either pick from [here](https://dl.dropboxusercontent.com/s/3dlev34kj94lir5/OpenSceneGraph_linux.7z?dl=1) or delete externals/OpenSceneGraph and re-run `cmake ..` to download.
 - Populate wheel angle in osi2csv.py script
 - Disable off-screen rendering by default
   - see more info in [User guide - save_or_grab_images](https://esmini.github.io/#_save_or_grab_images)
