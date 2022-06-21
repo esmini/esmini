@@ -3318,8 +3318,6 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 								if (!strcmp(roadMark.attribute("type").value(), "none"))
 								{
 									roadMark_type = LaneRoadMark::NONE_TYPE;
-									// None type indicates no roadmark, skip
-									continue;
 								}
 								else  if (!strcmp(roadMark.attribute("type").value(), "solid"))
 								{
@@ -3550,7 +3548,6 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 									}
 								}
 							}
-
 						}
 					}
 					// Check lane indices
