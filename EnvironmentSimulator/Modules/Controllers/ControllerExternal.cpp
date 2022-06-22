@@ -10,11 +10,6 @@
  * https://sites.google.com/view/simulationscenarios
  */
 
-/*
- * This controller simulates a bad or dizzy driver by manipulating
- * the speed and lateral offset in a random way.
- * The purpose is purely to demonstrate how to implement a controller.
- */
 
 #include "ControllerExternal.hpp"
 #include "Entities.hpp"

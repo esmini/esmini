@@ -23,8 +23,6 @@
 
 namespace scenarioengine
 {
-	class ScenarioEngine;
-
 	// base class for controllers
 	class ControllerRel2Abs: public Controller
 	{
@@ -82,7 +80,6 @@ namespace scenarioengine
 		void Step(double timeStep);
 		void Activate(ControlDomains domainMask);
 		void ReportKeyEvent(int key, bool down);
-		void SetScenarioEngine(ScenarioEngine* scenarioEngine) { scenarioEngine_ = scenarioEngine; };
 		void CopyPosition(Object* object, position_copy* obj_copy);
 
 		static const char* GetTypeNameStatic() { return CONTROLLER_REL2ABS_TYPE_NAME; }
@@ -100,8 +97,6 @@ namespace scenarioengine
 
 		//alters ego_obj to correct entities index for ego
 		void findEgo();
-
-		ScenarioEngine* scenarioEngine_;
 	};
 
 	Controller* InstantiateControllerRel2Abs(void* args);

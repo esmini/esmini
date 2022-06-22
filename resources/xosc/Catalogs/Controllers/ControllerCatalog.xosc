@@ -20,10 +20,12 @@
         <Controller name="interactiveDriver">
             <ParameterDeclarations>
                 <ParameterDeclaration name="SteeringRate" parameterType="double" value="4.0" />
+                <ParameterDeclaration name="SpeedFactor" parameterType="double" value="1.0" />
             </ParameterDeclarations>
             <Properties>
                 <Property name="esminiController" value="InteractiveController" />
                 <Property name="steeringRate" value="$SteeringRate" />
+                <Property name="speedFactor" value="$SpeedFactor" />
             </Properties>
         </Controller>
         <Controller name="controllerRel2Abs">
@@ -88,7 +90,7 @@
         <Controller name="followGhost">
             <ParameterDeclarations>
                 <ParameterDeclaration name="HeadStartTime" parameterType="double" value="3" />
-                <!-- FollowModes: time, position -->
+                <!-- FollowModes: time (time offset), position (distance offset) -->
                 <ParameterDeclaration name="FollowMode" parameterType="string" value="time" />
             </ParameterDeclarations>
             <Properties>
@@ -139,6 +141,23 @@
                 <Property name="logging" value="$Logging" />
             </Properties>
         </Controller>
+        <Controller name="ALKS_R157SM">
+            <ParameterDeclarations>
+                <ParameterDeclaration name="Mode" parameterType="string" value="additive" />
+                <!-- logLevel: 0 (none), 1 (log), 2 (log + debug) -->
+                <ParameterDeclaration name="LogLevel" parameterType="integer" value="0" />                
+                <!-- models: Regulation, ReferenceDriver, FSM, RSS -->
+                <ParameterDeclaration name="Model" parameterType="string" value="Regulation" />
+                <!-- cruise: false (no adaptive cruise control), true (use adaptive cruise control) -->
+                <ParameterDeclaration name="Cruise" parameterType="boolean" value="true" />                
+            </ParameterDeclarations>
+            <Properties>
+                <Property name="mode" value="$Mode" />
+                <Property name="logLevel" value="$LogLevel" />
+                <Property name="model"  value="$Model" />
+                <Property name="cruise"  value="$Cruise" />
+            </Properties>
+        </Controller>        
         <Controller name="UDPDriverController">
             <ParameterDeclarations>
                 <!-- port: port number [1, 65535] OR 0 to pick automatically starting at basePort (see below) -->

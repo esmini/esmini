@@ -15,15 +15,18 @@ STDOUT_FILENAME = 'stdout.txt'
 TIMEOUT = 40
 
 
-def run_scenario(osc_filename, esmini_arguments):
+def run_scenario(osc_filename, esmini_arguments, xosc_str = None):
     
     if os.path.exists(LOG_FILENAME):
         os.remove(LOG_FILENAME)
     if os.path.exists(STDOUT_FILENAME):
         os.remove(STDOUT_FILENAME)
 
-    args = [os.path.join(ESMINI_PATH,'bin','esmini'), '--osc', osc_filename] + esmini_arguments.split()
-    #print('running: {}'.format(' '.join(args)))
+    if osc_filename is not None:
+        args = [os.path.join(ESMINI_PATH,'bin','esmini'), '--osc', osc_filename] + esmini_arguments.split()
+        #print('running: {}'.format(' '.join(args)))
+    elif xosc_str is not None:
+        args = [os.path.join(ESMINI_PATH,'bin','esmini')] + esmini_arguments.split() + ['--osc_str', xosc_str]
     
     return_code = None    
     with open(STDOUT_FILENAME, "w") as f:
@@ -69,5 +72,3 @@ def generate_csv():
         return f.read()
 
     assert False, 'No csv file'
-
-

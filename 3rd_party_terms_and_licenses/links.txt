@@ -35,3 +35,6 @@ https://ebertolazzi.github.io/Clothoids/
 
 tronkko/dirent (Windows implementation of dirent.h)
 https://github.com/tronkko/dirent
+
+Regulation 157 Safety Models
+https://github.com/ec-jrc/JRC-FSM

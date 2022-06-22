@@ -112,7 +112,7 @@ void ControllerRel2Abs::Step(double timeStep)
 	if (!switchNow) {
 		double currentSpeed_ = object_->GetSpeed();
 
-		double currentTime = scenarioEngine_->getSimulationTime();
+		double currentTime = scenario_engine_->getSimulationTime();
 
 		if (currentTime - timestamp > pred_horizon)
 		{
@@ -267,7 +267,7 @@ void ControllerRel2Abs::Step(double timeStep)
 			}
 		}
 
-		currentTime = scenarioEngine_->getSimulationTime();
+		currentTime = scenario_engine_->getSimulationTime();
 		actualData.time.push_back(currentTime);
 		actualData.posX.push_back(object_->pos_.GetX());
 		actualData.posY.push_back(object_->pos_.GetY());
@@ -409,8 +409,8 @@ void ControllerRel2Abs::Step(double timeStep)
 							}
 						}
 					}
-					lda->End(scenarioEngine_->getSimulationTime());
-					lsa->Start(scenarioEngine_->getSimulationTime(),timeStep);
+					lda->End(scenario_engine_->getSimulationTime());
+					lsa->Start(scenario_engine_->getSimulationTime(),timeStep);
 					LOG("Replacing the relative target LongDistanceAction with an absolute target LongSpeedAction and target value: %lf", currentSpeed);
 				}
 			}
@@ -518,8 +518,8 @@ void ControllerRel2Abs::Step(double timeStep)
 									}
 								}
 							}
-							sa->End(scenarioEngine_->getSimulationTime());
-							lsa->Start(scenarioEngine_->getSimulationTime(), timeStep);
+							sa->End(scenario_engine_->getSimulationTime());
+							lsa->Start(scenario_engine_->getSimulationTime(), timeStep);
 							LOG("Replacing the SynchronizeAction (with final speed) with an absolute target LongSpeedAction and target value: %lf", trgSpeed);
 						}
 						else if (sa->mode_ == SynchronizeAction::SynchMode::MODE_NON_LINEAR)
@@ -563,8 +563,8 @@ void ControllerRel2Abs::Step(double timeStep)
 								}
 							}
 						}
-						sa->End(scenarioEngine_->getSimulationTime());
-						lsa->Start(scenarioEngine_->getSimulationTime(), timeStep);
+						sa->End(scenario_engine_->getSimulationTime());
+						lsa->Start(scenario_engine_->getSimulationTime(), timeStep);
 						LOG("Replacing the SynchronizeAction (no final speed) with an absolute target LongSpeedAction and target value: %lf", currentSpeed);
 					}
 				}

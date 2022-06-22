@@ -93,6 +93,15 @@ namespace scenarioengine
 			double maxSpeed;
 		} Performance;
 
+		typedef struct
+		{
+			double maxSteering;
+			double positionX;
+			double positionZ;
+			double trackWidth;
+			double wheelDiameter;
+		} Axle;
+
 		// Allocate vector for all possible override status
 		OverrideActionStatus overrideActionList[OVERRIDE_NR_TYPES];
 
@@ -129,6 +138,8 @@ namespace scenarioengine
 		roadmanager::Junction::JunctionStrategyType junctionSelectorStrategy_;
 		double nextJunctionSelectorAngle_;  // number between 0:2pi (circle). E.g. if 1.57 choose the leftmost road
 		Performance performance_;
+		Axle front_axle_;
+		Axle rear_axle_;
 		Controller* controller_; // reference to any assigned controller object
 		bool reset_;			 // indicate discreet movement, teleporting, no odometer update
 		bool isGhost_;

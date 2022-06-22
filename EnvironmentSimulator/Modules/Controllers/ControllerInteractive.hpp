@@ -10,6 +10,11 @@
  * https://sites.google.com/view/simulationscenarios
  */
 
+ /*
+  * This controller let the user control the vehicle interactively by the arrow keys
+  */
+
+
 #pragma once
 
 #include <string>
@@ -45,6 +50,7 @@ namespace scenarioengine
 		vehicle::THROTTLE accelerate = vehicle::THROTTLE_NONE;
 		vehicle::STEERING steer = vehicle::STEERING_NONE;
 		double steering_rate_;
+		double speed_factor_;
 	};
 
 	Controller* InstantiateControllerInteractive(void* args);

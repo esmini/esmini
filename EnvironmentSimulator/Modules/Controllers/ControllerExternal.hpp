@@ -10,6 +10,14 @@
  * https://sites.google.com/view/simulationscenarios
  */
 
+ /*
+  * This controller simply deactivates the default controller for the specific object
+  * instead esmini expects the state to be reported from an external application.
+  * Optionally the ghost feature can be enabled to create a "blue print" run, e.g. to
+  * be used by an external driver model.
+  */
+
+
 #pragma once
 
 #include <string>

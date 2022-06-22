@@ -789,14 +789,7 @@ void ScenarioEngine::parseScenario()
 		for (size_t i = 0; i < scenarioReader->controller_.size(); i++)
 		{
 			scenarioReader->controller_[i]->Init();
-			if (scenarioReader->controller_[i]->GetType() == Controller::Type::CONTROLLER_TYPE_REL2ABS)
-			{
-				((ControllerRel2Abs*)(scenarioReader->controller_[i]))->SetScenarioEngine(this);
-			}
-			else if (scenarioReader->controller_[i]->GetType() == Controller::Type::CONTROLLER_TYPE_FOLLOW_GHOST)
-			{
-				((ControllerFollowGhost*)(scenarioReader->controller_[i]))->SetScenarioEngine(this);
-			}
+			scenarioReader->controller_[i]->SetScenarioEngine(this);
 		}
 
 		// find out maximum headstart time for ghosts

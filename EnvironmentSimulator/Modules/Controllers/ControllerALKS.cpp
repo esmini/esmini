@@ -11,9 +11,9 @@
  */
 
 /*
- * This controller simulates a bad or dizzy driver by manipulating
- * the speed and lateral offset in a random way.
- * The purpose is purely to demonstrate how to implement a controller.
+ * This controller simulates a simple Automated Lane Keeping Systems (ALKS)
+ * It utilizes the simple ACC controller for longitudinal domain
+ * and simply keep current lane offset for the lateral domain
  */
 
 #include "ControllerALKS.hpp"

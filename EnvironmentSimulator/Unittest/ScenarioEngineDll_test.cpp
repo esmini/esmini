@@ -3378,10 +3378,8 @@ int main(int argc, char **argv)
 	testing::InitGoogleTest(&argc, argv);
 
 #if 0  // set to 1 and modify filter to run one single test
-	testing::GTEST_FLAG(filter) = "*TestValidityRecord*";
-
-	// You can also specify a filter as argument to the executable
-	// Example: --gtest_filter=*TestStoryboardElementStateCallback*
+	testing::GTEST_FLAG(filter) = "*TestFetchImage*";
+	// Or make use of launch argument, e.g. --gtest_filter=TestFetchImage*
 #else
 	SE_LogToConsole(false);
 #endif

@@ -11,9 +11,7 @@
  */
 
 /*
- * This controller simulates a bad or dizzy driver by manipulating
- * the speed and lateral offset in a random way.
- * The purpose is purely to demonstrate how to implement a controller.
+ * This controller simulates a simple Adaptive Cruise Control
  */
 
 #include "ControllerACC.hpp"

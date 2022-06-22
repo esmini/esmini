@@ -54,6 +54,9 @@ is_active_(false)
 	{
 		SetJunctionSelectorAngleRandom();
 	}
+
+	front_axle_ = { 0.0, 0.0, 0.0, 0.0, 0.0 };
+	rear_axle_ = { 0.0, 0.0, 0.0, 0.0, 0.0 };
 }
 
 void Object::SetEndOfRoad(bool state, double time)

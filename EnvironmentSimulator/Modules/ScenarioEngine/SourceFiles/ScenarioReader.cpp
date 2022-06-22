@@ -24,6 +24,7 @@
 #include "ControllerALKS.hpp"
 #include "ControllerUDPDriver.hpp"
 #include "ControllerECE_ALKS_RefDriver.hpp"
+#include "ControllerALKS_R157SM.hpp"
 
 #include <cstdlib>
 
@@ -67,6 +68,7 @@ void ScenarioReader::LoadControllers()
 	RegisterController(ControllerALKS::GetTypeNameStatic(), InstantiateControllerALKS);
 	RegisterController(ControllerUDPDriver::GetTypeNameStatic(), InstantiateControllerUDPDriver);
 	RegisterController(ControllerECE_ALKS_REF_DRIVER::GetTypeNameStatic(), InstantiateControllerECE_ALKS_REF_DRIVER);
+	RegisterController(ControllerALKS_R157SM::GetTypeNameStatic(), InstantiateControllerALKS_R157SM);
 }
 
 void ScenarioReader::UnloadControllers()
@@ -556,6 +558,34 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
 		if (!(performance_node.attribute("maxSpeed").empty()))
 		{
 			vehicle->SetMaxSpeed(strtod(parameters.ReadAttribute(performance_node, "maxSpeed")));
+		}
+	}
+
+	pugi::xml_node axles = vehicleNode.child("Axles");
+	if (axles != NULL)
+	{
+		for (pugi::xml_node axle_node = axles.first_child(); axle_node; axle_node = axle_node.next_sibling())
+		{
+			std::string axle_name(axle_node.name());
+			Vehicle::Axle* axle = nullptr;
+
+			if (axle_name == "FrontAxle")
+			{
+				axle = &vehicle->front_axle_;
+			}
+			else if (axle_name == "RearAxle")
+			{
+				axle = &vehicle->rear_axle_;
+			}
+
+			if (axle != nullptr)
+			{
+				axle->maxSteering = std::stof(parameters.ReadAttribute(axle_node, "maxSteering"));
+				axle->positionX = std::stof(parameters.ReadAttribute(axle_node, "positionX"));
+				axle->positionZ = std::stof(parameters.ReadAttribute(axle_node, "positionZ"));
+				axle->trackWidth = std::stof(parameters.ReadAttribute(axle_node, "trackWidth"));
+				axle->wheelDiameter = std::stof(parameters.ReadAttribute(axle_node, "wheelDiameter"));
+			}
 		}
 	}
 

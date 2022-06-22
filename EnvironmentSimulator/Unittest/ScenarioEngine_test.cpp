@@ -7,6 +7,7 @@
 #include "ScenarioEngine.hpp"
 #include "ScenarioReader.hpp"
 #include "ControllerUDPDriver.hpp"
+#include "ControllerALKS_R157SM.hpp"
 #include "pugixml.hpp"
 #include "simple_expr.h"
 
@@ -1440,6 +1441,74 @@ TEST(SpeedProfileTest, TestSpeedProfileNonZeroInitalAcc)
     EXPECT_NEAR(sp_action.GetSpeed(), 4.0, 1E-3);
 }
 
+TEST(ControllerTest, ALKS_R157_TestR157RegulationMinDist)
+{
+    double dt = 0.01;
+
+    ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/alks_r157_test.xosc");
+    ASSERT_NE(se, nullptr);
+    ASSERT_EQ(se->entities_.object_.size(), 2);
+
+    // Set controller
+    scenarioengine::Controller::InitArgs args;
+    args.name = "ALKS_R157SM_Controller";
+    args.type = ControllerALKS_R157SM::GetTypeNameStatic();
+    args.parameters = 0;
+    args.gateway = se->getScenarioGateway();
+    args.properties = new OSCProperties();
+    OSCProperties::Property property;
+    property.name_ = "model";
+    property.value_ = "Regulation";
+    args.properties->property_.push_back(property);
+    ControllerALKS_R157SM* controller = (ControllerALKS_R157SM*)InstantiateControllerALKS_R157SM(&args);
+    controller->SetScenarioEngine(se);
+
+    Object* obj = se->entities_.object_[0];
+    delete obj->controller_;
+    delete args.properties;
+
+    controller->Assign(obj);
+    se->scenarioReader->controller_[0] = controller;
+    obj->controller_ = controller;
+
+    // assign controllers
+    se->step(dt);
+
+    obj->SetSpeed(0);
+    EXPECT_EQ(controller->model_->MinDist(), 2.0);
+
+    obj->SetSpeed(1.9);
+    EXPECT_EQ(controller->model_->MinDist(), 2.0);
+
+    obj->SetSpeed(2.0);
+    EXPECT_EQ(controller->model_->MinDist(), 2.0);
+
+    obj->SetSpeed(2.5);
+    EXPECT_NEAR(controller->model_->MinDist(), 2.660, 1E-3);
+
+    obj->SetSpeed(10.0 / 3.6);  // break point
+    EXPECT_NEAR(controller->model_->MinDist(), 3.056, 1E-3);
+
+    obj->SetSpeed(13.0 / 3.6);
+    EXPECT_NEAR(controller->model_->MinDist(), 4.081, 1E-3);
+
+    obj->SetSpeed(20.0 / 3.6);
+    EXPECT_NEAR(controller->model_->MinDist(), 6.667, 1E-3);
+
+    obj->SetSpeed(40.0 / 3.6);
+    EXPECT_NEAR(controller->model_->MinDist(), 15.556, 1E-3);
+
+    obj->SetSpeed(58.0 / 3.6);
+    EXPECT_NEAR(controller->model_->MinDist(), 25.456, 1E-3);
+
+    obj->SetSpeed(60.0 / 3.6);
+    EXPECT_NEAR(controller->model_->MinDist(), 26.667, 1E-3);
+
+    obj->SetSpeed(90.0 / 3.6);  // Outside range, but supported anyway
+    EXPECT_NEAR(controller->model_->MinDist(), 47.500, 1E-3);
+}
+
+
 // Uncomment to print log output to console
 //#define LOG_TO_CONSOLE
 
@@ -1459,7 +1528,10 @@ int main(int argc, char** argv)
     }
 #endif
 
-    //testing::GTEST_FLAG(filter) = "*CalcDistancePointAcrossIntersection";
+#if 0 // set to 1 and modify filter to run one single test
+    testing::GTEST_FLAG(filter) = "*ALKS_R157_TestR157RegulationMinDist*";
+    // Or make use of launch argument, e.g. --gtest_filter=*ALKS_R157_TestR157RegulationMinDist*
+#endif
 
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

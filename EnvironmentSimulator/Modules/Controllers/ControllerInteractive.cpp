@@ -10,11 +10,6 @@
  * https://sites.google.com/view/simulationscenarios
  */
 
-/*
- * This controller simulates a bad or dizzy driver by manipulating
- * the speed and lateral offset in a random way.
- * The purpose is purely to demonstrate how to implement a controller.
- */
 
 #include "ControllerInteractive.hpp"
 #include "CommonMini.hpp"
@@ -32,11 +27,19 @@ Controller* scenarioengine::InstantiateControllerInteractive(void* args)
 	return new ControllerInteractive(initArgs);
 }
 
-ControllerInteractive::ControllerInteractive(InitArgs* args) : steering_rate_(4.0), Controller(args)
+ControllerInteractive::ControllerInteractive(InitArgs* args) : steering_rate_(4.0), speed_factor_(1.0), Controller(args)
 {
-	if (args && args->properties && args->properties->ValueExists("steeringRate"))
+	if (args && args->properties)
 	{
-		steering_rate_ = strtod(args->properties->GetValueStr("steeringRate"));
+		if (args->properties->ValueExists("steeringRate"))
+		{
+			steering_rate_ = strtod(args->properties->GetValueStr("steeringRate"));
+		}
+
+		if (args->properties->ValueExists("speedFactor"))
+		{
+			speed_factor_ = strtod(args->properties->GetValueStr("speedFactor"));
+		}
 	}
 }
 
@@ -63,7 +66,7 @@ void ControllerInteractive::Step(double timeStep)
 			speed_limit = 60 / 3.6;
 		}
 	}
-	vehicle_.SetMaxSpeed(MIN(speed_limit, object_->GetMaxSpeed()));
+	vehicle_.SetMaxSpeed(MIN(speed_factor_ * speed_limit, object_->GetMaxSpeed()));
 
 	if (!(IsActiveOnDomains(ControlDomains::DOMAIN_LONG)))
 	{
