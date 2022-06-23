@@ -450,7 +450,7 @@ namespace roadmanager
 		s_offset_(s_offset), type_(type), weight_(weight), color_(color), material_(material), lane_change_(lane_change),
 		width_(width), height_(height) {}
 
-		void AddType(LaneRoadMarkType *lane_roadMarkType) { lane_roadMarkType_.push_back(lane_roadMarkType); }
+		void AddType(LaneRoadMarkType* lane_roadMarkType);
 
 		double GetSOffset() { return s_offset_; }
 		double GetWidth() { return width_; }
@@ -566,8 +566,8 @@ namespace roadmanager
 
 		// Add Functions
 		void AddLink(LaneLink *lane_link) { link_.push_back(lane_link); }
-		void AddLaneWidth(LaneWidth *lane_width) { lane_width_.push_back(lane_width); }
-		void AddLaneRoadMark(LaneRoadMark *lane_roadMark) { lane_roadMark_.push_back(lane_roadMark); }
+		void AddLaneWidth(LaneWidth* lane_width);
+		void AddLaneRoadMark(LaneRoadMark* lane_roadMark);
 
 		// Get Functions
 		int GetNumberOfRoadMarks() { return (int)lane_roadMark_.size(); }

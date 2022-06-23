@@ -938,6 +938,43 @@ LaneWidth *Lane::GetWidthByS(double s)
 	return lane_width_.back();
 }
 
+void Lane::AddLaneWidth(LaneWidth* lane_width)
+{
+	if (lane_width_.size() > 0 &&
+		lane_width->GetSOffset() < lane_width_.back()->GetSOffset())
+	{
+		for (size_t i = 0; i < lane_width_.size(); i++)
+		{
+			if (lane_width->GetSOffset() < lane_width_[i]->GetSOffset())
+			{
+				lane_width_.insert(lane_width_.begin() + i, lane_width);
+				return;
+			}
+		}
+	}
+
+	lane_width_.push_back(lane_width);
+}
+
+void Lane::AddLaneRoadMark(LaneRoadMark* lane_roadMark)
+{
+	if (lane_roadMark_.size() > 0 &&
+		lane_roadMark->GetSOffset() < lane_roadMark_.back()->GetSOffset())
+	{
+		for (size_t i = 0; i < lane_roadMark_.size(); i++)
+		{
+			if (lane_roadMark->GetSOffset() < lane_roadMark_[i]->GetSOffset())
+			{
+				lane_roadMark_.insert(lane_roadMark_.begin() + i, lane_roadMark);
+				return;
+			}
+		}
+	}
+
+	lane_roadMark_.push_back(lane_roadMark);
+}
+
+
 LaneLink *Lane::GetLink(LinkType type)
 {
 	for (int i=0; i<(int)link_.size(); i++)
@@ -1090,6 +1127,11 @@ LaneRoadMarkType* LaneRoadMark::GetLaneRoadMarkTypeByIdx(int idx)
 	return 0;
 }
 
+void LaneRoadMark::AddType(LaneRoadMarkType* lane_roadMarkType)
+{
+	lane_roadMarkType_.push_back(lane_roadMarkType);
+}
+
 LaneRoadMarkTypeLine* LaneRoadMarkType::GetLaneRoadMarkTypeLineByIdx(int idx)
 {
 	if (idx < (int)lane_roadMarkTypeLine_.size())
@@ -1103,6 +1145,20 @@ LaneRoadMarkTypeLine* LaneRoadMarkType::GetLaneRoadMarkTypeLineByIdx(int idx)
 void LaneRoadMarkType::AddLine(LaneRoadMarkTypeLine *lane_roadMarkTypeLine)
 {
 	lane_roadMarkTypeLine->SetGlobalId();
+
+	if (lane_roadMarkTypeLine_.size() > 0 &&
+		lane_roadMarkTypeLine->GetSOffset() < lane_roadMarkTypeLine_.back()->GetSOffset())
+	{
+		for (size_t i = 0; i < lane_roadMarkTypeLine_.size(); i++)
+		{
+			if (lane_roadMarkTypeLine->GetSOffset() < lane_roadMarkTypeLine_[i]->GetSOffset())
+			{
+				lane_roadMarkTypeLine_.insert(lane_roadMarkTypeLine_.begin() + i, lane_roadMarkTypeLine);
+				return;
+			}
+		}
+	}
+
 	lane_roadMarkTypeLine_.push_back(lane_roadMarkTypeLine);
 }
 
