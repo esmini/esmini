@@ -9,14 +9,15 @@ if __name__ == "__main__":
     # Add the arguments
     parser.add_argument('--x_axis', help='x-axis parameter')
     parser.add_argument('--equal_axis_aspect', help='lock aspect ratio = 1:1', action='store_true')
-    parser.add_argument('filename', help='csv filename')
+    parser.add_argument('filename', help='dat filename')
+    parser.add_argument('--derive', help='yes', action='store_true')
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('--list_params', help='list available parameters in given file', action='store_true')
     group.add_argument('--param', help='parameter to plot (can be specified multiple times)', action='append')
 
+
     # Execute the parse_args() method
     args = parser.parse_args()
-
     # Read the dat file
     dat = DATFile(args.filename)
 
@@ -39,7 +40,7 @@ if __name__ == "__main__":
                 print('Parameter \'{}\' is not plottable'.format(a))
             else:
                 print('Parameter \'{}\' is not available in dat file'.format(a))
-            exit(0)
+            #exit(0)
         parameter.append(a)
 
     objs = []
@@ -54,7 +55,6 @@ if __name__ == "__main__":
 
     print('x_axis:', x_axis)
     print('parameters:', ', '.join(parameter))
-
     for data in dat.data:
         id = int(data.id)
         if id not in id2idx:
@@ -69,6 +69,15 @@ if __name__ == "__main__":
         for j, p in enumerate(parameter):
             y[id2idx[id]][j].append(float(getattr(data, p)))
         x[id2idx[id]].append(float(getattr(data, x_axis)))
+
+    if (args.derive):
+        for i in range(len(y)):
+            new_y = []
+            for j in range(1,len(y[i][0])):
+                y_prim = (y[i][0][j] - y[i][0][j-1]) / (x[i][j] - x[i][j-1])
+                new_y.append(y_prim)
+            new_y.append(new_y[-1])
+            y[i][0] = new_y
 
     p1 = plt.figure(1)
     for i in range(len(x)):
