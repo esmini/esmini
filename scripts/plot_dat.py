@@ -72,12 +72,13 @@ if __name__ == "__main__":
 
     if (args.derive):
         for i in range(len(y)):
-            new_y = []
-            for j in range(1,len(y[i][0])):
-                y_prim = (y[i][0][j] - y[i][0][j-1]) / (x[i][j] - x[i][j-1])
-                new_y.append(y_prim)
-            new_y.append(new_y[-1])
-            y[i][0] = new_y
+            for j in range(len(y[i])):
+                new_y = []
+                for k in range(1,len(y[i][j])):
+                    y_prim = (y[i][j][k] - y[i][j][k-1]) / max((x[i][k] - x[i][k-1], 1e-10))
+                    new_y.append(y_prim)
+                new_y.append(new_y[-1])  # duplicate last entry
+                y[i][j] = new_y
 
     p1 = plt.figure(1)
     for i in range(len(x)):
