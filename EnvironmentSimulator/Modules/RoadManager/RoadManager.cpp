@@ -2088,8 +2088,8 @@ RMObject* Road::GetRoadObject(int idx)
 	return object_[idx];
 }
 
-OutlineCornerRoad::OutlineCornerRoad(int roadId, double s, double t, double dz, double height):
-	roadId_(roadId), s_(s), t_(t), dz_(dz), height_(height)
+OutlineCornerRoad::OutlineCornerRoad(int roadId, double s, double t, double dz, double height, double center_s, double center_t, double center_heading):
+	roadId_(roadId), s_(s), t_(t), dz_(dz), height_(height), center_s_(center_s), center_t_(center_t), center_heading_(center_heading)
 {
 
 }
@@ -2101,6 +2101,21 @@ void OutlineCornerRoad::GetPos(double& x, double& y, double& z)
 	x = pos.GetX();
 	y = pos.GetY();
 	z = pos.GetZ() + dz_;
+}
+
+void OutlineCornerRoad::GetPosLocal(double& x, double& y, double& z)
+{
+	roadmanager::Position pref;
+	pref.SetTrackPos(roadId_, center_s_, center_t_);
+	roadmanager::Position point;
+	point.SetTrackPos(roadId_, s_, t_);
+	double total_heading = GetAngleSum(pref.GetH(), center_heading_);
+
+	Global2LocalCoordinates( point.GetX(), point.GetY(),
+							  pref.GetX(), pref.GetY(), total_heading,
+							 x, y);
+
+	z = pref.GetZ() + dz_;
 }
 
 OutlineCornerLocal::OutlineCornerLocal(int roadId, double s, double t, double u, double v, double zLocal, double height, double heading) :
@@ -2120,6 +2135,13 @@ void OutlineCornerLocal::GetPos(double& x, double& y, double& z)
 	x = pref.GetX() + u2;
 	y = pref.GetY() + v2;
 	z = pref.GetZ() + zLocal_;
+}
+
+void OutlineCornerLocal::GetPosLocal(double& x, double& y, double& z)
+{
+	x = u_;
+	y = v_;
+	z = zLocal_;
 }
 
 std::string RMObject::Type2Str(RMObject::ObjectType type)
@@ -3823,7 +3845,7 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 								double dz = atof(corner_node.attribute("dz").value());
 								double heightc = atof(corner_node.attribute("height").value());
 
-								corner = (OutlineCorner*)(new OutlineCornerRoad(r->GetId(), sc, tc, dz, heightc));
+								corner = (OutlineCorner*)(new OutlineCornerRoad(r->GetId(), sc, tc, dz, heightc, s, t, heading));
 							}
 							else if (!strcmp(corner_node.name(), "cornerLocal"))
 							{
