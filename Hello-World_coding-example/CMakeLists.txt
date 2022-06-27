@@ -14,6 +14,9 @@ link_directories(. ../lib ../bin)
 
 project(${TARGET})
 
+# Windows: Uncomment next line to completely suppress the console
+# set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup")
+
 add_executable(${TARGET} main.cpp)
 
 target_link_libraries(${TARGET} esminiLib)
