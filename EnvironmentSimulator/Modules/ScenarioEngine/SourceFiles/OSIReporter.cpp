@@ -524,10 +524,7 @@ int OSIReporter::UpdateOSIStationaryObjectODR(int road_id, roadmanager::RMObject
 		LOG("OSIReporter::UpdateOSIStationaryObjectODR -> Unsupported stationary object category");
 	}
 
-	// Set OSI Stationary Object Boundingbox
-	obj_osi_internal.sobj->mutable_base()->mutable_dimension()->set_height(object->GetHeight());
-	obj_osi_internal.sobj->mutable_base()->mutable_dimension()->set_width(object->GetWidth());
-	obj_osi_internal.sobj->mutable_base()->mutable_dimension()->set_length(object->GetLength());
+
 
 
 	if (object->GetNumberOfOutlines() > 0)
@@ -537,22 +534,28 @@ int OSIReporter::UpdateOSIStationaryObjectODR(int road_id, roadmanager::RMObject
 			roadmanager::Outline* outline = object->GetOutline((int)k);
 			if (outline)
 			{
+				double height = 0;
 				for (size_t l = 0; l < outline->corner_.size(); l++)
 				{
 					double x, y, z;
-					outline->corner_[l]->GetPos(x, y, z);
-					printf("outline corner %d, %d: %.2f %.2f\n", (int)k, (int)l, x, y);
+					outline->corner_[l]->GetPosLocal(x, y, z);
+					// printf("outline corner %d, %d: %.2f %.2f\n", (int)k, (int)l, x, y);
 					osi3::Vector2d* vec = obj_osi_internal.sobj->mutable_base()->add_base_polygon();
 					vec->set_x(x);
 					vec->set_y(y);
+					height += outline->corner_[l]->GetHeight()/outline->corner_.size();
 				}
+				obj_osi_internal.sobj->mutable_base()->mutable_dimension()->set_height(height);
 			}
 		}
 	}
 	else
 	{
+		// Set OSI Stationary Object Boundingbox
+		obj_osi_internal.sobj->mutable_base()->mutable_dimension()->set_height(object->GetHeight());
+		obj_osi_internal.sobj->mutable_base()->mutable_dimension()->set_width(object->GetWidth());
+		obj_osi_internal.sobj->mutable_base()->mutable_dimension()->set_length(object->GetLength());
 		// only bounding box
-		printf("bounding box\n");
 		pos.SetTrackPos(road_id, object->GetS(), object->GetT());
 
 		// Set OSI Stationary Object Position

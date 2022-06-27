@@ -1021,6 +1021,7 @@ namespace roadmanager
 	{
 	public:
 		virtual void GetPos(double& x, double& y, double& z) = 0;
+		virtual void GetPosLocal(double& x, double& y, double& z) = 0;
 		virtual double GetHeight() = 0;
 		virtual ~OutlineCorner() {}
 	};
@@ -1028,20 +1029,22 @@ namespace roadmanager
 	class OutlineCornerRoad : public OutlineCorner
 	{
 	public:
-		OutlineCornerRoad(int roadId, double s, double t, double dz, double height);
-		void GetPos(double& x, double& y, double& z);
+		OutlineCornerRoad(int roadId, double s, double t, double dz, double height, double center_s, double center_t, double center_heading);
+		void GetPos(double& x, double& y, double& z) override;
+		void GetPosLocal(double& x, double& y, double& z) override;
 		double GetHeight() { return height_; }
 
 	private:
 		int roadId_;
-		double s_, t_, dz_, height_;
+		double s_, t_, dz_, height_, center_s_, center_t_, center_heading_;
 	};
 
 	class OutlineCornerLocal : public OutlineCorner
 	{
 	public:
 		OutlineCornerLocal(int roadId, double s, double t, double u, double v, double zLocal, double height, double heading);
-		void GetPos(double& x, double& y, double& z);
+		void GetPos(double& x, double& y, double& z) override;
+		void GetPosLocal(double& x, double& y, double& z) override;
 		double GetHeight() { return height_; }
 
 	private:

@@ -217,6 +217,71 @@ TEST(OSIintersections, motorway)
 	SE_Close();
 }
 
+
+
+TEST(OSIStationaryObjects, square_building)
+{
+
+	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/Junction_with_building0.xosc";
+	const char *Scenario_file = scenario_file.c_str();
+	SE_Init(Scenario_file, 0, 0, 0, 0);
+	SE_StepDT(0.001f);
+	SE_UpdateOSIGroundTruth();
+
+	osi3::GroundTruth osi_gt;
+	int sv_size = 0;
+	const char *gt = SE_GetOSIGroundTruth(&sv_size);
+	osi_gt.ParseFromArray(gt, sv_size);
+	ASSERT_EQ(osi_gt.stationary_object_size(),1);
+	for (int i = 0; i < osi_gt.stationary_object_size(); i++)
+	{
+		EXPECT_EQ(osi_gt.stationary_object(i).base().base_polygon_size(), 0);
+		EXPECT_EQ(osi_gt.stationary_object(i).base().position().x(),80);
+		EXPECT_EQ(osi_gt.stationary_object(i).base().position().y(),20);
+		EXPECT_EQ(osi_gt.stationary_object(i).base().dimension().length(),30);
+		EXPECT_EQ(osi_gt.stationary_object(i).base().dimension().width(),20);
+		EXPECT_EQ(osi_gt.stationary_object(i).base().dimension().height(),4);
+		EXPECT_EQ(osi_gt.stationary_object(i).classification().type(),osi3::StationaryObject_Classification_Type_TYPE_BUILDING);
+	}
+
+	SE_Close();
+}
+
+
+class OSIStationaryObjectsOutline : public ::testing::TestWithParam<std::tuple<std::string>>
+{
+};
+
+
+TEST_P(OSIStationaryObjectsOutline, object_with_outline)
+{
+
+	std::string scenario_file = std::get<0>(GetParam());
+	const char *Scenario_file = scenario_file.c_str();
+	ASSERT_EQ(SE_Init(Scenario_file, 0, 0, 0, 0),0 ) ;
+	SE_StepDT(0.001f);
+	SE_UpdateOSIGroundTruth();
+
+	osi3::GroundTruth osi_gt;
+	int sv_size = 0;
+	const char *gt = SE_GetOSIGroundTruth(&sv_size);
+	osi_gt.ParseFromArray(gt, sv_size);
+	ASSERT_EQ(osi_gt.stationary_object_size(),1);
+	for (int i = 0; i < osi_gt.stationary_object_size(); i++)
+	{
+		EXPECT_EQ(osi_gt.stationary_object(i).base().base_polygon_size(), 8);
+		EXPECT_EQ(osi_gt.stationary_object(i).base().base_polygon(0).x(), 20);
+		EXPECT_EQ(osi_gt.stationary_object(i).base().base_polygon(0).y(), 0);
+		EXPECT_EQ(osi_gt.stationary_object(i).base().dimension().height(), 4);
+	}
+	
+	SE_Close();
+}
+
+
+INSTANTIATE_TEST_SUITE_P(OSIStationaryObjects, OSIStationaryObjectsOutline, ::testing::Values(std::make_tuple("../../../EnvironmentSimulator/Unittest/xosc/Weird_looking_building_road_coord.xosc"),
+	std::make_tuple("../../../EnvironmentSimulator/Unittest/xosc/Weird_looking_building_local_coord.xosc")));
+
 TEST(OSIintersections, multilane)
 {
 	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/multilane_3way_intersection_osi.xosc";
@@ -3219,7 +3284,7 @@ int main(int argc, char **argv)
 	testing::InitGoogleTest(&argc, argv);
 
 #if 0  // set to 1 and modify filter to run one single test
-	testing::GTEST_FLAG(filter) = "*GetOSIRoadLaneTest*";
+	testing::GTEST_FLAG(filter) = "*object_with_outline*";
 #else
 	SE_LogToConsole(false);
 #endif

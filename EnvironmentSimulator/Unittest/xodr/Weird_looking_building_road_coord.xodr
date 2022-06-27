@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<OpenDRIVE>
+    <header name="road" revMajor="1" revMinor="5" date="2022-06-27 12:10:27.703683" north="0.0" south="0.0" east="0.0" west="0.0"/>
+    <road rule="RHT" id="1" junction="-1" length="100">
+        <link/>
+        <planView>
+            <geometry s="0" x="0" y="0" hdg="0" length="100">
+                <line/>
+            </geometry>
+        </planView>
+        <elevationProfile/>
+        <lateralProfile/>
+        <lanes>
+            <laneSection s="0">
+                <left>
+                    <lane id="1" type="driving" level="false">
+                        <link/>
+                        <width a="3" b="0" c="0" d="0" sOffset="0"/>
+                        <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>
+                    </lane>
+                </left>
+                <center>
+                    <lane id="0" type="none" level="false">
+                        <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>
+                    </lane>
+                </center>
+                <right>
+                    <lane id="-1" type="driving" level="false">
+                        <link/>
+                        <width a="3" b="0" c="0" d="0" sOffset="0"/>
+                        <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>
+                    </lane>
+                </right>
+            </laneSection>
+        </lanes>
+        <objects>
+            <object id="0" s="10" t="-25" subtype="None" dynamic="no" zOffset="0" pitch="0" roll="0" type="none" orientation="none" hdg="0">
+                <outlines>
+                    <outline closed="true">
+                        <cornerRoad s="30" t="-25" dz="0" height="4"/>
+                        <cornerRoad s="60" t="-25" dz="0" height="4"/>
+                        <cornerRoad s="60" t="-10" dz="0" height="4"/>
+                        <cornerRoad s="55" t="-10" dz="0" height="4"/>
+                        <cornerRoad s="50" t="-17" dz="0" height="4"/>
+                        <cornerRoad s="40" t="-17" dz="0" height="4"/>
+                        <cornerRoad s="35" t="-10" dz="0" height="4"/>
+                        <cornerRoad s="30" t="-10" dz="0" height="4"/>
+                    </outline>
+                </outlines>
+            </object>
+        </objects>
+    </road>
+</OpenDRIVE>
