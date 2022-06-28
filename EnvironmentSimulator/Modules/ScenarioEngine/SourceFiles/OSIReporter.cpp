@@ -524,7 +524,11 @@ int OSIReporter::UpdateOSIStationaryObjectODR(int road_id, roadmanager::RMObject
 		LOG("OSIReporter::UpdateOSIStationaryObjectODR -> Unsupported stationary object category");
 	}
 
-
+	pos.SetTrackPos(road_id, object->GetS(), object->GetT());
+	// Set OSI Stationary Object Position
+	obj_osi_internal.sobj->mutable_base()->mutable_position()->set_x(pos.GetX());
+	obj_osi_internal.sobj->mutable_base()->mutable_position()->set_y(pos.GetY());
+	obj_osi_internal.sobj->mutable_base()->mutable_position()->set_z(pos.GetZ());
 
 
 	if (object->GetNumberOfOutlines() > 0)
@@ -556,12 +560,8 @@ int OSIReporter::UpdateOSIStationaryObjectODR(int road_id, roadmanager::RMObject
 		obj_osi_internal.sobj->mutable_base()->mutable_dimension()->set_width(object->GetWidth());
 		obj_osi_internal.sobj->mutable_base()->mutable_dimension()->set_length(object->GetLength());
 		// only bounding box
-		pos.SetTrackPos(road_id, object->GetS(), object->GetT());
+		
 
-		// Set OSI Stationary Object Position
-		obj_osi_internal.sobj->mutable_base()->mutable_position()->set_x(pos.GetX());
-		obj_osi_internal.sobj->mutable_base()->mutable_position()->set_y(pos.GetY());
-		obj_osi_internal.sobj->mutable_base()->mutable_position()->set_z(pos.GetZ());
 
 		// Set OSI Stationary Object Orientation
 		obj_osi_internal.sobj->mutable_base()->mutable_orientation()->set_roll(GetAngleInIntervalMinusPIPlusPI(pos.GetR()));

@@ -273,8 +273,10 @@ TEST_P(OSIStationaryObjectsOutline, object_with_outline)
 		EXPECT_EQ(osi_gt.stationary_object(i).base().base_polygon(0).x(), 20);
 		EXPECT_EQ(osi_gt.stationary_object(i).base().base_polygon(0).y(), 0);
 		EXPECT_EQ(osi_gt.stationary_object(i).base().dimension().height(), 4);
+		EXPECT_NEAR(osi_gt.stationary_object(i).base().position().x(), 10.0, 0.1);
+		EXPECT_NEAR(osi_gt.stationary_object(i).base().position().y(), -25.0, 0.1);
 	}
-	
+
 	SE_Close();
 }
 
