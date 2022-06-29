@@ -772,6 +772,17 @@ osgconv has a lot of useful options. Run `osgconv -h` for more info. Here's a fe
 ``osgconv in.fbx out.osgb -o -90-1,0,0`` will rotate the model (rotate -90 deg around X-axis) +
 ``osgconv in.fbx out.osgb -o -90-1,0,0 --use-world-frame`` as above but pivot point world origin +
 
+A useful environment variable is `OSG_OPTIMIZER` which affects the structure and content of the scene graph. For example, if the osgb file includes cloned sub trees, like motorway railings, these might not be populated in the fbx file. To solve that set:
+
+`OSG_OPTIMIZER = FLATTEN_STATIC_TRANSFORMS_DUPLICATING_SHARED_SUBGRAPHS`
+
+Exact syntax depends on your environment. Examples:
+[horizontal]
+*bash*:: ``export OSG_OPTIMIZER=FLATTEN_STATIC_TRANSFORMS_DUPLICATING_SHARED_SUBGRAPHS``
+*powershell*:: ``$env:OSG_OPTIMIZER = "FLATTEN_STATIC_TRANSFORMS_DUPLICATING_SHARED_SUBGRAPHS"``
+
+Then run the ``osgconv`` command (in the same terminal where you defined the environment variable).
+
 osg native format is `osgb` which stands for OpenSceneGraph binary format. It's a stable and compact (quick to load) format, which also can embed textures and animations. Thanks to the osgconv tool, esmini can get away with only supporting the .osgb format and still indirectly support many other 3D formats.
 
 === Get osgconv
