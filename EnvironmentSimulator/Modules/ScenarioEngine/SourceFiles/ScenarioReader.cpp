@@ -1931,8 +1931,8 @@ int ScenarioReader::parseDynamicConstraints(pugi::xml_node dynamics_node, Dynami
 			*values[i].variable = strtod(parameters.ReadAttribute(dynamics_node, values[i].label.c_str()));
 			if (*values[i].variable < SMALL_NUMBER)
 			{
-				LOG("Unexpected small %s value: %.5, replacing with %.2f", values[i].label.c_str(), *values[i].variable, values[i].default_value);
-				*values[i].variable = values[i].default_value;
+				LOG("parseDynamicConstraints: Unexpected small %s value: %.5f, replacing with default %.2f", values[i].label.c_str(), *values[i].variable, values[i].default_value);
+					*values[i].variable = values[i].default_value;
 			}
 		}
 	}
