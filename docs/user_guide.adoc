@@ -750,6 +750,32 @@ the result becomes:
 
 image::speed-profile9.png[]
 
+==== Sharp brake-to-stop profile
+
+To skip jerk phase, e.g. as in emergency brake with an abrupt stop, just set AccelerationRate to a large number. 
+
+Example:
+Once again starting from https://github.com/esmini/esmini/blob/master/resources/xosc/speed-profile.xosc[speed-profile.xosc], change speed in the Init speed actions to 10.0 and replace the speed profile actions as below:
+
+[source,xml]
+----
+    <SpeedProfileAction followingMode="follow">
+        <DynamicConstraints
+            maxAcceleration = "5.0"
+            maxDeceleration = "10.0"
+            maxAccelerationRate = "1E10"
+            maxDecelerationRate = "3.0"
+            maxSpeed = "50"
+        />
+        <SpeedProfileEntry time="0.0" speed="10.0"/>
+        <SpeedProfileEntry time="4.0" speed="0.0"/>
+    </SpeedProfileAction>
+----
+
+image::speed-profile10.png[]
+
+*Note*: A drawback is that the setting will affect any acceleration phase in the complete profile. In other words, a limitation is that entries can't have individual settings. In the example above it's not problem since the first jerk phase is a deceleration while the second is an acceleration. If different rate values of same type are needed, it can be achieved by defining multiple SpeedProfile actions in a sequence, with individual performance settings.
+
 ==== More info
 To get more understanding of the implementation, see a few slides https://drive.google.com/file/d/1DmjVHftcsbU71Ce_GASZ6IArcPA6teNF/view?usp=sharing[here].
 
