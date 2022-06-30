@@ -319,7 +319,7 @@ void FollowTrajectoryAction::Start(double simTime, double dt)
 		return;
 	}
 
-	traj_->Freeze();
+	traj_->Freeze(following_mode_);
 	object_->pos_.SetTrajectory(traj_);
 
 	object_->pos_.SetTrajectoryS(initialDistanceOffset_);

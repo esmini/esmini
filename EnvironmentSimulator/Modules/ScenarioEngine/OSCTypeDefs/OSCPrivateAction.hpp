@@ -31,12 +31,6 @@ namespace scenarioengine
 
 	class ScenarioEngine;
 
-	enum class FollowingMode
-	{
-		FOLLOW,
-		POSITION
-	};
-
 	class DynamicConstraints
 	{
 	public:
@@ -772,12 +766,13 @@ namespace scenarioengine
 
 		roadmanager::RMTrajectory* traj_;
 		TimingDomain timing_domain_;
+		FollowingMode following_mode_;
 		double timing_scale_;
 		double timing_offset_;
 		double time_;
 		double initialDistanceOffset_;
 
-		FollowTrajectoryAction() : traj_(0), timing_domain_(TimingDomain::NONE), timing_scale_(1),
+		FollowTrajectoryAction() : traj_(0), timing_domain_(TimingDomain::NONE), timing_scale_(1), following_mode_(FollowingMode::FOLLOW),
 			timing_offset_(0), time_(0), initialDistanceOffset_(0), OSCPrivateAction(OSCPrivateAction::ActionType::FOLLOW_TRAJECTORY, ControlDomains::DOMAIN_BOTH) {}
 
 		FollowTrajectoryAction(const FollowTrajectoryAction& action) : OSCPrivateAction(OSCPrivateAction::ActionType::FOLLOW_TRAJECTORY, ControlDomains::DOMAIN_BOTH)
@@ -788,6 +783,7 @@ namespace scenarioengine
 			timing_scale_ = action.timing_scale_;
 			timing_offset_ = action.timing_offset_;
 			initialDistanceOffset_ = action.timing_offset_;
+			following_mode_ = action.following_mode_;
 			time_ = 0;
 		}
 

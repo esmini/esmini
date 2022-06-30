@@ -1808,6 +1808,13 @@ namespace roadmanager
 			UPDATE_XYZH
 		};
 
+		enum class OrientationSetMask
+		{
+			H = 1 << 0,
+			P = 1 << 1,
+			R = 1 << 2
+		};
+
 		enum class PositionStatusMode
 		{
 			POS_STATUS_END_OF_ROAD = (1 << 0),
@@ -2414,6 +2421,14 @@ namespace roadmanager
 		*/
 		void SetLockOnLane(bool mode) { lockOnLane_ = mode; }
 
+		int GetOrientationSetMask() { return orientationSetMask; }
+		bool IsOrientationTypeSet(OrientationSetMask bit) { return static_cast<int>(bit) & orientationSetMask; }
+		void SetOrientationTypeSetBitmask(int mask) { orientationSetMask = mask; }
+		void SetOrientationTypeSetBit(OrientationSetMask bit, bool value)
+		{
+			orientationSetMask = (orientationSetMask & ~static_cast<int>(bit)) | static_cast<int>(value);
+		}
+
 	protected:
 		void Track2Lane();
 		ReturnCode Track2XYZ();
@@ -2502,6 +2517,8 @@ namespace roadmanager
 
 		// Store roads overlapping position, updated by XYZH2TrackPos()
 		std::vector<int> overlapping_roads;  // road ids overlapping position evaluated by XYZH2TrackPos()
+
+		int orientationSetMask; // use values from OrientationSetMask
 	};
 
 
@@ -2832,7 +2849,7 @@ namespace roadmanager
 
 		RMTrajectory(Shape* shape, std::string name, bool closed) : shape_(shape), name_(name), closed_(closed) {}
 		RMTrajectory() : shape_(0), closed_(false) {}
-		void Freeze();
+		void Freeze(FollowingMode following_mode);
 		double GetLength() { return shape_ ? shape_->GetLength() : 0.0; }
 		double GetTimeAtS(double s);
 		double GetStartTime();

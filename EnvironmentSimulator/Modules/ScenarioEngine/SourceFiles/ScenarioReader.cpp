@@ -1012,11 +1012,10 @@ roadmanager::RMTrajectory *ScenarioReader::parseTrajectory(pugi::xml_node node)
 					pos = parseOSCPosition(posNode, pos);
 					double time = strtod(parameters.ReadAttribute(vertexNode, "time"));
 
-					bool calculateHeading = true;
-					if (pos->type_ == OSCPosition::PositionType::WORLD && pos->GetH() != std::nan("") ||
-						posNode.first_child().child("Orientation"))
+					bool calculateHeading = false;
+					if (pos->type_ != OSCPosition::PositionType::WORLD && !posNode.first_child().child("Orientation"))
 					{
-						calculateHeading = false;
+						calculateHeading = true;
 					}
 					pline->AddVertex(*pos->GetRMPos(), time, calculateHeading);
 				}
@@ -2451,6 +2450,29 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 						action_follow_trajectory->initialDistanceOffset_ = 0.0;
 					}
 
+					action_follow_trajectory->following_mode_ = FollowingMode::FOLLOW;
+					pugi::xml_node followingModeNode = routingChild.child("TrajectoryFollowingMode");
+					if (followingModeNode != NULL)
+					{
+						std::string followingMode = parameters.ReadAttribute(followingModeNode, "followingMode");
+						if (followingMode.empty())
+						{
+							LOG("trajectoryFollowingMode followingMode attribute missing, applying \"follow\"");
+						}
+						else if (followingMode == "position")
+						{
+							action_follow_trajectory->following_mode_ = FollowingMode::POSITION;
+						}
+						else if (followingMode != "follow")
+						{
+							LOG("trajectoryFollowingMode %s not supported yet, applying \"follow\"", followingMode.c_str());
+						}
+					}
+					else
+					{
+						LOG("trajectoryFollowingMode missing, applying \"following\"");
+					}
+
 					for (pugi::xml_node followTrajectoryChild = routingChild.first_child(); followTrajectoryChild; followTrajectoryChild = followTrajectoryChild.next_sibling())
 					{
 						if (followTrajectoryChild.name() == std::string("TrajectoryRef"))
@@ -2514,23 +2536,8 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 								action_follow_trajectory->timing_domain_ = FollowTrajectoryAction::TimingDomain::NONE;
 							}
 						}
-						else if (followTrajectoryChild.name() == std::string("TrajectoryFollowingMode"))
-						{
-							std::string followingMode = parameters.ReadAttribute(followTrajectoryChild, "followingMode");
-							if (followingMode.empty())
-							{
-								LOG("trajectoryFollowingMode missing, applying \"position\"");
-							}
-							else if (followingMode != "position")
-							{
-								LOG("trajectoryFollowingMode %s not supported yet, applying \"position\"", followingMode.c_str());
-							}
-						}
-						else
-						{
-							throw std::runtime_error("Unexpected element: " + std::string(followTrajectoryChild.name()));
-						}
 					}
+
 					// Check that trajectory has time duration
 					if (action_follow_trajectory->timing_domain_ != FollowTrajectoryAction::TimingDomain::NONE &&
 						action_follow_trajectory->traj_->GetDuration() < SMALL_NUMBER)

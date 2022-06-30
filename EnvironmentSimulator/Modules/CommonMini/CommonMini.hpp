@@ -129,6 +129,12 @@ enum class EntityScaleMode
 	MODEL_TO_BB,  // Scale 3D model to specified or generated bounding box
 };
 
+enum class FollowingMode
+{
+	FOLLOW,
+	POSITION
+};
+
 std::string ControlDomain2Str(ControlDomains domains);
 
 enum class PixelFormat

@@ -28,10 +28,31 @@ OSCPositionWorld::OSCPositionWorld(double x, double y, double z, double h, doubl
 			LOG("At least one of z, pitch (p) and roll (r) is set. Remaining will be set to zero.");
 		}
 
-		if (std::isnan(z)) z = 0.0;
-		if (std::isnan(p)) p = 0.0;
-		if (std::isnan(r)) r = 0.0;
-		if (std::isnan(h)) h = 0.0;
+		if (std::isnan(z))
+		{
+			z = 0.0;
+		}
+
+		if (std::isnan(p))
+		{
+			// Indicate that this attribute has not been set explicitly in the scenario
+			position_.SetOrientationTypeSetBit(roadmanager::Position::OrientationSetMask::P, 0);
+			p = 0.0;  // set default value
+		}
+
+		if (std::isnan(r))
+		{
+			// Indicate that this attribute has not been set explicitly in the scenario
+			position_.SetOrientationTypeSetBit(roadmanager::Position::OrientationSetMask::R, 0);
+			r = 0.0;  // set default value
+		}
+
+		if (std::isnan(h))
+		{
+			// Indicate that this attribute has not been set explicitly in the scenario
+			position_.SetOrientationTypeSetBit(roadmanager::Position::OrientationSetMask::H, 0);
+			h = 0.0;  // set default value
+		}
 
 		position_.SetInertiaPos(x, y, z, h, p, r);
 	}
@@ -39,7 +60,9 @@ OSCPositionWorld::OSCPositionWorld(double x, double y, double z, double h, doubl
 	{
 		if (std::isnan(h))
 		{
-			h = 0.0;
+			// Indicate that this attribute has not been set explicitly in the scenario
+			position_.SetOrientationTypeSetBit(roadmanager::Position::OrientationSetMask::H, 0);
+			h = 0.0;  // set default value
 		}
 
 		position_.SetInertiaPos(x, y, h);

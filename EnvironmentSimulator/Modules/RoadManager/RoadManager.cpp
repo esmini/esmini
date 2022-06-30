@@ -5446,6 +5446,9 @@ void Position::Init()
 	osi_point_idx_ = -1;
 	route_ = 0;
 	trajectory_ = 0;
+
+	// Assume all values are defined. Set resp. mask value explicitly to zero in order to make it undefined.
+	orientationSetMask = 3;
 }
 
 Position::Position()
@@ -10852,7 +10855,7 @@ std::string Route::getName()
 	return name_;
 }
 
-void RMTrajectory::Freeze()
+void RMTrajectory::Freeze(FollowingMode following_mode)
 {
 	if (shape_->type_ == Shape::ShapeType::POLYLINE)
 	{
@@ -10863,9 +10866,14 @@ void RMTrajectory::Freeze()
 			Position* pos = &pline->vertex_[i]->pos_;
 			pos->ReleaseRelation();
 
+			if (following_mode == FollowingMode::FOLLOW && !pos->IsOrientationTypeSet(Position::OrientationSetMask::H))
+			{
+				// If heading is not provided AND follow mode is requested, then calculate heading
+				pline->pline_.vertex_[i].calcHeading = true;
+			}
+
 			if (pline->pline_.vertex_[i].calcHeading)
 			{
-
 				pline->pline_.UpdateVertex((int)i, pos->GetX(), pos->GetY(), pos->GetZ());
 			}
 			else
