@@ -9460,7 +9460,7 @@ int PolyLineBase::EvaluateSegmentByLocalS(int i, double local_s, double cornerRa
 		if (vertex_[i + 1].calcHeading && !interpolateHeading_)
 		{
 			// Strategy: Align to line, but interpolate at corners
-			double radius = MIN(4.0, length);
+			double radius = MIN(2.0, length / 2.0);
 			if (local_s < radius)
 			{
 				// passed a corner

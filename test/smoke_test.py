@@ -50,8 +50,9 @@ class TestSuite(unittest.TestCase):
 
         # Check vehicle key positions
         csv = generate_csv()
+        self.assertTrue(re.search('\n4.050, 1, Target, 128.812, 13.692, -3.441, 0.516, 0.021, 0.003, 24.524, 0.065, 5.762', csv))
         self.assertTrue(re.search('\n4.100.*, 0, Ego, 115.042, 4.864, -3.006, 0.281, 0.032, 0.000, 16.000', csv))
-        self.assertTrue(re.search('\n4.100, 1, Target, 129.852, 14.341, -3.467, 0.506, 0.020, 0.002, 24.524', csv))
+        self.assertTrue(re.search('\n4.100, 1, Target, 129.852, 14.341, -3.467, 0.558, 0.020, 0.003, 24.524, 0.060, 2.983', csv))
         self.assertTrue(re.search('\n11.100.*, 0, Ego, 200.713, 72.600, -2.443, 1.057, 6.263, 0.000, 16.000', csv))
         self.assertTrue(re.search('\n11.100, 1, Target, 205.945, 66.378, -2.497, 2.507, 6.281, 6.263, 17.500', csv))
         self.assertTrue(re.search('\n17.250.*, 0, Ego, 217.345, 167.663, 1.989, 1.738, 6.209, 0.000, 16.000', csv))
@@ -860,6 +861,6 @@ if __name__ == "__main__":
     # execute only if run as a script
 
     # Run next line instead to execute only one test
-    # unittest.main(argv=['ignored', '-v', 'TestSuite.test_synchronize'])
+    # unittest.main(argv=['ignored', '-v', 'TestSuite.test_trajectory'])
 
     unittest.main(verbosity=2)
