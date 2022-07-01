@@ -614,7 +614,7 @@ double SE_getSimTimeStep(__int64 &time_stamp, double min_time_step, double max_t
 		{
 			SE_sleep((int)((min_time_step - dt) * 1000));
 			now = SE_getSystemTime();
-			dt = min_time_step;
+			dt = (now - time_stamp) * 0.001;
 		}
 	}
 	time_stamp = now;
