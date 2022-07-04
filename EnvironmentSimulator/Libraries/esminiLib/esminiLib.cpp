@@ -841,6 +841,16 @@ extern "C"
 		return (float)player->scenarioEngine->getSimulationTime();
 	}
 
+	SE_DLL_API double SE_GetSimulationTimeDouble()
+	{
+		if (player == nullptr)
+		{
+			return 0.0;
+		}
+
+		return player->scenarioEngine->getSimulationTime();
+	}
+
 	SE_DLL_API float SE_GetSimTimeStep()
 	{
 		if (player == nullptr)

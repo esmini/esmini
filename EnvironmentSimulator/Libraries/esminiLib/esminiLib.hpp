@@ -317,9 +317,14 @@ extern "C"
 	SE_DLL_API void SE_CollisionDetection(bool mode);
 
 	/**
-		Get simulation time in seconds
+		Get simulation time in seconds - float (32 bit) precision
 	*/
 	SE_DLL_API float SE_GetSimulationTime(); // Get simulation time in seconds
+
+	/**
+		Get simulation time in seconds - double (64 bit) precision
+	*/
+	SE_DLL_API double SE_GetSimulationTimeDouble();
 
 	/**
 		Get simulation time step in seconds
