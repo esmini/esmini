@@ -16,7 +16,7 @@
 			<CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
 		</ScenarioObject>
 		<ScenarioObject name="Wall">
-			<MiscObject mass="100.0" MiscObjectCategory="barrier" name="Wall">
+			<MiscObject mass="100.0" miscObjectCategory="barrier" name="Wall">
 				<ParameterDeclarations/>
 				<BoundingBox>
 					<Center x="0.0" y="0.0" z="0.0"/>

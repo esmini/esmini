@@ -1601,6 +1601,11 @@ namespace roadmanager
 		~OpenDrive();
 
 		/**
+			Clear all allocated data and reset counters
+		*/
+		void Clear();
+
+		/**
 			Load a road network, specified in the OpenDRIVE file format
 			@param filename OpenDRIVE file
 			@param replace If true any old road data will be erased, else new will be added to the old

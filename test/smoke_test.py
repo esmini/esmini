@@ -279,8 +279,8 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^2.060, 1, Ego_ghost, 8.386, 101.178, -0.139, 1.566, 0.002, 0.000, 22.550, -0.000, 1.795', csv, re.MULTILINE))
         self.assertTrue(re.search('^2.550, 0, Ego, 8.279, 77.042, -0.088, 1.567, 0.002, 0.000, 18.389, -0.000, 1.950', csv, re.MULTILINE))
         self.assertTrue(re.search('^6.500, 0, Ego, 6.079, 178.716, -0.308, 1.634, 0.002, 0.000, 27.778, -0.014, 3.658', csv, re.MULTILINE))
-        self.assertTrue(re.search('^13.000, 1, Ego_ghost, 11.237, 356.783, -0.639, 1.549, 0.002, 0.000, 5.100, -0.000, 3.236', csv, re.MULTILINE))
-        self.assertTrue(re.search('^15.350, 0, Ego, 11.131, 351.850, -0.629, 1.550, 0.002, 0.000, 0.003, -0.001, 2.482', csv, re.MULTILINE))
+        self.assertTrue(re.search('^13.000, 1, Ego_ghost, 11.237, 356.784, -0.639, 1.549, 0.002, 0.000, 5.100, -0.000, 3.236', csv, re.MULTILINE))
+        self.assertTrue(re.search('^15.350, 0, Ego, 11.131, 351.850, -0.629, 1.550, 0.002, 0.000, 0.003, -0.001, 2.484', csv, re.MULTILINE))
 
     def test_heading_trig(self):
         log = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/traj-heading-trig.xosc'), COMMON_ARGS)
@@ -320,7 +320,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^7.000, 0, Ego, 255.000, -4.500, 0.000, 0.000, 0.000, 0.000, 35.000', csv, re.MULTILINE))
         self.assertTrue(re.search('^7.000, 1, Target, 263.859, -6.691, 0.000, 6.250, 0.000, 0.000, 31.250', csv, re.MULTILINE))
         self.assertTrue(re.search('^11.500, 0, Ego, 412.500, -4.500, 0.000, 0.000, 0.000, 0.000, 35.000', csv, re.MULTILINE))
-        self.assertTrue(re.search('^11.500, 1, Target, 400.852, -30.959, 0.000, 5.933, 0.000, 0.000, 31.250', csv, re.MULTILINE))
+        self.assertTrue(re.search('^11.500, 1, Target, 400.851, -30.959, 0.000, 5.933, 0.000, 0.000, 31.250', csv, re.MULTILINE))
 
     def test_lane_change_clothoid(self):
         log = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/lane-change_clothoid_based_trajectory.xosc'), COMMON_ARGS)
@@ -861,6 +861,6 @@ if __name__ == "__main__":
     # execute only if run as a script
 
     # Run next line instead to execute only one test
-    # unittest.main(argv=['ignored', '-v', 'TestSuite.test_trajectory'])
+    # unittest.main(argv=['ignored', '-v', 'TestSuite.test_lane_change_at_hw_exit'])
 
     unittest.main(verbosity=2)

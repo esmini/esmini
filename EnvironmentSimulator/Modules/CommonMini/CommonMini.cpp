@@ -398,6 +398,12 @@ double DistanceFromPointToLine2D(double x3, double y3, double x1, double y1, dou
 	return distance;
 }
 
+double DistanceFromPointToLine2DWithAngle(double x3, double y3, double x1, double y1, double angle)
+{
+	// https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
+	return abs(cos(angle) * (y1 - y3) - sin(angle) * (x1 - x3));
+}
+
 int PointSideOfVec(double px, double py, double vx1, double vy1, double vx2, double vy2)
 {
 	// Use cross product

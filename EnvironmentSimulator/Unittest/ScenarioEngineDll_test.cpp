@@ -332,7 +332,7 @@ TEST(GetOSIRoadLaneTest, lane_no_obj)
 	SE_StepDT(0.001f);
 	SE_FlushOSIFile();
 	ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-	EXPECT_EQ(fileStatus.st_size, 69257);  // initial OSI size, including static content
+	EXPECT_EQ(fileStatus.st_size, 69228);  // initial OSI size, including static content
 
 	int road_lane_size;
 
@@ -344,12 +344,12 @@ TEST(GetOSIRoadLaneTest, lane_no_obj)
 	SE_StepDT(0.001f);  // Step for write another frame to osi file
 	SE_FlushOSIFile();
 	ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-	EXPECT_EQ(fileStatus.st_size, 69720);  // slight growth due to only dynamic updates
+	EXPECT_EQ(fileStatus.st_size, 69691);  // slight growth due to only dynamic updates
 
 	SE_StepDT(0.001f);  // Step for write another frame to osi file
 	SE_FlushOSIFile();
 	ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-	EXPECT_EQ(fileStatus.st_size, 70184);  // slight growth due to only dynamic updates
+	EXPECT_EQ(fileStatus.st_size, 70155);  // slight growth due to only dynamic updates
 
 	SE_Close();
 }
@@ -851,7 +851,7 @@ TEST(GroundTruthTests, check_GroundTruth_including_init_state)
 	SE_Close();
 
 	ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-	EXPECT_EQ(fileStatus.st_size, 19831);
+	EXPECT_EQ(fileStatus.st_size, 19471);
 
 	// Read OSI file
 	FILE* file = fopen("gt.osi", "rb");
@@ -2334,8 +2334,8 @@ TEST(ExternalController, TestExternalDriver)
 					{
 						SE_RoadInfo road_info3;
 						SE_GetRoadInfoGhostTrailTime(0, SE_GetSimulationTime(), &road_info3, &speed2);
-						EXPECT_NEAR(road_info3.global_pos_x, 388.369, 1e-3);
-						EXPECT_NEAR(road_info3.global_pos_y, 290.966, 1e-3);
+						EXPECT_NEAR(road_info3.global_pos_x, 388.367, 1e-3);
+						EXPECT_NEAR(road_info3.global_pos_y, 290.969, 1e-3);
 					}
 				}
 			}
@@ -2367,8 +2367,8 @@ TEST(ExternalController, TestExternalDriver)
 					if (ghostMode[i] == true)
 					{
 						SE_GetRoadInfoGhostTrailTime(0, SE_GetSimulationTime(), &road_info2, &speed3);
-						EXPECT_NEAR(road_info2.global_pos_x, 388.369, 1e-3);
-						EXPECT_NEAR(road_info2.global_pos_y, 290.966, 1e-3);
+						EXPECT_NEAR(road_info2.global_pos_x, 388.367, 1e-3);
+						EXPECT_NEAR(road_info2.global_pos_y, 290.969, 1e-3);
 					}
 				}
 			}
@@ -3286,7 +3286,7 @@ int main(int argc, char **argv)
 	testing::InitGoogleTest(&argc, argv);
 
 #if 0  // set to 1 and modify filter to run one single test
-	testing::GTEST_FLAG(filter) = "*object_with_outline*";
+	testing::GTEST_FLAG(filter) = "*TestFetchImag*";
 #else
 	SE_LogToConsole(false);
 #endif

@@ -1543,7 +1543,9 @@ TEST_F(LaneTestFixture, TestLaneGetLineGlobalIds)
 
 TEST(RoadTest, RoadWidthAllLanes)
 {
-    roadmanager::OpenDrive* odr = new OpenDrive("../../../resources/xodr/soderleden.xodr");
+    ASSERT_EQ(roadmanager::Position::LoadOpenDrive("../../../resources/xodr/soderleden.xodr"), true);
+    roadmanager::OpenDrive* odr = Position::GetOpenDrive();
+    ASSERT_NE(odr, nullptr);
 
     ASSERT_NE(odr, nullptr);
     EXPECT_EQ(odr->GetNumOfRoads(), 5);
@@ -1555,7 +1557,7 @@ TEST(RoadTest, RoadWidthAllLanes)
     EXPECT_NEAR(road->GetWidth(0, 1), 2.3, 1e-5);
     EXPECT_NEAR(road->GetWidth(0, 0), 8.1, 1e-5);
 
-    delete odr;
+    odr->Clear();
 }
 
 TEST(RoadTest, RoadWidthDrivingLanes)
@@ -2307,7 +2309,7 @@ int main(int argc, char **argv)
     }
 #endif
 
-    //testing::GTEST_FLAG(filter) = "*TestRelativeRoadPos*";
+    //testing::GTEST_FLAG(filter) = "*RoadWidthAllLanes*";
 
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

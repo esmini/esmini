@@ -187,8 +187,8 @@ TEST(DistanceTest, CalcDistancePointAcrossIntersection)
     double longDist = 0.0;
 
     ASSERT_EQ(obj0.FreeSpaceDistancePointRoadLane(pos1.GetX(), pos1.GetY(), &latDist, &longDist, CoordinateSystem::CS_ROAD), 0);
-    EXPECT_NEAR(longDist, -38.587016, 1e-5);
-    EXPECT_NEAR(latDist, 0.221272, 1e-5);
+    EXPECT_NEAR(longDist, -38.58642, 1e-5);
+    EXPECT_NEAR(latDist, 0.22127, 1e-5);
 
 }
 
@@ -1459,7 +1459,7 @@ int main(int argc, char** argv)
     }
 #endif
 
-    //testing::GTEST_FLAG(filter) = "*UDPDriverModelTestAsynchronous";
+    //testing::GTEST_FLAG(filter) = "*CalcDistancePointAcrossIntersection";
 
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
