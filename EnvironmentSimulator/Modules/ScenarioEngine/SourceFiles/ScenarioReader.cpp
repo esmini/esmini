@@ -744,7 +744,7 @@ MiscObject *ScenarioReader::parseOSCMiscObject(pugi::xml_node miscObjectNode)
 	parameters.addParameterDeclarations(paramDecl);
 
 	miscObject->typeName_ = parameters.ReadAttribute(miscObjectNode, "name");
-	miscObject->SetCategory(parameters.ReadAttribute(miscObjectNode, "MiscObjectCategory"));
+	miscObject->SetCategory(parameters.ReadAttribute(miscObjectNode, "miscObjectCategory"));
 	miscObject->mass_ = strtod(parameters.ReadAttribute(miscObjectNode, "mass"));
 
 	// Parse BoundingBox

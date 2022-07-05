@@ -22,6 +22,18 @@
         <ScenarioObject name="bike">
             <CatalogReference catalogName="VehicleCatalog" entryName="bicycle"/>
         </ScenarioObject>
+        <ScenarioObject name="Box">
+          <MiscObject name="box" miscObjectCategory="obstacle" model3d="../models/box_cc_by.osgb" mass="200.0">
+              <ParameterDeclarations/>
+              <BoundingBox>
+                  <Center x="0.0" y="0.0" z="0.75"/>
+                  <Dimensions width="1.0" length="2.0" height="1.2"/>
+              </BoundingBox>
+              <Properties>
+                  <Property name="scaleMode" value="ModelToBB"/>
+              </Properties>
+          </MiscObject>
+        </ScenarioObject>
     </Entities>
     <Storyboard>
         <Init>
@@ -79,6 +91,17 @@
                             <LongitudinalDistanceAction entityRef="Target" freespace="false" continuous="true" distance="1.2"/>
                         </LongitudinalAction>
                     </PrivateAction>
+                </Private>
+                <Private entityRef="Box">
+                   <PrivateAction>
+                      <TeleportAction>
+                         <Position>
+                            <LanePosition roadId="1" laneId="-1" offset="-2" s="150">
+                                <Orientation type="relative" h="0.1"/>
+                            </LanePosition>
+                         </Position>
+                      </TeleportAction>
+                   </PrivateAction>
                 </Private>
             </Actions>
         </Init>
