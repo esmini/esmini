@@ -347,15 +347,15 @@ static int GetRoadInfoAtGhostTrailTime(int object_id, float time, SE_RoadInfo* r
 		return -1;
 	}
 
-	Object* ghost = 0;
-	if (obj->GetAssignedControllerType() != Controller::Type::CONTROLLER_TYPE_DEFAULT)
+	Object* ghost = obj->GetGhost();
+	if (ghost == nullptr)
 	{
-		ghost = obj->GetGhost();
-		if (ghost == 0)
+		if (obj->GetAssignedControllerType() != Controller::Type::CONTROLLER_TYPE_DEFAULT)
 		{
 			LOG("Ghost object not available for object id %d", object_id);
-			return -1;
 		}
+
+		return -1;
 	}
 
 	int index_out;
