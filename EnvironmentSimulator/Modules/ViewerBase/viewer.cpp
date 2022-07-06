@@ -2103,11 +2103,12 @@ EntityModel* Viewer::CreateEntityModel(std::string modelFilepath, osg::Vec4 trai
 			boundingBox->dimensions_.length_ = modelBB._max.x() - modelBB._min.x();
 			boundingBox->dimensions_.width_ = modelBB._max.y() - modelBB._min.y();
 			boundingBox->dimensions_.height_ = modelBB._max.z() - modelBB._min.z();
+
+			LOG("Adjusted %s bounding box to model %s - xyz: %.2f, %.2f, %.2f lwh: %.2f, %.2f, %.2f",
+				name.c_str(), FileNameOf(modelFilepath).c_str(),
+				boundingBox->center_.x_, boundingBox->center_.y_, boundingBox->center_.z_,
+				boundingBox->dimensions_.length_, boundingBox->dimensions_.width_, boundingBox->dimensions_.height_);
 		}
-		LOG("Adjusted %s bounding box to model %s - xyz: %.2f, %.2f, %.2f lwh: %.2f, %.2f, %.2f",
-			name.c_str(), FileNameOf(modelFilepath).c_str(),
-			boundingBox->center_.x_, boundingBox->center_.y_, boundingBox->center_.z_,
-			boundingBox->dimensions_.length_, boundingBox->dimensions_.width_, boundingBox->dimensions_.height_);
 	}
 	else if (scaleMode == EntityScaleMode::MODEL_TO_BB)
 	{
