@@ -476,8 +476,11 @@ extern "C"
 	{
 		resetScenario();
 
-		// Add "esmini" as first arg
-		AddArgument("esmini");
+		if (argv && !strncmp(argv[0], "--", 2))
+		{
+			// Application name argument missing. Add something.
+			AddArgument("esmini");
+		}
 
 		for (int i = 0; i < argc; i++)
 		{
@@ -543,7 +546,7 @@ extern "C"
 #endif
 		resetScenario();
 
-		AddArgument("viewer"); // name of application
+		AddArgument("esmini(lib)"); // name of application
 		AddArgument("--osc_str");
 		AddArgument(oscAsXMLString, false);
 
@@ -573,7 +576,7 @@ extern "C"
 #endif
 		resetScenario();
 
-		AddArgument("viewer"); // name of application
+		AddArgument("esmini(lib)"); // name of application
 		AddArgument("--osc");
 		AddArgument(oscFilename, false);
 

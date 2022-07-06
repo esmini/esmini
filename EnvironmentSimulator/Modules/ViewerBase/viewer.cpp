@@ -3273,10 +3273,15 @@ void Viewer::SetWindowTitleFromArgs(std::vector<std::string>& args)
 		std::string arg = args[i];
 		if (i == 0)
 		{
-			arg = FileNameWithoutExtOf(arg);
-			if (arg != "esmini")
+			if (args[i].compare(0, 2, "--"))
 			{
-				arg = "esmini " + arg;
+				// first argument is not an esmini argument, assume it's the name of the application.
+				arg = FileNameWithoutExtOf(arg);
+			}
+			else
+			{
+				// add esmini as application name
+				arg = "esmini";
 			}
 		}
 		else if (arg == "--osc" || arg == "--odr" || arg == "--model")
