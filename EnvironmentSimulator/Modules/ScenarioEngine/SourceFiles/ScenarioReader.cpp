@@ -623,6 +623,10 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
 						}
 					}
 				}
+				else if (trailer_child_node_name == "Vehicle")
+				{
+					trailer = parseOSCVehicle(trailer_child_node);
+				}
 				else
 				{
 					LOG("Unexpected Trailer child element %s", trailer_child_node_name.c_str());
