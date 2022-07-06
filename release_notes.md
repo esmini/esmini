@@ -1,5 +1,44 @@
 ## esmini release notes
 
+### 2022-07-06 Version 2.24.0
+
+- Support lane discontinuities and improve road 3D model tesselation
+  - refactorize OSI lane points to support discontinuities, e.g. step laneWidth changes
+  - optimize tesselation reducing unnecessary polygons
+- Add high precision (64 bit double) GetSimulationTime function
+  - See header [here](https://github.com/esmini/esmini/blob/4d82d27b7a613a764d7cf3a5f20c389d5d60f409/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L327)
+- Add vehicle 3D model bounding box dimensions info to [vehicle catalog](https://github.com/esmini/esmini/blob/master/resources/xosc/Catalogs/Vehicles/VehicleCatalog.xosc)
+- Support inline trailer definitions
+  - see updated example ["semi_truck_with_extra_trailer"](https://github.com/esmini/esmini/blob/79c529e6745191c332c8ed879f09273692c49ed5/resources/xosc/Catalogs/Vehicles/VehicleCatalog.xosc#L371) in [vehicle catalog](https://github.com/esmini/esmini/blob/master/resources/xosc/Catalogs/Vehicles/VehicleCatalog.xosc)
+  - also see updated draft [trailer XML description](https://docs.google.com/document/u/1/d/e/2PACX-1vR7jXggp_LaEIzNyKsFEpJxWrYdC_W2GEDayQIeeCBU4fzyrEyJ22Ihbq4Ra7JXmbWqgPOydfB6WZ0j/pub)
+- Add followingMode to FollowTrajectoryAction 
+  - followingMode `follow`: Calculate and interpolate heading in case heading is not explicitly set (overriding OpenSCENARIO 1.1+ default values) 
+  - followingMode `position`: Strictly follow the standard, e.g. missing heading is interpreted as 0.0
+- Improve heading interpolation (decrease radius/ duration)
+- Populate stationary objects, including outlines, to OSI stream
+- Add misc object to example scenario and fix miscObjectCategory typo
+  - esmini now expect [`miscObjectCategory`](https://www.asam.net/static_downloads/ASAM_OpenSCENARIO_V1.2.0_Model_Documentation/modelDocumentation/content/MiscObject.html) instead of the former wrong `MiscObjectCategory`
+  - obstacle box added to the example scenario [drop-bike.xosc](https://github.com/esmini/esmini/blob/master/resources/xosc/drop-bike.xosc)
+- Add info to User guide on how to make `osgconv` deal with repeated objects
+  - see about FLATTEN_STATIC_TRANSFORMS_DUPLICATING_SHARED_SUBGRAPHS [here](https://esmini.github.io/#_openscenegraph_and_3d_models)
+- Add info on sharp braking speed profiles
+  - see [User guide - Sharp brake-to-stop profile](https://esmini.github.io/#_sharp_brake_to_stop_profile)
+- Add info on how to suppress Windows console ([issue #294](https://github.com/esmini/esmini/issues/294))
+  - see [here](https://github.com/esmini/esmini/blob/4d82d27b7a613a764d7cf3a5f20c389d5d60f409/Hello-World_coding-example/CMakeLists.txt#L18)
+- Add derivative feature to plot_dat.py
+  - plot first derivative (instead of original value) of parameters wrt x axis (typically time)
+  - activate with `--derive` argument
+- Accept roadMark type `none`
+  - This change enables empty road mark segments within same lane section
+- Accept unsorted (sOffset) `roadMark` entries
+- Fix min time-step glitch causing esmini to be really slow
+- Fix error messages to show junction id ([pr #297](https://github.com/esmini/esmini/pull/297))
+- Fix invalid warning of unknown argument when using [SE_InitWithArgs()](https://github.com/esmini/esmini/blob/4d82d27b7a613a764d7cf3a5f20c389d5d60f409/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L287)
+- Fix elevation jump bug at trajectory end ([issue #293](https://github.com/esmini/esmini/issues/293))
+- Fix performance setting log message bug
+- Fix crash due to referencing deactivated ghost (nullptr)
+  - this fix makes it possible to toggle on/off controllers involving ghost
+
 ### 2022-06-20 Version 2.23.4
 
 - Fix wrong successor selection at junction on route ([pr #292](https://github.com/esmini/esmini/issues/292))
