@@ -1393,7 +1393,7 @@ int Road::GetConnectingLaneId(RoadLink* road_link, int fromLaneId, int connectin
 
 		if (junction == 0)
 		{
-			LOG("Error: junction %d not existing\n", road_link->GetElementType());
+			LOG("Error: junction %d not existing\n", road_link->GetElementId());
 			return 0;
 		}
 
@@ -7378,7 +7378,7 @@ Position::ReturnCode Position::MoveToConnectingRoad(RoadLink *road_link, Contact
 
 		if (junction == 0)
 		{
-			LOG("Error: junction %d not existing\n", road_link->GetElementType());
+			LOG("Error: junction %d not existing\n", road_link->GetElementId());
 			return ReturnCode::ERROR_GENERIC;
 		}
 
