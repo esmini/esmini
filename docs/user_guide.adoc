@@ -779,6 +779,66 @@ image::speed-profile10.png[]
 ==== More info
 To get more understanding of the implementation, see a few slides https://drive.google.com/file/d/1DmjVHftcsbU71Ce_GASZ6IArcPA6teNF/view?usp=sharing[here].
 
+=== Road signs
+(framework updated in esmini v2.25.0)
+
+==== The system
+
+Road signs are specified in the https://www.asam.net/index.php?eID=dumpFile&t=f&f=4422&token=e590561f3c39aa2260e5442e29e93f6693d1cccd#top-016f925e-bfe2-481d-b603-da4524d7491f[OpenDRIVE] road network description file. A road sign is identified by up to four parameters:
+
+1. country code
+1. type
+1. subtype
+1. value
+
+Country code is a two letter word according to the https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2[ISO 3166-1 alpha-2 system]. Examples: Sweden = se, Germany = de.
+
+Type and subtype defines the semantic meaning of the sign. The value is used when applicable to further specify information, e.g. speed or weight. Data type and meaning of the parameters may differ between countries. However a mapping to each country's system is often feasible.
+
+Examples:
+In https://www.transportstyrelsen.se/sv/vagtrafik/Vagmarken/[Sweden a speed sign] belongs to the category prohibition signs named "c". Within that category speed signs is a sub group with index 31. Within that group each sign has a value of speed/10, e.g. 5=50km/h, 10=100km/h. So the parameters for a Swedish speed limit 90 km/h sign becomes: se, c, 31, 9.
+
+In https://en.wikipedia.org/wiki/Road_signs_in_Germany[Germany] there are no similar categories. Instead all signs have a unique group or type number, e.g. speed signs make up group 274. Then the value defines the speed. No need for subtype. So the parameters for a German  speed limit 90 km/h sign becomes: de, 274, -, 90.
+
+==== esmini sign catalogs
+Instead of hard-coding road sign support esmini will lookup the https://opensimulationinterface.github.io/open-simulation-interface/structosi3_1_1TrafficSign_1_1MainSign_1_1Classification.html[OSI code] from a separate sign definition file, which is unique for each country. Name convention for the file is: `country code` + "_traffic_signals.txt". Example: Swedish catalog is named "se_traffic_signals.txt".
+
+The file is a simple text format each line defining a sign ID and corresponding OSI type. 
+
+Swedish example: `c.31-7=TYPE_SPEED_LIMIT_BEGIN` +
+German example: `274=TYPE_SPEED_LIMIT_BEGIN`
+
+Type is mandatory. For esmini to distinguish between subtype and value different separators are used: "." before subtype and "-" before value. For some signs the value is optional, e.g. for speed signs it simply specify the speed limit. But for some signs it is used as a subtype to identify a variant of a sign, as in the German 101 type category.
+
+Example files can be found in https://github.com/esmini/esmini/tree/master/resources/traffic_signals[esmini/resources/traffic_signals].
+
+Currently (v2.25.0) the esmini sign support is very limited. However, it should be fairly straight forward to add signs into existing catalogs and even catalogs (for more countries).
+
+==== Sign 3D models
+esmini road signs are created as follows:
+
+- A basic 3D geometry is modeled in Blender, e.g. round face for speed signs
+- Assign a material with any texture image mapped on the sign face
+- The 3D model is exported in `.dae` format (example https://drive.google.com/file/d/11v7xz9Mqw_Vx4An_FoLfKVlwcWJc-mnE/view?usp=sharing[here])
+- Find textures of the needed sign(s) and convert them into some common format, e.g. `.png`. Recommended size is 256, but larger is OK. If possible make it size 2^n x 2^m to avoid performance penalty on low spec/old systems.
+- Rename image to the same name as the texture image in the dae file (sign_image.png in the example dae)
+- Convert the .dae file into .osgb using osgconv. The texture will be embedded in the.osgb file by default.
+
+.Speed sign in Blender
+image::speed_sign_blender.png[]
+
+A https://github.com/esmini/esmini/blob/master/scripts/bake_signs.sh[script] is available as a starting point for automating the two last steps in the process above.
+
+==== Example
+
+The OpenDRIVE file https://github.com/esmini/esmini/blob/master/resources/xodr/straight_500m_signs.xodr[straight_500m_signs.xodr] includes a bunch of speed signs, some Swedish and some German ones. It shows how the signs are specified in terms of the country code, type, subtype and value attributes. It also shows how to specify the 3D model using the `name` attribute.
+
+.Swedish speed sign
+image::speed_sign1.png[]
+
+.German speed sign
+image::speed_sign2.png[]
+
 == OpenSceneGraph and 3D models
 
 http://www.openscenegraph.org/[OpenSceneGraph] (osg) includes readers and writers for quite a few 3D file formats. It comes with a demo application, http://www.openscenegraph.org/index.php/documentation/user-guides/55-osgconv[osgconv], a command line tool that simply takes one file as input and outputs the same content in a different format. 
