@@ -1279,7 +1279,7 @@ TEST(RoadSign, TestValidityRecord)
 	int n_Objects = SE_GetNumberOfObjects();
 	EXPECT_EQ(n_Objects, 2);
 
-	EXPECT_EQ(SE_GetNumberOfRoadSigns(1), 12);
+	EXPECT_EQ(SE_GetNumberOfRoadSigns(1), 13);
 	EXPECT_EQ(SE_GetNumberOfRoadSignValidityRecords(1, 0), 2);
 
 	SE_RoadObjValidity validityRec;
@@ -2108,10 +2108,14 @@ TEST(OSILaneParing, simple_4way_intersection)
 	SE_Close();
 }
 
+
 TEST(OSILaneParing, Signs)
 {
-	std::string scenario_file = "../../../resources/xosc/distance_test.xosc";
+	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/sign_test.xosc";
 	const char* Scenario_file = scenario_file.c_str();
+
+	SE_AddPath("../../../resources");
+
 	int i_init = SE_Init(Scenario_file, 0, 0, 0, 0);
 	ASSERT_EQ(i_init, 0);
 	SE_StepDT(0.001f);
@@ -2122,18 +2126,21 @@ TEST(OSILaneParing, Signs)
 	const char* gt = SE_GetOSIGroundTruth(&sv_size);
 	osi_gt.ParseFromArray(gt, sv_size);
 	// order: id, type, country, subtypevalue, text, pitch, roll, height, s, t, zOffset
-	std::vector<std::tuple<int, osi3::TrafficSign_MainSign_Classification_Type, double, std::string, double, double, double, double, double, double>> signs = { std::make_tuple(0, osi3::TrafficSign_MainSign_Classification_Type::TrafficSign_MainSign_Classification_Type_TYPE_DANGER_SPOT, -1, "", 0.0, 0.0, 0.61, 0.0, 3.57, 1.7),
-																																					std::make_tuple(1, osi3::TrafficSign_MainSign_Classification_Type::TrafficSign_MainSign_Classification_Type_TYPE_DANGER_SPOT, -1, "", 0.0, 0.0, 0.61, 0.0, 3.57, 1.7),
-																																					std::make_tuple(2, osi3::TrafficSign_MainSign_Classification_Type::TrafficSign_MainSign_Classification_Type_TYPE_ZEBRA_CROSSING, -1, "", 0.0, 0.0, 0.61, 100.0, 3.57, 1.7),
-																																					std::make_tuple(3, osi3::TrafficSign_MainSign_Classification_Type::TrafficSign_MainSign_Classification_Type_TYPE_UNKNOWN, -1, "", 0.0, 0.0, 0.61, 100.0, 3.57, 1.7),
-																																					std::make_tuple(4, osi3::TrafficSign_MainSign_Classification_Type::TrafficSign_MainSign_Classification_Type_TYPE_HILL_UPWARDS, -1, "", 0.0, 0.0, 0.61, 100.0, 3.57, 1.7),
-																																					std::make_tuple(5, osi3::TrafficSign_MainSign_Classification_Type::TrafficSign_MainSign_Classification_Type_TYPE_DOUBLE_TURN_LEFT, -1, "", 0.0, 0.0, 0.61, 100.0, 3.57, 1.7),
-																																					std::make_tuple(6, osi3::TrafficSign_MainSign_Classification_Type::TrafficSign_MainSign_Classification_Type_TYPE_DOUBLE_TURN_RIGHT, -1, "", 0.0, 0.0, 0.61, 200.0, 3.57, 1.7),
-																																					std::make_tuple(7, osi3::TrafficSign_MainSign_Classification_Type::TrafficSign_MainSign_Classification_Type_TYPE_UNKNOWN, -1, "", 0.0, 0.0, 0.61, 200.0, 3.57, 1.7),
-																																					std::make_tuple(8, osi3::TrafficSign_MainSign_Classification_Type::TrafficSign_MainSign_Classification_Type_TYPE_UNKNOWN, -1, "", 0.0, 0.0, 0.61, 200.0, 3.57, 1.7),
-																																					std::make_tuple(9, osi3::TrafficSign_MainSign_Classification_Type::TrafficSign_MainSign_Classification_Type_TYPE_UNKNOWN, -1, "", 0.0, 0.0, 0.61, 200.0, 3.57, 1.7),
-																																					std::make_tuple(10, osi3::TrafficSign_MainSign_Classification_Type::TrafficSign_MainSign_Classification_Type_TYPE_UNKNOWN, -1, "", 0.0, 0.0, 0.61, 500.0, 3.57, 1.7),
-																																					std::make_tuple(11, osi3::TrafficSign_MainSign_Classification_Type::TrafficSign_MainSign_Classification_Type_TYPE_UNKNOWN, -1, "", 0.0, 0.0, 0.61, 500.0, 3.57, 1.7) };
+	std::vector<std::tuple<int, osi3::TrafficSign_MainSign_Classification_Type, double, std::string, double, double, double, double, double, double>> signs =
+	{
+		std::make_tuple(0, osi3::TrafficSign_MainSign_Classification_Type::TrafficSign_MainSign_Classification_Type_TYPE_DANGER_SPOT, 0, "", 0.0, 0.0, 0.61, 0.0, 3.57, 1.7),
+		std::make_tuple(1, osi3::TrafficSign_MainSign_Classification_Type::TrafficSign_MainSign_Classification_Type_TYPE_DANGER_SPOT, 0, "", 0.0, 0.0, 0.61, 0.0, 3.57, 1.7),
+		std::make_tuple(2, osi3::TrafficSign_MainSign_Classification_Type::TrafficSign_MainSign_Classification_Type_TYPE_ZEBRA_CROSSING, 11, "", 0.0, 0.0, 0.61, 100.0, 3.57, 1.7),
+		std::make_tuple(3, osi3::TrafficSign_MainSign_Classification_Type::TrafficSign_MainSign_Classification_Type_TYPE_UNKNOWN, 0, "", 0.0, 0.0, 0.61, 100.0, 3.57, 1.7),
+		std::make_tuple(4, osi3::TrafficSign_MainSign_Classification_Type::TrafficSign_MainSign_Classification_Type_TYPE_HILL_UPWARDS, 0, "", 0.0, 0.0, 0.61, 100.0, 3.57, 1.7),
+		std::make_tuple(5, osi3::TrafficSign_MainSign_Classification_Type::TrafficSign_MainSign_Classification_Type_TYPE_DOUBLE_TURN_LEFT, 10, "", 0.0, 0.0, 0.61, 100.0, 3.57, 1.7),
+		std::make_tuple(6, osi3::TrafficSign_MainSign_Classification_Type::TrafficSign_MainSign_Classification_Type_TYPE_DOUBLE_TURN_RIGHT, 20, "", 0.0, 0.0, 0.61, 200.0, 3.57, 1.7),
+		std::make_tuple(7, osi3::TrafficSign_MainSign_Classification_Type::TrafficSign_MainSign_Classification_Type_TYPE_UNKNOWN, 0, "", 0.0, 0.0, 0.61, 200.0, 3.57, 1.7),
+		std::make_tuple(8, osi3::TrafficSign_MainSign_Classification_Type::TrafficSign_MainSign_Classification_Type_TYPE_UNKNOWN, 0, "", 0.0, 0.0, 0.61, 200.0, 3.57, 1.7),
+		std::make_tuple(9, osi3::TrafficSign_MainSign_Classification_Type::TrafficSign_MainSign_Classification_Type_TYPE_UNKNOWN, 0, "", 0.0, 0.0, 0.61, 200.0, 3.57, 1.7),
+		std::make_tuple(10, osi3::TrafficSign_MainSign_Classification_Type::TrafficSign_MainSign_Classification_Type_TYPE_UNKNOWN, 0, "", 0.0, 0.0, 0.61, 500.0, 3.57, 1.7),
+		std::make_tuple(11, osi3::TrafficSign_MainSign_Classification_Type::TrafficSign_MainSign_Classification_Type_TYPE_UNKNOWN, 0, "", 0.0, 0.0, 0.61, 500.0, 3.57, 1.7)
+	};
 
 	int sign_id = 0;
 	osi3::TrafficSign_MainSign_Classification_Type type = osi3::TrafficSign_MainSign_Classification_Type_TYPE_UNKNOWN;
@@ -3286,7 +3293,7 @@ int main(int argc, char **argv)
 	testing::InitGoogleTest(&argc, argv);
 
 #if 0  // set to 1 and modify filter to run one single test
-	testing::GTEST_FLAG(filter) = "*TestFetchImag*";
+	testing::GTEST_FLAG(filter) = "*TestValidityRecord*";
 #else
 	SE_LogToConsole(false);
 #endif

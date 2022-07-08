@@ -1057,6 +1057,8 @@ int ScenarioPlayer::Init()
 	opt.AddOption("version", "Show version and quit");
 
 	exe_path_ = argv_[0];
+	SE_Env::Inst().AddPath(DirNameOf(exe_path_));  // Add location of exe file to search paths
+
 	if (opt.ParseArgs(&argc_, argv_) != 0)
 	{
 		PrintUsage();

@@ -339,6 +339,8 @@ int main(int argc, char** argv)
 	// Use logger callback
 	Logger::Inst().SetCallback(log_callback);
 
+	SE_Env::Inst().AddPath(DirNameOf(argv[0]));  // Add location of exe file to search paths
+
 	std::vector<std::string> args;
 	for (int i = 0; i < argc; i++) args.push_back(argv[i]);
 

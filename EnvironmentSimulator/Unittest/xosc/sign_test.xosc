@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- This scenario demonstrates the keep distance action -->
+<OpenSCENARIO>
+   <FileHeader revMajor="1"
+               revMinor="1"
+               date="2021-07-27T10:00:00"
+               description="Keep distance"
+               author="esmini team"/>
+   <ParameterDeclarations/>
+   <CatalogLocations>
+      <VehicleCatalog>
+         <Directory path="../xosc/Catalogs/Vehicles"/>
+      </VehicleCatalog>
+   </CatalogLocations>
+   <RoadNetwork>
+      <LogicFile filepath="../xodr/some_signs.xodr"/>
+   </RoadNetwork>
+   <Entities/>
+   <Storyboard>
+      <Init/>
+      <Story name="Story_DistTest">
+         <ParameterDeclarations/>
+         <Act name="Act_DistTest">
+            <ManeuverGroup maximumExecutionCount="1" name="ManeuverGroup">
+               <Actors selectTriggeringEntities="false"/>
+               <Maneuver name="Maneuver"/>
+            </ManeuverGroup>
+            <StartTrigger/>
+         </Act>
+      </Story>
+      <StopTrigger>
+         <ConditionGroup>
+            <Condition name="CutInActStart" delay="0" conditionEdge="none">
+                <ByValueCondition>
+                    <SimulationTimeCondition value="3" rule="greaterThan"/>
+                </ByValueCondition>
+            </Condition>
+         </ConditionGroup>
+      </StopTrigger>
+   </Storyboard>
+</OpenSCENARIO>

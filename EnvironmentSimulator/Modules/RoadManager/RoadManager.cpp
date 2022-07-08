@@ -107,7 +107,7 @@ const char* object_type_str[] =
 	"wind"
 };
 
-const std::map<std::string, Signal::Type> Signal::types_mapping_ = {
+const std::map<std::string, Signal::OSIType> Signal::types_mapping_ = {
 	{"TYPE_UNKNOWN", Signal::TYPE_UNKNOWN},
 	{"TYPE_OTHER", Signal::TYPE_OTHER},
 	{"TYPE_DANGER_SPOT", Signal::TYPE_DANGER_SPOT},
@@ -351,13 +351,44 @@ const std::map<std::string, Signal::Type> Signal::types_mapping_ = {
 	{"TYPE_TRAFFIC_LIGHT_GREEN_ARROW", Signal::TYPE_TRAFFIC_LIGHT_GREEN_ARROW}
 };
 
-Signal::Type Signal::GetTypeFromString(const std::string& type)
+Signal::Signal(double s, double t, int id, std::string name, bool dynamic, Orientation orientation, double z_offset, std::string country, int osi_type,
+	std::string type, std::string subtype, std::string value_str, std::string unit, double height, double width, std::string text, double h_offset,
+	double pitch, double roll) : s_(s), t_(t), id_(id), name_(name), dynamic_(dynamic), orientation_(orientation), z_offset_(z_offset),
+	country_(country), osi_type_(osi_type), type_(type), subtype_(subtype), value_str_(value_str), unit_(unit), height_(height), width_(width), text_(text),
+	h_offset_(h_offset), pitch_(pitch), roll_(roll), length_(0)
 {
-	if(types_mapping_.count(type) != 0)
+	value_ = strtod(value_str);
+}
+
+Signal::OSIType Signal::GetOSITypeFromString(const std::string& type)
+{
+	if (types_mapping_.count(type) != 0)
 	{
 		return types_mapping_.find(type)->second;
 	}
 	return Signal::TYPE_UNKNOWN;
+}
+
+std::string Signal::GetCombinedTypeSubtypeValueStr(std::string type, std::string subtype, std::string value)
+{
+	std::string str;
+
+	if (!type.empty())
+	{
+		str = type;
+
+		if (!subtype.empty())
+		{
+			str += "." + subtype;
+		}
+
+		if (!value.empty())
+		{
+			str += "-" + value;
+		}
+	}
+
+	return str;
 }
 
 int roadmanager::GetNewGlobalLaneId()
@@ -3713,44 +3744,46 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 					double  z_offset = atof(signal.attribute("zOffset").value());
 					std::string country = signal.attribute("country").value();
 					//Load the country file for types
-					if(!country_file_loaded || current_country != country)
+					if(!country.empty() && (!country_file_loaded || current_country != country))
 					{
 						current_country = country;
 						country_file_loaded = LoadSignalsByCountry(country);
 					}
 
-					// type
-					int type = Signal::TYPE_UNKNOWN;
-					if (signal.attribute("type") == 0 || !strcmp(signal.attribute("type").value(), ""))
-					{
-						LOG("Road signal type error");
-					}
-					// sub_type
-					if (signal.attribute("subtype") == 0 || !strcmp(signal.attribute("subtype").value(), ""))
-					{
-						LOG("Road signal sub-type error");
-					}
+					std::string type;
+					std::string subtype;
+					std::string value;
 
-					if (strcmp(signal.attribute("type").value(), "none") && strcmp(signal.attribute("type").value(), "-1"))
+					type = signal.attribute("type").value();
+					subtype = signal.attribute("subtype").value();
+					value = signal.attribute("value").value();
+					int osi_type = static_cast<int>(Signal::OSIType::TYPE_UNKNOWN);
+
+					if (!type.empty())
 					{
-						std::string type_to_find = signal.attribute("type").value();
-						if (strcmp(signal.attribute("subtype").value(), "none") && strcmp(signal.attribute("subtype").value(), "-1"))
+						std::string type_to_find = Signal::GetCombinedTypeSubtypeValueStr(type, subtype, value);
+
+						if (signals_types_.count(country + type_to_find) != 0)
 						{
-							type_to_find = type_to_find + "-" + signal.attribute("subtype").value();
+							std::string enum_string = signals_types_.find(country + type_to_find)->second;
+							osi_type = static_cast<int>(Signal::GetOSITypeFromString(enum_string));
 						}
 
-						if(signals_types_.count(type_to_find) != 0)
+						if (osi_type == static_cast<int>(Signal::OSIType::TYPE_UNKNOWN))
 						{
-							std::string enum_string = signals_types_.find(type_to_find)->second;
-							type = static_cast<int>(Signal::GetTypeFromString(enum_string));
-						}
-						else
-						{
-							LOG("Signal Type %s doesn't exists for this country", type_to_find.c_str());
+							// Try without value
+							if (signals_types_.count(country + type + (subtype.empty() ? "" : "." + subtype)) != 0)
+							{
+								std::string enum_string = signals_types_.find(country + type + (subtype.empty() ? "" : "." + subtype))->second;
+								osi_type = static_cast<int>(Signal::GetOSITypeFromString(enum_string));
+							}
+							if (osi_type == static_cast<int>(Signal::OSIType::TYPE_UNKNOWN))
+							{
+								LOG("Signal Type %s doesn't exists for country %s", type_to_find.c_str(), country.c_str());
+							}
 						}
 					}
 
-					double value = atof(signal.attribute("value").value());
 					std::string unit = signal.attribute("unit").value();
 					double height = atof(signal.attribute("height").value());
 					double width = atof(signal.attribute("width").value());
@@ -3759,7 +3792,7 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 					double pitch = atof(signal.attribute("pitch").value());
 					double roll = atof(signal.attribute("roll").value());
 
-					Signal* sig = new Signal(s, t, ids, name, dynamic, orientation, z_offset, country, type, value, unit, height,
+					Signal* sig = new Signal(s, t, ids, name, dynamic, orientation, z_offset, country, osi_type, type, subtype, value, unit, height,
 						width, text, h_offset, pitch, roll);
 					if (sig != NULL)
 					{
@@ -5323,19 +5356,25 @@ void OpenDrive::ParseGeoLocalization(const std::string& geoLocalization)
 
 bool OpenDrive::LoadSignalsByCountry(const std::string& country)
 {
+	std::string sign_filename = country + "_traffic_signals.txt";
 	std::vector<std::string> file_name_candidates;
+
 	// absolute path or relative to current directory
-	file_name_candidates.push_back("../../../resources/traffic_signals/" + country + "_traffic_signals.txt");
-	// relative path to scenario directory
-	file_name_candidates.push_back("resources/traffic_signals/" + country + "_traffic_signals.txt");
+	file_name_candidates.push_back(sign_filename);
 	// Remove all directories from path and look in current directory
-	file_name_candidates.push_back(country + "_traffic_signals.txt");
-	// Finally check registered paths
+	file_name_candidates.push_back(FileNameOf(sign_filename));
+	// assume OpenDRIVE file directory is on same level as traffic_signals directory
+	file_name_candidates.push_back(odr_filename_ + "/../../traffic_signals/" + sign_filename);
+
 	for (size_t i = 0; i < SE_Env::Inst().GetPaths().size(); i++)
 	{
-		file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], "resources/traffic_signals/" + country + "_traffic_signals.txt"));
-		file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], country + "_traffic_signals.txt"));
+		// Also check registered paths
+		file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], sign_filename));
+		file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], "traffic_signals/" + sign_filename));
+		file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], "resources/traffic_signals/" + sign_filename));
+		file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], "/../traffic_signals/" + sign_filename));
 	}
+
 	size_t i;
 	bool located = false;
 	for (i = 0; i < file_name_candidates.size(); i++)
@@ -5355,14 +5394,15 @@ bool OpenDrive::LoadSignalsByCountry(const std::string& country)
 				{
 					LOG("  -> trying: %s", file_name_candidates[i + 1].c_str());
 				}
-			}else
+			}
+			else
 			{
 				const char delimiter = '=';
 
 				// process each line in turn
 				while(std::getline(fs, line))
 				{
-					std::stringstream sstream(line);
+					std::stringstream sstream(country+line);
 					std::string key = "";
 					std::string value = "";
 
@@ -5377,6 +5417,16 @@ bool OpenDrive::LoadSignalsByCountry(const std::string& country)
 				break;
 			}
 		}
+	}
+
+	if (i == file_name_candidates.size())
+	{
+		printf("Failed to load %s file. Tried:\n", sign_filename.c_str());
+		for (int j = 0; j < file_name_candidates.size(); j++)
+		{
+			printf("  %s\n", file_name_candidates[j].c_str());
+		}
+		return false;
 	}
 
 	return true;

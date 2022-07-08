@@ -410,11 +410,17 @@ int OSIReporter::UpdateOSIDynamicGroundTruth(std::vector<ObjectState *> objectSt
 		obj_osi_internal.gt->mutable_timestamp()->set_seconds((int64_t)(nanosec_ / 1000000000));
 		obj_osi_internal.gt->mutable_timestamp()->set_nanos((uint32_t)(nanosec_ % 1000000000));
 	}
-	else
+	else if (objectState.size() > 0)
 	{
 		// use timstamp from object state
 		obj_osi_internal.gt->mutable_timestamp()->set_seconds((int64_t)objectState[0]->state_.info.timeStamp);
 		obj_osi_internal.gt->mutable_timestamp()->set_nanos((uint32_t)((objectState[0]->state_.info.timeStamp - (int64_t)objectState[0]->state_.info.timeStamp) * 1e9));
+	}
+	else
+	{
+		// report time = 0
+		obj_osi_internal.gt->mutable_timestamp()->set_seconds((int64_t)0);
+		obj_osi_internal.gt->mutable_timestamp()->set_nanos((uint32_t)0);
 	}
 
 	for (size_t i = 0; i < objectState.size(); i++)
@@ -560,7 +566,7 @@ int OSIReporter::UpdateOSIStationaryObjectODR(int road_id, roadmanager::RMObject
 		obj_osi_internal.sobj->mutable_base()->mutable_dimension()->set_width(object->GetWidth());
 		obj_osi_internal.sobj->mutable_base()->mutable_dimension()->set_length(object->GetLength());
 		// only bounding box
-		
+
 
 
 		// Set OSI Stationary Object Orientation
@@ -2039,7 +2045,7 @@ int OSIReporter::UpdateTrafficSignals()
 					trafficSign->mutable_id()->set_value(signal->GetId());
 					trafficSign->mutable_main_sign()->mutable_classification()->mutable_value()->set_value(signal->GetValue());
 					trafficSign->mutable_main_sign()->mutable_classification()->mutable_value()->set_text(signal->GetText());
-					trafficSign->mutable_main_sign()->mutable_classification()->set_type(static_cast<osi3::TrafficSign_MainSign_Classification_Type>(signal->GetType()));
+					trafficSign->mutable_main_sign()->mutable_classification()->set_type(static_cast<osi3::TrafficSign_MainSign_Classification_Type>(signal->GetOSIType()));
 
 					//Set Unit
 					if(std::strcmp(signal->GetUnit().c_str(), ""))

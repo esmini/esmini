@@ -334,6 +334,8 @@ int main(int argc, char** argv)
 	Logger::Inst().SetCallback(log_callback);
 	Logger::Inst().LogVersion();
 
+	SE_Env::Inst().AddPath(DirNameOf(argv[0]));  // Add location of exe file to search paths
+
 	// use common options parser to manage the program arguments
 	SE_Options opt;
 	opt.AddOption("file", "Simulation recording data file", "filename");

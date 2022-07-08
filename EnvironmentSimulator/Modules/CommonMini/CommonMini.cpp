@@ -101,6 +101,7 @@ std::map<int, std::string> ParseModelIds()
 	for (size_t i = 0; i < SE_Env::Inst().GetPaths().size(); i++)
 	{
 		file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], filename));
+		file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i] + "/../resources", filename));
 	}
 
 	size_t i;

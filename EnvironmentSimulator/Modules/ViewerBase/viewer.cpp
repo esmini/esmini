@@ -1957,12 +1957,13 @@ EntityModel* Viewer::CreateEntityModel(std::string modelFilepath, osg::Vec4 trai
 	if (modelgroup == nullptr && !modelFilepath.empty())
 	{
 		file_name_candidates.push_back(modelFilepath);
-		file_name_candidates.push_back(CombineDirectoryPathAndFilepath(DirNameOf(exe_path_) + "/../resources/models", modelFilepath));
+
 		// Finally check registered paths
 		for (size_t i = 0; i < SE_Env::Inst().GetPaths().size(); i++)
 		{
 			file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], modelFilepath));
 			file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], std::string("../models/" + modelFilepath)));
+			file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], std::string("/../resources/models/" + modelFilepath)));
 			file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], FileNameOf(modelFilepath)));
 		}
 		for (size_t i = 0; i < file_name_candidates.size(); i++)
@@ -2788,11 +2789,29 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
 			roadmanager::Signal* signal = road->GetSignal(s);
 			double orientation = signal->GetOrientation() == roadmanager::Signal::Orientation::NEGATIVE ? M_PI : 0.0;
 
-			tx = LoadRoadFeature(road, signal->GetName() + ".osgb");
+			// Road sign filename is the combination of type_subtype_value
+			std::string filename = signal->GetCountry() + "_" + signal->GetType();
+			if (!signal->GetSubType().empty())
+			{
+				filename += "_" + signal->GetSubType();
+			}
+
+			if(!signal->GetValueStr().empty())
+			{
+				filename += "-" + signal->GetValueStr();
+			}
+			tx = LoadRoadFeature(road, filename + ".osgb");
 
 			if (tx == nullptr)
 			{
-				return -1;
+				// if file according to type, subtype and value could not be resolved, try from name
+				tx = LoadRoadFeature(road, signal->GetName() + ".osgb");
+			}
+
+			if (tx == nullptr)
+			{
+				LOG("Failed to load signal %s / %s", std::string(filename + ".osgb").c_str(), std::string(signal->GetName() + ".osgb").c_str());
+				continue;
 			}
 			else
 			{

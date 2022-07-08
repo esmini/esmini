@@ -723,7 +723,7 @@ namespace roadmanager
 	{
 	public:
 
-		enum Type : int {
+		enum OSIType : int {
 			TYPE_UNKNOWN = 0,
 			TYPE_OTHER = 1,
 			TYPE_DANGER_SPOT = 2,
@@ -970,10 +970,8 @@ namespace roadmanager
 		};
 
 		Signal(double s, double t, int id, std::string name, bool dynamic, Orientation orientation, double z_offset, std::string country,
-		int type, double value, std::string unit, double height, double width, std::string text, double h_offset,
-		double pitch, double roll) : s_(s), t_(t), id_(id), name_(name), dynamic_(dynamic), orientation_(orientation), z_offset_(z_offset),
-		country_(country), type_(type), value_(value), unit_(unit), height_(height), width_(width), text_(text),
-		h_offset_(h_offset), pitch_(pitch), roll_(roll), length_(0) {}
+			int osi_type, std::string type, std::string subtype, std::string value_str_, std::string unit, double height, double width,
+			std::string text, double h_offset, double pitch, double roll);
 
 		std::string GetName() { return name_; }
 		int GetId() { return id_; }
@@ -984,16 +982,21 @@ namespace roadmanager
 		double GetHOffset() { return h_offset_; }
 		double GetZOffset() { return z_offset_; }
 		Orientation GetOrientation() { return orientation_; }
-		int GetType() { return type_; }
+		int GetOSIType() { return osi_type_; }
+		std::string GetType() { return type_; }
+		std::string GetSubType() { return subtype_; }
+		std::string GetCountry() { return country_; }
 		double GetHeight() { return height_; }
 		double GetWidth() { return width_; }
 		bool IsDynamic() { return dynamic_; }
 		double GetPitch() { return pitch_; }
 		double GetRoll() { return roll_; }
 		double GetValue() { return value_; }
+		std::string GetValueStr() { return value_str_; }
 		std::string GetUnit() { return unit_; }
 		std::string GetText() { return text_; }
-		static Type GetTypeFromString(const std::string& type);
+		static OSIType GetOSITypeFromString(const std::string& type);
+		static std::string GetCombinedTypeSubtypeValueStr(std::string type, std::string subtype, std::string value);
 
 	private:
 		double s_;
@@ -1004,7 +1007,10 @@ namespace roadmanager
 		Orientation orientation_;
 		double z_offset_;
 		std::string country_;
-		int type_;
+		int osi_type_;
+		std::string type_;
+		std::string subtype_;
+		std::string value_str_;
 		double value_;
 		std::string unit_;
 		double height_;
@@ -1014,7 +1020,7 @@ namespace roadmanager
 		double pitch_;
 		double roll_;
 		double length_;
-		static const std::map<std::string, Type> types_mapping_;
+		static const std::map<std::string, OSIType> types_mapping_;
 	};
 
 	class OutlineCorner
