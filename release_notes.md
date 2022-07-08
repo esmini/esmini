@@ -5,6 +5,7 @@
 - Add info on update road sign framework to [User guide - Road signs](https://esmini.github.io/#_road_signs)
 - Relax country code interpretation, support both upper and lower case (e.g. `se` and `SE` will both work)
 - Extend search locations, increasing chances to find the traffic signal catalogs
+- Add missing speed signs to release package (update cache on build server)
 
 ### 2022-07-08 Version 2.25.0
 
