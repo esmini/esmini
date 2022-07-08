@@ -239,6 +239,28 @@ extern "C"
 		return (int)(position.size() - 1);  // return index of newly created
 	}
 
+    RM_DLL_API int RM_IsRoadSuccessor(int road_id, int other_id)
+    {
+        if (odrManager == nullptr)
+        {
+            return -1;
+        }
+        else
+        {
+            roadmanager::Road *road = odrManager->GetRoadById(road_id);
+            roadmanager::Road *successor_road = odrManager->GetRoadById(other_id);
+
+            if(road->IsSuccessor(successor_road))
+            {
+                return 1;
+            }
+            else
+            {
+                return 0;
+            }
+        }
+    }
+
 	RM_DLL_API void RM_SetAlignMode(int handle, int mode)
 	{
 		if (odrManager == nullptr || handle < 0 || handle >= position.size())

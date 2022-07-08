@@ -157,6 +157,14 @@ extern "C"
 	*/
 	RM_DLL_API int RM_CopyPosition(int handle);
 
+    /**
+    * Check if road is a successor to another road
+    * @param road_id The road ID to check if @other_id is a successor for
+    * @param other_id The road ID.
+    * @return -1 if there's an error, 0 if false, 1 if true.
+    */
+    RM_DLL_API int RM_IsRoadSuccessor(int road_id, int other_id);
+
 	/**
 	Specify if and how position object will align to the road. This version
 	sets same mode for all components: Heading, Pitch, Roll and Z (elevation)
