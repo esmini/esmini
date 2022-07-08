@@ -74,7 +74,10 @@ resources/models/mc.osgb \
 resources/models/moose_cc0.osgb \
 resources/models/multi_intersections.osgb \
 resources/models/curves_elevation.osgb \
-resources/models/Swe*.osgb \
+resources/models/de_274-30.osgb \
+resources/models/de_274-50.osgb \
+resources/models/se_c_31-3.osgb \
+resources/models/se_c_31-5.osgb \
 resources/models/pole.osgb \
 resources/models/asphalt.jpg \
 resources/models/grass.jpg \
@@ -91,6 +94,8 @@ resources/models/fence_plank.osgb \
 resources/models/fence_pole.osgb \
 resources/sumo_inputs/e6mini* \
 resources/sumo_inputs/multi_intersections* \
+resources/traffic_signals/* \
+
 run/esmini/run_follow_ghost.* \
 run/esmini/run_ltap-od_interactive.* \
 run/esmini/run_ltap-od.* \

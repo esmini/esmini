@@ -12,6 +12,7 @@ IF NOT EXIST %target_dir%\resources\xosc\Catalogs\Pedestrians ( mkdir %target_di
 IF NOT EXIST %target_dir%\resources\xodr ( mkdir %target_dir%\resources\xodr )
 IF NOT EXIST %target_dir%\resources\models ( mkdir %target_dir%\resources\models )
 IF NOT EXIST %target_dir%\resources\sumo_inputs ( mkdir %target_dir%\resources\sumo_inputs )
+IF NOT EXIST %target_dir%\resources\traffic_signals ( mkdir %target_dir%\resources\traffic_signals )
 IF NOT EXIST %target_dir%\run ( mkdir %target_dir%\run )
 IF NOT EXIST %target_dir%\run\esmini ( mkdir %target_dir%\run\esmini )
 IF NOT EXIST %target_dir%\run\odrviewer ( mkdir %target_dir%\run\odrviewer )
@@ -101,7 +102,10 @@ copy resources\models\moose_cc0.osgb %target_dir%\resources\models /y
 copy resources\models\multi_intersections.osgb %target_dir%\resources\models /y
 copy resources\models\curves_elevation.osgb %target_dir%\resources\models /y
 copy resources\models\pole.osgb %target_dir%\resources\models /y
-copy resources\models\Swe*.osgb %target_dir%\resources\models /y
+copy resources\models\de_274-30.osgb %target_dir%\resources\models /y
+copy resources\models\de_274-50.osgb %target_dir%\resources\models /y
+copy resources\models\se_c_31-3.osgb %target_dir%\resources\models /y
+copy resources\models\se_c_31-5.osgb %target_dir%\resources\models /y
 copy resources\models\asphalt.jpg %target_dir%\resources\models /y
 copy resources\models\grass.jpg %target_dir%\resources\models /y
 copy resources\models\railing.osgb %target_dir%\resources\models /y
@@ -118,6 +122,8 @@ copy resources\models\fence_pole.osgb %target_dir%\resources\models /y
 
 copy resources\sumo_inputs\e6mini* %target_dir%\resources\sumo_inputs /y
 copy resources\sumo_inputs\multi_intersections* %target_dir%\resources\sumo_inputs /y
+
+copy resources\traffic_signals\* %target_dir%\resources\traffic_signals /y
 
 copy run\esmini\run_follow_ghost.bat %target_dir%\run\esmini /y
 copy run\esmini\run_ltap-od_interactive.bat %target_dir%\run\esmini /y
