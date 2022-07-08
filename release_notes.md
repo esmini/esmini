@@ -1,5 +1,11 @@
 ## esmini release notes
 
+### 2022-07-08 Version 2.25.1
+
+- Add info on update road sign framework to [User guide - Road signs](https://esmini.github.io/#_road_signs)
+- Relax country code interpretation, support both upper and lower case (e.g. `se` and `SE` will both work)
+- Extend search locations, increasing chances to find the traffic signal catalogs
+
 ### 2022-07-08 Version 2.25.0
 
 - Update road sign framework 
@@ -9,7 +15,7 @@
   - ensure correct lookup when mixing country codes
   - update examples in OpenDRIVE file [straight_500m_signs.xodr](https://github.com/esmini/esmini/blob/master/resources/xodr/straight_500m_signs.xodr)
   - update model pack with new German speed signs and updated and renamed Swedish ones
-
+  
   **Note**:
 
   Due to new sign name convention model pack has been updated. Get it from [here](https://dl.dropboxusercontent.com/s/5gk8bvgzqiaaoco/models.7z?dl=1).

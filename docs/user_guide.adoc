@@ -832,7 +832,9 @@ A https://github.com/esmini/esmini/blob/master/scripts/bake_signs.sh[script] is 
 
 ==== Example
 
-The OpenDRIVE file https://github.com/esmini/esmini/blob/master/resources/xodr/straight_500m_signs.xodr[straight_500m_signs.xodr] includes a bunch of speed signs, some Swedish and some German ones. It shows how the signs are specified in terms of the country code, type, subtype and value attributes. It also shows how to specify the 3D model using the `name` attribute.
+The OpenDRIVE file https://github.com/esmini/esmini/blob/master/resources/xodr/straight_500m_signs.xodr[straight_500m_signs.xodr] includes a bunch of speed signs, some Swedish and some German ones. It shows how the signs are specified in terms of the country code, type, subtype and value attributes. 
+
+It also shows how to specify the 3D model using the `name` attribute: If filename composed by country, type, subtype and value is not found, the `name` attribute + ".osgb" will be used for a second and final attempt.
 
 .Swedish speed sign
 image::speed_sign1.png[]
