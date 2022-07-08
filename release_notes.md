@@ -1,5 +1,21 @@
 ## esmini release notes
 
+### 2022-07-08 Version 2.25.0
+
+- Update road sign framework 
+  - clarifies interpretation of country code, type, subtype and value
+  - 3D model filename derived from type definition (name now only used as fallback)
+  - add embryo catalog for swedish road signs
+  - ensure correct lookup when mixing country codes
+  - update examples in OpenDRIVE file [straight_500m_signs.xodr](https://github.com/esmini/esmini/blob/master/resources/xodr/straight_500m_signs.xodr)
+  - update model pack with new German speed signs and updated and renamed Swedish ones
+
+  **Note**:
+
+  Due to new sign name convention model pack has been updated. Get it from [here](https://dl.dropboxusercontent.com/s/5gk8bvgzqiaaoco/models.7z?dl=1).
+
+  Also, to enable frequent updates of the model pack it has been removed from github. Which means that also cmake build script has been updated. If trouble arise, the easiest solution is to grab a fresh clone of esmini: `git clone https://github.com/esmini/esmini.git`.
+
 ### 2022-07-06 Version 2.24.0
 
 - Support lane discontinuities and improve road 3D model tesselation

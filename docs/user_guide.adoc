@@ -786,10 +786,10 @@ To get more understanding of the implementation, see a few slides https://drive.
 
 Road signs are specified in the https://www.asam.net/index.php?eID=dumpFile&t=f&f=4422&token=e590561f3c39aa2260e5442e29e93f6693d1cccd#top-016f925e-bfe2-481d-b603-da4524d7491f[OpenDRIVE] road network description file. A road sign is identified by up to four parameters:
 
-1. country code
-1. type
-1. subtype
-1. value
+. country code
+. type
+. subtype
+. value
 
 Country code is a two letter word according to the https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2[ISO 3166-1 alpha-2 system]. Examples: Sweden = se, Germany = de.
 
@@ -819,7 +819,8 @@ esmini road signs are created as follows:
 
 - A basic 3D geometry is modeled in Blender, e.g. round face for speed signs
 - Assign a material with any texture image mapped on the sign face
-- The 3D model is exported in `.dae` format (example https://drive.google.com/file/d/11v7xz9Mqw_Vx4An_FoLfKVlwcWJc-mnE/view?usp=sharing[here])
+- The 3D model is exported in `.dae` format (example https://drive.google.com/uc?export=download&id=11v7xz9Mqw_Vx4An_FoLfKVlwcWJc-mnE[here])
+
 - Find textures of the needed sign(s) and convert them into some common format, e.g. `.png`. Recommended size is 256, but larger is OK. If possible make it size 2^n x 2^m to avoid performance penalty on low spec/old systems.
 - Rename image to the same name as the texture image in the dae file (sign_image.png in the example dae)
 - Convert the .dae file into .osgb using osgconv. The texture will be embedded in the.osgb file by default.
