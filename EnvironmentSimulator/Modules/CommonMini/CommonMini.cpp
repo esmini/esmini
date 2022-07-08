@@ -16,6 +16,7 @@
 #include <algorithm>
 #include <vector>
 #include <sstream>
+#include <locale>
 
 
 // UDP network includes
@@ -709,6 +710,32 @@ std::string FileNameWithoutExtOf(const std::string& fname)
 	{
 		return (fname.substr(start_pos));
 	}
+}
+
+std::string ToLower(const std::string in_str)
+{
+	std::locale loc;
+	std::string out_str = in_str;
+
+	for (size_t i = 0; i < out_str.size(); i++)
+	{
+		out_str[i] = std::tolower(out_str[i], loc);
+	}
+
+	return out_str;
+}
+
+std::string ToLower(const char* in_str)
+{
+	std::locale loc;
+	std::string out_str = in_str;
+
+	for (size_t i = 0; i < out_str.size(); i++)
+	{
+		out_str[i] = std::tolower(out_str[i], loc);
+	}
+
+	return out_str;
 }
 
 double GetCrossProduct2D(double x1, double y1, double x2, double y2)

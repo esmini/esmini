@@ -3742,8 +3742,9 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 					}
 
 					double  z_offset = atof(signal.attribute("zOffset").value());
-					std::string country = signal.attribute("country").value();
-					//Load the country file for types
+					std::string country = ToLower(signal.attribute("country").value());
+
+					// Load the country file for types
 					if(!country.empty() && (!country_file_loaded || current_country != country))
 					{
 						current_country = country;
@@ -5373,6 +5374,7 @@ bool OpenDrive::LoadSignalsByCountry(const std::string& country)
 		file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], "traffic_signals/" + sign_filename));
 		file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], "resources/traffic_signals/" + sign_filename));
 		file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], "/../traffic_signals/" + sign_filename));
+		file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], "/../resources/traffic_signals/" + sign_filename));
 	}
 
 	size_t i;
