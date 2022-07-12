@@ -50,16 +50,20 @@ void Event::Start(double simTime, double dt)
 				{
 					for (size_t k = 0; k < obj->objectEvents_[j]->action_.size(); k++)
 					{
-						OSCPrivateAction* pa2 = (OSCPrivateAction*)obj->objectEvents_[j]->action_[k];
-						if (pa2 != pa && pa2->object_->GetId() == pa->object_->GetId() && pa2->IsActive() &&
-							pa2->base_type_ == OSCAction::BaseType::PRIVATE)
+						// Make sure the object's action is of private type
+						if (obj->objectEvents_[j]->action_[k]->base_type_ == OSCAction::BaseType::PRIVATE)
 						{
-							if (static_cast<int>(pa2->GetDomain()) & static_cast<int>(pa->GetDomain()))
+							OSCPrivateAction* pa2 = (OSCPrivateAction*)obj->objectEvents_[j]->action_[k];
+							if (pa2 != pa && pa2->object_->GetId() == pa->object_->GetId() && pa2->IsActive() &&
+								pa2->base_type_ == OSCAction::BaseType::PRIVATE)
 							{
-								// Domains overlap, at least one domain in common. Terminate old action.
-								LOG("Stopping object %s %s on conflicting %s domain(s)",
-									obj->name_.c_str(), pa2->name_.c_str(), ControlDomain2Str(pa2->GetDomain()).c_str());
-								pa2->End(simTime);
+								if (static_cast<int>(pa2->GetDomain()) & static_cast<int>(pa->GetDomain()))
+								{
+									// Domains overlap, at least one domain in common. Terminate old action.
+									LOG("Stopping object %s %s on conflicting %s domain(s)",
+										obj->name_.c_str(), pa2->name_.c_str(), ControlDomain2Str(pa2->GetDomain()).c_str());
+									pa2->End(simTime);
+								}
 							}
 						}
 					}
