@@ -417,6 +417,10 @@ bool TrigByState::CheckCondition(StoryBoard *storyBoard, double sim_time)
 		{
 			element = storyBoard->FindEventByName(element_name_);
 		}
+		else if (element_type_ == StoryBoardElement::ElementType::MANEUVER)
+		{
+			element = storyBoard->FindManeuverByName(element_name_);
+		}
 		else
 		{
 			LOG("Story element type %d not supported yet", element_type_);

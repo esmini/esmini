@@ -126,7 +126,7 @@ namespace scenarioengine
 			if (state_ == State::RUNNING || state_ == State::STANDBY )
 			{
 				transition_ = Transition::END_TRANSITION;
-				if (type_ == ElementType::ACT || type_ == ElementType::ACTION)
+				if (type_ == ElementType::ACT || type_ == ElementType::ACTION || type_ == ElementType::MANEUVER)
 				{
 					next_state_ = State::COMPLETE;
 				}

@@ -124,7 +124,7 @@ namespace scenarioengine
 		Trigger* parseTrigger(pugi::xml_node triggerNode, bool defaultValue);
 		//	void parseOSCConditionGroup(OSCConditionGroup *conditionGroup, pugi::xml_node conditionGroupNode);
 		int parseStoryBoard(StoryBoard &storyBoard);
-		void parseOSCManeuver(OSCManeuver *maneuver, pugi::xml_node maneuverNode, ManeuverGroup *mGroup);
+		void parseOSCManeuver(Maneuver *maneuver, pugi::xml_node maneuverNode, ManeuverGroup *mGroup);
 
 		std::string getScenarioFilename() { return oscFilename_; }
 		bool IsLoaded() { return !osc_root_.empty(); }

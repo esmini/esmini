@@ -3464,7 +3464,7 @@ Trigger *ScenarioReader::parseTrigger(pugi::xml_node triggerNode, bool defaultVa
 	return trigger;
 }
 
-void ScenarioReader::parseOSCManeuver(OSCManeuver *maneuver, pugi::xml_node maneuverNode, ManeuverGroup *mGroup)
+void ScenarioReader::parseOSCManeuver(Maneuver *maneuver, pugi::xml_node maneuverNode, ManeuverGroup *mGroup)
 {
 	maneuver->name_ = parameters.ReadAttribute(maneuverNode, "name");
 
@@ -3678,7 +3678,7 @@ int ScenarioReader::parseStoryBoard(StoryBoard &storyBoard)
 
 								if (entry->type_ == CatalogType::CATALOG_MANEUVER)
 								{
-									OSCManeuver *maneuver = new OSCManeuver;
+									Maneuver *maneuver = new Maneuver;
 
 									// Make a new instance from catalog entry
 									parseOSCManeuver(maneuver, entry->GetNode(), mGroup);
@@ -3696,7 +3696,7 @@ int ScenarioReader::parseStoryBoard(StoryBoard &storyBoard)
 							for (pugi::xml_node maneuver_n = actChild.child("Maneuver"); maneuver_n; maneuver_n = maneuver_n.next_sibling("Maneuver"))
 								if (maneuver_n != NULL)
 								{
-									OSCManeuver *maneuver = new OSCManeuver;
+									Maneuver *maneuver = new Maneuver;
 
 									parseOSCManeuver(maneuver, maneuver_n, mGroup);
 									mGroup->maneuver_.push_back(maneuver);

@@ -52,12 +52,13 @@ namespace scenarioengine
 		void UpdateState();
 	};
 
-	class OSCManeuver
+	class Maneuver: public StoryBoardElement
 	{
 	public:
 		OSCParameterDeclarations parameter_declarations_;
 		std::vector<Event*> event_;
-		std::string name_;
+
+		Maneuver() : StoryBoardElement(StoryBoardElement::ElementType::MANEUVER) {}
 
 		bool IsAnyEventActive();
 		bool AreAllEventsComplete();

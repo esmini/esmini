@@ -131,7 +131,7 @@ void Event::UpdateState()
 	StoryBoardElement::UpdateState();
 }
 
-bool OSCManeuver::IsAnyEventActive()
+bool Maneuver::IsAnyEventActive()
 {
 	for (size_t i = 0; i < event_.size(); i++)
 	{
@@ -143,7 +143,7 @@ bool OSCManeuver::IsAnyEventActive()
 	return false;
 }
 
-bool OSCManeuver::AreAllEventsComplete()
+bool Maneuver::AreAllEventsComplete()
 {
 	for (size_t i = 0; i < event_.size(); i++)
 	{
@@ -155,16 +155,18 @@ bool OSCManeuver::AreAllEventsComplete()
 	return true;
 }
 
-void OSCManeuver::UpdateState()
+void Maneuver::UpdateState()
 {
 	// Update state of sub elements - moving from transitions to stable states
 	for (size_t k = 0; k < event_.size(); k++)
 	{
 		event_[k]->UpdateState();
 	}
+
+	StoryBoardElement::UpdateState();
 }
 
-void OSCManeuver::Reset()
+void Maneuver::Reset()
 {
 	// Reset child events
 	for (size_t k = 0; k < event_.size(); k++)
@@ -172,4 +174,3 @@ void OSCManeuver::Reset()
 		event_[k]->Reset();
 	}
 }
-

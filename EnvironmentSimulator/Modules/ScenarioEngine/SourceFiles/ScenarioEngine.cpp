@@ -301,7 +301,7 @@ int ScenarioEngine::step(double deltaSimTime)
 					{
 						for (size_t l = 0; l < mg->maneuver_.size(); l++)
 						{
-							OSCManeuver* maneuver = mg->maneuver_[l];
+							Maneuver* maneuver = mg->maneuver_[l];
 
 							for (size_t m = 0; m < maneuver->event_.size(); m++)
 							{
@@ -430,7 +430,7 @@ int ScenarioEngine::step(double deltaSimTime)
 				{
 					for (size_t l = 0; l < act->maneuverGroup_[k]->maneuver_.size(); l++)
 					{
-						OSCManeuver* maneuver = act->maneuverGroup_[k]->maneuver_[l];
+						Maneuver* maneuver = act->maneuverGroup_[k]->maneuver_[l];
 
 						for (size_t m = 0; m < maneuver->event_.size(); m++)
 						{
@@ -1175,7 +1175,7 @@ void ScenarioEngine::SetupGhost(Object* object)
 				}
 				for (size_t l = 0; l < act->maneuverGroup_[k]->maneuver_.size(); l++)
 				{
-					OSCManeuver* maneuver = act->maneuverGroup_[k]->maneuver_[l];
+					Maneuver* maneuver = act->maneuverGroup_[k]->maneuver_[l];
 					for (size_t m = 0; m < maneuver->event_.size(); m++)
 					{
 						Event* event = maneuver->event_[m];
@@ -1232,7 +1232,7 @@ void ScenarioEngine::ResetEvents()
 			{
 				for (size_t l = 0; l < act->maneuverGroup_[k]->maneuver_.size(); l++)
 				{
-					OSCManeuver* maneuver = act->maneuverGroup_[k]->maneuver_[l];
+					Maneuver* maneuver = act->maneuverGroup_[k]->maneuver_[l];
 
 					for (size_t m = 0; m < maneuver->event_.size(); m++)
 					{

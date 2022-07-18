@@ -192,8 +192,8 @@
                 <ConditionGroup>
                    <Condition name="ActStopCondition" delay="5" conditionEdge="rising">
                       <ByValueCondition>
-                         <StoryboardElementStateCondition storyboardElementType="event"
-                                                          storyboardElementRef="OvertakerBrakeEvent"
+                         <StoryboardElementStateCondition storyboardElementType="maneuver"
+                                                          storyboardElementRef="CutInManeuver"
                                                           state="endTransition"/>
                       </ByValueCondition>
                    </Condition>
