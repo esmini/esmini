@@ -1,263 +1,348 @@
-OpenSCENARIO 1.1 specifics (not complete)
-    TrajectoryPosition                       Yes
-    FollowTrajectoryAction
-        initialDistanceOffset                Yes
-    CoordinateSystem
-        entity                               Yes
-        lane                                 No (falling back to road)
-        road                                 Yes
-        trajectory                           Incomplete (long but not lat)
+OpenSCENARIO
+    CatalogDefinition
+        Catalog
+            VehicleCatalog                                                     Yes
+            ControllerCatalog                                                  Yes
+            PedestrianCatalog                                                  Yes
+            PedestrianControllerCatalog                                        No
+            MiscObjectCatalog                                                  No
+            EnvironmentCatalog                                                 No
+            ManeuverCatalog                                                    Yes
+            TrajectoryCatalog                                                  Yes
+            RouteCatalog                                                       Yes
+    ParameterValueDistributionDefinition (1.1)                                 No
+    ScenarioDefinition
+        ParameterDeclaration                                                   Yes
+        VariableDeclaration (1.2)                                              No
+        CatalogLocations                                                       Yes
+        RoadNetwork
+            LogicFile                                                          Yes
+            SceneGraphFile                                                     Yes
+            TrafficSignals                                                     No
+            UsedArea (1.1)                                                     No
+        Entities
+            ScenarioObject
+                ObjectController                                               Yes
+                    ControllerType (1.2)                                       No
+                EntityObject
+                    CatalogReference                                           Yes
+                    Vehicle                                                    Yes
+                        Role (1.2)                                             No
+                    Pedestrian                                                 Yes
+                    MiscObject                                                 Yes
+                    ExternalObjectReference (1.1)                              No
+            EntitySelection                                                    No
+        Storyboard
+            Init
+                InitActions                                                    Yes
+            Story
+                Act
+                    ManeuverGroup
+                        maximumExecutionCount                                  Yes
+                        Actors
+                            entityRefs                                         Yes
+                            selectTriggeringEntities                           No
+                        CatalogReference                                       Yes
+                        Maneuver                                               Yes
+                            name                                               Yes
+                            ParameterDeclaration                               Yes
+                            Event
+                                maximumExecutionCount                          Yes
+                                name                                           Yes
+                                priority                                       Yes
+                                Action
+                                    Global                                     Yes
+                                        Environment                            No
+                                            DomeImage (1.2)                    No
+                                            Weather                            No
+                                            RoadCondition                      No
+                                        Entity                                 Yes
+                                            AddEntityAction                    Yes
+                                            DeleteEntityAction                 Yes
+                                        ParameterAction (<= 1.1)               Yes
+                                        VariableAction (>= 1.2)                No
+                                        Infrastructure                         No
+                                        Traffic
+                                            TrafficSourceAction                No
+                                            TrafficSinkAction                  No
+                                            TrafficSwarmAction                 Yes (limited)
+                                                TrafficDefinition              No
+                                                DirectionOfTravelDistr. (1.2)  No
+                                                InitialSpeedRange (1.2)        No
+                                            TrafficStopAction                  No
+                                    Private                                    Yes
+                                        ActivateController                     Yes
+                                            animation (1.2)                    No
+                                            lighting (1.2)                     No
+                                            controllerRef                      No
+                                        AnimationAction (1.2)                  No
+                                        AppearanceAction (1.2)                 No
+                                        AssignController                       Yes
+                                            animation (1.2)                    No
+                                            lighting (1.2)                     No
+                                        Lateral
+                                            LaneChange
+                                                targetLaneOffset               Yes
+                                                Dynamics
+                                                    shape
+                                                        linear                 Yes
+                                                        cubic                  Yes
+                                                        sinusoidal             Yes
+                                                        step                   Yes
+                                                    choice
+                                                        time                   Yes
+                                                        distance               Yes
+                                                        rate                   Yes
+                                                    FollowingMode (1.2)        No
+                                                Target
+                                                    Relative
+                                                        object                 Yes
+                                                        value                  Yes
+                                                    Absolute
+                                                        value                  Yes
+                                            LaneOffset
+                                                Dynamics
+                                                    maxLateralAcc              Yes
+                                                    duration                   Yes
+                                                    shape
+                                                        linear                 Yes
+                                                        cubic                  Yes
+                                                        sinusoidal             Yes
+                                                        step                   Yes
+                                                Target
+                                                    Relative
+                                                        object                 Yes
+                                                        value                  Yes
+                                                    Absolute
+                                                        value                  Yes
+                                            Distance                           No
+                                        Longitudinal
+                                            Speed
+                                                Dynamics
+                                                    shape
+                                                        linear                 Yes
+                                                        cubic                  Yes
+                                                        sinusoidal             Yes
+                                                        step                   Yes
+                                                    choice
+                                                        rate                   Yes
+                                                        time                   Yes
+                                                        distance               Yes
+                                                    FollowingMode (1.2)        No
+                                                Target
+                                                    Relative                   Yes
+                                                    Absolute                   Yes
+                                            SpeedProfileAction (1.2)           Yes
+                                            Distance
+                                                object                         Yes
+                                                freespace                      Yes
+                                                choice
+                                                    distance                   Yes
+                                                    timeGap                    Yes
+                                                Dynamics
+                                                    Limited
+                                                        maxAcceleration        Yes
+                                                        maxDeceleration        Yes
+                                                        maxSpeed               Yes
+                                                displacement (1.1)             Yes
+                                        OverrideControllerActionValue          Yes
+                                            OverrideThrottleAction             Yes
+                                            OverrideBrakeAction                Yes
+                                                BrakeInput (1.2)               No
+                                            OverrideClutchAction               Yes
+                                            OverrideParkingBrakeAction         Yes
+                                                BrakeInput (1.2)               No
+                                            OverrideSteeringWheelAction        Yes
+                                                maxRate (1.2)                  No
+                                                maxTorque (1.2)                No
+                                            OverrideGearAction                 Yes
+                                                Gear (1.2)                     No
+                                        Routing
+                                            AssignRoute                        Yes
+                                            FollowTrajectory                   Yes
+                                                InitialDistanceOffset (1.1)    Yes
+                                            AcquirePosition                    Yes
+                                        Synchronize                            Yes
+                                            SteadyState (1.1)                  Yes
+                                        TeleportAction                         Yes
+                                        Visibility                             Yes
+                                            SensorReference	(1.2)              No
+                                    UserDefinedAction                          No
+                                StartTrigger                                   Yes
+                    StartTrigger                                               Yes
+                    StopTrigger                                                Yes
+            StopTrigger                                                        Yes
+
+Common classes
+    ParameterDeclaration                       Yes
+        Expressions (1.1)                      Yes
+            Arithmetic calculations            Yes
+            Logical expressions                Yes
+    CatalogReference                           Yes
+    Trajectory                                 Yes
+        polyLine                               Yes
+        clothoid                               Yes
+        nurbs                                  Yes
+    Route
+        closed                                 No
+        ParameterDeclaration                   No
+        Waypoint                               Yes
+            Position                           Yes
+            strategy                           No
+    Driver                                     No
+    PedestrianController                       No
+    Environment                                No
+    TrafficDefinition                          Yes
+    Position
+        GeoPosition (1.1)                      No
+        World                                  Yes
+        RelativeWorld                          Yes
+        RelativeObject                         Yes
+        Road                                   Yes
+        RelativeRoad                           Yes
+        Lane                                   Yes
+        RelativeLane                           Yes
+        Route                                  Yes
+        TrajectoryPosition (1.1)               Yes
+    Pedestrian
+        model                                  Yes
+        mass                                   Yes
+        name                                   Yes
+        PedestrianCategory                     Yes
+        ParameterDeclaration                   Yes
+        BoundingBox                            Yes
+        Properties                             Yes
+    OSCVehicle
+        name                                   Yes
+        VehicleCategory                        Yes
+        ParameterDeclaration                   Yes
+        BoundingBox                            Yes
+        Performance                            Yes
+        Axles                                  Yes
+        Properties                             Yes
+    MiscObject                                 Yes
+        MiscObjectCategory                     Yes
+        mass                                   Yes
+        name                                   Yes
+        ParameterDeclaration	               Yes
+        BoundingBox                            Yes
+        Properties                             Yes
+    Condition
+        ConditionEdge                          Yes
+            rising                             Yes
+            falling                            Yes
+            risingOrFalling                    Yes
+            none                               Yes
+        delay                                  Yes
+        name                                   Yes
+        ByEntityCondition                      Yes
+            TriggeringEntities
+                Entity                         Yes
+                rule
+                    any                        Yes
+                    all                        Yes
+            Condition
+                EndOfRoad                      Yes
+                Collision                      Yes
+                    EntityRef                  Yes
+                    ByType                     Yes
+                Offroad                        Yes
+                TimeHeadway                    Yes
+                    Direction (1.2)            No
+                TimeToCollision                Yes
+                    routingAlgorithm (1.2)     No
+                Acceleration                   Yes
+                    Direction (1.2)            No
+                StandStill                     Yes
+                Speed                          Yes
+                    Direction (1.2)            No
+                RelativeSpeed                  Yes
+                    Direction (1.2)            No
+                TraveledDistance               Yes
+                ReachPosition                  Yes
+                Distance                       Yes
+                    routingAlgorithm (1.2)     No
+                RelativeDistance               Yes
+                RelativeClearance (1.2)        No
+        ByState (<=1.0)
+            AfterTermination                   Yes
+            AtStart                            Yes
+            Command                            No
+            Signal                             No
+            Controller                         No
+        ByValue
+            ParameterCondition                 Yes
+            TimeOfDayCondition                 No
+            SimulationTimeCondition            Yes
+            StoryboardElementStateCondition	   yes
+            UserDefinedValueCondition          No
+            TrafficSignalCondition             No
+            TrafficSignalControllerCondition   No
+            VariableCondition (1.2)            No
+    ConditionGroup                             Yes
+    BoundingBox                                Yes
+    FileHeader                                 No
+    Directory                                  Yes
+    File                                       Yes
+    ParameterDeclaration                       Yes
+    Properties                                 Yes
+        CustomContent (1.2)                    No
+    CatalogReference                           Yes
+    ParameterAssignment                        Yes
+    Orientation                                Yes
+    PersonDescription                          No
+
+Enumerations
+    AutomaticGearType (1.2)                    No
+    CloudState                                 No
+    ColorType (1.2)                            No
+    ConditionEdge                              Yes
+    ControllerType (1.2)                       No
+    CoordinateSystem (1.1)
+        entity                                 Yes
+        lane                                   No (falling back to road)
+        road                                   Yes
+        trajectory                             Incomplete (long but not lat)
+    DirectionalDimension (1.2)                 No
+    DynamicsDimension                          Yes
+    DynamicsShape                              Yes
+    FollowingMode                              Yes (but only in SpeedProfileAction)
+    FractionalCloudCover (1.2)                 No
+    LateralDisplacement (1.1)                  No
+    LightMode (1.2)                            No
+    LongitudinalDisplacement (1.1)             Yes
+    MiscObjectCategory                         Yes
+    ObjectType                                 Yes
+    ParameterType                              Yes
+    PedestrianCategory                         Yes
+    PedestrianGestureType (1.2)                No
+    PedestrianMotionType (1.2)                 No
+    PrecipitationType (1.2)                    No
+    Priority                                   Yes
+    ReferenceContext                           Yes
     RelativeDistanceType
-        lateral                              Yes
-        longitudinal                         No (falling back to road)
-        cartesianDistance                    Yes
-        euclidianDistance                    Yes
-    Condition Rule
-        equalTo                              Yes (1.0)
-        greaterThan                          Yes (1.0)
-        lessThan                             Yes (1.0)
-        greaterOrEqual                       Yes (1.1)
-        lessOrEqual                          Yes (1.1)
-        notEqualTo                           Yes (1.1)
-    SynchronizeAction
-        SteadyState                          Yes
-    LongitudinalDistanceAction
-        displacement                         Yes
-    Logical scenarios
-        ParameterValueDistribution           No
-        StochasticDistribution               No
-    Expressions                   
-        Arithmetic calculations              Yes
-        Logical expressions                  Yes (untested)
-                     
-OpenSCENARIO                                 
-ParameterDeclaration                         Yes
-Catalogs                                     
-    VehicleCatalog                           Yes
-    ControllerCatalog                        Yes
-    PedestrianCatalog                        Yes
-    PedestrianControllerCatalog              No
-    MiscObjectCatalog                        No
-    EnvironmentCatalog                       No
-    ManeuverCatalog                          Yes
-    TrajectoryCatalog                        Yes (untested)
-    RouteCatalog                             Yes
-                                             
-RoadNetwork                                  
-    Logics                                   Yes
-    SceneGraph                               Yes
-    Signals                                  No
-Entities                                     
-    ScenarioObject                           
-        Controller                           Yes
-        EntityObject                            
-            CatalogReference                 Yes
-            Vehicle                          Yes
-            Pedestrian                       Yes
-            MiscObject                       Yes
-    EntitySelection                          No
-Storyboard                                   
-    Init                                     
-        Actions                              
-            Global                           Partly (ParameterSetAction)
-            UserDefined                      No
-            Private                          Yes
-    Story                                    
-        Act                                  
-            ManeuverGroup                         
-                numberOfExecutions           Yes
-                Actors                       
-                    entityRefs               Yes
-                    selectTriggeringEntities No
-                CatalogReference             Yes
-                Maneuver                     Yes
-            Trigger                          
-                StartTrigger                 Yes
-                StopTrigger                  Yes
-    StopTrigger                              Yes
-OSCTypeDefs                                  
-    OSCTrajectory                            Yes
-        polyLine                             Yes
-        clothoid                             Yes
-        nurbs                                Yes
-    OSCRoute                                 
-        closed                               No
-        ParameterDeclaration                 No
-        Waypoint                             Yes
-            Position                         Yes
-            strategy                         No
-    OSCDriver                                No
-    OSCPedestrianController                  No
-    OSCEnvironment                           No
-    OSCTrafficDefinition                     Yes
-    OSCPosition                              
-        World                                Yes
-        RelativeWorld                        Yes
-        RelativeObject                       Yes
-        Road                                 Yes
-        RelativeRoad                         Yes
-        Lane                                 Yes
-        RelativeLane                         Yes
-        Route                                Yes
-    OSCManeuver                              
-        ParameterDeclaration                 Yes
-        Event                                
-            priority                         Yes
-            Action                           
-                Global                       Yes
-                UserDefined                  No
-                Private                      Yes
-            StartConditions                  Yes
-    OSCPedestrian                            
-    OSCVehicle                               
-        ParameterDeclaration                 Yes
-        Performance                          Yes
-        BoundingBox                          Yes
-        Axles                                Yes
-        category                             Yes
-        Properties                           Yes
-    OSCMiscObject                            No
-    OSCObjectType                            No
-    OSCCondition                             
-        delay                                Yes
-        ByEntity                             Yes
-            TriggeringEntities               
-                Entity                       Yes
-                rule                         
-                    any                      Yes
-                    all                      Yes
-            Condition                        
-                EndOfRoad                    Yes
-                Collision                    Yes
-                    EntityRef                Yes
-                    ByType                   Yes
-                Offroad                      Yes
-                TimeHeadway                  Yes
-                TimeToCollision              Yes
-                Acceleration                 Yes
-                StandStill                   Yes
-                Speed                        Yes
-                RelativeSpeed                Yes
-                TraveledDistance             Yes
-                ReachPosition                Yes
-                Distance                     Yes
-                RelativeDistance             Yes
-        ByState                              
-            AfterTermination                 Yes
-            AtStart                          Yes
-            Command                          No
-            Signal                           No
-            Controller                       No
-        ByValue                              
-            Parameter                        Yes
-            TimeOfDay                        No
-            SimulationTime                   Yes
-            StoryBoardElementState           Partly (Story, Act, ManeuverGroup, Event, Action. Not all transitions supported)
-            UserDefinedValue                 No
-            TrafficSignal                    No
-            TrafficSignalController          No
-        edge                                 
-            rising                           Yes
-            falling                          Yes
-            risingOrFalling                  Yes
-            none                             Yes
-    OSCConditionGroup                        Yes
-    OSCPrivateAction                         
-        Longitudinal                         
-            Speed                            
-                Dynamics                     
-                    shape                    
-                        linear               Yes
-                        cubic                Yes
-                        sinusoidal           Yes
-                        step                 Yes
-                    choice                   
-                        rate                 Yes
-                        time                 Yes
-                        distance             Yes
-                Target                       
-                    Relative                 Yes
-                    Absolute                 Yes
-            Distance                         
-                object                       Yes
-                freespace                    Yes
-                choice                       
-                    distance                 Yes
-                    timeGap                  Yes
-                Dynamics                     
-                    Limited                  
-                        maxAcceleration      Yes
-                        maxDeceleration      Yes
-                        maxSpeed             Yes
-        Lateral                              
-            LaneChange                       
-                targetLaneOffset             Yes
-                Dynamics                     
-                    shape                    
-                        linear               Yes
-                        cubic                Yes
-                        sinusoidal           Yes
-                        step                 Yes
-                    choice                   
-                        time                 Yes
-                        distance             Yes
-                        rate                 Yes
-                Target                       
-                    Relative                 
-                        object               Yes
-                        value                Yes
-                    Absolute                 
-                        value                Yes
-            LaneOffset                       
-                Dynamics                     
-                    maxLateralAcc            Yes
-                    duration                 Yes
-                    shape                    
-                        linear               Yes
-                        cubic                Yes
-                        sinusoidal           Yes
-                        step                 Yes
-                Target                       
-                    Relative                 
-                        object               Yes
-                        value                Yes
-                    Absolute                 
-                        value                Yes
-            Distance                         No
-        Visibility                           No
-        Synchronize                          Yes
-        ActivateController                   Yes
-        Controller                           Yes 
-        OverrideControllerActionValue        Yes
-        TeleportAction                       Yes
-        Routing                              
-            AssignRoute                      Yes
-            FollowTrajectory                 Yes
-            AcquirePosition                  Yes
-    OSCUserDefinedAction                     No
-    OSCGlobalAction                          
-        SetEnvironment                       No
-        Entity                               Yes
-            AddEntityAction                  Yes
-            DeleteEntityAction               Yes
-        ParameterSetAction                   Yes
-        Infrastructure                       No
-        Traffic                              
-           	TrafficSourceAction              No
-            TrafficSinkAction                No
-            TrafficSwarmAction               Yes (limited)
-                TrafficDefinition            No
-            TrafficStopAction                No
-    OSCBoundingBox                           No
-    OSCFileHeader                            No
-    OSCDirectory                             No
-    OSCFile                                  Yes
-    OSCParameterDeclaration                  Yes
-    OSCProperties                            Yes
-    OSCCatalogReference                      Yes
-    OSCParameterAssignment                   Yes
-    OSCOrientation                           Yes
-    OSCPersonDescription                     No
+        lateral                                Yes
+        longitudinal                           No (falling back to road)
+        cartesianDistance                      Yes
+        euclidianDistance                      Yes
+    Role (1.2)                                 No
+    RouteStrategy                              Yes
+    RoutingAlgorithm (1.2)                     No
+    Rule                                       Yes
+        equalTo                                Yes (1.0)
+        greaterThan                            Yes (1.0)
+        lessThan                               Yes (1.0)
+        greaterOrEqual                         Yes (1.1)
+        lessOrEqual                            Yes (1.1)
+        notEqualTo                             Yes (1.1)
+    SpeedTargetValueType                       Yes
+    StoryboardElementState                     Yes
+    StoryboardElementType                      Yes
+    TriggeringEntitiesRule                     Yes
+    VehicleCategory                            Yes
+    VehicleComponentType (1.2)                 No
+    VehicleLightType (1.2)                     No
+    Wetness (1.2)                              No
 
 Extensions:
 
@@ -267,7 +352,8 @@ Extensions:
         The Vehicle class has been extended with the following elements:
             <TrailerCoupler dx/>  # mounting point for any tow vehicle, relative vehicle ref point
             <TrailerHitch dx/>  # mounting point for optional trailer, relative vehicle ref point
-            <Trailer>
+            <Trailer>  # xor
+                <Vehicle vehicle/>
                 <EntityRef entityRef/>
                 <CatalogReference catalogName entryName/>
             </Trailer>
