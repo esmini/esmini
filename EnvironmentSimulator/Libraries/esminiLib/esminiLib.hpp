@@ -838,6 +838,30 @@ extern "C"
 	*/
 	SE_DLL_API void SE_RegisterConditionCallback(void (*fnPtr)(const char* name, double timestamp));
 
+    /**
+    Registers a function to be called back from esmini every time a StoryBoardElement changes its state.
+    The name of the respective StoryBoardElement, the type and the state will be returned.
+
+     Values for the StoryBoardElement type
+        STORY = 1,
+        ACT = 2,
+        MANEUVER_GROUP = 3,
+        MANEUVER = 4,
+        EVENT = 5,
+        ACTION = 6,
+        UNDEFINED_ELEMENT_TYPE = 0
+
+     Values for the StoryBoardElement state
+        STANDBY = 1,
+        RUNNING = 2,
+        COMPLETE = 3,
+        UNDEFINED_ELEMENT_STATE = 0
+
+    Registered callbacks will be cleared between SE_Init calls.
+    @param fnPtr A pointer to the function to be invoked
+    */
+    SE_DLL_API void SE_RegisterStoryBoardElementStateChangeCallback(void (*fnPtr)(const char* name, int type, int state));
+
 	/**
 	Registers a function to be called back from esmini every time an event starts or ends.
 	The name of the respective event, the current timestamp and whether the event

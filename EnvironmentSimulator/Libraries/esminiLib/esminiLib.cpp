@@ -89,6 +89,7 @@ static void resetScenario(void)
 	// Reset (global) callbacks
 	OSCCondition::conditionCallback = nullptr;
 	Event::eventCallback = nullptr;
+    StoryBoardElement::stateChangeCallback = nullptr;
 
 	time_stamp = 0;
 }
@@ -1742,6 +1743,11 @@ extern "C"
 	{
 		OSCCondition::conditionCallback = fnPtr;
 	}
+
+    SE_DLL_API void SE_RegisterStoryBoardElementStateChangeCallback(void (*fnPtr)(const char* name, int type, int state))
+    {
+        StoryBoardElement::stateChangeCallback = fnPtr;
+    }
 
 	SE_DLL_API void SE_RegisterEventCallback(void (*fnPtr)(const char* name, double timestamp, bool start))
 	{
