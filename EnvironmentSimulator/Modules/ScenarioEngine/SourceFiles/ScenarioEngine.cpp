@@ -552,7 +552,8 @@ int ScenarioEngine::step(double deltaSimTime)
 		// and only ghosts allowed to execute during ghost (restart
 		if (!(obj->IsControllerActiveOnDomains(ControlDomains::DOMAIN_BOTH) && obj->GetControllerMode() == Controller::Mode::MODE_OVERRIDE) &&
 			fabs(obj->speed_) > SMALL_NUMBER &&
-			(obj->IsGhost() && ghost_mode_ != GhostMode::RESTART || ghost_mode_ != GhostMode::RESTARTING)  &&
+			// Skip update for non ghost objects during ghost restart
+			!(!obj->IsGhost() && ghost_mode_ == GhostMode::RESTARTING) &&
 			!obj->TowVehicle())  // update trailers later
 		{
 			defaultController(obj, deltaSimTime);
