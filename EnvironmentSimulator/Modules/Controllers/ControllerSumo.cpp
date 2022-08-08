@@ -91,18 +91,6 @@ ControllerSumo::ControllerSumo(InitArgs* args) : Controller(args)
 
 void ControllerSumo::Init()
 {
-	// Adds all vehicles added in openscenario to the sumosimulation
-	for (size_t i = 0; i < entities_->object_.size(); i++)
-	{
-		if (!(entities_->object_[i]->IsGhost()))
-		{
-			std::string id = entities_->object_[i]->name_;
-			libsumo::Vehicle::add(id, "", "DEFAULT_VEHTYPE");
-			libsumo::Vehicle::moveToXY(id, "random", 0, entities_->object_[i]->pos_.GetX() + sumo_x_offset_,
-				entities_->object_[i]->pos_.GetY() + sumo_y_offset_, entities_->object_[i]->pos_.GetH(), 0);
-			libsumo::Vehicle::setSpeed(id, entities_->object_[i]->speed_);
-		}
-	}
 }
 
 void ControllerSumo::Step(double timeStep)
@@ -112,6 +100,21 @@ void ControllerSumo::Step(double timeStep)
 	// do sumo timestep
 	time_ += timeStep;
 	libsumo::Simulation::step(time_);
+
+	std::vector<std::string> idlist = libsumo::Vehicle::getIDList();
+
+	// Add new vehicles in openscenario to the sumo simulation
+	for (size_t i = 0; i < entities_->object_.size(); i++)
+	{
+		if (!(entities_->object_[i]->IsGhost()) && std::find(idlist.begin(), idlist.end(), entities_->object_[i]->GetName()) == idlist.end())
+		{
+			std::string id = entities_->object_[i]->name_;
+			libsumo::Vehicle::add(id, "", "DEFAULT_VEHTYPE");
+			libsumo::Vehicle::moveToXY(id, "random", 0, entities_->object_[i]->pos_.GetX() + sumo_x_offset_,
+				entities_->object_[i]->pos_.GetY() + sumo_y_offset_, entities_->object_[i]->pos_.GetH(), 0);
+			libsumo::Vehicle::setSpeed(id, entities_->object_[i]->speed_);
+		}
+	}
 
 	// check if any new cars has been added by sumo and add them to entities
 	if (libsumo::Simulation::getDepartedNumber() > 0) {
@@ -140,9 +143,24 @@ void ControllerSumo::Step(double timeStep)
 			for (size_t j = 0; j < entities_->object_.size(); j++)
 			{
 				if (arrivelist[i] == entities_->object_[j]->name_) {
-					LOG("Removing vehicle: %s", arrivelist[i].c_str());
-					gateway_->removeObject(arrivelist[i]);
-					entities_->removeObject(arrivelist[i]);
+					Object* obj = entities_->GetObjectByName(arrivelist[i]);
+					if (obj != nullptr)
+					{
+						LOG("Removing vehicle: %s", arrivelist[i].c_str());
+						gateway_->removeObject(arrivelist[i]);
+						if (obj->objectEvents_.size() > 0 || obj->initActions_.size() > 0)
+						{
+							entities_->deactivateObject(obj);
+						}
+						else
+						{
+							entities_->removeObject(obj, false);
+						}
+					}
+					else
+					{
+						LOG("Failed to remove vehicle: %s - not found", arrivelist[i].c_str());
+					}
 				}
 			}
 		}
@@ -151,29 +169,32 @@ void ControllerSumo::Step(double timeStep)
 	// Update the position of all cars controlled by sumo
 	for (size_t i = 0; i < entities_->object_.size(); i++)
 	{
-		if (entities_->object_[i]->GetActivatedControllerType() == Controller::Type::CONTROLLER_TYPE_SUMO)
+		if (entities_->object_[i]->IsActive())
 		{
-			Object* obj = entities_->object_[i];
+			if (entities_->object_[i]->GetActivatedControllerType() == Controller::Type::CONTROLLER_TYPE_SUMO)
+			{
+				Object* obj = entities_->object_[i];
 
-			std::string sumoid = obj->name_;
-			libsumo::TraCIPosition pos = libsumo::Vehicle::getPosition3D(sumoid);
-			obj->speed_ = libsumo::Vehicle::getSpeed(sumoid);
-			obj->pos_.SetInertiaPos(pos.x - sumo_x_offset_, pos.y - sumo_y_offset_, pos.z,
-				-libsumo::Vehicle::getAngle(sumoid) * M_PI / 180 + M_PI / 2, libsumo::Vehicle::getSlope(sumoid) * M_PI / 180, 0);
+				std::string sumoid = obj->name_;
+				libsumo::TraCIPosition pos = libsumo::Vehicle::getPosition3D(sumoid);
+				obj->speed_ = libsumo::Vehicle::getSpeed(sumoid);
+				obj->pos_.SetInertiaPos(pos.x - sumo_x_offset_, pos.y - sumo_y_offset_, pos.z,
+					-libsumo::Vehicle::getAngle(sumoid) * M_PI / 180 + M_PI / 2, libsumo::Vehicle::getSlope(sumoid) * M_PI / 180, 0);
 
-			obj->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);
+				obj->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);
 
-			// Report updated state to the gateway
-			gateway_->reportObject(obj->id_, obj->name_, static_cast<int>(obj->type_), obj->category_, obj->model_id_,
-				obj->GetActivatedControllerType(), obj->boundingbox_, static_cast<int>(obj->scaleMode_), 0xff, time_,
-				obj->speed_, obj->wheel_angle_, obj->wheel_rot_, &obj->pos_);
-		}
-		else if (!entities_->object_[i]->IsGhost())
-		{
-			// Updates all positions for non-sumo controlled vehicles
-			libsumo::Vehicle::moveToXY(entities_->object_[i]->name_, "random", 0, entities_->object_[i]->pos_.GetX() + sumo_x_offset_,
-				entities_->object_[i]->pos_.GetY() + sumo_y_offset_, entities_->object_[i]->pos_.GetH(), 0);
-			libsumo::Vehicle::setSpeed(entities_->object_[i]->name_, entities_->object_[i]->speed_);
+				// Report updated state to the gateway
+				gateway_->reportObject(obj->id_, obj->name_, static_cast<int>(obj->type_), obj->category_, obj->model_id_,
+					obj->GetActivatedControllerType(), obj->boundingbox_, static_cast<int>(obj->scaleMode_), 0xff, time_,
+					obj->speed_, obj->wheel_angle_, obj->wheel_rot_, &obj->pos_);
+			}
+			else if (!entities_->object_[i]->IsGhost())
+			{
+				// Updates all positions for non-sumo controlled vehicles
+				libsumo::Vehicle::moveToXY(entities_->object_[i]->name_, "random", 0, entities_->object_[i]->pos_.GetX() + sumo_x_offset_,
+					entities_->object_[i]->pos_.GetY() + sumo_y_offset_, entities_->object_[i]->pos_.GetH(), 0);
+				libsumo::Vehicle::setSpeed(entities_->object_[i]->name_, entities_->object_[i]->speed_);
+			}
 		}
 	}
 
