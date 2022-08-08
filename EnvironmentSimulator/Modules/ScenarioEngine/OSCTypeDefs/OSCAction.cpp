@@ -14,6 +14,8 @@
 
 using namespace scenarioengine;
 
+void (*StoryBoardElement::stateChangeCallback)(const char* name, int type, int state) = nullptr;
+
 std::string StoryBoardElement::state2str(StoryBoardElement::State state)
 {
 	if (state == StoryBoardElement::State::COMPLETE)
@@ -93,6 +95,11 @@ void StoryBoardElement::SetState(StoryBoardElement:: State state)
 			state2str(state_).c_str(),
 			transition2str(transition_).c_str(),
 			state2str(state).c_str());
+
+        if (stateChangeCallback != nullptr)
+        {
+            stateChangeCallback(name_.c_str(), (int) type_, (int) state);
+        }
 	}
 	state_ = state;
 }

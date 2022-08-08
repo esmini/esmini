@@ -20,24 +20,31 @@ namespace scenarioengine
 	class StoryBoardElement
 	{
 	public:
+        static void (*stateChangeCallback)(const char* name, int type, int state);
 
+        /**
+         * Take note, changing this enum will alter the public API in esminiLib.hpp
+         */
 		typedef enum
 		{
-			STORY,
-			ACT,
-			MANEUVER_GROUP,
-			MANEUVER,
-			EVENT,
-			ACTION,
-			UNDEFINED_ELEMENT_TYPE
+			STORY = 1,
+			ACT = 2,
+			MANEUVER_GROUP = 3,
+			MANEUVER = 4,
+			EVENT = 5,
+			ACTION = 6,
+			UNDEFINED_ELEMENT_TYPE = 0
 		} ElementType;
 
+        /**
+         * Take note, changing this enum will alter the public API in esminiLib.hpp
+         */
 		typedef enum
 		{
-			STANDBY,
-			RUNNING,
-			COMPLETE,
-			UNDEFINED_ELEMENT_STATE
+			STANDBY = 1,
+			RUNNING = 2,
+			COMPLETE = 3,
+			UNDEFINED_ELEMENT_STATE = 0
 		} State;
 
 		typedef enum
