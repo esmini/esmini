@@ -3287,6 +3287,34 @@ TEST(ReplayTest, TestMultiReplayDifferentTimeSteps)
 	}
 }
 
+void EventCallbackInstance1(const char* element_name, double timestamp, bool start)
+{
+	EXPECT_STREQ(element_name, "slowdown event");
+	EXPECT_NEAR(timestamp, 3.4, 1E-4);
+	EXPECT_NEAR((float)timestamp, SE_GetSimulationTime(), 1E-4);
+	EXPECT_EQ(start, true);
+}
+
+TEST(EventCallbackTest, TestEventCallback)
+{
+	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/highway_exit.xosc";
+
+	SE_Init(scenario_file.c_str(), 0, 0, 0, 0);
+
+	int n_Objects = SE_GetNumberOfObjects();
+	EXPECT_EQ(n_Objects, 2);
+
+	SE_RegisterEventCallback(EventCallbackInstance1);
+
+	// Just run until passed 3.4 seconds to cover first event triggering
+	for (int i = 0; i < 36; i++)
+	{
+		SE_StepDT(0.1f);
+	}
+
+	SE_Close();
+}
+
 
 int main(int argc, char **argv)
 {
