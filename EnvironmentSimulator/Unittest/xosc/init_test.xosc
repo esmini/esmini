@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <OpenSCENARIO>
-   <FileHeader revMajor="1"
-               revMinor="1"
-               date="2022-01-26T10:00:00"
-               description="Exercise some initial cases"
-               author="esmini-team"/>
+    <FileHeader revMajor="1" revMinor="1" date="2022-01-26T10:00:00" description="Exercise some initial cases" author="esmini-team"/>
     <ParameterDeclarations/>
     <CatalogLocations>
         <VehicleCatalog>
@@ -152,6 +148,24 @@
                     <ByValueCondition>
                         <SimulationTimeCondition value="5" rule="greaterOrEqual"/>
                     </ByValueCondition>
+                </Condition>
+            </ConditionGroup>
+            <ConditionGroup>
+                <Condition name="Stop at origin condition" delay="0" conditionEdge="none">
+                    <!-- Should not trig. It's here to make sure Teleport and FollowTrajectory actions is initialized before Storyboard stop trigger is checked. -->
+                    <ByEntityCondition>
+                        <TriggeringEntities triggeringEntitiesRule="any">
+                            <EntityRef entityRef="Ego"/>
+                            <EntityRef entityRef="OverTaker1"/>
+                        </TriggeringEntities>
+                        <EntityCondition>
+                            <DistanceCondition value="5" rule="lessThan" freespace="true" coordinateSystem="entity" relativeDistanceType="euclidianDistance">
+                                <Position>
+                                    <WorldPosition x="0.0" y="0.0" z="0.0" h="0.0" p="0.0" r="0.0"/>
+                                </Position>
+                            </DistanceCondition>
+                        </EntityCondition>
+                    </ByEntityCondition>
                 </Condition>
             </ConditionGroup>
         </StopTrigger>
