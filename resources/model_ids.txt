@@ -13,3 +13,6 @@
 12 semi_tractor.osgb
 13 semi_trailer.osgb
 14 truck_trailer.osgb
+15 box_cc_by.osgb
+16 cone-45.osgb
+17 cone-100.osgb
