@@ -207,6 +207,13 @@ int ScenarioEngine::step(double deltaSimTime)
 		}
 	}
 
+	// First evaluate StoryBoard stopTrigger
+	if (storyBoard.stop_trigger_ && storyBoard.stop_trigger_->Evaluate(&storyBoard, simulationTime_) == true)
+	{
+		quit_flag = true;
+		return -1;
+	}
+
 	// Step inital actions - might be extened in time (more than one step)
 	for (size_t i = 0; i < init.private_action_.size(); i++)
 	{
@@ -237,14 +244,6 @@ int ScenarioEngine::step(double deltaSimTime)
 	if (SE_Env::Inst().GetCollisionDetection() && frame_nr_ == 0)
 	{
 		DetectCollisions();
-	}
-
-	// Story
-	// First evaluate StoryBoard stopTrigger
-	if (storyBoard.stop_trigger_ && storyBoard.stop_trigger_->Evaluate(&storyBoard, simulationTime_) == true)
-	{
-		quit_flag = true;
-		return -1;
 	}
 
 	// Then evaluate all stories
