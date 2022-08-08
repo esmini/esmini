@@ -613,7 +613,7 @@ double Object::FreeSpaceDistancePoint(double x, double y, double* latDist, doubl
 
 		double xProj = 0;
 		double yProj = 0;
-		double tmpDist = DistanceFromPointToLine2D(point[0], point[1], edge[0][0], edge[0][1], edge[1][0], edge[1][1],
+		double tmpDist = DistanceFromPointToEdge2D(point[0], point[1], edge[0][0], edge[0][1], edge[1][0], edge[1][1],
 			&xProj, &yProj);
 
 		if (tmpDist < minDist)
