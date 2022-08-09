@@ -3364,7 +3364,7 @@ TEST(EventCallbackTest, TestStoryboardElementStateCallback)
 
 	SE_RegisterStoryBoardElementStateChangeCallback(StoryBoardElementStateCallbackInstance1);
 
-	// Just run until passed 3.4 seconds to cover first event triggering
+	// Just run until passed 12 seconds to cover the complete scenario
 	for (int i = 0; i < 125; i++)
 	{
 		SE_StepDT(0.1f);
