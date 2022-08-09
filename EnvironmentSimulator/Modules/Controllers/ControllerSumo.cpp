@@ -101,21 +101,6 @@ void ControllerSumo::Step(double timeStep)
 	time_ += timeStep;
 	libsumo::Simulation::step(time_);
 
-	std::vector<std::string> idlist = libsumo::Vehicle::getIDList();
-
-	// Add new vehicles in openscenario to the sumo simulation
-	for (size_t i = 0; i < entities_->object_.size(); i++)
-	{
-		if (!(entities_->object_[i]->IsGhost()) && std::find(idlist.begin(), idlist.end(), entities_->object_[i]->GetName()) == idlist.end())
-		{
-			std::string id = entities_->object_[i]->name_;
-			libsumo::Vehicle::add(id, "", "DEFAULT_VEHTYPE");
-			libsumo::Vehicle::moveToXY(id, "random", 0, entities_->object_[i]->pos_.GetX() + sumo_x_offset_,
-				entities_->object_[i]->pos_.GetY() + sumo_y_offset_, entities_->object_[i]->pos_.GetH(), 0);
-			libsumo::Vehicle::setSpeed(id, entities_->object_[i]->speed_);
-		}
-	}
-
 	// check if any new cars has been added by sumo and add them to entities
 	if (libsumo::Simulation::getDepartedNumber() > 0) {
 		std::vector<std::string> deplist = libsumo::Simulation::getDepartedIDList();
@@ -125,7 +110,7 @@ void ControllerSumo::Step(double timeStep)
 			{
 				Vehicle* vehicle = new Vehicle();
 				// copy the default vehicle stuff here (add bounding box and so on)
-				LOG("Adding new vehicle: %s", deplist[i].c_str());
+				LOG("SUMO controller: Add vehicle to scenario: %s", deplist[i].c_str());
 				vehicle->name_ = deplist[i];
 				vehicle->controller_ = this;
 				vehicle->model3d_ = template_vehicle_->model3d_;
@@ -146,7 +131,7 @@ void ControllerSumo::Step(double timeStep)
 					Object* obj = entities_->GetObjectByName(arrivelist[i]);
 					if (obj != nullptr)
 					{
-						LOG("Removing vehicle: %s", arrivelist[i].c_str());
+						LOG("SUMO controller: Remove vehicle from scenario: %s", arrivelist[i].c_str());
 						gateway_->removeObject(arrivelist[i]);
 						if (obj->objectEvents_.size() > 0 || obj->initActions_.size() > 0)
 						{
@@ -163,6 +148,22 @@ void ControllerSumo::Step(double timeStep)
 					}
 				}
 			}
+		}
+	}
+
+	// Add missing vehicles from OpenSCENARIO to the sumo simulation
+	std::vector<std::string> idlist = libsumo::Vehicle::getIDList();
+	for (size_t i = 0; i < entities_->object_.size(); i++)
+	{
+		if (entities_->object_[i]->IsActive() && !entities_->object_[i]->IsGhost() &&
+			std::find(idlist.begin(), idlist.end(), entities_->object_[i]->GetName()) == idlist.end()) // not already in sumo list
+		{
+			std::string id = entities_->object_[i]->name_;
+			LOG("SUMO controller: Add vehicle to SUMO: %s", id.c_str());
+			libsumo::Vehicle::add(id, "", "DEFAULT_VEHTYPE");
+			libsumo::Vehicle::moveToXY(id, "random", 0, entities_->object_[i]->pos_.GetX() + sumo_x_offset_,
+				entities_->object_[i]->pos_.GetY() + sumo_y_offset_, entities_->object_[i]->pos_.GetH(), 0);
+			libsumo::Vehicle::setSpeed(id, entities_->object_[i]->speed_);
 		}
 	}
 
