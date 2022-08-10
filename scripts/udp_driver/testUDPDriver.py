@@ -3,9 +3,12 @@
    it offers three modes of input:
       0. driverInput in terms of throttle, brake and SteeringWheelAngle
       1. state in terms of X, Y, Z, Head, Pitch, Roll, Speed, SteeringWheelAngle
-      2. state in terms of X, Y, Head, Speed, SteeringWheelAngle 
-   Mode 0 and 2 will align to road, while for 1 all values will be respected, even 
+      2. state in terms of X, Y, Head, Speed, SteeringWheelAngle
+   Mode 0 and 2 will align to road, while for 1 all values will be respected, even
    if vehicle will "hang" in the air.
+
+   Python dependencies:
+      pip install protobuf==3.19
 
    To run it:
    1. Open two terminals
@@ -19,8 +22,8 @@
    You might need to open ports in firewall. E.g. in Windows add a Inbound Rule for UDP messages on port range 49950-49999.
 
    Running controllers and esmini on different hosts works as long as they have the same endianess/byte-order, so e.g.
-   Mac, Linux and Mac on Intel or the new Mac M1 chip should all work (since they are little-endian). 
-   
+   Mac, Linux and Mac on Intel or the new Mac M1 chip should all work (since they are little-endian).
+
    For other endianess, e.g. dSPACE runtime platform, you would need to swap byteorder on sender or receiver side.
 
    For complete message definitions, see esmini/EnvironmentSimulator/Modules/Controllers/ControllerUDPDriver.hpp
@@ -115,7 +118,7 @@ class Object():
                 self.throttle.get(),
                 self.brake.get(),
                 -self.wheel_angle.get())
-        
+
         if (message is not None):
             self.udpSender.send(message)
             self.frameNumber += 1
@@ -293,26 +296,26 @@ class Application(Frame):
 
             row += 1
             Label(frame3, text="throttle").grid(sticky = SE, row = row, column = 0, padx = padx)
-            Scale(frame3, from_=0, to=1, resolution=0.01, orient=HORIZONTAL, variable=obj.throttle, width=scalewidth, 
+            Scale(frame3, from_=0, to=1, resolution=0.01, orient=HORIZONTAL, variable=obj.throttle, width=scalewidth,
                 command=obj.updateDriverInput).grid(sticky = EW, row = row, column = 1, padx = padx)
 
             row += 1
             Label(frame3, text="brake").grid(sticky = SE, row = row, column = 0, padx = padx)
-            Scale(frame3, from_=0, to=1, resolution=0.01, orient=HORIZONTAL, variable=obj.brake, width=scalewidth, 
+            Scale(frame3, from_=0, to=1, resolution=0.01, orient=HORIZONTAL, variable=obj.brake, width=scalewidth,
                 command=obj.updateDriverInput).grid(sticky = EW, row = row, column = 1, padx = padx)
 
             row += 1
             Label(frame3, text="wheel angle").grid(sticky = SE, row = row, column = 0, padx = padx)
-            Scale(frame3, from_=-1.0, to=1.0, resolution=0.01, orient=HORIZONTAL, variable=obj.wheel_angle, width=scalewidth, 
+            Scale(frame3, from_=-1.0, to=1.0, resolution=0.01, orient=HORIZONTAL, variable=obj.wheel_angle, width=scalewidth,
                 command=obj.updateDriverInput).grid(sticky = EW, row = row, column = 1, padx = padx)
 
-            
+
             bottom_frame = Frame(tab_frame, borderwidth=2, relief=GROOVE)
             bottom_frame.grid(row=3,sticky=EW)
             row = 0
             Label(bottom_frame, text='inputMode: ').grid(sticky = W, row = row, column = 0, padx = padx)
             Entry(bottom_frame, textvariable=obj.inputModeText, state='disabled').grid(sticky = E, row = row, column = 1, padx = padx)
-        
+
         Button(self.master, text="Quit", width=10, command=self.quit).pack(side=RIGHT)
 
         Checkbutton(self.master, text='continuous mode', variable=self.continuous, command=self.updateContinuousMode, onvalue=True, offvalue=False).pack(side=LEFT)

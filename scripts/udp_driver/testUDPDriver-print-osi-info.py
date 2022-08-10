@@ -1,8 +1,10 @@
 '''
    This script shows how to fetch and parse OSI message on UDP socket from esmini
    Prerequisites:
-      Python 3
-      OSI https://github.com/OpenSimulationInterface/open-simulation-interface
+      Python 3 
+
+   Python dependencies:
+      pip install protobuf==3.19
 
    To run it:
    1. Open two terminals

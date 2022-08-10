@@ -2,7 +2,9 @@
    Some useful common classes for the example scripts in this folder
    Prerequisites:
       Python 3
-      OSI https://github.com/OpenSimulationInterface/open-simulation-interface
+
+   Python dependencies:
+      pip install protobuf==3.19
 '''
 
 from socket import *

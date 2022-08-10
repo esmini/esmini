@@ -4,7 +4,9 @@
    based on current position and orientation which is extracted from OSI UDP messages from esmini. 
    Prerequisites:
       Python 3
-      OSI https://github.com/OpenSimulationInterface/open-simulation-interface
+
+   Python dependencies:
+      pip install protobuf==3.19
 
    To run it:
    1. Open two terminals
