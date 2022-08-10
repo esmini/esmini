@@ -1198,6 +1198,7 @@ void ScenarioEngine::SetupGhost(Object* object)
 									// then move the action to the ghost object instance, and also make needed
 									// changes to the event trigger
 									if (pa->type_ == OSCPrivateAction::ActionType::LONG_SPEED ||
+										pa->type_ == OSCPrivateAction::ActionType::LONG_SPEED_PROFILE ||
 										pa->type_ == OSCPrivateAction::ActionType::LAT_LANE_CHANGE ||
 										pa->type_ == OSCPrivateAction::ActionType::LAT_LANE_OFFSET ||
 										pa->type_ == OSCPrivateAction::ActionType::SYNCHRONIZE ||
