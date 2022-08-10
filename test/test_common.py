@@ -1,15 +1,18 @@
+ESMINI_PATH = '../'
+
 import os
 import subprocess
 import time
 import re
 import sys
+sys.path.insert(0, ESMINI_PATH + 'scripts')
+from dat import *
 
 LOG_FILENAME = 'log.txt'
 DAT_FILENAME = 'sim.dat'
 CSV_FILENAME = 'sim.csv'
 STDOUT_FILENAME = 'stdout.txt'
 TIMEOUT = 40
-ESMINI_PATH = '../'
 
 
 def run_scenario(osc_filename, esmini_arguments):
@@ -52,8 +55,16 @@ def run_scenario(osc_filename, esmini_arguments):
 
 
 def generate_csv():
-    args = [os.path.join(ESMINI_PATH,'bin','dat2csv'), DAT_FILENAME]
-    process = subprocess.run(args, cwd=os.path.dirname(os.path.realpath(__file__)))
+
+    # Below is one/the old way of converting dat to csv. Keeping the lines for reference.
+    # args = [os.path.join(ESMINI_PATH,'bin','dat2csv'), DAT_FILENAME]
+    # process = subprocess.run(args, cwd=os.path.dirname(os.path.realpath(__file__)))
+
+    # Below is the Python way of converting dat to csv
+    dat = DATFile(DAT_FILENAME)
+    dat.save_csv()
+    dat.close()
+
     with open(CSV_FILENAME, "r") as f:
         return f.read()
 
