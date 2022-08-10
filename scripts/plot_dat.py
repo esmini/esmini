@@ -10,7 +10,8 @@ if __name__ == "__main__":
     parser.add_argument('--x_axis', help='x-axis parameter')
     parser.add_argument('--equal_axis_aspect', help='lock aspect ratio = 1:1', action='store_true')
     parser.add_argument('filename', help='dat filename')
-    parser.add_argument('--derive', help='yes', action='store_true')
+    parser.add_argument('--derive', help='derive values wrt x, i.e. dy/dx', action='store_true')
+    parser.add_argument('--dots', help='add dots', action='store_true')
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('--list_params', help='list available parameters in given file', action='store_true')
     group.add_argument('--param', help='parameter to plot (can be specified multiple times)', action='append')
@@ -83,7 +84,11 @@ if __name__ == "__main__":
     p1 = plt.figure(1)
     for i in range(len(x)):
         for j, p in enumerate(parameter):
-            plt.plot(x[i], y[i][j], linewidth=1.0, label=objs[i] + ' ' + p)
+            if args.dots:
+                p_style = '.-'
+            else:
+                p_style = '-'
+            plt.plot(x[i], y[i][j], p_style, linewidth=1.0, label=objs[i] + ' ' + p)
 
     plt.xlabel(x_axis)
     plt.legend(loc="upper right")
