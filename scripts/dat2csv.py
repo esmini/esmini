@@ -12,4 +12,6 @@ if __name__ == "__main__":
 
     dat = DATFile(args.filename)
     dat.save_csv()
+    print('Created ' + os.path.splitext(args.filename)[0] + '.csv')
+    dat.close()
 

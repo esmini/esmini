@@ -1541,7 +1541,8 @@ void TeleportAction::Start(double simTime, double dt)
 
 		object_->trail_.Reset();
 
-		if (object_->ghost_Ego_ != 0)
+		// The following code will copy speed from the Ego that ghost relates to
+		if (object_->ghost_Ego_ != nullptr)
 		{
 			object_->SetSpeed(object_->ghost_Ego_->GetSpeed());
 		}

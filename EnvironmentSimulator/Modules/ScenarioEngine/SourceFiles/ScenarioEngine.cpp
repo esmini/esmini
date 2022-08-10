@@ -599,7 +599,7 @@ int ScenarioEngine::step(double deltaSimTime)
 	{
 		if (scenarioReader->controller_[i]->Active())
 		{
-			if (ghost_mode_ == GhostMode::NORMAL)
+			if (ghost_mode_ != GhostMode::RESTARTING)
 			{
 				scenarioReader->controller_[i]->Step(deltaSimTime);
 			}
@@ -792,6 +792,10 @@ void ScenarioEngine::parseScenario()
 			if (scenarioReader->controller_[i]->GetType() == Controller::Type::CONTROLLER_TYPE_REL2ABS)
 			{
 				((ControllerRel2Abs*)(scenarioReader->controller_[i]))->SetScenarioEngine(this);
+			}
+			else if (scenarioReader->controller_[i]->GetType() == Controller::Type::CONTROLLER_TYPE_FOLLOW_GHOST)
+			{
+				((ControllerFollowGhost*)(scenarioReader->controller_[i]))->SetScenarioEngine(this);
 			}
 		}
 
@@ -1120,6 +1124,7 @@ void ScenarioEngine::CreateGhostTeleport(Object* obj1, Object* obj2, Event* even
 
 	event->action_.insert(event->action_.begin(), myNewAction);
 }
+
 void ScenarioEngine::SetupGhost(Object* object)
 {
 	// FollowGhostController special treatment:

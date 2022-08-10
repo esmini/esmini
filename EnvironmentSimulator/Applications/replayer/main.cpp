@@ -411,11 +411,11 @@ int main(int argc, char** argv)
 	{
 		if (!arg_str.empty())
 		{
-			player = new Replay(arg_str, opt.GetOptionArg("file"));
+			player = new Replay(arg_str, opt.GetOptionArg("file"), true);
 		}
 		else
 		{
-			player = new Replay(opt.GetOptionArg("file"));
+			player = new Replay(opt.GetOptionArg("file"), true);
 		}
 	}
 	catch (const std::exception& e)
@@ -423,6 +423,7 @@ int main(int argc, char** argv)
 		LOG(std::string("Exception: ").append(e.what()).c_str());
 		return -1;
 	}
+
 	try
 	{
 		if (strcmp(player->header_.odr_filename, ""))

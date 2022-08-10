@@ -41,8 +41,8 @@ namespace scenarioengine
 		ReplayHeader header_;
 		std::vector<ReplayEntry> data_;
 
-		Replay(std::string filename);
-		Replay(const std::string directory, const std::string scenario);
+		Replay(std::string filename, bool clean);
+		Replay(const std::string directory, const std::string scenario, bool clean);
 		~Replay();
 
 		/**
@@ -82,6 +82,7 @@ private:
 		unsigned int stopIndex_;
 		unsigned int index_;
 		bool repeat_;
+		bool clean_;
 
 		int FindIndexAtTimestamp(double timestamp, int startSearchIndex = 0);
 	};

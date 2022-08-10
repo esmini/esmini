@@ -24,6 +24,7 @@
 namespace scenarioengine
 {
 	class ScenarioPlayer;
+	class ScenarioEngine;
 
 	// base class for controllers
 	class ControllerFollowGhost: public Controller
@@ -44,6 +45,8 @@ namespace scenarioengine
 		static const int GetTypeStatic() { return CONTROLLER_TYPE_FOLLOW_GHOST; }
 		virtual int GetType() { return GetTypeStatic(); }
 
+		void SetScenarioEngine(ScenarioEngine* scenarioEngine) { scenarioEngine_ = scenarioEngine; };
+
 		void Init();
 		void Step(double timeStep);
 		void Activate(ControlDomains domainMask);
@@ -52,8 +55,8 @@ namespace scenarioengine
 	private:
 		vehicle::Vehicle vehicle_;
 		double headstart_time_;
-		double elapsed_time_;
 		FollowMode follow_mode_;
+		ScenarioEngine* scenarioEngine_;
 	};
 
 	Controller* InstantiateControllerFollowGhost(void* args);

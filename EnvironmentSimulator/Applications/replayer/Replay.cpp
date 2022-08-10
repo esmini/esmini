@@ -18,7 +18,7 @@
 using namespace scenarioengine;
 
 
-Replay::Replay(std::string filename) : time_(0.0), index_(0), repeat_(false)
+Replay::Replay(std::string filename, bool clean) : time_(0.0), index_(0), repeat_(false), clean_(clean)
 {
 	file_.open(filename, std::ofstream::binary);
 	if (file_.fail())
@@ -55,7 +55,10 @@ Replay::Replay(std::string filename) : time_(0.0), index_(0), repeat_(false)
 		}
 	}
 
-	CleanEntries(data_);
+	if (clean_)
+	{
+		CleanEntries(data_);
+	}
 
 	if (data_.size() > 0)
 	{
@@ -70,7 +73,7 @@ Replay::Replay(std::string filename) : time_(0.0), index_(0), repeat_(false)
 	}
 }
 
-Replay::Replay(const std::string directory, const std::string scenario) : time_(0.0), index_(0), repeat_(false)
+Replay::Replay(const std::string directory, const std::string scenario, bool clean) : time_(0.0), index_(0), repeat_(false), clean_(clean)
 {
 	GetReplaysFromDirectory(directory, scenario);
 	std::vector<std::pair<std::string, std::vector<ReplayEntry>>> scenarioData;

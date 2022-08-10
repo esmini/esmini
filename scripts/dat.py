@@ -76,8 +76,6 @@ class DATFile():
                 filename, self.version, VERSION)
             )
             exit(-1)
-        else:
-            print(self.get_header_line())
 
         # Read and print all rows of data
         while (True):
@@ -143,7 +141,9 @@ class DATFile():
             fcsv.write(self.get_data_line(data) + '\n')
 
         fcsv.close()
-        print('Created ' + csvfile)
+
+    def close(self):
+        self.file.close()
 
 if __name__ == "__main__":
     # Create the parser
@@ -157,3 +157,4 @@ if __name__ == "__main__":
 
     dat = DATFile(args.filename)
     dat.print()
+    dat.close()

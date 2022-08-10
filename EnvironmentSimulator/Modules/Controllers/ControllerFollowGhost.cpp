@@ -21,6 +21,7 @@
 #include "CommonMini.hpp"
 #include "Entities.hpp"
 #include "ScenarioGateway.hpp"
+#include "ScenarioEngine.hpp"
 
 using namespace scenarioengine;
 
@@ -34,7 +35,7 @@ Controller* scenarioengine::InstantiateControllerFollowGhost(void* args)
 }
 
 ControllerFollowGhost::ControllerFollowGhost(InitArgs* args) :
-	elapsed_time_(0.0), follow_mode_(FollowMode::FOLLOW_MODE_TIME), Controller(args)
+	follow_mode_(FollowMode::FOLLOW_MODE_TIME), Controller(args)
 {
 	if (args->properties->ValueExists("headstartTime"))
 	{
@@ -82,6 +83,8 @@ void ControllerFollowGhost::Step(double timeStep)
 		return;
 	}
 
+	double currentTime = scenarioEngine_->getSimulationTime();
+
 	if (follow_mode_ == FollowMode::FOLLOW_MODE_POSITION)
 	{
 		if (object_->GetGhost()->trail_.FindClosestPoint(object_->pos_.GetX(), object_->pos_.GetY(),
@@ -114,7 +117,7 @@ void ControllerFollowGhost::Step(double timeStep)
 	}
 	else
 	{
-		ret_val = object_->GetGhost()->trail_.FindPointAtTime(elapsed_time_ - headstart_time_ + 1.7,  // look ahead 1.7 seconds
+		ret_val = object_->GetGhost()->trail_.FindPointAtTime(currentTime - headstart_time_ + 1.7,  // look ahead 1.7 seconds
 			point, index_out, object_->trail_follow_index_);
 	}
 
@@ -179,8 +182,6 @@ void ControllerFollowGhost::Step(double timeStep)
 		gateway_->updateObjectWheelAngle(object_->id_, 0.0, vehicle_.wheelAngle_);
 	}
 
-	elapsed_time_ += timeStep;
-
 	Controller::Step(timeStep);
 }
 
@@ -202,8 +203,6 @@ void ControllerFollowGhost::Activate(ControlDomains domainMask)
 		object_->pos_.SetAlignModeZ(roadmanager::Position::ALIGN_MODE::ALIGN_HARD);
 		object_->pos_.SetAlignModeP(roadmanager::Position::ALIGN_MODE::ALIGN_HARD);
 	}
-
-	elapsed_time_ = 0.0;
 
 	Controller::Activate(domainMask);
 }

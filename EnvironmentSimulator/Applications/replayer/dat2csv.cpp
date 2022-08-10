@@ -48,7 +48,7 @@ int main(int argc, char** argv)
 	// Create replayer object for parsing the binary data file
 	try
 	{
-		player = new Replay(argv[1]);
+		player = new Replay(argv[1], false);
 	}
 	catch (const std::exception& e)
 	{
