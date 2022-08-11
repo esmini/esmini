@@ -73,7 +73,7 @@ Replay::Replay(std::string filename, bool clean) : time_(0.0), index_(0), repeat
 	}
 }
 
-Replay::Replay(const std::string directory, const std::string scenario, bool clean) : time_(0.0), index_(0), repeat_(false), clean_(clean)
+Replay::Replay(const std::string directory, const std::string scenario, bool clean, std::string create_datfile) : time_(0.0), index_(0), repeat_(false), clean_(clean), create_datfile_(create_datfile)
 {
 	GetReplaysFromDirectory(directory, scenario);
 	std::vector<std::pair<std::string, std::vector<ReplayEntry>>> scenarioData;
@@ -150,6 +150,11 @@ Replay::Replay(const std::string directory, const std::string scenario, bool cle
 		// Register last entry timestamp as stop time
 		stopTime_ = data_.back().state.info.timeStamp;
 		stopIndex_ = FindIndexAtTimestamp(stopTime_);
+	}
+
+	if (!create_datfile_.empty())
+	{
+		CreateMergedDatfile(create_datfile_);
 	}
 }
 
@@ -551,5 +556,55 @@ void Replay::BuildData(std::vector<std::pair<std::string, std::vector<ReplayEntr
 		}
 
 		cur_timestamp = min_time_stamp;
+	}
+}
+
+void Replay::CreateMergedDatfile(const std::string filename)
+{
+	std::ofstream data_file_;
+	data_file_.open(filename, std::ofstream::binary);
+	if (data_file_.fail())
+	{
+		LOG("Cannot open file: %s", filename.c_str());
+		exit(-1);
+	}
+
+	data_file_.write((char*)&header_, sizeof(header_));
+
+	if (data_file_.is_open())
+	{
+		// Write status to file - for later replay
+		for (size_t i = 0; i < data_.size(); i++)
+		{
+			struct ObjectStateStructDat datState;
+
+			datState.info.boundingbox = data_[i].state.info.boundingbox;
+			datState.info.ctrl_type = data_[i].state.info.ctrl_type;
+			datState.info.ctrl_type = data_[i].state.info.ctrl_type;
+			datState.info.id = data_[i].state.info.id;
+			datState.info.model_id = data_[i].state.info.model_id;
+			memcpy(datState.info.name, data_[i].state.info.name, sizeof(datState.info.name));
+			datState.info.obj_category = data_[i].state.info.obj_category;
+			datState.info.obj_type = data_[i].state.info.ctrl_type;
+			datState.info.scaleMode = data_[i].state.info.scaleMode;
+			datState.info.speed = (float)data_[i].state.info.speed;
+			datState.info.timeStamp = (float)data_[i].state.info.timeStamp;
+			datState.info.visibilityMask = data_[i].state.info.visibilityMask;
+			datState.info.wheel_angle = (float)data_[i].state.info.wheel_angle;
+			datState.info.wheel_rot = (float)data_[i].state.info.wheel_rot;
+
+			datState.pos.x = (float)data_[i].state.pos.x;
+			datState.pos.y = (float)data_[i].state.pos.y;
+			datState.pos.z = (float)data_[i].state.pos.z;
+			datState.pos.h = (float)data_[i].state.pos.h;
+			datState.pos.p = (float)data_[i].state.pos.p;
+			datState.pos.r = (float)data_[i].state.pos.r;
+			datState.pos.roadId = data_[i].state.pos.roadId;
+			datState.pos.laneId = data_[i].state.pos.laneId;
+			datState.pos.offset = (float)data_[i].state.pos.offset;
+			datState.pos.t = (float)data_[i].state.pos.t;
+			datState.pos.s = (float)data_[i].state.pos.s;
+			data_file_.write((char*)(&datState), sizeof(datState));
+		}
 	}
 }

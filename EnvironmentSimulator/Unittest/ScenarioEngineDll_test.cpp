@@ -3237,7 +3237,7 @@ TEST(ReplayTest, TestMultiReplayDifferentTimeSteps)
 		}
 
 		// Check multi replay
-		scenarioengine::Replay* replay = new scenarioengine::Replay(".", "multirep_test", true);
+		scenarioengine::Replay* replay = new scenarioengine::Replay(".", "multirep_test", true, "");
 		EXPECT_EQ(replay->GetNumberOfScenarios(), 2);
 
 		EXPECT_NEAR(replay->data_[0].state.info.timeStamp, -2.5, 1E-3);

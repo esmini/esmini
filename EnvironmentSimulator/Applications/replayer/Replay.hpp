@@ -42,7 +42,8 @@ namespace scenarioengine
 		std::vector<ReplayEntry> data_;
 
 		Replay(std::string filename, bool clean);
-		Replay(const std::string directory, const std::string scenario, bool clean);
+		// Replay(const std::string directory, const std::string scenario, bool clean);
+		Replay(const std::string directory, const std::string scenario, bool clean, std::string create_datfile);
 		~Replay();
 
 		/**
@@ -71,6 +72,7 @@ namespace scenarioengine
 		void SetRepeat(bool repeat) { repeat_ = repeat; }
 		void CleanEntries(std::vector<ReplayEntry>& entries);
 		void BuildData(std::vector<std::pair<std::string, std::vector<ReplayEntry>>>& scenarios);
+		void CreateMergedDatfile(const std::string filename);
 
 private:
 		std::ifstream file_;
@@ -83,6 +85,7 @@ private:
 		unsigned int index_;
 		bool repeat_;
 		bool clean_;
+		std::string create_datfile_;
 
 		int FindIndexAtTimestamp(double timestamp, int startSearchIndex = 0);
 	};
