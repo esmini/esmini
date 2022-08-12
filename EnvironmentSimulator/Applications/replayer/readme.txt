@@ -26,6 +26,8 @@ Options:
       Hide trajectories from start (toggle with key 'n')
   --info_text <mode>
       Show on-screen info text (toggle key 'i') mode 0=None 1=current (default) 2=per_object 3=both
+  --save_merged <filename>
+      Save merged data into one dat file, instead of viewing
   --no_ghost
       Remove ghost entities
   --no_ghost_model

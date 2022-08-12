@@ -346,10 +346,10 @@ int main(int argc, char** argv)
 	opt.AddOption("custom_fixed_camera", "Additional custom camera position <x,y,z>[,h,p] (multiple occurrences supported)", "position and optional orientation");
 	opt.AddOption("custom_fixed_top_camera", "Additional custom top camera <x,y,z,rot> (multiple occurrences supported)", "position and rotation");
 	opt.AddOption("dir", "Directory containing replays to overlay, pair with \"file\" argument, where \"file\" is .dat filename match substring","path");
-	opt.AddOption("merge_datfiles", "Directory containing replays to overlay, pair with \"file\" argument, where \"file\" is .dat filename match substring","path");
 	opt.AddOption("disable_off_screen", "Disable esmini off-screen rendering, revert to OSG viewer default handling");
 	opt.AddOption("hide_trajectories", "Hide trajectories from start (toggle with key 'n')");
 	opt.AddOption("info_text", "Show on-screen info text (toggle key 'i') mode 0=None 1=current (default) 2=per_object 3=both", "mode");
+	opt.AddOption("save_merged", "Save merged data into one dat file, instead of viewing", "filename");
 	opt.AddOption("no_ghost", "Remove ghost entities");
 	opt.AddOption("no_ghost_model", "Remove only ghost model, show trajectory (toggle with key 'g')");
 	opt.AddOption("path", "Search path prefix for assets, e.g. model_ids.txt file (multiple occurrences supported)", "path");
@@ -372,7 +372,10 @@ int main(int argc, char** argv)
 		return -1;
 	}
 
-	opt.ParseArgs(&argc, argv);
+	if (opt.ParseArgs(&argc, argv) != 0)
+	{
+		return -1;
+	}
 
 	if (opt.GetOptionArg("file").empty())
 	{
@@ -409,18 +412,26 @@ int main(int argc, char** argv)
 	// Create player
 	arg_str = opt.GetOptionArg("dir");
 
-	std::string merge_dat = opt.GetOptionArg("merge_datfiles"); // merge datfiles, this is the name
+	std::string save_merged = opt.GetOptionArg("save_merged"); // name of new dat file
 	try
 	{
 		if (!arg_str.empty())
 		{
-			player = new Replay(arg_str, opt.GetOptionArg("file"), true, merge_dat);
+			player = new Replay(arg_str, opt.GetOptionArg("file"), true, save_merged);
 
-			if (!merge_dat.empty())
-				return -1;
+			if (!save_merged.empty())
+			{
+				LOG("Merged data saved in %s", save_merged.c_str());
+				return 0;
+			}
 		}
 		else
 		{
+			if (!save_merged.empty())
+			{
+				LOG("\"--saved_merged\" works only in combination with \"--dir\" argument, combining multiple dat files");
+				return -1;
+			}
 			player = new Replay(opt.GetOptionArg("file"), true);
 		}
 	}
