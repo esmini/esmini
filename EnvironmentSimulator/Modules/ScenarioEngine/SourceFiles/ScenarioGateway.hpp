@@ -16,6 +16,8 @@
 #include "Entities.hpp"
 
 #define DAT_FILE_FORMAT_VERSION 2
+#define DAT_FILENAME_SIZE 512
+
 
 namespace scenarioengine
 {
@@ -83,6 +85,13 @@ namespace scenarioengine
 		struct ObjectPositionStructDat pos;
 	};
 
+	typedef struct
+	{
+		int version;
+		char odr_filename[DAT_FILENAME_SIZE];
+		char model_filename[DAT_FILENAME_SIZE];
+	} DatHeader;
+
 	class ObjectState
 	{
 	public:
@@ -111,7 +120,6 @@ namespace scenarioengine
 
 		friend class ScenarioGateway;
 	};
-
 
 	class ScenarioGateway
 	{

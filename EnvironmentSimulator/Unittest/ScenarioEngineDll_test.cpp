@@ -2745,7 +2745,7 @@ TEST(DirectJunctionTest, TestVariousRoutes)
 static void ReadDat(std::string filename, std::vector<scenarioengine::ReplayEntry>& entries)
 {
 	std::ifstream file;
-	scenarioengine::ReplayHeader header;
+	scenarioengine::DatHeader header;
 
 	file.open(filename, std::ofstream::binary);
 	ASSERT_EQ(file.fail(), false);
@@ -3237,7 +3237,7 @@ TEST(ReplayTest, TestMultiReplayDifferentTimeSteps)
 		}
 
 		// Check multi replay
-		scenarioengine::Replay* replay = new scenarioengine::Replay(".", "multirep_test", true, "");
+		scenarioengine::Replay* replay = new scenarioengine::Replay(".", "multirep_test", "");
 		EXPECT_EQ(replay->GetNumberOfScenarios(), 2);
 
 		EXPECT_NEAR(replay->data_[0].state.info.timeStamp, -2.5, 1E-3);

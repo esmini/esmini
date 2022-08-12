@@ -19,16 +19,6 @@
 
 namespace scenarioengine
 {
-
-#define REPLAY_FILENAME_SIZE 512
-
-	typedef struct
-	{
-		int version;
-		char odr_filename[REPLAY_FILENAME_SIZE];
-		char model_filename[REPLAY_FILENAME_SIZE];
-	} ReplayHeader;
-
 	typedef struct
 	{
 		ObjectStateStructDat state;
@@ -38,12 +28,12 @@ namespace scenarioengine
 	class Replay
 	{
 	public:
-		ReplayHeader header_;
+		DatHeader header_;
 		std::vector<ReplayEntry> data_;
 
 		Replay(std::string filename, bool clean);
 		// Replay(const std::string directory, const std::string scenario, bool clean);
-		Replay(const std::string directory, const std::string scenario, bool clean, std::string create_datfile);
+		Replay(const std::string directory, const std::string scenario, std::string create_datfile);
 		~Replay();
 
 		/**

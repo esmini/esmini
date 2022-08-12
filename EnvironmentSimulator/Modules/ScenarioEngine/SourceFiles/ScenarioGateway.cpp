@@ -12,7 +12,6 @@
 
 #include "ScenarioGateway.hpp"
 #include "CommonMini.hpp"
-#include "Replay.hpp"
 
 #ifdef _WIN32
 #include <winsock2.h>
@@ -725,10 +724,10 @@ int ScenarioGateway::RecordToFile(std::string filename, std::string odr_filename
 			LOG("Cannot open file: %s", filename.c_str());
 			return -1;
 		}
-		ReplayHeader header;
+		DatHeader header;
 		header.version = DAT_FILE_FORMAT_VERSION;
-		strncpy(header.odr_filename, odr_filename.c_str(), REPLAY_FILENAME_SIZE);
-		strncpy(header.model_filename, model_filename.c_str(), REPLAY_FILENAME_SIZE);
+		strncpy(header.odr_filename, odr_filename.c_str(), DAT_FILENAME_SIZE);
+		strncpy(header.model_filename, model_filename.c_str(), DAT_FILENAME_SIZE);
 
 		data_file_.write((char*)&header, sizeof(header));
 	}

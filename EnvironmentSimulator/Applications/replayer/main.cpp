@@ -417,7 +417,7 @@ int main(int argc, char** argv)
 	{
 		if (!arg_str.empty())
 		{
-			player = new Replay(arg_str, opt.GetOptionArg("file"), true, save_merged);
+			player = new Replay(arg_str, opt.GetOptionArg("file"), save_merged);
 
 			if (!save_merged.empty())
 			{
