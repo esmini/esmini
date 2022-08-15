@@ -102,8 +102,8 @@ typedef struct
 	float h;
 	float p;
 	float speed;
-	float whee_rotation;
-	float whee_angle;
+	float wheel_rotation;
+	float wheel_angle;
 } SE_SimpleVehicleState;
 
 typedef struct

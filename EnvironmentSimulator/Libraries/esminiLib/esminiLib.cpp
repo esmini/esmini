@@ -1974,8 +1974,8 @@ extern "C"
 		state->h = (float)((vehicle::Vehicle *)handleSimpleVehicle)->heading_;
 		state->p = (float)((vehicle::Vehicle *)handleSimpleVehicle)->pitch_;
 		state->speed = (float)((vehicle::Vehicle *)handleSimpleVehicle)->speed_;
-		state->whee_rotation = (float)((vehicle::Vehicle*)handleSimpleVehicle)->wheelRotation_;
-		state->whee_angle = (float)((vehicle::Vehicle*)handleSimpleVehicle)->wheelAngle_;
+		state->wheel_rotation = (float)((vehicle::Vehicle*)handleSimpleVehicle)->wheelRotation_;
+		state->wheel_angle = (float)((vehicle::Vehicle*)handleSimpleVehicle)->wheelAngle_;
 	}
 
 	SE_DLL_API int SE_SetOffScreenRendering(bool state)
