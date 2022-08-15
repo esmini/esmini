@@ -2382,7 +2382,7 @@ TEST(ExternalController, TestExternalDriver)
 
 			// Report updated vehicle position and heading. z, pitch and roll will be aligned to the road
 			SE_ReportObjectPosXYH(0, 0, vehicleState.x, vehicleState.y, vehicleState.h, vehicleState.speed);
-			SE_ReportObjectWheelStatus(0, vehicleState.whee_rotation, vehicleState.whee_angle);
+			SE_ReportObjectWheelStatus(0, vehicleState.wheel_rotation, vehicleState.wheel_angle);
 
 			// Finally, update scenario using same time step as for vehicle model
 			SE_StepDT(dt);
