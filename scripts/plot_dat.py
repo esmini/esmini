@@ -61,7 +61,7 @@ if __name__ == "__main__":
         if id not in id2idx:
             print('adding object {} {}'.format(id, data.name.decode('utf-8')))
             id2idx[id] = len(objs)
-            objs.append(data.name.decode('utf-8'))
+            objs.append(data.name.decode('utf-8') + ' ({})'.format(id))
             x.append([])
             y.append([])
             for p in parameter:
