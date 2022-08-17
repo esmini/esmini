@@ -353,9 +353,9 @@ const std::map<std::string, Signal::OSIType> Signal::types_mapping_ = {
 
 Signal::Signal(double s, double t, int id, std::string name, bool dynamic, Orientation orientation, double z_offset, std::string country, int osi_type,
 	std::string type, std::string subtype, std::string value_str, std::string unit, double height, double width, std::string text, double h_offset,
-	double pitch, double roll) : s_(s), t_(t), id_(id), name_(name), dynamic_(dynamic), orientation_(orientation), z_offset_(z_offset),
+	double pitch, double roll, double x, double y, double z, double h) : s_(s), t_(t), id_(id), name_(name), dynamic_(dynamic), orientation_(orientation), z_offset_(z_offset),
 	country_(country), osi_type_(osi_type), type_(type), subtype_(subtype), value_str_(value_str), unit_(unit), height_(height), width_(width), text_(text),
-	h_offset_(h_offset), pitch_(pitch), roll_(roll), length_(0)
+	h_offset_(h_offset), pitch_(pitch), roll_(roll), length_(0), RoadObject(x, y, z, h)
 {
 	value_ = strtod(value_str);
 }
@@ -3684,6 +3684,8 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 			}
 		}
 
+		road_.push_back(r);
+
 		pugi::xml_node signals = road_node.child("signals");
 		if (signals != NULL)
 		{
@@ -3793,8 +3795,10 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 					double pitch = atof(signal.attribute("pitch").value());
 					double roll = atof(signal.attribute("roll").value());
 
+					Position pos(rid, s, t);
+
 					Signal* sig = new Signal(s, t, ids, name, dynamic, orientation, z_offset, country, osi_type, type, subtype, value, unit, height,
-						width, text, h_offset, pitch, roll);
+						width, text, h_offset, pitch, roll, pos.GetX(), pos.GetY(), pos.GetZ(), pos.GetHRoad() + (orientation == Signal::Orientation::NEGATIVE ? M_PI : 0.0));
 					if (sig != NULL)
 					{
 						r->AddSignal(sig);
@@ -3905,8 +3909,10 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 				double pitch = atof(object.attribute("pitch").value());
 				double roll = atof(object.attribute("roll").value());
 
+				Position pos(rid, s, t);
+
 				RMObject* obj = new RMObject(s, t, ids, name, orientation, z_offset, type, length, height,
-					width, heading, pitch, roll);
+					width, heading, pitch, roll, pos.GetX(), pos.GetY(), pos.GetZ(), pos.GetHRoad());
 
 				if (Repeats.size() > 0)
 				{
@@ -3980,8 +3986,6 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 			lane_section->AddLane(new Lane(0, Lane::LANE_TYPE_NONE));
 			r->AddLaneSection(lane_section);
 		}
-
-		road_.push_back(r);
 	}
 
 	for (pugi::xml_node controller_node = node.child("controller"); controller_node; controller_node = controller_node.next_sibling("controller"))

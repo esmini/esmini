@@ -483,7 +483,6 @@ int OSIReporter::UpdateOSIStationaryObjectODR(int road_id, roadmanager::RMObject
 {
 	// Create OSI Stationary Object
 	obj_osi_internal.sobj = obj_osi_internal.gt->add_stationary_object();
-	roadmanager::Position pos;
 
 	// Set OSI Stationary Object Mutable ID
 	int sobj_size = obj_osi_internal.gt->mutable_stationary_object()->size();
@@ -530,12 +529,10 @@ int OSIReporter::UpdateOSIStationaryObjectODR(int road_id, roadmanager::RMObject
 		LOG("OSIReporter::UpdateOSIStationaryObjectODR -> Unsupported stationary object category");
 	}
 
-	pos.SetTrackPos(road_id, object->GetS(), object->GetT());
 	// Set OSI Stationary Object Position
-	obj_osi_internal.sobj->mutable_base()->mutable_position()->set_x(pos.GetX());
-	obj_osi_internal.sobj->mutable_base()->mutable_position()->set_y(pos.GetY());
-	obj_osi_internal.sobj->mutable_base()->mutable_position()->set_z(pos.GetZ());
-
+	obj_osi_internal.sobj->mutable_base()->mutable_position()->set_x(object->GetX());
+	obj_osi_internal.sobj->mutable_base()->mutable_position()->set_y(object->GetY());
+	obj_osi_internal.sobj->mutable_base()->mutable_position()->set_z(object->GetZ() + object->GetZOffset());
 
 	if (object->GetNumberOfOutlines() > 0)
 	{
@@ -570,9 +567,9 @@ int OSIReporter::UpdateOSIStationaryObjectODR(int road_id, roadmanager::RMObject
 
 
 		// Set OSI Stationary Object Orientation
-		obj_osi_internal.sobj->mutable_base()->mutable_orientation()->set_roll(GetAngleInIntervalMinusPIPlusPI(pos.GetR()));
-		obj_osi_internal.sobj->mutable_base()->mutable_orientation()->set_pitch(GetAngleInIntervalMinusPIPlusPI(pos.GetP()));
-		obj_osi_internal.sobj->mutable_base()->mutable_orientation()->set_yaw(GetAngleInIntervalMinusPIPlusPI(pos.GetH()));
+		obj_osi_internal.sobj->mutable_base()->mutable_orientation()->set_roll(GetAngleInIntervalMinusPIPlusPI(object->GetRoll()));
+		obj_osi_internal.sobj->mutable_base()->mutable_orientation()->set_pitch(GetAngleInIntervalMinusPIPlusPI(object->GetPitch()));
+		obj_osi_internal.sobj->mutable_base()->mutable_orientation()->set_yaw(GetAngleInIntervalMinusPIPlusPI(object->GetH() + object->GetHOffset()));
 	}
 
 
@@ -2027,15 +2024,13 @@ int OSIReporter::UpdateTrafficSignals()
 					trafficLight->mutable_id()->set_value(signal->GetId());
 					trafficLight->mutable_base()->mutable_orientation()->set_pitch(GetAngleInIntervalMinusPIPlusPI(signal->GetPitch()));
 					trafficLight->mutable_base()->mutable_orientation()->set_roll(GetAngleInIntervalMinusPIPlusPI(signal->GetRoll()));
+					trafficLight->mutable_base()->mutable_orientation()->set_yaw(GetAngleInIntervalMinusPIPlusPI(signal->GetH() + signal->GetHOffset()));
 					trafficLight->mutable_base()->mutable_dimension()->set_height(signal->GetHeight());
 					trafficLight->mutable_base()->mutable_dimension()->set_width(signal->GetWidth());
 
-					roadmanager::Position pos;
-					pos.SetTrackPos(road->GetId(), signal->GetS(), signal->GetT());
-
-					trafficLight->mutable_base()->mutable_position()->set_x(pos.GetX());
-					trafficLight->mutable_base()->mutable_position()->set_y(pos.GetY());
-					trafficLight->mutable_base()->mutable_position()->set_z(pos.GetZ() + signal->GetZOffset());
+					trafficLight->mutable_base()->mutable_position()->set_x(signal->GetX());
+					trafficLight->mutable_base()->mutable_position()->set_y(signal->GetY());
+					trafficLight->mutable_base()->mutable_position()->set_z(signal->GetZ() + signal->GetZOffset());
 				}
 				else
 				{
@@ -2100,16 +2095,14 @@ int OSIReporter::UpdateTrafficSignals()
 					//Set Pithc, Roll, Height, Width
 					trafficSign->mutable_main_sign()->mutable_base()->mutable_orientation()->set_pitch(GetAngleInIntervalMinusPIPlusPI(signal->GetPitch()));
 					trafficSign->mutable_main_sign()->mutable_base()->mutable_orientation()->set_roll(GetAngleInIntervalMinusPIPlusPI(signal->GetRoll()));
+					trafficSign->mutable_main_sign()->mutable_base()->mutable_orientation()->set_yaw(GetAngleInIntervalMinusPIPlusPI(signal->GetH() + signal->GetHOffset()));
 					trafficSign->mutable_main_sign()->mutable_base()->mutable_dimension()->set_height(signal->GetHeight());
 					trafficSign->mutable_main_sign()->mutable_base()->mutable_dimension()->set_width(signal->GetWidth());
 
-					roadmanager::Position pos;
-					pos.SetTrackPos(road->GetId(), signal->GetS(), signal->GetT());
-
 					//Set X, Y, Z based on s, t, and zOffset
-					trafficSign->mutable_main_sign()->mutable_base()->mutable_position()->set_x(pos.GetX());
-					trafficSign->mutable_main_sign()->mutable_base()->mutable_position()->set_y(pos.GetY());
-					trafficSign->mutable_main_sign()->mutable_base()->mutable_position()->set_z(pos.GetZ() + signal->GetZOffset());
+					trafficSign->mutable_main_sign()->mutable_base()->mutable_position()->set_x(signal->GetX());
+					trafficSign->mutable_main_sign()->mutable_base()->mutable_position()->set_y(signal->GetY());
+					trafficSign->mutable_main_sign()->mutable_base()->mutable_position()->set_z(signal->GetZ() + signal->GetZOffset());
 				}
 			}
 		}

@@ -2787,7 +2787,6 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
 		{
 			tx = nullptr;
 			roadmanager::Signal* signal = road->GetSignal(s);
-			double orientation = signal->GetOrientation() == roadmanager::Signal::Orientation::NEGATIVE ? M_PI : 0.0;
 
 			// Road sign filename is the combination of type_subtype_value
 			std::string filename = signal->GetCountry() + "_" + signal->GetType();
@@ -2815,9 +2814,8 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
 			}
 			else
 			{
-				pos.SetTrackPos(road->GetId(), signal->GetS(), signal->GetT());
-				tx->setPosition(osg::Vec3(pos.GetX(), pos.GetY(), signal->GetZOffset() + pos.GetZ()));
-				tx->setAttitude(osg::Quat(pos.GetH() + orientation + signal->GetHOffset(), osg::Vec3(0, 0, 1)));
+				tx->setPosition(osg::Vec3(signal->GetX(), signal->GetY(), signal->GetZ() + signal->GetZOffset()));
+				tx->setAttitude(osg::Quat(signal->GetH() + signal->GetHOffset(), osg::Vec3(0, 0, 1)));
 
 				objGroup->addChild(tx);
 			}

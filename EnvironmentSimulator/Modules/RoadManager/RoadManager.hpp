@@ -716,7 +716,19 @@ namespace roadmanager
 			NONE,
 		};
 
+		RoadObject() : x_(0.0), y_(0.0), z_(0.0), h_(0.0) {}
+		RoadObject(double x, double y, double z, double h) : x_(x), y_(y), z_(z), h_(h) {}
+
+		double GetX() { return x_; }  // X coordinate of sign position
+		double GetY() { return y_; }  // Y coordinate of sign position
+		double GetZ() { return z_; }  // Z coordinate of road level at sign X, Y position
+		double GetH() { return h_; }  // face direction including orientation (+/-) but excluding h_offset
+
 		std::vector<ValidityRecord> validity_;
+		double x_;
+		double y_;
+		double z_;
+		double h_;
 	};
 
 	class Signal : public RoadObject
@@ -971,7 +983,7 @@ namespace roadmanager
 
 		Signal(double s, double t, int id, std::string name, bool dynamic, Orientation orientation, double z_offset, std::string country,
 			int osi_type, std::string type, std::string subtype, std::string value_str_, std::string unit, double height, double width,
-			std::string text, double h_offset, double pitch, double roll);
+			std::string text, double h_offset, double pitch, double roll, double x, double y, double z, double h);
 
 		std::string GetName() { return name_; }
 		int GetId() { return id_; }
@@ -1182,9 +1194,10 @@ namespace roadmanager
 		};
 
 		RMObject(double s, double t, int id, std::string name, Orientation orientation, double z_offset, ObjectType type,
-			double length, double height, double width, double heading, double pitch, double roll) :
+			double length, double height, double width, double heading, double pitch, double roll, double x, double y, double z, double h) :
 			s_(s), t_(t), id_(id), name_(name), orientation_(orientation), z_offset_(z_offset), type_(type),
-			length_(length), height_(height), width_(width), heading_(heading), pitch_(pitch), roll_(roll), repeat_(0) {}
+			length_(length), height_(height), width_(width), heading_(heading), pitch_(pitch), roll_(roll), repeat_(0),
+			RoadObject(x, y, z, h) {}
 
 		~RMObject()
 		{
