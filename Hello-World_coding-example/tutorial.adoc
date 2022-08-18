@@ -224,6 +224,7 @@ However, in the example code this parameter is controlled by the ``paramDeclCB()
 
 To access OSI data we first need to complement the build script (CMakeLists.txt) with OSI include and library info. For example:
 
+Windows:
 ----
 include_directories(. ../include ../EnvironmentSimulator/Libraries/esminiLib ../externals/OSI/v10/include)
 
@@ -231,6 +232,16 @@ link_directories(. ../lib ../bin ../externals/OSI/v10/lib)
 
 target_link_libraries(${TARGET} esminiLib libprotobuf open_simulation_interface_pic) 
 ----
+
+Linux:
+----
+include_directories(. ../include ../EnvironmentSimulator/Libraries/esminiLib ../externals/OSI/linux/include)
+
+link_directories(. ../lib ../bin ../externals/OSI/linux/lib)
+
+target_link_libraries(${TARGET} esminiLib protobuf open_simulation_interface_pic)
+----
+
 
 
 *Note:*
