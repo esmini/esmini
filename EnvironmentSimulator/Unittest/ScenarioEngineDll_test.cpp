@@ -1150,7 +1150,7 @@ TEST(ParameterTest, SetParameterValuesBeforeInit)
 {
 	double positions[3][2] = {
 		{5.34382, 186.68216},  // TargetSpeedFactor = 1.1
-		{8.69330, 240.68001},  // TargetSpeedFactor = 1.5
+		{8.69330, 240.68063},  // TargetSpeedFactor = 1.5
 		{5.46731, 201.38162}  // TargetSpeedFactor = Default = 1.2
 	};
 	SE_ScenarioObjectState state;
@@ -2319,30 +2319,30 @@ TEST(ExternalController, TestExternalDriver)
 				{
 					SE_GetObjectState(0, &objectState);
 					EXPECT_NEAR(objectState.x, 202.458, 1e-3);
-					EXPECT_NEAR(objectState.y, 82.981, 1e-3);
+					EXPECT_NEAR(objectState.y, 82.982, 1e-3);
 					EXPECT_NEAR(objectState.h, 1.134, 1e-3);
 					EXPECT_NEAR(objectState.p, 6.262, 1e-3);
 					if (ghostMode[i] == true)
 					{
 						SE_RoadInfo road_info2;
 						SE_GetRoadInfoGhostTrailTime(0, SE_GetSimulationTime(), &road_info2, &speed2);
-						EXPECT_NEAR(road_info2.global_pos_x, 206.755, 1e-3);
-						EXPECT_NEAR(road_info2.global_pos_y, 92.547, 1e-3);
+						EXPECT_NEAR(road_info2.global_pos_x, 206.759, 1e-3);
+						EXPECT_NEAR(road_info2.global_pos_y, 92.559, 1e-3);
 					}
 				}
 				else if (abs(SE_GetSimulationTime() - 30.0f) < SMALL_NUMBER)
 				{
 					SE_GetObjectState(0, &objectState);
-					EXPECT_NEAR(objectState.x, 381.951, 1e-3);
-					EXPECT_NEAR(objectState.y, 301.892, 1e-3);
+					EXPECT_NEAR(objectState.x, 381.944, 1e-3);
+					EXPECT_NEAR(objectState.y, 301.903, 1e-3);
 					EXPECT_NEAR(objectState.h, 5.274, 1e-3);
 					EXPECT_NEAR(objectState.p, 0.025, 1e-3);
 					if (ghostMode[i] == true)
 					{
 						SE_RoadInfo road_info3;
 						SE_GetRoadInfoGhostTrailTime(0, SE_GetSimulationTime(), &road_info3, &speed2);
-						EXPECT_NEAR(road_info3.global_pos_x, 388.367, 1e-3);
-						EXPECT_NEAR(road_info3.global_pos_y, 290.969, 1e-3);
+						EXPECT_NEAR(road_info3.global_pos_x, 388.363, 1e-3);
+						EXPECT_NEAR(road_info3.global_pos_y, 290.978, 1e-3);
 					}
 				}
 			}
@@ -2360,22 +2360,22 @@ TEST(ExternalController, TestExternalDriver)
 					if (ghostMode[i] == true)
 					{
 						SE_GetRoadInfoGhostTrailTime(0, SE_GetSimulationTime(), &road_info2, &speed3);
-						EXPECT_NEAR(road_info2.global_pos_x, 206.755, 1e-3);
-						EXPECT_NEAR(road_info2.global_pos_y, 92.547, 1e-3);
+						EXPECT_NEAR(road_info2.global_pos_x, 206.759, 1e-3);
+						EXPECT_NEAR(road_info2.global_pos_y, 92.559, 1e-3);
 					}
 				}
 				else if (abs(SE_GetSimulationTime() - 30.0f) < SMALL_NUMBER)
 				{
 					SE_GetObjectState(0, &objectState);
-					EXPECT_NEAR(objectState.x, 382.099, 1e-3);
-					EXPECT_NEAR(objectState.y, 302.463, 1e-3);
+					EXPECT_NEAR(objectState.x, 382.098, 1e-3);
+					EXPECT_NEAR(objectState.y, 302.465, 1e-3);
 					EXPECT_NEAR(objectState.h, 5.271, 1e-3);
 					EXPECT_NEAR(objectState.p, 0.026, 1e-3);
 					if (ghostMode[i] == true)
 					{
 						SE_GetRoadInfoGhostTrailTime(0, SE_GetSimulationTime(), &road_info2, &speed3);
-						EXPECT_NEAR(road_info2.global_pos_x, 388.367, 1e-3);
-						EXPECT_NEAR(road_info2.global_pos_y, 290.969, 1e-3);
+						EXPECT_NEAR(road_info2.global_pos_x, 388.363, 1e-3);
+						EXPECT_NEAR(road_info2.global_pos_y, 290.978, 1e-3);
 					}
 				}
 			}

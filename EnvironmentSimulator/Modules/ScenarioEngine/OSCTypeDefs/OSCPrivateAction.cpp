@@ -577,17 +577,13 @@ void LatLaneChangeAction::Start(double simTime, double dt)
 	object_->pos_.SetRollRelative(0.0);
 	object_->pos_.EvaluateOrientation();
 
-	// Switch internal position to the target lane
+	// Set initial state
+	object_->pos_.ForceLaneId(target_lane_id_);
 	internal_pos_ = object_->pos_;
-	internal_pos_.ForceLaneId(target_lane_id_);
 
 	// Make offsets agnostic to lane sign
-	transition_.SetStartVal(SIGN(internal_pos_.GetLaneId()) * internal_pos_.GetOffset());
+	transition_.SetStartVal(SIGN(object_->pos_.GetLaneId()) * object_->pos_.GetOffset());
 	transition_.SetTargetVal(SIGN(target_lane_id_) * target_lane_offset_);
-
-	// Set initial state
-	internal_pos_.SetLanePos(internal_pos_.GetTrackId(), internal_pos_.GetLaneId(), internal_pos_.GetS(),
-		SIGN(internal_pos_.GetLaneId()) * transition_.Evaluate());
 }
 
 void LatLaneChangeAction::Step(double simTime, double dt)
@@ -621,30 +617,21 @@ void LatLaneChangeAction::Step(double simTime, double dt)
 	offset_agnostic = transition_.Evaluate();
 	double rate = transition_.EvaluateScaledPrim();
 
-	// Fetch any assigned route and/or trajectory
-	internal_pos_.SetTrajectory(object_->pos_.GetTrajectory());
-	internal_pos_.SetTrajectoryS(object_->pos_.GetTrajectoryS());
-	internal_pos_.SetTrajectoryT(object_->pos_.GetTrajectoryT());
-	internal_pos_.SetRoute(object_->pos_.GetRoute());
-
-	// Update internal position with new offset
-	internal_pos_.SetLanePos(internal_pos_.GetTrackId(), internal_pos_.GetLaneId(), internal_pos_.GetS(), offset_agnostic * SIGN(internal_pos_.GetLaneId()));
+	// Restore position to target lane and new offset
+	object_->pos_.SetLanePos(internal_pos_.GetTrackId(), internal_pos_.GetLaneId(), internal_pos_.GetS(), offset_agnostic * SIGN(internal_pos_.GetLaneId()));
 
 	// Update longitudinal position
 	double ds = object_->pos_.DistanceToDS(object_->speed_ * dt);
 	roadmanager::Position::ReturnCode retval = roadmanager::Position::ReturnCode::OK;
-	if (internal_pos_.GetRoute() && internal_pos_.GetRoute()->IsValid())
+	if (object_->pos_.GetRoute() && object_->pos_.GetRoute()->IsValid())
 	{
-		retval = internal_pos_.MoveRouteDS(ds, false);
-		object_->pos_ = internal_pos_;
+		retval = object_->pos_.MoveRouteDS(ds, false);
+		internal_pos_.SetLanePos(object_->pos_.GetTrackId(), object_->pos_.GetLaneId(), object_->pos_.GetS(), object_->pos_.GetOffset());
 	}
 	else
 	{
-		retval = internal_pos_.MoveAlongS(ds, 0.0, -1.0);
-		object_->pos_ = internal_pos_;
-
-		// Attach object position to closest road and lane, look up via inertial coordinates
-		object_->pos_.XYZH2TrackPos(object_->pos_.GetX(), object_->pos_.GetY(), object_->pos_.GetZ(), object_->pos_.GetH());
+		retval = object_->pos_.MoveAlongS(ds, 0.0, -1.0);
+		internal_pos_.SetLanePos(object_->pos_.GetTrackId(), object_->pos_.GetLaneId(), object_->pos_.GetS(), object_->pos_.GetOffset());
 	}
 
 	if (object_->pos_.GetRoute())
@@ -679,7 +666,7 @@ void LatLaneChangeAction::Step(double simTime, double dt)
 			// Convert rate (lateral-movment/time) to lateral-movement/long-movement
 			angle = atan(rate / AVOID_ZERO(object_->GetSpeed()));
 		}
-		object_->pos_.SetHeadingRelativeRoadDirection((IsAngleForward(internal_pos_.GetHRelative()) ? 1 : -1) * SIGN(internal_pos_.GetLaneId()) * angle);
+		object_->pos_.SetHeadingRelativeRoadDirection((IsAngleForward(object_->pos_.GetHRelative()) ? 1 : -1) * SIGN(object_->pos_.GetLaneId()) * angle);
 	}
 	object_->pos_.EvaluateOrientation();
 
@@ -695,6 +682,12 @@ void LatLaneChangeAction::Step(double simTime, double dt)
 	if (retval == roadmanager::Position::ReturnCode::ERROR_END_OF_ROAD)
 	{
 		object_->SetSpeed(0.0);
+	}
+
+	if (!(object_->pos_.GetRoute() && object_->pos_.GetRoute()->IsValid()))
+	{
+		// Attach object position to closest road and lane, look up via inertial coordinates
+		object_->pos_.XYZH2TrackPos(object_->pos_.GetX(), object_->pos_.GetY(), object_->pos_.GetZ(), object_->pos_.GetH());
 	}
 
 	object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);
