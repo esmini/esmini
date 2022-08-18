@@ -2024,7 +2024,8 @@ int OSIReporter::UpdateTrafficSignals()
 					trafficLight->mutable_id()->set_value(signal->GetId());
 					trafficLight->mutable_base()->mutable_orientation()->set_pitch(GetAngleInIntervalMinusPIPlusPI(signal->GetPitch()));
 					trafficLight->mutable_base()->mutable_orientation()->set_roll(GetAngleInIntervalMinusPIPlusPI(signal->GetRoll()));
-					trafficLight->mutable_base()->mutable_orientation()->set_yaw(GetAngleInIntervalMinusPIPlusPI(signal->GetH() + signal->GetHOffset()));
+					trafficLight->mutable_base()->mutable_orientation()->set_yaw(GetAngleInIntervalMinusPIPlusPI(signal->GetH() + signal->GetHOffset() +
+						M_PI));  // Add pi to have the yaw angle of actual sign face direction (normally pointing 180 degrees wrt road construction direction)
 					trafficLight->mutable_base()->mutable_dimension()->set_height(signal->GetHeight());
 					trafficLight->mutable_base()->mutable_dimension()->set_width(signal->GetWidth());
 
@@ -2095,7 +2096,8 @@ int OSIReporter::UpdateTrafficSignals()
 					//Set Pithc, Roll, Height, Width
 					trafficSign->mutable_main_sign()->mutable_base()->mutable_orientation()->set_pitch(GetAngleInIntervalMinusPIPlusPI(signal->GetPitch()));
 					trafficSign->mutable_main_sign()->mutable_base()->mutable_orientation()->set_roll(GetAngleInIntervalMinusPIPlusPI(signal->GetRoll()));
-					trafficSign->mutable_main_sign()->mutable_base()->mutable_orientation()->set_yaw(GetAngleInIntervalMinusPIPlusPI(signal->GetH() + signal->GetHOffset()));
+					trafficSign->mutable_main_sign()->mutable_base()->mutable_orientation()->set_yaw(GetAngleInIntervalMinusPIPlusPI(signal->GetH() + signal->GetHOffset() +
+						M_PI));  // Add pi to have the yaw angle of actual sign face direction (normally pointing 180 degrees wrt road construction direction)
 					trafficSign->mutable_main_sign()->mutable_base()->mutable_dimension()->set_height(signal->GetHeight());
 					trafficSign->mutable_main_sign()->mutable_base()->mutable_dimension()->set_width(signal->GetWidth());
 

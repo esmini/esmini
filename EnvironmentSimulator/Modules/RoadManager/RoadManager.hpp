@@ -722,7 +722,7 @@ namespace roadmanager
 		double GetX() { return x_; }  // X coordinate of sign position
 		double GetY() { return y_; }  // Y coordinate of sign position
 		double GetZ() { return z_; }  // Z coordinate of road level at sign X, Y position
-		double GetH() { return h_; }  // face direction including orientation (+/-) but excluding h_offset
+		double GetH() { return h_; }  // sign yaw rotation including "orientation" (+/-) but excluding h_offset
 
 		std::vector<ValidityRecord> validity_;
 		double x_;
