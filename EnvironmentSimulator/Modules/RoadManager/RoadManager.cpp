@@ -5395,7 +5395,7 @@ bool OpenDrive::LoadSignalsByCountry(const std::string& country)
 
 			if(fs.fail())
 			{
-				LOG("Signal: Error to load traffic signals file - %s\n", file_name_candidates[i].c_str());
+				LOG("Signal: Error to load traffic signals file - %s", file_name_candidates[i].c_str());
 				if (i < file_name_candidates.size() - 1)
 				{
 					LOG("  -> trying: %s", file_name_candidates[i + 1].c_str());
@@ -5427,10 +5427,10 @@ bool OpenDrive::LoadSignalsByCountry(const std::string& country)
 
 	if (i == file_name_candidates.size())
 	{
-		printf("Failed to load %s file. Tried:\n", sign_filename.c_str());
+		LOG("Failed to load %s file. Tried:", sign_filename.c_str());
 		for (int j = 0; j < file_name_candidates.size(); j++)
 		{
-			printf("  %s\n", file_name_candidates[j].c_str());
+			LOG("  %s", file_name_candidates[j].c_str());
 		}
 		return false;
 	}

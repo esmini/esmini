@@ -127,17 +127,17 @@ std::map<int, std::string> ParseModelIds()
 
 	if (i == file_name_candidates.size())
 	{
-		printf("Failed to load %s file. Tried:\n", filename.c_str());
+		LOG("Failed to load %s file. Tried:", filename.c_str());
 		for (int j = 0; j < file_name_candidates.size(); j++)
 		{
-			printf("  %s\n", file_name_candidates[j].c_str());
+			LOG("  %s", file_name_candidates[j].c_str());
 		}
 
 		printf("  continue with internal hard coded list: \n");
 		for (int j = 0; j < sizeof(entityModelsFilesFallbackList_) / sizeof(char*); j++)
 		{
 			entity_model_map[j] = entityModelsFilesFallbackList_[j];
-			printf("    %2d: %s\n", j, entity_model_map[j].c_str());
+			LOG("    %2d: %s", j, entity_model_map[j].c_str());
 		}
 	}
 

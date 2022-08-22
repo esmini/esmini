@@ -1269,7 +1269,7 @@ void ScenarioEngine::ResetEvents()
 									// If the event doesnt contain a teleport action, and the trigger is not triggable, we reser it, making it able to tigger again
 									if (NoTele && pa->object_->IsGhost() && event->start_trigger_->Evaluate(&storyBoard, simulationTime_) == false)
 									{
-										printf("Reset event %s: \n", event->name_.c_str());
+										LOG("Reset event %s: ", event->name_.c_str());
 										event->Reset();
 									}
 									// if (event->start_trigger_->Evaluate(&storyBoard, simulationTime_) == true)

@@ -159,7 +159,7 @@ extern "C"
 
 		if (!roadmanager::Position::LoadOpenDrive(odrFilename))
 		{
-			printf("Failed to load ODR %s\n", odrFilename);
+			LOG("Failed to load ODR %s", odrFilename);
 			return -1;
 		}
 		odrManager = roadmanager::Position::GetOpenDrive();
