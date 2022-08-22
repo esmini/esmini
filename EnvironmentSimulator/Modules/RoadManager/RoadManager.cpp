@@ -5369,7 +5369,7 @@ bool OpenDrive::LoadSignalsByCountry(const std::string& country)
 	// Remove all directories from path and look in current directory
 	file_name_candidates.push_back(FileNameOf(sign_filename));
 	// assume OpenDRIVE file directory is on same level as traffic_signals directory
-	file_name_candidates.push_back(odr_filename_ + "/../../traffic_signals/" + sign_filename);
+	file_name_candidates.push_back(DirNameOf(odr_filename_) + "/../../traffic_signals/" + sign_filename);
 
 	for (size_t i = 0; i < SE_Env::Inst().GetPaths().size(); i++)
 	{
