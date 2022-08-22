@@ -518,28 +518,31 @@ void Replay::BuildData(std::vector<std::pair<std::string, std::vector<ReplayEntr
 	{
 		// populate entries if all scenarios at current time step
 		double min_time_stamp = LARGE_NUMBER;
-		for (size_t j = 0; j < scenarios.size() && next_idx[j] != -1; j++)
+		for (size_t j = 0; j < scenarios.size(); j++)
 		{
-			int k = cur_idx[j];
-			for(; k < scenarios[j].second.size() &&
-				scenarios[j].second[k].state.info.timeStamp < cur_timestamp + SMALL_NUMBER; k++)
+			if (next_idx[j] != -1)
 			{
-				// push entry with modified timestamp
-				scenarios[j].second[k].state.info.timeStamp = (float)cur_timestamp;
-				data_.push_back(scenarios[j].second[k]);
-			}
-
-			if (k < scenarios[j].second.size())
-			{
-				next_idx[j] = k;
-				if (scenarios[j].second[k].state.info.timeStamp < min_time_stamp)
+				int k = cur_idx[j];
+				for (; k < scenarios[j].second.size() &&
+					scenarios[j].second[k].state.info.timeStamp < cur_timestamp + SMALL_NUMBER; k++)
 				{
-					min_time_stamp = scenarios[j].second[k].state.info.timeStamp;
+					// push entry with modified timestamp
+					scenarios[j].second[k].state.info.timeStamp = (float)cur_timestamp;
+					data_.push_back(scenarios[j].second[k]);
 				}
-			}
-			else
-			{
-				next_idx[j] = -1;
+
+				if (k < scenarios[j].second.size())
+				{
+					next_idx[j] = k;
+					if (scenarios[j].second[k].state.info.timeStamp < min_time_stamp)
+					{
+						min_time_stamp = scenarios[j].second[k].state.info.timeStamp;
+					}
+				}
+				else
+				{
+					next_idx[j] = -1;
+				}
 			}
 		}
 
