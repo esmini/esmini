@@ -1067,7 +1067,7 @@ The entity will not be moved by the scenario. Instead its state (position, rotat
 a| [horizontal]
 `useGhost`:: launch a ghost fore-runner, e.g. to provide input for any driver model (`true`/`false`) 
 `headstartTime`:: (for the ghost) 
-`mode`:: override disable default controller (default), additive: apply default controller before handing over to this controller 
+`mode`:: `override` disable default controller (default), `additive`: apply default controller before handing over to this controller 
 |*Example*:| https://github.com/esmini/esmini/tree/master/EnvironmentSimulator/code-examples/test-driver[test-driver code example]
 |===
 
@@ -1099,10 +1099,10 @@ Based and inspired by https://github.com/ec-jrc/JRC-FSM[Regulation 157 Safety Mo
 |*Properties*:
 a| [horizontal]
 `logLevel`:: 0: No logging, 1: Brief logging of state changes, 2: Verbose logging of some internal variables
-`model`:: Regulation, ReferenceDriver, FSM, RSS as described above.
+`model`:: `Regulation`, `ReferenceDriver`, `FSM`, `RSS` as described above.
 `cruise`:: Activate longitudinal ACC (comfort adaptive speed control) (`true`/`false`)
 |*Examples*:|
-https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/Unittest/xosc/alks_r157_cut_in_quick_brake.xosc[alks_r157_cut_in_quick_brake.xosc] +
+https://github.com/esmini/esmini/blob/master/resources/xosc/alks_r157_cut_in_quick_brake.xosc[alks_r157_cut_in_quick_brake.xosc] +
 https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/Unittest/xosc/alks_r157_quick_stop_test.xosc[alks_r157_quick_stop_test.xosc] +
 https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/Unittest/xosc/alks_r157_test.xosc[alks_r157_test.xosc] +
 |===

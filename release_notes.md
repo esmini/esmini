@@ -9,7 +9,7 @@
   - Add `replayer` merge dat-files option (see [info in User guide](https://esmini.github.io/#_save_merged_dat_files))
   - Add alks reg 157 safety models controller
     - Experimental implementation of four safety models inspired by [JRC-FSM](https://github.com/ec-jrc/JRC-FSM)
-    - See more [info in User guide](https://esmini.github.io/#)
+    - See more [info in User guide](https://esmini.github.io/#_alks_r157sm)
 - Fixes:
   - Support also maneuver element type in StoryboardElementStateCondition
   - Add heading when populating road object to OSI
@@ -23,7 +23,7 @@
   - Fix corrupt search path for [traffic sign files](https://github.com/esmini/esmini/tree/master/resources/traffic_signals)
 - Minor updates hopefully not causing side effects:
   - Prevent controller step completely during ghost restart
-  - Update Hello World [OSI makefile](https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/code-examples/osi-groundtruth/CMakeLists.txt) info regarding platform differences
+  - Update Hello World tutorial [OSI example](https://github.com/esmini/esmini/blob/master/Hello-World_coding-example/tutorial.adoc#osi-groundtruth) info regarding platform differences
   - Rework lane change action to preserve position info
 
 ### 2022-07-08 Version 2.25.1
