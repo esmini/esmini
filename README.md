@@ -92,31 +92,17 @@ Plugins can be updated, but NOTE that you need to restart Unity to (re)load shar
 ### esmini & Python
 see [User Guide Hello-World tutorial](https://esmini.github.io/#_python_binding).
 
-## esmini controllers
-
-esmini comes with a few controllers (ways of controlling individual entities in the scenario):
-
-- DefaultController. Performs actions exactly as specified in the OpenSCENARIO file. Assigned to entities by default.
-- InteractiveController. Hand over control to the user via keyboard arrow keys.
-- FollowGhost. A ghost-twin is performing the events a few seconds ahead. The entity will then follow its trajectory.
-- ExternalController. State (position, rotation ...) expected to be reported from external simulator via API. Ghost trajectory can be created for an external driver model as reference.
-- SumoController. A way of integrating SUMO controlled vehicles in a scenario.
-
-More information [here](https://github.com/esmini/esmini/blob/master/docs/Controllers.md).
-
-## 3D model support
-
-esmini make use of OpenSceneGraph (OSG) for visualization of the scenario. The OpenSCENARIO files can optionally refer to existing 3D models of the static environment (scene graph) and dynamic objects (entites). If the scene graph reference is missing, esmini will try to generate a basic model based on the OpenDRIVE road network description.
-
-Currently esmini only supports OSG native .osgb 3D file format. However, there are ways to convert 3D models of some other formats using the OSG tool osgconv. Please see [this issue report](https://github.com/esmini/esmini/issues/63#issuecomment-742273326) for some more info.
-
-
 ## Related work
 ### scenariogeneration
 [scenariogeneration](https://github.com/pyoscx/scenariogeneration) is a Python based scenario creation framework. The idea is to write scenarios in a high-level script format and automatically generate and run linked OpenDRIVE and OpenSCENARIO XML counterparts. It supports parameter sweeps to create multiple variants of a parameterized scenario.
 
 ### ALKS scenarios
 [OSC-ALKS-scenarios](https://github.com/arauschert/OSC-ALKS-scenarios) is a collection of scenarios for Automated Lane Keeping System testing. "BMW has taken on the task of implementing the test scenarios from the ALKS regulation using OpenSCENARIO and OpenDRIVE resulting in a bundle of XML files executable with standard compliant simulators."
+
+### Online OpenDRIVE viewer
+[odrviewer.io](https://odrviewer.io/) is an excellent interactive online OpenDRIVE viewer. Move around, zoom and inspect elements of the road network like roadID, laneID, successor and predecessor.
+
+https://github.com/johschmitz/blender-driving-scenario-creator
 
 ### OpenDRIVE plugin for Unreal Engine
 [brifsttar/OpenDRIVE](https://github.com/brifsttar/OpenDRIVE) plugin allows you to manipulate OpenDRIVE road networks in Unreal Engine. It's based on esmini RoadManager (esminiRMLib).

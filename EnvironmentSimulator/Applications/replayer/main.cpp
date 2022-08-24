@@ -338,7 +338,7 @@ int main(int argc, char** argv)
 
 	// use common options parser to manage the program arguments
 	SE_Options opt;
-	opt.AddOption("file", "Simulation recording data file", "filename");
+	opt.AddOption("file", "Simulation recording data file (.dat)", "filename");
 	opt.AddOption("camera_mode", "Initial camera mode (\"orbit\" (default), \"fixed\", \"flex\", \"flex-orbit\", \"top\", \"driver\") (toggle during simulation by press 'k') ", "mode");
 	opt.AddOption("capture_screen", "Continuous screen capture. Warning: Many jpeg files will be created");
 	opt.AddOption("collision", "Pauses the replay if the ego collides with another entity");
@@ -349,7 +349,6 @@ int main(int argc, char** argv)
 	opt.AddOption("disable_off_screen", "Disable esmini off-screen rendering, revert to OSG viewer default handling");
 	opt.AddOption("hide_trajectories", "Hide trajectories from start (toggle with key 'n')");
 	opt.AddOption("info_text", "Show on-screen info text (toggle key 'i') mode 0=None 1=current (default) 2=per_object 3=both", "mode");
-	opt.AddOption("save_merged", "Save merged data into one dat file, instead of viewing", "filename");
 	opt.AddOption("no_ghost", "Remove ghost entities");
 	opt.AddOption("no_ghost_model", "Remove only ghost model, show trajectory (toggle with key 'g')");
 	opt.AddOption("path", "Search path prefix for assets, e.g. model_ids.txt file (multiple occurrences supported)", "path");
@@ -358,6 +357,7 @@ int main(int argc, char** argv)
 	opt.AddOption("repeat", "loop scenario");
 	opt.AddOption("res_path", "Path to resources root folder - relative or absolut", "path");
 	opt.AddOption("road_features", "Show OpenDRIVE road features");
+	opt.AddOption("save_merged", "Save merged data into one dat file, instead of viewing", "filename");
 	opt.AddOption("start_time", "Start playing at timestamp", "ms");
 	opt.AddOption("stop_time", "Stop playing at timestamp (set equal to time_start for single frame)", "ms");
 	opt.AddOption("time_scale", "Playback speed scale factor (1.0 == normal)", "factor");

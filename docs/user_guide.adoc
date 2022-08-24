@@ -423,17 +423,28 @@ and then launched in replayer:
 
 *Note:* The --disable_controllers flag is just specified to disable the interactive controller that normally is activated in that specific scenario. For more information about controllers, see https://github.com/esmini/esmini/blob/master/docs/Controllers.md[Controllers in esmini].
 
+
+Combine esmini and replayer in a one-liner command:
+``./bin/esmini --headless --fixed_timestep 0.05 --record sim.dat --osc ./resources/xosc/cut-in.xosc;./bin/replayer --window 60 60 800 400 --res_path ./resources --file sim.dat``
+
+==== Multiple scenarios in parallel
+
 Next example, play multiple variants of a scenario in parallel: +
 ``./bin/replayer --window 60 60 800 400 --file sim --res_path ./resources --capture_screen --dir tmp``
 
-The `--dir` argument points to a folder containing sim1.dat, sim2.dat and sim3.dat.
+The `--dir` argument points to a folder containing sim1.dat, sim2.dat and sim3.dat. +
+The `--capture_screen` argument will save each frame as an image file on disk.
 
 .Video clip demonstrating parallel scenarios in replayer
 video::replay_multiple_scenario_variants.mp4?raw=true[opts="loop,autoplay"]
 // video::KqoTmAE9NmI[youtube,width=800,height=400,opts="autoplay,nocontrols,loop"]
 
-Combine esmini and replayer in a one-liner command:
-``./bin/esmini --headless --fixed_timestep 0.05 --record sim.dat --osc ./resources/xosc/cut-in.xosc;./bin/replayer --window 60 60 800 400 --res_path ./resources --file sim.dat``
+==== Save merged .dat files
+
+Merged data from multiple .dat files can be saved into one single .dat file, e.g. for plotting: +
+``./bin/replayer --file sim_ --dir . --save_merged sim_merged.dat``
+
+replayer will look in current folder (".") for any .dat file starting with "sim_", i.e. "sim_*.dat". The files will be merged and saved as sim_merged.dat.
 
 === View road network
 
@@ -518,6 +529,20 @@ Lock axis aspect ratio, i.e. make axis scale equal: +
 ``./scripts/plot_dat.py sim.dat --x_axis x --param y --equal_axis_aspect``
 
 image::plot_dat_x_y_eq_axis.png[]
+
+Plot merged .dat files (created as described in <<Save merged .dat files>>) +
+
+``./scripts/plot_dat.py --param speed sim_merged.dat``
+
+image::plot_merged_dat_files.png[]
+
+Entity IDs will get an offset multiplier of 100, corresponding to the order of which the dat files were read by replayer. The mapping between ID range and dat file is printed to the console by replayer when the merged dat file is created, as the following example of four input files:
+
+[listing]
+Scenarios corresponding to IDs (0:99): sim_fsm.dat
+Scenarios corresponding to IDs (100:199): sim_ref.dat
+Scenarios corresponding to IDs (200:299): sim_reg.dat
+Scenarios corresponding to IDs (300:399): sim_rss.dat
 
 === Save OSI data
 esmini can provide OSI groundtruth data in three ways:
@@ -842,7 +867,283 @@ image::speed_sign1.png[]
 .German speed sign
 image::speed_sign2.png[]
 
+== Controllers
+
+=== Controller concept
+OpenSCENARIO provides the controller concept as a way to outsource control the motion and appearance of scenario entities. For the OpenSCENARIO description of the controller concept, see https://www.asam.net/index.php?eID=dumpFile&t=f&f=4908&token=ae9d9b44ab9257e817072a653b5d5e98ee0babf8#_controllers[OpenSCENARIO User Guide].
+
+Controllers can be assigned to object of type Vehicle or Pedestrian. Once assigned, controllers are activated for a given domain (e.g longitudinal, lateral, Lighting, Animation) using the ActivateControllerAction. It's also possible to activate immediately as part of the AssignControllerAction.
+
+While the ActivateControllerAction is executing, the Controller assigned to that object will manage specified domain(s). Controllers may be internal (part of the simulator) or external (defined in another file). 
+
+Intended use cases for Controllers include: +
+- Specifying that a vehicle is controlled by the system under test.
+- Defining smart actor behavior, where a controller takes intelligent decisions in response to the road network or other actors. Hence, controllers can be used, for example, to make agents in a scenario behave in a human-like way.
+- Assigning a vehicle to direct human control.
+
+The Controller element contains Properties, which can be used to specify controller behavior either directly or by a file reference.
+
+Although OpenSCENARIO from v1.2 supports assignment of multiple controllers to an object, esmini is currently only supporting one controller to be assigned (and hence activated) to an object at the time. 
+
+=== Background and motivation
+esmini version < 2.0 totally lacked support for controllers. Instead some similar functionality were implemented as part of different example-applications. For example, EgoSimulator provided interactive control of one vehicle. There was also an "external" mode which allowed for an external vehicle simulator to report current position for the typical Ego (VUT/SUT...) vehicle.
+
+First, this approach made the example code of simple applications complex. Secondly, it limited the use cases of esmini since functionality was tightly embedded in the applications.
+
+Controllers provides a much more flexible way of adding functionality to esmini, in a way harmonizing with the standard (OpenSCENARIO 1.X). A side effect of this "outsourcing" of functionality is that the former demo applications could be reduced to a minimum both in number and size.
+
+=== Brief on implementation
+
+Controllers was introduced in esmini v2.0. Briefly it works as follows:
+
+There is a collection of embedded controllers coming with esmini. Each controller inherit from the base class Controller (Controller.h/cpp). In order for esmini to be aware of the existence of a controller it has to be registered. This is done through the ScenarioReader method https://github.com/esmini/esmini/blob/3d1abcd6b3e3855707dc424f7c25477bbf136078/EnvironmentSimulator/Modules/ScenarioEngine/SourceFiles/ScenarioReader.hpp#L132[`RegisterController`]. It will put the controller into a collection to have available when the scenario is being parsed. So all controllers need to be registered prior to loading the scenario.
+
+A controller is registered with the following information:
+
+. Its static name which is used as identifier.
+. A pointer to a function instantiating the controller.
+
+This architecture makes it possible for an external module to create a controller and registering it without modifying any of esmini modules. In that way it is a semi-plugin concept, you can say.
+
+*Note*: Even though ScenarioReader have a helper function for registering all the embedded controllers the RegisterController can be called from any module directly, at any time prior to scenario initialization.
+
+esmini catalog framework supports controllers as well, so controllers can be defined in catalogs as presets, just like vehicles and routes for example.
+
+=== How it works for the user
+
+Controllers are completely handled in the OpenSCENARIO file. With one exception: esmini provides the --disable-controllers option which totally ignore any controllers, just performing the scenario with DefaultControllers, which can be handy when previewing and debugging scenarios.
+
+In terms of OpenSCENARIO a controller is assigned to an entity (object) in any of two ways:
+
+. As part of the Entities section and ScenarioObject definition, using the ObjectController element.
+. The AssignControllerAction which can be triggered as any action at any time during the simulation.
+
+Once assigned the controller must finally be activated using the ActivateControllerAction which can be triggered at any time. It provides an attribute to specify which domain(s) to control: Lateral, Longitudinal or both.
+
+Example 1: Implicit assignment of controller using the `ObjectController` element:
+
+[source,xml]
+----
+<Entities>
+   <ScenarioObject name="Ego">
+     <CatalogReference catalogName="VehicleCatalog" entryName="$HostVehicle"/>
+      <ObjectController>
+          <Controller name="MyController" >
+             <Properties>
+                 <Property name="esminiController" value="InteractiveController" />
+                 <Property name="speedFactor" value="1.5" />
+             </Properties>
+          </Controller>
+      </ObjectController>
+   </ScenarioObject>
+</Entities>
+----
+
+Example 2: As above, but using catalog reference:
+
+[source,xml]
+----
+<Entities>
+   <ScenarioObject name="Ego">
+     <CatalogReference catalogName="VehicleCatalog" entryName="$HostVehicle"/>
+        <ObjectController>
+            <CatalogReference catalogName="ControllerCatalog" entryName="interactiveDriver" />
+        </ObjectController>
+   </ScenarioObject>
+</Entities>
+----
+
+
+Example 3: Activate controller in the `Init` section:
+
+[source,xml]
+----
+<Init>
+   <Actions>
+      <Private entityRef="Ego">
+         <PrivateAction>
+            <TeleportAction>
+               <Position>
+                  <LanePosition roadId="0" laneId="-3" offset="0" s="$EgoStartS"/>
+               </Position>
+            </TeleportAction>
+         </PrivateAction>
+         <PrivateAction>
+              <ActivateControllerAction longitudinal="true" lateral="true" />
+         </PrivateAction>
+      </Private>
+   </Actions>
+</Init>
+----
+
+Example 4: Assign and activate the controller in the `Storyboard` section:
+
+[source,xml]
+----
+<Event name="InteractiveEvent" maximumExecutionCount="1" priority="overwrite">
+   <Action name="AssignControllerAction">
+     <PrivateAction>
+          <ControllerAction>
+              <AssignControllerAction>
+                  <CatalogReference catalogName="ControllerCatalog" entryName="interactiveDriver" />
+              </AssignControllerAction> 
+          </ControllerAction>
+      </PrivateAction>
+   </Action>
+   <Action name="ActivateControllerAction">
+      <PrivateAction>
+          <ControllerAction>
+              <ActivateControllerAction longitudinal="true" lateral="true" />
+          </ControllerAction>
+      </PrivateAction>
+   </Action>
+   <StartTrigger>
+      <ConditionGroup>
+         <Condition name="" delay="0" conditionEdge="none">
+            <ByValueCondition>
+               <SimulationTimeCondition value="20" rule="greaterThan"/>
+            </ByValueCondition>
+         </Condition>
+      </ConditionGroup>
+   </StartTrigger>
+</Event>
+----
+
+To disable any controller simply apply ActivateControllerAction on no domain, like:
+
+[source,xml]
+----
+<ActivateControllerAction longitudinal="false" lateral="false" />
+----
+That should work in all OpenSCENARIO supporting tools. In esmini you can also assign `DefaultController` which will disconnect any assigned controller.
+
+=== esmini embedded controllers
+
+Below is a listing of some of the available controllers in esmini. Note that only DefaultController is related to the OpenSCENARIO standard. The other ones are esmini-specific and will not work in other tools (so far there is no standard plugin-architecture for controllers to enable moving between tools). For updated and complete definition of controllers and their parameters, see https://github.com/esmini/esmini/blob/master/resources/xosc/Catalogs/Controllers/ControllerCatalog.xosc[ControllerCatalog.xosc].
+
+==== DefaultController
+Performs actions exactly as specified in the OpenSCENARIO file. Assigned to entities by default. Can be assigned at any point to "unassign" any currently assigned controller. +
+
+[%autowidth,frame=none,grid=none]
+|===
+|*Domain*:|n/a (will always take over both Lateral and Longitudinal domains) +
+|*Properties*:| None +
+|*Example*:| n/a (any scenario not explicitly assigning and activating another controller)
+|===
+
+==== InteractiveController
+A simple vehicle model controlled by the user via keyboard (arrow keys). +
+
+[%autowidth,frame=none,grid=none]
+|===
+|*Domain*:| longitudinal and/or lateral (independent) 
+|*Properties*:
+a| [horizontal]
+`steeringRate`:: steering sensitivity
+`speedFactor`:: scale speed performance (1.0 is default)
+|*Example*:| https://github.com/esmini/esmini/blob/master/resources/xosc/cut-in_interactive.xosc[cut-in_interactive.xosc]
+|===
+
+==== FollowGhost
+A simple driver model. A ghost-twin performing the events a few seconds ahead. The entity will then do its best to mimic the motion and speed of the ghost by follow the trajectory. The primary purpose of this controller is to provide an example, but it can be useful to smoothen out the sometimes synthetic feel of pure default controller. +
+
+[%autowidth,frame=none,grid=none]
+|===
+|*Domain*:|longitudinal and lateral (in combination only).
+|*Properties*:
+a| [horizontal]
+`headstartTime`:: seconds
+`followMode`:: `time` (time offset), `position` (distance offset)
+|*Example*:| https://github.com/esmini/esmini/blob/master/resources/xosc/follow_ghost.xosc[follow_ghost.xosc]
+|===
+
+==== ExternalController
+The entity will not be moved by the scenario. Instead its state (position, rotation ...) is expected to be reported from external simulator via API, e.g. SE_ReportObjectPos. Ghost trajectory can optionally be created for an external driver model to use as reference. +
+
+[%autowidth,frame=none,grid=none]
+|===
+|*Domain*:| longitudinal and/or lateral (independent). +
+|*Properties*:
+a| [horizontal]
+`useGhost`:: launch a ghost fore-runner, e.g. to provide input for any driver model (`true`/`false`) 
+`headstartTime`:: (for the ghost) 
+`mode`:: override disable default controller (default), additive: apply default controller before handing over to this controller 
+|*Example*:| https://github.com/esmini/esmini/tree/master/EnvironmentSimulator/code-examples/test-driver[test-driver code example]
+|===
+
+==== SumoController
+A way of integrating SUMO controlled vehicles in a scenario. OpenSCENARIO vehicles are reported to SUMO, and SUMO vehicles are reported back to esmini. A reference to a SUMO config file is provided as input to the controller. See cut-in_sumo.xosc for an example.
+
+[%autowidth,frame=none,grid=none]
+|===
+|*Domain*:| longitudinal and lateral (in combination only).
+|*Properties*: 
+a| [horizontal]
+`file`:: Path to the SUMO configuration file +
+|*Example*:| https://github.com/esmini/esmini/blob/master/resources/xosc/cut-in_sumo.xosc[cut-in_sumo.xosc]
+|===
+
+==== ALKS_R157SM
+Based and inspired by https://github.com/ec-jrc/JRC-FSM[Regulation 157 Safety Models]. Includes four safety models relating to the (https://unece.org/transport/documents/2021/03/standards/un-regulation-no-157-automated-lane-keeping-systems-alks[UNECE ALKS regulation #157]). The controller includes preliminary and experimental implementation of four models: +
+
+*Implemented models:*
+
+* `Regulation` Characteristics of expected system performance as stated in the https://unece.org/sites/default/files/2021-03/R157e.pdf[UNECE Reg 157 Paragraph 5.2.5.2]. +
+* `ReferenceDriver` Reference model of a "typical" human driver as specified in https://unece.org/sites/default/files/2021-03/R157e.pdf[UNECE Reg 157 Annex 4 - Appendix 3]. +
+* `FSM` __Fuzzy Safety Model__ proposed and described in https://www.sciencedirect.com/science/article/pii/S0001457520316146[Mattas, Konstantinos, et al. "Fuzzy Surrogate Safety Metrics for real-time assessment of rear-end collision risk. A study based on empirical observations." Accident Analysis & Prevention 148 (2020): 105794]. +
+* `RSS` __Responsibility-Sensitive Safety__ performance model proposed and described in https://arxiv.org/pdf/1708.06374.pdf[Shalev-Shwartz, Shai, Shaked Shammah, and Amnon Shashua. "On a formal model of safe and scalable self-driving cars." arXiv preprint arXiv:1708.06374 (2017)]. +
+
+[%autowidth,frame=none,grid=none]
+|===
+|*Domain*:| longitudinal and lateral (in combination only). *Note*: No advanced steering, just maintaining current lane offset.
+|*Properties*:
+a| [horizontal]
+`logLevel`:: 0: No logging, 1: Brief logging of state changes, 2: Verbose logging of some internal variables
+`model`:: Regulation, ReferenceDriver, FSM, RSS as described above.
+`cruise`:: Activate longitudinal ACC (comfort adaptive speed control) (`true`/`false`)
+|*Examples*:|
+https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/Unittest/xosc/alks_r157_cut_in_quick_brake.xosc[alks_r157_cut_in_quick_brake.xosc] +
+https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/Unittest/xosc/alks_r157_quick_stop_test.xosc[alks_r157_quick_stop_test.xosc] +
+https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/Unittest/xosc/alks_r157_test.xosc[alks_r157_test.xosc] +
+|===
+
+===== Example usage 
+
+Run example alks_r157_cut_in_quick_brake.xosc: +
+`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/alks_r157_cut_in_quick_brake.xosc`
+
+Change model:
+
+* Open `resources/xosc/alks_r157_cut_in_quick_brake.xosc` in a text editor
+* In the ALKS_R157SM_Controller, change +
+`<Property name="model" value="Regulation"/>` to +
+`<Property name="model" value="ReferenceDriver"/>`
+* Save and run again: +
+`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/alks_r157_cut_in_quick_brake.xosc`
+
+You can hardly see any difference. Let's run the two variants again and record for post analysis.
+
+* Set model to "ReferenceDriver" (by edit the file as described above)
+* Run: +
+`./bin/esmini --headless --fixed_timestep 0.02 --osc ./resources/xosc/alks_r157_cut_in_quick_brake.xosc --record sim-ref.dat`
+* Set model to "Regulation"
+* Run: +
+`./bin/esmini --headless --fixed_timestep 0.02 --osc ./resources/xosc/alks_r157_cut_in_quick_brake.xosc --record sim-reg.dat`
+* View scenarios in parallel: +
+`./bin/replayer --window 60 60 800 400 --res_path ./resources --dir . --file sim- --view_mode boundingbox`
+* Create a merged .dat file and plot it: +
+`./bin/replayer --file sim- --dir . --save_merged sim_merged.dat` +
+`./scripts/plot_dat.py --param speed sim_merged.dat`
+
+Something like this should show: 
+
+image::plot_merged_alks_ex.png[]
+
+Of course you can run also FSM and RSS models in similar way and merge all four .dat files. For more information about `replayer`, see "Plot merged .dat files" example in <<Plot scenario data>> section.
+
 == OpenSceneGraph and 3D models
+
+esmini make use of OpenSceneGraph (OSG) for visualization of the scenario. The OpenSCENARIO files can optionally refer to existing 3D models of the static environment (scene graph) and dynamic objects (entities). If the scene graph reference is missing, esmini will try to generate a basic model based on the OpenDRIVE road network description. Currently esmini only supports OSG native .osgb 3D file format. However, there are ways to convert 3D models as described next.
 
 http://www.openscenegraph.org/[OpenSceneGraph] (osg) includes readers and writers for quite a few 3D file formats. It comes with a demo application, http://www.openscenegraph.org/index.php/documentation/user-guides/55-osgconv[osgconv], a command line tool that simply takes one file as input and outputs the same content in a different format. 
 
@@ -907,6 +1208,14 @@ A folder named "out" should have been created and including the model.fbx plus a
    for HDRP template: "Surface type" to "Transparent" and check "alpha clipping"
 
 That should basically be it.
+
+=== Colors, textures and wheel rotations
+
+See https://github.com/esmini/esmini/issues/63#issuecomment-742273326[issue 63] for brief info.
+
+And these two scripts operating on textures and material respectively, can potentially provide some inspiration: +
+- https://github.com/esmini/esmini/blob/master/scripts/bake_signs.sh[bake_signs.sh] +
+- https://github.com/esmini/esmini/blob/master/scripts/fix_dae_materials.py[fix_dae_materials.py]
 
 == Support / Q&A
 
@@ -1205,6 +1514,26 @@ include::../EnvironmentSimulator/Applications/replayer/readme.txt[lines=5..-1]
 [source]
 ----
 include::../EnvironmentSimulator/Applications/odrviewer/readme.txt[lines=7..-1]
+----
+
+=== plot_dat.py
+[source]
+----
+usage: plot_dat.py [-h] [--x_axis X_AXIS] [--equal_axis_aspect] [--derive] [--dots] (--list_params | --param PARAM) <filename>
+
+positional arguments:
+  filename             dat filename
+
+optional arguments:
+  -h, --help           show this help message and exit
+  --x_axis X_AXIS      x-axis parameter
+  --equal_axis_aspect  lock aspect ratio = 1:1
+  --derive             derive values wrt x, i.e. dy/dx
+  --dots               add dots
+  --list_params        list available parameters in given file
+  --param PARAM        parameter to plot (can be specified multiple times)
+
+Note: In addition to <filename> one of the arguments --list_params and --param <PARAM> is required
 ----
 
 == esmini lib programming

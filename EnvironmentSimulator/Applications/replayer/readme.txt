@@ -5,7 +5,7 @@ Application is launched from command line (or batch file).
 Usage:  [options]
 Options:
   --file <filename>
-      Simulation recording data file
+      Simulation recording data file (.dat)
   --camera_mode <mode>
       Initial camera mode ("orbit" (default), "fixed", "flex", "flex-orbit", "top", "driver") (toggle during simulation by press 'k')
   --capture_screen
@@ -26,8 +26,6 @@ Options:
       Hide trajectories from start (toggle with key 'n')
   --info_text <mode>
       Show on-screen info text (toggle key 'i') mode 0=None 1=current (default) 2=per_object 3=both
-  --save_merged <filename>
-      Save merged data into one dat file, instead of viewing
   --no_ghost
       Remove ghost entities
   --no_ghost_model
@@ -44,6 +42,8 @@ Options:
       Path to resources root folder - relative or absolut
   --road_features
       Show OpenDRIVE road features
+  --save_merged <filename>
+      Save merged data into one dat file, instead of viewing
   --start_time <ms>
       Start playing at timestamp
   --stop_time <ms>
