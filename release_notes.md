@@ -1,5 +1,31 @@
 ## esmini release notes
 
+### 2022-08-24 Version 2.26.0
+
+- New features:
+  - Add obj id to legend in [plot_dat.py](https://github.com/esmini/esmini/blob/pf_rb/scripts/plot_dat.py) (useful for merged data)
+  - Add option to plot dots on top of lines in [plot_dat.py](https://github.com/esmini/esmini/blob/pf_rb/scripts/plot_dat.py)
+  - Add generic StoryBoardElementStateChange callback functionality ([pr #314](https://github.com/esmini/esmini/pull/314))
+  - Add `replayer` merge dat-files option (see [info in User guide](https://esmini.github.io/#_save_merged_dat_files))
+  - Add alks reg 157 safety models controller
+    - Experimental implementation of four safety models inspired by [JRC-FSM](https://github.com/ec-jrc/JRC-FSM)
+    - See more [info in User guide](https://esmini.github.io/#)
+- Fixes:
+  - Support also maneuver element type in StoryboardElementStateCondition
+  - Add heading when populating road object to OSI
+  - Fix free space distance calc bug ([issue #309](https://github.com/esmini/esmini/issues/309))
+  - Check story stopTrigger before stepping Init actions ([issue #313](https://github.com/esmini/esmini/issues/313))
+  - Consider only private actions in conflict handling ([issue #295](https://github.com/esmini/esmini/issues/295))
+  - Fix Delta function sometimes returning wrong dt/dlane in junction ([pr #283](https://github.com/esmini/esmini/pull/283))
+  - Update [OSC coverage](https://github.com/esmini/esmini/blob/pf_rb/osc_coverage.txt), clarify version
+  - Add box and cones to [model_id file](https://github.com/esmini/esmini/blob/pf_rb/resources/model_ids.txt)
+  - Consider speedProfileAction in ghost setup
+  - Fix corrupt search path for [traffic sign files](https://github.com/esmini/esmini/tree/master/resources/traffic_signals)
+- Minor updates hopefully not causing side effects:
+  - Prevent controller step completely during ghost restart
+  - Update Hello World [OSI makefile](https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/code-examples/osi-groundtruth/CMakeLists.txt) info regarding platform differences
+  - Rework lane change action to preserve position info
+
 ### 2022-07-08 Version 2.25.1
 
 - Add info on update road sign framework to [User guide - Road signs](https://esmini.github.io/#_road_signs)
