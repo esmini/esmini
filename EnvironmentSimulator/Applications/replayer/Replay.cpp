@@ -202,6 +202,9 @@ void Replay::GetReplaysFromDirectory(const std::string dir, const std::string sc
 	}
 	closedir(directory);
 
+	// Sort list of filenames
+	std::sort(scenarios_.begin(), scenarios_.end(), [](std::string const& a, std::string const& b) { return a < b; });
+
 	if (scenarios_.empty())
 	{
 		LOG_AND_QUIT("Couldn't read any scenarios named %s in path %s",sce.c_str(), dir.c_str());
@@ -513,11 +516,11 @@ void Replay::BuildData(std::vector<std::pair<std::string, std::vector<ReplayEntr
 	}
 
 	// Populate data_ based on first (with lowest timestamp) scenario
-	double cur_timestamp = scenarios[0].second[0].state.info.timeStamp;
+	float cur_timestamp = scenarios[0].second[0].state.info.timeStamp;
 	while (cur_timestamp < LARGE_NUMBER - SMALL_NUMBER)
 	{
 		// populate entries if all scenarios at current time step
-		double min_time_stamp = LARGE_NUMBER;
+		float min_time_stamp = LARGE_NUMBER;
 		for (size_t j = 0; j < scenarios.size(); j++)
 		{
 			if (next_idx[j] != -1)
@@ -527,7 +530,7 @@ void Replay::BuildData(std::vector<std::pair<std::string, std::vector<ReplayEntr
 					scenarios[j].second[k].state.info.timeStamp < cur_timestamp + SMALL_NUMBER; k++)
 				{
 					// push entry with modified timestamp
-					scenarios[j].second[k].state.info.timeStamp = (float)cur_timestamp;
+					scenarios[j].second[k].state.info.timeStamp = cur_timestamp;
 					data_.push_back(scenarios[j].second[k]);
 				}
 
