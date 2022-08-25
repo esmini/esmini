@@ -89,26 +89,21 @@ for:
           cd ..
 
     after_build:
-      - sh: >-
-
-          if [[ $APPVEYOR_REPO_COMMIT_MESSAGE = *#store_bins* ]] || [ "$APPVEYOR_REPO_TAG" == "true" ];
-          then
-            cd ../;zip -r esmini/esmini-bin_ubuntu.zip esmini/bin esmini/EnvironmentSimulator/Applications/odrplot/xodr.py esmini/EnvironmentSimulator/Libraries/esminiRMLib/esminiRMLib.hpp esmini/EnvironmentSimulator/Libraries/esminiRMLib/esminiRMWrapper.cs esmini/EnvironmentSimulator/Libraries/esminiRMLib/esminiRMUnityUtil.cs esmini/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp esmini/EnvironmentSimulator/Libraries/esminiLib/ESMiniWrapper.cs esmini/version.txt;cd -
-          else
-            echo "Skip binary artifacts";
-          fi
-
-          chmod -R +x ./run/*
-          chmod -R +x ./scripts/*
-
-          ./generate_binary_dist.sh
-
-          if [ "$APPVEYOR_REPO_TAG" == "true" ];
-          then
-              mv esmini-demo.zip esmini-demo_ubuntu.zip;
-          else
-              rm esmini-demo.zip;
-          fi
+      - if [[ $APPVEYOR_REPO_COMMIT_MESSAGE = *#store_bins* ]] || [ "$APPVEYOR_REPO_TAG" == "true" ]; then
+          cd ../ &&
+          zip -r esmini/esmini-bin_ubuntu.zip esmini/bin esmini/EnvironmentSimulator/Applications/odrplot/xodr.py  esmini/EnvironmentSimulator/Libraries/esminiRMLib/esminiRMLib.hpp esmini/EnvironmentSimulator/Libraries/esminiRMLib/esminiRMWrapper.cs esmini/EnvironmentSimulator/Libraries/esminiRMLib/esminiRMUnityUtil.cs esmini/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp esmini/EnvironmentSimulator/Libraries/esminiLib/ESMiniWrapper.cs esmini/version.txt &&
+          cd -;
+        else
+          echo "Skip binary artifacts";
+        fi
+      - chmod -R +x ./run/*
+      - chmod -R +x ./scripts/*
+      - ./generate_binary_dist.sh
+      - if [ "$APPVEYOR_REPO_TAG" == "true" ]; then
+          mv esmini-demo.zip esmini-demo_ubuntu.zip;
+        else
+          rm esmini-demo.zip;
+        fi
 
     test_script:
       - sh: Xvfb :99 -screen 0 1920x1080x24+32 & export DISPLAY=:99

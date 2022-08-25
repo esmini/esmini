@@ -96,7 +96,6 @@ resources/models/fence_pole.osgb \
 resources/sumo_inputs/e6mini* \
 resources/sumo_inputs/multi_intersections* \
 resources/traffic_signals/* \
-
 run/esmini/run_follow_ghost.* \
 run/esmini/run_ltap-od_interactive.* \
 run/esmini/run_ltap-od.* \
