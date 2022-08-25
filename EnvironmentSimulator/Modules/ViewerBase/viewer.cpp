@@ -50,6 +50,7 @@
 #define TRAILDOT3D 1
 #define PERSP_FOV 30.0
 #define ORTHO_FOV 1.0
+#define DEFAULT_LENGTH_FOR_CONTINUOUS_OBJS 10.0
 
 double color_green[3] = { 0.25, 0.6, 0.3 };
 double color_gray[3] = { 0.7, 0.7, 0.7 };
@@ -2883,9 +2884,19 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
 					}
 				}
 
+				roadmanager::Repeat* rep = object->GetRepeat();
+				int nCopies = 0;
+				double cur_s = 0.0;
+
 				if (tx == nullptr)
 				{
 					// create a bounding box to represent the object
+					if (rep && rep->GetDistance() < SMALL_NUMBER)
+					{
+						object->SetLength(DEFAULT_LENGTH_FOR_CONTINUOUS_OBJS);
+						// adjust so that continuous object start at requested s
+						cur_s += 0.5 * DEFAULT_LENGTH_FOR_CONTINUOUS_OBJS;
+					}
 					osg::ref_ptr<osg::ShapeDrawable> shape = new osg::ShapeDrawable(new osg::Box(osg::Vec3(0, 0, 0.5 * object->GetHeight()),
 						object->GetLength(),
 						object->GetWidth(),
@@ -2896,10 +2907,6 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
 					tx = new osg::PositionAttitudeTransform;
 					tx->addChild(shape);
 				}
-
-				roadmanager::Repeat* rep = object->GetRepeat();
-				int nCopies = 0;
-				double cur_s = 0.0;
 
 				osg::ComputeBoundsVisitor cbv;
 				tx->accept(cbv);
@@ -3007,8 +3014,20 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
 						// Combine
 						clone->setAttitude(quatLocal* quatRoad);
 
-						// increase current s distance according to road curvature
-						cur_s += pos.DistanceToDS(rep->distance_);
+						// increase current s according to distance
+						if (rep->distance_ > SMALL_NUMBER)
+						{
+							cur_s += rep->distance_;
+						}
+						else if (object->GetLength() > SMALL_NUMBER)
+						{
+							// for continuous objects, move along s wrt to road curvature
+							cur_s += pos.DistanceToDS(object->GetLength());
+						}
+						else
+						{
+							cur_s = road->GetLength(); // something wrong, skip
+						}
 					}
 
 					clone->setDataVariance(osg::Object::STATIC);

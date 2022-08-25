@@ -292,10 +292,10 @@
             </object>    
             
             <object type="railing" name="../models/railing.osgb" id="4" s="0.0" t="1.35" orientation="none" hdg="3.14159" pitch="0.0" roll="0.0">
-                <repeat s="4.0" length="1.4644343507055999e+03" distance="4.0" tStart="1.35" tEnd="1.35" heightStart="0.2" heightEnd="0.2" zOffsetStart="0.35" zOffsetEnd="0.35" />
+                <repeat s="2.0" length="1.4644343507055999e+03" distance="0.0" tStart="1.35" tEnd="1.35" heightStart="0.2" heightEnd="0.2" zOffsetStart="0.35" zOffsetEnd="0.35" />
             </object>
             <object type="railing" name="../models/railing.osgb" id="5" s="0.0" t="-1.35" orientation="none" hdg="0.0" pitch="0.0" roll="0.0">
-                <repeat s="0.0" length="1.4644343507055999e+03" distance="4.0" tStart="-1.35" tEnd="-1.35" heightStart="0.2" heightEnd="0.2" zOffsetStart="0.35" zOffsetEnd="0.35" />
+                <repeat s="2.0" length="1.4644343507055999e+03" distance="0.0" tStart="-1.35" tEnd="-1.35" heightStart="0.2" heightEnd="0.2" zOffsetStart="0.35" zOffsetEnd="0.35" />
             </object>
 
             <object type="guide-post" name="../models/guide-post.osgb" id="6" s="0" t="-17.25" orientation="none" hdg="0.0" pitch="0.0" roll="0.0">
