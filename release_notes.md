@@ -7,7 +7,7 @@
     - examples in [crest-curve.xodr](https://github.com/esmini/esmini/blob/master/resources/xodr/crest-curve.xodr) and [e6mini.xodr](https://github.com/esmini/esmini/blob/master/resources/xodr/e6mini.xodr)
   - Create stand-in bounding boxes for missing 3D object files, instead of skipping
   - Improve alignment of road object wrt road curvature
-  - *Note:* For correct alignments the [model pack]((https://dl.dropboxusercontent.com/s/5gk8bvgzqiaaoco/models.7z?dl=1)) needs to be updated
+  - *Note:* For correct alignments the [model pack](https://dl.dropboxusercontent.com/s/5gk8bvgzqiaaoco/models.7z?dl=1) needs to be updated
 - Re-add missing files in Mac and Linux demo packages
 
 ### 2022-08-24 Version 2.26.0
