@@ -13,8 +13,8 @@
 ### 2022-08-24 Version 2.26.0
 
 - New features:
-  - Add obj id to legend in [plot_dat.py](https://github.com/esmini/esmini/blob/pf_rb/scripts/plot_dat.py) (useful for merged data)
-  - Add option to plot dots on top of lines in [plot_dat.py](https://github.com/esmini/esmini/blob/pf_rb/scripts/plot_dat.py)
+  - Add obj id to legend in [plot_dat.py](https://github.com/esmini/esmini/blob/master/scripts/plot_dat.py) (useful for merged data)
+  - Add option to plot dots on top of lines in [plot_dat.py](https://github.com/esmini/esmini/blob/master/scripts/plot_dat.py)
   - Add generic StoryBoardElementStateChange callback functionality ([pr #314](https://github.com/esmini/esmini/pull/314))
   - Add `replayer` merge dat-files option (see [info in User guide](https://esmini.github.io/#_save_merged_dat_files))
   - Add alks reg 157 safety models controller
