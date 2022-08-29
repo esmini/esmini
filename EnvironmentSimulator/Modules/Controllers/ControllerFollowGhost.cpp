@@ -60,16 +60,17 @@ ControllerFollowGhost::ControllerFollowGhost(InitArgs* args) :
 		}
 	}
 
+}
+
+void ControllerFollowGhost::Init()
+{
 	// FollowGhost controller forced into override mode - will not perform any scenario actions
 	if (mode_ != Mode::MODE_OVERRIDE)
 	{
 		LOG("FollowGhost controller mode \"%s\" not applicable. Using override mode instead.", Mode2Str(mode_).c_str());
 		mode_ = Controller::Mode::MODE_OVERRIDE;
 	}
-}
 
-void ControllerFollowGhost::Init()
-{
 	object_->SetHeadstartTime(headstart_time_);
 
 	Controller::Init();

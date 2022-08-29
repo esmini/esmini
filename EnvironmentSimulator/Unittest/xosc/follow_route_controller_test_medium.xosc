@@ -17,7 +17,11 @@
         <ScenarioObject name="Ego">
             <CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>
             <ObjectController>
-                <CatalogReference catalogName="ControllerCatalog" entryName="followRoute"/>
+                <CatalogReference catalogName="ControllerCatalog" entryName="followRoute">
+                    <ParameterAssignments>
+                        <ParameterAssignment parameterRef="TestMode" value="true"/>
+                    </ParameterAssignments>
+                </CatalogReference>
             </ObjectController>
         </ScenarioObject>
     </Entities>

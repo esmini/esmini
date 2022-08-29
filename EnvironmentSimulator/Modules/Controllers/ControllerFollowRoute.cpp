@@ -32,20 +32,43 @@ Controller *scenarioengine::InstantiateControllerFollowRoute(void *args)
 	return new ControllerFollowRoute(initArgs);
 }
 
-ControllerFollowRoute::ControllerFollowRoute(InitArgs *args) : Controller(args)
+ControllerFollowRoute::ControllerFollowRoute(InitArgs *args) : testMode_(false), Controller(args)
 {
-	if (args->properties->ValueExists("minDistForCollision"))
+	if (args->properties)
 	{
-		minDistForCollision_ = strtod(args->properties->GetValueStr("minDistForCollision"));
-	}
-	if (args->properties->ValueExists("laneChangeTime"))
-	{
-		laneChangeTime_ = strtod(args->properties->GetValueStr("laneChangeTime"));
+		if (args->properties->ValueExists("minDistForCollision"))
+		{
+			minDistForCollision_ = strtod(args->properties->GetValueStr("minDistForCollision"));
+		}
+
+		if (args->properties->ValueExists("laneChangeTime"))
+		{
+			laneChangeTime_ = strtod(args->properties->GetValueStr("laneChangeTime"));
+		}
+
+		if (args->properties->ValueExists("testMode"))
+		{
+			if (args->properties->GetValueStr("testMode") == "true")
+			{
+				testMode_ = true;
+			}
+			else
+			{
+				testMode_ = false;
+			}
+		}
 	}
 }
 
 void ControllerFollowRoute::Init()
 {
+	// FollowRoute controller forced into additive mode - will perform scenario actions, except during lane changes
+	if (mode_ != Mode::MODE_ADDITIVE)
+	{
+		LOG("FollowRoute controller mode \"%s\" not applicable. Using additive mode (except during lane changes).", Mode2Str(mode_).c_str());
+		mode_ = Controller::Mode::MODE_ADDITIVE;
+	}
+
 	LOG("FollowRoute init");
 
 	Controller::Init();
@@ -74,10 +97,9 @@ void ControllerFollowRoute::Step(double timeStep)
 
 	roadmanager::Position vehiclePos = object_->pos_;
 	roadmanager::Position nextWaypoint = waypoints_[currentWaypointIndex_];
-	roadmanager::Road *nextRoad = odr_->GetRoadById(nextWaypoint.GetTrackId());
 
 	bool sameRoad = nextWaypoint.GetTrackId() == vehiclePos.GetTrackId();
-	
+
 	// Check if lane with different ids are connected between lane sections
 	int connectedLaneID = odr_->GetRoadById(vehiclePos.GetTrackId())->GetConnectedLaneIdAtS(vehiclePos.GetLaneId(),vehiclePos.GetS(),nextWaypoint.GetS());
 	bool lsecConnectedLane = connectedLaneID == nextWaypoint.GetLaneId();
@@ -104,7 +126,6 @@ void ControllerFollowRoute::Activate(ControlDomains domainMask)
 {
 	LOG("FollowRoute activate");
 
-	this->mode_ = Controller::Mode::MODE_ADDITIVE;
 	if (object_ != nullptr)
 	{
 		odr_ = object_->pos_.GetOpenDrive();
@@ -232,6 +253,7 @@ void ControllerFollowRoute::ChangeLane(double timeStep)
 		changingLane_ = false;
 		delete laneChangeAction_;
 		laneChangeAction_ = nullptr;
+		mode_ = Mode::MODE_ADDITIVE;
 		return;
 	}
 
@@ -239,9 +261,12 @@ void ControllerFollowRoute::ChangeLane(double timeStep)
 	{
 		laneChangeAction_->Start(scenarioEngine_->getSimulationTime(), timeStep);
 	}
-	else
+
+	if (laneChangeAction_->IsActive())
 	{
+		mode_ = Mode::MODE_ADDITIVE;
 		laneChangeAction_->Step(scenarioEngine_->getSimulationTime(), timeStep);
+		mode_ = Mode::MODE_OVERRIDE;
 		if (laneChangeAction_->state_ != OSCAction::State::COMPLETE)
 		{
 			laneChangeAction_->UpdateState();

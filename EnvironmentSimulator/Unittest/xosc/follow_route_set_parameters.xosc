@@ -21,6 +21,7 @@
                     <ParameterAssignments>
                         <ParameterAssignment parameterRef="MinDistForCollision" value="69.0"/>
                         <ParameterAssignment parameterRef="LaneChangeTime" value="420.0"/>
+                        <ParameterAssignment parameterRef="TestMode" value="true"/>
                     </ParameterAssignments>
                 </CatalogReference>
             </ObjectController>

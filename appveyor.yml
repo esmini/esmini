@@ -147,6 +147,16 @@ for:
                 throw "RoadManagerDll_test failed"
             }
 
+            ./FollowRoute_test
+            if ($lastExitCode -ne 0) {
+                throw "FollowRoute_test failed"
+            }
+
+            ./FollowRouteController_test
+            if ($lastExitCode -ne 0) {
+                throw "FollowRouteController_test failed"
+            }
+
             cd ../../../test
 
             python3 smoke_test.py
@@ -354,6 +364,16 @@ for:
             ./Release/RoadManagerDll_test
             if ($lastExitCode -ne 0) {
                 throw "RoadManagerDll_test failed"
+            }
+
+            ./Release/FollowRoute_test
+            if ($lastExitCode -ne 0) {
+                throw "FollowRoute_test failed"
+            }
+
+            ./Release/FollowRouteController_test
+            if ($lastExitCode -ne 0) {
+                throw "FollowRouteController_test failed"
             }
 
       - cmd:

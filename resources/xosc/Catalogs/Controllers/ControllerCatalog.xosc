@@ -103,11 +103,13 @@
             <ParameterDeclarations>
                 <ParameterDeclaration name="MinDistForCollision" parameterType="double" value="10" /> 
                 <ParameterDeclaration name="LaneChangeTime" parameterType="double" value="5" /> 
+                <ParameterDeclaration name="TestMode" parameterType="boolean" value="false" />                 
             </ParameterDeclarations>
             <Properties>
                 <Property name="esminiController" value="FollowRouteController" />
                 <Property name="minDistForCollision"  value="$MinDistForCollision" />
                 <Property name="laneChangeTime"  value="$LaneChangeTime" />
+                <Property name="testMode"  value="$TestMode" />
             </Properties>
         </Controller>
         <Controller name="sumoController">

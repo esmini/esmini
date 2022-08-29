@@ -25,6 +25,12 @@ Release\ScenarioEngineDll_test.exe
 Release\RoadManagerDll_test.exe
 @if %ERRORLEVEL% NEQ 0 goto failure
 
+Release\FollowRoute_test.exe
+@if %ERRORLEVEL% NEQ 0 goto failure
+
+Release\FollowRouteController_test.exe
+@if %ERRORLEVEL% NEQ 0 goto failure
+
 @echo SUCCESS
 @set exitcode=0
 goto quit

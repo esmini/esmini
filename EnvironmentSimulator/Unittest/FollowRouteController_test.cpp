@@ -20,6 +20,7 @@ class FollowRouteControllerTest : public ::testing::Test
 public:
     static void SetUpTestSuite()
     {
+        SE_Env::Inst().AddPath("../../../resources/traffic_signals");
     }
 };
 
@@ -193,9 +194,9 @@ TEST_F(FollowRouteControllerTest, FollowRouteMultipleScenarioWaypoints)
     for(Position &scenarioWp : scenarioWaypoints)
     {
         bool hasPassedWaypoint = std::find_if(passedPositions.begin(), passedPositions.end(), [&](const Position &p){
-            return p.GetTrackId() == scenarioWp.GetTrackId() && 
+            return p.GetTrackId() == scenarioWp.GetTrackId() &&
                     p.GetLaneId() == scenarioWp.GetLaneId() &&
-                    abs(p.GetS() - scenarioWp.GetS()) < 5; 
+                    abs(p.GetS() - scenarioWp.GetS()) < 5;
         }) != passedPositions.end();
         ASSERT_TRUE(hasPassedWaypoint);
     }
@@ -217,7 +218,7 @@ TEST_F(FollowRouteControllerTest, FollowRouteSetParameters)
 }
 
 // Uncomment to print log output to console
-#define LOG_TO_CONSOLE
+//#define LOG_TO_CONSOLE
 
 #ifdef LOG_TO_CONSOLE
 static void log_callback(const char *str)
