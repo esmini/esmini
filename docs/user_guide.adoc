@@ -6,6 +6,7 @@
 :src-local-root: ../
 :src-remote-root: https://github.com/esmini/esmini/tree/master
 :imagesdir: https://github.com/esmini/esmini.github.io/raw/main/images/
+:figure-caption!:
 // :imagesdir: https://media.githubusercontent.com/media/esmini/esmini.github.io/main/images/
 
 
@@ -1140,6 +1141,33 @@ Something like this should show:
 image::plot_merged_alks_ex.png[]
 
 Of course you can run also FSM and RSS models in similar way and merge all four .dat files. For more information about `replayer`, see "Plot merged .dat files" example in <<Plot scenario data>> section.
+
+==== FollowRoute
+
+Implementation of the Lane Independent Routing Model (LIRM) developed as part of the master thesis project https://hdl.handle.net/20.500.12380/305133[Olsson, Daniel; Rylander, Eric: "A Framework for Verification and
+Validation of Simulation Models in esmini"]. 
+
+From the https://odr.chalmers.se/bitstream/20.500.12380/305133/1/CSE%2022-59%20Olsson%20Rylander.pdf[report]: "LIRM has solved the issue with lane dependent routing that esmini had, by implementing a new controller that extends the behavior of the pathfinding and route following to incorporate lane changes."
+
+This controller enhance the capabilities for an entity to find a path through the road network according to a specified https://www.asam.net/static_downloads/ASAM_OpenSCENARIO_V1.2.0_Model_Documentation/modelDocumentation/content/Route.html[route] (basically a set of waypoints). The main advantage, compared to the route handler of the default controller, is that lane changes will be injected by the path finding algorithm in search for optimal path. The model will also take route strategy (Shortest, Fastest or Least Intersections) into consideration, which the default controller does not yet support. 
+
+A good example is found in https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/Unittest/xosc/follow_route_with_lane_change.xosc[follow_route_with_lane_change.xosc]. The vehicle start out in left-most lane and needs to make three lane changes in order to exit the highway.
+
+.Route waypoints and resulting trajectory in yellow
+image::follow_route_highway_exit.png[]
+
+`./bin/esmini --window 60 60 800 400 --osc ./EnvironmentSimulator/Unittest/xosc/follow_route_with_lane_change.xosc --trail_mode 1`
+
+[%autowidth,frame=none,grid=none]
+|===
+|*Domain*:| longitudinal and/or lateral (independent).+
+|*Properties*:
+a| [horizontal]
+`minDistForCollision`:: affects when a lane change will happen 
+`laneChangeTime`:: duration of lane changes 
+`testMode`:: stop at reached destination - mainly for test purpose (`true`/`false` (default)) 
+|*Example*:| https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/Unittest/xosc/follow_route_with_lane_change.xosc[follow_route_with_lane_change.xosc]
+|===
 
 == OpenSceneGraph and 3D models
 
