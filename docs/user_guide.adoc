@@ -1160,7 +1160,7 @@ image::follow_route_highway_exit.png[]
 
 [%autowidth,frame=none,grid=none]
 |===
-|*Domain*:| longitudinal and/or lateral (independent).+
+|*Domain*:| longitudinal and/or lateral (independent).
 |*Properties*:
 a| [horizontal]
 `minDistForCollision`:: affects when a lane change will happen 
