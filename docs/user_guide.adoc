@@ -43,7 +43,8 @@ For common Mac issues, please see <<Mac issues and limitations>>.
 === Get complete esmini
 The demo package contains only a subset of esmini tools and content (e.g. scenario examples, scripts and models). 
 
-To get the complete content, first download or clone the project from GitHub: https://github.com/esmini/esmini.
+To get the complete content, first download or clone the project from GitHub: https://github.com/esmini/esmini. E.g: +
+`git clone \https://github.com/esmini/esmini.git`
 
 Then either build yourself, see step 2 in next chapter <<Build esmini - quick guide>>, or:
 
@@ -57,6 +58,8 @@ Supported systems: Windows, Linux and Mac.
 
 Make sure you have a C++ compiler and https://cmake.org/[CMake] installed. 
 
+On Windows https://visualstudio.microsoft.com/[Visual Studio] is recommended (Community/free version is good enough for building esmini). Make sure to check the "Desktop development with C++" package for installation, no more is needed.
+
 On Linux, e.g. Ubunti, some additional system tools and libraries are needed. Run the following command:
 
 [source]
@@ -65,6 +68,7 @@ sudo apt install build-essential git pkg-config libgl1-mesa-dev libpthread-stubs
 ----
 
 Now we're ready to build esmini. From esmini root folder:
+
 [source]
 ----
 mkdir build
