@@ -562,9 +562,18 @@ esmini provides a script, osi2csv.py, that converts an OSI trace file into .csv 
 
 ``./scripts/osi2csv.py ground_truth.osi``
 
-will create ground_truth.csv.
-
+will create ground_truth.csv. +
 (if file type association is not setup, try: ``python ./scripts/osi2csv.py ground_truth.osi``)
+
+However the .csv file created with osi2csv will not contain all OSI information. To get a readable text file including the complete content of a OSI trace file you can make use of this Python script from the OSI project: +
+
+https://github.com/OpenSimulationInterface/open-simulation-interface/blob/master/format/osi2read.py +
+
+Use as following example:
+
+`../open-simulation-interface/format/osi2read.py --data ./ground_truth.osi --output ground_truth --type GroundTruth`
+
+it should create `ground_truth.txth` which is readable in a text editor.
 
 == Scenario features
 === Speed profile
