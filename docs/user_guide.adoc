@@ -1100,19 +1100,17 @@ a| [horizontal]
 ==== ALKS_R157SM
 Based and inspired by https://github.com/ec-jrc/JRC-FSM[Regulation 157 Safety Models]. Includes four safety models relating to the (https://unece.org/transport/documents/2021/03/standards/un-regulation-no-157-automated-lane-keeping-systems-alks[UNECE ALKS regulation #157]). The controller includes preliminary and experimental implementation of four models: +
 
-*Implemented models:*
-
 * `Regulation` Characteristics of expected system performance as stated in the https://unece.org/sites/default/files/2021-03/R157e.pdf[UNECE Reg 157 Paragraph 5.2.5.2]. +
 * `ReferenceDriver` Reference model of a "typical" human driver as specified in https://unece.org/sites/default/files/2021-03/R157e.pdf[UNECE Reg 157 Annex 4 - Appendix 3]. +
-* `FSM` __Fuzzy Safety Model__ proposed and described in https://www.sciencedirect.com/science/article/pii/S0001457520316146[Mattas, Konstantinos, et al. "Fuzzy Surrogate Safety Metrics for real-time assessment of rear-end collision risk. A study based on empirical observations." Accident Analysis & Prevention 148 (2020): 105794]. +
 * `RSS` __Responsibility-Sensitive Safety__ performance model proposed and described in https://arxiv.org/pdf/1708.06374.pdf[Shalev-Shwartz, Shai, Shaked Shammah, and Amnon Shashua. "On a formal model of safe and scalable self-driving cars." arXiv preprint arXiv:1708.06374 (2017)]. +
+* `FSM` __Fuzzy Safety Model__ proposed and described in https://www.sciencedirect.com/science/article/pii/S0001457520316146[Mattas, Konstantinos, et al. "Fuzzy Surrogate Safety Metrics for real-time assessment of rear-end collision risk. A study based on empirical observations." Accident Analysis & Prevention 148 (2020): 105794]. +
 
 [%autowidth,frame=none,grid=none]
 |===
 |*Domain*:| longitudinal and lateral (in combination only). *Note*: No advanced steering, just maintaining current lane offset.
 |*Properties*:
 a| [horizontal]
-`logLevel`:: 0: No logging, 1: Brief logging of state changes, 2: Verbose logging of some internal variables
+`logLevel`:: 0: No logging, 1: Brief logging of state changes (default), 2: Verbose logging of some internal variables
 `model`:: `Regulation`, `ReferenceDriver`, `FSM`, `RSS` as described above.
 `cruise`:: Activate longitudinal ACC (comfort adaptive speed control) (`true`/`false`)
 |*Examples*:|

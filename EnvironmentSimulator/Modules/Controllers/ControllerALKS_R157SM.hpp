@@ -56,9 +56,9 @@ namespace scenarioengine
 
         enum class ModelType {
             Regulation,
-            FSM,
             ReferenceDriver,
-            RSS
+            RSS,
+            FSM
         };
 
         enum class ModelMode
@@ -102,7 +102,7 @@ namespace scenarioengine
             double Step(double dt);
 
             // Scan traffic and select object to focus on, if any
-            virtual void Scan();
+            void Scan();
 
             // Returns true if object is considered cutting-in to ego lane
             virtual bool CheckLateralSafety(Object* obj, int dLaneId, double dist_long, double dist_lat) { return false; }
@@ -123,8 +123,6 @@ namespace scenarioengine
             Entities* entities_;
             ObjectInfo object_in_focus_;
             double cut_in_detected_timestamp_;
-
-            Mode mode_;
 
             // driver parameters
             double rt_;          // reaction time
@@ -169,34 +167,6 @@ namespace scenarioengine
             std::string GetModelName() override { return "Regulation"; }
         };
 
-        class FSM : Model
-        {
-        public:
-            FSM() : Model(ModelType::FSM, 0.75, 0.774 * 9.81, 46.0), min_jerk_(12.65),
-                br_min_(4.0), br_max_(6.0), bl_(7.0), ar_(2.0), margin_dist_(2.0), margin_safe_dist_(2.0),
-                cfs_(0.0), pfs_(0.0) {}
-
-            bool CheckLateralSafety(Object* obj, int deltaLaneId, double dist_long, double dist_lat) override;
-            bool CheckCritical() override;
-            double ReactCritical() override;
-            double MinDist() override;
-            std::string GetModelName() override { return "FSM"; }
-
-            double PFS(double dist, double speed_rear, double speed_lead, double rt, double br_min, double br_max,
-                double bl, double margin_dist, double margin_safe_dist);
-            double CFS(double dist, double speed_rear, double speed_lead, double rt,
-                double br_min, double br_max, double ar);
-
-            double min_jerk_;
-            double br_min_;
-            double br_max_;
-            double bl_;
-            double ar_;
-            double margin_dist_;
-            double margin_safe_dist_;
-            double cfs_;
-            double pfs_;
-        };
 
         class ReferenceDriver : Model
         {
@@ -252,6 +222,35 @@ namespace scenarioengine
 
             double min_jerk_;
             double mu_;
+        };
+
+        class FSM : Model
+        {
+        public:
+            FSM() : Model(ModelType::FSM, 0.75, 0.774 * 9.81, 46.0), min_jerk_(12.65),
+                br_min_(4.0), br_max_(6.0), bl_(7.0), ar_(2.0), margin_dist_(2.0), margin_safe_dist_(2.0),
+                cfs_(0.0), pfs_(0.0) {}
+
+            bool CheckLateralSafety(Object* obj, int deltaLaneId, double dist_long, double dist_lat) override;
+            bool CheckCritical() override;
+            double ReactCritical() override;
+            double MinDist() override;
+            std::string GetModelName() override { return "FSM"; }
+
+            double PFS(double dist, double speed_rear, double speed_lead, double rt, double br_min, double br_max,
+                double bl, double margin_dist, double margin_safe_dist);
+            double CFS(double dist, double speed_rear, double speed_lead, double rt,
+                double br_min, double br_max, double ar);
+
+            double min_jerk_;
+            double br_min_;
+            double br_max_;
+            double bl_;
+            double ar_;
+            double margin_dist_;
+            double margin_safe_dist_;
+            double cfs_;
+            double pfs_;
         };
 
 		Model* model_;

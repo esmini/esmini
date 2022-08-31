@@ -99,6 +99,63 @@ void ControllerALKS_R157SM::Init()
 	Controller::Init();
 }
 
+void ControllerALKS_R157SM::Step(double timeStep)
+{
+    double speed = model_->Step(timeStep);
+
+    if (mode_ == Mode::MODE_OVERRIDE)
+    {
+        object_->MoveAlongS(speed * timeStep);
+        gateway_->updateObjectPos(object_->GetId(), 0.0, &object_->pos_);
+    }
+
+    gateway_->updateObjectSpeed(object_->GetId(), 0.0, speed);
+
+    Controller::Step(timeStep);
+}
+
+void ControllerALKS_R157SM::Assign(Object* object)
+{
+    if (!object)
+    {
+        return;
+    }
+
+    if (object->type_ != Object::Type::VEHICLE)
+    {
+        LOG("Failed attempt to assign ControllerALKS_R157SM controller to a non vehicle object %s", object->GetName().c_str());
+        return;
+    }
+
+    if (model_)
+    {
+        model_->SetVehicle((Vehicle*)object);
+    }
+
+    Controller::Assign(object);
+}
+
+void ControllerALKS_R157SM::Activate(ControlDomains domainMask)
+{
+    if (model_)
+    {
+        model_->set_speed_ = object_->GetSpeed();
+    }
+    Controller::Activate(domainMask);
+}
+
+void ControllerALKS_R157SM::SetScenarioEngine(ScenarioEngine* scenario_engine)
+{
+    scenario_engine_ = scenario_engine;
+    if (model_)
+    {
+        model_->SetScenarioEngine(scenario_engine);
+    }
+};
+
+void ControllerALKS_R157SM::ReportKeyEvent(int key, bool down)
+{
+}
 
 void ControllerALKS_R157SM::Model::Scan()
 {
@@ -222,7 +279,7 @@ void ControllerALKS_R157SM::Model::ResetReactionTime()
 ControllerALKS_R157SM::Model::Model(ModelType type, double reaction_time,
     double max_dec_, double max_range_) : type_(type), rt_(reaction_time), entities_(0),
     rt_counter_(0.0), max_dec_(max_dec_), max_range_(max_range_), max_acc_(3.0), max_acc_lat_(1.0), veh_(nullptr),
-    set_speed_(0.0), log_level_(0),model_mode_(ModelMode::CRUISE_NO_TARGET), acc_(0.0), cruise_comfort_acc_(2.0),
+    set_speed_(0.0), log_level_(1),model_mode_(ModelMode::CRUISE_NO_TARGET), acc_(0.0), cruise_comfort_acc_(2.0),
     cut_in_detected_timestamp_(0.0), cruise_comfort_dec_(2.0), cruise_max_acc_(3.0), cruise_max_dec_(4.0), cruise_(false)
 {
     ResetObjectInFocus();
@@ -428,181 +485,6 @@ double ControllerALKS_R157SM::Regulation::ReactCritical()
     R157_LOG(2, "Critical: acc %.2f speed %.2f", acc_, speed);
 
     return speed;
-}
-
-double ControllerALKS_R157SM::FSM::MinDist()
-{
-    double min_dist = margin_dist_ +
-        veh_->GetSpeed() * rt_ + pow(veh_->GetSpeed(), 2) / (2 * br_min_) -
-        pow(object_in_focus_.obj->GetSpeed(), 2) / (2 * bl_) + margin_safe_dist_;
-
-    R157_LOG(2, "Min dist: %.2f", min_dist);
-
-    return min_dist;
-}
-
-double ControllerALKS_R157SM::FSM::PFS(double dist, double speed_rear, double speed_lead, double rt, double br_min, double br_max,
-    double bl, double margin_dist, double margin_safe_dist)
-{
-    dist = dist - margin_dist;
-
-    double dsafe = speed_rear * rt + pow(speed_rear, 2) / (2 * br_min) - pow(speed_lead, 2) / (2 * bl) + margin_safe_dist;
-
-    if (dist > dsafe)
-    {
-        return 0.0;
-    }
-    else
-    {
-        double dunsafe = speed_rear * rt + pow(speed_rear, 2) / (2 * br_max) - pow(speed_lead, 2) / (2 * bl);
-        if (dist < dunsafe)
-        {
-            return 1.0;
-        }
-        else
-        {
-            return (dist - dsafe) / (dunsafe - dsafe);
-        }
-    }
-}
-
-double ControllerALKS_R157SM::FSM::CFS(double dist, double speed_rear, double speed_lead,
-    double rt, double br_min, double br_max, double acc)
-{
-    double arF = MAX(acc, -br_min);  // Do not take into account very hard decelerations
-    double u_new = speed_rear + rt * arF;   // Estimate rear vehicle new speed
-    double dsafe = 0.0;
-
-    if (speed_rear <= speed_lead)
-    {
-        return 0.0;
-    }
-
-    if (u_new < speed_lead)
-    {
-        dsafe = pow(speed_rear - speed_lead, 2) / abs(acc * 2);
-        if (dist < dsafe)
-        {
-            return 1.0;
-        }
-        else
-        {
-            return 0.0;
-        }
-    }
-    else
-    {
-        dsafe = (speed_rear + arF * rt / 2 - speed_lead) * rt + pow(speed_rear + arF * rt - speed_lead, 2) / (br_min * 2);
-
-        if (dist > dsafe)
-        {
-            return 0.0;
-        }
-        else
-        {
-            double dunsafe = (speed_rear + arF * rt / 2 - speed_lead) * rt + pow(speed_rear + arF * rt - speed_lead, 2) / (br_max * 2);
-
-            if (dist < dunsafe)
-            {
-                return 1.0;
-            }
-            else
-            {
-                return (dist - dsafe) / (dunsafe - dsafe);
-            }
-        }
-    }
-}
-
-bool ControllerALKS_R157SM::FSM::CheckLateralSafety(Object* obj, int dLaneId, double dist_long, double dist_lat)
-{
-    if (obj == nullptr || dist_lat == LARGE_NUMBER)
-    {
-        return true;
-    }
-
-    if (dist_lat > -SMALL_NUMBER)
-    {
-        double cutin_speed = -SIGN(dLaneId) * obj->pos_.GetVelT();
-        if (cutin_speed > 0)
-        {
-            double headway_lat = abs(dist_lat) / cutin_speed;
-            double headway_long_gross = abs(dist_long) /
-                MAX(SMALL_NUMBER, veh_->GetSpeed() - obj->GetSpeed());
-
-            if (headway_lat > headway_long_gross + 0.1)
-            {
-                return true;
-            }
-        }
-        else
-        {
-            return true;
-        }
-    }
-
-    return false;
-}
-
-bool ControllerALKS_R157SM::FSM::CheckCritical()
-{
-    if (object_in_focus_.obj == nullptr)
-    {
-        SetMode(ModelMode::CRUISE_NO_TARGET);
-        return false;
-    }
-    else if (dt_ > SMALL_NUMBER && object_in_focus_.dv > 0.0 && object_in_focus_.dist_long > 0)
-    {
-        cfs_ = CFS(object_in_focus_.dist_long, veh_->GetSpeed(), object_in_focus_.obj->GetSpeed(),
-            rt_, br_min_, br_max_, veh_->pos_.GetAccS());
-        pfs_ = PFS(object_in_focus_.dist_long, veh_->GetSpeed(), object_in_focus_.obj->GetSpeed(),
-            rt_, br_min_, br_max_, bl_, margin_dist_, margin_safe_dist_);
-
-        R157_LOG(2, "cfs %.2f pfs %.2f", cfs_, pfs_);
-
-        if (cfs_ + pfs_ < SMALL_NUMBER)
-        {
-            SetMode(ModelMode::CRUISE_WITH_TARGET);
-            return false;
-        }
-
-        if (model_mode_ != ModelMode::CRITICAL)
-        {
-            ResetReactionTime();
-        }
-        SetMode(ModelMode::CRITICAL);
-        return true;
-    }
-
-    SetMode(ModelMode::CRUISE_WITH_TARGET);
-    return false;
-}
-
-
-double ControllerALKS_R157SM::FSM::ReactCritical()
-{
-    if (rt_counter_ > 0.0)
-    {
-        acc_ = MIN(acc_, 0.0);    // release gas pedal
-        rt_counter_ -= dt_;
-        return veh_->GetSpeed() + acc_ * dt_;  // no reaction yet
-    }
-
-    double acc = 0.0;
-    if (cfs_ > SMALL_NUMBER)
-    {
-        acc = cfs_ * (br_max_ - br_min_) + br_min_;
-    }
-    else
-    {
-        acc = pfs_ * br_min_;
-    }
-
-    acc_ = MAX(MAX(acc_ - min_jerk_ * dt_, -max_dec_), -acc);
-
-    R157_LOG(2, "acc %.2f", acc_);
-
-    return MAX(veh_->GetSpeed() + acc_ * dt_, 0);
 }
 
 bool ControllerALKS_R157SM::ReferenceDriver::CheckLateralSafety(Object* obj, int dLaneId, double dist_long, double dist_lat)
@@ -849,60 +731,177 @@ double ControllerALKS_R157SM::RSS::MinDist()
     return min_dist;
 }
 
-void ControllerALKS_R157SM::Step(double timeStep)
+double ControllerALKS_R157SM::FSM::MinDist()
 {
-    double speed = model_->Step(timeStep);
+    double min_dist = margin_dist_ +
+        veh_->GetSpeed() * rt_ + pow(veh_->GetSpeed(), 2) / (2 * br_min_) -
+        pow(object_in_focus_.obj->GetSpeed(), 2) / (2 * bl_) + margin_safe_dist_;
 
-    if (mode_ == Mode::MODE_OVERRIDE)
-    {
-        object_->MoveAlongS(speed * timeStep);
-        gateway_->updateObjectPos(object_->GetId(), 0.0, &object_->pos_);
-    }
+    R157_LOG(2, "Min dist: %.2f", min_dist);
 
-    gateway_->updateObjectSpeed(object_->GetId(), 0.0, speed);
-
-    Controller::Step(timeStep);
+    return min_dist;
 }
 
-void ControllerALKS_R157SM::Assign(Object* object)
+double ControllerALKS_R157SM::FSM::PFS(double dist, double speed_rear, double speed_lead, double rt, double br_min, double br_max,
+    double bl, double margin_dist, double margin_safe_dist)
 {
-    if (!object)
-    {
-        return;
-    }
+    dist = dist - margin_dist;
 
-    if (object->type_ != Object::Type::VEHICLE)
-    {
-        LOG("Failed attempt to assign ControllerALKS_R157SM controller to a non vehicle object %s", object->GetName().c_str());
-        return;
-    }
+    double dsafe = speed_rear * rt + pow(speed_rear, 2) / (2 * br_min) - pow(speed_lead, 2) / (2 * bl) + margin_safe_dist;
 
-    if (model_)
+    if (dist > dsafe)
     {
-        model_->SetVehicle((Vehicle*)object);
+        return 0.0;
     }
-
-    Controller::Assign(object);
+    else
+    {
+        double dunsafe = speed_rear * rt + pow(speed_rear, 2) / (2 * br_max) - pow(speed_lead, 2) / (2 * bl);
+        if (dist < dunsafe)
+        {
+            return 1.0;
+        }
+        else
+        {
+            return (dist - dsafe) / (dunsafe - dsafe);
+        }
+    }
 }
 
-void ControllerALKS_R157SM::Activate(ControlDomains domainMask)
+double ControllerALKS_R157SM::FSM::CFS(double dist, double speed_rear, double speed_lead,
+    double rt, double br_min, double br_max, double acc)
 {
-    if (model_)
+    double arF = MAX(acc, -br_min);  // Do not take into account very hard decelerations
+    double u_new = speed_rear + rt * arF;   // Estimate rear vehicle new speed
+    double dsafe = 0.0;
+
+    if (speed_rear <= speed_lead)
     {
-        model_->set_speed_ = object_->GetSpeed();
+        return 0.0;
     }
-    Controller::Activate(domainMask);
+
+    if (u_new < speed_lead)
+    {
+        dsafe = pow(speed_rear - speed_lead, 2) / abs(acc * 2);
+        if (dist < dsafe)
+        {
+            return 1.0;
+        }
+        else
+        {
+            return 0.0;
+        }
+    }
+    else
+    {
+        dsafe = (speed_rear + arF * rt / 2 - speed_lead) * rt + pow(speed_rear + arF * rt - speed_lead, 2) / (br_min * 2);
+
+        if (dist > dsafe)
+        {
+            return 0.0;
+        }
+        else
+        {
+            double dunsafe = (speed_rear + arF * rt / 2 - speed_lead) * rt + pow(speed_rear + arF * rt - speed_lead, 2) / (br_max * 2);
+
+            if (dist < dunsafe)
+            {
+                return 1.0;
+            }
+            else
+            {
+                return (dist - dsafe) / (dunsafe - dsafe);
+            }
+        }
+    }
 }
 
-void ControllerALKS_R157SM::SetScenarioEngine(ScenarioEngine* scenario_engine)
+bool ControllerALKS_R157SM::FSM::CheckLateralSafety(Object* obj, int dLaneId, double dist_long, double dist_lat)
 {
-    scenario_engine_ = scenario_engine;
-    if (model_)
+    if (obj == nullptr || dist_lat == LARGE_NUMBER)
     {
-        model_->SetScenarioEngine(scenario_engine);
+        return true;
     }
-};
 
-void ControllerALKS_R157SM::ReportKeyEvent(int key, bool down)
+    if (dist_lat > -SMALL_NUMBER)
+    {
+        double cutin_speed = -SIGN(dLaneId) * obj->pos_.GetVelT();
+        if (cutin_speed > 0)
+        {
+            double headway_lat = abs(dist_lat) / cutin_speed;
+            double headway_long_gross = abs(dist_long) /
+                MAX(SMALL_NUMBER, veh_->GetSpeed() - obj->GetSpeed());
+
+            if (headway_lat > headway_long_gross + 0.1)
+            {
+                return true;
+            }
+        }
+        else
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool ControllerALKS_R157SM::FSM::CheckCritical()
 {
+    if (object_in_focus_.obj == nullptr)
+    {
+        SetMode(ModelMode::CRUISE_NO_TARGET);
+        return false;
+    }
+    else if (dt_ > SMALL_NUMBER && object_in_focus_.dv > 0.0 && object_in_focus_.dist_long > 0)
+    {
+        cfs_ = CFS(object_in_focus_.dist_long, veh_->GetSpeed(), object_in_focus_.obj->GetSpeed(),
+            rt_, br_min_, br_max_, veh_->pos_.GetAccS());
+        pfs_ = PFS(object_in_focus_.dist_long, veh_->GetSpeed(), object_in_focus_.obj->GetSpeed(),
+            rt_, br_min_, br_max_, bl_, margin_dist_, margin_safe_dist_);
+
+        R157_LOG(2, "cfs %.2f pfs %.2f", cfs_, pfs_);
+
+        if (cfs_ + pfs_ < SMALL_NUMBER)
+        {
+            SetMode(ModelMode::CRUISE_WITH_TARGET);
+            return false;
+        }
+
+        if (model_mode_ != ModelMode::CRITICAL)
+        {
+            ResetReactionTime();
+        }
+        SetMode(ModelMode::CRITICAL);
+        return true;
+    }
+
+    SetMode(ModelMode::CRUISE_WITH_TARGET);
+    return false;
+}
+
+
+double ControllerALKS_R157SM::FSM::ReactCritical()
+{
+    if (rt_counter_ > 0.0)
+    {
+        acc_ = MIN(acc_, 0.0);    // release gas pedal
+        rt_counter_ -= dt_;
+        return veh_->GetSpeed() + acc_ * dt_;  // no reaction yet
+    }
+
+    double acc = 0.0;
+    if (cfs_ > SMALL_NUMBER)
+    {
+        acc = cfs_ * (br_max_ - br_min_) + br_min_;
+    }
+    else
+    {
+        acc = pfs_ * br_min_;
+    }
+
+    acc_ = MAX(MAX(acc_ - min_jerk_ * dt_, -max_dec_), -acc);
+
+    R157_LOG(2, "acc %.2f", acc_);
+
+    return MAX(veh_->GetSpeed() + acc_ * dt_, 0);
 }
