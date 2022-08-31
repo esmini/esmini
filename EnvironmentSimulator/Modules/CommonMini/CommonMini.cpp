@@ -666,6 +666,16 @@ std::string FileNameOf(const std::string& fname)
 	}
 }
 
+bool IsDirectoryName(const std::string& string)
+{
+	if (!string.empty() && (string.back() == '/' || string.back() == '\\'))
+	{
+		return true;
+	}
+
+	return false;
+}
+
 std::string FileNameExtOf(const std::string& fname)
 {
 	size_t start_pos = fname.find_last_of("\\/");
@@ -848,7 +858,7 @@ void R0R12EulerAngles(double h0, double p0, double r0, double h1, double p1, dou
 }
 
 SE_Env::SE_Env() : osiMaxLongitudinalDistance_(OSI_MAX_LONGITUDINAL_DISTANCE), osiMaxLateralDeviation_(OSI_MAX_LATERAL_DEVIATION),
-	logFilePath_(LOG_FILENAME), offScreenRendering_(true), collisionDetection_(false)
+	logFilePath_(LOG_FILENAME), datFilePath_(""), offScreenRendering_(true), collisionDetection_(false)
 {
 	seed_ = (std::random_device())();
 	gen_.seed(seed_);
@@ -1040,6 +1050,16 @@ SE_Env& SE_Env::Inst()
 void SE_Env::SetLogFilePath(std::string logFilePath)
 {
 	logFilePath_ = logFilePath;
+	if (Logger::Inst().IsFileOpen())
+	{
+		// Probably user wants another logfile with a new name
+		Logger::Inst().OpenLogfile();
+	}
+}
+
+void SE_Env::SetDatFilePath(std::string datFilePath)
+{
+	datFilePath_ = datFilePath;
 	if (Logger::Inst().IsFileOpen())
 	{
 		// Probably user wants another logfile with a new name

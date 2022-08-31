@@ -452,6 +452,11 @@ extern "C"
 		SE_Env::Inst().SetLogFilePath(logFilePath);
 	}
 
+	SE_DLL_API void SE_SetDatFilePath(const char* datFilePath)
+	{
+		SE_Env::Inst().SetDatFilePath(datFilePath);
+	}
+
 	SE_DLL_API unsigned int SE_GetSeed()
 	{
 		return SE_Env::Inst().GetSeed();
@@ -555,7 +560,7 @@ extern "C"
 		if (record)
 		{
 			AddArgument("--record");
-			AddArgument("simulation.dat", false);
+			AddArgument(SE_Env::Inst().GetDatFilePath().c_str(), false);
 		}
 
 		AddCommonArguments(disable_ctrls, use_viewer, threads, record);
@@ -585,7 +590,15 @@ extern "C"
 		if (record)
 		{
 			AddArgument("--record");
-			std::string datFilename = FileNameWithoutExtOf(oscFilename) + ".dat";
+			std::string datFilename;
+			if (SE_Env::Inst().GetDatFilePath().empty())
+			{
+				datFilename = FileNameWithoutExtOf(oscFilename) + ".dat";
+			}
+			else
+			{
+				datFilename = SE_Env::Inst().GetDatFilePath();
+			}
 			AddArgument(datFilename.c_str(), false);
 		}
 

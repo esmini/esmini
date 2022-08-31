@@ -185,13 +185,38 @@ extern "C"
 	SE_DLL_API void SE_ClearPaths();
 
 	/**
-		Specify logfile name, optionally including directory path
-		examples: "../logfile.txt" "c:/tmp/esmini.log" "my.log"
+		Specify scenario logfile (.txt) file path,
+		optionally including directory path and/or filename
+		Specify only directory (end with "/" or "\") to let esmini set default filename
+		Specify only filename (no leading "/" or "\") to let esmini set default directory
 		Set "" to disable logfile
+		examples:
+		  "../logfile.txt" (relative current directory)
+		  "c:/tmp/esmini.log" (absolute path)
+		  "my.log" (put it in current directory)
+		  "c:/tmp/" (use default filename)
+		  "" (prevent creation of logfile)
 		Note: Needs to be called prior to calling SE_Init()
 		@param path Logfile path
 	*/
 	SE_DLL_API void SE_SetLogFilePath(const char *logFilePath);
+
+	/**
+		Specify scenario recording (.dat) file path,
+		optionally including directory path and/or filename
+		Specify only directory (end with "/" or "\") to let esmini set default filename
+		Specify only filename (no leading "/" or "\") to let esmini set default directory
+		Set "" to use default .dat filename
+		examples:
+		  "../my_sim.dat" (relative current directory)
+		  "c:/tmp/esmini.dat" (absolute path)
+		  "my_sim.dat" (put it in current directory)
+		  "c:/tmp/" (use default filename)
+		  "" (use current directory and default .dat filename)
+		Note: Needs to be called prior to calling SE_Init()
+		@param path Recording (.dat) file path
+	*/
+	SE_DLL_API void SE_SetDatFilePath(const char* datFilePath);
 
 	/**
 	Get seed that esmini uses for current session. It can then be re-used

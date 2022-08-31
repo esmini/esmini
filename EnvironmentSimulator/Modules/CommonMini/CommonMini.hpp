@@ -56,6 +56,7 @@
 #define OSI_MAX_LONGITUDINAL_DISTANCE 50
 #define OSI_MAX_LATERAL_DEVIATION 0.05
 #define LOG_FILENAME "log.txt"
+#define DAT_FILENAME "sim.dat"
 #define GHOST_TRAIL_SAMPLE_TIME 0.2
 
 
@@ -565,6 +566,7 @@ private:
 std::vector<std::string> SplitString(const std::string& s, char separator);
 std::string DirNameOf(const std::string& fname);
 std::string FileNameOf(const std::string& fname);
+bool IsDirectoryName(const std::string& string);
 std::string FileNameExtOf(const std::string& fname);
 std::string FileNameWithoutExtOf(const std::string& fname);
 std::string ToLower(const std::string in_str);
@@ -852,13 +854,41 @@ public:
 	std::mt19937& GetGenerator() { return gen_; }
 
 	/**
-		Specify logfile name, optionally including directory path
-		examples: "../logfile.txt" "c:/tmp/esmini.log" "my.log"
+		Specify scenario logfile (.txt) file path,
+		optionally including directory path and/or filename
+		Specify only directory (end with "/" or "\") to let esmini set default filename
+		Specify only filename (no leading "/" or "\") to let esmini set default directory
 		Set "" to disable logfile
+		examples:
+		  "../logfile.txt" (relative current directory)
+		  "c:/tmp/esmini.log" (absolute path)
+		  "my.log" (put it in current directory)
+		  "c:/tmp/" (use default filename)
+		  "" (prevent creation of logfile)
+		Note: Needs to be called prior to calling SE_Init()
 		@param path Logfile path
 	*/
 	void SetLogFilePath(std::string logFilePath);
 	std::string GetLogFilePath() { return logFilePath_; }
+
+	/**
+		Specify scenario recording (.dat) file path,
+		optionally including directory path and/or filename
+		Specify only directory (end with "/" or "\") to let esmini set default filename
+		Specify only filename (no leading "/" or "\") to let esmini set default directory
+		Set "" to disable logfile
+		examples:
+		  "../logfile.txt" (relative current directory)
+		  "c:/tmp/esmini.log" (absolute path)
+		  "my.log" (put it in current directory)
+		  "c:/tmp/" (use default filename)
+		  "" (prevent creation of logfile)
+		Note: Needs to be called prior to calling SE_Init()
+		@param path Logfile path
+	*/
+	void SetDatFilePath(std::string datFilePath);
+	std::string GetDatFilePath() { return datFilePath_; }
+
 	std::string GetModelFilenameById(int model_id);
 	void ClearModelFilenames() { entity_model_map.clear(); }
 
@@ -867,6 +897,7 @@ private:
 	double osiMaxLongitudinalDistance_;
 	double osiMaxLateralDeviation_;
 	std::string logFilePath_;
+	std::string datFilePath_;
 	SE_SystemTime systemTime_;
 	unsigned int seed_;
 	std::mt19937 gen_;

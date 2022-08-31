@@ -1095,15 +1095,31 @@ int ScenarioPlayer::Init()
 	else if (opt.IsOptionArgumentSet("logfile_path"))
 	{
 		arg_str = opt.GetOptionArg("logfile_path");
-		SE_Env::Inst().SetLogFilePath(arg_str);
+
+		std::string filename;
+
+		if (!arg_str.empty())
+		{
+			if (IsDirectoryName(arg_str))
+			{
+				filename = arg_str + LOG_FILENAME;
+			}
+			else
+			{
+				filename = arg_str;
+			}
+		}
+
 		if (arg_str.empty())
 		{
 			printf("Custom logfile path empty, disable logfile\n");
 		}
 		else
 		{
-			printf("Custom logfile path: %s\n", arg_str.c_str());
+			printf("Custom logfile path: %s\n", filename.c_str());
 		}
+
+		SE_Env::Inst().SetLogFilePath(filename);
 	}
 	Logger::Inst().OpenLogfile();
 	Logger::Inst().LogVersion();
@@ -1255,8 +1271,26 @@ int ScenarioPlayer::Init()
 	// Create a data file for later replay?
 	if ((arg_str = opt.GetOptionArg("record")) != "")
 	{
-		LOG("Recording data to file %s", arg_str.c_str());
-		scenarioGateway->RecordToFile(arg_str, scenarioEngine->getOdrFilename(), scenarioEngine->getSceneGraphFilename());
+		std::string filename;
+
+		if (!arg_str.empty())
+		{
+			if (IsDirectoryName(arg_str))
+			{
+				filename = arg_str + FileNameWithoutExtOf(scenarioEngine->getScenarioFilename()) + ".dat";
+			}
+			else
+			{
+				filename = arg_str;
+			}
+		}
+		else
+		{
+			filename = SE_Env::Inst().GetDatFilePath();
+		}
+
+		LOG("Recording data to file %s", filename.c_str());
+		scenarioGateway->RecordToFile(filename, scenarioEngine->getOdrFilename(), scenarioEngine->getSceneGraphFilename());
 	}
 
 	if (launch_server)
