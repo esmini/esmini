@@ -947,7 +947,7 @@ extern "C"
 			{
 				vehicle = new Vehicle();
 				object_id = player->scenarioEngine->entities_.addObject(vehicle, true);
-				vehicle->name_ = "swarm" + std::to_string(object_id);
+				vehicle->name_ = name;
 				vehicle->scaleMode_ = EntityScaleMode::BB_TO_MODEL;
 				vehicle->model_id_ = model_id;
 				vehicle->model3d_ = SE_Env::Inst().GetModelFilenameById(model_id);
