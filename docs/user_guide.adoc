@@ -1111,7 +1111,7 @@ Based and inspired by https://github.com/ec-jrc/JRC-FSM[Regulation 157 Safety Mo
 |*Properties*:
 a| [horizontal]
 `logLevel`:: 0: No logging, 1: Brief logging of state changes (default), 2: Verbose logging of some internal variables
-`model`:: `Regulation`, `ReferenceDriver`, `FSM`, `RSS` as described above.
+`model`:: `Regulation`, `ReferenceDriver`, `RSS`, `FSM` as described above.
 `cruise`:: Activate longitudinal ACC (comfort adaptive speed control) (`true`/`false`)
 |*Examples*:|
 https://github.com/esmini/esmini/blob/master/resources/xosc/alks_r157_cut_in_quick_brake.xosc[alks_r157_cut_in_quick_brake.xosc] +
