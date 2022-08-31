@@ -91,6 +91,9 @@ public:
 	void ShowObjectSensors(bool mode);
 	void AddObjectSensor(int object_index, double pos_x, double pos_y, double pos_z, double heading,
 						 double near, double far, double fovH, int maxObj);
+#ifdef _USE_OSG
+	void InitVehicleModel(Object* obj, viewer::CarModel* model);
+#endif
 	void AddOSIDetection(int object_index);
 	void SetFixedTimestep(double timestep) { fixed_timestep_ = timestep; }
 	double GetFixedTimestep() { return fixed_timestep_; }

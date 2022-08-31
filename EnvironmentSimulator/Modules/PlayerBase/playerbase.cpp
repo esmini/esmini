@@ -323,7 +323,7 @@ void ScenarioPlayer::ViewerFrame(bool init)
 		viewer_->AddEntityModel(viewer_->CreateEntityModel(obj->model3d_, trail_color,
 			viewer::EntityModel::EntityType::VEHICLE, false,
 			obj->name_, &obj->boundingbox_, obj->scaleMode_));
-		viewer_->entities_.back()->routewaypoints_->SetWayPoints(obj->pos_.GetRoute());
+		InitVehicleModel(obj, (viewer::CarModel*)viewer_->entities_.back());
 	}
 
 	// remove obsolete cars
@@ -853,44 +853,13 @@ int ScenarioPlayer::InitViewer()
 			return -1;
 		}
 
-		viewer_->entities_.back()->routewaypoints_->SetWayPoints(obj->pos_.GetRoute());
-
 		// Connect callback for setting transparency
 		viewer::VisibilityCallback* cb = new viewer::VisibilityCallback(viewer_->entities_.back()->txNode_, obj, viewer_->entities_.back());
 		viewer_->entities_.back()->txNode_->setUpdateCallback(cb);
 
 		if (viewer_->entities_.back()->GetType() == viewer::EntityModel::EntityType::VEHICLE)
 		{
-			viewer::CarModel* model = (viewer::CarModel*)viewer_->entities_.back();
-
-			// Add a sensor to show when query road info ahead
-			model->steering_sensor_ = viewer_->CreateSensor(color_green, true, true, 0.4, 3);
-			viewer_->SensorSetPivotPos(model->steering_sensor_, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
-			viewer_->SensorSetTargetPos(model->steering_sensor_, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
-			if (obj->ghost_)
-			{
-				// Show steering sensor when following a ghost
-				model->steering_sensor_->Show();
-			}
-			else
-			{
-				// Otherwise hide it (as default)
-				model->steering_sensor_->Hide();
-			}
-
-			// If following a ghost vehicle, add visual representation of speed and steering sensors
-			if (scenarioEngine->entities_.object_[i]->GetGhost())
-			{
-				if (odr_manager->GetNumOfRoads() > 0)
-				{
-					model->trail_sensor_ = viewer_->CreateSensor(color_red, true, false, 0.4, 3);
-				}
-
-			}
-			else if (scenarioEngine->entities_.object_[i]->IsGhost())
-			{
-				scenarioEngine->entities_.object_[i]->SetVisibilityMask(scenarioEngine->entities_.object_[i]->visibilityMask_ &= ~(Object::Visibility::SENSORS));
-			}
+			InitVehicleModel(obj, (viewer::CarModel*)viewer_->entities_.back());
 		}
 	}
 
@@ -958,6 +927,42 @@ void ScenarioPlayer::AddObjectSensor(int object_index, double x, double y, doubl
 	}
 #endif
 }
+
+#ifdef _USE_OSG
+void ScenarioPlayer::InitVehicleModel(Object* obj, viewer::CarModel* model)
+{
+	// Add a sensor to show when query road info ahead
+	model->steering_sensor_ = viewer_->CreateSensor(color_green, true, true, 0.4, 3);
+	viewer_->SensorSetPivotPos(model->steering_sensor_, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
+	viewer_->SensorSetTargetPos(model->steering_sensor_, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
+	if (obj->ghost_)
+	{
+		// Show steering sensor when following a ghost
+		model->steering_sensor_->Show();
+	}
+	else
+	{
+		// Otherwise hide it (as default)
+		model->steering_sensor_->Hide();
+	}
+
+	// If following a ghost vehicle, add visual representation of speed and steering sensors
+	if (obj->GetGhost())
+	{
+		if (odr_manager->GetNumOfRoads() > 0)
+		{
+			model->trail_sensor_ = viewer_->CreateSensor(color_red, true, false, 0.4, 3);
+		}
+
+	}
+	else if (obj->IsGhost())
+	{
+		obj->SetVisibilityMask(obj->visibilityMask_ &= ~(Object::Visibility::SENSORS));
+	}
+
+	viewer_->entities_.back()->routewaypoints_->SetWayPoints(obj->pos_.GetRoute());
+}
+#endif
 
 void ScenarioPlayer::AddOSIDetection(int object_index)
 {

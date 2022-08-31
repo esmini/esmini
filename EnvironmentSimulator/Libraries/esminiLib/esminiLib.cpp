@@ -233,7 +233,8 @@ static int GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_Roa
 
 // Add visualization of forward looking road sensor probe
 #ifdef _USE_OSG
-		if (player->viewer_ && player->viewer_->entities_[object_id]->GetType() == viewer::EntityModel::EntityType::VEHICLE)
+		if (player->viewer_ && object_id < player->viewer_->entities_.size() &&
+			player->viewer_->entities_[object_id]->GetType() == viewer::EntityModel::EntityType::VEHICLE)
 		{
 			viewer::CarModel *model = (viewer::CarModel *)player->viewer_->entities_[object_id];
 			model->steering_sensor_->Show();
