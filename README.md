@@ -107,8 +107,6 @@ https://github.com/johschmitz/blender-driving-scenario-creator
 ### OpenDRIVE plugin for Unreal Engine
 [brifsttar/OpenDRIVE](https://github.com/brifsttar/OpenDRIVE) plugin allows you to manipulate OpenDRIVE road networks in Unreal Engine. It's based on esmini RoadManager (esminiRMLib).
 
-### Blender Driving Scenario Creator add-on
-https://github.com/johschmitz/blender-driving-scenario-creator
 
 ### Editors
 
