@@ -1274,6 +1274,19 @@ will add the relative path `../../` and absolute path `c:/tmp/my_models` to the 
 
 * If you get the "damaged file" message: Please open a terminal in the folder where the esmini-demo was extracted, and run the following command: `xattr -c -r esmini-demo`
 
+=== OpenStreetMap (OSM) roads in esmini
+SUMO comes with a great tool, https://sumo.dlr.de/docs/netconvert.html[netconvert], that can convert road networks from and to various formats. 
+
+Prerequisite: Download and install SUMO from https://sumo.dlr.de/docs/Downloads.php[here].
+
+Example: Convert an OSM map to OpenDRIVE for use in esmini:
+
+`netconvert --osm-files city.osm --opendrive-output city.xodr --no-turnarounds`
+
+Preview in odrviewer:
+
+`./bin/odrviewer --window 60 60 800 400 --odr city.xodr`
+
 === Issues at esmini GitHub page
 The https://github.com/esmini/esmini/issues[Issues tab at esmini GitHub page] is a valuable source of questions and answers. To search in all issues, make sure to set filter: `is:issue`.
 
