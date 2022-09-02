@@ -107,6 +107,8 @@ copy resources\models\de_274-30.osgb %target_dir%\resources\models /y
 copy resources\models\de_274-50.osgb %target_dir%\resources\models /y
 copy resources\models\se_c_31-3.osgb %target_dir%\resources\models /y
 copy resources\models\se_c_31-5.osgb %target_dir%\resources\models /y
+copy resources\models\de_123.osgb %target_dir%\resources\models /y
+copy resources\models\se_a_20-1.osgb %target_dir%\resources\models /y
 copy resources\models\asphalt.jpg %target_dir%\resources\models /y
 copy resources\models\grass.jpg %target_dir%\resources\models /y
 copy resources\models\railing.osgb %target_dir%\resources\models /y

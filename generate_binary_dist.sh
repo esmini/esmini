@@ -79,6 +79,8 @@ resources/models/de_274-30.osgb \
 resources/models/de_274-50.osgb \
 resources/models/se_c_31-3.osgb \
 resources/models/se_c_31-5.osgb \
+resources/models/de_123.osgb \
+resources/models/se_a_20-1.osgb \
 resources/models/pole.osgb \
 resources/models/asphalt.jpg \
 resources/models/grass.jpg \
