@@ -31,7 +31,7 @@ for mat in materials:
         if color is None:
             color = ET.Element('color')
             color.set('sid', 'ambient')
-            color.text = "{} {} {} 1".format(0.5, 0.5, 0.5)
+            color.text = "{} {} {} 1".format(1.0, 1.0, 1.0)
 
         ambient = mat.find('.//ambient', namespaces=tree.getroot().nsmap)
         if (ambient is not None):

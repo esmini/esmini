@@ -104,6 +104,8 @@
 			<object type="pole" name="pole" id="1" s="350.0" t="-3.57" zOffset="-0.2" validLength="0.0" orientation="+" length="0.06" width="0.06" radius="0.5" height="2.35" hdg="0.0" pitch="0.0" roll="0.0"/>
 			<object type="pole" name="pole" id="6" s="500.0" t="3.57" zOffset="-0.2" validLength="0.0" orientation="+" length="0.06" width="0.06" radius="0.5" height="2.35" hdg="0.0" pitch="0.0" roll="0.0"/>
 			<object type="pole" name="pole" id="7" s="500.0" t="-3.57" zOffset="-0.2" validLength="0.0" orientation="+" length="0.06" width="0.06" radius="0.5" height="2.35" hdg="0.0" pitch="0.0" roll="0.0"/>
+			<object type="pole" name="pole" id="8" s="80.0" t="-3.57" zOffset="-0.2" validLength="0.0" orientation="+" length="0.06" width="0.06" radius="0.5" height="2.35" hdg="0.0" pitch="0.0" roll="0.0"/>
+			<object type="pole" name="pole" id="9" s="80.0" t="3.57" zOffset="-0.2" validLength="0.0" orientation="+" length="0.06" width="0.06" radius="0.5" height="2.35" hdg="0.0" pitch="0.0" roll="0.0"/>
 		</objects>
 		<signals>
 			<signal s="0.0" t="3.57" id="0" name="speed_50_0_0" dynamic="no" orientation="+" zOffset="1.7" type="c" country="se" subtype="31" value="5" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61">
@@ -127,6 +129,8 @@
 			<signal s="350.0" t="-3.57" id="1" name="de_274-50" dynamic="no" orientation="+" zOffset="1.7" type="" country="" subtype="" value="" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61"/>
 			<signal s="500.0" t="3.57" id="10" name="speed_50_6" dynamic="no" orientation="-" zOffset="1.7" type="274" country="de" subtype="" value="50" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61"/>
 			<signal s="500.0" t="-3.57" id="11" name="speed_50_7" dynamic="no" orientation="-" zOffset="1.7" type="274" country="de" subtype="" value="50" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61"/>
+			<signal s="80.0" t="-3.57" id="12" name="construction_zone_s0" dynamic="no" orientation="+" zOffset="1.7" type="a" country="se" subtype="20" value="1" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61"/>
+			<signal s="80.0" t="3.57" id="13" name="construction_zone_s1" dynamic="no" orientation="+" zOffset="1.7" type="123" country="de" subtype="" value="" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61"/>
 		</signals>
 		<surface/>
 		<type s="0.0" type="rural">
