@@ -302,7 +302,8 @@ include::{src-local-root}/{file}[]
 
 === Example use of esminiRMLib (RoadManager)
 
-Just make sure the esminiRMLib is present in the same folder as the script:
+* Make sure the esminiRMLib is present in the same folder as the script
+* In the code, check filepath to the OpenDRIVE file to load (current search path should work when script is copied to and run from the esmini/Hello-World_coding-example folder)
 
 :file: EnvironmentSimulator/code-examples/hello_world/use_roadmanager.py
 .link:{src-remote-root}/{file}[{file}]

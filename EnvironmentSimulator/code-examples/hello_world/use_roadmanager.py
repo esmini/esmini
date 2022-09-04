@@ -1,17 +1,17 @@
 import ctypes as ct
-from sys import platform
+import sys
 
-if platform == "linux" or platform == "linux2":
+if sys.platform == "linux" or sys.platform == "linux2":
     rm = ct.CDLL("./libesminiRMLib.so")
-elif platform == "darwin":
+elif sys.platform == "darwin":
     rm = ct.CDLL("./libesminiRMLib.dylib")
-elif platform == "win32":
+elif sys.platform == "win32":
     rm = ct.CDLL("./esminiRMLib.dll")
 else:
-    print("Unsupported platform: {}".format(platform))
-    quit()
+    print("Unsupported platform: {}".format(sys.platform))
+    sys.exit(-1)
 
-# Definition of RM_PositionData struct
+# Definition of RM_PositionData struct - should match esminiRMLib::RM_PositionData struct
 class RM_PositionData(ct.Structure):
     _fields_ = [
         ("x", ct.c_float),
@@ -22,6 +22,7 @@ class RM_PositionData(ct.Structure):
         ("r", ct.c_float),
         ("h_relative", ct.c_float),
         ("road_id", ct.c_int),
+        ("junction_id", ct.c_int),  # -1 if not in a junction
         ("lane_id", ct.c_int),
         ("lane_offset", ct.c_float),
         ("s", ct.c_float),
@@ -32,8 +33,11 @@ rm.RM_SetWorldPosition.argtypes = [ct.c_int, ct.c_float, ct.c_float, ct.c_float,
 rm.RM_SetLanePosition.argtypes = [ct.c_int, ct.c_int, ct.c_int, ct.c_float, ct.c_float]
 
 
-# Initialize emsini RoadManger with given OpenDRIVE file
-rm.RM_Init(b'../resources/xodr/straight_500m.xodr')
+# Initialize esmini RoadManger with given OpenDRIVE file
+odr = '../resources/xodr/straight_500m.xodr'
+if rm.RM_Init(odr.encode()) == -1:   # encode() converts string to pure byte array
+    print("Failed to load OpenDRIVE file ", )
+    sys.exit(-1)
 
 rm_pos = rm.RM_CreatePosition()  # create a position object, returns a handle
 rm_pos_data = RM_PositionData()  # object that will be passed and filled in with position info
