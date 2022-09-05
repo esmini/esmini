@@ -502,16 +502,13 @@ int ScenarioEngine::step(double deltaSimTime)
 		trueTime_ = simulationTime_;
 	}
 
-	// Fetch states from gateway, indicated by dirty bits
 	for (size_t i = 0; i < entities_.object_.size(); i++)
 	{
 		Object* obj = entities_.object_[i];
+
+		// Fetch states from gateway (if available), indicated by dirty bits
 		ObjectState* o = scenarioGateway.getObjectStatePtrById(obj->id_);
-		if (o == nullptr)
-		{
-			LOG("Gateway did not provide state for external car %d", obj->id_);
-		}
-		else
+		if (o != nullptr)
 		{
 			if (o->dirty_ & (Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL))
 			{
@@ -530,24 +527,8 @@ int ScenarioEngine::step(double deltaSimTime)
 				obj->wheel_rot_ = o->state_.info.wheel_rot;
 			}
 			o->clearDirtyBits();
-
-			if (obj->pos_.GetStatusBitMask() & static_cast<int>(roadmanager::Position::PositionStatusMode::POS_STATUS_END_OF_ROAD))
-			{
-				if (!obj->IsEndOfRoad())
-				{
-					obj->SetEndOfRoad(true, simulationTime_);
-				}
-			}
-			else
-			{
-				obj->SetEndOfRoad(false);
-			}
 		}
-	}
 
-	for (size_t i = 0; i < entities_.object_.size(); i++)
-	{
-		Object* obj = entities_.object_[i];
 		// Do not move objects when speed is zero,
 		// and only ghosts allowed to execute during ghost (restart
 		if (!(obj->IsControllerActiveOnDomains(ControlDomains::DOMAIN_BOTH) && obj->GetControllerMode() == Controller::Mode::MODE_OVERRIDE) &&
@@ -557,6 +538,35 @@ int ScenarioEngine::step(double deltaSimTime)
 			!obj->TowVehicle())  // update trailers later
 		{
 			defaultController(obj, deltaSimTime);
+		}
+
+		if (!obj->pos_.GetRoute())
+		{
+			if (obj->GetJunctionSelectorStrategy() == roadmanager::Junction::JunctionStrategyType::RANDOM &&
+				obj->pos_.IsInJunction() && obj->GetJunctionSelectorAngle() >= 0)
+			{
+				// Set junction selector angle as undefined during junction
+				obj->SetJunctionSelectorAngle(std::nan(""));
+			}
+			else if (obj->GetJunctionSelectorStrategy() == roadmanager::Junction::JunctionStrategyType::RANDOM &&
+				!obj->pos_.IsInJunction() && std::isnan(obj->GetJunctionSelectorAngle()))
+			{
+				// Set new random junction selector after coming out of junction
+				obj->SetJunctionSelectorAngleRandom();
+			}
+		}
+
+		if (obj->pos_.GetStatusBitMask() & static_cast<int>(roadmanager::Position::PositionStatusMode::POS_STATUS_END_OF_ROAD) ||
+			obj->pos_.GetStatusBitMask() & static_cast<int>(roadmanager::Position::PositionStatusMode::POS_STATUS_END_OF_ROUTE))
+		{
+			if (!obj->IsEndOfRoad())
+			{
+				obj->SetEndOfRoad(true, simulationTime_);
+			}
+		}
+		else
+		{
+			obj->SetEndOfRoad(false);
 		}
 
 		// Report updated state to the gateway
@@ -841,39 +851,10 @@ int ScenarioEngine::defaultController(Object* obj, double dt)
 			Vehicle* tow_vehicle = (Vehicle*)obj->TowVehicle();
 			if (tow_vehicle == nullptr)
 			{
-				obj->MoveAlongS(steplen, true);
+				retval = static_cast<int>(obj->MoveAlongS(steplen, true));
 				obj->SetDirtyBits(Object::DirtyBit::LONGITUDINAL);
 			}
 		}
-	}
-
-	if (!obj->pos_.GetRoute())
-	{
-		if (obj->GetJunctionSelectorStrategy() == roadmanager::Junction::JunctionStrategyType::RANDOM &&
-			obj->pos_.IsInJunction() && obj->GetJunctionSelectorAngle() >= 0)
-		{
-			// Set junction selector angle as undefined during junction
-			obj->SetJunctionSelectorAngle(std::nan(""));
-		}
-		else if (obj->GetJunctionSelectorStrategy() == roadmanager::Junction::JunctionStrategyType::RANDOM &&
-			!obj->pos_.IsInJunction() && std::isnan(obj->GetJunctionSelectorAngle()))
-		{
-			// Set new random junction selector after coming out of junction
-			obj->SetJunctionSelectorAngleRandom();
-		}
-	}
-
-	if (obj->pos_.GetStatusBitMask() & static_cast<int>(roadmanager::Position::PositionStatusMode::POS_STATUS_END_OF_ROAD) ||
-		obj->pos_.GetStatusBitMask() & static_cast<int>(roadmanager::Position::PositionStatusMode::POS_STATUS_END_OF_ROUTE))
-	{
-		if (!obj->IsEndOfRoad())
-		{
-			obj->SetEndOfRoad(true, simulationTime_);
-		}
-	}
-	else
-	{
-		obj->SetEndOfRoad(false);
 	}
 
 	if (retval == 0)
