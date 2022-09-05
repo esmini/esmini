@@ -1040,8 +1040,8 @@ Performs actions exactly as specified in the OpenSCENARIO file. Assigned to enti
 
 [%autowidth,frame=none,grid=none]
 |===
-|*Domain*:|n/a (will always take over both Lateral and Longitudinal domains) +
-|*Properties*:| None +
+|*Domain*:|n/a (will always take over both Lateral and Longitudinal domains)
+|*Properties*:| None
 |*Example*:| n/a (any scenario not explicitly assigning and activating another controller)
 |===
 
@@ -1286,6 +1286,17 @@ Example: Convert an OSM map to OpenDRIVE for use in esmini:
 Preview in odrviewer:
 
 `./bin/odrviewer --window 60 60 800 400 --odr city.xodr`
+
+=== Update 3D model pack
+
+Do either:
+
+- remove any `resources/models` folder
+- from `./build` folder, run `cmake ..`
+
+or
+
+- get the package from https://dl.dropboxusercontent.com/s/5gk8bvgzqiaaoco/models.7z?dl=1[here] and unpack files into `./resources/models`
 
 === Issues at esmini GitHub page
 The https://github.com/esmini/esmini/issues[Issues tab at esmini GitHub page] is a valuable source of questions and answers. To search in all issues, make sure to set filter: `is:issue`.

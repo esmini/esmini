@@ -1,5 +1,30 @@
 ## esmini release notes
 
+### 2022-09-05 Version 2.26.2
+
+- New features:
+  - Add FollowRoute controller
+    - improved path finding by incorporating lane changes
+    - more info in [User guide - FollowRoute](https://esmini.github.io/#_followroute)
+  - Add roadworks/construction sign
+    - OSI road sign code: TYPE_ROAD_WORKS = 13
+    - Swedish and German signs added to 3D model pack 
+    - see [User guide - Update 3D model pack](https://esmini.github.io/#_update_3d_model_pack) how to update
+  - Extend options for logfile and .dat (recording) location and filename
+    - specify either of:
+      1. Explicit directory and filename
+      1. Just directory (ending '/' or '\\') (use default filename)
+      1. Just filename  (use default directory)
+    - see details in [esminiLib.hpp](https://github.com/esmini/esmini/blob/71311c7d9b7e25247e040afe4730a07830d3d4d7/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L187)
+
+- Fixes:
+  - Fix crash when query objects added by SE_AddObject() ([issue #263](https://github.com/esmini/esmini/issues/263))
+  - Fix struct mismatch in Python RoadManager example ([issue #318](https://github.com/esmini/esmini/issues/318))
+
+- Other:
+  - Add OpenStreetMap (OSM) to OpenDRIVE tip to User guide  ([issue #317](https://github.com/esmini/esmini/issues/317))
+    - see [User guide - OpenStreetMap (OSM) roads in esmini](https://esmini.github.io/#_openstreetmap_osm_roads_in_esmini)
+
 ### 2022-08-25 Version 2.26.1
 
 - Road object updates:
