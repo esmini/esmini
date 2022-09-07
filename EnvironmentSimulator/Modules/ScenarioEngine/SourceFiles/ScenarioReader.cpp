@@ -941,7 +941,7 @@ roadmanager::Route *ScenarioReader::parseOSCRoute(pugi::xml_node routeNode)
 			}else{// If shortest or unknown
 				rs = roadmanager::Position::RouteStrategy::SHORTEST;
 			}
-			
+
 			OSCPosition *pos = parseOSCPosition(routeChild.first_child());
 			if (pos)
 			{
@@ -2853,6 +2853,7 @@ void ScenarioReader::parseInit(Init &init)
 			Object *entityRef;
 
 			entityRef = ResolveObjectReference(parameters.ReadAttribute(actionsChild, "entityRef"));
+			bool teleport = false;
 			if (entityRef != NULL)
 			{
 				for (pugi::xml_node privateChild = actionsChild.first_child(); privateChild; privateChild = privateChild.next_sibling())
@@ -2862,6 +2863,16 @@ void ScenarioReader::parseInit(Init &init)
 					if (action != 0)
 					{
 						action->name_ = "Init " + entityRef->name_ + " " + privateChild.first_child().name();
+
+						if (action->type_ == OSCPrivateAction::ActionType::TELEPORT)
+						{
+							teleport = true;
+						}
+						else if (teleport == false && action->type_ == OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER)
+						{
+							LOG("WARNING: Controller activated before positioning (TeleportAction) the entity %s", entityRef->GetName().c_str());
+						}
+
 						init.private_action_.push_back(action);
 					}
 				}
