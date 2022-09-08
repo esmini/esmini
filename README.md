@@ -102,11 +102,8 @@ see [User Guide Hello-World tutorial](https://esmini.github.io/#_python_binding)
 ### Online OpenDRIVE viewer
 [odrviewer.io](https://odrviewer.io/) is an excellent interactive online OpenDRIVE viewer. Move around, zoom and inspect elements of the road network like roadID, laneID, successor and predecessor.
 
-https://github.com/johschmitz/blender-driving-scenario-creator
-
 ### OpenDRIVE plugin for Unreal Engine
 [brifsttar/OpenDRIVE](https://github.com/brifsttar/OpenDRIVE) plugin allows you to manipulate OpenDRIVE road networks in Unreal Engine. It's based on esmini RoadManager (esminiRMLib).
-
 
 ### Editors
 
