@@ -6385,7 +6385,7 @@ typedef struct
 	PointStruct* osi_point;  // osi point reference
 } XYZHVertex;
 
-Position::ReturnCode Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool connectedOnly, int roadId, bool check_overlapping_roads)
+Position::ReturnCode Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool connectedOnly, int roadId, bool check_overlapping_roads, int hintRoad)
 {
 	// Overall method:
 	//   1. Iterate over all roads, looking at OSI points of each lane sections center line (lane 0)
@@ -6711,7 +6711,8 @@ Position::ReturnCode Position::XYZH2TrackPos(double x3, double y3, double z3, do
 				}
 				if (weightedDist < closestPointDist + SMALL_NUMBER)
 				{
-					bool directlyConnectedCandidate = false;
+					bool isHintRoad = hintRoad == road->GetId();
+					bool directlyConnectedCandidate = isHintRoad;
 
 					if (directlyConnected && closestPointDirectlyConnected)
 					{
