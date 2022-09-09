@@ -6105,7 +6105,29 @@ void OpenDrive::SetRoadMarkOSIPoints()
 										}
 									}
 
-									if (lane_roadMark->GetType() == LaneRoadMark::RoadMarkType::BROKEN || lane_roadMark->GetType() == LaneRoadMark::RoadMarkType::BROKEN_BROKEN || broken)
+									if (lane_roadMark->GetType() == LaneRoadMark::RoadMarkType::BOTTS_DOTS)
+									{
+										// Setting OSI points for each dot
+										while (true)
+										{
+											pos->SetRoadMarkPos(road->GetId(), lane->GetId(), m, 0, n, s_roadmarkline, 0, j);
+											PointStruct p = { s_roadmarkline, pos->GetX(), pos->GetY(), pos->GetZ(), pos->GetHRoad() };
+											osi_point.push_back(p);
+
+											s_roadmarkline += lane_roadMarkTypeLine->GetSpace();
+											if (s_roadmarkline < SMALL_NUMBER || s_roadmarkline > s_end_roadmarkline - SMALL_NUMBER)
+											{
+												if (s_roadmarkline < SMALL_NUMBER)
+												{
+													LOG("Roadmark length + space = 0 - ignoring");
+												}
+												break;
+											}
+										}
+									}
+									else if (lane_roadMark->GetType() == LaneRoadMark::RoadMarkType::BROKEN ||
+										lane_roadMark->GetType() == LaneRoadMark::RoadMarkType::BROKEN_BROKEN ||
+										broken)
 									{
 										// Setting OSI points for each roadmarkline
 										while(true)
@@ -6129,7 +6151,10 @@ void OpenDrive::SetRoadMarkOSIPoints()
 											}
 										}
 									}
-									else if (lane_roadMark->GetType() == LaneRoadMark::RoadMarkType::SOLID || lane_roadMark->GetType() == LaneRoadMark::RoadMarkType::SOLID_SOLID || !broken)							{
+									else if (lane_roadMark->GetType() == LaneRoadMark::RoadMarkType::SOLID ||
+										lane_roadMark->GetType() == LaneRoadMark::RoadMarkType::SOLID_SOLID ||
+										!broken)
+									{
 										s0 = s_roadmarkline;
 										s1 = s0+OSI_POINT_CALC_STEPSIZE;
 										s1_prev = s0;

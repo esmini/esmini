@@ -71,6 +71,35 @@ USE_GRAPHICSWINDOW()
 
 using namespace viewer;
 
+osg::Vec4 viewer::ODR2OSGColor(roadmanager::RoadMarkColor color)
+{
+	osg::Vec4 osgc;
+
+	if (color == roadmanager::RoadMarkColor::YELLOW)
+	{
+		osgc.set(0.9f, 0.9f, 0.25f, 1.0f);
+	}
+	else if (color == roadmanager::RoadMarkColor::GREEN)
+	{
+		osgc.set(0.2f, 0.8f, 0.4f, 1.0f);
+	}
+	else if (color == roadmanager::RoadMarkColor::RED)
+	{
+		osgc.set(0.95f, 0.4f, 0.3f, 1.0f);
+	}
+	else if (color == roadmanager::RoadMarkColor::BLUE)
+	{
+		osgc.set(0.2f, 0.5f, 0.9f, 1.0f);
+	}
+	else
+	{
+		osgc.set(0.95f, 0.95f, 0.92f, 1.0f);
+	}
+
+	return osgc;
+}
+
+
 // Derive a class from NodeVisitor to find a node with a  specific name.
 class FindNamedNode : public osg::NodeVisitor
 {
@@ -2421,26 +2450,54 @@ bool Viewer::CreateRoadMarkLines(roadmanager::OpenDrive* od)
 								}
 							}
 
+							if (lane_roadmark->GetType() == roadmanager::LaneRoadMark::RoadMarkType::BOTTS_DOTS)
+							{
+								// osg references for botts dot osi points
+								osg::ref_ptr<osg::Geometry> osi_rm_geom = new osg::Geometry;
+								osg::ref_ptr<osg::Vec3Array> osi_rm_points = new osg::Vec3Array;
+								osg::ref_ptr<osg::Vec4Array> osi_rm_color = new osg::Vec4Array;
+
+								for (int q = 0; q < curr_osi_rm->GetPoints().size(); q++)
+								{
+									roadmanager::PointStruct osi_point = curr_osi_rm->GetPoint(q);
+
+									// Put points at the location of the botts dot
+									osg::ref_ptr<osg::Point> osi_rm_point = new osg::Point();
+									point.set(osi_point.x, osi_point.y, osi_point.z + z_offset);
+									osi_rm_points->push_back(point);
+									osi_rm_color->push_back(ODR2OSGColor(lane_roadmark->GetColor()));
+									osi_rm_point->setSize(6.0f);
+									osi_rm_geom->setVertexArray(osi_rm_points.get());
+									osi_rm_geom->setColorArray(osi_rm_color.get());
+									osi_rm_geom->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
+									osi_rm_geom->addPrimitiveSet(new osg::DrawArrays(GL_POINTS, 0, osi_rm_points->size()));
+									osi_rm_geom->getOrCreateStateSet()->setAttributeAndModes(osi_rm_point, osg::StateAttribute::ON);
+									osi_rm_geom->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+
+									osi_rm_geom->setNodeMask(NodeMask::NODE_MASK_OSI_POINTS);
+								}
+								osiFeatures_->addChild(osi_rm_geom);
+							}
 							if (lane_roadmark->GetType() == roadmanager::LaneRoadMark::RoadMarkType::BROKEN ||
 								lane_roadmark->GetType() == roadmanager::LaneRoadMark::RoadMarkType::BROKEN_BROKEN ||
 								broken)
 							{
+								// osg references for road mark osi points
+								osg::ref_ptr<osg::Geometry> osi_rm_geom = new osg::Geometry;
+								osg::ref_ptr<osg::Vec3Array> osi_rm_points = new osg::Vec3Array;
+								osg::ref_ptr<osg::Vec4Array> osi_rm_color = new osg::Vec4Array;
+								osg::ref_ptr<osg::Point> osi_rm_point = new osg::Point();
+
+								// osg references for drawing lines between each road mark osi points
+								osg::ref_ptr<osg::Geometry> geom = new osg::Geometry;
+								osg::ref_ptr<osg::Vec3Array> points = new osg::Vec3Array;
+								osg::ref_ptr<osg::Vec4Array> color = new osg::Vec4Array;
+								osg::ref_ptr<osg::LineWidth> lineWidth = new osg::LineWidth();
+
 								for (int q = 0; q < curr_osi_rm->GetPoints().size(); q += 2)
 								{
 									roadmanager::PointStruct osi_point1 = curr_osi_rm->GetPoint(q);
 									roadmanager::PointStruct osi_point2 = curr_osi_rm->GetPoint(q + 1);
-
-									// osg references for road mark osi points
-									osg::ref_ptr<osg::Geometry> osi_rm_geom = new osg::Geometry;
-									osg::ref_ptr<osg::Vec3Array> osi_rm_points = new osg::Vec3Array;
-									osg::ref_ptr<osg::Vec4Array> osi_rm_color = new osg::Vec4Array;
-									osg::ref_ptr<osg::Point> osi_rm_point = new osg::Point();
-
-									// osg references for drawing lines between each road mark osi points
-									osg::ref_ptr<osg::Geometry> geom = new osg::Geometry;
-									osg::ref_ptr<osg::Vec3Array> points = new osg::Vec3Array;
-									osg::ref_ptr<osg::Vec4Array> color = new osg::Vec4Array;
-									osg::ref_ptr<osg::LineWidth> lineWidth = new osg::LineWidth();
 
 									// start point of each road mark
 									point.set(osi_point1.x, osi_point1.y, osi_point1.z + z_offset);
@@ -2450,7 +2507,7 @@ bool Viewer::CreateRoadMarkLines(roadmanager::OpenDrive* od)
 									point.set(osi_point2.x, osi_point2.y, osi_point2.z + z_offset);
 									osi_rm_points->push_back(point);
 
-									osi_rm_color->push_back(osg::Vec4(color_white[0], color_white[1], color_white[2], 1.0));
+									osi_rm_color->push_back(ODR2OSGColor(lane_roadmark->GetColor()));
 
 									// Put points at the start and end of the roadmark
 									osi_rm_point->setSize(6.0f);
@@ -2462,7 +2519,6 @@ bool Viewer::CreateRoadMarkLines(roadmanager::OpenDrive* od)
 									osi_rm_geom->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
 
 									osi_rm_geom->setNodeMask(NodeMask::NODE_MASK_OSI_POINTS);
-									osiFeatures_->addChild(osi_rm_geom);
 
 									// Draw lines from the start of the roadmark to the end of the roadmark
 									if (lane_roadmark->GetWeight() == roadmanager::LaneRoadMark::BOLD)
@@ -2481,8 +2537,9 @@ bool Viewer::CreateRoadMarkLines(roadmanager::OpenDrive* od)
 									geom->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
 
 									geom->setNodeMask(NodeMask::NODE_MASK_OSI_LINES);
-									osiFeatures_->addChild(geom);
 								}
+								osiFeatures_->addChild(osi_rm_geom);
+								osiFeatures_->addChild(geom);
 							}
 							else if (lane_roadmark->GetType() == roadmanager::LaneRoadMark::RoadMarkType::SOLID ||
 								lane_roadmark->GetType() == roadmanager::LaneRoadMark::RoadMarkType::SOLID_SOLID ||
@@ -2505,7 +2562,7 @@ bool Viewer::CreateRoadMarkLines(roadmanager::OpenDrive* od)
 								{
 									point.set(curr_osi_rm->GetPoint(s).x, curr_osi_rm->GetPoint(s).y, curr_osi_rm->GetPoint(s).z + z_offset);
 									osi_rm_points->push_back(point);
-									osi_rm_color->push_back(osg::Vec4(color_white[0], color_white[1], color_white[2], 1.0));
+									osi_rm_color->push_back(ODR2OSGColor(lane_roadmark->GetColor()));
 								}
 
 								// Put points on selected locations

@@ -65,6 +65,8 @@ namespace viewer
 		NODE_MASK_ROUTE_WAYPOINTS  = (1 << 13),
 	} NodeMask;
 
+	osg::Vec4 ODR2OSGColor(roadmanager::RoadMarkColor color);
+
 	class PolyLine
 	{
 	public:

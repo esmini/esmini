@@ -21,8 +21,10 @@
 #include <osg/PolygonOffset>
 #include <osgDB/ReadFile>
 #include <osgUtil/SmoothingVisitor>
+#include <osg/ShapeDrawable>
 
 #include "CommonMini.hpp"
+#include "viewer.hpp"
 
 #define GEOM_TOLERANCE (0.2 - SMALL_NUMBER) // Minimum distance between two vertices along road s-axis
 #define TEXTURE_SCALE 0.5   // Scale factor for asphalt and grass textures 1.0 means whole texture fits in 1 x 1 m square
@@ -71,19 +73,11 @@ void RoadGeom::AddRoadMarkGeom(osg::ref_ptr<osg::Vec3Array> vertices, osg::ref_p
 	roadmanager::RoadMarkColor color)
 {
 	osg::ref_ptr<osg::Material> materialRoadmark_ = new osg::Material;
-	osg::ref_ptr<osg::Vec4Array> color_roadmark = new osg::Vec4Array;
+	osg::ref_ptr<osg::Vec4Array> color_array = new osg::Vec4Array;
+	color_array->push_back(viewer::ODR2OSGColor(color));
 
-	if (color == roadmanager::RoadMarkColor::YELLOW)
-	{
-		color_roadmark->push_back(osg::Vec4(0.9f, 0.9f, 0.25f, 1.0f));
-	}
-	else
-	{
-		color_roadmark->push_back(osg::Vec4(0.95f, 0.95f, 0.92f, 1.0f));
-	}
-
-	materialRoadmark_->setDiffuse(osg::Material::FRONT_AND_BACK, color_roadmark->at(0));
-	materialRoadmark_->setAmbient(osg::Material::FRONT_AND_BACK, color_roadmark->at(0));
+	materialRoadmark_->setDiffuse(osg::Material::FRONT_AND_BACK, color_array->at(0));
+	materialRoadmark_->setAmbient(osg::Material::FRONT_AND_BACK, color_array->at(0));
 //	materialRoadmark_->setShininess(osg::Material::FRONT_AND_BACK, 0);
 
 	// Finally create and add geometry
@@ -91,7 +85,7 @@ void RoadGeom::AddRoadMarkGeom(osg::ref_ptr<osg::Vec3Array> vertices, osg::ref_p
 	geom->setUseDisplayList(true);
 	geom->setVertexArray(vertices.get());
 	geom->addPrimitiveSet(indices.get());
-	geom->setColorArray(color_roadmark.get());
+	geom->setColorArray(color_array.get());
 	geom->setColorBinding(osg::Geometry::BIND_OVERALL);
 
 	// Use PolygonOffset feature to avoid z-fighting with road surface
@@ -160,7 +154,34 @@ int RoadGeom::AddRoadMarks(roadmanager::Lane* lane, osg::Group* parent)
 					}
 				}
 
-				if (lane_roadmark->GetType() == roadmanager::LaneRoadMark::RoadMarkType::BROKEN ||
+				if (lane_roadmark->GetType() == roadmanager::LaneRoadMark::RoadMarkType::BOTTS_DOTS)
+				{
+					for (int q = 0; q < curr_osi_rm->GetPoints().size(); q++)
+					{
+						const double botts_dot_size = 0.15;
+						static osg::ref_ptr<osg::Geode> dot = 0;
+
+						if (dot == 0)
+						{
+							osg::ref_ptr<osg::TessellationHints> th = new osg::TessellationHints();
+							th->setDetailRatio(0.3f);
+							osg::ref_ptr<osg::ShapeDrawable> shape = new osg::ShapeDrawable(
+								new osg::Cylinder(osg::Vec3(0.0, 0.0, 0.0), botts_dot_size, 0.3 * botts_dot_size), th
+							);
+							shape->setColor(viewer::ODR2OSGColor(lane_roadmark->GetColor()));
+							dot = new osg::Geode;
+							dot->addDrawable(shape);
+						}
+
+						roadmanager::PointStruct osi_point0 = curr_osi_rm->GetPoint(q);
+
+						osg::ref_ptr<osg::PositionAttitudeTransform> tx = new osg::PositionAttitudeTransform;
+						tx->setPosition(osg::Vec3(osi_point0.x, osi_point0.y, osi_point0.z));
+						tx->addChild(dot);
+						rm_group_->addChild(tx);
+					}
+				}
+				else if (lane_roadmark->GetType() == roadmanager::LaneRoadMark::RoadMarkType::BROKEN ||
 					lane_roadmark->GetType() == roadmanager::LaneRoadMark::RoadMarkType::BROKEN_BROKEN ||
 					broken)
 				{
