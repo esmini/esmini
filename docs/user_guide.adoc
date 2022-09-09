@@ -1031,6 +1031,88 @@ To disable any controller simply apply ActivateControllerAction on no domain, li
 ----
 That should work in all OpenSCENARIO supporting tools. In esmini you can also assign `DefaultController` which will disconnect any assigned controller.
 
+=== The ghost concept
+
+The purpose of the ghost concept is to support external driver models. The idea is to launch a forerunner, which performs the maneuvers in the OSC file. The resulting trajectory (also called trail), including speed and heading info, is registered. The driver model can then use the ghost trail as guidance. More specifically, the driver model can probe the trail at any timestamp or distance from its current pos and use the result for both steering and speed target.
+
+image::ghost_concept1.png[]
+
+A typical use case is having an external Ego vehicle simulator, including System Under test (SUT) and a driver model. Instead of the driver model (in the external simulator) being aware of and execute scenario maneuvers it can hand over to esmini to play the maneuvers and then simply try to mimic it, following in ghost's trail. This way the external simulator can benefit from esmini scenario engine and just concentrate on following the ghost.
+
+The ghost feature is available in the following esmini embedded controllers:
+
+* <<FollowGhost>>
+* <<ExternalController>>
+
+There are two different methods to probe the ghost trail:
+By time: Ask for ghost state (pos, heading, speed...) at specific timestamp
+By distance: Ask for ghost state at a specific distance, from a position (typically current Ego position)
+
+Both methods will return a RoadInfo structure including position details e.g. world position (absolute and relative Ego), road coordinates, road pitch, trail heading, heading angle to the target point and ghost speed at that point.
+
+[source,xml]
+----
+include::{src-local-root}/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp[tag=SE_RoadInfo_struct]
+----
+
+[discrete]
+==== Time method
+This approach is trivial, it will give the state of ghost at the specified timestamp using the API call:
+
+https://github.com/esmini/esmini/blob/362bcae28253f4eef2778e6f11b7a8393e6a3cd4/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L815[int SE_GetRoadInfoGhostTrailTime(int object_id, float time, SE_RoadInfo* data, float* speed_ghost);]
+
+[discrete]
+==== Distance method
+
+The API call is:
+
+https://github.com/esmini/esmini/blob/362bcae28253f4eef2778e6f11b7a8393e6a3cd4/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L805[int SE_GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, SE_RoadInfo *data, float *speed_ghost);]
+
+
+The method needs some further explanation. The basic idea is to look specified distance along the ghost trail and receive information at that target point. The tricky part is where to start measuring the distance from. This is how it works:
+
+image::ghost_concept2.png[]
+
+. From Ego, find closest point on trail (blue point)
+. From that point, look forward x meters along trail (red dot) 
+. Get info from that ”target” point
+
+Tuning parameters:
+
+. Lookahead distance along trail
+  * Typically speed dependent (look further at higher speeds)
+  * Potentially decrease distance with increased curvature (to stay on road)
+. Headstart time
+ * As small as possible, but enough for required lookahead distance
+
+[Note]
+====
+*Note:*
+If lookahead distance is too large, the steering target angle becomes irrelevant, leading to driving off road
+====
+
+.Too large lookahead distance
+image::ghost_concept3.png[]
+[discrete]
+==== Actions and triggers
+
+Most actions that affects motion will be transferred from the original entity (Ego) to its ghost, for example: `SpeedAction`, `LaneChangeAction` and `TeleportAction`. In addition, triggers will be affected in the following ways: 
+
+* Entity triggers: Replace any occurrence of original entity with ghost in the list of `TriggeringEntities`. For example, if the vehicle should brake when reaching a specified position, then it's the ghost that should trigger the action - not the original entity.
+* Other triggers: Restart ghost from where the Ego is now, in effect rewind ghost `headStartTime` seconds and recreate trajectory from there. The purpose is to enable ghost to react on triggers that happens in the "real" scenario (which plays out `headStartTime` seconds behind the ghost)
+* `SimulationTime` trigger conditions for events where Ego is the actor will be adjusted wrt ghost `headStartTime` time. For example, if vehicle should brake after 20 seconds of driving (simulationTime = 20), then it will be changed to simulationTime = 17 (for headstart 3s), since the ghost has been driving for 20 seconds at that point.
+
+Note that the strategy results in desired behavior in probably the majority of cases, but not all. There might be exceptions where another behavior is expected or required. The manipulation described above is handled by the method https://github.com/esmini/esmini/blob/362bcae28253f4eef2778e6f11b7a8393e6a3cd4/EnvironmentSimulator/Modules/ScenarioEngine/SourceFiles/ScenarioEngine.cpp#L1103[ScenarioEngine::SetupGhost()] which in best case can be modified to fit custom needs.
+
+[discrete]
+==== Additional notes on using the ghost feature
+
+Timestamps in log are always of same reference. Whenever a ghost is involved the time will start at -`headStartTime`, in order for the actual scenario to start at simulationTime = 0. Example: Assuming `headStartTime = 3s`, a log message for an Ego action like:
+
+`-2.100: SpeedChange standbyState -> startTransition -> runningState`
+
+means that action SpeedChange (Ego action that has been moved to ghost) is performed 0.9 (-2.1 + 3) seconds after ghost was launched. This would, for example, be the case for a `simulationTime = 0.9` condition.
+
 === esmini embedded controllers
 
 Below is a listing of some of the available controllers in esmini. Note that only DefaultController is related to the OpenSCENARIO standard. The other ones are esmini-specific and will not work in other tools (so far there is no standard plugin-architecture for controllers to enable moving between tools). For updated and complete definition of controllers and their parameters, see https://github.com/esmini/esmini/blob/master/resources/xosc/Catalogs/Controllers/ControllerCatalog.xosc[ControllerCatalog.xosc].
