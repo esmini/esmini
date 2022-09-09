@@ -1,5 +1,13 @@
 ## esmini release notes
 
+### 2022-09-09 Version 2.26.3
+
+- Add support for [botts' dots](https://en.wikipedia.org/wiki/Botts%27_dots)
+  - OpenDRIVE roadMarkType: `botts dots`
+  - OSI LaneBoundary/Classification/Type: `TYPE_BOTTS_DOTS`
+  - example in [Unittest/xodr/mw_100m.xodr](https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/Unittest/xodr/mw_100m.xodr)
+- Add info on ghost concept to [User guide](https://esmini.github.io/#_the_ghost_concept)
+
 ### 2022-09-05 Version 2.26.2
 
 - New features:
