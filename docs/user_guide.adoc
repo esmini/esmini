@@ -881,6 +881,85 @@ image::speed_sign1.png[]
 .German speed sign
 image::speed_sign2.png[]
 
+=== Expressions
+From OpenSCENARIO v1.1 https://www.asam.net/index.php?eID=dumpFile&t=f&f=4908&token=ae9d9b44ab9257e817072a653b5d5e98ee0babf8#_expressions[expressions] including mathematical operations are supported in assignment of value to OpenSCENARIO https://www.asam.net/index.php?eID=dumpFile&t=f&f=4908&token=ae9d9b44ab9257e817072a653b5d5e98ee0babf8#_parameters[parameters] and XML element attributes. Examples:
+
+[source,xml]
+----
+<ParameterDeclaration name="PI" parameterType="double" value="3.14159"/>
+<ParameterDeclaration name="KPH2MPS" parameterType="double" value="1/3.6"/>
+
+...
+
+<Position>
+    <LanePosition roadId="1" laneId="-1" s="40" offset="0">
+        <Orientation type="absolute" h="${sin(0.25*$PI)}"/>
+    </LanePosition>
+</Position>
+
+...
+
+<SpeedActionTarget>
+    <AbsoluteTargetSpeed value="${110 * $KPH2MPS}"/>
+</SpeedActionTarget>
+----
+
+h and (speed value) evaluates to 0.707106 and 30.55558 respectively
+
+[discrete]
+==== Expression operators and functions supported, as per 2022-09-12
+
+*Operators*
+
+[%autowidth,frame=none,grid=none,cols="1a,1"]
+|===
+|`+`|
+|`-`|
+|`*`| multiply
+|`/`|
+|`%`| modulo/reminder, see https://cplusplus.com/reference/cmath/fmod/[C++ fmod]
+|`**`| power
+|`<`|
+|`\<=`|
+|`>`|
+|`>=`|
+|`==`| equal
+|`!=`| not equal
+|`&&`| logical AND
+|`\|\|`| logical OR
+|===
+
+See https://github.com/esmini/esmini/blob/a53f09d85194509aa9d0c12971b1c73963c21d34/externals/expr/expr.h#L169[expr.h] for complete and updated list.
+
+*Functions*
+
+[%autowidth,frame=none,grid=none,cols="1a,1"]
+|===
+|`round`| see https://cplusplus.com/reference/cmath/round/[C++ round]
+|`floor`| see https://cplusplus.com/reference/cmath/floor/[C++ floor]
+|`ceil`| see https://cplusplus.com/reference/cmath/ceil/[C++ ceil]
+|`sqrt`| square root
+|`pow`| see https://cplusplus.com/reference/cmath/pow/[C++ pow]
+|===
+
+Following functions are supported by esmini, but not specified in OpenSCENARIO \<= 1.2, hence use with care since they may not work in other tools
+
+[%autowidth,frame=none,grid=none,cols="1a,1"]
+|===
+|`sin`|
+|`cos`|
+|`tan`|
+|`asin`|
+|`acos`|
+|`atan`|
+|`sign`|
+|`abs`|
+|`max`|
+|`min`|
+|===
+
+See https://github.com/esmini/esmini/blob/c9dc63c45be0dc479c22b78be74d047fc4449e7c/EnvironmentSimulator/Modules/ScenarioEngine/SourceFiles/simple_expr.c#L101[simple_expr.c] for complete and updated list.
+
 == Controllers
 
 === Controller concept

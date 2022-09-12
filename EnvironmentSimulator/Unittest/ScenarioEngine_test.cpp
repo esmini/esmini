@@ -332,6 +332,32 @@ TEST(ExpressionTest, EnsureResult)
     ASSERT_DOUBLE_EQ(eval_expr("2**3"), 8.0);
     ASSERT_DOUBLE_EQ(eval_expr("13.88888888888889 - 1.0"), 12.88888888888889);
     ASSERT_DOUBLE_EQ(eval_expr("13.88888888888889 - 0.0"), 13.88888888888889);
+
+    // round returns the integral value that is nearest to x, with halfway cases rounded away from zero.
+    ASSERT_DOUBLE_EQ(eval_expr("round(-2.5)"), -3.0);
+    ASSERT_DOUBLE_EQ(eval_expr("round(-3.5)"), -4.0);
+    ASSERT_DOUBLE_EQ(eval_expr("round(2.5)"), 3.0);
+    ASSERT_DOUBLE_EQ(eval_expr("round(3.5)"), 4.0);
+
+    // additional expressions not specified in OSC <=1.2
+    // may not work in other OpenSCENARIO compliant tools
+    EXPECT_DOUBLE_EQ(eval_expr("min(7,7.1)"), 7.0);
+    EXPECT_DOUBLE_EQ(eval_expr("max(7,7.1)"), 7.1);
+    EXPECT_DOUBLE_EQ(eval_expr("min(-7,-7.1)"), -7.1);
+    EXPECT_DOUBLE_EQ(eval_expr("max(-7,-7.1)"), -7.0);
+    EXPECT_DOUBLE_EQ(eval_expr("sign(7)"), 1);
+    EXPECT_DOUBLE_EQ(eval_expr("sign(-7)"), -1);
+    EXPECT_NEAR(eval_expr("sin(1.1)"), 0.89120, 1e-5);
+    EXPECT_NEAR(eval_expr("sin(7.0)"), 0.65698, 1e-5);
+    EXPECT_NEAR(eval_expr("cos(-2.0)"), -0.41614, 1e-5);
+    EXPECT_NEAR(eval_expr("atan(20.0)"), 1.52083, 1e-5);
+    EXPECT_NEAR(eval_expr("atan(-20.0)"), -1.52083, 1e-5);
+    EXPECT_NEAR(eval_expr("asin(0.5)"), 0.523598, 1e-5);
+    EXPECT_NEAR(eval_expr("acos(-0.5)"), 2.09440, 1e-5);
+    EXPECT_NEAR(eval_expr("abs(-0.5)"), 0.5, 1e-5);
+    EXPECT_NEAR(eval_expr("abs(0.5)"), 0.5, 1e-5);
+    EXPECT_NEAR(eval_expr("abs(2.9)"), 2.9, 1e-5);
+    EXPECT_NEAR(eval_expr("abs(-2.9)"), 2.9, 1e-5);
 }
 
 TEST(OptionsTest, TestOptionHandling)
