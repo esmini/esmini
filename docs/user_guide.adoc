@@ -917,7 +917,7 @@ h and (speed value) evaluates to 0.707106 and 30.55558 respectively
 |`-`|
 |`*`| multiply
 |`/`|
-|`%`| modulo/reminder, see https://cplusplus.com/reference/cmath/fmod/[C++ fmod]
+|`%`| modulo/remainder, see https://cplusplus.com/reference/cmath/fmod/[C++ fmod]
 |`**`| power
 |`<`|
 |`\<=`|
