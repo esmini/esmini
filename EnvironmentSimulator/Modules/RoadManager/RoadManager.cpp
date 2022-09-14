@@ -2454,7 +2454,7 @@ int Road::GetConnectedLaneIdAtS(int lane_id, double s_start, double s_target)
 	return connected_lane_id;
 }
 
-bool Road::IsDirectlyConnected(Road* road, LinkType link_type, ContactPointType* contact_point)
+bool Road::IsDirectlyConnected(Road* road, LinkType link_type, ContactPointType* contact_point, int fromLaneId)
 {
 	if (road == nullptr)
 	{
@@ -2493,7 +2493,21 @@ bool Road::IsDirectlyConnected(Road* road, LinkType link_type, ContactPointType*
 					*contact_point = connection->GetContactPoint();
 				}
 				// need to calculate contact point for non direct junctions?
-				return true;
+
+				if (fromLaneId != 0)
+				{
+					for (int j = 0; j < (int)connection->GetNumberOfLaneLinks(); j++)
+					{
+						if (connection->GetLaneLink(j)->from_ == fromLaneId)
+						{
+							return true;
+						}
+					}
+				}
+				else
+				{
+					return true;
+				}
 			}
 		}
 	}
@@ -2501,22 +2515,22 @@ bool Road::IsDirectlyConnected(Road* road, LinkType link_type, ContactPointType*
 	return false;
 }
 
-bool Road::IsSuccessor(Road* road, ContactPointType* contact_point)
+bool Road::IsSuccessor(Road* road, ContactPointType* contact_point, int fromLaneId)
 {
-	return IsDirectlyConnected(road, LinkType::SUCCESSOR, contact_point) != 0;
+	return IsDirectlyConnected(road, LinkType::SUCCESSOR, contact_point, fromLaneId) != 0;
 }
 
-bool Road::IsPredecessor(Road* road, ContactPointType* contact_point)
+bool Road::IsPredecessor(Road* road, ContactPointType* contact_point, int fromLaneId)
 {
-	return IsDirectlyConnected(road, LinkType::PREDECESSOR, contact_point) != 0;
+	return IsDirectlyConnected(road, LinkType::PREDECESSOR, contact_point, fromLaneId) != 0;
 }
 
-bool Road::IsDirectlyConnected(Road* road, double* curvature)
+bool Road::IsDirectlyConnected(Road* road, double* curvature, int fromLaneId)
 {
 	ContactPointType contact_point;
 
 	// Unspecified link, check both ends
-	if (IsSuccessor(road, &contact_point) || IsPredecessor(road, &contact_point))
+	if (IsSuccessor(road, &contact_point, fromLaneId) || IsPredecessor(road, &contact_point, fromLaneId))
 	{
 		// Find out curvature
 		if (contact_point == ContactPointType::CONTACT_POINT_START && road->geometry_.size() > 0)
@@ -5722,7 +5736,7 @@ void OpenDrive::SetLaneOSIPoints()
 				while(++counter)
 				{
 					// Make sure we stay within lane section length
-					double s = MIN(pos_candidate.GetS() + step, lsec_end);
+					double s = MIN(pos_candidate.GetS() + step, lsec_end - SMALL_NUMBER);
 
 					// [X1, Y1] = Real position with no tolerance
 					pos_candidate.SetLanePos(road->GetId(), lane->GetId(), s, 0, j);
@@ -5767,7 +5781,7 @@ void OpenDrive::SetLaneOSIPoints()
 					max_segment_length = GetMaxSegmentLen(&pos_candidate, 1.1 * OSI_POINT_CALC_STEPSIZE, SE_Env::Inst().GetOSIMaxLongitudinalDistance(),
 						OSI_POINT_DIST_SCALE, OSI_POINT_DIST_SCALE);
 
-					if (pos_candidate.GetS() + SMALL_NUMBER > lsec_end ||   // end of the lane reached, assign as final OSI point
+					if (pos_candidate.GetS() + SMALL_NUMBER > lsec_end - SMALL_NUMBER ||   // end of the lane reached, assign as final OSI point
 						osi_requirement && pos_candidate.GetS() - pos_pivot.GetS() > max_segment_length - SMALL_NUMBER ||
 						abs(step) < min_segment_length + SMALL_NUMBER)
 					{
@@ -5775,7 +5789,7 @@ void OpenDrive::SetLaneOSIPoints()
 						osi_point.push_back(p);
 						insert = false;
 
-						if (pos_candidate.GetS() + SMALL_NUMBER > lsec_end)
+						if (pos_candidate.GetS() + SMALL_NUMBER > lsec_end - SMALL_NUMBER)
 						{
 							break;
 						}
@@ -6136,8 +6150,9 @@ void OpenDrive::SetRoadMarkOSIPoints()
 											PointStruct p = { s_roadmarkline, pos->GetX(), pos->GetY(), pos->GetZ(), pos->GetHRoad() };
 											osi_point.push_back(p);
 
-											pos->SetRoadMarkPos(road->GetId(), lane->GetId(), m, 0, n, s_roadmarkline+lane_roadMarkTypeLine->GetLength(), 0, j);
-											p = { s_roadmarkline + lane_roadMarkTypeLine->GetLength(), pos->GetX(), pos->GetY(), pos->GetZ(), pos->GetHRoad() };
+											double s_rm_end = MIN(s_roadmarkline + lane_roadMarkTypeLine->GetLength(), s_end_roadmark);
+											pos->SetRoadMarkPos(road->GetId(), lane->GetId(), m, 0, n, s_rm_end, 0, j);
+											p = { s_rm_end, pos->GetX(), pos->GetY(), pos->GetZ(), pos->GetHRoad() };
 											osi_point.push_back(p);
 
 											s_roadmarkline += lane_roadMarkTypeLine->GetLength() + lane_roadMarkTypeLine->GetSpace();
@@ -6527,7 +6542,7 @@ Position::ReturnCode Position::XYZH2TrackPos(double x3, double y3, double z3, do
 		// actual weights are totally unscientific... up to tuning
 		if (road != current_road)
 		{
-			if (current_road && current_road->IsDirectlyConnected(road, &curvature))
+			if (current_road && current_road->IsDirectlyConnected(road, &curvature, lane_id_))
 			{
 				directlyConnected = true;
 			}
@@ -6736,7 +6751,7 @@ Position::ReturnCode Position::XYZH2TrackPos(double x3, double y3, double z3, do
 				}
 				if (weightedDist < closestPointDist + SMALL_NUMBER)
 				{
-					bool directlyConnectedCandidate = false;
+					bool directlyConnectedCandidate = directlyConnected;
 
 					if (directlyConnected && closestPointDirectlyConnected)
 					{
@@ -6744,9 +6759,9 @@ Position::ReturnCode Position::XYZH2TrackPos(double x3, double y3, double z3, do
 						// among equally close ones, find the one which goes the most straight forward
 						if (fabs(weightedDist - closestPointDist) < SMALL_NUMBER)
 						{
-							if (abs(curvature) < curvatureAbsMin)
+							if (abs(curvature) > curvatureAbsMin)
 							{
-								directlyConnectedCandidate = true;
+								directlyConnectedCandidate = false;
 							}
 						}
 					}

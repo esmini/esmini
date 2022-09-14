@@ -452,6 +452,7 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive *odr)
 						else
 						{
 							s_index[k] = osiPoints.size() - 1;  // add last OSI point for end of mesh
+							s_min = osiPoints.back().s;
 						}
 					}
 

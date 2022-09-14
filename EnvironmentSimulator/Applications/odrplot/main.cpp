@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
 
 				for (int k = 0; k < steps + 1; k++)
 				{
-					double s = MIN(s_end, s_start + k * step_length);
+					double s = MIN(s_end - SMALL_NUMBER, s_start + k * step_length);
 
 					// Set lane offset to half the lane width in order to mark the outer edge of the lane (laneOffset = 0 means middle of lane)
 					pos->SetLanePos(road->GetId(), lane->GetId(), s, SIGN(lane->GetId())*lane_section->GetWidth(s, lane->GetId())*0.5, i);

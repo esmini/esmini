@@ -1390,33 +1390,37 @@ namespace roadmanager
 			Check if specified road is directly connected to at specified end of current one (this)
 			@param road Road to check if connected with current one
 			@param contact_point If not null it will contain the contact point of specified road
+			@param fromLaneId If not zero, a connection from this lane must exist on specified road
 			@return true if connection exist, else false
 		*/
-		bool IsDirectlyConnected(Road *road, LinkType link_type, ContactPointType *contact_point = 0);
+		bool IsDirectlyConnected(Road *road, LinkType link_type, ContactPointType *contact_point, int fromLaneId = 0);
 
 		/**
 			Check if specified road is directly connected, at least in one end of current one (this)
 			@param road Road to check if connected with current one
 			@param curvature Optional return parameter for curvature of checked road at connection point
+			@param fromLaneId If not zero, a connection from this lane must exist on specified road
 			@return true if connection exist, else false
 		*/
-		bool IsDirectlyConnected(Road *road, double *curvature = 0);
+		bool IsDirectlyConnected(Road *road, double *curvature = 0, int fromLaneId = 0);
 
 		/**
 			Check if specified road is directly connected as successor to current one (this)
 			@param road Road to check if connected with current one
 			@param contact_point If not null it will contain the contact point of the successor road
+			@param fromLaneId If not zero, a connection from this lane must exist on specified road
 			@return true if connection exist, else false
 		*/
-		bool IsSuccessor(Road *road, ContactPointType *contact_point = 0);
+		bool IsSuccessor(Road *road, ContactPointType *contact_point = 0, int fromLaneId = 0);
 
 		/**
 			Check if specified road is directly connected as predecessor to current one (this)
 			@param road Road to check if connected with current one
 			@param contact_point If not null it will contain the contact point of the predecessor road
+			@param fromLaneId If not zero, a connection from this lane must exist on specified road
 			@return true if connection exist, else false
 		*/
-		bool IsPredecessor(Road *road, ContactPointType *contact_point = 0);
+		bool IsPredecessor(Road *road, ContactPointType *contact_point = 0, int fromLaneId = 0);
 
 		/**
 			Get width of road
