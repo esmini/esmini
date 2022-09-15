@@ -917,7 +917,7 @@ h and (speed value) evaluates to 0.707106 and 30.55558 respectively
 |`-`|
 |`*`| multiply
 |`/`|
-|`%`| modulo/remainder, see https://cplusplus.com/reference/cmath/fmod/[C++ fmod]
+|`%`| modulo/remainder, see https://cplusplus.com/reference/cmath/fmod/[C++ fmod] (might deviate from IEEE 754)
 |`**`| power
 |`<`|
 |`\<=`|
@@ -935,7 +935,7 @@ See https://github.com/esmini/esmini/blob/a53f09d85194509aa9d0c12971b1c73963c21d
 
 [%autowidth,frame=none,grid=none,cols="1a,1"]
 |===
-|`round`| see https://cplusplus.com/reference/cmath/round/[C++ round]
+|`round`| see https://cplusplus.com/reference/cmath/round/[C++ round] (might deviate from IEEE 754)
 |`floor`| see https://cplusplus.com/reference/cmath/floor/[C++ floor]
 |`ceil`| see https://cplusplus.com/reference/cmath/ceil/[C++ ceil]
 |`sqrt`| square root

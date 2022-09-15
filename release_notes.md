@@ -1,5 +1,20 @@
 ## esmini release notes
 
+### 2022-09-15 Version 2.26.4
+
+- Support some additional expression functions, e.g. sin, sign and atan.
+  - NOTE: These functions are extensions to OpenSCENARIO, use with care
+  - Complete list see [User guide - Expressions](https://esmini.github.io/#_expressions)
+- Fix lane offset, tolerate discontinuities
+  - ensure correct lane tesselation for offset steps, e.g. when lane shift left or right
+  - cut lane markings at end of lane sections
+- Calculate speed and wheel orientations if not reported for external vehicles ([issue #163](https://github.com/esmini/esmini/issues/163))
+  - default is to calculate speed and wheel roll and yaw angles based on vehicle motion
+  - can be overridden by simply reporting the values, see example in [test-driver.cpp](https://github.com/esmini/esmini/blob/c0d815cda69f74ce9e0e0153476e926bfd84feaf/EnvironmentSimulator/code-examples/test-driver/test-driver.cpp#L105)
+- Improve world coordinate (x, y) mapping to road coordinates
+  - prioritize connected lanes wrt previous known road coordinate
+  - for example when entering an intersection with overlapping lanes
+
 ### 2022-09-09 Version 2.26.3
 
 - Add support for [botts' dots](https://en.wikipedia.org/wiki/Botts%27_dots)
