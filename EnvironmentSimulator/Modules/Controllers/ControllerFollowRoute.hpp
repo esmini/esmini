@@ -113,14 +113,7 @@ namespace scenarioengine
 		 * @brief Wrapper for controller::deactivate, to include testMode
 		 *
 		 */
-		void Deactivate(){
-			if (testMode_)
-			{
-				object_->SetSpeed(0);
-			}
-			LOG("WARNING: ControllerFollowRoute - Deactivated");
-			Controller::Deactivate();
-		};
+		void Deactivate();
 
 		/**
 		 * @brief Get the Waypoint Status, checks if entity has missed, reached, or passed waypoint.

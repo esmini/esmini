@@ -280,7 +280,7 @@ ControllerALKS_R157SM::Model::Model(ModelType type, double reaction_time,
     double max_dec_, double max_range_) : type_(type), rt_(reaction_time), entities_(0),
     rt_counter_(0.0), max_dec_(max_dec_), max_range_(max_range_), max_acc_(3.0), max_acc_lat_(1.0), veh_(nullptr),
     set_speed_(0.0), log_level_(1),model_mode_(ModelMode::CRUISE_NO_TARGET), acc_(0.0), cruise_comfort_acc_(2.0),
-    cut_in_detected_timestamp_(0.0), cruise_comfort_dec_(2.0), cruise_max_acc_(3.0), cruise_max_dec_(4.0), cruise_(false)
+    cut_in_detected_timestamp_(0.0), cruise_comfort_dec_(2.0), cruise_max_acc_(3.0), cruise_max_dec_(4.0), cruise_(true)
 {
     ResetObjectInFocus();
 }

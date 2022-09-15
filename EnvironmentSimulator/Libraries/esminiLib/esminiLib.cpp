@@ -1008,7 +1008,7 @@ extern "C"
 		return -1;
 	}
 
-	SE_DLL_API int SE_ReportObjectPos(int object_id, float timestamp, float x, float y, float z, float h, float p, float r, float speed)
+	SE_DLL_API int SE_ReportObjectPos(int object_id, float timestamp, float x, float y, float z, float h, float p, float r)
 	{
 		Object* obj = nullptr;
 		if (getObjectById(object_id, obj) == -1)
@@ -1016,37 +1016,33 @@ extern "C"
 			return -1;
 		}
 
-		player->scenarioGateway->reportObject(object_id, obj->name_, obj->type_, obj->category_, obj->model_id_,
-			obj->GetActivatedControllerType(), obj->boundingbox_, static_cast<int>(obj->scaleMode_), obj->visibilityMask_,
-			timestamp, speed, obj->wheel_angle_, obj->wheel_rot_, x, y, z, h, p, r);
+		player->scenarioGateway->updateObjectWorldPos(object_id, timestamp, x, y, z, h, p, r);
 
 		return 0;
 	}
 
-	SE_DLL_API int SE_ReportObjectPosXYH(int object_id, float timestamp, float x, float y, float h, float speed)
+	SE_DLL_API int SE_ReportObjectPosXYH(int object_id, float timestamp, float x, float y, float h)
 	{
 		Object* obj = nullptr;
 		if (getObjectById(object_id, obj) == -1)
 		{
 			return -1;
 		}
-		player->scenarioGateway->reportObject(object_id, obj->name_, obj->type_, obj->category_, obj->model_id_,
-			obj->GetActivatedControllerType(), obj->boundingbox_, static_cast<int>(obj->scaleMode_), obj->visibilityMask_,
-			timestamp, speed, obj->wheel_angle_, obj->wheel_rot_, x, y, h);
+
+		player->scenarioGateway->updateObjectWorldPosXYH(object_id, timestamp, x, y, h);
 
 		return 0;
 	}
 
-	SE_DLL_API int SE_ReportObjectRoadPos(int object_id, float timestamp, int roadId, int laneId, float laneOffset, float s, float speed)
+	SE_DLL_API int SE_ReportObjectRoadPos(int object_id, float timestamp, int roadId, int laneId, float laneOffset, float s)
 	{
 		Object* obj = nullptr;
 		if (getObjectById(object_id, obj) == -1)
 		{
 			return -1;
 		}
-		player->scenarioGateway->reportObject(object_id, obj->name_, obj->type_, obj->category_, obj->model_id_,
-			obj->GetActivatedControllerType(), obj->boundingbox_, static_cast<int>(obj->scaleMode_), obj->visibilityMask_,
-			timestamp, speed, obj->wheel_angle_, obj->wheel_rot_, roadId, laneId, laneOffset, s);
+
+		player->scenarioGateway->updateObjectLanePos(object_id, timestamp, roadId, laneId, laneOffset, s);
 
 		return 0;
 	}

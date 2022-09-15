@@ -100,10 +100,17 @@ int main(int argc, char* argv[])
 			SE_SimpleVehicleGetState(vehicleHandle, &vehicleState);
 
 			// Report updated vehicle position and heading. z, pitch and roll will be aligned to the road
-			SE_ReportObjectPosXYH(0, 0, vehicleState.x, vehicleState.y, vehicleState.h, vehicleState.speed);
+			SE_ReportObjectPosXYH(0, 0, vehicleState.x, vehicleState.y, vehicleState.h);
 
-			// Also report wheel status (revolution and steering angles)
+			// The following values are not necessary to report.
+			// If not reported, esmini will calculate based on motion over time
+			// but for accuracy it's recommendeded to report if available.
+
+			// wheel status (revolution and steering angles)
 			SE_ReportObjectWheelStatus(0, vehicleState.wheel_rotation, vehicleState.wheel_angle);
+
+			// speed (along vehicle longitudinal (x) axis)
+			SE_ReportObjectSpeed(0, vehicleState.speed);
 
 			// Finally, update scenario using same time step as for vehicle model
 			SE_StepDT(dt);

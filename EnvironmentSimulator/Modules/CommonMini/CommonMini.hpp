@@ -415,6 +415,11 @@ int PointSideOfVec(double px, double py, double vx1, double vy1, double vx2, dou
 double GetLengthOfLine2D(double x1, double y1, double x2, double y2);
 
 /**
+	Retrieve the length of a 2D vector
+*/
+double GetLengthOfVector2D(double x, double y);
+
+/**
 	Retrieve the length of a 3D vector
 */
 double GetLengthOfVector3D(double x, double y, double z);

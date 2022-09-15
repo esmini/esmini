@@ -330,8 +330,6 @@ void FollowTrajectoryAction::Start(double simTime, double dt)
 
 	// But totally decouple trajectory positioning from road heading
 	object_->pos_.SetAlignModeH(roadmanager::Position::ALIGN_MODE::ALIGN_SOFT);
-
-	object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);
 }
 
 void FollowTrajectoryAction::End(double simTime)
@@ -363,7 +361,7 @@ void FollowTrajectoryAction::Step(double simTime, double dt)
 	}
 
 	// signal that an action owns control
-	object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);
+	object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::SPEED);
 
 	if (!object_->IsGhost() && simTime < 0.0)
 	{
@@ -690,7 +688,7 @@ void LatLaneChangeAction::Step(double simTime, double dt)
 		object_->pos_.XYZH2TrackPos(object_->pos_.GetX(), object_->pos_.GetY(), object_->pos_.GetZ(), object_->pos_.GetH());
 	}
 
-	object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);
+	object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::SPEED);
 }
 
 void LatLaneChangeAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
@@ -1563,7 +1561,7 @@ void TeleportAction::Start(double simTime, double dt)
 
 	LOG("%s New position:", object_->name_.c_str());
 	object_->pos_.Print();
-	object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);
+	object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::SPEED);
 	object_->reset_ = true;
 }
 

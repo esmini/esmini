@@ -854,7 +854,7 @@ int ScenarioEngine::defaultController(Object* obj, double dt)
 			if (tow_vehicle == nullptr)
 			{
 				retval = static_cast<int>(obj->MoveAlongS(steplen, true));
-				obj->SetDirtyBits(Object::DirtyBit::LONGITUDINAL);
+				obj->SetDirtyBits(Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::SPEED);
 			}
 		}
 	}
@@ -919,6 +919,12 @@ void ScenarioEngine::prepareGroundTruth(double dt)
 				{
 					// If not already reported, calculate linear velocity
 					obj->SetVel(dx / dt, dy / dt, 0.0);
+
+					// If default controller has not updated speed, calculate it
+					if (!obj->CheckDirtyBits(Object::DirtyBit::SPEED))
+					{
+						obj->SetSpeed(GetLengthOfVector2D(dx / dt, dy / dt));
+					}
 				}
 
 				if (!obj->CheckDirtyBits(Object::DirtyBit::ACCELERATION))

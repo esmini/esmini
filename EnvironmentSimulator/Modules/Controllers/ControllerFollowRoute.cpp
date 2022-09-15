@@ -243,17 +243,8 @@ void ControllerFollowRoute::CreateLaneChange(int lane)
 
 void ControllerFollowRoute::ChangeLane(double timeStep)
 {
-	if (laneChangeAction_ == nullptr)
+	if (laneChangeAction_ == nullptr || laneChangeAction_->state_ == OSCAction::State::COMPLETE)
 	{
-		return;
-	}
-
-	if (laneChangeAction_->state_ == OSCAction::State::COMPLETE)
-	{
-		changingLane_ = false;
-		delete laneChangeAction_;
-		laneChangeAction_ = nullptr;
-		mode_ = Mode::MODE_ADDITIVE;
 		return;
 	}
 
@@ -267,10 +258,17 @@ void ControllerFollowRoute::ChangeLane(double timeStep)
 		mode_ = Mode::MODE_ADDITIVE;
 		laneChangeAction_->Step(scenarioEngine_->getSimulationTime(), timeStep);
 		mode_ = Mode::MODE_OVERRIDE;
-		if (laneChangeAction_->state_ != OSCAction::State::COMPLETE)
+
+		laneChangeAction_->UpdateState();
+		if (laneChangeAction_->state_ == OSCAction::State::COMPLETE)
 		{
-			laneChangeAction_->UpdateState();
+			changingLane_ = false;
+			delete laneChangeAction_;
+			laneChangeAction_ = nullptr;
+			mode_ = Mode::MODE_ADDITIVE;
+			return;
 		}
+
 		// Fetch updated position after lane change step
 		vehicle_.posX_ = object_->pos_.GetX();
 		vehicle_.posY_ = object_->pos_.GetY();
@@ -352,6 +350,16 @@ double ControllerFollowRoute::DistanceBetween(roadmanager::Position p1, roadmana
 
 	return sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2));
 }
+
+void ControllerFollowRoute::Deactivate()
+{
+	if (testMode_)
+	{
+		gateway_->updateObjectSpeed(object_->GetId(), 0.0, 0.0);
+	}
+	LOG("ControllerFollowRoute - Deactivated");
+	Controller::Deactivate();
+};
 
 WaypointStatus ControllerFollowRoute::GetWaypointStatus(roadmanager::Position vehiclePos, roadmanager::Position waypoint)
 {

@@ -578,10 +578,9 @@ extern "C"
 		@param h Heading / yaw
 		@param p Pitch
 		@param r Roll
-		@param speed Speed in forward direction of the enitity
 		@return 0 if successful, -1 if not
 	*/
-	SE_DLL_API int SE_ReportObjectPos(int object_id, float timestamp, float x, float y, float z, float h, float p, float r, float speed);
+	SE_DLL_API int SE_ReportObjectPos(int object_id, float timestamp, float x, float y, float z, float h, float p, float r);
 
 	/**
 		Report object position in limited set of cartesian coordinates x, y and heading,
@@ -591,10 +590,9 @@ extern "C"
 		@param x X coordinate
 		@param y Y coordinate
 		@param h Heading / yaw
-		@param speed Speed in forward direction of the enitity
 		@return 0 if successful, -1 if not
 	*/
-	SE_DLL_API int SE_ReportObjectPosXYH(int object_id, float timestamp, float x, float y, float h, float speed);
+	SE_DLL_API int SE_ReportObjectPosXYH(int object_id, float timestamp, float x, float y, float h);
 
 	/**
 		Report object position in road coordinates
@@ -604,10 +602,9 @@ extern "C"
 		@param laneId Id of the lane
 		@param laneOffset Lateral offset from center of specified lane
 		@param s Longitudinal distance of the position along the specified road
-		@param speed Speed in forward direction (s axis) of the enitity
 		@return 0 if successful, -1 if not
 	*/
-	SE_DLL_API int SE_ReportObjectRoadPos(int object_id, float timestamp, int roadId, int laneId, float laneOffset, float s, float speed);
+	SE_DLL_API int SE_ReportObjectRoadPos(int object_id, float timestamp, int roadId, int laneId, float laneOffset, float s);
 
 	/**
 		Report object longitudinal speed. Useful for an external longitudinal controller.

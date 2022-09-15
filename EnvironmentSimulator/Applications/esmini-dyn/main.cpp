@@ -85,7 +85,7 @@ void objectCallback(SE_ScenarioObjectState* state, void *my_data)
 		else
 		{
 			float latOffset = (float)(latOffset0 + latDist * (SE_GetSimulationTime() - startTrigTime)/duration);
-			SE_ReportObjectRoadPos(state->id, state->timestamp, state->roadId, state->laneId, latOffset, state->s, state->speed);
+			SE_ReportObjectRoadPos(state->id, state->timestamp, state->roadId, state->laneId, latOffset, state->s);
 		}
 	}
 }

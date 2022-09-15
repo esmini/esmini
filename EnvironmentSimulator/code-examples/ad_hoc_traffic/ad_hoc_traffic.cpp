@@ -65,7 +65,7 @@ int main(int argc, char* argv[])
 			}
 			else
 			{
-				SE_ReportObjectPos(cars[i].id, 0.0f, cars[i].x, -1.5f, 0.0f, 0.0f, 0.0f, 0.0f, speed);
+				SE_ReportObjectPos(cars[i].id, 0.0f, cars[i].x, -1.5f, 0.0f, 0.0f, 0.0f, 0.0f);
 			}
 		}
 

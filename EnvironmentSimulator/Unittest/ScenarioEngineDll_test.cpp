@@ -2184,7 +2184,7 @@ TEST(OSILaneParing, Signs)
 
 void objectCallback(SE_ScenarioObjectState* state, void* my_data)
 {
-	SE_ReportObjectRoadPos(state->id, state->timestamp, state->roadId, 5, -2.3f, state->s, state->speed);
+	SE_ReportObjectRoadPos(state->id, state->timestamp, state->roadId, 5, -2.3f, state->s);
 }
 
 TEST(GatewayTest, TestReportToGatewayInCallback)
@@ -2381,8 +2381,9 @@ TEST(ExternalController, TestExternalDriver)
 			}
 
 			// Report updated vehicle position and heading. z, pitch and roll will be aligned to the road
-			SE_ReportObjectPosXYH(0, 0, vehicleState.x, vehicleState.y, vehicleState.h, vehicleState.speed);
+			SE_ReportObjectPosXYH(0, 0, vehicleState.x, vehicleState.y, vehicleState.h);
 			SE_ReportObjectWheelStatus(0, vehicleState.wheel_rotation, vehicleState.wheel_angle);
+			SE_ReportObjectSpeed(0, vehicleState.speed);
 
 			// Finally, update scenario using same time step as for vehicle model
 			SE_StepDT(dt);
@@ -2426,7 +2427,7 @@ TEST(SimpleVehicleTest, TestControl)
 	{
 		SE_SimpleVehicleControlTarget(vehicleHandle, dt, 30.0, 0.2);
 		SE_SimpleVehicleGetState(vehicleHandle, &vehicleState);
-		SE_ReportObjectPosXYH(0, 0.0f, vehicleState.x, vehicleState.y, vehicleState.h, vehicleState.speed);
+		SE_ReportObjectPosXYH(0, 0.0f, vehicleState.x, vehicleState.y, vehicleState.h);
 
 		SE_StepDT(dt);
 	}
@@ -2440,7 +2441,7 @@ TEST(SimpleVehicleTest, TestControl)
 	{
 		SE_SimpleVehicleControlTarget(vehicleHandle, dt, 60.0, -0.2);
 		SE_SimpleVehicleGetState(vehicleHandle, &vehicleState);
-		SE_ReportObjectPosXYH(0, 0.0f, vehicleState.x, vehicleState.y, vehicleState.h, vehicleState.speed);
+		SE_ReportObjectPosXYH(0, 0.0f, vehicleState.x, vehicleState.y, vehicleState.h);
 
 		SE_StepDT(dt);
 	}
@@ -2456,7 +2457,8 @@ TEST(SimpleVehicleTest, TestControl)
 	{
 		SE_SimpleVehicleControlTarget(vehicleHandle, dt, 80.0, 0.0);
 		SE_SimpleVehicleGetState(vehicleHandle, &vehicleState);
-		SE_ReportObjectPosXYH(0, 0.0f, vehicleState.x, vehicleState.y, vehicleState.h, vehicleState.speed);
+		SE_ReportObjectPosXYH(0, 0.0f, vehicleState.x, vehicleState.y, vehicleState.h);
+		SE_ReportObjectSpeed(0, vehicleState.speed);
 
 		SE_StepDT(dt);
 	}
@@ -2473,7 +2475,8 @@ TEST(SimpleVehicleTest, TestControl)
 	{
 		SE_SimpleVehicleControlBinary(vehicleHandle, dt, 0, 0);
 		SE_SimpleVehicleGetState(vehicleHandle, &vehicleState);
-		SE_ReportObjectPosXYH(0, 0.0f, vehicleState.x, vehicleState.y, vehicleState.h, vehicleState.speed);
+		SE_ReportObjectPosXYH(0, 0.0f, vehicleState.x, vehicleState.y, vehicleState.h);
+		SE_ReportObjectSpeed(0, vehicleState.speed);
 
 		SE_StepDT(dt);
 	}
@@ -2490,7 +2493,8 @@ TEST(SimpleVehicleTest, TestControl)
 	{
 		SE_SimpleVehicleControlAnalog(vehicleHandle, dt, 0, 0);   // no throttle -> engine brake applied
 		SE_SimpleVehicleGetState(vehicleHandle, &vehicleState);
-		SE_ReportObjectPosXYH(0, 0.0f, vehicleState.x, vehicleState.y, vehicleState.h, vehicleState.speed);
+		SE_ReportObjectPosXYH(0, 0.0f, vehicleState.x, vehicleState.y, vehicleState.h);
+		SE_ReportObjectSpeed(0, vehicleState.speed);
 
 		SE_StepDT(dt);
 	}
@@ -2819,7 +2823,8 @@ TEST(ExternalControlTest, TestTimings)
 			ego_state.y = road_info.global_pos_y;
 			ego_state.h = road_info.trail_heading;
 
-			SE_ReportObjectPosXYH(0, 0, ego_state.x, ego_state.y, ego_state.h, ghost_speed);
+			SE_ReportObjectPosXYH(0, 0, ego_state.x, ego_state.y, ego_state.h);
+			SE_ReportObjectSpeed(0, ghost_speed);
 
 			// Finally, update scenario using same time step as for vehicle model
 			SE_StepDT(dt);
