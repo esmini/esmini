@@ -47,6 +47,8 @@ typedef struct
 	float height;        // height
 	int objectType;      // Main type according to entities.hpp / Object / Type
 	int objectCategory;  // Sub category within type, according to entities.hpp / Vehicle, Pedestrian, MiscObject / Category
+    float wheel_angle;   // Steering angle of the wheel
+    float wheel_rot;     // Rotation angle of the wheel
 } SE_ScenarioObjectState;
 
 // asciidoc tag::SE_RoadInfo_struct[]
