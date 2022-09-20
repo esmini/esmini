@@ -54,6 +54,8 @@ namespace ESMini
         public float height;
         public int   objectType;     // Main type according to entities.hpp / Object / Type (NONE=0, VEHICLE=1, PEDESTRIAN=2, MISC_OBJECT=3)
         public int   objectCategory; // Sub category within type, according to entities.hpp / Vehicle, Pedestrian, MiscObject / Category
+        public float wheel_angle;
+        public float wheel_rotation;
     };
 
     [StructLayout(LayoutKind.Sequential)]
