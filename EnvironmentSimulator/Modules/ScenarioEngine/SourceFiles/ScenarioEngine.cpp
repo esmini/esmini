@@ -914,17 +914,17 @@ void ScenarioEngine::prepareGroundTruth(double dt)
 		{
 			if (dt > SMALL_NUMBER)
 			{
-
+				// If velocity has not been reported, calculate it based on movement
 				if (!obj->CheckDirtyBits(Object::DirtyBit::VELOCITY))
 				{
 					// If not already reported, calculate linear velocity
 					obj->SetVel(dx / dt, dy / dt, 0.0);
+				}
 
-					// If default controller has not updated speed, calculate it
-					if (!obj->CheckDirtyBits(Object::DirtyBit::SPEED))
-					{
-						obj->SetSpeed(GetLengthOfVector2D(dx / dt, dy / dt));
-					}
+				// If speed has not been reported or set by any controller, calculate it based on velocity
+				if (!obj->CheckDirtyBits(Object::DirtyBit::SPEED))
+				{
+					obj->SetSpeed(GetLengthOfVector2D(obj->pos_.GetVelX(), obj->pos_.GetVelY()));
 				}
 
 				if (!obj->CheckDirtyBits(Object::DirtyBit::ACCELERATION))
