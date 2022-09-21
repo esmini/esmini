@@ -29,6 +29,8 @@
 # Review and update settings in this section according to your system and preferences
 
 fbx_support=false  # users are encouraged to convert fbx to osgb format whenever possible
+PARALLEL_BUILDS=8
+ZIP_MIN_VERSION=12
 
 if [ "$OSTYPE" == "msys" ]; then
 	# Visual Studio 2019 - toolkit from Visual Studio 2017
@@ -71,7 +73,8 @@ elif [[ "$OSTYPE" == "darwin"* ]] || [[ "$OSTYPE" == "linux-gnu"* ]]; then
     else
         target_dir="mac"
         zfilename="osg_mac.7z"
-        z_exe=7z    
+        z_exe=7z
+        macos_arch="arm64;x86_64"
     fi
 else
 	echo Unknown OSTYPE: $OSTYPE
@@ -120,27 +123,27 @@ if [ "$OSTYPE" == "msys" ]; then
 
 elif  [[ "$OSTYPE" == "darwin"* ]] || [[ "$OSTYPE" == "linux-gnu"* ]]; then
 
-    if [ ! -d zlib-1.2.12 ]; then
-        if [ ! -f zlib1212.zip ]; then
-            curl "https://zlib.net/zlib1212.zip" -o zlib1212.zip
+    if [ ! -d zlib-1.2.$ZIP_MIN_VERSION ]; then
+        if [ ! -f zlib12$ZIP_MIN_VERSION.zip ]; then
+            curl "https://zlib.net/zlib12$ZIP_MIN_VERSION.zip" -o zlib12$ZIP_MIN_VERSION.zip
         fi
-        unzip zlib1212.zip
-        cd zlib-1.2.12
+        unzip zlib12$ZIP_MIN_VERSION.zip
+        cd zlib-1.2.$ZIP_MIN_VERSION
         mkdir install
         mkdir build
         cd build
 
         if [[ "$OSTYPE" == "linux-gnu"* ]]; then
             cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -D CMAKE_INSTALL_PREFIX=../install -DCMAKE_BUILD_TYPE=Debug .. -DCMAKE_C_FLAGS="-fPIC"
-            cmake --build . --target install
+            cmake --build . -j $PARALLEL_BUILDS --target install
             mv ../install/lib/libz.a ../install/lib/libzd.a
 
             rm CMakeCache.txt
             cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -D CMAKE_INSTALL_PREFIX=../install -DCMAKE_BUILD_TYPE=Release .. -DCMAKE_C_FLAGS="-fPIC"
-            cmake --build . --target install
+            cmake --build . -j $PARALLEL_BUILDS --target install
         elif [[ "$OSTYPE" == "darwin"* ]]; then
-            cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -D CMAKE_INSTALL_PREFIX=../install -DCMAKE_BUILD_TYPE=Release .. -DCMAKE_C_FLAGS="-fPIC"
-            cmake --build . --target install
+            cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -D CMAKE_INSTALL_PREFIX=../install -DCMAKE_BUILD_TYPE=Release .. -DCMAKE_C_FLAGS="-fPIC" -DCMAKE_OSX_ARCHITECTURES="$macos_arch"
+            cmake --build . -j $PARALLEL_BUILDS --target install
         fi
 
     else
@@ -177,19 +180,19 @@ cd $osg_root_dir
 if [[ "$OSTYPE" == "linux-gnu"* ]] || [[ "$OSTYPE" == "darwin"* ]]; then
     if [ ! -d jpeg-9e ]; then
         if [ ! -f jpegsrc.v9e.tar.gz ]; then
-            curl "http://www.ijg.org/files/jpegsrc.v9e.tar.gz" -o jpegsrc.v9e.tar.gz
+            curl -L -O http://www.ijg.org/files/jpegsrc.v9e.tar.gz
         fi
         tar xzf jpegsrc.v9e.tar.gz
         cd jpeg-9e
         if [[ "$OSTYPE" == "darwin"* ]]; then
-            ./configure
+            ./configure CFLAGS="-arch arm64 -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk -mmacosx-version-min=10.15"
             make
         else
-            ./configure CFLAGS='-fPIC -g'; make -j
+            ./configure CFLAGS='-fPIC -g'; make -j$PARALLEL_BUILDS
             mv .libs .libsd
             mv .libsd/libjpeg.a .libsd/libjpegd.a
             make clean
-            ./configure CFLAGS='-fPIC'; make -j
+            ./configure CFLAGS='-fPIC'; make -j$PARALLEL_BUILDS
         fi
     else
         echo jpeg folder already exists, continue with next step...
@@ -221,31 +224,31 @@ if [ ! -d OpenSceneGraph/build ]; then
 
         cmake ../ -DOSG_AGGRESSIVE_WARNINGS=False -DDYNAMIC_OPENSCENEGRAPH=false -DDYNAMIC_OPENTHREADS=false -DBUILD_OSG_APPLICATIONS=False -DOPENGL_PROFILE=GL2 -DBUILD_OSG_DEPRECATED_SERIALIZERS=False -DCMAKE_CXX_FLAGS=-fPIC -DJPEG_LIBRARY=$osg_root_dir/jpeg-9e/.libs/libjpeg.a -DJPEG_INCLUDE_DIR=$osg_root_dir/jpeg-9e -DFBX_INCLUDE_DIR="$fbx_include" -DFBX_LIBRARY="$fbx_lib_release" -DFBX_LIBRARY_DEBUG="$fbx_lib_debug" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../install 
  
-        make -j16 install
+        make -j$PARALLEL_BUILDS install
 
         # build debug variant
         rm CMakeCache.txt
 
         cmake ../ -DOSG_AGGRESSIVE_WARNINGS=False -DDYNAMIC_OPENSCENEGRAPH=false -DDYNAMIC_OPENTHREADS=false -DBUILD_OSG_APPLICATIONS=False -DOPENGL_PROFILE=GL2 -DBUILD_OSG_DEPRECATED_SERIALIZERS=False -DCMAKE_CXX_FLAGS=-fPIC -DJPEG_LIBRARY=$osg_root_dir/jpeg-9e/.libsd/libjpegd.a -DJPEG_INCLUDE_DIR=$osg_root_dir/jpeg-9e -DFBX_INCLUDE_DIR="$fbx_include" -DFBX_LIBRARY="$fbx_lib_debug" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=../install-debug
 
-        make -j16 install
+        make -j$PARALLEL_BUILDS install
 
     elif [[ "$OSTYPE" == "darwin"* ]]; then
-        cmake ../ -DDYNAMIC_OPENSCENEGRAPH=false -DDYNAMIC_OPENTHREADS=false -DOPENGL_PROFILE=GL2 -DJPEG_LIBRARY_RELEASE=$osg_root_dir/jpeg-9e/.libs/libjpeg.a -DJPEG_INCLUDE_DIR=$osg_root_dir/jpeg-9e -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS=-fPIC -DCMAKE_INSTALL_PREFIX=../install
+        cmake ../ -DDYNAMIC_OPENSCENEGRAPH=false -DDYNAMIC_OPENTHREADS=false -DBUILD_OSG_APPLICATIONS=False -DOSG_TEXT_USE_FONTCONFIG=false -DOPENGL_PROFILE=GL2 -DJPEG_LIBRARY_RELEASE=$osg_root_dir/jpeg-9e/.libs/libjpeg.a -DJPEG_INCLUDE_DIR=$osg_root_dir/jpeg-9e -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="$CMAKE_CXX_FLAGS -fPIC -DGL_SILENCE_DEPRECATION" -DCMAKE_OSX_ARCHITECTURES="$macos_arch" -DCMAKE_INSTALL_PREFIX=../install
 
-        cmake --build . -j 16 --config Release --target install
+        cmake --build . -j $PARALLEL_BUILDS --config Release --target install
 
     elif [ "$OSTYPE" == "msys" ]; then
-        cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} ../ -DDYNAMIC_OPENSCENEGRAPH=false -DOPENGL_PROFILE=GL3 -DDYNAMIC_OPENTHREADS=false -DCMAKE_INSTALL_PREFIX=../install -DACTUAL_3RDPARTY_DIR=../../3rdParty_x64/x64 -DFBX_INCLUDE_DIR="$fbx_include" -DFBX_LIBRARY="$fbx_lib_release" -DFBX_LIBRARY_DEBUG="$fbx_lib_debug" -DFBX_XML2_LIBRARY="$fbx_xml_lib_debug" -DFBX_ZLIB_LIBRARY="$fbx_zlib_lib_debug"
+        cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} ../ -DDYNAMIC_OPENSCENEGRAPH=false -DDYNAMIC_OPENTHREADS=false -DBUILD_OSG_APPLICATIONS=False -DOPENGL_PROFILE=GL3 -DCMAKE_INSTALL_PREFIX=../install -DACTUAL_3RDPARTY_DIR=../../3rdParty_x64/x64 -DFBX_INCLUDE_DIR="$fbx_include" -DFBX_LIBRARY="$fbx_lib_release" -DFBX_LIBRARY_DEBUG="$fbx_lib_debug" -DFBX_XML2_LIBRARY="$fbx_xml_lib_debug" -DFBX_ZLIB_LIBRARY="$fbx_zlib_lib_debug"
 
-        cmake --build . -j 8 --config Release --target install
+        cmake --build . -j $PARALLEL_BUILDS --config Release --target install
 
         # build debug variant
         rm CMakeCache.txt
 
         cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} ../ -DDYNAMIC_OPENSCENEGRAPH=false -OPENGL_PROFILE=GL3 -DDYNAMIC_OPENTHREADS=false -DCMAKE_INSTALL_PREFIX=../install-debug -DACTUAL_3RDPARTY_DIR=../../3rdParty_x64/x64
 
-        cmake --build . -j 8 --config Debug --target install
+        cmake --build . -j $PARALLEL_BUILDS --config Debug --target install
     else
         echo Unknown OSTYPE: $OSTYPE
     fi

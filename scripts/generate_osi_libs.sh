@@ -29,6 +29,8 @@
 
 PROTOBUF_VERSION=3.15.2
 OSI_VERSION=3.3.1
+PARALLEL_BUILDS=4
+ZIP_MIN_VERSION=12
 
 if [ "$OSTYPE" == "msys" ]; then
     # Visual Studio 2019 - toolkit from Visual Studio 2017
@@ -63,6 +65,7 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
     target_dir="mac"
     zfilename="osi_mac.7z"
     z_exe=7z
+    macos_arch="arm64;x86_64"
 else
     echo Unknown OSTYPE: $OSTYPE
 fi
@@ -82,32 +85,32 @@ osi_root_dir=$(pwd)
 echo ------------------------ Installing zlib ------------------------------------
 cd $osi_root_dir
 
-if [ ! -d zlib-1.2.11 ]
+if [ ! -d zlib-1.2.$ZIP_MIN_VERSION ]
 then
-    if [ ! -f zlib1211.zip ]; then
-        curl "https://zlib.net/zlib1211.zip" -o zlib1211.zip
+    if [ ! -f zlib12$ZIP_MIN_VERSION.zip ]; then
+        curl "https://zlib.net/zlib12$ZIP_MIN_VERSION.zip" -o zlib12$ZIP_MIN_VERSION.zip
     fi
-    unzip zlib1211.zip
-    cd zlib-1.2.11
+    unzip zlib12$ZIP_MIN_VERSION.zip
+    cd zlib-1.2.$ZIP_MIN_VERSION
     mkdir install
     mkdir build
     cd build
 
     if [[ "$OSTYPE" == "linux-gnu"* ]]; then
         cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -D CMAKE_INSTALL_PREFIX=../install -DCMAKE_BUILD_TYPE=Debug .. -DCMAKE_C_FLAGS="-fPIC"
-        cmake --build . --target install
+        cmake --build . -j $PARALLEL_BUILDS --target install
         mv ../install/lib/libz.a ../install/lib/libzd.a
 
         rm CMakeCache.txt
         cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -D CMAKE_INSTALL_PREFIX=../install -DCMAKE_BUILD_TYPE=Release .. -DCMAKE_C_FLAGS="-fPIC"
-        cmake --build . --target install
+        cmake --build . -j $PARALLEL_BUILDS --target install
     elif [[ "$OSTYPE" == "darwin"* ]]; then
-        cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -D CMAKE_INSTALL_PREFIX=../install -DCMAKE_BUILD_TYPE=Release .. -DCMAKE_C_FLAGS="-fPIC"
-        cmake --build . --target install
+        cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -D CMAKE_INSTALL_PREFIX=../install -DCMAKE_BUILD_TYPE=Release .. -DCMAKE_C_FLAGS="-fPIC" -DCMAKE_OSX_ARCHITECTURES="$macos_arch"
+        cmake --build . -j $PARALLEL_BUILDS --target install
     else
         cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -D CMAKE_INSTALL_PREFIX=../install ..
-        cmake --build . --config Debug --target install
-        cmake --build . --config Release --target install --clean-first
+        cmake --build . -j $PARALLEL_BUILDS --config Debug --target install
+        cmake --build . -j $PARALLEL_BUILDS --config Release --target install --clean-first
     fi
 
 else
@@ -177,14 +180,15 @@ function build {
         fi
 
         if [[ "$OSTYPE" != "darwin"* ]]; then
-            cmake ../cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DZLIB_LIBRARY=../../zlib-1.2.11/install/lib/$ZLIB_FILE_DEBUG -DZLIB_INCLUDE_DIR=../../zlib-1.2.11/install/include -DCMAKE_INSTALL_PREFIX=$INSTALL_PROTOBUF_DIR -Dprotobuf_BUILD_TESTS=OFF -Dprotobuf_WITH_ZLIB=ON -Dprotobuf_MSVC_STATIC_RUNTIME=OFF -DCMAKE_BUILD_TYPE=Debug $ADDITIONAL_CMAKE_PARAMETERS
-            cmake --build . --config Debug --target install --clean-first
+            cmake ../cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DZLIB_LIBRARY=../../zlib-1.2.$ZIP_MIN_VERSION/install/lib/$ZLIB_FILE_DEBUG -DZLIB_INCLUDE_DIR=../../zlib-1.2.$ZIP_MIN_VERSION/install/include -DCMAKE_INSTALL_PREFIX=$INSTALL_PROTOBUF_DIR -Dprotobuf_BUILD_TESTS=OFF -Dprotobuf_WITH_ZLIB=ON -Dprotobuf_MSVC_STATIC_RUNTIME=OFF -DCMAKE_BUILD_TYPE=Debug $ADDITIONAL_CMAKE_PARAMETERS
+            cmake --build . -j $PARALLEL_BUILDS --config Debug --target install --clean-first
+            rm CMakeCache.txt
+        else
+            ADDITIONAL_CMAKE_PARAMETERS+=" -DCMAKE_OSX_ARCHITECTURES=$macos_arch"
         fi
 
-        rm CMakeCache.txt
-
-        cmake ../cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DZLIB_LIBRARY=../../zlib-1.2.11/install/lib/$ZLIB_FILE_RELEASE -DZLIB_INCLUDE_DIR=../../zlib-1.2.11/install/include -DCMAKE_INSTALL_PREFIX=$INSTALL_PROTOBUF_DIR -Dprotobuf_BUILD_TESTS=OFF -Dprotobuf_WITH_ZLIB=ON -Dprotobuf_MSVC_STATIC_RUNTIME=OFF -DCMAKE_BUILD_TYPE=Release $ADDITIONAL_CMAKE_PARAMETERS
-        cmake --build . --config Release --target install --clean-first
+        cmake ../cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DZLIB_LIBRARY=../../zlib-1.2.$ZIP_MIN_VERSION/install/lib/$ZLIB_FILE_RELEASE -DZLIB_INCLUDE_DIR=../../zlib-1.2.$ZIP_MIN_VERSION/install/include -DCMAKE_INSTALL_PREFIX=$INSTALL_PROTOBUF_DIR -Dprotobuf_BUILD_TESTS=OFF -Dprotobuf_WITH_ZLIB=ON -Dprotobuf_MSVC_STATIC_RUNTIME=OFF -DCMAKE_BUILD_TYPE=Release $ADDITIONAL_CMAKE_PARAMETERS
+        cmake --build . -j $PARALLEL_BUILDS --config Release --target install --clean-first
 
     else
         echo protobuf folder already exists, continue with next step...
@@ -223,7 +227,7 @@ function build {
             cmake .. -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DCMAKE_INCLUDE_PATH=../protobuf$folder_postfix/protobuf-install/include -DFILTER_PROTO2CPP_PY_PATH=../../proto2cpp -DINSTALL_LIB_DIR=$INSTALL_OSI_LIB_DIR/lib -DINSTALL_INCLUDE_DIR=$INSTALL_OSI_LIB_DIR/include -DCMAKE_INSTALL_PREFIX=$INSTALL_OSI_LIB_DIR -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_BUILD_TYPE=Debug -DCMAKE_LIBRARY_PATH=../protobuf$folder_postfix/protobuf-install/lib -DCMAKE_CXX_STANDARD=11 $ADDITIONAL_CMAKE_PARAMETERS ..
 
             # First bild OSI submodule separately since we need to rename the library before linking with the application
-            cmake --build . --config Debug --target install
+            cmake --build . -j $PARALLEL_BUILDS --config Debug --target install
 
             if [[ "$OSTYPE" == "linux-gnu"* ]]; then
                 if [ $DYNAMIC_LINKING == "1" ]; then
@@ -239,13 +243,15 @@ function build {
                 mv $INSTALL_OSI_LIB_DIR/lib/osi3/open_simulation_interface_pic.lib $INSTALL_OSI_LIB_DIR/lib/osi3/open_simulation_interface_picd.lib
                 mv $INSTALL_OSI_LIB_DIR/lib/osi3/open_simulation_interface_static.lib $INSTALL_OSI_LIB_DIR/lib/osi3/open_simulation_interface_staticd.lib
             fi
-        fi
 
-        rm CMakeCache.txt
+            rm CMakeCache.txt
+        else
+            ADDITIONAL_CMAKE_PARAMETERS+=" -DCMAKE_OSX_ARCHITECTURES=$macos_arch"
+        fi
 
         cmake .. -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DCMAKE_INCLUDE_PATH=../protobuf$folder_postfix/protobuf-install/include -DFILTER_PROTO2CPP_PY_PATH=../../proto2cpp -DINSTALL_LIB_DIR=$INSTALL_OSI_LIB_DIR/lib -DINSTALL_INCLUDE_DIR=$INSTALL_OSI_LIB_DIR/include -DCMAKE_INSTALL_PREFIX=$INSTALL_OSI_LIB_DIR -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_LIBRARY_PATH=../protobuf$folder_postfix/protobuf-install/lib -DCMAKE_CXX_STANDARD=11 $ADDITIONAL_CMAKE_PARAMETERS ..
 
-        cmake --build . --config Release --target install --clean-first
+        cmake --build . -j $PARALLEL_BUILDS --config Release --target install --clean-first
 
         cd $osi_root_dir
 
