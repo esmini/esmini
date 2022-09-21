@@ -188,7 +188,7 @@ Common classes
         ParameterDeclaration                   No
         Waypoint                               Yes
             Position                           Yes
-            strategy                           No
+            strategy                           No (however, all except random is supported in FollowRouteController)
     Driver                                     No
     PedestrianController                       No
     Environment                                No
@@ -326,7 +326,7 @@ Enumerations
         cartesianDistance                      Yes
         euclidianDistance                      Yes
     Role (1.2)                                 No
-    RouteStrategy                              Yes
+    RouteStrategy                              Partly (all except random is supported in FollowRouteController)
     RoutingAlgorithm (1.2)                     No
     Rule                                       Yes
         equalTo                                Yes (1.0)
