@@ -1,5 +1,16 @@
 ## esmini release notes
 
+### 2022-09-22 Version 2.26.5
+
+- API related changes:
+  - Wheel angle (steering) and rotation (revolution) populated in the [SE_ScenarioObjectState](https://github.com/esmini/esmini/blob/eaf8e0debdc314c12f3cba4b3624e842e6cc6576/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L52) ([pr #323](https://github.com/esmini/esmini/pull/323))
+
+    **NOTE:** Structure on calling side should be updated accordingly. See example [get_states.py](https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/code-examples/hello_world/get_states.py).
+  - If velocity (vector) has been [reported](https://github.com/esmini/esmini/blob/eaf8e0debdc314c12f3cba4b3624e842e6cc6576/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L646) but not speed, then speed is calculated based on velocity x,y components (instead of dx, dy movement).
+
+- Bugfixes:
+  - Fix end-of-road detection failure for external entities (x, y -> road coord mapping)
+
 ### 2022-09-15 Version 2.26.4
 
 - Support some additional expression functions, e.g. sin, sign and atan.
