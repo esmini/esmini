@@ -8978,7 +8978,10 @@ int Position::GetLaneGlobalId()
 
 	if (road->GetJunction() != -1)
 	{
-		return GetOpenDrive()->GetJunctionById(road->GetJunction())->GetGlobalId();
+		if (GetOpenDrive()->GetJunctionById(road->GetJunction())->IsOsiIntersection())
+		{
+			return GetOpenDrive()->GetJunctionById(road->GetJunction())->GetGlobalId();
+		}
 	}
 
 	LaneSection *lane_section = road->GetLaneSectionByIdx(lane_section_idx_);
