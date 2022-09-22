@@ -3,9 +3,9 @@
 
 int main(int argc, char* argv[])
 {
-	SE_Init("../resources/xosc/lane_change_simple.xosc", 0, 1, 0, 0);
+	SE_Init("../resources/xosc/cut-in.xosc", 0, 1, 0, 0);
 
-	for (int i = 0; i < 500 && SE_GetQuitFlag() != 1; i++)
+	for (int i = 0; i < 500; i++)
 	{
 		SE_Step();
 

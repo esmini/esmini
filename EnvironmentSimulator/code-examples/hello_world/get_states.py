@@ -1,5 +1,4 @@
 import ctypes
-import math
 from sys import platform
 
 if platform == "linux" or platform == "linux2":
