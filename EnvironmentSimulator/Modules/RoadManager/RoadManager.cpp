@@ -5736,7 +5736,7 @@ void OpenDrive::SetLaneOSIPoints()
 				while(++counter)
 				{
 					// Make sure we stay within lane section length
-					double s = MIN(pos_candidate.GetS() + step, lsec_end - SMALL_NUMBER);
+					double s = MIN(pos_candidate.GetS() + step, lsec_end - SMALL_NUMBER/2);
 
 					// [X1, Y1] = Real position with no tolerance
 					pos_candidate.SetLanePos(road->GetId(), lane->GetId(), s, 0, j);
