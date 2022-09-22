@@ -155,8 +155,8 @@ static void copyStateFromScenarioGateway(SE_ScenarioObjectState *state, ObjectSt
 	state->height = gw_state->info.boundingbox.dimensions_.height_;
 	state->objectType = gw_state->info.obj_type;
 	state->objectCategory = gw_state->info.obj_category;
-    state->wheel_angle = (float)gw_state->info.wheel_angle;
-    state->wheel_rot = (float)gw_state->info.wheel_rot;
+	state->wheel_angle = (float)gw_state->info.wheel_angle;
+	state->wheel_rot = (float)gw_state->info.wheel_rot;
 }
 
 static int getObjectById(int object_id, Object*& obj)

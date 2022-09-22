@@ -22,31 +22,31 @@
 
 typedef struct
 {
-	int id;              // Automatically generated unique object id
-	int model_id;        // Id to control what 3D model to represent the vehicle - see carModelsFiles_[] in scenarioenginedll.cpp
-	int ctrl_type;       // 0: DefaultController 1: External. Further values see Controller::Type enum
-	float timestamp;     // Not used yet (idea is to use it to interpolate position for increased sync bewtween simulators)
-	float x;             // global x coordinate of position
-	float y;             // global y coordinate of position
-	float z;             // global z coordinate of position
-	float h;             // heading/yaw in global coordinate system
-	float p;             // pitch in global coordinate system
-	float r;             // roll in global coordinate system
-	int roadId;          // road ID
-	int junctionId;      // Junction ID (-1 if not in a junction)
-	float t;             // lateral position in road coordinate system
-	int laneId;          // lane ID
-	float laneOffset;    // lateral offset from lane center
-	float s;             // longitudinal position in road coordinate system
-	float speed;         // speed
-	float centerOffsetX; // x coordinate of bounding box center relative object reference point (local coordinate system)
-	float centerOffsetY; // y coordinate of bounding box center relative object reference point (local coordinate system)
-	float centerOffsetZ; // z coordinate of bounding box center relative object reference point (local coordinate system)
-	float width;         // width
-	float length;        // length
-	float height;        // height
-	int objectType;      // Main type according to entities.hpp / Object / Type
-	int objectCategory;  // Sub category within type, according to entities.hpp / Vehicle, Pedestrian, MiscObject / Category
+    int id;              // Automatically generated unique object id
+    int model_id;        // Id to control what 3D model to represent the vehicle - see carModelsFiles_[] in scenarioenginedll.cpp
+    int ctrl_type;       // 0: DefaultController 1: External. Further values see Controller::Type enum
+    float timestamp;     // Not used yet (idea is to use it to interpolate position for increased sync bewtween simulators)
+    float x;             // global x coordinate of position
+    float y;             // global y coordinate of position
+    float z;             // global z coordinate of position
+    float h;             // heading/yaw in global coordinate system
+    float p;             // pitch in global coordinate system
+    float r;             // roll in global coordinate system
+    int roadId;          // road ID
+    int junctionId;      // Junction ID (-1 if not in a junction)
+    float t;             // lateral position in road coordinate system
+    int laneId;          // lane ID
+    float laneOffset;    // lateral offset from lane center
+    float s;             // longitudinal position in road coordinate system
+    float speed;         // speed
+    float centerOffsetX; // x coordinate of bounding box center relative object reference point (local coordinate system)
+    float centerOffsetY; // y coordinate of bounding box center relative object reference point (local coordinate system)
+    float centerOffsetZ; // z coordinate of bounding box center relative object reference point (local coordinate system)
+    float width;         // width
+    float length;        // length
+    float height;        // height
+    int objectType;      // Main type according to entities.hpp / Object / Type
+    int objectCategory;  // Sub category within type, according to entities.hpp / Vehicle, Pedestrian, MiscObject / Category
     float wheel_angle;   // Steering angle of the wheel
     float wheel_rot;     // Rotation angle of the wheel
 } SE_ScenarioObjectState;
