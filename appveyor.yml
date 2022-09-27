@@ -189,7 +189,7 @@ for:
 
           cd build
 
-          cmake -G Xcode -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" ..
+          cmake -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" ..
 
           cmake --build . -j --config Release --target install
 
@@ -202,7 +202,7 @@ for:
 
           cd build-no-osg
 
-          cmake -G Xcode -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -DUSE_OSG=False -DUSE_SUMO=False -DUSE_OSI=False ..
+          cmake -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -DUSE_OSG=False -DUSE_SUMO=False -DUSE_OSI=False ..
 
           cmake --build . -j --config Release
 
