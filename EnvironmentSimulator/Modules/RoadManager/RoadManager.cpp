@@ -58,9 +58,6 @@
 #include "pugixml.hpp"
 #include "CommonMini.hpp"
 
-static unsigned int global_lane_counter;
-
-
 
 using namespace std;
 using namespace roadmanager;
@@ -1771,7 +1768,6 @@ double LaneSection::GetCenterOffsetHeading(double s, int lane_id)
 void LaneSection::AddLane(Lane *lane)
 {
 	lane->SetGlobalId();
-	global_lane_counter++;
 
 	// Keep list sorted on lane ID, from + to -
 	if (lane_.size() > 0 && lane->GetId() > lane_.back()->GetId())
@@ -2987,8 +2983,18 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 
 	for (pugi::xml_node road_node = node.child("road"); road_node; road_node = road_node.next_sibling("road"))
 	{
-		int rid = atoi(road_node.attribute("id").value());
 		std::string rname = road_node.attribute("name").value();
+
+		int rid = (int)road_.size();  // preliminary road id, use if not specified in OpenDRIVE file
+		if (road_node.attribute("id").empty() || !strcmp(road_node.attribute("id").value(), ""))
+		{
+			LOG("Id for road \"%s\" missing, assigning id %d", rname.c_str(), rid);
+		}
+		else
+		{
+			rid = atoi(road_node.attribute("id").value());
+		}
+
 		double roadlength = atof(road_node.attribute("length").value());
 		int junction_id = atoi(road_node.attribute("junction").value());
 		Road::RoadRule rrule = Road::RoadRule::RIGHT_HAND_TRAFFIC;  // right hand traffic is default

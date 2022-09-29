@@ -1607,7 +1607,7 @@ namespace roadmanager
 	class OpenDrive
 	{
 	public:
-		OpenDrive() : speed_unit_(SpeedUnit::UNDEFINED), versionMajor_(0), versionMinor_(0){};
+		OpenDrive() : speed_unit_(SpeedUnit::UNDEFINED), versionMajor_(0), versionMinor_(0) {};
 		OpenDrive(const char *filename);
 		~OpenDrive();
 
