@@ -134,7 +134,7 @@ class DATFile():
                 data.wheel_rot
             )
 
-    def print(self):
+    def print_csv(self):
 
         # Print header
         print(self.get_header_line())
@@ -186,5 +186,5 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     dat = DATFile(args.filename)
-    dat.print()
+    dat.print_csv()
     dat.close()
