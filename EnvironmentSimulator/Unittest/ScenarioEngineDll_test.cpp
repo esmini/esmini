@@ -332,7 +332,7 @@ TEST(GetOSIRoadLaneTest, lane_no_obj)
 	SE_StepDT(0.001f);
 	SE_FlushOSIFile();
 	ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-	EXPECT_EQ(fileStatus.st_size, 69183);  // initial OSI size, including static content
+	EXPECT_EQ(fileStatus.st_size, 71678);  // initial OSI size, including static content
 
 	int road_lane_size;
 
@@ -344,12 +344,12 @@ TEST(GetOSIRoadLaneTest, lane_no_obj)
 	SE_StepDT(0.001f);  // Step for write another frame to osi file
 	SE_FlushOSIFile();
 	ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-	EXPECT_EQ(fileStatus.st_size, 69646);  // slight growth due to only dynamic updates
+	EXPECT_EQ(fileStatus.st_size, 72141);  // slight growth due to only dynamic updates
 
 	SE_StepDT(0.001f);  // Step for write another frame to osi file
 	SE_FlushOSIFile();
 	ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-	EXPECT_EQ(fileStatus.st_size, 70110);  // slight growth due to only dynamic updates
+	EXPECT_EQ(fileStatus.st_size, 72605);  // slight growth due to only dynamic updates
 
 	SE_Close();
 }
@@ -851,7 +851,7 @@ TEST(GroundTruthTests, check_GroundTruth_including_init_state)
 	SE_Close();
 
 	ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-	EXPECT_EQ(fileStatus.st_size, 19471);
+	EXPECT_EQ(fileStatus.st_size, 19231);
 
 	// Read OSI file
 	FILE* file = fopen("gt.osi", "rb");
@@ -2298,8 +2298,8 @@ TEST(ExternalController, TestExternalDriver)
 				if (abs(SE_GetSimulationTime() - 11.0f) < SMALL_NUMBER)
 				{
 					SE_GetObjectState(0, &objectState);
-					EXPECT_NEAR(objectState.x, 215.889, 1e-3);
-					EXPECT_NEAR(objectState.y, 113.779, 1e-3);
+					EXPECT_NEAR(objectState.x, 215.890, 1e-3);
+					EXPECT_NEAR(objectState.y, 113.784, 1e-3);
 					EXPECT_NEAR(objectState.h, 1.362, 1e-3);
 					EXPECT_NEAR(objectState.p, 6.246, 1e-3);
 				}
@@ -2341,8 +2341,8 @@ TEST(ExternalController, TestExternalDriver)
 					{
 						SE_RoadInfo road_info3;
 						SE_GetRoadInfoGhostTrailTime(0, SE_GetSimulationTime(), &road_info3, &speed2);
-						EXPECT_NEAR(road_info3.global_pos_x, 388.363, 1e-3);
-						EXPECT_NEAR(road_info3.global_pos_y, 290.978, 1e-3);
+						EXPECT_NEAR(road_info3.global_pos_x, 388.364, 1e-3);
+						EXPECT_NEAR(road_info3.global_pos_y, 290.976, 1e-3);
 					}
 				}
 			}
@@ -2375,7 +2375,7 @@ TEST(ExternalController, TestExternalDriver)
 					{
 						SE_GetRoadInfoGhostTrailTime(0, SE_GetSimulationTime(), &road_info2, &speed3);
 						EXPECT_NEAR(road_info2.global_pos_x, 388.363, 1e-3);
-						EXPECT_NEAR(road_info2.global_pos_y, 290.978, 1e-3);
+						EXPECT_NEAR(road_info2.global_pos_y, 290.976, 1e-3);
 					}
 				}
 			}

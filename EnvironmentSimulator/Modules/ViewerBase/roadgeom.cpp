@@ -385,6 +385,8 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive *odr)
 				double y;
 				double z;
 				double h;
+				double slope;
+				double s;
 			} GeomPoint;
 			std::vector<std::vector<GeomPoint>> geom_point_list;
 			std::vector<GeomPoint> geom_point;
@@ -419,12 +421,16 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive *odr)
 							// generate point at this s-value
 							pos.SetTrackPos(road->GetId(), osiPoints[l].s, SIGN(lane->GetId())* lsec->GetOuterOffset(osiPoints[l].s, lane->GetId()), true);
 
-							// calculate error at this s value
-							double error = DistanceFromPointToLine2DWithAngle(
+							// calculate horizontal error at this s value
+							double error_horizontal = DistanceFromPointToLine2DWithAngle(
 								pos.GetX(), pos.GetY(),
 								geom_point_list.back()[k].x, geom_point_list.back()[k].y, geom_point_list.back()[k].h);
 
-							if (error > MAX_GEOM_ERROR)
+							// calculate vertical error at this s value
+							double error_vertical = abs((pos.GetZ() - geom_point_list.back()[k].z) -
+								(geom_point_list.back()[k].z + geom_point_list.back()[k].slope * (pos.GetS() - geom_point_list.back()[k].s)));
+
+							if (error_horizontal > MAX_GEOM_ERROR || error_vertical > MAX_GEOM_ERROR)
 							{
 								done = false;
 								break;
@@ -443,16 +449,15 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive *odr)
 								// add s-value exceeding the threshold
 								s_index[k] = l;
 							}
-
-							if (osiPoints[s_index[k]].s < s_min)
-							{
-								s_min = osiPoints[s_index[k]].s;  // register pivot s-value
-							}
 						}
 						else
 						{
 							s_index[k] = osiPoints.size() - 1;  // add last OSI point for end of mesh
-							s_min = osiPoints.back().s;
+						}
+
+						if (osiPoints[s_index[k]].s < s_min)
+						{
+							s_min = osiPoints[s_index[k]].s;  // register pivot s-value
 						}
 					}
 
@@ -490,7 +495,7 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive *odr)
 					{
 						lane = lsec->GetLaneByIdx(k);
 						pos.SetTrackPos(road->GetId(), s, SIGN(lane->GetId())* lsec->GetOuterOffset(s, lane->GetId()), true);
-						geom_point.push_back({ pos.GetX(), pos.GetY(), pos.GetZ(), pos.GetH() });
+						geom_point.push_back({ pos.GetX(), pos.GetY(), pos.GetZ(), pos.GetH(), pos.GetZRoadPrim(), pos.GetS() });
 					}
 
 					geom_point_list.push_back(geom_point);

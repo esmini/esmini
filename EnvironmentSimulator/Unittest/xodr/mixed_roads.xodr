@@ -1,0 +1,169 @@
+<?xml version="1.0" ?>
+<OpenDRIVE>
+    <header revMajor="1" revMinor="4" name="test" version="1" date="" north="" south="" east="" west="" />
+    <road name="changingLaneWidth" length="50.0" id="0" junction="-1">
+        <link />
+        <planView>
+            <geometry s="0.0" x="0.0" y="0.0" hdg="0.0" length="50">
+                <arc curvature="0.01" />
+            </geometry>
+        </planView>
+        <elevationProfile/>
+        <lateralProfile />
+        <lanes>
+            <laneSection s="0.0">
+                <left>
+                    <lane id="1" type="driving" level="false">
+                        <link />
+                        <width sOffset="0.0" a="3.0" b="0.0" c="0.0" d="0.0" />
+                        <width sOffset="35.0" a="5.0" b="0.0" c="0.0" d="0.0" />
+                        <roadMark sOffset="0.0" type="solid" material="standard" color="white" width="0.125"/>
+                    </lane>
+                </left>
+                <center>
+                    <lane id="0" type="driving" level="false">
+                        <link />
+                        <width sOffset="0.0" a="0.0" b="0.0" c="0.0" d="0.0" />
+                        <roadMark sOffset="0.0" type="broken" material="standard" color="white" width="0.125"/>
+                    </lane>
+                </center>
+                <right>
+                    <lane id="-1" type="driving" level="false">
+                        <link />
+                        <width sOffset="0.0" a="3.0" b="0.0" c="0.0" d="0.0" />
+                        <roadMark sOffset="0.0" type="solid" material="standard" color="white" width="0.125"/>
+                    </lane>
+                </right>
+            </laneSection>
+        </lanes>
+        <objects />
+        <signals />
+    </road>
+    <road name="slope1" length="50.0" id="1" junction="-1">
+        <link />
+        <planView>
+            <geometry s="0.0" x="0.0" y="-10.0" hdg="0.0" length="50">
+                <arc curvature="0.0" />
+            </geometry>
+        </planView>
+        <elevationProfile>
+            <elevation s="0.0" a="0.0" b="0.0" c="0.0" d="0.0" />
+            <elevation s="20.0" a="2.0" b="0.0" c="0.0" d="0.0" />
+        </elevationProfile>
+        <lateralProfile />
+        <lanes>
+            <laneSection s="0.0">
+                <left>
+                    <lane id="1" type="driving" level="false">
+                        <link />
+                        <width sOffset="0.0" a="3.0" b="0.0" c="0.0" d="0.0" />
+                        <roadMark sOffset="0.0" type="solid" material="standard" color="white" width="0.125"/>
+                    </lane>
+                </left>
+                <center>
+                    <lane id="0" type="driving" level="false">
+                        <link />
+                        <width sOffset="0.0" a="0.0" b="0.0" c="0.0" d="0.0" />
+                        <roadMark sOffset="0.0" type="broken" material="standard" color="white" width="0.125"/>
+                    </lane>
+                </center>
+                <right>
+                    <lane id="-1" type="driving" level="false">
+                        <link />
+                        <width sOffset="0.0" a="3.0" b="0.0" c="0.0" d="0.0" />
+                        <roadMark sOffset="0.0" type="solid" material="standard" color="white" width="0.125"/>
+                    </lane>
+                </right>
+            </laneSection>
+        </lanes>
+        <objects />
+        <signals />
+    </road>
+    <road name="slope2" length="50.0" id="2" junction="-1">
+        <link />
+        <planView>
+            <geometry s="0.0" x="0.0" y="-20.0" hdg="0.0" length="50">
+                <arc curvature="-0.005" />
+            </geometry>
+        </planView>
+        <elevationProfile>
+            <elevation s="0.0" a="0.0" b="0.0" c="0.0" d="0.0" />
+            <elevation s="20.0" a="2.0" b="0.0" c="0.0" d="0.0" />
+        </elevationProfile>
+        <lateralProfile />
+        <lanes>
+            <laneSection s="0.0">
+                <left>
+                    <lane id="1" type="driving" level="false">
+                        <link />
+                        <width sOffset="0.0" a="3.0" b="0.0" c="0.0" d="0.0" />
+                        <roadMark sOffset="0.0" type="solid" material="standard" color="white" width="0.125"/>
+                    </lane>
+                </left>
+                <center>
+                    <lane id="0" type="driving" level="false">
+                        <link />
+                        <width sOffset="0.0" a="0.0" b="0.0" c="0.0" d="0.0" />
+                        <roadMark sOffset="0.0" type="broken" material="standard" color="white" width="0.125"/>
+                    </lane>
+                </center>
+                <right>
+                    <lane id="-1" type="driving" level="false">
+                        <link />
+                        <width sOffset="0.0" a="3.0" b="0.0" c="0.0" d="0.0" />
+                        <roadMark sOffset="0.0" type="solid" material="standard" color="white" width="0.125"/>
+                    </lane>
+                </right>
+            </laneSection>
+        </lanes>
+        <objects />
+        <signals />
+    </road>    
+    <road name="slope3" length="150" id="3" junction="-1">
+        <link>
+        </link>
+        <planView>
+            <geometry s="0" x="0" y="-40" hdg="0" length="150">
+                <line/>
+            </geometry>
+        </planView>
+        <elevationProfile>
+            <elevation s="0" a="0.00" b="0.0" c="0.0" d="0.0"/>
+            <!-- f(x) = a + bx + cx^2 + dx^3 -->
+            <!-- A=start elevation, B=elevation diff, C=longitudinal distance -->
+            <!-- https://www.desmos.com/calculator/rz3gpcqlig -->
+            <!-- f(x) = A + 0 + 3×B/C^2×x^2 - 2×B/C^3×x^3 -->
+            <!-- A=0, B=10, C=50 -->
+            <!-- a=0 b=0 c=3×10/50^2=0.012 d=-2×10/50^3=-0.00016 -->
+            <elevation s="50" a="0.00" b="0.0" c="0.012" d="-0.00016"/>
+            <elevation s="100" a="10.00" b="0.0" c="0.0" d="0.0"/>
+        </elevationProfile>
+        <lanes>
+            <laneSection s="0">
+                <left>
+                    <lane id="1" type="driving" level="false">
+                        <link>
+                        </link>
+                        <width sOffset="0" a="3.00" b="0" c="0" d="0"/>
+                        <roadMark sOffset="0" type="solid" weight="standard" color="standard" width="0.12" laneChange="none" height="02"/>
+                    </lane>
+                </left>
+                <center>
+                    <lane id="0" type="driving" level="false">
+                        <link>
+                        </link>
+                        <roadMark sOffset="0" type="broken" weight="standard" color="standard" width="0.12" laneChange="both" height="02"/>
+                    </lane>
+                </center>
+                <right>
+                    <lane id="-1" type="driving" level="false">
+                        <link>
+                        </link>
+                        <width sOffset="0" a="3.00" b="0.0" c="0.0" d="0.0"/>
+                        <roadMark sOffset="0" type="solid" weight="standard" color="standard" width="0.12" laneChange="none" height="02"/>
+                    </lane>
+                </right>
+            </laneSection>
+        </lanes>
+    </road>
+</OpenDRIVE>
