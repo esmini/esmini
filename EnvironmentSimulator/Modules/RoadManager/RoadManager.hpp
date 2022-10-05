@@ -154,7 +154,7 @@ namespace roadmanager
 			(void)ds;
 			return curvature_;
 		}
-		double GetRadius() { return std::fabs(1.0 / curvature_); }
+		double GetRadius();
 		double GetCurvature() { return curvature_; }
 		void Print();
 		void EvaluateDS(double ds, double *x, double *y, double *h);
