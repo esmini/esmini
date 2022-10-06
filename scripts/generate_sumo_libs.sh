@@ -144,7 +144,7 @@ if [ ! -d xerces-c-3.2.2 ]; then
     mkdir xerces-install
 
     # Patch config to exlude ICU
-    sed -ie 's/include(XercesICU)/#include(XercesICU)/g' CMakeLists.txt
+    sed -i 's/include(XercesICU)/#include(XercesICU)/g' CMakeLists.txt
 
     if [[ "$OSTYPE" == "darwin"* ]] || [[ "$OSTYPE" == "linux"* ]]; then
         ADDITIONAL_CMAKE_PARAMETERS="-Dnetwork=OFF -DCMAKE_CXX_FLAGS=-fPIC"
