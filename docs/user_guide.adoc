@@ -364,6 +364,9 @@ To convert the .dat file into .csv, do either of: +
 or +
 ``python ./scripts/dat2csv.py sim.dat``
 
+Only a subset of the .dat file information is extracted. To extract some more info, e.g. road coordinates, run:
+``./scripts/dat2csv --extended sim.dat`` +
+
 ==== CSV logger
 To create a more complete csv logfile, compared to the content of the .dat file, activate the CSV_Logger:
 

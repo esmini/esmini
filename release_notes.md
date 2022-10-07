@@ -1,5 +1,27 @@
 ## esmini release notes
 
+### 2022-10-07 Version 2.26.6
+
+- Support Apple Silicon (e.g. M1)
+  - from now on releases includes universal binaries (works on both Intel and Apple Silicon based Macs).
+  - see updated info on how to deal with unsigned applications here: [esmini User guide - Mac issues and limitations](https://esmini.github.io/#_mac_issues_and_limitations)
+- Fix build error on Ubuntu 22.04
+  - enforce OSG lib to use sched_yield instead of deprecated pthread_yield
+  - build scripts updated 
+  - updated osg lib for Ubuntu available here: [osg_linux_glibc_2_31_gcc_7_5_0.7z](https://esmini.asuscomm.com/AICLOUD766065121/libs/osg_linux_glibc_2_31_gcc_7_5_0.7z) (now default)
+- Support straight arcs (curvature = 0.0 treated as a line)
+- Add option `--extended` to [dat2csv.py](https://github.com/esmini/esmini/blob/master/scripts/dat2csv.py) to extract additional data, e.g. road coordinates
+  - `-e` works as well
+- Handle empty or missing road IDs ([issue #326](https://github.com/esmini/esmini/issues/326))
+  - Generate and assign unique IDs (previously all roads got id=0, which caused trouble)
+- Improve road elevation support ([issue #327](https://github.com/esmini/esmini/issues/327))
+  - handle discontinuities in elevation profile and lane widths
+  - fix bug causing low tesselation resolution wrt elevation slope changes
+- Fix dat2csv.py (actually [dat.py](https://github.com/esmini/esmini/blob/master/scripts/dat.py)) issue so that it runs also on Python 2.X
+- Fix bugs that could cause a crash when adding/removing entities while co-simulating with SUMO ([issue #308](https://github.com/esmini/esmini/issues/308))
+- Add missing box 3D model to demo pack
+
+
 ### 2022-09-22 Version 2.26.5
 
 - API related changes:
