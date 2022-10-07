@@ -88,6 +88,7 @@ resources/models/railing.osgb \
 resources/models/railing-pole.osgb \
 resources/models/guide-post.osgb \
 resources/models/cone-100.osgb \
+resources/models/box_cc_by.osgb \
 resources/models/car_trailer.osgb \
 resources/models/semi_tractor.osgb \
 resources/models/semi_trailer.osgb \

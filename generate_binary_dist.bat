@@ -115,6 +115,7 @@ copy resources\models\railing.osgb %target_dir%\resources\models /y
 copy resources\models\railing-pole.osgb %target_dir%\resources\models /y
 copy resources\models\guide-post.osgb %target_dir%\resources\models /y
 copy resources\models\cone-100.osgb %target_dir%\resources\models /y
+copy resources\models\box_cc_by.osgb %target_dir%\resources\models /y
 copy resources\models\car_trailer.osgb %target_dir%\resources\models /y
 copy resources\models\semi_tractor.osgb %target_dir%\resources\models /y
 copy resources\models\semi_trailer.osgb %target_dir%\resources\models /y
