@@ -60,7 +60,7 @@ Make sure you have a C++ compiler and https://cmake.org/[CMake] installed.
 
 On Windows https://visualstudio.microsoft.com/[Visual Studio] is recommended (Community/free version is good enough for building esmini). Make sure to check the "Desktop development with C++" package for installation, no more is needed.
 
-On Linux, e.g. Ubunti, some additional system tools and libraries are needed. Run the following command:
+On Linux, e.g. Ubuntu, some additional system tools and libraries are needed. Run the following command:
 
 [source]
 ----
@@ -1427,13 +1427,21 @@ There are no fixed structure where scenario resources, e.g. vehicle 3D model or 
 will add the relative path `../../` and absolute path `c:/tmp/my_models` to the list of places where to look for resources referred to by the scenario.
 
 === Mac issues and limitations
-* Window can't be located in the upper part of the screen. If window won't open, try to adjust the y value (second entry) of the window argument. 60 pixels usually works fine, e.g: `./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in.xosc`
+
+From esmini version 2.26.6 mac executables are universal binaries which means they work on both Intel and Apple Silicon based Macs. Following are some known issues and work arounds:
+
+* Window can't be located in the upper part of the screen (some systems). If window won't open, try to adjust the y value (second entry) of the window argument. 60 pixels usually works fine, e.g: `./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in.xosc`
+
+* Issue has been reported that when multiple screens are connected esmini just shows a bland window. Currently only solution is to unplug the additional montitors or unplug Mac from dock station.
 
 * Graphics can not run in separate thread. Hence the `--thread` launch flag will have no effect. 
 
 * On Mac the zip-package might be put in quarantine, to release it: `xattr -d com.apple.quarantine file.zip` or even better: `xattr -c file.zip`
 
-* If you get the "damaged file" message: Please open a terminal in the folder where the esmini-demo was extracted, and run the following command: `xattr -c -r esmini-demo`
+* esmini executables are not signed with a https://developer.apple.com/developer-id[developer ID] - since we simply don't have one. If you got the package directly from https://github.com/esmini/esmini/releases[esmini release page on GitHub] it is safe to unpack and run. 
+In order to execute the files you need to do one of following from a terminal in the folder the demo package was extracted:
+** Remove quarantine flags: `xattr -c -r esmini-demo/bin`, or 
+** Sign executables for use on local machine: `codesign -f -s - esmini-demo/bin/*`
 
 === OpenStreetMap (OSM) roads in esmini
 SUMO comes with a great tool, https://sumo.dlr.de/docs/netconvert.html[netconvert], that can convert road networks from and to various formats. 
@@ -1546,7 +1554,7 @@ Linux Ubuntu 18.04
 sudo apt install build-essential git pkg-config libgl1-mesa-dev libpthread-stubs0-dev libjpeg-dev libxml2-dev libpng-dev libtiff5-dev libgdal-dev libpoppler-dev libdcmtk-dev libgstreamer1.0-dev libgtk2.0-dev libcairo2-dev libpoppler-glib-dev libxrandr-dev libxinerama-dev curl cmake
 ----
 
-Also, g++ version >= 5 is needed for c++14 code support.
+Also, g\++ version >= 5 is needed for c++14 code support.
 
 Windows and Mac: Install the https://cmake.org/[cmake] application
 
