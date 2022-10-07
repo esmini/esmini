@@ -428,7 +428,7 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive *odr)
 
 							// calculate vertical error at this s value
 							double error_vertical = abs((pos.GetZ() - geom_point_list.back()[k].z) -
-								(geom_point_list.back()[k].z + geom_point_list.back()[k].slope * (pos.GetS() - geom_point_list.back()[k].s)));
+								geom_point_list.back()[k].slope * (pos.GetS() - geom_point_list.back()[k].s));
 
 							if (error_horizontal > MAX_GEOM_ERROR || error_vertical > MAX_GEOM_ERROR)
 							{

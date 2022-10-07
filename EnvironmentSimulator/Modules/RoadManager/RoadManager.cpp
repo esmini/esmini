@@ -5879,7 +5879,7 @@ void OpenDrive::SetLaneOSIPoints()
 void OpenDrive::SetLaneBoundaryPoints()
 {
 	// Initialization
-	Position* pos = new roadmanager::Position();
+	Position pos;
 	Road *road;
 	LaneSection *lsec;
 	Lane *lane;
@@ -5935,41 +5935,41 @@ void OpenDrive::SetLaneBoundaryPoints()
 						s1 = MIN(s1, lsec_end - OSI_TANGENT_LINE_TOLERANCE);
 
 						// [XO, YO] = closest position with given (-) tolerance
-						pos->SetLaneBoundaryPos(road->GetId(), lane->GetId(), MAX(0, s0-OSI_TANGENT_LINE_TOLERANCE), 0, j);
-						x0.push_back(pos->GetX());
-						y0.push_back(pos->GetY());
+						pos.SetLaneBoundaryPos(road->GetId(), lane->GetId(), MAX(0, s0-OSI_TANGENT_LINE_TOLERANCE), 0, j);
+						x0.push_back(pos.GetX());
+						y0.push_back(pos.GetY());
 
 						// [XO, YO] = Real position with no tolerance
-						pos->SetLaneBoundaryPos(road->GetId(), lane->GetId(), s0, 0, j);
-						x0.push_back(pos->GetX());
-						y0.push_back(pos->GetY());
+						pos.SetLaneBoundaryPos(road->GetId(), lane->GetId(), s0, 0, j);
+						x0.push_back(pos.GetX());
+						y0.push_back(pos.GetY());
 
 						// Add the starting point of each lane as osi point
 						if (counter == 1)
 						{
-							PointStruct p = { s0, pos->GetX(), pos->GetY(), pos->GetZ(), pos->GetHRoad() };
+							PointStruct p = { s0, pos.GetX(), pos.GetY(), pos.GetZ(), pos.GetHRoad() };
 							osi_point.push_back(p);
 						}
 
 						// [XO, YO] = closest position with given (+) tolerance
-						pos->SetLaneBoundaryPos(road->GetId(), lane->GetId(), s0+OSI_TANGENT_LINE_TOLERANCE, 0, j);
-						x0.push_back(pos->GetX());
-						y0.push_back(pos->GetY());
+						pos.SetLaneBoundaryPos(road->GetId(), lane->GetId(), s0+OSI_TANGENT_LINE_TOLERANCE, 0, j);
+						x0.push_back(pos.GetX());
+						y0.push_back(pos.GetY());
 
 						// [X1, Y1] = closest position with given (-) tolerance
-						pos->SetLaneBoundaryPos(road->GetId(), lane->GetId(), s1-OSI_TANGENT_LINE_TOLERANCE, 0, j);
-						x1.push_back(pos->GetX());
-						y1.push_back(pos->GetY());
+						pos.SetLaneBoundaryPos(road->GetId(), lane->GetId(), s1-OSI_TANGENT_LINE_TOLERANCE, 0, j);
+						x1.push_back(pos.GetX());
+						y1.push_back(pos.GetY());
 
 						// [X1, Y1] = Real position with no tolerance
-						pos->SetLaneBoundaryPos(road->GetId(), lane->GetId(), s1, 0, j);
-						x1.push_back(pos->GetX());
-						y1.push_back(pos->GetY());
+						pos.SetLaneBoundaryPos(road->GetId(), lane->GetId(), s1, 0, j);
+						x1.push_back(pos.GetX());
+						y1.push_back(pos.GetY());
 
 						// [X1, Y1] = closest position with given (+) tolerance
-						pos->SetLaneBoundaryPos(road->GetId(), lane->GetId(), s1+OSI_TANGENT_LINE_TOLERANCE, 0, j);
-						x1.push_back(pos->GetX());
-						y1.push_back(pos->GetY());
+						pos.SetLaneBoundaryPos(road->GetId(), lane->GetId(), s1+OSI_TANGENT_LINE_TOLERANCE, 0, j);
+						x1.push_back(pos.GetX());
+						y1.push_back(pos.GetY());
 
 						// Check OSI Requirement between current given points
 						if (x1[1]-x0[1] != 0 && y1[1]-y0[1] != 0)
@@ -5984,7 +5984,7 @@ void OpenDrive::SetLaneBoundaryPoints()
 						// Make sure max segment length is longer than stepsize
 						if (osi_requirement)
 						{
-							max_segment_length = GetMaxSegmentLen(0, pos, 1.1 * OSI_POINT_CALC_STEPSIZE, SE_Env::Inst().GetOSIMaxLongitudinalDistance(),
+							max_segment_length = GetMaxSegmentLen(0, &pos, 1.1 * OSI_POINT_CALC_STEPSIZE, SE_Env::Inst().GetOSIMaxLongitudinalDistance(),
 								OSI_POINT_DIST_SCALE, OSI_POINT_DIST_SCALE, osi_requirement);
 						}
 
@@ -6006,8 +6006,8 @@ void OpenDrive::SetLaneBoundaryPoints()
 
 							if (counter != 1)
 							{
-								pos->SetLaneBoundaryPos(road->GetId(), lane->GetId(), s0, 0, j);
-								PointStruct p = { s0, pos->GetX(), pos->GetY(), pos->GetZ(), pos->GetHRoad() };
+								pos.SetLaneBoundaryPos(road->GetId(), lane->GetId(), s0, 0, j);
+								PointStruct p = { s0, pos.GetX(), pos.GetY(), pos.GetZ(), pos.GetHRoad() };
 								osi_point.push_back(p);
 							}
 						}
@@ -6015,8 +6015,8 @@ void OpenDrive::SetLaneBoundaryPoints()
 						// If the end of the lane reached, assign end of the lane as final OSI point for current lane
 						if (s1 + OSI_TANGENT_LINE_TOLERANCE >= lsec_end)
 						{
-							pos->SetLaneBoundaryPos(road->GetId(), lane->GetId(), MAX(0, lsec_end - SMALL_NUMBER), 0, j);
-							PointStruct p = { lsec_end, pos->GetX(), pos->GetY(), pos->GetZ(), pos->GetHRoad() };
+							pos.SetLaneBoundaryPos(road->GetId(), lane->GetId(), MAX(0, lsec_end - SMALL_NUMBER), 0, j);
+							PointStruct p = { lsec_end, pos.GetX(), pos.GetY(), pos.GetZ(), pos.GetHRoad() };
 							osi_point.push_back(p);
 							break;
 						}
