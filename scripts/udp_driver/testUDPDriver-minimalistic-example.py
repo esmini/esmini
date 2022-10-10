@@ -28,7 +28,7 @@ udpSender1 = UdpSender(port = base_port + 1)
 
 udpSender0.send(
     struct.pack(
-        'iiiiddddd', 
+        'iiiidddddB',
         1,    # version
         input_modes['stateXYH'],
         0,    # object ID
@@ -37,13 +37,14 @@ udpSender0.send(
         6.5,  # y
         1.57, # h
         0,    # speed
-        -0.9  # steering angle
+        -0.9, # steering angle
+        1     # dead reckoning
     )
 )
 
 udpSender1.send(
     struct.pack(
-        'iiiiddddd', 
+        'iiiidddddB',
         1,    # version
         input_modes['stateXYH'],
         1,    # object ID
@@ -52,7 +53,8 @@ udpSender1.send(
         6.5,  # y
         1.57, # h
         0.0,  # speed
-        0.0   # steering angle
+        0.0,   # steering angle
+        1     # dead reckoning
     )
 )
 
@@ -60,29 +62,28 @@ time.sleep(3)
 
 udpSender1.send(
     struct.pack(
-        'iiiiddd', 
+        'iiiiddd',
         1,    # version
         input_modes['driverInput'],
         1,    # object ID
         0,    # frame nr
         0.08, # throttle
         0.0,  # brake
-        0.25 # steering angle
+        0.6 # steering angle
     )
 )
 
-time.sleep(9)
+time.sleep(10)
 
 udpSender1.send(
     struct.pack(
-        'iiiiddd', 
+        'iiiiddd',
         1,   # version
         input_modes['driverInput'],
         1,   # object ID
         0,   # frame nr
         0.0, # throttle
         0.1, # brake
-        -0.2  # steering angle
+        -0.4  # steering angle
     )
 )
-

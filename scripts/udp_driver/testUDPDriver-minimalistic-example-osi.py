@@ -1,6 +1,6 @@
 '''
    This script shows how to use the esmini UDPDriverController in combination with
-   OSI. Two driver control messages is sent, one for each vehicle. Then one OSI message 
+   OSI. Two driver control messages is sent, one for each vehicle. Then one OSI message
    is fetched and parsed.
    Prerequisites:
       Python 3
@@ -31,7 +31,7 @@ if __name__ == "__main__":
     # Send states
     udpSender0.send(
         struct.pack(
-            'iiiiddddd', 
+            'iiiidddddB',
             1,    # version
             input_modes['stateXYH'],
             0,    # object ID
@@ -40,13 +40,14 @@ if __name__ == "__main__":
             6.5,  # y
             1.57, # h
             0,    # speed
-            -0.9  # steering angle
+            -0.9, # steering angle
+            1     # dead reckoning
         )
     )
 
     udpSender1.send(
         struct.pack(
-            'iiiiddddd', 
+            'iiiidddddB',
             1,    # version
             input_modes['stateXYH'],
             1,    # object ID
@@ -54,15 +55,16 @@ if __name__ == "__main__":
             8.7,  # x
             6.5,  # y
             1.57, # h
-            0.0,  # speed
-            0.0   # steering angle
+            5.0,  # speed
+            0.0,  # steering angle
+            1     # dead reckoning
         )
     )
 
     # Expect OSI message
     try:
         msg = osiReceiver.receive()
-        
+
         # Print some content from the message
         for i, o in enumerate(msg.moving_object):
             print('Object[{}] id {}'.format(i, o.id.value))

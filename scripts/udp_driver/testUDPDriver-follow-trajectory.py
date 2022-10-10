@@ -18,6 +18,9 @@
 '''
 
 import math
+from operator import truediv
+import time
+import sys
 from udp_osi_common import *
 
 class Driver():
@@ -41,7 +44,6 @@ class Driver():
     def step(self, speed, x, y, h):
 
         lookahead = max(5.0, 1.2 * speed)  # look ahead some distance proportional to speed
-        print(lookahead)
         # Lateral position on the trajectory
         y_target = self.trajectory_function(x+lookahead)  # look ahead 10 m
 
@@ -84,8 +86,10 @@ def print_osi_stuff(msg):
 
 if __name__ == "__main__":
 
+    id = 0
+
     # Create UDP socket objects
-    udpSender0 = UdpSender(port = base_port + 0)
+    udpSender0 = UdpSender(port = base_port + id)
     osiReceiver = OSIReceiver()
     driver = Driver() 
     done = False
@@ -98,8 +102,8 @@ if __name__ == "__main__":
             msg = osiReceiver.receive()
             print_osi_stuff(msg)
 
-            # extract values for Ego (id 0)
-            o = msg.moving_object[0]
+            # extract values for vehicle
+            o = msg.moving_object[id]
             speed = math.sqrt(o.base.velocity.x**2 + o.base.velocity.y**2)  # assume speed is the hypotenuse of x and y velocity components
             driver.step(speed, o.base.position.x, o.base.position.y, o.base.orientation.yaw)
         
@@ -110,19 +114,20 @@ if __name__ == "__main__":
             done = True
 
         # Send updated driver input
-        print('throttle {:.2f} brake {:.2f} steer_angle {:.2f}'.format(driver.throttle, driver.brake, driver.steering ))
         udpSender0.send(
             struct.pack(
                 'iiiiddd', 
                 1,    # version
                 input_modes['driverInput'],
-                0,    # object ID
+                id,    # object ID
                 counter,    # frame nr
                 driver.throttle, # throttle
                 driver.brake,  # brake
                 driver.steering # steering angle
             )
         )
+
+        print('{} throttle {:.2f} brake {:.2f} steer_angle {:.2f}'.format(counter, driver.throttle, driver.brake, driver.steering ))
 
         counter += 1
 
