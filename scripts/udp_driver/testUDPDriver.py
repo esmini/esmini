@@ -72,6 +72,8 @@ class Object():
             self.inputModeText.set('driverInput')
         elif (self.inputMode == input_modes['stateXYH']):
             self.inputModeText.set('stateXYH')
+        elif (self.inputMode == input_modes['stateH']):
+            self.inputModeText.set('stateH')
         elif (self.inputMode == input_modes['stateXYZHPR']):
             self.inputModeText.set('stateXYZHPR')
         elif (self.inputMode == 0):
@@ -109,6 +111,16 @@ class Object():
                 self.speed.get() / 3.6,
                 -self.wheel_angle.get(),
                 self.dead_reckon.get())
+        elif (self.inputMode == input_modes['stateH']):
+            message = struct.pack('iiiidddB',
+                self.version,
+                self.inputMode,
+                self.objectId,
+                self.frameNumber,
+                self.h.get(),
+                self.speed.get() / 3.6,
+                -self.wheel_angle.get(),
+                self.dead_reckon.get())
         elif (self.inputMode == input_modes['driverInput']):
             message = struct.pack('iiiiddd',
                 self.version,
@@ -133,12 +145,16 @@ class Object():
         self.setInputMode(input_modes['stateXYH'])
         self.sendMessage()
 
+    def updateStateH(self, value = 0):
+        self.setInputMode(input_modes['stateH'])
+        self.sendMessage()
+
     def updateDriverInput(self, value = 0):
         self.setInputMode(input_modes['driverInput'])
         self.sendMessage()
 
     def setInputMode(self, mode):
-        if (mode < 1 or mode > 3):
+        if (mode < 1 or mode > 4):
             print('Unknown mode:', mode)
         else:
             self.inputMode = mode
@@ -292,26 +308,53 @@ class Application(Frame):
             frame3.grid_columnconfigure(0, minsize=2)
 
             row = 0
-            Label(frame3, text='Driver input' + str(obj.id)).grid(row=row)
+            Label(frame3, text='StateH' + str(obj.id)).grid(row=row, sticky=N)
 
             row += 1
-            Label(frame3, text="throttle").grid(sticky = SE, row = row, column = 0, padx = padx)
-            Scale(frame3, from_=0, to=1, resolution=0.01, orient=HORIZONTAL, variable=obj.throttle, width=scalewidth,
-                command=obj.updateDriverInput).grid(sticky = EW, row = row, column = 1, padx = padx)
+            Label(frame3, text="h").grid(sticky = SE, row = row, column = 0, padx = padx)
+            Scale(frame3, from_=-3.14, to=3.14, resolution=0.01, orient=HORIZONTAL, variable=obj.h, width=scalewidth,
+                command=obj.updateStateH).grid(sticky = EW, row = row, column = 1, padx = padx)
 
             row += 1
-            Label(frame3, text="brake").grid(sticky = SE, row = row, column = 0, padx = padx)
-            Scale(frame3, from_=0, to=1, resolution=0.01, orient=HORIZONTAL, variable=obj.brake, width=scalewidth,
-                command=obj.updateDriverInput).grid(sticky = EW, row = row, column = 1, padx = padx)
+            Label(frame3, text="speed").grid(sticky = SE, row = row, column = 0, padx = padx)
+            Scale(frame3, from_=-10.0, to=100.0, resolution=1, orient=HORIZONTAL, variable=obj.speed, width=scalewidth,
+                command=obj.updateStateH).grid(sticky = EW, row = row, column = 1, padx = padx)
 
             row += 1
             Label(frame3, text="wheel angle").grid(sticky = SE, row = row, column = 0, padx = padx)
             Scale(frame3, from_=-1.0, to=1.0, resolution=0.01, orient=HORIZONTAL, variable=obj.wheel_angle, width=scalewidth,
+                command=obj.updateStateH).grid(sticky = EW, row = row, column = 1, padx = padx)
+
+            row += 1
+            Checkbutton(frame3, text="dead reckoning", variable=obj.dead_reckon, command=obj.updateStateH, onvalue=1, offvalue=0).\
+                grid(sticky = SW, row = row, column = 1, padx = padx, pady=5)
+
+            frame4 = Frame(tab_frame, borderwidth=2, relief=GROOVE)
+            frame4.grid(row=3,sticky=EW)
+            frame4.grid_rowconfigure(2, weight=1)
+            frame4.grid_columnconfigure(1, weight=1, minsize=200)
+            frame4.grid_columnconfigure(0, minsize=2)
+            row = 0
+            Label(frame4, text='Driver input' + str(obj.id)).grid(row=row)
+
+            row += 1
+            Label(frame4, text="throttle").grid(sticky = SE, row = row, column = 0, padx = padx)
+            Scale(frame4, from_=0, to=1, resolution=0.01, orient=HORIZONTAL, variable=obj.throttle, width=scalewidth,
+                command=obj.updateDriverInput).grid(sticky = EW, row = row, column = 1, padx = padx)
+
+            row += 1
+            Label(frame4, text="brake").grid(sticky = SE, row = row, column = 0, padx = padx)
+            Scale(frame4, from_=0, to=1, resolution=0.01, orient=HORIZONTAL, variable=obj.brake, width=scalewidth,
+                command=obj.updateDriverInput).grid(sticky = EW, row = row, column = 1, padx = padx)
+
+            row += 1
+            Label(frame4, text="wheel angle").grid(sticky = SE, row = row, column = 0, padx = padx)
+            Scale(frame4, from_=-1.0, to=1.0, resolution=0.01, orient=HORIZONTAL, variable=obj.wheel_angle, width=scalewidth,
                 command=obj.updateDriverInput).grid(sticky = EW, row = row, column = 1, padx = padx)
 
 
             bottom_frame = Frame(tab_frame, borderwidth=2, relief=GROOVE)
-            bottom_frame.grid(row=3,sticky=EW)
+            bottom_frame.grid(row=4,sticky=EW)
             row = 0
             Label(bottom_frame, text='inputMode: ').grid(sticky = W, row = row, column = 0, padx = padx)
             Entry(bottom_frame, textvariable=obj.inputModeText, state='disabled').grid(sticky = E, row = row, column = 1, padx = padx)

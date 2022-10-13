@@ -16,6 +16,7 @@ input_modes = {
   'driverInput': 1,
   'stateXYZHPR': 2,
   'stateXYH': 3,
+  'stateH': 4,
 }
 
 base_port = 53995
@@ -64,7 +65,7 @@ class OSIReceiver():
         # Large nessages might be split in multiple parts
         # esmini will add a counter to indicate sequence number 0, 1, 2...
         # negative counter means last part and message is now complete
-        while not done:  
+        while not done:
             # receive header
             msg = self.udp_receiver.receive()
 
@@ -76,7 +77,7 @@ class OSIReceiver():
             if not (len(frame) == size == len(msg)-8):
                 print('Error: Unexpected invalid lengths')
                 return
-            
+
             if counter == 1:  # new message
                 complete_msg = b''
                 next_index = 1
@@ -90,9 +91,9 @@ class OSIReceiver():
             else:
                 next_index = 1   # out of sync, reset
 
-        # Parse and return message 
+        # Parse and return message
         self.osi_msg.ParseFromString(complete_msg)
         return self.osi_msg
-        
+
     def close(self):
         self.udp_receiver.close()
