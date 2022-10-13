@@ -223,7 +223,9 @@ if [ ! -d OpenSceneGraph/build ]; then
     mkdir build
     cd build
 
-    COMMON_ARGS="${GENERATOR_ARGUMENTS} -DOSG_AGGRESSIVE_WARNINGS=False -DDYNAMIC_OPENSCENEGRAPH=false -DDYNAMIC_OPENTHREADS=false -DBUILD_OSG_APPLICATIONS=False -DBUILD_OSG_EXAMPLES=False -DBUILD_OSG_DEPRECATED_SERIALIZERS=False -DJPEG_INCLUDE_DIR=$osg_root_dir/jpeg-9e -DFBX_INCLUDE_DIR=$fbx_include "
+    COMMON_ARGS="-DOSG_AGGRESSIVE_WARNINGS=False -DDYNAMIC_OPENSCENEGRAPH=false -DDYNAMIC_OPENTHREADS=false -DBUILD_OSG_APPLICATIONS=False -DBUILD_OSG_EXAMPLES=False -DBUILD_OSG_DEPRECATED_SERIALIZERS=False -DFBX_INCLUDE_DIR="$fbx_include" "
+    echo $COMMON_ARGS
+
 
     if [[ "$OSTYPE" == "linux-gnu"* ]]; then
         COMMON_ARGS2="-DOPENGL_PROFILE=GL2 -DCMAKE_CXX_FLAGS=-fPIC -DJPEG_INCLUDE_DIR=$osg_root_dir/jpeg-9e "
@@ -239,21 +241,21 @@ if [ ! -d OpenSceneGraph/build ]; then
         make -j$PARALLEL_BUILDS install
 
     elif [[ "$OSTYPE" == "darwin"* ]]; then
-        cmake ../ ${COMMON_ARGS} -DOSG_TEXT_USE_FONTCONFIG=false -DOPENGL_PROFILE=GL2 -DJPEG_LIBRARY_RELEASE=$osg_root_dir/jpeg-9e/.libs/libjpeg.a -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="$CMAKE_CXX_FLAGS -fPIC -DGL_SILENCE_DEPRECATION" -DCMAKE_OSX_ARCHITECTURES="$macos_arch" -DCMAKE_INSTALL_PREFIX=../install
+        cmake ../ ${COMMON_ARGS} -DOSG_TEXT_USE_FONTCONFIG=false -DOPENGL_PROFILE=GL2 -DJPEG_INCLUDE_DIR=$osg_root_dir/jpeg-9e -DJPEG_LIBRARY_RELEASE=$osg_root_dir/jpeg-9e/.libs/libjpeg.a -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="$CMAKE_CXX_FLAGS -fPIC -DGL_SILENCE_DEPRECATION" -DCMAKE_OSX_ARCHITECTURES="$macos_arch" -DCMAKE_INSTALL_PREFIX=../install
 
         cmake --build . -j $PARALLEL_BUILDS --config Release --target install
 
     elif [ "$OSTYPE" == "msys" ]; then
-        COMMON_ARGS2="-DOPENGL_PROFILE=GL3 -DCMAKE_INSTALL_PREFIX=../install -DACTUAL_3RDPARTY_DIR=../../3rdParty_x64/x64 -DFBX_INCLUDE_DIR=$fbx_include -DFBX_LIBRARY=$fbx_lib_release -DFBX_LIBRARY_DEBUG=$fbx_lib_debug "
+        COMMON_ARGS2="-DOPENGL_PROFILE=GL3 -DACTUAL_3RDPARTY_DIR=../../3rdParty_x64/x64 -DFBX_INCLUDE_DIR="$fbx_include" -DFBX_LIBRARY="$fbx_lib_release" -DFBX_LIBRARY_DEBUG="$fbx_lib_debug" "
 
-        cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} ../ ${COMMON_ARGS} ${COMMON_ARGS2} -DCMAKE_INSTALL_PREFIX=../install -DFBX_XML2_LIBRARY="$fbx_xml_lib_release" -DFBX_ZLIB_LIBRARY="$fbx_zlib_lib_release"
+        cmake ../ -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} ${COMMON_ARGS} ${COMMON_ARGS2} -DCMAKE_INSTALL_PREFIX=../install -DFBX_XML2_LIBRARY="$fbx_xml_lib_release" -DFBX_ZLIB_LIBRARY="$fbx_zlib_lib_release"
 
         cmake --build . -j $PARALLEL_BUILDS --config Release --target install
 
         # build debug variant
         rm CMakeCache.txt
 
-        cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} ../ ${COMMON_ARGS} ${COMMON_ARGS2} -DCMAKE_INSTALL_PREFIX=../install-debug -DFBX_XML2_LIBRARY="$fbx_xml_lib_debug" -DFBX_ZLIB_LIBRARY="$fbx_zlib_lib_debug"
+        cmake ../ -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} ${COMMON_ARGS} ${COMMON_ARGS2} -DCMAKE_INSTALL_PREFIX=../install-debug -DFBX_XML2_LIBRARY="$fbx_xml_lib_debug" -DFBX_ZLIB_LIBRARY="$fbx_zlib_lib_debug"
 
         cmake --build . -j $PARALLEL_BUILDS --config Debug --target install
     else
