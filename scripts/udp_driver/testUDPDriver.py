@@ -8,7 +8,11 @@
    if vehicle will "hang" in the air.
 
    Python dependencies:
-      pip install protobuf==3.19
+      protobuf
+         pip install protobuf==3.19
+      tkinter (usually included with Python on Windows)
+         test if installed: python -m tkinter (or python3 -m tkinter)
+         sudo apt-get install python3-tk
 
    To run it:
    1. Open two terminals
