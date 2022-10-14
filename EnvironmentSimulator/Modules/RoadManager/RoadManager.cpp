@@ -6249,7 +6249,7 @@ void OpenDrive::SetRoadMarkOSIPoints()
 										while(++counter)
 										{
 											// Make sure we stay within lane section length
-											double s = MIN(pos_candidate.GetS() + step, lsec_end - SMALL_NUMBER / 2);
+											double s = MIN(pos_candidate.GetS() + step, s_end_roadmark - SMALL_NUMBER / 2);
 
 											// [X1, Y1] = Real position with no tolerance
 											pos_candidate.SetRoadMarkPos(road->GetId(), lane->GetId(), m, 0, n, s, 0, j);
@@ -6297,7 +6297,7 @@ void OpenDrive::SetRoadMarkOSIPoints()
 													OSI_POINT_DIST_SCALE, OSI_POINT_DIST_SCALE, osi_requirement);
 											}
 
-											if (pos_candidate.GetS() + SMALL_NUMBER > lsec_end - SMALL_NUMBER ||   // end of the lane reached, assign as final OSI point
+											if (pos_candidate.GetS() + SMALL_NUMBER > s_end_roadmark - SMALL_NUMBER ||   // end of the lane reached, assign as final OSI point
 												osi_requirement && pos_candidate.GetS() - pos_pivot.GetS() > max_segment_length - SMALL_NUMBER ||
 												abs(step) < min_segment_length + SMALL_NUMBER)
 											{
@@ -6305,7 +6305,7 @@ void OpenDrive::SetRoadMarkOSIPoints()
 												osi_point.push_back(p);
 												insert = false;
 
-												if (pos_candidate.GetS() + SMALL_NUMBER > lsec_end - SMALL_NUMBER)
+												if (pos_candidate.GetS() + SMALL_NUMBER > s_end_roadmark - SMALL_NUMBER)
 												{
 													break;
 												}
