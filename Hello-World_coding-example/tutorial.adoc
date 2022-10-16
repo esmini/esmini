@@ -25,7 +25,7 @@ Do following steps to build a minimal esmini-player application
 
 *Note*: If esminiLib is recompiled, make sure to grab the latest copy (e.g. from esmini/bin in case of build target "install").
 
-If all works as expected there should be an executable "esmini-player" in the Hello-World_coding-example folder. Try to run it from that directory. 
+If all works as expected there should be an executable "esmini-player" in the Hello-World_coding-example folder. Try to run it from that directory.
 On Linux you might need to define LD_LIBRARY PATH first, like this: ``export LD_LIBRARY_PATH=.``
 
 If you have any IDE installed, e.g. Visual Studio (Win) or Xcode (Mac), cmake might have produced project files for it, e.g. "build/esmini-player.sln".
@@ -75,13 +75,13 @@ include::{src-local-root}/{file}[]
 === External control of Ego
 A silly example showing how you can just take control over vehicle state via the API. The Ego car will move one meter along the Y-axis for each frame while rotating...
 
-First step is to modify the cut-in_interactive.xosc scenario. Make a copy named "cut-in_external.xosc". In that file, replace `interactiveDriver` controller with `externalController` by changing the line:  
+First step is to modify the cut-in_interactive.xosc scenario. Make a copy named "cut-in_external.xosc". In that file, replace `interactiveDriver` controller with `externalController` by changing the line:
 
 ----
 <CatalogReference catalogName="ControllerCatalog" entryName="interactiveDriver" />
 ----
 
-to: 
+to:
 
 ----
 <CatalogReference catalogName="ControllerCatalog" entryName="externalController" />
@@ -96,7 +96,7 @@ Now we will also introduce the quit_flag, which lets you quit by pressing 'Esc' 
 include::{src-local-root}/{file}[]
 ----
 
-Exercise: Change heading with i, e.g: 
+Exercise: Change heading with i, e.g:
 
 ``SE_ReportObjectPos(0, 0.0f, 8.0f, (float)i, 0.0f, 1.57f + 0.01f*i, 0.0f, 0.0f, 15.0f);``
 
@@ -112,7 +112,7 @@ Try to run cut-in_interactive.xosc, as below.
 include::{src-local-root}/{file}[]
 ----
 
-Control the Ego vehicle with arrow keys. 
+Control the Ego vehicle with arrow keys.
 
 To disable controllers and hand over to default scenario behavior set first argument flag (see https://github.com/esmini/esmini/blob/45ef22ed04867f6e6630bb73461e5d4a3fcd7d93/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L259[headerfile esminiLib.hpp]):
 
@@ -136,7 +136,7 @@ include::{src-local-root}/{file}[]
 
 === Driver model
 
-Using a simple vehicle model this example demonstrates how a driver model can interact with the scenario, once again using the ``ExternalController``. 
+Using a simple vehicle model this example demonstrates how a driver model can interact with the scenario, once again using the ``ExternalController``.
 
 To show different variants we also show how to set scenario parameters during intialization, via callbacks. In effect this is a way to achieve runtime variants of the same basic scenario.
 
@@ -144,15 +144,15 @@ Before heading into the application code we will look into the scenario file lin
 
 Now, let's have a look inside it to see how to activate the ExternalController, which will prevent the DefaultController to interfere with the Ego vehicle and instead hand over exclusive control to our application. You can skip this and go to the C++ code example below if you're not interested in the controller setup.
 
-- Open test-driver.xosc 
-- Look in the Entities section, under the ``<ScenarioObject name="Ego"\>`` element. Here the controller is defined and assigned to the Ego vehicle. 
+- Open test-driver.xosc
+- Look in the Entities section, under the ``<ScenarioObject name="Ego"\>`` element. Here the controller is defined and assigned to the Ego vehicle.
 
 [source,xml]
 ----
 include::{src-local-root}/EnvironmentSimulator/code-examples/test-driver/test-driver.xosc[tag=ObjectController]
 ----
 
-*Note:* The GhostMode parameter is set to true or false in the ParameterDeclarations section in the top of the scenario file. 
+*Note:* The GhostMode parameter is set to true or false in the ParameterDeclarations section in the top of the scenario file.
 
 - Then the initial position is set. This could instead be done by the application, but it's convenient to specify it in the scenario file.
 
@@ -161,7 +161,7 @@ include::{src-local-root}/EnvironmentSimulator/code-examples/test-driver/test-dr
 include::{src-local-root}/EnvironmentSimulator/code-examples/test-driver/test-driver.xosc[tag=TeleportAction]
 ----
 
-- Finally we need to activate the controller on both lateral and longitudinal domains. 
+- Finally we need to activate the controller on both lateral and longitudinal domains.
 
 [source,xml]
 ----
@@ -190,7 +190,7 @@ Now, study the code and perhaps play around mainpulating some values.
 include::{src-local-root}/{file}[]
 ----
 
-Don't worry about the stationary red car on the road, you'll just drive through it. 
+Don't worry about the stationary red car on the road, you'll just drive through it.
 
 Try experimenting with the driver settings, e.g. increase lookahead distance factor from 0.75 to 1.75.
 
@@ -200,15 +200,15 @@ When running the application, press key 'j' to toggle ghost trail dots and lines
 
 
 ==== Ghost concept in brief
-In the first loop the driver model is just capable of driving along the specified lane. It's totally detached from any scenario events. 
+In the first loop the driver model is just capable of driving along the specified lane. It's totally detached from any scenario events.
 
 The ghost concept is a solution for a driver model to perform scenario actions. Basically it will launch a fore-runner to perform the scenario actions. The trajectory, including speed, is registered into a "trail" which can then be used as reference for steering and speed target.
 
-Ghost mode is a parameter of the external controller. Normally this is set in the scenario, for example in test-driver.xosc, change line:  
+Ghost mode is a parameter of the external controller. Normally this is set in the scenario, for example in test-driver.xosc, change line:
 
 [source,xml]
 ----
-<ParameterDeclaration name="GhostMode" parameterType="bool" value="false"/> 
+<ParameterDeclaration name="GhostMode" parameterType="bool" value="false"/>
 ----
 
 to:
@@ -230,7 +230,7 @@ include_directories(. ../include ../EnvironmentSimulator/Libraries/esminiLib ../
 
 link_directories(. ../lib ../bin ../externals/OSI/v10/lib)
 
-target_link_libraries(${TARGET} esminiLib libprotobuf open_simulation_interface_pic) 
+target_link_libraries(${TARGET} esminiLib libprotobuf open_simulation_interface_pic)
 ----
 
 Linux:
@@ -270,7 +270,7 @@ import ctypes
 
 se = ctypes.CDLL("./esminiLib.dll")
 se.SE_Init(b"../resources/xosc/cut-in.xosc", 1, 1, 0, 0, 2)
- 
+
 for i in range (500):
     se.SE_Step()
 ```
@@ -280,7 +280,7 @@ for i in range (500):
 Below is a bit more flexible variant:
 
 - Portable: Works on all supported platforms
-- Provide scenario via argument 
+- Provide scenario via argument
 - Quit at press Escape or end of scenario
 
 :file: Hello-World_coding-example/esmini-player.py
@@ -311,14 +311,25 @@ include::{src-local-root}/{file}[]
 ----
 include::{src-local-root}/{file}[]
 ----
- 
-=== Advanced use case using callback
+
+=== Storyboard element state callback
+The following code shows how to get notification of storyboard events using StoryBoardElementStateChangeCallback.
+
+:file: EnvironmentSimulator/code-examples/hello_world/storyboard_state_callback.py
+.link:{src-remote-root}/{file}[{file}] (complete code)
+[source,python]
+----
+include::{src-local-root}/{file}[tag=StoryboardStateCallback]
+----
+
+=== Object state callback
+#Advanced#
 
 Controllers and callbacks can also be utilized via Python. Following code drafts how to grab state of the first scenario object and then, in a callback, manipulate it and report back. If used in combination with ExternalController in mode=additive the scenario action are applied first. On the contrary, if used with mode=override, the scenario actions will not be applied giving exclusive control to the external callback function.
 
 :file: EnvironmentSimulator/code-examples/hello_world/object_callback.py
-.link:{src-remote-root}/{file}[{file}]
+.link:{src-remote-root}/{file}[{file}] (complete code)
 [source,python]
 ----
-include::{src-local-root}/{file}[]
+include::{src-local-root}/{file}[tag=ObjectCallback]
 ----

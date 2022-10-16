@@ -43,7 +43,7 @@ class Application(Frame):
             print("Unsupported platform: {}".format(sys.platform))
             quit()
 
-        self.se.SE_AddPath(b"../../../resources/xosc/Catalogs/Vehicles", 0, 1, 0, 0)
+        self.se.SE_AddPath(b"../../../resources/xosc/Catalogs/Vehicles")
         self.se.SE_Init(b"trig_lane_change.xosc", 0, 1, 0, 0)
         self.step()
 
