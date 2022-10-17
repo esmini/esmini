@@ -1293,7 +1293,7 @@ int OSIReporter::UpdateOSILaneBoundary(std::vector<ObjectState *> objectState)
 									switch (laneroadmark->GetType())
 									{
 									case roadmanager::LaneRoadMark::RoadMarkType::NONE_TYPE:
-										classific_type = osi3::LaneBoundary_Classification_Type::LaneBoundary_Classification_Type_TYPE_UNKNOWN;
+										classific_type = osi3::LaneBoundary_Classification_Type::LaneBoundary_Classification_Type_TYPE_NO_LINE;
 										break;
 									case roadmanager::LaneRoadMark::RoadMarkType::SOLID:
 										classific_type = osi3::LaneBoundary_Classification_Type::LaneBoundary_Classification_Type_TYPE_SOLID_LINE;

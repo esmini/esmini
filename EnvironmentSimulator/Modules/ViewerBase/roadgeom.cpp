@@ -103,6 +103,12 @@ int RoadGeom::AddRoadMarks(roadmanager::Lane* lane, osg::Group* parent)
 	for (size_t i = 0; i < lane->GetNumberOfRoadMarks(); i++)
 	{
 		roadmanager::LaneRoadMark* lane_roadmark = lane->GetLaneRoadMarkByIdx(i);
+
+		if (lane_roadmark->GetType() == roadmanager::LaneRoadMark::RoadMarkType::NONE_TYPE)
+		{
+			continue;
+		}
+
 		for (int m = 0; m < lane_roadmark->GetNumberOfRoadMarkTypes(); m++)
 		{
 			roadmanager::LaneRoadMarkType* lane_roadmarktype = lane_roadmark->GetLaneRoadMarkTypeByIdx(m);

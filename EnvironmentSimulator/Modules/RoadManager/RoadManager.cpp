@@ -3652,10 +3652,18 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 										}
 									}
 								}
-								if (roadMark_type != LaneRoadMark::NONE_TYPE && lane_roadMarkType == 0)
+								if (lane_roadMarkType == 0)
 								{
-									if (roadMark_type == LaneRoadMark::SOLID ||
-										roadMark_type == LaneRoadMark::CURB)
+									if (roadMark_type == LaneRoadMark::NONE_TYPE)
+									{
+										lane_roadMarkType = new LaneRoadMarkType("stand-in", roadMark_width);
+										lane_roadMark->AddType(lane_roadMarkType);
+										LaneRoadMarkTypeLine::RoadMarkTypeLineRule rule = LaneRoadMarkTypeLine::NONE;
+										LaneRoadMarkTypeLine* lane_roadMarkTypeLine =
+											new LaneRoadMarkTypeLine(0, 0, 0, 0, rule, roadMark_width, roadMark_color);
+										lane_roadMarkType->AddLine(lane_roadMarkTypeLine);
+									}
+									else if (roadMark_type == LaneRoadMark::SOLID || roadMark_type == LaneRoadMark::CURB)
 									{
 										lane_roadMarkType = new LaneRoadMarkType("stand-in", roadMark_width);
 										lane_roadMark->AddType(lane_roadMarkType);
