@@ -6,7 +6,7 @@
 :src-local-root: ../
 // :src-remote-root: {src-local-root}
 :src-remote-root: https://github.com/esmini/esmini/tree/master
-:imagesdir: https://github.com/esmini/esmini.github.io/raw/main/images/src-remote-root
+:imagesdir: https://github.com/esmini/esmini.github.io/raw/main/images
 :figure-caption!:
 // :imagesdir: https://media.githubusercontent.com/media/esmini/esmini.github.io/main/images/
 
@@ -1344,6 +1344,71 @@ a| [horizontal]
 `testMode`:: stop at reached destination - mainly for test purpose (`true`/`false` (default))
 |*Example*:| https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/Unittest/xosc/follow_route_with_lane_change.xosc[follow_route_with_lane_change.xosc]
 |===
+
+==== UDPDriverController
+
+An UDP interface for external driver models or vehicle simulators. The idea is to allow external devices to control entities in an ongoing esmini simulation, over network.
+
+Concept:
+
+image::udp_driver_controller_concept.png[]
+
+* Assign the controller to any scenario vehicle (in the OpenSCENARIO file)
+* Send input to esmini controller
+* The vehicle will be updated by the controller accordingly (and bypassing esmini default controller)
+* receive ground-truth (OSI over UDP) from esmini
+
+
+There are a few input mode options:
+
+1. DRIVER_INPUT +
+Control a simple vehicle model in terms of pedals and steering input. Vehicle will apply latest received values until update is received.
+[horizontal]
+Parameters: ::
+  `throttle` +
+  `brake` +
+  `steeringAngle`
+
+2. VEHICLE_STATE_XYZHPR +
+Report explicit complete state, ignoring road geometry. Useful when advanced vehicle dynamics is involved and vehicle for example is pitching as result of acceleration and rolling as result of steering. Optional flag to enable dead reckoning on esmini side, in which case esmini will move entity according to latest received heading and speed (basically extrapolating).
+[horizontal]
+Parameters: ::
+  `x` +
+  `y` +
+  `z` +
+  `h`(eading) +
+  `p`(itch) +
+  `r`(oll) +
+  `speed` +
+  `wheelAngle` (wheel yaw/stering angle) +
+  `deadReckon` (flag)
+
+3. VEHICLE_STATE_XYH +
+Report explicit partial state. `z`, `pitch` and `roll` are aligned to the road geometry.
+[horizontal]
+Parameters: ::
+  `x` +
+  `y` +
+  `h`(eading) +
+  `speed` +
+  `wheelAngle` (wheel yaw/stering angle) +
+  `deadReckon` (flag)
+
+4. VEHICLE_STATE_H +
+Minimal explicit state, useful when the driver model output is only heading and speed.
+[horizontal]
+Parameters: ::
+  `h`(eading) +
+  `speed` +
+  `wheelAngle` (wheel yaw/stering angle) +
+  `deadReckon` (flag)
+
+For more info see: https://www.dropbox.com/s/qc2n7db0h9k7urt/UDPDriverController.pdf?dl=0[UDPDriverController.pdf]
+
+Demo (running a somewhat outdated https://github.com/esmini/esmini/blob/master/scripts/udp_driver/testUDPDriver.py[testUDPDriver.py]):
+
+video::IuwuGE3BzKw[youtube,width=854,height=480,opts="autoplay,nocontrols,loop"]
+
 
 == OpenSceneGraph and 3D models
 
