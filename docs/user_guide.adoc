@@ -914,7 +914,7 @@ From OpenSCENARIO v1.1 https://www.asam.net/index.php?eID=dumpFile&t=f&f=4908&to
 h and (speed value) evaluates to 0.707106 and 30.55558 respectively
 
 [discrete]
-==== Expression operators and functions supported, as per 2022-09-12
+==== Supported expression operators and functions
 
 *Operators*
 
@@ -924,7 +924,7 @@ h and (speed value) evaluates to 0.707106 and 30.55558 respectively
 |`-`|
 |`*`| multiply
 |`/`|
-|`%`| modulo/remainder, see https://cplusplus.com/reference/cmath/fmod/[C++ fmod] (might deviate from IEEE 754)
+|`%`| IEEE 754 remainder, see https://en.cppreference.com/w/cpp/numeric/math/remainder[C++ std::remainder]
 |`**`| power
 |`<`|
 |`\<=`|
@@ -942,11 +942,11 @@ See https://github.com/esmini/esmini/blob/a53f09d85194509aa9d0c12971b1c73963c21d
 
 [%autowidth,frame=none,grid=none,cols="1a,1"]
 |===
-|`round`| see https://cplusplus.com/reference/cmath/round/[C++ round] (might deviate from IEEE 754)
-|`floor`| see https://cplusplus.com/reference/cmath/floor/[C++ floor]
-|`ceil`| see https://cplusplus.com/reference/cmath/ceil/[C++ ceil]
+|`round`| see https://en.cppreference.com/w/c/numeric/math/rint[C++ rint] (Round to nearest, halfway cases to even. Aligned with IEEE 754 default)
+|`floor`| see https://en.cppreference.com/w/c/numeric/math/floor[C++ floor]
+|`ceil`| see  https://en.cppreference.com/w/c/numeric/math/ceil[C++ ceil]
 |`sqrt`| square root
-|`pow`| see https://cplusplus.com/reference/cmath/pow/[C++ pow]
+|`pow`| see https://en.cppreference.com/w/c/numeric/math/pow[C++ pow]
 |===
 
 Following functions are supported by esmini, but not specified in OpenSCENARIO \<= 1.2, hence use with care since they may not work in other tools

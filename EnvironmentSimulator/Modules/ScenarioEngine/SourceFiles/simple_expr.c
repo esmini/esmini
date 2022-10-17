@@ -17,7 +17,7 @@
 // Custom function that returns the floor of its argument
 static double round_(struct expr_func* f, vec_expr_t* args, void* c) {
     double a = expr_eval(&vec_nth(args, 0));
-    return round(a);
+    return rint(a);
 }
 
 // Custom function that returns the floor of its argument

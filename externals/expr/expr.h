@@ -320,7 +320,7 @@ static double expr_eval(struct expr *e) {
     return expr_eval(&e->param.op.args.buf[0]) /
            expr_eval(&e->param.op.args.buf[1]);
   case OP_REMAINDER:
-    return fmod(expr_eval(&e->param.op.args.buf[0]),
+    return remainder(expr_eval(&e->param.op.args.buf[0]),
                 expr_eval(&e->param.op.args.buf[1]));
   case OP_PLUS:
     return expr_eval(&e->param.op.args.buf[0]) +

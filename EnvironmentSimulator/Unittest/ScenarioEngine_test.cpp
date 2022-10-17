@@ -315,6 +315,12 @@ TEST(ExpressionTest, EnsureResult)
     ASSERT_DOUBLE_EQ(eval_expr("15/3.5"), 15.0f / 3.5);
     ASSERT_DOUBLE_EQ(eval_expr("15 % 6"), 3.0);
     ASSERT_DOUBLE_EQ(eval_expr("-15 % 6"), -3.0);
+    ASSERT_DOUBLE_EQ(eval_expr("180 % 360"), 180.0);
+    ASSERT_DOUBLE_EQ(eval_expr("-15 % 360"), -15.0);
+    ASSERT_DOUBLE_EQ(eval_expr("345 % 360"), -15.0);
+    ASSERT_DOUBLE_EQ(eval_expr("-345 % 360"), 15.0);
+    ASSERT_DOUBLE_EQ(eval_expr("705 % 360"), -15.0);
+    ASSERT_DOUBLE_EQ(eval_expr("-705 % 360"), 15.0);
     ASSERT_DOUBLE_EQ(eval_expr("1 == 1"), 1.0);
     ASSERT_DOUBLE_EQ(eval_expr("1 == 2"), 0.0);
     ASSERT_DOUBLE_EQ(eval_expr("(4 == 4) && (10 == 10)"), 1.0);
@@ -334,9 +340,9 @@ TEST(ExpressionTest, EnsureResult)
     ASSERT_DOUBLE_EQ(eval_expr("13.88888888888889 - 0.0"), 13.88888888888889);
 
     // round returns the integral value that is nearest to x, with halfway cases rounded away from zero.
-    ASSERT_DOUBLE_EQ(eval_expr("round(-2.5)"), -3.0);
+    ASSERT_DOUBLE_EQ(eval_expr("round(-2.5)"), -2.0);
     ASSERT_DOUBLE_EQ(eval_expr("round(-3.5)"), -4.0);
-    ASSERT_DOUBLE_EQ(eval_expr("round(2.5)"), 3.0);
+    ASSERT_DOUBLE_EQ(eval_expr("round(2.5)"), 2.0);
     ASSERT_DOUBLE_EQ(eval_expr("round(3.5)"), 4.0);
 
     // additional expressions not specified in OSC <=1.2
