@@ -57,7 +57,8 @@ callback_type = ct.CFUNCTYPE(None, ct.POINTER(SEScenarioObjectState), ct.c_void_
 callback_func = callback_type(callback)
 
 # Initialize esmini before register the callback
-se.SE_Init(b"../../../resources/xosc/cut-in.xosc", 0, 1, 0, 1)
+se.SE_AddPath(b"../../../resources/xosc")  # search path if run from original location
+se.SE_Init(b"../resources/xosc/cut-in.xosc", 0, 1, 0, 1)
 
 # register callback for first object (id=0)
 se.SE_RegisterObjectCallback(0, callback_func, 0)
