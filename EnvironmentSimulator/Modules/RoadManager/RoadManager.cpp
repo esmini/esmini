@@ -2031,22 +2031,47 @@ void RoadLink::Print()
 
 Road::~Road()
 {
-	for (size_t i=0; i<geometry_.size(); i++)
+	for (size_t i = 0; i < geometry_.size(); i++)
 	{
 		delete(geometry_[i]);
 	}
-	for (size_t i=0; i<elevation_profile_.size(); i++)
+	geometry_.clear();
+	for (size_t i = 0; i < elevation_profile_.size(); i++)
 	{
 		delete(elevation_profile_[i]);
 	}
+	elevation_profile_.clear();
 	for (size_t i = 0; i < super_elevation_profile_.size(); i++)
 	{
 		delete(super_elevation_profile_[i]);
 	}
-	for (size_t i=0; i<link_.size(); i++)
+	super_elevation_profile_.clear();
+
+	for (size_t i = 0; i < link_.size(); i++)
 	{
 		delete(link_[i]);
 	}
+	link_.clear();
+	for (size_t i = 0; i < lane_section_.size(); i++)
+	{
+		delete(lane_section_[i]);
+	}
+	lane_section_.clear();
+	for (size_t i = 0; i < lane_offset_.size(); i++)
+	{
+		delete(lane_offset_[i]);
+	}
+	lane_offset_.clear();
+	for (size_t i = 0; i < signal_.size(); i++)
+	{
+		delete(signal_[i]);
+	}
+	signal_.clear();
+	for (size_t i = 0; i < object_.size(); i++)
+	{
+		delete(object_[i]);
+	}
+	object_.clear();
 }
 
 void Road::Print()
