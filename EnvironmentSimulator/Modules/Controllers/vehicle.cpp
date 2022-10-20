@@ -187,7 +187,7 @@ void Vehicle::Update(double dt)
 	wheelRotation_ = fmod(wheelRotation_ + speed_ * dt / WHEEL_RADIUS, 2 * M_PI);
 
 	// Calculate vehicle kinematics according to simple bicycle model, see
-	// http://www.me.berkeley.edu/~frborrel/pdfpub/IV_KinematicMPC_jason.pdf
+	// https://github.com/philbort/udacity_self_driving_car/blob/master/Term2/Lab_Model_Predictive_Control/IV_KinematicMPC_jason.pdf
 
 	velAngleRelVehicleLongAxis_ = atan(0.15 * tan(wheelAngle_));  // Origo is between rear wheel axles on ground level, estimated 15% along X axis
 	velAngle_ = velAngleRelVehicleLongAxis_ + heading_;
