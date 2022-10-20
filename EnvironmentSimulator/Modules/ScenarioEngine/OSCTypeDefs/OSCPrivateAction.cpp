@@ -586,7 +586,7 @@ void LatLaneChangeAction::Start(double simTime, double dt)
 
 void LatLaneChangeAction::Step(double simTime, double dt)
 {
-	double offset_agnostic = internal_pos_.GetOffset() * internal_pos_.GetLaneId();
+	double offset_agnostic = internal_pos_.GetOffset() * SIGN(internal_pos_.GetLaneId());
 	double angle = 0;
 
 	if (object_->GetControllerMode() == Controller::Mode::MODE_OVERRIDE &&
