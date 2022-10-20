@@ -550,7 +550,30 @@ namespace roadmanager
 		// Construct & Destruct
 		Lane() : id_(0), type_(LaneType::LANE_TYPE_NONE), level_(0), global_id_(0), lane_boundary_(0) {}
 		Lane(int id, Lane::LaneType type) : id_(id), type_(type), level_(1), global_id_(0), lane_boundary_(0) {}
-		~Lane() {}
+		~Lane()
+		{
+			for (size_t i = 0; i < link_.size(); i++)
+			{
+				delete link_[i];
+			}
+			link_.clear();
+
+			for (size_t i = 0; i < lane_width_.size(); i++)
+			{
+				delete lane_width_[i];
+			}
+			lane_width_.clear();
+
+
+			for (size_t i = 0; i < lane_roadMark_.size(); i++)
+			{
+				delete lane_roadMark_[i];
+			}
+			lane_roadMark_.clear();
+
+			delete lane_boundary_;
+			lane_boundary_ = 0;
+		}
 
 		// Base Get Functions
 		int GetId() { return id_; }
@@ -608,6 +631,14 @@ namespace roadmanager
 	{
 	public:
 		LaneSection(double s) : s_(s), length_(0) {}
+		~LaneSection()
+		{
+			for (size_t i = 0; i < lane_.size(); i++)
+			{
+				delete lane_[i];
+			}
+			lane_.clear();
+		}
 		void AddLane(Lane *lane);
 		double GetS() { return s_; }
 		Lane *GetLaneByIdx(int idx);
