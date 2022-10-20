@@ -136,6 +136,7 @@ namespace scenarioengine
 		std::vector<roadmanager::Position> allWaypoints_;
 		double laneChangeTime_ = 5;
 		double minDistForCollision_ = 10;
+		double minLaneWidth_ = 0.5;
 		bool testMode_;
 	};
 

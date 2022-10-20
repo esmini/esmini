@@ -298,6 +298,13 @@ bool ControllerFollowRoute::CanChangeLane(int lane)
 	{
 		return true;
 	}
+
+	// Check width of target lane at this point (s-value) along the road
+	if (road->GetLaneWidthByS(vehiclePos.GetS(), lane) < minLaneWidth_)
+	{
+		return false;
+	}
+
 	// Check collision risk to every other vehicle on the same side of road.
 	for (Object *otherVehicle : allVehicles)
 	{

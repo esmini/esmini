@@ -417,7 +417,7 @@ double RoadCalculations::CalcAverageSpeed(Road *road)
 	if (roadTypeCount == 0)
 	{
 		// Assume road is rural
-		LOG("Warning: Road %d has no road types", road->GetId());
+		LOG("Warning: Road %d has no road types (and speed limit)", road->GetId());
 		return roadTypeToSpeed[Road::RoadType::ROADTYPE_RURAL];
 	}
 
