@@ -571,8 +571,11 @@ namespace roadmanager
 			}
 			lane_roadMark_.clear();
 
-			delete lane_boundary_;
-			lane_boundary_ = 0;
+			if (lane_boundary_)
+			{
+				delete lane_boundary_;
+				lane_boundary_ = 0;
+			}
 		}
 
 		// Base Get Functions
