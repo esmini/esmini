@@ -1,7 +1,7 @@
 = esmini user guide
 :numbered:
 :toc: left
-:toclevels: 3
+:toclevels: 2
 :source-highlighter: coderay
 :src-local-root: ../
 // :src-remote-root: {src-local-root}
@@ -1488,14 +1488,16 @@ And these two scripts operating on textures and material respectively, can poten
 
 == Support / Q&A
 
-=== Resources not found
+=== Various issues
+
+==== Resources not found
 There are no fixed structure where scenario resources, e.g. vehicle 3D model or controller catalog, needs to be stored. Instead, additional search paths can be added by launch argument `--path <path>`. For example: +
 
 ``./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/slow-lead-vehicle.xosc --path ../../ --path c:/tmp/my_models``
 
 will add the relative path `../../` and absolute path `c:/tmp/my_models` to the list of places where to look for resources referred to by the scenario.
 
-=== Mac issues and limitations
+==== Mac issues and limitations
 
 From esmini version 2.26.6 mac executables are universal binaries which means they work on both Intel and Apple Silicon based Macs. Following are some known issues and work arounds:
 
@@ -1512,7 +1514,7 @@ In order to execute the files you need to do one of following from a terminal in
 ** Remove quarantine flags: `xattr -c -r esmini-demo/bin`, or
 ** Sign executables for use on local machine: `codesign -f -s - esmini-demo/bin/*`
 
-=== OpenStreetMap (OSM) roads in esmini
+==== OpenStreetMap (OSM) roads in esmini
 SUMO comes with a great tool, https://sumo.dlr.de/docs/netconvert.html[netconvert], that can convert road networks from and to various formats.
 
 Prerequisite: Download and install SUMO from https://sumo.dlr.de/docs/Downloads.php[here].
@@ -1525,7 +1527,7 @@ Preview in odrviewer:
 
 `./bin/odrviewer --window 60 60 800 400 --odr city.xodr`
 
-=== Update 3D model pack
+==== Update 3D model pack
 
 Do either:
 
@@ -1536,7 +1538,33 @@ or
 
 - get the package from https://dl.dropboxusercontent.com/s/5gk8bvgzqiaaoco/models.7z?dl=1[here] and unpack files into `./resources/models`
 
-=== Issues at esmini GitHub page
+==== Entity does not appear
+In order to appear in the scenario, without need for AddEntity action, an entity must be represented in the Init section of the Storyboard. Common is to add actions to establish inital position and speed.
+
+Example:
+
+[source, xml]
+----
+<PrivateAction>
+   <TeleportAction>
+      <Position>
+         <LanePosition roadId="1" laneId="-1" offset="0" s="50"/>
+      </Position>
+   </TeleportAction>
+</PrivateAction>
+<PrivateAction>
+   <LongitudinalAction>
+      <SpeedAction>
+         <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
+         <SpeedActionTarget>
+            <AbsoluteTargetSpeed value="30.0"/>
+         </SpeedActionTarget>
+      </SpeedAction>
+   </LongitudinalAction>
+</PrivateAction>
+----
+
+=== Further issues at esmini GitHub page
 The https://github.com/esmini/esmini/issues[Issues tab at esmini GitHub page] is a valuable source of questions and answers. To search in all issues, make sure to set filter: `is:issue`.
 
 == Build guide
