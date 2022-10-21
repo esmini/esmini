@@ -1317,9 +1317,6 @@ TEST_F(LaneTestFixture, TestLaneAddFunctions)
     ASSERT_EQ(lane.GetNumberOfLaneWidths(), 1);
     ASSERT_EQ(lane.GetNumberOfRoadMarks(), 1);
 
-    delete lanelink;
-    delete lanewidth;
-    delete laneroadmark;
 }
 
 TEST_F(LaneTestFixture, TestLaneGetLink)
@@ -1332,8 +1329,6 @@ TEST_F(LaneTestFixture, TestLaneGetLink)
     LaneLink *mylanelink_second = lane.GetLink(LinkType::SUCCESSOR);
     ASSERT_EQ(mylanelink_second->GetType(), LinkType::SUCCESSOR);
     ASSERT_EQ(mylanelink_second->GetId(), 3);
-
-    delete lanelink;
 }
 
 TEST_F(LaneTestFixture, TestLaneGetWidth)
@@ -1390,9 +1385,6 @@ TEST_F(LaneTestFixture, TestLaneGetWidth)
     ASSERT_EQ(mylanewidth_s_final->poly3_.GetC(), 4.0);
     ASSERT_EQ(mylanewidth_s_final->poly3_.GetD(), -5.0);
     ASSERT_EQ(mylanewidth_s_final->poly3_.GetPscale(), 1.0);
-
-    delete lanewidth;
-    delete lanewidth_second;
 }
 
 TEST_F(LaneTestFixture, TestLaneGetRoadMark)
@@ -1415,7 +1407,6 @@ TEST_F(LaneTestFixture, TestLaneGetRoadMark)
     ASSERT_EQ(mylaneroadmark->GetMaterial(), LaneRoadMark::RoadMarkMaterial::STANDARD_MATERIAL);
     ASSERT_EQ(mylaneroadmark->GetLaneChange(), LaneRoadMark::RoadMarkLaneChange::BOTH);
 
-    delete laneroadmark;
 }
 
 TEST_F(LaneTestFixture, TestLaneGetRoadMark2)
@@ -1430,8 +1421,6 @@ TEST_F(LaneTestFixture, TestLaneGetRoadMark2)
 
     LaneRoadMark *mylaneroadmark = lane.GetLaneRoadMarkByIdx(0);
     ASSERT_EQ(mylaneroadmark->GetType(), LaneRoadMark::RoadMarkType::BROKEN_BROKEN);
-
-    delete laneroadmark;
 }
 
 TEST_F(LaneTestFixture, TestLaneGetRoadMark3)
@@ -1446,8 +1435,6 @@ TEST_F(LaneTestFixture, TestLaneGetRoadMark3)
 
     LaneRoadMark *mylaneroadmark = lane.GetLaneRoadMarkByIdx(0);
     ASSERT_EQ(mylaneroadmark->GetType(), LaneRoadMark::RoadMarkType::SOLID_SOLID);
-
-    delete laneroadmark;
 }
 
 TEST_F(LaneTestFixture, TestLaneGetRoadMark4)
@@ -1462,8 +1449,6 @@ TEST_F(LaneTestFixture, TestLaneGetRoadMark4)
 
     LaneRoadMark *mylaneroadmark = lane.GetLaneRoadMarkByIdx(0);
     ASSERT_EQ(mylaneroadmark->GetType(), LaneRoadMark::RoadMarkType::BROKEN_SOLID);
-
-    delete laneroadmark;
 }
 
 /*
@@ -1531,9 +1516,6 @@ TEST_F(LaneTestFixture, TestLaneGetLineGlobalIds)
     ASSERT_THAT(laneroadmarktype_second->GetLaneRoadMarkTypeLineByIdx(0)->GetGlobalId(), 1);
 
     delete odr;
-    delete laneroadmark;
-    delete laneroadmark_second;
-
     delete laneroadmarktype;
     delete laneroadmarktype_second;
 
