@@ -383,12 +383,7 @@ void ControllerALKS_R157SM::Model::SetScenarioEngine(ScenarioEngine* scenario_en
 
 double ControllerALKS_R157SM::Regulation::MinDist()
 {
-    //  This function will return max distance according to R157
-    //
-    //  Lines below is a simpler alternative:
-    //  double min_hw = 2.0;
-    //  double desired_hwt = 1.0;
-    //  double desired_hw = min_hw + desired_hwt * object_in_focus_->GetSpeed();
+    //  This function will return minimum following distance according to R157 regulation
 
     double time_gap = 0.0;
 
