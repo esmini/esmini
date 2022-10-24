@@ -53,11 +53,11 @@ CatalogType Entry::GetTypeByNodeName(pugi::xml_node node)
 	return CatalogType::CATALOG_UNDEFINED;
 }
 
-Entry::Entry(std::string name, pugi::xml_node node)
+Entry::Entry(std::string name, pugi::xml_document root)
 {
 	name_ = name;
-	node_ = node;
-	type_ = GetTypeByNodeName(node);
+	root_ = std::move(root);
+	type_ = GetTypeByNodeName(GetNode());
 }
 
 

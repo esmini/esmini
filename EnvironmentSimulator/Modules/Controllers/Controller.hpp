@@ -80,6 +80,7 @@ namespace scenarioengine
 
 		Controller() : entities_(0), gateway_(0), scenario_engine_(0) {}
 		Controller(InitArgs* args);
+		virtual ~Controller() = default;
 
 		static const char* GetTypeNameStatic() { return CONTROLLER_BASE_TYPE_NAME; }
 		virtual const char* GetTypeName() { return GetTypeNameStatic(); }

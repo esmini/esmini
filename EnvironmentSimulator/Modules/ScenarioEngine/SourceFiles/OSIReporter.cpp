@@ -284,7 +284,7 @@ int OSIReporter::ClearOSIGroundTruth()
 	return 0;
 }
 
-int OSIReporter::UpdateOSIGroundTruth(std::vector<ObjectState *> objectState)
+int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectState>>& objectState)
 {
 	if (osi_update_counter_ == 0)
 	{
@@ -342,7 +342,7 @@ int OSIReporter::UpdateOSIGroundTruth(std::vector<ObjectState *> objectState)
 	return 0;
 }
 
-int OSIReporter::UpdateOSIStaticGroundTruth(std::vector<ObjectState *> objectState)
+int OSIReporter::UpdateOSIStaticGroundTruth(const std::vector<std::unique_ptr<ObjectState>>& objectState)
 {
 	// First pick objects from the OpenSCENARIO description
 	static roadmanager::OpenDrive* opendrive = roadmanager::Position::GetOpenDrive();
@@ -372,7 +372,7 @@ int OSIReporter::UpdateOSIStaticGroundTruth(std::vector<ObjectState *> objectSta
 		}
 		else if (objectState[i]->state_.info.obj_type == static_cast<int>(Object::Type::MISC_OBJECT))
 		{
-			UpdateOSIStationaryObject(objectState[i]);
+			UpdateOSIStationaryObject(objectState[i].get());
 		}
 		else
 		{
@@ -381,8 +381,8 @@ int OSIReporter::UpdateOSIStaticGroundTruth(std::vector<ObjectState *> objectSta
 	}
 
 
-	UpdateOSIRoadLane(objectState);
-	UpdateOSILaneBoundary(objectState);
+	UpdateOSIRoadLane();
+	UpdateOSILaneBoundary();
 	UpdateOSIIntersection();
 	UpdateTrafficSignals();
 
@@ -399,7 +399,7 @@ int OSIReporter::UpdateOSIStaticGroundTruth(std::vector<ObjectState *> objectSta
 	return 0;
 }
 
-int OSIReporter::UpdateOSIDynamicGroundTruth(std::vector<ObjectState *> objectState, bool reportGhost)
+int OSIReporter::UpdateOSIDynamicGroundTruth(const std::vector<std::unique_ptr<ObjectState>>& objectState, bool reportGhost)
 {
 	obj_osi_internal.gt->clear_moving_object();
 	obj_osi_internal.gt->clear_timestamp();
@@ -430,13 +430,13 @@ int OSIReporter::UpdateOSIDynamicGroundTruth(std::vector<ObjectState *> objectSt
 		{
 			if(reportGhost)
 			{
-				UpdateOSIMovingObject(objectState[i]);
+				UpdateOSIMovingObject(objectState[i].get());
 			}
 			else
 			{
 				if(objectState[i]->state_.info.ctrl_type != Controller::Type::GHOST_RESERVED_TYPE)
 				{
-					UpdateOSIMovingObject(objectState[i]);
+					UpdateOSIMovingObject(objectState[i].get());
 				}
 			}
 
@@ -1175,7 +1175,7 @@ int OSIReporter::UpdateOSIIntersection()
 	return 0;
 }
 
-int OSIReporter::UpdateOSILaneBoundary(std::vector<ObjectState *> objectState)
+int OSIReporter::UpdateOSILaneBoundary()
 {
 	//Retrieve opendrive class from RoadManager
 	static roadmanager::OpenDrive *opendrive = roadmanager::Position::GetOpenDrive();
@@ -1419,7 +1419,7 @@ int OSIReporter::UpdateOSILaneBoundary(std::vector<ObjectState *> objectState)
 	return 0;
 }
 
-int OSIReporter::UpdateOSIRoadLane(std::vector<ObjectState *> objectState)
+int OSIReporter::UpdateOSIRoadLane()
 {
 	//Retrieve opendrive class from RoadManager
 	static roadmanager::OpenDrive *opendrive = roadmanager::Position::GetOpenDrive();
@@ -2215,7 +2215,7 @@ const char *OSIReporter::GetOSIGroundTruthRaw()
 	return (const char *)obj_osi_external.gt;
 }
 
-const char *OSIReporter::GetOSIRoadLane(std::vector<ObjectState *> objectState, int *size, int object_id)
+const char *OSIReporter::GetOSIRoadLane(const std::vector<std::unique_ptr<ObjectState>>& objectState, int *size, int object_id)
 {
 	// Check if object_id exists
 	if (object_id >= objectState.size())
@@ -2323,7 +2323,7 @@ int OSIReporter::GetLaneIdxfromIdOSI(int lane_id)
 	return idx;
 }
 
-void OSIReporter::GetOSILaneBoundaryIds(std::vector<ObjectState *> objectState, std::vector<int> &ids, int object_id)
+void OSIReporter::GetOSILaneBoundaryIds(const std::vector<std::unique_ptr<ObjectState>>& objectState, std::vector<int> &ids, int object_id)
 {
 	int idx_central, idx_left, idx_right;
 	int left_lb_id, right_lb_id;

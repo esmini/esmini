@@ -320,7 +320,7 @@ void FollowTrajectoryAction::Start(double simTime, double dt)
 	}
 
 	traj_->Freeze(following_mode_);
-	object_->pos_.SetTrajectory(traj_);
+	object_->pos_.SetTrajectory(traj_.get());
 
 	object_->pos_.SetTrajectoryS(initialDistanceOffset_);
 	time_ = traj_->GetTimeAtS(initialDistanceOffset_);
@@ -451,15 +451,15 @@ void FollowTrajectoryAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
 	}
 	if (traj_->shape_->type_ == roadmanager::Shape::ShapeType::CLOTHOID)
 	{
-		roadmanager::ClothoidShape* cl = (roadmanager::ClothoidShape*)traj_->shape_;
+		roadmanager::ClothoidShape* cl = (roadmanager::ClothoidShape*)traj_->shape_.get();
 		cl->pos_.ReplaceObjectRefs(&obj1->pos_, &obj2->pos_);
 	}
 	else if (traj_->shape_->type_ == roadmanager::Shape::ShapeType::POLYLINE)
 	{
-		roadmanager::PolyLineShape* pl = (roadmanager::PolyLineShape*)traj_->shape_;
+		roadmanager::PolyLineShape* pl = (roadmanager::PolyLineShape*)traj_->shape_.get();
 		for (size_t i = 0; i < pl->vertex_.size(); i++)
 		{
-			pl->vertex_[i]->pos_.ReplaceObjectRefs(&obj1->pos_, &obj2->pos_);
+			pl->vertex_[i].pos_.ReplaceObjectRefs(&obj1->pos_, &obj2->pos_);
 		}
 	}
 
@@ -468,13 +468,13 @@ void FollowTrajectoryAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
 void AcquirePositionAction::Start(double simTime, double dt)
 {
 	// Resolve route
-	route_ = new roadmanager::Route;
+	route_.reset(new roadmanager::Route);
 	route_->setName("AcquirePositionRoute");
 
 	route_->AddWaypoint(&object_->pos_);
 	route_->AddWaypoint(target_position_);
 
-	object_->pos_.SetRoute(route_);
+	object_->pos_.SetRoute(route_.get());
 	object_->SetDirtyBits(Object::DirtyBit::ROUTE);
 
 	OSCAction::Start(simTime, dt);
@@ -560,9 +560,9 @@ void LatLaneChangeAction::Start(double simTime, double dt)
 	else if (target_->type_ == Target::Type::RELATIVE_LANE)
 	{
 		// Find out target lane relative referred vehicle
-		target_lane_id_ = ((TargetRelative*)target_)->object_->pos_.GetLaneId() + target_->value_;
+		target_lane_id_ = ((TargetRelative*)target_.get())->object_->pos_.GetLaneId() + target_->value_;
 
-		if (target_lane_id_ == 0 || SIGN(((TargetRelative*)target_)->object_->pos_.GetLaneId()) != SIGN(target_lane_id_))
+		if (target_lane_id_ == 0 || SIGN(((TargetRelative*)target_.get())->object_->pos_.GetLaneId()) != SIGN(target_lane_id_))
 		{
 			// Skip reference lane (id == 0)
 			target_lane_id_ = SIGN(target_lane_id_ - object_->pos_.GetLaneId()) * (abs(target_lane_id_) + 1);
@@ -700,9 +700,9 @@ void LatLaneChangeAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
 
 	if (target_->type_ == Target::Type::RELATIVE_LANE)
 	{
-		if (((TargetRelative*)target_)->object_ == obj1)
+		if (((TargetRelative*)target_.get())->object_ == obj1)
 		{
-			((TargetRelative*)target_)->object_ = obj2;
+			((TargetRelative*)target_.get())->object_ = obj2;
 		}
 	}
 }
@@ -729,7 +729,7 @@ void LatLaneOffsetAction::Start(double simTime, double dt)
 		int lane_id = object_->pos_.GetLaneId();
 
 		// Find out referred object track position
-		roadmanager::Position refpos = ((TargetRelative*)target_)->object_->pos_;
+		roadmanager::Position refpos = ((TargetRelative*)target_.get())->object_->pos_;
 		refpos.SetTrackPos(refpos.GetTrackId(), refpos.GetS(), refpos.GetT() + target_->value_);
 		refpos.ForceLaneId(lane_id);
 
@@ -787,9 +787,9 @@ void LatLaneOffsetAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
 
 	if (target_->type_ == Target::Type::RELATIVE_OFFSET)
 	{
-		if (((TargetRelative*)target_)->object_ == obj1)
+		if (((TargetRelative*)target_.get())->object_ == obj1)
 		{
-			((TargetRelative*)target_)->object_ = obj2;
+			((TargetRelative*)target_.get())->object_ = obj2;
 		}
 	}
 }
@@ -907,7 +907,7 @@ void LongSpeedAction::Step(double simTime, double dt)
 
 	object_->SetSpeed(ABS_LIMIT(new_speed, object_->performance_.maxSpeed));
 
-	if (target_speed_reached_ && !(target_->type_ == Target::TargetType::RELATIVE_SPEED && ((TargetRelative*)target_)->continuous_ == true))
+	if (target_speed_reached_ && !(target_->type_ == Target::TargetType::RELATIVE_SPEED && ((TargetRelative*)target_.get())->continuous_ == true))
 	{
 		OSCAction::End(simTime);
 	}
@@ -1360,9 +1360,9 @@ void LongSpeedAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
 
 	if (target_->type_ == Target::TargetType::RELATIVE_SPEED)
 	{
-		if (((TargetRelative*)target_)->object_ == obj1)
+		if (((TargetRelative*)target_.get())->object_ == obj1)
 		{
-			((TargetRelative*)target_)->object_ = obj2;
+			((TargetRelative*)target_.get())->object_ = obj2;
 		}
 	}
 }

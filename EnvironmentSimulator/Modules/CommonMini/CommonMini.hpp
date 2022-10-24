@@ -672,18 +672,20 @@ public:
 	void AddOption(std::string opt_str, std::string opt_desc, std::string opt_arg, std::string opt_arg_default_value);
 
 	void PrintUsage();
-	void PrintArgs(int argc, char* argv[], std::string message = "Unrecognized arguments:");
+	void PrintUnknownArgs(std::string message = "Unrecognized arguments:");
 	bool GetOptionSet(std::string opt);
 	bool IsOptionArgumentSet(std::string opt);
 	std::string GetOptionArg(std::string opt, int index = 0);
-	int ParseArgs(int* argc, char* argv[]);
+	int ParseArgs(int argc, const char* const  argv[]);
 	std::vector<std::string>& GetOriginalArgs() { return originalArgs_; }
 	bool IsInOriginalArgs(std::string opt);
+	bool HasUnknownArgs();
 
 private:
 	std::vector<SE_Option> option_;
 	std::string app_name_;
 	std::vector<std::string> originalArgs_;
+	std::vector<std::string> unknown_args_;
 
 	SE_Option* GetOption(std::string opt);
 };

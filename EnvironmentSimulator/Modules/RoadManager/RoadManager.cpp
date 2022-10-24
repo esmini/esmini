@@ -1170,13 +1170,13 @@ LaneRoadMarkType* LaneRoadMark::GetLaneRoadMarkTypeByIdx(int idx)
 {
 	if (idx < (int)lane_roadMarkType_.size())
 	{
-		return lane_roadMarkType_[idx];
+		return lane_roadMarkType_[idx].get();
 	}
 
 	return 0;
 }
 
-void LaneRoadMark::AddType(LaneRoadMarkType* lane_roadMarkType)
+void LaneRoadMark::AddType(std::shared_ptr<LaneRoadMarkType> lane_roadMarkType)
 {
 	lane_roadMarkType_.push_back(lane_roadMarkType);
 }
@@ -1185,13 +1185,13 @@ LaneRoadMarkTypeLine* LaneRoadMarkType::GetLaneRoadMarkTypeLineByIdx(int idx)
 {
 	if (idx < (int)lane_roadMarkTypeLine_.size())
 	{
-		return lane_roadMarkTypeLine_[idx];
+		return lane_roadMarkTypeLine_[idx].get();
 	}
 
 	return 0;
 }
 
-void LaneRoadMarkType::AddLine(LaneRoadMarkTypeLine *lane_roadMarkTypeLine)
+void LaneRoadMarkType::AddLine(std::shared_ptr<LaneRoadMarkTypeLine> lane_roadMarkTypeLine)
 {
 	lane_roadMarkTypeLine->SetGlobalId();
 
@@ -2052,6 +2052,11 @@ void RoadLink::Print()
 
 Road::~Road()
 {
+	for (size_t i = 0; i < type_.size(); i++)
+	{
+		delete(type_[i]);
+	}
+	type_.clear();
 	for (size_t i = 0; i < geometry_.size(); i++)
 	{
 		delete(geometry_[i]);
@@ -3650,7 +3655,7 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 										std::string sub_type_name = sub_type.attribute("name").value();
 										double sub_type_width = atof(sub_type.attribute("width").value());
 										lane_roadMarkType = new LaneRoadMarkType(sub_type_name, sub_type_width);
-										lane_roadMark->AddType(lane_roadMarkType);
+										lane_roadMark->AddType(std::shared_ptr<LaneRoadMarkType>{lane_roadMarkType});
 
 										for (pugi::xml_node line = sub_type.child("line"); line; line = line.next_sibling("line"))
 										{
@@ -3694,7 +3699,7 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 
 											LaneRoadMarkTypeLine *lane_roadMarkTypeLine = new LaneRoadMarkTypeLine(llength, space, t_offset, s_offset_l, rule, width,
 												roadMark_color);
-											lane_roadMarkType->AddLine(lane_roadMarkTypeLine);
+											lane_roadMarkType->AddLine(std::shared_ptr<LaneRoadMarkTypeLine>(lane_roadMarkTypeLine));
 										}
 									}
 								}
@@ -3703,53 +3708,53 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 									if (roadMark_type == LaneRoadMark::NONE_TYPE)
 									{
 										lane_roadMarkType = new LaneRoadMarkType("stand-in", roadMark_width);
-										lane_roadMark->AddType(lane_roadMarkType);
+										lane_roadMark->AddType(std::shared_ptr<LaneRoadMarkType>{lane_roadMarkType});
 										LaneRoadMarkTypeLine::RoadMarkTypeLineRule rule = LaneRoadMarkTypeLine::NONE;
 										LaneRoadMarkTypeLine* lane_roadMarkTypeLine =
 											new LaneRoadMarkTypeLine(0, 0, 0, 0, rule, roadMark_width, roadMark_color);
-										lane_roadMarkType->AddLine(lane_roadMarkTypeLine);
+										lane_roadMarkType->AddLine(std::shared_ptr<LaneRoadMarkTypeLine>{lane_roadMarkTypeLine});
 									}
 									else if (roadMark_type == LaneRoadMark::SOLID || roadMark_type == LaneRoadMark::CURB)
 									{
 										lane_roadMarkType = new LaneRoadMarkType("stand-in", roadMark_width);
-										lane_roadMark->AddType(lane_roadMarkType);
+										lane_roadMark->AddType(std::shared_ptr<LaneRoadMarkType>{lane_roadMarkType});
 										LaneRoadMarkTypeLine::RoadMarkTypeLineRule rule = LaneRoadMarkTypeLine::NONE;
 										LaneRoadMarkTypeLine* lane_roadMarkTypeLine =
 											new LaneRoadMarkTypeLine(0, 0, 0, 0, rule, roadMark_width, roadMark_color);
-										lane_roadMarkType->AddLine(lane_roadMarkTypeLine);
+										lane_roadMarkType->AddLine(std::shared_ptr<LaneRoadMarkTypeLine>{lane_roadMarkTypeLine});
 									}
 									else if (roadMark_type == LaneRoadMark::SOLID_SOLID)
 									{
 										lane_roadMarkType = new LaneRoadMarkType("stand-in", roadMark_width);
-										lane_roadMark->AddType(lane_roadMarkType);
+										lane_roadMark->AddType(std::shared_ptr<LaneRoadMarkType>{lane_roadMarkType});
 										LaneRoadMarkTypeLine::RoadMarkTypeLineRule rule = LaneRoadMarkTypeLine::NONE;
 										LaneRoadMarkTypeLine* lane_roadMarkTypeLine = new
 											LaneRoadMarkTypeLine(0, 0, -roadMark_width, 0, rule, roadMark_width, roadMark_color);
-										lane_roadMarkType->AddLine(lane_roadMarkTypeLine);
+										lane_roadMarkType->AddLine(std::shared_ptr<LaneRoadMarkTypeLine>{lane_roadMarkTypeLine});
 										LaneRoadMarkTypeLine* lane_roadMarkTypeLine2 = new
 											LaneRoadMarkTypeLine(0, 0, roadMark_width, 0, rule, roadMark_width, roadMark_color);
-										lane_roadMarkType->AddLine(lane_roadMarkTypeLine2);
+										lane_roadMarkType->AddLine(std::shared_ptr<LaneRoadMarkTypeLine>{lane_roadMarkTypeLine2});
 									}
 									else if (roadMark_type == LaneRoadMark::BROKEN)
 									{
 										lane_roadMarkType = new LaneRoadMarkType("stand-in", roadMark_width);
-										lane_roadMark->AddType(lane_roadMarkType);
+										lane_roadMark->AddType(std::shared_ptr<LaneRoadMarkType>{lane_roadMarkType});
 										LaneRoadMarkTypeLine::RoadMarkTypeLineRule rule = LaneRoadMarkTypeLine::NONE;
 										LaneRoadMarkTypeLine* lane_roadMarkTypeLine =
 											new LaneRoadMarkTypeLine(4, 8, 0, 0, rule, roadMark_width, roadMark_color);
-										lane_roadMarkType->AddLine(lane_roadMarkTypeLine);
+										lane_roadMarkType->AddLine(std::shared_ptr<LaneRoadMarkTypeLine>{lane_roadMarkTypeLine});
 									}
 									else if (roadMark_type == LaneRoadMark::BROKEN_BROKEN)
 									{
 										lane_roadMarkType = new LaneRoadMarkType("stand-in", roadMark_width);
-										lane_roadMark->AddType(lane_roadMarkType);
+										lane_roadMark->AddType(std::shared_ptr<LaneRoadMarkType>{lane_roadMarkType});
 										LaneRoadMarkTypeLine::RoadMarkTypeLineRule rule = LaneRoadMarkTypeLine::NONE;
 										LaneRoadMarkTypeLine* lane_roadMarkTypeLine =
 											new LaneRoadMarkTypeLine(4, 8, -roadMark_width, 0, rule, roadMark_width, roadMark_color);
-										lane_roadMarkType->AddLine(lane_roadMarkTypeLine);
+										lane_roadMarkType->AddLine(std::shared_ptr<LaneRoadMarkTypeLine>{lane_roadMarkTypeLine});
 										LaneRoadMarkTypeLine* lane_roadMarkTypeLine2 =
 											new LaneRoadMarkTypeLine(4, 8, roadMark_width, 0, rule, roadMark_width, roadMark_color);
-										lane_roadMarkType->AddLine(lane_roadMarkTypeLine2);
+										lane_roadMarkType->AddLine(std::shared_ptr<LaneRoadMarkTypeLine>{lane_roadMarkTypeLine2});
 									}
 									else
 									{
@@ -10152,9 +10157,7 @@ void PolyLineBase::Reset()
 
 void PolyLineShape::AddVertex(Position pos, double time, bool calculateHeading)
 {
-	Vertex* v = new Vertex();
-	v->pos_ = pos;
-	vertex_.push_back(v);
+	vertex_.emplace_back(pos);
 	pline_.AddVertex({ pos.GetTrajectoryS(), pos.GetX(), pos.GetY(), pos.GetZ(), pos.GetH(), time, 0.0, 0.0, calculateHeading });
 }
 
@@ -10453,10 +10456,9 @@ double NurbsShape::GetDuration()
 	return ctrlPoint_.back().time_ - ctrlPoint_[0].time_;
 }
 
-ClothoidShape::ClothoidShape(roadmanager::Position pos, double curv, double curvPrime, double len, double tStart, double tEnd) : Shape(ShapeType::CLOTHOID)
+ClothoidShape::ClothoidShape(roadmanager::Position pos, double curv, double curvPrime, double len, double tStart, double tEnd) : Shape(ShapeType::CLOTHOID), pos_(pos), spiral_(0, pos_.GetX(), pos_.GetY(), pos_.GetH(), len, curv, curv + curvPrime * len)
 {
 	pos_ = pos;
-	spiral_ = new roadmanager::Spiral(0, pos_.GetX(), pos_.GetY(), pos_.GetH(), len, curv, curv + curvPrime * len);
 	t_start_ = tStart;
 	t_end_ = tEnd;
 	pline_.interpolateHeading_ = true;
@@ -10466,7 +10468,7 @@ void ClothoidShape::CalculatePolyLine()
 {
 	// Create polyline placeholder representation
 	double stepLen = 1.0;
-	int steps = (int)(spiral_->GetLength() / stepLen);
+	int steps = (int)(spiral_.GetLength() / stepLen);
 	pline_.Reset();
 	TrajVertex v;
 
@@ -10479,7 +10481,7 @@ void ClothoidShape::CalculatePolyLine()
 		else
 		{
 			// Add endpoint of spiral
-			EvaluateInternal(spiral_->GetLength(), v);
+			EvaluateInternal(spiral_.GetLength(), v);
 		}
 
 		// resolve road coordinates to get elevation at point
@@ -10487,7 +10489,7 @@ void ClothoidShape::CalculatePolyLine()
 		v.z = pos_.GetZ();
 
 		v.p = v.s = (double)i;
-		v.time = t_start_ + (i * stepLen / spiral_->GetLength()) * t_end_;
+		v.time = t_start_ + (i * stepLen / spiral_.GetLength()) * t_end_;
 
 		pline_.AddVertex(v);
 	}
@@ -10495,7 +10497,7 @@ void ClothoidShape::CalculatePolyLine()
 
 int ClothoidShape::EvaluateInternal(double s, TrajVertex& pos)
 {
-	spiral_->EvaluateDS(s, &pos.x, &pos.y, &pos.h);
+	spiral_.EvaluateDS(s, &pos.x, &pos.y, &pos.h);
 
 	return 0;
 }
@@ -10523,7 +10525,7 @@ int ClothoidShape::Evaluate(double p, TrajectoryParamType ptype, TrajVertex& pos
 
 	pline_.Evaluate(p, pos);
 
-	spiral_->EvaluateDS(p, &pos.x, &pos.y, &pos.h);
+	spiral_.EvaluateDS(p, &pos.x, &pos.y, &pos.h);
 
 	pos.s = p;
 
@@ -10709,7 +10711,7 @@ int Route::AddWaypoint(Position* position)
 		}
 
 		// Check that there is a valid path from previous waypoint
-		RoadPath* path = new RoadPath(&minimal_waypoints_.back(), position);
+		std::unique_ptr<RoadPath> path = std::make_unique<RoadPath>(&minimal_waypoints_.back(), position);
 		double dist = 0;
 		retval = path->Calculate(dist, false);
 		if (retval == 0)
@@ -11169,11 +11171,11 @@ void RMTrajectory::Freeze(FollowingMode following_mode)
 {
 	if (shape_->type_ == Shape::ShapeType::POLYLINE)
 	{
-		PolyLineShape* pline = (PolyLineShape*)shape_;
+		PolyLineShape* pline = (PolyLineShape*)shape_.get();
 
 		for (size_t i = 0; i < pline->vertex_.size(); i++)
 		{
-			Position* pos = &pline->vertex_[i]->pos_;
+			Position* pos = &pline->vertex_[i].pos_;
 			pos->ReleaseRelation();
 
 			if (following_mode == FollowingMode::FOLLOW && !pos->IsOrientationTypeSet(Position::OrientationSetMask::H))
@@ -11194,19 +11196,19 @@ void RMTrajectory::Freeze(FollowingMode following_mode)
 	}
 	else if (shape_->type_ == Shape::ShapeType::CLOTHOID)
 	{
-		ClothoidShape* clothoid = (ClothoidShape*)shape_;
+		ClothoidShape* clothoid = (ClothoidShape*)shape_.get();
 
 		clothoid->pos_.ReleaseRelation();
 
-		clothoid->spiral_->SetX(clothoid->pos_.GetX());
-		clothoid->spiral_->SetY(clothoid->pos_.GetY());
-		clothoid->spiral_->SetHdg(clothoid->pos_.GetH());
+		clothoid->spiral_.SetX(clothoid->pos_.GetX());
+		clothoid->spiral_.SetY(clothoid->pos_.GetY());
+		clothoid->spiral_.SetHdg(clothoid->pos_.GetH());
 
 		clothoid->CalculatePolyLine();
 	}
 	else
 	{
-		NurbsShape* nurbs = (NurbsShape*)shape_;
+		NurbsShape* nurbs = (NurbsShape*)shape_.get();
 
 		nurbs->CalculatePolyLine();
 	}

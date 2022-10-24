@@ -9,3 +9,6 @@ include(${CMAKE_CURRENT_LIST_DIR}/sanitizers.cmake)
 if(ENABLE_SANITIZERS)
   enable_sanitizers(project_options)
 endif()
+
+include(${CMAKE_CURRENT_LIST_DIR}/compiler_warnings.cmake)
+# set_project_warnings(project_options True)

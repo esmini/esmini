@@ -84,6 +84,7 @@ int ScenarioReader::RemoveController(Controller* controller)
 	{
 		if (controller_[i] == controller)
 		{
+			delete controller;
 			controller_.erase(controller_.begin() + i);
 			return 0;
 		}
@@ -265,10 +266,10 @@ Catalog *ScenarioReader::LoadCatalog(std::string name)
 	{
 		std::string entry_name = parameters.ReadAttribute(entry_n, "name");
 
-		// To copy a XML node it needs to be put into a XML doc
-		pugi::xml_document *xml_doc = new pugi::xml_document;
-		xml_doc->append_copy(entry_n);
-		catalog->AddEntry(new Entry(entry_name, xml_doc->first_child()));
+		pugi::xml_document root;
+		root.append_copy(entry_n);
+		
+		catalog->AddEntry(new Entry(entry_name, std::move(root)));
 	}
 
 	// Get type by inspecting first entry
@@ -468,12 +469,12 @@ void ScenarioReader::ParseOSCBoundingBox(OSCBoundingBox &boundingbox, pugi::xml_
 
 Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
 {
-	Vehicle *vehicle = new Vehicle();
-
 	if (vehicleNode == 0)
 	{
 		return 0;
 	}
+
+	Vehicle *vehicle = new Vehicle();
 
 	// First check for parameter declaration
 	pugi::xml_node paramDecl = vehicleNode.child("ParameterDeclarations");
@@ -541,6 +542,7 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
 		}
 		else
 		{
+			delete vehicle;
 			LOG_AND_QUIT("Unrecognized entity scale mode: %s", scaleModeStr.c_str());
 		}
 	}
@@ -595,14 +597,14 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
 	pugi::xml_node trailer_hitch_node = vehicleNode.child("TrailerHitch");
 	if (!trailer_hitch_node.empty())
 	{
-		vehicle->trailer_hitch_ = new Vehicle::TrailerHitch();
+		vehicle->trailer_hitch_ = std::make_shared<Vehicle::TrailerHitch>();
 		vehicle->trailer_hitch_->dx_ = strtod(parameters.ReadAttribute(trailer_hitch_node, "dx"));
 	}
 
 	pugi::xml_node trailer_coupler_node = vehicleNode.child("TrailerCoupler");
 	if (!trailer_coupler_node.empty())
 	{
-		vehicle->trailer_coupler_ = new Vehicle::TrailerCoupler();
+		vehicle->trailer_coupler_ = std::make_shared<Vehicle::TrailerCoupler>();
 		vehicle->trailer_coupler_->dx_ = strtod(parameters.ReadAttribute(trailer_coupler_node, "dx"));
 	}
 
@@ -668,6 +670,7 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
 				{
 					if (trailer->trailer_coupler_ == nullptr)
 					{
+						delete trailer;
 						LOG_AND_QUIT("Error: Trailer vehicle %s has no coupler", vehicle->GetName().c_str());
 					}
 					else
@@ -942,7 +945,7 @@ roadmanager::Route *ScenarioReader::parseOSCRoute(pugi::xml_node routeNode)
 				rs = roadmanager::Position::RouteStrategy::SHORTEST;
 			}
 
-			OSCPosition *pos = parseOSCPosition(routeChild.first_child());
+			std::unique_ptr<OSCPosition> pos = std::unique_ptr<OSCPosition>{parseOSCPosition(routeChild.first_child())};
 			if (pos)
 			{
 				roadmanager::Position *p = pos->GetRMPos();
@@ -1048,7 +1051,6 @@ roadmanager::RMTrajectory *ScenarioReader::parseTrajectory(pugi::xml_node node)
 			if (shapeType == "Polyline")
 			{
 				roadmanager::PolyLineShape *pline = new roadmanager::PolyLineShape();
-				OSCPosition* pos = nullptr;
 				for (pugi::xml_node vertexNode = shapeNode.first_child(); vertexNode; vertexNode = vertexNode.next_sibling())
 				{
 					pugi::xml_node posNode = vertexNode.child("Position");
@@ -1057,7 +1059,7 @@ roadmanager::RMTrajectory *ScenarioReader::parseTrajectory(pugi::xml_node node)
 					{
 						throw std::runtime_error("Missing Trajectory/Polyline/Vertex/Position node");
 					}
-					pos = parseOSCPosition(posNode, pos);
+					std::unique_ptr<OSCPosition> pos = std::unique_ptr<OSCPosition>{parseOSCPosition(posNode)};
 					double time = strtod(parameters.ReadAttribute(vertexNode, "time"));
 
 					bool calculateHeading = false;
@@ -1072,7 +1074,7 @@ roadmanager::RMTrajectory *ScenarioReader::parseTrajectory(pugi::xml_node node)
 			else if (shapeType == "Clothoid")
 			{
 				pugi::xml_node posNode = shapeNode.child("Position");
-				OSCPosition *pos = parseOSCPosition(posNode);
+				std::unique_ptr<OSCPosition> pos = std::unique_ptr<OSCPosition>{parseOSCPosition(posNode)};
 
 				double curvature = strtod(parameters.ReadAttribute(shapeNode, "curvature"));
 
@@ -1114,7 +1116,7 @@ roadmanager::RMTrajectory *ScenarioReader::parseTrajectory(pugi::xml_node node)
 					if (nurbsChildName == "ControlPoint")
 					{
 						pugi::xml_node posNode = nurbsChild.child("Position");
-						OSCPosition *pos = parseOSCPosition(posNode);
+						std::unique_ptr<OSCPosition> pos = std::unique_ptr<OSCPosition>{parseOSCPosition(posNode)};
 						double time = strtod(parameters.ReadAttribute(nurbsChild, "time"));
 						double weight = 1.0;
 						if (!nurbsChild.attribute("weight").empty())
@@ -1145,7 +1147,7 @@ roadmanager::RMTrajectory *ScenarioReader::parseTrajectory(pugi::xml_node node)
 			{
 				throw std::runtime_error("Missing Trajectory/Shape element");
 			}
-			traj->shape_ = shape;
+			traj->shape_.reset(shape);
 		}
 	}
 
@@ -1597,7 +1599,7 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPo
 	}
 	else if (positionChildName == "RoutePosition")
 	{
-		roadmanager::Route *route = nullptr;
+		std::unique_ptr<roadmanager::Route> route;
 		OSCPositionRoute *pos = new OSCPositionRoute;
 		OSCOrientation *orientation = 0;
 
@@ -1612,7 +1614,7 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPo
 					if (routeRefChildName == "Route")
 					{
 						// Parse inline route
-						route = parseOSCRoute(routeRefChild);
+						route.reset(parseOSCRoute(routeRefChild));
 						if (route == nullptr) LOG_AND_QUIT("Failed to resolve inline route");
 					}
 					else if (routeRefChildName == "CatalogReference")
@@ -1629,7 +1631,7 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPo
 						if (entry->type_ == CatalogType::CATALOG_ROUTE)
 						{
 							// Make a new instance from catalog entry
-							route = parseOSCRoute(entry->GetNode());
+							route.reset(parseOSCRoute(entry->GetNode()));
 						}
 						else
 						{
@@ -1644,6 +1646,11 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPo
 			}
 			else if (routeChild.name() == std::string("Orientation"))
 			{
+				if (orientation)
+				{
+					delete orientation;
+					orientation = nullptr;
+				}
 				orientation = new OSCOrientation;
 				parseOSCOrientation(*orientation, routeChild);
 			}
@@ -1674,11 +1681,11 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPo
 						}
 						if (orientation)
 						{
-							pos->SetRouteRefLaneCoord(route, s, lane_id, lane_offset, orientation);
+							pos->SetRouteRefLaneCoord(route.get(), s, lane_id, lane_offset, orientation);
 						}
 						else
 						{
-							pos->SetRouteRefLaneCoord(route, s, lane_id, lane_offset);
+							pos->SetRouteRefLaneCoord(route.get(), s, lane_id, lane_offset);
 							if (lane_id > 0)
 							{
 								pos->SetRouteRelativeHeading(M_PI);
@@ -1687,6 +1694,11 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPo
 					}
 				}
 			}
+		}
+
+		if (orientation)
+		{
+			delete orientation;
 		}
 
 		pos_return = (OSCPosition *)pos;
@@ -1890,7 +1902,8 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode)
 				{
 					AddEntityAction* addEntityAction = new AddEntityAction(entity);
 
-					addEntityAction->pos_ = parseOSCPosition(eaChild.child("Position"))->GetRMPos();
+					addEntityAction->pos_OSCPosition_.reset(parseOSCPosition(eaChild.child("Position")));
+					addEntityAction->pos_ = addEntityAction->pos_OSCPosition_->GetRMPos();
 					addEntityAction->SetEntities(entities_);
 
 					action = addEntityAction;
@@ -2039,14 +2052,14 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 									{
 										LOG("Value type %s not valid", value_type.c_str());
 									}
-									action_speed->target_ = target_rel;
+									action_speed->target_.reset(target_rel);
 								}
 								else if (targetChild.name() == std::string("AbsoluteTargetSpeed"))
 								{
 									LongSpeedAction::TargetAbsolute *target_abs = new LongSpeedAction::TargetAbsolute;
 
 									target_abs->value_ = strtod(parameters.ReadAttribute(targetChild, "value"));
-									action_speed->target_ = target_abs;
+									action_speed->target_.reset(target_abs);
 								}
 								else
 								{
@@ -2250,7 +2263,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 							}
 							if (target)
 							{
-								action_lane->target_ = target;
+								action_lane->target_.reset(target);
 							}
 						}
 					}
@@ -2300,7 +2313,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 									target = target_abs;
 								}
 							}
-							action_lane->target_ = target;
+							action_lane->target_.reset(target);
 						}
 					}
 					if (target == nullptr)
@@ -2317,7 +2330,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 		}
 		else if (actionChild.name() == std::string("SynchronizeAction"))
 		{
-			SynchronizeAction *action_synch = new SynchronizeAction;
+			SynchronizeAction *action_synch = new SynchronizeAction();
 
 			std::string master_object_str = parameters.ReadAttribute(actionChild, "masterEntityRef");
 			action_synch->master_object_ = ResolveObjectReference(master_object_str);
@@ -2328,7 +2341,8 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 				LOG("Missing required element \"TargetPositionMaster\"");
 				return 0;
 			}
-			action_synch->target_position_master_ = parseOSCPosition(target_position_master_node)->GetRMPos();
+			action_synch->target_position_master_OSCPosition_.reset(parseOSCPosition(target_position_master_node));
+			action_synch->target_position_master_ = action_synch->target_position_master_OSCPosition_->GetRMPos();
 			if (parameters.ReadAttribute(actionChild, "targetToleranceMaster") != "")
 			{
 				action_synch->tolerance_master_ = strtod(parameters.ReadAttribute(actionChild, "targetToleranceMaster"));
@@ -2340,7 +2354,8 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 				LOG("Missing required element \"TargetPosition\"");
 				return 0;
 			}
-			action_synch->target_position_ = parseOSCPosition(target_position_node)->GetRMPos();
+			action_synch->target_position_OSCPosition_.reset(parseOSCPosition(target_position_node));
+			action_synch->target_position_ = action_synch->target_position_OSCPosition_->GetRMPos();
 			if (parameters.ReadAttribute(actionChild, "targetTolerance") != "")
 			{
 				action_synch->tolerance_ = strtod(parameters.ReadAttribute(actionChild, "targetTolerance"));
@@ -2359,7 +2374,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 				{
 					LongSpeedAction::TargetAbsolute *targetSpeedAbs = new LongSpeedAction::TargetAbsolute;
 					targetSpeedAbs->value_ = strtod(parameters.ReadAttribute(final_speed_element, "value"));
-					action_synch->final_speed_ = targetSpeedAbs;
+					action_synch->final_speed_.reset(targetSpeedAbs);
 				}
 				else if (!strcmp(final_speed_element.name(), "RelativeSpeedToMaster"))
 				{
@@ -2389,7 +2404,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 					{
 						LOG("Value type %s not valid", value_type.c_str());
 					}
-					action_synch->final_speed_ = targetSpeedRel;
+					action_synch->final_speed_.reset(targetSpeedRel);
 				}
 				else
 				{
@@ -2423,9 +2438,9 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 					}
 					else if (!strcmp(steady_state_node.name(), "TargetPositionSteadyState"))
 					{
-						OSCPosition *pos = parseOSCPosition(steady_state_node);
+						action_synch->steadyState_OSCPosition_.reset(parseOSCPosition(steady_state_node));
 						action_synch->steadyState_.type_ = SynchronizeAction::SteadyStateType::STEADY_STATE_POS;
-						action_synch->steadyState_.pos_ = pos->GetRMPos();
+						action_synch->steadyState_.pos_ = action_synch->steadyState_OSCPosition_->GetRMPos();
 					}
 					else
 					{
@@ -2439,8 +2454,8 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 		else if (actionChild.name() == std::string("TeleportAction"))
 		{
 			TeleportAction *action_pos = new TeleportAction;
-			OSCPosition *pos = parseOSCPosition(actionChild.first_child());
-			action_pos->position_ = pos->GetRMPos();
+			action_pos->position_OSCPosition_.reset(parseOSCPosition(actionChild.first_child()));
+			action_pos->position_ = action_pos->position_OSCPosition_->GetRMPos();
 			action = action_pos;
 		}
 		else if (actionChild.name() == std::string("RoutingAction"))
@@ -2464,7 +2479,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 							// Find route in catalog
 							Entry *entry = ResolveCatalogReference(assignRouteChild);
 
-							if (entry == 0 || entry->node_ == 0)
+							if (entry == 0 || entry->root_ == 0)
 							{
 								throw std::runtime_error("Failed to resolve catalog reference");
 							}
@@ -2524,18 +2539,18 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 					{
 						if (followTrajectoryChild.name() == std::string("TrajectoryRef"))
 						{
-							action_follow_trajectory->traj_ = parseTrajectoryRef(followTrajectoryChild);
+							action_follow_trajectory->traj_.reset(parseTrajectoryRef(followTrajectoryChild));
 						}
 						else if (followTrajectoryChild.name() == std::string("Trajectory"))
 						{
-							action_follow_trajectory->traj_ = parseTrajectory(followTrajectoryChild);
+							action_follow_trajectory->traj_.reset(parseTrajectory(followTrajectoryChild));
 						}
 						else if (followTrajectoryChild.name() == std::string("CatalogReference"))
 						{
 							// Find trajectory in catalog
 							Entry *entry = ResolveCatalogReference(followTrajectoryChild);
 
-							if (entry == 0 || entry->node_ == 0)
+							if (entry == 0 || entry->root_ == 0)
 							{
 								throw std::runtime_error("Failed to resolve catalog reference");
 							}
@@ -2543,7 +2558,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 							if (entry->type_ == CatalogType::CATALOG_TRAJECTORY)
 							{
 								// Make a new instance from catalog entry
-								action_follow_trajectory->traj_ = parseTrajectory(entry->GetNode());
+								action_follow_trajectory->traj_.reset(parseTrajectory(entry->GetNode()));
 							}
 							else
 							{
@@ -2610,8 +2625,8 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 				else if (routingChild.name() == std::string("AcquirePositionAction"))
 				{
 					AcquirePositionAction* acqPosAction = new AcquirePositionAction;
-					OSCPosition* pos = parseOSCPosition(routingChild.first_child());
-					acqPosAction->target_position_ = pos->GetRMPos();
+					acqPosAction->target_position_OSCPosition_.reset(parseOSCPosition(routingChild.first_child()));
+					acqPosAction->target_position_ = acqPosAction->target_position_OSCPosition_->GetRMPos();
 					action = acqPosAction;
 				}
 				else
@@ -2747,6 +2762,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 						else
 						{
 							LOG("Unexpected OverrideControllerValueAction subelement: %s", controllerDefNode.name());
+							delete override_action;
 							return 0;
 						}
 
@@ -3124,7 +3140,7 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 						std::string targetChildName(targetChild.name());
 						if (targetChildName == "Position")
 						{
-							trigger->position_ = parseOSCPosition(targetChild);
+							trigger->position_.reset(parseOSCPosition(targetChild));
 						}
 						else if (targetChildName == "EntityRef")
 						{
@@ -3191,7 +3207,7 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 
 						// Read position
 						pugi::xml_node pos_node = condition_node.child("Position");
-						trigger->position_ = parseOSCPosition(pos_node);
+						trigger->position_.reset(parseOSCPosition(pos_node));
 						if (trigger->position_ && !pos_node.first_child().child("Orientation").empty())
 						{
 							trigger->checkOrientation_ = true;
@@ -3262,7 +3278,7 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 						// Read position
 						pugi::xml_node pos_node = condition_node.child("Position");
 
-						trigger->position_ = parseOSCPosition(pos_node);
+						trigger->position_.reset(parseOSCPosition(pos_node));
 
 						std::string freespace_str = parameters.ReadAttribute(condition_node, "freespace");
 						if ((freespace_str == "true") || (freespace_str == "1"))
@@ -3725,7 +3741,7 @@ int ScenarioReader::parseStoryBoard(StoryBoard &storyBoard)
 								parameters.CreateRestorePoint();
 								Entry *entry = ResolveCatalogReference(catalog_n);
 
-								if (entry == 0 || entry->node_ == 0)
+								if (entry == 0 || entry->root_ == 0)
 								{
 									throw std::runtime_error("Failed to resolve catalog reference");
 								}

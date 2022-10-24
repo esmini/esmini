@@ -368,7 +368,7 @@ int main(int argc, char** argv)
 	opt.AddOption("traffic_rule", "Enforce left or right hand traffic, regardless OpenDRIVE rule attribute (default: right)", "rule (right/left)");
 	opt.AddOption("version", "Show version and quit");
 
-	if (opt.ParseArgs(&argc, argv) != 0)
+	if (opt.ParseArgs(argc, argv) != 0)
 	{
 		opt.PrintUsage();
 		return -1;
@@ -530,9 +530,9 @@ int main(int argc, char** argv)
 			viewer->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_OSI_POINTS);
 		}
 
-		if (argc > 1)
+		if (opt.HasUnknownArgs())
 		{
-			opt.PrintArgs(argc, argv, "Unrecognized arguments:");
+			opt.PrintUnknownArgs("Unrecognized arguments:");
 			opt.PrintUsage();
 		}
 

@@ -166,13 +166,13 @@ namespace scenarioengine
 		void removeObject(std::string name);
 		int getNumberOfObjects() { return (int)objectState_.size(); }
 		ObjectState getObjectStateByIdx(int idx) { return *objectState_[idx]; }
-		ObjectState *getObjectStatePtrByIdx(int idx) { return objectState_[idx]; }
+		ObjectState *getObjectStatePtrByIdx(int idx) { return objectState_[idx].get(); }
 		ObjectState *getObjectStatePtrById(int id);
 		int getObjectStateById(int idx, ObjectState &objState);
 		void WriteStatesToFile();
 		int RecordToFile(std::string filename, std::string odr_filename, std::string model_filename);
 
-		std::vector<ObjectState*> objectState_;
+		std::vector<std::unique_ptr<ObjectState>> objectState_;
 
 	private:
 		int updateObjectInfo(ObjectState* obj_state, double timestamp, int visibilityMask, double speed, double wheel_angle, double wheel_rot);

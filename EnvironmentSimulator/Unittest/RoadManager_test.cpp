@@ -1105,8 +1105,8 @@ INSTANTIATE_TEST_SUITE_P(LaneRoadMarkTypeLineTests,LaneRoadMarkTypeLineTest,::te
 
 class LaneRoadMarkTypeTest : public ::testing::Test {
     protected:
-    void SetUp() override { lane_test_0 = new LaneRoadMarkType("test", 0.2); }
-    LaneRoadMarkType* lane_test_0;
+    void SetUp() override { lane_test_0 = std::make_unique<LaneRoadMarkType>("test", 0.2); }
+    std::unique_ptr<LaneRoadMarkType> lane_test_0;
 };
 
 TEST_F(LaneRoadMarkTypeTest, DefaultConstructor) {
@@ -1115,7 +1115,7 @@ TEST_F(LaneRoadMarkTypeTest, DefaultConstructor) {
 }
 
 TEST_F(LaneRoadMarkTypeTest,AddLine) {
-    LaneRoadMarkTypeLine * line_0 = new LaneRoadMarkTypeLine(100,100,0,0,LaneRoadMarkTypeLine::NO_PASSING,2);
+    std::shared_ptr<LaneRoadMarkTypeLine> line_0 = std::make_shared<LaneRoadMarkTypeLine>(100,100,0,0,LaneRoadMarkTypeLine::NO_PASSING,2);
     lane_test_0->AddLine(line_0);
     EXPECT_EQ(lane_test_0->GetNumberOfRoadMarkTypeLines(), 1);
 
@@ -1152,7 +1152,7 @@ TEST_P(LaneRoadMarkTest, DefaultConstructor) {
     EXPECT_EQ(lane_test_0.GetWidth(),std::get<6>(GetParam()));
     EXPECT_EQ(lane_test_0.GetHeight(),std::get<7>(GetParam()));
 
-    LaneRoadMarkType * type_test_0 = new LaneRoadMarkType("test", 0.2);
+    std::shared_ptr<LaneRoadMarkType> type_test_0 = std::make_shared<LaneRoadMarkType>("test", 0.2);
     lane_test_0.AddType(type_test_0);
     EXPECT_EQ(lane_test_0.GetNumberOfRoadMarkTypes(),1);
     EXPECT_EQ(lane_test_0.GetLaneRoadMarkTypeByIdx(0)->GetName(),type_test_0->GetName());
@@ -1487,11 +1487,11 @@ TEST_F(LaneTestFixture, TestLaneGetLineGlobalIds)
     RoadMarkColor::STANDARD_COLOR, LaneRoadMark::RoadMarkMaterial::STANDARD_MATERIAL, LaneRoadMark::RoadMarkLaneChange::BOTH,
     2.0, 2.0);
 
-    LaneRoadMarkType *laneroadmarktype = new LaneRoadMarkType("type1", 1.0);
-    LaneRoadMarkType *laneroadmarktype_second = new LaneRoadMarkType("type2", 1.0);
+    std::shared_ptr<LaneRoadMarkType> laneroadmarktype = std::make_shared<LaneRoadMarkType>("type1", 1.0);
+    std::shared_ptr<LaneRoadMarkType> laneroadmarktype_second = std::make_shared<LaneRoadMarkType>("type2", 1.0);
 
-    LaneRoadMarkTypeLine *laneRoadMarktypeline = new LaneRoadMarkTypeLine(3.0, 1.0, 0.5, 0.0, LaneRoadMarkTypeLine::RoadMarkTypeLineRule::CAUTION, 1.0);
-    LaneRoadMarkTypeLine *laneRoadMarktypeline_second = new LaneRoadMarkTypeLine(3.0, 1.0, 0.5, 50.0, LaneRoadMarkTypeLine::RoadMarkTypeLineRule::CAUTION, 1.0);
+    std::shared_ptr<LaneRoadMarkTypeLine> laneRoadMarktypeline = std::make_shared<LaneRoadMarkTypeLine>(3.0, 1.0, 0.5, 0.0, LaneRoadMarkTypeLine::RoadMarkTypeLineRule::CAUTION, 1.0);
+    std::shared_ptr<LaneRoadMarkTypeLine> laneRoadMarktypeline_second = std::make_shared<LaneRoadMarkTypeLine>(3.0, 1.0, 0.5, 50.0, LaneRoadMarkTypeLine::RoadMarkTypeLineRule::CAUTION, 1.0);
 
     laneroadmark->AddType(laneroadmarktype);
     laneroadmark->AddType(laneroadmarktype_second);
@@ -1516,11 +1516,6 @@ TEST_F(LaneTestFixture, TestLaneGetLineGlobalIds)
     ASSERT_THAT(laneroadmarktype_second->GetLaneRoadMarkTypeLineByIdx(0)->GetGlobalId(), 1);
 
     delete odr;
-    delete laneroadmarktype;
-    delete laneroadmarktype_second;
-
-    delete laneRoadMarktypeline;
-    delete laneRoadMarktypeline_second;
 }
 
 TEST(RoadTest, RoadWidthAllLanes)

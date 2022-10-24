@@ -42,6 +42,18 @@ namespace scenarioengine
 		Trigger *start_trigger_;
 
 		Event() : start_trigger_(0), StoryBoardElement(StoryBoardElement::ElementType::EVENT) {}
+		~Event()
+		{
+			for (auto* entry : action_)
+			{
+				delete entry;
+			}
+
+			if (start_trigger_)
+			{
+				delete start_trigger_;
+			}
+		}
 
 		void Start(double simTime, double dt);
 		void End(double simTime);
@@ -57,6 +69,13 @@ namespace scenarioengine
 		std::vector<Event*> event_;
 
 		Maneuver() : StoryBoardElement(StoryBoardElement::ElementType::MANEUVER) {}
+		~Maneuver() 
+		{
+			for (auto* entry : event_)
+			{
+				delete entry;
+			}
+		}
 
 		bool IsAnyEventActive();
 		bool AreAllEventsComplete();

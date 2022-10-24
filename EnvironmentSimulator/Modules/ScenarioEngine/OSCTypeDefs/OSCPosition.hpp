@@ -56,7 +56,7 @@ namespace scenarioengine
 
 		OSCPosition() : type_(PositionType::UNDEFINED) {}
 		OSCPosition(PositionType type) : type_(type) {}
-		virtual ~OSCPosition() {}
+		virtual ~OSCPosition() = default;
 
 		PositionType type_;
 

@@ -33,18 +33,18 @@ namespace scenarioengine
 			PARAM_TYPE_BOOL
 		};
 
-		typedef struct
+		struct ParameterStruct
 		{
 			std::string name;
 			ParameterType type;
 			struct value
 			{
-				int _int;
-				double _double;
+				int _int = 0;
+				double _double = 0;
 				std::string _string;
-				bool _bool;
+				bool _bool = false;
 			} value;
-		} ParameterStruct;
+		};
 
 		std::vector<ParameterStruct> Parameter;
 

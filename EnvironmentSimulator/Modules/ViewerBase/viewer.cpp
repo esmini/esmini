@@ -884,7 +884,7 @@ void VisibilityCallback::operator()(osg::Node* sa, osg::NodeVisitor* nv)
 Trajectory::Trajectory(osg::Group* parent, osgViewer::Viewer* viewer) :
 	parent_(parent), viewer_(viewer), activeRMTrajectory_(0)
 {
-	pline_ = new PolyLine(parent_, new osg::Vec3Array, osg::Vec4(0.9, 0.7, 0.3, 1.0), 3.0);
+	pline_ = std::make_unique<PolyLine>(parent_, new osg::Vec3Array, osg::Vec4(0.9, 0.7, 0.3, 1.0), 3.0);
 }
 
 void Trajectory::SetActiveRMTrajectory(roadmanager::RMTrajectory* RMTrajectory)
@@ -1106,18 +1106,18 @@ EntityModel::EntityModel(osgViewer::Viewer* viewer, osg::ref_ptr<osg::Group> gro
 	parent_->addChild(txNode_);
 
 	// Add trajectory placeholder
-	trajectory_ = new Trajectory(traj_parent, viewer);
+	trajectory_ = std::make_unique<Trajectory>(traj_parent, viewer);
 
 	viewer_ = viewer;
 	state_set_ = 0;
 	blend_color_ = 0;
 
 	// Prepare trail of dots
-	trail_ = new PolyLine(trail_parent, 0, trail_color, TRAIL_WIDTH, TRAIL_DOT3D_SIZE, true);
+	trail_ = std::make_unique<PolyLine>(trail_parent, nullptr, trail_color, TRAIL_WIDTH, TRAIL_DOT3D_SIZE, true);
 	trail_->SetNodeMaskLines(NodeMask::NODE_MASK_TRAIL_LINES);
 	trail_->SetNodeMaskDots(NodeMask::NODE_MASK_TRAIL_DOTS);
 
-	routewaypoints_ = new RouteWayPoints(route_waypoint_parent, trail_color);
+	routewaypoints_ = std::make_unique<RouteWayPoints>(route_waypoint_parent, trail_color);
 }
 
 EntityModel::~EntityModel()
@@ -1184,6 +1184,27 @@ CarModel::~CarModel()
 {
 	front_wheel_.clear();
 	rear_wheel_.clear();
+
+	if (road_sensor_)
+	{
+		delete road_sensor_;
+	}
+	if (route_sensor_)
+	{
+		delete route_sensor_;
+	}
+	if (lane_sensor_)
+	{
+		delete lane_sensor_;
+	}
+	if (trail_sensor_)
+	{
+		delete trail_sensor_;
+	}
+	if (steering_sensor_)
+	{
+		delete steering_sensor_;
+	}
 }
 
 void EntityModel::SetPosition(double x, double y, double z)
@@ -1630,7 +1651,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 			// Generate a simplistic 3D model based on OpenDRIVE content
 			LOG("No scenegraph 3D model loaded. Generating a simplistic one...");
 
-			roadGeom = new RoadGeom(odrManager);
+			roadGeom = std::make_unique<RoadGeom>(odrManager);
 			environment_ = roadGeom->root_;
 			envTx_->addChild(environment_);
 
@@ -2656,7 +2677,7 @@ bool Viewer::CreateRoadLines(roadmanager::OpenDrive* od)
 	roadmanager::Position* pos = new roadmanager::Position();
 	osg::Vec3 point(0, 0, 0);
 
-	roadmanager::OSIPoints* curr_osi;
+	roadmanager::OSIPoints* curr_osi = nullptr;
 
 	for (int r = 0; r < od->GetNumOfRoads(); r++)
 	{
@@ -2731,7 +2752,10 @@ bool Viewer::CreateRoadLines(roadmanager::OpenDrive* od)
 					}
 					else
 					{
-						curr_osi = lane->GetLaneBoundary()->GetOSIPoints();
+						if (lane->GetLaneBoundary() != nullptr)
+						{
+							curr_osi = lane->GetLaneBoundary()->GetOSIPoints();
+						}
 					}
 
 					if (curr_osi == 0)

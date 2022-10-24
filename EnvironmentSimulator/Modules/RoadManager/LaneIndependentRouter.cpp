@@ -10,8 +10,8 @@ LaneIndependentRouter::LaneIndependentRouter(OpenDrive *odr) : odr_(odr), roadCa
 }
 
 LaneIndependentRouter::~LaneIndependentRouter(){
-	clearVector(visited_);
 	clearQueue(unvisited_);
+	clearVector(visited_);
 }
 
 // Gets the next pathnode for the nextroad based on current srcnode
@@ -28,7 +28,7 @@ std::vector<Node *> LaneIndependentRouter::GetNextNodes(Road *nextRoad, Road *ta
 	;
 	for (std::pair<int, int> lanePair : connectingLaneIds)
 	{
-		Node *pNode = new Node;
+		Node *pNode = nullptr;
 		if (nextRoad == targetRoad && lanePair.second == targetLaneId)
 		{
 			// Target road found and driving in same direction, create a target node.
@@ -43,6 +43,7 @@ std::vector<Node *> LaneIndependentRouter::GetNextNodes(Road *nextRoad, Road *ta
 				continue;
 			}
 			// create next non target node
+			pNode = new Node;
 			pNode->link = nextLink;
 			pNode->road = nextRoad;
 			pNode->currentLaneId = lanePair.second;
@@ -187,6 +188,7 @@ bool LaneIndependentRouter::FindGoal()
 										  { return *n == *currentNode; }) != visited_.end();
 		if (nodeIsVisited)
 		{
+			delete currentNode;
 			continue;
 		}
 		visited_.push_back(currentNode);
@@ -273,8 +275,8 @@ Node *LaneIndependentRouter::CreateStartNode(RoadLink *link, Road *road, int lan
 
 std::vector<Node> LaneIndependentRouter::CalculatePath(Position start, Position target)
 {
-	clearVector(visited_);
 	clearQueue(unvisited_);
+	clearVector(visited_);
 
 	if (!IsPositionValid(start))
 	{

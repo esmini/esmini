@@ -1236,14 +1236,14 @@ Vehicle::Vehicle(const Vehicle& v) : trailer_hitch_(nullptr), trailer_coupler_(n
 
 	if (v.trailer_coupler_ && v.trailer_coupler_->tow_vehicle_)
 	{
-		trailer_coupler_ = new TrailerCoupler(*v.trailer_coupler_);
+		trailer_coupler_.reset(new TrailerCoupler(*v.trailer_coupler_));
 		trailer_coupler_->tow_vehicle_ = nullptr;
 	}
 
 	if (v.trailer_hitch_ && v.trailer_hitch_->trailer_vehicle_)
 	{
 		// make a unique copy of any trailer
-		trailer_hitch_ = new TrailerHitch(*v.trailer_hitch_);
+		trailer_hitch_.reset(new TrailerHitch(*v.trailer_hitch_));
 		Vehicle* trailer = new Vehicle(*((Vehicle*)(v.trailer_hitch_->trailer_vehicle_)));
 		ConnectTrailer(trailer);
 	}
@@ -1251,8 +1251,6 @@ Vehicle::Vehicle(const Vehicle& v) : trailer_hitch_(nullptr), trailer_coupler_(n
 
 Vehicle::~Vehicle()
 {
-	delete trailer_hitch_;
-	delete trailer_coupler_;
 }
 
 int Vehicle::ConnectTrailer(Vehicle* trailer)

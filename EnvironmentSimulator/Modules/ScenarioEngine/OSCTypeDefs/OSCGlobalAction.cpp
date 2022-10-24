@@ -173,13 +173,29 @@ SwarmTrafficAction::SwarmTrafficAction() : OSCGlobalAction(OSCGlobalAction::Type
     counter_ = 0;
 };
 
-SwarmTrafficAction::~SwarmTrafficAction()
+
+SwarmTrafficAction::~SwarmTrafficAction() 
 {
-    for (size_t i = 0; i < vehicle_pool_.size(); i++)
-    {
-        delete vehicle_pool_[i];
+    auto RecursiveDeleteTrailers = [](Vehicle* vehicle, auto& recurseLambda) -> void {
+        if (vehicle->trailer_hitch_ && vehicle->trailer_hitch_->trailer_vehicle_)
+        {
+            recurseLambda(static_cast<Vehicle*>(vehicle->trailer_hitch_->trailer_vehicle_), recurseLambda);
+        }
+
+        delete vehicle;
+    };
+
+    for (auto* entry : vehicle_pool_) {
+        if (entry != centralObject_)
+        {
+            if (entry->trailer_hitch_ && entry->trailer_hitch_->trailer_vehicle_)
+            {
+                RecursiveDeleteTrailers(static_cast<Vehicle*>(entry->trailer_hitch_->trailer_vehicle_), RecursiveDeleteTrailers);
+            }
+
+            delete entry;
+        }
     }
-    vehicle_pool_.clear();
 }
 
 void SwarmTrafficAction::Start(double simTime, double dt)
@@ -237,7 +253,7 @@ void SwarmTrafficAction::Start(double simTime, double dt)
     {
         if (centralObject_->type_ == Object::Type::VEHICLE)
         {
-            vehicle_pool_.push_back((Vehicle*)centralObject_);
+            vehicle_pool_.push_back(static_cast<Vehicle*>(centralObject_));
         }
         else
         {
@@ -586,7 +602,7 @@ int SwarmTrafficAction::despawn(double simTime)
 
     roadmanager::Position cPos = centralObject_->pos_;
 
-    while (infoPtr < spawnedV.end())
+    while (infoPtr != spawnedV.end())
     {
         Object *vehicle = entities_->GetObjectById(infoPtr->vehicleID);
 

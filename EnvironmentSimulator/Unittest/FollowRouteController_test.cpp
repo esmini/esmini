@@ -49,6 +49,8 @@ TEST_F(FollowRouteControllerTest, PerformSingleLaneChange)
     ASSERT_EQ(target.GetTrackId(), finalPos.GetTrackId());
     ASSERT_EQ(target.GetLaneId(), finalPos.GetLaneId());
     ASSERT_NEAR(target.GetS(), finalPos.GetS(), 10);
+    
+    delete se;
 }
 
 TEST_F(FollowRouteControllerTest, FollowRouteWithLaneChanges)
@@ -71,6 +73,8 @@ TEST_F(FollowRouteControllerTest, FollowRouteWithLaneChanges)
     ASSERT_EQ(target.GetTrackId(), finalPos.GetTrackId());
     ASSERT_EQ(target.GetLaneId(), finalPos.GetLaneId());
     ASSERT_NEAR(target.GetS(), finalPos.GetS(), 10);
+    
+    delete se;
 }
 
 TEST_F(FollowRouteControllerTest, FollowRouteWithCollisionRisk)
@@ -93,6 +97,8 @@ TEST_F(FollowRouteControllerTest, FollowRouteWithCollisionRisk)
     ASSERT_EQ(target.GetTrackId(), finalPos.GetTrackId());
     ASSERT_EQ(target.GetLaneId(), finalPos.GetLaneId());
     ASSERT_NEAR(target.GetS(), finalPos.GetS(), 10);
+    
+    delete se;
 }
 
 TEST_F(FollowRouteControllerTest, FollowRouteBlockedByCollisionRisk)
@@ -116,6 +122,8 @@ TEST_F(FollowRouteControllerTest, FollowRouteBlockedByCollisionRisk)
     Position finalPos = se->entities_.object_[0]->pos_;
     ASSERT_EQ(target.GetTrackId(), finalPos.GetTrackId());
     ASSERT_EQ(target.GetLaneId(), finalPos.GetLaneId());
+
+    delete se;
 }
 
 TEST_F(FollowRouteControllerTest, FollowRouteMedium)
@@ -138,6 +146,8 @@ TEST_F(FollowRouteControllerTest, FollowRouteMedium)
     ASSERT_EQ(target.GetTrackId(), finalPos.GetTrackId());
     ASSERT_EQ(target.GetLaneId(), finalPos.GetLaneId());
     ASSERT_NEAR(target.GetS(), finalPos.GetS(), 10);
+
+    delete se;
 }
 
 TEST_F(FollowRouteControllerTest, FollowRouteNoPath)
@@ -166,6 +176,8 @@ TEST_F(FollowRouteControllerTest, FollowRouteNoPath)
     ASSERT_NE(target.GetLaneId(), finalPos.GetLaneId());
     ASSERT_EQ(start.GetTrackId(), finalPos.GetTrackId());
     ASSERT_EQ(start.GetLaneId(), finalPos.GetLaneId());
+
+    delete se;
 }
 
 TEST_F(FollowRouteControllerTest, FollowRouteMultipleScenarioWaypoints)
@@ -205,6 +217,8 @@ TEST_F(FollowRouteControllerTest, FollowRouteMultipleScenarioWaypoints)
     ASSERT_EQ(scenarioWaypoints.back().GetTrackId(), finalPos.GetTrackId());
     ASSERT_EQ(scenarioWaypoints.back().GetLaneId(), finalPos.GetLaneId());
     ASSERT_NEAR(scenarioWaypoints.back().GetS(), finalPos.GetS(), 10);
+    
+    delete se;
 }
 
 TEST_F(FollowRouteControllerTest, FollowRouteSetParameters)
@@ -215,6 +229,8 @@ TEST_F(FollowRouteControllerTest, FollowRouteSetParameters)
     scenarioengine::ControllerFollowRoute *controller = static_cast<scenarioengine::ControllerFollowRoute *>(se->entities_.object_[0]->controller_);
     ASSERT_NEAR(controller->GetMinDistForCollision(), 69, 0.01);
     ASSERT_NEAR(controller->GetLaneChangeTime(), 420, 0.01);
+    
+    delete se;
 }
 
 // Uncomment to print log output to console

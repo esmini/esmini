@@ -42,6 +42,7 @@ namespace scenarioengine
 		SensorPosition pos_;  // Position, relative host object
 
 		BaseSensor(BaseSensor::Type type, double pos_x, double pos_y, double pos_z, double heading);
+		virtual ~BaseSensor() = default;
 
 		virtual void Update()
 		{

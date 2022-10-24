@@ -199,9 +199,27 @@ static struct {
     {"^", OP_UNARY_BITWISE_NOT},
 };
 
+static int undefined_behaviourless_strncmp( const char * s1, const char * s2, size_t n )
+{
+    while ( n && *s1 && ( *s1 == *s2 ) )
+    {
+        ++s1;
+        ++s2;
+        --n;
+    }
+    if ( n == 0 )
+    {
+        return 0;
+    }
+    else
+    {
+        return ( *(unsigned char *)s1 - *(unsigned char *)s2 );
+    }
+}
+
 static enum expr_type expr_op(const char *s, size_t len, int unary) {
   for (unsigned int i = 0; i < sizeof(OPS) / sizeof(OPS[0]); i++) {
-    if (strlen(OPS[i].s) == len && strncmp(OPS[i].s, s, len) == 0 &&
+    if (strlen(OPS[i].s) == len && undefined_behaviourless_strncmp(OPS[i].s, s, len) == 0 &&
         (unary == -1 || expr_is_unary(OPS[i].op) == unary)) {
       return OPS[i].op;
     }

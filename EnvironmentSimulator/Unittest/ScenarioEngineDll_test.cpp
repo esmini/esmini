@@ -798,6 +798,9 @@ TEST_P(GetGroundTruthTests, receive_GroundTruth)
 	EXPECT_EQ(ego_yoffset, std::get<3>(GetParam()).centerOffsetY);
 	EXPECT_EQ(ego_zoffset, std::get<3>(GetParam()).centerOffsetZ);
 	EXPECT_EQ(map_reference, std::get<4>(GetParam()));
+
+
+	SE_Close();
 }
 
 INSTANTIATE_TEST_SUITE_P(EsminiAPITests, GetGroundTruthTests, ::testing::Values(std::make_tuple("../../../resources/xosc/cut-in.xosc", 14, 2, bounding_box{5.04f, 2.0f, 1.5f, 1.4f, 0.0f, 0.75f}, "+proj=utm +lat_0=37.3542934123933 +lon_0=-122.0859797650754"), std::make_tuple("../../../resources/xosc/straight_500m.xosc", 6, 2, bounding_box{5.0f, 2.0f, 1.8f, 1.4f, 0.0f, 0.9f}, "+proj=utm +lat_0=37.3542934123933 +lon_0=-122.0859797650754"), std::make_tuple("../../../resources/xosc/highway_merge.xosc", 33, 6, bounding_box{5.04f, 2.0f, 1.5f, 1.4f, 0.0f, 0.75f}, "+proj=utm +lat_0=37.3542934123933 +lon_0=-122.0859797650754")));
@@ -933,6 +936,8 @@ TEST(GetMiscObjFromGroundTruth, receive_miscobj)
 	EXPECT_EQ(miscobj_roll, 5.0 - 2 * M_PI);  // Aligned to the road (so if road roll is 1.0 total roll will be 6.0)
 	EXPECT_EQ(miscobj_pitch, 5.0 - 2 * M_PI); // Aligned to the road (so if road pitch is 1.0 total pitch will be 6.0)
 	EXPECT_EQ(miscobj_yaw, 5.0 - 2 * M_PI);
+
+	SE_Close();
 }
 
 TEST(TestGetAndSet, SetOSITimestampTest)
@@ -1157,10 +1162,9 @@ TEST(ParameterTest, SetParameterValuesBeforeInit)
 
 	std::string scenario_file = "../../../resources/xosc/cut-in.xosc";
 
-	SE_RegisterParameterDeclarationCallback(paramDeclCallback, 0);
-
 	for (int i = 0; i < 3 && SE_GetQuitFlag() != 1; i++)
 	{
+		SE_RegisterParameterDeclarationCallback(paramDeclCallback, 0);
 		ASSERT_EQ(SE_Init(scenario_file.c_str(), 0, 0, 0, 0), 0);
 		ASSERT_EQ(SE_GetNumberOfObjects(), 2);
 
@@ -1226,6 +1230,8 @@ TEST(TestGetAndSet, OverrideActionTest)
 	EXPECT_DOUBLE_EQ(list.clutch.value, 0.7);
 	EXPECT_EQ(list.steeringWheel.active, false);
 	EXPECT_NEAR(list.steeringWheel.value, 2 * M_PI, 0.01);
+
+	SE_Close();
 }
 
 TEST(TestGetAndSet, PropertyTest)
@@ -1269,6 +1275,8 @@ TEST(TestGetAndSet, PropertyTest)
 	//object -1 and 3, does not exist
 	EXPECT_EQ(SE_GetNumberOfProperties(3), -1);
 	EXPECT_EQ(SE_GetNumberOfProperties(-1), -1);
+
+	SE_Close();
 }
 
 TEST(RoadSign, TestValidityRecord)
@@ -1475,6 +1483,8 @@ TEST(ObjectIds,check_ids)
 	ASSERT_EQ(SE_GetId(0),0);
 	ASSERT_EQ(SE_GetId(1),2);
 	ASSERT_EQ(SE_GetId(2),1);
+
+	SE_Close();
 }
 
 TEST(OSILaneParing, highway_split)
@@ -2206,6 +2216,8 @@ TEST(GatewayTest, TestReportToGatewayInCallback)
 	SE_GetObjectState(0, &state);
 	ASSERT_EQ(state.laneId, 5);
 	ASSERT_FLOAT_EQ(state.laneOffset, -2.3f);
+
+	SE_Close();
 }
 
 static void ghostParamDeclCB(void* user_arg)
@@ -2388,6 +2400,7 @@ TEST(ExternalController, TestExternalDriver)
 			// Finally, update scenario using same time step as for vehicle model
 			SE_StepDT(dt);
 		}
+		SE_SimpleVehicleDelete(vehicleHandle);
 		SE_Close();
 	}
 }
@@ -2505,6 +2518,7 @@ TEST(SimpleVehicleTest, TestControl)
 	EXPECT_NEAR(vehicleState.h, 1.924, 1e-3);
 	EXPECT_NEAR(vehicleState.speed, 3.459, 1e-3);
 
+	SE_SimpleVehicleDelete(vehicleHandle);
 	SE_Close();
 }
 
@@ -2740,11 +2754,12 @@ TEST(DirectJunctionTest, TestVariousRoutes)
 
 	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/direct_junction.xosc";
 
-	SE_RegisterParameterDeclarationCallback(paramDeclCallbackSetRoute, &positions);
+
 	SE_AddPath("../../../resources/models");
 
 	for (int i = 0; i < (int)(sizeof(positions) / sizeof(double[8])); i++)
-	{
+	{	
+		SE_RegisterParameterDeclarationCallback(paramDeclCallbackSetRoute, &positions);
 		ASSERT_EQ(SE_Init(scenario_file.c_str(), 1, 0, 0, 0), 0);
 		ASSERT_EQ(SE_GetNumberOfObjects(), 1);
 

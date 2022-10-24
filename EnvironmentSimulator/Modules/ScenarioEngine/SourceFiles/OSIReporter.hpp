@@ -79,15 +79,15 @@ public:
 	/**
 	Calls UpdateOSIStaticGroundTruth and UpdateOSIDynamicGroundTruth
 	*/
-	int UpdateOSIGroundTruth(std::vector<ObjectState*> objectState);
+	int UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectState>>& objectState);
 	/**
 	Fills up the osi message with  static GroundTruth
 	*/
-	int UpdateOSIStaticGroundTruth(std::vector<ObjectState*> objectState);
+	int UpdateOSIStaticGroundTruth(const std::vector<std::unique_ptr<ObjectState>>& objectState);
 	/**
 	Fills up the osi message with dynamic GroundTruth
 	*/
-	int UpdateOSIDynamicGroundTruth(std::vector<ObjectState*> objectState, bool reportGhost = true);
+	int UpdateOSIDynamicGroundTruth(const std::vector<std::unique_ptr<ObjectState>>& objectState, bool reportGhost = true);
 	/**
 	Fills up the osi message with Stationary Object from the OpenDRIVE description
 	*/
@@ -107,11 +107,11 @@ public:
 	/**
 	Fills up the osi message with Lane Boundary
 	*/
-	int UpdateOSILaneBoundary(std::vector<ObjectState*> objectState);
+	int UpdateOSILaneBoundary();
 	/**
 	Fills up the osi message with Lanes
 	*/
-	int UpdateOSIRoadLane(std::vector<ObjectState*> objectState);
+	int UpdateOSIRoadLane();
 	/**
 	Fills the intersection type of lanes
 	*/
@@ -128,9 +128,9 @@ public:
 
 	const char* GetOSIGroundTruth(int* size);
 	const char* GetOSIGroundTruthRaw();
-	const char* GetOSIRoadLane(std::vector<ObjectState*> objectState, int* size, int object_id);
+	const char* GetOSIRoadLane(const std::vector<std::unique_ptr<ObjectState>>& objectState, int* size, int object_id);
 	const char* GetOSIRoadLaneBoundary(int* size, int global_id);
-	void GetOSILaneBoundaryIds(std::vector<ObjectState*> objectState, std::vector<int>& ids, int object_id);
+	void GetOSILaneBoundaryIds(const std::vector<std::unique_ptr<ObjectState>>& objectState, std::vector<int>& ids, int object_id);
     const char* GetOSISensorDataRaw();
 	osi3::SensorView *GetSensorView();
 	bool IsCentralOSILane(int lane_idx);

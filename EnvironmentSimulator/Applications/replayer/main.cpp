@@ -323,7 +323,7 @@ int main(int argc, char** argv)
 {
 	roadmanager::OpenDrive *odrManager;
 	viewer::Viewer* viewer;
-	Replay* player;
+	std::unique_ptr<Replay> player;
 	double simTime = 0;
 	double view_mode = viewer::NodeMask::NODE_MASK_ENTITY_MODEL;
 	bool overlap = false;
@@ -372,7 +372,7 @@ int main(int argc, char** argv)
 		return -1;
 	}
 
-	if (opt.ParseArgs(&argc, argv) != 0)
+	if (opt.ParseArgs(argc, argv) != 0)
 	{
 		return -1;
 	}
@@ -417,7 +417,7 @@ int main(int argc, char** argv)
 	{
 		if (!arg_str.empty())
 		{
-			player = new Replay(arg_str, opt.GetOptionArg("file"), save_merged);
+			player = std::make_unique<Replay>(arg_str, opt.GetOptionArg("file"), save_merged);
 
 			if (!save_merged.empty())
 			{
@@ -432,7 +432,7 @@ int main(int argc, char** argv)
 				LOG("\"--saved_merged\" works only in combination with \"--dir\" argument, combining multiple dat files");
 				return -1;
 			}
-			player = new Replay(opt.GetOptionArg("file"), true);
+			player = std::make_unique<Replay>(opt.GetOptionArg("file"), true);
 		}
 	}
 	catch (const std::exception& e)
@@ -660,11 +660,11 @@ int main(int argc, char** argv)
 				viewer::NodeMask::NODE_MASK_INFO_PER_OBJ, mask * viewer::NodeMask::NODE_MASK_INFO);
 		}
 
-		viewer->RegisterKeyEventCallback(ReportKeyEvent, player);
+		viewer->RegisterKeyEventCallback(ReportKeyEvent, player.get());
 
-		if (argc > 1)
+		if (opt.HasUnknownArgs())
 		{
-			opt.PrintArgs(argc, argv, "Unrecognized arguments:");
+			opt.PrintUnknownArgs("Unrecognized arguments:");
 			opt.PrintUsage();
 #ifdef _USE_OSG
 			viewer::Viewer::PrintUsage();
@@ -756,7 +756,7 @@ int main(int argc, char** argv)
 			} while (pos != std::string::npos);
 		}
 
-		if (ParseEntities(viewer, player) != 0)
+		if (ParseEntities(viewer, player.get()) != 0)
 		{
 			delete viewer;
 			return -1;
@@ -1004,7 +1004,6 @@ int main(int argc, char** argv)
 		return 3;
 	}
 
-	delete player;
 
 	return 0;
 }

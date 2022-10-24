@@ -80,6 +80,8 @@ namespace scenarioengine
 			num_executions_(0),
 			max_num_executions_(max_num_executions) {}
 
+		virtual ~StoryBoardElement() = default;
+
 		virtual void UpdateState();
 		void SetState(State state);
 		std::string state2str(State state);

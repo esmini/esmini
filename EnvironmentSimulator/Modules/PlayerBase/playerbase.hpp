@@ -78,7 +78,7 @@ public:
 	} ObjCallback;
 
 
-	ScenarioPlayer(int& argc, char* argv[]);
+	ScenarioPlayer(int argc, char* argv[]);
 	~ScenarioPlayer();
 	void PrintUsage();
 	bool IsQuitRequested() { return quit_request; }
@@ -179,7 +179,7 @@ private:
 	int osi_freq_;
 	int frame_counter_;
 	std::string osi_receiver_addr;
-	int &argc_;
+	int argc_;
 	char **argv_;
 	std::string titleString;
 	PlayerState state_;

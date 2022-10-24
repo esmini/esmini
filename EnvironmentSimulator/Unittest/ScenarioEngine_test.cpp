@@ -3,6 +3,7 @@
 #include <gmock/gmock.h>
 #include <vector>
 #include <stdexcept>
+#include <array>
 
 #include "ScenarioEngine.hpp"
 #include "ScenarioReader.hpp"
@@ -305,6 +306,8 @@ TEST(TrajectoryTest, EnsureContinuation)
     ASSERT_NEAR(se->entities_.object_[0]->pos_.GetX(), 26.13539, 1e-5);
     ASSERT_NEAR(se->entities_.object_[0]->pos_.GetY(), 2.917931, 1e-5);
     ASSERT_NEAR(se->entities_.object_[0]->pos_.GetH(), 0.0, 1e-5);
+    
+    delete se;
 }
 
 TEST(ExpressionTest, EnsureResult)
@@ -381,7 +384,7 @@ TEST(OptionsTest, TestOptionHandling)
     // opt.PrintUsage();
 
     // set arguments
-    const char* args[] = {
+    std::array<const char*, 12> args = {
         "my_app",
         "--osc_file",
         "my_scenario.xosc",
@@ -395,17 +398,9 @@ TEST(OptionsTest, TestOptionHandling)
         "--option3",
         "--option4"
     };
-    int argc = sizeof(args) / sizeof(char*);
-    char** argv;
-    argv = (char**)malloc(argc * sizeof(char*));
-    for (int i = 0; i < argc; i++)
-    {
-        size_t len = strlen(args[i]);
-        argv[i] = (char*)malloc((len + 1) * sizeof(char*));
-        strncpy(argv[i], args[i], len + 1);
-    }
+    int argc = args.size();
 
-    ASSERT_EQ(opt.ParseArgs(&argc, argv), -1);
+    ASSERT_EQ(opt.ParseArgs(argc, args.data()), -1);
 
     ASSERT_EQ(opt.GetOptionSet("no_arg"), false);
     ASSERT_EQ(opt.GetOptionSet("osc_file"), true);
@@ -422,15 +417,8 @@ TEST(OptionsTest, TestOptionHandling)
     ASSERT_EQ(opt.GetOptionArg("option3"), "55");
 
     // test without last argument, should return OK
-    argc = sizeof(args-1) / sizeof(char*);
-    ASSERT_EQ(opt.ParseArgs(&argc, argv), 0);
-
-    // Clean up
-    for (int i = 0; i < argc; i++)
-    {
-        delete argv[i];
-    }
-    delete argv;
+    int argc_minus_one = args.size() - 1;
+    ASSERT_EQ(opt.ParseArgs(argc_minus_one, args.data()), 0);
 }
 
 TEST(ParameterTest, ResolveParameterTest)
@@ -822,6 +810,7 @@ TEST(ControllerTest, UDPDriverModelTestSynchronous)
 
     delete se;
     delete udpClient;
+    delete udpClient2;
 }
 
 TEST(RoadOrientationTest, TestElevationPitchRoll)
@@ -858,6 +847,8 @@ TEST(RoadOrientationTest, TestElevationPitchRoll)
     EXPECT_NEAR(se->entities_.object_[2]->pos_.GetZ(), 13.24676, 1e-5);
     EXPECT_NEAR(se->entities_.object_[2]->pos_.GetP(), 0.27808, 1e-5);
     EXPECT_NEAR(se->entities_.object_[2]->pos_.GetR(), 0, 1e-5);
+
+    delete se;
 }
 
 TEST(ActionDynamicsTest, TestDynamicsTimeDimension)
@@ -1145,6 +1136,8 @@ TEST(OrientationTest, TestRelativeRoadHeading)
     ASSERT_NEAR(se->entities_.object_[3]->pos_.GetX(), 1.539, 1e-3);
     ASSERT_NEAR(se->entities_.object_[3]->pos_.GetY(), -54.999, 1e-3);
     ASSERT_NEAR(se->entities_.object_[3]->pos_.GetH(), 4.713, 1e-3);
+
+    delete se;
 }
 
 TEST(SpeedProfileTest, TestSpeedProfileFirstEntryOffset)
@@ -1538,6 +1531,8 @@ TEST(ControllerTest, ALKS_R157_TestR157RegulationMinDist)
 
     obj->SetSpeed(90.0 / 3.6);  // Outside range, but supported anyway
     EXPECT_NEAR(controller->model_->MinDist(), 47.500, 1E-3);
+
+    delete se;
 }
 
 class StraightRoadTest : public testing::Test

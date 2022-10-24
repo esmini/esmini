@@ -42,7 +42,7 @@ static void log_callback(const char *str)
 	printf("%s\n", str);
 }
 
-ScenarioPlayer::ScenarioPlayer(int &argc, char *argv[]) :
+ScenarioPlayer::ScenarioPlayer(int argc, char *argv[]) :
 	maxStepSize(0.1), minStepSize(0.001), argc_(argc), argv_(argv), state_(PlayerState::PLAYER_STATE_PLAYING)
 {
 	quit_request = false;
@@ -593,8 +593,12 @@ int ScenarioPlayer::InitViewer()
 {
 	std::string arg_str;
 
+	// osg::ArgumentParser modifies given args array so we copy it for safe modification
+	std::vector<char*> args = {argv_, std::next(argv_, argc_)};
+	int arg_count = args.size();
+
 	// Create viewer
-	osg::ArgumentParser arguments(&argc_, argv_);
+	osg::ArgumentParser arguments(&arg_count, args.data());
 	viewer_ = new viewer::Viewer(
 		roadmanager::Position::GetOpenDrive(),
 		scenarioEngine->getSceneGraphFilename().c_str(),
@@ -905,7 +909,7 @@ int ScenarioPlayer::InitViewer()
 		}
 
 		// Connect callback for setting transparency
-		viewer::VisibilityCallback* cb = new viewer::VisibilityCallback(viewer_->entities_.back()->txNode_, obj, viewer_->entities_.back());
+		viewer::VisibilityCallback* cb = new viewer::VisibilityCallback(obj, viewer_->entities_.back());
 		viewer_->entities_.back()->txNode_->setUpdateCallback(cb);
 
 		if (viewer_->entities_.back()->IsVehicle())
@@ -1116,7 +1120,7 @@ int ScenarioPlayer::Init()
 	exe_path_ = argv_[0];
 	SE_Env::Inst().AddPath(DirNameOf(exe_path_));  // Add location of exe file to search paths
 
-	if (opt.ParseArgs(&argc_, argv_) != 0)
+	if (opt.ParseArgs(argc_, argv_) != 0)
 	{
 		PrintUsage();
 		return -2;
@@ -1400,9 +1404,9 @@ int ScenarioPlayer::Init()
 		LOG_AND_QUIT("Capture screen requires a window to be specified!");
 	}
 
-	if (argc_ > 1)
+	if (opt.HasUnknownArgs())
 	{
-		opt.PrintArgs(argc_, argv_, "Unrecognized arguments:");
+		opt.PrintUnknownArgs("Unrecognized arguments:");
 		PrintUsage();
 	}
 

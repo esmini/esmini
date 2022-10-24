@@ -233,8 +233,18 @@ namespace roadmanager
             }
             v.clear();
         }
+        
+        struct InspectionPriorityQueue : public std::priority_queue<Node *, std::vector<Node *>, WeightCompare> {
+            using BaseClass = std::priority_queue<Node *, std::vector<Node *>, WeightCompare>;
+            using BaseClass::BaseClass;
+        public:
+            std::vector<Node*>& GetUnderlyingContainer()
+            {
+                return c;
+            }
+        };
 
-        std::priority_queue<Node *, std::vector<Node *>, WeightCompare> unvisited_;
+        InspectionPriorityQueue unvisited_;
         std::vector<Node *> visited_;
         Position targetWaypoint_;
         OpenDrive *odr_;

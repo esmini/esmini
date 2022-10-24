@@ -76,7 +76,7 @@ static void resetScenario(void)
 	}
 	if (argv_)
 	{
-		for (int i = 0; i < argc_; i++)
+		for (int i = 0; i < args_v.size(); i++)
 		{
 			free(argv_[i]);
 		}
@@ -785,6 +785,7 @@ extern "C"
 	SE_DLL_API void SE_Close()
 	{
 		resetScenario();
+		RegisterParameterDeclarationCallback(nullptr, nullptr);
 	}
 
 	SE_DLL_API void SE_LogToConsole(bool mode)
@@ -1871,7 +1872,7 @@ extern "C"
 	{
 		if (handleSimpleVehicle)
 		{
-			free((vehicle::Vehicle *)handleSimpleVehicle);
+			delete((vehicle::Vehicle *)handleSimpleVehicle);
 			handleSimpleVehicle = 0;
 		}
 	}

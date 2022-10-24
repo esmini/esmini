@@ -43,11 +43,11 @@ namespace scenarioengine
 	public:
 
 		std::string name_;
-		pugi::xml_node node_;
+		pugi::xml_document root_;
 		CatalogType type_;
 
-		Entry(std::string name, pugi::xml_node node);
-		pugi::xml_node GetNode() { return node_; }
+		Entry(std::string name, pugi::xml_document root);
+		pugi::xml_node GetNode() { return root_.first_child(); }
 
 		static std::string GetTypeAsStr_(CatalogType type);
 		std::string GetTypeAsStr() { return GetTypeAsStr_(type_); }
@@ -62,6 +62,14 @@ namespace scenarioengine
 		std::string name_;
 		CatalogType type_;
 		std::vector<Entry*> entry_;
+
+		~Catalog()
+		{			
+			for (auto* entry : entry_)
+			{
+				delete entry;
+			}
+		}
 
 		CatalogType GetType() { return type_; }
 
@@ -99,6 +107,13 @@ namespace scenarioengine
 		std::vector<Catalog*> catalog_;
 
 		Catalogs() {}
+		~Catalogs()
+		{
+			for (auto* entry : catalog_)
+			{
+				delete entry;
+			}
+		}
 
 		int RegisterCatalogDirectory(std::string type, std::string directory);
 

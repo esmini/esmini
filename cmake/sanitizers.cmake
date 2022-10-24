@@ -1,17 +1,22 @@
 function(enable_sanitizers project_name)
 
-  set(SANITIZERS "")
+  if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES
+                                             ".*Clang")
 
-  list(APPEND SANITIZERS "address")
+    set(SANITIZERS "")
 
-  list(APPEND SANITIZERS "undefined")
+    list(APPEND SANITIZERS "address")
 
-  list(JOIN SANITIZERS "," LIST_OF_SANITIZERS)
+    list(APPEND SANITIZERS "undefined")
 
-  target_compile_options(
-    ${project_name} INTERFACE -fsanitize=${LIST_OF_SANITIZERS}
-                              -fno-omit-frame-pointer)
-  target_link_options(${project_name} INTERFACE
-                      -fsanitize=${LIST_OF_SANITIZERS})
+    list(JOIN SANITIZERS "," LIST_OF_SANITIZERS)
+
+    target_compile_options(
+      ${project_name} INTERFACE -fsanitize=${LIST_OF_SANITIZERS}
+                                -fno-omit-frame-pointer)
+    target_link_options(${project_name} INTERFACE
+                        -fsanitize=${LIST_OF_SANITIZERS})
+
+  endif()
 
 endfunction()

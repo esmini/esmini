@@ -67,6 +67,7 @@ namespace scenarioengine
 
 		OSCCondition(ConditionType base_type) : base_type_(base_type), state_(ConditionState::IDLE),
 			last_result_(false), edge_(ConditionEdge::NONE) {}
+		virtual ~OSCCondition() = default;
 
 		bool Evaluate(StoryBoard *storyBoard, double sim_time);
 		virtual bool CheckCondition(StoryBoard *storyBoard, double sim_time) = 0;
@@ -80,6 +81,14 @@ namespace scenarioengine
 	public:
 		std::vector<OSCCondition*> condition_;
 
+		~ConditionGroup()
+		{
+			for (auto* entry : condition_)
+			{
+				delete entry;
+			}
+		}
+
 		bool Evaluate(StoryBoard *storyBoard, double sim_time);
 	};
 
@@ -89,6 +98,14 @@ namespace scenarioengine
 		std::vector<ConditionGroup*> conditionGroup_;
 
 		Trigger(bool defaultValue) : defaultValue_(defaultValue) {}
+		~Trigger()
+		{
+			for (auto* entry : conditionGroup_)
+			{
+				delete entry;
+			}
+		}
+
 		bool Evaluate(StoryBoard *storyBoard, double sim_time);
 	private:
 		bool defaultValue_;  // applied on empty conditions
@@ -161,7 +178,7 @@ namespace scenarioengine
 	{
 	public:
 		Object* object_;
-		OSCPosition* position_;
+		std::unique_ptr<OSCPosition> position_;
 		double value_;
 		bool freespace_;
 		roadmanager::CoordinateSystem cs_;
@@ -170,14 +187,14 @@ namespace scenarioengine
 		double ttc_;
 
 		bool CheckCondition(StoryBoard* storyBoard, double sim_time);
-		TrigByTimeToCollision() : object_(0), position_(0), ttc_(-1), TrigByEntity(TrigByEntity::EntityConditionType::TIME_TO_COLLISION) {}
+		TrigByTimeToCollision() : object_(0), ttc_(-1), TrigByEntity(TrigByEntity::EntityConditionType::TIME_TO_COLLISION) {}
 		void Log();
 	};
 
 	class TrigByReachPosition : public TrigByEntity
 	{
 	public:
-		OSCPosition *position_;
+		std::unique_ptr<OSCPosition> position_;
 		double tolerance_;
 		double dist_;
 		double angularTolerance_;
@@ -192,7 +209,7 @@ namespace scenarioengine
 	class TrigByDistance : public TrigByEntity
 	{
 	public:
-		OSCPosition *position_;
+		std::unique_ptr<OSCPosition> position_;
 		double value_;
 		bool freespace_;
 		roadmanager::CoordinateSystem cs_;

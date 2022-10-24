@@ -20,12 +20,12 @@
 
 int main(int argc, char *argv[])
 {
-	ScenarioPlayer *player;
+	std::unique_ptr<ScenarioPlayer> player;
 	__int64 time_stamp = 0;
 
 	try
 	{
-		player = new ScenarioPlayer(argc, argv);
+		player = std::make_unique<ScenarioPlayer>(argc, argv);
 	}
 	catch (const std::exception& e)
 	{
@@ -47,8 +47,6 @@ int main(int argc, char *argv[])
 
 		player->Frame(dt);
 	}
-
-	delete player;
 
 	return 0;
 }

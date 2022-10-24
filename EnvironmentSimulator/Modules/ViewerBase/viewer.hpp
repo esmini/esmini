@@ -213,7 +213,7 @@ namespace viewer
 
 	private:
 		osgViewer::Viewer* viewer_;
-		PolyLine* pline_;
+		std::unique_ptr<PolyLine> pline_;
 	};
 
 	class RouteWayPoints
@@ -275,7 +275,7 @@ namespace viewer
 		osg::ref_ptr<osg::Group> parent_;
 		osg::BoundingBox modelBB_;
 
-		Trajectory* trajectory_;
+		std::unique_ptr<Trajectory> trajectory_;
 		static const EntityType entity_type_ = EntityType::ENTITY;
 		virtual EntityType GetType() { return entity_type_; }
 
@@ -293,15 +293,15 @@ namespace viewer
 		EntityModel(osgViewer::Viewer* viewer, osg::ref_ptr<osg::Group> group, osg::ref_ptr<osg::Group> parent,
 			osg::ref_ptr<osg::Group> trail_parent, osg::ref_ptr<osg::Group>traj_parent, osg::ref_ptr<osg::Node> dot_node,
 			osg::ref_ptr<osg::Group> route_waypoint_parent, osg::Vec4 trail_color, std::string name);
-		~EntityModel();
+		virtual ~EntityModel();
 		void SetPosition(double x, double y, double z);
 		void SetRotation(double hRoad, double pRoad, double hRelative, double r);
 		void SetRotation(double h, double p, double r);
 
 		void SetTransparency(double factor);
 
-		PolyLine* trail_;
-		RouteWayPoints* routewaypoints_;
+		std::unique_ptr<PolyLine> trail_;
+		std::unique_ptr<RouteWayPoints> routewaypoints_;
 		osgViewer::Viewer* viewer_;
 		OnScreenText on_screen_info_;
 	};
@@ -346,9 +346,8 @@ namespace viewer
 	class VisibilityCallback : public osg::NodeCallback
 	{
 	public:
-		VisibilityCallback(osg::Node* node, scenarioengine::Object* object, EntityModel* entity)
+		VisibilityCallback(scenarioengine::Object* object, EntityModel* entity)
 		{
-			node_ = (osg::LOD*)node;
 			object_ = object;
 			entity_ = entity;
 		}
@@ -360,7 +359,6 @@ namespace viewer
 	private:
 		scenarioengine::Object* object_;
 		EntityModel* entity_;
-		osg::LOD* node_;
 	};
 
 	// Callback for fetching key strokes
@@ -418,7 +416,7 @@ namespace viewer
 		osg::ref_ptr<osg::Group> roadSensors_;
 		osg::ref_ptr<osg::Group> trails_;
 		roadmanager::OpenDrive* odrManager_;
-		RoadGeom* roadGeom;
+		std::unique_ptr<RoadGeom> roadGeom;
 
 		std::string exe_path_;
 		std::vector<KeyEventCallback> callback_;

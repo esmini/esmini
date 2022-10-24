@@ -21,6 +21,7 @@
 #include "OSCAABBTree.hpp"
 #include <vector>
 #include "OSCUtils.hpp"
+#include "OSCPosition.hpp"
 
 namespace scenarioengine
 {
@@ -45,6 +46,7 @@ namespace scenarioengine
 		Type type_;
 
 		OSCGlobalAction(OSCGlobalAction::Type type) : OSCAction(OSCAction::BaseType::GLOBAL), type_(type) {}
+		virtual ~OSCGlobalAction() = default;
 
 		virtual void print()
 		{
@@ -101,6 +103,7 @@ namespace scenarioengine
 	{
 	public:
 		Object* entity_;
+		std::shared_ptr<OSCPosition> pos_OSCPosition_;
 		roadmanager::Position *pos_;
 		Entities* entities_;
 
@@ -116,8 +119,6 @@ namespace scenarioengine
 			entities_ = action.entities_;
 			pos_ = action.pos_;
 		}
-
-		~AddEntityAction() { delete pos_; }
 
 		OSCGlobalAction* Copy()
 		{
@@ -152,8 +153,6 @@ namespace scenarioengine
 			entities_ = action.entities_;
 			gateway_ = action.gateway_;
 		}
-
-		~DeleteEntityAction() {}
 
 		OSCGlobalAction* Copy()
 		{
@@ -231,7 +230,7 @@ namespace scenarioengine
 		std::vector<SpawnInfo> spawnedV;
 		roadmanager::OpenDrive* odrManager_;
 		double innerRadius_, semiMajorAxis_, semiMinorAxis_, midSMjA, midSMnA, minSize_, lastTime;
-		std::vector<Vehicle*>vehicle_pool_;
+		std::vector<Vehicle*> vehicle_pool_;
 		static int counter_;
 
 		int despawn(double simTime);

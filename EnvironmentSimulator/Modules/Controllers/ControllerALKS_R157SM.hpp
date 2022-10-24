@@ -82,6 +82,7 @@ namespace scenarioengine
             } ObjectInfo;
 
             Model(ModelType type, double reaction_time, double max_dec_, double max_range_);
+            virtual ~Model() = default;
 
             void SetVehicle(Vehicle* vehicle) { veh_ = vehicle; }
             bool Distance(Vehicle* vh, double& dist_long, double& dist_lat);

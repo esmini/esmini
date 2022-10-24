@@ -446,9 +446,15 @@ int ScenarioEngine::step(double deltaSimTime)
 									if (event->action_[n]->IsActive())
 									{
 										OSCAction* action = event->action_[n];
-										OSCPrivateAction* pa = (OSCPrivateAction*)action;
-										if (ghost_mode_ != GhostMode::RESTARTING ||
-											((action->base_type_ == OSCAction::BaseType::PRIVATE) && pa->object_->IsGhost()))
+										bool is_private_ghost = [&](){
+											if (action->base_type_ == OSCAction::BaseType::PRIVATE)
+											{
+												return ((OSCPrivateAction*)action)->object_->IsGhost();
+											}
+
+											return false;
+										}();
+										if (ghost_mode_ != GhostMode::RESTARTING || is_private_ghost)
 										{
 											event->action_[n]->Step(simulationTime_, deltaSimTime);
 

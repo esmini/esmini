@@ -17,6 +17,7 @@
 #include <vector>
 #include <sstream>
 #include <locale>
+#include <array>
 
 
 // UDP network includes
@@ -1334,12 +1335,12 @@ void SE_Options::PrintUsage()
 	printf("\n");
 }
 
-void SE_Options::PrintArgs(int argc, char *argv[], std::string message)
+void SE_Options::PrintUnknownArgs(std::string message)
 {
 	printf("\n%s\n", message.c_str());
-	for (size_t i = 1; i < argc; i++)
+	for (const auto& arg : unknown_args_) 
 	{
-		printf("  %s\n", argv[i]);
+		printf("  %s\n", arg.c_str());
 	}
 }
 
@@ -1381,31 +1382,30 @@ std::string SE_Options::GetOptionArg(std::string opt, int index)
 	}
 }
 
-static void ShiftArgs(int *argc, char** argv, int start_i)
-{
-	if (start_i >= 0 && start_i < *argc)
-	{
-		for (int i = start_i; i < *argc - 1; i++)
-		{
-			argv[i] = argv[i + 1];
-		}
-		(*argc)--;
-	}
-}
+static constexpr std::array<const char*, 5> OSG_ARGS = {
+	"--clear-color",
+	"--screen",
+	"--window",
+	"--borderless-window",
+	"--SingleThreaded"
+};
 
-int SE_Options::ParseArgs(int *argc, char* argv[])
+int SE_Options::ParseArgs(int argc, const char* const argv[])
 {
-	app_name_ = FileNameWithoutExtOf(argv[0]);
+	std::vector<const char*> args = {argv, std::next(argv, argc)};
+
+
+	app_name_ = FileNameWithoutExtOf(args[0]);
 	int returnVal = 0;
 
-	for (size_t i = 0; i < *argc; i++)
+	for (size_t i = 0; i < argc; i++)
 	{
-		originalArgs_.push_back(argv[i]);
+		originalArgs_.push_back(args[i]);
 	}
 
-	for (size_t i = 1; i < *argc;)
+	for (size_t i = 1; i < argc;)
 	{
-		std::string arg = argv[i];
+		std::string arg = args[i];
 
 		if (!(arg.substr(0, strlen(OPT_PREFIX)) == OPT_PREFIX))
 		{
@@ -1413,17 +1413,17 @@ int SE_Options::ParseArgs(int *argc, char* argv[])
 			continue;
 		}
 
-		SE_Option *option = GetOption(&argv[i][strlen(OPT_PREFIX)]); // skip prefix
+		SE_Option *option = GetOption(&args[i][strlen(OPT_PREFIX)]); // skip prefix
 
 		if (option)
 		{
 			option->set_ = true;
 			if (option->opt_arg_ != "")
 			{
-				if (i < *argc - 1 && strncmp(argv[i + 1], "--", 2))
+				if (i < argc - 1 && strncmp(args[i + 1], "--", 2))
 				{
-					option->arg_value_.push_back(argv[i+1]);
-					ShiftArgs(argc, argv, (int)i);
+					option->arg_value_.push_back(args[i+1]);
+					i++;
 				}
 				else if (!option->default_value_.empty())
 				{
@@ -1436,12 +1436,17 @@ int SE_Options::ParseArgs(int *argc, char* argv[])
 					returnVal = -1;
 				}
 			}
-			ShiftArgs(argc, argv, (int)i);
 		}
 		else
 		{
-			i++;
+			auto it = std::find_if(std::begin(OSG_ARGS), std::end(OSG_ARGS), [&arg](const char* osg_arg) {
+			  return osg_arg == arg;
+			});
+			if (it == std::end(OSG_ARGS)) {
+				unknown_args_.push_back(args[i]);
+			}
 		}
+		i++;
 	}
 
 	return returnVal;
@@ -1467,6 +1472,11 @@ bool SE_Options::IsInOriginalArgs(std::string opt)
 	}
 
 	return false;
+}
+
+bool SE_Options::HasUnknownArgs()
+{
+	return !unknown_args_.empty();
 }
 
 int SE_WritePPM(const char* filename, int width, int height, const unsigned char* data, int pixelSize, int pixelFormat, bool upsidedown)

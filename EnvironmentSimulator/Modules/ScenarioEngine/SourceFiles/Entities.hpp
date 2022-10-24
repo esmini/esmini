@@ -164,7 +164,7 @@ namespace scenarioengine
 		{
 			*this = o;
 		}
-		~Object() {}
+		virtual ~Object() {}
 		void SetEndOfRoad(bool state, double time = 0.0);
 		bool IsEndOfRoad() { return end_of_road_timestamp_ > SMALL_NUMBER; }
 		double GetEndOfRoadTimestamp() { return end_of_road_timestamp_; }
@@ -450,8 +450,8 @@ namespace scenarioengine
 		int ConnectTrailer(Vehicle* trailer);
 		void AlignTrailers();
 
-		TrailerCoupler* trailer_coupler_;  // mounting point to any tow vehicle
-		TrailerHitch* trailer_hitch_;   // mounting point to any tow vehicle
+		std::shared_ptr<TrailerCoupler> trailer_coupler_;  // mounting point to any tow vehicle
+		std::shared_ptr<TrailerHitch> trailer_hitch_;   // mounting point to any tow vehicle
 	};
 
 	class Pedestrian : public Object
@@ -618,6 +618,18 @@ namespace scenarioengine
 	{
 	public:
 		Entities() : nextId_(0) {}
+		~Entities()
+		{
+			for (auto* entry : object_)
+			{
+				delete entry;
+			}
+
+			for (auto* entry : object_pool_)
+			{
+				delete entry;
+			}
+		}
 
 		std::vector<Object*> object_;
 		std::vector<Object*> object_pool_;

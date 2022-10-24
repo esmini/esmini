@@ -235,12 +235,8 @@ void ControllerFollowRoute::CreateLaneChange(int lane)
 
 	LatLaneChangeAction::TargetAbsolute *target = new LatLaneChangeAction::TargetAbsolute;
 	target->value_ = lane;
-	if (action_lanechange->target_ != 0)
-	{
-		delete action_lanechange->target_;
-		action_lanechange->target_ = 0;
-	}
-	action_lanechange->target_ = target;
+
+	action_lanechange->target_.reset(target);
 
 	// Set lane change to be performed by ChangeLane function
 	laneChangeAction_ = action_lanechange;

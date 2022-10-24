@@ -169,7 +169,16 @@ namespace roadmanager
 		Spiral() : curv_start_(0.0), curv_end_(0.0), c_dot_(0.0), x0_(0.0), y0_(0.0), h0_(0.0), s0_(0.0), arc_(0), line_(0) {}
 		Spiral(double s, double x, double y, double hdg, double length, double curv_start, double curv_end);
 
-		~Spiral(){};
+		~Spiral(){
+			if (arc_)
+			{
+				delete arc_;
+			}
+			if(line_)
+			{
+				delete line_;
+			}
+		};
 
 		double GetCurvStart() { return curv_start_; }
 		double GetCurvEnd() { return curv_end_; }
@@ -391,7 +400,7 @@ namespace roadmanager
 	public:
 		LaneRoadMarkType(std::string name, double width) : name_(name), width_(width) {}
 
-		void AddLine(LaneRoadMarkTypeLine *lane_roadMarkTypeLine);
+		void AddLine(std::shared_ptr<LaneRoadMarkTypeLine> lane_roadMarkTypeLine);
 		std::string GetName() { return name_; }
 		double GetWidth() { return width_; }
 		LaneRoadMarkTypeLine *GetLaneRoadMarkTypeLineByIdx(int idx);
@@ -400,7 +409,7 @@ namespace roadmanager
 	private:
 		std::string name_;
 		double width_;
-		std::vector<LaneRoadMarkTypeLine *> lane_roadMarkTypeLine_;
+		std::vector<std::shared_ptr<LaneRoadMarkTypeLine>> lane_roadMarkTypeLine_;
 	};
 
 	class LaneRoadMark
@@ -443,7 +452,7 @@ namespace roadmanager
 					 RoadMarkMaterial material, RoadMarkLaneChange lane_change, double width, double height) : s_offset_(s_offset), type_(type), weight_(weight), color_(color), material_(material), lane_change_(lane_change),
 																											   width_(width), height_(height) {}
 
-		void AddType(LaneRoadMarkType* lane_roadMarkType);
+		void AddType(std::shared_ptr<LaneRoadMarkType> lane_roadMarkType);
 
 		double GetSOffset() { return s_offset_; }
 		double GetWidth() { return width_; }
@@ -469,7 +478,7 @@ namespace roadmanager
 		RoadMarkLaneChange lane_change_;
 		double width_;
 		double height_;
-		std::vector<LaneRoadMarkType *> lane_roadMarkType_;
+		std::vector<std::shared_ptr<LaneRoadMarkType>> lane_roadMarkType_;
 	};
 
 	class LaneOffset
@@ -1314,13 +1323,13 @@ namespace roadmanager
 			ROADTYPE_BICYCLE
 		};
 
-		typedef struct
+		struct RoadTypeEntry
 		{
 			double s_;
 			RoadType road_type_;
-			double speed_;	 // m/s
+			double speed_ = 0;	 // m/s
 			SpeedUnit unit_; // Originally specified unit
-		} RoadTypeEntry;
+		};
 
 		enum class RoadRule
 		{
@@ -2705,18 +2714,18 @@ namespace roadmanager
 		bool CheckRoad(Road *checkRoad, RoadPath::PathNode *srcNode, Road *fromRoad, int fromLaneId);
 	};
 
-	typedef struct
+	struct TrajVertex
 	{
-		double s;
-		double x;
-		double y;
-		double z;
-		double h;
-		double time;
-		double speed;
-		double p;
-		bool calcHeading;
-	} TrajVertex;
+		double s = 0;
+		double x = 0;
+		double y = 0;
+		double z = 0;
+		double h = 0;
+		double time = 0;
+		double speed = 0;
+		double p = 0;
+		bool calcHeading = 0;
+	};
 
 	class PolyLineBase
 	{
@@ -2807,6 +2816,7 @@ namespace roadmanager
 		} TrajectoryParamType;
 
 		Shape(ShapeType type) : type_(type) {}
+		virtual ~Shape() = default;
 		virtual int Evaluate(double p, TrajectoryParamType ptype, TrajVertex &pos) { return -1; };
 
 		/**
@@ -2833,6 +2843,7 @@ namespace roadmanager
 		class Vertex
 		{
 		public:
+			Vertex(const Position& pos) : pos_(pos) {}
 			Position pos_;
 		};
 
@@ -2843,7 +2854,7 @@ namespace roadmanager
 		double GetStartTime();
 		double GetDuration();
 
-		std::vector<Vertex *> vertex_;
+		std::vector<Vertex> vertex_;
 	};
 
 	class ClothoidShape : public Shape
@@ -2854,12 +2865,12 @@ namespace roadmanager
 		int Evaluate(double p, TrajectoryParamType ptype, TrajVertex &pos);
 		int EvaluateInternal(double s, TrajVertex &pos);
 		void CalculatePolyLine();
-		double GetLength() { return spiral_->GetLength(); }
+		double GetLength() { return spiral_.GetLength(); }
 		double GetStartTime();
 		double GetDuration();
 
 		Position pos_;
-		roadmanager::Spiral *spiral_; // make use of the OpenDRIVE clothoid definition
+		roadmanager::Spiral spiral_; // make use of the OpenDRIVE clothoid definition
 		double t_start_;
 		double t_end_;
 	};
@@ -2913,10 +2924,11 @@ namespace roadmanager
 	class RMTrajectory
 	{
 	public:
-		Shape *shape_;
+		std::unique_ptr<Shape> shape_;
 
-		RMTrajectory(Shape *shape, std::string name, bool closed) : shape_(shape), name_(name), closed_(closed) {}
-		RMTrajectory() : shape_(0), closed_(false) {}
+		RMTrajectory(std::unique_ptr<Shape> shape, std::string name, bool closed) : shape_(std::move(shape)), name_(name), closed_(closed) {}
+		RMTrajectory() : closed_(false) {}
+
 		void Freeze(FollowingMode following_mode);
 		double GetLength() { return shape_ ? shape_->GetLength() : 0.0; }
 		double GetTimeAtS(double s);

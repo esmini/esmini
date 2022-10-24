@@ -243,6 +243,8 @@ elseif(LINUX)
 
   if(CMAKE_BUILD_TYPE STREQUAL "Release")
     SET(CMAKE_CXX_FLAGS "${CXX_STD_FLAG} -pthread -fPIC -Wl,-strip-all")
+  elseif(CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+    SET(CMAKE_CXX_FLAGS "${CXX_STD_FLAG} -march=native -pthread -fPIC")
   elseif(CMAKE_BUILD_TYPE STREQUAL "Debug")
     SET(CMAKE_CXX_FLAGS "${CXX_STD_FLAG} -march=native -O0 -pthread -fPIC")
   else()
@@ -278,7 +280,7 @@ elseif(LINUX)
   if (DYN_PROTOBUF)
     set ( OSI_LIBRARIES
       optimized open_simulation_interface debug open_simulation_interfaced
-      optimized protobuf debug protobuf
+      optimized protobuf debug protobufd
     )
   else ()
     set ( OSI_LIBRARIES
@@ -420,6 +422,8 @@ elseif(MINGW)
 
   if(CMAKE_BUILD_TYPE STREQUAL "Release")
     SET(CMAKE_CXX_FLAGS "${CXX_STD_FLAG} -fPIC -Wl,-strip-all")
+  elseif(CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+    SET(CMAKE_CXX_FLAGS "${CXX_STD_FLAG} -march=native -pthread -fPIC")
   elseif(CMAKE_BUILD_TYPE STREQUAL "Debug")
     SET(CMAKE_CXX_FLAGS "${CXX_STD_FLAG} -march=native -O0 -fPIC")
   else()
