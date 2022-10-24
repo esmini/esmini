@@ -209,8 +209,9 @@ static int GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_Roa
 	}
 
 	roadmanager::Position *pos = &player->scenarioGateway->getObjectStatePtrByIdx(object_id)->state_.pos;
+	roadmanager::Position::ReturnCode retval = pos->GetProbeInfo(lookahead_distance, &s_data, (roadmanager::Position::LookAheadMode)lookAheadMode);
 
-	if (pos->GetProbeInfo(lookahead_distance, &s_data, (roadmanager::Position::LookAheadMode)lookAheadMode) != roadmanager::Position::ReturnCode::ERROR_GENERIC)
+	if (retval != roadmanager::Position::ReturnCode::ERROR_GENERIC)
 	{
 		// Copy data
 		r_data->local_pos_x = (float)s_data.relative_pos[0];
@@ -248,22 +249,9 @@ static int GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_Roa
 			player->viewer_->UpdateSensor(model->steering_sensor_);
 		}
 #endif
-
-		if (pos->GetStatusBitMask() & static_cast<int>(roadmanager::Position::PositionStatusMode::POS_STATUS_END_OF_ROAD))
-		{
-			return static_cast<int>(roadmanager::Position::ReturnCode::ERROR_END_OF_ROAD);
-		}
-		else if (pos->GetStatusBitMask() & static_cast<int>(roadmanager::Position::PositionStatusMode::POS_STATUS_END_OF_ROUTE))
-		{
-			return static_cast<int>(roadmanager::Position::ReturnCode::ERROR_END_OF_ROUTE);
-		}
-		else
-		{
-			return 0;  // OK
-		}
 	}
 
-	return -1;  // Error
+	return static_cast<int>(retval);
 }
 
 static int GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, SE_RoadInfo *r_data, float *speed_ghost)
@@ -1689,12 +1677,7 @@ extern "C"
 			}
 		}
 
-		if (GetRoadInfoAtDistance(object_id, adjustedLookaheadDistance, data, lookAheadMode) != 0)
-		{
-			return -1;
-		}
-
-		return 0;
+		return GetRoadInfoAtDistance(object_id, adjustedLookaheadDistance, data, lookAheadMode);
 	}
 
 	SE_DLL_API int SE_GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, SE_RoadInfo *data, float *speed_ghost)

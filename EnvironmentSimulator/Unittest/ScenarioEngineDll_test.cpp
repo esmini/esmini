@@ -3378,6 +3378,43 @@ TEST(EventCallbackTest, TestStoryboardElementStateCallback)
 	SE_Close();
 }
 
+TEST(RoadmanagerTest, TestGetInfoAtDistance)
+{
+	std::string scenario_file = "../../../resources/xosc/slow-lead-vehicle.xosc";
+
+	SE_Init(scenario_file.c_str(), 0, 0, 0, 0);
+
+	int n_Objects = SE_GetNumberOfObjects();
+	EXPECT_EQ(n_Objects, 2);
+
+	SE_RoadInfo roadinfo;
+	ASSERT_EQ(SE_GetRoadInfoAtDistance(0, -49, &roadinfo, 0, true), 0);
+	EXPECT_NEAR(roadinfo.global_pos_x, 1.0, 1e-5);
+	EXPECT_NEAR(roadinfo.global_pos_y, -1.535, 1e-5);
+	EXPECT_NEAR(roadinfo.local_pos_x, -49.0, 1e-5);
+	EXPECT_NEAR(roadinfo.local_pos_y, 0.0, 1e-5);
+
+	ASSERT_EQ(SE_GetRoadInfoAtDistance(0, -51, &roadinfo, 0, true), -2);
+	EXPECT_NEAR(roadinfo.global_pos_x, 0.0, 1e-5);
+	EXPECT_NEAR(roadinfo.global_pos_y, -1.535, 1e-5);
+	EXPECT_NEAR(roadinfo.local_pos_x, -50.0, 1e-5);
+	EXPECT_NEAR(roadinfo.local_pos_y, 0.0, 1e-5);
+
+	ASSERT_EQ(SE_GetRoadInfoAtDistance(0, 449, &roadinfo, 0, true), 0);
+	EXPECT_NEAR(roadinfo.global_pos_x, 499.0, 1e-5);
+	EXPECT_NEAR(roadinfo.global_pos_y, -1.535, 1e-3);
+	EXPECT_NEAR(roadinfo.local_pos_x, 449.0, 1e-5);
+	EXPECT_NEAR(roadinfo.local_pos_y, 0.0, 1e-5);
+
+	ASSERT_EQ(SE_GetRoadInfoAtDistance(0, 451, &roadinfo, 0, true), -2);
+	EXPECT_NEAR(roadinfo.global_pos_x, 500.0, 1e-5);
+	EXPECT_NEAR(roadinfo.global_pos_y, -1.535, 1e-3);
+	EXPECT_NEAR(roadinfo.local_pos_x, 450.0, 1e-5);
+	EXPECT_NEAR(roadinfo.local_pos_y, 0.0, 1e-5);
+
+	SE_Close();
+}
+
 int main(int argc, char **argv)
 {
 	testing::InitGoogleTest(&argc, argv);
