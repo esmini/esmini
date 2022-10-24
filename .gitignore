@@ -29,3 +29,7 @@ Hello-World_coding-example/build
 test/OSC-ALKS-scenarios
 test/stdout.txt
 __pycache__
+compile_commands.json
+.cache/
+run_unittests.sh
+out/build/**

@@ -23,3 +23,5 @@ set ( INCLUDES
 add_definitions(-DOSG_LIBRARY_STATIC)
 
 add_library ( ViewerBase STATIC ${SOURCES} ${INCLUDES} )
+
+target_link_libraries(ViewerBase PRIVATE project_options)

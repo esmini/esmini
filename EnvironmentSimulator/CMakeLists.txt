@@ -278,7 +278,7 @@ elseif(LINUX)
   if (DYN_PROTOBUF)
     set ( OSI_LIBRARIES
       optimized open_simulation_interface debug open_simulation_interfaced
-      optimized protobuf debug protobufd
+      optimized protobuf debug protobuf
     )
   else ()
     set ( OSI_LIBRARIES

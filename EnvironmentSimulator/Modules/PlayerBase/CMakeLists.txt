@@ -23,3 +23,4 @@ if (USE_OSG)
 endif (USE_OSG)
 
 add_library ( PlayerBase STATIC ${SOURCES} ${INCLUDES} )
+target_link_libraries(PlayerBase PRIVATE project_options)

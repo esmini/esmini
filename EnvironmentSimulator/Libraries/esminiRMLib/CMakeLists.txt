@@ -14,6 +14,8 @@ add_library ( ${TARGET} SHARED ${SOURCES} ${INCLUDES} )
 
 add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 
+target_link_libraries(${TARGET} PRIVATE project_options)
+
 target_link_libraries (
 	${TARGET}
 	PRIVATE RoadManager

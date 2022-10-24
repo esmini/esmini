@@ -14,6 +14,7 @@ set ( INCLUDES
 add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 
 add_library ( CommonMini STATIC ${SOURCES} ${INCLUDES} )
+target_link_libraries(CommonMini PRIVATE project_options)
 
 function (add_version_file)
    	execute_process (

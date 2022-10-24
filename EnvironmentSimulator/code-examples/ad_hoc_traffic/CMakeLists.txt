@@ -17,6 +17,7 @@ add_executable ( ${TARGET} ${SOURCES} ${INCLUDES} )
 target_link_libraries (
 	${TARGET}
 	esminiLib
+  project_options
 )
 
 install ( TARGETS ${TARGET} DESTINATION "${INSTALL_DIRECTORY_CODE_EXAMPLES}")

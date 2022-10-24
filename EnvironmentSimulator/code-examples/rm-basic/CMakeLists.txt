@@ -20,6 +20,7 @@ target_link_libraries (
 	esminiRMLib
 	CommonMini
 	${TIME_LIB}
+	project_options
 )
 
 install ( TARGETS ${TARGET} DESTINATION "${INSTALL_DIRECTORY_CODE_EXAMPLES}")

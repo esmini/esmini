@@ -34,5 +34,6 @@ add_library ( ScenarioEngine STATIC
 
 add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 
+target_link_libraries(ScenarioEngine PRIVATE project_options)
 
 	

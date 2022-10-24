@@ -1,0 +1,115 @@
+{
+    "version": 3,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 21,
+        "patch": 0
+    },
+    "configurePresets": [
+        {
+            "name": "conf-common",
+            "description": "General settings that apply to all configurations",
+            "hidden": true,
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/out/build",
+            "installDir": "${sourceDir}/out/install",
+            "vendor": {
+                "microsoft.com/VisualStudioRemoteSettings/CMake/1.0": {
+                    "sourceDir": "$env{HOME}/.vs/$ms{projectDirName}"
+                }
+            }
+        },
+        {
+            "name": "linux-gcc-debug",
+            "displayName": "gcc Debug",
+            "description": "Target Linux with the gcc compiler, debug build type",
+            "inherits": "conf-common",
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "gcc-7",
+                "CMAKE_CXX_COMPILER": "g++-7",
+                "CMAKE_BUILD_TYPE": "Debug",
+                "ENABLE_SANITIZERS": "True",
+                "DYN_PROTOBUF": "True"
+            }
+        },
+        {
+            "name": "linux-gcc-release",
+            "displayName": "gcc Release",
+            "description": "Target Linux with the gcc compiler, release build type",
+            "inherits": "conf-common",
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "gcc-7",
+                "CMAKE_CXX_COMPILER": "g++-7",
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+                "DYN_PROTOBUF": "True"
+            }
+        },
+        {
+            "name": "linux-clang-debug",
+            "displayName": "clang Debug",
+            "description": "Target Linux with the clang compiler, debug build type",
+            "inherits": "conf-common",
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "clang",
+                "CMAKE_CXX_COMPILER": "clang++",
+                "CMAKE_BUILD_TYPE": "Debug",
+                "ENABLE_SANITIZERS": "True",
+                "DYN_PROTOBUF": "True"
+            }
+        },
+        {
+            "name": "linux-clang-release",
+            "displayName": "clang Release",
+            "description": "Target Linux with the clang compiler, release build type",
+            "inherits": "conf-common",
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "clang",
+                "CMAKE_CXX_COMPILER": "clang++",
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+                "DYN_PROTOBUF": "True"
+            }
+        }
+    ],
+    "testPresets": [
+        {
+            "name": "test-common",
+            "description": "Test CMake settings that apply to all configurations",
+            "hidden": true,
+            "output": {
+                "outputOnFailure": true
+            },
+            "execution": {
+                "noTestsAction": "error",
+                "stopOnFailure": true
+            }
+        },
+        {
+            "name": "test-linux-gcc-debug",
+            "displayName": "Strict",
+            "description": "Enable output and stop on failure",
+            "inherits": "test-common",
+            "configurePreset": "linux-gcc-debug"
+        },
+        {
+            "name": "test-linux-gcc-release",
+            "displayName": "Strict",
+            "description": "Enable output and stop on failure",
+            "inherits": "test-common",
+            "configurePreset": "linux-gcc-release"
+        },
+        {
+            "name": "test-linux-clang-debug",
+            "displayName": "Strict",
+            "description": "Enable output and stop on failure",
+            "inherits": "test-common",
+            "configurePreset": "linux-clang-debug"
+        },
+        {
+            "name": "test-linux-clang-release",
+            "displayName": "Strict",
+            "description": "Enable output and stop on failure",
+            "inherits": "test-common",
+            "configurePreset": "linux-clang-release"
+        }
+    ]
+}

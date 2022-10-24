@@ -43,13 +43,14 @@ target_link_libraries (
 	${OSG_LIBRARIES}
 	${TIME_LIB}
   ${osi_libs}
+  project_options
 )
 endif (USE_OSG)
 
 # dat2csv target
 set (TARGET2 dat2csv)
 add_executable ( ${TARGET2} dat2csv.cpp Replay.cpp )
-target_link_libraries ( ${TARGET2} RoadManager CommonMini ${TIME_LIB} )
+target_link_libraries ( ${TARGET2} RoadManager CommonMini ${TIME_LIB} project_options)
 
 
 # osi_receiver target
@@ -57,7 +58,7 @@ if (USE_OSI)
   link_directories( ${OSI_LIBRARIES_PATH} )
   set (TARGET3 osireceiver)
   add_executable ( ${TARGET3} osi_receiver.cpp )
-  target_link_libraries ( ${TARGET3} ${OSI_LIBRARIES} ${TIME_LIB} ${SOCK_LIB})
+  target_link_libraries ( ${TARGET3} ${OSI_LIBRARIES} ${TIME_LIB} ${SOCK_LIB} project_options)
 endif ()
 # Install directives
 

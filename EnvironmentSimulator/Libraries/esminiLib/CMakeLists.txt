@@ -20,6 +20,8 @@ add_library ( ${TARGET} SHARED ${SOURCES} ${INCLUDES} )
 
 add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 
+target_link_libraries(${TARGET} PRIVATE project_options)
+
 if (USE_OSG)
   add_definitions(-DOSG_LIBRARY_STATIC)
   set (viewer_libs 	PRIVATE ViewerBase PRIVATE ${OSG_LIBRARIES})

@@ -19,7 +19,7 @@ add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 macro(package_add_test_with_libraries TESTNAME FILES LIBRARIES)
     add_executable(${TESTNAME} ${FILES})
 
-    target_link_libraries(${TESTNAME} ${GTEST_LIBRARIES} ${LIBRARIES} ${ARGN})
+    target_link_libraries(${TESTNAME} ${GTEST_LIBRARIES} ${LIBRARIES} ${ARGN} project_options)
 
     set_target_properties(${TESTNAME} PROPERTIES FOLDER Unittest)
 

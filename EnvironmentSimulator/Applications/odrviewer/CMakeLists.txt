@@ -34,6 +34,7 @@ target_link_libraries (
 	${OSG_LIBRARIES}
 	${TIME_LIB}
   ${osi_libs}
+  project_options
 )
 
 install ( TARGETS ${TARGET} DESTINATION "${INSTALL_DIRECTORY}")

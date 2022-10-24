@@ -21,3 +21,4 @@ if (NOT USE_SUMO)
 endif (NOT USE_SUMO)
 
 add_library ( Controllers STATIC ${CONTROLLERS_SOURCES} ${CONTROLLERS_INCLUDES} )
+target_link_libraries(Controllers PRIVATE project_options)

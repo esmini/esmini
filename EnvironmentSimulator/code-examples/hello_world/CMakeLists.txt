@@ -19,7 +19,7 @@ foreach(file_path ${modules})
 
   add_dependencies( ${TARGET_TMP} ${module_name} )
 
-  target_link_libraries( ${module_name} esminiLib )
+  target_link_libraries( ${module_name} esminiLib project_options)
 
   set_target_properties ( ${module_name} PROPERTIES FOLDER ${CodeExamplesFolder}/${TARGET} )
 

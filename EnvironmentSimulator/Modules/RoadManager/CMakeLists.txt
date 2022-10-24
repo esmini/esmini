@@ -27,4 +27,4 @@ endif()
 
 add_library ( RoadManager STATIC ${SOURCES} ${SRC_ADDITIONAL} ${INCLUDES} )
 
-target_link_libraries ( RoadManager CommonMini )
+target_link_libraries ( RoadManager CommonMini project_options)

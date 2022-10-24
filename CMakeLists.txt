@@ -57,6 +57,7 @@ set(USE_OSI True CACHE BOOL "If code that depend on OSI should be compiled.")
 set(USE_SUMO True CACHE BOOL "If code that depend on SUMO should be compiled.")
 set(USE_GTEST True CACHE BOOL "If unit test suites based on googletest should be compiled.")
 set(DYN_PROTOBUF False CACHE BOOL "Set for dynamic linking of protobuf library (.so/.dll)")
+set(ENABLE_SANITIZERS False CACHE BOOL "Enable sanitizers (Only valid for Linux and Mac OS)")
 
 
 if (USE_OSG)
@@ -79,6 +80,8 @@ if (DYN_PROTOBUF)
   add_definitions(-D_DYN_PROTOBUF)
   add_definitions(-DPROTOBUF_USE_DLLS)
 endif (DYN_PROTOBUF)
+
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/project_options.cmake)
 
 add_subdirectory(EnvironmentSimulator)
 

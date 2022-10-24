@@ -25,6 +25,7 @@ target_link_libraries (
     RoadManager
 	${TIME_LIB}
     ${OSI_LIBRARIES}
+    project_options
 )
 
 install ( TARGETS ${TARGET} DESTINATION "${INSTALL_DIRECTORY_CODE_EXAMPLES}")

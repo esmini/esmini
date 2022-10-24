@@ -44,6 +44,7 @@ target_link_libraries (
 	${sumo_libs}
 	${TIME_LIB}
     ${SOCK_LIB}
+    project_options
 )
 
 install ( TARGETS ${TARGET} DESTINATION "${INSTALL_DIRECTORY}")
