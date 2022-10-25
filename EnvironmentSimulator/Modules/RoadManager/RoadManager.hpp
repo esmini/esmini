@@ -1364,7 +1364,7 @@ namespace roadmanager
 		*/
 		double GetCenterOffset(double s, int lane_id);
 
-		LaneInfo GetLaneInfoByS(double s, int start_lane_link_idx, int start_lane_id, int laneTypeMask = Lane::LaneType::LANE_TYPE_ANY_DRIVING);
+		int GetLaneInfoByS(double s, int start_lane_link_idx, int start_lane_id, LaneInfo& lane_info, int laneTypeMask = Lane::LaneType::LANE_TYPE_ANY_DRIVING);
 		int GetConnectingLaneId(RoadLink *road_link, int fromLaneId, int connectingRoadId);
 		double GetLaneWidthByS(double s, int lane_id);
 		Lane::LaneType GetLaneTypeByS(double s, int lane_id);
