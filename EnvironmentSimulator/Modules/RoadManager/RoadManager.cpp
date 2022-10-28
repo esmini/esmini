@@ -7659,17 +7659,17 @@ Position::ReturnCode Position::MoveToConnectingRoad(RoadLink *road_link, Contact
 					double outHeading = 0.0;
 					if (lane_road_lane_connection.contact_point_ == CONTACT_POINT_START)
 					{
-						test_pos.SetLanePos(next_road->GetId(), new_lane_id, next_road->GetLength(), 0);
+						test_pos.SetLanePos(next_road->GetId(), 0, next_road->GetLength(), 0);
 						outHeading = test_pos.GetHRoad();
 					}
 					else if (lane_road_lane_connection.contact_point_ == CONTACT_POINT_END)
 					{
-						test_pos.SetLanePos(next_road->GetId(), new_lane_id, 0, 0);
+						test_pos.SetLanePos(next_road->GetId(), 0, 0, 0);
 						outHeading = GetAngleSum(test_pos.GetHRoad(), M_PI);
 					}
 					else
 					{
-						LOG("Unexpected contact point type: %d", road_link->GetContactPointType());
+						LOG("Unexpected contact point type: %d", lane_road_lane_connection.contact_point_);
 					}
 
 					// Compare heading angle difference, find smallest
@@ -7709,21 +7709,24 @@ Position::ReturnCode Position::MoveToConnectingRoad(RoadLink *road_link, Contact
 		LOG("No connection from rid %d lid %d -> rid %d eltype %d - trying move to closest lane",
 			road->GetId(), lane->GetId(), road_link->GetElementId(), road_link->GetElementType());
 
-		ReturnCode ret_val = ReturnCode::OK;
+		offset_ = 0;
 
 		// Find closest lane on new road - by convert to track pos and then set lane offset = 0
-		if (road_link->GetContactPointType() == CONTACT_POINT_START)
+		if (contact_point_type == CONTACT_POINT_START)
 		{
 			ret_val = SetTrackPos(next_road->GetId(), 0, GetT(), false);
 		}
-		else if (road_link->GetContactPointType() == CONTACT_POINT_END)
+		else if (contact_point_type == CONTACT_POINT_END)
 		{
 			ret_val = SetTrackPos(next_road->GetId(), next_road->GetLength(), GetT(), false);
 		}
+		else
+		{
+			LOG("MoveToConnectingRoad: Unexpected contact point type: %d", (int)contact_point_type);
+			return ReturnCode::ERROR_GENERIC;
+		}
 
 		LOG("%sonnection found (rid %d lid %d)", ret_val < ReturnCode::OK ? "No c" : "C", GetTrackId(), GetLaneId());
-
-		offset_ = 0;
 
 		return ret_val;
 	}
