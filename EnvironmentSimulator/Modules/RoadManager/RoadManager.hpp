@@ -513,38 +513,39 @@ namespace roadmanager
 
 		typedef enum
 		{
-			LANE_TYPE_NONE = (1 << 0),
-			LANE_TYPE_DRIVING = (1 << 1),
-			LANE_TYPE_STOP = (1 << 2),
-			LANE_TYPE_SHOULDER = (1 << 3),
-			LANE_TYPE_BIKING = (1 << 4),
-			LANE_TYPE_SIDEWALK = (1 << 5),
-			LANE_TYPE_BORDER = (1 << 6),
-			LANE_TYPE_RESTRICTED = (1 << 7),
-			LANE_TYPE_PARKING = (1 << 8),
-			LANE_TYPE_BIDIRECTIONAL = (1 << 9),
-			LANE_TYPE_MEDIAN =        (1 << 10),
-			LANE_TYPE_SPECIAL1 =      (1 << 11),
-			LANE_TYPE_SPECIAL2 =      (1 << 12),
-			LANE_TYPE_SPECIAL3 =      (1 << 13),
-			LANE_TYPE_ROADMARKS =     (1 << 14),
-			LANE_TYPE_TRAM =          (1 << 15),
-			LANE_TYPE_RAIL =          (1 << 16),
-			LANE_TYPE_ENTRY =         (1 << 17),
-			LANE_TYPE_EXIT =          (1 << 18),
-			LANE_TYPE_OFF_RAMP =      (1 << 19),
-			LANE_TYPE_ON_RAMP =       (1 << 20),
-			LANE_TYPE_CURB =          (1 << 21),
-			LANE_TYPE_CONNECTING_RAMP=(1 << 22),
-			LANE_TYPE_ANY_DRIVING =   LANE_TYPE_DRIVING |
-			                          LANE_TYPE_ENTRY |
-			                          LANE_TYPE_EXIT |
-			                          LANE_TYPE_OFF_RAMP |
-			                          LANE_TYPE_ON_RAMP,
-			LANE_TYPE_ANY_ROAD =      LANE_TYPE_ANY_DRIVING |
-			                          LANE_TYPE_RESTRICTED |
-			                          LANE_TYPE_STOP,
-			LANE_TYPE_ANY =           (0xFFFFFFFF)
+			LANE_TYPE_NONE =            (1 << 0),
+			LANE_TYPE_DRIVING =         (1 << 1),
+			LANE_TYPE_STOP =            (1 << 2),
+			LANE_TYPE_SHOULDER =        (1 << 3),
+			LANE_TYPE_BIKING =          (1 << 4),
+			LANE_TYPE_SIDEWALK =        (1 << 5),
+			LANE_TYPE_BORDER =          (1 << 6),
+			LANE_TYPE_RESTRICTED =      (1 << 7),
+			LANE_TYPE_PARKING =         (1 << 8),
+			LANE_TYPE_BIDIRECTIONAL =   (1 << 9),
+			LANE_TYPE_MEDIAN =          (1 << 10),
+			LANE_TYPE_SPECIAL1 =        (1 << 11),
+			LANE_TYPE_SPECIAL2 =        (1 << 12),
+			LANE_TYPE_SPECIAL3 =        (1 << 13),
+			LANE_TYPE_ROADMARKS =       (1 << 14),
+			LANE_TYPE_TRAM =            (1 << 15),
+			LANE_TYPE_RAIL =            (1 << 16),
+			LANE_TYPE_ENTRY =           (1 << 17),
+			LANE_TYPE_EXIT =            (1 << 18),
+			LANE_TYPE_OFF_RAMP =        (1 << 19),
+			LANE_TYPE_ON_RAMP =         (1 << 20),
+			LANE_TYPE_CURB =            (1 << 21),
+			LANE_TYPE_CONNECTING_RAMP = (1 << 22),
+			LANE_TYPE_REFERENCE_LINE =  (1 << 0),
+			LANE_TYPE_ANY_DRIVING =     LANE_TYPE_DRIVING |
+			                            LANE_TYPE_ENTRY |
+			                            LANE_TYPE_EXIT |
+			                            LANE_TYPE_OFF_RAMP |
+			                            LANE_TYPE_ON_RAMP,
+			LANE_TYPE_ANY_ROAD =        LANE_TYPE_ANY_DRIVING |
+			                            LANE_TYPE_RESTRICTED |
+			                            LANE_TYPE_STOP,
+			LANE_TYPE_ANY =             (0xFFFFFFFF)
 		} LaneType;
 
 		// Construct & Destruct
@@ -653,7 +654,13 @@ namespace roadmanager
 		int GetLaneGlobalIdById(int id);
 		double GetOuterOffset(double s, int lane_id);
 		double GetWidth(double s, int lane_id);
-		int GetClosestLaneIdx(double s, double t, double &offset, bool noZeroWidth, int laneTypeMask = Lane::LaneType::LANE_TYPE_ANY_DRIVING);
+
+		/**
+		Get index of closest lane wrt given constraints
+		@param s distance along the road segment
+		@param lane_id lane specifier, starting from center -1, -2, ... is on the right side, 1, 2... on the left
+		*/
+		int GetClosestLaneIdx(double s, double t, int side, double &offset, bool noZeroWidth, int laneTypeMask = Lane::LaneType::LANE_TYPE_ANY_DRIVING);
 
 		/**
 		Get lateral position of lane center, from road reference lane (lane id=0)
@@ -661,6 +668,7 @@ namespace roadmanager
 				lane 1 center offset is 5/2 = 2.5 and lane 2 center offset is 5 + 4/2 = 7
 		@param s distance along the road segment
 		@param lane_id lane specifier, starting from center -1, -2, ... is on the right side, 1, 2... on the left
+		@return Lateral position of lane center
 		*/
 		double GetCenterOffset(double s, int lane_id);
 		double GetOuterOffsetHeading(double s, int lane_id);
@@ -2437,6 +2445,8 @@ namespace roadmanager
 		@return -
 		*/
 		void SetSnapLaneTypes(int laneTypeMask) { snapToLaneTypes_ = laneTypeMask; }
+
+		int GetSnapLaneTypes() { return snapToLaneTypes_; }
 
 		void CopyRMPos(Position *from);
 

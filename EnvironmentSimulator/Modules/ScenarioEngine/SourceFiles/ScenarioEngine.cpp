@@ -854,19 +854,17 @@ int ScenarioEngine::defaultController(Object* obj, double dt)
 			if (tow_vehicle == nullptr)
 			{
 				retval = static_cast<int>(obj->MoveAlongS(steplen, true));
+				if (retval == -1)
+				{
+					// Something went wrong, couldn't move vehicle forward. Stop.
+					obj->SetSpeed(0.0);
+				}
 				obj->SetDirtyBits(Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::SPEED);
 			}
 		}
 	}
 
-	if (retval == 0)
-	{
-		return 0;
-	}
-	else
-	{
-		return -1;
-	}
+	return retval == -1 ? -1 : 0;
 }
 
 void ScenarioEngine::prepareGroundTruth(double dt)
