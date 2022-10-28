@@ -251,13 +251,16 @@ void ControllerFollowRoute::ChangeLane(double timeStep)
 	if (!laneChangeAction_->IsActive())
 	{
 		laneChangeAction_->Start(scenarioEngine_->getSimulationTime(), timeStep);
-	}
 
-	if (laneChangeAction_->IsActive())
+		mode_ = Mode::MODE_OVERRIDE;  // override mode to prevent default controller from moving the entity
+
+		// skip step at this timestep since default controller already update the entity
+	}
+	else
 	{
-		mode_ = Mode::MODE_ADDITIVE;
+		mode_ = Mode::MODE_ADDITIVE;  // disable override mode to enable use of default controller actions
 		laneChangeAction_->Step(scenarioEngine_->getSimulationTime(), timeStep);
-		mode_ = Mode::MODE_OVERRIDE;
+		mode_ = Mode::MODE_OVERRIDE;  // restore override mode to prevent default controller from moving the entity
 
 		laneChangeAction_->UpdateState();
 		if (laneChangeAction_->state_ == OSCAction::State::COMPLETE)
