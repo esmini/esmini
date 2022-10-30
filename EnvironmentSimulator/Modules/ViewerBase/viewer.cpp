@@ -1446,6 +1446,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 	roadGeom = NULL;
 	captureCounter_ = 0;
 	frameCounter_ = 0;
+	lightCounter_ = 1;  // one default light in osg viewer
 	saveImagesToRAM_ = false;  // Default is to read back rendered image for possible fetch via API
 	saveImagesToFile_ = 0;
 	imgCallback_ = { nullptr, nullptr };
@@ -1958,6 +1959,31 @@ void Viewer::UpdateCameraFOV()
 	osgViewer_->getCamera()->setProjectionMatrixAsPerspective(fov, (double)traits->width / traits->height, 1.0 * PERSP_FOV / fov, 1E5 * PERSP_FOV / fov);
 
 	osgViewer_->getCamera()->setLODScale(fov / PERSP_FOV);
+}
+
+int Viewer::AddCustomLightSource(double x, double y, double z, double intensity)
+{
+	if (lightCounter_ > 2)
+	{
+		return -1;
+	}
+
+	osg::ref_ptr<osg::Light> light = new osg::Light;
+	light->setPosition(osg::Vec4(x, y, z, 1.0));
+	light->setDirection(osg::Vec3(-x, -y, -z));
+	light->setAmbient(osg::Vec4(0, 0, 0, 1));
+	light->setDiffuse(osg::Vec4(intensity, intensity, 0.95 * intensity, 1));
+	light->setSpecular(osg::Vec4(0, 0, 0, 1));
+	light->setLightNum(lightCounter_);
+
+	osg::ref_ptr<osg::LightSource> lightSource = new osg::LightSource;
+	lightSource->setLight(light.get()); // Add to a light source node
+	rootnode_->addChild(lightSource.get());
+	lightSource->setStateSetModes(*rootnode_->getOrCreateStateSet(), osg::StateAttribute::ON);
+
+	lightCounter_++;
+
+	return 0;
 }
 
 EntityModel* Viewer::CreateEntityModel(std::string modelFilepath, osg::Vec4 trail_color, EntityModel::EntityType type,

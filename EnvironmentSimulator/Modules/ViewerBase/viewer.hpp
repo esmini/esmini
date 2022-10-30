@@ -414,6 +414,7 @@ namespace viewer
 		OffScreenImage capturedImage_;
 		int captureCounter_;
 		int frameCounter_;
+		int lightCounter_;
 
 		SE_Semaphore renderSemaphore;
 		SE_Mutex imageMutex;
@@ -425,6 +426,7 @@ namespace viewer
 		void AddCustomCamera(double x, double y, double z, bool fixed_pos = false);
 		void AddCustomFixedTopCamera(double x, double y, double z, double rot);
 		int GetCameraPosAndRot(osg::Vec3& pos, osg::Vec3& rot);
+		int AddCustomLightSource(double x, double y, double z, double intensity);
 
 		/**
 		* Set mode of the esmini camera model

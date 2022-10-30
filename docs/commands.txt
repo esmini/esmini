@@ -9,7 +9,7 @@ Options:
   --capture_screen
       Continuous screen capture. Warning: Many jpeg files will be created
   --camera_mode <mode>
-      Initial camera mode ("orbit" (default), "fixed", "flex", "flex-orbit", "top", "driver", "custom") (swith with key 'k') 
+      Initial camera mode ("orbit" (default), "fixed", "flex", "flex-orbit", "top", "driver", "custom") (swith with key 'k')
   --csv_logger <csv_filename>
       Log data for each vehicle in ASCII csv format
   --collision
@@ -20,6 +20,8 @@ Options:
       Additional custom camera position <x,y,z>[,h,p] (multiple occurrences supported)
   --custom_fixed_top_camera <position and rotation>
       Additional custom top camera <x,y,z,rot> (multiple occurrences supported)
+  --custom_light <position and intensity (intensity range 0..1)>
+      Additional custom light source <x,y,z,intensity> (multiple occurrences supported)
   --disable_controllers
       Disable controllers
   --disable_log

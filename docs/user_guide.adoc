@@ -1,5 +1,7 @@
 = esmini user guide
 :numbered:
+:sectnum:
+:sectnumlevels: 3
 :toc: left
 :toclevels: 2
 :source-highlighter: coderay
@@ -7,6 +9,7 @@
 // :src-remote-root: {src-local-root}
 :src-remote-root: https://github.com/esmini/esmini/tree/master
 :imagesdir: https://github.com/esmini/esmini.github.io/raw/main/images
+// :imagesdir: c://eknabe1/GIT/esmini.github.io/images
 :figure-caption!:
 // :imagesdir: https://media.githubusercontent.com/media/esmini/esmini.github.io/main/images/
 
@@ -1485,6 +1488,70 @@ See https://github.com/esmini/esmini/issues/63#issuecomment-742273326[issue 63] 
 And these two scripts operating on textures and material respectively, can potentially provide some inspiration: +
 - https://github.com/esmini/esmini/blob/master/scripts/bake_signs.sh[bake_signs.sh] +
 - https://github.com/esmini/esmini/blob/master/scripts/fix_dae_materials.py[fix_dae_materials.py]
+
+=== Lighting
+
+esmini use a very simple lighting model. Adding a global low ambient plus a stronger directed "sun" light. This is a simplistic model of a bright day where everything is visible but sides facing towards the sun gets brighter than those facing away.
+
+The ambient intensity is 0.4. The "sun" x,y,z position is (-7500, 5000, 10000) and intensity 0.8.
+
+Now, it has been reported that some custom models looks very dark on sides facing away from the sun. The main reason is often that the material definition do not have any ambient contribution.
+
+.Example of material lacking ambient component
+image::light_original.jpg[]
+
+There are two solutions:
+
+*Solution 1: Fix the material*
+
+Convert the model to Collada .dae format, example:
+
+`osgconv my_model.fbx my_model.dae`
+
+Then open the .dae file in a text editor. Look for `<library_materials>` and the material references inside that element. The actual material definitions are (typically?) found under `<library_effects>`. There might be many types, but two that we encountered are `<phong>` and `<lambert>`. They should have a diffuse element, something like:
+
+[source, xml]
+----
+<diffuse>
+  <color sid="diffuse">0.8 0.8 0.8 1.0</color>
+</diffuse>`
+----
+
+There might be a similar one for ambient. Check color values, if they are low, e.g. 0.2, try increase to max 1.0. If element is missing, just add it. In the end, it should look something like:
+
+[source, xml]
+----
+<ambient>
+  <color sid="ambient">1.0 1.0 1.0 1.0</color>
+</ambient>`
+----
+
+Save the file as my_model_fixed.dae.
+
+There is a script that automates this process, but it will only recognize phong and lambert material types: https://github.com/esmini/esmini/blob/master/scripts/fix_dae_materials.py[fix_dae_materials.py].
+
+Finally, convert the patched dae file to osgb: +
+`osgconv my_model.dae my_model.osgb`
+
+.Same model with patched material
+image::light_patched_material.jpg[]
+
+Different formats have different orientation frames. Hence it may be necessary to fix rotation. In that case, try something like: +
+`osgconv my_model.dae -o 90-1,0,0 --use-world-frame my_model.osgb`
+
+*Solution 2: Add light source*
+
+Users can add up to two custom light sources, specifying position (x, y, z) and intensity. Examples:
+
+Add one custom light source: +
+`./bin/esmini --window 60 60 800 400 --osc .\resources\xosc\lane_change_crest.xosc --custom_light 4000,-6000,500,1.0`
+
+Add two custom light sources: +
+`./bin/esmini --window 60 60 800 400 --osc .\resources\xosc\lane_change_crest.xosc --custom_light 4000,-6000,500,0.4  --custom_light 5000,5000,200,0.2`
+
+.Original model with one light added
+image::light_second_light.jpg[]
+
 
 == Support / Q&A
 

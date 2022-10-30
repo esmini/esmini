@@ -566,6 +566,16 @@ void ScenarioPlayer::AddCustomFixedTopCamera(double x, double y, double z, doubl
 	}
 }
 
+int ScenarioPlayer::AddCustomLightSource(double x, double y, double z, double intensity)
+{
+	if (viewer_)
+	{
+		return viewer_->AddCustomLightSource(x, y, z, intensity);
+	}
+
+	return -1;
+}
+
 void ScenarioPlayer::CloseViewer()
 {
 	if (viewer_ != nullptr)
@@ -766,6 +776,43 @@ int ScenarioPlayer::InitViewer()
 
 			AddCustomFixedTopCamera(v[0], v[1], v[2], v[3]);
 			LOG("Created custom fixed top camera %d (%.2f, %.2f, %.2f, %.2f)", counter, v[0], v[1], v[2], v[3]);
+			counter++;
+		}
+	}
+
+	if (opt.GetOptionSet("custom_light") == true)
+	{
+		int counter = 0;
+		int lightCounter = 0;
+
+		while ((arg_str = opt.GetOptionArg("custom_light", counter)) != "")
+		{
+			size_t pos = 0;
+			double v[4] = { 0.0, 0.0, 0.0, 0.0 };
+			for (int i = 0; i < 4; i++)
+			{
+				pos = arg_str.find(",");
+				if (i < 3 && pos == std::string::npos)
+				{
+					LOG_AND_QUIT("Expected custom_light <x,y,z,intensity>, got only %d values", i + 1);
+				}
+				v[i] = strtod(arg_str.substr(0, pos));
+				arg_str.erase(0, pos == std::string::npos ? pos : pos + 1);
+			}
+			if (!arg_str.empty())
+			{
+				LOG_AND_QUIT("Expected custom_light <x,y,z,intensity>, got too many values. Make sure only 4 values is specified");
+			}
+
+			if (AddCustomLightSource(v[0], v[1], v[2], v[3]) == 0)
+			{
+				LOG("Created custom light source %d (%.2f, %.2f, %.2f, %.2f)", lightCounter, v[0], v[1], v[2], v[3]);
+				lightCounter++;
+			}
+			else
+			{
+				LOG("Max nr custom lights (%d) reached. Ignoring (%.2f, %.2f, %.2f, %.2f)", lightCounter, v[0], v[1], v[2], v[3]);
+			}
 			counter++;
 		}
 	}
@@ -1028,6 +1075,7 @@ int ScenarioPlayer::Init()
 	opt.AddOption("custom_camera", "Additional custom fixed camera position <x,y,z,h,p> (multiple occurrences supported)", "position");
 	opt.AddOption("custom_fixed_camera", "Additional custom camera position <x,y,z>[,h,p] (multiple occurrences supported)", "position and optional orientation");
 	opt.AddOption("custom_fixed_top_camera", "Additional custom top camera <x,y,z,rot> (multiple occurrences supported)", "position and rotation");
+	opt.AddOption("custom_light", "Additional custom light source <x,y,z,intensity> intensity range 0..1 (multiple occurrences supported)", "position and intensity");
 	opt.AddOption("disable_controllers", "Disable controllers");
 	opt.AddOption("disable_log", "Prevent logfile from being created");
 	opt.AddOption("disable_off_screen", "Disable esmini off-screen rendering, revert to OSG viewer default handling");

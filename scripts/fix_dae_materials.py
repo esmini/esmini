@@ -18,6 +18,7 @@ outfile = args.input_file.replace('.dae', '_fixed.dae')
 parser = ET.XMLParser(remove_blank_text=True, huge_tree=True)
 tree = ET.parse(args.input_file, parser)
 materials = tree.findall('.//lambert', namespaces=tree.getroot().nsmap)
+materials += tree.findall('.//phong', namespaces=tree.getroot().nsmap)
 
 print('number of materials: {}'.format(len(materials)))
 
@@ -50,24 +51,28 @@ for mat in materials:
             shininess_value = 100 * float(reflectivity.find('float', namespaces=tree.getroot().nsmap).text)
             mat.remove(reflectivity)
         else:
-            shininess_value = 5
-        s = ET.Element('shininess')
-        f = ET.Element('float')
-        f.text = str(shininess_value)
-        s.append(f)
-        mat.append(s)
+            s = mat.find('.//shininess', namespaces=tree.getroot().nsmap)
+            if s is None:
+                shininess_value = 1.0
+            else:
+                shininess_value = s.find('float', namespaces=tree.getroot().nsmap)
+
+        if s is None:
+            s = ET.Element('shininess')
+            f = ET.Element('float')
+            f.text = str(shininess_value)
+            s.append(f)
+            mat.append(s)
 
         specular = mat.find('.//specular', namespaces=tree.getroot().nsmap)
         if specular is not None:
             scolor = specular.find('color', namespaces=tree.getroot().nsmap)
-            scolor.text = '0.5 0.5 0.5 1'
+            scolor.text = '0.25 0.25 0.25 1'
         else:
             a = ET.Element('specular')
             b = ET.Element('color')
             b.set('sid', 'specular')
             spec = min(1.0, 0.04 * shininess_value)
-            print(shininess_value, 0.04*shininess_value)
-            print("spec:", spec)
             b.text = "{} {} {} 1".format(spec, spec, spec)
             a.append(b)
             mat.append(a)
