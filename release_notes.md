@@ -1,5 +1,23 @@
 ## esmini release notes
 
+### 2022-10-31 Version 2.26.8
+
+- New feature: Custom lights ([issue #339](https://github.com/esmini/esmini/issues/339))
+  - launch option for custom light sources: `--custom_light <x y z intensity>`
+  - see more info in [User guide - Lighting](https://esmini.github.io/#_lighting)
+  - and [User guide - esmini Launch commands](https://esmini.github.io/#_launch_commands)
+- Align `%` and `round` operators to IEEE 754 ([issue #319](https://github.com/esmini/esmini/issues/319))
+  - see updated info in [User guide - Supported expression operators and functions](https://esmini.github.io/#_supported_expression_operators_and_functions)
+- Prevent snap to zero-width lanes and opposite directed lanes ([issue #337](https://github.com/esmini/esmini/issues/337))
+- Fix double speed at FollowRouteCtrl first lane change step ([issue #338](https://github.com/esmini/esmini/issues/338))
+- Fix issue with zero width lane in FollowRouteController ([issue #335](https://github.com/esmini/esmini/issues/335))
+- Fix SE_GetRoadInfoAtDistance() return codes
+  - update to align with internal API codes
+  - see [esminiLib.hpp](https://github.com/esmini/esmini/blob/3f5a67c2423fbb660053abbd2472f18d4482f9b7/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L794)
+- Fix some memory leaks ([pr #336](https://github.com/esmini/esmini/pull/336))
+- Fix bug in LaneChange action potentially resulting in wrong lane offset
+- Add note on object not appearing to [User guide - Various issues](https://esmini.github.io/#_entity_does_not_appear)
+
 ### 2022-10-17 Version 2.26.7
 
 - Update UDPDriverController
