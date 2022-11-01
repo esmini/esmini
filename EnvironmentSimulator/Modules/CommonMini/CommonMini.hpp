@@ -591,7 +591,7 @@ public:
 	void SetCallback(FuncPtr callback);
 	bool IsCallbackSet();
 	void SetTimePtr(double* timePtr) { time_ = timePtr; }
-	void OpenLogfile();
+	void OpenLogfile(std::string filename);
 	void LogVersion();
 	bool IsFileOpen() { return file_.is_open(); }
 
@@ -680,6 +680,8 @@ public:
 	std::vector<std::string>& GetOriginalArgs() { return originalArgs_; }
 	bool IsInOriginalArgs(std::string opt);
 	bool HasUnknownArgs();
+	void Reset();
+	int ChangeOptionArg(std::string opt, std::string new_value, int index = 0);
 
 private:
 	std::vector<SE_Option> option_;
@@ -898,6 +900,7 @@ public:
 
 	std::string GetModelFilenameById(int model_id);
 	void ClearModelFilenames() { entity_model_map.clear(); }
+	SE_Options* GetOptions() { return &options_; }
 
 private:
 	std::vector<std::string> paths_;
@@ -911,6 +914,7 @@ private:
 	bool offScreenRendering_;
 	bool collisionDetection_;
 	std::map<int, std::string> entity_model_map;
+	SE_Options options_;
 };
 
 /**

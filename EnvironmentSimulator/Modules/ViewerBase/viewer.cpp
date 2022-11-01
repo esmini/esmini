@@ -1122,7 +1122,10 @@ EntityModel::EntityModel(osgViewer::Viewer* viewer, osg::ref_ptr<osg::Group> gro
 
 EntityModel::~EntityModel()
 {
-	parent_->removeChild(txNode_);
+	if (parent_)
+	{
+		parent_->removeChild(txNode_);
+	}
 }
 
 MovingModel::MovingModel(osgViewer::Viewer* viewer, osg::ref_ptr<osg::Group> group, osg::ref_ptr<osg::Group> parent,
@@ -1439,11 +1442,6 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 	odrManager_ = odrManager;
 	bool clear_color = false;
 	std::string arg_str;
-
-	if (scenarioFilename != NULL && strcmp(scenarioFilename, ""))
-	{
-		SE_Env::Inst().AddPath(DirNameOf(scenarioFilename));
-	}
 
 	if (odrManager != NULL)
 	{
@@ -3452,6 +3450,18 @@ void Viewer::SetWindowTitleFromArgs(std::vector<std::string>& args)
 		else if (arg == "--window")
 		{
 			i += 4;
+			continue;
+		}
+		else if (arg == "--param_dist")
+		{
+			i += 1;
+			OSCParameterDistribution& dist = OSCParameterDistribution::Inst();
+			titleString += " " + std::to_string(dist.GetIndex() + 1) + " of " + std::to_string(dist.GetNumPermutations()) + " ";
+			continue;
+		}
+		else if (arg == "--param_permutation")
+		{
+			i += 1;
 			continue;
 		}
 

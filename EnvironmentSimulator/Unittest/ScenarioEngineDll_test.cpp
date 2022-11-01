@@ -26,6 +26,8 @@ TEST_P(GetNumberOfObjectsTest, number_of_objects)
 	std::string scenario_file = std::get<0>(GetParam());
 	//std::string scenario_file = "../../esmini/resources/xosc/cut-in.xosc";
 
+	SE_ClearPaths();
+
 	const char *Scenario_file = scenario_file.c_str();
 	SE_Init(Scenario_file, 0, 0, 0, 0);
 
@@ -764,6 +766,7 @@ TEST_P(GetGroundTruthTests, receive_GroundTruth)
 	int sv_size = 0;
 	osi3::GroundTruth osi_gt;
 
+	SE_ClearPaths();
 	SE_Init(Scenario_file, 0, 0, 0, 0);
 
 	//SE_OSIFileOpen(0);
@@ -1152,7 +1155,7 @@ static void paramDeclCallback(void*)
 }
 
 TEST(ParameterTest, SetParameterValuesBeforeInit)
-{
+	{
 	double positions[3][2] = {
 		{5.34382, 186.68216},  // TargetSpeedFactor = 1.1
 		{8.69330, 240.68063},  // TargetSpeedFactor = 1.5
@@ -1180,6 +1183,7 @@ TEST(ParameterTest, SetParameterValuesBeforeInit)
 
 		SE_Close();
 	}
+	SE_RegisterParameterDeclarationCallback(0, 0);
 }
 
 TEST(TestGetAndSet, OverrideActionTest)
@@ -2403,6 +2407,7 @@ TEST(ExternalController, TestExternalDriver)
 		SE_SimpleVehicleDelete(vehicleHandle);
 		SE_Close();
 	}
+	SE_RegisterParameterDeclarationCallback(0, 0);
 }
 
 TEST(TestGetAndSet, SeedTest)
@@ -2758,7 +2763,7 @@ TEST(DirectJunctionTest, TestVariousRoutes)
 	SE_AddPath("../../../resources/models");
 
 	for (int i = 0; i < (int)(sizeof(positions) / sizeof(double[8])); i++)
-	{	
+	{
 		SE_RegisterParameterDeclarationCallback(paramDeclCallbackSetRoute, &positions);
 		ASSERT_EQ(SE_Init(scenario_file.c_str(), 1, 0, 0, 0), 0);
 		ASSERT_EQ(SE_GetNumberOfObjects(), 1);
@@ -2775,6 +2780,7 @@ TEST(DirectJunctionTest, TestVariousRoutes)
 
 		SE_Close();
 	}
+	SE_RegisterParameterDeclarationCallback(0, 0);
 }
 
 static void ReadDat(std::string filename, std::vector<scenarioengine::ReplayEntry>& entries)
@@ -3445,12 +3451,143 @@ TEST(RoadmanagerTest, TestGetInfoAtDistance)
 	SE_Close();
 }
 
+TEST(ParamDistTest, TestRunAll)
+{
+	std::vector<std::string> gt =
+	{
+		"gt_1_of_6.osi",
+		"gt_2_of_6.osi",
+		"gt_3_of_6.osi",
+		"gt_4_of_6.osi",
+		"gt_5_of_6.osi",
+		"gt_6_of_6.osi",
+	};
+
+	std::vector<std::string> dat =
+	{
+		"cut-in_1_of_6.dat",
+		"cut-in_2_of_6.dat",
+		"cut-in_3_of_6.dat",
+		"cut-in_4_of_6.dat",
+		"cut-in_5_of_6.dat",
+		"cut-in_6_of_6.dat",
+	};
+
+	std::vector<std::string> log =
+	{
+		"log_1_of_6.txt",
+		"log_2_of_6.txt",
+		"log_3_of_6.txt",
+		"log_4_of_6.txt",
+		"log_5_of_6.txt",
+		"log_6_of_6.txt",
+	};
+
+	// Fetch timestamp of any old screenshot0
+	struct stat fileStatus;
+	long long oldModTime = 0;
+	long long time_sample1 = 0;
+	long long time_sample2 = 0;
+
+
+	if (stat(gt[0].c_str(), &fileStatus) == 0)
+	{
+		oldModTime = fileStatus.st_mtime;
+	}
+
+	if (stat(dat[0].c_str(), &fileStatus) == 0)
+	{
+		if (fileStatus.st_mtime > oldModTime)
+		{
+			oldModTime = fileStatus.st_mtime;
+		}
+	}
+
+	if (stat(log[0].c_str(), &fileStatus) == 0)
+	{
+		if (fileStatus.st_mtime > oldModTime)
+		{
+			oldModTime = fileStatus.st_mtime;
+		}
+	}
+
+	std::string scenario_file = "../../../resources/xosc/cut-in.xosc";
+	EXPECT_EQ(SE_SetParameterDistribution("../../../resources/xosc/cut-in_parameter_set.xosc"), 0);
+
+	EXPECT_EQ(SE_GetNumberOfPermutations(), 6);
+
+	for (int i = 0; i < SE_GetNumberOfPermutations(); i++)
+	{
+		SE_Init(scenario_file.c_str(), 0, 0, 0, 1);
+
+		SE_OSIFileOpen("gt.osi");
+
+		for (int j = 0; j < 50 && SE_GetQuitFlag() == 0; j++)
+		{
+			SE_StepDT(0.1f);
+		}
+
+		SE_Close();
+	}
+
+	EXPECT_EQ(SE_GetNumberOfPermutations(), 6);
+
+	// Check that files have been created as expected
+	for (int i = 0; i < SE_GetNumberOfPermutations(); i++)
+	{
+		EXPECT_EQ(stat(gt[i].c_str(), &fileStatus), 0);
+		EXPECT_GE(fileStatus.st_mtime, oldModTime);
+		EXPECT_GE(fileStatus.st_size, 0);
+		if (i == 0)
+		{
+			time_sample1 = fileStatus.st_mtime;
+		}
+
+		EXPECT_EQ(stat(dat[i].c_str(), &fileStatus), 0);
+		EXPECT_GE(fileStatus.st_mtime, 0);
+
+		EXPECT_EQ(stat(log[i].c_str(), &fileStatus), 0);
+		EXPECT_GE(fileStatus.st_mtime, 0);
+		if (i == 5)
+		{
+			time_sample2 = fileStatus.st_mtime;
+		}
+	}
+
+	SE_sleep(20);
+
+	// specify start at 4:th permutation, then expect automatic increment from there
+	SE_SelectPermutation(3);
+	do
+	{
+		SE_Init(scenario_file.c_str(), 0, 0, 0, 1);
+		SE_OSIFileOpen("gt.osi");
+
+		for (int j = 0; j < 50 && SE_GetQuitFlag() == 0; j++)
+		{
+			SE_StepDT(0.1f);
+		}
+
+		SE_Close();
+
+	} while (SE_GetPermutationIndex() < SE_GetNumberOfPermutations() - 1);
+
+	// The first 3 files should be untouched, while the last 3 should be updated
+	// check two samples, one from each category
+	EXPECT_EQ(stat(gt[0].c_str(), &fileStatus), 0);
+	EXPECT_EQ(fileStatus.st_mtime, time_sample1);
+	EXPECT_EQ(stat(gt[5].c_str(), &fileStatus), 0);
+	EXPECT_GE(fileStatus.st_mtime, time_sample2);
+
+	SE_ResetParameterDistribution();
+}
+
 int main(int argc, char **argv)
 {
 	testing::InitGoogleTest(&argc, argv);
 
 #if 0  // set to 1 and modify filter to run one single test
-	testing::GTEST_FLAG(filter) = "*TestFetchImage*";
+	testing::GTEST_FLAG(filter) = "*number_of_objects*";
 	// Or make use of launch argument, e.g. --gtest_filter=TestFetchImage*
 #else
 	SE_LogToConsole(false);

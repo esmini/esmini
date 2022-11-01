@@ -62,6 +62,10 @@ Options:
       Show OSI road pointss (toggle during simulation by press 'y')
   --osi_receiver_ip <IP address>
       IP address where to send OSI UDP packages
+  --param_dist <filename>
+      Run variations of the scenario according to specified parameter distribution file
+  --param_permutation <index (0 .. NumberOfPermutations-1)>
+      Run specific permutation of parameter distribution
   --path <path>
       Search path prefix for assets, e.g. OpenDRIVE files (multiple occurrences supported)
   --record <filename>
@@ -89,7 +93,7 @@ Additional OSG graphics options:
   --window <x y w h>                         Set the position x, y and size w, h of the viewer window. -1 -1 -1 -1 for fullscreen.
   --borderless-window <x y w h>              Set the position x, y and size w, h of a borderless viewer window. -1 -1 -1 -1 for fullscreen.
   --SingleThreaded                           Run application and all graphics tasks in one single thread.
-  --lodScale <LOD scalefactor>               Adjust Level Of Detail 1=default >1 decrease fidelity <1 increase fidelity  
+  --lodScale <LOD scalefactor>               Adjust Level Of Detail 1=default >1 decrease fidelity <1 increase fidelity
   
 For a complete list of OSG options and environment variables, see here:
 https://github.com/esmini/esmini/blob/master/docs/osg_options_and_env_variables.txt

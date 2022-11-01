@@ -16,6 +16,7 @@
 #include "ControllerExternal.hpp"
 #include "ControllerRel2Abs.hpp"
 #include "ControllerFollowRoute.hpp"
+#include "OSCParameterDistribution.hpp"
 
 #define WHEEL_RADIUS 0.35
 #define STAND_STILL_THRESHOLD 1e-3  // meter per second
@@ -58,15 +59,14 @@ void ScenarioEngine::InitScenario(std::string oscFilename, bool disable_controll
 	InitScenarioCommon(disable_controllers);
 
 	std::vector<std::string> file_name_candidates;
-	// absolute path or relative to current directory
+
+	// Filename as is - look in current directory
 	file_name_candidates.push_back(oscFilename);
-	// Remove all directories from path and look in current directory
-	file_name_candidates.push_back(FileNameOf(oscFilename));
+
 	// Finally check registered paths
 	for (size_t i = 0; i < SE_Env::Inst().GetPaths().size(); i++)
 	{
 		file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], oscFilename));
-		file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], FileNameOf(oscFilename)));
 	}
 	size_t i;
 	for (i = 0; i < file_name_candidates.size(); i++)
@@ -714,6 +714,27 @@ ScenarioGateway *ScenarioEngine::getScenarioGateway()
 	return &scenarioGateway;
 }
 
+static void ApplyParamDistribution()
+{
+	OSCParameterDistribution& dist = OSCParameterDistribution::Inst();
+
+	if (dist.GetNumParameters() > 0)
+	{
+		LOG("Parameter permutation %d/%d", dist.GetIndex() + 1, dist.GetNumPermutations());
+
+		for (int i = 0; i < dist.GetNumParameters(); i++)
+		{
+			LOG("   %s: %s", dist.GetParamName(i).c_str(), dist.GetParamValue(i).c_str());
+
+			ScenarioReader::parameters.setParameterValueByString(
+				dist.GetParamName(i),
+				dist.GetParamValue(i)
+			);
+		}
+	}
+}
+
+
 void ScenarioEngine::parseScenario()
 {
 	SetSimulationTime(0);
@@ -737,6 +758,11 @@ void ScenarioEngine::parseScenario()
 	if (paramDeclCallback.func != nullptr)
 	{
 		paramDeclCallback.func(paramDeclCallback.data);
+	}
+
+	if (OSCParameterDistribution::Inst().GetNumPermutations() > 0)
+	{
+		ApplyParamDistribution();
 	}
 
 	// Init road manager

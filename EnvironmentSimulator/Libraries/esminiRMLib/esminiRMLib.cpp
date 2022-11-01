@@ -151,7 +151,7 @@ extern "C"
 			RM_Close();
 		}
 
-		Logger::Inst().OpenLogfile();
+		Logger::Inst().OpenLogfile(SE_Env::Inst().GetLogFilePath());
 		Logger::Inst().LogVersion();
 
 		// Harmonize parsing and printing of floating point numbers. I.e. 1.57e+4 == 15700.0 not 15,700.0 or 1 or 1.57

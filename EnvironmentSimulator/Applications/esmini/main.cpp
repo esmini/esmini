@@ -13,40 +13,66 @@
 
 #include "playerbase.hpp"
 #include "CommonMini.cpp"
+#include "OSCParameterDistribution.hpp"
+#include <signal.h>
 
 #define MIN_TIME_STEP 0.01
 #define MAX_TIME_STEP 0.1
 
+static bool quit = false;
+
+static void signal_handler(int s)
+{
+	if (s == SIGINT)
+	{
+		LOG("Quit request from user");
+		quit = true;
+	}
+}
 
 int main(int argc, char *argv[])
 {
-	std::unique_ptr<ScenarioPlayer> player;
 	__int64 time_stamp = 0;
+	OSCParameterDistribution& dist = OSCParameterDistribution::Inst();
 
-	try
-	{
-		player = std::make_unique<ScenarioPlayer>(argc, argv);
-	}
-	catch (const std::exception& e)
-	{
-		LOG(std::string("Exception: ").append(e.what()).c_str());
-		return -1;
-	}
+	// Setup signal handler to catch Ctrl-C
+	signal(SIGINT, signal_handler);
 
-	while (!player->IsQuitRequested())
+	bool once = false;
+	do
 	{
-		double dt;
-		if (player->GetFixedTimestep() > SMALL_NUMBER)
+		std::unique_ptr<ScenarioPlayer> player;
+
+		try
 		{
-			dt = player->GetFixedTimestep();
+			player = std::make_unique<ScenarioPlayer>(argc, argv);
+			if (SE_Env::Inst().GetOptions()->IsOptionArgumentSet("param_permutation"))
+			{
+				once = true;
+			}
 		}
-		else
+		catch (const std::exception& e)
 		{
-			dt = SE_getSimTimeStep(time_stamp, player->minStepSize, player->maxStepSize);
+			LOG(std::string("Exception: ").append(e.what()).c_str());
+			return -1;
 		}
 
-		player->Frame(dt);
-	}
+		while (!player->IsQuitRequested() && !quit)
+		{
+			double dt;
+			if (player->GetFixedTimestep() > SMALL_NUMBER)
+			{
+				dt = player->GetFixedTimestep();
+			}
+			else
+			{
+				dt = SE_getSimTimeStep(time_stamp, player->minStepSize, player->maxStepSize);
+			}
+
+			player->Frame(dt);
+		}
+
+	} while (!once && dist.GetIndex() < dist.GetNumPermutations() - 1 && !quit);
 
 	return 0;
 }

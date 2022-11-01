@@ -9,6 +9,7 @@
 #include "ScenarioReader.hpp"
 #include "ControllerUDPDriver.hpp"
 #include "ControllerALKS_R157SM.hpp"
+#include "OSCParameterDistribution.hpp"
 #include "pugixml.hpp"
 #include "simple_expr.h"
 
@@ -1562,6 +1563,41 @@ TEST_F(StraightRoadTest, TestRoadPosition)
 
     OSCPositionRoad road_pos2(1, 50, -1.5, o);
     EXPECT_NEAR(((OSCPosition&)road_pos2).GetRMPos()->GetH(), 0.1, 1e-3);
+}
+
+TEST(DistributionTest, TestDeterministicDistribution)
+{
+    OSCParameterDistribution& dist = OSCParameterDistribution::Inst();
+
+    EXPECT_EQ(dist.Load("../../../resources/xosc/cut-in_parameter_set.xosc"), 0);
+
+    EXPECT_EQ(dist.GetNumParameters(), 4);
+    EXPECT_EQ(dist.GetNumPermutations(), 6);
+
+    EXPECT_EQ(dist.GetParamName(0), "HostVehicle");
+    EXPECT_EQ(dist.GetParamName(1), "TargetVehicle");
+    EXPECT_EQ(dist.GetParamName(2), "EgoSpeed");
+    EXPECT_EQ(dist.GetParamName(3), "TargetSpeedFactor");
+    EXPECT_EQ(dist.GetParamName(4), "");
+
+    // check some samples
+    EXPECT_EQ(dist.SelectPermutation(4), 0);
+    EXPECT_EQ(dist.GetParamName(0), "HostVehicle");
+    EXPECT_EQ(dist.GetParamValue(0), "car_blue");
+    EXPECT_EQ(dist.SelectPermutation(6), -1);
+    EXPECT_EQ(dist.SelectPermutation(7), -1);
+    EXPECT_EQ(dist.SelectPermutation(-1), -1);
+    EXPECT_EQ(dist.SelectPermutation(5), 0);
+    EXPECT_EQ(dist.GetParamName(1), "TargetVehicle");
+    EXPECT_EQ(dist.GetParamValue(1), "car_yellow");
+    EXPECT_NEAR(std::atof(dist.GetParamValue(2).c_str()), 110.0, 1e-3);
+    EXPECT_NEAR(std::atof(dist.GetParamValue(3).c_str()), 1.5, 1e-3);
+    EXPECT_EQ(dist.SelectPermutation(3), 0);
+    EXPECT_NEAR(std::atof(dist.GetParamValue(2).c_str()), 110.0, 1e-3);
+    EXPECT_NEAR(std::atof(dist.GetParamValue(3).c_str()), 1.1, 1e-3);
+    EXPECT_EQ(dist.SelectPermutation(1), 0);
+    EXPECT_NEAR(std::atof(dist.GetParamValue(2).c_str()), 70.0, 1e-3);
+    EXPECT_NEAR(std::atof(dist.GetParamValue(3).c_str()), 1.3, 1e-3);
 }
 
 // Uncomment to print log output to console

@@ -32,6 +32,7 @@
 #include "roadgeom.hpp"
 #include "Entities.hpp"
 #include "OSIReporter.hpp"
+#include "OSCParameterDistribution.hpp"
 
 extern double color_green[3];
 extern double color_gray[3];

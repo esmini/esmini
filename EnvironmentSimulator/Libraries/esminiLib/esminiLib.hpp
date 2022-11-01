@@ -269,6 +269,36 @@ extern "C"
 	SE_DLL_API int SE_SetOSITolerances(double maxLongitudinalDistance, double maxLateralDeviation);
 
 	/**
+		Specify OpenSCENARIO parameter distribution file. Call BEFORE SE_Init.
+		@param filename Name, including any path, of the parameter distribution file
+		@return 0 if successful, -1 if not
+	*/
+	SE_DLL_API int SE_SetParameterDistribution(const char* filename);
+
+	/**
+		Reset and disable parameter distribution.
+	*/
+	SE_DLL_API void SE_ResetParameterDistribution();
+
+	/**
+		Get the number of parameter value permutations. Call AFTER SE_Init.
+		@return -1 on error else number of permutations
+	*/
+	SE_DLL_API int SE_GetNumberOfPermutations();
+
+	/**
+		Select parameter value permutation. Call BEFORE SE_Init, e.g. during or after preceding run.
+		@return -1 on error else number of permutations
+	*/
+	SE_DLL_API int SE_SelectPermutation(int index);
+
+	/**
+		Get current parameter permutation index.
+		@return -1 on error or no parameter distribution loaded, else permutation index
+	*/
+	SE_DLL_API int SE_GetPermutationIndex();
+
+	/**
 		Initialize the scenario engine
 
 		@param oscFilename Path to the OpenSCENARIO file
@@ -1037,6 +1067,8 @@ extern "C"
 
 	/**
 		Create and open osi file
+		@param filename Optional filename, including path. Set to 0 to use default.
+		@return true=successful false=error
 	*/
 	SE_DLL_API bool SE_OSIFileOpen(const char *filename);
 

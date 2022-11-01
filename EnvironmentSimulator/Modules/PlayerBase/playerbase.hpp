@@ -117,6 +117,7 @@ public:
 	PlayerState GetState() { return state_; }
 	bool IsPaused() { return GetState() == PlayerState::PLAYER_STATE_PAUSE; }
 	int GetCounter() { return frame_counter_; }
+	int LoadParameterDistribution(std::string filename);
 
 	//TODO
 	//int GetNumberOfVehicleProperties(){return 4;};
@@ -159,7 +160,6 @@ public:
 	std::vector<ObjectSensor *> sensor;
 	const double maxStepSize;
 	const double minStepSize;
-	SE_Options opt;
 	std::vector<ObjCallback> objCallback;
 	std::string exe_path_;
 	SE_Semaphore player_init_semaphore;

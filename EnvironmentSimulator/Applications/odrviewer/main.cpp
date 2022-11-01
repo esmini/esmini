@@ -418,7 +418,7 @@ int main(int argc, char** argv)
 			printf("Custom logfile path: %s\n", arg_str.c_str());
 		}
 	}
-	Logger::Inst().OpenLogfile();
+	Logger::Inst().OpenLogfile(SE_Env::Inst().GetLogFilePath());
 	Logger::Inst().LogVersion();
 
 	if ((arg_str = opt.GetOptionArg("path")) != "")

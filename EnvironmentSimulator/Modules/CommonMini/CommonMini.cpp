@@ -999,10 +999,10 @@ Logger& Logger::Inst()
 	return instance_;
 }
 
-void Logger::OpenLogfile()
+void Logger::OpenLogfile(std::string filename)
 {
 #ifndef SUPPRESS_LOG
-	if (!SE_Env::Inst().GetLogFilePath().empty())
+	if (!filename.empty())
 	{
 		if (file_.is_open())
 		{
@@ -1010,16 +1010,16 @@ void Logger::OpenLogfile()
 			file_.close();
 		}
 
-		file_.open(SE_Env::Inst().GetLogFilePath().c_str());
+		file_.open(filename.c_str());
 		if (file_.fail())
 		{
-			const char* filename = std::tmpnam(NULL);
+			const char* filename_tmp = std::tmpnam(NULL);
 			printf("Cannot open log file: %s in working directory. Trying system tmp-file: %s\n",
-				SE_Env::Inst().GetLogFilePath().c_str(), filename);
-			file_.open(filename);
+				SE_Env::Inst().GetLogFilePath().c_str(), filename_tmp);
+			file_.open(filename_tmp);
 			if (file_.fail())
 			{
-				printf("Also failed to open log file: %s. Continue without logfile, still logging to console.\n", filename);
+				printf("Also failed to open log file: %s. Continue without logfile, still logging to console.\n", filename_tmp);
 			}
 		}
 	}
@@ -1059,7 +1059,7 @@ void SE_Env::SetLogFilePath(std::string logFilePath)
 	if (Logger::Inst().IsFileOpen())
 	{
 		// Probably user wants another logfile with a new name
-		Logger::Inst().OpenLogfile();
+		Logger::Inst().OpenLogfile(SE_Env::Inst().GetLogFilePath());
 	}
 }
 
@@ -1069,7 +1069,7 @@ void SE_Env::SetDatFilePath(std::string datFilePath)
 	if (Logger::Inst().IsFileOpen())
 	{
 		// Probably user wants another logfile with a new name
-		Logger::Inst().OpenLogfile();
+		Logger::Inst().OpenLogfile(SE_Env::Inst().GetLogFilePath());
 	}
 }
 
@@ -1395,6 +1395,20 @@ static constexpr std::array<const char*, 10> OSG_ARGS = {
 	"--lodScale"
 };
 
+int SE_Options::ChangeOptionArg(std::string opt, std::string new_value, int index)
+{
+	SE_Option* option = GetOption(opt);
+
+	if (option == nullptr || index < 0 || index >= option->arg_value_.size())
+	{
+		return -1;
+	}
+
+	option->arg_value_[index] = new_value;
+
+	return 0;
+}
+
 int SE_Options::ParseArgs(int argc, const char* const argv[])
 {
 	std::vector<const char*> args = {argv, std::next(argv, argc)};
@@ -1482,6 +1496,16 @@ bool SE_Options::IsInOriginalArgs(std::string opt)
 bool SE_Options::HasUnknownArgs()
 {
 	return !unknown_args_.empty();
+}
+
+void SE_Options::Reset()
+{
+	for (size_t i = 0; i < option_.size(); i++)
+	{
+		option_[i].arg_value_.clear();
+	}
+	option_.clear();
+	originalArgs_.clear();
 }
 
 int SE_WritePPM(const char* filename, int width, int height, const unsigned char* data, int pixelSize, int pixelFormat, bool upsidedown)

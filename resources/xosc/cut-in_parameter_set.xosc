@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<OpenSCENARIO>
+  <FileHeader revMajor="1" revMinor="2" date="2022-10-31T12:00:00" description="Parameter values for scenario" author="esmini-team" />
+  <ParameterValueDistribution>
+    <ScenarioFile filepath="cut-in.xosc" />
+    <Deterministic>
+      <DeterministicMultiParameterDistribution>
+        <ValueSetDistribution>
+          <ParameterValueSet>
+            <ParameterAssignment parameterRef="HostVehicle" value="car_blue" />
+            <ParameterAssignment parameterRef="TargetVehicle" value="car_yellow" />
+          </ParameterValueSet>
+        </ValueSetDistribution>
+      </DeterministicMultiParameterDistribution>
+      <DeterministicSingleParameterDistribution parameterName="EgoSpeed">
+        <DistributionSet>
+          <Element value="70.0" />
+          <Element value="110.0" />
+        </DistributionSet>
+      </DeterministicSingleParameterDistribution>
+      <DeterministicSingleParameterDistribution parameterName="TargetSpeedFactor">
+        <DistributionRange stepWidth="0.2">
+          <Range lowerLimit="1.1" upperLimit="1.5" />
+        </DistributionRange>
+      </DeterministicSingleParameterDistribution>
+    </Deterministic>
+  </ParameterValueDistribution>
+</OpenSCENARIO>

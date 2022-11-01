@@ -25,6 +25,7 @@
 #include "ControllerExternal.hpp"
 #include "OSCCondition.hpp"
 #include "OSCManeuver.hpp"
+#include "OSCParameterDistribution.hpp"
 
 using namespace scenarioengine;
 
@@ -132,7 +133,7 @@ static void copyStateFromScenarioGateway(SE_ScenarioObjectState *state, ObjectSt
 	state->model_id = gw_state->info.model_id;
 	state->ctrl_type = gw_state->info.ctrl_type;
 	//	strncpy(state->name, gw_state->info.name, NAME_LEN);
-	state->timestamp = gw_state->info.timeStamp;
+	state->timestamp = (float)gw_state->info.timeStamp;
 	state->x = (float)gw_state->pos.GetX();
 	state->y = (float)gw_state->pos.GetY();
 	state->z = (float)gw_state->pos.GetZ();
@@ -402,7 +403,7 @@ static int InitScenario()
 	std::setlocale(LC_ALL, "C.UTF-8");
 
 	Logger::Inst().SetCallback(log_callback);
-	Logger::Inst().OpenLogfile();
+	Logger::Inst().OpenLogfile(SE_Env::Inst().GetLogFilePath());
 	Logger::Inst().LogVersion();
 
 	ConvertArguments();
@@ -454,6 +455,31 @@ extern "C"
 	SE_DLL_API void SE_SetSeed(unsigned int seed)
 	{
 		SE_Env::Inst().SetSeed(seed);
+	}
+
+	SE_DLL_API int SE_SetParameterDistribution(const char* filename)
+	{
+		return OSCParameterDistribution::Inst().Load(filename);
+	}
+
+	SE_DLL_API void SE_ResetParameterDistribution()
+	{
+		OSCParameterDistribution::Inst().Reset();
+	}
+
+	SE_DLL_API int SE_GetNumberOfPermutations()
+	{
+		return OSCParameterDistribution::Inst().GetNumPermutations();
+	}
+
+	SE_DLL_API int SE_SelectPermutation(int index)
+	{
+		return OSCParameterDistribution::Inst().SelectPermutation(index);
+	}
+
+	SE_DLL_API int SE_GetPermutationIndex()
+	{
+		return OSCParameterDistribution::Inst().GetIndex();
 	}
 
 	SE_DLL_API void SE_SetWindowPosAndSize(int x, int y, int w, int h)
@@ -1230,9 +1256,6 @@ extern "C"
 		}
 
 		return copyOverrideActionListfromScenarioEngine(list, obj);
-
-
-		return -1;
 	}
 
 	SE_DLL_API const char* SE_GetObjectTypeName(int object_id)
@@ -1432,7 +1455,15 @@ extern "C"
 		if (player != nullptr)
 		{
 #ifdef _USE_OSI
-			return player->osiReporter->OpenOSIFile(filename);
+			if (OSCParameterDistribution::Inst().GetNumPermutations() > 0)
+			 {
+				return player->osiReporter->OpenOSIFile(OSCParameterDistribution::Inst().AddInfoToFilename(filename).c_str());
+			}
+			else
+			{
+				return player->osiReporter->OpenOSIFile(filename);
+			}
+
 #endif  // USE_OSI
 		}
 
@@ -1537,7 +1568,7 @@ extern "C"
 			return -1;
 		}
 
-		return obj->collisions_.size();
+		return (int)obj->collisions_.size();
 	}
 
 	SE_DLL_API int SE_GetObjectCollision(int object_id, int index)
@@ -2179,7 +2210,7 @@ extern "C"
 
 		if (obj->pos_.GetRoute())
 		{
-			return obj->pos_.GetRoute()->all_waypoints_.size();
+			return (int)obj->pos_.GetRoute()->all_waypoints_.size();
 		}
 		else
 		{
@@ -2203,16 +2234,16 @@ extern "C"
 
 		roadmanager::Road* road = player->odr_manager->GetRoadById(obj->pos_.GetRoute()->all_waypoints_[route_index].GetTrackId());
 
-		routeinfo->x = obj->pos_.GetRoute()->all_waypoints_[route_index].GetX();
-		routeinfo->y = obj->pos_.GetRoute()->all_waypoints_[route_index].GetY();
-		routeinfo->z = obj->pos_.GetRoute()->all_waypoints_[route_index].GetZ();
+		routeinfo->x = (float)obj->pos_.GetRoute()->all_waypoints_[route_index].GetX();
+		routeinfo->y = (float)obj->pos_.GetRoute()->all_waypoints_[route_index].GetY();
+		routeinfo->z = (float)obj->pos_.GetRoute()->all_waypoints_[route_index].GetZ();
 		routeinfo->roadId = obj->pos_.GetRoute()->all_waypoints_[route_index].GetTrackId();
 		routeinfo->junctionId = obj->pos_.GetRoute()->all_waypoints_[route_index].GetJunctionId();
 		routeinfo->laneId = obj->pos_.GetRoute()->all_waypoints_[route_index].GetLaneId();
 		routeinfo->osiLaneId = road->GetDrivingLaneById(obj->pos_.GetRoute()->all_waypoints_[route_index].GetS(), obj->pos_.GetRoute()->all_waypoints_[route_index].GetLaneId())->GetGlobalId();
-		routeinfo->laneOffset = obj->pos_.GetRoute()->all_waypoints_[route_index].GetOffset();
-		routeinfo->s = obj->pos_.GetRoute()->all_waypoints_[route_index].GetS();
-		routeinfo->t = obj->pos_.GetRoute()->all_waypoints_[route_index].GetT();
+		routeinfo->laneOffset = (float)obj->pos_.GetRoute()->all_waypoints_[route_index].GetOffset();
+		routeinfo->s = (float)obj->pos_.GetRoute()->all_waypoints_[route_index].GetS();
+		routeinfo->t = (float)obj->pos_.GetRoute()->all_waypoints_[route_index].GetT();
 
 		return 0;
 	}

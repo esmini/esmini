@@ -297,7 +297,7 @@ int Parameters::setParameterValueByString(std::string name, std::string value)
 	{
 		ps->value._bool = (value == "true" ? true : false);
 	}
-	else
+	else if (ps->type != OSCParameterDeclarations::ParameterType::PARAM_TYPE_STRING)
 	{
 		LOG("Unexpected type: %d", ps->type);
 		return -1;
