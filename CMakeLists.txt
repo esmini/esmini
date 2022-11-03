@@ -17,6 +17,7 @@ elseif (MINGW)
 endif()
 
 set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Allow for folder structure
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
