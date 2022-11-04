@@ -295,7 +295,7 @@ extern "C"
 	@param laneOffset Offset from lane center
 	@param s Distance along the specified road
 	@param align If true the heading will be reset to the lane driving direction (typically only at initialization)
-	@return 0 if successful, -1 if not
+	@return >= 0 on success. For all codes see roadmanager.hpp::Position::enum class ReturnCode
 	*/
 	RM_DLL_API int RM_SetLanePosition(int handle, int roadId, int laneId, float laneOffset, float s, bool align);
 
@@ -303,7 +303,7 @@ extern "C"
 	Set s (distance) part of a lane position, world coordinates being calculated
 	@param handle Handle to the position object
 	@param s Distance along the specified road
-	@return 0 if successful, -1 if not
+	@return >= 0 on success. For all codes see roadmanager.hpp::Position::enum class ReturnCode
 	*/
 	RM_DLL_API int RM_SetS(int handle, float s);
 
@@ -316,7 +316,7 @@ extern "C"
 	@param h rotation heading value
 	@param p rotation pitch value
 	@param r rotation roll value
-	@return 0 if successful, -1 if not
+	@return >= 0 on success. For all codes see roadmanager.hpp::Position::enum class ReturnCode
 	*/
 	RM_DLL_API int RM_SetWorldPosition(int handle, float x, float y, float z, float h, float p, float r);
 
@@ -326,7 +326,7 @@ extern "C"
 	@param x cartesian coordinate x value
 	@param y cartesian coordinate y value
 	@param h rotation heading value
-	@return 0 if successful, -1 if not
+	@return >= 0 on success. For all codes see roadmanager.hpp::Position::enum class ReturnCode
 	*/
 	RM_DLL_API int RM_SetWorldXYHPosition(int handle, float x, float y, float h);
 
@@ -337,7 +337,7 @@ extern "C"
 	@param x cartesian coordinate x value
 	@param y cartesian coordinate y value
 	@param h rotation heading value
-	@return 0 if successful, -1 if not
+	@return >= 0 on success. For all codes see roadmanager.hpp::Position::enum class ReturnCode
 	*/
 	RM_DLL_API int RM_SetWorldXYZHPosition(int handle, float x, float y, float z, float h);
 
@@ -345,7 +345,7 @@ extern "C"
 	Change road belonging of position object, keeping actual x,y location, regardless other roads being closer
 	@param handle Handle to the position object
 	@param roadId Id of the road to belong to
-	@return 0 if successful, -1 if not
+	@return >= 0 on success. For all codes see roadmanager.hpp::Position::enum class ReturnCode
 	*/
 	RM_DLL_API int RM_SetRoadId(int handle, int roadId);
 
@@ -354,7 +354,7 @@ extern "C"
 	@param handle Handle to the position object
 	@param dist Distance (meter) to move
 	@param junctionSelectorAngle Desired direction [0:2pi] from incoming road direction (angle = 0), set -1 to randomize
-	@return >= 0 on success, < 0 on error. For all codes see esmini roadmanager::Position::enum class ReturnCode
+	@return >= 0 on success. For all codes see roadmanager.hpp::Position::enum class ReturnCode
 	*/
 	RM_DLL_API int RM_PositionMoveForward(int handle, float dist, float junctionSelectorAngle);
 
