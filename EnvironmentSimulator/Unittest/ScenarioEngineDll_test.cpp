@@ -3294,8 +3294,8 @@ TEST(ReplayTest, TestMultiReplayDifferentTimeSteps)
 
 void ConditionCallbackInstance1(const char* element_name, double timestamp)
 {
-	EXPECT_STREQ(element_name, "position trigger");
-	EXPECT_NEAR(timestamp, 3.4, 1E-4);
+	EXPECT_STREQ(element_name, "act_start");
+	EXPECT_NEAR(timestamp, 0.1, 1E-4);
 	EXPECT_NEAR((float)timestamp, SE_GetSimulationTime(), 1E-4);
 }
 
@@ -3310,8 +3310,8 @@ TEST(EventCallbackTest, TestConditionCallback)
 
 	SE_RegisterConditionCallback(ConditionCallbackInstance1);
 
-	// Just run until passed 3.4 seconds to cover first event triggering
-	for (int i = 0; i < 36; i++)
+	// Just run for two steps such that the act gets started
+	for (int i = 0; i < 2; i++)
 	{
 		SE_StepDT(0.1f);
 	}
