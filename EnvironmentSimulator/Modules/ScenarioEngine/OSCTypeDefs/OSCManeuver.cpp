@@ -14,8 +14,6 @@
 
 using namespace scenarioengine;
 
-void (*Event::eventCallback)(const char* name, double timestamp, bool start) = nullptr;
-
 void Event::Start(double simTime, double dt)
 {
 	double adjustedTime = simTime;
@@ -87,11 +85,6 @@ void Event::Start(double simTime, double dt)
 		}
 	}
 
-	if (eventCallback != nullptr)
-	{
-		eventCallback(name_.c_str(), adjustedTime, true);
-	}
-
 	StoryBoardElement::Start(adjustedTime, dt);
 }
 
@@ -103,11 +96,6 @@ void Event::End(double simTime)
 		{
 			action_[i]->End(simTime);
 		}
-	}
-
-	if (eventCallback != nullptr)
-	{
-		eventCallback(name_.c_str(), simTime, false);
 	}
 
 	StoryBoardElement::End(simTime);

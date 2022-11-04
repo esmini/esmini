@@ -896,16 +896,6 @@ extern "C"
     SE_DLL_API void SE_RegisterStoryBoardElementStateChangeCallback(void (*fnPtr)(const char* name, int type, int state));
 
 	/**
-	Registers a function to be called back from esmini every time an event starts or ends.
-	The name of the respective event, the current timestamp and whether the event
-	starts (true) or ends (false) will be returned.
-	In case an event starts and ends within the same simulation step, only the end-transition may occur.
-	Registered callbacks will be cleared between SE_Init calls.
-	@param fnPtr A pointer to the function to be invoked
-	*/
-	SE_DLL_API void SE_RegisterEventCallback(void (*fnPtr)(const char* name, double timestamp, bool start));
-
-	/**
 		Get the number of road signs along specified road
 		@param road_id The road along which to look for signs
 		@return Number of road signs

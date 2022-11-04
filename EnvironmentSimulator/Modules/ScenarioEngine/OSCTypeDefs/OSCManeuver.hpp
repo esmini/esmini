@@ -27,8 +27,6 @@ namespace scenarioengine
 	class Event: public StoryBoardElement
 	{
 	public:
-		static void (*eventCallback)(const char* name, double timestamp, bool start);
-
 		typedef enum
 		{
 			OVERWRITE,
