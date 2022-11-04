@@ -6562,7 +6562,11 @@ Position::ReturnCode Position::XYZH2TrackPos(double x3, double y3, double z3, do
 	bool insideCurrentRoad = false;  // current postion projects on current road
 	double curvatureAbsMin = INFINITY;
 	bool closestPointDirectlyConnected = false;
-	overlapping_roads.clear();
+
+	if (check_overlapping_roads)
+	{
+		overlapping_roads.clear();
+	}
 
 	if (GetOpenDrive()->GetNumOfRoads() == 0)
 	{
