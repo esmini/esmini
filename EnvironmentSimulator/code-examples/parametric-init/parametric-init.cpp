@@ -23,10 +23,10 @@ void paramDeclCB(void*)
 
 int main(int argc, char* argv[])
 {
-	SE_RegisterParameterDeclarationCallback(paramDeclCB, 0);
-
 	for (int i = 0; i < 3 && SE_GetQuitFlag() != 1; i++)
 	{
+		SE_RegisterParameterDeclarationCallback(paramDeclCB, 0);
+
 		if (i == 0)
 		{
 			SE_SetParameterDouble("TargetSpeedFactor", 1.1);
