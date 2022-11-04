@@ -360,13 +360,20 @@ extern "C"
 			roadmanager::Road *road = odrManager->GetRoadById(roadId);
 
 			// Consider only drivable lanes
-			roadmanager::LaneSection *laneSection = road->GetLaneSectionByS(s);
-			for (size_t i = 0; i < laneSection->GetNumberOfLanes(); i++)
+			if (road)
 			{
-				if (laneSection->GetLaneByIdx((int)i)->IsDriving())
+				roadmanager::LaneSection* laneSection = road->GetLaneSectionByS(s);
+				for (size_t i = 0; i < laneSection->GetNumberOfLanes(); i++)
 				{
-					numberOfDrivableLanes++;
+					if (laneSection->GetLaneByIdx((int)i)->IsDriving())
+					{
+						numberOfDrivableLanes++;
+					}
 				}
+			}
+			else
+			{
+				return -1;
 			}
 		}
 
