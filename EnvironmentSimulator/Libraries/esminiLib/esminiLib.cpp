@@ -88,7 +88,6 @@ static void resetScenario(void)
 
 	// Reset (global) callbacks
 	OSCCondition::conditionCallback = nullptr;
-	Event::eventCallback = nullptr;
     StoryBoardElement::stateChangeCallback = nullptr;
 
 	time_stamp = 0;
@@ -1743,11 +1742,6 @@ extern "C"
     {
         StoryBoardElement::stateChangeCallback = fnPtr;
     }
-
-	SE_DLL_API void SE_RegisterEventCallback(void (*fnPtr)(const char* name, double timestamp, bool start))
-	{
-		Event::eventCallback = fnPtr;
-	}
 
 	SE_DLL_API int SE_GetNumberOfRoadSigns(int road_id)
 	{
