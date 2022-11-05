@@ -1189,6 +1189,24 @@ extern "C"
 		return player->scenarioGateway->getObjectStatePtrByIdx(index)->state_.info.id;
 	}
 
+	SE_DLL_API int SE_GetIdByName(const char* name)
+	{
+		if (player == nullptr)
+		{
+			return -1;
+		}
+
+		for (size_t i = 0; player->scenarioEngine && i < player->scenarioEngine->entities_.object_.size(); i++)
+		{
+			if (player->scenarioEngine->entities_.object_[i]->GetName() == name)
+			{
+				return player->scenarioEngine->entities_.object_[i]->GetId();
+			}
+		}
+
+		return -1;
+	}
+
 	SE_DLL_API int SE_GetObjectState(int object_id, SE_ScenarioObjectState *state)
 	{
 

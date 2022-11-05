@@ -709,6 +709,13 @@ extern "C"
 	SE_DLL_API int SE_GetId(int index);
 
 	/**
+	Get the Id of an entity present in the current scenario
+	@param name Name of the object.
+	@return Id of the object, -1 on error e.g. scenario not initialized
+	*/
+	SE_DLL_API int SE_GetIdByName(const char* name);
+
+	/**
 		Get the state of specified object
 		@param object_id Id of the object.
 		@param state Pointer/reference to a SE_ScenarioObjectState struct to be filled in

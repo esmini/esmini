@@ -2508,11 +2508,22 @@ TEST(SimpleVehicleTest, TestControl)
 	SE_Close();
 }
 
-TEST(APITest, TestGetName)
+class APITestCutIn : public testing::Test
 {
-	std::string scenario_file = "../../../resources/xosc/cut-in.xosc";
+protected:
+	static void SetUpTestSuite()
+	{
+		EXPECT_EQ(SE_Init("../../../resources/xosc/cut-in.xosc", 0, 0, 0, 0), 0);
+	}
 
-	EXPECT_EQ(SE_Init(scenario_file.c_str(), 0, 0, 0, 0), 0);
+	static void TearDownTestSuite()
+	{
+		SE_Close();
+	}
+};
+
+TEST_F(APITestCutIn, TestGetName)
+{
 	ASSERT_EQ(SE_GetNumberOfObjects(), 2);
 
 	EXPECT_STREQ(SE_GetObjectName(0), "Ego");
@@ -2522,8 +2533,13 @@ TEST(APITest, TestGetName)
 	EXPECT_STREQ(SE_GetObjectName(1), "OverTaker");
 	EXPECT_STREQ(SE_GetObjectTypeName(1), "car_red");
 	EXPECT_STREQ(SE_GetObjectModelFileName(1), "car_red.osgb");
+}
 
-	SE_Close();
+TEST_F(APITestCutIn, TestGetIdByName)
+{
+	EXPECT_EQ(SE_GetIdByName("OverTaker"), 1);
+	EXPECT_EQ(SE_GetIdByName("Ego"), 0);
+	EXPECT_EQ(SE_GetIdByName("NotExisting"), -1);
 }
 
 TEST(APITest, TestGetRoute)
