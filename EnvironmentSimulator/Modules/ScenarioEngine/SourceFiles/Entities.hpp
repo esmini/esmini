@@ -472,6 +472,9 @@ namespace scenarioengine
 			performance_.maxAcceleration = LARGE_NUMBER;
 			performance_.maxDeceleration = LARGE_NUMBER;
 			performance_.maxSpeed = LARGE_NUMBER;
+
+			// Enable snap to sidewalks
+			pos_.SetSnapLaneTypes(pos_.GetSnapLaneTypes() | roadmanager::Lane::LaneType::LANE_TYPE_SIDEWALK);
 		}
 
 		void SetCategory(std::string category)

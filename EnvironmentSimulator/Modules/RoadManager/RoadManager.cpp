@@ -6471,7 +6471,7 @@ int Position::GotoClosestDrivingLaneAtCurrentPosition()
 	}
 
 	double offset;
-	int lane_idx = lane_section->GetClosestLaneIdx(s_, t_, 0, offset, true);
+	int lane_idx = lane_section->GetClosestLaneIdx(s_, t_, 0, offset, true, snapToLaneTypes_);
 
 	if (lane_idx == -1)
 	{
@@ -7115,7 +7115,7 @@ Position::ReturnCode Position::XYZH2TrackPos(double x3, double y3, double z3, do
 
 			// Now find cloest lane at that lateral position, at updated s value
 			double laneOffset;
-			int lane_idx = lsec->GetClosestLaneIdx(closestS, fixedLaneOffset, 0, laneOffset, true, Lane::LaneType::LANE_TYPE_ANY_DRIVING);
+			int lane_idx = lsec->GetClosestLaneIdx(closestS, fixedLaneOffset, 0, laneOffset, true, snapToLaneTypes_);
 			fixedLaneId = lsec->GetLaneIdByIdx(lane_idx);
 		}
 	}
@@ -7504,11 +7504,11 @@ std::string OpenDrive::LinkType2Str(LinkType type)
 
 int Position::TeleportTo(Position* position)
 {
-	roadmanager::Position tmpPos;
-
 	if (position->GetRelativePosition() == this)
 	{
 		// Special case: Relation short circuit - need to make a copy before reseting
+		roadmanager::Position tmpPos;
+
 		tmpPos.CopyRMPos(this);
 
 		position->SetRelativePosition(&tmpPos, position->GetType());
@@ -8613,6 +8613,7 @@ void Position::CopyRMPos(Position *from)
 	h_acc_ = tmp_pos.h_acc_;
 	p_acc_ = tmp_pos.p_acc_;
 	r_acc_ = tmp_pos.r_acc_;
+	snapToLaneTypes_ = tmp_pos.snapToLaneTypes_;
 }
 
 void Position::PrintTrackPos()

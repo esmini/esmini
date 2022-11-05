@@ -259,9 +259,6 @@ int ScenarioGateway::reportObject(int id, std::string name, int obj_type, int ob
 		obj_state = new ObjectState(id, name,obj_type,obj_category, model_id, ctrl_type, boundingbox,
 			scaleMode, visibilityMask, timestamp, speed, wheel_angle, wheel_rot, pos);
 
-		// Specify lanes relevant to the object (will snap to them)
-		obj_state->state_.pos.SetSnapLaneTypes(roadmanager::Lane::LaneType::LANE_TYPE_ANY_DRIVING);
-
 		// Add object to collection
 		objectState_.push_back(obj_state);
 	}
