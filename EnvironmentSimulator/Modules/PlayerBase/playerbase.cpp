@@ -367,32 +367,35 @@ void ScenarioPlayer::ViewerFrame(bool init)
 				entity->routewaypoints_->SetWayPoints(nullptr);
 			}
 
-
-			if (entity->GetType() == viewer::EntityModel::EntityType::VEHICLE)
+			if (entity->IsMoving())
 			{
-				viewer::CarModel* car = (viewer::CarModel*)entity;
-				car->UpdateWheels(obj->wheel_angle_, obj->wheel_rot_);
+				if (entity->IsVehicle())
+				{
+					viewer::CarModel* car = (viewer::CarModel*)entity;
+					car->UpdateWheels(obj->wheel_angle_, obj->wheel_rot_);
+				}
 
+				viewer::MovingModel* mov = (viewer::MovingModel*)entity;
 				if (obj->GetGhost())
 				{
-					if (car->steering_sensor_)
+					if (mov->steering_sensor_)
 					{
-						viewer_->SensorSetPivotPos(car->steering_sensor_, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
-						viewer_->SensorSetTargetPos(car->steering_sensor_, obj->sensor_pos_[0], obj->sensor_pos_[1], obj->sensor_pos_[2]);
-						viewer_->UpdateSensor(car->steering_sensor_);
+						viewer_->SensorSetPivotPos(mov->steering_sensor_, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
+						viewer_->SensorSetTargetPos(mov->steering_sensor_, obj->sensor_pos_[0], obj->sensor_pos_[1], obj->sensor_pos_[2]);
+						viewer_->UpdateSensor(mov->steering_sensor_);
 					}
-					if (car->trail_sensor_)
+					if (mov->trail_sensor_)
 					{
-						viewer_->SensorSetPivotPos(car->trail_sensor_, obj->trail_closest_pos_.x, obj->trail_closest_pos_.y, obj->trail_closest_pos_.z);
-						viewer_->SensorSetTargetPos(car->trail_sensor_, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
-						viewer_->UpdateSensor(car->trail_sensor_);
+						viewer_->SensorSetPivotPos(mov->trail_sensor_, obj->trail_closest_pos_.x, obj->trail_closest_pos_.y, obj->trail_closest_pos_.z);
+						viewer_->SensorSetTargetPos(mov->trail_sensor_, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
+						viewer_->UpdateSensor(mov->trail_sensor_);
 					}
 				}
 
-				if (odr_manager->GetNumOfRoads() > 0 && car->road_sensor_)
+				if (odr_manager->GetNumOfRoads() > 0 && mov->road_sensor_)
 				{
-					car->ShowRouteSensor(obj->pos_.GetRoute() ? true : false);
-					viewer_->UpdateRoadSensors(car->road_sensor_, car->route_sensor_, car->lane_sensor_, &obj->pos_);
+					mov->ShowRouteSensor(obj->pos_.GetRoute() ? true : false);
+					viewer_->UpdateRoadSensors(mov->road_sensor_, mov->route_sensor_, mov->lane_sensor_, &obj->pos_);
 				}
 			}
 
@@ -893,7 +896,8 @@ int ScenarioPlayer::InitViewer()
 		}
 
 		if (viewer_->AddEntityModel(viewer_->CreateEntityModel(obj->model3d_, trail_color,
-			obj->type_ == Object::Type::VEHICLE ? viewer::EntityModel::EntityType::VEHICLE : viewer::EntityModel::EntityType::OTHER,
+			obj->type_ == Object::Type::VEHICLE ? viewer::EntityModel::EntityType::VEHICLE :
+			Object::Type::PEDESTRIAN ? viewer::EntityModel::EntityType::MOVING : viewer::EntityModel::EntityType::ENTITY,
 			road_sensor, obj->name_, &obj->boundingbox_, obj->scaleMode_)) != 0)
 		{
 			CloseViewer();
@@ -904,7 +908,7 @@ int ScenarioPlayer::InitViewer()
 		viewer::VisibilityCallback* cb = new viewer::VisibilityCallback(viewer_->entities_.back()->txNode_, obj, viewer_->entities_.back());
 		viewer_->entities_.back()->txNode_->setUpdateCallback(cb);
 
-		if (viewer_->entities_.back()->GetType() == viewer::EntityModel::EntityType::VEHICLE)
+		if (viewer_->entities_.back()->IsVehicle())
 		{
 			InitVehicleModel(obj, (viewer::CarModel*)viewer_->entities_.back());
 		}

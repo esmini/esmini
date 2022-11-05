@@ -1125,18 +1125,29 @@ EntityModel::~EntityModel()
 	parent_->removeChild(txNode_);
 }
 
-
-CarModel::CarModel(osgViewer::Viewer* viewer, osg::ref_ptr<osg::Group> group, osg::ref_ptr<osg::Group> parent,
+MovingModel::MovingModel(osgViewer::Viewer* viewer, osg::ref_ptr<osg::Group> group, osg::ref_ptr<osg::Group> parent,
 	osg::ref_ptr<osg::Group> trail_parent, osg::ref_ptr<osg::Group> traj_parent, osg::ref_ptr<osg::Node> dot_node,
 	osg::ref_ptr<osg::Group> route_waypoint_parent, osg::Vec4 trail_color, std::string name) :
 	EntityModel(viewer, group, parent, trail_parent, traj_parent, dot_node, route_waypoint_parent, trail_color, name)
 {
-	steering_sensor_ = 0;
 	road_sensor_ = 0;
-	route_sensor_ = 0;
 	lane_sensor_ = 0;
+	steering_sensor_ = 0;
+	route_sensor_ = 0;
 	trail_sensor_ = 0;
+}
 
+
+MovingModel::~MovingModel()
+{
+	delete trail_;
+}
+
+CarModel::CarModel(osgViewer::Viewer* viewer, osg::ref_ptr<osg::Group> group, osg::ref_ptr<osg::Group> parent,
+	osg::ref_ptr<osg::Group> trail_parent, osg::ref_ptr<osg::Group> traj_parent, osg::ref_ptr<osg::Node> dot_node,
+	osg::ref_ptr<osg::Group> route_waypoint_parent, osg::Vec4 trail_color, std::string name) :
+	MovingModel(viewer, group, parent, trail_parent, traj_parent, dot_node, route_waypoint_parent, trail_color, name)
+{
 	wheel_angle_ = 0;
 	wheel_rot_ = 0;
 
@@ -1169,11 +1180,10 @@ CarModel::CarModel(osgViewer::Viewer* viewer, osg::ref_ptr<osg::Group> group, os
 	}
 }
 
-CarModel ::~CarModel()
+CarModel::~CarModel()
 {
 	front_wheel_.clear();
 	rear_wheel_.clear();
-	delete trail_;
 }
 
 void EntityModel::SetPosition(double x, double y, double z)
@@ -1244,7 +1254,7 @@ void CarModel::UpdateWheelsDelta(double wheel_angle, double wheel_rotation_delta
 	UpdateWheels(wheel_angle, wheel_rot_ + wheel_rotation_delta);
 }
 
-void CarModel::ShowRouteSensor(bool mode)
+void MovingModel::ShowRouteSensor(bool mode)
 {
 	if (mode == true)
 	{
@@ -2213,11 +2223,17 @@ EntityModel* Viewer::CreateEntityModel(std::string modelFilepath, osg::Vec4 trai
 		emodel = new CarModel(osgViewer_, group, rootnode_, trails_, trajectoryLines_,
 			dot_node_, routewaypoints_, trail_color, name);
 	}
+	else if (type == EntityModel::EntityType::MOVING)
+	{
+		emodel = new MovingModel(osgViewer_, group, rootnode_, trails_, trajectoryLines_,
+			dot_node_, routewaypoints_, trail_color, name);
+	}
 	else
 	{
 		emodel = new EntityModel(osgViewer_, group, rootnode_, trails_, trajectoryLines_,
 			dot_node_, routewaypoints_, trail_color, name);
 	}
+
 	emodel->filename_ = modelFilepath;
 
 	emodel->blend_color_ = new osg::BlendColor(osg::Vec4(1, 1, 1, 1));
@@ -2231,18 +2247,18 @@ EntityModel* Viewer::CreateEntityModel(std::string modelFilepath, osg::Vec4 trai
 
 	emodel->modelBB_ = modelBB;
 
-	if (type == EntityModel::EntityType::VEHICLE)
+	if (emodel->IsMoving())
 	{
-		CarModel* vehicle = (CarModel*)emodel;
-		CreateRoadSensors(vehicle);
+		MovingModel* mov = (MovingModel*)emodel;
+		CreateRoadSensors(mov);
 
 		if (road_sensor)
 		{
-			vehicle->road_sensor_->Show();
+			mov->road_sensor_->Show();
 		}
 		else
 		{
-			vehicle->road_sensor_->Hide();
+			mov->road_sensor_->Hide();
 		}
 	}
 
@@ -3140,11 +3156,11 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
 	return 0;
 }
 
-bool Viewer::CreateRoadSensors(CarModel* vehicle_model)
+bool Viewer::CreateRoadSensors(MovingModel* moving_model)
 {
-	vehicle_model->road_sensor_ = CreateSensor(color_gray, true, false, 0.35, 2.5);
-	vehicle_model->route_sensor_ = CreateSensor(color_blue, true, false, 0.30, 2.5);
-	vehicle_model->lane_sensor_ = CreateSensor(color_gray, true, true, 0.25, 2.5);
+	moving_model->road_sensor_ = CreateSensor(color_gray, true, false, 0.35, 2.5);
+	moving_model->route_sensor_ = CreateSensor(color_blue, true, false, 0.30, 2.5);
+	moving_model->lane_sensor_ = CreateSensor(color_gray, true, true, 0.25, 2.5);
 
 	return true;
 }

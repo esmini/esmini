@@ -261,8 +261,9 @@ namespace viewer
 
 		enum class EntityType
 		{
-			VEHICLE,
-			OTHER
+			ENTITY = 1 << 0,
+			MOVING = ENTITY | 1 << 1,
+			VEHICLE = MOVING | 1 << 2,
 		};
 
 		osg::ref_ptr<osg::Group> group_;
@@ -275,8 +276,14 @@ namespace viewer
 		osg::BoundingBox modelBB_;
 
 		Trajectory* trajectory_;
-		static const EntityType entity_type_ = EntityType::OTHER;
+		static const EntityType entity_type_ = EntityType::ENTITY;
 		virtual EntityType GetType() { return entity_type_; }
+
+		/* Returns true if type is or inherits from MOVING */
+		bool IsMoving() { return static_cast<int>(GetType()) & 1 << 1; }
+
+		/* Returns true if type is or inherits from VEHICLE */
+		bool IsVehicle() { return static_cast<int>(GetType()) & 1 << 2; }
 
 		std::string name_;
 		std::string filename_;
@@ -293,25 +300,37 @@ namespace viewer
 
 		void SetTransparency(double factor);
 
-
 		PolyLine* trail_;
 		RouteWayPoints* routewaypoints_;
 		osgViewer::Viewer* viewer_;
 		OnScreenText on_screen_info_;
 	};
 
-	class CarModel : public EntityModel
+	class MovingModel : public EntityModel
+	{
+	public:
+		PointSensor* road_sensor_;
+		PointSensor* lane_sensor_;
+		PointSensor* route_sensor_;
+		PointSensor* trail_sensor_;
+		PointSensor* steering_sensor_;
+		static const EntityType entity_type_ = EntityType::MOVING;
+		virtual EntityType GetType() { return entity_type_; }
+
+		MovingModel(osgViewer::Viewer* viewer, osg::ref_ptr<osg::Group> group, osg::ref_ptr<osg::Group> parent,
+			osg::ref_ptr<osg::Group> trail_parent, osg::ref_ptr<osg::Group>traj_parent, osg::ref_ptr<osg::Node> dot_node,
+			osg::ref_ptr<osg::Group> route_waypoint_parent, osg::Vec4 trail_color, std::string name);
+		~MovingModel();
+		void ShowRouteSensor(bool mode);
+	};
+
+	class CarModel : public MovingModel
 	{
 	public:
 		std::vector<osg::ref_ptr<osg::PositionAttitudeTransform>> front_wheel_;
 		std::vector<osg::ref_ptr<osg::PositionAttitudeTransform>> rear_wheel_;
 		double wheel_angle_;
 		double wheel_rot_;
-		PointSensor* road_sensor_;
-		PointSensor* route_sensor_;
-		PointSensor* lane_sensor_;
-		PointSensor* trail_sensor_;
-		PointSensor* steering_sensor_;
 		static const EntityType entity_type_ = EntityType::VEHICLE;
 		virtual EntityType GetType() { return entity_type_; }
 
@@ -322,7 +341,6 @@ namespace viewer
 		osg::ref_ptr<osg::PositionAttitudeTransform>  AddWheel(osg::ref_ptr<osg::Node> carNode, const char* wheelName);
 		void UpdateWheels(double wheel_angle, double wheel_rotation);
 		void UpdateWheelsDelta(double wheel_angle, double wheel_rotation_delta);
-		void ShowRouteSensor(bool mode);
 	};
 
 	class VisibilityCallback : public osg::NodeCallback
@@ -467,7 +485,7 @@ namespace viewer
 		void ToggleNodeMaskBits(int bits);
 		int GetNodeMaskBit(int mask);
 		PointSensor* CreateSensor(double color[], bool create_ball, bool create_line, double ball_radius, double line_width);
-		bool CreateRoadSensors(CarModel* vehicle_model);
+		bool CreateRoadSensors(MovingModel* moving_model);
 		void SetWindowTitle(std::string title);
 		void SetWindowTitleFromArgs(std::vector<std::string>& arg);
 		void SetWindowTitleFromArgs(int argc, char* argv[]);
