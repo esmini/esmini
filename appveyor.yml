@@ -106,69 +106,11 @@ for:
         fi
 
     test_script:
-      - sh: Xvfb :99 -screen 0 1920x1080x24+32 & export DISPLAY=:99
-      - ps: |
-            cd build/EnvironmentSimulator/Unittest
-            $env:path += "../../../bin"
+      - sh: >-
 
-            ./OperatingSystem_test
-            if ($lastExitCode -ne 0) {
-                throw "OperatingSystem_test failed"
-            }
+          Xvfb :99 -screen 0 1920x1080x24+32 & export DISPLAY=:99
 
-            ./CommonMini_test
-            if ($lastExitCode -ne 0) {
-                throw "CommonMini_test failed"
-            }
-
-            ./RoadManager_test
-            if ($lastExitCode -ne 0) {
-                throw "RoadManager_test failed"
-            }
-
-            ./ScenarioEngine_test
-            if ($lastExitCode -ne 0) {
-                throw "ScenarioEngine_test failed"
-            }
-
-            ./ScenarioPlayer_test
-            if ($lastExitCode -ne 0) {
-                throw "ScenarioPlayer_test failed"
-            }
-
-            ./ScenarioEngineDll_test
-            if ($lastExitCode -ne 0) {
-                throw "ScenarioEngineDll_test failed"
-            }
-            dir *.tga, *.ppm
-
-            ./RoadManagerDll_test
-            if ($lastExitCode -ne 0) {
-                throw "RoadManagerDll_test failed"
-            }
-
-            ./FollowRoute_test
-            if ($lastExitCode -ne 0) {
-                throw "FollowRoute_test failed"
-            }
-
-            ./FollowRouteController_test
-            if ($lastExitCode -ne 0) {
-                throw "FollowRouteController_test failed"
-            }
-
-            cd ../../../test
-
-            python3 smoke_test.py
-            $r0 = $LASTEXITCODE
-
-            python3 alks_suite.py
-            $r1 = $LASTEXITCODE
-
-            if (($r0 -ne 0) -or ($r1 -ne 0))
-            {
-              throw "Test NOK"
-            }
+          ./scripts/run_tests.sh
 
     artifacts:
       - path: esmini-*_ubuntu.zip
@@ -235,19 +177,7 @@ for:
           fi
 
     test_script:
-      - ps: |
-            cd test
-
-            python3 smoke_test.py
-            $r0 = $LASTEXITCODE
-
-            python3 alks_suite.py
-            $r1 = $LASTEXITCODE
-
-            if (($r0 -ne 0) -or ($r1 -ne 0))
-            {
-              throw "Test NOK"
-            }
+      - sh: ./scripts/run_tests.sh
 
     artifacts:
       - path: esmini-*_mac_catalina.zip
@@ -326,62 +256,11 @@ for:
     #   - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
     test_script:
-      - ps: |
-            cd build/EnvironmentSimulator/Unittest
-            $env:path += ";../../../bin"
+      - cmd: >-
 
-            ./Release/OperatingSystem_test
-            if ($lastExitCode -ne 0) {
-                throw "OperatingSystem_test failed"
-            }
+          set PATH="c:/Program Files/Git/bin";%PATH%
 
-            ./Release/CommonMini_test
-            if ($lastExitCode -ne 0) {
-                throw "CommonMini_test failed"
-            }
-
-            ./Release/RoadManager_test
-            if ($lastExitCode -ne 0) {
-                throw "RoadManager_test failed"
-            }
-
-            ./Release/ScenarioEngine_test
-            if ($lastExitCode -ne 0) {
-                throw "ScenarioEngine_test failed"
-            }
-
-            ./Release/ScenarioPlayer_test
-            if ($lastExitCode -ne 0) {
-                throw "ScenarioPlayer_test failed"
-            }
-
-            ./Release/ScenarioEngineDll_test
-            if ($lastExitCode -ne 0) {
-                throw "ScenarioEngineDll_test failed"
-            }
-            dir *.tga, *.ppm
-
-            ./Release/RoadManagerDll_test
-            if ($lastExitCode -ne 0) {
-                throw "RoadManagerDll_test failed"
-            }
-
-            ./Release/FollowRoute_test
-            if ($lastExitCode -ne 0) {
-                throw "FollowRoute_test failed"
-            }
-
-            ./Release/FollowRouteController_test
-            if ($lastExitCode -ne 0) {
-                throw "FollowRouteController_test failed"
-            }
-
-      - cmd:
-            cd ../../../test
-
-            C:/Python38/python smoke_test.py
-
-            C:/Python38/python alks_suite.py
+          .\scripts\run_tests.sh
 
     artifacts:
       - path: esmini-*_win*.zip
