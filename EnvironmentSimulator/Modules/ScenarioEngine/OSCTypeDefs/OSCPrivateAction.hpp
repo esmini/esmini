@@ -453,7 +453,7 @@ namespace scenarioengine
 		double target_lane_offset_;
 
 		LatLaneChangeAction(LatLaneChangeAction::DynamicsDimension timing_type = DynamicsDimension::TIME) :
-			start_offset_(0.0), target_lane_offset_(0.0),
+			start_offset_(0.0), target_lane_offset_(0.0), target_(0),
 			OSCPrivateAction(OSCPrivateAction::ActionType::LAT_LANE_CHANGE, ControlDomains::DOMAIN_LAT)
 		{
 			transition_.dimension_ = timing_type;
