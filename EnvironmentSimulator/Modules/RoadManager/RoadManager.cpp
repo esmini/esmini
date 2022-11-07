@@ -2613,7 +2613,7 @@ double Road::GetWidth(double s, int side, int laneTypeMask)
 {
 	double offset0 = 0;
 	double offset1 = 0;
-	size_t i = 0;
+	int i = 0;
 	int index = 0;
 
 	for (; i < GetNumberOfLaneSections() - 1; i++)
@@ -5628,7 +5628,7 @@ bool Position::LoadOpenDrive(const char *filename)
 bool Position::LoadOpenDrive(OpenDrive* odr)
 {
 	*GetOpenDrive() = *odr;
-	return(GetOpenDrive());
+	return(GetOpenDrive() != nullptr);
 }
 
 
