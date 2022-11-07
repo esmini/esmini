@@ -116,19 +116,9 @@ OSCPositionRoad::OSCPositionRoad(int roadId, double s, double t, OSCOrientation 
 
 	if (orientation.type_ == roadmanager::Position::OrientationType::ORIENTATION_RELATIVE)
 	{
-		// Adjust heading to road direction also considering traffic rule (left/right hand traffic)
-		if (position_.GetDrivingDirectionRelativeRoad() < 0)
-		{
-			position_.SetHeadingRelative(GetAngleSum(M_PI, orientation.h_));
-			position_.SetPitchRelative(-orientation.p_);
-			position_.SetRollRelative(-orientation.r_);
-		}
-		else
-		{
-			position_.SetHeadingRelative(orientation.h_);
-			position_.SetPitchRelative(orientation.p_);
-			position_.SetRollRelative(orientation.r_);
-		}
+		position_.SetHeadingRelative(orientation.h_);
+		position_.SetPitchRelative(orientation.p_);
+		position_.SetRollRelative(orientation.r_);
 		position_.EvaluateOrientation();
 	}
 	else if (orientation.type_ == roadmanager::Position::OrientationType::ORIENTATION_ABSOLUTE)
@@ -226,11 +216,15 @@ OSCPositionRelativeRoad::OSCPositionRelativeRoad(Object* object, double ds, doub
 		position_.SetRollRelative(orientation.r_);
 		position_.EvaluateOrientation();
 	}
-	else
+	else if (orientation.type_ == roadmanager::Position::OrientationType::ORIENTATION_ABSOLUTE)
 	{
 		position_.SetHeading(orientation.h_);
 		position_.SetPitch(orientation.p_);
 		position_.SetRoll(orientation.r_);
+	}
+	else
+	{
+		LOG("Unexpected orientation type: %d", orientation.type_);
 	}
 
 	position_.SetRelativePosition(&object->pos_, roadmanager::Position::PositionType::RELATIVE_ROAD);

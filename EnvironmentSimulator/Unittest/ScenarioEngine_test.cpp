@@ -1540,6 +1540,34 @@ TEST(ControllerTest, ALKS_R157_TestR157RegulationMinDist)
     EXPECT_NEAR(controller->model_->MinDist(), 47.500, 1E-3);
 }
 
+class StraightRoadTest : public testing::Test
+{
+protected:
+
+    static void SetUpTestSuite()
+    {
+        ASSERT_EQ(roadmanager::Position::LoadOpenDrive("../../../resources/xodr/straight_500m.xodr"), true);
+        static OpenDrive* odr = Position::GetOpenDrive();
+        ASSERT_NE(odr, nullptr);
+        EXPECT_EQ(odr->GetNumOfRoads(), 1);
+    }
+
+    static void TearDownTestSuite()
+    {
+
+    }
+};
+
+TEST_F(StraightRoadTest, TestRoadPosition)
+{
+    OSCOrientation o(Position::OrientationType::ORIENTATION_RELATIVE, 0.1, 0.0, 0.0);
+
+    OSCPositionRoad road_pos1(1, 50, 1.5, o);
+    EXPECT_NEAR(((OSCPosition&)road_pos1).GetRMPos()->GetH(), 0.1, 1e-3);
+
+    OSCPositionRoad road_pos2(1, 50, -1.5, o);
+    EXPECT_NEAR(((OSCPosition&)road_pos2).GetRMPos()->GetH(), 0.1, 1e-3);
+}
 
 // Uncomment to print log output to console
 //#define LOG_TO_CONSOLE

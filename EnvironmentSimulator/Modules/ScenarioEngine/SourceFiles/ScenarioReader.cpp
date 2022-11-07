@@ -1548,7 +1548,6 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPo
 		int road_id = strtoi(parameters.ReadAttribute(positionChild, "roadId"));
 		double s = strtod(parameters.ReadAttribute(positionChild, "s"));
 		double t = strtod(parameters.ReadAttribute(positionChild, "t"));
-		;
 
 		// Check for optional Orientation element
 		pugi::xml_node orientation_node = positionChild.child("Orientation");
