@@ -306,7 +306,7 @@ TEST(TrajectoryTest, EnsureContinuation)
     ASSERT_NEAR(se->entities_.object_[0]->pos_.GetX(), 26.13539, 1e-5);
     ASSERT_NEAR(se->entities_.object_[0]->pos_.GetY(), 2.917931, 1e-5);
     ASSERT_NEAR(se->entities_.object_[0]->pos_.GetH(), 0.0, 1e-5);
-    
+
     delete se;
 }
 
@@ -398,7 +398,7 @@ TEST(OptionsTest, TestOptionHandling)
         "--option3",
         "--option4"
     };
-    int argc = args.size();
+    int argc = (int)args.size();
 
     ASSERT_EQ(opt.ParseArgs(argc, args.data()), -1);
 
@@ -417,7 +417,7 @@ TEST(OptionsTest, TestOptionHandling)
     ASSERT_EQ(opt.GetOptionArg("option3"), "55");
 
     // test without last argument, should return OK
-    int argc_minus_one = args.size() - 1;
+    int argc_minus_one = (int)(args.size() - 1);
     ASSERT_EQ(opt.ParseArgs(argc_minus_one, args.data()), 0);
 }
 

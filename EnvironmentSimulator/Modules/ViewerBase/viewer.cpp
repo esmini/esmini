@@ -1137,12 +1137,6 @@ MovingModel::MovingModel(osgViewer::Viewer* viewer, osg::ref_ptr<osg::Group> gro
 	trail_sensor_ = 0;
 }
 
-
-MovingModel::~MovingModel()
-{
-	delete trail_;
-}
-
 CarModel::CarModel(osgViewer::Viewer* viewer, osg::ref_ptr<osg::Group> group, osg::ref_ptr<osg::Group> parent,
 	osg::ref_ptr<osg::Group> trail_parent, osg::ref_ptr<osg::Group> traj_parent, osg::ref_ptr<osg::Node> dot_node,
 	osg::ref_ptr<osg::Group> route_waypoint_parent, osg::Vec4 trail_color, std::string name) :
