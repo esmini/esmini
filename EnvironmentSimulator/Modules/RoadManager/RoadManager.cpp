@@ -9083,6 +9083,12 @@ Position::ReturnCode Position::GetProbeInfo(double lookahead_distance, RoadProbe
 	}
 	Position target(*this);  // Make a copy of current position
 
+	Route saveRoute;
+	if (this->route_)
+	{
+		saveRoute = *this->route_;  // Preserve route
+	}
+
 	if (lookAheadMode == LookAheadMode::LOOKAHEADMODE_AT_ROAD_CENTER)
 	{
 		// Look along reference lane requested, move pivot position to t=0 plus a small number in order to
@@ -9113,6 +9119,11 @@ Position::ReturnCode Position::GetProbeInfo(double lookahead_distance, RoadProbe
 	if (retval != ReturnCode::ERROR_GENERIC)
 	{
 		CalcProbeTarget(&target, data);
+	}
+
+	if (this->route_)
+	{
+		*this->route_ = saveRoute;  // Restore route
 	}
 
 	return retval;
