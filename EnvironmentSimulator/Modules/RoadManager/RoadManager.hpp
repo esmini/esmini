@@ -1856,7 +1856,8 @@ namespace roadmanager
 
 		enum class ReturnCode
 		{
-			ERROR_OFF_ROAD = -4,
+			ERROR_OFF_ROAD = -5,
+			ERROR_NOT_ON_ROUTE = -4,
 			ERROR_END_OF_ROUTE = -3,
 			ERROR_END_OF_ROAD = -2,
 			ERROR_GENERIC = -1,

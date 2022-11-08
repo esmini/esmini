@@ -101,7 +101,18 @@ Position::ReturnCode Object::MoveAlongS(double ds, bool actualDistance)
 
 	if (pos_.GetRoute() && pos_.GetRoute()->IsValid())
 	{
-		ret_val = pos_.MoveRouteDS(ds, actualDistance);
+		if (pos_.GetRoute()->waypoint_idx_ < 0)
+		{
+			// Not on route (yet?). Move along s using standard method.
+			ret_val = pos_.MoveAlongS(ds, 0.0, GetJunctionSelectorAngle(), actualDistance);
+
+			// Then check if we reached the route
+			pos_.GetRoute()->SetTrackS(pos_.GetTrackId(), pos_.GetS());
+		}
+		else
+		{
+			ret_val = pos_.MoveRouteDS(ds, actualDistance);
+		}
 	}
 	else
 	{

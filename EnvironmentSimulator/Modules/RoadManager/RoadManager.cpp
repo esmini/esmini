@@ -1353,7 +1353,10 @@ int Road::GetLaneInfoByS(double s, int start_lane_section_idx, int start_lane_id
 					lane_info.lane_section_idx_ + 1 < GetNumberOfLaneSections())
 				{
 					// Find out connecting lane, then move to next lane section
-					lane_info.lane_id_ = lane_section->GetConnectingLaneId(lane_info.lane_id_, SUCCESSOR);
+					if (lane_info.lane_id_ != 0)
+					{
+						lane_info.lane_id_ = lane_section->GetConnectingLaneId(lane_info.lane_id_, SUCCESSOR);
+					}
 					lane_section = GetLaneSectionByIdx(++lane_info.lane_section_idx_);
 				}
 			}
@@ -1362,14 +1365,17 @@ int Road::GetLaneInfoByS(double s, int start_lane_section_idx, int start_lane_id
 				while (s < lane_section->GetS() && lane_info.lane_section_idx_ > 0)
 				{
 					// Move to previous lane section
-					lane_info.lane_id_ = lane_section->GetConnectingLaneId(lane_info.lane_id_, PREDECESSOR);
+					if (lane_info.lane_id_ != 0)
+					{
+						lane_info.lane_id_ = lane_section->GetConnectingLaneId(lane_info.lane_id_, PREDECESSOR);
+					}
 					lane_section = GetLaneSectionByIdx(--lane_info.lane_section_idx_);
 				}
 			}
 
 			// If new lane is not of snapping type, try to move into a close valid lane
 			Lane* lane = lane_section->GetLaneById(lane_info.lane_id_);
-			if (lane == 0 || !(laneTypeMask & lane_section->GetLaneById(lane_info.lane_id_)->GetLaneType()))
+			if (start_lane_id != 0 && (lane == 0 || !(laneTypeMask & lane_section->GetLaneById(lane_info.lane_id_)->GetLaneType())))
 			{
 				double offset = 0;
 
@@ -1820,6 +1826,12 @@ void LaneSection::AddLane(Lane *lane)
 int LaneSection::GetConnectingLaneId(int incoming_lane_id, LinkType link_type)
 {
 	int id = incoming_lane_id;
+
+	if (id == 0)
+	{
+		// reference lane
+		return 0;
+	}
 
 	if (GetLaneById(id) == 0)
 	{
@@ -7618,7 +7630,7 @@ Position::ReturnCode Position::MoveToConnectingRoad(RoadLink *road_link, Contact
 		else
 		{
 			// find valid connecting road, if multiple choices choose either most straight one OR by random
-			if (GetRoute())
+			if (GetRoute() && GetRoute()->IsValid() && GetRoute()->waypoint_idx_ >= 0)
 			{
 				// Choose direction of the route
 				Route* r = GetRoute();
@@ -9607,6 +9619,11 @@ Position::ReturnCode Position::MoveRouteDS(double ds, bool actualDistance)
 		return ReturnCode::ERROR_GENERIC;
 	}
 
+	if (route_->waypoint_idx_ < 0)
+	{
+		return ReturnCode::ERROR_NOT_ON_ROUTE;
+	}
+
 	// Idea:
 	// Calculate adjusted ds for entity actual distance
 	// if already in junction:
@@ -10924,7 +10941,7 @@ Position::ReturnCode Route::SetTrackS(int trackId, double s)
 	}
 
 	// Failed to map current position to the current route
-	return Position::ReturnCode::ERROR_GENERIC;
+	return Position::ReturnCode::ERROR_NOT_ON_ROUTE;
 }
 
 Position::ReturnCode Route::MovePathDS(double ds)
