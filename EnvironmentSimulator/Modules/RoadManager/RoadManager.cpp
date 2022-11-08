@@ -7725,8 +7725,6 @@ Position::ReturnCode Position::MoveToConnectingRoad(RoadLink *road_link, Contact
 		LOG("No connection from rid %d lid %d -> rid %d eltype %d - trying move to closest lane",
 			road->GetId(), lane->GetId(), road_link->GetElementId(), road_link->GetElementType());
 
-		offset_ = 0;
-
 		// Find closest lane on new road - by convert to track pos and then set lane offset = 0
 		if (contact_point_type == CONTACT_POINT_START)
 		{
@@ -7743,6 +7741,8 @@ Position::ReturnCode Position::MoveToConnectingRoad(RoadLink *road_link, Contact
 		}
 
 		LOG("%sonnection found (rid %d lid %d)", ret_val < ReturnCode::OK ? "No c" : "C", GetTrackId(), GetLaneId());
+
+		offset_ = 0;  // Reset lane offset when new move to new lane was enforced
 
 		return ret_val;
 	}

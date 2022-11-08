@@ -571,6 +571,8 @@ extern "C"
 				return (int)pos->MoveAlongS(dist, 0.0, junctionSelectorAngle);
 			}
 		}
+
+		return -1;
 	}
 
 	RM_DLL_API int RM_GetPositionData(int handle, RM_PositionData *data)
