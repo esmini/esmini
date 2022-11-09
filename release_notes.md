@@ -1,5 +1,19 @@
 ## esmini release notes
 
+### 2022-11-09 Version 2.26.9
+- Make pedestrians snap to sidewalks ([issue #343](https://github.com/esmini/esmini/issues/343))
+- Enable visualization of road and lane sensors for pedestrians
+- Add GetIdByName function to esminiLib ([issue #345](https://github.com/esmini/esmini/issues/345))
+- Remove RoadPosition driving direction dependency ([issue #340](https://github.com/esmini/esmini/issues/340))
+- Remove obsolete SE_RegisterEventCallback ([issue #311](https://github.com/esmini/esmini/issues/311))
+  - use [SE_RegisterStoryBoardElementStateChangeCallback](https://github.com/esmini/esmini/blob/daaf01d845bc3c6854ae5a92c6b09c15efa30c60/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L881) instead
+- Make use of roadmanager detailed return codes in esminiRMLib functions
+  - see [roadmanager.hpp::Position::enum class ReturnCode](https://github.com/esmini/esmini/blob/daaf01d845bc3c6854ae5a92c6b09c15efa30c60/EnvironmentSimulator/Modules/RoadManager/RoadManager.hpp#L1857)
+- Bugfix: Preserve overlapping road check result until next query
+- Bugfix: Reset lane offset after enforced lane switch (e.g. due to lane end or width become zero)
+- Bugfix: Fix SE_GetRoadInfoAtDistance along route (avoid accumulating distance)
+- Some additional minor fixes
+
 ### 2022-10-31 Version 2.26.8
 
 - New feature: Custom lights ([issue #339](https://github.com/esmini/esmini/issues/339))
