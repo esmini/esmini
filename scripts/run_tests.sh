@@ -9,8 +9,8 @@ exit_with_msg() {
 
 workingDir=$(pwd)
 
-LSAN_OPTIONS="print_suppressions=false:suppressions="${workingDir}"/LSAN.supp"
-ASAN_OPTIONS="detect_invalid_pointer_pairs=1:strict_string_checks=true:detect_stack_use_after_return=true:check_initialization_order=true:fast_unwind_on_malloc=false:suppressions="${workingDir}"/ASAN.supp"
+LSAN_OPTIONS="print_suppressions=false:suppressions="${workingDir}"/scripts/LSAN.supp"
+ASAN_OPTIONS="detect_invalid_pointer_pairs=1:strict_string_checks=true:detect_stack_use_after_return=true:check_initialization_order=true:fast_unwind_on_malloc=false:suppressions="${workingDir}"/scripts/ASAN.supp"
 
 UNIT_TEST_FOLDER=${workingDir}/build/EnvironmentSimulator/Unittest
 SMOKE_TEST_FOLDER=${workingDir}/test
