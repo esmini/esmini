@@ -1797,10 +1797,10 @@ int OSIReporter::UpdateOSIRoadLane(std::vector<ObjectState *> objectState)
 												lane_pairing->mutable_successor_lane_id()->set_value(lane_global_id);
 											}
 										}
-										else
-										{
-											LOG("Lane %d on road %d s %d is not a driving lane", lane->GetId(), predecessorRoad->GetId(), predecessor_lane_section->GetS());
-										}
+									}
+									else
+									{
+										LOG("Lane %d on predecessor road %d s %.2f is not a driving lane", lane->GetId(), predecessorRoad->GetId(), predecessor_lane_section->GetS());
 									}
 								}
 								else
@@ -1825,7 +1825,7 @@ int OSIReporter::UpdateOSIRoadLane(std::vector<ObjectState *> objectState)
 									}
 									else
 									{
-										LOG("Lane %d on road %d s %d is not a driving lane", lane->GetId(), predecessorRoad->GetId(), predecessor_lane_section->GetS());
+										LOG("Lane %d on successor road %d s %.2f is not a driving lane", lane->GetId(), successorRoad->GetId(), successor_lane_section->GetS());
 									}
 								}
 								else
