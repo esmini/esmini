@@ -57,6 +57,7 @@ Additional OSG graphics options:
   --window <x y w h>                         Set the position x, y and size w, h of the viewer window. -1 -1 -1 -1 for fullscreen.
   --borderless-window <x y w h>              Set the position x, y and size w, h of a borderless viewer window. -1 -1 -1 -1 for fullscreen.
   --SingleThreaded                           Run application and all graphics tasks in one single thread.
+  --lodScale <LOD scalefactor>               Adjust Level Of Detail 1=default >1 decrease fidelity <1 increase fidelity
   
 For a complete list of OSG options and environment variables, see here:
 https://github.com/esmini/esmini/blob/master/docs/osg_options_and_env_variables.txt  

@@ -1890,6 +1890,7 @@ void Viewer::PrintUsage()
 	printf("  --window <x y w h>                         Set the position x, y and size w, h of the viewer window. -1 -1 -1 -1 for fullscreen.\n");
 	printf("  --borderless-window <x y w h>	             Set the position x, y and size w, h of a borderless viewer window. -1 -1 -1 -1 for fullscreen.\n");
 	printf("  --SingleThreaded                           Run application and all graphics tasks in one single thread.\n");
+	printf("  --lodScale <LOD scalefactor>               Adjust Level Of Detail 1=default >1 decrease fidelity <1 increase fidelity\n");
 	printf("\n");
 }
 

@@ -1338,7 +1338,7 @@ void SE_Options::PrintUsage()
 void SE_Options::PrintUnknownArgs(std::string message)
 {
 	printf("\n%s\n", message.c_str());
-	for (const auto& arg : unknown_args_) 
+	for (const auto& arg : unknown_args_)
 	{
 		printf("  %s\n", arg.c_str());
 	}
@@ -1382,12 +1382,17 @@ std::string SE_Options::GetOptionArg(std::string opt, int index)
 	}
 }
 
-static constexpr std::array<const char*, 5> OSG_ARGS = {
+static constexpr std::array<const char*, 10> OSG_ARGS = {
 	"--clear-color",
 	"--screen",
 	"--window",
 	"--borderless-window",
-	"--SingleThreaded"
+	"--SingleThreaded",
+	"--CullDrawThreadPerContext",
+	"--SingleThreaded",
+	"--DrawThreadPerContext",
+	"--CullThreadPerCameraDrawThreadPerContext",
+	"--lodScale"
 };
 
 int SE_Options::ParseArgs(int argc, const char* const argv[])
