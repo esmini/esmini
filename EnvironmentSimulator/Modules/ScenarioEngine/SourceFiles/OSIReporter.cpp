@@ -1771,6 +1771,42 @@ int OSIReporter::UpdateOSIRoadLane()
 						//Update lanes that connect with junctions that are not intersections
 						if (road->GetNumberOfRoadTypes() > 0 && road->GetRoadType(0)->road_type_ == roadmanager::Road::RoadType::ROADTYPE_MOTORWAY && road->GetJunction() > 0)
 						{
+							roadmanager::LaneLink* link_predecessor = lane->GetLink(roadmanager::LinkType::PREDECESSOR);
+							roadmanager::LaneLink* link_successor = lane->GetLink(roadmanager::LinkType::SUCCESSOR);
+
+							roadmanager::Lane* driving_lane_predecessor;
+							roadmanager::Lane* driving_lane_successor;
+
+							// bool check_predecessor = false;
+							// bool check_successor = false;
+							
+
+							if (link_predecessor)
+							{
+								driving_lane_predecessor = predecessorRoad->GetDrivingLaneById(predecessor_lane_section->GetS(), link_predecessor->GetId());
+								if (driving_lane_predecessor)
+								{
+									LOG("Lane %d on predecessor road %d s %.2f is not a driving lane", lane->GetId(), predecessorRoad->GetId(), predecessor_lane_section->GetS());
+								}
+							}
+							else
+							{
+								LOG("Failed to resolve Predecessor link of lane %d of road %d", lane->GetId(), road->GetId());
+							}
+
+							if (link_successor)
+							{
+								driving_lane_successor = successorRoad->GetDrivingLaneById(successor_lane_section->GetS(), link_successor->GetId());
+								if (driving_lane_successor)
+								{
+									LOG("Lane %d on successor road %d s %.2f is not a driving lane", lane->GetId(), successorRoad->GetId(), successor_lane_section->GetS());
+								}
+							}
+							else
+							{
+								LOG("Failed to resolve Successor link of lane %d of road %d", lane->GetId(), road->GetId());
+							}
+							
 							for (int l = 0; l < obj_osi_internal.gt->lane_size(); ++l)
 							{
 								if (obj_osi_internal.gt->mutable_lane(l)->mutable_classification()->lane_pairing_size() >0 )
@@ -1782,56 +1818,21 @@ int OSIReporter::UpdateOSIRoadLane()
 								{
 									lane_pairing = obj_osi_internal.gt->mutable_lane(l)->mutable_classification()->add_lane_pairing();
 								}
-
-								roadmanager::LaneLink* link = lane->GetLink(roadmanager::LinkType::PREDECESSOR);
-								if (link)
+								if (predecessorRoad && predecessor_lane_section && link_predecessor && driving_lane_predecessor && driving_lane_predecessor->GetGlobalId() == obj_osi_internal.gt->lane(l).id().value())
 								{
-									roadmanager::Lane* driving_lane = predecessorRoad->GetDrivingLaneById(predecessor_lane_section->GetS(), link->GetId());
-									if (driving_lane != nullptr)
+									if ((road->GetLink(roadmanager::LinkType::PREDECESSOR) != 0))
 									{
-										if (predecessorRoad && predecessor_lane_section &&
-											driving_lane->GetGlobalId() == obj_osi_internal.gt->lane(l).id().value())
-										{
-											if ((road->GetLink(roadmanager::LinkType::PREDECESSOR) != 0))
-											{
-												lane_pairing->mutable_successor_lane_id()->set_value(lane_global_id);
-											}
-										}
-									}
-									else
-									{
-										LOG("Lane %d on predecessor road %d s %.2f is not a driving lane", lane->GetId(), predecessorRoad->GetId(), predecessor_lane_section->GetS());
+										lane_pairing->mutable_successor_lane_id()->set_value(lane_global_id);
 									}
 								}
-								else
+								if (successorRoad && successor_lane_section && link_successor && driving_lane_successor && driving_lane_successor->GetGlobalId() == obj_osi_internal.gt->lane(l).id().value())
 								{
-									LOG("Failed to resolve Predecessor link of lane %d of road %d", lane->GetId(), road->GetId());
-								}
-
-								link = lane->GetLink(roadmanager::LinkType::SUCCESSOR);
-								if (link)
-								{
-									roadmanager::Lane* driving_lane = successorRoad->GetDrivingLaneById(successor_lane_section->GetS(), link->GetId());
-									if (driving_lane != nullptr)
+									if ((road->GetLink(roadmanager::LinkType::SUCCESSOR) != 0))
 									{
-										if (successorRoad && successor_lane_section &&
-											driving_lane->GetGlobalId() == obj_osi_internal.gt->lane(l).id().value())
-										{
-											if ((road->GetLink(roadmanager::LinkType::SUCCESSOR) != 0))
-											{
-												lane_pairing->mutable_antecessor_lane_id()->set_value(lane_global_id);
-											}
-										}
-									}
-									else
-									{
-										LOG("Lane %d on successor road %d s %.2f is not a driving lane", lane->GetId(), successorRoad->GetId(), successor_lane_section->GetS());
+										lane_pairing->mutable_antecessor_lane_id()->set_value(lane_global_id);
 									}
 								}
-								else
-								{
-									LOG("Failed to resolve Successor link of lane %d of road %d", lane->GetId(), road->GetId());
-								}
+					
 							}
 						}
 
