@@ -9868,7 +9868,7 @@ TrajVertex* PolyLineBase::UpdateVertex(int i, double x, double y, double z)
 		if (v->calcHeading)
 		{
 			// Calulate heading from line segment between this and previous vertices
-			if (PointDistance2D(v->x, v->y, vp->x, v->y) < SMALL_NUMBER)
+			if (PointDistance2D(v->x, v->y, vp->x, vp->y) < SMALL_NUMBER)
 			{
 				// If points conside, use heading of previous vertex
 				v->h = vp->h;
