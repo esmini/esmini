@@ -1647,25 +1647,41 @@ However, it should be possible to configure custom variants using cmake. For exa
 ....
 mkdir build
 cd build
-cmake -G "Visual Studio 16 2019" ..
+cmake .. -G "Visual Studio 16 2019"
 cmake --build . --config Release --target install
 ....
 
-This will first generate Visual Studio solution and then compile esmini using MSVC toolset v142 (default with Visual Studio 2019). Default architecture is x64.
+This will first generate Visual Studio solution and then compile esmini using MSVC toolset v142 (default with Visual Studio 2019). Default architecture should be x64.
 
 If you want to compile with MSVC 2017 toolset just add directive to the generator as follows:
 
 ``
-cmake -G "Visual Studio 16 2019" -T v141 ..
+cmake .. -G "Visual Studio 16 2019" -T v141
 ``
 
 A complete list of supported toolsets are available https://cmake.org/cmake/help/v3.17/variable/MSVC_TOOLSET_VERSION.html[here].
 
-If you want to specify architecture you simply add -A x64 or -A Win32. So for example, if you want to compile with MSVC 2015 toolset and for win32 use the following generator command:
+Provided 3rd party lib binaries are only provided for Windows x64 architecture. To make sure you build for x64 add `-A x64`, For example:
+
+``
+cmake .. -G "Visual Studio 16 2019" -T v141 -A x64
+``
+
+If you want to compile with MSVC 2015 (v140) toolset and for win32 use the following generator command:
 
 ``
 cmake -G "Visual Studio 16 2019" -T v140 -A Win32 ..
 ``
+
+[Note]
+====
+**Note:**
+
+Provided 3rd party libs only available for x64 builds. If you need to build full esmini for Win32 (32bit), you need to compile the 3rd party libraries yourself. Perhaps the "scripts/generate_*_libs.sh" scripts can be a starting point for such an endeavor.
+
+Another possibility for Win32 is to build a slim esmini with a minimum of dependencies. See <<Slim esmini - customize configration>>.
+====
+
 
 Of course, building with a specific toolset requires it to be installed. Use https://docs.microsoft.com/en-us/visualstudio/install/install-visual-studio?view=vs-2019[Visual Studio Installer]. Steps:
 
@@ -1673,7 +1689,7 @@ Of course, building with a specific toolset requires it to be installed. Use htt
 - make sure Desktop Development with C++ is checked
 - go to tab "Individual components"
 - scroll down to "Compilers, build tools, and runtimes"
-- check the MSVC versions you need, e.g. "MSVC v140 - VS 2015 C++ build tools (v14.00)" and "MSVC v141 - VS 2017 C++ x64/x86 build tools (v14.16)"
+- check the MSVC versions you need, e.g. "MSVC v140 - VS 2015 C\++ build tools (v14.00)" and "MSVC v141 - VS 2017 C++ x64/x86 build tools (v14.16)"
 
 All configurations defines an "Install" build target that compiles (if needed) and copies relevant binaries into a common "esmini/bin" folder recognized by the example scripts under the "esmini/run" folder.
 
@@ -1725,7 +1741,7 @@ Windows and Mac: Install the https://cmake.org/[cmake] application
 === Dynamic protobuf linking
 When linking esmini with software already dependent on Google protobuf there might be need for dynamic linking of shared protobuf library. This can be achieved by defining cmake symbol DYN_PROTOBUF as following example:
 
-``cmake -D DYN_PROTOBUF=True ..``
+``cmake .. -D DYN_PROTOBUF=True``
 
 Then build as usual. It will link with protobuf shared library instead of linking with a static library.
 
@@ -1750,10 +1766,10 @@ The external dependencies OSG, OSI and SUMO are optional. Also the unit test sui
 - USE_GTEST
 
 So, for example, to cut dependency to OSG and SUMO, run:  +
-``cmake -D USE_OSG=False -D USE_SUMO=False ..``
+``cmake .. -D USE_OSG=False -D USE_SUMO=False``
 
 To disable OSG, SUMO, OSI and googletest, run:  +
-``cmake -D USE_OSG=False -D USE_SUMO=False -D USE_OSI=False -D USE_GTEST=False ..``
+``cmake .. -D USE_OSG=False -D USE_SUMO=False -D USE_OSI=False -D USE_GTEST=False``
 
 All options are enabled/True as default.
 
