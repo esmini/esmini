@@ -18,7 +18,7 @@
       </ControllerCatalog>      
    </CatalogLocations>
    <RoadNetwork>
-      <LogicFile filepath="../../resources/xodr/curves_elevation.xodr"/>
+      <LogicFile filepath="../../resources/xodr/crest-curve.xodr"/>
    </RoadNetwork>
    <Entities>
       <ScenarioObject name="Car0">
@@ -40,7 +40,7 @@
                <PrivateAction>
                   <TeleportAction>
                      <Position>
-                        <LanePosition roadId="1" laneId="-1" offset="0" s="50"/>
+                        <LanePosition roadId="0" laneId="-1" offset="0" s="50"/>
                      </Position>
                   </TeleportAction>
                </PrivateAction>
