@@ -81,8 +81,8 @@ if ! ${PYTHON} smoke_test.py; then
     exit_with_msg "smoke test failed"
 fi
 
-echo $'\n'Run ALKS test suite:
+# echo $'\n'Run ALKS test suite:
 
-if ! ${PYTHON} alks_suite.py; then
-    exit_with_msg "alks_suite test failed"
-fi
+# if ! ${PYTHON} alks_suite.py; then
+#     exit_with_msg "alks_suite test failed"
+# fi

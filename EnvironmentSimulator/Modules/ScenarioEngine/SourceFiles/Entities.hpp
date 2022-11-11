@@ -174,6 +174,7 @@ namespace scenarioengine
 		void SetStandStill(bool state, double time = 0.0);
 		bool IsStandStill() { return stand_still_timestamp_ > SMALL_NUMBER; }
 		bool IsActive() { return is_active_; }
+		Type GetType() { return type_; }
 
 		/**
 			Move current position along the road or route (if assigned)

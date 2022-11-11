@@ -38,6 +38,7 @@
 #pragma once
 
 #include <string>
+#include <map>
 #include "Controller.hpp"
 #include "Entities.hpp"
 #include "vehicle.hpp"
@@ -54,18 +55,27 @@ namespace scenarioengine
 	{
 	public:
 
+        enum class ScenarioType {
+            None,
+            CutIn,
+            CutOut,
+            Deceleration
+        };
+        static std::map<ScenarioType, std::string> ScenarioTypeName;
+
         enum class ModelType {
             Regulation,
             ReferenceDriver,
             RSS,
             FSM
         };
+        static std::map<ModelType, std::string> ModelTypeName;
 
         enum class ModelMode
         {
             CRITICAL,
-            CRUISE_WITH_TARGET,
-            CRUISE_NO_TARGET
+            TARGET_IN_SIGHT,
+            NO_TARGET
         };
 
         class Model
@@ -73,19 +83,22 @@ namespace scenarioengine
         public:
 
             typedef struct {
-                Object* obj;
-                double dist_long;  // distance (headway) to object in focus
-                double dist_lat;   // distance (headway) to object in focus
-                double dv;         // delta speed (ego speed relative this object)
-                double ttc;        // time-to-collision (from ego to this object)
-                int dLaneId;       // lane delta (from ego). -1, 0 or 1 (according to OpenDRIVE standard)
+                Object* obj  = 0;                         // pointer reference to the detected object
+                Object* cut_out_vehicle = 0;              // pointer reference to cut-out vehicle revealing obj above
+                double dist_long = LARGE_NUMBER;          // longitudinal distance (freespace) to object in focus
+                double dist_lat = LARGE_NUMBER;           // lateral distance (freespace) to object in focus
+                double dv_s = 0.0;                        // delta speed along road direction (ego speed relative this object)
+                double dv_t = 0.0;                        // delta speed across road direction (ego speed relative this object)
+                double ttc = LARGE_NUMBER;                // time-to-collision (from ego to this object)
+                double thw = LARGE_NUMBER;                // time-headway (from ego to this object)
+                int dLaneId = 0;                          // lane delta (from ego). -1, 0 or 1 (according to OpenDRIVE standard)
+                ScenarioType action = ScenarioType::None; // set if lane change in or out from ego lane detected
             } ObjectInfo;
 
             Model(ModelType type, double reaction_time, double max_dec_, double max_range_);
             virtual ~Model() = default;
 
             void SetVehicle(Vehicle* vehicle) { veh_ = vehicle; }
-            bool Distance(Vehicle* vh, double& dist_long, double& dist_lat);
             double GetReactionTime() { return rt_; }
             double GetReactionTimeCounter() { return rt_counter_; }
             double GetMaxDec() { return max_dec_; }
@@ -96,17 +109,26 @@ namespace scenarioengine
             void ResetObjectInFocus();
             void ResetReactionTime();
             std::string Mode2Str(ModelMode mode);
-            void SetMode(ModelMode mode, bool log = true);
+            std::string ScenarioType2Str(ScenarioType type) { return ScenarioTypeName[type]; }
+            std::string ModelType2Str(ModelType type) { return ModelTypeName[type]; }
+            void SetModelMode(ModelMode mode, bool log = true);
+            ModelMode GetModelMode() { return model_mode_; }
             void SetScenarioEngine(ScenarioEngine* scenario_engine);
+            void SetScenarioType(ScenarioType type);
+            ScenarioType GetScenarioType() { return scenario_type_; }
+            void SetFullStop(bool full_stop) { full_stop_ = full_stop; }
+            bool GetFullStop() { return full_stop_; }
 
             // Returns new speed
             double Step(double dt);
 
             // Scan traffic and select object to focus on, if any
-            void Scan();
+            int Detect();
 
-            // Returns true if object is considered cutting-in to ego lane
-            virtual bool CheckLateralSafety(Object* obj, int dLaneId, double dist_long, double dist_lat) { return false; }
+            int Process(ObjectInfo& info);
+
+            // Returns true if object is not in or intruding the ego lane, else false
+            virtual bool CheckLateralSafety(ObjectInfo* info) { return false; }
 
             // Returns true if critical situation and intervention needed
             virtual bool CheckCritical() { return false; };
@@ -117,7 +139,9 @@ namespace scenarioengine
             // Model dependent minimal distance, for the generic cruise function
             virtual double MinDist() = 0;
 
-            virtual std::string GetModelName() = 0;
+            std::string GetModelName() { return ModelType2Str(type_); }
+
+            virtual void Reset() {}
 
             ModelType type_;
             Vehicle* veh_;
@@ -143,13 +167,22 @@ namespace scenarioengine
             double cruise_max_dec_;
 
             ModelMode model_mode_;
+            ScenarioType scenario_type_;
 
             int log_level_;  // 0 (none), 1 (log), 2 (log + debug)
             bool cruise_;
+            bool full_stop_;
 
             const int deltaLaneId[3] = { -1, 0, 1 };
             const double g = 9.8;
             ScenarioEngine* scenario_engine_;
+
+            virtual bool CheckPerceptionCutIn() { return false; }
+            virtual bool CheckPerceptionCutOut() { return false; }
+            virtual bool CheckPerceptionDeceleration() { return false; }
+            virtual bool CheckCriticalCutIn() { return false; }
+            virtual bool CheckCriticalCutOut() { return false; }
+            virtual bool CheckCriticalDeceleration() { return false; }
         };
 
         class Regulation : Model
@@ -157,7 +190,7 @@ namespace scenarioengine
         public:
             Regulation() : Model(ModelType::Regulation, 0.35, 6.0, 46.0) {}
 
-            bool CheckLateralSafety(Object* obj, int deltaLaneId, double dist_long, double dist_lat) override;
+            bool CheckLateralSafety(ObjectInfo* info) override;
             bool CheckCritical() override;
             double ReactCritical() override;
             double MinDist() override;
@@ -165,48 +198,141 @@ namespace scenarioengine
             bool CheckSafety(Vehicle* obj, int dLaneId, double dist_long, double dist_lat) { return false; }
             bool CheckSafetyCutIn(Vehicle* obj, double speed_long, double speed_lat, double dt);
             double React(double speed_long, double dt);
-            std::string GetModelName() override { return "Regulation"; }
         };
 
-
+        // Assumptions and design choices:
+        //   Conditions for an enitity to be "detected":
+        //      - is in front of ego and within max range of 100 meter
+        //      - pedestrians: is overlapping ego laterally OR moving towards ego laterally
+        //      - other entities: is in same or adjecentlane to ego
+        //   Velocity calculations:
+        //      - Longitudinal velocity is based on latest movement and projected along road direction (s axis)
+        //      - Lateral velocity is based on latest movement projected across road direction (t axis)
+        //   Free space distance calculations:
+        //      - overlap (collision) detected and reported as zero distance
+        //      - distance calculations are mapped to the road coordinate system (s, t):
+        //          s = longitudinal distance along (projected to) road reference line
+        //          t = lateral distance across (perpendicular to) the road reference line
+        //      - pros: Longitudinal distance will consider curvature (not a straight line)
+        //      - cons: Longitudinal distance will not consider lateral offset from reference line
+        //              E.g. the distance between two vehicles in an outer lane going through
+        //              a curve will appear smaller or larger when projected on the reference
+        //              line, depending on left or right curve.
+        //      - Alternative solution would be to use either euclidian distance (straight lines) or
+        //        lane coordinate system which would consider lateral offset. Euclidian is currently
+        //        supported in esmini while lane coordinate system is not yet for distance calculations.
+        //   TTC calculation:
+        //      - Freespace distance (as above) divided by relative speed
+        //   Lateral lane offset representing cut-in perception time:
+        //      Sum of lane wandering threshold 0.375m according to regulation and additional perception delay:
+        //      - option 1: 0.72 meter ("worst case" based on 0.4 s perception time according to regulation)
+        //      - option 2: 0.4 seconds delay
+        //   Main flow:
+        //      Perception time starts as soon as object and action is detected, not waiting for critical criteria
+        //      Criticality check (ttc < 2.0 or hwt < 2.0) is done after the situation has been perceived
+        //      If critical, the reaction times is started
+        //      When reaction is done, criticality is checked once again
+        //      If still critical, enter critical reaction phase
+        //   Brake behavior: Option to either brake until full stop OR until critical situation avoided
+        //   Pedestrian wrap = 100% intepreted as lateral distance == 0 (overlapping to some degree)
+        //
         class ReferenceDriver : Model
         {
         public:
 
+            enum class CutInPerceptionDelayMode
+            {
+                DIST,
+                TIME
+            };
+
             enum class Phase
             {
                 INACTIVE,
+                PERCEIVE,
                 REACT,
                 BRAKE_REF,
                 BRAKE_AEB
             };
+            static std::map<Phase, std::string> PhaseName;
+
 
             // set look ahead distance to 100m
-            ReferenceDriver() : Model(ModelType::ReferenceDriver, 0.75, 0.774 * 9.81, 100.0),
-                min_jerk_(12.65), release_deceleration_(0.4), critical_ttc_(2.0), phase_(Phase::INACTIVE), timer_(0.0) {}
+            ReferenceDriver() : Model(ModelType::ReferenceDriver, 0.75, 0.774 * 9.81, 100.0), c_lane_offset_(0.0),
+                min_jerk_(12.65), release_deceleration_(0.4), critical_ttc_(2.0), critical_thw_(2.0),
+                phase_(Phase::INACTIVE), timer_(0.0), cut_in_perception_delay_mode_(CutInPerceptionDelayMode::DIST),
+                perception_dist_(0.72), perception_time_(0.4), wandering_threshold_(0.375), wrap_tolerance_(0.2) {}
 
-            bool CheckLateralSafety(Object* obj, int deltaLaneId, double dist_long, double dist_lat) override;
+            bool CheckLateralSafety(ObjectInfo* info) override;
             bool CheckCritical() override;
             double ReactCritical() override;
             double MinDist() override;
-            std::string GetModelName() override { return "ReferenceDriver"; }
             void SetPhase(Phase phase);
+            Phase GetPhase() { return phase_; }
             std::string Phase2Str(Phase phase);
-            void Reset()
+            void Reset() override
             {
-                phase_ = Phase::INACTIVE;
+                SetPhase(Phase::INACTIVE);
+                SetScenarioType(ScenarioType::None);
             }
-
-            //bool CheckSafety(Vehicle* cutting_in_veh, double speed_long, double speed_lat, double dt) { return false; }
-            //bool CheckSafetyCutIn(Vehicle* cutting_in_veh, double speed_long, double speed_lat, double dt);
-            //bool Distance(double ur) { return 2 * ur; }
-            //double React(double speed_long, double dt);
 
             double min_jerk_;
             double release_deceleration_;  // deceleration when not stepping on the accelerator pedal(I think)
             double critical_ttc_;
+            double critical_thw_;
             double timer_;
             Phase phase_;
+            CutInPerceptionDelayMode cut_in_perception_delay_mode_;
+            double perception_time_;
+            double perception_dist_;
+            double wandering_threshold_;
+            double wrap_tolerance_;
+            double c_lane_offset_;
+            bool CheckPerception()
+            {
+                if (GetScenarioType() == ScenarioType::CutIn)
+                {
+                    return CheckPerceptionCutIn();
+                }
+                else if (GetScenarioType() == ScenarioType::CutOut)
+                {
+                    return CheckPerceptionCutOut();
+                }
+                else if (GetScenarioType() == ScenarioType::Deceleration)
+                {
+                    return CheckPerceptionDeceleration();
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            bool CheckPerceptionCutIn() override;
+            bool CheckPerceptionCutOut() override;
+            bool CheckPerceptionDeceleration() override;
+
+            bool CheckCriticalCondition()
+            {
+                if (GetScenarioType() == ScenarioType::CutIn)
+                {
+                    return CheckCriticalCutIn();
+                }
+                else if (GetScenarioType() == ScenarioType::CutOut)
+                {
+                    return CheckCriticalCutOut();
+                }
+                else if (GetScenarioType() == ScenarioType::Deceleration)
+                {
+                    return CheckCriticalDeceleration();
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            bool CheckCriticalCutIn() override;
+            bool CheckCriticalCutOut() override;
+            bool CheckCriticalDeceleration() override;
         };
 
         class RSS : Model
@@ -215,11 +341,10 @@ namespace scenarioengine
             RSS() : Model(ModelType::RSS, 0.75, 0.774 * 9.81, 100.0),
                 min_jerk_(12.65), mu_(0.3) {}
 
-            bool CheckLateralSafety(Object* obj, int deltaLaneId, double dist_long, double dist_lat) override;
+            bool CheckLateralSafety(ObjectInfo* info) override;
             bool CheckCritical() override;
             double ReactCritical() override;
             double MinDist() override;
-            std::string GetModelName() override { return "RSS"; }
 
             double min_jerk_;
             double mu_;
@@ -232,11 +357,10 @@ namespace scenarioengine
                 br_min_(4.0), br_max_(6.0), bl_(7.0), ar_(2.0), margin_dist_(2.0), margin_safe_dist_(2.0),
                 cfs_(0.0), pfs_(0.0) {}
 
-            bool CheckLateralSafety(Object* obj, int deltaLaneId, double dist_long, double dist_lat) override;
+            bool CheckLateralSafety(ObjectInfo* info) override;
             bool CheckCritical() override;
             double ReactCritical() override;
             double MinDist() override;
-            std::string GetModelName() override { return "FSM"; }
 
             double PFS(double dist, double speed_rear, double speed_lead, double rt, double br_min, double br_max,
                 double bl, double margin_dist, double margin_safe_dist);
