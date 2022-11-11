@@ -1,7 +1,7 @@
 '''
    This script shows how to fetch and parse OSI message on UDP socket from esmini
    Prerequisites:
-      Python 3 
+      Python 3
 
    Python dependencies:
       pip install protobuf==3.19
@@ -19,16 +19,24 @@
 
 from udp_osi_common import *
 
-    
 def print_osi_stuff(msg):
-    # Print some content from the message
+
+    # Print some static content typically only available in first message
+    for l in msg.lane:
+        clf = l.classification
+        print("lane {} type: {}".format(l.id.value, clf.type))
+        print("  centerline:")
+        for c_line in clf.centerline:
+            print("    x: {:.2f} y: {:.2f}".format(c_line.x, c_line.y))
+
+    # Print some dynamic content from the message
     print('lane ids: {}'.format([l.id.value for l in msg.lane]))
     for i, o in enumerate(msg.moving_object):
         print('Object[{}] id {}'.format(i, o.id.value))
         print('   pos.x {:.2f} pos.y {:.2f} rot.h {:.2f}'.format(o.base.position.x, o.base.position.y, o.base.orientation.yaw))
         print('   vel.x {:.2f} vel.y {:.2f} rot_rate.h {:.2f}'.format(o.base.velocity.x, o.base.velocity.y, o.base.orientation_rate.yaw))
         print('   acc.x {:.2f} acc.y {:.2f} rot_acc.h {:.2f}'.format(o.base.acceleration.x, o.base.acceleration.y, o.base.orientation_acceleration.yaw))
-        
+
         lane_id = o.assigned_lane_id[0].value if len(msg.lane) > 0 and len(o.assigned_lane_id) > 0 else -1
         left_lane_id = -1
         right_lane_id = -1
@@ -51,7 +59,7 @@ if __name__ == "__main__":
     # Press throttle to achieve some speed
     udpSender0.send(
         struct.pack(
-            'iiiiddd', 
+            'iiiiddd',
             1,    # version
             input_modes['driverInput'],
             0,    # object ID
@@ -62,8 +70,8 @@ if __name__ == "__main__":
         )
     )
 
-    while not done and counter < 200:
-        # Read OSI 
+    while not done and counter < 20:
+        # Read OSI
         try:
             msg = osiReceiver.receive()
             print_osi_stuff(msg)
