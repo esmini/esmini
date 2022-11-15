@@ -1774,12 +1774,8 @@ int OSIReporter::UpdateOSIRoadLane()
 							roadmanager::LaneLink* link_predecessor = lane->GetLink(roadmanager::LinkType::PREDECESSOR);
 							roadmanager::LaneLink* link_successor = lane->GetLink(roadmanager::LinkType::SUCCESSOR);
 
-							roadmanager::Lane* driving_lane_predecessor;
-							roadmanager::Lane* driving_lane_successor;
-
-							// bool check_predecessor = false;
-							// bool check_successor = false;
-							
+							roadmanager::Lane* driving_lane_predecessor = 0;
+							roadmanager::Lane* driving_lane_successor = 0;
 
 							if (link_predecessor)
 							{
@@ -1806,7 +1802,7 @@ int OSIReporter::UpdateOSIRoadLane()
 							{
 								LOG("Failed to resolve Successor link of lane %d of road %d", lane->GetId(), road->GetId());
 							}
-							
+
 							for (int l = 0; l < obj_osi_internal.gt->lane_size(); ++l)
 							{
 								if (obj_osi_internal.gt->mutable_lane(l)->mutable_classification()->lane_pairing_size() >0 )
@@ -1832,7 +1828,7 @@ int OSIReporter::UpdateOSIRoadLane()
 										lane_pairing->mutable_antecessor_lane_id()->set_value(lane_global_id);
 									}
 								}
-					
+
 							}
 						}
 
