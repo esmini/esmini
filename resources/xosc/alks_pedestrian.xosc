@@ -35,6 +35,7 @@
                         <ParameterAssignment parameterRef="CutInPerceptionDelayMode" value="Time"/>
                         <ParameterAssignment parameterRef="FullStop" value="true"/>
                         <ParameterAssignment parameterRef="PedestrianRiskEvaluationTime" value="0.4"/>
+                        <ParameterAssignment parameterRef="AlwaysTrigOnScenario" value="true"/>
                     </ParameterAssignments>
                 </CatalogReference>
             </ObjectController>

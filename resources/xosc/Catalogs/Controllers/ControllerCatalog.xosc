@@ -179,6 +179,8 @@
                 <Property name="cruise"  value="$Cruise" />
                 <Property name="cutInPerceptionDelayMode"  value="$CutInPerceptionDelayMode" />
                 <Property name="fullStop"  value="$FullStop" />
+                <Property name="alwaysTrigOnScenario"  value="$AlwaysTrigOnScenario" />
+                <Property name="pedestrianRiskEvaluationTime"  value="$PedestrianRiskEvaluationTime" />
             </Properties>
         </Controller>        
         <Controller name="UDPDriverController">
