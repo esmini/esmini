@@ -154,19 +154,23 @@
                 <Property name="logging" value="$Logging" />
             </Properties>
         </Controller>
-        <Controller name="ALKS_R157SM">
+        <Controller name="ALKS_R157SM_Controller">
             <ParameterDeclarations>
                 <ParameterDeclaration name="Mode" parameterType="string" value="additive" />
                 <!-- logLevel: 0 (none), 1 (log), 2 (log + debug) -->
-                <ParameterDeclaration name="LogLevel" parameterType="integer" value="0" />                
+                <ParameterDeclaration name="LogLevel" parameterType="integer" value="1" />
                 <!-- models: Regulation, ReferenceDriver, FSM, RSS -->
-                <ParameterDeclaration name="Model" parameterType="string" value="Regulation" />
+                <ParameterDeclaration name="Model" parameterType="string" value="ReferenceDriver" />
                 <!-- cruise: false (no adaptive cruise control), true (use adaptive cruise control) -->
                 <ParameterDeclaration name="Cruise" parameterType="boolean" value="true" />                
                 <!-- perceptionDelayMode: Dist (0.72m), Time (0.4s) (only applicable to ReferenceDriver) -->
                 <ParameterDeclaration name="CutInPerceptionDelayMode" parameterType="string" value="Dist" />
                 <!-- fullStop: "true" = decelerate to a full stop, "false" = decelerate until safe -->
                 <ParameterDeclaration name="FullStop" parameterType="boolean" value="false" />                
+                <!-- alwaysTrigOnScenario: "false" = only act if critical, "true" = take action also outside critical zone -->
+                <ParameterDeclaration name="AlwaysTrigOnScenario" parameterType="boolean" value="false" />                
+                <!-- pedestrianRiskEvaluationTime: Time to perceive/evaluate a risk involving a pedestrian -->
+                <ParameterDeclaration name="PedestrianRiskEvaluationTime" parameterType="double" value="0.4" />
             </ParameterDeclarations>
             <Properties>
                 <Property name="mode" value="$Mode" />

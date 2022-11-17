@@ -118,6 +118,8 @@ namespace scenarioengine
             ScenarioType GetScenarioType() { return scenario_type_; }
             void SetFullStop(bool full_stop) { full_stop_ = full_stop; }
             bool GetFullStop() { return full_stop_; }
+            void SetAlwaysTrigOnScenario(bool value) { always_trig_on_scenario_ = value; }
+            bool GetAlwaysTrigOnScenario() { return always_trig_on_scenario_; }
 
             // Returns new speed
             double Step(double dt);
@@ -172,6 +174,7 @@ namespace scenarioengine
             int log_level_;  // 0 (none), 1 (log), 2 (log + debug)
             bool cruise_;
             bool full_stop_;
+            bool always_trig_on_scenario_;
 
             const int deltaLaneId[3] = { -1, 0, 1 };
             const double g = 9.8;
@@ -261,7 +264,8 @@ namespace scenarioengine
             ReferenceDriver() : Model(ModelType::ReferenceDriver, 0.75, 0.774 * 9.81, 100.0), c_lane_offset_(0.0),
                 min_jerk_(12.65), release_deceleration_(0.4), critical_ttc_(2.0), critical_thw_(2.0),
                 phase_(Phase::INACTIVE), timer_(0.0), cut_in_perception_delay_mode_(CutInPerceptionDelayMode::DIST),
-                perception_dist_(0.72), perception_time_(0.4), wandering_threshold_(0.375), wrap_tolerance_(0.2) {}
+                perception_dist_(0.72), perception_time_(0.4), wandering_threshold_(0.375), wrap_tolerance_(0.2),
+                pedestrian_risk_eval_time_(0.4) {}
 
             bool CheckLateralSafety(ObjectInfo* info) override;
             bool CheckCritical() override;
@@ -283,11 +287,13 @@ namespace scenarioengine
             double timer_;
             Phase phase_;
             CutInPerceptionDelayMode cut_in_perception_delay_mode_;
+            double pedestrian_risk_eval_time_;
             double perception_time_;
             double perception_dist_;
             double wandering_threshold_;
             double wrap_tolerance_;
             double c_lane_offset_;
+
             bool CheckPerception()
             {
                 if (GetScenarioType() == ScenarioType::CutIn)
@@ -333,6 +339,8 @@ namespace scenarioengine
             bool CheckCriticalCutIn() override;
             bool CheckCriticalCutOut() override;
             bool CheckCriticalDeceleration() override;
+            void SetPedestrianRiskEvaluationTime(double value) { pedestrian_risk_eval_time_ = value; }
+            double GetPedestrianRiskEvaluationTime() { return pedestrian_risk_eval_time_; }
         };
 
         class RSS : Model

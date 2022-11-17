@@ -96,6 +96,12 @@ ControllerALKS_R157SM::ControllerALKS_R157SM(InitArgs* args) : model_(0), entiti
             LOG("ALKS_R157SM ReferenceDriver perceptionDelayMode: %s",
                 ref_driver->cut_in_perception_delay_mode_ == ReferenceDriver::CutInPerceptionDelayMode::TIME ? "Time" : "Dist");
 
+            if (args->properties->ValueExists("pedestrianRiskEvaluationTime"))
+            {
+                ref_driver->SetPedestrianRiskEvaluationTime(strtod(args->properties->GetValueStr("pedestrianRiskEvaluationTime")));
+            }
+            LOG("ALKS_R157SM PedestrianRiskEvaluationTime: %.2f", ref_driver->GetPedestrianRiskEvaluationTime());
+
             model_ = (ControllerALKS_R157SM::Model*) ref_driver;
         }
         else if (args->properties->GetValueStr("model") == "RSS")
@@ -120,6 +126,12 @@ ControllerALKS_R157SM::ControllerALKS_R157SM(InitArgs* args) : model_(0), entiti
             model_->SetFullStop(args->properties->GetValueStr("fullStop") == "true" ? true : false);
         }
         LOG("ALKS_R157SM fullStop: %s", model_->GetFullStop() ? "true" : "false");
+
+        if (args->properties->ValueExists("alwaysTrigOnScenario"))
+        {
+            model_->SetAlwaysTrigOnScenario(args->properties->GetValueStr("alwaysTrigOnScenario") == "true" ? true : false);
+        }
+        LOG("ALKS_R157SM alwaysTrigOnScenario: %s", model_->GetAlwaysTrigOnScenario() ? "true" : "false");
 
         if (args->properties->ValueExists("cruise"))
         {
@@ -399,7 +411,7 @@ ControllerALKS_R157SM::Model::Model(ModelType type, double reaction_time,
     rt_counter_(0.0), max_dec_(max_dec_), max_range_(max_range_), max_acc_(3.0), max_acc_lat_(1.0), veh_(nullptr),
     set_speed_(0.0), log_level_(1),model_mode_(ModelMode::NO_TARGET), acc_(0.0), scenario_type_(ScenarioType::None),
     cruise_comfort_acc_(2.0), cut_in_detected_timestamp_(0.0), cruise_comfort_dec_(2.0), cruise_max_acc_(3.0),
-    cruise_max_dec_(4.0), cruise_(true), full_stop_(false)
+    cruise_max_dec_(4.0), cruise_(true), full_stop_(false), always_trig_on_scenario_(false)
 {
     ResetObjectInFocus();
 }
@@ -662,6 +674,8 @@ bool ControllerALKS_R157SM::ReferenceDriver::CheckPerceptionCutIn()
         if (object_in_focus_.obj && object_in_focus_.obj->GetType() == Object::Type::PEDESTRIAN &&
             object_in_focus_.dv_s > SMALL_NUMBER)
         {
+            // Calculate perception distance based on default or specified risk perception/evaluation time
+            timer_ = GetPedestrianRiskEvaluationTime();
             SetPhase(Phase::PERCEIVE);  // always consider pedestrians moving laterally towards ego
         }
         else if (-SIGN(object_in_focus_.dLaneId) * c_lane_offset_ > wandering_threshold_)
@@ -686,11 +700,13 @@ bool ControllerALKS_R157SM::ReferenceDriver::CheckPerceptionCutIn()
         {
             if (object_in_focus_.dv_s > SMALL_NUMBER)
             {
-                R157_LOG(2, "Pedestrian %s perceived immediately at lane offset %.2f",
-                    object_in_focus_.obj->GetName().c_str(), c_lane_offset_);
-                SetPhase(Phase::REACT);  // always consider pedestrians moving laterally towards ego
-                timer_ = rt_;
-                return true;
+                timer_ -= dt_;
+                if (timer_ < SMALL_NUMBER)
+                {
+                    SetPhase(Phase::REACT);
+                    R157_LOG(2, "Pedestrian %s perceived after %.2fs",
+                        object_in_focus_.obj->GetName().c_str(), GetPedestrianRiskEvaluationTime());
+                }
             }
         }
         else
@@ -714,11 +730,11 @@ bool ControllerALKS_R157SM::ReferenceDriver::CheckPerceptionCutIn()
                         -SIGN(object_in_focus_.dLaneId) * c_lane_offset_, wandering_threshold_, perception_time_);
                 }
             }
-            if (GetPhase() == Phase::REACT)
-            {
-                timer_ = rt_;
-                return true;
-            }
+        }
+        if (GetPhase() == Phase::REACT)
+        {
+            timer_ = rt_;
+            return true;
         }
     }
 
@@ -762,12 +778,27 @@ bool ControllerALKS_R157SM::ReferenceDriver::CheckPerceptionDeceleration()
 
 bool ControllerALKS_R157SM::ReferenceDriver::CheckCriticalCutIn()
 {
-    if (object_in_focus_.ttc > critical_ttc_ + SMALL_NUMBER)
+    bool retval = false;
+
+    if (GetAlwaysTrigOnScenario() || object_in_focus_.ttc < critical_ttc_)
+    {
+        if (GetPhase() == Phase::REACT)
+        {
+            if (timer_ < SMALL_NUMBER)
+            {
+                R157_LOG(2, "Reacting to cut-in at TTC %.2f (< %.2f) (%s)", object_in_focus_.ttc, critical_ttc_,
+                    object_in_focus_.thw < critical_thw_ ? "Critical" : "Non critical");
+                SetModelMode(ModelMode::CRITICAL);
+                retval = true;
+            }
+        }
+    }
+    else
     {
         if (GetPhase() == Phase::REACT)
         {
             // not considered a cut-in scenario
-            R157_LOG(2, "Perceived cut-in at TTC %.2f (> %.2f) => disregarding scenario.", object_in_focus_.ttc, critical_ttc_);
+            R157_LOG(2, "Perceived cut-in at TTC %.2f (> %.2f) => non critical", object_in_focus_.ttc, critical_ttc_);
             Reset();
         }
         else if (GetModelMode() == ModelMode::CRITICAL)
@@ -783,29 +814,33 @@ bool ControllerALKS_R157SM::ReferenceDriver::CheckCriticalCutIn()
             }
         }
     }
-    else
-    {
-        if (GetPhase() == Phase::REACT)
-        {
-            if (timer_ < SMALL_NUMBER)
-            {
-                R157_LOG(2, "Reacting to cut-in at TTC %.2f (< %.2f)", object_in_focus_.ttc, critical_ttc_);
-                SetModelMode(ModelMode::CRITICAL);
-            }
-        }
-    }
 
-    return object_in_focus_.ttc < critical_ttc_;
+    return retval;
 }
 
 bool ControllerALKS_R157SM::ReferenceDriver::CheckCriticalCutOut()
 {
-    if (object_in_focus_.thw > critical_thw_)
+    bool retval = false;
+
+    if (GetAlwaysTrigOnScenario() || object_in_focus_.thw < critical_thw_)
+    {
+        if (GetPhase() == Phase::REACT)
+        {
+            if (timer_ < SMALL_NUMBER)
+            {
+                R157_LOG(2, "Reacting to cut-out THW = %.2f (< %.2f) (%s)", object_in_focus_.thw, critical_thw_,
+                    object_in_focus_.thw < critical_thw_ ? "Critical" : "Non critical");
+                SetModelMode(ModelMode::CRITICAL);
+                retval = true;
+            }
+        }
+    }
+    else
     {
         if (GetPhase() == Phase::REACT)
         {
             // not considered a cut-out scenario
-            R157_LOG(2, "Reacting to cut-out but THW = %.2f (>%.2f) => disregarding scenario.", object_in_focus_.thw, critical_thw_);
+            R157_LOG(2, "Reacting to cut-out but THW = %.2f (>%.2f) => non critical", object_in_focus_.thw, critical_thw_);
             Reset();
         }
         else if (GetModelMode() == ModelMode::CRITICAL)
@@ -821,29 +856,33 @@ bool ControllerALKS_R157SM::ReferenceDriver::CheckCriticalCutOut()
             }
         }
     }
-    else
-    {
-        if (GetPhase() == Phase::REACT)
-        {
-            if (timer_ < SMALL_NUMBER)
-            {
-                R157_LOG(2, "Reacting to cut-out THW = %.2f (< %.2f)", object_in_focus_.thw, critical_thw_);
-                SetModelMode(ModelMode::CRITICAL);
-            }
-        }
-    }
 
-    return object_in_focus_.thw < critical_thw_;
+    return retval;
 }
 
 bool ControllerALKS_R157SM::ReferenceDriver::CheckCriticalDeceleration()
 {
-    if (object_in_focus_.thw > critical_thw_)
+    bool retval = false;
+
+    if (GetAlwaysTrigOnScenario() || object_in_focus_.thw < critical_thw_)
+    {
+        if (GetPhase() == Phase::REACT)
+        {
+            if (timer_ < SMALL_NUMBER)
+            {
+                R157_LOG(2, "Reacting to dececleration THW < %.2f (%.2f) (%s)", object_in_focus_.thw, critical_thw_,
+                    object_in_focus_.thw < critical_thw_ ? "Critical" : "Non critical");
+                SetModelMode(ModelMode::CRITICAL);
+                retval = true;
+            }
+        }
+    }
+    else
     {
         if (GetPhase() == Phase::REACT)
         {
             // not considered a cut-out scenario
-            R157_LOG(2, "Reacting to dececleration but THW > %.2f (%.2f) => disregarding scenario.", object_in_focus_.thw, critical_thw_);
+            R157_LOG(2, "Reacting to dececleration but THW > %.2f (%.2f) => non critical", object_in_focus_.thw, critical_thw_);
             Reset();
         }
         else if (GetModelMode() == ModelMode::CRITICAL)
@@ -859,19 +898,8 @@ bool ControllerALKS_R157SM::ReferenceDriver::CheckCriticalDeceleration()
             }
         }
     }
-    else
-    {
-        if (GetPhase() == Phase::REACT)
-        {
-            if (timer_ < SMALL_NUMBER)
-            {
-                R157_LOG(2, "Reacting to dececleration THW < %.2f (%.2f)", object_in_focus_.thw, critical_thw_);
-                SetModelMode(ModelMode::CRITICAL);
-            }
-        }
-    }
 
-    return object_in_focus_.thw < critical_thw_;
+    return retval;
 }
 
 void ControllerALKS_R157SM::ReferenceDriver::SetPhase(Phase phase)
@@ -894,7 +922,7 @@ bool ControllerALKS_R157SM::ReferenceDriver::CheckCritical()
     {
         if (CheckPerception())
         {
-            R157_LOG(2, "Perceived critical %s scenario ttc %.2f hwt %.2f",
+            R157_LOG(3, "Perceived critical %s scenario ttc %.2f hwt %.2f",
                 ScenarioType2Str(GetScenarioType()).c_str(), object_in_focus_.ttc, object_in_focus_.thw);
             SetPhase(Phase::REACT);
             timer_ = rt_;
