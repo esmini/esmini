@@ -7,6 +7,7 @@ mkdir esmini-demo
 rsync -R \
 resources/xosc/follow_ghost.xosc \
 resources/xosc/cut-in.xosc \
+resources/xosc/cut-in_parameter_set.xosc \
 resources/xosc/cut-in_interactive.xosc \
 resources/xosc/cut-in_sumo.xosc \
 resources/xosc/cut-in_simple.xosc \

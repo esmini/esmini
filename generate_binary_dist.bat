@@ -31,6 +31,7 @@ IF NOT EXIST %target_dir%\EnvironmentSimulator\Applications\odrplot ( mkdir %tar
 
 copy resources\xosc\follow_ghost.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\cut-in.xosc %target_dir%\resources\xosc /y
+copy resources\xosc\cut-in_parameter_set.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\cut-in_interactive.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\cut-in_sumo.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\cut-in_simple.xosc %target_dir%\resources\xosc /y
