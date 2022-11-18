@@ -568,7 +568,12 @@ void SensorViewFrustum::Update()
 	{
 		(*plines_[i]->pline_vertex_data_)[1][0] = sensor_->hitList_[i].x_;
 		(*plines_[i]->pline_vertex_data_)[1][1] = sensor_->hitList_[i].y_;
-		(*plines_[i]->pline_vertex_data_)[1][2] = sensor_->hitList_[i].z_;
+
+		// compensate z for vehicle pitch angle
+		double z_add = GetLengthOfLine2D(sensor_->hitList_[i].obj_->pos_.GetX(), sensor_->hitList_[i].obj_->pos_.GetY(),
+			sensor_->host_->pos_.GetX(), sensor_->host_->pos_.GetY()) * tan(sensor_->host_->pos_.GetP());
+
+		(*plines_[i]->pline_vertex_data_)[1][2] = sensor_->hitList_[i].z_ + z_add;
 
 		plines_[i]->Redraw();
 	}
