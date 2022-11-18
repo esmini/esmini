@@ -1,5 +1,27 @@
 ## esmini release notes
 
+### 2022-11-18 Version 2.27.0
+New feature:
+- Add parameter distribution support
+  - see info in [User guide - Parameter distributions](https://esmini.github.io/#_parameter_distributions)
+  - Note: currently limited to deterministic distributions
+
+Improvements:
+- Fix some memory leaks
+  - code refactorization for improved memory handling and enabling sanitizer checks
+- Unified [test runner script](https://github.com/esmini/esmini/blob/master/scripts/run_tests.sh) (works on all systems)
+- Some osi optimization and less print outs
+- Extend [testUDPDriver-print-osi-info.py](https://github.com/esmini/esmini/blob/master/scripts/udp_driver/testUDPDriver-print-osi-info.py) example to extract also stationary objects ([issue #350](https://github.com/esmini/esmini/issues/350))
+- Add Python example [add_sensor.py](https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/code-examples/hello_world/add_sensor.py) showing how to add cull sensors from Python ([issue #351](https://github.com/esmini/esmini/issues/351))
+
+Bug fixes:
+- Fix bug messing up auto-calculation of polyline trajectory heading
+- Some additional minor fixes
+
+Additional info:
+- Move some scripts from root to [scripts](https://github.com/esmini/esmini/blob/master/scripts) folder
+- Clarify limited Win32 (16 bit) support in [User guide - Build configurations](https://esmini.github.io/#_build_configurations)
+
 ### 2022-11-09 Version 2.26.9
 - Make pedestrians snap to sidewalks ([issue #343](https://github.com/esmini/esmini/issues/343))
 - Enable visualization of road and lane sensors for pedestrians

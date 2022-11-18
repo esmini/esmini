@@ -10,7 +10,9 @@ OpenSCENARIO
             ManeuverCatalog                                                    Yes
             TrajectoryCatalog                                                  Yes
             RouteCatalog                                                       Yes
-    ParameterValueDistributionDefinition (1.1)                                 No
+    ParameterValueDistributionDefinition (1.1)
+        Deterministic                                                          Yes
+        Stochastic                                                             No
     ScenarioDefinition
         ParameterDeclaration                                                   Yes
         VariableDeclaration (1.2)                                              No
