@@ -6579,6 +6579,7 @@ Position::ReturnCode Position::XYZH2TrackPos(double x3, double y3, double z3, do
 	bool insideCurrentRoad = false;  // current postion projects on current road
 	double curvatureAbsMin = INFINITY;
 	bool closestPointDirectlyConnected = false;
+	std::vector<int> overlapping_roads_tmp;
 
 	if (check_overlapping_roads)
 	{
@@ -6927,13 +6928,15 @@ Position::ReturnCode Position::XYZH2TrackPos(double x3, double y3, double z3, do
 					}
 				}
 
-				if (inside && distTmp < SMALL_NUMBER && (overlapping_roads.size() == 0 || overlapping_roads.back() != road->GetId()))
+				if (inside && distTmp < SMALL_NUMBER && (overlapping_roads_tmp.size() == 0 || overlapping_roads_tmp.back() != road->GetId()))
 				{
-					overlapping_roads.push_back(road->GetId());  // add overlap candidate
+					overlapping_roads_tmp.push_back(road->GetId());  // add overlap candidate
 				}
 			}
 		}
 	}
+
+	overlapping_roads = std::move(overlapping_roads_tmp);
 
 	if (closestPointInside)
 	{
