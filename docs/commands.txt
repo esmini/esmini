@@ -74,6 +74,8 @@ Options:
       Show OpenDRIVE road features ("on", "off"  (default)) (toggle during simulation by press 'o')
   --save_generated_model
       Save generated 3D model (n/a when a scenegraph is loaded)
+  --save_xosc
+      Save OpenSCENARIO file with any populated parameter values (from distribution)
   --seed <number>
       Specify seed number for random generator
   --sensors

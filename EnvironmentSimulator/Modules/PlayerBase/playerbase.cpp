@@ -1115,6 +1115,7 @@ int ScenarioPlayer::Init()
 	opt->AddOption("record", "Record position data into a file for later replay", "filename");
 	opt->AddOption("road_features", "Show OpenDRIVE road features (\"on\", \"off\"  (default)) (toggle during simulation by press 'o') ", "mode");
 	opt->AddOption("save_generated_model", "Save generated 3D model (n/a when a scenegraph is loaded)");
+	opt->AddOption("save_xosc", "Save OpenSCENARIO file with any populated parameter values (from distribution)");
 	opt->AddOption("seed", "Specify seed number for random generator", "number");
 	opt->AddOption("sensors", "Show sensor frustums (toggle during simulation by press 'r') ");
 	opt->AddOption("server", "Launch server to receive state of external Ego simulator");
@@ -1337,6 +1338,39 @@ int ScenarioPlayer::Init()
 	{
 		LOG(std::string("Exception: ").append(e.what()).c_str());
 		return -1;
+	}
+
+	// Save xml
+	if (opt->GetOptionSet("save_xosc"))
+	{
+		std::string filename = FileNameOf(scenarioEngine->getScenarioFilename());
+		pugi::xml_document* xml_doc = scenarioEngine->scenarioReader->GetDXMLDocument();
+
+		if (xml_doc)
+		{
+			if (dist.GetNumPermutations() > 0)
+			{
+				if (xml_doc->child("OpenSCENARIO") &&
+					xml_doc->child("OpenSCENARIO").child("ParameterDeclarations"))
+				{
+					for (pugi::xml_node node = xml_doc->child("OpenSCENARIO").child("ParameterDeclarations").child("ParameterDeclaration");
+						node; node = node.next_sibling())
+					{
+						std::string param_name = node.attribute("name").value();
+						for (int i = 0; i < dist.GetNumParameters(); i++)
+						{
+							if (dist.GetParamName(i) == param_name)
+							{
+								node.attribute("value").set_value(dist.GetParamValue(i).c_str());
+							}
+						}
+					}
+					filename = dist.AddInfoToFilename(filename);
+				}
+			}
+
+			xml_doc->save_file(filename.c_str());
+		}
 	}
 
 	// Fetch scenario gateway and OpenDRIVE manager objects

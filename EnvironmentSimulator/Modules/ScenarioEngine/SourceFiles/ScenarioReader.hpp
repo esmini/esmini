@@ -143,6 +143,7 @@ namespace scenarioengine
 
 		int RemoveController(Controller* controller);
 		void AddController(Controller* controller) { controller_.push_back(controller); }
+		pugi::xml_document* GetDXMLDocument() { return &doc_; }
 
 		std::vector<Controller*> controller_;
 
