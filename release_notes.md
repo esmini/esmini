@@ -1,5 +1,11 @@
 ## esmini release notes
 
+### 2022-11-18 Version 2.27.1
+
+- Add missing parameter distribution file [cut-in_parameter_set.xosc](https://github.com/esmini/esmini/blob/master/resources/xosc/cut-in_parameter_set.xosc) to demo pack
+- Fix sensor line elevation bug taking vehicle pitch angle into consideration
+- Patch to avoid known VS2019 std::vector issue ([issue #335](https://github.com/esmini/esmini/issues/335))
+
 ### 2022-11-18 Version 2.27.0
 New feature:
 - Add parameter distribution support
