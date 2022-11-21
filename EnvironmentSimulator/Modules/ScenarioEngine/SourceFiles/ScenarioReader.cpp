@@ -555,7 +555,7 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
 		{
 			vehicle->SetMaxAcceleration(strtod(parameters.ReadAttribute(performance_node, "maxAcceleration")));
 		}
-		if (!(performance_node.attribute("maxAcceleration").empty()))
+		if (!(performance_node.attribute("maxDeceleration").empty()))
 		{
 			vehicle->SetMaxDeceleration(strtod(parameters.ReadAttribute(performance_node, "maxDeceleration")));
 		}
