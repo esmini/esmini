@@ -383,10 +383,10 @@ class Application(Frame):
             # Sleep for a while according to fps before next send
             self.after((int)(1000.0/self.fps), self.sendMessages)
 
-
     def close(self):
         for obj in self.object:
             obj.delete()
+        quit()
 
 
 if __name__ == "__main__":

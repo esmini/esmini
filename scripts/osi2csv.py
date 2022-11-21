@@ -3,14 +3,10 @@ import struct
 import argparse
 import math
 
-from udp_driver.osi3.osi_groundtruth_pb2 import *
-
+from osi3.osi_groundtruth_pb2 import *
 
 class OSIFile():
     def __init__(self, filename):
-        if not os.path.isfile(filename):
-            print('ERROR: OSI file not found: {}'.format(filename))
-            return
         try:
             self.file = open(filename, 'rb')
         except OSError:

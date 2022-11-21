@@ -9,6 +9,12 @@
 
 from socket import *
 import struct
+import os
+import sys
+
+# Add scripts root directory to module search path in order to find osi3
+SCRIPTS_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(SCRIPTS_DIR)
 
 from osi3.osi_groundtruth_pb2 import GroundTruth
 
