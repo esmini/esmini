@@ -160,6 +160,7 @@ public:
 	std::vector<ObjectSensor *> sensor;
 	const double maxStepSize;
 	const double minStepSize;
+	SE_Options opt;
 	std::vector<ObjCallback> objCallback;
 	std::string exe_path_;
 	SE_Semaphore player_init_semaphore;

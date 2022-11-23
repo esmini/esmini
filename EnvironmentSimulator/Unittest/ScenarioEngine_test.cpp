@@ -1581,21 +1581,21 @@ TEST(DistributionTest, TestDeterministicDistribution)
     EXPECT_EQ(dist.GetParamName(4), "");
 
     // check some samples
-    EXPECT_EQ(dist.SelectPermutation(4), 0);
+    EXPECT_EQ(dist.SetIndex(4), 0);
     EXPECT_EQ(dist.GetParamName(0), "HostVehicle");
     EXPECT_EQ(dist.GetParamValue(0), "car_blue");
-    EXPECT_EQ(dist.SelectPermutation(6), -1);
-    EXPECT_EQ(dist.SelectPermutation(7), -1);
-    EXPECT_EQ(dist.SelectPermutation(-1), -1);
-    EXPECT_EQ(dist.SelectPermutation(5), 0);
+    EXPECT_EQ(dist.SetIndex(6), -1);
+    EXPECT_EQ(dist.SetIndex(7), -1);
+    EXPECT_EQ(dist.SetIndex(-1), -1);
+    EXPECT_EQ(dist.SetIndex(5), 0);
     EXPECT_EQ(dist.GetParamName(1), "TargetVehicle");
     EXPECT_EQ(dist.GetParamValue(1), "car_yellow");
     EXPECT_NEAR(std::atof(dist.GetParamValue(2).c_str()), 110.0, 1e-3);
     EXPECT_NEAR(std::atof(dist.GetParamValue(3).c_str()), 1.5, 1e-3);
-    EXPECT_EQ(dist.SelectPermutation(3), 0);
+    EXPECT_EQ(dist.SetIndex(3), 0);
     EXPECT_NEAR(std::atof(dist.GetParamValue(2).c_str()), 110.0, 1e-3);
     EXPECT_NEAR(std::atof(dist.GetParamValue(3).c_str()), 1.1, 1e-3);
-    EXPECT_EQ(dist.SelectPermutation(1), 0);
+    EXPECT_EQ(dist.SetIndex(1), 0);
     EXPECT_NEAR(std::atof(dist.GetParamValue(2).c_str()), 70.0, 1e-3);
     EXPECT_NEAR(std::atof(dist.GetParamValue(3).c_str()), 1.3, 1e-3);
 }

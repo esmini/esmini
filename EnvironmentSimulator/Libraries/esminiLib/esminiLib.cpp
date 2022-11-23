@@ -474,7 +474,7 @@ extern "C"
 
 	SE_DLL_API int SE_SelectPermutation(int index)
 	{
-		return OSCParameterDistribution::Inst().SelectPermutation(index);
+		return OSCParameterDistribution::Inst().SetRequestedIndex(index);
 	}
 
 	SE_DLL_API int SE_GetPermutationIndex()

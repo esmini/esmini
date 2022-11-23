@@ -19,6 +19,7 @@
 #define MIN_TIME_STEP 0.01
 #define MAX_TIME_STEP 0.1
 
+
 static bool quit = false;
 
 static void signal_handler(int s)
@@ -30,49 +31,65 @@ static void signal_handler(int s)
 	}
 }
 
-int main(int argc, char *argv[])
+static int execute_scenario(int argc, char* argv[])
 {
 	__int64 time_stamp = 0;
-	OSCParameterDistribution& dist = OSCParameterDistribution::Inst();
+
+	std::unique_ptr<ScenarioPlayer> player;
 
 	// Setup signal handler to catch Ctrl-C
 	signal(SIGINT, signal_handler);
 
-	bool once = false;
-	do
+	try
 	{
-		std::unique_ptr<ScenarioPlayer> player;
+		player = std::make_unique<ScenarioPlayer>(argc, argv);
 
-		try
+		if (player->opt.GetOptionSet("return_nr_permutations"))
 		{
-			player = std::make_unique<ScenarioPlayer>(argc, argv);
-			if (SE_Env::Inst().GetOptions()->IsOptionArgumentSet("param_permutation"))
-			{
-				once = true;
-			}
+			// Skip scenario, return immediately
+			return OSCParameterDistribution::Inst().GetNumPermutations();
 		}
-		catch (const std::exception& e)
+	}
+	catch (const std::exception& e)
+	{
+		LOG(std::string("Exception: ").append(e.what()).c_str());
+	}
+
+
+	while (!player->IsQuitRequested() && !quit)
+	{
+		double dt;
+		if (player->GetFixedTimestep() > SMALL_NUMBER)
 		{
-			LOG(std::string("Exception: ").append(e.what()).c_str());
-			return -1;
+			dt = player->GetFixedTimestep();
 		}
-
-		while (!player->IsQuitRequested() && !quit)
+		else
 		{
-			double dt;
-			if (player->GetFixedTimestep() > SMALL_NUMBER)
-			{
-				dt = player->GetFixedTimestep();
-			}
-			else
-			{
-				dt = SE_getSimTimeStep(time_stamp, player->minStepSize, player->maxStepSize);
-			}
-
-			player->Frame(dt);
+			dt = SE_getSimTimeStep(time_stamp, player->minStepSize, player->maxStepSize);
 		}
 
-	} while (!once && dist.GetIndex() < dist.GetNumPermutations() - 1 && !quit);
+		player->Frame(dt);
+	}
+
+	if (player->opt.IsOptionArgumentSet("param_permutation"))
+	{
+		// Single permutation requested and executed, quit now
+		quit = true;
+	}
 
 	return 0;
+}
+
+int main(int argc, char *argv[])
+{
+	OSCParameterDistribution& dist = OSCParameterDistribution::Inst();
+	int retval = 0;
+
+	do
+	{
+		 retval = execute_scenario(argc, argv);
+
+	} while (retval == 0 && dist.GetIndex() < dist.GetNumPermutations() - 1 && !quit);
+
+	return retval;
 }

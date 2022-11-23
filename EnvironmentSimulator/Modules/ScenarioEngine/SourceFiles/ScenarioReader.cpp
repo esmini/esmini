@@ -12,6 +12,7 @@
 
 #include "ScenarioReader.hpp"
 #include "CommonMini.hpp"
+#include "OSCParameterDistribution.hpp"
 #include "ControllerSloppyDriver.hpp"
 #include "ControllerInteractive.hpp"
 #include "ControllerFollowGhost.hpp"
@@ -112,6 +113,43 @@ int ScenarioReader::loadOSCFile(const char *path)
 	if (!osc_root_)
 	{
 		throw std::runtime_error("Couldn't find OpenSCENARIO or OpenScenario element - check XML!");
+	}
+
+	// Apply parameter values from distributions
+	OSCParameterDistribution& dist = OSCParameterDistribution::Inst();
+	if (dist.GetNumPermutations() > 0)
+	{
+		if (doc_)
+		{
+			if (dist.GetNumPermutations() > 0)
+			{
+				if (doc_.child("OpenSCENARIO") &&
+					doc_.child("OpenSCENARIO").child("ParameterDeclarations"))
+				{
+					LOG("Parameter permutation %d/%d", dist.GetIndex() + 1, dist.GetNumPermutations());
+
+					for (int i = 0; i < dist.GetNumParameters(); i++)
+					{
+						pugi::xml_node node = doc_.child("OpenSCENARIO").child("ParameterDeclarations").child("ParameterDeclaration");
+						for (;node; node = node.next_sibling())
+						{
+							std::string param_name = node.attribute("name").value();
+							if (dist.GetParamName(i) == param_name)
+							{
+								node.attribute("value").set_value(dist.GetParamValue(i).c_str());
+								LOG("   %s: %s", dist.GetParamName(i).c_str(), dist.GetParamValue(i).c_str());
+								break;
+							}
+						}
+						if (!node)
+						{
+							LOG("Distribution parameter %s not found in %s", dist.GetParamName(i).c_str(), path);
+							return -1;
+						}
+					}
+				}
+			}
+		}
 	}
 
 	oscFilename_ = path;
@@ -268,7 +306,7 @@ Catalog *ScenarioReader::LoadCatalog(std::string name)
 
 		pugi::xml_document root;
 		root.append_copy(entry_n);
-		
+
 		catalog->AddEntry(new Entry(entry_name, std::move(root)));
 	}
 

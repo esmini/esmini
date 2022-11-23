@@ -900,7 +900,6 @@ public:
 
 	std::string GetModelFilenameById(int model_id);
 	void ClearModelFilenames() { entity_model_map.clear(); }
-	SE_Options* GetOptions() { return &options_; }
 
 private:
 	std::vector<std::string> paths_;
@@ -914,7 +913,6 @@ private:
 	bool offScreenRendering_;
 	bool collisionDetection_;
 	std::map<int, std::string> entity_model_map;
-	SE_Options options_;
 };
 
 /**

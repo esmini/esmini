@@ -43,7 +43,7 @@ static void log_callback(const char *str)
 	printf("%s\n", str);
 }
 
-ScenarioPlayer::ScenarioPlayer(int argc, char *argv[]) :
+ScenarioPlayer::ScenarioPlayer(int argc, char* argv[]) :
 	maxStepSize(0.1), minStepSize(0.001), argc_(argc), argv_(argv), state_(PlayerState::PLAYER_STATE_PLAYING)
 {
 	quit_request = false;
@@ -54,9 +54,11 @@ ScenarioPlayer::ScenarioPlayer(int argc, char *argv[]) :
 	osi_freq_ = 1;
 	CSV_Log = NULL;
 	osiReporter = NULL;
-	viewer_ = 0;
 	disable_controllers_ = false;
 	frame_counter_ = 0;
+	scenarioEngine = nullptr;
+	osiReporter = nullptr;
+	viewer_ = nullptr;
 
 #ifdef _USE_OSG
 	viewerState_ = ViewerState::VIEWER_STATE_NOT_STARTED;
@@ -96,7 +98,11 @@ ScenarioPlayer::~ScenarioPlayer()
 	}
 #endif  // _USE_OSG
 	Logger::Inst().SetTimePtr(0);
-	delete scenarioEngine;
+	if (scenarioEngine)
+	{
+		delete scenarioEngine;
+		scenarioEngine = nullptr;
+	}
 
 #ifdef _USE_OSI
 	if (osiReporter)
@@ -602,7 +608,7 @@ int ScenarioPlayer::InitViewer()
 		scenarioEngine->getSceneGraphFilename().c_str(),
 		scenarioEngine->getScenarioFilename().c_str(),
 		exe_path_.c_str(),
-		arguments, SE_Env::Inst().GetOptions());
+		arguments, &opt);
 
 	if (viewer_->osgViewer_ == 0)
 	{
@@ -612,9 +618,7 @@ int ScenarioPlayer::InitViewer()
 
 	viewer_->osgViewer_->setKeyEventSetsDone(0);  // Disable default Escape key event handler, take over control
 
-	SE_Options* opt = SE_Env::Inst().GetOptions();
-
-	if ((arg_str = opt->GetOptionArg("info_text")) != "")
+	if ((arg_str = opt.GetOptionArg("info_text")) != "")
 	{
 		int mask = strtoi(arg_str);
 		if (mask < 0 || mask > 3)
@@ -627,13 +631,13 @@ int ScenarioPlayer::InitViewer()
 
 	viewer_->RegisterImageCallback(imageCallback.func, imageCallback.data);
 
-	if (opt->GetOptionSet("capture_screen"))
+	if (opt.GetOptionSet("capture_screen"))
 	{
 		LOG("Activate continuous screen capture");
 		viewer_->SaveImagesToFile(-1);
 	}
 
-	if ((arg_str = opt->GetOptionArg("trail_mode")) != "")
+	if ((arg_str = opt.GetOptionArg("trail_mode")) != "")
 	{
 		int mask = strtoi(arg_str);
 		if (mask < 0 || mask > 3)
@@ -644,47 +648,47 @@ int ScenarioPlayer::InitViewer()
 			viewer::NodeMask::NODE_MASK_TRAIL_DOTS, mask * viewer::NodeMask::NODE_MASK_TRAIL_LINES);
 	}
 
-	if (opt->GetOptionSet("hide_trajectories"))
+	if (opt.GetOptionSet("hide_trajectories"))
 	{
 		LOG("Hide trajectories");
 		viewer_->ClearNodeMaskBits(viewer::NodeMask::NODE_MASK_TRAJECTORY_LINES);
 	}
 
-	if (opt->GetOptionArg("road_features") == "on")
+	if (opt.GetOptionArg("road_features") == "on")
 	{
 		viewer_->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_ODR_FEATURES);
 	}
-	else if (opt->GetOptionArg("road_features") == "off")
+	else if (opt.GetOptionArg("road_features") == "off")
 	{
 		viewer_->ClearNodeMaskBits(viewer::NodeMask::NODE_MASK_ODR_FEATURES);
 	}
 
-	if (opt->GetOptionSet("hide_route_waypoints"))
+	if (opt.GetOptionSet("hide_route_waypoints"))
 	{
 		LOG("Disable route waypoint visualization");
 		viewer_->ClearNodeMaskBits(viewer::NodeMask::NODE_MASK_ROUTE_WAYPOINTS);
 	}
 
-	if (opt->GetOptionSet("osi_lines"))
+	if (opt.GetOptionSet("osi_lines"))
 	{
 		viewer_->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_OSI_LINES);
 	}
 
-	if (opt->GetOptionSet("osi_points"))
+	if (opt.GetOptionSet("osi_points"))
 	{
 		viewer_->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_OSI_POINTS);
 	}
 
-	if (opt->GetOptionSet("sensors"))
+	if (opt.GetOptionSet("sensors"))
 	{
 		viewer_->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_OBJECT_SENSORS);
 	}
 
-	if (opt->GetOptionSet("custom_camera") == true)
+	if (opt.GetOptionSet("custom_camera") == true)
 	{
 		int counter = 0;
 
-		while ((arg_str = opt->GetOptionArg("custom_camera", counter)) != "")
+		while ((arg_str = opt.GetOptionArg("custom_camera", counter)) != "")
 		{
 			size_t pos = 0;
 			double v[5] = { 0.0, 0.0, 0.0, 0.0, 0.0 };
@@ -708,11 +712,11 @@ int ScenarioPlayer::InitViewer()
 		}
 	}
 
-	if (opt->GetOptionSet("custom_fixed_camera") == true)
+	if (opt.GetOptionSet("custom_fixed_camera") == true)
 	{
 		int counter = 0;
 
-		while ((arg_str = opt->GetOptionArg("custom_fixed_camera", counter)) != "")
+		while ((arg_str = opt.GetOptionArg("custom_fixed_camera", counter)) != "")
 		{
 			size_t pos = 0;
 			double v[5] = { 0.0, 0.0, 0.0, 0.0, 0.0 };
@@ -758,11 +762,11 @@ int ScenarioPlayer::InitViewer()
 		}
 	}
 
-	if (opt->GetOptionSet("custom_fixed_top_camera") == true)
+	if (opt.GetOptionSet("custom_fixed_top_camera") == true)
 	{
 		int counter = 0;
 
-		while ((arg_str = opt->GetOptionArg("custom_fixed_top_camera", counter)) != "")
+		while ((arg_str = opt.GetOptionArg("custom_fixed_top_camera", counter)) != "")
 		{
 			size_t pos = 0;
 			double v[4] = { 0.0, 0.0, 0.0, 0.0 };
@@ -787,12 +791,12 @@ int ScenarioPlayer::InitViewer()
 		}
 	}
 
-	if (opt->GetOptionSet("custom_light") == true)
+	if (opt.GetOptionSet("custom_light") == true)
 	{
 		int counter = 0;
 		int lightCounter = 0;
 
-		while ((arg_str = opt->GetOptionArg("custom_light", counter)) != "")
+		while ((arg_str = opt.GetOptionArg("custom_light", counter)) != "")
 		{
 			size_t pos = 0;
 			double v[4] = { 0.0, 0.0, 0.0, 0.0 };
@@ -824,7 +828,7 @@ int ScenarioPlayer::InitViewer()
 		}
 	}
 
-	if ((arg_str = opt->GetOptionArg("camera_mode")) != "")
+	if ((arg_str = opt.GetOptionArg("camera_mode")) != "")
 	{
 		if (arg_str == "orbit")
 		{
@@ -860,7 +864,7 @@ int ScenarioPlayer::InitViewer()
 		}
 	}
 
-	if (opt->GetOptionSet("bounding_boxes"))
+	if (opt.GetOptionSet("bounding_boxes"))
 	{
 		viewer_->ClearNodeMaskBits(viewer::NodeMask::NODE_MASK_ENTITY_MODEL);
 		viewer_->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_ENTITY_BB);
@@ -937,7 +941,7 @@ int ScenarioPlayer::InitViewer()
 	}
 
 	// Decorate window border with application name and arguments
-	viewer_->SetWindowTitleFromArgs(opt->GetOriginalArgs());
+	viewer_->SetWindowTitleFromArgs(opt.GetOriginalArgs());
 	viewer_->RegisterKeyEventCallback(ReportKeyEvent, this);
 
 	viewerState_ = ViewerState::VIEWER_STATE_STARTED;
@@ -1056,7 +1060,7 @@ void ScenarioPlayer::ShowObjectSensors(bool mode)
 
 void ScenarioPlayer::PrintUsage()
 {
-	SE_Env::Inst().GetOptions()->PrintUsage();
+	opt.PrintUsage();
 #ifdef _USE_OSG
 	viewer::Viewer::PrintUsage();
 #endif
@@ -1072,138 +1076,155 @@ int ScenarioPlayer::Init()
 
 	std::string arg_str;
 
-	SE_Options* opt = SE_Env::Inst().GetOptions();
-	opt->Reset();
+	opt.Reset();
 
 	// use an ArgumentParser object to manage the program arguments.
-	opt->AddOption("osc", "OpenSCENARIO filename (required) - if path includes spaces, enclose with \"\"", "filename");
-	opt->AddOption("aa_mode", "Anti-alias mode=number of multisamples (subsamples, 0=off, 4=default)", "mode");
-	opt->AddOption("bounding_boxes", "Show entities as bounding boxes (toggle modes on key ',') ");
-	opt->AddOption("capture_screen", "Continuous screen capture. Warning: Many jpeg files will be created");
-	opt->AddOption("camera_mode", "Initial camera mode (\"orbit\" (default), \"fixed\", \"flex\", \"flex-orbit\", \"top\", \"driver\", \"custom\") (swith with key 'k') ", "mode");
-	opt->AddOption("csv_logger", "Log data for each vehicle in ASCII csv format", "csv_filename");
-	opt->AddOption("collision", "Enable global collision detection, potentially reducing performance");
-	opt->AddOption("custom_camera", "Additional custom fixed camera position <x,y,z,h,p> (multiple occurrences supported)", "position");
-	opt->AddOption("custom_fixed_camera", "Additional custom camera position <x,y,z>[,h,p] (multiple occurrences supported)", "position and optional orientation");
-	opt->AddOption("custom_fixed_top_camera", "Additional custom top camera <x,y,z,rot> (multiple occurrences supported)", "position and rotation");
-	opt->AddOption("custom_light", "Additional custom light source <x,y,z,intensity> intensity range 0..1 (multiple occurrences supported)", "position and intensity");
-	opt->AddOption("disable_controllers", "Disable controllers");
-	opt->AddOption("disable_log", "Prevent logfile from being created");
-	opt->AddOption("disable_off_screen", "Disable esmini off-screen rendering, revert to OSG viewer default handling");
-	opt->AddOption("disable_stdout", "Prevent messages to stdout");
-	opt->AddOption("enforce_generate_model", "Generate road 3D model even if SceneGraphFile is specified");
-	opt->AddOption("fixed_timestep", "Run simulation decoupled from realtime, with specified timesteps", "timestep");
-	opt->AddOption("generate_no_road_objects", "Do not generate any OpenDRIVE road objects (e.g. when part of referred 3D model)");
-	opt->AddOption("ground_plane", "Add a large flat ground surface");
-	opt->AddOption("headless", "Run without viewer window");
-	opt->AddOption("help", "Show this help message");
-	opt->AddOption("hide_route_waypoints", "Disable route waypoint visualization (toggle with key 'R')");
-	opt->AddOption("hide_trajectories", "Hide trajectories from start (toggle with key 'n')");
-	opt->AddOption("info_text", "Show on-screen info text (toggle key 'i') mode 0=None 1=current (default) 2=per_object 3=both", "mode");
-	opt->AddOption("logfile_path", "logfile path/filename, e.g. \"../esmini.log\" (default: log.txt)", "path");
-	opt->AddOption("osc_str", "OpenSCENARIO XML string", "string");
+	opt.AddOption("osc", "OpenSCENARIO filename (required) - if path includes spaces, enclose with \"\"", "filename");
+	opt.AddOption("aa_mode", "Anti-alias mode=number of multisamples (subsamples, 0=off, 4=default)", "mode");
+	opt.AddOption("bounding_boxes", "Show entities as bounding boxes (toggle modes on key ',') ");
+	opt.AddOption("capture_screen", "Continuous screen capture. Warning: Many jpeg files will be created");
+	opt.AddOption("camera_mode", "Initial camera mode (\"orbit\" (default), \"fixed\", \"flex\", \"flex-orbit\", \"top\", \"driver\", \"custom\") (swith with key 'k') ", "mode");
+	opt.AddOption("csv_logger", "Log data for each vehicle in ASCII csv format", "csv_filename");
+	opt.AddOption("collision", "Enable global collision detection, potentially reducing performance");
+	opt.AddOption("custom_camera", "Additional custom fixed camera position <x,y,z,h,p> (multiple occurrences supported)", "position");
+	opt.AddOption("custom_fixed_camera", "Additional custom camera position <x,y,z>[,h,p] (multiple occurrences supported)", "position and optional orientation");
+	opt.AddOption("custom_fixed_top_camera", "Additional custom top camera <x,y,z,rot> (multiple occurrences supported)", "position and rotation");
+	opt.AddOption("custom_light", "Additional custom light source <x,y,z,intensity> intensity range 0..1 (multiple occurrences supported)", "position and intensity");
+	opt.AddOption("disable_controllers", "Disable controllers");
+	opt.AddOption("disable_log", "Prevent logfile from being created");
+	opt.AddOption("disable_off_screen", "Disable esmini off-screen rendering, revert to OSG viewer default handling");
+	opt.AddOption("disable_stdout", "Prevent messages to stdout");
+	opt.AddOption("enforce_generate_model", "Generate road 3D model even if SceneGraphFile is specified");
+	opt.AddOption("fixed_timestep", "Run simulation decoupled from realtime, with specified timesteps", "timestep");
+	opt.AddOption("generate_no_road_objects", "Do not generate any OpenDRIVE road objects (e.g. when part of referred 3D model)");
+	opt.AddOption("ground_plane", "Add a large flat ground surface");
+	opt.AddOption("headless", "Run without viewer window");
+	opt.AddOption("help", "Show this help message");
+	opt.AddOption("hide_route_waypoints", "Disable route waypoint visualization (toggle with key 'R')");
+	opt.AddOption("hide_trajectories", "Hide trajectories from start (toggle with key 'n')");
+	opt.AddOption("info_text", "Show on-screen info text (toggle key 'i') mode 0=None 1=current (default) 2=per_object 3=both", "mode");
+	opt.AddOption("logfile_path", "logfile path/filename, e.g. \"../esmini.log\" (default: log.txt)", "path");
+	opt.AddOption("osc_str", "OpenSCENARIO XML string", "string");
 #ifdef _USE_OSI
-	opt->AddOption("osi_file", "save osi trace file", "filename", DEFAULT_OSI_TRACE_FILENAME);
-	opt->AddOption("osi_freq", "relative frequence for writing the .osi file e.g. --osi_freq=2 -> we write every two simulation steps", "frequence");
-	opt->AddOption("osi_lines", "Show OSI road lines (toggle during simulation by press 'u') ");
-	opt->AddOption("osi_points", "Show OSI road pointss (toggle during simulation by press 'y') ");
-	opt->AddOption("osi_receiver_ip", "IP address where to send OSI UDP packages", "IP address");
+	opt.AddOption("osi_file", "save osi trace file", "filename", DEFAULT_OSI_TRACE_FILENAME);
+	opt.AddOption("osi_freq", "relative frequence for writing the .osi file e.g. --osi_freq=2 -> we write every two simulation steps", "frequence");
+	opt.AddOption("osi_lines", "Show OSI road lines (toggle during simulation by press 'u') ");
+	opt.AddOption("osi_points", "Show OSI road pointss (toggle during simulation by press 'y') ");
+	opt.AddOption("osi_receiver_ip", "IP address where to send OSI UDP packages", "IP address");
 #endif
-	opt->AddOption("param_dist", "Run variations of the scenario according to specified parameter distribution file", "filename");
-	opt->AddOption("param_permutation", "Run specific permutation of parameter distribution", "index (0 .. NumberOfPermutations-1)");
-	opt->AddOption("path", "Search path prefix for assets, e.g. OpenDRIVE files (multiple occurrences supported)", "path");
-	opt->AddOption("record", "Record position data into a file for later replay", "filename");
-	opt->AddOption("road_features", "Show OpenDRIVE road features (\"on\", \"off\"  (default)) (toggle during simulation by press 'o') ", "mode");
-	opt->AddOption("save_generated_model", "Save generated 3D model (n/a when a scenegraph is loaded)");
-	opt->AddOption("save_xosc", "Save OpenSCENARIO file with any populated parameter values (from distribution)");
-	opt->AddOption("seed", "Specify seed number for random generator", "number");
-	opt->AddOption("sensors", "Show sensor frustums (toggle during simulation by press 'r') ");
-	opt->AddOption("server", "Launch server to receive state of external Ego simulator");
-	opt->AddOption("threads", "Run viewer in a separate thread, parallel to scenario engine");
-	opt->AddOption("trail_mode", "Show trail lines and/or dots (toggle key 'j') mode 0=None 1=lines 2=dots 3=both", "mode");
-	opt->AddOption("version", "Show version and quit");
+	opt.AddOption("param_dist", "Run variations of the scenario according to specified parameter distribution file", "filename");
+	opt.AddOption("param_permutation", "Run specific permutation of parameter distribution", "index (0 .. NumberOfPermutations-1)");
+	opt.AddOption("path", "Search path prefix for assets, e.g. OpenDRIVE files (multiple occurrences supported)", "path");
+	opt.AddOption("record", "Record position data into a file for later replay", "filename");
+	opt.AddOption("road_features", "Show OpenDRIVE road features (\"on\", \"off\"  (default)) (toggle during simulation by press 'o') ", "mode");
+	opt.AddOption("return_nr_permutations", "Return number of permutations without executing the scenario (-1 = error)");
+	opt.AddOption("save_generated_model", "Save generated 3D model (n/a when a scenegraph is loaded)");
+	opt.AddOption("save_xosc", "Save OpenSCENARIO file with any populated parameter values (from distribution)");
+	opt.AddOption("seed", "Specify seed number for random generator", "number");
+	opt.AddOption("sensors", "Show sensor frustums (toggle during simulation by press 'r') ");
+	opt.AddOption("server", "Launch server to receive state of external Ego simulator");
+	opt.AddOption("threads", "Run viewer in a separate thread, parallel to scenario engine");
+	opt.AddOption("trail_mode", "Show trail lines and/or dots (toggle key 'j') mode 0=None 1=lines 2=dots 3=both", "mode");
+	opt.AddOption("version", "Show version and quit");
 
 	exe_path_ = argv_[0];
 	SE_Env::Inst().AddPath(DirNameOf(exe_path_));  // Add location of exe file to search paths
 
-	if (opt->ParseArgs(argc_, argv_) != 0)
+	if (opt.ParseArgs(argc_, argv_) != 0)
 	{
 		PrintUsage();
 		return -2;
 	}
 
-	if (opt->GetOptionSet("version"))
+	if (opt.GetOptionSet("version"))
 	{
 		Logger::Inst().LogVersion();
 		return -2;
 	}
 
-	if (opt->GetOptionSet("help"))
+	if (opt.GetOptionSet("help"))
 	{
 		PrintUsage();
 		return -2;
 	}
 
-
 	OSCParameterDistribution& dist = OSCParameterDistribution::Inst();
-	if (opt->IsOptionArgumentSet("param_dist"))
+
+	if (dist.GetNumPermutations() > 0)
 	{
-		LoadParameterDistribution(opt->GetOptionArg("param_dist"));
+		LOG("Re-using parameter distribution %s", dist.GetFilename().c_str());
+	}
+	else if (opt.IsOptionArgumentSet("param_dist"))
+	{
+		if (dist.GetNumPermutations() == 0)
+		{
+			if (LoadParameterDistribution(opt.GetOptionArg("param_dist")) != 0)
+			{
+				return -1;
+			}
+		}
 	}
 
-	if (opt->IsOptionArgumentSet("param_permutation"))
+	if (opt.GetOptionSet("return_nr_permutations"))
 	{
-		int index = strtoi(opt->GetOptionArg("param_permutation"));
+		LOG("Nr permutations: %d", dist.GetNumPermutations());
+		// The distribution is loadad and we can abort the initialization here
+		// the outer scope will deliver the number of permutations as return value
+		return 0;
+	}
+
+	if (opt.IsOptionArgumentSet("param_permutation"))  // permutation index set by argument
+	{
+		int permutation_index = strtoi(opt.GetOptionArg("param_permutation"));
 
 		if (dist.GetNumPermutations() > 0)
 		{
-			if (index >= dist.GetNumPermutations() || index < 0)
+			if (permutation_index >= dist.GetNumPermutations() || permutation_index < 0)
 			{
-				LOG("Requested permutation %d out of range [%d .. %d]", index, 0, dist.GetNumPermutations() - 1);
+				LOG("Requested permutation %d out of range [%d .. %d]", permutation_index, 0, dist.GetNumPermutations() - 1);
 				return -1;
 			}
 			else
 			{
-				dist.SelectPermutation(index);
+				dist.SetIndex(permutation_index);
 			}
 		}
-		else if (index > 0)
+		else if (permutation_index > 0)
 		{
-			LOG("No permutations available, requested permutation %d ignored", index);
+			LOG("No permutations available, requested permutation %d ignored", permutation_index);
 			return -1;
 		}
-
 	}
-
-	if (dist.GetNumPermutations() > 0)
+	else if (dist.GetNumPermutations() > 0)
 	{
-		if (!dist.GetSelectFlag())
+		if (dist.GetRequestedIndex() > -1)  // Requested via lib API
 		{
-			// permutation index not explicitly set, increment index
-			dist.IncrementIndex();
+			if (dist.SetIndex(dist.GetRequestedIndex()) != 0)
+			{
+				LOG_AND_QUIT("Failed to set requested index %d", dist.GetRequestedIndex());
+			}
 		}
 		else
 		{
-			// specific permutation set (or first round), postpone increment to next round
-			dist.SetSelectFlag(false);
+			dist.IncrementIndex();
 		}
 	}
 
-	if (opt->GetOptionSet("disable_stdout"))
+	if (opt.GetOptionSet("disable_stdout"))
 	{
 		Logger::Inst().SetCallback(0);
 	}
 
 	std::string log_filename = SE_Env::Inst().GetLogFilePath();
 
-	if (opt->GetOptionSet("disable_log"))
+	if (opt.GetOptionSet("disable_log"))
 	{
 		log_filename = "";
 		printf("Disable logfile\n");
 	}
-	else if (opt->IsOptionArgumentSet("logfile_path"))
+	else if (opt.IsOptionArgumentSet("logfile_path"))
 	{
-		arg_str = opt->GetOptionArg("logfile_path");
+		arg_str = opt.GetOptionArg("logfile_path");
 
 		if (!arg_str.empty())
 		{
@@ -1240,7 +1261,7 @@ int ScenarioPlayer::Init()
 		LOG("Using parameter distribution file: %s", dist.GetFilename().c_str());
 	}
 
-	if (opt->GetOptionSet("threads"))
+	if (opt.GetOptionSet("threads"))
 	{
 #ifdef __APPLE__
 		LOG("Separate viewer thread requested. Unfortunately only supported on Windows and Linux.");
@@ -1252,22 +1273,22 @@ int ScenarioPlayer::Init()
 #endif
 	}
 
-	if (opt->GetOptionSet("server"))
+	if (opt.GetOptionSet("server"))
 	{
 		launch_server = true;
 		LOG("Launch server to receive state of external Ego simulator");
 	}
 
-	for (int index = 0; (arg_str = opt->GetOptionArg("fixed_timestep", index)) != ""; index++)
+	for (int index = 0; (arg_str = opt.GetOptionArg("fixed_timestep", index)) != ""; index++)
 	{
 		SetFixedTimestep(std::stod(arg_str));
 		LOG("Run simulation decoupled from realtime, with fixed timestep: %.2f", GetFixedTimestep());
 	}
 
-	if (opt->GetOptionArg("path") != "")
+	if (opt.GetOptionArg("path") != "")
 	{
 		int counter = 0;
-		while ((arg_str = opt->GetOptionArg("path", counter)) != "")
+		while ((arg_str = opt.GetOptionArg("path", counter)) != "")
 		{
 			SE_Env::Inst().AddPath(arg_str);
 			LOG("Added path %s", arg_str.c_str());
@@ -1275,14 +1296,14 @@ int ScenarioPlayer::Init()
 		}
 	}
 
-	if (opt->GetOptionSet("disable_controllers"))
+	if (opt.GetOptionSet("disable_controllers"))
 	{
 		disable_controllers_ = true;
 		LOG("Disable entity controllers");
 	}
 
 	// Use specific seed for repeatable scenarios?
-	if ((arg_str = opt->GetOptionArg("seed")) != "")
+	if ((arg_str = opt.GetOptionArg("seed")) != "")
 	{
 		unsigned int seed = static_cast<unsigned int>(std::stoul(arg_str));
 		LOG("Using specified seed %u", seed);
@@ -1293,12 +1314,12 @@ int ScenarioPlayer::Init()
 		LOG("Generated seed %u", SE_Env::Inst().GetSeed());
 	}
 
-	if (opt->GetOptionSet("collision"))
+	if (opt.GetOptionSet("collision"))
 	{
 		SE_Env::Inst().SetCollisionDetection(true);
 	}
 
-	if (opt->GetOptionSet("disable_off_screen"))
+	if (opt.GetOptionSet("disable_off_screen"))
 	{
 		SE_Env::Inst().SetOffScreenRendering(false);
 	}
@@ -1306,14 +1327,14 @@ int ScenarioPlayer::Init()
 	// Create scenario engine
 	try
 	{
-		if ((arg_str = opt->GetOptionArg("osc")) != "")
+		if ((arg_str = opt.GetOptionArg("osc")) != "")
 		{
 			SE_Env::Inst().AddPath(DirNameOf(arg_str));
 			scenarioEngine = new ScenarioEngine(FileNameOf(arg_str), disable_controllers_);
 			Logger::Inst().SetTimePtr(scenarioEngine->GetSimulationTimePtr());
 			//Logger::Inst().SetTimePtr(scenarioEngine->GetTrueTimePtr());
 		}
-		else if ((arg_str = opt->GetOptionArg("osc_str")) != "")
+		else if ((arg_str = opt.GetOptionArg("osc_str")) != "")
 		{
 			// parse XML string as document
 			pugi::xml_document doc;
@@ -1341,34 +1362,14 @@ int ScenarioPlayer::Init()
 	}
 
 	// Save xml
-	if (opt->GetOptionSet("save_xosc"))
+	if (opt.GetOptionSet("save_xosc"))
 	{
 		std::string filename = FileNameOf(scenarioEngine->getScenarioFilename());
 		pugi::xml_document* xml_doc = scenarioEngine->scenarioReader->GetDXMLDocument();
 
 		if (xml_doc)
 		{
-			if (dist.GetNumPermutations() > 0)
-			{
-				if (xml_doc->child("OpenSCENARIO") &&
-					xml_doc->child("OpenSCENARIO").child("ParameterDeclarations"))
-				{
-					for (pugi::xml_node node = xml_doc->child("OpenSCENARIO").child("ParameterDeclarations").child("ParameterDeclaration");
-						node; node = node.next_sibling())
-					{
-						std::string param_name = node.attribute("name").value();
-						for (int i = 0; i < dist.GetNumParameters(); i++)
-						{
-							if (dist.GetParamName(i) == param_name)
-							{
-								node.attribute("value").set_value(dist.GetParamValue(i).c_str());
-							}
-						}
-					}
-					filename = dist.AddInfoToFilename(filename);
-				}
-			}
-
+			filename = dist.AddInfoToFilename(filename);
 			xml_doc->save_file(filename.c_str());
 		}
 	}
@@ -1380,14 +1381,14 @@ int ScenarioPlayer::Init()
 #ifdef _USE_OSI
 	osiReporter = new OSIReporter();
 
-	if (opt->GetOptionSet("osi_receiver_ip"))
+	if (opt.GetOptionSet("osi_receiver_ip"))
 	{
-		osiReporter->OpenSocket(opt->GetOptionArg("osi_receiver_ip"));
+		osiReporter->OpenSocket(opt.GetOptionArg("osi_receiver_ip"));
 	}
 
-	if (opt->GetOptionSet("osi_file"))
+	if (opt.GetOptionSet("osi_file"))
 	{
-		std::string osi_filename = opt->GetOptionArg("osi_file");
+		std::string osi_filename = opt.GetOptionArg("osi_file");
 
 		if (dist.GetNumPermutations() > 0)
 		{
@@ -1397,7 +1398,7 @@ int ScenarioPlayer::Init()
 		osiReporter->OpenOSIFile(osi_filename.c_str());
 	}
 
-	if ((arg_str = opt->GetOptionArg("osi_freq")) != "")
+	if ((arg_str = opt.GetOptionArg("osi_freq")) != "")
 	{
 		if (!osiReporter->IsFileOpen())
 		{
@@ -1410,12 +1411,12 @@ int ScenarioPlayer::Init()
 #endif  // USE_OSI
 
 	// Initialize CSV logger for recording vehicle data
-	if (opt->GetOptionSet("csv_logger"))
+	if (opt.GetOptionSet("csv_logger"))
 	{
 		CSV_Log = &CSV_Logger::Inst();
 		if (CSV_Log)
 		{
-			std::string filename = opt->GetOptionArg("csv_logger");
+			std::string filename = opt.GetOptionArg("csv_logger");
 
 			if (dist.GetNumPermutations() > 0)
 			{
@@ -1433,7 +1434,7 @@ int ScenarioPlayer::Init()
 	}
 
 	// Create a data file for later replay?
-	if ((arg_str = opt->GetOptionArg("record")) != "")
+	if ((arg_str = opt.GetOptionArg("record")) != "")
 	{
 		std::string filename;
 
@@ -1470,7 +1471,7 @@ int ScenarioPlayer::Init()
 
 	player_init_semaphore.Set();
 
-	if (opt->IsInOriginalArgs("--window") || opt->IsInOriginalArgs("--borderless-window"))
+	if (opt.IsInOriginalArgs("--window") || opt.IsInOriginalArgs("--borderless-window"))
 	{
 #ifdef _USE_OSG
 
@@ -1511,15 +1512,15 @@ int ScenarioPlayer::Init()
 		LOG("window requested, but esmini compiled without OSG capabilities");
 #endif
 	}
-	else if (opt->GetOptionSet("capture_screen"))
+	else if (opt.GetOptionSet("capture_screen"))
 	{
 		PrintUsage();
 		LOG_AND_QUIT("Capture screen requires a window to be specified!");
 	}
 
-	if (opt->HasUnknownArgs())
+	if (opt.HasUnknownArgs())
 	{
-		opt->PrintUnknownArgs("Unrecognized arguments:");
+		opt.PrintUnknownArgs("Unrecognized arguments:");
 		PrintUsage();
 	}
 
@@ -1640,21 +1641,22 @@ int ScenarioPlayer::SetParameterValue(const char* name, bool value)
 
 int ScenarioPlayer::LoadParameterDistribution(std::string filename)
 {
-	OSCParameterDistribution& param_dist = OSCParameterDistribution::Inst();
+	OSCParameterDistribution& dist = OSCParameterDistribution::Inst();
 
-	if (param_dist.GetNumPermutations() > 0)
+	if (dist.GetNumPermutations() > 0)
 	{
-		// A parameter distribution seems to be already loaded.
-		// Skip loading, assume reuse current one.
-		// Use Reset() before loading another one.
+		LOG("Parameter distribution already loaded, reusing it");
 		return -2;
 	}
-	else if (param_dist.Load(filename) == 0)
+	else
 	{
-		return 0;
+		if (dist.Load(filename) != 0)
+		{
+			return -1;
+		}
 	}
 
-	return -1;
+	return 0;
 }
 
 //todo
