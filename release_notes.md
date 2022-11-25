@@ -1,5 +1,18 @@
 ## esmini release notes
 
+### 2022-11-25 Version 2.27.2
+
+- Add script for parallel execution of parameter distributions
+  - see more info in [User guide - Parallel execution](https://esmini.github.io/#_parallel_execution)
+- Add esmini option to just return nr permutations (also as exit code)
+  - see [User guide - Finding out number of permutations](https://esmini.github.io/#_finding_out_number_of_permutations)
+- Add acc and orientation vel/acc to [scripts/osi2csv.py](https://github.com/esmini/esmini/blob/master/scripts/osi2csv.py) script
+- Fix maxDeceleration parse error ([PR #354](https://github.com/esmini/esmini/pull/354))
+- Fix scripts path issues
+  - move osi3 folder up one folder for easier reuse
+  - add search path to make scrips executable from anywhere
+- Move binary demo generator scripts to scripts folder
+
 ### 2022-11-18 Version 2.27.1
 
 - Add missing parameter distribution file [cut-in_parameter_set.xosc](https://github.com/esmini/esmini/blob/master/resources/xosc/cut-in_parameter_set.xosc) to demo pack
