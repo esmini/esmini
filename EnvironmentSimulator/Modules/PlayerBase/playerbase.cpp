@@ -1148,6 +1148,11 @@ int ScenarioPlayer::Init()
 		return -2;
 	}
 
+	if (opt.GetOptionSet("disable_stdout"))
+	{
+		Logger::Inst().SetCallback(0);
+	}
+
 	OSCParameterDistribution& dist = OSCParameterDistribution::Inst();
 
 	if (dist.GetNumPermutations() > 0)
@@ -1208,11 +1213,6 @@ int ScenarioPlayer::Init()
 		{
 			dist.IncrementIndex();
 		}
-	}
-
-	if (opt.GetOptionSet("disable_stdout"))
-	{
-		Logger::Inst().SetCallback(0);
 	}
 
 	std::string log_filename = SE_Env::Inst().GetLogFilePath();

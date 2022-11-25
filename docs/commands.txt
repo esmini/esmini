@@ -72,6 +72,8 @@ Options:
       Record position data into a file for later replay
   --road_features <mode>
       Show OpenDRIVE road features ("on", "off"  (default)) (toggle during simulation by press 'o')
+  --return_nr_permutations
+      Return number of permutations without executing the scenario (-1 = error)
   --save_generated_model
       Save generated 3D model (n/a when a scenegraph is loaded)
   --save_xosc

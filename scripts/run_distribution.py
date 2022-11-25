@@ -1,47 +1,57 @@
+# Launch parallel esmini runs as defined by a parameter value distribution
+#
+# Example:
+# python ./scripts/run_distribution.py --osc .\resources\xosc\cut-in.xosc --param_dist .\resources\xosc\cut-in_parameter_set.xosc --fixed_timestep 0.05 --headless
 
+
+from multiprocessing.pool import ThreadPool
 import subprocess
 import sys
-import threading
-import time
+import os.path
 
+
+if len(sys.argv) < 3:
+    print('Usage: {} <esmini args>'.format(os.path.basename(sys.argv[0])))
+    print('\nMake sure to add at least:')
+    print('  --osc <scenario file>')
+    print('  --param_dist <parameter distribution file>')
+    print('  --fixed_timestep <timestep>')
+    print('  --headless')
+    print('\nExample:\n  python {} --osc cut-in.xosc --param_dist param_set.xosc --fixed_timestep 0.05 --headless'.
+        format(os.path.basename(sys.argv[0])))
+    exit(-1)
+
+# globals
 launched = 0
 done = 0
 n_runs = 0
-ps = []
 
 def print_status():
     print('Launched: {}/{} Done: {}'.format(launched, n_runs, done), end='\r', flush=True)
 
-def launch_func():
-    global n_runs
-    global ps
+def launch_scenario(index):
     global launched
+    global done
+    launched += 1
+    print_status()
+    p = subprocess.run(
+        ['./bin/esmini', '--disable_stdout'] + list(sys.argv[1:]) + ['--param_permutation'] + [str(index)],
+        stdout=subprocess.DEVNULL
+    )
+    done += 1
+    print_status()
 
-    for i in range(n_runs):
-        p = subprocess.Popen(
-            ['./bin/esmini'] + list(sys.argv[1:]) +
-            ['--param_permutation'] + [str(i)],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL)
-        ps.append([p, i])
-        launched += 1
-        print_status()
 
-p = subprocess.run(['./bin/esmini', '--disable_stdout'] + list(sys.argv[1:]) + ['--return_nr_permutations'],
-    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-n_runs = p.returncode
+if __name__ == '__main__':
+    p = subprocess.run(
+        ['./bin/esmini', '--disable_stdout'] + list(sys.argv[1:]) + ['--return_nr_permutations'],
+        stdout=subprocess.DEVNULL
+    )
+    n_runs = p.returncode
 
-launch_thread = threading.Thread(target=launch_func)
-launch_thread.start()
-print_status()
+    print_status()
 
-while launched == 0 or len(ps) > 0:
-    for p in ps:
-        if (p[0].poll() is not None):
-            print_status()
-            ps.remove(p)
-            done += 1
-            print_status()
-    time.sleep(0.5)
+    with ThreadPool() as p:
+        p. map(launch_scenario, range(n_runs))
 
-print('\n')
+    print()

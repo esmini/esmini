@@ -12,6 +12,8 @@
 
 #include "CommonMini.hpp"
 #include "OSCParameterDistribution.hpp"
+#include <iomanip>
+#include <sstream>
 
 using namespace scenarioengine;
 
@@ -293,8 +295,19 @@ std::string OSCParameterDistribution::AddInfoToFilename(std::string filename)
 {
 	std::string base_name = FileNameWithoutExtOf(filename);
 	std::string ext = FileNameExtOf(filename);
+
+#if 1  // no leading zeros
 	return FileNameWithoutExtOf(base_name) + "_" + std::to_string(GetIndex() + 1) + "_of_" +
 		std::to_string(GetNumPermutations()) + ext;
+#else  // leading zeros
+	int number = GetNumPermutations();
+	int num_digits = 0; while (number != 0) { number /= 10; num_digits++; }
+	std::ostringstream str;
+	str << FileNameWithoutExtOf(base_name) << "_" <<
+		std::setw(num_digits) << std::setfill('0') << GetIndex() + 1 << "_of_" <<
+		std::to_string(GetNumPermutations()) << ext;
+	return str.str();
+#endif
 }
 
 void OSCParameterDistribution::Reset()
