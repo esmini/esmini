@@ -169,6 +169,7 @@ copy scripts\dat.py %target_dir%\scripts /y
 copy scripts\plot_dat.py %target_dir%\scripts /y
 copy scripts\dat2csv.py %target_dir%\scripts /y
 copy scripts\osi2csv.py %target_dir%\scripts /y
+copy scripts\run_distribution.py %target_dir%\scripts /y
 copy scripts\udp_driver\* %target_dir%\scripts\udp_driver /y
 copy scripts\udp_driver\osi3\* %target_dir%\scripts\udp_driver\osi3 /y
 
