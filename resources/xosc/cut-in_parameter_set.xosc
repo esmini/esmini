@@ -23,6 +23,11 @@
           <Range lowerLimit="1.1" upperLimit="1.5" />
         </DistributionRange>
       </DeterministicSingleParameterDistribution>
+      <!-- <DeterministicSingleParameterDistribution parameterName="HeadwayTime_LaneChange"> -->
+        <!-- <DistributionRange stepWidth="0.2"> -->
+          <!-- <Range lowerLimit="0.2" upperLimit="0.6" /> -->
+        <!-- </DistributionRange> -->
+      <!-- </DeterministicSingleParameterDistribution> -->
     </Deterministic>
   </ParameterValueDistribution>
 </OpenSCENARIO>

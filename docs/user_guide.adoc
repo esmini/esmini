@@ -1025,6 +1025,52 @@ To view all results in parallel, make use of replayer like this:
 .View all permutations in parallel
 image::param_dist0.jpg[]
 
+==== Parallel execution
+
+Making use of Python threading pool framework we can utilize any multiple CPU kernels and run scenario variants in parallel. This is handled by the script https://github.com/esmini/esmini/blob/master/scripts/run_distribution.py[scripts/run_distribution.py].
+
+Usage: `run_distribution.py <esmini args>`
+
+Make sure to add at least the following esmini arguments: +
+`--osc <scenario file>` +
+`--param_dist <parameter distribution file>` +
+`--fixed_timestep <timestep>` +
+`--headless`
+
+Example:
+
+`python ./scripts/run_distribution.py --osc ./resources/xosc/cut-in.xosc --param_dist ./resources/xosc/cut-in_parameter_set.xosc --fixed_timestep 0.05 --headless`
+
+Of course, the --headless (and --fixed_timestep) is not required. It is possible to run with viewer as well:
+
+`python ./scripts/run_distribution.py --osc ./resources/xosc/cut-in.xosc --param_dist ./resources/xosc/cut-in_parameter_set.xosc --window 60 60 800 400`
+
+but the windows will open on top of each other at the same location on the screen, so you need to manually move them apart to see the parallel runs. Anyway, this use case is probably not relevant so the recommendation is to run headless with fixed time step.
+
+Putting it all together, execute the scenario permutations in parallel and then view the result in replayer:
+
+`python ./scripts/run_distribution.py --osc ./resources/xosc/cut-in.xosc --param_dist ./resources/xosc/cut-in_parameter_set.xosc --fixed_timestep 0.05 --headless --record sim.dat ; ./bin/replayer.exe --window 60 60 800 400 --res_path ./resources/ --file sim_ --dir .`
+
+==== Finding out number of permutations
+
+To find out the number of permutations of a specific scenario and parameter distribution, use the `--return_nr_permutations` launch argument. Example:
+
+`./bin/esmini --osc ./resources/xosc/cut-in.xosc --param_dist ./resources/xosc/cut-in_parameter_set.xosc --return_nr_permutations`
+
+Output:
+`Nr permutations: 6`
+
+For scripters: esmini will also return the number of permutations as exit code, for simple use in scripts.
+After executing the above the exit code can be inspected/verified from shell as well:
+
+PowerShell: +
+`echo $LastExitCode`  +
+`6`
+
+bash: +
+`echo $?` +
+`6`
+
 == Controllers
 
 === Controller concept

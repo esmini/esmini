@@ -135,6 +135,7 @@ scripts/dat.py \
 scripts/plot_dat.py \
 scripts/dat2csv.py \
 scripts/osi2csv.py \
+scripts/run_distribution.py \
 scripts/udp_driver/*.* \
 scripts/udp_driver/osi3/*.* \
 docs/readme.txt \

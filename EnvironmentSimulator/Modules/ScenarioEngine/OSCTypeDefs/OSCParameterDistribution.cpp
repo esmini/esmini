@@ -12,6 +12,8 @@
 
 #include "CommonMini.hpp"
 #include "OSCParameterDistribution.hpp"
+#include <iomanip>
+#include <sstream>
 
 using namespace scenarioengine;
 
@@ -293,8 +295,19 @@ std::string OSCParameterDistribution::AddInfoToFilename(std::string filename)
 {
 	std::string base_name = FileNameWithoutExtOf(filename);
 	std::string ext = FileNameExtOf(filename);
+
+#if 1  // no leading zeros
 	return FileNameWithoutExtOf(base_name) + "_" + std::to_string(GetIndex() + 1) + "_of_" +
 		std::to_string(GetNumPermutations()) + ext;
+#else  // leading zeros
+	int number = GetNumPermutations();
+	int num_digits = 0; while (number != 0) { number /= 10; num_digits++; }
+	std::ostringstream str;
+	str << FileNameWithoutExtOf(base_name) << "_" <<
+		std::setw(num_digits) << std::setfill('0') << GetIndex() + 1 << "_of_" <<
+		std::to_string(GetNumPermutations()) << ext;
+	return str.str();
+#endif
 }
 
 void OSCParameterDistribution::Reset()
@@ -306,11 +319,11 @@ void OSCParameterDistribution::Reset()
 	param_list_.clear();
 	filename_.clear();
 	scenario_filename_.clear();
-	index_ = 0;
-	select_flag_ = true;
+	index_ = -1;
+	requested_index_ = 0;  // first permutation
 }
 
-int OSCParameterDistribution::SelectPermutation(int index)
+int OSCParameterDistribution::SetIndex(int index)
 {
 	if (index < 0 || index >= GetNumPermutations())
 	{
@@ -319,17 +332,34 @@ int OSCParameterDistribution::SelectPermutation(int index)
 	}
 
 	index_ = index;
-
-	select_flag_ = true;
+	requested_index_ = -1; // set directly, no request
 
 	return 0;
 }
 
 int OSCParameterDistribution::IncrementIndex()
 {
-	int retval = SelectPermutation(GetIndex() + 1);
+	if (index_ < -1 || index_ >= GetNumPermutations() - 1)
+	{
+		LOG("Can't increment index %d, would end up out of range (0..%d)\n", index_, GetNumPermutations() - 1);
+		return -1;
+	}
 
-	select_flag_ = false;
+	index_++;
+	requested_index_ = -1;  // indicate calculated, not requested
 
-	return retval;
+	return index_;
+}
+
+int OSCParameterDistribution::SetRequestedIndex(int index)
+{
+	if (index < 0 || index >= GetNumPermutations())
+	{
+		LOG("requested permutation index %d out of range (0..%d)", index, GetNumPermutations() - 1);
+		return 0;
+	}
+
+	requested_index_ = index;
+
+	return 0;
 }

@@ -32,7 +32,7 @@ namespace scenarioengine
 		std::string filename_;
 		std::string scenario_filename_;
 		int index_;
-		bool select_flag_;  // indicates explicit permutation index requested
+		int requested_index_;
 		pugi::xml_document doc_;
 
 	public:
@@ -45,12 +45,12 @@ namespace scenarioengine
 		int GetNumParameters();
 		void Reset();
 		std::string GetFilename() { return filename_; }
-		bool GetSelectFlag() { return select_flag_; }
-		void SetSelectFlag(bool value) { select_flag_ = value; }
 
 		// Returns current permutation index
 		int GetIndex() { return index_; }
-		int SelectPermutation(int index);
+		int SetIndex(int index);
+		int SetRequestedIndex(int index);
+		int GetRequestedIndex() { return requested_index_; }
 		int IncrementIndex();
 		std::string GetParamName(int index);
 		std::string GetParamValue(int param_index);

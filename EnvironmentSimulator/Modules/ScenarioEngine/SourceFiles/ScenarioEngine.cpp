@@ -714,27 +714,6 @@ ScenarioGateway *ScenarioEngine::getScenarioGateway()
 	return &scenarioGateway;
 }
 
-static void ApplyParamDistribution()
-{
-	OSCParameterDistribution& dist = OSCParameterDistribution::Inst();
-
-	if (dist.GetNumParameters() > 0)
-	{
-		LOG("Parameter permutation %d/%d", dist.GetIndex() + 1, dist.GetNumPermutations());
-
-		for (int i = 0; i < dist.GetNumParameters(); i++)
-		{
-			LOG("   %s: %s", dist.GetParamName(i).c_str(), dist.GetParamValue(i).c_str());
-
-			ScenarioReader::parameters.setParameterValueByString(
-				dist.GetParamName(i),
-				dist.GetParamValue(i)
-			);
-		}
-	}
-}
-
-
 void ScenarioEngine::parseScenario()
 {
 	SetSimulationTime(0);
@@ -758,11 +737,6 @@ void ScenarioEngine::parseScenario()
 	if (paramDeclCallback.func != nullptr)
 	{
 		paramDeclCallback.func(paramDeclCallback.data);
-	}
-
-	if (OSCParameterDistribution::Inst().GetNumPermutations() > 0)
-	{
-		ApplyParamDistribution();
 	}
 
 	// Init road manager
