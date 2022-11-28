@@ -123,7 +123,7 @@ image::odrplot.png[]
 *plot_dat*:: Simple 2D plot of scenario data +
 Prerequisites: Python + https://matplotlib.org/[matplotlib] +
 Example: +
-``./bin/esmini --headless --osc ./resources/xosc/acc-test.xosc --record sim.dat`` (will create the .dat file) +
+``./bin/esmini --headless --osc ./resources/xosc/acc-test.xosc --fixed_timestep 0.05 --record sim.dat`` (will create the .dat file) +
 ``./scripts/plot_dat.py sim.dat --param speed``
 +
 image::plot_dat.png[]
@@ -139,6 +139,13 @@ Example: +
 will create ground_truth.csv
 +
 See <<Save OSI data>> how to create OSI groundtruth trace (``.osi`` file) from esmini.
+
+*plot_csv*:: Simple 2D plot of scenario data, similar to plot_dat +
+Prerequisites: Python + https://matplotlib.org/[matplotlib] +
+Example: +
+``./bin/esmini --headless --osc ./resources/xosc/acc-test.xosc --fixed_timestep 0.05 --osi_file sim.osi`` (will create an osi trace file) +
+``./scripts/osi2csv.py sim.osi`` (convert to .csv) +
+``./scripts/plot_csv.py sim.csv --param ax`` will plot the x component of acceleration vector.
 
 Shared libraries:
 [horizontal]

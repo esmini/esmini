@@ -1,6 +1,7 @@
-from dat import *
+import argparse
+import numpy as np
+import sys
 
-import matplotlib.pyplot as plt
 import plot
 
 if __name__ == "__main__":
@@ -8,9 +9,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Plot esmini log data')
 
     # Add the arguments
+    parser.add_argument('filename', help='dat filename')
     parser.add_argument('--x_axis', help='x-axis parameter', default='time')
     parser.add_argument('--equal_axis_aspect', help='lock aspect ratio = 1:1', action='store_true')
-    parser.add_argument('filename', help='dat filename')
     parser.add_argument('--derive', help='derive values wrt x, i.e. dy/dx', action='store_true')
     parser.add_argument('--dots', help='add dots', action='store_true')
     group = parser.add_mutually_exclusive_group(required=True)
@@ -21,14 +22,14 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Read the dat file
-    dat = DATFile(args.filename)
+    data = np.genfromtxt(sys.argv[1], delimiter=',', names=True, dtype=None, encoding=None, autostrip=True)
 
     rows = []
-    for data in dat.data:
-        rows.append(dat.get_data_line_array(data))
+    for r in data:
+        rows.append(r)
 
     plot.plot(
-        rows, dat.get_labels_line_array(),
+        rows, data.dtype.names,
         args.param,
         args.x_axis,
         args.derive,

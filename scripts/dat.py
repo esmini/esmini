@@ -47,7 +47,7 @@ class ObjectStateStructDat(ctypes.Structure):
 
 class DATHeader(ctypes.Structure):
     _fields_ = [
-        ('version', ctypes.c_int),        
+        ('version', ctypes.c_int),
         ('odr_filename', ctypes.c_char * REPLAY_FILENAME_SIZE),
         ('model_filename', ctypes.c_char * REPLAY_FILENAME_SIZE),
     ]
@@ -62,7 +62,7 @@ class DATFile():
         except OSError:
             print('ERROR: Could not open file {} for reading'.format(filename))
             raise
-        
+
         header = DATHeader.from_buffer_copy(self.file.read(ctypes.sizeof(DATHeader)))
         self.filename = filename
         self.version = header.version
@@ -86,8 +86,8 @@ class DATFile():
 
     def get_header_line(self):
         return 'Version: {}, OpenDRIVE: {}, 3DModel: {}'.format(
-                self.version, 
-                self.odr_filename, 
+                self.version,
+                self.odr_filename,
                 self.model_filename
             )
 
@@ -134,6 +134,71 @@ class DATFile():
                 data.wheel_rot
             )
 
+    def get_labels_line_array(self):
+        return [
+            "time",
+            "id",
+            "name",
+            "model_id",
+            "obj_type",
+            "obj_category",
+            "ctrl_type",
+            "x",
+            "y",
+            "z",
+            "h",
+            "p",
+            "r",
+            "speed",
+            "wheel_angle",
+            "wheel_rot",
+            "centerOffsetX",
+            "centerOffsetY",
+            "centerOffsetZ",
+            "width",
+            "length",
+            "height",
+            "scaleMode",
+            "visibilityMask",
+            "roadId",
+            "laneId",
+            "offset",
+            "t",
+            "s"];
+
+    def get_data_line_array(self, data):
+        return [
+            data.time,
+            data.id,
+            data.name.decode('utf-8'),
+            data.model_id,
+            data.obj_type,
+            data.obj_category,
+            data.ctrl_type,
+            data.x,
+            data.y,
+            data.z,
+            data.h,
+            data.p,
+            data.r,
+            data.speed,
+            data.wheel_angle,
+            data.wheel_rot,
+            data.centerOffsetX,
+            data.centerOffsetY,
+            data.centerOffsetZ,
+            data.width,
+            data.length,
+            data.height,
+            data.scaleMode,
+            data.visibilityMask,
+            data.roadId,
+            data.laneId,
+            data.offset,
+            data.t,
+            data.s];
+
+
     def print_csv(self):
 
         # Print header
@@ -156,7 +221,7 @@ class DATFile():
 
         # Save column headings / value types
         fcsv.write(self.get_header_line() + '\n')
-        
+
         # Save column headings / value types
         if extended:
             fcsv.write(self.get_labels_line_extended() + '\n')
