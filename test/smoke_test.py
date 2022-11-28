@@ -51,15 +51,15 @@ class TestSuite(unittest.TestCase):
 
         # Check vehicle key positions
         csv = generate_csv()
-        self.assertTrue(re.search('\n4.050, 1, Target, 128.812, 13.692, -3.441, 0.516, 0.021, 0.003, 24.524, 0.065, 5.762', csv))
+        self.assertTrue(re.search('\n4.050, 1, Target, 129.062, 13.848, -3.447, 0.539, 0.021, 0.003, 29.319, 0.065, 0.323', csv))
         self.assertTrue(re.search('\n4.100.*, 0, Ego, 115.042, 4.864, -3.006, 0.281, 0.032, 0.000, 16.000', csv))
-        self.assertTrue(re.search('\n4.100, 1, Target, 129.852, 14.341, -3.467, 0.558, 0.020, 0.003, 24.524, 0.060, 2.983', csv))
+        self.assertTrue(re.search('\n4.100, 1, Target, 130.300, 14.620, -3.477, 0.558, 0.020, 0.003, 29.065, 0.050, 4.489', csv))
         self.assertTrue(re.search('\n11.100.*, 0, Ego, 200.713, 72.600, -2.443, 1.057, 6.263, 0.000, 16.000', csv))
-        self.assertTrue(re.search('\n11.100, 1, Target, 205.945, 66.378, -2.497, 2.507, 6.281, 6.263, 17.500', csv))
+        self.assertTrue(re.search('\n11.100, 1, Target, 206.003, 66.438, -2.496, 2.508, 6.281, 6.263, 17.500, -0.253, 1.548', csv))
         self.assertTrue(re.search('\n17.250.*, 0, Ego, 217.345, 167.663, 1.989, 1.738, 6.209, 0.000, 16.000', csv))
-        self.assertTrue(re.search('\n17.250, 1, Target, 210.753, 157.759, 1.314, 1.228, 6.216, 0.032, 14.845, 0.049, 3.723', csv))
+        self.assertTrue(re.search('\n17.250, 1, Target, 210.747, 157.830, 1.319, 1.229, 6.216, 0.032, 14.846, 0.049, 3.972', csv))
         self.assertTrue(re.search('\n25.000.*, 0, Ego, 206.081, 288.506, 5.436, 1.188, 6.238, 0.000, 16.000', csv))
-        self.assertTrue(re.search('\n25.000, 1, Target, 216.246, 307.463, 6.701, 0.969, 6.214, 0.000, 21.101, -0.032, 5.562', csv))
+        self.assertTrue(re.search('\n25.000, 1, Target, 216.288, 307.524, 6.706, 0.968, 6.214, 0.000, 21.101, -0.032, 5.799', csv))
 
     def test_synchronize(self):
         log = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/synchronize.xosc'), COMMON_ARGS \
@@ -748,13 +748,13 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('Loading .*star.xosc', log)  is not None)
 
         # Check some scenario events
-        
+
         self.assertTrue(re.search('^0.000: Ego_0_-1 New position:$\n^0.000: Pos\(35.00, -1.75, 0.00\) Rot\(0.00, 0.00, 0.00\) roadId 0 laneId -1 offset 0.00 t -1.75', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('^1.750: Init Ego_23_1 LateralAction runningState -> endTransition -> completeState', log, re.MULTILINE)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv()
-        
+
         self.assertTrue(re.search('^0.000, 0, Ego_0_-1, 35.000, -1.750, 0.000, 2.356, 0.000, 0.000, 2.000, 0.000, 0.000', csv, re.MULTILINE))
         self.assertTrue(re.search('^0.000, 1, Ego_0_1, 35.000, 1.750, 0.000, 3.927, 0.000, 0.000, 2.000, 0.000, 0.000', csv, re.MULTILINE))
         self.assertTrue(re.search('^0.000, 2, Ego_1_-1, 35.000, -1.750, -15.328, 2.277, 5.905, 0.409, 2.000, 0.000, 0.000', csv, re.MULTILINE))
@@ -920,15 +920,15 @@ class TestSuite(unittest.TestCase):
                 tmp_xosc_str = re.sub('<Property name="cruise" value=.*/>', '<Property name="cruise" value=\"' + "false" + '\"/>', tmp_xosc_str)
             else:
                 tmp_xosc_str = re.sub('<Property name="cruise" value=.*/>', '<Property name="cruise" value=\"' + "true" + '\"/>', tmp_xosc_str)
-            
+
             # Save in separate .dat file
             log.append(run_scenario(None, args + ' --record sim_model_' + model + '.dat', tmp_xosc_str))
-            
+
             # Verify that the scenario was executed as expected
             self.assertTrue(re.search('^Loading inline', log[-1], re.MULTILINE)  is not None)
             self.assertTrue(re.search('^0.000: Recording data to file sim_', log[-1], re.MULTILINE)  is not None)
             self.assertTrue(re.search('^0.000: Controller ALKS_R157SM_Controller activated, domain mask=0x1', log[-1], re.MULTILINE)  is not None)
-            
+
         if len(models) > 0:
             with open(STDOUT_FILENAME, "w") as f:
                 if len(models) > 1:
@@ -982,7 +982,7 @@ if __name__ == "__main__":
 
     if len(sys.argv) > 1:
         # Add test case name as argument to run only that test
-        # example: smoke_test.py test_follow_ghost 
+        # example: smoke_test.py test_follow_ghost
         unittest.main(argv=['ignored', '-v', 'TestSuite.' + sys.argv[1]])
     else:
         unittest.main(verbosity=2)

@@ -1071,6 +1071,28 @@ bash: +
 `echo $?` +
 `6`
 
+=== Trajectories
+
+Using OpenSCENARIO https://www.asam.net/static_downloads/ASAM_OpenSCENARIO_V1.2.0_Model_Documentation/modelDocumentation/content/FollowTrajectoryAction.html[FollowTrajectoryAction] you can define various types of trajectories for entities to follow.
+
+esmini supports all three (as of OpenSCENARIO 1.2) file:///C:/eknabe1/GIT/openscenario/additional_content/Model/modelDocumentation/content/Shape.html[shapes]:
+
+- polyline
+- clothoid
+- nurbs
+
+Here follows a few design choices for the polyline type that affect the behavior.
+
+When FollowMode is `follow` esmini will:
+
+. Calculate heading based on direction of the line segments. However corners are interpolated in order to look better and avoid discontinuities.
+. Calculate speed based on current speed (when action is triggered) and then with constant acceleration per segment reach destination vertex on time (or earlier if distance is to short vs time). This approach results in a continuous speed profile.
+
+When FollowMode is `position` esmini will:
+
+. For world coordinates, apply whatever heading is specified in the vertices (note that 0.0 is default). Lane and road coordinates will align to road direction as default.
+. For each segment, calculate constant speed needed to reach next vertex on time. This approach results in a discontinuous speed profile.
+
 == Controllers
 
 === Controller concept

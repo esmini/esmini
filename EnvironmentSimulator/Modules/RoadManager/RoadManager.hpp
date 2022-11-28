@@ -2722,7 +2722,8 @@ namespace roadmanager
 		double z = 0;
 		double h = 0;
 		double time = 0;
-		double speed = 0;
+		double speed = 0; // speed at vertex point/start of segment
+		double acc = 0;   // acceleration along the segment
 		double p = 0;
 		bool calcHeading = 0;
 	};
@@ -2929,7 +2930,7 @@ namespace roadmanager
 		RMTrajectory(std::unique_ptr<Shape> shape, std::string name, bool closed) : shape_(std::move(shape)), name_(name), closed_(closed) {}
 		RMTrajectory() : closed_(false) {}
 
-		void Freeze(FollowingMode following_mode);
+		void Freeze(FollowingMode following_mode, double current_speed);
 		double GetLength() { return shape_ ? shape_->GetLength() : 0.0; }
 		double GetTimeAtS(double s);
 		double GetStartTime();

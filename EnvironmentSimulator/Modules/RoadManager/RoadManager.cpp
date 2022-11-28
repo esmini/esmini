@@ -10161,7 +10161,7 @@ void PolyLineBase::Reset()
 void PolyLineShape::AddVertex(Position pos, double time, bool calculateHeading)
 {
 	vertex_.emplace_back(pos);
-	pline_.AddVertex({ pos.GetTrajectoryS(), pos.GetX(), pos.GetY(), pos.GetZ(), pos.GetH(), time, 0.0, 0.0, calculateHeading });
+	pline_.AddVertex({ pos.GetTrajectoryS(), pos.GetX(), pos.GetY(), pos.GetZ(), pos.GetH(), time, 0.0, 0.0, 0.0, calculateHeading });
 }
 
 int PolyLineShape::Evaluate(double p, TrajectoryParamType ptype, TrajVertex& pos)
@@ -10189,8 +10189,17 @@ int PolyLineShape::Evaluate(double p, TrajectoryParamType ptype, TrajVertex& pos
 
 		if (ptype == TrajectoryParamType::TRAJ_PARAM_TYPE_TIME)
 		{
-			double a = (p - pline_.vertex_[i].time) / (pline_.vertex_[i + 1].time - pline_.vertex_[i].time); // a = interpolation factor
-			s = pline_.vertex_[i].s + a * (pline_.vertex_[i + 1].s - pline_.vertex_[i].s);
+			double dt = p - pline_.vertex_[i].time;
+
+			if (pline_.vertex_[i].acc < 0.0)
+			{
+				// slowing down, check if need for early stop due to distance too short wrt time
+				double max_dt = -pline_.vertex_[i].speed / pline_.vertex_[i].acc;
+				dt = MIN(dt, max_dt);
+			}
+
+			//  ds = v0 * t + 1/2 * acc * t^2
+			s = pline_.vertex_[i].s + dt * pline_.vertex_[i].speed + 0.5 * pline_.vertex_[i].acc * dt * dt;
 		}
 		else
 		{
@@ -11170,11 +11179,13 @@ std::string Route::getName()
 	return name_;
 }
 
-void RMTrajectory::Freeze(FollowingMode following_mode)
+void RMTrajectory::Freeze(FollowingMode following_mode, double current_speed)
 {
 	if (shape_->type_ == Shape::ShapeType::POLYLINE)
 	{
 		PolyLineShape* pline = (PolyLineShape*)shape_.get();
+
+		double speed = current_speed;
 
 		for (size_t i = 0; i < pline->vertex_.size(); i++)
 		{
@@ -11195,6 +11206,58 @@ void RMTrajectory::Freeze(FollowingMode following_mode)
 			{
 				pline->pline_.UpdateVertex((int)i, pos->GetX(), pos->GetY(), pos->GetZ(), pos->GetH());
 			}
+
+			// apply constant acceleration on the segment from current position
+			//  s = v0 * t + 1/2 * acc * t^2
+			//  v0 and s (dist) is known, acc and final v1 is unknown
+			//  acc = 2 * (s - v0 * t) / t^2
+			//  v1 = v0 + acc * t
+			double acc = 0.0;
+
+			if (i > 0)
+			{
+				double ds = pline->pline_.vertex_[i].s - pline->pline_.vertex_[i - 1].s;
+				double dt = pline->pline_.vertex_[i].time - pline->pline_.vertex_[i - 1].time;
+
+				if (following_mode == FollowingMode::FOLLOW)
+				{
+					if (abs(ds) > SMALL_NUMBER)
+					{
+						acc = 2 * (ds - speed * dt) / pow(dt, 2);
+						if (SIGN(speed + acc * dt) != SIGN(speed))
+						{
+							// too much time for constant acceleration towards zero speed
+							// allow arrival at earlier time, add eq v = 0 = v0 + acc * t
+							// acc = -v0^2 / (2 * s)
+							acc = -pow(speed, 2) / (2 * ds);
+							speed = 0.0;
+						}
+						else
+						{
+							speed = speed + acc * dt;
+						}
+					}
+					else
+					{
+						// no movement, set speed and to zero
+						speed = 0.0;
+					}
+					pline->pline_.vertex_[i - 1].acc = acc;
+				}
+				else  // position mode
+				{
+					if (dt > SMALL_NUMBER)
+					{
+						speed = ds / dt;
+					}
+					else
+					{
+						speed = 0.0;
+					}
+					pline->pline_.vertex_[i - 1].speed = speed;
+				}
+			}
+			pline->pline_.vertex_[i].speed = speed;
 		}
 	}
 	else if (shape_->type_ == Shape::ShapeType::CLOTHOID)

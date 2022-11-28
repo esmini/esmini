@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<OpenSCENARIO>
+    <FileHeader revMajor="1" revMinor="1" date="2022-11-27T10.00" description="braking to standstill" author="esmini-team"/>
+    <ParameterDeclarations>
+        <ParameterDeclaration name="SPEED1" parameterType="double" value="${100/3.6}"/>
+        <ParameterDeclaration name="SPEED2" parameterType="double" value="${50/3.6}"/>
+        <ParameterDeclaration name="SPEED3" parameterType="double" value="0.0"/>
+        <ParameterDeclaration name="ACC1" parameterType="double" value="-10"/>
+        <ParameterDeclaration name="ACC2" parameterType="double" value="-6"/>
+        <ParameterDeclaration name="TIME1" parameterType="double" value="${($SPEED2-$SPEED1)/$ACC1}"/>
+        <ParameterDeclaration name="TIME2" parameterType="double" value="${($SPEED3-$SPEED2)/$ACC2}"/>
+        <ParameterDeclaration name="DIST1" parameterType="double" value="${$SPEED1*$TIME1+0.5*$ACC1*pow($TIME1,2)}"/>
+        <ParameterDeclaration name="DIST2" parameterType="double" value="${$SPEED2*$TIME2+0.5*$ACC2*pow($TIME2,2)}"/>
+    </ParameterDeclarations>
+    <CatalogLocations>
+        <VehicleCatalog>
+            <Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
+        </VehicleCatalog>
+    </CatalogLocations>
+    <RoadNetwork>
+        <LogicFile filepath="../../../resources/xodr/straight_500m.xodr"/>
+        <!-- <LogicFile filepath="../../../resources/xodr/curves_elevation.xodr"/> -->
+    </RoadNetwork>
+    <Entities>
+        <ScenarioObject name="Target_lead">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>
+        </ScenarioObject>
+    </Entities>
+    <Storyboard>
+        <Init>
+            <Actions>
+                <Private entityRef="Target_lead">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="1" laneId="-1" s="50.0" offset="0.0"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="$SPEED1"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                </Private>
+            </Actions>
+        </Init>
+        <Story name="MyStory">
+            <ParameterDeclarations/>
+            <Act name="MyAct">
+                <ManeuverGroup name="MyMG" maximumExecutionCount="1">
+                    <Actors>
+                        <EntityRef entityRef="Target_lead"/>
+                    </Actors>
+                    <Maneuver name="breaking maneuver">
+                        <Event name="Lead Slowdown Event" priority="overwrite" maximumExecutionCount="1">
+                            <Action name="lead braking action">
+                                <PrivateAction>
+                                    <RoutingAction>
+                                        <FollowTrajectoryAction>
+                                            <TrajectoryRef>
+                                                <Trajectory name="my_trajectory" closed="false">
+                                                    <ParameterDeclarations/>
+                                                    <Shape>
+                                                        <Polyline>
+                                                            <Vertex time="0.0">
+                                                                <Position>
+                                                                    <RelativeLanePosition entityRef="Target_lead" ds="0.0" offset="0.0" dLane="0"/>
+                                                                </Position>
+                                                            </Vertex>
+                                                            <Vertex time="$TIME1">
+                                                                <Position>
+                                                                    <RelativeLanePosition entityRef="Target_lead" ds="$DIST1" offset="0.0" dLane="0"/>
+                                                                </Position>
+                                                            </Vertex>
+                                                            <Vertex time="${$TIME1+$TIME2}">
+                                                                <Position>
+                                                                    <RelativeLanePosition entityRef="Target_lead" ds="${$DIST1+$DIST2}" offset="0.0" dLane="0"/>
+                                                                </Position>
+                                                            </Vertex>
+                                                            <Vertex time="${$TIME1+$TIME2+1}">
+                                                                <Position>
+                                                                    <RelativeLanePosition entityRef="Target_lead" ds="${$DIST1+$DIST2}" offset="0.0" dLane="0"/>
+                                                                </Position>
+                                                            </Vertex>
+                                                        </Polyline>
+                                                    </Shape>
+                                                </Trajectory>
+                                            </TrajectoryRef>
+                                            <TimeReference>
+                                                <Timing domainAbsoluteRelative="relative" scale="1.0" offset="0.0"/>
+                                            </TimeReference>
+                                            <TrajectoryFollowingMode followingMode="follow"/>
+                                        </FollowTrajectoryAction>
+                                    </RoutingAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="start_trigger " delay="0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="1" rule="greaterThan"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                    </Maneuver>
+                </ManeuverGroup>
+                <StartTrigger/>
+                <StopTrigger/>
+            </Act>
+        </Story>
+        <StopTrigger>
+            <ConditionGroup>
+                <Condition name="stop_simulation_time" delay="0" conditionEdge="rising">
+                    <ByValueCondition>
+                        <SimulationTimeCondition value="${$TIME1+$TIME2+1.2}" rule="greaterThan"/>
+                    </ByValueCondition>
+                </Condition>
+            </ConditionGroup>
+        </StopTrigger>
+    </Storyboard>
+</OpenSCENARIO>

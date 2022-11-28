@@ -319,7 +319,7 @@ void FollowTrajectoryAction::Start(double simTime, double dt)
 		return;
 	}
 
-	traj_->Freeze(following_mode_);
+	traj_->Freeze(following_mode_, object_->GetSpeed());
 	object_->pos_.SetTrajectory(traj_.get());
 
 	object_->pos_.SetTrajectoryS(initialDistanceOffset_);
@@ -388,11 +388,15 @@ void FollowTrajectoryAction::Step(double simTime, double dt)
 	{
 		time_ += timing_scale_ * dt;
 		object_->pos_.SetTrajectoryPosByTime(time_ + timeOffset + timing_offset_);
-		if (time_ + timeOffset <= traj_->GetStartTime() + traj_->GetDuration())
+
+		// calculate and update actual speed only while not reached end of trajectory,
+		// since the movement is based on remaining length of trajectory, not speed
+		if (time_ + timeOffset < traj_->GetStartTime() + traj_->GetDuration() + SMALL_NUMBER)
 		{
-			// don't calculate and update actual speed when reached end of trajectory,
-			// since the movement is based on remaining length of trajectory, not speed
-			object_->SetSpeed((object_->pos_.GetTrajectoryS() - old_s) / MAX(SMALL_NUMBER, dt));
+			if (dt > SMALL_NUMBER)  // only update speed if some time has passed
+			{
+				object_->SetSpeed((object_->pos_.GetTrajectoryS() - old_s) / dt);
+			}
 		}
 	}
 	else if (timing_domain_ == TimingDomain::TIMING_ABSOLUTE)

@@ -311,6 +311,63 @@ TEST(TrajectoryTest, EnsureContinuation)
     delete se;
 }
 
+TEST(TrajectoryTest, PolyLineContinuosSpeed)
+{
+    double dt = 0.05;
+    ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/brake_by_trajectory_100-0.xosc");
+    ASSERT_NE(se, nullptr);
+
+    while(se->getSimulationTime() < 1.05)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 77.77778, 1e-5);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), -1.535, 1e-5);
+
+    while (se->getSimulationTime() < 1.10)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 79.154167, 1e-5);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), -1.535, 1e-5);
+
+    while (se->getSimulationTime() < 2.45)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 107.55053, 1e-5);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), -1.535, 1e-5);
+
+    while (se->getSimulationTime() < 2.50)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 108.21914, 1e-5);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), -1.535, 1e-5);
+
+    while (se->getSimulationTime() < 4.75)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 122.78807, 1e-5);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), -1.535, 1e-5);
+
+    while (se->getSimulationTime() < 4.80)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 122.78806, 1e-5);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), -1.535, 1e-5);
+
+    delete se;
+}
+
 TEST(ExpressionTest, EnsureResult)
 {
     ASSERT_DOUBLE_EQ(eval_expr("1 + 1"), 2.0);
