@@ -80,6 +80,7 @@ public:
 
 	ScenarioPlayer(int argc, char* argv[]);
 	~ScenarioPlayer();
+	int Init();
 	void PrintUsage();
 	bool IsQuitRequested() { return quit_request; }
 	void SetOSIFileStatus(bool is_on, const char *filename = 0);
@@ -167,7 +168,6 @@ public:
 	SE_Semaphore viewer_init_semaphore;
 
 private:
-	int Init();
 
 	double trail_dt;
 	SE_Thread thread;

@@ -39,10 +39,14 @@ static int execute_scenario(int argc, char* argv[])
 
 	// Setup signal handler to catch Ctrl-C
 	signal(SIGINT, signal_handler);
-
+	
 	try
 	{
 		player = std::make_unique<ScenarioPlayer>(argc, argv);
+		if (player->Init() != 0)
+		{
+			return -1;
+		}
 
 		if (player->opt.GetOptionSet("return_nr_permutations"))
 		{

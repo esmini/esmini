@@ -413,6 +413,17 @@ static int InitScenario()
 	{
 		// Initialize the scenario engine and viewer
 		player = new ScenarioPlayer(argc_, argv_);
+		int retval = player->Init();
+		if (retval == -1)
+		{
+			LOG("Failed to initialize scenario player");
+			resetScenario();
+		}
+		else if (retval == -2)
+		{
+			LOG("Skipped initialize scenario player");
+			resetScenario();
+		}
 	}
 	catch (const std::exception &e)
 	{

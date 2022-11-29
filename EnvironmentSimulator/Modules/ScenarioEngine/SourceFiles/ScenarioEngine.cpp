@@ -54,7 +54,7 @@ void ScenarioEngine::InitScenarioCommon(bool disable_controllers)
 	scenarioReader = new ScenarioReader(&entities_, &catalogs, disable_controllers);
 }
 
-void ScenarioEngine::InitScenario(std::string oscFilename, bool disable_controllers)
+int ScenarioEngine::InitScenario(std::string oscFilename, bool disable_controllers)
 {
 	InitScenarioCommon(disable_controllers);
 
@@ -75,7 +75,9 @@ void ScenarioEngine::InitScenario(std::string oscFilename, bool disable_controll
 		{
 			if (scenarioReader->loadOSCFile(file_name_candidates[i].c_str()) != 0)
 			{
-				throw std::invalid_argument(std::string("Failed to load OpenSCENARIO file ") + oscFilename);
+				//throw std::invalid_argument(std::string("Failed to load OpenSCENARIO file ") + oscFilename);
+				LOG(("Failed to load OpenSCENARIO file " + oscFilename).c_str());
+				return -3;
 			}
 			else
 			{
@@ -86,26 +88,31 @@ void ScenarioEngine::InitScenario(std::string oscFilename, bool disable_controll
 
 	if (i == file_name_candidates.size())
 	{
-		throw std::invalid_argument(std::string("Couldn't locate OpenSCENARIO file ") + oscFilename);
+		//throw std::invalid_argument(std::string("Couldn't locate OpenSCENARIO file ") + oscFilename);
+		LOG(("Couldn't locate OpenSCENARIO file " + oscFilename).c_str());
+		return -1;
 	}
 
 	if (!scenarioReader->IsLoaded())
 	{
-		throw std::invalid_argument(std::string("Couldn't load OpenSCENARIO file ") + oscFilename);
+		//throw std::invalid_argument(std::string("Couldn't load OpenSCENARIO file ") + oscFilename);
+		LOG(("Couldn't load OpenSCENARIO file " + oscFilename).c_str());
+		return -2;
 	}
 
-	parseScenario();
+	return parseScenario();
 }
 
-void ScenarioEngine::InitScenario(const pugi::xml_document &xml_doc, bool disable_controllers)
+int ScenarioEngine::InitScenario(const pugi::xml_document &xml_doc, bool disable_controllers)
 {
 	InitScenarioCommon(disable_controllers);
 
 	if (scenarioReader->loadOSCMem(xml_doc) != 0)
 	{
-		throw std::invalid_argument("Failed to load OpenSCENARIO from XML string");
+		return -3;
 	}
-	parseScenario();
+
+	return parseScenario();
 }
 
 ScenarioEngine::~ScenarioEngine()
@@ -714,7 +721,7 @@ ScenarioGateway *ScenarioEngine::getScenarioGateway()
 	return &scenarioGateway;
 }
 
-void ScenarioEngine::parseScenario()
+int ScenarioEngine::parseScenario()
 {
 	SetSimulationTime(0);
 	SetTrueTime(0);
@@ -788,6 +795,8 @@ void ScenarioEngine::parseScenario()
 		{
 			throw std::invalid_argument(std::string("Failed to ") + (located ? "load" : "find") + \
 				" OpenDRIVE file " + std::string(getOdrFilename().c_str()));
+			LOG((std::string("Failed to ") + (located ? "load" : "find") + " OpenDRIVE file " + getOdrFilename().c_str()).c_str());
+			return -1;
 		}
 	}
 
@@ -844,6 +853,8 @@ void ScenarioEngine::parseScenario()
 			((Vehicle*)obj)->AlignTrailers();
 		}
 	}
+
+	return 0;
 }
 
 int ScenarioEngine::defaultController(Object* obj, double dt)

@@ -7,28 +7,28 @@ exit_with_msg() {
     exit -1
 }
 
-workingDir=$(pwd)
+export workingDir=$(pwd)
 
-LSAN_OPTIONS="print_suppressions=false:suppressions="${workingDir}"/scripts/LSAN.supp"
-ASAN_OPTIONS="detect_invalid_pointer_pairs=1:strict_string_checks=true:detect_stack_use_after_return=true:check_initialization_order=true:fast_unwind_on_malloc=false:suppressions="${workingDir}"/scripts/ASAN.supp"
+export LSAN_OPTIONS="print_suppressions=false:suppressions="${workingDir}"/scripts/LSAN.supp"
+export ASAN_OPTIONS="detect_invalid_pointer_pairs=1:strict_string_checks=true:detect_stack_use_after_return=true:check_initialization_order=true:fast_unwind_on_malloc=false:suppressions="${workingDir}"/scripts/ASAN.supp"
 
-UNIT_TEST_FOLDER=${workingDir}/build/EnvironmentSimulator/Unittest
-SMOKE_TEST_FOLDER=${workingDir}/test
+export UNIT_TEST_FOLDER=${workingDir}/build/EnvironmentSimulator/Unittest
+export SMOKE_TEST_FOLDER=${workingDir}/test
 
 if [[ "$OSTYPE" == "msys" ]]; then
-    PATH=${PATH}";../Libraries/esminiLib/Release;../Libraries/esminiRMLib/Release"
-    EXE_FOLDER="./Release"
-    PYTHON="python"
+    export PATH=${PATH}";../Libraries/esminiLib/Release;../Libraries/esminiRMLib/Release"
+    export EXE_FOLDER="./Release"
+    export PYTHON="python"
 elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
-    LD_LIBRARY_PATH=${workingDir}"/externals/OSI/linux/lib-dyn"
-    path="../../../bin"
-    EXE_FOLDER="."
-    PYTHON="python3"
+    export LD_LIBRARY_PATH=${workingDir}"/externals/OSI/linux/lib-dyn"
+    export path="../../../bin"
+    export EXE_FOLDER="."
+    export PYTHON="python3"
 elif [[ "$OSTYPE" == "darwin"* ]]; then
-    LD_LIBRARY_PATH=${workingDir}"/externals/OSI/mac/lib-dyn"
-    path="../../../bin"
-    EXE_FOLDER="."
-    PYTHON="python3"
+    export LD_LIBRARY_PATH=${workingDir}"/externals/OSI/mac/lib-dyn"
+    export path="../../../bin"
+    export EXE_FOLDER="."
+    export PYTHON="python3"
 else
     echo "Unsupported OS: " $OSTYPE
 fi

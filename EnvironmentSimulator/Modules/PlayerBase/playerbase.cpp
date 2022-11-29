@@ -64,16 +64,6 @@ ScenarioPlayer::ScenarioPlayer(int argc, char* argv[]) :
 	viewerState_ = ViewerState::VIEWER_STATE_NOT_STARTED;
 	OSISensorDetection = nullptr;
 #endif
-
-	int retval = Init();
-	if (retval == -1)
-	{
-		throw std::invalid_argument("Failed to initialize scenario player");
-	}
-	else if (retval == -2)
-	{
-		throw std::invalid_argument("Skipped initialize scenario player");
-	}
 }
 
 ScenarioPlayer::~ScenarioPlayer()

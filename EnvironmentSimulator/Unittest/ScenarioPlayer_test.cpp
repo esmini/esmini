@@ -22,6 +22,9 @@ TEST(CustomCameraTest, TestCustomCameraVariants)
 
     ASSERT_NE(player, nullptr);
 
+    int retval = player->Init();
+    ASSERT_EQ(retval, 0);
+
     player->AddCustomCamera(-4.0, 1.0, 1.5, 0.0, 0.0);
     player->AddCustomFixedCamera(100.0, 50.0, 10.0, 0.5, 0.1);
     player->AddCustomSemiFixedCamera(100.0, 50.0, 10.0);

@@ -62,8 +62,8 @@ namespace scenarioengine
 		~ScenarioEngine();
 
 		void InitScenarioCommon(bool disable_controllers);
-		void InitScenario(std::string oscFilename, bool disable_controllers = false);
-		void InitScenario(const pugi::xml_document &xml_doc, bool disable_controllers = false);
+		int InitScenario(std::string oscFilename, bool disable_controllers = false);
+		int InitScenario(const pugi::xml_document &xml_doc, bool disable_controllers = false);
 
 		int step(double deltaSimTime);
 		void printSimulationTime();
@@ -121,7 +121,7 @@ namespace scenarioengine
 		bool quit_flag;
 		unsigned int frame_nr_;
 
-		void parseScenario();
+		int parseScenario();
 	};
 
 }
