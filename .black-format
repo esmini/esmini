@@ -1,0 +1,18 @@
+[tool.black]
+line-length = 88
+target-version = ['py36', 'py37', 'py38']
+include = '\.py?$'
+exclude = '''
+(
+  /(
+      build
+    | externals
+    | EnvironmentSimulator
+    | Hello-World_coding-example
+    | scripts
+    | test
+    | .venv
+  )/
+  | globals.py
+)
+'''
