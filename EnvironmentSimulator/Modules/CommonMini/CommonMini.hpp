@@ -178,6 +178,18 @@ public:
 		return res;
 	}
 
+	SE_Vector& operator += (SE_Vector const& p) {
+		this->x_ += p.x_;
+		this->y_ += p.y_;
+		return *this;
+	}
+
+	SE_Vector& operator -= (SE_Vector const& p) {
+		this->x_ -= p.x_;
+		this->y_ -= p.y_;
+		return *this;
+	}
+
 	SE_Vector Rotate(double angle) {
 		SE_Vector res;
 		res.x_ = x_ * cos(angle) - y_ * sin(angle);
@@ -351,6 +363,7 @@ bool IsPointWithinSectorBetweenTwoLines(SE_Vector p, SE_Vector l0p0, SE_Vector l
 
 /**
 	Check whether projected point is in between vector endpoints, or outside
+	NOTE: Assumes the x3, y3 point to be ON the line (x1,y1 - x2,y2)
 	@param x3 X-coordinate of the point to check
 	@param y3 Y-coordinate of the point to check
 	@param x1 X-coordinate of the first endpoint of the line

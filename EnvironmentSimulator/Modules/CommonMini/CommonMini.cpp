@@ -309,9 +309,8 @@ bool PointInBetweenVectorEndpoints(double x3, double y3, double x1, double y1, d
 
 	if (fabs(y2 - y1) < SMALL_NUMBER && fabs(x2 - x1) < SMALL_NUMBER)
 	{
-		// Point - not really a line
-		// Not sure if true of false should be returned
-		sNorm = 0;
+		// same point
+		sNorm = 0.0;
 		inside = true;
 	}
 	else if (fabs(x2 - x1) < fabs(y2 - y1))  // Line is steep (more vertical than horizontal

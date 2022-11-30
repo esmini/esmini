@@ -255,6 +255,23 @@ namespace scenarioengine
 		*/
 		int Distance(double x, double y, roadmanager::CoordinateSystem cs, roadmanager::RelativeDistanceType relDistType, bool freeSpace, double &dist, double maxDist = LARGE_NUMBER);
 
+		enum class OverlapType
+		{
+			NONE =            0,             // object is not overlapping Ego front projection
+			PART =            1 << 0,        // object is partly overlapping Ego front projection
+			INSIDE =          1 << 1,        // object is completely inside Ego front projection
+			FULL =            1 << 2,        // object is completely and beyond overlapping Ego front projection
+			INSIDE_AND_FULL = INSIDE | FULL  // object is perfectly overlapping (not inside, not outside)
+		};
+
+		/**
+		Check whether object is overlapping Ego front forward projection.
+		Measurements are performed on objects bounding boxes.
+		@param tolerance Tolerance for measurements, e.g. handle case of equal sized entities
+		@return Overlap found accoring to OverlapType
+		*/
+		OverlapType OverlappingFront(Object* target, double tolerance);
+
 		void SetSpeed(double speed)
 		{
 			speed_ = speed;

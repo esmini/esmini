@@ -1593,6 +1593,96 @@ TEST(ControllerTest, ALKS_R157_TestR157RegulationMinDist)
     delete se;
 }
 
+TEST(OverlapTest, TestOverlapCalculations)
+{
+    SE_Vector line_v0(2.0, 1.0);
+    SE_Vector line_v1(2.0, -1.0);
+
+    SE_Vector point_to_test(5, -0.5);
+    double projected_point[2];
+    double s_norm = 0.0;
+    bool is_within = false;
+
+    ProjectPointOnVector2D(
+        point_to_test.x(), point_to_test.y(),
+        line_v0.x(), line_v0.y(),
+        line_v1.x(), line_v1.y(),
+        projected_point[0], projected_point[1]);
+    is_within = PointInBetweenVectorEndpoints(
+        projected_point[0], projected_point[1],
+        line_v0.x(), line_v0.y(),
+        line_v1.x(), line_v1.y(), s_norm);
+    EXPECT_EQ(is_within, true);
+    EXPECT_NEAR(s_norm, 0.75, 1e-3);
+
+    point_to_test = { -5, -0.5 };
+    ProjectPointOnVector2D(
+        point_to_test.x(), point_to_test.y(),
+        line_v0.x(), line_v0.y(),
+        line_v1.x(), line_v1.y(),
+        projected_point[0], projected_point[1]);
+    is_within = PointInBetweenVectorEndpoints(
+        projected_point[0], projected_point[1],
+        line_v0.x(), line_v0.y(),
+        line_v1.x(), line_v1.y(), s_norm);
+    EXPECT_EQ(is_within, true);
+    EXPECT_NEAR(s_norm, 0.75, 1e-3);
+
+    point_to_test = { -5, -1.1 };
+    ProjectPointOnVector2D(
+        point_to_test.x(), point_to_test.y(),
+        line_v0.x(), line_v0.y(),
+        line_v1.x(), line_v1.y(),
+        projected_point[0], projected_point[1]);
+    is_within = PointInBetweenVectorEndpoints(
+        projected_point[0], projected_point[1],
+        line_v0.x(), line_v0.y(),
+        line_v1.x(), line_v1.y(), s_norm);
+    EXPECT_EQ(is_within, false);
+    EXPECT_NEAR(s_norm, 0.1, 1e-3);
+
+    point_to_test = { -5, 1.1 };
+    ProjectPointOnVector2D(
+        point_to_test.x(), point_to_test.y(),
+        line_v0.x(), line_v0.y(),
+        line_v1.x(), line_v1.y(),
+        projected_point[0], projected_point[1]);
+    is_within = PointInBetweenVectorEndpoints(
+        projected_point[0], projected_point[1],
+        line_v0.x(), line_v0.y(),
+        line_v1.x(), line_v1.y(), s_norm);
+    EXPECT_EQ(is_within, false);
+    EXPECT_NEAR(s_norm, -0.1, 1e-3);
+
+    line_v0 = { -1.0, 0.0 };
+    line_v1 = { 1.0, 0.0 };
+    point_to_test = { -0.5, 2.0 };
+    ProjectPointOnVector2D(
+        point_to_test.x(), point_to_test.y(),
+        line_v0.x(), line_v0.y(),
+        line_v1.x(), line_v1.y(),
+        projected_point[0], projected_point[1]);
+    is_within = PointInBetweenVectorEndpoints(
+        projected_point[0], projected_point[1],
+        line_v0.x(), line_v0.y(),
+        line_v1.x(), line_v1.y(), s_norm);
+    EXPECT_EQ(is_within, true);
+    EXPECT_NEAR(s_norm, 0.25, 1e-3);
+
+    point_to_test = { -20.5, 2.0 };
+    ProjectPointOnVector2D(
+        point_to_test.x(), point_to_test.y(),
+        line_v0.x(), line_v0.y(),
+        line_v1.x(), line_v1.y(),
+        projected_point[0], projected_point[1]);
+    is_within = PointInBetweenVectorEndpoints(
+        projected_point[0], projected_point[1],
+        line_v0.x(), line_v0.y(),
+        line_v1.x(), line_v1.y(), s_norm);
+    EXPECT_EQ(is_within, false);
+    EXPECT_NEAR(s_norm, -19.5, 1e-3);
+}
+
 class StraightRoadTest : public testing::Test
 {
 protected:
@@ -1656,6 +1746,59 @@ TEST(DistributionTest, TestDeterministicDistribution)
     EXPECT_NEAR(std::atof(dist.GetParamValue(2).c_str()), 70.0, 1e-3);
     EXPECT_NEAR(std::atof(dist.GetParamValue(3).c_str()), 1.3, 1e-3);
 }
+
+TEST_F(StraightRoadTest, TestObjectOverlap)
+{
+    Object ego(Object::Type::VEHICLE);
+    Object target(Object::Type::VEHICLE);
+
+    ego.boundingbox_ =
+    {
+        { 1.0, 0.0, 0.0 },
+        { 2.0, 5.0, 1.5 }
+    };
+    ego.pos_.SetInertiaPos(10, 1.5, 0.0);
+    target.boundingbox_ =
+    {
+        { 0.5, 0.0, 0.0 },
+        { 1.0, 1.0, 1.5 }
+    };
+    target.pos_.SetInertiaPos(10, 1.5, 0.0);
+    EXPECT_EQ(ego.OverlappingFront(&target, 0.1), Object::OverlapType::INSIDE);
+
+    target.boundingbox_ =
+    {
+        { 0.5, 0.0, 0.0 },
+        { 6.0, 2.0, 1.5 }
+    };
+    EXPECT_EQ(ego.OverlappingFront(&target, 0.1), Object::OverlapType::FULL);
+
+    ego.pos_.SetInertiaPos(10, 0.0, 0.0);
+    target.pos_.SetInertiaPos(10, 3.0, 0.0);
+    EXPECT_EQ(ego.OverlappingFront(&target, 0.1), Object::OverlapType::PART);
+
+    ego.boundingbox_ =
+    {
+        { 0.0, 0.0, 0.0 },
+        { 1.0, 1.0, 1.0 }
+    };
+    ego.pos_.SetInertiaPos(0.0, 0.0, 0.0);
+    target.boundingbox_ =
+    {
+        { 0.0, 0.0, 0.0 },
+        { 1.0, 1.0, 1.0 }
+    };
+    target.pos_.SetInertiaPos(10.0, 1.01, 0.0);
+    EXPECT_EQ(ego.OverlappingFront(&target, 0.0), Object::OverlapType::NONE);
+
+    EXPECT_EQ(ego.OverlappingFront(&target, 0.02), Object::OverlapType::PART);
+
+    // Rotate ego 90 deg
+    ego.pos_.SetH(M_PI_2);
+    target.pos_.SetInertiaPos(0.0, 10.0, 0.0);
+    EXPECT_EQ(ego.OverlappingFront(&target, 0.01), Object::OverlapType::INSIDE_AND_FULL);
+}
+
 
 // Uncomment to print log output to console
 //#define LOG_TO_CONSOLE

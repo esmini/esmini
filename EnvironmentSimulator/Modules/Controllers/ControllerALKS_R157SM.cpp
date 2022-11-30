@@ -978,9 +978,7 @@ double ControllerALKS_R157SM::ReferenceDriver::ReactCritical()
         {
             // Time for AEB?
             if (object_in_focus_.obj &&
-                (object_in_focus_.obj->GetType() == Object::Type::PEDESTRIAN && object_in_focus_.dist_lat < SMALL_NUMBER ||  // Overlapping is enough for pedestrian
-                 // For other objects: Complete lateral overlap (100% wrap/Rap?)
-                 object_in_focus_.dLaneId == 0 && abs(object_in_focus_.obj->pos_.GetOffset()) - abs(veh_->pos_.GetOffset()) < wrap_tolerance_))
+                veh_->OverlappingFront(object_in_focus_.obj, 0.1) > Object::OverlapType::PART)  // object fully inside or covering ego front extension
             {
                 R157_LOG(2, "Activating AEB (lateral CC distance: %.2f)",
                     abs(object_in_focus_.obj->pos_.GetOffset()) - abs(veh_->pos_.GetOffset()));

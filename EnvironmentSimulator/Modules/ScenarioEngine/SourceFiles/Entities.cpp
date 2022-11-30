@@ -1015,6 +1015,113 @@ int Object::Distance(double x, double y, roadmanager::CoordinateSystem cs, roadm
 	return 0;
 }
 
+Object::OverlapType Object::OverlappingFront(Object* target, double tolerance)
+{
+	// Strategy:
+	// Project vertices of target objects' bounding box
+	// on the front line of own bounding box
+	// All vertices inside: OVERLAP_INSIDE
+	// Some vertices inside: OVERLAP_PARTLY
+	// At least one vertex on each side of front line: OVERLAP_FULL
+
+	// Own object front side of bounding box
+	SE_Vector front_left(boundingbox_.center_.x_ + boundingbox_.dimensions_.length_ / 2.0, boundingbox_.dimensions_.width_ / 2.0);
+	SE_Vector front_right(boundingbox_.center_.x_ + boundingbox_.dimensions_.length_ / 2.0, -boundingbox_.dimensions_.width_ / 2.0);
+
+	// Rotate and translate front line
+	front_left = front_left.Rotate(pos_.GetH());
+	front_right = front_right.Rotate(pos_.GetH());
+	front_left += SE_Vector(pos_.GetX(), pos_.GetY());
+	front_right += SE_Vector(pos_.GetX(), pos_.GetY());
+
+	// Specify target object bounding box corner vertices, starting at first quadrant going clock wise
+	SE_Vector vertex[4] =
+	{
+		{ target->boundingbox_.center_.x_ + target->boundingbox_.dimensions_.length_ / 2.0, target->boundingbox_.center_.y_ + target->boundingbox_.dimensions_.width_ / 2.0 },
+		{ target->boundingbox_.center_.x_ - target->boundingbox_.dimensions_.length_ / 2.0, target->boundingbox_.center_.y_ + target->boundingbox_.dimensions_.width_ / 2.0 },
+		{ target->boundingbox_.center_.x_ - target->boundingbox_.dimensions_.length_ / 2.0, target->boundingbox_.center_.y_ - target->boundingbox_.dimensions_.width_ / 2.0 },
+		{ target->boundingbox_.center_.x_ + target->boundingbox_.dimensions_.length_ / 2.0, target->boundingbox_.center_.y_ - target->boundingbox_.dimensions_.width_ / 2.0 }
+	};
+
+	for (int i = 0; i < 4; i++)  // for all vertices
+	{
+		// Align points to targetect heading and position
+		vertex[i] = vertex[i].Rotate(target->pos_.GetH());
+		vertex[i] += SE_Vector(target->pos_.GetX(), target->pos_.GetY());
+	}
+
+	int outside_left_count = 0;
+	int outside_right_count = 0;
+	int inside_count = 0;
+	for (int i = 0; i < 4; i++)
+	{
+		double projected_point[2];
+		double s_norm = 0.0;
+
+		ProjectPointOnVector2D(
+			vertex[i].x(), vertex[i].y(),
+			front_left.x(), front_left.y(),
+			front_right.x(), front_right.y(),
+			projected_point[0], projected_point[1]);
+
+		bool is_within = PointInBetweenVectorEndpoints(
+			projected_point[0], projected_point[1],
+			front_left.x(), front_left.y(),
+			front_right.x(), front_right.y(), s_norm);
+
+		if (is_within)
+		{
+			inside_count++;
+
+			if (s_norm * boundingbox_.dimensions_.width_ < tolerance)  // s_norm is factor (0..1) along front line
+			{
+				outside_left_count++;
+			}
+			else if ((1 - s_norm) * boundingbox_.dimensions_.width_ < tolerance)
+			{
+				outside_right_count++;
+			}
+		}
+		else
+		{
+			if (abs(s_norm) < tolerance)  // s_norm is actual distance from front line
+			{
+				inside_count++;
+			}
+
+			if (s_norm < 0)
+			{
+				outside_left_count++;
+			}
+			else
+			{
+				outside_right_count++;
+			}
+		}
+	}
+
+	OverlapType retval = OverlapType::NONE;
+
+	if (inside_count == 4 && outside_left_count > 0 && outside_right_count > 0)
+	{
+		return OverlapType::INSIDE_AND_FULL;
+	}
+	else if (inside_count == 4)
+	{
+		return OverlapType::INSIDE;
+	}
+	else if (outside_left_count > 0 && outside_right_count > 0)
+	{
+		return OverlapType::FULL;
+	}
+	else if (inside_count > 0)
+	{
+		return OverlapType::PART;
+	}
+
+	return OverlapType::NONE;
+}
+
 int Entities::addObject(Object* obj, bool activate, int call_index)
 {
 	const int max_trailers = 100;
