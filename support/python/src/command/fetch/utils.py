@@ -7,8 +7,13 @@ import os
 import shutil
 
 from support.python.src import formatter
-from support.python.src.utils import yes_or_no
-from support.python.src.globals import SEPARATOR, ESMINI_DIRECTORY_EXTERNAL
+from support.python.src.utils import (
+    yes_or_no,
+    get_os,
+    download_entity,
+    subprocess_popen,
+)
+from support.python.src.globals import SEPARATOR, ESMINI_DIRECTORY_EXTERNALS
 
 
 ############################################################################################################################## # pylint: disable=line-too-long
@@ -16,56 +21,81 @@ from support.python.src.globals import SEPARATOR, ESMINI_DIRECTORY_EXTERNAL
 ############################################################################################################################## # pylint: disable=line-too-long
 
 
-def fetch_from_google_drive(  # pylint: disable=too-many-branches
-    key, entity, entity_type, version=""
+def fetch_from_given_source(  # pylint: disable=too-many-branches
+    key, source, entity_name, entity_data, version=""
 ):
-    """fetch_from_artifactory fetches the desired entities from artifactory
+    """fetch_from_given_source fetches the desired entities from artifactory
 
     Inputs
     ----------
         key (str): fetch or replace command
 
-        entity (list): the list containing the data of the entity
+        source (str): the source to fetch data from
 
-        entity_type (str): the type of the entity that will be fetched from google drive
+        entity_name (list): the name of the entity to be fetched
+
+        entity_data (list): the data of the entity to be fetched
 
         version (str): version of the entity
 
     """
 
-    root_dir = os.getcwd()
-    if not os.path.exists(os.path.join(ESMINI_DIRECTORY_EXTERNAL, entity_type)):
-        os.system("mkdir -p " + os.path.join(ESMINI_DIRECTORY_EXTERNAL, entity_type))
-    os.chdir(os.path.join(ESMINI_DIRECTORY_EXTERNAL, entity_type))
-
     if key == "fetch":
-        if os.path.exists(
-            os.path.join(ESMINI_DIRECTORY_EXTERNAL, entity_type, entity[1])
-        ):
-            print(formatter.form("ALREADY EXISTS", entity[1]))
-            if yes_or_no(formatter.format_yellow("WANT REPLACE ?", entity[1])):
-                replace_from_google_drive(entity, entity_type, version)
+        if os.path.exists(os.path.join(ESMINI_DIRECTORY_EXTERNALS, entity_name)):
+            print(formatter.format_yellow("ALREADY EXISTS " + entity_name))
+            if yes_or_no(formatter.format_yellow("WANT REPLACE ? " + entity_name)):
+                replace_from_given_source(source, entity_name, entity_data, version)
             else:
                 print("Allright :) \n")
                 return
         else:
-            # os.system(curl_key + entity[0] + "/" + version + "/" + entity[1] + ".zip")
-            if os.system("unzip -q " + entity[1] + ".zip") == 0:
-                print(formatter.format_green("FETCH", [entity[1], version]))
-                os.system("rm " + entity[1] + ".zip")
+            download_entity(source, entity_name, entity_data)
+            if entity_data["extension"] == ".7z":
+                cmd = [
+                    "7z",
+                    "x",
+                    os.path.join(
+                        entity_data["destination"],
+                        entity_name + "_" + get_os() + entity_data["extension"],
+                    ),
+                    "-oc:" + entity_data["destination"],
+                ]
+                stdout, stderr, return_code = subprocess_popen(
+                    cmd, cwd=os.path.join(ESMINI_DIRECTORY_EXTERNALS), return_code=True
+                )
+
+                if return_code != 0:
+                    print(stdout)
+                    print(stderr)
+                    raise ValueError(formatter.format_red("FAIL"))
+
+                print(
+                    formatter.format_green("SUCCESS ")
+                    + "-> "
+                    + formatter.format_green("FETCH ")
+                    + "-> "
+                    + formatter.format_green(entity_name + "_" + get_os())
+                    + " "
+                    + formatter.format_green(version)
+                )
+                os.system(
+                    "rm "
+                    + os.path.join(
+                        entity_data["destination"],
+                        entity_name + "_" + get_os() + entity_data["extension"],
+                    )
+                )
             else:
-                raise ValueError(formatter.format_red("FETCH", [entity[1], version]))
+                raise ValueError(formatter.format_red("FAIL"))
             print("─" * SEPARATOR)
 
-    os.chdir(root_dir)
 
-
-def replace_from_google_drive(entity, entity_type, version=""):
-    """replace_from_google_drive replaces the desired dependency
+def replace_from_given_source(source, entity_name, entity_data, version=""):
+    """replace_from_given_source replaces the desired dependency
 
     Inputs
     ----------
-        key (str): fetch or replace command
+        source (str): the source to fetch data from
 
         entity (list): the list containing the data of the entity
 
@@ -75,8 +105,8 @@ def replace_from_google_drive(entity, entity_type, version=""):
 
     """
 
-    if os.path.exists(os.path.join(ESMINI_DIRECTORY_EXTERNAL, entity_type, entity[1])):
-        shutil.rmtree(os.path.join(ESMINI_DIRECTORY_EXTERNAL, entity_type, entity[1]))
-        print(formatter.format_green("REMOVAL", [entity[1]]))
+    if os.path.exists(entity_data["destination"]):
+        shutil.rmtree(os.path.join(entity_data["destination"]))
+        print(formatter.format_green("REMOVAL " + entity_name))
 
-    fetch_from_google_drive("fetch", entity, entity_type, version)
+    fetch_from_given_source("fetch", source, entity_name, entity_data, version)

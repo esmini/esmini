@@ -2,28 +2,19 @@
 
 """
 
+import sys
 import subprocess
+import os
+import gdown
 
+from support.python.src import formatter
+from support.python.src.formatter import Color
 from support.python.src.globals import (
     SEPARATOR,
     ESMINI_CMAKE_TARGET_FLAGS,
     ESMINI_COMPILERS,
+    ESMINI_DIRECTORY_EXTERNALS,
 )
-
-
-class Color:  # pylint: disable=too-few-public-methods
-    """color codes for pretty printing"""
-
-    PURPLE = "\033[95m"
-    CYAN = "\033[96m"
-    DARKCYAN = "\033[36m"
-    BLUE = "\033[94m"
-    GREEN = "\033[92m"
-    YELLOW = "\033[93m"
-    RED = "\033[91m"
-    BOLD = "\033[1m"
-    UNDERLINE = "\033[4m"
-    END = "\033[0m"
 
 
 YES_OR_NO_STR = (
@@ -72,6 +63,13 @@ def subprocess_popen(commands, shell=False, cwd=None, env=None, return_code=Fals
     return (stdout.decode("utf-8"), stderr.decode("utf-8"))
 
 
+def get_os():
+    """get_os gets the operating system type"""
+
+    if sys.platform == "linux":
+        return "linux"
+
+
 def print_commands(args):
     """print arguments
 
@@ -95,7 +93,7 @@ def print_commands(args):
 def yes_or_no(question):
     """yes_or_no asks user a yes or no question to decide an action
 
-    Parameters
+    Inputs
     ----------
         question (str): desired question statament to ask to user
 
@@ -154,3 +152,33 @@ def get_available_compilers():
     for compiler in ESMINI_COMPILERS:
         build_str = build_str + Color.GREEN + "  " + compiler + Color.END + "\n"
     return build_str
+
+
+def download_entity(source, name, data):
+    """download_entity downloads entity from
+
+    Inputs
+    ----------
+        name (str): name of the entity
+
+        source (str): source to download
+
+        data (dict): information about what to download
+    """
+
+    if source == "google-drive":
+        print(
+            "Downloading "
+            + formatter.format_green(name + "_" + get_os())
+            + " from "
+            + formatter.format_green(source)
+            + " ..."
+        )
+        os.system("mkdir -p " + data["destination"])
+        gdown.download(
+            data["src"],
+            output=os.path.join(
+                data["destination"],
+                name + "_" + get_os() + data["extension"],
+            ),
+        )

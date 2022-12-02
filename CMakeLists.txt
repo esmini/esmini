@@ -81,7 +81,7 @@ if (DYN_PROTOBUF)
   add_definitions(-DPROTOBUF_USE_DLLS)
 endif (DYN_PROTOBUF)
 
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/project_options.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/rule/project_options.cmake)
 
 add_subdirectory(EnvironmentSimulator)
 

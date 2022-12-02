@@ -676,7 +676,7 @@ class _Command:
         str_ = ""
         for arg in self.arg_list:
             if arg.has_choices:
-                str_ += formatter.formatter.format_bold(
+                str_ += formatter.format_bold(
                     "Available options for " + arg.name + ":\n"
                 )
                 for choice in arg.choices:
@@ -721,7 +721,7 @@ class CLI:
             "dependency", "fetches desired dependencies"
         )
         fetch_dependency_cmd.add_example(["--name osi"])
-        fetch_dependency_cmd.add_example(["--name osi", "--source google_drive"])
+        fetch_dependency_cmd.add_example(["--name osi", "--source google-drive"])
 
         fetch_dependency_cmd.add_argument(
             "--name",
@@ -730,10 +730,11 @@ class CLI:
             nargs="?",
             help="select the name of the dependency (default: %(default)s)",
             choices=[
+                "osg",
                 "osi",
-                "open_scene_graph",
                 "sumo",
                 "googletest",
+                "models",
             ],
             metavar="NAME",
         )
@@ -741,9 +742,15 @@ class CLI:
         fetch_dependency_cmd.add_argument(
             "--source",
             dest="source",
-            default="google_drive",
+            default="google-drive",
             nargs="?",
             help="select the source for dependency (default: %(default)s)",
+            choices=[
+                "google-drive",
+                "dropbox",
+                "esmini",
+            ],
+            metavar="SOURCE",
         )
 
     def _init_replace(self):
@@ -756,7 +763,7 @@ class CLI:
             "dependency", "replaces desired dependencies"
         )
         replace_dependency_cmd.add_example(["--name osi"])
-        replace_dependency_cmd.add_example(["--name osi", "--source google_drive"])
+        replace_dependency_cmd.add_example(["--name osi", "--source google-drive"])
 
         replace_dependency_cmd.add_argument(
             "--name",
@@ -765,10 +772,11 @@ class CLI:
             nargs="?",
             help="select the name of the dependency (default: %(default)s)",
             choices=[
+                "osg",
                 "osi",
-                "open_scene_graph",
                 "sumo",
                 "googletest",
+                "models",
             ],
             metavar="NAME",
         )
@@ -776,9 +784,15 @@ class CLI:
         replace_dependency_cmd.add_argument(
             "--source",
             dest="source",
-            default="google_drive",
+            default="google-drive",
             nargs="?",
             help="Select the source for dependency (default: %(default)s)",
+            choices=[
+                "google-drive",
+                "dropbox",
+                "esmini",
+            ],
+            metavar="SOURCE",
         )
 
     def _init_generate(self):

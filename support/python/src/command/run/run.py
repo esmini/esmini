@@ -148,16 +148,18 @@ class Run:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
         if os.path.exists(os.path.join(ESMINI_DIRECTORY_ROOT, ".clang-format")):
             print(
                 formatter.format_green(
-                    os.path.join(ESMINI_DIRECTORY_ROOT, ".clang-format"),
-                    "is selected as clang-format configuration",
+                    os.path.join(ESMINI_DIRECTORY_ROOT, ".clang-format")
+                    + " is selected as clang-format configuration",
                 )
             )
             os.chdir(root_dir)
         else:
             raise FileExistsError(
                 formatter.format_red(
-                    "CONFIGURATION FILE",
-                    [".clang-format", "DOES NOT EXIST UNDER", ESMINI_DIRECTORY_ROOT],
+                    "CONFIGURATION FILE "
+                    + ".clang-format "
+                    + "DOES NOT EXIST UNDER "
+                    + ESMINI_DIRECTORY_ROOT
                 )
             )
 
@@ -170,16 +172,18 @@ class Run:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
         if os.path.exists(os.path.join(ESMINI_DIRECTORY_ROOT, ".cmake-format")):
             print(
                 formatter.format_green(
-                    os.path.join(ESMINI_DIRECTORY_ROOT, ".cmake-format"),
-                    "is selected as cmake-format configuration",
+                    os.path.join(ESMINI_DIRECTORY_ROOT, ".cmake-format")
+                    + " is selected as cmake-format configuration",
                 )
             )
             os.chdir(root_dir)
         else:
             raise FileExistsError(
                 formatter.format_red(
-                    "CONFIGURATION FILE",
-                    [".cmake-format", "DOES NOT EXIST UNDER", ESMINI_DIRECTORY_ROOT],
+                    "CONFIGURATION FILE "
+                    + ".cmake-format "
+                    + "DOES NOT EXIST UNDER "
+                    + ESMINI_DIRECTORY_ROOT
                 )
             )
 
@@ -201,8 +205,10 @@ class Run:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
         else:
             raise FileExistsError(
                 formatter.format_red(
-                    "configuration file",
-                    [".black-format", "does not exist under", ESMINI_DIRECTORY_ROOT],
+                    "CONFIGURATION FILE "
+                    + ".black-format "
+                    + "DOES NOT EXIST UNDER "
+                    + ESMINI_DIRECTORY_ROOT,
                 )
             )
 

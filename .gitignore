@@ -18,9 +18,9 @@ version.cpp
 version.txt
 log.txt
 esmini-dyn.log
-externals/OpenSceneGraph
-externals/OSI
-externals/SUMO
+externals/osg
+externals/osi
+externals/sumo
 externals/googletest
 resources/models
 Hello-World_coding-example/build

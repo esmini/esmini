@@ -3,11 +3,11 @@
 """
 
 from support.python.src.command.fetch.utils import (
-    fetch_from_google_drive,
-    replace_from_google_drive,
+    fetch_from_given_source,
+    replace_from_given_source,
 )
-from support.python.src.globals import ESMINI_GOOGLE_DRIVE_DEPENDENCY_COMPONENTS
-from support.python.src.utils import print_commands
+from support.python.src.globals import ESMINI_DEPENDENCY_EXTERNALS
+from support.python.src.utils import print_commands, get_os
 
 
 class Dependency:
@@ -19,13 +19,17 @@ class Dependency:
 
         Dependency._resolve_dependency_args(args)
         if args["name"] == "all" or args["name"][0] == "all":
-            for dep in ESMINI_GOOGLE_DRIVE_DEPENDENCY_COMPONENTS:
-                fetch_from_google_drive(key, dep, "dependency")
+            for dep_name, dep_data in ESMINI_DEPENDENCY_EXTERNALS[args["source"]][
+                get_os()
+            ].items():
+                fetch_from_given_source(key, args["source"], dep_name, dep_data)
         else:
-            for dep_name in args["name"]:
-                for dep in ESMINI_GOOGLE_DRIVE_DEPENDENCY_COMPONENTS:
-                    if dep[1] == dep_name:
-                        fetch_from_google_drive(key, dep, "dependency")
+            for desired_name in args["name"]:
+                for dep_name, dep_data in ESMINI_DEPENDENCY_EXTERNALS[args["source"]][
+                    get_os()
+                ].items():
+                    if dep_name == desired_name:
+                        fetch_from_given_source(key, args["source"], dep_name, dep_data)
 
     @staticmethod
     def replace_dependency(args):
@@ -34,20 +38,23 @@ class Dependency:
         version = ""
         Dependency._resolve_dependency_args(args)
         if args["name"] == "all" or args["name"][0] == "all":
-            for dep in ESMINI_GOOGLE_DRIVE_DEPENDENCY_COMPONENTS:
-                replace_from_google_drive(dep, "dependency", version)
+            for dep_name, dep_data in ESMINI_DEPENDENCY_EXTERNALS[args["source"]][
+                get_os()
+            ].items():
+                replace_from_given_source(args["source"], dep_name, dep_data, version)
         else:
-            for dep_name in args["name"]:
-                for dep in ESMINI_GOOGLE_DRIVE_DEPENDENCY_COMPONENTS:
-                    if dep[1] == dep_name:
-                        replace_from_google_drive(dep, "dependency", version)
+            for desired_name in args["name"]:
+                for dep_name, dep_data in ESMINI_DEPENDENCY_EXTERNALS[args["source"]][
+                    get_os()
+                ].items():
+                    if dep_name == desired_name:
+                        replace_from_given_source(
+                            args["source"], dep_name, dep_data, version
+                        )
 
     @staticmethod
     def _resolve_dependency_args(args):
         """resolves the dependency arguments in case there is conflicted request"""
-
-        if (args["source"] != "google_drive") and (args["source"][0] != "google_drive"):
-            raise ValueError("NOT SUPPORTED SOURCE", args["source"])
 
         if args["name"] != "all" and args["name"][0] != "all":
             match = False
@@ -55,10 +62,9 @@ class Dependency:
                 args["name"] = [args["name"]]
 
             for desired_dep in args["name"]:
-                for dep in ESMINI_GOOGLE_DRIVE_DEPENDENCY_COMPONENTS:
-                    for dep_name in dep:
-                        if dep_name == desired_dep:
-                            match = dep_name
+                for dep in ESMINI_DEPENDENCY_EXTERNALS[args["source"]][get_os()].keys():
+                    if dep == desired_dep:
+                        match = dep
                 if not match:
                     raise ValueError(
                         "DEPENDENCY NOT AVAILABLE",

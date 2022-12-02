@@ -1,4 +1,4 @@
-from jinja2 import Environment,FileSystemLoader,select_autoescape
+from jinja2 import Environment, FileSystemLoader, select_autoescape
 import xml.etree.ElementTree as ET
 import json
 import os
@@ -10,7 +10,7 @@ class OpenDrive:
         outputfolder = os.path.join(ESMINI_DIRECTORY_SUPPORT,"generated")
         if not os.path.exists(outputfolder):
             os.mkdir(outputfolder)
-        output_file = os.path.join(outputfolder,output+".hpp")
+        output_file = os.path.join(outputfolder, output + ".hpp")
 
         #Dump dict to json for testing/fault tracing
         self.print_dict(output_file,data)

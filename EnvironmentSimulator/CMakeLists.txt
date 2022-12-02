@@ -17,9 +17,9 @@ set ( CONTROLLERS_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Modules/Controllers")
 
 # OpenSceneGraph package adapted for this project
 set ( OSG_VERSION "osg161" )
-set ( OSG_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../externals/OpenSceneGraph" )
-set ( OSI_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../externals/OSI" )
-set ( SUMO_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../externals/SUMO" )
+set ( OSG_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../externals/osg" )
+set ( OSI_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../externals/osi" )
+set ( SUMO_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../externals/sumo" )
 
 # GoogleTest package
 set ( GTEST_VERSION "1.10.1" )
@@ -153,7 +153,7 @@ link_directories(${OSG_LIBRARIES_PATH} ${OSI_LIBRARIES_PATH} ${SUMO_LIBRARIES_PA
 
 if(APPLE)
   SET(CMAKE_CXX_FLAGS "${CXX_STD_FLAG} -std=c++14 -pthread -fPIC -flto -DGL_SILENCE_DEPRECATION -Wl,-dead_strip")
-  
+
   set ( OSG_LIBRARIES
     osg
     osgViewer
