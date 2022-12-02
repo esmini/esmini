@@ -10,7 +10,7 @@ from support.python.src.command.run import pytest
 from support.python.src.cli.cli import CLI
 from support.python.src.command.fetch.dependency import Dependency
 from support.python.src.command.run.run import Run
-
+from support.python.src.command.generate.opendrive import OpenDrive
 ##############################################################################################################################
 ############################################################ MAIN ############################################################
 ##############################################################################################################################
@@ -35,7 +35,7 @@ class Start(object):
             if "openscenario" == command_list[2].name:
                 pass
             elif "opendrive" == command_list[2].name:
-                pass
+                OpenDrive.generate_opendrive()
         if "run" == command_list[1].name:
             run = Run()
             if "format" == command_list[2].name:

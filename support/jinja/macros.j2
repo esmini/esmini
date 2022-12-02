@@ -1,0 +1,57 @@
+
+{%macro enum(key,value)%}
+enum class {{key[5:]}} {
+    {%for key1,value1 in value.items()-%}
+        {%for key2,value2 in value1.items()-%}
+            {%if loop.last -%}
+                {{key2|indent(4,True)}}
+            {%else-%}
+                {{key2|indent(4,True)}},
+            {%endif-%}
+        {%endfor-%}
+    {%endfor-%}
+};
+{%endmacro%}
+
+
+{%macro class(key,value)%}
+class {{key[6:]}} {
+    {%for key1,value1 in value.items()-%}
+        {%for key2,value2 in value1.items()-%}
+            {%if value2 is iterable and value2 is not string%}
+                {%for key3,value3 in value2.items()-%}
+                        {% if "type" in key3 -%}
+                            {% if "xs:" in value3 -%}
+                                {{value3[3:]|indent(4,True)}} {{key2|indent(4,True)}};
+                            {% elif "t_" in value3 or "e_" in value3-%}
+                                {{value3[2:]|indent(4,True)}} {{key2|indent(4,True)}};
+                            {%else%}
+                                {{value3|indent(4,True)}} {{key2|indent(4,True)}};
+                            {%endif-%}
+                        {%endif-%}
+                {%endfor-%}
+            {%endif%}
+        {%endfor-%}
+    {%endfor-%}
+};
+{%endmacro%}
+
+{%macro string(key,value)%}
+    string {{key[7:]}}
+{%endmacro%}
+
+
+{%macro generate_datastructs(data)%}
+    {%for key,value in data.items()-%}
+        {% if "enum_" in key -%}
+            {{enum(key,value)}}
+        {%endif%}
+        {% if "class_" in key -%}
+            {{class(key,value)}}
+        {%endif-%}
+        {% if "string_" in key%}
+            {{string(key,value)}}
+        {%endif%}
+    {%endfor%}
+{%endmacro%}
+
