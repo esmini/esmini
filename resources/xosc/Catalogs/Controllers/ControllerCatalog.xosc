@@ -169,8 +169,10 @@
                 <ParameterDeclaration name="FullStop" parameterType="boolean" value="false" />                
                 <!-- alwaysTrigOnScenario: "false" = only act if critical, "true" = take action also outside critical zone -->
                 <ParameterDeclaration name="AlwaysTrigOnScenario" parameterType="boolean" value="false" />                
-                <!-- pedestrianRiskEvaluationTime: Time to perceive/evaluate a risk involving a pedestrian -->
+                <!-- pedestrianRiskEvaluationTime: Time to perceive/evaluate a risk involving a pedestrian (ref driver only) -->
                 <ParameterDeclaration name="PedestrianRiskEvaluationTime" parameterType="double" value="0.4" />
+                <!-- aebTTC: TTC at which to trig AEB (ref driver only) -->
+                <ParameterDeclaration name="AEBTTC" parameterType="double" value="1.4" />
             </ParameterDeclarations>
             <Properties>
                 <Property name="mode" value="$Mode" />
@@ -181,6 +183,7 @@
                 <Property name="fullStop"  value="$FullStop" />
                 <Property name="alwaysTrigOnScenario"  value="$AlwaysTrigOnScenario" />
                 <Property name="pedestrianRiskEvaluationTime"  value="$PedestrianRiskEvaluationTime" />
+                <Property name="aebTTC"  value="$AEBTTC" />
             </Properties>
         </Controller>        
         <Controller name="UDPDriverController">

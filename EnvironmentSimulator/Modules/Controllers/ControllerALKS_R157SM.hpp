@@ -259,6 +259,23 @@ namespace scenarioengine
             };
             static std::map<Phase, std::string> PhaseName;
 
+            class AEB
+            {
+            public:
+                AEB(double ttc_critical_aeb) : ttc_critical_aeb_(ttc_critical_aeb),
+                    acc_(0.0), active_(false) {}
+                AEB() : AEB(1.5) {}
+
+                void Reset()
+                {
+                    acc_ = 0.0;
+                    active_ = false;
+                }
+
+                bool active_;
+                double ttc_critical_aeb_;
+                double acc_;
+            };
 
             // set look ahead distance to 100m
             ReferenceDriver() : Model(ModelType::ReferenceDriver, 0.75, 0.774 * 9.81, 100.0), c_lane_offset_(0.0),
@@ -279,6 +296,7 @@ namespace scenarioengine
                 SetPhase(Phase::INACTIVE);
                 SetScenarioType(ScenarioType::None);
             }
+            void UpdateAEB(Vehicle* ego, ObjectInfo* info, double dt);
 
             double min_jerk_;
             double release_deceleration_;  // deceleration when not stepping on the accelerator pedal(I think)
@@ -293,6 +311,7 @@ namespace scenarioengine
             double wandering_threshold_;
             double wrap_tolerance_;
             double c_lane_offset_;
+            AEB aeb_;
 
             bool CheckPerception()
             {

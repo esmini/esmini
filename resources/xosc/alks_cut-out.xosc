@@ -33,6 +33,7 @@
                         <Property name="cruise" value="false"/>
                         <Property name="cutInPerceptionDelayMode" value="Time"/>
                         <Property name="fullStop" value="true"/>
+                        <Property name="aebTTC" value="1.6"/>
                     </Properties>
                 </Controller>
             </ObjectController>

@@ -102,6 +102,12 @@ ControllerALKS_R157SM::ControllerALKS_R157SM(InitArgs* args) : model_(0), entiti
             }
             LOG("ALKS_R157SM PedestrianRiskEvaluationTime: %.2f", ref_driver->GetPedestrianRiskEvaluationTime());
 
+            if (args->properties->ValueExists("aebTTC"))
+            {
+                ref_driver->aeb_.ttc_critical_aeb_ = strtod(args->properties->GetValueStr("aebTTC"));
+            }
+            LOG("ALKS_R157SM AEB TTC: %.2f", ref_driver->aeb_.ttc_critical_aeb_);
+
             model_ = (ControllerALKS_R157SM::Model*) ref_driver;
         }
         else if (args->properties->GetValueStr("model") == "RSS")
@@ -375,6 +381,7 @@ double ControllerALKS_R157SM::Model::Step(double timeStep)
     dt_ = timeStep;
 
     Detect();
+
     if (CheckCritical())
     {
         return ReactCritical();
@@ -616,6 +623,26 @@ double ControllerALKS_R157SM::Regulation::ReactCritical()
     R157_LOG(3, "Critical: acc %.2f speed %.2f", acc_, speed);
 
     return speed;
+}
+
+void ControllerALKS_R157SM::ReferenceDriver::UpdateAEB(Vehicle* ego, ObjectInfo* info, double dt)
+{
+    if (!aeb_.active_ && info->ttc < aeb_.ttc_critical_aeb_ &&
+        ego->OverlappingFront(info->obj, 0.1) > Object::OverlapType::PART)  // object fully inside or covering ego front extension
+    {
+        R157_LOG(2, "AEB activated at ttc %.2f (< critical ttc %.2f)", info->ttc, aeb_.ttc_critical_aeb_);
+        aeb_.active_ = true;
+    }
+
+    if (aeb_.active_)
+    {
+        aeb_.acc_ -= dt * 0.85 * g / 0.6;
+
+        if (aeb_.acc_ < -0.85 * g)
+        {
+            aeb_.acc_ = -0.85 * g;
+        }
+    }
 }
 
 bool ControllerALKS_R157SM::ReferenceDriver::CheckLateralSafety(ObjectInfo* info)
@@ -918,6 +945,11 @@ std::string ControllerALKS_R157SM::ReferenceDriver::Phase2Str(Phase phase)
 
 bool ControllerALKS_R157SM::ReferenceDriver::CheckCritical()
 {
+    if (object_in_focus_.dv_s < SMALL_NUMBER && object_in_focus_.ttc > critical_ttc_)
+    {
+        return false;
+    }
+
     if (GetPhase() == Phase::INACTIVE || GetPhase() == Phase::PERCEIVE)
     {
         if (CheckPerception())
@@ -954,10 +986,12 @@ bool ControllerALKS_R157SM::ReferenceDriver::CheckCritical()
     }
     else if (veh_->GetSpeed() > SMALL_NUMBER && object_in_focus_.dist_long > 0)
     {
-        return CheckCriticalCondition();
+        CheckCriticalCondition();
     }
 
-    return GetModelMode() == ModelMode::CRITICAL;
+    UpdateAEB(veh_, &object_in_focus_, dt_);
+
+    return GetModelMode() == ModelMode::CRITICAL || aeb_.active_;
 }
 
 double ControllerALKS_R157SM::ReferenceDriver::ReactCritical()
@@ -972,18 +1006,8 @@ double ControllerALKS_R157SM::ReferenceDriver::ReactCritical()
         if (veh_->GetSpeed() < SMALL_NUMBER)
         {
             SetPhase(Phase::INACTIVE);
+            aeb_.Reset();
             timer_ = 0.0;
-        }
-        else if (GetPhase() == Phase::BRAKE_REF)
-        {
-            // Time for AEB?
-            if (object_in_focus_.obj &&
-                veh_->OverlappingFront(object_in_focus_.obj, 0.1) > Object::OverlapType::PART)  // object fully inside or covering ego front extension
-            {
-                R157_LOG(2, "Activating AEB (lateral CC distance: %.2f)",
-                    abs(object_in_focus_.obj->pos_.GetOffset()) - abs(veh_->pos_.GetOffset()));
-                SetPhase(Phase::BRAKE_AEB);
-            }
         }
     }
 
@@ -994,7 +1018,7 @@ double ControllerALKS_R157SM::ReferenceDriver::ReactCritical()
         // otherwise apply idle deceleration from lifting foot from gas pedal
         acc_ = MIN(-release_deceleration_, acc_);
     }
-    if (GetPhase() == Phase::BRAKE_REF)
+    else if (GetPhase() == Phase::BRAKE_REF)
     {
         acc_ -= dt_ * 0.774 * g / 0.6;
 
@@ -1003,14 +1027,15 @@ double ControllerALKS_R157SM::ReferenceDriver::ReactCritical()
             acc_ = -0.774 * g;
         }
     }
-    else if (GetPhase() == Phase::BRAKE_AEB)
-    {
-        acc_ -= dt_ * 0.85 * g / 0.6;
 
-        if (acc_ < -0.85 * g)
+    if (aeb_.active_ && aeb_.acc_ < acc_)
+    {
+        if (phase_ != Phase::BRAKE_AEB)
         {
-            acc_ = -0.85 * g;
+            R157_LOG(2, "AEB deceleration %.2f exceeding driver deceleration %.2f", aeb_.acc_, acc_);
+            SetPhase(Phase::BRAKE_AEB);
         }
+        acc_ = aeb_.acc_;
     }
 
     double speed = MAX(0.0, veh_->GetSpeed() + acc_ * dt_);
