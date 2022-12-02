@@ -1,14 +1,45 @@
 include_guard()
 
-# set(CMAKE_CXX_STANDARD 14) set(CMAKE_CXX_STANDARD_REQUIRED ON) set(CMAKE_CXX_EXTENSIONS ON) set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_CXX_STANDARD
+    14)
+set(CMAKE_CXX_STANDARD_REQUIRED
+    ON)
+set(CMAKE_CXX_EXTENSIONS
+    ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS
+    ON)
+set(CMAKE_VERBOSE_MAKEFILE
+    ON)
 
-# if(ENABLE_COLORED_DIAGNOSTICS) if(CMAKE_CXX_COMPILER_ID MATCHES ".*Clang") add_compile_options(-fcolor-diagnostics) elseif( CMAKE_CXX_COMPILER_ID
-# STREQUAL "GNU") add_compile_options(-fdiagnostics-color=always) else() message(STATUS "No colored compiler diagnostic set for
-# '${CMAKE_CXX_COMPILER_ID}' compiler.") endif() endif()
+# ---------------------------------------------------
+if(MSVC)
+    set(CMAKE_VS_INCLUDE_INSTALL_TO_DEFAULT_BUILD
+        1)
+elseif(MINGW)
 
-# include(${CMAKE_SOURCE_DIR}/support/cmake/rule/system_link.cmake)
+endif()
+# ---------------------------------------------------
 
-# include(${CMAKE_CURRENT_LIST_DIR}/standards.cmake) set_standards()
+# Enhance error reporting and compiler messages
+if(ENABLE_COLORED_DIAGNOSTICS)
+    if(CMAKE_CXX_COMPILER_ID
+       MATCHES
+       ".*Clang")
+        add_compile_options(-fcolor-diagnostics)
+    elseif(
+        CMAKE_CXX_COMPILER_ID
+        STREQUAL
+        "GNU")
+        add_compile_options(-fdiagnostics-color=always)
+    else()
+        message(STATUS "No colored compiler diagnostic set for '${CMAKE_CXX_COMPILER_ID}' compiler.")
+    endif()
+endif()
+
+include(${CMAKE_SOURCE_DIR}/support/cmake/rule/system_link.cmake)
+
+include(${CMAKE_CURRENT_LIST_DIR}/standards.cmake)
+set_standards()
 
 add_library(
     project_options

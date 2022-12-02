@@ -1,7 +1,7 @@
 
 include_directories (
-  ${ROADMANAGER_INCLUDE_DIR}
-  ${COMMON_MINI_INCLUDE_DIR}  
+  ${ROAD_MANAGER_PATH}
+  ${COMMON_MINI_PATH}
 )
 
 set(TARGET odrplot)
@@ -15,12 +15,12 @@ set ( INCLUDES
 
 add_executable ( ${TARGET} ${SOURCES} ${INCLUDES} )
 
-target_link_libraries ( 
+target_link_libraries (
 	${TARGET}
 	RoadManager
-	CommonMini	
+	CommonMini
 	${TIME_LIB}
 	project_options
 )
 
-install ( TARGETS ${TARGET} DESTINATION "${INSTALL_DIRECTORY}")
+install ( TARGETS ${TARGET} DESTINATION "${INSTALL_PATH}")

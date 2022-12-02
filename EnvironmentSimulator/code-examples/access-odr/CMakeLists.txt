@@ -1,7 +1,7 @@
 
 include_directories (
-  ${SCENARIOENGINE_DLL_INCLUDE_DIR}
-  ${COMMON_MINI_INCLUDE_DIR}
+  ${ESMINI_LIB_PATH}
+  ${COMMON_MINI_PATH}
 )
 
 set (TARGET access-odr)
@@ -24,4 +24,4 @@ target_link_libraries (
   project_options
 )
 
-install ( TARGETS ${TARGET} DESTINATION "${INSTALL_DIRECTORY_CODE_EXAMPLES}")
+install ( TARGETS ${TARGET} DESTINATION "${CODE_EXAMPLES_BIN_PATH}")

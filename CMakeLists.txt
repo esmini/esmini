@@ -1,94 +1,224 @@
-message(STATUS "CMake version: " ${CMAKE_VERSION})
+message(
+    STATUS "CMake version: "
+           ${CMAKE_VERSION})
 
-# Set to the current lowest tested version of CMake
+# ############################# Project generate options ###########################################################
+
+set(ENABLE_COLORED_DIAGNOSTICS
+    OFF
+    CACHE BOOL
+          "Enable colorful diagnostic messages from the compiler in console")
+
+set(ENABLE_WARNINGS_AS_ERRORS
+    OFF
+    CACHE BOOL
+          "Make compile warnings be treated as errors")
+
+set(ENABLE_CCACHE
+    OFF
+    CACHE BOOL
+          "Enable CCACHE")
+
+set(ENABLE_COVERAGE
+    OFF
+    CACHE BOOL
+          "Enable code coverage (Will force no optimizations)")
+
+set(ENABLE_SANITIZERS
+    OFF
+    CACHE BOOL
+          "Enable sanitizers (Only valid for Linux and Mac OS)")
+
+set(ENABLE_STATIC_ANALYSIS
+    OFF
+    CACHE BOOL
+          "Enable CppCheck and clang-tidy")
+
+set(ENABLE_INCLUDE_WHAT_YOU_USE
+    OFF
+    CACHE BOOL
+          "Enable iwyu")
+
+set(ENABLE_OSG
+    ON
+    CACHE BOOL
+          "If projects that depend on OpenSceneGraph should be compiled.")
+
+set(ENABLE_OSI
+    ON
+    CACHE BOOL
+          "If code that depend on OSI should be compiled.")
+
+set(ENABLE_SUMO
+    ON
+    CACHE BOOL
+          "If code that depend on SUMO should be compiled.")
+
+set(ENABLE_GTEST
+    ON
+    CACHE BOOL
+          "If unit test suites based on googletest should be compiled.")
+
+set(ENABLE_DYN_PROTOBUF
+    OFF
+    CACHE BOOL
+          "Set for dynamic linking of protobuf library (.so/.dll)")
+
+# ############################### Setting project rules ############################################################
+
 if(WIN32)
-  # for cmake generator VisualStudio 2017 support
-  cmake_minimum_required (VERSION 3.7.0 FATAL_ERROR)
+    cmake_minimum_required(
+        VERSION 3.7.0
+        FATAL_ERROR) # for cmake generator VisualStudio 2017 support
 else()
-  cmake_minimum_required (VERSION 2.8.12 FATAL_ERROR)
+    cmake_minimum_required(
+        VERSION 2.8.12
+        FATAL_ERROR)
 endif()
 
+project(
+    ESMINI
+    DESCRIPTION "ESMINI"
+    LANGUAGES C
+              CXX)
 
-project (EnvironmentSimulator)
+set_property(
+    GLOBAL
+    PROPERTY USE_FOLDERS
+             ON)
 
-if(MSVC)
-  set(CMAKE_VS_INCLUDE_INSTALL_TO_DEFAULT_BUILD 1)
-elseif (MINGW)
-endif()
+include(support/cmake/rule/project_options.cmake)
 
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
-# Allow for folder structure
-set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-
-# The static libaries needs to be compiled with position independent code
-# otherwise we cant link with them when building dynamic libaries
-# An alternative to this global option is to set POSITION_INDEPENDENT_CODE on each target
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-
-if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-  set (LINUX true)
-else ()
-  set (LINUX false)
-endif ()
-
-if (LINUX OR APPLE OR MINGW OR MSVC)
-  set(INSTALL_DIRECTORY "${CMAKE_HOME_DIRECTORY}/bin")
-else ()
-  message(FATAL_ERROR "Unrecognized platform therefore there isn't an installation directory. Stopping the cmake process.")
-endif ()
-
-set(INSTALL_DIRECTORY_CODE_EXAMPLES "${CMAKE_HOME_DIRECTORY}/code-examples-bin")
-
-set(PUGIXML_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/externals/pugixml")
-set(EXPR_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/externals/expr")
-if(MSVC)
-    set(DIRENT_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/externals/dirent/win")
+if(${CMAKE_SYSTEM_NAME}
+   MATCHES
+   "Linux")
+    set(LINUX
+        true)
 else()
-    set(DIRENT_INCLUDE_DIR "")
+    set(LINUX
+        false)
 endif()
 
+if(NOT
+   (LINUX
+    OR APPLE
+    OR MINGW
+    OR MSVC))
+    message(FATAL_ERROR "Unrecognized platform therefore there isn't an installation directory. Stopping the cmake process.")
+endif()
 
-include_directories( ${PUGIXML_INCLUDE_DIR} ${EXPR_INCLUDE_DIR})
+# ############################### Loading common packages ############################################################
 
-set(USE_OSG True CACHE BOOL "If projects that depend on OpenSceneGraph should be compiled.")
-set(USE_OSI True CACHE BOOL "If code that depend on OSI should be compiled.")
-set(USE_SUMO True CACHE BOOL "If code that depend on SUMO should be compiled.")
-set(USE_GTEST True CACHE BOOL "If unit test suites based on googletest should be compiled.")
-set(DYN_PROTOBUF False CACHE BOOL "Set for dynamic linking of protobuf library (.so/.dll)")
-set(ENABLE_SANITIZERS False CACHE BOOL "Enable sanitizers (Only valid for Linux and Mac OS)")
+include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/common/color.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/common/locations.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/common/definitions.cmake)
 
+set_project_internal_paths()
+set_project_external_paths()
+set_project_os_specific_paths()
+set_project_includes()
+set_definitions()
 
-if (USE_OSG)
-  add_definitions(-D_USE_OSG)
-endif (USE_OSG)
+# ############################### Loading cloud packages ##########################################################
 
-if (USE_OSI)
-  add_definitions(-D_USE_OSI)
-endif (USE_OSI)
+set(FILE_STORAGE
+    "esmini") # "dropbox", "google", "esmini"  (limited GB/Day)
+set(MODEL_STORAGE
+    "esmini") # "dropbox", "google", "esmini"  (limited GB/Day)
 
-if (USE_SUMO)
-  add_definitions(-D_USE_SUMO)
-endif (USE_SUMO)
+include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/cloud/dropbox.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/cloud/esmini.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/cloud/googledrive.cmake)
 
-if (USE_GTEST)
-  add_definitions(-D_USE_GTEST)
-endif (USE_GTEST)
+if(${FILE_STORAGE}
+   STREQUAL
+   "dropbox")
+    set_dropbox_cloud_links()
+elseif(
+    ${FILE_STORAGE}
+    STREQUAL
+    "google")
+    set_googledrive_cloud_links()
+elseif(
+    ${FILE_STORAGE}
+    STREQUAL
+    "esmini")
+    set_esmini_cloud_links()
+else()
+    message(
+        "Unknown storage type: "
+        ${FILE_STORAGE})
+endif()
 
-if (DYN_PROTOBUF)
-  add_definitions(-D_DYN_PROTOBUF)
-  add_definitions(-DPROTOBUF_USE_DLLS)
-endif (DYN_PROTOBUF)
+# ############################### Downloading cloud packages #########################################################
 
-include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/rule/project_options.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/cloud/download.cmake)
 
+download(
+    osg
+    ${EXTERNALS_OSG_PATH}
+    ${EXTERNALS_OSG_OS_SPECIFIC_PATH}
+    ${OSG_PACKAGE_URL})
+download(
+    osi
+    ${EXTERNALS_OSI_PATH}
+    ${EXTERNALS_OSI_OS_SPECIFIC_PATH}
+    ${OSI_PACKAGE_URL})
+download(
+    sumo
+    ${EXTERNALS_SUMO_PATH}
+    ${EXTERNALS_SUMO_OS_SPECIFIC_PATH}
+    ${SUMO_PACKAGE_URL})
+if(NOT
+   (APPLE
+    OR MINGW))
+    download(
+        googletest
+        ${EXTERNALS_OSG_PATH}
+        ${EXTERNALS_OSG_OS_SPECIFIC_PATH}
+        ${OSG_PACKAGE_URL})
+endif()
+download(
+    models
+    ${MODELS_PATH}
+    ${RESOURCES_PATH}
+    ${MODELS_PACKAGE_URL})
+
+# ############################### Loading external packages ##########################################################
+
+include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/external/gtest.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/external/osg.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/external/osi.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/external/sumo.cmake)
+
+set_gtest_libs()
+set_osg_libs()
+set_osi_libs()
+set_sumo_libs()
+
+# ############################### Compiling targets ##################################################################
+
+include_directories(
+    ${EXTERNALS_PUGIXML_PATH}
+    ${EXTERNALS_EXPR_PATH})
 add_subdirectory(EnvironmentSimulator)
 
-if( NOT EXISTS "test/OSC-ALKS-scenarios/.git" )
-  execute_process(COMMAND git submodule update --init WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+# ############################### OTHERS #############################################################################
+
+if(NOT
+   EXISTS
+   "test/OSC-ALKS-scenarios/.git")
+    execute_process(
+        COMMAND git submodule update --init
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 endif()
 
 # Add variables to global scope, e.g. when esmini is used as submodule
-set(PUGIXML_INCLUDE_DIR ${PUGIXML_INCLUDE_DIR} CACHE INTERNAL "")
-set(EXPR_INCLUDE_DIR ${EXPR_INCLUDE_DIR} CACHE INTERNAL "")
+set(EXTERNALS_PUGIXML_PATH
+    ${EXTERNALS_PUGIXML_PATH}
+    CACHE INTERNAL
+          "")
+set(EXTERNALS_EXPR_PATH
+    ${EXTERNALS_EXPR_PATH}
+    CACHE INTERNAL
+          "")

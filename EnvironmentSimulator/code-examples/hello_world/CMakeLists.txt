@@ -1,7 +1,7 @@
 
 include_directories (
-  ${SCENARIOENGINE_DLL_INCLUDE_DIR}
-  ${COMMON_MINI_INCLUDE_DIR}
+  ${ESMINI_LIB_PATH}
+  ${COMMON_MINI_PATH}
 )
 
 set (TARGET hello_world)
@@ -23,6 +23,6 @@ foreach(file_path ${modules})
 
   set_target_properties ( ${module_name} PROPERTIES FOLDER ${CodeExamplesFolder}/${TARGET} )
 
-  install ( TARGETS ${module_name} DESTINATION ${INSTALL_DIRECTORY_CODE_EXAMPLES})
+  install ( TARGETS ${module_name} DESTINATION ${CODE_EXAMPLES_BIN_PATH})
 
 endforeach()

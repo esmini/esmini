@@ -1,8 +1,8 @@
 
 include_directories (
-  ${PUGIXML_INCLUDE_DIR}
-  ${COMMON_MINI_INCLUDE_DIR}
-  ${ROADMANAGER_INCLUDE_DIR}  
+  ${PUGIXML_INCLUDE_DIR}/pugixml
+  ${COMMON_MINI_PATH}
+  ${ROAD_MANAGER_PATH}
 )
 
 set ( SOURCES

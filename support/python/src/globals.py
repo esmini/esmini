@@ -138,7 +138,8 @@ ESMINI_COMPILERS = [
 ########################################################## FORMAT ############################################################
 
 ESMINI_CMAKE_FORMAT_INCLUDES = [
-    os.path.join(ESMINI_DIRECTORY_SUPPORT, "cmake")
+    os.path.join(ESMINI_DIRECTORY_ROOT, "CMakeLists.txt"),
+    os.path.join(ESMINI_DIRECTORY_SUPPORT, "cmake"),
 ]
 
 ESMINI_CMAKE_FORMAT_EXTENSION = ["CMakeLists.txt", ".cmake"]

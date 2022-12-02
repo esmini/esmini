@@ -1,7 +1,7 @@
 
 include_directories (
-  ${ROADMANAGER_DLL_INCLUDE_DIR}
-  ${COMMON_MINI_INCLUDE_DIR}
+  ${ESMINI_RM_LIB_PATH}
+  ${COMMON_MINI_PATH}
 )
 
 set (TARGET rm-basic)
@@ -23,4 +23,4 @@ target_link_libraries (
 	project_options
 )
 
-install ( TARGETS ${TARGET} DESTINATION "${INSTALL_DIRECTORY_CODE_EXAMPLES}")
+install ( TARGETS ${TARGET} DESTINATION "${CODE_EXAMPLES_BIN_PATH}")
