@@ -57,6 +57,8 @@ class OpenDrive:
                 base = child.attrib["base"]
                 if base == "xs:string":
                     base = "string"
+                elif base == "xs:double":
+                    base = "double"
                 data.update({"base":{base:self.parse_children(child,{})}})
 
             elif "sequence" in child.tag:
@@ -64,7 +66,7 @@ class OpenDrive:
 
             elif "enumeration" in child.tag:
                 value = child.attrib["value"]
-                value = value.replace(" ","_")
+                value = self.fix_non_legal_chars(value)
                 data.update({value:""})
 
             elif "element" in child.tag:
@@ -88,23 +90,34 @@ class OpenDrive:
 
     def replace_cpp_types(self,attribute):
         if attribute == "xs:string":
-            attribute = "string"
+            attribute = "std::string"
         elif attribute == "xs:double":
             attribute = "double"
-        elif attribute == "xs:interger":
+        elif attribute == "xs:integer":
             attribute = "int"
         elif attribute == "xs:float":
             attribute = "float"
+        elif attribute == "t_grEqZero":
+            attribute = "double"
+        elif attribute == "t_grZero":
+            attribute = "double"
         return attribute
 
+    def fix_non_legal_chars(self,string):
+        string = string.replace("/","")
+        string = string.replace(" ","_")
+        return string
 
     def generate_opendrive(self):
-        path=os.path.join(ESMINI_DIRECTORY_ROOT,"..","OpenDrive1_7_0")
+        opendrive_schema_path=os.path.join(ESMINI_DIRECTORY_ROOT,"..","OpenDrive1_7_0")
         files_to_generate =[
-            (os.path.join(path,"opendrive_17_core.xsd"),"Core"),
-            (os.path.join(path,"opendrive_17_road.xsd"),"Road"),
-            (os.path.join(path,"opendrive_17_lane.xsd"),"Lane"),
-            (os.path.join(path,"opendrive_17_junction.xsd"),"Junction")
+            (os.path.join(opendrive_schema_path,"opendrive_17_core.xsd"),"Core"),
+            (os.path.join(opendrive_schema_path,"opendrive_17_road.xsd"),"Road"),
+            (os.path.join(opendrive_schema_path,"opendrive_17_lane.xsd"),"Lane"),
+            (os.path.join(opendrive_schema_path,"opendrive_17_junction.xsd"),"Junction"),
+            (os.path.join(opendrive_schema_path,"opendrive_17_object.xsd"),"Object"),
+            (os.path.join(opendrive_schema_path,"opendrive_17_signal.xsd"),"Signal"),
+            (os.path.join(opendrive_schema_path,"opendrive_17_railroad.xsd"),"Railroad")
         ]
         for opendrive,output in files_to_generate:
             print("Parsing: ",output)

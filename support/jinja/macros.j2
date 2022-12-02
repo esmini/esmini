@@ -24,14 +24,17 @@
                 {%for key3,value3 in value2.items()-%}
                         {% if "sequence" in key3-%}
                             {%for key4,value4 in value3.items()-%}
-                                {{value4["type"]|indent(4,True)}} {{key4|indent(4,True)}}
+                                {{value4["type"]|indent(4,True)}} {{key4|indent(4,True)}};
                             {%endfor%}
                         {%endif-%}
                         {% if "attributes" in key3 -%}
-                            {{"protected:"|indent(4,True)}}
+                            {{"public:"|indent(4,True)}}
+                                {{generate_setter(value3)|indent(8,False)-}}
+                                {{generate_getter(value3)|indent(8,True)-}}
+                            {{"private:"|indent(4,True)}}
                             {%for key4,value4 in value3.items()-%}
-                                {{value4["type"]|indent(4,True)}} {{key4|indent(4,True)}}
-                            {%endfor%}
+                                {{value4["type"]|indent(8,True)}} {{key4|indent(4,True)}}_;
+                            {%endfor-%}
                         {%endif-%}
                 {%endfor-%}
             {%endif%}
@@ -40,6 +43,17 @@
 };
 {%endmacro%}
 
+{%macro generate_setter(dict)-%}
+    {%for key,value in dict.items()-%}
+void Set{{key}}({{value["type"]}} {{key}}) { {{key}}_ = {{key}}; }
+    {%endfor-%}
+{%endmacro-%}
+
+{%macro generate_getter(dict)-%}
+    {%for key,value in dict.items()-%}
+{{value["type"]}} Get{{key}}() { return {{key}}_; }
+    {%endfor-%}
+{%endmacro-%}
 
 {%macro generate_datastructs(data)%}
     {%for key,value in data.items()-%}
