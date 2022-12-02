@@ -35,7 +35,8 @@ class Start(object):
             if "openscenario" == command_list[2].name:
                 pass
             elif "opendrive" == command_list[2].name:
-                OpenDrive.generate_opendrive()
+                opendrive = OpenDrive()
+                opendrive.generate_opendrive()
         if "run" == command_list[1].name:
             run = Run()
             if "format" == command_list[2].name:

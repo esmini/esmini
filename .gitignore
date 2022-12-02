@@ -32,5 +32,5 @@ __pycache__
 compile_commands.json
 .cache/
 out/build/**
-
 EnvironmentSimulator/Libraries/esminiJS/build*/*
+support/generated

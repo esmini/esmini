@@ -1,13 +1,15 @@
 
 {%macro enum(key,value)%}
-enum class {{key[5:]}} {
+{{key}} {
     {%for key1,value1 in value.items()-%}
         {%for key2,value2 in value1.items()-%}
-            {%if loop.last -%}
-                {{key2|indent(4,True)}}
-            {%else-%}
-                {{key2|indent(4,True)}},
-            {%endif-%}
+            {%for key3,value3 in value2.items()-%}
+                {%if loop.last -%}
+                    {{key3|indent(4,True)}}
+                {%else-%}
+                    {{key3|indent(4,True)}},
+                {%endif-%}
+            {%endfor-%}
         {%endfor-%}
     {%endfor-%}
 };
@@ -15,19 +17,21 @@ enum class {{key[5:]}} {
 
 
 {%macro class(key,value)%}
-class {{key[6:]}} {
+{{key}} {
     {%for key1,value1 in value.items()-%}
         {%for key2,value2 in value1.items()-%}
             {%if value2 is iterable and value2 is not string%}
                 {%for key3,value3 in value2.items()-%}
-                        {% if "type" in key3 -%}
-                            {% if "xs:" in value3 -%}
-                                {{value3[3:]|indent(4,True)}} {{key2|indent(4,True)}};
-                            {% elif "t_" in value3 or "e_" in value3-%}
-                                {{value3[2:]|indent(4,True)}} {{key2|indent(4,True)}};
-                            {%else%}
-                                {{value3|indent(4,True)}} {{key2|indent(4,True)}};
-                            {%endif-%}
+                        {% if "sequence" in key3-%}
+                            {%for key4,value4 in value3.items()-%}
+                                {{value4["type"]|indent(4,True)}} {{key4|indent(4,True)}}
+                            {%endfor%}
+                        {%endif-%}
+                        {% if "attributes" in key3 -%}
+                            {{"protected:"|indent(4,True)}}
+                            {%for key4,value4 in value3.items()-%}
+                                {{value4["type"]|indent(4,True)}} {{key4|indent(4,True)}}
+                            {%endfor%}
                         {%endif-%}
                 {%endfor-%}
             {%endif%}
@@ -36,22 +40,14 @@ class {{key[6:]}} {
 };
 {%endmacro%}
 
-{%macro string(key,value)%}
-    string {{key[7:]}}
-{%endmacro%}
-
 
 {%macro generate_datastructs(data)%}
     {%for key,value in data.items()-%}
-        {% if "enum_" in key -%}
-            {{enum(key,value)}}
-        {%endif%}
-        {% if "class_" in key -%}
-            {{class(key,value)}}
+        {% if "enum class" in key -%}
+            {{enum(key,value)|indent(4,True)}}
+        {% elif "class" in key -%}
+            {{class(key,value)|indent(4,True)}}
         {%endif-%}
-        {% if "string_" in key%}
-            {{string(key,value)}}
-        {%endif%}
     {%endfor%}
 {%endmacro%}
 

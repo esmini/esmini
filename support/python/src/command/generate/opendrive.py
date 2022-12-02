@@ -2,68 +2,104 @@ from jinja2 import Environment,FileSystemLoader,select_autoescape
 import xml.etree.ElementTree as ET
 import json
 import os
-from support.python.src.globals import ESMINI_DIRECTORY_SUPPORT
+from support.python.src.globals import ESMINI_DIRECTORY_SUPPORT,ESMINI_DIRECTORY_ROOT
 
 
 class OpenDrive:
-    def generate_j2(data,output):
+    def generate_file(self,data,output):
         outputfolder = os.path.join(ESMINI_DIRECTORY_SUPPORT,"generated")
         if not os.path.exists(outputfolder):
             os.mkdir(outputfolder)
         output_file = os.path.join(outputfolder,output+".hpp")
 
-        #Dump dicts for testing/fault tracing
+        #Dump dict to json for testing/fault tracing
+        self.print_dict(output_file,data)
+
+        #Generate the hpp file
+        self.create_hpp_files(output_file,data)
+
+
+    def create_hpp_files(self,output_file,data):
+        template_folder =os.path.join(ESMINI_DIRECTORY_SUPPORT,"jinja")
+        template_file = "hpp_template.j2"
+        env = Environment(autoescape=select_autoescape(),loader=FileSystemLoader(template_folder),trim_blocks=True,lstrip_blocks=True)
+        template = env.get_template(template_file)
+        content = template.render(data)
+        with open(output_file,mode="w",encoding="utf-8") as message:
+             message.write(content)
+
+    def print_dict(self,output_file,data):
         with open(output_file+".json",mode="w",encoding="utf-8") as file:
                 json.dump(data,file,indent=4)
                 file.close()
 
-        template_file = os.path.join(ESMINI_DIRECTORY_SUPPORT,"jinja","hpp_template.j2")
-        env = Environment(autoescape=select_autoescape(),loader=FileSystemLoader(""),trim_blocks=True,lstrip_blocks=True)
-        template = env.get_template(template_file)
-        content = template.render(data)
-        with open(output_file,mode="w",encoding="utf-8") as message:
-            message.write(content)
-            print(f"generated file: {output}")
-
-
-    def parser(file,name):
+    def parser(self,file,name):
         parsed_data ={}
         tree = ET.parse(file)
         root = tree.getroot()
-        OpenDrive.parse_children(root,parsed_data)
+        self.parse_children(root,parsed_data)
         return {"name":name,"data":parsed_data}
 
 
-    def parse_children(parent,data=dict):
+    def parse_children(self,parent,data):
+        attributes_dict = {}
         for child in parent:
             if "complexType" in child.tag or "simpleType" in child.tag:
-                child_sub_dict = OpenDrive.parse_children(child,{})
+                child_sub_dict = self.parse_children(child,{})
                 name = child.attrib["name"]
                 if name.startswith("t_"):
-                    name = "class_"+name[2:]
+                    name = "class "+name
                 elif name.startswith("e_"):
-                    name = "enum_"+name[2:]
+                    name = "enum class "+name
                 data.update({name:child_sub_dict})
+
             elif "extension" in child.tag or "restriction" in child.tag:
                 base = child.attrib["base"]
                 if base == "xs:string":
                     base = "string"
-                data.update({"base":{base:OpenDrive.parse_children(child,{})}})
+                data.update({"base":{base:self.parse_children(child,{})}})
+
+            elif "sequence" in child.tag:
+                data.update({"sequence":self.parse_children(child,{})})
+
             elif "enumeration" in child.tag:
                 value = child.attrib["value"]
                 value = value.replace(" ","_")
                 data.update({value:""})
+
             elif "element" in child.tag:
-                data.update({child.attrib["name"]:child.attrib})
+                attributes = child.attrib
+                if len(attributes) > 1:
+                    attributes["type"] = self.replace_cpp_types(attributes["type"])
+                data.update({child.attrib["name"]:attributes})
+
             elif "attribute" in child.tag:
-                data.update({child.attrib["name"]:child.attrib})
+                attributes = child.attrib
+                if len(attributes) > 1:
+                    attributes["type"] = self.replace_cpp_types(attributes["type"])
+                attributes_dict.update({child.attrib["name"]:attributes})
+
             else:
-                OpenDrive.parse_children(child,data)
+                self.parse_children(child,data)
+        if len(attributes_dict) != 0:
+            data.update({"attributes": attributes_dict})
         return data
 
 
-    def generate_opendrive():
-        path=""
+    def replace_cpp_types(self,attribute):
+        if attribute == "xs:string":
+            attribute = "string"
+        elif attribute == "xs:double":
+            attribute = "double"
+        elif attribute == "xs:interger":
+            attribute = "int"
+        elif attribute == "xs:float":
+            attribute = "float"
+        return attribute
+
+
+    def generate_opendrive(self):
+        path=os.path.join(ESMINI_DIRECTORY_ROOT,"..","OpenDrive1_7_0")
         files_to_generate =[
             (os.path.join(path,"opendrive_17_core.xsd"),"Core"),
             (os.path.join(path,"opendrive_17_road.xsd"),"Road"),
@@ -71,7 +107,8 @@ class OpenDrive:
             (os.path.join(path,"opendrive_17_junction.xsd"),"Junction")
         ]
         for opendrive,output in files_to_generate:
-            print("generating: ",output)
+            print("Parsing: ",output)
             with open(opendrive,mode="r",encoding="utf-8") as input:
-                data = OpenDrive.parser(input,output)
-            OpenDrive.generate_j2(data,output)
+                data = self.parser(input,output)
+            self.generate_file(data,output)
+            print(f"Generated: {output}")
