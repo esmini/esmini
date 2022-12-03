@@ -3,10 +3,10 @@
 <OpenSCENARIO>
     <FileHeader revMajor="1" revMinor="1" date="2022-11-15T10:00:00" description="Demonstrate ALKS controller" author="esmini-team"/>
     <ParameterDeclarations>
-        <ParameterDeclaration name="EgoSpeed" parameterType="double" value="20"/>
-        <ParameterDeclaration name="EgoS" parameterType="double" value="30"/>
-        <ParameterDeclaration name="PedestrianSpeed" parameterType="double" value="1.4"/>
-        <ParameterDeclaration name="PedestrianS" parameterType="double" value="114.9"/>
+        <ParameterDeclaration name="EgoSpeed" parameterType="double" value="16"/>
+        <ParameterDeclaration name="EgoS" parameterType="double" value="32"/>
+        <ParameterDeclaration name="PedestrianSpeed" parameterType="double" value="1.0"/>
+        <ParameterDeclaration name="PedestrianS" parameterType="double" value="110"/>
     </ParameterDeclarations>
     <CatalogLocations>
         <VehicleCatalog>
@@ -66,7 +66,9 @@
                         </LongitudinalAction>
                     </PrivateAction>
                     <PrivateAction>
-                        <ActivateControllerAction longitudinal="true" lateral="false"/>
+                        <ControllerAction>
+                            <ActivateControllerAction longitudinal="true" lateral="false"/>
+                        </ControllerAction>
                     </PrivateAction>
                 </Private>
                 <Private entityRef="Pedestrian">
@@ -79,7 +81,7 @@
                                         <Polyline>
                                             <Vertex>
                                                 <Position>
-                                                    <WorldPosition x="${$PedestrianS}" y="-5.0"/>
+                                                    <WorldPosition x="${$PedestrianS}" y="-4.0"/>
                                                 </Position>
                                             </Vertex>
                                             <Vertex>
@@ -103,7 +105,9 @@
                         </RoutingAction>
                     </PrivateAction>
                     <PrivateAction>
-                        <ActivateControllerAction longitudinal="true" lateral="true"/>
+                        <ControllerAction>
+                            <ActivateControllerAction longitudinal="true" lateral="true"/>
+                        </ControllerAction>
                     </PrivateAction>
                 </Private>
             </Actions>

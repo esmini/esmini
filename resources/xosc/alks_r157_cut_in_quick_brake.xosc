@@ -30,7 +30,7 @@
                 <Controller name="ALKS_R157SM_Controller">
                     <Properties>
                         <Property name="model" value="Regulation"/>
-                        <Property name="logLevel" value="1"/>
+                        <Property name="logLevel" value="2"/>
                         <Property name="cruise" value="true"/>
                     </Properties>
                 </Controller>

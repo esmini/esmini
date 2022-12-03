@@ -30,11 +30,12 @@
                 <Controller name="ALKS_R157SM_Controller">
                     <Properties>
                         <Property name="mode" value="override"/>
-                        <Property name="model" value="ReferenceDriver"/>
+                        <Property name="model" value="Regulation"/>
                         <Property name="logLevel" value="2"/>
                         <Property name="cruise" value="false"/>
                         <Property name="cutInPerceptionDelayMode" value="Time"/>
                         <Property name="fullStop" value="true"/>
+                        <Property name="lateralTrigDistance" value="0.5"/>
                         <Property name="aebTTC" value="1.2"/>
                     </Properties>
                 </Controller>
@@ -66,7 +67,9 @@
                         </LongitudinalAction>
                     </PrivateAction>
                     <PrivateAction>
-                        <ActivateControllerAction longitudinal="true" lateral="false"/>
+                        <ControllerAction>
+                            <ActivateControllerAction longitudinal="true" lateral="false"/>
+                        </ControllerAction>
                     </PrivateAction>
                 </Private>
                 <Private entityRef="TargetCutIn">
@@ -90,7 +93,9 @@
                         </LongitudinalAction>
                     </PrivateAction>
                     <PrivateAction>
-                        <ActivateControllerAction longitudinal="true" lateral="true"/>
+                        <ControllerAction>
+                            <ActivateControllerAction longitudinal="true" lateral="true"/>
+                        </ControllerAction>
                     </PrivateAction>
                 </Private>
             </Actions>

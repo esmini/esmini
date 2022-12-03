@@ -24,7 +24,7 @@
   * Rough logic flow:
   *   1. Find vehicle to focus on
   *      - consider closest lead vehicle AND
-  *      - any vehicles cutting in (CheckLateralSafety()) from neighbor lanes
+  *      - any vehicles cutting in (CheckSafety()) from neighbor lanes
   *      - pick the one which is closest ahead (probably too simple)
   *   2. Check if relation to vehicle in focus is critical (CheckCritical())
   *   3. If critical, react by adapting own speed (ReactCritical())
@@ -130,7 +130,7 @@ namespace scenarioengine
             int Process(ObjectInfo& info);
 
             // Returns true if object is not in or intruding the ego lane, else false
-            virtual bool CheckLateralSafety(ObjectInfo* info) { return false; }
+            virtual bool CheckSafety(ObjectInfo* info) { return false; }
 
             // Returns true if critical situation and intervention needed
             virtual bool CheckCritical() { return false; };
@@ -193,7 +193,7 @@ namespace scenarioengine
         public:
             Regulation() : Model(ModelType::Regulation, 0.35, 6.0, 46.0) {}
 
-            bool CheckLateralSafety(ObjectInfo* info) override;
+            bool CheckSafety(ObjectInfo* info) override;
             bool CheckCritical() override;
             double ReactCritical() override;
             double MinDist() override;
@@ -259,12 +259,9 @@ namespace scenarioengine
             };
             static std::map<Phase, std::string> PhaseName;
 
-            class AEB
+            struct AEB
             {
-            public:
-                AEB(double ttc_critical_aeb) : ttc_critical_aeb_(ttc_critical_aeb),
-                    acc_(0.0), active_(false) {}
-                AEB() : AEB(1.5) {}
+                AEB() : ttc_critical_aeb_(1.5) { Reset(); }
 
                 void Reset()
                 {
@@ -272,9 +269,28 @@ namespace scenarioengine
                     active_ = false;
                 }
 
-                bool active_;
                 double ttc_critical_aeb_;
+                bool active_;
                 double acc_;
+            };
+
+            struct LateralDistTrigger
+            {
+                LateralDistTrigger() : threshold_(0.0) { Reset(); }
+                bool Enabled() { return threshold_ > SMALL_NUMBER; }
+                bool Active() { return active_; }
+                double GetDistance() { return obj_ ? abs(obj_->pos_.GetT() - t0_) : 0.0; }
+                void Reset()
+                {
+                    active_ = false;
+                    obj_ = nullptr;
+                    t0_ = 0.0;
+                }
+
+                double threshold_;
+                bool active_;
+                Object* obj_;
+                double t0_;  // road coordinate t value at detection time
             };
 
             // set look ahead distance to 100m
@@ -284,7 +300,7 @@ namespace scenarioengine
                 perception_dist_(0.72), perception_time_(0.4), wandering_threshold_(0.375), wrap_tolerance_(0.2),
                 pedestrian_risk_eval_time_(0.4) {}
 
-            bool CheckLateralSafety(ObjectInfo* info) override;
+            bool CheckSafety(ObjectInfo* info) override;
             bool CheckCritical() override;
             double ReactCritical() override;
             double MinDist() override;
@@ -297,6 +313,8 @@ namespace scenarioengine
                 SetScenarioType(ScenarioType::None);
             }
             void UpdateAEB(Vehicle* ego, ObjectInfo* info, double dt);
+            void UpdateLateralDistTrigger(ObjectInfo* info);
+            bool EvaluateLateralDistTrigger();
 
             double min_jerk_;
             double release_deceleration_;  // deceleration when not stepping on the accelerator pedal(I think)
@@ -312,6 +330,7 @@ namespace scenarioengine
             double wrap_tolerance_;
             double c_lane_offset_;
             AEB aeb_;
+            LateralDistTrigger lateral_dist_trigger_;
 
             bool CheckPerception()
             {
@@ -368,7 +387,7 @@ namespace scenarioengine
             RSS() : Model(ModelType::RSS, 0.75, 0.774 * 9.81, 100.0),
                 min_jerk_(12.65), mu_(0.3) {}
 
-            bool CheckLateralSafety(ObjectInfo* info) override;
+            bool CheckSafety(ObjectInfo* info) override;
             bool CheckCritical() override;
             double ReactCritical() override;
             double MinDist() override;
@@ -384,7 +403,7 @@ namespace scenarioengine
                 br_min_(4.0), br_max_(6.0), bl_(7.0), ar_(2.0), margin_dist_(2.0), margin_safe_dist_(2.0),
                 cfs_(0.0), pfs_(0.0) {}
 
-            bool CheckLateralSafety(ObjectInfo* info) override;
+            bool CheckSafety(ObjectInfo* info) override;
             bool CheckCritical() override;
             double ReactCritical() override;
             double MinDist() override;

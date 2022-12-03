@@ -173,6 +173,9 @@
                 <ParameterDeclaration name="PedestrianRiskEvaluationTime" parameterType="double" value="0.4" />
                 <!-- aebTTC: TTC at which to trig AEB (ref driver only) -->
                 <ParameterDeclaration name="AEBTTC" parameterType="double" value="1.4" />
+                <!-- lateralTrigDistance: Trig cut-in when obj moved this lateral distance towards Ego (ref driver only) -->
+                <!-- set to > 0 to use instead of standard r157 ref driver cut-in trig condition -->
+                <ParameterDeclaration name="LateralTrigDistance" parameterType="double" value="0.0" />
             </ParameterDeclarations>
             <Properties>
                 <Property name="mode" value="$Mode" />
@@ -184,6 +187,7 @@
                 <Property name="alwaysTrigOnScenario"  value="$AlwaysTrigOnScenario" />
                 <Property name="pedestrianRiskEvaluationTime"  value="$PedestrianRiskEvaluationTime" />
                 <Property name="aebTTC"  value="$AEBTTC" />
+                <Property name="lateralTrigDistance"  value="$LateralTrigDistance" />
             </Properties>
         </Controller>        
         <Controller name="UDPDriverController">

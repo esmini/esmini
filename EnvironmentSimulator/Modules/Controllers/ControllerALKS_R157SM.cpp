@@ -108,6 +108,13 @@ ControllerALKS_R157SM::ControllerALKS_R157SM(InitArgs* args) : model_(0), entiti
             }
             LOG("ALKS_R157SM AEB TTC: %.2f", ref_driver->aeb_.ttc_critical_aeb_);
 
+            if (args->properties->ValueExists("lateralTrigDistance"))
+            {
+                ref_driver->lateral_dist_trigger_.threshold_ = strtod(args->properties->GetValueStr("lateralTrigDistance"));
+            }
+            LOG("ALKS_R157SM AEB LateralTrigDistance: %.2f (%s)", ref_driver->lateral_dist_trigger_.threshold_,
+                ref_driver->lateral_dist_trigger_.Enabled() ? "enabled" : "disabled");
+
             model_ = (ControllerALKS_R157SM::Model*) ref_driver;
         }
         else if (args->properties->GetValueStr("model") == "RSS")
@@ -246,7 +253,7 @@ int ControllerALKS_R157SM::Model::Detect()
             continue;
         }
 
-        if (!CheckLateralSafety(&tmp_obj_info))
+        if (!CheckSafety(&tmp_obj_info))
         {
             // Check whether it is the closest of potential threats
             if (tmp_obj_info.dist_long < candidate_obj_info.dist_long || // closest so far
@@ -545,11 +552,17 @@ double ControllerALKS_R157SM::Regulation::MinDist()
 }
 
 //   Return true if safe
-bool ControllerALKS_R157SM::Regulation::CheckLateralSafety(ObjectInfo* info)
+bool ControllerALKS_R157SM::Regulation::CheckSafety(ObjectInfo* info)
 {
     if (info->obj == nullptr || info->dist_lat == LARGE_NUMBER)
     {
         return true;
+    }
+
+    if (info->dLaneId == 0)   // same lane
+    {
+        info->action = ScenarioType::Deceleration;
+        return false;
     }
 
     // Check if car's front wheel has moved 0.3 meter inside own vehicle's lane
@@ -581,6 +594,7 @@ bool ControllerALKS_R157SM::Regulation::CheckLateralSafety(ObjectInfo* info)
         // Check if wheel is 0.3 meter inside Ego lane
         if (offset > lane_width / 2.0 + 0.3)
         {
+            info->action = ScenarioType::CutIn;
             return false;
         }
     }
@@ -645,12 +659,46 @@ void ControllerALKS_R157SM::ReferenceDriver::UpdateAEB(Vehicle* ego, ObjectInfo*
     }
 }
 
-bool ControllerALKS_R157SM::ReferenceDriver::CheckLateralSafety(ObjectInfo* info)
+void ControllerALKS_R157SM::ReferenceDriver::UpdateLateralDistTrigger(ObjectInfo* info)
+{
+    if (info->obj == nullptr ||
+        info->dv_t < SMALL_NUMBER) // moving away from ego lateral position
+    {
+        if (lateral_dist_trigger_.active_)
+        {
+            R157_LOG(2, "LateralDistanceTrigger deactivated");
+            lateral_dist_trigger_.Reset();
+        }
+        return;
+    }
+
+    if (info->obj != lateral_dist_trigger_.obj_)
+    {
+        R157_LOG(2, "LateralDistanceTrigger activated on %s", info->obj->GetName().c_str());
+        lateral_dist_trigger_.obj_ = info->obj;
+        lateral_dist_trigger_.active_ = true;
+        lateral_dist_trigger_.t0_ = info->obj->pos_.GetT();
+    }
+}
+
+bool ControllerALKS_R157SM::ReferenceDriver::EvaluateLateralDistTrigger()
+{
+    if (lateral_dist_trigger_.active_ == false || lateral_dist_trigger_.obj_ == nullptr)
+    {
+        return false;
+    }
+
+    return abs(lateral_dist_trigger_.obj_->pos_.GetT() - lateral_dist_trigger_.t0_) > lateral_dist_trigger_.threshold_;
+}
+
+bool ControllerALKS_R157SM::ReferenceDriver::CheckSafety(ObjectInfo* info)
 {
     if (info->obj == nullptr || info->dist_lat == LARGE_NUMBER)
     {
         return true;
     }
+
+    UpdateLateralDistTrigger(info);
 
     // Calculate lane offset of object center, transform OpenSCENARIO reference point
     c_lane_offset_ = info->obj->pos_.GetOffset() +
@@ -678,9 +726,11 @@ bool ControllerALKS_R157SM::ReferenceDriver::CheckLateralSafety(ObjectInfo* info
     }
     else
     {
-
-        if (-SIGN(info->dLaneId) * c_lane_offset_ > wandering_threshold_ && // check distance at the side facing ego
-            SIGN(info->dv_t) == 1) // moving towards ego lane
+        if (lateral_dist_trigger_.Enabled() &&
+            EvaluateLateralDistTrigger() == true ||
+            !lateral_dist_trigger_.Enabled() &&
+            info->dv_t > 0 && // moving towards ego lane
+            -SIGN(info->dLaneId) * c_lane_offset_ > wandering_threshold_) // check distance at the side facing ego
         {
             info->action = ScenarioType::CutIn;
             return false;
@@ -705,20 +755,41 @@ bool ControllerALKS_R157SM::ReferenceDriver::CheckPerceptionCutIn()
             timer_ = GetPedestrianRiskEvaluationTime();
             SetPhase(Phase::PERCEIVE);  // always consider pedestrians moving laterally towards ego
         }
-        else if (-SIGN(object_in_focus_.dLaneId) * c_lane_offset_ > wandering_threshold_)
+        else
         {
-            // Establish additional lateral perception distance
-            if (cut_in_perception_delay_mode_ == CutInPerceptionDelayMode::DIST)
+            bool trig = false;
+            if (lateral_dist_trigger_.Enabled())
             {
-                perception_dist_ = 0.72;    // ALKS Reg 157 3.4.1 default
+                if (EvaluateLateralDistTrigger() == true)
+                {
+                    R157_LOG(2, "Trig perception on lateral distance: %.2f (>%.2f)",
+                        lateral_dist_trigger_.GetDistance(), lateral_dist_trigger_.threshold_);
+                    trig = true;
+                }
             }
-            else if (cut_in_perception_delay_mode_ == CutInPerceptionDelayMode::TIME)
+            else
             {
-                // Calculate perception distance based on 0.4 seconds delay instead
-                timer_ = perception_time_;
+                if (-SIGN(object_in_focus_.dLaneId) * c_lane_offset_ > wandering_threshold_)
+                {
+                    trig = true;
+                }
             }
 
-            SetPhase(Phase::PERCEIVE);
+            if (trig)
+            {
+                // Establish additional lateral perception distance
+                if (cut_in_perception_delay_mode_ == CutInPerceptionDelayMode::DIST)
+                {
+                    perception_dist_ = 0.72;    // ALKS Reg 157 3.4.1 default
+                }
+                else if (cut_in_perception_delay_mode_ == CutInPerceptionDelayMode::TIME)
+                {
+                    // Calculate perception distance based on 0.4 seconds delay instead
+                    timer_ = perception_time_;
+                }
+
+                SetPhase(Phase::PERCEIVE);
+            }
         }
     }
     else if (GetPhase() == Phase::PERCEIVE)
@@ -772,8 +843,11 @@ bool ControllerALKS_R157SM::ReferenceDriver::CheckPerceptionCutOut()
 {
     if (GetPhase() == Phase::INACTIVE)
     {
-        SetPhase(Phase::PERCEIVE);
-        timer_ = perception_time_;
+        if (object_in_focus_.dv_s > SMALL_NUMBER)
+        {
+            SetPhase(Phase::PERCEIVE);
+            timer_ = perception_time_;
+        }
     }
     else if (GetPhase() == Phase::PERCEIVE)
     {
@@ -945,11 +1019,6 @@ std::string ControllerALKS_R157SM::ReferenceDriver::Phase2Str(Phase phase)
 
 bool ControllerALKS_R157SM::ReferenceDriver::CheckCritical()
 {
-    if (object_in_focus_.dv_s < SMALL_NUMBER && object_in_focus_.ttc > critical_ttc_)
-    {
-        return false;
-    }
-
     if (GetPhase() == Phase::INACTIVE || GetPhase() == Phase::PERCEIVE)
     {
         if (CheckPerception())
@@ -1054,15 +1123,16 @@ double ControllerALKS_R157SM::ReferenceDriver::MinDist()
     return min_dist;
 }
 
-bool ControllerALKS_R157SM::RSS::CheckLateralSafety(ObjectInfo* info)
+bool ControllerALKS_R157SM::RSS::CheckSafety(ObjectInfo* info)
 {
     if (info->obj == nullptr || info->dist_lat == LARGE_NUMBER)
     {
         return true;
     }
 
-    if (info->dist_lat < SMALL_NUMBER)
+    if (info->dist_lat < SMALL_NUMBER || info->dLaneId == 0)
     {
+        info->action = ScenarioType::Deceleration;
         return false;
     }
 
@@ -1071,10 +1141,11 @@ bool ControllerALKS_R157SM::RSS::CheckLateralSafety(ObjectInfo* info)
         (2.0 * cut_in_lat + max_acc_lat_ * rt_) * rt_ / 2.0) +
         pow(cut_in_lat + max_acc_lat_ * rt_, 2) / (2 * max_acc_lat_);
 
-    R157_LOG(3, "CheckLateralSafety: dist_lat % .2f d_safe_rss_lat %.2f", info->dist_lat, d_safe_rss_lat);
+    R157_LOG(3, "CheckSafety: dist_lat % .2f d_safe_rss_lat %.2f", info->dist_lat, d_safe_rss_lat);
 
     if (abs(info->dist_lat) < d_safe_rss_lat)
     {
+        info->action = ScenarioType::CutIn;
         return false;
     }
 
@@ -1221,11 +1292,17 @@ double ControllerALKS_R157SM::FSM::CFS(double dist, double speed_rear, double sp
     }
 }
 
-bool ControllerALKS_R157SM::FSM::CheckLateralSafety(ObjectInfo* info)
+bool ControllerALKS_R157SM::FSM::CheckSafety(ObjectInfo* info)
 {
     if (info->obj == nullptr || info->dist_lat == LARGE_NUMBER)
     {
         return true;
+    }
+
+    if (info->dLaneId == 0)   // same lane
+    {
+        info->action = ScenarioType::Deceleration;
+        return false;
     }
 
     if (info->dist_lat > -SMALL_NUMBER)
@@ -1248,6 +1325,7 @@ bool ControllerALKS_R157SM::FSM::CheckLateralSafety(ObjectInfo* info)
         }
     }
 
+    info->action = ScenarioType::CutIn;
     return false;
 }
 
