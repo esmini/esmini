@@ -39,27 +39,27 @@ set(ENABLE_INCLUDE_WHAT_YOU_USE
     CACHE BOOL
           "Enable iwyu")
 
-set(ENABLE_OSG
+set(USE_OSG
     ON
     CACHE BOOL
           "If projects that depend on OpenSceneGraph should be compiled.")
 
-set(ENABLE_OSI
+set(USE_OSI
     ON
     CACHE BOOL
           "If code that depend on OSI should be compiled.")
 
-set(ENABLE_SUMO
+set(USE_SUMO
     ON
     CACHE BOOL
           "If code that depend on SUMO should be compiled.")
 
-set(ENABLE_GTEST
+set(USE_GTEST
     ON
     CACHE BOOL
           "If unit test suites based on googletest should be compiled.")
 
-set(ENABLE_DYN_PROTOBUF
+set(DYN_PROTOBUF
     OFF
     CACHE BOOL
           "Set for dynamic linking of protobuf library (.so/.dll)")
