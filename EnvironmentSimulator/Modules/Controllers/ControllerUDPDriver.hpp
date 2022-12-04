@@ -117,7 +117,7 @@ namespace scenarioengine
 
 		static const char* GetTypeNameStatic() { return CONTROLLER_UDP_DRIVER_TYPE_NAME; }
 		virtual const char* GetTypeName() { return GetTypeNameStatic(); }
-		static const int GetTypeStatic() { return Controller::Type::CONTROLLER_TYPE_UDP_DRIVER; }
+		static int GetTypeStatic() { return Controller::Type::CONTROLLER_TYPE_UDP_DRIVER; }
 		virtual int GetType() { return GetTypeStatic(); }
 
 	private:

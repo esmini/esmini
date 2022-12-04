@@ -35,13 +35,12 @@ double SinusoidalTransition::GetHeading()
 
 Controller* scenarioengine::InstantiateControllerSloppyDriver(void* args)
 {
-	Controller::InitArgs* initArgs = (Controller::InitArgs*)args;
+	Controller::InitArgs* initArgs = static_cast<Controller::InitArgs*>(args);
 
 	return new ControllerSloppyDriver(initArgs);
 }
 
-ControllerSloppyDriver::ControllerSloppyDriver(InitArgs* args) : sloppiness_(0.5), time_(0),
-	Controller(args)
+ControllerSloppyDriver::ControllerSloppyDriver(InitArgs* args) : Controller(args), sloppiness_(0.5), time_(0)
 {
 	if (args->properties->ValueExists("sloppiness"))
 	{
@@ -76,12 +75,12 @@ void ControllerSloppyDriver::Step(double timeStep)
 		if (speedTimer_.Expired(time_))
 		{
 			// restart timer - 50% variation
-			double timerValue = speedTimerAverage_ * (1.0 + (1.0 * (SE_Env::Inst().GetGenerator())()) / ((SE_Env::Inst().GetGenerator()).max() - 0.5));
+			double timerValue = speedTimerAverage_ * (1.0 + (1.0 * static_cast<double>((SE_Env::Inst().GetGenerator())())) / (static_cast<double>((SE_Env::Inst().GetGenerator()).max()) - 0.5));
 			speedTimer_.Start(time_, timerValue);
 
 			// target speed +/- 35%
 			initSpeed_ = referenceSpeed_ * targetFactor_;
-			targetFactor_ = 1 + 0.7*sloppiness_ * MIN(sloppiness_, 1.0) * (1.0 * (SE_Env::Inst().GetGenerator())() / (SE_Env::Inst().GetGenerator()).max() - 0.5);
+			targetFactor_ = 1 + 0.7*sloppiness_ * MIN(sloppiness_, 1.0) * (1.0 * static_cast<double>((SE_Env::Inst().GetGenerator())()) / (static_cast<double>((SE_Env::Inst().GetGenerator()).max()) - 0.5));
 		}
 
 		double steplen = 0;
@@ -121,13 +120,13 @@ void ControllerSloppyDriver::Step(double timeStep)
 		{
 			// max lateral displacement is about half lane width (7/2)
 			tFuzz0 = tFuzzTarget;
-			tFuzzTarget = 5.0 * sloppiness_ * MIN(sloppiness_, 1.0) * (1.0 * (SE_Env::Inst().GetGenerator())() / (SE_Env::Inst().GetGenerator()).max() - 0.5);
+			tFuzzTarget = 5.0 * sloppiness_ * MIN(sloppiness_, 1.0) * (1.0 * static_cast<double>((SE_Env::Inst().GetGenerator())()) / (static_cast<double>((SE_Env::Inst().GetGenerator()).max()) - 0.5));
 
 			// restart timer - 50% variation
-			double timerValue = lateralTimerAverage_ * (1.0 + (1.0 * (SE_Env::Inst().GetGenerator())() / (SE_Env::Inst().GetGenerator()).max() - 0.5));
+			double timerValue = lateralTimerAverage_ * (1.0 + (1.0 * static_cast<double>((SE_Env::Inst().GetGenerator())()) / (static_cast<double>((SE_Env::Inst().GetGenerator()).max()) - 0.5)));
 			lateralTimer_.Start(time_, timerValue);
 		}
-		double h_error;
+		double h_error{};
 		if (mode_ == Mode::MODE_OVERRIDE)
 		{
 			h_error = object_->pos_.GetHRelative();
@@ -138,10 +137,10 @@ void ControllerSloppyDriver::Step(double timeStep)
 		}
 
 		// Normalize h_error to [-PI, PI]
-		h_error = h_error > M_PI ? h_error -= 2 * M_PI : h_error;
+		h_error > M_PI ? h_error -= 2 * M_PI : h_error; // TODO: @Emil to check
 
 		double tFuzz = tFuzz0 + (tFuzzTarget - tFuzz0) * lateralTimer_.Elapsed(time_) / lateralTimer_.duration_;
-		double lat_error = lat_error = currentT_ + tFuzz;
+		double lat_error = currentT_ + tFuzz;
 
 		// Adjust lane offset for driving direction and tweak these to tune performance
 		double lat_constant = -0.02;
@@ -202,4 +201,6 @@ void ControllerSloppyDriver::Activate(ControlDomains domainMask)
 
 void ControllerSloppyDriver::ReportKeyEvent(int key, bool down)
 {
+	(void)key;
+	(void)down;
 }

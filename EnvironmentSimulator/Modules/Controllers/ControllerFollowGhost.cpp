@@ -29,13 +29,13 @@ using namespace scenarioengine;
 
 Controller* scenarioengine::InstantiateControllerFollowGhost(void* args)
 {
-	Controller::InitArgs* initArgs = (Controller::InitArgs*)args;
+	Controller::InitArgs* initArgs = static_cast<Controller::InitArgs*>(args);
 
 	return new ControllerFollowGhost(initArgs);
 }
 
 ControllerFollowGhost::ControllerFollowGhost(InitArgs* args) :
-	follow_mode_(FollowMode::FOLLOW_MODE_TIME), Controller(args)
+	Controller(args), follow_mode_(FollowMode::FOLLOW_MODE_TIME)
 {
 	if (args->properties->ValueExists("headstartTime"))
 	{
@@ -124,9 +124,9 @@ void ControllerFollowGhost::Step(double timeStep)
 
 	if (ret_val != 0)
 	{
-		point.x = (float)object_->pos_.GetX();
-		point.y = (float)object_->pos_.GetY();
-		point.z = (float)object_->pos_.GetZ();
+		point.x = static_cast<float>(object_->pos_.GetX());
+		point.y = static_cast<float>(object_->pos_.GetY());
+		point.z = static_cast<float>(object_->pos_.GetZ());
 		point.speed = 0;
 	}
 	else if(follow_mode_ == FollowMode::FOLLOW_MODE_TIME)
@@ -210,5 +210,6 @@ void ControllerFollowGhost::Activate(ControlDomains domainMask)
 
 void ControllerFollowGhost::ReportKeyEvent(int key, bool down)
 {
-
+	(void)key;
+	(void)down;
 }

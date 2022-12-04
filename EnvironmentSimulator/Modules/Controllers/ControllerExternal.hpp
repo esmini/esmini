@@ -36,7 +36,7 @@ namespace scenarioengine
 
 		static const char* GetTypeNameStatic() { return CONTROLLER_EXTERNAL_TYPE_NAME; }
 		virtual const char* GetTypeName() { return GetTypeNameStatic(); }
-		static const int GetTypeStatic() { return CONTROLLER_TYPE_EXTERNAL; }
+		static int GetTypeStatic() { return CONTROLLER_TYPE_EXTERNAL; }
 		virtual int GetType() { return GetTypeStatic(); }
 
 		void Init();

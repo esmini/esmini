@@ -22,12 +22,12 @@ using namespace scenarioengine;
 
 Controller* scenarioengine::InstantiateControllerInteractive(void* args)
 {
-	Controller::InitArgs* initArgs = (Controller::InitArgs*)args;
+	Controller::InitArgs* initArgs = static_cast<Controller::InitArgs*>(args);
 
 	return new ControllerInteractive(initArgs);
 }
 
-ControllerInteractive::ControllerInteractive(InitArgs* args) : steering_rate_(4.0), speed_factor_(1.0), Controller(args)
+ControllerInteractive::ControllerInteractive(InitArgs* args) : Controller(args), steering_rate_(4.0), speed_factor_(1.0)
 {
 	if (args && args->properties)
 	{

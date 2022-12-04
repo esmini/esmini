@@ -28,7 +28,7 @@ namespace scenarioengine
 
 		static const char* GetTypeNameStatic() { return CONTROLLER_ACC_TYPE_NAME; }
 		virtual const char* GetTypeName() { return GetTypeNameStatic(); }
-		static const int GetTypeStatic() { return CONTROLLER_TYPE_ACC; }
+		static int GetTypeStatic() { return CONTROLLER_TYPE_ACC; }
 		virtual int GetType() { return GetTypeStatic(); }
 
 		void Init();
@@ -39,11 +39,11 @@ namespace scenarioengine
 
 	private:
 		vehicle::Vehicle vehicle_;
-		double timeGap_;  // target headway time
 		bool active_;
-		bool setSpeedSet_;
+		double timeGap_;  // target headway time
 		double setSpeed_;
 		double currentSpeed_;
+		bool setSpeedSet_;
 	};
 
 	Controller* InstantiateControllerACC(void* args);

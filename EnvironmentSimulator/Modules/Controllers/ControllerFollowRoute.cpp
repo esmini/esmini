@@ -27,12 +27,12 @@ using namespace scenarioengine;
 
 Controller *scenarioengine::InstantiateControllerFollowRoute(void *args)
 {
-	Controller::InitArgs *initArgs = (Controller::InitArgs *)args;
+	Controller::InitArgs *initArgs = static_cast<Controller::InitArgs*>(args);
 
 	return new ControllerFollowRoute(initArgs);
 }
 
-ControllerFollowRoute::ControllerFollowRoute(InitArgs *args) : testMode_(false), Controller(args)
+ControllerFollowRoute::ControllerFollowRoute(InitArgs *args) : Controller(args), testMode_(false)
 {
 	if (args->properties)
 	{
@@ -89,14 +89,14 @@ void ControllerFollowRoute::Step(double timeStep)
 	}
 
 	// Check if all waypoints have been passed
-	if (currentWaypointIndex_ >= waypoints_.size())
+	if (static_cast<unsigned int>(currentWaypointIndex_) >= waypoints_.size())
 	{
 		Deactivate();
 		return;
 	}
 
 	roadmanager::Position vehiclePos = object_->pos_;
-	roadmanager::Position nextWaypoint = waypoints_[currentWaypointIndex_];
+	roadmanager::Position nextWaypoint = waypoints_[static_cast<unsigned int>(currentWaypointIndex_)];
 
 	bool sameRoad = nextWaypoint.GetTrackId() == vehiclePos.GetTrackId();
 
@@ -141,6 +141,8 @@ void ControllerFollowRoute::Activate(ControlDomains domainMask)
 
 void ControllerFollowRoute::ReportKeyEvent(int key, bool down)
 {
+	(void)key;
+	(void)down;
 }
 
 
@@ -155,7 +157,7 @@ void ControllerFollowRoute::UpdateWaypoints(roadmanager::Position vehiclePos, ro
 		currentWaypointIndex_++;
 		if (nextWaypoint.GetTrackId() == waypoints_.back().GetTrackId())
 		{
-			bool scenarioWaypointsLeft = scenarioWaypointIndex_ < object_->pos_.GetRoute()->scenario_waypoints_.size() - 1;
+			bool scenarioWaypointsLeft = static_cast<unsigned int>(scenarioWaypointIndex_) < object_->pos_.GetRoute()->scenario_waypoints_.size() - 1;
 			if (scenarioWaypointsLeft)
 			{
 				scenarioWaypointIndex_++;
@@ -167,7 +169,7 @@ void ControllerFollowRoute::UpdateWaypoints(roadmanager::Position vehiclePos, ro
 		}
 
 		object_->pos_.GetRoute()->minimal_waypoints_.clear();
-		object_->pos_.GetRoute()->minimal_waypoints_ = {vehiclePos, waypoints_[currentWaypointIndex_]};
+		object_->pos_.GetRoute()->minimal_waypoints_ = {vehiclePos, waypoints_[static_cast<unsigned int>(currentWaypointIndex_)]};
 		object_->pos_.CalcRoutePosition(); // Reset route object according to new route waypoints and current position
 
 		return;
@@ -191,19 +193,19 @@ void ControllerFollowRoute::CalculateWaypoints()
 	roadmanager::LaneIndependentRouter router(odr_);
 
 	roadmanager::Position startPos = object_->pos_;
-	roadmanager::Position targetPos = object_->pos_.GetRoute()->scenario_waypoints_[scenarioWaypointIndex_];
+	roadmanager::Position targetPos = object_->pos_.GetRoute()->scenario_waypoints_[static_cast<unsigned int>(scenarioWaypointIndex_)];
 
 	// If start and target is on same road, set next waypoint as target
 	if (startPos.GetTrackId() == targetPos.GetTrackId())
 	{
 		scenarioWaypointIndex_++;
-		if (scenarioWaypointIndex_ >= object_->pos_.GetRoute()->scenario_waypoints_.size())
+		if (static_cast<unsigned int>(scenarioWaypointIndex_) >= object_->pos_.GetRoute()->scenario_waypoints_.size())
 		{
 			LOG("Error: start and target on same road, scenarioWaypointIndex out of bounds, deactivating controller");
 			Deactivate();
 			return;
 		}
-		targetPos = object_->pos_.GetRoute()->scenario_waypoints_[scenarioWaypointIndex_];
+		targetPos = object_->pos_.GetRoute()->scenario_waypoints_[static_cast<unsigned int>(scenarioWaypointIndex_)];
 	}
 
 	std::vector<roadmanager::Node> pathToGoal = router.CalculatePath(startPos, targetPos);
@@ -332,7 +334,7 @@ bool ControllerFollowRoute::CanChangeLane(int lane)
 			int lanesBetween = abs(vehiclePos.GetLaneId() - otherVehicle->pos_.GetLaneId());
 			bool lanesIncreasing = otherVehicle->pos_.GetLaneId() > vehiclePos.GetLaneId();
 
-			std::vector<int> laneIdsToCheck(lanesBetween);
+			std::vector<int> laneIdsToCheck(static_cast<unsigned int>(lanesBetween));
 			if (lanesIncreasing)
 			{
 				std::generate(laneIdsToCheck.begin(), laneIdsToCheck.end(), inc);
@@ -370,7 +372,7 @@ void ControllerFollowRoute::Deactivate()
 	}
 	LOG("ControllerFollowRoute - Deactivated");
 	Controller::Deactivate();
-};
+}
 
 WaypointStatus ControllerFollowRoute::GetWaypointStatus(roadmanager::Position vehiclePos, roadmanager::Position waypoint)
 {
@@ -412,9 +414,9 @@ WaypointStatus ControllerFollowRoute::GetWaypointStatus(roadmanager::Position ve
 	else if (link->GetElementType() == RoadLink::ElementType::ELEMENT_TYPE_JUNCTION)
 	{
 		Junction *junction = odr_->GetJunctionById(link->GetElementId());
-		for (size_t j = 0; j < junction->GetNoConnectionsFromRoadId(currentRoad->GetId()); j++)
+		for (size_t j = 0; j < static_cast<unsigned int>(junction->GetNoConnectionsFromRoadId(currentRoad->GetId())); j++)
 		{
-			int roadId = junction->GetConnectingRoadIdFromIncomingRoadId(currentRoad->GetId(), (int)j);
+			int roadId = junction->GetConnectingRoadIdFromIncomingRoadId(currentRoad->GetId(), static_cast<int>(j));
 			possiblePreviousRoads.push_back(odr_->GetRoadById(roadId));
 		}
 	}

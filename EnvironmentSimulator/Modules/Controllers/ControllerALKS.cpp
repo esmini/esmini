@@ -25,7 +25,7 @@ using namespace scenarioengine;
 
 Controller* scenarioengine::InstantiateControllerALKS(void* args)
 {
-	Controller::InitArgs* initArgs = (Controller::InitArgs*)args;
+	Controller::InitArgs* initArgs = static_cast<Controller::InitArgs*>(args);
 
 	return new ControllerALKS(initArgs);
 }

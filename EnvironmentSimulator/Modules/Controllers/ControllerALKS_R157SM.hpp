@@ -131,7 +131,7 @@ namespace scenarioengine
             int Process(ObjectInfo& info);
 
             // Returns true if object is not in or intruding the ego lane, else false
-            virtual bool CheckSafety(ObjectInfo* info) { return false; }
+            virtual bool CheckSafety(ObjectInfo* info) { (void)info; return false; }
 
             // Returns true if critical situation and intervention needed
             virtual bool CheckCritical() { return false; };
@@ -201,7 +201,7 @@ namespace scenarioengine
             double ReactCritical() override;
             double MinDist() override;
 
-            bool CheckSafety(Vehicle* obj, int dLaneId, double dist_long, double dist_lat) { return false; }
+            bool CheckSafety(Vehicle* obj, int dLaneId, double dist_long, double dist_lat) { (void)obj; (void)dLaneId; (void)dist_long; (void)dist_lat; return false; }
             bool CheckSafetyCutIn(Vehicle* obj, double speed_long, double speed_lat, double dt);
             double React(double speed_long, double dt);
         };
@@ -451,7 +451,7 @@ namespace scenarioengine
 
 		static const char* GetTypeNameStatic() { return CONTROLLER_ALKS_R157SM_TYPE_NAME; }
 		virtual const char* GetTypeName() { return GetTypeNameStatic(); }
-		static const int GetTypeStatic() { return CONTROLLER_ALKS_R157SM; }
+		static int GetTypeStatic() { return CONTROLLER_ALKS_R157SM; }
 		virtual int GetType() { return GetTypeStatic(); }
 
 		void Init();

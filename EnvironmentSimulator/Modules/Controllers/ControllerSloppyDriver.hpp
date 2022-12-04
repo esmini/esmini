@@ -42,8 +42,8 @@ namespace scenarioengine
 		}
 
 		double amplitude_;
-		double start_;
 		double startAngle_;
+		double start_;
 		double offset_;
 		double factor_;
 
@@ -62,7 +62,7 @@ namespace scenarioengine
 
 		static const char* GetTypeNameStatic() { return CONTROLLER_SLOPPY_DRIVER_TYPE_NAME; }
 		virtual const char* GetTypeName() { return GetTypeNameStatic(); }
-		static const int GetTypeStatic() { return Controller::Type::CONTROLLER_TYPE_SLOPPY_DRIVER; }
+		static int GetTypeStatic() { return Controller::Type::CONTROLLER_TYPE_SLOPPY_DRIVER; }
 		virtual int GetType() { return GetTypeStatic(); }
 
 		void Init();

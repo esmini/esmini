@@ -30,12 +30,12 @@ using namespace scenarioengine;
 
 Controller* scenarioengine::InstantiateControllerRel2Abs(void* args)
 {
-	Controller::InitArgs* initArgs = (Controller::InitArgs*)args;
+	Controller::InitArgs* initArgs = static_cast<Controller::InitArgs*>(args);
 
 	return new ControllerRel2Abs(initArgs);
 }
 
-ControllerRel2Abs::ControllerRel2Abs(InitArgs* args) : pred_horizon(1), switching_threshold_dist(1.5), switching_threshold_speed(1.5), Controller(args)
+ControllerRel2Abs::ControllerRel2Abs(InitArgs* args) :  Controller(args), pred_horizon(1), switching_threshold_dist(1.5), switching_threshold_speed(1.5)
 {
 	// ControllerRel2Abs forced into additive mode - will only react on scenario actions
 	if (mode_ != Mode::MODE_ADDITIVE)
@@ -67,28 +67,28 @@ void ControllerRel2Abs::findEgo()
 	if (ego_obj == -1)
 	{
 		LOG("Searching for vehicle named \"Ego\".");
-		for (int i = 0; i < entities_->object_.size(); i++)
+		for (unsigned int i = 0; i < entities_->object_.size(); i++)
 		{
 			if (entities_->object_[i]->type_ == Object::Type::VEHICLE)
 			{
 				std::string name = entities_->object_[i]->name_;
 				std::transform(name.begin(), name.end(), name.begin(),
-					[](unsigned char c) { return (unsigned char)tolower(c); });
+					[](unsigned char c) { return static_cast<unsigned char>(tolower(c)); });
 				if (name == "ego") {
-					ego_obj = i;
+					ego_obj = static_cast<int>(i);
 					LOG("Object named \"%s\" used as ego vehicle.", entities_->object_[i]->name_.c_str());
 					return;
 				}
 			}
 		}
 		LOG("Ego not found, searching for externally controlled vehicles instead.");
-		for (int i = 0; i < entities_->object_.size(); i++)
+		for (unsigned int i = 0; i < entities_->object_.size(); i++)
 		{
 			if (entities_->object_[i]->type_ == Object::Type::VEHICLE)
 			{
 				if (entities_->object_[i]->GetActivatedControllerType() == Controller::Type::CONTROLLER_TYPE_EXTERNAL)
 				{
-					ego_obj = i;
+					ego_obj = static_cast<int>(i);
 					LOG("Object named \"%s\" used as ego vehicle due to being controlled externally.", entities_->object_[i]->name_.c_str());
 					return;
 				}
@@ -104,7 +104,7 @@ void ControllerRel2Abs::Step(double timeStep)
 	double egoSpeed = 0;
 
 	findEgo();
-	Object *ego = entities_->object_[ego_obj];
+	Object *ego = entities_->object_[static_cast<unsigned int>(ego_obj)];
 	egoSpeed = ego->GetSpeed();
 
 	// ----------------------- prediction & switching algorithm - start -----------------------
@@ -132,7 +132,7 @@ void ControllerRel2Abs::Step(double timeStep)
 
 			std::vector<ControllerRel2Abs::position_copy*> positionsCopied;
 			// Copy positions, i.e. save original position and speed, keep object reference.
-			for (int i = 0; i < entities_->object_.size(); i++)
+			for (unsigned int i = 0; i < entities_->object_.size(); i++)
 			{
 				position_copy* obj_copy = new position_copy();
 				CopyPosition(entities_->object_[i], obj_copy);
@@ -146,7 +146,7 @@ void ControllerRel2Abs::Step(double timeStep)
 
 			//Vector of copies of all active private actions in scenario. Will in reality only contain private actions
 			std::vector<OSCAction*> activeActionsCopies;
-			for (int i = 0; i < entities_->object_.size(); i++)
+			for (unsigned int i = 0; i < entities_->object_.size(); i++)
 			{
 				std::vector<OSCPrivateAction*> actions = entities_->object_[i]->getPrivateActions();		//getActions creates the vector => it's not updated by SE (only event vector is)
 				std::vector<OSCPrivateAction*> activeActions;
@@ -166,18 +166,18 @@ void ControllerRel2Abs::Step(double timeStep)
 					}
 				}
 
-				for (int j = 0; j < activeActions.size(); j++)
+				for (unsigned int j = 0; j < activeActions.size(); j++)
 				{
 					OSCPrivateAction* action_copy = activeActions[j]->Copy();
 					action_copy->object_ = entities_->object_[i];
 					if (std::find(std::begin(action_whitelist), std::end(action_whitelist), activeActions[j]->type_) != std::end(action_whitelist)) {
-						activeActionsCopies.push_back((OSCAction*)action_copy);
+						activeActionsCopies.push_back(static_cast<OSCAction*>(action_copy));
 					}
 				}
 			}
 
 			//Start all copied actions
-			for (int i = 0; i < activeActionsCopies.size(); i++) {
+			for (unsigned int i = 0; i < activeActionsCopies.size(); i++) {
 				activeActionsCopies[i]->Start(currentTime, pred_timestep);
 			}
 
@@ -187,12 +187,12 @@ void ControllerRel2Abs::Step(double timeStep)
 				currentTime += pred_timestep;
 				data.time.push_back(currentTime);
 
-				for (int j = 0; j < entities_->object_.size(); j++)
+				for (unsigned int j = 0; j < entities_->object_.size(); j++)
 				{
 					Object* object = entities_->object_[j];
-					for (int k = 0; k < activeActionsCopies.size(); k++)
+					for (unsigned int k = 0; k < activeActionsCopies.size(); k++)
 					{
-						OSCPrivateAction* pa = (OSCPrivateAction*)activeActionsCopies[k];
+						OSCPrivateAction* pa = static_cast<OSCPrivateAction*>(activeActionsCopies[k]);
 						if (pa->object_ == object)
 						{
 							activeActionsCopies[k]->Step(currentTime, pred_timestep);
@@ -251,7 +251,7 @@ void ControllerRel2Abs::Step(double timeStep)
 				}
 			}
 
-			for (int i = 0; i < positionsCopied.size(); i++)
+			for (unsigned int i = 0; i < positionsCopied.size(); i++)
 			{
 				position_copy* cpy = positionsCopied[i];
 				cpy->object->pos_ = *cpy->pos;
@@ -261,7 +261,7 @@ void ControllerRel2Abs::Step(double timeStep)
 			}
 
 			// Free memory allocated through Action.copy()
-			for (int i = 0; i < activeActionsCopies.size(); i++)
+			for (unsigned int i = 0; i < activeActionsCopies.size(); i++)
 			{
 				delete(activeActionsCopies[i]);
 			}
@@ -286,7 +286,7 @@ void ControllerRel2Abs::Step(double timeStep)
 		double v_est = 0;
 
 		// Loop through data and find time closest to t (ideally do linear interpolation)
-		for (int i = 0; i < data.time.size(); i++)
+		for (unsigned int i = 0; i < data.time.size(); i++)
 		{
 			double t1 = data.time.at(i);
 			if (t1 == t)
@@ -356,14 +356,14 @@ void ControllerRel2Abs::Step(double timeStep)
 			}
 		}
 
-		for (int i = 0; i < activeActions.size(); i++)
+		for (unsigned int i = 0; i < activeActions.size(); i++)
 		{
 			if (activeActions[i]->type_ == OSCPrivateAction::ActionType::LONG_SPEED)
 			{
-				LongSpeedAction* lsa = (LongSpeedAction*)activeActions[i];
+				LongSpeedAction* lsa = static_cast<LongSpeedAction*>(activeActions[i]);
 				if (lsa->target_->type_ == LongSpeedAction::Target::TargetType::RELATIVE_SPEED)
 				{
-					LongSpeedAction::TargetRelative* target = (LongSpeedAction::TargetRelative*)lsa->target_.get();
+					LongSpeedAction::TargetRelative* target = static_cast<LongSpeedAction::TargetRelative*>(lsa->target_.get());
 					if (target->object_ == ego)
 					{
 						double trgSpeed = lsa->target_->GetValue();
@@ -375,7 +375,7 @@ void ControllerRel2Abs::Step(double timeStep)
 			}
 			else if (activeActions[i]->type_ == OSCPrivateAction::ActionType::LONG_DISTANCE)
 			{
-				LongDistanceAction* lda = (LongDistanceAction*)activeActions[i];
+				LongDistanceAction* lda = static_cast<LongDistanceAction*>(activeActions[i]);
 				if (lda->target_object_ == ego)
 				{
 					//Assumes object has reached steady state and want to continue in that state.
@@ -402,7 +402,7 @@ void ControllerRel2Abs::Step(double timeStep)
 						{
 							if (activeActions[i] == events[j]->action_[k])
 							{
-								events[j]->action_.push_back((OSCAction*)lsa);
+								events[j]->action_.push_back(static_cast<OSCAction*>(lsa));
 								activeActions.erase(activeActions.begin() + i);
 								activeActions.push_back(lsa);
 							}
@@ -427,7 +427,7 @@ void ControllerRel2Abs::Step(double timeStep)
 			}
 			else if (activeActions[i]->type_ == OSCPrivateAction::ActionType::SYNCHRONIZE)
 			{
-				SynchronizeAction* sa = (SynchronizeAction*)activeActions[i];
+				SynchronizeAction* sa = static_cast<SynchronizeAction*>(activeActions[i]);
 				if (sa->master_object_ == ego)
 				{
 					if (sa->final_speed_)
@@ -471,7 +471,7 @@ void ControllerRel2Abs::Step(double timeStep)
 
 								double tmp = (nextSpeed - it->second) / it->first;
 								//round acceleration to 1 decimals
-								tmp = (int)(tmp * 10 + 0.5);
+								tmp = static_cast<int>(tmp * 10 + 0.5);
 								tmp /= 10;
 								if (it != speeds.begin())
 								{
@@ -483,7 +483,7 @@ void ControllerRel2Abs::Step(double timeStep)
 								lastAcc = tmp;
 								currentAcc += tmp;
 							}
-							currentAcc /= speeds.size();
+							currentAcc /= static_cast<double>(speeds.size());
 							if (linear || lastAcc > 0.3)
 							{
 								//if speeds increasing linearly / recently passed a minima with a fairly large current acc.
@@ -511,7 +511,7 @@ void ControllerRel2Abs::Step(double timeStep)
 								{
 									if (activeActions[i] == events[j]->action_[k])
 									{
-										events[j]->action_.push_back((OSCAction*)lsa);
+										events[j]->action_.push_back(static_cast<OSCAction*>(lsa));
 										activeActions.erase(activeActions.begin() + i);
 										activeActions.push_back(lsa);
 									}
@@ -556,7 +556,7 @@ void ControllerRel2Abs::Step(double timeStep)
 							{
 								if (activeActions[i] == events[j]->action_[k])
 								{
-									events[j]->action_.push_back((OSCAction*)lsa);
+									events[j]->action_.push_back(static_cast<OSCAction*>(lsa));
 									activeActions.erase(activeActions.begin() + i);
 									activeActions.push_back(lsa);
 								}
@@ -612,6 +612,8 @@ void ControllerRel2Abs::Activate(ControlDomains domainMask)
 
 void ControllerRel2Abs::ReportKeyEvent(int key, bool down)
 {
+	(void)key;
+	(void)down;
 }
 
 //Method for copying position and saving speed for object. Contains pointer to object which Returns struct with action pointer,

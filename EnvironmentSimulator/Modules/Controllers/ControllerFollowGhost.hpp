@@ -42,7 +42,7 @@ namespace scenarioengine
 
 		static const char* GetTypeNameStatic() { return CONTROLLER_FOLLOW_GHOST_TYPE_NAME; }
 		virtual const char* GetTypeName() { return GetTypeNameStatic(); }
-		static const int GetTypeStatic() { return CONTROLLER_TYPE_FOLLOW_GHOST; }
+		static int GetTypeStatic() { return CONTROLLER_TYPE_FOLLOW_GHOST; }
 		virtual int GetType() { return GetTypeStatic(); }
 
 		void SetScenarioEngine(ScenarioEngine* scenarioEngine) { scenarioEngine_ = scenarioEngine; };

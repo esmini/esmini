@@ -26,7 +26,7 @@ using namespace scenarioengine;
 
 Controller* scenarioengine::InstantiateControllerSumo(void* args)
 {
-	Controller::InitArgs* initArgs = (Controller::InitArgs*)args;
+	Controller::InitArgs* initArgs = static_cast<Controller::InitArgs*>(args);
 
 	return new ControllerSumo(initArgs);
 }

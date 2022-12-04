@@ -45,7 +45,7 @@ namespace scenarioengine
 
 		static const char *GetTypeNameStatic() { return CONTROLLER_FOLLOW_ROUTE_TYPE_NAME; }
 		virtual const char *GetTypeName() { return GetTypeNameStatic(); }
-		static const int GetTypeStatic() { return CONTROLLER_TYPE_FOLLOW_ROUTE; }
+		static int GetTypeStatic() { return CONTROLLER_TYPE_FOLLOW_ROUTE; }
 		virtual int GetType() { return GetTypeStatic(); }
 
 		void Init();

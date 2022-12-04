@@ -21,7 +21,7 @@ Controller* scenarioengine::InstantiateController(void* args)
 {
 	LOG("The base class should not be instantiated");
 
-	return new Controller((Controller:: InitArgs*)args);
+	return new Controller(static_cast<Controller::InitArgs*>(args));
 }
 
 Controller::Controller(InitArgs* args) : domain_(ControlDomains::DOMAIN_NONE), mode_(Controller::Mode::MODE_OVERRIDE), object_(0)
@@ -64,6 +64,7 @@ Controller::Controller(InitArgs* args) : domain_(ControlDomains::DOMAIN_NONE), m
 
 void Controller::Step(double timeStep)
 {
+	(void)timeStep;
 	if (object_)
 	{
 		if (mode_ == Mode::MODE_OVERRIDE)

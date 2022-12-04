@@ -41,7 +41,7 @@ namespace scenarioengine
 
 		Trigger *start_trigger_;
 
-		Event() : start_trigger_(0), StoryBoardElement(StoryBoardElement::ElementType::EVENT) {}
+		Event() : StoryBoardElement(StoryBoardElement::ElementType::EVENT), start_trigger_(0) {}
 		~Event()
 		{
 			for (auto* entry : action_)
@@ -69,7 +69,7 @@ namespace scenarioengine
 		std::vector<Event*> event_;
 
 		Maneuver() : StoryBoardElement(StoryBoardElement::ElementType::MANEUVER) {}
-		~Maneuver() 
+		~Maneuver()
 		{
 			for (auto* entry : event_)
 			{

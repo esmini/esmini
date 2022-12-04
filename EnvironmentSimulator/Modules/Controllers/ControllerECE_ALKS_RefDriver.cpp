@@ -28,12 +28,12 @@ using namespace scenarioengine;
 
 Controller* scenarioengine::InstantiateControllerECE_ALKS_REF_DRIVER(void* args)
 {
-	Controller::InitArgs* initArgs = (Controller::InitArgs*)args;
+	Controller::InitArgs* initArgs = static_cast<Controller::InitArgs*>(args);
 
 	return new ControllerECE_ALKS_REF_DRIVER(initArgs);
 }
 
-ControllerECE_ALKS_REF_DRIVER::ControllerECE_ALKS_REF_DRIVER(InitArgs* args) : active_(false), setSpeed_(0), currentSpeed_(0), logging_(false), Controller(args)
+ControllerECE_ALKS_REF_DRIVER::ControllerECE_ALKS_REF_DRIVER(InitArgs* args) : Controller(args), active_(false), setSpeed_(0), currentSpeed_(0), logging_(false)
 {
 	mode_ = Mode::MODE_ADDITIVE;
 
@@ -406,4 +406,6 @@ void ControllerECE_ALKS_REF_DRIVER::Reset()
 
 void ControllerECE_ALKS_REF_DRIVER::ReportKeyEvent(int key, bool down)
 {
+	(void)key;
+	(void)down;
 }

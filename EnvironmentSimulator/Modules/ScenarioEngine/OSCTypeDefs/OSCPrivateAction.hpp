@@ -96,8 +96,9 @@ namespace scenarioengine
 			DynamicsShape shape_;
 			DynamicsDimension dimension_;
 
-			TransitionDynamics() : param_target_val_(0), scale_factor_(1.0), param_val_(0), start_val_(0),
-				target_val_(0), rate_(0), shape_(DynamicsShape::STEP), dimension_(DynamicsDimension::TIME) {}
+			TransitionDynamics() : shape_(DynamicsShape::STEP), dimension_(DynamicsDimension::TIME),
+			start_val_(0), target_val_(0), param_target_val_(0), scale_factor_(1.0), param_val_(0),
+			rate_(0)  {}
 			void Reset();
 
 			double Evaluate();  // 0 = start_value, 1 = end_value
@@ -333,7 +334,7 @@ namespace scenarioengine
 			LOG("");
 		}
 
-		void ReplaceObjectRefs(Object* obj1, Object* obj2) {}
+		void ReplaceObjectRefs(Object* obj1, Object* obj2) { (void)obj1; (void)obj2;}
 
 		void AddEntry(LongSpeedProfileAction::Entry entry) {entry_.push_back(entry); }
 		double GetStartTime() { return start_time_; }
@@ -380,8 +381,8 @@ namespace scenarioengine
 		DynamicConstraints dynamics_;
 
 		LongDistanceAction() : OSCPrivateAction(OSCPrivateAction::ActionType::LONG_DISTANCE, ControlDomains::DOMAIN_LONG),
-			target_object_(0), distance_(0), dist_type_(DistType::DISTANCE), freespace_(0), acceleration_(0), sim_time_(0),
-			displacement_(DisplacementType::NONE) {}
+			target_object_(0), distance_(0), dist_type_(DistType::DISTANCE), freespace_(0), sim_time_(0),
+			displacement_(DisplacementType::NONE), acceleration_(0){}
 
 		LongDistanceAction(const LongDistanceAction &action) : OSCPrivateAction(OSCPrivateAction::ActionType::LONG_DISTANCE, ControlDomains::DOMAIN_LONG)
 		{
@@ -457,16 +458,16 @@ namespace scenarioengine
 		double target_lane_offset_;
 
 		LatLaneChangeAction(LatLaneChangeAction::DynamicsDimension timing_type = DynamicsDimension::TIME) :
-			start_offset_(0.0), target_lane_offset_(0.0), target_(0),
-			OSCPrivateAction(OSCPrivateAction::ActionType::LAT_LANE_CHANGE, ControlDomains::DOMAIN_LAT)
+			OSCPrivateAction(OSCPrivateAction::ActionType::LAT_LANE_CHANGE, ControlDomains::DOMAIN_LAT),
+			target_(0), target_lane_offset_(0.0), start_offset_(0.0)
 		{
 			transition_.dimension_ = timing_type;
 		}
 
 		LatLaneChangeAction(const LatLaneChangeAction& action) :
-			transition_(action.transition_), target_(action.target_), start_offset_(action.start_offset_),
-			target_lane_offset_(action.target_lane_offset_),
-			OSCPrivateAction(OSCPrivateAction::ActionType::LAT_LANE_CHANGE, ControlDomains::DOMAIN_LAT)
+			OSCPrivateAction(OSCPrivateAction::ActionType::LAT_LANE_CHANGE, ControlDomains::DOMAIN_LAT),
+			target_(action.target_), transition_(action.transition_), target_lane_offset_(action.target_lane_offset_),
+			start_offset_(action.start_offset_)
 		{
 			name_ = action.name_;
 		}
@@ -733,7 +734,7 @@ namespace scenarioengine
 	public:
 		roadmanager::Route *route_;
 
-		AssignRouteAction() : route_(0), OSCPrivateAction(OSCPrivateAction::ActionType::ASSIGN_ROUTE, ControlDomains::DOMAIN_NONE) {}
+		AssignRouteAction() : OSCPrivateAction(OSCPrivateAction::ActionType::ASSIGN_ROUTE, ControlDomains::DOMAIN_NONE), route_(0)  {}
 
 		AssignRouteAction(const AssignRouteAction&action) : OSCPrivateAction(OSCPrivateAction::ActionType::ASSIGN_ROUTE, ControlDomains::DOMAIN_NONE)
 		{
@@ -781,8 +782,9 @@ namespace scenarioengine
 		double time_;
 		double initialDistanceOffset_;
 
-		FollowTrajectoryAction() : traj_(0), timing_domain_(TimingDomain::NONE), timing_scale_(1), following_mode_(FollowingMode::FOLLOW),
-			timing_offset_(0), time_(0), initialDistanceOffset_(0), OSCPrivateAction(OSCPrivateAction::ActionType::FOLLOW_TRAJECTORY, ControlDomains::DOMAIN_BOTH) {}
+		FollowTrajectoryAction() : OSCPrivateAction(OSCPrivateAction::ActionType::FOLLOW_TRAJECTORY, ControlDomains::DOMAIN_BOTH),
+		traj_(0), timing_domain_(TimingDomain::NONE), following_mode_(FollowingMode::FOLLOW), timing_scale_(1),
+		timing_offset_(0), time_(0), initialDistanceOffset_(0) {}
 
 		FollowTrajectoryAction(const FollowTrajectoryAction& action) : OSCPrivateAction(OSCPrivateAction::ActionType::FOLLOW_TRAJECTORY, ControlDomains::DOMAIN_BOTH)
 		{
@@ -821,7 +823,7 @@ namespace scenarioengine
 		roadmanager::Position* target_position_;
 		std::shared_ptr<roadmanager::Route> route_;
 
-		AcquirePositionAction() : route_(0), target_position_(0), OSCPrivateAction(OSCPrivateAction::ActionType::Acquire_POSITION, ControlDomains::DOMAIN_LONG) {}
+		AcquirePositionAction() : OSCPrivateAction(OSCPrivateAction::ActionType::Acquire_POSITION, ControlDomains::DOMAIN_LONG),  target_position_(0), route_(0) {}
 
 		AcquirePositionAction(const AcquirePositionAction& action) : OSCPrivateAction(OSCPrivateAction::ActionType::Acquire_POSITION, ControlDomains::DOMAIN_LONG)
 		{
@@ -854,9 +856,9 @@ namespace scenarioengine
 		Controller* controller_;
 		ControlDomains domainMask_;
 
-		AssignControllerAction(Controller* controller) : controller_(controller), domainMask_(ControlDomains::DOMAIN_NONE),
+		AssignControllerAction(Controller* controller) :
 			OSCPrivateAction(OSCPrivateAction::ActionType::ASSIGN_CONTROLLER,
-				controller != nullptr ? controller->GetDomain() : ControlDomains::DOMAIN_NONE) {}
+				controller != nullptr ? controller->GetDomain() : ControlDomains::DOMAIN_NONE), controller_(controller), domainMask_(ControlDomains::DOMAIN_NONE) {}
 
 		AssignControllerAction(const AssignControllerAction& action) : OSCPrivateAction(OSCPrivateAction::ActionType::ASSIGN_CONTROLLER,
 			action.controller_ != nullptr ? action.controller_->GetDomain() : ControlDomains::DOMAIN_NONE)
@@ -890,15 +892,15 @@ namespace scenarioengine
 		Default constructor assuming both domains (lat/long) activated
 		@param domainMask bitmask according to Controller::Domain type
 		*/
-		ActivateControllerAction() : domainMask_(ControlDomains::DOMAIN_BOTH),
-			OSCPrivateAction(OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER, domainMask_) {}
+		ActivateControllerAction() : OSCPrivateAction(OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER, domainMask_),
+		domainMask_(ControlDomains::DOMAIN_BOTH) {}
 
 		/**
 		Constructor with domain specification
 		@param domainMask bitmask according to Controller::Domain type
 		*/
-		ActivateControllerAction(ControlDomains domainMask) : domainMask_(domainMask),
-			OSCPrivateAction(OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER, ControlDomains::DOMAIN_NONE) {}
+		ActivateControllerAction(ControlDomains domainMask) : OSCPrivateAction(OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER, ControlDomains::DOMAIN_NONE),
+		domainMask_(domainMask) {}
 
 		ActivateControllerAction(const ActivateControllerAction& action) :
 			OSCPrivateAction(OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER, ControlDomains::DOMAIN_NONE)
@@ -962,11 +964,11 @@ namespace scenarioengine
 		bool traffic_;
 		bool sensors_;
 
-		VisibilityAction() : graphics_(true), traffic_(true), sensors_(true),
-			OSCPrivateAction(OSCPrivateAction::ActionType::VISIBILITY, ControlDomains::DOMAIN_NONE) {}
+		VisibilityAction() : OSCPrivateAction(OSCPrivateAction::ActionType::VISIBILITY, ControlDomains::DOMAIN_NONE),
+		graphics_(true), traffic_(true), sensors_(true) {}
 
-		VisibilityAction(const VisibilityAction& action) : graphics_(true), traffic_(true), sensors_(true),
-			OSCPrivateAction(OSCPrivateAction::ActionType::VISIBILITY, ControlDomains::DOMAIN_NONE)
+		VisibilityAction(const VisibilityAction& action) : OSCPrivateAction(OSCPrivateAction::ActionType::VISIBILITY, ControlDomains::DOMAIN_NONE),
+		graphics_(true), traffic_(true), sensors_(true)
 		{
 			name_ = action.name_;
 			graphics_ = action.graphics_;
@@ -997,7 +999,7 @@ namespace scenarioengine
 
 		// assume both domains
 		OverrideControlAction(double value, bool active, Object::OverrideType type) :
-			OSCPrivateAction(OSCPrivateAction::ActionType::OVERRIDE_CONTROLLER, ControlDomains::DOMAIN_NONE), type_(type) {}
+			OSCPrivateAction(OSCPrivateAction::ActionType::OVERRIDE_CONTROLLER, ControlDomains::DOMAIN_NONE), type_(type) { (void)value; (void)active;}
 
 		OverrideControlAction() : OverrideControlAction(0, false, Object::OverrideType::OVERRIDE_UNDEFINED) {}
 

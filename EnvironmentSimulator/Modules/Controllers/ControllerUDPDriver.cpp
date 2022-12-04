@@ -29,13 +29,13 @@ int ControllerUDPDriver::basePort_ = DEFAULT_UDP_DRIVER_PORT;
 
 Controller* scenarioengine::InstantiateControllerUDPDriver(void* args)
 {
-	Controller::InitArgs* initArgs = (Controller::InitArgs*)args;
+	Controller::InitArgs* initArgs = static_cast<Controller::InitArgs*>(args);
 
 	return new ControllerUDPDriver(initArgs);
 }
 
 ControllerUDPDriver::ControllerUDPDriver(InitArgs* args) :
-	inputMode_(InputMode::DRIVER_INPUT), udpServer_(nullptr), port_(0), execMode_(ExecMode::EXEC_MODE_ASYNCHRONOUS), Controller(args)
+	Controller(args), inputMode_(InputMode::DRIVER_INPUT), udpServer_(nullptr), port_(0), execMode_(ExecMode::EXEC_MODE_ASYNCHRONOUS)
 {
 	if (args && args->properties && args->properties->ValueExists("inputMode"))
 	{
@@ -67,7 +67,7 @@ ControllerUDPDriver::ControllerUDPDriver(InitArgs* args) :
 		}
 		else
 		{
-			port_ = (unsigned short)portTmp;
+			port_ = portTmp;
 		}
 	}
 
@@ -112,8 +112,8 @@ ControllerUDPDriver::ControllerUDPDriver(InitArgs* args) :
 	}
 	mode_ = Mode::MODE_OVERRIDE;
 
-	memset((void*)&msg, 0, sizeof(msg));
-	memset((void*)&lastMsg, 0, sizeof(lastMsg));
+	memset(static_cast<void*>(&msg), 0, sizeof(msg));
+	memset(static_cast<void*>(&lastMsg), 0, sizeof(lastMsg));
 }
 
 ControllerUDPDriver::~ControllerUDPDriver()
@@ -180,7 +180,7 @@ void ControllerUDPDriver::Step(double timeStep)
 		// Pick all queued messages - store only the last/latest
 		while (retval >= 0)
 		{
-			retval = udpServer_->Receive((char*)&msg, sizeof(msg));
+			retval = udpServer_->Receive(reinterpret_cast<char*>(&msg), sizeof(msg));
 			if (retval > 0)
 			{
 				receivedNrOfBytes = retval;
@@ -189,7 +189,7 @@ void ControllerUDPDriver::Step(double timeStep)
 	}
 	else
 	{
-		retval = udpServer_->Receive((char*)&msg, sizeof(msg));
+		retval = udpServer_->Receive(reinterpret_cast<char*>(&msg), sizeof(msg));
 		if (retval >= 0)
 		{
 			receivedNrOfBytes = retval;
@@ -215,7 +215,7 @@ void ControllerUDPDriver::Step(double timeStep)
 
 		if (msg.header.inputMode == static_cast<int>(InputMode::VEHICLE_STATE_XYZHPR))
 		{
-			roadmanager::Position* pos = &gateway_->getObjectStatePtrById(msg.header.objectId)->state_.pos;
+			roadmanager::Position* pos = &gateway_->getObjectStatePtrById(static_cast<int>(msg.header.objectId))->state_.pos;
 			pos->SetAlignModeZ(roadmanager::Position::ALIGN_MODE::ALIGN_NONE);
 			pos->SetAlignModeP(roadmanager::Position::ALIGN_MODE::ALIGN_NONE);
 
@@ -230,7 +230,7 @@ void ControllerUDPDriver::Step(double timeStep)
 		}
 		else if (msg.header.inputMode == static_cast<int>(InputMode::VEHICLE_STATE_XYH))
 		{
-			roadmanager::Position* pos = &gateway_->getObjectStatePtrById(msg.header.objectId)->state_.pos;
+			roadmanager::Position* pos = &gateway_->getObjectStatePtrById(static_cast<int>(msg.header.objectId))->state_.pos;
 			pos->SetAlignModeZ(roadmanager::Position::ALIGN_MODE::ALIGN_HARD);
 			pos->SetAlignModeP(roadmanager::Position::ALIGN_MODE::ALIGN_HARD);
 
@@ -247,7 +247,7 @@ void ControllerUDPDriver::Step(double timeStep)
 		}
 		else if (msg.header.inputMode == static_cast<int>(InputMode::VEHICLE_STATE_H))
 		{
-			roadmanager::Position* pos = &gateway_->getObjectStatePtrById(msg.header.objectId)->state_.pos;
+			roadmanager::Position* pos = &gateway_->getObjectStatePtrById(static_cast<int>(msg.header.objectId))->state_.pos;
 			pos->SetAlignModeZ(roadmanager::Position::ALIGN_MODE::ALIGN_HARD);
 			pos->SetAlignModeP(roadmanager::Position::ALIGN_MODE::ALIGN_HARD);
 
@@ -264,7 +264,7 @@ void ControllerUDPDriver::Step(double timeStep)
 		}
 		else if (msg.header.inputMode == static_cast<int>(InputMode::DRIVER_INPUT))
 		{
-			roadmanager::Position* pos = &gateway_->getObjectStatePtrById(msg.header.objectId)->state_.pos;
+			roadmanager::Position* pos = &gateway_->getObjectStatePtrById(static_cast<int>(msg.header.objectId))->state_.pos;
 			pos->SetAlignModeZ(roadmanager::Position::ALIGN_MODE::ALIGN_HARD);
 			pos->SetAlignModeP(roadmanager::Position::ALIGN_MODE::ALIGN_HARD);
 		}
@@ -273,13 +273,13 @@ void ControllerUDPDriver::Step(double timeStep)
 			LOG("ControllerExternalDriverModel received %d bytes and unexpected input mode %d", retval, msg.header.inputMode);
 		}
 	}
-	else if (timeStep > SMALL_NUMBER &&
-		(lastMsg.header.inputMode == static_cast<int>(InputMode::VEHICLE_STATE_H) &&
-			lastMsg.message.stateH.deadReckon == 1 ||
-			lastMsg.header.inputMode == static_cast<int>(InputMode::VEHICLE_STATE_XYH) &&
-			lastMsg.message.stateXYH.deadReckon == 1 ||
-			lastMsg.header.inputMode == static_cast<int>(InputMode::VEHICLE_STATE_XYZHPR) &&
-			lastMsg.message.stateXYZHPR.deadReckon == 1))
+	else if (timeStep > SMALL_NUMBER && // TODO: @Emil to check
+		((lastMsg.header.inputMode == static_cast<int>(InputMode::VEHICLE_STATE_H) &&
+			lastMsg.message.stateH.deadReckon == 1) ||
+			(lastMsg.header.inputMode == static_cast<int>(InputMode::VEHICLE_STATE_XYH) &&
+			lastMsg.message.stateXYH.deadReckon == 1) ||
+			(lastMsg.header.inputMode == static_cast<int>(InputMode::VEHICLE_STATE_XYZHPR) &&
+			lastMsg.message.stateXYZHPR.deadReckon == 1)))
 	{
 		double speed = 0.0;
 		double h = 0.0;
@@ -322,7 +322,7 @@ void ControllerUDPDriver::Step(double timeStep)
 		gateway_->updateObjectWheelAngle(object_->id_, 0.0, msg.message.driverInput.steeringAngle);
 
 		// Fetch Z and Pitch from OpenDRIVE position
-		roadmanager::Position* pos = &gateway_->getObjectStatePtrById(msg.header.objectId)->state_.pos;
+		roadmanager::Position* pos = &gateway_->getObjectStatePtrById(static_cast<int>(msg.header.objectId))->state_.pos;
 		vehicle_.SetZ(pos->GetZ());
 		vehicle_.SetPitch(pos->GetP());
 	}
@@ -349,11 +349,11 @@ void ControllerUDPDriver::Activate(ControlDomains domainMask)
 			}
 			if (execMode_ == ExecMode::EXEC_MODE_ASYNCHRONOUS)
 			{
-				udpServer_ = new UDPServer((unsigned short)port_, 1);
+				udpServer_ = new UDPServer(static_cast<unsigned short>(port_), 1);
 			}
 			else
 			{
-				udpServer_ = new UDPServer((unsigned short)port_, UDP_SYNCHRONOUS_MODE_TIMEOUT_MS);
+				udpServer_ = new UDPServer(static_cast<unsigned short>(port_), UDP_SYNCHRONOUS_MODE_TIMEOUT_MS);
 			}
 			LOG("ExternalDriverModel server listening on port %d execMode: %s", port_, ExecMode2Str(execMode_).c_str());
 		}
@@ -374,4 +374,6 @@ void ControllerUDPDriver::Activate(ControlDomains domainMask)
 
 void ControllerUDPDriver::ReportKeyEvent(int key, bool down)
 {
+	(void)key;
+	(void)down;
 }

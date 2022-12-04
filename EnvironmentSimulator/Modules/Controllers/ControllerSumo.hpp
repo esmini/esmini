@@ -29,7 +29,7 @@ namespace scenarioengine
 
 		static const char* GetTypeNameStatic() { return CONTROLLER_SUMO_TYPE_NAME; }
 		virtual const char* GetTypeName() { return GetTypeNameStatic(); }
-		static const int GetTypeStatic() { return CONTROLLER_TYPE_SUMO; }
+		static int GetTypeStatic() { return CONTROLLER_TYPE_SUMO; }
 		virtual int GetType() { return GetTypeStatic(); }
 
 		void Init();

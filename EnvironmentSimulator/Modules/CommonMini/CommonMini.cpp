@@ -129,13 +129,13 @@ std::map<int, std::string> ParseModelIds()
 	if (i == file_name_candidates.size())
 	{
 		LOG("Failed to load %s file. Tried:", filename.c_str());
-		for (int j = 0; j < file_name_candidates.size(); j++)
+		for (unsigned int j = 0; j < file_name_candidates.size(); j++)
 		{
 			LOG("  %s", file_name_candidates[j].c_str());
 		}
 
 		printf("  continue with internal hard coded list: \n");
-		for (int j = 0; j < sizeof(entityModelsFilesFallbackList_) / sizeof(char*); j++)
+		for (int j = 0; static_cast<unsigned int>(j) < sizeof(entityModelsFilesFallbackList_) / sizeof(char*); j++)
 		{
 			entity_model_map[j] = entityModelsFilesFallbackList_[j];
 			LOG("    %2d: %s", j, entity_model_map[j].c_str());
@@ -433,6 +433,7 @@ double PointSquareDistance2D(double x0, double y0, double x1, double y1)
 
 double PointHeadingDistance2D(double x0, double y0, double h, double x1, double y1)
 {
+	(void)h;
 	return (x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0);
 }
 
@@ -599,7 +600,7 @@ double strtod(std::string s)
 
 	void SE_sleep(unsigned int msec)
 	{
-		std::this_thread::sleep_for(std::chrono::milliseconds((int)(msec)));
+		std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(msec)));
 	}
 
 #endif
@@ -617,7 +618,7 @@ double SE_getSimTimeStep(__int64 &time_stamp, double min_time_step, double max_t
 	}
 	else
 	{
-		dt = (now - time_stamp) * 0.001;  // step size in seconds
+		dt = static_cast<double>(now - time_stamp) * 0.001;  // step size in seconds
 
 		if (dt > max_time_step) // limit step size
 		{
@@ -625,9 +626,9 @@ double SE_getSimTimeStep(__int64 &time_stamp, double min_time_step, double max_t
 		}
 		else if (dt < min_time_step)  // avoid CPU rush, sleep for a while
 		{
-			SE_sleep((int)((min_time_step - dt) * 1000));
+			SE_sleep(static_cast<unsigned int>(static_cast<int>(min_time_step - dt) * 1000));
 			now = SE_getSystemTime();
-			dt = (now - time_stamp) * 0.001;
+			dt = static_cast<double>(now - time_stamp) * 0.001;
 		}
 	}
 	time_stamp = now;
@@ -1296,11 +1297,11 @@ void SE_Option::Usage()
 {
 	if (!default_value_.empty())
 	{
-		printf("  %s%s %s", OPT_PREFIX, opt_str_.c_str(), (opt_arg_ != "") ? std::string('[' + opt_arg_ + ']').c_str() : "");
+		printf("  %s%s %s", OPT_PREFIX, opt_str_.c_str(), (opt_arg_ != "") ? '[' + opt_arg_.c_str() + ']' : "");
 	}
 	else
 	{
-		printf("  %s%s %s", OPT_PREFIX, opt_str_.c_str(), (opt_arg_ != "") ? std::string('<' + opt_arg_ + '>').c_str() : "");
+		printf("  %s%s %s", OPT_PREFIX, opt_str_.c_str(), (opt_arg_ != "") ? '<' + opt_arg_.c_str() + '>' : "");
 	}
 
 	if (!default_value_.empty())
@@ -1315,13 +1316,13 @@ void SE_Options::AddOption(std::string opt_str, std::string opt_desc, std::strin
 {
 	SE_Option opt(opt_str, opt_desc, opt_arg);
 	option_.push_back(opt);
-};
+}
 
 void SE_Options::AddOption(std::string opt_str, std::string opt_desc, std::string opt_arg, std::string default_value)
 {
 	SE_Option opt(opt_str, opt_desc, opt_arg, default_value);
 	option_.push_back(opt);
-};
+}
 
 void SE_Options::PrintUsage()
 {
@@ -1371,9 +1372,9 @@ std::string SE_Options::GetOptionArg(std::string opt, int index)
 		return "";
 	}
 
-	if (!(option->opt_arg_.empty()) && index < option->arg_value_.size())
+	if (!(option->opt_arg_.empty()) && static_cast<unsigned int>(index) < option->arg_value_.size())
 	{
-		return option->arg_value_[index];
+		return option->arg_value_[static_cast<unsigned int>(index)];
 	}
 	else
 	{
@@ -1398,12 +1399,12 @@ int SE_Options::ChangeOptionArg(std::string opt, std::string new_value, int inde
 {
 	SE_Option* option = GetOption(opt);
 
-	if (option == nullptr || index < 0 || index >= option->arg_value_.size())
+	if (option == nullptr || index < 0 || static_cast<unsigned int>(index) >= option->arg_value_.size())
 	{
 		return -1;
 	}
 
-	option->arg_value_[index] = new_value;
+	option->arg_value_[static_cast<unsigned int>(index)] = new_value;
 
 	return 0;
 }
@@ -1416,12 +1417,12 @@ int SE_Options::ParseArgs(int argc, const char* const argv[])
 	app_name_ = FileNameWithoutExtOf(args[0]);
 	int returnVal = 0;
 
-	for (size_t i = 0; i < argc; i++)
+	for (size_t i = 0; i < static_cast<unsigned int>(argc); i++)
 	{
 		originalArgs_.push_back(args[i]);
 	}
 
-	for (size_t i = 1; i < argc;)
+	for (size_t i = 1; i < static_cast<unsigned int>(argc);)
 	{
 		std::string arg = args[i];
 
@@ -1438,7 +1439,7 @@ int SE_Options::ParseArgs(int argc, const char* const argv[])
 			option->set_ = true;
 			if (option->opt_arg_ != "")
 			{
-				if (i < argc - 1 && strncmp(args[i + 1], "--", 2))
+				if (i < static_cast<unsigned int>(argc - 1) && strncmp(args[i + 1], "--", 2))
 				{
 					option->arg_value_.push_back(args[i+1]);
 					i++;
@@ -1548,7 +1549,7 @@ int SE_WritePPM(const char* filename, int width, int height, const unsigned char
 		else
 		{
 			// Write all RBG pixel values as a whole chunk
-			fwrite(data, 3, width * height, file);
+			fwrite(data, 3, static_cast<unsigned int>(width * height), file);
 		}
 	}
 	else
@@ -1617,12 +1618,12 @@ int SE_WriteTGA(const char* filename, int width, int height, const unsigned char
 		0,
 		0,
 		0,
-		(uint8_t)(width & 0x00FF),
-		(uint8_t)((width & 0xFF00) >> 8),
-		(uint8_t)(height & 0x00FF),
-		(uint8_t)((height & 0xFF00) >> 8),
-		(uint8_t)(pixelSize * 8),  // 24 (BGR)
-		(uint8_t)(upsidedown ? 0 : (1<<5))    // bit 5 (6:th) controls vertical direction
+		static_cast<uint8_t>(width & 0x00FF),
+		static_cast<uint8_t>((width & 0xFF00) >> 8),
+		static_cast<uint8_t>(height & 0x00FF),
+		static_cast<uint8_t>((height & 0xFF00) >> 8),
+		static_cast<uint8_t>(pixelSize * 8),  // 24 (BGR)
+		static_cast<uint8_t>(upsidedown ? 0 : (1<<5))    // bit 5 (6:th) controls vertical direction
 	};
 	fwrite(&header, 18, 1, file);
 
@@ -1638,7 +1639,7 @@ int SE_WriteTGA(const char* filename, int width, int height, const unsigned char
 	}
 	else
 	{
-		fwrite(data, width * height * pixelSize, 1, file);
+		fwrite(data, static_cast<unsigned int>(width * height * pixelSize), 1, file);
 	}
 
 	fclose(file);

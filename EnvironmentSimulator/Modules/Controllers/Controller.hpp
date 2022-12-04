@@ -84,7 +84,7 @@ namespace scenarioengine
 
 		static const char* GetTypeNameStatic() { return CONTROLLER_BASE_TYPE_NAME; }
 		virtual const char* GetTypeName() { return GetTypeNameStatic(); }
-		static const int GetTypeStatic() { return CONTROLLER_BASE_TYPE_ID; }
+		static int GetTypeStatic() { return CONTROLLER_BASE_TYPE_ID; }
 		virtual int GetType() { return GetTypeStatic(); }
 
 		virtual void Assign(Object* object);
@@ -110,13 +110,13 @@ namespace scenarioengine
 
 	protected:
 		ControlDomains domain_;  // bitmask according to ControllerDomain type
+		int mode_; // add to scenario actions or replace
+		Object* object_;  // The object to which the controller is attached and hence controls
 		std::string name_;
 		std::string type_name_;
 		Entities* entities_;
 		ScenarioGateway* gateway_;
 		ScenarioEngine* scenario_engine_;
-		Object* object_;  // The object to which the controller is attached and hence controls
-		int mode_; // add to scenario actions or replace
 	};
 
 	typedef Controller* (*ControllerInstantiateFunction) (void* args);

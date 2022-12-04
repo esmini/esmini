@@ -20,12 +20,12 @@ using namespace scenarioengine;
 
 Controller* scenarioengine::InstantiateControllerExternal(void* args)
 {
-	Controller::InitArgs* initArgs = (Controller::InitArgs*)args;
+	Controller::InitArgs* initArgs = static_cast<Controller::InitArgs*>(args);
 
 	return new ControllerExternal(initArgs);
 }
 
-ControllerExternal::ControllerExternal(InitArgs* args) : useGhost_(false), headstart_time_(0.0), Controller(args)
+ControllerExternal::ControllerExternal(InitArgs* args) : Controller(args), useGhost_(false), headstart_time_(0.0)
 {
 	if (args && args->properties && args->properties->ValueExists("useGhost"))
 	{
@@ -87,4 +87,6 @@ void ControllerExternal::Activate(ControlDomains domainMask)
 
 void ControllerExternal::ReportKeyEvent(int key, bool down)
 {
+	(void)key;
+	(void)down;
 }

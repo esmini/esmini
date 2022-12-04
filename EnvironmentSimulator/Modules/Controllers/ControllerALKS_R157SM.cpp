@@ -21,7 +21,7 @@ using namespace scenarioengine;
 
 #define R157_LOG(level, format, ...)                                                                  \
     {                                                                                                 \
-        if (level > 0 && level <= GetLogLevel())                                                         \
+        if (level > 0 && level <= GetLogLevel())                                                      \
         {                                                                                             \
             LOG((std::string("ALKS R157 ") + GetModelName() + " " + format).c_str(), ##__VA_ARGS__);  \
         }                                                                                             \
@@ -58,22 +58,22 @@ std::map<ControllerALKS_R157SM::ReferenceDriver::Phase, std::string> ControllerA
 
 Controller* scenarioengine::InstantiateControllerALKS_R157SM(void* args)
 {
-	Controller::InitArgs* initArgs = (Controller::InitArgs*)args;
+	Controller::InitArgs* initArgs = static_cast<Controller::InitArgs*>(args);
 
 	return new ControllerALKS_R157SM(initArgs);
 }
 
-ControllerALKS_R157SM::ControllerALKS_R157SM(InitArgs* args) : model_(0), entities_(0), Controller(args)
+ControllerALKS_R157SM::ControllerALKS_R157SM(InitArgs* args) : Controller(args), model_(0), entities_(0)
 {
     if (args && args->properties)
     {
         if (args->properties->GetValueStr("model") == "Regulation")
         {
-            model_ = (ControllerALKS_R157SM::Model*) new Regulation();
+            model_ = reinterpret_cast<ControllerALKS_R157SM::Model*>(new Regulation());
         }
         else if (args->properties->GetValueStr("model") == "FSM")
         {
-            model_ = (ControllerALKS_R157SM::Model*) new FSM();
+            model_ = reinterpret_cast<ControllerALKS_R157SM::Model*>(new FSM());
         }
         else if (args->properties->GetValueStr("model") == "ReferenceDriver")
         {
@@ -129,11 +129,11 @@ ControllerALKS_R157SM::ControllerALKS_R157SM(InitArgs* args) : model_(0), entiti
                 ref_driver->wandering_trigger_->SetName("WanderingTrigger");
             }
 
-            model_ = (ControllerALKS_R157SM::Model*) ref_driver;
+            model_ = reinterpret_cast<ControllerALKS_R157SM::Model*>(ref_driver);
         }
         else if (args->properties->GetValueStr("model") == "RSS")
         {
-            model_ = (ControllerALKS_R157SM::Model*) new RSS();
+            model_ = reinterpret_cast<ControllerALKS_R157SM::Model*>(new RSS());
         }
         else
         {
@@ -220,7 +220,7 @@ void ControllerALKS_R157SM::Assign(Object* object)
 
     if (model_)
     {
-        model_->SetVehicle((Vehicle*)object);
+        model_->SetVehicle(static_cast<Vehicle*>(object));
     }
 
     Controller::Assign(object);
@@ -242,10 +242,12 @@ void ControllerALKS_R157SM::SetScenarioEngine(ScenarioEngine* scenario_engine)
     {
         model_->SetScenarioEngine(scenario_engine);
     }
-};
+}
 
 void ControllerALKS_R157SM::ReportKeyEvent(int key, bool down)
 {
+    (void)key;
+	(void)down;
 }
 
 int ControllerALKS_R157SM::Model::Detect()
@@ -550,7 +552,7 @@ void ControllerALKS_R157SM::Model::SetScenarioEngine(ScenarioEngine* scenario_en
 {
     scenario_engine_ = scenario_engine;
     entities_ = &scenario_engine_->entities_;
-};
+}
 
 void ControllerALKS_R157SM::Model::SetScenarioType(ScenarioType type)
 {
@@ -600,16 +602,16 @@ bool ControllerALKS_R157SM::Regulation::CheckSafety(ObjectInfo* info)
         if (info->obj->GetType() == Object::Type::VEHICLE)
         {
             // Find out position of front wheel (axis)
-            x = ((Vehicle*)info->obj)->front_axle_.positionX;
+            x = (static_cast<Vehicle*>(info->obj))->front_axle_.positionX;
         }
         else
         {
             // Use front side of bounding box
-            x = info->obj->boundingbox_.dimensions_.length_ / 2.0;
+            x = static_cast<double>(info->obj->boundingbox_.dimensions_.length_) / 2.0;
         }
 
         // Look at side towards Ego vehicle lane
-        double y = -1 * SIGN(info->dLaneId) * info->obj->boundingbox_.dimensions_.width_ / 2.0;
+        double y = -1 * SIGN(info->dLaneId) * static_cast<double>(info->obj->boundingbox_.dimensions_.width_) / 2.0;
         double xr = 0.0, yr = 0.0;
         RotateVec2D(x, y, info->obj->pos_.GetHRelative(), xr, yr);
         double offset = info->obj->pos_.GetOffset() + yr;
@@ -1150,9 +1152,9 @@ bool ControllerALKS_R157SM::ReferenceDriver::CheckCritical()
         Reset();  // lost sight of object
         SetModelMode(ModelMode::NO_TARGET);
     }
-    else if (veh_->GetSpeed() > SMALL_NUMBER && 
+    else if (veh_->GetSpeed() > SMALL_NUMBER &&
             object_in_focus_.dist_long > 0 ||
-            GetFullStop()  // fulfill the scenario even if ego passed the perceived vehicle 
+            GetFullStop()  // fulfill the scenario even if ego passed the perceived vehicle
         )
     {
         CheckCriticalCondition();

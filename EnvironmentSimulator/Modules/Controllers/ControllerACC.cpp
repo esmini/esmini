@@ -23,13 +23,13 @@ using namespace scenarioengine;
 
 Controller* scenarioengine::InstantiateControllerACC(void* args)
 {
-	Controller::InitArgs* initArgs = (Controller::InitArgs*)args;
+	Controller::InitArgs* initArgs = static_cast<Controller::InitArgs*>(args);
 
 	return new ControllerACC(initArgs);
 }
 
-ControllerACC::ControllerACC(InitArgs* args) : active_(false), timeGap_(1.5), setSpeed_(0),
-	currentSpeed_(0), setSpeedSet_(false), Controller(args)
+ControllerACC::ControllerACC(InitArgs* args) : Controller(args), active_(false), timeGap_(1.5), setSpeed_(0),
+	currentSpeed_(0), setSpeedSet_(false)
 {
 	if (args && args->properties && args->properties->ValueExists("timeGap"))
 	{
@@ -59,7 +59,7 @@ void ControllerACC::Init()
 void ControllerACC::Step(double timeStep)
 {
 	double minGapLength = LARGE_NUMBER;
-	double minSpeedDiff = 0.0;
+	// double minSpeedDiff = 0.0; // TODO: Commented out because it is not used
 	int minObjIndex = -1;
 	const double minDist = 3.0;  // minimum distance to keep to lead vehicle
 	const double minLateralDist = 5.0;
@@ -95,38 +95,38 @@ void ControllerACC::Step(double timeStep)
 			if (dHeading < M_PI_2)   // objects are pointing roughly in the same direction
 			{
 				adjustedGapLength -=
-					(object_->boundingbox_.dimensions_.length_ / 2.0 + object_->boundingbox_.center_.x_) +
-					(pivot_obj->boundingbox_.dimensions_.length_ / 2.0 - pivot_obj->boundingbox_.center_.x_);
+					(static_cast<double>(object_->boundingbox_.dimensions_.length_) / 2.0 + static_cast<double>(object_->boundingbox_.center_.x_)) +
+					(static_cast<double>(pivot_obj->boundingbox_.dimensions_.length_) / 2.0 - static_cast<double>(pivot_obj->boundingbox_.center_.x_));
 			}
 			else   // objects are pointing roughly in the opposite direction
 			{
 				adjustedGapLength -=
-					(object_->boundingbox_.dimensions_.length_ / 2.0 + object_->boundingbox_.center_.x_) +
-					(pivot_obj->boundingbox_.dimensions_.length_ / 2.0 + pivot_obj->boundingbox_.center_.x_);
+					(static_cast<double>(object_->boundingbox_.dimensions_.length_) / 2.0 + static_cast<double>(object_->boundingbox_.center_.x_)) +
+					(static_cast<double>(pivot_obj->boundingbox_.dimensions_.length_) / 2.0 + static_cast<double>(pivot_obj->boundingbox_.center_.x_));
 			}
 
 			// dLaneId == 0 indicates there is linked path between object lanes, i.e. no lane changes needed
 			if (diff.dLaneId == 0 && adjustedGapLength > 0 && adjustedGapLength < minGapLength && abs(diff.dt) < minLateralDist)
 			{
 				minGapLength = adjustedGapLength;
-				minSpeedDiff = currentSpeed_ - pivot_obj->GetSpeed();
-				minObjIndex = (int)i;
+				// minSpeedDiff = currentSpeed_ - pivot_obj->GetSpeed();
+				minObjIndex = static_cast<int>(i); // TODO: size_t to int
 			}
 		}
 
 		// Also check for really close entities in front
-		if (minObjIndex != i)
+		if (static_cast<unsigned int>(minObjIndex) != i)
 		{
 			double x_local, y_local;
 			object_->FreeSpaceDistance(pivot_obj, &y_local, &x_local);
 
-			if (x_local > 0 && x_local < 1.0 + pivot_obj->boundingbox_.dimensions_.length_ +
+			if (x_local > 0 && x_local < 1.0 + static_cast<double>(pivot_obj->boundingbox_.dimensions_.length_) +
 				0.5 * MAX(0.0, currentSpeed_ - pivot_obj->GetSpeed())
 				&& y_local < 0.2 && y_local > -0.5) // yield some more for right hand traffic
 			{
 				minGapLength = x_local;
-				minSpeedDiff = currentSpeed_ - pivot_obj->GetSpeed();
-				minObjIndex = (int)i;
+				// minSpeedDiff = currentSpeed_ - pivot_obj->GetSpeed();
+				minObjIndex = static_cast<int>(i);
 			}
 		}
 	}
@@ -140,13 +140,13 @@ void ControllerACC::Step(double timeStep)
 		else
 		{
 			// Follow distance = minimum distance + timeGap_ seconds
-			double speedForTimeGap = MAX(currentSpeed_, entities_->object_[minObjIndex]->GetSpeed());
+			double speedForTimeGap = MAX(currentSpeed_, entities_->object_[static_cast<unsigned int>(minObjIndex)]->GetSpeed());
 			double followDist = minDist + timeGap_ * fabs(speedForTimeGap);  // (m)
 			double dist = minGapLength - followDist;
 			double acc = 0.0;
 			double distFactor = MIN(1.0, dist / followDist);
 
-			double dvMin = currentSpeed_ - MIN(setSpeed_, entities_->object_[minObjIndex]->GetSpeed());
+			double dvMin = currentSpeed_ - MIN(setSpeed_, entities_->object_[static_cast<unsigned int>(minObjIndex)]->GetSpeed());
 			double dvSet = currentSpeed_ - setSpeed_;
 
 			acc = 2.5 * distFactor - distFactor * dvSet - (1-distFactor) * dvMin;   // weighted combination of relative distance and speed
@@ -201,4 +201,6 @@ void ControllerACC::Activate(ControlDomains domainMask)
 
 void ControllerACC::ReportKeyEvent(int key, bool down)
 {
+	(void)key;
+	(void)down;
 }

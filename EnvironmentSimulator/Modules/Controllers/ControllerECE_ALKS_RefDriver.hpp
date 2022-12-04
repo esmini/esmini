@@ -31,7 +31,7 @@ namespace scenarioengine
 
 		static const char* GetTypeNameStatic() { return CONTROLLER_ECE_ALKS_REF_DRIVER_TYPE_NAME; }
 		virtual const char* GetTypeName() { return GetTypeNameStatic(); }
-		static const int GetTypeStatic() { return CONTROLLER_TYPE_ECE_ALKS_REF_DRIVER; }
+		static int GetTypeStatic() { return CONTROLLER_TYPE_ECE_ALKS_REF_DRIVER; }
 		virtual int GetType() { return GetTypeStatic(); }
 
 		void Init();

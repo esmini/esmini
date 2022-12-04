@@ -42,7 +42,7 @@ namespace scenarioengine
 
 		static const char* GetTypeNameStatic() { return CONTROLLER_INTERACTIVE_TYPE_NAME; }
 		virtual const char* GetTypeName() { return GetTypeNameStatic(); }
-		static const int GetTypeStatic() { return Controller::Type::CONTROLLER_TYPE_INTERACTIVE; }
+		static int GetTypeStatic() { return Controller::Type::CONTROLLER_TYPE_INTERACTIVE; }
 		virtual int GetType() { return GetTypeStatic(); }
 
 	private:

@@ -141,6 +141,7 @@ ESMINI_CMAKE_FORMAT_INCLUDES = [
     os.path.join(ESMINI_DIRECTORY_ROOT, "CMakeLists.txt"),
     os.path.join(ESMINI_DIRECTORY_SUPPORT, "cmake"),
     os.path.join(ESMINI_DIRECTORY_ENVIRONMENT_SIMULATOR, "Modules", "CommonMini", "CMakeLists.txt"),
+    os.path.join(ESMINI_DIRECTORY_ENVIRONMENT_SIMULATOR, "Modules", "Controllers", "CMakeLists.txt"),
 ]
 
 ESMINI_CMAKE_FORMAT_EXTENSION = ["CMakeLists.txt", ".cmake"]
