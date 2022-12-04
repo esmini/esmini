@@ -11,9 +11,9 @@ platform:
 
 cache:
 - externals/googletest -> appveyor.yml
-- externals/OpenSceneGraph -> appveyor.yml
-- externals/OSI -> appveyor.yml
-- externals/SUMO -> appveyor.yml
+- externals/osg -> appveyor.yml
+- externals/osi -> appveyor.yml
+- externals/sumo -> appveyor.yml
 - resources/models -> appveyor.yml
 
 skip_commits:

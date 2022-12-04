@@ -42,17 +42,17 @@ set(ENABLE_INCLUDE_WHAT_YOU_USE
 set(USE_OSG
     ON
     CACHE BOOL
-          "If projects that depend on OpenSceneGraph should be compiled.")
+          "If projects that depend on osg should be compiled.")
 
 set(USE_OSI
     ON
     CACHE BOOL
-          "If code that depend on OSI should be compiled.")
+          "If code that depend on osi should be compiled.")
 
 set(USE_SUMO
     ON
     CACHE BOOL
-          "If code that depend on SUMO should be compiled.")
+          "If code that depend on sumo should be compiled.")
 
 set(USE_GTEST
     ON
