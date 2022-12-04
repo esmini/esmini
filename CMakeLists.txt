@@ -174,9 +174,9 @@ if(NOT
     OR MINGW))
     download(
         googletest
-        ${EXTERNALS_OSG_PATH}
-        ${EXTERNALS_OSG_OS_SPECIFIC_PATH}
-        ${OSG_PACKAGE_URL})
+        ${EXTERNALS_GOOGLETEST_PATH}
+        ${EXTERNALS_GOOGLETEST_OS_SPECIFIC_PATH}
+        ${GTEST_PACKAGE_URL})
 endif()
 download(
     models
