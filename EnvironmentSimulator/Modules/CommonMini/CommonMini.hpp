@@ -712,7 +712,7 @@ public:
 
 	SE_SystemTime() : start_time_(SE_getSystemTime()) {}
 	void Reset() { start_time_ = SE_getSystemTime(); }
-	double GetS() { return 1E-3 * (SE_getSystemTime() - start_time_); }
+	double GetS() { return 1E-3 * static_cast<double>((SE_getSystemTime() - start_time_)); }
 };
 
 class SE_SystemTimer
@@ -735,7 +735,7 @@ public:
 	void Reset() { start_time_ = 0; }
 	bool Started() { return start_time_ > 0 ? true : false; }
 	void SetDuration(double duration) { duration_ = duration; }
-	double Elapsed() { return 1E-3 * (SE_getSystemTime() - start_time_); }
+	double Elapsed() { return 1E-3 * static_cast<double>((SE_getSystemTime() - start_time_)); }
 	double Remaining()
 	{
 		if (Expired())
@@ -839,12 +839,12 @@ public:
 	}
 
 private:
-	double x0_;
 	double x_;
-	double v_;
-	double a_;
+	double x0_;
 	double t_;
 	double d_;
+	double v_;
+	double a_;
 	bool critical_;
 };
 

@@ -9,3 +9,4 @@ pylint==2.13.8
 spython==0.2.1
 jinja2==3.1.2
 pygccxml==2.2.1
+gdown==4.5.4

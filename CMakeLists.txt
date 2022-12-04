@@ -30,12 +30,12 @@ set(ENABLE_SANITIZERS
           "Enable sanitizers (Only valid for Linux and Mac OS)")
 
 set(ENABLE_STATIC_ANALYSIS
-    OFF
+    ON
     CACHE BOOL
           "Enable CppCheck and clang-tidy")
 
 set(ENABLE_INCLUDE_WHAT_YOU_USE
-    OFF
+    ON
     CACHE BOOL
           "Enable iwyu")
 

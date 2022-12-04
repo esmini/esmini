@@ -34,7 +34,7 @@ UDPBase::UDPBase(unsigned short int port) : port_(port)
 	}
 #endif
 
-	if ((sock_ = (int)socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
+	if ((sock_ = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
 	{
 		LOG_AND_QUIT("socket failed");
 		return;
@@ -43,7 +43,7 @@ UDPBase::UDPBase(unsigned short int port) : port_(port)
 
 int UDPBase::Bind(struct sockaddr_in& addr)
 {
-	int retval = bind(sock_, (struct sockaddr*)&addr, sizeof(addr));
+	int retval = bind(sock_, reinterpret_cast<struct sockaddr*>(&addr), sizeof(addr));
 	if (retval != 0)
 	{
 #ifdef _WIN32
@@ -82,7 +82,7 @@ void UDPBase::CloseGracefully()
 }
 
 UDPServer::UDPServer(unsigned short int port, unsigned int timeoutMs) :
-	timeoutMs_(timeoutMs), UDPBase(port)
+	UDPBase(port), timeoutMs_(timeoutMs)
 {
 	//set timer for receive operations
 	struct timeval tv;
@@ -93,7 +93,7 @@ UDPServer::UDPServer(unsigned short int port, unsigned int timeoutMs) :
 	int timeout_msec = 1000 * tv.tv_sec + tv.tv_usec;
 	if (setsockopt(sock_, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout_msec, sizeof(timeout_msec)) != 0)
 #else
-	if (setsockopt(sock_, SOL_SOCKET, SO_RCVTIMEO, (struct timeval*)&tv, sizeof(tv)) < 0)
+	if (setsockopt(sock_, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) < 0)
 #endif
 	{
 		printf("socket SO_RCVTIMEO (receive timeout) not supported on this platform\n");
@@ -109,14 +109,17 @@ UDPServer::UDPServer(unsigned short int port, unsigned int timeoutMs) :
 
 int UDPServer::Receive(char* buf, unsigned int size)
 {
-	return recvfrom(sock_, buf, size, 0, (struct sockaddr*)&sender_addr_, &sender_addr_size_);
+	// TODO:
+	// Casting to int can cause overflow in this situation. Not a good idea.
+	// Let's fix it in a way that we actually return size_t and design the flow like that
+	return static_cast<int>(recvfrom(sock_, buf, size, 0, reinterpret_cast<struct sockaddr*>(&sender_addr_), &sender_addr_size_));
 }
 
 UDPClient::UDPClient(unsigned short int port, std::string ipAddress) :
-	ipAddress_(ipAddress), UDPBase(port)
+	UDPBase(port), ipAddress_(ipAddress)
 {
 	// Prepare the sockaddr_in structure
-	memset((char*)&server_addr_, 0, sizeof(server_addr_));
+	memset(reinterpret_cast<char*>(&server_addr_), 0, sizeof(server_addr_));
 	server_addr_.sin_family = AF_INET;
 	server_addr_.sin_port = htons(port_);
 	inet_pton(AF_INET, ipAddress.c_str(), &server_addr_.sin_addr.s_addr);
@@ -125,5 +128,8 @@ UDPClient::UDPClient(unsigned short int port, std::string ipAddress) :
 
 int UDPClient::Send(char* buf, unsigned int size)
 {
-	return sendto(sock_, buf, size, 0, (struct sockaddr*)&server_addr_, sizeof(server_addr_));
+	// TODO:
+	// Casting to int can cause overflow in this situation. Not a good idea.
+	// Let's fix it in a way that we actually return size_t and design the flow like that
+	return static_cast<int>(sendto(sock_, buf, size, 0, reinterpret_cast<struct sockaddr*>(&server_addr_), sizeof(server_addr_)));
 }
