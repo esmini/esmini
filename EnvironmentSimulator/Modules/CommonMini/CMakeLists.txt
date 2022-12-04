@@ -38,6 +38,7 @@ target_link_libraries(
 
 disable_static_analysis(${TARGET})
 disable_iwyu(${TARGET})
+enable_fpic(${TARGET})
 
 # ############################### OTHERS ###################################################################
 
