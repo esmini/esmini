@@ -99,10 +99,10 @@ add_subdirectory(Applications/esmini)
 add_subdirectory(Applications/esmini-dyn)
 
 # Add unittest folder
-if (APPLE OR MINGW)
-  message ("Googletest not yet supported for macOS and MinGW")
-elseif (USE_GTEST)
-  add_subdirectory(Unittest)
+if (NOT (APPLE OR MINGW))
+  if (USE_GTEST)
+    add_subdirectory(Unittest)
+  endif()
 endif()
 
 set ( ModulesFolder Modules )

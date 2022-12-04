@@ -32,9 +32,7 @@ if(NOT
         REMOVE_ITEM
         CONTROLLERS_INCLUDES
         "${CMAKE_CURRENT_LIST_DIR}/ControllerSumo.hpp")
-endif(
-    NOT
-    USE_SUMO)
+endif()
 
 # ############################### Creating library ###################################################################
 

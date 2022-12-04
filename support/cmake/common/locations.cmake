@@ -18,7 +18,7 @@ macro(set_project_internal_paths)
         ${CMAKE_SOURCE_DIR}/bin)
 
     set(APPLICATIONS_PATH
-        ${ENVIRONMENT_SIMULATOR_PATH}/applications)
+        ${ENVIRONMENT_SIMULATOR_PATH}/Applications)
     set(CODE_EXAMPLES_PATH
         ${ENVIRONMENT_SIMULATOR_PATH}/code-examples)
     set(LIBRARIES_PATH
@@ -37,7 +37,7 @@ macro(set_project_internal_paths)
     set(SCENARIO_ENGINE_PATH
         ${MODULES_PATH}/ScenarioEngine)
     set(VIEWER_BASE_PATH
-        ${MODULES_PATH}/View)
+        ${MODULES_PATH}/ViewerBase)
 
     set(ESMINI_RM_LIB_PATH
         ${LIBRARIES_PATH}/esminiRMLib)
