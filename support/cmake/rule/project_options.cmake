@@ -50,9 +50,9 @@ target_compile_features(
     INTERFACE cxx_std_${CMAKE_CXX_STANDARD})
 
 include(${CMAKE_CURRENT_LIST_DIR}/compiler_warnings.cmake)
-set_project_warnings(
-    project_options
-    ${ENABLE_WARNINGS_AS_ERRORS})
+# set_project_warnings(
+#     project_options
+#     ${ENABLE_WARNINGS_AS_ERRORS})
 
 include(${CMAKE_CURRENT_LIST_DIR}/ccache.cmake)
 if(ENABLE_CCACHE)
@@ -66,14 +66,14 @@ if(ENABLE_SANITIZERS)
     enable_sanitizers(project_options)
 endif()
 
-include(${CMAKE_CURRENT_LIST_DIR}/static_analysis.cmake)
-if(ENABLE_STATIC_ANALYSIS)
-    enable_static_analysis()
-endif()
+# include(${CMAKE_CURRENT_LIST_DIR}/static_analysis.cmake)
+# if(ENABLE_STATIC_ANALYSIS)
+#     enable_static_analysis()
+# endif()
 
-include(${CMAKE_CURRENT_LIST_DIR}/iwyu.cmake)
-if(ENABLE_INCLUDE_WHAT_YOU_USE)
-    enable_iwyu()
-endif()
+# include(${CMAKE_CURRENT_LIST_DIR}/iwyu.cmake)
+# if(ENABLE_INCLUDE_WHAT_YOU_USE)
+#     enable_iwyu()
+# endif()
 
 # include(${CMAKE_CURRENT_LIST_DIR}/valgrind.cmake) enable_valgrind()
