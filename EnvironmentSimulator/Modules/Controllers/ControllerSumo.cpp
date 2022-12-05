@@ -161,8 +161,8 @@ void ControllerSumo::Step(double timeStep)
 			std::string id = entities_->object_[i]->name_;
 			LOG("SUMO controller: Add vehicle to SUMO: %s", id.c_str());
 			libsumo::Vehicle::add(id, "", "DEFAULT_VEHTYPE");
-			libsumo::Vehicle::moveToXY(id, "random", 0, entities_->object_[i]->pos_.GetX() + sumo_x_offset_,
-				entities_->object_[i]->pos_.GetY() + sumo_y_offset_, entities_->object_[i]->pos_.GetH(), 0);
+			libsumo::Vehicle::moveToXY(id, "random", 0, entities_->object_[i]->pos_.GetX() + static_cast<double>(sumo_x_offset_),
+				entities_->object_[i]->pos_.GetY() + static_cast<double>(sumo_y_offset_), entities_->object_[i]->pos_.GetH(), 0);
 			libsumo::Vehicle::setSpeed(id, entities_->object_[i]->speed_);
 		}
 	}
@@ -179,7 +179,7 @@ void ControllerSumo::Step(double timeStep)
 				std::string sumoid = obj->name_;
 				libsumo::TraCIPosition pos = libsumo::Vehicle::getPosition3D(sumoid);
 				obj->speed_ = libsumo::Vehicle::getSpeed(sumoid);
-				obj->pos_.SetInertiaPos(pos.x - sumo_x_offset_, pos.y - sumo_y_offset_, pos.z,
+				obj->pos_.SetInertiaPos(pos.x - static_cast<double>(sumo_x_offset_), pos.y - static_cast<double>(sumo_y_offset_), pos.z,
 					-libsumo::Vehicle::getAngle(sumoid) * M_PI / 180 + M_PI / 2, libsumo::Vehicle::getSlope(sumoid) * M_PI / 180, 0);
 
 				obj->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);
@@ -192,8 +192,8 @@ void ControllerSumo::Step(double timeStep)
 			else if (!entities_->object_[i]->IsGhost())
 			{
 				// Updates all positions for non-sumo controlled vehicles
-				libsumo::Vehicle::moveToXY(entities_->object_[i]->name_, "random", 0, entities_->object_[i]->pos_.GetX() + sumo_x_offset_,
-					entities_->object_[i]->pos_.GetY() + sumo_y_offset_, entities_->object_[i]->pos_.GetH(), 0);
+				libsumo::Vehicle::moveToXY(entities_->object_[i]->name_, "random", 0, entities_->object_[i]->pos_.GetX() + static_cast<double>(sumo_x_offset_),
+					entities_->object_[i]->pos_.GetY() + static_cast<double>(sumo_y_offset_), entities_->object_[i]->pos_.GetH(), 0);
 				libsumo::Vehicle::setSpeed(entities_->object_[i]->name_, entities_->object_[i]->speed_);
 			}
 		}

@@ -31,23 +31,6 @@
 
 using namespace scenarioengine;
 
-static struct
-{
-	osi3::SensorData *sd;
-	osi3::GroundTruth *gt;
-	osi3::StationaryObject *sobj;
-	osi3::TrafficSign *ts;
-	osi3::MovingObject *mobj;
-	std::vector<osi3::Lane *> ln;
-	std::vector<osi3::LaneBoundary *> lnb;
-} obj_osi_internal;
-
-static struct
-{
-	osi3::GroundTruth *gt;
-	osi3::SensorView *sv;
-} obj_osi_external;
-
 class OSIReporter
 {
 public:

@@ -174,9 +174,9 @@ namespace scenarioengine
 
 		void removeObject(int id);
 		void removeObject(std::string name);
-		int getNumberOfObjects() { return (int)objectState_.size(); }
-		ObjectState getObjectStateByIdx(int idx) { return *objectState_[idx]; }
-		ObjectState *getObjectStatePtrByIdx(int idx) { return objectState_[idx].get(); }
+		int getNumberOfObjects() { return static_cast<int>(objectState_.size()); }
+		ObjectState getObjectStateByIdx(int idx) { return *objectState_[static_cast<unsigned int>(idx)]; }
+		ObjectState *getObjectStatePtrByIdx(int idx) { return objectState_[static_cast<unsigned int>(idx)].get(); }
 		ObjectState *getObjectStatePtrById(int id);
 		int getObjectStateById(int idx, ObjectState &objState);
 		void WriteStatesToFile();

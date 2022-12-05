@@ -52,7 +52,7 @@ namespace aabbTree {
     public:
         double sI, sF;
         Point a, b, c;
-        Triangle() : geometry_(nullptr), sI(0), sF(0) {}
+        Triangle() : sI(0), sF(0), geometry_(nullptr) {}
         Triangle(Geometry *geometry) : geometry_(geometry) {}
         ~Triangle() {}
         Geometry *geometry() { return geometry_; }

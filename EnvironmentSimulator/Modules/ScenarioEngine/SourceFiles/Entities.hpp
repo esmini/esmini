@@ -180,10 +180,10 @@ namespace scenarioengine
 		std::vector<Object*> collisions_;
 
 		Object(Type type);
-		Object(const Object& o)
-		{
-			*this = o;
-		}
+		Object(const Object& o) = default;
+		// { TODO: @Emil: why do we have this definition for copy constructor. It already implicityly does that?
+		// 	*this = o;
+		// }
 		virtual ~Object() {}
 		void SetEndOfRoad(bool state, double time = 0.0);
 		bool IsEndOfRoad() { return end_of_road_timestamp_ > SMALL_NUMBER; }
@@ -512,7 +512,7 @@ namespace scenarioengine
 			performance_.maxSpeed = LARGE_NUMBER;
 
 			// Enable snap to sidewalks
-			pos_.SetSnapLaneTypes(pos_.GetSnapLaneTypes() | roadmanager::Lane::LaneType::LANE_TYPE_SIDEWALK);
+			pos_.SetSnapLaneTypes(pos_.GetSnapLaneTypes() | static_cast<int>(roadmanager::Lane::LaneType::LANE_TYPE_SIDEWALK));
 		}
 
 		void SetCategory(std::string category)
@@ -567,7 +567,6 @@ namespace scenarioengine
 
 		MiscObject() : Object(Object::Type::MISC_OBJECT), mass_(0.0), name_("")
 		{
-			category_ = static_cast<int>(category_);
 			performance_.maxAcceleration = 0.0;
 			performance_.maxDeceleration = 0.0;
 			performance_.maxSpeed = 0.0;

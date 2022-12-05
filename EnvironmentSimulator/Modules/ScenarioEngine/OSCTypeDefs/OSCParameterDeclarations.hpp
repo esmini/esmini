@@ -52,12 +52,12 @@ namespace scenarioengine
 
 		void* getValueFromStruct(ParameterStruct *p)
 		{
-			return (void*)&p->value._int;
+			return static_cast<void*>(&p->value._int);
 		}
 
 		void* setValueInStruct(ParameterStruct* p)
 		{
-			return (void*)&p->value._int;
+			return static_cast<void*>(&p->value._int);
 		}
 	};
 

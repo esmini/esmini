@@ -65,8 +65,8 @@ namespace scenarioengine
 		SE_SimulationTimer timer_;
 		ConditionState state_;
 
-		OSCCondition(ConditionType base_type) : base_type_(base_type), state_(ConditionState::IDLE),
-			last_result_(false), edge_(ConditionEdge::NONE) {}
+		OSCCondition(ConditionType base_type) : base_type_(base_type),
+			last_result_(false), edge_(ConditionEdge::NONE), state_(ConditionState::IDLE) {}
 		virtual ~OSCCondition() = default;
 
 		bool Evaluate(StoryBoard *storyBoard, double sim_time);
@@ -170,7 +170,7 @@ namespace scenarioengine
 		double hwt_;
 
 		bool CheckCondition(StoryBoard* storyBoard, double sim_time);
-		TrigByTimeHeadway() : hwt_(0), TrigByEntity(TrigByEntity::EntityConditionType::TIME_HEADWAY) {}
+		TrigByTimeHeadway() : TrigByEntity(TrigByEntity::EntityConditionType::TIME_HEADWAY), hwt_(0) {}
 		void Log();
 	};
 
@@ -187,7 +187,7 @@ namespace scenarioengine
 		double ttc_;
 
 		bool CheckCondition(StoryBoard* storyBoard, double sim_time);
-		TrigByTimeToCollision() : object_(0), ttc_(-1), TrigByEntity(TrigByEntity::EntityConditionType::TIME_TO_COLLISION) {}
+		TrigByTimeToCollision() : TrigByEntity(TrigByEntity::EntityConditionType::TIME_TO_COLLISION), object_(0), ttc_(-1) {}
 		void Log();
 	};
 
@@ -201,8 +201,8 @@ namespace scenarioengine
 		bool checkOrientation_;
 
 		bool CheckCondition(StoryBoard* storyBoard, double sim_time);
-		TrigByReachPosition() : dist_(0), tolerance_(1.0), angularTolerance_(0.05), checkOrientation_(false) ,
-			TrigByEntity(TrigByEntity::EntityConditionType::REACH_POSITION) {}
+		TrigByReachPosition() : TrigByEntity(TrigByEntity::EntityConditionType::REACH_POSITION), tolerance_(1.0), dist_(0),
+		angularTolerance_(0.05), checkOrientation_(false) {}
 		void Log();
 	};
 
@@ -218,8 +218,9 @@ namespace scenarioengine
 		double dist_;
 
 		bool CheckCondition(StoryBoard* storyBoard, double sim_time);
-		TrigByDistance() : value_(0), dist_(0), cs_(roadmanager::CoordinateSystem::CS_UNDEFINED), freespace_(false),
-			relDistType_(roadmanager::RelativeDistanceType::REL_DIST_UNDEFINED), TrigByEntity(TrigByEntity::EntityConditionType::DISTANCE) {}
+		TrigByDistance() : TrigByEntity(TrigByEntity::EntityConditionType::DISTANCE), value_(0),
+		freespace_(false), cs_(roadmanager::CoordinateSystem::CS_UNDEFINED),
+		relDistType_(roadmanager::RelativeDistanceType::REL_DIST_UNDEFINED),dist_(0) {}
 		void Log();
 	};
 
@@ -230,7 +231,7 @@ namespace scenarioengine
 		double odom_;
 
 		bool CheckCondition(StoryBoard* storyBoard, double sim_time);
-		TrigByTraveledDistance() : value_(0), odom_(0), TrigByEntity(TrigByEntity::EntityConditionType::TRAVELED_DISTANCE) {}
+		TrigByTraveledDistance() : TrigByEntity(TrigByEntity::EntityConditionType::TRAVELED_DISTANCE), value_(0), odom_(0) {}
 		void Log();
 	};
 
@@ -247,7 +248,7 @@ namespace scenarioengine
 		double rel_dist_;
 
 		bool CheckCondition(StoryBoard* storyBoard, double sim_time);
-		TrigByRelativeDistance() : object_(0), value_(0.0), rel_dist_(0), TrigByEntity(TrigByEntity::EntityConditionType::RELATIVE_DISTANCE) {}
+		TrigByRelativeDistance() : TrigByEntity(TrigByEntity::EntityConditionType::RELATIVE_DISTANCE), object_(0), value_(0.0), rel_dist_(0) {}
 		void Log();
 	};
 
@@ -272,8 +273,8 @@ namespace scenarioengine
 		std::vector<CollisionPair> collision_pair_;
 
 		bool CheckCondition(StoryBoard* storyBoard, double sim_time);
-		TrigByCollision() : object_(0), type_(Object::Type::TYPE_NONE),
-			TrigByEntity(TrigByEntity::EntityConditionType::COLLISION) {}
+		TrigByCollision() : TrigByEntity(TrigByEntity::EntityConditionType::COLLISION),
+		object_(0), type_(Object::Type::TYPE_NONE) {}
 		void Log();
 	};
 
@@ -287,7 +288,7 @@ namespace scenarioengine
 		double current_duration_;
 
 		bool CheckCondition(StoryBoard* storyBoard, double sim_time);
-		TrigByEndOfRoad() : current_duration_(0), TrigByEntity(TrigByEntity::EntityConditionType::END_OF_ROAD) {}
+		TrigByEndOfRoad() : TrigByEntity(TrigByEntity::EntityConditionType::END_OF_ROAD), current_duration_(0) {}
 		void Log();
 
 	private:
@@ -303,7 +304,7 @@ namespace scenarioengine
 		double current_duration_;
 
 		bool CheckCondition(StoryBoard* storyBoard, double sim_time);
-		TrigByOffRoad() : current_duration_(0), TrigByEntity(TrigByEntity::EntityConditionType::OFF_ROAD) {}
+		TrigByOffRoad() : TrigByEntity(TrigByEntity::EntityConditionType::OFF_ROAD) , current_duration_(0) {}
 		void Log();
 
 	private:
@@ -318,7 +319,7 @@ namespace scenarioengine
 		double current_acceleration_;
 
 		bool CheckCondition(StoryBoard* storyBoard, double sim_time);
-		TrigByAcceleration() : value_(0), current_acceleration_(0), TrigByEntity(TrigByEntity::EntityConditionType::ACCELERATION) {}
+		TrigByAcceleration() : TrigByEntity(TrigByEntity::EntityConditionType::ACCELERATION), value_(0), current_acceleration_(0) {}
 		void Log();
 	};
 
@@ -330,7 +331,7 @@ namespace scenarioengine
 		double current_speed_;
 
 		bool CheckCondition(StoryBoard* storyBoard, double sim_time);
-		TrigBySpeed() : value_(0), current_speed_(0), TrigByEntity(TrigByEntity::EntityConditionType::SPEED) {}
+		TrigBySpeed() : TrigByEntity(TrigByEntity::EntityConditionType::SPEED), value_(0), current_speed_(0) {}
 		void Log();
 	};
 
@@ -343,7 +344,7 @@ namespace scenarioengine
 		double current_rel_speed_;
 
 		bool CheckCondition(StoryBoard* storyBoard, double sim_time);
-		TrigByRelativeSpeed() : value_(0), current_rel_speed_(0), TrigByEntity(TrigByEntity::EntityConditionType::RELATIVE_SPEED) {}
+		TrigByRelativeSpeed() : TrigByEntity(TrigByEntity::EntityConditionType::RELATIVE_SPEED), value_(0), current_rel_speed_(0) {}
 		void Log();
 	};
 
@@ -356,7 +357,7 @@ namespace scenarioengine
 		double current_duration_;
 
 		bool CheckCondition(StoryBoard* storyBoard, double sim_time);
-		TrigByStandStill() : current_duration_(0), TrigByEntity(TrigByEntity::EntityConditionType::STAND_STILL) {}
+		TrigByStandStill() : TrigByEntity(TrigByEntity::EntityConditionType::STAND_STILL), current_duration_(0) {}
 		void Log();
 
 	private:
@@ -417,7 +418,7 @@ namespace scenarioengine
 		double sim_time_;
 
 		bool CheckCondition(StoryBoard* storyBoard, double sim_time);
-		TrigBySimulationTime() : sim_time_(0), TrigByValue(TrigByValue::Type::SIMULATION_TIME) {}
+		TrigBySimulationTime() : TrigByValue(TrigByValue::Type::SIMULATION_TIME),sim_time_(0) {}
 		void Log();
 	};
 

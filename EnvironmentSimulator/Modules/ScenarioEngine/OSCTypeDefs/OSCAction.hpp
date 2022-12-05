@@ -103,6 +103,8 @@ namespace scenarioengine
 
 		virtual void Start(double simTime, double dt)
 		{
+			(void)simTime;
+			(void)dt;
 			if (state_ == State::STANDBY || next_state_ == State::STANDBY)
 			{
 				transition_ = Transition::START_TRANSITION;
@@ -130,6 +132,7 @@ namespace scenarioengine
 
 		virtual void End(double simTime)
 		{
+			(void)simTime;
 			// Allow elements to move directly from standby to complete
 			// Some actions are atomic, and don't need run time
 			if (state_ == State::RUNNING || state_ == State::STANDBY )
@@ -195,7 +198,7 @@ namespace scenarioengine
 
 		BaseType base_type_;
 
-		OSCAction(BaseType type) : base_type_(type), StoryBoardElement(StoryBoardElement::ElementType::ACTION) {}
+		OSCAction(BaseType type) : StoryBoardElement(StoryBoardElement::ElementType::ACTION), base_type_(type) {}
 		virtual ~OSCAction() {}
 
 		std::string BaseType2Str();

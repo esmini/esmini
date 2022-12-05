@@ -44,11 +44,11 @@ class RubberbandManipulator : public osgGA::CameraManipulator
         {
         public:
             CustomCamera(osg::Vec3 pos, osg::Vec3 rot, bool fixed_pos = false) :
-                pos_(pos), rot_(rot), fixed_pos_(fixed_pos), ortho_(false), fixed_rot_(true) {}
+                pos_(pos), rot_(rot), fixed_pos_(fixed_pos), fixed_rot_(true), ortho_(false) {}
             CustomCamera(osg::Vec3 pos, bool fixed_pos = false) :
                 pos_(pos), fixed_pos_(fixed_pos), fixed_rot_(false), ortho_(false) {}
             CustomCamera(osg::Vec3 pos, double rot) :
-                pos_(pos), rot_(osg::Vec3(rot, M_PI_2 - 1e-5, 0.0)),
+                pos_(pos), rot_(osg::Vec3(static_cast<float>(rot), static_cast<float>(M_PI_2) - 1e-5f, 0.0f)),
                 fixed_pos_(true), fixed_rot_(true), ortho_(true) {}
 
             bool GetFixPos() { return fixed_pos_; }
@@ -89,14 +89,14 @@ class RubberbandManipulator : public osgGA::CameraManipulator
         virtual void init(const GUIEventAdapter& ea,GUIActionAdapter& us);
 
         /** handle events, return true if handled, false otherwise.*/
-        virtual bool handle(const GUIEventAdapter& ea,GUIActionAdapter& us);
+        // virtual bool handle(const GUIEventAdapter& ea,GUIActionAdapter& us); // TODO: Why do we need this at all. We have exact declaration on base level? why attempt to overload?
 
         /** Get the keyboard and mouse usage of this manipulator.*/
         virtual void getUsage(osg::ApplicationUsage& usage) const;
 
 		void setMode(unsigned int mode);
 
-		int getMode() { return _mode; }
+		int getMode() { return static_cast<int>(_mode); }
 
 		void computeNodeCenterAndRotation(osg::Vec3d& nodeCenter, osg::Quat& nodeRotation) const;
 
@@ -104,7 +104,7 @@ class RubberbandManipulator : public osgGA::CameraManipulator
 
         void AddCustomCamera(CustomCamera customCamera) { customCamera_.push_back(customCamera); }
 
-        unsigned int GetNumberOfCameraModes() { return CAMERA_MODE::RB_NUM_MODES + customCamera_.size() - 1; }
+        unsigned int GetNumberOfCameraModes() { return static_cast<unsigned int>(CAMERA_MODE::RB_NUM_MODES + customCamera_.size() - 1); }
 
         CustomCamera* GetCurrentCustomCamera();
 

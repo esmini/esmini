@@ -39,7 +39,8 @@ endif()
 include_directories(
     ${COMMON_MINI_PATH}
     ${CONTROLLERS_PATH}
-    ${SCENARIO_ENGINE_PATH}/OSCTypeDefs)
+    ${SCENARIO_ENGINE_PATH}/OSCTypeDefs
+    ${SCENARIO_ENGINE_PATH}/SourceFiles)
 
 add_library(
     ${TARGET}
@@ -54,7 +55,6 @@ target_link_libraries(
 target_include_system_directories(
     ${TARGET}
     PRIVATE
-    ${SCENARIO_ENGINE_PATH}/SourceFiles
     ${ROAD_MANAGER_PATH}
     ${EXTERNALS_SUMO_INCLUDES})
 

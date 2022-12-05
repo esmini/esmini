@@ -31,7 +31,7 @@ namespace scenarioengine
 		} Actor;
 
 		ManeuverGroup() : StoryBoardElement(StoryBoardElement::ElementType::MANEUVER_GROUP) {}
-		~ManeuverGroup() 
+		~ManeuverGroup()
 		{
 			for (auto* entry : actor_)
             {
@@ -86,7 +86,7 @@ namespace scenarioengine
 		Trigger *start_trigger_;
 		Trigger *stop_trigger_;
 
-		Act() : start_trigger_(0), stop_trigger_(0), StoryBoardElement(StoryBoardElement::ElementType::ACT) {}
+		Act() : StoryBoardElement(StoryBoardElement::ElementType::ACT) , start_trigger_(0), stop_trigger_(0) {}
 		~Act()
 		{
 			for (auto* entry : maneuverGroup_)
@@ -103,7 +103,7 @@ namespace scenarioengine
 	class Story
 	{
 	public:
-		Story(std::string name) {}
+		Story(std::string name) { (void)name; }
 		~Story()
 		{
 			for (auto* entry : act_)
@@ -128,10 +128,10 @@ namespace scenarioengine
 	{
 	public:
 		StoryBoard() : stop_trigger_(0) {}
-		~StoryBoard() 
-		{ 
-			for (auto* entry : story_) 
-			{ 
+		~StoryBoard()
+		{
+			for (auto* entry : story_)
+			{
 				delete entry;
 			}
 			delete stop_trigger_;

@@ -23,15 +23,6 @@
 
 using namespace scenarioengine;
 
-namespace scenarioengine
-{
-	void RegisterParameterDeclarationCallback(ParamDeclCallbackFunc func, void* data)
-	{
-		paramDeclCallback.func = func;
-		paramDeclCallback.data = data;
-	}
-}
-
 ScenarioEngine::ScenarioEngine(std::string oscFilename, bool disable_controllers)
 {
 	init_status_ = InitScenario(oscFilename, disable_controllers);

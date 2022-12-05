@@ -34,14 +34,14 @@
 #include "OSIReporter.hpp"
 #include "OSCParameterDistribution.hpp"
 
-extern double color_green[3];
-extern double color_gray[3];
-extern double color_dark_gray[3];
-extern double color_red[3];
-extern double color_blue[3];
-extern double color_yellow[3];
-extern double color_white[3];
-extern double color_black[3];
+extern float color_green[3];
+extern float color_gray[3];
+extern float color_dark_gray[3];
+extern float color_red[3];
+extern float color_blue[3];
+extern float color_yellow[3];
+extern float color_white[3];
+extern float color_black[3];
 
 using namespace scenarioengine;
 
@@ -242,7 +242,7 @@ namespace viewer
 		osg::Vec3 pivot_pos;
 		osg::Vec3 target_pos;
 
-		PointSensor() : line_(0), line_vertex_data_(0), ball_(0) {};
+		PointSensor() : ball_(0), line_(0), line_vertex_data_(0) {};
 		void Show() { group_->setNodeMask(NODE_MASK_ROAD_SENSORS); }
 		void Hide() { group_->setNodeMask(0x0); };
 	};
@@ -483,7 +483,7 @@ namespace viewer
 		void ClearNodeMaskBits(int bits);
 		void ToggleNodeMaskBits(int bits);
 		int GetNodeMaskBit(int mask);
-		PointSensor* CreateSensor(double color[], bool create_ball, bool create_line, double ball_radius, double line_width);
+		PointSensor* CreateSensor(float color[], bool create_ball, bool create_line, double ball_radius, double line_width);
 		bool CreateRoadSensors(MovingModel* moving_model);
 		void SetWindowTitle(std::string title);
 		void SetWindowTitleFromArgs(std::vector<std::string>& arg);
@@ -532,7 +532,7 @@ namespace viewer
 	{
 	public:
 		ViewerEventHandler(Viewer *viewer) : viewer_(viewer) {}
-		bool handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter&);
+		// bool handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter&);  // TODO: Why do we need this at all. We have exact declaration on base level? why attempt to overload?
 
 	private:
 		Viewer* viewer_;

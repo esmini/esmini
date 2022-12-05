@@ -52,15 +52,15 @@
 #define ORTHO_FOV 1.0
 #define DEFAULT_LENGTH_FOR_CONTINUOUS_OBJS 10.0
 
-double color_green[3] = { 0.25, 0.6, 0.3 };
-double color_gray[3] = { 0.7, 0.7, 0.7 };
-double color_dark_gray[3] = { 0.5, 0.5, 0.5 };
-double color_light_gray[3] = { 0.7, 0.7, 0.7 };
-double color_red[3] = { 0.73, 0.26, 0.26 };
-double color_black[3] = { 0.2, 0.2, 0.2 };
-double color_blue[3] = { 0.25, 0.38, 0.7 };
-double color_yellow[3] = { 0.75, 0.7, 0.4 };
-double color_white[3] = { 0.90, 0.90, 0.85 };
+float color_green[3] = { 0.25, 0.6, 0.3 };
+float color_gray[3] = { 0.7, 0.7, 0.7 };
+float color_dark_gray[3] = { 0.5, 0.5, 0.5 };
+float color_light_gray[3] = { 0.7, 0.7, 0.7 };
+float color_red[3] = { 0.73, 0.26, 0.26 };
+float color_black[3] = { 0.2, 0.2, 0.2 };
+float color_blue[3] = { 0.25, 0.38, 0.7 };
+float color_yellow[3] = { 0.75, 0.7, 0.4 };
+float color_white[3] = { 0.90, 0.90, 0.85 };
 
 USE_OSGPLUGIN(osg2)
 USE_OSGPLUGIN(jpeg)
@@ -3187,7 +3187,7 @@ bool Viewer::CreateRoadSensors(MovingModel* moving_model)
 	return true;
 }
 
-PointSensor* Viewer::CreateSensor(double color[], bool create_ball, bool create_line, double ball_radius, double line_width)
+PointSensor* Viewer::CreateSensor(float color[], bool create_ball, bool create_line, double ball_radius, double line_width)
 {
 	PointSensor* sensor = new PointSensor();
 	sensor->group_ = new osg::Group();

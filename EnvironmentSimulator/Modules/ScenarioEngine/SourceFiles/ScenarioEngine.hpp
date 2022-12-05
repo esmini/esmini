@@ -35,8 +35,11 @@ namespace scenarioengine
 		void* data;
 	} paramDeclCallback = {0, 0};
 
-
-	void RegisterParameterDeclarationCallback(ParamDeclCallbackFunc func, void* data);
+	void RegisterParameterDeclarationCallback(ParamDeclCallbackFunc func, void* data)
+	{
+		paramDeclCallback.func = func;
+		paramDeclCallback.data = data;
+	}
 
 	typedef struct
 	{

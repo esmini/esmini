@@ -142,10 +142,10 @@ namespace scenarioengine
 		Entities* entities_;
 
 		AddEntityAction() : OSCGlobalAction(OSCGlobalAction::Type::ADD_ENTITY), entity_(nullptr),
-			entities_(nullptr), pos_(0) {};
+			pos_(0), entities_(nullptr) {};
 
 		AddEntityAction(Object* entity) : OSCGlobalAction(OSCGlobalAction::Type::ADD_ENTITY), entity_(entity),
-			entities_(nullptr), pos_(0) {};
+			pos_(0), entities_(nullptr) {};
 
 		AddEntityAction(const AddEntityAction& action) : OSCGlobalAction(OSCGlobalAction::Type::ADD_ENTITY)
 		{
@@ -249,7 +249,7 @@ namespace scenarioengine
 		void SetEntities(Entities* entities)      { entities_      = entities;   }
 		void SetGateway(ScenarioGateway* gateway) { gateway_ = gateway; }
 		void SetReader(ScenarioReader* reader)    { reader_ = reader; }
-		void SetNumberOfVehicles(int number)      { numberOfVehicles = number;   }
+		void SetNumberOfVehicles(int number)      { numberOfVehicles = static_cast<unsigned long>(number);   }
 		void Setvelocity(double velocity)         { velocity_ = velocity;        }
 
     private:

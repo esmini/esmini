@@ -294,6 +294,7 @@ void ScenarioPlayer::ViewerFrame(bool init)
 	}
 
 	static double last_dot_time = scenarioEngine->getSimulationTime();
+	(void)last_dot_time;
 
 	mutex.Lock();
 
@@ -306,7 +307,7 @@ void ScenarioPlayer::ViewerFrame(bool init)
 			scenarioEngine->entities_.object_[i]->model3d_ != viewer_->entities_[i]->filename_)
 		{
 			// Object has most probably been deleted from the entity list
-			viewer_->RemoveCar(i);
+			viewer_->RemoveCar(static_cast<int>(i));
 			i--;  // test same object again against next in viewer list
 		}
 	}
@@ -318,7 +319,7 @@ void ScenarioPlayer::ViewerFrame(bool init)
 		viewer_->AddEntityModel(viewer_->CreateEntityModel(obj->model3d_, trail_color,
 			viewer::EntityModel::EntityType::VEHICLE, false,
 			obj->name_, &obj->boundingbox_, obj->scaleMode_));
-		InitVehicleModel(obj, (viewer::CarModel*)viewer_->entities_.back());
+		InitVehicleModel(obj, static_cast<viewer::CarModel*>(viewer_->entities_.back()));
 	}
 
 	// remove obsolete cars
@@ -328,7 +329,7 @@ void ScenarioPlayer::ViewerFrame(bool init)
 		{
 			viewer_->entities_.back()->trajectory_->Disable();
 		}
-		viewer_->RemoveCar(viewer_->entities_.size() - 1);
+		viewer_->RemoveCar(static_cast<int>(viewer_->entities_.size() - 1));
 	}
 
 	if (!init)
@@ -366,11 +367,11 @@ void ScenarioPlayer::ViewerFrame(bool init)
 			{
 				if (entity->IsVehicle())
 				{
-					viewer::CarModel* car = (viewer::CarModel*)entity;
+					viewer::CarModel* car = static_cast<viewer::CarModel*>(entity);
 					car->UpdateWheels(obj->wheel_angle_, obj->wheel_rot_);
 				}
 
-				viewer::MovingModel* mov = (viewer::MovingModel*)entity;
+				viewer::MovingModel* mov = static_cast<viewer::MovingModel*>(entity);
 				if (obj->GetGhost())
 				{
 					if (mov->steering_sensor_)
@@ -394,19 +395,19 @@ void ScenarioPlayer::ViewerFrame(bool init)
 				}
 			}
 
-			if (entity->trail_->pline_vertex_data_->size() > obj->trail_.GetNumberOfVertices())
+			if (entity->trail_->pline_vertex_data_->size() > static_cast<unsigned int>(obj->trail_.GetNumberOfVertices()))
 			{
 				// Reset the trail, probably there has been a ghost restart
 				entity->trail_->Reset();
-				for (size_t j = 0; j < obj->trail_.GetNumberOfVertices(); j++)
+				for (size_t j = 0; j < static_cast<unsigned int>(obj->trail_.GetNumberOfVertices()); j++)
 				{
-					entity->trail_->AddPoint(osg::Vec3(obj->trail_.vertex_[j].x, obj->trail_.vertex_[j].y, obj->trail_.vertex_[j].z + (obj->GetId() + 1) * TRAIL_Z_OFFSET));
+					entity->trail_->AddPoint(osg::Vec3(static_cast<float>(obj->trail_.vertex_[j].x), static_cast<float>(obj->trail_.vertex_[j].y), static_cast<float>(obj->trail_.vertex_[j].z + (obj->GetId() + 1) * TRAIL_Z_OFFSET)));
 				}
 			}
 
-			if (obj->trail_.GetNumberOfVertices() > entity->trail_->pline_vertex_data_->size())
+			if (static_cast<unsigned int>(obj->trail_.GetNumberOfVertices()) > entity->trail_->pline_vertex_data_->size())
 			{
-				entity->trail_->AddPoint(osg::Vec3(obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ() + (obj->GetId() + 1) * TRAIL_Z_OFFSET));
+				entity->trail_->AddPoint(osg::Vec3(static_cast<float>(obj->pos_.GetX()), static_cast<float>(obj->pos_.GetY()), static_cast<float>(obj->pos_.GetZ() + (obj->GetId() + 1) * TRAIL_Z_OFFSET)));
 			}
 
 			// on screen text following each entity
@@ -418,8 +419,8 @@ void ScenarioPlayer::ViewerFrame(bool init)
 				obj->pos_.GetX(),
 				obj->pos_.GetY(),
 				obj->pos_.GetH(),
-				obj->pos_.GetX() + obj->boundingbox_.center_.x_ * cos(obj->pos_.GetH()),
-				obj->pos_.GetY() + obj->boundingbox_.center_.x_ * sin(obj->pos_.GetH()));
+				obj->pos_.GetX() + static_cast<double>(obj->boundingbox_.center_.x_) * cos(obj->pos_.GetH()),
+				obj->pos_.GetY() + static_cast<double>(obj->boundingbox_.center_.x_) * sin(obj->pos_.GetH()));
 			entity->on_screen_info_.osg_text_->setText(entity->on_screen_info_.string_);
 		}
 
@@ -430,9 +431,9 @@ void ScenarioPlayer::ViewerFrame(bool init)
 
 		// Update info text
 		static char str_buf[128];
-		if (viewer_->currentCarInFocus_ >= 0 && viewer_->currentCarInFocus_ < viewer_->entities_.size())
+		if (viewer_->currentCarInFocus_ >= 0 && static_cast<unsigned int>(viewer_->currentCarInFocus_) < viewer_->entities_.size())
 		{
-			Object* obj = scenarioEngine->entities_.object_[viewer_->currentCarInFocus_];
+			Object* obj = scenarioEngine->entities_.object_[static_cast<unsigned int>(viewer_->currentCarInFocus_)];
 			snprintf(str_buf, sizeof(str_buf), "%.2fs entity[%d]: %s (%d) %.2fkm/h %.2fm (%d, %d, %.2f, %.2f) / (%.2f, %.2f %.2f)", scenarioEngine->getSimulationTime(),
 				viewer_->currentCarInFocus_, obj->name_.c_str(), obj->GetId(), 3.6 * obj->speed_, obj->odometer_,
 				obj->pos_.GetTrackId(), obj->pos_.GetLaneId(), fabs(obj->pos_.GetOffset()) < SMALL_NUMBER ? 0 : obj->pos_.GetOffset(),
@@ -507,7 +508,7 @@ OffScreenImage* ScenarioPlayer::FetchCapturedImagePtr()
 				}
 				if (tmpImg->height * tmpImg->width > 0)
 				{
-					img.data = (unsigned char*)malloc(tmpImg->pixelSize * tmpImg->height * tmpImg->width * sizeof(unsigned char));
+					img.data = static_cast<unsigned char*>(malloc(static_cast<unsigned int>(tmpImg->pixelSize * tmpImg->height * tmpImg->width) * sizeof(unsigned char)));
 				}
 			}
 			if (img.data != nullptr)
@@ -516,7 +517,7 @@ OffScreenImage* ScenarioPlayer::FetchCapturedImagePtr()
 				img.width = tmpImg->width;
 				img.pixelSize = tmpImg->pixelSize;
 				img.pixelFormat = tmpImg->pixelFormat;
-				memcpy(img.data, tmpImg->data, tmpImg->pixelSize * tmpImg->height * tmpImg->width * sizeof(unsigned char));
+				memcpy(img.data, tmpImg->data, static_cast<unsigned int>(tmpImg->pixelSize * tmpImg->height * tmpImg->width) * sizeof(unsigned char));
 			}
 		}
 
@@ -590,7 +591,7 @@ int ScenarioPlayer::InitViewer()
 
 	// osg::ArgumentParser modifies given args array so we copy it for safe modification
 	std::vector<char*> args = {argv_, std::next(argv_, argc_)};
-	int arg_count = args.size();
+	int arg_count = static_cast<int>(args.size());
 
 	// Create viewer
 	osg::ArgumentParser arguments(&arg_count, args.data());
@@ -909,7 +910,7 @@ int ScenarioPlayer::InitViewer()
 
 		if (viewer_->entities_.back()->IsVehicle())
 		{
-			InitVehicleModel(obj, (viewer::CarModel*)viewer_->entities_.back());
+			InitVehicleModel(obj, static_cast<viewer::CarModel*>(viewer_->entities_.back()));
 		}
 	}
 
@@ -926,7 +927,7 @@ int ScenarioPlayer::InitViewer()
 			if (viewer_->GetEntityInFocus() == 0)
 			{
 				// Focus on first vehicle of specified types
-				viewer_->SetVehicleInFocus(i);
+				viewer_->SetVehicleInFocus(static_cast<int>(i));
 			}
 		}
 	}
@@ -942,7 +943,7 @@ int ScenarioPlayer::InitViewer()
 
 void viewer_thread(void *args)
 {
-	ScenarioPlayer *player = (ScenarioPlayer*)args;
+	ScenarioPlayer *player = static_cast<ScenarioPlayer*>(args);
 
 	if (player->InitViewer() != 0)
 	{
@@ -966,13 +967,13 @@ void viewer_thread(void *args)
 
 void ScenarioPlayer::AddObjectSensor(int object_index, double x, double y, double z, double h, double near, double far, double fovH, int maxObj)
 {
-	sensor.push_back(new ObjectSensor(&scenarioEngine->entities_, scenarioEngine->entities_.object_[object_index], x, y, z, h, near, far, fovH, maxObj));
+	sensor.push_back(new ObjectSensor(&scenarioEngine->entities_, scenarioEngine->entities_.object_[static_cast<unsigned int>(object_index)], x, y, z, h, near, far, fovH, maxObj));
 
 #ifdef _USE_OSG
 	if (viewer_)
 	{
 		mutex.Lock();
-		sensorFrustum.push_back(new viewer::SensorViewFrustum(sensor.back(), viewer_->entities_[object_index]->txNode_));
+		sensorFrustum.push_back(new viewer::SensorViewFrustum(sensor.back(), viewer_->entities_[static_cast<unsigned int>(object_index)]->txNode_));
 		mutex.Unlock();
 	}
 #endif
@@ -1022,7 +1023,7 @@ void ScenarioPlayer::AddOSIDetection(int object_index)
 		if(!OSISensorDetection)
 		{
 			mutex.Lock();
-			OSISensorDetection = new viewer::OSISensorDetection(viewer_->entities_[object_index]->txNode_);
+			OSISensorDetection = new viewer::OSISensorDetection(viewer_->entities_[static_cast<unsigned int>(object_index)]->txNode_);
 			mutex.Unlock();
 		}
 	}
@@ -1418,7 +1419,7 @@ int ScenarioPlayer::Init()
 			}
 
 			CSV_Log->Open(scenarioEngine->getScenarioFilename(),
-				(int)scenarioEngine->entities_.object_.size(), filename);
+				static_cast<int>(scenarioEngine->entities_.object_.size()), filename);
 			LOG("Log all vehicle data in csv file");
 		}
 		else
@@ -1474,7 +1475,7 @@ int ScenarioPlayer::Init()
 			viewer_init_semaphore.Set();
 
 			// Launch Viewer in a separate thread
-			thread.Start(viewer_thread, (void*)this);
+			thread.Start(viewer_thread, static_cast<void*>(this));
 
 			viewer_init_semaphore.Wait();
 
@@ -1716,23 +1717,23 @@ int ScenarioPlayer::SetVariableValue(const char* name, bool value)
 //todo
 int ScenarioPlayer::GetNumberOfProperties(int index)
 {
-	return (int)scenarioEngine->entities_.object_[index]->properties_.property_.size();
+	return static_cast<int>(scenarioEngine->entities_.object_[static_cast<unsigned int>(index)]->properties_.property_.size());
 }
 
 const char* ScenarioPlayer::GetPropertyName(int index,int propertyIndex)
 {
-	return scenarioEngine->entities_.object_[index]->properties_.property_[propertyIndex].name_.c_str();
+	return scenarioEngine->entities_.object_[static_cast<unsigned int>(index)]->properties_.property_[static_cast<unsigned int>(propertyIndex)].name_.c_str();
 }
 
 const char* ScenarioPlayer::GetPropertyValue(int index,int propertyIndex)
 {
-	return scenarioEngine->entities_.object_[index]->properties_.property_[propertyIndex].value_.c_str();
+	return scenarioEngine->entities_.object_[static_cast<unsigned int>(index)]->properties_.property_[static_cast<unsigned int>(propertyIndex)].value_.c_str();
 }
 
 #ifdef _USE_OSG
 	void ReportKeyEvent(viewer::KeyEvent* keyEvent, void* data)
 	{
-		ScenarioPlayer* player = (ScenarioPlayer*)data;
+		ScenarioPlayer* player = static_cast<ScenarioPlayer*>(data);
 		for (size_t i = 0; i < player->scenarioEngine->GetScenarioReader()->controller_.size(); i++)
 		{
 			player->scenarioEngine->GetScenarioReader()->controller_[i]->ReportKeyEvent(keyEvent->key_, keyEvent->down_);
