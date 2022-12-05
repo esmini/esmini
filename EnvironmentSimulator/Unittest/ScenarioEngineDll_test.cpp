@@ -797,16 +797,16 @@ TEST_P(GetGroundTruthTests, receive_GroundTruth)
 	EXPECT_EQ(ego_length, std::get<3>(GetParam()).length);
 	EXPECT_EQ(ego_width, std::get<3>(GetParam()).width);
 	EXPECT_EQ(ego_height, std::get<3>(GetParam()).height);
-	EXPECT_EQ(ego_xoffset, std::get<3>(GetParam()).centerOffsetX);
-	EXPECT_EQ(ego_yoffset, std::get<3>(GetParam()).centerOffsetY);
-	EXPECT_EQ(ego_zoffset, std::get<3>(GetParam()).centerOffsetZ);
+	EXPECT_NEAR(ego_xoffset, std::get<3>(GetParam()).centerOffsetX, 1e-5);
+	EXPECT_NEAR(ego_yoffset, std::get<3>(GetParam()).centerOffsetY, 1e-5);
+	EXPECT_NEAR(ego_zoffset, std::get<3>(GetParam()).centerOffsetZ, 1e-5);
 	EXPECT_EQ(map_reference, std::get<4>(GetParam()));
 
 
 	SE_Close();
 }
 
-INSTANTIATE_TEST_SUITE_P(EsminiAPITests, GetGroundTruthTests, ::testing::Values(std::make_tuple("../../../resources/xosc/cut-in.xosc", 14, 2, bounding_box{5.04f, 2.0f, 1.5f, 1.4f, 0.0f, 0.75f}, "+proj=utm +lat_0=37.3542934123933 +lon_0=-122.0859797650754"), std::make_tuple("../../../resources/xosc/straight_500m.xosc", 6, 2, bounding_box{5.0f, 2.0f, 1.8f, 1.4f, 0.0f, 0.9f}, "+proj=utm +lat_0=37.3542934123933 +lon_0=-122.0859797650754"), std::make_tuple("../../../resources/xosc/highway_merge.xosc", 33, 6, bounding_box{5.04f, 2.0f, 1.5f, 1.4f, 0.0f, 0.75f}, "+proj=utm +lat_0=37.3542934123933 +lon_0=-122.0859797650754")));
+INSTANTIATE_TEST_SUITE_P(EsminiAPITests, GetGroundTruthTests, ::testing::Values(std::make_tuple("../../../resources/xosc/cut-in.xosc", 14, 2, bounding_box{5.04f, 2.0f, 1.5f, -1.4f, 0.0f, -0.35f}, "+proj=utm +lat_0=37.3542934123933 +lon_0=-122.0859797650754"), std::make_tuple("../../../resources/xosc/straight_500m.xosc", 6, 2, bounding_box{5.0f, 2.0f, 1.8f, -1.4f, 0.0f, -0.5f}, "+proj=utm +lat_0=37.3542934123933 +lon_0=-122.0859797650754"), std::make_tuple("../../../resources/xosc/highway_merge.xosc", 33, 6, bounding_box{5.04f, 2.0f, 1.5f, -1.4f, 0.0f, -0.35f}, "+proj=utm +lat_0=37.3542934123933 +lon_0=-122.0859797650754")));
 // scenario_file_name, number_of_lanes, number_of_objects, ego_bounding_box
 
 TEST(GetGroundTruthTests, receive_GroundTruth_no_init)
@@ -847,6 +847,7 @@ TEST(GroundTruthTests, check_GroundTruth_including_init_state)
 		EXPECT_NEAR(obj_x, x_vals[i], 1E-5);
 		EXPECT_NEAR(obj_y, -1.535, 1E-5);
 		EXPECT_NEAR(obj_z, 0.75, 1E-5);
+		EXPECT_NEAR(osi_gt_ptr->mutable_moving_object(0)->mutable_vehicle_attributes()->mutable_bbcenter_to_rear()->z(), -0.35, 1E-5);
 
 		if (i < 2)  // skip step of the last round
 		{

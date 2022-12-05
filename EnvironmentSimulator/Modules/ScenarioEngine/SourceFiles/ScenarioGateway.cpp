@@ -33,8 +33,9 @@ ObjectState::ObjectState()
 }
 
 
-ObjectState::ObjectState(int id, std::string name, int obj_type, int obj_category, int model_id, int ctrl_type,	OSCBoundingBox boundingbox,
-	int scaleMode, int visibilityMask, double timestamp, double speed, double wheel_angle, double wheel_rot, roadmanager::Position* pos) : dirty_(0)
+ObjectState::ObjectState(int id, std::string name, int obj_type, int obj_category, int model_id, int ctrl_type,
+	OSCBoundingBox boundingbox,	int scaleMode, int visibilityMask, double timestamp, double speed,
+	double wheel_angle, double wheel_rot, double rear_axle_z_pos, roadmanager::Position* pos) : dirty_(0)
 {
 	memset(&state_, 0, sizeof(ObjectStateStruct));
 
@@ -49,6 +50,7 @@ ObjectState::ObjectState(int id, std::string name, int obj_type, int obj_categor
 	state_.info.speed = speed;
 	state_.info.wheel_angle = wheel_angle;
 	state_.info.wheel_rot = wheel_rot;
+	state_.info.rear_axle_z_pos = rear_axle_z_pos;
 	state_.info.boundingbox = boundingbox;
 	state_.info.scaleMode = scaleMode;
 	state_.info.visibilityMask = visibilityMask;
@@ -61,9 +63,10 @@ ObjectState::ObjectState(int id, std::string name, int obj_type, int obj_categor
 		Object::DirtyBit::WHEEL_ROTATION;
 }
 
-ObjectState::ObjectState(int id, std::string name, int obj_type, int obj_category, int model_id, int ctrl_type, OSCBoundingBox boundingbox,
-	int scaleMode, int visibilityMask, double timestamp, double speed, double wheel_angle, double wheel_rot,
-	double x, double y, double z, double h, double p, double r) : dirty_(0)
+ObjectState::ObjectState(int id, std::string name, int obj_type, int obj_category, int model_id, int ctrl_type,
+	OSCBoundingBox boundingbox,	int scaleMode, int visibilityMask, double timestamp, double speed,
+	double wheel_angle, double wheel_rot, double rear_axle_z_pos, double x, double y, double z, double h,
+	double p, double r) : dirty_(0)
 {
 	memset(&state_, 0, sizeof(ObjectStateStruct));
 
@@ -80,6 +83,7 @@ ObjectState::ObjectState(int id, std::string name, int obj_type, int obj_categor
 	state_.info.speed = speed;
 	state_.info.wheel_angle = wheel_angle;
 	state_.info.wheel_rot = wheel_rot;
+	state_.info.rear_axle_z_pos = rear_axle_z_pos;
 	state_.info.boundingbox = boundingbox;
 	state_.info.scaleMode = scaleMode;
 	state_.info.visibilityMask = visibilityMask;
@@ -92,9 +96,10 @@ ObjectState::ObjectState(int id, std::string name, int obj_type, int obj_categor
 		Object::DirtyBit::WHEEL_ROTATION;
 }
 
-ObjectState::ObjectState(int id, std::string name, int obj_type, int obj_category, int model_id, int ctrl_type, OSCBoundingBox boundingbox,
-	int scaleMode, int visibilityMask, double timestamp, double speed, double wheel_angle, double wheel_rot,
-	int roadId, int laneId, double laneOffset, double s) : dirty_(0)
+ObjectState::ObjectState(int id, std::string name, int obj_type, int obj_category, int model_id, int ctrl_type,
+	OSCBoundingBox boundingbox,	int scaleMode, int visibilityMask, double timestamp, double speed,
+	double wheel_angle, double wheel_rot, double rear_axle_z_pos, int roadId, int laneId, double laneOffset,
+	double s) : dirty_(0)
 {
 	memset(&state_, 0, sizeof(ObjectStateStruct));
 
@@ -109,6 +114,7 @@ ObjectState::ObjectState(int id, std::string name, int obj_type, int obj_categor
 	state_.info.speed = speed;
 	state_.info.wheel_angle = wheel_angle;
 	state_.info.wheel_rot = wheel_rot;
+	state_.info.rear_axle_z_pos = rear_axle_z_pos;
 	state_.info.boundingbox = boundingbox;
 	state_.info.scaleMode = scaleMode;
 	state_.info.visibilityMask = visibilityMask;
@@ -121,9 +127,9 @@ ObjectState::ObjectState(int id, std::string name, int obj_type, int obj_categor
 		Object::DirtyBit::WHEEL_ROTATION;
 }
 
-ObjectState::ObjectState(int id, std::string name, int obj_type, int obj_category, int model_id, int ctrl_type, OSCBoundingBox boundingbox,
-	int scaleMode, int visibilityMask, double timestamp, double speed, double wheel_angle, double wheel_rot,
-	int roadId, double lateralOffset, double s)
+ObjectState::ObjectState(int id, std::string name, int obj_type, int obj_category, int model_id, int ctrl_type,
+	OSCBoundingBox boundingbox,	int scaleMode, int visibilityMask, double timestamp, double speed, double wheel_angle,
+	double wheel_rot, double rear_axle_z_pos, int roadId, double lateralOffset, double s)
 {
 	memset(&state_, 0, sizeof(ObjectStateStruct));
 
@@ -138,6 +144,7 @@ ObjectState::ObjectState(int id, std::string name, int obj_type, int obj_categor
 	state_.info.speed = speed;
 	state_.info.wheel_angle = wheel_angle;
 	state_.info.wheel_rot = wheel_rot;
+	state_.info.rear_axle_z_pos = rear_axle_z_pos;
 	state_.info.boundingbox = boundingbox;
 	state_.info.scaleMode = scaleMode;
 	state_.info.visibilityMask = visibilityMask;
@@ -243,9 +250,9 @@ int ScenarioGateway::updateObjectInfo(ObjectState* obj_state, double timestamp, 
 	return 0;
 }
 
-int ScenarioGateway::reportObject(int id, std::string name, int obj_type, int obj_category, int model_id, int ctrl_type, OSCBoundingBox boundingbox,
-	int scaleMode, int visibilityMask, double timestamp, double speed, double wheel_angle, double wheel_rot,
-	roadmanager::Position* pos)
+int ScenarioGateway::reportObject(int id, std::string name, int obj_type, int obj_category, int model_id, int ctrl_type,
+	OSCBoundingBox boundingbox,	int scaleMode, int visibilityMask, double timestamp, double speed,
+	double wheel_angle, double wheel_rot, double rear_axle_z_pos, roadmanager::Position* pos)
 {
 	ObjectState* obj_state = getObjectStatePtrById(id);
 
@@ -253,7 +260,7 @@ int ScenarioGateway::reportObject(int id, std::string name, int obj_type, int ob
 	{
 		// Create state and set permanent information
 		obj_state = new ObjectState(id, name,obj_type,obj_category, model_id, ctrl_type, boundingbox,
-			scaleMode, visibilityMask, timestamp, speed, wheel_angle, wheel_rot, pos);
+			scaleMode, visibilityMask, timestamp, speed, wheel_angle, wheel_rot, rear_axle_z_pos, pos);
 
 		// Add object to collection
 		objectState_.push_back(std::unique_ptr<ObjectState>{obj_state});
@@ -272,9 +279,9 @@ int ScenarioGateway::reportObject(int id, std::string name, int obj_type, int ob
 	return 0;
 }
 
-int ScenarioGateway::reportObject(int id, std::string name, int obj_type, int obj_category, int model_id, int ctrl_type, OSCBoundingBox boundingbox,
-	int scaleMode, int visibilityMask, double timestamp, double speed, double wheel_angle, double wheel_rot,
-	double x, double y, double z, double h, double p, double r)
+int ScenarioGateway::reportObject(int id, std::string name, int obj_type, int obj_category, int model_id, int ctrl_type,
+	OSCBoundingBox boundingbox, int scaleMode, int visibilityMask, double timestamp, double speed, double wheel_angle,
+	double wheel_rot, double rear_axle_z_pos, double x, double y, double z, double h, double p, double r)
 {
 	ObjectState* obj_state = getObjectStatePtrById(id);
 
@@ -283,7 +290,7 @@ int ScenarioGateway::reportObject(int id, std::string name, int obj_type, int ob
 		// Create state and set permanent information
 		LOG("Creating new object \"%s\" (id %d, timestamp %.2f)", name.c_str(), id, timestamp);
 		obj_state = new ObjectState(id, name, obj_type, obj_category, model_id, ctrl_type, boundingbox,
-			scaleMode, visibilityMask, timestamp, speed, wheel_angle, wheel_rot, x, y, z, h, p, r);
+			scaleMode, visibilityMask, timestamp, speed, wheel_angle, wheel_rot, rear_axle_z_pos, x, y, z, h, p, r);
 
 		// Add object to collection
 		objectState_.push_back(std::unique_ptr<ObjectState>{obj_state});
@@ -302,9 +309,9 @@ int ScenarioGateway::reportObject(int id, std::string name, int obj_type, int ob
 	return 0;
 }
 
-int ScenarioGateway::reportObject(int id, std::string name, int obj_type, int obj_category, int model_id, int ctrl_type, OSCBoundingBox boundingbox,
-	int scaleMode, int visibilityMask, double timestamp, double speed, double wheel_angle, double wheel_rot,
-	double x, double y, double h)
+int ScenarioGateway::reportObject(int id, std::string name, int obj_type, int obj_category, int model_id, int ctrl_type,
+	OSCBoundingBox boundingbox,	int scaleMode, int visibilityMask, double timestamp, double speed, double wheel_angle,
+	double wheel_rot, double rear_axle_z_pos, double x, double y, double h)
 {
 	ObjectState* obj_state = getObjectStatePtrById(id);
 
@@ -313,7 +320,7 @@ int ScenarioGateway::reportObject(int id, std::string name, int obj_type, int ob
 		// Create state and set permanent information
 		LOG("Creating new object \"%s\" (id %d, timestamp %.2f)", name.c_str(), id, timestamp);
 		obj_state = new ObjectState(id, name, obj_type, obj_category, model_id, ctrl_type, boundingbox,
-			scaleMode, visibilityMask, timestamp, speed, wheel_angle, wheel_rot, x, y, 0, h, 0, 0);
+			scaleMode, visibilityMask, timestamp, speed, wheel_angle, wheel_rot, rear_axle_z_pos, x, y, 0, h, 0, 0);
 
 		// Add object to collection
 		objectState_.push_back(std::unique_ptr<ObjectState>{obj_state});
@@ -332,9 +339,9 @@ int ScenarioGateway::reportObject(int id, std::string name, int obj_type, int ob
 	return 0;
 }
 
-int ScenarioGateway::reportObject(int id, std::string name, int obj_type, int obj_category, int model_id, int ctrl_type, OSCBoundingBox boundingbox,
-	int scaleMode, int visibilityMask, double timestamp, double speed, double wheel_angle, double wheel_rot,
-	int roadId, int laneId, double laneOffset, double s)
+int ScenarioGateway::reportObject(int id, std::string name, int obj_type, int obj_category, int model_id, int ctrl_type,
+	OSCBoundingBox boundingbox,	int scaleMode, int visibilityMask, double timestamp, double speed, double wheel_angle,
+	double wheel_rot, double rear_axle_z_pos, int roadId, int laneId, double laneOffset, double s)
 {
 	ObjectState* obj_state = getObjectStatePtrById(id);
 
@@ -343,7 +350,8 @@ int ScenarioGateway::reportObject(int id, std::string name, int obj_type, int ob
 		// Create state and set permanent information
 		LOG("Creating new object \"%s\" (id %d, timestamp %.2f)", name.c_str(), id, timestamp);
 		obj_state = new ObjectState(id, name, obj_type, obj_category, model_id, ctrl_type, boundingbox,
-			scaleMode, visibilityMask, timestamp, speed, wheel_angle, wheel_rot, roadId, laneId, laneOffset, s);
+			scaleMode, visibilityMask, timestamp, speed, wheel_angle, wheel_rot, rear_axle_z_pos, roadId,
+			laneId, laneOffset, s);
 
 		// Add object to collection
 		objectState_.push_back(std::unique_ptr<ObjectState>{obj_state});
@@ -362,9 +370,9 @@ int ScenarioGateway::reportObject(int id, std::string name, int obj_type, int ob
 	return 0;
 }
 
-int ScenarioGateway::reportObject(int id, std::string name, int obj_type, int obj_category, int model_id, int ctrl_type, OSCBoundingBox boundingbox,
-	int scaleMode, int visibilityMask, double timestamp, double speed, double wheel_angle, double wheel_rot,
-	int roadId, double lateralOffset, double s)
+int ScenarioGateway::reportObject(int id, std::string name, int obj_type, int obj_category, int model_id, int ctrl_type,
+	OSCBoundingBox boundingbox,	int scaleMode, int visibilityMask, double timestamp, double speed, double wheel_angle,
+	double rear_axle_z_pos, double wheel_rot, int roadId, double lateralOffset, double s)
 {
 	ObjectState* obj_state = getObjectStatePtrById(id);
 
@@ -373,7 +381,7 @@ int ScenarioGateway::reportObject(int id, std::string name, int obj_type, int ob
 		// Create state and set permanent information
 		LOG("Creating new object \"%s\" (id %d, timestamp %.2f)", name.c_str(), id, timestamp);
 		obj_state = new ObjectState(id, name, obj_type, obj_category, model_id, ctrl_type, boundingbox, scaleMode,
-			visibilityMask, timestamp, speed, wheel_angle, wheel_rot, roadId, lateralOffset, s);
+			visibilityMask, timestamp, speed, wheel_angle, wheel_rot, rear_axle_z_pos, roadId, lateralOffset, s);
 
 		// Add object to collection
 		objectState_.push_back(std::unique_ptr<ObjectState>{obj_state});

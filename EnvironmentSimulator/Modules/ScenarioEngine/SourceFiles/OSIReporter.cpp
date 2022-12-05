@@ -736,9 +736,11 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState *objectState)
 	obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_driver_id()->set_value((uint64_t)objectState->state_.info.ctrl_type);
 
 	// Set OSI Moving Object Boundingbox
-	obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_bbcenter_to_rear()->set_x((double)(objectState->state_.info.boundingbox.center_.x_));
-	obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_bbcenter_to_rear()->set_y((double)(objectState->state_.info.boundingbox.center_.y_));
-	obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_bbcenter_to_rear()->set_z((double)(objectState->state_.info.boundingbox.center_.z_));
+	obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_bbcenter_to_rear()->set_x((double)(-objectState->state_.info.boundingbox.center_.x_));
+	obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_bbcenter_to_rear()->set_y((double)(-objectState->state_.info.boundingbox.center_.y_));
+	obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_bbcenter_to_rear()->set_z(
+		(double)(objectState->state_.info.rear_axle_z_pos - objectState->state_.info.boundingbox.center_.z_)
+	);
 	obj_osi_internal.mobj->mutable_base()->mutable_dimension()->set_height(objectState->state_.info.boundingbox.dimensions_.height_);
 	obj_osi_internal.mobj->mutable_base()->mutable_dimension()->set_width(objectState->state_.info.boundingbox.dimensions_.width_);
 	obj_osi_internal.mobj->mutable_base()->mutable_dimension()->set_length(objectState->state_.info.boundingbox.dimensions_.length_);
