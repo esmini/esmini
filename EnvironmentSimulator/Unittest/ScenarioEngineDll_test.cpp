@@ -846,7 +846,7 @@ TEST(GroundTruthTests, check_GroundTruth_including_init_state)
 		obj_z = osi_gt_ptr->mutable_moving_object(0)->mutable_base()->mutable_position()->z();
 		EXPECT_NEAR(obj_x, x_vals[i], 1E-5);
 		EXPECT_NEAR(obj_y, -1.535, 1E-5);
-		EXPECT_NEAR(obj_z, 0.0, 1E-5);
+		EXPECT_NEAR(obj_z, 0.75, 1E-5);
 
 		if (i < 2)  // skip step of the last round
 		{
@@ -857,7 +857,7 @@ TEST(GroundTruthTests, check_GroundTruth_including_init_state)
 	SE_Close();
 
 	ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-	EXPECT_EQ(fileStatus.st_size, 19231);
+	EXPECT_EQ(fileStatus.st_size, 19285);
 
 	// Read OSI file
 	FILE* file = fopen("gt.osi", "rb");
@@ -884,7 +884,7 @@ TEST(GroundTruthTests, check_GroundTruth_including_init_state)
 		obj_z = osi_gt.mutable_moving_object(0)->mutable_base()->mutable_position()->z();
 		EXPECT_NEAR(obj_x, x_vals[i], 1E-5);
 		EXPECT_NEAR(obj_y, -1.535, 1E-5);
-		EXPECT_NEAR(obj_z, 0.0, 1E-5);
+		EXPECT_NEAR(obj_z, 0.75, 1E-5);
 	}
 
 	fclose(file);

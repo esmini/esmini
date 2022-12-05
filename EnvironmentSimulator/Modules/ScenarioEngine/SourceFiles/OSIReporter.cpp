@@ -746,7 +746,7 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState *objectState)
 	// Set OSI Moving Object Position
 	obj_osi_internal.mobj->mutable_base()->mutable_position()->set_x(objectState->state_.pos.GetX() + objectState->state_.info.boundingbox.center_.x_ * cos(objectState->state_.pos.GetH()));
 	obj_osi_internal.mobj->mutable_base()->mutable_position()->set_y(objectState->state_.pos.GetY() + objectState->state_.info.boundingbox.center_.x_ * sin(objectState->state_.pos.GetH()));
-	obj_osi_internal.mobj->mutable_base()->mutable_position()->set_z(objectState->state_.pos.GetZ());
+	obj_osi_internal.mobj->mutable_base()->mutable_position()->set_z(objectState->state_.pos.GetZ() + objectState->state_.info.boundingbox.dimensions_.height_ / 2.0);
 
 	// Set OSI Moving Object Orientation
 	obj_osi_internal.mobj->mutable_base()->mutable_orientation()->set_roll(GetAngleInIntervalMinusPIPlusPI(objectState->state_.pos.GetR()));
