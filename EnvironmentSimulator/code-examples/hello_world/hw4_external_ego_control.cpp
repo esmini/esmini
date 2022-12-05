@@ -2,7 +2,7 @@
 
 int main(int argc, char* argv[])
 {
-	const char* filename = argc > 1 ? argv[1] : "../resources/xosc/cut-in_external.xosc";
+	const char* filename = argc > 1 ? argv[1] : "../resources/xosc/cut-in_external_example.xosc";
 
 	SE_Init(filename, 0, 1, 0, 0);
 
