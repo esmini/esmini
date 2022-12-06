@@ -39,7 +39,7 @@ static int execute_scenario(int argc, char* argv[])
 
 	// Setup signal handler to catch Ctrl-C
 	signal(SIGINT, signal_handler);
-	
+
 	try
 	{
 		player = std::make_unique<ScenarioPlayer>(argc, argv);

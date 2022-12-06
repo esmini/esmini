@@ -69,6 +69,7 @@ using namespace roadmanager;
 #define OSI_POINT_DIST_SCALE 0.025
 #define ROADMARK_WIDTH_STANDARD 0.15
 #define ROADMARK_WIDTH_BOLD 0.20
+#define NURBS_STEPLENGTH 1.0
 
 
 static int g_Lane_id;
@@ -10275,7 +10276,7 @@ void NurbsShape::CalculatePolyLine()
 	// Calculate approximate length - to find a reasonable step length
 
 	length_ = 0;
-	double steplen = 1.0; // steplen in meters
+	double steplen = NURBS_STEPLENGTH; // steplen in meters
 	for (size_t i = 0; i < ctrlPoint_.size(); i++)
 	{
 		ctrlPoint_[i].pos_.ReleaseRelation();
