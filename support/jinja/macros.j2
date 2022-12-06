@@ -1,5 +1,19 @@
 
-{%macro enum(key,value)%}
+{%macro generate_setter(dict)-%}
+    {%for key,value in dict.items()-%}
+void Set{{key}}({{value["type"]}} {{key}}) { {{key}}_ = {{key}}; }
+    {%endfor-%}
+{%endmacro-%}
+
+
+{%macro generate_getter(dict)-%}
+    {%for key,value in dict.items()-%}
+{{value["type"]}} Get{{key}}() { return {{key}}_; }
+    {%endfor-%}
+{%endmacro-%}
+
+
+{%macro generate_enum(key,value)%}
 {{key}} {
     {%for key1,value1 in value.items()-%}
         {%for key2,value2 in value1.items()-%}
@@ -15,25 +29,29 @@
 };
 {%endmacro%}
 
+{%macro generate_string(key, value)%}
+{{key}};
+{%endmacro%}
 
-{%macro class(key,value)%}
+
+{%macro generate_class(key,value)%}
 {{key}} {
     {%for key1,value1 in value.items()-%}
         {%for key2,value2 in value1.items()-%}
-            {%if value2 is iterable and value2 is not string%}
+            {%if value2 is iterable and value2 is not string-%}
                 {%for key3,value3 in value2.items()-%}
                         {% if "sequence" in key3-%}
                             {%for key4,value4 in value3.items()-%}
-                                {{value4["type"]|indent(4,True)}} {{key4|indent(4,True)}};
-                            {%endfor%}
+{{value4["type"]|indent(4,True)}} {{key4|indent(4,True)}};
+                            {%endfor-%}
                         {%endif-%}
                         {% if "attributes" in key3 -%}
-                            {{"public:"|indent(4,True)}}
-                                {{generate_setter(value3)|indent(8,False)-}}
-                                {{generate_getter(value3)|indent(8,True)-}}
-                            {{"private:"|indent(4,True)}}
+{{"public:"|indent(4,True)}}
+{{generate_setter(value3)|indent(8,True)}}
+{{generate_getter(value3)|indent(8,True)}}
+{{"private:"|indent(4,True)}}
                             {%for key4,value4 in value3.items()-%}
-                                {{value4["type"]|indent(8,True)}} {{key4|indent(4,True)}}_;
+{{value4["type"]|indent(8,True)}} {{key4|indent(4,True)}}_;
                             {%endfor-%}
                         {%endif-%}
                 {%endfor-%}
@@ -43,25 +61,32 @@
 };
 {%endmacro%}
 
-{%macro generate_setter(dict)-%}
-    {%for key,value in dict.items()-%}
-void Set{{key}}({{value["type"]}} {{key}}) { {{key}}_ = {{key}}; }
+{% macro generate_struct(key,value)%}
+{{key}} {
+    {%for key1,value1 in value.items()-%}
+        {% if  key1.startswith("enum") -%}
+            {{generate_enum(key1,value1)|indent(4,True)}}
+        {% elif key1.startswith("class") -%}
+            {{generate_class(key1,value1)|indent(4,True)}}
+        {% elif key1.startswith("std::string") -%}
+            {{generate_string(key1,value1)|indent(4, True)}}
+        {%endif-%}
     {%endfor-%}
-{%endmacro-%}
+};
+{%endmacro%}
 
-{%macro generate_getter(dict)-%}
-    {%for key,value in dict.items()-%}
-{{value["type"]}} Get{{key}}() { return {{key}}_; }
-    {%endfor-%}
-{%endmacro-%}
 
 {%macro generate_datastructs(data)%}
     {%for key,value in data.items()-%}
-        {% if "enum class" in key -%}
-            {{enum(key,value)|indent(4,True)}}
-        {% elif "class" in key -%}
-            {{class(key,value)|indent(4,True)}}
+        {% if  key.startswith("enum") -%}
+            {{generate_enum(key,value)|indent(4,True)}}
+        {% elif key.startswith("class") -%}
+            {{generate_class(key,value)|indent(4,True)}}
+        {% elif key.startswith("std::string") -%}
+            {{generate_string(key,value)|indent(4, True)}}
+        {% elif key.startswith("struct") -%}
+            {{generate_struct(key,value)|indent(4, True)}}
         {%endif-%}
-    {%endfor%}
+    {%endfor-%}
 {%endmacro%}
 

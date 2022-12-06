@@ -3,27 +3,29 @@
 {% import 'macros.j2' as m %}
 
 
-#include <string.h>
+#include <string>
+#include <vector>
+
 {%if name != "Junction"-%}
-#include <Junction.hpp>
+#include "Junction.hpp"
 {%endif-%}
 {%if name != "Core"-%}
-#include <Core.hpp>
+#include "Core.hpp"
 {%endif-%}
 {%if name != "Lane"-%}
-#include <Lane.hpp>
+#include "Lane.hpp"
 {%endif-%}
 {%if name != "Road"-%}
-#include <Road.hpp>
+#include "Road.hpp"
 {%endif%}
 {%if name != "Object"-%}
-#include <Object.hpp>
+#include "Object.hpp"
 {%endif%}
 {%if name != "Signal"-%}
-#include <Signal.hpp>
+#include "Signal.hpp"
 {%endif%}
 {%if name != "Railroad"-%}
-#include <Railroad.hpp>
+#include "Railroad.hpp"
 {%endif%}
 
 
