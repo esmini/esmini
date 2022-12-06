@@ -130,7 +130,8 @@ void ScenarioPlayer::Draw()
 			{
 				ViewerFrame();
 			}
-			else
+
+			if (viewer_->GetQuitRequest())
 			{
 				SetQuitRequest(true);
 				CloseViewer();

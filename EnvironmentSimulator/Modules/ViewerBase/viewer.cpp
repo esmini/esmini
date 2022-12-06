@@ -3544,6 +3544,9 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
 		viewer_->infoTextCamera->setProjectionMatrix(osg::Matrix::ortho2D(0, ea.getWindowWidth(), 0, ea.getWindowHeight()));
 		break;
 	case(osgGA::GUIEventAdapter::CLOSE_WINDOW):
+		viewer_->renderSemaphore.Release(); // no more rendering will happen
+		viewer_->SetQuitRequest(true);
+		break;
 	case(osgGA::GUIEventAdapter::QUIT_APPLICATION):
 		viewer_->SetQuitRequest(true);
 		break;
