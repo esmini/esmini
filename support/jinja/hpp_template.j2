@@ -5,28 +5,27 @@
 
 #include <string>
 #include <vector>
-
-{%if name != "Junction"-%}
-#include "Junction.hpp"
-{%endif-%}
 {%if name != "Core"-%}
 #include "Core.hpp"
-{%endif-%}
-{%if name != "Lane"-%}
+    {%if name != "Junction"-%}
+#include "Junction.hpp"
+    {%endif-%}
+    {%if name != "Lane"-%}
 #include "Lane.hpp"
-{%endif-%}
-{%if name != "Road"-%}
+    {%endif-%}
+    {%if name != "Road"-%}
 #include "Road.hpp"
-{%endif%}
-{%if name != "Object"-%}
+    {%endif%}
+    {%if name != "Object"-%}
 #include "Object.hpp"
-{%endif%}
-{%if name != "Signal"-%}
+    {%endif%}
+    {%if name != "Signal"-%}
 #include "Signal.hpp"
-{%endif%}
-{%if name != "Railroad"-%}
+    {%endif%}
+    {%if name != "Railroad"-%}
 #include "Railroad.hpp"
-{%endif%}
+    {%endif%}
+{%endif-%}
 
 
 namespace {{name}}{

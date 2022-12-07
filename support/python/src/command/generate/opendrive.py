@@ -153,19 +153,22 @@ class OpenDrive:
                     for key,value in sub_sub_dict.items():
                         if value == {}:
                             name = key + " " + name
+                        if key == "enum":
+                            name = "enum " + name
                 if name.startswith("t_"):
                     name = "class " + name
-                elif name.startswith("e_"):
-                    name = "enum class " + name
                 data.update({name: child_sub_dict})
 
             elif "extension" in child.tag or "restriction" in child.tag:
                 base = child.attrib["base"]
+                sub_children = self.parse_children(child, {})
+                if "enum" in sub_children.values():
+                    base = "enum"
                 if base == "xs:string":
                     base = "std::string"
                 elif base == "xs:double":
                     base = "double"
-                data.update({"base": {base: self.parse_children(child, {})}})
+                data.update({"base": {base: sub_children}})
 
             elif "sequence" in child.tag:
                 data.update({"sequence": self.parse_children(child, {})})
@@ -173,7 +176,7 @@ class OpenDrive:
             elif "enumeration" in child.tag:
                 value = child.attrib["value"]
                 value = self.fix_non_legal_chars(value)
-                data.update({value: ""})
+                data.update({value:"enum"})
 
             elif "element" in child.tag:
                 attributes = child.attrib
@@ -185,12 +188,20 @@ class OpenDrive:
                 data.update({child.attrib["name"]: attributes})
 
             elif "attribute" in child.tag:
+                sub_dict = self.parse_children(child,{})
+                doc =""
+                if "docs" in sub_dict:
+                    doc = sub_dict["docs"]
                 attributes = child.attrib
                 if len(attributes) > 1:
                     attributes["type"] = self.replace_xsd_types(attributes["type"])
-                attributes_dict.update({child.attrib["name"]: attributes})
+                attributes.update({"docs":doc})
+                attributes_dict.update({child.attrib["name"]:attributes})
             elif "union" in child.tag:
                 data.update({"union":child.attrib})
+
+            elif "documentation" in child.tag:
+                data.update({"docs":child.text})
             else:
                 self.parse_children(child, data)
         if len(attributes_dict) != 0:
