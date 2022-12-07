@@ -28,7 +28,6 @@ using namespace scenarioengine;
 
 ObjectState::ObjectState()
 {
-	memset(&state_, 0, sizeof(ObjectState));
 	state_.info.id = -1;
 }
 
@@ -37,8 +36,6 @@ ObjectState::ObjectState(int id, std::string name, int obj_type, int obj_categor
 	OSCBoundingBox boundingbox,	int scaleMode, int visibilityMask, double timestamp, double speed,
 	double wheel_angle, double wheel_rot, double rear_axle_z_pos, roadmanager::Position* pos) : dirty_(0)
 {
-	memset(&state_, 0, sizeof(ObjectStateStruct));
-
 	state_.info.id = id;
 	state_.info.obj_type = obj_type;
 	state_.info.obj_category = obj_category;
@@ -68,8 +65,6 @@ ObjectState::ObjectState(int id, std::string name, int obj_type, int obj_categor
 	double wheel_angle, double wheel_rot, double rear_axle_z_pos, double x, double y, double z, double h,
 	double p, double r) : dirty_(0)
 {
-	memset(&state_, 0, sizeof(ObjectStateStruct));
-
 	state_.info.id = id;
 	state_.info.obj_type = obj_type;
 	state_.info.obj_category = obj_category;
@@ -101,8 +96,6 @@ ObjectState::ObjectState(int id, std::string name, int obj_type, int obj_categor
 	double wheel_angle, double wheel_rot, double rear_axle_z_pos, int roadId, int laneId, double laneOffset,
 	double s) : dirty_(0)
 {
-	memset(&state_, 0, sizeof(ObjectStateStruct));
-
 	state_.info.id = id;
 	state_.info.obj_type = obj_type;
 	state_.info.obj_category = obj_category;
@@ -131,8 +124,6 @@ ObjectState::ObjectState(int id, std::string name, int obj_type, int obj_categor
 	OSCBoundingBox boundingbox,	int scaleMode, int visibilityMask, double timestamp, double speed, double wheel_angle,
 	double wheel_rot, double rear_axle_z_pos, int roadId, double lateralOffset, double s)
 {
-	memset(&state_, 0, sizeof(ObjectStateStruct));
-
 	state_.info.id = id;
 	state_.info.obj_type = obj_type;
 	state_.info.obj_category = obj_category;
@@ -175,14 +166,14 @@ void ObjectState::Print()
 		state_.info.obj_category
 	);
 	LOG("state: \n\tbounding box: \ncenter: x: %.2f, y: %.2f, z: %.2f\n\tdimensions: width: %.2f, length: %.2f, height: %.2f scaleMode: %d visMask: %d",
-    state_.info.boundingbox.center_.x_,
-		state_.info.boundingbox.center_.y_,
-		state_.info.boundingbox.center_.z_,
-		state_.info.boundingbox.dimensions_.width_,
-		state_.info.boundingbox.dimensions_.length_,
-		state_.info.boundingbox.dimensions_.height_,
-		state_.info.scaleMode,
-		state_.info.visibilityMask
+    static_cast<double>(state_.info.boundingbox.center_.x_),
+		static_cast<double>(state_.info.boundingbox.center_.y_),
+		static_cast<double>(state_.info.boundingbox.center_.z_),
+		static_cast<double>(state_.info.boundingbox.dimensions_.width_),
+		static_cast<double>(state_.info.boundingbox.dimensions_.length_),
+		static_cast<double>(state_.info.boundingbox.dimensions_.height_),
+		static_cast<double>(state_.info.scaleMode),
+		static_cast<double>(state_.info.visibilityMask)
 	);
 }
 
@@ -514,6 +505,7 @@ int ScenarioGateway::updateObjectWorldPos(int id, double timestamp, double x, do
 
 int ScenarioGateway::updateObjectSpeed(int id, double timestamp, double speed)
 {
+	(void)timestamp;
 	ObjectState* obj_state = getObjectStatePtrById(id);
 
 	if (obj_state == nullptr)
@@ -530,6 +522,7 @@ int ScenarioGateway::updateObjectSpeed(int id, double timestamp, double speed)
 
 int ScenarioGateway::updateObjectVel(int id, double timestamp, double x_vel, double y_vel, double z_vel)
 {
+	(void)timestamp;
 	ObjectState* obj_state = getObjectStatePtrById(id);
 
 	if (obj_state == nullptr)
@@ -546,6 +539,7 @@ int ScenarioGateway::updateObjectVel(int id, double timestamp, double x_vel, dou
 
 int ScenarioGateway::updateObjectAcc(int id, double timestamp, double x_acc, double y_acc, double z_acc)
 {
+	(void)timestamp;
 	ObjectState* obj_state = getObjectStatePtrById(id);
 
 	if (obj_state == nullptr)
@@ -562,6 +556,7 @@ int ScenarioGateway::updateObjectAcc(int id, double timestamp, double x_acc, dou
 
 int ScenarioGateway::updateObjectAngularVel(int id, double timestamp, double h_rate, double p_rate, double r_rate)
 {
+	(void)timestamp;
 	ObjectState* obj_state = getObjectStatePtrById(id);
 
 	if (obj_state == nullptr)
@@ -578,6 +573,7 @@ int ScenarioGateway::updateObjectAngularVel(int id, double timestamp, double h_r
 
 int ScenarioGateway::updateObjectAngularAcc(int id, double timestamp, double h_acc, double p_acc, double r_acc)
 {
+	(void)timestamp;
 	ObjectState* obj_state = getObjectStatePtrById(id);
 
 	if (obj_state == nullptr)
@@ -594,6 +590,7 @@ int ScenarioGateway::updateObjectAngularAcc(int id, double timestamp, double h_a
 
 int ScenarioGateway::updateObjectWheelAngle(int id, double timestamp, double wheelAngle)
 {
+	(void)timestamp;
 	ObjectState* obj_state = getObjectStatePtrById(id);
 
 	if (obj_state == nullptr)
@@ -610,6 +607,7 @@ int ScenarioGateway::updateObjectWheelAngle(int id, double timestamp, double whe
 
 int ScenarioGateway::updateObjectWheelRotation(int id, double timestamp, double wheelRotation)
 {
+	(void)timestamp;
 	ObjectState* obj_state = getObjectStatePtrById(id);
 
 	if (obj_state == nullptr)
@@ -781,24 +779,24 @@ void ScenarioGateway::WriteStatesToFile()
 			datState.info.obj_category = objectState_[i]->state_.info.obj_category;
 			datState.info.obj_type = objectState_[i]->state_.info.ctrl_type;
 			datState.info.scaleMode = objectState_[i]->state_.info.scaleMode;
-			datState.info.speed = (float)objectState_[i]->state_.info.speed;
-			datState.info.timeStamp = (float)objectState_[i]->state_.info.timeStamp;
+			datState.info.speed = static_cast<float>(objectState_[i]->state_.info.speed);
+			datState.info.timeStamp = static_cast<float>(objectState_[i]->state_.info.timeStamp);
 			datState.info.visibilityMask = objectState_[i]->state_.info.visibilityMask;
-			datState.info.wheel_angle = (float)objectState_[i]->state_.info.wheel_angle;
-			datState.info.wheel_rot = (float)objectState_[i]->state_.info.wheel_rot;
+			datState.info.wheel_angle = static_cast<float>(objectState_[i]->state_.info.wheel_angle);
+			datState.info.wheel_rot = static_cast<float>(objectState_[i]->state_.info.wheel_rot);
 
-			datState.pos.x = (float)objectState_[i]->state_.pos.GetX();
-			datState.pos.y = (float)objectState_[i]->state_.pos.GetY();
-			datState.pos.z = (float)objectState_[i]->state_.pos.GetZ();
-			datState.pos.h = (float)objectState_[i]->state_.pos.GetH();
-			datState.pos.p = (float)objectState_[i]->state_.pos.GetP();
-			datState.pos.r = (float)objectState_[i]->state_.pos.GetR();
+			datState.pos.x = static_cast<float>(objectState_[i]->state_.pos.GetX());
+			datState.pos.y = static_cast<float>(objectState_[i]->state_.pos.GetY());
+			datState.pos.z = static_cast<float>(objectState_[i]->state_.pos.GetZ());
+			datState.pos.h = static_cast<float>(objectState_[i]->state_.pos.GetH());
+			datState.pos.p = static_cast<float>(objectState_[i]->state_.pos.GetP());
+			datState.pos.r = static_cast<float>(objectState_[i]->state_.pos.GetR());
 			datState.pos.roadId = objectState_[i]->state_.pos.GetTrackId();
 			datState.pos.laneId = objectState_[i]->state_.pos.GetLaneId();
-			datState.pos.offset = (float)objectState_[i]->state_.pos.GetOffset();
-			datState.pos.t = (float)objectState_[i]->state_.pos.GetT();
-			datState.pos.s = (float)objectState_[i]->state_.pos.GetS();
-			data_file_.write((char*)(&datState), sizeof(datState));
+			datState.pos.offset = static_cast<float>(objectState_[i]->state_.pos.GetOffset());
+			datState.pos.t = static_cast<float>(objectState_[i]->state_.pos.GetT());
+			datState.pos.s = static_cast<float>(objectState_[i]->state_.pos.GetS());
+			data_file_.write(reinterpret_cast<char*>(&datState), sizeof(datState));
 		}
 	}
 }
@@ -818,7 +816,7 @@ int ScenarioGateway::RecordToFile(std::string filename, std::string odr_filename
 		strncpy(header.odr_filename, odr_filename.c_str(), DAT_FILENAME_SIZE);
 		strncpy(header.model_filename, model_filename.c_str(), DAT_FILENAME_SIZE);
 
-		data_file_.write((char*)&header, sizeof(header));
+		data_file_.write(reinterpret_cast<char*>(&header), sizeof(header));
 	}
 
 	return 0;

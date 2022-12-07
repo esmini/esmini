@@ -89,7 +89,7 @@ class RubberbandManipulator : public osgGA::CameraManipulator
         virtual void init(const GUIEventAdapter& ea,GUIActionAdapter& us);
 
         /** handle events, return true if handled, false otherwise.*/
-        // virtual bool handle(const GUIEventAdapter& ea,GUIActionAdapter& us); // TODO: Why do we need this at all. We have exact declaration on base level? why attempt to overload?
+        virtual bool handle(const GUIEventAdapter& ea,GUIActionAdapter& us);
 
         /** Get the keyboard and mouse usage of this manipulator.*/
         virtual void getUsage(osg::ApplicationUsage& usage) const;

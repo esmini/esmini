@@ -125,10 +125,8 @@ void print_triangles(BBoxVec &vec, char const filename[]) {
         auto trPtr = bbx->triangle();
         auto pt = trPtr->a;
         file << pt.x << "," << pt.y;
-        pt = trPtr->b;
-        file << "," << pt.x << "," << pt.y;
-        pt = trPtr->c;
-        file << "," << pt.x << "," << pt.y << "\n";
+        file << "," << trPtr->b.x << "," << trPtr->b.y;
+        file << "," << trPtr->c.x << "," << trPtr->c.y << "\n";
     }
     file.close();
 }
@@ -139,8 +137,7 @@ void print_bbx(BBoxVec &vec, char const filename[]) {
     for (auto const bbx : vec) {
         auto pt = bbx->blhCorner();
         file << pt.x << "," << pt.y;
-        pt = bbx->urhCorner();
-        file << "," << pt.x << "," << pt.y << "\n";
+        file << "," << bbx->urhCorner().x << "," << bbx->urhCorner().y << "\n";
     }
     file.close();
 }
@@ -183,7 +180,7 @@ SwarmTrafficAction::SwarmTrafficAction() : OSCGlobalAction(OSCGlobalAction::Type
 {
     spawnedV.clear();
     counter_ = 0;
-};
+}
 
 
 SwarmTrafficAction::~SwarmTrafficAction()
@@ -278,6 +275,7 @@ void SwarmTrafficAction::Start(double simTime, double dt)
 
 void SwarmTrafficAction::Step(double simTime, double dt)
 {
+    (void)dt;
     // Executes the step at each TIME_INTERVAL
     if (lastTime < 0 || abs(simTime - lastTime) > SWARM_TIME_INTERVAL)
     {
@@ -411,11 +409,11 @@ inline void SwarmTrafficAction::sampleRoads(int minN, int maxN, Solutions &sols,
         return;
     }
 
-    info.reserve(nCarsToSpawn);
+    info.reserve(static_cast<unsigned int>(nCarsToSpawn));
     info.clear();
     // We have more points than number of vehicles to spawn.
     // We sample the selected number and each point will be assigned a lane
-    if (nCarsToSpawn <= sols.size() && nCarsToSpawn > 0)
+    if (static_cast<unsigned int>(nCarsToSpawn) <= sols.size() && nCarsToSpawn > 0)
     {
         // Shuffle and randomly select the points
         // Solutions selected(nCarsToSpawn);
@@ -487,7 +485,7 @@ inline void SwarmTrafficAction::sampleRoads(int minN, int maxN, Solutions &sols,
 
 void SwarmTrafficAction::spawn(Solutions sols, int replace, double simTime)
 {
-    int maxCars = MIN(MAX_CARS, numberOfVehicles - (int)spawnedV.size());  // Remove MIN check when/if found a solution for dynamic array
+    int maxCars = static_cast<int>(MIN(MAX_CARS, static_cast<unsigned int>(numberOfVehicles) - spawnedV.size()));  // Remove MIN check when/if found a solution for dynamic array
     if (maxCars <= 0)
     {
         return;
@@ -540,15 +538,15 @@ void SwarmTrafficAction::spawn(Solutions sols, int replace, double simTime)
             Controller* acc = InstantiateControllerACC(&args);
 
 #if 1   // This is another way of setting the ACC setSpeed property
-            ((ControllerACC*)acc)->SetSetSpeed(velocity_);
+            (static_cast<ControllerACC*>(acc))->SetSetSpeed(velocity_);
 #endif
             reader_->AddController(acc);
 
             // Pick random model from vehicle catalog
-            std::uniform_int_distribution<int> dist(0, (int)(vehicle_pool_.size() - 1));
+            std::uniform_int_distribution<int> dist(0, static_cast<int>((vehicle_pool_.size() - 1)));
             int number = dist(SE_Env::Inst().GetGenerator());
 
-            Vehicle* vehicle = new Vehicle(*vehicle_pool_[number]);
+            Vehicle* vehicle = new Vehicle(*vehicle_pool_[static_cast<unsigned int>(number)]);
             vehicle->pos_.SetLanePos(inf.pos.GetTrackId(), laneID, inf.pos.GetS(), 0.0);
             vehicle->pos_.SetHeadingRelativeRoadDirection(laneID < 0 ? 0.0 : M_PI);
             vehicle->controller_ = acc;
@@ -607,6 +605,7 @@ inline bool SwarmTrafficAction::ensureDistance(roadmanager::Position pos, int la
 
 int SwarmTrafficAction::despawn(double simTime)
 {
+    (void)simTime;
     auto infoPtr               = spawnedV.begin();
     bool increase              = true;
     bool deleteVehicle         = false;
@@ -652,11 +651,11 @@ int SwarmTrafficAction::despawn(double simTime)
 
             if (vehicle->type_ == Object::Type::VEHICLE)
             {
-                Vehicle* v = (Vehicle*)vehicle;
+                Vehicle* v = static_cast<Vehicle*>(vehicle);
                 Vehicle* trailer = nullptr;
                 while (v)  // remove all linked trailers
                 {
-                    trailer = (Vehicle*)v->TrailerVehicle();
+                    trailer = static_cast<Vehicle*>(v->TrailerVehicle());
 
                     gateway_->removeObject(v->name_);
 

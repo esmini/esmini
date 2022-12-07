@@ -110,6 +110,9 @@ namespace scenarioengine
 			int scaleMode, int visibilityMask, double timestamp, double speed, double wheel_angle, double wheel_rot,
 			double rear_axle_z_pos, int roadId, double lateralOffset, double s);
 
+		ObjectState(const ObjectState &) = default;
+		ObjectState &operator=(const ObjectState &) = default;
+
 		ObjectStateStruct getStruct() { return state_; }
 
 		void Print();

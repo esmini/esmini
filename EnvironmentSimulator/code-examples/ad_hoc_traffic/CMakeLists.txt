@@ -1,6 +1,7 @@
 
 include_directories (
   ${ESMINI_LIB_PATH}
+  ${EXTERNALS_PUGIXML_PATH}
 )
 
 set (TARGET ad_hoc_traffic)

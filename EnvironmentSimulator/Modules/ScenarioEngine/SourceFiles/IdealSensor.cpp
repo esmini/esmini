@@ -41,7 +41,7 @@ ObjectSensor::ObjectSensor(
 	maxObj_ = maxObj;
 	host_ = refobj;
 	nObj_ = 0;
-	hitList_ = (ObjectHit*)malloc(maxObj * sizeof(ObjectHit));
+	hitList_ = static_cast<ObjectHit*>(malloc(static_cast<unsigned int>(maxObj) * sizeof(ObjectHit)));
 }
 
 ObjectSensor::~ObjectSensor()

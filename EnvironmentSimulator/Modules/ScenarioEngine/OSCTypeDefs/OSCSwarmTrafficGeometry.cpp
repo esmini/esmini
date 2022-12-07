@@ -208,6 +208,8 @@ namespace STGeometry {
 
     double vB(double x, double h, double k, double e_hdg, double SMjA)
     {
+        (void)x;
+        (void)h;
         return 2 * (-pow(sin(e_hdg), 2) * k) / pow(SMjA, 2);
     }
 
@@ -235,7 +237,7 @@ namespace STGeometry {
         if (xmin > xmax) std::swap(xmin, xmax);
         if (ymin > ymax) std::swap(ymin, ymax);
 
-        Solutions::iterator solsIter = sols.begin() + pos;
+        Solutions::iterator solsIter = sols.begin() + static_cast<int>(pos);
         while (solsIter < sols.end()) {
             double x, y;
             x = solsIter->x;

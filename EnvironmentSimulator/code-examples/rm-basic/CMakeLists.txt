@@ -2,6 +2,7 @@
 include_directories (
   ${ESMINI_RM_LIB_PATH}
   ${COMMON_MINI_PATH}
+  ${EXTERNALS_PUGIXML_PATH}
 )
 
 set (TARGET rm-basic)

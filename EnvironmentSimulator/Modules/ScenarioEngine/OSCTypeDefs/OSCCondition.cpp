@@ -367,7 +367,7 @@ bool Trigger::Evaluate(StoryBoard *storyBoard, double sim_time)
 				conditionGroup_[i]->condition_[j]->Log();
 				if (conditionGroup_[i]->condition_[j]->base_type_ == OSCCondition::ConditionType::BY_ENTITY)
 				{
-					TrigByEntity* trigger = (TrigByEntity*)conditionGroup_[i]->condition_[j];
+					TrigByEntity* trigger = static_cast<TrigByEntity*>(conditionGroup_[i]->condition_[j]);
 					for (size_t k = 0; k < trigger->triggered_by_entities_.size(); k++)
 					{
 						LOG("Triggering entity %d: %s", k, trigger->triggered_by_entities_[k]->name_.c_str());
@@ -543,6 +543,8 @@ void TrigBySimulationTime::Log()
 
 bool TrigByParameter::CheckCondition(StoryBoard* storyBoard, double sim_time)
 {
+	(void)sim_time;
+	(void)storyBoard;
 	bool result = false;
 	current_value_str_ = "";
 
@@ -649,7 +651,7 @@ bool TrigByTimeHeadway::CheckCondition(StoryBoard *storyBoard, double sim_time)
 	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
 	{
 		Object* trigObj = triggering_entities_.entity_[i].object_;
-		if (!trigObj->IsActive() || object_ && !object_->IsActive())
+		if (!trigObj->IsActive() || (object_ && !object_->IsActive()))
 		{
 			continue;
 		}

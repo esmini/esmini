@@ -60,12 +60,12 @@ RubberbandManipulator::CustomCamera* RubberbandManipulator::RubberbandManipulato
 		return nullptr;
 	}
 
-	int index = _mode - RB_MODE_CUSTOM;
+	unsigned int index = _mode - RB_MODE_CUSTOM;
 	if (index > customCamera_.size())
 	{
-		index = customCamera_.size() - 1;
+		index = static_cast<unsigned int>(customCamera_.size()) - 1;
 	}
-	else if (index < 0)
+	else
 	{
 		index = 0;
 	}
@@ -133,6 +133,7 @@ void RubberbandManipulator::calculateCameraDistance()
 
 void RubberbandManipulator::init(const GUIEventAdapter&, GUIActionAdapter& us)
 {
+	(void)us;
 	calcMovement(0, true);
 }
 
@@ -145,28 +146,25 @@ void RubberbandManipulator::getUsage(osg::ApplicationUsage& usage) const
 
 bool RubberbandManipulator::handle(const GUIEventAdapter& ea,GUIActionAdapter& us)
 {
-	static int lpush = 0;
-	static int rpush = 0;
 	static float lx0 = 0;
 	static float ly0 = 0;
-	static float rx0 = 0;
 	static float ry0 = 0;
 	float angleScale = 30.0;
 	float zoomScale = 1.0;
-	float scrollScale = 0.2;
+	float scrollScale = 0.2f;
 
 	if(ea.getEventType() & GUIEventAdapter::PUSH)
 	{
 		if (ea.getButtonMask() & GUIEventAdapter::LEFT_MOUSE_BUTTON)
 		{
-			lpush = true;
+			// int lpush = true;
 			lx0 = ea.getXnormalized();
 			ly0 = ea.getYnormalized();
 		}
 		else if(ea.getButtonMask() & GUIEventAdapter::RIGHT_MOUSE_BUTTON)
 		{
-			rpush = true;
-			rx0 = ea.getXnormalized();
+			// int rpush = true;
+			// float rx0 = ea.getXnormalized();
 			ry0 = ea.getYnormalized();
 		}
 	}
@@ -175,11 +173,11 @@ bool RubberbandManipulator::handle(const GUIEventAdapter& ea,GUIActionAdapter& u
 	{
 		if (ea.getButtonMask() & GUIEventAdapter::LEFT_MOUSE_BUTTON)
 		{
-			lpush = false;
+			// int lpush = false;
 		}
 		else if(ea.getButtonMask() & GUIEventAdapter::RIGHT_MOUSE_BUTTON)
 		{
-			rpush = false;
+			// int rpush = false;
 		}
 	}
 
@@ -219,6 +217,14 @@ bool RubberbandManipulator::handle(const GUIEventAdapter& ea,GUIActionAdapter& u
 			static int scroll = 0;
 			switch (ea.getScrollingMotion())
 			{
+			case(osgGA::GUIEventAdapter::SCROLL_NONE):
+				break;
+			case(osgGA::GUIEventAdapter::SCROLL_LEFT):
+				break;
+			case(osgGA::GUIEventAdapter::SCROLL_RIGHT):
+				break;
+			case(osgGA::GUIEventAdapter::SCROLL_2D):
+				break;
 			case(osgGA::GUIEventAdapter::SCROLL_DOWN):
 				scroll = -1;
 				break;
@@ -226,7 +232,7 @@ bool RubberbandManipulator::handle(const GUIEventAdapter& ea,GUIActionAdapter& u
 				scroll = 1;
 				break;
 			}
-			_cameraDistance -= scrollScale * _cameraDistance * (scroll);
+			_cameraDistance -= scrollScale * _cameraDistance * (static_cast<float>(scroll));
 			return false;
 		}
 		case(GUIEventAdapter::FRAME):
@@ -259,7 +265,7 @@ bool RubberbandManipulator::handle(const GUIEventAdapter& ea,GUIActionAdapter& u
 
 void RubberbandManipulator::computeNodeCenterAndRotation(osg::Vec3d& nodeCenter, osg::Quat& nodeRotation) const
 {
-	osg::PositionAttitudeTransform* pat = dynamic_cast<osg::PositionAttitudeTransform*> (_trackNode);
+	osg::PositionAttitudeTransform* pat = _trackNode;
 	nodeCenter = pat->getPosition();
 	nodeRotation = pat->getAttitude();
 }
@@ -279,6 +285,7 @@ void RubberbandManipulator::addEvent(const GUIEventAdapter& ea)
 
 void RubberbandManipulator::setByMatrix(const osg::Matrixd& matrix)
 {
+	(void)matrix;
 }
 
 osg::Matrixd RubberbandManipulator::getMatrix() const
@@ -312,13 +319,13 @@ bool RubberbandManipulator::calcMovement(double dt, bool reset)
 	{
 		_cameraRotation = -90;
 		_cameraAngle = 90;
-		x = -_cameraDistance * (cosf(_cameraRotation*0.0174533) * cosf(_cameraAngle*0.0174533));
-		y = -_cameraDistance * (sinf(_cameraRotation*0.0174533) * cosf(_cameraAngle*0.0174533));
+		x = -_cameraDistance * (cosf(_cameraRotation*0.0174533f) * cosf(_cameraAngle*0.0174533f));
+		y = -_cameraDistance * (sinf(_cameraRotation*0.0174533f) * cosf(_cameraAngle*0.0174533f));
 		cameraOffset.set(x, y, _cameraDistance);  // Put a small number to prevent undefined camera angle
 	}
 	else if(_mode == RB_MODE_RUBBER_BAND)
 	{
-		cameraOffset.set(-_cameraDistance, 0.0, _cameraDistance * atan(_cameraAngle*0.0174533));
+		cameraOffset.set(-_cameraDistance, 0.0, _cameraDistance * atan(_cameraAngle*0.0174533f));
 	}
 	else if (_mode == RB_MODE_DRIVER)
 	{
@@ -338,9 +345,9 @@ bool RubberbandManipulator::calcMovement(double dt, bool reset)
 		{
 			_cameraRotation = 0;
 		}
-		x = -_cameraDistance * (cosf(_cameraRotation*0.0174533) * cosf(_cameraAngle*0.0174533));
-		y = -_cameraDistance * (sinf(_cameraRotation*0.0174533) * cosf(_cameraAngle*0.0174533));
-		z = _cameraDistance * sinf(_cameraAngle*0.0174533);
+		x = -_cameraDistance * (cosf(_cameraRotation*0.0174533f) * cosf(_cameraAngle*0.0174533f));
+		y = -_cameraDistance * (sinf(_cameraRotation*0.0174533f) * cosf(_cameraAngle*0.0174533f));
+		z = _cameraDistance * sinf(_cameraAngle*0.0174533f);
 
 		cameraOffset.set(x, y, z);
 	}
@@ -373,7 +380,7 @@ bool RubberbandManipulator::calcMovement(double dt, bool reset)
 		// Update camera state
 		springDC = 2 * sqrt(springFC);
 		cameraAcc = cameraToTarget * springFC - cameraVel * springDC;
-		cameraVel += cameraAcc * dt;
+		cameraVel += cameraAcc * static_cast<float>(dt);
 
 		if (_mode == RB_MODE_FIXED || _mode == RB_MODE_ORBIT || _mode == RB_MODE_TOP  || _mode == RB_MODE_DRIVER || _mode >= RB_MODE_CUSTOM)
 		{
@@ -381,7 +388,7 @@ bool RubberbandManipulator::calcMovement(double dt, bool reset)
 		}
 		else
 		{
-			_eye += cameraVel * dt;
+			_eye += cameraVel * static_cast<float>(dt);
 		}
 	}
 
@@ -404,8 +411,8 @@ bool RubberbandManipulator::calcMovement(double dt, bool reset)
 			else
 			{
 				rot.makeRotate(
-					-M_PI_2, osg::Vec3(osg::X_AXIS), // rotate so that Z axis points up
-					M_PI_2 - cam_rot[0], osg::Vec3(osg::Y_AXIS),  // rotate so that X is forward and apply heading
+					static_cast<float>(-M_PI_2), osg::Vec3(osg::X_AXIS), // rotate so that Z axis points up
+					static_cast<float>(M_PI_2) - cam_rot[0], osg::Vec3(osg::Y_AXIS),  // rotate so that X is forward and apply heading
 					cam_rot[1], osg::Vec3(osg::X_AXIS)  // apply pitch
 				);
 
@@ -454,7 +461,7 @@ bool RubberbandManipulator::calcMovement(double dt, bool reset)
 	}
 	else if (_mode == RB_MODE_TOP)
 	{
-		_matrix.makeLookAt(_eye, nodeFocusPoint, osg::Vec3(nodeRotation*osg::Vec3(0, -1, 0)));
+		_matrix.makeLookAt(_eye, nodeFocusPoint, nodeRotation*osg::Vec3(0, -1, 0));
 	}
 	else
 	{

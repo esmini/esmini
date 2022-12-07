@@ -93,10 +93,18 @@ add_subdirectory(Modules/Controllers)
 add_subdirectory(Modules/PlayerBase)
 add_subdirectory(Modules/RoadManager)
 add_subdirectory(Modules/ScenarioEngine)
+
+if (USE_OSG)
+  add_subdirectory(Modules/ViewerBase)
+endif (USE_OSG)
+
 add_subdirectory(Libraries/esminiLib)
 add_subdirectory(Libraries/esminiRMLib)
 add_subdirectory(Applications/esmini)
 add_subdirectory(Applications/esmini-dyn)
+if (USE_OSG)
+  add_subdirectory(Applications/odrviewer)
+endif (USE_OSG)
 
 # Add unittest folder
 if (NOT (APPLE OR MINGW))
@@ -149,10 +157,7 @@ ENDFOREACH()
 add_subdirectory(Applications/odrplot)
 add_subdirectory(Applications/replayer)
 
-if (USE_OSG)
-  add_subdirectory(Applications/odrviewer)
-  add_subdirectory(Modules/ViewerBase)
-endif (USE_OSG)
+
 
 if (USE_OSI)
   set_target_properties (osireceiver PROPERTIES FOLDER ${ApplicationsFolder} )

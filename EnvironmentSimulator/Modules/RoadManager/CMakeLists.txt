@@ -1,30 +1,61 @@
+# ############################### Setting targets ####################################################################
 
-include_directories (
-  ${PUGIXML_INCLUDE_DIR}/pugixml
-  ${COMMON_MINI_PATH}
-  ${ROAD_MANAGER_PATH}
-)
+set(TARGET
+    RoadManager)
 
-set ( SOURCES
-  RoadManager.cpp
-  odrSpiral.cpp
-  LaneIndependentRouter.cpp
-)
+# ############################### Loading desired rules ##############################################################
 
-set ( SRC_ADDITIONAL ../../../externals/pugixml/pugixml.cpp)
-
-SOURCE_GROUP("External Libraries" FILES ${SRC_ADDITIONAL})
-
-set ( INCLUDES
-  RoadManager.hpp
-  odrSpiral.h
-  LaneIndependentRouter.hpp
-)
+include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_static_analysis.cmake)
+include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_iwyu.cmake)
+include(${CMAKE_SOURCE_DIR}/support/cmake/rule/system_link.cmake)
+include(${CMAKE_SOURCE_DIR}/support/cmake/rule/enable_fpic.cmake)
 
 if(MSVC)
-	add_definitions("/wd4482")
+    add_definitions("/wd4482")
 endif()
 
-add_library ( RoadManager STATIC ${SOURCES} ${SRC_ADDITIONAL} ${INCLUDES} )
+# ############################### Setting target files ###############################################################
 
-target_link_libraries ( RoadManager CommonMini project_options)
+set(SOURCES
+    RoadManager.cpp
+    odrSpiral.cpp
+    LaneIndependentRouter.cpp)
+
+set(SRC_ADDITIONAL
+    ${EXTERNALS_PUGIXML_PATH}/pugixml.cpp)
+
+source_group(
+    "External Libraries"
+    FILES ${SRC_ADDITIONAL})
+
+set(INCLUDES
+    RoadManager.hpp
+    odrSpiral.h
+    LaneIndependentRouter.hpp)
+
+# ############################### Creating library ###################################################################
+
+include_directories(${COMMON_MINI_PATH})
+
+add_library(
+    ${TARGET}
+    STATIC
+    ${SOURCES}
+    ${SRC_ADDITIONAL}
+    ${INCLUDES})
+
+target_link_libraries(
+    ${TARGET}
+    PRIVATE CommonMini
+            # project_options
+)
+
+target_include_system_directories(
+    ${TARGET}
+    PRIVATE
+    ${EXTERNALS_PUGIXML_PATH}
+    ${ROAD_MANAGER_PATH})
+
+disable_static_analysis(${TARGET})
+disable_iwyu(${TARGET})
+enable_fpic(${TARGET})

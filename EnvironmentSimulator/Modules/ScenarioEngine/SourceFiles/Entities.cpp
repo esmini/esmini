@@ -23,9 +23,9 @@ using namespace roadmanager;
 
 Object::Object(Type type) : type_(type), id_(0), speed_(0), wheel_angle_(0), wheel_rot_(0), model3d_(""), ghost_trail_s_(0),
 trail_follow_index_(0), odometer_(0), end_of_road_timestamp_(0.0), off_road_timestamp_(0.0), stand_still_timestamp_(0),
-dirty_(0), reset_(0), controller_(0), headstart_time_(0), ghost_(0), ghost_Ego_(0), visibilityMask_(0xff), isGhost_(false),
+reset_(0), controller_(0), headstart_time_(0), ghost_(0), ghost_Ego_(0), visibilityMask_(0xff), isGhost_(false),
 junctionSelectorStrategy_(Junction::JunctionStrategyType::RANDOM), nextJunctionSelectorAngle_(0.0), scaleMode_(EntityScaleMode::NONE),
-is_active_(false)
+dirty_(0), is_active_(false)
 {
 	sensor_pos_[0] = 0;
 	sensor_pos_[1] = 0;
@@ -43,7 +43,7 @@ is_active_(false)
 	// initialize override vector
 	for (int i = 0; i < OVERRIDE_NR_TYPES; i++)
 	{
-		overrideActionList[i].type = (OverrideType)i;
+		overrideActionList[i].type = static_cast<OverrideType>(i);
 		overrideActionList[i].value = 0.0;
 		overrideActionList[i].active = false;
 	}
@@ -248,7 +248,7 @@ void Object::SetJunctionSelectorAngle(double angle)
 
 void Object::SetJunctionSelectorAngleRandom()
 {
-	nextJunctionSelectorAngle_ = 2 * M_PI * ((double)(SE_Env::Inst().GetGenerator())()) / (SE_Env::Inst().GetGenerator()).max();
+	nextJunctionSelectorAngle_ = 2 * M_PI * static_cast<double>(((SE_Env::Inst().GetGenerator())())) / static_cast<double>((SE_Env::Inst().GetGenerator()).max());
 }
 
 bool Object::CollisionAndRelativeDistLatLong(Object* target, double *distLat, double *distLong)
@@ -336,10 +336,10 @@ bool Object::CollisionAndRelativeDistLatLong(Object* target, double *distLat, do
 				// Specify bounding box corner vertices, starting at first quadrant
 				double vertices[4][2] =
 				{
-					{ obj->boundingbox_.center_.x_ + obj->boundingbox_.dimensions_.length_ / 2.0, obj->boundingbox_.center_.y_ + obj->boundingbox_.dimensions_.width_ / 2.0 },
-					{ obj->boundingbox_.center_.x_ - obj->boundingbox_.dimensions_.length_ / 2.0, obj->boundingbox_.center_.y_ + obj->boundingbox_.dimensions_.width_ / 2.0 },
-					{ obj->boundingbox_.center_.x_ - obj->boundingbox_.dimensions_.length_ / 2.0, obj->boundingbox_.center_.y_ - obj->boundingbox_.dimensions_.width_ / 2.0 },
-					{ obj->boundingbox_.center_.x_ + obj->boundingbox_.dimensions_.length_ / 2.0, obj->boundingbox_.center_.y_ - obj->boundingbox_.dimensions_.width_ / 2.0 }
+					{ static_cast<double>(obj->boundingbox_.center_.x_) + static_cast<double>(obj->boundingbox_.dimensions_.length_) / 2.0, static_cast<double>(obj->boundingbox_.center_.y_) + static_cast<double>(obj->boundingbox_.dimensions_.width_) / 2.0 },
+					{ static_cast<double>(obj->boundingbox_.center_.x_) - static_cast<double>(obj->boundingbox_.dimensions_.length_) / 2.0, static_cast<double>(obj->boundingbox_.center_.y_) + static_cast<double>(obj->boundingbox_.dimensions_.width_) / 2.0 },
+					{ static_cast<double>(obj->boundingbox_.center_.x_) - static_cast<double>(obj->boundingbox_.dimensions_.length_) / 2.0, static_cast<double>(obj->boundingbox_.center_.y_) - static_cast<double>(obj->boundingbox_.dimensions_.width_) / 2.0 },
+					{ static_cast<double>(obj->boundingbox_.center_.x_) + static_cast<double>(obj->boundingbox_.dimensions_.length_) / 2.0, static_cast<double>(obj->boundingbox_.center_.y_) - static_cast<double>(obj->boundingbox_.dimensions_.width_) / 2.0 }
 				};
 
 				for (int l = 0; l < 4; l++)
@@ -366,8 +366,8 @@ bool Object::CollisionAndRelativeDistLatLong(Object* target, double *distLat, do
 				}
 			}
 
-			if (min[0] < min[1] - SMALL_NUMBER && max[0] < min[1] - SMALL_NUMBER ||
-				max[0] > max[1] + SMALL_NUMBER && min[0] > max[1] + SMALL_NUMBER)
+			if (((min[0] < min[1] - SMALL_NUMBER) && (max[0] < min[1] - SMALL_NUMBER)) ||
+				((max[0] > max[1] + SMALL_NUMBER) && (min[0] > max[1] + SMALL_NUMBER)))
 			{
 				// gap found
 				gap = true;
@@ -456,10 +456,10 @@ double Object::PointCollision(double x, double y)
 		// Specify bounding box corner vertices, starting at first quadrant
 		double vertices[4][2] =
 		{
-			{ obj0->boundingbox_.center_.x_ + obj0->boundingbox_.dimensions_.length_ / 2.0, obj0->boundingbox_.center_.y_ + obj0->boundingbox_.dimensions_.width_ / 2.0 },
-			{ obj0->boundingbox_.center_.x_ - obj0->boundingbox_.dimensions_.length_ / 2.0, obj0->boundingbox_.center_.y_ + obj0->boundingbox_.dimensions_.width_ / 2.0 },
-			{ obj0->boundingbox_.center_.x_ - obj0->boundingbox_.dimensions_.length_ / 2.0, obj0->boundingbox_.center_.y_ - obj0->boundingbox_.dimensions_.width_ / 2.0 },
-			{ obj0->boundingbox_.center_.x_ + obj0->boundingbox_.dimensions_.length_ / 2.0, obj0->boundingbox_.center_.y_ - obj0->boundingbox_.dimensions_.width_ / 2.0 }
+			{ static_cast<double>(obj0->boundingbox_.center_.x_) + static_cast<double>(obj0->boundingbox_.dimensions_.length_) / 2.0, static_cast<double>(obj0->boundingbox_.center_.y_) + static_cast<double>(obj0->boundingbox_.dimensions_.width_) / 2.0 },
+			{ static_cast<double>(obj0->boundingbox_.center_.x_) - static_cast<double>(obj0->boundingbox_.dimensions_.length_) / 2.0, static_cast<double>(obj0->boundingbox_.center_.y_) + static_cast<double>(obj0->boundingbox_.dimensions_.width_) / 2.0 },
+			{ static_cast<double>(obj0->boundingbox_.center_.x_) - static_cast<double>(obj0->boundingbox_.dimensions_.length_) / 2.0, static_cast<double>(obj0->boundingbox_.center_.y_) - static_cast<double>(obj0->boundingbox_.dimensions_.width_) / 2.0 },
+			{ static_cast<double>(obj0->boundingbox_.center_.x_) + static_cast<double>(obj0->boundingbox_.dimensions_.length_) / 2.0, static_cast<double>(obj0->boundingbox_.center_.y_) - static_cast<double>(obj0->boundingbox_.dimensions_.width_) / 2.0 }
 		};
 
 		for (int l = 0; l < 4; l++)
@@ -487,8 +487,8 @@ double Object::PointCollision(double x, double y)
 
 		double dot_p = GetDotProduct2D(x, y, n1[0], n1[1]);
 
-		if (min[0] < dot_p - SMALL_NUMBER && max[0] < dot_p - SMALL_NUMBER ||
-			max[0] > dot_p + SMALL_NUMBER && min[0] > dot_p + SMALL_NUMBER)
+		if (((min[0] < dot_p - SMALL_NUMBER) && (max[0] < dot_p - SMALL_NUMBER)) ||
+			((max[0] > dot_p + SMALL_NUMBER) && (min[0] > dot_p + SMALL_NUMBER)))
 		{
 			// gap found - no collision
 			return false;
@@ -530,10 +530,10 @@ double Object::FreeSpaceDistance(Object* target, double* latDist, double* longDi
 		// Specify bounding box corner vertices, starting at first quadrant
 		double vtmp[4][2] =
 		{
-			{ obj->boundingbox_.center_.x_ + obj->boundingbox_.dimensions_.length_ / 2.0, obj->boundingbox_.center_.y_ + obj->boundingbox_.dimensions_.width_ / 2.0 },
-			{ obj->boundingbox_.center_.x_ - obj->boundingbox_.dimensions_.length_ / 2.0, obj->boundingbox_.center_.y_ + obj->boundingbox_.dimensions_.width_ / 2.0 },
-			{ obj->boundingbox_.center_.x_ - obj->boundingbox_.dimensions_.length_ / 2.0, obj->boundingbox_.center_.y_ - obj->boundingbox_.dimensions_.width_ / 2.0 },
-			{ obj->boundingbox_.center_.x_ + obj->boundingbox_.dimensions_.length_ / 2.0, obj->boundingbox_.center_.y_ - obj->boundingbox_.dimensions_.width_ / 2.0 }
+			{ static_cast<double>(obj->boundingbox_.center_.x_) + static_cast<double>(obj->boundingbox_.dimensions_.length_) / 2.0, static_cast<double>(obj->boundingbox_.center_.y_) + static_cast<double>(obj->boundingbox_.dimensions_.width_) / 2.0 },
+			{ static_cast<double>(obj->boundingbox_.center_.x_) - static_cast<double>(obj->boundingbox_.dimensions_.length_) / 2.0, static_cast<double>(obj->boundingbox_.center_.y_) + static_cast<double>(obj->boundingbox_.dimensions_.width_) / 2.0 },
+			{ static_cast<double>(obj->boundingbox_.center_.x_) - static_cast<double>(obj->boundingbox_.dimensions_.length_) / 2.0, static_cast<double>(obj->boundingbox_.center_.y_) - static_cast<double>(obj->boundingbox_.dimensions_.width_) / 2.0 },
+			{ static_cast<double>(obj->boundingbox_.center_.x_) + static_cast<double>(obj->boundingbox_.dimensions_.length_) / 2.0, static_cast<double>(obj->boundingbox_.center_.y_) - static_cast<double>(obj->boundingbox_.dimensions_.width_) / 2.0 }
 		};
 
 		for (int j = 0; j < 4; j++)  // for all vertices
@@ -600,10 +600,10 @@ double Object::FreeSpaceDistancePoint(double x, double y, double* latDist, doubl
 	// Specify bounding box corner vertices, starting at first quadrant
 	double vtmp[4][2] =
 	{
-		{ obj->boundingbox_.center_.x_ + obj->boundingbox_.dimensions_.length_ / 2.0, obj->boundingbox_.center_.y_ + obj->boundingbox_.dimensions_.width_ / 2.0 },
-		{ obj->boundingbox_.center_.x_ - obj->boundingbox_.dimensions_.length_ / 2.0, obj->boundingbox_.center_.y_ + obj->boundingbox_.dimensions_.width_ / 2.0 },
-		{ obj->boundingbox_.center_.x_ - obj->boundingbox_.dimensions_.length_ / 2.0, obj->boundingbox_.center_.y_ - obj->boundingbox_.dimensions_.width_ / 2.0 },
-		{ obj->boundingbox_.center_.x_ + obj->boundingbox_.dimensions_.length_ / 2.0, obj->boundingbox_.center_.y_ - obj->boundingbox_.dimensions_.width_ / 2.0 }
+		{ static_cast<double>(obj->boundingbox_.center_.x_) + static_cast<double>(obj->boundingbox_.dimensions_.length_) / 2.0, static_cast<double>(obj->boundingbox_.center_.y_) + static_cast<double>(obj->boundingbox_.dimensions_.width_) / 2.0 },
+		{ static_cast<double>(obj->boundingbox_.center_.x_) - static_cast<double>(obj->boundingbox_.dimensions_.length_) / 2.0, static_cast<double>(obj->boundingbox_.center_.y_) + static_cast<double>(obj->boundingbox_.dimensions_.width_) / 2.0 },
+		{ static_cast<double>(obj->boundingbox_.center_.x_) - static_cast<double>(obj->boundingbox_.dimensions_.length_) / 2.0, static_cast<double>(obj->boundingbox_.center_.y_) - static_cast<double>(obj->boundingbox_.dimensions_.width_) / 2.0 },
+		{ static_cast<double>(obj->boundingbox_.center_.x_) + static_cast<double>(obj->boundingbox_.dimensions_.length_) / 2.0, static_cast<double>(obj->boundingbox_.center_.y_) - static_cast<double>(obj->boundingbox_.dimensions_.width_) / 2.0 }
 	};
 
 	for (int j = 0; j < 4; j++)  // for all vertices
@@ -666,10 +666,10 @@ int Object::FreeSpaceDistancePointRoadLane(double x, double y, double* latDist, 
 	// Specify bounding box corner vertices, starting at first quadrant
 	double vtmp[4][2] =
 	{
-		{ boundingbox_.center_.x_ + boundingbox_.dimensions_.length_ / 2.0, boundingbox_.center_.y_ + boundingbox_.dimensions_.width_ / 2.0 },
-		{ boundingbox_.center_.x_ - boundingbox_.dimensions_.length_ / 2.0, boundingbox_.center_.y_ + boundingbox_.dimensions_.width_ / 2.0 },
-		{ boundingbox_.center_.x_ - boundingbox_.dimensions_.length_ / 2.0, boundingbox_.center_.y_ - boundingbox_.dimensions_.width_ / 2.0 },
-		{ boundingbox_.center_.x_ + boundingbox_.dimensions_.length_ / 2.0, boundingbox_.center_.y_ - boundingbox_.dimensions_.width_ / 2.0 }
+		{ static_cast<double>(boundingbox_.center_.x_) + static_cast<double>(boundingbox_.dimensions_.length_) / 2.0, static_cast<double>(boundingbox_.center_.y_) + static_cast<double>(boundingbox_.dimensions_.width_) / 2.0 },
+		{ static_cast<double>(boundingbox_.center_.x_) - static_cast<double>(boundingbox_.dimensions_.length_) / 2.0, static_cast<double>(boundingbox_.center_.y_) + static_cast<double>(boundingbox_.dimensions_.width_) / 2.0 },
+		{ static_cast<double>(boundingbox_.center_.x_) - static_cast<double>(boundingbox_.dimensions_.length_) / 2.0, static_cast<double>(boundingbox_.center_.y_) - static_cast<double>(boundingbox_.dimensions_.width_) / 2.0 },
+		{ static_cast<double>(boundingbox_.center_.x_) + static_cast<double>(boundingbox_.dimensions_.length_) / 2.0, static_cast<double>(boundingbox_.center_.y_) - static_cast<double>(boundingbox_.dimensions_.width_) / 2.0 }
 	};
 
 	// Align points to object heading and position
@@ -684,7 +684,7 @@ int Object::FreeSpaceDistancePointRoadLane(double x, double y, double* latDist, 
 
 	// Map XY point to road coordinates, but consider only roads reachable from point
 	Position pointPos = pos_;
-	if ((int)pointPos.XYZH2TrackPos(x, y, 0, 0, true) < 0)
+	if (static_cast<int>(pointPos.XYZH2TrackPos(x, y, 0, 0, true)) < 0)
 	{
 		return -1;
 	}
@@ -700,7 +700,7 @@ int Object::FreeSpaceDistancePointRoadLane(double x, double y, double* latDist, 
 	{
 		pos[j] = pos_;
 		// Map bounding box points to road coordinates, consider only roads reachable from current position
-		if ((int)pos[j].XYZH2TrackPos(vertices[j][0], vertices[j][1], 0, vertices[j][2], true) < 0)
+		if (static_cast<int>(pos[j].XYZH2TrackPos(vertices[j][0], vertices[j][1], 0, vertices[j][2], true)) < 0)
 		{
 			return -1;
 		}
@@ -796,10 +796,10 @@ int Object::FreeSpaceDistanceObjectRoadLane(Object* target, double* latDist, dou
 		// Specify bounding box corner vertices, starting at first quadrant
 		double vtmp[4][2] =
 		{
-			{ obj->boundingbox_.center_.x_ + obj->boundingbox_.dimensions_.length_ / 2.0, obj->boundingbox_.center_.y_ + obj->boundingbox_.dimensions_.width_ / 2.0 },
-			{ obj->boundingbox_.center_.x_ - obj->boundingbox_.dimensions_.length_ / 2.0, obj->boundingbox_.center_.y_ + obj->boundingbox_.dimensions_.width_ / 2.0 },
-			{ obj->boundingbox_.center_.x_ - obj->boundingbox_.dimensions_.length_ / 2.0, obj->boundingbox_.center_.y_ - obj->boundingbox_.dimensions_.width_ / 2.0 },
-			{ obj->boundingbox_.center_.x_ + obj->boundingbox_.dimensions_.length_ / 2.0, obj->boundingbox_.center_.y_ - obj->boundingbox_.dimensions_.width_ / 2.0 }
+			{ static_cast<double>(obj->boundingbox_.center_.x_) + static_cast<double>(obj->boundingbox_.dimensions_.length_) / 2.0, static_cast<double>(obj->boundingbox_.center_.y_) + static_cast<double>(obj->boundingbox_.dimensions_.width_) / 2.0 },
+			{ static_cast<double>(obj->boundingbox_.center_.x_) - static_cast<double>(obj->boundingbox_.dimensions_.length_) / 2.0, static_cast<double>(obj->boundingbox_.center_.y_) + static_cast<double>(obj->boundingbox_.dimensions_.width_) / 2.0 },
+			{ static_cast<double>(obj->boundingbox_.center_.x_) - static_cast<double>(obj->boundingbox_.dimensions_.length_) / 2.0, static_cast<double>(obj->boundingbox_.center_.y_) - static_cast<double>(obj->boundingbox_.dimensions_.width_) / 2.0 },
+			{ static_cast<double>(obj->boundingbox_.center_.x_) + static_cast<double>(obj->boundingbox_.dimensions_.length_) / 2.0, static_cast<double>(obj->boundingbox_.center_.y_) - static_cast<double>(obj->boundingbox_.dimensions_.width_) / 2.0 }
 		};
 
 		for (int j = 0; j < 4; j++)  // for all vertices
@@ -812,7 +812,7 @@ int Object::FreeSpaceDistanceObjectRoadLane(Object* target, double* latDist, dou
 
 			// Map XY points to road coordinates, but consider only roads reachable from point
 			pos[i][j] = pos_;
-			if ((int)pos[i][j].XYZH2TrackPos(vertices[i][j][0], vertices[i][j][1], 0, vertices[i][j][2], true) < 0)
+			if (static_cast<int>(pos[i][j].XYZH2TrackPos(vertices[i][j][0], vertices[i][j][1], 0, vertices[i][j][2], true)) < 0)
 			{
 				return -1;
 			}
@@ -840,22 +840,22 @@ int Object::FreeSpaceDistanceObjectRoadLane(Object* target, double* latDist, dou
 			ds[i][j] = posDiff.ds;
 			dt[i][j] = posDiff.dt;
 
-			if (i == 0 && j == 0 || fabs(posDiff.ds) < fabs(minDS))
+			if ((i == 0 && j == 0) || fabs(posDiff.ds) < fabs(minDS))
 			{
 				minDS = posDiff.ds;
 			}
 
-			if (i == 0 && j == 0 || fabs(posDiff.dt) < fabs(minDT))
+			if ((i == 0 && j == 0) || fabs(posDiff.dt) < fabs(minDT))
 			{
 				minDT = posDiff.dt;
 			}
 
-			if (i == 0 && j == 0 || fabs(posDiff.ds) > fabs(maxDS))
+			if ((i == 0 && j == 0) || fabs(posDiff.ds) > fabs(maxDS))
 			{
 				maxDS = posDiff.ds;
 			}
 
-			if (i == 0 && j == 0 || fabs(posDiff.dt) > fabs(maxDT))
+			if ((i == 0 && j == 0) || fabs(posDiff.dt) > fabs(maxDT))
 			{
 				maxDT = posDiff.dt;
 			}
@@ -886,6 +886,7 @@ int Object::FreeSpaceDistanceObjectRoadLane(Object* target, double* latDist, dou
 int Object::Distance(Object* target, roadmanager::CoordinateSystem cs, roadmanager::RelativeDistanceType relDistType, bool freeSpace,
 	double& dist, double maxDist)
 {
+	(void)maxDist;
 	if (freeSpace)
 	{
 		double latDist, longDist;
@@ -1140,7 +1141,7 @@ int Entities::addObject(Object* obj, bool activate, int call_index)
 
 	obj->SetActive(activate);
 
-	Vehicle* trailer_vehicle = (Vehicle*)obj->TrailerVehicle();
+	Vehicle* trailer_vehicle = static_cast<Vehicle*>(obj->TrailerVehicle());
 	if (trailer_vehicle && trailer_vehicle != obj)
 	{
 		if (trailer_vehicle->name_.empty())
@@ -1161,14 +1162,14 @@ int Entities::activateObject(Object* obj, int call_index)
 		LOG_AND_QUIT("Error: activateObject max recursion reached (%d). Check scenario trailer config", max_trailers);
 	}
 
-	int n_active_objs = (int)std::count(object_.begin(), object_.end(), obj);
+	int n_active_objs = static_cast<int>(std::count(object_.begin(), object_.end(), obj));
 
 	if (n_active_objs == 0)
 	{
 		object_.push_back(obj);
 		obj->SetActive(true);
 
-		int n_objs = (int)std::count(object_pool_.begin(), object_pool_.end(), obj);
+		int n_objs = static_cast<int>(std::count(object_pool_.begin(), object_pool_.end(), obj));
 		if (n_objs == 1)
 		{
 			object_pool_.erase(std::remove(object_pool_.begin(), object_pool_.end(), obj), object_pool_.end());
@@ -1184,7 +1185,7 @@ int Entities::activateObject(Object* obj, int call_index)
 			LOG("Unexpected finding: Object %s missing in pool empty when activating.", obj->GetName().c_str());
 		}
 
-		Vehicle* trailer_vehicle = (Vehicle*)obj->TrailerVehicle();
+		Vehicle* trailer_vehicle = static_cast<Vehicle*>(obj->TrailerVehicle());
 		if (trailer_vehicle && trailer_vehicle != obj)
 		{
 			activateObject(trailer_vehicle, call_index + 1);
@@ -1208,14 +1209,14 @@ int Entities::deactivateObject(Object* obj, int call_index)
 		LOG_AND_QUIT("Error: deactivateObject max recursion reached (%d). Check scenario trailer config", max_trailers);
 	}
 
-	int n_active_objs = (int)std::count(object_.begin(), object_.end(), obj);
+	int n_active_objs = static_cast<int>(std::count(object_.begin(), object_.end(), obj));
 
 	if (n_active_objs == 1)
 	{
 		object_.erase(std::remove(object_.begin(), object_.end(), obj), object_.end());
 		obj->SetActive(false);
 
-		int n_objs = (int)std::count(object_pool_.begin(), object_pool_.end(), obj);
+		int n_objs = static_cast<int>(std::count(object_pool_.begin(), object_pool_.end(), obj));
 		if (n_objs == 0)
 		{
 			object_pool_.push_back(obj);
@@ -1226,7 +1227,7 @@ int Entities::deactivateObject(Object* obj, int call_index)
 				obj->GetName().c_str(), n_objs);
 		}
 
-		Vehicle* trailer_vehicle = (Vehicle*)obj->TrailerVehicle();
+		Vehicle* trailer_vehicle = static_cast<Vehicle*>(obj->TrailerVehicle());
 		if (trailer_vehicle && trailer_vehicle != obj)
 		{
 			deactivateObject(trailer_vehicle, call_index + 1);
@@ -1281,7 +1282,7 @@ void Entities::removeObject(Object* object, bool recursive)
 			{
 				if (object->type_ == Object::Type::VEHICLE)
 				{
-					Vehicle* v = (Vehicle*)object;
+					Vehicle* v = static_cast<Vehicle*>(object);
 					if (v->trailer_hitch_ && v->trailer_hitch_->trailer_vehicle_)
 					{
 						removeObject(v->trailer_hitch_->trailer_vehicle_, recursive);
@@ -1327,7 +1328,7 @@ int Entities::getNewId()
 	return nextId_++;
 }
 
-Vehicle::Vehicle() : trailer_hitch_(nullptr), trailer_coupler_(nullptr), Object(Object::Type::VEHICLE)
+Vehicle::Vehicle() : Object(Object::Type::VEHICLE), trailer_coupler_(nullptr), trailer_hitch_(nullptr)
 {
 	category_ = static_cast<int>(Category::CAR);
 	performance_.maxAcceleration = 10.0;
@@ -1335,10 +1336,8 @@ Vehicle::Vehicle() : trailer_hitch_(nullptr), trailer_coupler_(nullptr), Object(
 	performance_.maxSpeed = 100.0;
 }
 
-Vehicle::Vehicle(const Vehicle& v) : trailer_hitch_(nullptr), trailer_coupler_(nullptr), Object(Object::Type::VEHICLE)
+Vehicle::Vehicle(const Vehicle& v) : Object(Object::Type::VEHICLE), trailer_coupler_(nullptr), trailer_hitch_(nullptr)
 {
-	*this = v;
-
 	if (v.trailer_coupler_ && v.trailer_coupler_->tow_vehicle_)
 	{
 		trailer_coupler_.reset(new TrailerCoupler(*v.trailer_coupler_));
@@ -1349,7 +1348,7 @@ Vehicle::Vehicle(const Vehicle& v) : trailer_hitch_(nullptr), trailer_coupler_(n
 	{
 		// make a unique copy of any trailer
 		trailer_hitch_.reset(new TrailerHitch(*v.trailer_hitch_));
-		Vehicle* trailer = new Vehicle(*((Vehicle*)(v.trailer_hitch_->trailer_vehicle_)));
+		Vehicle* trailer = new Vehicle(*(static_cast<Vehicle*>((v.trailer_hitch_->trailer_vehicle_))));
 		ConnectTrailer(trailer);
 	}
 }
@@ -1381,7 +1380,7 @@ void Vehicle::AlignTrailers()
 	int counter = 0;
 	while (v && counter++ < 100)
 	{
-		trailer = (Vehicle*)v->TrailerVehicle();
+		trailer = static_cast<Vehicle*>(v->TrailerVehicle());
 		if (trailer)
 		{
 			SE_Vector v0(v->trailer_hitch_->dx_, 0.0);
@@ -1452,7 +1451,7 @@ void Object::removeEvent(Event* event)
 
 std::vector<OSCPrivateAction*> Object::getPrivateActions() {
 	std::vector<OSCPrivateAction*> actions;
-	for (int i = 0; i < objectEvents_.size(); i++)
+	for (unsigned int i = 0; i < objectEvents_.size(); i++)
 	{
 		Event* event = objectEvents_[i];
 		for (size_t n = 0; n < event->action_.size(); n++)
@@ -1460,7 +1459,7 @@ std::vector<OSCPrivateAction*> Object::getPrivateActions() {
 			OSCAction* action = event->action_[n];
 			if (action->base_type_ == OSCAction::BaseType::PRIVATE)
 			{
-				OSCPrivateAction* pa = (OSCPrivateAction*)action;
+				OSCPrivateAction* pa = static_cast<OSCPrivateAction*>(action);
 				if (pa->IsActive() || pa->IsTriggable()) {
 					actions.push_back(pa);
 				}
@@ -1476,14 +1475,14 @@ Object* Object::TowVehicle()
 
 	if (type_ == Object::Type::VEHICLE)
 	{
-		Vehicle* vehicle = (Vehicle*)this;
+		Vehicle* vehicle = static_cast<Vehicle*>(this);
 		if (vehicle->trailer_coupler_ != nullptr)
 		{
 			if (vehicle->trailer_coupler_->tow_vehicle_)
 			{
 				if (vehicle->trailer_coupler_->tow_vehicle_->type_ == Object::Type::VEHICLE)
 				{
-					tow_vehicle = (Vehicle*)vehicle->trailer_coupler_->tow_vehicle_;
+					tow_vehicle = static_cast<Vehicle*>(vehicle->trailer_coupler_->tow_vehicle_);
 					if (tow_vehicle != nullptr && tow_vehicle->trailer_hitch_ == nullptr)
 					{
 						LOG_ONCE("Warning: Tow vehicle %s lacks hitch", tow_vehicle->GetName().c_str());
@@ -1503,14 +1502,14 @@ Object* Object::TrailerVehicle()
 
 	if (type_ == Object::Type::VEHICLE)
 	{
-		Vehicle* vehicle = (Vehicle*)this;
+		Vehicle* vehicle = static_cast<Vehicle*>(this);
 		if (vehicle->trailer_hitch_ != nullptr)
 		{
 			if (vehicle->trailer_hitch_->trailer_vehicle_)
 			{
 				if (vehicle->trailer_hitch_->trailer_vehicle_->type_ == Object::Type::VEHICLE)
 				{
-					trailer_vehicle = (Vehicle*)vehicle->trailer_hitch_->trailer_vehicle_;
+					trailer_vehicle = static_cast<Vehicle*>(vehicle->trailer_hitch_->trailer_vehicle_);
 					if (trailer_vehicle != nullptr && trailer_vehicle->trailer_coupler_ == nullptr)
 					{
 						LOG_ONCE("Warning: Trailer vehicle %s lacks coupler", trailer_vehicle->GetName().c_str());

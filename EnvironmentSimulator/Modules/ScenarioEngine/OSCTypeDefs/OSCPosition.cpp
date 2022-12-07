@@ -237,6 +237,9 @@ void OSCPositionRelativeRoad::Print()
 
 OSCPositionRoute::OSCPositionRoute(roadmanager::Route *route, double s, int laneId, double laneOffset)
 {
+	(void)s;
+	(void)laneId;
+	(void)laneOffset;
 	position_.SetRoute(route);
 }
 
@@ -266,6 +269,8 @@ void OSCPositionRoute::SetRouteRefLaneCoord(roadmanager::Route *route, double pa
 
 OSCPositionTrajectory::OSCPositionTrajectory(roadmanager::RMTrajectory* traj, double s, double t, OSCOrientation orientation)
 {
+	(void)orientation;
+	(void)t;
 	position_.SetTrajectory(traj);
 	position_.SetTrajectoryS(s);
 }

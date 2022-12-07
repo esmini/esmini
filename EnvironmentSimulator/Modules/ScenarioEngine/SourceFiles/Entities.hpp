@@ -126,43 +126,45 @@ namespace scenarioengine
 		OverrideActionStatus overrideActionList[OverrideType::OVERRIDE_NR_TYPES];
 
 		Type type_;
-		int category_; // specific object category in vehicle, pedestrian or misobject
-		std::string typeName_;  // Name of the vehicle-, pedestrian- or misc object type
-		std::string name_;
-		std::string model3d_;
 		int id_;
-		EntityScaleMode scaleMode_;
-
-		// Ghost following stuff
-		int trail_follow_index_; // Index of closest segment
-		int ghost_trail_s_;		 // closest point on ghost trail
-		roadmanager::TrajVertex trail_closest_pos_;
-
-		double sensor_pos_[3];
-		Object* ghost_;
-		Object* ghost_Ego_;
-
 		double speed_;
 		double wheel_angle_;
 		double wheel_rot_;
-		roadmanager::Position pos_;
-		int model_id_;
-		roadmanager::PolyLineBase trail_;
+		std::string model3d_;
+		int ghost_trail_s_;		 // closest point on ghost trail
+		int trail_follow_index_; // Index of closest segment
 		double odometer_;
-		OSCBoundingBox boundingbox_;
 		double end_of_road_timestamp_;
 		double off_road_timestamp_;
 		double stand_still_timestamp_;
+		bool reset_;			 // indicate discreet movement, teleporting, no odometer update
+
+		Controller* controller_; // reference to any assigned controller object
 		double headstart_time_;
+		Object* ghost_;
+		Object* ghost_Ego_;
 		int visibilityMask_;
+		bool isGhost_;
 		roadmanager::Junction::JunctionStrategyType junctionSelectorStrategy_;
 		double nextJunctionSelectorAngle_;  // number between 0:2pi (circle). E.g. if 1.57 choose the leftmost road
+		EntityScaleMode scaleMode_;
+
+		int category_; // specific object category in vehicle, pedestrian or misobject
+		std::string typeName_;  // Name of the vehicle-, pedestrian- or misc object type
+		std::string name_;
+
+		// Ghost following stuff
+		roadmanager::TrajVertex trail_closest_pos_;
+
+		double sensor_pos_[3];
+
+		roadmanager::Position pos_;
+		int model_id_;
+		roadmanager::PolyLineBase trail_;
+		OSCBoundingBox boundingbox_;
 		Performance performance_;
 		Axle front_axle_;
 		Axle rear_axle_;
-		Controller* controller_; // reference to any assigned controller object
-		bool reset_;			 // indicate discreet movement, teleporting, no odometer update
-		bool isGhost_;
 
 		//Rel2abs Controller addition
 		std::vector<Event*> objectEvents_;				//Events that contains privateactions applied to this object
@@ -181,9 +183,6 @@ namespace scenarioengine
 
 		Object(Type type);
 		Object(const Object& o) = default;
-		// { TODO: @Emil: why do we have this definition for copy constructor. It already implicityly does that?
-		// 	*this = o;
-		// }
 		virtual ~Object() {}
 		void SetEndOfRoad(bool state, double time = 0.0);
 		bool IsEndOfRoad() { return end_of_road_timestamp_ > SMALL_NUMBER; }

@@ -98,7 +98,7 @@ void StoryBoardElement::SetState(StoryBoardElement:: State state)
 
         if (stateChangeCallback != nullptr)
         {
-            stateChangeCallback(name_.c_str(), (int) type_, (int) state);
+            stateChangeCallback(name_.c_str(),  static_cast<int>(type_), static_cast<int>(state));
         }
 	}
 	state_ = state;

@@ -62,7 +62,7 @@ int OSCParameterDistribution::Load(std::string filename)
 	if (i == file_name_candidates.size())
 	{
 		LOG("Failed to load parameter distribution file %s. Tried:", filename.c_str());
-		for (int j = 0; j < file_name_candidates.size(); j++)
+		for (unsigned int j = 0; j < file_name_candidates.size(); j++)
 		{
 			LOG("   %s\n", file_name_candidates[j].c_str());
 		}
@@ -229,14 +229,14 @@ int OSCParameterDistribution::Load(std::string filename)
 
 int OSCParameterDistribution::GetNumParameters()
 {
-	return (int)param_list_.size();
+	return static_cast<int>(param_list_.size());
 }
 
 std::string OSCParameterDistribution::GetParamName(int index)
 {
-	if (index >= 0 && index < param_list_.size())
+	if (index >= 0 && static_cast<unsigned int>(index) < param_list_.size())
 	{
-		return param_list_[index].name;
+		return param_list_[static_cast<unsigned int>(index)].name;
 	}
 
 	return "";
@@ -253,7 +253,7 @@ int OSCParameterDistribution::GetNumPermutations()
 
 	for (size_t i = 0; i < param_list_.size(); i++)
 	{
-		n *= (int)param_list_[i].value.size();
+		n *= static_cast<int>(param_list_[i].value.size());
 	}
 
 	return n;
@@ -261,7 +261,7 @@ int OSCParameterDistribution::GetNumPermutations()
 
 std::string OSCParameterDistribution::GetParamValue(int param_index)
 {
-	if (param_index < 0 || param_index >= param_list_.size())
+	if (param_index < 0 || static_cast<unsigned int>(param_index) >= param_list_.size())
 	{
 		return "";
 	}
@@ -276,14 +276,14 @@ std::string OSCParameterDistribution::GetParamValue(int param_index)
 
 	int n = index_;
 
-	for (size_t i = param_list_.size() - 1; i >= 0; i--)
+	for (int i = static_cast<int>(param_list_.size()) - 1; i >= 0; i--)
 	{
-		int q = n / (int)param_list_[i].value.size();
-		int r = n % (int)param_list_[i].value.size();
+		int q = n / static_cast<int>(param_list_[static_cast<unsigned int>(i)].value.size());
+		int r = n % static_cast<int>(param_list_[static_cast<unsigned int>(i)].value.size());
 
 		if (i == param_index)
 		{
-			return param_list_[param_index].value[r];
+			return param_list_[static_cast<unsigned int>(param_index)].value[static_cast<unsigned int>(r)];
 		}
 		n = q;
 	}

@@ -50,7 +50,7 @@ target_compile_features(
     INTERFACE cxx_std_${CMAKE_CXX_STANDARD})
 
 include(${CMAKE_CURRENT_LIST_DIR}/compiler_warnings.cmake)
-# set_project_warnings(project_options ${ENABLE_WARNINGS_AS_ERRORS})
+# set_project_warnings( project_options ${ENABLE_WARNINGS_AS_ERRORS})
 
 include(${CMAKE_CURRENT_LIST_DIR}/ccache.cmake)
 if(ENABLE_CCACHE)

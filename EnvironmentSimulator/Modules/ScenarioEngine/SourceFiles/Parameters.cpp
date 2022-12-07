@@ -17,7 +17,7 @@ using namespace scenarioengine;
 
 void Parameters::addParameterDeclarations(pugi::xml_node xml_node)
 {
-	paramDeclarationsSize_.push((int)parameterDeclarations_.Parameter.size());
+	paramDeclarationsSize_.push(static_cast<int>(parameterDeclarations_.Parameter.size()));
 	parseParameterDeclarations(xml_node, &parameterDeclarations_);
 }
 
@@ -33,7 +33,7 @@ void Parameters::parseGlobalParameterDeclarations(pugi::xml_node node)
 
 void Parameters::CreateRestorePoint()
 {
-	paramDeclarationsSize_.push((int)parameterDeclarations_.Parameter.size());
+	paramDeclarationsSize_.push(static_cast<int>(parameterDeclarations_.Parameter.size()));
 }
 
 void Parameters::RestoreParameterDeclarations()
@@ -42,7 +42,7 @@ void Parameters::RestoreParameterDeclarations()
 	{
 		parameterDeclarations_.Parameter.erase(
 			parameterDeclarations_.Parameter.begin(),
-			parameterDeclarations_.Parameter.begin() + parameterDeclarations_.Parameter.size() - paramDeclarationsSize_.top());
+			parameterDeclarations_.Parameter.begin() + static_cast<int>(parameterDeclarations_.Parameter.size()) - paramDeclarationsSize_.top());
 		paramDeclarationsSize_.pop();
 		catalog_param_assignments.clear();
 	}
@@ -100,20 +100,20 @@ OSCParameterDeclarations::ParameterStruct* Parameters::getParameterEntry(std::st
 
 int Parameters::GetNumberOfParameters()
 {
-	return (int)parameterDeclarations_.Parameter.size();
+	return static_cast<int>(parameterDeclarations_.Parameter.size());
 }
 
 const char* Parameters::GetParameterName(int index, OSCParameterDeclarations::ParameterType* type)
 {
-	if (index < 0 || index >= parameterDeclarations_.Parameter.size())
+	if (index < 0 || static_cast<unsigned int>(index) >= parameterDeclarations_.Parameter.size())
 	{
 		LOG_AND_QUIT("index %d out of range [0:%d]", index, parameterDeclarations_.Parameter.size() - 1);
 		return 0;
 	}
 
-	*type = parameterDeclarations_.Parameter[index].type;
+	*type = parameterDeclarations_.Parameter[static_cast<unsigned int>(index)].type;
 
-	return parameterDeclarations_.Parameter[index].name.c_str();
+	return parameterDeclarations_.Parameter[static_cast<unsigned int>(index)].name.c_str();
 }
 
 int Parameters::setParameterValue(std::string name, const void* value)
@@ -127,21 +127,21 @@ int Parameters::setParameterValue(std::string name, const void* value)
 
 	if (ps->type == OSCParameterDeclarations::ParameterType::PARAM_TYPE_INTEGER)
 	{
-		ps->value._int = *((int*)value);
+		ps->value._int = *(reinterpret_cast<int*>(&value));
 		ps->value._string = std::to_string(ps->value._int);
 	}
 	else if (ps->type == OSCParameterDeclarations::ParameterType::PARAM_TYPE_DOUBLE)
 	{
-		ps->value._double = *((double*)value);
+		ps->value._double = *(reinterpret_cast<double*>(&value));
 		ps->value._string = std::to_string(ps->value._double);
 	}
 	else if (ps->type == OSCParameterDeclarations::ParameterType::PARAM_TYPE_STRING)
 	{
-		ps->value._string = *((std::string*)value);
+		ps->value._string = *(reinterpret_cast<std::string*>(&value));
 	}
 	else if (ps->type == OSCParameterDeclarations::ParameterType::PARAM_TYPE_BOOL)
 	{
-		ps->value._bool = *((bool*)value);
+		ps->value._bool = *(reinterpret_cast<bool*>(&value));
 		ps->value._string = ps->value._bool == true ? "true" : "false";
 	}
 	else
@@ -164,19 +164,19 @@ int Parameters::getParameterValue(std::string name, void* value)
 
 	if (ps->type == OSCParameterDeclarations::ParameterType::PARAM_TYPE_INTEGER)
 	{
-		*((int*)value) = ps->value._int;
+		*(static_cast<int*>(value)) = ps->value._int;
 	}
 	else if (ps->type == OSCParameterDeclarations::ParameterType::PARAM_TYPE_DOUBLE)
 	{
-		*((double*)value) = ps->value._double;
+		*(static_cast<double*>(value)) = ps->value._double;
 	}
 	else if (ps->type == OSCParameterDeclarations::ParameterType::PARAM_TYPE_BOOL)
 	{
-		*((bool*)value) = ps->value._bool;
+		*(static_cast<bool*>(value)) = ps->value._bool;
 	}
 	else if (ps->type == OSCParameterDeclarations::ParameterType::PARAM_TYPE_STRING)
 	{
-		*((std::string*)value) = ps->value._string;
+		*(static_cast<std::string*>(value)) = ps->value._string;
 	}
 	else
 	{
@@ -482,11 +482,11 @@ void Parameters::parseParameterDeclarations(pugi::xml_node declarationsNode, OSC
 		// Check for catalog parameter assignements, overriding default value
 		// Start from end of parameter list, in case of duplicates we want the most recent
 		param.value._string = ReadAttribute(pdChild, "value");
-		for (int i = (int)catalog_param_assignments.size() - 1; i >= 0; i--)
+		for (int i = static_cast<int>(catalog_param_assignments.size()) - 1; i >= 0; i--)
 		{
-			if (param.name == catalog_param_assignments[i].name)
+			if (param.name == catalog_param_assignments[static_cast<unsigned int>(i)].name)
 			{
-				param.value._string = catalog_param_assignments[i].value._string;
+				param.value._string = catalog_param_assignments[static_cast<unsigned int>(i)].value._string;
 				break;
 			}
 		}

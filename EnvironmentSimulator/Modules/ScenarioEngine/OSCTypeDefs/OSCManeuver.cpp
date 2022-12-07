@@ -23,7 +23,7 @@ void Event::Start(double simTime, double dt)
 		// Terminate any ongoing action on same object and domain
 		if (action_[i]->base_type_ == OSCAction::BaseType::PRIVATE)
 		{
-			OSCPrivateAction* pa = (OSCPrivateAction*)action_[i];
+			OSCPrivateAction* pa = static_cast<OSCPrivateAction*>(action_[i]);
 			Object* obj = pa->object_;
 			if (obj != nullptr)
 			{
@@ -51,7 +51,7 @@ void Event::Start(double simTime, double dt)
 						// Make sure the object's action is of private type
 						if (obj->objectEvents_[j]->action_[k]->base_type_ == OSCAction::BaseType::PRIVATE)
 						{
-							OSCPrivateAction* pa2 = (OSCPrivateAction*)obj->objectEvents_[j]->action_[k];
+							OSCPrivateAction* pa2 = static_cast<OSCPrivateAction*>(obj->objectEvents_[j]->action_[k]);
 							if (pa2 != pa && pa2->object_->GetId() == pa->object_->GetId() && pa2->IsActive() &&
 								pa2->base_type_ == OSCAction::BaseType::PRIVATE)
 							{
@@ -77,7 +77,7 @@ void Event::Start(double simTime, double dt)
 			// When using a TeleportAction for the Ghost-vehicle, we need to set back the starting simTime for other Actions in the same Event.
 			// This is an easy solution. A nicer one could be to access ScenarioEngines getSimulationTime() when calling action Start.
 			OSCAction* action = action_[i];
-			OSCPrivateAction* pa = (OSCPrivateAction*)action;
+			OSCPrivateAction* pa = static_cast<OSCPrivateAction*>(action);
 			if (pa->object_->IsGhost() && pa->type_ == OSCPrivateAction::ActionType::TELEPORT)
 			{
 				adjustedTime = simTime - pa->object_->GetHeadstartTime();

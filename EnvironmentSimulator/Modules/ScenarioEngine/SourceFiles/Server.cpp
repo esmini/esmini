@@ -34,7 +34,9 @@ namespace scenarioengine
 {
 	void ServerThread(void *args)
 	{
+		(void)args;
 		static unsigned short int iPortIn = ESMINI_DEFAULT_INPORT;   // Port for incoming packages
+		(void) iPortIn;
 		EgoStateBuffer_t buf;
 
 		state = SERV_NOT_STARTED;
@@ -49,7 +51,7 @@ namespace scenarioengine
 
 		while (state == SERV_RUNNING)
 		{
-			int ret = udpServer->Receive((char*)&buf, sizeof(EgoStateBuffer_t));
+			int ret = udpServer->Receive(reinterpret_cast<char*>(&buf), sizeof(EgoStateBuffer_t));
 
 #ifdef SWAP_BYTE_ORDER_ESMINI
 			SwapByteOrder((unsigned char*)&buf, 4, sizeof(buf));
@@ -65,7 +67,7 @@ namespace scenarioengine
 				y_old = buf.y;
 
 				printf("Server: Received Ego pos (%.2f, %.2f, %.2f) rot: (%.2f, %.2f, %.2f) speed: %.2f (%.2f km/h) wheel_angle: %.2f (%.2f deg)\n",
-					buf.x, buf.y, buf.z, buf.h, buf.p, buf.r, buf.speed, 3.6 * buf.speed, buf.wheel_angle, 180 * buf.wheel_angle / M_PI);
+					static_cast<double>(buf.x), static_cast<double>(buf.y), static_cast<double>(buf.z), static_cast<double>(buf.h), static_cast<double>(buf.p), static_cast<double>(buf.r), static_cast<double>(buf.speed), 3.6 * static_cast<double>(buf.speed), static_cast<double>(buf.wheel_angle), 180 * static_cast<double>(buf.wheel_angle) / M_PI);
 
 				// Update Ego state
 				mutex.Lock();

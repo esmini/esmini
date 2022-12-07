@@ -198,9 +198,7 @@ set_sumo_libs()
 
 # ############################### Compiling targets ##################################################################
 
-include_directories(
-    ${EXTERNALS_PUGIXML_PATH}
-    ${EXTERNALS_EXPR_PATH})
+# include_directories( ${EXTERNALS_PUGIXML_PATH} ${EXTERNALS_EXPR_PATH})
 add_subdirectory(EnvironmentSimulator)
 
 # ############################### OTHERS #############################################################################

@@ -87,7 +87,7 @@ int ScenarioReader::RemoveController(Controller* controller)
 		if (controller_[i] == controller)
 		{
 			delete controller;
-			controller_.erase(controller_.begin() + i);
+			controller_.erase(controller_.begin() + static_cast<int>(i));
 			return 0;
 		}
 	}
@@ -284,7 +284,7 @@ Catalog *ScenarioReader::LoadCatalog(std::string name)
 	}
 	if (!result)
 	{
-		throw std::runtime_error(std::string("Couldn't locate catalog file: " + name + ". " + result.description()));
+		throw std::runtime_error("Couldn't locate catalog file: " + name + ". " + result.description());
 	}
 
 	pugi::xml_node osc_node_ = catalog_doc.child("OpenSCENARIO");
@@ -675,7 +675,7 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
 							{
 								LOG_AND_QUIT("Error: Trailer %s is not of Vehicle type", parameters.ReadAttribute(trailer_node, "entityRef").c_str());
 							}
-							trailer = (Vehicle*)object;
+							trailer = static_cast<Vehicle*>(object);
 						}
 					}
 				}
@@ -934,7 +934,7 @@ Controller *ScenarioReader::parseOSCObjectController(pugi::xml_node controllerNo
 		args.gateway = gateway_;
 		args.parameters = &parameters;
 		args.properties = &properties;
-		controller = (Controller *)ctrl_entry->instantiateFunction(&args);
+		controller = ctrl_entry->instantiateFunction(&args);
 	}
 	else
 	{
@@ -1377,7 +1377,7 @@ int ScenarioReader::parseEntities()
 				if (ctrl->GetType() == Controller::Type::CONTROLLER_TYPE_SUMO)
 				{
 					// Set template vehicle to be used for all vehicles spawned from SUMO
-					((ControllerSumo *)ctrl)->SetSumoVehicle(obj);
+					(static_cast<ControllerSumo *>(ctrl))->SetSumoVehicle(obj);
 					obj->id_ = -1;
 
 					// SUMO controller is special in the sense that it is always active
@@ -1478,7 +1478,7 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPo
 
 		OSCPositionWorld *pos = new OSCPositionWorld(x, y, z, h, p, r, base_on_pos);
 
-		pos_return = (OSCPosition *)pos;
+		pos_return = reinterpret_cast<OSCPosition *>(pos);
 	}
 	else if (positionChildName == "RelativeWorldPosition")
 	{
@@ -1500,7 +1500,7 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPo
 
 		OSCPositionRelativeWorld *pos = new OSCPositionRelativeWorld(object, dx, dy, dz, orientation);
 
-		pos_return = (OSCPosition *)pos;
+		pos_return = reinterpret_cast<OSCPosition *>(pos);
 	}
 	else if (positionChildName == "RelativeObjectPosition")
 	{
@@ -1521,7 +1521,7 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPo
 
 		OSCPositionRelativeObject *pos = new OSCPositionRelativeObject(object, dx, dy, dz, orientation);
 
-		pos_return = (OSCPosition *)pos;
+		pos_return = reinterpret_cast<OSCPosition *>(pos);
 	}
 	else if (positionChildName == "RelativeLanePosition")
 	{
@@ -1557,7 +1557,7 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPo
 
 		OSCPositionRelativeLane *pos = new OSCPositionRelativeLane(object, dLane, ds, offset, orientation);
 
-		pos_return = (OSCPosition *)pos;
+		pos_return = reinterpret_cast<OSCPosition *>(pos);
 	}
 	else if (positionChildName == "RelativeRoadPosition")
 	{
@@ -1582,7 +1582,7 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPo
 
 		OSCPositionRelativeRoad *pos = new OSCPositionRelativeRoad(object, ds, dt, orientation);
 
-		pos_return = (OSCPosition *)pos;
+		pos_return = reinterpret_cast<OSCPosition *>(pos);
 	}
 	else if (positionChildName == "RoadPosition")
 	{
@@ -1605,7 +1605,7 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPo
 
 		OSCPositionRoad *pos = new OSCPositionRoad(road_id, s, t, orientation);
 
-		pos_return = (OSCPosition *)pos;
+		pos_return = reinterpret_cast<OSCPosition *>(pos);
 	}
 	else if (positionChildName == "LanePosition")
 	{
@@ -1634,7 +1634,7 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPo
 
 		OSCPositionLane *pos = new OSCPositionLane(road_id, lane_id, s, offset, orientation);
 
-		pos_return = (OSCPosition *)pos;
+		pos_return = reinterpret_cast<OSCPosition *>(pos);
 	}
 	else if (positionChildName == "RoutePosition")
 	{
@@ -1740,7 +1740,7 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPo
 			delete orientation;
 		}
 
-		pos_return = (OSCPosition *)pos;
+		pos_return = reinterpret_cast<OSCPosition *>(pos);
 	}
 	else if (positionChildName == "TrajectoryPosition")
 	{
@@ -1771,7 +1771,7 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPo
 
 		OSCPositionTrajectory *pos = new OSCPositionTrajectory(traj, s, t, orientation);
 
-		pos_return = (OSCPosition *)pos;
+		pos_return = reinterpret_cast<OSCPosition *>(pos);
 	}
 
 	if (pos_return == 0)
@@ -1939,7 +1939,7 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode)
 
 				// Number of vehicles
 				numberOfVehicles = parameters.ReadAttribute(trafficChild, "numberOfVehicles");
-				trafficSwarmAction->SetNumberOfVehicles(std::stoul(numberOfVehicles));
+				trafficSwarmAction->SetNumberOfVehicles(static_cast<int>(std::stoul(numberOfVehicles)));
 
 				// Velocity
 				velocity = parameters.ReadAttribute(trafficChild, "velocity");
@@ -2041,7 +2041,7 @@ int ScenarioReader::parseDynamicConstraints(pugi::xml_node dynamics_node, Dynami
 		{ &dc.max_speed_, 250.0/3.6, "maxSpeed" },
 	};
 
-	for (int i = 0; i < sizeof(values) / sizeof(value); i++)
+	for (unsigned int i = 0; i < sizeof(values) / sizeof(value); i++)
 	{
 		if (dynamics_node.attribute(values[i].label.c_str()).empty())
 		{
@@ -3174,14 +3174,14 @@ void ScenarioReader::parseInit(Init &init)
 			roadmanager::Position *pos = 0;
 			if (init.private_action_[j]->type_ == OSCPrivateAction::ActionType::TELEPORT)
 			{
-				TeleportAction *action = (TeleportAction *)init.private_action_[j];
+				TeleportAction *action = static_cast<TeleportAction *>(init.private_action_[j]);
 				if (action->position_->GetType() == roadmanager::Position::PositionType::RELATIVE_LANE)
 				{
-					pos = ((roadmanager::Position *)action->position_)->GetRelativePosition();
+					pos = action->position_->GetRelativePosition();
 				}
 				else if (action->position_->GetType() == roadmanager::Position::PositionType::RELATIVE_OBJECT)
 				{
-					pos = ((roadmanager::Position *)action->position_)->GetRelativePosition();
+					pos = action->position_->GetRelativePosition();
 				}
 			}
 			if (pos == &init.private_action_[i]->object_->pos_)
@@ -3666,7 +3666,7 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 			pugi::xml_node triggering_entities = conditionChild.child("TriggeringEntities");
 			if (triggering_entities != NULL)
 			{
-				TrigByEntity *trigger = (TrigByEntity *)condition;
+				TrigByEntity *trigger = static_cast<TrigByEntity *>(condition);
 
 				std::string trig_ent_rule = parameters.ReadAttribute(triggering_entities, "triggeringEntitiesRule");
 				if (trig_ent_rule == "any")
@@ -3872,7 +3872,7 @@ void ScenarioReader::parseOSCManeuver(Maneuver *maneuver, pugi::xml_node maneuve
 							OSCGlobalAction *action = parseOSCGlobalAction(actionChild);
 							if (action != 0)
 							{
-								event->action_.push_back((OSCAction *)action);
+								event->action_.push_back(static_cast<OSCAction *>(action));
 							}
 						}
 						else if (actionChildName == "UserDefinedAction")
@@ -3892,7 +3892,7 @@ void ScenarioReader::parseOSCManeuver(Maneuver *maneuver, pugi::xml_node maneuve
 								OSCPrivateAction *action = parseOSCPrivateAction(actionChild, mGroup->actor_[i]->object_);
 								if (action != 0)
 								{
-									event->action_.push_back((OSCAction *)action);
+									event->action_.push_back(static_cast<OSCAction *>(action));
 								}
 								else
 								{
@@ -3914,10 +3914,10 @@ void ScenarioReader::parseOSCManeuver(Maneuver *maneuver, pugi::xml_node maneuve
 							OSCCondition* cond = event->start_trigger_->conditionGroup_[i]->condition_[j];
 							if (cond->base_type_ == OSCCondition::ConditionType::BY_VALUE)
 							{
-								TrigByValue* trig = (TrigByValue*)cond;
+								TrigByValue* trig = static_cast<TrigByValue*>(cond);
 								if (trig->type_ == TrigByValue::Type::SIMULATION_TIME &&
 									trig->edge_ != OSCCondition::NONE &&
-									fabs(((TrigBySimulationTime*)(trig))->value_) < SMALL_NUMBER)
+									fabs((static_cast<TrigBySimulationTime*>((trig)))->value_) < SMALL_NUMBER)
 								{
 									LOG("Warning: simulationTime = 0 condition used with edge \"%s\" which could be missed. Edge \"none\" is recommended.", trig->Edge2Str().c_str());
 								}

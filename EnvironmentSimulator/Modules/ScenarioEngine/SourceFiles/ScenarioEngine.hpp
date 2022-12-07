@@ -27,19 +27,19 @@
 
 namespace scenarioengine
 {
-	typedef void (*ParamDeclCallbackFunc)(void*);
+	// typedef void (*ParamDeclCallbackFunc)(void*);
 
-	static struct
-	{
-		ParamDeclCallbackFunc func;
-		void* data;
-	} paramDeclCallback = {0, 0};
+	// static struct // TODO: @Melih
+	// {
+	// 	ParamDeclCallbackFunc func;
+	// 	void* data;
+	// } paramDeclCallback = {0, 0};
 
-	void RegisterParameterDeclarationCallback(ParamDeclCallbackFunc func, void* data)
-	{
-		paramDeclCallback.func = func;
-		paramDeclCallback.data = data;
-	}
+	// void RegisterParameterDeclarationCallback(ParamDeclCallbackFunc func, void* data)
+	// {
+	// 	paramDeclCallback.func = func;
+	// 	paramDeclCallback.data = data;
+	// }
 
 	typedef struct
 	{

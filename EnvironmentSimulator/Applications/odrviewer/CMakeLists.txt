@@ -8,6 +8,7 @@ include_directories (
   ${COMMON_MINI_PATH}
   ${CONTROLLERS_PATH}
   ${EXTERNALS_OSI_INCLUDES}
+  ${EXTERNALS_PUGIXML_PATH}
 )
 
 set(TARGET odrviewer)

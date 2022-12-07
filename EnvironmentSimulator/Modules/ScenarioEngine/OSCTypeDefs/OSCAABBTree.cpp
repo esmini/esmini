@@ -53,10 +53,9 @@ bool Triangle::collide(ptTriangle const triangle) const {
 
 
 BBox::BBox(ptTriangle triangle) : triangle_(triangle) {
-    Point a, b, c;
-    a = triangle->a;
-    b = triangle->b;
-    c = triangle->c;
+    Point a = triangle->a;
+    Point b = triangle->b;
+    Point c = triangle->c;
     blhc_.x = min(a.x, min(b.x, c.x));
     urhc_.x = max(a.x, max(b.x, c.x));
     blhc_.y = min(a.y, min(b.y, c.y));
@@ -153,7 +152,7 @@ bool Tree::empty() {
  */
 void Tree::__build(BBoxVec::iterator const start, BBoxVec::iterator const end) {
     vector<StackRecord> stack;
-    stack.reserve(int(log(end - start) * 2));
+    stack.reserve(static_cast<unsigned int>((log(end - start) * 2)));
     stack.clear();
 
     BBoxVec::iterator cut;

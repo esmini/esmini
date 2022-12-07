@@ -4,6 +4,7 @@ include_directories (
   ${SCENARIO_ENGINE_PATH}/OSCTypeDefs
   ${ROAD_MANAGER_PATH}
   ${COMMON_MINI_PATH}
+  ${EXTERNALS_PUGIXML_PATH}
 )
 
 set(TARGET esminiRMLib)

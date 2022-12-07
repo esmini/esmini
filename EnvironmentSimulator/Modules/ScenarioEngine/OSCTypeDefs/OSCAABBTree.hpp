@@ -45,6 +45,7 @@ namespace aabbTree {
         Point(double x_, double y_) : x(x_), y(y_) {};
         Point(double x_, double y_, double h_) : x(x_), y(y_), h(h_) {};
         Point(Point const &pt) : x(pt.x), y(pt.y), h(pt.h) {};
+        Point &operator=(const Point &) = default;
         Point() : x(0), y(0), h(0) {};
     };
 

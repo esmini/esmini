@@ -10,6 +10,7 @@ include_directories (
   ${EXTERNALS_SUMO_INCLUDES}
   ${COMMON_MINI_PATH}
   ${EXTERNALS_OSI_INCLUDES}
+  ${EXTERNALS_PUGIXML_PATH}
 )
 
 set(TARGET esmini)

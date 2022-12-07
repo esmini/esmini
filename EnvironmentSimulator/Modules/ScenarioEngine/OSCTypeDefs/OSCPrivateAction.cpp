@@ -291,6 +291,7 @@ void AssignRouteAction::Start(double simTime, double dt)
 
 void AssignRouteAction::Step(double simTime, double dt)
 {
+	(void)dt;
 	OSCAction::End(simTime);
 }
 
@@ -455,12 +456,12 @@ void FollowTrajectoryAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
 	}
 	if (traj_->shape_->type_ == roadmanager::Shape::ShapeType::CLOTHOID)
 	{
-		roadmanager::ClothoidShape* cl = (roadmanager::ClothoidShape*)traj_->shape_.get();
+		roadmanager::ClothoidShape* cl = static_cast<roadmanager::ClothoidShape*>(traj_->shape_.get());
 		cl->pos_.ReplaceObjectRefs(&obj1->pos_, &obj2->pos_);
 	}
 	else if (traj_->shape_->type_ == roadmanager::Shape::ShapeType::POLYLINE)
 	{
-		roadmanager::PolyLineShape* pl = (roadmanager::PolyLineShape*)traj_->shape_.get();
+		roadmanager::PolyLineShape* pl = static_cast<roadmanager::PolyLineShape*>(traj_->shape_.get());
 		for (size_t i = 0; i < pl->vertex_.size(); i++)
 		{
 			pl->vertex_[i].pos_.ReplaceObjectRefs(&obj1->pos_, &obj2->pos_);
@@ -493,6 +494,7 @@ void AcquirePositionAction::Start(double simTime, double dt)
 
 void AcquirePositionAction::Step(double simTime, double dt)
 {
+	(void)dt;
 	OSCAction::End(simTime);
 }
 
@@ -511,7 +513,7 @@ void AssignControllerAction::Start(double simTime, double dt)
 		// Detach any other controller from object
 		if (object_->controller_)
 		{
-			Controller* ctrl = (Controller*)object_->controller_;
+			Controller* ctrl = object_->controller_;
 			ctrl->Assign(0);
 			ctrl->Deactivate();
 			object_->SetAssignedController(0);
@@ -564,9 +566,9 @@ void LatLaneChangeAction::Start(double simTime, double dt)
 	else if (target_->type_ == Target::Type::RELATIVE_LANE)
 	{
 		// Find out target lane relative referred vehicle
-		target_lane_id_ = ((TargetRelative*)target_.get())->object_->pos_.GetLaneId() + target_->value_;
+		target_lane_id_ = (static_cast<TargetRelative*>(target_.get()))->object_->pos_.GetLaneId() + target_->value_;
 
-		if (target_lane_id_ == 0 || SIGN(((TargetRelative*)target_.get())->object_->pos_.GetLaneId()) != SIGN(target_lane_id_))
+		if (target_lane_id_ == 0 || SIGN((static_cast<TargetRelative*>(target_.get()))->object_->pos_.GetLaneId()) != SIGN(target_lane_id_))
 		{
 			// Skip reference lane (id == 0)
 			target_lane_id_ = SIGN(target_lane_id_ - object_->pos_.GetLaneId()) * (abs(target_lane_id_) + 1);
@@ -657,7 +659,7 @@ void LatLaneChangeAction::Step(double simTime, double dt)
 		// Close enough?
 		fabs(offset_agnostic - transition_.GetTargetVal()) < SMALL_NUMBER ||
 		// Passed target value?
-		transition_.GetParamVal() > 0 && SIGN(offset_agnostic - transition_.GetTargetVal()) != SIGN(transition_.GetStartVal() - transition_.GetTargetVal()))
+		(transition_.GetParamVal() > 0 && SIGN(offset_agnostic - transition_.GetTargetVal())) != SIGN(transition_.GetStartVal() - transition_.GetTargetVal()))
 	{
 		OSCAction::End(simTime);
 		object_->pos_.SetHeadingRelativeRoadDirection(0);
@@ -709,9 +711,9 @@ void LatLaneChangeAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
 
 	if (target_->type_ == Target::Type::RELATIVE_LANE)
 	{
-		if (((TargetRelative*)target_.get())->object_ == obj1)
+		if ((static_cast<TargetRelative*>(target_.get()))->object_ == obj1)
 		{
-			((TargetRelative*)target_.get())->object_ = obj2;
+			(static_cast<TargetRelative*>(target_.get()))->object_ = obj2;
 		}
 	}
 }
@@ -738,7 +740,7 @@ void LatLaneOffsetAction::Start(double simTime, double dt)
 		int lane_id = object_->pos_.GetLaneId();
 
 		// Find out referred object track position
-		roadmanager::Position refpos = ((TargetRelative*)target_.get())->object_->pos_;
+		roadmanager::Position refpos = (static_cast<TargetRelative*>(target_.get()))->object_->pos_;
 		refpos.SetTrackPos(refpos.GetTrackId(), refpos.GetS(), refpos.GetT() + target_->value_);
 		refpos.ForceLaneId(lane_id);
 
@@ -767,7 +769,7 @@ void LatLaneOffsetAction::Step(double simTime, double dt)
 		// Close enough?
 		fabs(offset_agnostic - transition_.GetTargetVal()) < SMALL_NUMBER ||
 		// Passed target value?
-		transition_.GetParamVal() > 0 && SIGN(offset_agnostic - transition_.GetTargetVal()) != SIGN(transition_.GetStartVal() - transition_.GetTargetVal()))
+		(transition_.GetParamVal() > 0 && SIGN(offset_agnostic - transition_.GetTargetVal())) != SIGN(transition_.GetStartVal() - transition_.GetTargetVal()))
 	{
 		OSCAction::End(simTime);
 		object_->pos_.SetLanePos(object_->pos_.GetTrackId(), object_->pos_.GetLaneId(), object_->pos_.GetS(), SIGN(object_->pos_.GetLaneId()) * transition_.GetTargetVal());
@@ -796,9 +798,9 @@ void LatLaneOffsetAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
 
 	if (target_->type_ == Target::Type::RELATIVE_OFFSET)
 	{
-		if (((TargetRelative*)target_.get())->object_ == obj1)
+		if ((static_cast<TargetRelative*>(target_.get()))->object_ == obj1)
 		{
-			((TargetRelative*)target_.get())->object_ = obj2;
+			(static_cast<TargetRelative*>(target_.get()))->object_ = obj2;
 		}
 	}
 }
@@ -916,7 +918,7 @@ void LongSpeedAction::Step(double simTime, double dt)
 
 	object_->SetSpeed(ABS_LIMIT(new_speed, object_->performance_.maxSpeed));
 
-	if (target_speed_reached_ && !(target_->type_ == Target::TargetType::RELATIVE_SPEED && ((TargetRelative*)target_.get())->continuous_ == true))
+	if (target_speed_reached_ && !(target_->type_ == Target::TargetType::RELATIVE_SPEED && (static_cast<TargetRelative*>(target_.get()))->continuous_ == true))
 	{
 		OSCAction::End(simTime);
 	}
@@ -943,7 +945,7 @@ void LongSpeedProfileAction::Start(double simTime, double timestep)
 	init_acc_ = object_->pos_.GetAccLong();
 
 	std::vector<EntryVertex> vertex;
-	int index = 0;
+	unsigned int index = 0;
 
 	// Check need for initial entry with current speed
 	if (entry_[0].time_ > SMALL_NUMBER)
@@ -1283,19 +1285,19 @@ void LongSpeedProfileAction::Step(double simTime, double dt)
 
 	if (time < segment_.back().t + 10 && !(time > segment_.back().t and abs(speed_ - segment_.back().v) < SMALL_NUMBER))
 	{
-		while (cur_index_ < segment_.size() - 1 && time > segment_[cur_index_ + 1].t - SMALL_NUMBER)
+		while (static_cast<unsigned int>(cur_index_) < segment_.size() - 1 && time > segment_[static_cast<unsigned int>(cur_index_) + 1].t - SMALL_NUMBER)
 		{
 			cur_index_++;
 		}
 
-		SpeedSegment* s = &segment_[cur_index_];
+		SpeedSegment* s = &segment_[static_cast<unsigned int>(cur_index_)];
 
 		speed_ = s->v + s->k * (time - s->t) + 0.5 * s->j * pow(time - s->t, 2);
 	}
 
 	elapsed_ = MAX(0.0, time - segment_[0].t);
 
-	if (cur_index_ >= entry_.size() - 1 && fabs(speed_ - segment_.back().v) < SMALL_NUMBER)
+	if (static_cast<unsigned int>(cur_index_) >= entry_.size() - 1 && fabs(speed_ - segment_.back().v) < SMALL_NUMBER)
 	{
 		speed_ = segment_.back().v;
 		OSCAction::End(simTime);
@@ -1369,9 +1371,9 @@ void LongSpeedAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
 
 	if (target_->type_ == Target::TargetType::RELATIVE_SPEED)
 	{
-		if (((TargetRelative*)target_.get())->object_ == obj1)
+		if ((static_cast<TargetRelative*>(target_.get()))->object_ == obj1)
 		{
-			((TargetRelative*)target_.get())->object_ = obj2;
+			(static_cast<TargetRelative*>(target_.get()))->object_ = obj2;
 		}
 	}
 }
@@ -1565,7 +1567,7 @@ void TeleportAction::Start(double simTime, double dt)
  	object_->pos_.TeleportTo(position_);
 	if (!object_->TowVehicle() && object_->TrailerVehicle())
 	{
-		((Vehicle*)object_)->AlignTrailers();
+		(static_cast<Vehicle*>(object_))->AlignTrailers();
 	}
 
 	LOG("%s New position:", object_->name_.c_str());
@@ -1576,6 +1578,7 @@ void TeleportAction::Start(double simTime, double dt)
 
 void TeleportAction::Step(double simTime, double dt)
 {
+	(void)dt;
 	OSCAction::End(simTime);
 }
 
@@ -2072,6 +2075,7 @@ void VisibilityAction::Start(double simTime, double dt)
 
 void VisibilityAction::Step(double simTime, double dt)
 {
+	(void)dt;
 	OSCAction::End(simTime);
 }
 
@@ -2122,6 +2126,7 @@ void OverrideControlAction::Start(double simTime, double dt)
 
 void OverrideControlAction::Step(double simTime, double dt)
 {
+	(void)dt;
 	OSCAction::End(simTime);
 }
 

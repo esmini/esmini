@@ -311,7 +311,7 @@ int ScenarioEngine::step(double deltaSimTime)
 										OSCAction* action = event->action_[n];
 										if (action->base_type_ == OSCAction::BaseType::PRIVATE)
 										{
-											OSCPrivateAction* pa = (OSCPrivateAction*)action;
+											OSCPrivateAction* pa = static_cast<OSCPrivateAction*>(action);
 											if (!pa->object_->containsEvent(event))
 											{
 												pa->object_->addEvent(event);
@@ -351,7 +351,7 @@ int ScenarioEngine::step(double deltaSimTime)
 															OSCAction* action = maneuver->event_[n]->action_[o];
 															if (action->base_type_ == OSCAction::BaseType::PRIVATE)
 															{
-																OSCPrivateAction* pa = (OSCPrivateAction*)action;
+																OSCPrivateAction* pa = static_cast<OSCPrivateAction*>(action);
 																pa->object_->removeEvent(event);
 
 																break;
@@ -445,7 +445,7 @@ int ScenarioEngine::step(double deltaSimTime)
 										bool is_private_ghost = [&](){
 											if (action->base_type_ == OSCAction::BaseType::PRIVATE)
 											{
-												return ((OSCPrivateAction*)action)->object_->IsGhost();
+												return (static_cast<OSCPrivateAction*>(action)->object_->IsGhost());
 											}
 
 											return false;
@@ -470,7 +470,7 @@ int ScenarioEngine::step(double deltaSimTime)
 										OSCAction* action = event->action_[n];
 										if (action->base_type_ == OSCAction::BaseType::PRIVATE)
 										{
-											OSCPrivateAction* pa = (OSCPrivateAction*)action;
+											OSCPrivateAction* pa = static_cast<OSCPrivateAction*>(action);
 											pa->object_->removeEvent(event);
 											break;
 										}
@@ -640,12 +640,12 @@ int ScenarioEngine::step(double deltaSimTime)
 	for (size_t i = 0; i < entities_.object_.size(); i++)
 	{
 		Object* obj = entities_.object_[i];
-		Vehicle* trailer = (Vehicle*)obj->TrailerVehicle();
+		Vehicle* trailer = static_cast<Vehicle*>(obj->TrailerVehicle());
 
 		if (!obj->TowVehicle() && obj->TrailerVehicle())
 		{
 			// Found a front tow vehicle, update trailers
-			Vehicle* tow_vehicle = (Vehicle*)obj;
+			Vehicle* tow_vehicle = static_cast<Vehicle*>(obj);
 			while (trailer)
 			{
 				// Calculate new trailer position and orientation
@@ -662,7 +662,7 @@ int ScenarioEngine::step(double deltaSimTime)
 				trailer->SetSpeed(tow_vehicle->GetSpeed());
 
 				tow_vehicle = trailer;
-				trailer = (Vehicle*)trailer->TrailerVehicle();
+				trailer = static_cast<Vehicle*>(trailer->TrailerVehicle());
 			}
 		}
 	}
@@ -747,10 +747,10 @@ int ScenarioEngine::parseScenario()
 	scenarioReader->variables.Print("variables");  // All variables parsed at this point (not the case with parameters)
 
 	// Now that parameter declaration has been parsed, call any registered callbacks before applying the parameters
-	if (paramDeclCallback.func != nullptr)
-	{
-		paramDeclCallback.func(paramDeclCallback.data);
-	}
+	// if (paramDeclCallback.func != nullptr) // TODO: @Melih
+	// {
+	// 	paramDeclCallback.func(paramDeclCallback.data);
+	// }
 
 	// Init road manager
 	scenarioReader->parseRoadNetwork(roadNetwork);
@@ -829,7 +829,7 @@ int ScenarioEngine::parseScenario()
 
 			if (obj->GetAssignedControllerType() == Controller::Type::CONTROLLER_TYPE_FOLLOW_GHOST ||
 				(obj->GetAssignedControllerType() == Controller::Type::CONTROLLER_TYPE_EXTERNAL &&
-					((ControllerExternal*)(obj->controller_))->UseGhost()))
+					(static_cast<ControllerExternal*>((obj->controller_))->UseGhost())))
 			{
 				SetupGhost(obj);
 
@@ -854,7 +854,7 @@ int ScenarioEngine::parseScenario()
 		if (!obj->TowVehicle() && obj->TrailerVehicle())
 		{
 			// Found a front tow vehicle, update trailers
-			((Vehicle*)obj)->AlignTrailers();
+			(static_cast<Vehicle*>(obj)->AlignTrailers());
 		}
 	}
 
@@ -884,7 +884,7 @@ int ScenarioEngine::defaultController(Object* obj, double dt)
 		if (obj->GetControllerMode() == Controller::Mode::MODE_ADDITIVE ||
 			!obj->IsControllerActiveOnDomains(ControlDomains::DOMAIN_LONG))
 		{
-			Vehicle* tow_vehicle = (Vehicle*)obj->TowVehicle();
+			Vehicle* tow_vehicle = static_cast<Vehicle*>(obj->TowVehicle());
 			if (tow_vehicle == nullptr)
 			{
 				retval = static_cast<int>(obj->MoveAlongS(steplen, true));
@@ -942,7 +942,7 @@ void ScenarioEngine::prepareGroundTruth(double dt)
 		double dx = obj->pos_.GetX() - obj->state_old.pos_x;
 		double dy = obj->pos_.GetY() - obj->state_old.pos_y;
 
-		if (frame_nr_ == 1 || obj->IsGhost() && ghost_mode_ != GhostMode::RESTART || !obj->IsGhost() && ghost_mode_ != GhostMode::RESTARTING)
+		if (frame_nr_ == 1 || (obj->IsGhost() && ghost_mode_ != GhostMode::RESTART) || (!obj->IsGhost() && ghost_mode_ != GhostMode::RESTARTING))
 		{
 			if (dt > SMALL_NUMBER)
 			{
@@ -1073,7 +1073,7 @@ void ScenarioEngine::ReplaceObjectInTrigger(Trigger* trigger, Object* obj1, Obje
 			OSCCondition* cond = trigger->conditionGroup_[i]->condition_[j];
 			if (cond->base_type_ == OSCCondition::ConditionType::BY_ENTITY)
 			{
-				TrigByEntity* trig = (TrigByEntity*)cond;
+				TrigByEntity* trig = static_cast<TrigByEntity*>(cond);
 
 				if (trig->type_ == TrigByEntity::EntityConditionType::COLLISION ||
 					trig->type_ == TrigByEntity::EntityConditionType::REACH_POSITION ||
@@ -1108,10 +1108,10 @@ void ScenarioEngine::ReplaceObjectInTrigger(Trigger* trigger, Object* obj1, Obje
 			}
 			else if (cond->base_type_ == OSCCondition::ConditionType::BY_VALUE)
 			{
-				TrigByValue* trig = (TrigByValue*)cond;
+				TrigByValue* trig = static_cast<TrigByValue*>(cond);
 				if (trig->type_ == TrigByValue::Type::SIMULATION_TIME)
 				{
-					((TrigBySimulationTime*)(trig))->value_ += timeOffset;
+					(static_cast<TrigBySimulationTime*>((trig)))->value_ += timeOffset;
 				}
 				else if(event != nullptr)
 				{
@@ -1145,7 +1145,7 @@ void ScenarioEngine::SetupGhost(Object* object)
 	// FollowGhostController special treatment:
 	// Create a new (ghost) vehicle and copy all actions from base object
 
-	Vehicle* ghost = new Vehicle(*(Vehicle*)object);
+	Vehicle* ghost = new Vehicle(*static_cast<Vehicle*>(object));
 	object->SetGhost(ghost);
 	ghost->name_ += "_ghost";
 	ghost->ghost_ = 0;
@@ -1156,10 +1156,10 @@ void ScenarioEngine::SetupGhost(Object* object)
 	entities_.addObject(ghost, true);
 	object->SetHeadstartTime(0);
 
-	int numberOfInitActions = (int)init.private_action_.size();
+	int numberOfInitActions = static_cast<int>(init.private_action_.size());
 	for (int i = 0; i < numberOfInitActions; i++)
 	{
-		OSCPrivateAction* action = init.private_action_[i];
+		OSCPrivateAction* action = init.private_action_[static_cast<unsigned int>(i)];
 		if (action->object_ == object)
 		{
 			// Copy all actions except ActivateController
@@ -1205,7 +1205,7 @@ void ScenarioEngine::SetupGhost(Object* object)
 							OSCAction* action = event->action_[n];
 							if (action->base_type_ == OSCAction::BaseType::PRIVATE)
 							{
-								OSCPrivateAction* pa = (OSCPrivateAction*)action;
+								OSCPrivateAction* pa = static_cast<OSCPrivateAction*>(action);
 								pa->scenarioEngine_ = this;
 								if (pa->object_ == object)
 								{
@@ -1267,7 +1267,7 @@ void ScenarioEngine::ResetEvents()
 								OSCAction* action = event->action_[n];
 								if (action->base_type_ == OSCAction::BaseType::PRIVATE)
 								{
-									OSCPrivateAction* pa = (OSCPrivateAction*)action;
+									OSCPrivateAction* pa = static_cast<OSCPrivateAction*>(action);
 									if (pa->type_ == OSCPrivateAction::ActionType::TELEPORT)
 									{
 										NoTele = false;
@@ -1279,7 +1279,7 @@ void ScenarioEngine::ResetEvents()
 								OSCAction* action = event->action_[n];
 								if (action->base_type_ == OSCAction::BaseType::PRIVATE)
 								{
-									OSCPrivateAction* pa = (OSCPrivateAction*)action;
+									OSCPrivateAction* pa = static_cast<OSCPrivateAction*>(action);
 
 									// If the event doesnt contain a teleport action, and the trigger is not triggable, we reser it, making it able to tigger again
 									if (NoTele && pa->object_->IsGhost() && event->start_trigger_->Evaluate(&storyBoard, simulationTime_) == false)
@@ -1345,7 +1345,7 @@ int ScenarioEngine::DetectCollisions()
 			{
 				// object previously collided with pivot object has vanished from the set of entities, remove it from collision list
 				LOG("Unregister collision between %s and vanished entity", obj->GetName().c_str());
-				obj->collisions_.erase(obj->collisions_.begin() + j);
+				obj->collisions_.erase(obj->collisions_.begin() + static_cast<int>(j));
 				j--;
 			}
 		}

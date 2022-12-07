@@ -44,7 +44,7 @@ osg::ref_ptr<osg::Texture2D> RoadGeom::ReadTexture(std::string filename)
 	for (size_t i = 0; i < SE_Env::Inst().GetPaths().size(); i++)
 	{
 		file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], filename));
-		file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], std::string("../models/" + filename)));
+		file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], "../models/" + filename));
 		file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], FileNameOf(filename)));
 	}
 	for (size_t i = 0; i < file_name_candidates.size(); i++)
@@ -100,9 +100,10 @@ void RoadGeom::AddRoadMarkGeom(osg::ref_ptr<osg::Vec3Array> vertices, osg::ref_p
 
 int RoadGeom::AddRoadMarks(roadmanager::Lane* lane, osg::Group* parent)
 {
-	for (size_t i = 0; i < lane->GetNumberOfRoadMarks(); i++)
+	(void)parent;
+	for (size_t i = 0; i < static_cast<unsigned int>(lane->GetNumberOfRoadMarks()); i++)
 	{
-		roadmanager::LaneRoadMark* lane_roadmark = lane->GetLaneRoadMarkByIdx(i);
+		roadmanager::LaneRoadMark* lane_roadmark = lane->GetLaneRoadMarkByIdx(static_cast<int>(i));
 
 		if (lane_roadmark->GetType() == roadmanager::LaneRoadMark::RoadMarkType::NONE_TYPE)
 		{
@@ -129,11 +130,11 @@ int RoadGeom::AddRoadMarks(roadmanager::Lane* lane, osg::Group* parent)
 
 				if (lane->GetId() < 0 || lane->GetId() == 0)
 				{
-					inner_index = std::max_element(sort_solidbroken_brokensolid.begin(), sort_solidbroken_brokensolid.end()) - sort_solidbroken_brokensolid.begin();
+					inner_index = static_cast<int>(std::max_element(sort_solidbroken_brokensolid.begin(), sort_solidbroken_brokensolid.end()) - sort_solidbroken_brokensolid.begin());
 				}
 				else
 				{
-					inner_index = std::min_element(sort_solidbroken_brokensolid.begin(), sort_solidbroken_brokensolid.end()) - sort_solidbroken_brokensolid.begin();
+					inner_index = static_cast<int>(std::min_element(sort_solidbroken_brokensolid.begin(), sort_solidbroken_brokensolid.end()) - sort_solidbroken_brokensolid.begin());
 				}
 			}
 
@@ -162,7 +163,7 @@ int RoadGeom::AddRoadMarks(roadmanager::Lane* lane, osg::Group* parent)
 
 				if (lane_roadmark->GetType() == roadmanager::LaneRoadMark::RoadMarkType::BOTTS_DOTS)
 				{
-					for (int q = 0; q < curr_osi_rm->GetPoints().size(); q++)
+					for (unsigned int q = 0; q < curr_osi_rm->GetPoints().size(); q++)
 					{
 						const double botts_dot_size = 0.15;
 						static osg::ref_ptr<osg::Geode> dot = 0;
@@ -172,17 +173,17 @@ int RoadGeom::AddRoadMarks(roadmanager::Lane* lane, osg::Group* parent)
 							osg::ref_ptr<osg::TessellationHints> th = new osg::TessellationHints();
 							th->setDetailRatio(0.3f);
 							osg::ref_ptr<osg::ShapeDrawable> shape = new osg::ShapeDrawable(
-								new osg::Cylinder(osg::Vec3(0.0, 0.0, 0.0), botts_dot_size, 0.3 * botts_dot_size), th
+								new osg::Cylinder(osg::Vec3(0.0, 0.0, 0.0), static_cast<float>(botts_dot_size), 0.3f * static_cast<float>(botts_dot_size)), th
 							);
 							shape->setColor(viewer::ODR2OSGColor(lane_roadmark->GetColor()));
 							dot = new osg::Geode;
 							dot->addDrawable(shape);
 						}
 
-						roadmanager::PointStruct osi_point0 = curr_osi_rm->GetPoint(q);
+						roadmanager::PointStruct osi_point0 = curr_osi_rm->GetPoint(static_cast<int>(q));
 
 						osg::ref_ptr<osg::PositionAttitudeTransform> tx = new osg::PositionAttitudeTransform;
-						tx->setPosition(osg::Vec3(osi_point0.x, osi_point0.y, osi_point0.z));
+						tx->setPosition(osg::Vec3(static_cast<float>(osi_point0.x), static_cast<float>(osi_point0.y), static_cast<float>(osi_point0.z)));
 						tx->addChild(dot);
 						rm_group_->addChild(tx);
 					}
@@ -191,10 +192,10 @@ int RoadGeom::AddRoadMarks(roadmanager::Lane* lane, osg::Group* parent)
 					lane_roadmark->GetType() == roadmanager::LaneRoadMark::RoadMarkType::BROKEN_BROKEN ||
 					broken)
 				{
-					for (int q = 0; q < curr_osi_rm->GetPoints().size(); q += 2)
+					for (unsigned int q = 0; q < curr_osi_rm->GetPoints().size(); q += 2)
 					{
-						roadmanager::PointStruct osi_point0 = curr_osi_rm->GetPoint(q);
-						roadmanager::PointStruct osi_point1 = curr_osi_rm->GetPoint(q + 1);
+						roadmanager::PointStruct osi_point0 = curr_osi_rm->GetPoint(static_cast<int>(q));
+						roadmanager::PointStruct osi_point1 = curr_osi_rm->GetPoint(static_cast<int>(q) + 1);
 
 						osg::ref_ptr<osg::Vec3Array> vertices = new osg::Vec3Array(4);
 						osg::ref_ptr<osg::DrawElementsUInt> indices = new osg::DrawElementsUInt(GL_TRIANGLE_STRIP, 4);
@@ -208,10 +209,10 @@ int RoadGeom::AddRoadMarks(roadmanager::Lane* lane, osg::Group* parent)
 						OffsetVec2D(osi_point0.x, osi_point0.y, osi_point1.x, osi_point1.y, lane_roadmarktypeline->GetWidth()/2, x0r, y0r, x1r, y1r);
 
 						// Set vertices and indices
-						(*vertices)[0].set(x0l, y0l, osi_point0.z);
-						(*vertices)[1].set(x0r, y0r, osi_point0.z);
-						(*vertices)[2].set(x1l, y1l, osi_point1.z);
-						(*vertices)[3].set(x1r, y1r, osi_point1.z);
+						(*vertices)[0].set(static_cast<float>(x0l), static_cast<float>(y0l), static_cast<float>(osi_point0.z));
+						(*vertices)[1].set(static_cast<float>(x0r), static_cast<float>(y0r), static_cast<float>(osi_point0.z));
+						(*vertices)[2].set(static_cast<float>(x1l), static_cast<float>(y1l), static_cast<float>(osi_point1.z));
+						(*vertices)[3].set(static_cast<float>(x1r), static_cast<float>(y1r), static_cast<float>(osi_point1.z));
 
 						(*indices)[0] = 0;
 						(*indices)[1] = 1;
@@ -234,8 +235,8 @@ int RoadGeom::AddRoadMarks(roadmanager::Lane* lane, osg::Group* parent)
 						continue;
 					}
 
-					osg::ref_ptr<osg::Vec3Array> vertices = new osg::Vec3Array(osi_points.size() * 2);
-					osg::ref_ptr<osg::DrawElementsUInt> indices = new osg::DrawElementsUInt(GL_TRIANGLE_STRIP, osi_points.size() * 2);
+					osg::ref_ptr<osg::Vec3Array> vertices = new osg::Vec3Array(static_cast<unsigned int>(osi_points.size() * 2));
+					osg::ref_ptr<osg::DrawElementsUInt> indices = new osg::DrawElementsUInt(GL_TRIANGLE_STRIP, static_cast<unsigned int>(osi_points.size()) * 2);
 
 					for (size_t q = 0; q < osi_points.size(); q++)
 					{
@@ -251,14 +252,14 @@ int RoadGeom::AddRoadMarks(roadmanager::Lane* lane, osg::Group* parent)
 						if (q == 0)
 						{
 							// First point, no adjustment needed
-							(*vertices)[q * 2 + 0].set(l1p0l[0], l1p0l[1], osi_points[q].z);
-							(*vertices)[q * 2 + 1].set(l1p0r[0], l1p0r[1], osi_points[q].z);
+							(*vertices)[q * 2 + 0].set(static_cast<float>(l1p0l[0]), static_cast<float>(l1p0l[1]), static_cast<float>(osi_points[q].z));
+							(*vertices)[q * 2 + 1].set(static_cast<float>(l1p0r[0]), static_cast<float>(l1p0r[1]), static_cast<float>(osi_points[q].z));
 						}
 						else if (q == osi_points.size() - 1)
 						{
 							// Last point, no adjustment needed
-							(*vertices)[q * 2 + 0].set(l1p1l[0], l1p1l[1], osi_points[q].z);
-							(*vertices)[q * 2 + 1].set(l1p1r[0], l1p1r[1], osi_points[q].z);
+							(*vertices)[q * 2 + 0].set(static_cast<float>(l1p1l[0]), static_cast<float>(l1p1l[1]), static_cast<float>(osi_points[q].z));
+							(*vertices)[q * 2 + 1].set(static_cast<float>(l1p1r[0]), static_cast<float>(l1p1r[1]), static_cast<float>(osi_points[q].z));
 						}
 						else
 						{
@@ -267,22 +268,22 @@ int RoadGeom::AddRoadMarks(roadmanager::Lane* lane, osg::Group* parent)
 
 							if (GetIntersectionOfTwoLineSegments(l0p0l[0], l0p0l[1], l0p1l[0], l0p1l[1], l1p0l[0], l1p0l[1], l1p1l[0], l1p1l[1], isect[0], isect[1]) == 0)
 							{
-								(*vertices)[q * 2 + 0].set(isect[0], isect[1], osi_points[q].z);
+								(*vertices)[q * 2 + 0].set(static_cast<float>(isect[0]), static_cast<float>(isect[1]), static_cast<float>(osi_points[q].z));
 							}
 							else
 							{
 								// lines parallel, no adjustment needed
-								(*vertices)[q * 2 + 0].set(l1p0l[0], l1p0l[1], osi_points[q].z);
+								(*vertices)[q * 2 + 0].set(static_cast<float>(l1p0l[0]), static_cast<float>(l1p0l[1]), static_cast<float>(osi_points[q].z));
 							}
 
 							if (GetIntersectionOfTwoLineSegments(l0p0r[0], l0p0r[1], l0p1r[0], l0p1r[1], l1p0r[0], l1p0r[1], l1p1r[0], l1p1r[1], isect[0], isect[1]) == 0)
 							{
-								(*vertices)[q * 2 + 1].set(isect[0], isect[1], osi_points[q].z);
+								(*vertices)[q * 2 + 1].set(static_cast<float>(isect[0]), static_cast<float>(isect[1]), static_cast<float>(osi_points[q].z));
 							}
 							else
 							{
 								// lines parallel, no adjustment needed
-								(*vertices)[q * 2 + 1].set(l1p0r[0], l1p0r[1], osi_points[q].z);
+								(*vertices)[q * 2 + 1].set(static_cast<float>(l1p0r[0]), static_cast<float>(l1p0r[1]), static_cast<float>(osi_points[q].z));
 							}
 						}
 
@@ -296,8 +297,8 @@ int RoadGeom::AddRoadMarks(roadmanager::Lane* lane, osg::Group* parent)
 						}
 
 						// Set indices
-						(*indices)[q * 2 + 0] = q * 2 + 0;
-						(*indices)[q * 2 + 1] = q * 2 + 1;
+						(*indices)[q * 2 + 0] = static_cast<unsigned int>(q) * 2 + 0;
+						(*indices)[q * 2 + 1] = static_cast<unsigned int>(q) * 2 + 1;
 					}
 
 					// Finally create and add OSG geometries
@@ -359,14 +360,14 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive *odr)
 	materialBorderInner_->setDiffuse(osg::Material::FRONT_AND_BACK, color_border_inner->at(0));
 	materialBorderInner_->setAmbient(osg::Material::FRONT_AND_BACK, color_border_inner->at(0));
 
-	for (size_t i = 0; i < odr->GetNumOfRoads(); i++)
+	for (size_t i = 0; i < static_cast<unsigned int>(odr->GetNumOfRoads()); i++)
 	{
-		roadmanager::Road* road = odr->GetRoadByIdx(i);
+		roadmanager::Road* road = odr->GetRoadByIdx(static_cast<int>(i));
 		std::vector<double> s_list;
 
-		for (size_t j = 0; j < road->GetNumberOfLaneSections(); j++)
+		for (size_t j = 0; j < static_cast<unsigned int>(road->GetNumberOfLaneSections()); j++)
 		{
-			roadmanager::LaneSection* lsec = road->GetLaneSectionByIdx(j);
+			roadmanager::LaneSection* lsec = road->GetLaneSectionByIdx(static_cast<int>(j));
 			if (lsec->GetNumberOfLanes() < 2)
 			{
 				// need at least reference lane plus another lane to form a road geometry
@@ -382,7 +383,7 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive *odr)
 			}
 
 			// create a list to keep track of current s-value for each lane
-			std::vector<int> s_index(lsec->GetNumberOfLanes(), 0);
+			std::vector<int> s_index(static_cast<unsigned int>(lsec->GetNumberOfLanes()), 0);
 
 			// create a 2d list of positions for vertices, nr_of_lanes x nr_of_s-values
 			typedef struct
@@ -415,11 +416,11 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive *odr)
 				else
 				{
 					// find next s-value based on accumulated error of each lane
-					for (size_t k = 0; k < lsec->GetNumberOfLanes(); k++)
+					for (size_t k = 0; k < static_cast<unsigned int>(lsec->GetNumberOfLanes()); k++)
 					{
-						lane = lsec->GetLaneByIdx(k);
+						lane = lsec->GetLaneByIdx(static_cast<int>(k));
 						std::vector<roadmanager::PointStruct> osiPoints = lane->GetOSIPoints()->GetPoints();
-						int l = s_index[k] + 1;
+						unsigned int l = static_cast<unsigned int>(s_index[k]) + 1;
 
 						// Find next s-value for this lane - go forward until error becomes too large
 						for (; l < osiPoints.size(); l++)
@@ -445,25 +446,25 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive *odr)
 
 						if (l < osiPoints.size())
 						{
-							if (s_index[k] != l - 1)
+							if (s_index[k] != static_cast<int>(l) - 1)
 							{
 								// make sure previous s-value before error exceeded threshold is included
-								s_index[k] = l - 1;
+								s_index[k] = static_cast<int>(l) - 1;
 							}
 							else
 							{
 								// add s-value exceeding the threshold
-								s_index[k] = l;
+								s_index[k] = static_cast<int>(l);
 							}
 						}
 						else
 						{
-							s_index[k] = osiPoints.size() - 1;  // add last OSI point for end of mesh
+							s_index[k] = static_cast<int>(osiPoints.size()) - 1;  // add last OSI point for end of mesh
 						}
 
-						if (osiPoints[s_index[k]].s < s_min)
+						if (osiPoints[static_cast<unsigned int>(s_index[k])].s < s_min)
 						{
-							s_min = osiPoints[s_index[k]].s;  // register pivot s-value
+							s_min = osiPoints[static_cast<unsigned int>(s_index[k])].s;  // register pivot s-value
 						}
 					}
 
@@ -481,7 +482,7 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive *odr)
 				}
 
 				// limit segment length - split if needed
-				int n = (int)((total_segment_length - SMALL_NUMBER) / MAX_GEOM_LENGTH) + 1;
+				int n = static_cast<int>((total_segment_length - SMALL_NUMBER) / MAX_GEOM_LENGTH) + 1;
 				double segment_length = total_segment_length / n;
 				for (int m = 0; m < n; m++)
 				{
@@ -497,9 +498,9 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive *odr)
 						s = s_list.rbegin()[1] + (m + 1) * segment_length;
 					}
 
-					for (size_t k = 0; k < lsec->GetNumberOfLanes(); k++)
+					for (size_t k = 0; k < static_cast<unsigned int>(lsec->GetNumberOfLanes()); k++)
 					{
-						lane = lsec->GetLaneByIdx(k);
+						lane = lsec->GetLaneByIdx(static_cast<int>(k));
 						pos.SetTrackPos(road->GetId(), s, SIGN(lane->GetId())* lsec->GetOuterOffset(s, lane->GetId()), true);
 						geom_point.push_back({ pos.GetX(), pos.GetY(), pos.GetZ(), pos.GetH(), pos.GetZRoadPrim(), pos.GetS() });
 					}
@@ -510,46 +511,46 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive *odr)
 
 			// Then create actual vertices and triangle strips for the lane section
 			pos.SetAlignMode(roadmanager::Position::ALIGN_MODE::ALIGN_HARD);
-			int nrOfVerticesTotal = geom_point_list.size() * lsec->GetNumberOfLanes();
-			osg::ref_ptr<osg::Vec3Array> verticesAll = new osg::Vec3Array(nrOfVerticesTotal);
+			int nrOfVerticesTotal = static_cast<int>(geom_point_list.size()) * lsec->GetNumberOfLanes();
+			osg::ref_ptr<osg::Vec3Array> verticesAll = new osg::Vec3Array(static_cast<unsigned int>(nrOfVerticesTotal));
 			osg::ref_ptr<osg::Vec2Array> texcoordsAll = new osg::Vec2Array;
 			int vidxAll = 0;
 
 			// Potential optimization: Swap loops, creating all vertices for same s-value for each step
-			for (size_t k = 0; k < lsec->GetNumberOfLanes(); k++)
+			for (size_t k = 0; k < static_cast<unsigned int>(lsec->GetNumberOfLanes()); k++)
 			{
 				osg::ref_ptr<osg::Vec3Array> verticesLocal;
 				osg::ref_ptr<osg::Vec2Array> texcoordsLocal;
 				osg::ref_ptr<osg::DrawElementsUInt> indices;
 				int vidxLocal = 0;
-				lane = lsec->GetLaneByIdx(k);
+				lane = lsec->GetLaneByIdx(static_cast<int>(k));
 
 				if (k > 0)
 				{
-					verticesLocal = new osg::Vec3Array(geom_point_list.size() * 2);
-					indices = new osg::DrawElementsUInt(GL_TRIANGLE_STRIP, geom_point_list.size() * 2);
-					texcoordsLocal = new osg::Vec2Array(geom_point_list.size() * 2);
+					verticesLocal = new osg::Vec3Array(static_cast<unsigned int>(geom_point_list.size()) * 2);
+					indices = new osg::DrawElementsUInt(GL_TRIANGLE_STRIP, static_cast<unsigned int>(geom_point_list.size()) * 2);
+					texcoordsLocal = new osg::Vec2Array(static_cast<unsigned int>(geom_point_list.size()) * 2);
 				}
 
 				for (size_t l = 0; l < geom_point_list.size(); l++)
 				{
 					GeomPoint& gp = geom_point_list[l][k];
-					(*verticesAll)[vidxAll++].set(gp.x, gp.y, gp.z);
+					(*verticesAll)[static_cast<unsigned int>(vidxAll++)].set(static_cast<float>(gp.x), static_cast<float>(gp.y), static_cast<float>(gp.z));
 					double texscale = TEXTURE_SCALE;
-					texcoordsAll->push_back(osg::Vec2(texscale * gp.x, texscale * gp.y));
+					texcoordsAll->push_back(osg::Vec2(static_cast<float>(texscale * gp.x), static_cast<float>(texscale * gp.y)));
 
 					// Create indices for the lane strip, referring to the vertex list
 					if (k > 0)
 					{
 						// vertex of left lane border
-						(*verticesLocal)[vidxLocal] = (*verticesAll)[(k - 1) * geom_point_list.size() + l];
-						(*texcoordsLocal)[vidxLocal] = (*texcoordsAll)[(k - 1) * geom_point_list.size() + l];
-						(*indices)[vidxLocal] = vidxLocal;
+						(*verticesLocal)[static_cast<unsigned int>(vidxLocal)] = (*verticesAll)[(k - 1) * geom_point_list.size() + l];
+						(*texcoordsLocal)[static_cast<unsigned int>(vidxLocal)] = (*texcoordsAll)[(k - 1) * geom_point_list.size() + l];
+						(*indices)[static_cast<unsigned int>(vidxLocal)] = static_cast<unsigned int>(vidxLocal);
 						vidxLocal++;
 						// vertex of right
-						(*verticesLocal)[vidxLocal] = (*verticesAll)[k * geom_point_list.size() + l];
-						(*texcoordsLocal)[vidxLocal] = (*texcoordsAll)[k * geom_point_list.size() + l];
-						(*indices)[vidxLocal] = vidxLocal;
+						(*verticesLocal)[static_cast<unsigned int>(vidxLocal)] = (*verticesAll)[k * geom_point_list.size() + l];
+						(*texcoordsLocal)[static_cast<unsigned int>(vidxLocal)] = (*texcoordsAll)[k * geom_point_list.size() + l];
+						(*indices)[static_cast<unsigned int>(vidxLocal)] = static_cast<unsigned int>(vidxLocal);
 						vidxLocal++;
 					}
 				}
@@ -566,7 +567,7 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive *odr)
 
 					osg::ref_ptr<osg::Texture2D> tex = nullptr;
 
-					roadmanager::Lane* laneForMaterial = lsec->GetLaneByIdx(lane->GetId() < 0 ? k : k - 1);
+					roadmanager::Lane* laneForMaterial = lsec->GetLaneByIdx(lane->GetId() < 0 ? static_cast<int>(k) : static_cast<int>(k) - 1);
 
 					if (laneForMaterial->IsType(roadmanager::Lane::LaneType::LANE_TYPE_ANY_ROAD))
 					{
@@ -584,7 +585,7 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive *odr)
 						geom->getOrCreateStateSet()->setAttributeAndModes(materialConcrete_.get());
 					}
 					else if (laneForMaterial->IsType(roadmanager::Lane::LaneType::LANE_TYPE_BORDER) &&
-						k != 1 && k != lsec->GetNumberOfLanes() - 1)
+						k != 1 && k != static_cast<unsigned int>(lsec->GetNumberOfLanes()) - 1)
 					{
 						geom->setColorArray(color_border_inner.get());
 						geom->getOrCreateStateSet()->setAttributeAndModes(materialBorderInner_.get());

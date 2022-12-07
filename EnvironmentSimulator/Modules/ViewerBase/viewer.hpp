@@ -532,7 +532,7 @@ namespace viewer
 	{
 	public:
 		ViewerEventHandler(Viewer *viewer) : viewer_(viewer) {}
-		// bool handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter&);  // TODO: Why do we need this at all. We have exact declaration on base level? why attempt to overload?
+		bool handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter&);
 
 	private:
 		Viewer* viewer_;
