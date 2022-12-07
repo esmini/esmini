@@ -57,7 +57,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\n11.100.*, 0, Ego, 200.713, 72.600, -2.443, 1.057, 6.263, 0.000, 16.000', csv))
         self.assertTrue(re.search('\n11.100, 1, Target, 206.003, 66.438, -2.496, 2.508, 6.281, 6.263, 17.500, -0.253, 1.548', csv))
         self.assertTrue(re.search('\n17.250.*, 0, Ego, 217.345, 167.663, 1.989, 1.738, 6.209, 0.000, 16.000', csv))
-        self.assertTrue(re.search('\n17.250, 1, Target, 210.747, 157.830, 1.319, 1.229, 6.216, 0.032, 14.846, 0.049, 3.972', csv))
+        self.assertTrue(re.search('\n17.250, 1, Target, 210.632, 157.507, 1.295, 1.225, 6.216, 0.032, 14.907, 0.050, 2.996', csv))
         self.assertTrue(re.search('\n25.000.*, 0, Ego, 206.081, 288.506, 5.436, 1.188, 6.238, 0.000, 16.000', csv))
         self.assertTrue(re.search('\n25.000, 1, Target, 216.288, 307.524, 6.706, 0.968, 6.214, 0.000, 21.101, -0.032, 5.799', csv))
 

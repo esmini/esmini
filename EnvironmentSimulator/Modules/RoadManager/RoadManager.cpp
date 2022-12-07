@@ -10313,17 +10313,17 @@ void NurbsShape::CalculatePolyLine()
 		// Calulate heading from line segment between this and previous vertices
 		if (i < nSteps)
 		{
-			EvaluateInternal(t + 0.01 * p_steplen, tmppos);
+			EvaluateInternal(MIN(t + MIN(0.001, p_steplen), 1.0), tmppos);
 		}
 		else
 		{
-			EvaluateInternal(t - 0.01 * p_steplen, tmppos);
+			EvaluateInternal(MAX(t - MIN(0.001, p_steplen), 0.0), tmppos);
 		}
 
 		if (PointDistance2D(tmppos.x, tmppos.y, pos.x, pos.y) < SMALL_NUMBER)
 		{
 			// If points conside, use heading from polyline
-			pos.calcHeading = false;
+			pos.calcHeading = true;
 		}
 		else
 		{
