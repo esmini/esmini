@@ -40,6 +40,9 @@ void Set{{key}}({{value["type"]}} {{key}}) { {{key}}_ = {{key}}; }
 {{generate_constructor(key,value)|indent(4,True)}}
 {{generate_destructor(key,value)|indent(4,True)}}
 {{generate_copyconstructor(key,value)|indent(4,True)}}
+{{generate_copyassignment(key,value)|indent(4,True)}}
+{{generate_moveconstructor(key,value)|indent(4,True)}}
+{{generate_moveassignment(key,value)|indent(4,True)}}
     {%for key1,value1 in value.items()-%}
         {%for key2,value2 in value1.items()-%}
             {%if value2 is iterable and value2 is not string-%}
@@ -81,15 +84,46 @@ void Set{{key}}({{value["type"]}} {{key}}) { {{key}}_ = {{key}}; }
 
 
 {%macro generate_constructor(key,value)-%}
-    {{key[6:]}}();
+/**
+* @brief constructor
+*/
+{{key[6:]}}();
 {%endmacro-%}
 
 {%macro generate_destructor(key,value)-%}
-    virtual ~{{key[6:]}}();
+/**
+* @brief destructor
+*/
+virtual ~{{key[6:]}}() = default;
 {%endmacro-%}
 
 {%macro generate_copyconstructor(key,value)-%}
-    {{key[6:]}}(const {{key[6:]}}&  {{key[8:]|lower}});
+/**
+* @brief copy constructor
+*/
+{{key[6:]}}(const {{key[6:]}}& {{key[8:]|lower}}) = delete;
+{%endmacro-%}
+
+{%macro generate_copyassignment(key,value)-%}
+/**
+* @brief copy assignment
+*/
+{{key[6:]}}& operator=(const {{key[6:]}}& {{key[8:]|lower}}) & = delete;
+{%endmacro-%}
+
+
+{%macro generate_moveconstructor(key,value)-%}
+/**
+* @brief move constructor
+*/
+{{key[6:]}}({{key[6:]}}&& {{key[8:]|lower}}) = delete;
+{%endmacro-%}
+
+{%macro generate_moveassignment(key,value)-%}
+/**
+* @brief move assignment
+*/
+{{key[6:]}}& operator=({{key[6:]}}&& {{key[8:]|lower}}) & = delete;
 {%endmacro-%}
 
 {%macro generate_datastructs(data)%}
