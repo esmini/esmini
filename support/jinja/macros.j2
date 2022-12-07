@@ -29,13 +29,17 @@ void Set{{key}}({{value["type"]}} {{key}}) { {{key}}_ = {{key}}; }
 };
 {%endmacro%}
 
-{%macro generate_string(key, value)%}
+{%macro generate_variable(key, value)%}
 {{key}};
 {%endmacro%}
 
 
 {%macro generate_class(key,value)%}
 {{key}} {
+
+{{generate_constructor(key,value)|indent(4,True)}}
+{{generate_destructor(key,value)|indent(4,True)}}
+{{generate_copyconstructor(key,value)|indent(4,True)}}
     {%for key1,value1 in value.items()-%}
         {%for key2,value2 in value1.items()-%}
             {%if value2 is iterable and value2 is not string-%}
@@ -68,13 +72,25 @@ void Set{{key}}({{value["type"]}} {{key}}) { {{key}}_ = {{key}}; }
             {{generate_enum(key1,value1)|indent(4,True)}}
         {% elif key1.startswith("class") -%}
             {{generate_class(key1,value1)|indent(4,True)}}
-        {% elif key1.startswith("std::string") -%}
-            {{generate_string(key1,value1)|indent(4, True)}}
+        {% elif key1.startswith("std::string") or key1.startswith("double") -%}
+            {{generate_variable(key1,value1)|indent(4, True)}}
         {%endif-%}
     {%endfor-%}
 };
 {%endmacro%}
 
+
+{%macro generate_constructor(key,value)-%}
+    {{key[6:]}}();
+{%endmacro-%}
+
+{%macro generate_destructor(key,value)-%}
+    virtual ~{{key[6:]}}();
+{%endmacro-%}
+
+{%macro generate_copyconstructor(key,value)-%}
+    {{key[6:]}}(const {{key[6:]}}&  {{key[8:]|lower}});
+{%endmacro-%}
 
 {%macro generate_datastructs(data)%}
     {%for key,value in data.items()-%}
@@ -83,7 +99,7 @@ void Set{{key}}({{value["type"]}} {{key}}) { {{key}}_ = {{key}}; }
         {% elif key.startswith("class") -%}
             {{generate_class(key,value)|indent(4,True)}}
         {% elif key.startswith("std::string") -%}
-            {{generate_string(key,value)|indent(4, True)}}
+            {{generate_variable(key,value)|indent(4, True)}}
         {% elif key.startswith("struct") -%}
             {{generate_struct(key,value)|indent(4, True)}}
         {%endif-%}

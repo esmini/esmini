@@ -52,9 +52,7 @@ class OpenDrive:
         for item in data.items():
             if "struct" in item[0]:
                 structs.append(item)
-        # create new dict ->
-            # {struct e_unit : { e_unitDistance:{}, e_unitSpeed:{} ....}}
-            # append to new_dict
+        # create correct dictionaries for each struct
         struct_members = []
         for key,value in structs:
             members_dict = {}
@@ -66,16 +64,18 @@ class OpenDrive:
                             if member in data_key:
                                 struct_members.append(data_key)
                                 members_dict.update({data_key:data.get(data_key)})
+                        if member == "t_grEqZero" or member == "t_grZero":
+                            #Remove struct t_ to get the name
+                            member_name = "double "+key[9:]
+                            members_dict.update({member_name:""})
             new_dict.update({key:members_dict})
-
+        #copy all other datastructures to the new dict
+        #expect the ones that exists in the newly created structs
         for key,value in data.items():
             if key in struct_members or "struct" in key:
                 pass
             else:
                 new_dict.update({key:value})
-        # check if next element(data) is not a part of struct
-            #append if not
-            # delete / ignore if
         return new_dict
 
     def parse_children(self, parent, data):
