@@ -3,6 +3,7 @@ import xml.etree.ElementTree as ET
 import json
 import os
 from support.python.src.globals import ESMINI_DIRECTORY_SUPPORT, ESMINI_DIRECTORY_ROOT
+from support.python.src.formatter import format_green,format_yellow
 
 
 class OpenDrive:
@@ -26,6 +27,7 @@ class OpenDrive:
         # Generate the hpp file
         self.create_hpp_files(output_file, data)
 
+
     def create_hpp_files(self, output_file, data):
         """
             Generates the .hpp files using jinja2
@@ -47,6 +49,7 @@ class OpenDrive:
         content = template.render(data)
         with open(output_file, mode="w", encoding="utf-8") as message:
             message.write(content)
+        print(format_green(f"Generated: {output_file}"))
 
     def print_dict(self, output_file, data):
         """
@@ -61,6 +64,7 @@ class OpenDrive:
         with open(output_file + ".json", mode="w", encoding="utf-8") as file:
             json.dump(data, file, indent=4)
             file.close()
+        print(format_yellow(f"Printed dictionary"))
 
     def parser(self, file, name):
         """
@@ -143,7 +147,13 @@ class OpenDrive:
         """
         attributes_dict = {}
         for child in parent:
-            if "complexType" in child.tag or "simpleType" in child.tag:
+            if "complexType" in child.tag: #-> class
+                child_sub_dict = self.parse_children(child, {})
+                name = child.attrib["name"]
+                name = "class " + name
+                data.update({name: child_sub_dict})
+
+            elif "simpleType" in child.tag: #-> struct/enum/variable
                 child_sub_dict = self.parse_children(child, {})
                 name = child.attrib["name"]
                 if "union" in child_sub_dict.keys():
@@ -155,8 +165,6 @@ class OpenDrive:
                             name = key + " " + name
                         if key == "enum":
                             name = "enum " + name
-                if name.startswith("t_"):
-                    name = "class " + name
                 data.update({name: child_sub_dict})
 
             elif "extension" in child.tag or "restriction" in child.tag:
@@ -164,10 +172,7 @@ class OpenDrive:
                 sub_children = self.parse_children(child, {})
                 if "enum" in sub_children.values():
                     base = "enum"
-                if base == "xs:string":
-                    base = "std::string"
-                elif base == "xs:double":
-                    base = "double"
+                base = self.xsd_to_cpp_types(base)
                 data.update({"base": {base: sub_children}})
 
             elif "sequence" in child.tag:
@@ -181,7 +186,7 @@ class OpenDrive:
             elif "element" in child.tag:
                 attributes = child.attrib
                 if "type" in attributes:
-                    attributes["type"] = self.replace_xsd_types(attributes["type"])
+                    attributes["type"] = self.xsd_to_cpp_types(attributes["type"])
                 if "maxOccurs" in attributes:
                     if attributes["maxOccurs"] == "unbounded":
                         attributes["type"] = "std::vector<"+attributes["type"]+">"
@@ -194,47 +199,54 @@ class OpenDrive:
                     doc = sub_dict["docs"]
                 attributes = child.attrib
                 if len(attributes) > 1:
-                    attributes["type"] = self.replace_xsd_types(attributes["type"])
+                    attributes["type"] = self.xsd_to_cpp_types(attributes["type"])
                 attributes.update({"docs":doc})
                 attributes_dict.update({child.attrib["name"]:attributes})
+
             elif "union" in child.tag:
                 data.update({"union":child.attrib})
 
             elif "documentation" in child.tag:
                 data.update({"docs":child.text})
+
             else:
                 self.parse_children(child, data)
+
         if len(attributes_dict) != 0:
             data.update({"attributes": attributes_dict})
         return data
 
-    def replace_xsd_types(self, attribute):
+    def xsd_to_cpp_types(self, type):
         """
             Replaces xsd types with corresponding cpp types
 
             Inputs:
             ---------
-            attribute (str): str containing the type
+            type (str): str containing the type
 
             Returns:
             ---------
             attribute (str) <- with the corresponding cpp type
         """
-        if attribute == "xs:string":
-            attribute = "std::string"
-        elif attribute == "xs:double":
-            attribute = "double"
-        elif attribute == "xs:integer":
-            attribute = "int"
-        elif attribute == "xs:negativeInteger":
-            attribute = "int"
-        elif attribute == "xs:float":
-            attribute = "float"
-        elif attribute == "t_grEqZero": # TODO should be fetch or linked to core file
-            attribute = "double"
-        elif attribute == "t_grZero": # TODO should be fetch or linked to core file
-            attribute = "double"
-        return attribute
+        if type == "xs:string":
+            type = "std::string"
+        elif type == "xs:double":
+            type = "double"
+        elif type == "xs:boolean":
+            type = "bool"
+        elif type == "xs:decimal":
+            type = "double"
+        elif type == "xs:integer":
+            type = "int"
+        elif type == "xs:negativeInteger":
+            type = "int"
+        elif type == "xs:float":
+            type = "float"
+        elif type == "t_grEqZero": # TODO should be fetch or linked to core file
+            type = "double"
+        elif type == "t_grZero": # TODO should be fetch or linked to core file
+            type = "double"
+        return type
 
     def fix_non_legal_chars(self, string):
         """
@@ -249,6 +261,7 @@ class OpenDrive:
             string (str) <- without non legal chars
         """
         string = string.replace("/", "")
+        string = string.replace(" ", "_")
         string = string.replace("+", "positive") #TODO agree on naming
         string = string.replace("-", "negative") #TODO agree on naming
         string = string.replace("%", "percent") #TODO agree on naming
@@ -277,8 +290,7 @@ class OpenDrive:
             ),
         ]
         for opendrive, output in files_to_generate:
-            print("Parsing: ", output)
             with open(opendrive, mode="r", encoding="utf-8") as input:
                 data = self.parser(input, output)
             self.generate_file(data, output)
-            print(f"Generated: {output}")
+

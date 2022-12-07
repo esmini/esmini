@@ -17,7 +17,7 @@ void Set{{key}}({{value["type"]}} {{key}}) { {{key}}_ = {{key}}; }
     {%for key1,value1 in value.items()-%}
         {%if value1 is string%}
 /**
-*@brief {{value1}}
+* @brief {{value1|wordwrap(wrapstring="\n* ")}}
 */
         {%endif%}
     {%endfor%}
@@ -47,17 +47,18 @@ void Set{{key}}({{value["type"]}} {{key}}) { {{key}}_ = {{key}}; }
     {%for key1,value1 in value.items()-%}
         {%if value1 is string%}
 /**
-*@brief {{value1}}
+* @brief {{value1|wordwrap(wrapstring="\n* ")}}
 */
         {%endif%}
     {%endfor%}
 {{key}} {
-{{generate_constructor(key,value)|indent(4,True)}}
-{{generate_destructor(key,value)|indent(4,True)}}
-{{generate_copyconstructor(key,value)|indent(4,True)}}
-{{generate_copyassignment(key,value)|indent(4,True)}}
-{{generate_moveconstructor(key,value)|indent(4,True)}}
-{{generate_moveassignment(key,value)|indent(4,True)}}
+{{"public:"|indent(4,True)}}
+{{generate_constructor(key,value)|indent(8,True)-}}
+{{generate_destructor(key,value)|indent(8,True)-}}
+{{generate_copyconstructor(key,value)|indent(8,True)-}}
+{{generate_copyassignment(key,value)|indent(8,True)-}}
+{{generate_moveconstructor(key,value)|indent(8,True)-}}
+{{generate_moveassignment(key,value)|indent(8,True)}}
     {%for key1,value1 in value.items()-%}
         {%if value1 is not string%}
             {%for key2,value2 in value1.items()-%}
@@ -65,16 +66,15 @@ void Set{{key}}({{value["type"]}} {{key}}) { {{key}}_ = {{key}}; }
                     {%for key3,value3 in value2.items()-%}
                             {% if "sequence" in key3-%}
                                 {%for key4,value4 in value3.items()-%}
-{{value4["type"]|indent(4,True)}} {{key4|indent(4,True)}};
+{{value4["type"]|indent(8,True)}} {{key4}};
                                 {%endfor-%}
                             {%endif-%}
                             {% if "attributes" in key3 -%}
-{{"public:"|indent(4,True)}}
 {{generate_setter(value3)|indent(8,True)}}
 {{generate_getter(value3)|indent(8,True)}}
 {{"private:"|indent(4,True)}}
                                 {%for key4,value4 in value3.items()-%}
-{{value4["type"]|indent(8,True)}} {{key4|indent(4,True)}}_;    //{{value4["docs"]}}
+{{value4["type"]|indent(8,True)}} {{key4}}_; //{{value4["docs"]}}
                                 {%endfor-%}
                             {%endif-%}
                     {%endfor-%}
@@ -89,11 +89,11 @@ void Set{{key}}({{value["type"]}} {{key}}) { {{key}}_ = {{key}}; }
 {{key}} {
     {%for key1,value1 in value.items()-%}
         {% if  key1.startswith("enum") -%}
-            {{generate_enum(key1,value1)|indent(4,True)}}
+            {{generate_enum(key1,value1)|indent(4,True)-}}
         {% elif key1.startswith("class") -%}
-            {{generate_class(key1,value1)|indent(4,True)}}
+            {{generate_class(key1,value1)|indent(4,True)-}}
         {% elif key1.startswith("std::string") or key1.startswith("double") -%}
-            {{generate_variable(key1,value1)|indent(4, True)}}
+            {{generate_variable(key1,value1)|indent(4, True)-}}
         {%endif-%}
     {%endfor-%}
 };
