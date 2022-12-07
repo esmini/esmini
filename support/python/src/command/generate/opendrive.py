@@ -7,18 +7,34 @@ from support.python.src.globals import ESMINI_DIRECTORY_SUPPORT, ESMINI_DIRECTOR
 
 class OpenDrive:
     def generate_file(self, data, output):
+        """
+            Handles the generation of the .json and .hpp files
+
+            Inputs:
+            ---------
+            data (dict): dictionary used in jinja generation
+            output (str): name of file to generate
+        """
         outputfolder = os.path.join(ESMINI_DIRECTORY_SUPPORT, "generated")
         if not os.path.exists(outputfolder):
             os.mkdir(outputfolder)
         output_file = os.path.join(outputfolder, output + ".hpp")
 
-        # Dump dict to json for testing/fault tracing
+        # Dump dict to json for testing
         self.print_dict(output_file, data)
 
         # Generate the hpp file
         self.create_hpp_files(output_file, data)
 
     def create_hpp_files(self, output_file, data):
+        """
+            Generates the .hpp files using jinja2
+
+            Inputs:
+            ---------
+            output_file (path): the name/location of file to generate
+            data (dict): dictionary used in jinja generation
+        """
         template_folder = os.path.join(ESMINI_DIRECTORY_SUPPORT, "jinja")
         template_file = "hpp_template.j2"
         env = Environment(
@@ -33,11 +49,32 @@ class OpenDrive:
             message.write(content)
 
     def print_dict(self, output_file, data):
+        """
+            Generates the .json, primarly for debugging/testing\n
+            Dumps the data dictionary to a json file
+
+            Inputs:
+            ---------
+            output_file (path): the name/location of file to generate
+            data (dict): dictionary used in jinja generation
+        """
         with open(output_file + ".json", mode="w", encoding="utf-8") as file:
             json.dump(data, file, indent=4)
             file.close()
 
     def parser(self, file, name):
+        """
+            Parses a .xsd file in to a dictionary
+
+            Inputs:
+            ---------
+            file (path): the path to file to be parsed
+            name (str): name of file to be generated
+
+            Returns:
+            ---------
+            dict <- containing the parsed file
+        """
         parsed_data = {}
         tree = ET.parse(file)
         root = tree.getroot()
@@ -46,6 +83,18 @@ class OpenDrive:
         return {"name": name, "data": parsed_data}
 
     def union_to_struct(self,data):
+        """
+            Restructures a dictionary containing the xsd keyword union to
+            fit the structure of struct
+
+            Inputs:
+            ---------
+            data (dict): dictionary to be fixed
+
+            Returns:
+            ---------
+            dict <- containing the restructerd dict
+        """
         new_dict = {}
         structs = []
         # get all structs
@@ -64,6 +113,7 @@ class OpenDrive:
                             if member in data_key:
                                 struct_members.append(data_key)
                                 members_dict.update({data_key:data.get(data_key)})
+                        #special case if struct contains values for core file
                         if member == "t_grEqZero" or member == "t_grZero":
                             #Remove struct t_ to get the name
                             member_name = "double "+key[9:]
@@ -79,6 +129,18 @@ class OpenDrive:
         return new_dict
 
     def parse_children(self, parent, data):
+        """
+            Parses the xml.tree and extracts necessary data for jinja2 generation
+
+            Inputs:
+            ---------
+            parent (xml.tree): xml to be parsed
+            data (dict): dictionary to append parsed data to
+
+            Returns:
+            ---------
+            data (dict)
+        """
         attributes_dict = {}
         for child in parent:
             if "complexType" in child.tag or "simpleType" in child.tag:
@@ -116,7 +178,7 @@ class OpenDrive:
             elif "element" in child.tag:
                 attributes = child.attrib
                 if "type" in attributes:
-                    attributes["type"] = self.replace_cpp_types(attributes["type"])
+                    attributes["type"] = self.replace_xsd_types(attributes["type"])
                 if "maxOccurs" in attributes:
                     if attributes["maxOccurs"] == "unbounded":
                         attributes["type"] = "std::vector<"+attributes["type"]+">"
@@ -125,7 +187,7 @@ class OpenDrive:
             elif "attribute" in child.tag:
                 attributes = child.attrib
                 if len(attributes) > 1:
-                    attributes["type"] = self.replace_cpp_types(attributes["type"])
+                    attributes["type"] = self.replace_xsd_types(attributes["type"])
                 attributes_dict.update({child.attrib["name"]: attributes})
             elif "union" in child.tag:
                 data.update({"union":child.attrib})
@@ -135,7 +197,18 @@ class OpenDrive:
             data.update({"attributes": attributes_dict})
         return data
 
-    def replace_cpp_types(self, attribute):
+    def replace_xsd_types(self, attribute):
+        """
+            Replaces xsd types with corresponding cpp types
+
+            Inputs:
+            ---------
+            attribute (str): str containing the type
+
+            Returns:
+            ---------
+            attribute (str) <- with the corresponding cpp type
+        """
         if attribute == "xs:string":
             attribute = "std::string"
         elif attribute == "xs:double":
@@ -146,18 +219,34 @@ class OpenDrive:
             attribute = "int"
         elif attribute == "xs:float":
             attribute = "float"
-        elif attribute == "t_grEqZero": # TODO SHOULD BE FETCH FROM CORE
+        elif attribute == "t_grEqZero": # TODO should be fetch or linked to core file
             attribute = "double"
-        elif attribute == "t_grZero": # TODO SHOULD BE FETCH FROM CORE
+        elif attribute == "t_grZero": # TODO should be fetch or linked to core file
             attribute = "double"
         return attribute
 
     def fix_non_legal_chars(self, string):
+        """
+            Remove non legal chars from string
+
+            Inputs:
+            ---------
+            string (str): string to be checked
+
+            Returns:
+            ---------
+            string (str) <- without non legal chars
+        """
         string = string.replace("/", "")
-        string = string.replace(" ", "_")
+        string = string.replace("+", "positive") #TODO agree on naming
+        string = string.replace("-", "negative") #TODO agree on naming
+        string = string.replace("%", "percent") #TODO agree on naming
         return string
 
     def generate_opendrive(self):
+        """
+            Generates all opendrive files
+        """
         opendrive_schema_path = os.path.join(
             ESMINI_DIRECTORY_ROOT, "..", "OpenDrive1_7_0"
         )
