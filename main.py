@@ -37,7 +37,7 @@ class Start(object):
                 pass
             elif "opendrive" == command_list[2].name:
                 opendrive = OpenDrive()
-                opendrive.generate_opendrive()
+                opendrive.generate_opendrive("1.7")
         if "run" == command_list[1].name:
             run = Run()
             if "format" == command_list[2].name:

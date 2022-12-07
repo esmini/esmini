@@ -66,7 +66,7 @@ class OpenDrive:
             file.close()
         print(format_yellow(f"Printed dictionary"))
 
-    def parser(self, file, name):
+    def parser(self, file, name,version):
         """
             Parses a .xsd file in to a dictionary
 
@@ -84,7 +84,7 @@ class OpenDrive:
         root = tree.getroot()
         self.parse_children(root, parsed_data)
         parsed_data = self.union_to_struct(parsed_data)
-        return {"name": name, "data": parsed_data}
+        return {"name": name,"version":version, "data": parsed_data}
 
     def union_to_struct(self,data):
         """
@@ -118,7 +118,7 @@ class OpenDrive:
                                 struct_members.append(data_key)
                                 members_dict.update({data_key:data.get(data_key)})
                         #special case if struct contains values for core file
-                        if member == "t_grEqZero" or member == "t_grZero":
+                        if member == "t_grEqZero" or member == "t_grZero": #TODO these comes from core.xsd
                             #Remove struct t_ to get the name
                             member_name = "double "+key[9:]
                             members_dict.update({member_name:""})
@@ -267,30 +267,32 @@ class OpenDrive:
         string = string.replace("%", "percent") #TODO agree on naming
         return string
 
-    def generate_opendrive(self):
+    def generate_opendrive(self,version):
         """
             Generates all opendrive files
         """
         opendrive_schema_path = os.path.join(
-            ESMINI_DIRECTORY_ROOT, "..", "OpenDrive1_7_0"
+            ESMINI_DIRECTORY_ROOT, "..", "OpenDrive_17"
         )
+
+        f_version = version.replace(".","") #fix naming for files
         files_to_generate = [
-            (os.path.join(opendrive_schema_path, "opendrive_17_core.xsd"), "Core"),
-            (os.path.join(opendrive_schema_path, "opendrive_17_road.xsd"), "Road"),
-            (os.path.join(opendrive_schema_path, "opendrive_17_lane.xsd"), "Lane"),
+            (os.path.join(opendrive_schema_path, "opendrive_"+f_version+"_core.xsd"), "Core"),
+            (os.path.join(opendrive_schema_path, "opendrive_"+f_version+"_road.xsd"), "Road"),
+            (os.path.join(opendrive_schema_path, "opendrive_"+f_version+"_lane.xsd"), "Lane"),
             (
-                os.path.join(opendrive_schema_path, "opendrive_17_junction.xsd"),
+                os.path.join(opendrive_schema_path, "opendrive_"+f_version+"_junction.xsd"),
                 "Junction",
             ),
-            (os.path.join(opendrive_schema_path, "opendrive_17_object.xsd"), "Object"),
-            (os.path.join(opendrive_schema_path, "opendrive_17_signal.xsd"), "Signal"),
+            (os.path.join(opendrive_schema_path, "opendrive_"+f_version+"_object.xsd"), "Object"),
+            (os.path.join(opendrive_schema_path, "opendrive_"+f_version+"_signal.xsd"), "Signal"),
             (
-                os.path.join(opendrive_schema_path, "opendrive_17_railroad.xsd"),
+                os.path.join(opendrive_schema_path, "opendrive_"+f_version+"_railroad.xsd"),
                 "Railroad",
             ),
         ]
         for opendrive, output in files_to_generate:
             with open(opendrive, mode="r", encoding="utf-8") as input:
-                data = self.parser(input, output)
+                data = self.parser(input, output,version)
             self.generate_file(data, output)
 
