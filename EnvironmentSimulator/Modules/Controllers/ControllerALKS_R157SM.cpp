@@ -252,6 +252,9 @@ int ControllerALKS_R157SM::Model::Detect()
         {
             continue;
         }
+        auto target = entities_->object_[i];
+        auto target_bb_offset = target->pos_.GetOffset() + sin(target->pos_.GetH()) * target->boundingbox_.center_.x_;
+        R157_LOG(1, "Rear axle: : %.2f BB center: %.2f",target->pos_.GetOffset(),target_bb_offset);
 
         if (!CheckSafety(&tmp_obj_info))
         {
@@ -646,16 +649,6 @@ void ControllerALKS_R157SM::ReferenceDriver::UpdateAEB(Vehicle* ego, ObjectInfo*
     {
         R157_LOG(2, "AEB activated at ttc %.2f (< critical ttc %.2f)", info->ttc, aeb_.ttc_critical_aeb_);
         aeb_.active_ = true;
-    }
-
-    if (aeb_.active_)
-    {
-        aeb_.acc_ -= dt * 0.85 * g / 0.6;
-
-        if (aeb_.acc_ < -0.85 * g)
-        {
-            aeb_.acc_ = -0.85 * g;
-        }
     }
 }
 
@@ -1070,7 +1063,7 @@ double ControllerALKS_R157SM::ReferenceDriver::ReactCritical()
         SetPhase(Phase::BRAKE_REF);
     }
 
-    if (GetPhase() == Phase::BRAKE_REF || GetPhase() == Phase::BRAKE_AEB)
+    if (GetPhase() == Phase::BRAKE_REF || aeb_.active_)
     {
         if (veh_->GetSpeed() < SMALL_NUMBER)
         {
@@ -1091,20 +1084,14 @@ double ControllerALKS_R157SM::ReferenceDriver::ReactCritical()
     {
         acc_ -= dt_ * 0.774 * g / 0.6;
 
-        if (acc_ < -0.774 * g)
-        {
-            acc_ = -0.774 * g;
-        }
+        MAX(acc_, -0.774 * g);
     }
 
-    if (aeb_.active_ && aeb_.acc_ < acc_)
+    if (aeb_.active_)
     {
-        if (phase_ != Phase::BRAKE_AEB)
-        {
-            R157_LOG(2, "AEB deceleration %.2f exceeding driver deceleration %.2f", aeb_.acc_, acc_);
-            SetPhase(Phase::BRAKE_AEB);
-        }
-        acc_ = aeb_.acc_;
+        acc_ -= (dt_ * 0.85 * g / 0.6);
+        
+        acc_ = MAX(acc_, -0.85 * g);
     }
 
     double speed = MAX(0.0, veh_->GetSpeed() + acc_ * dt_);

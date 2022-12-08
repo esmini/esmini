@@ -265,13 +265,11 @@ namespace scenarioengine
 
                 void Reset()
                 {
-                    acc_ = 0.0;
                     active_ = false;
                 }
 
                 double ttc_critical_aeb_;
                 bool active_;
-                double acc_;
             };
 
             struct LateralDistTrigger

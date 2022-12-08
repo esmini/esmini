@@ -966,7 +966,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^2.850, 201, Target, 122.750, 0.991, 0.000, 6.202, 0.000, 0.000, 15.000, -0.015, 2.762', csv, re.MULTILINE))
         self.assertTrue(re.search('^2.850, 300, Ego, 107.000, -1.535, 0.000, 0.000, 0.000, 0.000, 20.000, 0.000, 5.778', csv, re.MULTILINE))
         self.assertTrue(re.search('^2.850, 301, Target, 122.750, 0.991, 0.000, 6.202, 0.000, 0.000, 15.000, -0.015, 2.762', csv, re.MULTILINE))
-        self.assertTrue(re.search('^5.060, 200, Ego, 148.133, -1.535, 0.000, 0.000, 0.000, 0.000, 13.212, 0.000, 3.921', csv, re.MULTILINE))
+        self.assertTrue(re.search('^5.060, 200, Ego, 147.892, -1.535, 0.000, 0.000, 0.000, 0.000, 12.735, 0.000, 3.231', csv, re.MULTILINE))
         self.assertTrue(re.search('^5.060, 201, Target, 153.059, -1.535, 0.000, 0.000, 0.000, 0.000, 9.592, 0.035, 1.246', csv, re.MULTILINE))
         self.assertTrue(re.search('^6.380, 0, Ego, 156.133, -1.535, 0.000, 0.000, 0.000, 0.000, 6.161, 0.000, 1.644', csv, re.MULTILINE))
         self.assertTrue(re.search('^6.380, 1, Target, 161.087, -1.535, 0.000, 0.000, 0.000, 0.000, 2.728, 0.000, 5.334', csv, re.MULTILINE))
