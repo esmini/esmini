@@ -23,6 +23,17 @@
 
 using namespace scenarioengine;
 
+static CallBack paramDeclCallback = {0, 0};
+
+namespace scenarioengine
+{
+	void RegisterParameterDeclarationCallback(ParamDeclCallbackFunc func, void* data)
+	{
+		paramDeclCallback.func = func;
+		paramDeclCallback.data = data;
+	}
+}
+
 ScenarioEngine::ScenarioEngine(std::string oscFilename, bool disable_controllers)
 {
 	init_status_ = InitScenario(oscFilename, disable_controllers);
@@ -747,10 +758,10 @@ int ScenarioEngine::parseScenario()
 	scenarioReader->variables.Print("variables");  // All variables parsed at this point (not the case with parameters)
 
 	// Now that parameter declaration has been parsed, call any registered callbacks before applying the parameters
-	// if (paramDeclCallback.func != nullptr) // TODO: @Melih
-	// {
-	// 	paramDeclCallback.func(paramDeclCallback.data);
-	// }
+	if (paramDeclCallback.func != nullptr)
+	{
+		paramDeclCallback.func(paramDeclCallback.data);
+	}
 
 	// Init road manager
 	scenarioReader->parseRoadNetwork(roadNetwork);
