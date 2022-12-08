@@ -1,14 +1,14 @@
 
 {%macro generate_setter(dict)-%}
     {%for key,value in dict.items()-%}
-void Set{{key}}({{value["type"]}} {{key}}) { {{key}}_ = {{key}}; }
+inline void Set{{key}}({{value["type"]}} {{key}}) { {{key}}_ = {{key}}; }
     {%endfor-%}
 {%endmacro-%}
 
 
 {%macro generate_getter(dict)-%}
     {%for key,value in dict.items()-%}
-{{value["type"]}} Get{{key}}() { return {{key}}_; }
+inline {{value["type"]}} Get{{key}}() const { return {{key}}_; }
     {%endfor-%}
 {%endmacro-%}
 
@@ -27,9 +27,9 @@ void Set{{key}}({{value["type"]}} {{key}}) { {{key}}_ = {{key}}; }
             {%for key2,value2 in value1.items()-%}
                 {%for key3,value3 in value2.items()-%}
                     {%if loop.last -%}
-{{key3|indent(4,True)}}
+{{key3|upper|indent(4,True)}}
                     {%else-%}
-{{key3|indent(4,True)}},
+{{key3|upper|indent(4,True)}},
                     {%endif-%}
                 {%endfor-%}
             {%endfor-%}
@@ -39,7 +39,7 @@ void Set{{key}}({{value["type"]}} {{key}}) { {{key}}_ = {{key}}; }
 {%endmacro%}
 
 {%macro generate_variable(key, value)%}
-{{key}};
+{{key}}{};
 {%endmacro%}
 
 
@@ -66,7 +66,7 @@ void Set{{key}}({{value["type"]}} {{key}}) { {{key}}_ = {{key}}; }
                     {%for key3,value3 in value2.items()-%}
                             {% if "sequence" in key3-%}
                                 {%for key4,value4 in value3.items()-%}
-{{value4["type"]|indent(8,True)}} {{key4}};
+{{value4["type"]|indent(8,True)}} {{key4}}{};
                                 {%endfor-%}
                                 {{""}}
                             {%endif-%}
@@ -75,7 +75,8 @@ void Set{{key}}({{value["type"]}} {{key}}) { {{key}}_ = {{key}}; }
 {{generate_getter(value3)|indent(8,True)}}
 {{"private:"|indent(4,True)}}
                                 {%for key4,value4 in value3.items()-%}
-{{value4["type"]|indent(8,True)}} {{key4}}_; //{{value4["docs"]}}
+{{"//"|indent(8,True)}}{{value4["docs"]|replace("\n"," ")}}
+{{value4["type"]|indent(8,True)}} {{key4}}_{};
                                 {%endfor-%}
                             {%endif-%}
                     {%endfor-%}
@@ -112,7 +113,7 @@ void Set{{key}}({{value["type"]}} {{key}}) { {{key}}_ = {{key}}; }
 /**
 * @brief destructor
 */
-virtual ~{{key[6:]}}() = default;
+~{{key[6:]}}() = default;
 {%endmacro-%}
 
 {%macro generate_copyconstructor(key,value)-%}

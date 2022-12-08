@@ -165,7 +165,7 @@ class OpenDrive:
                         if value == {}:
                             name = key + " " + name
                         if key == "enum":
-                            name = "enum " + name
+                            name = "enum class " + name
                 data.update({name: child_sub_dict})
 
             elif "extension" in child.tag or "restriction" in child.tag:
@@ -246,6 +246,8 @@ class OpenDrive:
         elif type == "t_grEqZero": # TODO should be fetch or linked to core file
             type = "double"
         elif type == "t_grZero": # TODO should be fetch or linked to core file
+            type = "double"
+        elif type == "t_zeroOne": # TODO should be fetch or linked to core file
             type = "double"
         return type
 
