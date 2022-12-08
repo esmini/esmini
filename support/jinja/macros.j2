@@ -68,6 +68,7 @@ void Set{{key}}({{value["type"]}} {{key}}) { {{key}}_ = {{key}}; }
                                 {%for key4,value4 in value3.items()-%}
 {{value4["type"]|indent(8,True)}} {{key4}};
                                 {%endfor-%}
+                                {{""}}
                             {%endif-%}
                             {% if "attributes" in key3 -%}
 {{generate_setter(value3)|indent(8,True)}}

@@ -22,7 +22,7 @@ class OpenDrive:
         output_file = os.path.join(outputfolder, output + ".hpp")
 
         # Dump dict to json for testing
-        self.print_dict(output_file, data)
+        #self.print_dict(output_file, data)
 
         # Generate the hpp file
         self.create_hpp_files(output_file, data)
@@ -49,7 +49,8 @@ class OpenDrive:
         content = template.render(data)
         with open(output_file, mode="w", encoding="utf-8") as message:
             message.write(content)
-        print(format_green(f"Generated: {output_file}"))
+        filename = output_file.split("/")[-1]
+        print(format_green(f"Generated: {filename}"))
 
     def print_dict(self, output_file, data):
         """
@@ -178,12 +179,12 @@ class OpenDrive:
             elif "sequence" in child.tag:
                 data.update({"sequence": self.parse_children(child, {})})
 
-            elif "enumeration" in child.tag:
+            elif "enumeration" in child.tag: #enum elements
                 value = child.attrib["value"]
                 value = self.fix_non_legal_chars(value)
                 data.update({value:"enum"})
 
-            elif "element" in child.tag:
+            elif "element" in child.tag: #Public variables
                 attributes = child.attrib
                 if "type" in attributes:
                     attributes["type"] = self.xsd_to_cpp_types(attributes["type"])
@@ -192,7 +193,7 @@ class OpenDrive:
                         attributes["type"] = "std::vector<"+attributes["type"]+">"
                 data.update({child.attrib["name"]: attributes})
 
-            elif "attribute" in child.tag:
+            elif "attribute" in child.tag: #Private variables
                 sub_dict = self.parse_children(child,{})
                 doc =""
                 if "docs" in sub_dict:
@@ -203,10 +204,10 @@ class OpenDrive:
                 attributes.update({"docs":doc})
                 attributes_dict.update({child.attrib["name"]:attributes})
 
-            elif "union" in child.tag:
+            elif "union" in child.tag: # structs
                 data.update({"union":child.attrib})
 
-            elif "documentation" in child.tag:
+            elif "documentation" in child.tag: # extracts documentation from xsd
                 data.update({"docs":child.text})
 
             else:
@@ -271,11 +272,10 @@ class OpenDrive:
         """
             Generates all opendrive files
         """
+        f_version = version.replace(".","") #fix naming for files (X.X) -> (XX)
         opendrive_schema_path = os.path.join(
-            ESMINI_DIRECTORY_ROOT, "..", "OpenDrive_17"
+            ESMINI_DIRECTORY_ROOT, "..", "OpenDrive_"+f_version
         )
-
-        f_version = version.replace(".","") #fix naming for files
         files_to_generate = [
             (os.path.join(opendrive_schema_path, "opendrive_"+f_version+"_core.xsd"), "Core"),
             (os.path.join(opendrive_schema_path, "opendrive_"+f_version+"_road.xsd"), "Road"),
