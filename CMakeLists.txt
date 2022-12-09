@@ -180,8 +180,8 @@ if(NOT
 endif()
 download(
     models
-    ${MODELS_PATH}
     ${RESOURCES_PATH}
+    ${MODELS_PATH}
     ${MODELS_PACKAGE_URL})
 
 # ############################### Loading external packages ##########################################################
