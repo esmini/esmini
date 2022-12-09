@@ -61,10 +61,10 @@ RubberbandManipulator::CustomCamera* RubberbandManipulator::RubberbandManipulato
 	}
 
 	// Custom camera models starts on index RB_MODE_CUSTOM
-	int index = _mode - RB_MODE_CUSTOM;
+	int index = static_cast<int>(_mode) - RB_MODE_CUSTOM;
 
 	// make sure index is withing range
-    if (index >= customCamera_.size())
+    if (index >= static_cast<int>(customCamera_.size()))
 	{
 		index = static_cast<int>(customCamera_.size()) - 1;
 	}
@@ -73,7 +73,7 @@ RubberbandManipulator::CustomCamera* RubberbandManipulator::RubberbandManipulato
 		index = 0;
 	}
 
-	return &customCamera_[index];
+	return &customCamera_[static_cast<unsigned int>(index)];
 }
 
 void RubberbandManipulator::setMode(unsigned int mode)
