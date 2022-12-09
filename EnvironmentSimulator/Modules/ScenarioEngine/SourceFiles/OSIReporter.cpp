@@ -78,9 +78,6 @@ static OSIGroundTruth osiGroundTruth;
 static OSIRoadLane osiRoadLane;
 static OSIRoadLaneBoundary osiRoadLaneBoundary;
 
-
-static struct sockaddr_in recvAddr;
-
 // ScenarioGateway
 
 OSIReporter::OSIReporter()
@@ -385,7 +382,7 @@ int OSIReporter::UpdateOSIDynamicGroundTruth(const std::vector<std::unique_ptr<O
 	{
 		// use timstamp from object state
 		obj_osi_internal.gt->mutable_timestamp()->set_seconds(static_cast<int64_t>(objectState[0]->state_.info.timeStamp));
-		obj_osi_internal.gt->mutable_timestamp()->set_nanos(static_cast<uint32_t>(((objectState[0]->state_.info.timeStamp - static_cast<int64_t>(objectState[0]->state_.info.timeStamp)) * 1e9)));
+		obj_osi_internal.gt->mutable_timestamp()->set_nanos(static_cast<uint32_t>(static_cast<int64_t>(objectState[0]->state_.info.timeStamp) - static_cast<int64_t>(objectState[0]->state_.info.timeStamp * 1e9)));
 	}
 	else
 	{
