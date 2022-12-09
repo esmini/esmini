@@ -68,7 +68,7 @@ On Linux, e.g. Ubuntu, some additional system tools and libraries are needed. Ru
 
 [source]
 ----
-sudo apt install build-essential git pkg-config libgl1-mesa-dev libpthread-stubs0-dev libjpeg-dev libxml2-dev libpng-dev libtiff5-dev libgdal-dev libpoppler-dev libdcmtk-dev libgstreamer1.0-dev libgtk2.0-dev libcairo2-dev libpoppler-glib-dev libxrandr-dev libxinerama-dev curl cmake
+sudo apt install build-essential gdb ninja-build git pkg-config libgl1-mesa-dev libpthread-stubs0-dev libjpeg-dev libxml2-dev libpng-dev libtiff5-dev libgdal-dev libpoppler-dev libdcmtk-dev libgstreamer1.0-dev libgtk2.0-dev libcairo2-dev libpoppler-glib-dev libxrandr-dev libxinerama-dev curl cmake
 ----
 
 Now we're ready to build esmini. From esmini root folder:
@@ -1864,12 +1864,59 @@ Linux Ubuntu 18.04
 
 [source]
 ----
-sudo apt install build-essential git pkg-config libgl1-mesa-dev libpthread-stubs0-dev libjpeg-dev libxml2-dev libpng-dev libtiff5-dev libgdal-dev libpoppler-dev libdcmtk-dev libgstreamer1.0-dev libgtk2.0-dev libcairo2-dev libpoppler-glib-dev libxrandr-dev libxinerama-dev curl cmake
+sudo apt install build-essential gdp ninja-build git pkg-config libgl1-mesa-dev libpthread-stubs0-dev libjpeg-dev libxml2-dev libpng-dev libtiff5-dev libgdal-dev libpoppler-dev libdcmtk-dev libgstreamer1.0-dev libgtk2.0-dev libcairo2-dev libpoppler-glib-dev libxrandr-dev libxinerama-dev curl cmake
 ----
 
 Also, g\++ version >= 5 is needed for c++14 code support.
 
 Windows and Mac: Install the https://cmake.org/[cmake] application
+
+=== Run with Linux and visual studio code
+When want to run from the visual studio code below steps might help with setup configuration.
+
+``1. Open the Command Palette (Ctrl+Shift+P) and run CMake: Select a Kit. Select the compiler you want to use. For example GCC 11.3.0``
+
+``2. open the Command Palette (Ctrl+Shift+P) run the CMake: Select Variant command. Select Debug``
+
+``3. open the Command Palette (Ctrl+Shift+P) run the CMake:Set Build Target. Select install``
+
+``4. Open the Command Palette (Ctrl+Shift+P) and run the CMake: Build command, or select the Build button from the Status bar.``
+
+Now launch.json file to be configured
+
+``Open the run and debug window (Ctrl+Shift+P)``
+
+``Select Create new lanuch.json file``
+
+``Select add configuration``
+
+``Change Program argument as "${workspaceFolder}/build/EnvironmentSimulator/Applications/esmini/esmini"``
+
+``Change args argument as ["--window", "60", "60", "800", "400", "--osc", "../resources/xosc/cut-in.xosc"]``
+
+``Press RUN-->run without debug button``
+
+=== Debug with Linux and visual studio code
+
+Open launch.json file already created.
+
+``Select add configuration``
+
+``Change Program argument as "${workspaceFolder}/build/EnvironmentSimulator/Applications/esmini-dyn/esmini-dyn"``
+
+``Rename name as some meaningfull eg "name": "(gdb) Launch esmini/debug"``
+
+``args argument as []``
+
+``Open the Command Palette (Ctrl+Shift+P) and run the CMake: Build command, or select the Build button from the Status bar.``
+
+``Copy the content from the Hello-World_coding-example/main.cpp to build/EnvironmentSimulator/Applications/esmini-dyn/main.cpp``
+
+``Open the run and debug window (Ctrl+Shift+P) and select newly created configuration``
+
+``Press RUN-->start debuging button``
+
+Refer https://code.visualstudio.com/docs/cpp/CMake-linux[Here] for more information
 
 === Dynamic protobuf linking
 When linking esmini with software already dependent on Google protobuf there might be need for dynamic linking of shared protobuf library. This can be achieved by defining cmake symbol DYN_PROTOBUF as following example:
