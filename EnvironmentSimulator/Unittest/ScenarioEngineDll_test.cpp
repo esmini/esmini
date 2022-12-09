@@ -830,7 +830,7 @@ TEST(GroundTruthTests, check_GroundTruth_including_init_state)
 	double x_vals[] = { 51.400, 51.600, 51.800 };
 	double time_stamps[] = { 0.00, 0.01, 0.02 };
 
-	SE_Init("../../../resources/xosc/cut-in_simple.xosc", 0, 0, 0, 0);
+	ASSERT_EQ(SE_Init("../../../resources/xosc/cut-in_simple.xosc", 0, 0, 0, 0), 0);
 	SE_OSIFileOpen("gt.osi");
 	SE_UpdateOSIGroundTruth();
 
