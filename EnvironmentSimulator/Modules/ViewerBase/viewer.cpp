@@ -370,7 +370,7 @@ SensorViewFrustum::SensorViewFrustum(ObjectSensor* sensor, osg::Group* parent)
 	parent->addChild(txNode_);
 
 	// Create geometry
-	int numSegments = 16 * static_cast<int>(sensor_->fovH_ / M_PI);
+	int numSegments = static_cast<int>(16 * sensor_->fovH_ / M_PI);
 	double angleDelta = sensor_->fovH_ / numSegments;
 	double angle = -sensor_->fovH_ / 2.0;
 	double fovV_rate = 0.2;
