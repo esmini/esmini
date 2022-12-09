@@ -659,7 +659,7 @@ void LatLaneChangeAction::Step(double simTime, double dt)
 		// Close enough?
 		fabs(offset_agnostic - transition_.GetTargetVal()) < SMALL_NUMBER ||
 		// Passed target value?
-		(transition_.GetParamVal() > 0 && SIGN(offset_agnostic - transition_.GetTargetVal())) != SIGN(transition_.GetStartVal() - transition_.GetTargetVal()))
+		(transition_.GetParamVal() > 0 && SIGN(offset_agnostic - transition_.GetTargetVal()) != SIGN(transition_.GetStartVal() - transition_.GetTargetVal())))
 	{
 		OSCAction::End(simTime);
 		object_->pos_.SetHeadingRelativeRoadDirection(0);
@@ -769,7 +769,7 @@ void LatLaneOffsetAction::Step(double simTime, double dt)
 		// Close enough?
 		fabs(offset_agnostic - transition_.GetTargetVal()) < SMALL_NUMBER ||
 		// Passed target value?
-		(transition_.GetParamVal() > 0 && SIGN(offset_agnostic - transition_.GetTargetVal())) != SIGN(transition_.GetStartVal() - transition_.GetTargetVal()))
+		(transition_.GetParamVal() > 0 && SIGN(offset_agnostic - transition_.GetTargetVal()) != SIGN(transition_.GetStartVal() - transition_.GetTargetVal())))
 	{
 		OSCAction::End(simTime);
 		object_->pos_.SetLanePos(object_->pos_.GetTrackId(), object_->pos_.GetLaneId(), object_->pos_.GetS(), SIGN(object_->pos_.GetLaneId()) * transition_.GetTargetVal());
