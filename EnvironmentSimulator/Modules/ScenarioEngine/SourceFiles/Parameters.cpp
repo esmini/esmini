@@ -127,21 +127,21 @@ int Parameters::setParameterValue(std::string name, const void* value)
 
 	if (ps->type == OSCParameterDeclarations::ParameterType::PARAM_TYPE_INTEGER)
 	{
-		ps->value._int = *(reinterpret_cast<int*>(&value));
+		ps->value._int = *(reinterpret_cast<const int*>(value));
 		ps->value._string = std::to_string(ps->value._int);
 	}
 	else if (ps->type == OSCParameterDeclarations::ParameterType::PARAM_TYPE_DOUBLE)
 	{
-		ps->value._double = *(reinterpret_cast<double*>(&value));
+        ps->value._double = *(reinterpret_cast<const double*>(value));
 		ps->value._string = std::to_string(ps->value._double);
 	}
 	else if (ps->type == OSCParameterDeclarations::ParameterType::PARAM_TYPE_STRING)
 	{
-		ps->value._string = *(reinterpret_cast<std::string*>(&value));
+        ps->value._string = *(reinterpret_cast<const std::string*>(value));
 	}
 	else if (ps->type == OSCParameterDeclarations::ParameterType::PARAM_TYPE_BOOL)
 	{
-		ps->value._bool = *(reinterpret_cast<bool*>(&value));
+        ps->value._bool   = *(reinterpret_cast<const bool*>(value));
 		ps->value._string = ps->value._bool == true ? "true" : "false";
 	}
 	else
