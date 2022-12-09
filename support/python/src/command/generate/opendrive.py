@@ -9,7 +9,7 @@ from support.python.src.formatter import format_green, format_yellow
 class OpenDrive:
     def generate_file(self, data, output):
         """
-        Handles the generation of the .json and .hpp files
+        Handles the generation of the .json and .hpp files.
 
         Inputs:
         ---------
@@ -21,25 +21,35 @@ class OpenDrive:
             os.mkdir(outputfolder)
         output_file = os.path.join(outputfolder, output + ".hpp")
 
-
-        for key,value in data["data"].items():
-            if "struct e_countryCode" in key:
-                shared ={}
-                shared["data"]= {key:value}
-                shared["name"]="shared"
-                shared["version"]=data["version"]
-                self.create_exception_shared_hpp(outputfolder,shared)
-                data["data"].pop(key)
-                break
-
-
         # Dump dict to json for testing
-        #self.print_dict(output_file, data)
+        # self.print_dict(output_file, data)
+
+        # Handles the generation of shared.hpp to fix mutual inclusion problem
+        for key, value in data["data"].items():
+            if "struct e_countryCode" in key:
+                shared = {}
+                shared["name"] = "shared"
+                shared["namespace"] = data["name"]  # Get name/namespace
+                shared["version"] = data["version"]  # Get version
+                shared["data"] = {key: value}  # Copy e_countryCode
+                self.create_exception_shared_hpp(outputfolder, shared)
+                data["data"].pop(key) #Remove e_countryCode to not generate it twice
+                break
 
         # Generate the hpp file
         self.create_hpp_files(output_file, data)
 
-    def create_exception_shared_hpp(self,outputfolder,data):
+    def create_exception_shared_hpp(self, outputfolder, data):
+        """
+        Generate a exception shared header for "struct e_countryCode" \n
+        to fix a problem with mutual inclusion between signal and road
+
+        Inputs:
+        ---------
+        outputfolder (str): name of folder to generate
+        data (dict): dictionary used in jinja generation
+
+        """
         template_folder = os.path.join(ESMINI_DIRECTORY_SUPPORT, "jinja")
         template_file = "shared_template.j2"
         env = Environment(
@@ -50,15 +60,15 @@ class OpenDrive:
         )
         template = env.get_template(template_file)
         content = template.render(data)
-        output_file = os.path.join(outputfolder,"shared.hpp")
+        output_file = os.path.join(outputfolder, "shared.hpp")
         with open(output_file, mode="w", encoding="utf-8") as message:
             message.write(content)
         filename = output_file.split("/")[-1]
-        print(format_green(f"Generated exception file: {filename}"))
+        print(format_yellow(f"Generated exception file: {filename}"))
 
     def create_hpp_files(self, output_file, data):
         """
-        Generates the .hpp files using jinja2
+        Generates the .hpp files using jinja2.
 
         Inputs:
         ---------
@@ -82,7 +92,7 @@ class OpenDrive:
 
     def print_dict(self, output_file, data):
         """
-        Generates the .json, primarly for debugging/testing\n
+        Generates the .json, primarly for debugging/testing.\n
         Dumps the data dictionary to a json file
 
         Inputs:
@@ -93,12 +103,12 @@ class OpenDrive:
         with open(output_file + ".json", mode="w", encoding="utf-8") as file:
             json.dump(data, file, indent=4)
             file.close()
-        print(format_yellow(f"Printed dictionary"))
+        print((f"Printed dictionary"))
 
     def parser(self, file, name, version):
         """
-        Parses a .xsd file in to a dictionary for jinja generation
-        Also do all necessary post-parsing processing of the dictionary
+        Parses a .xsd file in to a dictionary for jinja generation.
+        Also do all necessary post-parsing processing of the dictionary.
 
         Inputs:
         ---------
@@ -130,7 +140,8 @@ class OpenDrive:
 
     def create_ref_list(self, ref_list, path, data):
         """
-        Create a list containing all references from all files
+        Create a list containing all references from all files.
+        reference example -> namespace::struct::enum
 
         Inputs:
         ---------
@@ -153,8 +164,8 @@ class OpenDrive:
 
     def order_dictionary(self, dict_to_order):
         """
-        Orders dictionary after order of class declaration needed for c++ code
-        Order is: enum/struct -> classes
+        Orders dictionary after order of class declaration needed for c++ code. \n
+        Order: first enums and structs, then classes ordered according to get_key_order().
 
         Inputs:
         ---------
@@ -168,22 +179,31 @@ class OpenDrive:
         keys = dict_to_order.keys()
         first_keys = []
         for key in keys:
-            if "enum" in key or "struct" in key:
+            if "enum" in key or "struct" in key: #Extract enums and structs
                 first_keys.append(key)
-        for key in first_keys:  # Enums and structs first
+        for key in first_keys:  # Add Enums and structs (items) first
             ordered_dict.update({key: dict_to_order.pop(key)})
-        second_keys = dict_to_order.keys()
-        ordered_key_list = self.get_key_order(dict_to_order, [], second_keys)
-        for key in ordered_key_list:
+        # Update keys after enums/structs has been extracted
+        keys = (
+            dict_to_order.keys()
+        )
+        # Fetch the correct order
+        ordered_key_list = self.get_key_order(
+            dict_to_order, [], keys
+        )
+
+        for key in ordered_key_list:  # Add classes (items) after correct order
             ordered_dict.update({"class " + key: dict_to_order.pop("class " + key)})
-        for key, value in dict_to_order.items():
+
+        for key, value in dict_to_order.items():  # Add all items left in unordered dict
             ordered_dict.update({key: value})
         return ordered_dict
 
     def get_key_order(self, dict_to_order, order, keys):
         """
-        Creates a list containing the order for keys
-        Will return order after need for c++ code
+        Creates a list containing the order for keys. \n
+        Will return order after what types is under public/private variables accoring to c++.\n
+        Ex: If class A has class B as a variable, B should be before of A.
 
         Inputs:
         ---------
@@ -195,6 +215,7 @@ class OpenDrive:
         ---------
         list <- containing the order of keys
         """
+
         for key, value in dict_to_order.items():
             if isinstance(value, dict) and "type" in value.keys():
                 if isinstance(value["type"], str) and value["type"] != key:
@@ -214,7 +235,7 @@ class OpenDrive:
 
     def find_core_reference(self, ref_list, dict_to_check, current_file):
         """
-        Checks dictionary for types with ref to other files, fixes the namespace if so
+        Checks dictionary for types with ref to other files, fixes the namespace.
 
         Inputs:
         ---------
@@ -249,7 +270,7 @@ class OpenDrive:
     def union_to_struct(self, data):
         """
         Restructures a dictionary containing the xsd keyword union to
-        fit the structure of struct
+        fit the structure of struct.
 
         Inputs:
         ---------
@@ -296,7 +317,7 @@ class OpenDrive:
 
     def parse_children(self, parent, data):
         """
-        Parses the xml.tree and extracts necessary data for jinja2 generation
+        Parses the xml.tree and extracts necessary data for jinja2 generation.
 
         Inputs:
         ---------
@@ -381,7 +402,7 @@ class OpenDrive:
 
     def xsd_to_cpp_types(self, type):
         """
-        Replaces xsd types with corresponding c++ types
+        Replaces xsd types with corresponding c++ types.
 
         Inputs:
         ---------
@@ -421,7 +442,7 @@ class OpenDrive:
 
     def fix_illegal_names(self, string):
         """
-        Remove illegal (c++) names
+        Replace illegal (c++) names.
 
         Inputs:
         ---------
@@ -439,7 +460,7 @@ class OpenDrive:
 
     def fix_illegal_chars(self, string):
         """
-        Remove illegal(c++) chars from string
+        Replace illegal(c++) chars from string.
 
         Inputs:
         ---------
@@ -458,7 +479,11 @@ class OpenDrive:
 
     def generate_opendrive(self, version):
         """
-        Generates all opendrive files
+        Generates all opendrive files.
+
+        Inputs:
+        ---------
+        version (str): opendrive version
         """
         f_version = version.replace(".", "")  # fix naming for files (X.X) -> (XX)
         opendrive_schema_path = os.path.join(

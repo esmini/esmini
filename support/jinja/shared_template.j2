@@ -8,11 +8,12 @@
 
 #ifndef __{{name|upper}}HEADER_H__
 #define __{{name|upper}}HEADER_H__
+
 {% import 'macros.j2' as m %}
 #include <string>
 
-namespace Road
+namespace {{namespace}}
 {
 {{m.generate_datastructs(data)|indent(4,True)}}
-} // namespace Road
+} // namespace {{namespace}}
 #endif
