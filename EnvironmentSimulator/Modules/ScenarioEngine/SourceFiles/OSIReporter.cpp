@@ -283,7 +283,7 @@ int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectSt
 				osi_udp_buf.counter = -osi_udp_buf.counter;
 			}
 
-			int sendResult = udp_client_->Send(reinterpret_cast<char *>(&osi_udp_buf), static_cast<size_t>(packSize));
+			int sendResult = udp_client_->Send(reinterpret_cast<char *>(&osi_udp_buf), static_cast<unsigned int>(packSize));
 
 			if (sendResult != packSize)
 			{
