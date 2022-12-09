@@ -5,35 +5,38 @@
 *   ASAM OpenDRIVE version: {{version}}
 *   ASAM OpenDRIVE schema file: opendrive_{{version|replace(".","")}}_{{name|lower}}.xsd
 */
-{% import 'macros.j2' as m %}
 
+#ifndef __{{name|upper}}HEADER_H__
+#define __{{name|upper}}HEADER_H__
+{% import 'macros.j2' as m %}
 
 #include <string>
 #include <vector>
 {%if name != "Core"-%}
 {{""}}
 #include "Core.hpp"
-    {%if name != "Junction"-%}
-#include "Junction.hpp"
-    {%endif-%}
-    {%if name != "Lane"-%}
+    {%if name == "Object"-%}
 #include "Lane.hpp"
-    {%endif-%}
-    {%if name != "Road"-%}
-#include "Road.hpp"
-    {%endif-%}
-    {%if name != "Object"-%}
+    {%elif name == "Junction"-%}
 #include "Object.hpp"
-    {%endif-%}
-    {%if name != "Signal"-%}
+    {%elif name == "Railroad"-%}
+#include "Junction.hpp"
+    {%elif name == "Signal"-%}
+#include "Object.hpp"
+#include "Lane.hpp"
+#include "shared.hpp"
+    {%elif name == "Road"-%}
+#include "Object.hpp"
+#include "Lane.hpp"
 #include "Signal.hpp"
-    {%endif-%}
-    {%if name != "Railroad"-%}
+#include "shared.hpp"
 #include "Railroad.hpp"
+#include "Junction.hpp"
     {%endif-%}
 {%endif-%}
 {{""}}
 namespace {{name}}{
 {{m.generate_datastructs(data)}}
-}
+} // namespace {{name}}
 
+#endif
