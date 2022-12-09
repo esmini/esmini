@@ -1338,6 +1338,8 @@ Vehicle::Vehicle() : Object(Object::Type::VEHICLE), trailer_coupler_(nullptr), t
 
 Vehicle::Vehicle(const Vehicle& v) : Object(Object::Type::VEHICLE), trailer_coupler_(nullptr), trailer_hitch_(nullptr)
 {
+	*this = v;
+
 	if (v.trailer_coupler_ && v.trailer_coupler_->tow_vehicle_)
 	{
 		trailer_coupler_.reset(new TrailerCoupler(*v.trailer_coupler_));

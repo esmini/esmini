@@ -1156,7 +1156,7 @@ void ScenarioEngine::SetupGhost(Object* object)
 	// FollowGhostController special treatment:
 	// Create a new (ghost) vehicle and copy all actions from base object
 
-	Vehicle* ghost = new Vehicle(*static_cast<Vehicle*>(object));
+	Vehicle* ghost = new Vehicle(*(static_cast<Vehicle*>(object)));
 	object->SetGhost(ghost);
 	ghost->name_ += "_ghost";
 	ghost->ghost_ = 0;
