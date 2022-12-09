@@ -90,6 +90,7 @@ def plot(rows, labels, params=['speed'], x_axis='time', derive=False, dots=False
                 p_style = '-'
             plt.plot(x[i], y[i][j], p_style, linewidth=1.0, label=objs[i] + ' ' + p)
 
+    plt.grid(True)
     plt.xlabel(x_axis)
     plt.legend(loc="upper right")
 
