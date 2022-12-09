@@ -425,7 +425,7 @@ void ControllerRel2Abs::Step(double timeStep)
 			{
 				// Action type not currently implemented in esmini
 			}
-			else if (activeActions[i]->type_ == OSCPrivateAction::ActionType::SYNCHRONIZE)
+			else if (activeActions[i]->type_ == OSCPrivateAction::ActionType::SYNCHRONIZE_ACTION)
 			{
 				SynchronizeAction* sa = static_cast<SynchronizeAction*>(activeActions[i]);
 				if (sa->master_object_ == ego)

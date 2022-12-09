@@ -2937,7 +2937,7 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
 
 			if (tx == nullptr)
 			{
-				LOG("Failed to load signal %s / %s", filename + ".osgb", signal->GetName() + ".osgb");
+				LOG("Failed to load signal %s / %s", filename + ".osgb", signal->GetName().c_str() + ".osgb");
 				continue;
 			}
 			else

@@ -70,7 +70,7 @@ namespace scenarioengine
 			ASSIGN_ROUTE,
 			FOLLOW_TRAJECTORY,
 			Acquire_POSITION,
-			SYNCHRONIZE
+			SYNCHRONIZE_ACTION
 		};
 
 		enum class DynamicsDimension
@@ -617,7 +617,7 @@ namespace scenarioengine
 		double lastDist_;
 		double lastMasterDist_;
 
-		SynchronizeAction() : OSCPrivateAction(OSCPrivateAction::ActionType::SYNCHRONIZE, ControlDomains::DOMAIN_LONG)
+		SynchronizeAction() : OSCPrivateAction(OSCPrivateAction::ActionType::SYNCHRONIZE_ACTION, ControlDomains::DOMAIN_LONG)
 		{
 			steadyState_OSCPosition_ = nullptr;
 			master_object_ = 0;
@@ -633,7 +633,7 @@ namespace scenarioengine
 			steadyState_.type_ = SteadyStateType::STEADY_STATE_NONE;
 		}
 
-		SynchronizeAction(const SynchronizeAction &action) : OSCPrivateAction(OSCPrivateAction::ActionType::SYNCHRONIZE, ControlDomains::DOMAIN_LONG)
+		SynchronizeAction(const SynchronizeAction &action) : OSCPrivateAction(OSCPrivateAction::ActionType::SYNCHRONIZE_ACTION, ControlDomains::DOMAIN_LONG)
 		{
 			name_ = action.name_;
 			steadyState_OSCPosition_ = action.steadyState_OSCPosition_;

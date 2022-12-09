@@ -28,23 +28,31 @@
 
 #define ESMINI_DEFAULT_INPORT 48199
 
+#ifdef _WIN32
+	typedef SOCKET SE_SOCKET;
+#else
+	typedef int SE_SOCKET;
+#endif
+
 class UDPBase
 {
 public:
-	UDPBase(unsigned short int port);
-	~UDPBase() { CloseGracefully(); }
-	int Bind(struct sockaddr_in &addr);
-	void CloseGracefully();
+    int GetStatus() { return sock_ >= 0 ? 0 : -1; }  // 0 = OK, -1 = NOK
 
 protected:
+    UDPBase(unsigned short int port);
+    ~UDPBase() { CloseGracefully(); }
+    int  Bind(struct sockaddr_in& addr);
+    void CloseGracefully();
+
 	unsigned short int port_;
-	int sock_;
+    SE_SOCKET sock_;
 	struct sockaddr_in server_addr_;
 	struct sockaddr_in sender_addr_;
 	socklen_t sender_addr_size_;
 };
 
-class UDPServer : private UDPBase
+class UDPServer : public UDPBase
 {
 public:
 	UDPServer(unsigned short int port, unsigned int timeoutMs = 500);
@@ -57,7 +65,7 @@ private:
 	unsigned int timeoutMs_;
 };
 
-class UDPClient : private UDPBase
+class UDPClient : public UDPBase
 {
 public:
 	UDPClient(unsigned short int port, std::string ipAddress);

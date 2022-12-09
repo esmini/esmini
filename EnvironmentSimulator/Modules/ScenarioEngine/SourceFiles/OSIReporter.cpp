@@ -68,8 +68,8 @@ static struct
 
 static struct
 {
-	osi3::GroundTruth *gt;
-	osi3::SensorView *sv;
+	osi3::GroundTruth* gt;
+	osi3::SensorView* sv;
 } obj_osi_external;
 
 using namespace scenarioengine;
@@ -85,7 +85,7 @@ static struct sockaddr_in recvAddr;
 
 OSIReporter::OSIReporter()
 {
-	sendSocket = 0;
+	udp_client_ = nullptr;
 
 	obj_osi_internal.gt = new osi3::GroundTruth();
 	obj_osi_external.gt = new osi3::GroundTruth();
@@ -139,63 +139,19 @@ OSIReporter::~OSIReporter()
 	osiGroundTruth.size = 0;
 	osiRoadLane.size = 0;
 
-	CloseSocket();
+	delete udp_client_;
+
 	if (osi_file.is_open())
 	{
 		osi_file.close();
 	}
 }
 
-int OSIReporter::OpenSocket(std::string ipaddr)
+SE_SOCKET OSIReporter::OpenSocket(std::string ipaddr)
 {
-#ifdef _WIN32
-	WSADATA wsa_data;
-	int iResult = WSAStartup(MAKEWORD(2, 2), &wsa_data);
-	if (iResult != NO_ERROR)
-	{
-		wprintf(L"WSAStartup failed with error %d\n", iResult);
-		return -1;
-	}
-#endif
+    udp_client_ = new UDPClient(OSI_OUT_PORT, ipaddr);
 
-	// create socket for outgoing UDP packages
-	sendSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-	if (sendSocket < 0)
-	{
-		LOG("socket failed");
-		return -1;
-	}
-
-	// Setup receiver IP address
-	recvAddr.sin_family = AF_INET;
-	recvAddr.sin_port = htons(OSI_OUT_PORT);
-	inet_pton(AF_INET, ipaddr.c_str(), &recvAddr.sin_addr);
-
-	return 0;
-}
-
-int OSIReporter::CloseSocket()
-{
-	if (!sendSocket)
-	{
-		return 0;
-	}
-
-#ifdef _WIN32
-	if (closesocket(sendSocket) == SOCKET_ERROR)
-#else
-	if (close(sendSocket) < 0)
-#endif
-	{
-		printf("Failed closing socket");
-		return -1;
-	}
-
-#ifdef _WIN32
-	WSACleanup();
-#endif
-
-	return 0;
+    return udp_client_->GetStatus();
 }
 
 void OSIReporter::ReportSensors(std::vector<ObjectSensor *> sensor)
@@ -307,13 +263,13 @@ int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectSt
 	}
 	UpdateOSIDynamicGroundTruth(objectState);
 
-	if (GetSocket() || IsFileOpen())
+  	if (GetUDPClientStatus() == 0 || IsFileOpen())
 	{
 		obj_osi_external.gt->SerializeToString(&osiGroundTruth.ground_truth);
 		osiGroundTruth.size = static_cast<unsigned int>(obj_osi_external.gt->ByteSizeLong());
 	}
 
-	if (sendSocket)
+  	if (GetUDPClientStatus() == 0)
 	{
 		// send over udp - split large OSI messages in multiple transmissions
 		unsigned int sentDataBytes = 0;
@@ -330,7 +286,7 @@ int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectSt
 				osi_udp_buf.counter = -osi_udp_buf.counter;
 			}
 
-			int sendResult = static_cast<int>(sendto(sendSocket, reinterpret_cast<char *>(&osi_udp_buf), static_cast<size_t>(packSize), 0, reinterpret_cast<struct sockaddr *>(&recvAddr), sizeof(recvAddr)));
+			int sendResult = udp_client_->Send(reinterpret_cast<char *>(&osi_udp_buf), static_cast<size_t>(packSize));
 
 			if (sendResult != packSize)
 			{
@@ -1113,7 +1069,7 @@ int OSIReporter::UpdateOSIIntersection()
 				std::vector<int> ids_to_remove;
 				for (unsigned int j = 0; j < lane_lengths.size(); j++)
 				{
-					if (!(std::find(ids_to_remove.begin(), ids_to_remove.end(), j) != ids_to_remove.end()))
+					if (!(std::find(ids_to_remove.begin(), ids_to_remove.end(), static_cast<int>(j)) != ids_to_remove.end()))
 					{
 						for (unsigned int k = 0; k < lane_lengths.size(); k++)
 						{
@@ -1139,7 +1095,7 @@ int OSIReporter::UpdateOSIIntersection()
 
 				for (unsigned int j = 0; j < lane_lengths.size(); j++)
 				{
-					if (!(std::find(ids_to_remove.begin(), ids_to_remove.end(), j) != ids_to_remove.end()))
+					if (!(std::find(ids_to_remove.begin(), ids_to_remove.end(), static_cast<int>(j)) != ids_to_remove.end()))
 					{
 						osi3::Identifier *free_lane_id = osi_lane->mutable_classification()->add_free_lane_boundary_id();
 						free_lane_id->set_value(static_cast<unsigned int>(lane_lengths[j].global_id));
@@ -2221,7 +2177,7 @@ void OSIReporter::CreateLaneBoundaryFromSensordata(const osi3::SensorData &sd, i
 
 const char* OSIReporter::GetOSIGroundTruth(int* size)
 {
-	if (!(GetSocket() || IsFileOpen()))
+  	if (!(GetUDPClientStatus() == 0 || IsFileOpen()))
 	{
 		// Data has not been serialized
 		obj_osi_external.gt->SerializeToString(&osiGroundTruth.ground_truth);

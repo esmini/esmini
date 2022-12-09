@@ -20,7 +20,7 @@
 #include "CommonMini.hpp"
 
 
-UDPBase::UDPBase(unsigned short int port) : port_(port)
+UDPBase::UDPBase(unsigned short int port) : port_(port), sock_(static_cast<SE_SOCKET>(-1))
 {
 	sender_addr_size_ = sizeof(sender_addr_);
 

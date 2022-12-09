@@ -258,7 +258,7 @@ void ScenarioPlayer::ScenarioPostFrame()
 		osiReporter->ReportSensors(sensor);
 
 		// Update OSI info
-		if (osiReporter->IsFileOpen() || osiReporter->GetSocket())
+		if (osiReporter->IsFileOpen() || osiReporter->GetUDPClientStatus() == 0)
 		{
 			if ((GetCounter()-1) % osi_freq_ == 0)
 			{
@@ -965,9 +965,9 @@ void viewer_thread(void *args)
 
 #endif
 
-void ScenarioPlayer::AddObjectSensor(int object_index, double x, double y, double z, double h, double near, double far, double fovH, int maxObj)
+void ScenarioPlayer::AddObjectSensor(int object_index, double x, double y, double z, double h, double near_dist, double far_dist, double fovH, int maxObj)
 {
-	sensor.push_back(new ObjectSensor(&scenarioEngine->entities_, scenarioEngine->entities_.object_[static_cast<unsigned int>(object_index)], x, y, z, h, near, far, fovH, maxObj));
+	sensor.push_back(new ObjectSensor(&scenarioEngine->entities_, scenarioEngine->entities_.object_[static_cast<unsigned int>(object_index)], x, y, z, h, near_dist, far_dist, fovH, maxObj));
 
 #ifdef _USE_OSG
 	if (viewer_)

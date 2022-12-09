@@ -1227,7 +1227,7 @@ void ScenarioEngine::SetupGhost(Object* object)
 										pa->type_ == OSCPrivateAction::ActionType::LONG_SPEED_PROFILE ||
 										pa->type_ == OSCPrivateAction::ActionType::LAT_LANE_CHANGE ||
 										pa->type_ == OSCPrivateAction::ActionType::LAT_LANE_OFFSET ||
-										pa->type_ == OSCPrivateAction::ActionType::SYNCHRONIZE ||
+										pa->type_ == OSCPrivateAction::ActionType::SYNCHRONIZE_ACTION ||
 										pa->type_ == OSCPrivateAction::ActionType::FOLLOW_TRAJECTORY ||
 										pa->type_ == OSCPrivateAction::ActionType::ASSIGN_ROUTE ||
 										pa->type_ == OSCPrivateAction::ActionType::TELEPORT)

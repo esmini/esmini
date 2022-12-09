@@ -12,6 +12,7 @@
 
 #pragma once
 
+#include "UDP.hpp"
 #include "IdealSensor.hpp"
 #include "ScenarioGateway.hpp"
 #include "osi_sensordata.pb.h"
@@ -118,10 +119,8 @@ public:
 	osi3::SensorView *GetSensorView();
 	bool IsCentralOSILane(int lane_idx);
 	int GetLaneIdxfromIdOSI(int lane_id);
-	int OpenSocket(std::string ipaddr);
-	int CloseSocket();
-	int GetSocket() { return sendSocket; }
-	bool IsFileOpen() { return osi_file.is_open(); }
+    SE_SOCKET OpenSocket(std::string ipaddr);
+    int GetUDPClientStatus() { return (udp_client_ ? udp_client_->GetStatus() : -1); }		bool IsFileOpen() { return osi_file.is_open(); }
 	void ReportSensors(std::vector<ObjectSensor*> sensor);
 	int GetCounter() { return osi_update_counter_; }
 
@@ -134,7 +133,7 @@ public:
 	bool IsTimeStampSetExplicit() { return nanosec_ != 0xffffffffffffffff; }
 
 private:
-	int sendSocket;
+	UDPClient* udp_client_;
 	unsigned long long int nanosec_;
 	std::ofstream osi_file;
 	int osi_update_counter_;
