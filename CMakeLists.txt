@@ -77,8 +77,8 @@ else()
 endif()
 
 project(
-    ESMINI
-    DESCRIPTION "ESMINI"
+    esmini
+    DESCRIPTION "esmini"
     LANGUAGES C
               CXX)
 
