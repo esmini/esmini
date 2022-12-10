@@ -117,6 +117,7 @@ set_project_internal_paths()
 set_project_external_paths()
 set_project_os_specific_paths()
 set_project_includes()
+set_project_library_paths()
 set_definitions()
 
 # ############################### Loading cloud packages ##########################################################

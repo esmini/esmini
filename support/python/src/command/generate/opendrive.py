@@ -33,7 +33,7 @@ class OpenDrive:
                 shared["version"] = data["version"]  # Get version
                 shared["data"] = {key: value}  # Copy e_countryCode
                 self.create_exception_shared_hpp(outputfolder, shared)
-                data["data"].pop(key) #Remove e_countryCode to not generate it twice
+                data["data"].pop(key)  # Remove e_countryCode to not generate it twice
                 break
 
         # Generate the hpp file
@@ -179,18 +179,14 @@ class OpenDrive:
         keys = dict_to_order.keys()
         first_keys = []
         for key in keys:
-            if "enum" in key or "struct" in key: #Extract enums and structs
+            if "enum" in key or "struct" in key:  # Extract enums and structs
                 first_keys.append(key)
         for key in first_keys:  # Add Enums and structs (items) first
             ordered_dict.update({key: dict_to_order.pop(key)})
         # Update keys after enums/structs has been extracted
-        keys = (
-            dict_to_order.keys()
-        )
+        keys = dict_to_order.keys()
         # Fetch the correct order
-        ordered_key_list = self.get_key_order(
-            dict_to_order, [], keys
-        )
+        ordered_key_list = self.get_key_order(dict_to_order, [], keys)
 
         for key in ordered_key_list:  # Add classes (items) after correct order
             ordered_dict.update({"class " + key: dict_to_order.pop("class " + key)})

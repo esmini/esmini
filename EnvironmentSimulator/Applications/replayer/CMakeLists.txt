@@ -34,7 +34,7 @@ set ( SOURCES
     helpText.hpp
     collision.hpp
 )
-link_directories( ${OSG_LIBRARIES_PATH} )
+link_directories( ${EXTERNALS_OSG_LIBRARY_PATH} )
 add_executable ( ${TARGET1} ${SOURCES} ${INCLUDES} )
 target_link_libraries (
 	${TARGET1}
@@ -57,7 +57,7 @@ target_link_libraries ( ${TARGET2} RoadManager CommonMini ${TIME_LIB} project_op
 
 # osi_receiver target
 if (USE_OSI)
-  link_directories( ${OSI_LIBRARIES_PATH} )
+  link_directories( ${EXTERNALS_OSI_LIBRARY_PATH} )
   set (TARGET3 osireceiver)
   add_executable ( ${TARGET3} osi_receiver.cpp )
   target_link_libraries ( ${TARGET3} ${OSI_LIBRARIES} ${TIME_LIB} ${SOCK_LIB} project_options)

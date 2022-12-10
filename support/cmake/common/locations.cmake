@@ -151,3 +151,29 @@ macro(set_project_includes)
         ${EXTERNALS_GOOGLETEST_OS_SPECIFIC_PATH}/include)
 
 endmacro()
+
+# ############################### Setting project library paths ####################################################
+
+macro(set_project_library_paths)
+
+    set(EXTERNALS_OSG_LIBRARY_PATH
+        ${EXTERNALS_OSG_OS_SPECIFIC_PATH}/lib)
+
+    set(EXTERNALS_OSG_PLUGINS_LIBRARY_PATH
+        ${EXTERNALS_OSG_LIBRARY_PATH}/osgPlugins-3.6.5)
+
+    if(DYN_PROTOBUF)
+        set(EXTERNALS_OSI_LIBRARY_PATH
+            ${EXTERNALS_OSI_OS_SPECIFIC_PATH}/lib-dyn)
+    else()
+        set(EXTERNALS_OSI_LIBRARY_PATH
+            ${EXTERNALS_OSI_OS_SPECIFIC_PATH}/lib)
+    endif(DYN_PROTOBUF)
+
+    set(EXTERNALS_SUMO_LIBRARY_PATH
+        ${EXTERNALS_SUMO_OS_SPECIFIC_PATH}/lib)
+
+    set(EXTERNALS_GTEST_LIBRARY_PATH
+        ${EXTERNALS_GOOGLETEST_OS_SPECIFIC_PATH}/lib)
+
+endmacro()

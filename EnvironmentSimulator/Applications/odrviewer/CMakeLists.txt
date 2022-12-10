@@ -22,7 +22,7 @@ set ( SOURCES
     helpText.hpp
 )
 
-link_directories( ${OSG_LIBRARIES_PATH} )
+link_directories( ${EXTERNALS_OSG_LIBRARY_PATH} )
 
 add_executable ( ${TARGET} ${SOURCES} )
 

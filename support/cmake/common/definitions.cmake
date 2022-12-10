@@ -6,6 +6,7 @@ macro(set_definitions)
 
     if(USE_OSG)
         add_definitions(-D_USE_OSG)
+        add_definitions(-DOSG_LIBRARY_STATIC)
     endif(USE_OSG)
 
     if(USE_OSI)
