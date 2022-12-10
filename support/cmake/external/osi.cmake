@@ -34,19 +34,19 @@ macro(set_osi_libs)
            STREQUAL
            "Release")
             set(OSI_LIBRARIES
-                ${EXTERNALS_OSI_LIBRARY_PATH}/libopen_simulation_interface_pic.a
-                ${EXTERNALS_OSI_LIBRARY_PATH}/libprotobuf.a)
+                ${EXTERNALS_OSI_LIBRARY_PATH}/open_simulation_interface_pic.lib
+                ${EXTERNALS_OSI_LIBRARY_PATH}/libprotobuf.lib)
         elseif(
             CMAKE_BUILD_TYPE
             STREQUAL
             "Debug")
             set(OSI_LIBRARIES
-                ${EXTERNALS_OSI_LIBRARY_PATH}/libopen_simulation_interface_picd.a
-                ${EXTERNALS_OSI_LIBRARY_PATH}/libprotobufd.a)
+                ${EXTERNALS_OSI_LIBRARY_PATH}/open_simulation_interface_picd.lib
+                ${EXTERNALS_OSI_LIBRARY_PATH}/libprotobufd.lib)
         else()
             set(OSI_LIBRARIES
-                ${EXTERNALS_OSI_LIBRARY_PATH}/libopen_simulation_interface_pic.a
-                ${EXTERNALS_OSI_LIBRARY_PATH}/libprotobuf.a)
+                ${EXTERNALS_OSI_LIBRARY_PATH}/open_simulation_interface_pic.lib
+                ${EXTERNALS_OSI_LIBRARY_PATH}/libprotobuf.lib)
         endif()
     endif()
 endmacro()
