@@ -160,16 +160,19 @@ download(
     ${EXTERNALS_OSG_PATH}
     ${EXTERNALS_OSG_OS_SPECIFIC_PATH}
     ${OSG_PACKAGE_URL})
+
 download(
     osi
     ${EXTERNALS_OSI_PATH}
     ${EXTERNALS_OSI_OS_SPECIFIC_PATH}
     ${OSI_PACKAGE_URL})
+
 download(
     sumo
     ${EXTERNALS_SUMO_PATH}
     ${EXTERNALS_SUMO_OS_SPECIFIC_PATH}
     ${SUMO_PACKAGE_URL})
+
 if(NOT
    (APPLE
     OR MINGW))
@@ -179,6 +182,7 @@ if(NOT
         ${EXTERNALS_GOOGLETEST_OS_SPECIFIC_PATH}
         ${GTEST_PACKAGE_URL})
 endif()
+
 download(
     models
     ${RESOURCES_PATH}
@@ -192,14 +196,13 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/external/osg.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/external/osi.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/external/sumo.cmake)
 
-set_gtest_libs()
-set_osg_libs()
-set_osi_libs()
+add_gtest_library()
+add_osg_library()
+add_osi_library()
 set_sumo_libs()
 
 # ############################### Compiling targets ##################################################################
 
-# include_directories( ${EXTERNALS_PUGIXML_PATH} ${EXTERNALS_EXPR_PATH})
 add_subdirectory(EnvironmentSimulator)
 
 # ############################### OTHERS #############################################################################

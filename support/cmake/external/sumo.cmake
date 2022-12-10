@@ -309,3 +309,17 @@ macro(set_sumo_libs)
         endif()
     endif()
 endmacro()
+
+# ############################### Creating sumo interface library ######################################################
+
+# macro(add_sumo_library)
+
+# set_sumo_libs()
+
+# add_library( SUMO INTERFACE)
+
+# target_include_directories( SUMO INTERFACE ${EXTERNALS_SUMO_INCLUDES})
+
+# target_link_libraries( SUMO INTERFACE ${SUMO_LIBRARIES})
+
+# endmacro()

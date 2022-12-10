@@ -14,7 +14,7 @@ include_directories (
 set(TARGET odrviewer)
 
 if (USE_OSI)
-  set (osi_libs ${OSI_LIBRARIES})
+  set (osi_libs OSI)
 endif (USE_OSI)
 
 set ( SOURCES
@@ -33,7 +33,7 @@ target_link_libraries (
 	RoadManager
 	ViewerBase
 	CommonMini
-	${OSG_LIBRARIES}
+	OSG
 	${TIME_LIB}
   ${osi_libs}
   project_options

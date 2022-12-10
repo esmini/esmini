@@ -23,7 +23,7 @@ add_executable ( ${TARGET} ${SOURCES} ${INCLUDES} )
 
 if (USE_OSG)
   add_definitions(-DOSG_LIBRARY_STATIC)
-  set (viewer_libs ViewerBase ${OSG_LIBRARIES})
+  set (viewer_libs ViewerBase OSG)
 endif (USE_OSG)
 
 if (USE_SUMO)
@@ -31,7 +31,7 @@ if (USE_SUMO)
 endif (USE_SUMO)
 
 if (USE_OSI)
-  set (osi_libs ${OSI_LIBRARIES})
+  set (osi_libs OSI)
 endif (USE_OSI)
 
 target_link_libraries (

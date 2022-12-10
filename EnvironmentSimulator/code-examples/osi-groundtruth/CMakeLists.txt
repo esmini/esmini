@@ -25,7 +25,7 @@ target_link_libraries (
 	CommonMini
     RoadManager
 	${TIME_LIB}
-    ${OSI_LIBRARIES}
+    OSI
     project_options
 )
 

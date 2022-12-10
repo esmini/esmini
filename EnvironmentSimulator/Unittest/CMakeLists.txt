@@ -21,7 +21,7 @@ add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 macro(package_add_test_with_libraries TESTNAME FILES LIBRARIES)
     add_executable(${TESTNAME} ${FILES})
 
-    target_link_libraries(${TESTNAME} ${GTEST_LIBRARIES} ${LIBRARIES} ${ARGN} project_options)
+    target_link_libraries(${TESTNAME} GTEST ${LIBRARIES} ${ARGN} project_options)
 
     set_target_properties(${TESTNAME} PROPERTIES FOLDER Unittest)
 
@@ -33,7 +33,7 @@ endmacro()
 
 if (USE_OSG)
   add_definitions(-DOSG_LIBRARY_STATIC)
-  set (viewer_libs ViewerBase ${OSG_LIBRARIES})
+  set (viewer_libs ViewerBase OSG)
 endif (USE_OSG)
 
 if (USE_SUMO)
@@ -41,7 +41,7 @@ if (USE_SUMO)
 endif (USE_SUMO)
 
 if (USE_OSI)
-  set (osi_libs ${OSI_LIBRARIES})
+  set (osi_libs OSI)
 endif (USE_OSI)
 
 package_add_test_with_libraries(OperatingSystem_test OperatingSystem_test.cpp PlayerBase)
@@ -68,7 +68,7 @@ package_add_test_with_libraries(ScenarioPlayer_test ScenarioPlayer_test.cpp
 	${SOCK_LIB}
 )
 set (sources ScenarioEngineDll_test.cpp  "../Applications/replayer/Replay.cpp")
-package_add_test_with_libraries(ScenarioEngineDll_test "${sources}" esminiLib CommonMini ${OSI_LIBRARIES})
+package_add_test_with_libraries(ScenarioEngineDll_test "${sources}" esminiLib CommonMini OSI)
 package_add_test_with_libraries(RoadManagerDll_test RoadManagerDll_test.cpp esminiRMLib CommonMini)
 package_add_test_with_libraries(CommonMini_test CommonMini_test.cpp CommonMini)
 package_add_test_with_libraries(FollowRoute_test FollowRoute_test.cpp

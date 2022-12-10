@@ -17,7 +17,7 @@ endif (USE_OSI)
 )
 
 if (USE_OSI)
-  set (osi_libs ${OSI_LIBRARIES})
+  set (osi_libs OSI)
 endif (USE_OSI)
 
 set ( INCLUDES
@@ -42,7 +42,7 @@ target_link_libraries (
 	ScenarioEngine
 	ViewerBase
 	CommonMini
-	${OSG_LIBRARIES}
+	OSG
 	${TIME_LIB}
   ${osi_libs}
   project_options
@@ -60,7 +60,7 @@ if (USE_OSI)
   link_directories( ${EXTERNALS_OSI_LIBRARY_PATH} )
   set (TARGET3 osireceiver)
   add_executable ( ${TARGET3} osi_receiver.cpp )
-  target_link_libraries ( ${TARGET3} ${OSI_LIBRARIES} ${TIME_LIB} ${SOCK_LIB} project_options)
+  target_link_libraries ( ${TARGET3} OSI ${TIME_LIB} ${SOCK_LIB} project_options)
 endif ()
 # Install directives
 

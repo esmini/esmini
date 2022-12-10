@@ -231,3 +231,23 @@ macro(set_osg_libs)
         endif()
     endif()
 endmacro()
+
+# ############################### Creating osg interface library #####################################################
+
+macro(add_osg_library)
+
+    set_osg_libs()
+
+    add_library(
+        OSG
+        INTERFACE)
+
+    target_include_directories(
+        OSG
+        INTERFACE ${EXTERNALS_OSG_INCLUDES})
+
+    target_link_libraries(
+        OSG
+        INTERFACE ${OSG_LIBRARIES})
+
+endmacro()
