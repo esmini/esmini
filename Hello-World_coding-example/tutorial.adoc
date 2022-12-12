@@ -20,13 +20,14 @@ Do following steps to build a minimal esmini-player application
 	mkdir build
 	cd build
 	cmake ..
-	cmake --build . --config Release --target install
+	cmake --build . --config Release
 ----
 
-*Note*: If esminiLib is recompiled, make sure to grab the latest copy (e.g. from esmini/bin in case of build target "install").
-
-If all works as expected there should be an executable "esmini-player" in the Hello-World_coding-example folder. Try to run it from that directory.
-On Linux you might need to define LD_LIBRARY PATH first, like this: ``export LD_LIBRARY_PATH=.``
+If all works as expected there should be an executable "esmini-player" in the Hello-World_coding-example/build folder. Try to run it from that directory.
+----
+./build/esmini-player
+----
+On Linux you might need to define LD_LIBRARY PATH first, ``export LD_LIBRARY_PATH=../bin``
 
 If you have any IDE installed, e.g. Visual Studio (Win) or Xcode (Mac), cmake might have produced project files for it, e.g. "build/esmini-player.sln".
 
@@ -34,6 +35,21 @@ If you have any IDE installed, e.g. Visual Studio (Win) or Xcode (Mac), cmake mi
 ====
 **Note:** On Windows there are two library files: esminiLib.lib and esminiLib.dll. The .lib file (basically only table of contents of the library) is used for compile time linking while the .dll (actual code) for runtime dynamic linking. On other platforms there is only one library file, .so (Shared Object) in Linux and .dylib (Dynamic Library) on Mac, which is used for both compile time and runtime linking.
 ====
+
+== Steps to debug esmini "Hello World" with visual studio code
+Do the following steps to debug esmini. This is alternative method, you can completely skip <<Steps to build esmini "Hello World">> part if you wish to
+debug with visual studio code. Make sure bin folder generated in root folder by following <<Getting started>> or <<Run esmini>>
+
+. Open visual studio as Hello-World_coding-example as root folder
+. If not already installed, goto extensions and install cmake tools.
+. Open the Command Palette (Ctrl+Shift+P) and run CMake: Select a Kit. Select the compiler you want to use. For example GCC 11.3.0
+. Open the Command Palette (Ctrl+Shift+P) run the CMake: Select Variant command. Select Debug.
+. Open the Command Palette (Ctrl+Shift+P) run the CMake:Set Build Target. Select esmini-player.
+. Open the Command Palette (Ctrl+Shift+P) and run the CMake: Build command, or select the build button from the Status bar.
+
+Open main.cpp file in the Hello-World_coding-example folder and introduce break points.
+
+. Open the Command Palette (Ctrl+Shift+P) and run the CMake: debug command or use debug button from the Status bar.
 
 Here follows a few code examples to try out, e.g. by modifying main.cpp:
 

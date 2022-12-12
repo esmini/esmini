@@ -4,23 +4,13 @@
 # Make sure that the headerfile esminiLib.hpp and library esminiLib 
 # (exact filename depending on platform) is available, either in this folder or in 
 # the original location (relative this folder).
-
 cmake_minimum_required (VERSION 3.5.0 FATAL_ERROR)
-
 set(TARGET esmini-player)
-
-include_directories(. ../include ../EnvironmentSimulator/Libraries/esminiLib)
-link_directories(. ../lib ../bin)
-
+message( "${CMAKE_CURRENT_SOURCE_DIR}" )
+include_directories(. ${CMAKE_CURRENT_SOURCE_DIR}/../EnvironmentSimulator/Libraries/esminiLib)
+link_directories(.)
 project(${TARGET})
-
 # Windows: Uncomment next line to completely suppress the console
 # set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup")
-
 add_executable(${TARGET} main.cpp)
-
 target_link_libraries(${TARGET} esminiLib)
-
-# Copy the executable to the main folder
-install(TARGETS ${TARGET} DESTINATION ${CMAKE_HOME_DIRECTORY}/.)
-
