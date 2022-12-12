@@ -11,9 +11,10 @@
 
 {% import 'macros.j2' as m %}
 #include <string>
-
+namespace OpenDRIVE {
 namespace {{namespace}}
 {
 {{m.generate_datastructs(data)|indent(4,True)}}
 } // namespace {{namespace}}
+} // namespace OpenDRIVE
 #endif

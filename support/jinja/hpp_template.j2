@@ -24,19 +24,20 @@
     {%elif name == "Signal"-%}
 #include "Object.hpp"
 #include "Lane.hpp"
-#include "shared.hpp"
+#include "Shared.hpp"
     {%elif name == "Road"-%}
 #include "Object.hpp"
 #include "Lane.hpp"
 #include "Signal.hpp"
-#include "shared.hpp"
+#include "Shared.hpp"
 #include "Railroad.hpp"
 #include "Junction.hpp"
     {%endif-%}
 {%endif-%}
 {{""}}
+namespace OpenDRIVE{
 namespace {{name}}{
 {{m.generate_datastructs(data)}}
 } // namespace {{name}}
-
+} // namespace OpenDRIVE
 #endif

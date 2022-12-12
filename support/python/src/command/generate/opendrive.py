@@ -60,7 +60,7 @@ class OpenDrive:
         )
         template = env.get_template(template_file)
         content = template.render(data)
-        output_file = os.path.join(outputfolder, "shared.hpp")
+        output_file = os.path.join(outputfolder, "Shared.hpp")
         with open(output_file, mode="w", encoding="utf-8") as message:
             message.write(content)
         filename = output_file.split("/")[-1]
