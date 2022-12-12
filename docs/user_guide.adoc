@@ -2236,7 +2236,7 @@ Note that disabling the this will permanently disable the callback mechanism for
 
 
 == Hello World programming tutorial
-include::../Hello-World_coding-example/tutorial.adoc[leveloffset=+1, lines=5..-1]
+include::../Hello-World_coding-example/tutorial.adoc[leveloffset=+1, lines=3..-1]
 
 == Run ASAM OpenSCENARIO examples
 

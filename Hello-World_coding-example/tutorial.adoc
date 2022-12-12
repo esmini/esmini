@@ -1,14 +1,20 @@
 = esmini Hello World Tutorial
 
+This tutorial shows how to utilize esmini as a shared (dynamically loaded) library for use in a custom application. It can be used with or without esmini embedded viewer.
+
 == Preparations [[preparations]]
+
 The simplest preparation is to get the demo package from https://github.com/esmini/esmini/releases/latest[the latest relase] and then head on to the steps below.
 
-But, of course, if you already have checked out the esmini project from GitHub and compiled it you're basically set. Just copy the runtime shared library to the Hello-World_coding_example folder. Exact filename depends on the platform as follows:
+But, of course, if you already have checked out the esmini project from GitHub and compiled it you should already be set.
+
+Just make sure that the shared library is available in the `bin` folder, which should be available directly under esmini root. Exact filename depends on the platform as follows:
 
 [horizontal]
 *Windows:*:: esminiLib.dll
 *Linux:*:: libesminiLib.so
 *Mac:*:: libesminiLib.dylib
+
 :listing-caption: Example
 
 == Steps to build esmini "Hello World"

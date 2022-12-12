@@ -1,16 +1,22 @@
-# This is a minimalistic example of how to create build files for an application 
+# This is a minimalistic example of how to create build files for an application
 # making use of the esmini shared library.
-# 
-# Make sure that the headerfile esminiLib.hpp and library esminiLib 
-# (exact filename depending on platform) is available, either in this folder or in 
+#
+# Make sure that the headerfile esminiLib.hpp and library esminiLib
+# (exact filename depending on platform) is available, either in this folder or in
 # the original location (relative this folder).
+
 cmake_minimum_required (VERSION 3.5.0 FATAL_ERROR)
+
 set(TARGET esmini-player)
-message( "${CMAKE_CURRENT_SOURCE_DIR}" )
+
 include_directories(. ${CMAKE_CURRENT_SOURCE_DIR}/../EnvironmentSimulator/Libraries/esminiLib)
 link_directories(.)
+
 project(${TARGET})
+
 # Windows: Uncomment next line to completely suppress the console
 # set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup")
+
 add_executable(${TARGET} main.cpp)
+
 target_link_libraries(${TARGET} esminiLib)
