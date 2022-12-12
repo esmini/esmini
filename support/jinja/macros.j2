@@ -1,14 +1,14 @@
 
 {%macro generate_setter(dict)-%}
     {%for key,value in dict.items()-%}
-inline void Set{{key}}({{value["type"]}} {{key}}) { {{key}}_ = {{key}}; }
+inline void Set{{key|capitalize}}({{value["type"]}} {{key}}) { {{key}}_ = {{key}}; }
     {%endfor-%}
 {%endmacro-%}
 
 
 {%macro generate_getter(dict)-%}
     {%for key,value in dict.items()-%}
-inline {{value["type"]}} Get{{key}}() const { return {{key}}_; }
+inline {{value["type"]}} Get{{key|capitalize}}() const { return {{key}}_; }
     {%endfor-%}
 {%endmacro-%}
 
@@ -106,7 +106,7 @@ inline {{value["type"]}} Get{{key}}() const { return {{key}}_; }
 /**
 * @brief constructor
 */
-{{key[6:]}}();
+{{key[6:]}}() = default;
 {%endmacro-%}
 
 {%macro generate_destructor(key,value)-%}
