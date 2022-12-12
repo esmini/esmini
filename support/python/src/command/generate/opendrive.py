@@ -379,6 +379,11 @@ class OpenDrive:
                     doc = sub_dict["docs"]
                 attributes = child.attrib
                 if len(attributes) > 1:
+                    # Set ID or junction to int instead of string (as these should be integers in esmini)
+                    if (
+                        attributes["name"] == "id" or attributes["name"] == "junction"
+                    ) and attributes["type"] == "xs:string":
+                        attributes["type"] = "int"
                     attributes["type"] = self.xsd_to_cpp_types(attributes["type"])
                 attributes.update({"docs": doc})
                 attributes_dict.update({child.attrib["name"]: attributes})
