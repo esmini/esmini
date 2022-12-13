@@ -1084,7 +1084,7 @@ double ControllerALKS_R157SM::ReferenceDriver::ReactCritical()
     {
         acc_ -= dt_ * 0.774 * g / 0.6;
 
-        MAX(acc_, -0.774 * g);
+        acc_ = MAX(acc_, -0.774 * g);
     }
 
     if (aeb_.active_)
