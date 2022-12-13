@@ -45,13 +45,21 @@ inline {{value["type"]}} Get{{key|capitalize}}() const { return {{key}}_; }
 
 {%macro generate_class(key,value)%}
     {%for key1,value1 in value.items()-%}
-        {%if value1 is string%}
+        {%if key1 == "docs" and value1 is string%}
 /**
 * @brief {{value1|wordwrap(wrapstring="\n* ")}}
 */
         {%endif%}
     {%endfor%}
+    {%if "inherits" in value.keys()%}
+        {%for key1,value1 in value.items()-%}
+            {%if key1 == "inherits"%}
+{{key}} : public {{value1}}{
+            {%endif%}
+        {%endfor%}
+    {%else%}
 {{key}} {
+    {%endif%}
 {{"public:"|indent(4,True)}}
 {{generate_constructor(key,value)|indent(8,True)-}}
 {{generate_destructor(key,value)|indent(8,True)-}}
