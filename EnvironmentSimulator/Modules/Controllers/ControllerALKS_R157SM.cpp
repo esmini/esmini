@@ -252,9 +252,6 @@ int ControllerALKS_R157SM::Model::Detect()
         {
             continue;
         }
-        auto target = entities_->object_[i];
-        auto target_bb_offset = target->pos_.GetOffset() + sin(target->pos_.GetH()) * target->boundingbox_.center_.x_;
-        R157_LOG(1, "Rear axle: : %.2f BB center: %.2f",target->pos_.GetOffset(),target_bb_offset);
 
         if (!CheckSafety(&tmp_obj_info))
         {
@@ -1083,16 +1080,14 @@ double ControllerALKS_R157SM::ReferenceDriver::ReactCritical()
     else if (GetPhase() == Phase::BRAKE_REF)
     {
         acc_ -= dt_ * 0.774 * g / 0.6;
-
-        acc_ = MAX(acc_, -0.774 * g);
     }
 
     if (aeb_.active_)
     {
-        acc_ -= (dt_ * 0.85 * g / 0.6);
-        
-        acc_ = MAX(acc_, -0.85 * g);
+        acc_ -= dt_ * 0.85 * g / 0.6;
     }
+
+    (aeb_.active_) ? acc_ = MAX(acc_, -0.85 * g) : acc_ = MAX(acc_, -0.774 * g);
 
     double speed = MAX(0.0, veh_->GetSpeed() + acc_ * dt_);
 
