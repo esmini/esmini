@@ -642,7 +642,7 @@ double ControllerALKS_R157SM::Regulation::ReactCritical()
 void ControllerALKS_R157SM::ReferenceDriver::UpdateAEB(Vehicle* ego, ObjectInfo* info, double dt)
 {
     if (!aeb_.active_ && info->ttc < aeb_.ttc_critical_aeb_ &&
-        ego->OverlappingFront(info->obj, 0.1) > Object::OverlapType::PART)  // object fully inside or covering ego front extension
+        ego->OverlappingFront(info->obj, overlap_tolerance_) > Object::OverlapType::PART)  // object fully inside or covering ego front extension
     {
         R157_LOG(2, "AEB activated at ttc %.2f (< critical ttc %.2f)", info->ttc, aeb_.ttc_critical_aeb_);
         aeb_.active_ = true;
@@ -693,6 +693,13 @@ bool ControllerALKS_R157SM::ReferenceDriver::CheckSafety(ObjectInfo* info)
     // Calculate lane offset of object center, transform OpenSCENARIO reference point
     c_lane_offset_ = info->obj->pos_.GetOffset() +
         SE_Vector(info->obj->boundingbox_.center_.x_, 0.0).Rotate(info->obj->pos_.GetH()).y();
+
+    // TODO: Improve implementation later for intial offset.
+    if (set_initial_offset_)
+    {
+        initial_offset_ = c_lane_offset_;
+        set_initial_offset_ = false;
+    }
 
     if (info->obj->GetType() == Object::Type::PEDESTRIAN)
     {
@@ -801,7 +808,7 @@ bool ControllerALKS_R157SM::ReferenceDriver::CheckPerceptionCutIn()
         {
             if (cut_in_perception_delay_mode_ == CutInPerceptionDelayMode::DIST)
             {
-                if (-SIGN(object_in_focus_.dLaneId) * c_lane_offset_ > wandering_threshold_ + perception_dist_)
+                if (-SIGN(object_in_focus_.dLaneId) * c_lane_offset_ > wandering_threshold_ + perception_dist_ + abs(initial_offset_))
                 {
                     R157_LOG(2, "Reached lane offset %.2fm (> %.3fm + %.2fm)",
                         -SIGN(object_in_focus_.dLaneId) * c_lane_offset_, wandering_threshold_, perception_dist_);
