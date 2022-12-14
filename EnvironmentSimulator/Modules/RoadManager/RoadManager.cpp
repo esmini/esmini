@@ -10298,8 +10298,9 @@ void NurbsShape::CalculatePolyLine()
 
 	// Calculate arc length
 	double newLength = 0.0;
+	double t_max = knot_.back();
 	int nSteps = (int)(1 + length_ / steplen);
-	double p_steplen = knot_.back() / nSteps;
+	double p_steplen = t_max / nSteps;
 	TrajVertex pos = { 0, 0, 0, 0, 0, 0, 0, 0, false };
 	TrajVertex oldpos = { 0, 0, 0, 0, 0, 0, 0, 0, false };
 	TrajVertex tmppos = { 0, 0, 0, 0, 0, 0, 0, 0, false };
@@ -10313,7 +10314,7 @@ void NurbsShape::CalculatePolyLine()
 		// Calulate heading from line segment between this and previous vertices
 		if (i < nSteps)
 		{
-			EvaluateInternal(MIN(t + MIN(0.001, p_steplen), 1.0), tmppos);
+			EvaluateInternal(MIN(t + MIN(0.001, p_steplen), t_max), tmppos);
 		}
 		else
 		{
