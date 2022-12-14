@@ -12,9 +12,14 @@
                 <line/>
             </geometry>
         </planView>
-        <!-- https://www.desmos.com/calculator/rz3gpcqlig -->
         <elevationProfile>
             <elevation s="0.0" a="0.0" b="0.0" c="0.0" d="0.0" />
+            <!-- f(x) = a + bx + cx^2 + dx^3 -->
+            <!-- A=start elevation,  B=elevation diff, C=longitudinal distance -->
+            <!-- f(x) = A + 0 + 3×B/C^2×x^2 - 2×B/C^3×x^3 -->
+            <!-- a=A, b=0 (no inital or final slope), c=3xB/C^2, d=-2xB/C^3 -->
+            <!-- https://www.desmos.com/calculator/wokomkxytf -->
+            <!-- B=20, C=100 -->
             <elevation s="250.0" a="0.0" b="0.0" c="0.006" d="-4.0e-5" />
             <elevation s="350.0" a="20" b="0.0" c="-0.006" d="4.0e-5" />
             <elevation s="450.0" a="0.0" b="0.0" c="0.0" d="0.0" />
