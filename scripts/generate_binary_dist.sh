@@ -4,7 +4,7 @@ rm -rf esmini-demo
 
 mkdir esmini-demo
 
-rsync -R \
+tar -c \
 resources/xosc/follow_ghost.xosc \
 resources/xosc/cut-in.xosc \
 resources/xosc/cut-in_parameter_set.xosc \
@@ -137,7 +137,7 @@ scripts/dat2csv.py \
 scripts/osi2csv.py \
 scripts/run_distribution.py \
 scripts/udp_driver/*.* \
-scripts/udp_driver/osi3/*.* \
+scripts/osi3/*.* \
 docs/readme.txt \
 docs/commands.txt \
 3rd_party_terms_and_licenses/* \
@@ -149,15 +149,8 @@ bin/odrviewer \
 bin/replayer \
 bin/dat2csv \
 bin/odrplot \
+bin/*esminiLib.* \
 EnvironmentSimulator/Applications/odrplot/xodr.py \
-esmini-demo
-
-cp -r Hello-World_coding-example esmini-demo
-cp bin/libesminiLib.* esmini-demo/Hello-World_coding-example
-cp EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp esmini-demo/Hello-World_coding-example
-mkdir esmini-demo/include
-cp EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp esmini-demo/include
-
-rm -f esmini-demo*.zip
-
-zip -r esmini-demo.zip esmini-demo
+EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp \
+Hello-World_coding-example/* \
+| tar -C esmini-demo -x

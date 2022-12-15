@@ -30,8 +30,8 @@ Run from `Hello-World_coding-example` root folder: +
 ==== Build and run the application from command line
 
 ===== Build
-`cmake --build . --config Release --target install` (release variant), or +
-`cmake --build . --config Debug --target install` (debug variant) +
+`cmake --build . --config Release` (release variant), or +
+`cmake --build . --config Debug` (debug variant) +
 
 ===== Run
 . open a command shell and put yourself in `Hello-World_coding-example/build` folder
@@ -39,18 +39,17 @@ Run from `Hello-World_coding-example` root folder: +
   CMD: `set path=../../bin;%path%` +
   PowerShell: `$env:path+=";../../bin"` +
   bash: `PATH=$PATH:../../bin` +
-  *Note:* In the demo package the libraries are contained in `../../lib` folder instead
 . Launch application +
    CMD: +
-  `Debug\esmini-player.exe` or +
-  `Release\esmini-player.exe` (depending on variant) +
+  `.\Debug\esmini-player.exe` or +
+  `.\Release\esmini-player.exe` (depending on variant) +
   PowerShell or bash: +
   `./Debug/esmini-player.exe` or +
   `./Release/esmini-player.exe`
 
 ==== Build, run and debug the application from Visual Studio
 . Open `esmini-player.sln` in Visual Studio
-. Build as usual
+. Build as usual (Ctrl-F7 or `Build` -> `Build Solution`)
 . Set as startup project
   ** Right click on esmini-player in Solution Explorer
   ** Click on `Set as Startup Project`
@@ -59,7 +58,7 @@ Run from `Hello-World_coding-example` root folder: +
   ** Click on `Properties`
   ** Select Configuration -> `All Configurations`
   ** In `Configuration Properties` -> `Debugging` -> `Environment` write:
-    `path=$(ProjectDir)/../../bin;path=$(ProjectDir)/../../lib` +
+    `path=$(ProjectDir)/../../bin` +
     or any other folder containing the esmini library
 . Run
   ** `Ctrl-F5` to run without debug
@@ -67,24 +66,33 @@ Run from `Hello-World_coding-example` root folder: +
 
 === Linux
 
-==== Build and run from command line
-. Generate Makefile: +
+==== First step: Create the Makefile
+Run from `Hello-World_coding-example` root folder: +
+  `mkdir build` +
+  `cd build` +
+then: +
   `cmake .. -DCMAKE_BUILD_TYPE=Release` for Release variant, or +
   `cmake .. -DCMAKE_BUILD_TYPE=Debug` for Debug variant +
+
+==== Build and run from command line
 . Build +
   `cmake --build .` or just +
   `make` +
-. Tell system where to look for esmini shared library +
-  `export LD_LIBRARY_PATH=../../bin` or +
-  `export LD_LIBRARY_PATH=../../lib`
+. Tell system where to look for esmini shared library (maybe not necessary) +
+  `export LD_LIBRARY_PATH=../../bin`
 . Launch application +
-  `./Debug/esmini-player` or +
-  `./Release/esmini-player`
+  `./esmini-player`
 
 ==== Build, run and debug from Visual Studio Code
 
+Prerequisites: Install the following VS Code extensions:
+
+* C/C++
+* CMake Tools
+
+===== Build
+
 . Open visual studio as Hello-World_coding-example as root folder
-. If not already installed, goto extensions and install cmake tools.
 . Open the Command Palette (Ctrl+Shift+P) and run `CMake: Select a Kit`. Select the compiler you want to use. For example GCC 11.3.0
 . Open the Command Palette (Ctrl+Shift+P) run the `CMake: Select Variant` command. Select Debug.
 . Open the Command Palette (Ctrl+Shift+P) run the `CMake:Set Build Target`. Select esmini-player.
@@ -92,8 +100,15 @@ Run from `Hello-World_coding-example` root folder: +
 
 Open main.cpp file in the Hello-World_coding-example folder and optionally introduce break points.
 
-[start=7]
-. Open the Command Palette (Ctrl+Shift+P) and run the `CMake: debug` command or use debug button from the Status bar.
+===== Run
+. Open the Command Palette (Ctrl+Shift+P) and run the `CMake: Run Without Debugging` command, or
+. Use play button in the status bar, or
+. Shift-F5
+
+===== Debug
+. Open the Command Palette (Ctrl+Shift+P) and run the `CMake: Debug` command, or
+. Use debug button in the status bar, or
+. Ctrl-F5
 
 === Next step
 
@@ -290,7 +305,7 @@ Windows:
 ----
 include_directories(. ../include ../EnvironmentSimulator/Libraries/esminiLib ../externals/OSI/v10/include)
 
-link_directories(. ../lib ../bin ../externals/OSI/v10/lib)
+link_directories(. ../bin ../externals/OSI/v10/lib)
 
 target_link_libraries(${TARGET} esminiLib libprotobuf open_simulation_interface_pic)
 ----
@@ -299,11 +314,10 @@ Linux:
 ----
 include_directories(. ../include ../EnvironmentSimulator/Libraries/esminiLib ../externals/OSI/linux/include)
 
-link_directories(. ../lib ../bin ../externals/OSI/linux/lib)
+link_directories(. ../bin ../externals/OSI/linux/lib)
 
 target_link_libraries(${TARGET} esminiLib protobuf open_simulation_interface_pic)
 ----
-
 
 
 *Note:*

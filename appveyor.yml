@@ -89,21 +89,24 @@ for:
           cd ..
 
     after_build:
-      - if [[ $APPVEYOR_REPO_COMMIT_MESSAGE = *#store_bins* ]] || [ "$APPVEYOR_REPO_TAG" == "true" ]; then
-          cd ../ &&
-          zip -r esmini/esmini-bin_ubuntu.zip esmini/bin esmini/EnvironmentSimulator/Applications/odrplot/xodr.py  esmini/EnvironmentSimulator/Libraries/esminiRMLib/esminiRMLib.hpp esmini/EnvironmentSimulator/Libraries/esminiRMLib/esminiRMWrapper.cs esmini/EnvironmentSimulator/Libraries/esminiRMLib/esminiRMUnityUtil.cs esmini/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp esmini/EnvironmentSimulator/Libraries/esminiLib/ESMiniWrapper.cs esmini/version.txt &&
-          cd -;
-        else
-          echo "Skip binary artifacts";
-        fi
-      - chmod -R +x ./run/*
-      - chmod -R +x ./scripts/*
-      - ./scripts/generate_binary_dist.sh
-      - if [ "$APPVEYOR_REPO_TAG" == "true" ]; then
-          mv esmini-demo.zip esmini-demo_ubuntu.zip;
-        else
-          rm esmini-demo.zip;
-        fi
+      - sh: >-
+
+          if [[ $APPVEYOR_REPO_COMMIT_MESSAGE = *#store_bins* ]] || [ "$APPVEYOR_REPO_TAG" == "true" ];
+          then
+            cd ../ &&
+            zip -r esmini/esmini-bin_ubuntu.zip esmini/bin esmini/EnvironmentSimulator/Applications/odrplot/xodr.py  esmini/EnvironmentSimulator/Libraries/esminiRMLib/esminiRMLib.hpp esmini/EnvironmentSimulator/Libraries/esminiRMLib/esminiRMWrapper.cs esmini/EnvironmentSimulator/Libraries/esminiRMLib/esminiRMUnityUtil.cs esmini/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp esmini/EnvironmentSimulator/Libraries/esminiLib/ESMiniWrapper.cs esmini/version.txt &&
+            cd -;
+          else
+            echo "Skip binary artifacts";
+          fi
+
+          if [ "$APPVEYOR_REPO_TAG" == "true" ];
+          then
+            chmod -R +x ./run/*
+            chmod -R +x ./scripts/*
+            ./scripts/generate_binary_dist.sh
+            7z a esmini-demo_ubuntu.zip esmini-demo/*
+          fi
 
     test_script:
       - sh: >-
@@ -116,6 +119,9 @@ for:
       - path: esmini-*_ubuntu.zip
         name: ubuntu_artifacts
 
+    # on_finish:
+        # - sh: export APPVEYOR_SSH_BLOCK=true
+        # - sh: curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-ssh.sh' | bash -e -  
   -
     matrix:
       only:
@@ -163,17 +169,12 @@ for:
             echo "Skip binary artifacts";
           fi
 
-          chmod -R +x ./run/*
-
-          chmod -R +x ./scripts/*
-
-          ./scripts/generate_binary_dist.sh
-
           if [ "$APPVEYOR_REPO_TAG" == "true" ];
           then
-              mv esmini-demo.zip esmini-demo_mac_catalina.zip;
-          else
-              rm esmini-demo.zip;
+            chmod -R +x ./run/*
+            chmod -R +x ./scripts/*
+            ./scripts/generate_binary_dist.sh
+            7z a esmini-demo_mac_catalina.zip esmini-demo/*
           fi
 
     test_script:
@@ -205,7 +206,9 @@ for:
 
           cd..
 
-          scripts\generate_binary_dist.bat
+          set PATH="c:/Program Files/Git/bin";%PATH%
+
+          bash .\scripts\generate_binary_dist.sh
 
           echo Also verify build without OSG, OSI and SUMO
 
@@ -234,10 +237,6 @@ for:
           {
             7z a esmini-demo_win.zip esmini-demo/*
           }
-          else
-          {
-            echo "Skip demos"
-          }
 
       - cmd:
           cd ..
@@ -260,7 +259,7 @@ for:
 
           set PATH="c:/Program Files/Git/bin";%PATH%
 
-          .\scripts\run_tests.sh
+          bash .\scripts\run_tests.sh
 
     artifacts:
       - path: esmini-*_win*.zip
