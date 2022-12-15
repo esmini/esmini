@@ -43,7 +43,7 @@ inline {{value["type"]}} Get{{key|capitalize}}() const { return {{key}}_; }
 {%endmacro%}
 
 
-{%macro generate_class(key,value)%}
+{%macro generate_class(key,value,dict)%}
     {%for key1,value1 in value.items()-%}
         {%if key1 == "docs" and value1 is string%}
 /**
@@ -61,7 +61,8 @@ inline {{value["type"]}} Get{{key|capitalize}}() const { return {{key}}_; }
 {{key}} {
     {%endif%}
 {{"public:"|indent(4,True)}}
-{{generate_constructor(key,value)|indent(8,True)-}}
+{{generate_default_constructor(key,value)|indent(8,True)-}}
+{{generate_constructor(key,value,dict)|indent(8,True)-}}
 {{generate_destructor(key,value)|indent(8,True)-}}
 {{generate_copyconstructor(key,value)|indent(8,True)-}}
 {{generate_copyassignment(key,value)|indent(8,True)-}}
@@ -81,7 +82,7 @@ inline {{value["type"]}} Get{{key|capitalize}}() const { return {{key}}_; }
                             {% if "attributes" in key3 -%}
 {{generate_setter(value3)|indent(8,True)}}
 {{generate_getter(value3)|indent(8,True)}}
-{{"private:"|indent(4,True)}}
+{{"protected:"|indent(4,True)}}
                                 {%for key4,value4 in value3.items()-%}
 {{"//"|indent(8,True)}}{{value4["docs"]|replace("\n"," ")}}
 {{value4["type"]|indent(8,True)}} {{key4}}_{};
@@ -110,12 +111,71 @@ inline {{value["type"]}} Get{{key|capitalize}}() const { return {{key}}_; }
 {%endmacro%}
 
 
-{%macro generate_constructor(key,value)-%}
+{%macro generate_default_constructor(key,value)-%}
 /**
-* @brief constructor
+* @brief default constructor
 */
 {{key[6:]}}() = default;
 {%endmacro-%}
+
+
+{%macro generate_inputs(value,type)%}
+    {%-for key1,value1 in value.items()-%}
+        {%-if value1 is not string%}
+            {%-for key2,value2 in value1.items()-%}
+                {%-if value2 is iterable and value2 is not string-%}
+                    {%-for key3,value3 in value2.items()-%}
+                            {%- if "attributes" in key3 -%}
+                                {%-for key4,value4 in value3.items()-%}
+                                    {%if type == True%}
+                                        {%-if loop.last%}
+{{- value4["type"]}} {{key4}}
+                                        {%-else%}
+{{- value4["type"]}} {{key4}},
+                                        {%-endif%}
+                                    {%else%}
+                                        {%-if loop.last%}
+{{key4}}
+                                        {%-else%}
+{{key4}},
+                                        {%-endif%}
+                                    {%endif%}
+                                {%-endfor-%}
+                            {%-endif-%}
+                    {%-endfor-%}
+                {%-endif%}
+            {%-endfor-%}
+        {%-endif%}
+    {%-endfor-%}
+{%endmacro%}
+
+
+{%macro generate_constructor(key,value,dict)-%}
+/**
+* @brief constructor
+*/
+{{key[6:]}}(
+{{-generate_inputs(value,True)-}}
+{%-if "inherits" in value.keys()-%}
+    {%-set base = value["inherits"]-%}
+    {%-for basekey,basevalue in dict.items()-%}
+        {%-if "class "+base == basekey-%}
+,{{"\n"}}{{-generate_inputs(basevalue,True)|indent(4,True)-}}
+        {%endif%}
+    {%endfor%}
+{%endif%}
+)
+    {%-if "inherits" in value.keys()-%}
+    {%-set base = value["inherits"]-%}
+        {%-for basekey,basevalue in dict.items()-%}
+            {%-if "class "+base == basekey-%}
+:{{"\n"}}{{basekey[6:]|indent(4,True)}}({{-generate_inputs(basevalue,False)-}}) {}
+        {%endif%}
+        {%endfor%}
+    {%-else-%}
+{};
+    {%endif%}
+{%endmacro%}
 
 {%macro generate_destructor(key,value)-%}
 /**
@@ -158,7 +218,7 @@ inline {{value["type"]}} Get{{key|capitalize}}() const { return {{key}}_; }
         {% if  key.startswith("enum") -%}
             {{generate_enum(key,value)|indent(4,True)}}
         {% elif key.startswith("class") -%}
-            {{generate_class(key,value)|indent(4,True)}}
+            {{generate_class(key,value,data)|indent(4,True)}}
         {% elif key.startswith("std::string") or key.startswith("double")-%}
             {{generate_variable(key,value)|indent(4, True)}}
         {% elif key.startswith("struct") -%}
