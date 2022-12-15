@@ -22,6 +22,7 @@
 #include "OSCGlobalAction.hpp"
 #include "OSCBoundingBox.hpp"
 #include "Parameters.hpp"
+#include "Variables.hpp"
 #include "Controller.hpp"
 #include "ScenarioGateway.hpp"
 
@@ -105,6 +106,7 @@ namespace scenarioengine
 		Vehicle* createRandomOSCVehicle(std::string name);
 		Controller* parseOSCObjectController(pugi::xml_node vehicleNode);
 		void parseGlobalParameterDeclarations() { parameters.parseGlobalParameterDeclarations(osc_root_); }
+		void parseGlobalVariableDeclarations() { variables.parseGlobalVariableDeclarations(osc_root_); }
 
 		// Enitites
 		int parseEntities();
@@ -148,6 +150,7 @@ namespace scenarioengine
 		std::vector<Controller*> controller_;
 
 		static Parameters parameters;  // static to enable set via callback during creation of object
+		static Variables variables;
 
 	private:
 		pugi::xml_document doc_;

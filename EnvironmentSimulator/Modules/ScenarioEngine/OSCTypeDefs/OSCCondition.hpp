@@ -22,6 +22,7 @@
 #include "Entities.hpp"
 #include "OSCPosition.hpp"
 #include "Parameters.hpp"
+#include "Variables.hpp"
 
 namespace scenarioengine
 {
@@ -398,6 +399,7 @@ namespace scenarioengine
 		typedef enum
 		{
 			PARAMETER,
+			VARIABLE,
 			TIME_OF_DAY,
 			SIMULATION_TIME,
 			UNDEFINED
@@ -433,6 +435,22 @@ namespace scenarioengine
 
 		bool CheckCondition(StoryBoard* storyBoard, double sim_time);
 		TrigByParameter() : TrigByValue(TrigByValue::Type::PARAMETER) {}
+		void Log();
+	};
+
+	class TrigByVariable : public TrigByValue
+	{
+	public:
+		Object* object_;
+		std::string name_;
+		std::string value_;
+		Rule rule_;
+		Variables* variables_;
+		std::string current_value_str_;
+
+
+		bool CheckCondition(StoryBoard* storyBoard, double sim_time);
+		TrigByVariable() : TrigByValue(TrigByValue::Type::VARIABLE) {}
 		void Log();
 	};
 

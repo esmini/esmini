@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Two cars approaching from opposite directions. Both changing lane cross road -->
+<!-- reference line. Purpose is to validate esmini lane change functionality.     -->
+<OpenSCENARIO>
+    <FileHeader revMajor="1" revMinor="0" date="2019-06-09T10:00:00" description="Cut-in" author="esmini-team"/>
+    <VariableDeclarations>
+        <VariableDeclaration name="DummyVariable" variableType="double" value="2"/>
+        <VariableDeclaration name="DummyVariable2" variableType="boolean" value="true"/>
+        <VariableDeclaration name="DummyVariable3" variableType="string" value="lane_change_var"/>
+    </VariableDeclarations>
+    <CatalogLocations>
+        <VehicleCatalog>
+            <Directory path="../xosc/Catalogs/Vehicles"/>
+        </VehicleCatalog>
+    </CatalogLocations>
+    <RoadNetwork>
+        <LogicFile filepath="../xodr/jolengatan.xodr"/>
+        <!-- <SceneGraphFile filepath="../models/jolengatan.osgb"/> -->
+    </RoadNetwork>
+    <Entities>
+        <ScenarioObject name="Truck">
+            <CatalogReference catalogName="VehicleCatalog" entryName="semi_truck_with_extra_trailer"/>
+        </ScenarioObject>
+    </Entities>
+    <Storyboard>
+        <Init>
+            <Actions>
+                <Private entityRef="Truck">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="1" laneId="1" offset="0" s="300"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="20"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                </Private>
+            </Actions>
+        </Init>
+        <Story name="Lane change story">
+            <Act name="Lane change act">
+                <ManeuverGroup maximumExecutionCount="1" name="Lane change 2">
+                    <Actors selectTriggeringEntities="false">
+                        <EntityRef entityRef="Truck"/>
+                    </Actors>
+                    <Maneuver name="Lane change Target maneuver">
+                        <Event name="Lane change Target event" priority="overwrite">
+                            <Action name="Lane change Target action">
+                                <PrivateAction>
+                                    <LateralAction>
+                                        <LaneChangeAction>
+                                            <LaneChangeActionDynamics dynamicsShape="sinusoidal" value="2" dynamicsDimension="time"/>
+                                            <LaneChangeTarget>
+                                                <RelativeTargetLane entityRef="Truck" value="-1"/>
+                                            </LaneChangeTarget>
+                                        </LaneChangeAction>
+                                    </LateralAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="Lane change Target condition" delay="0" conditionEdge="rising">
+                                        <ByValueCondition>
+                                            <VariableCondition variableRef="DummyVariable" value="3" rule="greaterThan"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event name="Dummy Variable event" priority="parallel">
+                            <Action name="Dummy Variable action">
+                                <GlobalAction>
+                                    <VariableAction variableRef="DummyVariable">
+                                        <SetAction value="11"/>
+                                    </VariableAction>
+                                </GlobalAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="Lane change Target condition" delay="0" conditionEdge="rising">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="3" rule="greaterThan"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                    </Maneuver>
+                </ManeuverGroup>
+                <StartTrigger>
+                    <ConditionGroup>
+                        <Condition name="CutInActStart" delay="0" conditionEdge="risingOrFalling">
+                            <ByValueCondition>
+                                <SimulationTimeCondition value="0" rule="greaterThan"/>
+                            </ByValueCondition>
+                        </Condition>
+                    </ConditionGroup>
+                </StartTrigger>
+            </Act>
+        </Story>
+        <StopTrigger>
+            <ConditionGroup>
+                <Condition name="StopCondition" delay="0" conditionEdge="risingOrFalling">
+                    <ByValueCondition>
+                        <SimulationTimeCondition value="10" rule="greaterThan"/>
+                    </ByValueCondition>
+                </Condition>
+            </ConditionGroup>
+        </StopTrigger>
+    </Storyboard>
+</OpenSCENARIO>

@@ -118,6 +118,12 @@ typedef struct
 
 typedef struct
 {
+	const char *name; // Name of the variable as defined in the OpenSCENARIO file
+	void *value;	  // Pointer to value which can be an integer, double, bool or string (const char*) as defined in the OpenSCENARIO file
+} SE_Variable;
+
+typedef struct
+{
 	bool active;  // True: override; false: stop overriding
 	double value; // Depends on action, see SE_OverrideActionList
 } SE_OverrideActionStatus;
@@ -524,6 +530,75 @@ extern "C"
 	@return 0 if successful, -1 if not
 	*/
 	SE_DLL_API int SE_SetParameterBool(const char *parameterName, bool value);
+
+	SE_DLL_API int SE_SetVariable(SE_Variable variable);
+
+	/**
+		Get value of named parameter. The value within the parameter struct will be filled in.
+		@param parameter Pointer to parameter struct object, see SE_Parameter declaration.
+		@return 0 if successful, -1 if not
+	*/
+	SE_DLL_API int SE_GetVariable(SE_Variable *variable);
+
+	/**
+		Get typed value of named variable
+		@variableName Name of the variable
+		@return 0 if successful, -1 if not (e.g. wrong type)
+	*/
+	SE_DLL_API int SE_GetVariableInt(const char *variableName, int *value);
+
+	/**
+		Get typed value of named variable
+		@variableName Name of the variable
+		@return 0 if successful, -1 if not (e.g. wrong type)
+	*/
+	SE_DLL_API int SE_GetVariableDouble(const char *variableName, double *value);
+
+	/**
+	Get typed value of named variable
+	@variableName Name of the variable
+	@return 0 if successful, -1 if not (e.g. wrong type)
+	*/
+	SE_DLL_API int SE_GetVariableString(const char *variableName, const char **value);
+
+	/**
+	Get typed value of named variable
+	@variableName Name of the variable
+	@return 0 if successful, -1 if not (e.g. wrong type)
+	*/
+	SE_DLL_API int SE_GetVariableBool(const char *variableName, bool *value);
+
+	/**
+	Set typed value of named variable
+	@variableName Name of the variable
+	@value Value
+	@return 0 if successful, -1 if not
+	*/
+	SE_DLL_API int SE_SetVariableInt(const char *variableName, int value);
+
+	/**
+	Set typed value of named variable
+	@variableName Name of the variable
+	@value Value
+	@return 0 if successful, -1 if not
+	*/
+	SE_DLL_API int SE_SetVariableDouble(const char *variableName, double value);
+
+	/**
+	Set typed value of named variable
+	@variableName Name of the parameter
+	@value Value
+	@return 0 if successful, -1 if not
+	*/
+	SE_DLL_API int SE_SetVariableString(const char *variableName, const char *value);
+
+	/**
+	Set typed value of named variable
+	@variableName Name of the variable
+	@value Value
+	@return 0 if successful, -1 if not
+	*/
+	SE_DLL_API int SE_SetVariableBool(const char *variableName, bool value);
 
 	SE_DLL_API void *SE_GetODRManager();
 

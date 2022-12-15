@@ -10,7 +10,7 @@ cmake_minimum_required (VERSION 3.5.0 FATAL_ERROR)
 set(TARGET esmini-player)
 
 include_directories(. ${CMAKE_CURRENT_SOURCE_DIR}/../EnvironmentSimulator/Libraries/esminiLib)
-link_directories(. ../bin)
+link_directories(. ${CMAKE_CURRENT_SOURCE_DIR}/../bin)
 
 project(${TARGET})
 

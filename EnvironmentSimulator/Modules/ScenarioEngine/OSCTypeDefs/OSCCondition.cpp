@@ -588,6 +588,53 @@ void TrigByParameter::Log()
 			Rule2Str(rule_).c_str(), value_.c_str(), Edge2Str().c_str());
 }
 
+bool TrigByVariable::CheckCondition(StoryBoard* storyBoard, double sim_time)
+{
+	bool result = false;
+	current_value_str_ = "";
+
+	OSCVariableDeclarations::VariableStruct* pe = variables_->getVariableEntry(name_);
+	if (pe == 0)
+	{
+		if (state_ < ConditionState::EVALUATED)  // print only once
+		{
+			LOG("Variable %s not found", name_.c_str());
+		}
+		return result;
+	}
+
+	current_value_str_ = std::to_string(pe->value._int).c_str();
+	if (pe->type == OSCVariableDeclarations::VariableType::VAR_TYPE_INTEGER)
+	{
+		result = EvaluateRule(pe->value._int, strtoi(value_), rule_);
+
+	}
+	else if (pe->type == OSCVariableDeclarations::VariableType::VAR_TYPE_DOUBLE)
+	{
+		result = EvaluateRule(pe->value._double, strtod(value_), rule_);
+	}
+	else if (pe->type == OSCVariableDeclarations::VariableType::VAR_TYPE_STRING)
+	{
+		result = EvaluateRule(pe->value._string, value_, rule_);
+	}
+	else if (pe->type == OSCVariableDeclarations::VariableType::VAR_TYPE_BOOL)
+	{
+		result = EvaluateRule(pe->value._bool, value_ == "true" ? true : false, rule_);
+	}
+	else
+	{
+		LOG("Unexpected variable type: %d", pe->type);
+	}
+
+	return result;
+}
+
+void TrigByVariable::Log()
+{
+	LOG("variable %s %s %s %s edge: %s", name_.c_str(), current_value_str_.c_str(),
+			Rule2Str(rule_).c_str(), value_.c_str(), Edge2Str().c_str());
+}
+
 bool TrigByTimeHeadway::CheckCondition(StoryBoard *storyBoard, double sim_time)
 {
 	(void)storyBoard;

@@ -1142,6 +1142,73 @@ TEST(ParameterTest, GetTypedParameterValues)
 	SE_Close();
 }
 
+TEST(VariableTest, GetTypedVariableValues)
+{
+	std::string scenario_file = "../../../resources/xosc/lane_change_variable.xosc";
+	SE_Init(scenario_file.c_str(), 0, 0, 0, 0);
+
+	bool boolVar;
+	int retVal;
+	retVal = SE_GetVariableBool("DummyVariable2", &boolVar);
+	EXPECT_EQ(retVal, 0);
+	EXPECT_EQ(boolVar, true);
+
+	// Use common SE_Variable class
+	SE_Variable var;
+	var.name = "DummyVariable2";
+	bool value = false;
+	var.value = (void*)&value;
+	retVal = SE_GetVariable(&var);
+	EXPECT_EQ(retVal, 0);
+	value = *(bool*)(var.value);
+	EXPECT_EQ(value, true);
+
+	value = false;
+	retVal = SE_SetVariable(var);
+	EXPECT_EQ(retVal, 0);
+
+	value = true;
+	retVal = SE_GetVariable(&var);
+	EXPECT_EQ(retVal, 0);
+	value = *(bool*)(var.value);
+	EXPECT_EQ(value, false);
+
+	// Unavailable
+	retVal = SE_GetVariableBool("DoesNotExist", &boolVar);
+	EXPECT_EQ(retVal, -1);
+
+	// Set value
+	SE_SetVariableBool("DummyVariable2", false);
+	retVal = SE_GetVariableBool("DummyVariable2", &boolVar);
+	EXPECT_EQ(retVal, 0);
+	EXPECT_EQ(boolVar, false);
+
+	// Wrong name
+	retVal = SE_SetVariableBool("DummyVariable3", false);
+	EXPECT_EQ(retVal, -1);
+
+	// Wrong type
+	retVal = SE_SetVariableInt("DummyVariable2", false);
+	EXPECT_EQ(retVal, -1);
+
+	// String
+	const char *strVar;
+	retVal = SE_GetVariableString("DummyVariable3", &strVar);
+	EXPECT_EQ(retVal, 0);
+	EXPECT_STREQ(strVar, "lane_change_var");
+
+	retVal = SE_SetVariableString("DummyVariable3", "Kalle");
+	EXPECT_EQ(retVal, 0);
+	retVal = SE_GetVariableString("DummyVariable3", &strVar);
+	EXPECT_EQ(retVal, 0);
+	EXPECT_STREQ(strVar, "Kalle");
+
+	retVal = SE_GetParameterString("DoesNotExist", &strVar);
+	EXPECT_EQ(retVal, -1);
+
+	SE_Close();
+}
+
 static void paramDeclCallback(void*)
 {
 	static int counter = 0;

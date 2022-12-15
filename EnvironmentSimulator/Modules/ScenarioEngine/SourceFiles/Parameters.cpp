@@ -384,7 +384,7 @@ std::string Parameters::ResolveParametersInString(std::string str)
 	return str;
 }
 
-void ReplaceStringInPlace(std::string& subject, const std::string& search, const std::string& replace) {
+static void ReplaceStringInPlace(std::string& subject, const std::string& search, const std::string& replace) {
 	size_t pos = 0;
 	while ((pos = subject.find(search, pos)) != std::string::npos) {
 		subject.replace(pos, search.length(), replace);

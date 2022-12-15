@@ -54,6 +54,18 @@ void ParameterSetAction::Step(double, double)
     OSCAction::Stop();
 }
 
+void VariableSetAction::Start(double simTime, double dt)
+{
+	LOG("Set variable %s = %s", name_.c_str(), value_.c_str());
+	variables_->setVariableValueByString(name_, value_);
+	OSCAction::Start(simTime, dt);
+}
+
+void VariableSetAction::Step(double, double)
+{
+    OSCAction::Stop();
+}
+
 void AddEntityAction::Start(double simTime, double dt)
 {
     if (entity_ == nullptr)

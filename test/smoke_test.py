@@ -38,6 +38,17 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\n6.500, 0, Ego, 28.542, -7.876, 0.000, 1.779, 0.000, 0.000, 10.000, -0.006, 3.502', csv))
         self.assertTrue(re.search('\n6.500, 1, NPC, 24.456, 0.305, 0.000, 5.394, 0.000, 0.000, 7.000, 0.335, 5.147', csv))
 
+    def test_variables(self):
+        log = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/lane_change_variable.xosc'), COMMON_ARGS)
+        
+        # Check some initialization steps
+        self.assertTrue(re.search('Loading .*lane_change_variable.xosc', log)  is not None)
+        self.assertTrue(re.search('\n3.010: Lane change Target condition == true, 3.0100 > 3.00 edge: rising', log)  is not None)
+
+        csv = generate_csv()
+        self.assertTrue(re.search('\n0.500, 0, Truck, 55.800, -47.582, 0.000, 6.170, 0.000, 0.000, 20.000, 0.000, 3.439', csv))
+        self.assertTrue(re.search('\n5.000, 0, Truck, 145.649, -53.708, 0.000, 6.189, 0.000, 0.000, 20.000, -0.034, 2.971', csv))
+
     def test_trajectory(self):
         log = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/trajectory-test.xosc'), COMMON_ARGS \
             + '--disable_controllers')

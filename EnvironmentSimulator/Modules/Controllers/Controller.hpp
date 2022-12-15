@@ -16,6 +16,7 @@
 #include "CommonMini.hpp"
 #include "OSCProperties.hpp"
 #include "Parameters.hpp"
+#include "Variables.hpp"
 
 #define CONTROLLER_BASE_TYPE_NAME "ControllerClass"
 #define CONTROLLER_BASE_TYPE_ID -1
@@ -76,6 +77,7 @@ namespace scenarioengine
 			Entities* entities;
 			ScenarioGateway* gateway;
 			Parameters* parameters;
+			Variables* variables;
 		} InitArgs;
 
 		Controller() : entities_(0), gateway_(0), scenario_engine_(0) {}

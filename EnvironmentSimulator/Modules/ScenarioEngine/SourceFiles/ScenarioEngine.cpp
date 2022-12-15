@@ -739,6 +739,7 @@ int ScenarioEngine::parseScenario()
 	LOG("Loading %s (v%d.%d)", scenarioReader->getScenarioFilename().c_str(), scenarioReader->GetVersionMajor(), scenarioReader->GetVersionMinor());
 
 	scenarioReader->parseGlobalParameterDeclarations();
+	scenarioReader->parseGlobalVariableDeclarations();
 
 	// Now that parameter declaration has been parsed, call any registered callbacks before applying the parameters
 	if (paramDeclCallback.func != nullptr)

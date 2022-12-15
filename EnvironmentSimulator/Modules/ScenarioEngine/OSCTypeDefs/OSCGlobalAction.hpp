@@ -16,6 +16,7 @@
 #include "OSCAction.hpp"
 #include "CommonMini.hpp"
 #include "Parameters.hpp"
+#include "Variables.hpp"
 #include "Entities.hpp"
 #include "ScenarioGateway.hpp"
 #include "OSCAABBTree.hpp"
@@ -39,6 +40,7 @@ namespace scenarioengine
 			ADD_ENTITY,
 			DELETE_ENTITY,
 			PARAMETER_SET,
+			VARIABLE_SET,
 			INFRASTRUCTURE,  // not supported yet
 			SWARM_TRAFFIC,
 		} Type;
@@ -90,6 +92,39 @@ namespace scenarioengine
 		std::string Type2Str()
 		{
 			return "ParameterSetAction";
+		};
+
+		void Start(double simTime, double dt);
+		void Step(double simTime, double dt);
+
+		void print() {}
+
+	};
+
+	class VariableSetAction : public OSCGlobalAction
+	{
+	public:
+		std::string name_;
+		std::string value_;
+		Variables* variables_;
+
+		VariableSetAction() : OSCGlobalAction(OSCGlobalAction::Type::VARIABLE_SET), name_(""), value_(""), variables_(0) {};
+
+		VariableSetAction(const ParameterSetAction& action) : OSCGlobalAction(OSCGlobalAction::Type::VARIABLE_SET)
+		{
+			name_ = action.name_;
+			value_ = action.value_;
+		}
+
+		OSCGlobalAction* Copy()
+		{
+			VariableSetAction* new_action = new VariableSetAction(*this);
+			return new_action;
+		}
+
+		std::string Type2Str()
+		{
+			return "VariableSetAction";
 		};
 
 		void Start(double simTime, double dt);

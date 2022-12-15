@@ -113,6 +113,18 @@ public:
 	int SetParameterValue(const char *name, double value);
 	int SetParameterValue(const char *name, const char *value);
 	int SetParameterValue(const char *name, bool value);
+	int GetNumberOfVariables();
+	const char *GetVariableName(int index, OSCVariableDeclarations::VariableType *type);
+	int SetVariableValue(const char *name, const void *value);
+	int GetVariableValue(const char *name, void *value);
+	int GetVariableValueInt(const char *name, int &value);
+	int GetVariableValueDouble(const char *name, double &value);
+	int GetVariableValueString(const char *name, const char *&value);
+	int GetVariableValueBool(const char *name, bool &value);
+	int SetVariableValue(const char *name, int value);
+	int SetVariableValue(const char *name, double value);
+	int SetVariableValue(const char *name, const char *value);
+	int SetVariableValue(const char *name, bool value);
 	void SetQuitRequest(bool quit) { quit_request = quit; }
 	void SetState(PlayerState state) { state_ = state; }
 	PlayerState GetState() { return state_; }
