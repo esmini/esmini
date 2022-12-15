@@ -155,12 +155,16 @@ inline {{value["type"]}} Get{{key|capitalize}}() const { return {{key}}_; }
 * @brief constructor
 */
 {{key[6:]}}(
+{%-set length = generate_inputs(value,True)-%}
 {{-generate_inputs(value,True)-}}
 {%-if "inherits" in value.keys()-%}
     {%-set base = value["inherits"]-%}
     {%-for basekey,basevalue in dict.items()-%}
         {%-if "class "+base == basekey-%}
-,{{"\n"}}{{-generate_inputs(basevalue,True)|indent(4,True)-}}
+            {%if length %}
+,
+            {%endif%}
+{{-generate_inputs(basevalue,True)-}}
         {%endif%}
     {%endfor%}
 {%endif%}
