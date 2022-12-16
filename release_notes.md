@@ -1,5 +1,39 @@
 ## esmini release notes
 
+### 2022-12-16 Version 2.27.3
+
+New features and behaviors:
+- Extend plot_dat and add plot_csv script
+  - plot_dat.py support all plottable values
+  - added plot_csv.py for plotting any csv file
+  - this means that osi tracefiles can be plotted (via osi2csv.py and plot_csv.py)
+- Support continuous polyline speed and constant acceleration on segments
+  - apply continuous speed / constant acc in FollowMode = follow
+  - keep constant speed (zero acc) per segment in FollowMode = position
+- Add grid on plots
+- Update ALKS Reference Driver controller implementation
+  - add support for cut-out and deceleration
+  - add experimental support for pedestrians
+  - add a few scenario examples (alks_*.xosc)
+  - adjusted lateral trigger rule for cutting-in motorbikes
+  - add overlap check function and apply for ALKS AEB trigger
+  - add a few experimental properties, see `ALKS_R157SM_Controller` in [ControllerCatalog.xosc](https://github.com/esmini/esmini/blob/master/resources/xosc/Catalogs/Controllers/ControllerCatalog.xosc)
+
+Improvements and fixes:
+
+- Update equation link in odr elevation example in [straight_500_superelevation_elevation.xodr](https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/Unittest/xodr/straight_500_superelevation_elevation.xodr)
+- Hello World updated to make use of existing library and header file (avoid keeping copies)
+- Add info on how to use Visual Studio (and VSCode) with Hello World tutorial
+  - see [User guide - How to build, run and debug "Hello World"](https://esmini.github.io/#_how_to_build_run_and_debug_hello_world)
+- Fix shaky heading at end of small segment trajectories
+- Fix failed quit on close window event ([issue #363](https://github.com/esmini/esmini/issues/363))
+- Fix wrong OSI `bbcenter_to_rear` values ([issue #353](https://github.com/esmini/esmini/issues/353))
+  - change sign (measure from bb center to read axle)
+  - rear axle z relates to actual position, not projected on ground
+- Add correct moving obj z coordinate ([issue #355](https://github.com/esmini/esmini/issues/355))
+- Fix some additional memory leaks
+- Restore lost OSI files in demo pack
+
 ### 2022-11-25 Version 2.27.2
 
 - Add script for parallel execution of parameter distributions
