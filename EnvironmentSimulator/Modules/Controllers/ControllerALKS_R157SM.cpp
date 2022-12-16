@@ -21,7 +21,7 @@ using namespace scenarioengine;
 
 #define R157_LOG(level, format, ...)                                                                  \
     {                                                                                                 \
-        if (level > 0 && level <= log_level_)                                                         \
+        if (level > 0 && level <= GetLogLevel())                                                         \
         {                                                                                             \
             LOG((std::string("ALKS R157 ") + GetModelName() + " " + format).c_str(), ##__VA_ARGS__);  \
         }                                                                                             \
@@ -110,10 +110,18 @@ ControllerALKS_R157SM::ControllerALKS_R157SM(InitArgs* args) : model_(0), entiti
 
             if (args->properties->ValueExists("lateralTrigDistance"))
             {
-                ref_driver->lateral_dist_trigger_.threshold_ = strtod(args->properties->GetValueStr("lateralTrigDistance"));
+                ref_driver->lateral_dist_trigger_ = new ReferenceDriver::LateralDistTrigger(ref_driver);
+                ref_driver->lateral_dist_trigger_->threshold_ = strtod(args->properties->GetValueStr("lateralTrigDistance"));
+                ref_driver->lateral_dist_trigger_->SetName("LateralDistTrigger");
+                LOG("ALKS_R157SM AEB LateralTrigDistance: %.2f", ref_driver->lateral_dist_trigger_->threshold_);
             }
-            LOG("ALKS_R157SM AEB LateralTrigDistance: %.2f (%s)", ref_driver->lateral_dist_trigger_.threshold_,
-                ref_driver->lateral_dist_trigger_.Enabled() ? "enabled" : "disabled");
+
+            if (!ref_driver->lateral_dist_trigger_)
+            {
+                ref_driver->wandering_trigger_ = new ReferenceDriver::WanderingTrigger(ref_driver);
+                ref_driver->wandering_trigger_->threshold_ = ref_driver->wandering_threshold_;
+                ref_driver->wandering_trigger_->SetName("WanderingTrigger");
+            }
 
             model_ = (ControllerALKS_R157SM::Model*) ref_driver;
         }
@@ -609,6 +617,11 @@ bool ControllerALKS_R157SM::Regulation::CheckCritical()
         SetModelMode(ModelMode::NO_TARGET);
         return false;
     }
+    else if (GetModelMode() == ModelMode::CRITICAL && full_stop_)
+    {
+        // if already entered critical state and full stop is requested, stay in critical state regardless
+        return true;
+    }
     else if (object_in_focus_.dv_s > 0.0 && object_in_focus_.dist_long > 0)
     {
         // TTCLaneIntrusion < vrel / (2 x 6 ms^2) + 0.35s?
@@ -639,6 +652,19 @@ double ControllerALKS_R157SM::Regulation::ReactCritical()
     return speed;
 }
 
+ControllerALKS_R157SM::ReferenceDriver::~ReferenceDriver()
+{
+    if (lateral_dist_trigger_)
+    {
+        delete lateral_dist_trigger_;
+    }
+
+    if (wandering_trigger_)
+    {
+        delete wandering_trigger_;
+    }
+}
+
 void ControllerALKS_R157SM::ReferenceDriver::UpdateAEB(Vehicle* ego, ObjectInfo* info, double dt)
 {
     if (!aeb_.active_ && info->ttc < aeb_.ttc_critical_aeb_ &&
@@ -649,36 +675,83 @@ void ControllerALKS_R157SM::ReferenceDriver::UpdateAEB(Vehicle* ego, ObjectInfo*
     }
 }
 
-void ControllerALKS_R157SM::ReferenceDriver::UpdateLateralDistTrigger(ObjectInfo* info)
+void ControllerALKS_R157SM::ReferenceDriver::LateralDistTrigger::Update(ObjectInfo* info)
 {
     if (info->obj == nullptr ||
         info->dv_t < SMALL_NUMBER) // moving away from ego lateral position
     {
-        if (lateral_dist_trigger_.active_)
+        if (active_)
         {
-            R157_LOG(2, "LateralDistanceTrigger deactivated");
-            lateral_dist_trigger_.Reset();
+            R157_LOG(2, "%s deactivated", name_.c_str());
+            Reset();
         }
         return;
     }
 
-    if (info->obj != lateral_dist_trigger_.obj_)
+    if (info->obj != obj_)
     {
-        R157_LOG(2, "LateralDistanceTrigger activated on %s", info->obj->GetName().c_str());
-        lateral_dist_trigger_.obj_ = info->obj;
-        lateral_dist_trigger_.active_ = true;
-        lateral_dist_trigger_.t0_ = info->obj->pos_.GetT();
+        obj_ = info->obj;
+        active_ = true;
+        t0_ = info->obj->pos_.GetT();
+
+        R157_LOG(2, "%s activated on %s at t %.3f with dist delta threshold %.3f",
+            name_.c_str(), info->obj->GetName().c_str(), t0_, threshold_);
     }
 }
 
-bool ControllerALKS_R157SM::ReferenceDriver::EvaluateLateralDistTrigger()
+void ControllerALKS_R157SM::ReferenceDriver::WanderingTrigger::Update(ObjectInfo* info)
 {
-    if (lateral_dist_trigger_.active_ == false || lateral_dist_trigger_.obj_ == nullptr)
+    if (info->obj == nullptr ||
+        info->dv_t < SMALL_NUMBER) // moving away from ego lateral position
+    {
+        if (active_)
+        {
+            R157_LOG(2, "%s deactivated", name_.c_str());
+            Reset();
+        }
+        return;
+    }
+
+    if (info->obj != obj_)
+    {
+        obj_ = info->obj;
+        active_ = true;
+        t0_ = info->obj->pos_.GetT();
+
+        threshold_ = model_->wandering_threshold_;
+
+        bool mc = obj_->GetType() == Object::Type::VEHICLE && ((Vehicle*)obj_)->category_ == Vehicle::Category::MOTORBIKE;
+
+        if (obj_->pos_.GetT() > model_->veh_->pos_.GetT() &&  // target is to the left of Ego, moving along negative T
+            obj_->pos_.GetOffset() > 0 ||                     // target is to the left (other side) of lane center
+            obj_->pos_.GetT() < model_->veh_->pos_.GetT() &&  // target is to the right of Ego, moving along positive T
+            obj_->pos_.GetOffset() < 0)                       // target is to the right (other side) of lane center
+        {
+            // add current lane offset to end up at wandering_threshold
+            threshold_ += abs(obj_->pos_.GetOffset());
+        }
+        else if (!mc)
+        {
+            // Target is not a mc and is already at same side of lane center as ego
+            // remove current lane offset to end up at wandering_threshold.
+            // MC is exception, it will move wandering_threshold regardless of
+            // initial lane offset when on same side as Ego.
+            threshold_ = MAX(0.0, threshold_ - abs(obj_->pos_.GetOffset()));
+        }
+
+        R157_LOG(2, "%s activated on %s (%s) at t %.3f with delta dist threshold %.3f",
+            name_.c_str(), info->obj->GetName().c_str(), mc ? "MC" : "non MC", t0_, threshold_);
+    }
+}
+
+bool ControllerALKS_R157SM::ReferenceDriver::LateralDistTrigger::Evaluate()
+{
+    if (active_ == false || obj_ == nullptr)
     {
         return false;
     }
 
-    return abs(lateral_dist_trigger_.obj_->pos_.GetT() - lateral_dist_trigger_.t0_) > lateral_dist_trigger_.threshold_;
+    return abs(obj_->pos_.GetT() - t0_) > threshold_;
 }
 
 bool ControllerALKS_R157SM::ReferenceDriver::CheckSafety(ObjectInfo* info)
@@ -688,17 +761,17 @@ bool ControllerALKS_R157SM::ReferenceDriver::CheckSafety(ObjectInfo* info)
         return true;
     }
 
-    UpdateLateralDistTrigger(info);
-
     // Calculate lane offset of object center, transform OpenSCENARIO reference point
     c_lane_offset_ = info->obj->pos_.GetOffset() +
         SE_Vector(info->obj->boundingbox_.center_.x_, 0.0).Rotate(info->obj->pos_.GetH()).y();
 
-    // TODO: Improve implementation later for intial offset.
-    if (set_initial_offset_)
+    if (lateral_dist_trigger_)
     {
-        initial_offset_ = c_lane_offset_;
-        set_initial_offset_ = false;
+        lateral_dist_trigger_->Update(info);
+    }
+    else
+    {
+        wandering_trigger_->Update(info);
     }
 
     if (info->obj->GetType() == Object::Type::PEDESTRIAN)
@@ -723,11 +796,10 @@ bool ControllerALKS_R157SM::ReferenceDriver::CheckSafety(ObjectInfo* info)
     }
     else
     {
-        if (lateral_dist_trigger_.Enabled() &&
-            EvaluateLateralDistTrigger() == true ||
-            !lateral_dist_trigger_.Enabled() &&
-            info->dv_t > 0 && // moving towards ego lane
-            -SIGN(info->dLaneId) * c_lane_offset_ > wandering_threshold_) // check distance at the side facing ego
+        if (lateral_dist_trigger_ &&
+            lateral_dist_trigger_->Evaluate() == true ||
+            !lateral_dist_trigger_ &&
+            wandering_trigger_->Evaluate() == true) // check distance at the side facing ego
         {
             info->action = ScenarioType::CutIn;
             return false;
@@ -755,25 +827,23 @@ bool ControllerALKS_R157SM::ReferenceDriver::CheckPerceptionCutIn()
         else
         {
             bool trig = false;
-            if (lateral_dist_trigger_.Enabled())
+            if (lateral_dist_trigger_ && lateral_dist_trigger_->Evaluate() == true)
             {
-                if (EvaluateLateralDistTrigger() == true)
-                {
-                    R157_LOG(2, "Trig perception on lateral distance: %.2f (>%.2f)",
-                        lateral_dist_trigger_.GetDistance(), lateral_dist_trigger_.threshold_);
-                    trig = true;
-                }
+                R157_LOG(2, "Trig perception on lateral distance: %.2f (>%.2f)",
+                    lateral_dist_trigger_->GetDistance(), lateral_dist_trigger_->threshold_);
+                trig = true;
             }
-            else
+            else if(wandering_trigger_ && wandering_trigger_->Evaluate() == true)
             {
-                if (-SIGN(object_in_focus_.dLaneId) * c_lane_offset_ > wandering_threshold_)
-                {
-                    trig = true;
-                }
+                R157_LOG(2, "Trig perception on lateral wandering threshold: %.3f (>%.3f)",
+                    abs(wandering_trigger_->obj_->pos_.GetT() - wandering_trigger_->t0_), wandering_trigger_->threshold_);
+                trig = true;
             }
 
             if (trig)
             {
+                perception_t_ = object_in_focus_.obj->pos_.GetT();
+
                 // Establish additional lateral perception distance
                 if (cut_in_perception_delay_mode_ == CutInPerceptionDelayMode::DIST)
                 {
@@ -808,11 +878,19 @@ bool ControllerALKS_R157SM::ReferenceDriver::CheckPerceptionCutIn()
         {
             if (cut_in_perception_delay_mode_ == CutInPerceptionDelayMode::DIST)
             {
-                if (-SIGN(object_in_focus_.dLaneId) * c_lane_offset_ > wandering_threshold_ + perception_dist_ + abs(initial_offset_))
+                if (object_in_focus_.obj->pos_.GetT() > veh_->pos_.GetT() &&  // target moving along negative T
+                    object_in_focus_.obj->pos_.GetT() < perception_t_ - perception_dist_)
                 {
-                    R157_LOG(2, "Reached lane offset %.2fm (> %.3fm + %.2fm)",
-                        -SIGN(object_in_focus_.dLaneId) * c_lane_offset_, wandering_threshold_, perception_dist_);
                     SetPhase(Phase::REACT);
+                    R157_LOG(2, "Reached lateral perception distance (t %.3f < t0 %.3f - perc dist %.2f)",
+                        object_in_focus_.obj->pos_.GetT(), perception_t_, perception_dist_);
+                }
+                else if (object_in_focus_.obj->pos_.GetT() < veh_->pos_.GetT() && // target moving along positive T
+                    object_in_focus_.obj->pos_.GetT() > perception_t_ + perception_dist_)
+                {
+                    SetPhase(Phase::REACT);
+                    R157_LOG(2, "Reached lateral perception distance (t %.3f > t0 %.3f + perc dist %.2f)",
+                        object_in_focus_.obj->pos_.GetT(), perception_t_, perception_dist_);
                 }
             }
             else if (cut_in_perception_delay_mode_ == CutInPerceptionDelayMode::TIME)
@@ -821,8 +899,8 @@ bool ControllerALKS_R157SM::ReferenceDriver::CheckPerceptionCutIn()
                 if (timer_ < SMALL_NUMBER)
                 {
                     SetPhase(Phase::REACT);
-                    R157_LOG(2, "Reached lane offset %.2fm (> %.3fm + %.2fs)",
-                        -SIGN(object_in_focus_.dLaneId) * c_lane_offset_, wandering_threshold_, perception_time_);
+                    R157_LOG(2, "Reached lateral perception time at t %.2fm (t0 %.3fm + perc time %.2f)",
+                        object_in_focus_.obj->pos_.GetT(), perception_t_, perception_time_);
                 }
             }
         }

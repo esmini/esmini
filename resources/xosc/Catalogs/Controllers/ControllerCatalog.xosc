@@ -163,7 +163,8 @@
                 <ParameterDeclaration name="Model" parameterType="string" value="ReferenceDriver" />
                 <!-- cruise: false (no adaptive cruise control), true (use adaptive cruise control) -->
                 <ParameterDeclaration name="Cruise" parameterType="boolean" value="true" />                
-                <!-- perceptionDelayMode: Dist (0.72m), Time (0.4s) (only applicable to ReferenceDriver) -->
+                <!-- perceptionDelayMode: Dist (0.72m), Time (0.4s default) (only applicable to ReferenceDriver) -->
+                <!-- time 0.4s can be overriden for pedestrians by setting PedestrianRiskEvaluationTime -->
                 <ParameterDeclaration name="CutInPerceptionDelayMode" parameterType="string" value="Dist" />
                 <!-- fullStop: "true" = decelerate to a full stop, "false" = decelerate until safe -->
                 <ParameterDeclaration name="FullStop" parameterType="boolean" value="false" />                

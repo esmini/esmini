@@ -143,6 +143,8 @@ namespace scenarioengine
 
             std::string GetModelName() { return ModelType2Str(type_); }
 
+            int GetLogLevel() { return log_level_; }
+
             virtual void Reset() {}
 
             ModelType type_;
@@ -272,10 +274,12 @@ namespace scenarioengine
                 bool active_;
             };
 
-            struct LateralDistTrigger
+            class LateralDistTrigger
             {
-                LateralDistTrigger() : threshold_(0.0) { Reset(); }
-                bool Enabled() { return threshold_ > SMALL_NUMBER; }
+            public:
+                LateralDistTrigger(ReferenceDriver* ref_driver) :
+                    model_(ref_driver), threshold_(0.0), name_("LateralTrigger") { Reset(); }
+
                 bool Active() { return active_; }
                 double GetDistance() { return obj_ ? abs(obj_->pos_.GetT() - t0_) : 0.0; }
                 void Reset()
@@ -284,11 +288,25 @@ namespace scenarioengine
                     obj_ = nullptr;
                     t0_ = 0.0;
                 }
+                virtual void Update(ObjectInfo* info);
+                bool Evaluate();
+                std::string GetModelName() { return model_ ? model_->GetModelName() : ""; }
+                int GetLogLevel() { return model_ ? model_->GetLogLevel() : 0; }
+                void SetName(std::string name) { name_ = name; }
 
                 double threshold_;
+                ReferenceDriver* model_;
                 bool active_;
                 Object* obj_;
                 double t0_;  // road coordinate t value at detection time
+                std::string name_;
+            };
+
+            class WanderingTrigger : public LateralDistTrigger
+            {
+            public:
+                WanderingTrigger(ReferenceDriver* ref_driver) : LateralDistTrigger(ref_driver) {}
+                void Update(ObjectInfo* info);
             };
 
             // set look ahead distance to 100m
@@ -296,7 +314,9 @@ namespace scenarioengine
                 min_jerk_(12.65), release_deceleration_(0.4), critical_ttc_(2.0), critical_thw_(2.0),
                 phase_(Phase::INACTIVE), timer_(0.0), cut_in_perception_delay_mode_(CutInPerceptionDelayMode::DIST),
                 perception_dist_(0.72), perception_time_(0.4), wandering_threshold_(0.375), overlap_tolerance_(0.2),
-                pedestrian_risk_eval_time_(0.4) {}
+                pedestrian_risk_eval_time_(0.4), perception_t_(0.0), lateral_dist_trigger_(0), wandering_trigger_(0) {}
+
+            ~ReferenceDriver();
 
             bool CheckSafety(ObjectInfo* info) override;
             bool CheckCritical() override;
@@ -311,8 +331,6 @@ namespace scenarioengine
                 SetScenarioType(ScenarioType::None);
             }
             void UpdateAEB(Vehicle* ego, ObjectInfo* info, double dt);
-            void UpdateLateralDistTrigger(ObjectInfo* info);
-            bool EvaluateLateralDistTrigger();
 
             double min_jerk_;
             double release_deceleration_;  // deceleration when not stepping on the accelerator pedal(I think)
@@ -327,10 +345,10 @@ namespace scenarioengine
             double wandering_threshold_;
             double overlap_tolerance_;
             double c_lane_offset_;
-            bool set_initial_offset_ = true;
-            double initial_offset_ = 0.0;
+            double perception_t_; // t-value when target has been perceived
             AEB aeb_;
-            LateralDistTrigger lateral_dist_trigger_;
+            LateralDistTrigger* lateral_dist_trigger_;
+            WanderingTrigger* wandering_trigger_;
 
             bool CheckPerception()
             {

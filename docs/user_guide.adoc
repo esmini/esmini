@@ -1414,6 +1414,9 @@ a| [horizontal]
 `logLevel`:: 0: No logging, 1: Brief logging of state changes (default), 2: Verbose logging of some internal variables
 `model`:: `Regulation`, `ReferenceDriver`, `RSS`, `FSM` as described above.
 `cruise`:: Activate longitudinal ACC (comfort adaptive speed control) (`true`/`false`)
+
+Further properties see `ALKS_R157SM_Controller` in https://github.com/esmini/esmini/blob/master/resources/xosc/Catalogs/Controllers/ControllerCatalog.xosc[Controllers/ControllerCatalog.xosc].
+
 |*Examples*:|
 https://github.com/esmini/esmini/blob/master/resources/xosc/alks_r157_cut_in_quick_brake.xosc[alks_r157_cut_in_quick_brake.xosc] +
 https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/Unittest/xosc/alks_r157_quick_stop_test.xosc[alks_r157_quick_stop_test.xosc] +

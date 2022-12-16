@@ -52,7 +52,7 @@
                     <PrivateAction>
                         <TeleportAction>
                             <Position>
-                                <LanePosition roadId="1" laneId="-1" offset="0" s="$EgoS"/>
+                                <LanePosition roadId="1" laneId="-1" offset="0.0" s="$EgoS"/>
                             </Position>
                         </TeleportAction>
                     </PrivateAction>
@@ -76,8 +76,8 @@
                     <PrivateAction>
                         <TeleportAction>
                             <Position>
-                                <LanePosition roadId="1" laneId="1" offset="0" s="$TargetS">
-                                    <Orientation type="relative" h="3.1416"/>
+                                <LanePosition roadId="1" laneId="1" offset="0.0" s="$TargetS">
+                                    <Orientation type="relative" h="3.141593"/>
                                 </LanePosition>
                             </Position>
                         </TeleportAction>

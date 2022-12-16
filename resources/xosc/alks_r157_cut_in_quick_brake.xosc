@@ -72,7 +72,7 @@
                         <TeleportAction>
                             <Position>
                                 <LanePosition roadId="1" laneId="1" offset="0" s="$TargetS">
-                                    <Orientation type="relative" h="3.1415"/>
+                                    <Orientation type="relative" h="3.141593"/>
                                 </LanePosition>
                             </Position>
                         </TeleportAction>
