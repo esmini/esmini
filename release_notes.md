@@ -1,5 +1,18 @@
 ## esmini release notes
 
+### 2022-12-17 Version 2.27.4
+
+New features and behaviors:
+- Step fwd/back by delta time in replayer instead of fixed nr steps
+  - shift => 0.1s
+  - ctrl-shift => 1.0s
+  - full description see [replayer Command reference](https://esmini.github.io/#_replayer)
+
+Improvements and fixes:
+- Fix chopped exe filenames in demo pack for Windows
+- Fix orientation alignment bug ([issue #364](https://github.com/esmini/esmini/issues/364))
+- Fix visibility mask bug in replayer
+
 ### 2022-12-16 Version 2.27.3
 
 New features and behaviors:
