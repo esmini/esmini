@@ -46,8 +46,7 @@ target_include_system_directories(
     PRIVATE
     ${ROAD_MANAGER_PATH}
     ${EXTERNALS_OSI_INCLUDES}
-    ${EXTERNALS_PUGIXML_PATH}
-)
+    ${EXTERNALS_PUGIXML_PATH})
 
 target_link_libraries(
     ${TARGET}
@@ -60,29 +59,32 @@ target_link_libraries(
     PRIVATE ${SOCK_LIB})
 
 if(USE_OSG)
-  target_link_libraries(
-      ${TARGET}
-      PRIVATE ViewerBase)
+    target_link_libraries(
+        ${TARGET}
+        PRIVATE ViewerBase)
 
-  target_link_system_libraries(
-    ${TARGET}
-    PRIVATE
-    OSG)
+    target_link_system_libraries(
+        ${TARGET}
+        PRIVATE
+        OSG)
 endif()
 
 if(USE_SUMO)
-  target_link_system_libraries(
-    ${TARGET}
-    PRIVATE
-    ${SUMO_LIBRARIES})
+    target_link_system_libraries(
+        ${TARGET}
+        PRIVATE
+        ${SUMO_LIBRARIES})
 endif()
 
 if(USE_OSI)
-  target_link_system_libraries(
-    ${TARGET}
-    PRIVATE
-    OSI)
+    target_link_system_libraries(
+        ${TARGET}
+        PRIVATE
+        OSI)
 endif()
+
+disable_static_analysis(${TARGET})
+disable_iwyu(${TARGET})
 
 # ############################### Install ############################################################################
 
