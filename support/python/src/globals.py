@@ -142,10 +142,7 @@ ESMINI_CMAKE_FORMAT_INCLUDES = [
     os.path.join(ESMINI_DIRECTORY_SUPPORT, "cmake"),
     os.path.join(ESMINI_DIRECTORY_ENVIRONMENT_SIMULATOR, "Modules"),
     os.path.join(ESMINI_DIRECTORY_ENVIRONMENT_SIMULATOR, "Libraries"),
-    os.path.join(ESMINI_DIRECTORY_ENVIRONMENT_SIMULATOR, "Applications", "esmini"),
-    os.path.join(ESMINI_DIRECTORY_ENVIRONMENT_SIMULATOR, "Applications", "esmini-dyn"),
-    os.path.join(ESMINI_DIRECTORY_ENVIRONMENT_SIMULATOR, "Applications", "odrviewer"),
-    os.path.join(ESMINI_DIRECTORY_ENVIRONMENT_SIMULATOR, "Applications", "odrplot"),
+    os.path.join(ESMINI_DIRECTORY_ENVIRONMENT_SIMULATOR, "Applications"),
 ]
 
 ESMINI_CMAKE_FORMAT_EXTENSION = ["CMakeLists.txt", ".cmake"]

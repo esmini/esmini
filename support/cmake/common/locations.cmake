@@ -127,10 +127,10 @@ macro(set_project_os_specific_paths)
     endif()
 
     if(MSVC)
-        set(DIRENT_INCLUDE_DIR
+        set(EXTERNALS_DIRENT_INCLUDES
             "${EXTERNALS_DIRENT_PATH}/win")
     else()
-        set(DIRENT_INCLUDE_DIR
+        set(EXTERNALS_DIRENT_INCLUDES
             "")
     endif()
 

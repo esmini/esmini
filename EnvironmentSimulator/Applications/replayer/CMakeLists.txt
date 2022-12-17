@@ -1,68 +1,167 @@
+# ############################### Setting targets ####################################################################
 
-include_directories (
-  ${ROAD_MANAGER_PATH}
-  ${SCENARIO_ENGINE_PATH}/SourceFiles
-  ${SCENARIO_ENGINE_PATH}/OSCTypeDefs
-  ${VIEWER_BASE_PATH}
-if (USE_OSG)
-  ${EXTERNALS_OSG_INCLUDES}
-endif (USE_OSG)
-  ${COMMON_MINI_PATH}
-if (USE_OSI)
-  ${EXTERNALS_OSI_INCLUDES}
-endif (USE_OSI)
-  ${CONTROLLERS_PATH}
-  ${DIRENT_INCLUDE_DIR}
-  ${EXTERNALS_PUGIXML_PATH}
-)
+set(TARGET1
+    replayer)
 
-if (USE_OSI)
-  set (osi_libs OSI)
-endif (USE_OSI)
+set(TARGET2
+    dat2csv)
 
-set ( INCLUDES
-	Replay.hpp
-)
+set(TARGET3
+    osireceiver)
 
-if (USE_OSG)
-# Replayer target
-set (TARGET1 replayer)
-add_definitions(-DOSG_LIBRARY_STATIC)
-set ( SOURCES
-	main.cpp
-	Replay.cpp
-    helpText.hpp
-    collision.hpp
-)
-link_directories( ${EXTERNALS_OSG_LIBRARY_PATH} )
-add_executable ( ${TARGET1} ${SOURCES} ${INCLUDES} )
-target_link_libraries (
-	${TARGET1}
-	RoadManager
-	ScenarioEngine
-	ViewerBase
-	CommonMini
-	OSG
-	${TIME_LIB}
-  ${osi_libs}
-  project_options
-)
-endif (USE_OSG)
+# ############################### Loading desired rules ##############################################################
 
-# dat2csv target
-set (TARGET2 dat2csv)
-add_executable ( ${TARGET2} dat2csv.cpp Replay.cpp )
-target_link_libraries ( ${TARGET2} RoadManager CommonMini ${TIME_LIB} project_options)
+include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_static_analysis.cmake)
+include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_iwyu.cmake)
+include(${CMAKE_SOURCE_DIR}/support/cmake/rule/system_link.cmake)
 
+# ############################### Setting target files ###############################################################
 
-# osi_receiver target
-if (USE_OSI)
-  link_directories( ${EXTERNALS_OSI_LIBRARY_PATH} )
-  set (TARGET3 osireceiver)
-  add_executable ( ${TARGET3} osi_receiver.cpp )
-  target_link_libraries ( ${TARGET3} OSI ${TIME_LIB} ${SOCK_LIB} project_options)
-endif ()
-# Install directives
+set(TARGET1_SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Replay.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/helpText.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/collision.hpp)
 
-install ( TARGETS ${TARGET1} ${TARGET2} ${TARGET3} DESTINATION "${INSTALL_PATH}")
+set(TARGET1_INCLUDES
+    ${CMAKE_CURRENT_SOURCE_DIR}/Replay.hpp)
 
+set(TARGET2_SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/dat2csv.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Replay.cpp)
+
+set(TARGET3_SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/osi_receiver.cpp)
+
+# ############################### Creating executable for target1 (replayer) #########################################
+
+include_directories(
+    ${SCENARIO_ENGINE_PATH}/SourceFiles
+    ${SCENARIO_ENGINE_PATH}/OSCTypeDefs
+    ${VIEWER_BASE_PATH}
+    ${CONTROLLERS_PATH}
+    ${COMMON_MINI_PATH})
+
+if(USE_OSG)
+
+    add_executable(
+        ${TARGET1}
+        ${TARGET1_SOURCES}
+        ${TARGET1_INCLUDES})
+
+    target_link_libraries(
+        ${TARGET1}
+        PRIVATE project_options)
+
+    target_include_system_directories(
+        ${TARGET1}
+        PRIVATE
+        ${ROAD_MANAGER_PATH}
+        ${EXTERNALS_OSI_INCLUDES}
+        ${EXTERNALS_PUGIXML_PATH}
+        ${EXTERNALS_OSG_INCLUDES}
+        ${EXTERNALS_DIRENT_INCLUDES})
+
+    target_link_libraries(
+        ${TARGET1}
+        PRIVATE RoadManager
+        PRIVATE ScenarioEngine
+        PRIVATE ViewerBase
+        PRIVATE CommonMini
+        PRIVATE ${TIME_LIB})
+
+    target_link_system_libraries(
+        ${TARGET1}
+        PRIVATE
+        OSG)
+
+    if(USE_OSI)
+        target_link_system_libraries(
+            ${TARGET1}
+            PRIVATE
+            OSI)
+    endif()
+
+endif()
+
+disable_static_analysis(${TARGET1})
+disable_iwyu(${TARGET1})
+
+# ############################### Creating executable for target2 (dat2csv) ##########################################
+
+add_executable(
+    ${TARGET2}
+    ${TARGET2_SOURCES})
+
+target_link_libraries(
+    ${TARGET2}
+    PRIVATE project_options)
+
+target_include_system_directories(
+    ${TARGET2}
+    PRIVATE
+    ${ROAD_MANAGER_PATH}
+    ${EXTERNALS_OSI_INCLUDES}
+    ${EXTERNALS_PUGIXML_PATH}
+    ${EXTERNALS_OSG_INCLUDES}
+    ${EXTERNALS_DIRENT_INCLUDES})
+
+target_link_libraries(
+    ${TARGET2}
+    PRIVATE RoadManager
+    PRIVATE CommonMini
+    PRIVATE ${TIME_LIB})
+
+if(USE_OSI)
+    target_link_system_libraries(
+        ${TARGET2}
+        PRIVATE
+        OSI)
+endif()
+
+disable_static_analysis(${TARGET2})
+disable_iwyu(${TARGET2})
+
+# ############################### Creating executable for target3 (osireceiver) ######################################
+
+if(USE_OSI)
+
+    add_executable(
+        ${TARGET3}
+        ${TARGET3_SOURCES})
+
+    target_link_libraries(
+        ${TARGET3}
+        PRIVATE project_options)
+
+    target_include_system_directories(
+        ${TARGET3}
+        PRIVATE
+        ${ROAD_MANAGER_PATH}
+        ${EXTERNALS_OSI_INCLUDES}
+        ${EXTERNALS_PUGIXML_PATH}
+        ${EXTERNALS_OSG_INCLUDES}
+        ${EXTERNALS_DIRENT_INCLUDES})
+
+    target_link_libraries(
+        ${TARGET3}
+        PRIVATE ${TIME_LIB}
+        PRIVATE ${SOCK_LIB})
+
+    target_link_system_libraries(
+        ${TARGET3}
+        PRIVATE
+        OSI)
+
+endif()
+
+disable_static_analysis(${TARGET3})
+disable_iwyu(${TARGET3})
+
+# # ############################### Install ############################################################################
+
+install(
+    TARGETS ${TARGET1}
+            ${TARGET2}
+            ${TARGET3}
+    DESTINATION "${INSTALL_PATH}")
