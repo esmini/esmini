@@ -1,52 +1,86 @@
+# ############################### Setting targets ####################################################################
 
-include_directories (
-  ${SCENARIO_ENGINE_PATH}/SourceFiles
-  ${SCENARIO_ENGINE_PATH}/OSCTypeDefs
-  ${ROAD_MANAGER_PATH}
-  ${VIEWER_BASE_PATH}
-  ${PLAYER_BASE_PATH}
-  ${CONTROLLERS_PATH}
-  ${EXTERNALS_OSG_INCLUDES}
-  ${EXTERNALS_SUMO_INCLUDES}
-  ${COMMON_MINI_PATH}
-  ${EXTERNALS_OSI_INCLUDES}
-  ${EXTERNALS_PUGIXML_PATH}
-)
+set(TARGET
+    esmini)
 
-set(TARGET esmini)
+# ############################### Loading desired rules ##############################################################
 
-set ( SOURCES
-	main.cpp
-)
+include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_static_analysis.cmake)
+include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_iwyu.cmake)
+include(${CMAKE_SOURCE_DIR}/support/cmake/rule/system_link.cmake)
 
-add_executable ( ${TARGET} ${SOURCES} ${INCLUDES} )
+# ############################### Setting target files ###############################################################
 
-if (USE_OSG)
-  add_definitions(-DOSG_LIBRARY_STATIC)
-  set (viewer_libs ViewerBase OSG)
-endif (USE_OSG)
+set(SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
 
-if (USE_SUMO)
-  set (sumo_libs ${SUMO_LIBRARIES})
-endif (USE_SUMO)
+# ############################### Creating executable ################################################################
 
-if (USE_OSI)
-  set (osi_libs OSI)
-endif (USE_OSI)
+include_directories(
+    ${SCENARIO_ENGINE_PATH}/SourceFiles
+    ${SCENARIO_ENGINE_PATH}/OSCTypeDefs
+    ${VIEWER_BASE_PATH}
+    ${PLAYER_BASE_PATH}
+    ${CONTROLLERS_PATH}
+    ${COMMON_MINI_PATH})
 
-target_link_libraries (
-	${TARGET}
-	PlayerBase
-	ScenarioEngine
-    Controllers
-	RoadManager
-	CommonMini
-    ${viewer_libs}
-	${osi_libs}
-	${sumo_libs}
-	${TIME_LIB}
-    ${SOCK_LIB}
-    project_options
-)
+add_executable(
+    ${TARGET}
+    ${SOURCES})
 
-install ( TARGETS ${TARGET} DESTINATION "${INSTALL_PATH}")
+target_link_libraries(
+    ${TARGET}
+    PRIVATE project_options)
+
+target_include_system_directories(
+    ${TARGET}
+    PRIVATE
+    ${ROAD_MANAGER_PATH}
+    ${EXTERNALS_OSI_INCLUDES}
+    ${EXTERNALS_PUGIXML_PATH}
+    ${EXTERNALS_OSG_INCLUDES}
+    ${EXTERNALS_SUMO_INCLUDES})
+
+target_link_libraries(
+    ${TARGET}
+    PRIVATE PlayerBase
+    PRIVATE ScenarioEngine
+    PRIVATE CommonMini
+    PRIVATE Controllers
+    PRIVATE RoadManager
+    PRIVATE ${TIME_LIB}
+    PRIVATE ${SOCK_LIB})
+
+if(USE_OSG)
+    target_link_libraries(
+        ${TARGET}
+        PRIVATE ViewerBase)
+
+    target_link_system_libraries(
+        ${TARGET}
+        PRIVATE
+        OSG)
+endif()
+
+if(USE_SUMO)
+    target_link_system_libraries(
+        ${TARGET}
+        PRIVATE
+        ${SUMO_LIBRARIES})
+endif()
+
+if(USE_OSI)
+    target_link_system_libraries(
+        ${TARGET}
+        PRIVATE
+        OSI)
+endif()
+
+disable_static_analysis(${TARGET})
+disable_iwyu(${TARGET})
+
+# ############################### Install ############################################################################
+
+install(
+    TARGETS ${TARGET}
+    DESTINATION "${INSTALL_PATH}")
