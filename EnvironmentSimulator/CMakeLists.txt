@@ -1,5 +1,7 @@
 link_directories(${EXTERNALS_OSG_LIBRARY_PATH} ${EXTERNALS_OSI_LIBRARY_PATH} ${EXTERNALS_SUMO_LIBRARY_PATH} ${EXTERNALS_GTEST_LIBRARY_PATH} )
 
+# ############################### Building Modules #####################################################################
+
 add_subdirectory(Modules/CommonMini)
 add_subdirectory(Modules/Controllers)
 add_subdirectory(Modules/PlayerBase)
@@ -10,19 +12,27 @@ if (USE_OSG)
   add_subdirectory(Modules/ViewerBase)
 endif (USE_OSG)
 
+# ############################### Building Libraries ###################################################################
+
 add_subdirectory(Libraries/esminiLib)
 add_subdirectory(Libraries/esminiRMLib)
+
+# ############################### Building Applications ################################################################
+
 add_subdirectory(Applications/esmini)
 add_subdirectory(Applications/esmini-dyn)
+
 if (USE_OSG)
   add_subdirectory(Applications/odrviewer)
 endif (USE_OSG)
 
-# Add unittest folder
-if (NOT (APPLE OR MINGW))
-  if (USE_GTEST)
-    add_subdirectory(Unittest)
-  endif()
+add_subdirectory(Applications/odrplot)
+add_subdirectory(Applications/replayer)
+
+# ############################### Building Unittest ####################################################################
+
+if ((NOT (APPLE OR MINGW)) AND USE_GTEST)
+  add_subdirectory(Unittest)
 endif()
 
 set ( ModulesFolder Modules )
@@ -36,28 +46,18 @@ set_target_properties (ScenarioEngine PROPERTIES FOLDER ${ModulesFolder} )
 set_target_properties (RoadManager PROPERTIES FOLDER ${ModulesFolder} )
 set_target_properties (ScenarioEngine PROPERTIES FOLDER ${ModulesFolder} )
 
+# ############################### Getting code-examples ################################################################
 
-# Add all projects under code-examples folder using a macro
-MACRO(SUBDIRLIST result curdir)
-  FILE(GLOB children RELATIVE ${curdir} ${curdir}/*)
-  SET(dirlist "")
-  FOREACH(child ${children})
-    IF(IS_DIRECTORY ${curdir}/${child})
-      LIST(APPEND dirlist ${child})
-    ENDIF()
-  ENDFOREACH()
+get_subdirectories(${CODE_EXAMPLES_PATH} subdirectories)
 
-  if (NOT USE_OSI)
-    LIST(REMOVE_ITEM dirlist "osi-groundtruth")
-    LIST(REMOVE_ITEM dirlist "osi-groundtruth-dyn")
-  endif ()
+if (NOT USE_OSI)
+  list(REMOVE_ITEM subdirectories "osi-groundtruth")
+  list(REMOVE_ITEM subdirectories "osi-groundtruth-dyn")
+endif ()
 
-  SET(${result} ${dirlist})
-ENDMACRO()
+# ############################### Building code-examples ###############################################################
 
-SUBDIRLIST(SUBDIRS ${CMAKE_CURRENT_SOURCE_DIR}/code-examples)
-
-FOREACH(subdir ${SUBDIRS})
+FOREACH(subdir ${subdirectories})
     if (NOT ${subdir} STREQUAL "trig_lane_change")
         add_subdirectory(code-examples/${subdir})
         if (NOT ${subdir} STREQUAL "hello_world")
@@ -65,11 +65,6 @@ FOREACH(subdir ${SUBDIRS})
         endif ()
     endif ()
 ENDFOREACH()
-
-add_subdirectory(Applications/odrplot)
-add_subdirectory(Applications/replayer)
-
-
 
 if (USE_OSI)
   set_target_properties (osireceiver PROPERTIES FOLDER ${ApplicationsFolder} )

@@ -122,7 +122,11 @@ set_project_library_paths()
 set_definitions()
 set_special_build_flags()
 
-# ############################### Loading cloud packages ##########################################################
+# ############################### Loading utils packages ##############################################################
+
+include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/utils/get_subdirectories.cmake)
+
+# ############################### Loading cloud packages ##############################################################
 
 set(FILE_STORAGE
     "esmini") # "dropbox", "google", "esmini"  (limited GB/Day)
