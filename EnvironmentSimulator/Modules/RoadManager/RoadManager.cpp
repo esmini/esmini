@@ -8415,6 +8415,34 @@ void Position::EvaluateOrientation()
 			p_,
 			r_
 		);
+
+		if (align_h_ == ALIGN_MODE::ALIGN_HARD)
+		{
+			h_relative_ = 0.0;
+		}
+		else if (align_h_ == ALIGN_MODE::ALIGN_NONE)
+		{
+			h_relative_ = GetAngleInInterval2PI(h_ - GetHRoad());
+		}
+
+		if (align_p_ == ALIGN_MODE::ALIGN_HARD)
+		{
+			p_relative_ = 0.0;
+		}
+		else if (align_p_ == ALIGN_MODE::ALIGN_NONE)
+		{
+			p_relative_ = GetAngleInInterval2PI(p_ - GetPRoad());
+		}
+
+		if (align_r_ == ALIGN_MODE::ALIGN_HARD)
+		{
+			r_relative_ = 0.0;
+		}
+		else if (align_h_ == ALIGN_MODE::ALIGN_NONE)
+		{
+			r_relative_ = GetAngleInInterval2PI(r_ - GetRRoad());
+		}
+
 		h_ = GetAngleInInterval2PI(h_);
 		p_ = GetAngleInInterval2PI(p_);
 		r_ = GetAngleInInterval2PI(r_);
