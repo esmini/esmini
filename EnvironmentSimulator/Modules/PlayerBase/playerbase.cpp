@@ -900,7 +900,7 @@ int ScenarioPlayer::InitViewer()
 
 		if (viewer_->AddEntityModel(viewer_->CreateEntityModel(obj->model3d_, trail_color,
 			obj->type_ == Object::Type::VEHICLE ? viewer::EntityModel::EntityType::VEHICLE :
-			Object::Type::PEDESTRIAN ? viewer::EntityModel::EntityType::MOVING : viewer::EntityModel::EntityType::ENTITY,
+			Object::Type::PEDESTRIAN ? viewer::EntityModel::EntityType::MOVING : viewer::EntityModel::EntityType::ENTITY, // TODO: @Emil
 			road_sensor, obj->name_, &obj->boundingbox_, obj->scaleMode_)) != 0)
 		{
 			CloseViewer();

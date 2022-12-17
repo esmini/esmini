@@ -116,7 +116,7 @@ static void AddArgument(const char *str, bool split = true)
 static void ConvertArguments()
 {
 	argc_ = static_cast<int>(args_v.size());
-	argv_ = static_cast<char **>(malloc(argc_ * sizeof(char *)));
+	argv_ = static_cast<char **>(malloc(argc_ * sizeof(char *))); // TODO: @Emil
 	std::string argument_list;
 	for (int i = 0; i < argc_; i++)
 	{

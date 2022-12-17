@@ -273,7 +273,7 @@ void ControllerUDPDriver::Step(double timeStep)
 			LOG("ControllerExternalDriverModel received %d bytes and unexpected input mode %d", retval, msg.header.inputMode);
 		}
 	}
-	else if (timeStep > SMALL_NUMBER && // TODO: @Emil to check
+	else if (timeStep > SMALL_NUMBER && // TODO: @Emil
 		((lastMsg.header.inputMode == static_cast<int>(InputMode::VEHICLE_STATE_H) &&
 			lastMsg.message.stateH.deadReckon == 1) ||
 			(lastMsg.header.inputMode == static_cast<int>(InputMode::VEHICLE_STATE_XYH) &&

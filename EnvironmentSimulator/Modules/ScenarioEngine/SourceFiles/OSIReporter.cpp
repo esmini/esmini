@@ -283,7 +283,7 @@ int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectSt
 				osi_udp_buf.counter = -osi_udp_buf.counter;
 			}
 
-			int sendResult = udp_client_->Send(reinterpret_cast<char *>(&osi_udp_buf), static_cast<size_t>(packSize));
+			int sendResult = udp_client_->Send(reinterpret_cast<char *>(&osi_udp_buf), static_cast<size_t>(packSize)); // TODO: @Emil
 
 			if (sendResult != packSize)
 			{
@@ -382,7 +382,7 @@ int OSIReporter::UpdateOSIDynamicGroundTruth(const std::vector<std::unique_ptr<O
 	{
 		// use timstamp from object state
 		obj_osi_internal.gt->mutable_timestamp()->set_seconds(static_cast<int64_t>(objectState[0]->state_.info.timeStamp));
-		obj_osi_internal.gt->mutable_timestamp()->set_nanos(static_cast<uint32_t>(((objectState[0]->state_.info.timeStamp - static_cast<int64_t>(objectState[0]->state_.info.timeStamp)) * 1e9)));
+		obj_osi_internal.gt->mutable_timestamp()->set_nanos(static_cast<uint32_t>(((objectState[0]->state_.info.timeStamp - static_cast<int64_t>(objectState[0]->state_.info.timeStamp)) * 1e9))); // TODO: @Emil
 	}
 	else
 	{

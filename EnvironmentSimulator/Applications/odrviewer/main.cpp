@@ -154,10 +154,10 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 		if (road->GetLength() > ROAD_MIN_LENGTH)
 		{
 			// Populate road lanes with vehicles at some random distances
-			for (double s = 10; s < road->GetLength() - average_distance; s += average_distance + 0.2 * average_distance * (SE_Env::Inst().GetGenerator())() / (SE_Env::Inst().GetGenerator()).max())
+			for (double s = 10; s < road->GetLength() - average_distance; s += average_distance + 0.2 * average_distance * (SE_Env::Inst().GetGenerator())() / (SE_Env::Inst().GetGenerator()).max()) // TODO: @Emil
 			{
 				// Pick lane by random
-				int lane_idx = ((double)road->GetNumberOfDrivingLanes(s) * (SE_Env::Inst().GetGenerator())()) / (SE_Env::Inst().GetGenerator()).max();
+				int lane_idx = (static_cast<double>(road->GetNumberOfDrivingLanes(s)) * (SE_Env::Inst().GetGenerator())()) / (SE_Env::Inst().GetGenerator()).max(); // TODO: @Emil
 				roadmanager::Lane *lane = road->GetDrivingLaneByIdx(s, lane_idx);
 				if (lane == 0)
 				{
@@ -166,15 +166,15 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 				}
 
 
-				if ((SIGN(lane->GetId()) < 0) && (road->GetLength() - s < 50) && (road->GetLink(roadmanager::LinkType::SUCCESSOR) == 0) ||
-					(SIGN(lane->GetId()) > 0) && (s < 50) && (road->GetLink(roadmanager::LinkType::PREDECESSOR) == 0))
+				if (((SIGN(lane->GetId()) < 0) && (road->GetLength() - s < 50) && (road->GetLink(roadmanager::LinkType::SUCCESSOR) == 0)) ||
+					((SIGN(lane->GetId()) > 0) && (s < 50) && (road->GetLink(roadmanager::LinkType::PREDECESSOR) == 0)))
 				{
 					// Skip vehicles too close to road end - and where connecting road is missing
 					continue;
 				}
 
 				// randomly choose model
-				int carModelID = (double(sizeof(carModelsFiles_) / sizeof(carModelsFiles_[0])) * (SE_Env::Inst().GetGenerator())()) / (SE_Env::Inst().GetGenerator()).max();
+				int carModelID = (double(sizeof(carModelsFiles_) / sizeof(carModelsFiles_[0])) * (SE_Env::Inst().GetGenerator())()) / (SE_Env::Inst().GetGenerator()).max(); // TODO: @Emil
 				//LOG("Adding car of model %d to road nr %d (road id %d s %.2f lane id %d), ", carModelID, r, road->GetId(), s, lane->GetId());
 
 				Car *car_ = new Car;
@@ -206,7 +206,7 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 						return -1;
 					}
 				}
-				car_->id = cars.size();
+				car_->id = static_cast<int>(cars.size());
 				cars.push_back(car_);
 				if (first_car_in_focus == -1 && lane->GetId() < 0)
 				{
@@ -227,6 +227,7 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 
 int SetupCarsSpecial(roadmanager::OpenDrive* odrManager, viewer::Viewer* viewer)
 {
+	(void)odrManager;
 	// Setup one single vehicle in a dedicated pos
 	Car* car_ = new Car;
 
@@ -251,7 +252,7 @@ int SetupCarsSpecial(roadmanager::OpenDrive* odrManager, viewer::Viewer* viewer)
 		}
 	}
 
-	car_->id = cars.size();
+	car_->id = static_cast<int>(cars.size());
 	cars.push_back(car_);
 
 	first_car_in_focus = 0;
@@ -276,7 +277,7 @@ void updateCar(roadmanager::OpenDrive *odrManager, Car *car, double dt)
 		ds *= -1;
 	}
 
-	if ((int)car->pos->MoveAlongS(ds) < 0)
+	if (static_cast<int>(car->pos->MoveAlongS(ds)) < 0)
 	{
 		if (openEnds.size() == 0)
 		{
@@ -294,10 +295,10 @@ void updateCar(roadmanager::OpenDrive *odrManager, Car *car, double dt)
 		else
 		{
 			// Choose random open end
-			int oeIndex = (int)(((double)openEnds.size()) * (SE_Env::Inst().GetGenerator())() / (SE_Env::Inst().GetGenerator()).max());
-			OpenEnd* oe = &openEnds[oeIndex];
+			int oeIndex = static_cast<int>((static_cast<double>(openEnds.size())) * (SE_Env::Inst().GetGenerator())() / (SE_Env::Inst().GetGenerator()).max()); // TODO: @Emil
+			OpenEnd* oe = &openEnds[static_cast<unsigned int>(oeIndex)];
 			// Choose random lane
-			int laneIndex = (int)(((double)oe->nLanes) * (SE_Env::Inst().GetGenerator())() / (SE_Env::Inst().GetGenerator()).max());
+			int laneIndex = static_cast<int>((static_cast<double>(oe->nLanes)) * (SE_Env::Inst().GetGenerator())() / (SE_Env::Inst().GetGenerator()).max()); // TODO: @Emil
 			roadmanager::Road* road = odrManager->GetRoadById(oe->roadId);
 			roadmanager::Lane *lane = road->GetDrivingLaneSideByIdx(oe->s, oe->side, laneIndex);
 
@@ -544,7 +545,7 @@ int main(int argc, char** argv)
 		{
 			return 4;
 		}
-		LOG("%d cars added", (int)cars.size());
+		LOG("%d cars added", static_cast<int>(cars.size()));
 		viewer->SetVehicleInFocus(first_car_in_focus);
 
 		__int64 now, lastTimeStamp = 0;
@@ -561,7 +562,7 @@ int main(int argc, char** argv)
 			{
 				// Get milliseconds since Jan 1 1970
 				now = SE_getSystemTime();
-				deltaSimTime = (now - lastTimeStamp) / 1000.0;  // step size in seconds
+				deltaSimTime = static_cast<double>(now - lastTimeStamp) / 1000.0;  // step size in seconds
 				lastTimeStamp = now;
 				if (deltaSimTime > maxStepSize) // limit step size
 				{
@@ -569,7 +570,7 @@ int main(int argc, char** argv)
 				}
 				else if (deltaSimTime < minStepSize)  // avoid CPU rush, sleep for a while
 				{
-					SE_sleep(now - lastTimeStamp);
+					SE_sleep(static_cast<unsigned int>(now - lastTimeStamp));
 					deltaSimTime = minStepSize;
 				}
 			}
@@ -585,9 +586,9 @@ int main(int argc, char** argv)
 			}
 
 			// Set info text
-			if (cars.size() > 0 && viewer->currentCarInFocus_ >= 0 && viewer->currentCarInFocus_ < cars.size())
+			if (static_cast<int>(cars.size()) > 0 && viewer->currentCarInFocus_ >= 0 && viewer->currentCarInFocus_ < static_cast<int>(cars.size()))
 			{
-				Car* car = cars[viewer->currentCarInFocus_];
+				Car* car = cars[static_cast<unsigned int>(viewer->currentCarInFocus_)];
 				snprintf(str_buf, sizeof(str_buf), "entity[%d]: %.2fkm/h (%d, %d, %.2f, %.2f) / (%.2f, %.2f %.2f)", viewer->currentCarInFocus_,
 					3.6 * car->pos->GetSpeedLimit() * car->speed_factor * global_speed_factor, car->pos->GetTrackId(), car->pos->GetLaneId(),
 					fabs(car->pos->GetOffset()) < SMALL_NUMBER ? 0 : car->pos->GetOffset(), car->pos->GetS(), car->pos->GetX(), car->pos->GetY(), car->pos->GetH());

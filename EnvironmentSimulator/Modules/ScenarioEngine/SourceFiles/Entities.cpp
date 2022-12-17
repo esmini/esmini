@@ -1336,9 +1336,9 @@ Vehicle::Vehicle() : Object(Object::Type::VEHICLE), trailer_coupler_(nullptr), t
 	performance_.maxSpeed = 100.0;
 }
 
-Vehicle::Vehicle(const Vehicle& v) : Object(Object::Type::VEHICLE), trailer_coupler_(nullptr), trailer_hitch_(nullptr)
+Vehicle::Vehicle(const Vehicle& v) : Object(Object::Type::VEHICLE), trailer_coupler_(nullptr), trailer_hitch_(nullptr) // TODO: @Emil
 {
-	*this = v;
+	*this = v; // TODO: @Emil
 
 	if (v.trailer_coupler_ && v.trailer_coupler_->tow_vehicle_)
 	{

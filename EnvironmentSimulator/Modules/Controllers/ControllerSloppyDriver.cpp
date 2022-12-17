@@ -137,7 +137,7 @@ void ControllerSloppyDriver::Step(double timeStep)
 		}
 
 		// Normalize h_error to [-PI, PI]
-		h_error > M_PI ? h_error -= 2 * M_PI : h_error; // TODO: @Emil to check
+		h_error > M_PI ? h_error -= 2 * M_PI : h_error; // TODO: @Emil
 
 		double tFuzz = tFuzz0 + (tFuzzTarget - tFuzz0) * lateralTimer_.Elapsed(time_) / lateralTimer_.duration_;
 		double lat_error = currentT_ + tFuzz;
