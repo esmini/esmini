@@ -1,4 +1,6 @@
-#!/bin/sh
+#!/bin/bash
+
+shopt -s extglob
 
 rm -rf esmini-demo 
 
@@ -144,11 +146,11 @@ docs/commands.txt \
 LICENSE \
 release_notes.md \
 version.txt \
-bin/esmini \
-bin/odrviewer \
-bin/replayer \
-bin/dat2csv \
-bin/odrplot \
+bin/esmini?(.exe) \
+bin/odrviewer?(.exe) \
+bin/replayer?(.exe) \
+bin/dat2csv?(.exe) \
+bin/odrplot?(.exe) \
 bin/*esminiLib.* \
 EnvironmentSimulator/Applications/odrplot/xodr.py \
 EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp \
