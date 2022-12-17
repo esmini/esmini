@@ -47,7 +47,7 @@ namespace scenarioengine
 		size_t GetNumberOfScenarios();
 		void GoToStart();
 		void GoToEnd();
-		void GoToNextFrame();
+		int GoToNextFrame();
 		void GoToPreviousFrame();
 		int FindNextTimestamp(bool wrap = false);
 		int FindPreviousTimestamp(bool wrap = false);

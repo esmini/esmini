@@ -311,7 +311,7 @@ void Replay::GoToDeltaTime(double dt, bool stop_at_next_frame)
 	GoToTime(time_ + dt, stop_at_next_frame);
 }
 
-void Replay::GoToNextFrame()
+int Replay::GoToNextFrame()
 {
 	double ctime = data_[index_].state.info.timeStamp;
 	for (size_t i = index_+1; i < data_.size(); i++)
@@ -319,9 +319,10 @@ void Replay::GoToNextFrame()
 		if (data_[i].state.info.timeStamp > ctime)
 		{
 			GoToTime(data_[i].state.info.timeStamp);
-			break;
+			return static_cast<int>(i);
 		}
 	}
+	return -1;
 }
 
 void Replay::GoToPreviousFrame()

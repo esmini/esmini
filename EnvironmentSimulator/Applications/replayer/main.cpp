@@ -34,6 +34,8 @@ using namespace scenarioengine;
 
 #define TIME_SCALE_FACTOR 1.1
 #define GHOST_CTRL_TYPE 100    // control type 100 indicates ghost
+#define JUMP_DELTA_TIME_LARGE 1.0
+#define JUMP_DELTA_TIME_SMALL 0.1
 
 static const double stepSize = 0.01;
 static const double maxStepSize = 0.1;
@@ -255,44 +257,48 @@ void ReportKeyEvent(viewer::KeyEvent* keyEvent, void* data)
 	{
 		if (keyEvent->key_ == static_cast<int>(KeyType::KEY_Right))
 		{
-			if (keyEvent->modKeyMask_ & static_cast<int>(ModKeyMask::MODKEY_CTRL))
+			if (keyEvent->modKeyMask_ & static_cast<int>(ModKeyMask::MODKEY_CTRL) &&
+				keyEvent->modKeyMask_ & static_cast<int>(ModKeyMask::MODKEY_SHIFT))
+			{
+				player->GoToDeltaTime(JUMP_DELTA_TIME_LARGE);
+			}
+			else if (keyEvent->modKeyMask_ & static_cast<int>(ModKeyMask::MODKEY_SHIFT))
+			{
+				player->GoToDeltaTime(JUMP_DELTA_TIME_SMALL);
+			}
+			else if (keyEvent->modKeyMask_ & static_cast<int>(ModKeyMask::MODKEY_CTRL))
 			{
 				player->GoToEnd();
 			}
 			else
 			{
-				// step
-
-				int steps = 1;
-				if (keyEvent->modKeyMask_ & static_cast<int>(ModKeyMask::MODKEY_SHIFT))
-				{
-					steps = 10;
-				}
-				for (int i = 0; i < steps; i++) player->GoToNextFrame();
-
-				pause = true;  // step by step
+				player->GoToNextFrame();
 			}
+
+			pause = true;  // step by step
 		}
 		else if (keyEvent->key_ == static_cast<int>(KeyType::KEY_Left))
 		{
-			if (keyEvent->modKeyMask_ & static_cast<int>(ModKeyMask::MODKEY_CTRL))
+			if (keyEvent->modKeyMask_ & static_cast<int>(ModKeyMask::MODKEY_CTRL) &&
+				keyEvent->modKeyMask_ & static_cast<int>(ModKeyMask::MODKEY_SHIFT))
+			{
+				player->GoToDeltaTime(-JUMP_DELTA_TIME_LARGE);
+			}
+			else if (keyEvent->modKeyMask_ & static_cast<int>(ModKeyMask::MODKEY_SHIFT))
+			{
+				player->GoToDeltaTime(-JUMP_DELTA_TIME_SMALL);
+			}
+			else if (keyEvent->modKeyMask_ & static_cast<int>(ModKeyMask::MODKEY_CTRL))
 			{
 				// rewind to beginning
 				player->GoToStart();
 			}
 			else
 			{
-				// step
-
-				int steps = 1;
-				if (keyEvent->modKeyMask_ & static_cast<int>(ModKeyMask::MODKEY_SHIFT))
-				{
-					steps = 10;
-				}
-				for (int i = 0; i < steps; i++) player->GoToPreviousFrame();
-
-				pause = true;  // step by step
+				player->GoToPreviousFrame();
 			}
+
+			pause = true;  // step by step
 		}
 		else if (keyEvent->key_ == static_cast<int>(KeyType::KEY_Space))
 		{
@@ -884,7 +890,7 @@ int main(int argc, char** argv)
 						if (index == viewer->currentCarInFocus_)
 						{
 							// Update overlay info text
-							snprintf(info_str_buf, sizeof(info_str_buf), "%.2fs entity[%d]: %s (%d) NO INFO",
+							snprintf(info_str_buf, sizeof(info_str_buf), "%.3fs entity[%d]: %s (%d) NO INFO",
 								simTime, viewer->currentCarInFocus_, sc->name.c_str(), sc->id);
 							viewer->SetInfoText(info_str_buf);
 						}
@@ -916,7 +922,7 @@ int main(int argc, char** argv)
 					if (index == viewer->currentCarInFocus_)
 					{
 						// Update overlay info text
-						snprintf(info_str_buf, sizeof(info_str_buf), "%.2fs entity[%d]: %s (%d) %.2fs %.2fkm/h %.2fm (%d, %d, %.2f, %.2f)/(%.2f, %.2f %.2f) tScale: %.2f ",
+						snprintf(info_str_buf, sizeof(info_str_buf), "%.3fs entity[%d]: %s (%d) %.2fs %.2fkm/h %.2fm (%d, %d, %.2f, %.2f)/(%.2f, %.2f %.2f) tScale: %.2f ",
 							simTime, viewer->currentCarInFocus_, state->info.name, state->info.id, state->info.timeStamp, 3.6 * state->info.speed, entry->odometer, sc->pos.roadId,
 							sc->pos.laneId, fabs(sc->pos.offset) < SMALL_NUMBER ? 0 : sc->pos.offset, sc->pos.s, sc->pos.x, sc->pos.y, sc->pos.h, time_scale);
 						viewer->SetInfoText(info_str_buf);

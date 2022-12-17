@@ -30,14 +30,16 @@ Key shortcuts \n\
     ESC:           quit \n\
     \n\
     Arrow keys \n\
-        Left:          Pause and move to previous frame(+Shift to skip 10 frames) \n\
-        Right:         Pause and move to next frame(+Shift to skip 10 frames) \n\
-        Shift + Left:  Pause and jump 10 frames back \n\
-        Shift + Right: Pause and jump 10 frames forward \n\
-        Ctrl + Left:   Jump to beginning \n\
-        Ctrl + Right:  Jump to end \n\
-        Up:            Increase timeScale(play faster) \n\
-        Down:          Decrease timeScale(play slower) \n\
+        Left:               Pause and move to previous frame(+Shift to skip 10 frames) \n\
+        Right:              Pause and move to next frame(+Shift to skip 10 frames) \n\
+        Shift + Left:       Pause and jump 0.1s back \n\
+        Shift + Right:      Pause and jump 0.1s forward \n\
+        Shift + Ctrl Left:  Pause and jump 1.0s back \n\
+        Shift + Ctrl Right: Pause and jump 1.0s forward \n\
+        Ctrl + Left:        Pause and jump to beginning \n\
+        Ctrl + Right:       Pause and jump to end \n\
+        Up:                 Increase timeScale(play faster) \n\
+        Down:               Decrease timeScale(play slower) \n\
     \n\
     1 - 9: Camera models acording to : \n\
         1: Custom camera model \n\
