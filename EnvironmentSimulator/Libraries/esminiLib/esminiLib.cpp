@@ -120,8 +120,8 @@ static void ConvertArguments()
 	std::string argument_list;
 	for (int i = 0; i < argc_; i++)
 	{
-		argv_[i] = static_cast<char *>(malloc((args_v[i].size() + 1) * sizeof(char)));
-		strcpy(argv_[i], args_v[i].c_str());
+		argv_[i] = static_cast<char *>(malloc((args_v[static_cast<unsigned int>(i)].size() + 1) * sizeof(char)));
+		strcpy(argv_[i], args_v[static_cast<unsigned int>(i)].c_str());
 		argument_list += std::string(" ") + argv_[i];
 	}
 	LOG("Player arguments: %s", argument_list.c_str());
