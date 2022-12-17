@@ -17,35 +17,34 @@ set(SOURCES
 
 # ############################### Creating executable ################################################################
 
-include_directories (
-  ${SCENARIO_ENGINE_PATH}/SourceFiles
-  ${SCENARIO_ENGINE_PATH}/OSCTypeDefs
-  ${VIEWER_BASE_PATH}
-  ${COMMON_MINI_PATH}
-  ${CONTROLLERS_PATH}
-)
+include_directories(
+    ${SCENARIO_ENGINE_PATH}/SourceFiles
+    ${SCENARIO_ENGINE_PATH}/OSCTypeDefs
+    ${VIEWER_BASE_PATH}
+    ${COMMON_MINI_PATH}
+    ${CONTROLLERS_PATH})
 
-add_executable(${TARGET} ${SOURCES})
+add_executable(
+    ${TARGET}
+    ${SOURCES})
 
 target_link_libraries(
     ${TARGET}
     PRIVATE project_options)
 
 target_include_system_directories(
-  ${TARGET}
-  PRIVATE
-  ${ROAD_MANAGER_PATH}
-  ${EXTERNALS_OSI_INCLUDES}
-  ${EXTERNALS_PUGIXML_PATH}
-  ${EXTERNALS_OSG_INCLUDES}
-)
+    ${TARGET}
+    PRIVATE
+    ${ROAD_MANAGER_PATH}
+    ${EXTERNALS_OSI_INCLUDES}
+    ${EXTERNALS_PUGIXML_PATH}
+    ${EXTERNALS_OSG_INCLUDES})
 
 target_link_libraries(
     ${TARGET}
     PRIVATE RoadManager
     PRIVATE CommonMini
-    PRIVATE ${TIME_LIB}
-)
+    PRIVATE ${TIME_LIB})
 
 if(USE_OSG)
     target_link_libraries(
@@ -70,4 +69,6 @@ disable_iwyu(${TARGET})
 
 # ############################### Install ############################################################################
 
-install ( TARGETS ${TARGET} DESTINATION "${INSTALL_PATH}")
+install(
+    TARGETS ${TARGET}
+    DESTINATION "${INSTALL_PATH}")
