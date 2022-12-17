@@ -112,6 +112,7 @@ endif()
 include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/common/color.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/common/locations.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/common/definitions.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/common/flags.cmake)
 
 set_project_internal_paths()
 set_project_external_paths()
@@ -119,6 +120,7 @@ set_project_os_specific_paths()
 set_project_includes()
 set_project_library_paths()
 set_definitions()
+set_special_build_flags()
 
 # ############################### Loading cloud packages ##########################################################
 
