@@ -82,10 +82,10 @@ if(USE_OSG)
             OSI)
     endif()
 
-endif()
+    disable_static_analysis(${TARGET1})
+    disable_iwyu(${TARGET1})
 
-disable_static_analysis(${TARGET1})
-disable_iwyu(${TARGET1})
+endif()
 
 # ############################### Creating executable for target2 (dat2csv) ##########################################
 
@@ -153,10 +153,10 @@ if(USE_OSI)
         PRIVATE
         OSI)
 
-endif()
+    disable_static_analysis(${TARGET3})
+    disable_iwyu(${TARGET3})
 
-disable_static_analysis(${TARGET3})
-disable_iwyu(${TARGET3})
+endif()
 
 # # ############################### Install ############################################################################
 
