@@ -63,11 +63,11 @@ class DATFile():
             print('ERROR: Could not open file {} for reading'.format(filename))
             raise
 
-        header = DATHeader.from_buffer_copy(self.file.read(ctypes.sizeof(DATHeader)))
+        self.header = DATHeader.from_buffer_copy(self.file.read(ctypes.sizeof(DATHeader)))
         self.filename = filename
-        self.version = header.version
-        self.odr_filename = header.odr_filename.decode('utf-8')
-        self.model_filename = header.model_filename.decode('utf-8')
+        self.version = self.header.version
+        self.odr_filename = self.header.odr_filename.decode('utf-8')
+        self.model_filename = self.header.model_filename.decode('utf-8')
         self.labels = [field[0] for field in ObjectStateStructDat._fields_]
         self.data = []
 
@@ -236,6 +236,20 @@ class DATFile():
                 fcsv.write(self.get_data_line(data) + '\n')
 
         fcsv.close()
+
+    def save_dat(self, filename):
+        try:
+            fdat = open(filename, 'wb')
+        except OSError:
+            print('ERROR: Could not open file {} for writing'.format(filename))
+            raise
+
+        fdat.write(self.header)
+
+        for d in self.data:
+            fdat.write(d)
+
+        fdat.close()
 
     def close(self):
         self.file.close()

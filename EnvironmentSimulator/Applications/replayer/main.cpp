@@ -60,11 +60,11 @@ void setEntityVisibility(int index, bool visible)
 	{
 		if (visible != scenarioEntity[index].visible)
 		{
-			scenarioEntity[index].entityModel->txNode_->setNodeMask(visible ? viewer::NodeMask::NODE_MASK_ENTITY_MODEL : 0x0);
+			scenarioEntity[index].entityModel->txNode_->setNodeMask(visible ? 0xffffffff : 0x0);
 			scenarioEntity[index].visible = visible;
 			if (scenarioEntity[index].trajectory)
 			{
-				scenarioEntity[index].trajectory->SetNodeMaskLines(visible ? viewer::NodeMask::NODE_MASK_TRAJECTORY_LINES : 0x0);
+				scenarioEntity[index].trajectory->SetNodeMaskLines(visible ? 0xffffffff : 0x0);
 			}
 		}
 	}
