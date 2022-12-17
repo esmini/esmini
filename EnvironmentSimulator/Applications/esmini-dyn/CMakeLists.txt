@@ -1,31 +1,53 @@
+# ############################### Setting targets ####################################################################
 
-include_directories (
-  ${ESMINI_LIB_PATH}
-  ${COMMON_MINI_PATH}
-  ${EXTERNALS_OSI_INCLUDES}
-)
+set(TARGET
+    esmini-dyn)
 
-set (TARGET esmini-dyn)
+# ############################### Loading desired rules ##############################################################
 
-set ( SOURCES
-  main.cpp
-)
+include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_static_analysis.cmake)
+include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_iwyu.cmake)
+include(${CMAKE_SOURCE_DIR}/support/cmake/rule/system_link.cmake)
 
-set ( INCLUDES
-)
+# ############################### Setting target files ###############################################################
 
-link_directories( ${EXTERNALS_OSI_OS_SPECIFIC_PATH}/lib )
+set(SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
 
-add_executable ( ${TARGET} ${SOURCES} ${INCLUDES} )
+# ############################### Creating executable ################################################################
 
+include_directories(
+    ${ESMINI_LIB_PATH}
+    ${COMMON_MINI_PATH})
 
-target_link_libraries (
-	${TARGET}
-	esminiLib
-	CommonMini
-	${TIME_LIB}
-	${OSI_LIBRARIES}
-	project_options
-)
+add_executable(
+    ${TARGET}
+    ${SOURCES})
 
-install ( TARGETS ${TARGET} DESTINATION "${INSTALL_PATH}")
+target_link_libraries(
+    ${TARGET}
+    PRIVATE project_options)
+
+target_include_system_directories(
+    ${TARGET}
+    PRIVATE
+    ${EXTERNALS_OSI_INCLUDES})
+
+target_link_libraries(
+    ${TARGET}
+    PRIVATE esminiLib
+    PRIVATE CommonMini
+    PRIVATE ${TIME_LIB})
+
+if(USE_OSI)
+    target_link_libraries(
+        ${TARGET}
+        PRIVATE
+        ${OSI_LIBRARIES})
+endif()
+
+# ############################### Install ############################################################################
+
+install(
+    TARGETS ${TARGET}
+    DESTINATION "${INSTALL_PATH}")

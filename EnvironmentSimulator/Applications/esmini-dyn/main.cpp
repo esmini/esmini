@@ -51,7 +51,7 @@
 #define DURATION 25
 #define MAX_DETECTIONS 8
 
-static SE_ScenarioObjectState states[MAX_N_OBJECTS];
+// static SE_ScenarioObjectState states[MAX_N_OBJECTS];
 
 typedef struct
 {
@@ -72,11 +72,11 @@ void objectCallback(SE_ScenarioObjectState* state, void* my_data)
 	static bool firstTime = true;
 	static double latOffset0;
 
-	Stuff* stuff = (Stuff*)my_data;
+	Stuff* stuff = static_cast<Stuff*>(my_data);
 
 	printf("mydata.counter: %d\n", stuff->counter);
 
-	if (SE_GetSimulationTime() > startTrigTime && SE_GetSimulationTime() < startTrigTime + duration)
+	if (static_cast<double>(SE_GetSimulationTime()) > startTrigTime && static_cast<double>(SE_GetSimulationTime()) < startTrigTime + duration)
 	{
 		if (firstTime)
 		{
@@ -85,7 +85,7 @@ void objectCallback(SE_ScenarioObjectState* state, void* my_data)
 		}
 		else
 		{
-			float latOffset = (float)(latOffset0 + latDist * (SE_GetSimulationTime() - startTrigTime) / duration);
+			float latOffset = static_cast<float>(latOffset0 + latDist * (static_cast<double>(SE_GetSimulationTime()) - startTrigTime) / duration);
 			SE_ReportObjectRoadPos(state->id, state->timestamp, state->roadId, state->laneId, latOffset, state->s);
 		}
 	}
@@ -94,7 +94,7 @@ void objectCallback(SE_ScenarioObjectState* state, void* my_data)
 int main(int argc, const char* argv[])
 {
 	Stuff stuff;
-	SimpleVehicle vehicle = { 0, {0, 0, 0, 0, 0, 0} };
+	SimpleVehicle vehicle = { 0, {0, 0, 0, 0, 0, 0, 0, 0} };
 	const char* filename = 0;
 
 	if (!filename == 0 && argc < 2)
@@ -197,10 +197,10 @@ int main(int argc, const char* argv[])
 
 #if DEMONSTRATE_SENSORS
 		// Add four sensors around the vehicle
-		SE_AddObjectSensor(0, 4.0f, 0.0f, 0.5f, 0.0f, 6.0f, 50.0f, (float)(50.0 * M_PI / 180.0), MAX_DETECTIONS);
-		SE_AddObjectSensor(0, 2.0f, 1.05f, 0.5f, 1.5f, 1.0f, 20.0f, (float)(120.0 * M_PI / 180.0), MAX_DETECTIONS);
-		SE_AddObjectSensor(0, 2.0f, -1.05f, 0.5f, -1.5f, 1.0f, 20.0f, (float)(120.0 * M_PI / 180.0), MAX_DETECTIONS);
-		SE_AddObjectSensor(0, -1.1f, 0.0f, 0.5f, 3.14f, 5.0f, 30.0f, (float)(50.0 * M_PI / 180.0), MAX_DETECTIONS);
+		SE_AddObjectSensor(0, 4.0f, 0.0f, 0.5f, 0.0f, 6.0f, 50.0f, static_cast<float>(50.0 * M_PI / 180.0), MAX_DETECTIONS);
+		SE_AddObjectSensor(0, 2.0f, 1.05f, 0.5f, 1.5f, 1.0f, 20.0f, static_cast<float>(120.0 * M_PI / 180.0), MAX_DETECTIONS);
+		SE_AddObjectSensor(0, 2.0f, -1.05f, 0.5f, -1.5f, 1.0f, 20.0f, static_cast<float>(120.0 * M_PI / 180.0), MAX_DETECTIONS);
+		SE_AddObjectSensor(0, -1.1f, 0.0f, 0.5f, 3.14f, 5.0f, 30.0f, static_cast<float>(50.0 * M_PI / 180.0), MAX_DETECTIONS);
 
 		SE_ViewerShowFeature(1, true);  // show sensor frustoms (see NodeMask in viewer.hpp)
 #endif
@@ -213,7 +213,7 @@ int main(int argc, const char* argv[])
 #endif
 
 
-		for (int i = 0; i * TIME_STEP < DURATION && !(SE_GetQuitFlag() == 1); i++)
+		for (int i = 0; i * TIME_STEP < DURATION && !(SE_GetQuitFlag() == 1); i++) // TODO: @Emil
 		{
 #if DEMONSTRATE_PARAMETER  // try with lane_change.xosc which sets "DummyParameter"
 			double value;
@@ -365,7 +365,7 @@ int main(int argc, const char* argv[])
 
 			if (DEMONSTRATE_THREAD)
 			{
-				if (i == (int)(0.2 * DURATION / TIME_STEP))
+				if (i == static_cast<int>(0.2 * DURATION / TIME_STEP)) // TODO: @Emil
 				{
 					// Halfway through, pause the simulation for a few seconds
 					// to demonstrate how camera can still move independently
@@ -377,7 +377,7 @@ int main(int argc, const char* argv[])
 				else
 				{
 					// Normal case, sleep until its time for next simulation step
-					SE_sleep((unsigned int)(TIME_STEP * 1000));
+					SE_sleep(static_cast<unsigned int>(TIME_STEP * 1000));
 				}
 			}
 		}
