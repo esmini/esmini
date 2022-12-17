@@ -22,7 +22,7 @@ class OpenDrive:
         output_file = os.path.join(outputfolder, output + ".hpp")
 
         # Dump dict to json for testing
-        #self.print_dict(output_file, data)
+        # self.print_dict(output_file, data)
 
         # Handles the generation of shared.hpp to fix mutual inclusion problem
         for key, value in data["data"].items():
@@ -139,8 +139,7 @@ class OpenDrive:
         parsed_dict = {"name": name, "version": version, "data": parsed_data}
         return (ref_list, parsed_dict)
 
-
-    def get_inheritance(self,root):
+    def get_inheritance(self, root):
         """
         Looks through the dictionary and searches for inheritances
             looks for the keyword ("choice") in dictionary to find inheritance
@@ -154,20 +153,27 @@ class OpenDrive:
         list(tuples) <- list of tuples containing (child,parent) for inheritance
         """
         inheritance = []
-        for child,contains in root.items(): #(class/enum/struct,base)
-            if isinstance(contains,dict):
-                for _, base in contains.items():#(base,opendriveelements..)
-                    if isinstance(base,dict):
-                        for _, types in base.items(): #(opendriveelement,types(choice,sequence,attribute))
-                            if isinstance(types,dict):
-                                for type,attributes in types.items(): #(choice,items)
+        for child, contains in root.items():  # (class/enum/struct,base)
+            if isinstance(contains, dict):
+                for _, base in contains.items():  # (base,opendriveelements..)
+                    if isinstance(base, dict):
+                        for (
+                            _,
+                            types,
+                        ) in (
+                            base.items()
+                        ):  # (opendriveelement,types(choice,sequence,attribute))
+                            if isinstance(types, dict):
+                                for type, attributes in types.items():  # (choice,items)
                                     if type == "choice":
-                                        for _,items in attributes.items():
+                                        for _, items in attributes.items():
                                             if "type" in items.keys():
-                                                inheritance.append((items["type"],child))
+                                                inheritance.append(
+                                                    (items["type"], child)
+                                                )
         return inheritance
 
-    def create_inheritance(self,root):
+    def create_inheritance(self, root):
         """
         Creates the inheritance between elements in dictionary
             Add ("inherit") key to element in dictionary if element has inheritance
@@ -183,20 +189,23 @@ class OpenDrive:
         inheritance = self.get_inheritance(root)
         element_to_remove = []
         element_to_add = []
-        for child,parent in inheritance:
-            for key,value in root.items():
-                if "class "+ child == key: #Check if key exists in inheritance
-                    element_to_remove.append(key) #Add to be removed
-                    value.update({"inherits":parent[6:]}) #append value with inherits key
-                    element_to_add.append({key:value}) #Add new dict to list to append
-        if element_to_remove: # Remove non-valid elements
+        for child, parent in inheritance:
+            for key, value in root.items():
+                if "class " + child == key:  # Check if key exists in inheritance
+                    element_to_remove.append(key)  # Add to be removed
+                    value.update(
+                        {"inherits": parent[6:]}
+                    )  # append value with inherits key
+                    element_to_add.append(
+                        {key: value}
+                    )  # Add new dict to list to append
+        if element_to_remove:  # Remove non-valid elements
             for element in element_to_remove:
                 root.pop(element)
-        if  element_to_add: # Add the newly created elements with inheritance
+        if element_to_add:  # Add the newly created elements with inheritance
             for element in element_to_add:
                 root.update(element)
         return root
-
 
     def create_ref_list(self, ref_list, path, data):
         """
@@ -415,14 +424,14 @@ class OpenDrive:
                 data.update({"base": {base: sub_children}})
 
             elif "sequence" in child.tag:
-                child_sub_dict =  self.parse_children(child, {})
+                child_sub_dict = self.parse_children(child, {})
                 if "choice" in child_sub_dict.keys():
                     choice_dict = child_sub_dict.pop("choice")
                     child_sub_dict.update(choice_dict)
-                data.update({"sequence":child_sub_dict})
+                data.update({"sequence": child_sub_dict})
 
             elif "choice" in child.tag:
-                 data.update({"choice": self.parse_children(child,{})})
+                data.update({"choice": self.parse_children(child, {})})
 
             elif "enumeration" in child.tag:  # enum elements
                 value = child.attrib["value"]
