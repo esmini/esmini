@@ -31,11 +31,11 @@ using namespace scenarioengine;
 #ifdef _USE_OSG
 void ReportKeyEvent(viewer::KeyEvent *keyEvent, void *data);
 
-static struct
+struct ImageCallBack
 {
 	viewer::ImageCallbackFunc func;
 	void* data;
-} imageCallback = { 0, 0 };
+};
 
 void RegisterImageCallback(viewer::ImageCallbackFunc func, void* data);
 

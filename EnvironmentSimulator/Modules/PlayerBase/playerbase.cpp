@@ -31,6 +31,9 @@ using namespace scenarioengine;
 #define TRAIL_Z_OFFSET 0.02
 
 #ifdef _USE_OSG
+
+static ImageCallBack imageCallback = {0, 0};
+
 void RegisterImageCallback(viewer::ImageCallbackFunc func, void* data)
 {
 	imageCallback.func = func;
