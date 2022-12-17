@@ -31,7 +31,7 @@ static int GetProbeInfo(int index, float lookahead_distance, RM_RoadProbeInfo *r
 		return -1;
 	}
 
-	if (index >= position.size())
+	if (index >= static_cast<int>(position.size()))
 	{
 		LOG("Object %d not available, only %d registered", index, position.size());
 		return -1;
@@ -42,40 +42,40 @@ static int GetProbeInfo(int index, float lookahead_distance, RM_RoadProbeInfo *r
 	if (inRoadDrivingDirection)
 	{
 		// Look in the driving direction of current lane
-		if (position[index].GetHRelativeDrivingDirection() > M_PI_2 && position[index].GetHRelativeDrivingDirection() < 3 * M_PI_2)
+		if (position[static_cast<unsigned int>(index)].GetHRelativeDrivingDirection() > M_PI_2 && position[static_cast<unsigned int>(index)].GetHRelativeDrivingDirection() < 3 * M_PI_2)
 		{
 			adjustedLookaheadDistance = -lookahead_distance;
 		}
 	}
 
-	if (position[index].GetProbeInfo(adjustedLookaheadDistance, &s_data, (roadmanager::Position::LookAheadMode)lookAheadMode) != roadmanager::Position::ReturnCode::ERROR_GENERIC)
+	if (position[static_cast<unsigned int>(index)].GetProbeInfo(adjustedLookaheadDistance, &s_data, static_cast<roadmanager::Position::LookAheadMode>(lookAheadMode)) != roadmanager::Position::ReturnCode::ERROR_GENERIC)
 	{
 		// Copy data
-		r_data->road_lane_info.pos.x = (float)s_data.road_lane_info.pos[0];
-		r_data->road_lane_info.pos.y = (float)s_data.road_lane_info.pos[1];
-		r_data->road_lane_info.pos.z = (float)s_data.road_lane_info.pos[2];
-		r_data->road_lane_info.heading = (float)s_data.road_lane_info.heading;
-		r_data->road_lane_info.pitch = (float)s_data.road_lane_info.pitch;
-		r_data->road_lane_info.roll = (float)s_data.road_lane_info.roll;
-		r_data->road_lane_info.width = (float)s_data.road_lane_info.width;
-		r_data->road_lane_info.curvature = (float)s_data.road_lane_info.curvature;
-		r_data->road_lane_info.speed_limit = (float)s_data.road_lane_info.speed_limit;
-		r_data->road_lane_info.roadId = (int)s_data.road_lane_info.roadId;
-		r_data->road_lane_info.junctionId = (int)s_data.road_lane_info.junctionId;
-		r_data->road_lane_info.laneId = (int)s_data.road_lane_info.laneId;
-		r_data->road_lane_info.laneOffset = (float)s_data.road_lane_info.laneOffset;
-		r_data->road_lane_info.s = (float)s_data.road_lane_info.s;
-		r_data->road_lane_info.t = (float)s_data.road_lane_info.t;
-		r_data->relative_pos.x = (float)s_data.relative_pos[0];
-		r_data->relative_pos.y = (float)s_data.relative_pos[1];
-		r_data->relative_pos.z = (float)s_data.relative_pos[2];
-		r_data->relative_h = (float)s_data.relative_h;
+		r_data->road_lane_info.pos.x = static_cast<float>(s_data.road_lane_info.pos[0]);
+		r_data->road_lane_info.pos.y = static_cast<float>(s_data.road_lane_info.pos[1]);
+		r_data->road_lane_info.pos.z = static_cast<float>(s_data.road_lane_info.pos[2]);
+		r_data->road_lane_info.heading = static_cast<float>(s_data.road_lane_info.heading);
+		r_data->road_lane_info.pitch = static_cast<float>(s_data.road_lane_info.pitch);
+		r_data->road_lane_info.roll = static_cast<float>(s_data.road_lane_info.roll);
+		r_data->road_lane_info.width = static_cast<float>(s_data.road_lane_info.width);
+		r_data->road_lane_info.curvature = static_cast<float>(s_data.road_lane_info.curvature);
+		r_data->road_lane_info.speed_limit = static_cast<float>(s_data.road_lane_info.speed_limit);
+		r_data->road_lane_info.roadId = s_data.road_lane_info.roadId;
+		r_data->road_lane_info.junctionId = s_data.road_lane_info.junctionId;
+		r_data->road_lane_info.laneId = s_data.road_lane_info.laneId;
+		r_data->road_lane_info.laneOffset = static_cast<float>(s_data.road_lane_info.laneOffset);
+		r_data->road_lane_info.s = static_cast<float>(s_data.road_lane_info.s);
+		r_data->road_lane_info.t = static_cast<float>(s_data.road_lane_info.t);
+		r_data->relative_pos.x = static_cast<float>(s_data.relative_pos[0]);
+		r_data->relative_pos.y = static_cast<float>(s_data.relative_pos[1]);
+		r_data->relative_pos.z = static_cast<float>(s_data.relative_pos[2]);
+		r_data->relative_h = static_cast<float>(s_data.relative_h);
 
-		if (position[index].GetStatusBitMask() & static_cast<int>(roadmanager::Position::PositionStatusMode::POS_STATUS_END_OF_ROAD))
+		if (position[static_cast<unsigned int>(index)].GetStatusBitMask() & static_cast<int>(roadmanager::Position::PositionStatusMode::POS_STATUS_END_OF_ROAD))
 		{
 			return static_cast<int>(roadmanager::Position::ReturnCode::ERROR_END_OF_ROAD);
 		}
-		else if (position[index].GetStatusBitMask() & static_cast<int>(roadmanager::Position::PositionStatusMode::POS_STATUS_END_OF_ROUTE))
+		else if (position[static_cast<unsigned int>(index)].GetStatusBitMask() & static_cast<int>(roadmanager::Position::PositionStatusMode::POS_STATUS_END_OF_ROUTE))
 		{
 			return static_cast<int>(roadmanager::Position::ReturnCode::ERROR_END_OF_ROUTE);
 		}
@@ -97,7 +97,7 @@ static int GetRoadLaneInfo(int index, float lookahead_distance, RM_RoadLaneInfo 
 		return -1;
 	}
 
-	if (index >= position.size())
+	if (index >= static_cast<int>(position.size()))
 	{
 		LOG("Object %d not available, only %d registered", index, position.size());
 		return -1;
@@ -108,29 +108,29 @@ static int GetRoadLaneInfo(int index, float lookahead_distance, RM_RoadLaneInfo 
 	if (!inRoadDrivingDirection)
 	{
 		// Find out what direction to look in
-		if (fabs(position[index].GetHRelativeDrivingDirection()) > M_PI_2)
+		if (fabs(position[static_cast<unsigned int>(index)].GetHRelativeDrivingDirection()) > M_PI_2)
 		{
 			adjustedLookaheadDistance = -lookahead_distance;
 		}
 	}
 
-	position[index].GetRoadLaneInfo(adjustedLookaheadDistance, &s_data, (roadmanager::Position::LookAheadMode)lookAheadMode);
+	position[static_cast<unsigned int>(index)].GetRoadLaneInfo(adjustedLookaheadDistance, &s_data, static_cast<roadmanager::Position::LookAheadMode>(lookAheadMode));
 
-	r_data->pos.x = (float)s_data.pos[0];
-	r_data->pos.y = (float)s_data.pos[1];
-	r_data->pos.z = (float)s_data.pos[2];
-	r_data->heading = (float)s_data.heading;
-	r_data->pitch = (float)s_data.pitch;
-	r_data->roll = (float)s_data.roll;
-	r_data->width = (float)s_data.width;
-	r_data->curvature = (float)s_data.curvature;
-	r_data->speed_limit = (float)s_data.speed_limit;
+	r_data->pos.x = static_cast<float>(s_data.pos[0]);
+	r_data->pos.y = static_cast<float>(s_data.pos[1]);
+	r_data->pos.z = static_cast<float>(s_data.pos[2]);
+	r_data->heading = static_cast<float>(s_data.heading);
+	r_data->pitch = static_cast<float>(s_data.pitch);
+	r_data->roll = static_cast<float>(s_data.roll);
+	r_data->width = static_cast<float>(s_data.width);
+	r_data->curvature = static_cast<float>(s_data.curvature);
+	r_data->speed_limit = static_cast<float>(s_data.speed_limit);
 	r_data->roadId = s_data.roadId;
 	r_data->junctionId = s_data.junctionId;
 	r_data->laneId = s_data.laneId;
-	r_data->laneOffset = (float)s_data.laneOffset;
-	r_data->t = (float)s_data.t;
-	r_data->s = (float)s_data.s;
+	r_data->laneOffset = static_cast<float>(s_data.laneOffset);
+	r_data->t = static_cast<float>(s_data.t);
+	r_data->s = static_cast<float>(s_data.s);
 
 	return 0;
 }
@@ -189,7 +189,7 @@ extern "C"
 
 		roadmanager::Position newPosition;
 		position.push_back(newPosition);
-		return (int)(position.size() - 1);  // return index of newly created
+		return static_cast<int>((position.size() - 1));  // return index of newly created
 	}
 
 	RM_DLL_API int RM_GetNrOfPositions()
@@ -199,7 +199,7 @@ extern "C"
 			return -1;
 		}
 
-		return (int)position.size();
+		return static_cast<int>(position.size());
 	}
 
 	RM_DLL_API int RM_DeletePosition(int handle)
@@ -214,7 +214,7 @@ extern "C"
 			// Delete all items
 			position.clear();
 		}
-		else if (handle >= 0 && handle < position.size())
+		else if (handle >= 0 && handle < static_cast<int>(position.size()))
 		{
 			// Delete specific item
 			position.erase(position.begin() + handle);
@@ -229,74 +229,74 @@ extern "C"
 
 	RM_DLL_API int RM_CopyPosition(int handle)
 	{
-		if (odrManager == nullptr || handle < 0 || handle >= position.size())
+		if (odrManager == nullptr || handle < 0 || handle >= static_cast<int>(position.size()))
 		{
 			return -1;
 		}
 
-		roadmanager::Position newPosition(position[handle]);
+		roadmanager::Position newPosition(position[static_cast<unsigned int>(handle)]);
 		position.push_back(newPosition);
-		return (int)(position.size() - 1);  // return index of newly created
+		return static_cast<int>((position.size() - 1));  // return index of newly created
 	}
 
 	RM_DLL_API void RM_SetAlignMode(int handle, int mode)
 	{
-		if (odrManager == nullptr || handle < 0 || handle >= position.size())
+		if (odrManager == nullptr || handle < 0 || handle >= static_cast<int>(position.size()))
 		{
 			return;
 		}
 
-		position[handle].SetAlignMode((roadmanager::Position::ALIGN_MODE)mode);
+		position[static_cast<unsigned int>(handle)].SetAlignMode((roadmanager::Position::ALIGN_MODE)mode);
 	}
 
 	RM_DLL_API void RM_SetAlignModeH(int handle, int mode)
 	{
-		if (odrManager == nullptr || handle < 0 || handle >= position.size())
+		if (odrManager == nullptr || handle < 0 || handle >= static_cast<int>(position.size()))
 		{
 			return;
 		}
 
-		position[handle].SetAlignModeH((roadmanager::Position::ALIGN_MODE)mode);
+		position[static_cast<unsigned int>(handle)].SetAlignModeH((roadmanager::Position::ALIGN_MODE)mode);
 	}
 
 	RM_DLL_API void RM_SetAlignModeP(int handle, int mode)
 	{
-		if (odrManager == nullptr || handle < 0 || handle >= position.size())
+		if (odrManager == nullptr || handle < 0 || handle >= static_cast<int>(position.size()))
 		{
 			return;
 		}
 
-		position[handle].SetAlignModeP((roadmanager::Position::ALIGN_MODE)mode);
+		position[static_cast<unsigned int>(handle)].SetAlignModeP((roadmanager::Position::ALIGN_MODE)mode);
 	}
 
 	RM_DLL_API void RM_SetAlignModeR(int handle, int mode)
 	{
-		if (odrManager == nullptr || handle < 0 || handle >= position.size())
+		if (odrManager == nullptr || handle < 0 || handle >= static_cast<int>(position.size()))
 		{
 			return;
 		}
 
-		position[handle].SetAlignModeR((roadmanager::Position::ALIGN_MODE)mode);
+		position[static_cast<unsigned int>(handle)].SetAlignModeR((roadmanager::Position::ALIGN_MODE)mode);
 	}
 
 	RM_DLL_API void RM_SetAlignModeZ(int handle, int mode)
 	{
-		if (odrManager == nullptr || handle < 0 || handle >= position.size())
+		if (odrManager == nullptr || handle < 0 || handle >= static_cast<int>(position.size()))
 		{
 			return;
 		}
 
-		position[handle].SetAlignModeZ((roadmanager::Position::ALIGN_MODE)mode);
+		position[static_cast<unsigned int>(handle)].SetAlignModeZ((roadmanager::Position::ALIGN_MODE)mode);
 	}
 
 	RM_DLL_API int RM_SetLockOnLane(int handle, bool mode)
 	{
-		if (odrManager == nullptr || handle < 0 || handle >= position.size())
+		if (odrManager == nullptr || handle < 0 || handle >= static_cast<int>(position.size()))
 		{
 			return -1;
 		}
 
-		position[handle].SetLockOnLane(mode);
+		position[static_cast<unsigned int>(handle)].SetLockOnLane(mode);
 
 		return 0;
 	}
@@ -339,7 +339,7 @@ extern "C"
 	{
 		if (odrManager != nullptr)
 		{
-			return (float)(odrManager->GetRoadById(id)->GetLength());
+			return static_cast<float>((odrManager->GetRoadById(id)->GetLength()));
 		}
 		else
 		{
@@ -363,9 +363,9 @@ extern "C"
 			if (road)
 			{
 				roadmanager::LaneSection* laneSection = road->GetLaneSectionByS(s);
-				for (size_t i = 0; i < laneSection->GetNumberOfLanes(); i++)
+				for (size_t i = 0; static_cast<int>(i) < laneSection->GetNumberOfLanes(); i++)
 				{
-					if (laneSection->GetLaneByIdx((int)i)->IsDriving())
+					if (laneSection->GetLaneByIdx(static_cast<int>(i))->IsDriving())
 					{
 						numberOfDrivableLanes++;
 					}
@@ -382,24 +382,24 @@ extern "C"
 
 	RM_DLL_API int RM_GetNumberOfRoadsOverlapping(int handle)
 	{
-		if (odrManager == nullptr || handle >= position.size() || handle < 0)
+		if (odrManager == nullptr || handle >= static_cast<int>(position.size()) || handle < 0)
 		{
 			return -1;
 		}
 
-		roadmanager::Position* pos = &position[handle];
+		roadmanager::Position* pos = &position[static_cast<unsigned int>(handle)];
 
 		return pos->GetNumberOfRoadsOverlapping();
 	}
 
 	RM_DLL_API int RM_GetOverlappingRoadId(int handle, int index)
 	{
-		if (odrManager == nullptr || handle >= position.size() || handle < 0)
+		if (odrManager == nullptr || handle >= static_cast<int>(position.size()) || handle < 0)
 		{
 			return -1;
 		}
 
-		roadmanager::Position* pos = &position[handle];
+		roadmanager::Position* pos = &position[static_cast<unsigned int>(handle)];
 
 		return pos->GetOverlappingRoadId(index);
 	}
@@ -418,13 +418,13 @@ extern "C"
 
 			// Consider only drivable lanes
 			roadmanager::LaneSection *laneSection = road->GetLaneSectionByS(s);
-			for (size_t i = 0; i < laneSection->GetNumberOfLanes(); i++)
+			for (size_t i = 0; static_cast<int>(i) < laneSection->GetNumberOfLanes(); i++)
 			{
-				if (laneSection->GetLaneByIdx((int)i)->IsDriving())
+				if (laneSection->GetLaneByIdx(static_cast<int>(i))->IsDriving())
 				{
 					if (numberOfDrivableLanes == laneIndex)
 					{
-						return laneSection->GetLaneByIdx((int)i)->GetId();
+						return laneSection->GetLaneByIdx(static_cast<int>(i))->GetId();
 					}
 					else
 					{
@@ -438,16 +438,16 @@ extern "C"
 
 	RM_DLL_API int RM_SetLanePosition(int handle, int roadId, int laneId, float laneOffset, float s, bool align)
 	{
-		if (odrManager == nullptr || handle >= position.size())
+		if (odrManager == nullptr || handle >= static_cast<int>(position.size()))
 		{
 			return -1;
 		}
 		else
 		{
-			roadmanager::Position *pos = &position[handle];
+			roadmanager::Position *pos = &position[static_cast<unsigned int>(handle)];
 			if (pos)
 			{
-				int retval = (int)pos->SetLanePos(roadId, laneId, s, laneOffset);
+				int retval = static_cast<int>(pos->SetLanePos(roadId, laneId, s, laneOffset));
 				if (align)
 				{
 					if (laneId < 0)
@@ -468,13 +468,13 @@ extern "C"
 
 	RM_DLL_API int RM_SetWorldPosition(int handle, float x, float y, float z, float h, float p, float r)
 	{
-		if (odrManager == nullptr || handle >= position.size())
+		if (odrManager == nullptr || handle >= static_cast<int>(position.size()))
 		{
 			return -1;
 		}
 		else
 		{
-			roadmanager::Position *pos = &position[handle];
+			roadmanager::Position *pos = &position[static_cast<unsigned int>(handle)];
 			if (pos)
 			{
 				return pos->SetInertiaPos(x, y, z, h, p, r);
@@ -486,16 +486,16 @@ extern "C"
 
 	RM_DLL_API int RM_SetWorldXYHPosition(int handle, float x, float y, float h)
 	{
-		if (odrManager == nullptr || handle >= position.size())
+		if (odrManager == nullptr || handle >= static_cast<int>(position.size()))
 		{
 			return -1;
 		}
 		else
 		{
-			roadmanager::Position *pos = &position[handle];
+			roadmanager::Position *pos = &position[static_cast<unsigned int>(handle)];
 			if (pos)
 			{
-				return (int)pos->XYZH2TrackPos(x, y, pos->GetZ(), h);
+				return static_cast<int>(pos->XYZH2TrackPos(x, y, pos->GetZ(), h));
 			}
 		}
 
@@ -504,16 +504,16 @@ extern "C"
 
 	RM_DLL_API int RM_SetWorldXYZHPosition(int handle, float x, float y, float z, float h)
 	{
-		if (odrManager == nullptr || handle >= position.size())
+		if (odrManager == nullptr || handle >= static_cast<int>(position.size()))
 		{
 			return -1;
 		}
 		else
 		{
-			roadmanager::Position* pos = &position[handle];
+			roadmanager::Position* pos = &position[static_cast<unsigned int>(handle)];
 			if (pos)
 			{
-				return (int)pos->XYZH2TrackPos(x, y, z, h);
+				return static_cast<int>(pos->XYZH2TrackPos(x, y, z, h));
 			}
 		}
 
@@ -522,16 +522,16 @@ extern "C"
 
 	RM_DLL_API int RM_SetRoadId(int handle, int roadId)
 	{
-		if (odrManager == nullptr || handle >= position.size())
+		if (odrManager == nullptr || handle >= static_cast<int>(position.size()))
 		{
 			return -1;
 		}
 		else
 		{
-			roadmanager::Position* pos = &position[handle];
+			roadmanager::Position* pos = &position[static_cast<unsigned int>(handle)];
 			if (pos)
 			{
-				return (int)pos->XYZH2TrackPos(pos->GetX(), pos->GetY(), pos->GetZ(), pos->GetH(), false, roadId, false);
+				return static_cast<int>(pos->XYZH2TrackPos(pos->GetX(), pos->GetY(), pos->GetZ(), pos->GetH(), false, roadId, false));
 			}
 		}
 
@@ -540,16 +540,16 @@ extern "C"
 
 	RM_DLL_API int RM_SetS(int handle, float s)
 	{
-		if (odrManager == nullptr || handle >= position.size())
+		if (odrManager == nullptr || handle >= static_cast<int>(position.size()))
 		{
 			return -1;
 		}
 		else
 		{
-			roadmanager::Position *pos = &position[handle];
+			roadmanager::Position *pos = &position[static_cast<unsigned int>(handle)];
 			if (pos)
 			{
-				return (int)pos->SetLanePos(pos->GetTrackId(), pos->GetLaneId(), s, pos->GetOffset());
+				return static_cast<int>(pos->SetLanePos(pos->GetTrackId(), pos->GetLaneId(), s, pos->GetOffset()));
 			}
 		}
 
@@ -558,17 +558,17 @@ extern "C"
 
 	RM_DLL_API int RM_PositionMoveForward(int handle, float dist, float junctionSelectorAngle)
 	{
-		if (odrManager == nullptr || handle >= position.size())
+		if (odrManager == nullptr || handle >= static_cast<int>(position.size()))
 		{
 			return -1;
 		}
 		else
 		{
-			roadmanager::Position *pos = &position[handle];
+			roadmanager::Position *pos = &position[static_cast<unsigned int>(handle)];
 
 			if (pos)
 			{
-				return (int)pos->MoveAlongS(dist, 0.0, junctionSelectorAngle);
+				return static_cast<int>(pos->MoveAlongS(dist, 0.0, junctionSelectorAngle));
 			}
 		}
 
@@ -577,24 +577,24 @@ extern "C"
 
 	RM_DLL_API int RM_GetPositionData(int handle, RM_PositionData *data)
 	{
-		if (odrManager == nullptr || handle >= position.size())
+		if (odrManager == nullptr || handle >= static_cast<int>(position.size()))
 		{
 			return -1;
 		}
 		else
 		{
-			data->x = (float)position[handle].GetX();
-			data->y = (float)position[handle].GetY();
-			data->z = (float)position[handle].GetZ();
-			data->h = (float)position[handle].GetH();
-			data->p = (float)position[handle].GetP();
-			data->r = (float)position[handle].GetR();
-			data->hRelative = (float)position[handle].GetHRelative();
-			data->roadId = position[handle].GetTrackId();
-			data->junctionId = position[handle].GetJunctionId();
-			data->laneId = position[handle].GetLaneId();
-			data->laneOffset = (float)position[handle].GetOffset();
-			data->s = (float)position[handle].GetS();
+			data->x = static_cast<float>(position[static_cast<unsigned int>(handle)].GetX());
+			data->y = static_cast<float>(position[static_cast<unsigned int>(handle)].GetY());
+			data->z = static_cast<float>(position[static_cast<unsigned int>(handle)].GetZ());
+			data->h = static_cast<float>(position[static_cast<unsigned int>(handle)].GetH());
+			data->p = static_cast<float>(position[static_cast<unsigned int>(handle)].GetP());
+			data->r = static_cast<float>(position[static_cast<unsigned int>(handle)].GetR());
+			data->hRelative = static_cast<float>(position[static_cast<unsigned int>(handle)].GetHRelative());
+			data->roadId = position[static_cast<unsigned int>(handle)].GetTrackId();
+			data->junctionId = position[static_cast<unsigned int>(handle)].GetJunctionId();
+			data->laneId = position[static_cast<unsigned int>(handle)].GetLaneId();
+			data->laneOffset = static_cast<float>(position[static_cast<unsigned int>(handle)].GetOffset());
+			data->s = static_cast<float>(position[static_cast<unsigned int>(handle)].GetS());
 		}
 
 		return 0;
@@ -602,7 +602,7 @@ extern "C"
 
 	RM_DLL_API int RM_GetLaneInfo(int handle, float lookahead_distance, RM_RoadLaneInfo *data, int lookAheadMode, bool inRoadDrivingDirection)
 	{
-		if (odrManager == nullptr || handle >= position.size())
+		if (odrManager == nullptr || handle >= static_cast<int>(position.size()))
 		{
 			return -1;
 		}
@@ -614,17 +614,17 @@ extern "C"
 
 	RM_DLL_API float RM_GetSpeedLimit(int handle)
 	{
-		if (odrManager == nullptr || handle >= position.size())
+		if (odrManager == nullptr || handle >= static_cast<int>(position.size()))
 		{
 			return -1;
 		}
 
-		return (float)position[handle].GetSpeedLimit();
+		return static_cast<float>(position[static_cast<unsigned int>(handle)].GetSpeedLimit());
 	}
 
 	RM_DLL_API int RM_GetProbeInfo(int handle, float lookahead_distance, RM_RoadProbeInfo * data, int lookAheadMode, bool inRoadDrivingDirection)
 	{
-		if (odrManager == nullptr || handle >= position.size())
+		if (odrManager == nullptr || handle >= static_cast<int>(position.size()))
 		{
 			return -1;
 		}
@@ -634,18 +634,18 @@ extern "C"
 
 	RM_DLL_API float RM_GetLaneWidth(int handle, int lane_id)
 	{
-		if (odrManager == nullptr || handle < 0 || handle >= position.size())
+		if (odrManager == nullptr || handle < 0 || handle >= static_cast<int>(position.size()))
 		{
 			return 0.0;
 		}
 
-		roadmanager::Road* road = odrManager->GetRoadById(position[handle].GetTrackId());
+		roadmanager::Road* road = odrManager->GetRoadById(position[static_cast<unsigned int>(handle)].GetTrackId());
 		if (road == nullptr)
 		{
 			return 0.0;
 		}
 
-		return (float)road->GetLaneWidthByS(position[handle].GetS(), lane_id);
+		return static_cast<float>(road->GetLaneWidthByS(position[static_cast<unsigned int>(handle)].GetS(), lane_id));
 	}
 
 	RM_DLL_API float RM_GetLaneWidthByRoadId(int road_id, int lane_id, float s)
@@ -661,23 +661,23 @@ extern "C"
 			return 0.0;
 		}
 
-		return (float)road->GetLaneWidthByS(s, lane_id);
+		return static_cast<float>(road->GetLaneWidthByS(s, lane_id));
 	}
 
 	RM_DLL_API int RM_GetLaneType(int handle, int lane_id)
 	{
-		if (odrManager == nullptr || handle < 0 || handle >= position.size())
+		if (odrManager == nullptr || handle < 0 || handle >= static_cast<int>(position.size()))
 		{
 			return -1;
 		}
 
-		roadmanager::Road* road = odrManager->GetRoadById(position[handle].GetTrackId());
+		roadmanager::Road* road = odrManager->GetRoadById(position[static_cast<unsigned int>(handle)].GetTrackId());
 		if (road == nullptr)
 		{
 			return -1;
 		}
 
-		return road->GetLaneTypeByS(position[handle].GetS(), lane_id);
+		return road->GetLaneTypeByS(position[static_cast<unsigned int>(handle)].GetS(), lane_id);
 	}
 
 	RM_DLL_API int RM_GetLaneTypeByRoadId(int road_id, int lane_id, float s)
@@ -698,16 +698,16 @@ extern "C"
 
 	RM_DLL_API int RM_SubtractAFromB(int handleA, int handleB, RM_PositionDiff *pos_diff)
 	{
-		if (odrManager == nullptr || handleA >= position.size() || handleB >= position.size())
+		if (odrManager == nullptr || handleA >= static_cast<int>(position.size()) || handleB >= static_cast<int>(position.size()))
 		{
 			return -1;
 		}
 
 		PositionDiff diff;
-		if (position[handleA].Delta(&position[handleB], diff) == true)
+		if (position[static_cast<unsigned int>(handleA)].Delta(&position[static_cast<unsigned int>(handleB)], diff) == true)
 		{
-			pos_diff->ds = (float)diff.ds;
-			pos_diff->dt = (float)diff.dt;
+			pos_diff->ds = static_cast<float>(diff.ds);
+			pos_diff->dt = static_cast<float>(diff.dt);
 			pos_diff->dLaneId = diff.dLaneId;
 
 			return 0;
@@ -757,17 +757,17 @@ extern "C"
 				road_sign->id = s->GetId();
 				returnString = s->GetName();
 				road_sign->name = returnString.c_str();
-				road_sign->x = (float)pos.GetX();
-				road_sign->y = (float)pos.GetY();
-				road_sign->z = (float)pos.GetZ();
-				road_sign->h = (float)pos.GetH();
-				road_sign->s = (float)pos.GetS();
-				road_sign->t = (float)pos.GetT();
+				road_sign->x = static_cast<float>(pos.GetX());
+				road_sign->y = static_cast<float>(pos.GetY());
+				road_sign->z = static_cast<float>(pos.GetZ());
+				road_sign->h = static_cast<float>(pos.GetH());
+				road_sign->s = static_cast<float>(pos.GetS());
+				road_sign->t = static_cast<float>(pos.GetT());
 				road_sign->orientation = s->GetOrientation() == roadmanager::Signal::Orientation::NEGATIVE ? -1 : 1;
-				road_sign->z_offset = (float)s->GetZOffset();
-				road_sign->length = (float)s->GetLength();
-				road_sign->height = (float)s->GetHeight();
-				road_sign->width = (float)s->GetWidth();
+				road_sign->z_offset = static_cast<float>(s->GetZOffset());
+				road_sign->length = static_cast<float>(s->GetLength());
+				road_sign->height = static_cast<float>(s->GetHeight());
+				road_sign->width = static_cast<float>(s->GetWidth());
 
 				return 0;
 			}
@@ -789,7 +789,7 @@ extern "C"
 			if (road != NULL)
 			{
 				roadmanager::Signal* s = road->GetSignal(index);
-				return (int)s->validity_.size();
+				return static_cast<int>(s->validity_.size());
 			}
 		}
 
@@ -804,10 +804,10 @@ extern "C"
 			if (road != NULL)
 			{
 				roadmanager::Signal* s = road->GetSignal(signIndex);
-				if (validityIndex >= 0 && validityIndex < s->validity_.size())
+				if (validityIndex >= 0 && validityIndex < static_cast<int>(s->validity_.size()))
 				{
-					validity->fromLane = s->validity_[validityIndex].fromLane_;
-					validity->toLane = s->validity_[validityIndex].toLane_;
+					validity->fromLane = s->validity_[static_cast<unsigned int>(validityIndex)].fromLane_;
+					validity->toLane = s->validity_[static_cast<unsigned int>(validityIndex)].toLane_;
 					return 0;
 				}
 			}
@@ -826,25 +826,25 @@ extern "C"
 				return -1;
 			}
 			else {
-				rmGeoReference->a_ = (float)(geoReference->a_);
-				rmGeoReference->axis_ = (float)(geoReference->axis_);
-				rmGeoReference->b_ = (float)(geoReference->b_);
+				rmGeoReference->a_ = static_cast<float>((geoReference->a_));
+				rmGeoReference->axis_ = static_cast<float>((geoReference->axis_));
+				rmGeoReference->b_ = static_cast<float>((geoReference->b_));
 				rmGeoReference->ellps_ = geoReference->ellps_.c_str();
-				rmGeoReference->k_ = (float)(geoReference->k_);
-				rmGeoReference->k_0_ = (float)(geoReference->k_0_);
-				rmGeoReference->lat_0_ = (float)(geoReference->lat_0_);
-				rmGeoReference->lon_0_ = (float)(geoReference->lon_0_);
-				rmGeoReference->lon_wrap_ = (float)(geoReference->lon_wrap_);
-				rmGeoReference->over_ = (float)(geoReference->over_);
+				rmGeoReference->k_ = static_cast<float>((geoReference->k_));
+				rmGeoReference->k_0_ = static_cast<float>((geoReference->k_0_));
+				rmGeoReference->lat_0_ = static_cast<float>((geoReference->lat_0_));
+				rmGeoReference->lon_0_ = static_cast<float>((geoReference->lon_0_));
+				rmGeoReference->lon_wrap_ = static_cast<float>((geoReference->lon_wrap_));
+				rmGeoReference->over_ = static_cast<float>((geoReference->over_));
 				rmGeoReference->pm_ = geoReference->pm_.c_str();
 				rmGeoReference->proj_ = geoReference->proj_.c_str();
 				rmGeoReference->units_ = geoReference->units_.c_str();
 				rmGeoReference->vunits_ = geoReference->vunits_.c_str();
-				rmGeoReference->x_0_ = (float)(geoReference->x_0_);
-				rmGeoReference->y_0_ = (float)(geoReference->y_0_);
+				rmGeoReference->x_0_ = static_cast<float>((geoReference->x_0_));
+				rmGeoReference->y_0_ = static_cast<float>((geoReference->y_0_));
 				rmGeoReference->datum_ = geoReference->datum_.c_str();
 				rmGeoReference->geo_id_grids_ = geoReference->geo_id_grids_.c_str();
-				rmGeoReference->zone_ = (float)(geoReference->zone_);
+				rmGeoReference->zone_ = static_cast<float>((geoReference->zone_));
 				rmGeoReference->towgs84_ = geoReference->towgs84_;
 
 				return 0;
