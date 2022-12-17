@@ -85,6 +85,10 @@ if(USE_OSG)
     disable_static_analysis(${TARGET1})
     disable_iwyu(${TARGET1})
 
+    install(
+        TARGETS ${TARGET1}
+        DESTINATION "${INSTALL_PATH}")
+
 endif()
 
 # ############################### Creating executable for target2 (dat2csv) ##########################################
@@ -122,6 +126,10 @@ endif()
 disable_static_analysis(${TARGET2})
 disable_iwyu(${TARGET2})
 
+install(
+    TARGETS ${TARGET2}
+    DESTINATION "${INSTALL_PATH}")
+
 # ############################### Creating executable for target3 (osireceiver) ######################################
 
 if(USE_OSI)
@@ -156,12 +164,8 @@ if(USE_OSI)
     disable_static_analysis(${TARGET3})
     disable_iwyu(${TARGET3})
 
+    install(
+        TARGETS ${TARGET3}
+        DESTINATION "${INSTALL_PATH}")
+
 endif()
-
-# # ############################### Install ############################################################################
-
-install(
-    TARGETS ${TARGET1}
-            ${TARGET2}
-            ${TARGET3}
-    DESTINATION "${INSTALL_PATH}")
