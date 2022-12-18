@@ -1,9 +1,3 @@
-link_directories(
-    ${EXTERNALS_OSG_LIBRARY_PATH}
-    ${EXTERNALS_OSI_LIBRARY_PATH}
-    ${EXTERNALS_SUMO_LIBRARY_PATH}
-    ${EXTERNALS_GTEST_LIBRARY_PATH})
-
 # ############################### Building Modules #####################################################################
 
 add_subdirectory(Modules/CommonMini)
