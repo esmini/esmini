@@ -114,11 +114,6 @@ macro(
         PRIVATE
         GTEST)
 
-    set_target_properties(
-        ${TARGET}
-        PROPERTIES FOLDER
-                   Unittest)
-
     disable_static_analysis(${TARGET})
     disable_iwyu(${TARGET})
 

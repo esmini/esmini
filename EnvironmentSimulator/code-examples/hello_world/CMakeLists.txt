@@ -63,11 +63,6 @@ foreach(
         ${module_name}
         PRIVATE esminiLib)
 
-    set_target_properties(
-        ${module_name}
-        PROPERTIES FOLDER
-                   ${CodeExamplesFolder}/${TARGET})
-
     install(
         TARGETS ${module_name}
         DESTINATION ${CODE_EXAMPLES_BIN_PATH})
