@@ -29,13 +29,6 @@ endif (USE_OSG)
 add_subdirectory(Applications/odrplot)
 add_subdirectory(Applications/replayer)
 
-# ############################### Building Unittest ####################################################################
-
-if ((NOT (APPLE OR MINGW)) AND USE_GTEST)
-  add_subdirectory(Unittest)
-endif()
-
-
 set ( ModulesFolder Modules )
 set ( ApplicationsFolder Applications )
 set ( LibrariesFolder Libraries )
@@ -66,6 +59,12 @@ FOREACH(subdir ${subdirectories})
         endif ()
     endif ()
 ENDFOREACH()
+
+# ############################### Building Unittest ####################################################################
+
+if ((NOT (APPLE OR MINGW)) AND USE_GTEST)
+  add_subdirectory(Unittest)
+endif()
 
 # ############################### Others ###############################################################################
 
