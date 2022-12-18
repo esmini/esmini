@@ -31,13 +31,14 @@ target_link_libraries(
 target_include_system_directories(
     ${TARGET}
     PRIVATE
+    ${ROAD_MANAGER_PATH}
     ${EXTERNALS_PUGIXML_PATH})
 
 target_link_libraries(
     ${TARGET}
     PRIVATE esminiLib
-    PRIVATE RoadManager
     PRIVATE CommonMini
+    PRIVATE RoadManager
     PRIVATE ${TIME_LIB})
 
 # ############################### Install ############################################################################

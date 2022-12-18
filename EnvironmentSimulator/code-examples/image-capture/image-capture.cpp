@@ -5,6 +5,8 @@
 
 void img_callback(SE_Image* img, void* data)
 {
+	(void)data;
+
 	static int counter = 0;
 
 	if (img != nullptr && img->data != nullptr)
@@ -17,6 +19,9 @@ void img_callback(SE_Image* img, void* data)
 
 int main(int argc, char* argv[])
 {
+	(void)argc;
+	(void)argv;
+
 	SE_Image img;
 
 	// Set custom window size
@@ -55,7 +60,7 @@ int main(int argc, char* argv[])
 	SE_WriteTGAImage("snap2.tga", img.width, img.height, img.data, img.pixelSize, img.pixelFormat, true);
 
 	// Run forward a few seconds and then grab another snapshot
-	while (SE_GetSimulationTime() < 2.0) SE_StepDT(0.1f);
+	while (SE_GetSimulationTime() < 2.0f) SE_StepDT(0.1f);
 	if (SE_FetchImage(&img) != 0)
 	{
 		printf("Error 3\n");
@@ -76,7 +81,7 @@ int main(int argc, char* argv[])
 	SE_Init("../resources/xosc/lane_change_crest.xosc", 0, 1, 0, 0);  // 1 = viewer
 
 	// Run forward a small duration to grab some images
-	while (SE_GetSimulationTime() < 2.0) SE_StepDT(0.1f);
+	while (SE_GetSimulationTime() < 2.0f) SE_StepDT(0.1f);
 
 	SE_Close();
 

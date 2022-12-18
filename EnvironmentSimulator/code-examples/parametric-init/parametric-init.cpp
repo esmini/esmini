@@ -23,6 +23,9 @@ void paramDeclCB(void*)
 
 int main(int argc, char* argv[])
 {
+	(void)argc;
+	(void)argv;
+
 	for (int i = 0; i < 3 && SE_GetQuitFlag() != 1; i++)
 	{
 		SE_RegisterParameterDeclarationCallback(paramDeclCB, 0);
@@ -38,7 +41,7 @@ int main(int argc, char* argv[])
 
 		SE_Init("../resources/xosc/cut-in.xosc", 0, 1, 0, 0);
 
-		while (SE_GetSimulationTime() < 20.0 && SE_GetQuitFlag() != 1)
+		while (SE_GetSimulationTime() < 20.0f && SE_GetQuitFlag() != 1)
 		{
 			SE_Step();
 		}

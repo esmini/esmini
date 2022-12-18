@@ -3,6 +3,9 @@
 
 int main(int argc, char* argv[])
 {
+	(void)argc;
+	(void)argv;
+
 	RM_Init("../resources/xodr/straight_500m_signs.xodr");
 
 	// Print some basic info
@@ -19,7 +22,7 @@ int main(int argc, char* argv[])
 			RM_RoadSign rs;
 			RM_GetRoadSign(rid, j, &rs);
 			printf("Road[%d] sign[%d] id %d name %s x %.2f y %.2f z %.2f heading %.2f orientation %d z_offset %.2f height: %.2f width %.2f\n",
-				i, j, rs.id, rs.name, rs.x, rs.y, rs.z, rs.h, rs.orientation, rs.z_offset, rs.height, rs.width);
+				i, j, rs.id, rs.name, static_cast<double>(rs.x), static_cast<double>(rs.y), static_cast<double>(rs.z), static_cast<double>(rs.h), rs.orientation, static_cast<double>(rs.z_offset), static_cast<double>(rs.height), static_cast<double>(rs.width));
 
 			int nValidityRecords = RM_GetNumberOfRoadSignValidityRecords(rid, j);
 			for (int k = 0; k < nValidityRecords; k++)
@@ -45,21 +48,21 @@ int main(int argc, char* argv[])
 
 	printf("\nPosition manipulation:\n");
 	printf("current pos: s %.2f laneId %d offset %.2f x %.2f y %.2f z %.2f \n",
-		posData.s, laneInfo.laneId, laneInfo.laneOffset, posData.x, posData.y, posData.z);
+		static_cast<double>(posData.s), laneInfo.laneId, static_cast<double>(laneInfo.laneOffset), static_cast<double>(posData.x), static_cast<double>(posData.y), static_cast<double>(posData.z));
 
 	// Move the position object
 	RM_SetLanePosition(p0, laneInfo.roadId, laneInfo.laneId + 1, 0.0, 200.0, true);
 	RM_GetLaneInfo(p0, 0.0, &laneInfo, 2, false);  // LookAheadMode = 2 looks at current lane offset
 	RM_GetPositionData(p0, &posData);
 	printf("current pos: s %.2f laneId %d offset %.2f x %.2f y %.2f z %.2f \n",
-		posData.s, laneInfo.laneId, laneInfo.laneOffset, posData.x, posData.y, posData.z);
+		static_cast<double>(posData.s), laneInfo.laneId, static_cast<double>(laneInfo.laneOffset), static_cast<double>(posData.x), static_cast<double>(posData.y), static_cast<double>(posData.z));
 
 	// Move forward in current lane
 	RM_PositionMoveForward(p0, 950, -1); // Junction selector angle -1 = random choice
 	RM_GetLaneInfo(p0, 0.0, &laneInfo, 2, false);  // LookAheadMode = 2 looks at current lane offset
 	RM_GetPositionData(p0, &posData);
 	printf("current pos: s %.2f laneId %d offset %.2f x %.2f y %.2f z %.2f \n",
-		posData.s, laneInfo.laneId, laneInfo.laneOffset, posData.x, posData.y, posData.z);
+		static_cast<double>(posData.s), laneInfo.laneId, static_cast<double>(laneInfo.laneOffset), static_cast<double>(posData.x), static_cast<double>(posData.y), static_cast<double>(posData.z));
 
 
 	// Re-initialize road manager with another road to demonstrate junction ID
@@ -77,9 +80,9 @@ int main(int argc, char* argv[])
 	printf("Junction Id: %d\n", posData.junctionId);
 
 	printf("Nr overlapping roads: %d\n", RM_GetNumberOfRoadsOverlapping(p0));
-	for (size_t i = 0; i < RM_GetNumberOfRoadsOverlapping(p0); i++)
+	for (size_t i = 0; static_cast<int>(i) < RM_GetNumberOfRoadsOverlapping(p0); i++)
 	{
-		printf("  road_id %d\n", RM_GetOverlappingRoadId(p0, (int)i));
+		printf("  road_id %d\n", RM_GetOverlappingRoadId(p0, static_cast<int>(i)));
 	}
 
 	RM_Close();

@@ -7,6 +7,9 @@
 
 int main(int argc, char* argv[])
 {
+	(void)argc;
+	(void)argv;
+
 	SE_Init("../resources/xosc/cut-in_simple.xosc", 0, 1, 0, 0);
 
 	osi3::GroundTruth* gt;
@@ -23,10 +26,10 @@ int main(int argc, char* argv[])
 		SE_UpdateOSIGroundTruth();
 
 		// Fetch OSI struct
-		gt = (osi3::GroundTruth*)SE_GetOSIGroundTruthRaw();
+		gt = (osi3::GroundTruth*)SE_GetOSIGroundTruthRaw(); // TODO: @Emil -> Recommendation: reinterpret_cast<const osi3::GroundTruth*>
 
 		// Print timestamp
-		printf("Frame %d timestamp: %.2f\n", i, gt->mutable_timestamp()->seconds() +
+		printf("Frame %d timestamp: %.2f\n", i, gt->mutable_timestamp()->seconds() + // TODO: @Emil
 			1E-9 * gt->mutable_timestamp()->nanos());
 
 		// Lane boundaries

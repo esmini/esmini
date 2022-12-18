@@ -1,12 +1,16 @@
 
 #include "esminiLib.hpp"
-#include "../RoadManager/RoadManager.hpp"
+#include "RoadManager.hpp"
 
 int main(int argc, char* argv[])
 {
+
+	(void)argc;
+	(void)argv;
+
 	SE_Init("../resources/xosc/cut-in.xosc", 0, 0, 0, 0);
 
-	roadmanager::OpenDrive* odr = (roadmanager::OpenDrive*)SE_GetODRManager();
+	roadmanager::OpenDrive* odr = static_cast<roadmanager::OpenDrive*>(SE_GetODRManager());
 
 	printf("OpenDRIVE filepath: %s\n", odr->GetOpenDriveFilename().c_str());
 	printf("NumberOfRoads: %d\n", odr->GetNumOfRoads());

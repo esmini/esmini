@@ -7,7 +7,7 @@
 
 void paramDeclCB(void* user_arg)
 {
-	bool ghostMode = *((bool*)user_arg);
+	bool ghostMode = *(static_cast<bool*>(user_arg));
 
 	SE_LogMessage((std::string("Running with ghostMode = ").append(ghostMode == true ? "true" : "false")).c_str());
 	SE_SetParameterBool("GhostMode", ghostMode);
@@ -15,6 +15,10 @@ void paramDeclCB(void* user_arg)
 
 int main(int argc, char* argv[])
 {
+
+	(void)argc;
+	(void)argv;
+
 	const double defaultTargetSpeed = 50.0;
 	const double curveWeight = 30.0;
 	const double throttleWeight = 0.1;
@@ -22,7 +26,7 @@ int main(int argc, char* argv[])
 	bool ghostMode[3] = { false, true, true };
 
 	void* vehicleHandle = 0;
-	SE_SimpleVehicleState vehicleState = { 0, 0, 0, 0, 0, 0 };
+	SE_SimpleVehicleState vehicleState = { 0, 0, 0, 0, 0, 0, 0, 0};
 	SE_ScenarioObjectState objectState;
 	SE_RoadInfo roadInfo;
 
@@ -81,14 +85,14 @@ int main(int argc, char* argv[])
 				SE_GetRoadInfoAtDistance(0, 5 + 0.75f * vehicleState.speed, &roadInfo, 0, true);
 
 				// Slow down when curve ahead - CURVE_WEIGHT is the tuning parameter
-				targetSpeed = defaultTargetSpeed / (1 + curveWeight * fabs(roadInfo.angle));
+				targetSpeed = defaultTargetSpeed / (1 + curveWeight * static_cast<double>(fabs(roadInfo.angle)));
 			}
 
 			// Steer towards where the point
 			double steerAngle = roadInfo.angle;
 
 			// Accelerate or decelerate towards target speed - THROTTLE_WEIGHT tunes magnitude
-			double throttle = throttleWeight * (targetSpeed - vehicleState.speed);
+			double throttle = throttleWeight * (targetSpeed - static_cast<double>(vehicleState.speed));
 
 			// Step vehicle model with driver input, but wait until time > 0
 			if (SE_GetSimulationTime() > 0 && !SE_GetPauseFlag())

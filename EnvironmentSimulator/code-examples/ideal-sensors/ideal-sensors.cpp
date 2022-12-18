@@ -5,6 +5,9 @@
 
 int main(int argc, char* argv[])
 {
+	(void)argc;
+	(void)argv;
+
 	SE_Init("../resources/xosc/cut-in.xosc", 0, 1, 0, 0);
 
 	SE_AddObjectSensor(0, 2.0f, 1.0f, 0.5f, 1.57f, 1.0f, 50.0f, 1.57f, MAX_HITS);
@@ -26,7 +29,7 @@ int main(int argc, char* argv[])
 				SE_ScenarioObjectState state;
 
 				SE_GetObjectState(objList[k], &state);
-				printf("object[%d] pos: (%.2f, %.2f) heading: %.2f\n", objList[k], state.x, state.y, state.h);
+				printf("object[%d] pos: (%.2f, %.2f) heading: %.2f\n", objList[k], static_cast<double>(state.x), static_cast<double>(state.y), static_cast<double>(state.h));
 			}
 		}
 	}

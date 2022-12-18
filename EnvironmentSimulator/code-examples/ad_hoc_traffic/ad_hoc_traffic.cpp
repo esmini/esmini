@@ -17,6 +17,9 @@ typedef struct
 
 int main(int argc, char* argv[])
 {
+	(void)argc;
+	(void)argv;
+
 	SE_AddPath("../resources");
 
 	if (SE_Init("../EnvironmentSimulator/code-examples/ad_hoc_traffic/empty_scenario.xosc", 1, 1, 0, 0) != 0)
@@ -35,7 +38,7 @@ int main(int argc, char* argv[])
 
 	while (timestamp_now < 30.0 && !(SE_GetQuitFlag() == 1))
 	{
-		if (timestamp_now > distance * counter / speed)
+		if (timestamp_now > distance * counter / speed) // TODO: @Emil
 		{
 			// Add a vehicle at regular distance
 			std::string name = "object_" + std::to_string(counter);
@@ -60,7 +63,7 @@ int main(int argc, char* argv[])
 			{
 				printf("Removing car with id %d\n", cars[i].id);
 				SE_DeleteObject(cars[i].id);
-				cars.erase(cars.begin() + i);
+				cars.erase(cars.begin() + i); // TODO: @Emil
 				i--;
 			}
 			else

@@ -213,11 +213,14 @@ const char* scenario = "\
 
 int main(int argc, char* argv[])
 {
+   (void)argc;
+   (void)argv;
+
 	SE_AddPath("../resources/xodr");
 
     SE_InitWithString(scenario, 1, 1, 0, 0);
 
-	while (SE_GetSimulationTime() < 20.0 && !(SE_GetQuitFlag() == 1))
+	while (SE_GetSimulationTime() < 20.0f && !(SE_GetQuitFlag() == 1))
 	{
 		SE_Step();
 
@@ -226,7 +229,7 @@ int main(int argc, char* argv[])
 			SE_ScenarioObjectState state;
 
 			SE_GetObjectState(SE_GetId(k), &state);
-			printf("time [%.2f] object[%d] pos[%.2f, %.2f] \n", state.timestamp, k, state.x, state.y);
+			printf("time [%.2f] object[%d] pos[%.2f, %.2f] \n", state.timestamp, k, static_cast<double>(state.x), static_cast<double>(state.y)); // TODO: @Emil
 		}
 	}
 
