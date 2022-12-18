@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
 			LaneSection *lane_section = road->GetLaneSectionByIdx(i);
 			double s_start = lane_section->GetS();
 			double s_end = s_start + lane_section->GetLength();
-			int steps = MAX(1, (int)((s_end - s_start) / step_length_target));
+			int steps = MAX(1, static_cast<int>((s_end - s_start) / step_length_target));
 			double step_length = steps > 0 ? (s_end - s_start) / steps : s_end - s_start;
 
 			for (int j = 0; j < lane_section->GetNumberOfLanes(); j++)

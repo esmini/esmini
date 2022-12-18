@@ -69,6 +69,8 @@ static void signal_handler(int s)
 
 int main(int argc, char* argv[])
 {
+	(void)argc;
+	(void)argv;
 	static int sock;
 	struct sockaddr_in server_addr;
 	struct sockaddr_in sender_addr;
@@ -99,7 +101,7 @@ int main(int argc, char* argv[])
 	}
 #endif
 
-	sock = (int)socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+	sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	if (sock < 0)
 	{
 		printf("socket failed\n");
@@ -113,7 +115,7 @@ int main(int argc, char* argv[])
 	int timeout_msec = 1000 * tv.tv_sec + tv.tv_usec;
 	if (setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout_msec, sizeof(timeout_msec)) < 0)
 #else
-	if (setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (struct timeval*)&tv, sizeof(tv)) == 0)
+	if (setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) == 0)
 #endif
 	{
 		printf("socket SO_RCVTIMEO (receive timeout) not supported on this platform\n");
@@ -123,7 +125,7 @@ int main(int argc, char* argv[])
 	server_addr.sin_port = htons(iPortIn);
 	server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
-	if (bind(sock, (struct sockaddr *)&server_addr, sizeof(server_addr)) != 0)
+	if (bind(sock, reinterpret_cast<struct sockaddr *>(&server_addr), sizeof(server_addr)) != 0)
 	{
 		printf("Bind failed");
 		CloseGracefully(sock);
@@ -142,7 +144,7 @@ int main(int argc, char* argv[])
 		int receivedDataBytes = 0;
 		while (buf.counter > 0)
 		{
-			retval = recvfrom(sock, (char*)&buf, sizeof(buf), 0, (struct sockaddr*)&sender_addr, &sender_addr_size);
+			retval = static_cast<int>(recvfrom(sock, reinterpret_cast<char*>(&buf), sizeof(buf), 0, reinterpret_cast<struct sockaddr*>(&sender_addr), &sender_addr_size));
 			if (retval > 0)
 			{
 				if (buf.counter == 1)
@@ -151,7 +153,7 @@ int main(int argc, char* argv[])
 					receivedDataBytes = 0;
 				}
 				memcpy(&large_buf[receivedDataBytes], buf.data, buf.datasize);
-				receivedDataBytes += buf.datasize;
+				receivedDataBytes += static_cast<int>(buf.datasize);
 			}
 		}
 
@@ -160,14 +162,14 @@ int main(int argc, char* argv[])
 			gt.ParseFromArray(large_buf, receivedDataBytes);
 
 			// Print timestamp
-			printf("timestamp: %.2f\n", gt.mutable_timestamp()->seconds() +
+			printf("timestamp: %.2f\n", gt.mutable_timestamp()->seconds() + // TODO: @Emil
 				1E-9 * gt.mutable_timestamp()->nanos());
 
 			// Print object id, position, orientation and velocity
 			for (int i = 0; i < gt.mutable_moving_object()->size(); i++)
 			{
 				printf(" obj id %d pos (%.2f, %.2f, %.2f) orientation (%.2f, %.2f, %.2f) velocity (%.2f, %.2f, %.2f) \n",
-					(int)gt.mutable_moving_object(i)->mutable_id()->value(),
+					static_cast<int>(gt.mutable_moving_object(i)->mutable_id()->value()),
 					gt.mutable_moving_object(i)->mutable_base()->mutable_position()->x(),
 					gt.mutable_moving_object(i)->mutable_base()->mutable_position()->y(),
 					gt.mutable_moving_object(i)->mutable_base()->mutable_position()->z(),

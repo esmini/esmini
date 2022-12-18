@@ -68,18 +68,18 @@ int main(int argc, char** argv)
 		ObjectStateStructDat *state = &player->data_[i].state;
 
 		snprintf(line, MAX_LINE_LEN, "%.3f, %d, %s, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f\n",
-			state->info.timeStamp,
+			static_cast<double>(state->info.timeStamp),
 			state->info.id,
 			state->info.name,
-			state->pos.x,
-			state->pos.y,
-			state->pos.z,
-			state->pos.h,
-			state->pos.p,
-			state->pos.r,
-			state->info.speed,
-			state->info.wheel_angle,
-			state->info.wheel_rot);
+			static_cast<double>(state->pos.x),
+			static_cast<double>(state->pos.y),
+			static_cast<double>(state->pos.z),
+			static_cast<double>(state->pos.h),
+			static_cast<double>(state->pos.p),
+			static_cast<double>(state->pos.r),
+			static_cast<double>(state->info.speed),
+			static_cast<double>(state->info.wheel_angle),
+			static_cast<double>(state->info.wheel_rot));
 
 		file << line;
 	}

@@ -58,7 +58,7 @@ namespace scenarioengine
 		double GetStartTime() { return startTime_; }
 		double GetStopTime() { return stopTime_; }
 		double GetTime() { return time_; }
-		int GetIndex() { return index_; }
+		int GetIndex() { return static_cast<int>(index_); }
 		void SetRepeat(bool repeat) { repeat_ = repeat; }
 		void CleanEntries(std::vector<ReplayEntry>& entries);
 		void BuildData(std::vector<std::pair<std::string, std::vector<ReplayEntry>>>& scenarios);

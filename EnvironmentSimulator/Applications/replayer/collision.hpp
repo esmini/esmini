@@ -23,10 +23,10 @@ void updateCorners(ScenarioEntity& entity)
     SE_Vector bb_center(entity.bounding_box.center_.x_, entity.bounding_box.center_.y_);
     SE_Vector bb_dim(entity.bounding_box.dimensions_.length_, entity.bounding_box.dimensions_.width_);
 
-    SE_Vector front_right = SE_Vector(entity.pos.x, entity.pos.y) + SE_Vector(bb_center.x() + bb_dim.x() / 2.0f, bb_center.y() - bb_dim.y() / 2.0f).Rotate(entity.pos.h);
-    SE_Vector front_left = SE_Vector(entity.pos.x, entity.pos.y) + SE_Vector(bb_center.x() + bb_dim.x() / 2.0f, bb_center.y() + bb_dim.y() / 2.0f).Rotate(entity.pos.h);
-    SE_Vector rear_left = SE_Vector(entity.pos.x, entity.pos.y) + SE_Vector(bb_center.x() - bb_dim.x() / 2.0f, bb_center.y() + bb_dim.y() / 2.0f).Rotate(entity.pos.h);
-    SE_Vector rear_right = SE_Vector(entity.pos.x, entity.pos.y) + SE_Vector(bb_center.x() - bb_dim.x() / 2.0f, bb_center.y() - bb_dim.y() / 2.0f).Rotate(entity.pos.h);
+    SE_Vector front_right = SE_Vector(entity.pos.x, entity.pos.y) + SE_Vector(bb_center.x() + bb_dim.x() / 2.0, bb_center.y() - bb_dim.y() / 2.0).Rotate(entity.pos.h);
+    SE_Vector front_left = SE_Vector(entity.pos.x, entity.pos.y) + SE_Vector(bb_center.x() + bb_dim.x() / 2.0, bb_center.y() + bb_dim.y() / 2.0).Rotate(entity.pos.h);
+    SE_Vector rear_left = SE_Vector(entity.pos.x, entity.pos.y) + SE_Vector(bb_center.x() - bb_dim.x() / 2.0, bb_center.y() + bb_dim.y() / 2.0).Rotate(entity.pos.h);
+    SE_Vector rear_right = SE_Vector(entity.pos.x, entity.pos.y) + SE_Vector(bb_center.x() - bb_dim.x() / 2.0, bb_center.y() - bb_dim.y() / 2.0).Rotate(entity.pos.h);
 
     entity.corners = {front_right, front_left, rear_left, rear_right};
 }
