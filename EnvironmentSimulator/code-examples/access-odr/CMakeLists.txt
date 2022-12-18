@@ -1,28 +1,47 @@
+# ############################### Setting targets ####################################################################
 
-include_directories (
-  ${ESMINI_LIB_PATH}
-  ${COMMON_MINI_PATH}
-  ${EXTERNALS_PUGIXML_PATH}
-)
+set(TARGET
+    access-odr)
 
-set (TARGET access-odr)
+# ############################### Loading desired rules ##############################################################
 
-set ( SOURCES
-  access-odr.cpp
-)
+include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_static_analysis.cmake)
+include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_iwyu.cmake)
+include(${CMAKE_SOURCE_DIR}/support/cmake/rule/system_link.cmake)
 
-set ( INCLUDES
-)
+# ############################### Setting target files ###############################################################
 
-add_executable ( ${TARGET} ${SOURCES} ${INCLUDES} )
+set(SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/access-odr.cpp)
 
-target_link_libraries (
-	${TARGET}
-	esminiLib
-    RoadManager
-	CommonMini
-	${TIME_LIB}
-  project_options
-)
+# ############################### Creating executable ################################################################
 
-install ( TARGETS ${TARGET} DESTINATION "${CODE_EXAMPLES_BIN_PATH}")
+include_directories(
+    ${ESMINI_LIB_PATH}
+    ${COMMON_MINI_PATH})
+
+add_executable(
+    ${TARGET}
+    ${SOURCES})
+
+target_link_libraries(
+    ${TARGET}
+    PRIVATE project_options)
+
+target_include_system_directories(
+    ${TARGET}
+    PRIVATE
+    ${EXTERNALS_PUGIXML_PATH})
+
+target_link_libraries(
+    ${TARGET}
+    PRIVATE esminiLib
+    PRIVATE RoadManager
+    PRIVATE CommonMini
+    PRIVATE ${TIME_LIB})
+
+# ############################### Install ############################################################################
+
+install(
+    TARGETS ${TARGET}
+    DESTINATION "${CODE_EXAMPLES_BIN_PATH}")

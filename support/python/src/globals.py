@@ -140,9 +140,10 @@ ESMINI_COMPILERS = [
 ESMINI_CMAKE_FORMAT_INCLUDES = [
     os.path.join(ESMINI_DIRECTORY_ROOT, "CMakeLists.txt"),
     os.path.join(ESMINI_DIRECTORY_SUPPORT, "cmake"),
-    os.path.join(ESMINI_DIRECTORY_ENVIRONMENT_SIMULATOR, "Modules"),
-    os.path.join(ESMINI_DIRECTORY_ENVIRONMENT_SIMULATOR, "Libraries"),
     os.path.join(ESMINI_DIRECTORY_ENVIRONMENT_SIMULATOR, "Applications"),
+    os.path.join(ESMINI_DIRECTORY_ENVIRONMENT_SIMULATOR, "code-examples"),
+    os.path.join(ESMINI_DIRECTORY_ENVIRONMENT_SIMULATOR, "Libraries"),
+    os.path.join(ESMINI_DIRECTORY_ENVIRONMENT_SIMULATOR, "Modules"),
 ]
 
 ESMINI_CMAKE_FORMAT_EXTENSION = ["CMakeLists.txt", ".cmake"]

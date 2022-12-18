@@ -66,6 +66,8 @@ FOREACH(subdir ${subdirectories})
     endif ()
 ENDFOREACH()
 
+# ############################### Others ###############################################################################
+
 if (USE_OSI)
   set_target_properties (osireceiver PROPERTIES FOLDER ${ApplicationsFolder} )
 endif ()

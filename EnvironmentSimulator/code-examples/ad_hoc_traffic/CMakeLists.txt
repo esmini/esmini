@@ -1,25 +1,42 @@
+# ############################### Setting targets ####################################################################
 
-include_directories (
-  ${ESMINI_LIB_PATH}
-  ${EXTERNALS_PUGIXML_PATH}
-)
+set(TARGET
+    ad_hoc_traffic)
 
-set (TARGET ad_hoc_traffic)
+# ############################### Loading desired rules ##############################################################
 
-set ( SOURCES
-  ad_hoc_traffic.cpp
-)
+include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_static_analysis.cmake)
+include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_iwyu.cmake)
+include(${CMAKE_SOURCE_DIR}/support/cmake/rule/system_link.cmake)
 
-set ( INCLUDES
-)
+# ############################### Setting target files ###############################################################
 
-add_executable ( ${TARGET} ${SOURCES} ${INCLUDES} )
+set(SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/ad_hoc_traffic.cpp)
 
-target_link_libraries (
-	${TARGET}
-	esminiLib
-  project_options
-)
+# ############################### Creating executable ################################################################
 
-install ( TARGETS ${TARGET} DESTINATION "${CODE_EXAMPLES_BIN_PATH}")
+include_directories(${ESMINI_LIB_PATH})
 
+add_executable(
+    ${TARGET}
+    ${SOURCES})
+
+target_link_libraries(
+    ${TARGET}
+    PRIVATE project_options)
+
+target_include_system_directories(
+    ${TARGET}
+    PRIVATE
+    ${EXTERNALS_PUGIXML_PATH})
+
+target_link_libraries(
+    ${TARGET}
+    PRIVATE esminiLib)
+
+# ############################### Install ############################################################################
+
+install(
+    TARGETS ${TARGET}
+    DESTINATION "${CODE_EXAMPLES_BIN_PATH}")
