@@ -49,12 +49,25 @@ macro(
             STREQUAL
             "OSI")
 
-            if(USE_OSI)
+            if(${TARGET}
+               STREQUAL
+               "ScenarioEngineDll_test")
 
                 target_link_system_libraries(
                     ${TARGET}
                     PRIVATE
                     ${library})
+
+            else()
+
+                if(USE_OSI)
+
+                    target_link_system_libraries(
+                        ${TARGET}
+                        PRIVATE
+                        ${library})
+
+                endif()
 
             endif()
 
