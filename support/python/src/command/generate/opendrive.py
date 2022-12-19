@@ -2,12 +2,18 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 import xml.etree.ElementTree as ET
 import json
 import os
-from support.python.src.globals import ESMINI_DIRECTORY_SUPPORT, ESMINI_DIRECTORY_ROOT
-from support.python.src.formatter import format_green, format_yellow
+
+from support.python.src.command.run.run import Run
+from support.python.src.globals import (
+    ESMINI_DIRECTORY_EXTERNALS,
+    ESMINI_DIRECTORY_JINJA_TEMPLATES,
+    ESMINI_DIRECTORY_SUPPORT,
+)
+from support.python.src.formatter import format_green, format_yellow, format_red
 
 
 class OpenDrive:
-    def generate_file(self, data, output):
+    def generate_file(self, data, output_folder):
         """
         Handles the generation of the .json and .hpp files.
 
@@ -16,15 +22,38 @@ class OpenDrive:
         data (dict): dictionary used in jinja generation
         output (str): name of file to generate
         """
-        outputfolder = os.path.join(ESMINI_DIRECTORY_SUPPORT, "generated")
-        if not os.path.exists(outputfolder):
-            os.mkdir(outputfolder)
-        output_file = os.path.join(outputfolder, output + ".hpp")
+
+        if not os.path.exists(output_folder):
+            os.mkdir(output_folder)
+        output_file = os.path.join(output_folder, data["name"] + ".hpp")
 
         # Dump dict to json for testing
         # self.print_dict(output_file, data)
 
         # Handles the generation of shared.hpp to fix mutual inclusion problem
+        if data["name"] == "Road":
+            data = self.create_exception_shared(
+                data, os.path.join(output_folder, "Shared.hpp")
+            )
+
+        # Generate the hpp file
+        template_file = "hpp_template.j2"
+        self.create_hpp_file(template_file, output_file, data)
+
+    def create_exception_shared(self, data, output_file):
+        """
+        Creates a exception shared dictionary for "struct e_countryCode"
+        and generates a shared hpp file for the dictionary.\n
+        This to fix a problem with mutual inclusion between signal and road
+
+        Inputs:
+        ---------
+        dictionary (dict): the dictionary containing all parsed data
+        outputfolder (path): to the folder where the file should be generated
+        Returns:
+        ---------
+        dict <- with the "shared" object removed
+        """
         for key, value in data["data"].items():
             if "struct e_countryCode" in key:
                 shared = {}
@@ -32,63 +61,36 @@ class OpenDrive:
                 shared["namespace"] = data["name"]  # Get name/namespace
                 shared["version"] = data["version"]  # Get version
                 shared["data"] = {key: value}  # Copy e_countryCode
-                self.create_exception_shared_hpp(outputfolder, shared)
+                self.create_hpp_file("shared_template.j2", output_file, shared)
                 data["data"].pop(key)  # Remove e_countryCode to not generate it twice
                 break
+        return data
 
-        # Generate the hpp file
-        self.create_hpp_files(output_file, data)
-
-    def create_exception_shared_hpp(self, outputfolder, data):
-        """
-        Generate a exception shared header for "struct e_countryCode" \n
-        to fix a problem with mutual inclusion between signal and road
-
-        Inputs:
-        ---------
-        outputfolder (str): name of folder to generate
-        data (dict): dictionary used in jinja generation
-
-        """
-        template_folder = os.path.join(ESMINI_DIRECTORY_SUPPORT, "jinja")
-        template_file = "shared_template.j2"
-        env = Environment(
-            autoescape=select_autoescape(),
-            loader=FileSystemLoader(template_folder),
-            trim_blocks=True,
-            lstrip_blocks=True,
-        )
-        template = env.get_template(template_file)
-        content = template.render(data)
-        output_file = os.path.join(outputfolder, "Shared.hpp")
-        with open(output_file, mode="w", encoding="utf-8") as message:
-            message.write(content)
-        filename = output_file.split("/")[-1]
-        print(format_yellow(f"Generated exception file: {filename}"))
-
-    def create_hpp_files(self, output_file, data):
+    def create_hpp_file(self, template_file, output_file, data):
         """
         Generates the .hpp files using jinja2.
 
         Inputs:
         ---------
+        template_file (str): name of template to use for generation
         output_file (path): the name/location of file to generate
         data (dict): dictionary used in jinja generation
         """
-        template_folder = os.path.join(ESMINI_DIRECTORY_SUPPORT, "jinja")
-        template_file = "hpp_template.j2"
         env = Environment(
             autoescape=select_autoescape(),
-            loader=FileSystemLoader(template_folder),
+            loader=FileSystemLoader(ESMINI_DIRECTORY_JINJA_TEMPLATES),
             trim_blocks=True,
             lstrip_blocks=True,
         )
         template = env.get_template(template_file)
         content = template.render(data)
-        with open(output_file, mode="w", encoding="utf-8") as message:
-            message.write(content)
-        filename = output_file.split("/")[-1]
-        print(format_green(f"Generated: {filename}"))
+        try:
+            with open(output_file, mode="w", encoding="utf-8") as message:
+                message.write(content)
+        except OSError as e:
+            print(format_red(f"{e}"))
+
+        print(format_green("Generated: " + output_file.split("/")[-1]))
 
     def print_dict(self, output_file, data):
         """
@@ -100,10 +102,13 @@ class OpenDrive:
         output_file (path): the name/location of file to generate
         data (dict): dictionary used in jinja generation
         """
-        with open(output_file + ".json", mode="w", encoding="utf-8") as file:
-            json.dump(data, file, indent=4)
-            file.close()
-        print((f"Printed dictionary"))
+        try:
+            with open(output_file + ".json", mode="w", encoding="utf-8") as file:
+                json.dump(data, file, indent=4)
+                file.close()
+        except OSError as e:
+            print(format_red(f"{e}"))
+        print(format_yellow("Dumped dictionary"))
 
     def parser(self, file, name, version):
         """
@@ -117,7 +122,7 @@ class OpenDrive:
 
         Returns:
         ---------
-        (ref_list,dict) <- containing the parsed and processed file and all refences from the file
+        tuple(ref_list,dict) <- (list) of all references from the file, (dict) of the parsed post-processed file
         """
         parsed_data = {}
         tree = ET.parse(file)
@@ -127,7 +132,10 @@ class OpenDrive:
         parsed_data = self.union_to_struct(parsed_data)
         ref_list = self.create_ref_list([], name, parsed_data)
         ordered = False
-        while not ordered:
+
+        while (
+            not ordered
+        ):  # Runs until dictionary is not changed between two runs -> ordered
             old_dict = parsed_data.copy()
             parsed_data = self.order_dictionary(parsed_data)
             check = True
@@ -135,6 +143,7 @@ class OpenDrive:
                 if oldkey != newkey:
                     check = False
             ordered = check
+
         parsed_data = self.create_inheritance(parsed_data)
         parsed_dict = {"name": name, "version": version, "data": parsed_data}
         return (ref_list, parsed_dict)
@@ -153,24 +162,32 @@ class OpenDrive:
         list(tuples) <- list of tuples containing (child,parent) for inheritance
         """
         inheritance = []
-        for child, contains in root.items():  # (class/enum/struct,base)
+        for classname, classdict in root.items():
+            if isinstance(classdict, dict):
+                self.get_inheritance_rec(classdict, classname, inheritance)
+        return inheritance
+
+    def get_inheritance_rec(self, parent, classname, inheritance):
+        """
+        Looks through the dictionary and searches for inheritances
+            looks for the keyword ("choice") in dictionary to find inheritance
+
+        Inputs:
+        ---------
+        parent (dict):  dictionary to be searched
+        classname (str):
+        Returns:
+        ---------
+        list(tuples) <- list of tuples containing (childtype,classname) for inheritance
+        """
+        for child, contains in parent.items():
             if isinstance(contains, dict):
-                for _, base in contains.items():  # (base,opendriveelements..)
-                    if isinstance(base, dict):
-                        for (
-                            _,
-                            types,
-                        ) in (
-                            base.items()
-                        ):  # (opendriveelement,types(choice,sequence,attribute))
-                            if isinstance(types, dict):
-                                for type, attributes in types.items():  # (choice,items)
-                                    if type == "choice":
-                                        for _, items in attributes.items():
-                                            if "type" in items.keys():
-                                                inheritance.append(
-                                                    (items["type"], child)
-                                                )
+                if child == "choice":
+                    for _, items in contains.items():
+                        if "type" in items.keys():
+                            inheritance.append((items["type"], classname))
+                else:
+                    self.get_inheritance_rec(contains, classname, inheritance)
         return inheritance
 
     def create_inheritance(self, root):
@@ -288,12 +305,10 @@ class OpenDrive:
                         if value["type"] not in order:
                             order.append(value["type"])
                     if "std::vector" in value["type"]:
-                        temp_str = value["type"]
-                        temp_str = temp_str.replace("std::vector<", "")
-                        temp_str = temp_str.replace(">", "")
-                        if temp_str in keys:
-                            if temp_str not in order:
-                                order.append(temp_str)
+                        # Removes "std::vector< >" to get type
+                        temp_str = value["type"][12:-1]
+                        if temp_str in keys and temp_str not in order:
+                            order.append(temp_str)
             if not isinstance(value, str):
                 self.get_key_order(value, order, keys)
         return order
@@ -321,9 +336,8 @@ class OpenDrive:
                                 value["type"] = refrence
                                 break
                             if "std::vector" in value["type"]:
-                                temp_str = value["type"]
-                                temp_str = temp_str.replace("std::vector<", "")
-                                temp_str = temp_str.replace(">", "")
+                                # Removes "std::vector< > to get type"
+                                temp_str = value["type"][12:-1]
                                 if temp_str == refrence.split("::")[-1]:
                                     value["type"] = "std::vector<" + refrence + ">"
                                     break
@@ -363,12 +377,10 @@ class OpenDrive:
                             if member in data_key:
                                 struct_members.append(data_key)
                                 members_dict.update({data_key: data.get(data_key)})
-                        # special case if struct contains values for core file
-                        if (
-                            member == "t_grEqZero" or member == "t_grZero"
-                        ):  # TODO these comes from core.xsd
-                            # Remove struct t_ to get the name
-                            member_name = "double " + key[9:]
+                        # special case for doubles that inside structs
+                        if member == "t_grEqZero" or member == "t_grZero":
+                            # Replace "struct t_" with "double" in name
+                            member_name = key.replace("struct t_", "double ")
                             members_dict.update({member_name: ""})
             new_dict.update({key: members_dict})
         # copy all other datastructures to the new dict
@@ -395,13 +407,13 @@ class OpenDrive:
         """
         attributes_dict = {}
         for child in parent:
-            if "complexType" in child.tag:  # -> class
+            if "complexType" in child.tag:  # class
                 child_sub_dict = self.parse_children(child, {})
                 name = child.attrib["name"]
                 name = "class " + name
                 data.update({name: child_sub_dict})
 
-            elif "simpleType" in child.tag:  # -> struct/enum/variable
+            elif "simpleType" in child.tag:  # struct/enum/variable
                 child_sub_dict = self.parse_children(child, {})
                 name = child.attrib["name"]
                 if "union" in child_sub_dict.keys():
@@ -416,22 +428,25 @@ class OpenDrive:
                 data.update({name: child_sub_dict})
 
             elif "extension" in child.tag or "restriction" in child.tag:
+                child_sub_dict = self.parse_children(child, {})
                 base = child.attrib["base"]
-                sub_children = self.parse_children(child, {})
-                if "enum" in sub_children.values():
+                if "enum" in child_sub_dict.values():
                     base = "enum"
                 base = self.xsd_to_cpp_types(base)
-                data.update({"base": {base: sub_children}})
+                data.update({"base": {base: child_sub_dict}})
 
             elif "sequence" in child.tag:
                 child_sub_dict = self.parse_children(child, {})
-                if "choice" in child_sub_dict.keys():
+                if (
+                    "choice" in child_sub_dict.keys()
+                ):  # if choice under sequence -> ignore choice
                     choice_dict = child_sub_dict.pop("choice")
                     child_sub_dict.update(choice_dict)
                 data.update({"sequence": child_sub_dict})
 
-            elif "choice" in child.tag:
-                data.update({"choice": self.parse_children(child, {})})
+            elif "choice" in child.tag:  # Handles choice keyword
+                child_sub_dict = self.parse_children(child, {})
+                data.update({"choice": child_sub_dict})
 
             elif "enumeration" in child.tag:  # enum elements
                 value = child.attrib["value"]
@@ -448,11 +463,11 @@ class OpenDrive:
                         attributes["type"] = "std::vector<" + attributes["type"] + ">"
                 data.update({child.attrib["name"]: attributes})
 
-            elif "attribute" in child.tag:  # Private variables
-                sub_dict = self.parse_children(child, {})
+            elif "attribute" in child.tag:  # Protected variables -> special case
+                child_sub_dict = self.parse_children(child, {})
                 doc = ""
-                if "docs" in sub_dict:
-                    doc = sub_dict["docs"]
+                if "docs" in child_sub_dict:
+                    doc = child_sub_dict["docs"]
                 attributes = child.attrib
                 if len(attributes) > 1:
                     # Set ID or junction to int instead of string (as these should be integers in esmini)
@@ -467,12 +482,14 @@ class OpenDrive:
             elif "union" in child.tag:  # structs
                 data.update({"union": child.attrib})
 
-            elif "documentation" in child.tag:  # extracts documentation from xsd
+            elif "documentation" in child.tag:  # extracts documentation
                 data.update({"docs": child.text})
 
             else:
                 self.parse_children(child, data)
 
+        # Special case for attributes to create them under one key
+        # When all attributes are looked through this will added all under one key
         if len(attributes_dict) != 0:
             data.update({"attributes": attributes_dict})
         return data
@@ -491,29 +508,21 @@ class OpenDrive:
         """
         if type == "xs:string":
             type = "std::string"
-        elif type == "xs:double":
+        elif (
+            type == "xs:double"
+            or type == "xs:decimal"
+            or type == "t_grEqZero"
+            or type == "t_zeroOne"
+            or type == "t_grZero"
+        ):  # TODO t_grEqZero,t_zeroOne,t_grZero should comes from core file
             type = "double"
-        elif type == "xs:boolean":
-            type = "bool"
-        elif type == "xs:decimal":
-            type = "double"
-        elif type == "xs:integer":
+        elif type == "xs:integer" or type == "xs:negativeInteger":
             type = "int"
-        elif type == "xs:negativeInteger":
-            type = "int"
-        elif type == "xs:nonNegativeInteger":  # TODO size_t or int?
-            type = "size_t"
-        elif type == "xs:positiveInteger":  # TODO size_t or int?
+        elif type == "xs:nonNegativeInteger" or type == "xs:positiveInteger":
             type = "size_t"
         elif type == "xs:float":
             type = "float"
-        elif type == "t_grEqZero":  # TODO should be fetch or linked to core file
-            type = "double"
-        elif type == "t_grZero":  # TODO should be fetch or linked to core file
-            type = "double"
-        elif type == "t_zeroOne":  # TODO should be fetch or linked to core file
-            type = "double"
-        elif type == "t_bool":
+        elif type == "t_bool" or type == "xs:boolean":
             type = "bool"
         return type
 
@@ -529,10 +538,10 @@ class OpenDrive:
         ---------
         string (str) <- without illegal name
         """
-        if string == "explicit":  # TODO agree on naming
-            string = "exp"
-        if string == "switch":  # TODO agree on naming
-            string = "sw"
+        if string == "explicit":
+            string = "exp"  # TODO agree on naming
+        if string == "switch":
+            string = "sw"  # TODO agree on naming
         return string
 
     def fix_illegal_chars(self, string):
@@ -549,9 +558,9 @@ class OpenDrive:
         """
         string = string.replace("/", "")
         string = string.replace(" ", "_")
-        string = string.replace("+", "positive")  # TODO agree on naming
-        string = string.replace("-", "negative")  # TODO agree on naming
-        string = string.replace("%", "percent")  # TODO agree on naming
+        string = string.replace("+", "positive")
+        string = string.replace("-", "negative")
+        string = string.replace("%", "percent")
         return string
 
     def generate_opendrive(self, version):
@@ -564,7 +573,7 @@ class OpenDrive:
         """
         f_version = version.replace(".", "")  # fix naming for files (X.X) -> (XX)
         opendrive_schema_path = os.path.join(
-            ESMINI_DIRECTORY_ROOT, "..", "OpenDrive_" + f_version
+            ESMINI_DIRECTORY_EXTERNALS, "OpenDrive_" + f_version
         )
         files_to_generate = [
             (
@@ -613,13 +622,19 @@ class OpenDrive:
         list_of_parsed_dict = []
         reference_list = []
         for opendrive, name in files_to_generate:
-            with open(opendrive, mode="r", encoding="utf-8") as input:
-                ref_list, parsed_dict = self.parser(input, name, version)
-                list_of_parsed_dict.append(parsed_dict)
-                reference_list = reference_list + ref_list
+            try:
+                with open(opendrive, mode="r", encoding="utf-8") as input:
+                    ref_list, parsed_dict = self.parser(input, name, version)
+                    list_of_parsed_dict.append(parsed_dict)
+                    reference_list = reference_list + ref_list
+            except OSError as e:
+                print(format_red(f"{e}"))
 
+        output_folder = os.path.join(ESMINI_DIRECTORY_SUPPORT, "generated")
         for dict in list_of_parsed_dict:
             dict["data"] = self.find_core_reference(
                 reference_list, dict["data"], dict["name"]
             )
-            self.generate_file(dict, dict["name"])
+            self.generate_file(dict, output_folder)
+
+        # Run.run_clang_format([outputfolder],[],False)

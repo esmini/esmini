@@ -23,6 +23,9 @@ ESMINI_DIRECTORY_SUPPORT = os.path.abspath(
 ESMINI_DIRECTORY_RESOURCES = os.path.abspath(
     os.path.join(ESMINI_DIRECTORY_ROOT, "resources")
 )
+ESMINI_DIRECTORY_JINJA_TEMPLATES = os.path.abspath(
+    os.path.join(ESMINI_DIRECTORY_SUPPORT,"jinja")
+)
 
 ######################################################## EXTERNALS #################################################################
 

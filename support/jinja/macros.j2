@@ -60,6 +60,7 @@ inline {{value["type"]}} Get{{key|capitalize}}() const { return {{key}}_; }
     {%else%}
 {{key}} {
     {%endif%}
+
 {{"public:"|indent(4,True)}}
 {{generate_default_constructor(key,value)|indent(8,True)-}}
 {{generate_constructor(key,value,dict)|indent(8,True)-}}
@@ -67,9 +68,10 @@ inline {{value["type"]}} Get{{key|capitalize}}() const { return {{key}}_; }
 {{generate_copyconstructor(key,value)|indent(8,True)-}}
 {{generate_copyassignment(key,value)|indent(8,True)-}}
 {{generate_moveconstructor(key,value)|indent(8,True)-}}
-{{generate_moveassignment(key,value)|indent(8,True)}}
+{{generate_moveassignment(key,value)|indent(8,True)-}}
+
     {%for key1,value1 in value.items()-%}
-        {%if value1 is not string%}
+        {%if value1 is not string-%}
             {%for key2,value2 in value1.items()-%}
                 {%if value2 is iterable and value2 is not string-%}
                     {%for key3,value3 in value2.items()-%}
@@ -119,7 +121,7 @@ inline {{value["type"]}} Get{{key|capitalize}}() const { return {{key}}_; }
 {%endmacro-%}
 
 
-{%macro generate_inputs(value,type)%}
+{%macro generate_inputs(value,types)%}
     {%-for key1,value1 in value.items()-%}
         {%-if value1 is not string%}
             {%-for key2,value2 in value1.items()-%}
@@ -127,7 +129,7 @@ inline {{value["type"]}} Get{{key|capitalize}}() const { return {{key}}_; }
                     {%-for key3,value3 in value2.items()-%}
                             {%- if "attributes" in key3 -%}
                                 {%-for key4,value4 in value3.items()-%}
-                                    {%if type == True%}
+                                    {%if types == True%}
                                         {%-if loop.last%}
 {{- value4["type"]}} {{key4}}
                                         {%-else%}
