@@ -129,13 +129,12 @@ class OpenDrive:
         root = tree.getroot()
 
         self.parse_children(root, parsed_data)
-        parsed_data = self.union_to_struct(parsed_data)
-        ref_list = self.create_ref_list([], name, parsed_data)
-        ordered = False
+        parsed_data = self.union_to_struct(parsed_data) #Create struct from unions
+        ref_list = self.create_ref_list([], name, parsed_data) #Create list of references for parsed_data
 
-        while (
-            not ordered
-        ):  # Runs until dictionary is not changed between two runs -> ordered
+        # Runs until dictionary is not changed between two runs -> ordered
+        ordered = False
+        while (not ordered):
             old_dict = parsed_data.copy()
             parsed_data = self.order_dictionary(parsed_data)
             check = True
@@ -144,7 +143,7 @@ class OpenDrive:
                     check = False
             ordered = check
 
-        parsed_data = self.create_inheritance(parsed_data)
+        parsed_data = self.create_inheritance(parsed_data) #Fix inheritance if classes has it
         parsed_dict = {"name": name, "version": version, "data": parsed_data}
         return (ref_list, parsed_dict)
 
@@ -210,12 +209,10 @@ class OpenDrive:
             for key, value in root.items():
                 if "class " + child == key:  # Check if key exists in inheritance
                     element_to_remove.append(key)  # Add to be removed
-                    value.update(
-                        {"inherits": parent[6:]}
-                    )  # append value with inherits key
-                    element_to_add.append(
-                        {key: value}
-                    )  # Add new dict to list to append
+                    # append value with inherits key
+                    value.update({"inherits": parent[6:]})
+                    # Add new dict to list to append
+                    element_to_add.append({key: value})
         if element_to_remove:  # Remove non-valid elements
             for element in element_to_remove:
                 root.pop(element)
@@ -227,7 +224,7 @@ class OpenDrive:
     def create_ref_list(self, ref_list, path, data):
         """
         Create a list containing all references from all files.
-        reference example -> namespace::struct::enum
+            reference example -> namespace::struct::enum
 
         Inputs:
         ---------
@@ -437,9 +434,8 @@ class OpenDrive:
 
             elif "sequence" in child.tag:
                 child_sub_dict = self.parse_children(child, {})
-                if (
-                    "choice" in child_sub_dict.keys()
-                ):  # if choice under sequence -> ignore choice
+                # if choice under sequence -> ignore choice
+                if ("choice" in child_sub_dict.keys()):
                     choice_dict = child_sub_dict.pop("choice")
                     child_sub_dict.update(choice_dict)
                 data.update({"sequence": child_sub_dict})
