@@ -51,7 +51,7 @@
                   <TeleportAction>
                      <Position>
                         <LanePosition roadId="0" laneId="3" offset="0" s="$EgoStartS">
-                           <Orientation type="relative" h="3.14"/>
+                           <Orientation type="relative" h="3.14159"/>
                         </LanePosition>
                      </Position>
                   </TeleportAction>

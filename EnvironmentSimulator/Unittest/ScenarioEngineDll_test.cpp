@@ -1159,7 +1159,7 @@ TEST(ParameterTest, SetParameterValuesBeforeInit)
 	{
 	double positions[3][2] = {
 		{5.34382, 186.68216},  // TargetSpeedFactor = 1.1
-		{8.69330, 240.68063},  // TargetSpeedFactor = 1.5
+		{8.69271, 240.62697},  // TargetSpeedFactor = 1.5
 		{5.46731, 201.38162}  // TargetSpeedFactor = Default = 1.2
 	};
 	SE_ScenarioObjectState state;
@@ -2335,31 +2335,31 @@ TEST(ExternalController, TestExternalDriver)
 				if (abs(SE_GetSimulationTime() - 11.0f) < SMALL_NUMBER)
 				{
 					SE_GetObjectState(0, &objectState);
-					EXPECT_NEAR(objectState.x, 202.458, 1e-3);
-					EXPECT_NEAR(objectState.y, 82.982, 1e-3);
+					EXPECT_NEAR(objectState.x, 202.451, 1e-3);
+					EXPECT_NEAR(objectState.y, 82.970, 1e-3);
 					EXPECT_NEAR(objectState.h, 1.134, 1e-3);
 					EXPECT_NEAR(objectState.p, 6.262, 1e-3);
 					if (ghostMode[i] == true)
 					{
 						SE_RoadInfo road_info2;
 						SE_GetRoadInfoGhostTrailTime(0, SE_GetSimulationTime(), &road_info2, &speed2);
-						EXPECT_NEAR(road_info2.global_pos_x, 206.759, 1e-3);
-						EXPECT_NEAR(road_info2.global_pos_y, 92.559, 1e-3);
+						EXPECT_NEAR(road_info2.global_pos_x, 206.696, 1e-3);
+						EXPECT_NEAR(road_info2.global_pos_y, 92.395, 1e-3);
 					}
 				}
 				else if (abs(SE_GetSimulationTime() - 30.0f) < SMALL_NUMBER)
 				{
 					SE_GetObjectState(0, &objectState);
-					EXPECT_NEAR(objectState.x, 381.944, 1e-3);
-					EXPECT_NEAR(objectState.y, 301.903, 1e-3);
-					EXPECT_NEAR(objectState.h, 5.274, 1e-3);
+					EXPECT_NEAR(objectState.x, 382.066, 1e-3);
+					EXPECT_NEAR(objectState.y, 301.707, 1e-3);
+					EXPECT_NEAR(objectState.h, 5.272, 1e-3);
 					EXPECT_NEAR(objectState.p, 0.025, 1e-3);
 					if (ghostMode[i] == true)
 					{
 						SE_RoadInfo road_info3;
 						SE_GetRoadInfoGhostTrailTime(0, SE_GetSimulationTime(), &road_info3, &speed2);
-						EXPECT_NEAR(road_info3.global_pos_x, 388.364, 1e-3);
-						EXPECT_NEAR(road_info3.global_pos_y, 290.976, 1e-3);
+						EXPECT_NEAR(road_info3.global_pos_x, 388.244, 1e-3);
+						EXPECT_NEAR(road_info3.global_pos_y, 291.211, 1e-3);
 					}
 				}
 			}
@@ -2370,29 +2370,29 @@ TEST(ExternalController, TestExternalDriver)
 				if (abs(SE_GetSimulationTime() - 11.0f) < SMALL_NUMBER)
 				{
 					SE_GetObjectState(0, &objectState);
-					EXPECT_NEAR(objectState.x, 203.196, 1e-3);
-					EXPECT_NEAR(objectState.y, 84.473, 1e-3);
+					EXPECT_NEAR(objectState.x, 203.201, 1e-3);
+					EXPECT_NEAR(objectState.y, 84.471, 1e-3);
 					EXPECT_NEAR(objectState.h, 1.142, 1e-3);
 					EXPECT_NEAR(objectState.p, 6.262, 1e-3);
 					if (ghostMode[i] == true)
 					{
 						SE_GetRoadInfoGhostTrailTime(0, SE_GetSimulationTime(), &road_info2, &speed3);
-						EXPECT_NEAR(road_info2.global_pos_x, 206.759, 1e-3);
-						EXPECT_NEAR(road_info2.global_pos_y, 92.559, 1e-3);
+						EXPECT_NEAR(road_info2.global_pos_x, 206.696, 1e-3);
+						EXPECT_NEAR(road_info2.global_pos_y, 92.395, 1e-3);
 					}
 				}
 				else if (abs(SE_GetSimulationTime() - 30.0f) < SMALL_NUMBER)
 				{
 					SE_GetObjectState(0, &objectState);
-					EXPECT_NEAR(objectState.x, 382.098, 1e-3);
-					EXPECT_NEAR(objectState.y, 302.465, 1e-3);
+					EXPECT_NEAR(objectState.x, 382.076, 1e-3);
+					EXPECT_NEAR(objectState.y, 302.530, 1e-3);
 					EXPECT_NEAR(objectState.h, 5.271, 1e-3);
 					EXPECT_NEAR(objectState.p, 0.026, 1e-3);
 					if (ghostMode[i] == true)
 					{
 						SE_GetRoadInfoGhostTrailTime(0, SE_GetSimulationTime(), &road_info2, &speed3);
-						EXPECT_NEAR(road_info2.global_pos_x, 388.363, 1e-3);
-						EXPECT_NEAR(road_info2.global_pos_y, 290.976, 1e-3);
+						EXPECT_NEAR(road_info2.global_pos_x, 388.244, 1e-3);
+						EXPECT_NEAR(road_info2.global_pos_y, 291.211, 1e-3);
 					}
 				}
 			}
@@ -3314,14 +3314,14 @@ TEST(ReplayTest, TestMultiReplayDifferentTimeSteps)
 		if (k == 0)
 		{
 			EXPECT_NEAR(replay->data_[2012].state.pos.y, 130.995, 1E-3);
-			EXPECT_NEAR(replay->data_[2015].state.pos.y, 207.414, 1E-3);
+			EXPECT_NEAR(replay->data_[2015].state.pos.y, 207.385, 1E-3);
 			EXPECT_NEAR(replay->data_[6009].state.info.timeStamp, 19.53, 1E-3);
 			EXPECT_NEAR(replay->data_[6009].state.info.id, 1, 1E-3);
 		}
 		else
 		{
 			EXPECT_NEAR(replay->data_[2012].state.pos.y, 130.924, 1E-3);
-			EXPECT_NEAR(replay->data_[2015].state.pos.y, 210.776, 1E-3);
+			EXPECT_NEAR(replay->data_[2015].state.pos.y, 210.728, 1E-3);
 			EXPECT_NEAR(replay->data_[4213].state.info.timeStamp, 19.8, 1E-3);
 			EXPECT_NEAR(replay->data_[4213].state.info.id, 1, 1E-3);
 		}

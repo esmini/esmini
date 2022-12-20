@@ -1800,6 +1800,39 @@ TEST_F(StraightRoadTest, TestObjectOverlap)
 }
 
 
+TEST(SpeedTest, TestAbsoluteSpeed)
+{
+    double dt = 0.05;
+    ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/lateral_maneuvers_test.xosc");
+    ASSERT_NE(se, nullptr);
+
+    double time = 0.0;
+
+    while (time < 7.5)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+        time = se->getSimulationTime();
+
+        if (time > 1.1 + SMALL_NUMBER && time < 3.1 + SMALL_NUMBER)
+        {
+            // Lane change action
+            EXPECT_NEAR(se->entities_.object_[0]->pos_.GetVelY(), 1.535, 1e-3);
+        }
+        else if (time > 4.15 + SMALL_NUMBER && time < 7.15 + SMALL_NUMBER)
+        {
+            // Lane change action
+            EXPECT_NEAR(se->entities_.object_[0]->pos_.GetVelY(), -1.0116, 1e-4);
+        }
+        else if (time > 7.2)
+        {
+            ASSERT_NEAR(se->entities_.object_[0]->pos_.GetVelY(), 0.0, 1e-4);
+        }
+    }
+
+    delete se;
+}
+
 // Uncomment to print log output to console
 //#define LOG_TO_CONSOLE
 

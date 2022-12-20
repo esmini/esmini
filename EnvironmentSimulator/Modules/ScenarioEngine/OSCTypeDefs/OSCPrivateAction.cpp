@@ -618,12 +618,17 @@ void LatLaneChangeAction::Step(double simTime, double dt)
 	transition_.SetMaxRate(object_->GetSpeed());
 	offset_agnostic = transition_.Evaluate();
 	double rate = transition_.EvaluateScaledPrim();
+	double old_offset = internal_pos_.GetOffset();
 
 	// Restore position to target lane and new offset
 	object_->pos_.SetLanePos(internal_pos_.GetTrackId(), internal_pos_.GetLaneId(), internal_pos_.GetS(), offset_agnostic * SIGN(internal_pos_.GetLaneId()));
 
-	// Update longitudinal position
-	double ds = object_->pos_.DistanceToDS(object_->speed_ * dt);
+	// Update longitudinal position, considering absolute speed and lateral speed component
+	double dist = object_->speed_ * dt;                     // travel distance total
+	double d_lat = object_->pos_.GetOffset() - old_offset;  // travel distance lateral component
+	double d_long = SIGN(object_->speed_) * sqrt(MAX(0.0, pow(dist, 2) - pow(d_lat, 2)));     // travel distance longitudinal component
+	double ds = object_->pos_.DistanceToDS(d_long);         // find correspondning delta s along road reference line
+
 	roadmanager::Position::ReturnCode retval = roadmanager::Position::ReturnCode::OK;
 	if (object_->pos_.GetRoute() && object_->pos_.GetRoute()->IsValid())
 	{
@@ -1746,9 +1751,13 @@ void SynchronizeAction::Step(double simTime, double dt)
 	masterDist = MAX(masterDist - tolerance_master_, SMALL_NUMBER);
 
 	double masterTimeToDest = LARGE_NUMBER;
-	if (master_object_->speed_ > SMALL_NUMBER)
+
+	// project speed on road s-axis
+	double master_speed = SIGN(master_object_->GetSpeed()) * abs(master_object_->pos_.GetVelS());
+
+	if (master_speed > SMALL_NUMBER)
 	{
-		masterTimeToDest = masterDist / master_object_->speed_;
+		masterTimeToDest = masterDist / master_speed;
 
 		if (masterTimeToDest < dt)
 		{
@@ -1951,7 +1960,9 @@ void SynchronizeAction::Step(double simTime, double dt)
 			// Now, calculate x and vx according to default method oulined in the documentation
 			double s = dist;
 			double t = masterTimeToDest;
-			double v0 = object_->speed_;
+
+			// project speed on road s-axis
+			double v0 = SIGN(object_->GetSpeed()) * abs(object_->pos_.GetVelS());
 			double v1 = final_speed_->GetValue();
 
 			double signed_term = sqrt(2.0) * sqrt(2.0 * s*s - 2 * (v1 + v0)*t*s + (v1*v1 + v0 * v0)*t*t);
