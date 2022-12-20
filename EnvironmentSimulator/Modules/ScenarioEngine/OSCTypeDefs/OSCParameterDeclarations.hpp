@@ -27,6 +27,7 @@ namespace scenarioengine
 	{
 	public:
 		enum class ParameterType {
+			PARAM_TYPE_NONE,
 			PARAM_TYPE_INTEGER,
 			PARAM_TYPE_DOUBLE,
 			PARAM_TYPE_STRING,
@@ -36,7 +37,7 @@ namespace scenarioengine
 		struct ParameterStruct
 		{
 			std::string name;
-			ParameterType type;
+			ParameterType type = ParameterType::PARAM_TYPE_NONE;
 			struct value
 			{
 				int _int = 0;
@@ -44,6 +45,7 @@ namespace scenarioengine
 				std::string _string;
 				bool _bool = false;
 			} value;
+			bool variable = false;
 		};
 
 		std::vector<ParameterStruct> Parameter;

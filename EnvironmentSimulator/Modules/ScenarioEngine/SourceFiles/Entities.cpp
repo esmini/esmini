@@ -1100,8 +1100,6 @@ Object::OverlapType Object::OverlappingFront(Object* target, double tolerance)
 		}
 	}
 
-	OverlapType retval = OverlapType::NONE;
-
 	if (inside_count == 4 && outside_left_count > 0 && outside_right_count > 0)
 	{
 		return OverlapType::INSIDE_AND_FULL;

@@ -114,7 +114,7 @@ public:
 	int SetParameterValue(const char *name, const char *value);
 	int SetParameterValue(const char *name, bool value);
 	int GetNumberOfVariables();
-	const char *GetVariableName(int index, OSCVariableDeclarations::VariableType *type);
+	const char *GetVariableName(int index, OSCParameterDeclarations::ParameterType *type);
 	int SetVariableValue(const char *name, const void *value);
 	int GetVariableValue(const char *name, void *value);
 	int GetVariableValueInt(const char *name, int &value);

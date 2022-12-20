@@ -16,7 +16,6 @@
 #include "OSCAction.hpp"
 #include "CommonMini.hpp"
 #include "Parameters.hpp"
-#include "Variables.hpp"
 #include "Entities.hpp"
 #include "ScenarioGateway.hpp"
 #include "OSCAABBTree.hpp"
@@ -106,7 +105,7 @@ namespace scenarioengine
 	public:
 		std::string name_;
 		std::string value_;
-		Variables* variables_;
+		Parameters* variables_;
 
 		VariableSetAction() : OSCGlobalAction(OSCGlobalAction::Type::VARIABLE_SET), name_(""), value_(""), variables_(0) {};
 

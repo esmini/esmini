@@ -593,7 +593,7 @@ bool TrigByVariable::CheckCondition(StoryBoard* storyBoard, double sim_time)
 	bool result = false;
 	current_value_str_ = "";
 
-	OSCVariableDeclarations::VariableStruct* pe = variables_->getVariableEntry(name_);
+	OSCParameterDeclarations::ParameterStruct* pe = variables_->getParameterEntry(name_);
 	if (pe == 0)
 	{
 		if (state_ < ConditionState::EVALUATED)  // print only once
@@ -604,20 +604,20 @@ bool TrigByVariable::CheckCondition(StoryBoard* storyBoard, double sim_time)
 	}
 
 	current_value_str_ = std::to_string(pe->value._int).c_str();
-	if (pe->type == OSCVariableDeclarations::VariableType::VAR_TYPE_INTEGER)
+	if (pe->type == OSCParameterDeclarations::ParameterType::PARAM_TYPE_INTEGER)
 	{
 		result = EvaluateRule(pe->value._int, strtoi(value_), rule_);
 
 	}
-	else if (pe->type == OSCVariableDeclarations::VariableType::VAR_TYPE_DOUBLE)
+	else if (pe->type == OSCParameterDeclarations::ParameterType::PARAM_TYPE_DOUBLE)
 	{
 		result = EvaluateRule(pe->value._double, strtod(value_), rule_);
 	}
-	else if (pe->type == OSCVariableDeclarations::VariableType::VAR_TYPE_STRING)
+	else if (pe->type == OSCParameterDeclarations::ParameterType::PARAM_TYPE_STRING)
 	{
 		result = EvaluateRule(pe->value._string, value_, rule_);
 	}
-	else if (pe->type == OSCVariableDeclarations::VariableType::VAR_TYPE_BOOL)
+	else if (pe->type == OSCParameterDeclarations::ParameterType::PARAM_TYPE_BOOL)
 	{
 		result = EvaluateRule(pe->value._bool, value_ == "true" ? true : false, rule_);
 	}

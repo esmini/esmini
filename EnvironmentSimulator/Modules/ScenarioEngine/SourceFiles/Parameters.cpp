@@ -21,13 +21,14 @@ void Parameters::addParameterDeclarations(pugi::xml_node xml_node)
 	parseParameterDeclarations(xml_node, &parameterDeclarations_);
 }
 
-void Parameters::parseGlobalParameterDeclarations(pugi::xml_node osc_root_)
+void Parameters::parseGlobalParameterDeclarations(pugi::xml_node node)
 {
 	if (parameterDeclarations_.Parameter.size() != 0)
 	{
 		LOG("Unexpected non empty parameterDeclarations_ when about to parse global declarations");
 	}
-	parseParameterDeclarations(osc_root_.child("ParameterDeclarations"), &parameterDeclarations_);
+
+	parseParameterDeclarations(node, &parameterDeclarations_);
 }
 
 void Parameters::CreateRestorePoint()
@@ -463,13 +464,20 @@ std::string Parameters::ReadAttribute(pugi::xml_node node, std::string attribute
 	return "";
 }
 
-void Parameters::parseParameterDeclarations(pugi::xml_node parameterDeclarationsNode, OSCParameterDeclarations* pd)
+void Parameters::parseParameterDeclarations(pugi::xml_node declarationsNode, OSCParameterDeclarations* pd)
 {
-	for (pugi::xml_node pdChild = parameterDeclarationsNode.first_child(); pdChild; pdChild = pdChild.next_sibling())
+	bool is_variable = false;
+	if (!strcmp(declarationsNode.name(), "VariableDeclarations"))
+	{
+		is_variable = true;
+	}
+
+	for (pugi::xml_node pdChild = declarationsNode.first_child(); pdChild; pdChild = pdChild.next_sibling())
 	{
 		OSCParameterDeclarations::ParameterStruct param = { "", OSCParameterDeclarations::ParameterType::PARAM_TYPE_STRING, {0, 0, "", false} };
 
 		param.name = pdChild.attribute("name").value();
+		param.variable = is_variable;
 
 		// Check for catalog parameter assignements, overriding default value
 		// Start from end of parameter list, in case of duplicates we want the most recent
@@ -488,9 +496,13 @@ void Parameters::parseParameterDeclarations(pugi::xml_node parameterDeclarations
 		{
 			type_str = pdChild.attribute("parameterType").value();
 		}
+		else if (pdChild.attribute("variableType"))
+		{
+			type_str = pdChild.attribute("variableType").value();
+		}
 		else
 		{
-			LOG_TRACE_AND_QUIT("Missing parameter type (or wrongly spelled attribute) for %s", param.name.c_str());
+			LOG_TRACE_AND_QUIT("Missing parameter or variable type (or wrongly spelled attribute) for %s", param.name.c_str());
 		}
 
 		if (type_str == "integer" || type_str == "int")
@@ -544,9 +556,9 @@ void Parameters::Clear()
 	catalog_param_assignments.clear();
 }
 
-void Parameters::Print()
+void Parameters::Print(std::string typestr)
 {
-	LOG("%d parameters%s", parameterDeclarations_.Parameter.size(), parameterDeclarations_.Parameter.size() > 0 ? ":" : "");
+	LOG("%d %s%s", parameterDeclarations_.Parameter.size(), typestr.c_str(), parameterDeclarations_.Parameter.size() > 0 ? ":" : "");
 
 	for (size_t i = 0; i < parameterDeclarations_.Parameter.size(); i++)
 	{

@@ -57,7 +57,7 @@ void ParameterSetAction::Step(double, double)
 void VariableSetAction::Start(double simTime, double dt)
 {
 	LOG("Set variable %s = %s", name_.c_str(), value_.c_str());
-	variables_->setVariableValueByString(name_, value_);
+	variables_->setParameterValueByString(name_, value_);
 	OSCAction::Start(simTime, dt);
 }
 
@@ -186,7 +186,7 @@ SwarmTrafficAction::SwarmTrafficAction() : OSCGlobalAction(OSCGlobalAction::Type
 };
 
 
-SwarmTrafficAction::~SwarmTrafficAction() 
+SwarmTrafficAction::~SwarmTrafficAction()
 {
     auto RecursiveDeleteTrailers = [](Vehicle* vehicle, auto& recurseLambda) -> void {
         if (vehicle->trailer_hitch_ && vehicle->trailer_hitch_->trailer_vehicle_)

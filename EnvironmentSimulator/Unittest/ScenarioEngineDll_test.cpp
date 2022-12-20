@@ -1144,7 +1144,7 @@ TEST(ParameterTest, GetTypedParameterValues)
 
 TEST(VariableTest, GetTypedVariableValues)
 {
-	std::string scenario_file = "../../../resources/xosc/lane_change_variable.xosc";
+	std::string scenario_file = "../../../resources/xosc/lane_change_trig_by_variable.xosc";
 	SE_Init(scenario_file.c_str(), 0, 0, 0, 0);
 
 	bool boolVar;
@@ -1195,7 +1195,7 @@ TEST(VariableTest, GetTypedVariableValues)
 	const char *strVar;
 	retVal = SE_GetVariableString("DummyVariable3", &strVar);
 	EXPECT_EQ(retVal, 0);
-	EXPECT_STREQ(strVar, "lane_change_var");
+	EXPECT_STREQ(strVar, "lane_change_var3");
 
 	retVal = SE_SetVariableString("DummyVariable3", "Kalle");
 	EXPECT_EQ(retVal, 0);
@@ -1205,6 +1205,13 @@ TEST(VariableTest, GetTypedVariableValues)
 
 	retVal = SE_GetParameterString("DoesNotExist", &strVar);
 	EXPECT_EQ(retVal, -1);
+
+	// verify no mixup between variable and parameter
+	EXPECT_EQ(SE_GetParameterString("DummyParameter4", &strVar), 0);
+	EXPECT_STREQ(strVar, "lane_change_param4");
+
+	EXPECT_EQ(SE_GetVariableString("DummyParameter4", &strVar), 0);
+	EXPECT_STREQ(strVar, "lane_change_var5");
 
 	SE_Close();
 }

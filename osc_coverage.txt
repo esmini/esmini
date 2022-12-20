@@ -62,7 +62,7 @@ OpenSCENARIO
                                             AddEntityAction                    Yes
                                             DeleteEntityAction                 Yes
                                         ParameterAction (<= 1.1)               Yes
-                                        VariableAction (>= 1.2)                No
+                                        VariableAction (>= 1.2)                Yes
                                         Infrastructure                         No
                                         Traffic
                                             TrafficSourceAction                No
@@ -180,6 +180,7 @@ Common classes
         Expressions (1.1)                      Yes
             Arithmetic calculations            Yes
             Logical expressions                Yes
+    VariableDeclaration                        Yes
     CatalogReference                           Yes
     Trajectory                                 Yes
         polyLine                               Yes
@@ -274,6 +275,7 @@ Common classes
             Controller                         No
         ByValue
             ParameterCondition                 Yes
+            VariableCondition                  Yes
             TimeOfDayCondition                 No
             SimulationTimeCondition            Yes
             StoryboardElementStateCondition	   yes

@@ -3,19 +3,26 @@
 <!-- reference line. Purpose is to validate esmini lane change functionality.     -->
 <OpenSCENARIO>
     <FileHeader revMajor="1" revMinor="0" date="2019-06-09T10:00:00" description="Cut-in" author="esmini-team"/>
+    <ParameterDeclarations>
+        <ParameterDeclaration name="DummyParameter" parameterType="double" value="2"/>
+        <ParameterDeclaration name="DummyParameter2" parameterType="boolean" value="false"/>
+        <ParameterDeclaration name="DummyParameter3" parameterType="string" value="lane_change_param3"/>
+        <ParameterDeclaration name="DummyParameter4" parameterType="string" value="lane_change_param4"/>
+    </ParameterDeclarations>    
     <VariableDeclarations>
         <VariableDeclaration name="DummyVariable" variableType="double" value="2"/>
         <VariableDeclaration name="DummyVariable2" variableType="boolean" value="true"/>
-        <VariableDeclaration name="DummyVariable3" variableType="string" value="lane_change_var"/>
+        <VariableDeclaration name="DummyVariable3" variableType="string" value="lane_change_var3"/>
+        <VariableDeclaration name="DummyVariable4" variableType="string" value="lane_change_var4"/>
+        <VariableDeclaration name="DummyParameter4" variableType="string" value="lane_change_var5"/>
     </VariableDeclarations>
     <CatalogLocations>
         <VehicleCatalog>
-            <Directory path="../xosc/Catalogs/Vehicles"/>
+            <Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
         </VehicleCatalog>
     </CatalogLocations>
     <RoadNetwork>
-        <LogicFile filepath="../xodr/jolengatan.xodr"/>
-        <!-- <SceneGraphFile filepath="../models/jolengatan.osgb"/> -->
+        <LogicFile filepath="../../../resources/xodr/jolengatan.xodr"/>
     </RoadNetwork>
     <Entities>
         <ScenarioObject name="Truck">
@@ -48,13 +55,13 @@
         </Init>
         <Story name="Lane change story">
             <Act name="Lane change act">
-                <ManeuverGroup maximumExecutionCount="1" name="Lane change 2">
+                <ManeuverGroup maximumExecutionCount="1" name="Lane change by variable">
                     <Actors selectTriggeringEntities="false">
                         <EntityRef entityRef="Truck"/>
                     </Actors>
-                    <Maneuver name="Lane change Target maneuver">
-                        <Event name="Lane change Target event" priority="overwrite">
-                            <Action name="Lane change Target action">
+                    <Maneuver name="Lane change Target maneuver by variable">
+                        <Event name="Lane change Target event by variable" priority="overwrite">
+                            <Action name="Lane change Target action by variable">
                                 <PrivateAction>
                                     <LateralAction>
                                         <LaneChangeAction>
@@ -68,7 +75,7 @@
                             </Action>
                             <StartTrigger>
                                 <ConditionGroup>
-                                    <Condition name="Lane change Target condition" delay="0" conditionEdge="rising">
+                                    <Condition name="Lane change Target condition by variable" delay="0" conditionEdge="rising">
                                         <ByValueCondition>
                                             <VariableCondition variableRef="DummyVariable" value="3" rule="greaterThan"/>
                                         </ByValueCondition>
@@ -76,7 +83,7 @@
                                 </ConditionGroup>
                             </StartTrigger>
                         </Event>
-                        <Event name="Dummy Variable event" priority="parallel">
+                        <Event name="Dummy Variable event by variable" priority="parallel">
                             <Action name="Dummy Variable action">
                                 <GlobalAction>
                                     <VariableAction variableRef="DummyVariable">
@@ -86,9 +93,57 @@
                             </Action>
                             <StartTrigger>
                                 <ConditionGroup>
-                                    <Condition name="Lane change Target condition" delay="0" conditionEdge="rising">
+                                    <Condition name="Lane change Target condition by variable" delay="0" conditionEdge="rising">
                                         <ByValueCondition>
                                             <SimulationTimeCondition value="3" rule="greaterThan"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                    </Maneuver>
+                </ManeuverGroup>
+                <ManeuverGroup maximumExecutionCount="1" name="Lane change by parameter">
+                    <Actors selectTriggeringEntities="false">
+                        <EntityRef entityRef="Truck"/>
+                    </Actors>
+                    <Maneuver name="Lane change Target maneuver by parameter">
+                        <Event name="Lane change Target event by parameter" priority="overwrite">
+                            <Action name="Lane change Target action by parameter">
+                                <PrivateAction>
+                                    <LateralAction>
+                                        <LaneChangeAction>
+                                            <LaneChangeActionDynamics dynamicsShape="sinusoidal" value="2" dynamicsDimension="time"/>
+                                            <LaneChangeTarget>
+                                                <RelativeTargetLane entityRef="Truck" value="1"/>
+                                            </LaneChangeTarget>
+                                        </LaneChangeAction>
+                                    </LateralAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="Lane change Target condition by parameter" delay="0" conditionEdge="rising">
+                                        <ByValueCondition>
+                                            <ParameterCondition parameterRef="DummyParameter" value="3" rule="greaterThan"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event name="Dummy parameter event" priority="parallel">
+                            <Action name="Dummy parameter action">
+                                <GlobalAction>
+                                    <ParameterAction parameterRef="DummyParameter">
+                                        <SetAction value="15"/>
+                                    </ParameterAction>
+                                </GlobalAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="Lane change Target condition by parameter" delay="0" conditionEdge="rising">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="6" rule="greaterThan"/>
                                         </ByValueCondition>
                                     </Condition>
                                 </ConditionGroup>
@@ -111,7 +166,7 @@
             <ConditionGroup>
                 <Condition name="StopCondition" delay="0" conditionEdge="risingOrFalling">
                     <ByValueCondition>
-                        <SimulationTimeCondition value="10" rule="greaterThan"/>
+                        <SimulationTimeCondition value="9" rule="greaterThan"/>
                     </ByValueCondition>
                 </Condition>
             </ConditionGroup>

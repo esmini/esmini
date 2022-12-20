@@ -22,7 +22,6 @@
 #include "Entities.hpp"
 #include "OSCPosition.hpp"
 #include "Parameters.hpp"
-#include "Variables.hpp"
 
 namespace scenarioengine
 {
@@ -445,7 +444,7 @@ namespace scenarioengine
 		std::string name_;
 		std::string value_;
 		Rule rule_;
-		Variables* variables_;
+		Parameters* variables_;
 		std::string current_value_str_;
 
 
