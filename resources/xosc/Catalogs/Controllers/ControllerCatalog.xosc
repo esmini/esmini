@@ -177,6 +177,8 @@
                 <!-- lateralTrigDistance: Trig cut-in when obj moved this lateral distance towards Ego (ref driver only) -->
                 <!-- set to > 0 to use instead of standard r157 ref driver cut-in trig condition -->
                 <ParameterDeclaration name="LateralTrigDistance" parameterType="double" value="0.0" />
+                <!-- overlapTolerance: Tolerance for overlap check between target object and Ego vehicle front (ref driver only) -->
+                <ParameterDeclaration name="OverlapTolerance" parameterType="double" value="0.1" />
             </ParameterDeclarations>
             <Properties>
                 <Property name="mode" value="$Mode" />
@@ -189,6 +191,7 @@
                 <Property name="pedestrianRiskEvaluationTime"  value="$PedestrianRiskEvaluationTime" />
                 <Property name="aebTTC"  value="$AEBTTC" />
                 <Property name="lateralTrigDistance"  value="$LateralTrigDistance" />
+                <Property name="overlapTolerance"  value="$OverlapTolerance" />
             </Properties>
         </Controller>        
         <Controller name="UDPDriverController">

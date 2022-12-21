@@ -116,6 +116,12 @@ ControllerALKS_R157SM::ControllerALKS_R157SM(InitArgs* args) : model_(0), entiti
                 LOG("ALKS_R157SM AEB LateralTrigDistance: %.2f", ref_driver->lateral_dist_trigger_->threshold_);
             }
 
+            if (args->properties->ValueExists("overlapTolerance"))
+            {
+                ref_driver->overlap_tolerance_ = strtod(args->properties->GetValueStr("overlapTolerance"));
+            }
+            LOG("ALKS_R157SM Overlap tolerance: %.2f", ref_driver->overlap_tolerance_);
+
             if (!ref_driver->lateral_dist_trigger_)
             {
                 ref_driver->wandering_trigger_ = new ReferenceDriver::WanderingTrigger(ref_driver);

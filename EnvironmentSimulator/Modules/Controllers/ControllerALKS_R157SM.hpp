@@ -313,7 +313,7 @@ namespace scenarioengine
             ReferenceDriver() : Model(ModelType::ReferenceDriver, 0.75, 0.774 * 9.81, 100.0), c_lane_offset_(0.0),
                 min_jerk_(12.65), release_deceleration_(0.4), critical_ttc_(2.0), critical_thw_(2.0),
                 phase_(Phase::INACTIVE), timer_(0.0), cut_in_perception_delay_mode_(CutInPerceptionDelayMode::DIST),
-                perception_dist_(0.72), perception_time_(0.4), wandering_threshold_(0.375), overlap_tolerance_(0.2),
+                perception_dist_(0.72), perception_time_(0.4), wandering_threshold_(0.375), overlap_tolerance_(0.1),
                 pedestrian_risk_eval_time_(0.4), perception_t_(0.0), lateral_dist_trigger_(0), wandering_trigger_(0) {}
 
             ~ReferenceDriver();

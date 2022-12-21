@@ -36,6 +36,7 @@
                         <ParameterAssignment parameterRef="FullStop" value="true"/>
                         <ParameterAssignment parameterRef="PedestrianRiskEvaluationTime" value="0.4"/>
                         <ParameterAssignment parameterRef="AlwaysTrigOnScenario" value="true"/>
+                        <ParameterAssignment parameterRef="OverlapTolerance" value="0.0"/>
                     </ParameterAssignments>
                 </CatalogReference>
             </ObjectController>
