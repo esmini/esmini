@@ -35,7 +35,7 @@ def plot(rows, labels, params=['speed'], x_axis='time', derive=False, dots=False
             if a in labels:
                 print('Parameter \'{}\' is not plottable'.format(a))
             else:
-                print('Parameter \'{}\' is not available in dat file'.format(a))
+                print('Parameter \'{}\' is not available in data'.format(a))
             return
         parameter.append(a)
 

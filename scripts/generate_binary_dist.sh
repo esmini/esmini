@@ -134,6 +134,7 @@ run/replayer/run_and_plot_cut-in_speed*.* \
 run/replayer/run_and_plot_ltap-od_pos*.* \
 run/replayer/run_and_replay_lane-change_clothoid*.* \
 scripts/dat.py \
+scripts/plot.py \
 scripts/plot_dat.py \
 scripts/dat2csv.py \
 scripts/osi2csv.py \
