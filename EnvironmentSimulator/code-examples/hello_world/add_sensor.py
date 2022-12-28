@@ -2,11 +2,11 @@ import ctypes
 from sys import platform
 
 if platform == "linux" or platform == "linux2":
-    se = ctypes.CDLL("./libesminiLib.so")
+    se = ctypes.CDLL("../bin/libesminiLib.so")
 elif platform == "darwin":
-    se = ctypes.CDLL("./libesminiLib.dylib")
+    se = ctypes.CDLL("../bin/libesminiLib.dylib")
 elif platform == "win32":
-    se = ctypes.CDLL("./esminiLib.dll")
+    se = ctypes.CDLL("../bin/esminiLib.dll")
 else:
     print("Unsupported platform: {}".format(platform))
     quit()

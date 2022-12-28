@@ -2,11 +2,11 @@ import ctypes as ct
 import sys
 
 if sys.platform == "linux" or sys.platform == "linux2":
-    rm = ct.CDLL("./libesminiRMLib.so")
+    rm = ct.CDLL("../bin/libesminiRMLib.so")
 elif sys.platform == "darwin":
-    rm = ct.CDLL("./libesminiRMLib.dylib")
+    rm = ct.CDLL("../bin/libesminiRMLib.dylib")
 elif sys.platform == "win32":
-    rm = ct.CDLL("./esminiRMLib.dll")
+    rm = ct.CDLL("../bin/esminiRMLib.dll")
 else:
     print("Unsupported platform: {}".format(sys.platform))
     sys.exit(-1)
