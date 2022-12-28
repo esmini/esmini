@@ -97,6 +97,7 @@ namespace scenarioengine
 		void SetGhostRestart() { ghost_mode_ = GhostMode::RESTART; }
 		GhostMode GetGhostMode() { return ghost_mode_; }
 		void UpdateGhostMode();
+		int GetInitStatus() { return init_status_; }
 
 		double trueTime_;
 		bool doOnce = true;
@@ -120,6 +121,7 @@ namespace scenarioengine
 		// execution control flags
 		bool quit_flag;
 		unsigned int frame_nr_;
+		int init_status_;
 
 		int parseScenario();
 	};

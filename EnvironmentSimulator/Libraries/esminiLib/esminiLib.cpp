@@ -417,12 +417,16 @@ static int InitScenario()
 		if (retval == -1)
 		{
 			LOG("Failed to initialize scenario player");
-			resetScenario();
 		}
 		else if (retval == -2)
 		{
 			LOG("Skipped initialize scenario player");
+		}
+
+		if (retval != 0)
+		{
 			resetScenario();
+			return -1;
 		}
 	}
 	catch (const std::exception &e)

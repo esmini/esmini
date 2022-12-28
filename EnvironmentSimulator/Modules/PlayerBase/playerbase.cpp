@@ -1323,7 +1323,6 @@ int ScenarioPlayer::Init()
 			SE_Env::Inst().AddPath(DirNameOf(arg_str));
 			scenarioEngine = new ScenarioEngine(FileNameOf(arg_str), disable_controllers_);
 			Logger::Inst().SetTimePtr(scenarioEngine->GetSimulationTimePtr());
-			//Logger::Inst().SetTimePtr(scenarioEngine->GetTrueTimePtr());
 		}
 		else if ((arg_str = opt.GetOptionArg("osc_str")) != "")
 		{
@@ -1336,7 +1335,6 @@ int ScenarioPlayer::Init()
 			}
 			scenarioEngine = new ScenarioEngine(doc, disable_controllers_);
 			Logger::Inst().SetTimePtr(scenarioEngine->GetSimulationTimePtr());
-			//Logger::Inst().SetTimePtr(scenarioEngine->GetTrueTimePtr());
 		}
 		else
 		{
@@ -1349,6 +1347,11 @@ int ScenarioPlayer::Init()
 	catch (std::logic_error &e)
 	{
 		LOG(std::string("Exception: ").append(e.what()).c_str());
+		return -1;
+	}
+
+	if (scenarioEngine->GetInitStatus() != 0)
+	{
 		return -1;
 	}
 

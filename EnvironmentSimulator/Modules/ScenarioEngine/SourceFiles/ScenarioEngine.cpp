@@ -34,17 +34,18 @@ namespace scenarioengine
 
 ScenarioEngine::ScenarioEngine(std::string oscFilename, bool disable_controllers)
 {
-	InitScenario(oscFilename, disable_controllers);
+	init_status_ = InitScenario(oscFilename, disable_controllers);
 }
 
 ScenarioEngine::ScenarioEngine(const pugi::xml_document &xml_doc, bool disable_controllers)
 {
-	InitScenario(xml_doc, disable_controllers);
+	init_status_ = InitScenario(xml_doc, disable_controllers);
 }
 
 void ScenarioEngine::InitScenarioCommon(bool disable_controllers)
 {
 	quit_flag = false;
+	init_status_ = 0;
 	disable_controllers_ = disable_controllers;
 	headstart_time_ = 0;
 	simulationTime_ = 0;
@@ -75,7 +76,6 @@ int ScenarioEngine::InitScenario(std::string oscFilename, bool disable_controlle
 		{
 			if (scenarioReader->loadOSCFile(file_name_candidates[i].c_str()) != 0)
 			{
-				//throw std::invalid_argument(std::string("Failed to load OpenSCENARIO file ") + oscFilename);
 				LOG(("Failed to load OpenSCENARIO file " + oscFilename).c_str());
 				return -3;
 			}
@@ -88,14 +88,12 @@ int ScenarioEngine::InitScenario(std::string oscFilename, bool disable_controlle
 
 	if (i == file_name_candidates.size())
 	{
-		//throw std::invalid_argument(std::string("Couldn't locate OpenSCENARIO file ") + oscFilename);
 		LOG(("Couldn't locate OpenSCENARIO file " + oscFilename).c_str());
 		return -1;
 	}
 
 	if (!scenarioReader->IsLoaded())
 	{
-		//throw std::invalid_argument(std::string("Couldn't load OpenSCENARIO file ") + oscFilename);
 		LOG(("Couldn't load OpenSCENARIO file " + oscFilename).c_str());
 		return -2;
 	}
@@ -795,8 +793,6 @@ int ScenarioEngine::parseScenario()
 		if (i == file_name_candidates.size())
 		{
 			LOG((std::string("Failed to ") + (located ? "load" : "find") + " OpenDRIVE file " + getOdrFilename().c_str()).c_str());
-			throw std::invalid_argument(std::string("Failed to ") + (located ? "load" : "find") + \
-				" OpenDRIVE file " + std::string(getOdrFilename().c_str()));
 			return -1;
 		}
 	}
