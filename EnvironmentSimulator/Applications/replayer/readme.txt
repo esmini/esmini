@@ -1,6 +1,6 @@
 replayer is a simple application for re-playing .dat files recorded by esmini.
 
-Application is launched from command line (or batch file). 
+Application is launched from command line (or batch file).
 
 Usage:  [options]
 Options:
@@ -79,14 +79,16 @@ Key shortcuts
     ESC:           quit
 
     Arrow keys
-        Left:          Pause and move to previous frame(+Shift to skip 10 frames)
-        Right:         Pause and move to next frame(+Shift to skip 10 frames)
-        Shift + Left:  Pause and jump 10 frames back
-        Shift + Right: Pause and jump 10 frames forward
-        Ctrl + Left:   Jump to beginning
-        Ctrl + Right:  Jump to end
-        Up:            Increase timeScale(play faster)
-        Down:          Decrease timeScale(play slower)
+        Left:               Pause and move to previous frame(+Shift to skip 10 frames)
+        Right:              Pause and move to next frame(+Shift to skip 10 frames)
+        Shift + Left:       Pause and jump 0.1s back
+        Shift + Right:      Pause and jump 0.1s forward
+        Shift + Ctrl Left:  Pause and jump 1.0s back
+        Shift + Ctrl Right: Pause and jump 1.0s forward
+        Ctrl + Left:        Pause and jump to beginning
+        Ctrl + Right:       Pause and jump to end
+        Up:                 Increase timeScale(play faster)
+        Down:               Decrease timeScale(play slower)
 
     1 - 9: Camera models acording to :
         1: Custom camera model
