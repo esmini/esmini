@@ -129,12 +129,14 @@ class OpenDrive:
         root = tree.getroot()
 
         self.parse_children(root, parsed_data)
-        parsed_data = self.union_to_struct(parsed_data) #Create struct from unions
-        ref_list = self.create_ref_list([], name, parsed_data) #Create list of references for parsed_data
+        parsed_data = self.union_to_struct(parsed_data)  # Create struct from unions
+        ref_list = self.create_ref_list(
+            [], name, parsed_data
+        )  # Create list of references for parsed_data
 
         # Runs until dictionary is not changed between two runs -> ordered
         ordered = False
-        while (not ordered):
+        while not ordered:
             old_dict = parsed_data.copy()
             parsed_data = self.order_dictionary(parsed_data)
             check = True
@@ -143,7 +145,9 @@ class OpenDrive:
                     check = False
             ordered = check
 
-        parsed_data = self.create_inheritance(parsed_data) #Fix inheritance if classes has it
+        parsed_data = self.create_inheritance(
+            parsed_data
+        )  # Fix inheritance if classes has it
         parsed_dict = {"name": name, "version": version, "data": parsed_data}
         return (ref_list, parsed_dict)
 
@@ -435,7 +439,7 @@ class OpenDrive:
             elif "sequence" in child.tag:
                 child_sub_dict = self.parse_children(child, {})
                 # if choice under sequence -> ignore choice
-                if ("choice" in child_sub_dict.keys()):
+                if "choice" in child_sub_dict.keys():
                     choice_dict = child_sub_dict.pop("choice")
                     child_sub_dict.update(choice_dict)
                 data.update({"sequence": child_sub_dict})
@@ -466,11 +470,6 @@ class OpenDrive:
                     doc = child_sub_dict["docs"]
                 attributes = child.attrib
                 if len(attributes) > 1:
-                    # Set ID or junction to int instead of string (as these should be integers in esmini)
-                    if (
-                        attributes["name"] == "id" or attributes["name"] == "junction"
-                    ) and attributes["type"] == "xs:string":
-                        attributes["type"] = "int"
                     attributes["type"] = self.xsd_to_cpp_types(attributes["type"])
                 attributes.update({"docs": doc})
                 attributes_dict.update({child.attrib["name"]: attributes})
