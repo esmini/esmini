@@ -3,6 +3,9 @@
 set(TARGET
     ScenarioEngine)
 
+set(EXTERNAL_TARGET
+    Externals)
+
 # ############################### Loading desired rules ##############################################################
 
 include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_static_analysis.cmake)

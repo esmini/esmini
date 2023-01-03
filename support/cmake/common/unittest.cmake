@@ -117,6 +117,8 @@ macro(
     disable_static_analysis(${TARGET})
     disable_iwyu(${TARGET})
 
+    set_folder(${TARGET} Unittest)
+
     add_test(
         NAME ${TARGET}
         COMMAND ${TARGET})

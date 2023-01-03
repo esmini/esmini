@@ -64,8 +64,13 @@ macro(set_special_build_flags)
            AND (MSVC_VERSION
                 GREATER_EQUAL
                 1910))
-            # suppress warning 4127 (conditional expression is constant) to avoid harmless warning from Google protobuf header suppress warning 4100
-            # (unreferenced formal parameter) to allow function headers with unreferenced parameters for increased readability
+
+            # remove default warning level from initial CMAKE_CXX_FLAGS
+            string (REGEX REPLACE "/W[0-4]" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+
+            # suppress warning 4127 (conditional expression is constant) to avoid harmless warning from Google protobuf header
+            # suppress warning 4100 (unreferenced formal parameter) to allow function headers with unreferenced parameters for increased readability
+
             add_compile_options(
                 /permissive-
                 /W4

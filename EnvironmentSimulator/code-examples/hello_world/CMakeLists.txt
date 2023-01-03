@@ -3,9 +3,6 @@
 set(TARGET
     hello_world)
 
-set(TARGET_TMP
-    hello_world_tmp)
-
 # ############################### Loading desired rules ##############################################################
 
 include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_static_analysis.cmake)
@@ -26,8 +23,6 @@ include_directories(
     ${ESMINI_LIB_PATH}
     ${COMMON_MINI_PATH})
 
-add_custom_target(${TARGET_TMP})
-
 foreach(
     file_path
     ${modules})
@@ -46,10 +41,6 @@ foreach(
         ${module_name}
         ${filename})
 
-    add_dependencies(
-        ${TARGET_TMP}
-        ${module_name})
-
     target_link_libraries(
         ${module_name}
         PRIVATE project_options)
@@ -62,6 +53,8 @@ foreach(
     target_link_libraries(
         ${module_name}
         PRIVATE esminiLib)
+
+    set_folder( ${module_name} ${CodeExamplesFolder}/${TARGET} )
 
     install(
         TARGETS ${module_name}

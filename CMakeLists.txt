@@ -68,8 +68,10 @@ set(DYN_PROTOBUF
 
 if(WIN32)
     cmake_minimum_required(
-        VERSION 3.7.0
-        FATAL_ERROR) # for cmake generator VisualStudio 2017 support
+        VERSION 3.7.1   # for cmake generator VisualStudio 2017 support
+        # VERSION 3.14   # for cmake generator VisualStudio 2019 support
+        # VERSION 3.19   # for cmake presets support
+        FATAL_ERROR)
 else()
     cmake_minimum_required(
         VERSION 2.8.12
@@ -125,6 +127,7 @@ set_special_build_flags()
 # ############################### Loading utils packages ##############################################################
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/utils/get_subdirectories.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/utils/set_folder.cmake)
 
 # ############################### Loading cloud packages ##############################################################
 

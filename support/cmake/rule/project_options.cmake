@@ -10,6 +10,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS
     ON)
 set(CMAKE_VERBOSE_MAKEFILE
     ON)
+set(EXPLICIT_FOLDER_STRUCTURE ON)
 
 # ---------------------------------------------------
 if(MSVC)

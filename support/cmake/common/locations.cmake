@@ -108,7 +108,9 @@ macro(set_project_os_specific_paths)
     elseif(MSVC)
         if("${CMAKE_VS_PLATFORM_NAME}"
            STREQUAL
-           "x64")
+           "Win32")
+            message("Win32 configurations not supported")
+        else()
             set(EXTERNALS_OSG_OS_SPECIFIC_PATH
                 ${EXTERNALS_OSG_PATH}/v10)
             set(EXTERNALS_OSI_OS_SPECIFIC_PATH
@@ -121,8 +123,6 @@ macro(set_project_os_specific_paths)
                 Ws2_32.lib)
             set(TIME_LIB
                 "")
-        else()
-            message("Unsupported Windows configuration")
         endif()
     endif()
 

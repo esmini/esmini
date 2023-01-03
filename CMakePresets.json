@@ -1,155 +1,314 @@
 {
-    "version": 3,
-    "cmakeMinimumRequired": {
-        "major": 3,
-        "minor": 21,
-        "patch": 0
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 21,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "conf-common",
+      "description": "General settings that apply to all configurations",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build",
+      "vendor": {
+        "microsoft.com/VisualStudioRemoteSettings/CMake/1.0": {
+          "sourceDir": "$env{HOME}/.vs/$ms{projectDirName}"
+        }
+      }
     },
-    "configurePresets": [
-        {
-            "name": "conf-common",
-            "description": "General settings that apply to all configurations",
-            "hidden": true,
-            "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build",
-            "vendor": {
-                "microsoft.com/VisualStudioRemoteSettings/CMake/1.0": {
-                    "sourceDir": "$env{HOME}/.vs/$ms{projectDirName}"
-                }
-            }
-        },
-        {
-            "name": "linux-gcc-debug",
-            "displayName": "gcc Debug",
-            "description": "Target Linux with the gcc compiler, debug build type",
-            "inherits": "conf-common",
-            "cacheVariables": {
-                "CMAKE_C_COMPILER": "gcc-7",
-                "CMAKE_CXX_COMPILER": "g++-7",
-                "CMAKE_BUILD_TYPE": "Debug",
-                "ENABLE_SANITIZERS": "True",
-                "DYN_PROTOBUF": "True"
-            }
-        },
-        {
-            "name": "linux-gcc-debug-nosan",
-            "displayName": "gcc Debug no sanitizers",
-            "description": "Target Linux with the gcc compiler, debug build type",
-            "inherits": "conf-common",
-            "cacheVariables": {
-                "CMAKE_C_COMPILER": "gcc-7",
-                "CMAKE_CXX_COMPILER": "g++-7",
-                "CMAKE_BUILD_TYPE": "Debug",
-                "ENABLE_SANITIZERS": "False",
-                "DYN_PROTOBUF": "True"
-            }
-        },
-        {
-            "name": "linux-gcc-release",
-            "displayName": "gcc Release",
-            "description": "Target Linux with the gcc compiler, release build type",
-            "inherits": "conf-common",
-            "cacheVariables": {
-                "CMAKE_C_COMPILER": "gcc-7",
-                "CMAKE_CXX_COMPILER": "g++-7",
-                "CMAKE_BUILD_TYPE": "RelWithDebInfo",
-                "ENABLE_SANITIZERS": "True",
-                "DYN_PROTOBUF": "True"
-            }
-        },
-        {
-            "name": "linux-gcc-dist-san",
-            "displayName": "gcc Dist sanitizers",
-            "description": "Target Linux with the gcc compiler, release build type",
-            "inherits": "conf-common",
-            "cacheVariables": {
-                "CMAKE_C_COMPILER": "gcc-7",
-                "CMAKE_CXX_COMPILER": "g++-7",
-                "CMAKE_BUILD_TYPE": "Release",
-                "ENABLE_SANITIZERS": "True",
-                "DYN_PROTOBUF": "True"
-            }
-        },
-        {
-            "name": "linux-gcc-dist",
-            "displayName": "gcc Dist",
-            "description": "Target Linux with the gcc compiler, release build type",
-            "inherits": "conf-common",
-            "cacheVariables": {
-                "CMAKE_C_COMPILER": "gcc-7",
-                "CMAKE_CXX_COMPILER": "g++-7",
-                "CMAKE_BUILD_TYPE": "Release",
-                "ENABLE_SANITIZERS": "False",
-                "DYN_PROTOBUF": "True"
-            }
-        },
-        {
-            "name": "linux-clang-debug",
-            "displayName": "clang Debug",
-            "description": "Target Linux with the clang compiler, debug build type",
-            "inherits": "conf-common",
-            "cacheVariables": {
-                "CMAKE_C_COMPILER": "clang",
-                "CMAKE_CXX_COMPILER": "clang++",
-                "CMAKE_BUILD_TYPE": "Debug",
-                "ENABLE_SANITIZERS": "True",
-                "DYN_PROTOBUF": "True"
-            }
-        },
-        {
-            "name": "linux-clang-release",
-            "displayName": "clang Release",
-            "description": "Target Linux with the clang compiler, release build type",
-            "inherits": "conf-common",
-            "cacheVariables": {
-                "CMAKE_C_COMPILER": "clang",
-                "CMAKE_CXX_COMPILER": "clang++",
-                "CMAKE_BUILD_TYPE": "RelWithDebInfo",
-                "ENABLE_SANITIZERS": "True",
-                "DYN_PROTOBUF": "True"
-            }
-        }
-    ],
-    "testPresets": [
-        {
-            "name": "test-common",
-            "description": "Test CMake settings that apply to all configurations",
-            "hidden": true,
-            "output": {
-                "outputOnFailure": true
-            },
-            "execution": {
-                "noTestsAction": "error",
-                "stopOnFailure": true
-            }
-        },
-        {
-            "name": "test-linux-gcc-debug",
-            "displayName": "Strict",
-            "description": "Enable output and stop on failure",
-            "inherits": "test-common",
-            "configurePreset": "linux-gcc-debug"
-        },
-        {
-            "name": "test-linux-gcc-release",
-            "displayName": "Strict",
-            "description": "Enable output and stop on failure",
-            "inherits": "test-common",
-            "configurePreset": "linux-gcc-release"
-        },
-        {
-            "name": "test-linux-clang-debug",
-            "displayName": "Strict",
-            "description": "Enable output and stop on failure",
-            "inherits": "test-common",
-            "configurePreset": "linux-clang-debug"
-        },
-        {
-            "name": "test-linux-clang-release",
-            "displayName": "Strict",
-            "description": "Enable output and stop on failure",
-            "inherits": "test-common",
-            "configurePreset": "linux-clang-release"
-        }
-    ]
+    {
+      "name": "linux-gcc-debug",
+      "displayName": "gcc Debug",
+      "description": "Target Linux with the gcc compiler, debug build type",
+      "inherits": "conf-common",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "gcc",
+        "CMAKE_CXX_COMPILER": "g++",
+        "CMAKE_BUILD_TYPE": "Debug",
+        "ENABLE_SANITIZERS": "True",
+        "DYN_PROTOBUF": "False"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
+    },
+    {
+      "name": "linux-gcc-debug-nosan",
+      "displayName": "gcc Debug no sanitizers",
+      "description": "Target Linux with the gcc compiler, debug build type",
+      "inherits": "conf-common",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "gcc",
+        "CMAKE_CXX_COMPILER": "g++",
+        "CMAKE_BUILD_TYPE": "Debug",
+        "ENABLE_SANITIZERS": "False",
+        "DYN_PROTOBUF": "False"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
+    },
+    {
+      "name": "linux-gcc-release",
+      "displayName": "gcc Release",
+      "description": "Target Linux with the gcc compiler, release build type",
+      "inherits": "conf-common",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "gcc",
+        "CMAKE_CXX_COMPILER": "g++",
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "ENABLE_SANITIZERS": "True",
+        "DYN_PROTOBUF": "False"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
+    },
+    {
+      "name": "linux-gcc-dist-san",
+      "displayName": "gcc Dist sanitizers",
+      "description": "Target Linux with the gcc compiler, release build type",
+      "inherits": "conf-common",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "gcc",
+        "CMAKE_CXX_COMPILER": "g++",
+        "CMAKE_BUILD_TYPE": "Release",
+        "ENABLE_SANITIZERS": "True",
+        "DYN_PROTOBUF": "False"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
+    },
+    {
+      "name": "linux-gcc-dist",
+      "displayName": "gcc Dist",
+      "description": "Target Linux with the gcc compiler, release build type",
+      "inherits": "conf-common",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "gcc",
+        "CMAKE_CXX_COMPILER": "g++",
+        "CMAKE_BUILD_TYPE": "Release",
+        "ENABLE_SANITIZERS": "False",
+        "DYN_PROTOBUF": "False"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
+    },
+    {
+      "name": "linux-gcc-dist-dyn-pb",
+      "displayName": "gcc Dist dyn protobuf",
+      "description": "Target Linux with the gcc compiler, release build type",
+      "inherits": "conf-common",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "gcc",
+        "CMAKE_CXX_COMPILER": "g++",
+        "CMAKE_BUILD_TYPE": "Release",
+        "ENABLE_SANITIZERS": "False",
+        "DYN_PROTOBUF": "True"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
+    },
+    {
+      "name": "linux-clang-debug",
+      "displayName": "clang Debug",
+      "description": "Target Linux with the clang compiler, debug build type",
+      "inherits": "conf-common",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_BUILD_TYPE": "Debug",
+        "ENABLE_SANITIZERS": "True",
+        "DYN_PROTOBUF": "False"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
+    },
+    {
+      "name": "linux-clang-release",
+      "displayName": "clang Release",
+      "description": "Target Linux with the clang compiler, release build type",
+      "inherits": "conf-common",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "ENABLE_SANITIZERS": "True",
+        "DYN_PROTOBUF": "False"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
+    },
+    {
+      "name": "linux-clang-release-dyn-pb",
+      "displayName": "clang Release dyn protobuf",
+      "description": "Target Linux with the clang compiler, release build type",
+      "inherits": "conf-common",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "ENABLE_SANITIZERS": "True",
+        "DYN_PROTOBUF": "True"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
+    },
+    {
+      "name": "windows-msvc-debug",
+      "displayName": "msvc ninja Debug",
+      "description": "Target Windows with the Visual Studio compiler, debug build type",
+      "inherits": "conf-common",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "cl.exe",
+        "CMAKE_CXX_COMPILER": "cl.exe",
+        "CMAKE_BUILD_TYPE": "Debug",
+        "ENABLE_SANITIZERS": "False",
+        "DYN_PROTOBUF": "False"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
+    },
+    {
+      "name": "windows-msvc-release",
+      "displayName": "msvc ninja Release",
+      "description": "Target Windows with the Visual Studio compiler, release build type",
+      "inherits": "conf-common",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "cl.exe",
+        "CMAKE_CXX_COMPILER": "cl.exe",
+        "CMAKE_BUILD_TYPE": "Release",
+        "ENABLE_SANITIZERS": "False",
+        "DYN_PROTOBUF": "False"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
+    },
+    {
+      "name": "windows-msvc-sln-debug",
+      "displayName": "msvc solution Debug",
+      "description": "Solution target Windows with the Visual Studio compiler, debug build type",
+      "inherits": "conf-common",
+      "generator": "Visual Studio 16 2019",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "cl.exe",
+        "CMAKE_CXX_COMPILER": "cl.exe",
+        "CMAKE_BUILD_TYPE": "Debug",
+        "ENABLE_SANITIZERS": "False",
+        "DYN_PROTOBUF": "False"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
+    },
+    {
+      "name": "windows-msvc-sln-release",
+      "displayName": "msvc solution Release",
+      "description": "Solution target Windows with the Visual Studio compiler, release build type",
+      "inherits": "conf-common",
+      "generator": "Visual Studio 16 2019",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "cl.exe",
+        "CMAKE_CXX_COMPILER": "cl.exe",
+        "CMAKE_BUILD_TYPE": "Release",
+        "ENABLE_SANITIZERS": "False",
+        "DYN_PROTOBUF": "False"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "test-common",
+      "description": "Test CMake settings that apply to all configurations",
+      "hidden": true,
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error",
+        "stopOnFailure": true
+      }
+    },
+    {
+      "name": "test-linux-gcc-debug",
+      "displayName": "Strict",
+      "description": "Enable output and stop on failure",
+      "inherits": "test-common",
+      "configurePreset": "linux-gcc-debug"
+    },
+    {
+      "name": "test-linux-gcc-release",
+      "displayName": "Strict",
+      "description": "Enable output and stop on failure",
+      "inherits": "test-common",
+      "configurePreset": "linux-gcc-release"
+    },
+    {
+      "name": "test-linux-clang-debug",
+      "displayName": "Strict",
+      "description": "Enable output and stop on failure",
+      "inherits": "test-common",
+      "configurePreset": "linux-clang-debug"
+    },
+    {
+      "name": "test-linux-clang-release",
+      "displayName": "Strict",
+      "description": "Enable output and stop on failure",
+      "inherits": "test-common",
+      "configurePreset": "linux-clang-release"
+    },
+    {
+      "name": "test-msvc-debug",
+      "displayName": "Strict",
+      "description": "Enable output and stop on failure",
+      "inherits": "test-common",
+      "configurePreset": "windows-msvc-debug"
+    },
+    {
+      "name": "test-msvc-release",
+      "displayName": "Strict",
+      "description": "Enable output and stop on failure",
+      "inherits": "test-common",
+      "configurePreset": "windows-msvc-release"
+    }
+  ]
 }
