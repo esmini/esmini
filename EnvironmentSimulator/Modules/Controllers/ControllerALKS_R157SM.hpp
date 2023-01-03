@@ -82,7 +82,7 @@ namespace scenarioengine
         {
         public:
 
-            typedef struct {
+            struct ObjectInfo {
                 Object* obj  = 0;                         // pointer reference to the detected object
                 Object* cut_out_vehicle = 0;              // pointer reference to cut-out vehicle revealing obj above
                 double dist_long = LARGE_NUMBER;          // longitudinal distance (freespace) to object in focus
@@ -93,7 +93,7 @@ namespace scenarioengine
                 double thw = LARGE_NUMBER;                // time-headway (from ego to this object)
                 int dLaneId = 0;                          // lane delta (from ego). -1, 0 or 1 (according to OpenDRIVE standard)
                 ScenarioType action = ScenarioType::None; // set if lane change in or out from ego lane detected
-            } ObjectInfo;
+            };
 
             Model(ModelType type, double reaction_time, double max_dec_, double max_range_);
             virtual ~Model() = default;
