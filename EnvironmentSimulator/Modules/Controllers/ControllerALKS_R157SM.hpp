@@ -111,6 +111,7 @@ namespace scenarioengine
             std::string Mode2Str(ModelMode mode);
             std::string ScenarioType2Str(ScenarioType type) { return ScenarioTypeName[type]; }
             std::string ModelType2Str(ModelType type) { return ModelTypeName[type]; }
+            ModelType GetModelType() { return type_; }
             void SetModelMode(ModelMode mode, bool log = true);
             ModelMode GetModelMode() { return model_mode_; }
             void SetScenarioEngine(ScenarioEngine* scenario_engine);

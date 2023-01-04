@@ -401,7 +401,19 @@ double ControllerALKS_R157SM::Model::Step(double timeStep)
 {
     dt_ = timeStep;
 
-    Detect();
+    if (object_in_focus_.obj && GetModelType() == ModelType::ReferenceDriver &&
+        ((ReferenceDriver*)this)->GetPhase() != ControllerALKS_R157SM::ReferenceDriver::Phase::INACTIVE &&
+        GetFullStop())
+    {
+        // reference driver ongoing action in combination with FullStop mode
+        // skip full re-scan, just update measurements for object already in focus
+        Process(object_in_focus_);
+    }
+    else
+    {
+        // do a full re-scan for object in focus
+        Detect();
+    }
 
     if (CheckCritical())
     {
@@ -884,19 +896,23 @@ bool ControllerALKS_R157SM::ReferenceDriver::CheckPerceptionCutIn()
         {
             if (cut_in_perception_delay_mode_ == CutInPerceptionDelayMode::DIST)
             {
-                if (object_in_focus_.obj->pos_.GetT() > veh_->pos_.GetT() &&  // target moving along negative T
+                if (object_in_focus_.obj == nullptr)
+                {
+                    R157_LOG(3, "In perceive phase, but lost object in focus");
+                }
+                else if (object_in_focus_.obj->pos_.GetT() > veh_->pos_.GetT() &&  // target moving along negative T
                     object_in_focus_.obj->pos_.GetT() < perception_t_ - perception_dist_)
                 {
-                    SetPhase(Phase::REACT);
                     R157_LOG(2, "Reached lateral perception distance (t %.3f < t0 %.3f - perc dist %.2f)",
                         object_in_focus_.obj->pos_.GetT(), perception_t_, perception_dist_);
+                    SetPhase(Phase::REACT);
                 }
                 else if (object_in_focus_.obj->pos_.GetT() < veh_->pos_.GetT() && // target moving along positive T
                     object_in_focus_.obj->pos_.GetT() > perception_t_ + perception_dist_)
                 {
-                    SetPhase(Phase::REACT);
                     R157_LOG(2, "Reached lateral perception distance (t %.3f > t0 %.3f + perc dist %.2f)",
                         object_in_focus_.obj->pos_.GetT(), perception_t_, perception_dist_);
+                    SetPhase(Phase::REACT);
                 }
             }
             else if (cut_in_perception_delay_mode_ == CutInPerceptionDelayMode::TIME)
@@ -1134,7 +1150,10 @@ bool ControllerALKS_R157SM::ReferenceDriver::CheckCritical()
         Reset();  // lost sight of object
         SetModelMode(ModelMode::NO_TARGET);
     }
-    else if (veh_->GetSpeed() > SMALL_NUMBER && object_in_focus_.dist_long > 0)
+    else if (veh_->GetSpeed() > SMALL_NUMBER && 
+            object_in_focus_.dist_long > 0 ||
+            GetFullStop()  // fulfill the scenario even if ego passed the perceived vehicle 
+        )
     {
         CheckCriticalCondition();
     }
