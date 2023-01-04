@@ -31,12 +31,16 @@ static bool quit;
 #ifdef _WIN32
 	#include <winsock2.h>
 	#include <Ws2tcpip.h>
+	typedef SOCKET SE_SOCKET;
+	#define SE_INVALID_SOCKET INVALID_SOCKET
 #else
 	 /* Assume that any non-Windows platform uses POSIX-style sockets instead. */
 	#include <sys/socket.h>
 	#include <arpa/inet.h>
 	#include <netdb.h>  /* Needed for getaddrinfo() and freeaddrinfo() */
 	#include <unistd.h> /* Needed for close() */
+	typedef int SE_SOCKET;
+	#define SE_INVALID_SOCKET -1
 #endif
 
 #define OSI_OUT_PORT 48198
@@ -44,7 +48,7 @@ static bool quit;
 #define MAX_MSG_SIZE 1024000
 #define OSI_MAX_UDP_DATA_SIZE 8200
 
-void CloseGracefully(int socket)
+void CloseGracefully(SE_SOCKET socket)
 {
 #ifdef _WIN32
 	if (closesocket(socket) == SOCKET_ERROR)
@@ -71,7 +75,7 @@ int main(int argc, char* argv[])
 {
 	(void)argc;
 	(void)argv;
-	static int sock;
+	static SE_SOCKET sock;
 	struct sockaddr_in server_addr;
 	struct sockaddr_in sender_addr;
 	static unsigned short int iPortIn = OSI_OUT_PORT;   // Port for incoming packages
@@ -101,8 +105,8 @@ int main(int argc, char* argv[])
 	}
 #endif
 
-	sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-	if (sock < 0)
+	sock = static_cast<int>(socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP));
+	if (sock == SE_INVALID_SOCKET)
 	{
 		printf("socket failed\n");
 		return -1;

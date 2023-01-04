@@ -30,14 +30,16 @@
 
 #ifdef _WIN32
 	typedef SOCKET SE_SOCKET;
+	#define SE_INVALID_SOCKET INVALID_SOCKET
 #else
 	typedef int SE_SOCKET;
+	#define SE_INVALID_SOCKET -1
 #endif
 
 class UDPBase
 {
 public:
-    int GetStatus() { return sock_ >= 0 ? 0 : -1; }  // 0 = OK, -1 = NOK
+    int GetStatus() { return sock_ == SE_INVALID_SOCKET ? -1 : 0; }  // -1 = NOK, 0 = OK
 
 protected:
     UDPBase(unsigned short int port);

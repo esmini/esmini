@@ -20,7 +20,7 @@
 #include "CommonMini.hpp"
 
 
-UDPBase::UDPBase(unsigned short int port) : port_(port), sock_(-1)
+UDPBase::UDPBase(unsigned short int port) : port_(port), sock_(SE_INVALID_SOCKET)
 {
 	sender_addr_size_ = sizeof(sender_addr_);
 
@@ -34,7 +34,7 @@ UDPBase::UDPBase(unsigned short int port) : port_(port), sock_(-1)
 	}
 #endif
 
-	if ((sock_ = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
+	if ((sock_ = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == SE_INVALID_SOCKET)
 	{
 		LOG_AND_QUIT("socket failed");
 		return;
