@@ -281,6 +281,8 @@ namespace scenarioengine
                 LateralDistTrigger(ReferenceDriver* ref_driver) :
                     model_(ref_driver), threshold_(0.0), name_("LateralTrigger") { Reset(); }
 
+                virtual ~LateralDistTrigger() = default;
+
                 bool Active() { return active_; }
                 double GetDistance() { return obj_ ? abs(obj_->pos_.GetT() - t0_) : 0.0; }
                 void Reset()
@@ -307,6 +309,7 @@ namespace scenarioengine
             {
             public:
                 WanderingTrigger(ReferenceDriver* ref_driver) : LateralDistTrigger(ref_driver) {}
+                ~WanderingTrigger() = default;
                 void Update(ObjectInfo* info);
             };
 
