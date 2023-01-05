@@ -1297,11 +1297,11 @@ void SE_Option::Usage()
 {
 	if (!default_value_.empty())
 	{
-		printf("  %s%s %s", OPT_PREFIX, opt_str_.c_str(), (opt_arg_ != "") ? '[' + opt_arg_.c_str() + ']' : "");
+		printf("  %s%s %s", OPT_PREFIX, opt_str_.c_str(), (opt_arg_ != "") ? std::string('[' + opt_arg_ + ']').c_str() : "");
 	}
 	else
 	{
-		printf("  %s%s %s", OPT_PREFIX, opt_str_.c_str(), (opt_arg_ != "") ? '<' + opt_arg_.c_str() + '>' : "");
+		printf("  %s%s %s", OPT_PREFIX, opt_str_.c_str(), (opt_arg_ != "") ? std::string('<' + opt_arg_ + '>').c_str() : "");
 	}
 
 	if (!default_value_.empty())
