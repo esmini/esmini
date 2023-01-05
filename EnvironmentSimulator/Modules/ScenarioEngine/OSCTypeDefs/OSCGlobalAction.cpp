@@ -121,7 +121,7 @@ void DeleteEntityAction::Step(double, double)
 void print_triangles(BBoxVec &vec, char const filename[]) {
     std::ofstream file;
     file.open(filename);
-    for (auto const bbx : vec) {
+    for (auto const& bbx : vec) {
         auto trPtr = bbx->triangle();
         auto pt = trPtr->a;
         file << pt.x << "," << pt.y;
@@ -134,7 +134,7 @@ void print_triangles(BBoxVec &vec, char const filename[]) {
 void print_bbx(BBoxVec &vec, char const filename[]) {
     std::ofstream file;
     file.open(filename);
-    for (auto const bbx : vec) {
+    for (auto const& bbx : vec) {
         auto pt = bbx->blhCorner();
         file << pt.x << "," << pt.y;
         file << "," << bbx->urhCorner().x << "," << bbx->urhCorner().y << "\n";
@@ -159,7 +159,7 @@ void printTree(aabbTree::Tree &tree, char filename[]) {
     v1.insert(v1.end(), tree.Children().begin(), tree.Children().end());
 
     while (!v1.empty()) {
-        for (auto const tr : v1) {
+        for (auto const& tr : v1) {
             if (!tr->empty()) {
                 auto bbox = tr->BBox();
                 file << bbox->blhCorner().x << "," << bbox->blhCorner().y <<
