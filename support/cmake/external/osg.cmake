@@ -29,206 +29,110 @@ macro(set_osg_libs)
             dl
             z)
     elseif(LINUX)
-        if(CMAKE_BUILD_TYPE
-           STREQUAL
-           "Release")
-            set(OSG_LIBRARIES
-                ${EXTERNALS_OSG_LIBRARY_PATH}/libosg.a
-                ${EXTERNALS_OSG_LIBRARY_PATH}/libosgViewer.a
-                ${EXTERNALS_OSG_LIBRARY_PATH}/libosgDB.a
-                ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/libosgdb_serializers_osgsim.a
-                ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/libosgdb_serializers_osg.a
-                ${EXTERNALS_OSG_LIBRARY_PATH}/libosgGA.a
-                ${EXTERNALS_OSG_LIBRARY_PATH}/libosgText.a
-                ${EXTERNALS_OSG_LIBRARY_PATH}/libosgSim.a
-                ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/libosgdb_osg.a
-                ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/libosgdb_jpeg.a
-                ${EXTERNALS_OSG_LIBRARY_PATH}/libosgUtil.a
-                ${EXTERNALS_OSG_LIBRARY_PATH}/libosgAnimation.a
-                ${EXTERNALS_OSG_LIBRARY_PATH}/libosg.a
-                ${EXTERNALS_OSG_LIBRARY_PATH}/libOpenThreads.a
-                ${EXTERNALS_OSG_LIBRARY_PATH}/libjpeg.a
-                GL
-                X11
-                Xrandr
-                dl
-                z
-                Xinerama
-                fontconfig)
-        elseif(
-            CMAKE_BUILD_TYPE
-            STREQUAL
-            "Debug")
-            set(OSG_LIBRARIES
-                ${EXTERNALS_OSG_LIBRARY_PATH}/libosgd.a
-                ${EXTERNALS_OSG_LIBRARY_PATH}/libosgViewerd.a
-                ${EXTERNALS_OSG_LIBRARY_PATH}/libosgDBd.a
-                ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/libosgdb_serializers_osgsimd.a
-                ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/libosgdb_serializers_osgd.a
-                ${EXTERNALS_OSG_LIBRARY_PATH}/libosgGAd.a
-                ${EXTERNALS_OSG_LIBRARY_PATH}/libosgTextd.a
-                ${EXTERNALS_OSG_LIBRARY_PATH}/libosgSimd.a
-                ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/libosgdb_osgd.a
-                ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/libosgdb_jpegd.a
-                ${EXTERNALS_OSG_LIBRARY_PATH}/libosgUtild.a
-                ${EXTERNALS_OSG_LIBRARY_PATH}/libosgAnimationd.a
-                ${EXTERNALS_OSG_LIBRARY_PATH}/libosgd.a
-                ${EXTERNALS_OSG_LIBRARY_PATH}/libOpenThreadsd.a
-                ${EXTERNALS_OSG_LIBRARY_PATH}/libjpegd.a
-                GL
-                X11
-                Xrandr
-                dl
-                z
-                Xinerama
-                fontconfig)
-        else()
-            set(OSG_LIBRARIES
-                ${EXTERNALS_OSG_LIBRARY_PATH}/libosg.a
-                ${EXTERNALS_OSG_LIBRARY_PATH}/libosgViewer.a
-                ${EXTERNALS_OSG_LIBRARY_PATH}/libosgDB.a
-                ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/libosgdb_serializers_osgsim.a
-                ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/libosgdb_serializers_osg.a
-                ${EXTERNALS_OSG_LIBRARY_PATH}/libosgGA.a
-                ${EXTERNALS_OSG_LIBRARY_PATH}/libosgText.a
-                ${EXTERNALS_OSG_LIBRARY_PATH}/libosgSim.a
-                ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/libosgdb_osg.a
-                ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/libosgdb_jpeg.a
-                ${EXTERNALS_OSG_LIBRARY_PATH}/libosgUtil.a
-                ${EXTERNALS_OSG_LIBRARY_PATH}/libosgAnimation.a
-                ${EXTERNALS_OSG_LIBRARY_PATH}/libosg.a
-                ${EXTERNALS_OSG_LIBRARY_PATH}/libOpenThreads.a
-                ${EXTERNALS_OSG_LIBRARY_PATH}/libjpeg.a
-                GL
-                X11
-                Xrandr
-                dl
-                z
-                Xinerama
-                fontconfig)
-        endif()
+        set(OSG_LIBRARIES
+            optimized ${EXTERNALS_OSG_LIBRARY_PATH}/libosg.a
+            optimized ${EXTERNALS_OSG_LIBRARY_PATH}/libosgViewer.a
+            optimized ${EXTERNALS_OSG_LIBRARY_PATH}/libosgDB.a
+            optimized ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/libosgdb_serializers_osgsim.a
+            optimized ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/libosgdb_serializers_osg.a
+            optimized ${EXTERNALS_OSG_LIBRARY_PATH}/libosgGA.a
+            optimized ${EXTERNALS_OSG_LIBRARY_PATH}/libosgText.a
+            optimized ${EXTERNALS_OSG_LIBRARY_PATH}/libosgSim.a
+            optimized ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/libosgdb_osg.a
+            optimized ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/libosgdb_jpeg.a
+            optimized ${EXTERNALS_OSG_LIBRARY_PATH}/libosgUtil.a
+            optimized ${EXTERNALS_OSG_LIBRARY_PATH}/libosgAnimation.a
+            optimized ${EXTERNALS_OSG_LIBRARY_PATH}/libosg.a
+            optimized ${EXTERNALS_OSG_LIBRARY_PATH}/libOpenThreads.a
+            optimized ${EXTERNALS_OSG_LIBRARY_PATH}/libjpeg.a
+            debug ${EXTERNALS_OSG_LIBRARY_PATH}/libosgd.a
+            debug ${EXTERNALS_OSG_LIBRARY_PATH}/libosgViewerd.a
+            debug ${EXTERNALS_OSG_LIBRARY_PATH}/libosgDBd.a
+            debug ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/libosgdb_serializers_osgsimd.a
+            debug ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/libosgdb_serializers_osgd.a
+            debug ${EXTERNALS_OSG_LIBRARY_PATH}/libosgGAd.a
+            debug ${EXTERNALS_OSG_LIBRARY_PATH}/libosgTextd.a
+            debug ${EXTERNALS_OSG_LIBRARY_PATH}/libosgSimd.a
+            debug ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/libosgdb_osgd.a
+            debug ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/libosgdb_jpegd.a
+            debug ${EXTERNALS_OSG_LIBRARY_PATH}/libosgUtild.a
+            debug ${EXTERNALS_OSG_LIBRARY_PATH}/libosgAnimationd.a
+            debug ${EXTERNALS_OSG_LIBRARY_PATH}/libosgd.a
+            debug ${EXTERNALS_OSG_LIBRARY_PATH}/libOpenThreadsd.a
+            debug ${EXTERNALS_OSG_LIBRARY_PATH}/libjpegd.a
+            GL
+            X11
+            Xrandr
+            dl
+            z
+            Xinerama
+            fontconfig)
     elseif(MSVC)
-        if(CMAKE_BUILD_TYPE
-           STREQUAL
-           "Release")
-            set(OSG_LIBRARIES
-                opengl32.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/zlibstatic.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/jpeg.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osg.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgAnimation.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgDB.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgGA.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgViewer.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgText.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgUtil.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgSim.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/ot21-OpenThreads.lib
-                ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/osgdb_serializers_osgsim.lib
-                ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/osgdb_serializers_osg.lib
-                ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/osgdb_osg.lib
-                ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/osgdb_jpeg.lib)
-        elseif(
-            CMAKE_BUILD_TYPE
-            STREQUAL
-            "Debug")
-            set(OSG_LIBRARIES
-                opengl32.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/zlibstaticd.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/jpegd.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgd.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgAnimationd.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgDBd.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgGAd.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgViewerd.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgTextd.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgUtild.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgSimd.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/ot21-OpenThreadsd.lib
-                ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/osgdb_serializers_osgsimd.lib
-                ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/osgdb_serializers_osgd.lib
-                ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/osgdb_osgd.lib
-                ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/osgdb_jpegd.lib)
-        else()
-            set(OSG_LIBRARIES
-                opengl32.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/zlibstatic.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/jpeg.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osg.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgAnimation.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgDB.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgGA.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgViewer.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgText.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgUtil.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgSim.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/ot21-OpenThreads.lib
-                ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/osgdb_serializers_osgsim.lib
-                ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/osgdb_serializers_osg.lib
-                ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/osgdb_osg.lib
-                ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/osgdb_jpeg.lib)
-        endif()
+        set(OSG_LIBRARIES
+            opengl32.lib
+            optimized ${EXTERNALS_OSG_LIBRARY_PATH}/zlibstatic.lib
+            optimized ${EXTERNALS_OSG_LIBRARY_PATH}/jpeg.lib
+            optimized ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osg.lib
+            optimized ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgAnimation.lib
+            optimized ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgDB.lib
+            optimized ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgGA.lib
+            optimized ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgViewer.lib
+            optimized ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgText.lib
+            optimized ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgUtil.lib
+            optimized ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgSim.lib
+            optimized ${EXTERNALS_OSG_LIBRARY_PATH}/ot21-OpenThreads.lib
+            optimized ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/osgdb_serializers_osgsim.lib
+            optimized ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/osgdb_serializers_osg.lib
+            optimized ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/osgdb_osg.lib
+            optimized ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/osgdb_jpeg.lib
+            debug ${EXTERNALS_OSG_LIBRARY_PATH}/zlibstaticd.lib
+            debug ${EXTERNALS_OSG_LIBRARY_PATH}/jpegd.lib
+            debug ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgd.lib
+            debug ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgAnimationd.lib
+            debug ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgDBd.lib
+            debug ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgGAd.lib
+            debug ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgViewerd.lib
+            debug ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgTextd.lib
+            debug ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgUtild.lib
+            debug ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgSimd.lib
+            debug ${EXTERNALS_OSG_LIBRARY_PATH}/ot21-OpenThreadsd.lib
+            debug ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/osgdb_serializers_osgsimd.lib
+            debug ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/osgdb_serializers_osgd.lib
+            debug ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/osgdb_osgd.lib
+            debug ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/osgdb_jpegd.lib)
     elseif(MINGW)
-        if(CMAKE_BUILD_TYPE
-           STREQUAL
-           "Release")
-            set(OSG_LIBRARIES
-                opengl32.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/zlibstatic.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/jpeg.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osg.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgAnimation.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgDB.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgGA.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgViewer.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgText.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgUtil.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgSim.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/ot21-OpenThreads.lib
-                ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/osgdb_serializers_osgsim.lib
-                ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/osgdb_serializers_osg.lib
-                ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/osgdb_osg.lib
-                ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/osgdb_jpeg.lib)
-        elseif(
-            CMAKE_BUILD_TYPE
-            STREQUAL
-            "Debug")
-            set(OSG_LIBRARIES
-                opengl32.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/zlibstaticd.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/jpegd.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgd.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgAnimationd.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgDBd.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgGAd.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgViewerd.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgTextd.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgUtild.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgSimd.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/ot21-OpenThreadsd.lib
-                ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/osgdb_serializers_osgsimd.lib
-                ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/osgdb_serializers_osgd.lib
-                ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/osgdb_osgd.lib
-                ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/osgdb_jpegd.lib)
-        else()
-            set(OSG_LIBRARIES
-                opengl32.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/zlibstatic.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/jpeg.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osg.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgAnimation.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgDB.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgGA.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgViewer.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgText.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgUtil.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgSim.lib
-                ${EXTERNALS_OSG_LIBRARY_PATH}/ot21-OpenThreads.lib
-                ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/osgdb_serializers_osgsim.lib
-                ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/osgdb_serializers_osg.lib
-                ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/osgdb_osg.lib
-                ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/osgdb_jpeg.lib)
-        endif()
+        set(OSG_LIBRARIES
+            opengl32.lib
+            optimized ${EXTERNALS_OSG_LIBRARY_PATH}/zlibstatic.lib
+            optimized ${EXTERNALS_OSG_LIBRARY_PATH}/jpeg.lib
+            optimized ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osg.lib
+            optimized ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgAnimation.lib
+            optimized ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgDB.lib
+            optimized ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgGA.lib
+            optimized ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgViewer.lib
+            optimized ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgText.lib
+            optimized ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgUtil.lib
+            optimized ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgSim.lib
+            optimized ${EXTERNALS_OSG_LIBRARY_PATH}/ot21-OpenThreads.lib
+            optimized ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/osgdb_serializers_osgsim.lib
+            optimized ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/osgdb_serializers_osg.lib
+            optimized ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/osgdb_osg.lib
+            optimized ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/osgdb_jpeg.lib
+            debug ${EXTERNALS_OSG_LIBRARY_PATH}/zlibstaticd.lib
+            debug ${EXTERNALS_OSG_LIBRARY_PATH}/jpegd.lib
+            debug ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgd.lib
+            debug ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgAnimationd.lib
+            debug ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgDBd.lib
+            debug ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgGAd.lib
+            debug ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgViewerd.lib
+            debug ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgTextd.lib
+            debug ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgUtild.lib
+            debug ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osgSimd.lib
+            debug ${EXTERNALS_OSG_LIBRARY_PATH}/ot21-OpenThreadsd.lib
+            debug ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/osgdb_serializers_osgsimd.lib
+            debug ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/osgdb_serializers_osgd.lib
+            debug ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/osgdb_osgd.lib
+            debug ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/osgdb_jpegd.lib)
     endif()
 endmacro()
 

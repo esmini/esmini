@@ -16,89 +16,32 @@ macro(set_osi_libs)
         endif()
 
     elseif(LINUX)
-        if(CMAKE_BUILD_TYPE
-           STREQUAL
-           "Release")
-
-            if(DYN_PROTOBUF)
-                set(OSI_LIBRARIES
-                    ${EXTERNALS_OSI_LIBRARY_PATH}/libopen_simulation_interface.so
-                    ${EXTERNALS_OSI_LIBRARY_PATH}/libprotobuf.so)
-            else()
-                set(OSI_LIBRARIES
-                    ${EXTERNALS_OSI_LIBRARY_PATH}/libopen_simulation_interface_pic.a
-                    ${EXTERNALS_OSI_LIBRARY_PATH}/libprotobuf.a)
-            endif()
-
-        elseif(
-            CMAKE_BUILD_TYPE
-            STREQUAL
-            "Debug")
-
-            if(DYN_PROTOBUF)
-                set(OSI_LIBRARIES
-                    ${EXTERNALS_OSI_LIBRARY_PATH}/libopen_simulation_interfaced.so
-                    ${EXTERNALS_OSI_LIBRARY_PATH}/libprotobufd.so)
-            else()
-                set(OSI_LIBRARIES
-                    ${EXTERNALS_OSI_LIBRARY_PATH}/libopen_simulation_interface_picd.a
-                    ${EXTERNALS_OSI_LIBRARY_PATH}/libprotobufd.a)
-            endif()
-
+        if(DYN_PROTOBUF)
+            set(OSI_LIBRARIES
+                optimized ${EXTERNALS_OSI_LIBRARY_PATH}/libopen_simulation_interface.so
+                optimized ${EXTERNALS_OSI_LIBRARY_PATH}/libprotobuf.so
+                debug ${EXTERNALS_OSI_LIBRARY_PATH}/libopen_simulation_interfaced.so
+                debug ${EXTERNALS_OSI_LIBRARY_PATH}/libprotobufd.so)
         else()
-
-            if(DYN_PROTOBUF)
-                set(OSI_LIBRARIES
-                    ${EXTERNALS_OSI_LIBRARY_PATH}/libopen_simulation_interface.so
-                    ${EXTERNALS_OSI_LIBRARY_PATH}/libprotobuf.so)
-            else()
-                set(OSI_LIBRARIES
-                    ${EXTERNALS_OSI_LIBRARY_PATH}/libopen_simulation_interface_pic.a
-                    ${EXTERNALS_OSI_LIBRARY_PATH}/libprotobuf.a)
-            endif()
-
+            set(OSI_LIBRARIES
+                optimized ${EXTERNALS_OSI_LIBRARY_PATH}/libopen_simulation_interface_pic.a
+                optimized ${EXTERNALS_OSI_LIBRARY_PATH}/libprotobuf.a
+                debug ${EXTERNALS_OSI_LIBRARY_PATH}/libopen_simulation_interface_picd.a
+                debug ${EXTERNALS_OSI_LIBRARY_PATH}/libprotobufd.a)
         endif()
-
     elseif(MSVC)
-        if(CMAKE_BUILD_TYPE
-           STREQUAL
-           "Release")
-
-            if(DYN_PROTOBUF)
-                set(OSI_LIBRARIES
-                    ${EXTERNALS_OSI_LIBRARY_PATH}/open_simulation_interface.dll
-                    ${EXTERNALS_OSI_LIBRARY_PATH}/libprotobuf.lib)
-            else()
-                set(OSI_LIBRARIES
-                    ${EXTERNALS_OSI_LIBRARY_PATH}/open_simulation_interface_pic.lib
-                    ${EXTERNALS_OSI_LIBRARY_PATH}/libprotobuf.lib)
-            endif()
-
-        elseif(
-            CMAKE_BUILD_TYPE
-            STREQUAL
-            "Debug")
-
-            if(DYN_PROTOBUF)
-                set(OSI_LIBRARIES
-                    ${EXTERNALS_OSI_LIBRARY_PATH}/open_simulation_interfaced.dll
-                    ${EXTERNALS_OSI_LIBRARY_PATH}/libprotobufd.lib)
-            else()
-                set(OSI_LIBRARIES
-                    ${EXTERNALS_OSI_LIBRARY_PATH}/open_simulation_interface_picd.lib
-                    ${EXTERNALS_OSI_LIBRARY_PATH}/libprotobufd.lib)
-            endif()
-
+        if(DYN_PROTOBUF)
+            set(OSI_LIBRARIES
+                optimized ${EXTERNALS_OSI_LIBRARY_PATH}/open_simulation_interface.dll
+                optimized ${EXTERNALS_OSI_LIBRARY_PATH}/libprotobuf.lib
+                debug ${EXTERNALS_OSI_LIBRARY_PATH}/open_simulation_interfaced.dll
+                debug ${EXTERNALS_OSI_LIBRARY_PATH}/libprotobufd.lib)
         else()
-            if(DYN_PROTOBUF)
-                set(OSI_LIBRARIES
-                    ${EXTERNALS_OSI_LIBRARY_PATH}/open_simulation_interface.dll
-                    ${EXTERNALS_OSI_LIBRARY_PATH}/libprotobuf.lib)
-            else()
-                set(OSI_LIBRARIES
-                    ${EXTERNALS_OSI_LIBRARY_PATH}/open_simulation_interface_pic.lib
-                    ${EXTERNALS_OSI_LIBRARY_PATH}/libprotobuf.lib)
-            endif()
+            set(OSI_LIBRARIES
+                optimized ${EXTERNALS_OSI_LIBRARY_PATH}/open_simulation_interface_pic.lib
+                optimized ${EXTERNALS_OSI_LIBRARY_PATH}/libprotobuf.lib
+                debug ${EXTERNALS_OSI_LIBRARY_PATH}/open_simulation_interface_picd.lib
+                debug ${EXTERNALS_OSI_LIBRARY_PATH}/libprotobufd.lib)
         endif()
     endif()
 endmacro()

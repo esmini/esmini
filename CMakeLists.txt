@@ -208,7 +208,7 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/external/sumo.cmake)
 add_gtest_library()
 add_osg_library()
 add_osi_library()
-set_sumo_libs()
+add_sumo_library()
 
 # ############################### Compiling targets ##################################################################
 

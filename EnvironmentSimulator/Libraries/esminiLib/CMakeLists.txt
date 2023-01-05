@@ -73,7 +73,7 @@ if(USE_SUMO)
     target_link_system_libraries(
         ${TARGET}
         PRIVATE
-        ${SUMO_LIBRARIES})
+        SUMO)
 endif()
 
 if(USE_OSI)

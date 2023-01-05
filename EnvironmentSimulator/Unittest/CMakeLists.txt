@@ -49,7 +49,7 @@ unittest(
     ViewerBase
     OSG
     OSI
-    ${SUMO_LIBRARIES}
+    SUMO
     ${SOCK_LIB})
 
 # ############################### Creating executable (ScenarioPlayer_test) ##########################################
@@ -65,7 +65,7 @@ unittest(
     ViewerBase
     OSG
     OSI
-    ${SUMO_LIBRARIES}
+    SUMO
     ${SOCK_LIB})
 
 # ############################### Creating executable (ScenarioEngineDll_test) #######################################
@@ -107,7 +107,7 @@ unittest(
     CommonMini
     ViewerBase
     OSG
-    ${SUMO_LIBRARIES}
+    SUMO
     ${SOCK_LIB})
 
 # ############################### Creating executable (FollowRouteController_test) ##############################################
@@ -121,5 +121,5 @@ unittest(
     CommonMini
     ViewerBase
     OSG
-    ${SUMO_LIBRARIES}
+    SUMO
     ${SOCK_LIB})
