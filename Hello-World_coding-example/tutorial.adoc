@@ -211,6 +211,41 @@ include::{src-local-root}/{file}[]
 
 *Note*: If you want M_PI, add on top (before includes): ``#define _USE_MATH_DEFINES``
 
+=== Collision detection
+
+There are two approaches to collision detection that fit different use cases:
+
+==== 1. By scenario
+
+Making use of the OpenSCENARIO https://www.asam.net/static_downloads/ASAM_OpenSCENARIO_V1.2.0_Model_Documentation/modelDocumentation/content/CollisionCondition.html[CollisionCondition] a collision can be detected and act upon. This can be useful for example if a scenario or test case should end in case of Ego vehicle gets involved in a collision.
+
+See example https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/Unittest/xosc/test-collision-detection.xosc[EnvironmentSimulator/Unittest/xosc/test-collision-detection.xosc]. To run it from command line:
+
+`./bin/esmini --window 60 60 800 400 --osc ./EnvironmentSimulator/Unittest/xosc/test-collision-detection.xosc`
+
+Control the Ego car with keyboard arrow keys. Press "up" to accelerate, and "left" or "right" to steer. See output in console when colliding with the two other cars.
+
+The interactive controller can be disabled. Then the Ego car will get the speed from the scenario. Run:
+
+`./bin/esmini --window 60 60 800 400 --osc ./EnvironmentSimulator/Unittest/xosc/test-collision-detection.xosc --disable_controllers`
+
+*Note:* In this example the action is empty, i.e. the event is triggered on collision but nothing really happens, other than logging the trigger result. In a real use case there could be an actual action, e.g. immediate stop by setting speed to zero in a single step. Another usage is to use the condition in a scenario stop trigger, e.g. to quit the test case as soon as collision happens.
+
+==== 2. By API
+
+In addition, or as alternative, to detect collisions via OpenSCENARIO condition esmini can check for collisions between any objects regardless of the scenario. This is a feature that must be enabled (`SE_CollisionDetection(true)`) since it's off by default to avoid unnecessary performance penalties.
+
+See code example:
+
+:file: EnvironmentSimulator/code-examples/hello_world/hw8_collision_detection.cpp
+.link:{src-remote-root}//{file}[{file}]
+[source,c++]
+----
+include::{src-local-root}/{file}[]
+----
+
+*Note:* It uses the same scenario file as the above (<<1. By scenario>>) but the complete "CollisionManeuver" could be removed since no CollisionCondition is needed for API based collision detection. Actually, if maneuver is present the console will show log info from both the condition and the API driven collision detections.
+
 === Driver model
 
 Using a simple vehicle model this example demonstrates how a driver model can interact with the scenario, once again using the ``ExternalController``.
