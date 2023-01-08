@@ -521,7 +521,7 @@ extern "C"
 
 		for (int i = 0; i < argc; i++)
 		{
-			AddArgument(argv[i]);
+			AddArgument(argv[i], false);
 		}
 
 		return InitScenario();

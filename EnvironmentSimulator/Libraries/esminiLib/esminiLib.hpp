@@ -344,7 +344,6 @@ extern "C"
 
 	/**
 		Initialize the scenario engine
-		@param oscFilename Path to the OpenSCENARIO file
 		@param argc Number of arguments
 		@param argv Arguments
 		@return 0 if successful, -1 if not

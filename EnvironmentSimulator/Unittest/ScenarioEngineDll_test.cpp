@@ -2697,9 +2697,9 @@ TEST(APITest, TestFetchImage)
 
 	const char* args[] =
 	{
-		"--osc ../../../resources/xosc/cut-in_simple.xosc",
-		"--window 60 60 800 400",
-		"--aa_mode 4",
+		"--osc", "../../../resources/xosc/cut-in_simple.xosc",
+		"--window", "60", "60", "800", "400",
+		"--aa_mode", "4",
 		"--headless"
 	};
 
@@ -2894,23 +2894,23 @@ TEST(ExternalControlTest, TestTimings)
 	float dt = 0.1f;
 	float ghost_speed;
 
-	const char* args[2][5] =
+	const char* args[2][10] =
 	{
 		{
-			"--osc ../../../EnvironmentSimulator/Unittest/xosc/timing_scenario0.xosc",
-			"--record sim.dat",
-			"--fixed_timestep 0.1",
-			//"--window 60 60 800 400",
-			"--csv_logger csv_log.csv",
-			"--osi_file gt.osi"
+			"--osc", "../../../EnvironmentSimulator/Unittest/xosc/timing_scenario0.xosc",
+			"--record", "sim.dat",
+			"--fixed_timestep", "0.1",
+			//"--window", "60", "60", "800", "400",
+			"--csv_logger", "csv_log.csv",
+			"--osi_file", "gt.osi"
 		},
 		{
-			"--osc ../../../EnvironmentSimulator/Unittest/xosc/timing_scenario_with_restarts.xosc",
-			"--record sim.dat",
-			"--fixed_timestep 0.1",
-			//"--window 60 60 800 400",
-			"--csv_logger csv_log.csv",
-			"--osi_file gt.osi"
+			"--osc", "../../../EnvironmentSimulator/Unittest/xosc/timing_scenario_with_restarts.xosc",
+			"--record", "sim.dat",
+			"--fixed_timestep", "0.1",
+			//"--window", "60", "60", "800", "400",
+			"--csv_logger", "csv_log.csv",
+			"--osi_file", "gt.osi"
 		}
 	};
 
@@ -3303,32 +3303,32 @@ TEST(ExternalControlTest, TestTimings)
 
 TEST(ReplayTest, TestMultiReplayDifferentTimeSteps)
 {
-	const char* args[2][2][3] =
+	const char* args[2][2][6] =
 	{
 		// First run with smaller timsteps in first scenario
 		{
 			{
-				"--osc ../../../resources/xosc/follow_ghost.xosc",
-				"--record multirep_test1.dat",
-				"--fixed_timestep 0.01"
+				"--osc", "../../../resources/xosc/follow_ghost.xosc",
+				"--record", "multirep_test1.dat",
+				"--fixed_timestep", "0.01"
 			},
 			{
-				"--osc ../../../resources/xosc/left-hand-traffic_using_road_rule.xosc",
-				"--record multirep_test2.dat",
-				"--fixed_timestep 0.1"
+				"--osc", "../../../resources/xosc/left-hand-traffic_using_road_rule.xosc",
+				"--record", "multirep_test2.dat",
+				"--fixed_timestep", "0.1"
 			}
 		},
 		// Then run with smaller timsteps in second scenario
 		{
 			{
-				"--osc ../../../resources/xosc/follow_ghost.xosc",
-				"--record multirep_test1.dat",
-				"--fixed_timestep 0.1"
+				"--osc", "../../../resources/xosc/follow_ghost.xosc",
+				"--record", "multirep_test1.dat",
+				"--fixed_timestep", "0.1"
 			},
 			{
-				"--osc ../../../resources/xosc/left-hand-traffic_using_road_rule.xosc",
-				"--record multirep_test2.dat",
-				"--fixed_timestep 0.01"
+				"--osc", "../../../resources/xosc/left-hand-traffic_using_road_rule.xosc",
+				"--record", "multirep_test2.dat",
+				"--fixed_timestep", "0.01"
 			}
 		}
 	};
