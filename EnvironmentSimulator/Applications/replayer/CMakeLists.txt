@@ -13,7 +13,6 @@ set(TARGET3
 
 include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_static_analysis.cmake)
 include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_iwyu.cmake)
-include(${CMAKE_SOURCE_DIR}/support/cmake/rule/system_link.cmake)
 
 # ############################### Setting target files ###############################################################
 
@@ -35,13 +34,6 @@ set(TARGET3_SOURCES
 
 # ############################### Creating executable for target1 (replayer) #########################################
 
-include_directories(
-    ${SCENARIO_ENGINE_PATH}/SourceFiles
-    ${SCENARIO_ENGINE_PATH}/OSCTypeDefs
-    ${VIEWER_BASE_PATH}
-    ${CONTROLLERS_PATH}
-    ${COMMON_MINI_PATH})
-
 if(USE_OSG)
 
     add_executable(
@@ -53,9 +45,18 @@ if(USE_OSG)
         ${TARGET1}
         PRIVATE project_options)
 
-    target_include_system_directories(
+    target_include_directories(
         ${TARGET1}
         PRIVATE
+        ${SCENARIO_ENGINE_PATH}/SourceFiles
+        ${SCENARIO_ENGINE_PATH}/OSCTypeDefs
+        ${VIEWER_BASE_PATH}
+        ${CONTROLLERS_PATH}
+        ${COMMON_MINI_PATH})
+
+    target_include_directories(
+        ${TARGET1}
+        SYSTEM PUBLIC
         ${ROAD_MANAGER_PATH}
         ${EXTERNALS_OSI_INCLUDES}
         ${EXTERNALS_PUGIXML_PATH}
@@ -64,22 +65,26 @@ if(USE_OSG)
 
     target_link_libraries(
         ${TARGET1}
-        PRIVATE RoadManager
-        PRIVATE ScenarioEngine
-        PRIVATE ViewerBase
-        PRIVATE CommonMini
-        PRIVATE ${TIME_LIB})
+        PRIVATE
+        RoadManager
+        ScenarioEngine
+        CommonMini
+        ${TIME_LIB}
+    )
 
-    target_link_system_libraries(
+if(USE_OSG)
+    target_link_libraries(
         ${TARGET1}
         PRIVATE
-        OSG)
+        ViewerBase
+        ${OSG_LIBRARIES})
+endif()
 
     if(USE_OSI)
-        target_link_system_libraries(
+        target_link_libraries(
             ${TARGET1}
             PRIVATE
-            OSI)
+            ${OSI_LIBRARIES})
     endif()
 
     disable_static_analysis(${TARGET1})
@@ -99,28 +104,33 @@ add_executable(
 
 target_link_libraries(
     ${TARGET2}
-    PRIVATE project_options)
+    PRIVATE
+    project_options
+    RoadManager
+    CommonMini
+    ${TIME_LIB})
 
-target_include_system_directories(
+target_include_directories(
     ${TARGET2}
     PRIVATE
+    ${COMMON_MINI_PATH}
+    ${SCENARIO_ENGINE_PATH}/SourceFiles
+    ${SCENARIO_ENGINE_PATH}/OSCTypeDefs)
+
+target_include_directories(
+    ${TARGET2}
+    SYSTEM PUBLIC
     ${ROAD_MANAGER_PATH}
     ${EXTERNALS_OSI_INCLUDES}
     ${EXTERNALS_PUGIXML_PATH}
     ${EXTERNALS_OSG_INCLUDES}
     ${EXTERNALS_DIRENT_INCLUDES})
 
-target_link_libraries(
-    ${TARGET2}
-    PRIVATE RoadManager
-    PRIVATE CommonMini
-    PRIVATE ${TIME_LIB})
-
 if(USE_OSI)
-    target_link_system_libraries(
+    target_link_libraries(
         ${TARGET2}
         PRIVATE
-        OSI)
+        ${OSI_LIBRARIES})
 endif()
 
 disable_static_analysis(${TARGET2})
@@ -138,28 +148,20 @@ if(USE_OSI)
         ${TARGET3}
         ${TARGET3_SOURCES})
 
-    target_link_libraries(
+    target_include_directories(
         ${TARGET3}
-        PRIVATE project_options)
-
-    target_include_system_directories(
-        ${TARGET3}
-        PRIVATE
+        SYSTEM PUBLIC
         ${ROAD_MANAGER_PATH}
         ${EXTERNALS_OSI_INCLUDES}
-        ${EXTERNALS_PUGIXML_PATH}
-        ${EXTERNALS_OSG_INCLUDES}
         ${EXTERNALS_DIRENT_INCLUDES})
 
     target_link_libraries(
         ${TARGET3}
-        PRIVATE ${TIME_LIB}
-        PRIVATE ${SOCK_LIB})
-
-    target_link_system_libraries(
-        ${TARGET3}
         PRIVATE
-        OSI)
+        project_options
+        ${TIME_LIB}
+        ${SOCK_LIB}
+        ${OSI_LIBRARIES})
 
     disable_static_analysis(${TARGET3})
     disable_iwyu(${TARGET3})

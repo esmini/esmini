@@ -7,7 +7,6 @@ set(TARGET
 
 include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_static_analysis.cmake)
 include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_iwyu.cmake)
-include(${CMAKE_SOURCE_DIR}/support/cmake/rule/system_link.cmake)
 include(${CMAKE_SOURCE_DIR}/support/cmake/rule/enable_fpic.cmake)
 
 if(USE_OSG)
@@ -25,26 +24,25 @@ set(INCLUDES
 
 # ############################### Creating library ###################################################################
 
-include_directories(
-    ${SCENARIO_ENGINE_PATH}/SourceFiles
-    ${SCENARIO_ENGINE_PATH}/OSCTypeDefs
-    ${COMMON_MINI_PATH}
-    ${VIEWER_BASE_PATH}
-    ${CONTROLLERS_PATH})
-
 add_library(
     ${TARGET}
     STATIC
     ${SOURCES}
     ${INCLUDES})
 
-target_link_libraries(
-    ${TARGET}
-    PRIVATE project_options)
-
-target_include_system_directories(
+target_include_directories(
     ${TARGET}
     PRIVATE
+    project_options
+    ${SCENARIO_ENGINE_PATH}/SourceFiles
+    ${SCENARIO_ENGINE_PATH}/OSCTypeDefs
+    ${COMMON_MINI_PATH}
+    ${VIEWER_BASE_PATH}
+    ${CONTROLLERS_PATH})
+
+target_include_directories(
+    ${TARGET}
+    SYSTEM PUBLIC
     ${ROAD_MANAGER_PATH}
     ${EXTERNALS_OSG_INCLUDES}
     ${EXTERNALS_OSI_INCLUDES}

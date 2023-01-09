@@ -95,7 +95,7 @@ macro(set_sumo_libs)
             debug ${EXTERNALS_SUMO_LIBRARY_PATH}/libforeign_tcpipd.a
             debug ${EXTERNALS_SUMO_LIBRARY_PATH}/libmicrosim_cfmodelsd.a
             debug ${EXTERNALS_SUMO_LIBRARY_PATH}/libzlibstaticd.a
-            debug ${EXTERNALS_SUMO_LIBRARY_PATH}/libxerces-c_3D.a)            
+            debug ${EXTERNALS_SUMO_LIBRARY_PATH}/libxerces-c_3D.a)
     elseif(MSVC)
         set(SUMO_LIBRARIES
             optimized ${EXTERNALS_SUMO_LIBRARY_PATH}/libsumostatic.lib
@@ -157,24 +157,4 @@ macro(set_sumo_libs)
             debug ${EXTERNALS_SUMO_LIBRARY_PATH}/zlibstaticd.lib
             debug ${EXTERNALS_SUMO_LIBRARY_PATH}/xerces-c_3D.lib)
     endif()
-endmacro()
-
-# ############################### Creating sumo interface library ######################################################
-
-macro(add_sumo_library)
-
-    set_sumo_libs()
-
-    add_library(
-        SUMO
-        INTERFACE)
-
-    target_include_directories(
-        SUMO 
-        INTERFACE ${EXTERNALS_SUMO_INCLUDES})
-
-    target_link_libraries(
-        SUMO 
-        INTERFACE ${SUMO_LIBRARIES})
-
 endmacro()

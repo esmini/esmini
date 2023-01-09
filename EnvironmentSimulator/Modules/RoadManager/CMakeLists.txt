@@ -7,7 +7,6 @@ set(TARGET
 
 include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_static_analysis.cmake)
 include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_iwyu.cmake)
-include(${CMAKE_SOURCE_DIR}/support/cmake/rule/system_link.cmake)
 include(${CMAKE_SOURCE_DIR}/support/cmake/rule/enable_fpic.cmake)
 
 if(MSVC)
@@ -35,8 +34,6 @@ set(INCLUDES
 
 # ############################### Creating library ###################################################################
 
-include_directories(${COMMON_MINI_PATH})
-
 add_library(
     ${TARGET}
     STATIC
@@ -50,9 +47,14 @@ target_link_libraries(
             # project_options
 )
 
-target_include_system_directories(
+target_include_directories(
     ${TARGET}
     PRIVATE
+    ${COMMON_MINI_PATH})
+
+target_include_directories(
+    ${TARGET}
+    SYSTEM PUBLIC
     ${EXTERNALS_PUGIXML_PATH}
     ${ROAD_MANAGER_PATH})
 

@@ -7,7 +7,6 @@ set(TARGET
 
 include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_static_analysis.cmake)
 include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_iwyu.cmake)
-include(${CMAKE_SOURCE_DIR}/support/cmake/rule/system_link.cmake)
 include(${CMAKE_SOURCE_DIR}/support/cmake/rule/enable_fpic.cmake)
 
 # ############################### Setting target files ###############################################################
@@ -52,7 +51,7 @@ target_link_libraries(
     ${TARGET}
     PRIVATE project_options)
 
-target_include_system_directories(
+target_include_directories(
     ${TARGET}
     PRIVATE
     ${ROAD_MANAGER_PATH}

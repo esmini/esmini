@@ -46,22 +46,3 @@ macro(set_osi_libs)
     endif()
 endmacro()
 
-# ############################### Creating osi interface library ######################################################
-
-macro(add_osi_library)
-
-    set_osi_libs()
-
-    add_library(
-        OSI
-        INTERFACE)
-
-    target_include_directories(
-        OSI
-        INTERFACE ${EXTERNALS_OSI_INCLUDES})
-
-    target_link_libraries(
-        OSI
-        INTERFACE ${OSI_LIBRARIES})
-
-endmacro()

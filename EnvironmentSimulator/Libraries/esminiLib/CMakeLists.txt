@@ -7,7 +7,6 @@ set(TARGET
 
 include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_static_analysis.cmake)
 include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_iwyu.cmake)
-include(${CMAKE_SOURCE_DIR}/support/cmake/rule/system_link.cmake)
 
 add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 
@@ -23,14 +22,6 @@ set(INCLUDES
 
 # ############################### Creating library ###################################################################
 
-include_directories(
-    ${SCENARIO_ENGINE_PATH}/SourceFiles
-    ${SCENARIO_ENGINE_PATH}/OSCTypeDefs
-    ${VIEWER_BASE_PATH}
-    ${PLAYER_BASE_PATH}
-    ${COMMON_MINI_PATH}
-    ${CONTROLLERS_PATH})
-
 add_library(
     ${TARGET}
     SHARED
@@ -41,46 +32,54 @@ target_link_libraries(
     ${TARGET}
     PRIVATE project_options)
 
-target_include_system_directories(
+target_include_directories(
     ${TARGET}
     PRIVATE
+    ${SCENARIO_ENGINE_PATH}/SourceFiles
+    ${SCENARIO_ENGINE_PATH}/OSCTypeDefs
+    ${VIEWER_BASE_PATH}
+    ${PLAYER_BASE_PATH}
+    ${COMMON_MINI_PATH}
+    ${CONTROLLERS_PATH})
+
+target_include_directories(
+    ${TARGET}
+    SYSTEM PUBLIC
     ${ROAD_MANAGER_PATH}
     ${EXTERNALS_OSI_INCLUDES}
     ${EXTERNALS_PUGIXML_PATH})
 
 target_link_libraries(
     ${TARGET}
-    PRIVATE PlayerBase
-    PRIVATE ScenarioEngine
-    PRIVATE CommonMini
-    PRIVATE Controllers
-    PRIVATE RoadManager
-    PRIVATE ${TIME_LIB}
-    PRIVATE ${SOCK_LIB})
+    PRIVATE
+    PlayerBase
+    ScenarioEngine
+    CommonMini
+    Controllers
+    RoadManager
+    ${TIME_LIB}
+    ${SOCK_LIB})
 
 if(USE_OSG)
     target_link_libraries(
         ${TARGET}
-        PRIVATE ViewerBase)
-
-    target_link_system_libraries(
-        ${TARGET}
         PRIVATE
-        OSG)
+        ViewerBase
+        ${OSG_LIBRARIES})
 endif()
 
 if(USE_SUMO)
-    target_link_system_libraries(
+    target_link_libraries(
         ${TARGET}
         PRIVATE
-        SUMO)
+        ${SUMO_LIBRARIES})
 endif()
 
 if(USE_OSI)
-    target_link_system_libraries(
+    target_link_libraries(
         ${TARGET}
         PRIVATE
-        OSI)
+        ${OSI_LIBRARIES})
 endif()
 
 disable_static_analysis(${TARGET})

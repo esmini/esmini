@@ -2,7 +2,6 @@
 
 include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_static_analysis.cmake)
 include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_iwyu.cmake)
-include(${CMAKE_SOURCE_DIR}/support/cmake/rule/system_link.cmake)
 
 add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 
@@ -10,20 +9,11 @@ add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 
 include(${CMAKE_SOURCE_DIR}/support/cmake/common/unittest.cmake)
 
-# ############################### Adding includes ####################################################################
-
-include_directories(
-    ${SCENARIO_ENGINE_PATH}/SourceFiles
-    ${SCENARIO_ENGINE_PATH}/OSCTypeDefs
-    ${ESMINI_LIB_PATH}
-    ${ESMINI_RM_LIB_PATH}
-    ${COMMON_MINI_PATH}
-    ${VIEWER_BASE_PATH}
-    ${PLAYER_BASE_PATH}
-    ${CONTROLLERS_PATH}
-    ${REPLAYER_PATH})
-
 # ############################### Creating executable (OperatingSystem_test) #########################################
+
+if(USE_OSG)
+    set(VIEWER_LIBS_FOR_TEST ViewerBase)
+endif()
 
 unittest(
     OperatingSystem_test
@@ -46,10 +36,10 @@ unittest(
     Controllers
     RoadManager
     CommonMini
-    ViewerBase
-    OSG
-    OSI
-    SUMO
+    ${VIEWER_LIBS_FOR_TEST}
+    ${OSG_LIBRARIES}
+    ${OSI_LIBRARIES}
+    ${SUMO_LIBRARIES}
     ${SOCK_LIB})
 
 # ############################### Creating executable (ScenarioPlayer_test) ##########################################
@@ -62,10 +52,10 @@ unittest(
     Controllers
     RoadManager
     CommonMini
-    ViewerBase
-    OSG
-    OSI
-    SUMO
+    ${VIEWER_LIBS_FOR_TEST}
+    ${OSG_LIBRARIES}
+    ${OSI_LIBRARIES}
+    ${SUMO_LIBRARIES}
     ${SOCK_LIB})
 
 # ############################### Creating executable (ScenarioEngineDll_test) #######################################
@@ -79,7 +69,7 @@ unittest(
     "${ScenarioEngineDll_sources}"
     esminiLib
     CommonMini
-    OSI)
+    ${OSI_LIBRARIES})
 
 # ############################### Creating executable (RoadManagerDll_test) ##########################################
 
@@ -105,9 +95,9 @@ unittest(
     Controllers
     RoadManager
     CommonMini
-    ViewerBase
-    OSG
-    SUMO
+    ${VIEWER_LIBS_FOR_TEST}
+    ${OSG_LIBRARIES}
+    ${SUMO_LIBRARIES}
     ${SOCK_LIB})
 
 # ############################### Creating executable (FollowRouteController_test) ##############################################
@@ -118,8 +108,7 @@ unittest(
     ScenarioEngine
     Controllers
     RoadManager
-    CommonMini
-    ViewerBase
-    OSG
-    SUMO
+    ${VIEWER_LIBS_FOR_TEST}
+    ${OSG_LIBRARIES}
+    ${SUMO_LIBRARIES}
     ${SOCK_LIB})

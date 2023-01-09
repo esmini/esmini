@@ -32,22 +32,3 @@ macro(set_gtest_libs)
 
 endmacro()
 
-# ############################### Creating gtest interface library #####################################################
-
-macro(add_gtest_library)
-
-    set_gtest_libs()
-
-    add_library(
-        GTEST
-        INTERFACE)
-
-    target_include_directories(
-        GTEST
-        INTERFACE ${EXTERNALS_GOOGLETEST_INCLUDES})
-
-    target_link_libraries(
-        GTEST
-        INTERFACE ${GTEST_LIBRARIES})
-
-endmacro()

@@ -58,9 +58,9 @@ std::map<ControllerALKS_R157SM::ReferenceDriver::Phase, std::string> ControllerA
 
 Controller* scenarioengine::InstantiateControllerALKS_R157SM(void* args)
 {
-	Controller::InitArgs* initArgs = static_cast<Controller::InitArgs*>(args);
+    Controller::InitArgs* initArgs = static_cast<Controller::InitArgs*>(args);
 
-	return new ControllerALKS_R157SM(initArgs);
+    return new ControllerALKS_R157SM(initArgs);
 }
 
 ControllerALKS_R157SM::ControllerALKS_R157SM(InitArgs* args) : Controller(args), model_(0), entities_(0)
@@ -187,7 +187,7 @@ ControllerALKS_R157SM::~ControllerALKS_R157SM()
 
 void ControllerALKS_R157SM::Init()
 {
-	Controller::Init();
+    Controller::Init();
 }
 
 void ControllerALKS_R157SM::Step(double timeStep)
@@ -247,7 +247,7 @@ void ControllerALKS_R157SM::SetScenarioEngine(ScenarioEngine* scenario_engine)
 void ControllerALKS_R157SM::ReportKeyEvent(int key, bool down)
 {
     (void)key;
-	(void)down;
+    (void)down;
 }
 
 int ControllerALKS_R157SM::Model::Detect()
@@ -274,8 +274,8 @@ int ControllerALKS_R157SM::Model::Detect()
             // Check whether it is the closest of potential threats
             if (tmp_obj_info.dist_long < candidate_obj_info.dist_long || // closest so far
                 // OR object in own lane is detected beyond a cutting-out one and with potentially less ttc
-                tmp_obj_info.dLaneId == 0 && candidate_obj_info.obj->GetType() == Object::Type::VEHICLE &&
-                candidate_obj_info.action == ScenarioType::CutOut)
+                (tmp_obj_info.dLaneId == 0 && candidate_obj_info.obj->GetType() == Object::Type::VEHICLE &&
+                    candidate_obj_info.action == ScenarioType::CutOut))
             {
                 if (tmp_obj_info.obj->GetType() == Object::Type::VEHICLE &&
                     tmp_obj_info.action == ScenarioType::CutOut &&
@@ -313,7 +313,7 @@ int ControllerALKS_R157SM::Model::Detect()
 
     if (candidate_obj_info.obj && candidate_obj_info.action != ScenarioType::None &&
         (candidate_obj_info.obj != object_in_focus_.obj ||
-         candidate_obj_info.action != object_in_focus_.action))
+            candidate_obj_info.action != object_in_focus_.action))
     {
         // New object or scenario detected, register scenario type
         SetScenarioType(candidate_obj_info.action);
@@ -356,9 +356,9 @@ int ControllerALKS_R157SM::Model::Process(ObjectInfo& info)
             diff.dLaneId = -1;
         }
 
-       if (diff.ds > SMALL_NUMBER &&  // consider only entities in front of ego
+        if (diff.ds > SMALL_NUMBER &&  // consider only entities in front of ego
             (info.obj->GetType() == Object::Type::PEDESTRIAN ||  // consider pedestrians regardless of lane
-                diff.dLaneId > -2 && diff.dLaneId < 2))  // consider other entities in own or adjecent lanes
+                (diff.dLaneId > -2 && diff.dLaneId < 2)))  // consider other entities in own or adjecent lanes
         {
             info.dLaneId = diff.dLaneId;
 
@@ -404,7 +404,7 @@ double ControllerALKS_R157SM::Model::Step(double timeStep)
     dt_ = timeStep;
 
     if (object_in_focus_.obj && GetModelType() == ModelType::ReferenceDriver &&
-        ((ReferenceDriver*)this)->GetPhase() != ControllerALKS_R157SM::ReferenceDriver::Phase::INACTIVE &&
+        (reinterpret_cast<ReferenceDriver*>(this))->GetPhase() != ControllerALKS_R157SM::ReferenceDriver::Phase::INACTIVE &&
         GetFullStop())
     {
         // reference driver ongoing action in combination with FullStop mode
@@ -449,11 +449,12 @@ void ControllerALKS_R157SM::Model::ResetReactionTime()
 
 
 ControllerALKS_R157SM::Model::Model(ModelType type, double reaction_time,
-    double max_dec_, double max_range_) : type_(type), rt_(reaction_time), entities_(0),
-    rt_counter_(0.0), max_dec_(max_dec_), max_range_(max_range_), max_acc_(3.0), max_acc_lat_(1.0), veh_(nullptr),
-    set_speed_(0.0), log_level_(1),model_mode_(ModelMode::NO_TARGET), acc_(0.0), scenario_type_(ScenarioType::None),
-    cruise_comfort_acc_(2.0), cut_in_detected_timestamp_(0.0), cruise_comfort_dec_(2.0), cruise_max_acc_(3.0),
-    cruise_max_dec_(4.0), cruise_(true), full_stop_(false), always_trig_on_scenario_(false)
+    double max_dec, double max_range) : type_(type), veh_(nullptr), entities_(0), cut_in_detected_timestamp_(0.0), rt_(reaction_time),
+    rt_counter_(0.0), max_dec_(max_dec), max_range_(max_range), max_acc_(3.0), max_acc_lat_(1.0), set_speed_(0.0), dt_(0.01), acc_(0.0),
+    cruise_comfort_acc_(2.0), cruise_comfort_dec_(2.0), cruise_max_acc_(3.0), cruise_max_dec_(4.0),
+    model_mode_(ModelMode::NO_TARGET), scenario_type_(ScenarioType::None), log_level_(1),
+    cruise_(true), full_stop_(false), always_trig_on_scenario_(false),
+    scenario_engine_(nullptr)
 {
     ResetObjectInFocus();
 }
@@ -685,7 +686,7 @@ ControllerALKS_R157SM::ReferenceDriver::~ReferenceDriver()
     }
 }
 
-void ControllerALKS_R157SM::ReferenceDriver::UpdateAEB(Vehicle* ego, ObjectInfo* info, double dt)
+void ControllerALKS_R157SM::ReferenceDriver::UpdateAEB(Vehicle* ego, ObjectInfo* info)
 {
     if (!aeb_.active_ && info->ttc < aeb_.ttc_critical_aeb_ &&
         ego->OverlappingFront(info->obj, overlap_tolerance_) > Object::OverlapType::PART)  // object fully inside or covering ego front extension
@@ -740,12 +741,12 @@ void ControllerALKS_R157SM::ReferenceDriver::WanderingTrigger::Update(ObjectInfo
 
         threshold_ = model_->wandering_threshold_;
 
-        bool mc = obj_->GetType() == Object::Type::VEHICLE && ((Vehicle*)obj_)->category_ == Vehicle::Category::MOTORBIKE;
+        bool mc = obj_->GetType() == Object::Type::VEHICLE && (reinterpret_cast<Vehicle*>(obj_))->category_ == Vehicle::Category::MOTORBIKE;
 
-        if (obj_->pos_.GetT() > model_->veh_->pos_.GetT() &&  // target is to the left of Ego, moving along negative T
-            obj_->pos_.GetOffset() > 0 ||                     // target is to the left (other side) of lane center
-            obj_->pos_.GetT() < model_->veh_->pos_.GetT() &&  // target is to the right of Ego, moving along positive T
-            obj_->pos_.GetOffset() < 0)                       // target is to the right (other side) of lane center
+        if ((obj_->pos_.GetT() > model_->veh_->pos_.GetT() &&  // target is to the left of Ego, moving along negative T
+            obj_->pos_.GetOffset() > 0) ||                    // target is to the left (other side) of lane center
+            (obj_->pos_.GetT() < model_->veh_->pos_.GetT() &&  // target is to the right of Ego, moving along positive T
+                obj_->pos_.GetOffset() < 0))                       // target is to the right (other side) of lane center
         {
             // add current lane offset to end up at wandering_threshold
             threshold_ += abs(obj_->pos_.GetOffset());
@@ -816,10 +817,10 @@ bool ControllerALKS_R157SM::ReferenceDriver::CheckSafety(ObjectInfo* info)
     }
     else
     {
-        if (lateral_dist_trigger_ &&
-            lateral_dist_trigger_->Evaluate() == true ||
-            !lateral_dist_trigger_ &&
-            wandering_trigger_->Evaluate() == true) // check distance at the side facing ego
+        if ((lateral_dist_trigger_ &&
+            lateral_dist_trigger_->Evaluate() == true) ||
+            (!lateral_dist_trigger_ &&
+                wandering_trigger_->Evaluate() == true)) // check distance at the side facing ego
         {
             info->action = ScenarioType::CutIn;
             return false;
@@ -853,7 +854,7 @@ bool ControllerALKS_R157SM::ReferenceDriver::CheckPerceptionCutIn()
                     lateral_dist_trigger_->GetDistance(), lateral_dist_trigger_->threshold_);
                 trig = true;
             }
-            else if(wandering_trigger_ && wandering_trigger_->Evaluate() == true)
+            else if (wandering_trigger_ && wandering_trigger_->Evaluate() == true)
             {
                 R157_LOG(2, "Trig perception on lateral wandering threshold: %.3f (>%.3f)",
                     abs(wandering_trigger_->obj_->pos_.GetT() - wandering_trigger_->t0_), wandering_trigger_->threshold_);
@@ -1152,15 +1153,15 @@ bool ControllerALKS_R157SM::ReferenceDriver::CheckCritical()
         Reset();  // lost sight of object
         SetModelMode(ModelMode::NO_TARGET);
     }
-    else if (veh_->GetSpeed() > SMALL_NUMBER &&
-            object_in_focus_.dist_long > 0 ||
-            GetFullStop()  // fulfill the scenario even if ego passed the perceived vehicle
+    else if ((veh_->GetSpeed() > SMALL_NUMBER &&
+        object_in_focus_.dist_long > 0) ||
+        GetFullStop()  // fulfill the scenario even if ego passed the perceived vehicle
         )
     {
         CheckCriticalCondition();
     }
 
-    UpdateAEB(veh_, &object_in_focus_, dt_);
+    UpdateAEB(veh_, &object_in_focus_);
 
     return GetModelMode() == ModelMode::CRITICAL || aeb_.active_;
 }

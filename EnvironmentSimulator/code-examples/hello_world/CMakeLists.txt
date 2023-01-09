@@ -7,7 +7,6 @@ set(TARGET
 
 include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_static_analysis.cmake)
 include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_iwyu.cmake)
-include(${CMAKE_SOURCE_DIR}/support/cmake/rule/system_link.cmake)
 
 # ############################### Setting target files ###############################################################
 
@@ -18,10 +17,6 @@ file(
     "*.cpp")
 
 # ############################### Creating executable ################################################################
-
-include_directories(
-    ${ESMINI_LIB_PATH}
-    ${COMMON_MINI_PATH})
 
 foreach(
     file_path
@@ -45,10 +40,13 @@ foreach(
         ${module_name}
         PRIVATE project_options)
 
-    target_include_system_directories(
+    target_include_directories(
         ${module_name}
         PRIVATE
-        ${EXTERNALS_PUGIXML_PATH})
+        ${EXTERNALS_PUGIXML_PATH}
+        SYSTEM PUBLIC
+        ${ESMINI_LIB_PATH}
+        ${COMMON_MINI_PATH})
 
     target_link_libraries(
         ${module_name}

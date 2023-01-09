@@ -5,114 +5,46 @@ include_guard()
 macro(
     unittest
     TARGET
-    FILES
-    LIBRARIES)
+    FILES)
 
     add_executable(
         ${TARGET}
         ${FILES})
 
+    set(LIBRARIES ${ARGN})  # any number of optional libraries
+
     target_link_libraries(
         ${TARGET}
         PRIVATE project_options)
 
-    foreach(
-        library
-        ${LIBRARIES}
-        ${ARGN})
-
-        target_include_system_directories(
-            ${TARGET}
-            PRIVATE
-            ${ROAD_MANAGER_PATH}
-            ${EXTERNALS_GOOGLETEST_INCLUDES}
-            ${EXTERNALS_OSI_INCLUDES}
-            ${EXTERNALS_OSG_INCLUDES}
-            ${EXTERNALS_DIRENT_INCLUDES}
-            ${EXTERNALS_PUGIXML_PATH})
-
-        if(${library}
-           STREQUAL
-           "OSG")
-
-            if(USE_OSG)
-
-                target_link_system_libraries(
-                    ${TARGET}
-                    PRIVATE
-                    ${library})
-
-            endif()
-
-        elseif(
-            ${library}
-            STREQUAL
-            "OSI")
-
-            if(${TARGET}
-               STREQUAL
-               "ScenarioEngineDll_test")
-
-                target_link_system_libraries(
-                    ${TARGET}
-                    PRIVATE
-                    ${library})
-
-            else()
-
-                if(USE_OSI)
-
-                    target_link_system_libraries(
-                        ${TARGET}
-                        PRIVATE
-                        ${library})
-
-                endif()
-
-            endif()
-
-        elseif(
-            ${library}
-            MATCHES
-            ".*externals/sumo")
-
-            if(USE_SUMO)
-
-                target_link_system_libraries(
-                    ${TARGET}
-                    PRIVATE
-                    ${library})
-
-            endif()
-
-        else()
-
-            if(${library}
-               STREQUAL
-               "ViewerBase")
-
-                if(USE_OSG)
-                    target_link_libraries(
-                        ${TARGET}
-                        PRIVATE ${library})
-                endif()
-
-            else()
-
-                target_link_libraries(
-                    ${TARGET}
-                    PRIVATE ${library})
-
-            endif()
-
-        endif()
-
-    endforeach()
-
-    target_link_system_libraries(
+    target_include_directories(
         ${TARGET}
         PRIVATE
-        GTEST)
+        ${SCENARIO_ENGINE_PATH}/SourceFiles
+        ${SCENARIO_ENGINE_PATH}/OSCTypeDefs
+        ${ESMINI_LIB_PATH}
+        ${ESMINI_RM_LIB_PATH}
+        ${COMMON_MINI_PATH}
+        ${VIEWER_BASE_PATH}
+        ${PLAYER_BASE_PATH}
+        ${CONTROLLERS_PATH}
+        ${REPLAYER_PATH})
+
+    target_include_directories(
+        ${TARGET}
+        SYSTEM PUBLIC
+        ${ROAD_MANAGER_PATH}
+        ${EXTERNALS_GOOGLETEST_INCLUDES}
+        ${EXTERNALS_OSI_INCLUDES}
+        ${EXTERNALS_OSG_INCLUDES}
+        ${EXTERNALS_DIRENT_INCLUDES}
+        ${EXTERNALS_PUGIXML_PATH})
+
+    target_link_libraries(
+        ${TARGET}
+        PRIVATE
+        ${LIBRARIES}
+        ${GTEST_LIBRARIES})
 
     disable_static_analysis(${TARGET})
     disable_iwyu(${TARGET})

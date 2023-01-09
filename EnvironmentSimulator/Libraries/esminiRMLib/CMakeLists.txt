@@ -7,7 +7,6 @@ set(TARGET
 
 include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_static_analysis.cmake)
 include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_iwyu.cmake)
-include(${CMAKE_SOURCE_DIR}/support/cmake/rule/system_link.cmake)
 
 add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 
@@ -21,11 +20,6 @@ set(INCLUDES
 
 # ############################### Creating library ###################################################################
 
-include_directories(
-    ${SCENARIO_ENGINE_PATH}/SourceFiles
-    ${SCENARIO_ENGINE_PATH}/OSCTypeDefs
-    ${COMMON_MINI_PATH})
-
 add_library(
     ${TARGET}
     SHARED
@@ -36,9 +30,16 @@ target_link_libraries(
     ${TARGET}
     PRIVATE project_options)
 
-target_include_system_directories(
+target_include_directories(
     ${TARGET}
     PRIVATE
+    ${SCENARIO_ENGINE_PATH}/SourceFiles
+    ${SCENARIO_ENGINE_PATH}/OSCTypeDefs
+    ${COMMON_MINI_PATH})
+
+target_include_directories(
+    ${TARGET}
+    SYSTEM PUBLIC
     ${ROAD_MANAGER_PATH}
     ${EXTERNALS_PUGIXML_PATH})
 

@@ -51,9 +51,9 @@ namespace scenarioengine
 {
 
 
-	class ControllerALKS_R157SM : public Controller
-	{
-	public:
+    class ControllerALKS_R157SM : public Controller
+    {
+    public:
 
         enum class ScenarioType {
             None,
@@ -83,7 +83,7 @@ namespace scenarioengine
         public:
 
             struct ObjectInfo {
-                Object* obj  = 0;                         // pointer reference to the detected object
+                Object* obj = 0;                          // pointer reference to the detected object
                 Object* cut_out_vehicle = 0;              // pointer reference to cut-out vehicle revealing obj above
                 double dist_long = LARGE_NUMBER;          // longitudinal distance (freespace) to object in focus
                 double dist_lat = LARGE_NUMBER;           // lateral distance (freespace) to object in focus
@@ -279,7 +279,9 @@ namespace scenarioengine
             {
             public:
                 LateralDistTrigger(ReferenceDriver* ref_driver) :
-                    model_(ref_driver), threshold_(0.0), name_("LateralTrigger") { Reset(); }
+                    model_(ref_driver), threshold_(0.0), name_("LateralTrigger") {
+                    Reset();
+                }
 
                 virtual ~LateralDistTrigger() = default;
 
@@ -297,8 +299,8 @@ namespace scenarioengine
                 int GetLogLevel() { return model_ ? model_->GetLogLevel() : 0; }
                 void SetName(std::string name) { name_ = name; }
 
-                double threshold_;
                 ReferenceDriver* model_;
+                double threshold_;
                 bool active_;
                 Object* obj_;
                 double t0_;  // road coordinate t value at detection time
@@ -334,21 +336,21 @@ namespace scenarioengine
                 SetPhase(Phase::INACTIVE);
                 SetScenarioType(ScenarioType::None);
             }
-            void UpdateAEB(Vehicle* ego, ObjectInfo* info, double dt);
+            void UpdateAEB(Vehicle* ego, ObjectInfo* info);
 
+            double c_lane_offset_;
             double min_jerk_;
             double release_deceleration_;  // deceleration when not stepping on the accelerator pedal(I think)
             double critical_ttc_;
             double critical_thw_;
-            double timer_;
             Phase phase_;
+            double timer_;
             CutInPerceptionDelayMode cut_in_perception_delay_mode_;
-            double pedestrian_risk_eval_time_;
-            double perception_time_;
             double perception_dist_;
+            double perception_time_;
             double wandering_threshold_;
             double overlap_tolerance_;
-            double c_lane_offset_;
+            double pedestrian_risk_eval_time_;
             double perception_t_; // t-value when target has been perceived
             AEB aeb_;
             LateralDistTrigger* lateral_dist_trigger_;
@@ -446,24 +448,24 @@ namespace scenarioengine
             double pfs_;
         };
 
-		Model* model_;
+        Model* model_;
         Entities* entities_;
 
         ControllerALKS_R157SM(InitArgs* args);
         ~ControllerALKS_R157SM();
 
-		static const char* GetTypeNameStatic() { return CONTROLLER_ALKS_R157SM_TYPE_NAME; }
-		virtual const char* GetTypeName() { return GetTypeNameStatic(); }
-		static int GetTypeStatic() { return CONTROLLER_ALKS_R157SM; }
-		virtual int GetType() { return GetTypeStatic(); }
+        static const char* GetTypeNameStatic() { return CONTROLLER_ALKS_R157SM_TYPE_NAME; }
+        virtual const char* GetTypeName() { return GetTypeNameStatic(); }
+        static int GetTypeStatic() { return CONTROLLER_ALKS_R157SM; }
+        virtual int GetType() { return GetTypeStatic(); }
 
-		void Init();
-		void Step(double timeStep);
+        void Init();
+        void Step(double timeStep);
         void Assign(Object* object);
-		void Activate(ControlDomains domainMask);
-		void ReportKeyEvent(int key, bool down);
+        void Activate(ControlDomains domainMask);
+        void ReportKeyEvent(int key, bool down);
         void SetScenarioEngine(ScenarioEngine* scenario_engine) override;
-	};
+    };
 
-	Controller* InstantiateControllerALKS_R157SM(void* args);
+    Controller* InstantiateControllerALKS_R157SM(void* args);
 }

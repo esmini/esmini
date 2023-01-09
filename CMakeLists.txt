@@ -200,15 +200,25 @@ download(
 
 # ############################### Loading external packages ##########################################################
 
-include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/external/gtest.cmake)
-include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/external/osg.cmake)
-include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/external/osi.cmake)
-include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/external/sumo.cmake)
+if(USE_GTEST)
+    include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/external/gtest.cmake)
+    set_gtest_libs()
+endif()
 
-add_gtest_library()
-add_osg_library()
-add_osi_library()
-add_sumo_library()
+if(USE_OSG)
+    include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/external/osg.cmake)
+    set_osg_libs()
+endif()
+
+if(USE_OSI)
+    include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/external/osi.cmake)
+    set_osi_libs()
+endif()
+
+if(USE_SUMO)
+    include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/external/sumo.cmake)
+    set_sumo_libs()
+endif()
 
 # ############################### Compiling targets ##################################################################
 

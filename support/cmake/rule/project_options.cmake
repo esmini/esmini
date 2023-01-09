@@ -37,8 +37,6 @@ if(ENABLE_COLORED_DIAGNOSTICS)
     endif()
 endif()
 
-include(${CMAKE_SOURCE_DIR}/support/cmake/rule/system_link.cmake)
-
 include(${CMAKE_CURRENT_LIST_DIR}/standards.cmake)
 set_standards()
 
