@@ -303,15 +303,15 @@ void PolyLine::Update()
 	Redraw();
 }
 
-void PolyLine::SetNodeMaskLines(int nodemask)
+void PolyLine::SetNodeMaskLines(unsigned int nodemask)
 {
-	pline_geom_->setNodeMask(static_cast<unsigned int>(nodemask));
+	pline_geom_->setNodeMask(nodemask);
 }
 
-void PolyLine::SetNodeMaskDots(int nodemask)
+void PolyLine::SetNodeMaskDots(unsigned int nodemask)
 {
-	if (dot3D_geode_) dot3D_geode_->setNodeMask(static_cast<unsigned int>(nodemask));
-	if (dots_geom_) dots_geom_->setNodeMask(static_cast<unsigned int>(nodemask));
+	if (dot3D_geode_) dot3D_geode_->setNodeMask(nodemask);
+	if (dots_geom_) dots_geom_->setNodeMask(nodemask);
 }
 
 void PolyLine::SetPoints(osg::ref_ptr<osg::Vec3Array> points)
@@ -796,11 +796,11 @@ OSIDetectedCar::OSIDetectedCar(const osg::Vec3 point, double h, double w, double
 	osg::Material* material = new osg::Material();
 
 	// Set color of vehicle based on its index
-	double* color = reinterpret_cast<double*>(&color_green);
-	double b = 1.5;  // brighness
+	float* color = color_green;
+	float b = 1.5;  // brighness
 
-	material->setDiffuse(osg::Material::FRONT, osg::Vec4(static_cast<float>(b * color[0]), static_cast<float>(b * color[1]), static_cast<float>(b * color[2]), 1.0f));
-	material->setAmbient(osg::Material::FRONT, osg::Vec4(static_cast<float>(b * color[0]), static_cast<float>(b * color[1]), static_cast<float>(b * color[2]), 1.0f));
+	material->setAmbient(osg::Material::FRONT, osg::Vec4(b * color[0], b * color[1], b * color[2], 1.0f));
+	material->setDiffuse(osg::Material::FRONT, osg::Vec4(b * color[0], b * color[1], b * color[2], 1.0f));
 
 	// Set dimensions of the entity "box"
 	osi_detection_tx_->setScale(bb_dimensions_);

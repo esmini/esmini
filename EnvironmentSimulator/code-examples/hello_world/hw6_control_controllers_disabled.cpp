@@ -1,6 +1,6 @@
 #include "esminiLib.hpp"
 
-int main(int argc, char* argv[])
+int main(int, char**)
 {
 	SE_Init("../resources/xosc/cut-in_interactive.xosc", 1, 1, 0, 0);
 

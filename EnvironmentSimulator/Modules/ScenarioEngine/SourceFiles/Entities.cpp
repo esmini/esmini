@@ -248,7 +248,7 @@ void Object::SetJunctionSelectorAngle(double angle)
 
 void Object::SetJunctionSelectorAngleRandom()
 {
-	nextJunctionSelectorAngle_ = 2 * M_PI * static_cast<double>(((SE_Env::Inst().GetGenerator())())) / static_cast<double>((SE_Env::Inst().GetGenerator()).max());
+	nextJunctionSelectorAngle_ = 2 * M_PI * SE_Env::Inst().GetRand().GetReal();
 }
 
 bool Object::CollisionAndRelativeDistLatLong(Object* target, double *distLat, double *distLong)
@@ -1026,8 +1026,8 @@ Object::OverlapType Object::OverlappingFront(Object* target, double tolerance)
 	// At least one vertex on each side of front line: OVERLAP_FULL
 
 	// Own object front side of bounding box
-	SE_Vector front_left(boundingbox_.center_.x_ + boundingbox_.dimensions_.length_ / 2.0, boundingbox_.dimensions_.width_ / 2.0);
-	SE_Vector front_right(boundingbox_.center_.x_ + boundingbox_.dimensions_.length_ / 2.0, -boundingbox_.dimensions_.width_ / 2.0);
+	SE_Vector front_left(boundingbox_.center_.x_ + boundingbox_.dimensions_.length_ / 2.0f, boundingbox_.dimensions_.width_ / 2.0f);
+	SE_Vector front_right(boundingbox_.center_.x_ + boundingbox_.dimensions_.length_ / 2.0f, -boundingbox_.dimensions_.width_ / 2.0f);
 
 	// Rotate and translate front line
 	front_left = front_left.Rotate(pos_.GetH());
@@ -1038,10 +1038,10 @@ Object::OverlapType Object::OverlappingFront(Object* target, double tolerance)
 	// Specify target object bounding box corner vertices, starting at first quadrant going clock wise
 	SE_Vector vertex[4] =
 	{
-		{ target->boundingbox_.center_.x_ + target->boundingbox_.dimensions_.length_ / 2.0, target->boundingbox_.center_.y_ + target->boundingbox_.dimensions_.width_ / 2.0 },
-		{ target->boundingbox_.center_.x_ - target->boundingbox_.dimensions_.length_ / 2.0, target->boundingbox_.center_.y_ + target->boundingbox_.dimensions_.width_ / 2.0 },
-		{ target->boundingbox_.center_.x_ - target->boundingbox_.dimensions_.length_ / 2.0, target->boundingbox_.center_.y_ - target->boundingbox_.dimensions_.width_ / 2.0 },
-		{ target->boundingbox_.center_.x_ + target->boundingbox_.dimensions_.length_ / 2.0, target->boundingbox_.center_.y_ - target->boundingbox_.dimensions_.width_ / 2.0 }
+		{ target->boundingbox_.center_.x_ + target->boundingbox_.dimensions_.length_ / 2.0f, target->boundingbox_.center_.y_ + target->boundingbox_.dimensions_.width_ / 2.0f },
+		{ target->boundingbox_.center_.x_ - target->boundingbox_.dimensions_.length_ / 2.0f, target->boundingbox_.center_.y_ + target->boundingbox_.dimensions_.width_ / 2.0f },
+		{ target->boundingbox_.center_.x_ - target->boundingbox_.dimensions_.length_ / 2.0f, target->boundingbox_.center_.y_ - target->boundingbox_.dimensions_.width_ / 2.0f },
+		{ target->boundingbox_.center_.x_ + target->boundingbox_.dimensions_.length_ / 2.0f, target->boundingbox_.center_.y_ - target->boundingbox_.dimensions_.width_ / 2.0f }
 	};
 
 	for (int i = 0; i < 4; i++)  // for all vertices
@@ -1074,11 +1074,11 @@ Object::OverlapType Object::OverlappingFront(Object* target, double tolerance)
 		{
 			inside_count++;
 
-			if (s_norm * boundingbox_.dimensions_.width_ < tolerance)  // s_norm is factor (0..1) along front line
+			if (s_norm * static_cast<double>(boundingbox_.dimensions_.width_) < tolerance)  // s_norm is factor (0..1) along front line
 			{
 				outside_left_count++;
 			}
-			else if ((1 - s_norm) * boundingbox_.dimensions_.width_ < tolerance)
+			else if ((1 - s_norm) * static_cast<double>(boundingbox_.dimensions_.width_) < tolerance)
 			{
 				outside_right_count++;
 			}
@@ -1336,9 +1336,9 @@ Vehicle::Vehicle() : Object(Object::Type::VEHICLE), trailer_coupler_(nullptr), t
 	performance_.maxSpeed = 100.0;
 }
 
-Vehicle::Vehicle(const Vehicle& v) : Object(Object::Type::VEHICLE), trailer_coupler_(nullptr), trailer_hitch_(nullptr) // TODO: @Emil
+Vehicle::Vehicle(const Vehicle& v) : Object(Object::Type::VEHICLE), trailer_coupler_(nullptr), trailer_hitch_(nullptr)
 {
-	*this = v; // TODO: @Emil
+	*this = v;
 
 	if (v.trailer_coupler_ && v.trailer_coupler_->tow_vehicle_)
 	{
@@ -1354,6 +1354,26 @@ Vehicle::Vehicle(const Vehicle& v) : Object(Object::Type::VEHICLE), trailer_coup
 		ConnectTrailer(trailer);
 	}
 }
+
+// Vehicle& Vehicle::operator=(const Vehicle& v)
+// {
+// 	*this = v;
+
+// 	if (v.trailer_coupler_ && v.trailer_coupler_->tow_vehicle_)
+// 	{
+// 		trailer_coupler_.reset(new TrailerCoupler(*v.trailer_coupler_));
+// 		trailer_coupler_->tow_vehicle_ = nullptr;
+// 	}
+
+// 	if (v.trailer_hitch_ && v.trailer_hitch_->trailer_vehicle_)
+// 	{
+// 		// make a unique copy of any trailer
+// 		trailer_hitch_.reset(new TrailerHitch(*v.trailer_hitch_));
+// 		Vehicle* trailer = new Vehicle(*(static_cast<Vehicle*>((v.trailer_hitch_->trailer_vehicle_))));
+// 		ConnectTrailer(trailer);
+// 	}
+// }
+
 
 Vehicle::~Vehicle()
 {

@@ -12,7 +12,7 @@ int main(int argc, char* argv[])
 
 	SE_Init("../resources/xosc/cut-in_simple.xosc", 0, 1, 0, 0);
 
-	osi3::GroundTruth* gt;
+	const osi3::GroundTruth* gt;
 
 	// Initial update of complete Ground Truth, including static things
 	SE_UpdateOSIGroundTruth();
@@ -26,11 +26,11 @@ int main(int argc, char* argv[])
 		SE_UpdateOSIGroundTruth();
 
 		// Fetch OSI struct
-		gt = (osi3::GroundTruth*)SE_GetOSIGroundTruthRaw(); // TODO: @Emil -> Recommendation: reinterpret_cast<const osi3::GroundTruth*>
+		gt = reinterpret_cast<const osi3::GroundTruth*>(SE_GetOSIGroundTruthRaw());
 
 		// Print timestamp
-		printf("Frame %d timestamp: %.2f\n", i, gt->mutable_timestamp()->seconds() + // TODO: @Emil
-			1E-9 * gt->mutable_timestamp()->nanos());
+		printf("Frame %d timestamp: %.2f\n", i, static_cast<double>(gt->timestamp().seconds()) +
+			1E-9 * static_cast<double>(gt->timestamp().nanos()));
 
 		// Lane boundaries
 		printf("lane boundaries: %d\n", gt->lane_boundary_size());
@@ -56,22 +56,22 @@ int main(int argc, char* argv[])
 
 #if 1  // change to 1 in order to print some moving object state info
 		// Print object id, position, orientation and velocity
-		for (int j = 0; j < gt->mutable_moving_object()->size(); j++)
+		for (int j = 0; j < gt->moving_object().size(); j++)
 		{
 			printf("  obj id %u pos (%.2f, %.2f, %.2f) orientation (%.2f, %.2f, %.2f) vel (%.2f, %.2f, %.2f) acc (%.2f, %.2f, %.2f)\n",
-				static_cast<unsigned int>(gt->mutable_moving_object(j)->mutable_id()->value()),
-				gt->mutable_moving_object(j)->mutable_base()->mutable_position()->x(),
-				gt->mutable_moving_object(j)->mutable_base()->mutable_position()->y(),
-				gt->mutable_moving_object(j)->mutable_base()->mutable_position()->z(),
-				gt->mutable_moving_object(j)->mutable_base()->mutable_orientation()->yaw(),
-				gt->mutable_moving_object(j)->mutable_base()->mutable_orientation()->pitch(),
-				gt->mutable_moving_object(j)->mutable_base()->mutable_orientation()->roll(),
-				gt->mutable_moving_object(j)->mutable_base()->mutable_velocity()->x(),
-				gt->mutable_moving_object(j)->mutable_base()->mutable_velocity()->y(),
-				gt->mutable_moving_object(j)->mutable_base()->mutable_velocity()->z(),
-				gt->mutable_moving_object(j)->mutable_base()->mutable_acceleration()->x(),
-				gt->mutable_moving_object(j)->mutable_base()->mutable_acceleration()->y(),
-				gt->mutable_moving_object(j)->mutable_base()->mutable_acceleration()->z()
+				static_cast<unsigned int>(gt->moving_object(j).id().value()),
+				gt->moving_object(j).base().position().x(),
+				gt->moving_object(j).base().position().y(),
+				gt->moving_object(j).base().position().z(),
+				gt->moving_object(j).base().orientation().yaw(),
+				gt->moving_object(j).base().orientation().pitch(),
+				gt->moving_object(j).base().orientation().roll(),
+				gt->moving_object(j).base().velocity().x(),
+				gt->moving_object(j).base().velocity().y(),
+				gt->moving_object(j).base().velocity().z(),
+				gt->moving_object(j).base().acceleration().x(),
+				gt->moving_object(j).base().acceleration().y(),
+				gt->moving_object(j).base().acceleration().z()
 			);
 		}
 #endif

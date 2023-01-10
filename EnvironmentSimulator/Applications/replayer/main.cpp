@@ -789,15 +789,17 @@ int main(int argc, char** argv)
 		if (!start_time_str.empty())
 		{
 			double startTime = 1E-3 * strtod(start_time_str);
-			if (startTime < player->data_[0].state.info.timeStamp) // TODO: @Emil
+			if (static_cast<float>(startTime) < player->data_[0].state.info.timeStamp)
 			{
-				printf("Specified start time (%.2f) < first timestamp (%.2f), adapting.\n", startTime, player->data_[0].state.info.timeStamp); // TODO: @Emil
-				startTime = player->data_[0].state.info.timeStamp; // TODO: @Emil
+				printf("Specified start time (%.2f) < first timestamp (%.2f), adapting.\n", startTime,
+					static_cast<double>(player->data_[0].state.info.timeStamp));
+				startTime = static_cast<double>(player->data_[0].state.info.timeStamp);
 			}
-			else if (startTime > player->data_.back().state.info.timeStamp) // TODO: @Emil
+			else if (static_cast<float>(startTime) > player->data_.back().state.info.timeStamp)
 			{
-				printf("Specified start time (%.2f) > last timestamp (%.2f), adapting.\n", startTime, player->data_.back().state.info.timeStamp); // TODO: @Emil
-				startTime = player->data_.back().state.info.timeStamp; // TODO: @Emil
+				printf("Specified start time (%.2f) > last timestamp (%.2f), adapting.\n", startTime,
+					static_cast<double>(player->data_.back().state.info.timeStamp));
+				startTime = static_cast<double>(player->data_.back().state.info.timeStamp);
 			}
 			player->SetStartTime(startTime);
 			player->GoToTime(startTime);
@@ -807,15 +809,17 @@ int main(int argc, char** argv)
 		if (!stop_time_str.empty())
 		{
 			double stopTime = 1E-3 * strtod(stop_time_str);
-			if (stopTime > player->data_.back().state.info.timeStamp) // TODO: @Emil
+			if (static_cast<float>(stopTime) > player->data_.back().state.info.timeStamp)
 			{
-				printf("Specified stop time (%.2f) > last timestamp (%.2f), adapting.\n", stopTime, player->data_.back().state.info.timeStamp); // TODO: @Emil
-				stopTime = player->data_.back().state.info.timeStamp; // TODO: @Emil
+				printf("Specified stop time (%.2f) > last timestamp (%.2f), adapting.\n", stopTime,
+					static_cast<double>(player->data_.back().state.info.timeStamp));
+				stopTime = static_cast<double>(player->data_.back().state.info.timeStamp);
 			}
-			else if (stopTime < player->data_[0].state.info.timeStamp) // TODO: @Emil
+			else if (static_cast<float>(stopTime) < player->data_[0].state.info.timeStamp)
 			{
-				printf("Specified stop time (%.2f) < first timestamp (%.2f), adapting.\n", simTime, player->data_[0].state.info.timeStamp); // TODO: @Emil
-				stopTime = player->data_[0].state.info.timeStamp; // TODO: @Emil
+				printf("Specified stop time (%.2f) < first timestamp (%.2f), adapting.\n", stopTime,
+					static_cast<double>(player->data_[0].state.info.timeStamp));
+				stopTime = static_cast<double>(player->data_[0].state.info.timeStamp);
 			}
 			player->SetStopTime(stopTime);
 		}
@@ -842,7 +846,7 @@ int main(int argc, char** argv)
 				{
 					// Get milliseconds since Jan 1 1970
 					now = SE_getSystemTime();
-					deltaSimTime = now - lastTimeStamp / 1000.0;  // step size in seconds // TODO: @Emil
+					deltaSimTime = static_cast<double>(now - lastTimeStamp) / 1000.0;  // step size in seconds
 					lastTimeStamp = now;
 					if (deltaSimTime > maxStepSize) // limit step size
 					{
@@ -923,8 +927,9 @@ int main(int argc, char** argv)
 					{
 						// Update overlay info text
 						snprintf(info_str_buf, sizeof(info_str_buf), "%.3fs entity[%d]: %s (%d) %.2fs %.2fkm/h %.2fm (%d, %d, %.2f, %.2f)/(%.2f, %.2f %.2f) tScale: %.2f ",
-							simTime, viewer->currentCarInFocus_, state->info.name, state->info.id, state->info.timeStamp, 3.6 * static_cast<double>(state->info.speed), // TODO: @Emil
-							entry->odometer, sc->pos.roadId, sc->pos.laneId, static_cast<double>(fabs(sc->pos.offset)) < SMALL_NUMBER ? 0 : static_cast<double>(sc->pos.offset),
+							simTime, viewer->currentCarInFocus_, state->info.name, state->info.id, static_cast<double>(state->info.timeStamp),
+							3.6 * static_cast<double>(state->info.speed), entry->odometer, sc->pos.roadId, sc->pos.laneId,
+							static_cast<double>(fabs(sc->pos.offset)) < SMALL_NUMBER ? 0 : static_cast<double>(sc->pos.offset),
 							static_cast<double>(sc->pos.s), static_cast<double>(sc->pos.x), static_cast<double>(sc->pos.y), static_cast<double>(sc->pos.h), time_scale);
 						viewer->SetInfoText(info_str_buf);
 					}

@@ -75,12 +75,12 @@ void ControllerSloppyDriver::Step(double timeStep)
 		if (speedTimer_.Expired(time_))
 		{
 			// restart timer - 50% variation
-			double timerValue = speedTimerAverage_ * (1.0 + (1.0 * static_cast<double>((SE_Env::Inst().GetGenerator())())) / (static_cast<double>((SE_Env::Inst().GetGenerator()).max()) - 0.5));
+			double timerValue = speedTimerAverage_ * SE_Env::Inst().GetRand().GetRealBetween(0.5, 1.5);
 			speedTimer_.Start(time_, timerValue);
 
 			// target speed +/- 35%
 			initSpeed_ = referenceSpeed_ * targetFactor_;
-			targetFactor_ = 1 + 0.7*sloppiness_ * MIN(sloppiness_, 1.0) * (1.0 * static_cast<double>((SE_Env::Inst().GetGenerator())()) / (static_cast<double>((SE_Env::Inst().GetGenerator()).max()) - 0.5));
+			targetFactor_ = 1 + 0.7 * sloppiness_ * MIN(sloppiness_, 1.0) * SE_Env::Inst().GetRand().GetRealBetween(0.5, 1.5);
 		}
 
 		double steplen = 0;
@@ -120,10 +120,10 @@ void ControllerSloppyDriver::Step(double timeStep)
 		{
 			// max lateral displacement is about half lane width (7/2)
 			tFuzz0 = tFuzzTarget;
-			tFuzzTarget = 5.0 * sloppiness_ * MIN(sloppiness_, 1.0) * (1.0 * static_cast<double>((SE_Env::Inst().GetGenerator())()) / (static_cast<double>((SE_Env::Inst().GetGenerator()).max()) - 0.5));
+			tFuzzTarget = 5.0 * sloppiness_ * MIN(sloppiness_, 1.0) * SE_Env::Inst().GetRand().GetRealBetween(0.5, 1.5);
 
 			// restart timer - 50% variation
-			double timerValue = lateralTimerAverage_ * (1.0 + (1.0 * static_cast<double>((SE_Env::Inst().GetGenerator())()) / (static_cast<double>((SE_Env::Inst().GetGenerator()).max()) - 0.5)));
+			double timerValue = lateralTimerAverage_ * SE_Env::Inst().GetRand().GetRealBetween(0.5, 1.5);
 			lateralTimer_.Start(time_, timerValue);
 		}
 		double h_error{};

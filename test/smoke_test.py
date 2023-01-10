@@ -229,20 +229,20 @@ class TestSuite(unittest.TestCase):
         # Random generators differ on platforms => random traffic will be repeatable only per platform
         if platform == "win32":
             self.assertTrue(re.search('^5.000, 0, Ego, 11.090, 349.861, -0.625, 1.550, 0.002, 0.000, 10.000, -0.000, 4.627', csv, re.MULTILINE))
-            self.assertTrue(re.search('^5.000, 2, swarm_1, -7.366, 400.877, -0.720, 4.684, 6.281, 0.000, 30.000, 0.001, 1.315', csv, re.MULTILINE))
-            self.assertTrue(re.search('^5.000, 19, swarm_15, 28.373, 614.039, -0.826, 1.480, 0.000, 0.000, 30.000, 0.000, 0.000', csv, re.MULTILINE))
-            self.assertTrue(re.search('^5.000, 20, swarm_15\+, 27.832, 608.063, -0.826, 1.481, 6.283, 0.000, 30.000, 0.000, 0.000', csv, re.MULTILINE))
-            self.assertTrue(re.search('^5.000, 21, swarm_15\+\+, 26.689, 595.415, -0.828, 1.481, 6.283, 0.000, 30.000, 0.000, 0.000', csv, re.MULTILINE))
-            self.assertTrue(re.search('^20.000, 32, swarm_22, 13.924, 447.798, -0.793, 1.532, 0.001, 0.000, 13.665, -0.001, 4.040', csv, re.MULTILINE))
-            self.assertTrue(re.search('^20.000, 33, swarm_23, 19.789, 495.137, -0.838, 1.518, 0.001, 0.000, 30.649, -0.001, 5.924', csv, re.MULTILINE))
-            self.assertTrue(re.search('^20.000, 36, swarm_25, -9.511, 299.399, -0.526, 4.697, 6.281, 0.000, 30.000, 0.000, 2.958', csv, re.MULTILINE))
+            self.assertTrue(re.search('^5.000, 1, swarm_0, 12.730, 199.986, -0.348, 1.562, 0.002, 0.000, 30.000, -0.000, 1.315', csv, re.MULTILINE))
+            self.assertTrue(re.search('^5.000, 2, swarm_0\+, 12.681, 193.986, -0.337, 1.562, 0.002, 0.000, 30.000, -0.000, 1.315', csv, re.MULTILINE))
+            self.assertTrue(re.search('^5.000, 3, swarm_0\+\+, 12.580, 181.286, -0.313, 1.563, 0.002, 0.000, 30.000, -0.000, 1.315', csv, re.MULTILINE))
+            self.assertTrue(re.search('^5.000, 8, swarm_3, 8.882, 182.004, -0.314, 1.563, 0.002, 0.000, 30.000, -0.000, 1.568', csv, re.MULTILINE))
+            self.assertTrue(re.search('^20.000, 32, swarm_20, -10.150, 251.337, -0.438, 4.701, 6.281, 0.000, 30.000, 0.000, 5.285', csv, re.MULTILINE))
+            self.assertTrue(re.search('^20.000, 35, swarm_23, -5.755, 302.989, -0.533, 4.697, 6.281, 0.000, 30.038, 0.000, 6.177', csv, re.MULTILINE))
+            self.assertTrue(re.search('^20.000, 36, swarm_24, 19.328, 486.143, -0.832, 1.521, 0.001, 0.000, 31.050, -0.001, 0.744', csv, re.MULTILINE))
         elif platform == "linux" or platform == "linux2":
             self.assertTrue(re.search('^5.000, 0, Ego, 11.090, 349.861, -0.625, 1.550, 0.002, 0.000, 10.000, -0.000, 4.627', csv, re.MULTILINE))
-            self.assertTrue(re.search('^5.000, 1, swarm_0, 12.730, 199.986, -0.348, 1.562, 0.002, 0.000, 30.000, -0.000, 1.315', csv, re.MULTILINE))
-            self.assertTrue(re.search('^20.000, 23, swarm_16, 14.959, 472.228, -0.820, 1.525, 0.001, 0.000, 12.184, -0.001, 4.946', csv, re.MULTILINE))
-            self.assertTrue(re.search('^20.000, 76, swarm_52, 13.880, 298.618, -0.525, 1.556, 0.002, 0.000, 30.375, -0.000, 1.993', csv, re.MULTILINE))
-            self.assertTrue(re.search('^20.000, 77, swarm_52\+, 13.793, 292.619, -0.514, 1.556, 0.002, 0.000, 30.000, -0.000, 1.942', csv, re.MULTILINE))
-            self.assertTrue(re.search('^20.000, 78, swarm_52\+\+, 13.618, 279.920, -0.490, 1.557, 0.002, 0.000, 30.000, -0.000, 1.942', csv, re.MULTILINE))
+            self.assertTrue(re.search('^5.000, 2, swarm_1, -0.103, 400.363, -0.719, 4.684, 6.281, 0.000, 30.000, 0.001, 1.315', csv, re.MULTILINE))
+            self.assertTrue(re.search('^20.000, 22, swarm_18, 21.251, 520.859, -0.847, 1.510, 0.000, 0.000, 30.000, -0.001, 1.037', csv, re.MULTILINE))
+            self.assertTrue(re.search('^20.000, 24, swarm_20, -2.738, 262.667, -0.458, 4.700, 6.281, 0.000, 30.000, 0.000, 4.703', csv, re.MULTILINE))
+            self.assertTrue(re.search('^20.000, 50, swarm_41\+, 2.468, 535.761, -0.847, 4.646, 0.000, 6.283, 30.000, 0.001, 5.057', csv, re.MULTILINE))
+            self.assertTrue(re.search('^20.000, 51, swarm_41\+\+, 3.343, 548.430, -0.845, 4.642, 0.000, 6.283, 30.000, 0.001, 5.057', csv, re.MULTILINE))
 
     def test_conflicting_domains(self):
         log = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/conflicting-domains.xosc'), COMMON_ARGS)

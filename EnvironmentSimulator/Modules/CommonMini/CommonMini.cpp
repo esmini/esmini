@@ -18,7 +18,7 @@
 #include <sstream>
 #include <locale>
 #include <array>
-
+#include <filesystem>
 
 // UDP network includes
 #ifndef _WIN32
@@ -572,6 +572,15 @@ double strtod(std::string s)
 	return atof(s.c_str());
 }
 
+void StrCopy(char* dest, const char* src, int size, bool terminate)
+{
+	memcpy(dest, src, static_cast<size_t>(size) * sizeof(char));
+	if (terminate && size > 0)
+	{
+		dest[size-1] = 0;  // NULL termination
+	}
+}
+
 #if (defined WINVER && WINVER == _WIN32_WINNT_WIN7 || __MINGW32__)
 
 	#include <windows.h>
@@ -863,13 +872,6 @@ void R0R12EulerAngles(double h0, double p0, double r0, double h1, double p1, dou
 	r = GetAngleInInterval2PI(atan2(R2[2][1], R2[2][2]));
 }
 
-SE_Env::SE_Env() : osiMaxLongitudinalDistance_(OSI_MAX_LONGITUDINAL_DISTANCE), osiMaxLateralDeviation_(OSI_MAX_LATERAL_DEVIATION),
-	logFilePath_(LOG_FILENAME), datFilePath_(""), offScreenRendering_(true), collisionDetection_(false)
-{
-	seed_ = (std::random_device())();
-	gen_.seed(seed_);
-}
-
 int SE_Env::AddPath(std::string path)
 {
 	// Check if path already in list
@@ -1013,14 +1015,8 @@ void Logger::OpenLogfile(std::string filename)
 		file_.open(filename.c_str());
 		if (file_.fail())
 		{
-			const char* filename_tmp = std::tmpnam(NULL);
-			printf("Cannot open log file: %s in working directory. Trying system tmp-file: %s\n",
-				SE_Env::Inst().GetLogFilePath().c_str(), filename_tmp);
-			file_.open(filename_tmp);
-			if (file_.fail())
-			{
-				printf("Also failed to open log file: %s. Continue without logfile, still logging to console.\n", filename_tmp);
-			}
+			printf("Can't open log file: %s. Skipping. Logfile path can be specified as launch argument, se usage.\n",
+				filename.c_str());
 		}
 	}
 #endif
@@ -1297,11 +1293,11 @@ void SE_Option::Usage()
 {
 	if (!default_value_.empty())
 	{
-		printf("  %s%s %s", OPT_PREFIX, opt_str_.c_str(), (opt_arg_ != "") ? std::string('[' + opt_arg_ + ']').c_str() : "");
+		printf("  %s%s %s", OPT_PREFIX, opt_str_.c_str(), (opt_arg_ != "") ? ('[' + opt_arg_ + ']').c_str() : "");
 	}
 	else
 	{
-		printf("  %s%s %s", OPT_PREFIX, opt_str_.c_str(), (opt_arg_ != "") ? std::string('<' + opt_arg_ + '>').c_str() : "");
+		printf("  %s%s %s", OPT_PREFIX, opt_str_.c_str(), (opt_arg_ != "") ? ('<' + opt_arg_ + '>').c_str() : "");
 	}
 
 	if (!default_value_.empty())

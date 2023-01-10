@@ -49,8 +49,8 @@ namespace scenarioengine
 		void GoToEnd();
 		int GoToNextFrame();
 		void GoToPreviousFrame();
-		int FindNextTimestamp(bool wrap = false);
-		int FindPreviousTimestamp(bool wrap = false);
+		unsigned int FindNextTimestamp(bool wrap = false);
+		unsigned int FindPreviousTimestamp(bool wrap = false);
 		ReplayEntry* GetEntry(int id);
 		ObjectStateStructDat* GetState(int id);
 		void SetStartTime(double time);
@@ -64,7 +64,7 @@ namespace scenarioengine
 		void BuildData(std::vector<std::pair<std::string, std::vector<ReplayEntry>>>& scenarios);
 		void CreateMergedDatfile(const std::string filename);
 
-private:
+	private:
 		std::ifstream file_;
 		std::vector<std::string> scenarios_;
 		double time_;

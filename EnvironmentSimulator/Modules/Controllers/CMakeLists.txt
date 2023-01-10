@@ -53,7 +53,7 @@ target_link_libraries(
 
 target_include_directories(
     ${TARGET}
-    PRIVATE
+    SYSTEM PUBLIC
     ${ROAD_MANAGER_PATH}
     ${EXTERNALS_SUMO_INCLUDES}
     ${EXTERNALS_PUGIXML_PATH})

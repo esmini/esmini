@@ -119,8 +119,8 @@ namespace viewer
 		void Reset();
 		void Update();
 		void Redraw();
-		void SetNodeMaskLines(int nodemask);
-		void SetNodeMaskDots(int nodemask);
+		void SetNodeMaskLines(unsigned int nodemask);
+		void SetNodeMaskDots(unsigned int nodemask);
 	private:
 		bool dots3D_;
 		void Add3DDot(osg::Vec3 pos);

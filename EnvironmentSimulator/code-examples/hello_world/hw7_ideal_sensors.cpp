@@ -3,7 +3,7 @@
 
 #define MAX_HITS 10
 
-int main(int argc, char* argv[])
+int main(int, char**)
 {
 	SE_Init("../resources/xosc/cut-in.xosc", 0, 1, 0, 0);
 
@@ -29,7 +29,8 @@ int main(int argc, char* argv[])
 				SE_ScenarioObjectState state;
 
 				SE_GetObjectState(objList[k], &state);
-				printf("object[%d] pos: (%.2f, %.2f) heading: %.2f\n", objList[k], state.x, state.y, state.h);
+				printf("object[%d] pos: (%.2f, %.2f) heading: %.2f\n", objList[k],
+					static_cast<double>(state.x), static_cast<double>(state.y), static_cast<double>(state.h));
 			}
 		}
 	}

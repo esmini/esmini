@@ -592,6 +592,8 @@ void TrigByParameter::Log()
 
 bool TrigByVariable::CheckCondition(StoryBoard* storyBoard, double sim_time)
 {
+	(void)storyBoard;  // touch unused variables to aoid warning
+	(void)sim_time;
 	bool result = false;
 	current_value_str_ = "";
 

@@ -28,7 +28,7 @@ TEST_P(GetNumberOfObjectsTest, number_of_objects)
 
 	SE_ClearPaths();
 
-	const char *Scenario_file = scenario_file.c_str();
+	const char* Scenario_file = scenario_file.c_str();
 	SE_Init(Scenario_file, 0, 0, 0, 0);
 
 	int n_Objects = SE_GetNumberOfObjects();
@@ -64,7 +64,7 @@ TEST(GetOSILaneBoundaryIdsTest, lane_boundary_ids)
 	SE_StepDT(0.001f);
 	SE_UpdateOSIGroundTruth();
 
-	std::vector<std::vector<int>> lane_bound = {{-1, 8, 9, 10},
+	std::vector<std::vector<int>> lane_bound = { {-1, 8, 9, 10},
 												{8, 9, 10, 0},
 												{9, 10, 0, 1},
 												{10, 0, 1, 2},
@@ -77,9 +77,9 @@ TEST(GetOSILaneBoundaryIdsTest, lane_boundary_ids)
 												{5, 6, 7, 12},
 												{6, 7, 12, 13},
 												{7, 12, 13, 14},
-												{12, 13, 14, -1}};
+												{12, 13, 14, -1} };
 
-	std::vector<int> veh_id = {13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
+	std::vector<int> veh_id = { 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 };
 	for (int i = 0; i < lane_bound.size(); i++)
 	{
 		SE_LaneBoundaryId lanes_id;
@@ -104,13 +104,13 @@ TEST(GetOSILaneBoundaryIdsTest, lane_boundary_ids_no_obj)
 {
 
 	std::string scenario_file = "../../../resources/xosc/cut-in.xosc";
-	const char *Scenario_file = scenario_file.c_str();
+	const char* Scenario_file = scenario_file.c_str();
 	SE_Init(Scenario_file, 0, 0, 0, 0);
 	SE_StepDT(0.001f);
 	SE_UpdateOSIGroundTruth();
 
 	SE_LaneBoundaryId ids;
-	SE_LaneBoundaryId right_lanes_id = {-1, -1, -1, -1};
+	SE_LaneBoundaryId right_lanes_id = { -1, -1, -1, -1 };
 
 	SE_GetOSILaneBoundaryIds(10, &ids);
 	EXPECT_EQ(ids.far_left_lb_id, right_lanes_id.far_left_lb_id);
@@ -125,7 +125,7 @@ TEST(OSIintersections, threeway)
 {
 
 	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/simple_3_way_intersection_osi.xosc";
-	const char *Scenario_file = scenario_file.c_str();
+	const char* Scenario_file = scenario_file.c_str();
 	SE_Init(Scenario_file, 0, 0, 0, 0);
 	SE_StepDT(0.001f);
 	SE_UpdateOSIGroundTruth();
@@ -133,7 +133,7 @@ TEST(OSIintersections, threeway)
 	bool intersection_found = false;
 	osi3::GroundTruth osi_gt;
 	int sv_size = 0;
-	const char *gt = SE_GetOSIGroundTruth(&sv_size);
+	const char* gt = SE_GetOSIGroundTruth(&sv_size);
 	osi_gt.ParseFromArray(gt, sv_size);
 	for (int i = 0; i < osi_gt.lane_size(); i++)
 	{
@@ -159,7 +159,7 @@ TEST(OSIintersections, fourway)
 {
 
 	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/simple_4_way_intersection_osi.xosc";
-	const char *Scenario_file = scenario_file.c_str();
+	const char* Scenario_file = scenario_file.c_str();
 	SE_Init(Scenario_file, 0, 0, 0, 0);
 	SE_StepDT(0.001f);
 	SE_UpdateOSIGroundTruth();
@@ -167,7 +167,7 @@ TEST(OSIintersections, fourway)
 	bool intersection_found = false;
 	osi3::GroundTruth osi_gt;
 	int sv_size = 0;
-	const char *gt = SE_GetOSIGroundTruth(&sv_size);
+	const char* gt = SE_GetOSIGroundTruth(&sv_size);
 	osi_gt.ParseFromArray(gt, sv_size);
 	for (int i = 0; i < osi_gt.lane_size(); i++)
 	{
@@ -193,7 +193,7 @@ TEST(OSIintersections, motorway)
 {
 
 	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/simple_motorway_osi_intersection.xosc";
-	const char *Scenario_file = scenario_file.c_str();
+	const char* Scenario_file = scenario_file.c_str();
 	SE_Init(Scenario_file, 0, 0, 0, 0);
 	SE_StepDT(0.001f);
 	SE_UpdateOSIGroundTruth();
@@ -201,7 +201,7 @@ TEST(OSIintersections, motorway)
 	bool intersection_found = false;
 	osi3::GroundTruth osi_gt;
 	int sv_size = 0;
-	const char *gt = SE_GetOSIGroundTruth(&sv_size);
+	const char* gt = SE_GetOSIGroundTruth(&sv_size);
 	osi_gt.ParseFromArray(gt, sv_size);
 	for (int i = 0; i < osi_gt.lane_size(); i++)
 	{
@@ -225,25 +225,25 @@ TEST(OSIStationaryObjects, square_building)
 {
 
 	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/Junction_with_building0.xosc";
-	const char *Scenario_file = scenario_file.c_str();
+	const char* Scenario_file = scenario_file.c_str();
 	SE_Init(Scenario_file, 0, 0, 0, 0);
 	SE_StepDT(0.001f);
 	SE_UpdateOSIGroundTruth();
 
 	osi3::GroundTruth osi_gt;
 	int sv_size = 0;
-	const char *gt = SE_GetOSIGroundTruth(&sv_size);
+	const char* gt = SE_GetOSIGroundTruth(&sv_size);
 	osi_gt.ParseFromArray(gt, sv_size);
-	ASSERT_EQ(osi_gt.stationary_object_size(),1);
+	ASSERT_EQ(osi_gt.stationary_object_size(), 1);
 	for (int i = 0; i < osi_gt.stationary_object_size(); i++)
 	{
 		EXPECT_EQ(osi_gt.stationary_object(i).base().base_polygon_size(), 0);
-		EXPECT_EQ(osi_gt.stationary_object(i).base().position().x(),80);
-		EXPECT_EQ(osi_gt.stationary_object(i).base().position().y(),20);
-		EXPECT_EQ(osi_gt.stationary_object(i).base().dimension().length(),30);
-		EXPECT_EQ(osi_gt.stationary_object(i).base().dimension().width(),20);
-		EXPECT_EQ(osi_gt.stationary_object(i).base().dimension().height(),4);
-		EXPECT_EQ(osi_gt.stationary_object(i).classification().type(),osi3::StationaryObject_Classification_Type_TYPE_BUILDING);
+		EXPECT_EQ(osi_gt.stationary_object(i).base().position().x(), 80);
+		EXPECT_EQ(osi_gt.stationary_object(i).base().position().y(), 20);
+		EXPECT_EQ(osi_gt.stationary_object(i).base().dimension().length(), 30);
+		EXPECT_EQ(osi_gt.stationary_object(i).base().dimension().width(), 20);
+		EXPECT_EQ(osi_gt.stationary_object(i).base().dimension().height(), 4);
+		EXPECT_EQ(osi_gt.stationary_object(i).classification().type(), osi3::StationaryObject_Classification_Type_TYPE_BUILDING);
 	}
 
 	SE_Close();
@@ -259,16 +259,16 @@ TEST_P(OSIStationaryObjectsOutline, object_with_outline)
 {
 
 	std::string scenario_file = std::get<0>(GetParam());
-	const char *Scenario_file = scenario_file.c_str();
-	ASSERT_EQ(SE_Init(Scenario_file, 0, 0, 0, 0),0 ) ;
+	const char* Scenario_file = scenario_file.c_str();
+	ASSERT_EQ(SE_Init(Scenario_file, 0, 0, 0, 0), 0);
 	SE_StepDT(0.001f);
 	SE_UpdateOSIGroundTruth();
 
 	osi3::GroundTruth osi_gt;
 	int sv_size = 0;
-	const char *gt = SE_GetOSIGroundTruth(&sv_size);
+	const char* gt = SE_GetOSIGroundTruth(&sv_size);
 	osi_gt.ParseFromArray(gt, sv_size);
-	ASSERT_EQ(osi_gt.stationary_object_size(),1);
+	ASSERT_EQ(osi_gt.stationary_object_size(), 1);
 	for (int i = 0; i < osi_gt.stationary_object_size(); i++)
 	{
 		EXPECT_EQ(osi_gt.stationary_object(i).base().base_polygon_size(), 8);
@@ -289,7 +289,7 @@ INSTANTIATE_TEST_SUITE_P(OSIStationaryObjects, OSIStationaryObjectsOutline, ::te
 TEST(OSIintersections, multilane)
 {
 	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/multilane_3way_intersection_osi.xosc";
-	const char *Scenario_file = scenario_file.c_str();
+	const char* Scenario_file = scenario_file.c_str();
 	SE_Init(Scenario_file, 0, 0, 0, 0);
 	SE_StepDT(0.001f);
 	SE_UpdateOSIGroundTruth();
@@ -297,7 +297,7 @@ TEST(OSIintersections, multilane)
 	bool intersection_found = false;
 	osi3::GroundTruth osi_gt;
 	int sv_size = 0;
-	const char *gt = SE_GetOSIGroundTruth(&sv_size);
+	const char* gt = SE_GetOSIGroundTruth(&sv_size);
 	osi_gt.ParseFromArray(gt, sv_size);
 	for (int i = 0; i < osi_gt.lane_size(); i++)
 	{
@@ -324,7 +324,7 @@ TEST(GetOSIRoadLaneTest, lane_no_obj)
 {
 	struct stat fileStatus;
 	std::string scenario_file = "../../../resources/xosc/cut-in.xosc";
-	const char *Scenario_file = scenario_file.c_str();
+	const char* Scenario_file = scenario_file.c_str();
 
 	SE_Init(Scenario_file, 0, 0, 0, 0);
 	SE_OSIFileOpen("gt.osi");
@@ -338,7 +338,7 @@ TEST(GetOSIRoadLaneTest, lane_no_obj)
 
 	int road_lane_size;
 
-	const char *road_lane = SE_GetOSIRoadLane(&road_lane_size, 15);
+	const char* road_lane = SE_GetOSIRoadLane(&road_lane_size, 15);
 
 	EXPECT_EQ(road_lane_size, 0);
 	EXPECT_EQ(road_lane, nullptr);
@@ -360,7 +360,7 @@ TEST(GetOSIRoadLaneTest, lane_id)
 {
 
 	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/full_e6mini.xosc";
-	const char *Scenario_file = scenario_file.c_str();
+	const char* Scenario_file = scenario_file.c_str();
 
 	SE_Init(Scenario_file, 0, 0, 0, 0);
 	SE_StepDT(0.001f);
@@ -376,7 +376,7 @@ TEST(GetOSIRoadLaneTest, lane_id)
 	{
 		int lane_id = lanes[i];
 
-		const char *road_lane = SE_GetOSIRoadLane(&road_lane_size, veh_id[i]);
+		const char* road_lane = SE_GetOSIRoadLane(&road_lane_size, veh_id[i]);
 		osi_lane.ParseFromArray(road_lane, road_lane_size);
 
 		EXPECT_EQ(osi_lane.id().value(), lane_id);
@@ -388,7 +388,7 @@ TEST(GetOSIRoadLaneTest, left_lane_id)
 {
 
 	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/full_e6mini.xosc";
-	const char *Scenario_file = scenario_file.c_str();
+	const char* Scenario_file = scenario_file.c_str();
 	SE_Init(Scenario_file, 0, 0, 0, 0);
 
 	int n_Objects = SE_GetNumberOfObjects();
@@ -405,7 +405,7 @@ TEST(GetOSIRoadLaneTest, left_lane_id)
 
 	for (int i = 0; i < lanes.size(); i++)
 	{
-		const char *road_lane = SE_GetOSIRoadLane(&road_lane_size, veh_id[i]);
+		const char* road_lane = SE_GetOSIRoadLane(&road_lane_size, veh_id[i]);
 		osi_lane.ParseFromArray(road_lane, road_lane_size);
 		if (lanes[i] == 0)
 		{
@@ -432,7 +432,7 @@ TEST(GetOSIRoadLaneTest, right_lane_id)
 {
 
 	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/full_e6mini.xosc";
-	const char *Scenario_file = scenario_file.c_str();
+	const char* Scenario_file = scenario_file.c_str();
 
 	SE_Init(Scenario_file, 0, 0, 0, 0);
 	SE_StepDT(0.001f);
@@ -446,7 +446,7 @@ TEST(GetOSIRoadLaneTest, right_lane_id)
 
 	for (int i = 0; i < lanes.size(); i++)
 	{
-		const char *road_lane = SE_GetOSIRoadLane(&road_lane_size, veh_id[i]);
+		const char* road_lane = SE_GetOSIRoadLane(&road_lane_size, veh_id[i]);
 		osi_lane.ParseFromArray(road_lane, road_lane_size);
 
 		if (lanes[i] == 14)
@@ -474,7 +474,7 @@ TEST(GetOSIRoadLaneTest, right_lane_boundary_id)
 {
 
 	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/full_e6mini.xosc";
-	const char *Scenario_file = scenario_file.c_str();
+	const char* Scenario_file = scenario_file.c_str();
 
 	SE_Init(Scenario_file, 0, 0, 0, 0);
 	SE_StepDT(0.001f);
@@ -488,7 +488,7 @@ TEST(GetOSIRoadLaneTest, right_lane_boundary_id)
 
 	for (int i = 0; i < lane_bound.size() - 1; i++)
 	{
-		const char *road_lane = SE_GetOSIRoadLane(&road_lane_size, veh_id[i]);
+		const char* road_lane = SE_GetOSIRoadLane(&road_lane_size, veh_id[i]);
 		osi_lane.ParseFromArray(road_lane, road_lane_size);
 
 		EXPECT_EQ(osi_lane.classification().right_lane_boundary_id(0).value(), lane_bound[i + 1]);
@@ -501,7 +501,7 @@ TEST(GetOSIRoadLaneTest, left_lane_boundary_id)
 {
 
 	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/full_e6mini.xosc";
-	const char *Scenario_file = scenario_file.c_str();
+	const char* Scenario_file = scenario_file.c_str();
 
 	SE_Init(Scenario_file, 0, 0, 0, 0);
 	SE_StepDT(0.001f);
@@ -515,7 +515,7 @@ TEST(GetOSIRoadLaneTest, left_lane_boundary_id)
 
 	for (int i = 0; i < veh_id.size(); i++)
 	{
-		const char *road_lane = SE_GetOSIRoadLane(&road_lane_size, veh_id[i]);
+		const char* road_lane = SE_GetOSIRoadLane(&road_lane_size, veh_id[i]);
 		osi_lane.ParseFromArray(road_lane, road_lane_size);
 
 		EXPECT_EQ(osi_lane.classification().left_lane_boundary_id(0).value(), lane_bound[i]);
@@ -534,7 +534,7 @@ TEST_P(GetOSIRoadLaneTest, centerline_is_driving_direction)
 {
 
 	std::string scenario_file = std::get<0>(GetParam());
-	const char *Scenario_file = scenario_file.c_str();
+	const char* Scenario_file = scenario_file.c_str();
 
 	SE_Init(Scenario_file, 0, 0, 0, 0);
 	SE_StepDT(0.001f);
@@ -549,7 +549,7 @@ TEST_P(GetOSIRoadLaneTest, centerline_is_driving_direction)
 
 	for (int i = 0; i < lanes.size(); i++)
 	{
-		const char *road_lane = SE_GetOSIRoadLane(&road_lane_size, veh_id[i]);
+		const char* road_lane = SE_GetOSIRoadLane(&road_lane_size, veh_id[i]);
 		osi_lane.ParseFromArray(road_lane, road_lane_size);
 		if (veh_id[i] < 7)
 		{
@@ -571,7 +571,7 @@ TEST(GetOSIRoadLaneTest, is_host_vehicle_lane)
 {
 
 	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/full_e6mini.xosc";
-	const char *Scenario_file = scenario_file.c_str();
+	const char* Scenario_file = scenario_file.c_str();
 
 	SE_Init(Scenario_file, 0, 0, 0, 0);
 	SE_StepDT(0.001f);
@@ -585,7 +585,7 @@ TEST(GetOSIRoadLaneTest, is_host_vehicle_lane)
 
 	for (int i = 0; i < lanes.size(); i++)
 	{
-		const char *road_lane = SE_GetOSIRoadLane(&road_lane_size, veh_id[i]);
+		const char* road_lane = SE_GetOSIRoadLane(&road_lane_size, veh_id[i]);
 		osi_lane.ParseFromArray(road_lane, road_lane_size);
 
 		EXPECT_EQ(osi_lane.classification().is_host_vehicle_lane(), false);
@@ -598,7 +598,7 @@ TEST(GetOSIRoadLaneTest, lane_classification)
 {
 
 	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/full_e6mini.xosc";
-	const char *Scenario_file = scenario_file.c_str();
+	const char* Scenario_file = scenario_file.c_str();
 
 	SE_Init(Scenario_file, 0, 0, 0, 0);
 	SE_StepDT(0.001f);
@@ -616,7 +616,7 @@ TEST(GetOSIRoadLaneTest, lane_classification)
 	{
 		int lane_id = lanes[i];
 
-		const char *road_lane = SE_GetOSIRoadLane(&road_lane_size, veh_id[i]);
+		const char* road_lane = SE_GetOSIRoadLane(&road_lane_size, veh_id[i]);
 		osi_lane.ParseFromArray(road_lane, road_lane_size);
 
 		osi3::Lane_Classification_Type lane_type = osi_lane.classification().type();
@@ -640,7 +640,7 @@ TEST(GetOSILaneBoundaryTests, lane_boundary_id_existing)
 {
 
 	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/full_e6mini.xosc";
-	const char *Scenario_file = scenario_file.c_str();
+	const char* Scenario_file = scenario_file.c_str();
 
 	SE_Init(Scenario_file, 0, 0, 0, 0);
 	SE_StepDT(0.001f);
@@ -649,8 +649,8 @@ TEST(GetOSILaneBoundaryTests, lane_boundary_id_existing)
 	osi3::LaneBoundary osi_lb;
 
 	// explicitly writing lanes ID so that it will be easy to adapt the test for more complex roads in the future
-	std::vector<int> lanes = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14};
-	std::vector<int> lane_bound = {-1, 8, 9, 10, 0, 1, 2, 3, 11, 4, 5, 6, 7, 12, 13, 14, -1};
+	std::vector<int> lanes = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14 };
+	std::vector<int> lane_bound = { -1, 8, 9, 10, 0, 1, 2, 3, 11, 4, 5, 6, 7, 12, 13, 14, -1 };
 
 	for (int i = 0; i < lane_bound.size(); i++)
 	{
@@ -659,7 +659,7 @@ TEST(GetOSILaneBoundaryTests, lane_boundary_id_existing)
 		{
 			continue;
 		}
-		const char *lb = SE_GetOSILaneBoundary(&lb_size, lb_global_id);
+		const char* lb = SE_GetOSILaneBoundary(&lb_size, lb_global_id);
 		osi_lb.ParseFromArray(lb, lb_size);
 
 		EXPECT_EQ(osi_lb.id().value(), lb_global_id);
@@ -678,14 +678,14 @@ TEST_P(GetOSILaneBoundaryTests, lane_boundary_id_not_existing)
 {
 
 	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/full_e6mini.xosc";
-	const char *Scenario_file = scenario_file.c_str();
+	const char* Scenario_file = scenario_file.c_str();
 
 	SE_Init(Scenario_file, 0, 0, 0, 0);
 	SE_StepDT(0.001f);
 	SE_UpdateOSIGroundTruth();
 	int lb_size = 0;
 
-	const char *lb = SE_GetOSILaneBoundary(&lb_size, std::get<0>(GetParam()));
+	const char* lb = SE_GetOSILaneBoundary(&lb_size, std::get<0>(GetParam()));
 
 	EXPECT_EQ(lb_size, std::get<1>(GetParam()));
 	EXPECT_EQ(lb, nullptr);
@@ -699,7 +699,7 @@ TEST(OSIFile, writeosifile_two_step)
 {
 
 	std::string scenario_file = "../../../resources/xosc/cut-in.xosc";
-	const char *Scenario_file = scenario_file.c_str();
+	const char* Scenario_file = scenario_file.c_str();
 	std::streamoff file_size1, file_size2, file_sizeend;
 
 	SE_Init(Scenario_file, 0, 0, 0, 0);
@@ -762,7 +762,7 @@ TEST_P(GetGroundTruthTests, receive_GroundTruth)
 {
 
 	std::string scenario_file = std::get<0>(GetParam());
-	const char *Scenario_file = scenario_file.c_str();
+	const char* Scenario_file = scenario_file.c_str();
 	int sv_size = 0;
 	osi3::GroundTruth osi_gt;
 
@@ -775,7 +775,7 @@ TEST_P(GetGroundTruthTests, receive_GroundTruth)
 
 	SE_UpdateOSIGroundTruth();
 
-	const char *sv = SE_GetOSIGroundTruth(&sv_size);
+	const char* sv = SE_GetOSIGroundTruth(&sv_size);
 	osi_gt.ParseFromArray(sv, sv_size);
 
 	int n_lanes = osi_gt.lane_size();
@@ -806,7 +806,7 @@ TEST_P(GetGroundTruthTests, receive_GroundTruth)
 	SE_Close();
 }
 
-INSTANTIATE_TEST_SUITE_P(EsminiAPITests, GetGroundTruthTests, ::testing::Values(std::make_tuple("../../../resources/xosc/cut-in.xosc", 14, 2, bounding_box{5.04f, 2.0f, 1.5f, -1.4f, 0.0f, -0.35f}, "+proj=utm +lat_0=37.3542934123933 +lon_0=-122.0859797650754"), std::make_tuple("../../../resources/xosc/straight_500m.xosc", 6, 2, bounding_box{5.0f, 2.0f, 1.8f, -1.4f, 0.0f, -0.5f}, "+proj=utm +lat_0=37.3542934123933 +lon_0=-122.0859797650754"), std::make_tuple("../../../resources/xosc/highway_merge.xosc", 33, 6, bounding_box{5.04f, 2.0f, 1.5f, -1.4f, 0.0f, -0.35f}, "+proj=utm +lat_0=37.3542934123933 +lon_0=-122.0859797650754")));
+INSTANTIATE_TEST_SUITE_P(EsminiAPITests, GetGroundTruthTests, ::testing::Values(std::make_tuple("../../../resources/xosc/cut-in.xosc", 14, 2, bounding_box{ 5.04f, 2.0f, 1.5f, -1.4f, 0.0f, -0.35f }, "+proj=utm +lat_0=37.3542934123933 +lon_0=-122.0859797650754"), std::make_tuple("../../../resources/xosc/straight_500m.xosc", 6, 2, bounding_box{ 5.0f, 2.0f, 1.8f, -1.4f, 0.0f, -0.5f }, "+proj=utm +lat_0=37.3542934123933 +lon_0=-122.0859797650754"), std::make_tuple("../../../resources/xosc/highway_merge.xosc", 33, 6, bounding_box{ 5.04f, 2.0f, 1.5f, -1.4f, 0.0f, -0.35f }, "+proj=utm +lat_0=37.3542934123933 +lon_0=-122.0859797650754")));
 // scenario_file_name, number_of_lanes, number_of_objects, ego_bounding_box
 
 TEST(GetGroundTruthTests, receive_GroundTruth_no_init)
@@ -815,7 +815,7 @@ TEST(GetGroundTruthTests, receive_GroundTruth_no_init)
 	int sv_size = 0;
 	osi3::GroundTruth osi_gt;
 
-	const char *sv = SE_GetOSIGroundTruth(&sv_size);
+	const char* sv = SE_GetOSIGroundTruth(&sv_size);
 
 	EXPECT_EQ(sv_size, 0);
 	EXPECT_EQ(sv, nullptr);
@@ -903,7 +903,7 @@ TEST(GetMiscObjFromGroundTruth, receive_miscobj)
 
 	SE_UpdateOSIGroundTruth();
 
-	const char *gt = SE_GetOSIGroundTruth(&sv_size);
+	const char* gt = SE_GetOSIGroundTruth(&sv_size);
 	osi_gt.ParseFromArray(gt, sv_size);
 
 	int n_miscobjects = osi_gt.mutable_stationary_object()->size();
@@ -946,7 +946,7 @@ TEST(GetMiscObjFromGroundTruth, receive_miscobj)
 
 TEST(TestGetAndSet, SetOSITimestampTest)
 {
-	osi3::GroundTruth *osi_gt;
+	osi3::GroundTruth* osi_gt;
 
 	std::string scenario_file = "../../../resources/xosc/cut-in.xosc";
 
@@ -958,7 +958,7 @@ TEST(TestGetAndSet, SetOSITimestampTest)
 	SE_StepDT(0.001f);
 	SE_UpdateOSIGroundTruth();
 
-	osi_gt = (osi3::GroundTruth *)SE_GetOSIGroundTruthRaw();
+	osi_gt = (osi3::GroundTruth*)SE_GetOSIGroundTruthRaw();
 
 	EXPECT_EQ(osi_gt->mutable_moving_object()->size(), 2);
 
@@ -989,7 +989,7 @@ TEST(TestGetAndSet, SetOSITimestampTest)
 
 TEST(TestGetAndSet, ReportObjectAcc)
 {
-	osi3::GroundTruth *osi_gt;
+	osi3::GroundTruth* osi_gt;
 
 	std::string scenario_file = "../../../resources/xosc/cut-in_simple.xosc";
 
@@ -1001,7 +1001,7 @@ TEST(TestGetAndSet, ReportObjectAcc)
 	SE_StepDT(0.001f);
 	SE_UpdateOSIGroundTruth();
 
-	osi_gt = (osi3::GroundTruth *)SE_GetOSIGroundTruthRaw();
+	osi_gt = (osi3::GroundTruth*)SE_GetOSIGroundTruthRaw();
 
 	EXPECT_EQ(osi_gt->mutable_moving_object()->size(), 2);
 
@@ -1032,7 +1032,7 @@ TEST(TestGetAndSet, ReportObjectAcc)
 
 TEST(TestGetAndSet, ReportObjectVel)
 {
-	osi3::GroundTruth *osi_gt;
+	osi3::GroundTruth* osi_gt;
 
 	std::string scenario_file = "../../../resources/xosc/cut-in_simple.xosc";
 
@@ -1044,7 +1044,7 @@ TEST(TestGetAndSet, ReportObjectVel)
 	SE_StepDT(0.001f);
 	SE_UpdateOSIGroundTruth();
 
-	osi_gt = (osi3::GroundTruth *)SE_GetOSIGroundTruthRaw();
+	osi_gt = (osi3::GroundTruth*)SE_GetOSIGroundTruthRaw();
 
 	EXPECT_EQ(osi_gt->mutable_moving_object()->size(), 2);
 
@@ -1971,23 +1971,23 @@ TEST(ExternalControlTest, TestTimings)
 	float dt = 0.1f;
 	float ghost_speed;
 
-	const char* args[2][5] =
+	const char* args[2][10] =
 	{
 		{
-			"--osc ../../../EnvironmentSimulator/Unittest/xosc/timing_scenario0.xosc",
-			"--record sim.dat",
-			"--fixed_timestep 0.1",
-			//"--window 60 60 800 400",
-			"--csv_logger csv_log.csv",
-			"--osi_file gt.osi"
+			"--osc", "../../../EnvironmentSimulator/Unittest/xosc/timing_scenario0.xosc",
+			"--record", "sim.dat",
+			"--fixed_timestep", "0.1",
+			//"--window", "60", "60", "800", "400",
+			"--csv_logger", "csv_log.csv",
+			"--osi_file", "gt.osi"
 		},
 		{
-			"--osc ../../../EnvironmentSimulator/Unittest/xosc/timing_scenario_with_restarts.xosc",
-			"--record sim.dat",
-			"--fixed_timestep 0.1",
-			//"--window 60 60 800 400",
-			"--csv_logger csv_log.csv",
-			"--osi_file gt.osi"
+			"--osc", "../../../EnvironmentSimulator/Unittest/xosc/timing_scenario_with_restarts.xosc",
+			"--record", "sim.dat",
+			"--fixed_timestep", "0.1",
+			//"--window", "60", "60", "800", "400",
+			"--csv_logger", "csv_log.csv",
+			"--osi_file", "gt.osi"
 		}
 	};
 
@@ -2430,7 +2430,7 @@ TEST(ParameterTest, GetTypedParameterValues)
 	EXPECT_EQ(retVal, -1);
 
 	// String
-	const char *strVar;
+	const char* strVar;
 	retVal = SE_GetParameterString("DummyParameter3", &strVar);
 	EXPECT_EQ(retVal, 0);
 	EXPECT_STREQ(strVar, "lane_change_param");
@@ -2497,7 +2497,7 @@ TEST(VariableTest, GetTypedVariableValues)
 	EXPECT_EQ(retVal, -1);
 
 	// String
-	const char *strVar;
+	const char* strVar;
 	retVal = SE_GetVariableString("DummyVariable3", &strVar);
 	EXPECT_EQ(retVal, 0);
 	EXPECT_STREQ(strVar, "lane_change_var3");
@@ -2535,7 +2535,7 @@ static void paramDeclCallback(void*)
 }
 
 TEST(ParameterTest, SetParameterValuesBeforeInit)
-	{
+{
 	double positions[3][2] = {
 		{5.34382, 186.68216},  // TargetSpeedFactor = 1.1
 		{8.69271, 240.62697},  // TargetSpeedFactor = 1.5
@@ -2569,7 +2569,7 @@ TEST(ParameterTest, SetParameterValuesBeforeInit)
 TEST(TestGetAndSet, OverrideActionTest)
 {
 	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/override_action.xosc";
-	const char *Scenario_file = scenario_file.c_str();
+	const char* Scenario_file = scenario_file.c_str();
 	float dt = 0.1f;
 	float t = 0.0f;
 
@@ -2718,7 +2718,7 @@ TEST(TestGetAndSet, OverrideActionTestver1_2)
 TEST(TestGetAndSet, PropertyTest)
 {
 	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/VehiclePropertyTest.xosc";
-	const char *Scenario_file = scenario_file.c_str();
+	const char* Scenario_file = scenario_file.c_str();
 	SE_Init(Scenario_file, 0, 0, 0, 0);
 
 	//object 0, 3 properties
@@ -2798,16 +2798,16 @@ TEST(RoadSign, TestValidityRecord)
 	SE_Close();
 }
 
-TEST(ObjectIds,check_ids)
+TEST(ObjectIds, check_ids)
 {
 	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/init_test_objects_strange_order.xosc";
-	const char *Scenario_file = scenario_file.c_str();
+	const char* Scenario_file = scenario_file.c_str();
 	int i_init = SE_Init(Scenario_file, 0, 0, 0, 0);
 	ASSERT_EQ(i_init, 0);
 	SE_StepDT(0.001f);
-	ASSERT_EQ(SE_GetId(0),0);
-	ASSERT_EQ(SE_GetId(1),2);
-	ASSERT_EQ(SE_GetId(2),1);
+	ASSERT_EQ(SE_GetId(0), 0);
+	ASSERT_EQ(SE_GetId(1), 2);
+	ASSERT_EQ(SE_GetId(2), 1);
 
 	SE_Close();
 }
@@ -2944,7 +2944,7 @@ TEST(ExternalController, TestExternalDriver)
 					EXPECT_NEAR(objectState.p, 0.046, 1e-3);
 				}
 			}
-			else if (i==1)
+			else if (i == 1)
 			{
 				float speed2 = 0;
 				if (abs(SE_GetSimulationTime() - 11.0f) < SMALL_NUMBER)
@@ -3184,21 +3184,21 @@ TEST(APITest, TestGetRoute)
 	EXPECT_EQ(SE_Init(scenario_file.c_str(), 0, 0, 0, 0), 0);
 
 	int num_of_points = SE_GetNumberOfRoutePoints(0);
-	EXPECT_EQ(num_of_points,4);
+	EXPECT_EQ(num_of_points, 4);
 
 	SE_RouteInfo route_info;
-	SE_GetRoutePoint(0,0,&route_info);
-	EXPECT_EQ(route_info.t,-1.5);
-	EXPECT_EQ(route_info.s,15);
-	EXPECT_EQ(route_info.x,15);
-	EXPECT_EQ(route_info.y,-1.5);
-	EXPECT_EQ(route_info.osiLaneId,3);
-	SE_GetRoutePoint(0,1,&route_info);
-	EXPECT_EQ(route_info.t,-4.5);
-	EXPECT_EQ(route_info.s,150);
-	EXPECT_EQ(route_info.x,150);
-	EXPECT_EQ(route_info.y,-4.5);
-	EXPECT_EQ(route_info.osiLaneId,15);
+	SE_GetRoutePoint(0, 0, &route_info);
+	EXPECT_EQ(route_info.t, -1.5);
+	EXPECT_EQ(route_info.s, 15);
+	EXPECT_EQ(route_info.x, 15);
+	EXPECT_EQ(route_info.y, -1.5);
+	EXPECT_EQ(route_info.osiLaneId, 3);
+	SE_GetRoutePoint(0, 1, &route_info);
+	EXPECT_EQ(route_info.t, -4.5);
+	EXPECT_EQ(route_info.s, 150);
+	EXPECT_EQ(route_info.x, 150);
+	EXPECT_EQ(route_info.y, -4.5);
+	EXPECT_EQ(route_info.osiLaneId, 15);
 
 	SE_Close();
 }
@@ -3244,13 +3244,13 @@ TEST(APITest, TestFetchImage)
 		"--headless"
 	};
 
-	ASSERT_EQ(SE_InitWithArgs(sizeof(args)/sizeof(char*), args), 0);
+	ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
 	SE_SaveImagesToRAM(true);
 
 	ASSERT_EQ(SE_GetNumberOfObjects(), 2);
 
-	SE_Image image = {0, 0, 0, 0, 0};
- 	SE_FetchImage(&image);
+	SE_Image image = { 0, 0, 0, 0, 0 };
+	SE_FetchImage(&image);
 	ASSERT_NE(image.data, nullptr);
 
 	EXPECT_EQ(image.width, 800);
@@ -3258,7 +3258,7 @@ TEST(APITest, TestFetchImage)
 	EXPECT_EQ(image.pixelSize, 3);
 
 	// Check RGB color values of a random pixel x=222, y=250
-	int pixelNr = ((400-1) - 250) * 800 + 222;  // image stored upside down
+	int pixelNr = ((400 - 1) - 250) * 800 + 222;  // image stored upside down
 	EXPECT_NEAR(image.data[pixelNr * image.pixelSize + 2], 65, max_pixel_deviation);  // R
 	EXPECT_NEAR(image.data[pixelNr * image.pixelSize + 1], 88, max_pixel_deviation);  // G
 	EXPECT_NEAR(image.data[pixelNr * image.pixelSize + 0], 37, max_pixel_deviation);  // B
@@ -3308,7 +3308,7 @@ TEST(APITest, TestFetchImage)
 	EXPECT_EQ(CheckFileExists(screenshotFilename0, oldModTime), false);
 
 	// Run a few steps to create the screenshot images
-	for (int i=0; i<3; i++) SE_StepDT(0.1f);
+	for (int i = 0; i < 3; i++) SE_StepDT(0.1f);
 	SE_sleep(100);  // Allow for last image to be created (running in a separate thread)
 
 	EXPECT_EQ(CheckFileExists(screenshotFilename0, oldModTime), true);
@@ -3397,449 +3397,6 @@ TEST(DirectJunctionTest, TestVariousRoutes)
 		SE_Close();
 	}
 	SE_RegisterParameterDeclarationCallback(0, 0);
-}
-
-static void ReadDat(std::string filename, std::vector<scenarioengine::ReplayEntry>& entries)
-{
-	std::ifstream file;
-	scenarioengine::DatHeader header;
-
-	file.open(filename, std::ofstream::binary);
-	ASSERT_EQ(file.fail(), false);
-
-	file.read((char*)&header, sizeof(header));
-
-	scenarioengine::ReplayEntry entry;
-
-	while (!file.eof())
-	{
-		file.read((char*)&entry.state, sizeof(entry.state));
-
-		if (!file.eof())
-		{
-			entries.push_back(entry);
-		}
-	}
-	file.close();
-}
-
-TEST(ExternalControlTest, TestTimings)
-{
-	// This test case imitates a custom application controlling the Ego vehicle
-	// It makes use of the esmini ghost feature to provide input to a driver model
-	// Ego vehicle state is reported for each time step.
-
-	SE_ScenarioObjectState ego_state;
-	SE_RoadInfo road_info;
-	double duration = 10.0;
-	float dt = 0.1f;
-	float ghost_speed;
-
-	const char* args[2][10] =
-	{
-		{
-			"--osc", "../../../EnvironmentSimulator/Unittest/xosc/timing_scenario0.xosc",
-			"--record", "sim.dat",
-			"--fixed_timestep", "0.1",
-			//"--window", "60", "60", "800", "400",
-			"--csv_logger", "csv_log.csv",
-			"--osi_file", "gt.osi"
-		},
-		{
-			"--osc", "../../../EnvironmentSimulator/Unittest/xosc/timing_scenario_with_restarts.xosc",
-			"--record", "sim.dat",
-			"--fixed_timestep", "0.1",
-			//"--window", "60", "60", "800", "400",
-			"--csv_logger", "csv_log.csv",
-			"--osi_file", "gt.osi"
-		}
-	};
-
-	SE_AddPath("../../../resources/xodr");
-
-	for (int j = 0; j < 2; j++)
-	{
-		ASSERT_EQ(SE_InitWithArgs(sizeof(args[j]) / sizeof(char*), args[j]), 0);
-		ASSERT_EQ(SE_GetNumberOfObjects(), 3);
-
-		// show some road features, including road sensor
-		SE_ViewerShowFeature(4 + 8, true);  // NODE_MASK_TRAIL_DOTS (1 << 2) & NODE_MASK_ODR_FEATURES (1 << 3),
-
-		// Initialize the vehicle model, fetch initial state from the scenario
-		SE_GetObjectState(0, &ego_state);
-
-		while (SE_GetSimulationTime() < duration && SE_GetQuitFlag() != 1)
-		{
-			// Copy position and heading from ghost at next timestamp
-			SE_GetRoadInfoGhostTrailTime(0, SE_GetSimulationTime() + dt, &road_info, &ghost_speed);
-			ego_state.x = road_info.global_pos_x + 100;
-			ego_state.y = road_info.global_pos_y;
-			ego_state.h = road_info.trail_heading;
-
-			SE_ReportObjectPosXYH(0, 0, ego_state.x, ego_state.y, ego_state.h);
-			SE_ReportObjectSpeed(0, ghost_speed);
-
-			// Finally, update scenario using same time step as for vehicle model
-			SE_StepDT(dt);
-		}
-
-		SE_Close();
-
-		// Check .dat file
-		std::vector<scenarioengine::ReplayEntry> entries;
-		ReadDat("sim.dat", entries);
-
-		// Check first timestep (-3.0)
-		int i = 0;
-		EXPECT_NEAR(entries[i].state.info.timeStamp, -3.0, 1E-3);
-		EXPECT_STREQ(entries[i].state.info.name, "Ego");
-		EXPECT_NEAR(entries[i].state.pos.x, 10.0, 1E-3);
-		EXPECT_NEAR(entries[i].state.pos.y, -1.5, 1E-3);
-		i++;
-		EXPECT_NEAR(entries[i].state.info.timeStamp, -3.0, 1E-3);
-		EXPECT_STREQ(entries[i].state.info.name, "Target");
-		EXPECT_NEAR(entries[i].state.pos.x, 10.0, 1E-3);
-		EXPECT_NEAR(entries[i].state.pos.y, -4.5, 1E-3);
-		i++;
-		EXPECT_NEAR(entries[i].state.info.timeStamp, -3.0, 1E-3);
-		EXPECT_STREQ(entries[i].state.info.name, "Ego_ghost");
-		EXPECT_NEAR(entries[i].state.pos.x, 10.0, 1E-3);
-		EXPECT_NEAR(entries[i].state.pos.y, -1.5, 1E-3);
-
-		// Check timestep before 0.0
-		while (i < entries.size() - 1 && entries[i].state.info.timeStamp < -SMALL_NUMBER) i++;
-		i -= 3;
-		EXPECT_NEAR(entries[i].state.info.timeStamp, -0.05, 1E-3);
-		EXPECT_STREQ(entries[i].state.info.name, "Ego");
-		EXPECT_NEAR(entries[i].state.pos.x, 10.0, 1E-3);
-		EXPECT_NEAR(entries[i].state.pos.y, -1.5, 1E-3);
-		i++;
-		EXPECT_NEAR(entries[i].state.info.timeStamp, -0.05, 1E-3);
-		EXPECT_STREQ(entries[i].state.info.name, "Target");
-		EXPECT_NEAR(entries[i].state.pos.x, 10.0, 1E-3);
-		EXPECT_NEAR(entries[i].state.pos.y, -4.5, 1E-3);
-		i++;
-		EXPECT_NEAR(entries[i].state.info.timeStamp, -0.05, 1E-3);
-		EXPECT_STREQ(entries[i].state.info.name, "Ego_ghost");
-		EXPECT_NEAR(entries[i].state.pos.x, 39.5, 1E-3);
-		EXPECT_NEAR(entries[i].state.pos.y, -1.5, 1E-3);
-
-		// Check timestep 0.0
-		i++;
-		EXPECT_NEAR(entries[i].state.info.timeStamp, 0.0, 1E-3);
-		EXPECT_STREQ(entries[i].state.info.name, "Ego");
-		EXPECT_NEAR(entries[i].state.pos.x, 10.0, 1E-3);
-		EXPECT_NEAR(entries[i].state.pos.y, -1.5, 1E-3);
-		i++;
-		EXPECT_NEAR(entries[i].state.info.timeStamp, 0.0, 1E-3);
-		EXPECT_STREQ(entries[i].state.info.name, "Target");
-		EXPECT_NEAR(entries[i].state.pos.x, 10.0, 1E-3);
-		EXPECT_NEAR(entries[i].state.pos.y, -4.5, 1E-3);
-		i++;
-		EXPECT_NEAR(entries[i].state.info.timeStamp, 0.0, 1E-3);
-		EXPECT_STREQ(entries[i].state.info.name, "Ego_ghost");
-		EXPECT_NEAR(entries[i].state.pos.x, 40.0, 1E-3);
-		EXPECT_NEAR(entries[i].state.pos.y, -1.5, 1E-3);
-
-		// Check timestep after 0.0
-		i++;
-		EXPECT_NEAR(entries[i].state.info.timeStamp, dt, 1E-3);
-		EXPECT_STREQ(entries[i].state.info.name, "Ego");
-		EXPECT_NEAR(entries[i].state.pos.x, 111.0, 1E-3);
-		EXPECT_NEAR(entries[i].state.pos.y, -1.5, 1E-3);
-		i++;
-		EXPECT_NEAR(entries[i].state.info.timeStamp, dt, 1E-3);
-		EXPECT_STREQ(entries[i].state.info.name, "Target");
-		EXPECT_NEAR(entries[i].state.pos.x, 12.0, 1E-3);
-		EXPECT_NEAR(entries[i].state.pos.y, -4.5, 1E-3);
-		i++;
-		EXPECT_NEAR(entries[i].state.info.timeStamp, dt, 1E-3);
-		EXPECT_STREQ(entries[i].state.info.name, "Ego_ghost");
-		EXPECT_NEAR(entries[i].state.pos.x, 41.0, 1E-3);
-		EXPECT_NEAR(entries[i].state.pos.y, -1.5, 1E-3);
-
-		if (j == 1)  // additional restart tests
-		{
-			// Check first restart
-			i = 243;
-			EXPECT_NEAR(entries[i].state.info.timeStamp, 2.1, 1E-3);
-			EXPECT_STREQ(entries[i].state.info.name, "Ego");
-			EXPECT_NEAR(entries[i].state.pos.x, 131.0, 1E-3);
-			EXPECT_NEAR(entries[i].state.pos.y, -1.5, 1E-3);
-			i++;
-			EXPECT_NEAR(entries[i].state.info.timeStamp, 2.1, 1E-3);
-			EXPECT_STREQ(entries[i].state.info.name, "Target");
-			EXPECT_NEAR(entries[i].state.pos.x, 52.0, 1E-3);
-			EXPECT_NEAR(entries[i].state.pos.y, -4.5, 1E-3);
-			i++;
-			EXPECT_NEAR(entries[i].state.info.timeStamp, 2.1, 1E-3);
-			EXPECT_STREQ(entries[i].state.info.name, "Ego_ghost");
-			EXPECT_NEAR(entries[i].state.pos.x, 61.0, 1E-3);
-			EXPECT_NEAR(entries[i].state.pos.y, -1.5, 1E-3);
-
-			i++;
-			EXPECT_NEAR(entries[i].state.info.timeStamp, -0.75, 1E-3);
-			EXPECT_STREQ(entries[i].state.info.name, "Ego");
-			EXPECT_NEAR(entries[i].state.pos.x, 132.0, 1E-3);
-			EXPECT_NEAR(entries[i].state.pos.y, -1.5, 1E-3);
-			i++;
-			EXPECT_NEAR(entries[i].state.info.timeStamp, -0.75, 1E-3);
-			EXPECT_STREQ(entries[i].state.info.name, "Target");
-			EXPECT_NEAR(entries[i].state.pos.x, 54.0, 1E-3);
-			EXPECT_NEAR(entries[i].state.pos.y, -4.5, 1E-3);
-			i++;
-			EXPECT_NEAR(entries[i].state.info.timeStamp, -0.75, 1E-3);
-			EXPECT_STREQ(entries[i].state.info.name, "Ego_ghost");
-			EXPECT_NEAR(entries[i].state.pos.x, 131.502, 1E-3);
-			EXPECT_NEAR(entries[i].state.pos.y, -1.5, 1E-3);
-
-			i++;
-			EXPECT_NEAR(entries[i].state.info.timeStamp, -0.70, 1E-3);
-			EXPECT_STREQ(entries[i].state.info.name, "Ego");
-			EXPECT_NEAR(entries[i].state.pos.x, 132.0, 1E-3);
-			EXPECT_NEAR(entries[i].state.pos.y, -1.5, 1E-3);
-			i++;
-			EXPECT_NEAR(entries[i].state.info.timeStamp, -0.70, 1E-3);
-			EXPECT_STREQ(entries[i].state.info.name, "Target");
-			EXPECT_NEAR(entries[i].state.pos.x, 54.0, 1E-3);
-			EXPECT_NEAR(entries[i].state.pos.y, -4.5, 1E-3);
-			i++;
-			EXPECT_NEAR(entries[i].state.info.timeStamp, -0.70, 1E-3);
-			EXPECT_STREQ(entries[i].state.info.name, "Ego_ghost");
-			EXPECT_NEAR(entries[i].state.pos.x, 132.005, 1E-3);
-			EXPECT_NEAR(entries[i].state.pos.y, -1.5, 1E-3);
-
-			i = 423;
-			EXPECT_NEAR(entries[i].state.info.timeStamp, 2.2, 1E-3);
-			EXPECT_STREQ(entries[i].state.info.name, "Ego");
-			EXPECT_NEAR(entries[i].state.pos.x, 132.0, 1E-3);
-			EXPECT_NEAR(entries[i].state.pos.y, -1.5, 1E-3);
-			i++;
-			EXPECT_NEAR(entries[i].state.info.timeStamp, 2.2, 1E-3);
-			EXPECT_STREQ(entries[i].state.info.name, "Target");
-			EXPECT_NEAR(entries[i].state.pos.x, 54.0, 1E-3);
-			EXPECT_NEAR(entries[i].state.pos.y, -4.5, 1E-3);
-			i++;
-			EXPECT_NEAR(entries[i].state.info.timeStamp, 2.2, 1E-3);
-			EXPECT_STREQ(entries[i].state.info.name, "Ego_ghost");
-			EXPECT_NEAR(entries[i].state.pos.x, 169.124, 1E-3);
-			EXPECT_NEAR(entries[i].state.pos.y, -1.5, 1E-3);
-
-			i++;
-			EXPECT_NEAR(entries[i].state.info.timeStamp, 2.3, 1E-3);
-			EXPECT_STREQ(entries[i].state.info.name, "Ego");
-			EXPECT_NEAR(entries[i].state.pos.x, 232.008, 1E-3);
-			EXPECT_NEAR(entries[i].state.pos.y, -1.5, 1E-3);
-			i++;
-			EXPECT_NEAR(entries[i].state.info.timeStamp, 2.3, 1E-3);
-			EXPECT_STREQ(entries[i].state.info.name, "Target");
-			EXPECT_NEAR(entries[i].state.pos.x, 56.0, 1E-3);
-			EXPECT_NEAR(entries[i].state.pos.y, -4.5, 1E-3);
-			i++;
-			EXPECT_NEAR(entries[i].state.info.timeStamp, 2.3, 1E-3);
-			EXPECT_STREQ(entries[i].state.info.name, "Ego_ghost");
-			EXPECT_NEAR(entries[i].state.pos.x, 170.624, 1E-3);
-			EXPECT_NEAR(entries[i].state.pos.y, -1.5, 1E-3);
-
-			i = 600;
-			EXPECT_NEAR(entries[i].state.info.timeStamp, 8.1, 1E-3);
-			EXPECT_STREQ(entries[i].state.info.name, "Ego");
-			EXPECT_NEAR(entries[i].state.pos.x, 312.624, 1E-3);
-			EXPECT_NEAR(entries[i].state.pos.y, -1.5, 1E-3);
-			i++;
-			EXPECT_NEAR(entries[i].state.info.timeStamp, 8.1, 1E-3);
-			EXPECT_STREQ(entries[i].state.info.name, "Target");
-			EXPECT_NEAR(entries[i].state.pos.x, 172.000, 1E-3);
-			EXPECT_NEAR(entries[i].state.pos.y, -4.5, 1E-3);
-			i++;
-			EXPECT_NEAR(entries[i].state.info.timeStamp, 8.1, 1E-3);
-			EXPECT_STREQ(entries[i].state.info.name, "Ego_ghost");
-			EXPECT_NEAR(entries[i].state.pos.x, 257.624, 1E-3);
-			EXPECT_NEAR(entries[i].state.pos.y, -1.5, 1E-3);
-
-			i++;
-			EXPECT_NEAR(entries[i].state.info.timeStamp, 5.25, 1E-3);
-			EXPECT_STREQ(entries[i].state.info.name, "Ego");
-			EXPECT_NEAR(entries[i].state.pos.x, 314.124, 1E-3);
-			EXPECT_NEAR(entries[i].state.pos.y, -1.5, 1E-3);
-			i++;
-			EXPECT_NEAR(entries[i].state.info.timeStamp, 5.25, 1E-3);
-			EXPECT_STREQ(entries[i].state.info.name, "Target");
-			EXPECT_NEAR(entries[i].state.pos.x, 174.000, 1E-3);
-			EXPECT_NEAR(entries[i].state.pos.y, -4.5, 1E-3);
-			i++;
-			EXPECT_NEAR(entries[i].state.info.timeStamp, 5.25, 1E-3);
-			EXPECT_STREQ(entries[i].state.info.name, "Ego_ghost");
-			EXPECT_NEAR(entries[i].state.pos.x, 313.376, 1E-3);
-			EXPECT_NEAR(entries[i].state.pos.y, -1.5, 1E-3);
-
-			i = 774;
-			EXPECT_NEAR(entries[i].state.info.timeStamp, 8.1, 1E-3);
-			EXPECT_STREQ(entries[i].state.info.name, "Ego");
-			EXPECT_NEAR(entries[i].state.pos.x, 314.124, 1E-3);
-			EXPECT_NEAR(entries[i].state.pos.y, -1.5, 1E-3);
-			i++;
-			EXPECT_NEAR(entries[i].state.info.timeStamp, 8.1, 1E-3);
-			EXPECT_STREQ(entries[i].state.info.name, "Target");
-			EXPECT_NEAR(entries[i].state.pos.x, 174.000, 1E-3);
-			EXPECT_NEAR(entries[i].state.pos.y, -4.5, 1E-3);
-			i++;
-			EXPECT_NEAR(entries[i].state.info.timeStamp, 8.1, 1E-3);
-			EXPECT_STREQ(entries[i].state.info.name, "Ego_ghost");
-			EXPECT_NEAR(entries[i].state.pos.x, 363.748, 1E-3);
-			EXPECT_NEAR(entries[i].state.pos.y, -1.5, 1E-3);
-
-			i = 780;
-			EXPECT_NEAR(entries[i].state.info.timeStamp, 8.2, 1E-3);
-			EXPECT_STREQ(entries[i].state.info.name, "Ego");
-			EXPECT_NEAR(entries[i].state.pos.x, 314.124, 1E-3);
-			EXPECT_NEAR(entries[i].state.pos.y, -1.5, 1E-3);
-			i++;
-			EXPECT_NEAR(entries[i].state.info.timeStamp, 8.2, 1E-3);
-			EXPECT_STREQ(entries[i].state.info.name, "Target");
-			EXPECT_NEAR(entries[i].state.pos.x, 174.000, 1E-3);
-			EXPECT_NEAR(entries[i].state.pos.y, -4.5, 1E-3);
-			i++;
-			EXPECT_NEAR(entries[i].state.info.timeStamp, 8.2, 1E-3);
-			EXPECT_STREQ(entries[i].state.info.name, "Ego_ghost");
-			EXPECT_NEAR(entries[i].state.pos.x, 365.748, 1E-3);
-			EXPECT_NEAR(entries[i].state.pos.y, -1.5, 1E-3);
-
-			i++;
-			EXPECT_NEAR(entries[i].state.info.timeStamp, 8.3, 1E-3);
-			EXPECT_STREQ(entries[i].state.info.name, "Ego");
-			EXPECT_NEAR(entries[i].state.pos.x, 414.133, 1E-3);
-			EXPECT_NEAR(entries[i].state.pos.y, -1.5, 1E-3);
-			i++;
-			EXPECT_NEAR(entries[i].state.info.timeStamp, 8.3, 1E-3);
-			EXPECT_STREQ(entries[i].state.info.name, "Target");
-			EXPECT_NEAR(entries[i].state.pos.x, 176.000, 1E-3);
-			EXPECT_NEAR(entries[i].state.pos.y, -4.5, 1E-3);
-			i++;
-			EXPECT_NEAR(entries[i].state.info.timeStamp, 8.3, 1E-3);
-			EXPECT_STREQ(entries[i].state.info.name, "Ego_ghost");
-			EXPECT_NEAR(entries[i].state.pos.x, 367.748, 1E-3);
-			EXPECT_NEAR(entries[i].state.pos.y, -1.5, 1E-3);
-
-			// Also check a few entries in the csv log file, focus on scenario controlled entity "Target"
-			std::vector<std::vector<std::string>> csv;
-			ASSERT_EQ(SE_ReadCSVFile("csv_log.csv", csv, 6), 0);
-			EXPECT_NEAR(std::stod(csv[1][1]), -3.0, 1E-3);
-			EXPECT_NEAR(std::stod(csv[61][30]), 10.0, 1E-3);
-			EXPECT_NEAR(std::stod(csv[61][33]), 20.0, 1E-3);
-			EXPECT_NEAR(std::stod(csv[61][36]), 0.0, 1E-3);
-			EXPECT_NEAR(std::stod(csv[82][1]), 2.1, 1E-3);
-			EXPECT_NEAR(std::stod(csv[82][30]), 52.0, 1E-3);
-			EXPECT_NEAR(std::stod(csv[82][33]), 20.0, 1E-3);
-			EXPECT_NEAR(std::stod(csv[82][36]), 0.0, 1E-3);
-			EXPECT_NEAR(std::stod(csv[83][1]), -0.75, 1E-3);
-			EXPECT_NEAR(std::stod(csv[83][30]), 54.0, 1E-3);
-			EXPECT_NEAR(std::stod(csv[83][33]), 20.0, 1E-3);
-			EXPECT_NEAR(std::stod(csv[83][36]), 0.0, 1E-3);
-			EXPECT_NEAR(std::stod(csv[142][1]), 2.2, 1E-3);
-			EXPECT_NEAR(std::stod(csv[142][30]), 54.0, 1E-3);
-			EXPECT_NEAR(std::stod(csv[142][33]), 20.0, 1E-3);
-			EXPECT_NEAR(std::stod(csv[142][36]), 0.0, 1E-3);
-
-			// Read OSI file
-			FILE* file = fopen("gt.osi", "rb");
-			ASSERT_NE(file, nullptr);
-
-			const int max_msg_size = 10000;
-			char msg_buf[max_msg_size];
-			int msg_size;
-			osi3::GroundTruth osi_gt;
-			double seconds = -1.0;
-
-			double time_stamps[] = { 0.0, 2.1, 2.2 };
-
-			// Focus on position and acceleration
-			double pos_x[3][3] = {   // for three timestamps and three entities
-				{ 11.4, 11.3, 41.4 },
-				{ 132.4, 53.3, 62.4 },
-				{ 133.4, 55.3, 170.524 }
-			};
-
-			double acc_x[3][3] = {   // for three timestamps and three entities
-				{ 0.0, 0.0, 0.0 },
-				{ 0.0, 0.0, 0.0 },
-				{ 0.0, 0.0, 0.0 }
-			};
-
-
-			// Read OSI message size
-			ASSERT_EQ(fread((char*)(&msg_size), 1, sizeof(msg_size), file), sizeof(msg_size));
-			ASSERT_LE(msg_size, max_msg_size);
-
-			// Read first OSI message
-			EXPECT_EQ(fread(msg_buf, 1, msg_size, file), msg_size);
-			osi_gt.ParseFromArray(msg_buf, msg_size);
-
-			seconds = osi_gt.mutable_timestamp()->seconds() + 1E-9 * osi_gt.mutable_timestamp()->nanos();
-
-			EXPECT_NEAR(seconds, time_stamps[0], 1E-3);
-
-			EXPECT_EQ(osi_gt.mutable_moving_object()->size(), 3);
-			EXPECT_NEAR(osi_gt.mutable_moving_object(0)->mutable_base()->mutable_position()->x(), pos_x[0][0], 1E-3);
-			EXPECT_NEAR(osi_gt.mutable_moving_object(1)->mutable_base()->mutable_position()->x(), pos_x[0][1], 1E-3);
-			EXPECT_NEAR(osi_gt.mutable_moving_object(2)->mutable_base()->mutable_position()->x(), pos_x[0][2], 1E-3);
-			EXPECT_NEAR(osi_gt.mutable_moving_object(0)->mutable_base()->mutable_acceleration()->x(), acc_x[0][0], 1E-3);
-			EXPECT_NEAR(osi_gt.mutable_moving_object(1)->mutable_base()->mutable_acceleration()->x(), acc_x[0][1], 1E-3);
-			EXPECT_NEAR(osi_gt.mutable_moving_object(2)->mutable_base()->mutable_acceleration()->x(), acc_x[0][2], 1E-3);
-
-			// fast forward until 2.0 seconds
-			while (seconds < 2.0 - SMALL_NUMBER)
-			{
-				// Read OSI message size
-				ASSERT_EQ(fread((char*)(&msg_size), 1, sizeof(msg_size), file), sizeof(msg_size));
-				ASSERT_LE(msg_size, max_msg_size);
-
-				// Read OSI message
-				EXPECT_EQ(fread(msg_buf, 1, msg_size, file), msg_size);
-				osi_gt.ParseFromArray(msg_buf, msg_size);
-
-				seconds = osi_gt.mutable_timestamp()->seconds() + 1E-9 * osi_gt.mutable_timestamp()->nanos();
-			}
-
-			// Read second OSI message (should be at 2.1s)
-			ASSERT_EQ(fread((char*)(&msg_size), 1, sizeof(msg_size), file), sizeof(msg_size));
-			ASSERT_LE(msg_size, max_msg_size);
-			EXPECT_EQ(fread(msg_buf, 1, msg_size, file), msg_size);
-			osi_gt.ParseFromArray(msg_buf, msg_size);
-
-			seconds = osi_gt.mutable_timestamp()->seconds() + 1E-9 * osi_gt.mutable_timestamp()->nanos();
-
-			EXPECT_NEAR(seconds, time_stamps[1], 1E-3);
-
-			EXPECT_EQ(osi_gt.mutable_moving_object()->size(), 3);
-			EXPECT_NEAR(osi_gt.mutable_moving_object(0)->mutable_base()->mutable_position()->x(), pos_x[1][0], 1E-3);
-			EXPECT_NEAR(osi_gt.mutable_moving_object(1)->mutable_base()->mutable_position()->x(), pos_x[1][1], 1E-3);
-			EXPECT_NEAR(osi_gt.mutable_moving_object(2)->mutable_base()->mutable_position()->x(), pos_x[1][2], 1E-3);
-			EXPECT_NEAR(osi_gt.mutable_moving_object(0)->mutable_base()->mutable_acceleration()->x(), acc_x[1][0], 1E-3);
-			EXPECT_NEAR(osi_gt.mutable_moving_object(1)->mutable_base()->mutable_acceleration()->x(), acc_x[1][1], 1E-3);
-			EXPECT_NEAR(osi_gt.mutable_moving_object(2)->mutable_base()->mutable_acceleration()->x(), acc_x[1][2], 1E-3);
-
-			// Read third OSI message (should be at 2.2s)
-			ASSERT_EQ(fread((char*)(&msg_size), 1, sizeof(msg_size), file), sizeof(msg_size));
-			ASSERT_LE(msg_size, max_msg_size);
-			EXPECT_EQ(fread(msg_buf, 1, msg_size, file), msg_size);
-			osi_gt.ParseFromArray(msg_buf, msg_size);
-
-			seconds = osi_gt.mutable_timestamp()->seconds() + 1E-9 * osi_gt.mutable_timestamp()->nanos();
-
-			EXPECT_NEAR(seconds, time_stamps[2], 1E-3);
-
-			EXPECT_EQ(osi_gt.mutable_moving_object()->size(), 3);
-			EXPECT_NEAR(osi_gt.mutable_moving_object(0)->mutable_base()->mutable_position()->x(), pos_x[2][0], 1E-3);
-			EXPECT_NEAR(osi_gt.mutable_moving_object(1)->mutable_base()->mutable_position()->x(), pos_x[2][1], 1E-3);
-			EXPECT_NEAR(osi_gt.mutable_moving_object(2)->mutable_base()->mutable_position()->x(), pos_x[2][2], 1E-3);
-			EXPECT_NEAR(osi_gt.mutable_moving_object(0)->mutable_base()->mutable_acceleration()->x(), acc_x[2][0], 1E-3);
-			EXPECT_NEAR(osi_gt.mutable_moving_object(1)->mutable_base()->mutable_acceleration()->x(), acc_x[2][1], 1E-3);
-			EXPECT_NEAR(osi_gt.mutable_moving_object(2)->mutable_base()->mutable_acceleration()->x(), acc_x[2][2], 1E-3);
-
-			fclose(file);
-		}
-	}
 }
 
 TEST(ReplayTest, TestMultiReplayDifferentTimeSteps)
@@ -4007,7 +3564,7 @@ void StoryBoardElementStateCallbackInstance1(const char* element_name, int type,
 		EXPECT_EQ(state, state_target[counter].state);
 	}
 
- 	counter++;
+	counter++;
 }
 
 TEST(EventCallbackTest, TestStoryboardElementStateCallback)
@@ -4198,7 +3755,7 @@ TEST(ParamDistTest, TestRunAll)
 	SE_ResetParameterDistribution();
 }
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
 	testing::InitGoogleTest(&argc, argv);
 

@@ -260,20 +260,20 @@ void Tree::intersect(Tree const &tree, Candidates &candidates) const {
             break;
         }
         case 1: { // Tree & Leaf
-            for (ptTree const child : childeren) {
+            for (ptTree const& child : childeren) {
                 child->intersect(tree, candidates);
             }
             break;
         }
         case 2: { // Leaf & Tree
-            for (ptTree const child : tree.Children()) {
+            for (ptTree const& child : tree.Children()) {
                 intersect(*child, candidates);
             }
             break;
         }
         case 3: { // Tree & Tree
-            for (ptTree const child1 : childeren) {
-                for (ptTree const child2 : tree.Children())
+            for (ptTree const& child1 : childeren) {
+                for (ptTree const& child2 : tree.Children())
                     child1->intersect(*child2, candidates);
             }
             break;
@@ -301,7 +301,7 @@ aabbTree::ptBBox aabbTree::makeTriangleAndBbx(double x0, double y0, double x1, d
 }
 
 void aabbTree::processCandidates(Candidates const &candidates, vector<ptTriangle> &solutions) {
-    for (auto const candidate : candidates) {
+    for (auto const& candidate : candidates) {
         ptTriangle const tr1 = candidate.bbox1->triangle();
         ptTriangle const tr2 = candidate.bbox2->triangle();
         if (tr1->collide(tr2)) {
@@ -314,7 +314,7 @@ void aabbTree::processCandidates(Candidates const &candidates, vector<ptTriangle
 }
 
 void aabbTree::findPoints(vector<ptTriangle> const &triangles, EllipseInfo &eInfo, Solutions &points) {
-    for (auto const tr : triangles) {
+    for (auto const& tr : triangles) {
         if (tr->geometry()) {
             geometryIntersect(*tr, eInfo, points);
         } else

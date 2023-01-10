@@ -154,10 +154,10 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 		if (road->GetLength() > ROAD_MIN_LENGTH)
 		{
 			// Populate road lanes with vehicles at some random distances
-			for (double s = 10; s < road->GetLength() - average_distance; s += average_distance + 0.2 * average_distance * (SE_Env::Inst().GetGenerator())() / (SE_Env::Inst().GetGenerator()).max()) // TODO: @Emil
+			for (double s = 10; s < road->GetLength() - average_distance; s += average_distance + 0.2 * average_distance * SE_Env::Inst().GetRand().GetReal())
 			{
 				// Pick lane by random
-				int lane_idx = (static_cast<double>(road->GetNumberOfDrivingLanes(s)) * (SE_Env::Inst().GetGenerator())()) / (SE_Env::Inst().GetGenerator()).max(); // TODO: @Emil
+				int lane_idx = SE_Env::Inst().GetRand().GetNumberBetween(0, road->GetNumberOfDrivingLanes(s));
 				roadmanager::Lane *lane = road->GetDrivingLaneByIdx(s, lane_idx);
 				if (lane == 0)
 				{
@@ -174,7 +174,7 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 				}
 
 				// randomly choose model
-				int carModelID = (double(sizeof(carModelsFiles_) / sizeof(carModelsFiles_[0])) * (SE_Env::Inst().GetGenerator())()) / (SE_Env::Inst().GetGenerator()).max(); // TODO: @Emil
+				int carModelID = SE_Env::Inst().GetRand().GetNumberBetween(0, sizeof(carModelsFiles_) / sizeof(carModelsFiles_[0]));
 				//LOG("Adding car of model %d to road nr %d (road id %d s %.2f lane id %d), ", carModelID, r, road->GetId(), s, lane->GetId());
 
 				Car *car_ = new Car;
@@ -295,10 +295,10 @@ void updateCar(roadmanager::OpenDrive *odrManager, Car *car, double dt)
 		else
 		{
 			// Choose random open end
-			int oeIndex = static_cast<int>((static_cast<double>(openEnds.size())) * (SE_Env::Inst().GetGenerator())() / (SE_Env::Inst().GetGenerator()).max()); // TODO: @Emil
+			int oeIndex = SE_Env::Inst().GetRand().GetNumberBetween(0, static_cast<int>(openEnds.size()));
 			OpenEnd* oe = &openEnds[static_cast<unsigned int>(oeIndex)];
 			// Choose random lane
-			int laneIndex = static_cast<int>((static_cast<double>(oe->nLanes)) * (SE_Env::Inst().GetGenerator())() / (SE_Env::Inst().GetGenerator()).max()); // TODO: @Emil
+			int laneIndex = SE_Env::Inst().GetRand().GetNumberBetween(0, oe->nLanes);
 			roadmanager::Road* road = odrManager->GetRoadById(oe->roadId);
 			roadmanager::Lane *lane = road->GetDrivingLaneSideByIdx(oe->s, oe->side, laneIndex);
 
@@ -433,11 +433,11 @@ int main(int argc, char** argv)
 	{
 		unsigned int seed = static_cast<unsigned int>(std::stoul(arg_str));
 		LOG("Using specified seed %u", seed);
-		SE_Env::Inst().SetSeed(seed);
+		SE_Env::Inst().GetRand().SetSeed(seed);
 	}
 	else
 	{
-		LOG("Generated seed %u", SE_Env::Inst().GetSeed());
+		LOG("Generated seed %u", SE_Env::Inst().GetRand().GetSeed());
 	}
 
 	std::string odrFilename = opt.GetOptionArg("odr");

@@ -202,7 +202,7 @@ for:
 
           cmake -G "Visual Studio 15 Win64" ..
 
-          msbuild /m /property:Configuration=Release esmini.sln
+          cmake --build . -j --config Release --target install
 
           cd..
 

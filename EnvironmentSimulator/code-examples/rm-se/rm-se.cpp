@@ -44,7 +44,8 @@ int main(int argc, char* argv[])
 				SE_ScenarioObjectState state;
 
 				SE_GetObjectState(j, &state);
-				printf("time %.2f object[%d] type %d category %d pos (%.2f, %.2f) \n", state.timestamp, j, state.objectType, state.objectCategory, static_cast<double>(state.x), static_cast<double>(state.y)); // TODO: @Emil
+				printf("time %.2f object[%d] type %d category %d pos (%.2f, %.2f) \n", static_cast<double>(state.timestamp), j,
+					state.objectType, state.objectCategory, static_cast<double>(state.x), static_cast<double>(state.y));
 			}
 		}
 

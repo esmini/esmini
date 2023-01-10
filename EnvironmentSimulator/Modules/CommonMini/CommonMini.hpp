@@ -42,7 +42,9 @@
 #endif
 
 #define SMALL_NUMBER (1E-6)
+#define SMALL_NUMBERF (1E-6f)
 #define LARGE_NUMBER (1E+10)
+#define LARGE_NUMBERF (1E+10f)
 #define SIGN(X) ((X<0)?-1:1)
 #define MAX(x, y) ((y) > (x) ? (y) : (x))
 #define MIN(x, y) ((y) < (x) ? (y) : (x))
@@ -52,6 +54,7 @@
 #define AVOID_ZERO(x) (SIGN(x)*MAX(SMALL_NUMBER, fabs(x)))
 #define NEAR_ZERO(x) (abs(x) < SMALL_NUMBER)
 #define NEAR_NUMBERS(x, y) (abs(x - y) < SMALL_NUMBER)
+#define NEAR_NUMBERSF(x, y) (abs(x - y) < SMALL_NUMBERF)
 #define IS_IN_SPAN(x, y, z) ((x) >= (y) && (x) <= (z))
 #define OSI_MAX_LONGITUDINAL_DISTANCE 50
 #define OSI_MAX_LATERAL_DEVIATION 0.05
@@ -593,6 +596,9 @@ std::string ToLower(const char* in_str);
 int strtoi(std::string s);
 double strtod(std::string s);
 
+
+void StrCopy(char* dest, const char* src, int size, bool terminate = true);
+
 // Global Logger class
 class Logger
 {
@@ -848,10 +854,50 @@ private:
 	bool critical_;
 };
 
+class SE_Rand
+{
+public:
+	SE_Rand()
+	{
+		seed_ = (std::random_device())();
+		gen_.seed(seed_);
+	}
+
+	void SetSeed(unsigned int seed)
+	{
+		seed_ = seed;
+		gen_.seed(seed_);
+	}
+
+
+	int GetNumberBetween(int min, int max)
+	{
+		return std::uniform_int_distribution<>{min, max}(gen_);
+	}
+
+	double GetReal()  // returns a floating point number between 0 and 1
+	{
+		return std::uniform_real_distribution<>{}(gen_);
+	}
+
+	double GetRealBetween(double min, double max)
+	{
+		return std::uniform_real_distribution<>{min, max}(gen_);
+	}
+
+	unsigned int GetSeed() { return seed_; }
+	std::mt19937& GetGenerator() { return gen_; }
+
+private:
+	unsigned int seed_;
+	std::mt19937 gen_;
+};
+
 class SE_Env
 {
 public:
-	SE_Env();
+	SE_Env() : osiMaxLongitudinalDistance_(OSI_MAX_LONGITUDINAL_DISTANCE), osiMaxLateralDeviation_(OSI_MAX_LATERAL_DEVIATION),
+	logFilePath_(LOG_FILENAME), datFilePath_(""), offScreenRendering_(true), collisionDetection_(false) {}
 
 	static SE_Env& Inst();
 
@@ -867,13 +913,6 @@ public:
 	int AddPath(std::string path);
 	void ClearPaths() { paths_.clear(); }
 	double GetSystemTime() { return systemTime_.GetS(); }
-	void SetSeed(unsigned int seed)
-	{
-		seed_ = seed;
-		gen_.seed(seed_);
-	}
-	unsigned int GetSeed() { return seed_; }
-	std::mt19937& GetGenerator() { return gen_; }
 
 	/**
 		Specify scenario logfile (.txt) file path,
@@ -914,6 +953,8 @@ public:
 	std::string GetModelFilenameById(int model_id);
 	void ClearModelFilenames() { entity_model_map.clear(); }
 
+	SE_Rand& GetRand() { return rand_; }
+
 private:
 	std::vector<std::string> paths_;
 	double osiMaxLongitudinalDistance_;
@@ -921,8 +962,7 @@ private:
 	std::string logFilePath_;
 	std::string datFilePath_;
 	SE_SystemTime systemTime_;
-	unsigned int seed_;
-	std::mt19937 gen_;
+	SE_Rand rand_;
 	bool offScreenRendering_;
 	bool collisionDetection_;
 	std::map<int, std::string> entity_model_map;

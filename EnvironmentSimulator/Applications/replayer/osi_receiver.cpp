@@ -105,7 +105,7 @@ int main(int argc, char* argv[])
 	}
 #endif
 
-	sock = static_cast<int>(socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP));
+	sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	if (sock == SE_INVALID_SOCKET)
 	{
 		printf("socket failed\n");
@@ -166,8 +166,8 @@ int main(int argc, char* argv[])
 			gt.ParseFromArray(large_buf, receivedDataBytes);
 
 			// Print timestamp
-			printf("timestamp: %.2f\n", gt.mutable_timestamp()->seconds() + // TODO: @Emil
-				1E-9 * gt.mutable_timestamp()->nanos());
+			printf("timestamp: %.2f\n", static_cast<double>(gt.mutable_timestamp()->seconds()) +
+				1E-9 * static_cast<double>(gt.mutable_timestamp()->nanos()));
 
 			// Print object id, position, orientation and velocity
 			for (int i = 0; i < gt.mutable_moving_object()->size(); i++)

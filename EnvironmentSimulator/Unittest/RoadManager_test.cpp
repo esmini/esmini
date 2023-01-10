@@ -30,10 +30,6 @@ PolynomialTestFixture::PolynomialTestFixture()
 {
 }
 
-PolynomialTestFixture::PolynomialTestFixture(double a, double b, double c, double d, double p_scale)
-{
-}
-
 PolynomialTestFixture::~PolynomialTestFixture()
 {
 }
@@ -243,10 +239,6 @@ OSIPointsTestFixture::OSIPointsTestFixture()
 {
 }
 
-OSIPointsTestFixture::OSIPointsTestFixture(std::vector<double> s, std::vector<double> x, std::vector<double> y, std::vector<double> z, std::vector<double> h)
-{
-}
-
 OSIPointsTestFixture::~OSIPointsTestFixture()
 {
 }
@@ -326,17 +318,17 @@ TEST_F(OSIPointsTestFixture, TestGetFromIdx)
 
     OSIPoints osi_points_test_object = OSIPoints(osi_points_test_set);
 
-    ASSERT_EQ(osi_points_test_object.GetXfromIdx(0), (double)0);
-    ASSERT_EQ(osi_points_test_object.GetXfromIdx(1), (double)-1);
-    ASSERT_EQ(osi_points_test_object.GetXfromIdx(2), (double)2);
+    ASSERT_EQ(osi_points_test_object.GetXfromIdx(0), 0);
+    ASSERT_EQ(osi_points_test_object.GetXfromIdx(1), -1);
+    ASSERT_EQ(osi_points_test_object.GetXfromIdx(2), 2);
 
-    ASSERT_EQ(osi_points_test_object.GetYfromIdx(0), (double)0);
-    ASSERT_EQ(osi_points_test_object.GetYfromIdx(1), (double)-1);
-    ASSERT_EQ(osi_points_test_object.GetYfromIdx(2), (double)2);
+    ASSERT_EQ(osi_points_test_object.GetYfromIdx(0), 0);
+    ASSERT_EQ(osi_points_test_object.GetYfromIdx(1), -1);
+    ASSERT_EQ(osi_points_test_object.GetYfromIdx(2), 2);
 
-    ASSERT_EQ(osi_points_test_object.GetZfromIdx(0), (double)0);
-    ASSERT_EQ(osi_points_test_object.GetZfromIdx(1), (double)-1);
-    ASSERT_EQ(osi_points_test_object.GetZfromIdx(2), (double)2);
+    ASSERT_EQ(osi_points_test_object.GetZfromIdx(0), 0);
+    ASSERT_EQ(osi_points_test_object.GetZfromIdx(1), -1);
+    ASSERT_EQ(osi_points_test_object.GetZfromIdx(2), 2);
 }
 
 TEST_F(OSIPointsTestFixture, TestGetNumOfOSIPoints)
@@ -427,10 +419,6 @@ class LineGeomTestFixture: public testing::Test
 };
 
 LineGeomTestFixture::LineGeomTestFixture()
-{
-}
-
-LineGeomTestFixture::LineGeomTestFixture(double s, double x, double y, double hdg, double length)
 {
 }
 
@@ -554,10 +542,6 @@ ArcGeomTestFixture::ArcGeomTestFixture()
 {
 }
 
-ArcGeomTestFixture::ArcGeomTestFixture(double s, double x, double y, double hdg, double length, double curvature)
-{
-}
-
 ArcGeomTestFixture::~ArcGeomTestFixture()
 {
 }
@@ -677,10 +661,6 @@ SpiralGeomTestFixture::SpiralGeomTestFixture()
 {
 }
 
-SpiralGeomTestFixture::SpiralGeomTestFixture(double s, double x, double y, double hdg, double length, double curv_start, double curv_end)
-{
-}
-
 SpiralGeomTestFixture::~SpiralGeomTestFixture()
 {
 }
@@ -758,10 +738,6 @@ class Poly3GeomTestFixture: public testing::Test
 };
 
 Poly3GeomTestFixture::Poly3GeomTestFixture()
-{
-}
-
-Poly3GeomTestFixture::Poly3GeomTestFixture(double s, double x, double y, double hdg, double length, double a, double b, double c, double d)
 {
 }
 
@@ -886,11 +862,6 @@ ParamPoly3GeomTestFixture::ParamPoly3GeomTestFixture()
 {
 }
 
-ParamPoly3GeomTestFixture::ParamPoly3GeomTestFixture(double s, double x, double y, double hdg, double length,
-        double aU, double bU, double cU, double dU, double aV, double bV, double cV, double dV, ParamPoly3::PRangeType p_range)
-{
-}
-
 ParamPoly3GeomTestFixture::~ParamPoly3GeomTestFixture()
 {
 }
@@ -988,10 +959,6 @@ class ElevationTestFixture: public testing::Test
 };
 
 ElevationTestFixture::ElevationTestFixture()
-{
-}
-
-ElevationTestFixture::ElevationTestFixture(double s, double a, double b, double c, double d)
 {
 }
 
@@ -1193,10 +1160,6 @@ LaneOffsetTestFixture::LaneOffsetTestFixture()
 {
 }
 
-LaneOffsetTestFixture::LaneOffsetTestFixture(double s, double a, double b, double c, double d)
-{
-}
-
 LaneOffsetTestFixture::~LaneOffsetTestFixture()
 {
 }
@@ -1275,10 +1238,6 @@ class LaneTestFixture: public testing::Test
 };
 
 LaneTestFixture::LaneTestFixture()
-{
-}
-
-LaneTestFixture::LaneTestFixture(double s, double a, double b, double c, double d)
 {
 }
 
@@ -2039,7 +1998,7 @@ TEST(ControllerTest, TestControllers)
     Junction* junction = odr->GetJunctionByIdx(1);
     EXPECT_EQ(junction->GetNumberOfControllers(), 5);
     int controllerIds[] = { 7, 9, 10, 8, 6 };
-    for (int i = 0; i < (int)junction->GetNumberOfControllers(); i++)
+    for (int i = 0; i < junction->GetNumberOfControllers(); i++)
     {
         jcontroller = junction->GetJunctionControllerByIdx(i);
         EXPECT_EQ(jcontroller->id_, controllerIds[i]);

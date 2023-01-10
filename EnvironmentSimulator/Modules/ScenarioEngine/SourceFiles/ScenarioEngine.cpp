@@ -876,19 +876,6 @@ int ScenarioEngine::defaultController(Object* obj, double dt)
 {
 	int retval = 0;
 	double steplen = obj->speed_ * dt;
-	double d_lat = 0.0;
-
-	ObjectState* o = scenarioGateway.getObjectStatePtrById(obj->id_);
-	if (o != nullptr)
-	{
-		d_lat = obj->pos_.GetOffset() - o->state_.pos.GetOffset();  // travel distance, lateral component
-	}
-
-	double d_long = steplen;
-	if (abs(d_lat) > SMALL_NUMBER)
-	{
-		d_long = SIGN(obj->speed_) * sqrt(MAX(0.0, pow(steplen, 2) - pow(d_lat, 2)));  // travel distance, longitudinal component
-	}
 
 	if (!obj->CheckDirtyBits(Object::DirtyBit::LONGITUDINAL)) // No action has updated longitudinal dimension
 	{

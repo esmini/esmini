@@ -229,7 +229,8 @@ int main(int argc, char* argv[])
 			SE_ScenarioObjectState state;
 
 			SE_GetObjectState(SE_GetId(k), &state);
-			printf("time [%.2f] object[%d] pos[%.2f, %.2f] \n", state.timestamp, k, static_cast<double>(state.x), static_cast<double>(state.y)); // TODO: @Emil
+			printf("time [%.2f] object[%d] pos[%.2f, %.2f] \n", static_cast<double>(state.timestamp),
+            k, static_cast<double>(state.x), static_cast<double>(state.y));
 		}
 	}
 

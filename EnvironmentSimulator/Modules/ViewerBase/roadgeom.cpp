@@ -238,10 +238,18 @@ int RoadGeom::AddRoadMarks(roadmanager::Lane* lane, osg::Group* parent)
 					osg::ref_ptr<osg::Vec3Array> vertices = new osg::Vec3Array(static_cast<unsigned int>(osi_points.size() * 2));
 					osg::ref_ptr<osg::DrawElementsUInt> indices = new osg::DrawElementsUInt(GL_TRIANGLE_STRIP, static_cast<unsigned int>(osi_points.size()) * 2);
 
+					double l0p0l[2] = { 0.0, 0.0 };
+					double l0p0r[2] = { 0.0, 0.0 };
+					double l0p1l[2] = { 0.0, 0.0 };
+					double l0p1r[2] = { 0.0, 0.0 };
+					double l1p0l[2] = { 0.0, 0.0 };
+					double l1p0r[2] = { 0.0, 0.0 };
+					double l1p1l[2] = { 0.0, 0.0 };
+					double l1p1r[2] = { 0.0, 0.0 };
+
 					for (size_t q = 0; q < osi_points.size(); q++)
 					{
 						// Find offset points of solid roadmark at each OSI point
-						double l0p0l[2], l0p0r[2], l0p1l[2], l0p1r[2], l1p0l[2], l1p0r[2], l1p1l[2], l1p1r[2];
 
 						if (q < osi_points.size() - 1)
 						{

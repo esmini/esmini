@@ -18,7 +18,7 @@ TEST(CustomCameraTest, TestCustomCameraVariants)
         "esmini", "--osc", "../../../resources/xosc/cut-in_cr.xosc", "--window", "60", "60", "800", "600", "--headless", "--disable_stdout"
     };
     int argc = sizeof(args) / sizeof(char*);
-    ScenarioPlayer* player = new ScenarioPlayer(argc, (char**)args);
+    ScenarioPlayer* player = new ScenarioPlayer(argc, const_cast<char**>(args));
 
     ASSERT_NE(player, nullptr);
 

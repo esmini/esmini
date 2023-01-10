@@ -12,7 +12,7 @@
 typedef struct
 {
 	int id;
-	float x;
+	double x;
 } Car;
 
 int main(int argc, char* argv[])
@@ -29,8 +29,8 @@ int main(int argc, char* argv[])
 	}
 
 	std::vector<Car> cars;
-	const float speed = 200.0f / 3.6f;
-	const float distance = 40.0f;
+	const double speed = 200.0 / 3.6;
+	const double distance = 40.0;
 
 	int counter = 0;
 	double timestamp_now = SE_GetSimulationTime();
@@ -38,7 +38,7 @@ int main(int argc, char* argv[])
 
 	while (timestamp_now < 30.0 && !(SE_GetQuitFlag() == 1))
 	{
-		if (timestamp_now > distance * counter / speed) // TODO: @Emil
+		if (timestamp_now > (distance * static_cast<double>(counter)) / speed)
 		{
 			// Add a vehicle at regular distance
 			std::string name = "object_" + std::to_string(counter);
@@ -56,19 +56,19 @@ int main(int argc, char* argv[])
 			counter++;
 		}
 
-		for (size_t i = 0; i<cars.size(); i++)
+		for (unsigned int i = 0; i<cars.size(); i++)
 		{
-			cars[i].x += speed * float(timestamp_now - timestamp_old);
+			cars[i].x += speed * timestamp_now - timestamp_old;
 			if (cars[i].x > 500)
 			{
 				printf("Removing car with id %d\n", cars[i].id);
 				SE_DeleteObject(cars[i].id);
-				cars.erase(cars.begin() + i); // TODO: @Emil
+				cars.erase(cars.begin() + i);
 				i--;
 			}
 			else
 			{
-				SE_ReportObjectPos(cars[i].id, 0.0f, cars[i].x, -1.5f, 0.0f, 0.0f, 0.0f, 0.0f);
+				SE_ReportObjectPos(cars[i].id, 0.0f, static_cast<float>(cars[i].x), -1.5f, 0.0f, 0.0f, 0.0f, 0.0f);
 			}
 		}
 

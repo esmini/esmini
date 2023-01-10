@@ -7714,7 +7714,7 @@ Position::ReturnCode Position::MoveToConnectingRoad(RoadLink *road_link, Contact
 			}
 			else  // randomize
 			{
-				connection_idx = (int)(n_connections * (double)(SE_Env::Inst().GetGenerator())() / (SE_Env::Inst().GetGenerator()).max());
+				connection_idx = SE_Env::Inst().GetRand().GetNumberBetween(0, n_connections);
 			}
 		}
 

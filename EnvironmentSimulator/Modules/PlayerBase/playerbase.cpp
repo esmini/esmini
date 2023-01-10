@@ -1302,11 +1302,11 @@ int ScenarioPlayer::Init()
 	{
 		unsigned int seed = static_cast<unsigned int>(std::stoul(arg_str));
 		LOG("Using specified seed %u", seed);
-		SE_Env::Inst().SetSeed(seed);
+		SE_Env::Inst().GetRand().SetSeed(seed);
 	}
 	else
 	{
-		LOG("Generated seed %u", SE_Env::Inst().GetSeed());
+		LOG("Generated seed %u", SE_Env::Inst().GetRand().GetSeed());
 	}
 
 	if (opt.GetOptionSet("collision"))

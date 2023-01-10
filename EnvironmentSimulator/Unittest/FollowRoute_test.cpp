@@ -73,8 +73,6 @@ protected:
 };
 
 
-static void log_callback(const char *str);
-
 TEST_F(FollowRouteTestSmall, FindPathSmallInvalidPosition)
 {
     ASSERT_NE(Position::GetOpenDrive(), nullptr);
@@ -164,7 +162,7 @@ TEST_F(FollowRouteTestSmall, CreateWaypointSmall1)
     std::vector<Position> calcWaypoints = router.GetWaypoints(path, start, target);
     ASSERT_FALSE(calcWaypoints.empty());
     ASSERT_EQ(calcWaypoints.size(), expectedWaypoints.size());
-    for (int i = 0; i < expectedWaypoints.size(); i++)
+    for (size_t i = 0; i < expectedWaypoints.size(); i++)
     {
         ASSERT_EQ(calcWaypoints[i].GetTrackId(), expectedWaypoints[i].GetTrackId());
         ASSERT_EQ(calcWaypoints[i].GetLaneId(), expectedWaypoints[i].GetLaneId());
@@ -199,7 +197,7 @@ TEST_F(FollowRouteTestSmall, CreateWaypointSmall2)
     std::vector<Position> calcWaypoints = router.GetWaypoints(path, start, target);
     ASSERT_FALSE(calcWaypoints.empty());
     ASSERT_EQ(calcWaypoints.size(), expectedWaypoints.size());
-    for (int i = 0; i < expectedWaypoints.size(); i++)
+    for (size_t i = 0; i < expectedWaypoints.size(); i++)
     {
         ASSERT_EQ(calcWaypoints[i].GetTrackId(), expectedWaypoints[i].GetTrackId());
         ASSERT_EQ(calcWaypoints[i].GetLaneId(), expectedWaypoints[i].GetLaneId());
@@ -298,7 +296,7 @@ TEST_F(FollowRouteTestMedium, CreateWaypointMedium)
     std::vector<Position> calcWaypoints = router.GetWaypoints(path, start, target);
     ASSERT_FALSE(calcWaypoints.empty());
     ASSERT_EQ(calcWaypoints.size(), expectedWaypoints.size());
-    for (int i = 0; i < expectedWaypoints.size(); i++)
+    for (size_t i = 0; i < expectedWaypoints.size(); i++)
     {
         ASSERT_EQ(calcWaypoints[i].GetTrackId(), expectedWaypoints[i].GetTrackId());
         ASSERT_EQ(calcWaypoints[i].GetLaneId(), expectedWaypoints[i].GetLaneId());
@@ -469,7 +467,7 @@ TEST_F(FollowRouteTestRouteTest, FindPathShortest)
     std::vector<Node> path = router.CalculatePath(start, target);
     ASSERT_FALSE(path.empty());
 
-    for (int i = 0; i < expectedRoadIds.size(); i++)
+    for (size_t i = 0; i < expectedRoadIds.size(); i++)
     {
         ASSERT_EQ(path[i].road->GetId(), expectedRoadIds[i]);
     }
@@ -495,7 +493,7 @@ TEST_F(FollowRouteTestRouteTest, FindPathFastest)
     std::vector<Node> path = router.CalculatePath(start, target);
     ASSERT_FALSE(path.empty());
 
-    for (int i = 0; i < expectedRoadIds.size(); i++)
+    for (size_t i = 0; i < expectedRoadIds.size(); i++)
     {
         ASSERT_EQ(path[i].road->GetId(), expectedRoadIds[i]);
     }
@@ -521,7 +519,7 @@ TEST_F(FollowRouteTestRouteTest, FindPathMinIntersections)
     std::vector<Node> path = router.CalculatePath(start, target);
     ASSERT_FALSE(path.empty());
 
-    for (int i = 0; i < expectedRoadIds.size(); i++)
+    for (size_t i = 0; i < expectedRoadIds.size(); i++)
     {
         ASSERT_EQ(path[i].road->GetId(), expectedRoadIds[i]);
     }
@@ -547,7 +545,7 @@ TEST_F(FollowRouteTestRouteTestLHT, FindPathShortestLHT)
     std::vector<Node> path = router.CalculatePath(start, target);
     ASSERT_FALSE(path.empty());
 
-    for (int i = 0; i < expectedRoadIds.size(); i++)
+    for (size_t i = 0; i < expectedRoadIds.size(); i++)
     {
         ASSERT_EQ(path[i].road->GetId(), expectedRoadIds[i]);
     }

@@ -42,7 +42,7 @@ ObjectState::ObjectState(int id, std::string name, int obj_type, int obj_categor
 	state_.info.model_id = model_id;
 	state_.info.ctrl_type = ctrl_type;
 	state_.info.timeStamp = timestamp;
-	strncpy(state_.info.name, name.c_str(), NAME_LEN);
+	StrCopy(state_.info.name, name.c_str(), NAME_LEN);
 	state_.pos = *pos;
 	state_.info.speed = speed;
 	state_.info.wheel_angle = wheel_angle;
@@ -72,7 +72,7 @@ ObjectState::ObjectState(int id, std::string name, int obj_type, int obj_categor
 	state_.info.ctrl_type = ctrl_type;
 	state_.info.name[0] = 0;
 	state_.info.timeStamp = timestamp;
-	strncpy(state_.info.name, name.c_str(), NAME_LEN);
+	StrCopy(state_.info.name, name.c_str(), NAME_LEN);
 	state_.pos.Init();
 	state_.pos.SetInertiaPos(x, y, z, h, p, r);
 	state_.info.speed = speed;
@@ -102,7 +102,7 @@ ObjectState::ObjectState(int id, std::string name, int obj_type, int obj_categor
 	state_.info.model_id = model_id;
 	state_.info.ctrl_type = ctrl_type;
 	state_.info.timeStamp = timestamp;
-	strncpy(state_.info.name, name.c_str(), NAME_LEN);
+	StrCopy(state_.info.name, name.c_str(), NAME_LEN);
 	state_.pos.SetLanePos(roadId, laneId, s, laneOffset);
 	state_.info.speed = speed;
 	state_.info.wheel_angle = wheel_angle;
@@ -130,7 +130,7 @@ ObjectState::ObjectState(int id, std::string name, int obj_type, int obj_categor
 	state_.info.model_id = model_id;
 	state_.info.ctrl_type = ctrl_type;
 	state_.info.timeStamp = timestamp;
-	strncpy(state_.info.name, name.c_str(), NAME_LEN);
+	StrCopy(state_.info.name, name.c_str(), NAME_LEN);
 	state_.pos.SetTrackPos(roadId, s, lateralOffset);
 	state_.info.speed = speed;
 	state_.info.wheel_angle = wheel_angle;
@@ -813,8 +813,8 @@ int ScenarioGateway::RecordToFile(std::string filename, std::string odr_filename
 		}
 		DatHeader header;
 		header.version = DAT_FILE_FORMAT_VERSION;
-		strncpy(header.odr_filename, odr_filename.c_str(), DAT_FILENAME_SIZE);
-		strncpy(header.model_filename, model_filename.c_str(), DAT_FILENAME_SIZE);
+		StrCopy(header.odr_filename, odr_filename.c_str(), DAT_FILENAME_SIZE);
+		StrCopy(header.model_filename, model_filename.c_str(), DAT_FILENAME_SIZE);
 
 		data_file_.write(reinterpret_cast<char*>(&header), sizeof(header));
 	}

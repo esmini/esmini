@@ -275,7 +275,7 @@ TEST(TrajectoryTest, EnsureContinuation)
     ScenarioEngine *se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/trajectory-continuity.xosc");
     ASSERT_NE(se, nullptr);
 
-    for (int i = 0; i < (int)(1.0/dt); i++)
+    for (int i = 0; i < static_cast<int>(1.0/dt); i++)
     {
         se->step(dt);
         se->prepareGroundTruth(dt);
@@ -283,7 +283,7 @@ TEST(TrajectoryTest, EnsureContinuation)
     ASSERT_NEAR(se->entities_.object_[0]->pos_.GetX(), 4.95, 1e-5);
     ASSERT_NEAR(se->entities_.object_[0]->pos_.GetY(), -1.535, 1e-5);
 
-    for (int i = 0; i < (int)(2.0 / dt); i++)
+    for (int i = 0; i < static_cast<int>(2.0 / dt); i++)
     {
         se->step(dt);
         se->prepareGroundTruth(dt);
@@ -291,7 +291,7 @@ TEST(TrajectoryTest, EnsureContinuation)
     ASSERT_NEAR(se->entities_.object_[0]->pos_.GetX(), 14.92759, 1e-5);
     ASSERT_NEAR(se->entities_.object_[0]->pos_.GetY(), -1.18333, 1e-5);
 
-    for (int i = 0; i < (int)(1.5 / dt); i++)
+    for (int i = 0; i < static_cast<int>(1.5 / dt); i++)
     {
         se->step(dt);
         se->prepareGroundTruth(dt);
@@ -299,7 +299,7 @@ TEST(TrajectoryTest, EnsureContinuation)
     ASSERT_NEAR(se->entities_.object_[0]->pos_.GetX(), 21.32304, 1e-5);
     ASSERT_NEAR(se->entities_.object_[0]->pos_.GetY(), 2.553967, 1e-5);
 
-    for (int i = 0; i < (int)(1.0 / dt); i++)
+    for (int i = 0; i < static_cast<int>(1.0 / dt); i++)
     {
         se->step(dt);
         se->prepareGroundTruth(dt);
@@ -373,7 +373,7 @@ TEST(ExpressionTest, EnsureResult)
     ASSERT_DOUBLE_EQ(eval_expr("1 + 1"), 2.0);
     ASSERT_DOUBLE_EQ(eval_expr("5 * 10 + 1"), 51.0);
     ASSERT_DOUBLE_EQ(eval_expr("5 * (10 + 1)"), 55.0);
-    ASSERT_DOUBLE_EQ(eval_expr("15/3.5"), 15.0f / 3.5);
+    ASSERT_DOUBLE_EQ(eval_expr("15/3.5"), 15.0 / 3.5);
     ASSERT_DOUBLE_EQ(eval_expr("15 % 6"), 3.0);
     ASSERT_DOUBLE_EQ(eval_expr("-15 % 6"), -3.0);
     ASSERT_DOUBLE_EQ(eval_expr("180 % 360"), 180.0);
@@ -456,7 +456,7 @@ TEST(OptionsTest, TestOptionHandling)
         "--option3",
         "--option4"
     };
-    int argc = (int)args.size();
+    int argc = static_cast<int>(args.size());
 
     ASSERT_EQ(opt.ParseArgs(argc, args.data()), -1);
 
@@ -475,7 +475,7 @@ TEST(OptionsTest, TestOptionHandling)
     ASSERT_EQ(opt.GetOptionArg("option3"), "55");
 
     // test without last argument, should return OK
-    int argc_minus_one = (int)(args.size() - 1);
+    int argc_minus_one = static_cast<int>(args.size() - 1);
     ASSERT_EQ(opt.ParseArgs(argc_minus_one, args.data()), 0);
 }
 
@@ -557,7 +557,7 @@ TEST(JunctionTest, JunctionSelectorTest)
     int roadIds[] = { 1, 1, 2, 3 };
     double durations[] = { 2.5, 2.5, 2.6, 2.8 };  // Make sure car gets gets out of the intersection
 
-    for (int i = 0; i < sizeof(angles) / sizeof(double); i++)
+    for (int i = 0; i < static_cast<int>(sizeof(angles) / sizeof(double)); i++)
     {
         ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/junction-selector.xosc");
         se->step(0.0);
@@ -672,7 +672,7 @@ TEST(ControllerTest, UDPDriverModelTestAsynchronous)
     ASSERT_EQ(se->entities_.object_.size(), 2);
 
     // Replace controllers
-    for (int i = 0; i < 2; i++)
+    for (size_t i = 0; i < 2; i++)
     {
         scenarioengine::Controller::InitArgs args;
         args.name = "UDPDriverModel Controller";
@@ -690,7 +690,7 @@ TEST(ControllerTest, UDPDriverModelTestAsynchronous)
         property.name_ = "inputMode";
         property.value_ = "vehicleStateXYH";
         args.properties->property_.push_back(property);
-        ControllerUDPDriver* controller = (ControllerUDPDriver*)InstantiateControllerUDPDriver(&args);
+        ControllerUDPDriver* controller = reinterpret_cast<ControllerUDPDriver*>(InstantiateControllerUDPDriver(&args));
 
         delete se->entities_.object_[i]->controller_;
         delete args.properties;
@@ -720,11 +720,11 @@ TEST(ControllerTest, UDPDriverModelTestAsynchronous)
     msg.message.stateXYH.wheelAngle = 0.1;
     msg.message.stateXYH.deadReckon = 0;
 
-    udpClient->Send((char*)&msg, sizeof(msg));
+    udpClient->Send(reinterpret_cast<char*>(&msg), sizeof(msg));
 
     // Make sure last message is applied
     msg.message.stateXYZHPR.y = 40;
-    udpClient->Send((char*)&msg, sizeof(msg));
+    udpClient->Send(reinterpret_cast<char*>(&msg), sizeof(msg));
 
     // read messages and report updated states
     se->step(dt);
@@ -740,7 +740,7 @@ TEST(ControllerTest, UDPDriverModelTestAsynchronous)
 
     // now, do not update position but enable dead reckoning
     msg.message.stateXYH.deadReckon = 1;
-    udpClient->Send((char*)&msg, sizeof(msg));
+    udpClient->Send(reinterpret_cast<char*>(&msg), sizeof(msg));
     se->step(dt);
     se->step(dt);
     EXPECT_DOUBLE_EQ(se->entities_.object_[0]->pos_.GetX(), 20.0);
@@ -762,7 +762,7 @@ TEST(ControllerTest, UDPDriverModelTestSynchronous)
     ASSERT_EQ(se->entities_.object_.size(), 2);
 
     // Replace controllers
-    for (int i = 0; i < 2; i++)
+    for (size_t i = 0; i < 2; i++)
     {
         scenarioengine::Controller::InitArgs args;
         args.name = "UDPDriverModel Controller";
@@ -786,7 +786,7 @@ TEST(ControllerTest, UDPDriverModelTestSynchronous)
         property.name_ = "timoutMs";
         property.value_ = std::to_string(500);
         args.properties->property_.push_back(property);
-        ControllerUDPDriver* controller = (ControllerUDPDriver*)InstantiateControllerUDPDriver(&args);
+        ControllerUDPDriver* controller = reinterpret_cast<ControllerUDPDriver*>(InstantiateControllerUDPDriver(&args));
 
         delete se->entities_.object_[i]->controller_;
         delete args.properties;
@@ -814,12 +814,12 @@ TEST(ControllerTest, UDPDriverModelTestSynchronous)
     msg.message.stateXYZHPR.y = 30.0;
     msg.message.stateXYZHPR.deadReckon = 0;
 
-    udpClient->Send((char*)&msg, sizeof(msg));
+    udpClient->Send(reinterpret_cast<char*>(&msg), sizeof(msg));
 
     // Put another message on queue of first vehicle
     msg.header.frameNumber++;
     msg.message.stateXYZHPR.y = 40;
-    udpClient->Send((char*)&msg, sizeof(msg));
+    udpClient->Send(reinterpret_cast<char*>(&msg), sizeof(msg));
 
     // read messages and report updated states
     se->step(dt);
@@ -853,12 +853,12 @@ TEST(ControllerTest, UDPDriverModelTestSynchronous)
     msg.message.stateXYZHPR.y = -10.0;
     msg.message.stateXYZHPR.deadReckon = 0;
 
-    udpClient2->Send((char*)&msg, sizeof(msg));
+    udpClient2->Send(reinterpret_cast<char*>(&msg), sizeof(msg));
 
     msg.header.frameNumber = 2;
     msg.header.objectId = 0;
     msg.message.stateXYZHPR.x = 150.0;
-    udpClient->Send((char*)&msg, sizeof(msg));
+    udpClient->Send(reinterpret_cast<char*>(&msg), sizeof(msg));
 
     se->step(dt);
     se->step(dt);
@@ -1543,7 +1543,7 @@ TEST(ControllerTest, ALKS_R157_TestR157RegulationMinDist)
     property.name_ = "model";
     property.value_ = "Regulation";
     args.properties->property_.push_back(property);
-    ControllerALKS_R157SM* controller = (ControllerALKS_R157SM*)InstantiateControllerALKS_R157SM(&args);
+    ControllerALKS_R157SM* controller = reinterpret_cast<ControllerALKS_R157SM*>(InstantiateControllerALKS_R157SM(&args));
     controller->SetScenarioEngine(se);
 
     Object* obj = se->entities_.object_[0];
@@ -1706,10 +1706,10 @@ TEST_F(StraightRoadTest, TestRoadPosition)
     OSCOrientation o(Position::OrientationType::ORIENTATION_RELATIVE, 0.1, 0.0, 0.0);
 
     OSCPositionRoad road_pos1(1, 50, 1.5, o);
-    EXPECT_NEAR(((OSCPosition&)road_pos1).GetRMPos()->GetH(), 0.1, 1e-3);
+    EXPECT_NEAR(reinterpret_cast<OSCPosition&>(road_pos1).GetRMPos()->GetH(), 0.1, 1e-3);
 
     OSCPositionRoad road_pos2(1, 50, -1.5, o);
-    EXPECT_NEAR(((OSCPosition&)road_pos2).GetRMPos()->GetH(), 0.1, 1e-3);
+    EXPECT_NEAR(reinterpret_cast<OSCPosition&>(road_pos2).GetRMPos()->GetH(), 0.1, 1e-3);
 }
 
 TEST(DistributionTest, TestDeterministicDistribution)

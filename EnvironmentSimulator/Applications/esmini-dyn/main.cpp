@@ -48,7 +48,7 @@
 
 #define MAX_N_OBJECTS 10
 #define TIME_STEP 0.017f
-#define DURATION 25
+#define DURATION 25.0f
 #define MAX_DETECTIONS 8
 
 // static SE_ScenarioObjectState states[MAX_N_OBJECTS];
@@ -213,7 +213,7 @@ int main(int argc, const char* argv[])
 #endif
 
 
-		for (int i = 0; i * TIME_STEP < DURATION && !(SE_GetQuitFlag() == 1); i++) // TODO: @Emil
+		for (int i = 0; static_cast<float>(i) * TIME_STEP < DURATION && !(SE_GetQuitFlag() == 1); i++)
 		{
 #if DEMONSTRATE_PARAMETER  // try with lane_change.xosc which sets "DummyParameter"
 			double value;
@@ -365,7 +365,7 @@ int main(int argc, const char* argv[])
 
 			if (DEMONSTRATE_THREAD)
 			{
-				if (i == static_cast<int>(0.2 * DURATION / TIME_STEP)) // TODO: @Emil
+				if (i == static_cast<int>(0.2f * DURATION / TIME_STEP))
 				{
 					// Halfway through, pause the simulation for a few seconds
 					// to demonstrate how camera can still move independently

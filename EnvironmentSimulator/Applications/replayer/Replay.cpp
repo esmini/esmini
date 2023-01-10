@@ -119,15 +119,15 @@ Replay::Replay(const std::string directory, const std::string scenario, std::str
 
 	// Scenario with smallest start time first
 	std::sort(scenarioData.begin(), scenarioData.end(), [](const auto& sce1, const auto& sce2)
-	{
-		return sce1.second[0].state.info.timeStamp < sce2.second[0].state.info.timeStamp;
-	});
+		{
+			return sce1.second[0].state.info.timeStamp < sce2.second[0].state.info.timeStamp;
+		});
 
 	// Log which scenario belongs to what ID-group (0, 100, 200 etc.)
 	for (size_t i = 0; i < scenarioData.size(); i++)
 	{
-		std::string scenario_tmp = (scenarioData.begin()+i)->first; // TODO: @Emil
-		LOG("Scenarios corresponding to IDs (%d:%d): %s", i * 100, (i+1) * 100 - 1, FileNameOf(scenario_tmp.c_str()).c_str());
+		std::string scenario_tmp = scenarioData[i].first;
+		LOG("Scenarios corresponding to IDs (%d:%d): %s", i * 100, (i + 1) * 100 - 1, FileNameOf(scenario_tmp.c_str()).c_str());
 	}
 
 
@@ -179,7 +179,7 @@ void Replay::GetReplaysFromDirectory(const std::string dir, const std::string sc
 			DIR* nested_dir = opendir((dir + filename).c_str());
 			if (nested_dir == nullptr)
 			{
-				LOG("Couldn't open nested directory %s", (dir+filename).c_str());
+				LOG("Couldn't open nested directory %s", (dir + filename).c_str());
 			}
 
 			struct dirent* nested_file;
@@ -189,7 +189,7 @@ void Replay::GetReplaysFromDirectory(const std::string dir, const std::string sc
 
 				if (nested_filename != "." && nested_filename != ".." && nested_filename.find(sce) != std::string::npos && nested_filename.find(".dat") != std::string::npos)
 				{
-					scenarios_.emplace_back(CombineDirectoryPathAndFilepath(dir+filename, nested_filename));
+					scenarios_.emplace_back(CombineDirectoryPathAndFilepath(dir + filename, nested_filename));
 				}
 			}
 			closedir(nested_dir);
@@ -207,7 +207,7 @@ void Replay::GetReplaysFromDirectory(const std::string dir, const std::string sc
 
 	if (scenarios_.empty())
 	{
-		LOG_AND_QUIT("Couldn't read any scenarios named %s in path %s",sce.c_str(), dir.c_str());
+		LOG_AND_QUIT("Couldn't read any scenarios named %s in path %s", sce.c_str(), dir.c_str());
 	}
 }
 
@@ -261,12 +261,14 @@ void Replay::GoToTime(double time, bool stop_at_next_frame)
 	}
 	else
 	{
-		int next_index = static_cast<int>(index_);
+		size_t next_index = index_;
 
 		if (time > time_)
 		{
 			next_index = FindNextTimestamp();
-			if (next_index > static_cast<int>(index_) && time > data_[static_cast<unsigned int>(next_index)].state.info.timeStamp && data_[static_cast<unsigned int>(next_index)].state.info.timeStamp <= GetStopTime()) // TODO: @Emil
+			if (next_index > index_ &&
+				time > static_cast<double>(data_[next_index].state.info.timeStamp) &&
+				static_cast<double>(data_[next_index].state.info.timeStamp) <= GetStopTime())
 			{
 				index_ = static_cast<unsigned int>(next_index);
 				time_ = data_[index_].state.info.timeStamp;
@@ -286,7 +288,8 @@ void Replay::GoToTime(double time, bool stop_at_next_frame)
 		else if (time < time_)
 		{
 			next_index = FindPreviousTimestamp();
-			if (next_index < static_cast<int>(index_) && time < data_[static_cast<unsigned int>(next_index)].state.info.timeStamp) // TODO: @Emil
+			if (next_index < index_ &&
+				time < static_cast<double>(data_[next_index].state.info.timeStamp))
 			{
 				index_ = static_cast<unsigned int>(next_index);
 				time_ = data_[index_].state.info.timeStamp;
@@ -314,7 +317,7 @@ void Replay::GoToDeltaTime(double dt, bool stop_at_next_frame)
 int Replay::GoToNextFrame()
 {
 	float ctime = data_[index_].state.info.timeStamp;
-	for (size_t i = index_+1; i < data_.size(); i++)
+	for (size_t i = index_ + 1; i < data_.size(); i++)
 	{
 		if (data_[i].state.info.timeStamp > ctime)
 		{
@@ -329,7 +332,7 @@ void Replay::GoToPreviousFrame()
 {
 	if (index_ > 0)
 	{
-		GoToTime(data_[index_ -1].state.info.timeStamp);
+		GoToTime(data_[index_ - 1].state.info.timeStamp);
 	}
 }
 
@@ -355,7 +358,7 @@ int Replay::FindIndexAtTimestamp(double timestamp, int startSearchIndex)
 
 	for (i = startSearchIndex; i < static_cast<int>(data_.size()); i++)
 	{
-		if (data_[static_cast<unsigned int>(i)].state.info.timeStamp >= timestamp)
+		if (static_cast<double>(data_[static_cast<unsigned int>(i)].state.info.timeStamp) >= timestamp)
 		{
 			break;
 		}
@@ -364,18 +367,18 @@ int Replay::FindIndexAtTimestamp(double timestamp, int startSearchIndex)
 	return MIN(i, static_cast<int>(data_.size()) - 1);
 }
 
-int Replay::FindNextTimestamp(bool wrap)
+unsigned int Replay::FindNextTimestamp(bool wrap)
 {
-	int index = static_cast<int>(index_) + 1;
-	for (; index < static_cast<int>(data_.size()); index++)
+	unsigned int index = index_ + 1;
+	for (; index < data_.size(); index++)
 	{
-		if (data_[static_cast<unsigned int>(index)].state.info.timeStamp > data_[index_].state.info.timeStamp)
+		if (data_[index].state.info.timeStamp > data_[index_].state.info.timeStamp)
 		{
 			break;
 		}
 	}
 
-	if (index >= static_cast<int>(data_.size()))
+	if (index >= data_.size())
 	{
 		if (wrap)
 		{
@@ -383,14 +386,14 @@ int Replay::FindNextTimestamp(bool wrap)
 		}
 		else
 		{
-			return static_cast<int>(index_);  // stay on current index
+			return index_;  // stay on current index
 		}
 	}
 
 	return index;
 }
 
-int Replay::FindPreviousTimestamp(bool wrap)
+unsigned int Replay::FindPreviousTimestamp(bool wrap)
 {
 	int index = static_cast<int>(index_) - 1;
 
@@ -416,7 +419,7 @@ int Replay::FindPreviousTimestamp(bool wrap)
 		index = i;
 	}
 
-	return index;
+	return static_cast<unsigned int>(index);
 }
 
 ReplayEntry* Replay::GetEntry(int id)
@@ -473,20 +476,21 @@ void Replay::SetStopTime(double time)
 
 void Replay::CleanEntries(std::vector<ReplayEntry>& entries)
 {
-	for (size_t i = 0; i < entries.size() - 1; i++)
+	for (unsigned int i = 0; i < entries.size() - 1; i++)
 	{
 		if (entries[i + 1].state.info.timeStamp < entries[i].state.info.timeStamp)
 		{
-			entries.erase(entries.begin() + i + 1); // TODO: @Emil
+			entries.erase(entries.begin() + i + 1);
 			i--;
 		}
 
-		for (int j = 1; (i + j < entries.size()) && NEAR_NUMBERS(entries[i + j].state.info.timeStamp, entries[i].state.info.timeStamp); j++) // TODO: @Emil
+		for (unsigned int j = 1; (i + j < entries.size()) &&
+			NEAR_NUMBERSF(entries[i + j].state.info.timeStamp, entries[i].state.info.timeStamp); j++)
 		{
 			// Keep the latest instance of entries with same timestamp
-			if (entries[i + j].state.info.id == entries[i].state.info.id) // TODO: @Emil
+			if (entries[i + j].state.info.id == entries[i].state.info.id)
 			{
-				entries.erase(entries.begin() + i); // TODO: @Emil
+				entries.erase(entries.begin() + i);
 				i--;
 				break;
 			}
@@ -517,30 +521,30 @@ void Replay::BuildData(std::vector<std::pair<std::string, std::vector<ReplayEntr
 	}
 
 	// Populate data_ based on first (with lowest timestamp) scenario
-	float cur_timestamp = scenarios[0].second[0].state.info.timeStamp;
-	while (cur_timestamp < LARGE_NUMBER - SMALL_NUMBER) // TODO: @Emil
+	double cur_timestamp = static_cast<double>(scenarios[0].second[0].state.info.timeStamp);
+	while (static_cast<double>(cur_timestamp) < LARGE_NUMBER - SMALL_NUMBER)
 	{
 		// populate entries if all scenarios at current time step
-		float min_time_stamp = LARGE_NUMBER;
+		double min_time_stamp = LARGE_NUMBER;
 		for (size_t j = 0; j < scenarios.size(); j++)
 		{
 			if (next_idx[j] != -1)
 			{
 				unsigned int k = static_cast<unsigned int>(cur_idx[j]);
 				for (; k < scenarios[j].second.size() &&
-					scenarios[j].second[k].state.info.timeStamp < cur_timestamp + SMALL_NUMBER; k++) // TODO: @Emil
+					static_cast<double>(scenarios[j].second[k].state.info.timeStamp) < cur_timestamp + 1e-6; k++)
 				{
 					// push entry with modified timestamp
-					scenarios[j].second[k].state.info.timeStamp = cur_timestamp;
+					scenarios[j].second[k].state.info.timeStamp = static_cast<float>(cur_timestamp);
 					data_.push_back(scenarios[j].second[k]);
 				}
 
 				if (k < scenarios[j].second.size())
 				{
 					next_idx[j] = static_cast<int>(k);
-					if (scenarios[j].second[k].state.info.timeStamp < min_time_stamp)
+					if (static_cast<double>(scenarios[j].second[k].state.info.timeStamp) < min_time_stamp)
 					{
-						min_time_stamp = scenarios[j].second[k].state.info.timeStamp;
+						min_time_stamp = static_cast<double>(scenarios[j].second[k].state.info.timeStamp);
 					}
 				}
 				else
@@ -550,11 +554,12 @@ void Replay::BuildData(std::vector<std::pair<std::string, std::vector<ReplayEntr
 			}
 		}
 
-		if (static_cast<double>(min_time_stamp) < LARGE_NUMBER - SMALL_NUMBER)
+		if (min_time_stamp < LARGE_NUMBER - SMALL_NUMBER)
 		{
 			for (size_t j = 0; j < scenarios.size(); j++)
 			{
-				if (next_idx[j] > 0 && scenarios[j].second[static_cast<unsigned int>(next_idx[j])].state.info.timeStamp < min_time_stamp + SMALL_NUMBER) // TODO: @Emil
+				if (next_idx[j] > 0 && static_cast<double>(scenarios[j].second[static_cast<unsigned int>(next_idx[j])].state.info.timeStamp)
+					< min_time_stamp + SMALL_NUMBER)
 				{
 					// time has reached next entry, step this scenario
 					cur_idx[j] = next_idx[j];

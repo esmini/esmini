@@ -283,7 +283,7 @@ int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectSt
 				osi_udp_buf.counter = -osi_udp_buf.counter;
 			}
 
-			int sendResult = udp_client_->Send(reinterpret_cast<char *>(&osi_udp_buf), static_cast<size_t>(packSize)); // TODO: @Emil
+			int sendResult = udp_client_->Send(reinterpret_cast<char *>(&osi_udp_buf), static_cast<unsigned int>(packSize)); // TODO: @Emil
 
 			if (sendResult != packSize)
 			{
@@ -382,7 +382,8 @@ int OSIReporter::UpdateOSIDynamicGroundTruth(const std::vector<std::unique_ptr<O
 	{
 		// use timstamp from object state
 		obj_osi_internal.gt->mutable_timestamp()->set_seconds(static_cast<int64_t>(objectState[0]->state_.info.timeStamp));
-		obj_osi_internal.gt->mutable_timestamp()->set_nanos(static_cast<uint32_t>(((objectState[0]->state_.info.timeStamp - static_cast<int64_t>(objectState[0]->state_.info.timeStamp)) * 1e9))); // TODO: @Emil
+		obj_osi_internal.gt->mutable_timestamp()->set_nanos(static_cast<uint32_t>(((objectState[0]->state_.info.timeStamp -
+			static_cast<int64_t>(objectState[0]->state_.info.timeStamp)) * 1e9)));
 	}
 	else
 	{
@@ -712,7 +713,7 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState *objectState)
         static_cast<double>(-objectState->state_.info.boundingbox.center_.y_)
 	);
 	obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_bbcenter_to_rear()->set_z(
-        static_cast<double>(objectState->state_.info.rear_axle_z_pos - objectState->state_.info.boundingbox.center_.z_)
+        objectState->state_.info.rear_axle_z_pos - static_cast<double>(objectState->state_.info.boundingbox.center_.z_)
 	);
 	obj_osi_internal.mobj->mutable_base()->mutable_dimension()->set_height(objectState->state_.info.boundingbox.dimensions_.height_);
 	obj_osi_internal.mobj->mutable_base()->mutable_dimension()->set_width(objectState->state_.info.boundingbox.dimensions_.width_);
@@ -2186,7 +2187,7 @@ const char* OSIReporter::GetOSIGroundTruth(int* size)
 
 const char *OSIReporter::GetOSIGroundTruthRaw()
 {
-	return reinterpret_cast<const char *>(obj_osi_external.gt);
+	return reinterpret_cast<char *>(obj_osi_external.gt);
 }
 
 const char *OSIReporter::GetOSIRoadLane(const std::vector<std::unique_ptr<ObjectState>>& objectState, int *size, int object_id)

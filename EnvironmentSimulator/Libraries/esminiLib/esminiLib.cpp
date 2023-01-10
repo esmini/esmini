@@ -116,11 +116,11 @@ static void AddArgument(const char *str, bool split = true)
 static void ConvertArguments()
 {
 	argc_ = static_cast<int>(args_v.size());
-	argv_ = static_cast<char **>(malloc(argc_ * sizeof(char *))); // TODO: @Emil
+	argv_ = reinterpret_cast<char **>(malloc(args_v.size() * sizeof(char *)));
 	std::string argument_list;
 	for (int i = 0; i < argc_; i++)
 	{
-		argv_[i] = static_cast<char *>(malloc((args_v[static_cast<unsigned int>(i)].size() + 1) * sizeof(char)));
+		argv_[i] = reinterpret_cast<char*>(malloc((args_v[static_cast<unsigned int>(i)].size() + 1) * sizeof(char)));
 		strcpy(argv_[i], args_v[static_cast<unsigned int>(i)].c_str());
 		argument_list += std::string(" ") + argv_[i];
 	}
@@ -487,12 +487,12 @@ extern "C"
 
 	SE_DLL_API unsigned int SE_GetSeed()
 	{
-		return SE_Env::Inst().GetSeed();
+		return SE_Env::Inst().GetRand().GetSeed();
 	}
 
 	SE_DLL_API void SE_SetSeed(unsigned int seed)
 	{
-		SE_Env::Inst().SetSeed(seed);
+		SE_Env::Inst().GetRand().SetSeed(seed);
 	}
 
 	SE_DLL_API int SE_SetParameterDistribution(const char* filename)

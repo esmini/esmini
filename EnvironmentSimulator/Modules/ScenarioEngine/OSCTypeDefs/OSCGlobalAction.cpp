@@ -394,7 +394,6 @@ inline void SwarmTrafficAction::sampleRoads(int minN, int maxN, Solutions &sols,
 {
     //printf("Entered road selection\n");
     //printf("Min: %d, Max: %d\n", minN, maxN);
-    std::uniform_int_distribution<int> dist(minN, maxN);
 
     // Sample the number of cars to spawn
     if (maxN < minN)
@@ -403,7 +402,7 @@ inline void SwarmTrafficAction::sampleRoads(int minN, int maxN, Solutions &sols,
         return;
     }
 
-    int nCarsToSpawn = dist(SE_Env::Inst().GetGenerator());
+    int nCarsToSpawn = SE_Env::Inst().GetRand().GetNumberBetween(minN, maxN);
     if (nCarsToSpawn <= 0)
     {
         return;
@@ -419,7 +418,7 @@ inline void SwarmTrafficAction::sampleRoads(int minN, int maxN, Solutions &sols,
         // Solutions selected(nCarsToSpawn);
         static Point selected[MAX_CARS];  // Remove macro when/if found a solution for dynamic array
         std::random_shuffle(sols.begin(), sols.end());
-        sample(sols.begin(), sols.end(), selected, nCarsToSpawn, SE_Env::Inst().GetGenerator());
+        sample(sols.begin(), sols.end(), selected, nCarsToSpawn, SE_Env::Inst().GetRand().GetGenerator());
 
         for (int i = 0; i < nCarsToSpawn; i++)
         {
@@ -468,7 +467,7 @@ inline void SwarmTrafficAction::sampleRoads(int minN, int maxN, Solutions &sols,
             if (lanesLeft > 0)
             {
                 std::uniform_int_distribution<int> laneDist(0, std::min(lanesLeft, nDrivingLanes));
-                lanesN = laneDist(SE_Env::Inst().GetGenerator());
+                lanesN = laneDist(SE_Env::Inst().GetRand().GetGenerator());
                 lanesN = (lanesN == 0 ? 0 : lanesN - 1);
             }
             else
@@ -501,7 +500,7 @@ void SwarmTrafficAction::spawn(Solutions sols, int replace, double simTime)
 
         static int lanes[MAX_LANES];
 
-        sample(elements, elements + lanesNo, lanes, MIN(MAX_LANES, inf.nLanes), SE_Env::Inst().GetGenerator());
+        sample(elements, elements + lanesNo, lanes, MIN(MAX_LANES, inf.nLanes), SE_Env::Inst().GetRand().GetGenerator());
 
         for (int i = 0; i < MIN(MAX_LANES, inf.nLanes); i++)
         {
@@ -544,7 +543,7 @@ void SwarmTrafficAction::spawn(Solutions sols, int replace, double simTime)
 
             // Pick random model from vehicle catalog
             std::uniform_int_distribution<int> dist(0, static_cast<int>((vehicle_pool_.size() - 1)));
-            int number = dist(SE_Env::Inst().GetGenerator());
+            int number = dist(SE_Env::Inst().GetRand().GetGenerator());
 
             Vehicle* vehicle = new Vehicle(*vehicle_pool_[static_cast<unsigned int>(number)]);
             vehicle->pos_.SetLanePos(inf.pos.GetTrackId(), laneID, inf.pos.GetS(), 0.0);
