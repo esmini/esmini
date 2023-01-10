@@ -565,3 +565,9 @@ void Parameters::Print(std::string typestr)
 		LOG("   %s = %s", parameterDeclarations_.Parameter[i].name.c_str(), parameterDeclarations_.Parameter[i].value._string.c_str());
 	}
 }
+
+// bool Parameters::CheckAttribute(pugi::xml_node node, std::string attribute_name)
+// {
+// 	bool check = ReadAttribute(node, attribute_name);
+// 	return check
+// }

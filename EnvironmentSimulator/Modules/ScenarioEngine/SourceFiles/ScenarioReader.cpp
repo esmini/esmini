@@ -2784,42 +2784,249 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 				{
 					OverrideControlAction *override_action = new OverrideControlAction();
 					Object::OverrideActionStatus overrideStatus;
+					bool verFromMinor2 = (GetVersionMajor() == 1 && GetVersionMinor() >= 2);
 
 					for (pugi::xml_node controllerDefNode = controllerChild.first_child(); controllerDefNode; controllerDefNode = controllerDefNode.next_sibling())
 					{
-						double value = strtod(parameters.ReadAttribute(controllerDefNode, "value"));
 						// read active flag
 						overrideStatus.active = parameters.ReadAttribute(controllerDefNode, "active") == "true" ? true : false;
 
 						if (controllerDefNode.name() == std::string("Throttle"))
 						{
-							overrideStatus.type = Object::OverrideType::OVERRIDE_THROTTLE;
-							overrideStatus.value = override_action->RangeCheckAndErrorLog(overrideStatus.type, value);
+							double value = strtod(parameters.ReadAttribute(controllerDefNode, "value"));
+							overrideStatus.type = static_cast<int>(Object::OverrideType::OVERRIDE_THROTTLE);
+							overrideStatus.value = override_action->RangeCheckAndErrorLog(Object::OverrideType::OVERRIDE_THROTTLE, value);
+
+							// version 1.2 with throttle attribute
+							if ((verFromMinor2) && (!(controllerDefNode.attribute("maxRate").empty())))
+							{
+								double maxRate = strtod(parameters.ReadAttribute(controllerDefNode, "maxRate"));
+								overrideStatus.maxRate = maxRate;
+							}
 						}
 						else if (controllerDefNode.name() == std::string("Brake"))
 						{
 							overrideStatus.type = Object::OverrideType::OVERRIDE_BRAKE;
-							overrideStatus.value = override_action->RangeCheckAndErrorLog(overrideStatus.type, value);
+							pugi::xml_node brake_input_node = controllerDefNode.first_child();
+
+							if (brake_input_node.empty())
+							{
+								// No BrakeInput child element
+								double value = strtod(parameters.ReadAttribute(controllerDefNode, "value"));
+								overrideStatus.value = override_action->RangeCheckAndErrorLog(Object::OverrideType::OVERRIDE_BRAKE, value);
+								if (verFromMinor2)
+								{
+									LOG("From version 1.2 BrakeInput element should be used instead of value attribute, Accepting anyway");
+								}
+							}
+							else
+							{
+								// BrakeInput child element seems to be present
+								double value = strtod(parameters.ReadAttribute(brake_input_node, "value"));
+								if ((brake_input_node.name() == std::string("BrakeForce")))
+								{
+									overrideStatus.value_type = static_cast<int>(Object::OverrideBrakeType::Force);
+									// No upper limit
+									if (value < 0.0)
+									{
+										LOG("Unexpected negative brake force %.2f - ignoring, set to 0", value);
+										overrideStatus.value = 0.0;
+									}
+									else
+									{
+										overrideStatus.value = value;
+									}
+								}
+								else if ((controllerDefNode.first_child().name() == std::string("BrakePercent")))
+								{
+									overrideStatus.value_type = static_cast<int>(Object::OverrideBrakeType::Percent);
+									overrideStatus.value = override_action->RangeCheckAndErrorLog(Object::OverrideType::OVERRIDE_BRAKE, value);
+								}
+								else
+								{
+									LOG("Unexpected Brake child element: %s", brake_input_node.name());
+									delete override_action;
+									return 0;
+								}
+
+								// Check for optional maxRate attribute
+								if (!brake_input_node.attribute("maxRate").empty())
+								{
+									overrideStatus.maxRate = strtod(parameters.ReadAttribute(brake_input_node, "maxRate"));
+								}
+
+								if (!verFromMinor2)
+								{
+									LOG("Unexpected BrakeInput element in version %d.%d, introduced in OSC 1.2", GetVersionMajor(), GetVersionMinor());
+								}
+							}
 						}
 						else if (controllerDefNode.name() == std::string("Clutch"))
 						{
+							double value = strtod(parameters.ReadAttribute(controllerDefNode, "value"));
 							overrideStatus.type = Object::OverrideType::OVERRIDE_CLUTCH;
-							overrideStatus.value = override_action->RangeCheckAndErrorLog(overrideStatus.type, value);
+							overrideStatus.value = override_action->RangeCheckAndErrorLog(Object::OverrideType::OVERRIDE_CLUTCH, value);
+				
+							// version 1.2 with clutch attribute
+							if ((verFromMinor2) && (!(controllerDefNode.attribute("maxRate").empty())))
+							{
+								double maxRate = strtod(parameters.ReadAttribute(controllerDefNode, "maxRate"));
+								overrideStatus.maxRate = maxRate;
+							}
 						}
 						else if (controllerDefNode.name() == std::string("ParkingBrake"))
 						{
 							overrideStatus.type = Object::OverrideType::OVERRIDE_PARKING_BRAKE;
-							overrideStatus.value = override_action->RangeCheckAndErrorLog(overrideStatus.type, value);
+							pugi::xml_node parking_brake_input_node = controllerDefNode.first_child();
+
+							if (parking_brake_input_node.empty())
+							{
+								// No BrakeInput child element
+								double value = strtod(parameters.ReadAttribute(controllerDefNode, "value"));
+								overrideStatus.value = override_action->RangeCheckAndErrorLog(Object::OverrideType::OVERRIDE_PARKING_BRAKE, value);
+								if (verFromMinor2)
+								{
+									LOG("From version 1.2 BrakeInput element should be used instead of value attribute, Accepting anyway");
+								}
+							}
+							else
+							{
+								// BrakeInput child element seems to be present
+								double value = strtod(parameters.ReadAttribute(parking_brake_input_node, "value"));
+								if ((parking_brake_input_node.name() == std::string("BrakeForce")))
+								{
+									overrideStatus.value_type = static_cast<int>(Object::OverrideBrakeType::Force);
+									// No upper limit
+									if (value < 0.0)
+									{
+										LOG("Unexpected negative brake force %.2f - ignoring, set to 0", value);
+										overrideStatus.value = 0.0;
+									}
+									else
+									{
+										overrideStatus.value = value;
+									}
+								}
+								else if ((controllerDefNode.first_child().name() == std::string("BrakePercent")))
+								{
+									overrideStatus.value_type = static_cast<int>(Object::OverrideBrakeType::Percent);
+									overrideStatus.value = override_action->RangeCheckAndErrorLog(Object::OverrideType::OVERRIDE_PARKING_BRAKE, value);
+								}
+								else
+								{
+									LOG("Unexpected Parking Brake child element: %s", parking_brake_input_node.name());
+									delete override_action;
+									return 0;
+								}
+
+								// Check for optional maxRate attribute
+								if (!parking_brake_input_node.attribute("maxRate").empty())
+								{
+									overrideStatus.maxRate = strtod(parameters.ReadAttribute(parking_brake_input_node, "maxRate"));
+								}
+
+								if (!verFromMinor2)
+								{
+									LOG("Unexpected BrakeInput element in version %d.%d, introduced in OSC 1.2", GetVersionMajor(), GetVersionMinor());
+								}
+							}
 						}
+
 						else if (controllerDefNode.name() == std::string("SteeringWheel"))
 						{
+							double value = strtod(parameters.ReadAttribute(controllerDefNode, "value"));
 							overrideStatus.type = Object::OverrideType::OVERRIDE_STEERING_WHEEL;
-							overrideStatus.value = override_action->RangeCheckAndErrorLog(overrideStatus.type, value, -2 * M_PI, 2 * M_PI);
+							overrideStatus.value = override_action->RangeCheckAndErrorLog(Object::OverrideType::OVERRIDE_STEERING_WHEEL, value, -2 * M_PI, 2 * M_PI);
+							// version 1.2 and steering maxRate attribute
+							if ((verFromMinor2) && (!(controllerDefNode.attribute("maxRate").empty())))
+							{
+								double maxRate = strtod(parameters.ReadAttribute(controllerDefNode, "maxRate"));
+								overrideStatus.maxRate = maxRate;
+							}
+							// version 1.2 and steering maxTorque attribute
+							if ((verFromMinor2) && (!(controllerDefNode.attribute("maxTorque").empty())))
+							{
+								double maxTorque = strtod(parameters.ReadAttribute(controllerDefNode, "maxTorque"));
+								overrideStatus.maxTorque = maxTorque;
+							}
 						}
 						else if (controllerDefNode.name() == std::string("Gear"))
 						{
 							overrideStatus.type = Object::OverrideType::OVERRIDE_GEAR;
-							overrideStatus.value = override_action->RangeCheckAndErrorLog(overrideStatus.type, value, -1, 8, true);
+							// version < 1.2 or no gear type
+							if (controllerDefNode.first_child().empty())
+							{
+								overrideStatus.value_type = static_cast<int>(Object::OverrideGearType::Manual);
+								if (!(controllerDefNode.attribute("number").empty())) // version < 1.2 with number attribute
+								{
+									// Skip range check since valid range is [-inf, inf]
+									overrideStatus.number = static_cast<int>(strtod(parameters.ReadAttribute(controllerDefNode, "number")));
+								}
+								else if (!(controllerDefNode.attribute("value").empty())) // version 1.1.1 with value attribute
+								{
+									// Skip range check since valid range is [-inf, inf]
+									overrideStatus.number = static_cast<int>(strtod(parameters.ReadAttribute(controllerDefNode, "value")));
+									LOG("Unexpected Gear attribute name, change value to number, Accepting this time");
+								}
+								else
+								{
+									LOG("Unexpected OverrideControllerValueAction subelement: %s", controllerDefNode.name());
+									delete override_action;
+									return 0;
+								}
+							}
+							// version 1.2
+							else
+							{
+								if (controllerDefNode.first_child().name() == std::string("AutomaticGear"))
+								{
+									int number;
+									overrideStatus.value_type = static_cast<int>(Object::OverrideGearType::Automatic);
+									std::string number_str = parameters.ReadAttribute(controllerDefNode.first_child(), "gear");
+									if (number_str == std::string("r"))
+									{
+										number = -1;
+									}
+									else if (number_str == std::string("p"))
+									{
+										number = 1;
+									}
+									else if (number_str == std::string("n"))
+									{
+										number = 0;
+									}
+									else if (number_str == std::string("d"))
+									{
+										number = 2;
+									}
+									else
+									{
+										LOG("Unexpected AutomaticGear number: %s", number_str.c_str());
+										delete override_action;
+										return 0;
+									}
+
+									// Range check was done above
+									overrideStatus.number = number;
+								}
+								// version 1.2 with ManualGear attribute
+								else if (controllerDefNode.first_child().name() == std::string("ManualGear"))
+								{
+									overrideStatus.value_type = static_cast<int>(Object::OverrideGearType::Manual);
+									// Skip range check since valid range is [-inf, inf]
+									overrideStatus.number = strtoi(parameters.ReadAttribute(controllerDefNode.first_child(), "number"));
+								}
+								else
+								{
+									LOG("Unexpected Gear child element: %s", controllerDefNode.first_child().name());
+									delete override_action;
+									return 0;
+								}
+								if (!verFromMinor2)
+								{
+									LOG("Unexpected Gear element in version %d.%d, introduced in OSC 1.2", GetVersionMajor(), GetVersionMinor());
+								}
+							}
 						}
 						else
 						{

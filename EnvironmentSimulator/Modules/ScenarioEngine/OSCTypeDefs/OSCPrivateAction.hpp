@@ -586,7 +586,7 @@ namespace scenarioengine
 			SUBMODE_CONVEX,
 			SUBMODE_CONCAVE
 		} SynchSubmode;
-		
+
 		std::shared_ptr<OSCPosition> steadyState_OSCPosition_;
 		struct
 		{

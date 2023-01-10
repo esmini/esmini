@@ -1297,6 +1297,8 @@ TEST(TestGetAndSet, OverrideActionTest)
 	EXPECT_DOUBLE_EQ(list.clutch.value, 1.0);
 	EXPECT_EQ(list.steeringWheel.active, false);
 	EXPECT_DOUBLE_EQ(list.steeringWheel.value, 0.0);
+	EXPECT_EQ(list.brake.active, false);
+	EXPECT_DOUBLE_EQ(list.brake.value, 0.7);
 
 	for (; t < 5.1; t += dt)
 	{
@@ -1308,7 +1310,102 @@ TEST(TestGetAndSet, OverrideActionTest)
 	EXPECT_EQ(list.clutch.active, true);
 	EXPECT_DOUBLE_EQ(list.clutch.value, 0.7);
 	EXPECT_EQ(list.steeringWheel.active, false);
+	EXPECT_NEAR(list.steeringWheel.value, 2 * M_PI, 6.3);
+	EXPECT_DOUBLE_EQ(list.gear.number, 7);
+	EXPECT_EQ(list.gear.active, true);
+	EXPECT_EQ(list.parkingBrake.active, true);
+	EXPECT_DOUBLE_EQ(list.parkingBrake.value, 0);
+
+	for (; t <7.1; t += dt)
+	{
+		SE_StepDT(dt);
+	}
+	EXPECT_EQ(SE_GetOverrideActionStatus(0, &list), 0);
+	EXPECT_DOUBLE_EQ(list.gear.number, 100);
+	EXPECT_EQ(list.gear.active, true);
+	EXPECT_EQ(list.gear.value_type, 0);
+
+	SE_Close();
+}
+
+TEST(TestGetAndSet, OverrideActionTestver1_2)
+{
+	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/override_action_with_group_type.xosc";
+	const char *Scenario_file = scenario_file.c_str();
+	float dt = 0.1f;
+	float t = 0.0f;
+
+	SE_OverrideActionList list;
+
+	ASSERT_EQ(SE_Init(Scenario_file, 0, 0, 0, 0), 0);
+
+	EXPECT_EQ(SE_GetOverrideActionStatus(0, &list), 0);
+	EXPECT_EQ(list.throttle.active, false);
+	EXPECT_DOUBLE_EQ(list.throttle.value, 0.0);
+
+	for (; t < 2.5; t += dt)
+	{
+		SE_StepDT(dt);
+	}
+	// Should still be no changes
+	EXPECT_EQ(SE_GetOverrideActionStatus(0, &list), 0);
+	EXPECT_EQ(list.throttle.active, false);
+	EXPECT_DOUBLE_EQ(list.throttle.value, 0.0);
+
+	for (; t < 3.1; t += dt)
+	{
+		SE_StepDT(dt);
+	}
+	// Now there should be some settings done
+	EXPECT_EQ(SE_GetOverrideActionStatus(0, &list), 0);
+	EXPECT_EQ(list.throttle.active, false);
+	EXPECT_DOUBLE_EQ(list.throttle.value, 0.5);
+	EXPECT_EQ(list.clutch.active, false);
+	EXPECT_DOUBLE_EQ(list.clutch.value, 1.0);
+	EXPECT_EQ(list.brake.active, true);
+	EXPECT_DOUBLE_EQ(list.brake.value, 0.7);
+	EXPECT_EQ(list.steeringWheel.active, false);
+	EXPECT_NEAR(list.steeringWheel.value, 2 * M_PI, 6.3);
+	EXPECT_DOUBLE_EQ(list.gear.number, 7);
+	EXPECT_DOUBLE_EQ(list.gear.active, true);
+	EXPECT_DOUBLE_EQ(list.gear.value_type, 0);
+
+
+	for (; t < 5.1; t += dt)
+	{
+		SE_StepDT(dt);
+	}
+	EXPECT_EQ(SE_GetOverrideActionStatus(0, &list), 0);
+	EXPECT_EQ(list.throttle.active, true);
+	EXPECT_DOUBLE_EQ(list.throttle.value, 0.7);
+	EXPECT_DOUBLE_EQ(list.throttle.maxRate, 0.2);
+	EXPECT_EQ(list.clutch.active, true);
+	EXPECT_DOUBLE_EQ(list.clutch.value, 0.7);
+	EXPECT_DOUBLE_EQ(list.clutch.maxRate, 0.2);
+	EXPECT_EQ(list.steeringWheel.active, true);
 	EXPECT_NEAR(list.steeringWheel.value, 2 * M_PI, 0.01);
+	EXPECT_DOUBLE_EQ(list.steeringWheel.maxRate, 0.2);
+	EXPECT_DOUBLE_EQ(list.steeringWheel.maxTorque, 1);
+	EXPECT_EQ(list.brake.active, true);
+	EXPECT_DOUBLE_EQ(list.brake.value_type, 0);
+	EXPECT_DOUBLE_EQ(list.brake.value, 0.9);
+	EXPECT_DOUBLE_EQ(list.brake.maxRate, 0.3);
+	EXPECT_EQ(list.parkingBrake.active, false);
+	EXPECT_EQ(list.parkingBrake.value_type, 1);
+	EXPECT_DOUBLE_EQ(list.parkingBrake.value, 1);
+	EXPECT_DOUBLE_EQ(list.parkingBrake.maxRate, 0.2);
+	EXPECT_DOUBLE_EQ(list.gear.number, -2);
+	EXPECT_DOUBLE_EQ(list.gear.active, false);
+	EXPECT_DOUBLE_EQ(list.gear.value_type, 0);
+
+	for (; t < 7.1; t += dt)
+	{
+		SE_StepDT(dt);
+	}
+	EXPECT_EQ(SE_GetOverrideActionStatus(0, &list), 0);
+	EXPECT_DOUBLE_EQ(list.gear.number, -1);
+	EXPECT_EQ(list.gear.active, true);
+	EXPECT_DOUBLE_EQ(list.gear.value_type, 1);
 
 	SE_Close();
 }

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <OpenSCENARIO>
    <FileHeader revMajor="1"
-               revMinor="1"
+               revMinor="2"
                date="2021-04-13T10:00:00"
                description="For OverrideAction unit test"
                author="esmini-team"/>
@@ -59,16 +59,18 @@
                         <PrivateAction>
                            <ControllerAction>
                               <OverrideControllerValueAction>
-                                  <Throttle value="0.5" active="true"/>
-                                  <Brake value="0.7" active="false"/>
-                                  <Clutch value="2.0" active="false"/>
+                                 <Throttle value="0.5" active="false"/>
+                                 <Brake value="0.7" active="true"/>
+                                 <Clutch value="2.0" active="false"/>
+                                 <SteeringWheel value="15.0" active="false"/>
+                                 <Gear value="7.8" active="true"/>
                               </OverrideControllerValueAction>
                            </ControllerAction>
                         </PrivateAction>
                      </Action>
                      <StartTrigger>
                         <ConditionGroup>
-                           <Condition name="SetOverrideActionTrigger1" delay="0" conditionEdge="none">
+                           <Condition name="SetOverrideActionTrigger" delay="0" conditionEdge="none">
                               <ByValueCondition>
                                  <SimulationTimeCondition value="3" rule="greaterThan"/>
                               </ByValueCondition>
@@ -81,10 +83,18 @@
                         <PrivateAction>
                            <ControllerAction>
                               <OverrideControllerValueAction>
-                                  <Clutch value="0.7" active="true"/>
-                                  <ParkingBrake value="0.0" active="true"/>
-                                  <SteeringWheel value="15.0" active="false"/>
-                                  <Gear value="7.8" active="true"/>
+                              	 <Throttle value="0.7" maxRate="0.2" active="true"/>
+                                 <Brake active="true">
+                                     <BrakePercent maxRate="0.3" value="0.9"/>
+                                 </Brake>
+                                 <Clutch value="0.7" maxRate="0.2" active="true"/>
+                                 <ParkingBrake active="false">
+                                    <BrakeForce maxRate="0.2" value="1"/>
+                                 </ParkingBrake>
+                                 <SteeringWheel value="15.0" maxRate="0.2" maxTorque="1" active="true"/>
+                                 <Gear active="false">
+                                    <ManualGear number="-2"/>
+                                 </Gear>
                               </OverrideControllerValueAction>
                            </ControllerAction>
                         </PrivateAction>
@@ -99,12 +109,14 @@
                         </ConditionGroup>
                      </StartTrigger>
                   </Event>
-                  <Event name="SetOverrideEvent3" maximumExecutionCount="2" priority="overwrite">
+                     <Event name="SetOverrideEvent3" maximumExecutionCount="2" priority="overwrite">
                      <Action name="SetOverrideAction3">
                         <PrivateAction>
                            <ControllerAction>
                               <OverrideControllerValueAction>
-                                  <Gear number="100" active="true"/>
+                                 <Gear active="true">
+                                    <AutomaticGear gear="r"/>
+                                 </Gear>
                               </OverrideControllerValueAction>
                            </ControllerAction>
                         </PrivateAction>
