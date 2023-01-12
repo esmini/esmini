@@ -7403,6 +7403,10 @@ Position::ReturnCode Position::SetLongitudinalTrackPos(int track_id, double s)
 		status_ |= static_cast<int>(PositionStatusMode::POS_STATUS_END_OF_ROAD);
 		return ReturnCode::ERROR_END_OF_ROAD;
 	}
+	else if (s < 0.0)
+	{
+		s_ = 0.0;
+	}
 	else
 	{
 		s_ = s;
@@ -10696,6 +10700,18 @@ void Position::ReleaseRelation()
 	{
 		// Resolve requested position
 		SetTrackPos(roadId, s, t);
+
+		if (s - GetS() > SMALL_NUMBER)
+		{
+			// passed end of road - move remaining distance
+			MoveAlongS(s - GetS());
+		}
+		else if (s < 0)
+		{
+			// passed start of road - move backwards remaining distance
+			MoveAlongS(s);
+		}
+
 		if (orientation_type_ == OrientationType::ORIENTATION_ABSOLUTE)
 		{
 			SetHeading(hAbs);
@@ -10706,6 +10722,18 @@ void Position::ReleaseRelation()
 	else if (type == Position::PositionType::RELATIVE_LANE)
 	{
 		SetLanePos(roadId, laneId, s, offset);
+
+		if (s - GetS() > SMALL_NUMBER)
+		{
+			// passed end of road - move remaining distance
+			MoveAlongS(s - GetS());
+		}
+		else if (s < 0)
+		{
+			// passed start of road - move backwards remaining distance
+			MoveAlongS(s);
+		}
+
 		if (orientation_type_ == OrientationType::ORIENTATION_RELATIVE)
 		{
 			SetHeadingRelative(GetAngleSum(hRel, GetDrivingDirectionRelativeRoad() < 0 ? M_PI : 0.0));
