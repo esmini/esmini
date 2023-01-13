@@ -1,6 +1,6 @@
 
 image:
-- Visual Studio 2017
+- Visual Studio 2019
 - Ubuntu1804
 - macos
 
@@ -191,16 +191,16 @@ for:
   -
     matrix:
       only:
-        - image: Visual Studio 2017
+        - image: Visual Studio 2019
           platform: x64
     build_script:
-      - echo Visual Studio 2017 x64 build script
+      - echo Visual Studio 2019 x64 build script
       - cmd:
           mkdir build
 
           cd build
 
-          cmake -G "Visual Studio 15 Win64" ..
+          cmake .. -G "Visual Studio 16 2019" -T v142 -A x64
 
           cmake --build . -j --config Release --target install
 
@@ -216,7 +216,7 @@ for:
 
           cd build-no-osg
 
-          cmake -G "Visual Studio 15 Win64" -D USE_OSG=False -D USE_SUMO=False -D USE_OSI=False ..
+          cmake -G "Visual Studio 16 2019" -T v142 -A x64 -D USE_OSG=False -D USE_SUMO=False -D USE_OSI=False ..
 
           cmake --build . -j --config Release
 
