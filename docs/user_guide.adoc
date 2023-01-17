@@ -574,7 +574,7 @@ Only trace file way is described here. To save OSI data, add argument `--osi_fil
 
 ``./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in.xosc --osi_file``
 
-will create `ground_truth.osi`` in the current folder. The format is according to the OSI standard "Binary trace file", see OSI documentation https://opensimulationinterface.github.io/osi-documentation/index.html#_osi_trace_files[2.2.6 OSI trace files].
+will create `ground_truth.osi` in the current folder. The format is according to the OSI standard "Binary trace file", see OSI documentation https://opensimulationinterface.github.io/osi-documentation/index.html#_osi_trace_files[2.2.6 OSI trace files].
 
 esmini provides a script, osi2csv.py, that converts an OSI trace file into .csv format. The script can also serve as example how to parse and extract data from an OSI trace file:
 
@@ -634,7 +634,7 @@ The action for white car:
         maxDecelerationRate = "3.0"
         maxSpeed = "50"
     />
-    <SpeedProfileEntry time="0.0" speed="0.0"/>
+    <SpeedProfileEntry time="2.0" speed="0.0"/>
     <SpeedProfileEntry time="4.0" speed="10.0"/>
     <SpeedProfileEntry time="4.0" speed="4.0"/>
     <SpeedProfileEntry time="2.0" speed="8.0"/>
@@ -1093,7 +1093,7 @@ Here follows a few design choices for the polyline type that affect the behavior
 When FollowMode is `follow` esmini will:
 
 . Calculate heading based on direction of the line segments. However corners are interpolated in order to look better and avoid discontinuities.
-. Calculate speed based on current speed (when action is triggered) and then with constant acceleration per segment reach destination vertex on time (or earlier if distance is to short vs time). This approach results in a continuous speed profile.
+. Calculate speed based on current speed (when action is triggered) and then with constant acceleration per segment reach destination vertex on time (or earlier if distance is too short vs time). This approach results in a continuous speed profile.
 
 When FollowMode is `position` esmini will:
 
@@ -1264,8 +1264,9 @@ The ghost feature is available in the following esmini embedded controllers:
 * <<ExternalController>>
 
 There are two different methods to probe the ghost trail:
-By time: Ask for ghost state (pos, heading, speed...) at specific timestamp
-By distance: Ask for ghost state at a specific distance, from a position (typically current Ego position)
+
+. By time: Ask for ghost state (pos, heading, speed...) at specific timestamp
+. By distance: Ask for ghost state at a specific distance, from a position (typically current Ego position)
 
 Both methods will return a RoadInfo structure including position details e.g. world position (absolute and relative Ego), road coordinates, road pitch, trail heading, heading angle to the target point and ghost speed at that point.
 
@@ -1867,7 +1868,7 @@ Linux Ubuntu 18.04
 
 [source]
 ----
-sudo apt install build-essential gdp ninja-build git pkg-config libgl1-mesa-dev libpthread-stubs0-dev libjpeg-dev libxml2-dev libpng-dev libtiff5-dev libgdal-dev libpoppler-dev libdcmtk-dev libgstreamer1.0-dev libgtk2.0-dev libcairo2-dev libpoppler-glib-dev libxrandr-dev libxinerama-dev curl cmake
+sudo apt install build-essential gdb ninja-build git pkg-config libgl1-mesa-dev libpthread-stubs0-dev libjpeg-dev libxml2-dev libpng-dev libtiff5-dev libgdal-dev libpoppler-dev libdcmtk-dev libgstreamer1.0-dev libgtk2.0-dev libcairo2-dev libpoppler-glib-dev libxrandr-dev libxinerama-dev curl cmake
 ----
 
 Also, g\++ version >= 5 is needed for c++14 code support.
