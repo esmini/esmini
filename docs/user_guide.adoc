@@ -634,7 +634,7 @@ The action for white car:
         maxDecelerationRate = "3.0"
         maxSpeed = "50"
     />
-    <SpeedProfileEntry time="2.0" speed="0.0"/>
+    <SpeedProfileEntry time="0.0" speed="0.0"/>
     <SpeedProfileEntry time="4.0" speed="10.0"/>
     <SpeedProfileEntry time="4.0" speed="4.0"/>
     <SpeedProfileEntry time="2.0" speed="8.0"/>
