@@ -315,6 +315,26 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^1.320, 0, Car0, 438.186, -1.058, 0.000, 0.000, 0.000, 0.000, 13.889, 0.002, 2.115', csv, re.MULTILINE))
         self.assertTrue(re.search('^12.690, 0, Car0, 582.260, 41.297, 0.000, 0.951, 0.000, 0.000, 13.889, 0.031, 0.917', csv, re.MULTILINE))
 
+    def test_relative_speed_trig(self):
+        log = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/direction_dimension_trig.xosc'), COMMON_ARGS)
+
+        # Check some initialization steps
+        self.assertTrue(re.search('Loading .*direction_dimension_trig.xosc', log)  is not None)
+
+        # Check some scenario events
+        self.assertTrue(re.search('^2.680: EgoAccelRelCondition == true, relative_speed: -8.00 > -8.00, edge: rising', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^2.690: EgoAccelRelEvent standbyState -> startTransition -> runningState', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^4.680: EgoAccelRelEvent runningState -> endTransition -> completeState', log, re.MULTILINE)  is not None)
+
+        # Check vehicle key positions
+        csv = generate_csv()
+        self.assertTrue(re.search('^0.030, 1, OverTaker, 90.001, 19.999, 0.000, 5.356, 0.000, 0.000, 0.042, 0.000, 0.002', csv, re.MULTILINE))
+        self.assertTrue(re.search('^0.040, 0, Ego, 50.399, -1.968, 0.000, 0.080, 0.000, 0.000, 10.000, 0.000, 1.143', csv, re.MULTILINE))
+        self.assertTrue(re.search('^2.690, 0, Ego, 76.814, 0.145, 0.000, 0.080, 0.000, 0.000, 10.050, 0.000, 1.460', csv, re.MULTILINE))
+        self.assertTrue(re.search('^2.690, 1, OverTaker, 93.050, 15.933, 0.000, 5.356, 0.000, 0.000, 3.766, 0.000, 1.960', csv, re.MULTILINE))
+        self.assertTrue(re.search('^4.210, 0, Ego, 97.761, 1.821, 0.000, 0.080, 0.000, 0.000, 17.650, 0.000, 5.169', csv, re.MULTILINE))
+        self.assertTrue(re.search('^4.210, 1, OverTaker, 97.462, 10.051, 0.000, 5.356, 0.000, 0.000, 5.894, 0.000, 4.116', csv, re.MULTILINE))
+
     def test_lane_change_at_hw_exit(self):
         log = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/highway_exit.xosc'), COMMON_ARGS)
 

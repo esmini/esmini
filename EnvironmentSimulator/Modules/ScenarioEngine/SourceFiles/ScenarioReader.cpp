@@ -3252,7 +3252,31 @@ static Rule ParseRule(std::string rule)
 		LOG("Invalid or missing rule %s", rule.c_str());
 	}
 
-	return Rule::UNDEFINED;
+	return Rule::UNDEFINED_RULE;
+}
+
+static Direction ParseDirection(std::string direction)
+{
+	if (direction == "longitudinal")
+	{
+		return Direction::LONGITUDINAL;
+	}
+	else if (direction == "lateral")
+	{
+		return Direction::LATERAL;
+	}
+	else if (direction == "vertical")
+	{
+		return Direction::VERTICAL;
+	}
+	else
+	{
+		LOG("Invalid or missing direction %s", direction.c_str());
+		return Direction::UNDEFINED_DIRECTION;
+	}
+
+	return Direction::UNDEFINED_DIRECTION;
+
 }
 
 static TrigByState::CondElementState ParseState(std::string state)
@@ -3634,6 +3658,10 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 
 						trigger->value_ = strtod(parameters.ReadAttribute(condition_node, "value"));
 						trigger->rule_ = ParseRule(parameters.ReadAttribute(condition_node, "rule"));
+						if (!condition_node.attribute("direction").empty())
+						{
+							trigger->direction_ = ParseDirection(parameters.ReadAttribute(condition_node, "direction"));
+						}
 
 						condition = trigger;
 					}
@@ -3643,6 +3671,10 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 
 						trigger->value_ = strtod(parameters.ReadAttribute(condition_node, "value"));
 						trigger->rule_ = ParseRule(parameters.ReadAttribute(condition_node, "rule"));
+						if (!condition_node.attribute("direction").empty())
+						{
+							trigger->direction_ = ParseDirection(parameters.ReadAttribute(condition_node, "direction"));
+						}
 
 						condition = trigger;
 					}
@@ -3653,6 +3685,10 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 						trigger->object_ = ResolveObjectReference(parameters.ReadAttribute(condition_node, "entityRef"));
 						trigger->value_ = strtod(parameters.ReadAttribute(condition_node, "value"));
 						trigger->rule_ = ParseRule(parameters.ReadAttribute(condition_node, "rule"));
+						if (!condition_node.attribute("direction").empty())
+						{
+							trigger->direction_ = ParseDirection(parameters.ReadAttribute(condition_node, "direction"));
+						}
 
 						condition = trigger;
 					}

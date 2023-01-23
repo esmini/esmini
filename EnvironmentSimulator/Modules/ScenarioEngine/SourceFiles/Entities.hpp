@@ -173,8 +173,10 @@ namespace scenarioengine
 		struct {
 			double pos_x;
 			double pos_y;
+			double pos_z;
 			double vel_x;
 			double vel_y;
+			double vel_z;
 			double h;
 			double h_rate;
 		} state_old;

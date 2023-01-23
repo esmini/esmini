@@ -1252,11 +1252,15 @@ bool TrigByAcceleration::CheckCondition(StoryBoard* storyBoard, double sim_time)
 
 		if (direction_ == LONGITUDINAL)
 		{
-			current_acceleration_ = triggering_entities_.entity_[i].object_->pos_.GetAccX();
+			current_acceleration_ = triggering_entities_.entity_[i].object_->pos_.GetAccLong();
 		}
 		else if (direction_ == LATERAL)
 		{
-			current_acceleration_ = triggering_entities_.entity_[i].object_->pos_.GetAccY();
+			current_acceleration_ = triggering_entities_.entity_[i].object_->pos_.GetAccLat();
+		}
+		else if (direction_ == VERTICAL)
+		{
+			current_acceleration_ = triggering_entities_.entity_[i].object_->pos_.GetAccZ();
 		}
 		else
 		{
@@ -1301,7 +1305,22 @@ bool TrigBySpeed::CheckCondition(StoryBoard* storyBoard, double sim_time)
 			continue;
 		}
 
-		current_speed_ = triggering_entities_.entity_[i].object_->GetSpeed();
+		if (direction_ == LONGITUDINAL)
+		{
+			current_speed_ = triggering_entities_.entity_[i].object_->pos_.GetVelLong();
+		}
+		else if (direction_ == LATERAL)
+		{
+			current_speed_ = triggering_entities_.entity_[i].object_->pos_.GetVelLat();
+		}
+		else if (direction_ == VERTICAL)
+		{
+			current_speed_ = triggering_entities_.entity_[i].object_->pos_.GetVelZ();
+		}
+		else
+		{
+			current_speed_ = triggering_entities_.entity_[i].object_->GetSpeed();
+		}
 
 		result = EvaluateRule(current_speed_, value_, rule_);
 
@@ -1330,6 +1349,17 @@ bool TrigByRelativeSpeed::CheckCondition(StoryBoard* storyBoard, double sim_time
 	(void)storyBoard;
 	(void)sim_time;
 
+	if (object_ == nullptr)
+	{
+		LOG("TrigByRelativeSpeed: Couldn't resolve refEntity object");
+		return false;
+	}
+	else if(!object_->IsActive())
+	{
+		LOG("TrigByRelativeSpeed: refEntity not active");
+		return false;
+	}
+
 	triggered_by_entities_.clear();
 	bool result = false;
 	current_rel_speed_ = 0;
@@ -1341,13 +1371,30 @@ bool TrigByRelativeSpeed::CheckCondition(StoryBoard* storyBoard, double sim_time
 			continue;
 		}
 
-		if (object_)
+		if (direction_ == LONGITUDINAL)
 		{
-			current_rel_speed_ = triggering_entities_.entity_[i].object_->GetSpeed() - object_->GetSpeed();
+			// find out triggering entity speed along longitudinal axis in the reference vehicle coordinate system
+			// i.e. project it's speed to reference vehicle longitudinal axis
+			double vel_x = cos(-object_->pos_.GetH()) * triggering_entities_.entity_[i].object_->pos_.GetVelX() -
+				sin(-object_->pos_.GetH()) * triggering_entities_.entity_[i].object_->pos_.GetVelY();
+
+			// calculate the relative longitudinal speed (in reference vehicle coordinate system)
+			current_rel_speed_ = vel_x - object_->pos_.GetVelLong();
+
+		}
+		else if (direction_ == LATERAL)
+		{
+			double vel_y = sin(-object_->pos_.GetH()) * triggering_entities_.entity_[i].object_->pos_.GetVelX() +
+				cos(-object_->pos_.GetH()) * triggering_entities_.entity_[i].object_->pos_.GetVelY();
+			current_rel_speed_ = vel_y - object_->pos_.GetVelLat();
+		}
+		else if (direction_ == VERTICAL)
+		{
+			current_rel_speed_ = triggering_entities_.entity_[i].object_->pos_.GetVelZ() - object_->pos_.GetVelZ();
 		}
 		else
 		{
-			current_rel_speed_ = triggering_entities_.entity_[i].object_->GetSpeed();
+			current_rel_speed_ = triggering_entities_.entity_[i].object_->GetSpeed() - object_->GetSpeed();
 		}
 
 		result = EvaluateRule(current_rel_speed_, value_, rule_);

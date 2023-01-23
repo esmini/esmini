@@ -164,8 +164,10 @@ int ScenarioEngine::step(double deltaSimTime)
 
 			obj->state_old.pos_x = obj->pos_.GetX();
 			obj->state_old.pos_y = obj->pos_.GetY();
+			obj->state_old.pos_z = obj->pos_.GetZ();
 			obj->state_old.vel_x = obj->pos_.GetVelX();
 			obj->state_old.vel_y = obj->pos_.GetVelY();
+			obj->state_old.vel_z = obj->pos_.GetVelZ();
 			obj->state_old.h = obj->pos_.GetH();
 			obj->state_old.h_rate = obj->pos_.GetHRate();
 			obj->reset_ = true;
@@ -939,6 +941,7 @@ void ScenarioEngine::prepareGroundTruth(double dt)
 		// Calculate resulting updated velocity, acceleration and heading rate (rad/s) NOTE: in global coordinate sys
 		double dx = obj->pos_.GetX() - obj->state_old.pos_x;
 		double dy = obj->pos_.GetY() - obj->state_old.pos_y;
+		double dz = obj->pos_.GetZ() - obj->state_old.pos_z;
 
 		if (frame_nr_ == 1 || (obj->IsGhost() && ghost_mode_ != GhostMode::RESTART) || (!obj->IsGhost() && ghost_mode_ != GhostMode::RESTARTING))
 		{
@@ -948,7 +951,7 @@ void ScenarioEngine::prepareGroundTruth(double dt)
 				if (!obj->CheckDirtyBits(Object::DirtyBit::VELOCITY))
 				{
 					// If not already reported, calculate linear velocity
-					obj->SetVel(dx / dt, dy / dt, 0.0);
+					obj->SetVel(dx / dt, dy / dt, dz / dt);
 				}
 
 				// If speed has not been reported or set by any controller, calculate it based on velocity
@@ -960,7 +963,7 @@ void ScenarioEngine::prepareGroundTruth(double dt)
 				if (!obj->CheckDirtyBits(Object::DirtyBit::ACCELERATION))
 				{
 					// If not already reported, calculate linear acceleration
-					obj->SetAcc((obj->pos_.GetVelX() - obj->state_old.vel_x) / dt, (obj->pos_.GetVelY() - obj->state_old.vel_y) / dt, 0.0);
+					obj->SetAcc((obj->pos_.GetVelX() - obj->state_old.vel_x) / dt, (obj->pos_.GetVelY() - obj->state_old.vel_y) / dt, (obj->pos_.GetVelZ() - obj->state_old.vel_z) / dt);
 				}
 
 				double heading_rate_new = GetAngleDifference(obj->pos_.GetH(), obj->state_old.h) / dt;
@@ -1019,8 +1022,10 @@ void ScenarioEngine::prepareGroundTruth(double dt)
 			// store current values for next loop
 			obj->state_old.pos_x = obj->pos_.GetX();
 			obj->state_old.pos_y = obj->pos_.GetY();
+			obj->state_old.pos_z = obj->pos_.GetZ();
 			obj->state_old.vel_x = obj->pos_.GetVelX();
 			obj->state_old.vel_y = obj->pos_.GetVelY();
+			obj->state_old.vel_z = obj->pos_.GetVelZ();
 			obj->state_old.h = obj->pos_.GetH();
 			obj->state_old.h_rate = obj->pos_.GetHRate();
 

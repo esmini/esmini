@@ -23,7 +23,15 @@ namespace scenarioengine
 		LESS_OR_EQUAL,
 		EQUAL_TO,
 		NOT_EQUAL_TO,
-		UNDEFINED
+		UNDEFINED_RULE
 	} Rule;
+
+	typedef enum
+	{
+		LONGITUDINAL,
+		LATERAL,
+		VERTICAL,
+		UNDEFINED_DIRECTION
+	} Direction;
 
 }

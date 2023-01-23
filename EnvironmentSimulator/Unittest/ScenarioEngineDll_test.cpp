@@ -334,7 +334,7 @@ TEST(GetOSIRoadLaneTest, lane_no_obj)
 	SE_StepDT(0.001f);
 	SE_FlushOSIFile();
 	ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-	EXPECT_EQ(fileStatus.st_size, 71678);  // initial OSI size, including static content
+	EXPECT_EQ(fileStatus.st_size, 71696);  // initial OSI size, including static content
 
 	int road_lane_size;
 
@@ -346,12 +346,12 @@ TEST(GetOSIRoadLaneTest, lane_no_obj)
 	SE_StepDT(0.001f);  // Step for write another frame to osi file
 	SE_FlushOSIFile();
 	ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-	EXPECT_EQ(fileStatus.st_size, 72141);  // slight growth due to only dynamic updates
+	EXPECT_EQ(fileStatus.st_size, 72195);  // slight growth due to only dynamic updates
 
 	SE_StepDT(0.001f);  // Step for write another frame to osi file
 	SE_FlushOSIFile();
 	ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-	EXPECT_EQ(fileStatus.st_size, 72605);  // slight growth due to only dynamic updates
+	EXPECT_EQ(fileStatus.st_size, 72695);  // slight growth due to only dynamic updates
 
 	SE_Close();
 }

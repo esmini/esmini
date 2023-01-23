@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Another cut-in variant on a simple straight road. In this -->
+<!-- case specifying rate of the lane change lateral movement  -->
+<OpenSCENARIO>
+   <FileHeader revMajor="1"
+               revMinor="0"
+               date="2017-06-09T10:00:00"
+               description="Another variant of cut-in"
+               author="SimS"/>
+   <ParameterDeclarations>
+      <ParameterDeclaration name="HostVehicle" parameterType="string" value="car_white"/>
+      <ParameterDeclaration name="TargetVehicle" parameterType="string" value="car_red"/>
+      <ParameterDeclaration name="HeadwayTime_LaneChange" parameterType="double" value="0.4"/>
+      <ParameterDeclaration name="HeadwayTime_Brake" parameterType="double" value="1.0"/>
+   </ParameterDeclarations>
+   <CatalogLocations>
+      <VehicleCatalog>
+         <Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
+      </VehicleCatalog>
+   </CatalogLocations>
+   <RoadNetwork>
+      <LogicFile filepath="../../../resources/xodr/straight_500m.xodr"/>
+   </RoadNetwork>
+   <Entities>
+      <ScenarioObject name="Ego">
+         <CatalogReference catalogName="VehicleCatalog" entryName="$HostVehicle"/>
+      </ScenarioObject>
+      <ScenarioObject name="OverTaker">
+         <CatalogReference catalogName="VehicleCatalog" entryName="$TargetVehicle"/>
+      </ScenarioObject>
+   </Entities>
+   <Storyboard>
+      <Init>
+         <Actions>
+            <Private entityRef="Ego">
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="10"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <RoutingAction>
+                        <FollowTrajectoryAction>
+                           <Trajectory closed="False" name="EgoTrajectory">
+                              <ParameterDeclarations/>
+                              <Shape>
+                                 <Polyline>
+                                    <Vertex>
+                                       <Position>
+                                             <!-- <LanePosition roadId="1" laneId="-1" offset="20" s="90"/> -->
+                                             <!-- <WorldPosition x="90.0" y="20" h="0.0"/> -->
+                                             <!-- <WorldPosition x="50.0" y="-20"/> -->
+                                             <WorldPosition x="50.0" y="-2"/>
+                                       </Position>
+                                    </Vertex>
+                                    <Vertex>
+                                       <Position>
+                                             <!-- <LanePosition roadId="1" laneId="-1" offset="-20" s="120"/> -->
+                                             <!-- <WorldPosition x="120.0" y="-20" h="0.0"/> -->
+                                             <!-- <WorldPosition x="100.0" y="20"/> -->
+                                             <WorldPosition x="100.0" y="2"/>
+                                       </Position>
+                                    </Vertex>
+                                 </Polyline>
+                              </Shape>
+                           </Trajectory>
+                           <TimeReference>
+                              <None/>
+                           </TimeReference>
+                           <TrajectoryFollowingMode followingMode="follow"/>
+                        </FollowTrajectoryAction>
+                  </RoutingAction>
+               </PrivateAction>
+            </Private>
+            <Private entityRef="OverTaker">
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="linear" dynamicsDimension="time" value="5.0"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="7"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <RoutingAction>
+                        <FollowTrajectoryAction>
+                           <Trajectory closed="False" name="OverTakerTrajectory">
+                              <ParameterDeclarations/>
+                              <Shape>
+                                 <Polyline>
+                                    <Vertex>
+                                       <Position>
+                                             <!-- <LanePosition roadId="1" laneId="-1" offset="20" s="90"/> -->
+                                             <!-- <WorldPosition x="90.0" y="20" h="0.0"/> -->
+                                             <WorldPosition x="90.0" y="20"/>
+                                       </Position>
+                                    </Vertex>
+                                    <Vertex>
+                                       <Position>
+                                             <!-- <LanePosition roadId="1" laneId="-1" offset="-20" s="120"/> -->
+                                             <!-- <WorldPosition x="120.0" y="-20" h="0.0"/> -->
+                                             <WorldPosition x="120.0" y="-20"/>
+                                       </Position>
+                                    </Vertex>
+                                 </Polyline>
+                              </Shape>
+                           </Trajectory>
+                           <TimeReference>
+                              <None/>
+                           </TimeReference>
+                           <TrajectoryFollowingMode followingMode="follow"/>
+                        </FollowTrajectoryAction>
+                  </RoutingAction>
+               </PrivateAction>
+            </Private>
+         </Actions>
+      </Init>
+      <Story name="EgoAccelRelStory">
+         <Act name="EgoAccelRelAct">
+            <ManeuverGroup maximumExecutionCount="1" name="EgoSequence">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="Ego"/>
+               </Actors>
+               <Maneuver name="EgoAccelRelManeuver">
+                  <Event name="EgoAccelRelEvent" priority="overwrite">
+                     <Action name="EgoAccelRelAction">
+                        <PrivateAction>
+                           <LongitudinalAction>
+                              <SpeedAction>
+                                 <SpeedActionDynamics dynamicsShape="linear" value="-5" dynamicsDimension="rate"/>
+                                 <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="20"/>
+                                 </SpeedActionTarget>
+                              </SpeedAction>
+                           </LongitudinalAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="EgoAccelRelCondition" delay="0" conditionEdge="rising">
+                              <ByEntityCondition>
+                                 <TriggeringEntities triggeringEntitiesRule="any">
+                                    <EntityRef entityRef="OverTaker"/>
+                                 </TriggeringEntities>
+                                 <EntityCondition>
+                                    <RelativeSpeedCondition value="-8" rule="greaterThan" entityRef="Ego" direction="longitudinal"/>
+                                 </EntityCondition>
+                              </ByEntityCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+            </ManeuverGroup>
+            <StartTrigger>
+               <ConditionGroup>
+                  <Condition name="CutInActStart" delay="0" conditionEdge="rising">
+                     <ByValueCondition>
+                        <SimulationTimeCondition value="0" rule="greaterThan"/>
+                     </ByValueCondition>
+                  </Condition>
+               </ConditionGroup>
+            </StartTrigger>
+         </Act>
+      </Story>
+      <StopTrigger>
+          <ConditionGroup>
+              <Condition conditionEdge="none" delay="0" name="simulationEndEventDone">
+                  <ByValueCondition>
+                      <SimulationTimeCondition rule="greaterThan" value="7"/>
+                  </ByValueCondition>
+              </Condition>
+          </ConditionGroup>
+      </StopTrigger>
+   </Storyboard>
+</OpenSCENARIO>
