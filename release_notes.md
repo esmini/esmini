@@ -1,5 +1,35 @@
 ## esmini release notes
 
+### 2023-01-23 Version 2.27.5
+
+New features and behaviors:
+- support OpenSCENARIO variables (introduced in OSC v1.2)
+  - Scenario example: [Unittest/xosc/lane_change_trig_by_variable.xosc](https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/Unittest/xosc/lane_change_trig_by_variable.xosc)
+  - limitation: Only SetAction supported, not ModifyAction yet
+  - external API for setting and reading variables see [esminiLib.hpp](https://github.com/esmini/esmini/blob/37efb091396a522d1eb1b7daf919bca4e1a03bdc/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L540)
+  - deprecated ParameterSetAction still supported
+  - API for setting and reading parameters still available as well
+- Adjust speed along s to maintain absolute speed
+  - In other words: Do not increase total speed during lateral actions
+  - Note: This can affect how far an object travels along s for a given duration.
+- Update reference driver in ALKS_R157SM controller, e.g:
+  - fulfill reference driver action even if critical situation dissolves
+  - add overlap tolerance param to avoid edge cases, e.g. equal sized objects
+- Embryo solution for esmini.js (esmini lib for web usage), see [Libraries/esminiJS](https://github.com/esmini/esmini/tree/master/EnvironmentSimulator/Libraries/esminiJS) ([PR #356](https://github.com/esmini/esmini/pull/356))
+- Add Python OSI example ([issue #367](https://github.com/esmini/esmini/issues/367))
+  - see [User guide - OSI groundtruth](https://esmini.github.io/#_osi_groundtruth)
+- Add collision detection example to Hello World ([issue #368](https://github.com/esmini/esmini/issues/368))
+  - see more info in [User guide - Collision detection](https://esmini.github.io/#_collision_detection)
+
+Improvements and fixes:
+- Fix SE_InitWithArgs whitespace bug ([issue #370](https://github.com/esmini/esmini/issues/370))
+- Add missing plot.py to demo pack
+- Fix scenario initialization return code ([issue #363](https://github.com/esmini/esmini/issues/363))
+  - return 0 only on success, else -1
+- Fix relative position beyond current road bug ([issue #372](https://github.com/esmini/esmini/issues/372))
+- Fix typos in User guide ([PR #375](https://github.com/esmini/esmini/pull/375))
+- Some additional minor bug fixes
+
 ### 2022-12-17 Version 2.27.4
 
 New features and behaviors:
