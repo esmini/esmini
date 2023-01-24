@@ -1,5 +1,18 @@
 ## esmini release notes
 
+### 2023-01-24 Version 2.28.0
+
+New features and behaviors:
+
+- Update OverrideControllerValueAction for OpenSCENARIO v1.2
+  - support new attributes like rate, force and automatic gear
+  - API (data structs) updated, *not backward compatible*, see [esminiLib.hpp](https://github.com/esmini/esmini/blob/732fd19070c865901cd0c662cfeee7643657ea7c/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L125)
+
+- Respect elevation alignment setting
+  - enable use cases with external objects not bound to road surface
+  - harmonize function prefix, change RM_SetAlignMode\* to SE_SetAlignMode\*
+  - see example in [User guide - External control of Ego](https://esmini.github.io/index.html#_external_control_of_ego)
+
 ### 2023-01-23 Version 2.27.5
 
 New features and behaviors:

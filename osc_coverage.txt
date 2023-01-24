@@ -154,15 +154,15 @@ OpenSCENARIO
                                         OverrideControllerActionValue          Yes
                                             OverrideThrottleAction             Yes
                                             OverrideBrakeAction                Yes
-                                                BrakeInput (1.2)               No
+                                                BrakeInput (1.2)               Yes
                                             OverrideClutchAction               Yes
                                             OverrideParkingBrakeAction         Yes
-                                                BrakeInput (1.2)               No
+                                                BrakeInput (1.2)               Yes
                                             OverrideSteeringWheelAction        Yes
-                                                maxRate (1.2)                  No
-                                                maxTorque (1.2)                No
+                                                maxRate (1.2)                  Yes
+                                                maxTorque (1.2)                Yes
                                             OverrideGearAction                 Yes
-                                                Gear (1.2)                     No
+                                                Gear (1.2)                     Yes
                                         Routing
                                             AssignRoute                        Yes
                                             FollowTrajectory                   Yes
