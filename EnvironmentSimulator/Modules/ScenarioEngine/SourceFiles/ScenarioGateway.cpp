@@ -640,6 +640,90 @@ int ScenarioGateway::updateObjectVisibilityMask(int id, int visibilityMask)
 	return 0;
 }
 
+int ScenarioGateway::setObjectAlignMode(int id, int mode)
+{
+	ObjectState* obj_state = getObjectStatePtrById(id);
+
+	if (obj_state == nullptr)
+	{
+		LOG_ONCE("Can't set alignment mode for object %d yet. Please register object using reportObject() first.", id);
+		return -1;
+	}
+
+	obj_state->state_.pos.SetAlignMode(static_cast<roadmanager::Position::ALIGN_MODE>(mode));
+	obj_state->dirty_ |= (
+		Object::DirtyBit::ALIGN_MODE_H |
+		Object::DirtyBit::ALIGN_MODE_P |
+		Object::DirtyBit::ALIGN_MODE_R |
+		Object::DirtyBit::ALIGN_MODE_Z);
+
+	return 0;
+}
+
+int ScenarioGateway::setObjectAlignModeH(int id, int mode)
+{
+	ObjectState* obj_state = getObjectStatePtrById(id);
+
+	if (obj_state == nullptr)
+	{
+		LOG_ONCE("Can't set alignment mode for object %d yet. Please register object using reportObject() first.", id);
+		return -1;
+	}
+
+	obj_state->state_.pos.SetAlignModeH(static_cast<roadmanager::Position::ALIGN_MODE>(mode));
+	obj_state->dirty_ |= Object::DirtyBit::ALIGN_MODE_H;
+
+	return 0;
+}
+
+int ScenarioGateway::setObjectAlignModeP(int id, int mode)
+{
+	ObjectState* obj_state = getObjectStatePtrById(id);
+
+	if (obj_state == nullptr)
+	{
+		LOG_ONCE("Can't set alignment mode for object %d yet. Please register object using reportObject() first.", id);
+		return -1;
+	}
+
+	obj_state->state_.pos.SetAlignModeP(static_cast<roadmanager::Position::ALIGN_MODE>(mode));
+	obj_state->dirty_ |= Object::DirtyBit::ALIGN_MODE_P;
+
+	return 0;
+}
+
+int ScenarioGateway::setObjectAlignModeR(int id, int mode)
+{
+	ObjectState* obj_state = getObjectStatePtrById(id);
+
+	if (obj_state == nullptr)
+	{
+		LOG_ONCE("Can't set alignment mode for object %d yet. Please register object using reportObject() first.", id);
+		return -1;
+	}
+
+	obj_state->state_.pos.SetAlignModeR(static_cast<roadmanager::Position::ALIGN_MODE>(mode));
+	obj_state->dirty_ |= Object::DirtyBit::ALIGN_MODE_R;
+
+	return 0;
+}
+
+int ScenarioGateway::setObjectAlignModeZ(int id, int mode)
+{
+	ObjectState* obj_state = getObjectStatePtrById(id);
+
+	if (obj_state == nullptr)
+	{
+		LOG_ONCE("Can't set alignment mode for object %d yet. Please register object using reportObject() first.", id);
+		return -1;
+	}
+
+	obj_state->state_.pos.SetAlignModeZ(static_cast<roadmanager::Position::ALIGN_MODE>(mode));
+	obj_state->dirty_ |= Object::DirtyBit::ALIGN_MODE_Z;
+
+	return 0;
+}
+
 bool ScenarioGateway::isObjectReported(int id)
 {
 	return getObjectStatePtrById(id) != nullptr;

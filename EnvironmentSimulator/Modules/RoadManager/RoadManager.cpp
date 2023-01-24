@@ -7173,6 +7173,10 @@ Position::ReturnCode Position::XYZH2TrackPos(double x3, double y3, double z3, do
 	SetY(y3);
 	SetHeading(h3);
 
+	if (GetAlignModeZ() == Position::ALIGN_MODE::ALIGN_NONE)
+	{
+		SetZ(z3);
+	}
 	EvaluateRoadZPitchRoll();
 
 	if (!closestPointInside)
@@ -7218,10 +7222,6 @@ bool Position::EvaluateRoadZPitchRoll()
 	else if (align_z_ == ALIGN_MODE::ALIGN_HARD)
 	{
 		z_ = z_road_;
-	}
-	else
-	{
-		z_ = z_relative_;
 	}
 
 	return ret_value;

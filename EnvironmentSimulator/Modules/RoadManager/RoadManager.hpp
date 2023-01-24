@@ -2449,6 +2449,11 @@ namespace roadmanager
 		void SetAlignModeZ(ALIGN_MODE mode) { align_z_ = mode; }
 		void SetAlignMode(ALIGN_MODE mode) { align_h_ = align_p_ = align_r_ = align_z_ = mode; }
 
+		ALIGN_MODE GetAlignModeH() { return align_h_; }
+		ALIGN_MODE GetAlignModeP() { return align_p_; }
+		ALIGN_MODE GetAlignModeR() { return align_r_; }
+		ALIGN_MODE GetAlignModeZ() { return align_z_; }
+
 		/**
 		Specify which lane types the position object snaps to (is aware of)
 		@param laneTypes A combination (bitmask) of lane types

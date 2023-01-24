@@ -152,19 +152,9 @@ include::{src-local-root}/{file}[]
 === External control of Ego
 A silly example showing how you can just take control over vehicle state via the API. The Ego car will move one meter along the Y-axis for each frame while rotating...
 
-First step is to modify the cut-in_interactive.xosc scenario. Make a copy named "cut-in_external_example.xosc". In that file, replace `interactiveDriver` controller with `externalController` by changing the line:
-
-----
-<CatalogReference catalogName="ControllerCatalog" entryName="interactiveDriver" />
-----
-
-to:
-
-----
-<CatalogReference catalogName="ControllerCatalog" entryName="externalController" />
-----
-
 Now we will also introduce the quit_flag, which lets you quit by pressing 'Esc' key.
+
+In addition we'll try out the alignment feature. By default objects will be aligned to road surface. This behavior can be controlled with alignment settings. In below example, the Ego vehicle will be aligned to road surface except during iterations 100-200 where it will obey the reported Z coordinate and move accordingly to elevation/Z = 10 meter.
 
 :file: EnvironmentSimulator/code-examples/hello_world/hw4_external_ego_control.cpp
 .link:{src-remote-root}//{file}[{file}]

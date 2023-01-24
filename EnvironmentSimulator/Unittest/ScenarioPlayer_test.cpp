@@ -118,6 +118,47 @@ TEST(CustomCameraTest, TestCustomCameraVariants)
 
 #endif // _USE_OSG
 
+TEST(AlignmentTest, TestPositionAlignmentVariants)
+{
+    const char* args[] =
+    {
+        "esmini", "--osc", "../../../resources/xosc/cut-in.xosc", "--headless", "--disable_stdout"
+    };
+    int argc = sizeof(args) / sizeof(char*);
+    ScenarioPlayer* player = new ScenarioPlayer(argc, (char**)args);
+
+    ASSERT_NE(player, nullptr);
+    int retval = player->Init();
+    ASSERT_EQ(retval, 0);
+
+    EXPECT_NEAR(player->scenarioEngine->entities_.object_[0]->pos_.GetZ(), -0.0406, 1E-3);
+
+    player->scenarioGateway->updateObjectWorldPos(0, 0.0, 8.0, 67.0, 10.0, 1.57, 0.0, 0.0);
+    player->Frame(0.05);
+    // no change expected since align mode activated
+    EXPECT_NEAR(player->scenarioEngine->entities_.object_[0]->pos_.GetZ(), -0.06901, 1E-3);
+
+    player->scenarioGateway->setObjectAlignModeZ(0, roadmanager::Position::ALIGN_MODE::ALIGN_NONE);
+    player->scenarioGateway->updateObjectWorldPos(0, 0.0, 8.0, 67.0, 10.0, 1.57, 0.0, 0.0);
+    player->Frame(0.05);
+    // change expected since align mode deactivated
+    EXPECT_NEAR(player->scenarioEngine->entities_.object_[0]->pos_.GetZ(), 10.0, 1E-3);
+
+    player->scenarioGateway->setObjectAlignModeZ(0, roadmanager::Position::ALIGN_MODE::ALIGN_SOFT);
+    player->scenarioGateway->updateObjectWorldPos(0, 0.0, 12.0, 400.0, 10.0, 1.57, 0.0, 0.0);
+    player->Frame(0.05);
+    // Keep same relative height from road
+    EXPECT_NEAR(player->scenarioEngine->entities_.object_[0]->pos_.GetZ(), 9.34987, 1E-3);
+
+    player->scenarioGateway->setObjectAlignModeZ(0, roadmanager::Position::ALIGN_MODE::ALIGN_HARD);
+    player->scenarioGateway->updateObjectWorldPos(0, 0.0, 12.0, 400.0, 10.0, 1.57, 0.0, 0.0);
+    player->Frame(0.05);
+    // Align to road surface
+    EXPECT_NEAR(player->scenarioEngine->entities_.object_[0]->pos_.GetZ(), -0.719140, 1E-3);
+
+    delete player;
+}
+
 int main(int argc, char** argv)
 {
     //testing::GTEST_FLAG(filter) = "*TestCustomCameraVariants*";

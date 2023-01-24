@@ -164,6 +164,11 @@ namespace scenarioengine
 		int updateObjectWheelAngle(int id, double timestamp, double wheelAngle);
 		int updateObjectWheelRotation(int id, double timestamp, double wheelRotation);
 		int updateObjectVisibilityMask(int id, int visibilityMask);
+		int setObjectAlignMode(int id, int mode);
+		int setObjectAlignModeH(int id, int mode);
+		int setObjectAlignModeP(int id, int mode);
+		int setObjectAlignModeR(int id, int mode);
+		int setObjectAlignModeZ(int id, int mode);
 		bool isObjectReported(int id);
 		void clearDirtyBits();
 

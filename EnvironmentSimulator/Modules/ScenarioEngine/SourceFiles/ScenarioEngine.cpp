@@ -521,6 +521,22 @@ int ScenarioEngine::step(double deltaSimTime)
 		ObjectState* o = scenarioGateway.getObjectStatePtrById(obj->id_);
 		if (o != nullptr)
 		{
+			if (o->dirty_ & Object::DirtyBit::ALIGN_MODE_H)
+			{
+				obj->pos_.SetAlignModeH(o->state_.pos.GetAlignModeH());
+			}
+			if (o->dirty_ & Object::DirtyBit::ALIGN_MODE_P)
+			{
+				obj->pos_.SetAlignModeP(o->state_.pos.GetAlignModeP());
+			}
+			if (o->dirty_ & Object::DirtyBit::ALIGN_MODE_R)
+			{
+				obj->pos_.SetAlignModeR(o->state_.pos.GetAlignModeR());
+			}
+			if (o->dirty_ & Object::DirtyBit::ALIGN_MODE_Z)
+			{
+				obj->pos_.SetAlignModeZ(o->state_.pos.GetAlignModeZ());
+			}
 			if (o->dirty_ & (Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL))
 			{
 				obj->pos_ = o->state_.pos;
