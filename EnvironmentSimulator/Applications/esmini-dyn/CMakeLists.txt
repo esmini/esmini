@@ -24,7 +24,8 @@ target_link_libraries (
 	esminiLib
 	CommonMini
 	${TIME_LIB}
-  project_options
+	${OSI_LIBRARIES}
+	project_options
 )
 
 install ( TARGETS ${TARGET} DESTINATION "${INSTALL_DIRECTORY}")

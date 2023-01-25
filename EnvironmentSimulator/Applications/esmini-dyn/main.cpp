@@ -16,12 +16,12 @@
   */
 
 
-#if USE_OSI
-#include "osi_common.pb.h"
-#include "osi_object.pb.h"
-#include "osi_groundtruth.pb.h"
-#include "osi_sensordata.pb.h"
-#include "osi_version.pb.h"
+#ifdef _USE_OSI
+	#include "osi_common.pb.h"
+	#include "osi_object.pb.h"
+	#include "osi_groundtruth.pb.h"
+	#include "osi_sensordata.pb.h"
+	#include "osi_version.pb.h"
 #endif
 
 #include "stdio.h"
@@ -31,6 +31,7 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+
 
 #define DEMONSTRATE_SENSORS 1
 #define DEMONSTRATE_PARAMETER 0
