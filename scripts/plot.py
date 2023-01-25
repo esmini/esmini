@@ -21,7 +21,7 @@ def plot(rows, labels, params=['speed'], x_axis='time', derive=False, dots=False
     plottable_params = []
     for i, label in enumerate(labels):
         value = rows[0][i]
-        if isinstance(value, float) or isinstance(value, int) or isinstance(value, np.float) or isinstance(value, np.int):
+        if isinstance(value, float) or isinstance(value, int):
             plottable_params.append(label.strip())
 
     if list_plottable_params or params is None:
