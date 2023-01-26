@@ -2421,6 +2421,11 @@ namespace roadmanager
 		double GetAccS();
 
 		/**
+		Get magnitude of acceleration. Sign indicating direction, accelerating (+) or decelerating (-)
+		*/
+		double GetAcc();
+
+		/**
 		Get lateral and longitudinal component of acceleration in road coordinate system
 		This is slightly more effecient than calling GetAccT and GetAccS separately
 		@param at reference parameter returning lateral acceleration

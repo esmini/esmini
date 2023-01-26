@@ -1246,8 +1246,7 @@ bool TrigByAcceleration::CheckCondition(StoryBoard* storyBoard, double sim_time)
 			continue;
 		}
 
-		current_acceleration_ = sqrt(pow(triggering_entities_.entity_[i].object_->pos_.GetAccX(), 2) +
-			pow(triggering_entities_.entity_[i].object_->pos_.GetAccY(), 2));
+		current_acceleration_ = triggering_entities_.entity_[i].object_->pos_.GetAcc();
 
 		result = EvaluateRule(current_acceleration_, value_, rule_);
 

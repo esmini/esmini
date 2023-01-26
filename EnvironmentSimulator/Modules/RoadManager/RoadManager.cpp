@@ -8647,6 +8647,16 @@ void Position::GetAccTS(double& at, double& as)
 	RotateVec2D(GetAccX(), GetAccY(), -GetHRoad(), as, at);
 }
 
+double Position::GetAcc()
+{
+	// Find out x component of acceleration aligned with object coordinate system
+	double x = GetAccX() * cos(-GetH());
+
+	// Return magnitude of acceleration signed according to direction of x component
+	// i.e. acceleration projected on object heading direction
+	return SIGN(x) * sqrt(pow(GetAccX(), 2) + pow(GetAccY(), 2));
+}
+
 void Position::CopyRMPos(Position *from)
 {
 	// Use a temporary pos object to preserve some fields
