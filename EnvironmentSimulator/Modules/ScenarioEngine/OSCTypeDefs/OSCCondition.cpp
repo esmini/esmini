@@ -1250,7 +1250,18 @@ bool TrigByAcceleration::CheckCondition(StoryBoard* storyBoard, double sim_time)
 			continue;
 		}
 
-		current_acceleration_ = triggering_entities_.entity_[i].object_->pos_.GetAcc();
+		if (direction_ == LONGITUDINAL)
+		{
+			current_acceleration_ = triggering_entities_.entity_[i].object_->pos_.GetAccX();
+		}
+		else if (direction_ == LATERAL)
+		{
+			current_acceleration_ = triggering_entities_.entity_[i].object_->pos_.GetAccY();
+		}
+		else
+		{
+			current_acceleration_ = triggering_entities_.entity_[i].object_->pos_.GetAcc();
+		}
 
 		result = EvaluateRule(current_acceleration_, value_, rule_);
 
