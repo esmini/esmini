@@ -8650,7 +8650,7 @@ void Position::GetAccTS(double& at, double& as)
 double Position::GetAcc()
 {
 	// Find out x component of acceleration aligned with object coordinate system
-	double x = GetAccX() * cos(-GetH());
+	double x = GetAccX() * cos(-GetH()) - GetAccY() * sin(-GetH());
 
 	// Return magnitude of acceleration signed according to direction of x component
 	// i.e. acceleration projected on object heading direction
