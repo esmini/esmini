@@ -522,7 +522,7 @@ void Replay::BuildData(std::vector<std::pair<std::string, std::vector<ReplayEntr
 
 	// Populate data_ based on first (with lowest timestamp) scenario
 	double cur_timestamp = static_cast<double>(scenarios[0].second[0].state.info.timeStamp);
-	while (static_cast<double>(cur_timestamp) < LARGE_NUMBER - SMALL_NUMBER)
+	while (cur_timestamp < LARGE_NUMBER - SMALL_NUMBER)
 	{
 		// populate entries if all scenarios at current time step
 		double min_time_stamp = LARGE_NUMBER;
