@@ -65,7 +65,9 @@ ScenarioPlayer::ScenarioPlayer(int argc, char* argv[]) :
 
 #ifdef _USE_OSG
 	viewerState_ = ViewerState::VIEWER_STATE_NOT_STARTED;
+#ifdef _USE_OSI
 	OSISensorDetection = nullptr;
+#endif // _USE_OSI
 #endif
 }
 
@@ -119,7 +121,7 @@ void ScenarioPlayer::SetOSIFileStatus(bool is_on, const char* filename)
 			osiReporter->CloseOSIFile();
 		}
 	}
-#endif // USE_OSI
+#endif // _USE_OSI
 }
 
 void ScenarioPlayer::Draw()
@@ -274,7 +276,7 @@ void ScenarioPlayer::ScenarioPostFrame()
 			}
 		}
 	}
-#endif  // USE_OSI
+#endif  // _USE_OSI
 
 	//LOG("%d %d %.2f h: %.5f road_h %.5f h_relative_road %.5f",
 	//    scenarioEngine->entities_.object_[0]->pos_.GetTrackId(),
@@ -1018,17 +1020,20 @@ void ScenarioPlayer::InitVehicleModel(Object* obj, viewer::CarModel* model)
 }
 #endif
 
+
 void ScenarioPlayer::AddOSIDetection(int object_index)
 {
 #ifdef _USE_OSG
 	if (viewer_)
 	{
+#ifdef _USE_OSI
 		if(!OSISensorDetection)
 		{
 			mutex.Lock();
 			OSISensorDetection = new viewer::OSISensorDetection(viewer_->entities_[static_cast<unsigned int>(object_index)]->txNode_);
 			mutex.Unlock();
 		}
+#endif // _USE_OSI
 	}
 #endif
 }
@@ -1406,7 +1411,7 @@ int ScenarioPlayer::Init()
 		osi_freq_ = atoi(arg_str.c_str());
 		LOG("Run simulation decoupled from realtime, with fixed timestep: %.2f", GetFixedTimestep());
 	}
-#endif  // USE_OSI
+#endif  // _USE_OSI
 
 	// Initialize CSV logger for recording vehicle data
 	if (opt.GetOptionSet("csv_logger"))

@@ -141,6 +141,8 @@ namespace viewer
 		void Update();
 	};
 
+#ifdef _USE_OSI
+
 	class OSIDetectedPoint
 	{
 	public:
@@ -189,6 +191,8 @@ namespace viewer
 		~OSISensorDetection();
 		void Update(osi3::SensorView *sv);
 	};
+
+#endif // _USE_OSI
 
 	class Trajectory
 	{

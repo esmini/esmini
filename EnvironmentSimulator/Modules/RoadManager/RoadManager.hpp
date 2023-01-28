@@ -554,7 +554,7 @@ namespace roadmanager
 			LANE_TYPE_ANY_ROAD =        LANE_TYPE_ANY_DRIVING |
 			                            LANE_TYPE_RESTRICTED |
 			                            LANE_TYPE_STOP,
-			LANE_TYPE_ANY =             (0xFFFFFFFF)
+			LANE_TYPE_ANY =             (-1)
 		} LaneType;
 
 		// Construct & Destruct

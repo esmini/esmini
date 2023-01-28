@@ -31,6 +31,7 @@ using namespace scenarioengine;
         }                                                                                             \
     }
 
+
 std::map<ControllerALKS_R157SM::ScenarioType, std::string> ControllerALKS_R157SM::ScenarioTypeName =
 {
     {ControllerALKS_R157SM::ScenarioType::None, "None"},

@@ -590,6 +590,8 @@ void SensorViewFrustum::Update()
 	}
 }
 
+#ifdef _USE_OSI
+
 OSISensorDetection::OSISensorDetection(osg::ref_ptr<osg::Group> parent)
 {
 	parent_ = parent;
@@ -860,6 +862,8 @@ void OSIDetectedCar::Hide()
 	osi_detection_geode_center_->setNodeMask(0x0);
 	showing_ = false;
 }
+
+#endif // _USE_OSI
 
 void VisibilityCallback::operator()(osg::Node* sa, osg::NodeVisitor* nv)
 {

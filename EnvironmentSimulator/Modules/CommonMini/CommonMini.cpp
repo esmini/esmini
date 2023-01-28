@@ -18,7 +18,6 @@
 #include <sstream>
 #include <locale>
 #include <array>
-#include <filesystem>
 
 // UDP network includes
 #ifndef _WIN32

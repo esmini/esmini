@@ -913,19 +913,6 @@ extern "C"
 		SE_Env::Inst().SetCollisionDetection(mode);
 	}
 
-	SE_DLL_API int SE_OpenOSISocket(const char *ipaddr)
-	{
-		if (player == nullptr)
-		{
-			return -1;
-		}
-
-#ifdef _USE_OSI
-		player->osiReporter->OpenSocket(ipaddr);
-#endif  // USE_OSI
-		return 0;
-	}
-
 	SE_DLL_API int SE_Step()
 	{
 		if (player != nullptr)
@@ -1412,39 +1399,57 @@ extern "C"
 		return returnString.c_str();
 	}
 
+	SE_DLL_API int SE_OpenOSISocket(const char* ipaddr)
+	{
+#ifdef _USE_OSI
+		if (player == nullptr)
+		{
+			return -1;
+		}
+
+		player->osiReporter->OpenSocket(ipaddr);
+#else
+		(void)ipaddr;
+#endif // _USE_OSI
+
+		return 0;
+	}
+
 	SE_DLL_API const char *SE_GetOSIGroundTruth(int *size)
 	{
+#ifdef _USE_OSI
 		if (player != nullptr)
 		{
-#ifdef _USE_OSI
 			return player->osiReporter->GetOSIGroundTruth(size);
-#endif  // USE_OSI
 		}
 
 		*size = 0;
+#else
+		(void)size;
+#endif // _USE_OSI
 		return 0;
 	}
 
 	SE_DLL_API const char *SE_GetOSIGroundTruthRaw()
 	{
+#ifdef _USE_OSI
 		if (player != nullptr)
 		{
-#ifdef _USE_OSI
 			return player->osiReporter->GetOSIGroundTruthRaw();
-#endif  // USE_OSI
 		}
+#endif // _USE_OSI
 
 		return 0;
 	}
 
 	SE_DLL_API int SE_SetOSISensorDataRaw(const char* sensordata)
 	{
+#ifdef _USE_OSI
 		if (player != nullptr)
 		{
 #ifdef _USE_OSG
 			if (player->viewer_)
 			{
-	#ifdef _USE_OSI
 				const osi3::SensorData *sd = reinterpret_cast<const osi3::SensorData *>(sensordata);
 				player->osiReporter->CreateSensorViewFromSensorData(*sd);
 				if(player->osiReporter->GetSensorView())
@@ -1454,44 +1459,55 @@ extern "C"
 						player->OSISensorDetection->Update(player->osiReporter->GetSensorView());
 					}
 				}
-	#endif  // USE_OSI
 			}
 #endif
 		}
+#else
+		(void)sensordata;
+#endif // _USE_OSI
+
 		return 0;
 	}
 
 	SE_DLL_API const char *SE_GetOSIRoadLane(int *size, int object_id)
 	{
+#ifdef _USE_OSI
 		if (player != nullptr)
 		{
-#ifdef _USE_OSI
 			return player->osiReporter->GetOSIRoadLane(player->scenarioGateway->objectState_, size, object_id);
-#endif  // USE_OSI
 		}
 
 		*size = 0;
+#else
+		(void)size;
+		(void)object_id;
+#endif // _USE_OSI
+
 		return 0;
 	}
 
 	SE_DLL_API const char *SE_GetOSILaneBoundary(int *size, int global_id)
 	{
+#ifdef _USE_OSI
 		if (player != nullptr)
 		{
-#ifdef _USE_OSI
 			return player->osiReporter->GetOSIRoadLaneBoundary(size, global_id);
-#endif  // USE_OSI
 		}
 
 		*size = 0;
+#else
+		(void)size;
+		(void)global_id;
+#endif // _USE_OSI
+
 		return 0;
 	}
 
 	SE_DLL_API void SE_GetOSILaneBoundaryIds(int object_id, SE_LaneBoundaryId *ids)
 	{
+#ifdef _USE_OSI
 		if (player != nullptr)
 		{
-#ifdef _USE_OSI
 			std::vector<int> ids_vector;
 			player->osiReporter->GetOSILaneBoundaryIds(player->scenarioGateway->objectState_, ids_vector, object_id);
 			if (!ids_vector.empty())
@@ -1501,76 +1517,82 @@ extern "C"
 				ids->right_lb_id = ids_vector[2];
 				ids->far_right_lb_id = ids_vector[3];
 			}
-#endif  // USE_OSI
 		}
+#else
+		(void)object_id;
+		(void)ids;
+#endif // _USE_OSI
+
 		return;
 	}
 
 	SE_DLL_API int SE_ClearOSIGroundTruth()
 	{
+#ifdef _USE_OSI
 		if (player != nullptr)
 		{
-#ifdef _USE_OSI
 			return player->osiReporter->ClearOSIGroundTruth();
-#endif  // USE_OSI
 		}
+#endif // _USE_OSI
 
 		return 0;
 	}
 
 	SE_DLL_API int SE_UpdateOSIGroundTruth()
 	{
+#ifdef _USE_OSI
 		if (player != nullptr)
 		{
-#ifdef _USE_OSI
 			return player->osiReporter->UpdateOSIGroundTruth(player->scenarioGateway->objectState_);
-#endif  // USE_OSI
 		}
+#endif // _USE_OSI
 
 		return 0;
 	}
 
 	SE_DLL_API int SE_UpdateOSIStaticGroundTruth()
 	{
+#ifdef _USE_OSI
 		if (player != nullptr)
 		{
-#ifdef _USE_OSI
 			return player->osiReporter->UpdateOSIStaticGroundTruth(player->scenarioGateway->objectState_);
-#endif  // USE_OSI
 		}
+#endif // _USE_OSI
 
 		return 0;
 	}
 
 	SE_DLL_API int SE_UpdateOSIDynamicGroundTruth(bool reportGhost)
 	{
+#ifdef _USE_OSI
 		if (player != nullptr)
 		{
-#ifdef _USE_OSI
 			return player->osiReporter->UpdateOSIDynamicGroundTruth(player->scenarioGateway->objectState_, reportGhost);
-#endif  // USE_OSI
 		}
+#else
+		(void)reportGhost;
+#endif // _USE_OSI
 
 		return 0;
 	}
 
 	SE_DLL_API const char *SE_GetOSISensorDataRaw()
 	{
+#ifdef _USE_OSI
 		if (player != nullptr)
 		{
-#ifdef _USE_OSI
 			return player->osiReporter->GetOSISensorDataRaw();
-#endif  // USE_OSI
 		}
+#endif // _USE_OSI
 
 		return 0;
 	}
 
 	SE_DLL_API bool SE_OSIFileOpen(const char *filename)
 	{
+#ifdef _USE_OSI
 		if (player != nullptr)
 		{
-#ifdef _USE_OSI
 			if (OSCParameterDistribution::Inst().GetNumPermutations() > 0)
 			 {
 				return player->osiReporter->OpenOSIFile(OSCParameterDistribution::Inst().AddInfoToFilename(filename).c_str());
@@ -1579,40 +1601,45 @@ extern "C"
 			{
 				return player->osiReporter->OpenOSIFile(filename);
 			}
-
-#endif  // USE_OSI
 		}
+#else
+		(void)filename;
+#endif // _USE_OSI
 
 		return false;
 	}
 
 	SE_DLL_API bool SE_OSIFileWrite(bool flush)
 	{
+#ifdef _USE_OSI
 		bool retval = false;
 
 		if (player != nullptr)
 		{
-#ifdef _USE_OSI
 			retval = player->osiReporter->WriteOSIFile();
 			if (flush)
 			{
 				player->osiReporter->FlushOSIFile();
 			}
-#endif  // USE_OSI
 		}
-
 		return retval;
+#else
+		(void)flush;
+		return false;
+#endif // _USE_OSI
 	}
 
 	SE_DLL_API int SE_OSISetTimeStamp(unsigned long long int nanoseconds)
 	{
+#ifdef _USE_OSI
 		if (player != nullptr)
 		{
-#ifdef _USE_OSI
 			player->osiReporter->SetOSITimeStampExplicit(nanoseconds);
 			return 0;
-#endif  // USE_OSI
 		}
+#else
+		(void)nanoseconds;
+#endif // _USE_OSI
 
 		return -1;
 	}
@@ -2005,6 +2032,9 @@ extern "C"
 		{
 			player->viewer_->SetNodeMaskBits(featureType, enable ? featureType : 0x0);
 		}
+#else
+		(void)featureType;
+		(void)enable;
 #endif
 	}
 
@@ -2152,6 +2182,7 @@ extern "C"
 			return -1;
 		}
 #else
+		(void)state;
 		return -1;
 #endif
 	}
@@ -2169,6 +2200,7 @@ extern "C"
 			return -1;
 		}
 #else
+		(void)nrOfFrames;
 		return -1;
 #endif
 	}
@@ -2192,6 +2224,7 @@ extern "C"
 
 		return 0;
 #else
+		(void)img;
 		return -1;
 #endif
 	}
@@ -2200,6 +2233,9 @@ extern "C"
 	{
 #ifdef _USE_OSG
 		RegisterImageCallback((viewer::ImageCallbackFunc)fnPtr, user_data);  // ensure SE_Image and OffScrImage is compatible
+#else
+		(void)fnPtr;
+		(void)user_data;
 #endif
 	}
 
@@ -2227,6 +2263,11 @@ extern "C"
 
 		return 0;
 #else
+		(void)x;
+		(void)y;
+		(void)z;
+		(void)h;
+		(void)p;
 		return -1;
 #endif
 	}
@@ -2245,6 +2286,11 @@ extern "C"
 
 		return 0;
 #else
+		(void)x;
+		(void)y;
+		(void)z;
+		(void)h;
+		(void)p;
 		return -1;
 #endif
 	}
@@ -2263,6 +2309,9 @@ extern "C"
 
 		return 0;
 #else
+		(void)x;
+		(void)y;
+		(void)z;
 		return -1;
 #endif
 	}
@@ -2281,6 +2330,10 @@ extern "C"
 
 		return 0;
 #else
+		(void)x;
+		(void)y;
+		(void)z;
+		(void)rot;
 		return -1;
 #endif
 	}
@@ -2294,6 +2347,8 @@ extern "C"
 			player->viewer_->SetCameraMode(mode);
 			return 0;
 		}
+#else
+		(void)mode;
 #endif
 		return -1;
 	}
@@ -2312,6 +2367,8 @@ extern "C"
 			}
 			return 0;
 		}
+#else
+		(void)object_id;
 #endif
 		return -1;
 	}

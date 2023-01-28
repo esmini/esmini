@@ -1385,7 +1385,7 @@ int ScenarioReader::parseEntities()
 
 					// SUMO controller is not assigned to any scenario vehicle
 				}
-#endif // USE_SUMO
+#endif // _USE_SUMO
 				controller_.push_back(ctrl);
 			}
 		}
@@ -2866,7 +2866,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 							double value = strtod(parameters.ReadAttribute(controllerDefNode, "value"));
 							overrideStatus.type = Object::OverrideType::OVERRIDE_CLUTCH;
 							overrideStatus.value = override_action->RangeCheckAndErrorLog(Object::OverrideType::OVERRIDE_CLUTCH, value);
-				
+
 							// version 1.2 with clutch attribute
 							if ((verFromMinor2) && (!(controllerDefNode.attribute("maxRate").empty())))
 							{

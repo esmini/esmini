@@ -1,7 +1,7 @@
 #include "esminiLib.hpp"
 #include "stdio.h"
 
-int main(int argc, char* argv[])
+int main(void)
 {
 	SE_Init("../EnvironmentSimulator/Unittest/xosc/test-collision-detection.xosc", 1, 1, 0, 0);
 	SE_CollisionDetection(true);

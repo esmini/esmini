@@ -49,6 +49,14 @@ function(
         -Wimplicit-fallthrough # warn on statements that fallthrough without an explicit annotation
     )
 
+    if(APPLE)
+        set(CLANG_WARNINGS ${CLANG_WARNINGS}
+            # disable some specific warnings which we couldn't solve yet without skipping useful features
+            -Wno-gnu-zero-variadic-macro-arguments # feature works and is too useful to skip
+            -Wno-variadic-macros # GNU ## feature seems still OK in C99
+        )
+    endif(APPLE)
+
     set(GCC_WARNINGS
         ${CLANG_WARNINGS}
         -Wmisleading-indentation # warn if indentation implies blocks where blocks do not exist

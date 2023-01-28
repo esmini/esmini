@@ -63,26 +63,27 @@
 #define GHOST_TRAIL_SAMPLE_TIME 0.2
 
 
-#define LOG(Format_, ...)  Logger::Inst().Log(false, false, __FILENAME__, __FUNCTION__, __LINE__, Format_, ##__VA_ARGS__)
-#define LOG_TRACE(Format_, ...)  Logger::Inst().Log(false, true, __FILENAME__, __FUNCTION__, __LINE__, Format_, ##__VA_ARGS__)
-#define LOG_ONCE(Format_, ...)  { \
+#define LOG(format_, ...)  Logger::Inst().Log(false, false, __FILENAME__, __FUNCTION__, __LINE__, format_, ##__VA_ARGS__)
+#define LOG_TRACE(format_, ...)  Logger::Inst().Log(false, true, __FILENAME__, __FUNCTION__, __LINE__, format_, ##__VA_ARGS__)
+#define LOG_ONCE(format_, ...)  { \
 		static bool firstTime = true; \
 		if (firstTime) \
 		{ \
-			Logger::Inst().Log(false, false, __FILENAME__, __FUNCTION__, __LINE__, Format_, ##__VA_ARGS__); \
+			Logger::Inst().Log(false, false, __FILENAME__, __FUNCTION__, __LINE__, format_, ##__VA_ARGS__); \
 			firstTime = false; \
 		} \
 	}
-#define LOG_TRACE_ONCE(Format_, ...)  { \
+#define LOG_TRACE_ONCE(format_, ...)  { \
 		static bool firstTime = true; \
 		if (firstTime) \
 		{ \
-			Logger::Inst().Log(false, true, __FILENAME__, __FUNCTION__, __LINE__, Format_, ##__VA_ARGS__); \
+			Logger::Inst().Log(false, true, __FILENAME__, __FUNCTION__, __LINE__, format_, ##__VA_ARGS__); \
 			firstTime = false; \
 		} \
 	}
-#define LOG_AND_QUIT(Format_, ...)  Logger::Inst().Log(true, false, __FILENAME__, __FUNCTION__, __LINE__, Format_, ##__VA_ARGS__)
-#define LOG_TRACE_AND_QUIT(Format_, ...)  Logger::Inst().Log(true, true, __FILENAME__, __FUNCTION__, __LINE__, Format_, ##__VA_ARGS__)
+#define LOG_AND_QUIT(format_, ...)  Logger::Inst().Log(true, false, __FILENAME__, __FUNCTION__, __LINE__, format_, ##__VA_ARGS__)
+#define LOG_TRACE_AND_QUIT(format_, ...)  Logger::Inst().Log(true, true, __FILENAME__, __FUNCTION__, __LINE__, format_, ##__VA_ARGS__)
+
 
 
 // Time functions
@@ -606,7 +607,7 @@ public:
 	typedef void(*FuncPtr)(const char*);
 
 	static Logger& Inst();
-	void Log(bool quit, bool trace, char const* func, char const* file, int line, char const* format, ...);
+	void Log(bool quit, bool trace, const char* func, const char* file, int line, const char* format, ...);
 	void SetCallback(FuncPtr callback);
 	bool IsCallbackSet();
 	void SetTimePtr(double* timePtr) { time_ = timePtr; }

@@ -125,7 +125,7 @@ TEST(AlignmentTest, TestPositionAlignmentVariants)
         "esmini", "--osc", "../../../resources/xosc/cut-in.xosc", "--headless", "--disable_stdout"
     };
     int argc = sizeof(args) / sizeof(char*);
-    ScenarioPlayer* player = new ScenarioPlayer(argc, (char**)args);
+    ScenarioPlayer* player = new ScenarioPlayer(argc, const_cast<char**>(args));
 
     ASSERT_NE(player, nullptr);
     int retval = player->Init();

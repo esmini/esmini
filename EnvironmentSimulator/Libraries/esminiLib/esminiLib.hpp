@@ -1189,6 +1189,7 @@ extern "C"
 	*/
 	SE_DLL_API int SE_OSISetTimeStamp(unsigned long long int nanoseconds);
 
+	// End of OSI interface
 
 	SE_DLL_API void SE_LogMessage(const char *message);
 

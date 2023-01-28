@@ -1773,8 +1773,11 @@ The https://github.com/esmini/esmini/issues[Issues tab at esmini GitHub page] is
 
 == Build guide
 
-=== Build configurations
-https://cmake.org/[CMake] tool is used to create standard make configurations. A few example "create..." batch scripts are supplied as examples how to generate desired build setup.
+=== Build configurations in Visual Studio and Visual Studio Code
+From esmini version 2.29.0 a set of cmake presets are provided. These can be utilized from Visual Studio Code and Visual Studio (from 2019 version 16.10 onwards) with the CMake Tools extension.
+
+=== Build configurations from command line
+https://cmake.org/[CMake] tool is used to create standard make configurations. A few example "create..." batch scripts are supplied (in `scripts` folder) as examples how to generate desired build setup from command line.
 
 - VisualStudio / win64 / Windows SDK v10 / Release and Debug
 - Ubuntu and Kubuntu (tested on 18.04) / gcc / Release and Debug

@@ -21,7 +21,7 @@
 #include "IdealSensor.hpp"
 #ifdef _USE_OSI
 #include "OSIReporter.hpp"
-#endif  // USE_OSI
+#endif  // _USE_OSI
 #ifdef _USE_OSG
 #include "viewer.hpp"
 #endif
@@ -146,12 +146,14 @@ public:
 	OSIReporter *osiReporter;
 #else
 	void* osiReporter;
-#endif  // USE_OSI
+#endif  // _USE_OSI
 
 #ifdef _USE_OSG
 	viewer::Viewer *viewer_;
 	std::vector<viewer::SensorViewFrustum *> sensorFrustum;
+#ifdef _USE_OSI
 	viewer::OSISensorDetection* OSISensorDetection;
+#endif // _USE_OSI
 	ViewerState viewerState_;
 	int InitViewer();
 	void CloseViewer();

@@ -3513,6 +3513,7 @@ TEST(RoadmanagerTest, TestGetInfoAtDistance)
 
 TEST(ParamDistTest, TestRunAll)
 {
+#ifdef _USE_OSI
 	std::vector<std::string> gt =
 	{
 		"gt_1_of_6.osi",
@@ -3522,6 +3523,7 @@ TEST(ParamDistTest, TestRunAll)
 		"gt_5_of_6.osi",
 		"gt_6_of_6.osi",
 	};
+#endif // _USE_OSI
 
 	std::vector<std::string> dat =
 	{
@@ -3546,14 +3548,15 @@ TEST(ParamDistTest, TestRunAll)
 	// Fetch timestamp of any old screenshot0
 	struct stat fileStatus;
 	long long oldModTime = 0;
-	long long time_sample1 = 0;
 	long long time_sample2 = 0;
 
-
+#ifdef _USE_OSI
+	long long time_sample1 = 0;
 	if (stat(gt[0].c_str(), &fileStatus) == 0)
 	{
 		oldModTime = fileStatus.st_mtime;
 	}
+#endif // _USE_OSI
 
 	if (stat(dat[0].c_str(), &fileStatus) == 0)
 	{
@@ -3580,7 +3583,9 @@ TEST(ParamDistTest, TestRunAll)
 	{
 		SE_Init(scenario_file.c_str(), 0, 0, 0, 1);
 
+#ifdef _USE_OSI
 		SE_OSIFileOpen("gt.osi");
+#endif // _USE_OSI
 
 		for (int j = 0; j < 50 && SE_GetQuitFlag() == 0; j++)
 		{
@@ -3595,6 +3600,7 @@ TEST(ParamDistTest, TestRunAll)
 	// Check that files have been created as expected
 	for (size_t i = 0; i < static_cast<size_t>(SE_GetNumberOfPermutations()); i++)
 	{
+#ifdef _USE_OSI
 		EXPECT_EQ(stat(gt[i].c_str(), &fileStatus), 0);
 		EXPECT_GE(fileStatus.st_mtime, oldModTime);
 		EXPECT_GE(fileStatus.st_size, 0);
@@ -3602,7 +3608,7 @@ TEST(ParamDistTest, TestRunAll)
 		{
 			time_sample1 = fileStatus.st_mtime;
 		}
-
+#endif // _USE_OSI
 		EXPECT_EQ(stat(dat[i].c_str(), &fileStatus), 0);
 		EXPECT_GE(fileStatus.st_mtime, 0);
 
@@ -3621,7 +3627,10 @@ TEST(ParamDistTest, TestRunAll)
 	do
 	{
 		SE_Init(scenario_file.c_str(), 0, 0, 0, 1);
+
+#ifdef _USE_OSI
 		SE_OSIFileOpen("gt.osi");
+#endif // _USE_OSI
 
 		for (int j = 0; j < 50 && SE_GetQuitFlag() == 0; j++)
 		{
@@ -3634,10 +3643,12 @@ TEST(ParamDistTest, TestRunAll)
 
 	// The first 3 files should be untouched, while the last 3 should be updated
 	// check two samples, one from each category
+#ifdef _USE_OSI
 	EXPECT_EQ(stat(gt[0].c_str(), &fileStatus), 0);
 	EXPECT_EQ(fileStatus.st_mtime, time_sample1);
 	EXPECT_EQ(stat(gt[5].c_str(), &fileStatus), 0);
 	EXPECT_GE(fileStatus.st_mtime, time_sample2);
+#endif // _USE_OSI
 
 	SE_ResetParameterDistribution();
 }

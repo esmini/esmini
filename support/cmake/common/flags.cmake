@@ -6,7 +6,9 @@ macro(set_special_build_flags)
 
     if(APPLE)
         set(CMAKE_CXX_FLAGS
-            "${CXX_STD_FLAG} -std=c++14 -pthread -fPIC -flto -DGL_SILENCE_DEPRECATION -Wl,-dead_strip")
+            "${CXX_STD_FLAG} -std=c++14 -pthread -fPIC -flto -DGL_SILENCE_DEPRECATION")
+        set(CMAKE_EXE_LINKER_FLAGS
+            "${CMAKE_EXE_LINKER_FLAGS} -dead_strip")
     elseif(LINUX)
         include(CheckCXXCompilerFlag)
 
