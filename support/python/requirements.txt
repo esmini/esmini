@@ -1,6 +1,6 @@
 black==22.3.0
 cmakelang==0.6.13
-GitPython==3.1.27
+GitPython==3.1.30
 pyyaml==5.3.1
 pytest==7.1.2
 pytest-cov==3.0.0
