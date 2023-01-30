@@ -417,7 +417,7 @@ inline void SwarmTrafficAction::sampleRoads(int minN, int maxN, Solutions &sols,
         // Shuffle and randomly select the points
         // Solutions selected(nCarsToSpawn);
         static Point selected[MAX_CARS];  // Remove macro when/if found a solution for dynamic array
-        std::random_shuffle(sols.begin(), sols.end());
+        std::shuffle(sols.begin(), sols.end(), SE_Env::Inst().GetRand().GetGenerator());
         sample(sols.begin(), sols.end(), selected, nCarsToSpawn, SE_Env::Inst().GetRand().GetGenerator());
 
         for (int i = 0; i < nCarsToSpawn; i++)

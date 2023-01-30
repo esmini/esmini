@@ -16,7 +16,6 @@
 namespace  Utils {
 
     using std::uniform_int_distribution;
-    using std::random_shuffle;
 
     template<typename __InputIterator, typename __RandomAccessIterator, typename __Number, typename __Generator>
     inline void sample(__InputIterator first, __InputIterator last, __RandomAccessIterator out, __Number n, __Generator &g)
