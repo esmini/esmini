@@ -157,7 +157,7 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 			for (double s = 10; s < road->GetLength() - average_distance; s += average_distance + 0.2 * average_distance * SE_Env::Inst().GetRand().GetReal())
 			{
 				// Pick lane by random
-				int lane_idx = SE_Env::Inst().GetRand().GetNumberBetween(0, road->GetNumberOfDrivingLanes(s));
+				int lane_idx = SE_Env::Inst().GetRand().GetNumberBetween(0, road->GetNumberOfDrivingLanes(s) - 1);
 				roadmanager::Lane *lane = road->GetDrivingLaneByIdx(s, lane_idx);
 				if (lane == 0)
 				{
@@ -174,7 +174,7 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 				}
 
 				// randomly choose model
-				int carModelID = SE_Env::Inst().GetRand().GetNumberBetween(0, sizeof(carModelsFiles_) / sizeof(carModelsFiles_[0]));
+				int carModelID = SE_Env::Inst().GetRand().GetNumberBetween(0, (sizeof(carModelsFiles_) / sizeof(carModelsFiles_[0])) - 1);
 				//LOG("Adding car of model %d to road nr %d (road id %d s %.2f lane id %d), ", carModelID, r, road->GetId(), s, lane->GetId());
 
 				Car *car_ = new Car;
@@ -295,10 +295,10 @@ void updateCar(roadmanager::OpenDrive *odrManager, Car *car, double dt)
 		else
 		{
 			// Choose random open end
-			int oeIndex = SE_Env::Inst().GetRand().GetNumberBetween(0, static_cast<int>(openEnds.size()));
+			int oeIndex = SE_Env::Inst().GetRand().GetNumberBetween(0, static_cast<int>(openEnds.size()) - 1);
 			OpenEnd* oe = &openEnds[static_cast<unsigned int>(oeIndex)];
 			// Choose random lane
-			int laneIndex = SE_Env::Inst().GetRand().GetNumberBetween(0, oe->nLanes);
+			int laneIndex = SE_Env::Inst().GetRand().GetNumberBetween(0, oe->nLanes - 1);
 			roadmanager::Road* road = odrManager->GetRoadById(oe->roadId);
 			roadmanager::Lane *lane = road->GetDrivingLaneSideByIdx(oe->s, oe->side, laneIndex);
 
