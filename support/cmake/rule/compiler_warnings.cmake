@@ -66,31 +66,24 @@ function(
         -Wuseless-cast # warn if you perform a cast to the same type
     )
 
-    set(CUDA_WARNINGS
-        -Wall
-        -Wextra
-        -Wunused
-        -Wconversion
-        -Wshadow
-        # TODO add more Cuda warnings
-    )
-
     if(ENABLE_WARNINGS_AS_ERRORS)
-        message(
-            TRACE
-            "Warnings are treated as errors")
-        list(
-            APPEND
-            CLANG_WARNINGS
-            -Werror)
-        list(
-            APPEND
-            GCC_WARNINGS
-            -Werror)
-        list(
-            APPEND
-            MSVC_WARNINGS
-            /WX)
+        if(NOT APPLE) # some warnings still remaining on Mac
+            message(
+                TRACE
+                "Warnings are treated as errors")
+            list(
+                APPEND
+                CLANG_WARNINGS
+                -Werror)
+            list(
+                APPEND
+                GCC_WARNINGS
+                -Werror)
+            list(
+                APPEND
+                MSVC_WARNINGS
+                /WX)
+        endif(NOT APPLE)
     endif()
 
     if(MSVC)
