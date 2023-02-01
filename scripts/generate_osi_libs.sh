@@ -28,9 +28,15 @@
 # Review and update settings in this section according to your system and preferences
 
 PROTOBUF_VERSION=3.15.2
-OSI_VERSION=3.3.1
+OSI_VERSION=3.5.0
+ZIP_MIN_VERSION=13
 PARALLEL_BUILDS=4
-ZIP_MIN_VERSION=12
+
+if (( "$PARALLEL_BUILDS" < 2 )); then
+    PARALLEL_ARG=""
+else
+    PARALLEL_ARG="$PARALLEL_ARG"
+fi
 
 if [ "$OSTYPE" == "msys" ]; then
     # Visual Studio 2019 - toolkit from Visual Studio 2017
@@ -70,9 +76,14 @@ else
     echo Unknown OSTYPE: $OSTYPE
 fi
 
-mkdir $target_dir
-mkdir $target_dir/include
-
+if [ ! -d $target_dir ]
+then
+    mkdir $target_dir
+fi
+if [ ! -d $target_dir/include ]
+then
+    mkdir $target_dir/include
+fi
 
 # ---------------------------------------------------------------------------------------
 # From this point no adjustments should be necessary, except fixing bugs in the script :)
@@ -85,32 +96,30 @@ osi_root_dir=$(pwd)
 echo ------------------------ Installing zlib ------------------------------------
 cd $osi_root_dir
 
-if [ ! -d zlib-1.2.$ZIP_MIN_VERSION ]
+if [ ! -d zlib ]
 then
-    if [ ! -f zlib12$ZIP_MIN_VERSION.zip ]; then
-        curl "https://zlib.net/zlib12$ZIP_MIN_VERSION.zip" -o zlib12$ZIP_MIN_VERSION.zip
-    fi
-    unzip zlib12$ZIP_MIN_VERSION.zip
-    cd zlib-1.2.$ZIP_MIN_VERSION
+    git clone https://github.com/madler/zlib.git
+    cd  zlib
+    git checkout v1.2.$ZIP_MIN_VERSION
     mkdir install
     mkdir build
     cd build
 
     if [[ "$OSTYPE" == "linux-gnu"* ]]; then
         cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -D CMAKE_INSTALL_PREFIX=../install -DCMAKE_BUILD_TYPE=Debug .. -DCMAKE_C_FLAGS="-fPIC"
-        cmake --build . -j $PARALLEL_BUILDS --target install
+        cmake --build . $PARALLEL_ARG --target install
         mv ../install/lib/libz.a ../install/lib/libzd.a
 
         rm CMakeCache.txt
         cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -D CMAKE_INSTALL_PREFIX=../install -DCMAKE_BUILD_TYPE=Release .. -DCMAKE_C_FLAGS="-fPIC"
-        cmake --build . -j $PARALLEL_BUILDS --target install
+        cmake --build . $PARALLEL_ARG --target install
     elif [[ "$OSTYPE" == "darwin"* ]]; then
         cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -D CMAKE_INSTALL_PREFIX=../install -DCMAKE_BUILD_TYPE=Release .. -DCMAKE_C_FLAGS="-fPIC" -DCMAKE_OSX_ARCHITECTURES="$macos_arch"
-        cmake --build . -j $PARALLEL_BUILDS --target install
+        cmake --build . $PARALLEL_ARG --target install
     else
         cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -D CMAKE_INSTALL_PREFIX=../install ..
-        cmake --build . -j $PARALLEL_BUILDS --config Debug --target install
-        cmake --build . -j $PARALLEL_BUILDS --config Release --target install --clean-first
+        cmake --build . $PARALLEL_ARG --config Debug --target install
+        cmake --build . $PARALLEL_ARG --config Release --target install --clean-first
     fi
 
 else
@@ -119,6 +128,7 @@ fi
 
 
 echo ------------------------ Installing OSI proto2cpp -----------------------------------
+
 cd $osi_root_dir
 
 if [ ! -d proto2cpp ]
@@ -129,6 +139,8 @@ else
 fi
 
 function build {
+
+    cd $osi_root_dir
 
     if [[ $1 == "static" ]]; then
         DYNAMIC_LINKING=0
@@ -180,15 +192,15 @@ function build {
         fi
 
         if [[ "$OSTYPE" != "darwin"* ]]; then
-            cmake ../cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DZLIB_LIBRARY=../../zlib-1.2.$ZIP_MIN_VERSION/install/lib/$ZLIB_FILE_DEBUG -DZLIB_INCLUDE_DIR=../../zlib-1.2.$ZIP_MIN_VERSION/install/include -DCMAKE_INSTALL_PREFIX=$INSTALL_PROTOBUF_DIR -Dprotobuf_BUILD_TESTS=OFF -Dprotobuf_WITH_ZLIB=ON -Dprotobuf_MSVC_STATIC_RUNTIME=OFF -DCMAKE_BUILD_TYPE=Debug $ADDITIONAL_CMAKE_PARAMETERS
-            cmake --build . -j $PARALLEL_BUILDS --config Debug --target install --clean-first
+            cmake ../cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DZLIB_LIBRARY=../../zlib/install/lib/$ZLIB_FILE_DEBUG -DZLIB_INCLUDE_DIR=../../zlib/install/include -DCMAKE_INSTALL_PREFIX=$INSTALL_PROTOBUF_DIR -Dprotobuf_BUILD_TESTS=OFF -Dprotobuf_WITH_ZLIB=ON -Dprotobuf_MSVC_STATIC_RUNTIME=OFF -DCMAKE_BUILD_TYPE=Debug $ADDITIONAL_CMAKE_PARAMETERS
+            cmake --build . $PARALLEL_ARG --config Debug --target install --clean-first
             rm CMakeCache.txt
         else
             ADDITIONAL_CMAKE_PARAMETERS+=" -DCMAKE_OSX_ARCHITECTURES=$macos_arch"
         fi
 
-        cmake ../cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DZLIB_LIBRARY=../../zlib-1.2.$ZIP_MIN_VERSION/install/lib/$ZLIB_FILE_RELEASE -DZLIB_INCLUDE_DIR=../../zlib-1.2.$ZIP_MIN_VERSION/install/include -DCMAKE_INSTALL_PREFIX=$INSTALL_PROTOBUF_DIR -Dprotobuf_BUILD_TESTS=OFF -Dprotobuf_WITH_ZLIB=ON -Dprotobuf_MSVC_STATIC_RUNTIME=OFF -DCMAKE_BUILD_TYPE=Release $ADDITIONAL_CMAKE_PARAMETERS
-        cmake --build . -j $PARALLEL_BUILDS --config Release --target install --clean-first
+        cmake ../cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DZLIB_LIBRARY=../../zlib/install/lib/$ZLIB_FILE_RELEASE -DZLIB_INCLUDE_DIR=../../zlib/install/include -DCMAKE_INSTALL_PREFIX=$INSTALL_PROTOBUF_DIR -Dprotobuf_BUILD_TESTS=OFF -Dprotobuf_WITH_ZLIB=ON -Dprotobuf_MSVC_STATIC_RUNTIME=OFF -DCMAKE_BUILD_TYPE=Release $ADDITIONAL_CMAKE_PARAMETERS
+        cmake --build . $PARALLEL_ARG --config Release --target install --clean-first
 
     else
         echo protobuf folder already exists, continue with next step...
@@ -196,6 +208,7 @@ function build {
 
 
     echo --------------------- Installing OSI $1 -----------------------------
+
     cd $osi_root_dir
 
     if [ ! -d open-simulation-interface$folder_postfix ]
@@ -227,7 +240,7 @@ function build {
             cmake .. -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DCMAKE_INCLUDE_PATH=../protobuf$folder_postfix/protobuf-install/include -DFILTER_PROTO2CPP_PY_PATH=../../proto2cpp -DINSTALL_LIB_DIR=$INSTALL_OSI_LIB_DIR/lib -DINSTALL_INCLUDE_DIR=$INSTALL_OSI_LIB_DIR/include -DCMAKE_INSTALL_PREFIX=$INSTALL_OSI_LIB_DIR -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_BUILD_TYPE=Debug -DCMAKE_LIBRARY_PATH=../protobuf$folder_postfix/protobuf-install/lib -DCMAKE_CXX_STANDARD=11 $ADDITIONAL_CMAKE_PARAMETERS ..
 
             # First bild OSI submodule separately since we need to rename the library before linking with the application
-            cmake --build . -j $PARALLEL_BUILDS --config Debug --target install
+            cmake --build . $PARALLEL_ARG --config Debug --target install
 
             if [[ "$OSTYPE" == "linux-gnu"* ]]; then
                 if [ $DYNAMIC_LINKING == "1" ]; then
@@ -251,9 +264,7 @@ function build {
 
         cmake .. -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DCMAKE_INCLUDE_PATH=../protobuf$folder_postfix/protobuf-install/include -DFILTER_PROTO2CPP_PY_PATH=../../proto2cpp -DINSTALL_LIB_DIR=$INSTALL_OSI_LIB_DIR/lib -DINSTALL_INCLUDE_DIR=$INSTALL_OSI_LIB_DIR/include -DCMAKE_INSTALL_PREFIX=$INSTALL_OSI_LIB_DIR -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_LIBRARY_PATH=../protobuf$folder_postfix/protobuf-install/lib -DCMAKE_CXX_STANDARD=11 $ADDITIONAL_CMAKE_PARAMETERS ..
 
-        cmake --build . -j $PARALLEL_BUILDS --config Release --target install --clean-first
-
-        cd $osi_root_dir
+        cmake --build . $PARALLEL_ARG --config Release --target install --clean-first
 
     else
         echo open-simulation-interface folder already exists, continue with next step...
@@ -261,12 +272,17 @@ function build {
 
     echo ------------------------ Pack $1 ------------------------------------
 
+    cd $osi_root_dir
+
     cp open-simulation-interface$folder_postfix/install/osi-lib/include/osi3/* $target_dir/include
     cp -r protobuf$folder_postfix/protobuf-install/include/google $target_dir/include
 
     if [ $DYNAMIC_LINKING == "1" ]; then
         target_lib_dir="lib-dyn"
-        mkdir $target_dir/$target_lib_dir
+        if [ ! -d $target_dir/$target_lib_dir ]
+        then
+            mkdir $target_dir/$target_lib_dir
+        fi
         if [ "$OSTYPE" == "msys" ]; then
             cp open-simulation-interface$folder_postfix/install/osi-lib/lib/osi3/open_simulation_interface*.dll $target_dir/$target_lib_dir
             cp open-simulation-interface$folder_postfix/install/osi-lib/lib/osi3/open_simulation_interface_pic*.lib $target_dir/$target_lib_dir
@@ -284,7 +300,10 @@ function build {
         fi
     else
         target_lib_dir="lib"
-        mkdir $target_dir/$target_lib_dir
+        if [ ! -d $target_dir/$target_lib_dir ]
+        then
+            mkdir $target_dir/$target_lib_dir
+        fi
         if [ "$OSTYPE" == "msys" ]; then
             cp open-simulation-interface$folder_postfix/install/osi-lib/lib/osi3/*open_simulation_interface_pic*.lib $target_dir/$target_lib_dir
             cp protobuf$folder_postfix/protobuf-install/lib/libprotobuf*.lib $target_dir/$target_lib_dir
