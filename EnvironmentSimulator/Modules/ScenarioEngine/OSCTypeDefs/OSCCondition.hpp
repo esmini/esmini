@@ -320,7 +320,7 @@ namespace scenarioengine
 		double current_acceleration_;
 
 		bool CheckCondition(StoryBoard* storyBoard, double sim_time);
-		TrigByAcceleration() : TrigByEntity(TrigByEntity::EntityConditionType::ACCELERATION), value_(0), current_acceleration_(0), direction_(Direction::UNDEFINED_DIRECTION) {}
+		TrigByAcceleration() : TrigByEntity(TrigByEntity::EntityConditionType::ACCELERATION), value_(0), direction_(Direction::UNDEFINED_DIRECTION), current_acceleration_(0) {}
 		void Log();
 	};
 
@@ -333,7 +333,7 @@ namespace scenarioengine
 		double current_speed_;
 
 		bool CheckCondition(StoryBoard* storyBoard, double sim_time);
-		TrigBySpeed() : TrigByEntity(TrigByEntity::EntityConditionType::SPEED), value_(0), current_speed_(0), direction_(Direction::UNDEFINED_DIRECTION) {}
+		TrigBySpeed() : TrigByEntity(TrigByEntity::EntityConditionType::SPEED), value_(0), direction_(Direction::UNDEFINED_DIRECTION),current_speed_(0) {}
 		void Log();
 	};
 
@@ -347,7 +347,7 @@ namespace scenarioengine
 		double current_rel_speed_;
 
 		bool CheckCondition(StoryBoard* storyBoard, double sim_time);
-		TrigByRelativeSpeed() : TrigByEntity(TrigByEntity::EntityConditionType::RELATIVE_SPEED), value_(0), current_rel_speed_(0), direction_(Direction::UNDEFINED_DIRECTION) {}
+		TrigByRelativeSpeed() : TrigByEntity(TrigByEntity::EntityConditionType::RELATIVE_SPEED), value_(0), direction_(Direction::UNDEFINED_DIRECTION), current_rel_speed_(0) {}
 		void Log();
 	};
 
