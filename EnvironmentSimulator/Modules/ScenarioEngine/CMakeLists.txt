@@ -12,8 +12,6 @@ include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_static_analysis.cmake)
 include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_iwyu.cmake)
 include(${CMAKE_SOURCE_DIR}/support/cmake/rule/enable_fpic.cmake)
 
-add_definitions(-D_CRT_SECURE_NO_WARNINGS)
-
 # ############################### Setting target files ###############################################################
 
 file(

@@ -571,7 +571,7 @@ double strtod(std::string s)
 	return atof(s.c_str());
 }
 
-void StrCopy(char* dest, const char* src, int size, bool terminate)
+void StrCopy(char* dest, const char* src, unsigned int size, bool terminate)
 {
 	memcpy(dest, src, static_cast<size_t>(size) * sizeof(char));
 	if (terminate && size > 0)
@@ -760,6 +760,22 @@ std::string ToLower(const char* in_str)
 	}
 
 	return out_str;
+}
+
+FILE* FileOpen(const char* filename, const char* mode)
+{
+	FILE* file = nullptr;
+
+#ifdef _WIN32
+	if (fopen_s(&file, filename, mode) != 0)
+	{
+		return nullptr;
+	}
+#else
+	file = fopen(filename, mode);
+#endif
+
+	return file;
 }
 
 double GetCrossProduct2D(double x1, double y1, double x2, double y2)
@@ -964,7 +980,7 @@ void Logger::Log(bool quit, bool trace, char const* file, char const* func, int 
 		}
 		else
 		{
-			strncpy(complete_entry, message, 1024);
+			StrCopy(complete_entry, message, 1024);
 		}
 	}
 
@@ -1505,9 +1521,9 @@ void SE_Options::Reset()
 
 int SE_WritePPM(const char* filename, int width, int height, const unsigned char* data, int pixelSize, int pixelFormat, bool upsidedown)
 {
-	FILE* file;
+	FILE* file = FileOpen(filename, "wb");
 
-	if ((file = fopen(filename, "wb")) == nullptr)
+	if (file == nullptr)
 	{
 		return -1;
 	}
@@ -1580,9 +1596,9 @@ int SE_WritePPM(const char* filename, int width, int height, const unsigned char
 
 int SE_WriteTGA(const char* filename, int width, int height, const unsigned char* data, int pixelSize, int pixelFormat, bool upsidedown)
 {
-	FILE* file;
+	FILE* file = FileOpen(filename, "wb");
 
-	if ((file = fopen(filename, "wb")) == nullptr)
+	if (file == nullptr)
 	{
 		return -1;
 	}

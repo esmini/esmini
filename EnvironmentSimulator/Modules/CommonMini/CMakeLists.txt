@@ -23,8 +23,6 @@ set(INCLUDES
 
 # ############################### Creating library ###################################################################
 
-add_definitions(-D_CRT_SECURE_NO_WARNINGS)
-
 add_library(
     ${TARGET}
     STATIC

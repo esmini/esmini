@@ -3,8 +3,6 @@
 include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_static_analysis.cmake)
 include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_iwyu.cmake)
 
-add_definitions(-D_CRT_SECURE_NO_WARNINGS)
-
 # ############################### Loading unittest macro #############################################################
 
 include(${CMAKE_SOURCE_DIR}/support/cmake/common/unittest.cmake)

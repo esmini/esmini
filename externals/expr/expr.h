@@ -15,6 +15,17 @@ extern "C" {
 // Disable warning of some struct initializations
 #pragma warning(disable:4204)
 
+// Portable string copy with enforced null termination
+// size_t = total size of dest buffer including null termination
+static void StrCopy(char* dest, const char* src, size_t size)
+{
+    memcpy(dest, src, (unsigned int)(size * sizeof(char)));
+    if (size > 0)
+    {
+        dest[size - 1] = 0;  // NULL termination
+    }
+}
+
 /*
  * Simple expandable vector implementation
  */
@@ -303,7 +314,7 @@ static struct expr_var *expr_var(struct expr_var_list *vars, const char *s,
   }
   v->next = vars->head;
   v->value = 0;
-  strncpy(v->name, s, len);
+  StrCopy(v->name, s, len + 1);
   v->name[len] = '\0';
   vars->head = v;
   return v;

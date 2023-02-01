@@ -593,12 +593,19 @@ std::string FileNameExtOf(const std::string& fname);
 std::string FileNameWithoutExtOf(const std::string& fname);
 std::string ToLower(const std::string in_str);
 std::string ToLower(const char* in_str);
+FILE* FileOpen(const char* filename, const char* mode);
 
 int strtoi(std::string s);
 double strtod(std::string s);
 
-
-void StrCopy(char* dest, const char* src, int size, bool terminate = true);
+/**
+	Copy string
+	@param dest Destination buffer (resulting copy)
+	@param src Source buffer (original string)
+	@param size Maximum character written, including optional added terminating null (see terminate parameter)
+	@param terminate If true the dest will always be terminated, at latest at dest[size-1]
+*/
+void StrCopy(char* dest, const char* src, unsigned int size, bool terminate = true);
 
 // Global Logger class
 class Logger

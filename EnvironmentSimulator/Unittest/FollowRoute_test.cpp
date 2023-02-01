@@ -609,15 +609,17 @@ TEST_F(FollowRouteTestMediumChangedSpeeds, LogWaypointMedium)
             Position target = pair.second;
             target.SetRouteStrategy(rs);
 
-            char buffer[100];
-            sprintf(buffer, "Start, %d, %d, %.2f, Target, %d, %d, %.2f, RouteStrategy, %s", start.GetTrackId(), start.GetLaneId(), start.GetS(), target.GetTrackId(), target.GetLaneId(), target.GetS(), rsText.c_str());
+            const int bufsize = 128;
+            char buffer[bufsize];
+            snprintf(buffer, bufsize, "Start, %d, %d, %.2f, Target, %d, %d, %.2f, RouteStrategy, %s", start.GetTrackId(),
+                start.GetLaneId(), start.GetS(), target.GetTrackId(), target.GetLaneId(), target.GetS(), rsText.c_str());
             ofs << buffer << "\n";
             std::vector<Node> calculatedPath = router.CalculatePath(start, target);
             std::vector<Position> calculatedWaypoints = router.GetWaypoints(calculatedPath, start, target);
             for (Position& wp : calculatedWaypoints)
             {
-                memset(buffer, 0, sizeof buffer); // Clear buffer
-                sprintf(buffer, "Waypoint, %d, %d, %.2f", wp.GetTrackId(), wp.GetLaneId(), wp.GetS());
+                memset(buffer, 0, bufsize); // Clear buffer
+                snprintf(buffer, bufsize, "Waypoint, %d, %d, %.2f", wp.GetTrackId(), wp.GetLaneId(), wp.GetS());
                 ofs << buffer << "\n";
             }
         }
