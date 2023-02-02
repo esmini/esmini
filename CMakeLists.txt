@@ -10,7 +10,7 @@ set(ENABLE_COLORED_DIAGNOSTICS
           "Enable colorful diagnostic messages from the compiler in console")
 
 set(ENABLE_WARNINGS_AS_ERRORS
-    ON
+    OFF
     CACHE BOOL
           "Make compile warnings be treated as errors")
 

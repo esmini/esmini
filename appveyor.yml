@@ -58,7 +58,7 @@ for:
 
           cd build
 
-          cmake -DCMAKE_BUILD_TYPE=Release ..
+          cmake .. -D CMAKE_BUILD_TYPE=Release -D ENABLE_WARNINGS_AS_ERRORS=True
 
           cmake --build . -j --config Release --target install
 
@@ -70,7 +70,7 @@ for:
 
           cd build-no-osg
 
-          cmake -DCMAKE_BUILD_TYPE=Release -D USE_OSG=False -D USE_SUMO=False -D USE_OSI=False ..
+          cmake .. -DCMAKE_BUILD_TYPE=Release -D USE_OSG=False -D USE_SUMO=False -D USE_OSI=False -D ENABLE_WARNINGS_AS_ERRORS=True
 
           cmake --build . -j --config Release
 
@@ -82,7 +82,7 @@ for:
 
           cd build-debug
 
-          cmake -DCMAKE_BUILD_TYPE=Debug ..
+          cmake .. -D CMAKE_BUILD_TYPE=Debug -D ENABLE_WARNINGS_AS_ERRORS=True
 
           cmake --build . -j --config Debug
 
@@ -136,7 +136,7 @@ for:
 
           cd build
 
-          cmake -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" ..
+          cmake .. -D CMAKE_OSX_ARCHITECTURES="arm64;x86_64" -D ENABLE_WARNINGS_AS_ERRORS=False
 
           cmake --build . -j --config Release --target install
 
@@ -149,7 +149,7 @@ for:
 
           cd build-no-osg
 
-          cmake -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -DUSE_OSG=False -DUSE_SUMO=False -DUSE_OSI=False ..
+          cmake .. -D CMAKE_OSX_ARCHITECTURES="arm64;x86_64" -D USE_OSG=False -D USE_SUMO=False -D USE_OSI=False -D ENABLE_WARNINGS_AS_ERRORS=False
 
           cmake --build . -j --config Release
 
@@ -200,7 +200,7 @@ for:
 
           cd build
 
-          cmake .. -G "Visual Studio 16 2019" -T v142 -A x64
+          cmake .. -G "Visual Studio 16 2019" -T v142 -A x64 -D ENABLE_WARNINGS_AS_ERRORS=True
 
           cmake --build . -j --config Release --target install
 
@@ -216,7 +216,7 @@ for:
 
           cd build-no-osg
 
-          cmake -G "Visual Studio 16 2019" -T v142 -A x64 -D USE_OSG=False -D USE_SUMO=False -D USE_OSI=False ..
+          cmake .. -G "Visual Studio 16 2019" -T v142 -A x64 -D USE_OSG=False -D USE_SUMO=False -D USE_OSI=False -D ENABLE_WARNINGS_AS_ERRORS=True
 
           cmake --build . -j --config Release
 
