@@ -9,14 +9,14 @@ macro(set_esmini_cloud_links)
         set(OSG_PACKAGE_URL
             https://esmini.asuscomm.com/AICLOUD766065121/libs/OpenSceneGraph_mac.7z)
         set(OSI_PACKAGE_URL
-            https://esmini.asuscomm.com/AICLOUD766065121/libs/osi_mac.7z)
+            https://esmini.asuscomm.com/AICLOUD766065121/libs/osi_3_5_0_mac_clang_1200.7z)
         set(SUMO_PACKAGE_URL
             https://esmini.asuscomm.com/AICLOUD766065121/libs/sumo_mac.7z)
     elseif(LINUX)
         set(OSG_PACKAGE_URL
             https://esmini.asuscomm.com/AICLOUD766065121/libs/osg_linux_glibc_2_31_gcc_7_5_0.7z)
         set(OSI_PACKAGE_URL
-            https://esmini.asuscomm.com/AICLOUD766065121/libs/osi_linux.7z)
+            https://esmini.asuscomm.com/AICLOUD766065121/libs/osi_3_5_0_linux_glibc_2_31_gcc_7_5_0.7z)
         set(SUMO_PACKAGE_URL
             https://esmini.asuscomm.com/AICLOUD766065121/libs/sumo_linux.7z)
         set(GTEST_PACKAGE_URL
@@ -25,7 +25,7 @@ macro(set_esmini_cloud_links)
         set(OSG_PACKAGE_URL
             https://esmini.asuscomm.com/AICLOUD766065121/libs/OpenSceneGraph_v10.7z)
         set(OSI_PACKAGE_URL
-            https://esmini.asuscomm.com/AICLOUD766065121/libs/osi_v10.7z)
+            https://esmini.asuscomm.com/AICLOUD766065121/libs/osi_3_5_0_win_vs_sdk_141.7z)
         set(SUMO_PACKAGE_URL
             https://esmini.asuscomm.com/AICLOUD766065121/libs/sumo_v10.7z)
         set(GTEST_PACKAGE_URL
