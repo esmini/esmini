@@ -1,5 +1,22 @@
 ## esmini release notes
 
+### 2023-02-02 Version 2.29.0
+
+New features and behaviors:
+
+- Support for [DirectionDimension](https://www.asam.net/static_downloads/ASAM_OpenSCENARIO_V1.2.0_Model_Documentation/modelDocumentation/content/DirectionalDimension.html) in relevant conditions (introduced in OSC v1.2)
+- Make AccelerationCondition aware of deceleration
+  - Previously only considering absolute value of acceleration. Now signed.
+- Add cmake config presets also for Visual Studio (Windows)
+
+Improvements and fixes:
+- Update to OSI v3.5.0 (from v3.3.1)
+- Major refactorization cleaning up memory leaks and compiler warnings
+- Increase compiler warning sensitivity, add multiple useful warnings
+- For CI builds, treat warnings as errors - zero tolerance
+- Improve [OSI build script](https://github.com/esmini/esmini/blob/master/scripts/generate_osi_libs.sh)
+- Restore OSI demo in esmini-dyn
+
 ### 2023-01-24 Version 2.28.0
 
 New features and behaviors:

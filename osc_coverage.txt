@@ -255,16 +255,16 @@ Common classes
                     ByType                     Yes
                 Offroad                        Yes
                 TimeHeadway                    Yes
-                    Direction (1.2)            No
+                    routingAlgorithm (1.2)     No
                 TimeToCollision                Yes
                     routingAlgorithm (1.2)     No
                 Acceleration                   Yes
-                    Direction (1.2)            No
+                    Direction (1.2)            Yes
                 StandStill                     Yes
                 Speed                          Yes
-                    Direction (1.2)            No
+                    Direction (1.2)            Yes
                 RelativeSpeed                  Yes
-                    Direction (1.2)            No
+                    Direction (1.2)            Yes
                 TraveledDistance               Yes
                 ReachPosition                  Yes
                 Distance                       Yes
