@@ -854,8 +854,41 @@ void LongSpeedAction::Start(double simTime, double dt)
 	if (transition_.dimension_ == DynamicsDimension::DISTANCE)
 	{
 		// Convert to time, since speed shape is expected over time, not distance (as in lane change case)
-		// integrated distance = time(v_init + v_delta/2) = time(v_init + v_end)/2 => time = 2*distance/(v_init + v_end)
-		transition_.SetParamTargetVal(2 * transition_.GetParamTargetVal() / (transition_.GetStartVal() + target_->GetValue()));
+		// special cased when speed changes sign:
+
+		double v0 = transition_.GetStartVal();
+		double v1 = target_->GetValue();
+		double dist = transition_.GetParamTargetVal();
+
+		if (abs(v1 - v0) < SMALL_NUMBER)
+		{
+			// no change
+			transition_.SetParamTargetVal(0.0);
+		}
+		else if (abs(v0) > SMALL_NUMBER && abs(v1) > SMALL_NUMBER && SIGN(v0) != SIGN(v1))
+		{
+			// sign of speed changes, add two parts divided by speed = 0
+			// find relation dist0 / (dist0 + dist1) = v0^2 / (v0^2 + v1^2)
+			double dist_factor = abs(pow(v0,2) / (pow(v0, 2) + pow(v1,2)));
+
+			// Find displacement of part 1
+			// d0 = (v0 * t0) / 2 => t0 = (2 * d0) / v0
+			double d0 = dist_factor * dist;
+
+			// calculate duration of part 1
+			double t0 = 2.0 * d0 / abs(v0);
+
+			// calculate duration of remaning part 2
+			double t1 = 2.0 * (dist - d0) / abs(v1);
+
+			transition_.SetParamTargetVal(t0 + t1);
+		}
+		else   // change of speed without changing driving direction
+		{
+			// integrated distance = time(v_init + v_delta/2) = time(v_init + v_end)/2
+			// => time = 2*distance/(v_init + v_end)
+			transition_.SetParamTargetVal(2 * dist / (abs(v0 + v1)));
+		}
 	}
 
 	transition_.SetTargetVal(target_->GetValue());

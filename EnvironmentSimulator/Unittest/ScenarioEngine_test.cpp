@@ -1833,6 +1833,34 @@ TEST(SpeedTest, TestAbsoluteSpeed)
     delete se;
 }
 
+TEST(SpeedTest, TestChangeSpeedOverDistance)
+{
+    LongSpeedAction action;
+    Object obj(Object::Type::VEHICLE);
+    action.object_ = &obj;
+
+    std::shared_ptr<LongSpeedAction::TargetAbsolute> target = std::make_shared<LongSpeedAction::TargetAbsolute>();
+    action.target_ = target;
+
+    action.transition_.dimension_ = OSCPrivateAction::DynamicsDimension::DISTANCE;
+    action.transition_.shape_ = OSCPrivateAction::DynamicsShape::LINEAR;
+
+    double v0[6] = { 5.0, -5.0, 0.0, -5.0, 5.0, 1.5 };
+    double v1[6] = { 10.0, -10.0, 0.0, 5.0, -5.0, -0.5 };
+    double dist[6] = { 20.0, 20.0, 20.0, 20.0, 20.0, 1.25};
+    double time[6] = { 2.66667, 2.66667, 0.0, 8.0, 8.0, 2.0 };
+
+    for (unsigned int i = 0; i < static_cast<unsigned int>(sizeof(v0) / sizeof(double)); i++)
+    {
+        obj.SetSpeed(v0[i]);
+        target->value_ = v1[i];
+        action.transition_.SetParamTargetVal(dist[i]);  // distance
+
+        action.Start(0.0, 0.0);
+        EXPECT_NEAR(action.transition_.GetParamTargetVal(), time[i], 1E-5);
+    }
+}
+
 // Uncomment to print log output to console
 //#define LOG_TO_CONSOLE
 
