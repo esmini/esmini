@@ -10015,6 +10015,13 @@ int PolyLineBase::Time2S(double time, double& s)
 		return 0;
 	}
 
+	if (GetNumberOfVertices() == 1)
+	{
+		current_index_ = 0;
+		current_s_ = vertex_[0].s;
+		return 0;
+	}
+
 	// start looking from current index
 	int i = current_index_;
 
