@@ -1437,3 +1437,8 @@ extern "C"
 #ifdef __cplusplus
 }
 #endif
+
+#ifdef __cplusplus
+#include <functional>
+SE_DLL_API void SE_RegisterStoryBoardElementStateChangeCallback(std::function<void(const char*, int, int)> fn);
+#endif

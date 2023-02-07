@@ -13,6 +13,7 @@
 #pragma once
 
 #include "Entities.hpp"
+#include <functional>
 
 namespace scenarioengine
 {
@@ -20,9 +21,9 @@ namespace scenarioengine
 	class StoryBoardElement
 	{
 	public:
-        static void (*stateChangeCallback)(const char* name, int type, int state);
-
-        /**
+        static std::function<void(const char* name, int type, int state)> stateChangeCallback;
+        
+		/**
          * Take note, changing this enum will alter the public API in esminiLib.hpp
          */
 		typedef enum

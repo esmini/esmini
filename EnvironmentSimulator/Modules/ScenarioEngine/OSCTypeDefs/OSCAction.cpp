@@ -14,7 +14,7 @@
 
 using namespace scenarioengine;
 
-void (*StoryBoardElement::stateChangeCallback)(const char* name, int type, int state) = nullptr;
+std::function<void(const char* name, int type, int state)> StoryBoardElement::stateChangeCallback = nullptr;
 
 std::string StoryBoardElement::state2str(StoryBoardElement::State state)
 {
