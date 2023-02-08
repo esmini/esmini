@@ -2232,7 +2232,6 @@ TEST(OSIPointTest, MixedRoads)
     roadmanager::OpenDrive* odr = Position::GetOpenDrive();
     ASSERT_NE(odr, nullptr);
 
-    ASSERT_NE(odr, nullptr);
     EXPECT_EQ(odr->GetNumOfRoads(), 4);
 
     Road* road = odr->GetRoadByIdx(0);
@@ -2298,6 +2297,73 @@ TEST(OSIPointTest, MixedRoads)
     odr->Clear();
 }
 
+TEST(RoadEdgeTest, TestRoadEdge)
+{
+    ASSERT_EQ(roadmanager::Position::LoadOpenDrive("../../../EnvironmentSimulator/Unittest/xodr/highway_example_with_merge_and_split.xodr"), true);
+    roadmanager::OpenDrive* odr = Position::GetOpenDrive();
+    ASSERT_NE(odr, nullptr);
+
+    EXPECT_EQ(odr->GetNumOfRoads(), 9);
+
+    Road* road = odr->GetRoadById(0);
+    EXPECT_EQ(road->GetId(), 0);
+    LaneSection* lane_section = road->GetLaneSectionByIdx(2);
+    EXPECT_EQ(lane_section->GetLaneById(2)->IsRoadEdge(), true);
+    EXPECT_EQ(lane_section->GetLaneById(1)->IsRoadEdge(), false);
+    EXPECT_EQ(lane_section->GetLaneById(0)->IsRoadEdge(), false);
+    EXPECT_EQ(lane_section->GetLaneById(-1)->IsRoadEdge(), false);
+    EXPECT_EQ(lane_section->GetLaneById(-2)->IsRoadEdge(), false);
+    EXPECT_EQ(lane_section->GetLaneById(-3)->IsRoadEdge(), false);
+    EXPECT_EQ(lane_section->GetLaneById(-4)->IsRoadEdge(), true);
+
+    road = odr->GetRoadById(3);
+    EXPECT_EQ(road->GetId(), 3);
+    lane_section = road->GetLaneSectionByIdx(0);
+    EXPECT_EQ(lane_section->GetLaneById(2)->IsRoadEdge(), true);
+    EXPECT_EQ(lane_section->GetLaneById(1)->IsRoadEdge(), false);
+    EXPECT_EQ(lane_section->GetLaneById(0)->IsRoadEdge(), false);
+    EXPECT_EQ(lane_section->GetLaneById(-1)->IsRoadEdge(), false);
+    EXPECT_EQ(lane_section->GetLaneById(-2)->IsRoadEdge(), false);
+    EXPECT_EQ(lane_section->GetLaneById(-3)->IsRoadEdge(), true);
+
+    road = odr->GetRoadById(4);
+    EXPECT_EQ(road->GetId(), 4);
+    lane_section = road->GetLaneSectionByIdx(0);
+    EXPECT_EQ(lane_section->GetLaneById(-1)->IsRoadEdge(), true);
+    EXPECT_EQ(lane_section->GetLaneById(0)->IsRoadEdge(), true);
+
+    road = odr->GetRoadById(1);
+    EXPECT_EQ(road->GetId(), 1);
+    lane_section = road->GetLaneSectionByIdx(1);
+    EXPECT_EQ(lane_section->GetLaneById(3)->IsRoadEdge(), true);
+    EXPECT_EQ(lane_section->GetLaneById(2)->IsRoadEdge(), false);
+    EXPECT_EQ(lane_section->GetLaneById(1)->IsRoadEdge(), false);
+    EXPECT_EQ(lane_section->GetLaneById(0)->IsRoadEdge(), false);
+    EXPECT_EQ(lane_section->GetLaneById(-1)->IsRoadEdge(), false);
+    EXPECT_EQ(lane_section->GetLaneById(-2)->IsRoadEdge(), false);
+    EXPECT_EQ(lane_section->GetLaneById(-3)->IsRoadEdge(), true);
+
+    odr->Clear();
+
+    ASSERT_EQ(roadmanager::Position::LoadOpenDrive("../../../resources/xodr/jolengatan.xodr"), true);
+    odr = Position::GetOpenDrive();
+    ASSERT_NE(odr, nullptr);
+
+    EXPECT_EQ(odr->GetNumOfRoads(), 1);
+
+    road = odr->GetRoadById(1);
+    EXPECT_EQ(road->GetId(), 1);
+    lane_section = road->GetLaneSectionByIdx(0);
+    EXPECT_EQ(lane_section->GetLaneById(3)->IsRoadEdge(), false);
+    EXPECT_EQ(lane_section->GetLaneById(2)->IsRoadEdge(), false);
+    EXPECT_EQ(lane_section->GetLaneById(1)->IsRoadEdge(), true);
+    EXPECT_EQ(lane_section->GetLaneById(0)->IsRoadEdge(), false);
+    EXPECT_EQ(lane_section->GetLaneById(-1)->IsRoadEdge(), true);
+    EXPECT_EQ(lane_section->GetLaneById(-2)->IsRoadEdge(), false);
+    EXPECT_EQ(lane_section->GetLaneById(-3)->IsRoadEdge(), false);
+
+    odr->Clear();
+}
 
 
 // Uncomment to print log output to console

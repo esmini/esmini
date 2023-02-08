@@ -558,8 +558,8 @@ namespace roadmanager
 		} LaneType;
 
 		// Construct & Destruct
-		Lane() : id_(0), type_(LaneType::LANE_TYPE_NONE), level_(0), global_id_(0), lane_boundary_(0) {}
-		Lane(int id, Lane::LaneType type) : id_(id), type_(type), level_(1), global_id_(0), lane_boundary_(0) {}
+		Lane() : id_(0), type_(LaneType::LANE_TYPE_NONE), level_(0), global_id_(0), lane_boundary_(0), road_edge_(false) {}
+		Lane(int id, Lane::LaneType type) : id_(id), type_(type), level_(1), global_id_(0), lane_boundary_(0), road_edge_(false) {}
 		~Lane()
 		{
 			for (size_t i = 0; i < link_.size(); i++)
@@ -627,6 +627,8 @@ namespace roadmanager
 		int GetOSIIntersectionId() { return osiintersection_; }
 		void Print();
 		OSIPoints osi_points_;
+		void SetRoadEdge(bool value) { road_edge_ = value; }
+		bool IsRoadEdge() { return road_edge_; }
 
 	private:
 		int id_;			  // center = 0, left > 0, right < 0
@@ -638,6 +640,7 @@ namespace roadmanager
 		std::vector<LaneWidth*> lane_width_;
 		std::vector<LaneRoadMark*> lane_roadMark_;
 		LaneBoundaryOSI* lane_boundary_;
+		bool road_edge_;  // indicates whether this is edge of the paved road (used for OSI ROAD_EDGE)
 	};
 
 	class LaneSection

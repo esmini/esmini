@@ -1384,8 +1384,18 @@ int OSIReporter::UpdateOSILaneBoundary()
 							//boundary_point->set_height(laneroadmark->GetHeight());
 						}
 
-						osi3::LaneBoundary_Classification_Type classific_type = osi3::LaneBoundary_Classification_Type::LaneBoundary_Classification_Type_TYPE_NO_LINE;
-						osi_laneboundary->mutable_classification()->set_type(classific_type);
+						if (lane->IsRoadEdge())
+						{
+							osi_laneboundary->mutable_classification()->set_type(
+								osi3::LaneBoundary_Classification_Type::LaneBoundary_Classification_Type_TYPE_ROAD_EDGE
+							);
+						}
+						else
+						{
+							osi_laneboundary->mutable_classification()->set_type(
+								osi3::LaneBoundary_Classification_Type::LaneBoundary_Classification_Type_TYPE_NO_LINE
+							);
+						}
 
 						osi3::LaneBoundary_Classification_Color classific_col = osi3::LaneBoundary_Classification_Color::LaneBoundary_Classification_Color_COLOR_UNKNOWN;
 						osi_laneboundary->mutable_classification()->set_color(classific_col);

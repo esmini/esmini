@@ -3363,6 +3363,7 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 							LOG("Unsupported lane side: %s", child2->name());
 							continue;
 						}
+
 						for (pugi::xml_node_iterator lane_node = child2->children().begin(); lane_node != child2->children().end(); lane_node++)
 						{
 							if (strcmp(lane_node->name(), "lane"))
@@ -3765,17 +3766,60 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 							}
 						}
 					}
-					// Check lane indices
+					// Check lane indices and identify road edge
+
+					int last_road_lane_right_id = 0;
+					int last_road_lane_left_id = 0;
+
 					int lastLaneId = 0;
 					for (int i = 0; i < lane_section->GetNumberOfLanes(); i++)
 					{
-						int laneId = lane_section->GetLaneByIdx(i)->GetId();
-						if (i > 0 && laneId != lastLaneId - 1)
+						Lane* lane = lane_section->GetLaneByIdx(i);
+
+						if (i > 0 && lane->GetId() != lastLaneId - 1)
 						{
 							LOG("Warning: expected laneId %d missing of roadId %d. Found laneIds %d and %d",
-								lastLaneId - 1, r->GetId(), lastLaneId, laneId);
+								lastLaneId - 1, r->GetId(), lastLaneId, lane->GetId());
 						}
-						lastLaneId = laneId;
+						lastLaneId = lane->GetId();
+
+						if (lane->GetLaneType() & roadmanager::Lane::LaneType::LANE_TYPE_ANY_ROAD)
+						{
+							if (lane->GetId() < 0)
+							{
+								if (lane->GetId() < last_road_lane_right_id)
+								{
+									last_road_lane_right_id = lane->GetId();
+								}
+							}
+							else if (lane->GetId() > 0)
+							{
+								if (lane->GetId() > last_road_lane_left_id)
+								{
+									last_road_lane_left_id = lane->GetId();
+								}
+							}
+							else
+							{
+								LOG("Unexpected lane id %d", lane->GetId());
+							}
+						}
+					}
+
+					if (last_road_lane_right_id < 0)
+					{
+						lane_section->GetLaneById(last_road_lane_right_id)->SetRoadEdge(true);
+					}
+
+					if (last_road_lane_left_id > 0)
+					{
+						lane_section->GetLaneById(last_road_lane_left_id)->SetRoadEdge(true);
+					}
+
+					if (last_road_lane_right_id == 0 || last_road_lane_left_id == 0)
+					{
+						// at least one side of reference lane is empty, set as road boundary
+						lane_section->GetLaneById(0)->SetRoadEdge(true);
 					}
 				}
 				else
