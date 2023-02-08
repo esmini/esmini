@@ -69,7 +69,7 @@ int main(int argc, char* argv[])
 			else
 			{
 				SE_ReportObjectPos(cars[i].id, 0.0f, static_cast<float>(cars[i].x), -1.5f, 0.0f, 0.0f, 0.0f, 0.0f);
-				SE_ReportObjectSpeed(cars[i].id, speed);
+				SE_ReportObjectSpeed(cars[i].id, static_cast<float>(speed));
 			}
 		}
 
