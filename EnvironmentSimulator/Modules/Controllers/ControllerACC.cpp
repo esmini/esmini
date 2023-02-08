@@ -18,6 +18,7 @@
 #include "CommonMini.hpp"
 #include "Entities.hpp"
 #include "ScenarioGateway.hpp"
+#include "playerbase.hpp"
 
 using namespace scenarioengine;
 
@@ -155,6 +156,12 @@ void ControllerACC::Step(double timeStep)
 			currentSpeed_ += acc * timeStep;
 			currentSpeed_ = MAX(0.0, currentSpeed_);
 		}
+
+		object_->SetSensorPosition(
+			entities_->object_[static_cast<unsigned int>(minObjIndex)]->pos_.GetX(),
+			entities_->object_[static_cast<unsigned int>(minObjIndex)]->pos_.GetY(),
+			entities_->object_[static_cast<unsigned int>(minObjIndex)]->pos_.GetZ()
+		);
 	}
 	else
 	{
@@ -169,6 +176,8 @@ void ControllerACC::Step(double timeStep)
 		{
 			currentSpeed_ = tmpSpeed;
 		}
+
+		object_->SetSensorPosition(object_->pos_.GetX(), object_->pos_.GetY(), object_->pos_.GetZ());
 	}
 
 	if (mode_ == Mode::MODE_OVERRIDE)
@@ -196,6 +205,11 @@ void ControllerACC::Activate(ControlDomains domainMask)
 	{
 		// Make sure heading is aligned with road driving direction
 		object_->pos_.SetHeadingRelative((object_->pos_.GetHRelative() > M_PI_2 && object_->pos_.GetHRelative() < 3 * M_PI_2) ? M_PI : 0.0);
+	}
+
+	if (player_)
+	{
+		player_->SteeringSensorSetVisible(object_->GetId(), true);
 	}
 }
 

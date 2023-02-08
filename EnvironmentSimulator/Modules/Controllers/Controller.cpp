@@ -24,7 +24,8 @@ Controller* scenarioengine::InstantiateController(void* args)
 	return new Controller(static_cast<Controller::InitArgs*>(args));
 }
 
-Controller::Controller(InitArgs* args) : domain_(ControlDomains::DOMAIN_NONE), mode_(Controller::Mode::MODE_OVERRIDE), object_(0)
+Controller::Controller(InitArgs* args) : domain_(ControlDomains::DOMAIN_NONE), mode_(Controller::Mode::MODE_OVERRIDE),
+	object_(0), entities_(0), gateway_(0), scenario_engine_(0), player_(0)
 {
 	if (args)
 	{

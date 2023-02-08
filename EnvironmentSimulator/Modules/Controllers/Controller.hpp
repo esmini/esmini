@@ -23,6 +23,7 @@
 namespace scenarioengine
 {
 	// Forward declarations
+	class ScenarioPlayer;
 	class ScenarioGateway;
 	class ScenarioEngine;
 	class Entities;
@@ -78,7 +79,7 @@ namespace scenarioengine
 			Parameters* parameters;
 		} InitArgs;
 
-		Controller() : entities_(0), gateway_(0), scenario_engine_(0) {}
+		Controller() : object_(0), entities_(0), gateway_(0), scenario_engine_(0), player_(0) {}
 		Controller(InitArgs* args);
 		virtual ~Controller() = default;
 
@@ -93,6 +94,7 @@ namespace scenarioengine
 		virtual void Init() {};
 		virtual void ReportKeyEvent(int key, bool down);
 		virtual void SetScenarioEngine(ScenarioEngine* scenario_engine) { scenario_engine_ = scenario_engine; };
+		virtual void SetPlayer(ScenarioPlayer* player) { player_ = player; };
 
 		// Base class Step function should be called from derived classes
 		virtual void Step(double timeStep);
@@ -117,6 +119,7 @@ namespace scenarioengine
 		Entities* entities_;
 		ScenarioGateway* gateway_;
 		ScenarioEngine* scenario_engine_;
+		ScenarioPlayer* player_;
 	};
 
 	typedef Controller* (*ControllerInstantiateFunction) (void* args);

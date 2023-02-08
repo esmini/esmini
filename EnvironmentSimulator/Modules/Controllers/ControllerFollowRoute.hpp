@@ -27,9 +27,6 @@
 
 namespace scenarioengine
 {
-	class ScenarioPlayer;
-	class ScenarioEngine;
-
 	typedef enum
 	{
 		MISSED_WAYPOINT,

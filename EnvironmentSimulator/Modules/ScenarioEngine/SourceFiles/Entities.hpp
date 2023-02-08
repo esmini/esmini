@@ -321,6 +321,13 @@ namespace scenarioengine
 		void SetAngularVel(double h_vel, double p_vel, double r_vel);
 		void SetAngularAcc(double h_acc, double p_acc, double r_acc);
 
+		void SetSensorPosition(double x, double y, double z)
+		{
+			sensor_pos_[0] = x;
+			sensor_pos_[1] = y;
+			sensor_pos_[2] = z;
+		}
+
 		void SetMaxAcceleration(double maxAcceleration) { performance_.maxAcceleration = maxAcceleration; }
 		double GetMaxAcceleration() { return performance_.maxAcceleration; }
 		void SetMaxDeceleration(double maxDeceleration) { performance_.maxDeceleration = maxDeceleration; }
@@ -686,6 +693,7 @@ namespace scenarioengine
 		bool nameExists(std::string name);
 		Object* GetObjectByName(std::string name);
 		Object* GetObjectById(int id);
+		int GetObjectIdxById(int id);
 
 	private:
 		int nextId_;  // Is incremented for each new object created

@@ -377,20 +377,18 @@ void ScenarioPlayer::ViewerFrame(bool init)
 				}
 
 				viewer::MovingModel* mov = static_cast<viewer::MovingModel*>(entity);
-				if (obj->GetGhost())
+
+				if (mov->steering_sensor_ && mov->steering_sensor_->IsVisible())
 				{
-					if (mov->steering_sensor_)
-					{
-						viewer_->SensorSetPivotPos(mov->steering_sensor_, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
-						viewer_->SensorSetTargetPos(mov->steering_sensor_, obj->sensor_pos_[0], obj->sensor_pos_[1], obj->sensor_pos_[2]);
-						viewer_->UpdateSensor(mov->steering_sensor_);
-					}
-					if (mov->trail_sensor_)
-					{
-						viewer_->SensorSetPivotPos(mov->trail_sensor_, obj->trail_closest_pos_.x, obj->trail_closest_pos_.y, obj->trail_closest_pos_.z);
-						viewer_->SensorSetTargetPos(mov->trail_sensor_, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
-						viewer_->UpdateSensor(mov->trail_sensor_);
-					}
+					viewer_->SensorSetPivotPos(mov->steering_sensor_, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
+					viewer_->SensorSetTargetPos(mov->steering_sensor_, obj->sensor_pos_[0], obj->sensor_pos_[1], obj->sensor_pos_[2]);
+					viewer_->UpdateSensor(mov->steering_sensor_);
+				}
+				if (mov->trail_sensor_ && mov->steering_sensor_->IsVisible())
+				{
+					viewer_->SensorSetPivotPos(mov->trail_sensor_, obj->trail_closest_pos_.x, obj->trail_closest_pos_.y, obj->trail_closest_pos_.z);
+					viewer_->SensorSetTargetPos(mov->trail_sensor_, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
+					viewer_->UpdateSensor(mov->trail_sensor_);
 				}
 
 				if (odr_manager->GetNumOfRoads() > 0 && mov->road_sensor_)
@@ -867,6 +865,15 @@ int ScenarioPlayer::InitViewer()
 		viewer_->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_ENTITY_BB);
 	}
 
+	//  Create relation between controllers and player
+	for (size_t i = 0; i < scenarioEngine->entities_.object_.size(); i++)
+	{
+		if (scenarioEngine->entities_.object_[i]->controller_)
+		{
+			scenarioEngine->entities_.object_[i]->controller_->SetPlayer(this);
+		}
+	}
+
 	//  Create visual models
 	for (size_t i = 0; i < scenarioEngine->entities_.object_.size(); i++)
 	{
@@ -893,9 +900,7 @@ int ScenarioPlayer::InitViewer()
 
 		//  Create vehicles for visualization
 		bool road_sensor = false;
-		if (obj->GetGhost() ||
-			obj->GetAssignedControllerType() == Controller::Type::CONTROLLER_TYPE_INTERACTIVE ||
-			obj->GetAssignedControllerType() == Controller::Type::CONTROLLER_TYPE_EXTERNAL)
+		if (obj->GetGhost() || obj->GetAssignedControllerType() != Controller::Type::CONTROLLER_TYPE_DEFAULT)
 		{
 			road_sensor = true;
 		}
@@ -1034,6 +1039,28 @@ void ScenarioPlayer::AddOSIDetection(int object_index)
 			mutex.Unlock();
 		}
 #endif // _USE_OSI
+	}
+#endif
+}
+
+void ScenarioPlayer::SteeringSensorSetVisible(int object_index, bool value)
+{
+#ifdef _USE_OSG
+	int obj_index = scenarioEngine->entities_.GetObjectIdxById(object_index);
+	if (obj_index >= 0)
+	{
+		viewer::EntityModel* m = viewer_->entities_[obj_index];
+		if (m->IsMoving())
+		{
+			if (value == true)
+			{
+				reinterpret_cast<viewer::MovingModel*>(m)->steering_sensor_->Show();
+			}
+			else
+			{
+				reinterpret_cast<viewer::MovingModel*>(m)->steering_sensor_->Hide();
+			}
+		}
 	}
 #endif
 }

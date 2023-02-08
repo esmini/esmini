@@ -249,6 +249,7 @@ namespace viewer
 		PointSensor() : ball_(0), line_(0), line_vertex_data_(0) {};
 		void Show() { group_->setNodeMask(NODE_MASK_ROAD_SENSORS); }
 		void Hide() { group_->setNodeMask(0x0); };
+		bool IsVisible() { return group_->getNodeMask() & NODE_MASK_ROAD_SENSORS; }
 	};
 
 	class OnScreenText

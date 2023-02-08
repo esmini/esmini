@@ -36,6 +36,13 @@ namespace vehicle
 		void Update(double dt);
 		void DrivingControlTarget(double dt, double target_speed, double heading_to_target);
 		void DrivingControlBinary(double dt, THROTTLE throttle, STEERING steering);
+
+		/**
+			Update vehicle in terms of continuous throttle, brake and steering values
+			@param dt Timestep (sec)
+			@param throttle Acceleration (>0) or deceleration (<0) level in the range(-1, 1)
+			@param steering Steering output left (>0) or right (<0) in the range(-1, 1)
+		*/
 		void DrivingControlAnalog(double dt, double throttle, double steering);
 		void SetWheelAngle(double angle);
 		void SetWheelRotation(double rotation);

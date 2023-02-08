@@ -130,8 +130,8 @@ int Object::GetAssignedControllerType()
 	}
 	else
 	{
-		// Report 0 if not assigned or not activated on any domain
-		return 0;
+		// Report 0 (DefaultController) if not assigned or not activated on any domain
+		return Controller::Type::CONTROLLER_TYPE_DEFAULT;
 	}
 }
 
@@ -1462,6 +1462,19 @@ Object* Entities::GetObjectById(int id)
 	LOG("Failed to find object with id %d", id);
 
 	return 0;
+}
+
+int Entities::GetObjectIdxById(int id)
+{
+	for (size_t i = 0; i < object_.size(); i++)
+	{
+		if (object_[i]->GetId() == id)
+		{
+			return static_cast<int>(i);
+		}
+	}
+
+	return -1;
 }
 
 void Object::removeEvent(Event* event)

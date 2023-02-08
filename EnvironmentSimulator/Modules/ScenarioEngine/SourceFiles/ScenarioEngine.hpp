@@ -46,7 +46,7 @@ namespace scenarioengine
 	enum class GhostMode
 	{
 		NORMAL,
-		RESTART,     // the frame ghost is requested to restart
+		RESTART,    // the frame ghost is requested to restart
 		RESTARTING  // ghost restart is ongoing, including the final restart timestep
 	};
 
