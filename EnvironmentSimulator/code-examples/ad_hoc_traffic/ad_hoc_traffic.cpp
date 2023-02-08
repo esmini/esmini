@@ -29,7 +29,7 @@ int main(int argc, char* argv[])
 	}
 
 	std::vector<Car> cars;
-	const double speed = 200.0 / 3.6;
+	const double speed = 100.0 / 3.6;
 	const double distance = 40.0;
 
 	int counter = 0;
@@ -58,7 +58,7 @@ int main(int argc, char* argv[])
 
 		for (unsigned int i = 0; i<cars.size(); i++)
 		{
-			cars[i].x += speed * timestamp_now - timestamp_old;
+			cars[i].x += speed * (timestamp_now - timestamp_old);
 			if (cars[i].x > 500)
 			{
 				printf("Removing car with id %d\n", cars[i].id);
@@ -69,6 +69,7 @@ int main(int argc, char* argv[])
 			else
 			{
 				SE_ReportObjectPos(cars[i].id, 0.0f, static_cast<float>(cars[i].x), -1.5f, 0.0f, 0.0f, 0.0f, 0.0f);
+				SE_ReportObjectSpeed(cars[i].id, speed);
 			}
 		}
 

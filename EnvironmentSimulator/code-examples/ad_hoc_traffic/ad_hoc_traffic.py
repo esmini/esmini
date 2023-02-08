@@ -27,6 +27,10 @@ se.SE_ReportObjectPos.argtypes = [
         ctypes.c_float,
         ctypes.c_float
     ]
+se.SE_ReportObjectSpeed.argtypes = [
+        ctypes.c_int,
+        ctypes.c_float
+    ]
 
 # Define class Car to hold id and current position
 class Car():
@@ -38,7 +42,7 @@ se.SE_AddPath(b"../../../resources")
 se.SE_Init(b"../../../EnvironmentSimulator/code-examples/ad_hoc_traffic/empty_scenario.xosc", 1, 1, 0, 0)
 
 cars = []  # list of cars
-speed = 200.0 / 3.6
+speed = 100.0 / 3.6
 distance = 40.0
 
 counter = 0
@@ -67,8 +71,9 @@ while (timestamp_now < 30.0 and not se.SE_GetQuitFlag() == 1):
             i -= 1
         else:
             se.SE_ReportObjectPos(cars[i].id, 0.0, cars[i].x_pos, -1.5, 0.0, 0.0, 0.0, 0.0, speed)
+            se.SE_ReportObjectSpeed(cars[i].id, speed)
         i += 1
-    
+
     se.SE_Step()
     timestamp_old = timestamp_now
     timestamp_now = se.SE_GetSimulationTime()
