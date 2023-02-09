@@ -13,15 +13,15 @@
    <ParameterDeclarations>
       <ParameterDeclaration name="HostVehicle" parameterType="string" value="car_white"/>
       <ParameterDeclaration name="TargetVehicle" parameterType="string" value="car_red"/>
-      <ParameterDeclaration name="EgoSpeed" parameterType="double" value="30"/>
-      <ParameterDeclaration name="TargetSpeed" parameterType="double" value="20"/>
-      <ParameterDeclaration name="EgoS" parameterType="double" value="00"/>
-      <ParameterDeclaration name="TargetS" parameterType="double" value="170"/>
+      <ParameterDeclaration name="EgoSpeed" parameterType="double" value="120"/>
+      <ParameterDeclaration name="TargetSpeed" parameterType="double" value="30"/>
+      <ParameterDeclaration name="EgoS" parameterType="double" value="20"/>
+      <ParameterDeclaration name="TargetS" parameterType="double" value="140"/>
       <ParameterDeclaration name="LaneChange1Time" parameterType="double" value="5"/>
-      <ParameterDeclaration name="LaneChange2Time" parameterType="double" value="10"/>
-      <ParameterDeclaration name="BrakeTime" parameterType="double" value="15"/>
-      <ParameterDeclaration name="AccelerateTime" parameterType="double" value="21"/>
-      <ParameterDeclaration name="Brake2Time" parameterType="double" value="25"/>
+      <ParameterDeclaration name="LaneChange2Time" parameterType="double" value="7"/>
+      <ParameterDeclaration name="BrakeTime" parameterType="double" value="11"/>
+      <ParameterDeclaration name="AccelerateTime" parameterType="double" value="17"/>
+      <ParameterDeclaration name="Brake2Time" parameterType="double" value="20"/>
    </ParameterDeclarations>
    <CatalogLocations>
       <VehicleCatalog>
@@ -32,7 +32,7 @@
 	  </ControllerCatalog>
    </CatalogLocations>
    <RoadNetwork>
-      <LogicFile filepath="../xodr/road_straight_curve_junction.xodr"/>
+      <LogicFile filepath="../../EnvironmentSimulator/Unittest/xodr/straight_3000m.xodr"/>
       <!-- <SceneGraphFile filepath="../models/straight_500m.osgb"/> -->
    </RoadNetwork>
    <Entities>
@@ -42,7 +42,7 @@
             <Controller name="LoomingController">
             <!-- <Controller name="ACCController"> -->
                 <Properties>
-                    <Property name="timeGap" value="3.0" />
+                    <Property name="timeGap" value="1.0" />
                     <Property name="mode" value="override" />
                     <Property name="setSpeed" value="${$EgoSpeed / 3.6}" />
                 </Properties>
@@ -55,6 +55,18 @@
             <!-- <CatalogReference catalogName="ControllerCatalog" entryName="interactiveDriver" /> -->
          <!-- </ObjectController> -->
       </ScenarioObject>
+      <ScenarioObject name="Target1">
+         <CatalogReference catalogName="VehicleCatalog" entryName="$TargetVehicle"/>
+      </ScenarioObject>
+      <ScenarioObject name="Target2">
+         <CatalogReference catalogName="VehicleCatalog" entryName="$TargetVehicle"/>
+      </ScenarioObject>
+      <ScenarioObject name="Target3">
+         <CatalogReference catalogName="VehicleCatalog" entryName="$TargetVehicle"/>
+      </ScenarioObject>
+      <ScenarioObject name="Target4">
+         <CatalogReference catalogName="VehicleCatalog" entryName="$TargetVehicle"/>
+      </ScenarioObject>
    </Entities>
    <Storyboard>
       <Init>
@@ -63,7 +75,7 @@
                <PrivateAction>
                   <TeleportAction>
                      <Position>
-                        <LanePosition roadId="0" laneId="-1" offset="0" s="$EgoS"/>
+                        <LanePosition roadId="1" laneId="-1" offset="0" s="$EgoS"/>
                      </Position>
                   </TeleportAction>
                </PrivateAction>
@@ -85,7 +97,95 @@
                <PrivateAction>
                   <TeleportAction>
                      <Position>
-                        <LanePosition roadId="0" laneId="-1" offset="0" s="$TargetS"/>
+                        <LanePosition roadId="1" laneId="-1" offset="0" s="$TargetS"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                    <ActivateControllerAction longitudinal="true" lateral="true" />
+               </PrivateAction>
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="${$TargetSpeed / 3.6}"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>               
+            </Private>
+            <Private entityRef="Target1">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="1" laneId="-2" offset="0" s="120"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                    <ActivateControllerAction longitudinal="true" lateral="true" />
+               </PrivateAction>
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="${$TargetSpeed / 3.6}"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>               
+            </Private>
+            <Private entityRef="Target2">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="1" laneId="-3" offset="0" s="10"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                    <ActivateControllerAction longitudinal="true" lateral="true" />
+               </PrivateAction>
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="${$TargetSpeed / 3.6}"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>               
+            </Private>
+            <Private entityRef="Target3">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="1" laneId="2" offset="0" s="450"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                    <ActivateControllerAction longitudinal="true" lateral="true" />
+               </PrivateAction>
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="${$TargetSpeed / 3.6}"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>               
+            </Private>
+            <Private entityRef="Target4">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="1" laneId="3" offset="0" s="300"/>
                      </Position>
                   </TeleportAction>
                </PrivateAction>
@@ -122,7 +222,7 @@
                               <LaneChangeAction>
                                  <LaneChangeActionDynamics dynamicsShape="sinusoidal" value="1.5" dynamicsDimension="time"/>
                                  <LaneChangeTarget>
-                                    <RelativeTargetLane entityRef="Ego" value="1"/>
+                                    <RelativeTargetLane entityRef="Ego" value="-1"/>
                                  </LaneChangeTarget>
                               </LaneChangeAction>
                            </LateralAction>

@@ -12,7 +12,7 @@
                author="esmini-team"/>
    <ParameterDeclarations>
       <ParameterDeclaration name="HostVehicle" parameterType="string" value="car_white"/>
-      <ParameterDeclaration name="EgoSpeed" parameterType="double" value="60"/>
+      <ParameterDeclaration name="EgoSpeed" parameterType="double" value="40"/>
       <ParameterDeclaration name="EgoS" parameterType="double" value="00"/>
    </ParameterDeclarations>
    <CatalogLocations>
@@ -24,7 +24,7 @@
 	  </ControllerCatalog>
    </CatalogLocations>
    <RoadNetwork>
-      <LogicFile filepath="../xodr/curves.xodr"/>
+      <LogicFile filepath="../xodr/road_straight_curve_junction.xodr"/>
       <!-- <SceneGraphFile filepath="../models/straight_500m.osgb"/> -->
    </RoadNetwork>
    <Entities>
@@ -49,7 +49,7 @@
                <PrivateAction>
                   <TeleportAction>
                      <Position>
-                        <LanePosition roadId="1" laneId="-1" offset="0" s="$EgoS"/>
+                        <LanePosition roadId="0" laneId="-1" offset="0" s="$EgoS"/>
                      </Position>
                   </TeleportAction>
                </PrivateAction>

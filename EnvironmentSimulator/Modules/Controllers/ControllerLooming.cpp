@@ -19,6 +19,7 @@
 #include "Entities.hpp"
 #include "ScenarioEngine.hpp"
 #include "ScenarioGateway.hpp"
+#include "playerbase.hpp"
 
 using namespace scenarioengine;
 
@@ -47,45 +48,145 @@ ControllerLooming::ControllerLooming(InitArgs* args) : Controller(args), active_
 void ControllerLooming::Step(double timeStep)
 {
 	// looming controller properties
-	double const nearPointDistance = 10.0;
-	double const farPointDistance = 80.0;
-	double const carFollowingThreshold = 1.0;
 	double k0 = 1.8;
 	double k1 = 1.3;
 	double k2 = 1.5;
+	double const nearPointDistance = 10.0;
+	double const farPointDistance = 80.0;
+	double const carFollowingThreshold = 1.0;
 
+	double farAngle = 0.0;
+	double far_x = 0.0;
+	double far_y = 0.0;
+	double farTanS = 0.0;
 
 	double minGapLength = LARGE_NUMBER;
 	int minObjIndex = -1;
 	const double minDist = 3.0;  // minimum distance to keep to lead vehicle
 	const double minLateralDist = 5.0;
+	bool hasFarTan = false;
 
-	double far_x = 0.0;
-	double far_y = 0.0;
-	double near_x = 0.0;
-	double near_y = 0.0;
 
 	currentSpeed_ = object_->GetSpeed();
-
-
+	
 	roadmanager::RoadProbeInfo s_data;
 	// fixed near point
 	object_->pos_.GetProbeInfo(nearPointDistance, &s_data, roadmanager::Position::LookAheadMode::LOOKAHEADMODE_AT_LANE_CENTER);
-	nearAngle = s_data.relative_h;
+	double nearAngle = s_data.relative_h;
 
-	near_x = s_data.road_lane_info.pos[0];
-	near_y = s_data.road_lane_info.pos[1];
+	// double near_x = s_data.road_lane_info.pos[0];
+	// double near_y = s_data.road_lane_info.pos[1];
 
-	// dynamic far point-default points are road points
-	object_->pos_.GetProbeInfo(farPointDistance, &s_data, roadmanager::Position::LookAheadMode::LOOKAHEADMODE_AT_LANE_CENTER);
-	farAngle = s_data.relative_h;
+	roadmanager::OpenDrive* odr = roadmanager::Position::GetOpenDrive();
+	if (odr != NULL)
+	{
+		roadmanager::Road* road = odr->GetRoadById(object_->pos_.GetTrackId());
+		double dist = 0.0;
+		roadmanager::Road* roadTemp = road;
+		while ( dist < farPointDistance)
+		{
+			roadmanager::LaneSection* lsec = nullptr;
+			if (dist < SMALL_NUMBER) // first time 
+			{
+				lsec = roadTemp->GetLaneSectionByS(object_->pos_.GetS());
+			} 
+			else
+			{
+				roadmanager::RoadLink* roadLink = roadTemp->GetLink(roadmanager::LinkType::SUCCESSOR);
+				roadTemp = odr->GetRoadById(roadLink->GetElementId());
+				lsec = roadTemp->GetLaneSectionByS(0);
+				// todo depand on the direction pick s value
+			}
+			roadmanager::Lane* lane = lsec->GetLaneById(object_->pos_.GetLaneId());
+			std::vector<roadmanager::PointStruct> osi_points = lane->GetOSIPoints()->GetPoints();
+			double disS_left = -1.0;
+			
+			for (int m = 1; m < 3; m++)  // m==1: Left, m==2: Right
+			{
+				int counter = 0;
+				double prevAngleDif = 0.0;
+				double tmpPrevFarAngle = 0.0;
 
-	far_x = s_data.road_lane_info.pos[0];
-	far_y = s_data.road_lane_info.pos[1];
-	LOG("near: %.2f, %.2f", near_x, near_y);
+				for (size_t k=0; k < osi_points.size(); k++)
+				{
+					if (dist + osi_points[k].s > farPointDistance + object_->pos_.GetS())
+					{
+						break;
+					}
+					else if (m == 2 && disS_left > 0 && dist + osi_points[k].s > disS_left)
+					{
+						break;
+					}
+					else if (osi_points[k].s  > object_->pos_.GetS())
+					{
+						LOG("egoPosi: %.10f", object_->pos_.GetS());
+						LOG("disBtwFarAndEgo: %.2f",osi_points[k].s  - object_->pos_.GetS());
+						double xr = 0.0, yr = 0.0;
+						double local_x = 0.0;
+						double local_y = (m == 1 ? +1 : -1) * road->GetLaneWidthByS(osi_points[k].s , object_->pos_.GetLaneId())/2;
+
+						RotateVec2D(local_x, local_y, osi_points[k].h, xr, yr);
+						double farX = osi_points[k].x + xr;
+						double farY = osi_points[k].y + yr;
+						farAngle = GetAngleInIntervalMinusPIPlusPI(atan2(farY - object_->pos_.GetY() , farX - object_->pos_.GetX()));
+						printf("far x %.2f y %.2f angle %.2f\n", farX, farY, farAngle);
+				
+						if (counter > 0)
+						{
+							angleDif = GetAngleDifference(farAngle, tmpPrevFarAngle);
+							LOG("angleDiff: %.10f", angleDif);
+							if (counter > 1)
+							{
+								LOG("prevAngleDif: %.10f", prevAngleDif);
+								if (SIGN(angleDif)!=SIGN(prevAngleDif))
+								{
+									LOG("farFinalTanAngle: %.2f", farAngle);
+									if (m == 1)
+									{
+										disS_left = osi_points[k].s ;
+									}
+
+									far_x = farX;
+									far_y = farY;
+									farTanS = osi_points[k].s - object_->pos_.GetS();
+									hasFarTan = true;
+									break;
+								}
+							}
+							prevAngleDif = angleDif;
+						}
+						tmpPrevFarAngle = farAngle;
+						LOG("farTanAngle: %.10f", farAngle);
+						LOG("farTanPrevAngle: %.10f", tmpPrevFarAngle);
+						counter += 1;
+					}
+				}
+			}
+			if (dist < SMALL_NUMBER) // first time 
+			{
+				dist += roadTemp->GetLength() - object_->pos_.GetS();
+				// todo depand on the direction pick s value
+			} 
+			else
+			{
+				// todo depand on the direction pick s value
+				dist += roadTemp->GetLength();
+			}
+		}
+	}
+
+	if (!hasFarTan)
+	{
+		// dynamic far point-default points are road points
+		object_->pos_.GetProbeInfo(farPointDistance, &s_data, roadmanager::Position::LookAheadMode::LOOKAHEADMODE_AT_LANE_CENTER);
+		farAngle = s_data.relative_h;
+		LOG("farAngleNoTan: %.10f", farAngle);
+
+		far_x = s_data.road_lane_info.pos[0];
+		far_y = s_data.road_lane_info.pos[1];
+		// LOG("near: %.2f, %.2f", near_x, near_y);
+	}
 	
-
-
 	for (size_t i = 0; i < entities_->object_.size(); i++)
 	{
 
@@ -127,19 +228,20 @@ void ControllerLooming::Step(double timeStep)
 				// find far point from lead as reference, if lead <= farPointDistance(80) m
 				if (minGapLength <= farPointDistance)
 				{
-					double angle = atan2(object_->pos_.GetX() - pivot_obj->pos_.GetX(), object_->pos_.GetY() - pivot_obj->pos_.GetY()) - object_->pos_.GetH();
-					farAngle = checkAngle(angle);
+					if (hasFarTan && farTanS < minGapLength) // use lowest point if both lead points and road tan points detected
+					{
+						break;
+					}
+					farAngle = GetAngleInIntervalMinusPIPlusPI(atan2(object_->pos_.GetY() - pivot_obj->pos_.GetY() , object_->pos_.GetX() - pivot_obj->pos_.GetX()) - object_->pos_.GetH());
 					LOG("new far: %.2f, %.2f\n", pivot_obj->pos_.GetX(), pivot_obj->pos_.GetY());
+						far_x = pivot_obj->pos_.GetX();
+						far_y = pivot_obj->pos_.GetY();
 				}
-				else
-				{
-					LOG("far: %.2f, %.2f\n", far_x, far_y);
-				}
-
+				
+				// for close vehicle
 				if (minGapLength < carFollowingThreshold)
 				{
-					double angle = atan2(object_->pos_.GetX() - pivot_obj->pos_.GetX(), object_->pos_.GetY() - pivot_obj->pos_.GetY()) - object_->pos_.GetH();
-					farAngle = checkAngle(angle);
+					farAngle = GetAngleInIntervalMinusPIPlusPI(atan2(object_->pos_.GetX() - pivot_obj->pos_.GetX(), object_->pos_.GetY() - pivot_obj->pos_.GetY()) - object_->pos_.GetH());
 				}
 			}
 		}
@@ -161,7 +263,7 @@ void ControllerLooming::Step(double timeStep)
 			double dvMin = currentSpeed_ - MIN(setSpeed_, entities_->object_[static_cast<unsigned int>(minObjIndex)]->GetSpeed());
 			double dvSet = currentSpeed_ - setSpeed_;
 
-			acc = 2.5 * distFactor - distFactor * dvSet - (1-distFactor) * dvMin;   // weighted combination of relative distance and speed
+			acc = distFactor - distFactor * dvSet - (1-distFactor) * dvMin;   // weighted combination of relative distance and speed
 
 		}
 	}
@@ -169,15 +271,14 @@ void ControllerLooming::Step(double timeStep)
 	{
 		// no lead vehicle to adapt to, adjust according to setSpeed
 		acc = setSpeed_ - currentSpeed_;
-		LOG("far: %.2f, %.2f\n", far_x, far_y);
+		// LOG("far: %.2f, %.2f\n", far_x, far_y);
 
 	}
 
-	LOG("Current speed: %.2f", currentSpeed_);
-	LOG("Setspeed: %.2f", setSpeed_);
-	LOG("acc %.2f", acc);
+	// LOG("Current speed: %.2f", currentSpeed_);
+	// LOG("Setspeed: %.2f", setSpeed_);
+	// LOG("acc %.2f", CLAMP(acc,-1,1));
 	
-
 	if (timeStep > SMALL_NUMBER)
 	{
 		double nearAngleDot = (nearAngle - prevNearAngle)/timeStep;
@@ -187,7 +288,7 @@ void ControllerLooming::Step(double timeStep)
 		// scale (90 degrees) and truncate 
 		steering = steering / M_PI_4;
 		steering = CLAMP(steering, -1, 1);
-		LOG("steering %.2f", steering);
+		LOG("steering %.2f\n", steering);
 	}
 	prevNearAngle = nearAngle;
 	prevFarAngle = farAngle;
@@ -202,8 +303,12 @@ void ControllerLooming::Step(double timeStep)
 	object_->sensor_pos_[0] = far_x;
 	object_->sensor_pos_[1] = far_y;
 
-
-
+	object_->SetSensorPosition(
+		far_x,
+		far_y,
+		0.0
+	);
+	
 	Controller::Step(timeStep);
 	
 }
@@ -240,24 +345,14 @@ void ControllerLooming::Activate(ControlDomains domainMask)
 		// Make sure heading is aligned with road driving direction
 		object_->pos_.SetHeadingRelative((object_->pos_.GetHRelative() > M_PI_2 && object_->pos_.GetHRelative() < 3 * M_PI_2) ? M_PI : 0.0);
 	}
+	if (player_)
+	{
+		player_->SteeringSensorSetVisible(object_->GetId(), true);
+	}
 }
 
 void ControllerLooming::ReportKeyEvent(int key, bool down)
 {
 	(void)key;
 	(void)down;
-}
-
-double ControllerLooming::checkAngle(double angle)
-{
-	double const pi = 3.1415926535;
-	while (angle < -pi)
-	{
-        angle += 2.0 * pi;
-    }
-    while (angle > pi)
-	{
-        angle -= 2.0 * pi;
-    }
-    return angle;
 }

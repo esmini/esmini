@@ -37,7 +37,6 @@ namespace scenarioengine
 		void ReportKeyEvent(int key, bool down);
 		void SetSetSpeed(double setSpeed) { setSpeed_ = setSpeed; }
 		void Step(double timeStep);
-		double checkAngle(double angle);
 
 	private:
 		vehicle::Vehicle vehicle_;
@@ -46,14 +45,12 @@ namespace scenarioengine
 		double setSpeed_;
 		double currentSpeed_;
 		bool setSpeedSet_;
-		double nearAngle = 0.0;
-		double farAngle = 0.0;
 		double prevNearAngle = 0.0;
 		double prevFarAngle = 0.0;
 		double steering = 0.0;
-		double prevTime = 0.0;
 		double acc = 0.0;
-		double steering_rate_; 
+		double steering_rate_;
+		double angleDif = 0.0;
 	};
 	
 	Controller* InstantiateControllerLooming(void* args);
