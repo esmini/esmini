@@ -1,5 +1,32 @@
 ## esmini release notes
 
+### 2023-02-09 Version 2.29.1
+
+New features and behaviors:
+
+- Identify road edges and populate OSI accordingly
+  - Road edge is currently defined as boundary of outermost lane considered part of the road pavement
+  - Lane types currently considered part of the road pavement:
+    - DRIVING
+    - ENTRY
+    - EXIT
+    - OFF_RAMP
+    - ON_RAMP
+    - ANY_DRIVING
+    - RESTRICTED
+    - STOP
+- Count total displacement in SpeedAction dynamics ([issue #384](https://github.com/esmini/esmini/issues/384))
+  - for transition dimension = distance (fulfil speed change over specified distance), consider total sum of displacement including motion in opposite directions when speed is changing sign, e.g. from 10 to -5 m/s.
+
+Improvements and fixes:
+- Update OSI to v3.5.0 for scripts as well (forgotten about in v2.29.0)
+- Add player reference in controllers
+  - enables more control of visualization from controllers
+  - implemented example: Visualize sensor target point in acc controller (key 'o' / `--road_features on`)
+- Fix coloring of stand-in bounding boxes
+- Fix issues in ad-hoc traffic example
+- Some additional bug fixes
+
 ### 2023-02-02 Version 2.29.0
 
 New features and behaviors:
