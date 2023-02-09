@@ -672,6 +672,10 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState *objectState)
 		{
 			obj_osi_internal.mobj->mutable_vehicle_classification()->set_type(osi3::MovingObject_VehicleClassification::TYPE_HEAVY_TRUCK);
 		}
+		else if (objectState->state_.info.obj_category == static_cast<int>(Vehicle::Category::TRAILER))
+		{
+			obj_osi_internal.mobj->mutable_vehicle_classification()->set_type(osi3::MovingObject_VehicleClassification::TYPE_TRAILER);
+		}
 		else
 		{
 			obj_osi_internal.mobj->mutable_vehicle_classification()->set_type(osi3::MovingObject_VehicleClassification::TYPE_UNKNOWN);
