@@ -52,7 +52,9 @@
 #define ORTHO_FOV 1.0
 #define DEFAULT_LENGTH_FOR_CONTINUOUS_OBJS 10.0
 
-float color_green[3] = { 0.25f, 0.6f, 0.3f };
+
+
+float color_green[3] = { 0.2f, 0.6f, 0.3f };
 float color_gray[3] = { 0.7f, 0.7f, 0.7f };
 float color_dark_gray[3] = { 0.5f, 0.5f, 0.5f };
 float color_light_gray[3] = { 0.7f, 0.7f, 0.7f };
@@ -60,7 +62,7 @@ float color_red[3] = { 0.73f, 0.26f, 0.26f };
 float color_black[3] = { 0.2f, 0.2f, 0.2f };
 float color_blue[3] = { 0.25f, 0.38f, 0.7f };
 float color_yellow[3] = { 0.75f, 0.7f, 0.4f };
-float color_white[3] = { 0.90f, 0.90f, 0.85f };
+float color_white[3] = { 1.0f, 1.0f, 0.9f };
 
 USE_OSGPLUGIN(osg2)
 USE_OSGPLUGIN(jpeg)
@@ -799,7 +801,7 @@ OSIDetectedCar::OSIDetectedCar(const osg::Vec3 point, double h, double w, double
 
 	// Set color of vehicle based on its index
 	float* color = color_green;
-	float b = 1.5;  // brighness
+	float b = 1.0;  // brighness range (0,1)
 
 	material->setAmbient(osg::Material::FRONT, osg::Vec4(b * color[0], b * color[1], b * color[2], 1.0f));
 	material->setDiffuse(osg::Material::FRONT, osg::Vec4(b * color[0], b * color[1], b * color[2], 1.0f));
@@ -2074,18 +2076,18 @@ EntityModel* Viewer::CreateEntityModel(std::string modelFilepath, osg::Vec4 trai
 
 	// Make sure we have a 3D model
 	// Set color of vehicle based on its index
-	double* color;
-	double b = 1.5;  // brighness
+	float* color;
+	float b = 1.0;  // brighness
 	int index = entities_.size() % 4;
 
-	if (index == 0) color = reinterpret_cast<double*>(color_light_gray);
-	else if (index == 1) color = reinterpret_cast<double*>(color_red);
-	else if (index == 2) color = reinterpret_cast<double*>(color_blue);
-	else color = reinterpret_cast<double*>(color_yellow);
+	if (index == 0) color = color_light_gray;
+	else if (index == 1) color = color_red;
+	else if (index == 2) color = color_blue;
+	else color = color_yellow;
 
 	osg::Material* material = new osg::Material();
-	material->setDiffuse(osg::Material::FRONT, osg::Vec4(static_cast<float>(b * color[0]), static_cast<float>(b * color[1]), static_cast<float>(b * color[2]), 1.0f));
-	material->setAmbient(osg::Material::FRONT, osg::Vec4(static_cast<float>(b * color[0]), static_cast<float>(b * color[1]), static_cast<float>(b * color[2]), 1.0f));
+	material->setDiffuse(osg::Material::FRONT, osg::Vec4(b * color[0], b * color[1], b * color[2], 1.0f));
+	material->setAmbient(osg::Material::FRONT, osg::Vec4(b * color[0], b * color[1], b * color[2], 1.0f));
 	osg::ref_ptr<osg::PositionAttitudeTransform> modeltx = new osg::PositionAttitudeTransform;
 	if (modelgroup == nullptr)
 	{
