@@ -33,7 +33,6 @@ add_library(
 target_include_directories(
     ${TARGET}
     PRIVATE
-    project_options
     ${SCENARIO_ENGINE_PATH}/SourceFiles
     ${SCENARIO_ENGINE_PATH}/OSCTypeDefs
     ${COMMON_MINI_PATH}
@@ -47,6 +46,10 @@ target_include_directories(
     ${EXTERNALS_OSG_INCLUDES}
     ${EXTERNALS_OSI_INCLUDES}
     ${EXTERNALS_PUGIXML_PATH})
+
+target_link_libraries(
+    ${TARGET}
+    PRIVATE project_options)
 
 disable_static_analysis(${TARGET})
 disable_iwyu(${TARGET})

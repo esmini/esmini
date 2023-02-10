@@ -907,7 +907,8 @@ int ScenarioPlayer::InitViewer()
 
 		if (viewer_->AddEntityModel(viewer_->CreateEntityModel(obj->model3d_, trail_color,
 			obj->type_ == Object::Type::VEHICLE ? viewer::EntityModel::EntityType::VEHICLE :
-			Object::Type::PEDESTRIAN ? viewer::EntityModel::EntityType::MOVING : viewer::EntityModel::EntityType::ENTITY, // TODO: @Emil
+			obj->type_ == Object::Type::PEDESTRIAN ? viewer::EntityModel::EntityType::MOVING :
+			viewer::EntityModel::EntityType::ENTITY,
 			road_sensor, obj->name_, &obj->boundingbox_, obj->scaleMode_)) != 0)
 		{
 			CloseViewer();
@@ -1049,7 +1050,7 @@ void ScenarioPlayer::SteeringSensorSetVisible(int object_index, bool value)
 	int obj_index = scenarioEngine->entities_.GetObjectIdxById(object_index);
 	if (obj_index >= 0)
 	{
-		viewer::EntityModel* m = viewer_->entities_[obj_index];
+		viewer::EntityModel* m = viewer_->entities_[static_cast<unsigned int>(obj_index)];
 		if (m->IsMoving())
 		{
 			if (value == true)
@@ -1799,4 +1800,3 @@ const char* ScenarioPlayer::GetPropertyValue(int index,int propertyIndex)
 		}
 	}
 #endif
-
