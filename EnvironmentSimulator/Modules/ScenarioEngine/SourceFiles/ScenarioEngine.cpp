@@ -465,7 +465,18 @@ int ScenarioEngine::step(double deltaSimTime)
 										}();
 										if (ghost_mode_ != GhostMode::RESTARTING || is_private_ghost)
 										{
-											event->action_[n]->Step(simulationTime_, deltaSimTime);
+											if (ghost_mode_ == GhostMode::RESTART && is_private_ghost)
+											{
+												// The very step during which the ghost is restarting the
+												// simulation time has not yet been adjusted (need to keep
+												// same simulation time all actions throughout the step)
+												// special case for the restarting ghost, which needs the adjusted time
+												event->action_[n]->Step(simulationTime_ - headstart_time_, deltaSimTime);
+											}
+											else
+											{
+												event->action_[n]->Step(simulationTime_, deltaSimTime);
+											}
 
 											active = active || (event->action_[n]->IsActive());
 										}

@@ -1387,6 +1387,19 @@ void LongSpeedProfileAction::CheckSpeed(double speed)
 	}
 }
 
+void LongSpeedProfileAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
+{
+	if (object_ == obj1)
+	{
+		object_ = obj2;
+	}
+
+	if (entity_ref_ == obj1)
+	{
+		entity_ref_ = obj2;
+	}
+}
+
 void LongSpeedProfileAction::AddSpeedSegment(double t, double v, double k, double j)
 {
 	CheckSpeed(v);

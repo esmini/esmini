@@ -334,7 +334,7 @@ namespace scenarioengine
 			LOG("");
 		}
 
-		void ReplaceObjectRefs(Object* obj1, Object* obj2) { (void)obj1; (void)obj2;}
+		void ReplaceObjectRefs(Object* obj1, Object* obj2);
 
 		void AddEntry(LongSpeedProfileAction::Entry entry) {entry_.push_back(entry); }
 		double GetStartTime() { return start_time_; }
