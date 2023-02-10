@@ -10,7 +10,8 @@ include(${CMAKE_SOURCE_DIR}/support/cmake/common/unittest.cmake)
 # ############################### Creating executable (OperatingSystem_test) #########################################
 
 if(USE_OSG)
-    set(VIEWER_LIBS_FOR_TEST ViewerBase)
+    set(VIEWER_LIBS_FOR_TEST
+        ViewerBase)
 endif()
 
 unittest(
@@ -35,6 +36,7 @@ unittest(
     RoadManager
     CommonMini
     PlayerBase
+    ScenarioEngine
     ${VIEWER_LIBS_FOR_TEST}
     ${OSG_LIBRARIES}
     ${OSI_LIBRARIES}
@@ -106,8 +108,9 @@ unittest(
     FollowRouteController_test.cpp
     ScenarioEngine
     Controllers
-    RoadManager
     PlayerBase
+    ScenarioEngine
+    RoadManager
     ${VIEWER_LIBS_FOR_TEST}
     ${OSG_LIBRARIES}
     ${OSI_LIBRARIES}
