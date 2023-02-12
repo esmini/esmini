@@ -1047,6 +1047,11 @@ void ScenarioPlayer::AddOSIDetection(int object_index)
 void ScenarioPlayer::SteeringSensorSetVisible(int object_index, bool value)
 {
 #ifdef _USE_OSG
+	if (viewer_ == nullptr)
+	{
+		return;
+	}
+
 	int obj_index = scenarioEngine->entities_.GetObjectIdxById(object_index);
 	if (obj_index >= 0)
 	{
