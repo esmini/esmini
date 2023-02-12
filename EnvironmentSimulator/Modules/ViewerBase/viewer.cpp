@@ -875,7 +875,9 @@ void VisibilityCallback::operator()(osg::Node* sa, osg::NodeVisitor* nv)
 	{
 		if (object_->visibilityMask_ & scenarioengine::Object::Visibility::GRAPHICS)
 		{
-			entity_->txNode_->getChild(0)->setNodeMask(NodeMask::NODE_MASK_ENTITY_MODEL);
+			entity_->txNode_->getChild(0)->setNodeMask(
+				NodeMask::NODE_MASK_ENTITY_MODEL |
+				viewer::NodeMask::NODE_MASK_ENTITY_BB);
 			if (object_->visibilityMask_ & scenarioengine::Object::Visibility::SENSORS)
 			{
 				entity_->SetTransparency(0.0);
@@ -892,7 +894,6 @@ void VisibilityCallback::operator()(osg::Node* sa, osg::NodeVisitor* nv)
 		}
 	}
 	object_->ClearDirtyBits(scenarioengine::Object::DirtyBit::VISIBILITY);
-
 }
 
 Trajectory::Trajectory(osg::Group* parent, osgViewer::Viewer* viewer) :
