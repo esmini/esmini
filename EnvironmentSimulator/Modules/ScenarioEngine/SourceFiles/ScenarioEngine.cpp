@@ -1150,6 +1150,7 @@ void ScenarioEngine::CreateGhostTeleport(Object* obj1, Object* obj2, Event* even
 	myNewAction->object_ = obj2;
 	myNewAction->scenarioEngine_ = this;
 	myNewAction->name_ = "AddedGhostTeleport";
+	myNewAction->SetGhostRestart(true);
 
 	event->action_.insert(event->action_.begin(), myNewAction);
 }

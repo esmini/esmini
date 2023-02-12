@@ -1583,7 +1583,7 @@ void TeleportAction::Start(double simTime, double dt)
 	OSCAction::Start(simTime, dt);
 	LOG("Starting teleport Action");
 
-	if (object_->IsGhost() && scenarioEngine_->getSimulationTime() > SMALL_NUMBER)
+	if (object_->IsGhost() && IsGhostRestart() && scenarioEngine_->getSimulationTime() > SMALL_NUMBER)
 	{
 		scenarioEngine_->SetGhostRestart();
 
@@ -1634,6 +1634,8 @@ void TeleportAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
 	{
 		object_ = obj2;
 	}
+
+	position_->ReplaceObjectRefs(&obj1->pos_, &obj2->pos_);
 }
 
 double SynchronizeAction::CalcSpeedForLinearProfile(double v_final, double time, double dist)

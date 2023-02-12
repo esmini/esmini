@@ -696,13 +696,14 @@ namespace scenarioengine
 		std::shared_ptr<OSCPosition> position_OSCPosition_;
 		roadmanager::Position *position_;
 
-		TeleportAction() : OSCPrivateAction(OSCPrivateAction::ActionType::TELEPORT, ControlDomains::DOMAIN_BOTH) {}
+		TeleportAction() : OSCPrivateAction(OSCPrivateAction::ActionType::TELEPORT, ControlDomains::DOMAIN_BOTH), ghost_restart_(false) {}
 
 		TeleportAction(const TeleportAction &action) : OSCPrivateAction(OSCPrivateAction::ActionType::TELEPORT, ControlDomains::DOMAIN_BOTH)
 		{
 			name_ = action.name_;
 			position_OSCPosition_ = action.position_OSCPosition_;
 			position_ = action.position_;
+			ghost_restart_ = action.ghost_restart_;
 		}
 
 		~TeleportAction() {
@@ -727,6 +728,12 @@ namespace scenarioengine
 		void Start(double simTime, double dt);
 
 		void ReplaceObjectRefs(Object* obj1, Object* obj2);
+		void SetGhostRestart(bool value) { ghost_restart_ = value; }
+
+	private:
+		bool ghost_restart_;
+
+		bool IsGhostRestart() { return ghost_restart_; }
 	};
 
 	class AssignRouteAction : public OSCPrivateAction
