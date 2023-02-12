@@ -35,7 +35,7 @@ Controller* scenarioengine::InstantiateControllerFollowGhost(void* args)
 }
 
 ControllerFollowGhost::ControllerFollowGhost(InitArgs* args) :
-	Controller(args), follow_mode_(FollowMode::FOLLOW_MODE_TIME)
+	Controller(args), headstart_time_(3.0), follow_mode_(FollowMode::FOLLOW_MODE_TIME)
 {
 	if (args->properties->ValueExists("headstartTime"))
 	{

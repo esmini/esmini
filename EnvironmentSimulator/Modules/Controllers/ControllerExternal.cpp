@@ -25,7 +25,7 @@ Controller* scenarioengine::InstantiateControllerExternal(void* args)
 	return new ControllerExternal(initArgs);
 }
 
-ControllerExternal::ControllerExternal(InitArgs* args) : Controller(args), useGhost_(false), headstart_time_(0.0)
+ControllerExternal::ControllerExternal(InitArgs* args) : Controller(args), useGhost_(false), headstart_time_(3.0)
 {
 	if (args && args->properties && args->properties->ValueExists("useGhost"))
 	{
