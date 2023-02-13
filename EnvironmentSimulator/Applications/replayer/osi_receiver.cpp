@@ -81,7 +81,6 @@ int main(int argc, char* argv[])
 	static unsigned short int iPortIn = OSI_OUT_PORT;   // Port for incoming packages
 	static char large_buf[MAX_MSG_SIZE];
 	socklen_t sender_addr_size = sizeof(sender_addr);
-	struct timeval tv;
 
 	// This struct must match the sender side
 	struct {
@@ -113,12 +112,13 @@ int main(int argc, char* argv[])
 	}
 
 	//set timer for receive operations
-	tv.tv_sec = 0;
-	tv.tv_usec = ES_SERV_TIMEOUT;
 #ifdef _WIN32
-	int timeout_msec = 1000 * tv.tv_sec + tv.tv_usec;
+	int timeout_msec = ES_SERV_TIMEOUT;
 	if (setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout_msec, sizeof(timeout_msec)) < 0)
 #else
+   	struct timeval tv;
+   	tv.tv_sec = ES_SERV_TIMEOUT / 1000;
+	tv.tv_usec = (ES_SERV_TIMEOUT % 1000) * 1000;
 	if (setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) == 0)
 #endif
 	{

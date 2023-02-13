@@ -85,14 +85,12 @@ UDPServer::UDPServer(unsigned short int port, unsigned int timeoutMs) :
 	UDPBase(port), timeoutMs_(timeoutMs)
 {
 	//set timer for receive operations
-	struct timeval tv;
-	tv.tv_sec = 0;
-	tv.tv_usec = timeoutMs_;
-
 #ifdef _WIN32
-	int timeout_msec = 1000 * tv.tv_sec + tv.tv_usec;
-	if (setsockopt(sock_, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout_msec, sizeof(timeout_msec)) != 0)
+	if (setsockopt(sock_, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeoutMs_, sizeof(timeoutMs_)) != 0)
 #else
+	struct timeval tv;
+	tv.tv_sec = timeoutMs_ / 1000;
+	tv.tv_usec = (timeoutMs_ % 1000) * 1000;
 	if (setsockopt(sock_, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) < 0)
 #endif
 	{
