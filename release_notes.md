@@ -1,9 +1,22 @@
 ## esmini release notes
 
+### 2023-02-13 Version 2.29.2
+
+New features and behaviors:
+- Fix wrong ParameterValueSet handling ([issue #390](https://github.com/esmini/esmini/issues/390))
+  - For each scenario run one individual parameter value set is now applied
+  - Previous behavior was to apply all value sets at once
+
+Improvements and fixes:
+- ghost fixes:
+  - fix wrong sim time in actions at ghost restart, causing corrupt SpeedProfile
+  - add default head-start time in ghost controllers
+  - Fix issue with ordinary teleport actions by ghost (no restart)
+  - restore ghost bounding box visibility
+
 ### 2023-02-09 Version 2.29.1
 
 New features and behaviors:
-
 - Identify road edges and populate OSI accordingly
   - Road edge is currently defined as boundary of outermost lane considered part of the road pavement
   - Lane types currently considered part of the road pavement:
