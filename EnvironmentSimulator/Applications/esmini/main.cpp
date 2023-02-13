@@ -51,7 +51,7 @@ static int execute_scenario(int argc, char* argv[])
 		if (player->opt.GetOptionSet("return_nr_permutations"))
 		{
 			// Skip scenario, return immediately
-			return OSCParameterDistribution::Inst().GetNumPermutations();
+			return static_cast<int>(OSCParameterDistribution::Inst().GetNumPermutations());
 		}
 	}
 	catch (const std::exception& e)
@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
 	{
 		 retval = execute_scenario(argc, argv);
 
-	} while (retval == 0 && dist.GetIndex() < dist.GetNumPermutations() - 1 && !quit);
+	} while (retval == 0 && dist.GetIndex() >= 0 && dist.GetIndex() < static_cast<int>(dist.GetNumPermutations() - 1) && !quit);
 
 	return retval;
 }

@@ -498,12 +498,12 @@ extern "C"
 
 	SE_DLL_API int SE_GetNumberOfPermutations()
 	{
-		return OSCParameterDistribution::Inst().GetNumPermutations();
+		return static_cast<int>(OSCParameterDistribution::Inst().GetNumPermutations());
 	}
 
 	SE_DLL_API int SE_SelectPermutation(int index)
 	{
-		return OSCParameterDistribution::Inst().SetRequestedIndex(index);
+		return OSCParameterDistribution::Inst().SetRequestedIndex(static_cast<unsigned int>(index));
 	}
 
 	SE_DLL_API int SE_GetPermutationIndex()

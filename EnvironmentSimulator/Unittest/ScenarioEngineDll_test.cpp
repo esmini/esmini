@@ -3517,33 +3517,51 @@ TEST(ParamDistTest, TestRunAll)
 #ifdef _USE_OSI
 	std::vector<std::string> gt =
 	{
-		"gt_1_of_6.osi",
-		"gt_2_of_6.osi",
-		"gt_3_of_6.osi",
-		"gt_4_of_6.osi",
-		"gt_5_of_6.osi",
-		"gt_6_of_6.osi",
+		"gt_1_of_12.osi",
+		"gt_2_of_12.osi",
+		"gt_3_of_12.osi",
+		"gt_4_of_12.osi",
+		"gt_5_of_12.osi",
+		"gt_6_of_12.osi",
+		"gt_7_of_12.osi",
+		"gt_8_of_12.osi",
+		"gt_9_of_12.osi",
+		"gt_10_of_12.osi",
+		"gt_11_of_12.osi",
+		"gt_12_of_12.osi",
 	};
 #endif // _USE_OSI
 
 	std::vector<std::string> dat =
 	{
-		"cut-in_1_of_6.dat",
-		"cut-in_2_of_6.dat",
-		"cut-in_3_of_6.dat",
-		"cut-in_4_of_6.dat",
-		"cut-in_5_of_6.dat",
-		"cut-in_6_of_6.dat",
+		"cut-in_1_of_12.dat",
+		"cut-in_2_of_12.dat",
+		"cut-in_3_of_12.dat",
+		"cut-in_4_of_12.dat",
+		"cut-in_5_of_12.dat",
+		"cut-in_6_of_12.dat",
+		"cut-in_7_of_12.dat",
+		"cut-in_8_of_12.dat",
+		"cut-in_9_of_12.dat",
+		"cut-in_10_of_12.dat",
+		"cut-in_11_of_12.dat",
+		"cut-in_12_of_12.dat",
 	};
 
 	std::vector<std::string> log =
 	{
-		"log_1_of_6.txt",
-		"log_2_of_6.txt",
-		"log_3_of_6.txt",
-		"log_4_of_6.txt",
-		"log_5_of_6.txt",
-		"log_6_of_6.txt",
+		"log_1_of_12.txt",
+		"log_2_of_12.txt",
+		"log_3_of_12.txt",
+		"log_4_of_12.txt",
+		"log_5_of_12.txt",
+		"log_6_of_12.txt",
+		"log_7_of_12.txt",
+		"log_8_of_12.txt",
+		"log_9_of_12.txt",
+		"log_10_of_12.txt",
+		"log_11_of_12.txt",
+		"log_12_of_12.txt",
 	};
 
 	// Fetch timestamp of any old run
@@ -3576,7 +3594,7 @@ TEST(ParamDistTest, TestRunAll)
 	std::string scenario_file = "../../../resources/xosc/cut-in.xosc";
 	EXPECT_EQ(SE_SetParameterDistribution("../../../resources/xosc/cut-in_parameter_set.xosc"), 0);
 
-	EXPECT_EQ(SE_GetNumberOfPermutations(), 6);
+	EXPECT_EQ(SE_GetNumberOfPermutations(), 12);
 
 	for (int i = 0; i < SE_GetNumberOfPermutations(); i++)
 	{
@@ -3594,7 +3612,7 @@ TEST(ParamDistTest, TestRunAll)
 		SE_Close();
 	}
 
-	EXPECT_EQ(SE_GetNumberOfPermutations(), 6);
+	EXPECT_EQ(SE_GetNumberOfPermutations(), 12);
 
 	// Check that files have been created as expected
 	for (size_t i = 0; i < static_cast<size_t>(SE_GetNumberOfPermutations()); i++)

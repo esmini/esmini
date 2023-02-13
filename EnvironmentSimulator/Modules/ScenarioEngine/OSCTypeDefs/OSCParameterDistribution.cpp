@@ -123,16 +123,22 @@ int OSCParameterDistribution::Load(std::string filename)
 					return -1;
 				}
 
+				std::vector<std::vector<ParameterValueEntry>> p_list;
 				for (pugi::xml_node value_set = value_set_dist.child("ParameterValueSet"); value_set; value_set = value_set.next_sibling("ParameterValueSet"))
 				{
+					std::vector<ParameterValueEntry> p_value_list;
 					for (pugi::xml_node param_assign = value_set.child("ParameterAssignment"); param_assign; param_assign = param_assign.next_sibling("ParameterAssignment"))
 					{
-						ParameterValueList plist;
-						plist.name = param_assign.attribute("parameterRef").value();
-						plist.value.push_back(param_assign.attribute("value").value());
-						param_list_.push_back(plist);
+						ParameterValueEntry entry =
+						{
+							param_assign.attribute("parameterRef").value(),
+							param_assign.attribute("value").value()
+						};
+						p_value_list.push_back(entry);
 					}
+					p_list.push_back(p_value_list);
 				}
+				param_list_.push_back(p_list);
 			}
 			else if (child_node_name == "DeterministicSingleParameterDistribution")
 			{
@@ -152,19 +158,23 @@ int OSCParameterDistribution::Load(std::string filename)
 
 				if (!strcmp(dist.name(), "DistributionSet"))
 				{
-					ParameterValueList plist;
-					plist.name = param_name;
+					std::vector<std::vector<ParameterValueEntry>> p_list;
+					ParameterValueEntry entry;
+					entry.name = param_name;
 
 					for (pugi::xml_node elem = dist.child("Element"); elem; elem = elem.next_sibling("Element"))
 					{
-						plist.value.push_back(elem.attribute("value").value());
+						entry.value = elem.attribute("value").value();
+						std::vector<ParameterValueEntry> p_value_list = {entry};
+						p_list.push_back(p_value_list);
 					}
-					param_list_.push_back(plist);
+					param_list_.push_back(p_list);
 				}
 				else if (!strcmp(dist.name(), "DistributionRange"))
 				{
-					ParameterValueList plist;
-					plist.name = param_name;
+					std::vector<std::vector<ParameterValueEntry>> p_list;
+					ParameterValueEntry entry;
+					entry.name = param_name;
 
 					double step_width = std::atof(dist.attribute("stepWidth").value());
 
@@ -185,9 +195,11 @@ int OSCParameterDistribution::Load(std::string filename)
 					}
 					for (double v = lower_limit; v < upper_limit + SMALL_NUMBER; v += step_width)
 					{
-						plist.value.push_back(std::to_string(v));
+						entry.value = std::to_string(v);
+						std::vector<ParameterValueEntry> p_value_list = { entry };
+						p_list.push_back(p_value_list);
 					}
-					param_list_.push_back(plist);
+					param_list_.push_back(p_list);
 				}
 				else if (!strcmp(dist.name(), "UserDefinedDistribution"))
 				{
@@ -227,24 +239,9 @@ int OSCParameterDistribution::Load(std::string filename)
 	return 0;
 }
 
-int OSCParameterDistribution::GetNumParameters()
+unsigned int OSCParameterDistribution::GetNumPermutations()
 {
-	return static_cast<int>(param_list_.size());
-}
-
-std::string OSCParameterDistribution::GetParamName(int index)
-{
-	if (index >= 0 && static_cast<unsigned int>(index) < param_list_.size())
-	{
-		return param_list_[static_cast<unsigned int>(index)].name;
-	}
-
-	return "";
-}
-
-int OSCParameterDistribution::GetNumPermutations()
-{
-	int n = 1;
+	unsigned int n = 1;
 
 	if (param_list_.size() == 0)
 	{
@@ -253,42 +250,88 @@ int OSCParameterDistribution::GetNumPermutations()
 
 	for (size_t i = 0; i < param_list_.size(); i++)
 	{
-		n *= static_cast<int>(param_list_[i].value.size());
+		n *= static_cast<unsigned int>(param_list_[i].size());
 	}
 
 	return n;
 }
 
-std::string OSCParameterDistribution::GetParamValue(int param_index)
+unsigned int OSCParameterDistribution::GetNumParameters()
 {
-	if (param_index < 0 || static_cast<unsigned int>(param_index) >= param_list_.size())
+	if (index_ < 0)
 	{
-		return "";
-	}
-	else if (index_ < 0 || index_ >= GetNumPermutations())
-	{
-		return "";
-	}
-	else if (GetNumPermutations() == 0)
-	{
-		return "";
+		return 0;
 	}
 
-	int n = index_;
+	// Calculate number of parameters in current permutation
+	unsigned int num_parameters = 0;
 
-	for (int i = static_cast<int>(param_list_.size()) - 1; i >= 0; i--)
+	unsigned int n = static_cast<unsigned int>(index_);
+
+	for (unsigned int i = static_cast<unsigned int>(param_list_.size()); i > 0; i--)
 	{
-		int q = n / static_cast<int>(param_list_[static_cast<unsigned int>(i)].value.size());
-		int r = n % static_cast<int>(param_list_[static_cast<unsigned int>(i)].value.size());
+		unsigned int q = n / static_cast<unsigned int>(param_list_[i - 1].size());
+		unsigned int r = n % static_cast<unsigned int>(param_list_[i - 1].size());
 
-		if (i == param_index)
-		{
-			return param_list_[static_cast<unsigned int>(param_index)].value[static_cast<unsigned int>(r)];
-		}
+		// add parameters from this set
+		num_parameters += static_cast<unsigned int>(param_list_[i - 1][r].size());
+
 		n = q;
 	}
 
-	return "";
+	return num_parameters;
+}
+
+OSCParameterDistribution::ParameterValueEntry OSCParameterDistribution::GetParameterEntry(unsigned int param_index)
+{
+	unsigned int n_parameters = GetNumParameters();
+
+	if (param_index >= n_parameters)
+	{
+		return { "", "" };
+	}
+	else if (index_ >= static_cast<int>(GetNumPermutations()))
+	{
+		return { "", "" };
+	}
+	else if (GetNumPermutations() == 0 || index_ < 0)
+	{
+		return { "", "" };
+	}
+
+	// mirror internal index starting from end, since permutations are traversed that way
+	// varying the latest variable first
+	unsigned int p_idx = n_parameters - param_index - 1;
+	unsigned int param_counter = 0;
+	unsigned int n = static_cast<unsigned int>(index_);
+
+	for (unsigned int i = static_cast<unsigned int>(param_list_.size()); i > 0; i--)
+	{
+		unsigned int q = n / static_cast<unsigned int>(param_list_[i - 1].size());
+		unsigned int r = n % static_cast<unsigned int>(param_list_[i - 1].size());
+
+		// add parameters from this set
+		param_counter += static_cast<unsigned int>(param_list_[i - 1][r].size());
+
+		if (p_idx < param_counter)
+		{
+			return param_list_[i - 1][r][param_counter - p_idx - 1];
+		}
+
+		n = q;
+	}
+
+	return { "", "" };
+}
+
+std::string OSCParameterDistribution::GetParamName(unsigned int param_index)
+{
+	return GetParameterEntry(param_index).name;
+}
+
+std::string OSCParameterDistribution::GetParamValue(unsigned int param_index)
+{
+	return GetParameterEntry(param_index).value;
 }
 
 std::string OSCParameterDistribution::AddInfoToFilename(std::string filename)
@@ -314,7 +357,11 @@ void OSCParameterDistribution::Reset()
 {
 	for (size_t i = 0; i < param_list_.size(); i++)
 	{
-		param_list_[i].value.clear();
+		for (size_t j = 0; j < param_list_[i].size(); j++)
+		{
+			param_list_[i][j].clear();
+		}
+		param_list_[i].clear();
 	}
 	param_list_.clear();
 	filename_.clear();
@@ -323,15 +370,15 @@ void OSCParameterDistribution::Reset()
 	requested_index_ = 0;  // first permutation
 }
 
-int OSCParameterDistribution::SetIndex(int index)
+int OSCParameterDistribution::SetIndex(unsigned int index)
 {
-	if (index < 0 || index >= GetNumPermutations())
+	if (index >= GetNumPermutations())
 	{
 		LOG("Permutation index %d out of range (0..%d)", index, GetNumPermutations() - 1);
 		return -1;
 	}
 
-	index_ = index;
+	index_ = static_cast<int>(index);
 	requested_index_ = -1; // set directly, no request
 
 	return 0;
@@ -339,7 +386,7 @@ int OSCParameterDistribution::SetIndex(int index)
 
 int OSCParameterDistribution::IncrementIndex()
 {
-	if (index_ < -1 || index_ >= GetNumPermutations() - 1)
+	if (index_ < -1 || index_ >= static_cast<int>(GetNumPermutations() - 1))
 	{
 		LOG("Can't increment index %d, would end up out of range (0..%d)\n", index_, GetNumPermutations() - 1);
 		return -1;
@@ -351,15 +398,15 @@ int OSCParameterDistribution::IncrementIndex()
 	return index_;
 }
 
-int OSCParameterDistribution::SetRequestedIndex(int index)
+int OSCParameterDistribution::SetRequestedIndex(unsigned int index)
 {
-	if (index < 0 || index >= GetNumPermutations())
+	if (index >= GetNumPermutations())
 	{
 		LOG("requested permutation index %d out of range (0..%d)", index, GetNumPermutations() - 1);
 		return 0;
 	}
 
-	requested_index_ = index;
+	requested_index_ = static_cast<int>(index);
 
 	return 0;
 }

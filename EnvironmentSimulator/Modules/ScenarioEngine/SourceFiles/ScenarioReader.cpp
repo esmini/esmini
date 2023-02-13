@@ -129,7 +129,7 @@ int ScenarioReader::loadOSCFile(const char *path)
 				{
 					LOG("Parameter permutation %d/%d", dist.GetIndex() + 1, dist.GetNumPermutations());
 
-					for (int i = 0; i < dist.GetNumParameters(); i++)
+					for (unsigned int i = 0; i < dist.GetNumParameters(); i++)
 					{
 						pugi::xml_node node = doc_.child("OpenSCENARIO").child("ParameterDeclarations").child("ParameterDeclaration");
 						for (;node; node = node.next_sibling())

@@ -1719,7 +1719,7 @@ TEST(DistributionTest, TestDeterministicDistribution)
     EXPECT_EQ(dist.Load("../../../resources/xosc/cut-in_parameter_set.xosc"), 0);
 
     EXPECT_EQ(dist.GetNumParameters(), 4);
-    EXPECT_EQ(dist.GetNumPermutations(), 6);
+    EXPECT_EQ(dist.GetNumPermutations(), 12);
 
     EXPECT_EQ(dist.GetParamName(0), "HostVehicle");
     EXPECT_EQ(dist.GetParamName(1), "TargetVehicle");
@@ -1731,12 +1731,15 @@ TEST(DistributionTest, TestDeterministicDistribution)
     EXPECT_EQ(dist.SetIndex(4), 0);
     EXPECT_EQ(dist.GetParamName(0), "HostVehicle");
     EXPECT_EQ(dist.GetParamValue(0), "car_blue");
-    EXPECT_EQ(dist.SetIndex(6), -1);
-    EXPECT_EQ(dist.SetIndex(7), -1);
-    EXPECT_EQ(dist.SetIndex(-1), -1);
-    EXPECT_EQ(dist.SetIndex(5), 0);
     EXPECT_EQ(dist.GetParamName(1), "TargetVehicle");
     EXPECT_EQ(dist.GetParamValue(1), "car_yellow");
+    EXPECT_EQ(dist.SetIndex(12), -1);
+    EXPECT_EQ(dist.SetIndex(13), -1);
+    EXPECT_EQ(dist.SetIndex(7), 0);
+    EXPECT_EQ(dist.GetNumParameters(), 3);
+    EXPECT_EQ(dist.GetParamName(0), "TargetVehicle");
+    EXPECT_EQ(dist.GetParamValue(0), "van_red");
+    EXPECT_EQ(dist.SetIndex(5), 0);
     EXPECT_NEAR(std::atof(dist.GetParamValue(2).c_str()), 110.0, 1e-3);
     EXPECT_NEAR(std::atof(dist.GetParamValue(3).c_str()), 1.5, 1e-3);
     EXPECT_EQ(dist.SetIndex(3), 0);

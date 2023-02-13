@@ -22,13 +22,13 @@ namespace scenarioengine
 {
 	class OSCParameterDistribution
 	{
-		struct ParameterValueList
+		struct ParameterValueEntry
 		{
 			std::string name;
-			std::vector<std::string> value;
+			std::string value;
 		};
 
-		std::vector<ParameterValueList> param_list_;
+		std::vector<std::vector<std::vector<ParameterValueEntry>>> param_list_;
 		std::string filename_;
 		std::string scenario_filename_;
 		int index_;
@@ -41,19 +41,20 @@ namespace scenarioengine
 		static OSCParameterDistribution& Inst();
 
 		int Load(std::string filename);
-		int GetNumPermutations();
-		int GetNumParameters();
+		unsigned int GetNumPermutations();
+		unsigned int GetNumParameters();
 		void Reset();
 		std::string GetFilename() { return filename_; }
 
 		// Returns current permutation index
 		int GetIndex() { return index_; }
-		int SetIndex(int index);
-		int SetRequestedIndex(int index);
+		int SetIndex(unsigned int index);
+		int SetRequestedIndex(unsigned int index);
 		int GetRequestedIndex() { return requested_index_; }
 		int IncrementIndex();
-		std::string GetParamName(int index);
-		std::string GetParamValue(int param_index);
+		ParameterValueEntry GetParameterEntry(unsigned int param_index);
+		std::string GetParamName(unsigned int param_index);
+		std::string GetParamValue(unsigned int param_index);
 		std::string AddInfoToFilename(std::string filename);
 	};
 }

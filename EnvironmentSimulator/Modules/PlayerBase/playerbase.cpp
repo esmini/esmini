@@ -1217,14 +1217,14 @@ int ScenarioPlayer::Init()
 
 		if (dist.GetNumPermutations() > 0)
 		{
-			if (permutation_index >= dist.GetNumPermutations() || permutation_index < 0)
+			if (permutation_index >= static_cast<int>(dist.GetNumPermutations()) || permutation_index < 0)
 			{
 				LOG("Requested permutation %d out of range [%d .. %d]", permutation_index, 0, dist.GetNumPermutations() - 1);
 				return -1;
 			}
 			else
 			{
-				dist.SetIndex(permutation_index);
+				dist.SetIndex(static_cast<unsigned int>(permutation_index));
 			}
 		}
 		else if (permutation_index > 0)
@@ -1237,7 +1237,7 @@ int ScenarioPlayer::Init()
 	{
 		if (dist.GetRequestedIndex() > -1)  // Requested via lib API
 		{
-			if (dist.SetIndex(dist.GetRequestedIndex()) != 0)
+			if (dist.SetIndex(static_cast<unsigned int>(dist.GetRequestedIndex())) != 0)
 			{
 				LOG_AND_QUIT("Failed to set requested index %d", dist.GetRequestedIndex());
 			}

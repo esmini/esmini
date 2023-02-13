@@ -10,6 +10,9 @@
             <ParameterAssignment parameterRef="HostVehicle" value="car_blue" />
             <ParameterAssignment parameterRef="TargetVehicle" value="car_yellow" />
           </ParameterValueSet>
+          <ParameterValueSet>
+            <ParameterAssignment parameterRef="TargetVehicle" value="van_red" />
+          </ParameterValueSet>
         </ValueSetDistribution>
       </DeterministicMultiParameterDistribution>
       <DeterministicSingleParameterDistribution parameterName="EgoSpeed">
