@@ -788,10 +788,11 @@ namespace scenarioengine
 		double timing_offset_;
 		double time_;
 		double initialDistanceOffset_;
+		bool reverse_;
 
 		FollowTrajectoryAction() : OSCPrivateAction(OSCPrivateAction::ActionType::FOLLOW_TRAJECTORY, ControlDomains::DOMAIN_BOTH),
 		traj_(0), timing_domain_(TimingDomain::NONE), following_mode_(FollowingMode::FOLLOW), timing_scale_(1),
-		timing_offset_(0), time_(0), initialDistanceOffset_(0) {}
+		timing_offset_(0), time_(0), initialDistanceOffset_(0), reverse_(false) {}
 
 		FollowTrajectoryAction(const FollowTrajectoryAction& action) : OSCPrivateAction(OSCPrivateAction::ActionType::FOLLOW_TRAJECTORY, ControlDomains::DOMAIN_BOTH)
 		{
@@ -802,6 +803,7 @@ namespace scenarioengine
 			timing_offset_ = action.timing_offset_;
 			initialDistanceOffset_ = action.timing_offset_;
 			following_mode_ = action.following_mode_;
+			reverse_ = action.reverse_;
 			time_ = 0;
 		}
 

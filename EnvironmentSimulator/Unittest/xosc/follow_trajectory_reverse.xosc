@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSCENARIO>
+    <FileHeader author="esmini-team" revMajor="1" revMinor="1" date="2023-02-14T09:04:00+01:00" description="Test reverse trajectory follow"/>
+    <ParameterDeclarations>
+        <ParameterDeclaration name="Speed" parameterType="double" value="-22.0"/>
+    </ParameterDeclarations>
+    <CatalogLocations>
+        <VehicleCatalog>
+            <Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
+        </VehicleCatalog>
+    </CatalogLocations>
+    <RoadNetwork>
+        <LogicFile filepath="../../../resources/xodr/straight_500m.xodr"/>
+    </RoadNetwork>
+    <Entities>
+        <ScenarioObject name="Ego">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+    </Entities>
+    <Storyboard>
+        <Init>
+            <Actions>
+                <Private entityRef="Ego">
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.000000"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="$Speed"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <RoutingAction>
+                            <FollowTrajectoryAction>
+                                <TimeReference>
+                                    <None/>
+                                </TimeReference>
+                                <TrajectoryFollowingMode followingMode="follow"/>
+                                <TrajectoryRef>
+                                    <Trajectory name="Trajectory_1" closed="false">
+                                        <Shape>
+                                            <Polyline>
+                                                <Vertex>
+                                                    <Position>
+                                                        <LanePosition roadId="1" laneId="-1" offset="0.0" s="200.0"/>
+                                                    </Position>
+                                                </Vertex>
+                                                <Vertex>
+                                                    <Position>
+                                                        <LanePosition roadId="1" laneId="1" offset="0.0" s="250.0"/>
+                                                    </Position>
+                                                </Vertex>
+                                            </Polyline>
+                                        </Shape>
+                                    </Trajectory>
+                                </TrajectoryRef>
+                            </FollowTrajectoryAction>
+                        </RoutingAction>
+                    </PrivateAction>
+                </Private>
+            </Actions>
+        </Init>
+        <Story name="Story">
+            <Act name="Act">
+                <ManeuverGroup name="ManeuverGroup_1" maximumExecutionCount="1">
+                    <Actors selectTriggeringEntities="false">
+                        <EntityRef entityRef="Ego"/>
+                    </Actors>
+                    <Maneuver name="SpeedManeuver">
+                        <Event name="SpeedEvent" priority="overwrite">
+                            <Action name="OvertakerBrakeAction">
+                                <PrivateAction>
+                                    <LongitudinalAction>
+                                        <SpeedAction>
+                                            <SpeedActionDynamics dynamicsShape="linear" dynamicsDimension="rate" value="5.0"/>
+                                            <SpeedActionTarget>
+                                                <AbsoluteTargetSpeed value="${-$Speed}"/>
+                                            </SpeedActionTarget>
+                                        </SpeedAction>
+                                    </LongitudinalAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger/>
+                        </Event>
+                    </Maneuver>
+                </ManeuverGroup>
+                <StartTrigger/>
+            </Act>
+        </Story>
+        <StopTrigger>
+            <ConditionGroup>
+                <Condition name="ActStopCondition" delay="5" conditionEdge="rising">
+                    <ByValueCondition>
+                        <StoryboardElementStateCondition storyboardElementType="event" storyboardElementRef="SpeedEvent" state="endTransition"/>
+                    </ByValueCondition>
+                </Condition>
+            </ConditionGroup>
+        </StopTrigger>
+    </Storyboard>
+</OpenSCENARIO>
+

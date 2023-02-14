@@ -368,6 +368,42 @@ TEST(TrajectoryTest, PolyLineContinuosSpeed)
     delete se;
 }
 
+TEST(TrajectoryTest, FollowTrajectoryReverse)
+{
+    double dt = 0.05;
+    ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/follow_trajectory_reverse.xosc");
+    ASSERT_NE(se, nullptr);
+
+    while (se->getSimulationTime() < 4.36)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 248.858, 1e-3);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), 1.465, 1e-3);
+    EXPECT_NEAR(se->entities_.object_[0]->GetSpeed(), 0.0, 1e-3);
+
+    while (se->getSimulationTime() < 8.76)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 201.098, 1e-3);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), -1.468, 1e-3);
+    EXPECT_NEAR(se->entities_.object_[0]->GetSpeed(), 22.000, 1e-3);
+
+    while (se->getSimulationTime() < 9.96)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 174.700, 1e-3);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), -1.535, 1e-3);
+    EXPECT_NEAR(se->entities_.object_[0]->GetSpeed(), 22.000, 1e-3);
+
+    delete se;
+}
+
 TEST(ExpressionTest, EnsureResult)
 {
     ASSERT_DOUBLE_EQ(eval_expr("1 + 1"), 2.0);
