@@ -161,4 +161,6 @@ void Maneuver::Reset()
 	{
 		event_[k]->Reset();
 	}
+
+	StoryBoardElement::Reset();
 }
