@@ -376,7 +376,7 @@ void FollowTrajectoryAction::Step(double simTime, double dt)
 	double old_s = object_->pos_.GetTrajectoryS();
 
 	// Adjust absolute time for any ghost headstart
-	double timeOffset = (timing_domain_ == TimingDomain::TIMING_RELATIVE && object_->IsGhost()) ? object_->GetHeadstartTime() : 0.0;
+	double timeOffset = (timing_domain_ == TimingDomain::TIMING_ABSOLUTE && object_->IsGhost()) ? object_->GetHeadstartTime() : 0.0;
 
 	// Move along trajectory
 	if (
