@@ -1297,6 +1297,11 @@ image::ghost_concept2.png[]
 . From that point, look forward x meters along trail (red dot)
 . Get info from that ”target” point
 
+Ideally, two points are used: One closer for target speed and one more distant for steering target.
+
+.Different lookahead for speed and steering control
+image::ghost_targets.jpg[]
+
 Tuning parameters:
 
 . Lookahead distance along trail
@@ -1370,8 +1375,15 @@ A simple driver model. A ghost-twin performing the events a few seconds ahead. T
 a| [horizontal]
 `headstartTime`:: seconds
 `followMode`:: `time` (time offset), `position` (distance offset)
+`lookaheadSpeed`:: Pick target speed from position at this look-ahead time (`time` mode) or distance (`position` mode)
+`minLookaheadSpeed`:: Minimum speed target look-ahead time (`time` mode) or distance (`position` mode)
+`lookaheadSteering`:: Pick target steering point from position at this look-ahead time (`time` mode) or distance (`position` mode)
+`minLookaheadSteering`:: Minimum steering target look-ahead time (`time` mode) or distance (`position` mode)
 |*Example*:| https://github.com/esmini/esmini/blob/master/resources/xosc/follow_ghost.xosc[follow_ghost.xosc]
 |===
+
+.Illustration of separate look-ahead for speed and steering control
+image::ghost_targets.jpg[]
 
 ==== ExternalController
 The entity will not be moved by the scenario. Instead its state (position, rotation ...) is expected to be reported from external simulator via API, e.g. SE_ReportObjectPos. Ghost trajectory can optionally be created for an external driver model to use as reference. +

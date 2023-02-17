@@ -20,6 +20,10 @@
                 <CatalogReference catalogName="ControllerCatalog" entryName="followGhost">
                     <ParameterAssignments>
                         <ParameterAssignment parameterRef="$HeadStartTime" value="2"/>
+                        <ParameterAssignment parameterRef="LookaheadSpeed" value="1.7"/>
+                        <ParameterAssignment parameterRef="MinLookaheadSpeed" value="0.0"/>
+                        <ParameterAssignment parameterRef="LookaheadSteering" value="1.7"/>
+                        <ParameterAssignment parameterRef="MinLookaheadSteering" value="0.0"/>
                     </ParameterAssignments>
                 </CatalogReference>
             </ObjectController>

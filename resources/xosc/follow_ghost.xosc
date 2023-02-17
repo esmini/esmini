@@ -32,6 +32,10 @@
                     <ParameterAssignments>
                         <ParameterAssignment parameterRef="$HeadStartTime" value="2.5" />
                         <ParameterAssignment parameterRef="$FollowMode" value="position" />
+                        <ParameterAssignment parameterRef="LookaheadSpeed" value="0.5"/>
+                        <ParameterAssignment parameterRef="MinLookaheadSpeed" value="7.0"/>
+                        <ParameterAssignment parameterRef="LookaheadSteering" value="0.5"/>
+                        <ParameterAssignment parameterRef="MinLookaheadSteering" value="7.0"/>
                     </ParameterAssignments>
                 </CatalogReference>
             </ObjectController>

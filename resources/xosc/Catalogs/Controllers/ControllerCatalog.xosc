@@ -92,11 +92,25 @@
                 <ParameterDeclaration name="HeadStartTime" parameterType="double" value="3" />
                 <!-- FollowModes: time (time offset), position (distance offset) -->
                 <ParameterDeclaration name="FollowMode" parameterType="string" value="time" />
+                <!-- LookaheadSpeed: Look ahead time for picking ghost speed -->
+                <ParameterDeclaration name="LookaheadSpeed" parameterType="string" value="0.1" />
+                <!-- MinLookaheadSpeed: Minimum look ahead for picking ghost speed -->
+                <!-- Unit: time in time mode, distance in position mode -->
+                <ParameterDeclaration name="MinLookaheadSpeed" parameterType="string" value="0.1" />
+                <!-- LookaheadSteering: Look ahead time for picking ghost position for steering target -->
+                <ParameterDeclaration name="LookaheadSteering" parameterType="string" value="1.0" />
+                <!-- MinLookaheadSteering: Minimum look ahead for picking ghost position for steering target -->
+                <!-- Unit: time in time mode, distance in position mode -->
+                <ParameterDeclaration name="MinLookaheadSteering" parameterType="string" value="0.1" />
             </ParameterDeclarations>
             <Properties>
                 <Property name="esminiController" value="FollowGhostController" />
                 <Property name="headstartTime"  value="$HeadStartTime" />
                 <Property name="followMode"  value="$FollowMode" />
+                <Property name="lookaheadSpeed"  value="$LookaheadSpeed" />
+                <Property name="minLookaheadSpeed"  value="$MinLookaheadSpeed" />
+                <Property name="lookaheadSteering"  value="$LookaheadSteering" />
+                <Property name="minLookaheadSteering"  value="$MinLookaheadSteering" />
             </Properties>
         </Controller>
         <Controller name="followRoute">
