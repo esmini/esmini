@@ -571,9 +571,9 @@ double strtod(std::string s)
 	return atof(s.c_str());
 }
 
-void StrCopy(char* dest, const char* src, unsigned int size, bool terminate)
+void StrCopy(char* dest, const char* src, size_t size, bool terminate)
 {
-	memcpy(dest, src, static_cast<size_t>(size) * sizeof(char));
+	memcpy(dest, src, size);
 	if (terminate && size > 0)
 	{
 		dest[size-1] = 0;  // NULL termination

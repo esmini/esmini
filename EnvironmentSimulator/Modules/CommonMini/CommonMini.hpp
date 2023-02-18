@@ -605,7 +605,7 @@ double strtod(std::string s);
 	@param size Maximum character written, including optional added terminating null (see terminate parameter)
 	@param terminate If true the dest will always be terminated, at latest at dest[size-1]
 */
-void StrCopy(char* dest, const char* src, unsigned int size, bool terminate = true);
+void StrCopy(char* dest, const char* src, size_t size, bool terminate = true);
 
 // Global Logger class
 class Logger
