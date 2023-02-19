@@ -684,6 +684,7 @@ int Object::FreeSpaceDistancePointRoadLane(double x, double y, double* latDist, 
 
 	// Map XY point to road coordinates, but consider only roads reachable from point
 	Position pointPos = pos_;
+	pointPos.SetRoute(0);  // don't mess with the route of the original position object
 	if (static_cast<int>(pointPos.XYZH2TrackPos(x, y, 0, 0, true)) < 0)
 	{
 		return -1;
@@ -699,6 +700,7 @@ int Object::FreeSpaceDistancePointRoadLane(double x, double y, double* latDist, 
 	for (int j = 0; j < 4; j++)
 	{
 		pos[j] = pos_;
+		pos[j].SetRoute(0);  // don't mess with the route of the original position object
 		// Map bounding box points to road coordinates, consider only roads reachable from current position
 		if (static_cast<int>(pos[j].XYZH2TrackPos(vertices[j][0], vertices[j][1], 0, vertices[j][2], true)) < 0)
 		{

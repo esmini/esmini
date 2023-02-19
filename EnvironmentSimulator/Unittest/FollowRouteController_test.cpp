@@ -134,7 +134,7 @@ TEST_F(FollowRouteControllerTest, FollowRouteMedium)
     double dt = 0.1;
 
     // Fast forward
-    while (se->getSimulationTime() < (100 - SMALL_NUMBER))
+    while (se->getSimulationTime() < (35 - SMALL_NUMBER))
     {
         se->step(dt);
         se->prepareGroundTruth(dt);
