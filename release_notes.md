@@ -1,5 +1,22 @@
 ## esmini release notes
 
+### 2023-02-20 Version 2.29.3
+
+New features and behaviors:
+- Add lookahead options to followGhost controller
+  - set separate lookahead time/distance for speed and steering targets
+  - see more info [User guide - FollowGhost](https://esmini.github.io/#_followghost)
+- Add cmake option (-D OSI_VERSION_3_3_1) to enforce OSI v3.3.1 instead of v3.5.0 (default)
+
+Improvements and fixes:
+- Fix incorrect use of timeout parameter in unix ([PR #393](https://github.com/esmini/esmini/pull/393))
+- Ghost improvements
+  - Support reverse trajectory following ([issue #389](https://github.com/esmini/esmini/issues/389))
+  - Bugfix: Skip ghost time offset for relative timing mode causing an initial jump
+- Fix distance check messing up route ([issue #395](https://github.com/esmini/esmini/issues/395))
+- Fix missing maneuverGroup reset for multiple executions
+
+
 ### 2023-02-13 Version 2.29.2
 
 New features and behaviors:
