@@ -55,20 +55,16 @@ void ControllerLooming::Step(double timeStep)
 	double const farPointDistance = 80.0;
 	double const carFollowingThreshold = 1.0;
 
-	double farAngle = 0.0;
+	double far_angle = 0.0;
 	double far_x = 0.0;
 	double far_y = 0.0;
-	double farTanS = 0.0;
+	double far_tan_s = 0.0;
 
-	double minGapLength = LARGE_NUMBER;
-	int minObjIndex = -1;
-	const double minDist = 3.0;  // minimum distance to keep to lead vehicle
-	const double minLateralDist = 5.0;
 	bool hasFarTan = false;
 
 
 	currentSpeed_ = object_->GetSpeed();
-	
+
 	roadmanager::RoadProbeInfo s_data;
 	// fixed near point
 	object_->pos_.GetProbeInfo(nearPointDistance, &s_data, roadmanager::Position::LookAheadMode::LOOKAHEADMODE_AT_LANE_CENTER);
@@ -82,14 +78,25 @@ void ControllerLooming::Step(double timeStep)
 	{
 		roadmanager::Road* road = odr->GetRoadById(object_->pos_.GetTrackId());
 		double dist = 0.0;
+		int counter[2] = { 0, 0 };  // left, right
+		double angle_diff_prev[2] = { 0.0, 0.0 };   // left, right
+		double far_x_prev[2] = { 0.0, 0.0 };
+		double far_y_prev[2] = { 0.0, 0.0 };
+		double far_tan_s_prev[2] = { 0.0, 0.0 };
+		double far_angle_prev[2] = // initial angle to points parallel to Ego
+		{
+			GetAngleInIntervalMinusPIPlusPI(object_->pos_.GetHRoad() + M_PI_2),
+			GetAngleInIntervalMinusPIPlusPI(object_->pos_.GetHRoad() - M_PI_2)
+		}; // left, right
+
 		roadmanager::Road* roadTemp = road;
 		while ( dist < farPointDistance)
 		{
 			roadmanager::LaneSection* lsec = nullptr;
-			if (dist < SMALL_NUMBER) // first time 
+			if (dist < SMALL_NUMBER) // first time
 			{
 				lsec = roadTemp->GetLaneSectionByS(object_->pos_.GetS());
-			} 
+			}
 			else
 			{
 				roadmanager::RoadLink* roadLink = roadTemp->GetLink(roadmanager::LinkType::SUCCESSOR);
@@ -99,74 +106,73 @@ void ControllerLooming::Step(double timeStep)
 			}
 			roadmanager::Lane* lane = lsec->GetLaneById(object_->pos_.GetLaneId());
 			std::vector<roadmanager::PointStruct> osi_points = lane->GetOSIPoints()->GetPoints();
-			double disS_left = -1.0;
-			
-			for (int m = 1; m < 3; m++)  // m==1: Left, m==2: Right
-			{
-				int counter = 0;
-				double prevAngleDif = 0.0;
-				double tmpPrevFarAngle = 0.0;
+			double dist_left = -1.0;  // the distance from ego vehicle to the closest found tangent point
+			LOG("Road ID %d", roadTemp->GetId());
 
+			for (int m = 0; m < 2; m++)  // m==0: Left, m==1: Right
+			{
+				LOG("%s", m == 0 ? "Left" : "Right");
 				for (size_t k=0; k < osi_points.size(); k++)
 				{
-					if (dist + osi_points[k].s > farPointDistance + object_->pos_.GetS())
+					if (dist + osi_points[k].s - (dist < SMALL_NUMBER ? object_->pos_.GetS() : 0.0) > farPointDistance)
 					{
 						break;
 					}
-					else if (m == 2 && disS_left > 0 && dist + osi_points[k].s > disS_left)
+					else if (m == 1 && dist_left > 0 && dist + osi_points[k].s - (dist < SMALL_NUMBER ? object_->pos_.GetS() : 0.0) > dist_left)
 					{
+                        // we're on right side, and already passed a found tangent point on left side
+                        // no need to look further. Left side "win".
 						break;
 					}
-					else if (osi_points[k].s  > object_->pos_.GetS())
+					else if (dist > SMALL_NUMBER || // Not first round, let's look at OSI points from start of road
+						osi_points[k].s > object_->pos_.GetS())  // First round, skip OSI points up to Ego position
 					{
-						LOG("egoPosi: %.10f", object_->pos_.GetS());
-						LOG("disBtwFarAndEgo: %.2f",osi_points[k].s  - object_->pos_.GetS());
 						double xr = 0.0, yr = 0.0;
 						double local_x = 0.0;
-						double local_y = (m == 1 ? +1 : -1) * road->GetLaneWidthByS(osi_points[k].s , object_->pos_.GetLaneId())/2;
-
+						double local_y = (m == 0 ? +1 : -1) * road->GetLaneWidthByS(osi_points[k].s , object_->pos_.GetLaneId())/2;
 						RotateVec2D(local_x, local_y, osi_points[k].h, xr, yr);
-						double farX = osi_points[k].x + xr;
-						double farY = osi_points[k].y + yr;
-						farAngle = GetAngleInIntervalMinusPIPlusPI(atan2(farY - object_->pos_.GetY() , farX - object_->pos_.GetX()));
-						printf("far x %.2f y %.2f angle %.2f\n", farX, farY, farAngle);
-				
-						if (counter > 0)
-						{
-							angleDif = GetAngleDifference(farAngle, tmpPrevFarAngle);
-							LOG("angleDiff: %.10f", angleDif);
-							if (counter > 1)
-							{
-								LOG("prevAngleDif: %.10f", prevAngleDif);
-								if (SIGN(angleDif)!=SIGN(prevAngleDif))
-								{
-									LOG("farFinalTanAngle: %.2f", farAngle);
-									if (m == 1)
-									{
-										disS_left = osi_points[k].s ;
-									}
+						double far_x_tmp = osi_points[k].x + xr;
+						double far_y_tmp = osi_points[k].y + yr;
+						double farTanS_tmp = dist + osi_points[k].s - (dist < SMALL_NUMBER ? object_->pos_.GetS() : 0.0);
+						double farAngle_tmp = GetAngleInIntervalMinusPIPlusPI(atan2(far_y_tmp - object_->pos_.GetY() , far_x_tmp - object_->pos_.GetX()));
+						angleDiff = GetAngleDifference(farAngle_tmp, far_angle_prev[m]);
 
-									far_x = farX;
-									far_y = farY;
-									farTanS = osi_points[k].s - object_->pos_.GetS();
-									hasFarTan = true;
-									break;
+						if (counter[m] > 0)
+						{
+							if (SIGN(angleDiff) != SIGN(angle_diff_prev[m]))
+							{
+								printf("far x %.2f y %.2f far_angle %.2f dist %.2f m %d k %zd\n",
+									far_x_prev[m], far_y_prev[m], far_angle_prev[m], dist, m, k);
+								hasFarTan = true;
+								far_x = far_x_prev[m];
+								far_y = far_y_prev[m];
+								far_tan_s = far_tan_s_prev[m];
+								far_angle = far_angle_prev[m];
+
+								if (m == 0)
+								{
+									dist_left = far_tan_s_prev[m];
 								}
+								break;
 							}
-							prevAngleDif = angleDif;
 						}
-						tmpPrevFarAngle = farAngle;
-						LOG("farTanAngle: %.10f", farAngle);
-						LOG("farTanPrevAngle: %.10f", tmpPrevFarAngle);
-						counter += 1;
+
+						// Store info on farest point so far on this side of the road
+						far_x_prev[m] = far_x_tmp;
+						far_y_prev[m] = far_y_tmp;
+						far_tan_s_prev[m] = farTanS_tmp;
+						angle_diff_prev[m] = angleDiff;
+						far_angle_prev[m] = farAngle_tmp;
+
+						counter[m] += 1;  // Switch to right side
 					}
 				}
 			}
-			if (dist < SMALL_NUMBER) // first time 
+			if (dist < SMALL_NUMBER) // first time
 			{
 				dist += roadTemp->GetLength() - object_->pos_.GetS();
 				// todo depand on the direction pick s value
-			} 
+			}
 			else
 			{
 				// todo depand on the direction pick s value
@@ -179,14 +185,20 @@ void ControllerLooming::Step(double timeStep)
 	{
 		// dynamic far point-default points are road points
 		object_->pos_.GetProbeInfo(farPointDistance, &s_data, roadmanager::Position::LookAheadMode::LOOKAHEADMODE_AT_LANE_CENTER);
-		farAngle = s_data.relative_h;
-		LOG("farAngleNoTan: %.10f", farAngle);
+		far_angle = s_data.relative_h;
+		LOG("farAngleNoTan: %.10f", far_angle);
 
 		far_x = s_data.road_lane_info.pos[0];
 		far_y = s_data.road_lane_info.pos[1];
 		// LOG("near: %.2f, %.2f", near_x, near_y);
 	}
-	
+
+	int minObjIndex = -1;
+	double minGapLength = LARGE_NUMBER;
+	const double minDist = 3.0;  // minimum distance to keep to lead vehicle
+
+#if 0
+	const double minLateralDist = 5.0;
 	for (size_t i = 0; i < entities_->object_.size(); i++)
 	{
 
@@ -217,35 +229,36 @@ void ControllerLooming::Step(double timeStep)
 					(static_cast<double>(object_->boundingbox_.dimensions_.length_) / 2.0 + static_cast<double>(object_->boundingbox_.center_.x_)) +
 					(static_cast<double>(pivot_obj->boundingbox_.dimensions_.length_) / 2.0 + static_cast<double>(pivot_obj->boundingbox_.center_.x_));
 			}
-			
+
 
 			// dLaneId == 0 indicates there is linked path between object lanes, i.e. no lane changes needed
 			if (diff.dLaneId == 0 && adjustedGapLength > 0 && adjustedGapLength < minGapLength && abs(diff.dt) < minLateralDist)
 			{
 				minGapLength = adjustedGapLength;
 				minObjIndex = static_cast<int>(i); // TODO: size_t to int
-				
+
 				// find far point from lead as reference, if lead <= farPointDistance(80) m
 				if (minGapLength <= farPointDistance)
 				{
-					if (hasFarTan && farTanS < minGapLength) // use lowest point if both lead points and road tan points detected
+					if (hasFarTan && far_tan_s < minGapLength) // use lowest point if both lead points and road tan points detected
 					{
 						break;
 					}
-					farAngle = GetAngleInIntervalMinusPIPlusPI(atan2(object_->pos_.GetY() - pivot_obj->pos_.GetY() , object_->pos_.GetX() - pivot_obj->pos_.GetX()) - object_->pos_.GetH());
+					far_angle = GetAngleInIntervalMinusPIPlusPI(atan2(object_->pos_.GetY() - pivot_obj->pos_.GetY() , object_->pos_.GetX() - pivot_obj->pos_.GetX()) - object_->pos_.GetH());
 					LOG("new far: %.2f, %.2f\n", pivot_obj->pos_.GetX(), pivot_obj->pos_.GetY());
 						far_x = pivot_obj->pos_.GetX();
 						far_y = pivot_obj->pos_.GetY();
 				}
-				
+
 				// for close vehicle
 				if (minGapLength < carFollowingThreshold)
 				{
-					farAngle = GetAngleInIntervalMinusPIPlusPI(atan2(object_->pos_.GetX() - pivot_obj->pos_.GetX(), object_->pos_.GetY() - pivot_obj->pos_.GetY()) - object_->pos_.GetH());
+					far_angle = GetAngleInIntervalMinusPIPlusPI(atan2(object_->pos_.GetX() - pivot_obj->pos_.GetX(), object_->pos_.GetY() - pivot_obj->pos_.GetY()) - object_->pos_.GetH());
 				}
 			}
 		}
 	}
+#endif
 
 	if (minObjIndex > -1)
 	{
@@ -278,23 +291,22 @@ void ControllerLooming::Step(double timeStep)
 	// LOG("Current speed: %.2f", currentSpeed_);
 	// LOG("Setspeed: %.2f", setSpeed_);
 	// LOG("acc %.2f", CLAMP(acc,-1,1));
-	
+
 	if (timeStep > SMALL_NUMBER)
 	{
 		double nearAngleDot = (nearAngle - prevNearAngle)/timeStep;
-		double farAngleDot = (farAngle - prevFarAngle)/timeStep;
+		double farAngleDot = (far_angle - prevFarAngle)/timeStep;
 
 		steering = k0 * nearAngle + k1 * nearAngleDot + k2 * farAngleDot;
-		// scale (90 degrees) and truncate 
+		// scale (90 degrees) and truncate
 		steering = steering / M_PI_4;
 		steering = CLAMP(steering, -1, 1);
-		LOG("steering %.2f\n", steering);
 	}
 	prevNearAngle = nearAngle;
-	prevFarAngle = farAngle;
-	
+	prevFarAngle = far_angle;
+
 	gateway_->getObjectStatePtrByIdx(object_->GetId())->state_.pos.SetLockOnLane(true);
-	vehicle_.DrivingControlAnalog(timeStep, CLAMP(acc,-1,1), steering);		
+	vehicle_.DrivingControlAnalog(timeStep, CLAMP(acc,-1,1), steering);
 
 	gateway_->updateObjectWorldPosXYH(object_->GetId(), 0.0, vehicle_.posX_, vehicle_.posY_, vehicle_.heading_);
 	gateway_->updateObjectWheelAngle(object_->GetId(), 0.0, vehicle_.wheelAngle_);
@@ -303,14 +315,10 @@ void ControllerLooming::Step(double timeStep)
 	object_->sensor_pos_[0] = far_x;
 	object_->sensor_pos_[1] = far_y;
 
-	object_->SetSensorPosition(
-		far_x,
-		far_y,
-		0.0
-	);
-	
+	object_->SetSensorPosition(far_x, far_y, 0.0);
+
 	Controller::Step(timeStep);
-	
+
 }
 
 

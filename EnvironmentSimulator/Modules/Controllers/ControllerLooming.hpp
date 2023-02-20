@@ -50,8 +50,8 @@ namespace scenarioengine
 		double steering = 0.0;
 		double acc = 0.0;
 		double steering_rate_;
-		double angleDif = 0.0;
+		double angleDiff = 0.0;
 	};
-	
+
 	Controller* InstantiateControllerLooming(void* args);
 }
