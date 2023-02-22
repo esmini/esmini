@@ -89,9 +89,17 @@ void ControllerLooming::Step(double timeStep)
 			GetAngleInIntervalMinusPIPlusPI(object_->pos_.GetHRoad() - M_PI_2)
 		}; // left, right
 
+		if (!IsAngleForward(object_->pos_.GetHRelative()))
+		{ // According to direction switch initial angle to points parallel to Ego
+			far_angle_prev[0] = GetAngleInIntervalMinusPIPlusPI(object_->pos_.GetHRoad() - M_PI_2);
+			far_angle_prev[1] = GetAngleInIntervalMinusPIPlusPI(object_->pos_.GetHRoad() + M_PI_2);
+
+		}
+	
 		roadmanager::Road* roadTemp = road;
 		while ( dist < farPointDistance)
 		{
+			int roadDirection = 1; // 1-start point -1-end point
 			roadmanager::LaneSection* lsec = nullptr;
 			if (dist < SMALL_NUMBER) // first time
 			{
@@ -99,41 +107,151 @@ void ControllerLooming::Step(double timeStep)
 			}
 			else
 			{
+				// decide whether to pick next road as successor or predecessor
+				// based on the heading of the vehicle
 				roadmanager::RoadLink* roadLink = roadTemp->GetLink(roadmanager::LinkType::SUCCESSOR);
+	
+				if (!IsAngleForward(object_->pos_.GetHRelative()))
+				{
+					roadLink = roadTemp->GetLink(roadmanager::LinkType::PREDECESSOR);
+				}
+
+				if (roadLink == nullptr)
+				{
+					break; // no more connecting roads
+				}
+
+				if (roadLink->GetElementType() == roadmanager::RoadLink::ElementType::ELEMENT_TYPE_JUNCTION)
+				{
+					break; // currently intersection not considered.
+				}
+
+				if (roadLink->GetContactPointType() == roadmanager::CONTACT_POINT_END)
+				{
+					roadDirection = -1;
+				}
+
 				roadTemp = odr->GetRoadById(roadLink->GetElementId());
+
 				lsec = roadTemp->GetLaneSectionByS(0);
-				// todo depand on the direction pick s value
+				// todo depend on the direction pick s value
 			}
+			
+			// On this road, find out whether we're moving along the road s-direction or not
+			int direction = IsAngleForward(object_->pos_.GetHRelative()) ? 1 : -1;
+			if (dist > SMALL_NUMBER) // only in new road
+			{
+				if ( direction == 1 && roadDirection == 1)
+				{
+					roadDirection = 1;
+				}
+				else if ( direction == 1 && roadDirection == -1)
+				{ // road direction -1 means road connected opposite from here onwards
+					roadDirection = -1;
+				}
+				else if ( direction == -1 && roadDirection == -1)
+				{
+					roadDirection = 1;
+				}
+				else if ( direction == -1 && roadDirection == 1)
+				{
+					roadDirection = -1;
+				}
+			}
+
 			roadmanager::Lane* lane = lsec->GetLaneById(object_->pos_.GetLaneId());
 			std::vector<roadmanager::PointStruct> osi_points = lane->GetOSIPoints()->GetPoints();
+
 			double dist_left = -1.0;  // the distance from ego vehicle to the closest found tangent point
 			LOG("Road ID %d", roadTemp->GetId());
+
 
 			for (int m = 0; m < 2; m++)  // m==0: Left, m==1: Right
 			{
 				LOG("%s", m == 0 ? "Left" : "Right");
-				for (size_t k=0; k < osi_points.size(); k++)
+				for (size_t k = 0 ; k < osi_points.size(); k++)
 				{
-					if (dist + osi_points[k].s - (dist < SMALL_NUMBER ? object_->pos_.GetS() : 0.0) > farPointDistance)
+					size_t cur_idx = k;
+					if ((direction == -1 && roadDirection == 1) || (direction == 1 && roadDirection == -1))
+					{
+						cur_idx = osi_points.size() - 1 - k;
+					}
+					
+					if  ((dist < SMALL_NUMBER && // first road
+						((direction == 1 && 
+						 osi_points[cur_idx].s - object_->pos_.GetS() > farPointDistance) ||
+						(direction == -1 && 
+						object_->pos_.GetS() - osi_points[cur_idx].s > farPointDistance))) ||
+						// Not first road
+						(dist > SMALL_NUMBER && // missed this check
+						((direction == 1 &&
+						 roadDirection == 1 &&
+						 dist + osi_points[cur_idx].s > farPointDistance) ||
+						(direction == 1 &&
+						 roadDirection ==-1 && // incase only connecting roads has opposite direction
+						 dist + (roadTemp->GetLength() - osi_points[cur_idx].s) > farPointDistance) ||
+						(direction == -1 && 
+						 roadDirection == -1 && // incase only connecting roads has opposite direction
+						 dist + osi_points[cur_idx].s > farPointDistance) ||
+						(direction == -1 &&
+						 roadDirection == 1 &&
+						 dist + (roadTemp->GetLength() - osi_points[cur_idx].s) > farPointDistance))))
+					{
+						break;  // looked passed 80 meters, we can quit now
+					}
+
+                    // we're on right side, and already passed a found tangent point on left side
+                    // no need to look further. Left side "win".
+					else if (m == 1 && hasFarTan &&
+							((dist < SMALL_NUMBER && // first road
+							((direction == 1 && 
+							osi_points[cur_idx].s > object_->pos_.GetS() + dist_left) ||
+							(direction == -1 && 
+							osi_points[cur_idx].s < object_->pos_.GetS() - dist_left))) ||
+							(dist > SMALL_NUMBER && // Not first road
+							((direction == 1 &&
+							roadDirection == 1 &&
+							osi_points[cur_idx].s > dist_left - dist) ||
+							(direction == 1 &&
+							roadDirection == -1 && // incase only connecting roads has opposite direction
+							roadTemp->GetLength() - osi_points[cur_idx].s > dist_left - dist) ||
+							(direction == -1 &&
+							roadDirection == -1 && // incase only connecting roads has opposite direction
+							osi_points[cur_idx].s > dist_left - dist) ||
+							(direction == -1 &&
+							roadDirection == 1 &&
+							roadTemp->GetLength() - osi_points[cur_idx].s < dist_left -dist)))))					
 					{
 						break;
 					}
-					else if (m == 1 && dist_left > 0 && dist + osi_points[k].s - (dist < SMALL_NUMBER ? object_->pos_.GetS() : 0.0) > dist_left)
-					{
-                        // we're on right side, and already passed a found tangent point on left side
-                        // no need to look further. Left side "win".
-						break;
-					}
+
 					else if (dist > SMALL_NUMBER || // Not first round, let's look at OSI points from start of road
-						osi_points[k].s > object_->pos_.GetS())  // First round, skip OSI points up to Ego position
+						// First round, only check OSI points in front of ego
+						(direction == 1 && osi_points[cur_idx].s > object_->pos_.GetS()) ||
+						(direction == -1 && osi_points[cur_idx].s < object_->pos_.GetS()))
 					{
 						double xr = 0.0, yr = 0.0;
 						double local_x = 0.0;
-						double local_y = (m == 0 ? +1 : -1) * road->GetLaneWidthByS(osi_points[k].s , object_->pos_.GetLaneId())/2;
-						RotateVec2D(local_x, local_y, osi_points[k].h, xr, yr);
-						double far_x_tmp = osi_points[k].x + xr;
-						double far_y_tmp = osi_points[k].y + yr;
-						double farTanS_tmp = dist + osi_points[k].s - (dist < SMALL_NUMBER ? object_->pos_.GetS() : 0.0);
+						double local_y = (m == 0 ? +1 : -1) * road->GetLaneWidthByS(osi_points[cur_idx].s , object_->pos_.GetLaneId())/2;
+						local_y = (direction == -1 ? -local_y : local_y); // switch y position according to ego driving side
+						if ((direction == -1 && roadDirection == -1) || (direction == 1 && roadDirection == -1))
+						{
+							local_y = -local_y;
+						}
+						RotateVec2D(local_x, local_y, osi_points[cur_idx].h, xr, yr);
+						double far_x_tmp = osi_points[cur_idx].x + xr;
+						double far_y_tmp = osi_points[cur_idx].y + yr;
+						double s_tmp = (direction == -1 ? road->GetLength() - object_->pos_.GetS() : object_->pos_.GetS());
+						double remPoint_tmp = (direction == -1 ? roadTemp->GetLength() - osi_points[cur_idx].s : osi_points[cur_idx].s);
+						if (direction == 1 && roadDirection == -1)
+						{
+							remPoint_tmp = roadTemp->GetLength() - osi_points[cur_idx].s;
+						}
+						else if (direction == -1 && roadDirection == -1)
+						{
+							remPoint_tmp = osi_points[cur_idx].s;
+						}
+						double farTanS_tmp = dist + remPoint_tmp - (dist < SMALL_NUMBER ? s_tmp : 0.0);
 						double farAngle_tmp = GetAngleInIntervalMinusPIPlusPI(atan2(far_y_tmp - object_->pos_.GetY() , far_x_tmp - object_->pos_.GetX()));
 						angleDiff = GetAngleDifference(farAngle_tmp, far_angle_prev[m]);
 
@@ -170,7 +288,7 @@ void ControllerLooming::Step(double timeStep)
 			}
 			if (dist < SMALL_NUMBER) // first time
 			{
-				dist += roadTemp->GetLength() - object_->pos_.GetS();
+ 				dist += (direction == -1 ? object_->pos_.GetS(): road->GetLength() - object_->pos_.GetS());
 				// todo depand on the direction pick s value
 			}
 			else
