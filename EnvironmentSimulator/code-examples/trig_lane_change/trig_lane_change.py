@@ -1,5 +1,5 @@
 '''
-   demonstrate use of ParameterConditions for triggering of lane changes from an external application
+   demonstrate use of VariableConditions for triggering of lane changes from an external application
 
    Python dependencies:
       tkinter (usually included with Python on Windows)
@@ -7,15 +7,15 @@
          sudo apt-get install python3-tk
 
    Instruction:
-     - copy the esmini shared library (esminiLib.dll or esminiLib.so) to the current folder
-     - run: ./trig_lane_change.py
+     - make sure the esmini shared library (esminiLib.dll or esminiLib.so) is present in esmini/bin folder
+     - if not, either compile esmini (see User guide) or fetch bin package release
+     - from this folder (where this code module is), run: ./trig_lane_change.py
 '''
 
 
 import sys
 import ctypes
 from tkinter import *
-import tkinter.ttk as ttk
 
 STATE = {
   'idle': 0,
@@ -34,11 +34,11 @@ class Application(Frame):
         self.createGUI()
 
         if sys.platform == "linux" or sys.platform == "linux2":
-            self.se = ctypes.CDLL("./libesminiLib.so")
+            self.se = ctypes.CDLL("../../../bin/libesminiLib.so")
         elif sys.platform == "darwin":
-            self.se = ctypes.CDLL("./libesminiLib.dylib")
+            self.se = ctypes.CDLL("../../../bin/libesminiLib.dylib")
         elif sys.platform == "win32":
-            self.se = ctypes.CDLL("./esminiLib.dll")
+            self.se = ctypes.CDLL("../../../bin/esminiLib.dll")
         else:
             print("Unsupported platform: {}".format(sys.platform))
             quit()
@@ -66,19 +66,19 @@ class Application(Frame):
 
         # need to reset the bool flag value, to prepare for any other lane change
         if self.state == STATE['left']:
-            self.se.SE_SetParameterBool(b"ChangeLeft", 0)
+            self.se.SE_SetVariableBool(b"ChangeLeft", 0)
         elif self.state == STATE['right']:
-            self.se.SE_SetParameterBool(b"ChangeRight", 0)
+            self.se.SE_SetVariableBool(b"ChangeRight", 0)
 
         self.state == STATE['idle']
         root.after(int(1000.0 / fps), self.step)  # reschedule step
 
     def left(self):
-        self.se.SE_SetParameterBool(b"ChangeLeft", 1)
+        self.se.SE_SetVariableBool(b"ChangeLeft", 1)
         self.state = STATE['left']
 
     def right(self):
-        self.se.SE_SetParameterBool(b"ChangeRight", 1)
+        self.se.SE_SetVariableBool(b"ChangeRight", 1)
         self.state = STATE['right']
 
     def close(self):

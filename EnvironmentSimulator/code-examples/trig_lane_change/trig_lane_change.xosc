@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <OpenSCENARIO>
-    <FileHeader revMajor="1" revMinor="1" date="2022-10-14T10:00:00" description="Demonstrate external triggered lane changes" author="esmini-team"/>
+    <FileHeader revMajor="1" revMinor="2" date="2023-02-23T10:00:00" description="Demonstrate external triggered lane changes" author="esmini-team"/>
     <ParameterDeclarations>
-        <ParameterDeclaration name="ChangeLeft" parameterType="boolean" value="false"/>
-        <ParameterDeclaration name="ChangeRight" parameterType="boolean" value="false"/>
         <ParameterDeclaration name="RoadId" parameterType="integer" value="0"/>
         <ParameterDeclaration name="LaneId" parameterType="integer" value="-3"/>
         <ParameterDeclaration name="Speed" parameterType="double" value="50.0"/>
         <ParameterDeclaration name="LaneChangeDuration" parameterType="double" value="2.0"/>
     </ParameterDeclarations>
+    <VariableDeclarations>
+        <VariableDeclaration name="ChangeLeft" variableType="boolean" value="false"/>
+        <VariableDeclaration name="ChangeRight" variableType="boolean" value="false"/>
+    </VariableDeclarations>
     <CatalogLocations>
         <VehicleCatalog>
             <Directory path="../xosc/Catalogs/Vehicles"/>
@@ -54,7 +56,7 @@
                         <EntityRef entityRef="Ego"/>
                     </Actors>
                     <Maneuver name="MyManeuver">
-                        <Event name="ChangeLaneLeftEvent" priority="overwrite" maximumExecutionCount="-1">
+                        <Event name="ChangeLaneLeftEvent" priority="overwrite" maximumExecutionCount="1000">
                             <Action name="ChangeLaneLeftAction">
                                 <PrivateAction>
                                     <LateralAction>
@@ -71,13 +73,13 @@
                                 <ConditionGroup>
                                     <Condition name="LaneChangeLeftCondition" delay="0" conditionEdge="rising">
                                         <ByValueCondition>
-                                            <ParameterCondition parameterRef="ChangeLeft" value="true" rule="equalTo"/>
+                                            <VariableCondition variableRef="ChangeLeft" value="true" rule="equalTo"/>
                                         </ByValueCondition>
                                     </Condition>
                                 </ConditionGroup>
                             </StartTrigger>
                         </Event>
-                        <Event name="ChangeLaneRIghtEvent" priority="overwrite" maximumExecutionCount="-1">
+                        <Event name="ChangeLaneRIghtEvent" priority="overwrite" maximumExecutionCount="1000">
                             <Action name="ChangeLaneRightAction">
                                 <PrivateAction>
                                     <LateralAction>
@@ -94,7 +96,7 @@
                                 <ConditionGroup>
                                     <Condition name="LaneChangeRightCondition" delay="0" conditionEdge="rising">
                                         <ByValueCondition>
-                                            <ParameterCondition parameterRef="ChangeRight" value="true" rule="equalTo"/>
+                                            <VariableCondition variableRef="ChangeRight" value="true" rule="equalTo"/>
                                         </ByValueCondition>
                                     </Condition>
                                 </ConditionGroup>
@@ -111,7 +113,7 @@
                                     <EntityRef entityRef="Ego"/>
                                 </TriggeringEntities>
                                 <EntityCondition>
-                                    <EndOfRoadCondition duration="2.5" rule="greaterThan"/>
+                                    <EndOfRoadCondition duration="2.5"/>
                                 </EntityCondition>
                             </ByEntityCondition>
                         </Condition>
