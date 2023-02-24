@@ -7,8 +7,7 @@
     <FileHeader revMajor="1" revMinor="1" date="2021-08-24T10:00:00" description="Demonstrate ACC controller" author="esmini-team"/>
     <ParameterDeclarations>
         <ParameterDeclaration name="HostVehicle" parameterType="string" value="car_white"/>
-        <ParameterDeclaration name="EgoSpeed" parameterType="double" value="30.0"/>
-        <ParameterDeclaration name="EgoS" parameterType="double" value="0.0"/>
+        <ParameterDeclaration name="EgoSpeed" parameterType="double" value="50.0"/>
     </ParameterDeclarations>
     <CatalogLocations>
         <VehicleCatalog>
@@ -19,6 +18,9 @@
         </ControllerCatalog>
     </CatalogLocations>
     <RoadNetwork>
+        <!-- <LogicFile filepath="../xodr/straight_road_mixed.xodr"/> -->
+        <!-- <LogicFile filepath="../xodr/curve_road.xodr"/> -->
+        <!-- <LogicFile filepath="../xodr/curve_road_mixed.xodr"/> -->
         <LogicFile filepath="../xodr/road_straight_curve_junction.xodr"/>
         <!-- <SceneGraphFile filepath="../models/straight_500m.osgb"/> -->
     </RoadNetwork>
@@ -44,7 +46,7 @@
                     <PrivateAction>
                         <TeleportAction>
                             <Position>
-                                <LanePosition roadId="0" laneId="-1" offset="0" s="$EgoS"/>
+                                <LanePosition roadId="6" laneId="1" offset="0" s="100.0"/>
                             </Position>
                         </TeleportAction>
                     </PrivateAction>
@@ -66,15 +68,7 @@
         </Init>
         <Story name="empty">
             <Act name="empty">
-                <StartTrigger>
-                    <ConditionGroup>
-                        <Condition name="CutInActStart" delay="0" conditionEdge="none">
-                            <ByValueCondition>
-                                <SimulationTimeCondition value="0" rule="greaterThan"/>
-                            </ByValueCondition>
-                        </Condition>
-                    </ConditionGroup>
-                </StartTrigger>
+                <StartTrigger/>
                 <StopTrigger>
                     <!-- <ConditionGroup> -->
                         <!-- <Condition name="StopCondition" delay="0.0" conditionEdge="none"> -->

@@ -39,8 +39,7 @@
       <ScenarioObject name="Ego">
         <CatalogReference catalogName="VehicleCatalog" entryName="$HostVehicle"/>
          <ObjectController>
-            <Controller name="LoomingController">
-            <!-- <Controller name="ACCController"> -->
+            <Controller name="ACCController">
                 <Properties>
                     <Property name="timeGap" value="1.0" />
                     <Property name="mode" value="override" />

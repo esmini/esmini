@@ -7366,9 +7366,23 @@ Position::ReturnCode Position::XYZH2TrackPos(double x3, double y3, double z3, do
     {
         // Register lateral position of previous lane
         LaneSection* lsec = current_road->GetLaneSectionByIdx(lane_section_idx_);
+        bool change_direction = false;
         if (lsec)
         {
-            fixedLaneOffset = SIGN(lane_id_) * lsec->GetCenterOffset(s_, lane_id_);
+            if (closestPointDirectlyConnected)
+            {
+                if ((current_road->GetLink(LinkType::SUCCESSOR) &&
+                    current_road->GetLink(LinkType::SUCCESSOR)->GetElementId() == roadMin->GetId() &&
+                    current_road->GetLink(LinkType::SUCCESSOR)->GetContactPointType() == ContactPointType::CONTACT_POINT_END) ||
+                    (current_road->GetLink(LinkType::PREDECESSOR) &&
+                        current_road->GetLink(LinkType::PREDECESSOR)->GetElementId() == roadMin->GetId() &&
+                        current_road->GetLink(LinkType::PREDECESSOR)->GetContactPointType() == ContactPointType::CONTACT_POINT_START))
+                {
+                    change_direction = true;
+                }
+            }
+
+            fixedLaneOffset = (change_direction ? -1 : 1) * SIGN(lane_id_) * lsec->GetCenterOffset(s_, lane_id_);
 
             // Now find cloest lane at that lateral position, at updated s value
             double laneOffset;
