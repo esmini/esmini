@@ -142,6 +142,10 @@ Example:
 ----
 
 === Fetch state of scenario objects
+This example shows how to retrieve the state of scenario objects.
+
+We also check the return code from the initialization and react on any error.
+
 :file: EnvironmentSimulator/code-examples/hello_world/hw3_fetch_states.cpp
 .link:{src-remote-root}/{file}[{file}]
 [source,c++]
