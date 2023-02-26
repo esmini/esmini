@@ -158,10 +158,14 @@ void ScenarioPlayer::Frame(double timestep_s)
 
 		if (scenarioEngine->GetGhostMode() != GhostMode::NORMAL)
 		{
-			while (retval == 0 && scenarioEngine->GetGhostMode() != GhostMode::NORMAL)
+			while (retval == 0 && scenarioEngine->GetGhostMode() != GhostMode::NORMAL &&
+				!IsQuitRequested())
 			{
 				Draw();
-				retval = ScenarioFrame(ghost_solo_dt, false);
+				if (!IsPaused() && !IsQuitRequested())
+				{
+					retval = ScenarioFrame(ghost_solo_dt, false);
+				}
 			}
 		}
 
