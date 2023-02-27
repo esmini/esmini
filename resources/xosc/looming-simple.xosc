@@ -7,7 +7,8 @@
     <FileHeader revMajor="1" revMinor="1" date="2021-08-24T10:00:00" description="Demonstrate ACC controller" author="esmini-team"/>
     <ParameterDeclarations>
         <ParameterDeclaration name="HostVehicle" parameterType="string" value="car_white"/>
-        <ParameterDeclaration name="EgoSpeed" parameterType="double" value="50.0"/>
+        <ParameterDeclaration name="EgoSpeed" parameterType="double" value="30.0"/>
+        <ParameterDeclaration name="EgoS" parameterType="double" value="0.0"/>
     </ParameterDeclarations>
     <CatalogLocations>
         <VehicleCatalog>
@@ -18,11 +19,17 @@
         </ControllerCatalog>
     </CatalogLocations>
     <RoadNetwork>
-        <!-- <LogicFile filepath="../xodr/straight_road_mixed.xodr"/> -->
+        <!-- <LogicFile filepath="../../../scenariogeneration/straight_road_mixed.xodr"/> -->
         <!-- <LogicFile filepath="../xodr/curve_road.xodr"/> -->
-        <!-- <LogicFile filepath="../xodr/curve_road_mixed.xodr"/> -->
-        <LogicFile filepath="../xodr/road_straight_curve_junction.xodr"/>
+        <!-- <LogicFile filepath="../../../scenariogeneration/curve_road_mixed.xodr"/> -->
+        <!-- <LogicFile filepath="../xodr/road_straight_curve_junction.xodr"/> -->
+        <!-- <LogicFile filepath="../../../scenariogeneration/lane_section_complex.xodr"/> -->
+        <!-- <LogicFile filepath="../../../scenariogeneration/lane_section.xodr"/> -->
         <!-- <SceneGraphFile filepath="../models/straight_500m.osgb"/> -->
+        <!-- <LogicFile filepath="../../../scenariogeneration/straight_road.xodr"/> -->
+        <!-- <LogicFile filepath="../xodr/lane_number_change_merge.xodr"/> -->
+        <!-- <LogicFile filepath="../../../scenariogeneration/examples/xodr/lane_section_arc_1lanesection.xodr"/> -->
+        <LogicFile filepath="../../../scenariogeneration/lane_section_arc.xodr"/>
     </RoadNetwork>
     <Entities>
         <ScenarioObject name="Ego">
@@ -46,7 +53,7 @@
                     <PrivateAction>
                         <TeleportAction>
                             <Position>
-                                <LanePosition roadId="6" laneId="1" offset="0" s="100.0"/>
+                                <LanePosition roadId="0" laneId="-1" offset="0" s="$EgoS"/>
                             </Position>
                         </TeleportAction>
                     </PrivateAction>
@@ -68,7 +75,15 @@
         </Init>
         <Story name="empty">
             <Act name="empty">
-                <StartTrigger/>
+                <StartTrigger>
+                    <ConditionGroup>
+                        <Condition name="CutInActStart" delay="0" conditionEdge="none">
+                            <ByValueCondition>
+                                <SimulationTimeCondition value="0" rule="greaterThan"/>
+                            </ByValueCondition>
+                        </Condition>
+                    </ConditionGroup>
+                </StartTrigger>
                 <StopTrigger>
                     <!-- <ConditionGroup> -->
                         <!-- <Condition name="StopCondition" delay="0.0" conditionEdge="none"> -->
