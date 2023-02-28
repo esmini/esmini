@@ -42,7 +42,9 @@ You can also run the examples explicitly from a command line:
 
 ``./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in.xosc``
 
-For common Mac issues, please see <<Mac issues and limitations>>.
+For issues with the files linked in the .xosc file (.xodr, .osgb, catalogs) not
+found, please see <<Resources not found>>. For common Mac issues, please see
+<<Mac issues and limitations>>.
 
 === Get complete esmini
 The demo package contains only a subset of esmini tools and content (e.g. scenario examples, scripts and models).
@@ -1707,11 +1709,21 @@ image::light_second_light.jpg[]
 === Various issues
 
 ==== Resources not found
-There are no fixed structure where scenario resources, e.g. vehicle 3D model or controller catalog, needs to be stored. Instead, additional search paths can be added by launch argument `--path <path>`. For example: +
+
+Esmini searches for the scenario resources, i.e., static environment 3D model, vehicle 3D model, OpenSCENARIO catalogs and OpenDRIVE road network files which are linked from the .xosc file in 4 different places in the following order:
+
+1. Using absolute paths specified in the .xosc file
+2. Using the relative paths in the .xosc file, relative to the location of the .xosc file *(strongly recommended approach for portability reasons!)*
+3. Next to the ``esmini`` executable using the filename only
+4. Next to the .xosc file using the filename only
+5. Using the relative paths in the .xosc file, relative to additional search paths added by launch argument `--path <path>`
+
+multiple paths can be added with the `--path` launch argument. For example:
 
 ``./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/slow-lead-vehicle.xosc --path ../../ --path c:/tmp/my_models``
 
-will add the relative path `../../` and absolute path `c:/tmp/my_models` to the list of places where to look for resources referred to by the scenario.
+will add the relative path `../../` and absolute path `c:/tmp/my_models` to the
+list of places where to look for resources referred to by the scenario.
 
 ==== Mac issues and limitations
 

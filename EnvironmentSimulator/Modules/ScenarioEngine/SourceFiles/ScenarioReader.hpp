@@ -130,7 +130,7 @@ namespace scenarioengine
 		int parseStoryBoard(StoryBoard &storyBoard);
 		void parseOSCManeuver(Maneuver *maneuver, pugi::xml_node maneuverNode, ManeuverGroup *mGroup);
 
-		std::string getScenarioFilename() { return oscFilename_; }
+		std::string getScenarioFilePath() { return oscFilePath_; }
 		bool IsLoaded() { return !osc_root_.empty(); }
 
 		static void RegisterController(std::string type_name, ControllerInstantiateFunction function)
@@ -157,7 +157,7 @@ namespace scenarioengine
 	private:
 		pugi::xml_document doc_;
 		pugi::xml_node osc_root_;
-		std::string oscFilename_;
+		std::string oscFilePath_;
 		Entities *entities_;
 		Catalogs *catalogs_;
 		ScenarioGateway* gateway_;

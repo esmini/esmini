@@ -605,7 +605,7 @@ int ScenarioPlayer::InitViewer()
 	viewer_ = new viewer::Viewer(
 		roadmanager::Position::GetOpenDrive(),
 		scenarioEngine->getSceneGraphFilename().c_str(),
-		scenarioEngine->getScenarioFilename().c_str(),
+		scenarioEngine->getScenarioFilePath().c_str(),
 		exe_path_.c_str(),
 		arguments, &opt);
 
@@ -1404,7 +1404,7 @@ int ScenarioPlayer::Init()
 	// Save xml
 	if (opt.GetOptionSet("save_xosc"))
 	{
-		std::string filename = FileNameOf(scenarioEngine->getScenarioFilename());
+		std::string filename = FileNameOf(scenarioEngine->getScenarioFilePath());
 		pugi::xml_document* xml_doc = scenarioEngine->scenarioReader->GetDXMLDocument();
 
 		if (xml_doc)
@@ -1463,7 +1463,7 @@ int ScenarioPlayer::Init()
 				filename = dist.AddInfoToFilename(filename);
 			}
 
-			CSV_Log->Open(scenarioEngine->getScenarioFilename(),
+			CSV_Log->Open(scenarioEngine->getScenarioFilePath(),
 				static_cast<int>(scenarioEngine->entities_.object_.size()), filename);
 			LOG("Log all vehicle data in csv file");
 		}
@@ -1482,7 +1482,7 @@ int ScenarioPlayer::Init()
 		{
 			if (IsDirectoryName(arg_str))
 			{
-				filename = arg_str + FileNameWithoutExtOf(scenarioEngine->getScenarioFilename()) + ".dat";
+				filename = arg_str + FileNameWithoutExtOf(scenarioEngine->getScenarioFilePath()) + ".dat";
 			}
 			else
 			{
@@ -1500,7 +1500,7 @@ int ScenarioPlayer::Init()
 		}
 
 		LOG("Recording data to file %s", filename.c_str());
-		scenarioGateway->RecordToFile(filename, scenarioEngine->getOdrFilename(), scenarioEngine->getSceneGraphFilename());
+		scenarioGateway->RecordToFile(filename, scenarioEngine->getOdrFilePath(), scenarioEngine->getSceneGraphFilename());
 	}
 
 	if (launch_server)

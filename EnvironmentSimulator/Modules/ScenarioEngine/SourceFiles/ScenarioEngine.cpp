@@ -18,8 +18,12 @@
 #include "ControllerFollowRoute.hpp"
 #include "OSCParameterDistribution.hpp"
 
+#include <filesystem>
+
 #define WHEEL_RADIUS 0.35
 #define STAND_STILL_THRESHOLD 1e-3  // meter per second
+
+namespace fs = std::filesystem;
 
 using namespace scenarioengine;
 
@@ -765,7 +769,8 @@ int ScenarioEngine::parseScenario()
 		LOG_AND_QUIT("OpenSCENARIO v%d.%d not supported. Please migrate scenario to v1.0 or v1.1 and try again.",
 			scenarioReader->GetVersionMajor(), scenarioReader->GetVersionMinor());
 	}
-	LOG("Loading %s (v%d.%d)", scenarioReader->getScenarioFilename().c_str(), scenarioReader->GetVersionMajor(), scenarioReader->GetVersionMinor());
+	LOG("Loading OpenSCENARIO from %s (v%d.%d)", scenarioReader->getScenarioFilePath().c_str(),
+		scenarioReader->GetVersionMajor(), scenarioReader->GetVersionMinor());
 
 	scenarioReader->parseGlobalParameterDeclarations();
 	scenarioReader->variables.Print("variables");  // All variables parsed at this point (not the case with parameters)
@@ -779,51 +784,73 @@ int ScenarioEngine::parseScenario()
 	// Init road manager
 	scenarioReader->parseRoadNetwork(roadNetwork);
 
-	if (getOdrFilename().empty())
+	if (getOdrFilePath().empty())
 	{
 		LOG("No OpenDRIVE file specified, continue without");
 	}
 	else
 	{
-		std::vector<std::string> file_name_candidates;
-		// absolute path or relative to current directory
-		file_name_candidates.push_back(getOdrFilename());
-		// relative path to scenario directory
-		file_name_candidates.push_back(CombineDirectoryPathAndFilepath(DirNameOf(scenarioReader->getScenarioFilename()), getOdrFilename()));
-		// Remove all directories from path and look in current directory
-		file_name_candidates.push_back(FileNameOf(getOdrFilename()));
-		// Finally check registered paths
-		for (size_t i = 0; i < SE_Env::Inst().GetPaths().size(); i++)
+		fs::path xodrPathOsc(getOdrFilePath());
+		std::vector<fs::path> xodrPathCandidates;
+		// Absolute path or relative to current directory
+		if (xodrPathOsc.is_absolute())
 		{
-			file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], getOdrFilename()));
-			file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], FileNameOf(getOdrFilename())));
+			// Absolute path
+			xodrPathCandidates.push_back(xodrPathOsc);
 		}
-		size_t i;
-		bool located = false;
-		for (i = 0; i < file_name_candidates.size(); i++)
+		else {
+			// Relative path (relative to .xosc file) - this should be the normal case
+			fs::path osc_path = fs::path(getScenarioFilePath()).parent_path();
+			xodrPathCandidates.push_back(osc_path / xodrPathOsc);
+		}
+		// Also relative to registered paths
+		for (size_t j = 0; j < SE_Env::Inst().GetPaths().size(); j++)
 		{
-			if (FileExists(file_name_candidates[i].c_str()))
-			{
-				located = true;
-				if (roadmanager::Position::LoadOpenDrive(file_name_candidates[i].c_str()) == true)
-				{
-					LOG("Loaded OpenDRIVE: %s", file_name_candidates[i].c_str());
-					break;
+			// Take the relative path from the LogicFile OpenSCENARIO XML
+			// element into account when looking for .xodr files. Note that this
+			// is different for catalog files due to the inability of
+			// OpenSCENARIO to specify explicit catalog file paths. Do not
+			// search for .xodr files only via their names to avoid
+			// unpredictable side effects.
+			fs::path registeredPath(SE_Env::Inst().GetPaths()[j]);
+			xodrPathCandidates.push_back(registeredPath / xodrPathOsc);
+		}
+		// Make all paths absolute and canonical
+		for (auto &&candidate_path : xodrPathCandidates) {
+			if (not candidate_path.is_absolute()) {
+				if (fs::exists(candidate_path)) {
+					// Canonical requires file to exist
+					candidate_path = fs::canonical(
+						fs::current_path() / candidate_path);
 				}
-				else
-				{
-					LOG("Failed to load OpenDRIVE file: %s", file_name_candidates[i].c_str());
-					if (i < file_name_candidates.size() - 1)
-					{
-						LOG("  -> trying: %s", file_name_candidates[i + 1].c_str());
-					}
+				else {
+					// Weakly canonical does not require file to exist
+					candidate_path = fs::weakly_canonical(candidate_path);
 				}
 			}
 		}
-
-		if (i == file_name_candidates.size())
+		bool result = false;
+		for (size_t j = 0; j < xodrPathCandidates.size() && result == false; j++)
 		{
-			LOG((std::string("Failed to ") + (located ? "load" : "find") + " OpenDRIVE file " + getOdrFilename().c_str()).c_str());
+			if (fs::exists(xodrPathCandidates[j]))
+			{
+				// Try to load the .xodr file
+				result = roadmanager::Position::LoadOpenDrive(xodrPathCandidates[j].c_str());
+				if (result == true)
+				{
+					LOG("Successfully loaded OpenDRIVE road network from %s",
+						xodrPathCandidates[j].c_str());
+				}
+			}
+		}
+		if (result == false)
+		{
+			std::string candidatesLogStr = ConcatenatePathVectorForLogging(xodrPathCandidates);
+			LOG("Couldn't locate OpenDRIVE road network file at either of the "
+				" following locations: %s. Check the path in the .xosc file "
+				"or specify additional asset paths for search with the --path"
+				" option.",
+				candidatesLogStr.c_str());
 			return -1;
 		}
 	}
