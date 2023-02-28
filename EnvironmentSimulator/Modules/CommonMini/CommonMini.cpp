@@ -19,6 +19,7 @@
 #include <sstream>
 #include <locale>
 #include <array>
+#include <filesystem>
 
 // UDP network includes
 #ifndef _WIN32
@@ -185,6 +186,20 @@ std::string CombineDirectoryPathAndFilepath(std::string dir_path, std::string fi
     }
 
     return path;
+}
+
+std::string ConcatenatePathVectorForLogging(const std::vector<std::filesystem::path>& vec)
+{
+	std::stringstream ss;
+	for (size_t i = 0; i < vec.size(); i++)
+	{
+		if (i > 0)
+		{
+			ss << ", ";
+		}
+		ss << vec[i].string();
+	}
+	return ss.str();
 }
 
 double GetAngleOfVector(double x, double y)

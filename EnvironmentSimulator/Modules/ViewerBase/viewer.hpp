@@ -501,19 +501,16 @@ namespace viewer
         SE_Semaphore renderSemaphore;
         SE_Mutex     imageMutex;
 
-        Viewer(roadmanager::OpenDrive* odrManager,
-               const char*             modelFilename,
-               const char*             scenarioFilename,
-               const char*             exe_path,
-               osg::ArgumentParser     arguments,
-               SE_Options*             opt = 0);
-        ~Viewer();
-        static void PrintUsage();
-        void        AddCustomCamera(double x, double y, double z, double h, double p, bool fixed_pos = false);
-        void        AddCustomCamera(double x, double y, double z, bool fixed_pos = false);
-        void        AddCustomFixedTopCamera(double x, double y, double z, double rot);
-        int         GetCameraPosAndRot(osg::Vec3& pos, osg::Vec3& rot);
-        int         AddCustomLightSource(double x, double y, double z, double intensity);
+		Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilePath,
+			   const char* scenarioFilePath, const char* exe_path,
+			   osg::ArgumentParser arguments, SE_Options* opt = 0);
+		~Viewer();
+		static void PrintUsage();
+		void AddCustomCamera(double x, double y, double z, double h, double p, bool fixed_pos = false);
+		void AddCustomCamera(double x, double y, double z, bool fixed_pos = false);
+		void AddCustomFixedTopCamera(double x, double y, double z, double rot);
+		int GetCameraPosAndRot(osg::Vec3& pos, osg::Vec3& rot);
+		int AddCustomLightSource(double x, double y, double z, double intensity);
 
         /**
          * Set mode of the esmini camera model

@@ -30,6 +30,9 @@
 #include "ControllerLooming.hpp"
 
 #include <cstdlib>
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 using namespace scenarioengine;
 
@@ -156,7 +159,7 @@ int ScenarioReader::loadOSCFile(const char *path)
         }
     }
 
-    oscFilename_ = path;
+	oscFilePath_ = path;
 
     return 0;
 }
@@ -179,7 +182,7 @@ int ScenarioReader::loadOSCMem(const pugi::xml_document &xml_doc)
         throw std::runtime_error("Couldn't find OpenSCENARIO or OpenScenario element - check XML!");
     }
 
-    oscFilename_ = "inline";
+	oscFilePath_ = "inline";
 
     return 0;
 }
@@ -259,49 +262,80 @@ Catalog *ScenarioReader::LoadCatalog(std::string name)
         return catalog;
     }
 
-    // Not found, try to locate it in one the registered catalog directories
-    pugi::xml_document       catalog_doc;
-    pugi::xml_parse_result   result;
-    std::vector<std::string> file_name_candidates;
-    for (size_t i = 0; i < catalogs_->catalog_dirs_.size() && !result; i++)
-    {
-        file_name_candidates.clear();
-        // absolute path or relative to current directory
-        file_name_candidates.push_back(catalogs_->catalog_dirs_[i].dir_name_ + "/" + name + ".xosc");
-        // Then assume relative path to scenario directory - which perhaps should be the expected location
-        file_name_candidates.push_back(CombineDirectoryPathAndFilepath(DirNameOf(oscFilename_), catalogs_->catalog_dirs_[i].dir_name_) + "/" + name +
-                                       ".xosc");
-        // Check registered paths
-        for (size_t j = 0; j < SE_Env::Inst().GetPaths().size(); j++)
-        {
-            file_name_candidates.push_back(
-                CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[j], catalogs_->catalog_dirs_[i].dir_name_ + "/" + name + ".xosc"));
-            file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[j], name + ".xosc"));
-        }
-        for (size_t j = 0; j < file_name_candidates.size() && !result; j++)
-        {
-            if (FileExists(file_name_candidates[j].c_str()))
-            {
-                // Load it
-                result = catalog_doc.load_file(file_name_candidates[j].c_str());
-            }
-        }
-    }
-    if (!result)
-    {
-        throw std::runtime_error("Couldn't locate catalog file: " + name + ". " + result.description());
-    }
+	// Not found, try to locate it in one the registered catalog directories
+	pugi::xml_document catalog_doc;
+	pugi::xml_parse_result result;
+	std::vector<fs::path> catalogPathCandidates;
+	for (size_t i = 0; i < catalogs_->catalog_dirs_.size() && !result; i++)
+	{
+		catalogPathCandidates.clear();
+		fs::path catalogPathOsc(catalogs_->catalog_dirs_[i].dir_name_);
+		if (catalogPathOsc.is_absolute())
+		{
+			// Absolute path
+			catalogPathCandidates.push_back(catalogPathOsc);
+		}
+		else {
+			// Relative path (relative to .xosc file) - this should be the normal case
+			fs::path oscPath = fs::path(oscFilePath_).parent_path();
+			catalogPathCandidates.push_back(
+				oscPath / catalogPathOsc / fs::path(name + ".xosc"));
+		}
+		// Also relative to registered paths
+		for (size_t j = 0; j < SE_Env::Inst().GetPaths().size(); j++)
+		{
+			fs::path registeredPath(SE_Env::Inst().GetPaths()[j]);
+			catalogPathCandidates.push_back(
+				registeredPath / fs::path(name + ".xosc"));
+		}
+		// Make all paths absolute and canonical
+		for (auto &&catalogPath : catalogPathCandidates) {
+			if (not catalogPath.is_absolute()) {
+				if (fs::exists(catalogPath)) {
+					// Canonical requires file to exist
+					catalogPath = fs::canonical(
+						fs::current_path() / catalogPath);
+				}
+				else {
+					// Weakly canonical does not require file to exist
+					catalogPath = fs::weakly_canonical(catalogPath);
+				}
+			}
+		}
+		for (size_t j = 0; j < catalogPathCandidates.size() && !result; j++)
+		{
+			if (fs::exists(catalogPathCandidates[j]))
+			{
+				// Try to load the catalog file
+				result = catalog_doc.load_file(catalogPathCandidates[j].c_str());
+				if (result)
+				{
+					LOG("Successfully loaded %s from %s", name.c_str(),
+						catalogPathCandidates[j].c_str());
+				}
+			}
+		}
+	}
+	if (!result)
+	{
+		throw std::runtime_error("Couldn't locate " + name
+			+ " file at either of the following locations: "
+			+ ConcatenatePathVectorForLogging(catalogPathCandidates)
+			+ ". Check catalog paths in .xosc file or specify additional "
+			  " asset paths for search with the --path option."
+			+ result.description());
+	}
 
     pugi::xml_node osc_node_ = catalog_doc.child("OpenSCENARIO");
-    if (!osc_node_)
-    {
-        osc_node_ = catalog_doc.child("OpenScenario");
-        if (!osc_node_)
-        {
-            throw std::runtime_error("Couldn't find Catalog OpenSCENARIO or OpenScenario element - check XML!");
-        }
-    }
-    pugi::xml_node catalog_node = osc_node_.child("Catalog");
+	if (!osc_node_)
+	{
+		osc_node_ = catalog_doc.child("OpenScenario");
+		if (!osc_node_)
+		{
+			throw std::runtime_error("Couldn't find Catalog OpenSCENARIO or OpenScenario element - check XML!");
+		}
+	}
+	pugi::xml_node catalog_node = osc_node_.child("Catalog");
 
     catalog        = new Catalog();
     catalog->name_ = name;
@@ -945,13 +979,13 @@ Controller *ScenarioReader::parseOSCObjectController(pugi::xml_node controllerNo
         LOG("Warning: Empty controller node");
     }
 
-    if (!properties.file_.filepath_.empty())
-    {
-        // Localize file
-        if (!FileExists(filename.c_str()))
-        {
-            // Then assume relative path to scenario directory - which perhaps should be the expected location
-            std::string filename2 = CombineDirectoryPathAndFilepath(DirNameOf(oscFilename_), filename);
+	if (!properties.file_.filepath_.empty())
+	{
+		// Localize file
+		if (!FileExists(filename.c_str()))
+		{
+			// Then assume relative path to scenario directory - which perhaps should be the expected location
+			std::string filename2 = CombineDirectoryPathAndFilepath(DirNameOf(oscFilePath_), filename);
 
             if (!FileExists(filename2.c_str()))
             {

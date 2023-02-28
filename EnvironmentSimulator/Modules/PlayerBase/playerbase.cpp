@@ -631,14 +631,14 @@ int ScenarioPlayer::InitViewer()
     std::vector<char*> args      = {argv_, std::next(argv_, argc_)};
     int                arg_count = static_cast<int>(args.size());
 
-    // Create viewer
-    osg::ArgumentParser arguments(&arg_count, args.data());
-    viewer_ = new viewer::Viewer(roadmanager::Position::GetOpenDrive(),
-                                 scenarioEngine->getSceneGraphFilename().c_str(),
-                                 scenarioEngine->getScenarioFilename().c_str(),
-                                 exe_path_.c_str(),
-                                 arguments,
-                                 &opt);
+	// Create viewer
+	osg::ArgumentParser arguments(&arg_count, args.data());
+	viewer_ = new viewer::Viewer(
+		roadmanager::Position::GetOpenDrive(),
+		scenarioEngine->getSceneGraphFilename().c_str(),
+		scenarioEngine->getScenarioFilePath().c_str(),
+		exe_path_.c_str(),
+		arguments, &opt);
 
     if (viewer_->osgViewer_ == 0)
     {
@@ -1462,11 +1462,11 @@ int ScenarioPlayer::Init()
         return -1;
     }
 
-    // Save xml
-    if (opt.GetOptionSet("save_xosc"))
-    {
-        std::string         filename = FileNameOf(scenarioEngine->getScenarioFilename());
-        pugi::xml_document* xml_doc  = scenarioEngine->scenarioReader->GetDXMLDocument();
+	// Save xml
+	if (opt.GetOptionSet("save_xosc"))
+	{
+		std::string filename = FileNameOf(scenarioEngine->getScenarioFilePath());
+		pugi::xml_document* xml_doc = scenarioEngine->scenarioReader->GetDXMLDocument();
 
         if (xml_doc)
         {
@@ -1525,44 +1525,45 @@ int ScenarioPlayer::Init()
                 filename = dist.AddInfoToFilename(filename);
             }
 
-            CSV_Log->Open(scenarioEngine->getScenarioFilename(), static_cast<int>(scenarioEngine->entities_.object_.size()), filename);
-            LOG("Log all vehicle data in csv file");
-        }
-        else
-        {
-            LOG("Failed to open CSV log %s");
-        }
-    }
+			CSV_Log->Open(scenarioEngine->getScenarioFilePath(),
+				static_cast<int>(scenarioEngine->entities_.object_.size()), filename);
+			LOG("Log all vehicle data in csv file");
+		}
+		else
+		{
+			LOG("Failed to open CSV log %s");
+		}
+	}
 
     // Create a data file for later replay?
     if ((arg_str = opt.GetOptionArg("record")) != "")
     {
         std::string filename;
 
-        if (!arg_str.empty())
-        {
-            if (IsDirectoryName(arg_str))
-            {
-                filename = arg_str + FileNameWithoutExtOf(scenarioEngine->getScenarioFilename()) + ".dat";
-            }
-            else
-            {
-                filename = arg_str;
-            }
-        }
-        else
-        {
-            filename = SE_Env::Inst().GetDatFilePath();
-        }
+		if (!arg_str.empty())
+		{
+			if (IsDirectoryName(arg_str))
+			{
+				filename = arg_str + FileNameWithoutExtOf(scenarioEngine->getScenarioFilePath()) + ".dat";
+			}
+			else
+			{
+				filename = arg_str;
+			}
+		}
+		else
+		{
+			filename = SE_Env::Inst().GetDatFilePath();
+		}
 
         if (dist.GetNumPermutations() > 0)
         {
             filename = dist.AddInfoToFilename(filename);
         }
 
-        LOG("Recording data to file %s", filename.c_str());
-        scenarioGateway->RecordToFile(filename, scenarioEngine->getOdrFilename(), scenarioEngine->getSceneGraphFilename());
-    }
+		LOG("Recording data to file %s", filename.c_str());
+		scenarioGateway->RecordToFile(filename, scenarioEngine->getOdrFilePath(), scenarioEngine->getSceneGraphFilename());
+	}
 
     if (launch_server)
     {

@@ -692,16 +692,16 @@ extern "C"
         return pause_flag;
     }
 
-    SE_DLL_API const char *SE_GetODRFilename()
-    {
-        static std::string returnString;
-        if (player == nullptr)
-        {
-            return 0;
-        }
-        returnString = player->scenarioEngine->getOdrFilename().c_str();
-        return returnString.c_str();
-    }
+	SE_DLL_API const char *SE_GetODRFilename()
+	{
+		static std::string returnString;
+		if (player == nullptr)
+		{
+			return 0;
+		}
+		returnString = player->scenarioEngine->getOdrFilePath().c_str();
+		return returnString.c_str();
+	}
 
     SE_DLL_API const char *SE_GetSceneGraphFilename()
     {

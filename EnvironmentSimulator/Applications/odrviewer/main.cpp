@@ -491,7 +491,7 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    std::string modelFilename = opt.GetOptionArg("model");
+	std::string modelFilePath = opt.GetOptionArg("model");
 
     if (opt.GetOptionArg("density") != "")
     {
@@ -536,8 +536,14 @@ int main(int argc, char **argv)
         }
         roadmanager::OpenDrive *odrManager = roadmanager::Position::GetOpenDrive();
 
-        osg::ArgumentParser arguments(&argc, argv);
-        viewer::Viewer     *viewer = new viewer::Viewer(odrManager, modelFilename.c_str(), NULL, argv[0], arguments, &opt);
+		osg::ArgumentParser arguments(&argc, argv);
+		viewer::Viewer *viewer = new viewer::Viewer(
+			odrManager,
+			modelFilePath.c_str(),
+			NULL,
+			argv[0],
+			arguments,
+			&opt);
 
         viewer->SetWindowTitleFromArgs(args);
         viewer->RegisterKeyEventCallback(FetchKeyEvent, nullptr);
