@@ -150,14 +150,11 @@ void ControllerLooming::Step(double timeStep)
 					// New road has opposite direction, change sign of direction variable
 					direction *= -1;
 				}
-
-				laneSec_idx = roadTemp->GetLaneSectionIdxByS(direction == 1 ? 0.0 : roadTemp->GetLength());
-				
 			}
 
 			road_counter++;
 			double dist_lsec = 0.0;
-			for (int n = laneSec_idx; !hasFarTan && (dist + dist_lsec) < farPointDistance && n < roadTemp->GetNumberOfLaneSections(); n++)
+			for (int n = 0; !hasFarTan && dist + dist_lsec < farPointDistance && n < roadTemp->GetNumberOfLaneSections(); n++)
 			{
 				int current_laneSec_idx = n;
 				if (direction == -1)
@@ -187,7 +184,7 @@ void ControllerLooming::Step(double timeStep)
 						return;
 					}
 
-					lane = lsec->GetLaneById(link->GetId());				
+					lane = lsec->GetLaneById(link->GetId());
 				}
 				std::vector<roadmanager::PointStruct> osi_points = lane->GetOSIPoints()->GetPoints();
 
@@ -214,9 +211,9 @@ void ControllerLooming::Step(double timeStep)
 							// Not first road
 							(road_counter > 0 && // missed this check
 							((direction == 1 &&
-							dist + dist_lsec + osi_points[cur_idx].s > farPointDistance) ||
+							dist + osi_points[cur_idx].s > farPointDistance) ||
 							(direction == -1 &&
-							dist + dist_lsec + (lsec->GetLength() - osi_points[cur_idx].s) > farPointDistance))))
+							dist + dist_lsec - osi_points[cur_idx].s > farPointDistance))))
 						{
 							break;  // looked passed 80 meters, we can quit now
 						}
@@ -231,9 +228,9 @@ void ControllerLooming::Step(double timeStep)
 								osi_points[cur_idx].s < object_->pos_.GetS() - dist_left))) ||
 								(road_counter > 0 && // Not first road
 								((direction == 1 &&
-								osi_points[cur_idx].s > dist_left - (dist + dist_lsec)) ||
+								osi_points[cur_idx].s > dist_left - dist) ||
 								(direction == -1 &&
-								lsec->GetLength() - osi_points[cur_idx].s > dist_left - (dist + dist_lsec))))))
+								lsec->GetLength() - osi_points[cur_idx].s > dist_left - dist )))))
 						{
 							break;
 						}
@@ -250,7 +247,7 @@ void ControllerLooming::Step(double timeStep)
 							RotateVec2D(local_x, local_y, osi_points[cur_idx].h, xr, yr);
 							double far_x_tmp = osi_points[cur_idx].x + xr;
 							double far_y_tmp = osi_points[cur_idx].y + yr;
-							double farTanS_tmp = (dist + dist_lsec) + (direction == 1 ? osi_points[cur_idx].s : lsec->GetLength() - osi_points[cur_idx].s);
+							double farTanS_tmp = dist + (direction == 1 ? osi_points[cur_idx].s : dist_lsec - osi_points[cur_idx].s);
 							if (road_counter == 0)
 							{
 								// subtract object position
