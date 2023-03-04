@@ -54,6 +54,11 @@ set(USE_SUMO
     CACHE BOOL
           "If code that depend on sumo should be compiled.")
 
+set(USE_BULLET
+    ON
+    CACHE BOOL
+          "If code that depend on bullet dynamics should be compiled.")
+
 set(USE_GTEST
     ON
     CACHE BOOL
@@ -218,6 +223,11 @@ endif()
 if(USE_SUMO)
     include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/external/sumo.cmake)
     set_sumo_libs()
+endif()
+
+if(USE_BULLET)
+    include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/external/bullet.cmake)
+    set_bullet_libs()
 endif()
 
 # ############################### Compiling targets ##################################################################

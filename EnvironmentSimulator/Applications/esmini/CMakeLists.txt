@@ -40,7 +40,8 @@ target_include_directories(
     ${EXTERNALS_OSI_INCLUDES}
     ${EXTERNALS_PUGIXML_PATH}
     ${EXTERNALS_OSG_INCLUDES}
-    ${EXTERNALS_SUMO_INCLUDES})
+    ${EXTERNALS_SUMO_INCLUDES}
+    ${EXTERNALS_BULLET_INCLUDES})
 
 target_link_libraries(
     ${TARGET}
@@ -54,6 +55,7 @@ target_link_libraries(
     ${VIEWER_BASE}
     ${OSI_LIBRARIES}
     ${SUMO_LIBRARIES}
+    ${BULLET_LIBRARIES}
     ${TIME_LIB}
     ${SOCK_LIB})
 

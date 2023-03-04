@@ -17,6 +17,9 @@
 #include "ControllerInteractive.hpp"
 #include "ControllerFollowGhost.hpp"
 #include "ControllerFollowRoute.hpp"
+#ifdef _USE_BULLET
+#include "ControllerDynamics.hpp"
+#endif  // _USE_BULLET
 #ifdef _USE_SUMO
 #include "ControllerSumo.hpp"
 #endif  // _USE_SUMO
@@ -65,6 +68,9 @@ void ScenarioReader::LoadControllers()
 	RegisterController(ControllerFollowRoute::GetTypeNameStatic(), InstantiateControllerFollowRoute);
 #ifdef _USE_SUMO
 	RegisterController(ControllerSumo::GetTypeNameStatic(), InstantiateControllerSumo);
+#endif
+#ifdef _USE_BULLET
+	RegisterController(ControllerDynamics::GetTypeNameStatic(), InstantiateControllerDynamics);
 #endif
 	RegisterController(ControllerExternal::GetTypeNameStatic(), InstantiateControllerExternal);
 	RegisterController(ControllerRel2Abs::GetTypeNameStatic(), InstantiateControllerRel2Abs);

@@ -21,6 +21,10 @@ macro(set_definitions)
         add_definitions(-D_USE_GTEST)
     endif(USE_GTEST)
 
+    if(USE_BULLET)
+        add_definitions(-D_USE_BULLET)
+    endif(USE_BULLET)
+
     if(DYN_PROTOBUF)
         add_definitions(-D_DYN_PROTOBUF)
         add_definitions(-DPROTOBUF_USE_DLLS)

@@ -33,6 +33,18 @@ if(NOT
         "${CMAKE_CURRENT_LIST_DIR}/ControllerSumo.hpp")
 endif()
 
+if(NOT
+   USE_BULLET)
+    list(
+        REMOVE_ITEM
+        CONTROLLERS_SOURCES
+        "${CMAKE_CURRENT_LIST_DIR}/ControllerDynamics.cpp")
+    list(
+        REMOVE_ITEM
+        CONTROLLERS_INCLUDES
+        "${CMAKE_CURRENT_LIST_DIR}/ControllerDynamics.hpp")
+endif()
+
 # ############################### Creating library ###################################################################
 
 add_library(
@@ -62,7 +74,8 @@ target_include_directories(
     ${EXTERNALS_OSI_INCLUDES}
     ${EXTERNALS_SUMO_INCLUDES}
     ${EXTERNALS_PUGIXML_PATH}
-    ${EXTERNALS_OSG_INCLUDES})
+    ${EXTERNALS_OSG_INCLUDES}
+    ${EXTERNALS_BULLET_INCLUDES})
 
 disable_static_analysis(${TARGET})
 disable_iwyu(${TARGET})

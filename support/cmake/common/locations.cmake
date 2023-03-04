@@ -69,6 +69,8 @@ macro(set_project_external_paths)
         ${EXTERNALS_PATH}/pugixml)
     set(EXTERNALS_SUMO_PATH
         ${EXTERNALS_PATH}/sumo)
+    set(EXTERNALS_BULLET_PATH
+        ${EXTERNALS_PATH}/bullet)
     set(MODELS_PATH
         ${RESOURCES_PATH}/models)
 
@@ -87,6 +89,8 @@ macro(set_project_os_specific_paths)
             ${EXTERNALS_SUMO_PATH}/mac)
         set(EXTERNALS_GOOGLETEST_OS_SPECIFIC_PATH
             ${EXTERNALS_GOOGLETEST_PATH}/mac)
+        set(EXTERNALS_BULLET_OS_SPECIFIC_PATH
+            ${EXTERNALS_BULLET_PATH}/mac)
         set(TIME_LIB
             "")
     elseif(LINUX)
@@ -98,6 +102,8 @@ macro(set_project_os_specific_paths)
             ${EXTERNALS_SUMO_PATH}/linux)
         set(EXTERNALS_GOOGLETEST_OS_SPECIFIC_PATH
             ${EXTERNALS_GOOGLETEST_PATH}/linux)
+        set(EXTERNALS_BULLET_OS_SPECIFIC_PATH
+            ${EXTERNALS_BULLET_PATH}/linux)
         set(TIME_LIB
             "")
     elseif(MINGW)
@@ -119,6 +125,8 @@ macro(set_project_os_specific_paths)
                 ${EXTERNALS_SUMO_PATH}/v10)
             set(EXTERNALS_GOOGLETEST_OS_SPECIFIC_PATH
                 ${EXTERNALS_GOOGLETEST_PATH}/v10)
+            set(EXTERNALS_BULLET_OS_SPECIFIC_PATH
+                ${EXTERNALS_BULLET_PATH}/win)
             set(SOCK_LIB
                 Ws2_32.lib)
             set(TIME_LIB
@@ -149,6 +157,19 @@ macro(set_project_includes)
         ${EXTERNALS_SUMO_OS_SPECIFIC_PATH}/include)
     set(EXTERNALS_GOOGLETEST_INCLUDES
         ${EXTERNALS_GOOGLETEST_OS_SPECIFIC_PATH}/include)
+    set(EXTERNALS_BULLET_INCLUDES
+        ${EXTERNALS_BULLET_OS_SPECIFIC_PATH}/include
+        ${EXTERNALS_BULLET_OS_SPECIFIC_PATH}/include/BulletCollision/BroadphaseCollision
+        ${EXTERNALS_BULLET_OS_SPECIFIC_PATH}/include/BulletCollision/CollisionDispatch
+        ${EXTERNALS_BULLET_OS_SPECIFIC_PATH}/include/BulletCollision/CollisionShapes
+        ${EXTERNALS_BULLET_OS_SPECIFIC_PATH}/include/BulletCollision/NarrowPhaseCollision
+        ${EXTERNALS_BULLET_OS_SPECIFIC_PATH}/include/BulletDynamics/Character
+        ${EXTERNALS_BULLET_OS_SPECIFIC_PATH}/include/BulletDynamics/ConstraintSolver
+        ${EXTERNALS_BULLET_OS_SPECIFIC_PATH}/include/BulletDynamics/Dynamics
+        ${EXTERNALS_BULLET_OS_SPECIFIC_PATH}/include/BulletDynamics/Featherstone
+        ${EXTERNALS_BULLET_OS_SPECIFIC_PATH}/include/BulletDynamics/MLCPSolvers
+        ${EXTERNALS_BULLET_OS_SPECIFIC_PATH}/include/BulletDynamics/Vehicle
+        ${EXTERNALS_BULLET_OS_SPECIFIC_PATH}/include/LinearMath)
 
 endmacro()
 
@@ -172,6 +193,9 @@ macro(set_project_library_paths)
 
     set(EXTERNALS_SUMO_LIBRARY_PATH
         ${EXTERNALS_SUMO_OS_SPECIFIC_PATH}/lib)
+
+    set(EXTERNALS_BULLET_LIBRARY_PATH
+        ${EXTERNALS_BULLET_OS_SPECIFIC_PATH}/lib)
 
     set(EXTERNALS_GTEST_LIBRARY_PATH
         ${EXTERNALS_GOOGLETEST_OS_SPECIFIC_PATH}/lib)
