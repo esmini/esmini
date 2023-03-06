@@ -37,6 +37,10 @@ namespace scenarioengine
 		void ReportKeyEvent(int key, bool down);
 		void SetSetSpeed(double setSpeed) { setSpeed_ = setSpeed; }
 		void Step(double timeStep);
+		bool getHasFarTan()
+		{
+			return hasFarTan;
+		}
 
 	private:
 		vehicle::Vehicle vehicle_;
@@ -51,6 +55,7 @@ namespace scenarioengine
 		double acc = 0.0;
 		double steering_rate_;
 		double angleDiff = 0.0;
+		bool hasFarTan = false;
 	};
 
 	Controller* InstantiateControllerLooming(void* args);

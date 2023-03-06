@@ -8,6 +8,7 @@
 #include "ScenarioEngine.hpp"
 #include "ScenarioReader.hpp"
 #include "ControllerUDPDriver.hpp"
+#include "ControllerLooming.hpp"
 #include "ControllerALKS_R157SM.hpp"
 #include "OSCParameterDistribution.hpp"
 #include "pugixml.hpp"
@@ -1779,6 +1780,7 @@ TEST(DistributionTest, TestDeterministicDistribution)
     EXPECT_EQ(dist.SetIndex(1), 0);
     EXPECT_NEAR(std::atof(dist.GetParamValue(2).c_str()), 70.0, 1e-3);
     EXPECT_NEAR(std::atof(dist.GetParamValue(3).c_str()), 1.3, 1e-3);
+    dist.Reset();
 }
 
 TEST_F(StraightRoadTest, TestObjectOverlap)
@@ -1872,6 +1874,81 @@ TEST(SpeedTest, TestChangeSpeedOverDistance)
         action.Start(0.0, 0.0);
         EXPECT_NEAR(action.transition_.GetParamTargetVal(), time[i], 1E-5);
     }
+}
+
+TEST(ControllerTest, TestLoomingController)
+{
+    double dt = 0.05;
+    ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/loomingTest.xosc");
+    ASSERT_NE(se, nullptr);
+
+    for (int i = 0; i < static_cast<int>(5.0 / dt); i++)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetS(), 41.3639105007, 1E-5);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetT(), -1.4086498255, 1E-5);
+
+    for (int i = 0; i < static_cast<int>(50.0 / dt); i++)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetS(), 13.9465230480, 1E-5);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetT(), -1.4084915275, 1E-5);
+
+    for (int i = 0; i < static_cast<int>(250.0 / dt); i++)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetS(), 32.2660666957, 1e-5);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetT(), -0.3151178794, 1e-5);
+
+    for (int i = 0; i < static_cast<int>(500 / dt); i++)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetS(), 65.7392830880, 1e-5);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetT(), -1.4084949366, 1e-5);
+
+    for (int i = 0; i < static_cast<int>(1500 / dt); i++)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }
+    printf("x1500:%.10f", se->entities_.object_[0]->pos_.GetT());
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetS(), 28.5068071921, 1e-5);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetT(), -1.4084788268, 1e-5);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetH(), 0.7398100512, 1e-5);
+
+    delete se;
+}
+
+TEST(ControllerTest, TestLoomingFarTan)
+{
+    double dt = 0.05;
+    ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/loomingTest.xosc");
+    ASSERT_NE(se, nullptr);
+
+    // Get handle to first controller, which we know is a looming controller
+    ASSERT_EQ(se->scenarioReader->controller_[0]->GetType(), scenarioengine::Controller::Type::CONTROLLER_TYPE_LOOMING);
+
+    ControllerLooming* ctrl = reinterpret_cast<ControllerLooming*>(se->scenarioReader->controller_[0]);
+    ASSERT_NE(ctrl, nullptr);
+
+    for (int i = 0; i < static_cast<int>(5.0 / dt); i++)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+        EXPECT_EQ(ctrl->getHasFarTan(), true);
+    }
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetS(), 41.3639105007, 1E-5);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetT(), -1.4086498255, 1E-5);
+
+    delete se;
 }
 
 // Uncomment to print log output to console

@@ -59,8 +59,8 @@ void ControllerLooming::Step(double timeStep)
 	double far_y = 0.0;
 	double far_tan_s = 0.0;
 
-	bool hasFarTan = false;
 	int road_counter = -1;
+	int laneSec_counter = -1;
 
 
 	currentSpeed_ = object_->GetSpeed();
@@ -68,7 +68,7 @@ void ControllerLooming::Step(double timeStep)
 	roadmanager::RoadProbeInfo s_data;
 	// fixed near point
 	object_->pos_.GetProbeInfo(nearPointDistance, &s_data, roadmanager::Position::LookAheadMode::LOOKAHEADMODE_AT_LANE_CENTER);
-	double nearAngle = s_data.relative_h;
+ 	double nearAngle = s_data.relative_h;
 
 	// double near_x = s_data.road_lane_info.pos[0];
 	// double near_y = s_data.road_lane_info.pos[1];
@@ -106,7 +106,6 @@ void ControllerLooming::Step(double timeStep)
 		int direction = IsAngleForward(object_->pos_.GetHRelative());
 		int direction_prev = direction;
 		roadmanager::Lane* lane = nullptr;
-		int laneSec_idx = -1;
 
 		while (!hasFarTan && dist < farPointDistance)
 		{
@@ -114,8 +113,6 @@ void ControllerLooming::Step(double timeStep)
 			if (road_counter == -1) // first time, first road, same as ego vehicle is located
 			{
 				roadTemp = road;
-				laneSec_idx = roadTemp->GetLaneSectionIdxByS(object_->pos_.GetS()); //get lansec id
-
 				// On this road, find out whether we're moving along the road s-direction or not
 				direction = IsAngleForward(object_->pos_.GetHRelative()) ? 1 : -1;
 
@@ -136,7 +133,7 @@ void ControllerLooming::Step(double timeStep)
 
 				if (roadLink->GetElementType() == roadmanager::RoadLink::ElementType::ELEMENT_TYPE_JUNCTION)
 				{
-					break; // currently intersection not considered.
+					break; // currently intersection not considered.cclement@volvocars.com
 				}
 
 				roadTemp = odr->GetRoadById(roadLink->GetElementId());
@@ -170,9 +167,19 @@ void ControllerLooming::Step(double timeStep)
 				}
 				if (road_counter == 0)
 				{
-					lane = lsec->GetLaneById(object_->pos_.GetLaneId());  // start from the current lane of the vehicle
+					// lane = lsec->GetLaneById(object_->pos_.GetLaneId());
+					if (laneSec_counter < 0)
+					{
+						lane = lsec->GetLaneById(object_->pos_.GetLaneId());
+					}
+					else if (laneSec_counter >= 0)
+					{
+						lane = lsec->GetLaneById(lane->GetLink(direction_prev == 1 ? roadmanager::LinkType::SUCCESSOR :
+							roadmanager::LinkType::PREDECESSOR)->GetId());
+					}
+
 				}
-				else if (road_counter > 0)
+ 				else if (road_counter > 0)
 				{
 
 					// for lane links, we look from previous lane, hence switch direction
@@ -189,7 +196,7 @@ void ControllerLooming::Step(double timeStep)
 				std::vector<roadmanager::PointStruct> osi_points = lane->GetOSIPoints()->GetPoints();
 
 				double dist_left = -1.0;  // the distance from ego vehicle to the closest found tangent point
-
+				laneSec_counter++;
 				for (int m = 0; m < 2; m++)  // m==0: Left, m==1: Right
 				{
 					//LOG("road %d %.5f %s", roadTemp->GetId(), object_->pos_.GetS(), m == 0 ? "Left" : "Right");

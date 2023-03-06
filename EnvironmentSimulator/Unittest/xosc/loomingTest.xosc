@@ -12,16 +12,16 @@
     </ParameterDeclarations>
     <CatalogLocations>
         <VehicleCatalog>
-            <Directory path="../xosc/Catalogs/Vehicles"/>
+            <Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
         </VehicleCatalog>
         <ControllerCatalog>
-            <Directory path="../xosc/Catalogs/Controllers"/>
+            <Directory path="../../../resources/xosc/Catalogs/Controllers"/>
         </ControllerCatalog>
     </CatalogLocations>
     <RoadNetwork>
         <!-- <LogicFile filepath="../../../scenariogeneration/straight_road_mixed.xodr"/> -->
         <!-- <LogicFile filepath="../xodr/curve_road.xodr"/> -->
-        <!-- <LogicFile filepath="../../../scenariogeneration/curve_road_mixed.xodr"/> -->
+        <LogicFile filepath="../xodr/curve_road_mixed.xodr"/>
         <!-- <LogicFile filepath="../xodr/road_straight_curve_junction.xodr"/> -->
         <!-- <LogicFile filepath="../../../scenariogeneration/lane_section_complex.xodr"/> -->
         <!-- <LogicFile filepath="../../../scenariogeneration/lane_section.xodr"/> -->
@@ -29,7 +29,7 @@
         <!-- <LogicFile filepath="../../../scenariogeneration/straight_road.xodr"/> -->
         <!-- <LogicFile filepath="../xodr/lane_number_change_merge.xodr"/> -->
         <!-- <LogicFile filepath="../../../scenariogeneration/examples/xodr/lane_section_arc_1lanesection.xodr"/> -->
-        <LogicFile filepath="../../../scenariogeneration/lane_section_arc.xodr"/>
+        <!-- <LogicFile filepath="../../../scenariogeneration/lane_section_arc.xodr"/> -->
     </RoadNetwork>
     <Entities>
         <ScenarioObject name="Ego">
@@ -77,7 +77,7 @@
             <Act name="empty">
                 <StartTrigger>
                     <ConditionGroup>
-                        <Condition name="CutInActStart" delay="0" conditionEdge="none">
+                        <Condition name="SenarioStart" delay="0" conditionEdge="none">
                             <ByValueCondition>
                                 <SimulationTimeCondition value="0" rule="greaterThan"/>
                             </ByValueCondition>
@@ -85,13 +85,13 @@
                     </ConditionGroup>
                 </StartTrigger>
                 <StopTrigger>
-                    <!-- <ConditionGroup> -->
-                        <!-- <Condition name="StopCondition" delay="0.0" conditionEdge="none"> -->
-                            <!-- <ByValueCondition> -->
-                                <!-- <SimulationTimeCondition value="60.0" rule="greaterOrEqual"/> -->
-                            <!-- </ByValueCondition> -->
-                        <!-- </Condition> -->
-                    <!-- </ConditionGroup> -->
+                    <ConditionGroup>
+                        <Condition name="StopCondition" delay="0.0" conditionEdge="none">
+                            <ByValueCondition>
+                                <SimulationTimeCondition value="20.0" rule="greaterOrEqual"/>
+                            </ByValueCondition>
+                        </Condition>
+                    </ConditionGroup>
                 </StopTrigger>
             </Act>
         </Story>
