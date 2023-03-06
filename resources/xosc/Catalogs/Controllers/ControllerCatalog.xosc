@@ -1,239 +1,235 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <OpenSCENARIO>
-   <FileHeader revMajor="1"
-               revMinor="0"
-               date="2020-10-204T10:00:00"
-               description="Controller catalog"
-               author="esmini-team"/>
+    <FileHeader revMajor="1" revMinor="0" date="2020-10-204T10:00:00" description="Controller catalog" author="esmini-team"/>
     <Catalog name="ControllerCatalog">
         <Controller name="sloppyDriver">
             <ParameterDeclarations>
-                <ParameterDeclaration name="Sloppiness" parameterType="double" value="0.5" />
-                <ParameterDeclaration name="Mode" parameterType="string" value="additive" />
+                <ParameterDeclaration name="Sloppiness" parameterType="double" value="0.5"/>
+                <ParameterDeclaration name="Mode" parameterType="string" value="additive"/>
             </ParameterDeclarations>
             <Properties>
-                <Property name="esminiController" value="SloppyDriverController" />
-                <Property name="sloppiness" value="$Sloppiness" />
-                <Property name="mode" value="$Mode" />
+                <Property name="esminiController" value="SloppyDriverController"/>
+                <Property name="sloppiness" value="$Sloppiness"/>
+                <Property name="mode" value="$Mode"/>
             </Properties>
         </Controller>
         <Controller name="interactiveDriver">
             <ParameterDeclarations>
-                <ParameterDeclaration name="SteeringRate" parameterType="double" value="4.0" />
-                <ParameterDeclaration name="SpeedFactor" parameterType="double" value="1.0" />
+                <ParameterDeclaration name="SteeringRate" parameterType="double" value="4.0"/>
+                <ParameterDeclaration name="SpeedFactor" parameterType="double" value="1.0"/>
             </ParameterDeclarations>
             <Properties>
-                <Property name="esminiController" value="InteractiveController" />
-                <Property name="steeringRate" value="$SteeringRate" />
-                <Property name="speedFactor" value="$SpeedFactor" />
+                <Property name="esminiController" value="InteractiveController"/>
+                <Property name="steeringRate" value="$SteeringRate"/>
+                <Property name="speedFactor" value="$SpeedFactor"/>
             </Properties>
         </Controller>
-      <Controller name="DynamicsController">
-        <ParameterDeclarations>
-        </ParameterDeclarations>
-        <Properties>
-        </Properties>
-      </Controller>
+        <Controller name="dynamicsController">
+            <ParameterDeclarations/>
+            <Properties>
+                <Property name="esminiController" value="DynamicsController"/>
+            </Properties>
+        </Controller>
         <Controller name="controllerRel2Abs">
             <ParameterDeclarations>
-                <ParameterDeclaration name="Horizon" parameterType="double" value="1.0" />
-                <ParameterDeclaration name="ThresholdDist" parameterType="double" value="1.5" />
-                <ParameterDeclaration name="ThresholdSpeed" parameterType="double" value="1.5" />
+                <ParameterDeclaration name="Horizon" parameterType="double" value="1.0"/>
+                <ParameterDeclaration name="ThresholdDist" parameterType="double" value="1.5"/>
+                <ParameterDeclaration name="ThresholdSpeed" parameterType="double" value="1.5"/>
             </ParameterDeclarations>
             <Properties>
-                <Property name="esminiController" value="ControllerRel2Abs" />
-                <Property name="horizon" value="$Horizon" />
-                <Property name="thresholdDist" value="$ThresholdDist" />
-                <Property name="thresholdSpeed" value="$ThresholdSpeed" />
+                <Property name="esminiController" value="ControllerRel2Abs"/>
+                <Property name="horizon" value="$Horizon"/>
+                <Property name="thresholdDist" value="$ThresholdDist"/>
+                <Property name="thresholdSpeed" value="$ThresholdSpeed"/>
             </Properties>
         </Controller>
         <Controller name="externalController">
             <ParameterDeclarations>
-                <ParameterDeclaration name="UseGhost" parameterType="boolean" value="false" />
-                <ParameterDeclaration name="HeadStartTime" parameterType="double" value="3" />
-                <ParameterDeclaration name="Mode" parameterType="string" value="override" />
+                <ParameterDeclaration name="UseGhost" parameterType="boolean" value="false"/>
+                <ParameterDeclaration name="HeadStartTime" parameterType="double" value="3"/>
+                <ParameterDeclaration name="Mode" parameterType="string" value="override"/>
             </ParameterDeclarations>
             <Properties>
-                <Property name="esminiController" value="ExternalController" />
-                <Property name="useGhost" value="$UseGhost" />
-                <Property name="headstartTime" value="$HeadStartTime" />
-                <Property name="mode" value="$Mode" />
+                <Property name="esminiController" value="ExternalController"/>
+                <Property name="useGhost" value="$UseGhost"/>
+                <Property name="headstartTime" value="$HeadStartTime"/>
+                <Property name="mode" value="$Mode"/>
             </Properties>
         </Controller>
         <Controller name="cspas">
             <ParameterDeclarations>
-                <ParameterDeclaration name="UseGhost" parameterType="boolean" value="true" />
-                <ParameterDeclaration name="HeadStartTime" parameterType="double" value="3" />
+                <ParameterDeclaration name="UseGhost" parameterType="boolean" value="true"/>
+                <ParameterDeclaration name="HeadStartTime" parameterType="double" value="3"/>
             </ParameterDeclarations>
             <Properties>
-                <Property name="esminiController" value="ExternalController" />
-                <Property name="useGhost" value="$UseGhost" />
-                <Property name="headstartTime" value="$HeadStartTime" />
+                <Property name="esminiController" value="ExternalController"/>
+                <Property name="useGhost" value="$UseGhost"/>
+                <Property name="headstartTime" value="$HeadStartTime"/>
             </Properties>
         </Controller>
         <Controller name="cspas5s">
             <ParameterDeclarations>
-                <ParameterDeclaration name="UseGhost" parameterType="boolean" value="true" />
-                <ParameterDeclaration name="HeadStartTime" parameterType="double" value="5" />
+                <ParameterDeclaration name="UseGhost" parameterType="boolean" value="true"/>
+                <ParameterDeclaration name="HeadStartTime" parameterType="double" value="5"/>
             </ParameterDeclarations>
             <Properties>
-                <Property name="esminiController" value="ExternalController" />
-                <Property name="useGhost" value="$UseGhost" />
-                <Property name="headstartTime" value="$HeadStartTime" />
+                <Property name="esminiController" value="ExternalController"/>
+                <Property name="useGhost" value="$UseGhost"/>
+                <Property name="headstartTime" value="$HeadStartTime"/>
             </Properties>
         </Controller>
         <Controller name="cspas10s">
             <ParameterDeclarations>
-                <Property name="esminiController" value="ExternalController" />
-                <ParameterDeclaration name="UseGhost" parameterType="boolean" value="true" />
-                <ParameterDeclaration name="HeadStartTime" parameterType="double" value="10" />
+                <Property name="esminiController" value="ExternalController"/>
+                <ParameterDeclaration name="UseGhost" parameterType="boolean" value="true"/>
+                <ParameterDeclaration name="HeadStartTime" parameterType="double" value="10"/>
             </ParameterDeclarations>
             <Properties>
-                <Property name="useGhost" value="$UseGhost" />
-                <Property name="headstartTime" value="$HeadStartTime" />
+                <Property name="useGhost" value="$UseGhost"/>
+                <Property name="headstartTime" value="$HeadStartTime"/>
             </Properties>
         </Controller>
         <Controller name="followGhost">
             <ParameterDeclarations>
-                <ParameterDeclaration name="HeadStartTime" parameterType="double" value="3" />
+                <ParameterDeclaration name="HeadStartTime" parameterType="double" value="3"/>
                 <!-- FollowModes: time (time offset), position (distance offset) -->
-                <ParameterDeclaration name="FollowMode" parameterType="string" value="time" />
+                <ParameterDeclaration name="FollowMode" parameterType="string" value="time"/>
                 <!-- LookaheadSpeed: Look ahead time for picking ghost speed -->
-                <ParameterDeclaration name="LookaheadSpeed" parameterType="string" value="0.1" />
+                <ParameterDeclaration name="LookaheadSpeed" parameterType="string" value="0.1"/>
                 <!-- MinLookaheadSpeed: Minimum look ahead for picking ghost speed -->
                 <!-- Unit: time in time mode, distance in position mode -->
-                <ParameterDeclaration name="MinLookaheadSpeed" parameterType="string" value="0.1" />
+                <ParameterDeclaration name="MinLookaheadSpeed" parameterType="string" value="0.1"/>
                 <!-- LookaheadSteering: Look ahead time for picking ghost position for steering target -->
-                <ParameterDeclaration name="LookaheadSteering" parameterType="string" value="1.0" />
+                <ParameterDeclaration name="LookaheadSteering" parameterType="string" value="1.0"/>
                 <!-- MinLookaheadSteering: Minimum look ahead for picking ghost position for steering target -->
                 <!-- Unit: time in time mode, distance in position mode -->
-                <ParameterDeclaration name="MinLookaheadSteering" parameterType="string" value="0.1" />
+                <ParameterDeclaration name="MinLookaheadSteering" parameterType="string" value="0.1"/>
             </ParameterDeclarations>
             <Properties>
-                <Property name="esminiController" value="FollowGhostController" />
-                <Property name="headstartTime"  value="$HeadStartTime" />
-                <Property name="followMode"  value="$FollowMode" />
-                <Property name="lookaheadSpeed"  value="$LookaheadSpeed" />
-                <Property name="minLookaheadSpeed"  value="$MinLookaheadSpeed" />
-                <Property name="lookaheadSteering"  value="$LookaheadSteering" />
-                <Property name="minLookaheadSteering"  value="$MinLookaheadSteering" />
+                <Property name="esminiController" value="FollowGhostController"/>
+                <Property name="headstartTime" value="$HeadStartTime"/>
+                <Property name="followMode" value="$FollowMode"/>
+                <Property name="lookaheadSpeed" value="$LookaheadSpeed"/>
+                <Property name="minLookaheadSpeed" value="$MinLookaheadSpeed"/>
+                <Property name="lookaheadSteering" value="$LookaheadSteering"/>
+                <Property name="minLookaheadSteering" value="$MinLookaheadSteering"/>
             </Properties>
         </Controller>
         <Controller name="followRoute">
             <ParameterDeclarations>
-                <ParameterDeclaration name="MinDistForCollision" parameterType="double" value="10" />
-                <ParameterDeclaration name="LaneChangeTime" parameterType="double" value="5" />
-                <ParameterDeclaration name="TestMode" parameterType="boolean" value="false" />
+                <ParameterDeclaration name="MinDistForCollision" parameterType="double" value="10"/>
+                <ParameterDeclaration name="LaneChangeTime" parameterType="double" value="5"/>
+                <ParameterDeclaration name="TestMode" parameterType="boolean" value="false"/>
             </ParameterDeclarations>
             <Properties>
-                <Property name="esminiController" value="FollowRouteController" />
-                <Property name="minDistForCollision"  value="$MinDistForCollision" />
-                <Property name="laneChangeTime"  value="$LaneChangeTime" />
-                <Property name="testMode"  value="$TestMode" />
+                <Property name="esminiController" value="FollowRouteController"/>
+                <Property name="minDistForCollision" value="$MinDistForCollision"/>
+                <Property name="laneChangeTime" value="$LaneChangeTime"/>
+                <Property name="testMode" value="$TestMode"/>
             </Properties>
         </Controller>
         <Controller name="sumoController">
             <ParameterDeclarations>
-                <ParameterDeclaration name="CfgFile" parameterType="string" value="../sumo_inputs/e6mini.sumocfg" />
+                <ParameterDeclaration name="CfgFile" parameterType="string" value="../sumo_inputs/e6mini.sumocfg"/>
             </ParameterDeclarations>
             <Properties>
-                <Property name="esminiController" value="SumoController" />
+                <Property name="esminiController" value="SumoController"/>
                 <File filepath="$CfgFile"/>
             </Properties>
         </Controller>
         <Controller name="ACCController">
             <ParameterDeclarations>
-                <ParameterDeclaration name="SetSpeed" parameterType="double" value="50" />
-                <ParameterDeclaration name="TimeGap" parameterType="double" value="1.5" />
-                <ParameterDeclaration name="Mode" parameterType="string" value="additive" />
+                <ParameterDeclaration name="SetSpeed" parameterType="double" value="50"/>
+                <ParameterDeclaration name="TimeGap" parameterType="double" value="1.5"/>
+                <ParameterDeclaration name="Mode" parameterType="string" value="additive"/>
             </ParameterDeclarations>
             <Properties>
-                <Property name="esminiController" value="ACCController" />
-                <Property name="mode" value="$Mode" />
-                <Property name="setSpeed"  value="$SetSpeed" />
-                <Property name="timeGap"  value="$TimeGap" />
+                <Property name="esminiController" value="ACCController"/>
+                <Property name="mode" value="$Mode"/>
+                <Property name="setSpeed" value="$SetSpeed"/>
+                <Property name="timeGap" value="$TimeGap"/>
             </Properties>
         </Controller>
         <Controller name="ALKSController">
             <ParameterDeclarations>
-                <ParameterDeclaration name="SetSpeed" parameterType="double" value="50" />
-                <ParameterDeclaration name="TimeGap" parameterType="double" value="1.5" />
-                <ParameterDeclaration name="Mode" parameterType="string" value="additive" />
+                <ParameterDeclaration name="SetSpeed" parameterType="double" value="50"/>
+                <ParameterDeclaration name="TimeGap" parameterType="double" value="1.5"/>
+                <ParameterDeclaration name="Mode" parameterType="string" value="additive"/>
             </ParameterDeclarations>
             <Properties>
-                <Property name="mode" value="$Mode" />
-                <Property name="setSpeed"  value="$SetSpeed" />
-                <Property name="timeGap"  value="$TimeGap" />
+                <Property name="mode" value="$Mode"/>
+                <Property name="setSpeed" value="$SetSpeed"/>
+                <Property name="timeGap" value="$TimeGap"/>
             </Properties>
         </Controller>
         <Controller name="ECE_ALKS_RefDriverController">
             <ParameterDeclarations>
-                <ParameterDeclaration name="Logging" parameterType="bool" value="false" />
+                <ParameterDeclaration name="Logging" parameterType="bool" value="false"/>
             </ParameterDeclarations>
             <Properties>
-                <Property name="logging" value="$Logging" />
+                <Property name="logging" value="$Logging"/>
             </Properties>
         </Controller>
         <Controller name="ALKS_R157SM_Controller">
             <ParameterDeclarations>
-                <ParameterDeclaration name="Mode" parameterType="string" value="additive" />
+                <ParameterDeclaration name="Mode" parameterType="string" value="additive"/>
                 <!-- logLevel: 0 (none), 1 (log), 2 (log + debug) -->
-                <ParameterDeclaration name="LogLevel" parameterType="integer" value="1" />
+                <ParameterDeclaration name="LogLevel" parameterType="integer" value="1"/>
                 <!-- models: Regulation, ReferenceDriver, FSM, RSS -->
-                <ParameterDeclaration name="Model" parameterType="string" value="ReferenceDriver" />
+                <ParameterDeclaration name="Model" parameterType="string" value="ReferenceDriver"/>
                 <!-- cruise: false (no adaptive cruise control), true (use adaptive cruise control) -->
-                <ParameterDeclaration name="Cruise" parameterType="boolean" value="true" />
+                <ParameterDeclaration name="Cruise" parameterType="boolean" value="true"/>
                 <!-- perceptionDelayMode: Dist (0.72m), Time (0.4s default) (only applicable to ReferenceDriver) -->
                 <!-- time 0.4s can be overriden for pedestrians by setting PedestrianRiskEvaluationTime -->
-                <ParameterDeclaration name="CutInPerceptionDelayMode" parameterType="string" value="Dist" />
+                <ParameterDeclaration name="CutInPerceptionDelayMode" parameterType="string" value="Dist"/>
                 <!-- fullStop: "true" = decelerate to a full stop, "false" = decelerate until safe -->
-                <ParameterDeclaration name="FullStop" parameterType="boolean" value="false" />
+                <ParameterDeclaration name="FullStop" parameterType="boolean" value="false"/>
                 <!-- alwaysTrigOnScenario: "false" = only act if critical, "true" = take action also outside critical zone -->
-                <ParameterDeclaration name="AlwaysTrigOnScenario" parameterType="boolean" value="false" />
+                <ParameterDeclaration name="AlwaysTrigOnScenario" parameterType="boolean" value="false"/>
                 <!-- pedestrianRiskEvaluationTime: Time to perceive/evaluate a risk involving a pedestrian (ref driver only) -->
-                <ParameterDeclaration name="PedestrianRiskEvaluationTime" parameterType="double" value="0.4" />
+                <ParameterDeclaration name="PedestrianRiskEvaluationTime" parameterType="double" value="0.4"/>
                 <!-- aebTTC: TTC at which to trig AEB (ref driver only) -->
-                <ParameterDeclaration name="AEBTTC" parameterType="double" value="1.4" />
+                <ParameterDeclaration name="AEBTTC" parameterType="double" value="1.4"/>
                 <!-- lateralTrigDistance: Trig cut-in when obj moved this lateral distance towards Ego (ref driver only) -->
                 <!-- set to > 0 to use instead of standard r157 ref driver cut-in trig condition -->
-                <ParameterDeclaration name="LateralTrigDistance" parameterType="double" value="0.0" />
+                <ParameterDeclaration name="LateralTrigDistance" parameterType="double" value="0.0"/>
                 <!-- overlapTolerance: Tolerance for overlap check between target object and Ego vehicle front (ref driver only) -->
-                <ParameterDeclaration name="OverlapTolerance" parameterType="double" value="0.1" />
+                <ParameterDeclaration name="OverlapTolerance" parameterType="double" value="0.1"/>
             </ParameterDeclarations>
             <Properties>
-                <Property name="mode" value="$Mode" />
-                <Property name="logLevel" value="$LogLevel" />
-                <Property name="model"  value="$Model" />
-                <Property name="cruise"  value="$Cruise" />
-                <Property name="cutInPerceptionDelayMode"  value="$CutInPerceptionDelayMode" />
-                <Property name="fullStop"  value="$FullStop" />
-                <Property name="alwaysTrigOnScenario"  value="$AlwaysTrigOnScenario" />
-                <Property name="pedestrianRiskEvaluationTime"  value="$PedestrianRiskEvaluationTime" />
-                <Property name="aebTTC"  value="$AEBTTC" />
-                <Property name="lateralTrigDistance"  value="$LateralTrigDistance" />
-                <Property name="overlapTolerance"  value="$OverlapTolerance" />
+                <Property name="mode" value="$Mode"/>
+                <Property name="logLevel" value="$LogLevel"/>
+                <Property name="model" value="$Model"/>
+                <Property name="cruise" value="$Cruise"/>
+                <Property name="cutInPerceptionDelayMode" value="$CutInPerceptionDelayMode"/>
+                <Property name="fullStop" value="$FullStop"/>
+                <Property name="alwaysTrigOnScenario" value="$AlwaysTrigOnScenario"/>
+                <Property name="pedestrianRiskEvaluationTime" value="$PedestrianRiskEvaluationTime"/>
+                <Property name="aebTTC" value="$AEBTTC"/>
+                <Property name="lateralTrigDistance" value="$LateralTrigDistance"/>
+                <Property name="overlapTolerance" value="$OverlapTolerance"/>
             </Properties>
         </Controller>
         <Controller name="UDPDriverController">
             <ParameterDeclarations>
                 <!-- port: port number [1, 65535] OR 0 to pick automatically starting at basePort (see below) -->
                 <!-- Default = 49950 -->
-                <ParameterDeclaration name="Port" parameterType="integer" value="0" />
+                <ParameterDeclaration name="Port" parameterType="integer" value="0"/>
                 <!-- basePort: Specify first port nr. Default = 49950 -->
                 <!-- Since this value is used by all instances of the controller, the last -->
                 <!-- occurence of this parameter is applied in case it's specified in -->
                 <!-- multiple controllers -->
-                <ParameterDeclaration name="BasePort" parameterType="integer" value="49950" />
+                <ParameterDeclaration name="BasePort" parameterType="integer" value="49950"/>
                 <!-- execModeasynchronus blocking: true = run as separate port number [1, 65535] port number of first instance, additional instances -->
                 <!-- execMode: synchronous/asynchronous Default = asynchronous
                 <!-- synchronous: wait for and read only one (oldest) message each timestep. Blocking with timeout 500 ms -->
                 <!-- asynchronous: consume all received messages and ignore all but the latest. Non blocking (don't wait) -->
-                <ParameterDeclaration name="ExecMode" parameterType="string" value="asynchronous" />
+                <ParameterDeclaration name="ExecMode" parameterType="string" value="asynchronous"/>
             </ParameterDeclarations>
             <Properties>
-                <Property name="port" value="$Port" />
-                <Property name="basePort" value="$BasePort" />
-                <Property name="execMode" value="$ExecMode" />
+                <Property name="port" value="$Port"/>
+                <Property name="basePort" value="$BasePort"/>
+                <Property name="execMode" value="$ExecMode"/>
             </Properties>
         </Controller>
     </Catalog>
