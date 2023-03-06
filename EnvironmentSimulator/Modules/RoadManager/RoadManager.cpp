@@ -8720,6 +8720,10 @@ void Position::CopyRMPos(Position *from)
 	h_acc_ = tmp_pos.h_acc_;
 	p_acc_ = tmp_pos.p_acc_;
 	r_acc_ = tmp_pos.r_acc_;
+	align_h_ = tmp_pos.align_h_;
+	align_p_ = tmp_pos.align_p_;
+	align_r_ = tmp_pos.align_r_;
+	align_z_ = tmp_pos.align_z_;
 	snapToLaneTypes_ = tmp_pos.snapToLaneTypes_;
 }
 
