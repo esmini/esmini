@@ -341,9 +341,9 @@ target_link_libraries(${TARGET} esminiLib libprotobuf open_simulation_interface_
 
 Linux:
 ----
-include_directories(. ../include ../EnvironmentSimulator/Libraries/esminiLib ../externals/OSI/linux/include)
+include_directories(. ../include ../EnvironmentSimulator/Libraries/esminiLib ../externals/osi/linux/include)
 
-link_directories(. ../bin ../externals/OSI/linux/lib)
+link_directories(. ../bin ../externals/osi/linux/lib)
 
 target_link_libraries(${TARGET} esminiLib protobuf open_simulation_interface_pic)
 ----
