@@ -17,12 +17,10 @@
 
 #pragma once
 
-#define BT_EULER_DEFAULT_ZYX
-
 #include <string>
 #include "Controller.hpp"
 #include "Parameters.hpp"
-#include "btBulletDynamicsCommon.h"
+#include "DynamicVehicle.hpp"
 
 
 #define CONTROLLER_DYNAMICS_TYPE_NAME "DynamicsController"
@@ -48,23 +46,15 @@ namespace scenarioengine
 		static int GetTypeStatic() { return Controller::Type::CONTROLLER_TYPE_DYNAMICS; }
 		virtual int GetType() { return GetTypeStatic(); }
 
-
-		btBoxShape* veh_shape_;
-		btCompoundShape compound_;
-		btTransform veh_xform_;
-		btBroadphaseInterface* pair_cache_;
-		btDefaultCollisionConfiguration* collision_config_;
-		btCollisionDispatcher* dispatcher_;
-		btConstraintSolver* constraint_solver_;
-		btDiscreteDynamicsWorld* dynamics_world_;
-		btRigidBody* veh_body_;
-		btVehicleRaycaster* veh_ray_caster_;
-		btRaycastVehicle* vehicle_;
-		btDefaultMotionState* motion_state_;
+	private:
+		dynamicvehicle::DynamicVehicle vehicle_;
+		double length_;
+		double width_;
+		double height_;
+		double mass_;
 		double suspension_stiffness_;
 		double friction_slip_;
 		double roll_influence_;
-	private:
 	};
 
 	Controller* InstantiateControllerDynamics(void* args);
