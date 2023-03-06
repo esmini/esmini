@@ -32,12 +32,20 @@ OSCPositionWorld::OSCPositionWorld(double x, double y, double z, double h, doubl
 		{
 			z = 0.0;
 		}
+		else
+		{
+			this->position_.SetAlignModeZ(roadmanager::Position::ALIGN_MODE::ALIGN_NONE);
+		}
 
 		if (std::isnan(p))
 		{
 			// Indicate that this attribute has not been set explicitly in the scenario
 			position_.SetOrientationTypeSetBit(roadmanager::Position::OrientationSetMask::P, 0);
 			p = 0.0;  // set default value
+		}
+		else
+		{
+			this->position_.SetAlignModeP(roadmanager::Position::ALIGN_MODE::ALIGN_NONE);
 		}
 
 		if (std::isnan(r))
@@ -46,6 +54,10 @@ OSCPositionWorld::OSCPositionWorld(double x, double y, double z, double h, doubl
 			position_.SetOrientationTypeSetBit(roadmanager::Position::OrientationSetMask::R, 0);
 			r = 0.0;  // set default value
 		}
+		else
+		{
+			this->position_.SetAlignModeR(roadmanager::Position::ALIGN_MODE::ALIGN_NONE);
+		}
 
 		if (std::isnan(h))
 		{
@@ -53,6 +65,11 @@ OSCPositionWorld::OSCPositionWorld(double x, double y, double z, double h, doubl
 			position_.SetOrientationTypeSetBit(roadmanager::Position::OrientationSetMask::H, 0);
 			h = 0.0;  // set default value
 		}
+		else
+		{
+			this->position_.SetAlignModeH(roadmanager::Position::ALIGN_MODE::ALIGN_NONE);
+		}
+
 
 		position_.SetInertiaPos(x, y, z, h, p, r);
 	}
