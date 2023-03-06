@@ -38,3 +38,6 @@ https://github.com/tronkko/dirent
 
 Regulation 157 Safety Models
 https://github.com/ec-jrc/JRC-FSM
+
+Bullet Physics SDK
+https://github.com/bulletphysics/bullet3
