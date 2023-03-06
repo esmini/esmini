@@ -332,9 +332,9 @@ To access OSI data we first need to complement the build script (CMakeLists.txt)
 
 Windows:
 ----
-include_directories(. ../include ../EnvironmentSimulator/Libraries/esminiLib ../externals/OSI/v10/include)
+include_directories(. ../include ../EnvironmentSimulator/Libraries/esminiLib ../externals/osi/v10/include)
 
-link_directories(. ../bin ../externals/OSI/v10/lib)
+link_directories(. ../bin ../externals/osi/v10/lib)
 
 target_link_libraries(${TARGET} esminiLib libprotobuf open_simulation_interface_pic)
 ----
