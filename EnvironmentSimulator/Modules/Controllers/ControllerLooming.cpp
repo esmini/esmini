@@ -10,9 +10,6 @@
  * https://sites.google.com/view/simulationscenarios
  */
 
-/*
- * This controller simulates a simple Adaptive Cruise Control
- */
 
 #include "ControllerLooming.hpp"
 #include "CommonMini.hpp"
@@ -30,8 +27,7 @@ Controller* scenarioengine::InstantiateControllerLooming(void* args)
 	return new ControllerLooming(initArgs);
 }
 
-ControllerLooming::ControllerLooming(InitArgs* args) : Controller(args), active_(false), timeGap_(1.5), setSpeed_(0),
-	currentSpeed_(0), setSpeedSet_(false), steering_rate_(4.0)
+ControllerLooming::ControllerLooming(InitArgs* args) : Controller(args)
 {
 	if (args && args->properties && args->properties->ValueExists("timeGap"))
 	{
@@ -52,15 +48,18 @@ void ControllerLooming::Step(double timeStep)
 	double k1 = 1.3;
 	double k2 = 1.5;
 	double const nearPointDistance = 10.0;
-	double const farPointDistance = 80.0;
+	double farPointDistance = 80.0;
 
 	double far_angle = 0.0;
 	double far_x = 0.0;
 	double far_y = 0.0;
 	double far_tan_s = 0.0;
 
+	hasFarTan = false;
 	int road_counter = -1;
 	int laneSec_counter = -1;
+	bool isIntersection = false;
+	double dist = 0.0;
 
 
 	currentSpeed_ = object_->GetSpeed();
@@ -69,9 +68,6 @@ void ControllerLooming::Step(double timeStep)
 	// fixed near point
 	object_->pos_.GetProbeInfo(nearPointDistance, &s_data, roadmanager::Position::LookAheadMode::LOOKAHEADMODE_AT_LANE_CENTER);
  	double nearAngle = s_data.relative_h;
-
-	// double near_x = s_data.road_lane_info.pos[0];
-	// double near_y = s_data.road_lane_info.pos[1];
 
 	roadmanager::OpenDrive* odr = roadmanager::Position::GetOpenDrive();
 	if (odr != NULL)
@@ -83,7 +79,6 @@ void ControllerLooming::Step(double timeStep)
 			return;
 		}
 
-		double dist = 0.0;
 		int counter[2] = { 0, 0 };  // left, right
 		double angle_diff_prev[2] = { 0.0, 0.0 };   // left, right
 		double far_x_prev[2] = { 0.0, 0.0 };
@@ -133,7 +128,8 @@ void ControllerLooming::Step(double timeStep)
 
 				if (roadLink->GetElementType() == roadmanager::RoadLink::ElementType::ELEMENT_TYPE_JUNCTION)
 				{
-					break; // currently intersection not considered.cclement@volvocars.com
+					isIntersection = true;
+					break; // currently intersection not considered.
 				}
 
 				roadTemp = odr->GetRoadById(roadLink->GetElementId());
@@ -199,7 +195,6 @@ void ControllerLooming::Step(double timeStep)
 				laneSec_counter++;
 				for (int m = 0; m < 2; m++)  // m==0: Left, m==1: Right
 				{
-					//LOG("road %d %.5f %s", roadTemp->GetId(), object_->pos_.GetS(), m == 0 ? "Left" : "Right");
 
 					// road 0: start from first OSI point, othe roads: skip first since coinciding with last on previous
 					for (size_t k = road_counter == 0 ? 0 : 1; k < osi_points.size(); k++)
@@ -264,9 +259,6 @@ void ControllerLooming::Step(double timeStep)
 							double farAngle_tmp = GetAngleInIntervalMinusPIPlusPI(atan2(far_y_tmp - object_->pos_.GetY() , far_x_tmp - object_->pos_.GetX()));
 							angleDiff = GetAngleDifference(farAngle_tmp, far_angle_prev[m]);
 
-							//printf("far x  %.2f y  %.2f far_angle  %.3f dist %.2f rc %d m %d mc %d k %zd anglediff %.3f anglediff prev %.3f\n",
-							//	far_x_tmp, far_y_tmp, farAngle_tmp, dist, road_counter, m, counter[m], k, angleDiff, angle_diff_prev[m]);
-
 							if (counter[m] > 0)
 							{
 								if (abs(angleDiff) > SMALL_NUMBER &&  // skip points at same angle (e.g. identical position)
@@ -309,30 +301,16 @@ void ControllerLooming::Step(double timeStep)
 			}
 			else
 			{
-				// todo depand on the direction pick s value
 				dist += roadTemp->GetLength();
 			}
 		}
 	}
 
-	if (!hasFarTan)
-	{
-		// dynamic far point-default points are road points
-		object_->pos_.GetProbeInfo(farPointDistance, &s_data, roadmanager::Position::LookAheadMode::LOOKAHEADMODE_AT_LANE_CENTER);
-		far_angle = s_data.relative_h;
- 		//LOG("farAngleNoTan: %.10f", far_angle);
-
-		far_x = s_data.road_lane_info.pos[0];
-		far_y = s_data.road_lane_info.pos[1];
-		// LOG("near: %.2f, %.2f", near_x, near_y);
-	}
-
+	bool hasLeadFar = false;
 	int minObjIndex = -1;
 	double minGapLength = LARGE_NUMBER;
 	const double minDist = 3.0;  // minimum distance to keep to lead vehicle
 
-#if 0
-	double const carFollowingThreshold = 1.0;
 	const double minLateralDist = 5.0;
 	for (size_t i = 0; i < entities_->object_.size(); i++)
 	{
@@ -375,27 +353,34 @@ void ControllerLooming::Step(double timeStep)
 				// find far point from lead as reference, if lead <= farPointDistance(80) m
 				if (minGapLength <= farPointDistance)
 				{
-					if (hasFarTan && far_tan_s < minGapLength) // use lowest point if both lead points and road tan points detected
-					{
+					if (isIntersection && dist < minGapLength)
+					{ // lead is considered till it reach intersection and stop looking ahead.
+						farPointDistance = 0.0;
 						break;
 					}
+					if (hasFarTan && far_tan_s < minGapLength)
+					{ // far tan point wins if lead point greater
+						break;
+					}
+					hasLeadFar = true;
 					far_angle = GetAngleInIntervalMinusPIPlusPI(atan2(object_->pos_.GetY() - pivot_obj->pos_.GetY() , object_->pos_.GetX() - pivot_obj->pos_.GetX()) - object_->pos_.GetH());
-					LOG("new far: %.2f, %.2f\n", pivot_obj->pos_.GetX(), pivot_obj->pos_.GetY());
-						far_x = pivot_obj->pos_.GetX();
-						far_y = pivot_obj->pos_.GetY();
-				}
-
-				// for close vehicle
-				if (minGapLength < carFollowingThreshold)
-				{
-					far_angle = GetAngleInIntervalMinusPIPlusPI(atan2(object_->pos_.GetX() - pivot_obj->pos_.GetX(), object_->pos_.GetY() - pivot_obj->pos_.GetY()) - object_->pos_.GetH());
+					// LOG("new far: %.2f, %.2f\n", pivot_obj->pos_.GetX(), pivot_obj->pos_.GetY());
+					far_x = pivot_obj->pos_.GetX();
+					far_y = pivot_obj->pos_.GetY();
 				}
 			}
 		}
 	}
-#else
-	(void)far_tan_s;
-#endif
+
+	if (!hasFarTan && !hasLeadFar)
+	{
+		// dynamic far road points
+		object_->pos_.GetProbeInfo(farPointDistance, &s_data, roadmanager::Position::LookAheadMode::LOOKAHEADMODE_AT_LANE_CENTER);
+		far_angle = s_data.relative_h;
+
+		far_x = s_data.road_lane_info.pos[0];
+		far_y = s_data.road_lane_info.pos[1];
+	}
 
 	if (minObjIndex > -1)
 	{
@@ -407,8 +392,8 @@ void ControllerLooming::Step(double timeStep)
 		{
 			double speedForTimeGap = MAX(currentSpeed_, entities_->object_[static_cast<unsigned int>(minObjIndex)]->GetSpeed());
 			double followDist = minDist + timeGap_ * fabs(speedForTimeGap);  // (m)
-			double dist = minGapLength - followDist;
-			double distFactor = MIN(1.0, dist / followDist);
+			double distRem = minGapLength - followDist;
+			double distFactor = MIN(1.0, distRem / followDist);
 
 			double dvMin = currentSpeed_ - MIN(setSpeed_, entities_->object_[static_cast<unsigned int>(minObjIndex)]->GetSpeed());
 			double dvSet = currentSpeed_ - setSpeed_;
@@ -421,13 +406,7 @@ void ControllerLooming::Step(double timeStep)
 	{
 		// no lead vehicle to adapt to, adjust according to setSpeed
 		acc = setSpeed_ - currentSpeed_;
-		// LOG("far: %.2f, %.2f\n", far_x, far_y);
-
 	}
-
-	// LOG("Current speed: %.2f", currentSpeed_);
-	// LOG("Setspeed: %.2f", setSpeed_);
-	// LOG("acc %.2f", CLAMP(acc,-1,1));
 
 	if (timeStep > SMALL_NUMBER)
 	{

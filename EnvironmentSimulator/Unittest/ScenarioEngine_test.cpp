@@ -1876,58 +1876,58 @@ TEST(SpeedTest, TestChangeSpeedOverDistance)
     }
 }
 
-TEST(ControllerTest, TestLoomingController)
+TEST(ControllerTest, TestLoomingControllerSimple)
 {
     double dt = 0.05;
     ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/loomingTest.xosc");
     ASSERT_NE(se, nullptr);
 
-    for (int i = 0; i < static_cast<int>(5.0 / dt); i++)
+    while (se->getSimulationTime() < 5.0 - SMALL_NUMBER)
     {
         se->step(dt);
         se->prepareGroundTruth(dt);
     }
-    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetS(), 41.3639105007, 1E-5);
-    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetT(), -1.4086498255, 1E-5);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetS(), 41.4060182298, 1E-5);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetT(), -1.0844662327, 1E-5);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetH(), 0.2065681342, 1e-5);
 
-    for (int i = 0; i < static_cast<int>(50.0 / dt); i++)
+    while (se->getSimulationTime() < 10.0 - SMALL_NUMBER)
     {
         se->step(dt);
         se->prepareGroundTruth(dt);
     }
-    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetS(), 13.9465230480, 1E-5);
-    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetT(), -1.4084915275, 1E-5);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetS(), 82.8457730916, 1E-5);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetT(), -1.0642454223, 1E-5);
 
-    for (int i = 0; i < static_cast<int>(250.0 / dt); i++)
+    while (se->getSimulationTime() < 15.0 - SMALL_NUMBER)
     {
         se->step(dt);
         se->prepareGroundTruth(dt);
     }
-    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetS(), 32.2660666957, 1e-5);
-    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetT(), -0.3151178794, 1e-5);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetS(), 4.2868112508, 1e-5);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetT(), -1.0630431865, 1e-5);
 
-    for (int i = 0; i < static_cast<int>(500 / dt); i++)
+    while (se->getSimulationTime() < 20.0 - SMALL_NUMBER)
     {
         se->step(dt);
         se->prepareGroundTruth(dt);
     }
-    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetS(), 65.7392830880, 1e-5);
-    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetT(), -1.4084949366, 1e-5);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetS(), 45.7279451776, 1e-5);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetT(), -1.0638741808, 1e-5);
 
-    for (int i = 0; i < static_cast<int>(1500 / dt); i++)
+    while (se->getSimulationTime() < 25.0 - SMALL_NUMBER)
     {
         se->step(dt);
         se->prepareGroundTruth(dt);
     }
-    printf("x1500:%.10f", se->entities_.object_[0]->pos_.GetT());
-    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetS(), 28.5068071921, 1e-5);
-    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetT(), -1.4084788268, 1e-5);
-    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetH(), 0.7398100512, 1e-5);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetS(), 87.1641289481, 1e-5);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetT(), -1.2282167087, 1e-5);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetH(), 1.0125829829, 1e-5);
 
     delete se;
 }
 
-TEST(ControllerTest, TestLoomingFarTan)
+TEST(ControllerTest, TestLoomingSimpleFarTan)
 {
     double dt = 0.05;
     ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/loomingTest.xosc");
@@ -1939,7 +1939,7 @@ TEST(ControllerTest, TestLoomingFarTan)
     ControllerLooming* ctrl = reinterpret_cast<ControllerLooming*>(se->scenarioReader->controller_[0]);
     ASSERT_NE(ctrl, nullptr);
 
-    for (int i = 0; i < static_cast<int>(5.0 / dt); i++)
+    while (se->getSimulationTime() < 5.0 - SMALL_NUMBER)
     {
         se->step(dt);
         se->prepareGroundTruth(dt);
@@ -1947,6 +1947,45 @@ TEST(ControllerTest, TestLoomingFarTan)
     }
     ASSERT_NEAR(se->entities_.object_[0]->pos_.GetS(), 41.3639105007, 1E-5);
     ASSERT_NEAR(se->entities_.object_[0]->pos_.GetT(), -1.4086498255, 1E-5);
+
+    delete se;
+}
+
+TEST(ControllerTest, TestLoomingControllerAdvanced)
+{
+    double dt = 0.05;
+    ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/loomingAdvancedTest.xosc");
+    ASSERT_NE(se, nullptr);
+
+    // Get handle to first controller, which we know is a looming controller
+    ASSERT_EQ(se->scenarioReader->controller_[0]->GetType(), scenarioengine::Controller::Type::CONTROLLER_TYPE_LOOMING);
+
+    ControllerLooming* ctrl = reinterpret_cast<ControllerLooming*>(se->scenarioReader->controller_[0]);
+    ASSERT_NE(ctrl, nullptr);
+
+    while (se->getSimulationTime() < 4.0 - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }
+    EXPECT_EQ(ctrl->getHasFarTan(), false);
+
+    while(se->getSimulationTime() < 6.0 - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }
+    EXPECT_EQ(ctrl->getHasFarTan(), true);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetS(), 49.9929506124, 1E-5);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetT(), -1.5615593634, 1E-5);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetH(), 5.7594841579, 1e-5);
+
+    while (se->getSimulationTime() < 53.0 - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }
+    EXPECT_EQ(ctrl->getHasFarTan(), false);
 
     delete se;
 }

@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Demonstrate and test ACC controller -->
+<!-- Demonstrate and test Looming controller -->
 <!-- A white car is driving with constant speed, set by init event -->
-<!-- The white car approaches a red leading car -->
-<!-- The red leading car will perform some maneuvers to exercise the ACC function -->
+<!-- The white car adapt steering for curve road -->
 <OpenSCENARIO>
     <FileHeader revMajor="1" revMinor="1" date="2021-08-24T10:00:00" description="Demonstrate ACC controller" author="esmini-team"/>
     <ParameterDeclarations>
@@ -86,10 +85,15 @@
                 </StartTrigger>
                 <StopTrigger>
                     <ConditionGroup>
-                        <Condition name="StopCondition" delay="0.0" conditionEdge="none">
-                            <ByValueCondition>
-                                <SimulationTimeCondition value="20.0" rule="greaterOrEqual"/>
-                            </ByValueCondition>
+                            <Condition name="End Of Road condition" delay="0" conditionEdge="rising">
+                                <ByEntityCondition>
+                                    <TriggeringEntities triggeringEntitiesRule="any">
+                                        <EntityRef entityRef="Ego"/>
+                                    </TriggeringEntities>                                
+                                    <EntityCondition>
+                                        <EndOfRoadCondition duration="0.0" rule="greaterThan"/>
+                                    </EntityCondition>
+                                </ByEntityCondition>
                         </Condition>
                     </ConditionGroup>
                 </StopTrigger>

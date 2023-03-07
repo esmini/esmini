@@ -10,6 +10,19 @@
  * https://sites.google.com/view/simulationscenarios
  */
 
+/*
+ * This is the first step implementation of driver model including
+   steering target based on whatever closet within 80m of below points
+  - lane center ahead
+  - lane boundary tangent point 
+  - lead vehicle
+ * For longitudinal control the plan is to implement looming perception model.
+ * Meanwhile using a simple ACC model.
+ *
+ * This controller is inspired by work done by Ola Benderius:
+ * https://research.chalmers.se/en/person/benderiu
+ */
+
 #pragma once
 
 #include <string>
@@ -25,7 +38,7 @@ namespace scenarioengine
 	{
 	public:
 		ControllerLooming(InitArgs *args);
-		// ControllerLooming();
+
 		static const char* GetTypeNameStatic() { return CONTROLLER_LOOMING_TYPE_NAME; }
 		virtual const char* GetTypeName() { return GetTypeNameStatic(); }
 		static int GetTypeStatic() { return CONTROLLER_TYPE_LOOMING; }
@@ -37,6 +50,7 @@ namespace scenarioengine
 		void ReportKeyEvent(int key, bool down);
 		void SetSetSpeed(double setSpeed) { setSpeed_ = setSpeed; }
 		void Step(double timeStep);
+		bool hasFarTan;
 		bool getHasFarTan()
 		{
 			return hasFarTan;
@@ -44,18 +58,18 @@ namespace scenarioengine
 
 	private:
 		vehicle::Vehicle vehicle_;
-		bool active_;
-		double timeGap_;  // target headway time
-		double setSpeed_;
-		double currentSpeed_;
-		bool setSpeedSet_;
+		bool active_ = false;
+		double timeGap_ = 1.5;  // target headway time
+		double setSpeed_ = 0.0;
+		double currentSpeed_ = 0.0;
+		bool setSpeedSet_ = false;
 		double prevNearAngle = 0.0;
 		double prevFarAngle = 0.0;
 		double steering = 0.0;
 		double acc = 0.0;
-		double steering_rate_;
+		double steering_rate_ = 4.0;
 		double angleDiff = 0.0;
-		bool hasFarTan = false;
+		
 	};
 
 	Controller* InstantiateControllerLooming(void* args);
