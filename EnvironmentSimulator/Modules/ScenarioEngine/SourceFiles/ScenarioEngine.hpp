@@ -74,9 +74,9 @@ namespace scenarioengine
 		void ResetEvents();
 		int DetectCollisions();
 
-		std::string getScenarioFilename() { return scenarioReader->getScenarioFilename(); }
+		std::string getScenarioFilePath() { return scenarioReader->getScenarioFilePath(); }
 		std::string getSceneGraphFilename() { return roadNetwork.sceneGraphFile.filepath; }
-		std::string getOdrFilename() { return roadNetwork.logicFile.filepath; }
+		std::string getOdrFilePath() { return roadNetwork.logicFile.filepath; }
 		roadmanager::OpenDrive *getRoadManager() { return odrManager; }
 
 		ScenarioGateway *getScenarioGateway();

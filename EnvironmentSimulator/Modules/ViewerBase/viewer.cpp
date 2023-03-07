@@ -34,6 +34,8 @@
 #include <osgUtil/Tessellator> // to tessellate multiple contours
 #include <osgUtil/Optimizer>   // to flatten transform nodes
 
+#include <filesystem>
+
 #define SHADOW_SCALE 1.20
 #define SHADOW_MODEL_FILEPATH "shadow_face.osgb"
 #define ARROW_MODEL_FILEPATH "arrow.osgb"
@@ -52,8 +54,6 @@
 #define ORTHO_FOV 1.0
 #define DEFAULT_LENGTH_FOR_CONTINUOUS_OBJS 10.0
 
-
-
 float color_green[3] = { 0.2f, 0.6f, 0.3f };
 float color_gray[3] = { 0.7f, 0.7f, 0.7f };
 float color_dark_gray[3] = { 0.5f, 0.5f, 0.5f };
@@ -70,6 +70,8 @@ USE_SERIALIZER_WRAPPER_LIBRARY(osg)
 USE_SERIALIZER_WRAPPER_LIBRARY(osgSim)
 USE_COMPRESSOR_WRAPPER(ZLibCompressor)
 USE_GRAPHICSWINDOW()
+
+namespace fs = std::filesystem;
 
 using namespace viewer;
 
@@ -1453,9 +1455,10 @@ int Viewer::AddGroundSurface()
 	return 0;
 }
 
-Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, const char* scenarioFilename, const char* exe_path, osg::ArgumentParser arguments, SE_Options* opt)
+Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilePath,
+			   const char* scenarioFilePath, const char* exe_path,
+			   osg::ArgumentParser arguments, SE_Options* opt)
 {
-	(void)scenarioFilename;
 	odrManager_ = odrManager;
 	bool clear_color = false;
 	std::string arg_str;
@@ -1465,9 +1468,9 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 		SE_Env::Inst().AddPath(DirNameOf(odrManager->GetOpenDriveFilename()));
 	}
 
-	if (modelFilename != NULL && strcmp(modelFilename, ""))
+	if (modelFilePath != NULL && strcmp(modelFilePath, ""))
 	{
-		SE_Env::Inst().AddPath(DirNameOf(modelFilename));
+		SE_Env::Inst().AddPath(DirNameOf(modelFilePath));
 	}
 
 	// suppress OSG info messages
@@ -1613,42 +1616,70 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 	exe_path_ = exe_path;
 
 	// add environment
-	if (modelFilename != 0 && strcmp(modelFilename, ""))
+	if (modelFilePath != 0 && strcmp(modelFilePath, ""))
 	{
-		std::vector<std::string> file_name_candidates;
-
-		// absolute path or relative to current directory
-		file_name_candidates.push_back(modelFilename);
-
-		// Remove all directories from path and look in current directory
-		file_name_candidates.push_back(FileNameOf(modelFilename));
-
-		// Finally check registered paths
-		for (size_t i = 0; i < SE_Env::Inst().GetPaths().size(); i++)
+		fs::path modelPathOsc(modelFilePath);
+		std::vector<fs::path> modelPathCandidates;
+		// Absolute path or relative to current directory
+		if (modelPathOsc.is_absolute())
 		{
-			// Including file path
-			file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], modelFilename));
-
-			// Excluding file path
-			file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], FileNameOf(modelFilename)));
+			// Absolute path
+			modelPathCandidates.push_back(modelPathOsc);
 		}
-
-		size_t i;
-		for (i = 0; i < file_name_candidates.size(); i++)
+		else {
+			// Relative path (relative to .xosc file) - this should be the normal case
+			fs::path oscPath = fs::path(scenarioFilePath).parent_path();
+			modelPathCandidates.push_back(oscPath / modelPathOsc);
+		}
+		// Also relative to registered paths
+		for (size_t j = 0; j < SE_Env::Inst().GetPaths().size(); j++)
 		{
-			if (FileExists(file_name_candidates[i].c_str()))
-			{
-				if (AddEnvironment(file_name_candidates[i].c_str()) == 0)
-				{
-					LOG("Loaded scenegraph: %s", file_name_candidates[i].c_str());
-					break;
+			// Take the relative path from the LogicFile OpenSCENARIO XML
+			// element into account when looking for .osgb files. Note that this
+			// is different for catalog files due to the inability of
+			// OpenSCENARIO to specify explicit catalog file paths. Do not
+			// search for .osgb files only via their names to avoid
+			// unpredictable side effects.
+			fs::path registeredPath(SE_Env::Inst().GetPaths()[j]);
+			modelPathCandidates.push_back(registeredPath / modelPathOsc);
+		}
+		// Make all paths absolute and canonical
+		for (auto &&candidate_path : modelPathCandidates) {
+			if (not candidate_path.is_absolute()) {
+				if (fs::exists(candidate_path)) {
+					// Canonical requires file to exist
+					candidate_path = fs::canonical(
+						fs::current_path() / candidate_path);
+				}
+				else {
+					// Weakly canonical does not require file to exist
+					candidate_path = fs::weakly_canonical(candidate_path);
 				}
 			}
 		}
-
-		if (i == file_name_candidates.size())
+		bool result = false;
+		for (size_t j = 0; j < modelPathCandidates.size() && result == false; j++)
 		{
-			LOG("Failed to read environment model %s!", modelFilename);
+			if (fs::exists(modelPathCandidates[j]))
+			{
+				// Try to load the .osgb file
+				if (AddEnvironment(modelPathCandidates[j].c_str()) == 0)
+				{
+					LOG("Successfully loaded 3D environment model from: %s",
+						modelPathCandidates[j].c_str());
+					result = true;
+				}
+			}
+		}
+		if (result == false)
+		{
+			std::string candidatesLogStr = ConcatenatePathVectorForLogging(modelPathCandidates);
+			LOG("Couldn't locate .osgb 3D environment model file at either of "
+				"the following locations: %s. If you are trying to load a "
+				"detailed environment 3D model, check the model path in the "
+				".xosc file or specify additional asset paths for search with "
+				"the --path option.",
+				candidatesLogStr.c_str());
 		}
 	}
 

@@ -697,7 +697,7 @@ extern "C"
 		{
 			return 0;
 		}
-		returnString = player->scenarioEngine->getOdrFilename().c_str();
+		returnString = player->scenarioEngine->getOdrFilePath().c_str();
 		return returnString.c_str();
 	}
 

@@ -8,7 +8,7 @@ message(STATUS "CMake version: " ${CMAKE_VERSION})
 cmake_minimum_required (VERSION 3.5.0 FATAL_ERROR)
 
 set(TARGET esmini)
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 # set(CMAKE_BUILD_TYPE "Debug")
 # set(CMAKE_CXX_FLAGS_DEBUG  "$ENV{CXXFLAGS} -O0 -Wall -g")             # 调试包不优化
 

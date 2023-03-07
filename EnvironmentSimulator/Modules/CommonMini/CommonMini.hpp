@@ -22,6 +22,7 @@
 #include <condition_variable>
 #include <cstring>
 #include <map>
+#include <filesystem>
 
 #ifndef _WIN32
 	#include <inttypes.h>
@@ -268,6 +269,11 @@ bool FileExists(const char* fileName);
 	Concatenate a directory path and a file path
 */
 std::string CombineDirectoryPathAndFilepath(std::string dir_path, std::string file_path);
+
+/**
+ 	Concatenates a vector of strings into a single comma separated string
+*/
+std::string ConcatenatePathVectorForLogging(const std::vector<std::filesystem::path>& vec);
 
 /**
 	Retrieve the angle of a vector
