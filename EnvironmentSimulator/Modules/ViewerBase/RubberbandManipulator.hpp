@@ -22,62 +22,95 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
-namespace osgGA{
-
-class RubberbandManipulator : public osgGA::CameraManipulator
+namespace osgGA
 {
-	public:
 
-		enum CAMERA_MODE
-		{
-			RB_MODE_ORBIT,
-			RB_MODE_FIXED,
-			RB_MODE_RUBBER_BAND,
-			RB_MODE_RUBBER_BAND_ORBIT,
-			RB_MODE_TOP,
+    class RubberbandManipulator : public osgGA::CameraManipulator
+    {
+    public:
+        enum CAMERA_MODE
+        {
+            RB_MODE_ORBIT,
+            RB_MODE_FIXED,
+            RB_MODE_RUBBER_BAND,
+            RB_MODE_RUBBER_BAND_ORBIT,
+            RB_MODE_TOP,
             RB_MODE_DRIVER,
             RB_MODE_CUSTOM,
             RB_NUM_MODES
-		};
+        };
 
         class CustomCamera
         {
         public:
-            CustomCamera(osg::Vec3 pos, osg::Vec3 rot, bool fixed_pos = false) :
-                pos_(pos), rot_(rot), fixed_pos_(fixed_pos), fixed_rot_(true), ortho_(false) {}
-            CustomCamera(osg::Vec3 pos, bool fixed_pos = false) :
-                pos_(pos), fixed_pos_(fixed_pos), fixed_rot_(false), ortho_(false) {}
-            CustomCamera(osg::Vec3 pos, double rot) :
-                pos_(pos), rot_(osg::Vec3(static_cast<float>(rot), static_cast<float>(M_PI_2) - 1e-5f, 0.0f)),
-                fixed_pos_(true), fixed_rot_(true), ortho_(true) {}
+            CustomCamera(osg::Vec3 pos, osg::Vec3 rot, bool fixed_pos = false)
+                : pos_(pos),
+                  rot_(rot),
+                  fixed_pos_(fixed_pos),
+                  fixed_rot_(true),
+                  ortho_(false)
+            {
+            }
+            CustomCamera(osg::Vec3 pos, bool fixed_pos = false) : pos_(pos), fixed_pos_(fixed_pos), fixed_rot_(false), ortho_(false)
+            {
+            }
+            CustomCamera(osg::Vec3 pos, double rot)
+                : pos_(pos),
+                  rot_(osg::Vec3(static_cast<float>(rot), static_cast<float>(M_PI_2) - 1e-5f, 0.0f)),
+                  fixed_pos_(true),
+                  fixed_rot_(true),
+                  ortho_(true)
+            {
+            }
 
-            bool GetFixPos() { return fixed_pos_; }
-            bool GetFixRot() { return fixed_rot_; }
-            bool GetOrtho() { return ortho_; }
-            osg::Vec3 GetPos() { return pos_; }
-            osg::Vec3 GetRot() { return rot_; }
+            bool GetFixPos()
+            {
+                return fixed_pos_;
+            }
+            bool GetFixRot()
+            {
+                return fixed_rot_;
+            }
+            bool GetOrtho()
+            {
+                return ortho_;
+            }
+            osg::Vec3 GetPos()
+            {
+                return pos_;
+            }
+            osg::Vec3 GetRot()
+            {
+                return rot_;
+            }
 
         private:
             osg::Vec3 pos_;
             osg::Vec3 rot_;
-            bool fixed_pos_;
-            bool fixed_rot_;
-            bool ortho_;
+            bool      fixed_pos_;
+            bool      fixed_rot_;
+            bool      ortho_;
         };
 
-		RubberbandManipulator(unsigned int mode = RB_MODE_RUBBER_BAND_ORBIT);
+        RubberbandManipulator(unsigned int mode = RB_MODE_RUBBER_BAND_ORBIT);
 
-        virtual const char* className() const { return "RubberbandManipulator"; }
+        virtual const char* className() const
+        {
+            return "RubberbandManipulator";
+        }
 
-        typedef std::vector< osg::observer_ptr<osg::Node> >   ObserverNodePath;
+        typedef std::vector<osg::observer_ptr<osg::Node> > ObserverNodePath;
 
-		void setTrackNode(osg::PositionAttitudeTransform *node, bool calcDistance = false);
+        void setTrackNode(osg::PositionAttitudeTransform* node, bool calcDistance = false);
 
         /** set the position of the matrix manipulator using a 4x4 Matrix.*/
         virtual void setByMatrix(const osg::Matrixd& matrix);
 
         /** set the position of the matrix manipulator using a 4x4 Matrix.*/
-        virtual void setByInverseMatrix(const osg::Matrixd& matrix) { setByMatrix(osg::Matrixd::inverse(matrix)); }
+        virtual void setByInverseMatrix(const osg::Matrixd& matrix)
+        {
+            setByMatrix(osg::Matrixd::inverse(matrix));
+        }
 
         /** get the position of the manipulator as 4x4 Matrix.*/
         virtual osg::Matrixd getMatrix() const;
@@ -86,30 +119,38 @@ class RubberbandManipulator : public osgGA::CameraManipulator
         virtual osg::Matrixd getInverseMatrix() const;
 
         /** Start/restart the manipulator.*/
-        virtual void init(const GUIEventAdapter& ea,GUIActionAdapter& us);
+        virtual void init(const GUIEventAdapter& ea, GUIActionAdapter& us);
 
         /** handle events, return true if handled, false otherwise.*/
-        virtual bool handle(const GUIEventAdapter& ea,GUIActionAdapter& us);
+        virtual bool handle(const GUIEventAdapter& ea, GUIActionAdapter& us);
 
         /** Get the keyboard and mouse usage of this manipulator.*/
         virtual void getUsage(osg::ApplicationUsage& usage) const;
 
-		void setMode(unsigned int mode);
+        void setMode(unsigned int mode);
 
-		int getMode() { return static_cast<int>(_mode); }
+        int getMode()
+        {
+            return static_cast<int>(_mode);
+        }
 
-		void computeNodeCenterAndRotation(osg::Vec3d& nodeCenter, osg::Quat& nodeRotation) const;
+        void computeNodeCenterAndRotation(osg::Vec3d& nodeCenter, osg::Quat& nodeRotation) const;
 
-		void calculateCameraDistance();
+        void calculateCameraDistance();
 
-        void AddCustomCamera(CustomCamera customCamera) { customCamera_.push_back(customCamera); }
+        void AddCustomCamera(CustomCamera customCamera)
+        {
+            customCamera_.push_back(customCamera);
+        }
 
-        unsigned int GetNumberOfCameraModes() { return static_cast<unsigned int>(CAMERA_MODE::RB_NUM_MODES + customCamera_.size() - 1); }
+        unsigned int GetNumberOfCameraModes()
+        {
+            return static_cast<unsigned int>(CAMERA_MODE::RB_NUM_MODES + customCamera_.size() - 1);
+        }
 
         CustomCamera* GetCurrentCustomCamera();
 
     protected:
-
         virtual ~RubberbandManipulator();
 
         /** Reset the internal GUIEvent stack.*/
@@ -117,7 +158,7 @@ class RubberbandManipulator : public osgGA::CameraManipulator
         /** Add the current mouse GUIEvent to internal stack.*/
         void addEvent(const GUIEventAdapter& ea);
 
-		// Internal event stack comprising last two events.
+        // Internal event stack comprising last two events.
         osg::ref_ptr<const GUIEventAdapter> _ga_t1;
         osg::ref_ptr<const GUIEventAdapter> _ga_t0;
 
@@ -125,25 +166,24 @@ class RubberbandManipulator : public osgGA::CameraManipulator
             Return true is camera has moved and a redraw is required.*/
         bool calcMovement(double dt, bool reset);
 
-        osg::ref_ptr<osg::Node> _node;
-		osg::PositionAttitudeTransform *_trackNode;
+        osg::ref_ptr<osg::Node>         _node;
+        osg::PositionAttitudeTransform* _trackNode;
 
-        osg::Vec3d				_eye;
-		osg::Matrix				_matrix;
-		osg::Vec3 cameraAcc;
-		osg::Vec3 cameraVel;
+        osg::Vec3d  _eye;
+        osg::Matrix _matrix;
+        osg::Vec3   cameraAcc;
+        osg::Vec3   cameraVel;
 
-		float _cameraDistance;
-		float _cameraAngle;
-		float _cameraRotation;
+        float _cameraDistance;
+        float _cameraAngle;
+        float _cameraRotation;
 
-		unsigned int _mode;
-        bool fix_camera_;
+        unsigned int _mode;
+        bool         fix_camera_;
 
         std::vector<CustomCamera> customCamera_;
-};
+    };
 
-}
+}  // namespace osgGA
 
 #endif
-

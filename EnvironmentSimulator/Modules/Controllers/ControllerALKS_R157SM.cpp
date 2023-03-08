@@ -10,7 +10,6 @@
  * https://sites.google.com/view/simulationscenarios
  */
 
-
 #include "ControllerALKS_R157SM.hpp"
 #include "CommonMini.hpp"
 #include "Entities.hpp"
@@ -19,43 +18,36 @@
 
 using namespace scenarioengine;
 
-#define R157_LOG(level, format, ...)                                                                  \
-    {                                                                                                 \
-        if (level > 0 && level <= GetLogLevel())                                                      \
-        {                                                                                             \
-            LOG((std::string("ALKS R157 ") + GetModelName() + " " + format).c_str(), ##__VA_ARGS__);  \
-        }                                                                                             \
-        else                                                                                          \
-        {                                                                                             \
-            (void)0;                                                                                  \
-        }                                                                                             \
+#define R157_LOG(level, format, ...)                                                                 \
+    {                                                                                                \
+        if (level > 0 && level <= GetLogLevel())                                                     \
+        {                                                                                            \
+            LOG((std::string("ALKS R157 ") + GetModelName() + " " + format).c_str(), ##__VA_ARGS__); \
+        }                                                                                            \
+        else                                                                                         \
+        {                                                                                            \
+            (void)0;                                                                                 \
+        }                                                                                            \
     }
 
-
-std::map<ControllerALKS_R157SM::ScenarioType, std::string> ControllerALKS_R157SM::ScenarioTypeName =
-{
+std::map<ControllerALKS_R157SM::ScenarioType, std::string> ControllerALKS_R157SM::ScenarioTypeName = {
     {ControllerALKS_R157SM::ScenarioType::None, "None"},
     {ControllerALKS_R157SM::ScenarioType::CutIn, "CutIn"},
     {ControllerALKS_R157SM::ScenarioType::CutOut, "CutOut"},
-    {ControllerALKS_R157SM::ScenarioType::Deceleration, "Deceleration"}
-};
+    {ControllerALKS_R157SM::ScenarioType::Deceleration, "Deceleration"}};
 
-std::map<ControllerALKS_R157SM::ModelType, std::string> ControllerALKS_R157SM::ModelTypeName =
-{
+std::map<ControllerALKS_R157SM::ModelType, std::string> ControllerALKS_R157SM::ModelTypeName = {
     {ControllerALKS_R157SM::ModelType::Regulation, "Regulation"},
     {ControllerALKS_R157SM::ModelType::ReferenceDriver, "ReferenceDriver"},
     {ControllerALKS_R157SM::ModelType::RSS, "RSS"},
-    {ControllerALKS_R157SM::ModelType::FSM, "FSM"}
-};
+    {ControllerALKS_R157SM::ModelType::FSM, "FSM"}};
 
-std::map<ControllerALKS_R157SM::ReferenceDriver::Phase, std::string> ControllerALKS_R157SM::ReferenceDriver::PhaseName =
-{
+std::map<ControllerALKS_R157SM::ReferenceDriver::Phase, std::string> ControllerALKS_R157SM::ReferenceDriver::PhaseName = {
     {ControllerALKS_R157SM::ReferenceDriver::Phase::INACTIVE, "INACTIVE"},
     {ControllerALKS_R157SM::ReferenceDriver::Phase::PERCEIVE, "PERCEIVE"},
     {ControllerALKS_R157SM::ReferenceDriver::Phase::REACT, "REACT"},
     {ControllerALKS_R157SM::ReferenceDriver::Phase::BRAKE_REF, "BRAKE_REF"},
-    {ControllerALKS_R157SM::ReferenceDriver::Phase::BRAKE_AEB, "BRAKE_AEB"}
-};
+    {ControllerALKS_R157SM::ReferenceDriver::Phase::BRAKE_AEB, "BRAKE_AEB"}};
 
 Controller* scenarioengine::InstantiateControllerALKS_R157SM(void* args)
 {
@@ -91,7 +83,8 @@ ControllerALKS_R157SM::ControllerALKS_R157SM(InitArgs* args) : Controller(args),
                 }
                 else
                 {
-                    LOG("ControllerALKS_R157SM: Unexpected cutInPerceptionDelayMode: %s", args->properties->GetValueStr("cutInPerceptionDelayMode").c_str());
+                    LOG("ControllerALKS_R157SM: Unexpected cutInPerceptionDelayMode: %s",
+                        args->properties->GetValueStr("cutInPerceptionDelayMode").c_str());
                 }
             }
             LOG("ALKS_R157SM ReferenceDriver perceptionDelayMode: %s",
@@ -111,7 +104,7 @@ ControllerALKS_R157SM::ControllerALKS_R157SM(InitArgs* args) : Controller(args),
 
             if (args->properties->ValueExists("lateralTrigDistance"))
             {
-                ref_driver->lateral_dist_trigger_ = new ReferenceDriver::LateralDistTrigger(ref_driver);
+                ref_driver->lateral_dist_trigger_             = new ReferenceDriver::LateralDistTrigger(ref_driver);
                 ref_driver->lateral_dist_trigger_->threshold_ = strtod(args->properties->GetValueStr("lateralTrigDistance"));
                 ref_driver->lateral_dist_trigger_->SetName("LateralDistTrigger");
                 LOG("ALKS_R157SM AEB LateralTrigDistance: %.2f", ref_driver->lateral_dist_trigger_->threshold_);
@@ -125,7 +118,7 @@ ControllerALKS_R157SM::ControllerALKS_R157SM(InitArgs* args) : Controller(args),
 
             if (!ref_driver->lateral_dist_trigger_)
             {
-                ref_driver->wandering_trigger_ = new ReferenceDriver::WanderingTrigger(ref_driver);
+                ref_driver->wandering_trigger_             = new ReferenceDriver::WanderingTrigger(ref_driver);
                 ref_driver->wandering_trigger_->threshold_ = ref_driver->wandering_threshold_;
                 ref_driver->wandering_trigger_->SetName("WanderingTrigger");
             }
@@ -138,8 +131,7 @@ ControllerALKS_R157SM::ControllerALKS_R157SM(InitArgs* args) : Controller(args),
         }
         else
         {
-            LOG_AND_QUIT("ControllerALKS_R157SM unexpected model %s",
-                args->properties->GetValueStr("model").c_str());
+            LOG_AND_QUIT("ControllerALKS_R157SM unexpected model %s", args->properties->GetValueStr("model").c_str());
         }
         LOG("ALKS_R157SM model: %s", model_->GetModelName().c_str());
 
@@ -163,13 +155,11 @@ ControllerALKS_R157SM::ControllerALKS_R157SM(InitArgs* args) : Controller(args),
 
         if (args->properties->ValueExists("cruise"))
         {
-            if (args->properties->GetValueStr("cruise") == "true" ||
-                args->properties->GetValueStr("cruise") == "True")
+            if (args->properties->GetValueStr("cruise") == "true" || args->properties->GetValueStr("cruise") == "True")
             {
                 model_->SetCruise(true);
             }
-            else if (args->properties->GetValueStr("cruise") == "false" ||
-                args->properties->GetValueStr("cruise") == "False")
+            else if (args->properties->GetValueStr("cruise") == "false" || args->properties->GetValueStr("cruise") == "False")
             {
                 model_->SetCruise(false);
             }
@@ -273,14 +263,14 @@ int ControllerALKS_R157SM::Model::Detect()
         if (!CheckSafety(&tmp_obj_info))
         {
             // Check whether it is the closest of potential threats
-            if (tmp_obj_info.dist_long < candidate_obj_info.dist_long || // closest so far
-                // OR object in own lane is detected beyond a cutting-out one and with potentially less ttc
+            if (tmp_obj_info.dist_long <
+                    candidate_obj_info.dist_long ||  // closest so far
+                                                     // OR object in own lane is detected beyond a cutting-out one and with potentially less ttc
                 (tmp_obj_info.dLaneId == 0 && candidate_obj_info.obj->GetType() == Object::Type::VEHICLE &&
-                    candidate_obj_info.action == ScenarioType::CutOut))
+                 candidate_obj_info.action == ScenarioType::CutOut))
             {
-                if (tmp_obj_info.obj->GetType() == Object::Type::VEHICLE &&
-                    tmp_obj_info.action == ScenarioType::CutOut &&
-                    candidate_obj_info.obj && candidate_obj_info.dLaneId == 0)
+                if (tmp_obj_info.obj->GetType() == Object::Type::VEHICLE && tmp_obj_info.action == ScenarioType::CutOut && candidate_obj_info.obj &&
+                    candidate_obj_info.dLaneId == 0)
                 {
                     // Vehicle is cutting out revealing another object beyond in same lane
                     // Focus on the one with least TTC
@@ -289,18 +279,17 @@ int ControllerALKS_R157SM::Model::Detect()
                         candidate_obj_info = tmp_obj_info;
                     }
                 }
-                else if (tmp_obj_info.dLaneId == 0 && candidate_obj_info.obj &&
-                    candidate_obj_info.obj->GetType() == Object::Type::VEHICLE &&
-                    candidate_obj_info.action == ScenarioType::CutOut)
+                else if (tmp_obj_info.dLaneId == 0 && candidate_obj_info.obj && candidate_obj_info.obj->GetType() == Object::Type::VEHICLE &&
+                         candidate_obj_info.action == ScenarioType::CutOut)
                 {
                     // Detected object is in same lane and beyond a cutting out vehicle
                     // Focus on the one with least TTC
                     if (tmp_obj_info.ttc < candidate_obj_info.ttc)
                     {
-                        Object* cut_out_vehicle = candidate_obj_info.obj;
-                        candidate_obj_info = tmp_obj_info;
+                        Object* cut_out_vehicle            = candidate_obj_info.obj;
+                        candidate_obj_info                 = tmp_obj_info;
                         candidate_obj_info.cut_out_vehicle = cut_out_vehicle;
-                        candidate_obj_info.action = ScenarioType::CutOut;
+                        candidate_obj_info.action          = ScenarioType::CutOut;
                     }
                 }
                 else
@@ -313,15 +302,15 @@ int ControllerALKS_R157SM::Model::Detect()
     }
 
     if (candidate_obj_info.obj && candidate_obj_info.action != ScenarioType::None &&
-        (candidate_obj_info.obj != object_in_focus_.obj ||
-            candidate_obj_info.action != object_in_focus_.action))
+        (candidate_obj_info.obj != object_in_focus_.obj || candidate_obj_info.action != object_in_focus_.action))
     {
         // New object or scenario detected, register scenario type
         SetScenarioType(candidate_obj_info.action);
 
-        R157_LOG(1, "Detected object: %s Scenario: %s",
-            candidate_obj_info.obj->GetName().c_str(),
-            ScenarioType2Str(candidate_obj_info.action).c_str());
+        R157_LOG(1,
+                 "Detected object: %s Scenario: %s",
+                 candidate_obj_info.obj->GetName().c_str(),
+                 ScenarioType2Str(candidate_obj_info.action).c_str());
     }
 
     object_in_focus_ = candidate_obj_info;
@@ -357,9 +346,9 @@ int ControllerALKS_R157SM::Model::Process(ObjectInfo& info)
             diff.dLaneId = -1;
         }
 
-        if (diff.ds > SMALL_NUMBER &&  // consider only entities in front of ego
+        if (diff.ds > SMALL_NUMBER &&                            // consider only entities in front of ego
             (info.obj->GetType() == Object::Type::PEDESTRIAN ||  // consider pedestrians regardless of lane
-                (diff.dLaneId > -2 && diff.dLaneId < 2)))  // consider other entities in own or adjecent lanes
+             (diff.dLaneId > -2 && diff.dLaneId < 2)))           // consider other entities in own or adjecent lanes
         {
             info.dLaneId = diff.dLaneId;
 
@@ -372,11 +361,10 @@ int ControllerALKS_R157SM::Model::Process(ObjectInfo& info)
 
                 // Calculate relative speed along road (s axis), from ego point of view
                 info.dv_s = (veh_v_s - obj_v_s) *
-                    (abs(GetAngleInIntervalMinusPIPlusPI(veh_->pos_.GetHRelative())) > M_PI_2 ? -1.0 : 1.0);  // ignore road direction
+                            (abs(GetAngleInIntervalMinusPIPlusPI(veh_->pos_.GetHRelative())) > M_PI_2 ? -1.0 : 1.0);  // ignore road direction
 
                 // Calculate relative speed across road (t axis), from ego point of view
-                info.dv_t = (veh_v_t - obj_v_t) *
-                    SIGN(info.obj->pos_.GetT() - veh_->pos_.GetT());  // ignore side
+                info.dv_t = (veh_v_t - obj_v_t) * SIGN(info.obj->pos_.GetT() - veh_->pos_.GetT());  // ignore side
 
                 if (info.dv_s > 0.0)
                 {
@@ -389,8 +377,15 @@ int ControllerALKS_R157SM::Model::Process(ObjectInfo& info)
                     info.thw = LARGE_NUMBER;
                 }
 
-                R157_LOG(3, "%s relative speed s, t: %.2f, %.2f dist: %.2f, %.2f dLane %d TTC: %.2f",
-                    info.obj->GetName().c_str(), info.dv_s, info.dv_t, info.dist_long, info.dist_lat, info.dLaneId, info.ttc);
+                R157_LOG(3,
+                         "%s relative speed s, t: %.2f, %.2f dist: %.2f, %.2f dLane %d TTC: %.2f",
+                         info.obj->GetName().c_str(),
+                         info.dv_s,
+                         info.dv_t,
+                         info.dist_long,
+                         info.dist_lat,
+                         info.dLaneId,
+                         info.ttc);
 
                 return 0;
             }
@@ -405,8 +400,7 @@ double ControllerALKS_R157SM::Model::Step(double timeStep)
     dt_ = timeStep;
 
     if (object_in_focus_.obj && GetModelType() == ModelType::ReferenceDriver &&
-        (reinterpret_cast<ReferenceDriver*>(this))->GetPhase() != ControllerALKS_R157SM::ReferenceDriver::Phase::INACTIVE &&
-        GetFullStop())
+        (reinterpret_cast<ReferenceDriver*>(this))->GetPhase() != ControllerALKS_R157SM::ReferenceDriver::Phase::INACTIVE && GetFullStop())
     {
         // reference driver ongoing action in combination with FullStop mode
         // skip full re-scan, just update measurements for object already in focus
@@ -428,18 +422,7 @@ double ControllerALKS_R157SM::Model::Step(double timeStep)
 
 void ControllerALKS_R157SM::Model::ResetObjectInFocus()
 {
-    object_in_focus_ = {
-        nullptr,
-        nullptr,
-        LARGE_NUMBER,
-        LARGE_NUMBER,
-        0.0,
-        0.0,
-        LARGE_NUMBER,
-        LARGE_NUMBER,
-        0,
-        ScenarioType::None
-    };
+    object_in_focus_ = {nullptr, nullptr, LARGE_NUMBER, LARGE_NUMBER, 0.0, 0.0, LARGE_NUMBER, LARGE_NUMBER, 0, ScenarioType::None};
 }
 
 void ControllerALKS_R157SM::Model::ResetReactionTime()
@@ -448,14 +431,31 @@ void ControllerALKS_R157SM::Model::ResetReactionTime()
     rt_counter_ = GetReactionTime();
 }
 
-
-ControllerALKS_R157SM::Model::Model(ModelType type, double reaction_time,
-    double max_dec, double max_range) : type_(type), veh_(nullptr), entities_(0), cut_in_detected_timestamp_(0.0), rt_(reaction_time),
-    rt_counter_(0.0), max_dec_(max_dec), max_range_(max_range), max_acc_(3.0), max_acc_lat_(1.0), set_speed_(0.0), dt_(0.01), acc_(0.0),
-    cruise_comfort_acc_(2.0), cruise_comfort_dec_(2.0), cruise_max_acc_(3.0), cruise_max_dec_(4.0),
-    model_mode_(ModelMode::NO_TARGET), scenario_type_(ScenarioType::None), log_level_(1),
-    cruise_(true), full_stop_(false), always_trig_on_scenario_(false),
-    scenario_engine_(nullptr)
+ControllerALKS_R157SM::Model::Model(ModelType type, double reaction_time, double max_dec, double max_range)
+    : type_(type),
+      veh_(nullptr),
+      entities_(0),
+      cut_in_detected_timestamp_(0.0),
+      rt_(reaction_time),
+      rt_counter_(0.0),
+      max_dec_(max_dec),
+      max_range_(max_range),
+      max_acc_(3.0),
+      max_acc_lat_(1.0),
+      set_speed_(0.0),
+      dt_(0.01),
+      acc_(0.0),
+      cruise_comfort_acc_(2.0),
+      cruise_comfort_dec_(2.0),
+      cruise_max_acc_(3.0),
+      cruise_max_dec_(4.0),
+      model_mode_(ModelMode::NO_TARGET),
+      scenario_type_(ScenarioType::None),
+      log_level_(1),
+      cruise_(true),
+      full_stop_(false),
+      always_trig_on_scenario_(false),
+      scenario_engine_(nullptr)
 {
     ResetObjectInFocus();
 }
@@ -553,7 +553,7 @@ void ControllerALKS_R157SM::Model::SetModelMode(ModelMode mode, bool log)
 void ControllerALKS_R157SM::Model::SetScenarioEngine(ScenarioEngine* scenario_engine)
 {
     scenario_engine_ = scenario_engine;
-    entities_ = &scenario_engine_->entities_;
+    entities_        = &scenario_engine_->entities_;
 }
 
 void ControllerALKS_R157SM::Model::SetScenarioType(ScenarioType type)
@@ -589,7 +589,7 @@ bool ControllerALKS_R157SM::Regulation::CheckSafety(ObjectInfo* info)
         return true;
     }
 
-    if (info->dLaneId == 0)   // same lane
+    if (info->dLaneId == 0)  // same lane
     {
         info->action = ScenarioType::Deceleration;
         return false;
@@ -600,7 +600,7 @@ bool ControllerALKS_R157SM::Regulation::CheckSafety(ObjectInfo* info)
     if (road && info->dist_lat > -SMALL_NUMBER)
     {
         double lane_width = road->GetLaneWidthByS(info->obj->pos_.GetS(), info->obj->pos_.GetLaneId());
-        double x = 0.0;
+        double x          = 0.0;
         if (info->obj->GetType() == Object::Type::VEHICLE)
         {
             // Find out position of front wheel (axis)
@@ -613,7 +613,7 @@ bool ControllerALKS_R157SM::Regulation::CheckSafety(ObjectInfo* info)
         }
 
         // Look at side towards Ego vehicle lane
-        double y = -1 * SIGN(info->dLaneId) * static_cast<double>(info->obj->boundingbox_.dimensions_.width_) / 2.0;
+        double y  = -1 * SIGN(info->dLaneId) * static_cast<double>(info->obj->boundingbox_.dimensions_.width_) / 2.0;
         double xr = 0.0, yr = 0.0;
         RotateVec2D(x, y, info->obj->pos_.GetHRelative(), xr, yr);
         double offset = info->obj->pos_.GetOffset() + yr;
@@ -666,7 +666,7 @@ double ControllerALKS_R157SM::Regulation::ReactCritical()
         return veh_->GetSpeed();  // no reaction yet
     }
 #endif
-    acc_ = -GetMaxDec();
+    acc_         = -GetMaxDec();
     double speed = MAX(0.0, veh_->GetSpeed() + acc_ * dt_);
 
     R157_LOG(3, "Critical: acc %.2f speed %.2f", acc_, speed);
@@ -699,8 +699,7 @@ void ControllerALKS_R157SM::ReferenceDriver::UpdateAEB(Vehicle* ego, ObjectInfo*
 
 void ControllerALKS_R157SM::ReferenceDriver::LateralDistTrigger::Update(ObjectInfo* info)
 {
-    if (info->obj == nullptr ||
-        info->dv_t < SMALL_NUMBER) // moving away from ego lateral position
+    if (info->obj == nullptr || info->dv_t < SMALL_NUMBER)  // moving away from ego lateral position
     {
         if (active_)
         {
@@ -712,19 +711,17 @@ void ControllerALKS_R157SM::ReferenceDriver::LateralDistTrigger::Update(ObjectIn
 
     if (info->obj != obj_)
     {
-        obj_ = info->obj;
+        obj_    = info->obj;
         active_ = true;
-        t0_ = info->obj->pos_.GetT();
+        t0_     = info->obj->pos_.GetT();
 
-        R157_LOG(2, "%s activated on %s at t %.3f with dist delta threshold %.3f",
-            name_.c_str(), info->obj->GetName().c_str(), t0_, threshold_);
+        R157_LOG(2, "%s activated on %s at t %.3f with dist delta threshold %.3f", name_.c_str(), info->obj->GetName().c_str(), t0_, threshold_);
     }
 }
 
 void ControllerALKS_R157SM::ReferenceDriver::WanderingTrigger::Update(ObjectInfo* info)
 {
-    if (info->obj == nullptr ||
-        info->dv_t < SMALL_NUMBER) // moving away from ego lateral position
+    if (info->obj == nullptr || info->dv_t < SMALL_NUMBER)  // moving away from ego lateral position
     {
         if (active_)
         {
@@ -736,18 +733,18 @@ void ControllerALKS_R157SM::ReferenceDriver::WanderingTrigger::Update(ObjectInfo
 
     if (info->obj != obj_)
     {
-        obj_ = info->obj;
+        obj_    = info->obj;
         active_ = true;
-        t0_ = info->obj->pos_.GetT();
+        t0_     = info->obj->pos_.GetT();
 
         threshold_ = model_->wandering_threshold_;
 
         bool mc = obj_->GetType() == Object::Type::VEHICLE && (reinterpret_cast<Vehicle*>(obj_))->category_ == Vehicle::Category::MOTORBIKE;
 
         if ((obj_->pos_.GetT() > model_->veh_->pos_.GetT() &&  // target is to the left of Ego, moving along negative T
-            obj_->pos_.GetOffset() > 0) ||                    // target is to the left (other side) of lane center
+             obj_->pos_.GetOffset() > 0) ||                    // target is to the left (other side) of lane center
             (obj_->pos_.GetT() < model_->veh_->pos_.GetT() &&  // target is to the right of Ego, moving along positive T
-                obj_->pos_.GetOffset() < 0))                       // target is to the right (other side) of lane center
+             obj_->pos_.GetOffset() < 0))                      // target is to the right (other side) of lane center
         {
             // add current lane offset to end up at wandering_threshold
             threshold_ += abs(obj_->pos_.GetOffset());
@@ -761,8 +758,13 @@ void ControllerALKS_R157SM::ReferenceDriver::WanderingTrigger::Update(ObjectInfo
             threshold_ = MAX(0.0, threshold_ - abs(obj_->pos_.GetOffset()));
         }
 
-        R157_LOG(2, "%s activated on %s (%s) at t %.3f with delta dist threshold %.3f",
-            name_.c_str(), info->obj->GetName().c_str(), mc ? "MC" : "non MC", t0_, threshold_);
+        R157_LOG(2,
+                 "%s activated on %s (%s) at t %.3f with delta dist threshold %.3f",
+                 name_.c_str(),
+                 info->obj->GetName().c_str(),
+                 mc ? "MC" : "non MC",
+                 t0_,
+                 threshold_);
     }
 }
 
@@ -784,8 +786,7 @@ bool ControllerALKS_R157SM::ReferenceDriver::CheckSafety(ObjectInfo* info)
     }
 
     // Calculate lane offset of object center, transform OpenSCENARIO reference point
-    c_lane_offset_ = info->obj->pos_.GetOffset() +
-        SE_Vector(info->obj->boundingbox_.center_.x_, 0.0).Rotate(info->obj->pos_.GetH()).y();
+    c_lane_offset_ = info->obj->pos_.GetOffset() + SE_Vector(info->obj->boundingbox_.center_.x_, 0.0).Rotate(info->obj->pos_.GetH()).y();
 
     if (lateral_dist_trigger_)
     {
@@ -804,9 +805,9 @@ bool ControllerALKS_R157SM::ReferenceDriver::CheckSafety(ObjectInfo* info)
             return false;  // always consider pedestrians moving laterally towards ego
         }
     }
-    else if (info->dLaneId == 0) // same lane
+    else if (info->dLaneId == 0)  // same lane
     {
-        if (abs(c_lane_offset_) > wandering_threshold_ && info->dv_t < -SMALL_NUMBER) // moving away from ego
+        if (abs(c_lane_offset_) > wandering_threshold_ && info->dv_t < -SMALL_NUMBER)  // moving away from ego
         {
             info->action = ScenarioType::CutOut;  // indicate that car is potentially moving out of own lane
         }
@@ -818,10 +819,8 @@ bool ControllerALKS_R157SM::ReferenceDriver::CheckSafety(ObjectInfo* info)
     }
     else
     {
-        if ((lateral_dist_trigger_ &&
-            lateral_dist_trigger_->Evaluate() == true) ||
-            (!lateral_dist_trigger_ &&
-                wandering_trigger_->Evaluate() == true)) // check distance at the side facing ego
+        if ((lateral_dist_trigger_ && lateral_dist_trigger_->Evaluate() == true) ||
+            (!lateral_dist_trigger_ && wandering_trigger_->Evaluate() == true))  // check distance at the side facing ego
         {
             info->action = ScenarioType::CutIn;
             return false;
@@ -839,8 +838,7 @@ bool ControllerALKS_R157SM::ReferenceDriver::CheckPerceptionCutIn()
 {
     if (GetPhase() == Phase::INACTIVE)
     {
-        if (object_in_focus_.obj && object_in_focus_.obj->GetType() == Object::Type::PEDESTRIAN &&
-            object_in_focus_.dv_s > SMALL_NUMBER)
+        if (object_in_focus_.obj && object_in_focus_.obj->GetType() == Object::Type::PEDESTRIAN && object_in_focus_.dv_s > SMALL_NUMBER)
         {
             // Calculate perception distance based on default or specified risk perception/evaluation time
             timer_ = GetPedestrianRiskEvaluationTime();
@@ -851,14 +849,18 @@ bool ControllerALKS_R157SM::ReferenceDriver::CheckPerceptionCutIn()
             bool trig = false;
             if (lateral_dist_trigger_ && lateral_dist_trigger_->Evaluate() == true)
             {
-                R157_LOG(2, "Trig perception on lateral distance: %.2f (>%.2f)",
-                    lateral_dist_trigger_->GetDistance(), lateral_dist_trigger_->threshold_);
+                R157_LOG(2,
+                         "Trig perception on lateral distance: %.2f (>%.2f)",
+                         lateral_dist_trigger_->GetDistance(),
+                         lateral_dist_trigger_->threshold_);
                 trig = true;
             }
             else if (wandering_trigger_ && wandering_trigger_->Evaluate() == true)
             {
-                R157_LOG(2, "Trig perception on lateral wandering threshold: %.3f (>%.3f)",
-                    abs(wandering_trigger_->obj_->pos_.GetT() - wandering_trigger_->t0_), wandering_trigger_->threshold_);
+                R157_LOG(2,
+                         "Trig perception on lateral wandering threshold: %.3f (>%.3f)",
+                         abs(wandering_trigger_->obj_->pos_.GetT() - wandering_trigger_->t0_),
+                         wandering_trigger_->threshold_);
                 trig = true;
             }
 
@@ -869,7 +871,7 @@ bool ControllerALKS_R157SM::ReferenceDriver::CheckPerceptionCutIn()
                 // Establish additional lateral perception distance
                 if (cut_in_perception_delay_mode_ == CutInPerceptionDelayMode::DIST)
                 {
-                    perception_dist_ = 0.72;    // ALKS Reg 157 3.4.1 default
+                    perception_dist_ = 0.72;  // ALKS Reg 157 3.4.1 default
                 }
                 else if (cut_in_perception_delay_mode_ == CutInPerceptionDelayMode::TIME)
                 {
@@ -891,8 +893,7 @@ bool ControllerALKS_R157SM::ReferenceDriver::CheckPerceptionCutIn()
                 if (timer_ < SMALL_NUMBER)
                 {
                     SetPhase(Phase::REACT);
-                    R157_LOG(2, "Pedestrian %s perceived after %.2fs",
-                        object_in_focus_.obj->GetName().c_str(), GetPedestrianRiskEvaluationTime());
+                    R157_LOG(2, "Pedestrian %s perceived after %.2fs", object_in_focus_.obj->GetName().c_str(), GetPedestrianRiskEvaluationTime());
                 }
             }
         }
@@ -905,17 +906,23 @@ bool ControllerALKS_R157SM::ReferenceDriver::CheckPerceptionCutIn()
                     R157_LOG(3, "In perceive phase, but lost object in focus");
                 }
                 else if (object_in_focus_.obj->pos_.GetT() > veh_->pos_.GetT() &&  // target moving along negative T
-                    object_in_focus_.obj->pos_.GetT() < perception_t_ - perception_dist_)
+                         object_in_focus_.obj->pos_.GetT() < perception_t_ - perception_dist_)
                 {
-                    R157_LOG(2, "Reached lateral perception distance (t %.3f < t0 %.3f - perc dist %.2f)",
-                        object_in_focus_.obj->pos_.GetT(), perception_t_, perception_dist_);
+                    R157_LOG(2,
+                             "Reached lateral perception distance (t %.3f < t0 %.3f - perc dist %.2f)",
+                             object_in_focus_.obj->pos_.GetT(),
+                             perception_t_,
+                             perception_dist_);
                     SetPhase(Phase::REACT);
                 }
-                else if (object_in_focus_.obj->pos_.GetT() < veh_->pos_.GetT() && // target moving along positive T
-                    object_in_focus_.obj->pos_.GetT() > perception_t_ + perception_dist_)
+                else if (object_in_focus_.obj->pos_.GetT() < veh_->pos_.GetT() &&  // target moving along positive T
+                         object_in_focus_.obj->pos_.GetT() > perception_t_ + perception_dist_)
                 {
-                    R157_LOG(2, "Reached lateral perception distance (t %.3f > t0 %.3f + perc dist %.2f)",
-                        object_in_focus_.obj->pos_.GetT(), perception_t_, perception_dist_);
+                    R157_LOG(2,
+                             "Reached lateral perception distance (t %.3f > t0 %.3f + perc dist %.2f)",
+                             object_in_focus_.obj->pos_.GetT(),
+                             perception_t_,
+                             perception_dist_);
                     SetPhase(Phase::REACT);
                 }
             }
@@ -925,8 +932,11 @@ bool ControllerALKS_R157SM::ReferenceDriver::CheckPerceptionCutIn()
                 if (timer_ < SMALL_NUMBER)
                 {
                     SetPhase(Phase::REACT);
-                    R157_LOG(2, "Reached lateral perception time at t %.2fm (t0 %.3fm + perc time %.2f)",
-                        object_in_focus_.obj->pos_.GetT(), perception_t_, perception_time_);
+                    R157_LOG(2,
+                             "Reached lateral perception time at t %.2fm (t0 %.3fm + perc time %.2f)",
+                             object_in_focus_.obj->pos_.GetT(),
+                             perception_t_,
+                             perception_time_);
                 }
             }
         }
@@ -988,8 +998,11 @@ bool ControllerALKS_R157SM::ReferenceDriver::CheckCriticalCutIn()
         {
             if (timer_ < SMALL_NUMBER)
             {
-                R157_LOG(2, "Reacting to cut-in at TTC %.2f (< %.2f) (%s)", object_in_focus_.ttc, critical_ttc_,
-                    object_in_focus_.thw < critical_thw_ ? "Critical" : "Non critical");
+                R157_LOG(2,
+                         "Reacting to cut-in at TTC %.2f (< %.2f) (%s)",
+                         object_in_focus_.ttc,
+                         critical_ttc_,
+                         object_in_focus_.thw < critical_thw_ ? "Critical" : "Non critical");
                 SetModelMode(ModelMode::CRITICAL);
                 retval = true;
             }
@@ -1030,8 +1043,11 @@ bool ControllerALKS_R157SM::ReferenceDriver::CheckCriticalCutOut()
         {
             if (timer_ < SMALL_NUMBER)
             {
-                R157_LOG(2, "Reacting to cut-out THW = %.2f (< %.2f) (%s)", object_in_focus_.thw, critical_thw_,
-                    object_in_focus_.thw < critical_thw_ ? "Critical" : "Non critical");
+                R157_LOG(2,
+                         "Reacting to cut-out THW = %.2f (< %.2f) (%s)",
+                         object_in_focus_.thw,
+                         critical_thw_,
+                         object_in_focus_.thw < critical_thw_ ? "Critical" : "Non critical");
                 SetModelMode(ModelMode::CRITICAL);
                 retval = true;
             }
@@ -1072,8 +1088,11 @@ bool ControllerALKS_R157SM::ReferenceDriver::CheckCriticalDeceleration()
         {
             if (timer_ < SMALL_NUMBER)
             {
-                R157_LOG(2, "Reacting to dececleration THW < %.2f (%.2f) (%s)", object_in_focus_.thw, critical_thw_,
-                    object_in_focus_.thw < critical_thw_ ? "Critical" : "Non critical");
+                R157_LOG(2,
+                         "Reacting to dececleration THW < %.2f (%.2f) (%s)",
+                         object_in_focus_.thw,
+                         critical_thw_,
+                         object_in_focus_.thw < critical_thw_ ? "Critical" : "Non critical");
                 SetModelMode(ModelMode::CRITICAL);
                 retval = true;
             }
@@ -1124,8 +1143,11 @@ bool ControllerALKS_R157SM::ReferenceDriver::CheckCritical()
     {
         if (CheckPerception())
         {
-            R157_LOG(3, "Perceived critical %s scenario ttc %.2f hwt %.2f",
-                ScenarioType2Str(GetScenarioType()).c_str(), object_in_focus_.ttc, object_in_focus_.thw);
+            R157_LOG(3,
+                     "Perceived critical %s scenario ttc %.2f hwt %.2f",
+                     ScenarioType2Str(GetScenarioType()).c_str(),
+                     object_in_focus_.ttc,
+                     object_in_focus_.thw);
             SetPhase(Phase::REACT);
             timer_ = rt_;
         }
@@ -1154,10 +1176,9 @@ bool ControllerALKS_R157SM::ReferenceDriver::CheckCritical()
         Reset();  // lost sight of object
         SetModelMode(ModelMode::NO_TARGET);
     }
-    else if ((veh_->GetSpeed() > SMALL_NUMBER &&
-        object_in_focus_.dist_long > 0) ||
-        GetFullStop()  // fulfill the scenario even if ego passed the perceived vehicle
-        )
+    else if ((veh_->GetSpeed() > SMALL_NUMBER && object_in_focus_.dist_long > 0) ||
+             GetFullStop()  // fulfill the scenario even if ego passed the perceived vehicle
+    )
     {
         CheckCriticalCondition();
     }
@@ -1214,7 +1235,7 @@ double ControllerALKS_R157SM::ReferenceDriver::MinDist()
 {
     double min_dist = 2.0 + veh_->GetSpeed() * 2.0;
 
-    //R157_LOG(1, "Min dist: %.2f", min_dist);
+    // R157_LOG(1, "Min dist: %.2f", min_dist);
 
     return min_dist;
 }
@@ -1233,9 +1254,8 @@ bool ControllerALKS_R157SM::RSS::CheckSafety(ObjectInfo* info)
     }
 
     double cut_in_lat = abs(info->obj->pos_.GetVelT());
-    double d_safe_rss_lat = mu_ + abs(
-        (2.0 * cut_in_lat + max_acc_lat_ * rt_) * rt_ / 2.0) +
-        pow(cut_in_lat + max_acc_lat_ * rt_, 2) / (2 * max_acc_lat_);
+    double d_safe_rss_lat =
+        mu_ + abs((2.0 * cut_in_lat + max_acc_lat_ * rt_) * rt_ / 2.0) + pow(cut_in_lat + max_acc_lat_ * rt_, 2) / (2 * max_acc_lat_);
 
     R157_LOG(3, "CheckSafety: dist_lat % .2f d_safe_rss_lat %.2f", info->dist_lat, d_safe_rss_lat);
 
@@ -1258,9 +1278,8 @@ bool ControllerALKS_R157SM::RSS::CheckCritical()
 
     if (object_in_focus_.dv_s > 0.0 && object_in_focus_.dist_long > 0)
     {
-        double d_safe_rss_long = veh_->GetSpeed() * rt_ + max_acc_ * pow(rt_, 2) / 2.0 +
-            pow(veh_->GetSpeed() + rt_ * max_acc_, 2) / (2 * max_dec_) -
-            pow(object_in_focus_.obj->GetSpeed(), 2) / (2 * max_dec_);
+        double d_safe_rss_long = veh_->GetSpeed() * rt_ + max_acc_ * pow(rt_, 2) / 2.0 + pow(veh_->GetSpeed() + rt_ * max_acc_, 2) / (2 * max_dec_) -
+                                 pow(object_in_focus_.obj->GetSpeed(), 2) / (2 * max_dec_);
 
         R157_LOG(3, "CheckCritical: dist %.2f d_safe_rss_long %.2f", object_in_focus_.dist_long, d_safe_rss_long);
 
@@ -1283,7 +1302,7 @@ double ControllerALKS_R157SM::RSS::ReactCritical()
 {
     if (rt_counter_ > 0)
     {
-        acc_ = MIN(acc_, 0.0);    // release gas pedal
+        acc_ = MIN(acc_, 0.0);  // release gas pedal
         rt_counter_ -= dt_;
         return veh_->GetSpeed() + acc_ * dt_;
     }
@@ -1296,27 +1315,31 @@ double ControllerALKS_R157SM::RSS::ReactCritical()
 
 double ControllerALKS_R157SM::RSS::MinDist()
 {
-    double min_dist = veh_->GetSpeed() * rt_ * rt_ + max_acc_ * pow(rt_, 2) / 2 +
-        pow(veh_->GetSpeed() + rt_ * max_acc_, 2) / (2 * max_dec_) +
-        -pow(MAX(veh_->GetSpeed() - rt_ * max_acc_ * max_dec_, 0), 2) /
-        (2 * max_dec_) + 1.0 / 2 * max_dec_ * pow(rt_, 2);
+    double min_dist = veh_->GetSpeed() * rt_ * rt_ + max_acc_ * pow(rt_, 2) / 2 + pow(veh_->GetSpeed() + rt_ * max_acc_, 2) / (2 * max_dec_) +
+                      -pow(MAX(veh_->GetSpeed() - rt_ * max_acc_ * max_dec_, 0), 2) / (2 * max_dec_) + 1.0 / 2 * max_dec_ * pow(rt_, 2);
 
     return min_dist;
 }
 
 double ControllerALKS_R157SM::FSM::MinDist()
 {
-    double min_dist = margin_dist_ +
-        veh_->GetSpeed() * rt_ + pow(veh_->GetSpeed(), 2) / (2 * br_min_) -
-        pow(object_in_focus_.obj->GetSpeed(), 2) / (2 * bl_) + margin_safe_dist_;
+    double min_dist = margin_dist_ + veh_->GetSpeed() * rt_ + pow(veh_->GetSpeed(), 2) / (2 * br_min_) -
+                      pow(object_in_focus_.obj->GetSpeed(), 2) / (2 * bl_) + margin_safe_dist_;
 
     R157_LOG(3, "Min dist: %.2f", min_dist);
 
     return min_dist;
 }
 
-double ControllerALKS_R157SM::FSM::PFS(double dist, double speed_rear, double speed_lead, double rt, double br_min, double br_max,
-    double bl, double margin_dist, double margin_safe_dist)
+double ControllerALKS_R157SM::FSM::PFS(double dist,
+                                       double speed_rear,
+                                       double speed_lead,
+                                       double rt,
+                                       double br_min,
+                                       double br_max,
+                                       double bl,
+                                       double margin_dist,
+                                       double margin_safe_dist)
 {
     dist = dist - margin_dist;
 
@@ -1340,11 +1363,10 @@ double ControllerALKS_R157SM::FSM::PFS(double dist, double speed_rear, double sp
     }
 }
 
-double ControllerALKS_R157SM::FSM::CFS(double dist, double speed_rear, double speed_lead,
-    double rt, double br_min, double br_max, double acc)
+double ControllerALKS_R157SM::FSM::CFS(double dist, double speed_rear, double speed_lead, double rt, double br_min, double br_max, double acc)
 {
-    double arF = MAX(acc, -br_min);  // Do not take into account very hard decelerations
-    double u_new = speed_rear + rt * arF;   // Estimate rear vehicle new speed
+    double arF   = MAX(acc, -br_min);      // Do not take into account very hard decelerations
+    double u_new = speed_rear + rt * arF;  // Estimate rear vehicle new speed
     double dsafe = 0.0;
 
     if (speed_rear <= speed_lead)
@@ -1395,7 +1417,7 @@ bool ControllerALKS_R157SM::FSM::CheckSafety(ObjectInfo* info)
         return true;
     }
 
-    if (info->dLaneId == 0)   // same lane
+    if (info->dLaneId == 0)  // same lane
     {
         info->action = ScenarioType::Deceleration;
         return false;
@@ -1406,9 +1428,8 @@ bool ControllerALKS_R157SM::FSM::CheckSafety(ObjectInfo* info)
         double cutin_speed = -SIGN(info->dLaneId) * info->obj->pos_.GetVelT();
         if (cutin_speed > 0)
         {
-            double headway_lat = abs(info->dist_lat) / cutin_speed;
-            double headway_long_gross = abs(info->dist_long) /
-                MAX(SMALL_NUMBER, veh_->GetSpeed() - info->obj->GetSpeed());
+            double headway_lat        = abs(info->dist_lat) / cutin_speed;
+            double headway_long_gross = abs(info->dist_long) / MAX(SMALL_NUMBER, veh_->GetSpeed() - info->obj->GetSpeed());
 
             if (headway_lat > headway_long_gross + 0.1)
             {
@@ -1434,10 +1455,16 @@ bool ControllerALKS_R157SM::FSM::CheckCritical()
     }
     else if (dt_ > SMALL_NUMBER && object_in_focus_.dv_s > 0.0 && object_in_focus_.dist_long > 0)
     {
-        cfs_ = CFS(object_in_focus_.dist_long, veh_->GetSpeed(), object_in_focus_.obj->GetSpeed(),
-            rt_, br_min_, br_max_, veh_->pos_.GetAccS());
-        pfs_ = PFS(object_in_focus_.dist_long, veh_->GetSpeed(), object_in_focus_.obj->GetSpeed(),
-            rt_, br_min_, br_max_, bl_, margin_dist_, margin_safe_dist_);
+        cfs_ = CFS(object_in_focus_.dist_long, veh_->GetSpeed(), object_in_focus_.obj->GetSpeed(), rt_, br_min_, br_max_, veh_->pos_.GetAccS());
+        pfs_ = PFS(object_in_focus_.dist_long,
+                   veh_->GetSpeed(),
+                   object_in_focus_.obj->GetSpeed(),
+                   rt_,
+                   br_min_,
+                   br_max_,
+                   bl_,
+                   margin_dist_,
+                   margin_safe_dist_);
 
         R157_LOG(3, "cfs %.2f pfs %.2f", cfs_, pfs_);
 
@@ -1459,12 +1486,11 @@ bool ControllerALKS_R157SM::FSM::CheckCritical()
     return false;
 }
 
-
 double ControllerALKS_R157SM::FSM::ReactCritical()
 {
     if (rt_counter_ > 0.0)
     {
-        acc_ = MIN(acc_, 0.0);    // release gas pedal
+        acc_ = MIN(acc_, 0.0);  // release gas pedal
         rt_counter_ -= dt_;
         return veh_->GetSpeed() + acc_ * dt_;  // no reaction yet
     }

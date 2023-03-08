@@ -15,22 +15,22 @@ namespace roadmanager
      */
     typedef struct Node
     {
-        Road *road;
-        int currentLaneId;
-        int fromLaneId;
-        double weight;
+        Road     *road;
+        int       currentLaneId;
+        int       fromLaneId;
+        double    weight;
         RoadLink *link;
-        Node *previous;
-        void Print()
+        Node     *previous;
+        void      Print()
         {
             LOG("road=%d, cl=%d, fl=%d, w=%f", road->GetId(), currentLaneId, fromLaneId, weight);
         }
         bool operator==(const Node &rhs)
         {
-            bool sameRoadId = rhs.road->GetId() == road->GetId();
-            bool sameLaneId = rhs.currentLaneId == currentLaneId;
+            bool sameRoadId     = rhs.road->GetId() == road->GetId();
+            bool sameLaneId     = rhs.currentLaneId == currentLaneId;
             bool sameFromLaneId = rhs.fromLaneId == fromLaneId;
-            bool sameLink = rhs.link == link;
+            bool sameLink       = rhs.link == link;
             return sameRoadId && sameLaneId && sameFromLaneId && sameLink;
         }
     } Node;
@@ -42,9 +42,9 @@ namespace roadmanager
     struct WeightCompare
     {
     public:
-        bool operator()(Node *a, Node *b) // overloading both operators
+        bool operator()(Node *a, Node *b)  // overloading both operators
         {
-            if (a->weight == b->weight) // sort after lanes if weight is same.
+            if (a->weight == b->weight)  // sort after lanes if weight is same.
             {
                 // Changes lane as soon as possible:
                 int aAbs = abs(a->currentLaneId - a->previous->currentLaneId);
@@ -233,23 +233,25 @@ namespace roadmanager
             }
             v.clear();
         }
-        
-        struct InspectionPriorityQueue : public std::priority_queue<Node *, std::vector<Node *>, WeightCompare> {
+
+        struct InspectionPriorityQueue : public std::priority_queue<Node *, std::vector<Node *>, WeightCompare>
+        {
             using BaseClass = std::priority_queue<Node *, std::vector<Node *>, WeightCompare>;
             using BaseClass::BaseClass;
+
         public:
-            std::vector<Node*>& GetUnderlyingContainer()
+            std::vector<Node *> &GetUnderlyingContainer()
             {
                 return c;
             }
         };
 
         InspectionPriorityQueue unvisited_;
-        std::vector<Node *> visited_;
-        Position targetWaypoint_;
-        OpenDrive *odr_;
-        RoadCalculations roadCalculations_;
+        std::vector<Node *>     visited_;
+        Position                targetWaypoint_;
+        OpenDrive              *odr_;
+        RoadCalculations        roadCalculations_;
         Position::RouteStrategy routeStrategy_;
     };
 
-}
+}  // namespace roadmanager

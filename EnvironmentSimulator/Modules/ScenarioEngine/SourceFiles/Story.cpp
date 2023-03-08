@@ -15,252 +15,251 @@
 
 using namespace scenarioengine;
 
-
 Act* Story::FindActByName(std::string name)
 {
-	for (size_t i = 0; i < act_.size(); i++)
-	{
-		if (name == act_[i]->name_)
-		{
-			return act_[i];
-		}
-	}
+    for (size_t i = 0; i < act_.size(); i++)
+    {
+        if (name == act_[i]->name_)
+        {
+            return act_[i];
+        }
+    }
 
-	return nullptr;
+    return nullptr;
 }
 
 ManeuverGroup* Story::FindManeuverGroupByName(std::string name)
 {
-	for (size_t i = 0; i < act_.size(); i++)
-	{
-		for (size_t j = 0; j < act_[i]->maneuverGroup_.size(); j++)
-		{
-			ManeuverGroup *mg = act_[i]->maneuverGroup_[j];
-			if (name == mg->name_)
-			{
-				return mg;
-			}
-		}
-	}
+    for (size_t i = 0; i < act_.size(); i++)
+    {
+        for (size_t j = 0; j < act_[i]->maneuverGroup_.size(); j++)
+        {
+            ManeuverGroup* mg = act_[i]->maneuverGroup_[j];
+            if (name == mg->name_)
+            {
+                return mg;
+            }
+        }
+    }
 
-	return nullptr;
+    return nullptr;
 }
 
 Maneuver* Story::FindManeuverByName(std::string name)
 {
-	for (size_t i = 0; i < act_.size(); i++)
-	{
-		for (size_t j = 0; j < act_[i]->maneuverGroup_.size(); j++)
-		{
-			for (size_t k = 0; k < act_[i]->maneuverGroup_[j]->maneuver_.size(); k++)
-			{
-				Maneuver* maneuver = act_[i]->maneuverGroup_[j]->maneuver_[k];
-				if (maneuver->name_ == name)
-				{
-					return maneuver;
-				}
-			}
-		}
-	}
+    for (size_t i = 0; i < act_.size(); i++)
+    {
+        for (size_t j = 0; j < act_[i]->maneuverGroup_.size(); j++)
+        {
+            for (size_t k = 0; k < act_[i]->maneuverGroup_[j]->maneuver_.size(); k++)
+            {
+                Maneuver* maneuver = act_[i]->maneuverGroup_[j]->maneuver_[k];
+                if (maneuver->name_ == name)
+                {
+                    return maneuver;
+                }
+            }
+        }
+    }
 
-	return nullptr;
+    return nullptr;
 }
 
 Event* Story::FindEventByName(std::string name)
 {
-	for (size_t i = 0; i < act_.size(); i++)
-	{
-		for (size_t j = 0; j < act_[i]->maneuverGroup_.size(); j++)
-		{
-			for (size_t k = 0; k < act_[i]->maneuverGroup_[j]->maneuver_.size(); k++)
-			{
-				for (size_t l = 0; l < act_[i]->maneuverGroup_[j]->maneuver_[k]->event_.size(); l++)
-				{
-					Event *event = act_[i]->maneuverGroup_[j]->maneuver_[k]->event_[l];
-					if (name == event->name_)
-					{
-						return event;
-					}
-				}
-			}
-		}
-	}
+    for (size_t i = 0; i < act_.size(); i++)
+    {
+        for (size_t j = 0; j < act_[i]->maneuverGroup_.size(); j++)
+        {
+            for (size_t k = 0; k < act_[i]->maneuverGroup_[j]->maneuver_.size(); k++)
+            {
+                for (size_t l = 0; l < act_[i]->maneuverGroup_[j]->maneuver_[k]->event_.size(); l++)
+                {
+                    Event* event = act_[i]->maneuverGroup_[j]->maneuver_[k]->event_[l];
+                    if (name == event->name_)
+                    {
+                        return event;
+                    }
+                }
+            }
+        }
+    }
 
-	return nullptr;
+    return nullptr;
 }
 
-OSCAction * Story::FindActionByName(std::string name)
+OSCAction* Story::FindActionByName(std::string name)
 {
-	for (size_t i = 0; i < act_.size(); i++)
-	{
-		for (size_t j = 0; j < act_[i]->maneuverGroup_.size(); j++)
-		{
-			for (size_t k = 0; k < act_[i]->maneuverGroup_[j]->maneuver_.size(); k++)
-			{
-				for (size_t l = 0; l < act_[i]->maneuverGroup_[j]->maneuver_[k]->event_.size(); l++)
-				{
-					for (size_t m = 0; m < act_[i]->maneuverGroup_[j]->maneuver_[k]->event_[l]->action_.size(); m++)
-					{
-						OSCAction *action = act_[i]->maneuverGroup_[j]->maneuver_[k]->event_[l]->action_[m];
-						if (name == action->name_)
-						{
-							return action;
-						}
-					}
-				}
-			}
-		}
-	}
+    for (size_t i = 0; i < act_.size(); i++)
+    {
+        for (size_t j = 0; j < act_[i]->maneuverGroup_.size(); j++)
+        {
+            for (size_t k = 0; k < act_[i]->maneuverGroup_[j]->maneuver_.size(); k++)
+            {
+                for (size_t l = 0; l < act_[i]->maneuverGroup_[j]->maneuver_[k]->event_.size(); l++)
+                {
+                    for (size_t m = 0; m < act_[i]->maneuverGroup_[j]->maneuver_[k]->event_[l]->action_.size(); m++)
+                    {
+                        OSCAction* action = act_[i]->maneuverGroup_[j]->maneuver_[k]->event_[l]->action_[m];
+                        if (name == action->name_)
+                        {
+                            return action;
+                        }
+                    }
+                }
+            }
+        }
+    }
 
-	return nullptr;
+    return nullptr;
 }
 
 void Story::Print()
 {
-	LOG("Story: %s", name_.c_str());
+    LOG("Story: %s", name_.c_str());
 }
 
 Act* StoryBoard::FindActByName(std::string name)
 {
-	Act *act = 0;
-	for (size_t i = 0; i < story_.size(); i++)
-	{
-		if ((act = story_[i]->FindActByName(name)) != 0)
-		{
-			return act;
-		}
-	}
+    Act* act = 0;
+    for (size_t i = 0; i < story_.size(); i++)
+    {
+        if ((act = story_[i]->FindActByName(name)) != 0)
+        {
+            return act;
+        }
+    }
 
-	return 0;
+    return 0;
 }
 
 ManeuverGroup* StoryBoard::FindManeuverGroupByName(std::string name)
 {
-	ManeuverGroup* mg = 0;
-	for (size_t i = 0; i < story_.size(); i++)
-	{
-		if ((mg = story_[i]->FindManeuverGroupByName(name)) != 0)
-		{
-			return mg;
-		}
-	}
+    ManeuverGroup* mg = 0;
+    for (size_t i = 0; i < story_.size(); i++)
+    {
+        if ((mg = story_[i]->FindManeuverGroupByName(name)) != 0)
+        {
+            return mg;
+        }
+    }
 
-	return 0;
+    return 0;
 }
 
 Maneuver* StoryBoard::FindManeuverByName(std::string name)
 {
-	Maneuver* m = 0;
-	for (size_t i = 0; i < story_.size(); i++)
-	{
-		if ((m = story_[i]->FindManeuverByName(name)) != 0)
-		{
-			return m;
-		}
-	}
+    Maneuver* m = 0;
+    for (size_t i = 0; i < story_.size(); i++)
+    {
+        if ((m = story_[i]->FindManeuverByName(name)) != 0)
+        {
+            return m;
+        }
+    }
 
-	return 0;
+    return 0;
 }
 
 Event* StoryBoard::FindEventByName(std::string name)
 {
-	Event *event = 0;
-	for (size_t i = 0; i < story_.size(); i++)
-	{
-		if ((event = story_[i]->FindEventByName(name)) != 0)
-		{
-			return event;
-		}
-	}
+    Event* event = 0;
+    for (size_t i = 0; i < story_.size(); i++)
+    {
+        if ((event = story_[i]->FindEventByName(name)) != 0)
+        {
+            return event;
+        }
+    }
 
-	return 0;
+    return 0;
 }
 
 OSCAction* StoryBoard::FindActionByName(std::string name)
 {
-	OSCAction *action = 0;
-	for (size_t i = 0; i < story_.size(); i++)
-	{
-		if ((action = story_[i]->FindActionByName(name)) != 0)
-		{
-			return action;
-		}
-	}
+    OSCAction* action = 0;
+    for (size_t i = 0; i < story_.size(); i++)
+    {
+        if ((action = story_[i]->FindActionByName(name)) != 0)
+        {
+            return action;
+        }
+    }
 
-	return 0;
+    return 0;
 }
 
 void StoryBoard::Print()
 {
-	LOG("Storyboard:");
-	for (size_t i = 0; i < story_.size(); i++)
-	{
-		story_[i]->Print();
-	}
+    LOG("Storyboard:");
+    for (size_t i = 0; i < story_.size(); i++)
+    {
+        story_[i]->Print();
+    }
 }
 
 void Act::UpdateState()
 {
-	// Update state of sub elements - moving from transitions to stable states
-	for (size_t k = 0; k < maneuverGroup_.size(); k++)
-	{
-		maneuverGroup_[k]->UpdateState();
-	}
+    // Update state of sub elements - moving from transitions to stable states
+    for (size_t k = 0; k < maneuverGroup_.size(); k++)
+    {
+        maneuverGroup_[k]->UpdateState();
+    }
 
-	StoryBoardElement::UpdateState();
+    StoryBoardElement::UpdateState();
 }
 
 bool ManeuverGroup::AreAllManeuversComplete()
 {
-	for (size_t i = 0; i < maneuver_.size(); i++)
-	{
-		if (!maneuver_[i]->AreAllEventsComplete())
-		{
-			return false;
-		}
-	}
-	return true;
+    for (size_t i = 0; i < maneuver_.size(); i++)
+    {
+        if (!maneuver_[i]->AreAllEventsComplete())
+        {
+            return false;
+        }
+    }
+    return true;
 }
 
 void ManeuverGroup::UpdateState()
 {
-	// Update state of sub elements - moving from transitions to stable states
-	for (size_t k = 0; k < maneuver_.size(); k++)
-	{
-		maneuver_[k]->UpdateState();
-	}
+    // Update state of sub elements - moving from transitions to stable states
+    for (size_t k = 0; k < maneuver_.size(); k++)
+    {
+        maneuver_[k]->UpdateState();
+    }
 
-	StoryBoardElement::UpdateState();
+    StoryBoardElement::UpdateState();
 }
 
 void ManeuverGroup::Start(double simTime, double dt)
 {
-	// Reset all child manuevers, getting them ready for (re)start
-	for (size_t k = 0; k < maneuver_.size(); k++)
-	{
-		maneuver_[k]->Reset();
-		maneuver_[k]->Start(simTime, dt);
-	}
+    // Reset all child manuevers, getting them ready for (re)start
+    for (size_t k = 0; k < maneuver_.size(); k++)
+    {
+        maneuver_[k]->Reset();
+        maneuver_[k]->Start(simTime, dt);
+    }
 
-	// Make sure to call base class Start method
-	StoryBoardElement::Start(simTime, dt);
+    // Make sure to call base class Start method
+    StoryBoardElement::Start(simTime, dt);
 }
 
 void ManeuverGroup::End(double simTime)
 {
-	for (size_t k = 0; k < maneuver_.size(); k++)
-	{
-		maneuver_[k]->End(simTime);
-	}
+    for (size_t k = 0; k < maneuver_.size(); k++)
+    {
+        maneuver_[k]->End(simTime);
+    }
 
-	StoryBoardElement::End(simTime);
+    StoryBoardElement::End(simTime);
 }
 
 void ManeuverGroup::Stop()
 {
-	for (size_t k = 0; k < maneuver_.size(); k++)
-	{
-		maneuver_[k]->Stop();
-	}
-	StoryBoardElement::Stop();
+    for (size_t k = 0; k < maneuver_.size(); k++)
+    {
+        maneuver_[k]->Stop();
+    }
+    StoryBoardElement::Stop();
 }

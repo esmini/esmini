@@ -26,254 +26,300 @@
 namespace scenarioengine
 {
 
-	using aabbTree::Solutions;
-	using std::vector;
-	using namespace Utils;
+    using aabbTree::Solutions;
+    using std::vector;
+    using namespace Utils;
 
-	class OSCGlobalAction : public OSCAction
-	{
-	public:
-		typedef enum
-		{
-			ENVIRONMENT,     // not supported yet
-			ADD_ENTITY,
-			DELETE_ENTITY,
-			PARAMETER_SET,
-			VARIABLE_SET,
-			INFRASTRUCTURE,  // not supported yet
-			SWARM_TRAFFIC,
-		} Type;
+    class OSCGlobalAction : public OSCAction
+    {
+    public:
+        typedef enum
+        {
+            ENVIRONMENT,  // not supported yet
+            ADD_ENTITY,
+            DELETE_ENTITY,
+            PARAMETER_SET,
+            VARIABLE_SET,
+            INFRASTRUCTURE,  // not supported yet
+            SWARM_TRAFFIC,
+        } Type;
 
-		Type type_;
+        Type type_;
 
-		OSCGlobalAction(OSCGlobalAction::Type type) : OSCAction(OSCAction::BaseType::GLOBAL), type_(type) {}
-		virtual ~OSCGlobalAction() = default;
+        OSCGlobalAction(OSCGlobalAction::Type type) : OSCAction(OSCAction::BaseType::GLOBAL), type_(type)
+        {
+        }
+        virtual ~OSCGlobalAction() = default;
 
-		virtual void print()
-		{
-			LOG("Virtual, should be overridden");
-		}
+        virtual void print()
+        {
+            LOG("Virtual, should be overridden");
+        }
 
-		virtual OSCGlobalAction* Copy()
-		{
-			LOG("Virtual, should be overridden");
-			return 0;
-		};
+        virtual OSCGlobalAction* Copy()
+        {
+            LOG("Virtual, should be overridden");
+            return 0;
+        };
 
-		virtual std::string Type2Str()
-		{
-			return "OSCGlobalAction base class";
-		};
+        virtual std::string Type2Str()
+        {
+            return "OSCGlobalAction base class";
+        };
+    };
 
-	};
+    class ParameterSetAction : public OSCGlobalAction
+    {
+    public:
+        std::string name_;
+        std::string value_;
+        Parameters* parameters_;
 
-	class ParameterSetAction : public OSCGlobalAction
-	{
-	public:
-		std::string name_;
-		std::string value_;
-		Parameters* parameters_;
+        ParameterSetAction() : OSCGlobalAction(OSCGlobalAction::Type::PARAMETER_SET), name_(""), value_(""), parameters_(0){};
 
-		ParameterSetAction() : OSCGlobalAction(OSCGlobalAction::Type::PARAMETER_SET), name_(""), value_(""), parameters_(0) {};
+        ParameterSetAction(const ParameterSetAction& action) : OSCGlobalAction(OSCGlobalAction::Type::PARAMETER_SET)
+        {
+            name_  = action.name_;
+            value_ = action.value_;
+        }
 
-		ParameterSetAction(const ParameterSetAction& action) : OSCGlobalAction(OSCGlobalAction::Type::PARAMETER_SET)
-		{
-			name_ = action.name_;
-			value_ = action.value_;
-		}
+        OSCGlobalAction* Copy()
+        {
+            ParameterSetAction* new_action = new ParameterSetAction(*this);
+            return new_action;
+        }
 
-		OSCGlobalAction* Copy()
-		{
-			ParameterSetAction* new_action = new ParameterSetAction(*this);
-			return new_action;
-		}
+        std::string Type2Str()
+        {
+            return "ParameterSetAction";
+        };
 
-		std::string Type2Str()
-		{
-			return "ParameterSetAction";
-		};
+        void Start(double simTime, double dt);
+        void Step(double simTime, double dt);
 
-		void Start(double simTime, double dt);
-		void Step(double simTime, double dt);
+        void print()
+        {
+        }
+    };
 
-		void print() {}
+    class VariableSetAction : public OSCGlobalAction
+    {
+    public:
+        std::string name_;
+        std::string value_;
+        Parameters* variables_;
 
-	};
+        VariableSetAction() : OSCGlobalAction(OSCGlobalAction::Type::VARIABLE_SET), name_(""), value_(""), variables_(0){};
 
-	class VariableSetAction : public OSCGlobalAction
-	{
-	public:
-		std::string name_;
-		std::string value_;
-		Parameters* variables_;
+        VariableSetAction(const ParameterSetAction& action) : OSCGlobalAction(OSCGlobalAction::Type::VARIABLE_SET)
+        {
+            name_  = action.name_;
+            value_ = action.value_;
+        }
 
-		VariableSetAction() : OSCGlobalAction(OSCGlobalAction::Type::VARIABLE_SET), name_(""), value_(""), variables_(0) {};
+        OSCGlobalAction* Copy()
+        {
+            VariableSetAction* new_action = new VariableSetAction(*this);
+            return new_action;
+        }
 
-		VariableSetAction(const ParameterSetAction& action) : OSCGlobalAction(OSCGlobalAction::Type::VARIABLE_SET)
-		{
-			name_ = action.name_;
-			value_ = action.value_;
-		}
+        std::string Type2Str()
+        {
+            return "VariableSetAction";
+        };
 
-		OSCGlobalAction* Copy()
-		{
-			VariableSetAction* new_action = new VariableSetAction(*this);
-			return new_action;
-		}
+        void Start(double simTime, double dt);
+        void Step(double simTime, double dt);
 
-		std::string Type2Str()
-		{
-			return "VariableSetAction";
-		};
+        void print()
+        {
+        }
+    };
 
-		void Start(double simTime, double dt);
-		void Step(double simTime, double dt);
+    class AddEntityAction : public OSCGlobalAction
+    {
+    public:
+        Object*                      entity_;
+        std::shared_ptr<OSCPosition> pos_OSCPosition_;
+        roadmanager::Position*       pos_;
+        Entities*                    entities_;
 
-		void print() {}
+        AddEntityAction() : OSCGlobalAction(OSCGlobalAction::Type::ADD_ENTITY), entity_(nullptr), pos_(0), entities_(nullptr){};
 
-	};
+        AddEntityAction(Object* entity) : OSCGlobalAction(OSCGlobalAction::Type::ADD_ENTITY), entity_(entity), pos_(0), entities_(nullptr){};
 
-	class AddEntityAction : public OSCGlobalAction
-	{
-	public:
-		Object* entity_;
-		std::shared_ptr<OSCPosition> pos_OSCPosition_;
-		roadmanager::Position *pos_;
-		Entities* entities_;
+        AddEntityAction(const AddEntityAction& action) : OSCGlobalAction(OSCGlobalAction::Type::ADD_ENTITY)
+        {
+            entity_   = action.entity_;
+            entities_ = action.entities_;
+            pos_      = action.pos_;
+        }
 
-		AddEntityAction() : OSCGlobalAction(OSCGlobalAction::Type::ADD_ENTITY), entity_(nullptr),
-			pos_(0), entities_(nullptr) {};
+        OSCGlobalAction* Copy()
+        {
+            AddEntityAction* new_action = new AddEntityAction(*this);
+            return new_action;
+        }
 
-		AddEntityAction(Object* entity) : OSCGlobalAction(OSCGlobalAction::Type::ADD_ENTITY), entity_(entity),
-			pos_(0), entities_(nullptr) {};
+        void Start(double simTime, double dt);
+        void Step(double simTime, double dt);
 
-		AddEntityAction(const AddEntityAction& action) : OSCGlobalAction(OSCGlobalAction::Type::ADD_ENTITY)
-		{
-			entity_ = action.entity_;
-			entities_ = action.entities_;
-			pos_ = action.pos_;
-		}
+        void SetEntities(Entities* entities)
+        {
+            entities_ = entities;
+        }
 
-		OSCGlobalAction* Copy()
-		{
-			AddEntityAction* new_action = new AddEntityAction(*this);
-			return new_action;
-		}
+        void print()
+        {
+        }
+    };
 
-		void Start(double simTime, double dt);
-		void Step(double simTime, double dt);
+    class DeleteEntityAction : public OSCGlobalAction
+    {
+    public:
+        Object*          entity_;
+        Entities*        entities_;
+        ScenarioGateway* gateway_;
 
-		void SetEntities(Entities* entities) { entities_ = entities; }
+        DeleteEntityAction() : OSCGlobalAction(OSCGlobalAction::Type::DELETE_ENTITY), entity_(nullptr), entities_(nullptr), gateway_(nullptr){};
 
-		void print() {}
-	};
+        DeleteEntityAction(Object* entity)
+            : OSCGlobalAction(OSCGlobalAction::Type::DELETE_ENTITY),
+              entity_(entity),
+              entities_(nullptr),
+              gateway_(nullptr){};
 
-	class DeleteEntityAction : public OSCGlobalAction
-	{
-	public:
-		Object* entity_;
-		Entities* entities_;
-		ScenarioGateway* gateway_;
+        DeleteEntityAction(const DeleteEntityAction& action) : OSCGlobalAction(OSCGlobalAction::Type::DELETE_ENTITY)
+        {
+            entity_   = action.entity_;
+            entities_ = action.entities_;
+            gateway_  = action.gateway_;
+        }
 
-		DeleteEntityAction() : OSCGlobalAction(OSCGlobalAction::Type::DELETE_ENTITY), entity_(nullptr),
-			entities_(nullptr), gateway_(nullptr) {};
+        OSCGlobalAction* Copy()
+        {
+            DeleteEntityAction* new_action = new DeleteEntityAction(*this);
+            return new_action;
+        }
 
-		DeleteEntityAction(Object* entity) : OSCGlobalAction(OSCGlobalAction::Type::DELETE_ENTITY), entity_(entity),
-			entities_(nullptr), gateway_(nullptr) {};
+        void Start(double simTime, double dt);
+        void Step(double simTime, double dt);
 
-		DeleteEntityAction(const DeleteEntityAction& action) : OSCGlobalAction(OSCGlobalAction::Type::DELETE_ENTITY)
-		{
-			entity_ = action.entity_;
-			entities_ = action.entities_;
-			gateway_ = action.gateway_;
-		}
+        void SetEntities(Entities* entities)
+        {
+            entities_ = entities;
+        }
+        void SetGateway(ScenarioGateway* gateway)
+        {
+            gateway_ = gateway;
+        }
 
-		OSCGlobalAction* Copy()
-		{
-			DeleteEntityAction* new_action = new DeleteEntityAction(*this);
-			return new_action;
-		}
+        void print()
+        {
+        }
+    };
 
-		void Start(double simTime, double dt);
-		void Step(double simTime, double dt);
+    class ScenarioReader;
 
-		void SetEntities(Entities* entities) { entities_ = entities; }
-		void SetGateway(ScenarioGateway* gateway) { gateway_ = gateway; }
+    class SwarmTrafficAction : public OSCGlobalAction
+    {
+    public:
+        struct SpawnInfo
+        {
+            int    vehicleID;
+            int    outMidAreaCount;
+            int    roadID;
+            int    lane;
+            double simTime;
+        };
 
-		void print() {}
-	};
+        typedef struct
+        {
+            roadmanager::Position pos;
+            roadmanager::Road*    road;
+            int                   nLanes;
+        } SelectInfo;
 
-	class ScenarioReader;
+        SwarmTrafficAction();
+        ~SwarmTrafficAction();
 
-	class SwarmTrafficAction : public OSCGlobalAction
-	{
-	public:
+        SwarmTrafficAction(const SwarmTrafficAction& action) : OSCGlobalAction(OSCGlobalAction::Type::SWARM_TRAFFIC)
+        {
+            spawnedV.clear();
+            centralObject_ = action.centralObject_;
+        }
 
-		struct SpawnInfo{
-			int vehicleID;
-			int outMidAreaCount;
-			int roadID;
-			int lane;
-			double simTime;
-		};
+        OSCGlobalAction* Copy()
+        {
+            SwarmTrafficAction* new_action = new SwarmTrafficAction(*this);
+            return new_action;
+        }
 
-		typedef struct {
-		    roadmanager::Position pos;
-			roadmanager::Road *road;
-		    int nLanes;
-	    } SelectInfo;
+        void Start(double simTime, double dt);
 
-		SwarmTrafficAction();
-		~SwarmTrafficAction();
+        void Step(double simTime, double dt);
 
-		SwarmTrafficAction(const SwarmTrafficAction& action) : OSCGlobalAction(OSCGlobalAction::Type::SWARM_TRAFFIC) {
-		    spawnedV.clear();
-			centralObject_ = action.centralObject_;
-		}
+        void print()
+        {
+        }
 
-		OSCGlobalAction* Copy() {
-			SwarmTrafficAction* new_action = new SwarmTrafficAction(*this);
-			return new_action;
-		}
-
-		void Start(double simTime, double dt);
-
-		void Step(double simTime, double dt);
-
-		void print() {}
-
-		void SetCentralObject(Object* centralObj) { centralObject_ = centralObj; }
-		void SetInnerRadius(double innerRadius)   { innerRadius_   = innerRadius;}
-		void SetSemiMajorAxes(double axes)        { semiMajorAxis_ = axes;       }
-		void SetSemiMinorAxes(double axes)        { semiMinorAxis_ = axes;       }
-		void SetEntities(Entities* entities)      { entities_      = entities;   }
-		void SetGateway(ScenarioGateway* gateway) { gateway_ = gateway; }
-		void SetReader(ScenarioReader* reader)    { reader_ = reader; }
-		void SetNumberOfVehicles(int number)      { numberOfVehicles = static_cast<unsigned long>(number);   }
-		void Setvelocity(double velocity)         { velocity_ = velocity;        }
+        void SetCentralObject(Object* centralObj)
+        {
+            centralObject_ = centralObj;
+        }
+        void SetInnerRadius(double innerRadius)
+        {
+            innerRadius_ = innerRadius;
+        }
+        void SetSemiMajorAxes(double axes)
+        {
+            semiMajorAxis_ = axes;
+        }
+        void SetSemiMinorAxes(double axes)
+        {
+            semiMinorAxis_ = axes;
+        }
+        void SetEntities(Entities* entities)
+        {
+            entities_ = entities;
+        }
+        void SetGateway(ScenarioGateway* gateway)
+        {
+            gateway_ = gateway;
+        }
+        void SetReader(ScenarioReader* reader)
+        {
+            reader_ = reader;
+        }
+        void SetNumberOfVehicles(int number)
+        {
+            numberOfVehicles = static_cast<unsigned long>(number);
+        }
+        void Setvelocity(double velocity)
+        {
+            velocity_ = velocity;
+        }
 
     private:
+        double                  velocity_;
+        Entities*               entities_;
+        ScenarioGateway*        gateway_;
+        ScenarioReader*         reader_;
+        Object*                 centralObject_;
+        aabbTree::ptTree        rTree;
+        unsigned long           numberOfVehicles;
+        std::vector<SpawnInfo>  spawnedV;
+        roadmanager::OpenDrive* odrManager_;
+        double                  innerRadius_, semiMajorAxis_, semiMinorAxis_, midSMjA, midSMnA, minSize_, lastTime;
+        std::vector<Vehicle*>   vehicle_pool_;
+        static int              counter_;
 
-		double velocity_;
-		Entities *entities_;
-		ScenarioGateway* gateway_;
-		ScenarioReader* reader_;
-		Object* centralObject_;
-		aabbTree::ptTree rTree;
-		unsigned long numberOfVehicles;
-		std::vector<SpawnInfo> spawnedV;
-		roadmanager::OpenDrive* odrManager_;
-		double innerRadius_, semiMajorAxis_, semiMinorAxis_, midSMjA, midSMnA, minSize_, lastTime;
-		std::vector<Vehicle*> vehicle_pool_;
-		static int counter_;
+        int         despawn(double simTime);
+        void        createRoadSegments(aabbTree::BBoxVec& vec);
+        void        spawn(Solutions sols, int replace, double simTime);
+        inline bool ensureDistance(roadmanager::Position pos, int lane, double dist);
+        void        createEllipseSegments(aabbTree::BBoxVec& vec, double SMjA, double SMnA);
+        inline void sampleRoads(int minN, int maxN, Solutions& sols, vector<SelectInfo>& info);
+    };
 
-		int despawn(double simTime);
-		void createRoadSegments(aabbTree::BBoxVec &vec);
-		void spawn(Solutions sols, int replace, double simTime);
-		inline bool ensureDistance(roadmanager::Position pos, int lane, double dist);
-		void createEllipseSegments(aabbTree::BBoxVec &vec, double SMjA, double SMnA);
-		inline void sampleRoads(int minN, int maxN, Solutions &sols, vector<SelectInfo> &info);
-	};
-
-}
-
+}  // namespace scenarioengine

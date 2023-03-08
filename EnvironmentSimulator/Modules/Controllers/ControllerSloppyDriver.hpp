@@ -10,11 +10,11 @@
  * https://sites.google.com/view/simulationscenarios
  */
 
- /*
-  * This controller simulates a bad or dizzy driver by manipulating
-  * the speed and lateral offset in a random way.
-  * The purpose is purely to demonstrate how to implement a controller.
-  */
+/*
+ * This controller simulates a bad or dizzy driver by manipulating
+ * the speed and lateral offset in a random way.
+ * The purpose is purely to demonstrate how to implement a controller.
+ */
 
 #pragma once
 
@@ -27,71 +27,89 @@
 
 namespace scenarioengine
 {
-	class SinusoidalTransition
-	{
-	public:
-		SinusoidalTransition() : amplitude_(0), startAngle_(0), start_(0) {}
+    class SinusoidalTransition
+    {
+    public:
+        SinusoidalTransition() : amplitude_(0), startAngle_(0), start_(0)
+        {
+        }
 
-		void Init(double start, double targetValueRelative)
-		{
-			amplitude_ = fabs(0.5 * targetValueRelative);
-			startAngle_ = SIGN(targetValueRelative) > 0 ? M_PI : 0;
-			offset_ = SIGN(targetValueRelative) > 0 ? +1 : -1;
-			start_ = start;
-			factor_ = 0.0;
-		}
+        void Init(double start, double targetValueRelative)
+        {
+            amplitude_  = fabs(0.5 * targetValueRelative);
+            startAngle_ = SIGN(targetValueRelative) > 0 ? M_PI : 0;
+            offset_     = SIGN(targetValueRelative) > 0 ? +1 : -1;
+            start_      = start;
+            factor_     = 0.0;
+        }
 
-		double amplitude_;
-		double startAngle_;
-		double start_;
-		double offset_;
-		double factor_;
+        double amplitude_;
+        double startAngle_;
+        double start_;
+        double offset_;
+        double factor_;
 
-		double GetValue();
-		double GetFactor() { return factor_; }
-		double GetHeading();
-		void SetFactor(double factor) { factor_ = factor; }
-	};
+        double GetValue();
+        double GetFactor()
+        {
+            return factor_;
+        }
+        double GetHeading();
+        void   SetFactor(double factor)
+        {
+            factor_ = factor;
+        }
+    };
 
-	// base class for controllers
-	class ControllerSloppyDriver: public Controller
-	{
-	public:
+    // base class for controllers
+    class ControllerSloppyDriver : public Controller
+    {
+    public:
+        ControllerSloppyDriver(InitArgs* args);
 
-		ControllerSloppyDriver(InitArgs* args);
+        static const char* GetTypeNameStatic()
+        {
+            return CONTROLLER_SLOPPY_DRIVER_TYPE_NAME;
+        }
+        virtual const char* GetTypeName()
+        {
+            return GetTypeNameStatic();
+        }
+        static int GetTypeStatic()
+        {
+            return Controller::Type::CONTROLLER_TYPE_SLOPPY_DRIVER;
+        }
+        virtual int GetType()
+        {
+            return GetTypeStatic();
+        }
 
-		static const char* GetTypeNameStatic() { return CONTROLLER_SLOPPY_DRIVER_TYPE_NAME; }
-		virtual const char* GetTypeName() { return GetTypeNameStatic(); }
-		static int GetTypeStatic() { return Controller::Type::CONTROLLER_TYPE_SLOPPY_DRIVER; }
-		virtual int GetType() { return GetTypeStatic(); }
+        void Init();
+        void Step(double timeStep);
+        void Activate(ControlDomains domainMask);
+        void ReportKeyEvent(int key, bool down);
 
-		void Init();
-		void Step(double timeStep);
-		void Activate(ControlDomains domainMask);
-		void ReportKeyEvent(int key, bool down);
+    private:
+        double        sloppiness_;  // range [0-1], default = 0.5
+        OSCProperties properties_;
+        double        time_;
 
+        SE_SimulationTimer speedTimer_;
+        double             speedTimerAverage_;
+        double             referenceSpeed_;  // set by default driver
+        double             initSpeed_;       // start speed for each timer period
+        double             currentSpeed_;
+        double             targetFactor_;  // factor to multiply reference speed
 
-	private:
-		double sloppiness_;  // range [0-1], default = 0.5
-		OSCProperties properties_;
-		double time_;
+        SE_SimulationTimer lateralTimer_;
+        double             lateralTimerAverage_;
+        double             currentT_;
+        double             tFuzz0;
+        double             tFuzzTarget;
+        double             currentH_;
 
-		SE_SimulationTimer speedTimer_;
-		double speedTimerAverage_;
-		double referenceSpeed_; // set by default driver
-		double initSpeed_;  // start speed for each timer period
-		double currentSpeed_;
-		double targetFactor_;  // factor to multiply reference speed
+        const char* type_name_ = "SloppyDriver";
+    };
 
-		SE_SimulationTimer lateralTimer_;
-		double lateralTimerAverage_;
-		double currentT_;
-		double tFuzz0;
-		double tFuzzTarget;
-		double currentH_;
-
-		const char* type_name_ = "SloppyDriver";
-	};
-
-	Controller* InstantiateControllerSloppyDriver(void* args);
-}
+    Controller* InstantiateControllerSloppyDriver(void* args);
+}  // namespace scenarioengine

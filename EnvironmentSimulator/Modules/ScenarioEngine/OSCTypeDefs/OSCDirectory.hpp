@@ -19,10 +19,10 @@
 namespace scenarioengine
 {
 
-	class OSCDirectory
-	{
-	public:
-		std::string path;
-	};
+    class OSCDirectory
+    {
+    public:
+        std::string path;
+    };
 
-}
+}  // namespace scenarioengine

@@ -23,81 +23,91 @@
 
 namespace scenarioengine
 {
-	// base class for controllers
-	class ControllerRel2Abs: public Controller
-	{
-	public:
-		struct PreSimData
-		{
-			std::vector<double> time;
-			std::vector<double> speeds;
-			std::vector<double> posX;
-			std::vector<double> posY;
-		};
+    // base class for controllers
+    class ControllerRel2Abs : public Controller
+    {
+    public:
+        struct PreSimData
+        {
+            std::vector<double> time;
+            std::vector<double> speeds;
+            std::vector<double> posX;
+            std::vector<double> posY;
+        };
 
-		struct position_copy
-		{
-			Object* object;
-			roadmanager::Position* pos;
-			double speed;
-			int dirtyBits;
-		};
+        struct position_copy
+        {
+            Object*                object;
+            roadmanager::Position* pos;
+            double                 speed;
+            int                    dirtyBits;
+        };
 
-		enum ctrl_mode {
-			RELATIVE,
-			ABSOLUTE
-		};
+        enum ctrl_mode
+        {
+            RELATIVE,
+            ABSOLUTE
+        };
 
-		std::vector<PreSimData> data_vector;
-		PreSimData actualData;
-		PreSimData data;
-		double timestamp;
+        std::vector<PreSimData> data_vector;
+        PreSimData              actualData;
+        PreSimData              data;
+        double                  timestamp;
 
-		// Presim parameters
-		double pred_horizon;
-		double pred_timestep;
-		double pred_nbr_timesteps;
-		OSCPrivateAction::ActionType action_whitelist[7] =
-		{
-			OSCPrivateAction::ActionType::LONG_SPEED,
-			OSCPrivateAction::ActionType::LONG_DISTANCE,
-			OSCPrivateAction::ActionType::LAT_LANE_CHANGE,
-			OSCPrivateAction::ActionType::LAT_LANE_OFFSET,
-			OSCPrivateAction::ActionType::LAT_DISTANCE,
-			OSCPrivateAction::ActionType::ASSIGN_ROUTE,
-			OSCPrivateAction::ActionType::FOLLOW_TRAJECTORY
-		};
-		double switching_threshold_dist;
-		double switching_threshold_speed;
+        // Presim parameters
+        double                       pred_horizon;
+        double                       pred_timestep;
+        double                       pred_nbr_timesteps;
+        OSCPrivateAction::ActionType action_whitelist[7] = {OSCPrivateAction::ActionType::LONG_SPEED,
+                                                            OSCPrivateAction::ActionType::LONG_DISTANCE,
+                                                            OSCPrivateAction::ActionType::LAT_LANE_CHANGE,
+                                                            OSCPrivateAction::ActionType::LAT_LANE_OFFSET,
+                                                            OSCPrivateAction::ActionType::LAT_DISTANCE,
+                                                            OSCPrivateAction::ActionType::ASSIGN_ROUTE,
+                                                            OSCPrivateAction::ActionType::FOLLOW_TRAJECTORY};
+        double                       switching_threshold_dist;
+        double                       switching_threshold_speed;
 
-		//CSV loggning
-		std::ofstream logData;
-		int csv_iter;
+        // CSV loggning
+        std::ofstream logData;
+        int           csv_iter;
 
-		ControllerRel2Abs(InitArgs* args);
+        ControllerRel2Abs(InitArgs* args);
 
-		void Init();
-		void Step(double timeStep);
-		void Activate(ControlDomains domainMask);
-		void ReportKeyEvent(int key, bool down);
-		void CopyPosition(Object* object, position_copy* obj_copy);
+        void Init();
+        void Step(double timeStep);
+        void Activate(ControlDomains domainMask);
+        void ReportKeyEvent(int key, bool down);
+        void CopyPosition(Object* object, position_copy* obj_copy);
 
-		static const char* GetTypeNameStatic() { return CONTROLLER_REL2ABS_TYPE_NAME; }
-		virtual const char* GetTypeName() { return GetTypeNameStatic(); }
-		static int GetTypeStatic() { return Controller::Type::CONTROLLER_TYPE_REL2ABS; }
-		virtual int GetType() { return GetTypeStatic(); }
+        static const char* GetTypeNameStatic()
+        {
+            return CONTROLLER_REL2ABS_TYPE_NAME;
+        }
+        virtual const char* GetTypeName()
+        {
+            return GetTypeNameStatic();
+        }
+        static int GetTypeStatic()
+        {
+            return Controller::Type::CONTROLLER_TYPE_REL2ABS;
+        }
+        virtual int GetType()
+        {
+            return GetTypeStatic();
+        }
 
-	private:
-		int ego_obj;
-		double prev_ego_speed;
-		double prev_target_speed;
-		bool switchNow;
-		//vector with pairs of timestep and speed before that timestep
-		std::vector<std::pair<double, double>> speeds;
+    private:
+        int    ego_obj;
+        double prev_ego_speed;
+        double prev_target_speed;
+        bool   switchNow;
+        // vector with pairs of timestep and speed before that timestep
+        std::vector<std::pair<double, double>> speeds;
 
-		//alters ego_obj to correct entities index for ego
-		void findEgo();
-	};
+        // alters ego_obj to correct entities index for ego
+        void findEgo();
+    };
 
-	Controller* InstantiateControllerRel2Abs(void* args);
-}
+    Controller* InstantiateControllerRel2Abs(void* args);
+}  // namespace scenarioengine

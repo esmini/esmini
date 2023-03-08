@@ -15,7 +15,8 @@
 #include "expr.h"
 
 // Custom function that returns the floor of its argument
-static double round_(struct expr_func* f, vec_expr_t* args, void* c) {
+static double round_(struct expr_func* f, vec_expr_t* args, void* c)
+{
     (void)f;
     (void)c;
     double a = expr_eval(&vec_nth(args, 0));
@@ -23,7 +24,8 @@ static double round_(struct expr_func* f, vec_expr_t* args, void* c) {
 }
 
 // Custom function that returns the floor of its argument
-static double floor_(struct expr_func* f, vec_expr_t* args, void* c) {
+static double floor_(struct expr_func* f, vec_expr_t* args, void* c)
+{
     (void)f;
     (void)c;
     double a = expr_eval(&vec_nth(args, 0));
@@ -31,7 +33,8 @@ static double floor_(struct expr_func* f, vec_expr_t* args, void* c) {
 }
 
 // Custom function that returns the floor of its argument
-static double ceil_(struct expr_func* f, vec_expr_t* args, void* c) {
+static double ceil_(struct expr_func* f, vec_expr_t* args, void* c)
+{
     (void)f;
     (void)c;
     double a = expr_eval(&vec_nth(args, 0));
@@ -39,7 +42,8 @@ static double ceil_(struct expr_func* f, vec_expr_t* args, void* c) {
 }
 
 // Custom function that returns the floor of its argument
-static double sqrt_(struct expr_func* f, vec_expr_t* args, void* c) {
+static double sqrt_(struct expr_func* f, vec_expr_t* args, void* c)
+{
     (void)f;
     (void)c;
     double a = expr_eval(&vec_nth(args, 0));
@@ -47,7 +51,8 @@ static double sqrt_(struct expr_func* f, vec_expr_t* args, void* c) {
 }
 
 // Custom function that returns first argument raised to the power of the second argument
-static double pow_(struct expr_func* f, vec_expr_t* args, void* c) {
+static double pow_(struct expr_func* f, vec_expr_t* args, void* c)
+{
     (void)f;
     (void)c;
     double a = expr_eval(&vec_nth(args, 0));
@@ -56,63 +61,72 @@ static double pow_(struct expr_func* f, vec_expr_t* args, void* c) {
 }
 
 // Custom function that returns first argument raised to the power of the second argument
-static double sin_(struct expr_func* f, vec_expr_t* args, void* c) {
+static double sin_(struct expr_func* f, vec_expr_t* args, void* c)
+{
     (void)f;
     (void)c;
     double a = expr_eval(&vec_nth(args, 0));
     return sin(a);
 }
 
-static double cos_(struct expr_func* f, vec_expr_t* args, void* c) {
+static double cos_(struct expr_func* f, vec_expr_t* args, void* c)
+{
     (void)f;
     (void)c;
     double a = expr_eval(&vec_nth(args, 0));
     return cos(a);
 }
 
-static double tan_(struct expr_func* f, vec_expr_t* args, void* c) {
+static double tan_(struct expr_func* f, vec_expr_t* args, void* c)
+{
     (void)f;
     (void)c;
     double a = expr_eval(&vec_nth(args, 0));
     return tan(a);
 }
 
-static double asin_(struct expr_func* f, vec_expr_t* args, void* c) {
+static double asin_(struct expr_func* f, vec_expr_t* args, void* c)
+{
     (void)f;
     (void)c;
     double a = expr_eval(&vec_nth(args, 0));
     return asin(a);
 }
 
-static double acos_(struct expr_func* f, vec_expr_t* args, void* c) {
+static double acos_(struct expr_func* f, vec_expr_t* args, void* c)
+{
     (void)f;
     (void)c;
     double a = expr_eval(&vec_nth(args, 0));
     return acos(a);
 }
 
-static double atan_(struct expr_func* f, vec_expr_t* args, void* c) {
+static double atan_(struct expr_func* f, vec_expr_t* args, void* c)
+{
     (void)f;
     (void)c;
     double a = expr_eval(&vec_nth(args, 0));
     return atan(a);
 }
 
-static double sign_(struct expr_func* f, vec_expr_t* args, void* c) {
+static double sign_(struct expr_func* f, vec_expr_t* args, void* c)
+{
     (void)f;
     (void)c;
     double a = expr_eval(&vec_nth(args, 0));
     return (a < 0 ? -1 : 1);
 }
 
-static double abs_(struct expr_func* f, vec_expr_t* args, void* c) {
+static double abs_(struct expr_func* f, vec_expr_t* args, void* c)
+{
     (void)f;
     (void)c;
     double a = expr_eval(&vec_nth(args, 0));
     return fabs(a);
 }
 
-static double max_(struct expr_func* f, vec_expr_t* args, void* c) {
+static double max_(struct expr_func* f, vec_expr_t* args, void* c)
+{
     (void)f;
     (void)c;
     double a = expr_eval(&vec_nth(args, 0));
@@ -120,7 +134,8 @@ static double max_(struct expr_func* f, vec_expr_t* args, void* c) {
     return (b > a ? b : a);
 }
 
-static double min_(struct expr_func* f, vec_expr_t* args, void* c) {
+static double min_(struct expr_func* f, vec_expr_t* args, void* c)
+{
     (void)f;
     (void)c;
     double a = expr_eval(&vec_nth(args, 0));
@@ -152,8 +167,8 @@ static struct expr_func user_funcs[] = {
 
 double eval_expr(const char* str)
 {
-    struct expr_var_list vars = { 0 };
-    struct expr* e = expr_create(str, strlen(str), &vars, user_funcs);
+    struct expr_var_list vars = {0};
+    struct expr*         e    = expr_create(str, strlen(str), &vars, user_funcs);
     if (e == 0)
     {
         return NAN;

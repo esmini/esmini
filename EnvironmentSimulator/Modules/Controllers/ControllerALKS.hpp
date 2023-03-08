@@ -23,16 +23,30 @@
 
 namespace scenarioengine
 {
-	class ControllerALKS: public ControllerACC
-	{
-	public:
-		ControllerALKS(InitArgs *args) : ControllerACC(args) {}
+    class ControllerALKS : public ControllerACC
+    {
+    public:
+        ControllerALKS(InitArgs* args) : ControllerACC(args)
+        {
+        }
 
-		static const char* GetTypeNameStatic() { return CONTROLLER_ALKS_TYPE_NAME; }
-		virtual const char* GetTypeName() { return GetTypeNameStatic(); }
-		static int GetTypeStatic() { return CONTROLLER_TYPE_ALKS; }
-		virtual int GetType() { return GetTypeStatic(); }
-	};
+        static const char* GetTypeNameStatic()
+        {
+            return CONTROLLER_ALKS_TYPE_NAME;
+        }
+        virtual const char* GetTypeName()
+        {
+            return GetTypeNameStatic();
+        }
+        static int GetTypeStatic()
+        {
+            return CONTROLLER_TYPE_ALKS;
+        }
+        virtual int GetType()
+        {
+            return GetTypeStatic();
+        }
+    };
 
-	Controller* InstantiateControllerALKS(void* args);
-}
+    Controller* InstantiateControllerALKS(void* args);
+}  // namespace scenarioengine

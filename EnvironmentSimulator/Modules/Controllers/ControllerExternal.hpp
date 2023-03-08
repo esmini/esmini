@@ -10,13 +10,12 @@
  * https://sites.google.com/view/simulationscenarios
  */
 
- /*
-  * This controller simply deactivates the default controller for the specific object
-  * instead esmini expects the state to be reported from an external application.
-  * Optionally the ghost feature can be enabled to create a "blue print" run, e.g. to
-  * be used by an external driver model.
-  */
-
+/*
+ * This controller simply deactivates the default controller for the specific object
+ * instead esmini expects the state to be reported from an external application.
+ * Optionally the ghost feature can be enabled to create a "blue print" run, e.g. to
+ * be used by an external driver model.
+ */
 
 #pragma once
 
@@ -28,28 +27,43 @@
 
 namespace scenarioengine
 {
-	// base class for controllers
-	class ControllerExternal: public Controller
-	{
-	public:
-		ControllerExternal(InitArgs* args);
+    // base class for controllers
+    class ControllerExternal : public Controller
+    {
+    public:
+        ControllerExternal(InitArgs* args);
 
-		static const char* GetTypeNameStatic() { return CONTROLLER_EXTERNAL_TYPE_NAME; }
-		virtual const char* GetTypeName() { return GetTypeNameStatic(); }
-		static int GetTypeStatic() { return CONTROLLER_TYPE_EXTERNAL; }
-		virtual int GetType() { return GetTypeStatic(); }
+        static const char* GetTypeNameStatic()
+        {
+            return CONTROLLER_EXTERNAL_TYPE_NAME;
+        }
+        virtual const char* GetTypeName()
+        {
+            return GetTypeNameStatic();
+        }
+        static int GetTypeStatic()
+        {
+            return CONTROLLER_TYPE_EXTERNAL;
+        }
+        virtual int GetType()
+        {
+            return GetTypeStatic();
+        }
 
-		void Init();
-		void Step(double timeStep);
-		void Activate(ControlDomains domainMask);
-		void ReportKeyEvent(int key, bool down);
-		bool UseGhost() { return useGhost_; }
+        void Init();
+        void Step(double timeStep);
+        void Activate(ControlDomains domainMask);
+        void ReportKeyEvent(int key, bool down);
+        bool UseGhost()
+        {
+            return useGhost_;
+        }
 
-	private:
-		bool useGhost_;
-		double headstart_time_;
-	};
+    private:
+        bool   useGhost_;
+        double headstart_time_;
+    };
 
-	Controller* InstantiateControllerExternal(void* args);
+    Controller* InstantiateControllerExternal(void* args);
 
-}
+}  // namespace scenarioengine

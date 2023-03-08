@@ -10,8 +10,7 @@
  * https://sites.google.com/view/simulationscenarios
  */
 
-const char* helpText =
-"\n\
+const char* helpText = "\n\
 Key shortcuts \n\
     \n\
     H (shift + h): This help text \n\

@@ -21,39 +21,51 @@
 
 namespace scenarioengine
 {
-	class ScenarioPlayer;
+    class ScenarioPlayer;
 
-	// base class for controllers
-	class ControllerECE_ALKS_REF_DRIVER: public Controller
-	{
-	public:
-		ControllerECE_ALKS_REF_DRIVER(InitArgs *args);
+    // base class for controllers
+    class ControllerECE_ALKS_REF_DRIVER : public Controller
+    {
+    public:
+        ControllerECE_ALKS_REF_DRIVER(InitArgs* args);
 
-		static const char* GetTypeNameStatic() { return CONTROLLER_ECE_ALKS_REF_DRIVER_TYPE_NAME; }
-		virtual const char* GetTypeName() { return GetTypeNameStatic(); }
-		static int GetTypeStatic() { return CONTROLLER_TYPE_ECE_ALKS_REF_DRIVER; }
-		virtual int GetType() { return GetTypeStatic(); }
+        static const char* GetTypeNameStatic()
+        {
+            return CONTROLLER_ECE_ALKS_REF_DRIVER_TYPE_NAME;
+        }
+        virtual const char* GetTypeName()
+        {
+            return GetTypeNameStatic();
+        }
+        static int GetTypeStatic()
+        {
+            return CONTROLLER_TYPE_ECE_ALKS_REF_DRIVER;
+        }
+        virtual int GetType()
+        {
+            return GetTypeStatic();
+        }
 
-		void Init();
-		void Step(double timeStep);
-		void Activate(ControlDomains domainMask);
-		void Reset();
-		void ReportKeyEvent(int key, bool down);
+        void Init();
+        void Step(double timeStep);
+        void Activate(ControlDomains domainMask);
+        void Reset();
+        void ReportKeyEvent(int key, bool down);
 
-	private:
-		vehicle::Vehicle vehicle_;
-		bool active_;
-		double setSpeed_;
-		double currentSpeed_;
-		bool logging_;
+    private:
+        vehicle::Vehicle vehicle_;
+        bool             active_;
+        double           setSpeed_;
+        double           currentSpeed_;
+        bool             logging_;
 
-		double dtFreeCutOut_;
-		bool cutInDetected_;
-		double waitTime_;
-		bool driverBraking_;
-		bool aebBraking_;
-		double timeSinceBraking_;
-	};
+        double dtFreeCutOut_;
+        bool   cutInDetected_;
+        double waitTime_;
+        bool   driverBraking_;
+        bool   aebBraking_;
+        double timeSinceBraking_;
+    };
 
-	Controller* InstantiateControllerECE_ALKS_REF_DRIVER(void* args);
-}
+    Controller* InstantiateControllerECE_ALKS_REF_DRIVER(void* args);
+}  // namespace scenarioengine

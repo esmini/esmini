@@ -18,48 +18,48 @@
 namespace scenarioengine
 {
 
-	class OSCProperties
-	{
-	public:
-		class Property
-		{
-		public:
-			std::string name_;
-			std::string value_;
-		};
+    class OSCProperties
+    {
+    public:
+        class Property
+        {
+        public:
+            std::string name_;
+            std::string value_;
+        };
 
-		class File
-		{
-		public:
-			std::string filepath_;
-		};
+        class File
+        {
+        public:
+            std::string filepath_;
+        };
 
-		std::vector<Property> property_;
-		File file_;  // Should be no more than one?
+        std::vector<Property> property_;
+        File                  file_;  // Should be no more than one?
 
-		bool ValueExists(std::string key)
-		{
-			for (size_t i = 0; i < property_.size(); i++)
-			{
-				if (key == property_[i].name_)
-				{
-					return true;
-				}
-			}
-			return false;
-		}
+        bool ValueExists(std::string key)
+        {
+            for (size_t i = 0; i < property_.size(); i++)
+            {
+                if (key == property_[i].name_)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
 
-		std::string GetValueStr(std::string key)
-		{
-			for (size_t i = 0; i < property_.size(); i++)
-			{
-				if (key == property_[i].name_)
-				{
-					return property_[i].value_;
-				}
-			}
-			return "";
-		}
-	};
+        std::string GetValueStr(std::string key)
+        {
+            for (size_t i = 0; i < property_.size(); i++)
+            {
+                if (key == property_[i].name_)
+                {
+                    return property_[i].value_;
+                }
+            }
+            return "";
+        }
+    };
 
-}
+}  // namespace scenarioengine

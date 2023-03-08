@@ -19,15 +19,15 @@
 namespace scenarioengine
 {
 
-	class RoadNetwork
-	{
-	public:
-		RoadNetwork();
+    class RoadNetwork
+    {
+    public:
+        RoadNetwork();
 
-		OSCFile logicFile;
-		OSCFile sceneGraphFile;
+        OSCFile logicFile;
+        OSCFile sceneGraphFile;
 
-		void Print();
-	};
+        void Print();
+    };
 
-}
+}  // namespace scenarioengine

@@ -3,31 +3,31 @@
 
 TEST(UnixSuite, CheckUnix)
 {
-    //std::cout << "Check Operating System -> Unix \n";
-    #ifdef _WIN32
+// std::cout << "Check Operating System -> Unix \n";
+#ifdef _WIN32
     FAIL();
-    #else
+#else
     SUCCEED();
-    #endif
+#endif
 }
 
 TEST(WindowsSuite, CheckWindows)
 {
-    //std::cout << "Check Operating System - Windows \n";
-    #ifdef _WIN32
+// std::cout << "Check Operating System - Windows \n";
+#ifdef _WIN32
     SUCCEED();
-    #else
+#else
     FAIL();
-    #endif
+#endif
 }
 
 int main(int argc, char **argv)
 {
-    #ifdef _WIN32
-        ::testing::GTEST_FLAG(filter) = "WindowsSuite.*";
-    #else
-        ::testing::GTEST_FLAG(filter) = "UnixSuite.*";
-    #endif
+#ifdef _WIN32
+    ::testing::GTEST_FLAG(filter) = "WindowsSuite.*";
+#else
+    ::testing::GTEST_FLAG(filter) = "UnixSuite.*";
+#endif
 
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

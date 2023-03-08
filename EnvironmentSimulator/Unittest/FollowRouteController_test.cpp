@@ -183,11 +183,7 @@ TEST_F(FollowRouteControllerTest, FollowRouteMultipleScenarioWaypoints)
     ScenarioEngine *se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/follow_route_multiple_scenario_waypoints.xosc");
     ASSERT_NE(se, nullptr);
 
-    std::vector<Position> scenarioWaypoints = {
-        Position(284, -1, 10, 0),
-        Position(196, 1, 10, 0),
-        Position(202, 2, 40, 0)
-    };
+    std::vector<Position> scenarioWaypoints = {Position(284, -1, 10, 0), Position(196, 1, 10, 0), Position(202, 2, 40, 0)};
     std::vector<Position> passedPositions;
 
     double dt = 0.1;
@@ -201,13 +197,14 @@ TEST_F(FollowRouteControllerTest, FollowRouteMultipleScenarioWaypoints)
         se->prepareGroundTruth(dt);
     }
 
-    for(Position &scenarioWp : scenarioWaypoints)
+    for (Position &scenarioWp : scenarioWaypoints)
     {
-        bool hasPassedWaypoint = std::find_if(passedPositions.begin(), passedPositions.end(), [&](const Position &p){
-            return p.GetTrackId() == scenarioWp.GetTrackId() &&
-                    p.GetLaneId() == scenarioWp.GetLaneId() &&
-                    abs(p.GetS() - scenarioWp.GetS()) < 5;
-        }) != passedPositions.end();
+        bool hasPassedWaypoint = std::find_if(passedPositions.begin(),
+                                              passedPositions.end(),
+                                              [&](const Position &p) {
+                                                  return p.GetTrackId() == scenarioWp.GetTrackId() && p.GetLaneId() == scenarioWp.GetLaneId() &&
+                                                         abs(p.GetS() - scenarioWp.GetS()) < 5;
+                                              }) != passedPositions.end();
         ASSERT_TRUE(hasPassedWaypoint);
     }
 
@@ -232,7 +229,7 @@ TEST_F(FollowRouteControllerTest, FollowRouteSetParameters)
 }
 
 // Uncomment to print log output to console
-//#define LOG_TO_CONSOLE
+// #define LOG_TO_CONSOLE
 
 #ifdef LOG_TO_CONSOLE
 static void log_callback(const char *str)

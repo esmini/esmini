@@ -22,158 +22,165 @@
 
 namespace scenarioengine
 {
-	typedef enum
-	{
-		CATALOG_UNDEFINED,
-		CATALOG_VEHICLE,
-		CATALOG_DRIVER,
-		CATALOG_PEDESTRIAN,
-		CATALOG_PEDESTRIAN_CONTROLLER,
-		CATALOG_MISC_OBJECT,
-		CATALOG_ENVIRONMENT,
-		CATALOG_MANEUVER,
-		CATALOG_TRAJECTORY,
-		CATALOG_ROUTE,
-		CATALOG_CONTROLLER
-	} CatalogType;
+    typedef enum
+    {
+        CATALOG_UNDEFINED,
+        CATALOG_VEHICLE,
+        CATALOG_DRIVER,
+        CATALOG_PEDESTRIAN,
+        CATALOG_PEDESTRIAN_CONTROLLER,
+        CATALOG_MISC_OBJECT,
+        CATALOG_ENVIRONMENT,
+        CATALOG_MANEUVER,
+        CATALOG_TRAJECTORY,
+        CATALOG_ROUTE,
+        CATALOG_CONTROLLER
+    } CatalogType;
 
-	class Entry
-	{
+    class Entry
+    {
+    public:
+        std::string        name_;
+        pugi::xml_document root_;
+        CatalogType        type_;
 
-	public:
+        Entry(std::string name, pugi::xml_document root);
+        pugi::xml_node GetNode()
+        {
+            return root_.first_child();
+        }
 
-		std::string name_;
-		pugi::xml_document root_;
-		CatalogType type_;
+        static std::string GetTypeAsStr_(CatalogType type);
+        std::string        GetTypeAsStr()
+        {
+            return GetTypeAsStr_(type_);
+        }
+        CatalogType GetTypeByNodeName(pugi::xml_node node);
+    };
 
-		Entry(std::string name, pugi::xml_document root);
-		pugi::xml_node GetNode() { return root_.first_child(); }
+    class Catalog
+    {
+    public:
+        std::string          name_;
+        CatalogType          type_;
+        std::vector<Entry *> entry_;
 
-		static std::string GetTypeAsStr_(CatalogType type);
-		std::string GetTypeAsStr() { return GetTypeAsStr_(type_); }
-		CatalogType GetTypeByNodeName(pugi::xml_node node);
-	};
+        ~Catalog()
+        {
+            for (auto *entry : entry_)
+            {
+                delete entry;
+            }
+        }
 
+        CatalogType GetType()
+        {
+            return type_;
+        }
 
-	class Catalog
-	{
-	public:
+        void AddEntry(Entry *entry)
+        {
+            entry_.push_back(entry);
+        }
 
-		std::string name_;
-		CatalogType type_;
-		std::vector<Entry*> entry_;
+        Entry *FindEntryByName(std::string name)
+        {
+            for (size_t i = 0; i < entry_.size(); i++)
+            {
+                if (entry_[i]->name_ == name)
+                {
+                    return entry_[i];
+                }
+            }
+            return 0;
+        }
 
-		~Catalog()
-		{			
-			for (auto* entry : entry_)
-			{
-				delete entry;
-			}
-		}
+        std::string GetTypeAsStr()
+        {
+            return Entry::GetTypeAsStr_(type_);
+        }
+    };
 
-		CatalogType GetType() { return type_; }
+    class Catalogs
+    {
+    public:
+        typedef struct
+        {
+            CatalogType type_;
+            std::string dir_name_;
+        } CatalogDirEntry;
 
-		void AddEntry(Entry *entry)
-		{
-			entry_.push_back(entry);
-		}
+        std::vector<CatalogDirEntry> catalog_dirs_;
+        std::vector<Catalog *>       catalog_;
 
-		Entry* FindEntryByName(std::string name)
-		{
-			for (size_t i = 0; i < entry_.size(); i++)
-			{
-				if (entry_[i]->name_ == name)
-				{
-					return  entry_[i];
-				}
-			}
-			return 0;
-		}
+        Catalogs()
+        {
+        }
+        ~Catalogs()
+        {
+            for (auto *entry : catalog_)
+            {
+                delete entry;
+            }
+        }
 
-		std::string GetTypeAsStr() { return Entry::GetTypeAsStr_(type_); }
-	};
+        int RegisterCatalogDirectory(std::string type, std::string directory);
 
-	class Catalogs
-	{
-	public:
+        Catalog *FindCatalogByName(std::string name)
+        {
+            for (size_t i = 0; i < catalog_.size(); i++)
+            {
+                if (catalog_[i]->name_ == name)
+                {
+                    return catalog_[i];
+                }
+            }
 
-		typedef struct
-		{
-			CatalogType type_;
-			std::string dir_name_;
-		} CatalogDirEntry;
+            return 0;
+        }
 
-		std::vector<CatalogDirEntry> catalog_dirs_;
-		std::vector<Catalog*> catalog_;
+        void AddCatalog(Catalog *catalog)
+        {
+            catalog_.push_back(catalog);
+        }
 
-		Catalogs() {}
-		~Catalogs()
-		{
-			for (auto* entry : catalog_)
-			{
-				delete entry;
-			}
-		}
+        Entry *FindCatalogEntry(std::string catalog_name, std::string entry_name)
+        {
+            Entry   *entry   = 0;
+            Catalog *catalog = FindCatalogByName(catalog_name);
 
-		int RegisterCatalogDirectory(std::string type, std::string directory);
+            if (catalog == 0)
+            {
+                LOG("Couldn't find catalog %s", catalog_name.c_str());
+                return 0;
+            }
+            else
+            {
+                entry = catalog->FindEntryByName(entry_name);
+                if (entry == 0)
+                {
+                    LOG("Couldn't find entry %s in catalog %s", entry_name.c_str(), catalog_name.c_str());
+                }
+            }
+            return entry;
+        }
 
-		Catalog* FindCatalogByName(std::string name)
-		{
-			for (size_t i = 0; i < catalog_.size(); i++)
-			{
-				if (catalog_[i]->name_ == name)
-				{
-					return catalog_[i];
-				}
-			}
+        pugi::xml_node FindCatalogNode(std::string catalog_name, std::string entry_name)
+        {
+            Entry         *entry = FindCatalogEntry(catalog_name, entry_name);
+            pugi::xml_node node;
 
-			return 0;
-		}
+            if (entry != 0)
+            {
+                node = entry->GetNode();
+            }
+            else
+            {
+                LOG("Couldn't get element in entry %s in catalog %s", entry_name.c_str(), catalog_name.c_str());
+            }
 
+            return node;
+        }
+    };
 
-		void AddCatalog(Catalog *catalog)
-		{
-			catalog_.push_back(catalog);
-		}
-
-		Entry *FindCatalogEntry(std::string catalog_name, std::string entry_name)
-		{
-			Entry *entry = 0;
-			Catalog *catalog = FindCatalogByName(catalog_name);
-
-			if (catalog == 0)
-			{
-				LOG("Couldn't find catalog %s", catalog_name.c_str());
-				return 0;
-			}
-			else
-			{
-				entry = catalog->FindEntryByName(entry_name);
-				if (entry == 0)
-				{
-					LOG("Couldn't find entry %s in catalog %s", entry_name.c_str(), catalog_name.c_str());
-				}
-			}
-			return entry;
-		}
-
-		pugi::xml_node FindCatalogNode(std::string catalog_name, std::string entry_name)
-		{
-			Entry *entry = FindCatalogEntry(catalog_name, entry_name);
-			pugi::xml_node node;
-
-			if (entry != 0)
-			{
-				node = entry->GetNode();
-			}
-			else
-			{
-				LOG("Couldn't get element in entry %s in catalog %s", entry_name.c_str(), catalog_name.c_str());
-			}
-
-			return node;
-		}
-
-	};
-
-}
+}  // namespace scenarioengine

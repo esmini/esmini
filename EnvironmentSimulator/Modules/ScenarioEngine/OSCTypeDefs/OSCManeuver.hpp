@@ -24,67 +24,71 @@
 
 namespace scenarioengine
 {
-	class Event: public StoryBoardElement
-	{
-	public:
-		typedef enum
-		{
-			OVERWRITE,
-			SKIP,
-			PARALLEL,
-			UNDEFINED_PRIORITY
-		} Priority;
+    class Event : public StoryBoardElement
+    {
+    public:
+        typedef enum
+        {
+            OVERWRITE,
+            SKIP,
+            PARALLEL,
+            UNDEFINED_PRIORITY
+        } Priority;
 
-		Priority priority_;
+        Priority priority_;
 
-		std::vector<OSCAction*> action_;
+        std::vector<OSCAction*> action_;
 
-		Trigger *start_trigger_;
+        Trigger* start_trigger_;
 
-		Event() : StoryBoardElement(StoryBoardElement::ElementType::EVENT), start_trigger_(0) {}
-		~Event()
-		{
-			for (auto* entry : action_)
-			{
-				delete entry;
-			}
+        Event() : StoryBoardElement(StoryBoardElement::ElementType::EVENT), start_trigger_(0)
+        {
+        }
+        ~Event()
+        {
+            for (auto* entry : action_)
+            {
+                delete entry;
+            }
 
-			if (start_trigger_)
-			{
-				delete start_trigger_;
-			}
-		}
+            if (start_trigger_)
+            {
+                delete start_trigger_;
+            }
+        }
 
-		void Start(double simTime, double dt);
-		void End(double simTime);
-		void Stop();
+        void Start(double simTime, double dt);
+        void End(double simTime);
+        void Stop();
 
-		void UpdateState();
-	};
+        void UpdateState();
+    };
 
-	class Maneuver: public StoryBoardElement
-	{
-	public:
-		OSCParameterDeclarations parameter_declarations_;
-		std::vector<Event*> event_;
+    class Maneuver : public StoryBoardElement
+    {
+    public:
+        OSCParameterDeclarations parameter_declarations_;
+        std::vector<Event*>      event_;
 
-		Maneuver() : StoryBoardElement(StoryBoardElement::ElementType::MANEUVER) {}
-		~Maneuver()
-		{
-			for (auto* entry : event_)
-			{
-				delete entry;
-			}
-		}
+        Maneuver() : StoryBoardElement(StoryBoardElement::ElementType::MANEUVER)
+        {
+        }
+        ~Maneuver()
+        {
+            for (auto* entry : event_)
+            {
+                delete entry;
+            }
+        }
 
-		bool IsAnyEventActive();
-		bool AreAllEventsComplete();
-		void UpdateState();
-		void Reset();
+        bool IsAnyEventActive();
+        bool AreAllEventsComplete();
+        void UpdateState();
+        void Reset();
 
-		void Print()
-		{
-			LOG("\tname = %s", name_.c_str());
-		};
-	};
-}
+        void Print()
+        {
+            LOG("\tname = %s", name_.c_str());
+        };
+    };
+}  // namespace scenarioengine

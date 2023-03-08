@@ -19,22 +19,20 @@
 
 #include "ScenarioEngine.hpp"
 
-
 typedef struct
 {
-	float x;		// m
-	float y;		// m
-	float z;		// m
-	float h;		// rad
-	float p;		// rad
-	float r;		// rad
-	float speed;	// m/s
-	float wheel_angle; // rad
+    float x;            // m
+    float y;            // m
+    float z;            // m
+    float h;            // rad
+    float p;            // rad
+    float r;            // rad
+    float speed;        // m/s
+    float wheel_angle;  // rad
 } EgoStateBuffer_t;
-
 
 namespace scenarioengine
 {
-	void StartServer(ScenarioEngine *scenarioEngine);
-	void StopServer();
-}
+    void StartServer(ScenarioEngine *scenarioEngine);
+    void StopServer();
+}  // namespace scenarioengine

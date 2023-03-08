@@ -10,20 +10,20 @@
  * https://sites.google.com/view/simulationscenarios
  */
 
- // expression implementation is based on https://github.com/zserge/expr
+// expression implementation is based on https://github.com/zserge/expr
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/**
-* Evaluate expression
-* @param str Experssion
-* @return evaluated resulting value as float
-*/
-double eval_expr(const char* str);
+    /**
+     * Evaluate expression
+     * @param str Experssion
+     * @return evaluated resulting value as float
+     */
+    double eval_expr(const char* str);
 
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
-

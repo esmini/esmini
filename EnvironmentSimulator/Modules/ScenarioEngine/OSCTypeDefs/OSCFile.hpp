@@ -15,19 +15,18 @@
 #include <string>
 #include "CommonMini.hpp"
 
-
 namespace scenarioengine
 {
 
-	class OSCFile
-	{
-	public:
-		std::string filepath;
+    class OSCFile
+    {
+    public:
+        std::string filepath;
 
-		void Print()
-		{
-			LOG("file: %s", filepath.c_str());
-		};
-	};
+        void Print()
+        {
+            LOG("file: %s", filepath.c_str());
+        };
+    };
 
-}
+}  // namespace scenarioengine

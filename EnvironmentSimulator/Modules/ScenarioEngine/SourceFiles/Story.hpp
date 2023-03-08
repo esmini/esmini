@@ -22,129 +22,137 @@
 namespace scenarioengine
 {
 
-	class ManeuverGroup : public StoryBoardElement
-	{
-	public:
-		typedef struct
-		{
-			Object *object_;
-		} Actor;
+    class ManeuverGroup : public StoryBoardElement
+    {
+    public:
+        typedef struct
+        {
+            Object* object_;
+        } Actor;
 
-		ManeuverGroup() : StoryBoardElement(StoryBoardElement::ElementType::MANEUVER_GROUP) {}
-		~ManeuverGroup()
-		{
-			for (auto* entry : actor_)
+        ManeuverGroup() : StoryBoardElement(StoryBoardElement::ElementType::MANEUVER_GROUP)
+        {
+        }
+        ~ManeuverGroup()
+        {
+            for (auto* entry : actor_)
             {
-				delete entry;
-			}
-			for (auto* entry : maneuver_)
+                delete entry;
+            }
+            for (auto* entry : maneuver_)
             {
-				delete entry;
-			}
-		}
+                delete entry;
+            }
+        }
 
-		Object* FindActorByName(std::string name)
-		{
-			for (size_t i = 0; i < actor_.size(); i++)
-			{
-				if (actor_[i]->object_->name_ == name)
-				{
-					return actor_[i]->object_;
-				}
-			}
-			return 0;
-		}
+        Object* FindActorByName(std::string name)
+        {
+            for (size_t i = 0; i < actor_.size(); i++)
+            {
+                if (actor_[i]->object_->name_ == name)
+                {
+                    return actor_[i]->object_;
+                }
+            }
+            return 0;
+        }
 
-		bool IsObjectActor(Object* object)
-		{
-			for (size_t i = 0; i < actor_.size(); i++)
-			{
-				if (actor_[i]->object_ == object)
-				{
-					return true;
-				}
-			}
-			return false;
-		}
+        bool IsObjectActor(Object* object)
+        {
+            for (size_t i = 0; i < actor_.size(); i++)
+            {
+                if (actor_[i]->object_ == object)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
 
-		bool AreAllManeuversComplete();
+        bool AreAllManeuversComplete();
 
-		void UpdateState();
-		void Start(double simTime, double dt);
-		void End(double simTime);
-		void Stop();
+        void UpdateState();
+        void Start(double simTime, double dt);
+        void End(double simTime);
+        void Stop();
 
-		std::vector<Actor*> actor_;
-		std::vector<Maneuver*> maneuver_;
-	};
+        std::vector<Actor*>    actor_;
+        std::vector<Maneuver*> maneuver_;
+    };
 
-	class Act: public StoryBoardElement
-	{
-	public:
+    class Act : public StoryBoardElement
+    {
+    public:
+        std::vector<ManeuverGroup*> maneuverGroup_;
+        Trigger*                    start_trigger_;
+        Trigger*                    stop_trigger_;
 
-		std::vector<ManeuverGroup*> maneuverGroup_;
-		Trigger *start_trigger_;
-		Trigger *stop_trigger_;
+        Act() : StoryBoardElement(StoryBoardElement::ElementType::ACT), start_trigger_(0), stop_trigger_(0)
+        {
+        }
+        ~Act()
+        {
+            for (auto* entry : maneuverGroup_)
+            {
+                delete entry;
+            }
+            delete start_trigger_;
+            delete stop_trigger_;
+        }
 
-		Act() : StoryBoardElement(StoryBoardElement::ElementType::ACT) , start_trigger_(0), stop_trigger_(0) {}
-		~Act()
-		{
-			for (auto* entry : maneuverGroup_)
-			{
-				delete entry;
-			}
-			delete start_trigger_;
-			delete stop_trigger_;
-		}
+        void UpdateState();
+    };
 
-		void UpdateState();
-	};
+    class Story
+    {
+    public:
+        Story(std::string name)
+        {
+            (void)name;
+        }
+        ~Story()
+        {
+            for (auto* entry : act_)
+            {
+                delete entry;
+            }
+        }
 
-	class Story
-	{
-	public:
-		Story(std::string name) { (void)name; }
-		~Story()
-		{
-			for (auto* entry : act_)
-			{
-				delete entry;
-			}
-		}
+        OSCParameterDeclarations parameter_declarations_;
+        Act*                     FindActByName(std::string name);
+        ManeuverGroup*           FindManeuverGroupByName(std::string name);
+        Maneuver*                FindManeuverByName(std::string name);
+        Event*                   FindEventByName(std::string name);
+        OSCAction*               FindActionByName(std::string name);
+        void                     Print();
 
-		OSCParameterDeclarations parameter_declarations_;
-		Act* FindActByName(std::string name);
-		ManeuverGroup* FindManeuverGroupByName(std::string name);
-		Maneuver* FindManeuverByName(std::string name);
-		Event* FindEventByName(std::string name);
-		OSCAction* FindActionByName(std::string name);
-		void Print();
+        std::vector<Act*> act_;
+        std::string       name_;
+    };
 
-		std::vector<Act*> act_;
-		std::string name_;
-	};
+    class StoryBoard
+    {
+    public:
+        StoryBoard() : stop_trigger_(0)
+        {
+        }
+        ~StoryBoard()
+        {
+            for (auto* entry : story_)
+            {
+                delete entry;
+            }
+            delete stop_trigger_;
+        }
+        Act*           FindActByName(std::string name);
+        ManeuverGroup* FindManeuverGroupByName(std::string name);
+        Maneuver*      FindManeuverByName(std::string name);
+        Event*         FindEventByName(std::string name);
+        OSCAction*     FindActionByName(std::string name);
+        Entities*      entities_;
+        void           Print();
 
-	class StoryBoard
-	{
-	public:
-		StoryBoard() : stop_trigger_(0) {}
-		~StoryBoard()
-		{
-			for (auto* entry : story_)
-			{
-				delete entry;
-			}
-			delete stop_trigger_;
-		}
-		Act* FindActByName(std::string name);
-		ManeuverGroup* FindManeuverGroupByName(std::string name);
-		Maneuver* FindManeuverByName(std::string name);
-		Event* FindEventByName(std::string name);
-		OSCAction* FindActionByName(std::string name);
-		Entities* entities_;
-		void Print();
-
-		std::vector<Story*> story_;
-		Trigger *stop_trigger_;
-	};
-}
+        std::vector<Story*> story_;
+        Trigger*            stop_trigger_;
+    };
+}  // namespace scenarioengine

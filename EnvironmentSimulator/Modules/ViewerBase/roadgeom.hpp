@@ -22,15 +22,13 @@
 class RoadGeom
 {
 public:
-	osg::ref_ptr<osg::Group> root_;
-	osg::ref_ptr<osg::Group> rm_group_;
+    osg::ref_ptr<osg::Group> root_;
+    osg::ref_ptr<osg::Group> rm_group_;
 
-	RoadGeom(roadmanager::OpenDrive *odr);
-	int AddRoadMarks(roadmanager::Lane* lane, osg::Group* group);
-	void AddRoadMarkGeom(osg::ref_ptr<osg::Vec3Array> vertices, osg::ref_ptr<osg::DrawElementsUInt> indices,
-		roadmanager::RoadMarkColor color);
-	osg::ref_ptr<osg::Texture2D> ReadTexture(std::string filename);
+    RoadGeom(roadmanager::OpenDrive* odr);
+    int  AddRoadMarks(roadmanager::Lane* lane, osg::Group* group);
+    void AddRoadMarkGeom(osg::ref_ptr<osg::Vec3Array> vertices, osg::ref_ptr<osg::DrawElementsUInt> indices, roadmanager::RoadMarkColor color);
+    osg::ref_ptr<osg::Texture2D> ReadTexture(std::string filename);
 };
 
 #endif  // ROADGEOM_HPP_
-

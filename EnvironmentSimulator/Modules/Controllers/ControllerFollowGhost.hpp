@@ -23,45 +23,59 @@
 
 namespace scenarioengine
 {
-	class ScenarioPlayer;
-	class ScenarioEngine;
+    class ScenarioPlayer;
+    class ScenarioEngine;
 
-	// base class for controllers
-	class ControllerFollowGhost: public Controller
-	{
-	public:
+    // base class for controllers
+    class ControllerFollowGhost : public Controller
+    {
+    public:
+        enum class FollowMode
+        {
+            FOLLOW_MODE_NONE,
+            FOLLOW_MODE_TIME,
+            FOLLOW_MODE_POSITION,
+        };
 
-		enum class FollowMode
-		{
-			FOLLOW_MODE_NONE,
-			FOLLOW_MODE_TIME,
-			FOLLOW_MODE_POSITION,
-		};
+        ControllerFollowGhost(InitArgs* args);
 
-		ControllerFollowGhost(InitArgs *args);
+        static const char* GetTypeNameStatic()
+        {
+            return CONTROLLER_FOLLOW_GHOST_TYPE_NAME;
+        }
+        virtual const char* GetTypeName()
+        {
+            return GetTypeNameStatic();
+        }
+        static int GetTypeStatic()
+        {
+            return CONTROLLER_TYPE_FOLLOW_GHOST;
+        }
+        virtual int GetType()
+        {
+            return GetTypeStatic();
+        }
 
-		static const char* GetTypeNameStatic() { return CONTROLLER_FOLLOW_GHOST_TYPE_NAME; }
-		virtual const char* GetTypeName() { return GetTypeNameStatic(); }
-		static int GetTypeStatic() { return CONTROLLER_TYPE_FOLLOW_GHOST; }
-		virtual int GetType() { return GetTypeStatic(); }
+        void SetScenarioEngine(ScenarioEngine* scenarioEngine)
+        {
+            scenarioEngine_ = scenarioEngine;
+        };
 
-		void SetScenarioEngine(ScenarioEngine* scenarioEngine) { scenarioEngine_ = scenarioEngine; };
+        void Init();
+        void Step(double timeStep);
+        void Activate(ControlDomains domainMask);
+        void ReportKeyEvent(int key, bool down);
 
-		void Init();
-		void Step(double timeStep);
-		void Activate(ControlDomains domainMask);
-		void ReportKeyEvent(int key, bool down);
+    private:
+        vehicle::Vehicle vehicle_;
+        double           headstart_time_;
+        FollowMode       follow_mode_;
+        ScenarioEngine*  scenarioEngine_;
+        double           lookahead_speed_;
+        double           min_lookahead_speed_;
+        double           lookahead_steering_;
+        double           min_lookahead_steering_;
+    };
 
-	private:
-		vehicle::Vehicle vehicle_;
-		double headstart_time_;
-		FollowMode follow_mode_;
-		ScenarioEngine* scenarioEngine_;
-		double lookahead_speed_;
-		double min_lookahead_speed_;
-		double lookahead_steering_;
-		double min_lookahead_steering_;
-	};
-
-	Controller* InstantiateControllerFollowGhost(void* args);
-}
+    Controller* InstantiateControllerFollowGhost(void* args);
+}  // namespace scenarioengine

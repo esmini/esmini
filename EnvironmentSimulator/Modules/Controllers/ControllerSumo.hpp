@@ -21,31 +21,43 @@
 
 namespace scenarioengine
 {
-	// base class for controllers
-	class ControllerSumo: public Controller
-	{
-	public:
-		ControllerSumo(InitArgs* args);
+    // base class for controllers
+    class ControllerSumo : public Controller
+    {
+    public:
+        ControllerSumo(InitArgs* args);
 
-		static const char* GetTypeNameStatic() { return CONTROLLER_SUMO_TYPE_NAME; }
-		virtual const char* GetTypeName() { return GetTypeNameStatic(); }
-		static int GetTypeStatic() { return CONTROLLER_TYPE_SUMO; }
-		virtual int GetType() { return GetTypeStatic(); }
+        static const char* GetTypeNameStatic()
+        {
+            return CONTROLLER_SUMO_TYPE_NAME;
+        }
+        virtual const char* GetTypeName()
+        {
+            return GetTypeNameStatic();
+        }
+        static int GetTypeStatic()
+        {
+            return CONTROLLER_TYPE_SUMO;
+        }
+        virtual int GetType()
+        {
+            return GetTypeStatic();
+        }
 
-		void Init();
-		void Step(double time);
-		void Activate(ControlDomains domainMask);
+        void Init();
+        void Step(double time);
+        void Activate(ControlDomains domainMask);
 
-		void SetSumoVehicle(Object* object);
+        void SetSumoVehicle(Object* object);
 
-	private:
-		float sumo_x_offset_;
-		float sumo_y_offset_;
-		double time_;
-		pugi::xml_document docsumo_;
-		std::string model_filepath_;
-		Object* template_vehicle_;
-	};
+    private:
+        float              sumo_x_offset_;
+        float              sumo_y_offset_;
+        double             time_;
+        pugi::xml_document docsumo_;
+        std::string        model_filepath_;
+        Object*            template_vehicle_;
+    };
 
-	Controller* InstantiateControllerSumo(void* args);
-}
+    Controller* InstantiateControllerSumo(void* args);
+}  // namespace scenarioengine

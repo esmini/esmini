@@ -19,24 +19,24 @@
 namespace scenarioengine
 {
 
-	class Init
-	{
-	public:
-		~Init()
-		{
-			for (auto* entry : private_action_)
-			{
-				delete entry;
-			}
-		
-			for (auto* entry : global_action_)
-			{
-				delete entry;
-			}
-		}
+    class Init
+    {
+    public:
+        ~Init()
+        {
+            for (auto* entry : private_action_)
+            {
+                delete entry;
+            }
 
-		std::vector<OSCPrivateAction*> private_action_;
-		std::vector<OSCGlobalAction*> global_action_;
-	};
+            for (auto* entry : global_action_)
+            {
+                delete entry;
+            }
+        }
 
-}
+        std::vector<OSCPrivateAction*> private_action_;
+        std::vector<OSCGlobalAction*>  global_action_;
+    };
+
+}  // namespace scenarioengine

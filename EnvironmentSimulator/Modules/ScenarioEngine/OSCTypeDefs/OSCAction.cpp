@@ -18,102 +18,97 @@ void (*StoryBoardElement::stateChangeCallback)(const char* name, int type, int s
 
 std::string StoryBoardElement::state2str(StoryBoardElement::State state)
 {
-	if (state == StoryBoardElement::State::COMPLETE)
-	{
-		return "completeState";
-	}
-	else if (state == StoryBoardElement::State::RUNNING)
-	{
-		return "runningState";
-	}
-	else if (state == StoryBoardElement::State::STANDBY)
-	{
-		return "standbyState";
-	}
-	else
-	{
-		LOG("Undefined element state: %d", state);
-	}
+    if (state == StoryBoardElement::State::COMPLETE)
+    {
+        return "completeState";
+    }
+    else if (state == StoryBoardElement::State::RUNNING)
+    {
+        return "runningState";
+    }
+    else if (state == StoryBoardElement::State::STANDBY)
+    {
+        return "standbyState";
+    }
+    else
+    {
+        LOG("Undefined element state: %d", state);
+    }
 
-	return "Undefined";
+    return "Undefined";
 }
 
 std::string StoryBoardElement::transition2str(StoryBoardElement::Transition transition)
 {
-	if (transition == StoryBoardElement::Transition::START_TRANSITION)
-	{
-		return "startTransition";
-	}
-	else if (transition == StoryBoardElement::Transition::END_TRANSITION)
-	{
-		return "endTransition";
-	}
-	else if (transition == StoryBoardElement::Transition::STOP_TRANSITION)
-	{
-		return "stopTransition";
-	}
-	else if (transition == StoryBoardElement::Transition::SKIP_TRANSITION)
-	{
-		return "skipTransition";
-	}
-	else
-	{
-		LOG("Undefined transition: %d", transition);
-	}
+    if (transition == StoryBoardElement::Transition::START_TRANSITION)
+    {
+        return "startTransition";
+    }
+    else if (transition == StoryBoardElement::Transition::END_TRANSITION)
+    {
+        return "endTransition";
+    }
+    else if (transition == StoryBoardElement::Transition::STOP_TRANSITION)
+    {
+        return "stopTransition";
+    }
+    else if (transition == StoryBoardElement::Transition::SKIP_TRANSITION)
+    {
+        return "skipTransition";
+    }
+    else
+    {
+        LOG("Undefined transition: %d", transition);
+    }
 
-	return "Undefined";
+    return "Undefined";
 }
-
 
 std::string OSCAction::BaseType2Str()
 {
-	if (base_type_ == BaseType::GLOBAL)
-	{
-		return "Global";
-	}
-	else if(base_type_ == BaseType::PRIVATE)
-	{
-		return "Private";
-	}
-	else if (base_type_ == BaseType::USER_DEFINED)
-	{
-		return "User defined";
-	}
-	else
-	{
-		LOG("Undefined Base Type: %d", base_type_);
-	}
+    if (base_type_ == BaseType::GLOBAL)
+    {
+        return "Global";
+    }
+    else if (base_type_ == BaseType::PRIVATE)
+    {
+        return "Private";
+    }
+    else if (base_type_ == BaseType::USER_DEFINED)
+    {
+        return "User defined";
+    }
+    else
+    {
+        LOG("Undefined Base Type: %d", base_type_);
+    }
 
-	return "Undefined";
+    return "Undefined";
 }
 
-void StoryBoardElement::SetState(StoryBoardElement:: State state)
+void StoryBoardElement::SetState(StoryBoardElement::State state)
 {
-	if (state != state_)
-	{
-		LOG("%s %s -> %s -> %s", name_.c_str(),
-			state2str(state_).c_str(),
-			transition2str(transition_).c_str(),
-			state2str(state).c_str());
+    if (state != state_)
+    {
+        LOG("%s %s -> %s -> %s", name_.c_str(), state2str(state_).c_str(), transition2str(transition_).c_str(), state2str(state).c_str());
 
         if (stateChangeCallback != nullptr)
         {
-            stateChangeCallback(name_.c_str(),  static_cast<int>(type_), static_cast<int>(state));
+            stateChangeCallback(name_.c_str(), static_cast<int>(type_), static_cast<int>(state));
         }
-	}
-	state_ = state;
+    }
+    state_ = state;
 }
 
 void StoryBoardElement::UpdateState()
 {
-	if (next_state_ != state_)
-	{
-		SetState(next_state_);
-	}
-	else if (transition_ != Transition::UNDEFINED_ELEMENT_TRANSITION)
-	{
-		// Reset transition indicator
-		transition_ = Transition::UNDEFINED_ELEMENT_TRANSITION;
-	}
-
+    if (next_state_ != state_)
+    {
+        SetState(next_state_);
+    }
+    else if (transition_ != Transition::UNDEFINED_ELEMENT_TRANSITION)
+    {
+        // Reset transition indicator
+        transition_ = Transition::UNDEFINED_ELEMENT_TRANSITION;
+    }
 }

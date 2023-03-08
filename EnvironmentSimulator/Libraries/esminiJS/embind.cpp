@@ -52,6 +52,6 @@ namespace esmini
             .function("get_object_state", &OpenScenario::get_object_state, emscripten::allow_raw_pointers())
             .function("get_object_state_by_second", &OpenScenario::get_object_state_by_second);
     }
-}
+}  // namespace esmini
 
 #endif

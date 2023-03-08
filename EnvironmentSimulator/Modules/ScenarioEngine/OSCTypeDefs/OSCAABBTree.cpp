@@ -21,11 +21,11 @@
 #include <algorithm>
 
 using namespace aabbTree;
-using std::min;
-using std::max;
-using std::make_shared;
-using triangle2D::overlap2d;
 using roadmanager::Geometry;
+using std::make_shared;
+using std::max;
+using std::min;
+using triangle2D::overlap2d;
 using namespace STGeometry;
 
 /******************************************
@@ -37,11 +37,11 @@ using namespace STGeometry;
  *                          |___/         *
  *****************************************/
 
-bool Triangle::collide(ptTriangle const triangle) const {
+bool Triangle::collide(ptTriangle const triangle) const
+{
     Triangle const &tr = *triangle;
     return overlap2d(a, b, c, tr.a, tr.b, tr.c);
 }
-
 
 /***************************
  *  ____  ____             *
@@ -51,8 +51,8 @@ bool Triangle::collide(ptTriangle const triangle) const {
  * |____/|____/ \___/_/\_\ *
  **************************/
 
-
-BBox::BBox(ptTriangle triangle) : triangle_(triangle) {
+BBox::BBox(ptTriangle triangle) : triangle_(triangle)
+{
     Point a = triangle->a;
     Point b = triangle->b;
     Point c = triangle->c;
@@ -62,52 +62,55 @@ BBox::BBox(ptTriangle triangle) : triangle_(triangle) {
     urhc_.y = max(a.y, max(b.y, c.y));
 }
 
-BBox::BBox(BBoxVec const &bboxes) {
+BBox::BBox(BBoxVec const &bboxes)
+{
     merge(bboxes.begin(), bboxes.end());
 }
 
-BBox::BBox(BBoxVec::const_iterator start, BBoxVec::const_iterator end) {
+BBox::BBox(BBoxVec::const_iterator start, BBoxVec::const_iterator end)
+{
     triangle_ = nullptr;
     merge(start, end);
 }
 
-inline bool BBox::collide(ptBBox const bbox) const {
+inline bool BBox::collide(ptBBox const bbox) const
+{
     return collide(*bbox);
 }
 
-bool BBox::collide(BBox const &bbox) const {
+bool BBox::collide(BBox const &bbox) const
+{
     Point const &urhc = bbox.urhCorner();
     Point const &blhc = bbox.blhCorner();
 
-    return !(
-        (urhc_.x < blhc.x) ||
-        (blhc_.x > urhc.x) ||
-        (urhc_.y < blhc.y) ||
-        (blhc_.y > urhc.y)
-    );
+    return !((urhc_.x < blhc.x) || (blhc_.x > urhc.x) || (urhc_.y < blhc.y) || (blhc_.y > urhc.y));
 }
 
-double inline BBox::midPointX() const {
+double inline BBox::midPointX() const
+{
     return (urhc_.x + blhc_.x) / 2;
 }
 
-double inline BBox::midPointY() const {
+double inline BBox::midPointY() const
+{
     return (urhc_.y + blhc_.y) / 2;
 }
 
-void BBox::merge(BBoxVec::const_iterator start, BBoxVec::const_iterator end) {
-    BBoxVec::const_iterator it = start;
-    double &xmin = blhc_.x;
-    double &xmax = urhc_.x;
-    double &ymin = blhc_.y;
-    double &ymax = urhc_.y;
+void BBox::merge(BBoxVec::const_iterator start, BBoxVec::const_iterator end)
+{
+    BBoxVec::const_iterator it   = start;
+    double                 &xmin = blhc_.x;
+    double                 &xmax = urhc_.x;
+    double                 &ymin = blhc_.y;
+    double                 &ymax = urhc_.y;
 
     xmin = (*it)->blhCorner().x;
     ymin = (*it)->blhCorner().y;
     xmax = (*it)->urhCorner().x;
     ymax = (*it)->urhCorner().y;
 
-    while (end > ++it) {
+    while (end > ++it)
+    {
         xmin = min(xmin, (*it)->blhCorner().x);
         ymin = min(ymin, (*it)->blhCorner().y);
         xmax = max(xmax, (*it)->urhCorner().x);
@@ -123,7 +126,8 @@ void BBox::merge(BBoxVec::const_iterator start, BBoxVec::const_iterator end) {
  *   |_||_|  \___|\___| *
  ***********************/
 
-Tree::~Tree() {
+Tree::~Tree()
+{
     childeren.clear();
     bbox.reset();
 }
@@ -133,15 +137,18 @@ Tree::~Tree() {
  * If the number of nodes should be greater equal than the number
  * of bounding boxes.
  */
-void Tree::build(BBoxVec &bboxes) {
+void Tree::build(BBoxVec &bboxes)
+{
     childeren.clear();
-    if (bboxes.empty()) return;
+    if (bboxes.empty())
+        return;
     nodeCount_ = 1;
     leafCount_ = 0;
     __build(bboxes.begin(), bboxes.end());
 }
 
-bool Tree::empty() {
+bool Tree::empty()
+{
     return (!bbox && childeren.empty());
 }
 
@@ -150,7 +157,8 @@ bool Tree::empty() {
  * It exploits an iterative algorithm instead of a recursive one
  * to handle huge networks.
  */
-void Tree::__build(BBoxVec::iterator const start, BBoxVec::iterator const end) {
+void Tree::__build(BBoxVec::iterator const start, BBoxVec::iterator const end)
+{
     vector<StackRecord> stack;
     stack.reserve(static_cast<unsigned int>((log(end - start) * 2)));
     stack.clear();
@@ -161,39 +169,52 @@ void Tree::__build(BBoxVec::iterator const start, BBoxVec::iterator const end) {
 
     ptTree currentTree_ = nullptr;
 
-    auto currentTree = [&currentTree_, this]() -> Tree& {
-        if (currentTree_) return *currentTree_;
-        else return *this;
+    auto currentTree = [&currentTree_, this]() -> Tree &
+    {
+        if (currentTree_)
+            return *currentTree_;
+        else
+            return *this;
     };
 
-    while (last > first) {
-        if (last - first == 1) {
+    while (last > first)
+    {
+        if (last - first == 1)
+        {
             currentTree().bbox = *first;
             leafCount_++;
-            if (!stack.empty()) {
+            if (!stack.empty())
+            {
                 auto record = stack.back();
                 stack.pop_back();
-                first = record.first;
-                last  = record.last;
+                first        = record.first;
+                last         = record.last;
                 currentTree_ = record.tree;
-            } else break;
-        } else {
-            ptBBox  tmpBbox = make_shared<aabbTree::BBox>(first, last);
+            }
+            else
+                break;
+        }
+        else
+        {
+            ptBBox tmpBbox     = make_shared<aabbTree::BBox>(first, last);
             currentTree().bbox = tmpBbox;
-            cut = divide(first, last, tmpBbox);
-            ptTree pos = make_shared<Tree>();
-            ptTree neg = make_shared<Tree>();
+            cut                = divide(first, last, tmpBbox);
+            ptTree pos         = make_shared<Tree>();
+            ptTree neg         = make_shared<Tree>();
 
-            if (cut - first > 0 && last - cut > 0) {
-                kids:
+            if (cut - first > 0 && last - cut > 0)
+            {
+            kids:
                 currentTree().childeren.push_back(pos);
                 currentTree().childeren.push_back(neg);
                 nodeCount_ += 2;
-                StackRecord record = { cut, last, neg };
+                StackRecord record = {cut, last, neg};
                 stack.push_back(record);
                 currentTree_ = pos;
-                last = cut;
-            } else {
+                last         = cut;
+            }
+            else
+            {
                 cut = first + (last - first) / 2;
                 goto kids;
             }
@@ -206,37 +227,42 @@ void Tree::__build(BBoxVec::iterator const start, BBoxVec::iterator const end) {
  * line of the current bounding box.
  * It returns a pointer to the first element of the right side of the partition
  */
-BBoxVec::iterator Tree::divide(BBoxVec::iterator const start, BBoxVec::iterator const end, ptBBox bboxTmp) {
-    if (end - start == 0) return start;
-    if (end - start == 1) return end;
+BBoxVec::iterator Tree::divide(BBoxVec::iterator const start, BBoxVec::iterator const end, ptBBox bboxTmp)
+{
+    if (end - start == 0)
+        return start;
+    if (end - start == 1)
+        return end;
 
     std::function<bool(ptBBox)> compare;
-    double mid;
-    Point blhc = bboxTmp->blhCorner();
-    Point urhc = bboxTmp->urhCorner();
+    double                      mid;
+    Point                       blhc = bboxTmp->blhCorner();
+    Point                       urhc = bboxTmp->urhCorner();
 
-    if (urhc.x - blhc.x > urhc.y - blhc.y) {
-        mid = (urhc.x + blhc.x) / 2.0;
-        compare = [mid](ptBBox bbx) {
-            return bbx->midPointX() < mid;
-        };
-    } else {
-        mid = (urhc.y + blhc.y) / 2.0;
-        compare = [mid](ptBBox bbx) {
-            return bbx->midPointY() < mid;
-        };
+    if (urhc.x - blhc.x > urhc.y - blhc.y)
+    {
+        mid     = (urhc.x + blhc.x) / 2.0;
+        compare = [mid](ptBBox bbx) { return bbx->midPointX() < mid; };
+    }
+    else
+    {
+        mid     = (urhc.y + blhc.y) / 2.0;
+        compare = [mid](ptBBox bbx) { return bbx->midPointY() < mid; };
     }
 
     auto first = start;
     auto last  = end;
-    while (true) {
-        while (first < last && compare(*first)) {
+    while (true)
+    {
+        while (first < last && compare(*first))
+        {
             first++;
         }
         last--;
         while (first < last && !compare(*last))
             last--;
-        if (!(first < last)) return first;
+        if (!(first < last))
+            return first;
         std::iter_swap(first, last);
         first++;
     }
@@ -248,39 +274,47 @@ BBoxVec::iterator Tree::divide(BBoxVec::iterator const start, BBoxVec::iterator 
  *   https://github.com/ebertolazzi/Clothoids/blob/master/src/AABBtree.cc
  *
  */
-void Tree::intersect(Tree const &tree, Candidates &candidates) const {
-
-    if (!bbox || !tree.BBox() || !tree.BBox()->collide(bbox)) return;
+void Tree::intersect(Tree const &tree, Candidates &candidates) const
+{
+    if (!bbox || !tree.BBox() || !tree.BBox()->collide(bbox))
+        return;
 
     int case_ = (this->childeren.empty() ? 0 : 1) + (tree.Children().empty() ? 0 : 2);
 
-    switch(case_) {
-        case 0: { // Leaf & Leaf
+    switch (case_)
+    {
+        case 0:
+        {  // Leaf & Leaf
             candidates.push_back(Candidate(bbox, tree.BBox()));
             break;
         }
-        case 1: { // Tree & Leaf
-            for (ptTree const& child : childeren) {
+        case 1:
+        {  // Tree & Leaf
+            for (ptTree const &child : childeren)
+            {
                 child->intersect(tree, candidates);
             }
             break;
         }
-        case 2: { // Leaf & Tree
-            for (ptTree const& child : tree.Children()) {
+        case 2:
+        {  // Leaf & Tree
+            for (ptTree const &child : tree.Children())
+            {
                 intersect(*child, candidates);
             }
             break;
         }
-        case 3: { // Tree & Tree
-            for (ptTree const& child1 : childeren) {
-                for (ptTree const& child2 : tree.Children())
+        case 3:
+        {  // Tree & Tree
+            for (ptTree const &child1 : childeren)
+            {
+                for (ptTree const &child2 : tree.Children())
                     child1->intersect(*child2, candidates);
             }
             break;
         }
     }
 }
-
 
 /***********************
  *  _   _ _   _ _      *
@@ -290,21 +324,25 @@ void Tree::intersect(Tree const &tree, Candidates &candidates) const {
  *  \___/ \__|_|_|___/ *
  ***********************/
 
-aabbTree::ptBBox aabbTree::makeTriangleAndBbx(double x0, double y0, double x1, double y1, double x2, double y2, Geometry *gm, double s0, double s1) {
+aabbTree::ptBBox aabbTree::makeTriangleAndBbx(double x0, double y0, double x1, double y1, double x2, double y2, Geometry *gm, double s0, double s1)
+{
     ptTriangle triangle = make_shared<Triangle>(gm);
-    triangle->a = Point(x0, y0);
-    triangle->b = Point(x1, y1);
-    triangle->c = Point(x2, y2);
-    triangle->sI = s0;
-    triangle->sF = s1;
+    triangle->a         = Point(x0, y0);
+    triangle->b         = Point(x1, y1);
+    triangle->c         = Point(x2, y2);
+    triangle->sI        = s0;
+    triangle->sF        = s1;
     return make_shared<BBox>(triangle);
 }
 
-void aabbTree::processCandidates(Candidates const &candidates, vector<ptTriangle> &solutions) {
-    for (auto const& candidate : candidates) {
+void aabbTree::processCandidates(Candidates const &candidates, vector<ptTriangle> &solutions)
+{
+    for (auto const &candidate : candidates)
+    {
         ptTriangle const tr1 = candidate.bbox1->triangle();
         ptTriangle const tr2 = candidate.bbox2->triangle();
-        if (tr1->collide(tr2)) {
+        if (tr1->collide(tr2))
+        {
             if (tr2->geometry())
                 solutions.push_back(tr2);
             else
@@ -313,31 +351,38 @@ void aabbTree::processCandidates(Candidates const &candidates, vector<ptTriangle
     }
 }
 
-void aabbTree::findPoints(vector<ptTriangle> const &triangles, EllipseInfo &eInfo, Solutions &points) {
-    for (auto const& tr : triangles) {
-        if (tr->geometry()) {
+void aabbTree::findPoints(vector<ptTriangle> const &triangles, EllipseInfo &eInfo, Solutions &points)
+{
+    for (auto const &tr : triangles)
+    {
+        if (tr->geometry())
+        {
             geometryIntersect(*tr, eInfo, points);
-        } else
+        }
+        else
             LOG("Warning: triangle without a geometry found");
     }
 }
 
-void aabbTree::curve2triangles(Geometry *geometry, double segmSize, double maxAngle, BBoxVec &vec) {
-    double s0 = 0;
+void aabbTree::curve2triangles(Geometry *geometry, double segmSize, double maxAngle, BBoxVec &vec)
+{
+    double s0     = 0;
     double length = geometry->GetLength();
-    double ds = min(segmSize, length);
-    while (s0 < length) {
+    double ds     = min(segmSize, length);
+    while (s0 < length)
+    {
         double x0, y0, t0, x1, y1, t1, x2, y2;
-        int count = 0;
+        int    count = 0;
         geometry->EvaluateDS(s0, &x0, &y0, &t0);
 
         double s1 = min(s0 + ds, length);
 
-        s_1:
+    s_1:
         geometry->EvaluateDS(s1, &x1, &y1, &t1);
-        if (abs(t1 - t0) > maxAngle && count < 4) {
+        if (abs(t1 - t0) > maxAngle && count < 4)
+        {
             double dt = abs(t1 - t0) / (s1 - s0);
-            s1 = s0 + maxAngle / dt;
+            s1        = s0 + maxAngle / dt;
             count++;
             goto s_1;
         }
@@ -349,4 +394,3 @@ void aabbTree::curve2triangles(Geometry *geometry, double segmSize, double maxAn
         s0 = s1;
     }
 }
-

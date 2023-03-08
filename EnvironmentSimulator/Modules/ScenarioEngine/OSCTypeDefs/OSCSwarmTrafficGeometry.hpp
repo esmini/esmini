@@ -14,12 +14,13 @@
 #include "OSCAABBTree.hpp"
 #include <functional>
 
-namespace STGeometry {
+namespace STGeometry
+{
 
-    using aabbTree::Triangle;
-    using aabbTree::Point;
     using aabbTree::EllipseInfo;
+    using aabbTree::Point;
     using aabbTree::Solutions;
+    using aabbTree::Triangle;
 
     typedef std::function<double(double)> DDProc;
 
@@ -41,15 +42,7 @@ namespace STGeometry {
      * @param y
      * @returns double
      */
-    double ellipse(
-        double h,
-        double k,
-        double A,
-        double SMjA,
-        double SMnA,
-        double x,
-        double y
-    );
+    double ellipse(double h, double k, double A, double SMjA, double SMnA, double x, double y);
 
     /**
      * @brief It calculates the points of a parametrized ellipse in the form:
@@ -65,16 +58,7 @@ namespace STGeometry {
      * @param sx x-coordinate where the solution will be stored
      * @param sy y-coordinate where the solution will be stored
      */
-    void paramEllipse(
-        double alpha,
-        double h,
-        double k,
-        double SMjA,
-        double SMnA,
-        double hdg,
-        double& sx,
-        double& sy
-    );
+    void paramEllipse(double alpha, double h, double k, double SMjA, double SMnA, double hdg, double& sx, double& sy);
 
     /**
      * @brief It computes the angle of the tangent in the point of parametrization alpha
@@ -102,11 +86,7 @@ namespace STGeometry {
      * @param x2
      * @param y2
      */
-    void tangentIntersection(
-        double x0, double y0, double s0, double t0,
-        double x1, double y1, double s1, double t1,
-        double& x2, double& y2
-    );
+    void tangentIntersection(double x0, double y0, double s0, double t0, double x1, double y1, double s1, double t1, double& x2, double& y2);
 
     /*
      * Line considered in the form y = mx + q
@@ -171,4 +151,4 @@ namespace STGeometry {
      */
     bool geometryIntersect(Triangle& triangle, EllipseInfo& eInfo, Solutions& sol);
 
-}
+}  // namespace STGeometry

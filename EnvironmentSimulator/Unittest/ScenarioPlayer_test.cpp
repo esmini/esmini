@@ -14,10 +14,8 @@ using namespace scenarioengine;
 TEST(CustomCameraTest, TestCustomCameraVariants)
 {
     const char* args[] =
-    {
-        "esmini", "--osc", "../../../resources/xosc/cut-in_cr.xosc", "--window", "60", "60", "800", "600", "--headless", "--disable_stdout"
-    };
-    int argc = sizeof(args) / sizeof(char*);
+        {"esmini", "--osc", "../../../resources/xosc/cut-in_cr.xosc", "--window", "60", "60", "800", "600", "--headless", "--disable_stdout"};
+    int             argc   = sizeof(args) / sizeof(char*);
     ScenarioPlayer* player = new ScenarioPlayer(argc, const_cast<char**>(args));
 
     ASSERT_NE(player, nullptr);
@@ -116,15 +114,12 @@ TEST(CustomCameraTest, TestCustomCameraVariants)
     delete player;
 }
 
-#endif // _USE_OSG
+#endif  // _USE_OSG
 
 TEST(AlignmentTest, TestPositionAlignmentVariants)
 {
-    const char* args[] =
-    {
-        "esmini", "--osc", "../../../resources/xosc/cut-in.xosc", "--headless", "--disable_stdout"
-    };
-    int argc = sizeof(args) / sizeof(char*);
+    const char*     args[] = {"esmini", "--osc", "../../../resources/xosc/cut-in.xosc", "--headless", "--disable_stdout"};
+    int             argc   = sizeof(args) / sizeof(char*);
     ScenarioPlayer* player = new ScenarioPlayer(argc, const_cast<char**>(args));
 
     ASSERT_NE(player, nullptr);
@@ -161,7 +156,7 @@ TEST(AlignmentTest, TestPositionAlignmentVariants)
 
 int main(int argc, char** argv)
 {
-    //testing::GTEST_FLAG(filter) = "*TestCustomCameraVariants*";
+    // testing::GTEST_FLAG(filter) = "*TestCustomCameraVariants*";
 
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

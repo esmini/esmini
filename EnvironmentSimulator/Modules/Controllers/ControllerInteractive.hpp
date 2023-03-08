@@ -10,10 +10,9 @@
  * https://sites.google.com/view/simulationscenarios
  */
 
- /*
-  * This controller let the user control the vehicle interactively by the arrow keys
-  */
-
+/*
+ * This controller let the user control the vehicle interactively by the arrow keys
+ */
 
 #pragma once
 
@@ -23,35 +22,45 @@
 #include "Parameters.hpp"
 #include "vehicle.hpp"
 
-
 #define CONTROLLER_INTERACTIVE_TYPE_NAME "InteractiveController"
 
 namespace scenarioengine
 {
-	// base class for controllers
-	class ControllerInteractive: public Controller
-	{
-	public:
+    // base class for controllers
+    class ControllerInteractive : public Controller
+    {
+    public:
+        ControllerInteractive(InitArgs* args);
 
-		ControllerInteractive(InitArgs* args);
+        void Init();
+        void Step(double timeStep);
+        void Activate(ControlDomains domainMask);
+        void ReportKeyEvent(int key, bool down);
 
-		void Init();
-		void Step(double timeStep);
-		void Activate(ControlDomains domainMask);
-		void ReportKeyEvent(int key, bool down);
+        static const char* GetTypeNameStatic()
+        {
+            return CONTROLLER_INTERACTIVE_TYPE_NAME;
+        }
+        virtual const char* GetTypeName()
+        {
+            return GetTypeNameStatic();
+        }
+        static int GetTypeStatic()
+        {
+            return Controller::Type::CONTROLLER_TYPE_INTERACTIVE;
+        }
+        virtual int GetType()
+        {
+            return GetTypeStatic();
+        }
 
-		static const char* GetTypeNameStatic() { return CONTROLLER_INTERACTIVE_TYPE_NAME; }
-		virtual const char* GetTypeName() { return GetTypeNameStatic(); }
-		static int GetTypeStatic() { return Controller::Type::CONTROLLER_TYPE_INTERACTIVE; }
-		virtual int GetType() { return GetTypeStatic(); }
+    private:
+        vehicle::Vehicle  vehicle_;
+        vehicle::THROTTLE accelerate = vehicle::THROTTLE_NONE;
+        vehicle::STEERING steer      = vehicle::STEERING_NONE;
+        double            steering_rate_;
+        double            speed_factor_;
+    };
 
-	private:
-		vehicle::Vehicle vehicle_;
-		vehicle::THROTTLE accelerate = vehicle::THROTTLE_NONE;
-		vehicle::STEERING steer = vehicle::STEERING_NONE;
-		double steering_rate_;
-		double speed_factor_;
-	};
-
-	Controller* InstantiateControllerInteractive(void* args);
-}
+    Controller* InstantiateControllerInteractive(void* args);
+}  // namespace scenarioengine

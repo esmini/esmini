@@ -213,28 +213,31 @@ const char* scenario = "\
 
 int main(int argc, char* argv[])
 {
-   (void)argc;
-   (void)argv;
+    (void)argc;
+    (void)argv;
 
-	SE_AddPath("../resources/xodr");
+    SE_AddPath("../resources/xodr");
 
     SE_InitWithString(scenario, 1, 1, 0, 0);
 
-	while (SE_GetSimulationTime() < 20.0f && !(SE_GetQuitFlag() == 1))
-	{
-		SE_Step();
+    while (SE_GetSimulationTime() < 20.0f && !(SE_GetQuitFlag() == 1))
+    {
+        SE_Step();
 
-		for (int k = 0; k < SE_GetNumberOfObjects(); k++)
-		{
-			SE_ScenarioObjectState state;
+        for (int k = 0; k < SE_GetNumberOfObjects(); k++)
+        {
+            SE_ScenarioObjectState state;
 
-			SE_GetObjectState(SE_GetId(k), &state);
-			printf("time [%.2f] object[%d] pos[%.2f, %.2f] \n", static_cast<double>(state.timestamp),
-            k, static_cast<double>(state.x), static_cast<double>(state.y));
-		}
-	}
+            SE_GetObjectState(SE_GetId(k), &state);
+            printf("time [%.2f] object[%d] pos[%.2f, %.2f] \n",
+                   static_cast<double>(state.timestamp),
+                   k,
+                   static_cast<double>(state.x),
+                   static_cast<double>(state.y));
+        }
+    }
 
-	SE_Close();
+    SE_Close();
 
-	return 0;
+    return 0;
 }

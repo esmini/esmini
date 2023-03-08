@@ -21,30 +21,45 @@
 
 namespace scenarioengine
 {
-	class ControllerACC: public Controller
-	{
-	public:
-		ControllerACC(InitArgs *args);
+    class ControllerACC : public Controller
+    {
+    public:
+        ControllerACC(InitArgs* args);
 
-		static const char* GetTypeNameStatic() { return CONTROLLER_ACC_TYPE_NAME; }
-		virtual const char* GetTypeName() { return GetTypeNameStatic(); }
-		static int GetTypeStatic() { return CONTROLLER_TYPE_ACC; }
-		virtual int GetType() { return GetTypeStatic(); }
+        static const char* GetTypeNameStatic()
+        {
+            return CONTROLLER_ACC_TYPE_NAME;
+        }
+        virtual const char* GetTypeName()
+        {
+            return GetTypeNameStatic();
+        }
+        static int GetTypeStatic()
+        {
+            return CONTROLLER_TYPE_ACC;
+        }
+        virtual int GetType()
+        {
+            return GetTypeStatic();
+        }
 
-		void Init();
-		void Step(double timeStep);
-		void Activate(ControlDomains domainMask);
-		void ReportKeyEvent(int key, bool down);
-		void SetSetSpeed(double setSpeed) { setSpeed_ = setSpeed; }
+        void Init();
+        void Step(double timeStep);
+        void Activate(ControlDomains domainMask);
+        void ReportKeyEvent(int key, bool down);
+        void SetSetSpeed(double setSpeed)
+        {
+            setSpeed_ = setSpeed;
+        }
 
-	private:
-		vehicle::Vehicle vehicle_;
-		bool active_;
-		double timeGap_;  // target headway time
-		double setSpeed_;
-		double currentSpeed_;
-		bool setSpeedSet_;
-	};
+    private:
+        vehicle::Vehicle vehicle_;
+        bool             active_;
+        double           timeGap_;  // target headway time
+        double           setSpeed_;
+        double           currentSpeed_;
+        bool             setSpeedSet_;
+    };
 
-	Controller* InstantiateControllerACC(void* args);
-}
+    Controller* InstantiateControllerACC(void* args);
+}  // namespace scenarioengine

@@ -10,8 +10,7 @@
  * https://sites.google.com/view/simulationscenarios
  */
 
-static const char* helpText =
-"\n\
+static const char* helpText = "\n\
 Key shortcuts \n\
     \n\
     H (shift + h): This help text \n\
@@ -79,4 +78,3 @@ Mouse control \n\
     \n\
     This is typical, exact behaviour depends on active camera model. \n\
 ";
-
