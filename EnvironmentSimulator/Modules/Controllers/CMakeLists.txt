@@ -47,22 +47,21 @@ target_link_libraries(
 
 target_include_directories(
     ${TARGET}
-    PRIVATE
-    ${COMMON_MINI_PATH}
-    ${CONTROLLERS_PATH}
-    ${SCENARIO_ENGINE_PATH}/OSCTypeDefs
-    ${SCENARIO_ENGINE_PATH}/SourceFiles
-    ${VIEWER_BASE_PATH}
-    ${PLAYER_BASE_PATH})
+    PRIVATE ${COMMON_MINI_PATH}
+            ${CONTROLLERS_PATH}
+            ${SCENARIO_ENGINE_PATH}/OSCTypeDefs
+            ${SCENARIO_ENGINE_PATH}/SourceFiles
+            ${VIEWER_BASE_PATH}
+            ${PLAYER_BASE_PATH})
 
 target_include_directories(
     ${TARGET}
-    SYSTEM PUBLIC
-    ${ROAD_MANAGER_PATH}
-    ${EXTERNALS_OSI_INCLUDES}
-    ${EXTERNALS_SUMO_INCLUDES}
-    ${EXTERNALS_PUGIXML_PATH}
-    ${EXTERNALS_OSG_INCLUDES})
+    SYSTEM
+    PUBLIC ${ROAD_MANAGER_PATH}
+           ${EXTERNALS_OSI_INCLUDES}
+           ${EXTERNALS_SUMO_INCLUDES}
+           ${EXTERNALS_PUGIXML_PATH}
+           ${EXTERNALS_OSG_INCLUDES})
 
 disable_static_analysis(${TARGET})
 disable_iwyu(${TARGET})

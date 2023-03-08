@@ -25,14 +25,13 @@ target_link_libraries(
 
 target_include_directories(
     ${TARGET}
-    PRIVATE
-    ${COMMON_MINI_PATH})
+    PRIVATE ${COMMON_MINI_PATH})
 
 target_include_directories(
     ${TARGET}
-    SYSTEM PUBLIC
-    ${ROAD_MANAGER_PATH}
-    ${EXTERNALS_PUGIXML_PATH})
+    SYSTEM
+    PUBLIC ${ROAD_MANAGER_PATH}
+           ${EXTERNALS_PUGIXML_PATH})
 
 target_link_libraries(
     ${TARGET}

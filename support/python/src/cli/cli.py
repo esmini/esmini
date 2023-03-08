@@ -422,7 +422,6 @@ class _Command:
         parsed_command = self
         # Parse command and child command
         if self.has_child:
-
             # get parsed args
             if len(argv) < 1:
                 self._parser.print_help()
@@ -456,7 +455,6 @@ class _Command:
     # ===========================================
 
     def _setup_parser(self):
-
         # Setup argument parser
         self._parser.usage = self._get_usage_str()
         self._parser.formatter_class = argparse.RawTextHelpFormatter

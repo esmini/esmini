@@ -25,14 +25,13 @@ target_link_libraries(
 
 target_include_directories(
     ${TARGET}
-    PRIVATE
-    ${ESMINI_LIB_PATH}
-    ${COMMON_MINI_PATH})
+    PRIVATE ${ESMINI_LIB_PATH}
+            ${COMMON_MINI_PATH})
 
 target_include_directories(
     ${TARGET}
-    SYSTEM PUBLIC
-    ${EXTERNALS_OSI_INCLUDES})
+    SYSTEM
+    PUBLIC ${EXTERNALS_OSI_INCLUDES})
 
 target_link_libraries(
     ${TARGET}
@@ -43,8 +42,7 @@ target_link_libraries(
 if(USE_OSI)
     target_link_libraries(
         ${TARGET}
-        PRIVATE
-        ${OSI_LIBRARIES})
+        PRIVATE ${OSI_LIBRARIES})
 endif()
 
 # ############################### Install ############################################################################

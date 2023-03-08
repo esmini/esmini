@@ -33,25 +33,23 @@ add_library(
 
 target_link_libraries(
     ViewerBase
-    PRIVATE
-    ScenarioEngine
-    project_options)
+    PRIVATE ScenarioEngine
+            project_options)
 
 target_include_directories(
     ${TARGET}
-    PRIVATE
-    ${SCENARIO_ENGINE_PATH}/SourceFiles
-    ${SCENARIO_ENGINE_PATH}/OSCTypeDefs
-    ${COMMON_MINI_PATH}
-    ${CONTROLLERS_PATH})
+    PRIVATE ${SCENARIO_ENGINE_PATH}/SourceFiles
+            ${SCENARIO_ENGINE_PATH}/OSCTypeDefs
+            ${COMMON_MINI_PATH}
+            ${CONTROLLERS_PATH})
 
 target_include_directories(
     ${TARGET}
-    SYSTEM PUBLIC
-    ${ROAD_MANAGER_PATH}
-    ${EXTERNALS_OSG_INCLUDES}
-    ${EXTERNALS_OSI_INCLUDES}
-    ${EXTERNALS_PUGIXML_PATH})
+    SYSTEM
+    PUBLIC ${ROAD_MANAGER_PATH}
+           ${EXTERNALS_OSG_INCLUDES}
+           ${EXTERNALS_OSI_INCLUDES}
+           ${EXTERNALS_PUGIXML_PATH})
 
 disable_static_analysis(${TARGET})
 disable_iwyu(${TARGET})

@@ -30,16 +30,15 @@ target_link_libraries(
 
 target_include_directories(
     ${TARGET}
-    PRIVATE
-    ${SCENARIO_ENGINE_PATH}/SourceFiles
-    ${SCENARIO_ENGINE_PATH}/OSCTypeDefs
-    ${COMMON_MINI_PATH})
+    PRIVATE ${SCENARIO_ENGINE_PATH}/SourceFiles
+            ${SCENARIO_ENGINE_PATH}/OSCTypeDefs
+            ${COMMON_MINI_PATH})
 
 target_include_directories(
     ${TARGET}
-    SYSTEM PUBLIC
-    ${ROAD_MANAGER_PATH}
-    ${EXTERNALS_PUGIXML_PATH})
+    SYSTEM
+    PUBLIC ${ROAD_MANAGER_PATH}
+           ${EXTERNALS_PUGIXML_PATH})
 
 target_link_libraries(
     ${TARGET}

@@ -1,8 +1,11 @@
-
-set ( ModulesFolder Modules )
-set ( ApplicationsFolder Applications )
-set ( LibrariesFolder Libraries )
-set ( CodeExamplesFolder code-examples )
+set(ModulesFolder
+    Modules)
+set(ApplicationsFolder
+    Applications)
+set(LibrariesFolder
+    Libraries)
+set(CodeExamplesFolder
+    code-examples)
 
 # ############################### Building Modules #####################################################################
 
@@ -45,26 +48,62 @@ endif()
 
 # ############################### Establish folder structure ###########################################################
 
-set_folder (RoadManager ${ModulesFolder} )
-set_folder (CommonMini ${ModulesFolder} )
-set_folder (ScenarioEngine ${ModulesFolder} )
-set_folder (Externals ${ModulesFolder} )
-set_folder (RoadManager ${ModulesFolder} )
-set_folder (ScenarioEngine ${ModulesFolder} )
+set_folder(
+    RoadManager
+    ${ModulesFolder})
+set_folder(
+    CommonMini
+    ${ModulesFolder})
+set_folder(
+    ScenarioEngine
+    ${ModulesFolder})
+set_folder(
+    Externals
+    ${ModulesFolder})
+set_folder(
+    RoadManager
+    ${ModulesFolder})
+set_folder(
+    ScenarioEngine
+    ${ModulesFolder})
 
-if (USE_OSI)
-  set_folder (osireceiver ${ApplicationsFolder} )
-endif ()
-  set_folder (PlayerBase ${ModulesFolder} )
-  set_folder (Controllers ${ModulesFolder} )
-  set_folder (esminiLib ${LibrariesFolder} )
-  set_folder (esminiRMLib ${LibrariesFolder} )
-  set_folder (esmini ${ApplicationsFolder} )
-  set_folder (esmini-dyn ${ApplicationsFolder} )
-  set_folder (dat2csv ${ApplicationsFolder} )
-  set_folder (odrplot ${ApplicationsFolder} )
-if (USE_OSG)
-  set_folder (replayer ${ApplicationsFolder} )
-  set_folder (odrviewer ${ApplicationsFolder} )
-  set_folder (ViewerBase ${ModulesFolder} )
-endif (USE_OSG)
+if(USE_OSI)
+    set_folder(
+        osireceiver
+        ${ApplicationsFolder})
+endif()
+set_folder(
+    PlayerBase
+    ${ModulesFolder})
+set_folder(
+    Controllers
+    ${ModulesFolder})
+set_folder(
+    esminiLib
+    ${LibrariesFolder})
+set_folder(
+    esminiRMLib
+    ${LibrariesFolder})
+set_folder(
+    esmini
+    ${ApplicationsFolder})
+set_folder(
+    esmini-dyn
+    ${ApplicationsFolder})
+set_folder(
+    dat2csv
+    ${ApplicationsFolder})
+set_folder(
+    odrplot
+    ${ApplicationsFolder})
+if(USE_OSG)
+    set_folder(
+        replayer
+        ${ApplicationsFolder})
+    set_folder(
+        odrviewer
+        ${ApplicationsFolder})
+    set_folder(
+        ViewerBase
+        ${ModulesFolder})
+endif(USE_OSG)

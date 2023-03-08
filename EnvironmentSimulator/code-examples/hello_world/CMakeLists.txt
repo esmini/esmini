@@ -42,17 +42,18 @@ foreach(
 
     target_include_directories(
         ${module_name}
-        PRIVATE
-        ${EXTERNALS_PUGIXML_PATH}
-        SYSTEM PUBLIC
-        ${ESMINI_LIB_PATH}
-        ${COMMON_MINI_PATH})
+        PRIVATE ${EXTERNALS_PUGIXML_PATH}
+                SYSTEM
+        PUBLIC ${ESMINI_LIB_PATH}
+               ${COMMON_MINI_PATH})
 
     target_link_libraries(
         ${module_name}
         PRIVATE esminiLib)
 
-    set_folder( ${module_name} ${CodeExamplesFolder}/${TARGET} )
+    set_folder(
+        ${module_name}
+        ${CodeExamplesFolder}/${TARGET})
 
     install(
         TARGETS ${module_name}

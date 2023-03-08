@@ -49,14 +49,13 @@ target_link_libraries(
 
 target_include_directories(
     ${TARGET}
-    PRIVATE
-    ${COMMON_MINI_PATH})
+    PRIVATE ${COMMON_MINI_PATH})
 
 target_include_directories(
     ${TARGET}
-    SYSTEM PUBLIC
-    ${EXTERNALS_PUGIXML_PATH}
-    ${ROAD_MANAGER_PATH})
+    SYSTEM
+    PUBLIC ${EXTERNALS_PUGIXML_PATH}
+           ${ROAD_MANAGER_PATH})
 
 disable_static_analysis(${TARGET})
 disable_iwyu(${TARGET})

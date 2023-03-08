@@ -47,44 +47,39 @@ if(USE_OSG)
 
     target_include_directories(
         ${TARGET1}
-        PRIVATE
-        ${SCENARIO_ENGINE_PATH}/SourceFiles
-        ${SCENARIO_ENGINE_PATH}/OSCTypeDefs
-        ${VIEWER_BASE_PATH}
-        ${CONTROLLERS_PATH}
-        ${COMMON_MINI_PATH})
+        PRIVATE ${SCENARIO_ENGINE_PATH}/SourceFiles
+                ${SCENARIO_ENGINE_PATH}/OSCTypeDefs
+                ${VIEWER_BASE_PATH}
+                ${CONTROLLERS_PATH}
+                ${COMMON_MINI_PATH})
 
     target_include_directories(
         ${TARGET1}
-        SYSTEM PUBLIC
-        ${ROAD_MANAGER_PATH}
-        ${EXTERNALS_OSI_INCLUDES}
-        ${EXTERNALS_PUGIXML_PATH}
-        ${EXTERNALS_OSG_INCLUDES}
-        ${EXTERNALS_DIRENT_INCLUDES})
+        SYSTEM
+        PUBLIC ${ROAD_MANAGER_PATH}
+               ${EXTERNALS_OSI_INCLUDES}
+               ${EXTERNALS_PUGIXML_PATH}
+               ${EXTERNALS_OSG_INCLUDES}
+               ${EXTERNALS_DIRENT_INCLUDES})
 
     target_link_libraries(
         ${TARGET1}
-        PRIVATE
-        RoadManager
-        ScenarioEngine
-        CommonMini
-        ${TIME_LIB}
-    )
+        PRIVATE RoadManager
+                ScenarioEngine
+                CommonMini
+                ${TIME_LIB})
 
-if(USE_OSG)
-    target_link_libraries(
-        ${TARGET1}
-        PRIVATE
-        ViewerBase
-        ${OSG_LIBRARIES})
-endif()
+    if(USE_OSG)
+        target_link_libraries(
+            ${TARGET1}
+            PRIVATE ViewerBase
+                    ${OSG_LIBRARIES})
+    endif()
 
     if(USE_OSI)
         target_link_libraries(
             ${TARGET1}
-            PRIVATE
-            ${OSI_LIBRARIES})
+            PRIVATE ${OSI_LIBRARIES})
     endif()
 
     disable_static_analysis(${TARGET1})
@@ -104,33 +99,30 @@ add_executable(
 
 target_link_libraries(
     ${TARGET2}
-    PRIVATE
-    project_options
-    RoadManager
-    CommonMini
-    ${TIME_LIB})
+    PRIVATE project_options
+            RoadManager
+            CommonMini
+            ${TIME_LIB})
 
 target_include_directories(
     ${TARGET2}
-    PRIVATE
-    ${COMMON_MINI_PATH}
-    ${SCENARIO_ENGINE_PATH}/SourceFiles
-    ${SCENARIO_ENGINE_PATH}/OSCTypeDefs)
+    PRIVATE ${COMMON_MINI_PATH}
+            ${SCENARIO_ENGINE_PATH}/SourceFiles
+            ${SCENARIO_ENGINE_PATH}/OSCTypeDefs)
 
 target_include_directories(
     ${TARGET2}
-    SYSTEM PUBLIC
-    ${ROAD_MANAGER_PATH}
-    ${EXTERNALS_OSI_INCLUDES}
-    ${EXTERNALS_PUGIXML_PATH}
-    ${EXTERNALS_OSG_INCLUDES}
-    ${EXTERNALS_DIRENT_INCLUDES})
+    SYSTEM
+    PUBLIC ${ROAD_MANAGER_PATH}
+           ${EXTERNALS_OSI_INCLUDES}
+           ${EXTERNALS_PUGIXML_PATH}
+           ${EXTERNALS_OSG_INCLUDES}
+           ${EXTERNALS_DIRENT_INCLUDES})
 
 if(USE_OSI)
     target_link_libraries(
         ${TARGET2}
-        PRIVATE
-        ${OSI_LIBRARIES})
+        PRIVATE ${OSI_LIBRARIES})
 endif()
 
 disable_static_analysis(${TARGET2})
@@ -150,18 +142,17 @@ if(USE_OSI)
 
     target_include_directories(
         ${TARGET3}
-        SYSTEM PUBLIC
-        ${ROAD_MANAGER_PATH}
-        ${EXTERNALS_OSI_INCLUDES}
-        ${EXTERNALS_DIRENT_INCLUDES})
+        SYSTEM
+        PUBLIC ${ROAD_MANAGER_PATH}
+               ${EXTERNALS_OSI_INCLUDES}
+               ${EXTERNALS_DIRENT_INCLUDES})
 
     target_link_libraries(
         ${TARGET3}
-        PRIVATE
-        project_options
-        ${TIME_LIB}
-        ${SOCK_LIB}
-        ${OSI_LIBRARIES})
+        PRIVATE project_options
+                ${TIME_LIB}
+                ${SOCK_LIB}
+                ${OSI_LIBRARIES})
 
     disable_static_analysis(${TARGET3})
     disable_iwyu(${TARGET3})

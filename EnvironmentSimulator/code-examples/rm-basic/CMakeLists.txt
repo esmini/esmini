@@ -25,21 +25,19 @@ target_link_libraries(
 
 target_include_directories(
     ${TARGET}
-    PRIVATE
-    ${EXTERNALS_PUGIXML_PATH})
+    PRIVATE ${EXTERNALS_PUGIXML_PATH})
 
 target_include_directories(
     ${TARGET}
-    SYSTEM PUBLIC
-    ${ESMINI_RM_LIB_PATH}
-    ${COMMON_MINI_PATH})
+    SYSTEM
+    PUBLIC ${ESMINI_RM_LIB_PATH}
+           ${COMMON_MINI_PATH})
 
 target_link_libraries(
     ${TARGET}
-    PRIVATE
-    esminiRMLib
-    CommonMini
-    ${TIME_LIB})
+    PRIVATE esminiRMLib
+            CommonMini
+            ${TIME_LIB})
 
 # ############################### Install ############################################################################
 

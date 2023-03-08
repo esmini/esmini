@@ -7,8 +7,11 @@ macro(
     target
     folder)
 
-    if (${EXPLICIT_FOLDER_STRUCTURE})
-        set_target_properties (${target} PROPERTIES FOLDER ${folder} )
+    if(${EXPLICIT_FOLDER_STRUCTURE})
+        set_target_properties(
+            ${target}
+            PROPERTIES FOLDER
+                       ${folder})
     endif()
 
 endmacro()

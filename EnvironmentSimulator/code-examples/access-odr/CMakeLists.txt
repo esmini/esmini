@@ -25,15 +25,14 @@ target_link_libraries(
 
 target_include_directories(
     ${TARGET}
-    PRIVATE
-    ${ROAD_MANAGER_PATH}
-    ${EXTERNALS_PUGIXML_PATH})
+    PRIVATE ${ROAD_MANAGER_PATH}
+            ${EXTERNALS_PUGIXML_PATH})
 
 target_include_directories(
     ${TARGET}
-    SYSTEM PUBLIC
-    ${ESMINI_LIB_PATH}
-    ${COMMON_MINI_PATH})
+    SYSTEM
+    PUBLIC ${ESMINI_LIB_PATH}
+           ${COMMON_MINI_PATH})
 
 target_link_libraries(
     ${TARGET}

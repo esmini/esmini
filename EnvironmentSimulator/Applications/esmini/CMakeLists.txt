@@ -16,7 +16,8 @@ set(SOURCES
 # ############################### Creating executable ################################################################
 
 if(USE_OSG)
-    set (VIEWER_BASE ViewerBase)
+    set(VIEWER_BASE
+        ViewerBase)
 endif()
 
 add_executable(
@@ -25,44 +26,41 @@ add_executable(
 
 target_include_directories(
     ${TARGET}
-    PRIVATE
-    ${ROAD_MANAGER_PATH}
-    ${SCENARIO_ENGINE_PATH}/SourceFiles
-    ${SCENARIO_ENGINE_PATH}/OSCTypeDefs
-    ${VIEWER_BASE_PATH}
-    ${PLAYER_BASE_PATH}
-    ${CONTROLLERS_PATH}
-    ${COMMON_MINI_PATH})
+    PRIVATE ${ROAD_MANAGER_PATH}
+            ${SCENARIO_ENGINE_PATH}/SourceFiles
+            ${SCENARIO_ENGINE_PATH}/OSCTypeDefs
+            ${VIEWER_BASE_PATH}
+            ${PLAYER_BASE_PATH}
+            ${CONTROLLERS_PATH}
+            ${COMMON_MINI_PATH})
 
 target_include_directories(
     ${TARGET}
-    SYSTEM PUBLIC
-    ${EXTERNALS_OSI_INCLUDES}
-    ${EXTERNALS_PUGIXML_PATH}
-    ${EXTERNALS_OSG_INCLUDES}
-    ${EXTERNALS_SUMO_INCLUDES})
+    SYSTEM
+    PUBLIC ${EXTERNALS_OSI_INCLUDES}
+           ${EXTERNALS_PUGIXML_PATH}
+           ${EXTERNALS_OSG_INCLUDES}
+           ${EXTERNALS_SUMO_INCLUDES})
 
 target_link_libraries(
     ${TARGET}
-    PRIVATE
-    project_options
-    PlayerBase
-    ScenarioEngine
-    CommonMini
-    Controllers
-    RoadManager
-    ${VIEWER_BASE}
-    ${OSI_LIBRARIES}
-    ${SUMO_LIBRARIES}
-    ${TIME_LIB}
-    ${SOCK_LIB})
+    PRIVATE project_options
+            PlayerBase
+            ScenarioEngine
+            CommonMini
+            Controllers
+            RoadManager
+            ${VIEWER_BASE}
+            ${OSI_LIBRARIES}
+            ${SUMO_LIBRARIES}
+            ${TIME_LIB}
+            ${SOCK_LIB})
 
 if(USE_OSG)
-target_link_libraries(
-    ${TARGET}
-    PRIVATE
-    ViewerBase
-    ${OSG_LIBRARIES})
+    target_link_libraries(
+        ${TARGET}
+        PRIVATE ViewerBase
+                ${OSG_LIBRARIES})
 endif()
 
 disable_static_analysis(${TARGET})
