@@ -278,10 +278,9 @@ class Run:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
                 counter = counter + 1
                 print(
                     formatter.format_red("Requires Formatting: ")
-                    + os.path.dirname(file)
-                    + "/"
-                    + formatter.format_red(os.path.basename(file))
+                    + stderr
                 )
+
         print("─" * SEPARATOR)
         if counter > 0:
             raise ValueError(
