@@ -3,6 +3,7 @@
 
 import glob
 import os
+import sys
 from support.python.src import formatter
 from support.python.src.utils import print_commands, subprocess_popen
 from support.python.src.globals import (
@@ -14,6 +15,11 @@ from support.python.src.globals import (
     ESMINI_CMAKE_FORMAT_EXTENSION,
     ESMINI_DIRECTORY_ROOT,
 )
+
+if sys.platform == "win32":
+    CLANG_FORMAT = "clang-format"
+else:
+    CLANG_FORMAT = "clang-format-15"
 
 ############################################################################################################################## # pylint: disable=line-too-long
 ####################################################### Run CLASS ############################################################ # pylint: disable=line-too-long
@@ -232,7 +238,7 @@ class Run:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
         files = Run.get_files_for_clang_format(includes, excludes)
 
         for file in files:
-            os.system("clang-format-15 -style=file -i " + file)
+            os.system(CLANG_FORMAT + " -style=file -i " + file)
             if not silent_mode:
                 print(
                     formatter.format_green("Formatted: ")
@@ -258,7 +264,7 @@ class Run:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
         counter = 0
         for file in files:
             stdout, stderr = subprocess_popen(
-                ["clang-format-15", "--dry-run", "-style=file", "-i", file]
+                [CLANG_FORMAT, "--dry-run", "-style=file", "-i", file]
             )
 
             if len(stdout) == 0 and len(stderr) == 0:
