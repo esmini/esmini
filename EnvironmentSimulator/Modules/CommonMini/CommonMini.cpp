@@ -12,6 +12,7 @@
 
 #include <stdarg.h>
 #include <stdio.h>
+#include <cmath>
 #include <iostream>
 #include <algorithm>
 #include <vector>
@@ -256,7 +257,7 @@ double GetAngleInInterval2PI(double angle)
     {
         angle2 += 2 * M_PI;
     }
-    else if (angle2 == -0)
+    else if (std::signbit(angle2))
     {
         angle2 = 0;
     }
