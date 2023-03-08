@@ -2,9 +2,9 @@
 """Run pylint"""
 import os
 import sys
-from support.python.src.utils import subprocess_popen
+from utils import subprocess_popen
 
-from support.python.src.globals import ESMINI_DIRECTORY_ROOT
+from globals import ESMINI_DIRECTORY_ROOT
 
 
 def run_pylint() -> None:

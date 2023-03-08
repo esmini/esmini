@@ -2,12 +2,12 @@
 
 """
 
-from support.python.src.command.fetch.utils import (
+from command.fetch.utils import (
     fetch_from_given_source,
     replace_from_given_source,
 )
-from support.python.src.globals import ESMINI_DEPENDENCY_EXTERNALS
-from support.python.src.utils import print_commands, get_os
+from globals import ESMINI_DEPENDENCY_EXTERNALS
+from utils import print_commands, get_os
 
 
 class Dependency:

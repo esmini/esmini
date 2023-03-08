@@ -3,8 +3,8 @@
 import os
 import sys
 
-from support.python.src.globals import ESMINI_DIRECTORY_SUPPORT
-from support.python.src.utils import subprocess_popen
+from globals import ESMINI_DIRECTORY_SUPPORT
+from utils import subprocess_popen
 
 
 def run_pytest() -> None:

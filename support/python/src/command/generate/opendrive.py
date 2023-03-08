@@ -3,13 +3,13 @@ import xml.etree.ElementTree as ET
 import json
 import os
 
-from support.python.src.command.run.run import Run
-from support.python.src.globals import (
+from command.run.run import Run
+from globals import (
     ESMINI_DIRECTORY_EXTERNALS,
     ESMINI_DIRECTORY_JINJA_TEMPLATES,
     ESMINI_DIRECTORY_SUPPORT,
 )
-from support.python.src.formatter import format_green, format_yellow, format_red
+from formatter import format_green, format_yellow, format_red
 
 
 class OpenDrive:

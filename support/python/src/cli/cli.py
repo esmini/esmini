@@ -16,7 +16,7 @@ import sys
 from pathlib import Path
 from typing import List
 
-from support.python.src import formatter
+import formatter
 
 VALID_ENTRYPOINTS = ["main.py"]
 

@@ -41,17 +41,17 @@ jobs:
       - run: pip install -r support/python/requirements.txt
 
       - name: Run clang-format lint
-        run: python3 main.py run format --clang_format_checker
+        run: python3 support/python/src/main.py run format --clang_format_checker
 
       - name: Run cmake-format lint
-        run: python3 main.py run format --cmake_format_checker
+        run: python3 support/python/src/main.py run format --cmake_format_checker
 
       - name: Run black-format lint
-        run: python3 main.py run format --black_format_checker
+        run: python3 support/python/src/main.py run format --black_format_checker
 
       # TODO: OpenDrive generation currently has too many pylint issues
       #- name: Run pylint lint
-      #  run: python3 main.py run pylint
+      #  run: python3 support/python/src/main.py run pylint
 
   test:
     needs: [lint]
@@ -86,10 +86,10 @@ jobs:
 
       # TODO: We need a way to not fetch existing dependencies because of cached ones. This command currently asks for user input
       #- name: Fetch external dependencies/resources
-      #  run: python3 main.py fetch dependency
+      #  run: python3 support/python/src/main.py fetch dependency
 
       #- name: Generate OpenDrive interface
-      #  run: python3 main.py generate opendrive
+      #  run: python3 support/python/src/main.py generate opendrive
 
       - name: Install clang-tidy-15 - Ubuntu
         if: runner.os == 'Linux'
@@ -179,10 +179,10 @@ jobs:
 
       # TODO: We need a way to not fetch existing dependencies because of cached ones. This command currently asks for user input
       #- name: Fetch external dependencies/resources
-      #  run: python3 main.py fetch dependency
+      #  run: python3 support/python/src/main.py fetch dependency
 
       #- name: Generate OpenDrive interface
-      #  run: python3 main.py generate opendrive
+      #  run: python3 support/python/src/main.py generate opendrive
 
       - name: Install clang-tidy-15 - Ubuntu
         if: runner.os == 'Linux'

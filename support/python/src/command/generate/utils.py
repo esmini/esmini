@@ -4,8 +4,8 @@
 
 import os
 
-from support.python.src import formatter
-from support.python.src.utils import print_commands
+import formatter
+from utils import print_commands
 
 ############################################################################################################################## # pylint: disable=line-too-long
 ######################################################### Generate CLASS ##################################################### # pylint: disable=line-too-long

@@ -7,9 +7,9 @@ import subprocess
 import os
 import gdown
 
-from support.python.src import formatter
-from support.python.src.formatter import Color
-from support.python.src.globals import (
+import formatter
+from formatter import Color
+from globals import (
     SEPARATOR,
     ESMINI_CMAKE_TARGET_FLAGS,
     ESMINI_COMPILERS,

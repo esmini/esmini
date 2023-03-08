@@ -4,9 +4,9 @@
 import glob
 import os
 import sys
-from support.python.src import formatter
-from support.python.src.utils import print_commands, subprocess_popen
-from support.python.src.globals import (
+import formatter
+from utils import print_commands, subprocess_popen
+from globals import (
     SEPARATOR,
     ESMINI_CLANG_FORMAT_EXCLUDES,
     ESMINI_CLANG_FORMAT_EXTENSION,
@@ -276,10 +276,7 @@ class Run:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
                 )
             else:
                 counter = counter + 1
-                print(
-                    formatter.format_red("Requires Formatting: ")
-                    + stderr
-                )
+                print(formatter.format_red("Requires Formatting: ") + stderr)
 
         print("─" * SEPARATOR)
         if counter > 0:

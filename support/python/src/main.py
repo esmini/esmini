@@ -5,12 +5,12 @@
 import argparse
 import sys
 
-from support.python.src.command.run import pylint
-from support.python.src.command.run import pytest
-from support.python.src.cli.cli import CLI
-from support.python.src.command.fetch.dependency import Dependency
-from support.python.src.command.run.run import Run
-from support.python.src.command.generate.opendrive import OpenDrive
+from command.run import pylint
+from command.run import pytest
+from cli.cli import CLI
+from command.fetch.dependency import Dependency
+from command.run.run import Run
+from command.generate.opendrive import OpenDrive
 
 ##############################################################################################################################
 ############################################################ MAIN ############################################################

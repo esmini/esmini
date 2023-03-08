@@ -6,14 +6,14 @@
 import os
 import shutil
 
-from support.python.src import formatter
-from support.python.src.utils import (
+import formatter
+from utils import (
     yes_or_no,
     get_os,
     download_entity,
     subprocess_popen,
 )
-from support.python.src.globals import SEPARATOR, ESMINI_DIRECTORY_EXTERNALS
+from globals import SEPARATOR, ESMINI_DIRECTORY_EXTERNALS
 
 
 ############################################################################################################################## # pylint: disable=line-too-long
