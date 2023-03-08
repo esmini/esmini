@@ -30,8 +30,10 @@ function(
 
         target_compile_options(
             ${project_name}
-            INTERFACE -fsanitize=${LIST_OF_SANITIZERS}
-                      -fno-omit-frame-pointer)
+            INTERFACE -g
+                      -fsanitize=${LIST_OF_SANITIZERS}
+                      -fno-omit-frame-pointer
+                      -fno-common)
         target_link_options(
             ${project_name}
             INTERFACE

@@ -10,15 +10,13 @@ macro(enable_static_analysis)
         # Enable all warnings that are actionable by the user of this toolset style should enable the other 3, but we'll be explicit just in case
         set(CMAKE_CXX_CPPCHECK
             ${CPPCHECK}
-            --template=gcc
-            --enable=style,performance,warning,portability
-            --inline-suppr
-            # We cannot act on a bug/missing feature of cppcheck
+            --enable=all
             --suppress=internalAstError
-            # if a file does not have an internalAstError, we get an unmatchedSuppression error
+            --suppress=missingIncludeSystem
             --suppress=unmatchedSuppression
-            --suppress=toomanyconfigs
-            --inconclusive)
+            --inline-suppr
+            --inconclusive
+            --platform=native)
 
         if(ENABLE_WARNINGS_AS_ERRORS)
             list(
@@ -52,7 +50,7 @@ macro(enable_static_analysis)
 
     find_program(
         CLANGTIDY
-        clang-tidy-16)
+        clang-tidy)
     if(CLANGTIDY)
 
         # construct the clang-tidy command line

@@ -1,0 +1,59 @@
+name: Setup tools shared
+description: Setup platform tools
+
+runs:
+  using: 'composite'
+
+  steps:
+    - if: runner.os == 'Linux'
+      shell: bash
+      run: sudo apt-get update -q
+        && sudo apt-get install -q -y gcc-7 g++-7
+        && sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 200
+        && sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 200
+
+    - uses: actions/setup-python@v4.5.0
+      with:
+        python-version: '3.8'
+        cache: 'pip'
+    - run: pip install -r support/python/requirements.txt
+      shell: bash
+
+    - uses: seanmiddleditch/gha-setup-ninja@v3
+
+    - uses: jwlawson/actions-setup-cmake@v1.13.1
+      if: runner.os != 'macOS'
+
+    - name: Setup VS Dev Environment - Windows
+      if: runner.os == 'Windows'
+      uses: seanmiddleditch/gha-setup-vsdevenv@v4
+
+    - name: Install OSG dependencies - Ubuntu
+      if: runner.os == 'Linux'
+      shell: bash
+      run: sudo apt-get install -y -q libx11-dev libxrandr-dev libxinerama-dev libgl1-mesa-dev libegl1-mesa-dev
+        && sudo apt-get install -y -q libglu1-mesa-dev xorg-dev mesa-utils
+
+    - name: Install Mesa3D - Windows
+      if: runner.os == 'Windows'
+      uses: ssciwr/setup-mesa-dist-win@v1
+      with:
+        version: '22.3.5'
+
+    - name: Install wglinfo - Windows
+      if: runner.os == 'Windows'
+      shell: cmd
+      run: curl.exe -L --output wglinfo64.exe --url https://github.com/gkv311/wglinfo/releases/download/22_03/wglinfo64.exe
+
+    - name: Output glxinfo - Ubuntu
+      uses: GabrielBB/xvfb-action@v1.6
+      if: runner.os == 'Linux'
+      with:
+        run: glxinfo
+
+    - name: Output wglinfo - Windows
+      if: runner.os == 'Windows'
+      shell: cmd
+      env:
+        GALLIUM_DRIVER: llvmpipe
+      run: wglinfo64

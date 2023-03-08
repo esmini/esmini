@@ -19,8 +19,15 @@ if("${GIT_REV}"
         "N/A")
 else()
     execute_process(
-        COMMAND bash -c "git diff --quiet --exit-code || echo +"
-        OUTPUT_VARIABLE GIT_DIFF)
+        COMMAND git diff --quiet --exit-code
+        RESULT_VARIABLE exit_code)
+    if(NOT
+       exit_code
+       EQUAL
+       "0")
+        set(GIT_DIFF
+            "+")
+    endif()
     execute_process(
         COMMAND git describe --exact-match --tags
         OUTPUT_VARIABLE GIT_TAG
@@ -48,63 +55,16 @@ else()
               GIT_BRANCH)
 endif()
 
-set(VERSION
-    "const char* ESMINI_GIT_REV=\"${GIT_REV}${GIT_DIFF}\";
-const char* ESMINI_GIT_TAG=\"${GIT_TAG}\";
-const char* ESMINI_GIT_BRANCH=\"${GIT_BRANCH}\";\n")
+set(VERSION_TO_TXT_FILE
+    "ESMINI_GIT_REV=\"${GIT_REV}${GIT_DIFF}\"\nESMINI_GIT_TAG=\"${GIT_TAG}\"\nESMINI_GIT_BRANCH=\"${GIT_BRANCH}\"\nESMINI_BUILD_VERSION=\"${ESMINI_BUILD_VERSION}\""
+)
 
-if(EXISTS
-   ${CMAKE_CURRENT_SOURCE_DIR}/version.cpp)
-    file(
-        READ
-        ${CMAKE_CURRENT_SOURCE_DIR}/version.cpp
-        VERSION_FROM_FILE)
-else()
-    set(VERSION_FROM_FILE
-        "")
-endif()
-
-if(NOT
-   "${VERSION_FROM_FILE}"
-   STREQUAL
-   "${VERSION}")
-    file(
-        WRITE
-        ${CMAKE_CURRENT_SOURCE_DIR}/version.cpp
-        "${VERSION}")
-    set(VERSION_FROM_FILE
-        ${VERSION})
-endif()
-
-if(NOT
-   EXISTS
-   ${CMAKE_CURRENT_SOURCE_DIR}/buildnr.cpp)
-    file(
-        WRITE
-        ${CMAKE_CURRENT_SOURCE_DIR}/buildnr.cpp
-        "const char* ESMINI_BUILD_VERSION=\"N/A - client build\";\n")
-endif()
-
-string(
-    REGEX
-    REPLACE "const char\\* "
-            ""
-            VERSION_TO_TXT_FILE
-            ${VERSION_FROM_FILE})
-
-file(
-    READ
-    ${CMAKE_CURRENT_SOURCE_DIR}/buildnr.cpp
-    BUILD_NR_)
-
-string(
-    REGEX
-    REPLACE "const char\\* "
-            ""
-            BUILD_NR_TO_TXT_FILE
-            ${BUILD_NR_})
+configure_file(
+    "version.cpp.in"
+    "${CMAKE_CURRENT_SOURCE_DIR}/version.cpp"
+    ESCAPE_QUOTES)
 
 file(
     WRITE
     ${CMAKE_CURRENT_SOURCE_DIR}/../../../version.txt
-    "${VERSION_TO_TXT_FILE}${BUILD_NR_TO_TXT_FILE}")
+    "${VERSION_TO_TXT_FILE}")

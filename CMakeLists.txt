@@ -64,13 +64,17 @@ set(DYN_PROTOBUF
     CACHE BOOL
           "Set for dynamic linking of protobuf library (.so/.dll)")
 
+set(ESMINI_BUILD_VERSION
+    "N/A - client build"
+    CACHE STRING
+          "Esmini CI Build Version")
+
 # ############################### Setting project rules ############################################################
 
 if(WIN32)
     cmake_minimum_required(
-        VERSION 3.7.1   # for cmake generator VisualStudio 2017 support
-        # VERSION 3.14   # for cmake generator VisualStudio 2019 support
-        # VERSION 3.19   # for cmake presets support
+        VERSION 3.7.1 # for cmake generator VisualStudio 2017 support
+        # VERSION 3.14   # for cmake generator VisualStudio 2019 support VERSION 3.19   # for cmake presets support
         FATAL_ERROR)
 else()
     cmake_minimum_required(

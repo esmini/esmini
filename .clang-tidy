@@ -15,9 +15,8 @@ Checks: '*,
   -misc-non-private-member-variables-in-classes,
   -modernize-use-trailing-return-type'
 
-WarningsAsErrors: ''
-HeaderFilterRegex: '(containers)|(core)|(service_agents)'
-FormatStyle: none
+# WarningsAsErrors: ''
+HeaderFilterRegex: '(EnvironmentSimulator)'
 
 CheckOptions:
   - {key: readability-identifier-naming.NamespaceCase, value: lower_case}

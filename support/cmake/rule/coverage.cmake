@@ -7,9 +7,11 @@ function(
 
     target_compile_options(
         ${project_name}
-        INTERFACE --coverage
-                  -O0
-                  -g)
+        INTERFACE -Og
+                  -g
+                  --coverage
+                  -fkeep-inline-functions
+                  -fkeep-static-functions)
     target_link_libraries(
         ${project_name}
         INTERFACE --coverage)

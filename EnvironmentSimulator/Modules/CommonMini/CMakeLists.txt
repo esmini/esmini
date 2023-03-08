@@ -14,8 +14,7 @@ include(${CMAKE_SOURCE_DIR}/support/cmake/rule/enable_fpic.cmake)
 set(SOURCES
     CommonMini.cpp
     UDP.cpp
-    version.cpp
-    buildnr.cpp)
+    version.cpp)
 
 set(INCLUDES
     CommonMini.hpp
@@ -39,14 +38,7 @@ enable_fpic(${TARGET})
 
 # ############################### OTHERS ###################################################################
 
-function(add_version_file)
-    execute_process(
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/version.cmake)
-endfunction(add_version_file)
-
-message("Add version file")
-add_version_file()
+include(${CMAKE_CURRENT_SOURCE_DIR}/version.cmake)
 
 # Add a custom command that produces version.hpp, plus a dummy output that's not actually produced, in order to force version.cmake to always be
 # re-run before the build
@@ -54,4 +46,4 @@ add_custom_command(
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/_version.cpp
            ${CMAKE_CURRENT_SOURCE_DIR}/version.cpp
-    COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/version.cmake)
+    COMMAND ${CMAKE_COMMAND} -DESMINI_BUILD_VERSION=${ESMINI_BUILD_VERSION} -P ${CMAKE_CURRENT_SOURCE_DIR}/version.cmake)

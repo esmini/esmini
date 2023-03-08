@@ -1,0 +1,60 @@
+name: Sanitize
+
+on:
+  schedule:
+    # This will run the sanitize job Nightly at 3AM every day for the default branch (dev - is our default branch)
+    # * is a special character in YAML so you have to quote this string
+    - cron: '0 3 * * *'
+
+jobs:
+  sanitize:
+    strategy:
+      matrix:
+        configuration: [Debug, Release]
+        os: [macos-latest]
+        #ubuntu-latest
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v3.3.0
+        with:
+          submodules: true
+
+      - uses: ./.github/actions/setup_tools_shared
+
+      - name: Cache
+        uses: actions/cache@v3.2.5
+        with:
+          path: |
+            externals/googletest
+            externals/osg
+            externals/osi
+            externals/sumo
+            resources/models
+          key: ${{ runner.os }}-external-resources
+
+      # TODO: We need a way to not fetch existing dependencies because of cached ones. This command currently asks for user input
+      #- name: Fetch external dependencies/resources
+      #  run: python3 main.py fetch dependency
+
+      #- name: Generate OpenDrive interface
+      #  run: python3 main.py generate opendrive
+
+      - name: CMake Configure - Ubuntu
+        if: runner.os == 'Linux'
+        shell: pwsh
+        run: cmake "--preset=ci-sanitize-$("${{ matrix.os }}".split("-")[0])" -DCMAKE_BUILD_TYPE:STRING=${{ matrix.configuration }}
+
+      - name: CMake Configure - macOS
+        if: runner.os == 'macOS'
+        shell: pwsh
+        run: cmake "--preset=ci-sanitize-$("${{ matrix.os }}".split("-")[0])" -DCMAKE_BUILD_TYPE:STRING=${{ matrix.configuration }} -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
+
+      - name: CMake Build
+        run: cmake --build build --config ${{ matrix.configuration }} --target install -j 2
+
+      - name: Run Tests
+        uses: GabrielBB/xvfb-action@v1.6
+        with:
+          run: ./scripts/run_tests.sh

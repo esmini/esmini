@@ -6,7 +6,7 @@ rm -rf esmini-demo
 
 mkdir esmini-demo
 
-tar -c \
+tar -c -p \
 resources/xosc/follow_ghost.xosc \
 resources/xosc/cut-in.xosc \
 resources/xosc/cut-in_parameter_set.xosc \
@@ -156,4 +156,4 @@ bin/*esminiLib.* \
 EnvironmentSimulator/Applications/odrplot/xodr.py \
 EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp \
 Hello-World_coding-example/* \
-| tar -C esmini-demo -x
+| tar -p -C esmini-demo -x

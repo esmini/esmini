@@ -1,0 +1,14 @@
+name: Upload esmini artifacts
+description: Upload esmini artifacts
+
+runs:
+  using: 'composite'
+
+  steps:
+    - env:
+        NUM: ${{ github.run_number }}
+        OFFSET: '3138'
+      shell: bash
+      run: |
+        echo "BUILD_NUMBER=$(($NUM+$OFFSET))" >> $GITHUB_ENV
+        echo Build nr: $(($NUM+$OFFSET))

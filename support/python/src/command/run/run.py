@@ -386,9 +386,9 @@ class Run:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
             + " --check"
         )
         if is_black_done == 0:
-            print(formatter.format_green("BLACK FORMATING CHECK", "DONE"))
+            print(formatter.format_green("BLACK FORMATING CHECK DONE"))
         else:
-            raise ValueError(formatter.format_red("BLACK FORMATING CHECK", "FAILED"))
+            raise ValueError(formatter.format_red("BLACK FORMATING CHECK FAILED"))
         print("─" * SEPARATOR)
         os.chdir(root_dir)
 
