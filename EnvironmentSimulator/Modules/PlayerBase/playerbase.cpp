@@ -113,6 +113,8 @@ ScenarioPlayer::~ScenarioPlayer()
 
 void ScenarioPlayer::SetOSIFileStatus(bool is_on, const char* filename)
 {
+    (void)is_on;
+    (void)filename;
 #ifdef _USE_OSI
     if (osiReporter)
     {
@@ -1079,6 +1081,7 @@ void ScenarioPlayer::InitVehicleModel(Object* obj, viewer::CarModel* model)
 
 void ScenarioPlayer::AddOSIDetection(int object_index)
 {
+    (void)object_index;
 #ifdef _USE_OSG
     if (viewer_)
     {
@@ -1096,6 +1099,8 @@ void ScenarioPlayer::AddOSIDetection(int object_index)
 
 void ScenarioPlayer::SteeringSensorSetVisible(int object_index, bool value)
 {
+    (void)object_index;
+    (void)value;
 #ifdef _USE_OSG
     if (viewer_ == nullptr)
     {
@@ -1123,6 +1128,7 @@ void ScenarioPlayer::SteeringSensorSetVisible(int object_index, bool value)
 
 void ScenarioPlayer::ShowObjectSensors(bool mode)
 {
+    (void)mode;
     // Switch on sensor visualization as defult when sensors are added
 #ifdef _USE_OSG
     if (viewer_)
