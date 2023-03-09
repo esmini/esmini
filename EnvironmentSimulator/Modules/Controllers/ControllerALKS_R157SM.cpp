@@ -30,16 +30,16 @@ using namespace scenarioengine;
         }                                                                                            \
     }
 
-#define R157_LOG_SIMPLE(level, format)                                                               \
-    {                                                                                                \
-        if (level > 0 && level <= GetLogLevel())                                                     \
-        {                                                                                            \
-            LOG((std::string("ALKS R157 ") + GetModelName() + " " + format).c_str());                \
-        }                                                                                            \
-        else                                                                                         \
-        {                                                                                            \
-            (void)0;                                                                                 \
-        }                                                                                            \
+#define R157_LOG_SIMPLE(level, format)                                                \
+    {                                                                                 \
+        if (level > 0 && level <= GetLogLevel())                                      \
+        {                                                                             \
+            LOG((std::string("ALKS R157 ") + GetModelName() + " " + format).c_str()); \
+        }                                                                             \
+        else                                                                          \
+        {                                                                             \
+            (void)0;                                                                  \
+        }                                                                             \
     }
 
 std::map<ControllerALKS_R157SM::ScenarioType, std::string> ControllerALKS_R157SM::ScenarioTypeName = {

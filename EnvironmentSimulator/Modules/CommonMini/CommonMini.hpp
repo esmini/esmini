@@ -62,23 +62,23 @@ typedef int64_t __int64;
 
 #define LOG(...)       Logger::Inst().Log(false, false, __FILENAME__, __FUNCTION__, __LINE__, __VA_ARGS__)
 #define LOG_TRACE(...) Logger::Inst().Log(false, true, __FILENAME__, __FUNCTION__, __LINE__, __VA_ARGS__)
-#define LOG_ONCE(...)                                                                                       \
-    {                                                                                                       \
-        static bool firstTime = true;                                                                       \
-        if (firstTime)                                                                                      \
-        {                                                                                                   \
-            Logger::Inst().Log(false, false, __FILENAME__, __FUNCTION__, __LINE__, __VA_ARGS__);            \
-            firstTime = false;                                                                              \
-        }                                                                                                   \
+#define LOG_ONCE(...)                                                                            \
+    {                                                                                            \
+        static bool firstTime = true;                                                            \
+        if (firstTime)                                                                           \
+        {                                                                                        \
+            Logger::Inst().Log(false, false, __FILENAME__, __FUNCTION__, __LINE__, __VA_ARGS__); \
+            firstTime = false;                                                                   \
+        }                                                                                        \
     }
-#define LOG_TRACE_ONCE(...)                                                                                 \
-    {                                                                                                       \
-        static bool firstTime = true;                                                                       \
-        if (firstTime)                                                                                      \
-        {                                                                                                   \
-            Logger::Inst().Log(false, true, __FILENAME__, __FUNCTION__, __LINE__, __VA_ARGS__);             \
-            firstTime = false;                                                                              \
-        }                                                                                                   \
+#define LOG_TRACE_ONCE(...)                                                                     \
+    {                                                                                           \
+        static bool firstTime = true;                                                           \
+        if (firstTime)                                                                          \
+        {                                                                                       \
+            Logger::Inst().Log(false, true, __FILENAME__, __FUNCTION__, __LINE__, __VA_ARGS__); \
+            firstTime = false;                                                                  \
+        }                                                                                       \
     }
 #define LOG_AND_QUIT(...)       Logger::Inst().Log(true, false, __FILENAME__, __FUNCTION__, __LINE__, __VA_ARGS__)
 #define LOG_TRACE_AND_QUIT(...) Logger::Inst().Log(true, true, __FILENAME__, __FUNCTION__, __LINE__, __VA_ARGS__)
