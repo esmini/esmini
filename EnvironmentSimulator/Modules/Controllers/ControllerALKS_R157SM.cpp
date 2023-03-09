@@ -30,6 +30,18 @@ using namespace scenarioengine;
         }                                                                                            \
     }
 
+#define R157_LOG_SIMPLE(level, format)                                                               \
+    {                                                                                                \
+        if (level > 0 && level <= GetLogLevel())                                                     \
+        {                                                                                            \
+            LOG((std::string("ALKS R157 ") + GetModelName() + " " + format).c_str());                \
+        }                                                                                            \
+        else                                                                                         \
+        {                                                                                            \
+            (void)0;                                                                                 \
+        }                                                                                            \
+    }
+
 std::map<ControllerALKS_R157SM::ScenarioType, std::string> ControllerALKS_R157SM::ScenarioTypeName = {
     {ControllerALKS_R157SM::ScenarioType::None, "None"},
     {ControllerALKS_R157SM::ScenarioType::CutIn, "CutIn"},
@@ -247,7 +259,7 @@ int ControllerALKS_R157SM::Model::Detect()
 
     if (entities_ == 0)
     {
-        R157_LOG(1, "No entities! Register scenarioengine - SetScenarioEngine()");
+        R157_LOG_SIMPLE(1, "No entities! Register scenarioengine - SetScenarioEngine()");
         return -1;
     }
 
@@ -903,7 +915,7 @@ bool ControllerALKS_R157SM::ReferenceDriver::CheckPerceptionCutIn()
             {
                 if (object_in_focus_.obj == nullptr)
                 {
-                    R157_LOG(3, "In perceive phase, but lost object in focus");
+                    R157_LOG_SIMPLE(3, "In perceive phase, but lost object in focus");
                 }
                 else if (object_in_focus_.obj->pos_.GetT() > veh_->pos_.GetT() &&  // target moving along negative T
                          object_in_focus_.obj->pos_.GetT() < perception_t_ - perception_dist_)

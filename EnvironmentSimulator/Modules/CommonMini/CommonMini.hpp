@@ -60,28 +60,28 @@ typedef int64_t __int64;
 #define DAT_FILENAME                  "sim.dat"
 #define GHOST_TRAIL_SAMPLE_TIME       0.2
 
-#define LOG(format_, ...)       Logger::Inst().Log(false, false, __FILENAME__, __FUNCTION__, __LINE__, format_, ##__VA_ARGS__)
-#define LOG_TRACE(format_, ...) Logger::Inst().Log(false, true, __FILENAME__, __FUNCTION__, __LINE__, format_, ##__VA_ARGS__)
-#define LOG_ONCE(format_, ...)                                                                              \
+#define LOG(...)       Logger::Inst().Log(false, false, __FILENAME__, __FUNCTION__, __LINE__, __VA_ARGS__)
+#define LOG_TRACE(...) Logger::Inst().Log(false, true, __FILENAME__, __FUNCTION__, __LINE__, __VA_ARGS__)
+#define LOG_ONCE(...)                                                                                       \
     {                                                                                                       \
         static bool firstTime = true;                                                                       \
         if (firstTime)                                                                                      \
         {                                                                                                   \
-            Logger::Inst().Log(false, false, __FILENAME__, __FUNCTION__, __LINE__, format_, ##__VA_ARGS__); \
+            Logger::Inst().Log(false, false, __FILENAME__, __FUNCTION__, __LINE__, __VA_ARGS__);            \
             firstTime = false;                                                                              \
         }                                                                                                   \
     }
-#define LOG_TRACE_ONCE(format_, ...)                                                                       \
-    {                                                                                                      \
-        static bool firstTime = true;                                                                      \
-        if (firstTime)                                                                                     \
-        {                                                                                                  \
-            Logger::Inst().Log(false, true, __FILENAME__, __FUNCTION__, __LINE__, format_, ##__VA_ARGS__); \
-            firstTime = false;                                                                             \
-        }                                                                                                  \
+#define LOG_TRACE_ONCE(...)                                                                                 \
+    {                                                                                                       \
+        static bool firstTime = true;                                                                       \
+        if (firstTime)                                                                                      \
+        {                                                                                                   \
+            Logger::Inst().Log(false, true, __FILENAME__, __FUNCTION__, __LINE__, __VA_ARGS__);             \
+            firstTime = false;                                                                              \
+        }                                                                                                   \
     }
-#define LOG_AND_QUIT(format_, ...)       Logger::Inst().Log(true, false, __FILENAME__, __FUNCTION__, __LINE__, format_, ##__VA_ARGS__)
-#define LOG_TRACE_AND_QUIT(format_, ...) Logger::Inst().Log(true, true, __FILENAME__, __FUNCTION__, __LINE__, format_, ##__VA_ARGS__)
+#define LOG_AND_QUIT(...)       Logger::Inst().Log(true, false, __FILENAME__, __FUNCTION__, __LINE__, __VA_ARGS__)
+#define LOG_TRACE_AND_QUIT(...) Logger::Inst().Log(true, true, __FILENAME__, __FUNCTION__, __LINE__, __VA_ARGS__)
 
 // Time functions
 __int64 SE_getSystemTime();
