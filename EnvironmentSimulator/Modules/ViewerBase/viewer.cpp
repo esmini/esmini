@@ -112,7 +112,8 @@ public:
 
     // This method gets called for every node in the scene graph. Check each node
     // to see if its name matches out target. If so, save the node's address.
-    virtual void apply(osg::Group& node)
+    using osg::NodeVisitor::apply;
+    void apply(osg::Group& node) override
     {
         if (node.getName().find(_name) != std::string::npos)
         {
@@ -148,7 +149,8 @@ public:
 
     // This method gets called for every node in the scene graph. Check each node
     // to see if its name matches out target. If so, save the node's address.
-    virtual void apply(osg::Group& node)
+    using osg::NodeVisitor::apply;
+    void apply(osg::Group& node) override
     {
         if (node.getName().find(_name) != std::string::npos)
         {
@@ -1384,7 +1386,8 @@ struct FetchImage : public osg::Camera::DrawCallback
         viewer_->capturedImage_ = {0, 0, 0, 0, 0};
     }
 
-    virtual void operator()(osg::RenderInfo& renderInfo) const
+    using osg::Camera::DrawCallback::operator();
+    void                             operator()(osg::RenderInfo& renderInfo) const override
     {
         if (viewer_ != nullptr && SE_Env::Inst().GetOffScreenRendering() && !viewer_->GetQuitRequest() &&
             (viewer_->GetSaveImagesToRAM() || viewer_->frameCounter_ == 0 || viewer_->GetSaveImagesToFile() != 0 ||

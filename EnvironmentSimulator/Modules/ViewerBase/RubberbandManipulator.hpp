@@ -121,8 +121,9 @@ namespace osgGA
         /** Start/restart the manipulator.*/
         virtual void init(const GUIEventAdapter& ea, GUIActionAdapter& us);
 
+        using osgGA::CameraManipulator::handle;
         /** handle events, return true if handled, false otherwise.*/
-        virtual bool handle(const GUIEventAdapter& ea, GUIActionAdapter& us);
+        bool handle(const GUIEventAdapter& ea, GUIActionAdapter& us) override;
 
         /** Get the keyboard and mouse usage of this manipulator.*/
         virtual void getUsage(osg::ApplicationUsage& usage) const;

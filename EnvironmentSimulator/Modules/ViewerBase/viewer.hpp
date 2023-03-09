@@ -658,7 +658,9 @@ namespace viewer
         ViewerEventHandler(Viewer* viewer) : viewer_(viewer)
         {
         }
-        bool handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter&);
+
+        using osgGA::GUIEventHandler::handle;
+        bool handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter&) override;
 
     private:
         Viewer* viewer_;
