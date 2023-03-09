@@ -7365,18 +7365,17 @@ Position::ReturnCode Position::XYZH2TrackPos(double x3, double y3, double z3, do
     if (lockOnLane_)
     {
         // Register lateral position of previous lane
-        LaneSection* lsec = current_road->GetLaneSectionByIdx(lane_section_idx_);
-        bool change_direction = false;
+        LaneSection* lsec             = current_road->GetLaneSectionByIdx(lane_section_idx_);
+        bool         change_direction = false;
         if (lsec)
         {
             if (closestPointDirectlyConnected)
             {
-                if ((current_road->GetLink(LinkType::SUCCESSOR) &&
-                    current_road->GetLink(LinkType::SUCCESSOR)->GetElementId() == roadMin->GetId() &&
-                    current_road->GetLink(LinkType::SUCCESSOR)->GetContactPointType() == ContactPointType::CONTACT_POINT_END) ||
+                if ((current_road->GetLink(LinkType::SUCCESSOR) && current_road->GetLink(LinkType::SUCCESSOR)->GetElementId() == roadMin->GetId() &&
+                     current_road->GetLink(LinkType::SUCCESSOR)->GetContactPointType() == ContactPointType::CONTACT_POINT_END) ||
                     (current_road->GetLink(LinkType::PREDECESSOR) &&
-                        current_road->GetLink(LinkType::PREDECESSOR)->GetElementId() == roadMin->GetId() &&
-                        current_road->GetLink(LinkType::PREDECESSOR)->GetContactPointType() == ContactPointType::CONTACT_POINT_START))
+                     current_road->GetLink(LinkType::PREDECESSOR)->GetElementId() == roadMin->GetId() &&
+                     current_road->GetLink(LinkType::PREDECESSOR)->GetContactPointType() == ContactPointType::CONTACT_POINT_START))
                 {
                     change_direction = true;
                 }

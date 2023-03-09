@@ -1878,7 +1878,7 @@ TEST(SpeedTest, TestChangeSpeedOverDistance)
 
 TEST(ControllerTest, TestLoomingControllerSimple)
 {
-    double dt = 0.05;
+    double          dt = 0.05;
     ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/loomingTest.xosc");
     ASSERT_NE(se, nullptr);
 
@@ -1929,7 +1929,7 @@ TEST(ControllerTest, TestLoomingControllerSimple)
 
 TEST(ControllerTest, TestLoomingSimpleFarTan)
 {
-    double dt = 0.05;
+    double          dt = 0.05;
     ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/loomingTest.xosc");
     ASSERT_NE(se, nullptr);
 
@@ -1953,7 +1953,7 @@ TEST(ControllerTest, TestLoomingSimpleFarTan)
 
 TEST(ControllerTest, TestLoomingControllerAdvanced)
 {
-    double dt = 0.05;
+    double          dt = 0.05;
     ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/loomingAdvancedTest.xosc");
     ASSERT_NE(se, nullptr);
 
@@ -1970,7 +1970,7 @@ TEST(ControllerTest, TestLoomingControllerAdvanced)
     }
     EXPECT_EQ(ctrl->getHasFarTan(), false);
 
-    while(se->getSimulationTime() < 6.0 - SMALL_NUMBER)
+    while (se->getSimulationTime() < 6.0 - SMALL_NUMBER)
     {
         se->step(dt);
         se->prepareGroundTruth(dt);
