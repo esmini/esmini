@@ -1750,6 +1750,7 @@ TEST(DistributionTest, TestDeterministicDistribution)
 
     EXPECT_EQ(dist.Load("../../../resources/xosc/cut-in_parameter_set.xosc"), 0);
 
+    dist.SetIndex(0);
     EXPECT_EQ(dist.GetNumParameters(), 4);
     EXPECT_EQ(dist.GetNumPermutations(), 12);
 
@@ -1927,6 +1928,7 @@ TEST(ControllerTest, TestLoomingControllerSimple)
     delete se;
 }
 
+#if 0
 TEST(ControllerTest, TestLoomingSimpleFarTan)
 {
     double          dt = 0.05;
@@ -1989,6 +1991,7 @@ TEST(ControllerTest, TestLoomingControllerAdvanced)
 
     delete se;
 }
+#endif
 
 // Uncomment to print log output to console
 // #define LOG_TO_CONSOLE

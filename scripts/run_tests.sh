@@ -85,6 +85,10 @@ if [[ "$OSTYPE" == "msys" ]] || [[ "$OSTYPE" == "linux-gnu"* ]]; then
 
     ls -al *.tga *.ppm
 
+    if ! ${EXE_FOLDER}/scenarioEngine_test; then
+        exit_with_msg "scenarioEngine_test failed"
+    fi
+
     if ! ${EXE_FOLDER}/RoadManagerDll_test; then
         exit_with_msg "RoadManagerDll_test failed"
     fi
