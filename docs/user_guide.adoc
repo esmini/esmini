@@ -1561,6 +1561,16 @@ Demo (running a somewhat outdated https://github.com/esmini/esmini/blob/master/s
 
 video::IuwuGE3BzKw[youtube,width=854,height=480,opts="autoplay,nocontrols,loop"]
 
+===  How to add a new controller
+
+Below are the steps to add new controller in esmini:
+
+. Create a sepreate controller module in the controller folder. Suggestion is to copy one of the existing and use as a starting point.
+. Register the controller in the LoadControllers() fuction in EnvironmentSimulator/Modules/ScenarioEngine/SourceFiles/ScenarioReader.cpp
+. Create Instantiate method in the new controller. The name shall be unique eg InstantiateControllerLooming
+. In the new controller, Type name shall be unique eg, CONTROLLER_LOOMING_TYPE_NAME
+. Add controller type and it shall be unique in EnvironmentSimulator/Modules/Controllers/Controller.hpp
+. Make sure GetTypeStatic() and GetTypeNameStatic() and methods returns the unique type and type name values
 
 == OpenSceneGraph and 3D models
 
