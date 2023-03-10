@@ -19,6 +19,7 @@
 
 #include "DynamicVehicle.hpp"
 #include "CommonMini.hpp"
+#include "RoadManager.hpp"
 
 using namespace dynamicvehicle;
 
@@ -35,13 +36,56 @@ DynamicVehicle::~DynamicVehicle()
 		delete vehicle_;
 		vehicle_ = nullptr;
 	}
+
+	//delete collision shapes
+	for (int j = 0; j < collision_shapes_.size(); j++)
+	{
+		delete collision_shapes_[j];
+	}
+	collision_shapes_.clear();
 }
+
+class odrRaycaster : public btVehicleRaycaster
+{
+	roadmanager::OpenDrive* odr_;
+
+public:
+	odrRaycaster(roadmanager::OpenDrive* odr) : odr_(odr) {}
+
+	void* castRay(const btVector3& from, const btVector3& to, btVehicleRaycasterResult& result);
+};
+
+
+void* odrRaycaster::castRay(const btVector3& from, const btVector3& to, btVehicleRaycasterResult& result)
+{
+	if (odr_ == nullptr)
+	{
+		return 0;
+	}
+
+	// find out road z level of query position
+	roadmanager::Position pos;
+	pos.SetAlignMode(roadmanager::Position::ALIGN_MODE::ALIGN_HARD);
+	pos.SetInertiaPos(from[0], from[1], 0.0f);
+
+	if (pos.GetZ() > from[2])
+	{
+		// hit
+		result.m_hitNormalInWorld.setValue(0.0f, 0.0f, 1.0f);
+		result.m_hitPointInWorld.setValue(from[0], from[1], static_cast<float>(pos.GetZ()));
+		result.m_distFraction = from[2] - static_cast<float>(pos.GetZ());
+		return reinterpret_cast<void*>(1);  // Just return anything other than 0. Pointer is not used anyhow.
+	}
+
+	return 0;
+};
 
 void DynamicVehicle::Init(
 	double length,
 	double width,
 	double height,
 	double mass,
+	roadmanager::OpenDrive* odr,
 	double suspension_stiffness,
 	double friction_slip,
 	double roll_influence
@@ -57,8 +101,8 @@ void DynamicVehicle::Init(
 	btConstraintSolver* constraint_solver_ = new btSequentialImpulseConstraintSolver();
 	btDefaultCollisionConfiguration* collision_config_ = new btDefaultCollisionConfiguration();
 	btCollisionDispatcher* dispatcher_ = new btCollisionDispatcher(collision_config_);
-	btVector3 world_min(-1.0e+6, -1.0e+6, -1.0e+6);
-	btVector3 world_max(1.0e+6, 1.0e+6, 1.0e+6);
+	btVector3 world_min(-1.0e+3, -1.0e+3, -1.0e+3);
+	btVector3 world_max(1.0e+3, 1.0e+3, 1.0e+3);
 	btBroadphaseInterface* pair_cache_ = new btAxisSweep3(world_min, world_max);
 	dynamics_world_ = new btDiscreteDynamicsWorld(dispatcher_, pair_cache_, constraint_solver_, collision_config_);
 	dynamics_world_->setGravity(btVector3(0, 0, -10));
@@ -66,6 +110,7 @@ void DynamicVehicle::Init(
 
 	// Create dynamic chassis object
 	btBoxShape* veh_shape_ = new btBoxShape(btVector3(0.5f * static_cast<float>(length), 0.5f * static_cast<float>(width), 0.5f * static_cast<float>(height)));
+	collision_shapes_.push_back(veh_shape_);
 
 	// shift the center of mass with respect to the chassis
 	btTransform veh_xform_;
@@ -86,7 +131,11 @@ void DynamicVehicle::Init(
 	//Adds the vehicle chassis to the world
 	dynamics_world_->addRigidBody(veh_body_);
 
+#if 0
+	odrRaycaster* veh_ray_caster_ = new odrRaycaster(odr);
+#else
 	btVehicleRaycaster* veh_ray_caster_ = new btDefaultVehicleRaycaster(dynamics_world_);
+#endif
 
 	btRaycastVehicle::btVehicleTuning tuning;
 
@@ -201,4 +250,23 @@ void DynamicVehicle::Reset(double x, double y, double z, double h, double p, dou
 	vehicle_->getRigidBody()->getWorldTransform().setOrigin(btVector3(static_cast<float>(x), static_cast<float>(y), static_cast<float>(z)));
 	vehicle_->getRigidBody()->getWorldTransform().setRotation(btQuaternion(
 		static_cast<float>(h), static_cast<float>(p), static_cast<float>(r)));
+}
+
+void DynamicVehicle::SetupFlatGround(double size)
+{
+	btCollisionShape* ground_shape = new btBoxShape(btVector3(static_cast<float>(size), static_cast<float>(size), 0.5f));
+
+
+	collision_shapes_.push_back(ground_shape);
+
+	// create ground object, replaces localCreateRigidBody()
+	btTransform tr;
+	tr.setIdentity();
+	tr.setOrigin(btVector3(0, 0, -1.2f));
+
+	btVector3 localInertia(0, 0, 0);
+	//btDefaultMotionState* myMotionState = new btDefaultMotionState(tr);
+	btRigidBody* body = new btRigidBody(0, 0, ground_shape, localInertia);
+	body->setWorldTransform(tr);
+	dynamics_world_->addRigidBody(body);
 }

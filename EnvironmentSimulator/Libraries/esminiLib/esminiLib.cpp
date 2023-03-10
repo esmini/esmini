@@ -1081,7 +1081,7 @@ extern "C"
 
 			scenarioengine::OSCBoundingBox bb = { {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0} };
 			if (player->scenarioGateway->reportObject(object_id, name, object_type, object_category, model_id, vehicle->GetActivatedControllerType(),
-				bb, static_cast<int>(EntityScaleMode::BB_TO_MODEL), 0xff, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0) == 0)
+				bb, static_cast<int>(EntityScaleMode::BB_TO_MODEL), 0xff, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0) == 0)
 			{
 				return object_id;
 			}
@@ -1170,7 +1170,7 @@ extern "C"
 
 		player->scenarioGateway->reportObject(object_id, obj->name_, obj->type_, obj->category_, obj->model_id_,
 			obj->GetActivatedControllerType(), obj->boundingbox_, static_cast<int>(obj->scaleMode_), obj->visibilityMask_,
-			0.0, obj->GetSpeed(), obj->wheel_angle_, obj->wheel_rot_, obj->rear_axle_.positionZ, obj->pos_.GetTrackId(), t,
+			0.0, obj->GetSpeed(), obj->wheel_angle_, obj->wheel_rot_, obj->wheel_z_, obj->rear_axle_.positionZ, obj->pos_.GetTrackId(), t,
 			obj->pos_.GetS());
 
 		return 0;

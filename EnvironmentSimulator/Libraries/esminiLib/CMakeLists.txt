@@ -80,6 +80,13 @@ if(USE_OSI)
         ${OSI_LIBRARIES})
 endif()
 
+if(USE_BULLET)
+    target_link_libraries(
+        ${TARGET}
+        PRIVATE
+        ${BULLET_LIBRARIES})
+endif()
+
 disable_static_analysis(${TARGET})
 disable_iwyu(${TARGET})
 

@@ -49,16 +49,17 @@ namespace scenarioengine
 			SPEED = (1 << 2),
 			WHEEL_ANGLE = (1 << 3),
 			WHEEL_ROTATION = (1 << 4),
-			VISIBILITY = (1 << 5),
-			VELOCITY = (1 << 6),
-			ANGULAR_RATE = (1 << 7),
-			ACCELERATION = (1 << 8),
-			ANGULAR_ACC = (1 << 9),
-			ROUTE = (1 << 10),
-			ALIGN_MODE_H = (1 << 11),
-			ALIGN_MODE_P = (1 << 12),
-			ALIGN_MODE_R = (1 << 13),
-			ALIGN_MODE_Z = (1 << 14)
+			WHEEL_Z = (1 << 5),
+			VISIBILITY = (1 << 6),
+			VELOCITY = (1 << 7),
+			ANGULAR_RATE = (1 << 8),
+			ACCELERATION = (1 << 9),
+			ANGULAR_ACC = (1 << 10),
+			ROUTE = (1 << 11),
+			ALIGN_MODE_H = (1 << 12),
+			ALIGN_MODE_P = (1 << 13),
+			ALIGN_MODE_R = (1 << 14),
+			ALIGN_MODE_Z = (1 << 15)
 		} DirtyBit;
 
 		typedef enum
@@ -130,6 +131,7 @@ namespace scenarioengine
 		double speed_;
 		double wheel_angle_;
 		double wheel_rot_;
+		double wheel_z_;
 		std::string model3d_;
 		int ghost_trail_s_;		 // closest point on ghost trail
 		int trail_follow_index_; // Index of closest segment

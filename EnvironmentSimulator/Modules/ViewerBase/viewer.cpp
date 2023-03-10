@@ -1084,11 +1084,11 @@ osg::ref_ptr<osg::PositionAttitudeTransform> CarModel::AddWheel(osg::ref_ptr<osg
 
 			if (std::string(wheelName).find("wheel_r") != std::string::npos)
 			{
-				rear_wheel_.push_back(tx_node);
+				wheel_.push_back({ false, tx_node, tx_node.get()->getPosition()[2] });
 			}
 			else if (std::string(wheelName).find("wheel_f") != std::string::npos)
 			{
-				front_wheel_.push_back(tx_node);
+				wheel_.push_back({ true, tx_node, tx_node.get()->getPosition()[2] });
 			}
 		}
 	}
@@ -1195,8 +1195,7 @@ CarModel::CarModel(osgViewer::Viewer* viewer, osg::ref_ptr<osg::Group> group, os
 
 CarModel::~CarModel()
 {
-	front_wheel_.clear();
-	rear_wheel_.clear();
+	wheel_.clear();
 
 	if (road_sensor_)
 	{
@@ -1256,36 +1255,40 @@ void EntityModel::SetRotation(double h, double p, double r)
 	txNode_->setAttitude(quat_);
 }
 
-void CarModel::UpdateWheels(double wheel_angle, double wheel_rotation)
+void CarModel::UpdateWheels(double wheel_angle, double wheel_rotation, double wheel_z)
 {
 	// Update wheel angles and rotation for front wheels
 	wheel_angle_ = wheel_angle;
 	wheel_rot_ = wheel_rotation;
 	osg::Quat quat;
 
-	for (size_t i = 0; i < front_wheel_.size(); i++)
+	for (size_t i = 0; i < wheel_.size(); i++)
 	{
-		quat.makeRotate(
-			0, osg::Vec3(1, 0, 0), // Roll
-			wheel_rotation, osg::Vec3(0, 1, 0), // Pitch
-			wheel_angle, osg::Vec3(0, 0, 1)); // Heading
-		front_wheel_[i]->setAttitude(quat);
+		if (wheel_[i].front)
+		{
+			quat.makeRotate(
+				0, osg::Vec3(1, 0, 0), // Roll
+				wheel_rotation, osg::Vec3(0, 1, 0), // Pitch
+				wheel_angle, osg::Vec3(0, 0, 1)); // Heading
+		}
+		else
+		{
+			quat.makeRotate(
+				0, osg::Vec3(1, 0, 0), // Roll
+				wheel_rotation, osg::Vec3(0, 1, 0), // Pitch
+				0, osg::Vec3(0, 0, 1)); // Heading
+		}
+		wheel_[i].xform.get()->setAttitude(quat);
+		const osg::Vec3d& p = wheel_[i].xform.get()->getPosition();
+		//printf("wheel z %.2f\n", wheel_[i].xform->getPosition()[2]);
+		wheel_[i].xform.get()->setPosition(osg::Vec3(p[0], p[1], wheel_[i].rest_z_ + wheel_z));
 	}
 
-	for (size_t i = 0; i < rear_wheel_.size(); i++)
-	{
-		// Update rotation for rear wheels
-		quat.makeRotate(
-			0, osg::Vec3(1, 0, 0), // Roll
-			wheel_rotation, osg::Vec3(0, 1, 0), // Pitch
-			0, osg::Vec3(0, 0, 1)); // Heading
-		rear_wheel_[i]->setAttitude(quat);
-	}
 }
 
-void CarModel::UpdateWheelsDelta(double wheel_angle, double wheel_rotation_delta)
+void CarModel::UpdateWheelsDelta(double wheel_angle, double wheel_rotation_delta, double wheel_z)
 {
-	UpdateWheels(wheel_angle, wheel_rot_ + wheel_rotation_delta);
+	UpdateWheels(wheel_angle, wheel_rot_ + wheel_rotation_delta, wheel_z);
 }
 
 void MovingModel::ShowRouteSensor(bool mode)

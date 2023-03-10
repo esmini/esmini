@@ -185,7 +185,8 @@ int ScenarioEngine::step(double deltaSimTime)
 				Object::DirtyBit::LONGITUDINAL |
 				Object::DirtyBit::SPEED |
 				Object::DirtyBit::WHEEL_ANGLE |
-				Object::DirtyBit::WHEEL_ROTATION
+				Object::DirtyBit::WHEEL_ROTATION |
+				Object::DirtyBit::WHEEL_Z
 			);
 			obj->reset_ = false;
 
@@ -212,6 +213,10 @@ int ScenarioEngine::step(double deltaSimTime)
 				if (o->dirty_ & Object::DirtyBit::WHEEL_ROTATION)
 				{
 					obj->SetDirtyBits(Object::DirtyBit::WHEEL_ROTATION);
+				}
+				if (o->dirty_ & Object::DirtyBit::WHEEL_Z)
+				{
+					obj->SetDirtyBits(Object::DirtyBit::WHEEL_Z);
 				}
 			}
 		}
@@ -568,6 +573,10 @@ int ScenarioEngine::step(double deltaSimTime)
 			{
 				obj->wheel_rot_ = o->state_.info.wheel_rot;
 			}
+			if (o->dirty_ & Object::DirtyBit::WHEEL_Z)
+			{
+				obj->wheel_rot_ = o->state_.info.wheel_z;
+			}
 			o->clearDirtyBits();
 		}
 
@@ -634,6 +643,11 @@ int ScenarioEngine::step(double deltaSimTime)
 				scenarioGateway.updateObjectWheelRotation(obj->id_, simulationTime_, obj->wheel_rot_);
 			}
 
+			if (obj->CheckDirtyBits(Object::DirtyBit::WHEEL_Z))
+			{
+				scenarioGateway.updateObjectWheelZ(obj->id_, simulationTime_, obj->wheel_z_);
+			}
+
 			if (obj->CheckDirtyBits(Object::DirtyBit::VISIBILITY))
 			{
 				scenarioGateway.updateObjectVisibilityMask(obj->id_, obj->visibilityMask_);
@@ -644,7 +658,8 @@ int ScenarioEngine::step(double deltaSimTime)
 			// Object not reported yet, do that
 			scenarioGateway.reportObject(obj->id_, obj->name_, static_cast<int>(obj->type_), obj->category_, obj->model_id_,
 				obj->GetActivatedControllerType(), obj->boundingbox_, static_cast<int>(obj->scaleMode_), obj->visibilityMask_,
-				simulationTime_, obj->speed_, obj->wheel_angle_, obj->wheel_rot_, obj->rear_axle_.positionZ, &obj->pos_);
+				simulationTime_, obj->speed_, obj->wheel_angle_, obj->wheel_rot_, obj->wheel_z_,
+				obj->rear_axle_.positionZ, &obj->pos_);
 		}
 	}
 
@@ -947,6 +962,11 @@ void ScenarioEngine::prepareGroundTruth(double dt)
 				obj->wheel_rot_ = o->state_.info.wheel_rot;
 				obj->SetDirtyBits(Object::DirtyBit::WHEEL_ROTATION);
 			}
+			if (o->dirty_ & Object::DirtyBit::WHEEL_Z)
+			{
+				obj->wheel_z_ = o->state_.info.wheel_z;
+				obj->SetDirtyBits(Object::DirtyBit::WHEEL_Z);
+			}
 		}
 
 		// Calculate resulting updated velocity, acceleration and heading rate (rad/s) NOTE: in global coordinate sys
@@ -1028,6 +1048,11 @@ void ScenarioEngine::prepareGroundTruth(double dt)
 			if (obj->CheckDirtyBits(Object::DirtyBit::WHEEL_ROTATION))
 			{
 				scenarioGateway.updateObjectWheelRotation(obj->id_, simulationTime_, obj->wheel_rot_);
+			}
+
+			if (obj->CheckDirtyBits(Object::DirtyBit::WHEEL_Z))
+			{
+				scenarioGateway.updateObjectWheelZ(obj->id_, simulationTime_, obj->wheel_z_);
 			}
 
 			// store current values for next loop

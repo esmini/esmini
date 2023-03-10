@@ -333,8 +333,13 @@ namespace viewer
 	class CarModel : public MovingModel
 	{
 	public:
-		std::vector<osg::ref_ptr<osg::PositionAttitudeTransform>> front_wheel_;
-		std::vector<osg::ref_ptr<osg::PositionAttitudeTransform>> rear_wheel_;
+		struct Wheel
+		{
+			bool front = false;
+			osg::ref_ptr<osg::PositionAttitudeTransform> xform;
+			double rest_z_ = 0.0;
+		};
+		std::vector<Wheel> wheel_;
 		double wheel_angle_;
 		double wheel_rot_;
 		static const EntityType entity_type_ = EntityType::VEHICLE;
@@ -345,8 +350,8 @@ namespace viewer
 			osg::ref_ptr<osg::Group> route_waypoint_parent, osg::Vec4 trail_color, std::string name);
 		~CarModel();
 		osg::ref_ptr<osg::PositionAttitudeTransform>  AddWheel(osg::ref_ptr<osg::Node> carNode, const char* wheelName);
-		void UpdateWheels(double wheel_angle, double wheel_rotation);
-		void UpdateWheelsDelta(double wheel_angle, double wheel_rotation_delta);
+		void UpdateWheels(double wheel_angle, double wheel_rotation, double wheel_z);
+		void UpdateWheelsDelta(double wheel_angle, double wheel_rotation_delta, double wheel_z);
 	};
 
 	class VisibilityCallback : public osg::NodeCallback

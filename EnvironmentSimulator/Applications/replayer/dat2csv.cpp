@@ -59,7 +59,7 @@ int main(int argc, char** argv)
 	// First output header and CSV labels
 	snprintf(line, MAX_LINE_LEN, "Version: %d, OpenDRIVE: %s, 3DModel: %s\n", player->header_.version, player->header_.odr_filename, player->header_.model_filename);
 	file << line;
-	snprintf(line, MAX_LINE_LEN, "time, id, name, x, y, z, h, p, r, speed, wheel_angle, wheel_rot\n");
+	snprintf(line, MAX_LINE_LEN, "time, id, name, x, y, z, h, p, r, speed, wheel_angle, wheel_rot, wheel_z\n");
 	file << line;
 
 	// Then output all entries with comma separated values
@@ -67,7 +67,7 @@ int main(int argc, char** argv)
 	{
 		ObjectStateStructDat *state = &player->data_[i].state;
 
-		snprintf(line, MAX_LINE_LEN, "%.3f, %d, %s, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f\n",
+		snprintf(line, MAX_LINE_LEN, "%.3f, %d, %s, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f\n",
 			static_cast<double>(state->info.timeStamp),
 			state->info.id,
 			state->info.name,
@@ -79,7 +79,8 @@ int main(int argc, char** argv)
 			static_cast<double>(state->pos.r),
 			static_cast<double>(state->info.speed),
 			static_cast<double>(state->info.wheel_angle),
-			static_cast<double>(state->info.wheel_rot));
+			static_cast<double>(state->info.wheel_rot),
+			static_cast<double>(state->info.wheel_z));
 
 		file << line;
 	}

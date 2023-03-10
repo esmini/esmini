@@ -13,7 +13,8 @@ typedef struct
 	viewer::PolyLine* trajectory;
 	float wheel_angle;
 	float wheel_rotation;
-	bool visible;
+    float wheel_z;
+    bool visible;
     OSCBoundingBox bounding_box;
 	std::vector<SE_Vector> corners;
 } ScenarioEntity;

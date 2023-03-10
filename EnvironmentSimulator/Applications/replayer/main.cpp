@@ -144,6 +144,7 @@ int ParseEntities(viewer::Viewer* viewer, Replay* player)
 			new_sc.trajectory = nullptr;
 			new_sc.wheel_angle = 0.0f;
 			new_sc.wheel_rotation = 0.0f;
+			new_sc.wheel_z = 0.0f;
 			new_sc.name = state->info.name;
 			new_sc.visible = true;
 			std::string filename;
@@ -911,6 +912,7 @@ int main(int argc, char** argv)
 					sc->pos = state->pos;
 					sc->wheel_angle = state->info.wheel_angle;
 					sc->wheel_rotation = state->info.wheel_rot;
+					sc->wheel_z = state->info.wheel_z;
 
 					// on screen text following each entity
 					snprintf(sc->entityModel->on_screen_info_.string_, sizeof(sc->entityModel->on_screen_info_.string_),
@@ -995,7 +997,7 @@ int main(int argc, char** argv)
 
 					if (c->entityModel->GetType() == viewer::EntityModel::EntityType::VEHICLE)
 					{
-						(static_cast<viewer::CarModel*>(c->entityModel))->UpdateWheels(c->wheel_angle, c->wheel_rotation);
+						(static_cast<viewer::CarModel*>(c->entityModel))->UpdateWheels(c->wheel_angle, c->wheel_rotation, c->wheel_z);
 					}
 				}
 			}

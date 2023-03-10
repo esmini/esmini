@@ -2,7 +2,7 @@ import argparse
 import ctypes
 import os
 
-VERSION = 2
+VERSION = 3
 REPLAY_FILENAME_SIZE = 512
 NAME_LEN = 32
 
@@ -21,6 +21,7 @@ class ObjectStateStructDat(ctypes.Structure):
         ("speed", ctypes.c_float),
         ("wheel_angle", ctypes.c_float),
         ("wheel_rot", ctypes.c_float),
+        ("wheel_z", ctypes.c_float),
         ("centerOffsetX", ctypes.c_float),
         ("centerOffsetY", ctypes.c_float),
         ("centerOffsetZ", ctypes.c_float),

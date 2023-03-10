@@ -41,6 +41,7 @@ unittest(
     ${OSG_LIBRARIES}
     ${OSI_LIBRARIES}
     ${SUMO_LIBRARIES}
+    ${BULLET_LIBRARIES}
     ${SOCK_LIB})
 
 # ############################### Creating executable (ScenarioPlayer_test) ##########################################
@@ -57,6 +58,7 @@ unittest(
     ${OSG_LIBRARIES}
     ${OSI_LIBRARIES}
     ${SUMO_LIBRARIES}
+    ${BULLET_LIBRARIES}
     ${SOCK_LIB})
 
 # ############################### Creating executable (ScenarioEngineDll_test) #######################################
@@ -99,6 +101,7 @@ unittest(
     ${VIEWER_LIBS_FOR_TEST}
     ${OSG_LIBRARIES}
     ${SUMO_LIBRARIES}
+    ${BULLET_LIBRARIES}
     ${SOCK_LIB})
 
 # ############################### Creating executable (FollowRouteController_test) ##############################################
@@ -115,4 +118,5 @@ unittest(
     ${OSG_LIBRARIES}
     ${OSI_LIBRARIES}
     ${SUMO_LIBRARIES}
+    ${BULLET_LIBRARIES}
     ${SOCK_LIB})

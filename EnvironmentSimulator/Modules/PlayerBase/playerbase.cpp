@@ -377,7 +377,7 @@ void ScenarioPlayer::ViewerFrame(bool init)
 				if (entity->IsVehicle())
 				{
 					viewer::CarModel* car = static_cast<viewer::CarModel*>(entity);
-					car->UpdateWheels(obj->wheel_angle_, obj->wheel_rot_);
+					car->UpdateWheels(obj->wheel_angle_, obj->wheel_rot_, obj->wheel_z_);
 				}
 
 				viewer::MovingModel* mov = static_cast<viewer::MovingModel*>(entity);

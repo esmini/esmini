@@ -16,6 +16,12 @@
 
 #include "btBulletDynamicsCommon.h"
 
+
+namespace roadmanager
+{
+	class OpenDrive;
+}
+
 namespace dynamicvehicle
 {
 	typedef enum
@@ -36,17 +42,18 @@ namespace dynamicvehicle
 	{
 	public:
 
-		DynamicVehicle() : vehicle_(nullptr), dynamics_world_(nullptr) {}
+		DynamicVehicle() : vehicle_(nullptr), dynamics_world_(nullptr), odr_(nullptr) {}
 		~DynamicVehicle();
 
 		void Init(
 			double length,
 			double width,
 			double height,
-			double mass
+			double mass,
+			roadmanager::OpenDrive* odr
 		)
 		{
-			Init(length, width, height, mass, 20.0, 100.0, 0.5);
+			Init(length, width, height, mass, odr, 20.0, 100.0, 0.5);
 		}
 
 		void Init(
@@ -54,6 +61,7 @@ namespace dynamicvehicle
 			double width,
 			double height,
 			double mass,
+			roadmanager::OpenDrive* odr,
 			double suspension_stiffness,
 			double friction_slip,
 			double roll_influence
@@ -77,9 +85,13 @@ namespace dynamicvehicle
 		void Reset() { Reset(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0); }
 		void Reset(double x, double y, double z, double h, double p, double r, double speed);
 
-	private:
+		void SetupFlatGround(double size);
+
 		btRaycastVehicle* vehicle_;
+	private:
 		btDiscreteDynamicsWorld* dynamics_world_;
+		roadmanager::OpenDrive* odr_;
+		btAlignedObjectArray<btCollisionShape*> collision_shapes_;
 	};
 
 }
