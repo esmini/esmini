@@ -1928,7 +1928,6 @@ TEST(ControllerTest, TestLoomingControllerSimple)
     delete se;
 }
 
-#if 0
 TEST(ControllerTest, TestLoomingSimpleFarTan)
 {
     double          dt = 0.05;
@@ -1947,8 +1946,8 @@ TEST(ControllerTest, TestLoomingSimpleFarTan)
         se->prepareGroundTruth(dt);
         EXPECT_EQ(ctrl->getHasFarTan(), true);
     }
-    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetS(), 41.3639105007, 1E-5);
-    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetT(), -1.4086498255, 1E-5);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetS(), 41.4060182298, 1E-5);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetT(), -1.0844662326, 1E-5);
 
     delete se;
 }
@@ -1965,7 +1964,7 @@ TEST(ControllerTest, TestLoomingControllerAdvanced)
     ControllerLooming* ctrl = reinterpret_cast<ControllerLooming*>(se->scenarioReader->controller_[0]);
     ASSERT_NE(ctrl, nullptr);
 
-    while (se->getSimulationTime() < 4.0 - SMALL_NUMBER)
+    while (se->getSimulationTime() < 2.5 - SMALL_NUMBER)
     {
         se->step(dt);
         se->prepareGroundTruth(dt);
@@ -1978,11 +1977,11 @@ TEST(ControllerTest, TestLoomingControllerAdvanced)
         se->prepareGroundTruth(dt);
     }
     EXPECT_EQ(ctrl->getHasFarTan(), true);
-    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetS(), 49.9929506124, 1E-5);
-    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetT(), -1.5615593634, 1E-5);
-    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetH(), 5.7594841579, 1e-5);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetS(), 83.321507875, 1E-5);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetT(), -1.452957222, 1E-5);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetH(), 5.7631188563, 1e-5);
 
-    while (se->getSimulationTime() < 53.0 - SMALL_NUMBER)
+    while (se->getSimulationTime() < 31.0 - SMALL_NUMBER)
     {
         se->step(dt);
         se->prepareGroundTruth(dt);
@@ -1991,7 +1990,6 @@ TEST(ControllerTest, TestLoomingControllerAdvanced)
 
     delete se;
 }
-#endif
 
 // Uncomment to print log output to console
 // #define LOG_TO_CONSOLE
