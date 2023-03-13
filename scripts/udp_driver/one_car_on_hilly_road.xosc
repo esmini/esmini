@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- This scenario contains one car on a hilly road. It has UDPDriver controllers attached. -->
+<!-- The purpose is to show how pitch and roll will be aligned to the road surface when     -->
+<!-- omitted in the message. See scripts/udp-driver-model/testUDPDriverModel.py how to run. -->
+<OpenSCENARIO>
+    <FileHeader revMajor="1" revMinor="0" date="2021-10-22T10:00:00" description="Two cars controlled by UDPDriver" author="esmini-team"/>
+    <ParameterDeclarations/>
+    <CatalogLocations>
+        <VehicleCatalog>
+            <Directory path="../../resources/xosc/Catalogs/Vehicles"/>
+        </VehicleCatalog>
+        <ControllerCatalog>
+            <Directory path="../../resources/xosc/Catalogs/Controllers"/>
+        </ControllerCatalog>
+    </CatalogLocations>
+    <RoadNetwork>
+        <LogicFile filepath="../../EnvironmentSimulator/Unittest/xodr/straight_500_superelevation_elevation.xodr"/>
+    </RoadNetwork>
+    <Entities>
+        <ScenarioObject name="Car0">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+            <ObjectController>
+                <CatalogReference catalogName="ControllerCatalog" entryName="UDPDriverController">
+                    <ParameterAssignments>
+                        <ParameterAssignment parameterRef="Port" value="0"/>
+                        <ParameterAssignment parameterRef="BasePort" value="53995"/>
+                        <ParameterAssignment parameterRef="ExecMode" value="asynchronous"/>
+                    </ParameterAssignments>
+                </CatalogReference>
+            </ObjectController>
+        </ScenarioObject>
+    </Entities>
+    <Storyboard>
+        <Init>
+            <Actions>
+                <Private entityRef="Car0">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="1" laneId="-1" s="10.0"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <ActivateControllerAction longitudinal="true" lateral="true"/>
+                    </PrivateAction>
+                </Private>
+            </Actions>
+        </Init>
+        <Story>
+            <Act name="DummyAct">
+         </Act>
+        </Story>
+    </Storyboard>
+</OpenSCENARIO>

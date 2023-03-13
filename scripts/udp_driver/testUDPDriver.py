@@ -14,12 +14,19 @@
          test if installed: python -m tkinter (or python3 -m tkinter)
          sudo apt-get install python3-tk
 
-   To run it:
+   To run it (two cars on an large open area):
    1. Open two terminals
    2. From terminal 1, run: ./bin/esmini --window 60 60 800 400 --osc ./scripts/udp_driver/two_cars_in_open_space.xosc
    3. From terminal 2, run: ./scripts/udp_driver/testUDPDriver.py --id 0 --id 1
         or python ./scripts/udp_driver/testUDPDriver.py --id 0 --id 1
         or python3 ./scripts/udp_driver/testUDPDriver.py --id 0 --id 1
+        depending on platform and file type associations
+
+   or (one car on a hilly road):
+   2. From terminal 1, run: ./bin/esmini --window 60 60 800 400 --osc ./scripts/udp_driver/one_car_on_hilly_road.xosc
+   3. From terminal 2, run: ./scripts/udp_driver/testUDPDriver.py --id 0 --xmin 0 --xmax 500 --ymin -50 --ymax 50
+        or python ./scripts/udp_driver/testUDPDriver.py --id 0 --xmin 0 --xmax 500 --ymin -50 --ymax 50
+        or python3 ./scripts/udp_driver/testUDPDriver.py --id 0 --xmin 0 --xmax 500 --ymin -50 --ymax 50
         depending on platform and file type associations
 
    If esmini is running on another host, add argument --ip <ip address of host running esmini>, e.g. --ip 216.58.211.14
@@ -178,8 +185,17 @@ class Application(Frame):
         parser.add_argument('--id', action='append', nargs='+')
         parser.add_argument('--port', help='Start UDP port (default is ' + str(DEFAULT_PORT) + ' objectID)')
         parser.add_argument('--ip', help='IP address of esmini host', default='127.0.0.1')
+        parser.add_argument('--xmin', help='world space x axis min value', default='-100')
+        parser.add_argument('--xmax', help='world space x axis max value', default='100')
+        parser.add_argument('--ymin', help='world space y axis min value', default='-100')
+        parser.add_argument('--ymax', help='world space y axis max value', default='100')
 
         args = parser.parse_args()
+
+        self.xmin = args.xmin
+        self.xmax = args.xmax
+        self.ymin = args.ymin
+        self.ymax = args.ymax
 
         if (args.id is None):
             self.obj_id = [0]
@@ -209,7 +225,6 @@ class Application(Frame):
 
     def createGUI(self):
         scalewidth = 12
-        areasize = 600
         notebook = ttk.Notebook(self.master)
         notebook.pack(fill=BOTH, expand=True)
         padx = 2
@@ -230,12 +245,12 @@ class Application(Frame):
 
             row += 1
             Label(frame1, text="x").grid(sticky = SE, row = row, column = 0,padx = padx)
-            Scale(frame1, from_=-areasize/2.0, to=areasize/2.0, resolution=0.01, orient=HORIZONTAL, variable=obj.x, width=scalewidth,
+            Scale(frame1, from_=self.xmin, to=self.xmax, resolution=0.01, orient=HORIZONTAL, variable=obj.x, width=scalewidth,
                 command=obj.updateStateXYZHPR).grid(sticky = EW, row = row, column = 1, padx = padx)
 
             row += 1
             Label(frame1, text="y").grid(sticky = SE, row = row, column = 0, padx = padx)
-            Scale(frame1, from_=-areasize/2.0, to=areasize/2.0, resolution=0.01, orient=HORIZONTAL, variable=obj.y, width=scalewidth,
+            Scale(frame1, from_=self.ymin, to=self.ymax, resolution=0.01, orient=HORIZONTAL, variable=obj.y, width=scalewidth,
                 command=obj.updateStateXYZHPR).grid(sticky = EW, row = row, column = 1, padx = padx)
 
             row += 1
@@ -278,12 +293,12 @@ class Application(Frame):
 
             row += 1
             Label(frame2, text="x").grid(sticky = SE, row = row, column = 0, padx = padx)
-            Scale(frame2, from_=-areasize/2.0, to=areasize/2.0, resolution=0.01, orient=HORIZONTAL, variable=obj.x, width=scalewidth,
+            Scale(frame2, from_=self.xmin, to=self.xmax, resolution=0.01, orient=HORIZONTAL, variable=obj.x, width=scalewidth,
                 command=obj.updateStateXYH).grid(sticky = EW, row = row, column = 1, padx = padx)
 
             row += 1
             Label(frame2, text="y").grid(sticky = SE, row = row, column = 0, padx = padx)
-            Scale(frame2, from_=-areasize/2.0, to=areasize/2.0, resolution=0.01, orient=HORIZONTAL, variable=obj.y, width=scalewidth,
+            Scale(frame2, from_=self.ymin, to=self.ymax, resolution=0.01, orient=HORIZONTAL, variable=obj.y, width=scalewidth,
                 command=obj.updateStateXYH).grid(sticky = EW, row = row, column = 1, padx = padx)
 
             row += 1
