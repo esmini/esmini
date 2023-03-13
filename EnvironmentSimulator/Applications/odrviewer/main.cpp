@@ -354,7 +354,11 @@ int main(int argc, char **argv)
     // use an ArgumentParser object to manage the program arguments.
     opt.AddOption("help", "Show this help message");
     opt.AddOption("odr", "OpenDRIVE filename (required)", "odr_filename");
+    opt.AddOption("aa_mode", "Anti-alias mode=number of multisamples (subsamples, 0=off, 4=default)", "mode");
     opt.AddOption("capture_screen", "Continuous screen capture. Warning: Many .tga files will be created");
+    opt.AddOption("custom_fixed_camera",
+                  "Additional custom camera position <x,y,z>[,h,p] (multiple occurrences supported)",
+                  "position and optional orientation");
     opt.AddOption("density", "density (cars / 100 m)", "density", std::to_string(density));
     opt.AddOption("enforce_generate_model", "Generate road 3D model even if --model is specified");
     opt.AddOption("disable_log", "Prevent logfile from being created");
@@ -363,6 +367,7 @@ int main(int argc, char **argv)
     opt.AddOption("fixed_timestep", "Run simulation decoupled from realtime, with specified timesteps", "timestep");
     opt.AddOption("generate_no_road_objects", "Do not generate any OpenDRIVE road objects (e.g. when part of referred 3D model)");
     opt.AddOption("ground_plane", "Add a large flat ground surface");
+    opt.AddOption("headless", "Run without viewer window");
     opt.AddOption("logfile_path", "logfile path/filename, e.g. \"../esmini.log\" (default: log.txt)", "path");
     opt.AddOption("model", "3D Model filename", "model_filename");
     opt.AddOption("osi_lines", "Show OSI road lines (toggle during simulation by press 'u') ");
@@ -529,6 +534,58 @@ int main(int argc, char **argv)
         if (opt.GetOptionSet("osi_points"))
         {
             viewer->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_OSI_POINTS);
+        }
+
+        if (opt.GetOptionSet("custom_fixed_camera") == true)
+        {
+            int counter = 0;
+
+            while ((arg_str = opt.GetOptionArg("custom_fixed_camera", counter)) != "")
+            {
+                size_t pos  = 0;
+                double v[5] = {0.0, 0.0, 0.0, 0.0, 0.0};
+                int    i    = 0;
+                for (i = 0; i < 5; i++)
+                {
+                    pos = arg_str.find(",");
+
+                    if (i < 2 && pos == std::string::npos)
+                    {
+                        LOG_AND_QUIT("Expected custom_fixed_camera <x,y,z>[,h,p], got only %d values", i + 1);
+                    }
+                    else if (i == 3 && pos == std::string::npos)
+                    {
+                        LOG_AND_QUIT("Expected custom_fixed_camera <x,y,z>[,h,p], got %d values", i + 1);
+                    }
+                    v[i] = strtod(arg_str.substr(0, pos));
+                    arg_str.erase(0, pos == std::string::npos ? pos : pos + 1);
+
+                    if (i == 2 && pos == std::string::npos)
+                    {
+                        // Only position specified, stop now
+
+                        break;
+                    }
+                }
+                if (!arg_str.empty())
+                {
+                    LOG_AND_QUIT("Expected custom_fixed_camera <x,y,z>[,h,p], got too many values. Make sure only 3 or 5 values is specified");
+                }
+
+                if (i == 2)
+                {
+                    viewer->AddCustomCamera(v[0], v[1], v[2], true);
+                    viewer->SetCameraMode(-1);  // activate last camera which is the one just added
+                    LOG("Created custom fixed camera %d (%.2f, %.2f, %.2f)", counter, v[0], v[1], v[2]);
+                }
+                else
+                {
+                    viewer->AddCustomCamera(v[0], v[1], v[2], v[3], v[4], true);
+                    viewer->SetCameraMode(-1);  // activate last camera which is the one just added
+                    LOG("Created custom fixed camera %d (%.2f, %.2f, %.2f, %.2f, %.2f)", counter, v[0], v[1], v[2], v[3], v[4]);
+                }
+                counter++;
+            }
         }
 
         if (opt.HasUnknownArgs())

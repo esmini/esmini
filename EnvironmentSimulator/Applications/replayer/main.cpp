@@ -350,6 +350,7 @@ int main(int argc, char** argv)
     // use common options parser to manage the program arguments
     SE_Options opt;
     opt.AddOption("file", "Simulation recording data file (.dat)", "filename");
+    opt.AddOption("aa_mode", "Anti-alias mode=number of multisamples (subsamples, 0=off, 4=default)", "mode");
     opt.AddOption(
         "camera_mode",
         "Initial camera mode (\"orbit\" (default), \"fixed\", \"flex\", \"flex-orbit\", \"top\", \"driver\") (toggle during simulation by press 'k') ",
@@ -365,6 +366,7 @@ int main(int argc, char** argv)
                   "Directory containing replays to overlay, pair with \"file\" argument, where \"file\" is .dat filename match substring",
                   "path");
     opt.AddOption("disable_off_screen", "Disable esmini off-screen rendering, revert to OSG viewer default handling");
+    opt.AddOption("headless", "Run without viewer window");
     opt.AddOption("hide_trajectories", "Hide trajectories from start (toggle with key 'n')");
     opt.AddOption("info_text", "Show on-screen info text (toggle key 'i') mode 0=None 1=current (default) 2=per_object 3=both", "mode");
     opt.AddOption("no_ghost", "Remove ghost entities");

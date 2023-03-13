@@ -6,6 +6,8 @@ Usage:  [options]
 Options:
   --file <filename>
       Simulation recording data file (.dat)
+  --aa_mode <mode>
+      Anti-alias mode=number of multisamples (subsamples, 0=off, 4=default)
   --camera_mode <mode>
       Initial camera mode ("orbit" (default), "fixed", "flex", "flex-orbit", "top", "driver") (toggle during simulation by press 'k')
   --capture_screen
@@ -22,6 +24,8 @@ Options:
       Directory containing replays to overlay, pair with "file" argument, where "file" is .dat filename match substring
   --disable_off_screen
       Disable esmini off-screen rendering, revert to OSG viewer default handling
+  --headless
+      Run without viewer window
   --hide_trajectories
       Hide trajectories from start (toggle with key 'n')
   --info_text <mode>

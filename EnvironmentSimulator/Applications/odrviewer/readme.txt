@@ -10,8 +10,12 @@ Options:
       Show this help message
   --odr <odr_filename>
       OpenDRIVE filename (required)
+  --aa_mode <mode>
+      Anti-alias mode=number of multisamples (subsamples, 0=off, 4=default)
   --capture_screen
       Continuous screen capture. Warning: Many .tga files will be created
+  --custom_fixed_camera <position and optional orientation>
+      Additional custom camera position <x,y,z>[,h,p] (multiple occurrences supported)
   --density [density]  (default = 1.000000)
       density (cars / 100 m)
   --enforce_generate_model
@@ -28,6 +32,8 @@ Options:
       Do not generate any OpenDRIVE road objects (e.g. when part of referred 3D model)
   --ground_plane
       Add a large flat ground surface
+  --headless
+      Run without viewer window
   --logfile_path <path>
       logfile path/filename, e.g. "../esmini.log" (default: log.txt)
   --model <model_filename>
@@ -58,9 +64,6 @@ Additional OSG graphics options:
   --borderless-window <x y w h>              Set the position x, y and size w, h of a borderless viewer window. -1 -1 -1 -1 for fullscreen.
   --SingleThreaded                           Run application and all graphics tasks in one single thread.
   --lodScale <LOD scalefactor>               Adjust Level Of Detail 1=default >1 decrease fidelity <1 increase fidelity
-  
-For a complete list of OSG options and environment variables, see here:
-https://github.com/esmini/esmini/blob/master/docs/osg_options_and_env_variables.txt  
 
 Examples:
 
