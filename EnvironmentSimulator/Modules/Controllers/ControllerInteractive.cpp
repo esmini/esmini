@@ -136,7 +136,7 @@ void ControllerInteractive::Activate(ControlDomains domainMask)
 
 void ControllerInteractive::ReportKeyEvent(int key, bool down)
 {
-    if (key == Controller::KEY_Left)
+    if (key == static_cast<int>(KeyType::KEY_Left))
     {
         if (down)
         {
@@ -147,7 +147,7 @@ void ControllerInteractive::ReportKeyEvent(int key, bool down)
             steer = vehicle::STEERING_NONE;
         }
     }
-    else if (key == Controller::KEY_Right)
+    else if (key == static_cast<int>(KeyType::KEY_Right))
     {
         if (down)
         {
@@ -158,7 +158,7 @@ void ControllerInteractive::ReportKeyEvent(int key, bool down)
             steer = vehicle::STEERING_NONE;
         }
     }
-    else if (key == Controller::KEY_Up)
+    else if (key == static_cast<int>(KeyType::KEY_Up))
     {
         if (down)
         {
@@ -169,7 +169,7 @@ void ControllerInteractive::ReportKeyEvent(int key, bool down)
             accelerate = vehicle::THROTTLE_NONE;
         }
     }
-    else if (key == Controller::KEY_Down)
+    else if (key == static_cast<int>(KeyType::KEY_Down))
     {
         if (down)
         {

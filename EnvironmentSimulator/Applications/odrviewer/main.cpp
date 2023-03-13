@@ -34,16 +34,23 @@
 #define ROAD_MIN_LENGTH 30.0
 #define SIGN(X)         ((X < 0) ? -1 : 1)
 
-static bool                 run_only_once       = false;
-static const double         stepSize            = 0.01;
-static const double         maxStepSize         = 0.1;
-static const double         minStepSize         = 0.01;
-static const bool           freerun             = true;
-static double               density             = 1.0;  // Cars per 100 m
-static double               global_speed_factor = 1.0;
-static int                  first_car_in_focus  = -1;
-static double               fixed_timestep      = -1.0;
-roadmanager::Road::RoadRule rule                = roadmanager::Road::RoadRule::ROAD_RULE_UNDEFINED;
+static bool         run_only_once       = false;
+static const double stepSize            = 0.01;
+static const double maxStepSize         = 0.1;
+static const double minStepSize         = 0.01;
+static const bool   freerun             = true;
+static double       density             = 1.0;  // Cars per 100 m
+static double       global_speed_factor = 1.0;
+static int          first_car_in_focus  = -1;
+static double       fixed_timestep      = -1.0;
+
+static struct
+{
+    bool pause = false;
+    bool step  = false;
+} run_state;
+
+roadmanager::Road::RoadRule rule = roadmanager::Road::RoadRule::ROAD_RULE_UNDEFINED;
 
 double deltaSimTime;  // external - used by Viewer::RubberBandCamera
 
@@ -96,6 +103,17 @@ void FetchKeyEvent(viewer::KeyEvent *keyEvent, void *)
         if (keyEvent->key_ == 'H')
         {
             puts(helpText);
+        }
+
+        if (keyEvent->key_ == static_cast<int>(KeyType::KEY_Space))
+        {
+            run_state.pause = !run_state.pause;
+        }
+
+        if (keyEvent->key_ == static_cast<int>(KeyType::KEY_Return))
+        {
+            run_state.step  = true;
+            run_state.pause = true;
         }
     }
 }
@@ -611,54 +629,60 @@ int main(int argc, char **argv)
 
         while (!viewer->osgViewer_->done())
         {
-            if (fixed_timestep > 0)
+            if (run_state.step || !run_state.pause)
             {
-                deltaSimTime = fixed_timestep;
-            }
-            else
-            {
-                // Get milliseconds since Jan 1 1970
-                now           = SE_getSystemTime();
-                deltaSimTime  = static_cast<double>(now - lastTimeStamp) / 1000.0;  // step size in seconds
-                lastTimeStamp = now;
-                if (deltaSimTime > maxStepSize)  // limit step size
+                if (fixed_timestep > 0)
                 {
-                    deltaSimTime = maxStepSize;
+                    deltaSimTime = fixed_timestep;
                 }
-                else if (deltaSimTime < minStepSize)  // avoid CPU rush, sleep for a while
+                else
                 {
-                    SE_sleep(static_cast<unsigned int>(now - lastTimeStamp));
-                    deltaSimTime = minStepSize;
+                    // Get milliseconds since Jan 1 1970
+                    now           = SE_getSystemTime();
+                    deltaSimTime  = static_cast<double>(now - lastTimeStamp) / 1000.0;  // step size in seconds
+                    lastTimeStamp = now;
+                    if (deltaSimTime > maxStepSize)  // limit step size
+                    {
+                        deltaSimTime = maxStepSize;
+                    }
+                    else if (deltaSimTime < minStepSize)  // avoid CPU rush, sleep for a while
+                    {
+                        SE_sleep(static_cast<unsigned int>(now - lastTimeStamp));
+                        deltaSimTime = minStepSize;
+                    }
+                }
+
+                if (!(run_only_once && !first_time))
+                {
+                    for (size_t i = 0; i < cars.size(); i++)
+                    {
+                        updateCar(odrManager, cars[i], deltaSimTime);
+                    }
+                    first_time = false;
+                }
+
+                // Set info text
+                if (static_cast<int>(cars.size()) > 0 && viewer->currentCarInFocus_ >= 0 &&
+                    viewer->currentCarInFocus_ < static_cast<int>(cars.size()))
+                {
+                    Car *car = cars[static_cast<unsigned int>(viewer->currentCarInFocus_)];
+                    snprintf(str_buf,
+                             sizeof(str_buf),
+                             "entity[%d]: %.2fkm/h (%d, %d, %.2f, %.2f) / (%.2f, %.2f %.2f)",
+                             viewer->currentCarInFocus_,
+                             3.6 * car->pos->GetSpeedLimit() * car->speed_factor * global_speed_factor,
+                             car->pos->GetTrackId(),
+                             car->pos->GetLaneId(),
+                             fabs(car->pos->GetOffset()) < SMALL_NUMBER ? 0 : car->pos->GetOffset(),
+                             car->pos->GetS(),
+                             car->pos->GetX(),
+                             car->pos->GetY(),
+                             car->pos->GetH());
+                    viewer->SetInfoText(str_buf);
                 }
             }
 
-            if (!(run_only_once && !first_time))
-            {
-                for (size_t i = 0; i < cars.size(); i++)
-                {
-                    updateCar(odrManager, cars[i], deltaSimTime);
-                }
-                first_time = false;
-            }
-
-            // Set info text
-            if (static_cast<int>(cars.size()) > 0 && viewer->currentCarInFocus_ >= 0 && viewer->currentCarInFocus_ < static_cast<int>(cars.size()))
-            {
-                Car *car = cars[static_cast<unsigned int>(viewer->currentCarInFocus_)];
-                snprintf(str_buf,
-                         sizeof(str_buf),
-                         "entity[%d]: %.2fkm/h (%d, %d, %.2f, %.2f) / (%.2f, %.2f %.2f)",
-                         viewer->currentCarInFocus_,
-                         3.6 * car->pos->GetSpeedLimit() * car->speed_factor * global_speed_factor,
-                         car->pos->GetTrackId(),
-                         car->pos->GetLaneId(),
-                         fabs(car->pos->GetOffset()) < SMALL_NUMBER ? 0 : car->pos->GetOffset(),
-                         car->pos->GetS(),
-                         car->pos->GetX(),
-                         car->pos->GetY(),
-                         car->pos->GetH());
-                viewer->SetInfoText(str_buf);
-            }
+            run_state.step = false;
 
             // Step the simulation
             viewer->osgViewer_->frame();

@@ -54,14 +54,6 @@ namespace scenarioengine
             USER_CONTROLLER_TYPE_BASE = 1000,
         };
 
-        enum  // copy key enums from OSG GUIEventAdapter
-        {
-            KEY_Left  = 0xFF51, /* Left arrow */
-            KEY_Up    = 0xFF52, /* Up arrow */
-            KEY_Right = 0xFF53, /* Right arrow */
-            KEY_Down  = 0xFF54, /* Down arrow */
-        };
-
         typedef enum
         {
             MODE_NONE,      // Controller not available or it is not active
