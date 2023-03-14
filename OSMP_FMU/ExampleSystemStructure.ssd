@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ssd:SystemStructureDescription version="1.0" name="Root-System" generationTool="orchideo | easySSP (eXXcellent solutions GmbH)" generationDateAndTime="2023-03-14T18:14:23Z" xmlns:ssc="http://ssp-standard.org/SSP1/SystemStructureCommon" xmlns:ssb="http://ssp-standard.org/SSP1/SystemStructureSignalDictionary" xmlns:ssd="http://ssp-standard.org/SSP1/SystemStructureDescription" xmlns:easySSP="http://xsd.easy-ssp.com/SSPModel" xmlns:ssv="http://ssp-standard.org/SSP1/SystemStructureParameterValues" xmlns:ssm="http://ssp-standard.org/SSP1/SystemStructureParameterMapping">
+    <ssd:System name="Root-System">
+        <ssd:ParameterBindings>
+            <ssd:ParameterBinding>
+                <ssd:ParameterValues>
+                    <ssv:ParameterSet version="1.0" name="Internal Parameter-Set">
+                        <ssv:Parameters/>
+                    </ssv:ParameterSet>
+                </ssd:ParameterValues>
+            </ssd:ParameterBinding>
+        </ssd:ParameterBindings>
+        <ssd:Elements>
+            <ssd:Component type="application/x-fmu-sharedlibrary" source="resources/OSMPDummySensor.fmu" implementation="CoSimulation" name="OSMP Dummy Sensor FMU" description="Demonstration C++ Sensor FMU for OSI Sensor Model Packaging">
+                <ssd:Connectors>
+                    <ssd:Connector name="OSMPSensorViewIn.base.lo" kind="input">
+                        <ssc:Integer/>
+                        <ssd:ConnectorGeometry x="0.0" y="0.75"/>
+                    </ssd:Connector>
+                    <ssd:Connector name="OSMPSensorViewIn.base.hi" kind="input">
+                        <ssc:Integer/>
+                        <ssd:ConnectorGeometry x="0.0" y="0.5"/>
+                    </ssd:Connector>
+                    <ssd:Connector name="OSMPSensorViewIn.size" kind="input">
+                        <ssc:Integer/>
+                        <ssd:ConnectorGeometry x="0.0" y="0.25"/>
+                    </ssd:Connector>
+                    <ssd:Connector name="OSMPSensorDataOut.base.lo" kind="output">
+                        <ssc:Integer/>
+                        <ssd:ConnectorGeometry x="1.0" y="0.75"/>
+                    </ssd:Connector>
+                    <ssd:Connector name="OSMPSensorDataOut.base.hi" kind="output">
+                        <ssc:Integer/>
+                        <ssd:ConnectorGeometry x="1.0" y="0.5"/>
+                    </ssd:Connector>
+                    <ssd:Connector name="OSMPSensorDataOut.size" kind="output">
+                        <ssc:Integer/>
+                        <ssd:ConnectorGeometry x="1.0" y="0.25"/>
+                    </ssd:Connector>
+                </ssd:Connectors>
+                <ssd:ElementGeometry x1="-133.5" y1="-167.5" x2="147.5" y2="44.5"/>
+                <ssd:ParameterBindings>
+                    <ssd:ParameterBinding>
+                        <ssd:ParameterValues>
+                            <ssv:ParameterSet version="1.0" name="Internal Parameter-Set">
+                                <ssv:Parameters/>
+                            </ssv:ParameterSet>
+                        </ssd:ParameterValues>
+                    </ssd:ParameterBinding>
+                </ssd:ParameterBindings>
+            </ssd:Component>
+            <ssd:Component type="application/x-fmu-sharedlibrary" source="resources/EsminiOsiSource.fmu" implementation="CoSimulation" name="esmini" description="esmini scnario player packaged as OSMP FMU outputting an osi3::SensorView with GoundTruth from the scenario">
+                <ssd:Connectors>
+                    <ssd:Connector name="OSMPSensorViewOut.base.lo" kind="output">
+                        <ssc:Integer/>
+                        <ssd:ConnectorGeometry x="1.0" y="0.75"/>
+                    </ssd:Connector>
+                    <ssd:Connector name="OSMPSensorViewOut.base.hi" kind="output">
+                        <ssc:Integer/>
+                        <ssd:ConnectorGeometry x="1.0" y="0.490625"/>
+                    </ssd:Connector>
+                    <ssd:Connector name="OSMPSensorViewOut.size" kind="output">
+                        <ssc:Integer/>
+                        <ssd:ConnectorGeometry x="1.0" y="0.25"/>
+                    </ssd:Connector>
+                </ssd:Connectors>
+                <ssd:ElementGeometry x1="-704.0" y1="-168.0" x2="-401.0" y2="51.0"/>
+                <ssd:ParameterBindings>
+                    <ssd:ParameterBinding>
+                        <ssd:ParameterValues>
+                            <ssv:ParameterSet version="1.0" name="Internal Parameter-Set">
+                                <ssv:Parameters>
+                                    <ssv:Parameter name="xosc_path">
+                                        <ssv:String value="your/xosc/path.xosc"/>
+                                    </ssv:Parameter>
+                                </ssv:Parameters>
+                            </ssv:ParameterSet>
+                        </ssd:ParameterValues>
+                    </ssd:ParameterBinding>
+                </ssd:ParameterBindings>
+            </ssd:Component>
+        </ssd:Elements>
+        <ssd:Connections>
+            <ssd:Connection startElement="esmini" startConnector="OSMPSensorViewOut.base.lo" endElement="OSMP Dummy Sensor FMU" endConnector="OSMPSensorViewIn.base.lo" suppressUnitConversion="false"/>
+            <ssd:Connection startElement="esmini" startConnector="OSMPSensorViewOut.base.hi" endElement="OSMP Dummy Sensor FMU" endConnector="OSMPSensorViewIn.base.hi" suppressUnitConversion="false"/>
+            <ssd:Connection startElement="esmini" startConnector="OSMPSensorViewOut.size" endElement="OSMP Dummy Sensor FMU" endConnector="OSMPSensorViewIn.size" suppressUnitConversion="false"/>
+        </ssd:Connections>
+        <ssd:SystemGeometry x1="-904.0" y1="-368.0" x2="347.5" y2="251.0"/>
+    </ssd:System>
+    <ssd:DefaultExperiment startTime="0.0" stopTime="15.0">
+        <ssd:Annotations>
+            <!-- additional OpenMCx specific simulation parameters -->
+            <ssc:Annotation type="com.avl.model.connect.ssp.task"
+                            xmlns:mc="com.avl.model.connect.ssp.task">
+                <!-- sequential execution of component steps -->
+                <!-- synchronization time step size of 0.001 -->
+                <!-- simulation will end when the stopTime is reached -->
+                <mc:Task stepType="sequential" deltaTime="0.01" endType="end_time"/>
+            </ssc:Annotation>
+        </ssd:Annotations>
+    </ssd:DefaultExperiment>
+    <ssd:Annotations>
+        <ssc:Annotation type="com.easy-ssp.easy.ssp-model">
+            <easySSP:ParameterVariants>
+                <easySSP:ParameterVariant name="Parameter-Variant" isBase="true"/>
+            </easySSP:ParameterVariants>
+        </ssc:Annotation>
+    </ssd:Annotations>
+</ssd:SystemStructureDescription>

@@ -7,8 +7,8 @@ In the *doCalc* function (a subsequent function of *doStep*), the OSI ground tru
 The SensorView is the output of the FMU.
 
 ### Usage
-- First build esmini according to the [build instructions](https://esmini.github.io/#_build_esmini_quick_guide)
-- Build the FMU
+- First build esmini according to the [build instructions](https://esmini.github.io/#_build_esmini_quick_guide).
+- Build the FMU.
 
   ```bash
   mkdir build
@@ -17,4 +17,11 @@ The SensorView is the output of the FMU.
   cmake --build .
   ```
 
-- Run the FMU in a co-simulation, e.g. by using the open source framework [OpenMCx](https://github.com/eclipse/openmcx). Be sure to set the OpenScenario file as FMI parameter *xosc_path*.
+- Run the FMU in a co-simulation, e.g. by using the open source framework [OpenMCx](https://github.com/eclipse/openmcx).
+Be sure to set the OpenScenario file as FMI parameter *xosc_path*.
+
+### Example co-simulation
+An example system structure definition file (ssd) is included in this example.
+It connects this esmini OSI Source FMU to the [OSMPDummySensor](https://github.com/OpenSimulationInterface/osi-sensor-model-packaging/tree/master/examples/OSMPDummySensor), as shown in the image below.
+![example_system_structure.png](example_system_structure.png)
+Be sure to set the OpenScenario file as FMI parameter *xosc_path* in the ssd file. 
