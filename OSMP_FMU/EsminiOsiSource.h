@@ -59,7 +59,8 @@ using namespace std;
 #define FMI_REAL_VARS (FMI_REAL_LAST_IDX+1)
 
 /* String Variables */
-#define FMI_STRING_LAST_IDX 0
+#define FMI_STRING_XOSC_PATH_IDX 0
+#define FMI_STRING_LAST_IDX FMI_STRING_XOSC_PATH_IDX
 #define FMI_STRING_VARS (FMI_STRING_LAST_IDX+1)
 
 #include <iostream>
@@ -198,6 +199,8 @@ protected:
     void set_fmi_valid(fmi2Boolean value) { boolean_vars[FMI_BOOLEAN_VALID_IDX]=value; }
     fmi2Integer fmi_count() { return integer_vars[FMI_INTEGER_COUNT_IDX]; }
     void set_fmi_count(fmi2Integer value) { integer_vars[FMI_INTEGER_COUNT_IDX]=value; }
+    string fmi_xosc_path() { return string_vars[FMI_STRING_XOSC_PATH_IDX]; }
+    void set_fmi_xosc_path(string value) { string_vars[FMI_STRING_XOSC_PATH_IDX]=value; }
 
     /* Protocol Buffer Accessors */
     void set_fmi_sensor_view_out(const osi3::SensorView& data);

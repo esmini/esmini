@@ -126,9 +126,6 @@ fmi2Status EsminiOsiSource::doInit()
 {
   DEBUGBREAK();
 
-  SE_Init("Path/to/your/scenario/file.xosc", 0, 1, 0, 0);
-  SE_UpdateOSIGroundTruth();
-
   /* Booleans */
   for (int i = 0; i<FMI_BOOLEAN_VARS; i++)
     boolean_vars[i] = fmi2False;
@@ -165,6 +162,14 @@ fmi2Status EsminiOsiSource::doEnterInitializationMode()
 fmi2Status EsminiOsiSource::doExitInitializationMode()
 {
   DEBUGBREAK();
+
+  const std::string xosc_path =  fmi_xosc_path();
+  if (xosc_path.empty()) {
+    std::cerr << "No OpenScenario file selected!" << std::endl;
+    return fmi2Error;
+  }
+  SE_Init(xosc_path.c_str(), 0, 1, 0, 0);
+  SE_UpdateOSIGroundTruth();
 
   return fmi2OK;
 }

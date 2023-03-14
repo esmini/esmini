@@ -2,12 +2,12 @@
 <fmiModelDescription
   fmiVersion="2.0"
   modelName="esmini"
-  guid="@FMUGUID@"
+  guid="bbd7b2bd251f430797b8f36208d20c4b"
   description="esmini scnario player packaged as OSMP FMU outputting an osi3::SensorView with GoundTruth from the scenario"
   author="Persival GmbH"
-  version="@OSMPVERSION@"
+  version=""
   generationTool="manual"
-  generationDateAndTime="@FMUTIMESTAMP@"
+  generationDateAndTime="2023-03-14T18:47:59Z"
   variableNamingConvention="structured">
   <CoSimulation
     modelIdentifier="EsminiOsiSource"
@@ -24,25 +24,25 @@
   </LogCategories>
   <DefaultExperiment startTime="0.0" stepSize="0.020"/>
   <VendorAnnotations>
-    <Tool name="net.pmsf.osmp" xmlns:osmp="http://xsd.pmsf.net/OSISensorModelPackaging"><osmp:osmp version="@OSMPVERSION@" osi-version="@OSIVERSION@"/></Tool>
+    <Tool name="net.pmsf.osmp" xmlns:osmp="http://xsd.pmsf.net/OSISensorModelPackaging"><osmp:osmp version="" osi-version=""/></Tool>
   </VendorAnnotations>
   <ModelVariables>
     <ScalarVariable name="OSMPSensorViewOut.base.lo" valueReference="0" causality="output" variability="discrete" initial="exact">
       <Integer start="0"/>
       <Annotations>
-        <Tool name="net.pmsf.osmp" xmlns:osmp="http://xsd.pmsf.net/OSISensorModelPackaging"><osmp:osmp-binary-variable name="OSMPSensorViewOut" role="base.lo" mime-type="application/x-open-simulation-interface; type=SensorView; version=@OSIVERSION@"/></Tool>
+        <Tool name="net.pmsf.osmp" xmlns:osmp="http://xsd.pmsf.net/OSISensorModelPackaging"><osmp:osmp-binary-variable name="OSMPSensorViewOut" role="base.lo" mime-type="application/x-open-simulation-interface; type=SensorView; version="/></Tool>
       </Annotations>
     </ScalarVariable>
     <ScalarVariable name="OSMPSensorViewOut.base.hi" valueReference="1" causality="output" variability="discrete" initial="exact">
       <Integer start="0"/>
       <Annotations>
-        <Tool name="net.pmsf.osmp" xmlns:osmp="http://xsd.pmsf.net/OSISensorModelPackaging"><osmp:osmp-binary-variable name="OSMPSensorViewOut" role="base.hi" mime-type="application/x-open-simulation-interface; type=SensorView; version=@OSIVERSION@"/></Tool>
+        <Tool name="net.pmsf.osmp" xmlns:osmp="http://xsd.pmsf.net/OSISensorModelPackaging"><osmp:osmp-binary-variable name="OSMPSensorViewOut" role="base.hi" mime-type="application/x-open-simulation-interface; type=SensorView; version="/></Tool>
       </Annotations>
     </ScalarVariable>
     <ScalarVariable name="OSMPSensorViewOut.size" valueReference="2" causality="output" variability="discrete" initial="exact">
       <Integer start="0"/>
       <Annotations>
-        <Tool name="net.pmsf.osmp" xmlns:osmp="http://xsd.pmsf.net/OSISensorModelPackaging"><osmp:osmp-binary-variable name="OSMPSensorViewOut" role="size" mime-type="application/x-open-simulation-interface; type=SensorView; version=@OSIVERSION@"/></Tool>
+        <Tool name="net.pmsf.osmp" xmlns:osmp="http://xsd.pmsf.net/OSISensorModelPackaging"><osmp:osmp-binary-variable name="OSMPSensorViewOut" role="size" mime-type="application/x-open-simulation-interface; type=SensorView; version="/></Tool>
       </Annotations>
     </ScalarVariable>
     <ScalarVariable name="valid" valueReference="0" causality="output" variability="discrete" initial="exact">
