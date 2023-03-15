@@ -74,6 +74,24 @@
             </Properties>
         </Vehicle>
 
+        <Vehicle name="car_red1" vehicleCategory="car" model3d="../models/car_blue.osgb" role="ambulance">
+            <!-- model bounding box xyz: 1.46, 0.00, 0.77 lwh: 5.04, 2.04, 1.49 -->
+            <BoundingBox>
+                <Center x="1.45" y="0.0" z="0.75"/>
+                <Dimensions width="2.0" length="5.04" height="1.5"/>
+            </BoundingBox>
+            <Performance maxSpeed="70" maxDeceleration="10" maxAcceleration="5"/>
+            <Axles>
+                <FrontAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="2.98" positionZ="0.4"/>
+                <RearAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="0" positionZ="0.4"/>
+            </Axles>
+            <Properties>
+                <Property name="model_id" value="2"/>
+                <!-- Scale modes: None, BBToModel, ModelToBB -->
+                <Property name="scaleMode" value="BBToModel"/>
+            </Properties>
+        </Vehicle>
+
         <Vehicle name="car_yellow" vehicleCategory="car" model3d="../models/car_yellow.osgb">
             <!-- model bounding box xyz: 1.46, 0.00, 0.77 lwh: 5.04, 2.04, 1.49 -->
             <BoundingBox>

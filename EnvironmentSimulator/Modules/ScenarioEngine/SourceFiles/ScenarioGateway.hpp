@@ -15,7 +15,7 @@
 #include "OSCBoundingBox.hpp"
 #include "Entities.hpp"
 
-#define DAT_FILE_FORMAT_VERSION 2
+#define DAT_FILE_FORMAT_VERSION 3
 #define DAT_FILENAME_SIZE       512
 
 namespace scenarioengine
@@ -29,6 +29,7 @@ namespace scenarioengine
         int            model_id;
         int            obj_type;      // 0=None, 1=Vehicle, 2=Pedestrian, 3=MiscObj (see Object::Type enum)
         int            obj_category;  // sub type for vehicle, pedestrian and miscobj
+        int            obj_role;      // role for vehicle and pedestrian
         int            ctrl_type;     // See Controller::Type enum
         double         timeStamp;
         char           name[NAME_LEN];
@@ -53,6 +54,7 @@ namespace scenarioengine
         int            model_id;
         int            obj_type;      // 0=None, 1=Vehicle, 2=Pedestrian, 3=MiscObj (see Object::Type enum)
         int            obj_category;  // sub type for vehicle, pedestrian and miscobj
+        int            obj_role;      // role for vehicle and pedestrian
         int            ctrl_type;     // See Controller::Type enum
         float          timeStamp;
         char           name[NAME_LEN];
@@ -100,6 +102,7 @@ namespace scenarioengine
                     std::string            name,
                     int                    obj_type,
                     int                    obj_category,
+                    int                    obj_role,
                     int                    model_id,
                     int                    ctrl_type,
                     OSCBoundingBox         boundingbox,
@@ -115,6 +118,7 @@ namespace scenarioengine
                     std::string    name,
                     int            obj_type,
                     int            obj_category,
+                    int            obj_role,
                     int            model_id,
                     int            ctrl_type,
                     OSCBoundingBox boundingbox,
@@ -135,6 +139,7 @@ namespace scenarioengine
                     std::string    name,
                     int            obj_type,
                     int            obj_category,
+                    int            obj_role,
                     int            model_id,
                     int            ctrl_type,
                     OSCBoundingBox boundingbox,
@@ -153,6 +158,7 @@ namespace scenarioengine
                     std::string    name,
                     int            obj_type,
                     int            obj_category,
+                    int            obj_role,
                     int            model_id,
                     int            ctrl_type,
                     OSCBoundingBox boundingbox,
@@ -198,6 +204,7 @@ namespace scenarioengine
                          std::string            name,
                          int                    obj_type,
                          int                    obj_category,
+                         int                    obj_role,
                          int                    model_id,
                          int                    ctrl_type,
                          OSCBoundingBox         boundingbox,
@@ -214,6 +221,7 @@ namespace scenarioengine
                          std::string    name,
                          int            obj_type,
                          int            obj_category,
+                         int            obj_role,
                          int            model_id,
                          int            ctrl_type,
                          OSCBoundingBox boundingbox,
@@ -235,6 +243,7 @@ namespace scenarioengine
                          std::string    name,
                          int            obj_type,
                          int            obj_category,
+                         int            obj_role,
                          int            model_id,
                          int            ctrl_type,
                          OSCBoundingBox boundingbox,
@@ -253,6 +262,7 @@ namespace scenarioengine
                          std::string    name,
                          int            obj_type,
                          int            obj_category,
+                         int            obj_role,
                          int            model_id,
                          int            ctrl_type,
                          OSCBoundingBox boundingbox,
@@ -272,6 +282,7 @@ namespace scenarioengine
                          std::string    name,
                          int            obj_type,
                          int            obj_category,
+                         int            obj_role,
                          int            model_id,
                          int            ctrl_type,
                          OSCBoundingBox boundingbox,

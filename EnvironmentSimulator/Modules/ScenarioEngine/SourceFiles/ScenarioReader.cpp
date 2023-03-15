@@ -529,6 +529,15 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
     vehicle->typeName_ = parameters.ReadAttribute(vehicleNode, "name");
     vehicle->SetCategory(parameters.ReadAttribute(vehicleNode, "vehicleCategory"));
 
+    if (parameters.ReadAttribute(vehicleNode, "role").empty())
+    {
+        vehicle->SetRole("none");
+    }
+    else if (!parameters.ReadAttribute(vehicleNode, "role").empty())
+    {
+        vehicle->SetRole(parameters.ReadAttribute(vehicleNode, "role"));
+    }
+
     // get File based on Category, and set default 3D model id
     if (vehicle->category_ == Vehicle::Category::BICYCLE)
     {
@@ -755,6 +764,15 @@ Pedestrian *ScenarioReader::parseOSCPedestrian(pugi::xml_node pedestrianNode)
     OSCBoundingBox boundingbox = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
     ParseOSCBoundingBox(boundingbox, pedestrianNode);
     pedestrian->boundingbox_ = boundingbox;
+
+    if (parameters.ReadAttribute(pedestrianNode, "role").empty())
+    {
+        pedestrian->setPedRole("none");
+    }
+    else if (!parameters.ReadAttribute(pedestrianNode, "role").empty())
+    {
+        pedestrian->setPedRole(parameters.ReadAttribute(pedestrianNode, "role"));
+    }
 
     // Set default model_id, will be overwritten if that property is defined
     if (pedestrian->category_ == Pedestrian::Category::ANIMAL)

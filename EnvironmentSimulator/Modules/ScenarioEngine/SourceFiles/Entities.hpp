@@ -149,6 +149,7 @@ namespace scenarioengine
         EntityScaleMode scaleMode_;
 
         int         category_;  // specific object category in vehicle, pedestrian or misobject
+        int         role_;      // Specific roles for entity objects of type Vehicle or Pedestrian
         std::string typeName_;  // Name of the vehicle-, pedestrian- or misc object type
         std::string name_;
 
@@ -569,6 +570,18 @@ namespace scenarioengine
             TRAM        = 9
         } Category;
 
+        typedef enum
+        {
+            NONE = 0,
+            AMBULANCE = 1,
+            CIVIL = 2,
+            FIRE = 3,
+            MILITARY = 4,
+            POLICE = 5,
+            PUBLIC_TRANSPORT = 6,
+            ROAD_ASSISTANCE = 7
+        }Role;
+
         Vehicle();
         Vehicle(const Vehicle& v);
         Vehicle& operator=(const Vehicle&) = default;
@@ -615,6 +628,42 @@ namespace scenarioengine
 
             return;
         }
+
+        void SetRole(std::string role)
+        {
+            if (role == "ambulance")
+            {
+                role_ = static_cast<int>(Vehicle::Role::AMBULANCE);
+            }
+            else if (role == "civil")
+            {
+                role_ = static_cast<int>(Vehicle::Role::CIVIL);
+            }
+            else if (role == "fire")
+            {
+                role_ = static_cast<int>(Vehicle::Role::FIRE);
+            }
+            else if (role == "military")
+            {
+                role_ = static_cast<int>(Vehicle::Role::MILITARY);
+            }
+            else if (role == "police")
+            {
+                role_ = static_cast<int>(Vehicle::Role::POLICE);
+            }
+            else if (role == "public_transport")
+            {
+                role_ = static_cast<int>(Vehicle::Role::PUBLIC_TRANSPORT);
+            }
+            else if (role == "road_assistance")
+            {
+                role_ = static_cast<int>(Vehicle::Role::ROAD_ASSISTANCE);
+            }
+            else
+            {
+                role_ = static_cast<int>(Vehicle::Role::NONE);
+            }
+        }
         int  ConnectTrailer(Vehicle* trailer);
         void AlignTrailers();
 
@@ -633,6 +682,11 @@ namespace scenarioengine
         } Category;
 
         double mass_; /**< The mass of a pedestrian in kg. */
+        Vehicle *veh = new Vehicle();
+        void setPedRole (std::string role)
+        {
+            veh->SetRole(role);
+        }
 
         Pedestrian() : Object(Object::Type::PEDESTRIAN), mass_(0.0)
         {

@@ -43,7 +43,7 @@ int main(int argc, char* argv[])
             std::string name = "object_" + std::to_string(counter);
             Car         car  = {0, 0.0f};
 
-            car.id = SE_AddObject(name.c_str(), 1, 0, counter % 11);
+            car.id = SE_AddObject(name.c_str(), 1, 0, 0, counter % 11);
             if (car.id >= 0)
             {
                 cars.push_back(car);

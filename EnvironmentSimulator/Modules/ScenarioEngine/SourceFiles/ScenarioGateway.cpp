@@ -35,6 +35,7 @@ ObjectState::ObjectState(int                    id,
                          std::string            name,
                          int                    obj_type,
                          int                    obj_category,
+                         int                    obj_role,
                          int                    model_id,
                          int                    ctrl_type,
                          OSCBoundingBox         boundingbox,
@@ -51,6 +52,7 @@ ObjectState::ObjectState(int                    id,
     state_.info.id           = id;
     state_.info.obj_type     = obj_type;
     state_.info.obj_category = obj_category;
+    state_.info.obj_role     = obj_role;
     state_.info.model_id     = model_id;
     state_.info.ctrl_type    = ctrl_type;
     state_.info.timeStamp    = timestamp;
@@ -72,6 +74,7 @@ ObjectState::ObjectState(int            id,
                          std::string    name,
                          int            obj_type,
                          int            obj_category,
+                         int            obj_role,
                          int            model_id,
                          int            ctrl_type,
                          OSCBoundingBox boundingbox,
@@ -93,6 +96,7 @@ ObjectState::ObjectState(int            id,
     state_.info.id           = id;
     state_.info.obj_type     = obj_type;
     state_.info.obj_category = obj_category;
+    state_.info.obj_role     = obj_role;
     state_.info.model_id     = model_id;
     state_.info.ctrl_type    = ctrl_type;
     state_.info.name[0]      = 0;
@@ -116,6 +120,7 @@ ObjectState::ObjectState(int            id,
                          std::string    name,
                          int            obj_type,
                          int            obj_category,
+                         int            obj_role,
                          int            model_id,
                          int            ctrl_type,
                          OSCBoundingBox boundingbox,
@@ -135,6 +140,7 @@ ObjectState::ObjectState(int            id,
     state_.info.id           = id;
     state_.info.obj_type     = obj_type;
     state_.info.obj_category = obj_category;
+    state_.info.obj_role     = obj_role;
     state_.info.model_id     = model_id;
     state_.info.ctrl_type    = ctrl_type;
     state_.info.timeStamp    = timestamp;
@@ -156,6 +162,7 @@ ObjectState::ObjectState(int            id,
                          std::string    name,
                          int            obj_type,
                          int            obj_category,
+                         int            obj_role,
                          int            model_id,
                          int            ctrl_type,
                          OSCBoundingBox boundingbox,
@@ -173,6 +180,7 @@ ObjectState::ObjectState(int            id,
     state_.info.id           = id;
     state_.info.obj_type     = obj_type;
     state_.info.obj_category = obj_category;
+    state_.info.obj_role     = obj_role;
     state_.info.model_id     = model_id;
     state_.info.ctrl_type    = ctrl_type;
     state_.info.timeStamp    = timestamp;
@@ -192,7 +200,7 @@ ObjectState::ObjectState(int            id,
 
 void ObjectState::Print()
 {
-    LOG("state: \n\tid %d\n\tname %s\n\tmodel_id: %d\n\tctrl_type: %d\n\ttime %.2f\n\tx %.2f\n\ty %.2f\n\th %.2f\n\tspeed %.2f\twheel_angle %.2f type %d category %d",
+    LOG("state: \n\tid %d\n\tname %s\n\tmodel_id: %d\n\tctrl_type: %d\n\ttime %.2f\n\tx %.2f\n\ty %.2f\n\th %.2f\n\tspeed %.2f\twheel_angle %.2f type %d category %d role %d",
         state_.info.id,
         state_.info.name,
         state_.info.model_id,
@@ -204,7 +212,8 @@ void ObjectState::Print()
         state_.info.speed,
         state_.info.wheel_angle,
         state_.info.obj_type,
-        state_.info.obj_category);
+        state_.info.obj_category,
+        state_.info.obj_role);
     LOG("state: \n\tbounding box: \ncenter: x: %.2f, y: %.2f, z: %.2f\n\tdimensions: width: %.2f, length: %.2f, height: %.2f scaleMode: %d visMask: %d",
         static_cast<double>(state_.info.boundingbox.center_.x_),
         static_cast<double>(state_.info.boundingbox.center_.y_),
@@ -285,6 +294,7 @@ int ScenarioGateway::reportObject(int                    id,
                                   std::string            name,
                                   int                    obj_type,
                                   int                    obj_category,
+                                  int                    obj_role,
                                   int                    model_id,
                                   int                    ctrl_type,
                                   OSCBoundingBox         boundingbox,
@@ -306,6 +316,7 @@ int ScenarioGateway::reportObject(int                    id,
                                     name,
                                     obj_type,
                                     obj_category,
+                                    obj_role,
                                     model_id,
                                     ctrl_type,
                                     boundingbox,
@@ -337,6 +348,7 @@ int ScenarioGateway::reportObject(int            id,
                                   std::string    name,
                                   int            obj_type,
                                   int            obj_category,
+                                  int            obj_role,
                                   int            model_id,
                                   int            ctrl_type,
                                   OSCBoundingBox boundingbox,
@@ -364,6 +376,7 @@ int ScenarioGateway::reportObject(int            id,
                                     name,
                                     obj_type,
                                     obj_category,
+                                    obj_role,
                                     model_id,
                                     ctrl_type,
                                     boundingbox,
@@ -400,6 +413,7 @@ int ScenarioGateway::reportObject(int            id,
                                   std::string    name,
                                   int            obj_type,
                                   int            obj_category,
+                                  int            obj_role,
                                   int            model_id,
                                   int            ctrl_type,
                                   OSCBoundingBox boundingbox,
@@ -424,6 +438,7 @@ int ScenarioGateway::reportObject(int            id,
                                     name,
                                     obj_type,
                                     obj_category,
+                                    obj_role,
                                     model_id,
                                     ctrl_type,
                                     boundingbox,
@@ -460,6 +475,7 @@ int ScenarioGateway::reportObject(int            id,
                                   std::string    name,
                                   int            obj_type,
                                   int            obj_category,
+                                  int            obj_role,
                                   int            model_id,
                                   int            ctrl_type,
                                   OSCBoundingBox boundingbox,
@@ -485,6 +501,7 @@ int ScenarioGateway::reportObject(int            id,
                                     name,
                                     obj_type,
                                     obj_category,
+                                    obj_role,
                                     model_id,
                                     ctrl_type,
                                     boundingbox,
@@ -519,6 +536,7 @@ int ScenarioGateway::reportObject(int            id,
                                   std::string    name,
                                   int            obj_type,
                                   int            obj_category,
+                                  int            obj_role,
                                   int            model_id,
                                   int            ctrl_type,
                                   OSCBoundingBox boundingbox,
@@ -543,6 +561,7 @@ int ScenarioGateway::reportObject(int            id,
                                     name,
                                     obj_type,
                                     obj_category,
+                                    obj_role,
                                     model_id,
                                     ctrl_type,
                                     boundingbox,

@@ -92,6 +92,7 @@ namespace scenarioengine
                                               "Ego",
                                               static_cast<int>(Object::Type::VEHICLE),
                                               static_cast<int>(Vehicle::Category::CAR),
+                                              static_cast<int>(Vehicle::Role::NONE),
                                               0,
                                               1,
                                               bbox,

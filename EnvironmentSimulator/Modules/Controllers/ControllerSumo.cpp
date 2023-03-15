@@ -200,6 +200,7 @@ void ControllerSumo::Step(double timeStep)
                                        obj->name_,
                                        static_cast<int>(obj->type_),
                                        obj->category_,
+                                       obj->role_,
                                        obj->model_id_,
                                        obj->GetActivatedControllerType(),
                                        obj->boundingbox_,

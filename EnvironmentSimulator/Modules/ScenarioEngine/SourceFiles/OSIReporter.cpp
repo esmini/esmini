@@ -89,8 +89,13 @@ OSIReporter::OSIReporter()
     obj_osi_external.sv = new osi3::SensorView();
 
     obj_osi_internal.gt->mutable_version()->set_version_major(3);
-    obj_osi_internal.gt->mutable_version()->set_version_minor(0);
+#ifdef _OSI_VERSION_3_3_1
+    obj_osi_internal.gt->mutable_version()->set_version_minor(3);
+    obj_osi_internal.gt->mutable_version()->set_version_patch(1);
+#else
+    obj_osi_internal.gt->mutable_version()->set_version_minor(5);
     obj_osi_internal.gt->mutable_version()->set_version_patch(0);
+#endif
 
     obj_osi_internal.gt->mutable_timestamp()->set_seconds(0);
     obj_osi_internal.gt->mutable_timestamp()->set_nanos(0);
@@ -694,6 +699,44 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState *objectState)
             obj_osi_internal.mobj->mutable_vehicle_classification()->set_type(osi3::MovingObject_VehicleClassification::TYPE_UNKNOWN);
             LOG("OSIReporter::UpdateOSIMovingObject -> Unsupported moving object category");
         }
+
+#ifdef _OSI_VERSION_3_3_1
+        LOG_ONCE("using OSI 3.3.1, skipping vehicle role attribute");
+#else
+        LOG_ONCE("using OSI 3.5.0, ---------->");
+        if (objectState->state_.info.obj_role == Vehicle::Role::AMBULANCE)
+        {
+            obj_osi_internal.mobj->mutable_vehicle_classification()->set_role(osi3::MovingObject_VehicleClassification::ROLE_AMBULANCE);
+        }
+        else if (objectState->state_.info.obj_role == Vehicle::Role::CIVIL)
+        {
+            obj_osi_internal.mobj->mutable_vehicle_classification()->set_role(osi3::MovingObject_VehicleClassification::ROLE_CIVIL);
+        }
+        else if (objectState->state_.info.obj_role == Vehicle::Role::FIRE)
+        {
+            obj_osi_internal.mobj->mutable_vehicle_classification()->set_role(osi3::MovingObject_VehicleClassification::ROLE_FIRE);
+        }
+        else if (objectState->state_.info.obj_role == Vehicle::Role::MILITARY)
+        {
+            obj_osi_internal.mobj->mutable_vehicle_classification()->set_role(osi3::MovingObject_VehicleClassification::ROLE_MILITARY);
+        }
+        else if (objectState->state_.info.obj_role == Vehicle::Role::POLICE)
+        {
+            obj_osi_internal.mobj->mutable_vehicle_classification()->set_role(osi3::MovingObject_VehicleClassification::ROLE_POLICE);
+        }
+        else if (objectState->state_.info.obj_role == Vehicle::Role::PUBLIC_TRANSPORT)
+        {
+            obj_osi_internal.mobj->mutable_vehicle_classification()->set_role(osi3::MovingObject_VehicleClassification::ROLE_PUBLIC_TRANSPORT);
+        }
+        else if (objectState->state_.info.obj_role == Vehicle::Role::ROAD_ASSISTANCE)
+        {
+            obj_osi_internal.mobj->mutable_vehicle_classification()->set_role(osi3::MovingObject_VehicleClassification::ROLE_ROAD_ASSISTANCE);
+        }
+        else
+        {
+            obj_osi_internal.mobj->mutable_vehicle_classification()->set_role(osi3::MovingObject_VehicleClassification::ROLE_UNKNOWN);
+        }
+#endif
     }
     else if (objectState->state_.info.obj_type == static_cast<int>(Object::Type::PEDESTRIAN))
     {

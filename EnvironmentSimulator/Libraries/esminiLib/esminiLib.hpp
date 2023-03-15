@@ -691,10 +691,11 @@ extern "C"
             @param object_name Name of the object, preferably be unique
             @param object_type Type of the object. See Entities.hpp::Object::Type. Default=1 (VEHICLE).
             @param object_category Category of the object. Depends on type, see descendants of Entities.hpp::Object. Set to 0 if not known.
+            @param object_role role of the object. Depends on type, See Entities.hpp::Object::Role. Set to 0 if not known.
             @param model_id Id of the 3D model to represent the object. See resources/model_ids.txt.
             @return 0 if successful, -1 if not
     */
-    SE_DLL_API int SE_AddObject(const char *object_name, int object_type, int object_category, int model_id);
+    SE_DLL_API int SE_AddObject(const char *object_name, int object_type, int object_category, int object_role, int model_id);
 
     /**
             Delete object

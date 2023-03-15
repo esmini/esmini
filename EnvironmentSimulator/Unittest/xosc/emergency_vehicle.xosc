@@ -9,9 +9,8 @@
                author="SimS"/>
    <ParameterDeclarations>
       <ParameterDeclaration name="HostVehicle" parameterType="string" value="car_white"/>
-      <ParameterDeclaration name="TargetVehicle" parameterType="string" value="car_red"/>
+      <ParameterDeclaration name="TargetVehicle" parameterType="string" value="car_red1"/>
       <ParameterDeclaration name="HeadwayTime_LaneChange" parameterType="double" value="0.4"/>
-      <ParameterDeclaration name="HeadwayTime_Brake" parameterType="double" value="1.0"/>
    </ParameterDeclarations>
    <CatalogLocations>
       <VehicleCatalog>
@@ -19,13 +18,11 @@
       </VehicleCatalog>
    </CatalogLocations>
    <RoadNetwork>
-      <LogicFile filepath="../EnvironmentSimulator/Unittest/xodr/straight_500_superelevation_elevation.xodr"/>
+      <LogicFile filepath="../EnvironmentSimulator/Unittest/xodr/straight_3000m.xodr"/>
    </RoadNetwork>
    <Entities>
       <ScenarioObject name="Ego">
          <CatalogReference catalogName="VehicleCatalog" entryName="$HostVehicle"/>
-            <Vehicle role="ambulance">
-            </Vehicle>
       </ScenarioObject>
       <ScenarioObject name="OverTaker">
          <CatalogReference catalogName="VehicleCatalog" entryName="$TargetVehicle"/>
@@ -48,7 +45,7 @@
                <PrivateAction>
                   <TeleportAction>
                      <Position>
-                        <LanePosition roadId="1" laneId="-1" offset="0" s="50"/>
+                        <LanePosition roadId="1" laneId="-2" offset="0" s="50"/>
                      </Position>
                   </TeleportAction>
                </PrivateAction>
@@ -112,101 +109,6 @@
                                                           freespace="true"
                                                           alongRoute="true"
                                                           rule="greaterThan"/>
-                                 </EntityCondition>
-                              </ByEntityCondition>
-                           </Condition>
-                        </ConditionGroup>
-                     </StartTrigger>
-                  </Event>
-               </Maneuver>
-            </ManeuverGroup>
-            <ManeuverGroup maximumExecutionCount="1" name="EgoSequence">
-               <Actors selectTriggeringEntities="false">
-                  <EntityRef entityRef="Ego"/>
-               </Actors>
-               <Maneuver name="EgoBrakeManeuver">
-                  <Event name="EgoBrakeEvent" priority="overwrite">
-                     <Action name="EgoBrakeAction">
-                        <PrivateAction>
-                           <LongitudinalAction>
-                              <SpeedAction>
-                                 <SpeedActionDynamics dynamicsShape="linear" value="-2" dynamicsDimension="rate"/>
-                                 <SpeedActionTarget>
-                                    <AbsoluteTargetSpeed value="0"/>
-                                 </SpeedActionTarget>
-                              </SpeedAction>
-                           </LongitudinalAction>
-                        </PrivateAction>
-                     </Action>
-                     <StartTrigger>
-                        <ConditionGroup>
-                           <Condition name="EgoBrakeCondition" delay="0" conditionEdge="rising">
-                              <ByEntityCondition>
-                                 <TriggeringEntities triggeringEntitiesRule="any">
-                                    <EntityRef entityRef="$owner"/>
-                                 </TriggeringEntities>
-                                 <EntityCondition>
-                                    <AccelerationCondition value="-0.2" rule="greaterThan" direction="lateral"/>
-                                 </EntityCondition>
-                              </ByEntityCondition>
-                           </Condition>
-                        </ConditionGroup>
-                     </StartTrigger>
-                  </Event>
-               </Maneuver>
-               <Maneuver name="EgoAccelManeuver">
-                  <Event name="EgoAccelEvent" priority="overwrite">
-                     <Action name="EgoAccelAction">
-                        <PrivateAction>
-                           <LongitudinalAction>
-                              <SpeedAction>
-                                 <SpeedActionDynamics dynamicsShape="linear" value="-2" dynamicsDimension="rate"/>
-                                 <SpeedActionTarget>
-                                    <AbsoluteTargetSpeed value="15"/>
-                                 </SpeedActionTarget>
-                              </SpeedAction>
-                           </LongitudinalAction>
-                        </PrivateAction>
-                     </Action>
-                     <StartTrigger>
-                        <ConditionGroup>
-                           <Condition name="EgoAccelCondition" delay="0" conditionEdge="rising">
-                              <ByEntityCondition>
-                                 <TriggeringEntities triggeringEntitiesRule="any">
-                                    <EntityRef entityRef="Ego"/>
-                                 </TriggeringEntities>
-                                 <EntityCondition>
-                                    <SpeedCondition value="1" rule="lessThan" direction="longitudinal"/>
-                                 </EntityCondition>
-                              </ByEntityCondition>
-                           </Condition>
-                        </ConditionGroup>
-                     </StartTrigger>
-                  </Event>
-               </Maneuver>
-               <Maneuver name="EgoAccelRelManeuver">
-                  <Event name="EgoAccelRelEvent" priority="overwrite">
-                     <Action name="EgoAccelRelAction">
-                        <PrivateAction>
-                           <LateralAction>
-                              <LaneChangeAction >
-                                 <LaneChangeActionDynamics dynamicsShape="sinusoidal" value="5" dynamicsDimension="time"/>
-                                 <LaneChangeTarget>
-                                    <AbsoluteTargetLane value="1"/>
-                                 </LaneChangeTarget>
-                              </LaneChangeAction>
-                           </LateralAction>
-                        </PrivateAction>
-                     </Action>
-                     <StartTrigger>
-                        <ConditionGroup>
-                           <Condition name="EgoAccelRelCondition" delay="0" conditionEdge="rising">
-                              <ByEntityCondition>
-                                 <TriggeringEntities triggeringEntitiesRule="any">
-                                    <EntityRef entityRef="OverTaker"/>
-                                 </TriggeringEntities>
-                                 <EntityCondition>
-                                    <RelativeSpeedCondition value="1" rule="lessThan" entityRef="Ego" direction="vertical"/>
                                  </EntityCondition>
                               </ByEntityCondition>
                            </Condition>

@@ -597,6 +597,7 @@ void ControllerRel2Abs::Step(double timeStep)
                            object_->name_,
                            static_cast<int>(object_->type_),
                            object_->category_,
+                           object_->role_,
                            object_->model_id_,
                            object_->GetActivatedControllerType(),
                            object_->boundingbox_,

@@ -54,7 +54,7 @@ while (timestamp_now < 30.0 and not se.SE_GetQuitFlag() == 1):
     if timestamp_now > distance * counter / speed:
         # Add a vehicle at regular distance
         name = "object_" + str(counter)
-        car_id = se.SE_AddObject(b"name", 1, 0, counter % 11)
+        car_id = se.SE_AddObject(b"name", 1, 0, 0, counter % 11)
         if car_id >= 0:
             cars.append(Car(car_id, 0.0))
         else:

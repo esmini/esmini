@@ -218,9 +218,10 @@ public static class ESMiniLib
         /// <param name="object_name">Name of the object, preferably be unique</param>
         /// <param name="object_type">Type of the object. See Entities.hpp::Object::Type. Default=1 (VEHICLE).</param>
         /// <param name="object_category">Category of the object. Depends on type, see descendants of Entities.hpp::Object. Set to 0 if not known.</param>
+        /// <param name="object_role"> role of the object. Depends on type, See Entities.hpp::Object::Role. Set to 0 if not known.</param>
         /// <param name="model_id">Id of the 3D model to represent the object. See resources/model_ids.txt.</param>
         /// <returns>0 on success, -1 on failure for any reason</returns>
-        public static extern int SE_AddObject(string object_name, int object_type, int object_category, int model_id);
+        public static extern int SE_AddObject(string object_name, int object_type, int object_category, int object_role, int model_id);
 
         [DllImport(LIB_NAME, EntryPoint = "SE_DeleteObject")]
         /// <summary>Delete object</summary>

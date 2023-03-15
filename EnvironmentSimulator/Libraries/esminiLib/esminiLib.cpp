@@ -1037,7 +1037,7 @@ extern "C"
         }
     }
 
-    SE_DLL_API int SE_AddObject(const char *object_name, int object_type, int object_category, int model_id)
+    SE_DLL_API int SE_AddObject(const char *object_name, int object_type, int object_category, int object_role, int model_id)
     {
         int object_id = -1;
 
@@ -1069,6 +1069,7 @@ extern "C"
                 vehicle->model_id_  = model_id;
                 vehicle->model3d_   = SE_Env::Inst().GetModelFilenameById(model_id);
                 vehicle->category_  = object_category;
+                vehicle->role_      = object_role;
 
                 Controller::InitArgs args = {"", "", 0, 0, 0, 0};
                 args.type                 = ControllerExternal::GetTypeNameStatic();
@@ -1086,6 +1087,7 @@ extern "C"
                                                       name,
                                                       object_type,
                                                       object_category,
+                                                      object_role,
                                                       model_id,
                                                       vehicle->GetActivatedControllerType(),
                                                       bb,
@@ -1192,6 +1194,7 @@ extern "C"
                                               obj->name_,
                                               obj->type_,
                                               obj->category_,
+                                              obj->role_,
                                               obj->model_id_,
                                               obj->GetActivatedControllerType(),
                                               obj->boundingbox_,
@@ -1222,6 +1225,7 @@ extern "C"
                                               obj->name_,
                                               obj->type_,
                                               obj->category_,
+                                              obj->role_,
                                               obj->model_id_,
                                               obj->GetActivatedControllerType(),
                                               obj->boundingbox_,
