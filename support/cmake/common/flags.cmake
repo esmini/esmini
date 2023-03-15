@@ -6,31 +6,12 @@ macro(set_special_build_flags)
 
     if(APPLE)
         set(CMAKE_CXX_FLAGS
-            "${CXX_STD_FLAG} -std=c++14 -pthread -fPIC -flto -DGL_SILENCE_DEPRECATION")
+            "${CXX_STD_FLAG} -std=c++17 -pthread -fPIC -flto -DGL_SILENCE_DEPRECATION")
         set(CMAKE_EXE_LINKER_FLAGS
             "${CMAKE_EXE_LINKER_FLAGS} -dead_strip")
     elseif(LINUX)
-        include(CheckCXXCompilerFlag)
-
-        # Check for standard to use
-        check_cxx_compiler_flag(
-            -std=c++14
-            HAVE_FLAG_STD_CXX14)
-
-        if(HAVE_FLAG_STD_CXX14)
-            set(CXX_STD_FLAG
-                "-std=c++14")
-        else()
-            check_cxx_compiler_flag(
-                -std=c++1y
-                HAVE_FLAG_STD_CXX1Y)
-            if(HAVE_FLAG_STD_CXX1Y)
-                set(CXX_STD_FLAG
-                    "-std=c++1y")
-            else()
-                message("Need compiler support for c++14 \(or 1y as the beta was called\)")
-            endif()
-        endif()
+        set(CXX_STD_FLAG
+            "-std=c++17")
 
         set(CMAKE_C_FLAGS
             "-std=c11 ${CMAKE_C_FLAGS}")
@@ -91,28 +72,8 @@ macro(set_special_build_flags)
                 /wd4100)
         endif()
     elseif(MINGW)
-        include(CheckCXXCompilerFlag)
-
-        # Check for standard to use
-        check_cxx_compiler_flag(
-            -std=c++14
-            HAVE_FLAG_STD_CXX14)
-
-        if(HAVE_FLAG_STD_CXX14)
-            set(CXX_STD_FLAG
-                "-std=c++14")
-        else()
-            check_cxx_compiler_flag(
-                -std=c++1y
-                HAVE_FLAG_STD_CXX1Y)
-            if(HAVE_FLAG_STD_CXX1Y)
-                set(CXX_STD_FLAG
-                    "-std=c++1y")
-            else()
-                message("Need compiler support for c++14 \(or 1y as the beta was called\)")
-            endif()
-        endif()
-
+        set(CXX_STD_FLAG
+            "-std=c++17")
         set(CMAKE_C_FLAGS
             "-std=c11 ${CMAKE_C_FLAGS}")
 

@@ -92,14 +92,7 @@ unittest(
 unittest(
     FollowRoute_test
     FollowRoute_test.cpp
-    ScenarioEngine
-    Controllers
-    RoadManager
-    CommonMini
-    ${VIEWER_LIBS_FOR_TEST}
-    ${OSG_LIBRARIES}
-    ${SUMO_LIBRARIES}
-    ${SOCK_LIB})
+    RoadManager)
 
 # ############################### Creating executable (FollowRouteController_test) ##############################################
 
