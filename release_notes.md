@@ -1,5 +1,29 @@
 ## esmini release notes
 
+### 2023-03-15 Version 2.30.0
+
+Project updates:
+- Bump C++ version from 14 to 17
+- Migrate CI to GitHub actions
+  - introducing further checks, e.g. formatting check, build and test more variants
+- Introducing "dev" as main development branch while master will be reserved mainly for releases
+
+New features and behaviors:
+- Add pause and step feature to odrviewer ([issue #407](https://github.com/esmini/esmini/issues/407))
+  - For complete command list, see Key shortcuts in [User guide - odrviewer](https://esmini.github.io/#_odrviewer)
+- Add some viewer options to replayer and odrviewer
+  - odrviewer: --aa_mode, --headless, --custom_fixed_camera
+  - replayer: --aa_mode, --headless
+  - For complete and updated launch arguments, see [User guide - Command reference](https://esmini.github.io/#_command_reference)
+- Add "Looming" driver model controller
+  - experimental implementation, see more info in [ControllerLooming.hpp#L14](https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/Modules/Controllers/ControllerLooming.hpp#L14)
+
+Improvements and fixes:
+- Support pause and quit during ghost head start
+- Add driver input reverse example ([issue #400](https://github.com/esmini/esmini/issues/400))
+- Add scenario, [one_car_on_hilly_road.xosc](https://github.com/esmini/esmini/blob/master/scripts/udp_driver/one_car_on_hilly_road.xosc), to demonstrate road alignment in UDP driver controller
+  - See [testUDPDriver.py](https://github.com/esmini/esmini/blob/master/scripts/udp_driver/testUDPDriver.py) how to run
+
 ### 2023-02-20 Version 2.29.3
 
 New features and behaviors:
