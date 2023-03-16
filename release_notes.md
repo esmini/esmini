@@ -1,6 +1,6 @@
 ## esmini release notes
 
-### 2023-03-15 Version 2.30.0
+### 2023-03-16 Version 2.30.0
 
 Project updates:
 - Bump C++ version from 14 to 17
