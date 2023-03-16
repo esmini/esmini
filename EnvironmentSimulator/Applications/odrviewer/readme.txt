@@ -82,16 +82,19 @@ Examples:
 
 Key shortcuts
 
-    H (shift h): This help text
-    TAB:         Move camera to next vehicle
-    Shift - TAB: Move camera to previoius vehicle
-    o:           Toggle show/hide OpenDRIVE road feature lines
-    u:           Toggle show / hide OSI road lines
-    y:           Toggle show / hide OSI road points
-    p:           Toggle show / hide environment 3D model
-    i:           Toggle info text showing time and speed
-    , (comma):   Toggle entity view : Model / None
-    ESC:         quit
+    H (shift + h): This help text
+    Space:         Toggle pause/play simulation
+    Return:        Step simulation(one timestep) then pause
+    TAB:           Move camera to next vehicle
+    Shift + TAB:   Move camera to previoius vehicle
+    Delete:        Same as above (Shift + TAB)
+    o:             Toggle show/hide OpenDRIVE road feature lines
+    u:             Toggle show / hide OSI road lines
+    y:             Toggle show / hide OSI road points
+    p:             Toggle show / hide environment 3D model
+    i:             Toggle info text showing time and speed
+    , (comma):     Toggle entity view : Model / None
+    ESC:           quit
 
     1 - 9: Camera models acording to :
         1: Custom camera model
