@@ -5,6 +5,7 @@ Optionally it can populate the road lanes with randomized dummy vehicles, which 
 Application is launched from command line (or batch file). 
 
 Usage: odrviewer [options]
+Usage: odrviewer [options]
 Options:
   --help
       Show this help message
@@ -52,6 +53,8 @@ Options:
       Specify seed number for random generator
   --speed_factor [speed_factor]  (default = 1.000000)
       speed_factor <number>
+  --stop_at_end_of_road
+      Instead of respawning elsewhere, stop when no connection exists
   --traffic_rule <rule (right/left)>
       Enforce left or right hand traffic, regardless OpenDRIVE rule attribute (default: right)
   --version

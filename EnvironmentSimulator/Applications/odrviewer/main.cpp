@@ -43,6 +43,7 @@ static double       density             = 1.0;  // Cars per 100 m
 static double       global_speed_factor = 1.0;
 static int          first_car_in_focus  = -1;
 static double       fixed_timestep      = -1.0;
+static bool         stop_at_end_of_road = false;
 
 static struct
 {
@@ -54,7 +55,7 @@ roadmanager::Road::RoadRule rule = roadmanager::Road::RoadRule::ROAD_RULE_UNDEFI
 
 double deltaSimTime;  // external - used by Viewer::RubberBandCamera
 
-typedef struct
+struct Car
 {
     int                    road_id_init;
     int                    lane_id_init;
@@ -64,7 +65,8 @@ typedef struct
     double                 speed_factor;  // speed vary bewtween lanes, m/s
     viewer::EntityModel   *model;
     int                    id;
-} Car;
+    bool                   stopped = false;
+};
 
 typedef struct
 {
@@ -285,6 +287,11 @@ int SetupCarsSpecial(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 
 void updateCar(roadmanager::OpenDrive *odrManager, Car *car, double dt)
 {
+    if (car->stopped)
+    {
+        return;
+    }
+
     double new_speed = car->pos->GetSpeedLimit() * car->speed_factor * global_speed_factor;
     double ds        = new_speed * dt;  // right lane is < 0 in road dir;
 
@@ -302,7 +309,11 @@ void updateCar(roadmanager::OpenDrive *odrManager, Car *car, double dt)
 
     if (static_cast<int>(car->pos->MoveAlongS(ds)) < 0)
     {
-        if (openEnds.size() == 0)
+        if (stop_at_end_of_road)
+        {
+            car->stopped = true;
+        }
+        else if (openEnds.size() == 0)
         {
             // If no open ends, respawn based on initial position
             // start from beginning of lane section - not initial s-position
@@ -395,6 +406,7 @@ int main(int argc, char **argv)
     opt.AddOption("save_generated_model", "Save generated 3D model (n/a when a scenegraph is loaded)");
     opt.AddOption("seed", "Specify seed number for random generator", "number");
     opt.AddOption("speed_factor", "speed_factor <number>", "speed_factor", std::to_string(global_speed_factor));
+    opt.AddOption("stop_at_end_of_road", "Instead of respawning elsewhere, stop when no connection exists");
     opt.AddOption("traffic_rule", "Enforce left or right hand traffic, regardless OpenDRIVE rule attribute (default: right)", "rule (right/left)");
     opt.AddOption("version", "Show version and quit");
 
@@ -552,6 +564,11 @@ int main(int argc, char **argv)
         if (opt.GetOptionSet("osi_points"))
         {
             viewer->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_OSI_POINTS);
+        }
+
+        if (opt.GetOptionSet("stop_at_end_of_road"))
+        {
+            stop_at_end_of_road = true;
         }
 
         if (opt.GetOptionSet("custom_fixed_camera") == true)
