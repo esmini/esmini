@@ -140,6 +140,7 @@ namespace scenarioengine
 		double off_road_timestamp_;
 		double stand_still_timestamp_;
 		bool reset_;			 // indicate discreet movement, teleporting, no odometer update
+		void* graphics_model_ptr_ = nullptr; // pointer to graphics model
 
 		Controller* controller_; // reference to any assigned controller object
 		double headstart_time_;

@@ -22,8 +22,8 @@
             </BoundingBox>
             <Performance maxSpeed="${250/3.6}" maxDeceleration="10" maxAcceleration="5"/>
             <Axles>
-                <FrontAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="2.98" positionZ="0.4"/>
-                <RearAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="0" positionZ="0.4"/>
+                <FrontAxle maxSteering="0.523598775598" wheelDiameter="0.76" trackWidth="1.68" positionX="2.98" positionZ="0.4"/>
+                <RearAxle maxSteering="0.523598775598" wheelDiameter="0.76" trackWidth="1.68" positionX="0" positionZ="0.4"/>
             </Axles>
             <TrailerHitch dx="-1.2"/>
             <Trailer>
@@ -44,8 +44,8 @@
             </BoundingBox>
             <Performance maxSpeed="69" maxDeceleration="10" maxAcceleration="5"/>
             <Axles>
-                <FrontAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="2.98" positionZ="0.4"/>
-                <RearAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="0" positionZ="0.4"/>
+                <FrontAxle maxSteering="0.523598775598" wheelDiameter="0.76" trackWidth="1.68" positionX="2.98" positionZ="0.4"/>
+                <RearAxle maxSteering="0.523598775598" wheelDiameter="0.76" trackWidth="1.68" positionX="0" positionZ="0.4"/>
             </Axles>
             <Properties>
                 <Property name="model_id" value="1"/>
@@ -64,8 +64,8 @@
             </BoundingBox>
             <Performance maxSpeed="70" maxDeceleration="10" maxAcceleration="5"/>
             <Axles>
-                <FrontAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="2.98" positionZ="0.4"/>
-                <RearAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="0" positionZ="0.4"/>
+                <FrontAxle maxSteering="0.523598775598" wheelDiameter="0.76" trackWidth="1.68" positionX="2.98" positionZ="0.4"/>
+                <RearAxle maxSteering="0.523598775598" wheelDiameter="0.76" trackWidth="1.68" positionX="0" positionZ="0.4"/>
             </Axles>
             <Properties>
                 <Property name="model_id" value="2"/>
@@ -82,8 +82,8 @@
             </BoundingBox>
             <Performance maxSpeed="70" maxDeceleration="10" maxAcceleration="5"/>
             <Axles>
-                <FrontAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="2.98" positionZ="0.4"/>
-                <RearAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="0" positionZ="0.4"/>
+                <FrontAxle maxSteering="0.523598775598" wheelDiameter="0.76" trackWidth="1.68" positionX="2.98" positionZ="0.4"/>
+                <RearAxle maxSteering="0.523598775598" wheelDiameter="0.76" trackWidth="1.68" positionX="0" positionZ="0.4"/>
             </Axles>
             <Properties>
                 <!-- Scale modes: None, BBToModel, ModelToBB -->
@@ -102,8 +102,8 @@
             </BoundingBox>
             <Performance maxSpeed="70" maxDeceleration="10" maxAcceleration="5"/>
             <Axles>
-                <FrontAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="2.98" positionZ="0.4"/>
-                <RearAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="0" positionZ="0.4"/>
+                <FrontAxle maxSteering="0.523598775598" wheelDiameter="0.76" trackWidth="1.68" positionX="2.98" positionZ="0.4"/>
+                <RearAxle maxSteering="0.523598775598" wheelDiameter="0.76" trackWidth="1.68" positionX="0" positionZ="0.4"/>
             </Axles>
             <Properties>
                 <!-- Scale modes: None, BBToModel, ModelToBB -->
@@ -120,8 +120,8 @@
             </BoundingBox>
             <Performance maxSpeed="70" maxDeceleration="10" maxAcceleration="5"/>
             <Axles>
-                <FrontAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="2.98" positionZ="0.4"/>
-                <RearAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="0" positionZ="0.4"/>
+                <FrontAxle maxSteering="0.523598775598" wheelDiameter="0.76" trackWidth="1.68" positionX="2.98" positionZ="0.4"/>
+                <RearAxle maxSteering="0.523598775598" wheelDiameter="0.76" trackWidth="1.68" positionX="0" positionZ="0.4"/>
             </Axles>
             <Properties>
                 <!-- Scale modes: None, BBToModel, ModelToBB -->
@@ -138,8 +138,8 @@
             </BoundingBox>
             <Performance maxSpeed="70" maxDeceleration="10" maxAcceleration="5"/>
             <Axles>
-                <FrontAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="2.98" positionZ="0.4"/>
-                <RearAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="0" positionZ="0.4"/>
+                <FrontAxle maxSteering="0.523598775598" wheelDiameter="0.9" trackWidth="1.68" positionX="2.98" positionZ="0.4"/>
+                <RearAxle maxSteering="0.523598775598" wheelDiameter="0.9" trackWidth="1.68" positionX="0" positionZ="0.4"/>
             </Axles>
             <Properties>
                 <!-- Scale modes: None, BBToModel, ModelToBB -->
@@ -316,8 +316,8 @@
             </BoundingBox>
             <Performance maxSpeed="${250/3.6}" maxDeceleration="10" maxAcceleration="5"/>
             <Axles>
-                <FrontAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="2.98" positionZ="0.4"/>
-                <RearAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="0" positionZ="0.4"/>
+                <FrontAxle maxSteering="0.523598775598" wheelDiameter="0.76" trackWidth="1.68" positionX="2.98" positionZ="0.4"/>
+                <RearAxle maxSteering="0.523598775598" wheelDiameter="0.76" trackWidth="1.68" positionX="0" positionZ="0.4"/>
             </Axles>
             <TrailerHitch dx="-1.2"/>
             <Trailer>

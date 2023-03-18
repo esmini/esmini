@@ -85,6 +85,8 @@ void DynamicVehicle::Init(
 	double width,
 	double height,
 	double mass,
+	double wheel_diameter,
+	double connection_point_z,
 	roadmanager::OpenDrive* odr,
 	double suspension_stiffness,
 	double friction_slip,
@@ -97,6 +99,11 @@ void DynamicVehicle::Init(
 		return;
 	}
 
+	height_ = height;
+	length_ = length;
+	width_ = width;
+	connection_point_z_ = connection_point_z;
+
 	// Setup dynamics world
 	btConstraintSolver* constraint_solver_ = new btSequentialImpulseConstraintSolver();
 	btDefaultCollisionConfiguration* collision_config_ = new btDefaultCollisionConfiguration();
@@ -106,6 +113,8 @@ void DynamicVehicle::Init(
 	btBroadphaseInterface* pair_cache_ = new btAxisSweep3(world_min, world_max);
 	dynamics_world_ = new btDiscreteDynamicsWorld(dispatcher_, pair_cache_, constraint_solver_, collision_config_);
 	dynamics_world_->setGravity(btVector3(0, 0, -10));
+	dynamics_world_->getSolverInfo().m_minimumSolverBatchSize = 128;  //for direct solver, it is better to solve multiple objects together, small batches have high overhead
+	dynamics_world_->getSolverInfo().m_globalCfm = 0.00001f;
 
 
 	// Create dynamic chassis object
@@ -115,18 +124,18 @@ void DynamicVehicle::Init(
 	// shift the center of mass with respect to the chassis
 	btTransform veh_xform_;
 	veh_xform_.setIdentity();
-	veh_xform_.setOrigin(btVector3(0, 0, 1));
-	btCompoundShape compound_;
-	compound_.addChildShape(veh_xform_, veh_shape_);
+	veh_xform_.setOrigin(btVector3(0, 0, 1.0f * static_cast<float>(height)));
+	btCompoundShape* compound_ = new btCompoundShape();
+	compound_->addChildShape(veh_xform_, veh_shape_);
 
 	// create a rigid body
 
 	btVector3 local_inertia(0, 0, 0);
 	veh_shape_->calculateLocalInertia(static_cast<float>(mass), local_inertia);
 
-	btRigidBody::btRigidBodyConstructionInfo rbInfo(static_cast<float>(mass), 0, veh_shape_, local_inertia);
+	//btRigidBody::btRigidBodyConstructionInfo rbInfo(static_cast<float>(mass), 0, compound_, local_inertia);
 
-	btRigidBody* veh_body_ = new btRigidBody(rbInfo);
+	btRigidBody* veh_body_ = new btRigidBody(static_cast<float>(mass), 0, compound_, local_inertia);
 
 	//Adds the vehicle chassis to the world
 	dynamics_world_->addRigidBody(veh_body_);
@@ -144,17 +153,17 @@ void DynamicVehicle::Init(
 
 	// setup wheels
 	vehicle_->setCoordinateSystem(1, 2, 0);  // forward, right, up
-	btScalar wheel_radius = 0.4f;
+	btScalar wheel_radius = static_cast<float>(0.5 * wheel_diameter);
 	btScalar wheel_width = 0.3f;
-	btScalar connection_height = 0;
 	btVector3 wheel_dir(0, 0, -1);  // downwards
-	btVector3 wheel_axle(0, 1, 0);  // the axis which the wheel rotates arround
-	btScalar suspension_rest_length((btScalar)0.6);
+	btVector3 wheel_axle(0, -1, 0);  // the axis which the wheel rotates arround
+	btScalar suspension_rest_length((btScalar)0.5);
 	bool is_front_wheel = true;
 	btVector3 connectionPointCS0;
 
 	// wheel configuration assumes the vehicle is centered at the origin
-	connectionPointCS0 = btVector3(0.5f * static_cast<float>(length) - 1.0f, 0.5f * static_cast<float>(width) - wheel_width, connection_height);
+	connectionPointCS0 = btVector3(0.5f * static_cast<float>(length) - 1.0f, 0.5f * static_cast<float>(width) - wheel_width,
+		static_cast<float>(connection_point_z_ + 0.5 * height));
 
 	vehicle_->addWheel(connectionPointCS0, wheel_dir, wheel_axle, suspension_rest_length, wheel_radius, tuning, is_front_wheel);
 	vehicle_->addWheel(connectionPointCS0 * btVector3(1, -1, 1), wheel_dir, wheel_axle, suspension_rest_length, wheel_radius, tuning, is_front_wheel);
@@ -165,11 +174,38 @@ void DynamicVehicle::Init(
 	for (int i = 0; i < vehicle_->getNumWheels(); i++)
 	{
 		btWheelInfo& wheel = vehicle_->getWheelInfo(i);
-		wheel.m_suspensionStiffness = static_cast<float>(suspension_stiffness);
-		wheel.m_wheelsDampingRelaxation = 0.3f * 2.0f * btSqrt(wheel.m_suspensionStiffness);
-		wheel.m_wheelsDampingCompression = 0.5f * 2.0f * btSqrt(wheel.m_suspensionStiffness);
-		wheel.m_frictionSlip = static_cast<float>(friction_slip);
-		wheel.m_rollInfluence = static_cast<float>(roll_influence);
+
+		// The stiffness constant for the suspension.  10.0 - Offroad buggy, 50.0 - Sports car, 200.0 - F1 Car
+		wheel.m_suspensionStiffness = 12.0f;
+		// From Vehicle Simulation With Bullet, Date: 16/8/2010, Kester Maddock
+		// https://docs.google.com/document/d/18edpOwtGgCwNyvakS78jxMajCuezotCU_0iezcwiFQc/edit?usp=sharing
+		// The damping coefficient for when the suspension is compressed.
+		// Set to k * 2.0 * btSqrt(m_suspensionStiffness) so k is proportional to critical damping.
+		// k = 0.0 undamped & bouncy, k = 1.0 critical damping
+		// k = 0.1 to 0.3 are good values
+		double k = 0.1f;
+		wheel.m_wheelsDampingCompression = static_cast<btScalar>(k * 2.0f * sqrt(suspension_stiffness));
+		// The damping coefficient for when the suspension is expanding.
+		// m_wheelsDampingRelaxation should be slightly larger than m_wheelsDampingCompression, eg k = 0.2 to 0.5
+		k = 0.2f;
+		wheel.m_wheelsDampingCompression = static_cast<btScalar>(k * 2.0f * sqrt(suspension_stiffness));
+		wheel.m_frictionSlip = 1000.0f;
+		wheel.m_rollInfluence = 0.1f;
+	}
+
+	vehicle_->setSteeringValue(0.0, 0);
+	vehicle_->setSteeringValue(0.0, 1);
+
+	veh_body_->setCenterOfMassTransform(btTransform::getIdentity());
+	veh_body_->setLinearVelocity(btVector3(0, 0, 0));
+	veh_body_->setAngularVelocity(btVector3(0, 0, 0));
+	vehicle_->resetSuspension();
+	for (int i = 0; i < vehicle_->getNumWheels(); i++)
+	{
+		//synchronize the wheels with the (interpolated) chassis worldtransform
+		vehicle_->updateWheelTransform(i, true);
+		vehicle_->applyEngineForce(0.0, i);
+		vehicle_->setBrake(0.0, i);
 	}
 
 	// never deactivate the vehicle
@@ -196,15 +232,16 @@ void DynamicVehicle::DrivingControlAnalog(double dt, double throttle, double ste
 void DynamicVehicle::Step(double dt)
 {
 	// Add wind force
+#if 0
 	float wf = powf(vehicle_->getRigidBody()->getLinearVelocity().length(), 2.0f);
 	btVector3 windForce = -5.0f * wf * vehicle_->getRigidBody()->getLinearVelocity();
 	vehicle_->getRigidBody()->applyCentralForce(windForce);
 
 	// add forces
 	int wheelIndex = 2;
-	float engine_force = 10.0;
-	float brake_force = -1.0;
-	float throttle = 1.0;
+	float engine_force = 0.0;
+	float brake_force = 0.0;
+	float throttle = 0.0;
 	vehicle_->applyEngineForce(engine_force, wheelIndex);
 	vehicle_->setBrake(brake_force + 5 * (1 - throttle), wheelIndex);
 	wheelIndex = 3;
@@ -217,6 +254,9 @@ void DynamicVehicle::Step(double dt)
 	wheelIndex = 1;
 	m_vehicle->setSteeringValue(steeringClamp * gVehicleSteering, wheelIndex);
 #endif
+#endif
+	vehicle_->setSteeringValue(0.0, 0);
+	vehicle_->setSteeringValue(0.0, 1);
 	dynamics_world_->stepSimulation(static_cast<float>(dt));
 }
 
@@ -241,6 +281,29 @@ void DynamicVehicle::GetRotation(double& h, double& p, double& r)
 	r = r_;
 }
 
+int DynamicVehicle::GetWheelInfo(int index, double& h, double& z)
+{
+	btScalar r[3] = { 0.0f, 0.0f, 0.0f };
+	const btTransform* xform = &(vehicle_->getRigidBody()->getCenterOfMassTransform());
+	xform->getRotation().getEulerZYX(r[0], r[1], r[2]);
+
+	if (index < vehicle_->getNumWheels())
+	{
+		btScalar wh, wp, wr;
+		xform = &(vehicle_->getWheelTransformWS(index));
+		xform->getRotation().getEulerZYX(wh, wp, wr);
+		h = GetAngleInInterval2PI(wh - r[0]);
+
+		z = 0.55 - vehicle_->getWheelInfo(index).m_raycastInfo.m_suspensionLength;
+		printf("suspensionRestLength %.2f connect point %.2f suspLen %.2f wheel z %.2f\n", connection_point_z_,
+			vehicle_->getWheelInfo(index).getSuspensionRestLength(),
+			vehicle_->getWheelInfo(index).m_raycastInfo.m_suspensionLength, xform->getOrigin()[2]);
+		return 0;
+	}
+
+	return -1;
+}
+
 void DynamicVehicle::Reset(double x, double y, double z, double h, double p, double r, double speed)
 {
 	vehicle_->getRigidBody()->clearForces();
@@ -254,7 +317,7 @@ void DynamicVehicle::Reset(double x, double y, double z, double h, double p, dou
 
 void DynamicVehicle::SetupFlatGround(double size)
 {
-	btCollisionShape* ground_shape = new btBoxShape(btVector3(static_cast<float>(size), static_cast<float>(size), 0.5f));
+	btCollisionShape* ground_shape = new btBoxShape(btVector3(static_cast<float>(size), static_cast<float>(size), 10.0f));
 
 
 	collision_shapes_.push_back(ground_shape);
@@ -262,10 +325,9 @@ void DynamicVehicle::SetupFlatGround(double size)
 	// create ground object, replaces localCreateRigidBody()
 	btTransform tr;
 	tr.setIdentity();
-	tr.setOrigin(btVector3(0, 0, -1.2f));
+	tr.setOrigin(btVector3(0, 0, -10.0f));
 
 	btVector3 localInertia(0, 0, 0);
-	//btDefaultMotionState* myMotionState = new btDefaultMotionState(tr);
 	btRigidBody* body = new btRigidBody(0, 0, ground_shape, localInertia);
 	body->setWorldTransform(tr);
 	dynamics_world_->addRigidBody(body);

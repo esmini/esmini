@@ -29,15 +29,16 @@ Controller* scenarioengine::InstantiateControllerDynamics(void* args)
 }
 
 ControllerDynamics::ControllerDynamics(InitArgs* args) :
-	length_(5.0), width_(2.0), height_(1.5), mass_(1000), suspension_stiffness_(2.3), friction_slip_(1.2), roll_influence_(1.0),
-	Controller(args)
+	length_(5.0), width_(2.0), height_(1.5), mass_(800), suspension_stiffness_(2.3), friction_slip_(1.2),
+	roll_influence_(1.0), connection_point_z_(0.0), Controller(args)
 {
 	if (args && args->properties)
 	{
+		if (args->properties->ValueExists("connectionPointZ"))
+		{
+			connection_point_z_ = strtod(args->properties->GetValueStr("connectionPointZ"));
+		}
 	}
-
-	vehicle_.Init(length_, width_, height_, mass_, object_->pos_.GetOpenDrive(), suspension_stiffness_, friction_slip_, roll_influence_);
-	vehicle_.SetupFlatGround(100);
 }
 
 ControllerDynamics::~ControllerDynamics()
@@ -48,6 +49,10 @@ ControllerDynamics::~ControllerDynamics()
 void ControllerDynamics::Init()
 {
 	printf("dynamics init\n");
+
+	vehicle_.Init(length_, width_, height_, mass_, object_->rear_axle_.wheelDiameter, connection_point_z_,
+		object_->pos_.GetOpenDrive(), suspension_stiffness_, friction_slip_, roll_influence_);
+	vehicle_.SetupFlatGround(100);
 
 	// Detach object from any constraints aligning to road
 	object_->pos_.SetAlignMode(roadmanager::Position::ALIGN_MODE::ALIGN_NONE);
@@ -62,20 +67,15 @@ void ControllerDynamics::Step(double timeStep)
 	double x, y, z, h, p, r;
 	vehicle_.GetPosition(x, y, z);
 	vehicle_.GetRotation(h, p, r);
+	gateway_->updateObjectWorldPos(object_->GetId(), 0.0, x, y, z, h, p, r);
 
 	for (int i = 0; i < vehicle_.vehicle_->getNumWheels(); i++)
 	{
-		const btTransform* xform = &(vehicle_.vehicle_->getWheelTransformWS(i));
-
-		gateway_->updateObjectWheelZ(object_->GetId(), 0.0, xform->getOrigin()[2]);
-
-		float wh, wp, wr;
-		xform->getRotation().getEulerZYX(wh, wp, wr);
-		gateway_->updateObjectWheelAngle(object_->GetId(), 0.0, h);
+		double wh, wz;
+		vehicle_.GetWheelInfo(i, wh, wz);
+		gateway_->updateObjectWheelAngle(object_->GetId(), 0.0, wh);
+		gateway_->updateObjectWheelZ(object_->GetId(), 0.0, wz);
 	}
-
-
-	gateway_->updateObjectWorldPos(object_->GetId(), 0.0, x, y, z, h, p, r);
 
 	Controller::Step(timeStep);
 }

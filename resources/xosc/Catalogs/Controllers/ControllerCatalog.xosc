@@ -25,9 +25,12 @@
             </Properties>
         </Controller>
         <Controller name="dynamicsController">
-            <ParameterDeclarations/>
+            <ParameterDeclarations>
+                <ParameterDeclaration name="ConnectionPointZ" parameterType="double" value="0.2"/>
+            </ParameterDeclarations>
             <Properties>
                 <Property name="esminiController" value="DynamicsController"/>
+                <Property name="connectionPointZ" value="$ConnectionPointZ"/>
             </Properties>
         </Controller>
         <Controller name="controllerRel2Abs">

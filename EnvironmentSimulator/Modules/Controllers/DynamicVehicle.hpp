@@ -50,10 +50,12 @@ namespace dynamicvehicle
 			double width,
 			double height,
 			double mass,
+			double wheel_diameter,
+			double connection_point_z,
 			roadmanager::OpenDrive* odr
 		)
 		{
-			Init(length, width, height, mass, odr, 20.0, 100.0, 0.5);
+			Init(length, width, height, mass, wheel_diameter, connection_point_z, odr, 20.0, 100.0, 0.5);
 		}
 
 		void Init(
@@ -61,6 +63,8 @@ namespace dynamicvehicle
 			double width,
 			double height,
 			double mass,
+			double wheel_diameter,
+			double connection_point_z,
 			roadmanager::OpenDrive* odr,
 			double suspension_stiffness,
 			double friction_slip,
@@ -81,6 +85,7 @@ namespace dynamicvehicle
 
 		void GetPosition(double& x, double& y, double& z);
 		void GetRotation(double& h, double& p, double& r);
+		int GetWheelInfo(int index, double& h, double& z);
 
 		void Reset() { Reset(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0); }
 		void Reset(double x, double y, double z, double h, double p, double r, double speed);
@@ -92,6 +97,10 @@ namespace dynamicvehicle
 		btDiscreteDynamicsWorld* dynamics_world_;
 		roadmanager::OpenDrive* odr_;
 		btAlignedObjectArray<btCollisionShape*> collision_shapes_;
+		double connection_point_z_ = 0.2f;
+		double height_ = 0.0;
+		double length_ = 0.0;
+		double width_ = 0.0;
 	};
 
 }

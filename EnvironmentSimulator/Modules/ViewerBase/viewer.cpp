@@ -1070,6 +1070,7 @@ osg::ref_ptr<osg::PositionAttitudeTransform> CarModel::AddWheel(osg::ref_ptr<osg
 		if (node != NULL)
 		{
 			tx_node = new osg::PositionAttitudeTransform;
+			tx_node->setName("TxWheel");
 			// We found the wheel. Put it under a useful transform node
 			tx_node->addChild(node);
 
@@ -1094,6 +1095,46 @@ osg::ref_ptr<osg::PositionAttitudeTransform> CarModel::AddWheel(osg::ref_ptr<osg
 	}
 
 	return tx_node;
+}
+
+int CarModel::IdentifyBody(osg::ref_ptr<osg::Node> carNode)
+{
+	// Find body node
+	std::vector<osg::Node*> nodes;
+	FindNamedNodes fnn("body", nodes);
+	carNode->accept(fnn);
+
+	if (nodes.size() > 1)
+	{
+		LOG("Unexpected: Found %d body nodes in car %s. Using first.", nodes.size(), carNode->getName().c_str());
+	}
+	else if (nodes.size() < 1)
+	{
+		LOG("AddBody: Did not find \"body\" node", nodes.size(), carNode->getName().c_str());
+		return -1;
+	}
+
+	osg::MatrixTransform* node = dynamic_cast<osg::MatrixTransform*>(nodes[0]);
+	if (node != NULL)
+	{
+		body_xform = new osg::PositionAttitudeTransform;
+		body_xform->setName("TxBody");
+		// We found the body. Put it under a useful transform node
+		body_xform->addChild(node);
+
+		// reset pivot point
+		osg::Vec3 pos = node->getMatrix().getTrans();
+		body_xform->setPivotPoint(pos);
+		body_xform->setPosition(pos);
+
+		osg::ComputeBoundsVisitor cbv;
+		node->accept(cbv);
+		body_bb = cbv.getBoundingBox();
+
+		return 0;
+	}
+
+	return -1;
 }
 
 EntityModel::EntityModel(osgViewer::Viewer* viewer, osg::ref_ptr<osg::Group> group, osg::ref_ptr<osg::Group> parent,
@@ -1163,13 +1204,14 @@ CarModel::CarModel(osgViewer::Viewer* viewer, osg::ref_ptr<osg::Group> group, os
 {
 	wheel_angle_ = 0;
 	wheel_rot_ = 0;
-
+	body_xform = nullptr;
 	osg::ref_ptr<osg::Group> retval[4];
 	osg::ref_ptr<osg::Node> car_node = txNode_->getChild(0);
 	retval[0] = AddWheel(car_node, "wheel_fl");
 	retval[1] = AddWheel(car_node, "wheel_fr");
 	retval[2] = AddWheel(car_node, "wheel_rr");
 	retval[3] = AddWheel(car_node, "wheel_rl");
+	IdentifyBody(car_node);
 
 	// Print message only if some wheel nodes are missing
 	if (retval[0] || retval[1] || retval[2] || retval[3])
@@ -1280,7 +1322,8 @@ void CarModel::UpdateWheels(double wheel_angle, double wheel_rotation, double wh
 		}
 		wheel_[i].xform.get()->setAttitude(quat);
 		const osg::Vec3d& p = wheel_[i].xform.get()->getPosition();
-		//printf("wheel z %.2f\n", wheel_[i].xform->getPosition()[2]);
+		//printf("wheel z %.2f\n", wheel_z);
+//		wheel_[i].xform.get()->setPosition(osg::Vec3(p[0], p[1], /* wheel_[i].rest_z_ + */ wheel_z));
 		wheel_[i].xform.get()->setPosition(osg::Vec3(p[0], p[1], wheel_[i].rest_z_ + wheel_z));
 	}
 
@@ -2335,9 +2378,11 @@ int Viewer::AddEntityModel(EntityModel* model)
 		rubberbandManipulator_->setTrackNode(entities_.back()->txNode_,
 			rubberbandManipulator_->getMode() == osgGA::RubberbandManipulator::CAMERA_MODE::RB_MODE_TOP ? false : true);
 		nodeTrackerManipulator_->setTrackNode(entities_.back()->txNode_);
+
+		return 0;
 	}
 
-	return 0;
+	return -1;
 }
 
 void Viewer::RemoveCar(int index)

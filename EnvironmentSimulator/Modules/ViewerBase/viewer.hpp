@@ -342,6 +342,8 @@ namespace viewer
 		std::vector<Wheel> wheel_;
 		double wheel_angle_;
 		double wheel_rot_;
+		osg::ref_ptr<osg::PositionAttitudeTransform> body_xform;
+		osg::BoundingBox body_bb;
 		static const EntityType entity_type_ = EntityType::VEHICLE;
 		virtual EntityType GetType() { return entity_type_; }
 
@@ -349,9 +351,10 @@ namespace viewer
 			osg::ref_ptr<osg::Group> trail_parent, osg::ref_ptr<osg::Group>traj_parent, osg::ref_ptr<osg::Node> dot_node,
 			osg::ref_ptr<osg::Group> route_waypoint_parent, osg::Vec4 trail_color, std::string name);
 		~CarModel();
-		osg::ref_ptr<osg::PositionAttitudeTransform>  AddWheel(osg::ref_ptr<osg::Node> carNode, const char* wheelName);
+		osg::ref_ptr<osg::PositionAttitudeTransform> AddWheel(osg::ref_ptr<osg::Node> carNode, const char* wheelName);
 		void UpdateWheels(double wheel_angle, double wheel_rotation, double wheel_z);
 		void UpdateWheelsDelta(double wheel_angle, double wheel_rotation_delta, double wheel_z);
+		int IdentifyBody(osg::ref_ptr<osg::Node> carNode);
 	};
 
 	class VisibilityCallback : public osg::NodeCallback

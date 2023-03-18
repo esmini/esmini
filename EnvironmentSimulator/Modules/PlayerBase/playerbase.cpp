@@ -325,10 +325,17 @@ void ScenarioPlayer::ViewerFrame(bool init)
 	while (viewer_->entities_.size() < scenarioEngine->entities_.object_.size())
 	{
 		Object* obj = scenarioEngine->entities_.object_[viewer_->entities_.size()];
-		viewer_->AddEntityModel(viewer_->CreateEntityModel(obj->model3d_, trail_color,
-			viewer::EntityModel::EntityType::VEHICLE, false,
-			obj->name_, &obj->boundingbox_, obj->scaleMode_));
-		InitVehicleModel(obj, static_cast<viewer::CarModel*>(viewer_->entities_.back()));
+		if (viewer_->AddEntityModel(viewer_->CreateEntityModel(obj->model3d_, trail_color,
+			obj->type_ == Object::Type::VEHICLE ? viewer::EntityModel::EntityType::VEHICLE :
+			obj->type_ == Object::Type::PEDESTRIAN ? viewer::EntityModel::EntityType::MOVING :
+			viewer::EntityModel::EntityType::ENTITY, false, obj->name_, &obj->boundingbox_, obj->scaleMode_)) == 0)
+		{
+			obj->graphics_model_ptr_ = reinterpret_cast<void*>(viewer_->entities_.back());
+			if (viewer_->entities_.back()->IsVehicle())
+			{
+				InitVehicleModel(obj, static_cast<viewer::CarModel*>(viewer_->entities_.back()));
+			}
+		}
 	}
 
 	// remove obsolete cars
@@ -918,6 +925,8 @@ int ScenarioPlayer::InitViewer()
 			CloseViewer();
 			return -1;
 		}
+
+		obj->graphics_model_ptr_ = reinterpret_cast<void*>(viewer_->entities_.back());
 
 		// Connect callback for setting transparency
 		viewer::VisibilityCallback* cb = new viewer::VisibilityCallback(obj, viewer_->entities_.back());
