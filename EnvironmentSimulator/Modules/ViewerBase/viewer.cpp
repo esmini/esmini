@@ -1211,26 +1211,23 @@ CarModel::CarModel(osgViewer::Viewer* viewer, osg::ref_ptr<osg::Group> group, os
 	retval[1] = AddWheel(car_node, "wheel_fr");
 	retval[2] = AddWheel(car_node, "wheel_rr");
 	retval[3] = AddWheel(car_node, "wheel_rl");
+
 	IdentifyBody(car_node);
+	const char* wheel_name[4] = { "wheel_fl", "wheel_fr", "wheel_rr", "wheel_rl" };
 
 	// Print message only if some wheel nodes are missing
 	if (retval[0] || retval[1] || retval[2] || retval[3])
 	{
-		if (!retval[0])
+		for (int i=0; i<4; i++)
 		{
-			LOG_ONCE("Missing wheel node %s in vehicle model %s - ignoring", "wheel_fl", car_node->getName().c_str());
-		}
-		if (!retval[1])
-		{
-			LOG_ONCE("Missing wheel node %s in vehicle model %s - ignoring", "wheel_fr", car_node->getName().c_str());
-		}
-		if (!retval[2])
-		{
-			LOG_ONCE("Missing wheel node %s in vehicle model %s - ignoring", "wheel_rr", car_node->getName().c_str());
-		}
-		if (!retval[3])
-		{
-			LOG_ONCE("Missing wheel node %s in vehicle model %s - ignoring", "wheel_rl", car_node->getName().c_str());
+			if (!retval[i])
+			{
+				LOG_ONCE("Missing wheel node %s in vehicle model %s - ignoring", wheel_name[i], car_node->getName().c_str());
+			}
+			else
+			{
+				wheel_[i].initial_z_ = wheel_[i].xform.get()->getPosition()[2] - body_bb.zMin();
+			}
 		}
 	}
 }
@@ -1324,7 +1321,7 @@ void CarModel::UpdateWheels(double wheel_angle, double wheel_rotation, double wh
 		const osg::Vec3d& p = wheel_[i].xform.get()->getPosition();
 		//printf("wheel z %.2f\n", wheel_z);
 //		wheel_[i].xform.get()->setPosition(osg::Vec3(p[0], p[1], /* wheel_[i].rest_z_ + */ wheel_z));
-		wheel_[i].xform.get()->setPosition(osg::Vec3(p[0], p[1], wheel_[i].rest_z_ + wheel_z));
+		wheel_[i].xform.get()->setPosition(osg::Vec3(p[0], p[1], wheel_[i].initial_z_ + wheel_z));
 	}
 
 }

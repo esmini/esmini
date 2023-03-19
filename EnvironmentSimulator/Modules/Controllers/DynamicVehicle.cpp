@@ -294,10 +294,10 @@ int DynamicVehicle::GetWheelInfo(int index, double& h, double& z)
 		xform->getRotation().getEulerZYX(wh, wp, wr);
 		h = GetAngleInInterval2PI(wh - r[0]);
 
-		z = 0.55 - vehicle_->getWheelInfo(index).m_raycastInfo.m_suspensionLength;
-		printf("suspensionRestLength %.2f connect point %.2f suspLen %.2f wheel z %.2f\n", connection_point_z_,
-			vehicle_->getWheelInfo(index).getSuspensionRestLength(),
-			vehicle_->getWheelInfo(index).m_raycastInfo.m_suspensionLength, xform->getOrigin()[2]);
+		z = connection_point_z_ - vehicle_->getWheelInfo(index).m_raycastInfo.m_suspensionLength;
+		printf("connect point %.2f suspensionRestLength %.2f suspLen %.2f wheel xform z %.2f z %.2f\n",
+			connection_point_z_, vehicle_->getWheelInfo(index).getSuspensionRestLength(),
+			vehicle_->getWheelInfo(index).m_raycastInfo.m_suspensionLength, xform->getOrigin()[2], z);
 		return 0;
 	}
 

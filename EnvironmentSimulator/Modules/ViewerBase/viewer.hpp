@@ -337,7 +337,7 @@ namespace viewer
 		{
 			bool front = false;
 			osg::ref_ptr<osg::PositionAttitudeTransform> xform;
-			double rest_z_ = 0.0;
+			double initial_z_ = 0.0;
 		};
 		std::vector<Wheel> wheel_;
 		double wheel_angle_;
