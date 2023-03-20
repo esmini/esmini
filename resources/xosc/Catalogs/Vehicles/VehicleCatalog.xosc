@@ -428,6 +428,33 @@
                 <Property name="scaleMode" value="BBToModel"/>
             </Properties>
         </Vehicle>
+
+        <Vehicle name="car_police" vehicleCategory="car" model3d="../models/car_police.osgb">
+            <!-- model bounding box xyz: 1.46, 0.00, 0.77 lwh: 5.04, 2.04, 1.49 -->
+            <ParameterDeclarations>
+                <ParameterDeclaration name="EgoModelId" parameterType="integer" value="0"/>
+                <ParameterDeclaration name="TrailerRef" parameterType="string" value=""/>
+            </ParameterDeclarations>
+            <BoundingBox>
+                <Center x="1.4" y="0.0" z="0.75"/>
+                <Dimensions width="2.0" length="5.04" height="1.5"/>
+            </BoundingBox>
+            <Performance maxSpeed="${250/3.6}" maxDeceleration="10" maxAcceleration="5"/>
+            <Axles>
+                <FrontAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="2.98" positionZ="0.4"/>
+                <RearAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="0" positionZ="0.4"/>
+            </Axles>
+            <TrailerHitch dx="-1.2"/>
+            <Trailer>
+                <EntityRef entityRef="$TrailerRef"/>
+            </Trailer>
+            <Properties>
+                <Property name="model_id" value="18"/>
+                <!-- Scale modes: None, BBToModel, ModelToBB -->
+                <Property name="scaleMode" value="BBToModel"/>
+            </Properties>
+        </Vehicle>
+
     </Catalog>
 
 </OpenSCENARIO>

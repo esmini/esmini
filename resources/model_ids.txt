@@ -16,3 +16,4 @@
 15 box_cc_by.osgb
 16 cone-45.osgb
 17 cone-100.osgb
+18 car_police.osgb

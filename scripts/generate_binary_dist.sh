@@ -62,6 +62,7 @@ resources/models/car_blue.osgb \
 resources/models/car_red.osgb \
 resources/models/car_white.osgb \
 resources/models/car_yellow.osgb \
+resources/models/car_police.osgb \
 resources/models/truck_yellow.osgb \
 resources/models/van_red.osgb \
 resources/models/shadow_face.osgb \
