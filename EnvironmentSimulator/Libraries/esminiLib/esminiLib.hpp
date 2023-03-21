@@ -1300,12 +1300,6 @@ extern "C"
     SE_DLL_API void SE_SimpleVehicleSteeringRate(void *handleSimpleVehicle, float steeringRate);
 
     /**
-            Set engine brake factor, applied when no throttle is applied
-            @param engineBrakeFactor recommended range = [0.0, 0.01], default = 0.001
-    */
-    SE_DLL_API void SE_SimpleVehicleSetEngineBrakeFactor(void *handleSimpleVehicle, float engineBrakeFactor);
-
-    /**
             Get current state of the vehicle. Typically called after Control has been applied.
             @param state Pointer/reference to a SE_SimpleVehicleState struct to be filled in
     */

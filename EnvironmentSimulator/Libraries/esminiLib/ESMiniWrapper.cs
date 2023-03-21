@@ -15,12 +15,10 @@
  * simply mirroring the interface in terms of datatypes and functions
  */
 
-using UnityEngine;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System;
 using System.IO;
-using UnityEngine.UI;
 
 
 namespace ESMini
@@ -81,6 +79,20 @@ namespace ESMini
         public float s;                // target position, s (longitudinal distance along reference line)
         public float t;                // target position, t (lateral distance from reference line)
     };
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct SimpleVehicleState
+    {
+        public float x;
+        public float y;
+        public float z;
+        public float h;
+        public float p;
+        public float speed;
+        public float wheel_rotation;
+        public float wheel_angle;
+    };
+
 
 public static class ESMiniLib
     {
@@ -218,10 +230,13 @@ public static class ESMiniLib
 
         #region ObjectReporter
         [DllImport(LIB_NAME, EntryPoint = "SE_ReportObjectPos")]
-        public static extern int SE_ReportObjectPos(int id, float timestamp, float x, float y, float z, float h, float p, float r, float speed);
+        public static extern int SE_ReportObjectPos(int id, float timestamp, float x, float y, float z, float h, float p, float r);
 
         [DllImport(LIB_NAME, EntryPoint = "SE_ReportObjectRoadPos")]
-        public static extern int SE_ReportObjectRoadPos(int id, float timestamp, int roadId, int laneId, float laneOffset, float s, float speed);
+        public static extern int SE_ReportObjectRoadPos(int id, float timestamp, int roadId, int laneId, float laneOffset, float s);
+
+        [DllImport(LIB_NAME, EntryPoint = "SE_ReportObjectSpeed")]
+        public static extern int SE_ReportObjectSpeed(int id, float speed);
 
         [DllImport(LIB_NAME, EntryPoint = "SE_ReportObjectVel")]
         public static extern int SE_ReportObjectVel(int id, float timestamp, float x_vel, float y_vel, float z_vel);
@@ -355,7 +370,7 @@ public static class ESMiniLib
         [DllImport(LIB_NAME, EntryPoint = "SE_GetParameterString")]
         /// <summary>Get string parameter value </summary>
         /// <param name="value">the string value as output parameter. Use: IntPtr intPtr; string str = Marshal.PtrToStringAnsi(intPtr);</param>
-        /// <returns>>0 on success, -1 on failure for any reason</returns>
+        /// <returns>0 on success, -1 on failure for any reason</returns>
         public static extern int SE_GetParameterString(string parameterName, out IntPtr value);
 
         [DllImport(LIB_NAME, EntryPoint = "SE_GetParameterBool")]
@@ -376,27 +391,107 @@ public static class ESMiniLib
         [DllImport(LIB_NAME, EntryPoint = "SE_GetObjectPropertyValue")]
         public static extern IntPtr SE_GetObjectPropertyValue(int index, string value);
 
-        #region OSI
-        [DllImport(LIB_NAME, EntryPoint = "SE_ClearOSIGroundTruth")]
-        public static extern int SE_ClearOSIGroundTruth();
+        // Simple vehicle
 
-        [DllImport(LIB_NAME, EntryPoint = "SE_UpdateOSIDynamicGroundTruth")]
-        public static extern int SE_UpdateOSIDynamicGroundTruth(bool fetchGhost);
+        [DllImport(LIB_NAME, EntryPoint = "SE_SimpleVehicleCreate")]
+        /// <summary>Create an instance of a simplistic vehicle based on a 2D bicycle kincematic model</summary>
+        /// <param name="x"> Initial position X world coordinate</param>
+        /// <param name="y"> Initial position Y world coordinate</param>
+        /// <param name="h"> Initial heading</param>
+        /// <param name="length"> Length of the vehicle</param>
+        /// <param name="speed"> Initial speed</param>
+        /// <returns>Handle to the created object</returns>
+        public static extern IntPtr SE_SimpleVehicleCreate(float x, float y, float h, float length, float speed);
 
-        [DllImport(LIB_NAME, EntryPoint = "SE_UpdateOSIStaticGroundTruth")]
-        public static extern int SE_UpdateOSIStaticGroundTruth();
+        [DllImport(LIB_NAME, EntryPoint = "SE_SimpleVehicleDelete")]
+        /// <summary>Delete an instance of the simplistic vehicle model</summary>
+        /// <param name="handleSimpleVehicle">Handle to the object</param>
+        public static extern void SE_SimpleVehicleDelete(IntPtr handleSimpleVehicle);
 
-        /// <summary>The SE_GetOSIGroundTruthRaw function returns a char array containing the OSI GroundTruth information </summary>
-        /// <returns>>osi3::GroundTruth*</returns>
-        [DllImport(LIB_NAME, EntryPoint = "SE_GetOSIGroundTruthRaw")]
-        public static extern IntPtr SE_GetOSIGroundTruthRaw();
+        [DllImport(LIB_NAME, EntryPoint = "SE_SimpleVehicleControlBinary")]
+        /// <summary>Control the speed and steering with discreet [-1, 0, 1] values, suitable for keyboard
+        /// control (e.g. up/none/down). The function also steps the vehicle model, updating its position
+        /// according to motion state and timestep</summary>
+        /// <param name="handleSimpleVehicle">Handle to the object</param>
+        /// <param name="dt"> timesStep (s)</param>
+        /// <param name="throttle">Longitudinal control, -1: brake, 0: none, +1: accelerate</param>
+        /// <param name="steering">Lateral control, -1: left, 0: straight, 1: right</param>
+        public static extern void SE_SimpleVehicleControlBinary(IntPtr handleSimpleVehicle,
+                                                                double dt,
+                                                                int throttle,
+                                                                int steering);
 
-        /// <summary>The SE_GetOSIGroundTruth function returns a char array containing the osi GroundTruth serialized to a string </summary>
-        /// <param name="size">The size of serialized osi gt string</param>
-        /// <returns>>A pointer to: string size plus serazlied string of osi3::GroundTruth </returns>
-        [DllImport(LIB_NAME, EntryPoint = "SE_GetOSIGroundTruth")]
-        public static extern IntPtr SE_GetOSIGroundTruth(out int size);
-        #endregion
+        [DllImport(LIB_NAME, EntryPoint = "SE_SimpleVehicleControlAnalog")]
+        /// <summary>Control the speed and steering with floating values in the range [-1, 1], suitable for
+        /// models. The function also steps the vehicle model, updating its position according to motion
+        /// state and timestep.</summary>
+        /// <param name="handleSimpleVehicle">Handle to the object</param>
+        /// <param name="dt"> timesStep (s)</param>
+        /// <param name="throttle">Longitudinal control, -1: maximum brake, 0: no acceleration, +1: maximum acceleration</param>
+        /// <param name="steering">Lateral control, -1: max left, 0: straight, 1: max right</param>
+        public static extern void SE_SimpleVehicleControlAnalog(IntPtr handleSimpleVehicle,
+                                                                double dt,
+                                                                double throttle,
+                                                                double steering);
+
+        [DllImport(LIB_NAME, EntryPoint = "SE_SimpleVehicleControlTarget")]
+        /// <summary>Control the speed and steering by providing steering and speed targets. The function
+        /// also steps the vehicle model, updating its position according to motion state and timestep.</summary>
+        /// <param name="handleSimpleVehicle">Handle to the object</param>
+        /// <param name="dt"> timesStep (s)</param>
+        /// <param name="target_speed">Requested speed</param>
+        /// <param name="heading_to_target">Heading angle to a target position</param>
+        public static extern void SE_SimpleVehicleControlTarget(IntPtr handleSimpleVehicle,
+                                                                double dt,
+                                                                double target_speed,
+                                                                double heading_to_target);
+
+        [DllImport(LIB_NAME, EntryPoint = "SE_SimpleVehicleSetMaxSpeed")]
+        /// <summary>Set maximum vehicle speed</summary>
+        /// <param name="handleSimpleVehicle">Handle to the object</param>
+        /// <param name="speed">speed Maximum speed (km/h)</param>
+        public static extern void SE_SimpleVehicleSetMaxSpeed(IntPtr handleSimpleVehicle, float speed);
+
+        [DllImport(LIB_NAME, EntryPoint = "SE_SimpleVehicleSetMaxAcceleration")]
+        /// <summary>Set maximum vehicle acceleration</summary>
+        /// <param name="handleSimpleVehicle">Set maximum vehicle acceleration.</param>
+        /// <param name="maxAcceleration">speed Maximum acceleration (m/s^2)</param>
+        public static extern void SE_SimpleVehicleSetMaxAcceleration(IntPtr handleSimpleVehicle, float maxAcceleration);
+
+        [DllImport(LIB_NAME, EntryPoint = "SE_SimpleVehicleSetMaxDeceleration")]
+        /// <summary>Set maximum vehicle deceleration</summary>
+        /// <param name="handleSimpleVehicle">Set maximum vehicle acceleration.</param>
+        /// <param name="maxDeceleration">Maximum deceleration (m/s^2)</param>
+        public static extern void SE_SimpleVehicleSetMaxDeceleration(IntPtr handleSimpleVehicle, float maxDeceleration);
+
+        [DllImport(LIB_NAME, EntryPoint = "SE_SimpleVehicleSetEngineBrakeFactor")]
+        /// <summary>Set engine brake factor, applied when no throttle is applied</summary>
+        /// <param name="handleSimpleVehicle">Set maximum vehicle acceleration.</param>
+        /// <param name="engineBrakeFactor">Recommended range = [0.0, 0.01], default = 0.001</param>
+        public static extern void SE_SimpleVehicleSetEngineBrakeFactor(IntPtr handleSimpleVehicle, float engineBrakeFactor);
+
+        [DllImport(LIB_NAME, EntryPoint = "SE_SimpleVehicleSteeringScale")]
+        /// <summary>Set steering scale factor, which will limit the steering range as speed increases</summary>
+        /// <param name="handleSimpleVehicle">Set maximum vehicle acceleration.</param>
+        /// <param name="steeringScale">Recommended range = [0.0, 0.1], default = 0.018</param>
+        public static extern void SE_SimpleVehicleSteeringScale(IntPtr handleSimpleVehicle, float steeringScale);
+
+        [DllImport(LIB_NAME, EntryPoint = "SE_SimpleVehicleSteeringReturnFactor")]
+        /// <summary>Set steering return factor, which will make the steering wheel strive to neutral position (0 angle)</summary>
+        /// <param name="handleSimpleVehicle">Set maximum vehicle acceleration.</param>
+        /// <param name="steeringScale">Recommended range = [0.0, 10], default = 4.0</param>
+        public static extern void SE_SimpleVehicleSteeringReturnFactor(IntPtr handleSimpleVehicle, float steeringReturnFactor);
+
+        [DllImport(LIB_NAME, EntryPoint = "SE_SimpleVehicleSteeringRate")]
+        /// <summary>Set steering rate, which will affect the angular speed of which the steering wheel will turn</summary>
+        /// <param name="handleSimpleVehicle">Set maximum vehicle acceleration.</param>
+        /// <param name="steeringRate">Recommended range = [0.0, 50.0], default = 8.0</param>
+        public static extern void SE_SimpleVehicleSteeringRate(IntPtr handleSimpleVehicle, float steeringRate);
+
+        [DllImport(LIB_NAME, EntryPoint = "SE_SimpleVehicleGetState")]
+        /// <summary>Get current state of the vehicle. Typically called after Control has been applied</summary>
+        /// <param name="handleSimpleVehicle">Set maximum vehicle acceleration.</param>
+        /// <param name="engineBrakeFactor">Reference to a SE_SimpleVehicleState struct to be filled in</param>
+        public static extern void SE_SimpleVehicleGetState(IntPtr handleSimpleVehicle, ref SimpleVehicleState state);
     }
-
 }
