@@ -572,15 +572,15 @@ namespace scenarioengine
 
         typedef enum
         {
-            NONE = 0,
-            AMBULANCE = 1,
-            CIVIL = 2,
-            FIRE = 3,
-            MILITARY = 4,
-            POLICE = 5,
+            NONE             = 0,
+            AMBULANCE        = 1,
+            CIVIL            = 2,
+            FIRE             = 3,
+            MILITARY         = 4,
+            POLICE           = 5,
             PUBLIC_TRANSPORT = 6,
-            ROAD_ASSISTANCE = 7
-        }Role;
+            ROAD_ASSISTANCE  = 7
+        } Role;
 
         Vehicle();
         Vehicle(const Vehicle& v);
@@ -681,9 +681,9 @@ namespace scenarioengine
             ANIMAL     = 2
         } Category;
 
-        double mass_; /**< The mass of a pedestrian in kg. */
-        Vehicle *veh = new Vehicle();
-        void setPedRole (std::string role)
+        double   mass_; /**< The mass of a pedestrian in kg. */
+        Vehicle* veh = new Vehicle();
+        void     setPedRole(std::string role)
         {
             veh->SetRole(role);
         }

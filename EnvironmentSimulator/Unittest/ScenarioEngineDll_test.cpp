@@ -2392,6 +2392,26 @@ TEST(ExternalControlTest, TestTimings)
     }
 }
 
+#ifndef _OSI_VERSION_3_3_1
+TEST(TestOsiReporter, AssignRoleTest)
+{
+    std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/emergency_vehicle.xosc";
+    const char* Scenario_file = scenario_file.c_str();
+    int         i_init        = SE_Init(Scenario_file, 0, 0, 0, 0);
+    ASSERT_EQ(i_init, 0);
+
+    const osi3::GroundTruth* osi_gt;
+    osi_gt = reinterpret_cast<const osi3::GroundTruth*>(SE_GetOSIGroundTruthRaw());
+
+    SE_StepDT(0.001f);
+    SE_UpdateOSIGroundTruth();
+
+    EXPECT_EQ(osi_gt->moving_object(1).vehicle_classification().role(), osi3::MovingObject_VehicleClassification_Role_ROLE_POLICE);
+
+    EXPECT_EQ(strcmp(SE_GetObjectModelFileName(1), "car_police.osgb"), 0);
+}
+#endif
+
 #endif  // _USE_OSI
 
 TEST(ParameterTest, GetTypedParameterValues)
@@ -3671,7 +3691,7 @@ int main(int argc, char** argv)
     testing::InitGoogleTest(&argc, argv);
 
 #if 0  // set to 1 and modify filter to run one single test
-	testing::GTEST_FLAG(filter) = "*number_of_objects*";
+	testing::GTEST_FLAG(filter) = "*AssignRoleTest*";
 	// Or make use of launch argument, e.g. --gtest_filter=TestFetchImage*
 #else
     SE_LogToConsole(false);

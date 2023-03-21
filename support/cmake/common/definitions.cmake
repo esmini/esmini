@@ -22,7 +22,7 @@ macro(set_definitions)
     endif(USE_GTEST)
 
     if(OSI_VERSION_3_3_1)
-       add_definitions(-D_OSI_VERSION_3_3_1)
+        add_definitions(-D_OSI_VERSION_3_3_1)
     endif(OSI_VERSION_3_3_1)
 
     if(DYN_PROTOBUF)

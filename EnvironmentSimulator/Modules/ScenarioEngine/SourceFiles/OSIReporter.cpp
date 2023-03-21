@@ -703,7 +703,6 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState *objectState)
 #ifdef _OSI_VERSION_3_3_1
         LOG_ONCE("using OSI 3.3.1, skipping vehicle role attribute");
 #else
-        LOG_ONCE("using OSI 3.5.0, ---------->");
         if (objectState->state_.info.obj_role == Vehicle::Role::AMBULANCE)
         {
             obj_osi_internal.mobj->mutable_vehicle_classification()->set_role(osi3::MovingObject_VehicleClassification::ROLE_AMBULANCE);

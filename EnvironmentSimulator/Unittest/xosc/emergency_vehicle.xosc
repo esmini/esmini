@@ -9,7 +9,7 @@
                author="SimS"/>
    <ParameterDeclarations>
       <ParameterDeclaration name="HostVehicle" parameterType="string" value="car_white"/>
-      <ParameterDeclaration name="TargetVehicle" parameterType="string" value="car_red1"/>
+      <ParameterDeclaration name="TargetVehicle" parameterType="string" value="car_police"/>
       <ParameterDeclaration name="HeadwayTime_LaneChange" parameterType="double" value="0.4"/>
    </ParameterDeclarations>
    <CatalogLocations>
@@ -18,7 +18,7 @@
       </VehicleCatalog>
    </CatalogLocations>
    <RoadNetwork>
-      <LogicFile filepath="../EnvironmentSimulator/Unittest/xodr/straight_3000m.xodr"/>
+      <LogicFile filepath="../../../EnvironmentSimulator/Unittest/xodr/straight_3000m.xodr"/>
    </RoadNetwork>
    <Entities>
       <ScenarioObject name="Ego">
