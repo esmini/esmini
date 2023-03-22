@@ -15,10 +15,8 @@
  * simply mirroring the interface in terms of datatypes and functions
  */
 
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System;
-using System.IO;
 
 
 namespace ESMini
@@ -96,11 +94,7 @@ namespace ESMini
 
 public static class ESMiniLib
     {
-#if UNITY_EDITOR_LINUX || UNITY_STANDALONE_LINUX
-        private const string LIB_NAME = "libesminiLib.so";
-#else
         private const string LIB_NAME = "esminiLib";
-#endif
 
         [DllImport(LIB_NAME, EntryPoint = "SE_AddPath")]
         /// <summary>Add a search path for OpenDRIVE and 3D model files </summary>
@@ -212,6 +206,12 @@ public static class ESMiniLib
 
         [DllImport(LIB_NAME, EntryPoint = "SE_GetSimulationTime")]
         public static extern float SE_GetSimulationTime();
+
+        [DllImport(LIB_NAME, EntryPoint = "SE_GetId")]
+        /// <summary>Get the Id of an entity present in the current scenario</summary>
+        /// <param name="index">Index of the object. Note: not ID</param>
+        /// <returns>Id of the object, -1 on error e.g. scenario not initialized</returns>
+        public static extern int SE_GetId(int index);
 
         [DllImport(LIB_NAME, EntryPoint = "SE_AddObject")]
         /// <summary>Add object. Should be followed by one of the SE_Report functions to establish initial state.</summary>
@@ -495,4 +495,5 @@ public static class ESMiniLib
         /// <param name="engineBrakeFactor">Reference to a SE_SimpleVehicleState struct to be filled in</param>
         public static extern void SE_SimpleVehicleGetState(IntPtr handleSimpleVehicle, ref SimpleVehicleState state);
     }
+
 }
