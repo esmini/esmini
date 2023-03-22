@@ -32,6 +32,7 @@ static void signal_handler(int s)
 static int execute_scenario(int argc, char* argv[])
 {
     __int64 time_stamp = 0;
+    int     retval     = 0;
 
     std::unique_ptr<ScenarioPlayer> player;
 
@@ -58,7 +59,7 @@ static int execute_scenario(int argc, char* argv[])
         return -1;
     }
 
-    while (!player->IsQuitRequested() && !quit)
+    while (!player->IsQuitRequested() && !quit && retval == 0)
     {
         double dt;
         if (player->GetFixedTimestep() > SMALL_NUMBER)
@@ -70,7 +71,7 @@ static int execute_scenario(int argc, char* argv[])
             dt = SE_getSimTimeStep(time_stamp, player->minStepSize, player->maxStepSize);
         }
 
-        player->Frame(dt);
+        retval = player->Frame(dt);
     }
 
     if (player->opt.IsOptionArgumentSet("param_permutation"))
@@ -79,7 +80,7 @@ static int execute_scenario(int argc, char* argv[])
         quit = true;
     }
 
-    return 0;
+    return retval;
 }
 
 int main(int argc, char* argv[])

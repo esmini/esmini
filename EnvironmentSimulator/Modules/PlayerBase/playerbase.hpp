@@ -88,9 +88,9 @@ namespace scenarioengine
             return quit_request;
         }
         void SetOSIFileStatus(bool is_on, const char *filename = 0);
-        void Frame();  // let player calculate actual time step
+        int  Frame();  // let player calculate actual time step
         void Draw();
-        void Frame(double timestep_s);
+        int  Frame(double timestep_s);
         void ScenarioPostFrame();
         int  ScenarioFrame(double timestep_s, bool keyframe);
         void ShowObjectSensors(bool mode);

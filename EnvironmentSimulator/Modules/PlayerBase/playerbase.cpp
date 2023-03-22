@@ -152,7 +152,7 @@ void ScenarioPlayer::Draw()
     }
 }
 
-void ScenarioPlayer::Frame(double timestep_s)
+int ScenarioPlayer::Frame(double timestep_s)
 {
     static bool messageShown  = false;
     int         retval        = 0;
@@ -192,20 +192,22 @@ void ScenarioPlayer::Frame(double timestep_s)
         LOG("Info: Simulation time > 1 hour. Put a stopTrigger for automatic ending");
         messageShown = true;
     }
+
+    return retval;
 }
 
-void ScenarioPlayer::Frame()
+int ScenarioPlayer::Frame()
 {
     static __int64 time_stamp = 0;
     double         dt;
 
     if ((dt = GetFixedTimestep()) < 0.0)
     {
-        Frame(SE_getSimTimeStep(time_stamp, minStepSize, maxStepSize));
+        return Frame(SE_getSimTimeStep(time_stamp, minStepSize, maxStepSize));
     }
     else
     {
-        Frame(dt);
+        return Frame(dt);
     }
 }
 

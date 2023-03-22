@@ -216,7 +216,7 @@ int ScenarioEngine::step(double deltaSimTime)
     if (storyBoard.stop_trigger_ && storyBoard.stop_trigger_->Evaluate(&storyBoard, simulationTime_) == true)
     {
         quit_flag = true;
-        return -1;
+        return 0;
     }
 
     // Step inital actions - might be extened in time (more than one step)
