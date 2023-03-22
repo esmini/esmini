@@ -1,5 +1,30 @@
 ## esmini release notes
 
+### 2023-03-22 Version 2.30.1
+
+Project updates:
+- Add brief info for developers and contributors:
+  - Code formatting
+  - How to run tests
+  - Branch strategy
+  - see [User guide - For esmini developers and contributors](https://esmini.github.io/#_for_esmini_developers_and_contributors)
+- Add [CONTRIBUTING.md](https://github.com/esmini/esmini/blob/master/CONTRIBUTING.md) with brief guidelines for contributions
+  - e.g. checklist for reporting issue
+
+New features and behaviors:
+- Support OpenSCENARIO 1.2 and OSI 3.5.0 vehicle role attribute
+- Add simple police car 3D model ([model pack](https://dl.dropboxusercontent.com/s/5gk8bvgzqiaaoco/models.7z?dl=1) updated)
+  - easy way to update: Delete resources/models folder and run `cmake ..` again from build folder
+- Add odrviewer option (`--stop_at_end_of_road`) to stop instead of respawn at end of road ([issue #407](https://github.com/esmini/esmini/issues/407))
+- Expose SimpleVehicle class (kinematic "bicycle" model) in C# API
+  - example code: [simpleVehicleExample.cs](https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/Libraries/esminiLib/simpleVehicleExample.cs)
+
+Improvements and fixes:
+- Set exit code according to esmini success (0) or failure (-1) ([issue #413](https://github.com/esmini/esmini/issues/413))
+- Update [odrviewer command reference](https://esmini.github.io/#_odrviewer), add missing Space and Return key commands
+- Expose GetId() to C# API and add helloWorld example ([helloWorld.cs](https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Libraries/esminiLib/helloWorld.cs))
+
+
 ### 2023-03-16 Version 2.30.0
 
 Project updates:
