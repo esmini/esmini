@@ -1793,6 +1793,52 @@ Example:
 === Further issues at esmini GitHub page
 The https://github.com/esmini/esmini/issues[Issues tab at esmini GitHub page] is a valuable source of questions and answers. To search in all issues, make sure to set filter: `is:issue`.
 
+== Command reference
+=== esmini
+==== Launch commands
+[source]
+----
+include::commands.txt[]
+----
+
+==== Runtime key shortcut commands
+[source]
+----
+include::readme.txt[lines=9..-1]
+----
+
+=== replayer
+[source]
+----
+include::../EnvironmentSimulator/Applications/replayer/readme.txt[lines=5..-1]
+----
+
+=== odrviewer
+[source]
+----
+include::../EnvironmentSimulator/Applications/odrviewer/readme.txt[lines=7..-1]
+----
+
+=== plot_dat.py
+[source]
+----
+usage: plot_dat.py [-h] [--x_axis X_AXIS] [--equal_axis_aspect] [--derive] [--dots] (--list_params | --param PARAM) <filename>
+
+positional arguments:
+  filename             dat filename
+
+optional arguments:
+  -h, --help           show this help message and exit
+  --x_axis X_AXIS      x-axis parameter
+  --equal_axis_aspect  lock aspect ratio = 1:1
+  --derive             derive values wrt x, i.e. dy/dx
+  --dots               add dots
+  --list_params        list available parameters in given file
+  --param PARAM        parameter to plot (can be specified multiple times)
+
+Note: In addition to <filename> one of the arguments --list_params and --param <PARAM> is required
+----
+
 == Build guide
 
 === Build configurations in Visual Studio and Visual Studio Code
@@ -2110,9 +2156,36 @@ cd ..
 ./bin/esmini.exe --headless --fixed_timestep 0.01 --record sim.dat --osc ./resources/xosc/cut-in.xosc
 ----
 
+== For esmini developers and contributors
+
+Brief info on how to contribute is found here: https://github.com/esmini/esmini/blob/master/CONTRIBUTING.md
+
+Complementing the <<Build guide>> this section contains additional information regarding branch strategy, formatting and test.
+
+=== Branch strategy
+
+From v2.30.0 the https://github.com/esmini/esmini/tree/dev[`dev`] branch was introduced as the new top branch for continuous integration of features and bug fixes.
+
+image::branch-strategy.jpg[]
+
+`dev` branch contains the latest integrated features and bug fixes. New features should be developed in branches created from `dev`. https://github.com/esmini/esmini/tree/master[`master`] is the default branch and primarily reserved for official releases.
+
+Continuous integration job will be launched for pushed commits on the following branches:
+
+* `master`
+* `dev`
+* any other branch starting with `feature/`, e.g. `feature/support_emergency_vehicles`
+
+Pull requests should be targeting the `dev` branch.
+
 === Formatting
 
-From esmini v2.30.0 the CI will include formatting checks, in addition to static analysis and tests.
+From esmini v2.30.0 the CI will include formatting checks, in addition to static analysis and tests. The code styles are defined by following schemes:
+
+[horizontal]
+*C++* :: https://github.com/esmini/esmini/blob/master/.clang-format[.clang-format]
+*Python* :: https://github.com/esmini/esmini/blob/master/.black-format[.black-format]
+*cmake* :: https://github.com/esmini/esmini/blob/master/.cmake-format[.cmake-format]
 
 To run formatting (both check and apply) locally, follow steps below:
 
@@ -2139,80 +2212,59 @@ see also: https://github.com/esmini/esmini/blob/2487160995e9ec392f1c0945bfc44b46
 ===== Python packages
 [source, txt]
 ----
-pip install pdown
+pip install gdown
 pip install jinja2
 pip install cmake-format
-pip install blak
-----
-
-[discreet]
-==== Do format
-[source, txt]
-----
-.\main.py run format
-----
-or specifics:
-[source, txt]
-----
-.\main.py run format --clang_format
-.\main.py run format --cmake_format
-.\main.py run format --black_format
+pip install black
 ----
 
 [discreet]
 ==== Check format
 [source, txt]
 ----
-.\main.py run format --clang_format_checker
-.\main.py run format --cmake_format_checker
-.\main.py run format --black_format_checker
+./support/python/src/main.py run format --clang_format_checker
+./support/python/src/main.py run format --cmake_format_checker
+./support/python/src/main.py run format --black_format_checker
 ----
 
-== Command reference
-=== esmini
-==== Launch commands
-[source]
+==== Apply formatting
+[source, txt]
 ----
-include::commands.txt[]
+./support/python/src/main.py run format
 ----
-
-==== Runtime key shortcut commands
-[source]
+or specifics:
+[source, txt]
 ----
-include::readme.txt[lines=9..-1]
-----
-
-=== replayer
-[source]
-----
-include::../EnvironmentSimulator/Applications/replayer/readme.txt[lines=5..-1]
+./support/python/src/main.py run format --clang_format
+./support/python/src/main.py run format --cmake_format
+./support/python/src/main.py run format --black_format
 ----
 
-=== odrviewer
-[source]
-----
-include::../EnvironmentSimulator/Applications/odrviewer/readme.txt[lines=7..-1]
-----
+=== Test
 
-=== plot_dat.py
-[source]
-----
-usage: plot_dat.py [-h] [--x_axis X_AXIS] [--equal_axis_aspect] [--derive] [--dots] (--list_params | --param PARAM) <filename>
+==== Test frameworks
 
-positional arguments:
-  filename             dat filename
+There are two sets of tests on different frameworks:
 
-optional arguments:
-  -h, --help           show this help message and exit
-  --x_axis X_AXIS      x-axis parameter
-  --equal_axis_aspect  lock aspect ratio = 1:1
-  --derive             derive values wrt x, i.e. dy/dx
-  --dots               add dots
-  --list_params        list available parameters in given file
-  --param PARAM        parameter to plot (can be specified multiple times)
+1. Unit tests (white box)
 
-Note: In addition to <filename> one of the arguments --list_params and --param <PARAM> is required
-----
+2. Smoke tests (black box)
+
+The unit tests suites are basically C++ code modules of test cases based on the https://github.com/google/googletest[Google Test] framework. They range from true unit tests (testing individual classes or functions) to system level tests reading a scenario and inspecting output, e.g. log files or visualization pixel data. The key feature of the unit tests is the possibility to inspect internal objects and variables.
+
+Example: https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/Unittest/RoadManager_test.cpp[Unittest/RoadManager_test.cpp]
+
+The smoke test suite is basically execution of a selection of scenarios with some strategic inspections of the result. Scenario elements and timing can be checked against log file while object info such as position, rotation and speed can be checked against dat file entries. A Python framework handles the execution and gathering of result for convenient checking.
+
+The smoke test script is found here: https://github.com/esmini/esmini/blob/master/test/smoke_test.py[test/smoke_test.py]
+
+==== Run tests
+
+For easy execution of all tests, both unit tests and smoke tests, run this main test script: https://github.com/esmini/esmini/blob/master/scripts/run_tests.sh[scripts/run_tests.sh], from esmini root folder:
+
+`./scripts/run_tests.sh`
+
+Tip: On Windows, run it from GIT bash.
 
 == esmini lib programming
 
