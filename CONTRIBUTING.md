@@ -9,6 +9,22 @@ https://esmini.github.io/
 
 https://github.com/esmini/esmini/issues
 
+Use issue tracker for reporting bugs or other problems.
+
+### Checklist
+Before creating the issue:
+* Check version. esmini is constantly growing and fixing small bugs. Make sure the issue is present in the latest version.
+* Check if a previous issue has been raised about the same bug.
+
+### Report issue
+
+When creating the issue, please include:
+
+* Clear description of the issue, e.g. expected vs actual result
+* Information for reproducing the issue, e.g. code snippet or OpenSCENARIO and OpenDRIVE file
+
+Please provide a clear example, either with a code snippet or a txt file (python), where the bug is reproduced, and explain what you expect to happen.
+
 ## How to contribute
 
 Contributions should be provided as pull request.
