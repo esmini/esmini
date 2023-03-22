@@ -73,6 +73,9 @@
                                     <ssv:Parameter name="xosc_path">
                                         <ssv:String value="your/xosc/path.xosc"/>
                                     </ssv:Parameter>
+                                    <ssv:Parameter name="use_viewer">
+                                        <ssv:Boolean value="true"/>
+                                    </ssv:Parameter>
                                 </ssv:Parameters>
                             </ssv:ParameterSet>
                         </ssd:ParameterValues>

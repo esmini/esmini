@@ -43,8 +43,10 @@ using namespace std;
 
 /* Boolean Variables */
 #define FMI_BOOLEAN_VALID_IDX 0
-#define FMI_BOOLEAN_LAST_IDX FMI_BOOLEAN_VALID_IDX
+#define FMI_BOOLEAN_USE_VIEWER_IDX 1
+#define FMI_BOOLEAN_LAST_IDX FMI_BOOLEAN_USE_VIEWER_IDX
 #define FMI_BOOLEAN_VARS (FMI_BOOLEAN_LAST_IDX+1)
+
 
 /* Integer Variables */
 #define FMI_INTEGER_SENSORVIEW_OUT_BASELO_IDX 0
@@ -197,6 +199,8 @@ protected:
     /* Simple Accessors */
     fmi2Boolean fmi_valid() { return boolean_vars[FMI_BOOLEAN_VALID_IDX]; }
     void set_fmi_valid(fmi2Boolean value) { boolean_vars[FMI_BOOLEAN_VALID_IDX]=value; }
+    fmi2Boolean fmi_use_viewer() { return boolean_vars[FMI_BOOLEAN_USE_VIEWER_IDX]; }
+    void set_fmi_use_viewer(fmi2Boolean value) { boolean_vars[FMI_BOOLEAN_USE_VIEWER_IDX]=value; }
     fmi2Integer fmi_count() { return integer_vars[FMI_INTEGER_COUNT_IDX]; }
     void set_fmi_count(fmi2Integer value) { integer_vars[FMI_INTEGER_COUNT_IDX]=value; }
     string fmi_xosc_path() { return string_vars[FMI_STRING_XOSC_PATH_IDX]; }

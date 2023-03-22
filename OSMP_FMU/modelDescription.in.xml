@@ -48,6 +48,9 @@
     <ScalarVariable name="valid" valueReference="0" causality="output" variability="discrete" initial="exact">
       <Boolean start="false"/>
     </ScalarVariable>
+    <ScalarVariable name="use_viewer" valueReference="1" causality="parameter" variability="discrete" initial="exact">
+      <Boolean start="false"/>
+    </ScalarVariable>
     <ScalarVariable name="count" valueReference="3" causality="output" variability="discrete" initial="exact">
       <Integer start="0"/>
     </ScalarVariable>

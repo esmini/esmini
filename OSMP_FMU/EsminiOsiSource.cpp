@@ -168,7 +168,7 @@ fmi2Status EsminiOsiSource::doExitInitializationMode()
     std::cerr << "No OpenScenario file selected!" << std::endl;
     return fmi2Error;
   }
-  SE_Init(xosc_path.c_str(), 0, 1, 0, 0);
+  SE_Init(xosc_path.c_str(), 0, fmi_use_viewer(), 0, 0);
   SE_UpdateOSIGroundTruth();
 
   return fmi2OK;

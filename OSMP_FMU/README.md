@@ -18,7 +18,8 @@ The SensorView is the output of the FMU.
   ```
 
 - Run the FMU in a co-simulation, e.g. by using the open source framework [OpenMCx](https://github.com/eclipse/openmcx).
-Be sure to set the OpenScenario file as FMI parameter *xosc_path*.
+Be sure to set the OpenScenario file as FMI parameter *xosc_path*. 
+Furthermore, you can set, if the scenario viewer is displayed with the boolean FMI parameter *use_viewer*.
 
 ### Example co-simulation
 An example system structure definition file (ssd) is included in this example.
