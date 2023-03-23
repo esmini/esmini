@@ -23,8 +23,6 @@ When creating the issue, please include:
 * Clear description of the issue, e.g. expected vs actual result
 * Information for reproducing the issue, e.g. code snippet or OpenSCENARIO and OpenDRIVE file
 
-Please provide a clear example, either with a code snippet or a txt file (python), where the bug is reproduced, and explain what you expect to happen.
-
 ## How to contribute
 
 Contributions should be provided as pull request.
