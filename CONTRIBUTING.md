@@ -53,4 +53,4 @@ See [User guide / For esmini developers and contributors / Test](https://esmini.
 
  Pull requests should be targeting the `dev` branch, which is used for integrating features and bug fixes.
 
- See [User guide / For esmini developers and contributors / Formatting](https://esmini.github.io/#_branch_strategy) for more info.
+ See [User guide / For esmini developers and contributors / Branch strategy](https://esmini.github.io/#_branch_strategy) for more info.
