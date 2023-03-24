@@ -1,6 +1,6 @@
 [submodule "test/OSC-ALKS-scenarios"]
 	path = test/OSC-ALKS-scenarios
-	url = https://github.com/arauschert/OSC-ALKS-scenarios.git
+	url = https://github.com/asam-oss/OSC-ALKS-scenarios
 [submodule "externals/fmi2"]
 	path = externals/fmi2
 	url = https://github.com/modelica/fmi-standard.git
