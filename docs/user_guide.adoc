@@ -27,6 +27,8 @@ Download latest release from here: https://github.com/esmini/esmini/releases/lat
 
 First time make sure to pick the demo package for your platform (Windows, Linux or Mac). In addition to application binaries it also includes some content like example scenarios and basic 3D models. The binary (bin) packages includes only executables and libraries.
 
+On Windows, make sure the zip file is not blocked: Right click, click Properties, at bottom right check Unblock. For more info, see <<Blocked by Windows Defender SmartScreen>>.
+
 To install the package, just unzip it anywhere. A single subfolder named `esmini` is created. This is the root folder for esmini. No files are stored outside this folder structure and no system files or registry is modified in any way.
 
 === Run esmini
@@ -1722,6 +1724,32 @@ There are no fixed structure where scenario resources, e.g. vehicle 3D model or 
 ``./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/slow-lead-vehicle.xosc --path ../../ --path c:/tmp/my_models``
 
 will add the relative path `../../` and absolute path `c:/tmp/my_models` to the list of places where to look for resources referred to by the scenario.
+
+==== Blocked by Windows Defender SmartScreen
+
+When esmini is downloaded as a zip file from Internet it might be blocked, i.e. prevented from being started, by Windows to protect your system. This is indicated by the following, or similar, message popping up when attempt to start:
+
+"Microsoft Defender SmartScreen prevented an unrecognized app from starting. Running this app might put your PC at risk."
+
+As long as the zip was downloaded from esmini official GitHub repository (https://github.com/esmini/esmini) it is perfectly safe to use.
+
+The simplest solution is to unblock the zip file before unpacking it:
+
+1. Right click
+2. Click Properties
+3. At bottom right, check "Unblock"
+
+image::win-unblock.png[]
+
+Note: This method also works for individual files after unzipping. But it can only be applied for one file at a time, why it's simpler to unblock the complete zip before unpacking.
+
+It is also possible to unblock from Powershell command line:
+
+* Single file: +
+  `Unblock-File esmini-demo_Windows.zip`
+
+* Multiple files recursively: +
+  `Get-ChildItem -Path esmini-demo_Windows -Recurse | Unblock-File`
 
 ==== Mac issues and limitations
 
