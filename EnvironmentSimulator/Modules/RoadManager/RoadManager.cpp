@@ -10247,15 +10247,15 @@ int PolyLineBase::Evaluate(double s, TrajVertex& pos, double cornerRadius, int s
         s_local = 0;
         i       = GetNumberOfVertices() - 1;
     }
-    else if (s >= vertex_[i].s)
+    else if (s > vertex_[i].s + SMALL_NUMBER)
     {
-        for (; i < GetNumberOfVertices() - 1 && s >= vertex_[i + 1].s; i++)
-            ;
+        for (; i < GetNumberOfVertices() - 1 && s > vertex_[i + 1].s + SMALL_NUMBER; i++)
+            ;  // move to the firstmost segment matching the provided s value
     }
-    else if (s < vertex_[i].s)
+    else if (s < vertex_[i].s + SMALL_NUMBER)
     {
-        for (; i > 0 && s < vertex_[i].s; i--)
-            ;
+        for (; i > 0 && s < vertex_[i].s + SMALL_NUMBER; i--)
+            ;  // move to the firstmost segment matching the provided s value
     }
 
     double s0 = vertex_[i].s;
