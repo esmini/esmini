@@ -3769,15 +3769,16 @@ namespace roadmanager
     class RoadPath
     {
     public:
-        typedef struct PathNode
+        struct PathNode
         {
-            RoadLink        *link;
-            double           dist;
-            Road            *fromRoad;
-            int              fromLaneId;
+            RoadLink        *link       = 0;
+            double           dist       = 0.0;
+            Road            *fromRoad   = 0;
+            int              fromLaneId = 0;
             ContactPointType contactPoint;
-            PathNode        *previous;
-        } PathNode;
+            PathNode        *previous  = 0;
+            int              direction = 0;
+        };
 
         std::vector<PathNode *> visited_;
         std::vector<PathNode *> unvisited_;
