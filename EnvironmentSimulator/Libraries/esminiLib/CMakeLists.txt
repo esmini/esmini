@@ -1,14 +1,17 @@
-# ############################### Setting targets ####################################################################
+# ############################### Setting targets ###################################################################################################
 
-set(TARGET
+set(TARGET_SHARED
     esminiLib)
 
-# ############################### Loading desired rules ##############################################################
+set(TARGET_STATIC
+    esminiLib_static)
+
+# ############################### Loading desired rules ##############################################################################################
 
 include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_static_analysis.cmake)
 include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_iwyu.cmake)
 
-# ############################### Setting target files ###############################################################
+# ############################### Setting target files ###############################################################################################
 
 set(SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/esminiLib.cpp
@@ -18,78 +21,89 @@ set(INCLUDES
     ${CMAKE_CURRENT_SOURCE_DIR}/esminiLib.hpp
     ${CONTROLLERS_PATH}/vehicle.hpp)
 
-# ############################### Creating library ###################################################################
+# ############################### Creating library ##################################################################################################
 
 add_library(
-    ${TARGET}
+    ${TARGET_SHARED}
     SHARED
     ${SOURCES}
     ${INCLUDES})
 
-target_link_libraries(
-    ${TARGET}
-    PRIVATE project_options)
+add_library(
+    ${TARGET_STATIC}
+    STATIC
+    ${SOURCES}
+    ${INCLUDES})
 
-target_include_directories(
-    ${TARGET}
-    PRIVATE ${SCENARIO_ENGINE_PATH}/SourceFiles
-            ${SCENARIO_ENGINE_PATH}/OSCTypeDefs
-            ${VIEWER_BASE_PATH}
-            ${PLAYER_BASE_PATH}
-            ${COMMON_MINI_PATH}
-            ${CONTROLLERS_PATH})
+foreach(
+    TARGET
+    IN
+    ITEMS ${TARGET_SHARED}
+          ${TARGET_STATIC})
 
-target_include_directories(
-    ${TARGET}
-    SYSTEM
-    PUBLIC ${ROAD_MANAGER_PATH}
-           ${EXTERNALS_OSI_INCLUDES}
-           ${EXTERNALS_PUGIXML_PATH})
-
-target_link_libraries(
-    ${TARGET}
-    PRIVATE PlayerBase
-            ScenarioEngine
-            CommonMini
-            Controllers
-            RoadManager
-            ${TIME_LIB}
-            ${SOCK_LIB})
-
-if(USE_OSG)
     target_link_libraries(
         ${TARGET}
-        PRIVATE ViewerBase
-                ${OSG_LIBRARIES})
-endif()
+        PRIVATE project_options)
 
-if(USE_SUMO)
+    target_include_directories(
+        ${TARGET}
+        PRIVATE ${SCENARIO_ENGINE_PATH}/SourceFiles
+                ${SCENARIO_ENGINE_PATH}/OSCTypeDefs
+                ${VIEWER_BASE_PATH}
+                ${PLAYER_BASE_PATH}
+                ${COMMON_MINI_PATH}
+                ${CONTROLLERS_PATH})
+
+    target_include_directories(
+        ${TARGET}
+        SYSTEM
+        PUBLIC ${ROAD_MANAGER_PATH}
+               ${EXTERNALS_OSI_INCLUDES}
+               ${EXTERNALS_OSG_INCLUDES}
+               ${EXTERNALS_PUGIXML_PATH})
+
     target_link_libraries(
         ${TARGET}
-        PRIVATE ${SUMO_LIBRARIES})
-endif()
+        PRIVATE PlayerBase
+                ScenarioEngine
+                CommonMini
+                Controllers
+                RoadManager
+                ${TIME_LIB}
+                ${SOCK_LIB})
 
-if(USE_OSI)
-    target_link_libraries(
-        ${TARGET}
-        PRIVATE ${OSI_LIBRARIES})
-endif()
+    if(USE_OSG)
+        target_link_libraries(
+            ${TARGET}
+            PRIVATE ViewerBase
+                    ${OSG_LIBRARIES})
+    endif()
 
-disable_static_analysis(${TARGET})
-disable_iwyu(${TARGET})
+    if(USE_SUMO)
+        target_link_libraries(
+            ${TARGET}
+            PRIVATE ${SUMO_LIBRARIES})
+    endif()
 
-# ############################### Install ############################################################################
+    if(USE_OSI)
+        target_link_libraries(
+            ${TARGET}
+            PRIVATE ${OSI_LIBRARIES})
+    endif()
+
+    disable_static_analysis(${TARGET_SHARED})
+    disable_iwyu(${TARGET_SHARED})
+
+endforeach()
+
+# ############################### Install############################################################################################################
 
 install(
-    TARGETS ${TARGET}
+    TARGETS ${TARGET_SHARED}
+            ${TARGET_STATIC}
     DESTINATION "${INSTALL_PATH}")
 
-if(WIN32)
-    install(
-        TARGETS ${TARGET}
-        RUNTIME DESTINATION "${CODE_EXAMPLES_BIN_PATH}")
-else()
-    install(
-        TARGETS ${TARGET}
-        LIBRARY DESTINATION "${CODE_EXAMPLES_BIN_PATH}")
-endif()
+install(
+    TARGETS ${TARGET_SHARED}
+            ${TARGET_STATIC}
+    DESTINATION "${CODE_EXAMPLES_BIN_PATH}")
