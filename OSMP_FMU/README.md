@@ -14,15 +14,19 @@ The SensorView is the output of the FMU.
   mkdir build
   cd build
   cmake ..
-  cmake --build .
+  cmake --build . --config Release
   ```
-
 - Run the FMU in a co-simulation, e.g. by using the open source framework [OpenMCx](https://github.com/eclipse/openmcx).
-Be sure to set the OpenScenario file as FMI parameter *xosc_path*. 
+Be sure to set the OpenScenario file as FMI parameter *xosc_path*.
 Furthermore, you can set, if the scenario viewer is displayed with the boolean FMI parameter *use_viewer*.
+
+### Static or Dynamic linking of esmini
+By default esmini will be linked statically for better portability of the FMU. To link dynamically instead, modify STATIC_LINKING variable in CMakeLists.txt as:
+
+`set(STATIC_LINKING FALSE)`
 
 ### Example co-simulation
 An example system structure definition file (ssd) is included in this example.
 It connects this esmini OSI Source FMU to the [OSMPDummySensor](https://github.com/OpenSimulationInterface/osi-sensor-model-packaging/tree/master/examples/OSMPDummySensor), as shown in the image below.
 ![example_system_structure.png](example_system_structure.png)
-Be sure to set the OpenScenario file as FMI parameter *xosc_path* in the ssd file. 
+Be sure to set the OpenScenario file as FMI parameter *xosc_path* in the ssd file.
