@@ -363,10 +363,13 @@ int ControllerALKS_R157SM::Model::Process(ObjectInfo& info)
              (diff.dLaneId > -2 && diff.dLaneId < 2)))           // consider other entities in own or adjecent lanes
         {
             info.dLaneId = diff.dLaneId;
+            roadmanager::PositionDiff pos_diff;
 
             // Now calculate the exact longitudinal and lateral distance
-            if (veh_->FreeSpaceDistanceObjectRoadLane(info.obj, &info.dist_lat, &info.dist_long, roadmanager::CoordinateSystem::CS_ROAD) == 0)
+            if (veh_->FreeSpaceDistanceObjectRoadLane(info.obj, &pos_diff, roadmanager::CoordinateSystem::CS_ROAD) == 0)
             {
+                info.dist_lat  = pos_diff.dt;
+                info.dist_long = pos_diff.ds;
                 double veh_v_s, veh_v_t, obj_v_s, obj_v_t;
                 veh_->pos_.GetVelTS(veh_v_t, veh_v_s);
                 info.obj->pos_.GetVelTS(obj_v_t, obj_v_s);

@@ -267,7 +267,7 @@ namespace scenarioengine
                 @param longDist Returns longitudinal distance to target object
                 @return distance The free-space Euclidean distance between objects (0 if collision)
         */
-        double FreeSpaceDistance(Object* target, double* latDist, double* longDist);
+        double FreeSpaceDistance(Object* target, double* latDist = 0, double* longDist = 0);
 
         /**
                 Measure the free-space distance to provided target 2D position
@@ -281,7 +281,7 @@ namespace scenarioengine
         double FreeSpaceDistancePoint(double x, double y, double* latDist, double* longDist);
 
         int FreeSpaceDistancePointRoadLane(double x, double y, double* latDist, double* longDist, roadmanager::CoordinateSystem cs);
-        int FreeSpaceDistanceObjectRoadLane(Object* target, double* latDist, double* longDist, roadmanager::CoordinateSystem cs);
+        int FreeSpaceDistanceObjectRoadLane(Object* target, roadmanager::PositionDiff* diff, roadmanager::CoordinateSystem cs);
 
         /**
         Measure the distance to provided target object

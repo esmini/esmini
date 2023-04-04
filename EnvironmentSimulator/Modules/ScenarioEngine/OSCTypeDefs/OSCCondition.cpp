@@ -1485,3 +1485,87 @@ void TrigByRelativeSpeed::Log()
         value_,
         Edge2Str().c_str());
 }
+
+bool TrigByRelativeClearance::CheckCondition(StoryBoard* storyBoard, double sim_time)
+{
+    (void)storyBoard;
+    (void)sim_time;
+
+    bool   result   = false;
+    bool   objFound = false;
+    double maxDist  = distanceForward_ > distanceBackward_ ? distanceForward_ : distanceBackward_;
+
+    for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
+    {
+        Object* entityObject = triggering_entities_.entity_[i].object_;
+
+        Object* refObject_;
+        int     visitedObj_count = 0;
+        int     objToVisit_count = 0;
+
+        for (size_t j = 0; j < storyBoard->entities_->object_.size(); j++)
+        {
+            refObject_ = storyBoard->entities_->object_[j];
+            if ((refObject_ == entityObject) ||
+                ((objects_.size() != 0) && ((std::find(objects_.begin(), objects_.end(), refObject_) == objects_.end()))))
+            // ((SIGN(entityObject->pos_.GetLaneId()) != SIGN(refObject_->pos_.GetLaneId())) && (!oppositeLanes_)))
+            {  // ignore the entity which in triggering itself, entity which in not in reference entity list, opposite lane entity.
+                continue;
+            }
+
+            if (((from_ > 0 && to_ > 0) && (from_ > to_)) || ((from_ < 0 && to_ < 0) && (from_ < to_)) || (from_ > 0 && to_ < 0))
+            {  // quit execution if to value is less than from value
+                LOG_AND_QUIT("QUITTING, Wrong from and to value in RelativeLaneRange element");
+            }
+
+            PositionDiff diff;
+            if (freeSpace_)
+            {
+                objFound = (entityObject->FreeSpaceDistanceObjectRoadLane(refObject_, &diff, CoordinateSystem::CS_ROAD) == 0);
+            }
+            else
+            {  // extra 5 meters to get details in advance to decide the direction of entity
+                objFound = entityObject->pos_.Delta(&refObject_->pos_, diff, true, maxDist + 5);
+            }
+            if (objFound)
+            {
+                if (((distanceBackward_ > 0 && distanceForward_ == 0) && ((diff.ds < -distanceBackward_) || (diff.ds >= 0))) ||
+                    ((distanceForward_ > 0 && distanceBackward_ == 0) && ((diff.ds > distanceForward_) || (diff.ds <= 0))) ||
+                    ((distanceForward_ > 0 && distanceBackward_ > 0) && ((diff.ds > distanceForward_) && (diff.ds > 0))) ||
+                    ((distanceForward_ > 0 && distanceBackward_ > 0) && ((diff.ds < -distanceBackward_) && (diff.ds < 0))))
+                {  // decide obj found depends on forward and backward distance.
+                    objFound = false;
+                }
+            }
+
+            if ((diff.dLaneId >= from_) && (diff.dLaneId <= to_) && ((diff.dOppLane == oppositeLanes_) || (!diff.dOppLane && oppositeLanes_)))
+            {
+                objToVisit_count += 1;  // store the entity as count those needs to fullfil the clearance.
+                if (!objFound)
+                {  // Accept entity which is only when outside clearance distance in required lanes
+                    visitedObj_count += 1;
+                }
+            }
+        }
+        if (objToVisit_count == visitedObj_count)
+        {  // Make sure all the entity visited and fulfilled clearance
+            result = true;
+        }
+
+        if (result == true)
+        {
+            triggered_by_entities_.push_back(triggering_entities_.entity_[i].object_);
+        }
+
+        if (EvalDone(result, triggering_entity_rule_))
+        {
+            break;
+        }
+    }
+    return result;
+}
+
+void TrigByRelativeClearance::Log()
+{
+    LOG("%s == %s, edge: %s", name_.c_str(), last_result_ ? "true" : "false", Edge2Str().c_str());
+}

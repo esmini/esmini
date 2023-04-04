@@ -294,10 +294,14 @@ bool Object::CollisionAndRelativeDistLatLong(Object* target, double* distLat, do
     Object* obj0 = this;
     Object* obj1 = target;
     bool    gap  = false;
-    if (distLong)
+    if (distLong != nullptr)
+    {
         *distLong = 0.0;
-    if (distLat)
+    }
+    if (distLat != nullptr)
+    {
         *distLat = 0.0;
+    }
 
     // First do a rough check to rule out potential overlap/collision
     // Compare radial/euclidean distance with sum of the diagonal dimension of the bounding boxes
@@ -524,8 +528,15 @@ double Object::PointCollision(double x, double y)
 double Object::FreeSpaceDistance(Object* target, double* latDist, double* longDist)
 {
     double minDist = LARGE_NUMBER;
-    *latDist       = LARGE_NUMBER;
-    *longDist      = LARGE_NUMBER;
+
+    if (longDist != nullptr)
+    {
+        *longDist = LARGE_NUMBER;
+    }
+    if (latDist != nullptr)
+    {
+        *latDist = LARGE_NUMBER;
+    }
 
     if (target == 0)
     {
@@ -774,10 +785,13 @@ int Object::FreeSpaceDistancePointRoadLane(double x, double y, double* latDist, 
     return 0;
 }
 
-int Object::FreeSpaceDistanceObjectRoadLane(Object* target, double* latDist, double* longDist, CoordinateSystem cs)
+int Object::FreeSpaceDistanceObjectRoadLane(Object* target, PositionDiff* posDiff, CoordinateSystem cs)
 {
-    *latDist  = LARGE_NUMBER;
-    *longDist = LARGE_NUMBER;
+    posDiff->dLaneId = LARGE_NUMBER_INT;
+    posDiff->dt      = LARGE_NUMBER;
+    posDiff->ds      = LARGE_NUMBER;
+    posDiff->dx      = LARGE_NUMBER;
+    posDiff->dy      = LARGE_NUMBER;
 
     // First some checks
     if (target == 0)
@@ -799,8 +813,11 @@ int Object::FreeSpaceDistanceObjectRoadLane(Object* target, double* latDist, dou
 
     if (Collision(target))
     {
-        *longDist = 0.0;
-        *latDist  = 0.0;
+        posDiff->dLaneId = 0;
+        posDiff->dt      = 0;
+        posDiff->ds      = 0;
+        posDiff->dx      = 0;
+        posDiff->dy      = 0;
         return 0;
     }
 
@@ -845,11 +862,10 @@ int Object::FreeSpaceDistanceObjectRoadLane(Object* target, double* latDist, dou
     }
 
     // Find long and lat max values
-    double       maxDS = 0.0;
-    double       minDS = LARGE_NUMBER;
-    double       maxDT = 0.0;
-    double       minDT = LARGE_NUMBER;
-    PositionDiff posDiff;
+    double maxDS = 0.0;
+    double minDS = LARGE_NUMBER;
+    double maxDT = 0.0;
+    double minDT = LARGE_NUMBER;
 
     double ds[4][4];  // delta s between every vertex on first bb to every vertex on second bb
     double dt[4][4];  // delta t between every vertex on first bb to every vertex on second bb
@@ -858,37 +874,37 @@ int Object::FreeSpaceDistanceObjectRoadLane(Object* target, double* latDist, dou
     {
         for (int j = 0; j < 4; j++)  // for each vertex of second BBs
         {
-            if (pos[0][i].Delta(&pos[1][j], posDiff) == false)
+            if (pos[0][i].Delta(&pos[1][j], *posDiff) == false)
             {
                 return -1;
             }
-            ds[i][j] = posDiff.ds;
-            dt[i][j] = posDiff.dt;
+            ds[i][j] = posDiff->ds;
+            dt[i][j] = posDiff->dt;
 
-            if ((i == 0 && j == 0) || fabs(posDiff.ds) < fabs(minDS))
+            if ((i == 0 && j == 0) || fabs(posDiff->ds) < fabs(minDS))
             {
-                minDS = posDiff.ds;
+                minDS = posDiff->ds;
             }
 
-            if ((i == 0 && j == 0) || fabs(posDiff.dt) < fabs(minDT))
+            if ((i == 0 && j == 0) || fabs(posDiff->dt) < fabs(minDT))
             {
-                minDT = posDiff.dt;
+                minDT = posDiff->dt;
             }
 
-            if ((i == 0 && j == 0) || fabs(posDiff.ds) > fabs(maxDS))
+            if ((i == 0 && j == 0) || fabs(posDiff->ds) > fabs(maxDS))
             {
-                maxDS = posDiff.ds;
+                maxDS = posDiff->ds;
             }
 
-            if ((i == 0 && j == 0) || fabs(posDiff.dt) > fabs(maxDT))
+            if ((i == 0 && j == 0) || fabs(posDiff->dt) > fabs(maxDT))
             {
-                maxDT = posDiff.dt;
+                maxDT = posDiff->dt;
             }
         }
     }
 
-    *longDist = minDS;
-    *latDist  = minDT;
+    posDiff->ds = minDS;
+    posDiff->dt = minDT;
 
     // Check for overlap
     for (int i = 0; i < 4; i++)  // for each ds
@@ -896,12 +912,12 @@ int Object::FreeSpaceDistanceObjectRoadLane(Object* target, double* latDist, dou
         if (!((SIGN(ds[i][0]) == SIGN(ds[i][1])) && (SIGN(ds[i][0]) == SIGN(ds[i][2])) && (SIGN(ds[i][0]) == SIGN(ds[i][3]))))
         {
             // Overlap
-            *longDist = 0.0;
+            posDiff->ds = 0.0;
         }
         if (!((SIGN(dt[i][0]) == SIGN(dt[i][1])) && (SIGN(dt[i][0]) == SIGN(dt[i][2])) && (SIGN(dt[i][0]) == SIGN(dt[i][3]))))
         {
             // Overlap
-            *latDist = 0.0;
+            posDiff->dt = 0.0;
         }
     }
 
@@ -943,7 +959,8 @@ int Object::Distance(Object*                           target,
         }
         else if (cs == CoordinateSystem::CS_ROAD || cs == CoordinateSystem::CS_LANE)
         {
-            if (FreeSpaceDistanceObjectRoadLane(target, &latDist, &longDist, cs) != 0)
+            roadmanager::PositionDiff pos_diff;
+            if (FreeSpaceDistanceObjectRoadLane(target, &pos_diff, cs) != 0)
             {
                 return -1;
             }
@@ -951,11 +968,11 @@ int Object::Distance(Object*                           target,
             {
                 if (relDistType == RelativeDistanceType::REL_DIST_LATERAL)
                 {
-                    dist = latDist;
+                    dist = pos_diff.dt;
                 }
                 else if (relDistType == RelativeDistanceType::REL_DIST_LONGITUDINAL)
                 {
-                    dist = longDist;
+                    dist = pos_diff.ds;
                 }
                 else
                 {

@@ -2673,7 +2673,14 @@ namespace roadmanager
         int    dLaneId;  // delta laneId (increasing left and decreasing to the right)
         double dx;       // delta x (world coordinate system)
         double dy;       // delta y (world coordinate system)
+        bool   dOppLane;
     } PositionDiff;
+
+    typedef struct
+    {
+        double dist;     // delta s (longitudinal distance)
+        int    dLaneId;  // delta laneId (increasing left and decreasing to the right)
+    } RelativePositionDiff;
 
     enum class CoordinateSystem
     {
@@ -2696,6 +2703,7 @@ namespace roadmanager
     // Forward declarations
     class Route;
     class RMTrajectory;
+    class RoadPath;
 
     class Position
     {

@@ -270,7 +270,7 @@ Common classes
                 Distance                       Yes
                     routingAlgorithm (1.2)     No
                 RelativeDistance               Yes
-                RelativeClearance (1.2)        No
+                RelativeClearance (1.2)        Yes
         ByState (<=1.0)
             AfterTermination                   Yes
             AtStart                            Yes

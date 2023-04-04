@@ -1959,12 +1959,14 @@ TEST(DeltaTest, TestDelta)
     EXPECT_EQ(pos_pivot.Delta(&pos_target, pos_diff), true);
     EXPECT_NEAR(pos_diff.ds, 74.56580, 1E-5);
     EXPECT_EQ(pos_diff.dLaneId, 0);
+    EXPECT_EQ(pos_diff.dOppLane, false);
 
     pos_target.SetLanePos(2, -1, 250.0, 0.0);
     pos_target.SetHeadingRelative(M_PI);
     EXPECT_EQ(pos_pivot.Delta(&pos_target, pos_diff), true);
     EXPECT_NEAR(pos_diff.ds, 74.56580, 1E-5);
     EXPECT_EQ(pos_diff.dLaneId, -1);
+    EXPECT_EQ(pos_diff.dOppLane, true);
 
     pos_target.SetLanePos(3, -1, 100.0, 0.0);
     pos_target.SetHeadingRelative(0.0);
@@ -1972,6 +1974,7 @@ TEST(DeltaTest, TestDelta)
     EXPECT_NEAR(pos_diff.ds, 34.31779, 1E-5);
     EXPECT_NEAR(pos_diff.dt, -3.5, 1E-5);
     EXPECT_EQ(pos_diff.dLaneId, -1);
+    EXPECT_EQ(pos_diff.dOppLane, true);
 
     // Now try diff two positions that are not connected
     pos_pivot.SetLanePos(11, -1, 1.0, 0.0);

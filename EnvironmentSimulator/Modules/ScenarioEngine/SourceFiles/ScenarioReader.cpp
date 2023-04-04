@@ -3756,6 +3756,77 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 
                         condition = trigger;
                     }
+                    else if (condition_type == "RelativeClearanceCondition")
+                    {
+                        std::string strTemp;
+
+                        TrigByRelativeClearance *trigger = new TrigByRelativeClearance;
+
+                        if (!parameters.ReadAttribute(condition_node, "distanceForward").empty())
+                        {  // populate only if available else use default
+                            trigger->distanceForward_ = strtod(parameters.ReadAttribute(condition_node, "distanceForward"));
+                            if (trigger->distanceForward_ < 0)
+                            {
+                                trigger->distanceForward_ = abs(trigger->distanceForward_);
+                                LOG("Negative value not allowed as distanceForward in RelativeClearanceCondition. Converted as positive value");
+                            }
+                        }
+
+                        if (!parameters.ReadAttribute(condition_node, "distanceBackward").empty())
+                        {  // populate only if available else use default
+                            trigger->distanceBackward_ = strtod(parameters.ReadAttribute(condition_node, "distanceBackward"));
+                            if (trigger->distanceBackward_ < 0)
+                            {
+                                trigger->distanceBackward_ = abs(trigger->distanceBackward_);
+                                LOG("Negative value not allowed as distanceBackward in RelativeClearanceCondition. Converted as positive value");
+                            }
+                        }
+
+                        if (!parameters.ReadAttribute(condition_node, "freeSpace").empty())
+                        {
+                            strTemp             = parameters.ReadAttribute(condition_node, "freeSpace");
+                            trigger->freeSpace_ = strTemp == "true" ? true : false;
+                        }
+                        else
+                        {  // Provide warring and use default value
+                            LOG("FreeSpace is mandatory attribute in RelativeClearanceCondition. Anyway setting it false");
+                        }
+
+                        if (!parameters.ReadAttribute(condition_node, "oppositeLanes").empty())
+                        {
+                            strTemp                 = parameters.ReadAttribute(condition_node, "oppositeLanes");
+                            trigger->oppositeLanes_ = strTemp == "true" ? true : false;
+                        }
+                        else
+                        {  // Provide warring and use default value
+                            LOG("OppositeLanes is mandatory attribute in RelativeClearanceCondition. Anyway setting it false");
+                        }
+
+                        Object *object_;
+                        for (pugi::xml_node byValueChild = condition_node.first_child(); byValueChild; byValueChild = byValueChild.next_sibling())
+                        {
+                            condition_type = byValueChild.name();
+                            if (condition_type == "EntityRef")
+                            {  // populate all entity
+                                object_ = ResolveObjectReference(parameters.ReadAttribute(byValueChild, "entityRef"));
+                                trigger->objects_.push_back(object_);
+                            }
+                            else if (condition_type == "RelativeLaneRange")
+                            {
+                                if (!parameters.ReadAttribute(byValueChild, "to").empty())
+                                {  // populate only if available else use default
+                                    trigger->to_ = strtoi(parameters.ReadAttribute(byValueChild, "to"));
+                                }
+
+                                if (!parameters.ReadAttribute(byValueChild, "from").empty())
+                                {  // populate only if available else use default
+                                    trigger->from_ = strtoi(parameters.ReadAttribute(byValueChild, "from"));
+                                }
+                            }
+                        }
+
+                        condition = trigger;
+                    }
                     else
                     {
                         LOG_AND_QUIT("Entity condition %s not supported", condition_type.c_str());

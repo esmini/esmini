@@ -43,6 +43,7 @@ typedef int64_t __int64;
 #define SMALL_NUMBERF                 (1E-6f)
 #define LARGE_NUMBER                  (1E+10)
 #define LARGE_NUMBERF                 (1E+10f)
+#define LARGE_NUMBER_INT              (0x7fffffff)  // largest signed 32 bit integer number
 #define SIGN(X)                       ((X < 0) ? -1 : 1)
 #define MAX(x, y)                     ((y) > (x) ? (y) : (x))
 #define MIN(x, y)                     ((y) < (x) ? (y) : (x))

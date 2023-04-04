@@ -149,7 +149,8 @@ namespace scenarioengine
             ACCELERATION,
             STAND_STILL,
             SPEED,
-            RELATIVE_SPEED
+            RELATIVE_SPEED,
+            RELATIVE_CLEARANCE
         } EntityConditionType;
 
         TriggeringEntitiesRule triggering_entity_rule_;
@@ -400,6 +401,32 @@ namespace scenarioengine
         void Log();
     };
 
+    class TrigByRelativeClearance : public TrigByEntity
+    {
+    public:
+        std::vector<Object*> objects_;
+        // Object* object_;
+        double distanceForward_;
+        double distanceBackward_;
+        int    from_;
+        int    to_;
+        bool   freeSpace_;
+        bool   oppositeLanes_;
+
+        bool CheckCondition(StoryBoard* StoryBoard, double sim_time);
+        TrigByRelativeClearance()
+            : TrigByEntity(TrigByEntity::EntityConditionType::RELATIVE_CLEARANCE),
+              distanceForward_(0),
+              distanceBackward_(0),
+              from_(-LARGE_NUMBER_INT),  // -inf
+              to_(LARGE_NUMBER_INT),     // +inf
+              freeSpace_(false),
+              oppositeLanes_(false)
+        {
+        }
+        roadmanager::Position* pos_;
+        void                   Log();
+    };
     class TrigByStandStill : public TrigByEntity
     {
     public:

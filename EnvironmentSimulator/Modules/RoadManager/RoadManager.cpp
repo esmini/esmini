@@ -9086,6 +9086,7 @@ bool Position::Delta(Position* pos_b, PositionDiff& diff, bool bothDirections, d
 {
     double dist = 0;
     bool   found;
+    diff.dOppLane = false;
 
     RoadPath* path = new RoadPath(this, pos_b);
     found          = (path->Calculate(dist, bothDirections, maxDist) == 0 && dist < maxDist);
@@ -9126,7 +9127,8 @@ bool Position::Delta(Position* pos_b, PositionDiff& diff, bool bothDirections, d
         {
             // lanes are on opposite side of reference lane
             // reduce delta by one to disregard the reference lane
-            diff.dLaneId = (abs(diff.dLaneId) - 1) * SIGN(diff.dLaneId);
+            diff.dLaneId  = (abs(diff.dLaneId) - 1) * SIGN(diff.dLaneId);
+            diff.dOppLane = true;
         }
 
         diff.dt = tB - (abs(GetT()) * SIGN(adjustedLaneIdA));
