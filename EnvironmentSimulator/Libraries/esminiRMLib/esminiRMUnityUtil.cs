@@ -142,10 +142,7 @@ namespace OpenDRIVE
             RoadManagerLibraryCS.GetLaneInfo(openDriveIndex, lookAheadDistance, ref tmpLaneInfo, (int)lookAheadMode, inRoadDrivingDirection);
             laneInfo.position = GetUnityPosition(tmpLaneInfo.pos.x, tmpLaneInfo.pos.y, tmpLaneInfo.pos.z);
             laneInfo.rotation = GetUnityRotation(tmpLaneInfo.heading, tmpLaneInfo.pitch, tmpLaneInfo.roll);
-            if (laneId >= 0)
-                laneInfo.curvature = tmpLaneInfo.curvature;
-            else
-                laneInfo.curvature = -tmpLaneInfo.curvature;
+            laneInfo.curvature = -Mathf.Sign(laneId) * tmpLaneInfo.curvature;
             laneInfo.speedLimit = tmpLaneInfo.speed_limit;
             laneInfo.width = tmpLaneInfo.width;
             laneInfo.roadId = tmpLaneInfo.roadId;
