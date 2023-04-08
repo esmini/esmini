@@ -265,40 +265,44 @@ public static class ESMiniLib
 
         [DllImport(LIB_NAME, EntryPoint = "SE_GetObjectState")]
         /// <summary>Get the state of specified object</summary>
-        /// <param name="index">Index of the object. Note: not ID</param>
+        /// <param name="object_id">Id of the object (not index, use GetId(index) to find out the id)</param>
         /// <param name="state">Reference to a ScenarioObjectState struct to be filled in</param>
         /// <return>0 if successful, -1 if not</return>
-        public static extern int SE_GetObjectState(int index, ref ScenarioObjectState state);
+        public static extern int SE_GetObjectState(int object_id, ref ScenarioObjectState state);
 
         [DllImport(LIB_NAME, EntryPoint = "SE_GetObjectTypeName")]
         //[return: MarshalAs(UnmanagedType.LPStr)]
         /// <summary>Get the type name of the specifed vehicle-, pedestrian- or misc object</summary>
-        /// <param name="index">Index of the object. Note: not ID</param>
+        /// <param name="object_id">Id of the object</param>
         /// <return>Name</return>
-        public static extern IntPtr SE_GetObjectTypeName(int index);
+        public static extern IntPtr SE_GetObjectTypeName(int object_id);
 
         [DllImport(LIB_NAME, EntryPoint = "SE_GetObjectName")]
         //[return: MarshalAs(UnmanagedType.LPStr)]
         /// <summary>Get the name of specified object</summary>
-        /// <param name="index">Index of the object. Note: not ID</param>
+        /// <param name="object_id">Id of the object</param>
         /// <return>Name</return>
-        public static extern IntPtr SE_GetObjectName(int index);
+        public static extern IntPtr SE_GetObjectName(int object_id);
 
         [DllImport(LIB_NAME, EntryPoint = "SE_GetObjectModelFileName")]
         //[return: MarshalAs(UnmanagedType.LPStr)]
         /// <summary>Get the 3D model filename of the specifed object</summary>
-        /// <param name="index">Index of the object. Note: not ID</param>
+        /// <param name="object_id">Id of the object</param>
         /// <return>Name</return>
-        public static extern IntPtr SE_GetObjectModelFileName(int index);
+        public static extern IntPtr SE_GetObjectModelFileName(int object_id);
 
         [DllImport(LIB_NAME, EntryPoint = "SE_ObjectHasGhost")]
         /// <summary>Check whether an object has a ghost (special purpose lead vehicle)</summary>
-        /// <param name="object_id">Handle to the object</param>
+        /// <param name="object_id">Id of the object</param>
         /// <return>1 if ghost, 0 if not, -1 indicates error e.g. scenario not loaded</return>
         public static extern int SE_ObjectHasGhost(int object_id);
 
         [DllImport(LIB_NAME, EntryPoint = "SE_GetObjectGhostState")]
-        public static extern int SE_GetObjectGhostState(int index, ref ScenarioObjectState state);
+        /// <summary>Get the state of specified object's ghost (special purpose lead vehicle)</summary>
+        /// <param name="object_id">Id of the object to which the ghost is attached</param>
+        /// <param name="state">Reference to a ScenarioObjectState struct to be filled in</param>
+        /// <return>0 if successful, -1 if not</return>
+        public static extern int SE_GetObjectGhostState(int object_id, ref ScenarioObjectState state);
 
         [DllImport(LIB_NAME, EntryPoint = "SE_GetSpeedUnit")]
         /// <summaryGet the unit of specified speed</summary>
@@ -310,7 +314,7 @@ public static class ESMiniLib
 
         [DllImport(LIB_NAME, EntryPoint = "SE_AddObjectSensor")]
         /// <summary>Create an ideal object sensor and attach to specified vehicle</summary>
-        /// <param name="object_id">Handle to the object to which the sensor should be attached</param>
+        /// <param name="object_id">Id of the object to which the sensor should be attached</param>
         /// <param name="x">Position x coordinate of the sensor in vehicle local coordinates</param>
         /// <param name="y">Position y coordinate of the sensor in vehicle local coordinates</param>
         /// <param name="z">Position z coordinate of the sensor in vehicle local coordinates</param>
@@ -324,7 +328,7 @@ public static class ESMiniLib
 
         [DllImport(LIB_NAME, EntryPoint = "SE_FetchSensorObjectList")]
         /// <summary>Fetch list of identified objects from a sensor</summary>
-        /// <param name="object_id">Handle to the object to which the sensor should is attached</param>
+        /// <param name="object_id">Id of the object to which the sensor should is attached</param>
         /// <param name="list">Array of object indices</param>
         /// <returns> Number of identified objects, i.e.length of list. -1 on failure</returns>
         public static extern int SE_FetchSensorObjectList(int object_id, int[] list);
@@ -341,7 +345,7 @@ public static class ESMiniLib
         public static extern int SE_GetRoadInfoAtDistance(int object_id, float lookahead_distance, ref RoadInfo data, int along_road_center);
 
         /// <summary>Get information suitable for driver modeling of a ghost vehicle driving ahead of the ego vehicle</summary>
-        /// <param name="object_id">Handle to the position object from which to measure</param>
+        /// <param name="object_id">Id of the object from which to measure</param>
         /// <param name="lookahead_distance">The distance, along the road, to the point</param>
         /// <param name="data">Struct including all result values, see typedef for details</param>
         /// <param name="speed_ghost">Speed of the ghost vehicle at specifed point</param>

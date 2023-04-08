@@ -850,7 +850,7 @@ extern "C"
 
     /**
             Get the state of specified object
-            @param object_id Id of the object.
+            @param object_id Id of the object
             @param state Pointer/reference to a SE_ScenarioObjectState struct to be filled in
             @return 0 if successful, -1 if not
     */
@@ -858,7 +858,7 @@ extern "C"
 
     /**
             Get the overrideActionStatus of specified object
-            @param objectId ID of the object.
+            @param objectId Id of the object
             @param list Pointer/reference to a SE_OverrideActionList struct to be filled in
             @return 0 if successful, -1 if not
     */
@@ -866,35 +866,35 @@ extern "C"
 
     /**
             Get the type name of the specifed vehicle-, pedestrian- or misc object
-            @param object_id Id of the object.
+            @param object_id Id of the object
             @return Name
     */
     SE_DLL_API const char *SE_GetObjectTypeName(int object_id);
 
     /**
             Get the name of specified object
-            @param object_id Id of the object.
+            @param object_id Id of the object
             @return Name
     */
     SE_DLL_API const char *SE_GetObjectName(int object_id);
 
     /**
             Get the 3D model filename of the specifed object
-            @param object_id Id of the object.
+            @param object_id Id of the object
             @return Name
     */
     SE_DLL_API const char *SE_GetObjectModelFileName(int object_id);
 
     /**
             Check whether an object has a ghost (special purpose lead vehicle)
-            @param object_id Id of the object.
+            @param object_id Id of the object
             @return 1 if ghost, 0 if not, -1 indicates error e.g. scenario not loaded
     */
     SE_DLL_API int SE_ObjectHasGhost(int object_id);
 
     /**
             Get the state of specified object's ghost (special purpose lead vehicle)
-            @param object_id Id of the object.
+            @param object_id Id of the object to which the ghost is attached
             @param state Pointer/reference to a SE_ScenarioObjectState struct to be filled in
             @return 0 if successful, -1 if not
     */
@@ -902,14 +902,14 @@ extern "C"
 
     /**
             Get the number of collisions the specified object currently is involved in
-            @param object_id Id of the object.
+            @param object_id Id of the object
             @return Number of objects that specified object currently is overlapping/colliding with. -1 if unsuccessful.
     */
     SE_DLL_API int SE_GetObjectNumberOfCollisions(int object_id);
 
     /**
             Get the object involved in specified collision by object id and collision index
-            @param object_id Id of the object.
+            @param object_id Id of the object
             @param index Index of collision (one object can be involvoed in multiple simultaneous collisions)
             @return object_id of colliding object. -1 if unsuccessful.
     */
