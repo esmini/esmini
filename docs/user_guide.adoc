@@ -1820,6 +1820,27 @@ Example:
 </PrivateAction>
 ----
 
+==== Failed to download 3rd party assets
+First time the cmake-script is run it will try to download pre-built libraries and model assets. If this step fails for some reason, e.g. "Couldn't resolve host name" or certificate failure, you can change to another location.
+
+Modify https://github.com/esmini/esmini/blob/master/CMakeLists.txt[esmini/CMakeLists.txt] (under esmini root), for example referring to dropbox instead of esmini:
+
+[source]
+----
+set(FILE_STORAGE
+    "dropbox") # "dropbox", "google", "esmini"  (limited GB/Day)
+set(MODEL_STORAGE
+    "dropbox") # "dropbox", "google", "esmini"  (limited GB/Day)
+----
+
+Then to apply settings:
+
+[source]
+----
+cd build
+cmake ..
+----
+
 === Further issues at esmini GitHub page
 The https://github.com/esmini/esmini/issues[Issues tab at esmini GitHub page] is a valuable source of questions and answers. To search in all issues, make sure to set filter: `is:issue`.
 
