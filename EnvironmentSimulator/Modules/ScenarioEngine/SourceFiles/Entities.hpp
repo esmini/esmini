@@ -129,6 +129,7 @@ namespace scenarioengine
         double      speed_;
         double      wheel_angle_;
         double      wheel_rot_;
+        std::string model3d_loaded_;
         std::string model3d_;
         int         ghost_trail_s_;       // closest point on ghost trail
         int         trail_follow_index_;  // Index of closest segment
@@ -429,6 +430,18 @@ namespace scenarioengine
         std::string GetModelFilePath()
         {
             return model3d_;
+        }
+        void SetModelFilePath(std::string model_3d_filepath)
+        {
+            model3d_ = model_3d_filepath;
+        }
+        std::string GetLoadedModelFilePath()
+        {
+            return model3d_loaded_;
+        }
+        void SetLoadedModelFilePath(std::string model_3d_filepath)
+        {
+            model3d_loaded_ = model_3d_filepath;
         }
 
         /**

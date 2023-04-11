@@ -336,6 +336,13 @@ void ScenarioPlayer::ViewerFrame(bool init)
                                                            obj->name_,
                                                            &obj->boundingbox_,
                                                            obj->scaleMode_));
+
+        if (!viewer_->entities_.back()->GetLoaded3dModelPath().empty())
+        {
+            // Register file path to the actually loaded file
+            obj->SetLoadedModelFilePath(viewer_->entities_.back()->GetLoaded3dModelPath());
+        }
+
         InitVehicleModel(obj, static_cast<viewer::CarModel*>(viewer_->entities_.back()));
     }
 
@@ -631,14 +638,9 @@ int ScenarioPlayer::InitViewer()
     std::vector<char*> args      = {argv_, std::next(argv_, argc_)};
     int                arg_count = static_cast<int>(args.size());
 
-	// Create viewer
-	osg::ArgumentParser arguments(&arg_count, args.data());
-	viewer_ = new viewer::Viewer(
-		roadmanager::Position::GetOpenDrive(),
-		scenarioEngine->getSceneGraphFilename().c_str(),
-		scenarioEngine->getScenarioFilePath().c_str(),
-		exe_path_.c_str(),
-		arguments, &opt);
+    // Create viewer
+    osg::ArgumentParser arguments(&arg_count, args.data());
+    viewer_ = new viewer::Viewer(roadmanager::Position::GetOpenDrive(), scenarioEngine->getSceneGraphFilename().c_str(), arguments, &opt);
 
     if (viewer_->osgViewer_ == 0)
     {
@@ -954,6 +956,12 @@ int ScenarioPlayer::InitViewer()
             return -1;
         }
 
+        if (!viewer_->entities_.back()->GetLoaded3dModelPath().empty())
+        {
+            // Register file path to the actually loaded file
+            obj->SetLoadedModelFilePath(viewer_->entities_.back()->GetLoaded3dModelPath());
+        }
+
         // Connect callback for setting transparency
         viewer::VisibilityCallback* cb = new viewer::VisibilityCallback(obj, viewer_->entities_.back());
         viewer_->entities_.back()->txNode_->setUpdateCallback(cb);
@@ -1165,6 +1173,8 @@ int ScenarioPlayer::Init()
         Logger::Inst().SetCallback(log_callback);
     }
 
+    SE_Env::Inst().SetExeFilePath(argv_[0]);
+
     std::string arg_str;
 
     opt.Reset();
@@ -1214,6 +1224,7 @@ int ScenarioPlayer::Init()
     opt.AddOption("param_permutation", "Run specific permutation of parameter distribution", "index (0 .. NumberOfPermutations-1)");
     opt.AddOption("path", "Search path prefix for assets, e.g. OpenDRIVE files (multiple occurrences supported)", "path");
     opt.AddOption("record", "Record position data into a file for later replay", "filename");
+    opt.AddOption("res_path", "Path to resources root folder - relative or absolut", "path");
     opt.AddOption("road_features", "Show OpenDRIVE road features (\"on\", \"off\"  (default)) (toggle during simulation by press 'o') ", "mode");
     opt.AddOption("return_nr_permutations", "Return number of permutations without executing the scenario (-1 = error)");
     opt.AddOption("save_generated_model", "Save generated 3D model (n/a when a scenegraph is loaded)");
@@ -1224,9 +1235,6 @@ int ScenarioPlayer::Init()
     opt.AddOption("threads", "Run viewer in a separate thread, parallel to scenario engine");
     opt.AddOption("trail_mode", "Show trail lines and/or dots (toggle key 'j') mode 0=None 1=lines 2=dots 3=both", "mode");
     opt.AddOption("version", "Show version and quit");
-
-    exe_path_ = argv_[0];
-    SE_Env::Inst().AddPath(DirNameOf(exe_path_));  // Add location of exe file to search paths
 
     if (opt.ParseArgs(argc_, argv_) != 0)
     {
@@ -1249,6 +1257,20 @@ int ScenarioPlayer::Init()
     if (opt.GetOptionSet("disable_stdout"))
     {
         Logger::Inst().SetCallback(0);
+    }
+
+    arg_str = opt.GetOptionArg("res_path");
+    if (!arg_str.empty())
+    {
+        SE_Env::Inst().SetResourcesFolderPath(arg_str);
+    }
+    else if (GetEnvVar("ESMINI_RESOURCES_PATH") != nullptr)
+    {
+        SE_Env::Inst().SetResourcesFolderPath(GetEnvVar("ESMINI_RESOURCES_PATH"));
+    }
+    else if (!SE_Env::Inst().GetExeFolderPath().empty())
+    {
+        SE_Env::Inst().SetResourcesFolderPath(SE_Env::Inst().GetExeFolderPath().parent_path() / "resources");
     }
 
     OSCParameterDistribution& dist = OSCParameterDistribution::Inst();
@@ -1386,11 +1408,10 @@ int ScenarioPlayer::Init()
     if (opt.GetOptionArg("path") != "")
     {
         int counter = 0;
-        while ((arg_str = opt.GetOptionArg("path", counter)) != "")
+        while ((arg_str = opt.GetOptionArg("path", counter++)) != "")
         {
             SE_Env::Inst().AddPath(arg_str);
             LOG("Added path %s", arg_str.c_str());
-            counter++;
         }
     }
 
@@ -1427,8 +1448,7 @@ int ScenarioPlayer::Init()
     {
         if ((arg_str = opt.GetOptionArg("osc")) != "")
         {
-            SE_Env::Inst().AddPath(DirNameOf(arg_str));
-            scenarioEngine = new ScenarioEngine(FileNameOf(arg_str), disable_controllers_);
+            scenarioEngine = new ScenarioEngine(arg_str, disable_controllers_);
             Logger::Inst().SetTimePtr(scenarioEngine->GetSimulationTimePtr());
         }
         else if ((arg_str = opt.GetOptionArg("osc_str")) != "")
@@ -1462,11 +1482,11 @@ int ScenarioPlayer::Init()
         return -1;
     }
 
-	// Save xml
-	if (opt.GetOptionSet("save_xosc"))
-	{
-		std::string filename = FileNameOf(scenarioEngine->getScenarioFilePath());
-		pugi::xml_document* xml_doc = scenarioEngine->scenarioReader->GetDXMLDocument();
+    // Save xml
+    if (opt.GetOptionSet("save_xosc"))
+    {
+        std::string         filename = SE_Env::Inst().GetScenarioFilePath().filename().generic_string();
+        pugi::xml_document* xml_doc  = scenarioEngine->scenarioReader->GetDXMLDocument();
 
         if (xml_doc)
         {
@@ -1481,7 +1501,6 @@ int ScenarioPlayer::Init()
 
 #ifdef _USE_OSI
     osiReporter = new OSIReporter();
-    osiReporter->SetStationaryModelReference(scenarioEngine->getSceneGraphFilename());
 
     if (opt.GetOptionSet("osi_receiver_ip"))
     {
@@ -1525,45 +1544,46 @@ int ScenarioPlayer::Init()
                 filename = dist.AddInfoToFilename(filename);
             }
 
-			CSV_Log->Open(scenarioEngine->getScenarioFilePath(),
-				static_cast<int>(scenarioEngine->entities_.object_.size()), filename);
-			LOG("Log all vehicle data in csv file");
-		}
-		else
-		{
-			LOG("Failed to open CSV log %s");
-		}
-	}
+            CSV_Log->Open(SE_Env::Inst().GetScenarioFilePath().generic_string(),
+                          static_cast<int>(scenarioEngine->entities_.object_.size()),
+                          filename);
+            LOG("Log all vehicle data in csv file");
+        }
+        else
+        {
+            LOG("Failed to open CSV log %s");
+        }
+    }
 
     // Create a data file for later replay?
     if ((arg_str = opt.GetOptionArg("record")) != "")
     {
         std::string filename;
 
-		if (!arg_str.empty())
-		{
-			if (IsDirectoryName(arg_str))
-			{
-				filename = arg_str + FileNameWithoutExtOf(scenarioEngine->getScenarioFilePath()) + ".dat";
-			}
-			else
-			{
-				filename = arg_str;
-			}
-		}
-		else
-		{
-			filename = SE_Env::Inst().GetDatFilePath();
-		}
+        if (!arg_str.empty())
+        {
+            if (IsDirectoryName(arg_str))
+            {
+                filename = arg_str + SE_Env::Inst().GetScenarioFilePath().replace_extension(".dat").generic_string();
+            }
+            else
+            {
+                filename = arg_str;
+            }
+        }
+        else
+        {
+            filename = SE_Env::Inst().GetDatFilePath();
+        }
 
         if (dist.GetNumPermutations() > 0)
         {
             filename = dist.AddInfoToFilename(filename);
         }
 
-		LOG("Recording data to file %s", filename.c_str());
-		scenarioGateway->RecordToFile(filename, scenarioEngine->getOdrFilePath(), scenarioEngine->getSceneGraphFilename());
-	}
+        LOG("Recording data to file %s", filename.c_str());
+        scenarioGateway->RecordToFile(filename, scenarioEngine->getOdrFilePath(), scenarioEngine->getSceneGraphFilename());
+    }
 
     if (launch_server)
     {
@@ -1625,6 +1645,17 @@ int ScenarioPlayer::Init()
         opt.PrintUnknownArgs("Unrecognized arguments:");
         PrintUsage();
     }
+
+#ifdef _USE_OSI
+    if (viewer_)
+    {
+        osiReporter->SetStationaryModelReference(viewer_->GetLoadedEnvironmentFilePath());
+    }
+    else
+    {
+        osiReporter->SetStationaryModelReference(scenarioEngine->getSceneGraphFilename());
+    }
+#endif
 
     Frame(0.0);
 

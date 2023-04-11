@@ -282,6 +282,12 @@ private:
 // Useful operations
 
 /**
+        Portable and safe function to get environment variables
+        Return value should be copied, since the buffer will be re-used between calls
+*/
+const char* GetEnvVar(const char* key);
+
+/**
         Get model filename from model_id.
 */
 std::string GetModelFilenameById(int model_id);
@@ -297,12 +303,20 @@ bool FileExists(const char* fileName);
 std::string CombineDirectoryPathAndFilepath(std::string dir_path, std::string file_path);
 
 /**
- 	Concatenates a vector of strings into a single comma separated string
+        Concatenates a vector of strings into a single comma separated string
 */
 std::string ConcatenatePathVectorForLogging(const std::vector<std::filesystem::path>& vec);
 
 /**
-	Retrieve the angle of a vector
+        Find file given the provided file path, optional search paths, and any reported search paths (--path / AddPath())
+        Note: The resulting complete search paths must be absolute
+        @param filepath Filename with optional prepended relative path, e.g. "car.osgb" or "../models/car.osgb"
+        @param searchpath Optional vector of additional search paths to prepend the filepath
+*/
+std::filesystem::path LocateFile(std::filesystem::path filepath, std::vector<std::filesystem::path> searchpath = {""});
+
+/**
+        Retrieve the angle of a vector
 */
 double GetAngleOfVector(double x, double y);
 
@@ -1147,7 +1161,8 @@ public:
             Note: Needs to be called prior to calling SE_Init()
             @param path Logfile path
     */
-    void        SetLogFilePath(std::string logFilePath);
+    void SetLogFilePath(std::string logFilePath);
+
     std::string GetLogFilePath()
     {
         return logFilePath_;
@@ -1168,14 +1183,79 @@ public:
             Note: Needs to be called prior to calling SE_Init()
             @param path Logfile path
     */
-    void        SetDatFilePath(std::string datFilePath);
+    void SetDatFilePath(std::string datFilePath);
+
     std::string GetDatFilePath()
     {
         return datFilePath_;
     }
 
-    std::string GetModelFilenameById(int model_id);
-    void        ClearModelFilenames()
+    void SetExeFilePath(std::filesystem::path filepath);
+
+    std::filesystem::path GetExeFilePath()
+    {
+        return exe_filepath_;
+    }
+
+    std::filesystem::path GetExeFolderPath()
+    {
+        return exe_filepath_.parent_path();
+    }
+
+    void SetResourcesFolderPath(std::filesystem::path filepath);
+
+    std::filesystem::path GetResourcesFolderPath()
+    {
+        return resources_folderpath_;
+    }
+
+    void SetScenarioFilePath(std::filesystem::path filepath)
+    {
+        if (std::filesystem::exists(filepath))
+        {
+            scenario_filepath_ = std::filesystem::canonical(filepath);
+        }
+        else
+        {
+            scenario_filepath_ = filepath;
+        }
+    }
+
+    std::filesystem::path GetScenarioFilePath()
+    {
+        return scenario_filepath_;
+    }
+
+    std::filesystem::path GetScenarioFolderPath()
+    {
+        return scenario_filepath_.parent_path();
+    }
+
+    void SetRoadFilePath(std::filesystem::path filepath)
+    {
+        if (std::filesystem::exists(filepath))
+        {
+            road_filepath_ = std::filesystem::canonical(filepath);
+        }
+        else
+        {
+            road_filepath_ = filepath;
+        }
+    }
+
+    std::filesystem::path GetRoadFilePath()
+    {
+        return road_filepath_;
+    }
+
+    std::filesystem::path GetRoadFolderPath()
+    {
+        return road_filepath_.parent_path();
+    }
+
+    std::string GetModelFilenameById(int model_id, std::filesystem::path model_ids_filename = "model_ids.txt");
+
+    void ClearModelFilenames()
     {
         entity_model_map.clear();
     }
@@ -1195,6 +1275,10 @@ private:
     SE_Rand                    rand_;
     bool                       offScreenRendering_;
     bool                       collisionDetection_;
+    std::filesystem::path      exe_filepath_;
+    std::filesystem::path      resources_folderpath_;
+    std::filesystem::path      scenario_filepath_;
+    std::filesystem::path      road_filepath_;
     std::map<int, std::string> entity_model_map;
 };
 

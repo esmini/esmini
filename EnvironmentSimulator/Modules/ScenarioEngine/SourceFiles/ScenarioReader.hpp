@@ -132,8 +132,10 @@ namespace scenarioengine
         int  parseStoryBoard(StoryBoard& storyBoard);
         void parseOSCManeuver(Maneuver* maneuver, pugi::xml_node maneuverNode, ManeuverGroup* mGroup);
 
-		std::string getScenarioFilePath() { return oscFilePath_; }
-		bool IsLoaded() { return !osc_root_.empty(); }
+        bool IsLoaded()
+        {
+            return !osc_root_.empty();
+        }
 
         static void RegisterController(std::string type_name, ControllerInstantiateFunction function)
         {
@@ -171,18 +173,18 @@ namespace scenarioengine
         static Parameters parameters;  // static to enable set via callback during creation of object
         static Parameters variables;
 
-	private:
-		pugi::xml_document doc_;
-		pugi::xml_node osc_root_;
-		std::string oscFilePath_;
-		Entities *entities_;
-		Catalogs *catalogs_;
-		ScenarioGateway* gateway_;
-		bool disable_controllers_;
-		static ControllerPool controllerPool_;
-		int versionMajor_;
-		int versionMinor_;
-		std::string description_;
+    private:
+        pugi::xml_document    doc_;
+        pugi::xml_node        osc_root_;
+        std::string           oscFilePath_;
+        Entities*             entities_;
+        Catalogs*             catalogs_;
+        ScenarioGateway*      gateway_;
+        bool                  disable_controllers_;
+        static ControllerPool controllerPool_;
+        int                   versionMajor_;
+        int                   versionMinor_;
+        std::string           description_;
 
         int             ParseTransitionDynamics(pugi::xml_node node, OSCPrivateAction::TransitionDynamics& td);
         ConditionGroup* ParseConditionGroup(pugi::xml_node node);

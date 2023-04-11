@@ -2581,15 +2581,5 @@ int OSIReporter::SetOSITimeStampExplicit(unsigned long long int nanoseconds)
 }
 void OSIReporter::SetStationaryModelReference(std::string model_reference)
 {
-    // Check registered paths for model3d
-    std::string model3d_abs_path;
-    for (size_t i = 0; i < SE_Env::Inst().GetPaths().size(); i++)
-    {
-        std::string file_name_candidate = CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], model_reference);
-        if (FileExists(file_name_candidate.c_str()))
-        {
-            stationary_model_reference = file_name_candidate;
-            break;
-        }
-    }
+    stationary_model_reference = model_reference;
 }

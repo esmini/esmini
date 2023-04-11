@@ -320,18 +320,6 @@ int ScenarioGateway::reportObject(int                    id,
 
     if (obj_state == 0)
     {
-        // Check registered paths for model3d
-        std::string model3d_abs_path;
-        for (size_t i = 0; i < SE_Env::Inst().GetPaths().size(); i++)
-        {
-            std::string file_name_candidate = CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], model3d);
-            if (FileExists(file_name_candidate.c_str()))
-            {
-                model3d_abs_path = file_name_candidate;
-                break;
-            }
-        }
-
         // Create state and set permanent information
         obj_state = new ObjectState(id,
                                     name,
@@ -339,7 +327,7 @@ int ScenarioGateway::reportObject(int                    id,
                                     obj_category,
                                     obj_role,
                                     model_id,
-                                    model3d_abs_path,
+                                    model3d,
                                     ctrl_type,
                                     boundingbox,
                                     scaleMode,
@@ -1028,8 +1016,37 @@ int ScenarioGateway::RecordToFile(std::string filename, std::string odr_filename
         }
         DatHeader header;
         header.version = DAT_FILE_FORMAT_VERSION;
+        if (odr_filename.length() + 1 > DAT_FILENAME_SIZE)
+        {
+            LOG("Failed to create DAT file, odr filepath (%s) too long (%d/%d)", odr_filename.c_str(), odr_filename.length() + 1, DAT_FILENAME_SIZE);
+        }
         StrCopy(header.odr_filename, odr_filename.c_str(), MIN(odr_filename.length() + 1, DAT_FILENAME_SIZE));
-        StrCopy(header.model_filename, model_filename.c_str(), MIN(model_filename.length() + 1, DAT_FILENAME_SIZE));
+
+        std::filesystem::path odr_folder     = std::filesystem::path(odr_filename).parent_path();
+        std::filesystem::path model_filepath = std::filesystem::relative(model_filename, odr_folder);
+        if (model_filepath.generic_string().length() + 1 > DAT_FILENAME_SIZE)
+        {
+            if (model_filepath.filename().generic_string().length() + 1 > DAT_FILENAME_SIZE)
+            {
+                LOG("Failed to create DAT file, model filepath (%s) too long (%d/%d), even skipping the path",
+                    model_filepath.generic_string().c_str(),
+                    model_filepath.generic_string().length() + 1,
+                    DAT_FILENAME_SIZE);
+                return -1;
+            }
+            else
+            {
+                LOG("Create DAT file: Model filepath (%s) too long (%d/%d). Trying with filename without path %s",
+                    model_filepath.generic_string().c_str(),
+                    model_filepath.generic_string().length() + 1,
+                    DAT_FILENAME_SIZE,
+                    model_filepath.filename().generic_string().c_str());
+                model_filename = model_filepath.filename().generic_string();
+            }
+        }
+        StrCopy(header.model_filename,
+                std::filesystem::relative(model_filename, odr_folder).generic_string().c_str(),
+                MIN(model_filename.length() + 1, DAT_FILENAME_SIZE));
 
         data_file_.write(reinterpret_cast<char*>(&header), sizeof(header));
     }

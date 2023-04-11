@@ -1769,20 +1769,163 @@ image::light_second_light.jpg[]
 
 ==== Resources not found
 
-Esmini searches for the scenario resources, i.e., static environment 3D model, vehicle 3D model, OpenSCENARIO catalogs and OpenDRIVE road network files which are linked from the .xosc file in 4 different places in the following order:
+The default file structure for binaries (applications and libs) and scenario assets is:
 
-1. Using absolute paths specified in the .xosc file
-2. Using the relative paths in the .xosc file, relative to the location of the .xosc file *(strongly recommended approach for portability reasons!)*
-3. Next to the ``esmini`` executable using the filename only
-4. Next to the .xosc file using the filename only
-5. Using the relative paths in the .xosc file, relative to additional search paths added by launch argument `--path <path>`
+[source]
+----
+esmini/
+|_ bin/
+|  |_ esmini
+|  |_ odrviewer
+|  |_ replayer
+|_ resources/
+   |_ model_ids.txt
+   |_ traffic_signals/
+   |_ models/
+   |_ xodr/
+   |_ xosc/
+----
 
-multiple paths can be added with the `--path` launch argument. For example:
+* `bin` folder contains all executables and shared libraries (esminiLib and esminiRMLib)
+* `model_ids.txt` contains a simple mapping of model Id and 3D model file. This is used when replaying `.dat` files which contains only model ID number instead of full 3D model file path (for bandwidth reasons).
+* `traffic_signals` folder contains mapping of road sign ID to OSI type, per country
+* `models` folder contains 3D model files
+* `xodr` folder contains OpenDRIVE files
+* `xosc` folder contains OpenSCENARIO files
 
-``./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/slow-lead-vehicle.xosc --path ../../ --path c:/tmp/my_models``
+esmini supports other folder structures and file locations as well. The following sections explains where esmini is searching based input files locations and user input.
 
-will add the relative path `../../` and absolute path `c:/tmp/my_models` to the
-list of places where to look for resources referred to by the scenario.
+esmini supports the following file reference modes in OpenSCENARIO and OpenDRIVE files:
+
+* Relative path (preferred)
+ ** example: `../xodr/road.xodr`
+ ** starting from the location of the OpenSCENARIO/OpenDRIVE file
+* Absolute path
+ ** example: `c:/tmp/road.xodr`
+* Only filename
+ ** example: `road.xodr`
+ ** look in the default location for the resource type (xosc/Catalogs, xodr, models)
+ ** Note: The search folder can be derived in multiple ways. See below for details
+
+===== Search locations
+
+The following files are potentially, depending on tool, lib, and the actual scenario, being used by esmini:
+
+- OpenDRIVE file referred from OpenSCENARIO and .dat files
+- Road 3D model referred from OpenSCENARIO and .dat files
+- Catalog files referred from OpenSCENARIO files
+- Entity object 3D models (cars, pedestrians, misc...) referred from OpenSCENARIO, Catalog files and .dat files
+- Road object 3D models (signs, railings...) referred from OpenDRIVE file
+- Traffic signals mapping files indirectly referred from OpenDRIVE file
+- model_id.txt - Used by replayer to select 3D model for object based on model_id in the dat file
+
+The following sections explains how esmini will locate these files accordingly.
+
+====== OpenDRIVE file
+
+The OpenDRIVE file path is specified in the OpenSCENARIO file as `logicFile`. The file path is either absolute (e.g. `c:/tmp/road.xodr`) or relative (e.g. `../xodr/road.xodr`).
+
+If absolute, it will be used as is. If relative, it will be combined with the location of the OpenSCENARIO file (e.g. `c:/tmp/xosc/cut-in.xosc` + `../xodr/road.xodr` => `c:/tmp/xodr/road.xodr`).
+
+Pure filename without leading path, e.g. `road.xodr`, will be treated as a relative path, e.g. `./road.xodr`. It will simply be looked for in the same directory as the OpenSCENARIO file.
+
+====== Road network 3D model
+
+The road network 3D file is specified in the OpenSCENARIO file as `sceneGraphFile`. The file path is either absolute, e.g. `c:/tmp/road.xodr`, or relative, e.g. `../xodr/road.xodr`. Even pure filename, e.g. `road.xodr`, will be treated as relative path, e.g. `./road.xodr`.
+
+====== Catalog files
+
+Catalog locations are specified in the OpenSCENARIO file. Paths can be either absolute or relative.
+
+The final search locations will be a combination of the folder containing the OpenSCENARIO file, catalog name, and extension `.xosc`.
+
+Example: `c:/tmp/xosc/cut-in.xosc` + `Catalogs/Vehicles` + `VehicleCatalog` => `c:/tmp/xosc/Catalogs/Vehicles/VehicleCatalog.xosc`
+
+Like in the case of OpenDRIVE files, when catalog location path is absolute the OpenSCENARIO file location is neglected.
+
+====== 3D model files specified in OpenSCENARIO and catalogs
+
+3D model files specified in OpenSCENARIO file and catalogs follow a similar pattern as OpenDRIVE and catalog files: The file path is combined (concatenated) with the location of the OpenSCENARIO file.
+
+Example: `c:/tmp/xosc/cut-in.xosc` + `../models/car_blue.osgb` => `c:/tmp/xosc/models/car_blue.osgb`.
+
+*Note:* Also relative paths in catalogs will be related to the location of the OpenSCENARIO file, NOT the catalog itself. The thinking is that the catalog entry is being included into the OpenSCENARIO file, becoming part of it.
+
+====== 3D model files specified in OpenDRIVE files
+
+3D model files specified in OpenDRIVE files, such as road signs and railings, can also be specified either as absolute or relative file path. The extension `.osgb` is optional - if missing, it will simply be added by esmini.
+
+If path is absolute, it will be used as is. Else if relative, base it on the location of the OpenDRIVE file.
+
+Example: `c:/tmp/xodr/road.xosc` + `../models/speed_50` => `c:/tmp/models/speed_50.osgb` +
+
+Finally, if it is a pure filename without path: First consider default location relative the `resources` folder: `resources/models`. Then look in any `models` folder parallel to the folder containing the OpenDRIVE file, for example: `c:/tmp/xodr/road.xosc` + `speed_50` => `c:/tmp/models/speed_50.osgb`
+
+====== 3D model files specified in odrviewer and replayer
+
+For the applications `odrviewer` and `replayer` where there is no OpenSCENARIO file or catalogs involved, the 3D model files will be searched for in `<resources folder>/models`.
+
+See <<Resources folder>> below for how the `<resource folder>` is derived.
+
+====== Traffic signal mapping files
+The purpose of these files is to map signal IDs to OSI signal type. There is one file per country. The filename is derived from the traffic signal type attributes. The location is assumed to be `<resources folder>`/traffic_signals.
+
+See <<Resources folder>> below for how the `<resource folder>` is derived.
+
+====== Resources folder
+
+The path to the `resources` folder can be explicitly registered in two ways:
+
+1. by setting environment variable `ESMINI_RESOURCES_PATH`
+2. by launch argument `--res_path <resources folder path>`
+
+If the path has not been registered by any of above methods, it will be guessed based on the executable or library being used as follows:
+
+[%autowidth,frame=none,grid=none]
+|===
+|esmini executable | `<esmini executable folder>/../resources`|
+|replayer | `<replayer executable folder>/../resources`|
+|odrviewer | `<odrviewer executable folder>/../resources`|
+|esmini lib | `<OpenSCENARIO file folder>/../resources`|
+|esminiRM lib | `<OpenDRIVE file>/../resources`|
+|===
+
+[horizontal]
+esmini executable :: `<esmini executable folder>/../resources`
+replayer :: `<replayer executable folder>/../resources`
+odrviewer :: `<odrviewer executable folder>/../resources`
+esmini lib :: `<OpenSCENARIO file folder>/../resources`
+esminiRM lib :: `<OpenDRIVE file>/../resources`
+
+
+Conclusion: If the `resources` folder is named "resources" and located according to the above table, then there is no need for the user to specify it's location. The default structure is compatible with this pattern, but also other structures are possible.
+
+===== Additional search paths
+
+For full flexibility, any number of additional search paths can be specified with `--path` launch argument.
+
+If a file has not been localized with the strategies listed above it will be search for in additional search paths using filename only. Example:
+
+Assume esmini root folder is `c:/users/kalle/esmini/`, `scenario.xosc` is located in `c:/users/kalle/my_project/` and refer to OpenDRIVE `../my_roads/road7.xodr`. From esmini folder, launching:
+
+`./bin/esmini --window 60 60 800 400 --osc ../my_project/scenario.xosc --path ../../ --path c:/tmp`
+
+will make esmini look for the OpenDRIVE file `road7.xodr` in the following locations and in specified order:
+
+* `c:/users/kalle/my_roads/road7.xodr` (standard method)
+* `c:/users/road7.xodr` (first added search path relative current folder)
+* `c:/tmp/road7.xodr` (second added absolute search path)
+
+If the OpenDRIVE reference was `road7.xodr` (filename alone) the first search locations would be:
+
+* `c:/users/kalle/esmini/resources/xodr/road7.xodr`
+
+the other ones, based on filename alone and additional paths, would be unchanged.
+
+For example, to find a custom 3D car model named `small_sedan.osgb` or a custom vehicle catalog file `my_vehicles.xosc` placed in `c:/tmp`: +
+`./bin/esmini --window 60 60 800 400 --osc ../my_project/scenario.xosc --path c:/tmp`
+
+For programmers: Additional search paths can be added with `SE_AddPath()` function.
 
 ==== Blocked by Windows Defender SmartScreen
 

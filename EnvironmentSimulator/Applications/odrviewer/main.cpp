@@ -371,10 +371,19 @@ int main(int argc, char **argv)
     static char str_buf[128];
     SE_Options  opt;
 
+    SE_Env::Inst().SetExeFilePath(argv[0]);
+
     // Use logger callback
     Logger::Inst().SetCallback(log_callback);
 
-    SE_Env::Inst().AddPath(DirNameOf(argv[0]));  // Add location of exe file to search paths
+    if (GetEnvVar("ESMINI_RESOURCES_PATH") != nullptr)
+    {
+        SE_Env::Inst().SetResourcesFolderPath(GetEnvVar("ESMINI_RESOURCES_PATH"));
+    }
+    else if (!SE_Env::Inst().GetExeFolderPath().empty())
+    {
+        SE_Env::Inst().SetResourcesFolderPath(SE_Env::Inst().GetExeFolderPath().parent_path() / "resources");
+    }
 
     std::vector<std::string> args;
     for (int i = 0; i < argc; i++)
@@ -466,8 +475,12 @@ int main(int argc, char **argv)
 
     if ((arg_str = opt.GetOptionArg("path")) != "")
     {
-        SE_Env::Inst().AddPath(arg_str);
-        LOG("Added path %s", arg_str.c_str());
+        int counter = 0;
+        while ((arg_str = opt.GetOptionArg("path", counter++)) != "")
+        {
+            SE_Env::Inst().AddPath(arg_str);
+            LOG("Added path %s", arg_str.c_str());
+        }
     }
 
     // Use specific seed for repeatable scenarios?
@@ -491,7 +504,7 @@ int main(int argc, char **argv)
         return -1;
     }
 
-	std::string modelFilePath = opt.GetOptionArg("model");
+    std::string modelFilePath = opt.GetOptionArg("model");
 
     if (opt.GetOptionArg("density") != "")
     {
@@ -536,14 +549,8 @@ int main(int argc, char **argv)
         }
         roadmanager::OpenDrive *odrManager = roadmanager::Position::GetOpenDrive();
 
-		osg::ArgumentParser arguments(&argc, argv);
-		viewer::Viewer *viewer = new viewer::Viewer(
-			odrManager,
-			modelFilePath.c_str(),
-			NULL,
-			argv[0],
-			arguments,
-			&opt);
+        osg::ArgumentParser arguments(&argc, argv);
+        viewer::Viewer     *viewer = new viewer::Viewer(odrManager, modelFilePath.c_str(), arguments, &opt);
 
         viewer->SetWindowTitleFromArgs(args);
         viewer->RegisterKeyEventCallback(FetchKeyEvent, nullptr);

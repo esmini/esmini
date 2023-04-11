@@ -106,7 +106,7 @@ OSCPositionRoad::OSCPositionRoad(int roadId, double s, double t, OSCOrientation 
 {
     if (position_.GetRoadById(roadId) == nullptr)
     {
-        LOG_AND_QUIT("Reffered road ID %d not available in road network", roadId);
+        LOG_AND_QUIT("Referred road ID %d not available in road network", roadId);
     }
 
     position_.SetOrientationType(orientation.type_);

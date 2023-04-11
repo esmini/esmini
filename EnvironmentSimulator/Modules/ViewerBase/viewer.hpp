@@ -346,11 +346,20 @@ namespace viewer
         void SetRotation(double h, double p, double r);
 
         void SetTransparency(double factor);
+        void SetLoaded3dModelPath(std::string loaded_3d_model_path)
+        {
+            loaded_3d_model_path_ = loaded_3d_model_path;
+        }
+        std::string GetLoaded3dModelPath()
+        {
+            return loaded_3d_model_path_;
+        }
 
         std::unique_ptr<PolyLine>       trail_;
         std::unique_ptr<RouteWayPoints> routewaypoints_;
         osgViewer::Viewer*              viewer_;
         OnScreenText                    on_screen_info_;
+        std::string                     loaded_3d_model_path_;
     };
 
     class MovingModel : public EntityModel
@@ -484,7 +493,6 @@ namespace viewer
         roadmanager::OpenDrive*                      odrManager_;
         std::unique_ptr<RoadGeom>                    roadGeom;
 
-        std::string                   exe_path_;
         std::vector<KeyEventCallback> callback_;
         ImageCallback                 imgCallback_;
 
@@ -501,16 +509,14 @@ namespace viewer
         SE_Semaphore renderSemaphore;
         SE_Mutex     imageMutex;
 
-		Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilePath,
-			   const char* scenarioFilePath, const char* exe_path,
-			   osg::ArgumentParser arguments, SE_Options* opt = 0);
-		~Viewer();
-		static void PrintUsage();
-		void AddCustomCamera(double x, double y, double z, double h, double p, bool fixed_pos = false);
-		void AddCustomCamera(double x, double y, double z, bool fixed_pos = false);
-		void AddCustomFixedTopCamera(double x, double y, double z, double rot);
-		int GetCameraPosAndRot(osg::Vec3& pos, osg::Vec3& rot);
-		int AddCustomLightSource(double x, double y, double z, double intensity);
+        Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilePath, osg::ArgumentParser arguments, SE_Options* opt = 0);
+        ~Viewer();
+        static void PrintUsage();
+        void        AddCustomCamera(double x, double y, double z, double h, double p, bool fixed_pos = false);
+        void        AddCustomCamera(double x, double y, double z, bool fixed_pos = false);
+        void        AddCustomFixedTopCamera(double x, double y, double z, double rot);
+        int         GetCameraPosAndRot(osg::Vec3& pos, osg::Vec3& rot);
+        int         AddCustomLightSource(double x, double y, double z, double intensity);
 
         /**
          * Set mode of the esmini camera model
@@ -524,7 +530,7 @@ namespace viewer
         {
             return currentCarInFocus_;
         }
-        EntityModel*             CreateEntityModel(std::string             modelFilepath,
+        EntityModel*             CreateEntityModel(std::filesystem::path   modelFilepath,
                                                    osg::Vec4               trail_color,
                                                    EntityModel::EntityType type,
                                                    bool                    road_sensor,
@@ -535,8 +541,8 @@ namespace viewer
         void                     RemoveCar(int index);
         void                     RemoveCar(std::string name);
         void                     ReplaceCar(int index, EntityModel* model);
-        int                      LoadShadowfile(std::string vehicleModelFilename);
-        int                      AddEnvironment(const char* filename);
+        int                      LoadShadowfile(std::filesystem::path vehicleModelFilename);
+        int                      AddEnvironment(std::filesystem::path filename);
         osg::ref_ptr<osg::Group> LoadEntityModel(const char* filename, osg::BoundingBox& bb);
         void                     UpdateSensor(PointSensor* sensor);
         void                     SensorSetPivotPos(PointSensor* sensor, double x, double y, double z);
@@ -597,6 +603,14 @@ namespace viewer
         void         RegisterImageCallback(ImageCallbackFunc func, void* data);
         PolyLine*    AddPolyLine(osg::ref_ptr<osg::Vec3Array> points, osg::Vec4 color, double width, double dotsize = 0);
         PolyLine*    AddPolyLine(osg::Group* parent, osg::ref_ptr<osg::Vec3Array> points, osg::Vec4 color, double width, double dotsize = 0);
+        void         SetLoadedEnvironmentFilePath(std::string loaded_environment_filepath)
+        {
+            loaded_environment_filepath_ = loaded_environment_filepath;
+        }
+        std::string GetLoadedEnvironmentFilePath()
+        {
+            return loaded_environment_filepath_;
+        }
 
         void SaveImagesToFile(int nrOfFrames);
         int  GetSaveImagesToFile()
@@ -618,7 +632,7 @@ namespace viewer
         bool                                         CreateRoadLines(roadmanager::OpenDrive* od);
         bool                                         CreateRoadMarkLines(roadmanager::OpenDrive* od);
         int                                          CreateOutlineObject(roadmanager::Outline* outline, osg::Vec4 color);
-        osg::ref_ptr<osg::PositionAttitudeTransform> LoadRoadFeature(roadmanager::Road* road, std::string filename);
+        osg::ref_ptr<osg::PositionAttitudeTransform> LoadRoadFeature(roadmanager::Road* road, std::filesystem::path filename);
         int                                          CreateRoadSignsAndObjects(roadmanager::OpenDrive* od);
         int                                          InitTraits(osg::ref_ptr<osg::GraphicsContext::Traits> traits,
                                                                 int                                        x,
@@ -639,6 +653,7 @@ namespace viewer
         int                                          saveImagesToFile_;
         bool                                         disable_off_screen_;
         osgViewer::ViewerBase::ThreadingModel        initialThreadingModel_;
+        std::string                                  loaded_environment_filepath_;
 
         struct
         {

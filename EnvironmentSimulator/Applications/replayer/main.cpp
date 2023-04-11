@@ -145,13 +145,14 @@ int ParseEntities(viewer::Viewer* viewer, Replay* player)
             new_sc.wheel_rotation = 0.0f;
             new_sc.name           = state->info.name;
             new_sc.visible        = true;
-            std::string filename;
+            std::filesystem::path model_filename;
+
             if (state->info.model_id >= 0)
             {
-                filename = SE_Env::Inst().GetModelFilenameById(state->info.model_id);
+                model_filename = SE_Env::Inst().GetModelFilenameById(state->info.model_id, "model_ids.txt");
             }
 
-            if ((new_sc.entityModel = viewer->CreateEntityModel(filename.c_str(),
+            if ((new_sc.entityModel = viewer->CreateEntityModel(model_filename,
                                                                 osg::Vec4(0.5, 0.5, 0.5, 1.0),
                                                                 viewer::EntityModel::EntityType::VEHICLE,
                                                                 false,
@@ -341,6 +342,8 @@ int main(int argc, char** argv)
     static char             info_str_buf[256];
     std::string             arg_str;
 
+    SE_Env::Inst().SetExeFilePath(argv[0]);
+
     // Use logger callback for console output instead of logfile
     Logger::Inst().SetCallback(log_callback);
     Logger::Inst().LogVersion();
@@ -411,18 +414,25 @@ int main(int argc, char** argv)
     if (opt.GetOptionArg("path") != "")
     {
         int counter = 0;
-        while ((arg_str = opt.GetOptionArg("path", counter)) != "")
+        while ((arg_str = opt.GetOptionArg("path", counter++)) != "")
         {
             SE_Env::Inst().AddPath(arg_str);
             LOG("Added path %s", arg_str.c_str());
-            counter++;
         }
     }
 
     arg_str = opt.GetOptionArg("res_path");
     if (!arg_str.empty())
     {
-        SE_Env::Inst().AddPath(arg_str);
+        SE_Env::Inst().SetResourcesFolderPath(arg_str);
+    }
+    else if (GetEnvVar("ESMINI_RESOURCES_PATH") != nullptr)
+    {
+        SE_Env::Inst().SetResourcesFolderPath(GetEnvVar("ESMINI_RESOURCES_PATH"));
+    }
+    else if (!SE_Env::Inst().GetExeFolderPath().empty())
+    {
+        SE_Env::Inst().SetResourcesFolderPath(SE_Env::Inst().GetExeFolderPath().parent_path() / "resources");
     }
 
     if (opt.GetOptionSet("disable_off_screen"))
@@ -466,51 +476,30 @@ int main(int argc, char** argv)
     {
         if (strcmp(player->header_.odr_filename, ""))
         {
-            // find and OpenDRIVE file. Test some combinations of paths and filename
-            std::vector<std::string> file_name_candidates;
+            std::vector<std::filesystem::path> folders;
 
-            // just filepath as stated in .dat file
-            file_name_candidates.push_back(player->header_.odr_filename);
-
-            // Check registered paths
-            for (size_t i = 0; i < SE_Env::Inst().GetPaths().size(); i++)
+            if (!SE_Env::Inst().GetResourcesFolderPath().empty())
             {
-                // Including file path
-                file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], player->header_.odr_filename));
-
-                // Excluding file path
-                file_name_candidates.push_back(
-                    CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], FileNameOf(player->header_.odr_filename)));
-
-                // Including file path and xodr sub folder
-                file_name_candidates.push_back(
-                    CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i] + "/xodr/", FileNameOf(player->header_.odr_filename)));
-
-                // Excluding file path but add xodr sub folder
-                file_name_candidates.push_back(
-                    CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i] + "/xodr/", player->header_.odr_filename));
+                folders.push_back(SE_Env::Inst().GetResourcesFolderPath() / "xodr");
             }
 
-            size_t i;
-            for (i = 0; i < file_name_candidates.size(); i++)
+            if (!SE_Env::Inst().GetExeFolderPath().empty())
             {
-                if (FileExists(file_name_candidates[i].c_str()))
-                {
-                    if (roadmanager::Position::LoadOpenDrive(file_name_candidates[i].c_str()))
-                    {
-                        break;
-                    }
-                }
+                folders.push_back(SE_Env::Inst().GetExeFolderPath().parent_path() / "resources" / "xodr");
             }
 
-            if (i == file_name_candidates.size())
+            std::filesystem::path filepath = LocateFile(player->header_.odr_filename, folders);
+            if (filepath.empty())
             {
-                printf("Failed to load OpenDRIVE file %s. Tried:\n", player->header_.odr_filename);
-                for (int j = 0; j < static_cast<int>(file_name_candidates.size()); j++)
+                printf("Failed to locate OpenDRIVE - continue without road description\n");
+            }
+            else
+            {
+                printf("Loading OpenDRIVE file %s\n", filepath.generic_string().c_str());
+                if (!roadmanager::Position::LoadOpenDrive(filepath.generic_string().c_str()))
                 {
-                    printf("   %s\n", file_name_candidates[static_cast<unsigned int>(j)].c_str());
+                    printf("Failed to load OpenDRIVE - continue without road description\n");
                 }
-                printf("continue without road description\n");
             }
         }
 
@@ -518,7 +507,7 @@ int main(int argc, char** argv)
 
         osg::ArgumentParser arguments(&argc, argv);
 
-        viewer = new viewer::Viewer(odrManager, player->header_.model_filename, NULL, argv[0], arguments, &opt);
+        viewer = new viewer::Viewer(odrManager, player->header_.model_filename, arguments, &opt);
 
         if (viewer == nullptr)
         {

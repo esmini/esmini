@@ -88,6 +88,8 @@ int main(int argc, char* argv[])
     OSCParameterDistribution& dist   = OSCParameterDistribution::Inst();
     int                       retval = 0;
 
+    SE_Env::Inst().SetExeFilePath(argv[0]);
+
     do
     {
         retval = execute_scenario(argc, argv);

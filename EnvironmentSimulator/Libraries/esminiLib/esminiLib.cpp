@@ -478,6 +478,11 @@ extern "C"
         SE_Env::Inst().SetDatFilePath(datFilePath);
     }
 
+    SE_DLL_API void SE_SetResourcesFolderPath(const char *path)
+    {
+        SE_Env::Inst().SetResourcesFolderPath(path);
+    }
+
     SE_DLL_API unsigned int SE_GetSeed()
     {
         return SE_Env::Inst().GetRand().GetSeed();
@@ -532,7 +537,7 @@ extern "C"
         if (argv && !strncmp(argv[0], "--", 2))
         {
             // Application name argument missing. Add something.
-            AddArgument("esmini");
+            AddArgument("esmini(lib)");
         }
 
         for (int i = 0; i < argc; i++)
@@ -692,16 +697,16 @@ extern "C"
         return pause_flag;
     }
 
-	SE_DLL_API const char *SE_GetODRFilename()
-	{
-		static std::string returnString;
-		if (player == nullptr)
-		{
-			return 0;
-		}
-		returnString = player->scenarioEngine->getOdrFilePath().c_str();
-		return returnString.c_str();
-	}
+    SE_DLL_API const char *SE_GetODRFilename()
+    {
+        static std::string returnString;
+        if (player == nullptr)
+        {
+            return 0;
+        }
+        returnString = player->scenarioEngine->getOdrFilePath().c_str();
+        return returnString.c_str();
+    }
 
     SE_DLL_API const char *SE_GetSceneGraphFilename()
     {

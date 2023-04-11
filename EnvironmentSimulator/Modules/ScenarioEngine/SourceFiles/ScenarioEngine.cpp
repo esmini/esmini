@@ -20,7 +20,7 @@
 
 #include <filesystem>
 
-#define WHEEL_RADIUS 0.35
+#define WHEEL_RADIUS          0.35
 #define STAND_STILL_THRESHOLD 1e-3  // meter per second
 
 namespace fs = std::filesystem;
@@ -65,42 +65,44 @@ int ScenarioEngine::InitScenario(std::string oscFilename, bool disable_controlle
 {
     InitScenarioCommon(disable_controllers);
 
-    std::vector<std::string> file_name_candidates;
-
-    // Filename as is - look in current directory
-    file_name_candidates.push_back(oscFilename);
-
-    // Finally check registered paths
-    for (size_t i = 0; i < SE_Env::Inst().GetPaths().size(); i++)
+    if (oscFilename.empty())
     {
-        file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], oscFilename));
+        LOG("No OpenSCENARIO file specified");
+        return -1;
     }
-    size_t i;
-    for (i = 0; i < file_name_candidates.size(); i++)
+    else
     {
-        if (FileExists(file_name_candidates[i].c_str()))
+        fs::path filepath = LocateFile(oscFilename);
+
+        if (!filepath.empty())
         {
-            if (scenarioReader->loadOSCFile(file_name_candidates[i].c_str()) != 0)
+            if (SE_Env::Inst().GetResourcesFolderPath().empty())
             {
-                LOG(("Failed to load OpenSCENARIO file " + oscFilename).c_str());
+                // If resource folder has not been set yet, guess the location based on OpenSCENARIO file location
+                SE_Env::Inst().SetResourcesFolderPath(filepath.parent_path().parent_path() / "resources");
+            }
+
+            // Try to load the file
+            if (scenarioReader->loadOSCFile(filepath.generic_string().c_str()) != 0)
+            {
+                LOG("Failed to load OpenSCENARIO");
                 return -3;
             }
             else
             {
-                break;
+                SE_Env::Inst().SetScenarioFilePath(filepath);
             }
         }
-    }
-
-    if (i == file_name_candidates.size())
-    {
-        LOG(("Couldn't locate OpenSCENARIO file " + oscFilename).c_str());
-        return -1;
+        else
+        {
+            LOG("Failed to load OpenSCENARIO");
+            return -3;
+        }
     }
 
     if (!scenarioReader->IsLoaded())
     {
-        LOG(("Couldn't load OpenSCENARIO file " + oscFilename).c_str());
+        LOG("Failed to confirm loaded OpenSCENARIO");
         return -2;
     }
 
@@ -650,7 +652,7 @@ int ScenarioEngine::step(double deltaSimTime)
                                          obj->category_,
                                          obj->role_,
                                          obj->model_id_,
-                                         obj->model3d_,
+                                         obj->GetLoadedModelFilePath().empty() ? obj->GetModelFilePath() : obj->GetLoadedModelFilePath(),
                                          obj->GetActivatedControllerType(),
                                          obj->boundingbox_,
                                          static_cast<int>(obj->scaleMode_),
@@ -779,14 +781,17 @@ int ScenarioEngine::parseScenario()
 
     scenarioReader->SetGateway(&scenarioGateway);
 
-	scenarioReader->parseOSCHeader();
-	if (scenarioReader->GetVersionMajor() < 1)
-	{
-		LOG_AND_QUIT("OpenSCENARIO v%d.%d not supported. Please migrate scenario to v1.0 or v1.1 and try again.",
-			scenarioReader->GetVersionMajor(), scenarioReader->GetVersionMinor());
-	}
-	LOG("Loading OpenSCENARIO from %s (v%d.%d)", scenarioReader->getScenarioFilePath().c_str(),
-		scenarioReader->GetVersionMajor(), scenarioReader->GetVersionMinor());
+    scenarioReader->parseOSCHeader();
+    if (scenarioReader->GetVersionMajor() < 1)
+    {
+        LOG_AND_QUIT("OpenSCENARIO v%d.%d not supported. Please migrate scenario to v1.0 or v1.1 and try again.",
+                     scenarioReader->GetVersionMajor(),
+                     scenarioReader->GetVersionMinor());
+    }
+    LOG("Loading OpenSCENARIO from %s (v%d.%d)",
+        SE_Env::Inst().GetScenarioFilePath().generic_string().c_str(),
+        scenarioReader->GetVersionMajor(),
+        scenarioReader->GetVersionMinor());
 
     scenarioReader->parseGlobalParameterDeclarations();
     scenarioReader->variables.Print("variables");  // All variables parsed at this point (not the case with parameters)
@@ -800,76 +805,28 @@ int ScenarioEngine::parseScenario()
     // Init road manager
     scenarioReader->parseRoadNetwork(roadNetwork);
 
-	if (getOdrFilePath().empty())
-	{
-		LOG("No OpenDRIVE file specified, continue without");
-	}
-	else
-	{
-		fs::path xodrPathOsc(getOdrFilePath());
-		std::vector<fs::path> xodrPathCandidates;
-		// Absolute path or relative to current directory
-		if (xodrPathOsc.is_absolute())
-		{
-			// Absolute path
-			xodrPathCandidates.push_back(xodrPathOsc);
-		}
-		else {
-			// Relative path (relative to .xosc file) - this should be the normal case
-			fs::path osc_path = fs::path(getScenarioFilePath()).parent_path();
-			xodrPathCandidates.push_back(osc_path / xodrPathOsc);
-		}
-		// Also relative to registered paths
-		for (size_t j = 0; j < SE_Env::Inst().GetPaths().size(); j++)
-		{
-			// Take the relative path from the LogicFile OpenSCENARIO XML
-			// element into account when looking for .xodr files. Note that this
-			// is different for catalog files due to the inability of
-			// OpenSCENARIO to specify explicit catalog file paths. Do not
-			// search for .xodr files only via their names to avoid
-			// unpredictable side effects.
-			fs::path registeredPath(SE_Env::Inst().GetPaths()[j]);
-			xodrPathCandidates.push_back(registeredPath / xodrPathOsc);
-		}
-		// Make all paths absolute and canonical
-		for (auto &&candidate_path : xodrPathCandidates) {
-			if (not candidate_path.is_absolute()) {
-				if (fs::exists(candidate_path)) {
-					// Canonical requires file to exist
-					candidate_path = fs::canonical(
-						fs::current_path() / candidate_path);
-				}
-				else {
-					// Weakly canonical does not require file to exist
-					candidate_path = fs::weakly_canonical(candidate_path);
-				}
-			}
-		}
-		bool result = false;
-		for (size_t j = 0; j < xodrPathCandidates.size() && result == false; j++)
-		{
-			if (fs::exists(xodrPathCandidates[j]))
-			{
-				// Try to load the .xodr file
-				result = roadmanager::Position::LoadOpenDrive(xodrPathCandidates[j].c_str());
-				if (result == true)
-				{
-					LOG("Successfully loaded OpenDRIVE road network from %s",
-						xodrPathCandidates[j].c_str());
-				}
-			}
-		}
-		if (result == false)
-		{
-			std::string candidatesLogStr = ConcatenatePathVectorForLogging(xodrPathCandidates);
-			LOG("Couldn't locate OpenDRIVE road network file at either of the "
-				" following locations: %s. Check the path in the .xosc file "
-				"or specify additional asset paths for search with the --path"
-				" option.",
-				candidatesLogStr.c_str());
-			return -1;
-		}
-	}
+    if (getOdrFilePath().empty())
+    {
+        LOG("No OpenDRIVE file specified, continue without");
+    }
+    else
+    {
+        fs::path filepath = LocateFile(getOdrFilePath(), {SE_Env::Inst().GetScenarioFolderPath()});
+        if (!filepath.empty())
+        {
+            // Try to load the file
+            LOG("Loading OpenDRIVE from %s", filepath.generic_string().c_str());
+            if (!roadmanager::Position::LoadOpenDrive(filepath.generic_string().c_str()))
+            {
+                LOG("Failed to load OpenDRIVE");
+                return -1;
+            }
+        }
+        else
+        {
+            return -1;
+        }
+    }
 
     odrManager = roadmanager::Position::GetOpenDrive();
 

@@ -239,6 +239,13 @@ extern "C"
     SE_DLL_API void SE_SetLogFilePath(const char *logFilePath);
 
     /**
+        Specify path to esmini resources folder
+        Note: Needs to be called prior to calling SE_Init()
+        @param path Folder path
+    */
+    SE_DLL_API void SE_SetResourcesFolderPath(const char *path);
+
+    /**
             Specify scenario recording (.dat) file path,
             optionally including directory path and/or filename
             Specify only directory (end with "/" or "\") to let esmini set default filename

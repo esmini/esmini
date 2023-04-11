@@ -36,33 +36,33 @@
 
 #include <filesystem>
 
-#define SHADOW_SCALE 1.20
-#define SHADOW_MODEL_FILEPATH "shadow_face.osgb"
-#define ARROW_MODEL_FILEPATH "arrow.osgb"
-#define LOD_DIST 3000
-#define LOD_DIST_ROAD_FEATURES 500
-#define LOD_SCALE_DEFAULT 1.0
-#define DEFAULT_AA_MULTISAMPLES 4
-#define OSI_LINE_WIDTH 2.0f
-#define OSI_LINE_WIDTH_BOLD 4.0f
-#define TRAIL_WIDTH 2
-#define TRAIL_DOT_SIZE 10
-#define TRAIL_DOT3D_SIZE 0.2
-#define WAYPOINT_HEIGHT 0.2
-#define TRAILDOT3D 1
-#define PERSP_FOV 30.0
-#define ORTHO_FOV 1.0
+#define SHADOW_SCALE                       1.20
+#define SHADOW_MODEL_FILEPATH              "shadow_face.osgb"
+#define ARROW_MODEL_FILEPATH               "arrow.osgb"
+#define LOD_DIST                           3000
+#define LOD_DIST_ROAD_FEATURES             500
+#define LOD_SCALE_DEFAULT                  1.0
+#define DEFAULT_AA_MULTISAMPLES            4
+#define OSI_LINE_WIDTH                     2.0f
+#define OSI_LINE_WIDTH_BOLD                4.0f
+#define TRAIL_WIDTH                        2
+#define TRAIL_DOT_SIZE                     10
+#define TRAIL_DOT3D_SIZE                   0.2
+#define WAYPOINT_HEIGHT                    0.2
+#define TRAILDOT3D                         1
+#define PERSP_FOV                          30.0
+#define ORTHO_FOV                          1.0
 #define DEFAULT_LENGTH_FOR_CONTINUOUS_OBJS 10.0
 
-float color_green[3] = { 0.2f, 0.6f, 0.3f };
-float color_gray[3] = { 0.7f, 0.7f, 0.7f };
-float color_dark_gray[3] = { 0.5f, 0.5f, 0.5f };
-float color_light_gray[3] = { 0.7f, 0.7f, 0.7f };
-float color_red[3] = { 0.73f, 0.26f, 0.26f };
-float color_black[3] = { 0.2f, 0.2f, 0.2f };
-float color_blue[3] = { 0.25f, 0.38f, 0.7f };
-float color_yellow[3] = { 0.75f, 0.7f, 0.4f };
-float color_white[3] = { 1.0f, 1.0f, 0.9f };
+float color_green[3]      = {0.2f, 0.6f, 0.3f};
+float color_gray[3]       = {0.7f, 0.7f, 0.7f};
+float color_dark_gray[3]  = {0.5f, 0.5f, 0.5f};
+float color_light_gray[3] = {0.7f, 0.7f, 0.7f};
+float color_red[3]        = {0.73f, 0.26f, 0.26f};
+float color_black[3]      = {0.2f, 0.2f, 0.2f};
+float color_blue[3]       = {0.25f, 0.38f, 0.7f};
+float color_yellow[3]     = {0.75f, 0.7f, 0.4f};
+float color_white[3]      = {1.0f, 1.0f, 0.9f};
 
 USE_OSGPLUGIN(osg2)
 USE_OSGPLUGIN(jpeg)
@@ -103,7 +103,7 @@ osg::Vec4 viewer::ODR2OSGColor(roadmanager::RoadMarkColor color)
     return osgc;
 }
 
-// Derive a class from NodeVisitor to find a node with a  specific name.
+// Derive a class from NodeVisitor to find a node with a specific name.
 class FindNamedNode : public osg::NodeVisitor
 {
 public:
@@ -1538,24 +1538,12 @@ int Viewer::AddGroundSurface()
     return 0;
 }
 
-Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilePath,
-			   const char* scenarioFilePath, const char* exe_path,
-			   osg::ArgumentParser arguments, SE_Options* opt)
+Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilePath, osg::ArgumentParser arguments, SE_Options* opt)
 {
-    (void)scenarioFilename;
+    (void)modelFilePath;
     odrManager_             = odrManager;
     bool        clear_color = false;
     std::string arg_str;
-
-    if (odrManager != NULL)
-    {
-        SE_Env::Inst().AddPath(DirNameOf(odrManager->GetOpenDriveFilename()));
-    }
-
-	if (modelFilePath != NULL && strcmp(modelFilePath, ""))
-	{
-		SE_Env::Inst().AddPath(DirNameOf(modelFilePath));
-	}
 
     // suppress OSG info messages
     osg::setNotifyLevel(osg::NotifySeverity::WARN);
@@ -1702,75 +1690,46 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilePath,
     routewaypoints_->setNodeMask(NodeMask::NODE_MASK_ROUTE_WAYPOINTS);
     rootnode_->addChild(routewaypoints_);
 
-    exe_path_ = exe_path;
+    // add environment
+    if (modelFilePath != 0 && strcmp(modelFilePath, ""))
+    {
+        std::vector<fs::path> folders;
 
-	// add environment
-	if (modelFilePath != 0 && strcmp(modelFilePath, ""))
-	{
-		fs::path modelPathOsc(modelFilePath);
-		std::vector<fs::path> modelPathCandidates;
-		// Absolute path or relative to current directory
-		if (modelPathOsc.is_absolute())
-		{
-			// Absolute path
-			modelPathCandidates.push_back(modelPathOsc);
-		}
-		else {
-			// Relative path (relative to .xosc file) - this should be the normal case
-			fs::path oscPath = fs::path(scenarioFilePath).parent_path();
-			modelPathCandidates.push_back(oscPath / modelPathOsc);
-		}
-		// Also relative to registered paths
-		for (size_t j = 0; j < SE_Env::Inst().GetPaths().size(); j++)
-		{
-			// Take the relative path from the LogicFile OpenSCENARIO XML
-			// element into account when looking for .osgb files. Note that this
-			// is different for catalog files due to the inability of
-			// OpenSCENARIO to specify explicit catalog file paths. Do not
-			// search for .osgb files only via their names to avoid
-			// unpredictable side effects.
-			fs::path registeredPath(SE_Env::Inst().GetPaths()[j]);
-			modelPathCandidates.push_back(registeredPath / modelPathOsc);
-		}
-		// Make all paths absolute and canonical
-		for (auto &&candidate_path : modelPathCandidates) {
-			if (not candidate_path.is_absolute()) {
-				if (fs::exists(candidate_path)) {
-					// Canonical requires file to exist
-					candidate_path = fs::canonical(
-						fs::current_path() / candidate_path);
-				}
-				else {
-					// Weakly canonical does not require file to exist
-					candidate_path = fs::weakly_canonical(candidate_path);
-				}
-			}
-		}
-		bool result = false;
-		for (size_t j = 0; j < modelPathCandidates.size() && result == false; j++)
-		{
-			if (fs::exists(modelPathCandidates[j]))
-			{
-				// Try to load the .osgb file
-				if (AddEnvironment(modelPathCandidates[j].c_str()) == 0)
-				{
-					LOG("Successfully loaded 3D environment model from: %s",
-						modelPathCandidates[j].c_str());
-					result = true;
-				}
-			}
-		}
-		if (result == false)
-		{
-			std::string candidatesLogStr = ConcatenatePathVectorForLogging(modelPathCandidates);
-			LOG("Couldn't locate .osgb 3D environment model file at either of "
-				"the following locations: %s. If you are trying to load a "
-				"detailed environment 3D model, check the model path in the "
-				".xosc file or specify additional asset paths for search with "
-				"the --path option.",
-				candidatesLogStr.c_str());
-		}
-	}
+        if (!SE_Env::Inst().GetScenarioFolderPath().empty())
+        {
+            folders.push_back(SE_Env::Inst().GetScenarioFolderPath());
+        }
+        else
+        {
+            // scenario not defined, which means we're playing a dat file
+            if (!SE_Env::Inst().GetRoadFolderPath().empty())
+            {
+                folders.push_back(SE_Env::Inst().GetRoadFolderPath().parent_path());
+            }
+
+            if (!SE_Env::Inst().GetResourcesFolderPath().empty())
+            {
+                folders.push_back(SE_Env::Inst().GetResourcesFolderPath() / "models");
+            }
+
+            if (!SE_Env::Inst().GetExeFolderPath().empty())
+            {
+                folders.push_back(SE_Env::Inst().GetExeFolderPath().parent_path() / "resources" / "models");
+            }
+        }
+
+        std::filesystem::path filepath = LocateFile(modelFilePath, folders);
+
+        if (!filepath.empty() && AddEnvironment(filepath) == 0)
+        {
+            LOG("Successfully loaded 3D environment model from: %s", filepath.generic_string().c_str());
+            SetLoadedEnvironmentFilePath(filepath.generic_string());
+        }
+        else
+        {
+            LOG("Failed to load 3D environment model from: %s", filepath.generic_string().c_str());
+        }
+    }
 
     if (environment_ == 0 || opt->GetOptionSet("enforce_generate_model"))
     {
@@ -2158,7 +2117,7 @@ int Viewer::AddCustomLightSource(double x, double y, double z, double intensity)
     return 0;
 }
 
-EntityModel* Viewer::CreateEntityModel(std::string             modelFilepath,
+EntityModel* Viewer::CreateEntityModel(std::filesystem::path   modelFilepath,
                                        osg::Vec4               trail_color,
                                        EntityModel::EntityType type,
                                        bool                    road_sensor,
@@ -2171,7 +2130,6 @@ EntityModel* Viewer::CreateEntityModel(std::string             modelFilepath,
     osg::ref_ptr<osg::Group> modelgroup = nullptr;
     osg::ref_ptr<osg::Group> bbGroup    = nullptr;
     osg::BoundingBox         modelBB;
-    std::vector<std::string> file_name_candidates;
     double                   carStdDim[]  = {4.5, 1.8, 1.5};
     double                   carStdOrig[] = {1.5, 0.0, 0.75};
 
@@ -2187,27 +2145,31 @@ EntityModel* Viewer::CreateEntityModel(std::string             modelFilepath,
     }
 
     // First try to load 3d model
+    std::filesystem::path filepath;
     if (modelgroup == nullptr && !modelFilepath.empty())
     {
-        file_name_candidates.push_back(modelFilepath);
-
-        // Finally check registered paths
-        for (size_t i = 0; i < SE_Env::Inst().GetPaths().size(); i++)
+        std::vector<std::filesystem::path> folders;
+        if (!SE_Env::Inst().GetScenarioFilePath().empty())
         {
-            file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], modelFilepath));
-            file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], "../models/" + modelFilepath));
-            file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], "/../resources/models/" + modelFilepath));
-            file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], FileNameOf(modelFilepath)));
+            // If scenario file is defined, use it for relative path
+            folders.push_back(SE_Env::Inst().GetScenarioFilePath().parent_path());
         }
-        for (size_t i = 0; i < file_name_candidates.size(); i++)
+
+        // secondly, look in default 3D models location under resources folder
+        if (!SE_Env::Inst().GetResourcesFolderPath().empty())
         {
-            if (FileExists(file_name_candidates[i].c_str()))
-            {
-                if (modelgroup = LoadEntityModel(file_name_candidates[i].c_str(), modelBB))
-                {
-                    break;
-                }
-            }
+            folders.push_back(SE_Env::Inst().GetResourcesFolderPath() / "models");
+        }
+
+        filepath = LocateFile(modelFilepath, folders);
+        if (filepath.empty())
+        {
+            LOG("Failed to locate model file %s", modelFilepath.generic_string().c_str());
+        }
+        else
+        {
+            LOG("Loading model file %s", filepath.generic_string().c_str());
+            modelgroup = LoadEntityModel(filepath.generic_string().c_str(), modelBB);
         }
     }
 
@@ -2232,20 +2194,13 @@ EntityModel* Viewer::CreateEntityModel(std::string             modelFilepath,
     osg::ref_ptr<osg::PositionAttitudeTransform> modeltx = new osg::PositionAttitudeTransform;
     if (modelgroup == nullptr)
     {
-        if (modelFilepath.empty())
+        if (filepath.empty())
         {
             LOG("No filename specified for model! - creating a dummy model");
         }
         else
         {
-            LOG("Failed to load visual model %s. %s",
-                modelFilepath.c_str(),
-                file_name_candidates.size() > 1 ? "Also tried the following paths:" : "");
-            for (size_t i = 1; i < file_name_candidates.size(); i++)
-            {
-                LOG("    %s", file_name_candidates[i].c_str());
-            }
-            LOG("Creating a dummy model instead");
+            LOG("Failed to load visual model - creating a dummy model instead");
         }
 
         // Create a dummy cuboid
@@ -2348,7 +2303,7 @@ EntityModel* Viewer::CreateEntityModel(std::string             modelFilepath,
 
             LOG("Adjusted %s bounding box to model %s - xyz: %.2f, %.2f, %.2f lwh: %.2f, %.2f, %.2f",
                 name.c_str(),
-                FileNameOf(modelFilepath).c_str(),
+                modelFilepath.stem().generic_string().c_str(),
                 static_cast<double>(boundingBox->center_.x_),
                 static_cast<double>(boundingBox->center_.y_),
                 static_cast<double>(boundingBox->center_.z_),
@@ -2372,8 +2327,11 @@ EntityModel* Viewer::CreateEntityModel(std::string             modelFilepath,
         modeltx->setScale(osg::Vec3(static_cast<float>(sx), static_cast<float>(sy), static_cast<float>(sz)));
     }
 
-    // Put transform node under modelgroup
-    modeltx->addChild(modelgroup);
+    if (modelgroup.get() != nullptr)
+    {
+        // Put transform node under modelgroup
+        modeltx->addChild(modelgroup);
+    }
 
     // Draw only wireframe
     osg::PolygonMode* polygonMode = new osg::PolygonMode;
@@ -2410,7 +2368,13 @@ EntityModel* Viewer::CreateEntityModel(std::string             modelFilepath,
         emodel = new EntityModel(osgViewer_, group, rootnode_, trails_, trajectoryLines_, dot_node_, routewaypoints_, trail_color, name);
     }
 
-    emodel->filename_ = modelFilepath;
+    emodel->filename_ = modelFilepath.generic_string();
+
+    if (modelgroup.get() != nullptr)
+    {
+        // If 3D model loaded, register full absolute path
+        emodel->SetLoaded3dModelPath(filepath.generic_string());
+    }
 
     emodel->blend_color_ = new osg::BlendColor(osg::Vec4(1, 1, 1, 1));
     emodel->blend_color_->setDataVariance(osg::Object::DYNAMIC);
@@ -3034,37 +2998,57 @@ int Viewer::CreateOutlineObject(roadmanager::Outline* outline, osg::Vec4 color)
     return 0;
 }
 
-osg::ref_ptr<osg::PositionAttitudeTransform> Viewer::LoadRoadFeature(roadmanager::Road* road, std::string filename)
+osg::ref_ptr<osg::PositionAttitudeTransform> Viewer::LoadRoadFeature(roadmanager::Road* road, std::filesystem::path filename)
 {
     (void)road;
     osg::ref_ptr<osg::Node>                      node;
     osg::ref_ptr<osg::PositionAttitudeTransform> xform = 0;
+    std::vector<std::filesystem::path>           folders;
 
-    // Load file, try multiple paths
-    std::vector<std::string> file_name_candidates;
-    file_name_candidates.push_back(filename);
-    file_name_candidates.push_back(CombineDirectoryPathAndFilepath(DirNameOf(exe_path_) + "/../resources/models", filename));
-    // Finally check registered paths
-    for (size_t i = 0; i < SE_Env::Inst().GetPaths().size(); i++)
+    if (SE_Env::Inst().GetRoadFilePath().empty())
     {
-        file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], filename));
-        file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], "../models/" + filename));
-        file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], FileNameOf(filename)));
+        LOG("Unexpected: Missing road file path in LoadRoadFeature()");
+        return 0;
     }
-    for (size_t i = 0; i < file_name_candidates.size(); i++)
-    {
-        if (FileExists(file_name_candidates[i].c_str()))
-        {
-            node = osgDB::readNodeFile(file_name_candidates[i]);
-            if (!node)
-            {
-                return 0;
-            }
 
-            xform = new osg::PositionAttitudeTransform;
-            xform->addChild(node);
+    if (filename.has_parent_path() && !filename.has_root_path())
+    {
+        // filename includes relative path
+        // combine search path of road file folder and 3D model file path
+        folders.push_back(SE_Env::Inst().GetRoadFolderPath() / filename.parent_path());
+    }
+    else if (!filename.has_parent_path())
+    {
+        // filename is pure filename without path
+        if (!SE_Env::Inst().GetResourcesFolderPath().empty())
+        {
+            // locate models from resources folder if registered
+            folders.push_back(SE_Env::Inst().GetResourcesFolderPath() / "models");
+        }
+
+        // finally, assume model is located in "models" folder sharing the same parent folder as the OpenDRIVE file
+        folders.push_back(SE_Env::Inst().GetRoadFolderPath().parent_path() / "models");
+    }
+
+    std::filesystem::path filepath = LocateFile(filename, folders);
+    if (filepath.empty())
+    {
+        printf("Failed to locate road feature file %s\n", filename.generic_string().c_str());
+        return 0;
+    }
+    else
+    {
+        printf("Loading road feature file %s\n", filepath.generic_string().c_str());
+        node = osgDB::readNodeFile(filepath.generic_string());
+        if (!node)
+        {
+            printf("Failed to load road feature\n");
+            return 0;
         }
     }
+
+    xform = new osg::PositionAttitudeTransform;
+    xform->addChild(node);
 
     return xform;
 }
@@ -3085,7 +3069,7 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
             roadmanager::Signal* signal = road->GetSignal(static_cast<int>(s));
 
             // Road sign filename is the combination of type_subtype_value
-            std::string filename = signal->GetCountry() + "_" + signal->GetType();
+            std::filesystem::path filename = signal->GetCountry() + "_" + signal->GetType();
             if (!signal->GetSubType().empty())
             {
                 filename += "_" + signal->GetSubType();
@@ -3095,17 +3079,26 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
             {
                 filename += "-" + signal->GetValueStr();
             }
-            tx = LoadRoadFeature(road, filename + ".osgb");
 
+            if (!(signal->GetType().empty() && signal->GetSubType().empty() && signal->GetValueStr().empty()))
+            {
+                tx = LoadRoadFeature(road, filename += ".osgb");
+            }
+
+            std::filesystem::path filename2 = signal->GetName();
             if (tx == nullptr)
             {
                 // if file according to type, subtype and value could not be resolved, try from name
-                tx = LoadRoadFeature(road, signal->GetName() + ".osgb");
+                if (!filename2.has_extension())
+                {
+                    filename2 += ".osgb";
+                }
+                tx = LoadRoadFeature(road, filename2);
             }
 
             if (tx == nullptr)
             {
-                LOG("Failed to load signal %s / %s", (filename + ".osgb").c_str(), (signal->GetName() + ".osgb").c_str());
+                LOG("Failed to load signal %s / %s", filename.generic_string().c_str(), filename2.generic_string().c_str());
                 continue;
             }
             else
@@ -3160,16 +3153,15 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
                 double orientation = object->GetOrientation() == roadmanager::Signal::Orientation::NEGATIVE ? M_PI : 0.0;
 
                 // absolute path or relative to current directory
-                std::string filename = object->GetName();
+                std::filesystem::path filename = object->GetName();
 
                 // Assume name is representing a 3D model filename
                 if (!filename.empty())
                 {
-                    std::vector<std::string> file_name_candidates;
-
-                    if (FileNameExtOf(filename) == "")
+                    // If .osgb extension is missing, add it
+                    if (!filename.has_extension())
                     {
-                        filename += ".osgb";  // add missing extension
+                        filename += ".osgb";
                     }
 
                     tx = LoadRoadFeature(road, filename);
@@ -3496,13 +3488,21 @@ void Viewer::UpdateSensor(PointSensor* sensor)
     }
 }
 
-int Viewer::LoadShadowfile(std::string vehicleModelFilename)
+int Viewer::LoadShadowfile(std::filesystem::path vehicleModelFilename)
 {
+    std::vector<std::filesystem::path> folders;
+
     // Load shadow geometry - assume it resides in the same resource folder as the vehicle model
-    std::string shadowFilename = DirNameOf(vehicleModelFilename).append("/" + std::string(SHADOW_MODEL_FILEPATH));
-    if (FileExists(shadowFilename.c_str()))
+    folders.push_back(vehicleModelFilename.parent_path());
+
+    // Secondly, try model resource folder
+    folders.push_back(SE_Env::Inst().GetResourcesFolderPath() / "models");
+
+    std::filesystem::path filepath = LocateFile(SHADOW_MODEL_FILEPATH, folders);
+
+    if (!filepath.empty())
     {
-        shadow_node_ = osgDB::readNodeFile(shadowFilename);
+        shadow_node_ = osgDB::readNodeFile(filepath.generic_string().c_str());
     }
 
     if (!shadow_node_)
@@ -3516,7 +3516,7 @@ int Viewer::LoadShadowfile(std::string vehicleModelFilename)
     return 0;
 }
 
-int Viewer::AddEnvironment(const char* filename)
+int Viewer::AddEnvironment(std::filesystem::path filename)
 {
     // remove current model, if any
     if (environment_ != 0)
@@ -3527,9 +3527,9 @@ int Viewer::AddEnvironment(const char* filename)
 
     // load and apply new model
     // First, assume absolute path or relative current directory
-    if (strcmp(FileNameOf(filename).c_str(), ""))
+    if (strcmp(filename.stem().generic_string().c_str(), ""))
     {
-        if ((environment_ = osgDB::readNodeFile(filename)) == 0)
+        if ((environment_ = osgDB::readNodeFile(filename.generic_string())) == 0)
         {
             return -1;
         }
@@ -3538,7 +3538,7 @@ int Viewer::AddEnvironment(const char* filename)
     }
     else
     {
-        LOG("AddEnvironment: No environment 3D model specified (%s) - go ahead without\n", filename);
+        LOG("AddEnvironment: No environment 3D model specified (%s) - go ahead without\n", filename.generic_string().c_str());
     }
 
     return 0;
@@ -3625,7 +3625,7 @@ void Viewer::SetWindowTitleFromArgs(std::vector<std::string>& args)
             if (args[i].compare(0, 2, "--"))
             {
                 // first argument is not an esmini argument, assume it's the name of the application.
-                arg = FileNameWithoutExtOf(arg);
+                arg = std::filesystem::path(arg).stem().generic_string();
             }
             else
             {

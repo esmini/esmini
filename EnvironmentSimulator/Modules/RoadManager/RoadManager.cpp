@@ -3049,6 +3049,18 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
         return false;
     }
 
+    if (SE_Env::Inst().GetResourcesFolderPath().empty())
+    {
+        // If resource folder has not been set yet, guess the location based on OpenDRIVE file location
+        // This should only happen if resource folder has not been specified and no OpenSCENARIO file has been loaded
+        std::filesystem::path filepath(std::filesystem::canonical(filename));
+
+        if (!filepath.empty())
+        {
+            SE_Env::Inst().SetResourcesFolderPath(filepath.parent_path().parent_path() / "resources");
+        }
+    }
+
     pugi::xml_document doc;
 
     // First assume absolute path
@@ -3065,6 +3077,8 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
         LOG("Invalid OpenDRIVE file, can't find OpenDRIVE element");
         return false;
     }
+
+    SE_Env::Inst().SetRoadFilePath(filename);
 
     // Initialize GeoRef structure
     geo_ref_ = {std::numeric_limits<double>::quiet_NaN(),
@@ -5627,76 +5641,56 @@ bool OpenDrive::LoadSignalsByCountry(const std::string& country)
     std::string              sign_filename = country + "_traffic_signals.txt";
     std::vector<std::string> file_name_candidates;
 
-    // absolute path or relative to current directory
-    file_name_candidates.push_back(sign_filename);
-    // Remove all directories from path and look in current directory
-    file_name_candidates.push_back(FileNameOf(sign_filename));
-    // assume OpenDRIVE file directory is on same level as traffic_signals directory
-    file_name_candidates.push_back(DirNameOf(odr_filename_) + "/../../traffic_signals/" + sign_filename);
+    // find model_ids.txt file
+    std::vector<std::filesystem::path> folders;
 
-    for (size_t i = 0; i < SE_Env::Inst().GetPaths().size(); i++)
+    if (!SE_Env::Inst().GetResourcesFolderPath().empty())
     {
-        // Also check registered paths
-        file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], sign_filename));
-        file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], "traffic_signals/" + sign_filename));
-        file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], "resources/traffic_signals/" + sign_filename));
-        file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], "/../traffic_signals/" + sign_filename));
-        file_name_candidates.push_back(
-            CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], "/../resources/traffic_signals/" + sign_filename));
+        folders.push_back(SE_Env::Inst().GetResourcesFolderPath() / "traffic_signals");
     }
 
-    size_t i;
-    bool   located = false;
-    for (i = 0; i < file_name_candidates.size(); i++)
+    if (!SE_Env::Inst().GetRoadFolderPath().empty())
     {
-        if (FileExists(file_name_candidates[i].c_str()))
-        {
-            located = true;
-            std::string line;
-            // assuming the file is text
-            std::ifstream fs;
-            fs.open(file_name_candidates[i].c_str());
-
-            if (fs.fail())
-            {
-                LOG("Signal: Error to load traffic signals file - %s", file_name_candidates[i].c_str());
-                if (i < file_name_candidates.size() - 1)
-                {
-                    LOG("  -> trying: %s", file_name_candidates[i + 1].c_str());
-                }
-            }
-            else
-            {
-                const char delimiter = '=';
-
-                // process each line in turn
-                while (std::getline(fs, line))
-                {
-                    std::stringstream sstream(country + line);
-                    std::string       key   = "";
-                    std::string       value = "";
-
-                    std::getline(sstream, key, delimiter);
-                    std::getline(sstream, value, delimiter);
-
-                    signals_types_.emplace(key, value);
-                }
-
-                fs.close();
-
-                break;
-            }
-        }
+        folders.push_back(SE_Env::Inst().GetRoadFolderPath().parent_path() / "traffic_signals");
     }
 
-    if (i == file_name_candidates.size())
+    std::filesystem::path filepath = LocateFile(country + "_traffic_signals.txt", folders);
+
+    if (filepath.empty())
     {
-        LOG("Failed to load %s file. Tried:", sign_filename.c_str());
-        for (int j = 0; j < file_name_candidates.size(); j++)
-        {
-            LOG("  %s", file_name_candidates[j].c_str());
-        }
+        LOG("Failed to locate traffic signal specication %s", filepath.generic_string().c_str());
         return false;
+    }
+
+    std::string line;
+    // assuming the file is text
+    std::ifstream fs;
+    fs.open(filepath);
+
+    LOG("Load traffic signals file - %s", filepath.generic_string().c_str());
+    if (fs.fail())
+    {
+        LOG("Signal: Error to load traffic signals file - %s", filepath.generic_string().c_str());
+        return false;
+    }
+    else
+    {
+        const char delimiter = '=';
+
+        // process each line in turn
+        while (std::getline(fs, line))
+        {
+            std::stringstream sstream(country + line);
+            std::string       key   = "";
+            std::string       value = "";
+
+            std::getline(sstream, key, delimiter);
+            std::getline(sstream, value, delimiter);
+
+            signals_types_.emplace(key, value);
+        }
+
+        fs.close();
     }
 
     return true;
