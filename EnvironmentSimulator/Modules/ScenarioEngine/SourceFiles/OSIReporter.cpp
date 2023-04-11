@@ -373,6 +373,8 @@ int OSIReporter::UpdateOSIStaticGroundTruth(const std::vector<std::unique_ptr<Ob
     obj_osi_external.gt->mutable_traffic_light()->CopyFrom(*obj_osi_internal.gt->mutable_traffic_light());
     obj_osi_external.gt->mutable_road_marking()->CopyFrom(*obj_osi_internal.gt->mutable_road_marking());
 
+    obj_osi_external.gt->set_model_reference(stationary_model_reference);
+
     return 0;
 }
 
@@ -2570,4 +2572,18 @@ int OSIReporter::SetOSITimeStampExplicit(unsigned long long int nanoseconds)
     nanosec_ = nanoseconds;
 
     return 0;
+}
+void OSIReporter::SetStationaryModelReference(std::string model_reference)
+{
+    // Check registered paths for model3d
+    std::string model3d_abs_path;
+    for (size_t i = 0; i < SE_Env::Inst().GetPaths().size(); i++)
+    {
+        std::string file_name_candidate = CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], model_reference);
+        if (FileExists(file_name_candidate.c_str()))
+        {
+            stationary_model_reference = file_name_candidate;
+            break;
+        }
+    }
 }
