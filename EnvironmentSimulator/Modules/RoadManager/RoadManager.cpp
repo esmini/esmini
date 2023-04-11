@@ -9091,52 +9091,38 @@ bool Position::Delta(Position* pos_b, PositionDiff& diff, bool bothDirections, d
     found          = (path->Calculate(dist, bothDirections, maxDist) == 0 && dist < maxDist);
     if (found)
     {
-        int    laneIdB = pos_b->GetLaneId();
-        double tB      = pos_b->GetT();
+        int                              laneIdB         = pos_b->GetLaneId();
+        Road*                            road_B          = Position::GetRoadById(pos_b->GetTrackId());
+        double                           tB              = pos_b->GetT();
+        int                              adjustedLaneIdA = GetLaneId();
+        roadmanager::RoadPath::PathNode* last_node       = path->visited_.size() > 0 ? path->visited_.back() : nullptr;
 
-        if (path->visited_.size() > 0)
+        if (last_node != nullptr)
         {
-            RoadPath::PathNode* lastNode  = path->visited_.back();
-            RoadPath::PathNode* firstNode = path->firstNode_;
-            if (firstNode == nullptr)
+            // Find out corresponding lane ID of connected route up to pos B
+            if (last_node->contactPoint == ContactPointType::CONTACT_POINT_START)
             {
-                LOG("Missing first node in path");
-                return false;
+                // move to end of the last road in the path leading to the road of pos B
+                adjustedLaneIdA = last_node->fromRoad->GetConnectedLaneIdAtS(last_node->fromLaneId, -1.0, 0.0);
+                // find out the connecting lane at beginning of road of pos B
+                adjustedLaneIdA = last_node->fromRoad->GetConnectingLaneId(last_node->link, adjustedLaneIdA, pos_b->GetTrackId());
+                // move to the s location of pos B to find out the lane ID there (possibly another lane section)
+                adjustedLaneIdA = road_B->GetConnectedLaneIdAtS(adjustedLaneIdA, 0.0, pos_b->GetS());
             }
-            if (lastNode == nullptr)
+            else
             {
-                LOG("Missing last node in path");
-                return false;
-            }
-            bool isPathForward         = firstNode->link->GetType() == LinkType::SUCCESSOR;
-            bool isPathBackward        = firstNode->link->GetType() == LinkType::PREDECESSOR;
-            bool isConnectedToEnd      = lastNode->link->GetContactPointType() == ContactPointType::CONTACT_POINT_END;
-            bool isConnectedToStart    = lastNode->link->GetContactPointType() == ContactPointType::CONTACT_POINT_START;
-            bool isConnectedToJunction = lastNode->link->GetContactPointType() == ContactPointType::CONTACT_POINT_JUNCTION;
-            if (isConnectedToJunction)
-            {
-                Road*     lastNodeRoad = lastNode->fromRoad;
-                Road*     lastRoad     = GetRoadById(pos_b->GetTrackId());
-                RoadLink* linkPred     = lastRoad->GetLink(LinkType::PREDECESSOR);
-                RoadLink* linkSucc     = lastRoad->GetLink(LinkType::SUCCESSOR);
-                isConnectedToStart     = linkPred && lastNodeRoad && lastNodeRoad->GetId() == linkPred->GetElementId();
-                isConnectedToEnd       = linkSucc && lastNodeRoad && lastNodeRoad->GetId() == linkSucc->GetElementId();
-            }
-
-            bool isHeadToHead = isPathForward && isConnectedToEnd;
-            bool isToeToToe   = isPathBackward && isConnectedToStart;
-
-            // If start and end roads are oppotite directed, inverse one side for delta calculations
-            if (isHeadToHead || isToeToToe)
-            {
-                laneIdB = -laneIdB;
-                tB      = -tB;
+                // move to start of the last road in the path leading to the road of pos B
+                adjustedLaneIdA = last_node->fromRoad->GetConnectedLaneIdAtS(last_node->fromLaneId, 0.0, -1.0);
+                // find out the connecting lane at start of road of pos B
+                adjustedLaneIdA = last_node->fromRoad->GetConnectingLaneId(last_node->link, adjustedLaneIdA, pos_b->GetTrackId());
+                // move to the s location of pos B to find out the lane ID there (possibly another lane section)
+                adjustedLaneIdA = road_B->GetConnectedLaneIdAtS(adjustedLaneIdA, -1.0, pos_b->GetS());
             }
         }
 
         // calculate delta lane id and lateral position
-        diff.dLaneId = -SIGN(GetLaneId()) * (laneIdB - GetLaneId());
-        diff.dt      = -SIGN(GetLaneId()) * (tB - GetT());
+        diff.dLaneId = laneIdB - adjustedLaneIdA;
+        diff.dt      = tB - (abs(GetT()) * SIGN(adjustedLaneIdA));
 
         diff.ds = dist;
 

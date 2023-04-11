@@ -115,9 +115,9 @@ TEST(DistanceTest, CalcDistanceVariations)
     obj1.pos_.SetLanePos(0, 1, 50.0, -2.5);
     obj1.pos_.SetHeadingRelative(M_PI);
     ASSERT_EQ(obj0.Distance(&obj1, CoordinateSystem::CS_ROAD, RelativeDistanceType::REL_DIST_LATERAL, false, dist), 0);
-    EXPECT_NEAR(dist, 2.5, 1e-5);
+    EXPECT_NEAR(dist, -2.5, 1e-5);
     ASSERT_EQ(obj0.Distance(&obj1, CoordinateSystem::CS_ROAD, RelativeDistanceType::REL_DIST_LATERAL, true, dist), 0);
-    EXPECT_NEAR(dist, 0.5, 1e-5);
+    EXPECT_NEAR(dist, -0.5, 1e-5);
     ASSERT_EQ(obj0.Distance(&obj1, CoordinateSystem::CS_ROAD, RelativeDistanceType::REL_DIST_LONGITUDINAL, false, dist), 0);
     EXPECT_NEAR(dist, -1.0, 1e-5);
     ASSERT_EQ(obj0.Distance(&obj1, CoordinateSystem::CS_ROAD, RelativeDistanceType::REL_DIST_LONGITUDINAL, true, dist), 0);
@@ -164,7 +164,7 @@ TEST(DistanceTest, CalcDistancePoint)
     EXPECT_NEAR(tmpPos.GetY(), 45.140405, 1e-5);
     ASSERT_EQ(obj0.FreeSpaceDistancePointRoadLane(tmpPos.GetX(), tmpPos.GetY(), &latDist, &longDist, CoordinateSystem::CS_ROAD), 0);
     EXPECT_NEAR(longDist, 195.5, 1e-5);
-    EXPECT_NEAR(latDist, 3.0, 1e-5);
+    EXPECT_NEAR(latDist, -3.0, 1e-5);
 }
 
 TEST(DistanceTest, CalcDistancePointAcrossIntersection)
@@ -192,7 +192,7 @@ TEST(DistanceTest, CalcDistancePointAcrossIntersection)
 
     ASSERT_EQ(obj0.FreeSpaceDistancePointRoadLane(pos1.GetX(), pos1.GetY(), &latDist, &longDist, CoordinateSystem::CS_ROAD), 0);
     EXPECT_NEAR(longDist, -38.58642, 1e-5);
-    EXPECT_NEAR(latDist, 0.22127, 1e-5);
+    EXPECT_NEAR(latDist, -0.22127, 1e-5);
 }
 
 TEST(DistanceTest, CalcEntityDistanceFreespace)

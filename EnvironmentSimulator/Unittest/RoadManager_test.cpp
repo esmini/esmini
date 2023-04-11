@@ -1679,7 +1679,7 @@ TEST(DistanceTest, CalcDistanceLong)
     pos0.SetLanePos(3, 1, 5.0, -0.25);
     pos1.SetLanePos(0, -1, 15.0, 0.15);
     ASSERT_EQ(pos0.Distance(&pos1, CoordinateSystem::CS_ROAD, RelativeDistanceType::REL_DIST_LATERAL, dist), 0);
-    EXPECT_NEAR(dist, 3.1, 1e-5);
+    EXPECT_NEAR(dist, -3.1, 1e-5);
     ASSERT_EQ(pos0.Distance(&pos1, CoordinateSystem::CS_ROAD, RelativeDistanceType::REL_DIST_LONGITUDINAL, dist), 0);
     EXPECT_NEAR(dist, 139.317791, 1e-5);
 
@@ -1687,7 +1687,7 @@ TEST(DistanceTest, CalcDistanceLong)
     pos0.SetLanePos(3, -1, 5.0, -0.25);
     pos1.SetLanePos(2, -1, 1.0, 0.15);
     ASSERT_EQ(pos0.Distance(&pos1, CoordinateSystem::CS_ROAD, RelativeDistanceType::REL_DIST_LATERAL, dist), 0);
-    EXPECT_NEAR(dist, 3.6, 1e-5);
+    EXPECT_NEAR(dist, -3.6, 1e-5);
 
     // No valid route is to be found between connecting roads (following directed connectivity in OpenDRIVE file)
     pos0.SetLanePos(16, -1, 5.0, -0.25);
@@ -1964,14 +1964,14 @@ TEST(DeltaTest, TestDelta)
     pos_target.SetHeadingRelative(M_PI);
     EXPECT_EQ(pos_pivot.Delta(&pos_target, pos_diff), true);
     EXPECT_NEAR(pos_diff.ds, 74.56580, 1E-5);
-    EXPECT_EQ(pos_diff.dLaneId, 2);
+    EXPECT_EQ(pos_diff.dLaneId, -2);
 
     pos_target.SetLanePos(3, -1, 100.0, 0.0);
     pos_target.SetHeadingRelative(0.0);
     EXPECT_EQ(pos_pivot.Delta(&pos_target, pos_diff), true);
     EXPECT_NEAR(pos_diff.ds, 34.31779, 1E-5);
-    EXPECT_NEAR(pos_diff.dt, 3.5, 1E-5);
-    EXPECT_EQ(pos_diff.dLaneId, 2);
+    EXPECT_NEAR(pos_diff.dt, -3.5, 1E-5);
+    EXPECT_EQ(pos_diff.dLaneId, -2);
 
     // Now try diff two positions that are not connected
     pos_pivot.SetLanePos(11, -1, 1.0, 0.0);
