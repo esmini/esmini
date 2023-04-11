@@ -1481,6 +1481,7 @@ int ScenarioPlayer::Init()
 
 #ifdef _USE_OSI
     osiReporter = new OSIReporter();
+    osiReporter->SetStationaryModelReference(scenarioEngine->getSceneGraphFilename());
 
     if (opt.GetOptionSet("osi_receiver_ip"))
     {
