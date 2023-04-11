@@ -78,7 +78,6 @@ ObjectState::ObjectState(int            id,
                          int            obj_category,
                          int            obj_role,
                          int            model_id,
-                         std::string    model3d,
                          int            ctrl_type,
                          OSCBoundingBox boundingbox,
                          int            scaleMode,
@@ -101,7 +100,6 @@ ObjectState::ObjectState(int            id,
     state_.info.obj_category = obj_category;
     state_.info.obj_role     = obj_role;
     state_.info.model_id     = model_id;
-    state_.info.model3d      = model3d;
     state_.info.ctrl_type    = ctrl_type;
     state_.info.name[0]      = 0;
     state_.info.timeStamp    = timestamp;
@@ -126,7 +124,6 @@ ObjectState::ObjectState(int            id,
                          int            obj_category,
                          int            obj_role,
                          int            model_id,
-                         std::string    model3d,
                          int            ctrl_type,
                          OSCBoundingBox boundingbox,
                          int            scaleMode,
@@ -147,7 +144,6 @@ ObjectState::ObjectState(int            id,
     state_.info.obj_category = obj_category;
     state_.info.obj_role     = obj_role;
     state_.info.model_id     = model_id;
-    state_.info.model3d      = model3d;
     state_.info.ctrl_type    = ctrl_type;
     state_.info.timeStamp    = timestamp;
     StrCopy(state_.info.name, name.c_str(), MIN(name.length() + 1, NAME_LEN));
@@ -170,7 +166,6 @@ ObjectState::ObjectState(int            id,
                          int            obj_category,
                          int            obj_role,
                          int            model_id,
-                         std::string    model3d,
                          int            ctrl_type,
                          OSCBoundingBox boundingbox,
                          int            scaleMode,
@@ -189,7 +184,6 @@ ObjectState::ObjectState(int            id,
     state_.info.obj_category = obj_category;
     state_.info.obj_role     = obj_role;
     state_.info.model_id     = model_id;
-    state_.info.model3d      = model3d;
     state_.info.ctrl_type    = ctrl_type;
     state_.info.timeStamp    = timestamp;
     StrCopy(state_.info.name, name.c_str(), MIN(name.length() + 1, NAME_LEN));
@@ -320,6 +314,18 @@ int ScenarioGateway::reportObject(int                    id,
 
     if (obj_state == 0)
     {
+        // Check registered paths for model3d
+        std::string model3d_abs_path;
+        for (size_t i = 0; i < SE_Env::Inst().GetPaths().size(); i++)
+        {
+            std::string file_name_candidate = CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], model3d);
+            if (FileExists(file_name_candidate.c_str()))
+            {
+                model3d_abs_path = file_name_candidate;
+                break;
+            }
+        }
+
         // Create state and set permanent information
         obj_state = new ObjectState(id,
                                     name,
@@ -327,7 +333,7 @@ int ScenarioGateway::reportObject(int                    id,
                                     obj_category,
                                     obj_role,
                                     model_id,
-                                    model3d,
+                                    model3d_abs_path,
                                     ctrl_type,
                                     boundingbox,
                                     scaleMode,
@@ -388,7 +394,6 @@ int ScenarioGateway::reportObject(int            id,
                                     obj_category,
                                     obj_role,
                                     model_id,
-                                    std::string(),
                                     ctrl_type,
                                     boundingbox,
                                     scaleMode,
@@ -451,7 +456,6 @@ int ScenarioGateway::reportObject(int            id,
                                     obj_category,
                                     obj_role,
                                     model_id,
-                                    std::string(),
                                     ctrl_type,
                                     boundingbox,
                                     scaleMode,
@@ -515,7 +519,6 @@ int ScenarioGateway::reportObject(int            id,
                                     obj_category,
                                     obj_role,
                                     model_id,
-                                    std::string(),
                                     ctrl_type,
                                     boundingbox,
                                     scaleMode,
@@ -576,7 +579,6 @@ int ScenarioGateway::reportObject(int            id,
                                     obj_category,
                                     obj_role,
                                     model_id,
-                                    std::string(),
                                     ctrl_type,
                                     boundingbox,
                                     scaleMode,
