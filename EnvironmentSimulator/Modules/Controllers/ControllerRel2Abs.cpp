@@ -599,6 +599,7 @@ void ControllerRel2Abs::Step(double timeStep)
                            object_->category_,
                            object_->role_,
                            object_->model_id_,
+                           object_->model3d_,
                            object_->GetActivatedControllerType(),
                            object_->boundingbox_,
                            static_cast<int>(object_->scaleMode_),

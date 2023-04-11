@@ -811,6 +811,9 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState *objectState)
     // Set OSI Wheel Angle Data (Yaw)
     obj_osi_internal.mobj->mutable_vehicle_attributes()->add_wheel_data()->mutable_orientation()->set_yaw(objectState->state_.info.wheel_angle);
 
+    // Set 3D model file as OSI model reference
+    obj_osi_internal.mobj->set_model_reference(objectState->state_.info.model3d);
+
     return 0;
 }
 
