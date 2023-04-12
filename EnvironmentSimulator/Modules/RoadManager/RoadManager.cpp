@@ -9122,8 +9122,14 @@ bool Position::Delta(Position* pos_b, PositionDiff& diff, bool bothDirections, d
 
         // calculate delta lane id and lateral position
         diff.dLaneId = laneIdB - adjustedLaneIdA;
-        diff.dt      = tB - (abs(GetT()) * SIGN(adjustedLaneIdA));
+        if (SIGN(laneIdB) != SIGN(adjustedLaneIdA))
+        {
+            // lanes are on opposite side of reference lane
+            // reduce delta by one to disregard the reference lane
+            diff.dLaneId = (abs(diff.dLaneId) - 1) * SIGN(diff.dLaneId);
+        }
 
+        diff.dt = tB - (abs(GetT()) * SIGN(adjustedLaneIdA));
         diff.ds = dist;
 
 #if 0  // Change to 1 to print some info on stdout - e.g. for debugging
