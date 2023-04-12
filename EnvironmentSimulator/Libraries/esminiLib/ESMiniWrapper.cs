@@ -91,6 +91,14 @@ namespace ESMini
         public float wheel_angle;
     };
 
+    [StructLayout(LayoutKind.Sequential)]
+    public struct LaneBoundaryId
+    {
+        public int far_left_lb_id;
+        public int left_lb_id;
+        public int right_lb_id;
+        public int far_right_lb_id;
+    };
 
 public static class ESMiniLib
     {
@@ -114,13 +122,6 @@ public static class ESMiniLib
         /// <param name="path">Logfile path</param>
         /// <returns>0 on success, -1 on failure for any reason</returns>
         public static extern int SE_SetLogFilePath(string path);
-
-        [DllImport(LIB_NAME, EntryPoint = "SE_SetOSITolerances")]
-        /// <summary>Configure tolerances/resolution for OSI road features</summary>
-        /// <param name="max_longitudinal_distance">Maximum distance between OSI points, even on straight road. Default=50(m) </param>
-        /// <param name="max_lateral_deviation"> Control resolution w.r.t. curvature default=0.05(m)</param>
-        /// <return>0 if successful, -1 if not</return>
-        public static extern int SE_SetOSITolerances(double maxLongitudinalDistance, double maxLateralDeviation);
 
         [DllImport(LIB_NAME, EntryPoint = "SE_RegisterParameterDeclarationCallback")]
         /// <summary>
@@ -498,6 +499,70 @@ public static class ESMiniLib
         /// <param name="handleSimpleVehicle">Set maximum vehicle acceleration.</param>
         /// <param name="engineBrakeFactor">Reference to a SE_SimpleVehicleState struct to be filled in</param>
         public static extern void SE_SimpleVehicleGetState(IntPtr handleSimpleVehicle, ref SimpleVehicleState state);
+
+        // OSI interface (subset)
+
+        [DllImport(LIB_NAME, EntryPoint = "SE_SetOSITolerances")]
+        /// <summary>Configure tolerances/resolution for OSI road features</summary>
+        /// <param name="max_longitudinal_distance">Maximum distance between OSI points, even on straight road. Default=50(m)</param>
+        /// <param name="max_lateral_deviation">Control resolution w.r.t. curvature default=0.05(m)</param>
+        /// <returns>0 if successful, -1 if not</returns>
+        public static extern int SE_SetOSITolerances(double maxLongitudinalDistance, double maxLateralDeviation);
+
+        [DllImport(LIB_NAME, EntryPoint = "SE_DisableOSIFile")]
+        /// <summary>Switch off logging to OSI file(s)</summary>
+        /// <returns>0 if successful, -1 if not</returns>
+        public static extern void SE_DisableOSIFile();
+
+        [DllImport(LIB_NAME, EntryPoint = "SE_EnableOSIFile")]
+        /// <summary>Switch on logging to OSI file(s)</summary>
+        /// <param name="filename">Optional filename, including path.Set to 0 or "" to use default.</param>
+        /// <returns>0 if successful, -1 if not</returns>
+        public static extern void SE_EnableOSIFile(string filename);
+
+        [DllImport(LIB_NAME, EntryPoint = "SE_FlushOSIFile")]
+        /// <summary>Enforce flushing OSI file (save all buffered data to file)</summary>
+        public static extern void SE_FlushOSIFile();
+
+        [DllImport(LIB_NAME, EntryPoint = "SE_UpdateOSIGroundTruth")]
+        /// <summary>Updates OSI Groundtruth</summary>
+        public static extern void SE_UpdateOSIGroundTruth();
+
+        [DllImport(LIB_NAME, EntryPoint = "SE_GetOSIGroundTruth")]
+        //[return: MarshalAs(UnmanagedType.LPStr)]
+        /// <summary>char array containing the osi GroundTruth serialized to a string</summary>
+        /// <param name="size">Size of the retuned OSI string</param>
+        /// <returns>osi3::GroundTruth*</returns>
+        public static extern IntPtr SE_GetOSIGroundTruth(ref int size);
+
+        [DllImport(LIB_NAME, EntryPoint = "SE_GetOSIGroundTruthRaw")]
+        //[return: MarshalAs(UnmanagedType.LPStr)]
+        /// <summary>char array containing the OSI GroundTruth information</summary>
+        /// <returns>osi3::GroundTruth*</returns>
+        public static extern IntPtr SE_GetOSIGroundTruthRaw();
+
+        [DllImport(LIB_NAME, EntryPoint = "SE_GetOSIRoadLane")]
+        //[return: MarshalAs(UnmanagedType.LPStr)]
+        /// <summary>Get information of the lane where the object with object_id is</summary>
+        /// <param name="size">Size of the retuned OSI string</param>
+        /// <param name="object_id">Id of the object</param>
+        /// <returns>a char array containing the osi Lane information/message, serialized to a string</returns>
+        public static extern IntPtr SE_GetOSIRoadLane(ref int size, int object_id);
+
+        [DllImport(LIB_NAME, EntryPoint = "SE_GetOSILaneBoundary")]
+        //[return: MarshalAs(UnmanagedType.LPStr)]
+        /// <summary>Get information of the lane boundary where the object with object_id is</summary>
+        /// <param name="size">Size of the retuned OSI string</param>
+        /// <param name="object_id">Id of the object</param>
+        /// <returns>a char array containing the osi Lane Boundary information/message, serialized to a string</returns>
+        public static extern IntPtr SE_GetOSILaneBoundary(ref int size, int object_id);
+
+        [DllImport(LIB_NAME, EntryPoint = "SE_GetOSILaneBoundaryIds")]
+        //[return: MarshalAs(UnmanagedType.LPStr)]
+        /// <summary>Get the global ids for left, far left, right and far right lane boundaries, relative an object</summary>
+        /// <param name="object_id">Id of the object</param>
+        /// <param name="ids">Reference to a struct which will be filled with the Ids</param>
+        public static extern IntPtr SE_GetOSILaneBoundaryIds(int object_id, ref LaneBoundaryId ids);
     }
 
 }
