@@ -454,3 +454,19 @@ Controllers and callbacks can also be utilized via Python. Following code drafts
 ----
 include::{src-local-root}/{file}[tag=ObjectCallback]
 ----
+
+== C# binding
+:listing-caption: Example
+
+A C# wrapper for the esminiLib is provided (https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/Libraries/esminiLib/ESMiniWrapper.cs[ESMiniWrapper.cs]). Coverage is limited, but it might serve as a good starting point.
+
+=== OSI groundtruth with C#
+
+:file: EnvironmentSimulator/code-examples/osi-groundtruth-cs/osi-gt.cs
+.link:{src-remote-root}/{file}[{file}] (complete code)
+[source, c++]
+----
+include::{src-local-root}/{file}[]
+----
+
+include::../EnvironmentSimulator/code-examples/osi-groundtruth-cs/README.adoc[leveloffset=+1]

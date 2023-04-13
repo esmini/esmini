@@ -24,7 +24,11 @@ foreach(
     if(NOT
        ${subdir}
        STREQUAL
-       "trig_lane_change")
+       "trig_lane_change"
+       AND NOT
+           ${subdir}
+           STREQUAL
+           "osi-groundtruth-cs")
         add_subdirectory(${subdir})
         if(NOT
            ${subdir}

@@ -1,0 +1,40 @@
+This example shows, one way, how to access OSI data in a C# environment.
+
+It's dependent on the https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/Libraries/esminiLib/ESMiniWrapper.cs[ESMiniWrapper.cs], and targeting Windows environment. If the wrapper is modified to work on Linux (referring .so instead of DLL) it might work there as well, but it's not been tested.
+
+=== Build
+[source]
+----
+mkdir build
+cd build
+cmake ..
+cmake --build . --config Release
+----
+
+=== Run
+To have the correct relative path to the scenario file and also access to esminiLib we move into `esmini/bin` folder for running the example.
+
+[source]
+----
+cd ..\..\..\..\bin
+..\EnvironmentSimulator\code-examples\osi-groundtruth-cs\build\Release\osi-groundtruth.exe
+----
+
+=== How to create the osi3 C# files
+For this example the osi3 C# files were provided. If you need or want to compile them yourself:
+
+* Get protoc compiler +
+  Suggested version: 3.15.2 +
+  Either build it yourself or get `protoc-3.15.2-win64.zip` from release: +
+  https://github.com/protocolbuffers/protobuf/releases/tag/v3.15.2
+
+* Get OSI +
+ https://github.com/OpenSimulationInterface/open-simulation-interface/releases/tag/v3.5.0 +
+
+* OSI proto files need to be converted for protobuf v3. This is easily done with the provided script: +
+ `./convert-to-proto3.sh`
+
+* Compile for C#
+ ** open a command line in `open-simulation-interface` root folder
+ ** `c:\my_path_to_protoc\protoc.exe *.proto --csharp_out=.` +
+ will create C# versions of all proto files
