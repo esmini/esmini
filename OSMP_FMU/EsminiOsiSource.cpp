@@ -168,7 +168,12 @@ fmi2Status EsminiOsiSource::doExitInitializationMode()
     std::cerr << "No OpenScenario file selected!" << std::endl;
     return fmi2Error;
   }
-  SE_Init(xosc_path.c_str(), 0, fmi_use_viewer(), 0, 0);
+  if (SE_Init(xosc_path.c_str(), 0, fmi_use_viewer(), 0, 0) != 0)
+  {
+    std::cerr <<"Failed to initialize the scenario" << std::endl;
+    return fmi2Error;
+  }
+
   SE_UpdateOSIGroundTruth();
 
   return fmi2OK;
@@ -178,10 +183,19 @@ fmi2Status EsminiOsiSource::doCalc(fmi2Real currentCommunicationPoint, fmi2Real 
 {
   DEBUGBREAK();
 
-  SE_StepDT((float)communicationStepSize);
+  if (SE_StepDT((float)communicationStepSize) != 0)
+  {
+    std::cerr <<"Failed run simulation step" << std::endl;
+    return fmi2Error;
+  }
 
   // Further updates will only affect dynamic OSI stuff
-  SE_UpdateOSIGroundTruth();
+
+  if (SE_UpdateOSIGroundTruth() != 0)
+  {
+    std::cerr <<"Failed update OSI Ground Truth" << std::endl;
+    return fmi2Error;
+  }
 
   // Fetch OSI struct
   const auto* se_osi_ground_truth = reinterpret_cast<const osi3::GroundTruth*>(SE_GetOSIGroundTruthRaw());
