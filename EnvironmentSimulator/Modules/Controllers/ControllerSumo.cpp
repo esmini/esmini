@@ -211,6 +211,8 @@ void ControllerSumo::Step(double timeStep)
                                        obj->wheel_angle_,
                                        obj->wheel_rot_,
                                        object_->rear_axle_.positionZ,
+                                       object_->front_axle_.positionX,
+                                       object_->front_axle_.positionZ,
                                        &obj->pos_);
             }
             else if (!entities_->object_[i]->IsGhost())

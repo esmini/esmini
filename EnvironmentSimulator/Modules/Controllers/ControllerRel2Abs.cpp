@@ -608,6 +608,8 @@ void ControllerRel2Abs::Step(double timeStep)
                            object_->wheel_angle_,
                            object_->wheel_rot_,
                            object_->rear_axle_.positionZ,
+                           object_->front_axle_.positionX,
+                           object_->front_axle_.positionZ,
                            &object_->pos_);
 
     Controller::Step(timeStep);

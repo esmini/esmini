@@ -31,22 +31,24 @@ ObjectState::ObjectState()
     state_.info.id = -1;
 }
 
-ObjectState::ObjectState(int                    id,
-                         std::string            name,
-                         int                    obj_type,
-                         int                    obj_category,
-                         int                    obj_role,
-                         int                    model_id,
-                         int                    ctrl_type,
-                         OSCBoundingBox         boundingbox,
-                         int                    scaleMode,
-                         int                    visibilityMask,
-                         double                 timestamp,
-                         double                 speed,
-                         double                 wheel_angle,
-                         double                 wheel_rot,
-                         double                 rear_axle_z_pos,
-                         roadmanager::Position* pos)
+ObjectState::ObjectState(int id,
+                         std::string name,
+                         int obj_type,
+                         int obj_category,
+                         int obj_role,
+                         int model_id,
+                         int ctrl_type,
+                         OSCBoundingBox boundingbox,
+                         int scaleMode,
+                         int visibilityMask,
+                         double timestamp,
+                         double speed,
+                         double wheel_angle,
+                         double wheel_rot,
+                         double rear_axle_z_pos,
+                         double front_axle_x_pos,
+                         double front_axle_z_pos,
+                         roadmanager::Position *pos)
     : dirty_(0)
 {
     state_.info.id           = id;
@@ -62,6 +64,8 @@ ObjectState::ObjectState(int                    id,
     state_.info.wheel_angle     = wheel_angle;
     state_.info.wheel_rot       = wheel_rot;
     state_.info.rear_axle_z_pos = rear_axle_z_pos;
+    state_.info.front_axle_x_pos = front_axle_x_pos;
+    state_.info.front_axle_z_pos = front_axle_z_pos;
     state_.info.boundingbox     = boundingbox;
     state_.info.scaleMode       = scaleMode;
     state_.info.visibilityMask  = visibilityMask;
@@ -290,22 +294,24 @@ int ScenarioGateway::updateObjectInfo(ObjectState* obj_state,
     return 0;
 }
 
-int ScenarioGateway::reportObject(int                    id,
-                                  std::string            name,
-                                  int                    obj_type,
-                                  int                    obj_category,
-                                  int                    obj_role,
-                                  int                    model_id,
-                                  int                    ctrl_type,
-                                  OSCBoundingBox         boundingbox,
-                                  int                    scaleMode,
-                                  int                    visibilityMask,
-                                  double                 timestamp,
-                                  double                 speed,
-                                  double                 wheel_angle,
-                                  double                 wheel_rot,
-                                  double                 rear_axle_z_pos,
-                                  roadmanager::Position* pos)
+int ScenarioGateway::reportObject(int id,
+                                  std::string name,
+                                  int obj_type,
+                                  int obj_category,
+                                  int obj_role,
+                                  int model_id,
+                                  int ctrl_type,
+                                  OSCBoundingBox boundingbox,
+                                  int scaleMode,
+                                  int visibilityMask,
+                                  double timestamp,
+                                  double speed,
+                                  double wheel_angle,
+                                  double wheel_rot,
+                                  double rear_axle_z_pos,
+                                  double front_axle_x_pos,
+                                  double front_axle_z_pos,
+                                  roadmanager::Position *pos)
 {
     ObjectState* obj_state = getObjectStatePtrById(id);
 
@@ -327,6 +333,8 @@ int ScenarioGateway::reportObject(int                    id,
                                     wheel_angle,
                                     wheel_rot,
                                     rear_axle_z_pos,
+                                    front_axle_x_pos,
+                                    front_axle_z_pos,
                                     pos);
 
         // Add object to collection
