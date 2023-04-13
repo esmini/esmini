@@ -656,6 +656,7 @@ bool TrigByTimeHeadway::CheckCondition(StoryBoard* storyBoard, double sim_time)
 
     for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
     {
+        result          = false;
         Object* trigObj = triggering_entities_.entity_[i].object_;
         if (!trigObj->IsActive() || (object_ && !object_->IsActive()))
         {
@@ -719,6 +720,7 @@ bool TrigByTimeToCollision::CheckCondition(StoryBoard* storyBoard, double sim_ti
 
     for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
     {
+        result          = false;
         Object* trigObj = triggering_entities_.entity_[i].object_;
         if (!trigObj->IsActive())
         {
@@ -1491,6 +1493,8 @@ bool TrigByRelativeClearance::CheckCondition(StoryBoard* storyBoard, double sim_
     (void)storyBoard;
     (void)sim_time;
 
+    triggered_by_entities_.clear();
+
     bool   result   = false;
     bool   objFound = false;
     double maxDist  = MAX(distanceForward_, distanceBackward_);
@@ -1500,8 +1504,7 @@ bool TrigByRelativeClearance::CheckCondition(StoryBoard* storyBoard, double sim_
         Object* entityObject = triggering_entities_.entity_[i].object_;
 
         Object* refObject_;
-        int     visitedObj_count = 0;
-        int     objToVisit_count = 0;
+        result = false;
 
         for (size_t j = 0; j < storyBoard->entities_->object_.size(); j++)
         {
@@ -1512,7 +1515,7 @@ bool TrigByRelativeClearance::CheckCondition(StoryBoard* storyBoard, double sim_
                 continue;
             }
 
-            if (((from_ > 0 && to_ > 0) && (from_ > to_)) || ((from_ < 0 && to_ < 0) && (from_ < to_)) || (from_ > 0 && to_ < 0))
+            if (from_ > to_)
             {  // quit execution if to value is less than from value
                 LOG_AND_QUIT("QUITTING, Wrong from and to value in RelativeLaneRange element");
             }
@@ -1536,12 +1539,16 @@ bool TrigByRelativeClearance::CheckCondition(StoryBoard* storyBoard, double sim_
                 }
                 else
                 {
-                    // found object is within specified distance rante, check lane range and opposite direction condition
+                    // found object is within specified distance range, check lane range and opposite direction condition
                     if ((diff.dLaneId >= from_) && (diff.dLaneId <= to_) &&
                         !(!oppositeLanes_ && diff.dOppLane))  // reject objects in opposite lane if we don't want them
                     {
-                        // We found at least ONE object in the specified clearande area (lane and distance range)
+                        // We found at least ONE object in the specified clearance area (lane and distance range)
                         break;
+                    }
+                    else
+                    {  // ds is within range but not within lane range and opposite direction condition
+                        objFound = false;
                     }
                 }
             }

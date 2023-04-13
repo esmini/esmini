@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Another cut-in variant on a simple straight road. In this -->
-<!-- case specifying rate of the lane change lateral movement  -->
+<!-- Relative clearance condition with freeSpace on and off
+in straight road with multiple vechicles.-->
 <OpenSCENARIO>
    <FileHeader revMajor="1"
                revMinor="0"
@@ -11,6 +11,7 @@
       <ParameterDeclaration name="HostVehicle" parameterType="string" value="car_white"/>
       <ParameterDeclaration name="TargetVehicle" parameterType="string" value="car_red"/>
       <ParameterDeclaration name="TargetRef" parameterType="string" value="car_blue"/>
+      <ParameterDeclaration name="FreeSpace" parameterType="boolean" value="false"/>
    </ParameterDeclarations>
    <CatalogLocations>
       <VehicleCatalog>
@@ -169,14 +170,6 @@
                   <Event name="RelativeClearanceEvent" priority="overwrite">
                      <Action name="RelativeClearanceAction">
                         <PrivateAction>
-                           <!-- <LongitudinalAction>
-                              <SpeedAction>
-                                 <SpeedActionDynamics dynamicsShape="linear" value="-5" dynamicsDimension="rate"/>
-                                 <SpeedActionTarget>
-                                    <AbsoluteTargetSpeed value="20"/>
-                                 </SpeedActionTarget>
-                              </SpeedAction>
-                           </LongitudinalAction> -->
                            <LateralAction>
                               <LaneChangeAction>
                                  <LaneChangeActionDynamics dynamicsShape="cubic" value="3" dynamicsDimension="time"/>
@@ -195,7 +188,7 @@
                                     <EntityRef entityRef="TargetRef"/>
                                  </TriggeringEntities>
                                  <EntityCondition>
-                                    <RelativeClearanceCondition distanceForward="40" distanceBackward="30" freeSpace="false" oppositeLanes="false">
+                                    <RelativeClearanceCondition distanceForward="40" distanceBackward="30" freeSpace="$FreeSpace" oppositeLanes="false">
                                        <EntityRef entityRef="Dummy1"/>
                                        <EntityRef entityRef="Target"/>
                                        <EntityRef entityRef="Dummy"/>
@@ -241,15 +234,6 @@
                   </Event>
                </Maneuver>
             </ManeuverGroup>
-            <StartTrigger>
-               <ConditionGroup>
-                  <Condition name="CutInActStart" delay="0" conditionEdge="none">
-                     <ByValueCondition>
-                        <SimulationTimeCondition value="0" rule="greaterOrEqual"/>
-                     </ByValueCondition>
-                  </Condition>
-               </ConditionGroup>
-            </StartTrigger>
          </Act>
       </Story>
       <StopTrigger>

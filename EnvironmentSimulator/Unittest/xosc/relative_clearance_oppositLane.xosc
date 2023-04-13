@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Another cut-in variant on a simple straight road. In this -->
-<!-- case specifying rate of the lane change lateral movement  -->
+<!-- Relative clearance condition with oppositLane on and off
+in multiple road connected opposite direction.-->
 <OpenSCENARIO>
    <FileHeader revMajor="1"
                revMinor="0"
@@ -11,6 +11,7 @@
       <ParameterDeclaration name="HostVehicle" parameterType="string" value="car_white"/>
       <ParameterDeclaration name="TargetVehicle" parameterType="string" value="car_red"/>
       <ParameterDeclaration name="TargetRef" parameterType="string" value="car_blue"/>
+      <ParameterDeclaration name="OppositeLanes" parameterType="boolean" value="false"/>
    </ParameterDeclarations>
    <CatalogLocations>
       <VehicleCatalog>
@@ -48,7 +49,7 @@
                <PrivateAction>
                     <TeleportAction>
                         <Position>
-                            <LanePosition roadId="0" laneId="-1" offset="0" s="0"/>
+                            <LanePosition roadId="0" laneId="-1" offset="0" s="80"/>
                         </Position>
                     </TeleportAction>
                </PrivateAction>
@@ -67,7 +68,7 @@
                <PrivateAction>
                     <TeleportAction>
                         <Position>
-                            <LanePosition roadId="1" laneId="-1" offset="0" s="200"/>
+                            <LanePosition roadId="1" laneId="-1" offset="0" s="190"/>
                         </Position>
                     </TeleportAction>
                </PrivateAction>
@@ -86,7 +87,7 @@
                <PrivateAction>
                     <TeleportAction>
                         <Position>
-                            <LanePosition roadId="0" laneId="-1" offset="0" s="10"/>
+                            <LanePosition roadId="0" laneId="-1" offset="0" s="150"/>
                         </Position>
                     </TeleportAction>
                </PrivateAction>
@@ -107,7 +108,7 @@
                               <LaneChangeAction>
                                  <LaneChangeActionDynamics dynamicsShape="cubic" value="3" dynamicsDimension="time"/>
                                  <LaneChangeTarget>
-                                    <RelativeTargetLane entityRef="TargetRef" value="1"/>
+                                    <AbsoluteTargetLane value="1"/>
                                  </LaneChangeTarget>
                               </LaneChangeAction>
                            </LateralAction>
@@ -121,7 +122,7 @@
                                     <EntityRef entityRef="TargetRef"/>
                                  </TriggeringEntities>
                                  <EntityCondition>
-                                    <RelativeClearanceCondition distanceForward="240" distanceBackward="30" freeSpace="false" oppositeLanes = "true">
+                                    <RelativeClearanceCondition distanceForward="100" distanceBackward="30" freeSpace="false" oppositeLanes="$OppositeLanes">
                                        <EntityRef entityRef="Target"/>
                                        <RelativeLaneRange from= "-1" to = "3"/>
                                     </RelativeClearanceCondition>
@@ -133,22 +134,13 @@
                   </Event>
                </Maneuver>
             </ManeuverGroup>
-            <StartTrigger>
-               <ConditionGroup>
-                  <Condition name="CutInActStart" delay="0" conditionEdge="none">
-                     <ByValueCondition>
-                        <SimulationTimeCondition value="0" rule="greaterOrEqual"/>
-                     </ByValueCondition>
-                  </Condition>
-               </ConditionGroup>
-            </StartTrigger>
          </Act>
       </Story>
       <StopTrigger>
           <ConditionGroup>
               <Condition conditionEdge="none" delay="0" name="simulationEndEventDone">
                   <ByValueCondition>
-                      <SimulationTimeCondition rule="greaterThan" value="7"/>
+                      <SimulationTimeCondition rule="greaterThan" value="10"/>
                   </ByValueCondition>
               </Condition>
           </ConditionGroup>

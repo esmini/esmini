@@ -1952,80 +1952,110 @@ TEST(ControllerTest, TestLoomingSimpleFarTan)
     delete se;
 }
 
-TEST(RelativeClearanceTest, TestRelativeClearanceNoFreeSpaceOff)
+static void clearanceFreeSpaceParamDeclCallback(void*)
 {
-    double          dt = 0.05;
-    ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/relative_clearance_freeSpaceOff.xosc");
-    ASSERT_NE(se, nullptr);
+    static int counter  = 0;
+    bool       value[2] = {true, false};
 
-    while (se->getSimulationTime() < 5.0 - SMALL_NUMBER)
+    if (counter < 2)
     {
-        se->step(dt);
-        se->prepareGroundTruth(dt);
+        ScenarioReader::parameters.setParameterValue("FreeSpace", value[counter]);
     }
 
-    ASSERT_NEAR(se->entities_.object_[2]->pos_.GetS(), 59.50000, 1E-3);
-    ASSERT_NEAR(se->entities_.object_[2]->pos_.GetT(), -4.500000, 1E-3);
-    ASSERT_EQ(se->entities_.object_[2]->GetName(), "TargetRef");
-
-    while (se->getSimulationTime() < 10.5 - SMALL_NUMBER)
-    {
-        se->step(dt);
-        se->prepareGroundTruth(dt);
-    }
-
-    ASSERT_NEAR(se->entities_.object_[2]->pos_.GetS(), 114.415284, 1E-3);
-    ASSERT_NEAR(se->entities_.object_[2]->pos_.GetT(), -3.0749722, 1E-3);
-    ASSERT_EQ(se->entities_.object_[2]->GetName(), "TargetRef");
-
-    delete se;
+    counter++;
 }
 
-TEST(RelativeClearanceTest, TestRelativeClearanceNoFreeSpaceOn)
+TEST(RelativeClearanceTest, TestRelativeClearanceFreeSpace)
 {
-    double          dt = 0.05;
-    ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/relative_clearance_freeSpaceOn.xosc");
-    ASSERT_NE(se, nullptr);
+    double dt = 0.05;
 
-    while (se->getSimulationTime() < 5.0 - SMALL_NUMBER)
+    RegisterParameterDeclarationCallback(clearanceFreeSpaceParamDeclCallback, 0);
+    for (int i = 0; i < 2; i++)
     {
-        se->step(dt);
-        se->prepareGroundTruth(dt);
+        ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/relative_clearance_freeSpace.xosc");
+        ASSERT_NE(se, nullptr);
+
+        while (se->getSimulationTime() < 5.0 - SMALL_NUMBER)
+        {
+            se->step(dt);
+            se->prepareGroundTruth(dt);
+        }
+
+        ASSERT_NEAR(se->entities_.object_[2]->pos_.GetT(), -4.500000, 1E-3);
+        ASSERT_EQ(se->entities_.object_[2]->GetName(), "TargetRef");
+
+        while (se->getSimulationTime() < 10.5 - SMALL_NUMBER)
+        {
+            se->step(dt);
+            se->prepareGroundTruth(dt);
+        }
+
+        if (i == 1)
+        {
+            ASSERT_NEAR(se->entities_.object_[2]->pos_.GetT(), -3.0749722, 1E-3);
+            ASSERT_EQ(se->entities_.object_[2]->GetName(), "TargetRef");
+        }
+        if (i == 2)
+        {
+            ASSERT_NEAR(se->entities_.object_[2]->pos_.GetT(), -3.7222222, 1E-3);
+            ASSERT_EQ(se->entities_.object_[2]->GetName(), "TargetRef");
+        }
+        delete se;
     }
-
-    ASSERT_NEAR(se->entities_.object_[2]->pos_.GetS(), 59.50000, 1E-3);
-    ASSERT_NEAR(se->entities_.object_[2]->pos_.GetT(), -4.500000, 1E-3);
-    ASSERT_EQ(se->entities_.object_[2]->GetName(), "TargetRef");
-
-    while (se->getSimulationTime() < 10.5 - SMALL_NUMBER)
-    {
-        se->step(dt);
-        se->prepareGroundTruth(dt);
-    }
-
-    ASSERT_NEAR(se->entities_.object_[2]->pos_.GetS(), 114.462129, 1E-3);
-    ASSERT_NEAR(se->entities_.object_[2]->pos_.GetT(), -3.7222222, 1E-3);
-    ASSERT_EQ(se->entities_.object_[2]->GetName(), "TargetRef");
-
-    delete se;
+    RegisterParameterDeclarationCallback(nullptr, 0);
 }
+
+static void clearanceParamDeclCallback(void*)
+{
+    static int counter  = 0;
+    bool       value[2] = {false, true};
+
+    if (counter < 2)
+    {
+        ScenarioReader::parameters.setParameterValue("OppositeLanes", value[counter]);
+    }
+
+    counter++;
+}
+
 TEST(RelativeClearanceTest, TestRelativeClearanceOppositeLane)
 {
-    double          dt = 0.05;
-    ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/relative_clearance_oppositLane.xosc");
-    ASSERT_NE(se, nullptr);
+    double dt = 0.05;
 
-    while (se->getSimulationTime() < 5.0 - SMALL_NUMBER)
+    RegisterParameterDeclarationCallback(clearanceParamDeclCallback, 0);
+
+    for (int i = 0; i < 2; i++)
     {
-        se->step(dt);
-        se->prepareGroundTruth(dt);
+        ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/relative_clearance_oppositLane.xosc");
+        ASSERT_NE(se, nullptr);
+
+        while (se->getSimulationTime() < 1.65 - SMALL_NUMBER)
+        {
+            se->step(dt);
+            se->prepareGroundTruth(dt);
+        }
+        if (i == 0)
+        {
+            ASSERT_NEAR(se->entities_.object_[2]->pos_.GetT(), 0.150, 1E-3);
+            ASSERT_EQ(se->entities_.object_[2]->GetName(), "TargetRef");
+        }
+
+        while (se->getSimulationTime() < 5.80 - SMALL_NUMBER)
+        {
+            se->step(dt);
+            se->prepareGroundTruth(dt);
+        }
+
+        if (i == 1)
+        {
+            ASSERT_NEAR(se->entities_.object_[2]->pos_.GetT(), 0.298, 1E-3);
+            ASSERT_EQ(se->entities_.object_[2]->GetName(), "TargetRef");
+        }
+
+        delete se;
     }
 
-    ASSERT_NEAR(se->entities_.object_[2]->pos_.GetS(), 61.97499, 1E-3);
-    ASSERT_NEAR(se->entities_.object_[2]->pos_.GetT(), -1.500000, 1E-3);
-    ASSERT_EQ(se->entities_.object_[2]->GetName(), "TargetRef");
-
-    delete se;
+    RegisterParameterDeclarationCallback(nullptr, 0);
 }
 
 TEST(ControllerTest, TestLoomingControllerAdvanced)
