@@ -294,7 +294,7 @@ int ScenarioGateway::updateObjectInfo(ObjectState* obj_state,
     return 0;
 }
 
-int ScenarioGateway::reportObject(int id,
+int ScenarioGateway::reportObject(int                    id,
                                   std::string            name,
                                   int                    obj_type,
                                   int                    obj_category,
