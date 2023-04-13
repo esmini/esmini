@@ -3803,25 +3803,29 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
                         }
 
                         Object *object_;
-                        for (pugi::xml_node byValueChild = condition_node.first_child(); byValueChild; byValueChild = byValueChild.next_sibling())
+                        for (pugi::xml_node relClearanceChild = condition_node.first_child(); relClearanceChild;
+                             relClearanceChild                = relClearanceChild.next_sibling())
                         {
-                            condition_type = byValueChild.name();
-                            if (condition_type == "EntityRef")
+                            if (relClearanceChild.name() == "EntityRef")
                             {  // populate all entity
-                                object_ = ResolveObjectReference(parameters.ReadAttribute(byValueChild, "entityRef"));
+                                object_ = ResolveObjectReference(parameters.ReadAttribute(relClearanceChild, "entityRef"));
                                 trigger->objects_.push_back(object_);
                             }
-                            else if (condition_type == "RelativeLaneRange")
+                            else if (relClearanceChild.name() == "RelativeLaneRange")
                             {
-                                if (!parameters.ReadAttribute(byValueChild, "to").empty())
+                                if (!parameters.ReadAttribute(relClearanceChild, "to").empty())
                                 {  // populate only if available else use default
-                                    trigger->to_ = strtoi(parameters.ReadAttribute(byValueChild, "to"));
+                                    trigger->to_ = strtoi(parameters.ReadAttribute(relClearanceChild, "to"));
                                 }
 
-                                if (!parameters.ReadAttribute(byValueChild, "from").empty())
+                                if (!parameters.ReadAttribute(relClearanceChild, "from").empty())
                                 {  // populate only if available else use default
-                                    trigger->from_ = strtoi(parameters.ReadAttribute(byValueChild, "from"));
+                                    trigger->from_ = strtoi(parameters.ReadAttribute(relClearanceChild, "from"));
                                 }
+                            }
+                            else
+                            {
+                                LOG("Unexpected element %s in RelativeClearanceCondition ", relClearanceChild.name());
                             }
                         }
 

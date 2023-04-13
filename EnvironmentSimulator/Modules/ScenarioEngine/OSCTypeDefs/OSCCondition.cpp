@@ -1493,7 +1493,7 @@ bool TrigByRelativeClearance::CheckCondition(StoryBoard* storyBoard, double sim_
 
     bool   result   = false;
     bool   objFound = false;
-    double maxDist  = distanceForward_ > distanceBackward_ ? distanceForward_ : distanceBackward_;
+    double maxDist  = MAX(distanceForward_, distanceBackward_);
 
     for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
     {
@@ -1508,8 +1508,7 @@ bool TrigByRelativeClearance::CheckCondition(StoryBoard* storyBoard, double sim_
             refObject_ = storyBoard->entities_->object_[j];
             if ((refObject_ == entityObject) ||
                 ((objects_.size() != 0) && ((std::find(objects_.begin(), objects_.end(), refObject_) == objects_.end()))))
-            // ((SIGN(entityObject->pos_.GetLaneId()) != SIGN(refObject_->pos_.GetLaneId())) && (!oppositeLanes_)))
-            {  // ignore the entity which in triggering itself, entity which in not in reference entity list, opposite lane entity.
+            {  // ignore the entity which in triggering itself, entity which in not in reference entity list
                 continue;
             }
 
@@ -1524,31 +1523,32 @@ bool TrigByRelativeClearance::CheckCondition(StoryBoard* storyBoard, double sim_
                 objFound = (entityObject->FreeSpaceDistanceObjectRoadLane(refObject_, &diff, CoordinateSystem::CS_ROAD) == 0);
             }
             else
-            {  // extra 5 meters to get details in advance to decide the direction of entity
-                objFound = entityObject->pos_.Delta(&refObject_->pos_, diff, true, maxDist + 5);
-            }
-            if (objFound)
             {
-                if (((distanceBackward_ > 0 && distanceForward_ == 0) && ((diff.ds < -distanceBackward_) || (diff.ds >= 0))) ||
-                    ((distanceForward_ > 0 && distanceBackward_ == 0) && ((diff.ds > distanceForward_) || (diff.ds <= 0))) ||
-                    ((distanceForward_ > 0 && distanceBackward_ > 0) && ((diff.ds > distanceForward_) && (diff.ds > 0))) ||
-                    ((distanceForward_ > 0 && distanceBackward_ > 0) && ((diff.ds < -distanceBackward_) && (diff.ds < 0))))
-                {  // decide obj found depends on forward and backward distance.
-                    objFound = false;
-                }
+                objFound = entityObject->pos_.Delta(&refObject_->pos_, diff, true, maxDist);
             }
 
-            if ((diff.dLaneId >= from_) && (diff.dLaneId <= to_) && ((diff.dOppLane == oppositeLanes_) || (!diff.dOppLane && oppositeLanes_)))
+            if (objFound)
             {
-                objToVisit_count += 1;  // store the entity as count those needs to fullfil the clearance.
-                if (!objFound)
-                {  // Accept entity which is only when outside clearance distance in required lanes
-                    visitedObj_count += 1;
+                if (diff.ds < -distanceBackward_ || diff.ds > distanceForward_)
+                {
+                    // ds is not within range (-distanceBackward_ : distanceForward_)
+                    objFound = false;
+                }
+                else
+                {
+                    // found object is within specified distance rante, check lane range and opposite direction condition
+                    if ((diff.dLaneId >= from_) && (diff.dLaneId <= to_) &&
+                        !(!oppositeLanes_ && diff.dOppLane))  // reject objects in opposite lane if we don't want them
+                    {
+                        // We found at least ONE object in the specified clearande area (lane and distance range)
+                        break;
+                    }
                 }
             }
         }
-        if (objToVisit_count == visitedObj_count)
-        {  // Make sure all the entity visited and fulfilled clearance
+
+        if (!objFound)
+        {
             result = true;
         }
 

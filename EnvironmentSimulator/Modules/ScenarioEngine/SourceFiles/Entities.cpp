@@ -787,11 +787,18 @@ int Object::FreeSpaceDistancePointRoadLane(double x, double y, double* latDist, 
 
 int Object::FreeSpaceDistanceObjectRoadLane(Object* target, PositionDiff* posDiff, CoordinateSystem cs)
 {
-    posDiff->dLaneId = LARGE_NUMBER_INT;
-    posDiff->dt      = LARGE_NUMBER;
-    posDiff->ds      = LARGE_NUMBER;
-    posDiff->dx      = LARGE_NUMBER;
-    posDiff->dy      = LARGE_NUMBER;
+    if (posDiff == nullptr)
+    {
+        LOG("FreeSpaceDistanceObjectRoadLane: PositionDiff is NULL");
+        return -1;
+    }
+
+    posDiff->dLaneId  = LARGE_NUMBER_INT;
+    posDiff->dt       = LARGE_NUMBER;
+    posDiff->ds       = LARGE_NUMBER;
+    posDiff->dx       = LARGE_NUMBER;
+    posDiff->dy       = LARGE_NUMBER;
+    posDiff->dOppLane = false;
 
     // First some checks
     if (target == 0)

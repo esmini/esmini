@@ -2668,19 +2668,13 @@ namespace roadmanager
 
     typedef struct
     {
-        double ds;       // delta s (longitudinal distance)
-        double dt;       // delta t (lateral distance)
-        int    dLaneId;  // delta laneId (increasing left and decreasing to the right)
-        double dx;       // delta x (world coordinate system)
-        double dy;       // delta y (world coordinate system)
-        bool   dOppLane;
+        double ds;        // delta s (longitudinal distance)
+        double dt;        // delta t (lateral distance)
+        int    dLaneId;   // delta laneId (increasing left and decreasing to the right)
+        double dx;        // delta x (world coordinate system)
+        double dy;        // delta y (world coordinate system)
+        bool   dOppLane;  // true if the two position objects are in opposite sides of reference lane
     } PositionDiff;
-
-    typedef struct
-    {
-        double dist;     // delta s (longitudinal distance)
-        int    dLaneId;  // delta laneId (increasing left and decreasing to the right)
-    } RelativePositionDiff;
 
     enum class CoordinateSystem
     {
@@ -2703,7 +2697,6 @@ namespace roadmanager
     // Forward declarations
     class Route;
     class RMTrajectory;
-    class RoadPath;
 
     class Position
     {

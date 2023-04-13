@@ -195,12 +195,12 @@
                                     <EntityRef entityRef="TargetRef"/>
                                  </TriggeringEntities>
                                  <EntityCondition>
-                                    <RelativeClearanceCondition distanceForward="40" distanceBackward="30" freeSpace="false" oppositeLanes = "false">
+                                    <RelativeClearanceCondition distanceForward="40" distanceBackward="30" freeSpace="false" oppositeLanes="false">
                                        <EntityRef entityRef="Dummy1"/>
                                        <EntityRef entityRef="Target"/>
                                        <EntityRef entityRef="Dummy"/>
                                        <EntityRef entityRef="Dummy2"/>
-                                       <RelativeLaneRange from= "0" to = "3"/>
+                                       <RelativeLaneRange from="0" to="3"/>
                                     </RelativeClearanceCondition>
                                  </EntityCondition>
                               </ByEntityCondition>
