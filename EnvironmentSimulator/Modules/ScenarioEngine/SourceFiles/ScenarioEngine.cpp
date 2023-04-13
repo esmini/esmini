@@ -656,6 +656,8 @@ int ScenarioEngine::step(double deltaSimTime)
                                          obj->wheel_angle_,
                                          obj->wheel_rot_,
                                          obj->rear_axle_.positionZ,
+                                         obj->front_axle_.positionX,
+                                         obj->front_axle_.positionZ,
                                          &obj->pos_);
         }
     }

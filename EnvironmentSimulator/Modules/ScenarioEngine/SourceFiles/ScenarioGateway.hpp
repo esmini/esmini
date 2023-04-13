@@ -38,6 +38,8 @@ namespace scenarioengine
         double         wheel_angle;      // Only used for vehicle
         double         wheel_rot;        // Only used for vehicle
         double         rear_axle_z_pos;  // z coordinate of the middle of rear axle under neutral load conditions
+        double         front_axle_x_pos;  // x coordinate of the middle of front axle under neutral load conditions
+        double         front_axle_z_pos;  // z coordinate of the middle of front axle under neutral load conditions
         OSCBoundingBox boundingbox;
         int            scaleMode;       // 0=None, 1=BoundingBoxToModel, 2=ModelToBoundingBox (see enum EntityScaleMode)
         int            visibilityMask;  // bitmask according to Object::Visibility (1 = Graphics, 2 = Traffic, 4 = Sensors)
@@ -114,6 +116,8 @@ namespace scenarioengine
                     double                 wheel_angle,
                     double                 wheel_rot,
                     double                 rear_axle_z_pos,
+                    double                 front_axle_x_pos,
+                    double                 front_axle_z_pos,
                     roadmanager::Position *pos);
         ObjectState(int            id,
                     std::string    name,
@@ -217,6 +221,8 @@ namespace scenarioengine
                          double                 wheel_angle,
                          double                 wheel_rot,
                          double                 rear_axle_z_pos,
+                         double                 front_axle_x_pos,
+                         double                 front_axle_z_pos,
                          roadmanager::Position *pos);
 
         int reportObject(int            id,

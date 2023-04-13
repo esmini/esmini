@@ -47,6 +47,8 @@ ObjectState::ObjectState(int                    id,
                          double                 wheel_angle,
                          double                 wheel_rot,
                          double                 rear_axle_z_pos,
+                         double                 front_axle_x_pos,
+                         double                 front_axle_z_pos,
                          roadmanager::Position* pos)
     : dirty_(0)
 {
@@ -64,6 +66,8 @@ ObjectState::ObjectState(int                    id,
     state_.info.wheel_angle     = wheel_angle;
     state_.info.wheel_rot       = wheel_rot;
     state_.info.rear_axle_z_pos = rear_axle_z_pos;
+    state_.info.front_axle_x_pos = front_axle_x_pos;
+    state_.info.front_axle_z_pos = front_axle_z_pos;
     state_.info.boundingbox     = boundingbox;
     state_.info.scaleMode       = scaleMode;
     state_.info.visibilityMask  = visibilityMask;
@@ -308,6 +312,8 @@ int ScenarioGateway::reportObject(int                    id,
                                   double                 wheel_angle,
                                   double                 wheel_rot,
                                   double                 rear_axle_z_pos,
+                                  double                 front_axle_x_pos,
+                                  double                 front_axle_z_pos,
                                   roadmanager::Position* pos)
 {
     ObjectState* obj_state = getObjectStatePtrById(id);
@@ -343,6 +349,8 @@ int ScenarioGateway::reportObject(int                    id,
                                     wheel_angle,
                                     wheel_rot,
                                     rear_axle_z_pos,
+                                    front_axle_x_pos,
+                                    front_axle_z_pos,
                                     pos);
 
         // Add object to collection
