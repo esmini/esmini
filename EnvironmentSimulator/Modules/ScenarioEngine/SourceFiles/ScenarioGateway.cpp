@@ -61,16 +61,16 @@ ObjectState::ObjectState(int                    id,
     state_.info.ctrl_type    = ctrl_type;
     state_.info.timeStamp    = timestamp;
     StrCopy(state_.info.name, name.c_str(), MIN(name.length() + 1, NAME_LEN));
-    state_.pos                  = *pos;
-    state_.info.speed           = speed;
-    state_.info.wheel_angle     = wheel_angle;
-    state_.info.wheel_rot       = wheel_rot;
-    state_.info.rear_axle_z_pos = rear_axle_z_pos;
+    state_.pos                   = *pos;
+    state_.info.speed            = speed;
+    state_.info.wheel_angle      = wheel_angle;
+    state_.info.wheel_rot        = wheel_rot;
+    state_.info.rear_axle_z_pos  = rear_axle_z_pos;
     state_.info.front_axle_x_pos = front_axle_x_pos;
     state_.info.front_axle_z_pos = front_axle_z_pos;
-    state_.info.boundingbox     = boundingbox;
-    state_.info.scaleMode       = scaleMode;
-    state_.info.visibilityMask  = visibilityMask;
+    state_.info.boundingbox      = boundingbox;
+    state_.info.scaleMode        = scaleMode;
+    state_.info.visibilityMask   = visibilityMask;
 
     dirty_ = Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::LATERAL | Object::DirtyBit::SPEED | Object::DirtyBit::WHEEL_ANGLE |
              Object::DirtyBit::WHEEL_ROTATION;

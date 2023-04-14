@@ -35,9 +35,9 @@ namespace scenarioengine
         double         timeStamp;
         char           name[NAME_LEN];
         double         speed;
-        double         wheel_angle;      // Only used for vehicle
-        double         wheel_rot;        // Only used for vehicle
-        double         rear_axle_z_pos;  // z coordinate of the middle of rear axle under neutral load conditions
+        double         wheel_angle;       // Only used for vehicle
+        double         wheel_rot;         // Only used for vehicle
+        double         rear_axle_z_pos;   // z coordinate of the middle of rear axle under neutral load conditions
         double         front_axle_x_pos;  // x coordinate of the middle of front axle under neutral load conditions
         double         front_axle_z_pos;  // z coordinate of the middle of front axle under neutral load conditions
         OSCBoundingBox boundingbox;
