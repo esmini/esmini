@@ -23,7 +23,7 @@
         </ControllerCatalog>
     </CatalogLocations>
     <RoadNetwork>
-        <LogicFile filepath="../../../resources/tmp/simple_highway.xodr"/>
+        <LogicFile filepath="../xodr/simple_highway.xodr"/>
     </RoadNetwork>
     <Entities>
         <ScenarioObject name="Ego">
