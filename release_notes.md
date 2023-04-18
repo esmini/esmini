@@ -1,5 +1,34 @@
 ## esmini release notes
 
+### 2023-04-18 Version 2.31.0
+
+New features and behaviors:
+- Add esmini OSMP FMU ([PR #409](https://github.com/esmini/esmini/pull/409) and [issue #341](https://github.com/esmini/esmini/issues/341))
+  - based on the [OSMPDummySource](https://github.com/OpenSimulationInterface/osi-sensor-model-packaging/tree/master/examples/OSMPDummySource) example
+  - more info here: https://github.com/esmini/esmini/tree/master/OSMP_FMU
+- Add support for [OSC 1.2 RelativeClearanceCondition](https://www.asam.net/static_downloads/ASAM_OpenSCENARIO_V1.2.0_Model_Documentation/modelDocumentation/content/RelativeClearanceCondition.html)
+- Add `--ground_plane` option to replayer
+- Add static variant of esminiLib
+  - also add code example [hello_world_static](https://github.com/esmini/esmini/tree/master/EnvironmentSimulator/code-examples/hello_world_static)
+- Expose subset of OSI API in C# wrapper ([ESMiniWrapper.cs](https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/Libraries/esminiLib/ESMiniWrapper.cs))
+
+Improvements and fixes:
+- Add info on blocked files on Windows (see [here](https://esmini.github.io/#_blocked_by_windows_defender_smartscreen/))
+- Add some COLLADA info related to osgconv (see [here](https://esmini.github.io/#_get_osgconv))
+- Fix issue with stand still phases on trajectories
+  - e.g. allow for rotate heading while stationary
+- Fix curvature direction dependence in esminiRM Unity Util GetLaneInfo()
+- Add info on failed package download to [User guide - Various issues](https://esmini.github.io/#_failed_to_download_3rd_party_assets)
+- Fix/update esmini [C# wrapper API](https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/Libraries/esminiLib/ESMiniWrapper.cs) documentation (header comments/tooltip))
+  - AddObject() returns created object ID (not always 0) on success
+  - object_id replacing object index as argument in many functions (use GetId(index) to find out)
+- Improve delta lane ID calculation in Roadmanager::Position::Delta() method
+  - based on connected lane id at target position (compare at same road and s-value)
+  - remove reference lane from delta (e.g. difference between lanes -2 and +3 is 4, not 5)
+  - include flag for vehicle found in opposite lane or not
+- Add another looming controller demo scenario [loomingHW.xosc](https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/Unittest/xosc/loomingHW.xosc) ([videoclip](https://youtu.be/X1D4b2xZiJc))
+
+
 ### 2023-03-22 Version 2.30.1
 
 Project updates:
