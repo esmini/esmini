@@ -13,7 +13,7 @@ New features and behaviors:
 - Expose subset of OSI API in C# wrapper ([ESMiniWrapper.cs](https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/Libraries/esminiLib/ESMiniWrapper.cs))
 
 Improvements and fixes:
-- Add info on blocked files on Windows (see [here](https://esmini.github.io/#_blocked_by_windows_defender_smartscreen/))
+- Add info on blocked files on Windows (see [here](https://esmini.github.io/#_blocked_by_windows_defender_smartscreen))
 - Add some COLLADA info related to osgconv (see [here](https://esmini.github.io/#_get_osgconv))
 - Fix issue with stand still phases on trajectories
   - e.g. allow for rotate heading while stationary
