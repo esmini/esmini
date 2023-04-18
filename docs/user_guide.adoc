@@ -1841,6 +1841,41 @@ cd build
 cmake ..
 ----
 
+==== Heading behavior in Road vs Lane Position
+
+In esmini, the behavior of the two position types https://www.asam.net/static_downloads/ASAM_OpenSCENARIO_V1.2.0_Model_Documentation/modelDocumentation/content/RoadPosition.html[`RoadPosition`] and https://www.asam.net/static_downloads/ASAM_OpenSCENARIO_V1.2.0_Model_Documentation/modelDocumentation/content/LanePosition.html[`LanePosition`] differ in terms of heading.
+
+- `RoadPosition`: When not specified, the heading will align to the direction of the road (s-axis)
+- `LanePosition`: When not specified, the heading will align to the driving direction of the lane
+
+In the image below, the white cars are positioned by `RoadPosition` with `t=-1.5` and `t=1.5` respectively while the red cars are positioned by `LanePosition` with `laneId="-1"` and `laneId="1"` respectively.
+
+.Positioning with RoadPosition (white) and LanePosition (red) - heading omitted
+image::no-heading.jpg[]
+
+Explicitly specified heading (in `Orientation` sub-element):
+
+- Absolute heading will be respected and treated in the same way for both position cases
+- Relative heading will be based on the default heading, i.e. road or driving direction respectively.
+
+In next image, an `Orientation` element was added with *absolute* heading = 0.4 for all four cars.
+
+.Positioning with RoadPosition (white) and LanePosition (red) - absolute heading=0.4
+image::absolute-heading.jpg[]
+
+In next image, an `Orientation` element was added with *relative* heading = 0.4 for all four cars.
+
+.Positioning with RoadPosition (white) and LanePosition (red) - relative heading=0.4
+image::relative-heading.jpg[]
+
+Corresponding behavior applies also to `RelativeRoadPosition` and `RelativeLanePosition`.
+
+===== Motivation
+
+In some (maybe most) use cases it's preferred that vehicles align to the driving direction of the lane. But in other cases not, example: In an overtake maneuver, the overtaking car may start in the neighbor lane. The driving direction of the lane should not affect the heading of the car.
+
+So the different strategies for `RoadPosition` and `LanePosition` was decided upon to support as many use cases as possible. For more background, see issues https://github.com/esmini/esmini/issues/385[#385] and https://github.com/esmini/esmini/issues/228[#228].
+
 === Further issues at esmini GitHub page
 The https://github.com/esmini/esmini/issues[Issues tab at esmini GitHub page] is a valuable source of questions and answers. To search in all issues, make sure to set filter: `is:issue`.
 
