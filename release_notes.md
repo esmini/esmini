@@ -1,5 +1,18 @@
 ## esmini release notes
 
+### 2023-04-19 Version 2.31.1
+
+New features and behaviors:
+- Add custom fixed top camera option to odrviewer as well
+  - for usage info, see similar last example in [User guide - Camera control](https://esmini.github.io/#_camera_control)
+
+Improvements and fixes:
+- Add C# coding example showing how to get and print OSI ground truth
+  - see [code-examples/osi-groundtruth-cs](https://github.com/esmini/esmini/tree/master/EnvironmentSimulator/code-examples/osi-groundtruth-cs)
+  - or [User guide - Hello World - C# binding](https://esmini.github.io/#_c_binding)
+- Fix bug causing camera to be stuck in orthographic mode after switching from custom top view
+- Run nightly sanitizer checks on dev branch instead of master
+
 ### 2023-04-18 Version 2.31.0
 
 New features and behaviors:
