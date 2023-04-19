@@ -630,8 +630,8 @@ int main(int argc, char **argv)
 
             while ((arg_str = opt.GetOptionArg("custom_fixed_top_camera", counter)) != "")
             {
-                size_t pos = 0;
-                double v[4] = { 0.0, 0.0, 0.0, 0.0 };
+                size_t pos  = 0;
+                double v[4] = {0.0, 0.0, 0.0, 0.0};
                 for (int i = 0; i < 4; i++)
                 {
                     pos = arg_str.find(",");
