@@ -2,12 +2,13 @@ name: Sanitize
 
 on:
   schedule:
-    # This will run the sanitize job Nightly at 3AM every day for the default branch (dev - is our default branch)
+    # This will run the sanitize job Nightly at 3AM every day for the dev branch
     # * is a special character in YAML so you have to quote this string
     - cron: '0 3 * * *'
 
 jobs:
   sanitize:
+    if: ${{ github.ref == 'refs/heads/dev' }}
     strategy:
       matrix:
         configuration: [Debug, Release]
