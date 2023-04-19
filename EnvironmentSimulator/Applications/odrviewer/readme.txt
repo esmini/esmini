@@ -5,7 +5,6 @@ Optionally it can populate the road lanes with randomized dummy vehicles, which 
 Application is launched from command line (or batch file). 
 
 Usage: odrviewer [options]
-Usage: odrviewer [options]
 Options:
   --help
       Show this help message
@@ -17,6 +16,8 @@ Options:
       Continuous screen capture. Warning: Many .tga files will be created
   --custom_fixed_camera <position and optional orientation>
       Additional custom camera position <x,y,z>[,h,p] (multiple occurrences supported)
+  --custom_fixed_top_camera <position and rotation>
+      Additional custom top camera <x,y,z,rot> (multiple occurrences supported)
   --density [density]  (default = 1.000000)
       density (cars / 100 m)
   --enforce_generate_model
