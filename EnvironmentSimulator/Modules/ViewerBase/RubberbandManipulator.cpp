@@ -70,6 +70,7 @@ RubberbandManipulator::CustomCamera* RubberbandManipulator::RubberbandManipulato
     else if (index < 0)
     {
         index = 0;
+        return 0;
     }
 
     return &customCamera_[static_cast<unsigned int>(index)];
