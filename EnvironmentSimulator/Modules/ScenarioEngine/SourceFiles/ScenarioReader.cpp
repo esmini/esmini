@@ -4009,6 +4009,18 @@ void ScenarioReader::parseOSCManeuver(Maneuver *maneuver, pugi::xml_node maneuve
             std::string prio = parameters.ReadAttribute(maneuverChild, "priority");
             if (prio == "overwrite")
             {
+                if (GetVersionMajor() == 1 && GetVersionMinor() > 1)
+                {
+                    LOG("Info: \"overwrite\" priority deprecated in v1.2. Use \"override\" instead. Accepting it anyway.");
+                }
+                event->priority_ = Event::Priority::OVERWRITE;
+            }
+            else if (prio == "override")
+            {
+                if (GetVersionMajor() == 1 && GetVersionMinor() < 2)
+                {
+                    LOG("Info: \"override\" priority was introduced in v1.2. Use \"overwrite\" for earlier versions. Accepting it anyway.");
+                }
                 event->priority_ = Event::Priority::OVERWRITE;
             }
             else if (prio == "skip")
