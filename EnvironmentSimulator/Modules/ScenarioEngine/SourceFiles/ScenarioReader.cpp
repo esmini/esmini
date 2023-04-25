@@ -604,18 +604,44 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
     pugi::xml_node performance_node = vehicleNode.child("Performance");
     if (performance_node != NULL)
     {
-        if (!(performance_node.attribute("maxAcceleration").empty()))
-        {
-            vehicle->SetMaxAcceleration(strtod(parameters.ReadAttribute(performance_node, "maxAcceleration")));
-        }
-        if (!(performance_node.attribute("maxDeceleration").empty()))
-        {
-            vehicle->SetMaxDeceleration(strtod(parameters.ReadAttribute(performance_node, "maxDeceleration")));
-        }
         if (!(performance_node.attribute("maxSpeed").empty()))
         {
             vehicle->SetMaxSpeed(strtod(parameters.ReadAttribute(performance_node, "maxSpeed")));
         }
+        else
+        {
+            LOG("Info: Missing mandatory Performance maxSpeed for %s, applying default %.2f", vehicle->GetTypeName().c_str(), vehicle->GetMaxSpeed());
+        }
+
+        if (!(performance_node.attribute("maxAcceleration").empty()))
+        {
+            vehicle->SetMaxAcceleration(strtod(parameters.ReadAttribute(performance_node, "maxAcceleration")));
+        }
+        else
+        {
+            LOG("Info: Missing mandatory Performance maxAcceleration for %s, applying default %.2f",
+                vehicle->GetTypeName().c_str(),
+                vehicle->GetMaxAcceleration());
+        }
+
+        if (!(performance_node.attribute("maxDeceleration").empty()))
+        {
+            vehicle->SetMaxDeceleration(strtod(parameters.ReadAttribute(performance_node, "maxDeceleration")));
+        }
+        else
+        {
+            LOG("Info: Missing mandatory Performance maxDeceleration for %s, applying default %.2f",
+                vehicle->GetTypeName().c_str(),
+                vehicle->GetMaxDeceleration());
+        }
+    }
+    else
+    {
+        LOG("Info: Missing mandatory Performance element for %s, applying defaults maxspeed %.2f maxacc %.2f maxdec %.2f",
+            vehicle->GetTypeName().c_str(),
+            vehicle->GetMaxSpeed(),
+            vehicle->GetMaxAcceleration(),
+            vehicle->GetMaxDeceleration());
     }
 
     pugi::xml_node axles = vehicleNode.child("Axles");
@@ -2067,21 +2093,22 @@ ActivateControllerAction *ScenarioReader::parseActivateControllerAction(pugi::xm
     return activateControllerAction;
 }
 
-int ScenarioReader::parseDynamicConstraints(pugi::xml_node dynamics_node, DynamicConstraints &dc)
+int ScenarioReader::parseDynamicConstraints(pugi::xml_node dynamics_node, DynamicConstraints &dc, Object *obj)
 {
     struct value
     {
         double     *variable;
         double      default_value;
+        double      performance_value;
         std::string label;
     };
 
     value values[] = {
-        {&dc.max_acceleration_, 5.0, "maxAcceleration"},
-        {&dc.max_acceleration_rate_, 2.0, "maxAccelerationRate"},
-        {&dc.max_deceleration_, 10.0, "maxDeceleration"},
-        {&dc.max_deceleration_rate_, 2.0, "maxDecelerationRate"},
-        {&dc.max_speed_, 250.0 / 3.6, "maxSpeed"},
+        {&dc.max_speed_, 250.0 / 3.6, obj->performance_.maxSpeed, "maxSpeed"},
+        {&dc.max_acceleration_, 5.0, obj->performance_.maxAcceleration, "maxAcceleration"},
+        {&dc.max_acceleration_rate_, 2.0, dc.max_acceleration_rate_, "maxAccelerationRate"},
+        {&dc.max_deceleration_, 10.0, obj->performance_.maxDeceleration, "maxDeceleration"},
+        {&dc.max_deceleration_rate_, 2.0, dc.max_deceleration_rate_, "maxDecelerationRate"},
     };
 
     for (unsigned int i = 0; i < sizeof(values) / sizeof(value); i++)
@@ -2093,13 +2120,23 @@ int ScenarioReader::parseDynamicConstraints(pugi::xml_node dynamics_node, Dynami
         else
         {
             *values[i].variable = strtod(parameters.ReadAttribute(dynamics_node, values[i].label.c_str()));
+
             if (*values[i].variable < SMALL_NUMBER)
             {
-                LOG("parseDynamicConstraints: Unexpected small %s value: %.5f, replacing with default %.2f",
+                LOG("parseDynamicConstraints: Unexpected small %s value: %.5f, replacing with %s value %.2f",
                     values[i].label.c_str(),
                     *values[i].variable,
-                    values[i].default_value);
-                *values[i].variable = values[i].default_value;
+                    values[i].default_value < values[i].performance_value ? "default" : "performance",
+                    values[i].default_value < values[i].performance_value ? values[i].default_value : values[i].performance_value);
+                *values[i].variable = values[i].default_value < values[i].performance_value ? values[i].default_value : values[i].performance_value;
+            }
+            else if (*values[i].variable > values[i].performance_value)
+            {
+                LOG("parseDynamicConstraints: %s value %.2f exceeds object performance value: %.2f, truncating",
+                    values[i].label.c_str(),
+                    *values[i].variable,
+                    values[i].performance_value);
+                *values[i].variable = values[i].performance_value;
             }
         }
     }
@@ -2210,7 +2247,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                     {
                         if (!strcmp(child.name(), "DynamicConstraints"))
                         {
-                            parseDynamicConstraints(child, action_speed_profile->dynamics_);
+                            parseDynamicConstraints(child, action_speed_profile->dynamics_, object);
                         }
                         else if (!strcmp(child.name(), "EntityRef"))
                         {
@@ -2252,7 +2289,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                     pugi::xml_node dynamics_node = longitudinalChild.child("DynamicConstraints");
                     if (dynamics_node != NULL)
                     {
-                        parseDynamicConstraints(dynamics_node, action_dist->dynamics_);
+                        parseDynamicConstraints(dynamics_node, action_dist->dynamics_, object);
                     }
 
                     action_dist->target_object_ = ResolveObjectReference(parameters.ReadAttribute(longitudinalChild, "entityRef"));

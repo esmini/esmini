@@ -1518,7 +1518,7 @@ void LongDistanceAction::Step(double simTime, double)
 
     double speed_diff = object_->speed_ - target_object_->speed_;
     double acc;
-    double spring_constant = 4;
+    double spring_constant = 0.4;
     double dc;
     double requested_dist = 0;
 
@@ -1549,7 +1549,7 @@ void LongDistanceAction::Step(double simTime, double)
         OSCAction::End(simTime);
     }
 
-    if (dynamics_.max_acceleration_ >= LARGE_NUMBER || dynamics_.max_deceleration_ >= LARGE_NUMBER)
+    if (dynamics_.max_acceleration_ >= LARGE_NUMBER && dynamics_.max_deceleration_ >= LARGE_NUMBER)
     {
         // Set position according to distance and copy speed of target vehicle
         object_->pos_.MoveAlongS(distance_diff);
@@ -1558,8 +1558,10 @@ void LongDistanceAction::Step(double simTime, double)
     else
     {
         // Apply damped spring model with critical/optimal damping factor
-        // Adjust tension in spring in proportion to max acceleration. Experimental, may be removed.
-        double spring_constant_adjusted = 0.1 * dynamics_.max_acceleration_ * spring_constant;
+        // Adjust tension in spring in proportion to the max acceleration and max deceleration
+        double tension = distance_diff < 0.0 ? dynamics_.max_acceleration_ : dynamics_.max_deceleration_;
+
+        double spring_constant_adjusted = tension * spring_constant;
         dc                              = 2 * sqrt(spring_constant_adjusted);
         acc                             = distance_diff * spring_constant_adjusted - speed_diff * dc;
         if (acc > dynamics_.max_acceleration_)
