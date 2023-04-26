@@ -199,19 +199,26 @@ class DATFile():
             data.s];
 
 
-    def print_csv(self):
+    def print_csv(self, extended = False, include_file_refs = True):
 
         # Print header
-        print(self.get_header_line())
+        if include_file_refs:
+            print(self.get_header_line())
 
         # Print column headings / value types
-        print(self.get_labels_line())
+        if extended:
+            print(self.get_labels_line_extended())
+        else:
+            print(self.get_labels_line())
 
         # Read and print all rows of data
         for data in self.data:
-            print(self.get_data_line(data))
+            if extended:
+                print(self.get_data_line_extended(data))
+            else:
+                print(self.get_data_line(data))
 
-    def save_csv(self, extended = False):
+    def save_csv(self, extended = False, include_file_refs = True):
         csvfile = os.path.splitext(self.filename)[0] + '.csv'
         try:
             fcsv = open(csvfile, 'w')
@@ -220,7 +227,8 @@ class DATFile():
             raise
 
         # Save column headings / value types
-        fcsv.write(self.get_header_line() + '\n')
+        if include_file_refs:
+            fcsv.write(self.get_header_line() + '\n')
 
         # Save column headings / value types
         if extended:
@@ -260,10 +268,12 @@ if __name__ == "__main__":
 
     # Add the arguments
     parser.add_argument('filename', help='dat filename')
+    parser.add_argument('--extended', '-e', action='store_true', help='add road coordinates')
+    parser.add_argument('--file_refs', '-r', action='store_true', help='include odr and model file references')
 
     # Execute the parse_args() method
     args = parser.parse_args()
 
     dat = DATFile(args.filename)
-    dat.print_csv()
+    dat.print_csv(args.extended, args.file_refs)
     dat.close()
