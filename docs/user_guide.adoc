@@ -1329,7 +1329,52 @@ Most actions that affects motion will be transferred from the original entity (E
 * Other triggers: Restart ghost from where the Ego is now, in effect rewind ghost `headStartTime` seconds and recreate trajectory from there. The purpose is to enable ghost to react on triggers that happens in the "real" scenario (which plays out `headStartTime` seconds behind the ghost)
 * `SimulationTime` trigger conditions for events where Ego is the actor will be adjusted wrt ghost `headStartTime` time. For example, if vehicle should brake after 20 seconds of driving (simulationTime = 20), then it will be changed to simulationTime = 17 (for headstart 3s), since the ghost has been driving for 20 seconds at that point.
 
-Note that the strategy results in desired behavior in probably the majority of cases, but not all. There might be exceptions where another behavior is expected or required. The manipulation described above is handled by the method https://github.com/esmini/esmini/blob/362bcae28253f4eef2778e6f11b7a8393e6a3cd4/EnvironmentSimulator/Modules/ScenarioEngine/SourceFiles/ScenarioEngine.cpp#L1103[ScenarioEngine::SetupGhost()] which in best case can be modified to fit custom needs.
+[discrete]
+===== Examples
+
+The following examples shows two different triggers for a lane change action. First example uses TraveledDistanceCondition. Ghost will be the triggering entity and since this is independent of other road users, there is no need to restart ghost.
+
+The second example, on the other hand, uses TimeHeadwayCondition which calculates the time gap between the white Ego car and the red Target car, hence depending on other road users. Since ghost is running ahead of time it does not make sense to involve ghost in such conditions, hence Ego will be the triggering entity.
+
+Example 1: Trigger based on traveled distance - no restart
+
+[source, xml]
+----
+<ByEntityCondition>
+    <TriggeringEntities triggeringEntitiesRule="any">
+        <EntityRef entityRef="Ego"/>
+    </TriggeringEntities>
+    <EntityCondition>
+        <TraveledDistanceCondition value="20"/>
+    </EntityCondition>
+</ByEntityCondition>
+----
+
+video::traveled_distance.mp4?raw=true[opts="loop,autoplay"]
+
+Example 2: Trigger based on time headway - restart ghost
+
+[source, xml]
+----
+<ByEntityCondition>
+    <TriggeringEntities triggeringEntitiesRule="any">
+        <EntityRef entityRef="Ego"/>
+    </TriggeringEntities>
+    <EntityCondition>
+        <TimeHeadwayCondition
+            entityRef="Target"
+            value="4.0"
+            freespace="false"
+            coordinateSystem="road"
+            relativeDistanceType="longitudinal"
+            rule="lessThan"/>
+    </EntityCondition>
+</ByEntityCondition>
+----
+
+video::time_headway.mp4?raw=true[opts="loop,autoplay"]
+
+Note that the strategy results in desired behavior in probably the majority of cases, but not all. There might be exceptions where another behavior is expected or required. The manipulation described above is handled by the methods `SetupGhost()` and `ReplaceObjectInTrigger()` in https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/Modules/ScenarioEngine/SourceFiles/ScenarioEngine.cpp[ScenarioEngine.cpp] which can be modified to fit custom needs.
 
 [discrete]
 ==== Additional notes on using the ghost feature
