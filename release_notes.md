@@ -1,5 +1,21 @@
 ## esmini release notes
 
+### 2023-04-28 Version 2.31.2
+
+Improvements and fixes:
+- Fix RelativeClearanceCondition missed case of empty lanes within range
+- Support OpenSCENARIO v1.2 `override` priority, renamed from `overwrite`
+- Support `freespace` attribute in RelativeClearanceCondition
+  - typo in standard, should have been `freeSpace`
+  - esmini now supports both `freespace` and `freeSpace`
+- Improve LongitudinalDistanceAction
+  - make use of any dynamics constraints provided for the action
+  - disable dynamics only when all constraints are missing
+  - respect vehicle performance settings (limit constraints)
+- exclude odr and model refs from csv file converted from .dat
+  - fixes plot_csv.py failing to plot csv files created from dat2csv.py
+- Add some ghost trigger info to User guide, see [The ghost concept / Actions and triggers](https://esmini.github.io/#_actions_and_triggers)
+
 ### 2023-04-19 Version 2.31.1
 
 New features and behaviors:
