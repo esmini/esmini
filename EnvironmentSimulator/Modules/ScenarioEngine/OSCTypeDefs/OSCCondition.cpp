@@ -1499,13 +1499,17 @@ bool TrigByRelativeClearance::CheckCondition(StoryBoard* storyBoard, double sim_
     bool   objFound = false;
     double maxDist  = MAX(distanceForward_, distanceBackward_);
 
+    roadmanager::OpenDrive* odr = roadmanager::Position::GetOpenDrive();
+
     for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
     {
-        Object* entityObject = triggering_entities_.entity_[i].object_;
+        Object*            entityObject = triggering_entities_.entity_[i].object_;
+        roadmanager::Road* road         = odr->GetRoadById(entityObject->pos_.GetTrackId());
 
         Object* refObject_;
         result = false;
 
+        // First check all entities within lane range
         for (size_t j = 0; j < storyBoard->entities_->object_.size(); j++)
         {
             refObject_ = storyBoard->entities_->object_[j];
@@ -1554,9 +1558,27 @@ bool TrigByRelativeClearance::CheckCondition(StoryBoard* storyBoard, double sim_
             }
         }
 
-        if (!objFound)
+        if (objFound)
         {
-            result = true;
+            result = false;
+        }
+        else
+        {
+            // Then, if lanes in the specified lane range are free of entities also check that the specified area exists
+            // check at location of current position (road, lane and s)
+            result = false;
+
+            for (int j = 0; j < road->GetNumberOfDrivingLanes(entityObject->pos_.GetS()); j++)
+            {
+                int lane_id = road->GetDrivingLaneByIdx(entityObject->pos_.GetS(), j)->GetId();
+                if (IS_IN_SPAN(lane_id, entityObject->pos_.GetLaneId() + from_, entityObject->pos_.GetLaneId() + to_) &&
+                    lane_id != entityObject->pos_.GetLaneId())
+                {
+                    // at least one lane found within the specified range, which is enough
+                    result = true;
+                    break;
+                }
+            }
         }
 
         if (result == true)
