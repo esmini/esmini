@@ -1571,8 +1571,10 @@ bool TrigByRelativeClearance::CheckCondition(StoryBoard* storyBoard, double sim_
             for (int j = 0; j < road->GetNumberOfDrivingLanes(entityObject->pos_.GetS()); j++)
             {
                 int lane_id = road->GetDrivingLaneByIdx(entityObject->pos_.GetS(), j)->GetId();
-                if (IS_IN_SPAN(lane_id, entityObject->pos_.GetLaneId() + from_, entityObject->pos_.GetLaneId() + to_) &&
-                    lane_id != entityObject->pos_.GetLaneId())
+                if (IS_IN_SPAN(lane_id, entityObject->pos_.GetLaneId() + from_, entityObject->pos_.GetLaneId() + to_) &&  // lane is within range
+                    ((oppositeLanes_ == true) ||  // consider any lane when opposite lane flag is false
+                     (oppositeLanes_ == false &&
+                      SIGN(lane_id) == SIGN(entityObject->pos_.GetLaneId()))))  // consider only same direction when opposite lane flag is false
                 {
                     // at least one lane found within the specified range, which is enough
                     result = true;
