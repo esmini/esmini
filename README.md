@@ -112,6 +112,9 @@ see [User Guide Hello-World tutorial](https://esmini.github.io/#_python_binding)
 ### Carla Simulator
 [Carla](http://carla.org/) is an [Unreal](https://www.unrealengine.com/) based open source simulator worth to check out.
 
+### OpenMSL
+[Open Source Model & Simulation Library](https://github.com/openmsl) is a central hub for simulation entities for virtual ADAS testing. It runs a co-simulation with esmini in a GitHub action for sensor model testing and therefore demonstrates its application with other simulation models.
+
 ## Data formats
 
 [OpenDRIVE](https://www.asam.net/standards/detail/opendrive/)
