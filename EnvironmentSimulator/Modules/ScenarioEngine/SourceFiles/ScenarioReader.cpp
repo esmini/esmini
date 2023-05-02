@@ -3824,6 +3824,11 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
                             strTemp             = parameters.ReadAttribute(condition_node, "freeSpace");
                             trigger->freeSpace_ = strTemp == "true" ? true : false;
                         }
+                        else if (!parameters.ReadAttribute(condition_node, "freespace").empty())
+                        {
+                            strTemp             = parameters.ReadAttribute(condition_node, "freespace");
+                            trigger->freeSpace_ = strTemp == "true" ? true : false;
+                        }
                         else
                         {  // Provide warring and use default value
                             LOG("FreeSpace is mandatory attribute in RelativeClearanceCondition. Anyway setting it false");
