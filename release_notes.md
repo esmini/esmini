@@ -1,13 +1,25 @@
 ## esmini release notes
 
+### 2023-05-03 Version 2.31.3
+
+Improvements and fixes:
+- Support `freespace` attribute in RelativeClearanceCondition
+  - typo in standard, should have been `freeSpace`
+  - esmini now supports both `freespace` and `freeSpace`
+  - was intended to be part of release 2.31.2, but failed to
+- Improve RelativeClearanceCondition
+  - consider also empty lane of triggering entity
+  - consider opposite lane flag for empty lanes as well
+- Added OpenMSL to [related work](https://github.com/esmini/esmini#related-work)
+
 ### 2023-04-28 Version 2.31.2
 
 Improvements and fixes:
 - Fix RelativeClearanceCondition missed case of empty lanes within range
 - Support OpenSCENARIO v1.2 `override` priority, renamed from `overwrite`
-- Support `freespace` attribute in RelativeClearanceCondition
-  - typo in standard, should have been `freeSpace`
-  - esmini now supports both `freespace` and `freeSpace`
+- ~~Support `freespace` attribute in RelativeClearanceCondition~~
+  - ~~typo in standard, should have been `freeSpace`~~
+  - ~~esmini now supports both `freespace` and `freeSpace`~~
 - Improve LongitudinalDistanceAction
   - make use of any dynamics constraints provided for the action
   - disable dynamics only when all constraints are missing
