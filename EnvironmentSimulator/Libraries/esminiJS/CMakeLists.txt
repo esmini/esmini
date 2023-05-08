@@ -24,6 +24,8 @@ set(CONTROLLERS_INCLUDE_DIR
     "${CMAKE_CURRENT_SOURCE_DIR}/../../Modules/Controllers")
 set(ROADMANAGER_INCLUDE_DIR
     "${CMAKE_CURRENT_SOURCE_DIR}/../../Modules/RoadManager")
+set(PLAYERBASE_INCLUDE_DIR
+    "${CMAKE_CURRENT_SOURCE_DIR}/../../Modules/PlayerBase")
 set(COMMON_MINI_INCLUDE_DIR
     "${CMAKE_CURRENT_SOURCE_DIR}/../../Modules/CommonMini")
 set(PUGIXML_INCLUDE_DIR
@@ -40,6 +42,11 @@ file(
     GLOB
     ROADMANAGER_SOURCES
     "../../Modules/RoadManager/*.cpp")
+
+file(
+    GLOB
+    PLAYERBASE_SOURCES
+    "../../Modules/PlayerBase/*.cpp")
 
 file(
     GLOB
@@ -80,6 +87,7 @@ include_directories(
     ${SCENARIOENGINE_INCLUDE_DIRS}
     ${CONTROLLERS_INCLUDE_DIR}
     ${ROADMANAGER_INCLUDE_DIR}
+    ${PLAYERBASE_INCLUDE_DIR}
     ${COMMON_MINI_INCLUDE_DIR}
     ${PUGIXML_INCLUDE_DIR}
     ${EXPR_INCLUDE_DIR}
@@ -95,6 +103,7 @@ if(EMSCRIPTEN)
         esminijs.cpp
         ${CONTROLLERS_SOURCES}
         ${ROADMANAGER_SOURCES}
+        ${PLAYERBASE_SOURCES}
         ${SCENARIOENGINE_SOURCES}
         ${COMMONMINI_SOURCES}
         ${PUGIXML_SOURCES})
