@@ -57,6 +57,7 @@ namespace scenarioengine
         bool             active_;
         double           timeGap_;  // target headway time
         double           setSpeed_;
+        double           lateralDist_;
         double           currentSpeed_;
         bool             setSpeedSet_;
     };

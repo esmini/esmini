@@ -29,7 +29,14 @@ Controller* scenarioengine::InstantiateControllerACC(void* args)
     return new ControllerACC(initArgs);
 }
 
-ControllerACC::ControllerACC(InitArgs* args) : Controller(args), active_(false), timeGap_(1.5), setSpeed_(0), currentSpeed_(0), setSpeedSet_(false)
+ControllerACC::ControllerACC(InitArgs* args)
+    : Controller(args),
+      active_(false),
+      timeGap_(1.5),
+      setSpeed_(0),
+      lateralDist_(5.0),
+      currentSpeed_(0),
+      setSpeedSet_(false)
 {
     if (args && args->properties && args->properties->ValueExists("timeGap"))
     {
@@ -39,6 +46,10 @@ ControllerACC::ControllerACC(InitArgs* args) : Controller(args), active_(false),
     {
         setSpeed_    = strtod(args->properties->GetValueStr("setSpeed"));
         setSpeedSet_ = true;
+    }
+    if (args && args->properties && args->properties->ValueExists("lateralDist"))
+    {
+        lateralDist_ = strtod(args->properties->GetValueStr("lateralDist"));
     }
     if (args && args->properties && !args->properties->ValueExists("mode"))
     {
@@ -62,7 +73,6 @@ void ControllerACC::Step(double timeStep)
     // double minSpeedDiff = 0.0; // TODO: Commented out because it is not used
     int          minObjIndex        = -1;
     const double minDist            = 3.0;  // minimum distance to keep to lead vehicle
-    const double minLateralDist     = 5.0;
     const double accelerationFactor = 0.7;
 
     // First check if speed has been set from somewhere else (another action or controller), respect it and update setSpeed
@@ -108,7 +118,7 @@ void ControllerACC::Step(double timeStep)
             }
 
             // dLaneId == 0 indicates there is linked path between object lanes, i.e. no lane changes needed
-            if (diff.dLaneId == 0 && adjustedGapLength > 0 && adjustedGapLength < minGapLength && abs(diff.dt) < minLateralDist)
+            if (diff.dLaneId == 0 && adjustedGapLength > 0 && adjustedGapLength < minGapLength && abs(diff.dt) < lateralDist_)
             {
                 minGapLength = adjustedGapLength;
                 // minSpeedDiff = currentSpeed_ - pivot_obj->GetSpeed();
