@@ -145,7 +145,7 @@ int ParseEntities(viewer::Viewer* viewer, Replay* player)
             new_sc.wheel_rotation = 0.0f;
             new_sc.name           = state->info.name;
             new_sc.visible        = true;
-            std::filesystem::path model_filename;
+            fs::path model_filename;
 
             if (state->info.model_id >= 0)
             {
@@ -476,7 +476,7 @@ int main(int argc, char** argv)
     {
         if (strcmp(player->header_.odr_filename, ""))
         {
-            std::vector<std::filesystem::path> folders;
+            std::vector<fs::path> folders;
 
             if (!SE_Env::Inst().GetResourcesFolderPath().empty())
             {
@@ -488,7 +488,7 @@ int main(int argc, char** argv)
                 folders.push_back(SE_Env::Inst().GetExeFolderPath().parent_path() / "resources" / "xodr");
             }
 
-            std::filesystem::path filepath = LocateFile(player->header_.odr_filename, folders);
+            fs::path filepath = LocateFile(player->header_.odr_filename, folders);
             if (filepath.empty())
             {
                 printf("Failed to locate OpenDRIVE - continue without road description\n");

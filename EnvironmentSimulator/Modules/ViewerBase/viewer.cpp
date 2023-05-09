@@ -1718,7 +1718,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilePath, os
             }
         }
 
-        std::filesystem::path filepath = LocateFile(modelFilePath, folders);
+        fs::path filepath = LocateFile(modelFilePath, folders);
 
         if (!filepath.empty() && AddEnvironment(filepath) == 0)
         {
@@ -2117,7 +2117,7 @@ int Viewer::AddCustomLightSource(double x, double y, double z, double intensity)
     return 0;
 }
 
-EntityModel* Viewer::CreateEntityModel(std::filesystem::path   modelFilepath,
+EntityModel* Viewer::CreateEntityModel(fs::path                modelFilepath,
                                        osg::Vec4               trail_color,
                                        EntityModel::EntityType type,
                                        bool                    road_sensor,
@@ -2145,10 +2145,10 @@ EntityModel* Viewer::CreateEntityModel(std::filesystem::path   modelFilepath,
     }
 
     // First try to load 3d model
-    std::filesystem::path filepath;
+    fs::path filepath;
     if (modelgroup == nullptr && !modelFilepath.empty())
     {
-        std::vector<std::filesystem::path> folders;
+        std::vector<fs::path> folders;
         if (!SE_Env::Inst().GetScenarioFilePath().empty())
         {
             // If scenario file is defined, use it for relative path
@@ -2998,12 +2998,12 @@ int Viewer::CreateOutlineObject(roadmanager::Outline* outline, osg::Vec4 color)
     return 0;
 }
 
-osg::ref_ptr<osg::PositionAttitudeTransform> Viewer::LoadRoadFeature(roadmanager::Road* road, std::filesystem::path filename)
+osg::ref_ptr<osg::PositionAttitudeTransform> Viewer::LoadRoadFeature(roadmanager::Road* road, fs::path filename)
 {
     (void)road;
     osg::ref_ptr<osg::Node>                      node;
     osg::ref_ptr<osg::PositionAttitudeTransform> xform = 0;
-    std::vector<std::filesystem::path>           folders;
+    std::vector<fs::path>                        folders;
 
     if (SE_Env::Inst().GetRoadFilePath().empty())
     {
@@ -3030,7 +3030,7 @@ osg::ref_ptr<osg::PositionAttitudeTransform> Viewer::LoadRoadFeature(roadmanager
         folders.push_back(SE_Env::Inst().GetRoadFolderPath().parent_path() / "models");
     }
 
-    std::filesystem::path filepath = LocateFile(filename, folders);
+    fs::path filepath = LocateFile(filename, folders);
     if (filepath.empty())
     {
         printf("Failed to locate road feature file %s\n", filename.generic_string().c_str());
@@ -3069,7 +3069,7 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
             roadmanager::Signal* signal = road->GetSignal(static_cast<int>(s));
 
             // Road sign filename is the combination of type_subtype_value
-            std::filesystem::path filename = signal->GetCountry() + "_" + signal->GetType();
+            fs::path filename = signal->GetCountry() + "_" + signal->GetType();
             if (!signal->GetSubType().empty())
             {
                 filename += "_" + signal->GetSubType();
@@ -3085,7 +3085,7 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
                 tx = LoadRoadFeature(road, filename += ".osgb");
             }
 
-            std::filesystem::path filename2 = signal->GetName();
+            fs::path filename2 = signal->GetName();
             if (tx == nullptr)
             {
                 // if file according to type, subtype and value could not be resolved, try from name
@@ -3153,7 +3153,7 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
                 double orientation = object->GetOrientation() == roadmanager::Signal::Orientation::NEGATIVE ? M_PI : 0.0;
 
                 // absolute path or relative to current directory
-                std::filesystem::path filename = object->GetName();
+                fs::path filename = object->GetName();
 
                 // Assume name is representing a 3D model filename
                 if (!filename.empty())
@@ -3488,9 +3488,9 @@ void Viewer::UpdateSensor(PointSensor* sensor)
     }
 }
 
-int Viewer::LoadShadowfile(std::filesystem::path vehicleModelFilename)
+int Viewer::LoadShadowfile(fs::path vehicleModelFilename)
 {
-    std::vector<std::filesystem::path> folders;
+    std::vector<fs::path> folders;
 
     // Load shadow geometry - assume it resides in the same resource folder as the vehicle model
     folders.push_back(vehicleModelFilename.parent_path());
@@ -3498,7 +3498,7 @@ int Viewer::LoadShadowfile(std::filesystem::path vehicleModelFilename)
     // Secondly, try model resource folder
     folders.push_back(SE_Env::Inst().GetResourcesFolderPath() / "models");
 
-    std::filesystem::path filepath = LocateFile(SHADOW_MODEL_FILEPATH, folders);
+    fs::path filepath = LocateFile(SHADOW_MODEL_FILEPATH, folders);
 
     if (!filepath.empty())
     {
@@ -3516,7 +3516,7 @@ int Viewer::LoadShadowfile(std::filesystem::path vehicleModelFilename)
     return 0;
 }
 
-int Viewer::AddEnvironment(std::filesystem::path filename)
+int Viewer::AddEnvironment(fs::path filename)
 {
     // remove current model, if any
     if (environment_ != 0)
@@ -3625,7 +3625,7 @@ void Viewer::SetWindowTitleFromArgs(std::vector<std::string>& args)
             if (args[i].compare(0, 2, "--"))
             {
                 // first argument is not an esmini argument, assume it's the name of the application.
-                arg = std::filesystem::path(arg).stem().generic_string();
+                arg = fs::path(arg).stem().generic_string();
             }
             else
             {

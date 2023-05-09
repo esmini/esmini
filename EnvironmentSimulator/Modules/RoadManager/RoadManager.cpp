@@ -3053,7 +3053,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
     {
         // If resource folder has not been set yet, guess the location based on OpenDRIVE file location
         // This should only happen if resource folder has not been specified and no OpenSCENARIO file has been loaded
-        std::filesystem::path filepath(std::filesystem::canonical(filename));
+        fs::path filepath(fs::canonical(filename));
 
         if (!filepath.empty())
         {
@@ -5642,7 +5642,7 @@ bool OpenDrive::LoadSignalsByCountry(const std::string& country)
     std::vector<std::string> file_name_candidates;
 
     // find model_ids.txt file
-    std::vector<std::filesystem::path> folders;
+    std::vector<fs::path> folders;
 
     if (!SE_Env::Inst().GetResourcesFolderPath().empty())
     {
@@ -5654,7 +5654,7 @@ bool OpenDrive::LoadSignalsByCountry(const std::string& country)
         folders.push_back(SE_Env::Inst().GetRoadFolderPath().parent_path() / "traffic_signals");
     }
 
-    std::filesystem::path filepath = LocateFile(country + "_traffic_signals.txt", folders);
+    fs::path filepath = LocateFile(country + "_traffic_signals.txt", folders);
 
     if (filepath.empty())
     {

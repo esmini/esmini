@@ -530,7 +530,7 @@ namespace viewer
         {
             return currentCarInFocus_;
         }
-        EntityModel*             CreateEntityModel(std::filesystem::path   modelFilepath,
+        EntityModel*             CreateEntityModel(fs::path                modelFilepath,
                                                    osg::Vec4               trail_color,
                                                    EntityModel::EntityType type,
                                                    bool                    road_sensor,
@@ -541,8 +541,8 @@ namespace viewer
         void                     RemoveCar(int index);
         void                     RemoveCar(std::string name);
         void                     ReplaceCar(int index, EntityModel* model);
-        int                      LoadShadowfile(std::filesystem::path vehicleModelFilename);
-        int                      AddEnvironment(std::filesystem::path filename);
+        int                      LoadShadowfile(fs::path vehicleModelFilename);
+        int                      AddEnvironment(fs::path filename);
         osg::ref_ptr<osg::Group> LoadEntityModel(const char* filename, osg::BoundingBox& bb);
         void                     UpdateSensor(PointSensor* sensor);
         void                     SensorSetPivotPos(PointSensor* sensor, double x, double y, double z);
@@ -632,7 +632,7 @@ namespace viewer
         bool                                         CreateRoadLines(roadmanager::OpenDrive* od);
         bool                                         CreateRoadMarkLines(roadmanager::OpenDrive* od);
         int                                          CreateOutlineObject(roadmanager::Outline* outline, osg::Vec4 color);
-        osg::ref_ptr<osg::PositionAttitudeTransform> LoadRoadFeature(roadmanager::Road* road, std::filesystem::path filename);
+        osg::ref_ptr<osg::PositionAttitudeTransform> LoadRoadFeature(roadmanager::Road* road, fs::path filename);
         int                                          CreateRoadSignsAndObjects(roadmanager::OpenDrive* od);
         int                                          InitTraits(osg::ref_ptr<osg::GraphicsContext::Traits> traits,
                                                                 int                                        x,

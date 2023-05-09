@@ -19,7 +19,6 @@
 #include <sstream>
 #include <locale>
 #include <array>
-#include <filesystem>
 
 // UDP network includes
 #ifndef _WIN32
@@ -34,8 +33,6 @@
 #endif
 
 #include "CommonMini.hpp"
-
-namespace fs = std::filesystem;
 
 // #define DEBUG_TRACE
 
@@ -88,12 +85,12 @@ const char* esmini_build_version(void)
     return ESMINI_BUILD_VERSION;
 }
 
-std::map<int, std::string> ParseModelIds(std::filesystem::path model_ids_filename)
+std::map<int, std::string> ParseModelIds(fs::path model_ids_filename)
 {
     std::map<int, std::string> entity_model_map;
 
     // find model id map file
-    std::vector<std::filesystem::path> folders;
+    std::vector<fs::path> folders;
 
     if (!SE_Env::Inst().GetResourcesFolderPath().empty())
     {
@@ -115,7 +112,7 @@ std::map<int, std::string> ParseModelIds(std::filesystem::path model_ids_filenam
         folders.push_back(SE_Env::Inst().GetRoadFolderPath().parent_path());
     }
 
-    std::filesystem::path filepath = LocateFile(model_ids_filename, folders);
+    fs::path filepath = LocateFile(model_ids_filename, folders);
     if (filepath.empty())
     {
         LOG("Failed to locate model id mapping file %s", model_ids_filename.generic_string().c_str());
@@ -198,7 +195,7 @@ std::string CombineDirectoryPathAndFilepath(std::string dir_path, std::string fi
     return path;
 }
 
-std::string ConcatenatePathVectorForLogging(const std::vector<std::filesystem::path>& vec)
+std::string ConcatenatePathVectorForLogging(const std::vector<fs::path>& vec)
 {
     std::stringstream ss;
     for (size_t i = 0; i < vec.size(); i++)
@@ -212,10 +209,10 @@ std::string ConcatenatePathVectorForLogging(const std::vector<std::filesystem::p
     return ss.str();
 }
 
-std::filesystem::path LocateFile(std::filesystem::path filepath, std::vector<std::filesystem::path> searchpath)
+fs::path LocateFile(fs::path filepath, std::vector<fs::path> searchpath)
 {
-    std::vector<std::filesystem::path> candidates;
-    std::filesystem::path              found_filepath;
+    std::vector<fs::path> candidates;
+    fs::path              found_filepath;
 
     if (filepath.empty())
     {
@@ -228,7 +225,7 @@ std::filesystem::path LocateFile(std::filesystem::path filepath, std::vector<std
         searchpath.push_back("");  // add a dummy entry for the loop to run once
     }
 
-    for (std::filesystem::path sp : searchpath)
+    for (fs::path sp : searchpath)
     {
         // Absolute path or relative to current directory
         if (filepath.is_absolute())
@@ -1015,25 +1012,25 @@ int SE_Env::AddPath(std::string path)
     return 0;
 }
 
-void SE_Env::SetExeFilePath(std::filesystem::path filepath)
+void SE_Env::SetExeFilePath(fs::path filepath)
 {
-    if (!std::filesystem::exists(filepath) && !filepath.has_extension())
+    if (!fs::exists(filepath) && !filepath.has_extension())
     {
         // add .exe extension in case of Windows and program was called without extension
         filepath.replace_extension(".exe");
     }
 
-    if (std::filesystem::exists(filepath))
+    if (fs::exists(filepath))
     {
-        exe_filepath_ = std::filesystem::canonical(filepath);
+        exe_filepath_ = fs::canonical(filepath);
     }
 }
 
-void SE_Env::SetResourcesFolderPath(std::filesystem::path filepath)
+void SE_Env::SetResourcesFolderPath(fs::path filepath)
 {
-    if (std::filesystem::exists(filepath))
+    if (fs::exists(filepath))
     {
-        resources_folderpath_ = std::filesystem::canonical(filepath);
+        resources_folderpath_ = fs::canonical(filepath);
     }
 }
 
@@ -1049,13 +1046,13 @@ const char* GetEnvVar(const char* key)
         }
     }
 #else
-    return GetEnvVar(key);
+    return std::getenv(key);
 #endif
 
     return nullptr;
 }
 
-std::string SE_Env::GetModelFilenameById(int model_id, std::filesystem::path model_ids_filename)
+std::string SE_Env::GetModelFilenameById(int model_id, fs::path model_ids_filename)
 {
     std::string name;
     if (entity_model_map.size() == 0)

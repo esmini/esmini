@@ -21,7 +21,16 @@
 #include <condition_variable>
 #include <cstring>
 #include <map>
+
+#if __has_include(<filesystem>)
 #include <filesystem>
+namespace fs = std::filesystem;
+#elif __has_include(<experimental/filesystem>)
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+#else
+#error "Missing <filesystem> header"
+#endif
 
 #ifndef _WIN32
 #include <inttypes.h>
@@ -305,7 +314,7 @@ std::string CombineDirectoryPathAndFilepath(std::string dir_path, std::string fi
 /**
         Concatenates a vector of strings into a single comma separated string
 */
-std::string ConcatenatePathVectorForLogging(const std::vector<std::filesystem::path>& vec);
+std::string ConcatenatePathVectorForLogging(const std::vector<fs::path>& vec);
 
 /**
         Find file given the provided file path, optional search paths, and any reported search paths (--path / AddPath())
@@ -313,7 +322,7 @@ std::string ConcatenatePathVectorForLogging(const std::vector<std::filesystem::p
         @param filepath Filename with optional prepended relative path, e.g. "car.osgb" or "../models/car.osgb"
         @param searchpath Optional vector of additional search paths to prepend the filepath
 */
-std::filesystem::path LocateFile(std::filesystem::path filepath, std::vector<std::filesystem::path> searchpath = {""});
+fs::path LocateFile(fs::path filepath, std::vector<fs::path> searchpath = {""});
 
 /**
         Retrieve the angle of a vector
@@ -1190,30 +1199,30 @@ public:
         return datFilePath_;
     }
 
-    void SetExeFilePath(std::filesystem::path filepath);
+    void SetExeFilePath(fs::path filepath);
 
-    std::filesystem::path GetExeFilePath()
+    fs::path GetExeFilePath()
     {
         return exe_filepath_;
     }
 
-    std::filesystem::path GetExeFolderPath()
+    fs::path GetExeFolderPath()
     {
         return exe_filepath_.parent_path();
     }
 
-    void SetResourcesFolderPath(std::filesystem::path filepath);
+    void SetResourcesFolderPath(fs::path filepath);
 
-    std::filesystem::path GetResourcesFolderPath()
+    fs::path GetResourcesFolderPath()
     {
         return resources_folderpath_;
     }
 
-    void SetScenarioFilePath(std::filesystem::path filepath)
+    void SetScenarioFilePath(fs::path filepath)
     {
-        if (std::filesystem::exists(filepath))
+        if (fs::exists(filepath))
         {
-            scenario_filepath_ = std::filesystem::canonical(filepath);
+            scenario_filepath_ = fs::canonical(filepath);
         }
         else
         {
@@ -1221,21 +1230,21 @@ public:
         }
     }
 
-    std::filesystem::path GetScenarioFilePath()
+    fs::path GetScenarioFilePath()
     {
         return scenario_filepath_;
     }
 
-    std::filesystem::path GetScenarioFolderPath()
+    fs::path GetScenarioFolderPath()
     {
         return scenario_filepath_.parent_path();
     }
 
-    void SetRoadFilePath(std::filesystem::path filepath)
+    void SetRoadFilePath(fs::path filepath)
     {
-        if (std::filesystem::exists(filepath))
+        if (fs::exists(filepath))
         {
-            road_filepath_ = std::filesystem::canonical(filepath);
+            road_filepath_ = fs::canonical(filepath);
         }
         else
         {
@@ -1243,17 +1252,17 @@ public:
         }
     }
 
-    std::filesystem::path GetRoadFilePath()
+    fs::path GetRoadFilePath()
     {
         return road_filepath_;
     }
 
-    std::filesystem::path GetRoadFolderPath()
+    fs::path GetRoadFolderPath()
     {
         return road_filepath_.parent_path();
     }
 
-    std::string GetModelFilenameById(int model_id, std::filesystem::path model_ids_filename = "model_ids.txt");
+    std::string GetModelFilenameById(int model_id, fs::path model_ids_filename = "model_ids.txt");
 
     void ClearModelFilenames()
     {
@@ -1275,10 +1284,10 @@ private:
     SE_Rand                    rand_;
     bool                       offScreenRendering_;
     bool                       collisionDetection_;
-    std::filesystem::path      exe_filepath_;
-    std::filesystem::path      resources_folderpath_;
-    std::filesystem::path      scenario_filepath_;
-    std::filesystem::path      road_filepath_;
+    fs::path                   exe_filepath_;
+    fs::path                   resources_folderpath_;
+    fs::path                   scenario_filepath_;
+    fs::path                   road_filepath_;
     std::map<int, std::string> entity_model_map;
 };
 

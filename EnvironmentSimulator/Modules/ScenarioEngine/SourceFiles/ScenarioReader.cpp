@@ -261,8 +261,8 @@ Catalog *ScenarioReader::LoadCatalog(std::string name)
     }
 
     // Not found, try to locate it in one the registered catalog directories and default location in resources folder structure
-    pugi::xml_document                 catalog_doc;
-    std::vector<std::filesystem::path> folders;
+    pugi::xml_document    catalog_doc;
+    std::vector<fs::path> folders;
 
     for (size_t i = 0; i < catalogs_->catalog_dirs_.size(); i++)
     {
@@ -272,11 +272,11 @@ Catalog *ScenarioReader::LoadCatalog(std::string name)
         }
         else
         {
-            folders.push_back(SE_Env::Inst().GetScenarioFilePath().parent_path() / std::filesystem::path(catalogs_->catalog_dirs_[i].dir_name_));
+            folders.push_back(SE_Env::Inst().GetScenarioFilePath().parent_path() / fs::path(catalogs_->catalog_dirs_[i].dir_name_));
 
             if (!SE_Env::Inst().GetResourcesFolderPath().empty())
             {
-                folders.push_back(SE_Env::Inst().GetResourcesFolderPath() / "xosc" / std::filesystem::path(catalogs_->catalog_dirs_[i].dir_name_));
+                folders.push_back(SE_Env::Inst().GetResourcesFolderPath() / "xosc" / fs::path(catalogs_->catalog_dirs_[i].dir_name_));
             }
         }
     }
@@ -957,8 +957,8 @@ Controller *ScenarioReader::parseOSCObjectController(pugi::xml_node controllerNo
         if (!FileExists(filename.c_str()))
         {
             // Then assume relative path to scenario directory - which perhaps should be the expected location
-            std::filesystem::path filename2 = SE_Env::Inst().GetScenarioFilePath().parent_path() / filename;
-            if (std::filesystem::exists(filename2))
+            fs::path filename2 = SE_Env::Inst().GetScenarioFilePath().parent_path() / filename;
+            if (fs::exists(filename2))
             {
                 // Update file path
                 properties.file_.filepath_ = filename2.generic_string();

@@ -1022,8 +1022,8 @@ int ScenarioGateway::RecordToFile(std::string filename, std::string odr_filename
         }
         StrCopy(header.odr_filename, odr_filename.c_str(), MIN(odr_filename.length() + 1, DAT_FILENAME_SIZE));
 
-        std::filesystem::path odr_folder     = std::filesystem::path(odr_filename).parent_path();
-        std::filesystem::path model_filepath = std::filesystem::relative(model_filename, odr_folder);
+        fs::path odr_folder     = fs::path(odr_filename).parent_path();
+        fs::path model_filepath = fs::relative(model_filename, odr_folder);
         if (model_filepath.generic_string().length() + 1 > DAT_FILENAME_SIZE)
         {
             if (model_filepath.filename().generic_string().length() + 1 > DAT_FILENAME_SIZE)
@@ -1045,7 +1045,7 @@ int ScenarioGateway::RecordToFile(std::string filename, std::string odr_filename
             }
         }
         StrCopy(header.model_filename,
-                std::filesystem::relative(model_filename, odr_folder).generic_string().c_str(),
+                fs::relative(model_filename, odr_folder).generic_string().c_str(),
                 MIN(model_filename.length() + 1, DAT_FILENAME_SIZE));
 
         data_file_.write(reinterpret_cast<char*>(&header), sizeof(header));
