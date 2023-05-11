@@ -386,7 +386,7 @@ std::string Signal::GetCombinedTypeSubtypeValueStr(std::string type, std::string
     {
         str = type;
 
-        if (!subtype.empty())
+        if (!(subtype.empty() || subtype == "none" || subtype == "-1"))
         {
             str += "." + subtype;
         }

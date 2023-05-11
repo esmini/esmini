@@ -3057,7 +3057,7 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
 
             // Road sign filename is the combination of type_subtype_value
             std::string filename = signal->GetCountry() + "_" + signal->GetType();
-            if (!signal->GetSubType().empty())
+            if (!(signal->GetSubType().empty() || signal->GetSubType() == "none" || signal->GetSubType() == "-1"))
             {
                 filename += "_" + signal->GetSubType();
             }
