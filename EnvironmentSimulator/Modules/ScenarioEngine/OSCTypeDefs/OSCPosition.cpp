@@ -24,11 +24,6 @@ OSCPositionWorld::OSCPositionWorld(double x, double y, double z, double h, doubl
 
     if (!std::isnan(z) || !std::isnan(p) || !std::isnan(r))
     {
-        if (std::isnan(z) || std::isnan(p) || std::isnan(r))
-        {
-            LOG("At least one of z, pitch (p) and roll (r) is set. Remaining will be set to zero.");
-        }
-
         if (std::isnan(z))
         {
             z = 0.0;
