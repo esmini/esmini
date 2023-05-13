@@ -221,6 +221,7 @@ void ControllerUDPDriver::Step(double timeStep)
             roadmanager::Position* pos = &gateway_->getObjectStatePtrById(static_cast<int>(msg.header.objectId))->state_.pos;
             pos->SetAlignModeZ(roadmanager::Position::ALIGN_MODE::ALIGN_NONE);
             pos->SetAlignModeP(roadmanager::Position::ALIGN_MODE::ALIGN_NONE);
+            pos->SetAlignModeR(roadmanager::Position::ALIGN_MODE::ALIGN_NONE);
 
             // Update object state via gateway
             gateway_->updateObjectWorldPos(object_->id_,
@@ -242,6 +243,7 @@ void ControllerUDPDriver::Step(double timeStep)
             roadmanager::Position* pos = &gateway_->getObjectStatePtrById(static_cast<int>(msg.header.objectId))->state_.pos;
             pos->SetAlignModeZ(roadmanager::Position::ALIGN_MODE::ALIGN_HARD);
             pos->SetAlignModeP(roadmanager::Position::ALIGN_MODE::ALIGN_HARD);
+            pos->SetAlignModeR(roadmanager::Position::ALIGN_MODE::ALIGN_HARD);
 
             // Update object state via gateway
             gateway_->updateObjectWorldPosXYH(object_->id_, 0.0, msg.message.stateXYH.x, msg.message.stateXYH.y, msg.message.stateXYH.h);
@@ -259,6 +261,7 @@ void ControllerUDPDriver::Step(double timeStep)
             roadmanager::Position* pos = &gateway_->getObjectStatePtrById(static_cast<int>(msg.header.objectId))->state_.pos;
             pos->SetAlignModeZ(roadmanager::Position::ALIGN_MODE::ALIGN_HARD);
             pos->SetAlignModeP(roadmanager::Position::ALIGN_MODE::ALIGN_HARD);
+            pos->SetAlignModeR(roadmanager::Position::ALIGN_MODE::ALIGN_HARD);
 
             // Update object state via gateway
             gateway_->updateObjectWorldPosXYH(object_->id_, 0.0, pos->GetX(), pos->GetY(), msg.message.stateH.h);
@@ -276,6 +279,7 @@ void ControllerUDPDriver::Step(double timeStep)
             roadmanager::Position* pos = &gateway_->getObjectStatePtrById(static_cast<int>(msg.header.objectId))->state_.pos;
             pos->SetAlignModeZ(roadmanager::Position::ALIGN_MODE::ALIGN_HARD);
             pos->SetAlignModeP(roadmanager::Position::ALIGN_MODE::ALIGN_HARD);
+            pos->SetAlignModeR(roadmanager::Position::ALIGN_MODE::ALIGN_HARD);
         }
         else
         {

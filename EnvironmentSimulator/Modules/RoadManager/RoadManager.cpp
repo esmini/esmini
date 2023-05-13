@@ -8680,9 +8680,9 @@ void Position::EvaluateOrientation()
         R0R12EulerAngles(align_h_ != ALIGN_MODE::ALIGN_NONE ? GetHRoad() : 0.0,
                          align_p_ != ALIGN_MODE::ALIGN_NONE ? GetPRoad() : 0.0,
                          align_r_ != ALIGN_MODE::ALIGN_NONE ? GetRRoad() : 0.0,
-                         align_h_ != ALIGN_MODE::ALIGN_HARD ? GetHRelative() : 0.0,
-                         align_p_ != ALIGN_MODE::ALIGN_HARD ? GetPRelative() : 0.0,
-                         align_r_ != ALIGN_MODE::ALIGN_HARD ? GetRRelative() : 0.0,
+                         align_h_ == ALIGN_MODE::ALIGN_NONE ? h_ : (align_h_ == ALIGN_MODE::ALIGN_SOFT ? GetHRelative() : 0.0),
+                         align_p_ == ALIGN_MODE::ALIGN_NONE ? p_ : (align_p_ == ALIGN_MODE::ALIGN_SOFT ? GetPRelative() : 0.0),
+                         align_r_ == ALIGN_MODE::ALIGN_NONE ? r_ : (align_r_ == ALIGN_MODE::ALIGN_SOFT ? GetRRelative() : 0.0),
                          h_,
                          p_,
                          r_);
