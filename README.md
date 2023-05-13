@@ -37,13 +37,9 @@ For more information about the esmini software parts, see [Inner Workings of esm
 
 ## Background
 
-The purpose of this implementation was to explore and get familiar with the emerging [OpenSCENARIO](https://www.asam.net/standards/detail/openscenario/) data format. The development aimed at supporting various platforms such as Windows, Mac, Linux, and Android. Tool integration and portability were high priorities, the project outcomes should be capable of incorporation in native C++ applications as well as other frameworks like Unity3D (C#) and MATLAB/Simulink, among many others.
+The purpose of this implementation (started 2018) was initially to explore and get familiar with the emerging [OpenSCENARIO](https://www.asam.net/standards/detail/openscenario/) data format. The development aimed at supporting various platforms such as Windows, Mac, Linux, and Android. Tool integration and portability were high priorities. It should be easy to use for native C++ applications as well as other frameworks like Unity3D (C#) and MATLAB/Simulink, among many others. Initially, focus was more on features than quality.
 
-Although allowed by the license this implementation is not primarily intended for production use. The code was developed ad hoc to answer research questions connected with the ongoing project. Therefore, code quality, as expected from standard production applications, is lacking when it comes to clarity, structure, comments, error handling and coding guidelines.
-
-Since the Simulation Scenarios project is closed, no formal support should be expected from the initial contributors.
-
-Nevertheless, regarding the above stated limitations, it was decided to release the code as is, as a public outcome from the project. It can hopefully serve as guidance or just inspiration for those aspiring to build similar tools, or even get accustomed with the OpenSCENARIO format. And of course, all contributions to further development are welcome!
+Since then the purpose has grown, contributing to the spread and harmonization of OpenSCENARIO. esmini is also being used in other applications and test platforms. It grows slowly but steady, both in terms of functionality and quality, e.g. documentation, code refactorizations, continuous integration including static code analysis, and test coverage on both unit and application levels.
 
 ## Binaries and demos
 Windows, Linux and Mac supported
