@@ -30,11 +30,11 @@ TEST(CustomCameraTest, TestCustomCameraVariants)
 
     osg::Vec3 pos, rot;
     player->viewer_->GetCameraPosAndRot(pos, rot);
-    EXPECT_NEAR(pos[0], 123.952, 1E-3);
-    EXPECT_NEAR(pos[1], 11.902, 1E-3);
-    EXPECT_NEAR(pos[2], 3.020, 1E-3);
+    EXPECT_NEAR(pos[0], 123.940, 1E-3);
+    EXPECT_NEAR(pos[1], 11.892, 1E-3);
+    EXPECT_NEAR(pos[2], 2.942, 1E-3);
     EXPECT_NEAR(rot[0], 0.280, 1E-3);
-    EXPECT_NEAR(rot[1], 0.230, 1E-3);
+    EXPECT_NEAR(rot[1], 0.227, 1E-3);
     EXPECT_NEAR(rot[2], 0.000, 1E-3);
 
     player->viewer_->SetCameraMode(osgGA::RubberbandManipulator::CAMERA_MODE::RB_MODE_CUSTOM + 1);

@@ -302,20 +302,21 @@ osg::Matrixd RubberbandManipulator::getInverseMatrix() const
 
 bool RubberbandManipulator::calcMovement(double dt, bool reset)
 {
-    osg::Vec3   up(0.0, 0.0, 1.0);
-    osg::Vec3d  nodeCenter;
-    osg::Quat   nodeRotation;
-    osg::Matrix cameraTargetRotation;
-    float       springDC;
-    osg::Vec3   cameraOffset(0, 0, 0);
-    osg::Vec3   cameraTargetPosition(0, 0, 0);
-    osg::Vec3   cameraToTarget(0, 0, 0);
-    float       x, y, z;
+    osg::Vec3     up(0.0, 0.0, 1.0);
+    osg::Vec3d    nodeCenter;
+    osg::Quat     nodeRotation;
+    osg::Matrix   cameraTargetRotation;
+    float         springDC;
+    osg::Vec3     cameraOffset(0, 0, 0);
+    osg::Vec3     cameraTargetPosition(0, 0, 0);
+    osg::Vec3     cameraToTarget(0, 0, 0);
+    float         x, y, z;
+    CustomCamera* custom_cam = GetCurrentCustomCamera();
 
     computeNodeCenterAndRotation(nodeCenter, nodeRotation);
     osg::Matrix nodeRot;
     nodeRot.makeRotate(nodeRotation);
-    osg::Vec3 nodeFocusPoint = nodeRot * osg::Vec3(NODE_CENTER_OFFSET_X, NODE_CENTER_OFFSET_Y, NODE_CENTER_OFFSET_Z) + nodeCenter;
+    osg::Vec3 nodeFocusPoint = osg::Vec3(NODE_CENTER_OFFSET_X, NODE_CENTER_OFFSET_Y, NODE_CENTER_OFFSET_Z) + nodeCenter;
 
     if (_mode == RB_MODE_TOP)
     {
@@ -339,7 +340,14 @@ bool RubberbandManipulator::calcMovement(double dt, bool reset)
     {
         _cameraRotation = 0.0;
         _cameraAngle    = 0;
-        cameraOffset.set(0.0, 0.0, 0.0);
+        if (custom_cam && !custom_cam->GetFixPos() && !custom_cam->GetFixRot())
+        {
+            cameraOffset.set(custom_cam->GetPos());
+        }
+        else
+        {
+            cameraOffset.set(0.0, 0.0, 0.0);
+        }
     }
     else
     {
@@ -355,7 +363,12 @@ bool RubberbandManipulator::calcMovement(double dt, bool reset)
     }
 
     // Transform the camera target offset position
+#if 1  // use only heading to align camera position
+    osg::Matrix m_rot(nodeRotation);
+    cameraTargetRotation.setRotate(osg::Quat(atan2(m_rot(0, 1), m_rot(0, 0)), osg::Z_AXIS));
+#else  // use also pitch and roll to align camera position
     cameraTargetRotation.setRotate(nodeRotation);
+#endif
 
     cameraTargetPosition = cameraTargetRotation.preMult(cameraOffset);
 
@@ -395,58 +408,43 @@ bool RubberbandManipulator::calcMovement(double dt, bool reset)
     }
 
     // Create the view matrix
-    if (_mode >= RB_MODE_CUSTOM)
+    if (_mode >= RB_MODE_CUSTOM && custom_cam && (custom_cam->GetFixPos() || custom_cam->GetFixRot()))
     {
-        CustomCamera* cam = GetCurrentCustomCamera();
-        if (cam)
+        osg::Vec3 cam_pos = custom_cam->GetPos();
+        osg::Vec3 cam_rot = custom_cam->GetRot();
+
+        // Create a view matrix for custom position, or center Front Looking Camrera (FLC)
+
+        if (custom_cam->GetFixRot())
         {
-            osg::Vec3 cam_pos = cam->GetPos();
-            osg::Vec3 cam_rot = cam->GetRot();
+            osg::Matrix translate = osg::Matrix::translate(-cam_pos);
 
-            // Create a view matrix for custom position, or center Front Looking Camrera (FLC)
+            osg::Quat   rot(static_cast<float>(-M_PI_2),
+                          osg::Vec3(osg::X_AXIS),  // rotate so that Z axis points up
+                          static_cast<float>(M_PI_2) - cam_rot[0],
+                          osg::Vec3(osg::Y_AXIS),  // rotate so that X is forward and apply heading
+                          cam_rot[1],
+                          osg::Vec3(osg::X_AXIS)  // apply pitch
+            );
+            osg::Matrix localRotation = osg::Matrix::rotate(rot);
 
-            if (cam->GetFixRot())
+            if (custom_cam->GetFixPos())
             {
-                osg::Matrix translate = osg::Matrix::translate(-cam_pos[0], -cam_pos[1], -cam_pos[2]);
-
-                osg::Quat   rot(static_cast<float>(-M_PI_2),
-                              osg::Vec3(osg::X_AXIS),  // rotate so that Z axis points up
-                              static_cast<float>(M_PI_2) - cam_rot[0],
-                              osg::Vec3(osg::Y_AXIS),  // rotate so that X is forward and apply heading
-                              cam_rot[1],
-                              osg::Vec3(osg::X_AXIS)  // apply pitch
-                );
-                osg::Matrix localRotation = osg::Matrix::rotate(rot);
-
-                if (cam->GetFixPos())
-                {
-                    _matrix = translate * localRotation;
-                }
-                else
-                {
-                    // Find position relative focus object
-                    // Camera transform is the inverse of focus object rotation and position
-                    _matrix.makeRotate(nodeRotation.inverse());
-                    osg::Matrix node_trans = osg::Matrix::translate(-nodeCenter);
-                    _matrix.preMult(node_trans);
-                    _matrix = _matrix * translate * localRotation;
-                }
+                _matrix = translate * localRotation;
             }
             else
             {
-                if (cam->GetFixPos())
-                {
-                    _matrix.makeLookAt(cam_pos, nodeFocusPoint, osg::Vec3(0, 0, 1));
-                }
-                else
-                {
-                    osg::Matrix m_tmp(nodeRotation);
-                    osg::Matrix translate = osg::Matrix::translate(cam_pos);
-                    m_tmp                 = translate * m_tmp;
-
-                    _matrix.makeLookAt(m_tmp.getTrans() + nodeCenter, nodeFocusPoint, osg::Vec3(0, 0, 1));
-                }
+                // Find position relative focus object
+                // Camera transform is the inverse of focus object rotation and position
+                _matrix.makeRotate(nodeRotation.inverse());
+                osg::Matrix node_trans = osg::Matrix::translate(-nodeCenter);
+                _matrix.preMult(node_trans);
+                _matrix = _matrix * translate * localRotation;
             }
+        }
+        else if (custom_cam->GetFixPos())
+        {
+            _matrix.makeLookAt(cam_pos, nodeFocusPoint, osg::Vec3(0, 0, 1));
         }
     }
     else if (_mode == RB_MODE_DRIVER)
