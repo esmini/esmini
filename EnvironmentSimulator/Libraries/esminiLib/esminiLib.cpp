@@ -2293,7 +2293,7 @@ extern "C"
 #ifdef _USE_OSG
         if (player)
         {
-            player->AddCustomCamera(x, y, z, h, p);
+            player->AddCustomCamera(x, y, z, h, p, false);
         }
         else
         {
@@ -2316,7 +2316,7 @@ extern "C"
 #ifdef _USE_OSG
         if (player)
         {
-            player->AddCustomFixedCamera(x, y, z, h, p);
+            player->AddCustomCamera(x, y, z, h, p, true);
         }
         else
         {
@@ -2334,12 +2334,33 @@ extern "C"
 #endif
     }
 
-    SE_DLL_API int SE_AddCustomSemiFixedCamera(double x, double y, double z)
+    SE_DLL_API int SE_AddCustomAimingCamera(double x, double y, double z)
     {
 #ifdef _USE_OSG
         if (player)
         {
-            player->AddCustomSemiFixedCamera(x, y, z);
+            player->AddCustomCamera(x, y, z, false);
+        }
+        else
+        {
+            return -1;
+        }
+
+        return 0;
+#else
+        (void)x;
+        (void)y;
+        (void)z;
+        return -1;
+#endif
+    }
+
+    SE_DLL_API int SE_AddCustomFixedAimingCamera(double x, double y, double z)
+    {
+#ifdef _USE_OSG
+        if (player)
+        {
+            player->AddCustomCamera(x, y, z, true);
         }
         else
         {

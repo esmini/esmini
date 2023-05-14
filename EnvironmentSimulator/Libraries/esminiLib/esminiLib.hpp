@@ -1396,13 +1396,23 @@ extern "C"
     SE_DLL_API int SE_AddCustomFixedCamera(double x, double y, double z, double h, double p);
 
     /**
-    Add a camera with fixed position but continuously looking at current entity
+    Add a camera with relative position looking at current entity
     @param x X coordinate
     @param y Y coordinate
     @param z Z coordinate
     @return 0 if successful, -1 if not
     */
-    SE_DLL_API int SE_AddCustomSemiFixedCamera(double x, double y, double z);
+    SE_DLL_API int SE_AddCustomAimingCamera(double x, double y, double z);
+
+    /**
+    Add a camera at fixed location but always looking at current entity
+    @param x X coordinate
+    @param y Y coordinate
+    @param z Z coordinate
+    @param fixed_pos Position is relative current vehicle (false) or fixed (true)
+    @return 0 if successful, -1 if not
+    */
+    SE_DLL_API int SE_AddCustomFixedAimingCamera(double x, double y, double z);
 
     /**
     Add a top view camera with fixed position and rotation

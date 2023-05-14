@@ -195,10 +195,9 @@ namespace scenarioengine
         int SaveImagesToFile(int nrOfFrames);
 
         OffScreenImage *FetchCapturedImagePtr();
-        void            AddCustomCamera(double x, double y, double z, double h, double p);
-        void            AddCustomFixedCamera(double x, double y, double z, double h, double p);
+        void            AddCustomCamera(double x, double y, double z, double h, double p, bool fixed_pos);
+        void            AddCustomCamera(double x, double y, double z, bool fixed_pos);
         int             AddCustomLightSource(double x, double y, double z, double intensity);
-        void            AddCustomSemiFixedCamera(double x, double y, double z);
         void            AddCustomFixedTopCamera(double x, double y, double z, double rot);
 #else
         void *viewer_;

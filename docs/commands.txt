@@ -15,9 +15,9 @@ Options:
   --collision
       Enable global collision detection, potentially reducing performance
   --custom_camera <position>
-      Additional custom fixed camera position <x,y,z,h,p> (multiple occurrences supported)
-  --custom_fixed_camera <position and optional orientation>
       Additional custom camera position <x,y,z>[,h,p] (multiple occurrences supported)
+  --custom_fixed_camera <position and optional orientation>
+      Additional custom fixed camera position <x,y,z>[,h,p] (multiple occurrences supported)
   --custom_fixed_top_camera <position and rotation>
       Additional custom top camera <x,y,z,rot> (multiple occurrences supported)
   --custom_light <position and intensity>

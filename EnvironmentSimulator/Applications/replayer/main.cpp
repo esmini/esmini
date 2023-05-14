@@ -357,9 +357,9 @@ int main(int argc, char** argv)
         "mode");
     opt.AddOption("capture_screen", "Continuous screen capture. Warning: Many jpeg files will be created");
     opt.AddOption("collision", "Pauses the replay if the ego collides with another entity");
-    opt.AddOption("custom_camera", "Additional custom fixed camera position <x,y,z,h,p> (multiple occurrences supported)", "position");
+    opt.AddOption("custom_camera", "Additional custom camera position <x,y,z>[,h,p] (multiple occurrences supported)", "position");
     opt.AddOption("custom_fixed_camera",
-                  "Additional custom camera position <x,y,z>[,h,p] (multiple occurrences supported)",
+                  "Additional custom fixed camera position <x,y,z>[,h,p] (multiple occurrences supported)",
                   "position and optional orientation");
     opt.AddOption("custom_fixed_top_camera", "Additional custom top camera <x,y,z,rot> (multiple occurrences supported)", "position and rotation");
     opt.AddOption("dir",
@@ -566,23 +566,46 @@ int main(int argc, char** argv)
             {
                 size_t pos  = 0;
                 double v[5] = {0.0, 0.0, 0.0, 0.0, 0.0};
-                for (int i = 0; i < 5; i++)
+                int    i    = 0;
+                for (i = 0; i < 5; i++)
                 {
                     pos = arg_str.find(",");
-                    if (i < 4 && pos == std::string::npos)
+
+                    if (i < 2 && pos == std::string::npos)
                     {
-                        LOG_AND_QUIT("Expected custom_camera <x,y,z,h,p>, got only %d values", i + 1);
+                        LOG_AND_QUIT("Expected custom_camera <x,y,z>[,h,p], got only %d values", i + 1);
+                    }
+                    else if (i == 3 && pos == std::string::npos)
+                    {
+                        LOG_AND_QUIT("Expected custom_camera <x,y,z>[,h,p], got %d values", i + 1);
                     }
                     v[i] = strtod(arg_str.substr(0, pos));
                     arg_str.erase(0, pos == std::string::npos ? pos : pos + 1);
+
+                    if (i == 2 && pos == std::string::npos)
+                    {
+                        // Only position specified, stop now
+
+                        break;
+                    }
                 }
                 if (!arg_str.empty())
                 {
-                    LOG_AND_QUIT("Expected custom_camera <x,y,z,h,p>, got too many values. Make sure only 5 values is specified");
+                    LOG_AND_QUIT("Expected custom_camera <x,y,z>[,h,p], got too many values. Make sure only 3 or 5 values is specified");
                 }
-                viewer->AddCustomCamera(v[0], v[1], v[2], v[3], v[4]);
+
+                if (i == 2)
+                {
+                    viewer->AddCustomCamera(v[0], v[1], v[2], false);
+                    LOG("Created custom fixed camera %d (%.2f, %.2f, %.2f)", counter, v[0], v[1], v[2]);
+                }
+                else
+                {
+                    viewer->AddCustomCamera(v[0], v[1], v[2], v[3], v[4], false);
+                    LOG("Created custom fixed camera %d (%.2f, %.2f, %.2f, %.2f, %.2f)", counter, v[0], v[1], v[2], v[3], v[4]);
+                }
                 viewer->SetCameraMode(-1);  // activate last camera which is the one just added
-                LOG("Created custom camera %d (%.2f, %.2f, %.2f, %.2f, %.2f)", counter, v[0], v[1], v[2], v[3], v[4]);
+
                 counter++;
             }
         }

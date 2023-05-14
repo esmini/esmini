@@ -23,9 +23,9 @@ TEST(CustomCameraTest, TestCustomCameraVariants)
     int retval = player->Init();
     ASSERT_EQ(retval, 0);
 
-    player->AddCustomCamera(-4.0, 1.0, 1.5, 0.0, 0.0);
-    player->AddCustomFixedCamera(100.0, 50.0, 10.0, 0.5, 0.1);
-    player->AddCustomSemiFixedCamera(100.0, 50.0, 10.0);
+    player->AddCustomCamera(-4.0, 1.0, 1.5, 0.0, 0.0, false);
+    player->AddCustomCamera(100.0, 50.0, 10.0, 0.5, 0.1, true);
+    player->AddCustomCamera(100.0, 50.0, 10.0, true);
     player->AddCustomFixedTopCamera(100.0, 5.0, 10000.0, 0.5);
 
     osg::Vec3 pos, rot;

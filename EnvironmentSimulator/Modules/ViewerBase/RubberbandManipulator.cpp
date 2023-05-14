@@ -404,42 +404,47 @@ bool RubberbandManipulator::calcMovement(double dt, bool reset)
             osg::Vec3 cam_rot = cam->GetRot();
 
             // Create a view matrix for custom position, or center Front Looking Camrera (FLC)
-            osg::Quat rot;
 
-            if (cam->GetFixPos() && !cam->GetFixRot())
+            if (cam->GetFixRot())
             {
-                _matrix.makeLookAt(cam_pos, nodeFocusPoint, osg::Vec3(0, 0, 1));
-            }
-            else
-            {
-                rot.makeRotate(static_cast<float>(-M_PI_2),
-                               osg::Vec3(osg::X_AXIS),  // rotate so that Z axis points up
-                               static_cast<float>(M_PI_2) - cam_rot[0],
-                               osg::Vec3(osg::Y_AXIS),  // rotate so that X is forward and apply heading
-                               cam_rot[1],
-                               osg::Vec3(osg::X_AXIS)  // apply pitch
+                osg::Matrix translate = osg::Matrix::translate(-cam_pos[0], -cam_pos[1], -cam_pos[2]);
+
+                osg::Quat   rot(static_cast<float>(-M_PI_2),
+                              osg::Vec3(osg::X_AXIS),  // rotate so that Z axis points up
+                              static_cast<float>(M_PI_2) - cam_rot[0],
+                              osg::Vec3(osg::Y_AXIS),  // rotate so that X is forward and apply heading
+                              cam_rot[1],
+                              osg::Vec3(osg::X_AXIS)  // apply pitch
                 );
-
-                osg::Matrix localRotation;
-                localRotation.setRotate(rot);
-
-                osg::Matrix localTranslate;
-                localTranslate.setTrans(-cam_pos[0], -cam_pos[1], -cam_pos[2]);
+                osg::Matrix localRotation = osg::Matrix::rotate(rot);
 
                 if (cam->GetFixPos())
                 {
-                    _matrix = localTranslate * localRotation;
+                    _matrix = translate * localRotation;
                 }
                 else
                 {
+                    // Find position relative focus object
                     // Camera transform is the inverse of focus object rotation and position
                     _matrix.makeRotate(nodeRotation.inverse());
-                    osg::Matrix trans;
-                    trans.makeTranslate(-nodeCenter);
-                    _matrix.preMult(trans);
+                    osg::Matrix node_trans = osg::Matrix::translate(-nodeCenter);
+                    _matrix.preMult(node_trans);
+                    _matrix = _matrix * translate * localRotation;
+                }
+            }
+            else
+            {
+                if (cam->GetFixPos())
+                {
+                    _matrix.makeLookAt(cam_pos, nodeFocusPoint, osg::Vec3(0, 0, 1));
+                }
+                else
+                {
+                    osg::Matrix m_tmp(nodeRotation);
+                    osg::Matrix translate = osg::Matrix::translate(cam_pos);
+                    m_tmp                 = translate * m_tmp;
 
-                    // Combine driver and camera transform
-                    _matrix = _matrix * localTranslate * localRotation;
+                    _matrix.makeLookAt(m_tmp.getTrans() + nodeCenter, nodeFocusPoint, osg::Vec3(0, 0, 1));
                 }
             }
         }

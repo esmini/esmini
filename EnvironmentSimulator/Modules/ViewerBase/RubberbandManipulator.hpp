@@ -43,15 +43,10 @@ namespace osgGA
         class CustomCamera
         {
         public:
-            CustomCamera(osg::Vec3 pos, osg::Vec3 rot, bool fixed_pos = false)
-                : pos_(pos),
-                  rot_(rot),
-                  fixed_pos_(fixed_pos),
-                  fixed_rot_(true),
-                  ortho_(false)
+            CustomCamera(osg::Vec3 pos, osg::Vec3 rot, bool fixed_pos) : pos_(pos), rot_(rot), fixed_pos_(fixed_pos), fixed_rot_(true), ortho_(false)
             {
             }
-            CustomCamera(osg::Vec3 pos, bool fixed_pos = false) : pos_(pos), fixed_pos_(fixed_pos), fixed_rot_(false), ortho_(false)
+            CustomCamera(osg::Vec3 pos, bool fixed_pos) : pos_(pos), fixed_pos_(fixed_pos), fixed_rot_(false), ortho_(false)
             {
             }
             CustomCamera(osg::Vec3 pos, double rot)
