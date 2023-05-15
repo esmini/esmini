@@ -1,12 +1,27 @@
 ## esmini release notes
 
+### 2023-05-15 Version 2.31.4
+
+Project updates:
+- Update to macos-11 on github actions
+
+Improvements and fixes:
+- Add custom camera option to look at current entity
+  - simply specify `--custom_camera <x,y,z>` (skip heading and pitch)
+- Fix orientation alignment bug
+  - respect individual rotational dimension (h,p,r) alignment setting correctly
+- Add parameter to control accepted lateral distance in ACC Controller ([issue #427](https://github.com/esmini/esmini/issues/427))
+- Ignore road sign subtypes "none" and "-1" ([issue #430](https://github.com/esmini/esmini/issues/430))
+- Fix custom camera position behavior
+  - camera position affected only by entity position and heading, not roll and pitch
+- Add missing includes to esminiJS CMakeLists.txt
+
 ### 2023-05-03 Version 2.31.3
 
 Improvements and fixes:
 - Support `freespace` attribute in RelativeClearanceCondition
   - typo in standard, should have been `freeSpace`
   - esmini now supports both `freespace` and `freeSpace`
-  - was intended to be part of release 2.31.2, but failed to
 - Improve RelativeClearanceCondition
   - consider also empty lane of triggering entity
   - consider opposite lane flag for empty lanes as well
@@ -17,9 +32,6 @@ Improvements and fixes:
 Improvements and fixes:
 - Fix RelativeClearanceCondition missed case of empty lanes within range
 - Support OpenSCENARIO v1.2 `override` priority, renamed from `overwrite`
-- ~~Support `freespace` attribute in RelativeClearanceCondition~~
-  - ~~typo in standard, should have been `freeSpace`~~
-  - ~~esmini now supports both `freespace` and `freeSpace`~~
 - Improve LongitudinalDistanceAction
   - make use of any dynamics constraints provided for the action
   - disable dynamics only when all constraints are missing
