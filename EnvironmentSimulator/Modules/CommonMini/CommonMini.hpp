@@ -717,10 +717,10 @@ public:
                         double      accX,
                         double      accY,
                         double      accZ,
-                        double      distance_road,  // s (longitudinal distance along current road)
-                        double      distance_lanem, // t (lateral offset from reference lane)
+                        double      distance_road,   // s (longitudinal distance along current road)
+                        double      distance_lanem,  // t (lateral offset from reference lane)
                         int         lane_id,
-                        double      lane_offset,    // lateral offset from current lane center
+                        double      lane_offset,  // lateral offset from current lane center
                         double      heading,
                         double      heading_rate,
                         double      heading_angle,
