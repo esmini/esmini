@@ -2277,21 +2277,21 @@ TEST(ExternalControlTest, TestTimings)
             std::vector<std::vector<std::string>> csv;
             ASSERT_EQ(SE_ReadCSVFile("csv_log.csv", csv, 6), 0);
             EXPECT_NEAR(std::stod(csv[1][1]), -3.0, 1E-3);
-            EXPECT_NEAR(std::stod(csv[61][30]), 10.0, 1E-3);
-            EXPECT_NEAR(std::stod(csv[61][33]), 20.0, 1E-3);
-            EXPECT_NEAR(std::stod(csv[61][36]), 0.0, 1E-3);
+            EXPECT_NEAR(std::stod(csv[61][44]), 10.0, 1E-3);
+            EXPECT_NEAR(std::stod(csv[61][47]), 20.0, 1E-3);
+            EXPECT_NEAR(std::stod(csv[61][50]), 0.0, 1E-3);
             EXPECT_NEAR(std::stod(csv[82][1]), 2.1, 1E-3);
-            EXPECT_NEAR(std::stod(csv[82][30]), 52.0, 1E-3);
-            EXPECT_NEAR(std::stod(csv[82][33]), 20.0, 1E-3);
-            EXPECT_NEAR(std::stod(csv[82][36]), 0.0, 1E-3);
+            EXPECT_NEAR(std::stod(csv[82][44]), 52.0, 1E-3);
+            EXPECT_NEAR(std::stod(csv[82][47]), 20.0, 1E-3);
+            EXPECT_NEAR(std::stod(csv[82][50]), 0.0, 1E-3);
             EXPECT_NEAR(std::stod(csv[83][1]), -0.75, 1E-3);
-            EXPECT_NEAR(std::stod(csv[83][30]), 54.0, 1E-3);
-            EXPECT_NEAR(std::stod(csv[83][33]), 20.0, 1E-3);
-            EXPECT_NEAR(std::stod(csv[83][36]), 0.0, 1E-3);
+            EXPECT_NEAR(std::stod(csv[83][44]), 54.0, 1E-3);
+            EXPECT_NEAR(std::stod(csv[83][47]), 20.0, 1E-3);
+            EXPECT_NEAR(std::stod(csv[83][50]), 0.0, 1E-3);
             EXPECT_NEAR(std::stod(csv[142][1]), 2.2, 1E-3);
-            EXPECT_NEAR(std::stod(csv[142][30]), 54.0, 1E-3);
-            EXPECT_NEAR(std::stod(csv[142][33]), 20.0, 1E-3);
-            EXPECT_NEAR(std::stod(csv[142][36]), 0.0, 1E-3);
+            EXPECT_NEAR(std::stod(csv[142][44]), 54.0, 1E-3);
+            EXPECT_NEAR(std::stod(csv[142][47]), 20.0, 1E-3);
+            EXPECT_NEAR(std::stod(csv[142][50]), 0.0, 1E-3);
 
             // Read OSI file
             FILE* file = FileOpen("gt.osi", "rb");

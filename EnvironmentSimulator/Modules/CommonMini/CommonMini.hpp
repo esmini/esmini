@@ -702,6 +702,12 @@ public:
                         double      speed,
                         double      wheel_angle,
                         double      wheel_rot,
+                        double      bb_x,
+                        double      bb_y,
+                        double      bb_z,
+                        double      bb_length,
+                        double      bb_width,
+                        double      bb_height,
                         double      posX,
                         double      posY,
                         double      posZ,
@@ -711,8 +717,10 @@ public:
                         double      accX,
                         double      accY,
                         double      accZ,
-                        double      distance_road,
-                        double      distance_lanem,
+                        double      distance_road,  // s (longitudinal distance along current road)
+                        double      distance_lanem, // t (lateral offset from reference lane)
+                        int         lane_id,
+                        double      lane_offset,    // lateral offset from current lane center
                         double      heading,
                         double      heading_rate,
                         double      heading_angle,
