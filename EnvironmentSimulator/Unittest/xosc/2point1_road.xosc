@@ -1,0 +1,178 @@
+<!-- Demonstrate and test 2 point 1 road -->
+<!-- A white car is driving with constant speed, set by init event -->
+<!-- The white car approaches a red leading car -->
+<!-- The red leading car will perform some maneuvers to pass the red car by using 2 point 1 road -->
+
+
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSCENARIO>
+   <FileHeader revMajor="1"
+               revMinor="0"
+               date="2020-05-12T10:00:00"
+               description="dummy"
+               author="esmini-team"/>
+   <ParameterDeclarations>
+      <ParameterDeclaration name="TargetVehicle" parameterType="string" value="car_red"/>
+   </ParameterDeclarations>
+   <RoadNetwork>
+      <LogicFile filepath="../xodr/2point1-road.xodr"/>
+   </RoadNetwork>
+   <CatalogLocations>
+      <RouteCatalog/>
+      <VehicleCatalog>
+         <Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
+      </VehicleCatalog>
+   </CatalogLocations>
+   <Entities>
+      <ScenarioObject name="Ego">
+         <Vehicle name="car_white" vehicleCategory="car" model3d="../models/car_white.osgb">
+            <BoundingBox>
+               <Center x="1.4" y="0.0" z="0.9"/>
+               <Dimensions width="2.0" length="5.0" height="1.8"/>
+            </BoundingBox>
+            <Performance maxSpeed="69" maxDeceleration="30"/>
+            <Axles>
+               <FrontAxle maxSteering="30"
+                          wheelDiameter="0.8"
+                          trackWidth="1.68"
+                          positionX="2.98"
+                          positionZ="0.4"/>
+               <RearAxle maxSteering="30"
+                         wheelDiameter="0.8"
+                         trackWidth="1.68"
+                         positionX="0"
+                         positionZ="0.4"/>
+            </Axles>
+            <Properties>
+                <Property name="model_id" value="0"/>
+                <!-- Scale modes: None, BBToModel, ModelToBB -->
+                <Property name="scaleMode" value="ModelToBB"/>
+                <Property name="control" value="hybrid"/>
+            </Properties>
+         </Vehicle>
+      </ScenarioObject>
+      <ScenarioObject name="Target">
+         <CatalogReference catalogName="VehicleCatalog" entryName="$TargetVehicle"/>
+      </ScenarioObject>
+   </Entities>
+   <Storyboard>
+      <Init>
+         <Actions>
+            <Private entityRef="Ego">
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="30"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="1" laneId="-1" offset="0" s="0"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+            </Private>
+            <Private entityRef="Target">
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="20"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="1" laneId="-1" offset="0" s="90"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+            </Private>
+         </Actions>
+      </Init>
+        <Story name="RelativeClearanceStory">
+            <ParameterDeclarations/>
+            <Act name="2Point1roadAct">
+                <ManeuverGroup name="2Point1roadManeuverGroup" maximumExecutionCount="1">
+                    <Actors selectTriggeringEntities="false">
+                        <EntityRef entityRef="Ego"/>
+                    </Actors>
+                    <Maneuver name="LateralAction">
+                        <Event name="lanechangeLeftEvent" priority="skip" maximumExecutionCount="10000">
+                            <Action name="lanechangeLeftAction">
+                                <PrivateAction>
+                                    <LateralAction>
+                                        <LaneChangeAction>
+                                            <LaneChangeActionDynamics dynamicsShape="cubic" value="3.0" dynamicsDimension="time"/>
+                                            <LaneChangeTarget>
+                                                <RelativeTargetLane value="1" entityRef="Ego"/>
+                                            </LaneChangeTarget>
+                                        </LaneChangeAction>
+                                    </LateralAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="lanechange_condition" delay="0.0" conditionEdge="rising">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="6.0" rule="greaterThan"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event name="lanechangeRightEvent" priority="skip" maximumExecutionCount="10000">
+                            <Action name="lanechangeRightAction">
+                                <PrivateAction>
+                                    <LateralAction>
+                                        <LaneChangeAction>
+                                            <LaneChangeActionDynamics dynamicsShape="cubic" value="3.0" dynamicsDimension="time"/>
+                                            <LaneChangeTarget>
+                                                <RelativeTargetLane value="-1" entityRef="Ego"/>
+                                            </LaneChangeTarget>
+                                        </LaneChangeAction>
+                                    </LateralAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="lanechange_condition" delay="0.0" conditionEdge="rising">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="10.20" rule="greaterThan"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                    </Maneuver>
+                </ManeuverGroup>
+                <StartTrigger>
+                    <ConditionGroup>
+                        <Condition name="RelativeClearanceActTrigger" delay="0.0" conditionEdge="rising">
+                            <ByValueCondition>
+                                <SimulationTimeCondition value="0.0" rule="greaterThan"/>
+                            </ByValueCondition>
+                        </Condition>
+                    </ConditionGroup>
+                </StartTrigger>
+               <StopTrigger>
+                  <ConditionGroup>
+                        <Condition name="stop_simulation" delay="0.0" conditionEdge="rising">
+                           <ByValueCondition>
+                              <SimulationTimeCondition value="15.0" rule="greaterThan"/>
+                           </ByValueCondition>
+                        </Condition>
+                  </ConditionGroup>
+               </StopTrigger>
+            </Act>
+        </Story>
+   </Storyboard>
+</OpenSCENARIO>
