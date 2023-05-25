@@ -2005,6 +2005,38 @@ TEST(RelativeClearanceTest, TestRelativeClearanceFreeSpace)
     RegisterParameterDeclarationCallback(nullptr, 0);
 }
 
+TEST(ControllerTest, TestTwoPointOneRoad)
+{
+    double          dt = 0.05;
+    ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/2point1_road.xosc");
+    ASSERT_NE(se, nullptr);
+
+    while (se->getSimulationTime() < 5.0 - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetS(), 148.5000000000, 1E-5);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetT(), -3.10392549999, 1E-5);
+
+    while (se->getSimulationTime() < 9.0 - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetS(), 268.4295835146, 1E-5);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetT(), -1.63559259259, 1E-5);
+
+    while (se->getSimulationTime() < 13.0 - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetS(), 388.3597193132, 1E-5);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetT(), -1.53399999999, 1E-5);
+    delete se;
+}
+
 static void clearanceParamDeclCallback(void*)
 {
     static int counter  = 0;

@@ -1895,6 +1895,7 @@ In esmini, the behavior of the two position types https://www.asam.net/static_do
 
 In the image below, the white cars are positioned by `RoadPosition` with `t=-1.5` and `t=1.5` respectively while the red cars are positioned by `LanePosition` with `laneId="-1"` and `laneId="1"` respectively.
 
+
 .Positioning with RoadPosition (white) and LanePosition (red) - heading omitted
 image::no-heading.jpg[]
 
@@ -1914,6 +1915,15 @@ In next image, an `Orientation` element was added with *relative* heading = 0.4 
 image::relative-heading.jpg[]
 
 Corresponding behavior applies also to `RelativeRoadPosition` and `RelativeLanePosition`.
+
+==== Reference lane and center lane while using laneOffset
+
+In esmini reference lane and center lane are construsted differently while using laneOffset.
+
+- In OpenDrive https://www.asam.net/index.php?eID=dumpFile&t=f&f=4422&token=e590561f3c39aa2260e5442e29e93f6693d1cccd#top-05e95dfd-ce05-40c8-af93-d065229e6968[`9.3. Lane offset`]:A lane offset may be used to shift the center lane away from the road reference line.
+- Esmini: Road referrance lane also shifted along with center lane while using lane offset.
+
+As consequence t value also shifted as per lane offset.
 
 ===== Motivation
 
