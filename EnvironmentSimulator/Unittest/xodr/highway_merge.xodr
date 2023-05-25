@@ -6,7 +6,7 @@
             <successor elementType="junction" elementId="1"/>
         </link>
         <type s="0" type="motorway">
-            <speed max="10" unit="m/s"/>
+            <speed max="33.33" unit="m/s"/>
         </type>
         <planView>
             <geometry s="0" x="0" y="0" hdg="0" length="100">
@@ -49,7 +49,7 @@
             <successor elementType="junction" elementId="1"/>
         </link>
         <type s="0" type="motorway">
-            <speed max="10" unit="m/s"/>
+            <speed max="33.33" unit="m/s"/>
         </type>
         <planView>
             <geometry s="0" x="24.825227218254696" y="-76.18618871782002" hdg="13.196370614359171" length="100">
@@ -80,7 +80,7 @@
             <predecessor elementType="junction" elementId="1"/>
         </link>
         <type s="0" type="motorway">
-            <speed max="10" unit="m/s"/>
+            <speed max="33.33" unit="m/s"/>
         </type>
         <planView>
             <geometry s="0" x="129.68913202218454" y="3.2766436469473943" hdg="0.31499999999999995" length="100">
@@ -129,7 +129,7 @@
             <successor elementType="road" elementId="2" contactPoint="start"/>
         </link>
         <type s="0" type="motorway">
-            <speed max="10" unit="m/s"/>
+            <speed max="33.33" unit="m/s"/>
         </type>
         <planView>
             <geometry s="0" x="100.0" y="0.0" hdg="0" length="30">
@@ -182,7 +182,7 @@
             <successor elementType="road" elementId="2" contactPoint="start"/>
         </link>
         <type s="0" type="motorway">
-            <speed max="10" unit="m/s"/>
+            <speed max="33.33" unit="m/s"/>
         </type>
         <planView>
             <geometry s="0" x="105.62797804946996" y="-17.27171292359317" hdg="6.913185307179586" length="30">
