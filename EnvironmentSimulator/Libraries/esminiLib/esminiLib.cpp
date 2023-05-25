@@ -1941,6 +1941,46 @@ extern "C"
         return 0;
     }
 
+    SE_DLL_API int SE_GetDistanceToObject(int object_a_id, int object_b_id, bool free_space, SE_PositionDiff *pos_diff)
+    {
+        bool obj_found = false;
+
+        Object *obj_a = nullptr;
+        if (getObjectById(object_a_id, obj_a) == -1)
+        {
+            return -1;
+        }
+
+        Object *obj_b = nullptr;
+        if (getObjectById(object_b_id, obj_b) == -1)
+        {
+            return -1;
+        }
+
+        roadmanager::PositionDiff diff;
+
+        if (free_space)
+        {
+            obj_found = (obj_a->FreeSpaceDistanceObjectRoadLane(obj_b, &diff, roadmanager::CoordinateSystem::CS_ROAD) == 0);
+        }
+        else
+        {
+            obj_found = obj_a->pos_.Delta(&obj_b->pos_, diff, true, 1000);  // look only 1000 meters
+        }
+
+        if (obj_found)
+        {
+            pos_diff->dLaneId       = diff.dLaneId;
+            pos_diff->ds            = static_cast<float>(diff.ds);
+            pos_diff->dt            = static_cast<float>(diff.dt);
+            pos_diff->dx            = static_cast<float>(diff.dx);
+            pos_diff->dy            = static_cast<float>(diff.dy);
+            pos_diff->oppositeLanes = diff.dOppLane;
+        }
+
+        return obj_found ? 0 : -1;
+    }
+
     void objCallbackFn(ObjectStateStruct *state, void *my_data)
     {
         for (size_t i = 0; i < objCallback.size(); i++)

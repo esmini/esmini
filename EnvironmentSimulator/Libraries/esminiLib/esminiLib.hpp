@@ -100,6 +100,16 @@ typedef struct
 
 typedef struct
 {
+    float ds;             // delta s (longitudinal distance)
+    float dt;             // delta t (lateral distance)
+    int   dLaneId;        // delta laneId (increasing left and decreasing to the right)
+    float dx;             // delta x (world coordinate system)
+    float dy;             // delta y (world coordinate system)
+    bool  oppositeLanes;  // true if the two position objects are in opposite sides of reference lane
+} SE_PositionDiff;
+
+typedef struct
+{
     float x;
     float y;
     float z;
@@ -949,7 +959,7 @@ extern "C"
 
     /**
             Get information suitable for driver modeling of a ghost vehicle driving ahead of the ego vehicle
-            @param object_id Handle to the position object from which to measure (the actual externally controlled Ego vehicle, not ghost)
+            @param object_id Id of the object from which to measure (the actual externally controlled Ego vehicle, not ghost)
             @param lookahead_distance The distance, along the ghost trail, to the point from the current Ego vehicle location
             @param data Struct including all result values, see typedef for details
             @param speed_ghost reference to a variable returning the speed that the ghost had at this point along trail
@@ -959,13 +969,24 @@ extern "C"
 
     /**
             Get information suitable for driver modeling of a ghost vehicle driving ahead of the ego vehicle
-            @param object_id Handle to the position object from which to measure (the actual externally controlled Ego vehicle, not ghost)
+            @param object_id Id of the object from which to measure (the actual externally controlled Ego vehicle, not ghost)
             @param time Simulation time (subtracting headstart time, i.e. time=0 gives the initial state)
             @param data Struct including all result values, see typedef for details
             @param speed_ghost reference to a variable returning the speed that the ghost had at this point along trail
             @return 0 if successful, -1 if not
     */
     SE_DLL_API int SE_GetRoadInfoGhostTrailTime(int object_id, float time, SE_RoadInfo *data, float *speed_ghost);
+
+    /**
+            Find out the delta between two objects, e.g. distance (long and lat) and delta laneId
+            search range is 1000 meters
+            @param object_a_id Id of the object from which to measure
+            @param object_b_id Id of the object to which the distance is measured
+            @param free_space Measure distance between bounding boxes (true) or between ref points (false)
+            @param pos_diff Struct including all result values, see PositionDiff typedef
+            @return 0 if successful, -2 if route between positions can't be found, -1 if some other error
+    */
+    SE_DLL_API int SE_GetDistanceToObject(int object_a_id, int object_b_id, bool free_space, SE_PositionDiff *pos_diff);
 
     /**
             Create an ideal object sensor and attach to specified vehicle

@@ -3532,6 +3532,53 @@ TEST(RoadmanagerTest, TestGetInfoAtDistance)
     SE_Close();
 }
 
+TEST(RoadmanagerTest, TestGetPositionDiff)
+{
+    std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/loomingAdvancedTest.xosc";
+
+    EXPECT_EQ(SE_Init(scenario_file.c_str(), 0, 0, 0, 0), 0);
+
+    int n_Objects = SE_GetNumberOfObjects();
+    EXPECT_EQ(n_Objects, 2);
+
+    SE_PositionDiff diff;
+    ASSERT_EQ(SE_GetDistanceToObject(0, 1, false, &diff), 0);
+    EXPECT_EQ(diff.dLaneId, 0);
+    EXPECT_NEAR(diff.ds, 247.100, 1e-3);
+    EXPECT_NEAR(diff.dt, 0.0, 1e-3);
+    EXPECT_NEAR(diff.dx, 233.409, 1e-3);
+    EXPECT_NEAR(diff.dy, 53.693, 1e-3);
+    EXPECT_EQ(diff.oppositeLanes, false);
+
+    while (SE_GetSimulationTime() < 30.9f)
+    {
+        SE_StepDT(0.1f);
+    }
+
+    ASSERT_EQ(SE_GetDistanceToObject(0, 1, true, &diff), 0);
+    EXPECT_EQ(diff.dLaneId, 0);
+    EXPECT_NEAR(diff.ds, 31.729, 1e-3);
+    EXPECT_NEAR(diff.dt, 0.0, 1e-3);
+    EXPECT_NEAR(diff.dx, 21.283, 1e-3);
+    EXPECT_NEAR(diff.dy, -17.780, 1e-3);
+    EXPECT_EQ(diff.oppositeLanes, false);
+
+    while (SE_GetSimulationTime() < 35.0f)
+    {
+        SE_StepDT(0.1f);
+    }
+
+    ASSERT_EQ(SE_GetDistanceToObject(0, 1, false, &diff), 0);
+    EXPECT_EQ(diff.dLaneId, -1);
+    EXPECT_NEAR(diff.ds, -93.045, 1e-3);
+    EXPECT_NEAR(diff.dt, -2.923, 1e-3);
+    EXPECT_NEAR(diff.dx, -31.340, 1e-3);
+    EXPECT_NEAR(diff.dy, -68.577, 1e-3);
+    EXPECT_EQ(diff.oppositeLanes, true);
+
+    SE_Close();
+}
+
 TEST(ParamDistTest, TestRunAll)
 {
 #ifdef _USE_OSI

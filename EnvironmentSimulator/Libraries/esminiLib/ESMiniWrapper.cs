@@ -100,6 +100,18 @@ namespace ESMini
         public int far_right_lb_id;
     };
 
+    [StructLayout(LayoutKind.Sequential)]
+    public struct PositionDiff
+    {
+        public float ds;            // delta s (longitudinal distance)
+        public float dt;            // delta t (lateral distance)
+        public int d_lane_id;       // delta laneId (increasing left and decreasing to the right)
+        public float dx;            // delta x (world coordinate system)
+        public float dy;            // delta y (world coordinate system)
+        public bool opposite_lanes; // true if the two position objects are in opposite sides of reference lane
+    };
+
+
 public static class ESMiniLib
     {
         private const string LIB_NAME = "esminiLib";
@@ -353,6 +365,15 @@ public static class ESMiniLib
         /// <returns>0 on success, -1 on failure for any reason</returns>
         [DllImport(LIB_NAME, EntryPoint = "SE_GetRoadInfoAlongGhostTrail")]
         public static extern int SE_GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, ref RoadInfo data, ref float speed_ghost);
+
+        [DllImport(LIB_NAME, EntryPoint = "SE_GetDistanceToObject")]
+        /// <summary>Find out the delta between two objects, e.g. distance (long and lat) and delta laneId. Search range is 1000 meters</summary>
+        /// <param name="object_a_id">Id of the object from which to measure</param>
+        /// <param name="object_b_id">Id of the object from which to measure</param>
+        /// <param name="freespace">Measure distance between bounding boxes (true) or between ref points (false)</param>
+        /// <param name="pos_diff">Reference to struct including all result values, see typedef for details</param>
+        /// <returns>0 if successful, -1 if not</returns>
+        public static extern int SE_GetDistanceToObject(int object_a_id, int object_b_id, bool free_space, ref PositionDiff pos_diff);
 
         [DllImport(LIB_NAME, EntryPoint = "SE_GetNumberOfParameters")]
         /// <summary>Get the number of parameters in the current scenario</summary>
