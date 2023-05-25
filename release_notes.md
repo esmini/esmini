@@ -1,5 +1,24 @@
 ## esmini release notes
 
+### 2023-05-25 Version 2.31.5
+
+Improvements and fixes:
+
+- Add some additional object info to csv_logger ([issue #434](https://github.com/esmini/esmini/issues/434))
+  - bounding box position (relative obj ref point)
+  - bounding box dimensions
+  - lane id
+  - lane offset
+- Add API function [`SE_GetDistanceToObject()`](https://github.com/esmini/esmini/blob/4e45f132f13963a89e4b473c1bb16d9940d5c7cf/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L989) to get delta between objects
+  - distance (ds, dt, dx, dy)
+  - delta lane id
+  - opposite lane flag
+  - Note: ds will accumulate over multiple road segments
+- Add motorway type to relevant road segments in [Unittest/xodr/highway_exit.xodr](https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/Unittest/xodr/highway_exit.xodr)
+  - affects OSI handling of the junction
+- Reduce grid intensity in plot scripts
+
+
 ### 2023-05-15 Version 2.31.4
 
 Project updates:
