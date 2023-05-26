@@ -1978,7 +1978,7 @@ extern "C"
             pos_diff->oppositeLanes = diff.dOppLane;
         }
 
-        return obj_found ? 0 : -1;
+        return obj_found ? 0 : -2;
     }
 
     void objCallbackFn(ObjectStateStruct *state, void *my_data)
