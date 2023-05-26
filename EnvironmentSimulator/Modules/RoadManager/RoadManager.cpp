@@ -2742,6 +2742,15 @@ void Road::AddLaneOffset(LaneOffset* lane_offset)
         LaneOffset* lo_previous = lane_offset_.back();
         lo_previous->SetLength(lane_offset->GetS() - lo_previous->GetS());
     }
+    else if (lane_offset->GetS() > SMALL_NUMBER)
+    {
+        // first lane offset entry does not start from 0, add one
+        lane_offset_.push_back(new LaneOffset(0.0,
+                                              lane_offset->GetPolynomial().GetA(),
+                                              lane_offset->GetPolynomial().GetB(),
+                                              lane_offset->GetPolynomial().GetC(),
+                                              lane_offset->GetPolynomial().GetD()));
+    }
     lane_offset->SetLength(length_ - lane_offset->GetS());
 
     lane_offset_.push_back((LaneOffset*)lane_offset);
