@@ -19,7 +19,11 @@ int main(int argc, char* argv[])
 
         // fetch position in terms of road coordinates
         SE_GetObjectState(SE_GetId(0), &state);
-        printf("road_id: %d s: %.3f lane_id %d lane_offset: %.3f\n", state.roadId, state.s, state.laneId, state.laneOffset);
+        printf("road_id: %d s: %.3f lane_id %d lane_offset: %.3f\n",
+               state.roadId,
+               static_cast<double>(state.s),
+               state.laneId,
+               static_cast<double>(state.laneOffset));
 
         if (i == 100)
         {
