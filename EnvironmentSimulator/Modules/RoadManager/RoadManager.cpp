@@ -1811,7 +1811,7 @@ double LaneSection::GetOuterOffsetHeading(double s, int lane_id)
     double ds = s - (s_ + lane_width->GetSOffset());
 
     // Calculate heading at local s
-    double heading = lane_width->poly3_.EvaluatePrim(ds);
+    double heading = atan(lane_width->poly3_.EvaluatePrim(ds));
 
     if (abs(lane_id) == 1)
     {
@@ -1837,8 +1837,8 @@ double LaneSection::GetCenterOffsetHeading(double s, int lane_id)
     double inner_offset_heading = GetOuterOffsetHeading(s, lane_id + step);
     double outer_offset_heading = GetOuterOffsetHeading(s, lane_id);
 
-    // Center is simply mean value of inner and outer lane boundries
-    return (inner_offset_heading + outer_offset_heading) / 2;
+    // Center is simply mean/center value of inner and outer lane boundries
+    return atan((tan(inner_offset_heading) + tan(outer_offset_heading)) / 2.0);
 }
 
 void LaneSection::AddLane(Lane* lane)

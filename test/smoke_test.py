@@ -170,7 +170,7 @@ class TestSuite(unittest.TestCase):
         # Check vehicle key positions
         csv = generate_csv()
         self.assertTrue(re.search('\n7.00.*, 0, Ego, 291.875, 26.250, 0.000, 1.571, 0.00.*, 0.00.*, 50.00.*', csv))
-        self.assertTrue(re.search('\n23.900, 0, Ego, 232.765, -3.753, 0.000, 6.063, 0.000, 0.000, 50.000.*', csv))
+        self.assertTrue(re.search('\n23.900, 0, Ego, 232.765, -3.753, 0.000, 6.066, 0.000, 0.000, 50.000.*', csv))
         self.assertTrue(re.search('\n43.300, 0, Ego, 639.136, -1.875, 0.000, 0.000, 0.000, 0.000, 0.100', csv))
         self.assertTrue(re.search('\n43.310, 0, Ego, 639.136, -1.875, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
 

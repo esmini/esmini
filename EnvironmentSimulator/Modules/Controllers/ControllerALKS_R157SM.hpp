@@ -298,7 +298,7 @@ namespace scenarioengine
         //   Conditions for an enitity to be "detected":
         //      - is in front of ego and within max range of 100 meter
         //      - pedestrians: is overlapping ego laterally OR moving towards ego laterally
-        //      - other entities: is in same or adjecentlane to ego
+        //      - other entities: is in same or adjecent lane to ego
         //   Velocity calculations:
         //      - Longitudinal velocity is based on latest movement and projected along road direction (s axis)
         //      - Lateral velocity is based on latest movement projected across road direction (t axis)
