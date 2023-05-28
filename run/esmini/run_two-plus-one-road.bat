@@ -1,0 +1,1 @@
+"../../bin/esmini" --window 60 60 1024 576  --osc ../../resources/xosc/two_plus_one_road.xosc --custom_camera -30,10,7

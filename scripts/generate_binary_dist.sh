@@ -41,6 +41,7 @@ resources/xosc/lane-change_clothoid_based_trajectory.xosc \
 resources/xosc/trailers.xosc \
 resources/xosc/speed-profile.xosc \
 resources/xosc/alks_r157_cut_in_quick_brake.xosc \
+resources/xosc/two_plus_one_road.xosc \
 resources/xosc/Catalogs/Maneuvers/*.* \
 resources/xosc/Catalogs/Routes/*.* \
 resources/xosc/Catalogs/Vehicles/*.* \
@@ -57,6 +58,7 @@ resources/xodr/curve_r100.xodr \
 resources/xodr/multi_intersections.xodr \
 resources/xodr/curves_elevation.xodr \
 resources/xodr/crest-curve.xodr \
+resources/xodr/two_plus_one.xodr \
 resources/models/bus_blue.osgb \
 resources/models/car_blue.osgb \
 resources/models/car_red.osgb \
@@ -129,6 +131,7 @@ run/esmini/run_sumo-test.* \
 run/esmini/run_acc-test.* \
 run/esmini/run_swarm.* \
 run/esmini/run_trailers.* \
+run/esmini/run_two-plus-one-road.* \
 run/odrviewer/run_e6mini*.* \
 run/odrviewer/run_multi_intersections*.* \
 run/replayer/run_and_plot_cut-in_speed*.* \

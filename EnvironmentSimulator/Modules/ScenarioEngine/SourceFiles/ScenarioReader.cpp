@@ -4127,7 +4127,7 @@ void ScenarioReader::parseOSCManeuver(Maneuver *maneuver, pugi::xml_node maneuve
                                 }
                                 else
                                 {
-                                    LOG("Failed to parse Init action - continue regardless");
+                                    LOG("Failed to parse event %s - continue regardless", event->name_.c_str());
                                 }
                             }
                         }

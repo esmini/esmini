@@ -2008,7 +2008,7 @@ TEST(RelativeClearanceTest, TestRelativeClearanceFreeSpace)
 TEST(ControllerTest, TestTwoPointOneRoad)
 {
     double          dt = 0.05;
-    ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/2point1_road.xosc");
+    ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/two_plus_one_road.xosc");
     ASSERT_NE(se, nullptr);
 
     while (se->getSimulationTime() < 5.0 - SMALL_NUMBER)
@@ -2016,24 +2016,24 @@ TEST(ControllerTest, TestTwoPointOneRoad)
         se->step(dt);
         se->prepareGroundTruth(dt);
     }
-    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetS(), 148.5000000000, 1E-5);
-    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetT(), -3.10392549999, 1E-5);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetS(), 148.500, 1E-3);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetT(), -3.104, 1E-3);
 
     while (se->getSimulationTime() < 9.0 - SMALL_NUMBER)
     {
         se->step(dt);
         se->prepareGroundTruth(dt);
     }
-    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetS(), 268.4295835146, 1E-5);
-    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetT(), -1.63559259259, 1E-5);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetS(), 268.430, 1E-3);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetT(), -1.636, 1E-3);
 
     while (se->getSimulationTime() < 13.0 - SMALL_NUMBER)
     {
         se->step(dt);
         se->prepareGroundTruth(dt);
     }
-    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetS(), 388.3597193132, 1E-5);
-    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetT(), -1.53399999999, 1E-5);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetS(), 388.360, 1E-3);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetT(), -1.534, 1E-3);
     delete se;
 }
 

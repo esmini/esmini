@@ -36,8 +36,8 @@ planview = xodr.PlanView()
 planview.add_geometry(xodr.Line(500))
 
 # create two different roadmarkings
-rm_solid = xodr.RoadMark(xodr.RoadMarkType.solid, 0.12)
-rm_dashed = xodr.RoadMark(xodr.RoadMarkType.broken, 0.12)
+rm_solid = xodr.RoadMark(xodr.RoadMarkType.solid, 0.2)
+rm_dashed = xodr.RoadMark(xodr.RoadMarkType.broken, 0.15)
 
 # create a centerlane (same centerlane can be used since no linking is needed for this)
 centerlane = xodr.Lane(a=lane_width)
