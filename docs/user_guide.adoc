@@ -1955,7 +1955,7 @@ image::two_plus_one_lane_ids.png[]
 |*t*|-1.75|1.75
 |===
 
-A 2+1 example example scenario is found here: https://github.com/esmini/esmini/blob/4e45f132f13963a89e4b473c1bb16d9940d5c7cf/resources/xosc/two_plus_one_road.xosc[resources/xosc/two_plus_one_road.xosc]
+A 2+1 example example scenario is found here: https://github.com/esmini/esmini/blob/master/resources/xosc/two_plus_one_road.xosc[resources/xosc/two_plus_one_road.xosc]
 
 === Further issues at esmini GitHub page
 The https://github.com/esmini/esmini/issues[Issues tab at esmini GitHub page] is a valuable source of questions and answers. To search in all issues, make sure to set filter: `is:issue`.
