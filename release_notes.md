@@ -1,5 +1,26 @@
 ## esmini release notes
 
+### 2023-05-29 Version 2.31.6
+
+New content:
+- Add 2+1 road
+  - xodr ([resources/xodr/two_plus_one.xodr](https://github.com/esmini/esmini/blob/master/resources/xodr/two_plus_one.xodr))
+  - parameterized script: ([scripts/scenario_scripts/create_two_plus_one_road.py](https://github.com/esmini/esmini/blob/master/scripts/scenario_scripts/create_two_plus_one_road.py))
+  - scenario ([resources/xosc/two_plus_one_road.xosc](https://github.com/esmini/esmini/blob/master/resources/xosc/two_plus_one_road.xosc))
+  - run-script, with suitable camera pos ([run/esmini/run_two-plus-one-road.bat](https://github.com/esmini/esmini/blob/master/run/esmini/run_two-plus-one-road.bat))
+  - video clip: https://youtu.be/aT7I2iBDeR0
+
+Improvements and fixes:
+
+- Clarify esmini lane offset handling deviating from OpenDRIVE
+  - see [User guide - Reference line and center lane while using laneOffset](https://esmini.github.io/#_reference_line_and_center_lane_while_using_laneoffset)
+- Make sure lane offset definitions starts from s=0
+  - if first entry does not start at s=0, add a copy for s=0
+- Fix bug in heading calculation wrt lane width and offset
+- Fix wrong SE_GetDistanceToObject() return code for case route not found
+- Demonstrate position type conversion ([issue #437](https://github.com/esmini/esmini/issues/437))
+
+
 ### 2023-05-25 Version 2.31.5
 
 Improvements and fixes:
