@@ -2005,35 +2005,38 @@ TEST(RelativeClearanceTest, TestRelativeClearanceFreeSpace)
     RegisterParameterDeclarationCallback(nullptr, 0);
 }
 
-TEST(ControllerTest, TestTwoPointOneRoad)
+TEST(ControllerTest, TestTwoPlusOneRoad)
 {
     double          dt = 0.05;
-    ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/two_plus_one_road.xosc");
+    ScenarioEngine* se = new ScenarioEngine("../../../resources/xosc/two_plus_one_road.xosc");
+    struct
+    {
+        double time;
+        double s;
+        double t;
+        double h;
+        int    lane_id;
+    } exp_values[5] = {{4.0, 115.0, -1.75, 0.0, -1},
+                       {5.25, 134.19, -1.81, 0.054, -2},
+                       {7.0, 168.89, -2.18, 0.05, -1},
+                       {9.0, 218.22, -1.75, 0.0, -1},
+                       {11.25, 274.39, -4.02, 6.20, -2}};
+
     ASSERT_NE(se, nullptr);
 
-    while (se->getSimulationTime() < 5.0 - SMALL_NUMBER)
+    for (int i = 0; i < 5; i++)
     {
-        se->step(dt);
-        se->prepareGroundTruth(dt);
+        while (se->getSimulationTime() < exp_values[i].time + SMALL_NUMBER)
+        {
+            se->step(dt);
+            se->prepareGroundTruth(dt);
+        }
+        EXPECT_NEAR(se->entities_.object_[1]->pos_.GetS(), exp_values[i].s, 1E-2);
+        EXPECT_NEAR(se->entities_.object_[1]->pos_.GetT(), exp_values[i].t, 1E-2);
+        EXPECT_NEAR(se->entities_.object_[1]->pos_.GetH(), exp_values[i].h, 1E-2);
+        EXPECT_EQ(se->entities_.object_[1]->pos_.GetLaneId(), exp_values[i].lane_id);
     }
-    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetS(), 148.500, 1E-3);
-    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetT(), -3.104, 1E-3);
 
-    while (se->getSimulationTime() < 9.0 - SMALL_NUMBER)
-    {
-        se->step(dt);
-        se->prepareGroundTruth(dt);
-    }
-    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetS(), 268.430, 1E-3);
-    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetT(), -1.636, 1E-3);
-
-    while (se->getSimulationTime() < 13.0 - SMALL_NUMBER)
-    {
-        se->step(dt);
-        se->prepareGroundTruth(dt);
-    }
-    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetS(), 388.360, 1E-3);
-    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetT(), -1.534, 1E-3);
     delete se;
 }
 
