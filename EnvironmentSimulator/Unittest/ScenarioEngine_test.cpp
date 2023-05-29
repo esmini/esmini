@@ -2005,7 +2005,7 @@ TEST(RelativeClearanceTest, TestRelativeClearanceFreeSpace)
     RegisterParameterDeclarationCallback(nullptr, 0);
 }
 
-TEST(ControllerTest, TestTwoPlusOneRoad)
+TEST(TwoPlusOneRoadTest, TestTwoPlusOneRoad)
 {
     double          dt = 0.05;
     ScenarioEngine* se = new ScenarioEngine("../../../resources/xosc/two_plus_one_road.xosc");
