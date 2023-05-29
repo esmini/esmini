@@ -1916,20 +1916,46 @@ image::relative-heading.jpg[]
 
 Corresponding behavior applies also to `RelativeRoadPosition` and `RelativeLanePosition`.
 
-==== Reference lane and center lane while using laneOffset
-
-In esmini reference lane and center lane are construsted differently while using laneOffset.
-
-- In OpenDrive https://www.asam.net/index.php?eID=dumpFile&t=f&f=4422&token=e590561f3c39aa2260e5442e29e93f6693d1cccd#top-05e95dfd-ce05-40c8-af93-d065229e6968[`9.3. Lane offset`]:A lane offset may be used to shift the center lane away from the road reference line.
-- Esmini: Road referrance lane also shifted along with center lane while using lane offset.
-
-As consequence t value also shifted as per lane offset.
-
 ===== Motivation
 
 In some (maybe most) use cases it's preferred that vehicles align to the driving direction of the lane. But in other cases not, example: In an overtake maneuver, the overtaking car may start in the neighbor lane. The driving direction of the lane should not affect the heading of the car.
 
 So the different strategies for `RoadPosition` and `LanePosition` was decided upon to support as many use cases as possible. For more background, see issues https://github.com/esmini/esmini/issues/385[#385] and https://github.com/esmini/esmini/issues/228[#228].
+
+==== Reference line and center lane while using laneOffset
+
+In https://www.asam.net/index.php?eID=dumpFile&t=f&f=4422&token=e590561f3c39aa2260e5442e29e93f6693d1cccd#top-05e95dfd-ce05-40c8-af93-d065229e6968[`OpenDRIVE definition of laneOffset`]: A lane offset may be used to shift the center lane away from the road reference line.
+
+.OpenDRIVE standards stipulates reference line is not affected by lane offset
+image::lane_offset_standard_way.png[]
+
+In esmini lane offset affects the reference line as well as center lane, which is a deviation from the OpenDRIVE standard. As consequence, t values are also shifted with the lane offset.
+
+.esmini shift both center lane and reference line by lane offset
+image::lane_offset_esmini_way.png[]
+
+https://en.wikipedia.org/wiki/2%2B1_road[2+1 roads] can be defined utilizing lane offset. Consider image below:
+
+.2+1 road in esmini, utilizing lane offset
+image::two_plus_one_lane_ids.png[]
+
+*esmini*
+[%autowidth, options=header]
+|===
+||white car|red car
+|*laneId*|-2|-1
+|*t*|-5.25|-1.75
+|===
+
+*OpenDRIVE*
+[%autowidth, options="header",]
+|===
+||white car|red car
+|*laneId*|-2|-1
+|*t*|-1.75|1.75
+|===
+
+A 2+1 example example scenario is found here: https://github.com/esmini/esmini/blob/4e45f132f13963a89e4b473c1bb16d9940d5c7cf/resources/xosc/two_plus_one_road.xosc[resources/xosc/two_plus_one_road.xosc]
 
 === Further issues at esmini GitHub page
 The https://github.com/esmini/esmini/issues[Issues tab at esmini GitHub page] is a valuable source of questions and answers. To search in all issues, make sure to set filter: `is:issue`.
