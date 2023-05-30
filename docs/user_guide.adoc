@@ -1957,6 +1957,39 @@ image::two_plus_one_lane_ids.png[]
 
 A 2+1 example example scenario is found here: https://github.com/esmini/esmini/blob/master/resources/xosc/two_plus_one_road.xosc[resources/xosc/two_plus_one_road.xosc]
 
+==== OSI for Python on Windows
+
+Follow the following steps to install OSI (and dependent Google Protobuf) for use by some esmini scripts, e.g. https://github.com/esmini/esmini/blob/master/scripts/osi2csv.py[osi2csv.py].
+
+*Protobuf for Python* (skip if already installed)
+
+. Open a Powershell
+. `pip install protobuf==3.20.2`
+
+*protoc* (Protobuf compiler)
+[start=3]
+. Download https://github.com/protocolbuffers/protobuf/releases/download/v3.20.2/protoc-3.20.2-win64.zip[protoc-3.20.2-win64.zip] +
+  (release page: https://github.com/protocolbuffers/protobuf/releases/tag/v3.20.2)
+. Unzip (at least protoc.exe) to some location
+
+*OSI for Python*
+[start=5]
+. Open a Powershell in the to-be-parent folder of OSI
+. `git clone https://github.com/OpenSimulationInterface/open-simulation-interface`
+. `cd open-simulation-interface`
+. `git checkout v3.5.0`
+. `./convert-to-proto3.sh`
+. `$env:PROTOC=<location of protoc.exe>` +
+  for example: `$env:PROTOC="C:/tmp/protoc-3.20.2-win64/bin/protoc.exe"`
+. `pip install .`
+
+This should be it.
+
+*How to remove old versions* (if needed)
+
+. `pip uninstall protobuf`
+. `pip uninstall open-simulation-interface`
+
 === Further issues at esmini GitHub page
 The https://github.com/esmini/esmini/issues[Issues tab at esmini GitHub page] is a valuable source of questions and answers. To search in all issues, make sure to set filter: `is:issue`.
 
