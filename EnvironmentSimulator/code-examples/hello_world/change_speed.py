@@ -39,7 +39,7 @@ while se.SE_GetQuitFlag() != 1:
         state = 1
     elif state == 1 and se.SE_GetSimulationTime() > 4:
         se.SE_ReportObjectSpeed(se.SE_GetId(0), 50.0)
-        state = 1
+        state = 2
 
     se.SE_Step()
 
