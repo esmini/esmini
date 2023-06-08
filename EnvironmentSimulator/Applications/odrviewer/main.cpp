@@ -302,11 +302,6 @@ void updateCar(roadmanager::OpenDrive *odrManager, Car *car, double dt)
         rrule = rule;
     }
 
-    if (rrule == roadmanager::Road::RoadRule::LEFT_HAND_TRAFFIC)
-    {
-        ds *= -1;
-    }
-
     if (static_cast<int>(car->pos->MoveAlongS(ds)) < 0)
     {
         if (stop_at_end_of_road)
