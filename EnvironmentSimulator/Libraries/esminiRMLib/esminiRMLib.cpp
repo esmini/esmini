@@ -836,7 +836,7 @@ extern "C"
             else
             {
                 rmGeoReference->a_            = static_cast<float>((geoReference->a_));
-                rmGeoReference->axis_         = static_cast<float>((geoReference->axis_));
+                rmGeoReference->axis_         = geoReference->axis_.c_str();
                 rmGeoReference->b_            = static_cast<float>((geoReference->b_));
                 rmGeoReference->ellps_        = geoReference->ellps_.c_str();
                 rmGeoReference->k_            = static_cast<float>((geoReference->k_));

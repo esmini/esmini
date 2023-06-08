@@ -2469,7 +2469,7 @@ namespace roadmanager
     typedef struct
     {
         double      a_;
-        double      axis_;
+        std::string axis_;
         double      b_;
         std::string ellps_;
         double      k_;

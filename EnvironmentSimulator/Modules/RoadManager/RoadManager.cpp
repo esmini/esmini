@@ -3077,7 +3077,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
 
     // Initialize GeoRef structure
     geo_ref_ = {std::numeric_limits<double>::quiet_NaN(),
-                std::numeric_limits<double>::quiet_NaN(),
+                "",
                 std::numeric_limits<double>::quiet_NaN(),
                 "",
                 std::numeric_limits<double>::quiet_NaN(),
@@ -5543,7 +5543,7 @@ void OpenDrive::ParseGeoLocalization(const std::string& geoLocalization)
         }
         else if (attr.first == "+axis")
         {
-            geo_ref_.axis_ = std::stod(attr.second);
+            geo_ref_.axis_ = attr.second;
         }
         else if (attr.first == "+b")
         {

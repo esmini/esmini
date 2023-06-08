@@ -99,7 +99,7 @@ typedef struct
 typedef struct
 {
     float       a_;
-    float       axis_;
+    const char* axis_;
     float       b_;
     const char* ellps_;
     float       k_;
