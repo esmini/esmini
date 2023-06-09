@@ -1,5 +1,15 @@
 ## esmini release notes
 
+### 2023-06-09 Version 2.31.7
+
+- Fix left hand traffic going reverse ([issue #441](https://github.com/esmini/esmini/issues/441))
+- Fix wrong type in GeoReference.axis_ ([issue #442](https://github.com/esmini/esmini/issues/442))
+- Add info on how to install OSI for use with Python on Windows
+  - see [User guide - OSI for Python on Windows](https://esmini.github.io/#_osi_for_python_on_windows)
+- Add Python example script manipulating the speed of a vehicle
+  - see [code-examples/hello_world/change_speed.py](https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/code-examples/hello_world/change_speed.py)
+
+
 ### 2023-05-29 Version 2.31.6
 
 New content:
