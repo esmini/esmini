@@ -1196,6 +1196,7 @@ namespace scenarioengine
         double                   colorCmykYellow_;
         double                   colorCmykKey_;
 
+        double transitionTimer_ = 0.0;
         AppearanceAction()
             : OSCPrivateAction(OSCPrivateAction::ActionType::APPEARANCE_ACTION, ControlDomains::DOMAIN_NONE),
               transitionTime_(SMALL_NUMBER),

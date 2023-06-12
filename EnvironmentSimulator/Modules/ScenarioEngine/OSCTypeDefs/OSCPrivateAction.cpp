@@ -2313,8 +2313,11 @@ void AppearanceAction::Start(double simTime, double dt)
 void AppearanceAction::Step(double simTime, double dt)
 {
     (void)dt;
-    if ()
+    if (transitionTime_ < transitionTimer_)
+    {
         OSCAction::End(simTime);
+    }
+    transitionTimer_ += dt;
 }
 
 void OverrideControlAction::Start(double simTime, double dt)
