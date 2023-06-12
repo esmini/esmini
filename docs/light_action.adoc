@@ -1,0 +1,30 @@
+== Introduction
+
+Light state action is to control the lights. Definition of the light state are found here https://www.asam.net/static_downloads/ASAM_OpenSCENARIO_V1.2.0_Model_Documentation/modelDocumentation/content/LightState.html[here].
+
+=== Phrasing
+Below image explains about the light state phrasing especially where ever light state action is ignored and how base rbg is prioritized.
+
+.Light state action phrasing
+image::light_action_phrasing.png[]
+
+=== Example implementation
+
+Below flowchart explain the logic behind when light type, transition time and mode are provided.
+
+.Flow chart for light type, transition time and mode are provided
+image::Light_action_only_lightType.png[]
+
+=== Useful information
+Some of useful information about light state action are:
+
+. Light visualization can be toggled by pressing L.
+. Light visualization will be only ON from start of simulation when scenario has light state action.
+. Model without light material will support light state action.
+. Model without light material wont support light state visualization.
+. Light material shall be updated in the model but material name cannot be changed.
+. Lights in the model shall be remodeled but light name cannot be changed.
+. To see light status in scv file. use --extended tag while converting dat to csv.
+. Values in csv files #ffffff-ff Percentage which denote #RGB-Emission, Which is in HEX format.
+
+full lights workflow https://drive.google.com/file/d/1J7IDrlSXxA57qZo8bugY3ueljCgY-MMD/view?pli=1[here]

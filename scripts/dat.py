@@ -29,6 +29,7 @@ class ObjectStateStructDat(ctypes.Structure):
         ("height", ctypes.c_float),
         ("scaleMode", ctypes.c_int),
         ("visibilityMask", ctypes.c_int),
+        ("rgb", ctypes.c_ubyte * 52),
 
         # ObjectPositionStruct
         ("x", ctypes.c_float),
@@ -107,14 +108,16 @@ class DATFile():
                 data.r,
                 data.speed,
                 data.wheel_angle,
-                data.wheel_rot
-            )
+                data.wheel_rot)
+
 
     def get_labels_line_extended(self):
-        return 'time, id, name, x, y, z, h, p, r, roadId, laneId, offset, t, s, speed, wheel_angle, wheel_rot'
+        return 'time, id, name, x, y, z, h, p, r, roadId, laneId, offset, t, s,\
+speed, wheel_angle, wheel_rot, day_light, low_beam, high_beam, fog_light_front, fog_light_rear, brake_light, \
+ind_left, ind_right, reversing_light, license_plate, special_pur_light, fog_light, warning_light'
 
     def get_data_line_extended(self, data):
-        return '{:.3f}, {}, {}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {}, {}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}'.format(
+        str = '{:.3f}, {}, {}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {}, {}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}'.format(
                 data.time,
                 data.id,
                 data.name.decode('utf-8'),
@@ -133,6 +136,12 @@ class DATFile():
                 data.wheel_angle,
                 data.wheel_rot
             )
+
+        for i in range(12):
+            str += ', #{:02X}{:02X}{:02X}-{:02X}'.format(
+                    data.rgb[i*4 + 0], data.rgb[i*4 + 1], data.rgb[i*4 + 2], data.rgb[i*4 + 3]
+                )
+        return str
 
     def get_labels_line_array(self):
         return [

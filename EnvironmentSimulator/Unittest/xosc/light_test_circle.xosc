@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- scnario with different lights on, off and flash mode -->
+<OpenSCENARIO>
+   <FileHeader revMajor="1"
+               revMinor="2"
+               date="2017-06-09T10:00:00"
+               description="Another variant of cut-in"
+               author="esmini-team"/>
+   <ParameterDeclarations>
+      <ParameterDeclaration name="HeadwayTime_LaneChange" parameterType="double" value="0.4"/>
+      <ParameterDeclaration name="HeadwayTime_Brake" parameterType="double" value="1.0"/>
+      <ParameterDeclaration name="Period" parameterType="double" value="10.0"/>
+   </ParameterDeclarations>
+   <CatalogLocations>
+      <VehicleCatalog>
+         <Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
+      </VehicleCatalog>
+   </CatalogLocations>
+   <RoadNetwork>
+      <LogicFile filepath="../xodr/circle.xodr"/>
+   </RoadNetwork>
+   <Entities>
+        <ScenarioObject name="Ego">
+            <CatalogReference catalogName="VehicleCatalog" entryName="vehicle_light"/>
+        </ScenarioObject>
+   </Entities>
+   <Storyboard>
+      <Init>
+         <Actions>
+            <Private entityRef="Ego">
+               <PrivateAction>
+                  <LongitudinalAction>
+                        <SpeedAction>
+                           <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                           <SpeedActionTarget>
+                              <AbsoluteTargetSpeed value="20.0"/>
+                           </SpeedActionTarget>
+                        </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <TeleportAction>
+                        <Position>
+                           <LanePosition roadId="0" laneId="-1" s="5.0" offset="0.0"/>
+                        </Position>
+                  </TeleportAction>
+               </PrivateAction>
+            </Private>
+         </Actions>
+      </Init>
+      <Story name="LightStateActionStory">
+         <ParameterDeclarations>
+            <ParameterDeclaration parameterType="string" name="owner" value="Ego"/>
+         </ParameterDeclarations>
+         <Act name="LightStateActionAct">
+            <ManeuverGroup maximumExecutionCount="3" name="brakeLightsOnActionSequence">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="Ego"/>
+               </Actors>
+               <Maneuver name="brakeLightsOnActionManeuver">
+                  <Event name="brakeLightsOnActionEvent" priority="override" maximumExecutionCount="1" >
+                     <Action name="brakeLightsOnAction">
+                        <PrivateAction>
+                           <AppearanceAction>
+                                <LightStateAction transitionTime="2">
+                                    <LightType>
+                                       <VehicleLight vehicleLightType= "brakeLights"/>
+                                    </LightType>
+                                    <LightState mode= "on">
+                                    </LightState>
+                                </LightStateAction>
+                           </AppearanceAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="brakeLightsOnActionCondition0" delay="0" conditionEdge="rising">
+                              <ByValueCondition>
+                                 <SimulationTimeCondition value="${2 + 0 * $Period}" rule="greaterThan"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                        <ConditionGroup>
+                           <Condition name="brakeLightsOnActionCondition1" delay="0" conditionEdge="rising">
+                              <ByValueCondition>
+                                 <SimulationTimeCondition value="${2 + 1 * $Period}" rule="greaterThan"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                        <ConditionGroup>
+                           <Condition name="brakeLightsOnActionCondition2" delay="0" conditionEdge="rising">
+                              <ByValueCondition>
+                                 <SimulationTimeCondition value="${2 + 2 * $Period}" rule="greaterThan"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+               <Maneuver name="brakeLightsOffActionManeuver">
+                  <Event name="brakeLightsOffActionEvent" priority="override" maximumExecutionCount="1" >
+                     <Action name="brakeLightsOffAction">
+                        <PrivateAction>
+                           <AppearanceAction>
+                                 <LightStateAction transitionTime="2">
+                                    <LightType>
+                                       <VehicleLight vehicleLightType= "brakeLights"/>
+                                    </LightType>
+                                    <LightState mode= "off">
+                                    </LightState>
+                                 </LightStateAction>
+                           </AppearanceAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="brakeLightsOffActionCondition0" delay="0" conditionEdge="rising">
+                              <!-- <ByValueCondition>
+                                 <StoryboardElementStateCondition storyboardElementRef="brakeLightsOnActionEvent" state="endTransition" storyboardElementType="event"/>
+                              </ByValueCondition> -->
+                              <ByValueCondition>
+                                 <SimulationTimeCondition value="${6 + 0 * $Period}" rule="greaterThan"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                        <ConditionGroup>
+                           <Condition name="brakeLightsOffActionCondition1" delay="0" conditionEdge="rising">
+                              <ByValueCondition>
+                                 <SimulationTimeCondition value="${6 + 1 * $Period}" rule="greaterThan"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                        <ConditionGroup>
+                           <Condition name="brakeLightsOffActionCondition2" delay="0" conditionEdge="rising">
+                              <ByValueCondition>
+                                 <SimulationTimeCondition value="${6 + 2 * $Period}" rule="greaterThan"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+            </ManeuverGroup>
+            <StartTrigger>
+               <ConditionGroup>
+                  <Condition name="LightStateActionActStart" delay="0" conditionEdge="none">
+                     <ByValueCondition>
+                        <SimulationTimeCondition value="0" rule="greaterThan"/>
+                     </ByValueCondition>
+                  </Condition>
+               </ConditionGroup>
+            </StartTrigger>
+         </Act>
+      </Story>
+      <StopTrigger>
+          <ConditionGroup>
+              <Condition conditionEdge="none" delay="1" name="simulationEndEventDone">
+                  <ByValueCondition>
+                     <SimulationTimeCondition value="${3 * $Period}" rule="greaterThan"/>
+                  </ByValueCondition>
+              </Condition>
+          </ConditionGroup>
+      </StopTrigger>
+   </Storyboard>
+</OpenSCENARIO>

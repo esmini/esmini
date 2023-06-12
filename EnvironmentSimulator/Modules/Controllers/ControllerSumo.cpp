@@ -217,7 +217,8 @@ void ControllerSumo::Step(double timeStep)
                                        object_->rear_axle_.positionZ,
                                        object_->front_axle_.positionX,
                                        object_->front_axle_.positionZ,
-                                       &obj->pos_);
+                                       &obj->pos_,
+                                       obj->vehicleLightActionStatusList);
             }
             else if (!entities_->object_[i]->IsGhost())
             {

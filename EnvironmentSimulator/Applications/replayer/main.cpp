@@ -370,6 +370,9 @@ int main(int argc, char** argv)
     opt.AddOption("headless", "Run without viewer window");
     opt.AddOption("hide_trajectories", "Hide trajectories from start (toggle with key 'n')");
     opt.AddOption("info_text", "Show on-screen info text (toggle key 'i') mode 0=None 1=current (default) 2=per_object 3=both", "mode");
+    #ifdef _USE_OSG
+        opt.AddOption("lights", "Show lights for light state actions");
+    #endif
     opt.AddOption("no_ghost", "Remove ghost entities");
     opt.AddOption("no_ghost_model", "Remove only ghost model, show trajectory (toggle with key 'g')");
     opt.AddOption("path", "Search path prefix for assets, e.g. model_ids.txt file (multiple occurrences supported)", "path");
@@ -508,9 +511,26 @@ int main(int argc, char** argv)
                 printf("continue without road description\n");
             }
         }
+        // find lights visualize needed or not
+        bool isLightActionReplayer = false;
+        for (int i = 0; i < static_cast<int>(player->data_.size()); i++)
+        {
+            if(isLightActionReplayer)
+            {
+                break;
+            }
+            for(int j = 0; j < static_cast<int>(sizeof(player->data_[i].state.info.rgb)); j++)
+            {
+                if( static_cast<double>(player->data_[static_cast<unsigned int>(i)].state.info.rgb[j]) != 0.0)
+                {
+                    isLightActionReplayer = true;
+                    break;
+                }
+            }
+        }
+        opt.SetOptionSet("lights", isLightActionReplayer);
 
         odrManager = roadmanager::Position::GetOpenDrive();
-
         osg::ArgumentParser arguments(&argc, argv);
 
         viewer = new viewer::Viewer(odrManager, player->header_.model_filename, NULL, argv[0], arguments, &opt);
@@ -990,6 +1010,40 @@ int main(int argc, char** argv)
                                  time_scale);
                         viewer->SetInfoText(info_str_buf);
                     }
+
+                    // visualize lights
+                    Object::VehicleLightActionStatus vehicleLightActionStatusList[ Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS];
+                    for (int i = 0; i < Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS; i++)
+                    {
+                        for (int j = 0; j < 4; j++)
+                        {
+                            if (state->info.rgb[(i * 4) + j]/255.0 != 0)
+                            {
+                                vehicleLightActionStatusList[i].type = static_cast<Object::VehicleLightType>(i);
+                                // extract emission
+                                if ( j == 3)
+                                {
+                                    vehicleLightActionStatusList[i].emissionRgb[0] = vehicleLightActionStatusList[i].diffuseRgb[0] * state->info.rgb[(i * 4) + j]/255.0;
+                                    vehicleLightActionStatusList[i].emissionRgb[1] = vehicleLightActionStatusList[i].diffuseRgb[1] * state->info.rgb[(i * 4) + j]/255.0;
+                                    vehicleLightActionStatusList[i].emissionRgb[2] = vehicleLightActionStatusList[i].diffuseRgb[2] * state->info.rgb[(i * 4) + j]/255.0;
+
+                                }
+                                else
+                                { // extract diffuse
+                                    vehicleLightActionStatusList[i].diffuseRgb[j] = state->info.rgb[(i * 4) + j]/255.0;
+                                }
+                            }
+                            else
+                            {
+                                vehicleLightActionStatusList[i].diffuseRgb[j] = 0.0;
+                                vehicleLightActionStatusList[i].emissionRgb[j] = 0.0;
+                            }
+                            // printf("Obj[%d]Light[%d]RGB[%d]: %d\n", index, i, (i * 4) + j, state->info.rgb[(i * 4) + j]);
+                        }
+                        // printf("emission[%d]: %.2f %.2f %.2f\n",i, vehicleLightActionStatusList[i].emissionRgb[0], vehicleLightActionStatusList[i].emissionRgb[1], vehicleLightActionStatusList[i].emissionRgb[2]);
+                        // printf("diffuse[%d]: %.2f %.2f %.2f\n",i, vehicleLightActionStatusList[i].diffuseRgb[0], vehicleLightActionStatusList[i].diffuseRgb[1], vehicleLightActionStatusList[i].diffuseRgb[2]);
+                    }
+                    (static_cast<viewer::CarModel*>(sc->entityModel))->UpdateLight(vehicleLightActionStatusList);
                 }
 
                 if (col_analysis && scenarioEntity.size() > 1)

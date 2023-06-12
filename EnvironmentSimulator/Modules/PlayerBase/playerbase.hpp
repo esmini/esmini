@@ -174,6 +174,7 @@ namespace scenarioengine
         CSV_Logger      *CSV_Log;
         ScenarioEngine  *scenarioEngine;
         ScenarioGateway *scenarioGateway;
+
 #ifdef _USE_OSI
         OSIReporter *osiReporter;
 #else

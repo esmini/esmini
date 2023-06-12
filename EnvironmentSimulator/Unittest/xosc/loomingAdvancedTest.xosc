@@ -69,7 +69,7 @@
                                 <LanePosition roadId="2" laneId="-1" offset="0" s="10"/>
                             </Position>
                         </TeleportAction>
-                    </PrivateAction>                
+                    </PrivateAction>
                     <PrivateAction>
                         <RoutingAction>
                             <AssignRouteAction>

@@ -60,6 +60,7 @@ typedef int64_t __int64;
 #define LOG_FILENAME                  "log.txt"
 #define DAT_FILENAME                  "sim.dat"
 #define GHOST_TRAIL_SAMPLE_TIME       0.2
+#define MAX_INTENSITY_LUM              (12E+3)
 
 #define LOG(...)       Logger::Inst().Log(false, false, __FILENAME__, __FUNCTION__, __LINE__, __VA_ARGS__)
 #define LOG_TRACE(...) Logger::Inst().Log(false, true, __FILENAME__, __FUNCTION__, __LINE__, __VA_ARGS__)
@@ -119,10 +120,11 @@ enum class ModKeyMask
 
 enum class ControlDomains
 {
-    DOMAIN_NONE = 0,
-    DOMAIN_LONG = 1,
-    DOMAIN_LAT  = 2,
-    DOMAIN_BOTH = 3  // can also be interpreted as bitwise OR: DIM_LONG | DIM_LAT
+    DOMAIN_NONE  = 0,
+    DOMAIN_LONG  = 1,
+    DOMAIN_LAT   = 2,
+    DOMAIN_BOTH  = 3,  // can also be interpreted as bitwise OR: DIM_LONG | DIM_LAT
+    DOMAIN_LIGHT = 4,
 };
 
 enum class EntityScaleMode
@@ -548,6 +550,14 @@ void R0R12EulerAngles(double h0, double p0, double r0, double h1, double p1, dou
 */
 void SwapByteOrder(unsigned char* buf, int data_type_size, int buf_size);
 
+/**
+        Check whether array contains at least one non-zero element
+*/
+bool CheckArrayRange0to1(double array[], int size);
+double findMinIncrementArray( double array[], double limit, double percent);
+int adjustByOffsetArray(double (&array)[3], double limit);
+
+
 #if (defined WINVER && WINVER == _WIN32_WINNT_WIN7)
 #else
 #include <thread>
@@ -813,6 +823,7 @@ public:
     void                      PrintUsage();
     void                      PrintUnknownArgs(std::string message = "Unrecognized arguments:");
     bool                      GetOptionSet(std::string opt);
+    bool                      SetOptionSet(std::string opt, bool boo);
     bool                      IsOptionArgumentSet(std::string opt);
     std::string               GetOptionArg(std::string opt, int index = 0);
     int                       ParseArgs(int argc, const char* const argv[]);
