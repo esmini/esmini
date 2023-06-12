@@ -3208,6 +3208,132 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 
             action = visAction;
         }
+        else if (actionChild.name() == std::string("AppearanceAction"))
+        {
+            std::string lightType_;
+            std::string lightMode_;
+            std::string color_;
+
+            AppearanceAction *appAction             = new AppearanceAction();
+            pugi::xml_node    appearanceActionChild = actionChild.first_child();
+
+            if (appearanceActionChild.name() == std::string("LightStateAction"))
+            {
+                if (!parameters.ReadAttribute(appearanceActionChild, "transitionTime").empty())
+                {
+                    appAction->transitionTime_ = strtod(parameters.ReadAttribute(appearanceActionChild, "transitionTime"));
+                }
+                for (pugi::xml_node LightStateActionChild = appearanceActionChild.first_child(); LightStateActionChild;
+                     LightStateActionChild                = LightStateActionChild.next_sibling())
+                {
+                    if (LightStateActionChild.name() == std::string("LightType"))
+                    {
+                        std::printf("inside light type");
+
+                        for (pugi::xml_node lightTypeChild = LightStateActionChild.first_child(); lightTypeChild;
+                             lightTypeChild                = lightTypeChild.next_sibling())
+                        {
+                            if (lightTypeChild.name() == std::string("VehicleLight"))
+                            {
+                                std::printf("inside vehicle light");
+                                lightType_ = parameters.ReadAttribute(lightTypeChild, "vehicleLightType");
+                                appAction->setVehicleLightType(lightType_);
+                            }
+                            else if (lightTypeChild.name() == std::string("UserDefinedLight"))
+                            {
+                                LOG("UserDefinedLight not supported yet, ignoring");
+                            }
+                            else
+                            {
+                                LOG("VehicleLight mandatory field, Setting it to none");
+                            }
+                        }
+                    }
+                    else if (LightStateActionChild.name() == std::string("LightState"))
+                    {
+                        if (!parameters.ReadAttribute(LightStateActionChild, "flashingOffDuration").empty())
+                        {
+                            appAction->flashingOffDuration_ = strtod(parameters.ReadAttribute(LightStateActionChild, "flashingOffDuration"));
+                        }
+                        if (!parameters.ReadAttribute(LightStateActionChild, "flashingOnDuration").empty())
+                        {
+                            appAction->flashingOnDuration_ = strtod(parameters.ReadAttribute(LightStateActionChild, "flashingOnDuration"));
+                        }
+                        if (!parameters.ReadAttribute(LightStateActionChild, "luminousIntensity").empty())
+                        {
+                            appAction->luminousIntensity_ = strtod(parameters.ReadAttribute(LightStateActionChild, "luminousIntensity"));
+                        }
+                        if (!parameters.ReadAttribute(LightStateActionChild, "mode").empty())
+                        {
+                            lightMode_ = parameters.ReadAttribute(LightStateActionChild, "mode");
+                            appAction->setLightMode(lightMode_);
+                        }
+                        else
+                        {
+                            LOG("mode in LightState is mandatory field, Anyway setting it to flashing");
+                        }
+                        for (pugi::xml_node colourChild = LightStateActionChild.first_child(); colourChild; colourChild = colourChild.next_sibling())
+                        {
+                            if (colourChild.name() == std::string("Color"))
+                            {
+                                if (!parameters.ReadAttribute(colourChild, "colorType").empty())
+                                {
+                                    color_ = parameters.ReadAttribute(colourChild, "colorType");
+                                    appAction->setColourType(color_);
+                                }
+                                for (pugi::xml_node colourDesChild = colourChild.first_child(); colourDesChild;
+                                     colourDesChild                = colourDesChild.next_sibling())
+                                {
+                                    if (colourDesChild.name() == std::string("ColorRgb"))
+                                    {
+                                        if (!parameters.ReadAttribute(colourChild, "red").empty())
+                                        {
+                                            appAction->colorRgbRed_ = strtod(parameters.ReadAttribute(colourChild, "red"));
+                                        }
+                                        if (!parameters.ReadAttribute(colourChild, "blue").empty())
+                                        {
+                                            appAction->colorRgbBlue_ = strtod(parameters.ReadAttribute(colourChild, "blue"));
+                                        }
+                                        if (!parameters.ReadAttribute(colourChild, "green").empty())
+                                        {
+                                            appAction->colorRgbGreen_ = strtod(parameters.ReadAttribute(colourChild, "green"));
+                                        }
+                                    }
+                                    else if (colourDesChild.name() == std::string("ColorCmyk"))
+                                    {
+                                        if (!parameters.ReadAttribute(colourChild, "cyan").empty())
+                                        {
+                                            appAction->colorCmykCyan_ = strtod(parameters.ReadAttribute(colourChild, "cyan"));
+                                        }
+                                        if (!parameters.ReadAttribute(colourChild, "magenta").empty())
+                                        {
+                                            appAction->colorCmykMagenta_ = strtod(parameters.ReadAttribute(colourChild, "magenta"));
+                                        }
+                                        if (!parameters.ReadAttribute(colourChild, "yellow").empty())
+                                        {
+                                            appAction->colorCmykYellow_ = strtod(parameters.ReadAttribute(colourChild, "yellow"));
+                                        }
+                                        if (!parameters.ReadAttribute(colourChild, "key").empty())
+                                        {
+                                            appAction->colorCmykKey_ = strtod(parameters.ReadAttribute(colourChild, "key"));
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        LOG("Exiting, Either LightType or LightState missing in: %s", actionChild.name());
+                    }
+                }
+                action = appAction;
+            }
+            else
+            {
+                LOG("LightStateAction missing");
+            }
+        }
         else
         {
             throw std::runtime_error("Action is not supported: " + std::string(actionChild.name()));

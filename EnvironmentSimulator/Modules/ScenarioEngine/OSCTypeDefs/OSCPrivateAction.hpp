@@ -71,7 +71,8 @@ namespace scenarioengine
             ASSIGN_ROUTE,
             FOLLOW_TRAJECTORY,
             Acquire_POSITION,
-            SYNCHRONIZE_ACTION
+            SYNCHRONIZE_ACTION,
+            APPEARANCE_ACTION,
         };
 
         enum class DynamicsDimension
@@ -1152,6 +1153,69 @@ namespace scenarioengine
         {
             return "VisibilityAction";
         };
+
+        void Step(double simTime, double dt);
+        void Start(double simTime, double dt);
+    };
+
+    class AppearanceAction : public OSCPrivateAction
+    {
+    public:
+        enum class LightMode
+        {
+            ON,
+            OFF,
+            FLASHING
+        };
+        enum class Color
+        {
+            OTHER,
+            RED,
+            YELLOW,
+            GREEN,
+            BLUE,
+            VIOLET,
+            ORANGE,
+            BROWN,
+            BLACK,
+            GREY,
+            WHITE
+        };
+        Object::VehicleLightType vehicleLightType_;
+        double                   transitionTime_;
+        double                   flashingOffDuration_;
+        double                   flashingOnDuration_;
+        double                   luminousIntensity_;
+        LightMode                mode_;
+        Color                    colorType_;
+        double                   colorRgbRed_;
+        double                   colorRgbGreen_;
+        double                   colorRgbBlue_;
+        double                   colorCmykCyan_;
+        double                   colorCmykMagenta_;
+        double                   colorCmykYellow_;
+        double                   colorCmykKey_;
+
+        AppearanceAction()
+            : OSCPrivateAction(OSCPrivateAction::ActionType::APPEARANCE_ACTION, ControlDomains::DOMAIN_NONE),
+              transitionTime_(SMALL_NUMBER),
+              flashingOffDuration_(0.5),
+              flashingOnDuration_(0.5),
+              luminousIntensity_(0.0),
+              mode_(LightMode::FLASHING),
+              colorRgbRed_(1.0),
+              colorRgbGreen_(0.0),
+              colorRgbBlue_(0.0),
+              colorCmykCyan_(1.0),
+              colorCmykMagenta_(0.0),
+              colorCmykYellow_(0.0),
+              colorCmykKey_(0.0)
+        {
+        }
+
+        void setVehicleLightType(std::string);
+        void setLightMode(std::string);
+        void setColourType(std::string);
 
         void Step(double simTime, double dt);
         void Start(double simTime, double dt);

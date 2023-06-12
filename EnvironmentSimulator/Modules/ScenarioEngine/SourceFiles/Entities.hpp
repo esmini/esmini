@@ -70,6 +70,24 @@ namespace scenarioengine
 
         OSCProperties properties_;
 
+        enum class VehicleLightType
+        {
+            DAY_TIME_RUNNING_LIGHTS     = 0,
+            LOW_BEAM                    = 1,
+            HIGH_BEAM                   = 2,
+            FOG_LIGHTS                  = 3,
+            FOG_LIGHTS_FRONT            = 4,
+            FOG_LIGHTS_REAR             = 5,
+            BRAKE_LIGHTS                = 6,
+            WARNING_LIGHTS              = 7,
+            INDICATOR_LEFT              = 8,
+            INDICATOR_RIGHT             = 9,
+            REVERSING_LIGHTS            = 10,
+            LICENSE_PLATER_ILLUMINATION = 11,
+            SPECIAL_PURPOSE_LIGHTS      = 12,
+            NONE                        = 13
+        };
+
         typedef enum
         {
             OVERRIDE_THROTTLE       = 0,  // Value range: [0..1]. 0 represents 0%, 1 represents 100% of pressing the throttle pedal.
