@@ -1,0 +1,86 @@
+<?xml version="1.0" standalone="yes"?>
+<OpenDRIVE>
+    <header revMajor="1" revMinor="4" name="" version="1.00" date="Wed Jul  1 07:28:45 2020" north="0.0" south="0.0" east="0.0" west="0.0">
+    </header>
+    <road name="dummy road" length="400" id="0" junction="-1">
+        <link>
+        </link>
+        <planView>
+            <geometry s="0.0" x="0.0" y="0.0" hdg="0.0" length="500">
+                <line/>
+            </geometry>
+        </planView>
+        <lateralProfile/>
+        <lanes>
+            <laneSection s="0">
+                <left>
+                    <lane id="2" type="border" level= "false">
+                        <link>
+                        </link>
+                        <width sOffset="0.0" a="50" b="0.0" c="0.0" d="0.0"/>
+                    </lane>
+                    <lane id="1" type="driving" level= "false">
+                        <link>
+                        </link>
+                        <width sOffset="0.0" a="3.2" b="0.0" c="0.0" d="0.0"/>
+                        <roadMark sOffset="0.0" type="solid" weight="standard" color="standard" width="0.12" laneChange="none" height="0.02">
+                            <type name="solid" width="0.12" >
+                                <line length="0.0" space="0.0" tOffset="0.0" sOffset="0.0" rule="no passing" width="0.12"/>
+                            </type>
+                        </roadMark>
+                    </lane>
+                </left>
+                <center>
+                    <lane id="0" type="driving" level= "false">
+                        <link>
+                        </link>
+                        <roadMark sOffset="0.0" type="broken" weight="standard" color="standard" width="0.12" laneChange="none" height="0.02">
+                            <type name="broken" width="0.12" >
+                                <line length="4.0" space="8.0" tOffset="0.0" sOffset="0.0" rule="caution" width="0.12"/>
+                            </type>
+                        </roadMark>
+                    </lane>
+                </center>
+                <right>
+                    <lane id="-1" type="driving" level= "false">
+                        <link>
+                        </link>
+                        <width sOffset="0.0" a="3.2" b="0.0" c="0.0" d="0.0"/>
+                       <roadMark sOffset="0.0" type="solid" weight="standard" color="standard" width="0.12" laneChange="none" height="0.02">
+                            <type name="solid" width="0.12" >
+                                <line length="0.0" space="0.0" tOffset="0.0" sOffset="0.0" rule="no passing" width="0.12"/>
+                            </type>
+                        </roadMark>
+                    </lane>
+                    <lane id="-2" type="border" level= "false">
+                        <link>
+                        </link>
+                        <width sOffset="0.0" a="30.0" b="0.0" c="0.0" d="0.0"/>
+                    </lane>
+                </right>
+            </laneSection>
+        </lanes>
+        <objects>
+            <object type="barrier" id="0" s="30" t="0">
+                <outlines>
+                    <outline id="0" closed="true">
+                        <cornerRoad s="10" t="-2.5" dz="0.0" height="4.0" id="0"/>
+                        <cornerRoad s="15" t="-2.5" dz="0.0" height="4.0" id="0"/>
+                        <cornerRoad s="15" t="2.5" dz="0.0" height="4.0" id="2"/>
+                        <cornerRoad s="10" t="2.5" dz="0.0" height="4.0" id="1"/>
+                    </outline>
+                    <outline id="0" closed="true">
+                        <cornerRoad s="50.0" t="-2.5" z="0.0" height="4.0" id="0"/>
+                        <cornerRoad s="55.0" t="-2.5" z="0.0" height="4.0" id="3"/>
+                        <cornerRoad s="55.0" t="2.5" z="0.0" height="4.0" id="2"/>
+                    </outline>
+                </outlines>
+                <repeat s="25" length="5" distance ="0.0" tStart="5.0" tEnd="5.0"/>
+            </object>
+        </objects>
+        <signals>
+        </signals>
+        <surface>
+        </surface>
+    </road>
+</OpenDRIVE>

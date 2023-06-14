@@ -591,6 +591,11 @@ void RotateVec2D(double x, double y, double angle, double& xr, double& yr)
     yr = x * sin(angle) + y * cos(angle);
 }
 
+bool IsEqualDouble(double val1, double val2)
+{
+    return ((std::signbit(val1) == std::signbit(val2)) && (fabs(val1 - val2) < SMALL_NUMBER));
+}
+
 void Global2LocalCoordinates(double  xTargetGlobal,
                              double  yTargetGlobal,
                              double  xHostGlobal,
