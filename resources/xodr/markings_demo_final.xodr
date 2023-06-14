@@ -1,0 +1,678 @@
+<?xml version='1.0' encoding='utf-8'?>
+<OpenDRIVE>
+    <header name="myroad" revMajor="1" revMinor="7" date="2025-01-11 09:31:21.161369" north="0.0" south="0.0" east="0.0" west="0.0"/>
+    <road rule="RHT" id="1" junction="-1" length="200.0">
+        <link>
+            <successor elementType="road" elementId="2" contactPoint="start"/>
+        </link>
+        <planView>
+            <geometry s="0" x="0" y="0" hdg="0" length="100">
+                <line/>
+            </geometry>
+            <geometry s="100" x="100.0" y="0.0" hdg="0" length="100.0">
+                <arc curvature="-0.02"/>
+            </geometry>
+        </planView>
+        <elevationProfile/>
+        <lateralProfile/>
+        <lanes>
+            <laneSection s="0">
+                <left>
+                    <lane id="3" type="border" level="false">
+                        <link>
+                            <successor id="3"/>
+                        </link>
+                        <width a="6" b="0" c="0" d="0" sOffset="0"/>
+                        <width a="6" b="-1" c="0" d="0" sOffset="13"/>
+                        <width a="0.65" b="0" c="0" d="0" sOffset="18.35"/>
+                        <width a="0.65" b="1" c="0" d="0" sOffset="64.65"/>
+                        <width a="6.0" b="0" c="0" d="0" sOffset="70.0"/>
+                        <width a="6.0" b="-1" c="0" d="0" sOffset="85.0"/>
+                        <width a="1" b="0" c="0" d="0" sOffset="90.0"/>
+                        <width a="1" b="1" c="0" d="0" sOffset="140.0"/>
+                        <width a="6" b="0" c="0" d="0" sOffset="145.0"/>
+                        <width a="6" b="-0.5" c="0" d="0" sOffset="165.0"/>
+                        <width a="3.5" b="0" c="0" d="0" sOffset="170.0"/>
+                        <width a="3.5" b="0.5" c="0" d="0" sOffset="190.0"/>
+                        <width a="6.0" b="0.0" c="0" d="0" sOffset="195.0"/>
+                    </lane>
+                    <lane id="2" type="driving" level="false">
+                        <link>
+                            <successor id="2"/>
+                        </link>
+                        <width a="0" b="0" c="0" d="0" sOffset="0"/>
+                        <width a="0.0" b="1" c="0" d="0" sOffset="13"/>
+                        <width a="5.35" b="0" c="0" d="0" sOffset="18.35"/>
+                        <width a="5.35" b="-1" c="0" d="0" sOffset="64.65"/>
+                        <width a="0.0" b="0" c="0" d="0" sOffset="70.0"/>
+                        <width a="0.0" b="1" c="0" d="0" sOffset="85.0"/>
+                        <width a="5.0" b="0" c="0" d="0" sOffset="90.0"/>
+                        <width a="5.0" b="-1" c="0" d="0" sOffset="140.0"/>
+                        <width a="0.0" b="0" c="0" d="0" sOffset="145.0"/>
+                        <width a="0.0" b="0.5" c="0" d="0" sOffset="165.0"/>
+                        <width a="2.5" b="0" c="0" d="0" sOffset="170.0"/>
+                        <width a="2.5" b="-0.5" c="0" d="0" sOffset="190.0"/>
+                        <width a="0.0" b="0.0" c="0" d="0" sOffset="195.0"/>
+                    </lane>
+                    <lane id="1" type="driving" level="false">
+                        <link>
+                            <successor id="1"/>
+                        </link>
+                        <width a="3.25" b="0" c="0" d="0" sOffset="0"/>
+                    </lane>
+                </left>
+                <center>
+                    <lane id="0" type="none" level="false">
+                        <roadMark sOffset="0" type="broken" weight="standard" color="standard" height="0.02" width="0.2"/>
+                    </lane>
+                </center>
+                <right>
+                    <lane id="-1" type="driving" level="false">
+                        <link>
+                            <successor id="-1"/>
+                        </link>
+                        <width a="3.25" b="0" c="0" d="0" sOffset="0"/>
+                    </lane>
+                    <lane id="-2" type="border" level="false">
+                        <link>
+                            <successor id="-2"/>
+                        </link>
+                        <width a="0.3" b="0" c="0" d="0" sOffset="0"/>
+                    </lane>
+                    <lane id="-3" type="shoulder" level="false">
+                        <link>
+                            <successor id="-3"/>
+                        </link>
+                        <width a="2.05" b="0" c="0" d="0" sOffset="0"/>
+                        <height inner="0.12" outer="0.12" sOffset="0"/>
+                    </lane>
+                    <lane id="-4" type="border" level="false">
+                        <link>
+                            <successor id="-4"/>
+                        </link>
+                        <width a="0.2" b="0" c="0" d="0" sOffset="0"/>
+                        <height inner="0.12" outer="0.12" sOffset="0"/>
+                    </lane>
+                    <lane id="-5" type="biking" level="false">
+                        <link>
+                            <successor id="-5"/>
+                        </link>
+                        <width a="1.6" b="0" c="0" d="0" sOffset="0"/>
+                        <height inner="0.12" outer="0.12" sOffset="0"/>
+                    </lane>
+                    <lane id="-6" type="sidewalk" level="false">
+                        <link>
+                            <successor id="-6"/>
+                        </link>
+                        <width a="3" b="0" c="0" d="0" sOffset="0"/>
+                        <height inner="0.12" outer="0.12" sOffset="0"/>
+                    </lane>
+                    <lane id="-7" type="border" level="false">
+                        <link>
+                            <successor id="-7"/>
+                        </link>
+                        <width a="7" b="0" c="0" d="0" sOffset="0"/>
+                    </lane>
+                </right>
+            </laneSection>
+        </lanes>
+        <objects>
+            <object type="crosswalk" id="1" s="10.0" t="0.0" zOffset="0.0" orientation="none" length="10.0" width="7.0" hdg="0.0" pitch="0.0" roll="0.0">
+                <outlines>
+                    <outline id="0" closed="true">
+                        <cornerRoad s="6.0" t="3.2" dz="0.0" height="0.0" id="0"/>
+                        <cornerRoad s="6.0" t="-3.2" dz="0.0" height="0.0" id="1"/>
+                        <cornerRoad s="10.0" t="-3.2" dz="0.0" height="0.0" id="2"/>
+                        <cornerRoad s="10.0" t="3.2" dz="0.0" height="0.0" id="3"/>
+                    </outline>
+                </outlines>
+                <markings>
+                    <marking width="0.20" color="white" zOffset="0.005" spaceLength ="0.20" lineLength ="0.40" startOffset="0.3" stopOffset="0.0">
+                        <cornerReference id="0"/>
+                        <cornerReference id="1"/>
+                    </marking>
+                    <marking width="0.20" color="white" zOffset="0.005" spaceLength ="0.20" lineLength ="0.40" startOffset="0.3" stopOffset="0.0">
+                        <cornerReference id="2"/>
+                        <cornerReference id="3"/>
+                    </marking>
+                </markings>
+            </object>
+            <object type="crosswalk" id="2" s="10.0" t="0.0" zOffset="0.0" orientation="none" length="10.0" width="7.0" hdg="0.0" pitch="0.0" roll="0.0">
+                <outlines>
+                    <outline id="0" closed="true">
+                        <cornerRoad s="79.0" t="-3.0" dz="0.0" height="0.0" id="0"/>
+                        <cornerRoad s="79.0" t="3.0" dz="0.0" height="0.0" id="1"/>
+                    </outline>
+                </outlines>
+                <markings>
+                    <marking width="5" color="white" zOffset="0.005" spaceLength ="0.5" lineLength ="0.5" startOffset="0.25" stopOffset="0.0">
+                        <cornerReference id="0"/>
+                        <cornerReference id="1"/>
+                    </marking>
+                </markings>
+            </object>
+            <object type="crosswalk" id="3" s="152.0" t="0.0" hdg="1.5707964" zOffset="0.0">
+                <outlines>
+                    <outline id="0" closed="true">
+                        <cornerLocal u="-3.2" v="-2.0" z="0.0" height="4.0" id="0"/>
+                        <cornerLocal u="3.2" v="-2.0" z="0.0" height="4.0" id="1"/>
+                        <cornerLocal u="3.2" v="2.0" z="0.0" height="4.0" id="2"/>
+                        <cornerLocal u="-3.2" v="2.0" z="0.0" height="4.0" id="3"/>
+                    </outline>
+                </outlines>
+                <markings>
+                    <marking width="0.20" color="white" zOffset="0.005" spaceLength ="0.20" lineLength ="0.40" startOffset="0.3" stopOffset="0.0">
+                        <cornerReference id="0"/>
+                        <cornerReference id="1"/>
+                    </marking>
+                    <marking width="0.20" color="white" zOffset="0.005" spaceLength ="0.20" lineLength ="0.40" startOffset="0.3" stopOffset="0.0">
+                        <cornerReference id="2"/>
+                        <cornerReference id="3"/>
+                    </marking>
+                </markings>
+            </object>
+            <object type="parkingSpace" name="parkingSpace" id="4" s="2.5" t="0.0" zOffset="0.0">
+                <repeat distance ="3.53" tStart="3.25" tEnd="3.25" length="45" s="20" heightStart="4.0" heightEnd="4.0" zOffsetEnd="0.0" zOffsetStart="0.0" />
+				<outlines>
+                    <outline id="0" closed="true">
+                        <cornerLocal u="3.53" v="0.0" z="0.0" height="4.0" id="0"/>
+                        <cornerLocal u="-1.77" v="5.3" z="0.0" height="4.0" id="1"/>
+                        <cornerLocal u="-3.53" v="3.53" z="0.0" height="4.0" id="2"/>
+                        <cornerLocal u="0.0" v="0.0" z="0.0" height="4.0" id="3"/>
+                    </outline>
+				</outlines>
+                <markings>
+                    <marking width="0.1" color="white" zOffset="0.005" spaceLength ="0.0" lineLength ="0.1" startOffset="0.0" stopOffset="0.0">
+                        <cornerReference id="0"/>
+                        <cornerReference id="3"/>
+                    </marking>
+                </markings>
+            </object>
+            <object type="parkingSpace" name="parkingSpace" id="5" s="2.5" t="-2.0" zOffset="0.0">
+                <repeat distance ="0" tStart="3.25" tEnd="3.25" length="5" s="65.85" heightStart="4.0" heightEnd="4.0" zOffsetEnd="0.0" zOffsetStart="0.0"/>
+				<outlines>
+                    <outline id="0" closed="true">
+                        <cornerLocal u="3.53" v="0.0" z="0.0" height="4.0" id="0"/>
+                        <cornerLocal u="-1.77" v="5.3" z="0.0" height="4.0" id="1"/>
+                        <cornerLocal u="-3.53" v="3.53" z="0.0" height="4.0" id="2"/>
+                        <cornerLocal u="0.0" v="0.0" z="0.0" height="4.0" id="3"/>
+                    </outline>
+				</outlines>
+                <markings>
+                    <marking width="0.1" color="white" zOffset="0.005" spaceLength ="0.0" lineLength ="0.1" startOffset="0.0" stopOffset="0.0">
+                        <cornerReference id="0"/>
+                        <cornerReference id="3"/>
+                    </marking>
+                </markings>
+            </object>
+            <object type="parkingSpace" name="parkingSpace" id="6" s="2.5" t="0.0" zOffset="0.0">
+                <repeat distance ="0" lengthStart="2.5" lengthEnd="2.5" heightStart="4.0" heightEnd="4.0" widthStart="5" widthEnd="5" zOffsetEnd="0.0" zOffsetStart="0.0" tStart="5.75" tEnd="5.75" length="46" s="92.5"/>
+				<outlines>
+                    <outline id="0" closed="true">
+                      <cornerRoad s="2.5" t="-2.5" dz="0.0" height="4.0" id="0"/>
+                      <cornerRoad s="2.5" t="2.5" dz="0.0" height="4.0" id="1"/>
+                      <cornerRoad s="0.0" t="2.5" dz="0.0" height="4.0" id="2"/>
+                      <cornerRoad s="0.0" t="-2.5" dz="0.0" height="4.0" id="3"/>
+                    </outline>
+                  </outlines>
+                <markings>
+                    <marking width="0.1" color="white" zOffset="0.005" spaceLength ="0.0" lineLength ="0.1" startOffset="0.05" stopOffset="0.0">
+                        <cornerReference id="1"/>
+                        <cornerReference id="2"/>
+                    </marking>
+                    <marking width="0.1" color="white" zOffset="0.005" spaceLength ="0.0" lineLength ="0.1" startOffset="0.00" stopOffset="0.0">
+                        <cornerReference id="2"/>
+                        <cornerReference id="3"/>
+                    </marking>
+                </markings>
+            </object>
+            <object type="parkingSpace" name="parkingSpace" id="7" s="2.5" t="0.0" zOffset="0.0">
+                <repeat distance ="0" lengthStart="2.5" lengthEnd="2.5" heightStart="4.0" heightEnd="4.0" widthStart="5.0" widthEnd="5.0" zOffsetEnd="0.0" zOffsetStart="0.0" tStart="5.75" tEnd="5.75" length="2" s="140.0"/>
+				<outlines>
+                    <outline id="0" closed="true">
+                      <cornerRoad s="2.5" t="-2.5" dz="0.0" height="4.0" id="0"/>
+                      <cornerRoad s="2.5" t="2.5" dz="0.0" height="4.0" id="1"/>
+                      <cornerRoad s="0.0" t="2.5" dz="0.0" height="4.0" id="2"/>
+                      <cornerRoad s="0.0" t="-2.5" dz="0.0" height="4.0" id="3"/>
+                    </outline>
+                  </outlines>
+                <markings>
+                    <marking width="0.1" color="white" zOffset="0.005" spaceLength ="0.0" lineLength ="0.1" startOffset="0.0" stopOffset="0.0">
+                        <cornerReference id="0"/>
+                        <cornerReference id="3"/>
+                    </marking>
+                </markings>
+            </object>
+            <object type="parkingSpace" name="parkingSpace" id="8" s="2.5" t="0.0" zOffset="0.0">
+                <repeat distance ="0" lengthStart="6.0" lengthEnd="6.0" heightStart="4.0" heightEnd="4.0" widthStart="2.0" widthEnd="2.0" zOffsetEnd="0.0" zOffsetStart="0.0" tStart="4.5" tEnd="4.5" length="18" s="173"/>
+				<outlines>
+                    <outline id="0" closed="true">
+                        <cornerRoad s="0.0" t="-1.25" dz="0.0" height="4.0" id="0"/>
+                        <cornerRoad s="6.0" t="-1.25" dz="0.0" height="4.0" id="1"/>
+                        <cornerRoad s="6.0" t="1.25" dz="0.0" height="4.0" id="2"/>
+                        <cornerRoad s="0.0" t="1.25" dz="0.0" height="4.0" id="3"/>
+                      </outline>
+				</outlines>
+                <markings>
+                    <marking width="0.1" color="white" zOffset="0.005" spaceLength ="0.0" lineLength ="6.0" startOffset="0.0" stopOffset="0.0">
+                        <cornerReference id="2"/>
+                        <cornerReference id="3"/>
+                    </marking>
+                    <marking width="0.1" color="white" zOffset="0.005" spaceLength ="0.0" lineLength ="0.45" startOffset="0.05" stopOffset="0.0">
+                        <cornerReference id="3"/>
+                        <cornerReference id="0"/>
+                    </marking>
+                    <marking width="0.1" color="white" zOffset="0.005" spaceLength ="0.0" lineLength ="0.45" startOffset="0.05" stopOffset="0.0">
+                        <cornerReference id="1"/>
+                        <cornerReference id="2"/>
+                    </marking>
+                </markings>
+            </object>
+        </objects>
+    </road>
+    <road rule="RHT" id="2" junction="-1" length="30">
+        <link>
+            <predecessor elementType="road" elementId="1" contactPoint="end"/>
+            <successor elementType="junction" elementId="100"/>
+        </link>
+        <planView>
+            <geometry s="0" x="145.46487134128407" y="-70.80734182735712" hdg="4.283185307179586" length="30">
+                <line/>
+            </geometry>
+        </planView>
+        <elevationProfile/>
+        <lateralProfile/>
+        <lanes>
+            <laneSection s="0">
+                <left>
+                    <lane id="3" type="border" level="false">
+                        <link>
+                            <predecessor id="3"/>
+                        </link>
+                        <width a="6.0" b="-0.2" c="0" d="0" sOffset="0"/>
+                    </lane>
+                    <lane id="2" type="border" level="false">
+                        <link>
+                            <predecessor id="2"/>
+                        </link>
+                        <width a="0.0" b="0.0" c="0" d="0" sOffset="0"/>
+                    </lane>
+                    <lane id="1" type="driving" level="false">
+                        <link>
+                            <predecessor id="1"/>
+                        </link>
+                        <width a="3.25" b="0" c="0" d="0" sOffset="0"/>
+                    </lane>
+                </left>
+                <center>
+                    <lane id="0" type="none" level="false">
+                        <roadMark sOffset="0" type="broken" weight="standard" color="standard" height="0.02" width="0.2"/>
+                    </lane>
+                </center>
+                <right>
+                    <lane id="-1" type="driving" level="false">
+                        <link>
+                            <predecessor id="-1"/>
+                        </link>
+                        <width a="3.25" b="0" c="0" d="0" sOffset="0"/>
+                    </lane>
+                    <lane id="-2" type="border" level="false">
+                        <link>
+                            <predecessor id="-2"/>
+                        </link>
+                        <width a="0.3" b="-0.01" c="0" d="0" sOffset="0"/>
+                    </lane>
+                    <lane id="-3" type="shoulder" level="false">
+                        <link>
+                            <predecessor id="-3"/>
+                        </link>
+                        <width a="2.05" b="-0.06833333333333333" c="0" d="0" sOffset="0"/>
+                    </lane>
+                    <lane id="-4" type="border" level="false">
+                        <link>
+                            <predecessor id="-4"/>
+                        </link>
+                        <width a="0.2" b="-0.006666666666666667" c="0" d="0" sOffset="0"/>
+                    </lane>
+                    <lane id="-5" type="biking" level="false">
+                        <link>
+                            <predecessor id="-5"/>
+                        </link>
+                        <width a="1.6" b="-0.05333333333333334" c="0" d="0" sOffset="0"/>
+                    </lane>
+                    <lane id="-6" type="sidewalk" level="false">
+                        <link>
+                            <predecessor id="-6"/>
+                        </link>
+                        <width a="3" b="-0.1" c="0" d="0" sOffset="0"/>
+                    </lane>
+                    <lane id="-7" type="border" level="false">
+                        <link>
+                            <predecessor id="-7"/>
+                        </link>
+                        <width a="7" b="-0.23333333333333334" c="0" d="0" sOffset="0"/>
+                    </lane>
+                </right>
+            </laneSection>
+        </lanes>
+    </road>
+    <road rule="RHT" id="3" junction="-1" length="30.5">
+        <link>
+            <predecessor elementType="junction" elementId="100"/>
+        </link>
+        <type s="0" type="lowSpeed">
+            <speed max="10" unit="m/s"/>
+        </type>
+        <planView>
+            <geometry s="0" x="123.0396342695736" y="-101.7848940592166" hdg="2.7123889803846897" length="30.5">
+                <line/>
+            </geometry>
+        </planView>
+        <elevationProfile/>
+        <lateralProfile/>
+        <lanes>
+            <laneSection s="0">
+                <left>
+                    <lane id="2" type="driving" level="false">
+                        <link/>
+                        <width a="12" b="0" c="0" d="0" sOffset="0"/>
+                    </lane>
+                    <lane id="1" type="driving" level="false">
+                        <link/>
+                        <width a="3.25" b="0" c="0" d="0" sOffset="0"/>
+                    </lane>
+                </left>
+                <center>
+                    <lane id="0" type="none" level="false">
+                        <roadMark sOffset="0" type="broken" weight="standard" color="standard" height="0.02" width="0.2">
+                            <type name="broken" width="0.2">
+                                <line length="3" space="9" tOffset="0" width="0.15" sOffset="0"/>
+                            </type>
+                        </roadMark>
+                    </lane>
+                </center>
+                <right>
+                    <lane id="-1" type="driving" level="false">
+                        <link/>
+                        <width a="3.25" b="0" c="0" d="0" sOffset="0"/>
+                    </lane>
+                    <lane id="-2" type="driving" level="false">
+                        <link/>
+                        <width a="12" b="0" c="0" d="0" sOffset="0"/>
+                    </lane>
+                </right>
+            </laneSection>
+        </lanes>
+        <objects>
+            <object type="parkingSpace" name="parking1" id="9" s="0.0" t="0.0" zOffset="0.0">
+                <repeat distance ="2.55" heightStart="4.0" heightEnd="4.0" zOffsetEnd="0.0" zOffsetStart="0.0" tStart="-9.95" tEnd="-9.95" length="27.45" s="0.05"/>
+                <outlines>
+                    <outline id="0" closed="true">
+                        <cornerLocal u="0.0" v="0.0" z="0.0" height="4.0" id="0"/>
+                        <cornerLocal u="0.0" v="-5.0" z="0.0" height="4.0" id="1"/>
+                        <cornerLocal u="2.5" v="-5.0" z="0.0" height="4.0" id="2"/>
+                        <cornerLocal u="2.5" v="0.0" z="0.0" height="4.0" id="3"/>
+                    </outline>
+                </outlines>
+                <markings>
+                    <marking width="0.1" color="white" zOffset="0.005" spaceLength ="0.0" lineLength ="5.5" startOffset="0.0" stopOffset="0.0">
+                        <cornerReference id="0"/>
+                        <cornerReference id="2"/>
+                    </marking>
+                </markings>
+            </object>
+            <object type="parkingSpace" name="parking1" id="10" s="28.1" t="-9.95" zOffset="0.0">
+                <outlines>
+                    <outline id="0" closed="true">
+                        <cornerLocal u="0.0" v="0.0" z="0.0" height="4.0" id="0"/>
+                        <cornerLocal u="0.0" v="-5.0" z="0.0" height="4.0" id="1"/>
+                        <cornerLocal u="2.5" v="-5.0" z="0.0" height="4.0" id="2"/>
+                        <cornerLocal u="2.5" v="0.0" z="0.0" height="4.0" id="3"/>
+                    </outline>
+                </outlines>
+                <markings>
+                    <marking width="0.1" color="white" zOffset="0.005" spaceLength ="0.0" lineLength ="5.5" startOffset="0.0" stopOffset="0.0">
+                        <cornerReference id="0"/>
+                        <cornerReference id="3"/>
+                    </marking>
+                </markings>
+            </object>
+            <object type="parkingSpace" name="parking" id="11" s="0.0" t="0.0" zOffset="0.0">
+                <repeat distance ="2.55" heightStart="4.0" heightEnd="4.0" zOffsetEnd="0.0" zOffsetStart="0.0" tStart="9.95" tEnd="9.95" length="27.45" s="0.05"/>
+                <outlines>
+                    <outline id="0" closed="false">
+                        <cornerLocal u="2.5" v="0.0" z="0.0" height="4.0" id="0"/>
+                        <cornerLocal u="2.5" v="5.0" z="0.0" height="4.0" id="1"/>
+                        <cornerLocal u="0.0" v="5.0" z="0.0" height="4.0" id="2"/>
+                        <cornerLocal u="0.0" v="0.0" z="0.0" height="4.0" id="3"/>
+                    </outline>
+                </outlines>
+                <markings>
+                    <marking width="0.1" color="white" zOffset="0.005" spaceLength ="0.0" lineLength ="5.5" startOffset="0.0" stopOffset="0.0">
+                        <cornerReference id="1"/>
+                        <cornerReference id="3"/>
+                    </marking>
+                </markings>
+            </object>
+            <object type="parkingSpace" name="parking" id="12" s="28.1" t="9.95" zOffset="0.0">
+                <outlines>
+                    <outline id="0" closed="false">
+                        <cornerLocal u="2.5" v="0.0" z="0.0" height="4.0" id="0"/>
+                        <cornerLocal u="2.5" v="5.0" z="0.0" height="4.0" id="1"/>
+                        <cornerLocal u="0.0" v="5.0" z="0.0" height="4.0" id="2"/>
+                        <cornerLocal u="0.0" v="0.0" z="0.0" height="4.0" id="3"/>
+                    </outline>
+                </outlines>
+                <markings>
+                    <marking width="0.1" color="white" zOffset="0.005" spaceLength ="0.0" lineLength ="5.5" startOffset="0.0" stopOffset="0.0">
+                        <cornerReference id="0"/>
+                        <cornerReference id="3"/>
+                    </marking>
+                </markings>
+            </object>
+        </objects>
+    </road>
+    <road rule="RHT" id="4" junction="-1" length="20">
+        <link>
+            <predecessor elementType="junction" elementId="100"/>
+        </link>
+        <planView>
+            <geometry s="0" x="126.73826369666263" y="-111.72572603451279" hdg="4.283185307179586" length="20">
+                <line/>
+            </geometry>
+        </planView>
+        <elevationProfile/>
+        <lateralProfile/>
+        <lanes>
+            <laneSection s="0">
+                <left>
+                    <lane id="1" type="driving" level="false">
+                        <link/>
+                        <width a="3.25" b="0.0" c="-0.0" d="0.0" sOffset="0"/>
+                        <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>
+                    </lane>
+                </left>
+                <center>
+                    <lane id="0" type="none" level="false">
+                        <roadMark sOffset="0" type="broken" weight="standard" color="standard" height="0.02" width="0.2">
+                            <type name="broken" width="0.2">
+                                <line length="3" space="9" tOffset="0" width="0.15" sOffset="0"/>
+                            </type>
+                        </roadMark>
+                    </lane>
+                </center>
+                <right>
+                    <lane id="-1" type="driving" level="false">
+                        <link/>
+                        <width a="3.25" b="0.0" c="-0.0" d="0.0" sOffset="0"/>
+                        <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>
+                    </lane>
+                </right>
+            </laneSection>
+        </lanes>
+    </road>
+    <road rule="RHT" id="100" junction="100" length="12.451987006358245">
+        <link>
+            <predecessor elementType="road" elementId="2" contactPoint="end"/>
+            <successor elementType="road" elementId="3" contactPoint="start"/>
+        </link>
+        <planView>
+            <geometry s="0" x="132.98046624486977" y="-98.08626463212757" hdg="4.283185307179586" length="3.9267690476849655">
+                <spiral curvStart="1e-09" curvEnd="-0.1842529233077952"/>
+            </geometry>
+            <geometry s="3.9267690476849655" x="130.94105221227775" y="-101.41520203541766" hdg="3.92142597104771" length="4.5984489109883135">
+                <spiral curvStart="-0.18425292330779514" curvEnd="-0.18425292330779514"/>
+            </geometry>
+            <geometry s="8.525217958673279" x="126.7590065963201" y="-102.97119222004693" hdg="3.074148316516566" length="3.9267690476849655">
+                <spiral curvStart="-0.1842529233077952" curvEnd="9.999999994736442e-10"/>
+            </geometry>
+        </planView>
+        <elevationProfile/>
+        <lateralProfile/>
+        <lanes>
+            <laneSection s="0">
+                <left>
+                    <lane id="1" type="driving" level="false">
+                        <link>
+                            <predecessor id="1"/>
+                            <successor id="1"/>
+                        </link>
+                        <width a="3.25" b="0.0" c="-0.0" d="0.0" sOffset="0"/>
+                        <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>
+                    </lane>
+                </left>
+                <center>
+                    <lane id="0" type="none" level="false">
+                        <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>
+                    </lane>
+                </center>
+                <right>
+                    <lane id="-1" type="driving" level="false">
+                        <link>
+                            <predecessor id="-1"/>
+                            <successor id="-1"/>
+                        </link>
+                        <width a="3.25" b="0.0" c="-0.0" d="0.0" sOffset="0"/>
+                        <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>
+                    </lane>
+                </right>
+            </laneSection>
+        </lanes>
+    </road>
+    <road rule="RHT" id="101" junction="100" length="12.451987006358245">
+        <link>
+            <predecessor elementType="road" elementId="3" contactPoint="start"/>
+            <successor elementType="road" elementId="4" contactPoint="start"/>
+        </link>
+        <planView>
+            <geometry s="0" x="123.0396342695736" y="-101.7848940592166" hdg="5.853981633974483" length="3.9267690476849655">
+                <spiral curvStart="1e-09" curvEnd="-0.1842529233077952"/>
+            </geometry>
+            <geometry s="3.9267690476849655" x="126.3685716728637" y="-103.82430809180863" hdg="5.4922222978426065" length="4.5984489109883135">
+                <spiral curvStart="-0.18425292330779514" curvEnd="-0.18425292330779514"/>
+            </geometry>
+            <geometry s="8.525217958673279" x="127.92456185749296" y="-108.00635370776628" hdg="4.6449446433114625" length="3.9267690476849655">
+                <spiral curvStart="-0.1842529233077952" curvEnd="9.999999994736442e-10"/>
+            </geometry>
+        </planView>
+        <elevationProfile/>
+        <lateralProfile/>
+        <lanes>
+            <laneSection s="0">
+                <left>
+                    <lane id="1" type="driving" level="false">
+                        <link>
+                            <predecessor id="-1"/>
+                            <successor id="1"/>
+                        </link>
+                        <width a="3.25" b="0.0" c="-0.0" d="0.0" sOffset="0"/>
+                        <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>
+                    </lane>
+                </left>
+                <center>
+                    <lane id="0" type="none" level="false">
+                        <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>
+                    </lane>
+                </center>
+                <right>
+                    <lane id="-1" type="driving" level="false">
+                        <link>
+                            <predecessor id="1"/>
+                            <successor id="-1"/>
+                        </link>
+                        <width a="3.25" b="0.0" c="-0.0" d="0.0" sOffset="0"/>
+                        <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>
+                    </lane>
+                </right>
+            </laneSection>
+        </lanes>
+    </road>
+    <road rule="RHT" id="102" junction="100" length="15.0">
+        <link>
+            <predecessor elementType="road" elementId="2" contactPoint="end"/>
+            <successor elementType="road" elementId="4" contactPoint="start"/>
+        </link>
+        <planView>
+            <geometry s="0" x="132.98046624486977" y="-98.08626463212757" hdg="4.283185307179586" length="15.0">
+                <line/>
+            </geometry>
+        </planView>
+        <elevationProfile/>
+        <lateralProfile/>
+        <lanes>
+            <laneSection s="0">
+                <left>
+                    <lane id="1" type="driving" level="false">
+                        <link>
+                            <predecessor id="1"/>
+                            <successor id="1"/>
+                        </link>
+                        <width a="3.25" b="0.0" c="-0.0" d="0.0" sOffset="0"/>
+                        <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>
+                    </lane>
+                </left>
+                <center>
+                    <lane id="0" type="none" level="false">
+                        <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>
+                    </lane>
+                </center>
+                <right>
+                    <lane id="-1" type="driving" level="false">
+                        <link>
+                            <predecessor id="-1"/>
+                            <successor id="-1"/>
+                        </link>
+                        <width a="3.25" b="0.0" c="-0.0" d="0.0" sOffset="0"/>
+                        <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>
+                    </lane>
+                </right>
+            </laneSection>
+        </lanes>
+    </road>
+    <junction name="my junction" id="100" type="default">
+        <connection incomingRoad="2" id="0" contactPoint="start" connectingRoad="100">
+            <laneLink from="1" to="1"/>
+            <laneLink from="-1" to="-1"/>
+        </connection>
+        <connection incomingRoad="3" id="1" contactPoint="end" connectingRoad="100">
+            <laneLink from="1" to="1"/>
+            <laneLink from="-1" to="-1"/>
+        </connection>
+        <connection incomingRoad="3" id="2" contactPoint="start" connectingRoad="101">
+            <laneLink from="1" to="-1"/>
+            <laneLink from="-1" to="1"/>
+        </connection>
+        <connection incomingRoad="4" id="3" contactPoint="end" connectingRoad="101">
+            <laneLink from="1" to="1"/>
+            <laneLink from="-1" to="-1"/>
+        </connection>
+        <connection incomingRoad="4" id="4" contactPoint="end" connectingRoad="102">
+            <laneLink from="1" to="1"/>
+            <laneLink from="-1" to="-1"/>
+        </connection>
+        <connection incomingRoad="2" id="5" contactPoint="start" connectingRoad="102">
+            <laneLink from="1" to="1"/>
+            <laneLink from="-1" to="-1"/>
+        </connection>
+    </junction>
+</OpenDRIVE>

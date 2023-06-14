@@ -92,7 +92,11 @@ public:
     /**
     Fills up the osi message with Stationary Object from the OpenDRIVE description
     */
-    int UpdateOSIStationaryObjectODR(id_t road_id, roadmanager::RMObject* object);
+    int UpdateOSIStationaryObjectODR(roadmanager::RMObject* object);
+    /**
+    create Stationary Object from the OpenDRIVE description to fill up the osi message
+    */
+    int CreateOSIStationaryObjectODR(roadmanager::RMObject* object, bool isRepeat = false);
     /**
     Fills up the osi message with Stationary Object
     */

@@ -209,6 +209,14 @@ bool FileExists(const char* fileName)
     return infile.good();
 }
 
+double GetValueOrZero(double value)
+{
+    if (std::isnan(value))
+    {
+        return 0.0;
+    }
+    return value;
+}
 std::string CombineDirectoryPathAndFilepath(std::string dir_path, std::string file_path)
 {
     std::string path = file_path;
@@ -603,6 +611,11 @@ void RotateVec2D(double x, double y, double angle, double& xr, double& yr)
 {
     xr = x * cos(angle) - y * sin(angle);
     yr = x * sin(angle) + y * cos(angle);
+}
+
+bool IsEqualDouble(double val1, double val2)
+{
+    return ((std::signbit(val1) == std::signbit(val2)) && (fabs(val1 - val2) < SMALL_NUMBER));
 }
 
 void Global2LocalCoordinates(double  xTargetGlobal,

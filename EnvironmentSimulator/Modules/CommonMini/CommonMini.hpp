@@ -72,6 +72,7 @@ using idx_t = uint32_t;
 #define DAT_FILENAME                  "sim.dat"
 #define GHOST_TRAIL_SAMPLE_TIME       0.2
 #define LOGICAL_OR(X, Y)              ((X || Y) && !(X && Y))
+constexpr double DEFAULT_MIN_DIM = 0.01;
 
 const std::string CONFIG_FILE_OPTION_NAME = "config_file_path";
 const std::string DEFAULT_CONFIG_FILE     = "config.yml";
@@ -170,6 +171,17 @@ enum class GhostMode
     NORMAL,
     RESTART,    // the frame ghost is requested to restart
     RESTARTING  // ghost restart is ongoing, including the final restart timestep
+};
+
+struct Point2D
+{
+    double x = 0.0;
+    double y = 0.0;
+};
+
+struct Point3D : public Point2D
+{
+    double z = 0.0;
 };
 
 class SE_Vector
@@ -320,6 +332,11 @@ bool FileExists(const char* fileName);
         Concatenate a directory path and a file path
 */
 std::string CombineDirectoryPathAndFilepath(std::string dir_path, std::string file_path);
+
+/**
+        Retrun zero if value is NaN otherwise return value
+ */
+double GetValueOrZero(double value);
 
 /**
         Retrieve the angle of a vector
@@ -621,6 +638,8 @@ void RotateVec3d(const double h0,
 void SwapByteOrder(unsigned char* buf, int data_type_size, int buf_size);
 
 bool IsNumber(const std::string& str, int max_digits = -1);
+
+bool IsEqualDouble(double val1, double val2);
 
 #if (defined WINVER && WINVER == _WIN32_WINNT_WIN7)
 #else

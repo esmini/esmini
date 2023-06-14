@@ -1108,6 +1108,110 @@ image::speed_sign1.png[]
 .German speed sign
 image::speed_sign2.png[]
 
+=== Stationary Objects
+(framework updated in esmini v2.X)
+
+==== The System
+Objects are items that influence a road by expanding, delimiting, or supplementing its course. The most common examples are parking spaces, crosswalks, and traffic barriers. Stationary objects are specified in the https://publications.pages.asam.net/standards/ASAM_OpenDRIVE/ASAM_OpenDRIVE_Specification/latest/specification/13_objects/13_01_introduction.html[OpenDRIVE] road network description file.
+
+There are below ways to describe the objects
+
+- Simple bounding box : definition of the width, length and height.
+- Outline with a series of corner points, including the height of the object.
+- Custom 3D models
+
+Any above object can be repeated, with option to modify shape and pose (position and orientation) of the copies. The repeat feature can be useful for things like railings and street lamps.
+
+For detailed info of how objects are parsed and visualized, check the implementation flowchart: https://www.draw.io?lightbox=1&edit=_blank#Uhttps%3A%2F%2Fdrive.google.com%2Fuc%3Fid%3D1AB-qfGjadGYRa4UL18DwLVXu0JVDJ_xH%26export%3Ddownload[object flowchart]
+
+==== 3D Model as a stationary object
+
+The element attribute name in the object denoates the name of the 3D model. System searches in model folder(have to add link) and use this model for viewer. The bounding box info of model shall be used only for missing bounding box info from the object. For exmaple object lenght from model bounding box shall be used if no length is provided in the object definition. Example figure for model as object
+
+==== Releationship between object and repeat referrence point for outline
+For a object the element attribute S and T are the referrence point and for the repeat the element attributes S, tStart and tEnd are the referrence point. In case object with outline, the outline shall be shifted as how repeat referrence point shifted from object referrence point. Below are the example how it handled
+
+Case 1: outline with road corners
+Typically the object reference point will be inside or on boundary of the object, In this example to make clear
+Scenario:
+[source,xml]
+----
+<object type="barrier" id="0" s="30" t="0">
+    <outlines>
+        <outline id="0" closed="true">
+            <cornerRoad s="10" t="-2.5" dz="0.0" height="4.0" id="0"/>
+            <cornerRoad s="15" t="-2.5" dz="0.0" height="4.0" id="0"/>
+            <cornerRoad s="15" t="2.5" dz="0.0" height="4.0" id="2"/>
+            <cornerRoad s="10" t="2.5" dz="0.0" height="4.0" id="1"/>
+        </outline>
+    </outlines>
+    <repeat s="25" length="5" distance ="0.0" tStart="5.0" tEnd="5.0"/>
+</object>
+----
+Figure 1
+
+From the above figure, Object reference point is (30,0) and the repeat reference point is (25, 5). So the reference point is shifted by (25- 30 = -5, 5 – 0 = 5) . The outline shall also be shifted by (-5,5).
+
+Case 2: outline with local corners
+Scenario:
+[source,xml]
+----
+<object type="barrier" id="0" s="30" t="0">
+    <outlines>
+        <outline id="0" closed="true">
+            <cornerLocal u="0.0" v="-2.5" z="0.0" height="4.0" id="0"/>
+            <cornerLocal u="5.0" v="-2.5" z="0.0" height="4.0" id="3"/>
+            <cornerLocal u="5.0" v="2.5" z="0.0" height="4.0" id="2"/>
+            <cornerLocal u="0.0" v="2.5" z="0.0" height="4.0" id="1"/>
+        </outline>
+    </outlines>
+    <repeat s="25" length="5" distance ="0.0" tStart="5.0" tEnd="5.0"/>
+</object>
+----
+Figure 2
+From the figure 2, Object reference point is (30,0) and the repeat reference point is (25, 5). So the reference point is shifted by (25- 30 = -5, 5 – 0 = 5) . The outline shall also be shifted by (-5,5).
+
+Case 3: Two outline with road corners
+Scenario:
+[source,xml]
+----
+<object type="barrier" id="0" s="30" t="0">
+    <outlines>
+        <outline id="0" closed="true">
+            <cornerRoad s="10" t="-2.5" dz="0.0" height="4.0" id="0"/>
+            <cornerRoad s="15" t="-2.5" dz="0.0" height="4.0" id="0"/>
+            <cornerRoad s="15" t="2.5" dz="0.0" height="4.0" id="2"/>
+            <cornerRoad s="10" t="2.5" dz="0.0" height="4.0" id="1"/>
+        </outline>
+        <outline id="0" closed="true">
+            <cornerRoad s="50.0" t="-2.5" z="0.0" height="4.0" id="0"/>
+            <cornerRoad s="55.0" t="-2.5" z="0.0" height="4.0" id="3"/>
+            <cornerRoad s="55.0" t="2.5" z="0.0" height="4.0" id="2"/>
+        </outline>
+    </outlines>
+    <repeat s="25" length="5" distance ="0.0" tStart="5.0" tEnd="5.0"/>
+</object>
+----
+Figure 3
+From the figure 3, Object reference point is (30,0) and the repeat reference point is (25, 5). So the reference point is shifted by (25- 30 = -5, 5 – 0 = 5) . The two outlines shall also be shifted by (-5,5). The compound bounding box info shall be used for repeat calculations like compound length.
+
+Limitation:
+
+- In case of multiple outlines within a single object, esmini interpretation of the OSI standard is to report each outline as a separate object, all with the same ID, type and position. Further, each vertex (x, y value pair) will be reported as a separate base_polygon (although it would make sense to group all vertices within one base_polygon).
+- For repeating objects, the next object's reference point is simply the object's length away from the previous object's reference point. This creates a consistent linear movement for straight road. For straight and curve road, In case of pervious object referrence point is in straight raod and next object referrence point may in curve raod. Length is calulated considered only pervious object referrence point curvature, As a consequence the next object referrence point simply object's length.
+
+=== Object markings
+(framework updated in esmini v2.X)
+
+==== The System
+Marking describes the road marks of any objects like crosswalks, stopping-lines, and parking spaces. Marking is defined either in accordance to the bounding box of the element or by referencing outline points of the object which are specified in https://publications.pages.asam.net/standards/ASAM_OpenDRIVE/ASAM_OpenDRIVE_Specification/latest/specification/13_objects/13_08_object_marking.html[Object marking] road network description file.
+
+Basically markings shall be added to any type of stationary object either by mentioning side of the stationary object or by referring to the id of the outline corners. For detailed view of how marking is pharsed look the flowchart https://www.draw.io?lightbox=1&edit=_blank#Uhttps%3A%2F%2Fdrive.google.com%2Fuc%3Fid%3D1AB-qfGjadGYRa4UL18DwLVXu0JVDJ_xH%26export%3Ddownload[marking pharser]
+
+
+==== Example
+The openDRIVE file Ex_Markings_Demo.xodr includes set of markings like german crosswalk, swedish crosswalk, parrel parking, perpendicular parking. Below are the example figures.
+
 === Expressions
 From OpenSCENARIO v1.1 https://www.asam.net/index.php?eID=dumpFile&t=f&f=4908&token=ae9d9b44ab9257e817072a653b5d5e98ee0babf8#_expressions[expressions] including mathematical operations are supported in assignment of value to OpenSCENARIO https://www.asam.net/index.php?eID=dumpFile&t=f&f=4908&token=ae9d9b44ab9257e817072a653b5d5e98ee0babf8#_parameters[parameters] and XML element attributes. Examples:
 

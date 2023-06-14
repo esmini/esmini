@@ -75,6 +75,7 @@ static struct
     osi3::MovingObject               *mobj;
     std::vector<osi3::Lane *>         ln;
     std::vector<osi3::LaneBoundary *> lnb;
+    osi3::RoadMarking                *rm;
 } obj_osi_internal;
 
 static struct
@@ -407,7 +408,7 @@ int OSIReporter::UpdateOSIStaticGroundTruth(const std::vector<std::unique_ptr<Ob
                 roadmanager::RMObject *object = road->GetRoadObject(j);
                 if (object)
                 {
-                    UpdateOSIStationaryObjectODR(road->GetId(), object);
+                    UpdateOSIStationaryObjectODR(object);
                 }
             }
         }
@@ -622,45 +623,52 @@ int OSIReporter::UpdateOSIHostVehicleData(ObjectState *objectState)
     return 0;
 }
 
-int OSIReporter::UpdateOSIStationaryObjectODR(id_t road_id, roadmanager::RMObject *object)
+int UpdateOSIStationaryObjectODRMarking(std::vector<std::vector<Point3D>> &points)
 {
-    osi3::StationaryObject so;
-    obj_osi_internal.static_gt->mutable_stationary_object();
-    (void)road_id;
-    // Create OSI Stationary Object
-    obj_osi_internal.sobj = obj_osi_internal.static_gt->add_stationary_object();
+    obj_osi_internal.rm = obj_osi_internal.gt->add_road_marking();
+    obj_osi_internal.rm->mutable_classification()->set_type(osi3::RoadMarking_Classification_Type::RoadMarking_Classification_Type_TYPE_OTHER);
+    for (const auto &allPoints : points)
+    {
+        for (const auto &point : allPoints)
+        {
+            osi3::Vector2d *vec = obj_osi_internal.rm->mutable_base()->add_base_polygon();
+            vec->set_x(point.x);
+            vec->set_y(point.y);
+            // printf("marking points osi %.2f %.2f %.2f\n", point.x, point.y, point.z);
+        }
+    }
+    return 0;
+}
 
-    // Set OSI Stationary Object Mutable ID
-    int sobj_size = obj_osi_internal.static_gt->mutable_stationary_object()->size();
-    obj_osi_internal.sobj->mutable_id()->set_value(static_cast<unsigned int>(sobj_size - 1));
-
+int UpdateOSIStationaryObjectODRType(roadmanager::RMObject::ObjectType type, std::string restrictions, bool isRepeat = false)
+{
     // Set OSI Stationary Object Type and Classification
-    if (object->GetType() == roadmanager::RMObject::ObjectType::POLE)
+    if (type == roadmanager::RMObject::ObjectType::POLE)
     {
         obj_osi_internal.sobj->mutable_classification()->set_type(
             osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_POLE);
     }
-    else if (object->GetType() == roadmanager::RMObject::ObjectType::TREE)
+    else if (type == roadmanager::RMObject::ObjectType::TREE)
     {
         obj_osi_internal.sobj->mutable_classification()->set_type(
             osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_TREE);
     }
-    else if (object->GetType() == roadmanager::RMObject::ObjectType::VEGETATION)
+    else if (type == roadmanager::RMObject::ObjectType::VEGETATION)
     {
         obj_osi_internal.sobj->mutable_classification()->set_type(
             osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_VEGETATION);
     }
-    else if (object->GetType() == roadmanager::RMObject::ObjectType::BARRIER)
+    else if (type == roadmanager::RMObject::ObjectType::BARRIER)
     {
         obj_osi_internal.sobj->mutable_classification()->set_type(
             osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_BARRIER);
     }
-    else if (object->GetType() == roadmanager::RMObject::ObjectType::BUILDING)
+    else if (type == roadmanager::RMObject::ObjectType::BUILDING)
     {
         obj_osi_internal.sobj->mutable_classification()->set_type(
             osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_BUILDING);
     }
-    else if (object->GetType() == roadmanager::RMObject::ObjectType::PARKINGSPACE)
+    else if (type == roadmanager::RMObject::ObjectType::PARKINGSPACE)
     {
         obj_osi_internal.sobj->mutable_classification()->set_type(
             osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_OTHER);
@@ -670,17 +678,15 @@ int OSIReporter::UpdateOSIStationaryObjectODR(id_t road_id, roadmanager::RMObjec
             osi3::StationaryObject_Classification_Density::StationaryObject_Classification_Density_DENSITY_SOLID);
         obj_osi_internal.sobj->mutable_classification()->set_color(
             osi3::StationaryObject_Classification_Color::StationaryObject_Classification_Color_COLOR_GREY);
-
         osi3::ExternalReference *scource_reference = obj_osi_internal.sobj->add_source_reference();
         std::string             *identifier_string = scource_reference->add_identifier();
-        identifier_string->assign(object->GetParkingSpace().GetRestrictions());
+        identifier_string->assign(restrictions);
     }
-    else if (object->GetType() == roadmanager::RMObject::ObjectType::OBSTACLE || object->GetType() == roadmanager::RMObject::ObjectType::RAILING ||
-             object->GetType() == roadmanager::RMObject::ObjectType::PATCH || object->GetType() == roadmanager::RMObject::ObjectType::TRAFFICISLAND ||
-             object->GetType() == roadmanager::RMObject::ObjectType::CROSSWALK ||
-             object->GetType() == roadmanager::RMObject::ObjectType::STREETLAMP || object->GetType() == roadmanager::RMObject::ObjectType::GANTRY ||
-             object->GetType() == roadmanager::RMObject::ObjectType::SOUNDBARRIER || object->GetType() == roadmanager::RMObject::ObjectType::WIND ||
-             object->GetType() == roadmanager::RMObject::ObjectType::ROADMARK)
+    else if (type == roadmanager::RMObject::ObjectType::OBSTACLE || type == roadmanager::RMObject::ObjectType::RAILING ||
+             type == roadmanager::RMObject::ObjectType::PATCH || type == roadmanager::RMObject::ObjectType::TRAFFICISLAND ||
+             type == roadmanager::RMObject::ObjectType::CROSSWALK || type == roadmanager::RMObject::ObjectType::STREETLAMP ||
+             type == roadmanager::RMObject::ObjectType::GANTRY || type == roadmanager::RMObject::ObjectType::SOUNDBARRIER ||
+             type == roadmanager::RMObject::ObjectType::WIND || type == roadmanager::RMObject::ObjectType::ROADMARK)
     {
         obj_osi_internal.sobj->mutable_classification()->set_type(
             osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_OTHER);
@@ -689,47 +695,129 @@ int OSIReporter::UpdateOSIStationaryObjectODR(id_t road_id, roadmanager::RMObjec
     {
         obj_osi_internal.sobj->mutable_classification()->set_type(
             osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_UNKNOWN);
-        LOG_ERROR("OSIReporter::UpdateOSIStationaryObjectODR -> Unsupported stationary object category");
+        if (!isRepeat)  // only log once for repeated objects
+        {
+            LOG_ERROR("OSIReporter::UpdateOSIStationaryObjectODR -> Unsupported stationary object category");
+        }
     }
+    return 0;
+}
 
+double GetReporterDimension(const double val)
+{
+    if (!std::isnan(val))
+    {
+        return val;
+    }
+    return DEFAULT_MIN_DIM;
+}
+
+void UpdateOSIStationaryObjectOrientation(roadmanager::RMObject *object)
+{
+    // Set OSI Stationary Object Orientation
+    obj_osi_internal.sobj->mutable_base()->mutable_orientation()->set_roll(GetAngleInIntervalMinusPIPlusPI(object->GetRoll()));
+    obj_osi_internal.sobj->mutable_base()->mutable_orientation()->set_pitch(GetAngleInIntervalMinusPIPlusPI(object->GetPitch()));
+    obj_osi_internal.sobj->mutable_base()->mutable_orientation()->set_yaw(GetAngleInIntervalMinusPIPlusPI(object->GetH() + object->GetHOffset()));
+}
+
+void UpdateOSIStationaryObjectDimensionAndOrientation(roadmanager::RMObject *object)
+{
+    // Set OSI Stationary Object Bounding box
+    obj_osi_internal.sobj->mutable_base()->mutable_dimension()->set_height(GetReporterDimension(object->GetHeight().GetRawValue()));
+    obj_osi_internal.sobj->mutable_base()->mutable_dimension()->set_width(GetReporterDimension(object->GetWidth().GetRawValue()));
+    obj_osi_internal.sobj->mutable_base()->mutable_dimension()->set_length(GetReporterDimension(object->GetLength().GetRawValue()));
+    // only bounding box
+
+    UpdateOSIStationaryObjectOrientation(object);
+}
+
+int UpdateOSIStationaryObjectODRPosition(roadmanager::RMObject *object)
+{
     // Set OSI Stationary Object Position
     obj_osi_internal.sobj->mutable_base()->mutable_position()->set_x(object->GetX());
     obj_osi_internal.sobj->mutable_base()->mutable_position()->set_y(object->GetY());
-    obj_osi_internal.sobj->mutable_base()->mutable_position()->set_z(object->GetZ() + object->GetZOffset() + object->GetHeight() / 2.0);
+    obj_osi_internal.sobj->mutable_base()->mutable_position()->set_z(object->GetZ() + object->GetZOffset() + object->GetHeight().Get() / 2.0);
+    return 0;
+}
 
+void AddOSIStationaryObject(roadmanager::RMObject *object, bool isRepeat = false)
+{
+    // Create OSI Stationary Object
+    obj_osi_internal.sobj = obj_osi_internal.gt->add_stationary_object();
+    // Set OSI Stationary Object Mutable ID
+    int sobj_size = obj_osi_internal.gt->mutable_stationary_object()->size();
+    obj_osi_internal.sobj->mutable_id()->set_value(static_cast<unsigned int>(sobj_size - 1));
+    // Set OSI Stationary Object Type and Classification
+    UpdateOSIStationaryObjectODRType(object->GetType(), object->GetParkingSpace().GetRestrictions(), isRepeat);
+}
+
+void AddOSIStationaryObjectAtPosition(roadmanager::RMObject *object, bool isRepeat = false)
+{
+    AddOSIStationaryObject(object, isRepeat);
+    // Set OSI Stationary Object Position
+    UpdateOSIStationaryObjectODRPosition(object);
+}
+
+void AddPolygonToOSIStationaryObject(const roadmanager::Outline &outline)
+{
+    // printf("from osi reporter\n");
+    double height = 0;
+    for (const auto &corner : outline.GetCorners())
+    {
+        double x, y, z;
+        corner->GetPosLocal(x, y, z);
+        osi3::Vector2d *vec = obj_osi_internal.sobj->mutable_base()->add_base_polygon();
+        vec->set_x(x);
+        vec->set_y(y);
+        height += corner->GetHeight() / static_cast<double>(outline.GetNumberOfCorners());
+    }
+    obj_osi_internal.sobj->mutable_base()->mutable_dimension()->set_height(height);
+}
+
+int OSIReporter::CreateOSIStationaryObjectODR(roadmanager::RMObject *object, bool isRepeat)
+{
     if (object->GetNumberOfOutlines() > 0)
     {
-        for (unsigned int k = 0; k < object->GetNumberOfOutlines(); k++)
+        for (const auto &outline : object->GetOutlines())
         {
-            roadmanager::Outline *outline = object->GetOutline(k);
-            if (outline)
-            {
-                double height = 0;
-                for (size_t l = 0; l < outline->corner_.size(); l++)
-                {
-                    double x, y, z;
-                    outline->corner_[l]->GetPosLocal(x, y, z);
-                    osi3::Vector2d *vec = obj_osi_internal.sobj->mutable_base()->add_base_polygon();
-                    vec->set_x(x);
-                    vec->set_y(y);
-                    height += outline->corner_[l]->GetHeight() / static_cast<double>(outline->corner_.size());
-                }
-                obj_osi_internal.sobj->mutable_base()->mutable_dimension()->set_height(height);
-            }
+            AddOSIStationaryObjectAtPosition(object, isRepeat);  // each outline is separate object
+            AddPolygonToOSIStationaryObject(outline);
+            UpdateOSIStationaryObjectOrientation(object);
         }
     }
     else
     {
-        // Set OSI Stationary Object Boundingbox
-        obj_osi_internal.sobj->mutable_base()->mutable_dimension()->set_height(object->GetHeight());
-        obj_osi_internal.sobj->mutable_base()->mutable_dimension()->set_width(object->GetWidth());
-        obj_osi_internal.sobj->mutable_base()->mutable_dimension()->set_length(object->GetLength());
-        // only bounding box
+        AddOSIStationaryObjectAtPosition(object, isRepeat);
+        UpdateOSIStationaryObjectDimensionAndOrientation(object);
+    }
+    return 0;
+}
 
-        // Set OSI Stationary Object Orientation
-        obj_osi_internal.sobj->mutable_base()->mutable_orientation()->set_roll(GetAngleInIntervalMinusPIPlusPI(object->GetRoll()));
-        obj_osi_internal.sobj->mutable_base()->mutable_orientation()->set_pitch(GetAngleInIntervalMinusPIPlusPI(object->GetPitch()));
-        obj_osi_internal.sobj->mutable_base()->mutable_orientation()->set_yaw(GetAngleInIntervalMinusPIPlusPI(object->GetH() + object->GetHOffset()));
+int OSIReporter::UpdateOSIStationaryObjectODR(roadmanager::RMObject *object)
+{
+    bool isRepeat = false;
+    for (auto &repeat : object->GetRepeats())
+    {
+        // std::vector<roadmanager::RMObject*> repeatedObjs = object->GetRepeatedObjects(repeat);
+        // for (const auto& repeatedObj : repeatedObjs);
+        for (auto &repeatedObj : object->GetRepeatedObjects(repeat, roadmanager::Repeat::ZeroDistanceRepeatStrategy::ONE_OBJECT))
+        {
+            // roadmanager::RMObject* repeatedObj = repeatedObjs[j];
+            CreateOSIStationaryObjectODR(repeatedObj, isRepeat);
+            isRepeat = true;
+        }
+    }
+    if (!isRepeat)
+    {
+        CreateOSIStationaryObjectODR(object);
+    }
+
+    for (auto &marking : object->GetMarkingsWithPoints())  // marking
+    {
+        for (auto &segment : marking.GetMarkingSegments())  // marking points
+        {
+            UpdateOSIStationaryObjectODRMarking(segment.GetAllPoints());
+        }
     }
 
     return 0;

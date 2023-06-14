@@ -27,7 +27,8 @@ add_library(
 set(INCLUDES
     RoadManager.hpp
     odrSpiral.h
-    LaneIndependentRouter.hpp)
+    LaneIndependentRouter.hpp
+    DimensionComponent.h)
 
 # ############################### Creating library ###################################################################
 

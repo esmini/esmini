@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSCENARIO>
+   <FileHeader revMajor="1"
+               revMinor="3"
+               date="2024-12-19T10:00:00"
+               description="test object"
+               author="esmini-team"/>
+   <ParameterDeclarations/>
+   <CatalogLocations/>
+   <RoadNetwork>
+      <LogicFile filepath="../xodr/test_stationary_object_repeat.xodr"/>
+   </RoadNetwork>
+   <Entities/>
+   <Storyboard>
+    <Init>
+        <Actions/>
+    </Init>
+        <StopTrigger>
+            <ConditionGroup>
+                <Condition name="MyStopTrigger" delay="0" conditionEdge="none">
+                    <ByValueCondition>
+                        <SimulationTimeCondition value="1" rule="greaterThan"/>
+                    </ByValueCondition>
+                </Condition>
+            </ConditionGroup>
+        </StopTrigger>
+   </Storyboard>
+</OpenSCENARIO>
