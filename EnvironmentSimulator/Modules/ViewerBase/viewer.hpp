@@ -62,13 +62,17 @@ namespace viewer
         NODE_MASK_OSI_LINES        = (1 << 5),
         NODE_MASK_ENV_MODEL        = (1 << 6),
         NODE_MASK_ENTITY_MODEL     = (1 << 7),
-        NODE_MASK_ENTITY_BB        = (1 << 8),
+        NODE_MASK_ENTITY_BB_WF     = (1 << 8),
         NODE_MASK_INFO             = (1 << 9),
         NODE_MASK_INFO_PER_OBJ     = (1 << 10),
         NODE_MASK_ROAD_SENSORS     = (1 << 11),
         NODE_MASK_TRAJECTORY_LINES = (1 << 12),
         NODE_MASK_ROUTE_WAYPOINTS  = (1 << 13),
         NODE_MASK_SIGN             = (1 << 14),
+        NODE_MASK_OBJECT_SOLID     = (1 << 15),
+        NODE_MASK_OBJECT_WF        = (1 << 16),
+        NODE_MASK_MARKING          = (1 << 17),
+
     } NodeMask;
 
     osg::Vec4 ODR2OSGColor(roadmanager::RoadMarkColor color);
@@ -586,22 +590,61 @@ namespace viewer
         }
 
         void Frame(double time);
+        // Gives dimension for viewer
+        static double GetViewerDimension(const esmini::DimensionComponent component);
+        // Gives dimension for viewer
+        static double GetViewerDimension(const double val);
 
     private:
-        bool                                         CreateRoadLines(Viewer* viewer, roadmanager::OpenDrive* od);
-        bool                                         CreateRoadMarkLines(roadmanager::OpenDrive* od);
-        int                                          CreateOutlineObject(roadmanager::Outline* outline, osg::Vec4 color);
-        osg::ref_ptr<osg::PositionAttitudeTransform> LoadRoadFeature(roadmanager::Road* road, std::string filename);
+        // Get bounding box from the given 3D model node
+        const osg::BoundingBox GetBoundingBox(osg::Node* node);
+        // Update model from given original object and repeated object eg. Set position, scale, rotation
+        void UpdateModel(roadmanager::RMObject*                       repeatedObject,
+                         double                                       scale_x,
+                         double                                       scale_y,
+                         double                                       scale_z,
+                         osg::ref_ptr<osg::PositionAttitudeTransform> clone);
+        // Add model to the given graphics group
+        void AddModel(bool                                         IsMarkingAvailable,
+                      roadmanager::RMObject*                       object,
+                      osg::ref_ptr<osg::PositionAttitudeTransform> tx,
+                      osg::ref_ptr<osg::Group>                     objGroup);
+        void AddOutlineModel(bool IsMarkingAvailable, osg::ref_ptr<osg::Geode> geode, osg::ref_ptr<osg::Group> objGroup);
+        // validate and throw warning only if viewer default value used
+        void ValidateDimensionsForViewing(roadmanager::RMObject* object) const;
+        // Update RM object and get scale only if RM object cant be updated. eg. respect RM object dimension
+        void UpdateObjectDimensionsAndGetScale(const osg::BoundingBox& boundingBox,
+                                               roadmanager::RMObject*  object,
+                                               double&                 scale_x,
+                                               double&                 scale_y,
+                                               double&                 scale_z);
+        // get box shaped model based on given object dimension
+        osg::ref_ptr<osg::ShapeDrawable> GetBoxShapeModel(roadmanager::RMObject* object) const;
+        bool                             CreateRoadLines(Viewer* viewer, roadmanager::OpenDrive* od);
+        bool                             CreateRoadMarkLines(roadmanager::OpenDrive* od);
+        // create one outline model
+        void CreateOutlineModel(const roadmanager::Outline& outline, osg::Vec4 color, osg::ref_ptr<osg::Geode> geode, bool isShallowCopy = false);
+        // create marking for the object
+        int DrawMarking(roadmanager::RMObject* object);
+        // load and return the model for this given model name
+        osg::ref_ptr<osg::PositionAttitudeTransform> GetModel(std::string filename, roadmanager::RMObject* object);
+        osg::ref_ptr<osg::PositionAttitudeTransform> LoadRoadFeature(std::string filename);
         int                                          CreateRoadSignsAndObjects(roadmanager::OpenDrive* od);
-        int                                          InitTraits(osg::ref_ptr<osg::GraphicsContext::Traits> traits,
-                                                                int                                        x,
-                                                                int                                        y,
-                                                                int                                        w,
-                                                                int                                        h,
-                                                                int                                        samples,
-                                                                bool                                       decoration,
-                                                                int                                        screenNum,
-                                                                bool                                       headless);
+        // Create signal and add it into group
+        int  CreateRoadSignals(osg::ref_ptr<osg::Group> objGroup_, const std::vector<roadmanager::Signal*> signals);
+        bool CreateRepeats(roadmanager::RMObject*                       object,
+                           osg::ref_ptr<osg::PositionAttitudeTransform> tx,
+                           osg::ref_ptr<osg::Group>                     OutlineGroup,
+                           osg::ref_ptr<osg::Group>                     objGroup);
+        int  InitTraits(osg::ref_ptr<osg::GraphicsContext::Traits> traits,
+                        int                                        x,
+                        int                                        y,
+                        int                                        w,
+                        int                                        h,
+                        int                                        samples,
+                        bool                                       decoration,
+                        int                                        screenNum,
+                        bool                                       headless);
 
         int                                   AddGroundSurface();
         bool                                  keyUp_;

@@ -1,0 +1,98 @@
+<?xml version="1.0" standalone="yes"?>
+<OpenDRIVE>
+    <header revMajor="1" revMinor="8" name="" version="1.00" date="2024-12-19 13:59:00.864624" north="0.0" south="0.0" east="0.0" west="0.0">
+    </header>
+    <road name="dummy road" length="100" id="0" junction="-1">
+        <link>
+        </link>
+        <planView>
+            <!-- <geometry s="0.0" x="0.0" y="0.0" hdg="0.0" length="50">
+                <line/>
+            </geometry> -->
+            <geometry s="0.0" x="0.0" y="0.0" hdg="0.0" length="100">
+                <arc curvature="0.05"/>
+                <!-- <line/> -->
+            </geometry>
+        </planView>
+        <elevationProfile>
+		</elevationProfile>
+        <lateralProfile/>
+        <lanes>
+            <laneSection s="0">
+                <left>
+                    <lane id="2" type="border" level= "false">
+                        <link>
+                        </link>
+                        <width sOffset="0.0" a="10" b="0.0" c="0.0" d="0.0"/>
+                    </lane>
+                    <lane id="1" type="driving" level= "false">
+                        <link>
+                        </link>
+                        <width sOffset="0.0" a="3.0" b="0.0" c="0.0" d="0.0"/>
+                        <roadMark sOffset="0.0" type="solid" weight="standard" color="standard" width="0.12" laneChange="none" height="0.02">
+                            <type name="solid" width="0.12" >
+                                <line length="0.0" space="0.0" tOffset="0.0" sOffset="0.0" rule="no passing" width="0.12"/>
+                            </type>
+                        </roadMark>
+                    </lane>
+                </left>
+                <center>
+                    <lane id="0" type="driving" level= "false">
+                        <link>
+                        </link>
+                        <roadMark sOffset="0.0" type="broken" weight="standard" color="standard" width="0.12" laneChange="none" height="0.02">
+                            <type name="broken" width="0.12" >
+                                <line length="4.0" space="8.0" tOffset="0.0" sOffset="0.0" rule="caution" width="0.12"/>
+                            </type>
+                        </roadMark>
+                    </lane>
+                </center>
+                <right>
+                    <lane id="-1" type="driving" level= "false">
+                        <link>
+                        </link>
+                        <width sOffset="0.0" a="3.0" b="0.0" c="0.0" d="0.0"/>
+                       <roadMark sOffset="0.0" type="solid" weight="standard" color="standard" width="0.12" laneChange="none" height="0.02">
+                            <type name="solid" width="0.12" >
+                                <line length="0.0" space="0.0" tOffset="0.0" sOffset="0.0" rule="no passing" width="0.12"/>
+                            </type>
+                        </roadMark>
+                    </lane>
+                    <lane id="-2" type="border" level= "false">
+                        <link>
+                        </link>
+                        <width sOffset="0.0" a="10.0" b="0.0" c="0.0" d="0.0"/>
+                    </lane>
+                </right>
+            </laneSection>
+        </lanes>
+        <objects>
+            <object type="barrier" id="0" s="0" t="-9" zOffset="0.0">
+                <repeat s="10" length="50" distance ="0.0" tStart="-13.0" tEnd="-13.0" zOffsetEnd="0.0" zOffsetStart="0.0" heightStart="4.0" heightEnd="4.0"/>
+                <outlines>
+                    <outline id="0" closed="true">
+                        <cornerLocal u="-10.0" v="-2.5" z="0.0" height="4.0" id="0"/>
+                        <cornerLocal u="10.0" v="-2.5" z="0.0" height="4.0" id="1"/>
+                        <cornerLocal u="10.0" v="2.5" z="0.0" height="4.0" id="2"/>
+                        <cornerLocal u="-10.0" v="2.5" z="0.0" height="4.0" id="3"/>
+                    </outline>
+                </outlines>
+            </object>
+            <object type="barrier" id="1" s="0" t="0" zOffset="0.0">
+                <repeat s="40" length="20" distance ="7.0" tStart="-8.0" tEnd="-8.0" lengthStart="5" lengthEnd="5" widthStart="5" widthEnd="5" zOffsetEnd="0.0" zOffsetStart="0.0" heightStart="4.0" heightEnd="4.0"/>
+                <outlines>
+                    <outline id="1" closed="true">
+                        <cornerRoad s="10" t="-2.5" dz="0.0" height="4.0" id="0"/>
+                        <cornerRoad s="15" t="-2.5" dz="0.0" height="4.0" id="1"/>
+                        <cornerRoad s="15" t="2.5" dz="0.0" height="4.0" id="2"/>
+                        <cornerRoad s="10" t="2.5" dz="0.0" height="4.0" id="3"/>
+                    </outline>
+                </outlines>
+            </object>
+        </objects>
+        <signals>
+        </signals>
+        <surface>
+        </surface>
+    </road>
+</OpenDRIVE>

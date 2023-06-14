@@ -1,0 +1,96 @@
+<?xml version="1.0" standalone="yes"?>
+<OpenDRIVE>
+    <header revMajor="1" revMinor="8" name="" version="1.00" date="2024-12-19 13:59:00.864624" north="0.0" south="0.0" east="0.0" west="0.0">
+    </header>
+    <road name="dummy road" length="400" id="0" junction="-1">
+        <link>
+        </link>
+        <planView>
+            <geometry s="0.0" x="0.0" y="0.0" hdg="0.0" length="100">
+                <line/>
+            </geometry>
+           <geometry s="100.0" x="100.0" y="0.0" hdg="0.0" length="300">
+                <spiral curvStart="0.0" curvEnd="-0.02" />
+            </geometry>
+        </planView>
+        <elevationProfile>
+			<!-- https://www.desmos.com/calculator/fvu7anqrqr -->
+            <elevation s="0.0" a="0.0" b="0.00" c="0.00" d="0.00"/>
+            <elevation s="200.0" a="0.0" b="0.00" c="0.00367346938776" d="-0.0000349854227405"/>
+            <elevation s="270.0" a="6.0" b="0.00" c="-0.00367346938776" d="0.0000349854227405"/>
+            <elevation s="340.0" a="0.0" b="0.00" c="0.00" d="0.00"/>
+		</elevationProfile>
+        <lateralProfile/>
+        <lanes>
+            <laneSection s="0">
+                <left>
+                    <lane id="2" type="border" level= "false">
+                        <link>
+                        </link>
+                        <width sOffset="0.0" a="50" b="0.0" c="0.0" d="0.0"/>
+                    </lane>
+                    <lane id="1" type="driving" level= "false">
+                        <link>
+                        </link>
+                        <width sOffset="0.0" a="3.2" b="0.0" c="0.0" d="0.0"/>
+                        <roadMark sOffset="0.0" type="solid" weight="standard" color="standard" width="0.12" laneChange="none" height="0.02">
+                            <type name="solid" width="0.12" >
+                                <line length="0.0" space="0.0" tOffset="0.0" sOffset="0.0" rule="no passing" width="0.12"/>
+                            </type>
+                        </roadMark>
+                    </lane>
+                </left>
+                <center>
+                    <lane id="0" type="driving" level= "false">
+                        <link>
+                        </link>
+                        <roadMark sOffset="0.0" type="broken" weight="standard" color="standard" width="0.12" laneChange="none" height="0.02">
+                            <type name="broken" width="0.12" >
+                                <line length="4.0" space="8.0" tOffset="0.0" sOffset="0.0" rule="caution" width="0.12"/>
+                            </type>
+                        </roadMark>
+                    </lane>
+                </center>
+                <right>
+                    <lane id="-1" type="driving" level= "false">
+                        <link>
+                        </link>
+                        <width sOffset="0.0" a="3.2" b="0.0" c="0.0" d="0.0"/>
+                       <roadMark sOffset="0.0" type="solid" weight="standard" color="standard" width="0.12" laneChange="none" height="0.02">
+                            <type name="solid" width="0.12" >
+                                <line length="0.0" space="0.0" tOffset="0.0" sOffset="0.0" rule="no passing" width="0.12"/>
+                            </type>
+                        </roadMark>
+                    </lane>
+                    <lane id="-2" type="border" level= "false">
+                        <link>
+                        </link>
+                        <width sOffset="0.0" a="30.0" b="0.0" c="0.0" d="0.0"/>
+                    </lane>
+                </right>
+            </laneSection>
+        </lanes>
+        <objects>
+            <object type="parkingSpace" subtype="closed" id="11" s="13.54" t="-12.90" zOffset="0.0" orientation="none" length="3.5" pitch="0.0" roll="0.0">
+                <repeat distance = "0.0" lengthStart="3.5" lengthEnd="3.5" heightStart="4.0" heightEnd="4.0" widthStart="4" widthEnd="4" zOffsetEnd="0.0" zOffsetStart="0.0" tStart="-12.5" tEnd="-12.5" length="10" s="20.0"/>
+                <parkingSpace access="all"/>
+                <markings>
+                  <marking side="left" width="0.1" color="white" zOffset="0.005" spaceLength="0.0" lineLength="10.0" startOffset="0.0" stopOffset="0.0"/>
+                  <marking side="right" width="0.1" color="white" zOffset="0.005" spaceLength="0.0" lineLength="10.0" startOffset="0.0" stopOffset="0.0"/>
+                </markings>
+            </object>
+            <object type="parkingSpace" subtype="closed" id="12" s="13.54" t="-12.90" zOffset="0.0" orientation="none" length="3.5" pitch="0.0" roll="0.0">
+                <repeat distance = "5" lengthStart="3.5" lengthEnd="3.5" heightStart="4.0" heightEnd="4.0" widthStart="4" widthEnd="4" zOffsetEnd="0.0" zOffsetStart="0.0" tStart="-12.5" tEnd="-12.5" length="10" s="40.0"/>
+                <parkingSpace access="all"/>
+                <markings>
+                  <marking side="left" width="0.1" color="white" zOffset="0.005" spaceLength="0.0" lineLength="3.5" startOffset="0.0" stopOffset="0.0"/>
+                  <marking side="right" width="0.1" color="white" zOffset="0.005" spaceLength="0.0" lineLength="3.5" startOffset="0.0" stopOffset="0.0"/>
+                </markings>
+            </object>
+        </objects>
+        <signals>
+        </signals>
+        <surface>
+        </surface>
+    </road>
+</OpenDRIVE>

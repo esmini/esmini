@@ -902,7 +902,7 @@ int ScenarioPlayer::InitViewer()
     if (opt.GetOptionSet("bounding_boxes"))
     {
         viewer_->ClearNodeMaskBits(viewer::NodeMask::NODE_MASK_ENTITY_MODEL);
-        viewer_->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_ENTITY_BB);
+        viewer_->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_ENTITY_BB_WF);
     }
 
     //  Create visual models
