@@ -284,6 +284,8 @@ private:
     double y_;
 };
 
+bool IsEqualDouble(double val1, double val2);
+
 // Useful operations
 
 /**
