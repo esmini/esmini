@@ -50,6 +50,8 @@
 #define ORTHO_FOV                          1.0
 #define DEFAULT_LENGTH_FOR_CONTINUOUS_OBJS 10.0
 
+constexpr double DEFAULT_MIN_DIM = 0.01;
+
 float color_green[3]      = {0.2f, 0.6f, 0.3f};
 float color_gray[3]       = {0.7f, 0.7f, 0.7f};
 float color_dark_gray[3]  = {0.5f, 0.5f, 0.5f};
@@ -2700,43 +2702,109 @@ bool Viewer::CreateRoadLines(Viewer* viewer, roadmanager::OpenDrive* od)
     return true;
 }
 
-int Viewer::CreateOutlineObject(roadmanager::Outline* outline, osg::Vec4 color)
+int Viewer::DrawMarking(roadmanager::RMObject* object)
 {
-    if (outline == 0)
-        return -1;
-    bool roof = outline->closed_ ? true : false;
+    for (auto& marking : object->GetMarkings())  // marking
+    {
+        for (const auto& points : marking.GetMarkingsPoints(object))
+        {
+            osg::ref_ptr<osg::Group>     group        = new osg::Group();
+            osg::ref_ptr<osg::Vec3dArray> vertices_top = new osg::Vec3dArray(points.size());  // one set at bottom and one at top
+
+            for (int i = 0; i < points.size(); i += 4)
+            {
+                (*vertices_top)[i + 0].set(points[i + 0].x, points[i + 0].y, points[i + 0].z);
+                (*vertices_top)[i + 1].set(points[i + 1].x, points[i + 1].y, points[i + 1].z);
+                (*vertices_top)[i + 2].set(points[i + 2].x, points[i + 2].y, points[i + 2].z);
+                (*vertices_top)[i + 3].set(points[i + 3].x, points[i + 3].y, points[i + 3].z);
+            }
+
+            // Finally create and add geometry
+            osg::ref_ptr<osg::Geode>    geode = new osg::Geode;
+            osg::ref_ptr<osg::Geometry> geom  = new osg::Geometry;
+
+            geom->setVertexArray(vertices_top.get());
+            geom->addPrimitiveSet(new osg::DrawArrays(GL_QUADS, 0, points.size()));
+
+            // osgUtil::SmoothingVisitor::smooth(*geom, 0.5);
+            geom->setDataVariance(osg::Object::STATIC);
+            geom->setUseDisplayList(true);
+            geode->addDrawable(geom);
+
+            osg::Vec4                   color     = ODR2OSGColor(marking.GetColor());
+            osg::ref_ptr<osg::Material> material_ = new osg::Material;
+            material_->setDiffuse(osg::Material::FRONT_AND_BACK, color);
+            material_->setAmbient(osg::Material::FRONT_AND_BACK, color);
+            geode->getOrCreateStateSet()->setAttributeAndModes(material_.get());
+
+            group->addChild(geode);
+            env_origin2odr_->addChild(group);
+        }
+    }
+    return 0;
+}
+
+osg::Vec4 GetObjectColor(roadmanager::RMObject::ObjectType type)
+{
+    osg::Vec4 color;
+    // Set color based on object type
+    if (type == roadmanager::RMObject::ObjectType::BUILDING || type == roadmanager::RMObject::ObjectType::BARRIER)
+    {
+        color = osg::Vec4(0.6f, 0.6f, 0.6f, 1.0f);
+    }
+    else if (type == roadmanager::RMObject::ObjectType::OBSTACLE)
+    {
+        color = osg::Vec4(0.5f, 0.3f, 0.3f, 1.0f);
+    }
+    else if (type == roadmanager::RMObject::ObjectType::TREE || type == roadmanager::RMObject::ObjectType::VEGETATION)
+    {
+        color = osg::Vec4(0.22f, 0.32f, 0.22f, 1.0f);
+    }
+    else
+    {
+        color = osg::Vec4(0.4f, 0.4f, 0.4f, 1.0f);
+    }
+    return color;
+}
+
+void Viewer::CreateOutlineModel(roadmanager::Outline& outline, osg::Vec4 color, bool UseLocalDim, osg::ref_ptr<osg::Geode> geode)
+{
+    bool roof = outline.GetAreaType() == roadmanager::Outline::CLOSED ? true : false;
 
     // nrPoints will be corners + 1 if the outline should be closed, reusing first corner as last
-    int nrPoints = outline->closed_ ? static_cast<int>(outline->corner_.size()) + 1 : static_cast<int>(outline->corner_.size());
+    uint64_t                          nrPoints = outline.GetAreaType() == roadmanager::Outline::CLOSED ? outline.corner_.size() + 1
+                                                                                                : outline.corner_.size();
+    osg::ref_ptr<osg::Vec3Array> vertices_sides =
+        new osg::Vec3Array(nrPoints * 2);                                      // one set at bottom and one at top
+    osg::ref_ptr<osg::Vec3Array> vertices_top = new osg::Vec3Array(nrPoints);  // one set at bottom and one at top
 
-    osg::ref_ptr<osg::Group> group = new osg::Group();
-
-    osg::ref_ptr<osg::Vec3Array> vertices_sides = new osg::Vec3Array(static_cast<unsigned int>(nrPoints) * 2);  // one set at bottom and one at top
-    osg::ref_ptr<osg::Vec3Array> vertices_top   = new osg::Vec3Array(static_cast<unsigned int>(nrPoints));      // one set at bottom and one at top
-
-    // Set vertices
-    for (size_t i = 0; i < outline->corner_.size(); i++)
+    for (size_t i = 0; i < outline.corner_.size(); i++)
     {
-        double                      x, y, z;
-        roadmanager::OutlineCorner* corner = outline->corner_[i];
-        corner->GetPos(x, y, z);
-        (*vertices_sides)[i * 2 + 0].set(static_cast<float>(x - origin_[0]),
-                                         static_cast<float>(y - origin_[1]),
-                                         static_cast<float>(z + corner->GetHeight()));
-        (*vertices_sides)[i * 2 + 1].set(static_cast<float>(x - origin_[0]), static_cast<float>(y - origin_[1]), static_cast<float>(z));
-        (*vertices_top)[i].set(static_cast<float>(x - origin_[0]), static_cast<float>(y - origin_[1]), static_cast<float>(z + corner->GetHeight()));
+        double                      x, y, z_bottom;
+        roadmanager::OutlineCorner* corner = outline.corner_[i];
+        if( UseLocalDim)
+        {
+            corner->GetPosLocal(x, y, z_bottom);
+        }
+        else
+        {
+            corner->GetPos(x, y, z_bottom);
+        }
+        double z_top = z_bottom + corner->GetHeight();
+        (*vertices_sides)[i * 2 + 0].set(static_cast<float>(x - origin_[0]), static_cast<float>(y - origin_[1]), static_cast<float>(z_top));
+        (*vertices_sides)[i * 2 + 1].set(static_cast<float>(x - origin_[0]), static_cast<float>(y - origin_[1]), static_cast<float>(z_bottom));
+        (*vertices_top)[i].set(static_cast<float>(x - origin_[0]), static_cast<float>(y - origin_[1]), static_cast<float>(z_top));
     }
 
     // Close geometry
-    if (outline->closed_)
+    if (outline.GetAreaType() == roadmanager::Outline::CLOSED)
     {
-        (*vertices_sides)[2 * static_cast<unsigned int>(nrPoints) - 2].set((*vertices_sides)[0]);
-        (*vertices_sides)[2 * static_cast<unsigned int>(nrPoints) - 1].set((*vertices_sides)[1]);
-        (*vertices_top)[static_cast<unsigned int>(nrPoints) - 1].set((*vertices_top)[0]);
+        (*vertices_sides)[2 * nrPoints - 2].set((*vertices_sides)[0]);
+        (*vertices_sides)[2 * nrPoints - 1].set((*vertices_sides)[1]);
+        (*vertices_top)[nrPoints - 1].set((*vertices_top)[0]);
     }
 
     // Finally create and add geometry
-    osg::ref_ptr<osg::Geode>    geode  = new osg::Geode;
     osg::ref_ptr<osg::Geometry> geom[] = {new osg::Geometry, new osg::Geometry};
 
     geom[0]->setVertexArray(vertices_sides.get());
@@ -2763,16 +2831,64 @@ int Viewer::CreateOutlineObject(roadmanager::Outline* outline, osg::Vec4 color)
     material_->setDiffuse(osg::Material::FRONT_AND_BACK, color);
     material_->setAmbient(osg::Material::FRONT_AND_BACK, color);
     geode->getOrCreateStateSet()->setAttributeAndModes(material_.get());
+}
 
+void Viewer::ChangeModelAsWireFrame(osg::ref_ptr<osg::Geode> geode, bool isMarkingAvailable)
+{
+    if (isMarkingAvailable)  // draw outlink marking
+    {
+        osg::PolygonMode* polygonMode = new osg::PolygonMode;
+        polygonMode->setMode(osg::PolygonMode::FRONT_AND_BACK, osg::PolygonMode::LINE);
+        geode->getOrCreateStateSet()->setAttributeAndModes(polygonMode, osg::StateAttribute::OVERRIDE | osg::StateAttribute::ON);
+    }
+}
+
+void Viewer::CreateShallowCopyModels(roadmanager::RMObject* object)
+{
+    osg::Vec4          color = GetObjectColor(object->GetType());
+    for (auto& repeat : object->GetRepeats())
+    {
+        osg::ref_ptr<osg::Geode> geode = new osg::Geode;
+        for (auto& outline : object->GetOutlines())
+        {
+            CreateOutlineModel(outline, color, true, geode); // create outline model
+        }
+        for (const auto& repeatScale : object->GetRepeatLocalOutlineTransformationInfo(repeat)) // scale the model as per repeat info
+        {
+            // position mode relative for aligning to road heading
+            osg::ref_ptr<osg::PositionAttitudeTransform> xform = new osg::PositionAttitudeTransform();
+            xform->addChild(geode);
+            xform->setScale(
+                osg::Vec3d(repeatScale.scale_x, repeatScale.scale_y, repeatScale.scale_z));
+
+            xform->setPosition(osg::Vec3d(repeatScale.x, repeatScale.y, repeatScale.z));
+
+            // First align to road orientation
+            osg::Quat quatRoad(osg::Quat(repeatScale.roll, osg::X_AXIS, repeatScale.pitch, osg::Y_AXIS, repeatScale.heading, osg::Z_AXIS));
+            // Specified local rotation
+            osg::Quat quatLocal(repeatScale.hOffset, osg::Vec3(osg::Z_AXIS));  // Heading
+
+            // Combine
+            xform->setAttitude(quatLocal * quatRoad);
+            env_origin2odr_->addChild(xform);
+        }
+        ChangeModelAsWireFrame(geode, object->GetNumberOfMarkings() > 0);
+    }
+}
+
+int Viewer::CreateOutlineModel(roadmanager::Outline& outline, osg::Vec4 color, bool isMarkingAvailable)
+{
+    osg::ref_ptr<osg::Geode>    geode  = new osg::Geode;
+    CreateOutlineModel(outline, color, false, geode); // create outline model
+    osg::ref_ptr<osg::Group> group    = new osg::Group();
     group->addChild(geode);
     env_origin2odr_->addChild(group);
-
+    ChangeModelAsWireFrame(geode, isMarkingAvailable);
     return 0;
 }
 
-osg::ref_ptr<osg::PositionAttitudeTransform> Viewer::LoadRoadFeature(roadmanager::Road* road, std::string filename)
+osg::ref_ptr<osg::PositionAttitudeTransform> Viewer::LoadRoadFeature(std::string filename)
 {
-    (void)road;
     osg::ref_ptr<osg::Node>                      node;
     osg::ref_ptr<osg::PositionAttitudeTransform> xform = 0;
 
@@ -2805,459 +2921,397 @@ osg::ref_ptr<osg::PositionAttitudeTransform> Viewer::LoadRoadFeature(roadmanager
     return xform;
 }
 
-int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
+int Viewer::CreateRoadSignals(osg::ref_ptr<osg::Group> objGroup, std::vector<roadmanager::Signal*> signals)
 {
-    osg::ref_ptr<osg::Group>                     objGroup = new osg::Group;
-    osg::ref_ptr<osg::PositionAttitudeTransform> tx       = nullptr;
-
-    roadmanager::Position pos;
-
-    for (int r = 0; r < od->GetNumOfRoads(); r++)
+    for (const auto& signal : signals)
     {
-        roadmanager::Road* road = od->GetRoadByIdx(r);
+        // create a bounding for the sign
+        osg::ref_ptr<osg::PositionAttitudeTransform> tx_bb = new osg::PositionAttitudeTransform;
 
-        for (size_t s = 0; s < static_cast<unsigned int>(road->GetNumberOfSignals()); s++)
+        // avoid zero width, length and width - set to a minimum value of 0.05m
+        osg::ref_ptr<osg::ShapeDrawable> shape =
+            new osg::ShapeDrawable(new osg::Box(osg::Vec3(0.0f, 0.0f, 0.5f * MAX(0.05f, static_cast<float>(signal->GetHeight()))),
+                                                MAX(0.05f, static_cast<float>(signal->GetDepth())),
+                                                MAX(0.05f, static_cast<float>(signal->GetWidth())),
+                                                MAX(0.05f, static_cast<float>(signal->GetHeight()))));
+
+        shape->setColor(osg::Vec4(0.8f, 0.8f, 0.8f, 1.0f));
+        tx_bb->addChild(shape);
+        tx_bb->setPosition(osg::Vec3(static_cast<float>(signal->GetX() - origin_[0]),
+                                        static_cast<float>(signal->GetY() - origin_[1]),
+                                        static_cast<float>(signal->GetZ() + signal->GetZOffset())));
+        tx_bb->setAttitude(osg::Quat(signal->GetH() + signal->GetHOffset(), osg::Vec3(0, 0, 1)));
+
+        osg::ref_ptr<osg::PositionAttitudeTransform> tx = nullptr;
+        if (stand_in_model_ == true || !SE_Env::Inst().GetOptions().GetOptionSet("use_signs_in_external_model"))
         {
-            tx                          = nullptr;
-            roadmanager::Signal* signal = road->GetSignal(static_cast<int>(s));
-
-            // create a bounding for the sign
-            osg::ref_ptr<osg::PositionAttitudeTransform> tx_bb = new osg::PositionAttitudeTransform;
-
-            // avoid zero width, length and width - set to a minimum value of 0.05m
-            osg::ref_ptr<osg::ShapeDrawable> shape =
-                new osg::ShapeDrawable(new osg::Box(osg::Vec3(0.0f, 0.0f, 0.5f * MAX(0.05f, static_cast<float>(signal->GetHeight()))),
-                                                    MAX(0.05f, static_cast<float>(signal->GetDepth())),
-                                                    MAX(0.05f, static_cast<float>(signal->GetWidth())),
-                                                    MAX(0.05f, static_cast<float>(signal->GetHeight()))));
-
-            shape->setColor(osg::Vec4(0.8f, 0.8f, 0.8f, 1.0f));
-            tx_bb->addChild(shape);
-            tx_bb->setPosition(osg::Vec3(static_cast<float>(signal->GetX() - origin_[0]),
-                                         static_cast<float>(signal->GetY() - origin_[1]),
-                                         static_cast<float>(signal->GetZ() + signal->GetZOffset())));
-            tx_bb->setAttitude(osg::Quat(signal->GetH() + signal->GetHOffset(), osg::Vec3(0, 0, 1)));
-
-            if (stand_in_model_ == true || !SE_Env::Inst().GetOptions().GetOptionSet("use_signs_in_external_model"))
+            // Road sign filename is the combination of type_subtype_value
+            std::string filename = signal->GetCountry() + "_" + signal->GetType();
+            if (!(signal->GetSubType().empty() || signal->GetSubType() == "none" || signal->GetSubType() == "-1"))
             {
-                // Road sign filename is the combination of type_subtype_value
-                std::string filename = signal->GetCountry() + "_" + signal->GetType();
-                if (!(signal->GetSubType().empty() || signal->GetSubType() == "none" || signal->GetSubType() == "-1"))
-                {
-                    filename += "_" + signal->GetSubType();
-                }
-
-                if (!signal->GetValueStr().empty())
-                {
-                    filename += "-" + signal->GetValueStr();
-                }
-                tx = LoadRoadFeature(road, filename + ".osgb");
-
-                if (tx == nullptr)
-                {
-                    // if file according to type, subtype and value could not be resolved, try from name
-                    tx = LoadRoadFeature(road, signal->GetName() + ".osgb");
-                }
-
-                if (tx != nullptr)
-                {
-                    tx->setPosition(osg::Vec3(static_cast<float>(signal->GetX() - origin_[0]),
-                                              static_cast<float>(signal->GetY() - origin_[1]),
-                                              static_cast<float>(signal->GetZ() + signal->GetZOffset())));
-                    tx->setAttitude(osg::Quat(signal->GetH() + signal->GetHOffset(), osg::Vec3(0, 0, 1)));
-                    tx->setNodeMask(NODE_MASK_SIGN);
-                    objGroup->addChild(tx);
-                }
-                else
-                {
-                    LOG("Failed to load signal %s / %s - use simple bounding box",
-                        (filename + ".osgb").c_str(),
-                        (signal->GetName() + ".osgb").c_str());
-                    osg::ref_ptr<osg::PositionAttitudeTransform> obj_standin =
-                        dynamic_cast<osg::PositionAttitudeTransform*>(tx_bb->clone(osg::CopyOp::DEEP_COPY_ALL));
-                    obj_standin->setNodeMask(NODE_MASK_SIGN);
-                    objGroup->addChild(obj_standin);
-                }
+                filename += "_" + signal->GetSubType();
             }
 
-            // set bounding box to wireframe mode
-            osg::PolygonMode* polygonMode = new osg::PolygonMode;
-            polygonMode->setMode(osg::PolygonMode::FRONT_AND_BACK, osg::PolygonMode::LINE);
-            shape->getOrCreateStateSet()->setAttributeAndModes(polygonMode, osg::StateAttribute::OVERRIDE | osg::StateAttribute::ON);
-            tx_bb->setNodeMask(NODE_MASK_ODR_FEATURES);
+            if (!signal->GetValueStr().empty())
+            {
+                filename += "-" + signal->GetValueStr();
+            }
+            tx = LoadRoadFeature(filename + ".osgb");
 
-            objGroup->addChild(tx_bb);
+            if (tx == nullptr)
+            {
+                // if file according to type, subtype and value could not be resolved, try from name
+                tx = LoadRoadFeature(signal->GetName() + ".osgb");
+            }
+
+            if (tx != nullptr)
+            {
+                tx->setPosition(osg::Vec3(static_cast<float>(signal->GetX() - origin_[0]),
+                                            static_cast<float>(signal->GetY() - origin_[1]),
+                                            static_cast<float>(signal->GetZ() + signal->GetZOffset())));
+                tx->setAttitude(osg::Quat(signal->GetH() + signal->GetHOffset(), osg::Vec3(0, 0, 1)));
+                tx->setNodeMask(NODE_MASK_SIGN);
+                objGroup->addChild(tx);
+            }
+            else
+            {
+                LOG("Failed to load signal %s / %s - use simple bounding box",
+                    (filename + ".osgb").c_str(),
+                    (signal->GetName() + ".osgb").c_str());
+                osg::ref_ptr<osg::PositionAttitudeTransform> obj_standin =
+                    dynamic_cast<osg::PositionAttitudeTransform*>(tx_bb->clone(osg::CopyOp::DEEP_COPY_ALL));
+                obj_standin->setNodeMask(NODE_MASK_SIGN);
+                objGroup->addChild(obj_standin);
+            }
         }
 
-        for (size_t o = 0; o < static_cast<unsigned int>(road->GetNumberOfObjects()); o++)
+        // set bounding box to wireframe mode
+        osg::PolygonMode* polygonMode = new osg::PolygonMode;
+        polygonMode->setMode(osg::PolygonMode::FRONT_AND_BACK, osg::PolygonMode::LINE);
+        shape->getOrCreateStateSet()->setAttributeAndModes(polygonMode, osg::StateAttribute::OVERRIDE | osg::StateAttribute::ON);
+        tx_bb->setNodeMask(NODE_MASK_ODR_FEATURES);
+
+        objGroup->addChild(tx_bb);
+    }
+    return 0;
+}
+
+void Viewer::CreateOutlinesModel(std::vector<roadmanager::Outline>& Outlines, osg::Vec4 color, bool isMarkingAvailable)
+{
+    for (auto& outline : Outlines)
+    {
+        CreateOutlineModel(outline, color, isMarkingAvailable);
+    }
+}
+
+void Viewer::CreateUniqueModels(roadmanager::RMObject* object)
+{
+    for (auto& repeat : object->GetRepeats())
+    {
+        for (auto& outlines : object->GetUniqueOutlines(repeat))
         {
-            roadmanager::RMObject* object = road->GetRoadObject(static_cast<int>(o));
-            osg::Vec4              color;
-            tx = nullptr;
+            CreateOutlinesModel(outlines, GetObjectColor(object->GetType()), object->GetNumberOfMarkings() > 0);
+        }
+    }
+}
 
-            // Set color based on object type
-            if (object->GetType() == roadmanager::RMObject::ObjectType::BUILDING || object->GetType() == roadmanager::RMObject::ObjectType::BARRIER)
-            {
-                color = osg::Vec4(0.6f, 0.6f, 0.6f, 1.0f);
-            }
-            else if (object->GetType() == roadmanager::RMObject::ObjectType::OBSTACLE)
-            {
-                color = osg::Vec4(0.5f, 0.3f, 0.3f, 1.0f);
-            }
-            else if (object->GetType() == roadmanager::RMObject::ObjectType::TREE ||
-                     object->GetType() == roadmanager::RMObject::ObjectType::VEGETATION)
-            {
-                color = osg::Vec4(0.22f, 0.32f, 0.22f, 1.0f);
-            }
-            else
-            {
-                color = osg::Vec4(0.4f, 0.4f, 0.4f, 1.0f);
-            }
+double Viewer::GetViewerDimension(const esmini::DimensionComponent component)
+{
+    return std::max(component.Get(), DEFAULT_MIN_DIM);
+}
 
-            if (object->GetNumberOfOutlines() > 0 &&
-                object->GetNumberOfRepeats() == 0)  // if repeats are defined, wait and see if outline should replace failed 3D model or not
+double Viewer::GetViewerDimension(const double val)
+{
+    return std::max(val, DEFAULT_MIN_DIM);
+}
+
+// search, load and return trandform node for the given filename
+osg::ref_ptr<osg::PositionAttitudeTransform> Viewer::GetModel(std::string filename)
+{
+    osg::ref_ptr<osg::PositionAttitudeTransform> tx = nullptr;
+    // Assume name is representing a 3D model filename
+    if (!filename.empty())
+    {
+        if (FileNameExtOf(filename) == "")
+        {
+            filename += ".osgb";  // add missing extension
+        }
+
+        tx = LoadRoadFeature(filename);
+
+        if (tx == nullptr)
+        {
+            LOG("Failed to load road object model file: %s. Creating a bounding box as stand in.", filename.c_str());
+        }
+    }
+    return tx;
+}
+
+void Viewer::ValidateDimensionsForViewing(roadmanager::RMObject& object) const
+{
+    if (IsEqualDouble(object.GetLength().Get(), 0.0))
+    {
+        LOG("Object %s missing length, set to %.2f for viewer purpose", object.GetName(), 0.01);
+    }
+    if (IsEqualDouble(object.GetWidth().Get(), 0.0))
+    {
+        LOG("Object %s missing width, set to %.2f for viewer purpose", object.GetName(), 0.01);
+    }
+    if (IsEqualDouble(object.GetHeight().Get(), 0.0))
+    {
+        LOG("Object %s missing height, set to %.2f for viewer purpose", object.GetName(), 0.01);
+    }
+}
+
+const osg::BoundingBox Viewer::GetBoundingBox(osg::Node* node)
+{
+    osg::BoundingBox          boundingBox;
+    osg::ComputeBoundsVisitor cbv;
+    node->accept(cbv);
+    boundingBox = cbv.getBoundingBox();
+    return boundingBox;
+}
+
+void Viewer::UpdateObjectDimensionsAndGetScale(const osg::BoundingBox& boundingBox,
+                                               roadmanager::RMObject*  object,
+                                               double&                 scale_x,
+                                               double&                 scale_y,
+                                               double&                 scale_z)
+{
+    double dim_x = boundingBox._max.x() - boundingBox._min.x();
+    double dim_y = boundingBox._max.y() - boundingBox._min.y();
+    double dim_z = boundingBox._max.z() - boundingBox._min.z();
+
+    // model has to be scaled if dimension was provided in the OpenDRIVE
+    // otherwise, update object dimension from the 3D model (which do not need to scale)
+    bool valueNotChanged;
+    if ((valueNotChanged = !object->GetLength().SetIfNot(dim_x)) && dim_x > SMALL_NUMBER)  // consider only non zero dimensions for scaling
+    {
+        scale_x = object->GetLength().Get() / dim_x;
+    }
+    if ((valueNotChanged = !object->GetWidth().SetIfNot(dim_y)) && dim_y > SMALL_NUMBER)
+    {
+        scale_y = object->GetWidth().Get() / dim_y;
+    }
+    if ((valueNotChanged = !object->GetHeight().SetIfNot(dim_z)) && dim_z > SMALL_NUMBER)
+    {
+        scale_z = object->GetHeight().Get() / dim_z;
+    }
+}
+
+// create a bounding box to represent the given object
+osg::ref_ptr<osg::ShapeDrawable> Viewer::GetBoxShapeModel(roadmanager::RMObject* object) const
+{
+    // avoid zero width, length and width - set to a minimum value of 0.05m
+    osg::ref_ptr<osg::ShapeDrawable> shape =
+        new osg::ShapeDrawable(new osg::Box(osg::Vec3d(0.0f, 0.0f, 0.5f * GetViewerDimension(object->GetHeight())),
+                                            static_cast<float>(GetViewerDimension(object->GetLength())),
+                                            static_cast<float>(GetViewerDimension(object->GetWidth())),
+                                            static_cast<float>(GetViewerDimension(object->GetHeight()))));
+    shape->setColor(GetObjectColor(object->GetType()));
+    return shape;
+}
+
+Viewer::ViewerObjectDetail Viewer::ViewerObjectDetail::copy(const roadmanager::RMObject* object, double scale_x, double scale_y, double scale_z)
+{
+    ViewerObjectDetail detail;
+    detail.scale_x = scale_x;
+    detail.scale_y = scale_y;
+    detail.scale_z = scale_z;
+    detail.x       = object->GetX();
+    detail.y       = object->GetY();
+    detail.z       = object->GetZOffset() + object->GetZ();
+    detail.roll    = object->GetR();
+    detail.pitch   = object->GetP();
+    detail.heading = object->GetH();
+    detail.hOffset = object->GetOrientation() == roadmanager::Signal::Orientation::NEGATIVE ? M_PI : 0.0 + object->GetHOffset();
+    return detail;
+}
+
+Viewer::ViewerObjectDetail Viewer::ViewerObjectDetail::copy(roadmanager::RMObject*                                       object,
+                                                            const roadmanager::Repeat::RepeatTransformationInfoDimension repeatDimension)
+{
+    ViewerObjectDetail detail;
+    detail.scale_x = GetViewerDimension(repeatDimension.length) / GetViewerDimension(object->GetLength());
+    detail.scale_y = GetViewerDimension(repeatDimension.width) / GetViewerDimension(object->GetWidth());
+    detail.scale_z = GetViewerDimension(repeatDimension.height) / GetViewerDimension(object->GetHeight());
+    detail.x       = repeatDimension.x;
+    detail.y       = repeatDimension.y;
+    detail.z       = repeatDimension.z;
+    detail.roll    = repeatDimension.roll;
+    detail.pitch   = repeatDimension.pitch;
+    detail.heading = repeatDimension.heading;
+    detail.hOffset = repeatDimension.hOffset;
+    return detail;
+}
+
+Viewer::ViewerObjectDetail Viewer::ViewerObjectDetail::copy(const roadmanager::Repeat::RepeatTransformationInfoDimension repeatDimension,
+                                                            double                                                       dim_x,
+                                                            double                                                       dim_y,
+                                                            double                                                       dim_z)
+{
+    ViewerObjectDetail detail;
+    detail.scale_x = GetViewerDimension(repeatDimension.length) / GetViewerDimension(dim_y);
+    detail.scale_y = GetViewerDimension(repeatDimension.width) / GetViewerDimension(dim_y);
+    detail.scale_z = GetViewerDimension(repeatDimension.height) / GetViewerDimension(dim_z);
+    detail.x       = repeatDimension.x;
+    detail.y       = repeatDimension.y;
+    detail.z       = repeatDimension.z;
+    detail.roll    = repeatDimension.roll;
+    detail.pitch   = repeatDimension.pitch;
+    detail.heading = repeatDimension.heading;
+    detail.hOffset = repeatDimension.hOffset;
+    return detail;
+}
+
+// create object from given object and repeat dimension
+void Viewer::UpdateModel(const Viewer::ViewerObjectDetail& objectDetails, osg::ref_ptr<osg::PositionAttitudeTransform> clone)
+{
+    clone->getOrCreateStateSet()->setMode(GL_RESCALE_NORMAL, osg::StateAttribute::ON);
+    clone->setScale(osg::Vec3d(objectDetails.scale_x, objectDetails.scale_y, objectDetails.scale_z));
+    clone->setPosition(osg::Vec3d(objectDetails.x, objectDetails.y, objectDetails.z));
+
+    // First align to road orientation
+    osg::Quat quatRoad(osg::Quat(objectDetails.roll, osg::X_AXIS, objectDetails.pitch, osg::Y_AXIS, objectDetails.heading, osg::Z_AXIS));
+    // Specified local rotation
+    osg::Quat quatLocal(objectDetails.hOffset, osg::Vec3(osg::Z_AXIS));  // Heading
+    // Combine
+    clone->setAttitude(quatLocal * quatRoad);
+    clone->setDataVariance(osg::Object::STATIC);
+}
+
+// create object from given object and scales
+void Viewer::AddModel(roadmanager::RMObject*                       object,
+                       osg::ref_ptr<osg::PositionAttitudeTransform> tx,
+                       osg::ref_ptr<osg::Group>                     objGroup)
+{
+    // add current LOD and create a new one
+    osg::ref_ptr<osg::LOD>   lod      = new osg::LOD();
+    osg::ref_ptr<osg::Group> LODGroup = new osg::Group();
+    lod->addChild(LODGroup);
+    lod->setRange(0, 0, LOD_DIST_ROAD_FEATURES + MAX(GetViewerDimension(object->GetLength()), GetViewerDimension(object->GetWidth())));
+    objGroup->addChild(lod);
+    LODGroup->addChild(tx);
+    if (object->GetNumberOfMarkings() > 0)  // draw outlink marking
+    {
+        osg::PolygonMode* polygonMode = new osg::PolygonMode;
+        polygonMode->setMode(osg::PolygonMode::FRONT_AND_BACK, osg::PolygonMode::LINE);
+        LODGroup->getOrCreateStateSet()->setAttributeAndModes(polygonMode, osg::StateAttribute::OVERRIDE | osg::StateAttribute::ON);
+    }
+}
+
+void Viewer::CreateRepeatObject(roadmanager::RMObject* object, osg::ref_ptr<osg::Group> objGroup)
+{
+    ViewerObjectDetail objectDeatil;
+    osg::Vec4          color = GetObjectColor(object->GetType());
+    if (object->GetNumberOfOutlines() == 0)  // non outlines
+    {
+        osg::Vec4 color   = GetObjectColor(object->GetType());
+        double    scale_x = 1.0, scale_y = 1.0, scale_z = 1.0;
+
+        osg::ref_ptr<osg::PositionAttitudeTransform> tx = GetModel(object->GetName());  // Get the 3d model
+        if (tx == nullptr)                                                              // no model loaded
+        {
+            // create a bounding box to represent the object
+            tx = new osg::PositionAttitudeTransform;
+            tx->addChild(GetBoxShapeModel(object));
+
+            for (auto& repeat : object->GetRepeats())
             {
-                for (size_t j = 0; j < static_cast<unsigned int>(object->GetNumberOfOutlines()); j++)
+                if (repeat.GetDistance() > SMALL_NUMBER)
                 {
-                    roadmanager::Outline* outline = object->GetOutline(static_cast<int>(j));
-                    CreateOutlineObject(outline, color);
+                    for (const auto& repeatDimension : object->GetRepeatTransformationInfoDimensions(repeat))
+                    {
+                        osg::ref_ptr<osg::PositionAttitudeTransform> clone =
+                            tx != nullptr ? dynamic_cast<osg::PositionAttitudeTransform*>(tx->clone(osg::CopyOp::SHALLOW_COPY))
+                                          : nullptr;  // create shollow copy
+                        UpdateModel(objectDeatil.copy(object, repeatDimension), clone);
+                        AddModel(object, clone, objGroup);
+                    }
                 }
-                LOG("Created outline geometry for object %s.", object->GetName().c_str());
-                LOG("  if it looks strange, e.g.faces too dark or light color, ");
-                LOG("  check that corners are defined counter-clockwise (as OpenGL default).");
-            }
-            else
-            {
-                double orientation = object->GetOrientation() == roadmanager::Signal::Orientation::NEGATIVE ? M_PI : 0.0;
-
-                // absolute path or relative to current directory
-                std::string filename = object->GetName();
-
-                // Assume name is representing a 3D model filename
-                if (!filename.empty())
+                else  // repeat with zero distance
                 {
-                    std::vector<std::string> file_name_candidates;
-
-                    if (FileNameExtOf(filename) == "")
-                    {
-                        filename += ".osgb";  // add missing extension
-                    }
-
-                    tx = LoadRoadFeature(road, filename);
-
-                    if (tx == nullptr)
-                    {
-                        LOG("Failed to load road object model file: %s (%s). Creating a bounding box as stand in.",
-                            filename.c_str(),
-                            object->GetName().c_str());
-                    }
+                    CreateOutlinesModel(object->GetUniqueOutlinesZeroDistance(repeat), color, object->GetNumberOfMarkings() > 0);
                 }
-
-                roadmanager::Repeat*         rep     = object->GetRepeat();
-                int                          nCopies = 0;
-                double                       cur_s   = 0.0;
-                osg::ref_ptr<osg::Vec3Array> vertices_right_side;
-                osg::ref_ptr<osg::Vec3Array> vertices_left_side;
-                osg::ref_ptr<osg::Vec3Array> vertices_top;
-                osg::ref_ptr<osg::Group>     group;
-                if (tx == nullptr)  // No model loaded
+            }
+        }
+        else
+        {
+            osg::BoundingBox boundingBox = GetBoundingBox(tx.get());
+            object->GetLength().SetIfNot(boundingBox._max.x() - boundingBox._min.x());  // update object dim from model
+            object->GetWidth().SetIfNot(boundingBox._max.y() - boundingBox._min.y());
+            object->GetHeight().SetIfNot(boundingBox._max.z() - boundingBox._min.z());
+            for (auto& repeat : object->GetRepeats())
+            {
+                for (const auto& repeatDimension : object->GetRepeatTransformationInfoDimensions(repeat))  // use repeat dimensions
                 {
-                    if (rep && rep->GetDistance() < SMALL_NUMBER)  //  non continuous objects
-                    {
-                        // use outline, if exists
-                        if (object->GetNumberOfOutlines() > 0)
-                        {
-                            for (size_t j = 0; j < static_cast<unsigned int>(object->GetNumberOfOutlines()); j++)
-                            {
-                                roadmanager::Outline* outline = object->GetOutline(static_cast<int>(j));
-                                CreateOutlineObject(outline, color);
-                            }
-                            continue;
-                        }
-                        else
-                        {
-                            // create stand in object
-                            vertices_left_side  = new osg::Vec3Array;
-                            vertices_right_side = new osg::Vec3Array;
-                            vertices_top        = new osg::Vec3Array;
-                            group               = new osg::Group();
-                        }
-                    }
-                    else
+                    osg::ref_ptr<osg::PositionAttitudeTransform> clone =
+                        tx != nullptr ? dynamic_cast<osg::PositionAttitudeTransform*>(tx->clone(osg::CopyOp::SHALLOW_COPY))
+                                      : nullptr;  // create shollow copy
+                    UpdateModel(objectDeatil.copy(object, repeatDimension), clone);
+                    AddModel(object, clone, objGroup);
+                }
+            }
+        }
+    }
+    else
+    {
+        if (object->IsAllCornersLocal())  // all corner are local in all outline
+        {
+            CreateShallowCopyModels(object);
+        }
+        else  // any corner is road corner in any of outlines
+        {
+            CreateUniqueModels(object);
+        }
+    }
+}
+
+int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
+{
+    osg::ref_ptr<osg::Group> objGroup = new osg::Group;
+    for (auto& road : od->GetRoads())
+    {
+        CreateRoadSignals(objGroup, road->GetSignals());
+        for (auto& object : road->GetRoadObjects())
+        {
+            osg::Vec4          color = GetObjectColor(object->GetType());
+            ViewerObjectDetail objectDeatil;
+            if (object->GetNumberOfRepeats() == 0)  // no repeat
+            {
+                if (object->GetNumberOfOutlines() == 0)  // non outlines
+                {
+                    double scale_x = 1.0, scale_y = 1.0, scale_z = 1.0;
+
+                    osg::ref_ptr<osg::PositionAttitudeTransform> tx = GetModel(object->GetName());  // Get the 3d model
+                    if (tx == nullptr)                                                              // no model loaded
                     {
                         // create a bounding box to represent the object
                         tx = new osg::PositionAttitudeTransform;
-
-                        // avoid zero width, length and width - set to a minimum value of 0.05m
-                        osg::ref_ptr<osg::ShapeDrawable> shape =
-                            new osg::ShapeDrawable(new osg::Box(osg::Vec3(0.0f, 0.0f, 0.5f * MAX(0.05f, static_cast<float>(object->GetHeight()))),
-                                                                MAX(0.05f, static_cast<float>(object->GetLength())),
-                                                                MAX(0.05f, static_cast<float>(object->GetWidth())),
-                                                                MAX(0.05f, static_cast<float>(object->GetHeight()))));
-
-                        shape->setColor(color);
-                        tx->addChild(shape);
+                        tx->addChild(GetBoxShapeModel(object));
                     }
+                    else  // model loaded
+                    {
+                        osg::BoundingBox boundingBox = GetBoundingBox(tx.get());
+                        UpdateObjectDimensionsAndGetScale(boundingBox, object, scale_x, scale_y, scale_z);
+                    }
+                    ValidateDimensionsForViewing(*object);
+                    UpdateModel(objectDeatil.copy(object, scale_x, scale_y, scale_z), tx);  // update object with position and scale
+                    AddModel(object, tx, objGroup);
                 }
-
-                double dim_x = 0.0;
-                double dim_y = 0.0;
-                double dim_z = 0.0;
-
-                osg::BoundingBox boundingBox;
-                if (tx != nullptr)
+                else  // outlines
                 {
-                    osg::ComputeBoundsVisitor cbv;
-                    tx->accept(cbv);
-                    boundingBox = cbv.getBoundingBox();
-
-                    dim_x = boundingBox._max.x() - boundingBox._min.x();
-                    dim_y = boundingBox._max.y() - boundingBox._min.y();
-                    dim_z = boundingBox._max.z() - boundingBox._min.z();
-                    if (object->GetLength() < SMALL_NUMBER && dim_x > SMALL_NUMBER)
-                    {
-                        LOG("Object %s missing length, set to bounding box length %.2f", object->GetName().c_str(), dim_x);
-                        object->SetLength(dim_x);
-                    }
-                    if (object->GetWidth() < SMALL_NUMBER && dim_y > SMALL_NUMBER)
-                    {
-                        LOG("Object %s missing width, set to bounding box width %.2f", object->GetName().c_str(), dim_y);
-                        object->SetWidth(dim_y);
-                    }
-                    if (object->GetHeight() < SMALL_NUMBER && dim_z > SMALL_NUMBER)
-                    {
-                        LOG("Object %s missing height, set to bounding box height %.2f", object->GetName().c_str(), dim_z);
-                        object->SetHeight(dim_z);
-                    }
-                }
-
-                double                                       lastLODs = 0.0;  // used for putting object copies in LOD groups
-                osg::ref_ptr<osg::Group>                     LODGroup = 0;
-                osg::ref_ptr<osg::PositionAttitudeTransform> clone    = 0;
-
-                for (; nCopies < 1 ||
-                       (rep && rep->length_ > SMALL_NUMBER && cur_s < rep->GetLength() + SMALL_NUMBER && cur_s + rep->GetS() < road->GetLength());
-                     nCopies++)
-                {
-                    double factor, t, s, zOffset;
-                    double scale_x = 1.0;
-                    double scale_y = 1.0;
-                    double scale_z = 1.0;
-
-                    if (rep && cur_s + rep->GetS() + (object->GetLength() * scale_x) * cos(object->GetHOffset()) > road->GetLength())
-                    {
-                        break;  // object would reach outside specified total length
-                    }
-
-                    if (nCopies == 0)
-                    {
-                        // first object
-                        clone = tx;
-                    }
-                    else
-                    {
-                        clone = tx != nullptr ? dynamic_cast<osg::PositionAttitudeTransform*>(tx->clone(osg::CopyOp::DEEP_COPY_ALL)) : nullptr;
-                        clone->setDataVariance(osg::Object::STATIC);
-                    }
-
-                    if (rep == nullptr)
-                    {
-                        factor  = 1.0;
-                        t       = object->GetT();
-                        s       = object->GetS();
-                        zOffset = object->GetZOffset();
-
-                        if (object->GetLength() > SMALL_NUMBER)
-                        {
-                            scale_x = object->GetLength() / dim_x;
-                        }
-                        if (object->GetWidth() > SMALL_NUMBER)
-                        {
-                            scale_y = object->GetWidth() / dim_y;
-                        }
-                        if (object->GetHeight() > SMALL_NUMBER)
-                        {
-                            scale_z = object->GetHeight() / dim_z;
-                        }
-
-                        // position mode relative for aligning to road heading
-                        pos.SetTrackPosMode(road->GetId(),
-                                            object->GetS(),
-                                            object->GetT(),
-                                            roadmanager::Position::PosMode::H_REL | roadmanager::Position::PosMode::Z_REL |
-                                                roadmanager::Position::PosMode::P_REL | roadmanager::Position::PosMode::R_REL);
-
-                        clone->getOrCreateStateSet()->setMode(GL_NORMALIZE, osg::StateAttribute::ON);
-                        clone->setScale(osg::Vec3(static_cast<float>(scale_x), static_cast<float>(scale_y), static_cast<float>(scale_z)));
-
-                        clone->setPosition(osg::Vec3(static_cast<float>(pos.GetX() - origin_[0]),
-                                                     static_cast<float>(pos.GetY() - origin_[1]),
-                                                     static_cast<float>(object->GetZOffset() + pos.GetZ())));
-
-                        // First align to road orientation
-                        osg::Quat quatRoad(osg::Quat(pos.GetR(), osg::X_AXIS, pos.GetP(), osg::Y_AXIS, pos.GetH(), osg::Z_AXIS));
-                        // Specified local rotation
-                        osg::Quat quatLocal(orientation + object->GetHOffset(), osg::Vec3(osg::Z_AXIS));  // Heading
-                        // Combine
-                        clone->setAttitude(quatLocal * quatRoad);
-                    }
-                    else  // repeated objects (separate or continuous)
-                    {
-                        factor  = cur_s / rep->GetLength();
-                        t       = rep->GetTStart() + factor * (rep->GetTEnd() - rep->GetTStart());
-                        s       = rep->GetS() + cur_s;
-                        zOffset = rep->GetZOffsetStart() + factor * (rep->GetZOffsetEnd() - rep->GetZOffsetStart());
-
-                        // position mode relative for aligning to road heading
-                        pos.SetTrackPosMode(road->GetId(),
-                                            s,
-                                            t,
-                                            roadmanager::Position::PosMode::H_REL | roadmanager::Position::PosMode::Z_REL |
-                                                roadmanager::Position::PosMode::P_REL | roadmanager::Position::PosMode::R_REL);
-
-                        // Find angle based on delta t
-                        double h_offset = atan2(rep->GetTEnd() - rep->GetTStart(), rep->GetLength());
-                        pos.SetHeadingRelative(h_offset);
-
-                        if (tx == nullptr && rep->GetDistance() < SMALL_NUMBER)  // one single continuous object to be created
-                        {
-                            // add two vertices at this s-value
-                            double x   = 0.0;
-                            double y   = rep->GetWidthStart() + factor * (rep->GetWidthEnd() - rep->GetWidthStart());
-                            double z   = rep->GetHeightStart() + factor * (rep->GetHeightEnd() - rep->GetHeightStart());
-                            double p0x = 0.0;
-                            double p0y = 0.0;
-                            double p1x = 0.0;
-                            double p1y = 0.0;
-                            RotateVec2D(x, y, pos.GetH(), p0x, p0y);
-                            RotateVec2D(x, -y, pos.GetH(), p1x, p1y);
-
-                            vertices_right_side->push_back(osg::Vec3d(pos.GetX() + p1x - origin_[0], pos.GetY() + p1y - origin_[1], pos.GetZ()));
-                            vertices_right_side->push_back(osg::Vec3d(pos.GetX() + p1x - origin_[0], pos.GetY() + p1y - origin_[1], pos.GetZ() + z));
-                            // add left vertices in reversed order, since they will be concatenated later in reversed order
-                            vertices_left_side->push_back(osg::Vec3d(pos.GetX() + p0x - origin_[0], pos.GetY() + p0y - origin_[1], pos.GetZ() + z));
-                            vertices_left_side->push_back(osg::Vec3d(pos.GetX() + p0x - origin_[0], pos.GetY() + p0y - origin_[1], pos.GetZ()));
-                            vertices_top->push_back(osg::Vec3d(pos.GetX() + p0x - origin_[0], pos.GetY() + p0y - origin_[1], pos.GetZ() + z));
-                            vertices_top->push_back(osg::Vec3d(pos.GetX() + p1x - origin_[0], pos.GetY() + p1y - origin_[1], pos.GetZ() + z));
-                        }
-                        else  // separate objects
-                        {
-                            if (rep->GetLengthStart() > SMALL_NUMBER || rep->GetLengthEnd() > SMALL_NUMBER)
-                            {
-                                scale_x = ((rep->GetLengthStart() + factor * (rep->GetLengthEnd() - rep->GetLengthStart())) / cos(h_offset)) / dim_x;
-                            }
-                            else
-                            {
-                                scale_x = (abs(h_offset) < M_PI_2 - SMALL_NUMBER) ? scale_x / cos(h_offset) : LARGE_NUMBER;
-                            }
-                            if (rep->GetWidthStart() > SMALL_NUMBER || rep->GetWidthEnd() > SMALL_NUMBER)
-                            {
-                                scale_y = (rep->GetWidthStart() + factor * (rep->GetWidthEnd() - rep->GetWidthStart())) / dim_y;
-                            }
-                            if (rep->GetHeightStart() > SMALL_NUMBER || rep->GetHeightEnd() > SMALL_NUMBER)
-                            {
-                                scale_z = (rep->GetHeightStart() + factor * (rep->GetHeightEnd() - rep->GetHeightStart())) / dim_z;
-                            }
-
-                            clone->getOrCreateStateSet()->setMode(GL_NORMALIZE, osg::StateAttribute::ON);
-                            clone->setScale(osg::Vec3(static_cast<float>(scale_x), static_cast<float>(scale_y), static_cast<float>(scale_z)));
-                            clone->setPosition(osg::Vec3(static_cast<float>(pos.GetX() - origin_[0]),
-                                                         static_cast<float>(pos.GetY() - origin_[1]),
-                                                         static_cast<float>(pos.GetZ() + zOffset)));
-
-                            // First align to road orientation
-                            osg::Quat quatRoad(osg::Quat(pos.GetR(), osg::X_AXIS, pos.GetP(), osg::Y_AXIS, pos.GetH(), osg::Z_AXIS));
-
-                            // Specified local rotation
-                            osg::Quat quatLocal(object->GetHOffset(), osg::Vec3(osg::Z_AXIS));  // Heading
-
-                            // Combine
-                            clone->setAttitude(quatLocal * quatRoad);
-                        }
-
-                        // increase current s according to distance
-                        if (rep->distance_ > SMALL_NUMBER)
-                        {
-                            cur_s += rep->distance_;
-                        }
-                        else
-                        {
-                            // for continuous objects, move along s wrt to road curvature
-                            cur_s +=
-                                pos.DistanceToDS(object->GetLength() < SMALL_NUMBER ? MIN(rep->GetLength(), DEFAULT_LENGTH_FOR_CONTINUOUS_OBJS)
-                                                                                    : MIN(object->GetLength(), DEFAULT_LENGTH_FOR_CONTINUOUS_OBJS));
-                        }
-                    }
-
-                    if (tx != nullptr)  // wait with continuous object
-                    {
-                        clone->setDataVariance(osg::Object::STATIC);
-
-                        if (LODGroup == 0 || s - lastLODs > 0.5 * LOD_DIST_ROAD_FEATURES)
-                        {
-                            // add current LOD and create a new one
-                            osg::ref_ptr<osg::LOD> lod = new osg::LOD();
-                            LODGroup                   = new osg::Group();
-                            lod->addChild(LODGroup);
-                            lod->setRange(
-                                0,
-                                0,
-                                LOD_DIST_ROAD_FEATURES + MAX(boundingBox.xMax() - boundingBox.xMin(), boundingBox.yMax() - boundingBox.yMin()));
-                            objGroup->addChild(lod);
-                            lastLODs = s;
-                        }
-
-                        LODGroup->addChild(clone);
-                    }
-                }
-                if (tx == nullptr)
-                {
-                    // Create geometry for continuous object
-                    osg::ref_ptr<osg::Geode>    geode  = new osg::Geode;
-                    osg::ref_ptr<osg::Geometry> geom[] = {new osg::Geometry, new osg::Geometry};
-
-                    // Concatenate vertices for right and left side into one single array going around the object counter clockwise
-                    osg::ref_ptr<osg::Vec3Array> vertices = vertices_right_side;
-                    vertices->insert(vertices->end(), vertices_left_side->rbegin(), vertices_left_side->rend());
-
-                    // Finally, duplicate first set of vertices to the end in order to close the geometry
-                    vertices->insert(vertices->end(), vertices_right_side->begin(), vertices_right_side->begin() + 2);
-
-                    geom[0]->setVertexArray(vertices.get());
-                    geom[0]->addPrimitiveSet(new osg::DrawArrays(GL_QUAD_STRIP, 0, static_cast<int>(vertices->size())));
-
-                    // Add roof
-                    geom[1]->setVertexArray(vertices_top.get());
-                    geom[1]->addPrimitiveSet(new osg::DrawArrays(GL_QUAD_STRIP, 0, static_cast<int>(vertices_top->size())));
-
-                    osgUtil::Tessellator tessellator;
-                    tessellator.retessellatePolygons(*geom[1]);
-
-                    osg::ref_ptr<osg::Vec4Array> color_obj = new osg::Vec4Array();
-                    color_obj->push_back(color);
-                    for (auto& g : geom)
-                    {
-                        osgUtil::SmoothingVisitor::smooth(*g, 0.5);
-                        g->setDataVariance(osg::Object::STATIC);
-                        g->setUseDisplayList(true);
-                        g->setColorArray(color_obj);
-                        g->setColorBinding(osg::Geometry::BIND_OVERALL);
-                        geode->addDrawable(g);
-                        group->addChild(g);
-                    }
-
-                    osg::ComputeBoundsVisitor cbv;
-                    group->accept(cbv);
-                    boundingBox = cbv.getBoundingBox();
-
-                    osg::ref_ptr<osg::LOD> lod = new osg::LOD();
-                    lod->addChild(group);
-                    lod->setRange(0,
-                                  0,
-                                  LOD_DIST_ROAD_FEATURES + MAX(boundingBox.xMax() - boundingBox.xMin(), boundingBox.yMax() - boundingBox.yMin()));
-                    objGroup->addChild(lod);
+                    CreateOutlinesModel(object->GetOutlines(), color, object->GetNumberOfMarkings() > 0);
+                    LOG("Created outline geometry for object %s.", object->GetName().c_str());
+                    LOG("  if it looks strange, e.g.faces too dark or light color, ");
+                    LOG("  check that corners are defined counter-clockwise (as OpenGL default).");
                 }
             }
+            else
+            {
+                CreateRepeatObject(object, objGroup);
+            }
+            DrawMarking(object);
         }
     }
 

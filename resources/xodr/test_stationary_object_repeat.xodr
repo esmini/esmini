@@ -71,45 +71,26 @@
             </laneSection>
         </lanes>
         <objects>
-            <object type="vegetation" name="" id="0" s="210" t="-12" zOffset="0.00" orientation="none" length="15.0" width="5.0" height="3.0" hdg="0.3" pitch="0.0" roll="0.00"/>
-            <object type="obstacle" name="" id="1" s="190" t="7.5" zOffset="0.00" orientation="none" length="5.0" width="1.0" height="1.0" hdg="1.57" pitch="0.0" roll="0.00"/>
-            <object type="building" name="Building1" id="2" s="250" t="-5" zOffset="0.00" orientation="none" length="25.0" width="10.0" height="10.0" hdg="-0.15" pitch="0.0" roll="0.00">
-				<outlines>
-				  <outline id="52" fillType="" closed="true">
-					<cornerLocal u="0.0" v="0.0" z="-0.5" height="10.0" />
-					<cornerLocal u="0.0" v="-10.0" z="-0.5" height="10.0" />
-					<cornerLocal u="25.0" v="-10.0" z="-0.5" height="10.0" />
-					<cornerLocal u="25.0" v="0.0" z="-0.5" height="10.0" />
-				  </outline>
-				</outlines>
+            <object type="parkingSpace" subtype="closed" id="11" s="13.54" t="-12.90" zOffset="0.0" orientation="none" length="3.5" pitch="0.0" roll="0.0">
+                <parkingSpace access="all"/>
+                <repeat distance = "0.0" lengthStart="3.5" lengthEnd="3.5" heightStart="4.0" heightEnd="4.0" widthStart="4" widthEnd="4" zOffsetEnd="0.0" zOffsetStart="0.0" tStart="-12.5" tEnd="-12.5" length="10" s="20.0"/>
+                <markings>
+                  <marking side="left" width="0.1" color="white" zOffset="0.005" spaceLength="0.0" lineLength="0.1" startOffset="0.0" stopOffset="0.0"/>
+                  <marking side="right" width="0.1" color="white" zOffset="0.005" spaceLength="0.0" lineLength="0.1" startOffset="0.0" stopOffset="0.0"/>
+                </markings>
             </object>
-            <object type="none" name="Building2" id="3" s="220" t="15" zOffset="0.00" orientation="none" length="30.0" width="10.0" height="8.0" hdg="-0.15" pitch="0.0" roll="0.00">
-				<outlines>
-				  <outline id="53" fillType="grass" closed="true">
-					<cornerRoad s="220.0" t="10.0" dz="0.0" height="3.1" />
-					<cornerRoad s="250.0" t="10.0" dz="0.0" height="3.1"/>
-					<cornerRoad s="270.0" t="10.0" dz="0.0" height="3.1"/>
-					<cornerRoad s="320.0" t="10.0" dz="0.0" height="3.1"/>
-					<cornerRoad s="320.0" t="20.0" dz="0.0" height="3.1" />
-					<cornerRoad s="270.0" t="20.0" dz="0.0" height="3.1"/>
-					<cornerRoad s="250.0" t="20.0" dz="0.0" height="3.1"/>
-					<cornerRoad s="220.0" t="20.0" dz="0.0" height="3.1" />
-				  </outline>
-				</outlines>
-            </object>
-            <object type="barrier" name="../models/fence_plank_and_pole.osgb" id="4" s="200.0" t="5.0" orientation="none" hdg="0.0" pitch="0.0" roll="0.0">
-                <repeat s="200" length="100" distance="0.0" tStart="5.0" tEnd="5.0" heightStart="2.0" heightEnd="2.0" zOffsetStart="0.0" zOffsetEnd="0.0"/>
-            </object>
-            <object type="obstacle" name="../models/fence_pole.osgb" id="5" s="302.7" t="5.0" orientation="none" hdg="0.0" pitch="0.0" roll="0.0"/>
-            <object type="vegetation" name="../models/hedge.osgb" id="6" s="40" t="1.35" orientation="none" hdg="3.14159" pitch="0.0" roll="0.0">
-                <repeat s="180" length="50" distance="0.0" tStart="-5.0" tEnd="-5.0" heightStart="1.5" heightEnd="1.5" zOffsetStart="0.0" zOffsetEnd="0.0"/>
-            </object>
-            <object type="obstacle" name="cone-100" id="7" s="180" t="4"/>
-            <object type="barrier" length="5.0" hdg="0.0" orientation="none" id="8">
-                <repeat heightStart="0.1" heightEnd="4.0" widthStart="2.5" widthEnd="0.5" zOffsetEnd="0.0" zOffsetStart="0.0" tStart="15.0" tEnd="40.0" length="55" s="200.0"/>
+            <object type="parkingSpace" subtype="closed" id="12" s="13.54" t="-12.90" zOffset="0.0" orientation="none" length="3.5" pitch="0.0" roll="0.0">
+                <parkingSpace access="all"/>
+                <repeat distance = "5" lengthStart="3.5" lengthEnd="3.5" heightStart="4.0" heightEnd="4.0" widthStart="4" widthEnd="4" zOffsetEnd="0.0" zOffsetStart="0.0" tStart="-12.5" tEnd="-12.5" length="10" s="40.0"/>
+                <markings>
+                  <marking side="left" width="0.1" color="white" zOffset="0.005" spaceLength="0.0" lineLength="0.1" startOffset="0.0" stopOffset="0.0"/>
+                  <marking side="right" width="0.1" color="white" zOffset="0.005" spaceLength="0.0" lineLength="0.1" startOffset="0.0" stopOffset="0.0"/>
+                </markings>
             </object>
         </objects>
-        <signals/>
-        <surface/>
+        <signals>
+        </signals>
+        <surface>
+        </surface>
     </road>
 </OpenDRIVE>
