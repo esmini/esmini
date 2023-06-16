@@ -5774,6 +5774,9 @@ void Position::Init()
 
     // Assume all values are defined. Set resp. mask value explicitly to zero in order to make it undefined.
     orientationSetMask = 3;
+
+    // Assume z value defined. Set to zero to make it undefined.
+    zSet = true;
 }
 
 Position::Position()
@@ -8572,20 +8575,49 @@ void Position::SetRoadMarkPos(int    track_id,
 
 int Position::SetInertiaPos(double x, double y, double z, double h, double p, double r, bool updateTrackPos)
 {
-    x_ = x;
-    y_ = y;
-    z_ = z;
+    x_ = std::isnan(x) ? 0.0 : x;
+    y_ = std::isnan(y) ? 0.0 : y;
+    z_ = std::isnan(z) ? 0.0 : z;
 
     if (updateTrackPos)
     {
         XYZ2Track();
     }
 
+    if (!std::isnan(z))
+    {
+        // set explicitly specified elevation
+        SetZ(z);
+    }
+    else
+    {
+        // set elevation according to alignment setting
+        if (align_z_ == ALIGN_MODE::ALIGN_SOFT)
+        {
+            SetZRelative(z_relative_);  // follow road elevation at some offset
+        }
+        else if (align_z_ == ALIGN_MODE::ALIGN_HARD)
+        {
+            SetZ(z_road_);  // follow road elevation exactly
+        }
+    }
+
     // Now when road orientation is known, call functions for
     // updating angles both absolute and relative the road
-    SetHeading(h);
-    SetPitch(p);
-    SetRoll(r);
+    if (!std::isnan(h))
+    {
+        SetHeading(h);
+    }
+
+    if (!std::isnan(p))
+    {
+        SetPitch(p);
+    }
+
+    if (!std::isnan(r))
+    {
+        SetRoll(r);
+    }
 
     EvaluateOrientation();
 

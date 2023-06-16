@@ -921,17 +921,17 @@ TEST(GetMiscObjFromGroundTruth, receive_miscobj)
     EXPECT_EQ(miscobj_type, osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_BARRIER);
 
     EXPECT_EQ(miscobj_length, 200);
-    EXPECT_EQ(miscobj_width, 100);
-    EXPECT_EQ(miscobj_height, 5);
+    EXPECT_EQ(miscobj_width, 1);
+    EXPECT_EQ(miscobj_height, 4);
 
-    EXPECT_EQ(miscobj_x, 10);
-    EXPECT_EQ(miscobj_y, 10);
+    EXPECT_EQ(miscobj_x, 110);
+    EXPECT_EQ(miscobj_y, -10);
     EXPECT_EQ(miscobj_z, 0.0);  // adjusted to the road z
 
     // Angles in OSI should be in range [-PI, PI]
-    EXPECT_EQ(miscobj_roll, 5.0 - 2 * M_PI);   // Aligned to the road (so if road roll is 1.0 total roll will be 6.0)
-    EXPECT_EQ(miscobj_pitch, 5.0 - 2 * M_PI);  // Aligned to the road (so if road pitch is 1.0 total pitch will be 6.0)
-    EXPECT_EQ(miscobj_yaw, 5.0 - 2 * M_PI);
+    EXPECT_NEAR(miscobj_roll, 0.2, 1e-3);   // Aligned to the road (so if road roll is 1.0 total roll will be 6.0)
+    EXPECT_NEAR(miscobj_pitch, 0.0, 1e-3);  // Aligned to the road (so if road pitch is 1.0 total pitch will be 6.0)
+    EXPECT_NEAR(miscobj_yaw, -0.05, 1e-3);
 
     SE_Close();
 }

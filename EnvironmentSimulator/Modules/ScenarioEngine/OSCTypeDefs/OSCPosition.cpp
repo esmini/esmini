@@ -22,47 +22,31 @@ OSCPositionWorld::OSCPositionWorld(double x, double y, double z, double h, doubl
         this->position_ = *base_on_pos->GetRMPos();
     }
 
-    if (!std::isnan(z) || !std::isnan(p) || !std::isnan(r))
+    if (std::isnan(p))
     {
-        if (std::isnan(z))
-        {
-            z = 0.0;
-        }
-
-        if (std::isnan(p))
-        {
-            // Indicate that this attribute has not been set explicitly in the scenario
-            position_.SetOrientationTypeSetBit(roadmanager::Position::OrientationSetMask::P, 0);
-            p = 0.0;  // set default value
-        }
-
-        if (std::isnan(r))
-        {
-            // Indicate that this attribute has not been set explicitly in the scenario
-            position_.SetOrientationTypeSetBit(roadmanager::Position::OrientationSetMask::R, 0);
-            r = 0.0;  // set default value
-        }
-
-        if (std::isnan(h))
-        {
-            // Indicate that this attribute has not been set explicitly in the scenario
-            position_.SetOrientationTypeSetBit(roadmanager::Position::OrientationSetMask::H, 0);
-            h = 0.0;  // set default value
-        }
-
-        position_.SetInertiaPos(x, y, z, h, p, r);
+        // Indicate that this attribute has not been set explicitly in the scenario
+        position_.SetOrientationTypeSetBit(roadmanager::Position::OrientationSetMask::P, 0);
     }
-    else
+
+    if (std::isnan(r))
     {
-        if (std::isnan(h))
-        {
-            // Indicate that this attribute has not been set explicitly in the scenario
-            position_.SetOrientationTypeSetBit(roadmanager::Position::OrientationSetMask::H, 0);
-            h = 0.0;  // set default value
-        }
-
-        position_.SetInertiaPos(x, y, h);
+        // Indicate that this attribute has not been set explicitly in the scenario
+        position_.SetOrientationTypeSetBit(roadmanager::Position::OrientationSetMask::R, 0);
     }
+
+    if (std::isnan(h))
+    {
+        // Indicate that this attribute has not been set explicitly in the scenario
+        position_.SetOrientationTypeSetBit(roadmanager::Position::OrientationSetMask::H, 0);
+    }
+
+    if (std::isnan(z))
+    {
+        // Indicate that this attribute has not been set explicitly in the scenario
+        position_.SetZSet(false);
+    }
+
+    position_.SetInertiaPos(x, y, z, h, p, r);
 }
 
 OSCPositionLane::OSCPositionLane(int roadId, int laneId, double s, double offset, OSCOrientation orientation) : OSCPosition(PositionType::LANE)

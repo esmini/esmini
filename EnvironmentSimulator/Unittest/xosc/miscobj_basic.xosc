@@ -19,8 +19,8 @@
 			<MiscObject mass="100.0" miscObjectCategory="barrier" name="Wall">
 				<ParameterDeclarations/>
 				<BoundingBox>
-					<Center x="0.0" y="0.0" z="0.0"/>
-					<Dimensions height="5" length="200" width="100"/>
+					<Center x="0.0" y="0.0" z="2.0"/>
+					<Dimensions height="4" length="200" width="1"/>
 				</BoundingBox>
 				<Properties/>
 			</MiscObject>
@@ -43,7 +43,7 @@
 					<PrivateAction>
 						<TeleportAction>
 							<Position>
-								<LanePosition laneId="-3" offset="0" roadId="0" s="25"/>
+								<LanePosition laneId="-1" offset="0" roadId="1" s="25"/>
 							</Position>
 						</TeleportAction>
 					</PrivateAction>
@@ -52,7 +52,7 @@
 					<PrivateAction>
 						<TeleportAction>
 							<Position>
-								<WorldPosition h="5" p="5" r="5" x="10" y="10" z="10"/>
+								<WorldPosition x="110" y="-10" r="0.2" h="-0.05"/>
 							</Position>
 						</TeleportAction>
 					</PrivateAction>

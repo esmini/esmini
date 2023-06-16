@@ -119,7 +119,7 @@
                                 <PrivateAction>
                                     <TeleportAction>
                                         <Position>
-                                            <RelativeObjectPosition entityRef="bike" dx="0" dy="0" dz="0.1">
+                                            <RelativeObjectPosition entityRef="bike" dx="0" dy="0" dz="-0.1">
                                                 <Orientation type="relative" r="1.57"/>
                                             </RelativeObjectPosition>
                                         </Position>

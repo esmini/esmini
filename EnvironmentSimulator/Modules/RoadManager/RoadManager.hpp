@@ -2807,10 +2807,10 @@ namespace roadmanager
         Specify position by cartesian x, y, z and heading, pitch, roll
         @param x x
         @param y y
-        @param z z
+        @param z z (if std::nan("") it will be aligned to road)
         @param h heading
-        @param p pitch
-        @param r roll
+        @param p pitch (if std::nan("") it will be aligned to road)
+        @param r roll (if std::nan("") it will be aligned to road)
         @param updateTrackPos True: road position will be calculated False: don't update road position
         @return Non zero return value indicates error of some kind
         */
@@ -3573,6 +3573,16 @@ namespace roadmanager
             orientationSetMask = (orientationSetMask & ~static_cast<int>(bit)) | static_cast<int>(value);
         }
 
+        void SetZSet(bool value)
+        {
+            zSet = value;
+        }
+
+        bool GetZSet()
+        {
+            return zSet;
+        }
+
         RouteStrategy GetRouteStrategy()
         {
             return routeStrategy_;
@@ -3674,7 +3684,8 @@ namespace roadmanager
         // Store roads overlapping position, updated by XYZH2TrackPos()
         std::vector<int> overlapping_roads;  // road ids overlapping position evaluated by XYZH2TrackPos()
 
-        int orientationSetMask;  // use values from OrientationSetMask
+        int  orientationSetMask;  // use values from OrientationSetMask
+        bool zSet;                // indicates whether z was explicitly set
     };
 
     // A route is a sequence of positions, at least one per road along the route
