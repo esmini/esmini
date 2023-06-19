@@ -72,7 +72,7 @@ namespace scenarioengine
             FOLLOW_TRAJECTORY,
             Acquire_POSITION,
             SYNCHRONIZE_ACTION,
-            APPEARANCE_ACTION,
+            LIGHT_STATE_Action,
         };
 
         enum class DynamicsDimension
@@ -1158,7 +1158,7 @@ namespace scenarioengine
         void Start(double simTime, double dt);
     };
 
-    class AppearanceAction : public OSCPrivateAction
+    class LightStateAction : public OSCPrivateAction
     {
     public:
         enum class LightMode
@@ -1197,13 +1197,14 @@ namespace scenarioengine
         double                   colorCmykKey_;
 
         double transitionTimer_ = 0.0;
-        AppearanceAction()
-            : OSCPrivateAction(OSCPrivateAction::ActionType::APPEARANCE_ACTION, ControlDomains::DOMAIN_NONE),
+        LightStateAction()
+            : OSCPrivateAction(OSCPrivateAction::ActionType::LIGHT_STATE_Action, ControlDomains::DOMAIN_NONE),
               transitionTime_(SMALL_NUMBER),
               flashingOffDuration_(0.5),
               flashingOnDuration_(0.5),
               luminousIntensity_(0.0),
-              mode_(LightMode::FLASHING),
+              mode_(LightMode::ON),
+              colorType_(Color::OTHER),
               colorRgbRed_(1.0),
               colorRgbGreen_(0.0),
               colorRgbBlue_(0.0),
@@ -1214,7 +1215,7 @@ namespace scenarioengine
         {
         }
 
-        void setVehicleLightType(std::string);
+        int  setVehicleLightType(std::string);
         void setLightMode(std::string);
         void setColourType(std::string);
 

@@ -3214,14 +3214,14 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
             std::string lightMode_;
             std::string color_;
 
-            AppearanceAction *appAction             = new AppearanceAction();
+            LightStateAction *lightStateAction      = new LightStateAction();
             pugi::xml_node    appearanceActionChild = actionChild.first_child();
 
             if (appearanceActionChild.name() == std::string("LightStateAction"))
             {
                 if (!parameters.ReadAttribute(appearanceActionChild, "transitionTime").empty())
                 {
-                    appAction->transitionTime_ = strtod(parameters.ReadAttribute(appearanceActionChild, "transitionTime"));
+                    lightStateAction->transitionTime_ = strtod(parameters.ReadAttribute(appearanceActionChild, "transitionTime"));
                 }
                 for (pugi::xml_node LightStateActionChild = appearanceActionChild.first_child(); LightStateActionChild;
                      LightStateActionChild                = LightStateActionChild.next_sibling())
@@ -3237,7 +3237,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                             {
                                 std::printf("inside vehicle light");
                                 lightType_ = parameters.ReadAttribute(lightTypeChild, "vehicleLightType");
-                                appAction->setVehicleLightType(lightType_);
+                                lightStateAction->setVehicleLightType(lightType_);
                             }
                             else if (lightTypeChild.name() == std::string("UserDefinedLight"))
                             {
@@ -3253,24 +3253,24 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                     {
                         if (!parameters.ReadAttribute(LightStateActionChild, "flashingOffDuration").empty())
                         {
-                            appAction->flashingOffDuration_ = strtod(parameters.ReadAttribute(LightStateActionChild, "flashingOffDuration"));
+                            lightStateAction->flashingOffDuration_ = strtod(parameters.ReadAttribute(LightStateActionChild, "flashingOffDuration"));
                         }
                         if (!parameters.ReadAttribute(LightStateActionChild, "flashingOnDuration").empty())
                         {
-                            appAction->flashingOnDuration_ = strtod(parameters.ReadAttribute(LightStateActionChild, "flashingOnDuration"));
+                            lightStateAction->flashingOnDuration_ = strtod(parameters.ReadAttribute(LightStateActionChild, "flashingOnDuration"));
                         }
                         if (!parameters.ReadAttribute(LightStateActionChild, "luminousIntensity").empty())
                         {
-                            appAction->luminousIntensity_ = strtod(parameters.ReadAttribute(LightStateActionChild, "luminousIntensity"));
+                            lightStateAction->luminousIntensity_ = strtod(parameters.ReadAttribute(LightStateActionChild, "luminousIntensity"));
                         }
                         if (!parameters.ReadAttribute(LightStateActionChild, "mode").empty())
                         {
                             lightMode_ = parameters.ReadAttribute(LightStateActionChild, "mode");
-                            appAction->setLightMode(lightMode_);
+                            lightStateAction->setLightMode(lightMode_);
                         }
                         else
                         {
-                            LOG("mode in LightState is mandatory field, Anyway setting it to flashing");
+                            LOG("mode in LightState is mandatory field, Anyway setting it to ON");
                         }
                         for (pugi::xml_node colourChild = LightStateActionChild.first_child(); colourChild; colourChild = colourChild.next_sibling())
                         {
@@ -3279,7 +3279,11 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                                 if (!parameters.ReadAttribute(colourChild, "colorType").empty())
                                 {
                                     color_ = parameters.ReadAttribute(colourChild, "colorType");
-                                    appAction->setColourType(color_);
+                                    lightStateAction->setColourType(color_);
+                                }
+                                else
+                                {
+                                    LOG("colorType in LightState is mandatory Color field, setting to default (other)");
                                 }
                                 for (pugi::xml_node colourDesChild = colourChild.first_child(); colourDesChild;
                                      colourDesChild                = colourDesChild.next_sibling())
@@ -3288,34 +3292,34 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                                     {
                                         if (!parameters.ReadAttribute(colourChild, "red").empty())
                                         {
-                                            appAction->colorRgbRed_ = strtod(parameters.ReadAttribute(colourChild, "red"));
+                                            lightStateAction->colorRgbRed_ = strtod(parameters.ReadAttribute(colourChild, "red"));
                                         }
                                         if (!parameters.ReadAttribute(colourChild, "blue").empty())
                                         {
-                                            appAction->colorRgbBlue_ = strtod(parameters.ReadAttribute(colourChild, "blue"));
+                                            lightStateAction->colorRgbBlue_ = strtod(parameters.ReadAttribute(colourChild, "blue"));
                                         }
                                         if (!parameters.ReadAttribute(colourChild, "green").empty())
                                         {
-                                            appAction->colorRgbGreen_ = strtod(parameters.ReadAttribute(colourChild, "green"));
+                                            lightStateAction->colorRgbGreen_ = strtod(parameters.ReadAttribute(colourChild, "green"));
                                         }
                                     }
                                     else if (colourDesChild.name() == std::string("ColorCmyk"))
                                     {
                                         if (!parameters.ReadAttribute(colourChild, "cyan").empty())
                                         {
-                                            appAction->colorCmykCyan_ = strtod(parameters.ReadAttribute(colourChild, "cyan"));
+                                            lightStateAction->colorCmykCyan_ = strtod(parameters.ReadAttribute(colourChild, "cyan"));
                                         }
                                         if (!parameters.ReadAttribute(colourChild, "magenta").empty())
                                         {
-                                            appAction->colorCmykMagenta_ = strtod(parameters.ReadAttribute(colourChild, "magenta"));
+                                            lightStateAction->colorCmykMagenta_ = strtod(parameters.ReadAttribute(colourChild, "magenta"));
                                         }
                                         if (!parameters.ReadAttribute(colourChild, "yellow").empty())
                                         {
-                                            appAction->colorCmykYellow_ = strtod(parameters.ReadAttribute(colourChild, "yellow"));
+                                            lightStateAction->colorCmykYellow_ = strtod(parameters.ReadAttribute(colourChild, "yellow"));
                                         }
                                         if (!parameters.ReadAttribute(colourChild, "key").empty())
                                         {
-                                            appAction->colorCmykKey_ = strtod(parameters.ReadAttribute(colourChild, "key"));
+                                            lightStateAction->colorCmykKey_ = strtod(parameters.ReadAttribute(colourChild, "key"));
                                         }
                                     }
                                 }
@@ -3327,7 +3331,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                         LOG("Exiting, Either LightType or LightState missing in: %s", actionChild.name());
                     }
                 }
-                action = appAction;
+                action = lightStateAction;
             }
             else
             {

@@ -2180,7 +2180,7 @@ int OverrideControlAction::AddOverrideStatus(Object::OverrideActionStatus status
     return 0;
 }
 
-void AppearanceAction::setVehicleLightType(std::string light_type)
+int LightStateAction::setVehicleLightType(std::string light_type)
 {
     if (light_type == "daytimeRunningLights")
     {
@@ -2237,11 +2237,13 @@ void AppearanceAction::setVehicleLightType(std::string light_type)
     else
     {
         vehicleLightType_ = Object::VehicleLightType::NONE;
-        LOG("VehicleLight type not supported, Stoped");
+        LOG("VehicleLight type %s not supported", light_type.c_str());
+        return -1;
     }
+    return 0;
 }
 
-void AppearanceAction::setLightMode(std::string mode)
+void LightStateAction::setLightMode(std::string mode)
 {
     if (mode == "on")
     {
@@ -2257,7 +2259,7 @@ void AppearanceAction::setLightMode(std::string mode)
     }
 }
 
-void AppearanceAction::setColourType(std::string colorType)
+void LightStateAction::setColourType(std::string colorType)
 {
     if (colorType == "other")
     {
@@ -2279,11 +2281,11 @@ void AppearanceAction::setColourType(std::string colorType)
     {
         colorType_ = Color::BLUE;
     }
-    if (colorType == "violet")
+    else if (colorType == "violet")
     {
         colorType_ = Color::VIOLET;
     }
-    if (colorType == "orange")
+    else if (colorType == "orange")
     {
         colorType_ = Color::ORANGE;
     }
@@ -2303,14 +2305,18 @@ void AppearanceAction::setColourType(std::string colorType)
     {
         colorType_ = Color::WHITE;
     }
+    else
+    {
+        LOG("Colour type %s not supported, set to default (other)", colorType.c_str());
+    }
 }
 
-void AppearanceAction::Start(double simTime, double dt)
+void LightStateAction::Start(double simTime, double dt)
 {
     OSCAction::Start(simTime, dt);
 }
 
-void AppearanceAction::Step(double simTime, double dt)
+void LightStateAction::Step(double simTime, double dt)
 {
     (void)dt;
     if (transitionTime_ < transitionTimer_)
