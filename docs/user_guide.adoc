@@ -2409,13 +2409,10 @@ sudo apt-get install -y -q clang-format-15
 
 see also: https://github.com/esmini/esmini/blob/2487160995e9ec392f1c0945bfc44b46fb098e63/.github/workflows/ci.l#L26[ci.yml]
 
-===== Python packages
+===== Install dependent Python packages
 [source, txt]
 ----
-pip install gdown
-pip install jinja2
-pip install cmake-format
-pip install black
+pip install -r ./support/python/requirements.txt
 ----
 
 [discreet]
@@ -2598,10 +2595,12 @@ Install tools:
 ``sudo apt install ruby-coderay``
 
 *Windows*::
-First, if not already done, install ruby: https://rubyinstaller.org/downloads/ +
-Then: +
+* First, if not already done, install ruby: +
+  ** Pick latest Ruby x64 package, without devkit, here: https://rubyinstaller.org/downloads/ +
+  ** Install it. In the end you can leave "Run 'rid install' to setup MSYS2 and development toolchain" un-checked +
+* Then run: +
 ``gem install asciidoctor`` +
-``gem install coderay`` +
+``gem install coderay``
 
 Generate html: ``asciidoctor user_guide.adoc``
 
