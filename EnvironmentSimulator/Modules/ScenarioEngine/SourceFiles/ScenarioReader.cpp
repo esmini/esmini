@@ -3211,8 +3211,9 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
         else if (actionChild.name() == std::string("AppearanceAction"))
         {
             std::string lightType_;
-            std::string lightMode_;
             std::string color_;
+
+            Vehicle *vehicle = 0;
 
             LightStateAction *lightStateAction      = new LightStateAction();
             pugi::xml_node    appearanceActionChild = actionChild.first_child();
@@ -3236,8 +3237,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                             if (lightTypeChild.name() == std::string("VehicleLight"))
                             {
                                 std::printf("inside vehicle light");
-                                lightType_ = parameters.ReadAttribute(lightTypeChild, "vehicleLightType");
-                                lightStateAction->setVehicleLightType(lightType_);
+                                lightStateAction->vehicleLightType_ = parameters.ReadAttribute(lightTypeChild, "vehicleLightType");
                             }
                             else if (lightTypeChild.name() == std::string("UserDefinedLight"))
                             {
@@ -3265,8 +3265,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                         }
                         if (!parameters.ReadAttribute(LightStateActionChild, "mode").empty())
                         {
-                            lightMode_ = parameters.ReadAttribute(LightStateActionChild, "mode");
-                            lightStateAction->setLightMode(lightMode_);
+                            lightStateAction->mode_ = parameters.ReadAttribute(LightStateActionChild, "mode");
                         }
                         else
                         {

@@ -1161,12 +1161,6 @@ namespace scenarioengine
     class LightStateAction : public OSCPrivateAction
     {
     public:
-        enum class LightMode
-        {
-            ON,
-            OFF,
-            FLASHING
-        };
         enum class Color
         {
             OTHER,
@@ -1181,20 +1175,20 @@ namespace scenarioengine
             GREY,
             WHITE
         };
-        Object::VehicleLightType vehicleLightType_;
-        double                   transitionTime_;
-        double                   flashingOffDuration_;
-        double                   flashingOnDuration_;
-        double                   luminousIntensity_;
-        LightMode                mode_;
-        Color                    colorType_;
-        double                   colorRgbRed_;
-        double                   colorRgbGreen_;
-        double                   colorRgbBlue_;
-        double                   colorCmykCyan_;
-        double                   colorCmykMagenta_;
-        double                   colorCmykYellow_;
-        double                   colorCmykKey_;
+        std::string vehicleLightType_;
+        double      transitionTime_;
+        double      flashingOffDuration_;
+        double      flashingOnDuration_;
+        double      luminousIntensity_;
+        std::string mode_;
+        Color       colorType_;
+        double      colorRgbRed_;
+        double      colorRgbGreen_;
+        double      colorRgbBlue_;
+        double      colorCmykCyan_;
+        double      colorCmykMagenta_;
+        double      colorCmykYellow_;
+        double      colorCmykKey_;
 
         double transitionTimer_ = 0.0;
         LightStateAction()
@@ -1203,7 +1197,7 @@ namespace scenarioengine
               flashingOffDuration_(0.5),
               flashingOnDuration_(0.5),
               luminousIntensity_(0.0),
-              mode_(LightMode::ON),
+              mode_("ON"),
               colorType_(Color::OTHER),
               colorRgbRed_(1.0),
               colorRgbGreen_(0.0),
@@ -1215,8 +1209,6 @@ namespace scenarioengine
         {
         }
 
-        int  setVehicleLightType(std::string);
-        void setLightMode(std::string);
         void setColourType(std::string);
 
         void Step(double simTime, double dt);

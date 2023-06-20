@@ -70,24 +70,6 @@ namespace scenarioengine
 
         OSCProperties properties_;
 
-        enum class VehicleLightType
-        {
-            DAY_TIME_RUNNING_LIGHTS     = 0,
-            LOW_BEAM                    = 1,
-            HIGH_BEAM                   = 2,
-            FOG_LIGHTS                  = 3,
-            FOG_LIGHTS_FRONT            = 4,
-            FOG_LIGHTS_REAR             = 5,
-            BRAKE_LIGHTS                = 6,
-            WARNING_LIGHTS              = 7,
-            INDICATOR_LEFT              = 8,
-            INDICATOR_RIGHT             = 9,
-            REVERSING_LIGHTS            = 10,
-            LICENSE_PLATER_ILLUMINATION = 11,
-            SPECIAL_PURPOSE_LIGHTS      = 12,
-            NONE                        = 13
-        };
-
         typedef enum
         {
             OVERRIDE_THROTTLE       = 0,  // Value range: [0..1]. 0 represents 0%, 1 represents 100% of pressing the throttle pedal.
@@ -139,6 +121,115 @@ namespace scenarioengine
             double wheelDiameter;
         } Axle;
 
+        enum class VehicleLightType
+        {
+            DAY_TIME_RUNNING_LIGHTS     = 0,
+            LOW_BEAM                    = 1,
+            HIGH_BEAM                   = 2,
+            FOG_LIGHTS                  = 3,
+            FOG_LIGHTS_FRONT            = 4,
+            FOG_LIGHTS_REAR             = 5,
+            BRAKE_LIGHTS                = 6,
+            WARNING_LIGHTS              = 7,
+            INDICATOR_LEFT              = 8,
+            INDICATOR_RIGHT             = 9,
+            REVERSING_LIGHTS            = 10,
+            LICENSE_PLATER_ILLUMINATION = 11,
+            SPECIAL_PURPOSE_LIGHTS      = 12,
+            NONE                        = 13
+        };
+
+        enum class LightMode
+        {
+            ON       = 0,
+            OFF      = 1,
+            FLASHING = 2
+        };
+        typedef struct
+        {
+            VehicleLightType lightType_ = VehicleLightType::NONE;
+            LightMode        lightMode_ = LightMode::ON;
+        } LightState;
+
+        int setVehicleLightType(std::string light_type)
+        {
+            if (light_type == "daytimeRunningLights")
+            {
+                lightState_.lightType_ = VehicleLightType::DAY_TIME_RUNNING_LIGHTS;
+            }
+            else if (light_type == "lowBeam")
+            {
+                lightState_.lightType_ = VehicleLightType::LOW_BEAM;
+            }
+            else if (light_type == "highBeam")
+            {
+                lightState_.lightType_ = VehicleLightType::HIGH_BEAM;
+            }
+            else if (light_type == "fogLights")
+            {
+                lightState_.lightType_ = VehicleLightType::FOG_LIGHTS;
+            }
+            else if (light_type == "fogLightsFront")
+            {
+                lightState_.lightType_ = VehicleLightType::FOG_LIGHTS_FRONT;
+            }
+            else if (light_type == "fogLightsRear")
+            {
+                lightState_.lightType_ = VehicleLightType::FOG_LIGHTS_REAR;
+            }
+            else if (light_type == "brakeLights")
+            {
+                lightState_.lightType_ = VehicleLightType::BRAKE_LIGHTS;
+            }
+            else if (light_type == "warningLights")
+            {
+                lightState_.lightType_ = VehicleLightType::WARNING_LIGHTS;
+            }
+            else if (light_type == "indicatorLeft")
+            {
+                lightState_.lightType_ = VehicleLightType::INDICATOR_LEFT;
+            }
+            else if (light_type == "indicatorRight")
+            {
+                lightState_.lightType_ = VehicleLightType::INDICATOR_RIGHT;
+            }
+            else if (light_type == "reversingLights")
+            {
+                lightState_.lightType_ = VehicleLightType::REVERSING_LIGHTS;
+            }
+            else if (light_type == "licensePlateIllumination")
+            {
+                lightState_.lightType_ = VehicleLightType::LICENSE_PLATER_ILLUMINATION;
+            }
+            else if (light_type == "specialPurposeLights")
+            {
+                lightState_.lightType_ = VehicleLightType::SPECIAL_PURPOSE_LIGHTS;
+            }
+            else
+            {
+                lightState_.lightType_ = VehicleLightType::NONE;
+                LOG("VehicleLight type %s not supported", light_type.c_str());
+                return -1;
+            }
+            return 0;
+        }
+
+        void setVehicleLightMode(std::string mode)
+        {
+            if (mode == "on")
+            {
+                lightState_.lightMode_ = LightMode::ON;
+            }
+            else if (mode == "off")
+            {
+                lightState_.lightMode_ = LightMode::OFF;
+            }
+            else if (mode == "flashing")
+            {
+                lightState_.lightMode_ = LightMode::FLASHING;
+            }
+        }
+
         // Allocate vector for all possible override status
         OverrideActionStatus overrideActionList[OverrideType::OVERRIDE_NR_TYPES];
 
@@ -170,6 +261,7 @@ namespace scenarioengine
         int         role_;      // Specific roles for entity objects of type Vehicle or Pedestrian
         std::string typeName_;  // Name of the vehicle-, pedestrian- or misc object type
         std::string name_;
+        LightState  lightState_;
 
         // Ghost following stuff
         roadmanager::TrajVertex trail_closest_pos_;

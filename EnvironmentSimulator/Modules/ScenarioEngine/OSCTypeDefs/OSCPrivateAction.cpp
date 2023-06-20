@@ -2180,85 +2180,6 @@ int OverrideControlAction::AddOverrideStatus(Object::OverrideActionStatus status
     return 0;
 }
 
-int LightStateAction::setVehicleLightType(std::string light_type)
-{
-    if (light_type == "daytimeRunningLights")
-    {
-        vehicleLightType_ = Object::VehicleLightType::DAY_TIME_RUNNING_LIGHTS;
-    }
-    else if (light_type == "lowBeam")
-    {
-        vehicleLightType_ = Object::VehicleLightType::LOW_BEAM;
-    }
-    else if (light_type == "highBeam")
-    {
-        vehicleLightType_ = Object::VehicleLightType::HIGH_BEAM;
-    }
-    else if (light_type == "fogLights")
-    {
-        vehicleLightType_ = Object::VehicleLightType::FOG_LIGHTS;
-    }
-    else if (light_type == "fogLightsFront")
-    {
-        vehicleLightType_ = Object::VehicleLightType::FOG_LIGHTS_FRONT;
-    }
-    else if (light_type == "fogLightsRear")
-    {
-        vehicleLightType_ = Object::VehicleLightType::FOG_LIGHTS_REAR;
-    }
-    else if (light_type == "brakeLights")
-    {
-        vehicleLightType_ = Object::VehicleLightType::BRAKE_LIGHTS;
-    }
-    else if (light_type == "warningLights")
-    {
-        vehicleLightType_ = Object::VehicleLightType::WARNING_LIGHTS;
-    }
-    else if (light_type == "indicatorLeft")
-    {
-        vehicleLightType_ = Object::VehicleLightType::INDICATOR_LEFT;
-    }
-    else if (light_type == "indicatorRight")
-    {
-        vehicleLightType_ = Object::VehicleLightType::INDICATOR_RIGHT;
-    }
-    else if (light_type == "reversingLights")
-    {
-        vehicleLightType_ = Object::VehicleLightType::REVERSING_LIGHTS;
-    }
-    else if (light_type == "licensePlateIllumination")
-    {
-        vehicleLightType_ = Object::VehicleLightType::LICENSE_PLATER_ILLUMINATION;
-    }
-    else if (light_type == "specialPurposeLights")
-    {
-        vehicleLightType_ = Object::VehicleLightType::SPECIAL_PURPOSE_LIGHTS;
-    }
-    else
-    {
-        vehicleLightType_ = Object::VehicleLightType::NONE;
-        LOG("VehicleLight type %s not supported", light_type.c_str());
-        return -1;
-    }
-    return 0;
-}
-
-void LightStateAction::setLightMode(std::string mode)
-{
-    if (mode == "on")
-    {
-        mode_ = LightMode::ON;
-    }
-    else if (mode == "off")
-    {
-        mode_ = LightMode::OFF;
-    }
-    else if (mode == "flashing")
-    {
-        mode_ = LightMode::FLASHING;
-    }
-}
-
 void LightStateAction::setColourType(std::string colorType)
 {
     if (colorType == "other")
@@ -2321,6 +2242,8 @@ void LightStateAction::Step(double simTime, double dt)
     (void)dt;
     if (transitionTime_ < transitionTimer_)
     {
+        object_->setVehicleLightType(vehicleLightType_);
+        object_->setVehicleLightMode(mode_);
         OSCAction::End(simTime);
     }
     transitionTimer_ += dt;
