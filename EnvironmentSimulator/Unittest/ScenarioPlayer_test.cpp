@@ -30,9 +30,9 @@ TEST(CustomCameraTest, TestCustomCameraVariants)
 
     osg::Vec3 pos, rot;
     player->viewer_->GetCameraPosAndRot(pos, rot);
-    EXPECT_NEAR(pos[0], 123.940, 1E-3);
-    EXPECT_NEAR(pos[1], 11.892, 1E-3);
-    EXPECT_NEAR(pos[2], 2.942, 1E-3);
+    EXPECT_NEAR(pos[0], 125.200, 1E-3);
+    EXPECT_NEAR(pos[1], 12.626, 1E-3);
+    EXPECT_NEAR(pos[2], 2.987, 1E-3);
     EXPECT_NEAR(rot[0], 0.280, 1E-3);
     EXPECT_NEAR(rot[1], 0.227, 1E-3);
     EXPECT_NEAR(rot[2], 0.000, 1E-3);
@@ -53,8 +53,8 @@ TEST(CustomCameraTest, TestCustomCameraVariants)
     EXPECT_NEAR(pos[0], 100.000, 1E-3);
     EXPECT_NEAR(pos[1], 50.000, 1E-3);
     EXPECT_NEAR(pos[2], 10.000, 1E-3);
-    EXPECT_NEAR(rot[0], 5.698, 1E-3);
-    EXPECT_NEAR(rot[1], 0.220, 1E-3);
+    EXPECT_NEAR(rot[0], 5.720, 1E-3);
+    EXPECT_NEAR(rot[1], 0.217, 1E-3);
     EXPECT_NEAR(rot[2], 0.000, 1E-3);
 
     player->viewer_->SetCameraMode(osgGA::RubberbandManipulator::CAMERA_MODE::RB_MODE_CUSTOM + 3);
@@ -74,9 +74,9 @@ TEST(CustomCameraTest, TestCustomCameraVariants)
     player->viewer_->SetCameraMode(osgGA::RubberbandManipulator::CAMERA_MODE::RB_MODE_CUSTOM + 0);
     player->Frame(0.0);
     player->viewer_->GetCameraPosAndRot(pos, rot);
-    EXPECT_NEAR(pos[0], 217.520, 1E-3);
-    EXPECT_NEAR(pos[1], 127.505, 1E-3);
-    EXPECT_NEAR(pos[2], 0.775, 1E-3);
+    EXPECT_NEAR(pos[0], 217.639, 1E-3);
+    EXPECT_NEAR(pos[1], 128.953, 1E-3);
+    EXPECT_NEAR(pos[2], 0.906, 1E-3);
     EXPECT_NEAR(rot[0], 1.487, 1E-3);
     EXPECT_NEAR(rot[1], 6.228, 1E-3);
     EXPECT_NEAR(rot[2], 0.000, 1E-3);
@@ -97,8 +97,8 @@ TEST(CustomCameraTest, TestCustomCameraVariants)
     EXPECT_NEAR(pos[0], 100.000, 1E-3);
     EXPECT_NEAR(pos[1], 50.000, 1E-3);
     EXPECT_NEAR(pos[2], 10.000, 1E-3);
-    EXPECT_NEAR(rot[0], 0.601, 1E-3);
-    EXPECT_NEAR(rot[1], 0.066, 1E-3);
+    EXPECT_NEAR(rot[0], 0.609, 1E-3);
+    EXPECT_NEAR(rot[1], 0.065, 1E-3);
     EXPECT_NEAR(rot[2], 0.000, 1E-3);
 
     player->viewer_->SetCameraMode(osgGA::RubberbandManipulator::CAMERA_MODE::RB_MODE_CUSTOM + 3);

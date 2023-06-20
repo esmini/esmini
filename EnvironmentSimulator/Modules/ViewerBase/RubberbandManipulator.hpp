@@ -96,7 +96,7 @@ namespace osgGA
 
         typedef std::vector<osg::observer_ptr<osg::Node> > ObserverNodePath;
 
-        void setTrackNode(osg::PositionAttitudeTransform* node, bool calcDistance = false);
+        void setTrackNode(osg::Node* node, bool calcDistance = false);
 
         /** set the position of the matrix manipulator using a 4x4 Matrix.*/
         virtual void setByMatrix(const osg::Matrixd& matrix);
@@ -162,8 +162,8 @@ namespace osgGA
             Return true is camera has moved and a redraw is required.*/
         bool calcMovement(double dt, bool reset);
 
-        osg::ref_ptr<osg::Node>         _node;
-        osg::PositionAttitudeTransform* _trackNode;
+        osg::ref_ptr<osg::Node> _node;
+        osg::Node*              _trackNode;
 
         osg::Vec3d  _eye;
         osg::Matrix _matrix;

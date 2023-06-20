@@ -107,7 +107,7 @@ void RubberbandManipulator::setMode(unsigned int mode)
     }
 }
 
-void RubberbandManipulator::setTrackNode(osg::PositionAttitudeTransform* node, bool calcDistance)
+void RubberbandManipulator::setTrackNode(osg::Node* node, bool calcDistance)
 {
     if (!node)
     {
@@ -268,9 +268,11 @@ bool RubberbandManipulator::handle(const GUIEventAdapter& ea, GUIActionAdapter& 
 
 void RubberbandManipulator::computeNodeCenterAndRotation(osg::Vec3d& nodeCenter, osg::Quat& nodeRotation) const
 {
-    osg::PositionAttitudeTransform* pat = _trackNode;
-    nodeCenter                          = pat->getPosition();
-    nodeRotation                        = pat->getAttitude();
+    if (_trackNode)
+    {
+        nodeCenter   = _trackNode->getBound().center() * osg::computeLocalToWorld(_trackNode->getParentalNodePaths()[0]);
+        nodeRotation = osg::computeLocalToWorld(_trackNode->getParentalNodePaths()[0]).getRotate();
+    }
 }
 
 void RubberbandManipulator::flushEventStack()

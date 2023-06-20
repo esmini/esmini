@@ -591,6 +591,7 @@ namespace viewer
         void         ClearNodeMaskBits(int bits);
         void         ToggleNodeMaskBits(int bits);
         int          GetNodeMaskBit(int mask);
+        void         SetCameraTrackNode(osg::ref_ptr<osg::Node> xform);
         PointSensor* CreateSensor(float color[], bool create_ball, bool create_line, double ball_radius, double line_width);
         bool         CreateRoadSensors(MovingModel* moving_model);
         void         SetWindowTitle(std::string title);

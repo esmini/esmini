@@ -1892,7 +1892,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     terrainManipulator->setWheelZoomFactor(-1 * terrainManipulator->getWheelZoomFactor());  // inverse scroll wheel
 
     rubberbandManipulator_ = new osgGA::RubberbandManipulator(static_cast<unsigned int>(camMode_));
-    rubberbandManipulator_->setTrackNode(envTx_);
+    SetCameraTrackNode(envTx_);
     rubberbandManipulator_->calculateCameraDistance();
 
     {
@@ -2393,6 +2393,7 @@ EntityModel* Viewer::CreateEntityModel(std::string             modelFilepath,
     emodel->state_set_->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
 
     emodel->modelBB_ = modelBB;
+    emodel->model_   = modelgroup;
 
     if (emodel->IsMoving())
     {
@@ -2429,7 +2430,6 @@ EntityModel* Viewer::CreateEntityModel(std::string             modelFilepath,
     text_state->setAttributeAndModes(emodel->blend_color_);
     text_state->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::PROTECTED | osg::StateAttribute::OVERRIDE);
     text_state->setRenderBinDetails(INT_MAX - 1, "RenderBin", osg::StateSet::RenderBinMode::OVERRIDE_RENDERBIN_DETAILS);
-
     emodel->on_screen_info_.geode_->addDrawable(emodel->on_screen_info_.osg_text_);
     group->addChild(emodel->on_screen_info_.geode_.get());
 
@@ -3553,13 +3553,18 @@ int Viewer::GetNodeMaskBit(int mask)
     return static_cast<int>(osgViewer_->getCamera()->getCullMask() & static_cast<unsigned int>(mask));
 }
 
+void Viewer::SetCameraTrackNode(osg::ref_ptr<osg::Node> node)
+{
+    rubberbandManipulator_->setTrackNode(node, false);
+    nodeTrackerManipulator_->setTrackNode(node);
+}
+
 void Viewer::SetVehicleInFocus(int idx)
 {
     if (idx >= 0 && idx < static_cast<int>(entities_.size()))
     {
         currentCarInFocus_ = idx;
-        rubberbandManipulator_->setTrackNode(entities_[static_cast<unsigned int>(currentCarInFocus_)]->txNode_, false);
-        nodeTrackerManipulator_->setTrackNode(entities_[static_cast<unsigned int>(currentCarInFocus_)]->txNode_);
+        SetCameraTrackNode(entities_[static_cast<unsigned int>(currentCarInFocus_)]->model_);
     }
 }
 

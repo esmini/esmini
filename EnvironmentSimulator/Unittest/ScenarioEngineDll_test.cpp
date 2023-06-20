@@ -3191,9 +3191,9 @@ TEST(APITest, TestFetchImage)
 
     // Check RGB color values of a random pixel x=222, y=250
     int pixelNr = ((400 - 1) - 250) * 800 + 222;                                      // image stored upside down
-    EXPECT_NEAR(image.data[pixelNr * image.pixelSize + 2], 65, max_pixel_deviation);  // R
+    EXPECT_NEAR(image.data[pixelNr * image.pixelSize + 2], 70, max_pixel_deviation);  // R
     EXPECT_NEAR(image.data[pixelNr * image.pixelSize + 1], 88, max_pixel_deviation);  // G
-    EXPECT_NEAR(image.data[pixelNr * image.pixelSize + 0], 37, max_pixel_deviation);  // B
+    EXPECT_NEAR(image.data[pixelNr * image.pixelSize + 0], 43, max_pixel_deviation);  // B
 
     // Save file for possible post processing or inspection
     SE_WriteTGA("offscreen0.tga", image.width, image.height, image.data, image.pixelSize, image.pixelFormat, true);
@@ -3224,9 +3224,9 @@ TEST(APITest, TestFetchImage)
     EXPECT_EQ(image.pixelSize, 3);
 
     // Check pixel
-    EXPECT_NEAR(image.data[pixelNr * image.pixelSize + 2], 76, max_pixel_deviation);  // R
-    EXPECT_NEAR(image.data[pixelNr * image.pixelSize + 1], 94, max_pixel_deviation);  // G
-    EXPECT_NEAR(image.data[pixelNr * image.pixelSize + 0], 44, max_pixel_deviation);  // B
+    EXPECT_NEAR(image.data[pixelNr * image.pixelSize + 2], 66, max_pixel_deviation);  // R
+    EXPECT_NEAR(image.data[pixelNr * image.pixelSize + 1], 76, max_pixel_deviation);  // G
+    EXPECT_NEAR(image.data[pixelNr * image.pixelSize + 0], 38, max_pixel_deviation);  // B
 
     // Verify that we can't fetch images when feature disabled
     EXPECT_EQ(SE_SaveImagesToRAM(false), 0);
