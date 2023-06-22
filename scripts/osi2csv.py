@@ -25,16 +25,29 @@ class OSIFile():
             raise
 
         # write header
-        fcsv.write('time, id, name, x, y, z, vx, vy, vz, ax, ay, az, h, p, r, vh, vp, vr, ah, ap, ar, speed, wheel_angle, wheel_rot\n')
+        fcsv.write('time, id, name, type, x, y, z, vx, vy, vz, ax, ay, az, h, p, r, vh, vp, vr, ah, ap, ar, speed, wheel_angle, wheel_rot\n')
 
         # write data
         while self.read_next_message():
             t = self.osi_msg.timestamp.seconds + self.osi_msg.timestamp.nanos * 1e-9
             for o in self.osi_msg.moving_object:
-                fcsv.write('{:.6f}, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}\n'.format(
+                if o.type == 0:
+                    type = 'UNKNOWN'
+                elif o.type == 1:
+                    type = 'OTHER'
+                elif o.type == 2:
+                    type = str(o.vehicle_classification)[11:-1]
+                elif o.type == 3:
+                    type = 'PEDESTRIAN'
+                elif o.type == 4:
+                    type = 'ANIMAL'
+                else:
+                    type = 'ERROR'
+                fcsv.write('{:.6f}, {}, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}\n'.format(
                     t,
                     o.id.value,
                     'obj' + str(o.id.value),
+                    type,
                     o.base.position.x,
                     o.base.position.y,
                     o.base.position.z,
