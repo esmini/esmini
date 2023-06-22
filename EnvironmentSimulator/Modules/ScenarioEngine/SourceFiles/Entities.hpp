@@ -121,7 +121,7 @@ namespace scenarioengine
             double wheelDiameter;
         } Axle;
 
-        enum class VehicleLightType
+        typedef enum
         {
             DAY_TIME_RUNNING_LIGHTS     = 0,
             LOW_BEAM                    = 1,
@@ -136,102 +136,47 @@ namespace scenarioengine
             REVERSING_LIGHTS            = 10,
             LICENSE_PLATER_ILLUMINATION = 11,
             SPECIAL_PURPOSE_LIGHTS      = 12,
-            NONE                        = 13
-        };
+            LIGHT_TYPE_NONE             = 13
+        } VehicleLightType;
 
-        enum class LightMode
+        enum class VehicleLightMode
         {
             ON       = 0,
             OFF      = 1,
             FLASHING = 2
         };
-        typedef struct
-        {
-            VehicleLightType lightType_ = VehicleLightType::NONE;
-            LightMode        lightMode_ = LightMode::ON;
-        } LightState;
 
-        int setVehicleLightType(std::string light_type)
+        enum class VehicleLightColor
         {
-            if (light_type == "daytimeRunningLights")
-            {
-                lightState_.lightType_ = VehicleLightType::DAY_TIME_RUNNING_LIGHTS;
-            }
-            else if (light_type == "lowBeam")
-            {
-                lightState_.lightType_ = VehicleLightType::LOW_BEAM;
-            }
-            else if (light_type == "highBeam")
-            {
-                lightState_.lightType_ = VehicleLightType::HIGH_BEAM;
-            }
-            else if (light_type == "fogLights")
-            {
-                lightState_.lightType_ = VehicleLightType::FOG_LIGHTS;
-            }
-            else if (light_type == "fogLightsFront")
-            {
-                lightState_.lightType_ = VehicleLightType::FOG_LIGHTS_FRONT;
-            }
-            else if (light_type == "fogLightsRear")
-            {
-                lightState_.lightType_ = VehicleLightType::FOG_LIGHTS_REAR;
-            }
-            else if (light_type == "brakeLights")
-            {
-                lightState_.lightType_ = VehicleLightType::BRAKE_LIGHTS;
-            }
-            else if (light_type == "warningLights")
-            {
-                lightState_.lightType_ = VehicleLightType::WARNING_LIGHTS;
-            }
-            else if (light_type == "indicatorLeft")
-            {
-                lightState_.lightType_ = VehicleLightType::INDICATOR_LEFT;
-            }
-            else if (light_type == "indicatorRight")
-            {
-                lightState_.lightType_ = VehicleLightType::INDICATOR_RIGHT;
-            }
-            else if (light_type == "reversingLights")
-            {
-                lightState_.lightType_ = VehicleLightType::REVERSING_LIGHTS;
-            }
-            else if (light_type == "licensePlateIllumination")
-            {
-                lightState_.lightType_ = VehicleLightType::LICENSE_PLATER_ILLUMINATION;
-            }
-            else if (light_type == "specialPurposeLights")
-            {
-                lightState_.lightType_ = VehicleLightType::SPECIAL_PURPOSE_LIGHTS;
-            }
-            else
-            {
-                lightState_.lightType_ = VehicleLightType::NONE;
-                LOG("VehicleLight type %s not supported", light_type.c_str());
-                return -1;
-            }
-            return 0;
-        }
+            OTHER  = 1,
+            RED    = 2,
+            YELLOW = 3,
+            GREEN  = 4,
+            BLUE   = 5,
+            VIOLET = 6,
+            ORANGE = 7,
+            BROWN  = 8,
+            BLACK  = 9,
+            GREY   = 10,
+            WHITE  = 11
+        };
 
-        void setVehicleLightMode(std::string mode)
+        struct VehicleLightActionStatus
         {
-            if (mode == "on")
-            {
-                lightState_.lightMode_ = LightMode::ON;
-            }
-            else if (mode == "off")
-            {
-                lightState_.lightMode_ = LightMode::OFF;
-            }
-            else if (mode == "flashing")
-            {
-                lightState_.lightMode_ = LightMode::FLASHING;
-            }
-        }
+            int    type              = static_cast<int>(LIGHT_TYPE_NONE);  // according to VehicleLightType
+            double luminousIntensity = 0.0;                                // True: override; false: stop overriding
+            double colorRgbRed       = 0.0;                                // Depends on action, see light action
+            double colorRgbGreen     = 0.0;                                // Depends on action, see light action
+            double colorRgbBlue      = 0.0;                                // Depends on action, see light action
+            double colorCmykCyan     = 0.0;                                // Depends on action, see light action
+            double colorCmykMagenta  = 0.0;                                // Depends on action, see light action
+            double colorCmykYellow   = 0.0;                                // Depends on action, see light action
+            double colorCmykKey      = 0.0;                                // Depends on action, see light action
+        };
 
-        // Allocate vector for all possible override status
         OverrideActionStatus overrideActionList[OverrideType::OVERRIDE_NR_TYPES];
+
+        VehicleLightActionStatus vehicleLightActionStatusList[VehicleLightType::LIGHT_TYPE_NONE];
 
         Type        type_;
         int         id_;
@@ -261,7 +206,6 @@ namespace scenarioengine
         int         role_;      // Specific roles for entity objects of type Vehicle or Pedestrian
         std::string typeName_;  // Name of the vehicle-, pedestrian- or misc object type
         std::string name_;
-        LightState  lightState_;
 
         // Ghost following stuff
         roadmanager::TrajVertex trail_closest_pos_;

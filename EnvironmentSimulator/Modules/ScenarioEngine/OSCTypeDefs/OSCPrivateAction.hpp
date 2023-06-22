@@ -1161,58 +1161,36 @@ namespace scenarioengine
     class LightStateAction : public OSCPrivateAction
     {
     public:
-        enum class Color
-        {
-            OTHER,
-            RED,
-            YELLOW,
-            GREEN,
-            BLUE,
-            VIOLET,
-            ORANGE,
-            BROWN,
-            BLACK,
-            GREY,
-            WHITE
-        };
-        std::string vehicleLightType_;
-        double      transitionTime_;
-        double      flashingOffDuration_;
-        double      flashingOnDuration_;
-        double      luminousIntensity_;
-        std::string mode_;
-        Color       colorType_;
-        double      colorRgbRed_;
-        double      colorRgbGreen_;
-        double      colorRgbBlue_;
-        double      colorCmykCyan_;
-        double      colorCmykMagenta_;
-        double      colorCmykYellow_;
-        double      colorCmykKey_;
+        double                    transitionTime_;
+        double                    flashingOffDuration_;
+        double                    flashingOnDuration_;
+        Object::VehicleLightMode  mode_;
+        Object::VehicleLightColor color_;
+        Object::VehicleLightType  lightType_;
 
-        double transitionTimer_ = 0.0;
         LightStateAction()
             : OSCPrivateAction(OSCPrivateAction::ActionType::LIGHT_STATE_Action, ControlDomains::DOMAIN_NONE),
-              transitionTime_(SMALL_NUMBER),
+              transitionTime_(0.0),
               flashingOffDuration_(0.5),
               flashingOnDuration_(0.5),
-              luminousIntensity_(0.0),
-              mode_("ON"),
-              colorType_(Color::OTHER),
-              colorRgbRed_(1.0),
-              colorRgbGreen_(0.0),
-              colorRgbBlue_(0.0),
-              colorCmykCyan_(1.0),
-              colorCmykMagenta_(0.0),
-              colorCmykYellow_(0.0),
-              colorCmykKey_(0.0)
+              mode_(Object::VehicleLightMode::OFF),
+              color_(Object::VehicleLightColor::OTHER)
         {
         }
 
-        void setColourType(std::string);
+        double transitionTimer_ = SMALL_NUMBER;
+        double flashingTimer_ = SMALL_NUMBER;
+        int    setVehicleLightType(std::string type, Object::VehicleLightActionStatus& lightStatus);
+        void   setVehicleLightMode(std::string mode);
+        void   setVehicleLightColor(std::string colorType);
 
         void Step(double simTime, double dt);
         void Start(double simTime, double dt);
+        void AddVehicleLightActionStatus(Object::VehicleLightActionStatus lightStatus);
+        int setLightTransistionValues(double value);
+
+    private:
+        Object::VehicleLightActionStatus vehicleLightActionStatusList;
     };
 
     class OverrideControlAction : public OSCPrivateAction
