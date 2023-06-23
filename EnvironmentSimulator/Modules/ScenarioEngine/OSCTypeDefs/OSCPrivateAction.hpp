@@ -1179,7 +1179,7 @@ namespace scenarioengine
         }
 
         double transitionTimer_ = SMALL_NUMBER;
-        double flashingTimer_ = SMALL_NUMBER;
+        double flashingTimer_   = SMALL_NUMBER;
         int    setVehicleLightType(std::string type, Object::VehicleLightActionStatus& lightStatus);
         void   setVehicleLightMode(std::string mode);
         void   setVehicleLightColor(std::string colorType);
@@ -1187,7 +1187,7 @@ namespace scenarioengine
         void Step(double simTime, double dt);
         void Start(double simTime, double dt);
         void AddVehicleLightActionStatus(Object::VehicleLightActionStatus lightStatus);
-        int setLightTransistionValues(double value);
+        int  setLightTransistionValues(double value);
 
     private:
         Object::VehicleLightActionStatus vehicleLightActionStatusList;
