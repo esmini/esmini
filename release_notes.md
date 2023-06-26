@@ -1,5 +1,17 @@
 ## esmini release notes
 
+### 2023-06-26 Version 2.31.8
+
+New behaviours:
+- Set camera focus on model center instead of referece point ([issue #442](https://github.com/esmini/esmini/issues/442))
+- Relative lane id/offset based on entity x-axis instead of road ref system ([issue #444](https://github.com/esmini/esmini/issues/444))
+- Align any missing z (elev), r (roll), and p (pitch) to road surface, skipping default value (0)
+  - Note: This is a deviation from the OpenSCENARIO standard motivated by common sense
+  - Values can still be set to 0 explicitly
+
+Improvements:
+- Update prerequisite info on [formatting](https://esmini.github.io/#_formatting)
+
 ### 2023-06-09 Version 2.31.7
 
 - Fix left hand traffic going reverse ([issue #441](https://github.com/esmini/esmini/issues/441))
