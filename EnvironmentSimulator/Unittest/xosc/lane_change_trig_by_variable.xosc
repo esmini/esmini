@@ -67,7 +67,7 @@
                                         <LaneChangeAction>
                                             <LaneChangeActionDynamics dynamicsShape="sinusoidal" value="2" dynamicsDimension="time"/>
                                             <LaneChangeTarget>
-                                                <RelativeTargetLane entityRef="Truck" value="-1"/>
+                                                <RelativeTargetLane entityRef="Truck" value="1"/>
                                             </LaneChangeTarget>
                                         </LaneChangeAction>
                                     </LateralAction>
@@ -115,7 +115,7 @@
                                         <LaneChangeAction>
                                             <LaneChangeActionDynamics dynamicsShape="sinusoidal" value="2" dynamicsDimension="time"/>
                                             <LaneChangeTarget>
-                                                <RelativeTargetLane entityRef="Truck" value="1"/>
+                                                <RelativeTargetLane entityRef="Truck" value="-1"/>
                                             </LaneChangeTarget>
                                         </LaneChangeAction>
                                     </LateralAction>

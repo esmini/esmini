@@ -569,7 +569,8 @@ void LatLaneChangeAction::Start(double simTime, double dt)
     else if (target_->type_ == Target::Type::RELATIVE_LANE)
     {
         // Find out target lane relative referred vehicle
-        target_lane_id_ = (static_cast<TargetRelative*>(target_.get()))->object_->pos_.GetLaneId() + target_->value_;
+        target_lane_id_ = (static_cast<TargetRelative*>(target_.get()))->object_->pos_.GetLaneId() +
+                          target_->value_ * (IsAngleForward(object_->pos_.GetHRelative()) ? 1 : -1);
 
         if (target_lane_id_ == 0 || SIGN((static_cast<TargetRelative*>(target_.get()))->object_->pos_.GetLaneId()) != SIGN(target_lane_id_))
         {
@@ -748,7 +749,9 @@ void LatLaneOffsetAction::Start(double simTime, double dt)
 
         // Find out referred object track position
         roadmanager::Position refpos = (static_cast<TargetRelative*>(target_.get()))->object_->pos_;
-        refpos.SetTrackPos(refpos.GetTrackId(), refpos.GetS(), refpos.GetT() + target_->value_);
+        refpos.SetTrackPos(refpos.GetTrackId(),
+                           refpos.GetS(),
+                           refpos.GetT() + target_->value_ * (IsAngleForward(object_->pos_.GetHRelative()) ? 1 : -1));
         refpos.ForceLaneId(lane_id);
 
         // Target lane offset = t value of requested lane + offset relative t value of current lane without offset
