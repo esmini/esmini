@@ -45,6 +45,7 @@ RubberbandManipulator::RubberbandManipulator(unsigned int mode)
     _cameraAngle    = orbitCameraAngle;
     _cameraDistance = orbitCameraDistance;
     _cameraRotation = orbitCameraRotation;
+    _trackNode      = nullptr;
     setMode(mode);
 }
 

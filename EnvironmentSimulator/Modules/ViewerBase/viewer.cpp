@@ -1560,7 +1560,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     osg::setNotifyLevel(osg::NotifySeverity::WARN);
 
     lodScale_          = LOD_SCALE_DEFAULT;
-    currentCarInFocus_ = 0;
+    currentCarInFocus_ = -1;
     keyUp_             = false;
     keyDown_           = false;
     keyLeft_           = false;
@@ -1892,8 +1892,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     terrainManipulator->setWheelZoomFactor(-1 * terrainManipulator->getWheelZoomFactor());  // inverse scroll wheel
 
     rubberbandManipulator_ = new osgGA::RubberbandManipulator(static_cast<unsigned int>(camMode_));
-    SetCameraTrackNode(envTx_);
-    rubberbandManipulator_->calculateCameraDistance();
+    SetCameraTrackNode(envTx_, true);
 
     {
         osg::ref_ptr<osgGA::KeySwitchMatrixManipulator> keyswitchManipulator = new osgGA::KeySwitchMatrixManipulator;
@@ -2443,12 +2442,8 @@ int Viewer::AddEntityModel(EntityModel* model)
     // Focus on first added car
     if (entities_.size() == 1)
     {
-        currentCarInFocus_ = 0;
         (static_cast<osgGA::KeySwitchMatrixManipulator*>(osgViewer_->getCameraManipulator()))->selectMatrixManipulator(0);
-        rubberbandManipulator_->setTrackNode(
-            entities_.back()->txNode_,
-            rubberbandManipulator_->getMode() == osgGA::RubberbandManipulator::CAMERA_MODE::RB_MODE_TOP ? false : true);
-        nodeTrackerManipulator_->setTrackNode(entities_.back()->txNode_);
+        SetVehicleInFocus(0);
     }
 
     return 0;
@@ -3553,9 +3548,9 @@ int Viewer::GetNodeMaskBit(int mask)
     return static_cast<int>(osgViewer_->getCamera()->getCullMask() & static_cast<unsigned int>(mask));
 }
 
-void Viewer::SetCameraTrackNode(osg::ref_ptr<osg::Node> node)
+void Viewer::SetCameraTrackNode(osg::ref_ptr<osg::Node> node, bool calcDistance)
 {
-    rubberbandManipulator_->setTrackNode(node, false);
+    rubberbandManipulator_->setTrackNode(node, calcDistance);
     nodeTrackerManipulator_->setTrackNode(node);
 }
 
@@ -3563,8 +3558,11 @@ void Viewer::SetVehicleInFocus(int idx)
 {
     if (idx >= 0 && idx < static_cast<int>(entities_.size()))
     {
+        // calculate distance only for first vehicle and non top views
+        SetCameraTrackNode(
+            entities_[static_cast<unsigned int>(idx)]->model_,
+            (currentCarInFocus_ == -1 && rubberbandManipulator_->getMode() != osgGA::RubberbandManipulator::CAMERA_MODE::RB_MODE_TOP) ? true : false);
         currentCarInFocus_ = idx;
-        SetCameraTrackNode(entities_[static_cast<unsigned int>(currentCarInFocus_)]->model_);
     }
 }
 

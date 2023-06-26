@@ -665,7 +665,6 @@ int main(int argc, char **argv)
             return 4;
         }
         LOG("%d cars added", static_cast<int>(cars.size()));
-        viewer->SetVehicleInFocus(first_car_in_focus);
 
         __int64 now, lastTimeStamp = 0;
 
