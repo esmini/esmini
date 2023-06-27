@@ -2239,13 +2239,13 @@ EntityModel* Viewer::CreateEntityModel(std::string             modelFilepath,
                              static_cast<float>(carStdDim[2]))));
         }
         geode->setNodeMask(NodeMask::NODE_MASK_ENTITY_MODEL);
-        modeltx->addChild(geode);
-        modeltx->getOrCreateStateSet()->setAttribute(material);
+        geode->getOrCreateStateSet()->setAttribute(material);
 
         // and extract the OSG bounding box
         osg::ComputeBoundsVisitor cbv;
         geode->accept(cbv);
         modelBB = cbv.getBoundingBox();
+        modelgroup = geode;
     }
 
     // Then create a bounding box visual representation
