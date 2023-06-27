@@ -2338,19 +2338,19 @@ int LightStateAction::setVehicleLightType(std::string light_type, Object::Vehicl
     return 0;
 }
 
-void LightStateAction::setVehicleLightMode(std::string mode)
+void LightStateAction::setVehicleLightMode(std::string mode, Object::VehicleLightActionStatus& lightStatus)
 {
     if (mode == "on")
     {
-        mode_ = Object::VehicleLightMode::ON;
+        lightStatus.mode = mode_ = Object::VehicleLightMode::ON;
     }
     else if (mode == "off")
     {
-        mode_ = Object::VehicleLightMode::OFF;
+        lightStatus.mode = mode_ = Object::VehicleLightMode::OFF;
     }
     else if (mode == "flashing")
     {
-        mode_ = Object::VehicleLightMode::FLASHING;
+        lightStatus.mode = mode_ = Object::VehicleLightMode::FLASHING;
     }
 }
 

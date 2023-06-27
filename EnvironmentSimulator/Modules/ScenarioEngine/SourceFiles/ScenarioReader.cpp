@@ -3261,7 +3261,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                         }
                         if (!parameters.ReadAttribute(LightStateActionChild, "mode").empty())
                         {
-                            lightStateAction->setVehicleLightMode(parameters.ReadAttribute(LightStateActionChild, "mode"));
+                            lightStateAction->setVehicleLightMode(parameters.ReadAttribute(LightStateActionChild, "mode"), LightActionStatus);
                         }
                         else
                         {

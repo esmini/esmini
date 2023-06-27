@@ -750,6 +750,13 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState *objectState)
                 Vehicle::Role2String(objectState->state_.info.obj_role).c_str());
             obj_osi_internal.mobj->mutable_vehicle_classification()->set_role(osi3::MovingObject_VehicleClassification::ROLE_UNKNOWN);
         }
+        // if (objectState->state_.info.light_state.type == Object::VehicleLightType::BRAKE_LIGHTS)
+        // {
+        //     if(objectState->state_.info.light_state.mode == Object::VehicleLightMode::OFF)
+        //     {
+        //         obj_osi_internal.mobj->vehicle_classification()->set_brake_light_state(osi3::MovingObject_VehicleClassification_LightState::BRAKE_LIGHT_STATE_OFF)
+        //     }
+        // }
 #endif
     }
     else if (objectState->state_.info.obj_type == static_cast<int>(Object::Type::PEDESTRIAN))

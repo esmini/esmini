@@ -216,6 +216,19 @@ static int copyOverrideActionListfromScenarioEngine(SE_OverrideActionList *list,
     return 0;
 }
 
+static int copyVehicleLightStatesListFromScenarioEngine(SE_VehicleLightStates *states, Object *obj)
+{
+    if (obj == 0)
+    {
+        return -1;
+    }
+
+    states->lightType_             = obj->lightStatesList.lightType_;
+    states->lightState_.lightMode_ = obj->lightStatesList.lightState_.lightMode_;
+
+    return 0;
+}
+
 static int GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_RoadInfo *r_data, int lookAheadMode)
 {
     roadmanager::RoadProbeInfo s_data;
@@ -1442,6 +1455,17 @@ extern "C"
         }
 
         return copyOverrideActionListfromScenarioEngine(list, obj);
+    }
+
+    SE_DLL_API int SE_GetVehicleLightStatus(int object_id, SE_VehicleLightStates *states)
+    {
+        Object *obj = nullptr;
+        if (getObjectById(object_id, obj) == -1)
+        {
+            return -1;
+        }
+
+        return copyVehicleLightStatesListFromScenarioEngine(states, obj);
     }
 
     SE_DLL_API const char *SE_GetObjectTypeName(int object_id)

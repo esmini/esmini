@@ -141,9 +141,11 @@ namespace scenarioengine
 
         enum class VehicleLightMode
         {
-            ON       = 0,
-            OFF      = 1,
-            FLASHING = 2
+            ON           = 0,
+            OFF          = 1,
+            FLASHING     = 2,
+            OTHER        = 3,
+            UNKNOWN_MODE = 4
         };
 
         enum class VehicleLightColor
@@ -163,15 +165,16 @@ namespace scenarioengine
 
         struct VehicleLightActionStatus
         {
-            int    type              = static_cast<int>(LIGHT_TYPE_NONE);  // according to VehicleLightType
-            double luminousIntensity = 0.0;                                // True: override; false: stop overriding
-            double colorRgbRed       = 0.0;                                // Depends on action, see light action
-            double colorRgbGreen     = 0.0;                                // Depends on action, see light action
-            double colorRgbBlue      = 0.0;                                // Depends on action, see light action
-            double colorCmykCyan     = 0.0;                                // Depends on action, see light action
-            double colorCmykMagenta  = 0.0;                                // Depends on action, see light action
-            double colorCmykYellow   = 0.0;                                // Depends on action, see light action
-            double colorCmykKey      = 0.0;                                // Depends on action, see light action
+            int              type              = static_cast<int>(LIGHT_TYPE_NONE);  // according to VehicleLightType
+            VehicleLightMode mode              = VehicleLightMode::UNKNOWN_MODE;
+            double           luminousIntensity = 0.0;  // True: override; false: stop overriding
+            double           colorRgbRed       = 0.0;  // Depends on action, see light action
+            double           colorRgbGreen     = 0.0;  // Depends on action, see light action
+            double           colorRgbBlue      = 0.0;  // Depends on action, see light action
+            double           colorCmykCyan     = 0.0;  // Depends on action, see light action
+            double           colorCmykMagenta  = 0.0;  // Depends on action, see light action
+            double           colorCmykYellow   = 0.0;  // Depends on action, see light action
+            double           colorCmykKey      = 0.0;  // Depends on action, see light action
         };
 
         OverrideActionStatus overrideActionList[OverrideType::OVERRIDE_NR_TYPES];
