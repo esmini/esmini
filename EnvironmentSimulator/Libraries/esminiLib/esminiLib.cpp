@@ -1457,7 +1457,11 @@ extern "C"
         return copyOverrideActionListfromScenarioEngine(list, obj);
     }
 
-    SE_DLL_API int SE_GetVehicleLightStatus(int object_id, SE_VehicleLightStates *states)
+    SE_DLL_API int SE_GetNumberOfVehicleLights(int objectId)
+    {
+    }
+
+    SE_DLL_API int SE_GetVehicleLightStatus(int object_id, int lightIndex, SE_VehicleLightState *lightState)
     {
         Object *obj = nullptr;
         if (getObjectById(object_id, obj) == -1)

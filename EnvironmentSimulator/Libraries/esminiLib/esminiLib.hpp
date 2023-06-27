@@ -176,86 +176,14 @@ typedef struct
     SE_OverrideActionStatusGear     gear;           // Gear status
 } SE_OverrideActionList;
 
-enum class SE_VehicleLightType
-{
-    DAY_TIME_RUNNING_LIGHTS     = 0,
-    LOW_BEAM                    = 1,
-    HIGH_BEAM                   = 2,
-    FOG_LIGHTS                  = 3,
-    FOG_LIGHTS_FRONT            = 4,
-    FOG_LIGHTS_REAR             = 5,
-    BRAKE_LIGHTS                = 6,
-    WARNING_LIGHTS              = 7,
-    INDICATOR_LEFT              = 8,
-    INDICATOR_RIGHT             = 9,
-    REVERSING_LIGHTS            = 10,
-    LICENSE_PLATER_ILLUMINATION = 11,
-    SPECIAL_PURPOSE_LIGHTS      = 12,
-    NONE                        = 13
-};
-
-enum class SE_VehicleLightMode
-{
-    ON       = 0,
-    OFF      = 1,
-    FLASHING = 2
-};
-
-enum class SE_VehicleLightColorType
-{
-    OTHER  = 1,
-    RED    = 2,
-    YELLOW = 3,
-    GREEN  = 4,
-    BLUE   = 5,
-    VIOLET = 6,
-    ORANGE = 7,
-    BROWN  = 8,
-    BLACK  = 9,
-    GREY   = 10,
-    WHITE  = 11
-};
-
 typedef struct
 {
-    double blue  = 0.0;
-    double green = 0.0;
-    double red   = 1.0;
-} SE_VehicleLightColorRgb;
-
-typedef struct
-{
-    double cyan    = 1.0;
-    double key     = 0.0;
-    double magenta = 0.0;
-    double yellow  = 0.0;
-} SE_VehicleLightColorCmyk;
-
-typedef struct
-{
-    SE_VehicleLightColorType colorType_ = SE_VehicleLightColorType::OTHER;
-    SE_VehicleLightColorRgb  colorRgb_;
-    SE_VehicleLightColorCmyk colorCmyk_;
-
-} SE_VehicleLightColor;
-
-typedef struct
-{
-    SE_VehicleLightMode  lightMode_;
-    double               transitionTime_      = 0.0;
-    double               flashingOffDuration_ = 0.5;
-    double               flashingOnDuration_  = 0.5;
-    double               luminousIntensity_   = 0.0;
-    SE_VehicleLightColor color_;
-
+    int    lightType; // according to Entities.hpp::VehicleLightType
+    int    lightMode; // according to Entities.hpp::VehicleLightMode
+    int    colorName; // according to Entities.hpp::VehicleLightColor
+    double intensity;
+    double rgb[3];
 } SE_VehicleLightState;
-
-typedef struct
-{
-    SE_VehicleLightType  lightType_;
-    SE_VehicleLightState lightState_;
-
-} SE_VehicleLightStates;
 
 typedef struct
 {
@@ -1007,12 +935,20 @@ extern "C"
     SE_DLL_API int SE_GetOverrideActionStatus(int objectId, SE_OverrideActionList *list);
 
     /**
-            Get the overrideActionStatus of specified object
+            Get the number of lights for the specified object
             @param objectId Id of the object
-            @param list Pointer/reference to a SE_OverrideActionList struct to be filled in
+            @return Number of lights
+    */
+    SE_DLL_API int SE_GetNumberOfVehicleLights(int objectId);
+
+    /**
+            Get the light state of specified object and light
+            @param objectId Id of the object
+            @param lightIndex Index of the light
+            @param list Pointer/reference to a SE_VehicleLightState struct to be filled in
             @return 0 if successful, -1 if not
     */
-    SE_DLL_API int SE_GetVehicleLightStatus(int objectId, SE_VehicleLightStates *states);
+    SE_DLL_API int SE_GetVehicleLightStatus(int objectId, int lightIndex, SE_VehicleLightState *lightState);
 
     /**
             Get the type name of the specifed vehicle-, pedestrian- or misc object

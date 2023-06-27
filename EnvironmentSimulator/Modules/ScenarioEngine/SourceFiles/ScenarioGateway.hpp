@@ -43,7 +43,7 @@ namespace scenarioengine
         OSCBoundingBox                   boundingbox;
         int                              scaleMode;       // 0=None, 1=BoundingBoxToModel, 2=ModelToBoundingBox (see enum EntityScaleMode)
         int                              visibilityMask;  // bitmask according to Object::Visibility (1 = Graphics, 2 = Traffic, 4 = Sensors)
-        Object::VehicleLightActionStatus light_state[Object::VehicleLightType::LIGHT_TYPE_NONE];
+        Object::VehicleLightActionStatus light_state[Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS];
     };
 
     struct ObjectStateStruct
@@ -119,8 +119,8 @@ namespace scenarioengine
                     double                           rear_axle_z_pos,
                     double                           front_axle_x_pos,
                     double                           front_axle_z_pos,
-                    roadmanager::Position           *pos,
-                    Object::VehicleLightActionStatus light_state[Object::VehicleLightType::LIGHT_TYPE_NONE]);
+                    roadmanager::Position            *pos,
+                    Object::VehicleLightActionStatus *light_state);
         ObjectState(int                              id,
                     std::string                      name,
                     int                              obj_type,
@@ -142,7 +142,7 @@ namespace scenarioengine
                     double                           h,
                     double                           p,
                     double                           r,
-                    Object::VehicleLightActionStatus light_state[Object::VehicleLightType::LIGHT_TYPE_NONE]);
+                    Object::VehicleLightActionStatus *light_state);
         ObjectState(int                              id,
                     std::string                      name,
                     int                              obj_type,
@@ -162,7 +162,7 @@ namespace scenarioengine
                     int                              laneId,
                     double                           laneOffset,
                     double                           s,
-                    Object::VehicleLightActionStatus light_state[Object::VehicleLightType::LIGHT_TYPE_NONE]);
+                    Object::VehicleLightActionStatus *light_state);
         ObjectState(int                              id,
                     std::string                      name,
                     int                              obj_type,
@@ -181,7 +181,7 @@ namespace scenarioengine
                     int                              roadId,
                     double                           lateralOffset,
                     double                           s,
-                    Object::VehicleLightActionStatus light_state[Object::VehicleLightType::LIGHT_TYPE_NONE]);
+                    Object::VehicleLightActionStatus *light_state);
 
         ObjectState(const ObjectState &)            = default;
         ObjectState &operator=(const ObjectState &) = default;
@@ -229,7 +229,7 @@ namespace scenarioengine
                          double                           front_axle_x_pos,
                          double                           front_axle_z_pos,
                          roadmanager::Position           *pos,
-                         Object::VehicleLightActionStatus light_state[Object::VehicleLightType::LIGHT_TYPE_NONE]);
+                         Object::VehicleLightActionStatus *light_state);
 
         int reportObject(int                              id,
                          std::string                      name,
@@ -252,7 +252,7 @@ namespace scenarioengine
                          double                           h,
                          double                           p,
                          double                           r,
-                         Object::VehicleLightActionStatus light_state[]);
+                         Object::VehicleLightActionStatus *light_state);
 
         int reportObject(int                              id,
                          std::string                      name,
@@ -272,7 +272,7 @@ namespace scenarioengine
                          double                           x,
                          double                           y,
                          double                           h,
-                         Object::VehicleLightActionStatus light_state[]);
+                         Object::VehicleLightActionStatus *light_state);
 
         int reportObject(int                              id,
                          std::string                      name,
@@ -293,7 +293,7 @@ namespace scenarioengine
                          int                              laneId,
                          double                           laneOffset,
                          double                           s,
-                         Object::VehicleLightActionStatus light_state[]);
+                         Object::VehicleLightActionStatus *light_state);
 
         int reportObject(int                              id,
                          std::string                      name,
@@ -313,7 +313,7 @@ namespace scenarioengine
                          int                              roadId,
                          double                           lateralOffset,
                          double                           s,
-                         Object::VehicleLightActionStatus light_state[]);
+                         Object::VehicleLightActionStatus *light_state);
 
         int  updateObjectPos(int id, double timestamp, roadmanager::Position *pos);
         int  updateObjectRoadPos(int id, double timestamp, int roadId, double lateralOffset, double s);

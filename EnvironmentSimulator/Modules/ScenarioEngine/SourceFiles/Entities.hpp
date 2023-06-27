@@ -136,13 +136,13 @@ namespace scenarioengine
             REVERSING_LIGHTS            = 10,
             LICENSE_PLATER_ILLUMINATION = 11,
             SPECIAL_PURPOSE_LIGHTS      = 12,
-            LIGHT_TYPE_NONE             = 13
+            NUMBER_OF_VEHICLE_LIGHTS    = 13
         } VehicleLightType;
 
         enum class VehicleLightMode
         {
-            ON           = 0,
-            OFF          = 1,
+            OFF          = 0,
+            ON           = 1,
             FLASHING     = 2,
             OTHER        = 3,
             UNKNOWN_MODE = 4
@@ -150,36 +150,32 @@ namespace scenarioengine
 
         enum class VehicleLightColor
         {
-            OTHER  = 1,
-            RED    = 2,
-            YELLOW = 3,
-            GREEN  = 4,
-            BLUE   = 5,
-            VIOLET = 6,
-            ORANGE = 7,
-            BROWN  = 8,
-            BLACK  = 9,
-            GREY   = 10,
-            WHITE  = 11
+            OTHER  = 0,
+            RED    = 1,
+            YELLOW = 2,
+            GREEN  = 3,
+            BLUE   = 4,
+            VIOLET = 5,
+            ORANGE = 6,
+            BROWN  = 7,
+            BLACK  = 8,
+            GREY   = 9,
+            WHITE  = 10,
+            NUMBER_OF_COLORS = 11
         };
 
         struct VehicleLightActionStatus
         {
-            int              type              = static_cast<int>(LIGHT_TYPE_NONE);  // according to VehicleLightType
-            VehicleLightMode mode              = VehicleLightMode::UNKNOWN_MODE;
-            double           luminousIntensity = 0.0;  // True: override; false: stop overriding
-            double           colorRgbRed       = 0.0;  // Depends on action, see light action
-            double           colorRgbGreen     = 0.0;  // Depends on action, see light action
-            double           colorRgbBlue      = 0.0;  // Depends on action, see light action
-            double           colorCmykCyan     = 0.0;  // Depends on action, see light action
-            double           colorCmykMagenta  = 0.0;  // Depends on action, see light action
-            double           colorCmykYellow   = 0.0;  // Depends on action, see light action
-            double           colorCmykKey      = 0.0;  // Depends on action, see light action
+            int               type              = static_cast<int>(VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS);  // according to VehicleLightType
+            VehicleLightMode  mode              = VehicleLightMode::UNKNOWN_MODE;
+            VehicleLightColor colorName         = VehicleLightColor::OTHER;
+            double            luminousIntensity = 0.0;
+            double            rgb[3]            = {0.0, 0.0, 0.0};  // RGB values
         };
 
         OverrideActionStatus overrideActionList[OverrideType::OVERRIDE_NR_TYPES];
 
-        VehicleLightActionStatus vehicleLightActionStatusList[VehicleLightType::LIGHT_TYPE_NONE];
+        VehicleLightActionStatus vehicleLightActionStatusList[VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS];
 
         Type        type_;
         int         id_;
