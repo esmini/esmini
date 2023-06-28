@@ -86,8 +86,8 @@ namespace scenarioengine
                 // Update Ego state
                 mutex.Lock();
 
-                OSCBoundingBox                   bbox = {0, 0, 0, 0, 0, 0};  // dummy bariable just to feed into the function
-                Object::VehicleLightActionStatus light_type[Object::VehicleLightType::LIGHT_TYPE_NONE];
+                OSCBoundingBox                    bbox = {0, 0, 0, 0, 0, 0};  // dummy bariable just to feed into the function
+                Object::VehicleLightActionStatus *light_type;
 
                 scenarioGateway->reportObject(0,
                                               "Ego",

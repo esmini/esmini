@@ -216,15 +216,18 @@ static int copyOverrideActionListfromScenarioEngine(SE_OverrideActionList *list,
     return 0;
 }
 
-static int copyVehicleLightStatesListFromScenarioEngine(SE_VehicleLightStates *states, Object *obj)
+static int copyVehicleLightStatesListFromScenarioEngine(SE_VehicleLightState *states, Object *obj, int lightIndex)
 {
     if (obj == 0)
     {
         return -1;
     }
 
-    states->lightType_             = obj->lightStatesList.lightType_;
-    states->lightState_.lightMode_ = obj->lightStatesList.lightState_.lightMode_;
+    states->colorName = obj->vehicleLightActionStatusList[lightIndex].colorName;
+    states->intensity = obj->vehicleLightActionStatusList[lightIndex].luminousIntensity;
+    states->lightMode = obj->vehicleLightActionStatusList[lightIndex].mode;
+    states->lightType = obj->vehicleLightActionStatusList[lightIndex].type;
+    states->rgb       = obj->vehicleLightActionStatusList[lightIndex].rgb;
 
     return 0;
 }
@@ -1142,6 +1145,7 @@ extern "C"
                                                       0.0,
                                                       0.0,
                                                       0.0,
+                                                      0.0,
                                                       0.0) == 0)
             {
                 return object_id;
@@ -1246,7 +1250,8 @@ extern "C"
                                               obj->rear_axle_.positionZ,
                                               obj->pos_.GetTrackId(),
                                               t,
-                                              obj->pos_.GetS());
+                                              obj->pos_.GetS(),
+                                              obj->vehicleLightActionStatusList);
 
         return 0;
     }
@@ -1278,7 +1283,8 @@ extern "C"
                                               obj->pos_.GetTrackId(),
                                               obj->pos_.GetLaneId(),
                                               laneOffset,
-                                              obj->pos_.GetS());
+                                              obj->pos_.GetS(),
+                                              obj->vehicleLightActionStatusList);
 
         return 0;
     }
@@ -1459,6 +1465,12 @@ extern "C"
 
     SE_DLL_API int SE_GetNumberOfVehicleLights(int objectId)
     {
+        Object *obj = nullptr;
+        if (getObjectById(objectId, obj) == -1)
+        {
+            return -1;
+        }
+        return player->scenarioEngine->entities_.GetNumOfVehicleLight(objectId);
     }
 
     SE_DLL_API int SE_GetVehicleLightStatus(int object_id, int lightIndex, SE_VehicleLightState *lightState)
@@ -1469,7 +1481,7 @@ extern "C"
             return -1;
         }
 
-        return copyVehicleLightStatesListFromScenarioEngine(states, obj);
+        return copyVehicleLightStatesListFromScenarioEngine(lightState, obj, lightIndex);
     }
 
     SE_DLL_API const char *SE_GetObjectTypeName(int object_id)

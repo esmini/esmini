@@ -3225,8 +3225,6 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                 {
                     if (LightStateActionChild.name() == std::string("LightType"))
                     {
-                        std::printf("inside light type");
-
                         for (pugi::xml_node lightTypeChild = LightStateActionChild.first_child(); lightTypeChild;
                              lightTypeChild                = lightTypeChild.next_sibling())
                         {
@@ -3275,10 +3273,6 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                                 {
                                     lightStateAction->setVehicleLightColor(parameters.ReadAttribute(colourChild, "colorType"));
                                 }
-                                else
-                                {
-                                    LOG("colorType in LightState is mandatory Color field, setting to default (other)");
-                                }
                                 for (pugi::xml_node colourDesChild = colourChild.first_child(); colourDesChild;
                                      colourDesChild                = colourDesChild.next_sibling())
                                 {
@@ -3286,36 +3280,37 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                                     {
                                         if (!parameters.ReadAttribute(colourDesChild, "red").empty())
                                         {
-                                            LightActionStatus.colorRgbRed = strtod(parameters.ReadAttribute(colourDesChild, "red"));
+                                            LightActionStatus.rgb[0] = strtod(parameters.ReadAttribute(colourDesChild, "red"));
                                         }
                                         if (!parameters.ReadAttribute(colourDesChild, "blue").empty())
                                         {
-                                            LightActionStatus.colorRgbBlue = strtod(parameters.ReadAttribute(colourDesChild, "blue"));
+                                            LightActionStatus.rgb[1] = strtod(parameters.ReadAttribute(colourDesChild, "blue"));
                                         }
                                         if (!parameters.ReadAttribute(colourDesChild, "green").empty())
                                         {
-                                            LightActionStatus.colorRgbGreen = strtod(parameters.ReadAttribute(colourDesChild, "green"));
+                                            LightActionStatus.rgb[2] = strtod(parameters.ReadAttribute(colourDesChild, "green"));
                                         }
                                     }
                                     else if (colourDesChild.name() == std::string("ColorCmyk"))
                                     {
                                         if (!parameters.ReadAttribute(colourDesChild, "cyan").empty())
                                         {
-                                            LightActionStatus.colorCmykCyan = strtod(parameters.ReadAttribute(colourDesChild, "cyan"));
+                                            lightStateAction->cmyk_[0] = strtod(parameters.ReadAttribute(colourDesChild, "cyan"));
                                         }
                                         if (!parameters.ReadAttribute(colourDesChild, "magenta").empty())
                                         {
-                                            LightActionStatus.colorCmykMagenta = strtod(parameters.ReadAttribute(colourDesChild, "magenta"));
+                                            lightStateAction->cmyk_[1] = strtod(parameters.ReadAttribute(colourDesChild, "magenta"));
                                         }
                                         if (!parameters.ReadAttribute(colourDesChild, "yellow").empty())
                                         {
-                                            LightActionStatus.colorCmykYellow = strtod(parameters.ReadAttribute(colourDesChild, "yellow"));
+                                            lightStateAction->cmyk_[2] = strtod(parameters.ReadAttribute(colourDesChild, "yellow"));
                                         }
                                         if (!parameters.ReadAttribute(colourDesChild, "key").empty())
                                         {
-                                            LightActionStatus.colorCmykKey = strtod(parameters.ReadAttribute(colourDesChild, "key"));
+                                            lightStateAction->cmyk_[3] = strtod(parameters.ReadAttribute(colourDesChild, "key"));
                                         }
                                     }
+                                    lightStateAction->convertCmykToRbgAndCheckError(LightActionStatus);
                                 }
                             }
                         }

@@ -178,9 +178,9 @@ typedef struct
 
 typedef struct
 {
-    int    lightType; // according to Entities.hpp::VehicleLightType
-    int    lightMode; // according to Entities.hpp::VehicleLightMode
-    int    colorName; // according to Entities.hpp::VehicleLightColor
+    int    lightType;  // according to Entities.hpp::VehicleLightType
+    int    lightMode;  // according to Entities.hpp::VehicleLightMode
+    int    colorName;  // according to Entities.hpp::VehicleLightColor
     double intensity;
     double rgb[3];
 } SE_VehicleLightState;

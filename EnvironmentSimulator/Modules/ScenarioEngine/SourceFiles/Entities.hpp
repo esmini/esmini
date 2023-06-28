@@ -150,17 +150,17 @@ namespace scenarioengine
 
         enum class VehicleLightColor
         {
-            OTHER  = 0,
-            RED    = 1,
-            YELLOW = 2,
-            GREEN  = 3,
-            BLUE   = 4,
-            VIOLET = 5,
-            ORANGE = 6,
-            BROWN  = 7,
-            BLACK  = 8,
-            GREY   = 9,
-            WHITE  = 10,
+            OTHER            = 0,
+            RED              = 1,
+            YELLOW           = 2,
+            GREEN            = 3,
+            BLUE             = 4,
+            VIOLET           = 5,
+            ORANGE           = 6,
+            BROWN            = 7,
+            BLACK            = 8,
+            GREY             = 9,
+            WHITE            = 10,
             NUMBER_OF_COLORS = 11
         };
 
@@ -928,6 +928,7 @@ namespace scenarioengine
         Object* GetObjectByName(std::string name);
         Object* GetObjectById(int id);
         int     GetObjectIdxById(int id);
+        int     GetNumOfVehicleLight(int id);
 
     private:
         int nextId_;  // Is incremented for each new object created

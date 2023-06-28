@@ -1589,6 +1589,19 @@ int Entities::GetObjectIdxById(int id)
     return -1;
 }
 
+int Entities::GetNumOfVehicleLight(int id)
+{
+    for (size_t i = 0; i < object_.size(); i++)
+    {
+        if (object_[i]->GetId() == id)
+        {
+            return sizeof(object_[i]->vehicleLightActionStatusList);
+        }
+    }
+
+    return -1;
+}
+
 void Object::removeEvent(Event* event)
 {
     auto it = std::find(objectEvents_.begin(), objectEvents_.end(), event);
