@@ -2244,7 +2244,7 @@ EntityModel* Viewer::CreateEntityModel(std::string             modelFilepath,
         // and extract the OSG bounding box
         osg::ComputeBoundsVisitor cbv;
         geode->accept(cbv);
-        modelBB = cbv.getBoundingBox();
+        modelBB    = cbv.getBoundingBox();
         modelgroup = geode;
     }
 
