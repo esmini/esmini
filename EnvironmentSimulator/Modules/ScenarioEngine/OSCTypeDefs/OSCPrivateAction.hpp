@@ -1164,10 +1164,12 @@ namespace scenarioengine
         double                    transitionTime_;
         double                    flashingOffDuration_;
         double                    flashingOnDuration_;
+        double                    luminousIntensity_;
         Object::VehicleLightMode  mode_;
         Object::VehicleLightColor color_;
         Object::VehicleLightType  lightType_;
         double                    cmyk_[4];
+        double                    rgb_[3];
 
         LightStateAction()
             : OSCPrivateAction(OSCPrivateAction::ActionType::LIGHT_STATE_Action, ControlDomains::DOMAIN_NONE),
@@ -1176,21 +1178,25 @@ namespace scenarioengine
               flashingOnDuration_(0.5),
               mode_(Object::VehicleLightMode::OFF),
               color_(Object::VehicleLightColor::OTHER),
-              cmyk_{0.0, 0.0, 0.0, 0.0}
+              cmyk_{0.0, 0.0, 0.0, 0.0},
+              rgb_{0.0, 0.0, 0.0}
         {
         }
 
         double transitionTimer_ = SMALL_NUMBER;
         double flashingTimer_   = SMALL_NUMBER;
-        int    setVehicleLightType(std::string type, Object::VehicleLightActionStatus& lightStatus);
-        void   setVehicleLightMode(std::string mode, Object::VehicleLightActionStatus& lightStatus);
+        double initailValueLum_;
+        double initialValueRbg_[3];
+
+        int    setVehicleLightType(std::string typeObject, Object::VehicleLightActionStatus& lightStatus);
+        void   setVehicleLightMode(std::string mode);
         void   setVehicleLightColor(std::string colorType);
 
         void Step(double simTime, double dt);
         void Start(double simTime, double dt);
         void AddVehicleLightActionStatus(Object::VehicleLightActionStatus lightStatus);
         int  setLightTransistionValues(double value);
-        int  convertCmykToRbgAndCheckError(Object::VehicleLightActionStatus& lightStatus);
+        int  convertCmykToRbgAndCheckError();
 
     private:
         Object::VehicleLightActionStatus vehicleLightActionStatusList;

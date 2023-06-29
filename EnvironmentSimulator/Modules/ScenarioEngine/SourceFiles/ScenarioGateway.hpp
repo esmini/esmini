@@ -41,7 +41,7 @@ namespace scenarioengine
         double                           front_axle_x_pos;  // x coordinate of the middle of front axle under neutral load conditions
         double                           front_axle_z_pos;  // z coordinate of the middle of front axle under neutral load conditions
         OSCBoundingBox                   boundingbox;
-        int                              scaleMode;       // 0=None, 1=BoundingBoxToModel, 2=ModelToBoundingBox (see enum EntityScaleMode)
+        int                              scaleMode;       // 0=None, 1=BoundingBoxToModel, 2=ModelToBoundingrgb[2]Box (see enum EntityScaleMode)
         int                              visibilityMask;  // bitmask according to Object::Visibility (1 = Graphics, 2 = Traffic, 4 = Sensors)
         Object::VehicleLightActionStatus light_state[Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS];
     };

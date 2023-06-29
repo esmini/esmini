@@ -2652,6 +2652,57 @@ TEST(TestGetAndSet, OverrideActionTest)
     SE_Close();
 }
 
+TEST(TestGetAndSet, lightActionTest)
+{
+    std::string scenario_file = "../../../resources/xosc/light_test.xosc";
+    const char* Scenario_file = scenario_file.c_str();
+    float       dt            = 0.1f;
+    float       t             = 0.0f;
+
+    SE_VehicleLightState lightList;
+
+
+    ASSERT_EQ(SE_Init(Scenario_file, 0, 0, 0, 0), 0);
+
+    EXPECT_EQ(SE_GetVehicleLightStatus(0, 2, &lightList), 0);
+    EXPECT_EQ(lightList.lightType, 13);
+    EXPECT_EQ(lightList.colorName, 11);
+    EXPECT_DOUBLE_EQ(lightList.intensity , 0.0);
+    EXPECT_EQ(lightList.lightMode, 4);
+    EXPECT_DOUBLE_EQ(lightList.rgb[0] , 0.0);
+    EXPECT_DOUBLE_EQ(lightList.rgb[1] , 0.0);
+    EXPECT_DOUBLE_EQ(lightList.rgb[2] , 0.0);
+
+    for (; t < 3.5f; t += dt)
+    {
+        SE_StepDT(dt);
+    }
+
+    EXPECT_EQ(SE_GetOverrideActionStatus(0, 2, &lightList), 0);
+    EXPECT_EQ(lightList.lightType, 2);
+    EXPECT_EQ(lightList.colorName, 1);
+    EXPECT_DOUBLE_EQ(lightList.intensity , 0.0);
+    EXPECT_EQ(lightList.lightMode, 1);
+    EXPECT_DOUBLE_EQ(lightList.rgb[0] , 0.0);
+    EXPECT_DOUBLE_EQ(lightList.rgb[1] , 0.0);
+    EXPECT_DOUBLE_EQ(lightList.rgb[2] , 0.0);
+
+    for (; t < 8.0f; t += dt)
+    {
+        SE_StepDT(dt);
+    }
+    EXPECT_EQ(SE_GetOverrideActionStatus(0, 2, &lightList), 0);
+    EXPECT_EQ(lightList.lightType, 2);
+    EXPECT_EQ(lightList.colorName, 1);
+    EXPECT_DOUBLE_EQ(lightList.intensity , 0.0);
+    EXPECT_EQ(lightList.lightMode, 0);
+    EXPECT_DOUBLE_EQ(lightList.rgb[0] , 0.0);
+    EXPECT_DOUBLE_EQ(lightList.rgb[1] , 0.0);
+    EXPECT_DOUBLE_EQ(lightList.rgb[2] , 0.0);
+
+    SE_Close();
+}
+
 TEST(TestGetAndSet, PropertyTest)
 {
     std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/VehiclePropertyTest.xosc";

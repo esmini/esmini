@@ -50,7 +50,7 @@ ObjectState::ObjectState(int                               id,
                          double                            front_axle_x_pos,
                          double                            front_axle_z_pos,
                          roadmanager::Position*            pos,
-                         Object::VehicleLightActionStatus* light_state)
+                         Object::VehicleLightActionStatus *light_state)
     : dirty_(0)
 {
     state_.info.id           = id;
@@ -103,7 +103,7 @@ ObjectState::ObjectState(int                               id,
                          double                            h,
                          double                            p,
                          double                            r,
-                         Object::VehicleLightActionStatus* light_state)
+                         Object::VehicleLightActionStatus *light_state)
     : dirty_(0)
 {
     state_.info.id           = id;
@@ -153,7 +153,7 @@ ObjectState::ObjectState(int                               id,
                          int                               laneId,
                          double                            laneOffset,
                          double                            s,
-                         Object::VehicleLightActionStatus* light_state)
+                         Object::VehicleLightActionStatus *light_state)
     : dirty_(0)
 {
     state_.info.id           = id;
@@ -200,7 +200,7 @@ ObjectState::ObjectState(int                               id,
                          int                               roadId,
                          double                            lateralOffset,
                          double                            s,
-                         Object::VehicleLightActionStatus* light_state)
+                         Object::VehicleLightActionStatus *light_state)
 {
     state_.info.id           = id;
     state_.info.obj_type     = obj_type;
@@ -339,7 +339,7 @@ int ScenarioGateway::reportObject(int                               id,
                                   double                            front_axle_x_pos,
                                   double                            front_axle_z_pos,
                                   roadmanager::Position*            pos,
-                                  Object::VehicleLightActionStatus* light_state)
+                                  Object::VehicleLightActionStatus *light_state)
 {
     ObjectState* obj_state = getObjectStatePtrById(id);
 
@@ -415,7 +415,7 @@ int ScenarioGateway::reportObject(int                               id,
                                   double                            h,
                                   double                            p,
                                   double                            r,
-                                  Object::VehicleLightActionStatus* light_state)
+                                  Object::VehicleLightActionStatus *light_state)
 {
     ObjectState* obj_state = getObjectStatePtrById(id);
 
@@ -479,7 +479,7 @@ int ScenarioGateway::reportObject(int                               id,
                                   double                            x,
                                   double                            y,
                                   double                            h,
-                                  Object::VehicleLightActionStatus* light_state)
+                                  Object::VehicleLightActionStatus *light_state)
 {
     ObjectState* obj_state = getObjectStatePtrById(id);
 
@@ -544,7 +544,7 @@ int ScenarioGateway::reportObject(int                               id,
                                   int                               laneId,
                                   double                            laneOffset,
                                   double                            s,
-                                  Object::VehicleLightActionStatus* light_state)
+                                  Object::VehicleLightActionStatus *light_state)
 {
     ObjectState* obj_state = getObjectStatePtrById(id);
 
@@ -606,7 +606,7 @@ int ScenarioGateway::reportObject(int                               id,
                                   int                               roadId,
                                   double                            lateralOffset,
                                   double                            s,
-                                  Object::VehicleLightActionStatus* light_state)
+                                  Object::VehicleLightActionStatus *light_state)
 {
     ObjectState* obj_state = getObjectStatePtrById(id);
 

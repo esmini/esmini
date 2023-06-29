@@ -3230,8 +3230,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                         {
                             if (lightTypeChild.name() == std::string("VehicleLight"))
                             {
-                                lightStateAction->setVehicleLightType(parameters.ReadAttribute(lightTypeChild, "vehicleLightType"),
-                                                                      LightActionStatus);
+                                lightStateAction->setVehicleLightType(parameters.ReadAttribute(lightTypeChild, "vehicleLightType"), LightActionStatus);
                             }
                             else if (lightTypeChild.name() == std::string("UserDefinedLight"))
                             {
@@ -3255,15 +3254,20 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                         }
                         if (!parameters.ReadAttribute(LightStateActionChild, "luminousIntensity").empty())
                         {
-                            LightActionStatus.luminousIntensity = strtod(parameters.ReadAttribute(LightStateActionChild, "luminousIntensity"));
+                            lightStateAction->luminousIntensity_ = strtod(parameters.ReadAttribute(LightStateActionChild, "luminousIntensity"));
                         }
                         if (!parameters.ReadAttribute(LightStateActionChild, "mode").empty())
                         {
-                            lightStateAction->setVehicleLightMode(parameters.ReadAttribute(LightStateActionChild, "mode"), LightActionStatus);
+                            lightStateAction->setVehicleLightMode(parameters.ReadAttribute(LightStateActionChild, "mode"));
                         }
                         else
                         {
-                            LOG("mode in LightState is mandatory field, Anyway setting it to ON");
+                            LOG("mode in LightState is mandatory field, Anyway setting it to Off");
+                        }
+                        if (lightStateAction->mode_ == Object::VehicleLightMode::OFF && lightStateAction->luminousIntensity_ > 0.0)
+                        { //In case light mode is off, setting overwriting luminous intensity to 0.
+                            LOG("Light mode is in Off state, Making luminousIntensity to 0 from %.1f.",  lightStateAction->luminousIntensity_);
+                            lightStateAction->luminousIntensity_ = 0.0;
                         }
                         for (pugi::xml_node colourChild = LightStateActionChild.first_child(); colourChild; colourChild = colourChild.next_sibling())
                         {
@@ -3280,15 +3284,15 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                                     {
                                         if (!parameters.ReadAttribute(colourDesChild, "red").empty())
                                         {
-                                            LightActionStatus.rgb[0] = strtod(parameters.ReadAttribute(colourDesChild, "red"));
+                                            lightStateAction->rgb_[0] = strtod(parameters.ReadAttribute(colourDesChild, "red"));
                                         }
                                         if (!parameters.ReadAttribute(colourDesChild, "blue").empty())
                                         {
-                                            LightActionStatus.rgb[1] = strtod(parameters.ReadAttribute(colourDesChild, "blue"));
+                                            lightStateAction->rgb_[1] = strtod(parameters.ReadAttribute(colourDesChild, "blue"));
                                         }
                                         if (!parameters.ReadAttribute(colourDesChild, "green").empty())
                                         {
-                                            LightActionStatus.rgb[2] = strtod(parameters.ReadAttribute(colourDesChild, "green"));
+                                            lightStateAction->rgb_[2] = strtod(parameters.ReadAttribute(colourDesChild, "green"));
                                         }
                                     }
                                     else if (colourDesChild.name() == std::string("ColorCmyk"))
@@ -3310,7 +3314,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                                             lightStateAction->cmyk_[3] = strtod(parameters.ReadAttribute(colourDesChild, "key"));
                                         }
                                     }
-                                    lightStateAction->convertCmykToRbgAndCheckError(LightActionStatus);
+                                    lightStateAction->convertCmykToRbgAndCheckError();
                                 }
                             }
                         }

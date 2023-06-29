@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Another cut-in variant on a simple straight road. In this -->
+<!-- case specifying rate of the lane change lateral movement  -->
+<OpenSCENARIO>
+   <FileHeader revMajor="1"
+               revMinor="2"
+               date="2017-06-09T10:00:00"
+               description="Another variant of cut-in"
+               author="SimS"/>
+   <ParameterDeclarations>
+      <ParameterDeclaration name="HeadwayTime_LaneChange" parameterType="double" value="0.4"/>
+      <ParameterDeclaration name="HeadwayTime_Brake" parameterType="double" value="1.0"/>
+   </ParameterDeclarations>
+   <CatalogLocations>
+      <VehicleCatalog>
+         <Directory path="../xosc/Catalogs/Vehicles"/>
+      </VehicleCatalog>
+   </CatalogLocations>
+   <RoadNetwork>
+      <!-- <LogicFile filepath="../../../esmini/EnvironmentSimulator/Unittest/xodr/straight_road.xodr"/> -->
+      <LogicFile filepath="../xodr/straight_500m.xodr"/>
+      <!-- <SceneGraphFile filepath="../models/straight_500m.osgb"/> -->
+   </RoadNetwork>
+   <Entities>
+        <ScenarioObject name="Ego">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="Dummy0">
+            <CatalogReference catalogName="VehicleCatalog" entryName="van_red"/>
+        </ScenarioObject>
+   </Entities>
+   <Storyboard>
+      <Init>
+         <Actions>
+            <Private entityRef="Ego">
+               <PrivateAction>
+                  <LongitudinalAction>
+                        <SpeedAction>
+                           <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                           <SpeedActionTarget>
+                              <AbsoluteTargetSpeed value="20.0"/>
+                           </SpeedActionTarget>
+                        </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <TeleportAction>
+                        <Position>
+                           <LanePosition roadId="1" laneId="-2" s="5.0" offset="0.0"/>
+                        </Position>
+                  </TeleportAction>
+               </PrivateAction>
+            </Private>
+            <Private entityRef="Dummy0">
+               <PrivateAction>
+                  <LongitudinalAction>
+                        <SpeedAction>
+                           <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                           <SpeedActionTarget>
+                              <AbsoluteTargetSpeed value="10.0"/>
+                           </SpeedActionTarget>
+                        </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <TeleportAction>
+                        <Position>
+                           <LanePosition roadId="1" laneId="-2" s="76.0" offset="0.0"/>
+                        </Position>
+                  </TeleportAction>
+               </PrivateAction>
+            </Private>
+         </Actions>
+      </Init>
+      <Story name="LightStateAction Story">
+         <ParameterDeclarations>
+            <ParameterDeclaration parameterType="string" name="owner" value="Ego"/>
+         </ParameterDeclarations>
+         <Act name="LightStateAction Act">
+            <ManeuverGroup maximumExecutionCount="1" name="LightStateAction Sequence">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="Ego"/>
+               </Actors>
+               <Maneuver name="LightStateAction Maneuver">
+                  <Event name="LightStateAction Event" priority="overwrite" maximumExecutionCount="10000" >
+                    <Action name="LightStateAction Action">
+                        <PrivateAction>
+                           <AppearanceAction>
+                                <LightStateAction transitionTime="1">
+                                    <LightType>
+                                        <VehicleLight vehicleLightType= "highBeam"/>
+                                        <UserDefinedLight userDefinedLightType= "none"/>
+                                    </LightType>
+                                    <LightState mode= "on", luminousIntensity="10", flashingOffDuration="2", flashingOnDuration="4">
+                                       <Color ColorType="red"/>
+                                    </LightState>
+                                </LightStateAction>
+                           </AppearanceAction>
+                        </PrivateAction>
+                    </Action>
+                    <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="LightStateAction Condition" delay="0" conditionEdge="rising">
+                              <ByValueCondition>
+                                 <SimulationTimeCondition value="15" rule="greaterThan"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                    </StartTrigger>
+                  </Event>
+               </Maneuver>
+            </ManeuverGroup>
+            <StartTrigger>
+               <ConditionGroup>
+                  <Condition name="EgoSpeedChangeActStart" delay="0" conditionEdge="rising">
+                     <ByValueCondition>
+                        <SimulationTimeCondition value="0" rule="greaterThan"/>
+                     </ByValueCondition>
+                  </Condition>
+               </ConditionGroup>
+            </StartTrigger>
+         </Act>
+      </Story>
+      <StopTrigger>
+          <ConditionGroup>
+              <Condition conditionEdge="none" delay="0" name="simulationEndEventDone">
+                  <ByValueCondition>
+                      <SimulationTimeCondition rule="greaterThan" value="40"/>
+                  </ByValueCondition>
+              </Condition>
+          </ConditionGroup>
+      </StopTrigger>
+   </Storyboard>
+</OpenSCENARIO>

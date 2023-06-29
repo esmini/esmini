@@ -87,8 +87,8 @@ namespace scenarioengine
                 mutex.Lock();
 
                 OSCBoundingBox                    bbox = {0, 0, 0, 0, 0, 0};  // dummy bariable just to feed into the function
-                Object::VehicleLightActionStatus *light_type;
-
+                Vehicle *vehicle = nullptr;
+                vehicle             = new Vehicle();
                 scenarioGateway->reportObject(0,
                                               "Ego",
                                               static_cast<int>(Object::Type::VEHICLE),
@@ -110,7 +110,7 @@ namespace scenarioengine
                                               buf.h,
                                               buf.p,
                                               buf.r,
-                                              light_type);
+                                              vehicle->vehicleLightActionStatusList);
 
                 mutex.Unlock();
             }
