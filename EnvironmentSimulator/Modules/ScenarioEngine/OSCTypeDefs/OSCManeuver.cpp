@@ -65,6 +65,14 @@ void Event::Start(double simTime, double dt)
                                         ControlDomain2Str(pa2->GetDomain()).c_str());
                                     pa2->End(simTime);
                                 }
+                                if (static_cast<int>(pa2->GetLightDomain()) & static_cast<int>(pa->GetLightDomain()))
+                                {
+                                    // light Domains overlap, at least one domain in common. Terminate old action.
+                                    LOG("Stopping object %s %s on conflicting light domain(s)",
+                                        obj->name_.c_str(),
+                                        pa2->name_.c_str());
+                                    pa2->End(simTime);
+                                }
                             }
                         }
                     }

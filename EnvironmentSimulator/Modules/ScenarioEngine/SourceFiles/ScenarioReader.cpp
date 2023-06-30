@@ -3230,7 +3230,8 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                         {
                             if (lightTypeChild.name() == std::string("VehicleLight"))
                             {
-                                lightStateAction->setVehicleLightType(parameters.ReadAttribute(lightTypeChild, "vehicleLightType"), LightActionStatus);
+                                lightStateAction->setVehicleLightType(parameters.ReadAttribute(lightTypeChild, "vehicleLightType"),
+                                                                      LightActionStatus);
                             }
                             else if (lightTypeChild.name() == std::string("UserDefinedLight"))
                             {
@@ -3265,8 +3266,8 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                             LOG("mode in LightState is mandatory field, Anyway setting it to Off");
                         }
                         if (lightStateAction->mode_ == Object::VehicleLightMode::OFF && lightStateAction->luminousIntensity_ > 0.0)
-                        { //In case light mode is off, setting overwriting luminous intensity to 0.
-                            LOG("Light mode is in Off state, Making luminousIntensity to 0 from %.1f.",  lightStateAction->luminousIntensity_);
+                        {  // In case light mode is off, setting overwriting luminous intensity to 0.
+                            LOG("Ligth type %d is in Off state, Making luminousIntensity to 0 from %.1f.", lightStateAction->lightType_, lightStateAction->luminousIntensity_);
                             lightStateAction->luminousIntensity_ = 0.0;
                         }
                         for (pugi::xml_node colourChild = LightStateActionChild.first_child(); colourChild; colourChild = colourChild.next_sibling())
@@ -3314,10 +3315,10 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                                             lightStateAction->cmyk_[3] = strtod(parameters.ReadAttribute(colourDesChild, "key"));
                                         }
                                     }
-                                    lightStateAction->convertCmykToRbgAndCheckError();
                                 }
                             }
                         }
+                        lightStateAction->convertCmykToRbgAndCheckError();
                     }
                     else
                     {

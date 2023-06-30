@@ -50,7 +50,7 @@ ObjectState::ObjectState(int                               id,
                          double                            front_axle_x_pos,
                          double                            front_axle_z_pos,
                          roadmanager::Position*            pos,
-                         Object::VehicleLightActionStatus *light_state)
+                         Object::VehicleLightActionStatus* light_state)
     : dirty_(0)
 {
     state_.info.id           = id;
@@ -72,11 +72,10 @@ ObjectState::ObjectState(int                               id,
     state_.info.boundingbox      = boundingbox;
     state_.info.scaleMode        = scaleMode;
     state_.info.visibilityMask   = visibilityMask;
-    // for (int i = 0; i < Object::VehicleLightType::LIGHT_TYPE_NONE; i++)
-    // {
-    //     state_.info.light_state[state_.info.light_state[i].type] = light_state;
-    // }
-    // state_.info.light_state = light_state;
+    for (int i = 0; i < Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS; i++)
+    {
+        state_.info.light_state[state_.info.light_state[i].type] = light_state[i];
+    }
 
     dirty_ = Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::LATERAL | Object::DirtyBit::SPEED | Object::DirtyBit::WHEEL_ANGLE |
              Object::DirtyBit::WHEEL_ROTATION;
@@ -103,7 +102,7 @@ ObjectState::ObjectState(int                               id,
                          double                            h,
                          double                            p,
                          double                            r,
-                         Object::VehicleLightActionStatus *light_state)
+                         Object::VehicleLightActionStatus* light_state)
     : dirty_(0)
 {
     state_.info.id           = id;
@@ -124,11 +123,10 @@ ObjectState::ObjectState(int                               id,
     state_.info.boundingbox     = boundingbox;
     state_.info.scaleMode       = scaleMode;
     state_.info.visibilityMask  = visibilityMask;
-    // for (int i = 0; i < Object::VehicleLightType::LIGHT_TYPE_NONE; i++)
-    // {
-    //     state_.info.light_state[state_.info.light_state[i].type] = light_state;
-    // }
-    // state_.info.light_state = light_state;
+    for (int i = 0; i < Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS; i++)
+    {
+        state_.info.light_state[state_.info.light_state[i].type] = light_state[i];
+    }
 
     dirty_ = Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::LATERAL | Object::DirtyBit::SPEED | Object::DirtyBit::WHEEL_ANGLE |
              Object::DirtyBit::WHEEL_ROTATION;
@@ -153,7 +151,7 @@ ObjectState::ObjectState(int                               id,
                          int                               laneId,
                          double                            laneOffset,
                          double                            s,
-                         Object::VehicleLightActionStatus *light_state)
+                         Object::VehicleLightActionStatus* light_state)
     : dirty_(0)
 {
     state_.info.id           = id;
@@ -172,11 +170,11 @@ ObjectState::ObjectState(int                               id,
     state_.info.boundingbox     = boundingbox;
     state_.info.scaleMode       = scaleMode;
     state_.info.visibilityMask  = visibilityMask;
-    // for (int i = 0; i < Object::VehicleLightType::LIGHT_TYPE_NONE; i++)
+    // for (int i = 0; i < Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS; i++)
     // {
-    //     state_.info.light_state[state_.info.light_state[i].type] = light_state;
+    //     state_.info.light_state[state_.info.light_state[i].type] = light_state[i];
     // }
-    // state_.info.light_state = light_state;
+
 
     dirty_ = Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::LATERAL | Object::DirtyBit::SPEED | Object::DirtyBit::WHEEL_ANGLE |
              Object::DirtyBit::WHEEL_ROTATION;
@@ -200,7 +198,7 @@ ObjectState::ObjectState(int                               id,
                          int                               roadId,
                          double                            lateralOffset,
                          double                            s,
-                         Object::VehicleLightActionStatus *light_state)
+                         Object::VehicleLightActionStatus* light_state)
 {
     state_.info.id           = id;
     state_.info.obj_type     = obj_type;
@@ -218,12 +216,10 @@ ObjectState::ObjectState(int                               id,
     state_.info.boundingbox     = boundingbox;
     state_.info.scaleMode       = scaleMode;
     state_.info.visibilityMask  = visibilityMask;
-    // for (int i = 0; i < Object::VehicleLightType::LIGHT_TYPE_NONE; i++)
+    // for (int i = 0; i < Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS; i++)
     // {
-    //     state_.info.light_state[state_.info.light_state[i].type] = light_state;
+    //     state_.info.light_state[state_.info.light_state[i].type] = light_state[i];
     // }
-    // state_.info.light_state = light_state;
-    //  state_.info.light_state[] = light_state;
     dirty_ = Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::LATERAL | Object::DirtyBit::SPEED | Object::DirtyBit::WHEEL_ANGLE |
              Object::DirtyBit::WHEEL_ROTATION;
 }
@@ -339,7 +335,7 @@ int ScenarioGateway::reportObject(int                               id,
                                   double                            front_axle_x_pos,
                                   double                            front_axle_z_pos,
                                   roadmanager::Position*            pos,
-                                  Object::VehicleLightActionStatus *light_state)
+                                  Object::VehicleLightActionStatus* light_state)
 {
     ObjectState* obj_state = getObjectStatePtrById(id);
 
@@ -415,7 +411,7 @@ int ScenarioGateway::reportObject(int                               id,
                                   double                            h,
                                   double                            p,
                                   double                            r,
-                                  Object::VehicleLightActionStatus *light_state)
+                                  Object::VehicleLightActionStatus* light_state)
 {
     ObjectState* obj_state = getObjectStatePtrById(id);
 
@@ -479,7 +475,7 @@ int ScenarioGateway::reportObject(int                               id,
                                   double                            x,
                                   double                            y,
                                   double                            h,
-                                  Object::VehicleLightActionStatus *light_state)
+                                  Object::VehicleLightActionStatus* light_state)
 {
     ObjectState* obj_state = getObjectStatePtrById(id);
 
@@ -544,7 +540,7 @@ int ScenarioGateway::reportObject(int                               id,
                                   int                               laneId,
                                   double                            laneOffset,
                                   double                            s,
-                                  Object::VehicleLightActionStatus *light_state)
+                                  Object::VehicleLightActionStatus* light_state)
 {
     ObjectState* obj_state = getObjectStatePtrById(id);
 
@@ -606,7 +602,7 @@ int ScenarioGateway::reportObject(int                               id,
                                   int                               roadId,
                                   double                            lateralOffset,
                                   double                            s,
-                                  Object::VehicleLightActionStatus *light_state)
+                                  Object::VehicleLightActionStatus* light_state)
 {
     ObjectState* obj_state = getObjectStatePtrById(id);
 
