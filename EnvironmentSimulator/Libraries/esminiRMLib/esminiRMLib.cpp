@@ -564,6 +564,25 @@ extern "C"
         return -1;
     }
 
+    RM_DLL_API int RM_SetSnapLaneTypes(int handle, int laneTypes)
+    {
+        if (odrManager == nullptr || handle >= static_cast<int>(position.size()))
+        {
+            return -1;
+        }
+        else
+        {
+            roadmanager::Position* pos = &position[static_cast<unsigned int>(handle)];
+            if (pos)
+            {
+                pos->SetSnapLaneTypes(laneTypes);
+                return 0;
+            }
+        }
+
+        return -1;
+    }
+
     RM_DLL_API int RM_PositionMoveForward(int handle, float dist, float junctionSelectorAngle)
     {
         if (odrManager == nullptr || handle >= static_cast<int>(position.size()))

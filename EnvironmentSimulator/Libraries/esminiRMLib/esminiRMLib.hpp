@@ -220,6 +220,15 @@ extern "C"
     RM_DLL_API void RM_SetAlignModeZ(int handle, int mode);
 
     /**
+    Specify which lane types the position object snaps to (is aware of)
+    @param handle Handle to the position object
+    @param laneTypes A combination (bitmask) of lane types according to roadmanager::Lane::LaneType
+    examples: ANY_DRIVING = 1966082, ANY_ROAD = 1966214, ANY = -1
+    @return 0 if successful, -1 if not
+    */
+    RM_DLL_API int RM_SetSnapLaneTypes(int handle, int laneTypes);
+
+    /**
     Controls whether to keep lane ID regardless of lateral position or snap to closest lane (default)
     @parameter mode True=keep lane False=Snap to closest (default)
     @return 0 if successful, -1 if not

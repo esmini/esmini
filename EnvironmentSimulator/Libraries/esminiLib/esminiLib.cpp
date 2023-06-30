@@ -1317,22 +1317,41 @@ extern "C"
         return 0;
     }
 
-    SE_DLL_API int SE_SetLockOnLane(int id, bool mode)
+    SE_DLL_API int SE_SetSnapLaneTypes(int object_id, int laneTypes)
     {
-        if (player == nullptr)
+        Object *obj = nullptr;
+        if (getObjectById(object_id, obj) == -1)
         {
             return -1;
         }
+
+        if (object_id >= 0 && object_id < static_cast<int>(player->scenarioEngine->entities_.object_.size()))
+        {
+            player->scenarioGateway->getObjectStatePtrByIdx(object_id)->state_.pos.SetSnapLaneTypes(laneTypes);
+        }
         else
         {
-            if (id >= 0 && id < static_cast<int>(player->scenarioEngine->entities_.object_.size()))
-            {
-                player->scenarioGateway->getObjectStatePtrByIdx(id)->state_.pos.SetLockOnLane(mode);
-            }
-            else
-            {
-                return -1;
-            }
+            return -1;
+        }
+
+        return 0;
+    }
+
+    SE_DLL_API int SE_SetLockOnLane(int object_id, bool mode)
+    {
+        Object *obj = nullptr;
+        if (getObjectById(object_id, obj) == -1)
+        {
+            return -1;
+        }
+
+        if (object_id >= 0 && object_id < static_cast<int>(player->scenarioEngine->entities_.object_.size()))
+        {
+            player->scenarioGateway->getObjectStatePtrByIdx(object_id)->state_.pos.SetLockOnLane(mode);
+        }
+        else
+        {
+            return -1;
         }
 
         return 0;
