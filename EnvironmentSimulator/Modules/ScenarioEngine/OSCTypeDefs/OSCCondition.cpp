@@ -1506,6 +1506,11 @@ bool TrigByRelativeClearance::CheckCondition(StoryBoard* storyBoard, double sim_
         Object*            entityObject = triggering_entities_.entity_[i].object_;
         roadmanager::Road* road         = odr->GetRoadById(entityObject->pos_.GetTrackId());
 
+        if (road == nullptr)
+        {
+            return result;
+        }
+
         Object* refObject_;
         result = false;
 
