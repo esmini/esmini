@@ -3902,6 +3902,7 @@ namespace roadmanager
             return (int)vertex_.size();
         }
         TrajVertex *GetVertex(int index);
+        TrajVertex *GetCurrentVertex();
         void        Reset();
         int         Time2S(double time, double &s);
 

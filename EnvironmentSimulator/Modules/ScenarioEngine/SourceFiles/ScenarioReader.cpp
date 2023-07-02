@@ -1159,10 +1159,18 @@ roadmanager::RMTrajectory *ScenarioReader::parseTrajectory(pugi::xml_node node)
                     double                       time = strtod(parameters.ReadAttribute(vertexNode, "time"));
 
                     bool calculateHeading = false;
-                    if (pos->type_ != OSCPosition::PositionType::WORLD && !posNode.first_child().child("Orientation"))
+                    if (pos->type_ == OSCPosition::PositionType::WORLD)
+                    {
+                        if (!pos->GetRMPos()->IsOrientationTypeSet(roadmanager::Position::OrientationSetMask::H))
+                        {
+                            calculateHeading = true;
+                        }
+                    }
+                    else if (!posNode.first_child().child("Orientation"))
                     {
                         calculateHeading = true;
                     }
+
                     pline->AddVertex(*pos->GetRMPos(), time, calculateHeading);
                 }
                 shape = pline;

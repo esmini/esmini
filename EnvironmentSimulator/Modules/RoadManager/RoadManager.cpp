@@ -8604,11 +8604,6 @@ int Position::SetInertiaPos(double x, double y, double z, double h, double p, do
 
     // Now when road orientation is known, call functions for
     // updating angles both absolute and relative the road
-    if (!std::isnan(h))
-    {
-        SetHeading(h);
-    }
-
     if (!std::isnan(p))
     {
         SetPitch(p);
@@ -8617,6 +8612,17 @@ int Position::SetInertiaPos(double x, double y, double z, double h, double p, do
     if (!std::isnan(r))
     {
         SetRoll(r);
+    }
+
+    if (!std::isnan(h))
+    {
+        SetHeading(h);
+    }
+    else
+    {
+        // Heading not specified. Contrary to p and r, heading is not updated by XYZ2Track function
+        // Align it now to the road driving direction of current lane
+        SetHeading(GetHRoadInDrivingDirection());
     }
 
     EvaluateOrientation();
@@ -10126,7 +10132,7 @@ int PolyLineBase::EvaluateSegmentByLocalS(int i, double local_s, double cornerRa
 
         if (vertex_[i + 1].calcHeading && !interpolateHeading_)
         {
-            // Strategy: Align to line, but interpolate at corners
+            // Strategy: Align to line, interpolate only at corners
             double radius = MIN(2.0, length / 2.0);
             if (local_s < radius)
             {
@@ -10509,6 +10515,16 @@ TrajVertex* PolyLineBase::GetVertex(int index)
     {
         return &vertex_[index];
     }
+}
+
+TrajVertex* PolyLineBase::GetCurrentVertex()
+{
+    if (GetNumberOfVertices() < 1 || current_index_ < 0 || current_index_ >= vertex_.size())
+    {
+        return nullptr;
+    }
+
+    return &vertex_[current_index_];
 }
 
 void PolyLineBase::Reset()
@@ -11587,12 +11603,6 @@ void RMTrajectory::Freeze(FollowingMode following_mode, double current_speed)
         {
             Position* pos = &pline->vertex_[i].pos_;
             pos->ReleaseRelation();
-
-            if (following_mode == FollowingMode::FOLLOW && !pos->IsOrientationTypeSet(Position::OrientationSetMask::H))
-            {
-                // If heading is not provided AND follow mode is requested, then calculate heading
-                pline->pline_.vertex_[i].calcHeading = true;
-            }
 
             if (pline->pline_.vertex_[i].calcHeading)
             {
