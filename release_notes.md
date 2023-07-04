@@ -1,5 +1,16 @@
 ## esmini release notes
 
+### 2023-07-04 Version 2.31.9
+
+New behaviours:
+- Calculate omitted WorldPosition headings also when trajectory following mode is "position"
+  - previously omitted heading was set to "0.0" (default according to standard)
+  
+Improvements and fixes:
+- Expose functions to control snappable lanes ([issue #448](https://github.com/esmini/esmini/issues/448))
+  - both in [esminiLib](https://github.com/esmini/esmini/blob/d2f00135a2c43bd6a4430d07caa3d841d9100721/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L841) and [esminiRMLib](https://github.com/esmini/esmini/blob/d2f00135a2c43bd6a4430d07caa3d841d9100721/EnvironmentSimulator/Libraries/esminiRMLib/esminiRMLib.hpp#L229)
+- Fix camera lost track of bounding boxes bug
+
 ### 2023-06-26 Version 2.31.8
 
 New behaviours:
