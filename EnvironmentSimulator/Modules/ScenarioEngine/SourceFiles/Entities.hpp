@@ -512,8 +512,9 @@ namespace scenarioengine
             dirty_ = 0;
         }
 
-        Object* TowVehicle();
-        Object* TrailerVehicle();
+        Object*            TowVehicle();
+        Object*            TrailerVehicle();
+        static std::string Type2String(int type);
 
     private:
         int  dirty_;
@@ -664,9 +665,10 @@ namespace scenarioengine
                 role_ = static_cast<int>(Vehicle::Role::NONE);
             }
         }
-        int  ConnectTrailer(Vehicle* trailer);
-        void AlignTrailers();
-
+        int                             ConnectTrailer(Vehicle* trailer);
+        void                            AlignTrailers();
+        static std::string              Category2String(int category);
+        static std::string              Role2String(int role);
         std::shared_ptr<TrailerCoupler> trailer_coupler_;  // mounting point to any tow vehicle
         std::shared_ptr<TrailerHitch>   trailer_hitch_;    // mounting point to any tow vehicle
     };
@@ -720,6 +722,8 @@ namespace scenarioengine
 
             return;
         }
+
+        static std::string Category2String(int category);
     };
 
     class MiscObject : public Object
@@ -833,6 +837,8 @@ namespace scenarioengine
 
             return;
         }
+
+        static std::string Category2String(int category);
     };
 
     class Entities

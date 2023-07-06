@@ -1476,6 +1476,60 @@ void Vehicle::AlignTrailers()
     }
 }
 
+std::string Vehicle::Category2String(int category)
+{
+    switch (category)
+    {
+        case Category::BICYCLE:
+            return "BICYCLE";
+        case Category::BUS:
+            return "BUS";
+        case Category::CAR:
+            return "CAR";
+        case Category::MOTORBIKE:
+            return "MOTORBIKE";
+        case Category::SEMITRAILER:
+            return "SEMITRAILER";
+        case Category::TRAILER:
+            return "TRAILER";
+        case Category::TRAIN:
+            return "TRAIN";
+        case Category::TRAM:
+            return "TRAM";
+        case Category::TRUCK:
+            return "TRUCK";
+        case Category::VAN:
+            return "VAN";
+        default:
+            return "Unknown";
+    }
+}
+
+std::string Vehicle::Role2String(int role)
+{
+    switch (role)
+    {
+        case Role::AMBULANCE:
+            return "AMBULANCE";
+        case Role::CIVIL:
+            return "CIVIL";
+        case Role::FIRE:
+            return "FIRE";
+        case Role::MILITARY:
+            return "MILITARY";
+        case Role::NONE:
+            return "NONE";
+        case Role::POLICE:
+            return "POLICE";
+        case Role::PUBLIC_TRANSPORT:
+            return "PUBLIC_TRANSPORT";
+        case Role::ROAD_ASSISTANCE:
+            return "ROAD_ASSISTANCE";
+        default:
+            return "Unknown";
+    }
+}
+
 Object* Entities::GetObjectByName(std::string name)
 {
     for (size_t i = 0; i < object_.size(); i++)
@@ -1616,4 +1670,79 @@ Object* Object::TrailerVehicle()
     }
 
     return trailer_vehicle;
+}
+
+std::string Object::Type2String(int type)
+{
+    switch (type)
+    {
+        case Type::MISC_OBJECT:
+            return "MISC_OBJEC";
+        case Type::PEDESTRIAN:
+            return "PEDESTRIAN";
+        case Type::VEHICLE:
+            return "VEHICLE";
+        case Type::TYPE_NONE:
+            return "NONE";
+        default:
+            return "Unknown";
+    }
+}
+
+std::string Pedestrian::Category2String(int category)
+{
+    switch (category)
+    {
+        case Category::ANIMAL:
+            return "ANIMAL";
+        case Category::PEDESTRIAN:
+            return "PEDESTRIAN";
+        case Category::WHEELCHAIR:
+            return "WHEELCHAIR";
+        default:
+            return "Unknown";
+    }
+}
+
+std::string MiscObject::Category2String(int category)
+{
+    switch (category)
+    {
+        case Category::BARRIER:
+            return "BARRIER";
+        case Category::BUILDING:
+            return "BUILDING";
+        case Category::CROSSWALK:
+            return "CROSSWALK";
+        case Category::GANTRY:
+            return "GANTRY";
+        case Category::NONE:
+            return "NONE";
+        case Category::OBSTACLE:
+            return "OBSTACLE";
+        case Category::PARKINGSPACE:
+            return "PARKINGSPACE";
+        case Category::PATCH:
+            return "PATCH";
+        case Category::POLE:
+            return "POLE";
+        case Category::RAILING:
+            return "RAILING";
+        case Category::ROADMARK:
+            return "ROADMARK";
+        case Category::SOUNDBARRIER:
+            return "SOUNDBARRIER";
+        case Category::STREETLAMP:
+            return "STREETLAMP";
+        case Category::TRAFFICISLAND:
+            return "TRAFFICISLAND";
+        case Category::TREE:
+            return "TREE";
+        case Category::VEGETATION:
+            return "VEGETATION";
+        case Category::WIND:
+            return "WIND";
+        default:
+            return "Unknown";
+    }
 }

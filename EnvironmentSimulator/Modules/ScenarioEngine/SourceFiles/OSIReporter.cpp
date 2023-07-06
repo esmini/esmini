@@ -696,10 +696,16 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState *objectState)
         {
             obj_osi_internal.mobj->mutable_vehicle_classification()->set_type(osi3::MovingObject_VehicleClassification::TYPE_TRAILER);
         }
+        else if (objectState->state_.info.obj_category == static_cast<int>(Vehicle::Category::VAN))
+        {
+            obj_osi_internal.mobj->mutable_vehicle_classification()->set_type(osi3::MovingObject_VehicleClassification::TYPE_DELIVERY_VAN);
+        }
         else
         {
+            LOG("OSIReporter::UpdateOSIMovingObject -> Unsupported moving object vehicle category: %d (%s). Set to UNKNOWN.",
+                objectState->state_.info.obj_category,
+                Vehicle::Category2String(objectState->state_.info.obj_category).c_str());
             obj_osi_internal.mobj->mutable_vehicle_classification()->set_type(osi3::MovingObject_VehicleClassification::TYPE_UNKNOWN);
-            LOG("OSIReporter::UpdateOSIMovingObject -> Unsupported moving object category");
         }
 
 #ifdef _OSI_VERSION_3_3_1
@@ -733,8 +739,15 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState *objectState)
         {
             obj_osi_internal.mobj->mutable_vehicle_classification()->set_role(osi3::MovingObject_VehicleClassification::ROLE_ROAD_ASSISTANCE);
         }
+        else if (objectState->state_.info.obj_role == Vehicle::Role::NONE)
+        {
+            obj_osi_internal.mobj->mutable_vehicle_classification()->set_role(osi3::MovingObject_VehicleClassification::ROLE_UNKNOWN);
+        }
         else
         {
+            LOG("OSIReporter::UpdateOSIMovingObject -> Unsupported moving object vehicle role: %d (%s). Set classification UNKNOWN.",
+                objectState->state_.info.obj_role,
+                Vehicle::Role2String(objectState->state_.info.obj_role).c_str());
             obj_osi_internal.mobj->mutable_vehicle_classification()->set_role(osi3::MovingObject_VehicleClassification::ROLE_UNKNOWN);
         }
 #endif
@@ -755,13 +768,18 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState *objectState)
         }
         else
         {
+            LOG("OSIReporter::UpdateOSIMovingObject -> Unsupported moving object pedestrian category: %d (%s). Set type UNKNOWN.",
+                objectState->state_.info.obj_category,
+                Pedestrian::Category2String(objectState->state_.info.obj_category).c_str());
             obj_osi_internal.mobj->set_type(osi3::MovingObject::Type::MovingObject_Type_TYPE_UNKNOWN);
-            LOG("OSIReporter::UpdateOSIMovingObject -> Unsupported moving object category");
         }
     }
     else
     {
-        LOG("OSIReporter::UpdateOSIMovingObject -> Unsupported moving object type");
+        LOG("OSIReporter::UpdateOSIMovingObject -> Unsupported moving object type: %d (%s). Set UNKNOWN.",
+            objectState->state_.info.obj_type,
+            Object::Type2String(objectState->state_.info.obj_type).c_str());
+        obj_osi_internal.mobj->set_type(osi3::MovingObject::Type::MovingObject_Type_TYPE_UNKNOWN);
     }
 
     // Set OSI Moving Object Control Type
