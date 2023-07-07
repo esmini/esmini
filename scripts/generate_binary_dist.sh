@@ -102,6 +102,7 @@ resources/models/truck_trailer.osgb \
 resources/models/hedge.osgb \
 resources/models/fence_plank.osgb \
 resources/models/fence_pole.osgb \
+resources/models/fence_plank_and_pole.osgb \
 resources/sumo_inputs/e6mini* \
 resources/sumo_inputs/multi_intersections* \
 resources/traffic_signals/* \
