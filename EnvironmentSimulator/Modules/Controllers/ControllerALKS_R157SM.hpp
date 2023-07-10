@@ -598,6 +598,7 @@ namespace scenarioengine
 
         Model*    model_;
         Entities* entities_;
+        double    elapsed_time_ = 0.0;
 
         ControllerALKS_R157SM(InitArgs* args);
         ~ControllerALKS_R157SM();

@@ -196,14 +196,21 @@ void ControllerALKS_R157SM::Init()
 void ControllerALKS_R157SM::Step(double timeStep)
 {
     double speed = model_->Step(timeStep);
+    elapsed_time_ += timeStep;
+
+    if (mode_ == Mode::MODE_ADDITIVE && elapsed_time_ > 4.0)
+    {
+        // switch to override mode
+        mode_ = Mode::MODE_OVERRIDE;
+    }
 
     if (mode_ == Mode::MODE_OVERRIDE)
     {
+        // Only update vehicle when mode is override (should we maybe have a third mode = passive?
         object_->MoveAlongS(speed * timeStep);
         gateway_->updateObjectPos(object_->GetId(), 0.0, &object_->pos_);
+        gateway_->updateObjectSpeed(object_->GetId(), 0.0, speed);
     }
-
-    gateway_->updateObjectSpeed(object_->GetId(), 0.0, speed);
 
     Controller::Step(timeStep);
 }
