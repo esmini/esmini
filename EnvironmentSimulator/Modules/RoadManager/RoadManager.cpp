@@ -7307,7 +7307,7 @@ Position::ReturnCode Position::XYZH2TrackPos(double x3, double y3, double z3, do
             if (fabs(osip_first.h - osip_second.h) < 1e-5)  // Select threshold to avoid precision issues in calculations
             {
                 double px, py;
-                ProjectPointOnVector2D(x3, y3, osip_first.x, osip_first.y, osip_second.x, osip_second.y, px, py);
+                ProjectPointOnLine2D(x3, y3, osip_first.x, osip_first.y, osip_second.x, osip_second.y, px, py);
 
                 // Find relative position of projected point on line segment
                 double l1 = GetLengthOfLine2D(osip_first.x, osip_first.y, px, py);
@@ -10402,7 +10402,7 @@ int PolyLineBase::FindClosestPoint(double xin, double yin, TrajVertex& pos, int&
 
     while (i >= 0 && i < GetNumberOfVertices() - 1)
     {
-        ProjectPointOnVector2D(xin, yin, vertex_[i].x, vertex_[i].y, vertex_[i + 1].x, vertex_[i + 1].y, tmpPos.x, tmpPos.y);
+        ProjectPointOnLine2D(xin, yin, vertex_[i].x, vertex_[i].y, vertex_[i + 1].x, vertex_[i + 1].y, tmpPos.x, tmpPos.y);
         double distTmp = PointDistance2D(xin, yin, tmpPos.x, tmpPos.y);
 
         bool inside = PointInBetweenVectorEndpoints(tmpPos.x, tmpPos.y, vertex_[i].x, vertex_[i].y, vertex_[i + 1].x, vertex_[i + 1].y, sLocal);

@@ -365,7 +365,7 @@ double DistanceFromPointToEdge2D(double x3, double y3, double x1, double y1, dou
     double sNorm    = 0;
 
     // First project point on edge
-    ProjectPointOnVector2D(x3, y3, x1, y1, x2, y2, px, py);
+    ProjectPointOnLine2D(x3, y3, x1, y1, x2, y2, px, py);
     distance = PointDistance2D(x3, y3, px, py);
 
     if (PointInBetweenVectorEndpoints(px, py, x1, y1, x2, y2, sNorm))
@@ -408,7 +408,7 @@ double DistanceFromPointToLine2D(double x3, double y3, double x1, double y1, dou
         x = &xp;
     if (y == nullptr)
         y = &yp;
-    ProjectPointOnVector2D(x3, y3, x1, y1, x2, y2, *x, *y);
+    ProjectPointOnLine2D(x3, y3, x1, y1, x2, y2, *x, *y);
     distance = PointDistance2D(x3, y3, *x, *y);
 
     return distance;
@@ -451,7 +451,7 @@ double PointHeadingDistance2D(double x0, double y0, double h, double x1, double 
     return (x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0);
 }
 
-void ProjectPointOnVector2D(double x, double y, double vx1, double vy1, double vx2, double vy2, double& px, double& py)
+void ProjectPointOnLine2D(double x, double y, double vx1, double vy1, double vx2, double vy2, double& px, double& py)
 {
     // Project the given point on the straight line between geometry end points
     // https://stackoverflow.com/questions/1811549/perpendicular-on-a-line-from-a-given-point
@@ -470,6 +470,23 @@ void ProjectPointOnVector2D(double x, double y, double vx1, double vy1, double v
         double k = (dy * (x - vx1) - dx * (y - vy1)) / (dy * dy + dx * dx);
         px       = x - k * dy;
         py       = y + k * dx;
+    }
+}
+
+void ProjectPointOnVector2D(double x0, double y0, double x1, double y1, double& px, double& py)
+{
+    double square_length = GetDotProduct2D(x1, y1, x1, y1);
+
+    if (square_length > SMALL_NUMBER)
+    {
+        double scalar_proj = GetDotProduct2D(x0, y0, x1, y1) / square_length;
+        px                 = x1 * scalar_proj;
+        py                 = y1 * scalar_proj;
+    }
+    else
+    {
+        px = 0.0;
+        py = 0.0;
     }
 }
 

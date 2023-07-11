@@ -1116,14 +1116,14 @@ Object::OverlapType Object::OverlappingFront(Object* target, double tolerance)
         double projected_point[2];
         double s_norm = 0.0;
 
-        ProjectPointOnVector2D(vertex[i].x(),
-                               vertex[i].y(),
-                               front_left.x(),
-                               front_left.y(),
-                               front_right.x(),
-                               front_right.y(),
-                               projected_point[0],
-                               projected_point[1]);
+        ProjectPointOnLine2D(vertex[i].x(),
+                             vertex[i].y(),
+                             front_left.x(),
+                             front_left.y(),
+                             front_right.x(),
+                             front_right.y(),
+                             projected_point[0],
+                             projected_point[1]);
 
         bool is_within = PointInBetweenVectorEndpoints(projected_point[0],
                                                        projected_point[1],

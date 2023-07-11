@@ -1637,53 +1637,53 @@ TEST(OverlapTest, TestOverlapCalculations)
     double    s_norm    = 0.0;
     bool      is_within = false;
 
-    ProjectPointOnVector2D(point_to_test.x(),
-                           point_to_test.y(),
-                           line_v0.x(),
-                           line_v0.y(),
-                           line_v1.x(),
-                           line_v1.y(),
-                           projected_point[0],
-                           projected_point[1]);
+    ProjectPointOnLine2D(point_to_test.x(),
+                         point_to_test.y(),
+                         line_v0.x(),
+                         line_v0.y(),
+                         line_v1.x(),
+                         line_v1.y(),
+                         projected_point[0],
+                         projected_point[1]);
     is_within = PointInBetweenVectorEndpoints(projected_point[0], projected_point[1], line_v0.x(), line_v0.y(), line_v1.x(), line_v1.y(), s_norm);
     EXPECT_EQ(is_within, true);
     EXPECT_NEAR(s_norm, 0.75, 1e-3);
 
     point_to_test = {-5, -0.5};
-    ProjectPointOnVector2D(point_to_test.x(),
-                           point_to_test.y(),
-                           line_v0.x(),
-                           line_v0.y(),
-                           line_v1.x(),
-                           line_v1.y(),
-                           projected_point[0],
-                           projected_point[1]);
+    ProjectPointOnLine2D(point_to_test.x(),
+                         point_to_test.y(),
+                         line_v0.x(),
+                         line_v0.y(),
+                         line_v1.x(),
+                         line_v1.y(),
+                         projected_point[0],
+                         projected_point[1]);
     is_within = PointInBetweenVectorEndpoints(projected_point[0], projected_point[1], line_v0.x(), line_v0.y(), line_v1.x(), line_v1.y(), s_norm);
     EXPECT_EQ(is_within, true);
     EXPECT_NEAR(s_norm, 0.75, 1e-3);
 
     point_to_test = {-5, -1.1};
-    ProjectPointOnVector2D(point_to_test.x(),
-                           point_to_test.y(),
-                           line_v0.x(),
-                           line_v0.y(),
-                           line_v1.x(),
-                           line_v1.y(),
-                           projected_point[0],
-                           projected_point[1]);
+    ProjectPointOnLine2D(point_to_test.x(),
+                         point_to_test.y(),
+                         line_v0.x(),
+                         line_v0.y(),
+                         line_v1.x(),
+                         line_v1.y(),
+                         projected_point[0],
+                         projected_point[1]);
     is_within = PointInBetweenVectorEndpoints(projected_point[0], projected_point[1], line_v0.x(), line_v0.y(), line_v1.x(), line_v1.y(), s_norm);
     EXPECT_EQ(is_within, false);
     EXPECT_NEAR(s_norm, 0.1, 1e-3);
 
     point_to_test = {-5, 1.1};
-    ProjectPointOnVector2D(point_to_test.x(),
-                           point_to_test.y(),
-                           line_v0.x(),
-                           line_v0.y(),
-                           line_v1.x(),
-                           line_v1.y(),
-                           projected_point[0],
-                           projected_point[1]);
+    ProjectPointOnLine2D(point_to_test.x(),
+                         point_to_test.y(),
+                         line_v0.x(),
+                         line_v0.y(),
+                         line_v1.x(),
+                         line_v1.y(),
+                         projected_point[0],
+                         projected_point[1]);
     is_within = PointInBetweenVectorEndpoints(projected_point[0], projected_point[1], line_v0.x(), line_v0.y(), line_v1.x(), line_v1.y(), s_norm);
     EXPECT_EQ(is_within, false);
     EXPECT_NEAR(s_norm, -0.1, 1e-3);
@@ -1691,27 +1691,27 @@ TEST(OverlapTest, TestOverlapCalculations)
     line_v0       = {-1.0, 0.0};
     line_v1       = {1.0, 0.0};
     point_to_test = {-0.5, 2.0};
-    ProjectPointOnVector2D(point_to_test.x(),
-                           point_to_test.y(),
-                           line_v0.x(),
-                           line_v0.y(),
-                           line_v1.x(),
-                           line_v1.y(),
-                           projected_point[0],
-                           projected_point[1]);
+    ProjectPointOnLine2D(point_to_test.x(),
+                         point_to_test.y(),
+                         line_v0.x(),
+                         line_v0.y(),
+                         line_v1.x(),
+                         line_v1.y(),
+                         projected_point[0],
+                         projected_point[1]);
     is_within = PointInBetweenVectorEndpoints(projected_point[0], projected_point[1], line_v0.x(), line_v0.y(), line_v1.x(), line_v1.y(), s_norm);
     EXPECT_EQ(is_within, true);
     EXPECT_NEAR(s_norm, 0.25, 1e-3);
 
     point_to_test = {-20.5, 2.0};
-    ProjectPointOnVector2D(point_to_test.x(),
-                           point_to_test.y(),
-                           line_v0.x(),
-                           line_v0.y(),
-                           line_v1.x(),
-                           line_v1.y(),
-                           projected_point[0],
-                           projected_point[1]);
+    ProjectPointOnLine2D(point_to_test.x(),
+                         point_to_test.y(),
+                         line_v0.x(),
+                         line_v0.y(),
+                         line_v1.x(),
+                         line_v1.y(),
+                         projected_point[0],
+                         projected_point[1]);
     is_within = PointInBetweenVectorEndpoints(projected_point[0], projected_point[1], line_v0.x(), line_v0.y(), line_v1.x(), line_v1.y(), s_norm);
     EXPECT_EQ(is_within, false);
     EXPECT_NEAR(s_norm, -19.5, 1e-3);
@@ -2130,6 +2130,51 @@ TEST(ControllerTest, TestLoomingControllerAdvanced)
     EXPECT_EQ(ctrl->getHasFarTan(), false);
 
     delete se;
+}
+
+static void TTCAndLateralDistParamDeclCallback(void*)
+{
+    static int counter  = 0;
+    double     value[2] = {0.2, 5.0};
+
+    if (counter < 2)
+    {
+        ScenarioReader::parameters.setParameterValue("LateralDist", value[counter]);
+    }
+
+    counter++;
+}
+
+TEST(ConditionTest, TestTTCAndLateralDist)
+{
+    double dt = 0.05;
+
+    RegisterParameterDeclarationCallback(TTCAndLateralDistParamDeclCallback, 0);
+    for (int i = 0; i < 2; i++)
+    {
+        ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/ttc_condition.xosc");
+        ASSERT_NE(se, nullptr);
+        ASSERT_EQ(se->entities_.object_[0]->GetName(), "Ego");
+        ASSERT_EQ(se->entities_.object_[1]->GetName(), "Target");
+
+        while (se->getSimulationTime() < 2.0 - SMALL_NUMBER)
+        {
+            se->step(dt);
+            se->prepareGroundTruth(dt);
+        }
+
+        if (i == 0)
+        {
+            EXPECT_NEAR(se->entities_.object_[0]->pos_.GetVelX(), 10.0, 1E-3);
+        }
+        else
+        {
+            EXPECT_NEAR(se->entities_.object_[0]->pos_.GetVelX(), 1.0, 1E-3);
+        }
+
+        delete se;
+    }
+    RegisterParameterDeclarationCallback(nullptr, 0);
 }
 
 // Uncomment to print log output to console

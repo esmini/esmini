@@ -382,9 +382,29 @@ double PointToLineDistance2DSigned(double px, double py, double lx0, double ly0,
 double PointSquareDistance2D(double x0, double y0, double x1, double y1);
 
 /**
-        Project a 2D point on a 2D vector
+        Project a 2D point on a 2D line (specified start- and endpoint)
+        Project a 2D point on a 2D vector (from origin to specified point)
+        @param x X coordinate of point
+        @param y Y coordinate of point
+        @param vx1 X coordinate of line start point
+        @param vy1 Y coordinate of line start point
+        @param vx2 X coordinate of line end point
+        @param vy2 Y coordinate of line end point
+        @param px X coordinate of projected point (reference parameter)
+        @param py Y coordinate of projected point (reference parameter)
 */
-void ProjectPointOnVector2D(double x, double y, double vx1, double vy1, double vx2, double vy2, double& px, double& py);
+void ProjectPointOnLine2D(double x, double y, double vx1, double vy1, double vx2, double vy2, double& px, double& py);
+
+/**
+        Project a 2D point on a 2D vector (from origin to specified point)
+        @param x0 X coordinate of point
+        @param y0 Y coordinate of point
+        @param x1 X coordinate of vector
+        @param y1 Y coordinate of vector
+        @param px X coordinate of projected point (reference parameter)
+        @param py Y coordinate of projected point (reference parameter)
+*/
+void ProjectPointOnVector2D(double x0, double y0, double x1, double y1, double& px, double& py);
 
 /**
         Check whether projected point is in area formed by the two given vectors

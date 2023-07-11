@@ -77,6 +77,39 @@ TEST(VectorOperations, TestIsPointWithinSectorBetweenTwoLines)
     EXPECT_NEAR(factor, 0.354, 1E-3);
 }
 
+TEST(VectorOperations, TestProjectPointOnVector)
+{
+    double v_result[2] = {0.0, 0.0};
+
+    ProjectPointOnVector2D(5.0, 1.0, 0.1, 0.0, v_result[0], v_result[1]);
+    EXPECT_NEAR(v_result[0], 5.0, 1E-5);
+    EXPECT_NEAR(v_result[1], 0.0, 1E-5);
+
+    ProjectPointOnVector2D(0.1, -1.0, 4.0, 0.0, v_result[0], v_result[1]);
+    EXPECT_NEAR(v_result[0], 0.1, 1E-5);
+    EXPECT_NEAR(v_result[1], 0.0, 1E-5);
+
+    ProjectPointOnVector2D(-1.0, -1.0, 2.0, 0.0, v_result[0], v_result[1]);
+    EXPECT_NEAR(v_result[0], -1.0, 1E-5);
+    EXPECT_NEAR(v_result[1], 0.0, 1E-5);
+
+    ProjectPointOnVector2D(-1.0, -1.0, 0.0, 0.0, v_result[0], v_result[1]);
+    EXPECT_NEAR(v_result[0], 0.0, 1E-5);
+    EXPECT_NEAR(v_result[1], 0.0, 1E-5);
+
+    ProjectPointOnVector2D(1.0, 0.0, 5.0, 5.0, v_result[0], v_result[1]);
+    EXPECT_NEAR(v_result[0], 0.5, 1E-5);
+    EXPECT_NEAR(v_result[1], 0.5, 1E-5);
+
+    ProjectPointOnVector2D(1.0, 0.0, -5.0, 5.0, v_result[0], v_result[1]);
+    EXPECT_NEAR(v_result[0], 0.5, 1E-5);
+    EXPECT_NEAR(v_result[1], -0.5, 1E-5);
+
+    ProjectPointOnVector2D(2.5, -10.0, -3.0, 5.0, v_result[0], v_result[1]);
+    EXPECT_NEAR(v_result[0], 5.07353, 1E-5);
+    EXPECT_NEAR(v_result[1], -8.45588, 1E-5);
+}
+
 INSTANTIATE_TEST_SUITE_P(CommonMini,
                          Local2Global,
                          ::testing::Values(std::make_tuple(Coordinate2D{0, 1}, Coordinate2D{1, 1}, -M_PI / 2, Coordinate2D{2, 1}),

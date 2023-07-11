@@ -749,7 +749,15 @@ bool TrigByTimeToCollision::CheckCondition(StoryBoard* storyBoard, double sim_ti
 
         if (object_)
         {
-            rel_speed = trigObj->speed_ - object_->speed_;
+            // Calculate relative speed along triggering object's velocity direction
+            double rel_vel[2] = {0.0, 0.0};
+            ProjectPointOnVector2D(object_->pos_.GetVelX(),
+                                   object_->pos_.GetVelY(),
+                                   trigObj->pos_.GetVelX(),
+                                   trigObj->pos_.GetVelY(),
+                                   rel_vel[0],
+                                   rel_vel[1]);
+            rel_speed = GetLengthOfVector2D(trigObj->pos_.GetVelX() - rel_vel[0], trigObj->pos_.GetVelY() - rel_vel[1]);
         }
         else
         {
