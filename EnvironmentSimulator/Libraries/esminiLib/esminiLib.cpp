@@ -1112,6 +1112,94 @@ extern "C"
         return -1;
     }
 
+    SE_DLL_API int SE_AddObjectWithBoundingBox(const char       *object_name,
+                                               int               object_type,
+                                               int               object_category,
+                                               int               object_role,
+                                               int               model_id,
+                                               SE_OSCBoundingBox bounding_box)
+    {
+        int object_id = -1;
+
+        // Add missing object
+        if (player != nullptr)
+        {
+            std::string name;
+            if (object_name == nullptr)
+            {
+                name = "obj_" + std::to_string(object_id);
+            }
+            else
+            {
+                name = object_name;
+            }
+
+            if (object_type < 1 || object_type >= scenarioengine::Object::Type::N_OBJECT_TYPES)
+            {
+                object_type = scenarioengine::Object::Type::VEHICLE;
+            }
+
+            Vehicle *vehicle = nullptr;
+            scenarioengine::OSCBoundingBox bb;
+            bb.center_.x_ = bounding_box.center_.x_;
+            bb.center_.y_ = bounding_box.center_.y_;
+            bb.center_.z_ = bounding_box.center_.z_;
+            bb.dimensions_.height_ = bounding_box.dimensions_.height_;
+            bb.dimensions_.length_ = bounding_box.dimensions_.length_;
+            bb.dimensions_.width_  = bounding_box.dimensions_.width_;
+
+            if (object_type == scenarioengine::Object::Type::VEHICLE)
+            {
+                vehicle             = new Vehicle();
+                object_id           = player->scenarioEngine->entities_.addObject(vehicle, true);
+                vehicle->name_      = name;
+                vehicle->scaleMode_ = EntityScaleMode::MODEL_TO_BB;
+                vehicle->model_id_  = model_id;
+                vehicle->model3d_   = SE_Env::Inst().GetModelFilenameById(model_id);
+                vehicle->category_  = object_category;
+                vehicle->role_      = object_role;
+                vehicle->boundingbox_ = bb;
+
+                Controller::InitArgs args = {"", "", 0, 0, 0, 0};
+                args.type                 = ControllerExternal::GetTypeNameStatic();
+                vehicle->controller_      = InstantiateControllerExternal(&args);
+                vehicle->controller_->Activate(ControlDomains::DOMAIN_BOTH);
+            }
+            else
+            {
+                LOG("SE_AddObject: Object type %d not supported yet", object_type);
+                return -1;
+            }
+
+            if (player->scenarioGateway->reportObject(object_id,
+                                                      name,
+                                                      object_type,
+                                                      object_category,
+                                                      object_role,
+                                                      model_id,
+                                                      vehicle->GetActivatedControllerType(),
+                                                      bb,
+                                                      static_cast<int>(EntityScaleMode::BB_TO_MODEL),
+                                                      0xff,
+                                                      0.0,
+                                                      0.0,
+                                                      0.0,
+                                                      0.0,
+                                                      0.0,
+                                                      0.0,
+                                                      0.0,
+                                                      0.0,
+                                                      0.0,
+                                                      0.0,
+                                                      0.0) == 0)
+            {
+                return object_id;
+            }
+        }
+
+        return -1;
+    }
+    
     SE_DLL_API int SE_DeleteObject(int object_id)
     {
         Object *obj = nullptr;
