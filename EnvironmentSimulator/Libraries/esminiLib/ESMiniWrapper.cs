@@ -111,6 +111,29 @@ namespace ESMini
         public bool opposite_lanes; // true if the two position objects are in opposite sides of reference lane
     };
 
+    [StructLayout(LayoutKind.Sequential)]
+    public struct Center
+    {
+        public float x_;            // Center offset in x direction.
+        public float y_;            // Center offset in y direction.
+        public float z_;            // Center offset in z direction.
+    };
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct Dimensions
+    {
+        public float width_;            // Width of the entity's bounding box. Unit: m; Range: [0..inf[.
+        public float length_;           // Length of the entity's bounding box. Unit: m; Range: [0..inf[.
+        public float height_;           // Height of the entity's bounding box. Unit: m; Range: [0..inf[.
+    };
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct OSCBoundingBox
+    {
+        public Center center_;           // Represents the geometrical center of the bounding box
+        public Dimensions dimensions_;   // Width, length and height of the bounding box.
+    };
+
 
 public static class ESMiniLib
     {
@@ -235,6 +258,17 @@ public static class ESMiniLib
         /// <param name="model_id">Id of the 3D model to represent the object. See resources/model_ids.txt.</param>
         /// <returns> @return Id [0..inf] of the added object successful, -1 on failure</returns>
         public static extern int SE_AddObject(string object_name, int object_type, int object_category, int object_role, int model_id);
+
+        [DllImport(LIB_NAME, EntryPoint = "SE_AddObjectWithBoundingBox")]
+        /// <summary>Add object with bounding box. Sets scale mode to MODEL_TO_BB. Should be followed by one of the SE_Report functions to establish initial state.</summary>
+        /// <param name="object_name">Name of the object, preferably be unique</param>
+        /// <param name="object_type">Type of the object. See Entities.hpp::Object::Type. Default=1 (VEHICLE).</param>
+        /// <param name="object_category">Category of the object. Depends on type, see descendants of Entities.hpp::Object. Set to 0 if not known.</param>
+        /// <param name="object_role"> role of the object. Depends on type, See Entities.hpp::Object::Role. Set to 0 if not known.</param>
+        /// <param name="model_id">Id of the 3D model to represent the object. See resources/model_ids.txt.</param>
+        /// <param name="bounding_box">sets the internal bounding box of the model and will also be used to scale 3D model accordingly.</param>
+        /// <returns> @return Id [0..inf] of the added object successful, -1 on failure</returns>
+        public static extern int SE_AddObjectWithBoundingBox(string object_name, int object_type, int object_category, int object_role, int model_id, ref OSCBoundingBox bounding_box);
 
         [DllImport(LIB_NAME, EntryPoint = "SE_DeleteObject")]
         /// <summary>Delete object</summary>

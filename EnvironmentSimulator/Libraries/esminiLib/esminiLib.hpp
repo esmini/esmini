@@ -209,6 +209,27 @@ typedef struct
     unsigned char *data;
 } SE_Image;  // Should be synked with CommonMini/OffScreenImage
 
+
+typedef struct
+{
+    float x_;  // Center offset in x direction.
+    float y_;  // Center offset in y direction.
+    float z_;  // Center offset in z direction.
+} SE_Center;
+
+typedef struct
+{
+    float width_;  // Width of the entity's bounding box. Unit: m; Range: [0..inf[.
+    float length_;  // Length of the entity's bounding box. Unit: m; Range: [0..inf[.
+    float height_;  // Height of the entity's bounding box. Unit: m; Range: [0..inf[.
+} SE_Dimensions;
+
+typedef struct
+{
+    SE_Center  center_;      // Represents the geometrical center of the bounding box
+    SE_Dimensions dimensions_;  // Width, length and height of the bounding box.
+} SE_OSCBoundingBox;
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -706,6 +727,23 @@ extern "C"
             @return Id [0..inf] of the added object successful, -1 on failure
     */
     SE_DLL_API int SE_AddObject(const char *object_name, int object_type, int object_category, int object_role, int model_id);
+    /**
+            Add object with bounding box. Sets scale mode to MODEL_TO_BB.
+            Should be followed by one of the SE_Report functions to establish initial state.
+            @param object_name Name of the object, preferably be unique
+            @param object_type Type of the object. See Entities.hpp::Object::Type. Default=1 (VEHICLE).
+            @param object_category Category of the object. Depends on type, see descendants of Entities.hpp::Object. Set to 0 if not known.
+            @param object_role role of the object. Depends on type, See Entities.hpp::Object::Role. Set to 0 if not known.
+            @param model_id Id of the 3D model to represent the object. See resources/model_ids.txt.
+            @param bounding_box sets the internal bounding box of the model and will also be used to scale 3D model accordingly.
+            @return Id [0..inf] of the added object successful, -1 on failure
+    */
+    SE_DLL_API int SE_AddObjectWithBoundingBox(const char       *object_name,
+                                               int               object_type,
+                                               int               object_category,
+                                               int               object_role,
+                                               int               model_id,
+                                               SE_OSCBoundingBox bounding_box);
 
     /**
             Delete object
