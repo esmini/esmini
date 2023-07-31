@@ -1991,7 +1991,20 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode)
             {
                 SwarmTrafficAction *trafficSwarmAction = new SwarmTrafficAction();
 
-                pugi::xml_node childNode = trafficChild.child("CentralSwarmObject");
+                pugi::xml_node childNode = trafficChild.child("CentralObject");
+                if (childNode.empty())
+                {
+                    childNode = trafficChild.child("CentralSwarmObject");
+                    if (!childNode.empty())
+                    {
+                        LOG("Expected \"CentralObject\", found \"CentralSwarmObject\". Accepted.");
+                    }
+                }
+                if (childNode.empty())
+                {
+                    LOG("Warning: Missing swarm CentralObject!");
+                }
+
                 trafficSwarmAction->SetCentralObject(entities_->GetObjectByName(parameters.ReadAttribute(childNode, "entityRef")));
                 // childNode = trafficChild.child("")
 

@@ -62,7 +62,7 @@
             <GlobalAction>
                <TrafficAction>
                   <TrafficSwarmAction innerRadius="200" semiMajorAxis="300" semiMinorAxis="500" numberOfVehicles="75" velocity="30">
-                      <CentralSwarmObject entityRef="Ego" />
+                      <CentralObject entityRef="Ego" />
                   </TrafficSwarmAction>
                </TrafficAction>
             </GlobalAction>               
