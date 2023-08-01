@@ -209,7 +209,6 @@ typedef struct
     unsigned char *data;
 } SE_Image;  // Should be synked with CommonMini/OffScreenImage
 
-
 typedef struct
 {
     float x_;  // Center offset in x direction.
@@ -219,14 +218,14 @@ typedef struct
 
 typedef struct
 {
-    float width_;  // Width of the entity's bounding box. Unit: m; Range: [0..inf[.
+    float width_;   // Width of the entity's bounding box. Unit: m; Range: [0..inf[.
     float length_;  // Length of the entity's bounding box. Unit: m; Range: [0..inf[.
     float height_;  // Height of the entity's bounding box. Unit: m; Range: [0..inf[.
 } SE_Dimensions;
 
 typedef struct
 {
-    SE_Center  center_;      // Represents the geometrical center of the bounding box
+    SE_Center     center_;      // Represents the geometrical center of the bounding box
     SE_Dimensions dimensions_;  // Width, length and height of the bounding box.
 } SE_OSCBoundingBox;
 
@@ -736,6 +735,7 @@ extern "C"
             @param object_role role of the object. Depends on type, See Entities.hpp::Object::Role. Set to 0 if not known.
             @param model_id Id of the 3D model to represent the object. See resources/model_ids.txt.
             @param bounding_box sets the internal bounding box of the model and will also be used to scale 3D model accordingly.
+            @param scale_mode 0=NONE, 1=BB_TO_MODEL, 2=MODEL_TO_BB (see CommonMini::EntityScaleMode enum)
             @return Id [0..inf] of the added object successful, -1 on failure
     */
     SE_DLL_API int SE_AddObjectWithBoundingBox(const char       *object_name,
@@ -743,7 +743,8 @@ extern "C"
                                                int               object_category,
                                                int               object_role,
                                                int               model_id,
-                                               SE_OSCBoundingBox bounding_box);
+                                               SE_OSCBoundingBox bounding_box,
+                                               int               scale_mode);
 
     /**
             Delete object

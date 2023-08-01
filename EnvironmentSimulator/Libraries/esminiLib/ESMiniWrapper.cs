@@ -48,8 +48,8 @@ namespace ESMini
         public float width;
         public float length;
         public float height;
-        public int   objectType;     // Main type according to entities.hpp / Object / Type (NONE=0, VEHICLE=1, PEDESTRIAN=2, MISC_OBJECT=3)
-        public int   objectCategory; // Sub category within type, according to entities.hpp / Vehicle, Pedestrian, MiscObject / Category
+        public int objectType;     // Main type according to entities.hpp / Object / Type (NONE=0, VEHICLE=1, PEDESTRIAN=2, MISC_OBJECT=3)
+        public int objectCategory; // Sub category within type, according to entities.hpp / Vehicle, Pedestrian, MiscObject / Category
         public float wheel_angle;
         public float wheel_rotation;
     };
@@ -135,7 +135,7 @@ namespace ESMini
     };
 
 
-public static class ESMiniLib
+    public static class ESMiniLib
     {
         private const string LIB_NAME = "esminiLib";
 
@@ -267,8 +267,9 @@ public static class ESMiniLib
         /// <param name="object_role"> role of the object. Depends on type, See Entities.hpp::Object::Role. Set to 0 if not known.</param>
         /// <param name="model_id">Id of the 3D model to represent the object. See resources/model_ids.txt.</param>
         /// <param name="bounding_box">sets the internal bounding box of the model and will also be used to scale 3D model accordingly.</param>
+        /// <param name="scale_mode">0=NONE, 1=BB_TO_MODEL, 2=MODEL_TO_BB (see CommonMini::EntityScaleMode enum)</param>
         /// <returns> @return Id [0..inf] of the added object successful, -1 on failure</returns>
-        public static extern int SE_AddObjectWithBoundingBox(string object_name, int object_type, int object_category, int object_role, int model_id, ref OSCBoundingBox bounding_box);
+        public static extern int SE_AddObjectWithBoundingBox(string object_name, int object_type, int object_category, int object_role, int model_id, ref OSCBoundingBox bounding_box, int scale_mode);
 
         [DllImport(LIB_NAME, EntryPoint = "SE_DeleteObject")]
         /// <summary>Delete object</summary>
@@ -380,7 +381,7 @@ public static class ESMiniLib
         /// <returns> Number of identified objects, i.e.length of list. -1 on failure</returns>
         public static extern int SE_FetchSensorObjectList(int object_id, int[] list);
 
-		[DllImport(LIB_NAME, EntryPoint = "SE_GetRoadInfoAtDistance")]
+        [DllImport(LIB_NAME, EntryPoint = "SE_GetRoadInfoAtDistance")]
         /// <summary>Get information suitable for driver modeling of a point at a specified distance from object along the road ahead</summary>
         /// <param name="object_id">Handle to the position object from which to measure</param>
         /// <param name="lookahead_distance">The distance, along the road, to the point</param>
