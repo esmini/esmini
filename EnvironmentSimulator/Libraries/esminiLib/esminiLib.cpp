@@ -1040,7 +1040,13 @@ extern "C"
     SE_DLL_API int SE_AddObject(const char *object_name, int object_type, int object_category, int object_role, int model_id)
     {
         SE_OSCBoundingBox bb = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}};
-        return SE_AddObjectWithBoundingBox(object_name, object_type, object_category, object_role, model_id, bb, 1);
+        return SE_AddObjectWithBoundingBox(object_name,
+                                           object_type,
+                                           object_category,
+                                           object_role,
+                                           model_id,
+                                           bb,
+                                           static_cast<int>(EntityScaleMode::BB_TO_MODEL));
     }
 
     SE_DLL_API int SE_AddObjectWithBoundingBox(const char       *object_name,
@@ -1111,7 +1117,7 @@ extern "C"
                                                       model_id,
                                                       vehicle->GetActivatedControllerType(),
                                                       bb,
-                                                      static_cast<int>(EntityScaleMode::BB_TO_MODEL),
+                                                      scale_mode,
                                                       0xff,
                                                       0.0,
                                                       0.0,

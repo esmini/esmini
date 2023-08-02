@@ -716,7 +716,7 @@ extern "C"
     SE_DLL_API void SE_SetAlignModeZ(int object_id, int mode);
 
     /**
-            Add object
+            Add object with bounding box automatically adapted to 3D model (scale mode BB_TO_MODEL)
             Should be followed by one of the SE_Report functions to establish initial state.
             @param object_name Name of the object, preferably be unique
             @param object_type Type of the object. See Entities.hpp::Object::Type. Default=1 (VEHICLE).
@@ -726,16 +726,18 @@ extern "C"
             @return Id [0..inf] of the added object successful, -1 on failure
     */
     SE_DLL_API int SE_AddObject(const char *object_name, int object_type, int object_category, int object_role, int model_id);
+
     /**
-            Add object with bounding box. Sets scale mode to MODEL_TO_BB.
+            Add object with specified bounding box.
             Should be followed by one of the SE_Report functions to establish initial state.
+            For scale_mode BB_TO_MODEL, set bounding_box to whatever, e.g. {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}}, or use SE_AddObject()
             @param object_name Name of the object, preferably be unique
             @param object_type Type of the object. See Entities.hpp::Object::Type. Default=1 (VEHICLE).
             @param object_category Category of the object. Depends on type, see descendants of Entities.hpp::Object. Set to 0 if not known.
             @param object_role role of the object. Depends on type, See Entities.hpp::Object::Role. Set to 0 if not known.
             @param model_id Id of the 3D model to represent the object. See resources/model_ids.txt.
             @param bounding_box sets the internal bounding box of the model and will also be used to scale 3D model accordingly.
-            @param scale_mode 0=NONE, 1=BB_TO_MODEL, 2=MODEL_TO_BB (see CommonMini::EntityScaleMode enum)
+            @param scale_mode 0=NONE, 1=BB_TO_MODEL, 2=MODEL_TO_BB (recommended). See CommonMini::EntityScaleMode enum for details.
             @return Id [0..inf] of the added object successful, -1 on failure
     */
     SE_DLL_API int SE_AddObjectWithBoundingBox(const char       *object_name,
