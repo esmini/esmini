@@ -1,5 +1,17 @@
 ## esmini release notes
 
+### 2023-08-04 Version 2.31.10
+
+- Add [SE_AddObjectWithBoundingBox()](https://github.com/esmini/esmini/blob/e76b4cf90f0bf7827617eff587bd41e7388c4dc8/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L741) method to lib API ([PR #460](https://github.com/esmini/esmini/pull/460))
+- Fix wrong expected swarm central object attribute name ([issue #459](https://github.com/esmini/esmini/issues/459))
+  - correct attribute name is CentralObject
+  - previous expected name, CentralSwarmObject, is accepted as well
+- Add combined type and vehicle class to osi2csv
+- Add missing OSI VAN class
+- Add missing fence 3D model to demo package
+- For TTC, calc rel speed along triggering entity velocity vector ([issue #445](https://github.com/esmini/esmini/issues/445))
+
+
 ### 2023-07-04 Version 2.31.9
 
 New behaviours:
