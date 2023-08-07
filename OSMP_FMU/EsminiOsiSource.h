@@ -49,11 +49,13 @@ using namespace std;
 
 
 /* Integer Variables */
-#define FMI_INTEGER_SENSORVIEW_OUT_BASELO_IDX 0
-#define FMI_INTEGER_SENSORVIEW_OUT_BASEHI_IDX 1
-#define FMI_INTEGER_SENSORVIEW_OUT_SIZE_IDX 2
-#define FMI_INTEGER_COUNT_IDX 3
-#define FMI_INTEGER_LAST_IDX FMI_INTEGER_COUNT_IDX
+#define FMI_INTEGER_TRAFFICUPDATE_IN_BASELO_IDX 0
+#define FMI_INTEGER_TRAFFICUPDATE_IN_BASEHI_IDX 1
+#define FMI_INTEGER_TRAFFICUPDATE_IN_SIZE_IDX 2
+#define FMI_INTEGER_SENSORVIEW_OUT_BASELO_IDX 3
+#define FMI_INTEGER_SENSORVIEW_OUT_BASEHI_IDX 4
+#define FMI_INTEGER_SENSORVIEW_OUT_SIZE_IDX 5
+#define FMI_INTEGER_LAST_IDX FMI_INTEGER_SENSORVIEW_OUT_SIZE_IDX
 #define FMI_INTEGER_VARS (FMI_INTEGER_LAST_IDX+1)
 
 /* Real Variables */
@@ -201,12 +203,11 @@ protected:
     void set_fmi_valid(fmi2Boolean value) { boolean_vars[FMI_BOOLEAN_VALID_IDX]=value; }
     fmi2Boolean fmi_use_viewer() { return boolean_vars[FMI_BOOLEAN_USE_VIEWER_IDX]; }
     void set_fmi_use_viewer(fmi2Boolean value) { boolean_vars[FMI_BOOLEAN_USE_VIEWER_IDX]=value; }
-    fmi2Integer fmi_count() { return integer_vars[FMI_INTEGER_COUNT_IDX]; }
-    void set_fmi_count(fmi2Integer value) { integer_vars[FMI_INTEGER_COUNT_IDX]=value; }
     string fmi_xosc_path() { return string_vars[FMI_STRING_XOSC_PATH_IDX]; }
     void set_fmi_xosc_path(string value) { string_vars[FMI_STRING_XOSC_PATH_IDX]=value; }
 
     /* Protocol Buffer Accessors */
+    bool get_fmi_traffic_update_in(osi3::TrafficUpdate& data);
     void set_fmi_sensor_view_out(const osi3::SensorView& data);
     void reset_fmi_sensor_view_out();
 };

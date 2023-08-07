@@ -9,6 +9,7 @@
 #include "osi_common.pb.h"
 #include "osi_object.pb.h"
 #include "osi_groundtruth.pb.h"
+#include "osi_trafficupdate.pb.h"
 
 #include "EsminiOsiSource.h"
 
@@ -102,6 +103,18 @@ void encode_pointer_to_integer(const void* ptr,fmi2Integer& hi,fmi2Integer& lo)
 #endif
 }
 
+bool EsminiOsiSource::get_fmi_traffic_update_in(osi3::TrafficUpdate& data)
+{
+    if (integer_vars[FMI_INTEGER_TRAFFICUPDATE_IN_SIZE_IDX] > 0) {
+        void* buffer = decode_integer_to_pointer(integer_vars[FMI_INTEGER_TRAFFICUPDATE_IN_BASEHI_IDX],integer_vars[FMI_INTEGER_TRAFFICUPDATE_IN_BASELO_IDX]);
+        normal_log("OSMP","Got %08X %08X, reading from %p ...",integer_vars[FMI_INTEGER_TRAFFICUPDATE_IN_BASEHI_IDX],integer_vars[FMI_INTEGER_TRAFFICUPDATE_IN_BASELO_IDX],buffer);
+        data.ParseFromArray(buffer,integer_vars[FMI_INTEGER_TRAFFICUPDATE_IN_SIZE_IDX]);
+        return true;
+    } else {
+        return false;
+    }
+}
+
 void EsminiOsiSource::set_fmi_sensor_view_out(const osi3::SensorView& data)
 {
   data.SerializeToString(currentBuffer);
@@ -183,22 +196,54 @@ fmi2Status EsminiOsiSource::doCalc(fmi2Real currentCommunicationPoint, fmi2Real 
 {
   DEBUGBREAK();
 
+  // Handle OSI TrafficUpdate input
+  osi3::TrafficUpdate traffic_update;
+  if (get_fmi_traffic_update_in(traffic_update))
+  {
+    for (const auto& obj : traffic_update.update())
+    {
+      const int obj_id = (int)obj.id().value();
+      SE_ScenarioObjectState vehicleState;
+      SE_GetObjectState(obj_id, &vehicleState);
+      if (obj.base().has_orientation())
+      {
+        vehicleState.h = (float)obj.base().orientation().yaw();
+      }
+
+      if (obj.base().has_position())
+      {
+        vehicleState.x = obj.base().position().x() - vehicleState.centerOffsetX * cos(vehicleState.h) - vehicleState.centerOffsetY * sin(vehicleState.h);
+        vehicleState.y = obj.base().position().y() - vehicleState.centerOffsetX * sin(vehicleState.h) - vehicleState.centerOffsetY * cos(vehicleState.h);
+      }
+
+      SE_ReportObjectPosXYH(obj_id, 0, vehicleState.x, vehicleState.y, vehicleState.h);
+
+      if (obj.base().has_velocity())
+      {
+        SE_ReportObjectVel(obj_id, 0, obj.base().velocity().x(), obj.base().velocity().y(), obj.base().velocity().z());
+      }
+    }
+  }
+  else
+  {
+    normal_log("OSMP","No TrafficUpdate received.");
+  }
+
+  // Run simulation step
   if (SE_StepDT((float)communicationStepSize) != 0)
   {
     std::cerr <<"Failed run simulation step" << std::endl;
     return fmi2Error;
   }
 
-  // Further updates will only affect dynamic OSI stuff
-
+  // Handle OSI SensorView output
   if (SE_UpdateOSIGroundTruth() != 0)
   {
     std::cerr <<"Failed update OSI Ground Truth" << std::endl;
     return fmi2Error;
   }
 
-  // Fetch OSI struct
-  const auto* se_osi_ground_truth = reinterpret_cast<const osi3::GroundTruth*>(SE_GetOSIGroundTruthRaw());
+  const auto* se_osi_ground_truth = reinterpret_cast<const osi3::GroundTruth*>(SE_GetOSIGroundTruthRaw()); //Fetch OSI struct
 
   osi3::SensorView currentOut;
   currentOut.Clear();
@@ -213,7 +258,6 @@ fmi2Status EsminiOsiSource::doCalc(fmi2Real currentCommunicationPoint, fmi2Real 
 
   set_fmi_sensor_view_out(currentOut);
   set_fmi_valid(1);
-  set_fmi_count(currentGT->moving_object_size());
   return fmi2OK;
 }
 
