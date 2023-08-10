@@ -119,10 +119,10 @@ enum class ModKeyMask
 
 enum class ControlDomains
 {
-    DOMAIN_NONE = 0,
-    DOMAIN_LONG = 1,
-    DOMAIN_LAT  = 2,
-    DOMAIN_BOTH = 3,  // can also be interpreted as bitwise OR: DIM_LONG | DIM_LAT
+    DOMAIN_NONE  = 0,
+    DOMAIN_LONG  = 1,
+    DOMAIN_LAT   = 2,
+    DOMAIN_BOTH  = 3,  // can also be interpreted as bitwise OR: DIM_LONG | DIM_LAT
     DOMAIN_LIGHT = 4,
 };
 

@@ -1,25 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Another cut-in variant on a simple straight road. In this -->
-<!-- case specifying rate of the lane change lateral movement  -->
+<!-- scnario with different lights on, off and flash mode -->
 <OpenSCENARIO>
    <FileHeader revMajor="1"
                revMinor="2"
                date="2017-06-09T10:00:00"
                description="Another variant of cut-in"
-               author="SimS"/>
+               author="esmini-team"/>
    <ParameterDeclarations>
       <ParameterDeclaration name="HeadwayTime_LaneChange" parameterType="double" value="0.4"/>
       <ParameterDeclaration name="HeadwayTime_Brake" parameterType="double" value="1.0"/>
    </ParameterDeclarations>
    <CatalogLocations>
       <VehicleCatalog>
-         <Directory path="../xosc/Catalogs/Vehicles"/>
+         <Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
       </VehicleCatalog>
    </CatalogLocations>
    <RoadNetwork>
-      <!-- <LogicFile filepath="../../../esmini/EnvironmentSimulator/Unittest/xodr/straight_road.xodr"/> -->
-      <LogicFile filepath="../xodr/straight_500m.xodr"/>
-      <!-- <SceneGraphFile filepath="../models/straight_500m.osgb"/> -->
+      <LogicFile filepath="../xodr/straight_road.xodr"/>
    </RoadNetwork>
    <Entities>
         <ScenarioObject name="Ego">
@@ -51,68 +48,160 @@
                   </TeleportAction>
                </PrivateAction>
             </Private>
-            <Private entityRef="Dummy0">
-               <PrivateAction>
-                  <LongitudinalAction>
-                        <SpeedAction>
-                           <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
-                           <SpeedActionTarget>
-                              <AbsoluteTargetSpeed value="10.0"/>
-                           </SpeedActionTarget>
-                        </SpeedAction>
-                  </LongitudinalAction>
-               </PrivateAction>
-               <PrivateAction>
-                  <TeleportAction>
-                        <Position>
-                           <LanePosition roadId="1" laneId="-2" s="76.0" offset="0.0"/>
-                        </Position>
-                  </TeleportAction>
-               </PrivateAction>
-            </Private>
          </Actions>
       </Init>
-      <Story name="LightStateAction Story">
+      <Story name="LightStateActionStory">
          <ParameterDeclarations>
             <ParameterDeclaration parameterType="string" name="owner" value="Ego"/>
          </ParameterDeclarations>
-         <Act name="LightStateAction Act">
-            <ManeuverGroup maximumExecutionCount="1" name="LightStateAction Sequence">
+         <Act name="LightStateActionAct">
+            <ManeuverGroup maximumExecutionCount="1" name="HighBeamOnActionSequence">
                <Actors selectTriggeringEntities="false">
                   <EntityRef entityRef="Ego"/>
                </Actors>
-               <Maneuver name="LightStateAction Maneuver">
-                  <Event name="LightStateAction Event" priority="overwrite" maximumExecutionCount="10000" >
-                    <Action name="LightStateAction Action">
+               <Maneuver name="HighBeamOnActionManeuver">
+                  <Event name="HighBeamOnActionEvent" priority="skip" maximumExecutionCount="1" >
+                     <Action name="HighBeamOnAction">
                         <PrivateAction>
                            <AppearanceAction>
-                                <LightStateAction transitionTime="1">
+                                <LightStateAction transitionTime="4">
                                     <LightType>
-                                        <VehicleLight vehicleLightType= "highBeam"/>
-                                        <UserDefinedLight userDefinedLightType= "none"/>
+                                       <VehicleLight vehicleLightType= "highBeam"/>
                                     </LightType>
-                                    <LightState mode= "on", luminousIntensity="10", flashingOffDuration="2", flashingOnDuration="4">
-                                       <Color ColorType="red"/>
+                                    <LightState mode= "on" luminousIntensity="10" flashingOffDuration="2" flashingOnDuration="4">
+                                       <Color colorType="red">
+                                          <ColorCmyk cyan="1.0" key="0.0" mangenta="0.0" yellow="0.0"/>
+                                       </Color>
                                     </LightState>
                                 </LightStateAction>
                            </AppearanceAction>
                         </PrivateAction>
-                    </Action>
-                    <StartTrigger>
+                     </Action>
+                     <StartTrigger>
                         <ConditionGroup>
-                           <Condition name="LightStateAction Condition" delay="0" conditionEdge="rising">
+                           <Condition name="HighBeamOnActionCondition" delay="0" conditionEdge="rising">
+                              <ByValueCondition>
+                                 <SimulationTimeCondition value="2" rule="greaterThan"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+               <Maneuver name="HighBeamOffActionManeuver">
+                  <Event name="HighBeamOffActionEvent" priority="override" maximumExecutionCount="1" >
+                     <Action name="HighBeamOffAction">
+                        <PrivateAction>
+                           <AppearanceAction>
+                                <LightStateAction transitionTime="2">
+                                    <LightType>
+                                       <VehicleLight vehicleLightType= "highBeam"/>
+                                    </LightType>
+                                    <LightState mode= "off" luminousIntensity="10" flashingOffDuration="2" flashingOnDuration="4">
+                                       <Color colorType="red">
+                                          <ColorCmyk cyan="1.0" key="0.0" mangenta="0.0" yellow="0.0"/>
+                                       </Color>
+                                    </LightState>
+                                </LightStateAction>
+                           </AppearanceAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="HighBeamOffActionCondition" delay="0" conditionEdge="rising">
+                              <ByValueCondition>
+                                 <SimulationTimeCondition value="4" rule="greaterThan"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+               <Maneuver name="WarningLightOnActionManeuver">
+                  <Event name="WarningLightOnActionEvent" priority="override" maximumExecutionCount="1" >
+                     <Action name="WarningLightOnAction">
+                        <PrivateAction>
+                           <AppearanceAction>
+                                <LightStateAction>
+                                    <LightType>
+                                       <VehicleLight vehicleLightType= "warningLights"/>
+                                    </LightType>
+                                    <LightState mode= "flashing" luminousIntensity="10" flashingOffDuration="2" flashingOnDuration="4">
+                                       <Color>
+                                          <ColorCmyk cyan="1.0" key="0.0" mangenta="0.0" yellow="0.0"/>
+                                       </Color>
+                                    </LightState>
+                                </LightStateAction>
+                           </AppearanceAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="WarningLightOnActionCondition" delay="0" conditionEdge="rising">
+                              <ByValueCondition>
+                                 <SimulationTimeCondition value="12" rule="greaterThan"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+                  <Maneuver name="brakeLightsOffActionManeuver">
+                  <Event name="brakeLightsOffActionEvent" priority="override" maximumExecutionCount="1" >
+                     <Action name="brakeLightsOffAction">
+                        <PrivateAction>
+                           <AppearanceAction>
+                                <LightStateAction transitionTime="2">
+                                    <LightType>
+                                       <VehicleLight vehicleLightType= "brakeLights"/>
+                                    </LightType>
+                                    <LightState mode= "off">
+                                    </LightState>
+                                </LightStateAction>
+                           </AppearanceAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="brakeLightsOffActionCondition" delay="0" conditionEdge="rising">
                               <ByValueCondition>
                                  <SimulationTimeCondition value="15" rule="greaterThan"/>
                               </ByValueCondition>
                            </Condition>
                         </ConditionGroup>
-                    </StartTrigger>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+                  <Maneuver name="brakeLightsOnActionManeuver">
+                  <Event name="brakeLightsOnActionEvent" priority="override" maximumExecutionCount="1" >
+                     <Action name="brakeLightsOnAction">
+                        <PrivateAction>
+                           <AppearanceAction>
+                                <LightStateAction transitionTime="2">
+                                    <LightType>
+                                       <VehicleLight vehicleLightType= "brakeLights"/>
+                                    </LightType>
+                                    <LightState mode= "on">
+                                    </LightState>
+                                </LightStateAction>
+                           </AppearanceAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="brakeLightsOnActionCondition" delay="0" conditionEdge="rising">
+                              <ByValueCondition>
+                                 <SimulationTimeCondition value="18" rule="greaterThan"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
                   </Event>
                </Maneuver>
             </ManeuverGroup>
             <StartTrigger>
                <ConditionGroup>
-                  <Condition name="EgoSpeedChangeActStart" delay="0" conditionEdge="rising">
+                  <Condition name="LightStateActionActStart" delay="0" conditionEdge="rising">
                      <ByValueCondition>
                         <SimulationTimeCondition value="0" rule="greaterThan"/>
                      </ByValueCondition>

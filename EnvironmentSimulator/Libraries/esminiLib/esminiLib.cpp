@@ -1127,8 +1127,6 @@ extern "C"
                 return -1;
             }
 
-            scenarioengine::OSCBoundingBox bb = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}};
-
             if (player->scenarioGateway->reportObject(object_id,
                                                       name,
                                                       object_type,
@@ -1150,7 +1148,7 @@ extern "C"
                                                       0.0,
                                                       0.0,
                                                       0.0,
-                                                      0.0) == 0)
+                                                      nullptr) == 0)
             {
                 return object_id;
             }

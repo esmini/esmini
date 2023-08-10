@@ -60,7 +60,7 @@ void Event::Start(double simTime, double dt)
                                 {
                                     if (static_cast<int>(pa2->GetDomain()) == (static_cast<int>(ControlDomains::DOMAIN_LIGHT)))
                                     {
-                                        if ( static_cast<int>(pa2->GetLightType()) & static_cast<int>(pa->GetLightType()))
+                                        if (static_cast<int>(pa2->GetLightType()) == static_cast<int>(pa->GetLightType()))
                                         {
                                             // LightType overlap, at least one light type in common. Terminate old action.
                                             LOG("Stopping object %s %s on conflicting %s light(s)",

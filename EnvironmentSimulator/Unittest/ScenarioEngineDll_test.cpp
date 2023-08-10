@@ -2654,7 +2654,7 @@ TEST(TestGetAndSet, OverrideActionTest)
 
 TEST(TestGetAndSet, lightActionTest)
 {
-    std::string scenario_file = "../../../resources/xosc/light_test.xosc";
+    std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/light_test.xosc";
     const char* Scenario_file = scenario_file.c_str();
     float       dt            = 0.1f;
     float       t             = 0.0f;
@@ -2665,7 +2665,7 @@ TEST(TestGetAndSet, lightActionTest)
 
     EXPECT_EQ(SE_GetVehicleLightStatus(0, 2, &lightList), 0);
     EXPECT_EQ(lightList.lightType, 13);
-    EXPECT_EQ(lightList.colorName, 11);
+    EXPECT_EQ(lightList.colorName, 0);
     EXPECT_DOUBLE_EQ(lightList.intensity, 0.0);
     EXPECT_EQ(lightList.lightMode, 4);
     EXPECT_DOUBLE_EQ(lightList.rgb[0], 0.0);
@@ -2680,7 +2680,7 @@ TEST(TestGetAndSet, lightActionTest)
     EXPECT_EQ(SE_GetVehicleLightStatus(0, 2, &lightList), 0);
     EXPECT_EQ(lightList.lightType, 2);
     EXPECT_EQ(lightList.colorName, 1);
-    EXPECT_DOUBLE_EQ(lightList.intensity, 0.0);
+    EXPECT_DOUBLE_EQ(lightList.intensity, 9.3333334724108372);
     EXPECT_EQ(lightList.lightMode, 1);
     EXPECT_DOUBLE_EQ(lightList.rgb[0], 0.0);
     EXPECT_DOUBLE_EQ(lightList.rgb[1], 0.0);
@@ -2693,7 +2693,7 @@ TEST(TestGetAndSet, lightActionTest)
     EXPECT_EQ(SE_GetVehicleLightStatus(0, 2, &lightList), 0);
     EXPECT_EQ(lightList.lightType, 2);
     EXPECT_EQ(lightList.colorName, 1);
-    EXPECT_DOUBLE_EQ(lightList.intensity, 0.0);
+    EXPECT_DOUBLE_EQ(lightList.intensity, 0.46666654149691134);
     EXPECT_EQ(lightList.lightMode, 0);
     EXPECT_DOUBLE_EQ(lightList.rgb[0], 0.0);
     EXPECT_DOUBLE_EQ(lightList.rgb[1], 0.0);
@@ -2709,8 +2709,8 @@ TEST(TestGetAndSet, lightActionTest)
     EXPECT_DOUBLE_EQ(lightList.intensity, 10.0);
     EXPECT_EQ(lightList.lightMode, 2);
     EXPECT_DOUBLE_EQ(lightList.rgb[0], 0.0);
-    EXPECT_DOUBLE_EQ(lightList.rgb[1], 0.0);
-    EXPECT_DOUBLE_EQ(lightList.rgb[2], 0.0);
+    EXPECT_DOUBLE_EQ(lightList.rgb[1], 1.0);
+    EXPECT_DOUBLE_EQ(lightList.rgb[2], 1.0);
 
     for (; t < 16.0f; t += dt)
     {
@@ -2733,8 +2733,8 @@ TEST(TestGetAndSet, lightActionTest)
     EXPECT_EQ(lightList.lightType, 6);
     EXPECT_EQ(lightList.colorName, 0);
     EXPECT_DOUBLE_EQ(lightList.intensity, 0.0);
-    EXPECT_EQ(lightList.lightMode, 1);
-    EXPECT_DOUBLE_EQ(lightList.rgb[0], 1.0);
+    EXPECT_EQ(lightList.lightMode, 0);
+    EXPECT_DOUBLE_EQ(lightList.rgb[0], 0.0);
     EXPECT_DOUBLE_EQ(lightList.rgb[1], 0.0);
     EXPECT_DOUBLE_EQ(lightList.rgb[2], 0.0);
 

@@ -162,11 +162,11 @@ namespace scenarioengine
             double rate_;
         };
 
-        ActionType      type_;
+        ActionType               type_;
         Object::VehicleLightType lightType_;
-        ControlDomains  domain_;
-        Object*         object_;
-        ScenarioEngine* scenarioEngine_;
+        ControlDomains           domain_;
+        Object*                  object_;
+        ScenarioEngine*          scenarioEngine_;
 
         OSCPrivateAction(OSCPrivateAction::ActionType type, ControlDomains domain)
             : OSCAction(OSCAction::BaseType::PRIVATE),
@@ -1185,15 +1185,17 @@ namespace scenarioengine
         double                    luminousIntensity_;
         Object::VehicleLightMode  mode_;
         Object::VehicleLightColor color_;
-        // Object::VehicleLightType  C;
-        double                    cmyk_[4];
-        double                    rgb_[3];
+        double cmyk_[4];
+        double rgb_[3];
 
         LightStateAction()
-            : OSCPrivateAction(OSCPrivateAction::ActionType::LIGHT_STATE_ACTION, Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS, ControlDomains::DOMAIN_LIGHT),
+            : OSCPrivateAction(OSCPrivateAction::ActionType::LIGHT_STATE_ACTION,
+                               Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS,
+                               ControlDomains::DOMAIN_LIGHT),
               transitionTime_(0.0),
               flashingOffDuration_(0.5),
               flashingOnDuration_(0.5),
+              luminousIntensity_(0.0),
               mode_(Object::VehicleLightMode::OFF),
               color_(Object::VehicleLightColor::OTHER),
               cmyk_{0.0, 0.0, 0.0, 0.0},
@@ -1203,7 +1205,7 @@ namespace scenarioengine
 
         double transitionTimer_ = SMALL_NUMBER;
         double flashingTimer_   = SMALL_NUMBER;
-        double initailValueLum_;
+        double initialValueLum_;
         double initialValueRbg_[3];
 
         int  setVehicleLightType(std::string typeObject, Object::VehicleLightActionStatus& lightStatus);

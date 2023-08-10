@@ -2183,7 +2183,7 @@ int OverrideControlAction::AddOverrideStatus(Object::OverrideActionStatus status
 void LightStateAction::AddVehicleLightActionStatus(Object::VehicleLightActionStatus lightStatus)
 {
     vehicleLightActionStatusList = lightStatus;
-    if ( lightStatus.type < Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS)
+    if (lightStatus.type < Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS)
     {
         lightType_ = static_cast<Object::VehicleLightType>(lightStatus.type);
     }
@@ -2198,7 +2198,7 @@ void LightStateAction::Start(double simTime, double dt)
     // set initial values
     transitionTimer_    = 0.0;
     flashingTimer_      = 0.0;
-    initailValueLum_    = object_->vehicleLightActionStatusList[vehicleLightActionStatusList.type].luminousIntensity;
+    initialValueLum_    = object_->vehicleLightActionStatusList[vehicleLightActionStatusList.type].luminousIntensity;
     initialValueRbg_[0] = object_->vehicleLightActionStatusList[vehicleLightActionStatusList.type].rgb[0];
     initialValueRbg_[1] = object_->vehicleLightActionStatusList[vehicleLightActionStatusList.type].rgb[1];
     initialValueRbg_[2] = object_->vehicleLightActionStatusList[vehicleLightActionStatusList.type].rgb[2];
@@ -2212,8 +2212,15 @@ void LightStateAction::Start(double simTime, double dt)
           lightType_ == Object::VehicleLightType::INDICATOR_RIGHT || lightType_ == Object::VehicleLightType::SPECIAL_PURPOSE_LIGHTS) &&
         (mode_ == Object::VehicleLightMode::FLASHING))
     {
-        object_->vehicleLightActionStatusList[vehicleLightActionStatusList.type].mode = mode_= Object::VehicleLightMode::ON;
+        object_->vehicleLightActionStatusList[vehicleLightActionStatusList.type].mode = mode_ = Object::VehicleLightMode::ON;
         LOG("Setting light mode to ON, Only indicator or special purpose light support flashing");
+    }
+    if ((mode_ == Object::VehicleLightMode::OFF) && (luminousIntensity_ > 0.0))
+    {  // In case light mode is off, setting overwriting luminous intensity to 0.
+        LOG("Light type %s is in Off state, Making luminousIntensity to 0 from %.1f.",
+            LightType2Str(lightType_).c_str(),
+            luminousIntensity_);
+        luminousIntensity_ = 0.0;
     }
 
     OSCAction::Start(simTime, dt);
@@ -2259,7 +2266,7 @@ int LightStateAction::setLightTransistionValues(double value)
 {
     // initialValue + (proportion * (finalValue - initialValue))
     object_->vehicleLightActionStatusList[vehicleLightActionStatusList.type].luminousIntensity =
-        initailValueLum_ + ((transitionTimer_ / transitionTime_) * (luminousIntensity_ - initailValueLum_)) * value;
+        initialValueLum_ + ((transitionTimer_ / transitionTime_) * (luminousIntensity_ - initialValueLum_)) * value;
     object_->vehicleLightActionStatusList[vehicleLightActionStatusList.type].rgb[0] =
         initialValueRbg_[0] + ((transitionTimer_ / transitionTime_) * (rgb_[0] - initialValueRbg_[0])) * value;
     object_->vehicleLightActionStatusList[vehicleLightActionStatusList.type].rgb[1] =
@@ -2276,7 +2283,7 @@ int LightStateAction::convertCmykToRbgAndCheckError()
     {  // only look for color settings if color type is others
         if (std::accumulate(std::begin(cmyk_), std::end(cmyk_), 0.0) != 0.0 && std::accumulate(std::begin(rgb_), std::end(rgb_), 0.0) != 0.0)
         {
-            LOG("cmyk and rbg values provided for light color description, Accepting only rbg values");
+            LOG("cmyk and rbg values provided for % s light color description, Accepting only rbg values", LightType2Str(lightType_).c_str());
         }
         else if (std::accumulate(std::begin(cmyk_), std::end(cmyk_), 0.0) != 0.0)
         {
@@ -2285,7 +2292,7 @@ int LightStateAction::convertCmykToRbgAndCheckError()
                 if (cmyk_[i] > 1)
                 {
                     cmyk_[i] = MAX(0, MIN(cmyk_[i], 1));
-                    LOG("cmyk value is not within range and is changed to %.1f.", cmyk_[i]);
+                    LOG("cmyk value is not within range and is changed to %.1f for %s light type.", cmyk_[i], LightType2Str(lightType_).c_str());
                 }
             }  // convert cmyk to rbg values
             rgb_[0] = round((1 - cmyk_[0]) * (1 - cmyk_[3]));
@@ -2299,14 +2306,14 @@ int LightStateAction::convertCmykToRbgAndCheckError()
                 if (rgb_[j] > 1)
                 {
                     rgb_[j] = MAX(0, MIN(rgb_[j], 1));
-                    LOG("rbg value is not within range and is changed to %.1f.", rgb_[j]);
+                    LOG("rbg value is not within range and is changed to %.1f for %s light type.", rgb_[j], LightType2Str(lightType_).c_str());
                 }
             }
         }
         else
         {
             rgb_[0] = 1.0;
-            LOG("Either rbg and cmyk values are provided, Setting it as rbg red:%.f blue:%.f green:%.f", rgb_[0], rgb_[1], rgb_[2]);
+            LOG("Either rbg nor cmyk values are not provided for %s light type, Setting it as rbg red:%.f blue:%.f green:%.f", LightType2Str(lightType_).c_str(), rgb_[0], rgb_[1], rgb_[2]);
         }
 
         // decide color type from rbg, Special vehicle has only two extra colour (blue and amber), blue and red combination not considered

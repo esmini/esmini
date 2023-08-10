@@ -164,7 +164,6 @@ std::string ControlDomain2Str(ControlDomains domains)
     return "none";
 }
 
-
 bool FileExists(const char* fileName)
 {
     std::ifstream infile(fileName);

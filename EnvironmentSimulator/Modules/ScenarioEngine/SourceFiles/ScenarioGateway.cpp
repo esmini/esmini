@@ -175,7 +175,6 @@ ObjectState::ObjectState(int                               id,
     //     state_.info.light_state[state_.info.light_state[i].type] = light_state[i];
     // }
 
-
     dirty_ = Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::LATERAL | Object::DirtyBit::SPEED | Object::DirtyBit::WHEEL_ANGLE |
              Object::DirtyBit::WHEEL_ROTATION;
 }
