@@ -2183,6 +2183,14 @@ int OverrideControlAction::AddOverrideStatus(Object::OverrideActionStatus status
 void LightStateAction::AddVehicleLightActionStatus(Object::VehicleLightActionStatus lightStatus)
 {
     vehicleLightActionStatusList = lightStatus;
+    if ( lightStatus.type < Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS)
+    {
+        lightType_ = static_cast<Object::VehicleLightType>(lightStatus.type);
+    }
+    else
+    {
+        LOG_AND_QUIT("Unexpected light type: %d", lightStatus.type);
+    }
 }
 
 void LightStateAction::Start(double simTime, double dt)
@@ -2298,7 +2306,7 @@ int LightStateAction::convertCmykToRbgAndCheckError()
         else
         {
             rgb_[0] = 1.0;
-            LOG("Either rbg and cmyk values are provided, Setting it as rbg red:%d", rgb_);
+            LOG("Either rbg and cmyk values are provided, Setting it as rbg red:%.f blue:%.f green:%.f", rgb_[0], rgb_[1], rgb_[2]);
         }
 
         // decide color type from rbg, Special vehicle has only two extra colour (blue and amber), blue and red combination not considered
@@ -2449,6 +2457,67 @@ void LightStateAction::setVehicleLightColor(std::string colorType)
         LOG("Colour type %s not supported, set to default (other)", colorType.c_str());
         color_ = Object::VehicleLightColor::OTHER;
     }
+}
+
+std::string OSCPrivateAction::LightType2Str(Object::VehicleLightType lightType)
+{
+    if (lightType == Object::VehicleLightType::DAY_TIME_RUNNING_LIGHTS)
+    {
+        return "day time running light";
+    }
+    else if (lightType == Object::VehicleLightType::BRAKE_LIGHTS)
+    {
+        return "brake light";
+    }
+    else if (lightType == Object::VehicleLightType::FOG_LIGHTS)
+    {
+        return "fog light";
+    }
+    else if (lightType == Object::VehicleLightType::FOG_LIGHTS_FRONT)
+    {
+        return "fog light front";
+    }
+    else if (lightType == Object::VehicleLightType::FOG_LIGHTS_REAR)
+    {
+        return "for light rear";
+    }
+    else if (lightType == Object::VehicleLightType::HIGH_BEAM)
+    {
+        return "high beam";
+    }
+    else if (lightType == Object::VehicleLightType::INDICATOR_LEFT)
+    {
+        return "indicator left";
+    }
+    else if (lightType == Object::VehicleLightType::INDICATOR_RIGHT)
+    {
+        return "indicator right";
+    }
+    else if (lightType == Object::VehicleLightType::LICENSE_PLATER_ILLUMINATION)
+    {
+        return "license plate illumination";
+    }
+    else if (lightType == Object::VehicleLightType::LOW_BEAM)
+    {
+        return "low beam";
+    }
+    else if (lightType == Object::VehicleLightType::REVERSING_LIGHTS)
+    {
+        return "reversing light";
+    }
+    else if (lightType == Object::VehicleLightType::SPECIAL_PURPOSE_LIGHTS)
+    {
+        return "special purpose light";
+    }
+    else if (lightType == Object::VehicleLightType::WARNING_LIGHTS)
+    {
+        return "warning lights";
+    }
+    else if (lightType == Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS)
+    {
+        return "Unknown light";
+    }
+    return "none";
 }
 
 void OverrideControlAction::Start(double simTime, double dt)

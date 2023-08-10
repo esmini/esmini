@@ -122,26 +122,27 @@ enum class ControlDomains
     DOMAIN_NONE = 0,
     DOMAIN_LONG = 1,
     DOMAIN_LAT  = 2,
-    DOMAIN_BOTH = 3  // can also be interpreted as bitwise OR: DIM_LONG | DIM_LAT
+    DOMAIN_BOTH = 3,  // can also be interpreted as bitwise OR: DIM_LONG | DIM_LAT
+    DOMAIN_LIGHT = 4,
 };
 
-enum class LightDomains
-{
-    DAY_TIME_RUNNING_LIGHTS     = 0,
-    LOW_BEAM                    = 1,
-    HIGH_BEAM                   = 2,
-    FOG_LIGHTS                  = 3,
-    FOG_LIGHTS_FRONT            = 4,
-    FOG_LIGHTS_REAR             = 5,
-    BRAKE_LIGHTS                = 6,
-    WARNING_LIGHTS              = 7,
-    INDICATOR_LEFT              = 8,
-    INDICATOR_RIGHT             = 9,
-    REVERSING_LIGHTS            = 10,
-    LICENSE_PLATER_ILLUMINATION = 11,
-    SPECIAL_PURPOSE_LIGHTS      = 12,
-    NUMBER_OF_VEHICLE_LIGHTS    = 13  // can also be interpreted as bitwise OR: DIM_LONG | DIM_LAT
-};
+// enum class LightDomains
+// {
+//     DAY_TIME_RUNNING_LIGHTS     = 0,
+//     LOW_BEAM                    = 1,
+//     HIGH_BEAM                   = 2,
+//     FOG_LIGHTS                  = 3,
+//     FOG_LIGHTS_FRONT            = 4,
+//     FOG_LIGHTS_REAR             = 5,
+//     BRAKE_LIGHTS                = 6,
+//     WARNING_LIGHTS              = 7,
+//     INDICATOR_LEFT              = 8,
+//     INDICATOR_RIGHT             = 9,
+//     REVERSING_LIGHTS            = 10,
+//     LICENSE_PLATER_ILLUMINATION = 11,
+//     SPECIAL_PURPOSE_LIGHTS      = 12,
+//     NUMBER_OF_VEHICLE_LIGHTS    = 13  // can also be interpreted as bitwise OR: DIM_LONG | DIM_LAT
+// };
 
 enum class EntityScaleMode
 {
@@ -157,8 +158,6 @@ enum class FollowingMode
 };
 
 std::string ControlDomain2Str(ControlDomains domains);
-
-std::string LightDomain2Str(LightDomains lightDomains);
 
 enum class PixelFormat
 {

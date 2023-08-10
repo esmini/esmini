@@ -156,75 +156,14 @@ std::string ControlDomain2Str(ControlDomains domains)
     {
         return "longitudinal";
     }
+    else if (domains == ControlDomains::DOMAIN_LIGHT)
+    {
+        return "lights";
+    }
 
     return "none";
 }
 
-std::string LightDomain2Str(LightDomains LightDomain)
-{
-    if (LightDomain == LightDomains::DAY_TIME_RUNNING_LIGHTS)
-    {
-        return "day time running light";
-    }
-    else if (LightDomain == LightDomains::BRAKE_LIGHTS)
-    {
-        return "brake light";
-    }
-    else if (LightDomain == LightDomains::FOG_LIGHTS)
-    {
-        return "fog light";
-    }
-    else if (LightDomain == LightDomains::FOG_LIGHTS_FRONT)
-    {
-        return "fog light front";
-    }
-    else if (LightDomain == LightDomains::FOG_LIGHTS_REAR)
-    {
-        return "for light rear";
-    }
-    else if (LightDomain == LightDomains::HIGH_BEAM)
-    {
-        return "high beam";
-    }
-    else if (LightDomain == LightDomains::INDICATOR_LEFT)
-    {
-        return "indicator left";
-    }
-    else if (LightDomain == LightDomains::INDICATOR_RIGHT)
-    {
-        return "indicator right";
-    }
-    else if (LightDomain == LightDomains::LICENSE_PLATER_ILLUMINATION)
-    {
-        return "license plate illumination";
-    }
-    else if (LightDomain == LightDomains::LOW_BEAM)
-    {
-        return "low beam";
-    }
-    else if (LightDomain == LightDomains::REVERSING_LIGHTS)
-    {
-        return "reversing light";
-    }
-    else if (LightDomain == LightDomains::SPECIAL_PURPOSE_LIGHTS)
-    {
-        return "special purpose ligth";
-    }
-    else if (LightDomain == LightDomains::WARNING_LIGHTS)
-    {
-        return "warning ligths";
-    }
-    else if (LightDomain == LightDomains::NUMBER_OF_VEHICLE_LIGHTS)
-    {
-        return "Unknown light";
-    }
-
-
-
-
-
-    return "none";
-}
 
 bool FileExists(const char* fileName)
 {

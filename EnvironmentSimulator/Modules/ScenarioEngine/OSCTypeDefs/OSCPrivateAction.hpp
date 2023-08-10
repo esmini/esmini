@@ -72,7 +72,7 @@ namespace scenarioengine
             FOLLOW_TRAJECTORY,
             Acquire_POSITION,
             SYNCHRONIZE_ACTION,
-            LIGHT_STATE_Action,
+            LIGHT_STATE_ACTION,
         };
 
         enum class DynamicsDimension
@@ -91,6 +91,8 @@ namespace scenarioengine
             STEP,
             SHAPE_UNDEFINED
         };
+
+        std::string LightType2Str(Object::VehicleLightType lightType);
 
         class TransitionDynamics
         {
@@ -161,19 +163,27 @@ namespace scenarioengine
         };
 
         ActionType      type_;
+        Object::VehicleLightType lightType_;
         ControlDomains  domain_;
         Object*         object_;
         ScenarioEngine* scenarioEngine_;
-        Object::VehicleLightType lightDomain_;
 
-
-        OSCPrivateAction(OSCPrivateAction::ActionType type, ControlDomains domain, Object::VehicleLightType lightDomain)
+        OSCPrivateAction(OSCPrivateAction::ActionType type, ControlDomains domain)
             : OSCAction(OSCAction::BaseType::PRIVATE),
               type_(type),
               domain_(domain),
               object_(0),
-              scenarioEngine_(0),
-              lightDomain_(lightDomain)
+              scenarioEngine_(0)
+        {
+        }
+
+        OSCPrivateAction(OSCPrivateAction::ActionType type, Object::VehicleLightType lightType, ControlDomains domain)
+            : OSCAction(OSCAction::BaseType::PRIVATE),
+              type_(type),
+              lightType_(lightType),
+              domain_(domain),
+              object_(0),
+              scenarioEngine_(0)
         {
         }
 
@@ -199,9 +209,10 @@ namespace scenarioengine
         {
             return domain_;
         }
-        Object::VehicleLightType GetLightDomain()
+
+        Object::VehicleLightType GetLightType()
         {
-            return lightDomain_;
+            return lightType_;
         }
 
         virtual void ReplaceObjectRefs(Object*, Object*){};
@@ -274,13 +285,13 @@ namespace scenarioengine
         bool                    target_speed_reached_;
 
         LongSpeedAction()
-            : OSCPrivateAction(OSCPrivateAction::ActionType::LONG_SPEED, ControlDomains::DOMAIN_LONG, Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS),
+            : OSCPrivateAction(OSCPrivateAction::ActionType::LONG_SPEED, ControlDomains::DOMAIN_LONG),
               target_(0),
               target_speed_reached_(false)
         {
         }
 
-        LongSpeedAction(const LongSpeedAction& action) : OSCPrivateAction(OSCPrivateAction::ActionType::LONG_SPEED, ControlDomains::DOMAIN_LONG, Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS)
+        LongSpeedAction(const LongSpeedAction& action) : OSCPrivateAction(OSCPrivateAction::ActionType::LONG_SPEED, ControlDomains::DOMAIN_LONG)
         {
             name_                 = action.name_;
             target_               = action.target_;
@@ -362,7 +373,7 @@ namespace scenarioengine
         int                       cur_index_;
 
         LongSpeedProfileAction()
-            : OSCPrivateAction(OSCPrivateAction::ActionType::LONG_SPEED_PROFILE, ControlDomains::DOMAIN_LONG, Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS),
+            : OSCPrivateAction(OSCPrivateAction::ActionType::LONG_SPEED_PROFILE, ControlDomains::DOMAIN_LONG),
               following_mode_(FollowingMode::POSITION),
               entity_ref_(nullptr),
               cur_index_(0),
@@ -372,7 +383,7 @@ namespace scenarioengine
         }
 
         LongSpeedProfileAction(FollowingMode follow_mode)
-            : OSCPrivateAction(OSCPrivateAction::ActionType::LONG_SPEED_PROFILE, ControlDomains::DOMAIN_LONG, Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS),
+            : OSCPrivateAction(OSCPrivateAction::ActionType::LONG_SPEED_PROFILE, ControlDomains::DOMAIN_LONG),
               following_mode_(follow_mode),
               entity_ref_(nullptr),
               cur_index_(0),
@@ -382,7 +393,7 @@ namespace scenarioengine
         }
 
         LongSpeedProfileAction(const LongSpeedProfileAction& action)
-            : OSCPrivateAction(OSCPrivateAction::ActionType::LONG_SPEED_PROFILE, ControlDomains::DOMAIN_LONG, Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS)
+            : OSCPrivateAction(OSCPrivateAction::ActionType::LONG_SPEED_PROFILE, ControlDomains::DOMAIN_LONG)
         {
             name_           = action.name_;
             following_mode_ = action.following_mode_;
@@ -470,7 +481,7 @@ namespace scenarioengine
         DynamicConstraints dynamics_;
 
         LongDistanceAction()
-            : OSCPrivateAction(OSCPrivateAction::ActionType::LONG_DISTANCE, ControlDomains::DOMAIN_LONG,Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS),
+            : OSCPrivateAction(OSCPrivateAction::ActionType::LONG_DISTANCE, ControlDomains::DOMAIN_LONG),
               target_object_(0),
               distance_(0),
               dist_type_(DistType::DISTANCE),
@@ -482,7 +493,7 @@ namespace scenarioengine
         }
 
         LongDistanceAction(const LongDistanceAction& action)
-            : OSCPrivateAction(OSCPrivateAction::ActionType::LONG_DISTANCE, ControlDomains::DOMAIN_LONG, Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS)
+            : OSCPrivateAction(OSCPrivateAction::ActionType::LONG_DISTANCE, ControlDomains::DOMAIN_LONG)
         {
             name_          = action.name_;
             target_object_ = action.target_object_;
@@ -563,7 +574,7 @@ namespace scenarioengine
         double                  target_lane_offset_;
 
         LatLaneChangeAction(LatLaneChangeAction::DynamicsDimension timing_type = DynamicsDimension::TIME)
-            : OSCPrivateAction(OSCPrivateAction::ActionType::LAT_LANE_CHANGE, ControlDomains::DOMAIN_LAT, Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS),
+            : OSCPrivateAction(OSCPrivateAction::ActionType::LAT_LANE_CHANGE, ControlDomains::DOMAIN_LAT),
               target_(0),
               target_lane_offset_(0.0),
               start_offset_(0.0)
@@ -572,7 +583,7 @@ namespace scenarioengine
         }
 
         LatLaneChangeAction(const LatLaneChangeAction& action)
-            : OSCPrivateAction(OSCPrivateAction::ActionType::LAT_LANE_CHANGE, ControlDomains::DOMAIN_LAT, Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS),
+            : OSCPrivateAction(OSCPrivateAction::ActionType::LAT_LANE_CHANGE, ControlDomains::DOMAIN_LAT),
               target_(action.target_),
               transition_(action.transition_),
               target_lane_offset_(action.target_lane_offset_),
@@ -645,14 +656,14 @@ namespace scenarioengine
         TransitionDynamics      transition_;
         double                  max_lateral_acc_;
 
-        LatLaneOffsetAction() : OSCPrivateAction(OSCPrivateAction::ActionType::LAT_LANE_OFFSET, ControlDomains::DOMAIN_LAT, Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS)
+        LatLaneOffsetAction() : OSCPrivateAction(OSCPrivateAction::ActionType::LAT_LANE_OFFSET, ControlDomains::DOMAIN_LAT)
         {
             max_lateral_acc_ = 0;
             target_          = 0;
         }
 
         LatLaneOffsetAction(const LatLaneOffsetAction& action)
-            : OSCPrivateAction(OSCPrivateAction::ActionType::LAT_LANE_OFFSET, ControlDomains::DOMAIN_LAT, Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS)
+            : OSCPrivateAction(OSCPrivateAction::ActionType::LAT_LANE_OFFSET, ControlDomains::DOMAIN_LAT)
         {
             name_            = action.name_;
             target_          = action.target_;
@@ -734,7 +745,7 @@ namespace scenarioengine
         double lastDist_;
         double lastMasterDist_;
 
-        SynchronizeAction() : OSCPrivateAction(OSCPrivateAction::ActionType::SYNCHRONIZE_ACTION, ControlDomains::DOMAIN_LONG, Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS)
+        SynchronizeAction() : OSCPrivateAction(OSCPrivateAction::ActionType::SYNCHRONIZE_ACTION, ControlDomains::DOMAIN_LONG)
         {
             steadyState_OSCPosition_ = nullptr;
             master_object_           = 0;
@@ -751,7 +762,7 @@ namespace scenarioengine
         }
 
         SynchronizeAction(const SynchronizeAction& action)
-            : OSCPrivateAction(OSCPrivateAction::ActionType::SYNCHRONIZE_ACTION, ControlDomains::DOMAIN_LONG, Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS)
+            : OSCPrivateAction(OSCPrivateAction::ActionType::SYNCHRONIZE_ACTION, ControlDomains::DOMAIN_LONG)
         {
             name_                               = action.name_;
             steadyState_OSCPosition_            = action.steadyState_OSCPosition_;
@@ -812,11 +823,11 @@ namespace scenarioengine
         std::shared_ptr<OSCPosition> position_OSCPosition_;
         roadmanager::Position*       position_;
 
-        TeleportAction() : OSCPrivateAction(OSCPrivateAction::ActionType::TELEPORT, ControlDomains::DOMAIN_BOTH, Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS), ghost_restart_(false)
+        TeleportAction() : OSCPrivateAction(OSCPrivateAction::ActionType::TELEPORT, ControlDomains::DOMAIN_BOTH), ghost_restart_(false)
         {
         }
 
-        TeleportAction(const TeleportAction& action) : OSCPrivateAction(OSCPrivateAction::ActionType::TELEPORT, ControlDomains::DOMAIN_BOTH, Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS)
+        TeleportAction(const TeleportAction& action) : OSCPrivateAction(OSCPrivateAction::ActionType::TELEPORT, ControlDomains::DOMAIN_BOTH)
         {
             name_                 = action.name_;
             position_OSCPosition_ = action.position_OSCPosition_;
@@ -866,11 +877,11 @@ namespace scenarioengine
     public:
         roadmanager::Route* route_;
 
-        AssignRouteAction() : OSCPrivateAction(OSCPrivateAction::ActionType::ASSIGN_ROUTE, ControlDomains::DOMAIN_NONE, Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS), route_(0)
+        AssignRouteAction() : OSCPrivateAction(OSCPrivateAction::ActionType::ASSIGN_ROUTE, ControlDomains::DOMAIN_NONE), route_(0)
         {
         }
 
-        AssignRouteAction(const AssignRouteAction& action) : OSCPrivateAction(OSCPrivateAction::ActionType::ASSIGN_ROUTE, ControlDomains::DOMAIN_NONE, Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS)
+        AssignRouteAction(const AssignRouteAction& action) : OSCPrivateAction(OSCPrivateAction::ActionType::ASSIGN_ROUTE, ControlDomains::DOMAIN_NONE)
         {
             name_  = action.name_;
             route_ = new roadmanager::Route(*action.route_);
@@ -918,7 +929,7 @@ namespace scenarioengine
         bool                                       reverse_;
 
         FollowTrajectoryAction()
-            : OSCPrivateAction(OSCPrivateAction::ActionType::FOLLOW_TRAJECTORY, ControlDomains::DOMAIN_BOTH, Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS),
+            : OSCPrivateAction(OSCPrivateAction::ActionType::FOLLOW_TRAJECTORY, ControlDomains::DOMAIN_BOTH),
               traj_(0),
               timing_domain_(TimingDomain::NONE),
               following_mode_(FollowingMode::FOLLOW),
@@ -931,7 +942,7 @@ namespace scenarioengine
         }
 
         FollowTrajectoryAction(const FollowTrajectoryAction& action)
-            : OSCPrivateAction(OSCPrivateAction::ActionType::FOLLOW_TRAJECTORY, ControlDomains::DOMAIN_BOTH, Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS)
+            : OSCPrivateAction(OSCPrivateAction::ActionType::FOLLOW_TRAJECTORY, ControlDomains::DOMAIN_BOTH)
         {
             name_                  = action.name_;
             traj_                  = action.traj_;
@@ -970,14 +981,14 @@ namespace scenarioengine
         std::shared_ptr<roadmanager::Route> route_;
 
         AcquirePositionAction()
-            : OSCPrivateAction(OSCPrivateAction::ActionType::Acquire_POSITION, ControlDomains::DOMAIN_LONG, Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS),
+            : OSCPrivateAction(OSCPrivateAction::ActionType::Acquire_POSITION, ControlDomains::DOMAIN_LONG),
               target_position_(0),
               route_(0)
         {
         }
 
         AcquirePositionAction(const AcquirePositionAction& action)
-            : OSCPrivateAction(OSCPrivateAction::ActionType::Acquire_POSITION, ControlDomains::DOMAIN_LONG, Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS)
+            : OSCPrivateAction(OSCPrivateAction::ActionType::Acquire_POSITION, ControlDomains::DOMAIN_LONG)
         {
             name_                        = action.name_;
             target_position_OSCPosition_ = action.target_position_OSCPosition_;
@@ -1010,7 +1021,7 @@ namespace scenarioengine
 
         AssignControllerAction(Controller* controller)
             : OSCPrivateAction(OSCPrivateAction::ActionType::ASSIGN_CONTROLLER,
-                               controller != nullptr ? controller->GetDomain() : ControlDomains::DOMAIN_NONE, Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS),
+                               controller != nullptr ? controller->GetDomain() : ControlDomains::DOMAIN_NONE),
               controller_(controller),
               domainMask_(ControlDomains::DOMAIN_NONE)
         {
@@ -1018,7 +1029,7 @@ namespace scenarioengine
 
         AssignControllerAction(const AssignControllerAction& action)
             : OSCPrivateAction(OSCPrivateAction::ActionType::ASSIGN_CONTROLLER,
-                               action.controller_ != nullptr ? action.controller_->GetDomain() : ControlDomains::DOMAIN_NONE, Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS)
+                               action.controller_ != nullptr ? action.controller_->GetDomain() : ControlDomains::DOMAIN_NONE)
         {
             name_       = action.name_;
             controller_ = action.controller_;
@@ -1051,7 +1062,7 @@ namespace scenarioengine
         @param domainMask bitmask according to Controller::Domain type
         */
         ActivateControllerAction()
-            : OSCPrivateAction(OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER, domainMask_, Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS),
+            : OSCPrivateAction(OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER, domainMask_),
               domainMask_(ControlDomains::DOMAIN_BOTH)
         {
         }
@@ -1061,13 +1072,13 @@ namespace scenarioengine
         @param domainMask bitmask according to Controller::Domain type
         */
         ActivateControllerAction(ControlDomains domainMask)
-            : OSCPrivateAction(OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER, ControlDomains::DOMAIN_NONE, Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS),
+            : OSCPrivateAction(OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER, ControlDomains::DOMAIN_NONE),
               domainMask_(domainMask)
         {
         }
 
         ActivateControllerAction(const ActivateControllerAction& action)
-            : OSCPrivateAction(OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER, ControlDomains::DOMAIN_NONE, Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS)
+            : OSCPrivateAction(OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER, ControlDomains::DOMAIN_NONE)
         {
             name_       = action.name_;
             domainMask_ = action.domainMask_;
@@ -1131,7 +1142,7 @@ namespace scenarioengine
         bool sensors_;
 
         VisibilityAction()
-            : OSCPrivateAction(OSCPrivateAction::ActionType::VISIBILITY, ControlDomains::DOMAIN_NONE, Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS),
+            : OSCPrivateAction(OSCPrivateAction::ActionType::VISIBILITY, ControlDomains::DOMAIN_NONE),
               graphics_(true),
               traffic_(true),
               sensors_(true)
@@ -1139,7 +1150,7 @@ namespace scenarioengine
         }
 
         VisibilityAction(const VisibilityAction& action)
-            : OSCPrivateAction(OSCPrivateAction::ActionType::VISIBILITY, ControlDomains::DOMAIN_NONE, Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS),
+            : OSCPrivateAction(OSCPrivateAction::ActionType::VISIBILITY, ControlDomains::DOMAIN_NONE),
               graphics_(true),
               traffic_(true),
               sensors_(true)
@@ -1174,12 +1185,12 @@ namespace scenarioengine
         double                    luminousIntensity_;
         Object::VehicleLightMode  mode_;
         Object::VehicleLightColor color_;
-        Object::VehicleLightType  lightType_;
+        // Object::VehicleLightType  C;
         double                    cmyk_[4];
         double                    rgb_[3];
 
         LightStateAction()
-            : OSCPrivateAction(OSCPrivateAction::ActionType::LIGHT_STATE_Action, ControlDomains::DOMAIN_NONE, Object::VehicleLightType::HIGH_BEAM),
+            : OSCPrivateAction(OSCPrivateAction::ActionType::LIGHT_STATE_ACTION, Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS, ControlDomains::DOMAIN_LIGHT),
               transitionTime_(0.0),
               flashingOffDuration_(0.5),
               flashingOnDuration_(0.5),
@@ -1216,7 +1227,7 @@ namespace scenarioengine
 
         // assume both domains
         OverrideControlAction(double value, bool active, Object::OverrideType type)
-            : OSCPrivateAction(OSCPrivateAction::ActionType::OVERRIDE_CONTROLLER, ControlDomains::DOMAIN_NONE, Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS),
+            : OSCPrivateAction(OSCPrivateAction::ActionType::OVERRIDE_CONTROLLER, ControlDomains::DOMAIN_NONE),
               type_(type)
         {
             (void)value;
@@ -1228,7 +1239,7 @@ namespace scenarioengine
         }
 
         OverrideControlAction(const OverrideControlAction& action)
-            : OSCPrivateAction(OSCPrivateAction::ActionType::OVERRIDE_CONTROLLER, ControlDomains::DOMAIN_NONE, Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS)
+            : OSCPrivateAction(OSCPrivateAction::ActionType::OVERRIDE_CONTROLLER, ControlDomains::DOMAIN_NONE)
         {
             name_              = action.name_;
             type_              = action.type_;

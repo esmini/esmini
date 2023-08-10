@@ -58,20 +58,27 @@ void Event::Start(double simTime, double dt)
                             {
                                 if (static_cast<int>(pa2->GetDomain()) & static_cast<int>(pa->GetDomain()))
                                 {
-                                    // Domains overlap, at least one domain in common. Terminate old action.
-                                    LOG("Stopping object %s %s on conflicting %s domain(s)",
-                                        obj->name_.c_str(),
-                                        pa2->name_.c_str(),
-                                        ControlDomain2Str(pa2->GetDomain()).c_str());
-                                    pa2->End(simTime);
-                                }
-                                if (static_cast<int>(pa2->GetLightDomain()) & static_cast<int>(pa->GetLightDomain()))
-                                {
-                                    // light Domains overlap, at least one domain in common. Terminate old action.
-                                    LOG("Stopping object %s %s on conflicting light domain(s)",
-                                        obj->name_.c_str(),
-                                        pa2->name_.c_str());
-                                    pa2->End(simTime);
+                                    if (static_cast<int>(pa2->GetDomain()) == (static_cast<int>(ControlDomains::DOMAIN_LIGHT)))
+                                    {
+                                        if ( static_cast<int>(pa2->GetLightType()) & static_cast<int>(pa->GetLightType()))
+                                        {
+                                            // LightType overlap, at least one light type in common. Terminate old action.
+                                            LOG("Stopping object %s %s on conflicting %s light(s)",
+                                                obj->name_.c_str(),
+                                                pa2->name_.c_str(),
+                                                pa2->LightType2Str(pa2->GetLightType()).c_str());
+                                            pa2->End(simTime);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        // Domains overlap, at least one domain in common. Terminate old action.
+                                        LOG("Stopping object %s %s on conflicting %s domain(s)",
+                                            obj->name_.c_str(),
+                                            pa2->name_.c_str(),
+                                            ControlDomain2Str(pa2->GetDomain()).c_str());
+                                        pa2->End(simTime);
+                                    }
                                 }
                             }
                         }

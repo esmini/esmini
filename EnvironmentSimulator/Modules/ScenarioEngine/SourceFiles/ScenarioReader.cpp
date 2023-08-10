@@ -2098,6 +2098,7 @@ ActivateControllerAction *ScenarioReader::parseActivateControllerAction(pugi::xm
 {
     bool domain_longitudinal = parameters.ReadAttribute(node, "longitudinal") == "true";
     bool domain_lateral      = parameters.ReadAttribute(node, "lateral") == "true";
+    bool domain_light        = parameters.ReadAttribute(node, "light") == "true";
 
     int domainMask = 0;
     if (domain_longitudinal)
@@ -2107,6 +2108,10 @@ ActivateControllerAction *ScenarioReader::parseActivateControllerAction(pugi::xm
     if (domain_lateral)
     {
         domainMask |= static_cast<int>(ControlDomains::DOMAIN_LAT);
+    }
+    if (domain_light)
+    {
+        domainMask |= static_cast<int>(ControlDomains::DOMAIN_LIGHT);
     }
 
     ActivateControllerAction *activateControllerAction = new ActivateControllerAction(static_cast<ControlDomains>(domainMask));
