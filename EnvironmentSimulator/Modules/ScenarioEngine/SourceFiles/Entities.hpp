@@ -123,6 +123,7 @@ namespace scenarioengine
 
         typedef enum
         {
+            UNDEFINED                   = -1,
             DAY_TIME_RUNNING_LIGHTS     = 0,
             LOW_BEAM                    = 1,
             HIGH_BEAM                   = 2,
@@ -166,7 +167,7 @@ namespace scenarioengine
 
         struct VehicleLightActionStatus
         {
-            int               type              = static_cast<int>(VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS);  // according to VehicleLightType
+            int               type              = static_cast<int>(VehicleLightType::UNDEFINED);  // according to VehicleLightType
             VehicleLightMode  mode              = VehicleLightMode::UNKNOWN_MODE;
             VehicleLightColor colorName         = VehicleLightColor::OTHER;
             double            luminousIntensity = 0.0;

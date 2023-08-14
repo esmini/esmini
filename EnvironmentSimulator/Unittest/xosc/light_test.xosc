@@ -64,7 +64,7 @@
                      <Action name="HighBeamOnAction">
                         <PrivateAction>
                            <AppearanceAction>
-                                <LightStateAction transitionTime="4">
+                                <LightStateAction transitionTime="1.5">
                                     <LightType>
                                        <VehicleLight vehicleLightType= "highBeam"/>
                                     </LightType>
