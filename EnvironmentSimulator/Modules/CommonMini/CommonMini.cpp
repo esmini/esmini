@@ -603,6 +603,32 @@ void SwapByteOrder(unsigned char* buf, int data_type_size, int buf_size)
     }
 }
 
+bool CheckArrayNonZero(double array[], int size)
+{
+    for (int i = 0; i < size; i++)
+    {
+        if (!NEAR_ZERO(array[i]))
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool CheckArrayNonZero(int array[], int size)
+{
+    for (int i = 0; i < size; i++)
+    {
+        if (array[i] != 0)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 int strtoi(std::string s)
 {
     return atoi(s.c_str());

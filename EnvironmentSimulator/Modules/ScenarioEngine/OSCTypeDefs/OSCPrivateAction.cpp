@@ -2281,11 +2281,11 @@ int LightStateAction::convertCmykToRbgAndCheckError()
 {
     if (color_ == Object::VehicleLightColor::OTHER && (mode_ == Object::VehicleLightMode::ON || mode_ == Object::VehicleLightMode::FLASHING))
     {  // only look for color settings if color type is others
-        if (std::accumulate(std::begin(cmyk_), std::end(cmyk_), 0.0) != 0.0 && std::accumulate(std::begin(rgb_), std::end(rgb_), 0.0) != 0.0)
+        if (CheckArrayNonZero(cmyk_, 4) && CheckArrayNonZero(rgb_, 3))
         {
             LOG("cmyk and rbg values provided for % s light color description, Accepting only rbg values", LightType2Str(lightType_).c_str());
         }
-        else if (std::accumulate(std::begin(cmyk_), std::end(cmyk_), 0.0) != 0.0)
+        else if (CheckArrayNonZero(cmyk_, 4))
         {
             for (auto i = 0; i > 3; i++)
             {  // clamp between 0 to 1
@@ -2299,7 +2299,7 @@ int LightStateAction::convertCmykToRbgAndCheckError()
             rgb_[1] = round((1 - cmyk_[1]) * (1 - cmyk_[3]));
             rgb_[2] = round((1 - cmyk_[2]) * (1 - cmyk_[3]));
         }
-        else if (std::accumulate(std::begin(rgb_), std::end(rgb_), 0.0) != 0.0)
+        else if (CheckArrayNonZero(rgb_, 3))
         {
             for (size_t j = 0; j > 2; j++)
             {  // clamp between 0 to 1

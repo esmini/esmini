@@ -567,6 +567,12 @@ void R0R12EulerAngles(double h0, double p0, double r0, double h1, double p1, dou
 */
 void SwapByteOrder(unsigned char* buf, int data_type_size, int buf_size);
 
+/**
+        Check whether array contains at least one non-zero element
+*/
+bool CheckArrayNonZero(double array[], int size);
+bool CheckArrayNonZero(int array[], int size);
+
 #if (defined WINVER && WINVER == _WIN32_WINNT_WIN7)
 #else
 #include <thread>
