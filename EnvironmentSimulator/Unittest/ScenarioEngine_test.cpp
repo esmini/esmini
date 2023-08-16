@@ -2177,6 +2177,94 @@ TEST(ConditionTest, TestTTCAndLateralDist)
     RegisterParameterDeclarationCallback(nullptr, 0);
 }
 
+TEST(ActionTest, TestRelativeLaneChangeAction)
+{
+    double dt = 0.1;
+
+    ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/relative_lane_change.xosc");
+    ASSERT_NE(se, nullptr);
+    ASSERT_EQ(se->entities_.object_[0]->GetName(), "Ego");
+    ASSERT_EQ(se->entities_.object_[1]->GetName(), "Target1");
+    ASSERT_EQ(se->entities_.object_[2]->GetName(), "Target2");
+    ASSERT_EQ(se->entities_.object_[3]->GetName(), "Target3");
+
+    while (se->getSimulationTime() < 4.5 + dt - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }
+
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 109.483, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), -4.425, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[1]->pos_.GetX(), 140.0, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[1]->pos_.GetY(), -8.0, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[2]->pos_.GetX(), 290.547, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[2]->pos_.GetY(), 11.7, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[3]->pos_.GetX(), 260.0, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[3]->pos_.GetY(), 8.0, 1E-3);
+
+    while (se->getSimulationTime() < 8.5 + dt - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }
+
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 188.965, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), -11.5, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[1]->pos_.GetX(), 220.0, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[1]->pos_.GetY(), -8.0, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[2]->pos_.GetX(), 211.095, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[2]->pos_.GetY(), 4.425, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[3]->pos_.GetX(), 180.0, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[3]->pos_.GetY(), 8.0, 1E-3);
+
+    delete se;
+}
+
+TEST(ActionTest, TestRelativeLaneOffsetAction)
+{
+    double dt = 0.1;
+
+    ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/relative_lane_offset.xosc");
+    ASSERT_NE(se, nullptr);
+    ASSERT_EQ(se->entities_.object_[0]->GetName(), "Ego");
+    ASSERT_EQ(se->entities_.object_[1]->GetName(), "Target1");
+    ASSERT_EQ(se->entities_.object_[2]->GetName(), "Target2");
+    ASSERT_EQ(se->entities_.object_[3]->GetName(), "Target3");
+
+    while (se->getSimulationTime() < 4.5 + dt - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }
+
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 110.0, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), -7.1, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[1]->pos_.GetX(), 140.0, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[1]->pos_.GetY(), -8.0, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[2]->pos_.GetX(), 290.0, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[2]->pos_.GetY(), 8.9, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[3]->pos_.GetX(), 260.0, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[3]->pos_.GetY(), 8.0, 1E-3);
+
+    while (se->getSimulationTime() < 8.5 + dt - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }
+
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 190.0, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), -3.5, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[1]->pos_.GetX(), 220.0, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[1]->pos_.GetY(), -8.0, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[2]->pos_.GetX(), 210.0, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[2]->pos_.GetY(), 4.1, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[3]->pos_.GetX(), 180.0, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[3]->pos_.GetY(), 8.0, 1E-3);
+
+    delete se;
+}
+
 // Uncomment to print log output to console
 // #define LOG_TO_CONSOLE
 
