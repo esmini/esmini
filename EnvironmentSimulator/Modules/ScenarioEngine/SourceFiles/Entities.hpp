@@ -106,6 +106,7 @@ namespace scenarioengine
             int    value_type = 0;                                     // depends on override action type, e.g. OverrideBrakeType, OverrideGearType
         };
 
+        OverrideActionStatus overrideActionList[OverrideType::OVERRIDE_NR_TYPES];
         typedef struct
         {
             double maxAcceleration;
@@ -162,20 +163,17 @@ namespace scenarioengine
             BROWN            = 7,
             BLACK            = 8,
             GREY             = 9,
-            WHITE            = 10,
-            NUMBER_OF_COLORS = 11
+            WHITE            = 10
         };
 
         struct VehicleLightActionStatus
         {
-            int               type              = static_cast<int>(VehicleLightType::UNDEFINED);  // according to VehicleLightType
+            VehicleLightType  type              = VehicleLightType::UNDEFINED;  // according to VehicleLightType
             VehicleLightMode  mode              = VehicleLightMode::UNKNOWN_MODE;
             VehicleLightColor colorName         = VehicleLightColor::OTHER;
             double            luminousIntensity = 0.0;
             double            rgb[3]            = {0.0, 0.0, 0.0};  // RGB values
         };
-
-        OverrideActionStatus overrideActionList[OverrideType::OVERRIDE_NR_TYPES];
 
         VehicleLightActionStatus vehicleLightActionStatusList[VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS];
 

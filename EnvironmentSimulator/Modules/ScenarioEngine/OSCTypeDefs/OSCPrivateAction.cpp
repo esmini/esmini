@@ -2144,48 +2144,12 @@ void VisibilityAction::Step(double simTime, double dt)
     OSCAction::End(simTime);
 }
 
-int OverrideControlAction::AddOverrideStatus(Object::OverrideActionStatus status)
-{
-    overrideActionList.push_back(status);
-    if (status.type < Object::OverrideType::OVERRIDE_NR_TYPES)
-    {
-        if (status.type == Object::OverrideType::OVERRIDE_STEERING_WHEEL)
-        {
-            if (status.active)
-            {
-                domain_ = static_cast<ControlDomains>(static_cast<int>(domain_) | static_cast<int>(ControlDomains::DOMAIN_LAT));
-            }
-            else
-            {
-                domain_ = static_cast<ControlDomains>(static_cast<int>(domain_) & ~static_cast<int>(ControlDomains::DOMAIN_LAT));
-            }
-        }
-        else
-        {
-            if (status.active)
-            {
-                domain_ = static_cast<ControlDomains>(static_cast<int>(domain_) | static_cast<int>(ControlDomains::DOMAIN_LONG));
-            }
-            else
-            {
-                domain_ = static_cast<ControlDomains>(static_cast<int>(domain_) & ~static_cast<int>(ControlDomains::DOMAIN_LONG));
-            }
-        }
-    }
-    else
-    {
-        LOG_AND_QUIT("Unexpected override type: %d", status.type);
-    }
-
-    return 0;
-}
-
 void LightStateAction::AddVehicleLightActionStatus(Object::VehicleLightActionStatus lightStatus)
 {
     vehicleLightActionStatusList = lightStatus;
     if (lightStatus.type < Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS)
     {
-        lightType_ = static_cast<Object::VehicleLightType>(lightStatus.type);
+        lightType_ = lightStatus.type;
     }
     else
     {
@@ -2199,23 +2163,15 @@ void LightStateAction::Start(double simTime, double dt)
     transitionTimer_    = 0.0;
     flashingTimer_      = 0.0;
     initialValueLum_    = object_->vehicleLightActionStatusList[vehicleLightActionStatusList.type].luminousIntensity;
-    initialValueRbg_[0] = object_->vehicleLightActionStatusList[vehicleLightActionStatusList.type].rgb[0];
-    initialValueRbg_[1] = object_->vehicleLightActionStatusList[vehicleLightActionStatusList.type].rgb[1];
-    initialValueRbg_[2] = object_->vehicleLightActionStatusList[vehicleLightActionStatusList.type].rgb[2];
-
-    // type, mode, color assigned in dedicated object light
-    object_->vehicleLightActionStatusList[vehicleLightActionStatusList.type].type      = vehicleLightActionStatusList.type;
-    object_->vehicleLightActionStatusList[vehicleLightActionStatusList.type].mode      = mode_;
-    object_->vehicleLightActionStatusList[vehicleLightActionStatusList.type].colorName = color_;
 
     if (!(lightType_ == Object::VehicleLightType::WARNING_LIGHTS || lightType_ == Object::VehicleLightType::INDICATOR_LEFT ||
           lightType_ == Object::VehicleLightType::INDICATOR_RIGHT || lightType_ == Object::VehicleLightType::SPECIAL_PURPOSE_LIGHTS) &&
-        (mode_ == Object::VehicleLightMode::FLASHING))
+        (vehicleLightActionStatusList.mode == Object::VehicleLightMode::FLASHING))
     {
-        object_->vehicleLightActionStatusList[vehicleLightActionStatusList.type].mode = mode_ = Object::VehicleLightMode::ON;
+        object_->vehicleLightActionStatusList[vehicleLightActionStatusList.type].mode = Object::VehicleLightMode::ON;
         LOG("Setting light mode to ON, Only indicator or special purpose light support flashing");
     }
-    if ((mode_ == Object::VehicleLightMode::OFF) && (luminousIntensity_ > 0.0))
+    if ((vehicleLightActionStatusList.mode == Object::VehicleLightMode::OFF) && (luminousIntensity_ > 0.0))
     {  // In case light mode is off, setting overwriting luminous intensity to 0.
         LOG("Light type %s is in Off state, Making luminousIntensity to 0 from %.1f.",
             LightType2Str(lightType_).c_str(),
@@ -2223,6 +2179,7 @@ void LightStateAction::Start(double simTime, double dt)
         luminousIntensity_ = 0.0;
     }
 
+    object_->vehicleLightActionStatusList[vehicleLightActionStatusList.type] = vehicleLightActionStatusList;
     OSCAction::Start(simTime, dt);
 }
 
@@ -2230,14 +2187,11 @@ void LightStateAction::Step(double simTime, double dt)
 {
     if (transitionTime_ < transitionTimer_)
     {  // light intensity, color intensity increased till transistion time.
-        if (mode_ == Object::VehicleLightMode::FLASHING)
+        if (vehicleLightActionStatusList.mode == Object::VehicleLightMode::FLASHING)
         {
             if (flashingOnDuration_ > flashingTimer_)
             {  // flash on time made all values as final value
                 object_->vehicleLightActionStatusList[vehicleLightActionStatusList.type].luminousIntensity = luminousIntensity_;
-                object_->vehicleLightActionStatusList[vehicleLightActionStatusList.type].rgb[0]            = rgb_[0];
-                object_->vehicleLightActionStatusList[vehicleLightActionStatusList.type].rgb[1]            = rgb_[1];
-                object_->vehicleLightActionStatusList[vehicleLightActionStatusList.type].rgb[2]            = rgb_[2];
                 flashingTimer_ += dt;
             }
             else if (flashingOnDuration_ + flashingOffDuration_ > flashingTimer_)
@@ -2269,202 +2223,280 @@ int LightStateAction::setLightTransistionValues(double value)
     // initialValue + (proportion * (finalValue - initialValue))
     object_->vehicleLightActionStatusList[vehicleLightActionStatusList.type].luminousIntensity =
         initialValueLum_ + ((transitionTimer_ / transitionTime_) * (luminousIntensity_ - initialValueLum_)) * value;
-    object_->vehicleLightActionStatusList[vehicleLightActionStatusList.type].rgb[0] =
-        initialValueRbg_[0] + ((transitionTimer_ / transitionTime_) * (rgb_[0] - initialValueRbg_[0])) * value;
-    object_->vehicleLightActionStatusList[vehicleLightActionStatusList.type].rgb[1] =
-        initialValueRbg_[1] + ((transitionTimer_ / transitionTime_) * (rgb_[1] - initialValueRbg_[1])) * value;
-    object_->vehicleLightActionStatusList[vehicleLightActionStatusList.type].rgb[2] =
-        initialValueRbg_[2] + ((transitionTimer_ / transitionTime_) * (rgb_[2] - initialValueRbg_[2])) * value;
+    return 0;
+}
+
+int LightStateAction::checkColorType(Object::VehicleLightActionStatus& lightStatus)
+{
+    if (CheckArrayNonZero(cmyk_, 4) && CheckArrayNonZero(lightStatus.rgb, 3))
+    {
+        checkColorError(lightStatus.rgb, sizeof(lightStatus.rgb)/sizeof(lightStatus.rgb[0]), lightStatus.type);
+        LOG("cmyk and rbg values provided for % s light color description, Accepting only rbg values", LightType2Str(lightType_).c_str());
+    }
+    else if (CheckArrayNonZero(cmyk_, 4))
+    {
+        checkColorError(cmyk_, sizeof(cmyk_)/sizeof(cmyk_[0]), lightStatus.type);
+        // convert cmyk to rbg values
+        lightStatus.rgb[0] = (1 - cmyk_[0]) * (1 - cmyk_[3]);
+        lightStatus.rgb[1] = (1 - cmyk_[1]) * (1 - cmyk_[3]);
+        lightStatus.rgb[2] = (1 - cmyk_[2]) * (1 - cmyk_[3]);
+    }
+    else if (CheckArrayNonZero(lightStatus.rgb, 3))
+    {
+        checkColorError(lightStatus.rgb, sizeof(lightStatus.rgb)/sizeof(lightStatus.rgb[0]), lightStatus.type);
+    }
+    else if (lightStatus.colorName == Object::VehicleLightColor::OTHER)
+    {    // set rbg(red for brake, orange for indicator, white for remaining) in case no rbg values provided for other light type, other also mean no light type provided in scenario
+        if (lightStatus.type == Object::VehicleLightType::BRAKE_LIGHTS)
+        {
+            convertColorToRbg(Object::VehicleLightColor::RED, lightStatus);
+        }
+        else if ((lightStatus.type == Object::VehicleLightType::INDICATOR_LEFT) || (lightStatus.type == Object::VehicleLightType::INDICATOR_RIGHT) || (lightStatus.type == Object::VehicleLightType::WARNING_LIGHTS))
+        {
+            convertColorToRbg(Object::VehicleLightColor::ORANGE, lightStatus);
+        }
+        else
+        {
+            convertColorToRbg(Object::VehicleLightColor::WHITE, lightStatus);
+        }
+        LOG("Either rbg nor cmyk values are not provided for %s light type, Setting it as rbg red:%.f blue:%.f green:%.f", LightType2Str(lightType_).c_str(), lightStatus.rgb[0], lightStatus.rgb[1], lightStatus.rgb[2]);
+    }
+
+    else
+    { // convert color to rbg values, Only when color type provided without rbg or cmk
+        convertColorToRbg(lightStatus.colorName, lightStatus);
+    }
+
+    if (lightStatus.type == Object::VehicleLightType::SPECIAL_PURPOSE_LIGHTS)
+    {
+        // decide color type from rbg, Special vehicle has only two extra colour (blue and amber). see osiReporter.cpp
+        if (lightStatus.rgb[0] >= lightStatus.rgb[1] && lightStatus.rgb[0] >= lightStatus.rgb[2])
+        {  // orange if red value is greater than blue and green
+            lightStatus.colorName = Object::VehicleLightColor::ORANGE;
+        }
+        else
+        {
+            lightStatus.colorName = Object::VehicleLightColor::BLUE;
+        }
+    }
 
     return 0;
 }
 
-int LightStateAction::convertCmykToRbgAndCheckError()
+int LightStateAction::checkColorError(double *value, int n, Object::VehicleLightType type)
 {
-    if (color_ == Object::VehicleLightColor::OTHER && (mode_ == Object::VehicleLightMode::ON || mode_ == Object::VehicleLightMode::FLASHING))
-    {  // only look for color settings if color type is others
-        if (CheckArrayNonZero(cmyk_, 4) && CheckArrayNonZero(rgb_, 3))
+    for (int i = 0; i < n; i++)
+    {  // clamp between 0 to 1
+        if (value[i] > 1)
         {
-            LOG("cmyk and rbg values provided for % s light color description, Accepting only rbg values", LightType2Str(lightType_).c_str());
-        }
-        else if (CheckArrayNonZero(cmyk_, 4))
-        {
-            for (auto i = 0; i > 3; i++)
-            {  // clamp between 0 to 1
-                if (cmyk_[i] > 1)
-                {
-                    cmyk_[i] = MAX(0, MIN(cmyk_[i], 1));
-                    LOG("cmyk value is not within range and is changed to %.1f for %s light type.", cmyk_[i], LightType2Str(lightType_).c_str());
-                }
-            }  // convert cmyk to rbg values
-            rgb_[0] = round((1 - cmyk_[0]) * (1 - cmyk_[3]));
-            rgb_[1] = round((1 - cmyk_[1]) * (1 - cmyk_[3]));
-            rgb_[2] = round((1 - cmyk_[2]) * (1 - cmyk_[3]));
-        }
-        else if (CheckArrayNonZero(rgb_, 3))
-        {
-            for (size_t j = 0; j > 2; j++)
-            {  // clamp between 0 to 1
-                if (rgb_[j] > 1)
-                {
-                    rgb_[j] = MAX(0, MIN(rgb_[j], 1));
-                    LOG("rbg value is not within range and is changed to %.1f for %s light type.", rgb_[j], LightType2Str(lightType_).c_str());
-                }
-            }
-        }
-        else
-        {
-            rgb_[0] = 1.0;
-            LOG("Either rbg nor cmyk values are not provided for %s light type, Setting it as rbg red:%.f blue:%.f green:%.f", LightType2Str(lightType_).c_str(), rgb_[0], rgb_[1], rgb_[2]);
-        }
-
-        // decide color type from rbg, Special vehicle has only two extra colour (blue and amber), blue and red combination not considered
-        if (rgb_[0] >= rgb_[1] && rgb_[0] >= rgb_[2])
-        {  // orange if red value is greater than blue and green
-            color_ = Object::VehicleLightColor::ORANGE;
-        }
-        else
-        {
-            color_ = Object::VehicleLightColor::BLUE;
+            value[i] = MAX(0, MIN(value[i], 1));
+            LOG("cmyk or rbg value is not within range and is changed to %.1f for %s light type.", value[i], LightType2Str(type).c_str());
         }
     }
     return 0;
+}
+void LightStateAction::convertColorToRbg(Object::VehicleLightColor colorType, Object::VehicleLightActionStatus& lightStatus)
+{
+    if (colorType == Object::VehicleLightColor::RED)
+    {
+        lightStatus.rgb[0] = 0;
+        lightStatus.rgb[1] = 0;
+        lightStatus.rgb[2] = 1;
+    }
+    else if (colorType == Object::VehicleLightColor::YELLOW)
+    {
+        lightStatus.rgb[0] = 1;
+        lightStatus.rgb[1] = 1;
+        lightStatus.rgb[2] = 0;
+    }
+    else if (colorType == Object::VehicleLightColor::GREEN)
+    {
+        lightStatus.rgb[0] = 0;
+        lightStatus.rgb[1] = 0.5;
+        lightStatus.rgb[2] = 0;
+    }
+    else if (colorType == Object::VehicleLightColor::BLUE)
+    {
+        lightStatus.rgb[0] = 0;
+        lightStatus.rgb[1] = 0;
+        lightStatus.rgb[2] = 1;
+    }
+    else if (colorType == Object::VehicleLightColor::VIOLET)
+    {
+        lightStatus.rgb[0] = 0.93;
+        lightStatus.rgb[1] = 0.51;
+        lightStatus.rgb[2] = 0.93;
+    }
+    else if (colorType == Object::VehicleLightColor::ORANGE)
+    {
+        lightStatus.rgb[0] = 1;
+        lightStatus.rgb[1] = 0.65;
+        lightStatus.rgb[2] = 0;
+    }
+    else if (colorType == Object::VehicleLightColor::BROWN)
+    {
+        lightStatus.rgb[0] = 0.65;
+        lightStatus.rgb[1] = 0.16;
+        lightStatus.rgb[2] = 0.16;
+    }
+    else if (colorType == Object::VehicleLightColor::BLACK)
+    {
+        lightStatus.rgb[0] = 0;
+        lightStatus.rgb[1] = 0;
+        lightStatus.rgb[2] = 0;
+    }
+    else if (colorType == Object::VehicleLightColor::GREY)
+    {
+        lightStatus.rgb[0] = 0.5;
+        lightStatus.rgb[1] = 0.5;
+        lightStatus.rgb[2] = 0.5;
+    }
+    else if (colorType == Object::VehicleLightColor::WHITE)
+    {
+        lightStatus.rgb[0] = 1;
+        lightStatus.rgb[1] = 1;
+        lightStatus.rgb[2] = 1;
+    }
+    else
+    {
+        LOG("Colour type not supported, set to default (other)");
+    }
 }
 
 int LightStateAction::setVehicleLightType(std::string light_type, Object::VehicleLightActionStatus& lightStatus)
 {
     if (light_type == "daytimeRunningLights")
     {
-        lightStatus.type = lightType_ = Object::VehicleLightType::DAY_TIME_RUNNING_LIGHTS;
+        lightStatus.type = Object::VehicleLightType::DAY_TIME_RUNNING_LIGHTS;
     }
     else if (light_type == "lowBeam")
     {
-        lightStatus.type = lightType_ = Object::VehicleLightType::LOW_BEAM;
+        lightStatus.type = Object::VehicleLightType::LOW_BEAM;
     }
     else if (light_type == "highBeam")
     {
-        lightStatus.type = lightType_ = Object::VehicleLightType::HIGH_BEAM;
+        lightStatus.type = Object::VehicleLightType::HIGH_BEAM;
     }
     else if (light_type == "fogLights")
     {
-        lightStatus.type = lightType_ = Object::VehicleLightType::FOG_LIGHTS;
+        lightStatus.type = Object::VehicleLightType::FOG_LIGHTS;
     }
     else if (light_type == "fogLightsFront")
     {
-        lightStatus.type = lightType_ = Object::VehicleLightType::FOG_LIGHTS_FRONT;
+        lightStatus.type = Object::VehicleLightType::FOG_LIGHTS_FRONT;
     }
     else if (light_type == "fogLightsRear")
     {
-        lightStatus.type = lightType_ = Object::VehicleLightType::FOG_LIGHTS_REAR;
+        lightStatus.type = Object::VehicleLightType::FOG_LIGHTS_REAR;
     }
     else if (light_type == "brakeLights")
     {
-        lightStatus.type = lightType_ = Object::VehicleLightType::BRAKE_LIGHTS;
+        lightStatus.type = Object::VehicleLightType::BRAKE_LIGHTS;
     }
     else if (light_type == "warningLights")
     {
-        lightStatus.type = lightType_ = Object::VehicleLightType::WARNING_LIGHTS;
+        lightStatus.type = Object::VehicleLightType::WARNING_LIGHTS;
     }
     else if (light_type == "indicatorLeft")
     {
-        lightStatus.type = lightType_ = Object::VehicleLightType::INDICATOR_LEFT;
+        lightStatus.type = Object::VehicleLightType::INDICATOR_LEFT;
     }
     else if (light_type == "indicatorRight")
     {
-        lightStatus.type = lightType_ = Object::VehicleLightType::INDICATOR_RIGHT;
+        lightStatus.type = Object::VehicleLightType::INDICATOR_RIGHT;
     }
     else if (light_type == "reversingLights")
     {
-        lightStatus.type = lightType_ = Object::VehicleLightType::REVERSING_LIGHTS;
+        lightStatus.type = Object::VehicleLightType::REVERSING_LIGHTS;
     }
     else if (light_type == "licensePlateIllumination")
     {
-        lightStatus.type = lightType_ = Object::VehicleLightType::LICENSE_PLATER_ILLUMINATION;
+        lightStatus.type = Object::VehicleLightType::LICENSE_PLATER_ILLUMINATION;
     }
     else if (light_type == "specialPurposeLights")
     {
-        lightStatus.type = lightType_ = Object::VehicleLightType::SPECIAL_PURPOSE_LIGHTS;
+        lightStatus.type = Object::VehicleLightType::SPECIAL_PURPOSE_LIGHTS;
     }
     else
     {
-        lightStatus.type = lightType_ = Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS;
+        lightStatus.type = Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS;
         LOG("VehicleLight type %s not supported", light_type.c_str());
         return -1;
     }
     return 0;
 }
 
-void LightStateAction::setVehicleLightMode(std::string mode)
+void LightStateAction::setVehicleLightMode(std::string mode, Object::VehicleLightActionStatus& lightStatus)
 {
     if (mode == "on")
     {
-        mode_ = Object::VehicleLightMode::ON;
+        lightStatus.mode = Object::VehicleLightMode::ON;
     }
     else if (mode == "off")
     {
-        mode_ = Object::VehicleLightMode::OFF;
+        lightStatus.mode = Object::VehicleLightMode::OFF;
     }
     else if (mode == "flashing")
     {
-        mode_ = Object::VehicleLightMode::FLASHING;
+        lightStatus.mode = Object::VehicleLightMode::FLASHING;
     }
     else
     {
         LOG("VehicleLight Mode %s not supported", mode.c_str());
-        mode_ = Object::VehicleLightMode::UNKNOWN_MODE;
+       lightStatus.mode = Object::VehicleLightMode::UNKNOWN_MODE;
     }
 }
 
-void LightStateAction::setVehicleLightColor(std::string colorType)
+void LightStateAction::setVehicleLightColor(std::string colorType, Object::VehicleLightActionStatus& lightStatus)
 {
     if (colorType == "other")
     {
-        color_ = Object::VehicleLightColor::OTHER;
+        lightStatus.colorName = Object::VehicleLightColor::OTHER;
     }
     else if (colorType == "red")
     {
-        color_ = Object::VehicleLightColor::RED;
+        lightStatus.colorName = Object::VehicleLightColor::RED;
     }
     else if (colorType == "yellow")
     {
-        color_ = Object::VehicleLightColor::YELLOW;
+        lightStatus.colorName = Object::VehicleLightColor::YELLOW;
     }
     else if (colorType == "green")
     {
-        color_ = Object::VehicleLightColor::GREEN;
+        lightStatus.colorName = Object::VehicleLightColor::GREEN;
     }
     else if (colorType == "blue")
     {
-        color_ = Object::VehicleLightColor::BLUE;
+        lightStatus.colorName = Object::VehicleLightColor::BLUE;
     }
     else if (colorType == "violet")
     {
-        color_ = Object::VehicleLightColor::VIOLET;
+        lightStatus.colorName = Object::VehicleLightColor::VIOLET;
     }
     else if (colorType == "orange")
     {
-        color_ = Object::VehicleLightColor::ORANGE;
+        lightStatus.colorName = Object::VehicleLightColor::ORANGE;
     }
     else if (colorType == "brown")
     {
-        color_ = Object::VehicleLightColor::BROWN;
+        lightStatus.colorName = Object::VehicleLightColor::BROWN;
     }
     else if (colorType == "black")
     {
-        color_ = Object::VehicleLightColor::BLACK;
+        lightStatus.colorName = Object::VehicleLightColor::BLACK;
     }
     else if (colorType == "gray")
     {
-        color_ = Object::VehicleLightColor::GREY;
+        lightStatus.colorName = Object::VehicleLightColor::GREY;
     }
     else if (colorType == "white")
     {
-        color_ = Object::VehicleLightColor::WHITE;
+        lightStatus.colorName = Object::VehicleLightColor::WHITE;
     }
     else
     {
         LOG("Colour type %s not supported, set to default (other)", colorType.c_str());
-        color_ = Object::VehicleLightColor::OTHER;
+        lightStatus.colorName = Object::VehicleLightColor::OTHER;
     }
 }
 
@@ -2527,6 +2559,42 @@ std::string OSCPrivateAction::LightType2Str(Object::VehicleLightType lightType)
         return "Unknown light";
     }
     return "none";
+}
+
+int OverrideControlAction::AddOverrideStatus(Object::OverrideActionStatus status)
+{
+    overrideActionList.push_back(status);
+    if (status.type < Object::OverrideType::OVERRIDE_NR_TYPES)
+    {
+        if (status.type == Object::OverrideType::OVERRIDE_STEERING_WHEEL)
+        {
+            if (status.active)
+            {
+                domain_ = static_cast<ControlDomains>(static_cast<int>(domain_) | static_cast<int>(ControlDomains::DOMAIN_LAT));
+            }
+            else
+            {
+                domain_ = static_cast<ControlDomains>(static_cast<int>(domain_) & ~static_cast<int>(ControlDomains::DOMAIN_LAT));
+            }
+        }
+        else
+        {
+            if (status.active)
+            {
+                domain_ = static_cast<ControlDomains>(static_cast<int>(domain_) | static_cast<int>(ControlDomains::DOMAIN_LONG));
+            }
+            else
+            {
+                domain_ = static_cast<ControlDomains>(static_cast<int>(domain_) & ~static_cast<int>(ControlDomains::DOMAIN_LONG));
+            }
+        }
+    }
+    else
+    {
+        LOG_AND_QUIT("Unexpected override type: %d", status.type);
+    }
+
+    return 0;
 }
 
 void OverrideControlAction::Start(double simTime, double dt)

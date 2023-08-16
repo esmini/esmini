@@ -1183,10 +1183,8 @@ namespace scenarioengine
         double                    flashingOffDuration_;
         double                    flashingOnDuration_;
         double                    luminousIntensity_;
-        Object::VehicleLightMode  mode_;
-        Object::VehicleLightColor color_;
-        double cmyk_[4];
-        double rgb_[3];
+        double                    cmyk_[4];
+
 
         LightStateAction()
             : OSCPrivateAction(OSCPrivateAction::ActionType::LIGHT_STATE_ACTION,
@@ -1196,27 +1194,25 @@ namespace scenarioengine
               flashingOffDuration_(0.5),
               flashingOnDuration_(0.5),
               luminousIntensity_(0.0),
-              mode_(Object::VehicleLightMode::OFF),
-              color_(Object::VehicleLightColor::OTHER),
-              cmyk_{0.0, 0.0, 0.0, 0.0},
-              rgb_{0.0, 0.0, 0.0}
+              cmyk_{0.0, 0.0, 0.0, 0.0}
         {
         }
 
         double transitionTimer_ = SMALL_NUMBER;
         double flashingTimer_   = SMALL_NUMBER;
         double initialValueLum_;
-        double initialValueRbg_[3];
 
         int  setVehicleLightType(std::string typeObject, Object::VehicleLightActionStatus& lightStatus);
-        void setVehicleLightMode(std::string mode);
-        void setVehicleLightColor(std::string colorType);
+        void setVehicleLightMode(std::string mode, Object::VehicleLightActionStatus& lightStatus);
+        void setVehicleLightColor(std::string colorType, Object::VehicleLightActionStatus& lightStatus);
 
         void Step(double simTime, double dt);
         void Start(double simTime, double dt);
         void AddVehicleLightActionStatus(Object::VehicleLightActionStatus lightStatus);
         int  setLightTransistionValues(double value);
-        int  convertCmykToRbgAndCheckError();
+        int  checkColorType(Object::VehicleLightActionStatus& lightStatus);
+        int  checkColorError(double *value, int n, Object::VehicleLightType type);
+        void convertColorToRbg(Object::VehicleLightColor colorType, Object::VehicleLightActionStatus& lightStatus);
 
     private:
         Object::VehicleLightActionStatus vehicleLightActionStatusList;

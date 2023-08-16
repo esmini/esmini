@@ -3235,8 +3235,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                         {
                             if (lightTypeChild.name() == std::string("VehicleLight"))
                             {
-                                lightStateAction->setVehicleLightType(parameters.ReadAttribute(lightTypeChild, "vehicleLightType"),
-                                                                      LightActionStatus);
+                                lightStateAction->setVehicleLightType(parameters.ReadAttribute(lightTypeChild, "vehicleLightType"), LightActionStatus);
                             }
                             else if (lightTypeChild.name() == std::string("UserDefinedLight"))
                             {
@@ -3264,7 +3263,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                         }
                         if (!parameters.ReadAttribute(LightStateActionChild, "mode").empty())
                         {
-                            lightStateAction->setVehicleLightMode(parameters.ReadAttribute(LightStateActionChild, "mode"));
+                            lightStateAction->setVehicleLightMode(parameters.ReadAttribute(LightStateActionChild, "mode"), LightActionStatus);
                         }
                         else
                         {
@@ -3276,7 +3275,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                             {
                                 if (!parameters.ReadAttribute(colourChild, "colorType").empty())
                                 {
-                                    lightStateAction->setVehicleLightColor(parameters.ReadAttribute(colourChild, "colorType"));
+                                    lightStateAction->setVehicleLightColor(parameters.ReadAttribute(colourChild, "colorType"), LightActionStatus);
                                 }
                                 for (pugi::xml_node colourDesChild = colourChild.first_child(); colourDesChild;
                                      colourDesChild                = colourDesChild.next_sibling())
@@ -3285,16 +3284,23 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                                     {
                                         if (!parameters.ReadAttribute(colourDesChild, "red").empty())
                                         {
-                                            lightStateAction->rgb_[0] = strtod(parameters.ReadAttribute(colourDesChild, "red"));
-                                        }
-                                        if (!parameters.ReadAttribute(colourDesChild, "blue").empty())
-                                        {
-                                            lightStateAction->rgb_[1] = strtod(parameters.ReadAttribute(colourDesChild, "blue"));
+                                            LightActionStatus.rgb[0] = strtod(parameters.ReadAttribute(colourDesChild, "red"));
                                         }
                                         if (!parameters.ReadAttribute(colourDesChild, "green").empty())
                                         {
-                                            lightStateAction->rgb_[2] = strtod(parameters.ReadAttribute(colourDesChild, "green"));
+                                            LightActionStatus.rgb[1] = strtod(parameters.ReadAttribute(colourDesChild, "green"));
                                         }
+                                        if (!parameters.ReadAttribute(colourDesChild, "blue").empty())
+                                        {
+                                            LightActionStatus.rgb[2] = strtod(parameters.ReadAttribute(colourDesChild, "blue"));
+                                        }
+                                        if (parameters.ReadAttribute(colourDesChild, "red").empty() ||
+                                            parameters.ReadAttribute(colourDesChild, "green").empty() ||
+                                            parameters.ReadAttribute(colourDesChild, "blue").empty())
+                                        {
+                                            LOG("Any of RBG values missing, Anyway setting it as Zero");
+                                        }
+
                                     }
                                     else if (colourDesChild.name() == std::string("ColorCmyk"))
                                     {
@@ -3314,11 +3320,18 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                                         {
                                             lightStateAction->cmyk_[3] = strtod(parameters.ReadAttribute(colourDesChild, "key"));
                                         }
+                                        if (parameters.ReadAttribute(colourDesChild, "cyan").empty() ||
+                                            parameters.ReadAttribute(colourDesChild, "magenta").empty() ||
+                                            parameters.ReadAttribute(colourDesChild, "yellow").empty() ||
+                                            parameters.ReadAttribute(colourDesChild, "key").empty())
+                                        {
+                                            LOG("Any of CMYK values missing, Anyway setting it as Zero");
+                                        }
                                     }
                                 }
                             }
                         }
-                        lightStateAction->convertCmykToRbgAndCheckError();
+                        lightStateAction->checkColorType(LightActionStatus);
                     }
                     else
                     {

@@ -69,8 +69,8 @@
                                        <VehicleLight vehicleLightType= "highBeam"/>
                                     </LightType>
                                     <LightState mode= "on" luminousIntensity="10" flashingOffDuration="2" flashingOnDuration="4">
-                                       <Color colorType="red">
-                                          <ColorCmyk cyan="1.0" key="0.0" mangenta="0.0" yellow="0.0"/>
+                                       <Color colorType="white">
+                                          <ColorCmyk cyan="0.1" key="0.0" magenta="0.1" yellow="0.1"/>
                                        </Color>
                                     </LightState>
                                 </LightStateAction>
@@ -98,8 +98,8 @@
                                        <VehicleLight vehicleLightType= "highBeam"/>
                                     </LightType>
                                     <LightState mode= "off" luminousIntensity="10" flashingOffDuration="2" flashingOnDuration="4">
-                                       <Color colorType="red">
-                                          <ColorCmyk cyan="1.0" key="0.0" mangenta="0.0" yellow="0.0"/>
+                                       <Color colorType="white">
+                                          <ColorRgb red="1.0" blue="1.0" green="1.0"/>
                                        </Color>
                                     </LightState>
                                 </LightStateAction>
@@ -128,7 +128,7 @@
                                     </LightType>
                                     <LightState mode= "flashing" luminousIntensity="10" flashingOffDuration="2" flashingOnDuration="4">
                                        <Color>
-                                          <ColorCmyk cyan="1.0" key="0.0" mangenta="0.0" yellow="0.0"/>
+                                          <ColorCmyk cyan="0.0" key="0.0" magenta="0.35" yellow="1.0"/>
                                        </Color>
                                     </LightState>
                                 </LightStateAction>
@@ -182,6 +182,8 @@
                                        <VehicleLight vehicleLightType= "brakeLights"/>
                                     </LightType>
                                     <LightState mode= "on">
+                                       <Color colorType="red">
+                                       </Color>
                                     </LightState>
                                 </LightStateAction>
                            </AppearanceAction>
