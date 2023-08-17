@@ -304,13 +304,13 @@ int ScenarioGateway::getObjectStateById(int id, ObjectState& objectState)
     return -1;
 }
 
-int ScenarioGateway::updateObjectInfo(ObjectState* obj_state,
-                                      double       timestamp,
-                                      int          visibilityMask,
-                                      double       speed,
-                                      double       wheel_angle,
-                                      double       wheel_rot,
-                                      Object::VehicleLightActionStatus *light_state)
+int ScenarioGateway::updateObjectInfo(ObjectState*                      obj_state,
+                                      double                            timestamp,
+                                      int                               visibilityMask,
+                                      double                            speed,
+                                      double                            wheel_angle,
+                                      double                            wheel_rot,
+                                      Object::VehicleLightActionStatus* light_state)
 {
     if (!obj_state)
     {
@@ -901,7 +901,7 @@ int ScenarioGateway::updateObjectVisibilityMask(int id, int visibilityMask)
     return 0;
 }
 
-int ScenarioGateway::updateObjectLightState(int id, Object::VehicleLightActionStatus *light_state)
+int ScenarioGateway::updateObjectLightState(int id, Object::VehicleLightActionStatus* light_state)
 {
     ObjectState* obj_state = getObjectStatePtrById(id);
 
