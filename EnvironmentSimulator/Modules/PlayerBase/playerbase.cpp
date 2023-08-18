@@ -1245,6 +1245,7 @@ int ScenarioPlayer::Init()
     opt.AddOption("threads", "Run viewer in a separate thread, parallel to scenario engine");
     opt.AddOption("trail_mode", "Show trail lines and/or dots (toggle key 'j') mode 0=None 1=lines 2=dots 3=both", "mode");
     opt.AddOption("version", "Show version and quit");
+    opt.AddOption("plot", "Show plotting window with line-plots of interesting data");
 
     exe_path_ = argv_[0];
     SE_Env::Inst().AddPath(DirNameOf(exe_path_));  // Add location of exe file to search paths

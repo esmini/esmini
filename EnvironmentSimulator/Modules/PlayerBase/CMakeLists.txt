@@ -16,11 +16,13 @@ endif(USE_OSG)
 # ############################### Setting target files ###############################################################
 
 set(SOURCES
-    playerbase.cpp)
+    playerbase.cpp
+    Plot.cpp)
 
 set(INCLUDES
     playerbase.hpp
-    helpText.hpp)
+    helpText.hpp
+    Plot.hpp)
 
 # ############################### Creating library ###################################################################
 
@@ -44,7 +46,8 @@ target_include_directories(
     PUBLIC ${ROAD_MANAGER_PATH}
            ${EXTERNALS_OSG_INCLUDES}
            ${EXTERNALS_OSI_INCLUDES}
-           ${EXTERNALS_PUGIXML_PATH})
+           ${EXTERNALS_PUGIXML_PATH}
+           ${EXTERNALS_IMGUI_INCLUDES})
 
 target_link_libraries(
     ${TARGET}

@@ -67,6 +67,8 @@ macro(set_project_external_paths)
         ${EXTERNALS_PATH}/osi)
     set(EXTERNALS_PUGIXML_PATH
         ${EXTERNALS_PATH}/pugixml)
+    set(EXTERNALS_IMGUI_PATH
+        ${EXTERNALS_PATH}/imgui)
     set(EXTERNALS_SUMO_PATH
         ${EXTERNALS_PATH}/sumo)
     set(MODELS_PATH
@@ -149,6 +151,9 @@ macro(set_project_includes)
         ${EXTERNALS_SUMO_OS_SPECIFIC_PATH}/include)
     set(EXTERNALS_GOOGLETEST_INCLUDES
         ${EXTERNALS_GOOGLETEST_OS_SPECIFIC_PATH}/include)
+    set(EXTERNALS_IMGUI_INCLUDES
+        ${EXTERNALS_IMGUI_PATH}/imgui
+        ${EXTERNALS_IMGUI_PATH}/backends)
 
 endmacro()
 
