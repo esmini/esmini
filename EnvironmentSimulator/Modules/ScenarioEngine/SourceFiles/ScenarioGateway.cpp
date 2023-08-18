@@ -1070,14 +1070,6 @@ void ScenarioGateway::WriteStatesToFile()
             datState.info.visibilityMask = objectState_[i]->state_.info.visibilityMask;
             datState.info.wheel_angle    = static_cast<float>(objectState_[i]->state_.info.wheel_angle);
             datState.info.wheel_rot      = static_cast<float>(objectState_[i]->state_.info.wheel_rot);
-            for (int j = 0; j < Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS; j++)
-            {
-                if (objectState_[i]->state_.info.light_state[i].type != Object::VehicleLightType::UNDEFINED)
-                {
-                    datState.info.light_state[datState.info.light_state[i].type] = objectState_[i]->state_.info.light_state[i];
-                }
-            }
-
             datState.pos.x      = static_cast<float>(objectState_[i]->state_.pos.GetX());
             datState.pos.y      = static_cast<float>(objectState_[i]->state_.pos.GetY());
             datState.pos.z      = static_cast<float>(objectState_[i]->state_.pos.GetZ());
