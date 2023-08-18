@@ -54,19 +54,19 @@ namespace scenarioengine
 
     struct ObjectInfoStructDat
     {
-        int                              id;
-        int                              model_id;
-        int                              obj_type;      // 0=None, 1=Vehicle, 2=Pedestrian, 3=MiscObj (see Object::Type enum)
-        int                              obj_category;  // sub type for vehicle, pedestrian and miscobj
-        int                              ctrl_type;     // See Controller::Type enum
-        float                            timeStamp;
-        char                             name[NAME_LEN];
-        float                            speed;
-        float                            wheel_angle;  // Only used for vehicle
-        float                            wheel_rot;    // Only used for vehicle
-        OSCBoundingBox                   boundingbox;
-        int                              scaleMode;       // 0=None, 1=BoundingBoxToModel, 2=ModelToBoundingBox (see enum EntityScaleMode)
-        int                              visibilityMask;  // bitmask according to Object::Visibility (1 = Graphics, 2 = Traffic, 4 = Sensors)
+        int            id;
+        int            model_id;
+        int            obj_type;      // 0=None, 1=Vehicle, 2=Pedestrian, 3=MiscObj (see Object::Type enum)
+        int            obj_category;  // sub type for vehicle, pedestrian and miscobj
+        int            ctrl_type;     // See Controller::Type enum
+        float          timeStamp;
+        char           name[NAME_LEN];
+        float          speed;
+        float          wheel_angle;  // Only used for vehicle
+        float          wheel_rot;    // Only used for vehicle
+        OSCBoundingBox boundingbox;
+        int            scaleMode;       // 0=None, 1=BoundingBoxToModel, 2=ModelToBoundingBox (see enum EntityScaleMode)
+        int            visibilityMask;  // bitmask according to Object::Visibility (1 = Graphics, 2 = Traffic, 4 = Sensors)
         // Object::VehicleLightActionStatus light_state[Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS];
     };
 

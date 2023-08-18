@@ -1070,17 +1070,17 @@ void ScenarioGateway::WriteStatesToFile()
             datState.info.visibilityMask = objectState_[i]->state_.info.visibilityMask;
             datState.info.wheel_angle    = static_cast<float>(objectState_[i]->state_.info.wheel_angle);
             datState.info.wheel_rot      = static_cast<float>(objectState_[i]->state_.info.wheel_rot);
-            datState.pos.x      = static_cast<float>(objectState_[i]->state_.pos.GetX());
-            datState.pos.y      = static_cast<float>(objectState_[i]->state_.pos.GetY());
-            datState.pos.z      = static_cast<float>(objectState_[i]->state_.pos.GetZ());
-            datState.pos.h      = static_cast<float>(objectState_[i]->state_.pos.GetH());
-            datState.pos.p      = static_cast<float>(objectState_[i]->state_.pos.GetP());
-            datState.pos.r      = static_cast<float>(objectState_[i]->state_.pos.GetR());
-            datState.pos.roadId = objectState_[i]->state_.pos.GetTrackId();
-            datState.pos.laneId = objectState_[i]->state_.pos.GetLaneId();
-            datState.pos.offset = static_cast<float>(objectState_[i]->state_.pos.GetOffset());
-            datState.pos.t      = static_cast<float>(objectState_[i]->state_.pos.GetT());
-            datState.pos.s      = static_cast<float>(objectState_[i]->state_.pos.GetS());
+            datState.pos.x               = static_cast<float>(objectState_[i]->state_.pos.GetX());
+            datState.pos.y               = static_cast<float>(objectState_[i]->state_.pos.GetY());
+            datState.pos.z               = static_cast<float>(objectState_[i]->state_.pos.GetZ());
+            datState.pos.h               = static_cast<float>(objectState_[i]->state_.pos.GetH());
+            datState.pos.p               = static_cast<float>(objectState_[i]->state_.pos.GetP());
+            datState.pos.r               = static_cast<float>(objectState_[i]->state_.pos.GetR());
+            datState.pos.roadId          = objectState_[i]->state_.pos.GetTrackId();
+            datState.pos.laneId          = objectState_[i]->state_.pos.GetLaneId();
+            datState.pos.offset          = static_cast<float>(objectState_[i]->state_.pos.GetOffset());
+            datState.pos.t               = static_cast<float>(objectState_[i]->state_.pos.GetT());
+            datState.pos.s               = static_cast<float>(objectState_[i]->state_.pos.GetS());
             data_file_.write(reinterpret_cast<char*>(&datState), sizeof(datState));
         }
     }
