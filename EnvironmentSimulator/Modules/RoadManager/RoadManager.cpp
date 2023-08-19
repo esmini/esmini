@@ -5078,7 +5078,8 @@ int OpenDrive::GetTrackIdByIdx(int idx) const
     return 0;
 }
 
-bool OpenDrive::IsIndirectlyConnected(int road1_id, int road2_id, int*& connecting_road_id, int*& connecting_lane_id, int lane1_id, int lane2_id) const
+bool OpenDrive::IsIndirectlyConnected(int road1_id, int road2_id, int*& connecting_road_id, int*& connecting_lane_id, int lane1_id, int lane2_id)
+    const
 {
     Road*     road1 = GetRoadById(road1_id);
     Road*     road2 = GetRoadById(road2_id);

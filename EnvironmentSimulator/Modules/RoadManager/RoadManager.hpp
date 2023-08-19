@@ -2424,7 +2424,10 @@ namespace roadmanager
             return (int)connection_.size();
         }
         int                    GetNumberOfRoadConnections(int roadId, int laneId) const;
-        LaneRoadLaneConnection GetRoadConnectionByIdx(int roadId, int laneId, int idx, int laneTypeMask = Lane::LaneType::LANE_TYPE_ANY_DRIVING) const;
+        LaneRoadLaneConnection GetRoadConnectionByIdx(int roadId,
+                                                      int laneId,
+                                                      int idx,
+                                                      int laneTypeMask = Lane::LaneType::LANE_TYPE_ANY_DRIVING) const;
         void                   AddConnection(Connection *connection)
         {
             connection_.push_back(connection);
@@ -2567,12 +2570,8 @@ namespace roadmanager
             return (int)junction_.size();
         }
 
-        bool IsIndirectlyConnected(int   road1_id,
-                                   int   road2_id,
-                                   int *&connecting_road_id,
-                                   int *&connecting_lane_id,
-                                   int   lane1_id = 0,
-                                   int   lane2_id = 0) const;
+        bool IsIndirectlyConnected(int road1_id, int road2_id, int *&connecting_road_id, int *&connecting_lane_id, int lane1_id = 0, int lane2_id = 0)
+            const;
 
         /**
                 Add any missing connections so that road connectivity is two-ways
