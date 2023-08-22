@@ -18,6 +18,7 @@
 #include "RoadManager.hpp"
 #include "CommonMini.hpp"
 #include "Server.hpp"
+#include "ActionServer.hpp"
 #include "playerbase.hpp"
 #include "helpText.hpp"
 #include "OSCParameterDistribution.hpp"
@@ -56,6 +57,7 @@ ScenarioPlayer::ScenarioPlayer(int argc, char* argv[])
     quit_request         = false;
     threads              = false;
     launch_server        = false;
+    launch_action_server = false;
     fixed_timestep_      = -1.0;
     osi_receiver_addr    = "";
     osi_freq_            = 1;
@@ -80,6 +82,11 @@ ScenarioPlayer::~ScenarioPlayer()
     if (launch_server)
     {
         StopServer();
+    }
+
+    if (launch_action_server)
+    {
+        actionserver::StopActionServer();
     }
 
 #ifdef _USE_OSG
@@ -1185,6 +1192,7 @@ int ScenarioPlayer::Init()
     // use an ArgumentParser object to manage the program arguments.
     opt.AddOption("osc", "OpenSCENARIO filename (required) - if path includes spaces, enclose with \"\"", "filename");
     opt.AddOption("aa_mode", "Anti-alias mode=number of multisamples (subsamples, 0=off, 4=default)", "mode");
+    opt.AddOption("action_server", "Launch UDP server for injected actions");
     opt.AddOption("bounding_boxes", "Show entities as bounding boxes (toggle modes on key ',') ");
     opt.AddOption("capture_screen", "Continuous screen capture. Warning: Many jpeg files will be created");
     opt.AddOption(
@@ -1390,6 +1398,12 @@ int ScenarioPlayer::Init()
         LOG("Launch server to receive state of external Ego simulator");
     }
 
+    if (opt.GetOptionSet("action_server"))
+    {
+        launch_action_server = true;
+        LOG("Launch server to receive actions to inject");
+    }
+
     for (int index = 0; (arg_str = opt.GetOptionArg("fixed_timestep", index)) != ""; index++)
     {
         SetFixedTimestep(std::stod(arg_str));
@@ -1581,6 +1595,12 @@ int ScenarioPlayer::Init()
     {
         // Launch UDP server to receive external Ego state
         StartServer(scenarioEngine);
+    }
+
+    if (launch_action_server)
+    {
+        // Launch UDP server to receive actions from external process
+        actionserver::StartActionServer(scenarioEngine);
     }
 
     player_init_semaphore.Set();
