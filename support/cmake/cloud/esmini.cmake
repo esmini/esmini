@@ -31,6 +31,8 @@ macro(set_esmini_cloud_links)
             https://esmini.asuscomm.com/AICLOUD766065121/libs/sumo_linux.7z)
         set(GTEST_PACKAGE_URL
             https://esmini.asuscomm.com/AICLOUD766065121/libs/googletest_linux.7z)
+        set(IMPLOT_PACKAGE_URL
+            https://esmini.asuscomm.com/AICLOUD766065121/libs/implot_linux_glibc_2_31_gcc_7_5_0.7z)
     elseif(MSVC)
         set(OSG_PACKAGE_URL
             https://esmini.asuscomm.com/AICLOUD766065121/libs/OpenSceneGraph_v10.7z)
@@ -45,6 +47,8 @@ macro(set_esmini_cloud_links)
             https://esmini.asuscomm.com/AICLOUD766065121/libs/sumo_v10.7z)
         set(GTEST_PACKAGE_URL
             https://esmini.asuscomm.com/AICLOUD766065121/libs/googletest_v10.7z)
+        set(IMPLOT_PACKAGE_URL
+            https://esmini.asuscomm.com/AICLOUD766065121/libs/implot_v10.7z)
     elseif(MINGW)
         message("MinGW, enforcing slimmed esmini")
     else()

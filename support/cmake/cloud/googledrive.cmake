@@ -31,6 +31,8 @@ macro(set_googledrive_cloud_links)
             https://drive.google.com/u/1/uc?id=1m4znxNIXapP0D-l21oIm2l7L5ti-JbZH&export=download)
         set(GTEST_PACKAGE_URL
             https://drive.google.com/u/1/uc?id=1Hyr9eJX2GmgpYwZhx14xOoXlZ2j-FY_p&export=download)
+        set(IMPLOT_PACKAGE_URL
+			https://drive.google.com/u/1/uc?id=1YVetAhT7IBLTvkbDeyCDgZ3mjbExcxFY&export=download)
     elseif(MSVC)
         set(OSG_PACKAGE_URL
             https://drive.google.com/u/1/uc?id=1RTag0aUn_pJPK697j0-E72ABW10wZvOm&export=download)
@@ -45,6 +47,8 @@ macro(set_googledrive_cloud_links)
             https://drive.google.com/u/1/uc?id=18PhbSLyvs0IGWTAY3YBoYzpVnMFPbOuR&export=download)
         set(GTEST_PACKAGE_URL
             https://drive.google.com/u/1/uc?id=1So-3gtrmEdW9RhEvVQisj1QFksHM_otU&export=download)
+        set(IMPLOT_PACKAGE_URL
+			https://drive.google.com/u/1/uc?id=1k7dEITeu3vy6RTqKUw2o4FiTYljVuHkk&export=download)
     elseif(MINGW)
         message("MinGW, enforcing slimmed esmini")
     else()

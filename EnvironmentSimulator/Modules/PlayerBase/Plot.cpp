@@ -1,6 +1,6 @@
 #include "Plot.hpp"
 
-Plot::Plot(std::vector<scenarioengine::Object*> objects)
+Plot::Plot(std::vector<scenarioengine::Object*>& objects)
 {
     // Save some sizes for easier access later
     plotcategories_size_ = static_cast<size_t>(PlotCategories::Time);
@@ -67,7 +67,7 @@ void Plot::CleanUp()
     glfwTerminate();
 }
 
-void Plot::updateData(std::vector<Object*> objects, double dt)
+void Plot::updateData(std::vector<Object*>& objects, double dt)
 {
     for (size_t i = 0; i < objects.size(); i++)
     {
@@ -113,7 +113,7 @@ void Plot::renderPlot(const char* name, float window_w, float window_h)
             break;
         }
     }
-    
+
     // Set all not-recently checked boxes to false, only allow 1 checked box at a time (for now)
     for (size_t j = 0; j < bool_array_size_; j++)
     {
@@ -214,7 +214,7 @@ void Plot::renderImguiWindow()
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImPlot::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); 
+    ImGuiIO& io = ImGui::GetIO();
     static_cast<void>(io);
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
@@ -229,7 +229,7 @@ void Plot::renderImguiWindow()
     ImGui_ImplOpenGL3_Init(glsl_version);
 
     // Our state
-    while (!glfwWindowShouldClose(window)) 
+    while (!glfwWindowShouldClose(window))
     {
         // Poll and handle events (inputs, window resize, etc.)
         // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
@@ -266,24 +266,24 @@ void Plot::glfw_error_callback(int error, const char* description)
     fprintf(stderr, "GLFW Error %d: %s\n", error, description);
 }
 
-Plot::PlotObject::PlotObject(float max_acc, float max_decel, float max_speed) : 
-time_max_(30.0f), 
-max_acc_(max_acc), 
-max_decel_(-max_decel), 
-max_speed_(max_speed) 
+Plot::PlotObject::PlotObject(float max_acc, float max_decel, float max_speed) :
+time_max_(30.0f),
+max_acc_(max_acc),
+max_decel_(-max_decel),
+max_speed_(max_speed)
 {}
 
-void Plot::PlotObject::updateData(Object* object, double dt) 
+void Plot::PlotObject::updateData(Object* object, double dt)
 {
     // Update Time
     (plotData[PlotCategories::Time].empty()) ? plotData[PlotCategories::Time].push_back(static_cast<float>(dt)) : plotData[PlotCategories::Time].push_back(plotData[PlotCategories::Time].back() + static_cast<float>(dt));
-    
+
     // Update Velocity Lat./Long
     double lat_vel, long_vel;
     object->pos_.GetVelLatLong(lat_vel, long_vel);
     plotData[PlotCategories::LatVel].push_back(static_cast<float>(lat_vel));
     plotData[PlotCategories::LongVel].push_back(static_cast<float>(long_vel));
-    
+
     // Update offset
     plotData[PlotCategories::LaneOffset].push_back(static_cast<float>(object->pos_.GetOffset()));
 
@@ -296,19 +296,19 @@ void Plot::PlotObject::updateData(Object* object, double dt)
     plotData[PlotCategories::LaneID].push_back(static_cast<float>(object->pos_.GetLaneId()));
 }
 
-float Plot::PlotObject::getTimeMax() 
+float Plot::PlotObject::getTimeMax()
 {
     return time_max_;
 }
-float Plot::PlotObject::getMaxAcc() 
+float Plot::PlotObject::getMaxAcc()
 {
     return max_acc_;
 }
-float Plot::PlotObject::getMaxDecel() 
+float Plot::PlotObject::getMaxDecel()
 {
    return max_decel_;
 }
-float Plot::PlotObject::getMaxSpeed() 
+float Plot::PlotObject::getMaxSpeed()
 {
     return max_speed_;
 }

@@ -63,13 +63,18 @@ static int execute_scenario(int argc, char* argv[])
         return -1;
     }
 
+#ifdef _USE_IMPLOT
     // Initialize ImPlot
-    Plot plot(player->scenarioEngine->entities_.object_);
+    std::unique_ptr<Plot> plot;
+
     if (player->opt.GetOptionSet("plot"))
     {
-        std::thread thread1(&Plot::renderImguiWindow, &plot);//, std::ref(promise1));
+
+        plot = std::make_unique<Plot>(player->scenarioEngine->entities_.object_);
+        std::thread thread1(&Plot::renderImguiWindow, plot.get());//, std::ref(promise1));
         thread1.detach();
     }
+#endif
 
     while (!player->IsQuitRequested() && !quit && retval == 0)
     {
@@ -83,8 +88,10 @@ static int execute_scenario(int argc, char* argv[])
             dt = SE_getSimTimeStep(time_stamp, player->minStepSize, player->maxStepSize);
         }
 
-        if (player->opt.GetOptionSet("plot") && !player->IsPaused())
-            plot.updateData(player->scenarioEngine->entities_.object_, dt);
+#ifdef _USE_IMPLOT
+        if (plot && !player->IsPaused())
+            plot->updateData(player->scenarioEngine->entities_.object_, dt);
+#endif
 
         retval = player->Frame(dt);
     }
@@ -95,8 +102,10 @@ static int execute_scenario(int argc, char* argv[])
         quit = true;
     }
 
-    plot.CleanUp();
+#ifdef _USE_IMPLOT
+    plot->CleanUp();
     // thread1.join();
+#endif
 
     return retval;
 }

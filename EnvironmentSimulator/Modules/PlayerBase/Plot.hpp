@@ -41,11 +41,11 @@ enum class PlotCategories {
 
 class Plot {
     public:
-        Plot(std::vector<Object*> objects);
+        Plot(std::vector<Object*>& objects);
         ~Plot();
         void CleanUp();
 
-        void updateData(std::vector<Object*> objects, double dt);
+        void updateData(std::vector<Object*>& objects, double dt);
         void renderPlot(const char* name, float window_width, float window_height);
         void renderImguiWindow();
         static void glfw_error_callback(int error, const char* description);

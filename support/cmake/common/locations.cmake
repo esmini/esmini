@@ -67,10 +67,10 @@ macro(set_project_external_paths)
         ${EXTERNALS_PATH}/osi)
     set(EXTERNALS_PUGIXML_PATH
         ${EXTERNALS_PATH}/pugixml)
-    set(EXTERNALS_IMGUI_PATH
-        ${EXTERNALS_PATH}/imgui)
     set(EXTERNALS_SUMO_PATH
         ${EXTERNALS_PATH}/sumo)
+    set(EXTERNALS_IMPLOT_PATH
+        ${EXTERNALS_PATH}/implot)
     set(MODELS_PATH
         ${RESOURCES_PATH}/models)
 
@@ -89,6 +89,8 @@ macro(set_project_os_specific_paths)
             ${EXTERNALS_SUMO_PATH}/mac)
         set(EXTERNALS_GOOGLETEST_OS_SPECIFIC_PATH
             ${EXTERNALS_GOOGLETEST_PATH}/mac)
+		set(EXTERNALS_IMPLOT_OS_SPECIFIC_PATH
+			${EXTERNALS_IMPLOT_PATH}/mac)
         set(TIME_LIB
             "")
     elseif(LINUX)
@@ -100,6 +102,8 @@ macro(set_project_os_specific_paths)
             ${EXTERNALS_SUMO_PATH}/linux)
         set(EXTERNALS_GOOGLETEST_OS_SPECIFIC_PATH
             ${EXTERNALS_GOOGLETEST_PATH}/linux)
+		set(EXTERNALS_IMPLOT_OS_SPECIFIC_PATH
+			${EXTERNALS_IMPLOT_PATH}/linux)
         set(TIME_LIB
             "")
     elseif(MINGW)
@@ -121,6 +125,8 @@ macro(set_project_os_specific_paths)
                 ${EXTERNALS_SUMO_PATH}/v10)
             set(EXTERNALS_GOOGLETEST_OS_SPECIFIC_PATH
                 ${EXTERNALS_GOOGLETEST_PATH}/v10)
+            set(EXTERNALS_IMPLOT_OS_SPECIFIC_PATH
+                ${EXTERNALS_IMPLOT_PATH}/v10)
             set(SOCK_LIB
                 Ws2_32.lib)
             set(TIME_LIB
@@ -151,9 +157,11 @@ macro(set_project_includes)
         ${EXTERNALS_SUMO_OS_SPECIFIC_PATH}/include)
     set(EXTERNALS_GOOGLETEST_INCLUDES
         ${EXTERNALS_GOOGLETEST_OS_SPECIFIC_PATH}/include)
-    set(EXTERNALS_IMGUI_INCLUDES
-        ${EXTERNALS_IMGUI_PATH}/imgui
-        ${EXTERNALS_IMGUI_PATH}/backends)
+    set(EXTERNALS_IMPLOT_INCLUDES
+        ${EXTERNALS_IMPLOT_OS_SPECIFIC_PATH}/include/implot
+        ${EXTERNALS_IMPLOT_OS_SPECIFIC_PATH}/include/imgui
+        ${EXTERNALS_IMPLOT_OS_SPECIFIC_PATH}/include/imgui/backends
+        ${EXTERNALS_IMPLOT_OS_SPECIFIC_PATH}/include/glfw)
 
 endmacro()
 
@@ -180,5 +188,8 @@ macro(set_project_library_paths)
 
     set(EXTERNALS_GTEST_LIBRARY_PATH
         ${EXTERNALS_GOOGLETEST_OS_SPECIFIC_PATH}/lib)
+
+    set(EXTERNALS_IMPLOT_LIBRARY_PATH
+        ${EXTERNALS_IMPLOT_OS_SPECIFIC_PATH}/lib)
 
 endmacro()

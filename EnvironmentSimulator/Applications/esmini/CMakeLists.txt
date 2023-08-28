@@ -8,25 +8,6 @@ set(TARGET
 include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_static_analysis.cmake)
 include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_iwyu.cmake)
 
-## LOADING STUFF FOR DEARIMGUI
-
-find_library(myglfw glfw REQUIRED)
-if (${myglfw} STREQUAL myglfw-NOTFOUND)
-    message(FATAL ERROR "Stuff broken")
-else()
-    message(STATUS "Found ${myglfw}")
-endif()
-find_library(mygl GL REQUIRED)
-if (${mygl} STREQUAL mygl-NOTFOUND)
-    message(FATAL ERROR "Stuff broken")
-else()
-    message(STATUS "Found ${mygl}")
-endif()
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/home/slundel6/esmini/externals/imgui/imgui -I/home/slundel6/esmini/externals/imgui/backends")
-file(GLOB srcs /home/slundel6/esmini/externals/imgui/imgui/*.cpp)
-file(GLOB bsrcs /home/slundel6/esmini/externals/imgui/backends/*.cpp)
-add_library(imgui-objects OBJECT ${srcs} ${bsrcs})
 # ############################### Setting target files ###############################################################
 
 set(SOURCES
@@ -39,10 +20,9 @@ if(USE_OSG)
         ViewerBase)
 endif()
 
-# Imgui objects
 add_executable(
     ${TARGET}
-    ${SOURCES} $<TARGET_OBJECTS:imgui-objects>)
+    ${SOURCES})
 
 target_include_directories(
     ${TARGET}
@@ -62,7 +42,6 @@ target_include_directories(
            ${EXTERNALS_OSG_INCLUDES}
            ${EXTERNALS_SUMO_INCLUDES})
 
-# GLFW, GL, DL added here
 target_link_libraries(
     ${TARGET}
     PRIVATE project_options
@@ -74,11 +53,9 @@ target_link_libraries(
             ${VIEWER_BASE}
             ${OSI_LIBRARIES}
             ${SUMO_LIBRARIES}
+            ${IMPLOT_LIBRARIES}
             ${TIME_LIB}
-            ${SOCK_LIB}
-            ${myglfw}
-            ${mygl}
-            dl)
+            ${SOCK_LIB})
 
 if(USE_OSG)
     target_link_libraries(

@@ -47,7 +47,7 @@ target_include_directories(
            ${EXTERNALS_OSG_INCLUDES}
            ${EXTERNALS_OSI_INCLUDES}
            ${EXTERNALS_PUGIXML_PATH}
-           ${EXTERNALS_IMGUI_INCLUDES})
+           ${EXTERNALS_IMPLOT_INCLUDES})
 
 target_link_libraries(
     ${TARGET}

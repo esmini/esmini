@@ -31,6 +31,8 @@ macro(set_dropbox_cloud_links)
             https://dl.dropboxusercontent.com/s/gfwtqd3gf76f86a/sumo_linux.7z?dl=1)
         set(GTEST_PACKAGE_URL
             https://dl.dropboxusercontent.com/s/si7jsjjsy5bpoym/googletest_linux.7z?dl=1)
+        set(IMPLOT_PACKAGE_URL
+			https://www.dropbox.com/scl/fi/d5h6vdqqf6q890d53541b/implot_linux_glibc_2_31_gcc_7_5_0.7z?dl=1)
     elseif(MSVC)
         set(OSG_PACKAGE_URL
             https://dl.dropboxusercontent.com/s/e95hnoo782p40uc/OpenSceneGraph_v10.7z?dl=1)
@@ -45,6 +47,8 @@ macro(set_dropbox_cloud_links)
             https://dl.dropboxusercontent.com/s/5jtpnnd61wonxuh/sumo_v10.7z?dl=1)
         set(GTEST_PACKAGE_URL
             https://dl.dropboxusercontent.com/s/aaiehwzc6woqbc6/googletest_v10.7z?dl=1)
+        set(IMPLOT_PACKAGE_URL
+			https://www.dropbox.com/scl/fi/txl0jqi49ysreoegcoqk9/implot_v10.7z?&dl=1)
     elseif(MINGW)
         message("MinGW, enforcing slimmed esmini")
     else()
