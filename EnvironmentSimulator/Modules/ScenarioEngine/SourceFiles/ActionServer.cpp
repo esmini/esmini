@@ -112,9 +112,9 @@ namespace actionserver
             case UDP_ACTION_TYPE::LANE_CHANGE_ACTION:
                 return "LANE_CHANGE";
             case UDP_ACTION_TYPE::LANE_OFFSET_ACTION:
-                return "LANE_CHANGE";
+                return "LANE_OFFSET";
             case UDP_ACTION_TYPE::SPEED_ACTION:
-                return "LANE_CHANGE";
+                return "SPEED";
             default:
                 return "Unknown";
         }
