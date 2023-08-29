@@ -1,5 +1,6 @@
 #include "Plot.hpp"
 
+// Plot
 Plot::Plot(std::vector<scenarioengine::Object*>& objects)
 {
     // Save some sizes for easier access later
@@ -9,7 +10,7 @@ Plot::Plot(std::vector<scenarioengine::Object*>& objects)
     // Populate objects we want to plot and default settings for the checkbox selections
     for (size_t i = 0; i < objects.size(); i++)
     {
-        plotObjects.emplace_back(std::make_unique<PlotObject>(objects[i]->GetMaxAcceleration(), objects[i]->GetMaxDeceleration(), objects[i]->GetMaxSpeed()));
+        plotObjects.emplace_back(std::make_unique<PlotObject>(objects[i]));
         (i == 0) ? selectedItem.push_back(true) : selectedItem.push_back(false);
     }
     // Set default values for lineplot checkboxes
@@ -53,6 +54,7 @@ Plot::~Plot()
 
 void Plot::CleanUp()
 {
+    printf("Closing plot window\n");
     #ifdef __EMSCRIPTEN__
     EMSCRIPTEN_MAINLOOP_END;
     #endif
@@ -83,10 +85,11 @@ void Plot::renderPlot(const char* name, float window_w, float window_h)
     ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Once);
     ImGui::Begin(name, nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoTitleBar);
 
-    // Make checkboxes
+    // Make checkboxes for all objects in the scenario
     for (size_t i = 0; i < bool_array_size_; i++)
     {
-        ImGui::Checkbox(("Object " + std::to_string(i)).c_str(), reinterpret_cast<bool*>(&selectedItem[i]));
+        std::string checkbox_name = "Object " + std::to_string(i) + " (" + plotObjects[i]->getName() + ")";
+        ImGui::Checkbox(checkbox_name.c_str(), reinterpret_cast<bool*>(&selectedItem[i]));
         if (i < bool_array_size_ - 1)
         {
             ImGui::SameLine();
@@ -94,13 +97,21 @@ void Plot::renderPlot(const char* name, float window_w, float window_h)
     }
     auto store_pos = ImGui::GetCursorPos();
 
-    float y_pos = 10;
-    for (size_t i = 0; i < lineplot_selection.size(); i++)
+    // Wrap in scope to avoid variable conflict names later
     {
-        ImGui::SetCursorPos(ImVec2(820,y_pos));
-        ImGui::Checkbox(("Signal " + std::to_string(i)).c_str(), reinterpret_cast<bool*>(&lineplot_selection[i]));
-        auto box_size = ImGui::CalcTextSize("Signal 0");
-        y_pos += box_size[1] + 10;
+        float y_pos = 10;
+        int i = 0;
+        for (const auto& n : getCategoryName)
+        {
+            if (n.second != "Time")
+            {
+                ImGui::SetCursorPos(ImVec2(820, y_pos));
+                ImGui::Checkbox(n.second.c_str(), reinterpret_cast<bool*>(&lineplot_selection[i]));
+                auto box_size = ImGui::CalcTextSize("Signal 0");
+                y_pos += box_size[1] + 10;
+                i++;
+            }
+        }
     }
     ImGui::SetCursorPos(store_pos); // Set the cursor back to where we start drawing the lineplots
 
@@ -122,10 +133,6 @@ void Plot::renderPlot(const char* name, float window_w, float window_h)
             selectedItem[j] = false;
         }
     }
-    // ImGui::End();
-    // ImGui::Begin("Scrollable");
-    // ImGui::SetNextWindowSize(ImVec2(window_width, window_height), ImGuiCond_Once);
-    // ImGui::BeginChild("ScrollingRegion", ImVec2(window_width, window_height), false, ImGuiWindowFlags_HorizontalScrollbar);
 
     for (const auto& d : plotObjects[selection]->plotData)
     {
@@ -134,7 +141,7 @@ void Plot::renderPlot(const char* name, float window_w, float window_h)
         {
             case(PlotCategories::Time):
             {
-                plot_name = "Time";
+                plot_name = getCategoryName[PlotCategories::Time];
                 if (!d.second.empty() && d.second.back() > plotObjects[selection]->getTimeMax())
                 {
                     x_scaling = ImPlotAxisFlags_AutoFit;
@@ -143,38 +150,38 @@ void Plot::renderPlot(const char* name, float window_w, float window_h)
             }
             case(PlotCategories::LatVel):
             {
-                plot_name = "Lateral Velocity";
+                plot_name = getCategoryName[PlotCategories::LatVel];
                 ImPlot::SetNextAxesLimits(-5.0f, plotObjects[selection]->getTimeMax(), -1.0f, 1.0f);
                 break;
             }
             case(PlotCategories::LongVel):
             {
-                plot_name = "Longitudinal Velocity";
+                plot_name = getCategoryName[PlotCategories::LongVel];
                 ImPlot::SetNextAxesLimits(-5.0f, plotObjects[selection]->getTimeMax(), -1.0, plotObjects[selection]->getMaxSpeed() + 5.0f);
                 break;
             }
             case(PlotCategories::LatA):
             {
-                plot_name = "LatA";
+                plot_name = getCategoryName[PlotCategories::LatA];
                 ImPlot::SetNextAxesLimits(-5.0f, plotObjects[selection]->getTimeMax(), plotObjects[selection]->getMaxDecel(), plotObjects[selection]->getMaxAcc());
                 break;
             }
             case(PlotCategories::LongA):
             {
-                plot_name = "LongA";
+                plot_name = getCategoryName[PlotCategories::LongA];
                 ImPlot::SetNextAxesLimits(-5.0f, plotObjects[selection]->getTimeMax(), plotObjects[selection]->getMaxDecel(), plotObjects[selection]->getMaxAcc());
                 break;
             }
             case(PlotCategories::LaneOffset):
             {
-                plot_name = "Offset from current lane";
+                plot_name = getCategoryName[PlotCategories::LaneOffset];
                 // lineplot_selection = false;
                 ImPlot::SetNextAxesLimits(-5.0f, plotObjects[selection]->getTimeMax(), -2.5, 2.5);
                 break;
             }
             case(PlotCategories::LaneID):
             {
-                plot_name = "Lane ID";
+                plot_name = getCategoryName[PlotCategories::LaneID];
                 // lineplot_selection = false;
                 float y_values = abs(d.second.back());
                 ImPlot::SetNextAxesLimits(-5.0f, plotObjects[selection]->getTimeMax(), -y_values - 1, y_values + 1);
@@ -184,16 +191,15 @@ void Plot::renderPlot(const char* name, float window_w, float window_h)
 
 
         // Plot (but not time over time or X over X)
-        if (d.first == PlotCategories::Time || !lineplot_selection[0])
+        if (d.first == PlotCategories::Time)
         {
-            lineplot_selection[0] = true;
             continue;
         }
         else
         {
             ImPlot::BeginPlot(plot_name.c_str(), ImVec2(window_w - 200, (window_h - checkbox_padding) / lineplot_objects));
             ImPlot::SetupAxes("x", "y", x_scaling, y_scaling);
-            ImPlot::PlotLine(("Object " + std::to_string(selection)).c_str(), plotObjects[selection]->plotData.at(PlotCategories::Time).data(), d.second.data(), static_cast<int>(plotObjects[selection]->plotData.at(PlotCategories::Time).size()));
+            ImPlot::PlotLine(std::to_string(selection).c_str(), plotObjects[selection]->plotData.at(PlotCategories::Time).data(), d.second.data(), static_cast<int>(plotObjects[selection]->plotData.at(PlotCategories::Time).size()));
             ImPlot::EndPlot();
         }
     // ImPlot::SetNextMarkerStyle(ImPlotMarker_Circle);
@@ -229,7 +235,7 @@ void Plot::renderImguiWindow()
     ImGui_ImplOpenGL3_Init(glsl_version);
 
     // Our state
-    while (!glfwWindowShouldClose(window))
+    while (!glfwWindowShouldClose(window) && !quit_flag_)
     {
         // Poll and handle events (inputs, window resize, etc.)
         // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
@@ -266,11 +272,19 @@ void Plot::glfw_error_callback(int error, const char* description)
     fprintf(stderr, "GLFW Error %d: %s\n", error, description);
 }
 
-Plot::PlotObject::PlotObject(float max_acc, float max_decel, float max_speed) :
-time_max_(30.0f),
-max_acc_(max_acc),
-max_decel_(-max_decel),
-max_speed_(max_speed)
+void Plot::set_quit_flag() 
+{
+    quit_flag_ = true;
+}
+//Plot
+
+//PlotObject
+Plot::PlotObject::PlotObject(Object* object) :
+    time_max_(30.0f),
+    max_acc_(object->GetMaxAcceleration()),
+    max_decel_(-object->GetMaxDeceleration()),
+    max_speed_(object->GetMaxSpeed()),
+    name_(object->GetName())
 {}
 
 void Plot::PlotObject::updateData(Object* object, double dt)
@@ -284,15 +298,16 @@ void Plot::PlotObject::updateData(Object* object, double dt)
     plotData[PlotCategories::LatVel].push_back(static_cast<float>(lat_vel));
     plotData[PlotCategories::LongVel].push_back(static_cast<float>(long_vel));
 
-    // Update offset
-    plotData[PlotCategories::LaneOffset].push_back(static_cast<float>(object->pos_.GetOffset()));
-
     // Update Lat./Long. Acceleration
     double lat_acc, long_acc;
     object->pos_.GetAccLatLong(lat_acc, long_acc);
     plotData[PlotCategories::LongA].push_back(static_cast<float>(long_acc));
     plotData[PlotCategories::LatA].push_back(static_cast<float>(lat_acc));
 
+    // Update Lane offset
+    plotData[PlotCategories::LaneOffset].push_back(static_cast<float>(object->pos_.GetOffset()));
+
+    // Update Lane ID
     plotData[PlotCategories::LaneID].push_back(static_cast<float>(object->pos_.GetLaneId()));
 }
 
@@ -312,3 +327,8 @@ float Plot::PlotObject::getMaxSpeed()
 {
     return max_speed_;
 }
+std::string Plot::PlotObject::getName()
+{
+    return name_;
+}
+// PlotObject
