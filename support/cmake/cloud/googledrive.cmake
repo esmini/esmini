@@ -17,6 +17,8 @@ macro(set_googledrive_cloud_links)
         endif()
         set(SUMO_PACKAGE_URL
             https://drive.google.com/u/1/uc?id=1FAve0-MlJPv6lUZy0HvriZI7xstLAzvX&export=download)
+        set(IMPLOT_PACKAGE_URL
+			https://drive.google.com/u/1/uc?id=1Cjda4pzyOGpOBiKAJ0_nBAeK8wcWzPuT&export=download)
     elseif(LINUX)
         set(OSG_PACKAGE_URL
             https://drive.google.com/u/1/uc?id=1Ya1bLp_0-qqlhs67WAwbGW7l37wqP3o2&export=download)

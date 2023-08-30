@@ -17,6 +17,8 @@ macro(set_dropbox_cloud_links)
         endif()
         set(SUMO_PACKAGE_URL
             https://www.dropbox.com/s/0x8kwztk7nmacs1/sumo_mac.7z?dl=1)
+        set(IMPLOT_PACKAGE_URL
+			https://www.dropbox.com/scl/fi/kg6km3plk755vnz8gv1me/implot_mac.7z?dl=1)
     elseif(LINUX)
         set(OSG_PACKAGE_URL
             https://www.dropbox.com/s/4ug0gmkgdavzyb4/osg_linux_glibc_2_31_gcc_7_5_0.7z?dl=1)

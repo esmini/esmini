@@ -17,6 +17,8 @@ macro(set_esmini_cloud_links)
         endif()
         set(SUMO_PACKAGE_URL
             https://esmini.asuscomm.com/AICLOUD766065121/libs/sumo_mac.7z)
+        set(IMPLOT_PACKAGE_URL
+            https://esmini.asuscomm.com/AICLOUD766065121/libs/implot_mac.7z)
     elseif(LINUX)
         set(OSG_PACKAGE_URL
             https://esmini.asuscomm.com/AICLOUD766065121/libs/osg_linux_glibc_2_31_gcc_7_5_0.7z)
