@@ -89,8 +89,8 @@ macro(set_project_os_specific_paths)
             ${EXTERNALS_SUMO_PATH}/mac)
         set(EXTERNALS_GOOGLETEST_OS_SPECIFIC_PATH
             ${EXTERNALS_GOOGLETEST_PATH}/mac)
-		set(EXTERNALS_IMPLOT_OS_SPECIFIC_PATH
-			${EXTERNALS_IMPLOT_PATH}/mac)
+        set(EXTERNALS_IMPLOT_OS_SPECIFIC_PATH
+            ${EXTERNALS_IMPLOT_PATH}/mac)
         set(TIME_LIB
             "")
     elseif(LINUX)
@@ -102,8 +102,8 @@ macro(set_project_os_specific_paths)
             ${EXTERNALS_SUMO_PATH}/linux)
         set(EXTERNALS_GOOGLETEST_OS_SPECIFIC_PATH
             ${EXTERNALS_GOOGLETEST_PATH}/linux)
-		set(EXTERNALS_IMPLOT_OS_SPECIFIC_PATH
-			${EXTERNALS_IMPLOT_PATH}/linux)
+        set(EXTERNALS_IMPLOT_OS_SPECIFIC_PATH
+            ${EXTERNALS_IMPLOT_PATH}/linux)
         set(TIME_LIB
             "")
     elseif(MINGW)
