@@ -2,7 +2,7 @@
 #include "implot.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
-#include "Entities.hpp"
+#include "ScenarioEngine.hpp"
 #include <stdio.h>
 #include <vector>
 #include <unordered_map>
@@ -38,7 +38,7 @@ enum class PlotCategories
 class Plot
 {
 public:
-    Plot(std::vector<Object*>& objects);
+    Plot(ScenarioEngine* scenarioengine);
     ~Plot();
     void CleanUp();
 
@@ -48,14 +48,15 @@ public:
     static void glfw_error_callback(int error, const char* description);
     void        set_quit_flag();
 
+    SE_Semaphore init_sem_;
+
 private:
     class PlotObject
     {
     public:
         // PlotObject(float max_acc, float max_decel, float max_speed);
         PlotObject(Object* object);
-
-        void updateData(Object* object, double dt);
+        void updateData(Object* object, double time);
 
         // Getters
         float       getTimeMax();
@@ -107,6 +108,8 @@ private:
     size_t                                          bool_array_size_     = {};
     size_t                                          plotcategories_size_ = {};
     std::vector<char>                               selectedItem         = {};
+    ScenarioEngine*                                 scenarioengine_;
+    double                                          timestamp_;
 };
 
 #endif  // PLOT_H

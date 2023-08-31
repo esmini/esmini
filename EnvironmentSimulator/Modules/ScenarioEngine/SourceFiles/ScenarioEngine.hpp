@@ -151,8 +151,9 @@ namespace scenarioengine
             return init_status_;
         }
 
-        double trueTime_;
-        bool   doOnce = true;
+        double   trueTime_;
+        bool     doOnce = true;
+        SE_Mutex mutex_;
 
     private:
         // OpenSCENARIO parameters

@@ -1,16 +1,20 @@
 #include "Plot.hpp"
 
 // Plot
-Plot::Plot(std::vector<scenarioengine::Object*>& objects)
+Plot::Plot(ScenarioEngine* scenarioengine)
 {
+    init_sem_.Set();
+
     // Save some sizes for easier access later
     plotcategories_size_ = static_cast<size_t>(PlotCategories::Time);
-    bool_array_size_     = objects.size();
+    scenarioengine_      = scenarioengine;
+    bool_array_size_     = scenarioengine_->entities_.object_.size();
+    timestamp_           = scenarioengine_->getSimulationTime();
 
     // Populate objects we want to plot and default settings for the checkbox selections
-    for (size_t i = 0; i < objects.size(); i++)
+    for (size_t i = 0; i < scenarioengine_->entities_.object_.size(); i++)
     {
-        plotObjects.emplace_back(std::make_unique<PlotObject>(objects[i]));
+        plotObjects.emplace_back(std::make_unique<PlotObject>(scenarioengine_->entities_.object_[i]));
         (i == 0) ? selectedItem.push_back(true) : selectedItem.push_back(false);
     }
 
@@ -65,11 +69,11 @@ void Plot::CleanUp()
     glfwTerminate();
 }
 
-void Plot::updateData(std::vector<Object*>& objects, double dt)
+void Plot::updateData(std::vector<Object*>& objects, double time)
 {
     for (size_t i = 0; i < objects.size(); i++)
     {
-        plotObjects[i]->updateData(objects[i], dt);
+        plotObjects[i]->updateData(objects[i], time);
     }
 }
 
@@ -267,6 +271,7 @@ void Plot::renderImguiWindow()
     ImGui_ImplOpenGL3_Init(glsl_version);
 
     // Our state
+    bool semaphore_released = false;
     while (!glfwWindowShouldClose(window) && !quit_flag_)
     {
         // Poll and handle events (inputs, window resize, etc.)
@@ -283,6 +288,10 @@ void Plot::renderImguiWindow()
         ImGui::NewFrame();
         int window_w, window_h;
         glfwGetWindowSize(window, &window_w, &window_h);
+
+        scenarioengine_->mutex_.Lock();
+        updateData(scenarioengine_->entities_.object_, scenarioengine_->getSimulationTime());
+        scenarioengine_->mutex_.Unlock();
         renderPlot("Line plot", static_cast<float>(window_w), static_cast<float>(window_h));
 
         // Rendering
@@ -295,6 +304,11 @@ void Plot::renderImguiWindow()
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         glfwSwapBuffers(window);
+
+        if (!semaphore_released)
+        {
+            init_sem_.Release();
+        }
     }
 
     CleanUp();
@@ -321,12 +335,10 @@ Plot::PlotObject::PlotObject(Object* object)
 {
 }
 
-void Plot::PlotObject::updateData(Object* object, double dt)
+void Plot::PlotObject::updateData(Object* object, double time)
 {
     // Update Time
-    (plotData[PlotCategories::Time].empty())
-        ? plotData[PlotCategories::Time].push_back(static_cast<float>(dt))
-        : plotData[PlotCategories::Time].push_back(plotData[PlotCategories::Time].back() + static_cast<float>(dt));
+    plotData[PlotCategories::Time].push_back(static_cast<float>(time));
 
     // Update Velocity Lat./Long
     double lat_vel, long_vel;

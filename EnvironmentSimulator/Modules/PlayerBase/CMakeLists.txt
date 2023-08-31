@@ -16,13 +16,25 @@ endif(USE_OSG)
 # ############################### Setting target files ###############################################################
 
 set(SOURCES
-    playerbase.cpp
-    Plot.cpp)
+    playerbase.cpp)
+
+if(USE_IMPLOT)
+    list(
+        APPEND
+        SOURCES
+        Plot.cpp)
+endif(USE_IMPLOT)
 
 set(INCLUDES
     playerbase.hpp
-    helpText.hpp
-    Plot.hpp)
+    helpText.hpp)
+
+if(USE_IMPLOT)
+    list(
+        APPEND
+        INCLUDES
+        Plot.hpp)
+endif(USE_IMPLOT)
 
 # ############################### Creating library ###################################################################
 

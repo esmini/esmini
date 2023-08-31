@@ -167,6 +167,7 @@ int ScenarioPlayer::Frame(double timestep_s)
 
     if (!IsPaused())
     {
+        scenarioEngine->mutex_.Lock();
         retval = ScenarioFrame(timestep_s, true);
 
         if (scenarioEngine->GetGhostMode() != GhostMode::NORMAL)
@@ -190,6 +191,7 @@ int ScenarioPlayer::Frame(double timestep_s)
         {
             SetState(PlayerState::PLAYER_STATE_PAUSE);
         }
+        scenarioEngine->mutex_.Unlock();
     }
 
     Draw();

@@ -70,8 +70,9 @@ static int execute_scenario(int argc, char* argv[])
 
     if (player->opt.GetOptionSet("plot"))
     {
-        plot        = std::make_unique<Plot>(player->scenarioEngine->entities_.object_);
+        plot        = std::make_unique<Plot>(player->scenarioEngine);
         plot_thread = std::thread(&Plot::renderImguiWindow, plot.get());
+        plot->init_sem_.Wait();
     }
 #endif
 
@@ -86,13 +87,6 @@ static int execute_scenario(int argc, char* argv[])
         {
             dt = SE_getSimTimeStep(time_stamp, player->minStepSize, player->maxStepSize);
         }
-
-#ifdef _USE_IMPLOT
-        if (plot && !player->IsPaused())
-        {
-            plot->updateData(player->scenarioEngine->entities_.object_, dt);
-        }
-#endif
 
         retval = player->Frame(dt);
     }

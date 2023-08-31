@@ -20,9 +20,13 @@ macro(set_implot_libs)
             optimized
             ${EXTERNALS_IMPLOT_LIBRARY_PATH}/libimplot.a
             debug
-            ${EXTERNALS_IMPLOT_LIBRARY_PATH}/libimplot.a)
+            ${EXTERNALS_IMPLOT_LIBRARY_PATH}/libimplotd.a
+            GL
+            X11
+            dl)
     elseif(MSVC)
         set(IMPLOT_LIBRARIES
+            opengl32.lib
             optimized
             ${EXTERNALS_IMPLOT_LIBRARY_PATH}/glfw3.lib
             debug
@@ -30,7 +34,7 @@ macro(set_implot_libs)
             optimized
             ${EXTERNALS_IMPLOT_LIBRARY_PATH}/implot.lib
             debug
-            ${EXTERNALS_IMPLOT_LIBRARY_PATH}/implot.lib)
+            ${EXTERNALS_IMPLOT_LIBRARY_PATH}/implotd.lib)
     elseif(MINGW)
         message("implot not yet supported for MinGW")
     endif()
