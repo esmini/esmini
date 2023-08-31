@@ -2392,22 +2392,42 @@ To run formatting (both check and apply) locally, follow steps below:
 [discreet]
 ==== Dependencies
 ===== clang-format
-(v15 avoiding some known bugs in v14) +
+esmini makes use of version 15, avoiding some known bugs in v14 +
 
 Windows: +
 Download and install LLVM-15.0.7-win64.exe found here: +
 https://github.com/llvm/llvm-project/releases/tag/llvmorg-15.0.7
 
 Linux: +
-[source, txt]
-----
-wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add - 2>/dev/null
-sudo add-apt-repository -y "deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-15 main"
-sudo apt-get update -q
-sudo apt-get install -y -q clang-format-15
-----
 
-see also: https://github.com/esmini/esmini/blob/2487160995e9ec392f1c0945bfc44b46fb098e63/.github/workflows/ci.l#L26[ci.yml]
+Check if clang-format version 15 is installed:
+
+`clang-format-15`
+
+If you get the following message:
+
+```
+Command 'clang-format-15' not found, but can be installed with:
+sudo apt install clang-format-15
+```
+
+then clang 15 must be installed.
+
+On Ubuntu systems prior to 22.04, first install llvm version 15:
+
+```
+wget https://apt.llvm.org/llvm.sh
+chmod +x llvm.sh
+sudo ./llvm.sh 15
+```
+Source: https://apt.llvm.org[apt.llvm.org]
+
+Then, clang v15 can be installed:
+```
+sudo apt install clang-format-15
+```
+
+see also: https://github.com/esmini/esmini/blob/dev/.github/workflows/ci.yml#L26[ci.yml]
 
 ===== Install dependent Python packages
 [source, txt]
