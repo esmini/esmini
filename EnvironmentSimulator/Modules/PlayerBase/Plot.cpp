@@ -1,15 +1,12 @@
 #include "Plot.hpp"
 
 // Plot
-Plot::Plot(ScenarioEngine* scenarioengine)
+Plot::Plot(ScenarioEngine* scenarioengine, bool synchronous)
 {
-    init_sem_.Set();
-
     // Save some sizes for easier access later
     plotcategories_size_ = static_cast<size_t>(PlotCategories::Time);
     scenarioengine_      = scenarioengine;
     bool_array_size_     = scenarioengine_->entities_.object_.size();
-    timestamp_           = scenarioengine_->getSimulationTime();
 
     // Populate objects we want to plot and default settings for the checkbox selections
     for (size_t i = 0; i < scenarioengine_->entities_.object_.size(); i++)
@@ -45,6 +42,17 @@ Plot::Plot(ScenarioEngine* scenarioengine)
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
                                                                     // glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
 #endif
+
+    if (synchronous)
+    {
+        createImguiWindow();
+    }
+    else
+    {
+        init_sem_.Set();
+        thread_ = std::thread(&Plot::Thread, this);
+        init_sem_.Wait();
+    }
 }
 
 Plot::~Plot()
@@ -54,6 +62,11 @@ Plot::~Plot()
 
 void Plot::CleanUp()
 {
+    if (window == nullptr)
+    {
+        return;  // Already closed, or not even created yet
+    }
+
     printf("Closing plot window\n");
 #ifdef __EMSCRIPTEN__
     EMSCRIPTEN_MAINLOOP_END;
@@ -67,6 +80,7 @@ void Plot::CleanUp()
 
     glfwDestroyWindow(window);
     glfwTerminate();
+    window = nullptr;
 }
 
 void Plot::updateData(std::vector<Object*>& objects, double time)
@@ -242,7 +256,85 @@ void Plot::renderPlot(const char* name, float window_w, float window_h)
     ImGui::End();
 }
 
-void Plot::renderImguiWindow()
+int Plot::Frame()
+{
+    if (window == nullptr)
+    {
+        return -1;
+    }
+
+    if (glfwWindowShouldClose(window) || quit_flag_)
+    {
+        CleanUp();
+        return -1;
+    }
+
+    // Poll and handle events (inputs, window resize, etc.)
+    // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
+    // - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main application, or clear/overwrite your copy of the mouse
+    // data.
+    // - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application, or clear/overwrite your copy of the
+    // keyboard data. Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
+    glfwPollEvents();
+
+    // Start the Dear ImGui frame
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+    int window_w, window_h;
+    glfwGetWindowSize(window, &window_w, &window_h);
+
+    scenarioengine_->mutex_.Lock();
+    updateData(scenarioengine_->entities_.object_, scenarioengine_->getSimulationTime());
+    scenarioengine_->mutex_.Unlock();
+    renderPlot("Line plot", static_cast<float>(window_w), static_cast<float>(window_h));
+
+    // Rendering
+    ImGui::Render();
+    int display_w, display_h;
+    glfwGetFramebufferSize(window, &display_w, &display_h);
+    glViewport(0, 0, display_w, display_h);
+    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+    glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
+    glClear(GL_COLOR_BUFFER_BIT);
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+    glfwSwapBuffers(window);
+
+    return 0;
+}
+
+void Plot::Thread()
+{
+    static bool initialized = false;
+
+    createImguiWindow();
+
+    while (Frame() == 0)
+    {
+        if (!initialized)
+        {
+            initialized = true;
+            init_sem_.Release();
+        }
+    }
+}
+
+void Plot::Quit()
+{
+    quit_flag_ = true;
+
+    if (thread_.joinable())
+    {
+        thread_.join();
+    }
+    else
+    {
+        Frame();
+    }
+}
+
+void Plot::createImguiWindow()
 {
     // Create window with graphics context
     window = glfwCreateWindow(window_width, window_height, "Lineplot", nullptr, nullptr);
@@ -264,54 +356,10 @@ void Plot::renderImguiWindow()
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
     // ImGui::StyleColorsLight();
-    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
     // Setup Platform/Renderer backends
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init(glsl_version);
-
-    // Our state
-    bool semaphore_released = false;
-    while (!glfwWindowShouldClose(window) && !quit_flag_)
-    {
-        // Poll and handle events (inputs, window resize, etc.)
-        // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
-        // - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main application, or clear/overwrite your copy of the mouse
-        // data.
-        // - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application, or clear/overwrite your copy of the
-        // keyboard data. Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
-        glfwPollEvents();
-
-        // Start the Dear ImGui frame
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
-        int window_w, window_h;
-        glfwGetWindowSize(window, &window_w, &window_h);
-
-        scenarioengine_->mutex_.Lock();
-        updateData(scenarioengine_->entities_.object_, scenarioengine_->getSimulationTime());
-        scenarioengine_->mutex_.Unlock();
-        renderPlot("Line plot", static_cast<float>(window_w), static_cast<float>(window_h));
-
-        // Rendering
-        ImGui::Render();
-        int display_w, display_h;
-        glfwGetFramebufferSize(window, &display_w, &display_h);
-        glViewport(0, 0, display_w, display_h);
-        glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
-        glClear(GL_COLOR_BUFFER_BIT);
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-        glfwSwapBuffers(window);
-
-        if (!semaphore_released)
-        {
-            init_sem_.Release();
-        }
-    }
-
-    CleanUp();
 }
 
 void Plot::glfw_error_callback(int error, const char* description)
@@ -319,10 +367,6 @@ void Plot::glfw_error_callback(int error, const char* description)
     fprintf(stderr, "GLFW Error %d: %s\n", error, description);
 }
 
-void Plot::set_quit_flag()
-{
-    quit_flag_ = true;
-}
 // Plot
 
 // PlotObject

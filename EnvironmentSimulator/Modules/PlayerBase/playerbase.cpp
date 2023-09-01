@@ -1236,7 +1236,9 @@ int ScenarioPlayer::Init()
     opt.AddOption("param_dist", "Run variations of the scenario according to specified parameter distribution file", "filename");
     opt.AddOption("param_permutation", "Run specific permutation of parameter distribution", "index (0 .. NumberOfPermutations-1)");
     opt.AddOption("path", "Search path prefix for assets, e.g. OpenDRIVE files (multiple occurrences supported)", "path");
-    opt.AddOption("plot", "Show plotting window with line-plots of interesting data");
+#ifdef _USE_IMPLOT
+    opt.AddOption("plot", "Show window with line-plots of interesting data", "mode (asynchronous|synchronous)", "asynchronous");
+#endif
     opt.AddOption("record", "Record position data into a file for later replay", "filename");
     opt.AddOption("road_features", "Show OpenDRIVE road features (\"on\", \"off\"  (default)) (toggle during simulation by press 'o') ", "mode");
     opt.AddOption("return_nr_permutations", "Return number of permutations without executing the scenario (-1 = error)");
@@ -1450,6 +1452,25 @@ int ScenarioPlayer::Init()
     if (opt.GetOptionSet("disable_off_screen"))
     {
         SE_Env::Inst().SetOffScreenRendering(false);
+    }
+
+    if (opt.GetOptionSet("plot"))
+    {
+        if (opt.GetOptionArg("plot") != "synchronous")
+        {
+#ifdef __APPLE__
+            LOG("Plot mode %s not supported on mac systems (OpenGL graphics must run in main thread), applying synchronous mode",
+                opt.GetOptionArg("plot").c_str());
+            opt.ChangeOptionArg("plot", "synchronous");
+#else
+            if (opt.GetOptionArg("plot") != "asynchronous")
+            {
+                LOG("Plot mode %s not recognized. applying default asynchronous mode", opt.GetOptionArg("plot").c_str());
+                opt.ChangeOptionArg("plot", "asynchronous");
+            }
+#endif  // __APPLE__
+        }
+        LOG("Plot mode: %s", opt.GetOptionArg("plot").c_str());
     }
 
     // Create scenario engine

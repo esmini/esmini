@@ -6,6 +6,8 @@
 #include <stdio.h>
 #include <vector>
 #include <unordered_map>
+#include <thread>
+#include <future>
 #define GL_SILENCE_DEPRECATION
 #if defined(IMGUI_IMPL_OPENGL_ES2)
 #include <GLES2/gl2.h>
@@ -38,15 +40,21 @@ enum class PlotCategories
 class Plot
 {
 public:
-    Plot(ScenarioEngine* scenarioengine);
+    Plot(ScenarioEngine* scenarioengine, bool synchronous = false);
     ~Plot();
+    int  Frame();
+    void Thread();
     void CleanUp();
+    void Quit();
+    bool IsModeSynchronuous()
+    {
+        return !thread_.joinable();
+    }
 
     void        updateData(std::vector<Object*>& objects, double dt);
     void        renderPlot(const char* name, float window_width, float window_height);
-    void        renderImguiWindow();
+    void        createImguiWindow();
     static void glfw_error_callback(int error, const char* description);
-    void        set_quit_flag();
 
     SE_Semaphore init_sem_;
 
@@ -109,7 +117,8 @@ private:
     size_t                                          plotcategories_size_ = {};
     std::vector<char>                               selectedItem         = {};
     ScenarioEngine*                                 scenarioengine_;
-    double                                          timestamp_;
+    bool                                            initialized_ = false;
+    std::thread                                     thread_;
 };
 
 #endif  // PLOT_H

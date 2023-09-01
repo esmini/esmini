@@ -16,8 +16,6 @@
 #include "Plot.hpp"
 #include <osgViewer/ViewerEventHandlers>
 #include <signal.h>
-#include <thread>
-#include <future>
 
 #define MIN_TIME_STEP 0.01
 #define MAX_TIME_STEP 0.1
@@ -66,15 +64,13 @@ static int execute_scenario(int argc, char* argv[])
 #ifdef _USE_IMPLOT
     // Initialize ImPlot
     std::unique_ptr<Plot> plot;
-    std::thread           plot_thread;
 
     if (player->opt.GetOptionSet("plot"))
     {
-        plot        = std::make_unique<Plot>(player->scenarioEngine);
-        plot_thread = std::thread(&Plot::renderImguiWindow, plot.get());
-        plot->init_sem_.Wait();
+        // Create and run plot in a separate thread as default
+        plot = std::make_unique<Plot>(player->scenarioEngine, player->opt.GetOptionArg("plot") == "synchronous");
     }
-#endif
+#endif  // _USE_IMPLOT
 
     while (!player->IsQuitRequested() && !quit && retval == 0)
     {
@@ -89,6 +85,13 @@ static int execute_scenario(int argc, char* argv[])
         }
 
         retval = player->Frame(dt);
+
+#ifdef _USE_IMPLOT
+        if (plot != nullptr && plot->IsModeSynchronuous())
+        {
+            plot->Frame();
+        }
+#endif  // _USE_IMPLOT
     }
 
     if (player->opt.IsOptionArgumentSet("param_permutation"))
@@ -100,10 +103,9 @@ static int execute_scenario(int argc, char* argv[])
 #ifdef _USE_IMPLOT
     if (plot != nullptr)
     {
-        plot->set_quit_flag();
-        plot_thread.join();
+        plot->Quit();  // ensure plot window is closed correctly
     }
-#endif
+#endif  // _USE_IMPLOT
 
     return retval;
 }
