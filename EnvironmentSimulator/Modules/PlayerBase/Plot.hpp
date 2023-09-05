@@ -52,7 +52,9 @@ public:
     }
 
     void        updateData(std::vector<Object*>& objects, double dt);
-    void        renderPlot(const char* name, float window_width, float window_height);
+    void        renderPlot(const char* name);  //, float window_width, float window_height);
+    void        plotLine(std::string plot_name, std::string unit, PlotCategories x, PlotCategories y, size_t lineplot_objects);
+    void        adjustPlotDataAxis(const std::pair<const PlotCategories, std::vector<float>>& d, const size_t item);
     void        createImguiWindow();
     static void glfw_error_callback(int error, const char* description);
 
@@ -85,10 +87,14 @@ private:
         const std::string name_      = {};
     };
     // GLFW, glsl
-    const char* glsl_version     = nullptr;
-    GLFWwindow* window           = nullptr;
-    int         window_width     = 1000;
-    int         window_height    = 1000;
+    const char* glsl_version = nullptr;
+    GLFWwindow* window       = nullptr;
+    // Imgui window
+    int window_width  = 1000;
+    int window_height = 1000;
+    // Dynamic window
+    int         window_w         = {};
+    int         window_h         = {};
     const float checkbox_padding = 55.0;
     bool        quit_flag_       = false;
 
@@ -96,29 +102,37 @@ private:
     ImPlotAxisFlags x_scaling = ImPlotAxisFlags_None;
     ImPlotAxisFlags y_scaling = ImPlotAxisFlags_None;
 
-    // Variables
-    std::vector<std::unique_ptr<PlotObject>>        plotObjects          = {};
-    std::unordered_map<PlotCategories, std::string> getCategoryName      = {{PlotCategories::LatVel, "LatVel"},
+    // Plot Variables
+    std::vector<std::unique_ptr<PlotObject>>        plot_objects_        = {};
+    std::unordered_map<PlotCategories, std::string> get_category_name_   = {{PlotCategories::LatVel, "LatVel"},
                                                                             {PlotCategories::LongVel, "LongVel"},
                                                                             {PlotCategories::LatA, "LatA"},
                                                                             {PlotCategories::LongA, "LongA"},
                                                                             {PlotCategories::LaneOffset, "LaneOffset"},
                                                                             {PlotCategories::LaneID, "LaneID"},
                                                                             {PlotCategories::Time, "Time"}};
-    std::unordered_map<PlotCategories, bool>        lineplot_selection   = {{PlotCategories::LatVel, true},
+    std::unordered_map<PlotCategories, std::string> get_category_unit_   = {{PlotCategories::LatVel, "m/s"},
+                                                                            {PlotCategories::LongVel, "m/s"},
+                                                                            {PlotCategories::LatA, "m/s²"},
+                                                                            {PlotCategories::LongA, "m/s²"},
+                                                                            {PlotCategories::LaneOffset, "m"},
+                                                                            {PlotCategories::LaneID, "id"},
+                                                                            {PlotCategories::Time, "s"}};
+    std::unordered_map<PlotCategories, bool>        lineplot_selection_  = {{PlotCategories::LatVel, true},
                                                                             {PlotCategories::LongVel, true},
                                                                             {PlotCategories::LatA, true},
                                                                             {PlotCategories::LongA, true},
                                                                             {PlotCategories::LaneOffset, true},
                                                                             {PlotCategories::LaneID, true},
                                                                             {PlotCategories::Time, true}};
-    unsigned int                                    selection            = 0;
-    size_t                                          bool_array_size_     = {};
     size_t                                          plotcategories_size_ = {};
-    std::vector<char>                               selectedItem         = {};
-    ScenarioEngine*                                 scenarioengine_;
-    bool                                            initialized_ = false;
-    std::thread                                     thread_;
+    std::vector<char>                               selected_object_     = {};
+    float                                           time_axis_min_       = -5.0f;
+
+    // Runtime variables
+    ScenarioEngine* scenarioengine_;
+    bool            initialized_ = false;
+    std::thread     thread_;
 };
 
 #endif  // PLOT_H
