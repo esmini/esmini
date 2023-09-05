@@ -317,7 +317,16 @@ static int GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, S
         return -1;
     }
 
-    roadmanager::Position pos(trailPos.x, trailPos.y, 0, 0, 0, 0);
+    roadmanager::Position pos;
+    if (trailPos.road_id >= 0)
+    {
+        pos.XYZH2TrackPos(trailPos.x, trailPos.y, 0.0, 0.0, false, trailPos.road_id, false);
+    }
+    else
+    {
+        pos.XYZH2TrackPos(trailPos.x, trailPos.y, 0.0, 0.0);
+    }
+
     obj->pos_.CalcProbeTarget(&pos, &s_data);
 
     CopyRoadInfo(r_data, &s_data);
@@ -376,7 +385,16 @@ static int GetRoadInfoAtGhostTrailTime(int object_id, float time, SE_RoadInfo *r
         obj->trail_follow_index_ = index_out;
     }
 
-    roadmanager::Position pos(trailPos.x, trailPos.y, 0, 0, 0, 0);
+    roadmanager::Position pos;
+    if (trailPos.road_id >= 0)
+    {
+        pos.XYZH2TrackPos(trailPos.x, trailPos.y, 0.0, 0.0, false, trailPos.road_id, false);
+    }
+    else
+    {
+        pos.XYZH2TrackPos(trailPos.x, trailPos.y, 0.0, 0.0);
+    }
+
     obj->pos_.CalcProbeTarget(&pos, &s_data);
 
     CopyRoadInfo(r_data, &s_data);

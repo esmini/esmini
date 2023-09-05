@@ -3829,6 +3829,7 @@ namespace roadmanager
         double y           = 0;
         double z           = 0;
         double h           = 0;
+        int    road_id     = -1;  // -1 indicates no valid road position. Use X, Y instead.
         double time        = 0;
         double speed       = 0;  // speed at vertex point/start of segment
         double acc         = 0;  // acceleration along the segment
@@ -3843,8 +3844,8 @@ namespace roadmanager
         {
         }
         TrajVertex *AddVertex(TrajVertex p);
-        TrajVertex *AddVertex(double x, double y, double z, double h);
-        TrajVertex *AddVertex(double x, double y, double z);
+        TrajVertex *AddVertex(double x, double y, double z, double h, int roadId = -1);
+        TrajVertex *AddVertex(double x, double y, double z, int roadId = -1);
 
         /**
          * Update vertex position and recalculate dependent values, e.g. length and heading
@@ -3855,7 +3856,7 @@ namespace roadmanager
          * @param z Z coordinate of new position
          * @param h Heading
          */
-        TrajVertex *UpdateVertex(int i, double x, double y, double z, double h);
+        TrajVertex *UpdateVertex(int i, double x, double y, double z, double h, int roadId = -1);
 
         /**
          * Update vertex position and recalculate dependent values, e.g. length and heading
@@ -3865,7 +3866,7 @@ namespace roadmanager
          * @param y Y coordinate of new position
          * @param z Z coordinate of new position
          */
-        TrajVertex *UpdateVertex(int i, double x, double y, double z);
+        TrajVertex *UpdateVertex(int i, double x, double y, double z, int roadId = -1);
 
         void reset()
         {

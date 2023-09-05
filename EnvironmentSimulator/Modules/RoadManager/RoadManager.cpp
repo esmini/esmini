@@ -10104,14 +10104,16 @@ int PolyLineBase::EvaluateSegmentByLocalS(int i, double local_s, double cornerRa
 
     if (i >= GetNumberOfVertices() - 1)
     {
-        pos.x     = vp0->x;
-        pos.y     = vp0->y;
-        pos.z     = vp0->z;
-        pos.h     = vp0->h;
-        pos.s     = vp0->s;
-        pos.p     = vp0->p;
-        pos.time  = vp0->time;
-        pos.speed = vp0->speed;
+        pos.s       = vp0->s;
+        pos.x       = vp0->x;
+        pos.y       = vp0->y;
+        pos.z       = vp0->z;
+        pos.h       = vp0->h;
+        pos.road_id = vp0->road_id;
+        pos.time    = vp0->time;
+        pos.speed   = vp0->speed;
+        pos.acc     = vp0->acc;
+        pos.p       = vp0->p;
     }
     else if (i >= 0)
     {
@@ -10123,13 +10125,15 @@ int PolyLineBase::EvaluateSegmentByLocalS(int i, double local_s, double cornerRa
 
         double a = local_s / length;  // a = interpolation factor
 
-        pos.x     = (1 - a) * vp0->x + a * vp1->x;
-        pos.y     = (1 - a) * vp0->y + a * vp1->y;
-        pos.z     = (1 - a) * vp0->z + a * vp1->z;
-        pos.time  = (1 - a) * vp0->time + a * vp1->time;
-        pos.speed = (1 - a) * vp0->speed + a * vp1->speed;
-        pos.s     = (1 - a) * vp0->s + a * vp1->s;
-        pos.p     = (1 - a) * vp0->p + a * vp1->p;
+        pos.s       = (1 - a) * vp0->s + a * vp1->s;
+        pos.x       = (1 - a) * vp0->x + a * vp1->x;
+        pos.y       = (1 - a) * vp0->y + a * vp1->y;
+        pos.z       = (1 - a) * vp0->z + a * vp1->z;
+        pos.road_id = vp0->road_id;
+        pos.time    = (1 - a) * vp0->time + a * vp1->time;
+        pos.speed   = (1 - a) * vp0->speed + a * vp1->speed;
+        pos.acc     = (1 - a) * vp0->acc + a * vp1->acc;
+        pos.p       = (1 - a) * vp0->p + a * vp1->p;
 
         if (vertex_[i + 1].calcHeading && !interpolateHeading_)
         {
@@ -10181,7 +10185,7 @@ int PolyLineBase::EvaluateSegmentByLocalS(int i, double local_s, double cornerRa
     return 0;
 }
 
-TrajVertex* PolyLineBase::AddVertex(double x, double y, double z, double h)
+TrajVertex* PolyLineBase::AddVertex(double x, double y, double z, double h, int roadId)
 {
     TrajVertex v;
 
@@ -10191,14 +10195,14 @@ TrajVertex* PolyLineBase::AddVertex(double x, double y, double z, double h)
     return UpdateVertex(GetNumberOfVertices() - 1, x, y, z, GetAngleInInterval2PI(h));
 }
 
-TrajVertex* PolyLineBase::AddVertex(double x, double y, double z)
+TrajVertex* PolyLineBase::AddVertex(double x, double y, double z, int roadId)
 {
     TrajVertex v;
 
     v.calcHeading = true;
     vertex_.push_back(v);
 
-    return UpdateVertex(GetNumberOfVertices() - 1, x, y, z);
+    return UpdateVertex(GetNumberOfVertices() - 1, x, y, z, roadId);
 }
 
 TrajVertex* PolyLineBase::AddVertex(TrajVertex p)
@@ -10207,21 +10211,22 @@ TrajVertex* PolyLineBase::AddVertex(TrajVertex p)
 
     if (p.calcHeading)
     {
-        return UpdateVertex(GetNumberOfVertices() - 1, p.x, p.y, p.z);
+        return UpdateVertex(GetNumberOfVertices() - 1, p.x, p.y, p.z, p.road_id);
     }
     else
     {
-        return UpdateVertex(GetNumberOfVertices() - 1, p.x, p.y, p.z, p.h);
+        return UpdateVertex(GetNumberOfVertices() - 1, p.x, p.y, p.z, p.h, p.road_id);
     }
 }
 
-TrajVertex* PolyLineBase::UpdateVertex(int i, double x, double y, double z)
+TrajVertex* PolyLineBase::UpdateVertex(int i, double x, double y, double z, int roadId)
 {
     TrajVertex* v = &vertex_[i];
 
-    v->x = x;
-    v->y = y;
-    v->z = z;
+    v->x       = x;
+    v->y       = y;
+    v->z       = z;
+    v->road_id = roadId;
 
     if (i > 0)
     {
@@ -10261,13 +10266,13 @@ TrajVertex* PolyLineBase::UpdateVertex(int i, double x, double y, double z)
     return &vertex_[i];
 }
 
-TrajVertex* PolyLineBase::UpdateVertex(int i, double x, double y, double z, double h)
+TrajVertex* PolyLineBase::UpdateVertex(int i, double x, double y, double z, double h, int roadId)
 {
     TrajVertex* v = &vertex_[i];
 
     v->h = h;
 
-    UpdateVertex(i, x, y, z);
+    UpdateVertex(i, x, y, z, roadId);
 
     return &vertex_[i];
 }
@@ -10539,7 +10544,7 @@ void PolyLineBase::Reset()
 void PolyLineShape::AddVertex(Position pos, double time, bool calculateHeading)
 {
     vertex_.emplace_back(pos);
-    pline_.AddVertex({pos.GetTrajectoryS(), pos.GetX(), pos.GetY(), pos.GetZ(), pos.GetH(), time, 0.0, 0.0, 0.0, calculateHeading});
+    pline_.AddVertex({pos.GetTrajectoryS(), pos.GetX(), pos.GetY(), pos.GetZ(), pos.GetH(), 0, time, 0.0, 0.0, 0.0, calculateHeading});
 }
 
 int PolyLineShape::Evaluate(double p, TrajectoryParamType ptype, TrajVertex& pos)

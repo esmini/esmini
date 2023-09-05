@@ -1082,8 +1082,10 @@ void ScenarioEngine::prepareGroundTruth(double dt)
                                                obj->pos_.GetY(),
                                                obj->pos_.GetZ(),
                                                obj->pos_.GetH(),
+                                               obj->pos_.GetTrackId(),
                                                simulationTime_,
                                                obj->GetSpeed(),
+                                               obj->pos_.GetAcc(),
                                                0.0,
                                                false});
                     }
