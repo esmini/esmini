@@ -1,3 +1,15 @@
+/*
+ * esmini - Environment Simulator Minimalistic
+ * https://github.com/esmini/esmini
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ * Copyright (c) partners of Simulation Scenarios
+ * https://sites.google.com/view/simulationscenarios
+ */
+
 #include "Plot.hpp"
 
 // Plot
@@ -6,6 +18,14 @@ Plot::Plot(ScenarioEngine* scenarioengine, bool synchronous)
     // Save some sizes for easier access later
     plotcategories_size_ = static_cast<size_t>(PlotCategories::Time);
     scenarioengine_      = scenarioengine;
+
+    for (size_t i = 0; i < plotcategories_size_ + 1; i++)
+    {
+        auto cat                = static_cast<PlotCategories>(i);
+        get_category_name_[cat] = lineplot_information_[cat][0];
+        get_category_unit_[cat] = lineplot_information_[cat][1];
+        (lineplot_information_[cat][2] == "true") ? lineplot_selection_[cat] = true : lineplot_selection_[cat] = false;
+    }
 
     // Populate objects we want to plot and default settings for the checkbox selections
     for (size_t i = 0; i < scenarioengine_->entities_.object_.size(); i++)

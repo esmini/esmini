@@ -575,8 +575,8 @@ From version 2.32.0 esmini can plot some pre-configured data values during simul
 
 Features so far:
 
-- Values from one entity plotted at a time. Entity can be changed by checkboxes on top.
-- Selection of variables can be reduced by checkboxes to the right.
+- One or multiple entities can be selected by checkboxes on top
+- Selection of variables can be reduced by checkboxes to the right
 
 .Screenshot of a cut-in scenario with line plotting feature enabled
 image::implot.png[]

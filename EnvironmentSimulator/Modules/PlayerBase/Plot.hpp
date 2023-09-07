@@ -1,3 +1,15 @@
+/*
+ * esmini - Environment Simulator Minimalistic
+ * https://github.com/esmini/esmini
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ * Copyright (c) partners of Simulation Scenarios
+ * https://sites.google.com/view/simulationscenarios
+ */
+
 #include "imgui.h"
 #include "implot.h"
 #include "imgui_impl_glfw.h"
@@ -103,31 +115,23 @@ private:
     ImPlotAxisFlags y_scaling = ImPlotAxisFlags_None;
 
     // Plot Variables
-    std::vector<std::unique_ptr<PlotObject>>        plot_objects_        = {};
-    std::unordered_map<PlotCategories, std::string> get_category_name_   = {{PlotCategories::LatVel, "LatVel"},
-                                                                            {PlotCategories::LongVel, "LongVel"},
-                                                                            {PlotCategories::LatA, "LatA"},
-                                                                            {PlotCategories::LongA, "LongA"},
-                                                                            {PlotCategories::LaneOffset, "LaneOffset"},
-                                                                            {PlotCategories::LaneID, "LaneID"},
-                                                                            {PlotCategories::Time, "Time"}};
-    std::unordered_map<PlotCategories, std::string> get_category_unit_   = {{PlotCategories::LatVel, "m/s"},
-                                                                            {PlotCategories::LongVel, "m/s"},
-                                                                            {PlotCategories::LatA, "m/s²"},
-                                                                            {PlotCategories::LongA, "m/s²"},
-                                                                            {PlotCategories::LaneOffset, "m"},
-                                                                            {PlotCategories::LaneID, "id"},
-                                                                            {PlotCategories::Time, "s"}};
-    std::unordered_map<PlotCategories, bool>        lineplot_selection_  = {{PlotCategories::LatVel, true},
-                                                                            {PlotCategories::LongVel, true},
-                                                                            {PlotCategories::LatA, true},
-                                                                            {PlotCategories::LongA, true},
-                                                                            {PlotCategories::LaneOffset, true},
-                                                                            {PlotCategories::LaneID, true},
-                                                                            {PlotCategories::Time, true}};
-    size_t                                          plotcategories_size_ = {};
-    std::vector<char>                               selected_object_     = {};
-    float                                           time_axis_min_       = -5.0f;
+    std::vector<std::unique_ptr<PlotObject>>        plot_objects_       = {};
+    std::unordered_map<PlotCategories, std::string> get_category_name_  = {};
+    std::unordered_map<PlotCategories, std::string> get_category_unit_  = {};
+    std::unordered_map<PlotCategories, bool>        lineplot_selection_ = {};
+    // Add any new data below
+    std::unordered_map<PlotCategories, std::vector<std::string>> lineplot_information_ = {
+        {PlotCategories::LatVel, std::vector<std::string>{"LatVel", "m/s", "true"}},
+        {PlotCategories::LongVel, std::vector<std::string>{"LongVel", "m/s", "true"}},
+        {PlotCategories::LatA, std::vector<std::string>{"LatA", "m/s²", "true"}},
+        {PlotCategories::LongA, std::vector<std::string>{"LongA", "m/s²", "true"}},
+        {PlotCategories::LaneOffset, std::vector<std::string>{"LaneOffset", "LaneOffset", "true"}},
+        {PlotCategories::LaneID, std::vector<std::string>{"LaneID", "id", "true"}},
+        {PlotCategories::Time, std::vector<std::string>{"Time", "s", "true"}}};
+
+    size_t            plotcategories_size_ = {};
+    std::vector<char> selected_object_     = {};
+    float             time_axis_min_       = -5.0f;
 
     // Runtime variables
     ScenarioEngine* scenarioengine_;
