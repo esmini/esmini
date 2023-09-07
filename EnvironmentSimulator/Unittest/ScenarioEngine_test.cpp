@@ -1830,12 +1830,12 @@ TEST(SpeedTest, TestAbsoluteSpeed)
         se->prepareGroundTruth(dt);
         time = se->getSimulationTime();
 
-        if (time > 1.1 + SMALL_NUMBER && time < 3.1 + SMALL_NUMBER)
+        if (time > 1.1 + SMALL_NUMBER && time < 3.05 + SMALL_NUMBER)
         {
             // Lane change action
             EXPECT_NEAR(se->entities_.object_[0]->pos_.GetVelY(), 1.535, 1e-3);
         }
-        else if (time > 4.15 + SMALL_NUMBER && time < 7.15 + SMALL_NUMBER)
+        else if (time > 4.15 + SMALL_NUMBER && time < 7.10 + SMALL_NUMBER)
         {
             // Lane change action
             EXPECT_NEAR(se->entities_.object_[0]->pos_.GetVelY(), -1.0116, 1e-4);
@@ -1992,7 +1992,7 @@ TEST(RelativeClearanceTest, TestRelativeClearanceFreeSpace)
 
         if (i == 1)
         {
-            ASSERT_NEAR(se->entities_.object_[2]->pos_.GetT(), -3.0749722, 1E-3);
+            ASSERT_NEAR(se->entities_.object_[2]->pos_.GetT(), -3.000, 1E-3);
             ASSERT_EQ(se->entities_.object_[2]->GetName(), "TargetRef");
         }
         if (i == 2)
@@ -2017,10 +2017,10 @@ TEST(TwoPlusOneRoadTest, TestTwoPlusOneRoad)
         double h;
         int    lane_id;
     } exp_values[5] = {{4.0, 115.0, -1.75, 0.0, -1},
-                       {5.25, 134.19, -1.81, 0.054, -2},
-                       {7.0, 168.89, -2.18, 0.05, -1},
+                       {5.25, 134.19, -1.789, 0.054, -2},
+                       {7.0, 168.89, -2.154, 0.05, -1},
                        {9.0, 218.22, -1.75, 0.0, -1},
-                       {11.25, 274.39, -4.02, 6.20, -2}};
+                       {11.25, 274.39, -4.118, 6.20, -2}};
 
     ASSERT_NE(se, nullptr);
 
@@ -2064,7 +2064,7 @@ TEST(RelativeClearanceTest, TestRelativeClearanceOppositeLane)
         ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/relative_clearance_oppositLane.xosc");
         ASSERT_NE(se, nullptr);
 
-        while (se->getSimulationTime() < 1.65 - SMALL_NUMBER)
+        while (se->getSimulationTime() < 1.6 - SMALL_NUMBER)
         {
             se->step(dt);
             se->prepareGroundTruth(dt);
@@ -2075,7 +2075,7 @@ TEST(RelativeClearanceTest, TestRelativeClearanceOppositeLane)
             ASSERT_EQ(se->entities_.object_[2]->GetName(), "TargetRef");
         }
 
-        while (se->getSimulationTime() < 5.80 - SMALL_NUMBER)
+        while (se->getSimulationTime() < 5.75 - SMALL_NUMBER)
         {
             se->step(dt);
             se->prepareGroundTruth(dt);

@@ -626,6 +626,15 @@ void LatLaneChangeAction::Step(double simTime, double dt)
         return;
     }
 
+    if (transition_.dimension_ == DynamicsDimension::DISTANCE)
+    {
+        transition_.Step(dt * object_->GetSpeed());
+    }
+    else
+    {
+        transition_.Step(dt);
+    }
+
     // Add a constraint that lateral speed may not exceed longitudinal
     transition_.SetMaxRate(object_->GetSpeed());
     offset_agnostic   = transition_.Evaluate();
@@ -694,15 +703,6 @@ void LatLaneChangeAction::Step(double simTime, double dt)
                                                       angle);
     }
     object_->pos_.EvaluateOrientation();
-
-    if (transition_.dimension_ == DynamicsDimension::DISTANCE)
-    {
-        transition_.Step(dt * object_->GetSpeed());
-    }
-    else
-    {
-        transition_.Step(dt);
-    }
 
     if (retval == roadmanager::Position::ReturnCode::ERROR_END_OF_ROAD)
     {
