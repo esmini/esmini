@@ -1,5 +1,34 @@
 ## esmini release notes
 
+### 2023-09-07 Version 2.32.0
+
+New features:
+- Runtime plotting feature based on imgui/implot
+  - see brief info in [User guide - Runtime plotting](https://esmini.github.io/#_runtime_plotting)
+- osi3::TrafficUpdate input to the esmini OSMP FMU ([PR #463](https://github.com/esmini/esmini/pull/463))
+  - esmini can now be used in a closed-loop co-simulation with a traffic participant model
+- UDP action server ([issue #465](https://github.com/esmini/esmini/issues/465))
+  - Inject actions via UDP messages
+  - Only a few actions supported so far
+  - See [issue](https://github.com/esmini/esmini/issues/465#issuecomment-1693377535) and example [inject_actions.py](https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/code-examples/hello_world/inject_actions.py) for more info
+  
+Updated behaviors:
+- Relative lane-change/offset direction now based on the referenced entity orientation
+- Add road ID to trajectory vertices
+  - purpose is to preserve road ID for trajectory lookup functions, e.g. follow ghost
+  - especially useful in intersections where road id is ambiguous due to overlapping roads
+- Reduce lane change jitter
+  - apply lateral movement with delta-time of current frame, not previous
+
+Improvements and fixes:
+
+- Code quality improved by const correctness on class methods ([PR #466](https://github.com/esmini/esmini/pull/466))
+- Set SUMO vehicles role = CIVIL and category = CAR (previously undefined)
+- Add missing road info for esminiLib road lookahead functions
+  - junctionId, roadId, laneId, laneOffset, s and t
+- Update info how to install clang v15 on Linux in [User guide - Formatting](https://esmini.github.io/#_formatting)
+- Fix execution flow bug in the experimental [fix_dae_materials.py](https://github.com/esmini/esmini/blob/dev/scripts/fix_dae_materials.py) script
+
 ### 2023-08-04 Version 2.31.10
 
 - Add [SE_AddObjectWithBoundingBox()](https://github.com/esmini/esmini/blob/e76b4cf90f0bf7827617eff587bd41e7388c4dc8/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L741) method to lib API ([PR #460](https://github.com/esmini/esmini/pull/460))
