@@ -47,11 +47,11 @@ for mat in materials:
             mat.append(a)
 
         reflectivity = mat.find('.//reflectivity', namespaces=tree.getroot().nsmap)
+        s = mat.find('.//shininess', namespaces=tree.getroot().nsmap)
         if reflectivity is not None:
             shininess_value = 100 * float(reflectivity.find('float', namespaces=tree.getroot().nsmap).text)
             mat.remove(reflectivity)
         else:
-            s = mat.find('.//shininess', namespaces=tree.getroot().nsmap)
             if s is None:
                 shininess_value = 1.0
             else:
