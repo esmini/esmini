@@ -509,6 +509,12 @@ int ScenarioEngine::step(double deltaSimTime)
         }
     }
 
+    // Step any externally injected actions
+    if (serverActions_.NumberOfActions() > 0)
+    {
+        serverActions_.Step(simulationTime_, deltaSimTime);
+    }
+
     // This timestep calculation is due to the Ghost vehicle
     // If both times are equal, it is a normal scenario, or no Ghost teleportation is ongoing -> Step as usual
     // Else if we can take a step, and still not reach the point of teleportation -> Step only simulationTime (That the Ghost runs on)

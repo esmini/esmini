@@ -508,6 +508,10 @@ To navigate in the plot, click the four-arrow icon (see image below) and then us
 image::odrplot_help.png[]
 
 === Plot scenario data
+
+esmini can plot data in two ways: Off-line (plot content of .dat files) and runtime (a set of pre-defined values).
+
+==== Off-line plotting
 esmini provides a Python based script, plot_dat.py, to plot information in .dat files.
 
 First, create a .dat file. For that we don't need a window. Run esmini headless: +
@@ -564,6 +568,34 @@ Scenarios corresponding to IDs (0:99): sim_fsm.dat
 Scenarios corresponding to IDs (100:199): sim_ref.dat
 Scenarios corresponding to IDs (200:299): sim_reg.dat
 Scenarios corresponding to IDs (300:399): sim_rss.dat
+
+==== Runtime plotting
+
+From version 2.32.0 esmini can plot some pre-configured data values during simulation. Simply add launch flag `--plot`. 
+
+Features so far:
+
+- Values from one entity plotted at a time. Entity can be changed by checkboxes on top.
+- Selection of variables can be reduced by checkboxes to the right.
+
+.Screenshot of a cut-in scenario with line plotting feature enabled
+image::implot.png[]
+
+By default the plotting is executing in a separate thread, having minimal impact on esmini performance. It is also possible to execute in synchronous mode, where plotting is part of esmini main thread and stepping is done in synch. The mode can be specified explicitly. Examples:
+
+Simply enable plotting, default mode:
+
+`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in.xosc --fixed_timestep 0.05 --plot`
+
+Enforce synchronous mode:
+
+`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in.xosc --fixed_timestep 0.05 --plot synchronous`
+
+Asynchronous mode can be specified as well, although it's default hence not needed:
+
+`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in.xosc --fixed_timestep 0.05 --plot asynchronous`
+
+*Note:* On macos OpenGL window must be part of main thread. Hence synchronous mode is enforced on macos.
 
 === Save OSI data
 esmini can provide OSI groundtruth data in three ways:
@@ -2213,18 +2245,19 @@ The dynamic versions of protobuf were added Aug 31 2021. So you might need to up
 
 === Slim esmini - customize configration
 
-The external dependencies OSG, OSI and SUMO are optional. Also the unit test suite is optional, in effect making the dependecy to googletest framework optional as well. All these options are simply controlled by the following cmake options:
+The external dependencies OSG, OSI, SUMO and implot are optional. Also the unit test suite is optional, in effect making the dependecy to googletest framework optional as well. All these options are simply controlled by the following cmake options:
 
 - USE_OSG
 - USE_OSI
 - USE_SUMO
 - USE_GTEST
+- USE_IMPLOT
 
 So, for example, to cut dependency to OSG and SUMO, run:  +
 ``cmake .. -D USE_OSG=False -D USE_SUMO=False``
 
 To disable OSG, SUMO, OSI and googletest, run:  +
-``cmake .. -D USE_OSG=False -D USE_SUMO=False -D USE_OSI=False -D USE_GTEST=False``
+``cmake .. -D USE_OSG=False -D USE_SUMO=False -D USE_OSI=False -D USE_GTEST=False USE_IMPLOT=False``
 
 All options are enabled/True as default.
 
@@ -2392,22 +2425,42 @@ To run formatting (both check and apply) locally, follow steps below:
 [discreet]
 ==== Dependencies
 ===== clang-format
-(v15 avoiding some known bugs in v14) +
+esmini makes use of version 15, avoiding some known bugs in v14 +
 
 Windows: +
 Download and install LLVM-15.0.7-win64.exe found here: +
 https://github.com/llvm/llvm-project/releases/tag/llvmorg-15.0.7
 
 Linux: +
-[source, txt]
-----
-wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add - 2>/dev/null
-sudo add-apt-repository -y "deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-15 main"
-sudo apt-get update -q
-sudo apt-get install -y -q clang-format-15
-----
 
-see also: https://github.com/esmini/esmini/blob/2487160995e9ec392f1c0945bfc44b46fb098e63/.github/workflows/ci.l#L26[ci.yml]
+Check if clang-format version 15 is installed:
+
+`clang-format-15`
+
+If you get the following message:
+
+```
+Command 'clang-format-15' not found, but can be installed with:
+sudo apt install clang-format-15
+```
+
+then clang 15 must be installed.
+
+On Ubuntu systems prior to 22.04, first install llvm version 15:
+
+```
+wget https://apt.llvm.org/llvm.sh
+chmod +x llvm.sh
+sudo ./llvm.sh 15
+```
+Source: https://apt.llvm.org[apt.llvm.org]
+
+Then, clang v15 can be installed:
+```
+sudo apt install clang-format-15
+```
+
+see also: https://github.com/esmini/esmini/blob/dev/.github/workflows/ci.yml#L26[ci.yml]
 
 ===== Install dependent Python packages
 [source, txt]

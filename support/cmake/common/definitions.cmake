@@ -30,4 +30,8 @@ macro(set_definitions)
         add_definitions(-DPROTOBUF_USE_DLLS)
     endif(DYN_PROTOBUF)
 
+    if(USE_IMPLOT)
+        add_definitions(-D_USE_IMPLOT)
+    endif(USE_IMPLOT)
+
 endmacro()

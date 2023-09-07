@@ -45,6 +45,12 @@ if(USE_OSI)
         PRIVATE ${OSI_LIBRARIES})
 endif()
 
+if(USE_IMPLOT)
+    target_link_libraries(
+        ${TARGET}
+        PRIVATE ${IMPLOT_LIBRARIES})
+endif()
+
 # ############################### Install ############################################################################
 
 install(

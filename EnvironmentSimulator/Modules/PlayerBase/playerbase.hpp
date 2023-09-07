@@ -219,6 +219,7 @@ namespace scenarioengine
         bool        quit_request;
         bool        threads;
         bool        launch_server;
+        bool        launch_action_server;
         bool        disable_controllers_;
         double      fixed_timestep_;
         int         osi_freq_;

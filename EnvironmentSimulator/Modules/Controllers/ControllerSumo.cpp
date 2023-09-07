@@ -115,6 +115,9 @@ void ControllerSumo::Step(double timeStep)
                 vehicle->controller_ = this;
                 vehicle->model3d_    = template_vehicle_->model3d_;
                 vehicle->scaleMode_  = EntityScaleMode::BB_TO_MODEL;
+                vehicle->role_       = Vehicle::Role::CIVIL;
+                vehicle->category_   = Vehicle::Category::CAR;
+                vehicle->odometer_   = 0.0;
                 entities_->addObject(vehicle, true);
             }
         }

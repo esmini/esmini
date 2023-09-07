@@ -41,3 +41,12 @@ https://github.com/ec-jrc/JRC-FSM
 
 fmi-standard
 https://github.com/modelica/fmi-standard
+
+glfw
+https://github.com/glfw/glfw
+
+imgui
+https://github.com/ocornut/imgui
+
+implot
+https://github.com/epezent/implot

@@ -24,6 +24,7 @@
 #include "ScenarioGateway.hpp"
 #include "ScenarioReader.hpp"
 #include "RoadNetwork.hpp"
+#include "ActionServer.hpp"
 
 namespace scenarioengine
 {
@@ -53,8 +54,9 @@ namespace scenarioengine
     class ScenarioEngine
     {
     public:
-        Entities                   entities_;
-        std::vector<CollisionPair> collision_pair_;
+        Entities                    entities_;
+        std::vector<CollisionPair>  collision_pair_;
+        actionserver::ServerActions serverActions_;
 
         ScenarioEngine(std::string oscFilename, bool disable_controllers = false);
         ScenarioEngine(const pugi::xml_document &xml_doc, bool disable_controllers = false);
@@ -149,8 +151,9 @@ namespace scenarioengine
             return init_status_;
         }
 
-        double trueTime_;
-        bool   doOnce = true;
+        double   trueTime_;
+        bool     doOnce = true;
+        SE_Mutex mutex_;
 
     private:
         // OpenSCENARIO parameters
