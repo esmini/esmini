@@ -1567,7 +1567,7 @@ TEST(RoadTest, RoadWidthDrivingLanes)
 TEST(TrajectoryTest, PolyLineBase_YawInterpolation)
 {
     PolyLineBase pline;
-    TrajVertex   v = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false};
+    TrajVertex   v = {0.0, 0.0, 0.0, 0.0, 0.0, -1, 0.0, 0.0, 0.0, 0.0, false};
 
     // Simple case
     pline.AddVertex(0.0, 0.0, 0.0, 0.0);

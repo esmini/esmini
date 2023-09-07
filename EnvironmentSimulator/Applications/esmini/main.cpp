@@ -13,6 +13,8 @@
 #include "playerbase.hpp"
 #include "CommonMini.cpp"
 #include "OSCParameterDistribution.hpp"
+#include "Plot.hpp"
+#include <osgViewer/ViewerEventHandlers>
 #include <signal.h>
 
 #define MIN_TIME_STEP 0.01
@@ -59,6 +61,17 @@ static int execute_scenario(int argc, char* argv[])
         return -1;
     }
 
+#ifdef _USE_IMPLOT
+    // Initialize ImPlot
+    std::unique_ptr<Plot> plot;
+
+    if (player->opt.GetOptionSet("plot"))
+    {
+        // Create and run plot in a separate thread as default
+        plot = std::make_unique<Plot>(player->scenarioEngine, player->opt.GetOptionArg("plot") == "synchronous");
+    }
+#endif  // _USE_IMPLOT
+
     while (!player->IsQuitRequested() && !quit && retval == 0)
     {
         double dt;
@@ -72,6 +85,13 @@ static int execute_scenario(int argc, char* argv[])
         }
 
         retval = player->Frame(dt);
+
+#ifdef _USE_IMPLOT
+        if (plot != nullptr && plot->IsModeSynchronuous())
+        {
+            plot->Frame();
+        }
+#endif  // _USE_IMPLOT
     }
 
     if (player->opt.IsOptionArgumentSet("param_permutation"))
@@ -79,6 +99,13 @@ static int execute_scenario(int argc, char* argv[])
         // Single permutation requested and executed, quit now
         quit = true;
     }
+
+#ifdef _USE_IMPLOT
+    if (plot != nullptr)
+    {
+        plot->Quit();  // ensure plot window is closed correctly
+    }
+#endif  // _USE_IMPLOT
 
     return retval;
 }

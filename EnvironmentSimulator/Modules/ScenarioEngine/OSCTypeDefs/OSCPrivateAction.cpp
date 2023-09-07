@@ -569,13 +569,20 @@ void LatLaneChangeAction::Start(double simTime, double dt)
     else if (target_->type_ == Target::Type::RELATIVE_LANE)
     {
         // Find out target lane relative referred vehicle
-        target_lane_id_ = (static_cast<TargetRelative*>(target_.get()))->object_->pos_.GetLaneId() +
-                          target_->value_ * (IsAngleForward(object_->pos_.GetHRelative()) ? 1 : -1);
-
-        if (target_lane_id_ == 0 || SIGN((static_cast<TargetRelative*>(target_.get()))->object_->pos_.GetLaneId()) != SIGN(target_lane_id_))
+        Object* ref_entity = (static_cast<TargetRelative*>(target_.get()))->object_;
+        if (ref_entity != nullptr)
         {
-            // Skip reference lane (id == 0)
-            target_lane_id_ = SIGN(target_lane_id_ - object_->pos_.GetLaneId()) * (abs(target_lane_id_) + 1);
+            target_lane_id_ = ref_entity->pos_.GetLaneId() + target_->value_ * (IsAngleForward(ref_entity->pos_.GetHRelative()) ? 1 : -1);
+
+            if (target_lane_id_ == 0 || SIGN(ref_entity->pos_.GetLaneId()) != SIGN(target_lane_id_))
+            {
+                // Skip reference lane (id == 0)
+                target_lane_id_ = SIGN(target_lane_id_ - ref_entity->pos_.GetLaneId()) * (abs(target_lane_id_) + 1);
+            }
+        }
+        else
+        {
+            LOG("LaneChange RelativeTarget ref entity not found!");
         }
     }
 
@@ -617,6 +624,15 @@ void LatLaneChangeAction::Step(double simTime, double dt)
     if (abs(object_->GetSpeed()) < SMALL_NUMBER)
     {
         return;
+    }
+
+    if (transition_.dimension_ == DynamicsDimension::DISTANCE)
+    {
+        transition_.Step(dt * object_->GetSpeed());
+    }
+    else
+    {
+        transition_.Step(dt);
     }
 
     // Add a constraint that lateral speed may not exceed longitudinal
@@ -688,15 +704,6 @@ void LatLaneChangeAction::Step(double simTime, double dt)
     }
     object_->pos_.EvaluateOrientation();
 
-    if (transition_.dimension_ == DynamicsDimension::DISTANCE)
-    {
-        transition_.Step(dt * object_->GetSpeed());
-    }
-    else
-    {
-        transition_.Step(dt);
-    }
-
     if (retval == roadmanager::Position::ReturnCode::ERROR_END_OF_ROAD)
     {
         object_->SetSpeed(0.0);
@@ -747,14 +754,14 @@ void LatLaneOffsetAction::Start(double simTime, double dt)
         // Register what lane action object belongs to
         int lane_id = object_->pos_.GetLaneId();
 
-        // Find out referred object track position
+        // Find out target position based on the referred object
         roadmanager::Position refpos = (static_cast<TargetRelative*>(target_.get()))->object_->pos_;
-        refpos.SetTrackPos(refpos.GetTrackId(),
-                           refpos.GetS(),
-                           refpos.GetT() + target_->value_ * (IsAngleForward(object_->pos_.GetHRelative()) ? 1 : -1));
+        refpos.SetTrackPos(refpos.GetTrackId(), refpos.GetS(), refpos.GetT() + target_->value_ * (IsAngleForward(refpos.GetHRelative()) ? 1 : -1));
+
+        // Transform target position into lane position based on current lane id
         refpos.ForceLaneId(lane_id);
 
-        // Target lane offset = t value of requested lane + offset relative t value of current lane without offset
+        // Target lane offset = target t value - t value of current lane (which is current t - current offset)
         transition_.SetTargetVal(SIGN(object_->pos_.GetLaneId()) * (refpos.GetT() - (object_->pos_.GetT() - object_->pos_.GetOffset())));
     }
 

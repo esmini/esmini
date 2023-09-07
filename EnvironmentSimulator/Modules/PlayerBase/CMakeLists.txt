@@ -18,9 +18,23 @@ endif(USE_OSG)
 set(SOURCES
     playerbase.cpp)
 
+if(USE_IMPLOT)
+    list(
+        APPEND
+        SOURCES
+        Plot.cpp)
+endif(USE_IMPLOT)
+
 set(INCLUDES
     playerbase.hpp
     helpText.hpp)
+
+if(USE_IMPLOT)
+    list(
+        APPEND
+        INCLUDES
+        Plot.hpp)
+endif(USE_IMPLOT)
 
 # ############################### Creating library ###################################################################
 
@@ -44,7 +58,8 @@ target_include_directories(
     PUBLIC ${ROAD_MANAGER_PATH}
            ${EXTERNALS_OSG_INCLUDES}
            ${EXTERNALS_OSI_INCLUDES}
-           ${EXTERNALS_PUGIXML_PATH})
+           ${EXTERNALS_PUGIXML_PATH}
+           ${EXTERNALS_IMPLOT_INCLUDES})
 
 target_link_libraries(
     ${TARGET}

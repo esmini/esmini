@@ -18,6 +18,7 @@
 #include "RoadManager.hpp"
 #include "CommonMini.hpp"
 #include "Server.hpp"
+#include "ActionServer.hpp"
 #include "playerbase.hpp"
 #include "helpText.hpp"
 #include "OSCParameterDistribution.hpp"
@@ -56,6 +57,7 @@ ScenarioPlayer::ScenarioPlayer(int argc, char* argv[])
     quit_request         = false;
     threads              = false;
     launch_server        = false;
+    launch_action_server = false;
     fixed_timestep_      = -1.0;
     osi_receiver_addr    = "";
     osi_freq_            = 1;
@@ -80,6 +82,11 @@ ScenarioPlayer::~ScenarioPlayer()
     if (launch_server)
     {
         StopServer();
+    }
+
+    if (launch_action_server)
+    {
+        actionserver::StopActionServer();
     }
 
 #ifdef _USE_OSG
@@ -160,6 +167,7 @@ int ScenarioPlayer::Frame(double timestep_s)
 
     if (!IsPaused())
     {
+        scenarioEngine->mutex_.Lock();
         retval = ScenarioFrame(timestep_s, true);
 
         if (scenarioEngine->GetGhostMode() != GhostMode::NORMAL)
@@ -183,6 +191,7 @@ int ScenarioPlayer::Frame(double timestep_s)
         {
             SetState(PlayerState::PLAYER_STATE_PAUSE);
         }
+        scenarioEngine->mutex_.Unlock();
     }
 
     Draw();
@@ -1185,6 +1194,7 @@ int ScenarioPlayer::Init()
     // use an ArgumentParser object to manage the program arguments.
     opt.AddOption("osc", "OpenSCENARIO filename (required) - if path includes spaces, enclose with \"\"", "filename");
     opt.AddOption("aa_mode", "Anti-alias mode=number of multisamples (subsamples, 0=off, 4=default)", "mode");
+    opt.AddOption("action_server", "Launch UDP server for injected actions");
     opt.AddOption("bounding_boxes", "Show entities as bounding boxes (toggle modes on key ',') ");
     opt.AddOption("capture_screen", "Continuous screen capture. Warning: Many jpeg files will be created");
     opt.AddOption(
@@ -1226,6 +1236,9 @@ int ScenarioPlayer::Init()
     opt.AddOption("param_dist", "Run variations of the scenario according to specified parameter distribution file", "filename");
     opt.AddOption("param_permutation", "Run specific permutation of parameter distribution", "index (0 .. NumberOfPermutations-1)");
     opt.AddOption("path", "Search path prefix for assets, e.g. OpenDRIVE files (multiple occurrences supported)", "path");
+#ifdef _USE_IMPLOT
+    opt.AddOption("plot", "Show window with line-plots of interesting data", "mode (asynchronous|synchronous)", "asynchronous");
+#endif
     opt.AddOption("record", "Record position data into a file for later replay", "filename");
     opt.AddOption("road_features", "Show OpenDRIVE road features (\"on\", \"off\"  (default)) (toggle during simulation by press 'o') ", "mode");
     opt.AddOption("return_nr_permutations", "Return number of permutations without executing the scenario (-1 = error)");
@@ -1390,6 +1403,12 @@ int ScenarioPlayer::Init()
         LOG("Launch server to receive state of external Ego simulator");
     }
 
+    if (opt.GetOptionSet("action_server"))
+    {
+        launch_action_server = true;
+        LOG("Launch server to receive actions to inject");
+    }
+
     for (int index = 0; (arg_str = opt.GetOptionArg("fixed_timestep", index)) != ""; index++)
     {
         SetFixedTimestep(std::stod(arg_str));
@@ -1433,6 +1452,25 @@ int ScenarioPlayer::Init()
     if (opt.GetOptionSet("disable_off_screen"))
     {
         SE_Env::Inst().SetOffScreenRendering(false);
+    }
+
+    if (opt.GetOptionSet("plot"))
+    {
+        if (opt.GetOptionArg("plot") != "synchronous")
+        {
+#ifdef __APPLE__
+            LOG("Plot mode %s not supported on mac systems (OpenGL graphics must run in main thread), applying synchronous mode",
+                opt.GetOptionArg("plot").c_str());
+            opt.ChangeOptionArg("plot", "synchronous");
+#else
+            if (opt.GetOptionArg("plot") != "asynchronous")
+            {
+                LOG("Plot mode %s not recognized. applying default asynchronous mode", opt.GetOptionArg("plot").c_str());
+                opt.ChangeOptionArg("plot", "asynchronous");
+            }
+#endif  // __APPLE__
+        }
+        LOG("Plot mode: %s", opt.GetOptionArg("plot").c_str());
     }
 
     // Create scenario engine
@@ -1581,6 +1619,12 @@ int ScenarioPlayer::Init()
     {
         // Launch UDP server to receive external Ego state
         StartServer(scenarioEngine);
+    }
+
+    if (launch_action_server)
+    {
+        // Launch UDP server to receive actions from external process
+        actionserver::StartActionServer(scenarioEngine);
     }
 
     player_init_semaphore.Set();

@@ -8,7 +8,6 @@ on:
 
 jobs:
   sanitize:
-    if: ${{ github.ref == 'refs/heads/dev' }}
     strategy:
       matrix:
         configuration: [Debug, Release]
@@ -20,6 +19,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3.3.0
         with:
+          ref: dev
           submodules: true
 
       - uses: ./.github/actions/setup_tools_shared

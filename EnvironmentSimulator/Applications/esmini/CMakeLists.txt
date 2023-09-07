@@ -53,6 +53,7 @@ target_link_libraries(
             ${VIEWER_BASE}
             ${OSI_LIBRARIES}
             ${SUMO_LIBRARIES}
+            ${IMPLOT_LIBRARIES}
             ${TIME_LIB}
             ${SOCK_LIB})
 

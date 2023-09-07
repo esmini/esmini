@@ -38,7 +38,7 @@ static ScenarioGateway *scenarioGateway = 0;
 
 namespace scenarioengine
 {
-    void ServerThread(void *args)
+    static void ServerThread(void *args)
     {
         (void)args;
         static unsigned short int iPortIn = ESMINI_DEFAULT_INPORT;  // Port for incoming packages
