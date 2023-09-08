@@ -216,297 +216,308 @@ int ScenarioEngine::step(double deltaSimTime)
     if (storyBoard.stop_trigger_ && storyBoard.stop_trigger_->Evaluate(&storyBoard, simulationTime_) == true)
     {
         quit_flag = true;
-        return 0;
     }
-
-    // Step inital actions - might be extened in time (more than one step)
-    for (size_t i = 0; i < init.private_action_.size(); i++)
+    else
     {
-        Object* obj = init.private_action_[i]->object_;
-        if (obj && init.private_action_[i]->IsActive())
+        // Step inital actions - might be extened in time (more than one step)
+        for (size_t i = 0; i < init.private_action_.size(); i++)
         {
-            // Add action to object initActions vector if it doesn't contain the action
-            if (std::find(init.private_action_[i]->object_->initActions_.begin(),
-                          init.private_action_[i]->object_->initActions_.end(),
-                          init.private_action_[i]) == init.private_action_[i]->object_->initActions_.end())
+            Object* obj = init.private_action_[i]->object_;
+            if (obj && init.private_action_[i]->IsActive())
             {
-                init.private_action_[i]->object_->initActions_.push_back(init.private_action_[i]);
-            }
-            // LOG("Stepping action of type %d", init.private_action_[i]->action_[j]->type_)
-            init.private_action_[i]->Step(getSimulationTime(), deltaSimTime);
-        }
-        init.private_action_[i]->UpdateState();
-    }
-
-    for (size_t i = 0; i < init.global_action_.size(); i++)
-    {
-        if (init.global_action_[i]->IsActive())
-        {
-            init.global_action_[i]->Step(getSimulationTime(), deltaSimTime);
-        }
-        init.global_action_[i]->UpdateState();
-    }
-
-    // Check for collisions/overlap after first initialization
-    if (SE_Env::Inst().GetCollisionDetection() && frame_nr_ == 0)
-    {
-        DetectCollisions();
-    }
-
-    // Then evaluate all stories
-    bool all_done = true;  // This flag will indicate whether all acts are done or not
-    for (size_t i = 0; i < storyBoard.story_.size(); i++)
-    {
-        Story* story = storyBoard.story_[i];
-
-        for (size_t j = 0; j < story->act_.size(); j++)
-        {
-            Act* act = story->act_[j];
-
-            if (act->IsTriggable())
-            {
-                // Check start conditions
-                if (!act->start_trigger_ ||  // Start act even if there's no trigger
-                    act->start_trigger_->Evaluate(&storyBoard, simulationTime_) == true)
+                // Add action to object initActions vector if it doesn't contain the action
+                if (std::find(init.private_action_[i]->object_->initActions_.begin(),
+                              init.private_action_[i]->object_->initActions_.end(),
+                              init.private_action_[i]) == init.private_action_[i]->object_->initActions_.end())
                 {
-                    act->Start(simulationTime_, deltaSimTime);
+                    init.private_action_[i]->object_->initActions_.push_back(init.private_action_[i]);
                 }
+                // LOG("Stepping action of type %d", init.private_action_[i]->action_[j]->type_)
+                init.private_action_[i]->Step(getSimulationTime(), deltaSimTime);
             }
+            init.private_action_[i]->UpdateState();
+        }
 
-            if (act->IsActive())
+        for (size_t i = 0; i < init.global_action_.size(); i++)
+        {
+            if (init.global_action_[i]->IsActive())
             {
-                for (size_t k = 0; k < act->maneuverGroup_.size(); k++)
+                init.global_action_[i]->Step(getSimulationTime(), deltaSimTime);
+            }
+            init.global_action_[i]->UpdateState();
+        }
+
+        // Check for collisions/overlap after first initialization
+        if (SE_Env::Inst().GetCollisionDetection() && frame_nr_ == 0)
+        {
+            DetectCollisions();
+        }
+
+        // Then evaluate all stories
+        bool all_done = true;  // This flag will indicate whether all acts are done or not
+        for (size_t i = 0; i < storyBoard.story_.size(); i++)
+        {
+            Story* story = storyBoard.story_[i];
+
+            for (size_t j = 0; j < story->act_.size(); j++)
+            {
+                Act* act = story->act_[j];
+
+                if (act->IsTriggable())
                 {
-                    ManeuverGroup* mg = act->maneuverGroup_[k];
-                    if (mg && mg->IsTriggable())
+                    // Check start conditions
+                    if (!act->start_trigger_ ||  // Start act even if there's no trigger
+                        act->start_trigger_->Evaluate(&storyBoard, simulationTime_) == true)
                     {
-                        mg->Start(simulationTime_, deltaSimTime);
+                        act->Start(simulationTime_, deltaSimTime);
                     }
                 }
-                if (act->stop_trigger_)
+
+                if (act->IsActive())
                 {
-                    if (act->stop_trigger_->Evaluate(&storyBoard, simulationTime_) == true)
+                    for (size_t k = 0; k < act->maneuverGroup_.size(); k++)
                     {
-                        act->End(simulationTime_);
-                    }
-                }
-            }
-
-            act->UpdateState();
-
-            // Check whether this act is done - and update flag for all acts
-            all_done = all_done && act->state_ == Act::State::COMPLETE;
-
-            // Maneuvers
-            if (act->IsActive())
-            {
-                for (size_t k = 0; k < act->maneuverGroup_.size(); k++)
-                {
-                    ManeuverGroup* mg = act->maneuverGroup_[k];
-                    if (mg->IsActive())
-                    {
-                        for (size_t l = 0; l < mg->maneuver_.size(); l++)
+                        ManeuverGroup* mg = act->maneuverGroup_[k];
+                        if (mg && mg->IsTriggable())
                         {
-                            Maneuver* maneuver = mg->maneuver_[l];
+                            mg->Start(simulationTime_, deltaSimTime);
+                        }
+                    }
+                    if (act->stop_trigger_)
+                    {
+                        if (act->stop_trigger_->Evaluate(&storyBoard, simulationTime_) == true)
+                        {
+                            act->End(simulationTime_);
+                        }
+                    }
+                }
+
+                act->UpdateState();
+
+                // Check whether this act is done - and update flag for all acts
+                all_done = all_done && act->state_ == Act::State::COMPLETE;
+
+                // Maneuvers
+                if (act->IsActive())
+                {
+                    for (size_t k = 0; k < act->maneuverGroup_.size(); k++)
+                    {
+                        ManeuverGroup* mg = act->maneuverGroup_[k];
+                        if (mg->IsActive())
+                        {
+                            for (size_t l = 0; l < mg->maneuver_.size(); l++)
+                            {
+                                Maneuver* maneuver = mg->maneuver_[l];
+
+                                for (size_t m = 0; m < maneuver->event_.size(); m++)
+                                {
+                                    Event* event = maneuver->event_[m];
+
+                                    // add event to objectEvents vector
+                                    if (event->IsTriggable() || event->IsActive())
+                                    {
+                                        for (size_t n = 0; n < event->action_.size(); n++)
+                                        {
+                                            OSCAction* action = event->action_[n];
+                                            if (action->base_type_ == OSCAction::BaseType::PRIVATE)
+                                            {
+                                                OSCPrivateAction* pa = static_cast<OSCPrivateAction*>(action);
+                                                if (!pa->object_->containsEvent(event))
+                                                {
+                                                    pa->object_->addEvent(event);
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    // First evaluate which events are active
+                                    if (event->IsTriggable())
+                                    {
+                                        // Check event conditions
+                                        if (event->start_trigger_->Evaluate(&storyBoard, simulationTime_) == true)
+                                        {
+                                            bool startEvent = false;
+
+                                            // Check priority
+                                            if (event->priority_ == Event::Priority::OVERWRITE)
+                                            {
+                                                // Activate trigged event
+                                                if (event->IsActive())
+                                                {
+                                                    LOG("Can't overwrite own running event (%s) - skip trig", event->name_.c_str());
+                                                }
+                                                else
+                                                {
+                                                    // Deactivate any currently active event
+                                                    for (size_t n = 0; n < maneuver->event_.size(); n++)
+                                                    {
+                                                        if (maneuver->event_[n]->IsActive())
+                                                        {
+                                                            // remove event from objectEvents vector
+                                                            for (size_t o = 0; o < maneuver->event_[n]->action_.size(); o++)
+                                                            {
+                                                                OSCAction* action = maneuver->event_[n]->action_[o];
+                                                                if (action->base_type_ == OSCAction::BaseType::PRIVATE)
+                                                                {
+                                                                    OSCPrivateAction* pa = static_cast<OSCPrivateAction*>(action);
+                                                                    pa->object_->removeEvent(event);
+
+                                                                    break;
+                                                                }
+                                                            }
+
+                                                            maneuver->event_[n]->End(simulationTime_);
+                                                            LOG("Event %s ended, overwritten by event %s",
+                                                                maneuver->event_[n]->name_.c_str(),
+                                                                event->name_.c_str());
+                                                        }
+                                                    }
+
+                                                    startEvent = true;
+                                                }
+                                            }
+                                            else if (event->priority_ == Event::Priority::SKIP)
+                                            {
+                                                if (maneuver->IsAnyEventActive())
+                                                {
+                                                    LOG("Event is running, skipping trigged %s", event->name_.c_str());
+                                                }
+                                                else
+                                                {
+                                                    startEvent = true;
+                                                }
+                                            }
+                                            else if (event->priority_ == Event::Priority::PARALLEL)
+                                            {
+                                                // Don't care if any other action is ongoing, launch anyway
+                                                if (event->IsActive())
+                                                {
+                                                    LOG("Event %s already running, trigger ignored", event->name_.c_str());
+                                                }
+                                                else if (maneuver->IsAnyEventActive())
+                                                {
+                                                    LOG("Event(s) ongoing, %s will run in parallel", event->name_.c_str());
+                                                }
+
+                                                startEvent = true;
+                                            }
+                                            else
+                                            {
+                                                LOG("Unknown event priority: %d", event->priority_);
+                                            }
+
+                                            if (startEvent)
+                                            {
+                                                event->Start(simulationTime_, deltaSimTime);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            if (mg->AreAllManeuversComplete())
+                            {
+                                mg->End(simulationTime_);
+                            }
+                        }
+                    }
+                }
+            }
+
+            for (size_t j = 0; j < story->act_.size(); j++)
+            {
+                // Then step events
+                Act* act = story->act_[j];
+
+                // Maneuvers
+                if (act->IsActive())
+                {
+                    for (size_t k = 0; k < act->maneuverGroup_.size(); k++)
+                    {
+                        for (size_t l = 0; l < act->maneuverGroup_[k]->maneuver_.size(); l++)
+                        {
+                            Maneuver* maneuver = act->maneuverGroup_[k]->maneuver_[l];
 
                             for (size_t m = 0; m < maneuver->event_.size(); m++)
                             {
                                 Event* event = maneuver->event_[m];
 
-                                // add event to objectEvents vector
-                                if (event->IsTriggable() || event->IsActive())
+                                // Update (step) all active actions, for all objects connected to the action
+                                if (event->IsActive())
                                 {
+                                    bool active = false;
+
                                     for (size_t n = 0; n < event->action_.size(); n++)
                                     {
-                                        OSCAction* action = event->action_[n];
-                                        if (action->base_type_ == OSCAction::BaseType::PRIVATE)
+                                        if (event->action_[n]->IsActive())
                                         {
-                                            OSCPrivateAction* pa = static_cast<OSCPrivateAction*>(action);
-                                            if (!pa->object_->containsEvent(event))
+                                            OSCAction* action           = event->action_[n];
+                                            bool       is_private_ghost = [&]()
                                             {
-                                                pa->object_->addEvent(event);
+                                                if (action->base_type_ == OSCAction::BaseType::PRIVATE)
+                                                {
+                                                    return (static_cast<OSCPrivateAction*>(action)->object_->IsGhost());
+                                                }
+
+                                                return false;
+                                            }();
+                                            if (ghost_mode_ != GhostMode::RESTARTING || is_private_ghost)
+                                            {
+                                                if (ghost_mode_ == GhostMode::RESTART && is_private_ghost)
+                                                {
+                                                    // The very step during which the ghost is restarting the
+                                                    // simulation time has not yet been adjusted (need to keep
+                                                    // same simulation time all actions throughout the step)
+                                                    // special case for the restarting ghost, which needs the adjusted time
+                                                    event->action_[n]->Step(simulationTime_ - headstart_time_, deltaSimTime);
+                                                }
+                                                else
+                                                {
+                                                    event->action_[n]->Step(simulationTime_, deltaSimTime);
+                                                }
+
+                                                active = active || (event->action_[n]->IsActive());
+                                            }
+                                            else
+                                            {
+                                                active = true;
+                                            }
+                                        }
+                                    }
+                                    if (!active)
+                                    {
+                                        // remove event from objectEvents vector
+                                        for (size_t n = 0; n < event->action_.size(); n++)
+                                        {
+                                            OSCAction* action = event->action_[n];
+                                            if (action->base_type_ == OSCAction::BaseType::PRIVATE)
+                                            {
+                                                OSCPrivateAction* pa = static_cast<OSCPrivateAction*>(action);
+                                                pa->object_->removeEvent(event);
                                                 break;
                                             }
                                         }
-                                    }
-                                }
 
-                                // First evaluate which events are active
-                                if (event->IsTriggable())
-                                {
-                                    // Check event conditions
-                                    if (event->start_trigger_->Evaluate(&storyBoard, simulationTime_) == true)
-                                    {
-                                        bool startEvent = false;
-
-                                        // Check priority
-                                        if (event->priority_ == Event::Priority::OVERWRITE)
-                                        {
-                                            // Activate trigged event
-                                            if (event->IsActive())
-                                            {
-                                                LOG("Can't overwrite own running event (%s) - skip trig", event->name_.c_str());
-                                            }
-                                            else
-                                            {
-                                                // Deactivate any currently active event
-                                                for (size_t n = 0; n < maneuver->event_.size(); n++)
-                                                {
-                                                    if (maneuver->event_[n]->IsActive())
-                                                    {
-                                                        // remove event from objectEvents vector
-                                                        for (size_t o = 0; o < maneuver->event_[n]->action_.size(); o++)
-                                                        {
-                                                            OSCAction* action = maneuver->event_[n]->action_[o];
-                                                            if (action->base_type_ == OSCAction::BaseType::PRIVATE)
-                                                            {
-                                                                OSCPrivateAction* pa = static_cast<OSCPrivateAction*>(action);
-                                                                pa->object_->removeEvent(event);
-
-                                                                break;
-                                                            }
-                                                        }
-
-                                                        maneuver->event_[n]->End(simulationTime_);
-                                                        LOG("Event %s ended, overwritten by event %s",
-                                                            maneuver->event_[n]->name_.c_str(),
-                                                            event->name_.c_str());
-                                                    }
-                                                }
-
-                                                startEvent = true;
-                                            }
-                                        }
-                                        else if (event->priority_ == Event::Priority::SKIP)
-                                        {
-                                            if (maneuver->IsAnyEventActive())
-                                            {
-                                                LOG("Event is running, skipping trigged %s", event->name_.c_str());
-                                            }
-                                            else
-                                            {
-                                                startEvent = true;
-                                            }
-                                        }
-                                        else if (event->priority_ == Event::Priority::PARALLEL)
-                                        {
-                                            // Don't care if any other action is ongoing, launch anyway
-                                            if (event->IsActive())
-                                            {
-                                                LOG("Event %s already running, trigger ignored", event->name_.c_str());
-                                            }
-                                            else if (maneuver->IsAnyEventActive())
-                                            {
-                                                LOG("Event(s) ongoing, %s will run in parallel", event->name_.c_str());
-                                            }
-
-                                            startEvent = true;
-                                        }
-                                        else
-                                        {
-                                            LOG("Unknown event priority: %d", event->priority_);
-                                        }
-
-                                        if (startEvent)
-                                        {
-                                            event->Start(simulationTime_, deltaSimTime);
-                                        }
+                                        // Actions done -> Set event done
+                                        event->End(simulationTime_);
                                     }
                                 }
                             }
-                        }
-                        if (mg->AreAllManeuversComplete())
-                        {
-                            mg->End(simulationTime_);
                         }
                     }
                 }
             }
         }
-
-        for (size_t j = 0; j < story->act_.size(); j++)
+        if (all_done)
         {
-            // Then step events
-            Act* act = story->act_[j];
-
-            // Maneuvers
-            if (act->IsActive())
-            {
-                for (size_t k = 0; k < act->maneuverGroup_.size(); k++)
-                {
-                    for (size_t l = 0; l < act->maneuverGroup_[k]->maneuver_.size(); l++)
-                    {
-                        Maneuver* maneuver = act->maneuverGroup_[k]->maneuver_[l];
-
-                        for (size_t m = 0; m < maneuver->event_.size(); m++)
-                        {
-                            Event* event = maneuver->event_[m];
-
-                            // Update (step) all active actions, for all objects connected to the action
-                            if (event->IsActive())
-                            {
-                                bool active = false;
-
-                                for (size_t n = 0; n < event->action_.size(); n++)
-                                {
-                                    if (event->action_[n]->IsActive())
-                                    {
-                                        OSCAction* action           = event->action_[n];
-                                        bool       is_private_ghost = [&]()
-                                        {
-                                            if (action->base_type_ == OSCAction::BaseType::PRIVATE)
-                                            {
-                                                return (static_cast<OSCPrivateAction*>(action)->object_->IsGhost());
-                                            }
-
-                                            return false;
-                                        }();
-                                        if (ghost_mode_ != GhostMode::RESTARTING || is_private_ghost)
-                                        {
-                                            if (ghost_mode_ == GhostMode::RESTART && is_private_ghost)
-                                            {
-                                                // The very step during which the ghost is restarting the
-                                                // simulation time has not yet been adjusted (need to keep
-                                                // same simulation time all actions throughout the step)
-                                                // special case for the restarting ghost, which needs the adjusted time
-                                                event->action_[n]->Step(simulationTime_ - headstart_time_, deltaSimTime);
-                                            }
-                                            else
-                                            {
-                                                event->action_[n]->Step(simulationTime_, deltaSimTime);
-                                            }
-
-                                            active = active || (event->action_[n]->IsActive());
-                                        }
-                                        else
-                                        {
-                                            active = true;
-                                        }
-                                    }
-                                }
-                                if (!active)
-                                {
-                                    // remove event from objectEvents vector
-                                    for (size_t n = 0; n < event->action_.size(); n++)
-                                    {
-                                        OSCAction* action = event->action_[n];
-                                        if (action->base_type_ == OSCAction::BaseType::PRIVATE)
-                                        {
-                                            OSCPrivateAction* pa = static_cast<OSCPrivateAction*>(action);
-                                            pa->object_->removeEvent(event);
-                                            break;
-                                        }
-                                    }
-
-                                    // Actions done -> Set event done
-                                    event->End(simulationTime_);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            LOG("All acts are done, quit now");
+            quit_flag = true;
         }
+    }
+
+    if (quit_flag)
+    {
+        return 1;
     }
 
     // Step any externally injected actions
@@ -749,12 +760,6 @@ int ScenarioEngine::step(double deltaSimTime)
     if (SE_Env::Inst().GetCollisionDetection() && frame_nr_ > 0)
     {
         DetectCollisions();
-    }
-
-    if (all_done)
-    {
-        LOG("All acts are done, quit now");
-        quit_flag = true;
     }
 
     frame_nr_++;

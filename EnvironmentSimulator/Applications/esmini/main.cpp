@@ -107,7 +107,7 @@ static int execute_scenario(int argc, char* argv[])
     }
 #endif  // _USE_IMPLOT
 
-    return retval;
+    return (retval < 0 ? -1 : 0);
 }
 
 int main(int argc, char* argv[])

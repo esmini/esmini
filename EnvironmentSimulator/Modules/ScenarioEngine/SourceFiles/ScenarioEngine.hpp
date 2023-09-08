@@ -66,6 +66,11 @@ namespace scenarioengine
         int  InitScenario(std::string oscFilename, bool disable_controllers = false);
         int  InitScenario(const pugi::xml_document &xml_doc, bool disable_controllers = false);
 
+        /**
+        Step scenario, i.e. evaluate conditions and step actions
+        @param deltaSimTime timestep
+        @return 0 = OK normal, 1 = OK scenario done, -1 = NOK error
+        */
         int  step(double deltaSimTime);
         void printSimulationTime();
         void prepareGroundTruth(double dt);

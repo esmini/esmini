@@ -3396,15 +3396,15 @@ TEST(ReplayTest, TestMultiReplayDifferentTimeSteps)
         {
             EXPECT_NEAR(replay->data_[2012].state.pos.y, 130.995, 1E-3);
             EXPECT_NEAR(replay->data_[2015].state.pos.y, 207.378, 1E-3);
-            EXPECT_NEAR(replay->data_[5989].state.info.timeStamp, 19.53, 1E-3);
-            EXPECT_NEAR(replay->data_[5989].state.info.id, 1, 1E-3);
+            EXPECT_NEAR(replay->data_[5967].state.info.timeStamp, 19.52, 1E-3);
+            EXPECT_NEAR(replay->data_[5967].state.info.id, 1, 1E-3);
         }
         else
         {
             EXPECT_NEAR(replay->data_[2012].state.pos.y, 130.924, 1E-3);
             EXPECT_NEAR(replay->data_[2015].state.pos.y, 210.727, 1E-3);
-            EXPECT_NEAR(replay->data_[4209].state.info.timeStamp, 19.8, 1E-3);
-            EXPECT_NEAR(replay->data_[4209].state.info.id, 1, 1E-3);
+            EXPECT_NEAR(replay->data_[4203].state.info.timeStamp, 19.7, 1E-3);
+            EXPECT_NEAR(replay->data_[4203].state.info.id, 1, 1E-3);
         }
 
         delete replay;

@@ -86,7 +86,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\n9.9.* Synchronize_NPC_Event complete after 1 execution', log)  is not None)
         self.assertTrue(re.search('\n19.74.* Free_Speed_Condition_NPC == true, distance 4.81 < tolerance \(5.00\), edge: rising', log)  is not None)
         self.assertTrue(re.search('\n19.74.* Triggering entity 0: Ego', log)  is not None)
-        self.assertTrue(re.search('\n32.180: All acts are done, quit now', log)  is not None)
+        self.assertTrue(re.search('\n32.170: All acts are done, quit now', log)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv()
@@ -115,7 +115,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\n3.75.* Lane change == true, rel_dist: 10.02 > 10.00, edge: rising', log)  is not None)
         self.assertTrue(re.search('\n5.75.* Lane change complete after 1 execution', log)  is not None)
         self.assertTrue(re.search('\n9.75.* QuitCondition timer expired at 4.00 seconds', log)  is not None)
-        self.assertTrue(re.search('\n9.76.* All acts are done, quit now', log)  is not None)
+        self.assertTrue(re.search('\n9.75.* All acts are done, quit now', log)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv()
@@ -138,7 +138,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\n3.75.* Lane change == true, rel_dist: 10.02 > 10.00, edge: rising', log)  is not None)
         self.assertTrue(re.search('\n5.75.* Lane change complete after 1 execution', log)  is not None)
         self.assertTrue(re.search('\n9.75.* QuitCondition timer expired at 4.00 seconds', log)  is not None)
-        self.assertTrue(re.search('\n9.76.* All acts are done, quit now', log)  is not None)
+        self.assertTrue(re.search('\n9.75.* All acts are done, quit now', log)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv()
@@ -723,7 +723,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^3.390: MyAction2Trigger == true, element: MyEvent1 state: END_TRANSITION, edge: none', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('^5.650: MyAction2Trigger == true, element: MyEvent1 state: END_TRANSITION, edge: none', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('^6.770: MyMG complete after 3 executions', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^8.020: All acts are done, quit now', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^8.010: All acts are done, quit now', log, re.MULTILINE)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv()
@@ -745,7 +745,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^25.340: SpeedProfile: Can\'t reach.* speed 0.00 on.* time 26.24s.* extend to 27.54s', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('^29.550: SpeedProfile: Can\'t reach.* speed 0.00 on.* time 30.05s.* extend to 34.49s', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('^37.500: StopSimulationCondition == true, element: SpeedProfileEvent7 state: COMPLETE, edge: rising', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^37.510: All acts are done, quit now', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^37.500: All acts are done, quit now', log, re.MULTILINE)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv()
