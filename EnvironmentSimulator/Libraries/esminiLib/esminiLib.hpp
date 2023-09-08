@@ -761,10 +761,10 @@ extern "C"
             @param timestamp Timestamp (not really used yet, OK to set 0)
             @param x X coordinate
             @param y Y coordinate
-            @param z Z coordinate
+            @param z Z coordinate, std::nanf("") will align to road (#include <cmath>)
             @param h Heading / yaw
-            @param p Pitch
-            @param r Roll
+            @param p Pitch, std::nanf("") will align to road (#include <cmath>)
+            @param r Roll, std::nanf("") will align to road (#include <cmath>)
             @return 0 if successful, -1 if not
     */
     SE_DLL_API int SE_ReportObjectPos(int object_id, float timestamp, float x, float y, float z, float h, float p, float r);
