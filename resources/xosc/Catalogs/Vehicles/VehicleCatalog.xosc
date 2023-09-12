@@ -367,6 +367,40 @@
             </Properties>
         </Vehicle>
 
+        <!-- Truck trailer rotating front axle only -->
+        <Vehicle name="truck_trailer_front_axle" vehicleCategory="trailer" model3d="../models/truck_trailer_rotating_axle.osgb">
+            <!-- model bounding box xyz: 3.06, 0.00, 1.77 lwh: 11.23, 2.60, 3.54 -->
+            <ParameterDeclarations>
+                <ParameterDeclaration name="TrailerRef" parameterType="string" value=""/>
+                <ParameterDeclaration name="TrailerCatalogRef" parameterType="string" value=""/>
+            </ParameterDeclarations>
+            <BoundingBox>
+                <Center x="2.5" y="0.0" z="0.75"/>
+                <Dimensions width="2.6" length="2.5" height="3.2"/>
+            </BoundingBox>
+            <Performance maxSpeed="${250/3.6}" maxDeceleration="10" maxAcceleration="5"/>
+            <Axles>
+                <FrontAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="2.98" positionZ="0.4"/>
+                <RearAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="0" positionZ="0.4"/>
+            </Axles>
+            <TrailerCoupler dx="2.5"/>
+            <TrailerHitch dx="0.0"/>
+            <Trailer>
+                <EntityRef entityRef="$TrailerRef"/>
+                <CatalogReference catalogName="VehicleCatalog" entryName="$TrailerCatalogRef">
+                    <ParameterAssignments>
+                        <!-- Any next trailer will be the last one -->
+                        <ParameterAssignment parameterRef="TrailerCatalogRef" value=""/>
+                    </ParameterAssignments>
+                </CatalogReference>
+            </Trailer>
+            <Properties>
+                <Property name="model_id" value="19"/>
+                <!-- Scale modes: None, BBToModel, ModelToBB -->
+                <Property name="scaleMode" value="BBToModel"/>
+            </Properties>
+        </Vehicle>
+
         <!-- Tractor + Semi-trailer + Trailer -->
         <Vehicle name="semi_truck_with_extra_trailer" vehicleCategory="truck" model3d="../models/semi_tractor.osgb">
             <BoundingBox>
@@ -410,6 +444,92 @@
                             <TrailerCoupler dx="9.5"/>
                             <Properties>
                                 <Property name="model_id" value="14"/>
+                                <!-- Scale modes: None, BBToModel, ModelToBB -->
+                                <Property name="scaleMode" value="BBToModel"/>
+                            </Properties>
+                        </Vehicle>
+                    </Trailer>
+                    <Properties>
+                        <Property name="model_id" value="13"/>
+                        <!-- Scale modes: None, BBToModel, ModelToBB -->
+                        <Property name="scaleMode" value="BBToModel"/>
+                    </Properties>
+                </Vehicle>
+            </Trailer>
+            <Properties>
+                <Property name="model_id" value="12"/>
+                <!-- Scale modes: None, BBToModel, ModelToBB -->
+                <Property name="scaleMode" value="BBToModel"/>
+            </Properties>
+        </Vehicle>
+
+        <!-- Tractor + Semi-trailer + Trailer with rotating axle -->
+        <Vehicle name="semi_truck_with_extra_trailer_rotating_axle" vehicleCategory="truck" model3d="../models/semi_tractor.osgb">
+            <BoundingBox>
+                <Center x="1.4" y="0.0" z="0.75"/>
+                <Dimensions width="2.6" length="5.5" height="3.2"/>
+            </BoundingBox>
+            <Performance maxSpeed="${250/3.6}" maxDeceleration="10" maxAcceleration="5"/>
+            <Axles>
+                <FrontAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="2.98" positionZ="0.4"/>
+                <RearAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="0" positionZ="0.4"/>
+            </Axles>
+            <TrailerHitch dx="1.0"/>
+            <Trailer>
+                <Vehicle name="semi_trailer" vehicleCategory="trailer" model3d="../models/semi_trailer.osgb">
+                    <!-- model bounding box xyz: 2.56, 0.00, 1.77 lwh: 11.23, 2.60, 3.54 -->
+                    <ParameterDeclarations/>
+                    <BoundingBox>
+                        <Center x="2.5" y="0.0" z="0.75"/>
+                        <Dimensions width="2.6" length="11.0" height="3.2"/>
+                    </BoundingBox>
+                    <Performance maxSpeed="${250/3.6}" maxDeceleration="10" maxAcceleration="5"/>
+                    <Axles>
+                        <FrontAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="2.98" positionZ="0.4"/>
+                        <RearAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="0" positionZ="0.4"/>
+                    </Axles>
+                    <TrailerCoupler dx="7.0"/>
+                    <TrailerHitch dx="-3.2"/>
+                    <Trailer>
+                        <Vehicle name="truck_trailer_front_axle" vehicleCategory="trailer" model3d="../models/trailer_rotating_axle.osgb">
+                            <ParameterDeclarations>
+                                <ParameterDeclaration name="TrailerRef" parameterType="string" value=""/>
+                                <ParameterDeclaration name="TrailerCatalogRef" parameterType="string" value=""/>
+                            </ParameterDeclarations>
+                            <BoundingBox>
+                                <Center x="0.0" y="0.0" z="0.6"/>
+                                <Dimensions width="2.6" length="3.0" height="1.2"/>
+                            </BoundingBox>
+                            <Performance maxSpeed="${250/3.6}" maxDeceleration="10" maxAcceleration="5"/>
+                            <Axles>
+                                <FrontAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="2.98" positionZ="0.4"/>
+                                <RearAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="0" positionZ="0.4"/>
+                            </Axles>
+                            <TrailerCoupler dx="2.8"/>
+                            <TrailerHitch dx="-0.2"/>
+                            <Trailer>
+                                <Vehicle name="truck_trailer" vehicleCategory="trailer" model3d="../models/semi_trailer.osgb">
+                                    <!-- model bounding box xyz: 3.06, 0.00, 1.77 lwh: 11.23, 2.60, 3.54 -->
+                                    <ParameterDeclarations/>
+                                    <BoundingBox>
+                                        <Center x="2.5" y="0.0" z="0.75"/>
+                                        <Dimensions width="2.6" length="11.0" height="3.2"/>
+                                    </BoundingBox>
+                                    <Performance maxSpeed="${250/3.6}" maxDeceleration="10" maxAcceleration="5"/>
+                                    <Axles>
+                                        <FrontAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="2.98" positionZ="0.4"/>
+                                        <RearAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="0" positionZ="0.4"/>
+                                    </Axles>
+                                    <TrailerCoupler dx="6.5"/>
+                                    <Properties>
+                                        <Property name="model_id" value="14"/>
+                                        <!-- Scale modes: None, BBToModel, ModelToBB -->
+                                        <Property name="scaleMode" value="BBToModel"/>
+                                    </Properties>
+                                </Vehicle>
+                            </Trailer>
+                            <Properties>
+                                <Property name="model_id" value="19"/>
                                 <!-- Scale modes: None, BBToModel, ModelToBB -->
                                 <Property name="scaleMode" value="BBToModel"/>
                             </Properties>

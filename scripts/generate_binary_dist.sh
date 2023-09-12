@@ -42,6 +42,7 @@ resources/xosc/trailers.xosc \
 resources/xosc/speed-profile.xosc \
 resources/xosc/alks_r157_cut_in_quick_brake.xosc \
 resources/xosc/two_plus_one_road.xosc \
+resources/xosc/truck_with_rotating_axle.xosc \
 resources/xosc/Catalogs/Maneuvers/*.* \
 resources/xosc/Catalogs/Routes/*.* \
 resources/xosc/Catalogs/Vehicles/*.* \
@@ -99,6 +100,7 @@ resources/models/car_trailer.osgb \
 resources/models/semi_tractor.osgb \
 resources/models/semi_trailer.osgb \
 resources/models/truck_trailer.osgb \
+resources/models/trailer_rotating_axle.osgb \
 resources/models/hedge.osgb \
 resources/models/fence_plank.osgb \
 resources/models/fence_pole.osgb \
@@ -106,6 +108,7 @@ resources/models/fence_plank_and_pole.osgb \
 resources/sumo_inputs/e6mini* \
 resources/sumo_inputs/multi_intersections* \
 resources/traffic_signals/* \
+resources/model_ids.txt \
 run/esmini/run_follow_ghost.* \
 run/esmini/run_ltap-od_interactive.* \
 run/esmini/run_ltap-od.* \
@@ -133,6 +136,7 @@ run/esmini/run_acc-test.* \
 run/esmini/run_swarm.* \
 run/esmini/run_trailers.* \
 run/esmini/run_two-plus-one-road.* \
+run/esmini/run_truck_with_rotating_axle.* \
 run/odrviewer/run_e6mini*.* \
 run/odrviewer/run_multi_intersections*.* \
 run/replayer/run_and_plot_cut-in_speed*.* \

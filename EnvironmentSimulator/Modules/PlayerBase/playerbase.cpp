@@ -987,7 +987,16 @@ int ScenarioPlayer::InitViewer()
     }
 
     // Choose vehicle to look at initially (switch with 'Tab')
-    viewer_->SetVehicleInFocus(0);
+    if (opt.GetOptionSet("follow_object"))
+    {
+        LOG("Follow object %d", strtoi(opt.GetOptionArg("follow_object")));
+        viewer_->SetVehicleInFocus(strtoi(opt.GetOptionArg("follow_object")));
+    }
+    else
+    {
+        viewer_->SetVehicleInFocus(0);
+    }
+
     for (size_t i = 0; i < scenarioEngine->entities_.object_.size(); i++)
     {
         Object* obj = scenarioEngine->entities_.object_[i];
@@ -1217,6 +1226,7 @@ int ScenarioPlayer::Init()
     opt.AddOption("disable_stdout", "Prevent messages to stdout");
     opt.AddOption("enforce_generate_model", "Generate road 3D model even if SceneGraphFile is specified");
     opt.AddOption("fixed_timestep", "Run simulation decoupled from realtime, with specified timesteps", "timestep");
+    opt.AddOption("follow_object", "Set index of intial object for camera to follow (change with Tab/shift-Tab)", "index");
     opt.AddOption("generate_no_road_objects", "Do not generate any OpenDRIVE road objects (e.g. when part of referred 3D model)");
     opt.AddOption("ground_plane", "Add a large flat ground surface");
     opt.AddOption("headless", "Run without viewer window");

@@ -1,0 +1,1 @@
+"../../bin/esmini" --window 60 60 1000 500 --osc ../../resources/xosc/truck_with_rotating_axle.xosc --custom_camera 5,29,20,-1.45,0.62 --follow_object 3 --hide_trajectories --info_text  0

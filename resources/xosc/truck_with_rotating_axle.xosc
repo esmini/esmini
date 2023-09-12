@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Demonstrate concept of rotating front axle of a truck trailer  -->
+<OpenSCENARIO>
+    <FileHeader revMajor="1" revMinor="1" date="2023-09-11T10:00:00" description="Single truck vehicle, following trajectory" author="esmini-team"/>
+    <ParameterDeclarations/>
+    <CatalogLocations>
+        <VehicleCatalog>
+            <Directory path="../xosc/Catalogs/Vehicles"/>
+        </VehicleCatalog>
+    </CatalogLocations>
+    <RoadNetwork>
+        <SceneGraphFile filepath="../models/parking_lot.osgb"/>
+    </RoadNetwork>
+    <Entities>
+        <ScenarioObject name="Truck">
+            <CatalogReference catalogName="VehicleCatalog" entryName="semi_truck_with_extra_trailer_rotating_axle"/>
+        </ScenarioObject>
+    </Entities>
+    <Storyboard>
+        <Init>
+            <Actions>
+                <Private entityRef="Truck">
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsDimension="time" dynamicsShape="linear" value="5"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="5"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <RoutingAction>
+                            <FollowTrajectoryAction>
+                                <Trajectory closed="false" name="TrajectoryNurbs">
+                                    <ParameterDeclarations/>
+                                    <Shape>
+                                        <Nurbs order="3">
+                                            <ControlPoint weight="1.0">
+                                                <Position>
+                                                    <WorldPosition x="20" y="0"/>
+                                                </Position>
+                                            </ControlPoint>
+                                            <ControlPoint weight="1.0">
+                                                <Position>
+                                                    <WorldPosition x="30" y="0"/>
+                                                </Position>
+                                            </ControlPoint>
+                                            <ControlPoint weight="1.0">
+                                                <Position>
+                                                    <WorldPosition x="60" y="30"/>
+                                                </Position>
+                                            </ControlPoint>
+                                            <ControlPoint weight="1.0">
+                                                <Position>
+                                                    <WorldPosition x="90" y="-30"/>
+                                                </Position>
+                                            </ControlPoint>
+                                            <ControlPoint weight="1.0">
+                                                <Position>
+                                                    <WorldPosition x="120" y="0"/>
+                                                </Position>
+                                            </ControlPoint>
+                                            <ControlPoint weight="1.0">
+                                                <Position>
+                                                    <WorldPosition x="150" y="0"/>
+                                                </Position>
+                                            </ControlPoint>
+                                            <Knot value="0.0"/>
+                                            <Knot value="0.0"/>
+                                            <Knot value="0.0"/>
+                                            <Knot value="0.25"/>
+                                            <Knot value="0.5"/>
+                                            <Knot value="0.75"/>
+                                            <Knot value="1.0"/>
+                                            <Knot value="1.0"/>
+                                            <Knot value="1.0"/>
+                                        </Nurbs>
+                                    </Shape>
+                                </Trajectory>
+                                <TimeReference>
+                                    <None/>
+                                </TimeReference>
+                                <TrajectoryFollowingMode followingMode="position"/>
+                            </FollowTrajectoryAction>
+                        </RoutingAction>
+                    </PrivateAction>
+                </Private>
+            </Actions>
+        </Init>
+        <Story name="MyStory">
+            <Act name="DummyAct">
+                <ManeuverGroup maximumExecutionCount="1" name="DummyManueverGroup">
+                    <Actors selectTriggeringEntities="false"/>
+                </ManeuverGroup>
+                <StartTrigger/>
+            </Act>
+        </Story>
+        <StopTrigger>
+            <ConditionGroup>
+                <Condition conditionEdge="rising" delay="0" name="starttrigger">
+                    <ByValueCondition>
+                        <SimulationTimeCondition rule="greaterThan" value="38"/>
+                    </ByValueCondition>
+                </Condition>
+            </ConditionGroup>
+        </StopTrigger>
+    </Storyboard>
+</OpenSCENARIO>
