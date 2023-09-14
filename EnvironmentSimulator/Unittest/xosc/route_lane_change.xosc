@@ -6,7 +6,7 @@
     <FileHeader revMajor="1" revMinor="1" date="2021-12-29T10:00:00" description="Test lane change while route" author="esmini-team"/>
     <ParameterDeclarations>
         <ParameterDeclaration name="StartSpeed" parameterType="double" value="10"/>
-        <ParameterDeclaration name="StartS" parameterType="double" value="304"/>
+        <ParameterDeclaration name="StartS" parameterType="double" value="302"/>
     </ParameterDeclarations>
     <CatalogLocations>
         <RouteCatalog>
@@ -121,7 +121,7 @@
                                                 </Waypoint>
                                                 <Waypoint routeStrategy="shortest">
                                                     <Position>
-                                                        <LanePosition roadId="1" laneId="-1" offset="0" s="0"/>
+                                                        <LanePosition roadId="1" laneId="-1" offset="0" s="5"/>
                                                     </Position>
                                                 </Waypoint>
                                             </Route>
@@ -187,7 +187,7 @@
                                                 </Waypoint>
                                                 <Waypoint routeStrategy="shortest">
                                                     <Position>
-                                                        <LanePosition roadId="3" laneId="1" offset="0" s="0"/>
+                                                        <LanePosition roadId="3" laneId="1" offset="0" s="5"/>
                                                     </Position>
                                                 </Waypoint>
                                             </Route>
@@ -253,7 +253,7 @@
                                                 </Waypoint>
                                                 <Waypoint routeStrategy="shortest">
                                                     <Position>
-                                                        <LanePosition roadId="2" laneId="1" offset="0" s="0"/>
+                                                        <LanePosition roadId="2" laneId="1" offset="0" s="5"/>
                                                     </Position>
                                                 </Waypoint>
                                             </Route>
@@ -323,7 +323,7 @@
                                                 </Waypoint>
                                                 <Waypoint routeStrategy="shortest">
                                                     <Position>
-                                                        <LanePosition roadId="3" laneId="-1" offset="0" s="0"/>
+                                                        <LanePosition roadId="3" laneId="-1" offset="0" s="5"/>
                                                     </Position>
                                                 </Waypoint>
                                             </Route>

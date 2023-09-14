@@ -10026,25 +10026,14 @@ Position::ReturnCode Position::MoveRouteDS(double ds, bool actualDistance)
         return ReturnCode::ERROR_GENERIC;
     }
 
-    double s_route  = route_->GetTrackS();
-    double s_entity = GetS();
-    double t_entity = GetT();
-
     if (entity_road->GetJunction() > -1)
     {
         MoveAlongS(ds, false);  // actual distance = false since ds is already adjusted
 
         if (Position::GetOpenDrive()->GetRoadById(GetTrackId())->GetJunction() > -1)
         {
-            if ((int)route_->CopySFractionOfLength(this) < 0)
-            {
-                retval = route_->SetTrackS(GetTrackId(), GetS());
-            }
-            else
-            {
-                // Update route s value
-                retval = route_->SetPathS(route_->GetPathS() + ds);
-            }
+            // Synchronize route path, potentially on a different connecting road, with entity position
+            retval = route_->CopySFractionOfLength(this);
         }
         else
         {
@@ -10062,21 +10051,13 @@ Position::ReturnCode Position::MoveRouteDS(double ds, bool actualDistance)
 
         if (entity_road2->GetJunction() > -1 && route_road2->GetJunction() > -1)
         {
-            if ((int)route_->CopySFractionOfLength(this) < 0)
-            {
-                retval = route_->SetTrackS(GetTrackId(), GetS());
-            }
+            // Both entity and route pos entered junction, synchronize s-value of positions
+            retval = route_->CopySFractionOfLength(this);
         }
         else if (entity_road2->GetJunction() > -1 || route_road2->GetJunction() > -1)
         {
-            if (entity_road2->GetJunction() > -1)
-            {
-                SetTrackPos(route_->GetTrackId(), s_route + ds, t_entity);
-            }
-            else
-            {
-                retval = route_->SetTrackS(route_->GetTrackId(), s_entity + ds);
-            }
+            // Entity and route position not both in junction. Enforce synchronization.
+            XYZH2TrackPos(GetX(), GetY(), GetZ(), GetH(), false, route_->GetTrackId(), false);
         }
     }
 
@@ -11299,6 +11280,7 @@ Position::ReturnCode Route::CopySFractionOfLength(Position* pos)
             fraction = 1 - fraction;
         }
         currentPos_.SetLanePos(GetTrackId(), GetLaneId(), fraction * road1->GetLength(), 0.0);
+        SetTrackS(GetTrackId(), fraction * road1->GetLength());
     }
 
     return retval;
