@@ -211,6 +211,7 @@ namespace scenarioengine
         OSCAction(BaseType type) : StoryBoardElement(StoryBoardElement::ElementType::ACTION), base_type_(type)
         {
         }
+
         virtual ~OSCAction()
         {
         }
@@ -222,6 +223,49 @@ namespace scenarioengine
         }
 
         virtual void Step(double simTime, double dt) = 0;
+    };
+
+    class OSCUserDefinedAction : public OSCAction
+    {
+    public:
+        OSCUserDefinedAction() : OSCAction(OSCAction::BaseType::USER_DEFINED)
+        {
+        }
+
+        OSCUserDefinedAction(const OSCUserDefinedAction& action) : OSCAction(OSCAction::BaseType::USER_DEFINED)
+        {
+            name_    = action.name_;
+            type_    = action.type_;
+            content_ = action.content_;
+        }
+
+        ~OSCUserDefinedAction()
+        {
+        }
+
+        OSCUserDefinedAction* Copy()
+        {
+            OSCUserDefinedAction* new_action = new OSCUserDefinedAction(*this);
+            return new_action;
+        }
+
+        std::string Type2Str()
+        {
+            return "UserDefinedAction";
+        };
+
+        void Start(double simTime, double dt)
+        {
+            LOG("Starting %s type: %s content: %s", Type2Str().c_str(), type_.c_str(), content_.c_str());
+            OSCAction::Start(simTime, dt);
+        }
+
+        void Step(double, double)
+        {
+        }
+
+        std::string type_;
+        std::string content_;
     };
 
 }  // namespace scenarioengine

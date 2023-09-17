@@ -2094,6 +2094,30 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode)
     return action;
 }
 
+OSCUserDefinedAction *ScenarioReader::parseOSCUserDefinedAction(pugi::xml_node actionNode)
+{
+    OSCUserDefinedAction *action = nullptr;
+
+    pugi::xml_node actionChild = actionNode.first_child();
+    if (actionChild && actionChild.name() == std::string("CustomCommandAction"))
+    {
+        action           = new OSCUserDefinedAction();
+        action->type_    = parameters.ReadAttribute(actionChild, "type");
+        action->content_ = actionChild.first_child().value();
+    }
+
+    if (action && actionNode.parent().attribute("name"))
+    {
+        action->name_ = parameters.ReadAttribute(actionNode.parent(), "name");
+    }
+    else
+    {
+        action->name_ = "no name";
+    }
+
+    return action;
+}
+
 ActivateControllerAction *ScenarioReader::parseActivateControllerAction(pugi::xml_node node)
 {
     Controller::DomainActivation lateral      = Controller::DomainActivation::UNDEFINED;
@@ -4147,7 +4171,11 @@ void ScenarioReader::parseOSCManeuver(Maneuver *maneuver, pugi::xml_node maneuve
                         }
                         else if (actionChildName == "UserDefinedAction")
                         {
-                            LOG("%s is not implemented", actionChildName.c_str());
+                            OSCUserDefinedAction *action = parseOSCUserDefinedAction(actionChild);
+                            if (action != nullptr)
+                            {
+                                event->action_.push_back(static_cast<OSCAction *>(action));
+                            }
                         }
                         else if (actionChildName == "PrivateAction")
                         {

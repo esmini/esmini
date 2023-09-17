@@ -122,6 +122,7 @@ namespace scenarioengine
         int                       parseDynamicConstraints(pugi::xml_node dynamics_node, DynamicConstraints& dc, Object* obj);
         OSCPrivateAction*         parseOSCPrivateAction(pugi::xml_node actionNode, Object* object);
         OSCGlobalAction*          parseOSCGlobalAction(pugi::xml_node actionNode);
+        OSCUserDefinedAction*     parseOSCUserDefinedAction(pugi::xml_node actionNode);
         void                      parseOSCOrientation(OSCOrientation& orientation, pugi::xml_node orientationNode);
         OSCPosition*              parseOSCPosition(pugi::xml_node positionNode, OSCPosition* base_on_pos = nullptr);
 

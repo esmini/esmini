@@ -1009,6 +1009,26 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^6.350, 300, Ego, 152.710, -1.535, 0.000, 0.000, 0.000, 0.000, 6.080, 0.000, 4.429', csv, re.MULTILINE))
         self.assertTrue(re.search('^6.350, 301, Target, 160.872, -1.535, 0.000, 0.000, 0.000, 0.000, 2.832, 0.000, 5.098', csv, re.MULTILINE))
 
+    def test_user_defined_action(self):
+        log = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/user_defined_action.xosc'), COMMON_ARGS)
+
+        # Check some initialization steps
+        self.assertTrue(re.search('Loading .*user_defined_action.xosc', log)  is not None)
+
+        # Check some scenario events
+        self.assertTrue(re.search('4.890: Starting UserDefinedAction type: noop content: Wait', log)  is not None)
+        self.assertTrue(re.search('\n7.000: Event WaitEvent ended, overwritten by event DecelerateEvent', log)  is not None)
+        self.assertTrue(re.search('\n9.950: DecelerateDoneCondition timer expired at 1.00 seconds', log)  is not None)
+
+        # Check vehicle key positions
+        csv = generate_csv()
+
+        self.assertTrue(re.search('4.880, 0, Ego, 57.733, -1.535, 0.000, 0.000, 0.000, 0.000, 19.400, 0.000, 0.994\n', csv))
+        self.assertTrue(re.search('4.890, 0, Ego, 57.927, -1.535, 0.000, 0.000, 0.000, 0.000, 19.444, 0.000, 1.550\n', csv))
+        self.assertTrue(re.search('\n7.000, 0, Ego, 98.955, -1.535, 0.000, 0.000, 0.000, 0.000, 19.444, 0.000, 5.675', csv))
+        self.assertTrue(re.search('\n7.010, 0, Ego, 99.149, -1.535, 0.000, 0.000, 0.000, 0.000, 19.344, 0.000, 6.228', csv))
+        self.assertTrue(re.search('\n8.940, 0, Ego, 117.762, -1.535, 0.000, 0.000, 0.000, 0.000, 0.044, 0.000, 2.861', csv))
+        self.assertTrue(re.search('\n8.950, 0, Ego, 117.762, -1.535, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 2.861', csv))
 
 if __name__ == "__main__":
     # execute only if run as a script
