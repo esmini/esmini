@@ -22,6 +22,7 @@ externals/osg
 externals/osi
 externals/sumo
 externals/googletest
+externals/implot
 resources/models
 Hello-World_coding-example/build
 .pyenv
