@@ -123,7 +123,7 @@ void ControllerFollowRoute::Step(double timeStep)
     Controller::Step(timeStep);
 }
 
-void ControllerFollowRoute::Activate(ControlDomains domainMask)
+void ControllerFollowRoute::Activate(DomainActivation lateral, DomainActivation longitudinal)
 {
     LOG("FollowRoute activate");
 
@@ -137,7 +137,7 @@ void ControllerFollowRoute::Activate(ControlDomains domainMask)
     changingLane_          = false;
     waypoints_             = {};
     laneChangeAction_      = nullptr;
-    Controller::Activate(domainMask);
+    Controller::Activate(lateral, longitudinal);
 }
 
 void ControllerFollowRoute::ReportKeyEvent(int key, bool down)

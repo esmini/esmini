@@ -80,9 +80,9 @@ void ControllerExternal::Step(double timeStep)
     Controller::Step(timeStep);
 }
 
-void ControllerExternal::Activate(ControlDomains domainMask)
+void ControllerExternal::Activate(DomainActivation lateral, DomainActivation longitudinal)
 {
-    Controller::Activate(domainMask);
+    Controller::Activate(lateral, longitudinal);
 }
 
 void ControllerExternal::ReportKeyEvent(int key, bool down)

@@ -422,7 +422,7 @@ void ControllerLooming::Init()
     Controller::Init();
 }
 
-void ControllerLooming::Activate(ControlDomains domainMask)
+void ControllerLooming::Activate(DomainActivation lateral, DomainActivation longitudinal)
 {
     currentSpeed_ = object_->GetSpeed();
     if (mode_ == Mode::MODE_ADDITIVE || setSpeedSet_ == false)
@@ -441,7 +441,7 @@ void ControllerLooming::Activate(ControlDomains domainMask)
         vehicle_.SetSteeringRate(steering_rate_);
     }
 
-    Controller::Activate(domainMask);
+    Controller::Activate(lateral, longitudinal);
 
     if (IsActiveOnDomains(ControlDomains::DOMAIN_LAT))
     {

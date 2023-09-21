@@ -567,7 +567,7 @@ void SwarmTrafficAction::spawn(Solutions sols, int replace, double simTime)
             }
 
             acc->Assign(entities_->GetObjectById(id));
-            acc->Activate(ControlDomains::DOMAIN_LONG);
+            acc->Activate(Controller::DomainActivation::OFF, Controller::DomainActivation::ON);
 
             SpawnInfo sInfo = {
                 id,                    // Vehicle ID

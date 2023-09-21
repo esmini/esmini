@@ -57,7 +57,7 @@ namespace scenarioengine
         }
 
         void Init();
-        void Activate(ControlDomains domainMask);
+        void Activate(DomainActivation lateral, DomainActivation longitudinal);
         void ReportKeyEvent(int key, bool down);
         void SetSetSpeed(double setSpeed)
         {

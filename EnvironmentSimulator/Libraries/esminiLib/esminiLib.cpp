@@ -1101,7 +1101,7 @@ extern "C"
                 Controller::InitArgs args = {"", "", 0, 0, 0, 0};
                 args.type                 = ControllerExternal::GetTypeNameStatic();
                 vehicle->controller_      = InstantiateControllerExternal(&args);
-                vehicle->controller_->Activate(ControlDomains::DOMAIN_BOTH);
+                vehicle->controller_->Activate(Controller::DomainActivation::ON, Controller::DomainActivation::ON);
             }
             else
             {

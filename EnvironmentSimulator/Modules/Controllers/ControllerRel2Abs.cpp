@@ -616,7 +616,7 @@ void ControllerRel2Abs::Step(double timeStep)
     Controller::Step(timeStep);
 }
 
-void ControllerRel2Abs::Activate(ControlDomains domainMask)
+void ControllerRel2Abs::Activate(DomainActivation lateral, DomainActivation longitudinal)
 {
 #ifdef CONTROLLER_REL2ABS_DEBUG
     logData.open("LogData.csv");
@@ -632,7 +632,7 @@ void ControllerRel2Abs::Activate(ControlDomains domainMask)
 
     pred_timestep      = 0.1;
     pred_nbr_timesteps = pred_horizon / pred_timestep;
-    Controller::Activate(domainMask);
+    Controller::Activate(lateral, longitudinal);
 }
 
 void ControllerRel2Abs::ReportKeyEvent(int key, bool down)

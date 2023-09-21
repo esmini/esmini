@@ -278,12 +278,6 @@ void AssignRouteAction::Start(double simTime, double dt)
     object_->SetDirtyBits(Object::DirtyBit::ROUTE);
 
     OSCAction::Start(simTime, dt);
-
-    if (object_->GetControllerMode() == Controller::Mode::MODE_OVERRIDE && object_->IsControllerActiveOnDomains(ControlDomains::DOMAIN_LAT))
-    {
-        // lateral motion controlled elsewhere
-        return;
-    }
 }
 
 void AssignRouteAction::Step(double simTime, double dt)
@@ -531,17 +525,21 @@ void AssignControllerAction::Start(double simTime, double dt)
         {
             if (!object_->controller_->Active())
             {
-                if (domainMask_ != ControlDomains::DOMAIN_NONE)
+                if (lateral_ != Controller::DomainActivation::UNDEFINED || longitudinal_ != Controller::DomainActivation::UNDEFINED)
                 {
-                    object_->controller_->Activate(domainMask_);
-                    LOG("Controller %s activated, domain mask=0x%X", object_->controller_->GetName().c_str(), domainMask_);
+                    object_->controller_->Activate(lateral_, longitudinal_);
+                    LOG("Controller %s activated (lat %s, long %s), domain mask=0x%X",
+                        object_->controller_->GetName().c_str(),
+                        DomainActivation2Str(lateral_).c_str(),
+                        DomainActivation2Str(longitudinal_).c_str(),
+                        object_->controller_->GetDomain());
                 }
             }
             else
             {
                 LOG("Controller %s already active (domainmask 0x%X), should not happen when just assigned!",
                     object_->controller_->GetName().c_str(),
-                    domainMask_);
+                    object_->controller_->GetDomain());
             }
         }
     }

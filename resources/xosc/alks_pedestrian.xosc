@@ -105,11 +105,6 @@
                             </FollowTrajectoryAction>
                         </RoutingAction>
                     </PrivateAction>
-                    <PrivateAction>
-                        <ControllerAction>
-                            <ActivateControllerAction longitudinal="true" lateral="true"/>
-                        </ControllerAction>
-                    </PrivateAction>
                 </Private>
             </Actions>
         </Init>

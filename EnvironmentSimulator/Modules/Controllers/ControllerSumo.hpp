@@ -46,7 +46,7 @@ namespace scenarioengine
 
         void Init();
         void Step(double time);
-        void Activate(ControlDomains domainMask);
+        void Activate(DomainActivation lateral, DomainActivation longitudinal);
 
         void SetSumoVehicle(Object* object);
 

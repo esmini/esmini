@@ -109,7 +109,7 @@ void ControllerInteractive::Step(double timeStep)
     Controller::Step(timeStep);
 }
 
-void ControllerInteractive::Activate(ControlDomains domainMask)
+void ControllerInteractive::Activate(DomainActivation lateral, DomainActivation longitudinal)
 {
     if (object_)
     {
@@ -131,7 +131,7 @@ void ControllerInteractive::Activate(ControlDomains domainMask)
     object_->SetJunctionSelectorStrategy(roadmanager::Junction::JunctionStrategyType::SELECTOR_ANGLE);
     object_->SetJunctionSelectorAngle(0.0);
 
-    Controller::Activate(domainMask);
+    Controller::Activate(lateral, longitudinal);
 }
 
 void ControllerInteractive::ReportKeyEvent(int key, bool down)

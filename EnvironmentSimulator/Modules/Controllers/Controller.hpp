@@ -71,6 +71,13 @@ namespace scenarioengine
             Parameters*      parameters;
         } InitArgs;
 
+        enum class DomainActivation
+        {
+            UNDEFINED = 0,
+            OFF       = 1,
+            ON        = 2
+        };
+
         Controller() : object_(0), entities_(0), gateway_(0), scenario_engine_(0), player_(0)
         {
         }
@@ -95,9 +102,29 @@ namespace scenarioengine
         }
 
         virtual void Assign(Object* object);
-        virtual void Activate(ControlDomains domainMask)
+        virtual void Activate(DomainActivation lateral, DomainActivation longitudinal)
         {
-            domain_ = domainMask;
+            int domain_mask = static_cast<int>(domain_);
+
+            if (lateral == DomainActivation::OFF)
+            {
+                domain_mask &= ~static_cast<int>(ControlDomains::DOMAIN_LAT);
+            }
+            else if (lateral == DomainActivation::ON)
+            {
+                domain_mask |= static_cast<int>(ControlDomains::DOMAIN_LAT);
+            }
+
+            if (longitudinal == DomainActivation::OFF)
+            {
+                domain_mask &= ~static_cast<int>(ControlDomains::DOMAIN_LONG);
+            }
+            else if (longitudinal == DomainActivation::ON)
+            {
+                domain_mask |= static_cast<int>(ControlDomains::DOMAIN_LONG);
+            }
+
+            domain_ = static_cast<ControlDomains>(domain_mask);
         };
         virtual void Deactivate()
         {

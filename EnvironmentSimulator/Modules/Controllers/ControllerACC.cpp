@@ -201,7 +201,7 @@ void ControllerACC::Step(double timeStep)
     Controller::Step(timeStep);
 }
 
-void ControllerACC::Activate(ControlDomains domainMask)
+void ControllerACC::Activate(DomainActivation lateral, DomainActivation longitudinal)
 {
     currentSpeed_ = object_->GetSpeed();
     if (mode_ == Mode::MODE_ADDITIVE || setSpeedSet_ == false)
@@ -209,7 +209,7 @@ void ControllerACC::Activate(ControlDomains domainMask)
         setSpeed_ = object_->GetSpeed();
     }
 
-    Controller::Activate(domainMask);
+    Controller::Activate(lateral, longitudinal);
 
     if (IsActiveOnDomains(ControlDomains::DOMAIN_LAT))
     {

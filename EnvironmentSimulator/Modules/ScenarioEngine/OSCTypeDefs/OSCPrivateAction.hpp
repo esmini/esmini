@@ -197,6 +197,20 @@ namespace scenarioengine
         }
 
         virtual void ReplaceObjectRefs(Object*, Object*){};
+
+        const std::string DomainActivation2Str(Controller::DomainActivation mode) const
+        {
+            switch (mode)
+            {
+                case Controller::DomainActivation::UNDEFINED:
+                    return "UNDEFINED";
+                case Controller::DomainActivation::OFF:
+                    return "OFF";
+                case Controller::DomainActivation::ON:
+                    return "ON";
+            }
+            return "UNKNOWN";
+        }
     };
 
     class LongSpeedAction : public OSCPrivateAction
@@ -997,23 +1011,25 @@ namespace scenarioengine
     class AssignControllerAction : public OSCPrivateAction
     {
     public:
-        Controller*    controller_;
-        ControlDomains domainMask_;
+        Controller*                  controller_;
+        Controller::DomainActivation lateral_      = Controller::DomainActivation::OFF;
+        Controller::DomainActivation longitudinal_ = Controller::DomainActivation::OFF;
 
-        AssignControllerAction(Controller* controller)
-            : OSCPrivateAction(OSCPrivateAction::ActionType::ASSIGN_CONTROLLER,
-                               controller != nullptr ? controller->GetDomain() : ControlDomains::DOMAIN_NONE),
+        AssignControllerAction(Controller* controller, Controller::DomainActivation lateral, Controller::DomainActivation longitudinal)
+            : OSCPrivateAction(OSCPrivateAction::ActionType::ASSIGN_CONTROLLER, ControlDomains::DOMAIN_NONE),
               controller_(controller),
-              domainMask_(ControlDomains::DOMAIN_NONE)
+              lateral_(lateral),
+              longitudinal_(longitudinal)
         {
         }
 
         AssignControllerAction(const AssignControllerAction& action)
-            : OSCPrivateAction(OSCPrivateAction::ActionType::ASSIGN_CONTROLLER,
-                               action.controller_ != nullptr ? action.controller_->GetDomain() : ControlDomains::DOMAIN_NONE)
+            : OSCPrivateAction(OSCPrivateAction::ActionType::ASSIGN_CONTROLLER, ControlDomains::DOMAIN_NONE)
         {
-            name_       = action.name_;
-            controller_ = action.controller_;
+            name_         = action.name_;
+            controller_   = action.controller_;
+            lateral_      = action.lateral_;
+            longitudinal_ = action.longitudinal_;
         };
 
         OSCPrivateAction* Copy()
@@ -1030,21 +1046,24 @@ namespace scenarioengine
         void Step(double, double)
         {
         }
+
         void Start(double simTime, double dt);
     };
 
     class ActivateControllerAction : public OSCPrivateAction
     {
     public:
-        ControlDomains domainMask_;
+        Controller::DomainActivation lateral_      = Controller::DomainActivation::OFF;
+        Controller::DomainActivation longitudinal_ = Controller::DomainActivation::OFF;
 
         /**
         Default constructor assuming both domains (lat/long) activated
         @param domainMask bitmask according to Controller::Domain type
         */
         ActivateControllerAction()
-            : OSCPrivateAction(OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER, domainMask_),
-              domainMask_(ControlDomains::DOMAIN_BOTH)
+            : OSCPrivateAction(OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER, ControlDomains::DOMAIN_BOTH),
+              lateral_(Controller::DomainActivation::ON),
+              longitudinal_(Controller::DomainActivation::ON)
         {
         }
 
@@ -1052,17 +1071,19 @@ namespace scenarioengine
         Constructor with domain specification
         @param domainMask bitmask according to Controller::Domain type
         */
-        ActivateControllerAction(ControlDomains domainMask)
+        ActivateControllerAction(Controller::DomainActivation lateral, Controller::DomainActivation longitudinal)
             : OSCPrivateAction(OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER, ControlDomains::DOMAIN_NONE),
-              domainMask_(domainMask)
+              lateral_(lateral),
+              longitudinal_(longitudinal)
         {
         }
 
         ActivateControllerAction(const ActivateControllerAction& action)
             : OSCPrivateAction(OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER, ControlDomains::DOMAIN_NONE)
         {
-            name_       = action.name_;
-            domainMask_ = action.domainMask_;
+            name_         = action.name_;
+            lateral_      = action.lateral_;
+            longitudinal_ = action.longitudinal_;
         }
 
         OSCPrivateAction* Copy()
@@ -1075,18 +1096,13 @@ namespace scenarioengine
         {
             if (object_->GetAssignedControllerType() != 0)
             {
-                if (!object_->controller_->Active())
-                {
-                    object_->controller_->Activate(domainMask_);
-                    LOG("Controller %s activated, domain mask=0x%X", object_->controller_->GetName().c_str(), domainMask_);
-                    OSCAction::Start(simTime, dt);
-                }
-                else
-                {
-                    LOG("Controller %s already active (domainmask 0x%X), deactivate first in order to activate on different domain(s)",
-                        object_->controller_->GetName().c_str(),
-                        domainMask_);
-                }
+                object_->controller_->Activate(lateral_, longitudinal_);
+                LOG("Controller %s activated (lat %s, long %s), domain mask=0x%X",
+                    object_->controller_->GetName().c_str(),
+                    DomainActivation2Str(lateral_).c_str(),
+                    DomainActivation2Str(longitudinal_).c_str(),
+                    object_->controller_->GetDomain());
+                OSCAction::Start(simTime, dt);
             }
             else
             {

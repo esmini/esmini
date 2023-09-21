@@ -342,7 +342,7 @@ void ControllerUDPDriver::Step(double timeStep)
     Controller::Step(timeStep);
 }
 
-void ControllerUDPDriver::Activate(ControlDomains domainMask)
+void ControllerUDPDriver::Activate(DomainActivation lateral, DomainActivation longitudinal)
 {
     if (object_)
     {
@@ -381,7 +381,7 @@ void ControllerUDPDriver::Activate(ControlDomains domainMask)
     steer      = vehicle::STEERING_NONE;
     accelerate = vehicle::THROTTLE_NONE;
 
-    Controller::Activate(domainMask);
+    Controller::Activate(lateral, longitudinal);
 }
 
 void ControllerUDPDriver::ReportKeyEvent(int key, bool down)

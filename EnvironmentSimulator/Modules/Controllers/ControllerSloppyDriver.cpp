@@ -174,7 +174,7 @@ void ControllerSloppyDriver::Step(double timeStep)
     Controller::Step(timeStep);
 }
 
-void ControllerSloppyDriver::Activate(ControlDomains domainMask)
+void ControllerSloppyDriver::Activate(DomainActivation lateral, DomainActivation longitudinal)
 {
     if (object_)
     {
@@ -195,7 +195,7 @@ void ControllerSloppyDriver::Activate(ControlDomains domainMask)
         currentH_   = object_->pos_.GetHRelative();
     }
 
-    Controller::Activate(domainMask);
+    Controller::Activate(lateral, longitudinal);
 }
 
 void ControllerSloppyDriver::ReportKeyEvent(int key, bool down)

@@ -1455,7 +1455,7 @@ int ScenarioReader::parseEntities()
                     obj->id_ = -1;
 
                     // SUMO controller is special in the sense that it is always active
-                    ctrl->Activate(ControlDomains::DOMAIN_BOTH);
+                    ctrl->Activate(Controller::DomainActivation::ON, Controller::DomainActivation::ON);
 
                     // SUMO controller is not assigned to any scenario vehicle
                 }
@@ -2096,20 +2096,30 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode)
 
 ActivateControllerAction *ScenarioReader::parseActivateControllerAction(pugi::xml_node node)
 {
-    bool domain_longitudinal = parameters.ReadAttribute(node, "longitudinal") == "true";
-    bool domain_lateral      = parameters.ReadAttribute(node, "lateral") == "true";
+    Controller::DomainActivation lateral      = Controller::DomainActivation::UNDEFINED;
+    Controller::DomainActivation longitudinal = Controller::DomainActivation::UNDEFINED;
+    std::string                  lat_str      = parameters.ReadAttribute(node, "lateral");
+    std::string                  long_str     = parameters.ReadAttribute(node, "longitudinal");
 
-    int domainMask = 0;
-    if (domain_longitudinal)
+    if (lat_str == "false")
     {
-        domainMask |= static_cast<int>(ControlDomains::DOMAIN_LONG);
+        lateral = Controller::DomainActivation::OFF;
     }
-    if (domain_lateral)
+    else if (lat_str == "true")
     {
-        domainMask |= static_cast<int>(ControlDomains::DOMAIN_LAT);
+        lateral = Controller::DomainActivation::ON;
     }
 
-    ActivateControllerAction *activateControllerAction = new ActivateControllerAction(static_cast<ControlDomains>(domainMask));
+    if (long_str == "false")
+    {
+        longitudinal = Controller::DomainActivation::OFF;
+    }
+    else if (long_str == "true")
+    {
+        longitudinal = Controller::DomainActivation::ON;
+    }
+
+    ActivateControllerAction *activateControllerAction = new ActivateControllerAction(lateral, longitudinal);
 
     return activateControllerAction;
 }
@@ -2873,22 +2883,31 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                         {
                             controller_.push_back(controller);
                         }
-                        AssignControllerAction *assignControllerAction = new AssignControllerAction(controller);
 
-                        bool domain_lateral      = parameters.ReadAttribute(controllerDefNode, "activateLateral") == "true";
-                        bool domain_longitudinal = parameters.ReadAttribute(controllerDefNode, "activateLongitudinal") == "true";
+                        Controller::DomainActivation lateral      = Controller::DomainActivation::UNDEFINED;
+                        Controller::DomainActivation longitudinal = Controller::DomainActivation::UNDEFINED;
+                        std::string                  lat_str      = parameters.ReadAttribute(controllerDefNode, "lateral");
+                        std::string                  long_str     = parameters.ReadAttribute(controllerDefNode, "longitudinal");
 
-                        int domainMask = 0;
-                        if (domain_lateral)
+                        if (lat_str == "false")
                         {
-                            domainMask |= static_cast<int>(ControlDomains::DOMAIN_LAT);
+                            lateral = Controller::DomainActivation::OFF;
                         }
-                        if (domain_longitudinal)
+                        else if (lat_str == "true")
                         {
-                            domainMask |= static_cast<int>(ControlDomains::DOMAIN_LONG);
+                            lateral = Controller::DomainActivation::ON;
                         }
 
-                        assignControllerAction->domainMask_ = static_cast<ControlDomains>(domainMask);
+                        if (long_str == "false")
+                        {
+                            longitudinal = Controller::DomainActivation::OFF;
+                        }
+                        else if (long_str == "true")
+                        {
+                            longitudinal = Controller::DomainActivation::ON;
+                        }
+
+                        AssignControllerAction *assignControllerAction = new AssignControllerAction(controller, lateral, longitudinal);
 
                         action = assignControllerAction;
                     }

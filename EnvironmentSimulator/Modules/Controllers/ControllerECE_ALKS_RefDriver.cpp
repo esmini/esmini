@@ -475,10 +475,10 @@ void ControllerECE_ALKS_REF_DRIVER::Step(double timeStep)
     Controller::Step(timeStep);
 }
 
-void ControllerECE_ALKS_REF_DRIVER::Activate(ControlDomains domainMask)
+void ControllerECE_ALKS_REF_DRIVER::Activate(DomainActivation lateral, DomainActivation longitudinal)
 {
     Reset();
-    Controller::Activate(domainMask);
+    Controller::Activate(lateral, longitudinal);
 }
 
 void ControllerECE_ALKS_REF_DRIVER::Reset()

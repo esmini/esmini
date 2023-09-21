@@ -961,7 +961,7 @@ class TestSuite(unittest.TestCase):
             # Verify that the scenario was executed as expected
             self.assertTrue(re.search('^Loading inline', log[-1], re.MULTILINE)  is not None)
             self.assertTrue(re.search('^0.000: Recording data to file sim_', log[-1], re.MULTILINE)  is not None)
-            self.assertTrue(re.search('^0.000: Controller ALKS_R157SM_Controller activated, domain mask=0x1', log[-1], re.MULTILINE)  is not None)
+            self.assertTrue(re.search('^0.000: Controller ALKS_R157SM_Controller activated \(lat OFF, long ON\), domain mask=0x1', log[-1], re.MULTILINE)  is not None)
 
         if len(models) > 0:
             with open(STDOUT_FILENAME, "w") as f:

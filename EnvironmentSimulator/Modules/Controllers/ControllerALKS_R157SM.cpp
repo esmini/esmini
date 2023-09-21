@@ -229,13 +229,13 @@ void ControllerALKS_R157SM::Assign(Object* object)
     Controller::Assign(object);
 }
 
-void ControllerALKS_R157SM::Activate(ControlDomains domainMask)
+void ControllerALKS_R157SM::Activate(DomainActivation lateral, DomainActivation longitudinal)
 {
     if (model_)
     {
         model_->set_speed_ = object_->GetSpeed();
     }
-    Controller::Activate(domainMask);
+    Controller::Activate(lateral, longitudinal);
 }
 
 void ControllerALKS_R157SM::SetScenarioEngine(ScenarioEngine* scenario_engine)

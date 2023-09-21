@@ -237,19 +237,19 @@ void ControllerSumo::Step(double timeStep)
     Controller::Step(timeStep);
 }
 
-void ControllerSumo::Activate(ControlDomains domainMask)
+void ControllerSumo::Activate(DomainActivation lateral, DomainActivation longitudinal)
 {
     // Reset time
     time_ = 0;
 
     // SUMO controller forced into both domains
-    if (domainMask != ControlDomains::DOMAIN_BOTH)
+    if (lateral != Controller::DomainActivation::ON || longitudinal != Controller::DomainActivation::ON)
     {
         LOG("SUMO controller forced into operation of both domains (lat/long)");
-        domainMask = ControlDomains::DOMAIN_BOTH;
+        lateral = longitudinal = Controller::DomainActivation::ON;
     }
 
-    Controller::Activate(domainMask);
+    Controller::Activate(lateral, longitudinal);
 }
 
 void ControllerSumo::SetSumoVehicle(Object* object)

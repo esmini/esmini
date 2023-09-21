@@ -49,7 +49,12 @@
                </PrivateAction>
                <PrivateAction>
                   <ControllerAction>
-                     <ActivateControllerAction longitudinal="true" lateral="true"/>
+                     <ActivateControllerAction longitudinal="true"/>
+                  </ControllerAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <ControllerAction>
+                     <ActivateControllerAction lateral="true"/>
                   </ControllerAction>
                </PrivateAction>
                <PrivateAction>

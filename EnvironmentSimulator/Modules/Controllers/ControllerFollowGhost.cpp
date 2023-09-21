@@ -238,7 +238,7 @@ void ControllerFollowGhost::Step(double timeStep)
     Controller::Step(timeStep);
 }
 
-void ControllerFollowGhost::Activate(ControlDomains domainMask)
+void ControllerFollowGhost::Activate(DomainActivation lateral, DomainActivation longitudinal)
 {
     if (object_)
     {
@@ -257,7 +257,7 @@ void ControllerFollowGhost::Activate(ControlDomains domainMask)
         object_->pos_.SetAlignModeP(roadmanager::Position::ALIGN_MODE::ALIGN_HARD);
     }
 
-    Controller::Activate(domainMask);
+    Controller::Activate(lateral, longitudinal);
 }
 
 void ControllerFollowGhost::ReportKeyEvent(int key, bool down)
