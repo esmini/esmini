@@ -172,8 +172,8 @@ OpenSCENARIO
                                             SteadyState (1.1)                  Yes
                                         TeleportAction                         Yes
                                         Visibility                             Yes
-                                            SensorReference	(1.2)              No
-                                    UserDefinedAction                          No
+                                            SensorReference (1.2)              No
+                                    UserDefinedAction                          Yes
                                 StartTrigger                                   Yes
                     StartTrigger                                               Yes
                     StopTrigger                                                Yes
