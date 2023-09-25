@@ -5,7 +5,7 @@
   guid="@FMUGUID@"
   description="esmini scnario player packaged as OSMP FMU outputting an osi3::SensorView with GoundTruth from the scenario"
   author="Persival GmbH"
-  version="@OSMPVERSION@"
+  version="@VERSION@"
   generationTool="manual"
   generationDateAndTime="@FMUTIMESTAMP@"
   variableNamingConvention="structured">
