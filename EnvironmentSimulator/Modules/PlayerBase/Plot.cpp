@@ -103,6 +103,22 @@ void Plot::CleanUp()
 
 void Plot::updateData(std::vector<Object*>& objects, double time)
 {
+    if (plot_objects_.size() < scenarioengine_->entities_.object_.size())
+    {
+        for (const auto& object : scenarioengine_->entities_.object_)
+        {
+            const std::string name = object->GetName();
+            auto val = std::find_if(plot_objects_.begin(), plot_objects_.end(), [&name](const auto& obj) { return obj->getName() == name; });
+            if (val == plot_objects_.end())
+            {
+                plot_objects_.emplace_back(std::make_unique<PlotObject>(object));
+                selected_object_.push_back(false);  // Checkbox is unchecked
+            }
+        }
+    }
+    // TODO:
+    // else if (plot_objects_.size() > scen...)
+    // should remove the checkbox and data in some smart way
     for (size_t i = 0; i < objects.size(); i++)
     {
         plot_objects_[i]->updateData(objects[i], time);
@@ -124,10 +140,13 @@ void Plot::plotLine(std::string plot_name, std::string unit, PlotCategories x, P
             {
                 continue;
             }
-            ImPlot::PlotLine(std::to_string(i).c_str(),
-                             plot_objects_[i]->plotData.at(x).data(),
-                             plot_objects_[i]->plotData.at(y).data(),
-                             static_cast<int>(plot_objects_[i]->plotData.at(x).size()));
+            if (!plot_objects_[i]->plotData.at(x).empty() && !plot_objects_[i]->plotData.at(y).empty())
+            {
+                ImPlot::PlotLine(std::to_string(i).c_str(),
+                                 plot_objects_[i]->plotData.at(x).data(),
+                                 plot_objects_[i]->plotData.at(y).data(),
+                                 static_cast<int>(plot_objects_[i]->plotData.at(x).size()));
+            }
         }
         ImPlot::EndPlot();
     }
@@ -294,7 +313,7 @@ int Plot::Frame()
     scenarioengine_->mutex_.Lock();
     updateData(scenarioengine_->entities_.object_, scenarioengine_->getSimulationTime());
     scenarioengine_->mutex_.Unlock();
-    renderPlot("Line plot");  //, static_cast<float>(window_w), static_cast<float>(window_h));
+    renderPlot("Line plot");
 
     // Rendering
     ImGui::Render();
