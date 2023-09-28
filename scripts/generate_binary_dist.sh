@@ -43,6 +43,7 @@ resources/xosc/speed-profile.xosc \
 resources/xosc/alks_r157_cut_in_quick_brake.xosc \
 resources/xosc/two_plus_one_road.xosc \
 resources/xosc/truck_with_rotating_axle.xosc \
+resources/xosc/trailer_connect.xosc \
 resources/xosc/Catalogs/Maneuvers/*.* \
 resources/xosc/Catalogs/Routes/*.* \
 resources/xosc/Catalogs/Vehicles/*.* \
@@ -137,6 +138,7 @@ run/esmini/run_swarm.* \
 run/esmini/run_trailers.* \
 run/esmini/run_two-plus-one-road.* \
 run/esmini/run_truck_with_rotating_axle.* \
+run/esmini/run_trailer_connect.* \
 run/odrviewer/run_e6mini*.* \
 run/odrviewer/run_multi_intersections*.* \
 run/replayer/run_and_plot_cut-in_speed*.* \
