@@ -666,6 +666,7 @@ namespace scenarioengine
             }
         }
         int                             ConnectTrailer(Vehicle* trailer);
+        int                             DisconnectTrailer();
         void                            AlignTrailers();
         static std::string              Category2String(int category);
         static std::string              Role2String(int role);

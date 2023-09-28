@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSCENARIO>
+    <FileHeader revMajor="1" revMinor="1" date="2023-09-28T10:00:00" description="Demonstrate prototype OSC ConnectTrailerAction" author="esmini team"/>
+    <ParameterDeclarations>
+        <ParameterDeclaration name="X0" parameterType="double" value="1.7"/>
+        <ParameterDeclaration name="Y0" parameterType="double" value="13.5"/>
+        <ParameterDeclaration name="TrajRadius" parameterType="double" value="12.0"/>
+        <ParameterDeclaration name="Speed" parameterType="double" value="4.0"/>
+    </ParameterDeclarations>
+    <CatalogLocations>
+        <VehicleCatalog>
+            <Directory path="../xosc/Catalogs/Vehicles"/>
+        </VehicleCatalog>
+        <ControllerCatalog>
+            <Directory path="../xosc/Catalogs/Controllers"/>
+        </ControllerCatalog>
+    </CatalogLocations>
+    <RoadNetwork>
+        <SceneGraphFile filepath="../models/parking_lot.osgb"/>
+    </RoadNetwork>
+    <Entities>
+        <ScenarioObject name="Trailer">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_trailer"/>
+        </ScenarioObject>
+        <ScenarioObject name="Car">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+    </Entities>
+    <Storyboard>
+        <Init>
+            <Actions>
+                <Private entityRef="Trailer">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <WorldPosition x="$X0" y="$Y0" z="0.0" h="1.5708" p="0.0" r="0.0"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Car">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <WorldPosition x="${$X0 - $TrajRadius}" y="${$Y0 + $TrajRadius + 4.7}" z="0.0" h="3.1415" p="0.0" r="0.0"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                </Private>
+            </Actions>
+        </Init>
+        <Story name="MyStory">
+            <Act name="DummyAct">
+                <ManeuverGroup maximumExecutionCount="1" name="DummyManueverGroup">
+                    <Actors selectTriggeringEntities="false">
+                        <EntityRef entityRef="Car"/>
+                    </Actors>
+                    <Maneuver name="ConnectManeuver">
+                        <Event maximumExecutionCount="1" name="ReverseEvent" priority="overwrite">
+                            <Action name="ReverseSpeed">
+                                <PrivateAction>
+                                    <LongitudinalAction>
+                                        <SpeedAction>
+                                            <SpeedActionDynamics dynamicsDimension="time" dynamicsShape="step" value="0"/>
+                                            <SpeedActionTarget>
+                                                <AbsoluteTargetSpeed value="${-$Speed}"/>
+                                            </SpeedActionTarget>
+                                        </SpeedAction>
+                                    </LongitudinalAction>
+                                </PrivateAction>
+                            </Action>
+                            <Action name="ReverseAction">
+                                <PrivateAction>
+                                    <RoutingAction>
+                                        <FollowTrajectoryAction>
+                                            <Trajectory closed="false" name="TrajectoryReverse">
+                                                <ParameterDeclarations/>
+                                                <Shape>
+                                                    <Clothoid curvature="${-1.0/$TrajRadius}" curvatureDot="0.0" length="${0.25 * 2.0 * 3.141592 * $TrajRadius}">
+                                                        <Position>
+                                                            <RelativeWorldPosition dx="0.0" dy="0.0" entityRef="Car">
+                                                            </RelativeWorldPosition>
+                                                        </Position>
+                                                    </Clothoid>
+                                                </Shape>
+                                            </Trajectory>
+                                            <TimeReference>
+                                                <None/>
+                                            </TimeReference>
+                                            <TrajectoryFollowingMode followingMode="position"/>
+                                        </FollowTrajectoryAction>
+                                    </RoutingAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="ReverseTrigger" delay="0.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="1.0" rule="greaterOrEqual"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event maximumExecutionCount="1" name="ConnectEvent" priority="overwrite">
+                            <Action name="ConnectAction">
+                                <PrivateAction>
+                                    <ConnectTrailerAction trailer="Trailer"/>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="ConnectTrigger" delay="2.0" conditionEdge="rising">
+                                        <ByValueCondition>
+                                            <StoryboardElementStateCondition storyboardElementType="event" storyboardElementRef="ReverseEvent" state="endTransition"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event maximumExecutionCount="1" name="ForwardEvent" priority="overwrite">
+                            <Action name="ForwardSpeed">
+                                <PrivateAction>
+                                    <LongitudinalAction>
+                                        <SpeedAction>
+                                            <SpeedActionDynamics dynamicsDimension="time" dynamicsShape="step" value="0"/>
+                                            <SpeedActionTarget>
+                                                <AbsoluteTargetSpeed value="$Speed"/>
+                                            </SpeedActionTarget>
+                                        </SpeedAction>
+                                    </LongitudinalAction>
+                                </PrivateAction>
+                            </Action>
+                            <Action name="ForwardAction">
+                                <PrivateAction>
+                                    <RoutingAction>
+                                        <FollowTrajectoryAction>
+                                            <Trajectory closed="false" name="TrajectoryReverse">
+                                                <ParameterDeclarations/>
+                                                <Shape>
+                                                    <Clothoid curvature="${-1.0/$TrajRadius}" curvatureDot="0.001" length="25.0">
+                                                        <Position>
+                                                            <RelativeWorldPosition dx="0.0" dy="0.0" entityRef="Car">
+                                                                <Orientation type="relative" h="0.0"/>
+                                                            </RelativeWorldPosition>
+                                                        </Position>
+                                                    </Clothoid>
+                                                </Shape>
+                                            </Trajectory>
+                                            <TimeReference>
+                                                <None/>
+                                            </TimeReference>
+                                            <TrajectoryFollowingMode followingMode="position"/>
+                                        </FollowTrajectoryAction>
+                                    </RoutingAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="ForwardEvent" delay="2.0" conditionEdge="rising">
+                                        <ByValueCondition>
+                                            <StoryboardElementStateCondition storyboardElementType="event" storyboardElementRef="ConnectEvent" state="endTransition"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event maximumExecutionCount="1" name="DisconnectEvent" priority="parallel">
+                            <Action name="ConnectAction">
+                                <PrivateAction>
+                                    <ConnectTrailerAction>
+                                        <Disconnect/>
+                                    </ConnectTrailerAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="DisconnectEvent" delay="4.0" conditionEdge="rising">
+                                        <ByValueCondition>
+                                            <StoryboardElementStateCondition storyboardElementType="event" storyboardElementRef="ForwardEvent" state="startTransition"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                    </Maneuver>
+                </ManeuverGroup>
+                <StartTrigger>
+                    <ConditionGroup>
+                        <Condition name="StartTrigger" delay="0" conditionEdge="none">
+                            <ByValueCondition>
+                                <SimulationTimeCondition value="2" rule="greaterOrEqual"/>
+                            </ByValueCondition>
+                        </Condition>
+                    </ConditionGroup>
+                </StartTrigger>
+            </Act>
+        </Story>
+        <StopTrigger>
+            <ConditionGroup>
+                <Condition name="DisconnectEvent" delay="2.0" conditionEdge="rising">
+                    <ByValueCondition>
+                        <StoryboardElementStateCondition storyboardElementType="event" storyboardElementRef="ForwardEvent" state="endTransition"/>
+                    </ByValueCondition>
+                </Condition>
+            </ConditionGroup>
+        </StopTrigger>
+    </Storyboard>
+</OpenSCENARIO>

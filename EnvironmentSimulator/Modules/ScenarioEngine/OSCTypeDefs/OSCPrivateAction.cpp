@@ -1666,6 +1666,59 @@ void TeleportAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
     position_->ReplaceObjectRefs(&obj1->pos_, &obj2->pos_);
 }
 
+void ConnectTrailerAction::Start(double simTime, double dt)
+{
+    OSCAction::Start(simTime, dt);
+
+    if (trailer_object_)
+    {
+        if (object_->TrailerVehicle())
+        {
+            if (object_->TrailerVehicle() == trailer_object_)
+            {
+                LOG("Trailer %s already connected to %s - keep connection", trailer_object_->GetName().c_str(), object_->GetName().c_str());
+            }
+            else
+            {
+                LOG("Disconnecting currently connected trailer: %s", object_->TrailerVehicle()->GetName().c_str());
+                reinterpret_cast<Vehicle*>(object_)->DisconnectTrailer();
+            }
+        }
+
+        if (trailer_object_ != object_->TrailerVehicle())
+        {
+            LOG("Connect trailer %s", reinterpret_cast<Vehicle*>(trailer_object_)->GetName().c_str());
+            reinterpret_cast<Vehicle*>(object_)->ConnectTrailer(reinterpret_cast<Vehicle*>(trailer_object_));
+        }
+    }
+    else
+    {
+        if (object_->TrailerVehicle())
+        {
+            LOG("Disconnecting currently connected trailer %s from %s", object_->TrailerVehicle()->GetName().c_str(), object_->GetName().c_str());
+            reinterpret_cast<Vehicle*>(object_)->DisconnectTrailer();
+        }
+        else
+        {
+            LOG("No trailer to disconnect from %s", object_->GetName().c_str());
+        }
+    }
+}
+
+void ConnectTrailerAction::Step(double simTime, double dt)
+{
+    (void)dt;
+    OSCAction::End(simTime);
+}
+
+void ConnectTrailerAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
+{
+    if (object_ == obj1)
+    {
+        object_ = obj2;
+    }
+}
+
 double SynchronizeAction::CalcSpeedForLinearProfile(double v_final, double time, double dist)
 {
     if (time < 0.001 || dist < 0.001)

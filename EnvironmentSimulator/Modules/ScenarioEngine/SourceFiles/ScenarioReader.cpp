@@ -2662,6 +2662,18 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
             action_pos->position_ = action_pos->position_OSCPosition_->GetRMPos();
             action                = action_pos;
         }
+        else if (actionChild.name() == std::string("ConnectTrailerAction"))
+        {
+            ConnectTrailerAction *action_trailer = new ConnectTrailerAction;
+            std::string           trailer_ref    = parameters.ReadAttribute(actionChild, "trailer");
+
+            if (!trailer_ref.empty())
+            {
+                action_trailer->trailer_object_ = ResolveObjectReference(parameters.ReadAttribute(actionChild, "trailer"));
+            }
+
+            action = action_trailer;
+        }
         else if (actionChild.name() == std::string("RoutingAction"))
         {
             for (pugi::xml_node routingChild = actionChild.first_child(); routingChild; routingChild = routingChild.next_sibling())

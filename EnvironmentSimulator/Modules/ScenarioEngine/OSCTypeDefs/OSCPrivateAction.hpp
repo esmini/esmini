@@ -71,7 +71,8 @@ namespace scenarioengine
             ASSIGN_ROUTE,
             FOLLOW_TRAJECTORY,
             Acquire_POSITION,
-            SYNCHRONIZE_ACTION
+            SYNCHRONIZE_ACTION,
+            CONNECT_TRAILER_ACTION
         };
 
         enum class DynamicsDimension
@@ -865,6 +866,39 @@ namespace scenarioengine
         {
             return ghost_restart_;
         }
+    };
+
+    class ConnectTrailerAction : public OSCPrivateAction
+    {
+    public:
+        ConnectTrailerAction() : OSCPrivateAction(OSCPrivateAction::ActionType::CONNECT_TRAILER_ACTION, ControlDomains::DOMAIN_NONE)
+        {
+        }
+
+        ConnectTrailerAction(const ConnectTrailerAction& action)
+            : OSCPrivateAction(OSCPrivateAction::ActionType::CONNECT_TRAILER_ACTION, ControlDomains::DOMAIN_NONE)
+        {
+            name_           = action.name_;
+            trailer_object_ = action.trailer_object_;
+        }
+
+        OSCPrivateAction* Copy()
+        {
+            ConnectTrailerAction* new_action = new ConnectTrailerAction(*this);
+            return new_action;
+        }
+
+        std::string Type2Str()
+        {
+            return "ConnectTrailerAction";
+        };
+
+        void Step(double simTime, double dt);
+        void Start(double simTime, double dt);
+
+        void ReplaceObjectRefs(Object* obj1, Object* obj2);
+
+        Object* trailer_object_ = nullptr;
     };
 
     class AssignRouteAction : public OSCPrivateAction

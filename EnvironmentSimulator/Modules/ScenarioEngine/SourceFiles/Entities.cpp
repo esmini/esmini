@@ -1452,6 +1452,17 @@ int Vehicle::ConnectTrailer(Vehicle* trailer)
     return -1;
 }
 
+int Vehicle::DisconnectTrailer()
+{
+    if (trailer_hitch_ && trailer_hitch_->trailer_vehicle_)
+    {
+        reinterpret_cast<Vehicle*>(trailer_hitch_->trailer_vehicle_)->trailer_coupler_->tow_vehicle_ = nullptr;
+        trailer_hitch_->trailer_vehicle_                                                             = nullptr;
+    }
+
+    return 0;
+}
+
 void Vehicle::AlignTrailers()
 {
     // Calculate neutral trailer position and orientation
