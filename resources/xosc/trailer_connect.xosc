@@ -168,9 +168,7 @@
                         <Event maximumExecutionCount="1" name="DisconnectEvent" priority="parallel">
                             <Action name="ConnectAction">
                                 <PrivateAction>
-                                    <ConnectTrailerAction>
-                                        <Disconnect/>
-                                    </ConnectTrailerAction>
+                                    <ConnectTrailerAction/>
                                 </PrivateAction>
                             </Action>
                             <StartTrigger>
