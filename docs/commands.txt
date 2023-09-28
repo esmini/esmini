@@ -4,6 +4,8 @@ Options:
       OpenSCENARIO filename (required) - if path includes spaces, enclose with ""
   --aa_mode <mode>
       Anti-alias mode=number of multisamples (subsamples, 0=off, 4=default)
+  --action_server
+      Launch UDP server for injected actions
   --bounding_boxes
       Show entities as bounding boxes (toggle modes on key ',')
   --capture_screen
@@ -34,6 +36,8 @@ Options:
       Generate road 3D model even if SceneGraphFile is specified
   --fixed_timestep <timestep>
       Run simulation decoupled from realtime, with specified timesteps
+  --follow_object <index>
+      Set index of intial object for camera to follow (change with Tab/shift-Tab)
   --generate_no_road_objects
       Do not generate any OpenDRIVE road objects (e.g. when part of referred 3D model)
   --ground_plane
@@ -68,6 +72,8 @@ Options:
       Run specific permutation of parameter distribution
   --path <path>
       Search path prefix for assets, e.g. OpenDRIVE files (multiple occurrences supported)
+  --plot [mode (asynchronous|synchronous)]  (default = asynchronous)
+      Show window with line-plots of interesting data
   --record <filename>
       Record position data into a file for later replay
   --road_features <mode>

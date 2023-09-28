@@ -384,17 +384,12 @@ int main(int argc, char** argv)
     opt.AddOption("time_scale", "Playback speed scale factor (1.0 == normal)", "factor");
     opt.AddOption("view_mode", "Entity visualization: \"model\"(default)/\"boundingbox\"/\"both\"", "view_mode");
 
-    if (argc < 2)
+    if (opt.ParseArgs(argc, argv) != 0 || argc < 2)
     {
         opt.PrintUsage();
 #ifdef _USE_OSG
         viewer::Viewer::PrintUsage();
 #endif
-        return -1;
-    }
-
-    if (opt.ParseArgs(argc, argv) != 0)
-    {
         return -1;
     }
 
