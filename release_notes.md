@@ -1,5 +1,30 @@
 ## esmini release notes
 
+### 2023-09-29 Version 2.32.1
+
+New features:
+- Support UserDefinedAction as wait/noop action
+  - see example in [user_defined_action.xosc](https://github.com/esmini/esmini/blob/2af9304767d8b196bb00c6ecc7cb0cb725123b31/EnvironmentSimulator/Unittest/xosc/user_defined_action.xosc#L74)
+- Add ConnectTrailerAction prototype
+  - action for connecting/disconnecting trailer
+  - see [video clip](https://youtu.be/0NOX1we5dZ0) and example scenario [trailer_connect.xosc](https://github.com/esmini/esmini/blob/dev/resources/xosc/trailer_connect.xosc)
+  
+Updated behaviors:
+- Support activating controller on several domains in mulitple activation steps
+  - see example in [distance_test.xosc](https://github.com/esmini/esmini/blob/2af9304767d8b196bb00c6ecc7cb0cb725123b31/resources/xosc/distance_test.xosc#L52)
+  - previvious behavior was to reset all domains for each activation
+
+Improvements and fixes:
+- Add esmini, OSI and OSMP version to OSMP_FMU modelDescription.xml ([PR #476](https://github.com/esmini/esmini/pull/476))
+- Ensure synchronized route position in junctions (scenariogeneration #[179](https://github.com/pyoscx/scenariogeneration/issues/179))
+  - solves intermittent intersection border issue leading to wrong road ID and route failure
+- Avoid additional step after scenario termination
+- Fix plot window crash on added objects
+- Add trailer rotating front axle example
+  - see [video clip](https://youtu.be/5yud-oiO5AI) and find links in description
+- Document optional parameters in [ReportObjectPos](https://github.com/esmini/esmini/blob/2af9304767d8b196bb00c6ecc7cb0cb725123b31/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L759)
+  - z, p, r can be set to NAN for road alignment (temporary solution)
+
 ### 2023-09-07 Version 2.32.0
 
 New features:
