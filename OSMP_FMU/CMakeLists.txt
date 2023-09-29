@@ -3,7 +3,9 @@ cmake_minimum_required(VERSION 3.5)
 set(TARGET EsminiOsiSource)
 project(${TARGET})
 
-set(VERSION "2.0.0")
+set(VERSION "2.32.1")
+set(OSIVERSION "3.5.0")
+set(OSMPVERSION "1.4.0")
 
 set(STATIC_LINKING TRUE)
 
@@ -81,9 +83,6 @@ set(VERBOSE_FMI_LOGGING
 set(DEBUG_BREAKS
     OFF
     CACHE BOOL "Enable debugger traps for debug builds of FMU")
-
-set(OSIVERSION "3.5.0")
-set(OSMPVERSION "1.4.0")
 
 string(TIMESTAMP FMUTIMESTAMP UTC)
 string(MD5 FMUGUID modelDescription.in.xml)
