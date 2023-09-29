@@ -3,7 +3,14 @@ cmake_minimum_required(VERSION 3.5)
 set(TARGET EsminiOsiSource)
 project(${TARGET})
 
-set(VERSION "2.32.1")
+execute_process(
+    # fetch latest esmini tag (release) and remove "v" prefix
+    COMMAND bash "-c" "git describe --abbrev=0 | sed s/^v//"
+    OUTPUT_VARIABLE VERSION
+    ERROR_QUIET)
+
+string(STRIP "${VERSION}" VERSION)
+
 set(OSIVERSION "3.5.0")
 set(OSMPVERSION "1.4.0")
 
