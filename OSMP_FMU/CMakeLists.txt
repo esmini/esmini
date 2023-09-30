@@ -4,11 +4,13 @@ set(TARGET EsminiOsiSource)
 project(${TARGET})
 
 execute_process(
-    # fetch latest esmini tag (release) and remove "v" prefix
-    COMMAND bash "-c" "git describe --abbrev=0 | sed s/^v//"
+    # fetch latest esmini tag (release)
+    COMMAND git describe --abbrev=0
     OUTPUT_VARIABLE VERSION
     ERROR_QUIET)
 
+# Strip prefix "v" and any trailing line break
+string(SUBSTRING "${VERSION}" 1 -1 VERSION )
 string(STRIP "${VERSION}" VERSION)
 
 set(OSIVERSION "3.5.0")
