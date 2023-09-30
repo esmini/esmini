@@ -40,7 +40,7 @@ enable_fpic(${TARGET})
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/version.cmake)
 
-# Add a custom command that produces version.hpp, plus a dummy output that's not actually produced, in order to force version.cmake to always be
+# Add a custom command that produces version.cpp, plus a dummy output that's not actually produced, in order to force version.cmake to always be
 # re-run before the build
 add_custom_command(
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}

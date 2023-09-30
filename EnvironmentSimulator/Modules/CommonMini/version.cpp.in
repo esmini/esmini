@@ -1,4 +1,4 @@
-const char* ESMINI_GIT_REV       = "@GIT_REV@@GIT_DIFF@";
+const char* ESMINI_GIT_REV       = "@GIT_REV@";
 const char* ESMINI_GIT_TAG       = "@GIT_TAG@";
 const char* ESMINI_GIT_BRANCH    = "@GIT_BRANCH@";
 const char* ESMINI_BUILD_VERSION = "@ESMINI_BUILD_VERSION@";
