@@ -24,9 +24,9 @@ else()
         COMMAND git name-rev --name-only HEAD
         OUTPUT_VARIABLE GIT_BRANCH)
 
-    string(
-        STRIP "${GIT_REV}"
-              GIT_REV)
+    # Remove "g" prefix to get the pure commit id
+    string(REGEX REPLACE "^(v.*)-g(.*)\n$" "\\1-\\2" GIT_REV "${GIT_REV}")
+
     string(
         STRIP "${GIT_TAG}"
               GIT_TAG)
