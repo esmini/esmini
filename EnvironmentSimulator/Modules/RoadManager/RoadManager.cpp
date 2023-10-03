@@ -74,7 +74,7 @@ static int g_Lane_id;
 static int g_Laneb_id;
 
 const char* object_type_str[] = {"barrier",   "bike",     "building",     "bus",          "car",           "crosswalk",  "gantry",
-                                 "motorbike", "none",     "obstacle",     "parkingspace", "patch",         "pedestrian", "pole",
+                                 "motorbike", "none",     "obstacle",     "parkingSpace", "patch",         "pedestrian", "pole",
                                  "railing",   "roadmark", "soundbarrier", "streetlamp",   "trafficisland", "trailer",    "train",
                                  "tram",      "tree",     "van",          "vegetation",   "wind"};
 
