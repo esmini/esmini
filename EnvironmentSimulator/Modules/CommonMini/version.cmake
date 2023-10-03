@@ -25,7 +25,12 @@ else()
         OUTPUT_VARIABLE GIT_BRANCH)
 
     # Remove "g" prefix to get the pure commit id
-    string(REGEX REPLACE "^(v.*)-g(.*)\n$" "\\1-\\2" GIT_REV "${GIT_REV}")
+    string(
+        REGEX
+        REPLACE "^(v.*)-g(.*)\n$"
+                "\\1-\\2"
+                GIT_REV
+                "${GIT_REV}")
 
     string(
         STRIP "${GIT_TAG}"
