@@ -495,10 +495,19 @@ int OSIReporter::UpdateOSIStationaryObjectODR(int road_id, roadmanager::RMObject
         obj_osi_internal.sobj->mutable_classification()->set_type(
             osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_BUILDING);
     }
-    else if (object->GetType() == roadmanager::RMObject::ObjectType::OBSTACLE ||
-             object->GetType() == roadmanager::RMObject::ObjectType::PARKINGSPACE ||
-             object->GetType() == roadmanager::RMObject::ObjectType::RAILING || object->GetType() == roadmanager::RMObject::ObjectType::PATCH ||
-             object->GetType() == roadmanager::RMObject::ObjectType::TRAFFICISLAND ||
+    else if (object->GetType() == roadmanager::RMObject::ObjectType::PARKINGSPACE)
+    {
+        obj_osi_internal.sobj->mutable_classification()->set_type(
+            osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_OTHER);
+        obj_osi_internal.sobj->mutable_classification()->set_material(
+            osi3::StationaryObject_Classification_Material::StationaryObject_Classification_Material_MATERIAL_CONCRETE);
+        obj_osi_internal.sobj->mutable_classification()->set_density(
+            osi3::StationaryObject_Classification_Density::StationaryObject_Classification_Density_DENSITY_SOLID);
+        obj_osi_internal.sobj->mutable_classification()->set_color(
+            osi3::StationaryObject_Classification_Color::StationaryObject_Classification_Color_COLOR_GREY);
+    }
+    else if (object->GetType() == roadmanager::RMObject::ObjectType::OBSTACLE || object->GetType() == roadmanager::RMObject::ObjectType::RAILING ||
+             object->GetType() == roadmanager::RMObject::ObjectType::PATCH || object->GetType() == roadmanager::RMObject::ObjectType::TRAFFICISLAND ||
              object->GetType() == roadmanager::RMObject::ObjectType::CROSSWALK ||
              object->GetType() == roadmanager::RMObject::ObjectType::STREETLAMP || object->GetType() == roadmanager::RMObject::ObjectType::GANTRY ||
              object->GetType() == roadmanager::RMObject::ObjectType::SOUNDBARRIER || object->GetType() == roadmanager::RMObject::ObjectType::WIND ||
