@@ -2685,6 +2685,8 @@ bool Viewer::CreateRoadMarkLines(roadmanager::OpenDrive* od)
                                 osg::ref_ptr<osg::Vec4Array> color     = new osg::Vec4Array;
                                 osg::ref_ptr<osg::LineWidth> lineWidth = new osg::LineWidth();
 
+                                osi_rm_color->push_back(ODR2OSGColor(lane_roadmark->GetColor()));
+
                                 for (int q = 0; q < static_cast<int>(curr_osi_rm->GetPoints().size()); q += 2)
                                 {
                                     roadmanager::PointStruct osi_point1 = curr_osi_rm->GetPoint(q);
@@ -2702,13 +2704,11 @@ bool Viewer::CreateRoadMarkLines(roadmanager::OpenDrive* od)
                                               static_cast<float>(osi_point2.z + z_offset));
                                     osi_rm_points->push_back(point);
 
-                                    osi_rm_color->push_back(ODR2OSGColor(lane_roadmark->GetColor()));
-
                                     // Put points at the start and end of the roadmark
                                     osi_rm_point->setSize(6.0f);
                                     osi_rm_geom->setVertexArray(osi_rm_points.get());
                                     osi_rm_geom->setColorArray(osi_rm_color.get());
-                                    osi_rm_geom->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
+                                    osi_rm_geom->setColorBinding(osg::Geometry::BIND_OVERALL);
                                     osi_rm_geom->addPrimitiveSet(new osg::DrawArrays(GL_POINTS, 0, static_cast<int>(osi_rm_points->size())));
                                     osi_rm_geom->getOrCreateStateSet()->setAttributeAndModes(osi_rm_point, osg::StateAttribute::ON);
                                     osi_rm_geom->getOrCreateStateSet()->setMode(GL_LIGHTING,
@@ -2727,8 +2727,8 @@ bool Viewer::CreateRoadMarkLines(roadmanager::OpenDrive* od)
                                     }
                                     geom->setVertexArray(osi_rm_points.get());
                                     geom->setColorArray(osi_rm_color.get());
-                                    geom->setColorBinding(osg::Geometry::BIND_PER_PRIMITIVE_SET);
-                                    geom->addPrimitiveSet(new osg::DrawArrays(GL_LINE_STRIP, 0, static_cast<int>(osi_rm_points->size())));
+                                    geom->setColorBinding(osg::Geometry::BIND_OVERALL);
+                                    geom->addPrimitiveSet(new osg::DrawArrays(GL_LINES, 0, static_cast<int>(osi_rm_points->size())));
                                     geom->getOrCreateStateSet()->setAttributeAndModes(lineWidth, osg::StateAttribute::ON);
                                     geom->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
 
