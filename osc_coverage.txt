@@ -208,7 +208,7 @@ Common classes
         Road                                   Yes
         RelativeRoad                           Yes
         Lane                                   Yes
-        RelativeLane                           Yes
+        RelativeLane                           Yes (including dsLane mode)
         Route                                  Yes
         TrajectoryPosition (1.1)               Yes
     Pedestrian

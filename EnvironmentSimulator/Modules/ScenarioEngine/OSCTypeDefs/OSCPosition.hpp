@@ -176,11 +176,15 @@ namespace scenarioengine
     class OSCPositionRelativeLane : OSCPosition
     {
     public:
-        Object *object_;
-
+        Object        *object_;
         OSCOrientation o_;
 
-        OSCPositionRelativeLane(Object *object, int dLane, double ds, double offset, OSCOrientation orientation);
+        OSCPositionRelativeLane(Object                              *object,
+                                int                                  dLane,
+                                double                               ds,
+                                double                               offset,
+                                OSCOrientation                       orientation,
+                                roadmanager::Position::DirectionMode direction_mode);
 
         void                   Print();
         roadmanager::Position *GetRMPos()

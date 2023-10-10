@@ -151,7 +151,12 @@ void OSCPositionRelativeWorld::Print()
     object_->pos_.Print();
 }
 
-OSCPositionRelativeLane::OSCPositionRelativeLane(Object *object, int dLane, double ds, double offset, OSCOrientation orientation)
+OSCPositionRelativeLane::OSCPositionRelativeLane(Object                              *object,
+                                                 int                                  dLane,
+                                                 double                               ds,
+                                                 double                               offset,
+                                                 OSCOrientation                       orientation,
+                                                 roadmanager::Position::DirectionMode direction_mode)
     : OSCPosition(PositionType::RELATIVE_LANE),
       object_(object)
 {
@@ -159,6 +164,7 @@ OSCPositionRelativeLane::OSCPositionRelativeLane(Object *object, int dLane, doub
     position_.SetS(ds);
     position_.SetOffset(offset);
     position_.SetOrientationType(orientation.type_);
+    position_.SetDirectionMode(direction_mode);
 
     if (orientation.type_ == roadmanager::Position::OrientationType::ORIENTATION_RELATIVE)
     {

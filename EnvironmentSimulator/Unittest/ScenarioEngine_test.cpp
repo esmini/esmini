@@ -2265,6 +2265,43 @@ TEST(ActionTest, TestRelativeLaneOffsetAction)
     delete se;
 }
 
+TEST(ActionTest, TestRelativeLanePosition)
+{
+    const int    n         = 8;
+    const double pos[n][5] = {{1.5, 75.833, -5.250, 78.730, -2.332},
+                              {4.2, 158.333, -5.250, 158.369, -8.168},
+                              {7.0, 243.889, -5.250, 245.441, -2.652},
+                              {9.6, 323.333, -5.250, 323.369, -8.168},
+                              {12.5, 451.667, 5.250, 450.115, 2.652},
+                              {15.2, 369.167, 5.250, 367.615, 7.848},
+                              {17.8, 289.722, 5.250, 289.695, 2.690},
+                              {20.5, 207.222, 5.250, 207.195, 7.810}};
+
+    ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/relative_lane_pos_trajectories.xosc");
+    ASSERT_NE(se, nullptr);
+    ASSERT_EQ(se->entities_.object_[0]->GetName(), "Ego");
+    ASSERT_EQ(se->entities_.object_[1]->GetName(), "Target");
+
+    se->step(0.0);
+    se->prepareGroundTruth(0.0);
+
+    double dt = 0.1;
+    for (int i = 0; i < n; i++)
+    {
+        while (se->getSimulationTime() < pos[i][0] - SMALL_NUMBER)
+        {
+            se->step(dt);
+            se->prepareGroundTruth(dt);
+        }
+        EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), pos[i][1], 1E-3);
+        EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), pos[i][2], 1E-3);
+        EXPECT_NEAR(se->entities_.object_[1]->pos_.GetX(), pos[i][3], 1E-3);
+        EXPECT_NEAR(se->entities_.object_[1]->pos_.GetY(), pos[i][4], 1E-3);
+    }
+
+    delete se;
+}
+
 // Uncomment to print log output to console
 // #define LOG_TO_CONSOLE
 

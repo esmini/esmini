@@ -2769,6 +2769,12 @@ namespace roadmanager
             ALIGN_HARD = 2   // Completely align to road, disregard relative orientation
         } ALIGN_MODE;
 
+        enum class DirectionMode
+        {
+            ALONG_S,
+            ALONG_LANE
+        };
+
         explicit Position();
         explicit Position(int track_id, double s, double t);
         explicit Position(int track_id, int lane_id, double s, double offset);
@@ -3591,6 +3597,16 @@ namespace roadmanager
             routeStrategy_ = rs;
         }
 
+        void SetDirectionMode(DirectionMode direction_mode)
+        {
+            direction_mode_ = direction_mode;
+        }
+
+        DirectionMode GetDirectionMode() const
+        {
+            return direction_mode_;
+        }
+
     protected:
         void       Track2Lane();
         ReturnCode Track2XYZ();
@@ -3633,8 +3649,10 @@ namespace roadmanager
         ALIGN_MODE align_r_;     // Align to road: None, Soft or Hard
         ALIGN_MODE align_z_;     // Align elevation (Z) to road: None, Soft or Hard
 
-        Position       *rel_pos_;
-        PositionType    type_;
+        Position     *rel_pos_;
+        PositionType  type_;
+        DirectionMode direction_mode_;
+
         OrientationType orientation_type_;  // Applicable for relative positions
         int             snapToLaneTypes_;   // Bitmask of lane types that the position will snap to
         int             status_;            // Bitmask of various states, e.g. off_road, end_of_road

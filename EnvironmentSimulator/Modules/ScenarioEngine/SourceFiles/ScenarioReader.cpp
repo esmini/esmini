@@ -1599,18 +1599,10 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPo
     }
     else if (positionChildName == "RelativeLanePosition")
     {
-        int    dLane;
-        double ds, offset;
-
-        if (positionChild.attribute("dsLane").empty())
-        {
-            ds = strtod(parameters.ReadAttribute(positionChild, "ds"));
-        }
-        else
-        {
-            LOG("RelativeLanePosition:dsLane not supported yet, using it as ds");
-            ds = strtod(parameters.ReadAttribute(positionChild, "dsLane"));
-        }
+        int                                  dLane          = 0;
+        double                               ds             = 0.0;
+        double                               offset         = 0.0;
+        roadmanager::Position::DirectionMode direction_mode = roadmanager::Position::DirectionMode::ALONG_S;
 
         dLane          = strtoi(parameters.ReadAttribute(positionChild, "dLane"));
         offset         = strtod(parameters.ReadAttribute(positionChild, "offset"));
@@ -1629,7 +1621,18 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPo
             orientation.type_ = roadmanager::Position::OrientationType::ORIENTATION_RELATIVE;
         }
 
-        OSCPositionRelativeLane *pos = new OSCPositionRelativeLane(object, dLane, ds, offset, orientation);
+        if (!positionChild.attribute("ds").empty())
+        {
+            ds             = strtod(parameters.ReadAttribute(positionChild, "ds"));
+            direction_mode = roadmanager::Position::DirectionMode::ALONG_S;
+        }
+        else if (!positionChild.attribute("dsLane").empty())
+        {
+            ds             = strtod(parameters.ReadAttribute(positionChild, "dsLane"));
+            direction_mode = roadmanager::Position::DirectionMode::ALONG_LANE;
+        }
+
+        OSCPositionRelativeLane *pos = new OSCPositionRelativeLane(object, dLane, ds, offset, orientation, direction_mode);
 
         pos_return = reinterpret_cast<OSCPosition *>(pos);
     }

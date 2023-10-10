@@ -5752,6 +5752,7 @@ void Position::Init()
     z_roadPrimPrim_         = 0.0;
     z_roadPrim_             = 0.0;
     rel_pos_                = 0;
+    direction_mode_         = DirectionMode::ALONG_S;  // Default is along road construction direction
     align_h_                = ALIGN_MODE::ALIGN_SOFT;
     align_p_                = ALIGN_MODE::ALIGN_SOFT;
     align_r_                = ALIGN_MODE::ALIGN_SOFT;
@@ -9537,7 +9538,30 @@ int Position::GetLaneId() const
 {
     if (rel_pos_ && rel_pos_ != this && type_ == PositionType::RELATIVE_LANE)
     {
-        return rel_pos_->GetLaneId() + lane_id_;
+        if (GetTrackId() >= 0)
+        {
+            Road* road = GetRoadById(GetTrackId());
+            if (road != nullptr)
+            {
+                if (GetDirectionMode() == DirectionMode::ALONG_LANE)
+                {
+                    // Consider road rule (left hand or right hand traffic)
+                    if ((IsAngleForward(rel_pos_->GetH()) && (rel_pos_->GetLaneId() < 0 && road->GetRule() == Road::RoadRule::RIGHT_HAND_TRAFFIC)) ||
+                        (!IsAngleForward(rel_pos_->GetH()) && (rel_pos_->GetLaneId() > 0 && road->GetRule() == Road::RoadRule::LEFT_HAND_TRAFFIC)))
+                    {
+                        return rel_pos_->GetLaneId() + lane_id_;  // along road s axis
+                    }
+                    else
+                    {
+                        return rel_pos_->GetLaneId() - lane_id_;  // opposite side
+                    }
+                }
+                else
+                {
+                    return rel_pos_->GetLaneId() + lane_id_;  // do not consider driving direction
+                }
+            }
+        }
     }
 
     return lane_id_;
@@ -9599,7 +9623,30 @@ double Position::GetS() const
 {
     if (rel_pos_ && rel_pos_ != this && (type_ == PositionType::RELATIVE_LANE || type_ == PositionType::RELATIVE_ROAD))
     {
-        return rel_pos_->GetS() + s_;
+        // Adjust delta lane heading to road direction also considering traffic rule (left/right hand traffic)
+        if (GetTrackId() >= 0)
+        {
+            Road* road = GetRoadById(GetTrackId());
+            if (road != nullptr)
+            {
+                if (GetDirectionMode() == DirectionMode::ALONG_LANE)
+                {
+                    if ((IsAngleForward(rel_pos_->GetH()) && (rel_pos_->GetLaneId() < 0 && road->GetRule() == Road::RoadRule::RIGHT_HAND_TRAFFIC)) ||
+                        (!IsAngleForward(rel_pos_->GetH()) && (rel_pos_->GetLaneId() > 0 && road->GetRule() == Road::RoadRule::LEFT_HAND_TRAFFIC)))
+                    {
+                        return rel_pos_->GetS() + s_;  // along s
+                    }
+                    else
+                    {
+                        return rel_pos_->GetS() - s_;  // opposite side
+                    }
+                }
+                else
+                {
+                    return rel_pos_->GetS() + s_;  // along s
+                }
+            }
+        }
     }
 
     return s_;
