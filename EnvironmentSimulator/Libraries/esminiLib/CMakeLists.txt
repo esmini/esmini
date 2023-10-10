@@ -91,8 +91,8 @@ foreach(
             PRIVATE ${OSI_LIBRARIES})
     endif()
 
-    disable_static_analysis(${TARGET_SHARED})
-    disable_iwyu(${TARGET_SHARED})
+    disable_static_analysis(${TARGET})
+    disable_iwyu(${TARGET})
 
 endforeach()
 
