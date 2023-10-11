@@ -45,7 +45,8 @@ RubberbandManipulator::RubberbandManipulator(unsigned int mode)
     _cameraAngle    = orbitCameraAngle;
     _cameraDistance = orbitCameraDistance;
     _cameraRotation = orbitCameraRotation;
-    _trackNode      = nullptr;
+    track_node_     = nullptr;
+    track_tx_       = nullptr;
     setMode(mode);
 }
 
@@ -108,14 +109,14 @@ void RubberbandManipulator::setMode(unsigned int mode)
     }
 }
 
-void RubberbandManipulator::setTrackNode(osg::Node* node, bool calcDistance)
+void RubberbandManipulator::setTrackNode(osg::ref_ptr<osg::Node> node, bool calcDistance)
 {
     if (!node)
     {
-        osg::notify(osg::NOTICE) << "RubberbandManipulator::setTrackNode(Node*):  Unable to set tracked node due to null Node*" << std::endl;
+        osg::notify(osg::NOTICE) << "RubberbandManipulator::setTrackBB(bb):  Unable to set tracked bounding box due to null Node" << std::endl;
         return;
     }
-    _trackNode = node;
+    track_node_ = node;
 
     if (calcDistance)
     {
@@ -123,11 +124,21 @@ void RubberbandManipulator::setTrackNode(osg::Node* node, bool calcDistance)
     }
 }
 
+void RubberbandManipulator::setTrackTransform(osg::ref_ptr<osg::PositionAttitudeTransform> tx)
+{
+    if (!tx)
+    {
+        osg::notify(osg::NOTICE) << "RubberbandManipulator::setTrackTX(tx):  Unable to set tracked transofmration node due to null Node" << std::endl;
+        return;
+    }
+    track_tx_ = tx;
+}
+
 void RubberbandManipulator::calculateCameraDistance()
 {
-    const osg::MatrixList&    m = _trackNode->getWorldMatrices();
+    const osg::MatrixList&    m = track_node_->getWorldMatrices();
     osg::ComputeBoundsVisitor cbv;
-    _trackNode->accept(cbv);
+    track_node_->accept(cbv);
     osg::BoundingBox bb   = cbv.getBoundingBox();
     osg::Vec3        minV = bb._min * m.front();
     osg::Vec3        maxV = bb._max * m.front();
@@ -269,10 +280,24 @@ bool RubberbandManipulator::handle(const GUIEventAdapter& ea, GUIActionAdapter& 
 
 void RubberbandManipulator::computeNodeCenterAndRotation(osg::Vec3d& nodeCenter, osg::Quat& nodeRotation) const
 {
-    if (_trackNode)
+    if (track_tx_ != nullptr)
     {
-        nodeCenter   = _trackNode->getBound().center() * osg::computeLocalToWorld(_trackNode->getParentalNodePaths()[0]);
-        nodeRotation = osg::computeLocalToWorld(_trackNode->getParentalNodePaths()[0]).getRotate();
+        nodeRotation = track_tx_->getAttitude();
+        if (track_node_ != nullptr)
+        {
+            nodeCenter = track_tx_->getPosition() + nodeRotation * track_node_->getBound().center();
+        }
+        else
+        {
+            nodeCenter = track_tx_->getPosition();
+        }
+    }
+    else
+    {
+        if (track_node_ != nullptr)
+        {
+            nodeCenter = track_node_->getBound().center();
+        }
     }
 }
 

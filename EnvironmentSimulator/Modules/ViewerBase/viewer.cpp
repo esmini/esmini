@@ -3562,6 +3562,8 @@ void Viewer::SetVehicleInFocus(int idx)
         SetCameraTrackNode(
             entities_[static_cast<unsigned int>(idx)]->model_,
             (currentCarInFocus_ == -1 && rubberbandManipulator_->getMode() != osgGA::RubberbandManipulator::CAMERA_MODE::RB_MODE_TOP) ? true : false);
+        rubberbandManipulator_->setTrackTransform(entities_[static_cast<unsigned int>(idx)]->txNode_);
+
         currentCarInFocus_ = idx;
     }
 }
