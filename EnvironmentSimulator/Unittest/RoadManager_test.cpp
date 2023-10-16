@@ -1567,11 +1567,23 @@ TEST(RoadTest, RoadWidthDrivingLanes)
 TEST(TrajectoryTest, PolyLineBase_YawInterpolation)
 {
     PolyLineBase pline;
-    TrajVertex   v = {0.0, 0.0, 0.0, 0.0, 0.0, -1, 0.0, 0.0, 0.0, 0.0, false};
+    TrajVertex   v = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1, 0.0, 0.0, 0.0, 0.0, 0, 0};
 
-    // Simple case
-    pline.AddVertex(0.0, 0.0, 0.0, 0.0);
-    pline.AddVertex(1.0, 0.0, 0.0, 1.0);
+    // Simple case - no interpolation
+    pline.AddVertex({0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1, 0.0, 0.0, 0.0, 0.0, Position::PosMode::H_ABS, 0});
+    pline.AddVertex({std::nan(""), 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, -1, 0.0, 0.0, 0.0, 0.0, Position::PosMode::H_ABS, 0});
+    pline.Evaluate(0.5, v);
+
+    EXPECT_NEAR(v.x, 0.5, 1e-5);
+    EXPECT_NEAR(v.y, 0.0, 1e-5);
+    EXPECT_NEAR(v.h, 0.0, 1e-5);
+
+    // Same but with interpolation
+    pline.Reset(true);
+    pline.AddVertex(
+        {std::nan(""), 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1, 0.0, 0.0, 0.0, 0.0, Position::PosMode::H_ABS, InterpolationComponent::INTERPOLATE_HEADING});
+    pline.AddVertex(
+        {std::nan(""), 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, -1, 0.0, 0.0, 0.0, 0.0, Position::PosMode::H_ABS, InterpolationComponent::INTERPOLATE_HEADING});
     pline.Evaluate(0.5, v);
 
     EXPECT_NEAR(v.x, 0.5, 1e-5);
@@ -1579,9 +1591,23 @@ TEST(TrajectoryTest, PolyLineBase_YawInterpolation)
     EXPECT_NEAR(v.h, 0.5, 1e-5);
 
     // Wrap around case 1
-    pline.Reset();
-    pline.AddVertex(0.0, 0.0, 0.0, 2 * M_PI - 0.01);
-    pline.AddVertex(1.0, 0.0, 0.0, 0.09);
+    pline.Reset(true);
+    pline.AddVertex({std::nan(""),
+                     0.0,
+                     0.0,
+                     0.0,
+                     2 * M_PI - 0.01,
+                     0.0,
+                     0.0,
+                     -1,
+                     0.0,
+                     0.0,
+                     0.0,
+                     0.0,
+                     Position::PosMode::H_ABS,
+                     InterpolationComponent::INTERPOLATE_HEADING});
+    pline.AddVertex(
+        {std::nan(""), 1.0, 0.0, 0.0, 0.09, 0.0, 0.0, -1, 0.0, 0.0, 0.0, 0.0, Position::PosMode::H_ABS, InterpolationComponent::INTERPOLATE_HEADING});
     pline.Evaluate(0.5, v);
 
     EXPECT_NEAR(v.x, 0.5, 1e-5);
@@ -1589,9 +1615,35 @@ TEST(TrajectoryTest, PolyLineBase_YawInterpolation)
     EXPECT_NEAR(v.h, 0.04, 1e-5);
 
     // Wrap around case 2
-    pline.Reset();
-    pline.AddVertex(10.0, 10.0, 0.0, 0.1);
-    pline.AddVertex(10.0, 0.0, 0.0, -0.5);
+    pline.Reset(true);
+    pline.AddVertex({std::nan(""),
+                     10.0,
+                     10.0,
+                     0.0,
+                     0.1,
+                     0.0,
+                     0.0,
+                     -1,
+                     0.0,
+                     0.0,
+                     0.0,
+                     0.0,
+                     Position::PosMode::H_ABS,
+                     InterpolationComponent::INTERPOLATE_HEADING});
+    pline.AddVertex({std::nan(""),
+                     10.0,
+                     0.0,
+                     0.0,
+                     -0.5,
+                     0.0,
+                     0.0,
+                     -1,
+                     0.0,
+                     0.0,
+                     0.0,
+                     0.0,
+                     Position::PosMode::H_ABS,
+                     InterpolationComponent::INTERPOLATE_HEADING});
     pline.Evaluate(5.0, v);
 
     EXPECT_NEAR(v.x, 10.0, 1e-5);
@@ -1599,9 +1651,11 @@ TEST(TrajectoryTest, PolyLineBase_YawInterpolation)
     EXPECT_NEAR(v.h, 6.0831853, 1e-5);
 
     // Wrap around case 3
-    pline.Reset();
-    pline.AddVertex(0.0, 0.0, 0.0, 0.1);
-    pline.AddVertex(0.0, 10.0, 0.0, 8.1);
+    pline.Reset(true);
+    pline.AddVertex(
+        {std::nan(""), 0.0, 0.0, 0.0, 0.1, 0.0, 0.0, -1, 0.0, 0.0, 0.0, 0.0, Position::PosMode::H_ABS, InterpolationComponent::INTERPOLATE_HEADING});
+    pline.AddVertex(
+        {std::nan(""), 0.0, 10.0, 0.0, 8.1, 0.0, 0.0, -1, 0.0, 0.0, 0.0, 0.0, Position::PosMode::H_ABS, InterpolationComponent::INTERPOLATE_HEADING});
     pline.Evaluate(5.0, v);
 
     EXPECT_NEAR(v.x, 0.0, 1e-5);
@@ -1676,6 +1730,9 @@ TEST(DistanceTest, CalcDistanceLong)
     EXPECT_NEAR(dist, 134.051729, 1e-5);
 
     // starting from left lane will take another lane in intersection, increasing the total distance
+    // Change position mode so that relative heading will be preserved when changing location.
+    pos0.SetMode(roadmanager::Position::PosModeType::SET, roadmanager::Position::PosMode::H_REL);
+    pos0.SetHeadingRelative(0.0);
     pos0.SetLanePos(3, 1, 5.0, -0.25);
     pos1.SetLanePos(0, -1, 15.0, 0.15);
     ASSERT_EQ(pos0.Distance(&pos1, CoordinateSystem::CS_ROAD, RelativeDistanceType::REL_DIST_LATERAL, dist), 0);
@@ -1725,10 +1782,10 @@ TEST(NurbsTest, TestNurbsPosition)
 {
     NurbsShape n(4);
 
-    n.AddControlPoint(Position(-4.0, -4.0, 0.0, 0.0, 0.0, 0.0), 0.0, 1.0, true);
-    n.AddControlPoint(Position(-2.0, 4.0, 0.0, 0.0, 0.0, 0.0), 0.0, 1.0, true);
-    n.AddControlPoint(Position(2.0, -4.0, 0.0, 0.0, 0.0, 0.0), 0.0, 1.0, true);
-    n.AddControlPoint(Position(4.0, 4.0, 0.0, 0.0, 0.0, 0.0), 0.0, 1.0, true);
+    n.AddControlPoint(Position(-4.0, -4.0, 0.0, 0.0, 0.0, 0.0), 0.0, 1.0);
+    n.AddControlPoint(Position(-2.0, 4.0, 0.0, 0.0, 0.0, 0.0), 0.0, 1.0);
+    n.AddControlPoint(Position(2.0, -4.0, 0.0, 0.0, 0.0, 0.0), 0.0, 1.0);
+    n.AddControlPoint(Position(4.0, 4.0, 0.0, 0.0, 0.0, 0.0), 0.0, 1.0);
 
     std::vector<double> knots = {0, 0, 0, 0, 1, 1, 1, 1};
     n.AddKnots(knots);
@@ -1751,7 +1808,7 @@ TEST(NurbsTest, TestNurbsPosition)
     n.Evaluate(0.40045 * n.GetLength(), Shape::TrajectoryParamType::TRAJ_PARAM_TYPE_S, v);
     EXPECT_NEAR(v.x, -1.248623, 1e-5);
     EXPECT_NEAR(v.y, -0.087722, 1e-5);
-    EXPECT_NEAR(v.p, 0.360046, 1e-5);
+    EXPECT_NEAR(v.param, 0.360046, 1e-5);
 }
 
 TEST(Route, TestAssignRoute)
@@ -2194,6 +2251,10 @@ TEST(RoadPosTest, TestPrioStraightRoadInJunction)
     EXPECT_EQ(odr->GetNumOfRoads(), 16);
 
     Position pos;
+    pos.SetMode(Position::PosModeType::UPDATE,
+
+                roadmanager::Position::PosMode::Z_REL | roadmanager::Position::PosMode::H_ABS | roadmanager::Position::PosMode::P_REL |
+                    roadmanager::Position::PosMode::R_REL);
     pos.SetLanePos(0, 1, 0, 0.0);
     pos.SetHeadingRelative(3.1415);
     EXPECT_NEAR(pos.GetX(), 28.956, 1E-3);
@@ -2240,7 +2301,7 @@ void StarRoadTestFixture::Check(double x, double y, double h, double p_road, dou
     EXPECT_NEAR(pos.GetH(), h, 1E-3);
     EXPECT_NEAR(pos.GetPRoad(), p_road, 1E-3);
     EXPECT_NEAR(pos.GetP(), p, 1E-3);
-    EXPECT_NEAR(pos.GetR(), 0.0, 1E-3);
+    EXPECT_NEAR(fmod(pos.GetR(), 2.0 * M_PI), 0.0, 1E-3);
 }
 
 TEST_F(StarRoadTestFixture, TestRelativeRoadPos)
@@ -2251,6 +2312,7 @@ TEST_F(StarRoadTestFixture, TestRelativeRoadPos)
 
     // Road heading pi/2 downhill - RHT
     // right side
+    pos.SetMode(Position::PosModeType::SET, Position::PosMode::H_REL);
     pos.SetHeadingRelative(0.0);
     pos.SetTrackPos(7, 10.0, -lane_width / 2.0);
     Check(lane_width / 2.0, 20.0, M_PI / 2, 0.55, 0.55);
@@ -2419,6 +2481,110 @@ TEST(RoadEdgeTest, TestRoadEdge)
     EXPECT_EQ(lane_section->GetLaneById(-1)->IsRoadEdge(), true);
     EXPECT_EQ(lane_section->GetLaneById(-2)->IsRoadEdge(), false);
     EXPECT_EQ(lane_section->GetLaneById(-3)->IsRoadEdge(), false);
+
+    odr->Clear();
+}
+
+TEST(PositionModeTest, TestModeBitmasks)
+{
+    ASSERT_EQ(roadmanager::Position::LoadOpenDrive("../../../EnvironmentSimulator/Unittest/xodr/straight_500_superelevation_elevation_curve.xodr"),
+              true);
+    roadmanager::OpenDrive *odr = Position::GetOpenDrive();
+    ASSERT_NE(odr, nullptr);
+
+    EXPECT_EQ(odr->GetNumOfRoads(), 1);
+
+    Road *road = odr->GetRoadByIdx(0);
+    EXPECT_EQ(road->GetId(), 1);
+
+    // Verify default modes
+    EXPECT_EQ(Position::GetModeDefault(Position::PosModeType::SET), 0x7737);
+    EXPECT_EQ(Position::GetModeDefault(Position::PosModeType::UPDATE), 0x7777);
+
+    Position pos;
+    EXPECT_EQ(pos.GetMode(Position::PosModeType::SET), Position::GetModeDefault(Position::PosModeType::SET));
+    EXPECT_EQ(pos.GetMode(Position::PosModeType::UPDATE), Position::GetModeDefault(Position::PosModeType::UPDATE));
+
+    // Test some operations
+    pos.SetLanePos(road->GetId(), -1, 140.0, 0.0);
+    EXPECT_NEAR(pos.GetH(), 1.4, 1e-3);
+    EXPECT_NEAR(pos.GetP(), 0.0, 1e-3);
+    EXPECT_NEAR(pos.GetR(), 0.486, 1e-3);
+
+    pos.SetMode(Position::PosModeType::UPDATE, Position::PosMode::R_REL);
+    EXPECT_EQ(pos.GetMode(Position::PosModeType::SET), 0x7737);
+    EXPECT_EQ(pos.GetMode(Position::PosModeType::UPDATE), 0x7777);
+    pos.SetRollRelative(0.1);
+    pos.SetLanePos(road->GetId(), -1, 150.0, 0.0);
+    EXPECT_NEAR(pos.GetH(), 1.5, 1e-3);
+    EXPECT_NEAR(pos.GetP(), 0.0, 1e-3);
+    EXPECT_NEAR(pos.GetR(), 0.6, 1e-3);
+    EXPECT_NEAR(pos.GetRRoad(), 0.6 - 0.1, 1e-3);
+    pos.SetLanePos(road->GetId(), -1, 140.0, 0.0);
+    EXPECT_NEAR(pos.GetH(), 1.4, 1e-3);
+    EXPECT_NEAR(pos.GetP(), 0.0, 1e-3);
+    EXPECT_NEAR(pos.GetR(), 0.486 + 0.1, 1e-3);
+
+    pos.SetMode(Position::PosModeType::UPDATE, Position::PosMode::R_ABS);
+    EXPECT_EQ(pos.GetMode(Position::PosModeType::SET), 0x7737);
+    EXPECT_EQ(pos.GetMode(Position::PosModeType::UPDATE), 0x3777);
+    pos.SetRoll(0.1);
+    pos.SetLanePos(road->GetId(), -1, 150.0, 0.0);
+    EXPECT_NEAR(pos.GetH(), 1.5, 1e-3);
+    EXPECT_NEAR(pos.GetP(), 0.0, 1e-3);
+    EXPECT_NEAR(pos.GetR(), 0.1, 1e-3);
+
+    pos.SetLanePos(road->GetId(), -1, 140.0, 0.0);
+    EXPECT_NEAR(pos.GetH(), 1.4, 1e-3);
+    EXPECT_NEAR(pos.GetP(), 0.0, 1e-3);
+    EXPECT_NEAR(pos.GetR(), 0.1, 1e-3);
+
+    pos.SetLanePos(road->GetId(), -1, 300.0, 0.0);
+    EXPECT_NEAR(pos.GetH(), 3.0, 1e-3);
+    EXPECT_NEAR(pos.GetP(), 5.991, 1e-3);
+    EXPECT_NEAR(pos.GetR(), 0.1, 1e-3);
+
+    pos.SetMode(Position::PosModeType::UPDATE, Position::PosMode::R_REL);
+    EXPECT_EQ(pos.GetMode(Position::PosModeType::SET), 0x7737);
+    EXPECT_EQ(pos.GetMode(Position::PosModeType::UPDATE), 0x7777);
+    pos.SetRollRelative(0.0);
+    pos.SetLanePos(road->GetId(), -1, 300.0, 0.0);
+    EXPECT_NEAR(pos.GetH(), 3.0, 1e-3);
+    EXPECT_NEAR(pos.GetP(), 5.991, 1e-3);
+    EXPECT_NEAR(pos.GetR(), 0.0, 1e-3);
+
+    pos.SetInertiaPos(0.0, 200.0, 0.5);
+    EXPECT_NEAR(pos.GetH(), 0.5156, 1e-3);
+    EXPECT_NEAR(pos.GetP(), 0.2356, 1e-3);
+    EXPECT_NEAR(pos.GetR(), 0.1315, 1e-3);
+
+    pos.SetInertiaPos(-100.0, 83.0, 0.5);
+    EXPECT_NEAR(pos.GetH(), 0.5, 1e-3);
+    EXPECT_NEAR(pos.GetP(), 0.0, 1e-3);
+    EXPECT_NEAR(pos.GetR(), 0.0, 1e-3);
+
+    pos.SetModeDefault(Position::PosModeType::SET);
+    pos.SetInertiaPos(100.0, 85.0, -10.0, 0.5, 0.0, 0.3);
+    EXPECT_NEAR(pos.GetH(), 0.5615, 1e-3);
+    EXPECT_NEAR(pos.GetP(), 0.3853, 1e-3);
+    EXPECT_NEAR(pos.GetR(), 0.6127, 1e-3);
+
+    pos.SetMode(Position::PosModeType::SET, Position::PosMode::R_ABS);
+    EXPECT_EQ(pos.GetMode(Position::PosModeType::SET), 0x3737);
+    pos.SetInertiaPos(100.0, 85.0, -10.0, 0.5, 0.0, 0.3);
+    EXPECT_NEAR(pos.GetH(), 0.5, 1e-3);
+    EXPECT_NEAR(pos.GetP(), 0.0, 1e-3);
+    EXPECT_NEAR(pos.GetR(), 0.3, 1e-3);
+
+    // Test some settings
+    pos.SetMode(Position::PosModeType::UPDATE, Position::PosMode::H_REL | Position::PosMode::Z_ABS);
+    EXPECT_EQ(pos.GetMode(Position::PosModeType::UPDATE), 0x7773);
+
+    pos.SetMode(Position::PosModeType::SET, Position::PosMode::H_REL | Position::PosMode::Z_ABS | Position::PosMode::P_ABS);
+    EXPECT_EQ(pos.GetMode(Position::PosModeType::SET), 0x3373);
+    pos.SetMode(Position::PosModeType::SET, Position::PosMode::Z_MASK & Position::PosMode::Z_DEF);
+    EXPECT_EQ(pos.GetMode(Position::PosModeType::SET), 0x3377);
+    EXPECT_EQ(pos.GetMode(Position::PosModeType::UPDATE), 0x7773);
 
     odr->Clear();
 }

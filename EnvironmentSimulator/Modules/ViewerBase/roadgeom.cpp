@@ -591,7 +591,6 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive* odr)
             }
 
             // Then create actual vertices and triangle strips for the lane section
-            pos.SetAlignMode(roadmanager::Position::ALIGN_MODE::ALIGN_HARD);
             int                          nrOfVerticesTotal = static_cast<int>(geom_point_list.size()) * lsec->GetNumberOfLanes();
             osg::ref_ptr<osg::Vec3Array> verticesAll       = new osg::Vec3Array(static_cast<unsigned int>(nrOfVerticesTotal));
             osg::ref_ptr<osg::Vec2Array> texcoordsAll      = new osg::Vec2Array;

@@ -125,9 +125,6 @@ void ControllerInteractive::Activate(DomainActivation lateral, DomainActivation 
     steer      = vehicle::STEERING_NONE;
     accelerate = vehicle::THROTTLE_NONE;
 
-    object_->pos_.SetAlignModeZ(roadmanager::Position::ALIGN_MODE::ALIGN_HARD);
-    object_->pos_.SetAlignModeP(roadmanager::Position::ALIGN_MODE::ALIGN_HARD);
-
     object_->SetJunctionSelectorStrategy(roadmanager::Junction::JunctionStrategyType::SELECTOR_ANGLE);
     object_->SetJunctionSelectorAngle(0.0);
 

@@ -247,54 +247,24 @@ extern "C"
         return static_cast<int>((position.size() - 1));  // return index of newly created
     }
 
-    RM_DLL_API void RM_SetAlignMode(int handle, int mode)
+    RM_DLL_API void RM_SetObjectPositionMode(int handle, int type, int mode)
     {
         if (odrManager == nullptr || handle < 0 || handle >= static_cast<int>(position.size()))
         {
             return;
         }
 
-        position[static_cast<unsigned int>(handle)].SetAlignMode((roadmanager::Position::ALIGN_MODE)mode);
+        position[static_cast<unsigned int>(handle)].SetMode(static_cast<Position::PosModeType>(type), mode);
     }
 
-    RM_DLL_API void RM_SetAlignModeH(int handle, int mode)
+    RM_DLL_API void RM_SetObjectPositionModeDefault(int handle, int type)
     {
         if (odrManager == nullptr || handle < 0 || handle >= static_cast<int>(position.size()))
         {
             return;
         }
 
-        position[static_cast<unsigned int>(handle)].SetAlignModeH((roadmanager::Position::ALIGN_MODE)mode);
-    }
-
-    RM_DLL_API void RM_SetAlignModeP(int handle, int mode)
-    {
-        if (odrManager == nullptr || handle < 0 || handle >= static_cast<int>(position.size()))
-        {
-            return;
-        }
-
-        position[static_cast<unsigned int>(handle)].SetAlignModeP((roadmanager::Position::ALIGN_MODE)mode);
-    }
-
-    RM_DLL_API void RM_SetAlignModeR(int handle, int mode)
-    {
-        if (odrManager == nullptr || handle < 0 || handle >= static_cast<int>(position.size()))
-        {
-            return;
-        }
-
-        position[static_cast<unsigned int>(handle)].SetAlignModeR((roadmanager::Position::ALIGN_MODE)mode);
-    }
-
-    RM_DLL_API void RM_SetAlignModeZ(int handle, int mode)
-    {
-        if (odrManager == nullptr || handle < 0 || handle >= static_cast<int>(position.size()))
-        {
-            return;
-        }
-
-        position[static_cast<unsigned int>(handle)].SetAlignModeZ((roadmanager::Position::ALIGN_MODE)mode);
+        position[static_cast<unsigned int>(handle)].SetModeDefault(static_cast<Position::PosModeType>(type));
     }
 
     RM_DLL_API int RM_SetLockOnLane(int handle, bool mode)
@@ -503,7 +473,7 @@ extern "C"
             roadmanager::Position* pos = &position[static_cast<unsigned int>(handle)];
             if (pos)
             {
-                return static_cast<int>(pos->XYZH2TrackPos(x, y, pos->GetZ(), h));
+                return pos->SetInertiaPos(x, y, pos->GetZ(), h);
             }
         }
 
@@ -521,7 +491,7 @@ extern "C"
             roadmanager::Position* pos = &position[static_cast<unsigned int>(handle)];
             if (pos)
             {
-                return static_cast<int>(pos->XYZH2TrackPos(x, y, z, h));
+                return pos->SetInertiaPos(x, y, z, h);
             }
         }
 
@@ -539,7 +509,7 @@ extern "C"
             roadmanager::Position* pos = &position[static_cast<unsigned int>(handle)];
             if (pos)
             {
-                return static_cast<int>(pos->XYZH2TrackPos(pos->GetX(), pos->GetY(), pos->GetZ(), pos->GetH(), false, roadId, false));
+                return static_cast<int>(pos->XYZ2TrackPos(pos->GetX(), pos->GetY(), pos->GetZ(), false, roadId, false));
             }
         }
 

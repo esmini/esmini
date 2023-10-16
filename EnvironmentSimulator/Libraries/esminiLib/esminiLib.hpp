@@ -229,6 +229,36 @@ typedef struct
     SE_Dimensions dimensions_;  // Width, length and height of the bounding box.
 } SE_OSCBoundingBox;
 
+// Modes for interpret Z, Head, Pitch, Roll coordinate value as absolute or relative
+// grouped as bitmask: 0000 => skip/use current, 0001=DEFAULT, 0011=ABS, 0111=REL
+// example: Relative Z, Absolute H, Default R, Current P = SE_Z_REL | SE_H_ABS | SE_R_DEF = 4151 = 0001 0000 0011 0111
+// Must match roadmanager::Position::PositionMode
+typedef enum
+{
+    SE_Z_SET = 1,  // 0001
+    SE_Z_DEF = 1,  // 0001
+    SE_Z_ABS = 3,  // 0011
+    SE_Z_REL = 7,  // 0111
+    SE_H_SET = SE_Z_SET << 4,
+    SE_H_DEF = SE_Z_DEF << 4,
+    SE_H_ABS = SE_Z_ABS << 4,
+    SE_H_REL = SE_Z_REL << 4,
+    SE_P_SET = SE_Z_SET << 8,
+    SE_P_DEF = SE_Z_DEF << 8,
+    SE_P_ABS = SE_Z_ABS << 8,
+    SE_P_REL = SE_Z_REL << 8,
+    SE_R_SET = SE_Z_SET << 12,
+    SE_R_DEF = SE_Z_DEF << 12,
+    SE_R_ABS = SE_Z_ABS << 12,
+    SE_R_REL = SE_Z_REL << 12,
+} SE_PositionMode;
+
+typedef enum
+{
+    SE_SET    = 0,  // Used by explicit set functions
+    SE_UPDATE = 1   // Used by controllers updating the position
+} SE_PositionModeType;
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -661,59 +691,26 @@ extern "C"
     SE_DLL_API void *SE_GetODRManager();
 
     /**
-            Specify if and how position object will align to the road. This version
-            sets same mode for all components: Heading, Pitch, Roll and Z (elevation)
-            @object_id Id of the object
-            @param mode as defined by roadmanager::Position::ALIGN_MODE:
-            0 = ALIGN_NONE // No alignment to road
-            1 = ALIGN_SOFT // Align to road but add relative orientation
-            2 = ALIGN_HARD // Completely align to road, disregard relative orientation
+    Specify if and how position object will align to the road. The setting is done for individual components:
+    Z (elevation), Heading, Pitch, Roll and separately for set- and update operation. Set operations represents
+    when position is affected by API calls, e.g. updateObjectWorldPos(). Update operations represents when the
+    position is updated implicitly by the scenarioengine, e.g. default controller moving a vehicle along the lane.
+    @param object_id Id of the object
+    @param mode Bitmask combining values from roadmanager::PosMode enum
+    example: To set relative z and absolute roll: (SE_Z_REL | SE_R_ABS) or (7 | 12288) = (7 + 12288) = 12295
+    @param type Type of operations the setting applies to. SET (explicit set-functions) or UPDATE (updates by controllers),
+    according to roadmanager::PosModeType
     */
-    SE_DLL_API void SE_SetAlignMode(int object_id, int mode);
+    SE_DLL_API void SE_SetObjectPositionMode(int object_id, int type, int mode);
 
     /**
-            Specify if and how position object will align to the road. This version
-            sets same mode for only heading component.
-            @object_id Id of the object
-            @param mode as defined by roadmanager::Position::ALIGN_MODE:
-            0 = ALIGN_NONE // No alignment to road
-            1 = ALIGN_SOFT // Align to road but add relative orientation
-            2 = ALIGN_HARD // Completely align to road, disregard relative orientation
+    Set default alignment mode for SET or UPDATE operations. See roadmanager::Position::GetModeDefault() to find out
+    what are the default modes.
+    @param object_id Id of the object
+    @param type Type of operations the setting applies to. SET (explicit set-functions) or UPDATE (updates by controllers),
+    according to roadmanager::PosModeType
     */
-    SE_DLL_API void SE_SetAlignModeH(int object_id, int mode);
-
-    /**
-            Specify if and how position object will align to the road. This version
-            sets same mode for only pitch component.
-            @object_id Id of the object
-            @param mode as defined by roadmanager::Position::ALIGN_MODE:
-            0 = ALIGN_NONE // No alignment to road
-            1 = ALIGN_SOFT // Align to road but add relative orientation
-            2 = ALIGN_HARD // Completely align to road, disregard relative orientation
-    */
-
-    SE_DLL_API void SE_SetAlignModeP(int object_id, int mode);
-    /**
-            Specify if and how position object will align to the road. This version
-            sets same mode for only roll component.
-            @object_id Id of the object
-            @param mode as defined by roadmanager::Position::ALIGN_MODE:
-            0 = ALIGN_NONE // No alignment to road
-            1 = ALIGN_SOFT // Align to road but add relative orientation
-            2 = ALIGN_HARD // Completely align to road, disregard relative orientation
-    */
-    SE_DLL_API void SE_SetAlignModeR(int object_id, int mode);
-
-    /**
-            Specify if and how position object will align to the road. This version
-            sets same mode for only Z (elevation) component.
-            @object_id Id of the object
-            @param mode as defined by roadmanager::Position::ALIGN_MODE:
-            0 = ALIGN_NONE // No alignment to road
-            1 = ALIGN_SOFT // Align to road but add relative orientation
-            2 = ALIGN_HARD // Completely align to road, disregard relative orientation
-    */
-    SE_DLL_API void SE_SetAlignModeZ(int object_id, int mode);
+    SE_DLL_API void SE_SetObjectPositionModeDefault(int object_id, int type);
 
     /**
             Add object with bounding box automatically adapted to 3D model (scale mode BB_TO_MODEL)
@@ -761,13 +758,28 @@ extern "C"
             @param timestamp Timestamp (not really used yet, OK to set 0)
             @param x X coordinate
             @param y Y coordinate
-            @param z Z coordinate, std::nanf("") will align to road (#include <cmath>)
+            @param z Z coordinate, set std::nanf("") to ignore, i.e. re-use current value (#include <cmath>)
             @param h Heading / yaw
-            @param p Pitch, std::nanf("") will align to road (#include <cmath>)
-            @param r Roll, std::nanf("") will align to road (#include <cmath>)
+            @param p Pitch, set std::nanf("") to ignore, i.e. re-use current value (#include <cmath>)
+            @param r Roll, set std::nanf("") to ignore, i.e. re-use current value (#include <cmath>)
             @return 0 if successful, -1 if not
     */
     SE_DLL_API int SE_ReportObjectPos(int object_id, float timestamp, float x, float y, float z, float h, float p, float r);
+
+    /**
+            Report object position in cartesian coordinates, with detailed control of absolute or relative coordinates
+            @param object_id Id of the object
+            @param timestamp Timestamp (not really used yet, OK to set 0)
+            @param x X coordinate
+            @param y Y coordinate
+            @param z Z coordinate, set std::nanf("") to ignore, i.e. re-use current value (#include <cmath>)
+            @param h Heading / yaw
+            @param p Pitch, set std::nanf("") to ignore, i.e. re-use current value (#include <cmath>)
+            @param r Roll, set std::nanf("") to ignore, i.e. re-use current value (#include <cmath>)
+            @param mode Explicit mode, override current setting. E.g. POS_REL_Z | POS_ABS_H, see SE_PositionMode enum
+            @return 0 if successful, -1 if not
+    */
+    SE_DLL_API int SE_ReportObjectPosMode(int object_id, float timestamp, float x, float y, float z, float h, float p, float r, int mode);
 
     /**
             Report object position in limited set of cartesian coordinates x, y and heading,

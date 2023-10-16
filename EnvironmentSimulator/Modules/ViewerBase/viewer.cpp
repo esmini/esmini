@@ -3243,7 +3243,12 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
                             scale_z = object->GetHeight() / dim_z;
                         }
 
-                        pos.SetTrackPos(road->GetId(), object->GetS(), object->GetT());
+                        // position mode relative for aligning to road heading
+                        pos.SetTrackPosMode(road->GetId(),
+                                            object->GetS(),
+                                            object->GetT(),
+                                            roadmanager::Position::PosMode::H_REL | roadmanager::Position::PosMode::Z_REL |
+                                                roadmanager::Position::PosMode::P_REL | roadmanager::Position::PosMode::R_REL);
 
                         clone->setScale(osg::Vec3(static_cast<float>(scale_x), static_cast<float>(scale_y), static_cast<float>(scale_z)));
                         clone->setPosition(osg::Vec3(static_cast<float>(pos.GetX()),
@@ -3277,7 +3282,12 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
                             scale_z = (rep->GetHeightStart() + factor * (rep->GetHeightEnd() - rep->GetHeightStart())) / dim_z;
                         }
 
-                        pos.SetTrackPos(road->GetId(), s, t);
+                        // position mode relative for aligning to road heading
+                        pos.SetTrackPosMode(road->GetId(),
+                                            s,
+                                            t,
+                                            roadmanager::Position::PosMode::H_REL | roadmanager::Position::PosMode::Z_REL |
+                                                roadmanager::Position::PosMode::P_REL | roadmanager::Position::PosMode::R_REL);
 
                         clone->setScale(osg::Vec3(static_cast<float>(scale_x), static_cast<float>(scale_y), static_cast<float>(scale_z)));
                         clone->setPosition(

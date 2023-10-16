@@ -219,9 +219,10 @@ void ControllerUDPDriver::Step(double timeStep)
         if (msg.header.inputMode == static_cast<int>(InputMode::VEHICLE_STATE_XYZHPR))
         {
             roadmanager::Position* pos = &gateway_->getObjectStatePtrById(static_cast<int>(msg.header.objectId))->state_.pos;
-            pos->SetAlignModeZ(roadmanager::Position::ALIGN_MODE::ALIGN_NONE);
-            pos->SetAlignModeP(roadmanager::Position::ALIGN_MODE::ALIGN_NONE);
-            pos->SetAlignModeR(roadmanager::Position::ALIGN_MODE::ALIGN_NONE);
+            pos->SetMode(roadmanager::Position::PosModeType::SET,
+
+                         roadmanager::Position::PosMode::Z_ABS | roadmanager::Position::PosMode::H_ABS | roadmanager::Position::PosMode::P_ABS |
+                             roadmanager::Position::PosMode::R_ABS);
 
             // Update object state via gateway
             gateway_->updateObjectWorldPos(object_->id_,
@@ -241,9 +242,10 @@ void ControllerUDPDriver::Step(double timeStep)
         else if (msg.header.inputMode == static_cast<int>(InputMode::VEHICLE_STATE_XYH))
         {
             roadmanager::Position* pos = &gateway_->getObjectStatePtrById(static_cast<int>(msg.header.objectId))->state_.pos;
-            pos->SetAlignModeZ(roadmanager::Position::ALIGN_MODE::ALIGN_HARD);
-            pos->SetAlignModeP(roadmanager::Position::ALIGN_MODE::ALIGN_HARD);
-            pos->SetAlignModeR(roadmanager::Position::ALIGN_MODE::ALIGN_HARD);
+            pos->SetMode(roadmanager::Position::PosModeType::SET,
+
+                         roadmanager::Position::PosMode::Z_REL | roadmanager::Position::PosMode::H_ABS | roadmanager::Position::PosMode::P_REL |
+                             roadmanager::Position::PosMode::R_REL);
 
             // Update object state via gateway
             gateway_->updateObjectWorldPosXYH(object_->id_, 0.0, msg.message.stateXYH.x, msg.message.stateXYH.y, msg.message.stateXYH.h);
@@ -259,9 +261,10 @@ void ControllerUDPDriver::Step(double timeStep)
         else if (msg.header.inputMode == static_cast<int>(InputMode::VEHICLE_STATE_H))
         {
             roadmanager::Position* pos = &gateway_->getObjectStatePtrById(static_cast<int>(msg.header.objectId))->state_.pos;
-            pos->SetAlignModeZ(roadmanager::Position::ALIGN_MODE::ALIGN_HARD);
-            pos->SetAlignModeP(roadmanager::Position::ALIGN_MODE::ALIGN_HARD);
-            pos->SetAlignModeR(roadmanager::Position::ALIGN_MODE::ALIGN_HARD);
+            pos->SetMode(roadmanager::Position::PosModeType::SET,
+
+                         roadmanager::Position::PosMode::Z_REL | roadmanager::Position::PosMode::H_ABS | roadmanager::Position::PosMode::P_REL |
+                             roadmanager::Position::PosMode::R_REL);
 
             // Update object state via gateway
             gateway_->updateObjectWorldPosXYH(object_->id_, 0.0, pos->GetX(), pos->GetY(), msg.message.stateH.h);
@@ -277,9 +280,10 @@ void ControllerUDPDriver::Step(double timeStep)
         else if (msg.header.inputMode == static_cast<int>(InputMode::DRIVER_INPUT))
         {
             roadmanager::Position* pos = &gateway_->getObjectStatePtrById(static_cast<int>(msg.header.objectId))->state_.pos;
-            pos->SetAlignModeZ(roadmanager::Position::ALIGN_MODE::ALIGN_HARD);
-            pos->SetAlignModeP(roadmanager::Position::ALIGN_MODE::ALIGN_HARD);
-            pos->SetAlignModeR(roadmanager::Position::ALIGN_MODE::ALIGN_HARD);
+            pos->SetMode(roadmanager::Position::PosModeType::SET,
+
+                         roadmanager::Position::PosMode::Z_REL | roadmanager::Position::PosMode::H_ABS | roadmanager::Position::PosMode::P_REL |
+                             roadmanager::Position::PosMode::R_REL);
         }
         else
         {

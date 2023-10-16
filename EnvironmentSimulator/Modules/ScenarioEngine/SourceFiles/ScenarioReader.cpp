@@ -1157,21 +1157,20 @@ roadmanager::RMTrajectory *ScenarioReader::parseTrajectory(pugi::xml_node node)
                     }
                     std::unique_ptr<OSCPosition> pos  = std::unique_ptr<OSCPosition>{parseOSCPosition(posNode)};
                     double                       time = strtod(parameters.ReadAttribute(vertexNode, "time"));
-
-                    bool calculateHeading = false;
-                    if (pos->type_ == OSCPosition::PositionType::WORLD)
+#if 0
+                    if (pos->type_ != OSCPosition::PositionType::WORLD)
                     {
-                        if (!pos->GetRMPos()->IsOrientationTypeSet(roadmanager::Position::OrientationSetMask::H))
+                        if (!posNode.first_child().child("Orientation"))
                         {
-                            calculateHeading = true;
+                            pos->GetRMPos()->SetMode(roadmanager::Position::PosModeType::INIT, roadmanager::Position::PosMode::H_REL);
+                        }
+                        else
+                        {
+                            pos->GetRMPos()->SetMode(roadmanager::Position::PosModeType::INIT, roadmanager::Position::PosMode::H_ABS);
                         }
                     }
-                    else if (!posNode.first_child().child("Orientation"))
-                    {
-                        calculateHeading = true;
-                    }
-
-                    pline->AddVertex(*pos->GetRMPos(), time, calculateHeading);
+#endif
+                    pline->AddVertex(*pos->GetRMPos(), time);
                 }
                 shape = pline;
             }
@@ -1215,7 +1214,7 @@ roadmanager::RMTrajectory *ScenarioReader::parseTrajectory(pugi::xml_node node)
             }
             else if (shapeType == "Nurbs")
             {
-                int order = strtoi(parameters.ReadAttribute(shapeNode, "order"));
+                unsigned int order = static_cast<unsigned int>(strtoi(parameters.ReadAttribute(shapeNode, "order")));
 
                 roadmanager::NurbsShape *nurbs = new roadmanager::NurbsShape(order);
                 std::vector<double>      knots;
@@ -1235,8 +1234,17 @@ roadmanager::RMTrajectory *ScenarioReader::parseTrajectory(pugi::xml_node node)
                         {
                             weight = strtod(parameters.ReadAttribute(nurbsChild, "weight"));
                         }
-                        bool calcHeading = posNode.first_child().child("Orientation") ? false : true;
-                        nurbs->AddControlPoint(*pos->GetRMPos(), time, weight, calcHeading);
+#if 1
+                        if (posNode.first_child().child("Orientation"))
+                        {
+                            pos->GetRMPos()->SetMode(roadmanager::Position::PosModeType::SET, roadmanager::Position::PosMode::H_ABS);
+                        }
+                        else
+                        {
+                            pos->GetRMPos()->SetMode(roadmanager::Position::PosModeType::SET, roadmanager::Position::PosMode::H_REL);
+                        }
+#endif
+                        nurbs->AddControlPoint(*pos->GetRMPos(), time, weight);
                     }
                     else if (nurbsChildName == "Knot")
                     {
@@ -1246,6 +1254,25 @@ roadmanager::RMTrajectory *ScenarioReader::parseTrajectory(pugi::xml_node node)
                     else
                     {
                         throw std::runtime_error(std::string("Unsupported Nurbs child element: ") + nurbsChildName);
+                    }
+                }
+                if (knots.size() == 0)
+                {
+                    LOG("No knot vector provided. Creating a simple one.");
+                    for (size_t i = 0; i < nurbs->ctrlPoint_.size() + order; i++)
+                    {
+                        if (i < order)
+                        {
+                            knots.push_back(0.0);
+                        }
+                        else if (i > nurbs->ctrlPoint_.size() - 1)
+                        {
+                            knots.push_back(1.0);
+                        }
+                        else
+                        {
+                            knots.push_back(static_cast<double>(i + 1 - order) / static_cast<double>(nurbs->ctrlPoint_.size() + 1 - order));
+                        }
                     }
                 }
                 nurbs->AddKnots(knots);

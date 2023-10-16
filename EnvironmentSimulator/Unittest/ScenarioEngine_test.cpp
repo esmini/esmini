@@ -73,9 +73,11 @@ TEST(DistanceTest, CalcDistanceVariations)
     EXPECT_NEAR(dist, 0.468766, 1e-5);
 
     // freespace with overlap
-    obj0.pos_.SetAlignMode(Position::ALIGN_MODE::ALIGN_HARD);
+    obj0.pos_.SetMode(Position::PosModeType::UPDATE,
+                      Position::PosMode::Z_REL | Position::PosMode::H_REL | Position::PosMode::P_REL | Position::PosMode::R_REL);
     obj0.pos_.SetLanePos(0, -1, 549.0, 0.0);
-    obj1.pos_.SetAlignMode(Position::ALIGN_MODE::ALIGN_HARD);
+    obj0.pos_.SetMode(Position::PosModeType::UPDATE,
+                      Position::PosMode::Z_REL | Position::PosMode::H_REL | Position::PosMode::P_REL | Position::PosMode::R_REL);
     obj1.pos_.SetLanePos(0, -1, 550.0, 0.0);
     ASSERT_EQ(obj0.Distance(&obj1, CoordinateSystem::CS_ROAD, RelativeDistanceType::REL_DIST_LONGITUDINAL, true, dist), 0);
     EXPECT_NEAR(dist, 0.0, 1e-5);
@@ -934,12 +936,12 @@ TEST(RoadOrientationTest, TestElevationPitchRoll)
     }
 
     EXPECT_NEAR(se->entities_.object_[1]->pos_.GetZ(), 0.50319, 1e-5);
-    EXPECT_NEAR(se->entities_.object_[1]->pos_.GetP(), 0.0, 1e-5);
+    EXPECT_NEAR(fmod(2.0 * M_PI, se->entities_.object_[1]->pos_.GetP()), 0.0, 1e-5);
     EXPECT_NEAR(se->entities_.object_[1]->pos_.GetR(), 5.96641, 1e-5);
 
     EXPECT_NEAR(se->entities_.object_[2]->pos_.GetZ(), 13.24676, 1e-5);
     EXPECT_NEAR(se->entities_.object_[2]->pos_.GetP(), 0.27808, 1e-5);
-    EXPECT_NEAR(se->entities_.object_[2]->pos_.GetR(), 0, 1e-5);
+    EXPECT_NEAR(fmod(2.0 * M_PI, se->entities_.object_[2]->pos_.GetR()), 0, 1e-5);
 
     delete se;
 }
@@ -2298,6 +2300,80 @@ TEST(ActionTest, TestRelativeLanePosition)
         EXPECT_NEAR(se->entities_.object_[1]->pos_.GetX(), pos[i][3], 1E-3);
         EXPECT_NEAR(se->entities_.object_[1]->pos_.GetY(), pos[i][4], 1E-3);
     }
+
+    delete se;
+}
+
+TEST(PositionTest, TestPositionMode)
+{
+    double dt = 0.1;
+
+    ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/positioning_slope_up_leaning_right.xosc");
+    ASSERT_NE(se, nullptr);
+    EXPECT_EQ(se->entities_.object_[0]->GetName(), "Ego");
+
+    se->step(dt);
+    se->prepareGroundTruth(dt);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 10.0, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), -3.0, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetZ(), -0.268, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetH(), 0.0, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetP(), 6.184, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetR(), 0.4, 1E-3);
+
+    se->entities_.object_[0]->pos_.SetInertiaPosMode(35.0,
+                                                     -3.0,
+                                                     0.0,
+                                                     1.0,
+                                                     0.0,
+                                                     0.0,
+                                                     roadmanager::Position::PosMode::Z_REL | roadmanager::Position::PosMode::H_REL |
+                                                         roadmanager::Position::PosMode::R_REL | roadmanager::Position::PosMode::P_REL);
+
+    se->step(dt);
+    se->prepareGroundTruth(dt);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 35.0, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), -3.0, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetZ(), 2.232, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetH(), 0.993, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetP(), 5.894, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetR(), 0.136, 1E-3);
+
+    se->entities_.object_[0]->pos_.SetInertiaPosMode(30.0,
+                                                     -2.0,
+                                                     1.0,
+                                                     -0.5,
+                                                     0.3,
+                                                     0.5,
+                                                     roadmanager::Position::PosMode::Z_REL | roadmanager::Position::PosMode::H_ABS |
+                                                         roadmanager::Position::PosMode::R_REL | roadmanager::Position::PosMode::P_ABS);
+
+    se->step(dt);
+    se->prepareGroundTruth(dt);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 30.0, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), -2.0, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetZ(), 3.154, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetH(), 5.932, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetP(), 0.467, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetR(), 0.893, 1E-3);
+
+    se->entities_.object_[0]->pos_.SetInertiaPosMode(30.0,
+                                                     -2.0,
+                                                     0.0,
+                                                     -0.5,
+                                                     0.3,
+                                                     0.0,
+                                                     roadmanager::Position::PosMode::Z_REL | roadmanager::Position::PosMode::H_ABS |
+                                                         roadmanager::Position::PosMode::R_REL | roadmanager::Position::PosMode::P_REL);
+
+    se->step(dt);
+    se->prepareGroundTruth(dt);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 30.0, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), -2.0, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetZ(), 2.154, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetH(), 5.947, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetP(), 0.374, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetR(), 0.430, 1E-3);
 
     delete se;
 }

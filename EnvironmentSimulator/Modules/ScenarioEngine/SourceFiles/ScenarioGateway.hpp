@@ -305,24 +305,44 @@ namespace scenarioengine
                          double         lateralOffset,
                          double         s);
 
-        int  updateObjectPos(int id, double timestamp, roadmanager::Position *pos);
-        int  updateObjectRoadPos(int id, double timestamp, int roadId, double lateralOffset, double s);
-        int  updateObjectLanePos(int id, double timestamp, int roadId, int laneId, double offset, double s);
-        int  updateObjectWorldPos(int id, double timestamp, double x, double y, double z, double h, double p, double r);
-        int  updateObjectWorldPosXYH(int id, double timestamp, double x, double y, double h);
-        int  updateObjectSpeed(int id, double timestamp, double speed);
-        int  updateObjectVel(int id, double timestamp, double x_vel, double y_vel, double z_vel);
-        int  updateObjectAcc(int id, double timestamp, double x_acc, double y_acc, double z_acc);
-        int  updateObjectAngularVel(int id, double timestamp, double h_rate, double p_rate, double r_rate);
-        int  updateObjectAngularAcc(int id, double timestamp, double h_acc, double p_acc, double r_acc);
-        int  updateObjectWheelAngle(int id, double timestamp, double wheelAngle);
-        int  updateObjectWheelRotation(int id, double timestamp, double wheelRotation);
-        int  updateObjectVisibilityMask(int id, int visibilityMask);
-        int  setObjectAlignMode(int id, int mode);
-        int  setObjectAlignModeH(int id, int mode);
-        int  setObjectAlignModeP(int id, int mode);
-        int  setObjectAlignModeR(int id, int mode);
-        int  setObjectAlignModeZ(int id, int mode);
+        int updateObjectPos(int id, double timestamp, roadmanager::Position *pos);
+        int updateObjectRoadPos(int id, double timestamp, int roadId, double lateralOffset, double s);
+        int updateObjectLanePos(int id, double timestamp, int roadId, int laneId, double offset, double s);
+        int updateObjectWorldPos(int id, double timestamp, double x, double y, double z, double h, double p, double r);
+        int updateObjectWorldPosMode(int id, double timestamp, double x, double y, double z, double h, double p, double r, int mode);
+        int updateObjectWorldPosXYH(int id, double timestamp, double x, double y, double h);
+        int updateObjectWorldPosXYHMode(int id, double timestamp, double x, double y, double h, int mode);
+        int updateObjectSpeed(int id, double timestamp, double speed);
+        int updateObjectVel(int id, double timestamp, double x_vel, double y_vel, double z_vel);
+        int updateObjectAcc(int id, double timestamp, double x_acc, double y_acc, double z_acc);
+        int updateObjectAngularVel(int id, double timestamp, double h_rate, double p_rate, double r_rate);
+        int updateObjectAngularAcc(int id, double timestamp, double h_acc, double p_acc, double r_acc);
+        int updateObjectWheelAngle(int id, double timestamp, double wheelAngle);
+        int updateObjectWheelRotation(int id, double timestamp, double wheelRotation);
+        int updateObjectVisibilityMask(int id, int visibilityMask);
+
+        /**
+        Specify if and how position object will align to the road. The setting is done for individual components:
+        Z (elevation), Heading, Pitch, Roll and separately for set- and update operation. Set operations represents
+        when position is affected by API calls, e.g. updateObjectWorldPos(). Update operations represents when the
+        position is updated implicitly by the scenarioengine, e.g. default controller moving a vehicle along the lane.
+        @param id Id of the object
+        @param mode Bitmask combining values from roadmanager::PosMode enum
+        example: To set relative z and absolute roll: (Z_REL | R_ABS) or (7 | 12288) = (7 + 12288) = 12295
+        @param type Type of operations the setting applies to. SET (explicit set-functions) or UPDATE (updates by controllers),
+        according to roadmanager::PosModeType
+        */
+        int setObjectPositionMode(int id, int type, int mode);
+
+        /**
+        Set default alignment mode for SET or UPDATE operations. See roadmanager::Position::GetModeDefault() to find out
+        what are the default modes.
+        @param id Id of the object
+        @param type Type of operations the setting applies to. SET (explicit set-functions) or UPDATE (updates by controllers),
+        according to roadmanager::PosModeType
+        */
+        int setObjectPositionModeDefault(int id, int type);
+
         bool isObjectReported(int id);
         void clearDirtyBits();
 

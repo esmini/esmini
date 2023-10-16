@@ -27,12 +27,12 @@ int main(int argc, char* argv[])
 
         if (i == 100)
         {
-            SE_SetAlignModeZ(SE_GetId(0), 0);  // release vertical alignment to road surface
+            SE_SetObjectPositionMode(SE_GetId(0), 1, SE_PositionMode::SE_Z_ABS);  // release vertical alignment to road surface
         }
 
         if (i == 200)
         {
-            SE_SetAlignModeZ(SE_GetId(0), 2);  // enforce vertical alignment to road surface
+            SE_SetObjectPositionMode(SE_GetId(0), 1, SE_PositionMode::SE_Z_REL);  // enforce vertical alignment to road surface
         }
     }
 

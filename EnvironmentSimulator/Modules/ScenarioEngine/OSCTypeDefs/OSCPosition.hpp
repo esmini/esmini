@@ -26,7 +26,7 @@ namespace scenarioengine
     class OSCOrientation
     {
     public:
-        OSCOrientation() : type_(roadmanager::Position::OrientationType::ORIENTATION_ABSOLUTE), h_(0), p_(0), r_(0)
+        OSCOrientation() : type_(roadmanager::Position::OrientationType::ORIENTATION_ABSOLUTE), h_(std::nan("")), p_(std::nan("")), r_(std::nan(""))
         {
         }
         OSCOrientation(roadmanager::Position::OrientationType type, double h, double p, double r) : type_(type), h_(h), p_(p), r_(r)

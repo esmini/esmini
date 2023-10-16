@@ -2697,6 +2697,31 @@ namespace roadmanager
     class Route;
     class RMTrajectory;
 
+    typedef enum
+    {
+        INTERPOLATE_HEADING = 0x1,
+        INTERPOLATE_PITCH   = 0x2,
+        INTERPOLATE_ROLL    = 0x4
+    } InterpolationComponent;
+
+    struct TrajVertex
+    {
+        double s           = 0;
+        double x           = 0;
+        double y           = 0;
+        double z           = 0;
+        double h           = 0;
+        double pitch       = 0;
+        double r           = 0;
+        int    road_id     = -1;  // -1 indicates no valid road position. Use X, Y instead.
+        double time        = 0;
+        double speed       = 0;  // speed at vertex point/start of segment
+        double acc         = 0;  // acceleration along the segment
+        double param       = 0;
+        int    pos_mode    = 0;  // resolved alignment bitmask after calculation, see Position::PosMode enum
+        int    interpolate = 0;  // interpolation bitmask, see InterpolateComponent enum
+    };
+
     class Position
     {
     public:
@@ -2762,12 +2787,45 @@ namespace roadmanager
             POS_STATUS_END_OF_ROUTE = (1 << 1)
         };
 
+        // Modes for interpret Z, Head, Pitch, Roll coordinate value as absolute or relative
+        // grouped as bitmask: 0000 => skip/use current, 0001=DEFAULT, 0011=ABS, 0111=REL
+        // example: Relative Z, Absolute H, Default R, Current P = Z_REL | H_ABS | R_DEF = 4151 = 0001 0000 0011 0111
         typedef enum
         {
-            ALIGN_NONE = 0,  // No alignment to road
-            ALIGN_SOFT = 1,  // Align to road but add relative orientation
-            ALIGN_HARD = 2   // Completely align to road, disregard relative orientation
-        } ALIGN_MODE;
+            Z_SET  = 1,   // 0001
+            Z_DEF  = 1,   // 0001
+            Z_ABS  = 3,   // 0011
+            Z_REL  = 7,   // 0111
+            Z_MASK = 15,  // 1111
+            H_SET  = Z_SET << 4,
+            H_DEF  = Z_DEF << 4,
+            H_ABS  = Z_ABS << 4,
+            H_REL  = Z_REL << 4,
+            H_MASK = Z_MASK << 4,
+            P_SET  = Z_SET << 8,
+            P_DEF  = Z_DEF << 8,
+            P_ABS  = Z_ABS << 8,
+            P_REL  = Z_REL << 8,
+            P_MASK = Z_MASK << 8,
+            R_SET  = Z_SET << 12,
+            R_DEF  = Z_DEF << 12,
+            R_ABS  = Z_ABS << 12,
+            R_REL  = Z_REL << 12,
+            R_MASK = Z_MASK << 12,
+        } PosMode;
+
+        // Types of position modes
+        enum class PosModeType
+        {
+            SET    = 0,  // Used by explicit set functions
+            UPDATE = 1,  // Used by controllers updating the position
+            INIT   = 2   // Indicate mode at initializatio, i.e. what components were set (ABS) and not (REL)
+        };
+
+        bool CheckBitsEqual(int input, int mask, int bits) const
+        {
+            return (input & mask) == (bits & mask);
+        }
 
         enum class DirectionMode
         {
@@ -2789,47 +2847,110 @@ namespace roadmanager
         int               GotoClosestDrivingLaneAtCurrentPosition();
 
         /**
-        Specify position by track coordinate (road_id, s, t)
+        Specify position by track coordinate (road_id, s, t) using current UPDATE mode
         @param track_id Id of the road (track)
         @param s Distance to the position along and from the start of the road (track)
         @param updateXY update world coordinates x, y... as well - or not
         @return Non zero return value indicates error of some kind
         */
         ReturnCode SetTrackPos(int track_id, double s, double t, bool UpdateXY = true);
-        void       ForceLaneId(int lane_id);
-        ReturnCode SetLanePos(int track_id, int lane_id, double s, double offset, int lane_section_idx = -1);
-        void       SetLaneBoundaryPos(int track_id, int lane_id, double s, double offset, int lane_section_idx = -1);
-        void       SetRoadMarkPos(int    track_id,
-                                  int    lane_id,
-                                  int    roadmark_idx,
-                                  int    roadmarktype_idx,
-                                  int    roadmarkline_idx,
-                                  double s,
-                                  double offset,
-                                  int    lane_section_idx = -1);
 
         /**
-        Specify position by cartesian x, y, z and heading, pitch, roll
+        Specify position by lane coordinate (road_id, s, t) with specified mode
+        @param track_id Id of the road (track)
+        @param s Distance to the position along and from the start of the road (track)
+        @param mode Bitmask combining values from roadmanager::PosMode enum
+        example: To set relative z and absolute roll: (Z_REL | R_ABS) or (7 | 12288) = (7 + 12288) = 12295
+        @param updateXY update world coordinates x, y... as well - or not
+        @return Non zero return value indicates error of some kind
+        */
+        ReturnCode SetTrackPosMode(int track_id, double s, double t, int mode, bool UpdateXY = true);
+        void       ForceLaneId(int lane_id);
+
+        /**
+        Specify position by lane coordinate (road_id, lane_id, s, lane offset) using current UPDATE mode
+        @param track_id Id of the road (track)
+        @param lane_id Id of the lane
+        @param s Distance to the position along and from the start of the road (track)
+        @param offset Lateral distance from lane center
+        @param lane_section_idx Optional index of lane section to start search from
+        @return Non zero return value indicates error of some kind
+        */
+        ReturnCode SetLanePos(int track_id, int lane_id, double s, double offset, int lane_section_idx = -1);
+
+        /**
+        Specify position by lane coordinate (road_id, lane_id, s, lane offset) with specified mode
+        @param track_id Id of the road (track)
+        @param lane_id Id of the lane
+        @param s Distance to the position along and from the start of the road (track)
+        @param offset Lateral distance from lane center
+        @param mode Bitmask combining values from roadmanager::PosMode enum
+        example: To set relative z and absolute roll: (Z_REL | R_ABS) or (7 | 12288) = (7 + 12288) = 12295
+        @param lane_section_idx Optional index of lane section to start search from
+        @return Non zero return value indicates error of some kind
+        */
+        ReturnCode SetLanePosMode(int track_id, int lane_id, double s, double offset, int mode, int lane_section_idx = -1);
+
+        void SetLaneBoundaryPos(int track_id, int lane_id, double s, double offset, int lane_section_idx = -1);
+        void SetRoadMarkPos(int    track_id,
+                            int    lane_id,
+                            int    roadmark_idx,
+                            int    roadmarktype_idx,
+                            int    roadmarkline_idx,
+                            double s,
+                            double offset,
+                            int    lane_section_idx = -1);
+
+        /**
+        Specify position by cartesian x, y, z and heading, pitch, roll using current SET mode
         @param x x
         @param y y
-        @param z z (if std::nan("") it will be aligned to road)
+        @param z z (if std::nan("") it will be ignored/no change)
         @param h heading
-        @param p pitch (if std::nan("") it will be aligned to road)
-        @param r roll (if std::nan("") it will be aligned to road)
+        @param p pitch (if std::nan("") it will be ignored/no change)
+        @param r roll (if std::nan("") it will be ignored/no change)
         @param updateTrackPos True: road position will be calculated False: don't update road position
         @return Non zero return value indicates error of some kind
         */
         int SetInertiaPos(double x, double y, double z, double h, double p, double r, bool updateTrackPos = true);
 
         /**
-        Specify position by cartesian x, y and heading. z, pitch and roll will be aligned to road.
+        Specify position by cartesian x, y, z and heading, pitch, roll using specified mode
+        @param x x
+        @param y y
+        @param z z (if std::nan("") it will be aligned to road)
+        @param h heading
+        @param p pitch (if std::nan("") it will be ignored/no change)
+        @param r roll (if std::nan("") it will be ignored/no change)
+        @param mode Bitmask combining values from roadmanager::PosMode enum
+        example: To set relative z and absolute roll: (Z_REL | R_ABS) or (7 | 12288) = (7 + 12288) = 12295
+        @param updateTrackPos True: road position will be calculated False: don't update road position
+        @return Non zero return value indicates error of some kind
+        */
+        int SetInertiaPosMode(double x, double y, double z, double h, double p, double r, int mode, bool updateTrackPos = true);
+
+        /**
+        Specify position by cartesian x, y and heading using current SET mode for heading and UPDATE mode for pitch and roll
         @param x x
         @param y y
         @param h heading
         @param updateTrackPos True: road position will be calculated False: don't update road position
         @return Non zero return value indicates error of some kind
         */
-        int  SetInertiaPos(double x, double y, double h, bool updateTrackPos = true);
+        int SetInertiaPos(double x, double y, double h, bool updateTrackPos = true);
+
+        /**
+        Specify position by cartesian x, y and heading. Z, pitch and roll will be set to zero.
+        Heading, Z, pitch and roll will be aligned to road according to specified mode.
+        @param x x
+        @param y y
+        @param h heading
+        @param mode Bitmask combining values from roadmanager::PosMode enum
+        example: To set relative z and absolute roll: (Z_REL | R_ABS) or (7 | 12288) = (7 + 12288) = 12295
+        @param updateTrackPos True: road position will be calculated False: don't update road position
+        @return Non zero return value indicates error of some kind
+        */
+        int  SetInertiaPosMode(double x, double y, double h, int mode, bool updateTrackPos = true);
         void SetHeading(double heading);
         void SetHeadingRelative(double heading);
         void SetHeadingRelativeRoadDirection(double heading);
@@ -2841,9 +2962,16 @@ namespace roadmanager
         void SetZRelative(double z);
 
         /**
-
+        Call this to resolve orientation alignment wrt road
+        @param mode Bitmask combining values from roadmanager::PosMode enum
+        example: To set relative z and absolute roll: (Z_REL | R_ABS) or (7 | 12288) = (7 + 12288) = 12295
         */
-        void EvaluateOrientation();
+        void EvaluateZHPR(int align_mode_mask);
+
+        /**
+        Call this to resolve orientation alignment wrt road, using current SET mode
+        */
+        void EvaluateZHPR();
 
         /**
         Specify position by cartesian coordinate (x, y, z, h)
@@ -2851,13 +2979,12 @@ namespace roadmanager
         @param y Y-coordinate
         @param z Z-coordinate
         @param h Heading
-        @param conenctedOnly If true only roads that can be reached from current position will be considered, if false all roads will be considered
+        @param connectedOnly If true only roads that can be reached from current position will be considered, if false all roads will be considered
         @param roadId If != -1 only this road will be considered else all roads will be searched
         @param check_overlapping_roads If true all roads ovlerapping the position will be registered (with some performance penalty)
         @return Non zero return value indicates error of some kind
         */
-        ReturnCode
-        XYZH2TrackPos(double x, double y, double z, double h, bool connectedOnly = false, int roadId = -1, bool check_overlapping_roads = false);
+        ReturnCode XYZ2TrackPos(double x, double y, double z, bool connectedOnly = false, int roadId = -1, bool check_overlapping_roads = false);
 
         int TeleportTo(Position *pos);
 
@@ -3257,6 +3384,11 @@ namespace roadmanager
         double GetSpeedLimit() const;
 
         /**
+        Retrieve the road heading at current position
+        */
+        double GetRoadH() const;
+
+        /**
         Retrieve the road heading/direction at current position, and in the direction given by current lane
         */
         double GetDrivingDirection() const;
@@ -3462,47 +3594,57 @@ namespace roadmanager
         {
             orientation_type_ = type;
         }
+
         OrientationType GetOrientationType() const
         {
             return orientation_type_;
         }
-        void SetAlignModeH(ALIGN_MODE mode)
+
+        /**
+        Set default road alignment for object
+        @param type 0=Set (for all explicit set-functions), 1=Update (when object is updated by any controller)
+        */
+        void SetModeDefault(PosModeType type)
         {
-            align_h_ = mode;
-        }
-        void SetAlignModeP(ALIGN_MODE mode)
-        {
-            align_p_ = mode;
-        }
-        void SetAlignModeR(ALIGN_MODE mode)
-        {
-            align_r_ = mode;
-        }
-        void SetAlignModeZ(ALIGN_MODE mode)
-        {
-            align_z_ = mode;
-        }
-        void SetAlignMode(ALIGN_MODE mode)
-        {
-            align_h_ = align_p_ = align_r_ = align_z_ = mode;
+            SetMode(type, GetModeDefault(type));
         }
 
-        ALIGN_MODE GetAlignModeH() const
+        /**
+        Get default road alignment for object
+        @param type 0=Set (for all explicit set-functions), 1=Update (when object is updated by any controller)
+        */
+        static const int GetModeDefault(PosModeType type)
         {
-            return align_h_;
+            if (type == PosModeType::SET)
+            {
+                return PosMode::Z_REL | PosMode::H_ABS | PosMode::P_REL | PosMode::R_REL;
+            }
+            else if (type == PosModeType::UPDATE)
+            {
+                return PosMode::Z_REL | PosMode::H_REL | PosMode::P_REL | PosMode::R_REL;
+            }
+            else if (type == PosModeType::INIT)
+            {
+                return PosMode::Z_REL | PosMode::H_ABS | PosMode::P_REL | PosMode::R_REL;
+            }
+            else
+            {
+                LOG("Unexpected position mode type: %d", type);
+                return 0;
+            }
         }
-        ALIGN_MODE GetAlignModeP() const
-        {
-            return align_p_;
-        }
-        ALIGN_MODE GetAlignModeR() const
-        {
-            return align_r_;
-        }
-        ALIGN_MODE GetAlignModeZ() const
-        {
-            return align_z_;
-        }
+
+        /**
+        Specify if and how position object will align to the road. This version
+        sets same mode for all components: Heading, Pitch, Roll and Z (elevation)
+        @param id Id of the object
+        @param mode Bitmask combining values from roadmanager::PosMode enum
+        example: To set relative z and absolute roll: (Z_REL | R_ABS) or (7 | 12288) = (7 + 12288) = 12295
+        @param type 0=Set (for all explicit set-functions), 1=Update (when object is updated by any controller)
+        */
+        void SetMode(PosModeType type, int mode);
+
+        int GetMode(PosModeType type);
 
         /**
         Specify which lane types the position object snaps to (is aware of)
@@ -3561,33 +3703,6 @@ namespace roadmanager
             lockOnLane_ = mode;
         }
 
-        int GetOrientationSetMask() const
-        {
-            return orientationSetMask;
-        }
-        bool IsOrientationTypeSet(OrientationSetMask bit) const
-        {
-            return static_cast<int>(bit) & orientationSetMask;
-        }
-        void SetOrientationTypeSetBitmask(int mask)
-        {
-            orientationSetMask = mask;
-        }
-        void SetOrientationTypeSetBit(OrientationSetMask bit, bool value)
-        {
-            orientationSetMask = (orientationSetMask & ~static_cast<int>(bit)) | static_cast<int>(value);
-        }
-
-        void SetZSet(bool value)
-        {
-            zSet = value;
-        }
-
-        bool GetZSet() const
-        {
-            return zSet;
-        }
-
         RouteStrategy GetRouteStrategy() const
         {
             return routeStrategy_;
@@ -3618,7 +3733,14 @@ namespace roadmanager
         void       LaneBoundary2Track();
         void       XYZ2Track();
         ReturnCode SetLongitudinalTrackPos(int track_id, double s);
-        bool       EvaluateRoadZPitchRoll();
+        bool       EvaluateRoadZHPR();
+
+        /**
+        Update trajectory position
+        @param v Trajectory vertex
+        @return Non zero return value indicates error of some kind
+        */
+        int UpdateTrajectoryPos(TrajVertex v);
 
         // Control lane belonging
         bool lockOnLane_;  // if true then keep logical lane regardless of lateral position, default false
@@ -3630,24 +3752,23 @@ namespace roadmanager
         RMTrajectory *trajectory_;  // if pointer set, the position corresponds to a point along (s) the trajectory
 
         // track reference
-        int        track_id_;
-        double     s_;             // longitudinal point/distance along the track
-        double     t_;             // lateral position relative reference line (geometry)
-        int        lane_id_;       // lane reference
-        double     offset_;        // lateral position relative lane given by lane_id
-        double     h_road_;        // heading of the road
-        double     h_offset_;      // local heading offset given by lane width and offset
-        double     h_relative_;    // heading relative to the road (h_ = h_road_ + h_relative_)
-        double     z_relative_;    // z relative to the road
-        double     s_trajectory_;  // longitudinal point/distance along the trajectory
-        double     t_trajectory_;  // longitudinal point/distance along the trajectory
-        double     curvature_;
-        double     p_relative_;  // pitch relative to the road (h_ = h_road_ + h_relative_)
-        double     r_relative_;  // roll relative to the road (h_ = h_road_ + h_relative_)
-        ALIGN_MODE align_h_;     // Align to road: None, Soft or Hard
-        ALIGN_MODE align_p_;     // Align to road: None, Soft or Hard
-        ALIGN_MODE align_r_;     // Align to road: None, Soft or Hard
-        ALIGN_MODE align_z_;     // Align elevation (Z) to road: None, Soft or Hard
+        int    track_id_;
+        double s_;             // longitudinal point/distance along the track
+        double t_;             // lateral position relative reference line (geometry)
+        int    lane_id_;       // lane reference
+        double offset_;        // lateral position relative lane given by lane_id
+        double h_road_;        // heading of the road
+        double h_offset_;      // local heading offset given by lane width and offset
+        double h_relative_;    // heading relative to the road (h_ = h_road_ + h_relative_)
+        double z_relative_;    // z relative to the road
+        double s_trajectory_;  // longitudinal point/distance along the trajectory
+        double t_trajectory_;  // longitudinal point/distance along the trajectory
+        double curvature_;
+        double p_relative_;   // pitch relative to the road (h_ = h_road_ + h_relative_)
+        double r_relative_;   // roll relative to the road (h_ = h_road_ + h_relative_)
+        int    mode_update_;  // bitmask controlling alignment to road surface and orientation, update operations. See PositionMode enum.
+        int    mode_set_;     // bitmask controlling alignment to road surface and orientation, set operations. See PositionMode enum.
+        int    mode_init_;    // bitmask controlling alignment to road surface and orientation, initialization. See PositionMode enum.
 
         Position     *rel_pos_;
         PositionType  type_;
@@ -3698,8 +3819,8 @@ namespace roadmanager
         // RouteStrategy for a position, used for waypoints
         RouteStrategy routeStrategy_ = RouteStrategy::SHORTEST;
 
-        // Store roads overlapping position, updated by XYZH2TrackPos()
-        std::vector<int> overlapping_roads;  // road ids overlapping position evaluated by XYZH2TrackPos()
+        // Store roads overlapping position, updated by XYZ2TrackPos()
+        std::vector<int> overlapping_roads;  // road ids overlapping position evaluated by XYZ2TrackPos()
 
         int  orientationSetMask;  // use values from OrientationSetMask
         bool zSet;                // indicates whether z was explicitly set
@@ -3840,51 +3961,18 @@ namespace roadmanager
         bool CheckRoad(Road *checkRoad, RoadPath::PathNode *srcNode, Road *fromRoad, int fromLaneId);
     };
 
-    struct TrajVertex
-    {
-        double s           = 0;
-        double x           = 0;
-        double y           = 0;
-        double z           = 0;
-        double h           = 0;
-        int    road_id     = -1;  // -1 indicates no valid road position. Use X, Y instead.
-        double time        = 0;
-        double speed       = 0;  // speed at vertex point/start of segment
-        double acc         = 0;  // acceleration along the segment
-        double p           = 0;
-        bool   calcHeading = 0;
-    };
-
     class PolyLineBase
     {
     public:
-        PolyLineBase() : length_(0), current_index_(0), current_s_(0.0), interpolateHeading_(false)
+        PolyLineBase() : length_(0), current_index_(0), current_s_(0.0)
         {
         }
-        TrajVertex *AddVertex(TrajVertex p);
-        TrajVertex *AddVertex(double x, double y, double z, double h, int roadId = -1);
-        TrajVertex *AddVertex(double x, double y, double z, int roadId = -1);
 
         /**
-         * Update vertex position and recalculate dependent values, e.g. length and heading
-         * NOTE: Need to be called in order, starting from i=0
-         * @param i Index of vertex to update
-         * @param x X coordinate of new position
-         * @param y Y coordinate of new position
-         * @param z Z coordinate of new position
-         * @param h Heading
+         * Add vertex
+         * @param v Vertex to add. Set s=std::nan("") to have s value automatically calculated.
          */
-        TrajVertex *UpdateVertex(int i, double x, double y, double z, double h, int roadId = -1);
-
-        /**
-         * Update vertex position and recalculate dependent values, e.g. length and heading
-         * NOTE: Need to be called in order, starting from i=0
-         * @param i Index of vertex to update
-         * @param x X coordinate of new position
-         * @param y Y coordinate of new position
-         * @param z Z coordinate of new position
-         */
-        TrajVertex *UpdateVertex(int i, double x, double y, double z, int roadId = -1);
+        void AddVertex(TrajVertex v);
 
         void reset()
         {
@@ -3921,14 +4009,13 @@ namespace roadmanager
         }
         TrajVertex *GetVertex(int index);
         TrajVertex *GetCurrentVertex();
-        void        Reset();
+        void        Reset(bool clear_vertices);
         int         Time2S(double time, double &s);
 
         std::vector<TrajVertex> vertex_;
         int                     current_index_;
         double                  current_s_;
         double                  length_;
-        bool                    interpolateHeading_;
 
     protected:
         int EvaluateSegmentByLocalS(int i, double local_s, double cornerRadius, TrajVertex &pos);
@@ -3961,6 +4048,10 @@ namespace roadmanager
             return -1;
         };
 
+        virtual void CalculatePolyLine()
+        {
+        }
+
         /**
                 Find point on shape closest to provided point
                 @param xin X coordinate of input position
@@ -3986,9 +4077,10 @@ namespace roadmanager
         {
             return 0.0;
         }
-        ShapeType type_;
-
-        PolyLineBase pline_;  // approximation of shape, used for calculations and visualization
+        ShapeType     type_;
+        FollowingMode following_mode_;
+        double        initial_speed_;
+        PolyLineBase  pline_;  // approximation of shape, used for calculations and visualization
     };
 
     class PolyLineShape : public Shape
@@ -3997,17 +4089,19 @@ namespace roadmanager
         class Vertex
         {
         public:
-            Vertex(const Position &pos) : pos_(pos)
+            Vertex(const Position &pos, double time) : pos_(pos), time_(time)
             {
             }
             Position pos_;
+            double   time_;
         };
 
         PolyLineShape() : Shape(ShapeType::POLYLINE)
         {
         }
-        void   AddVertex(Position pos, double time, bool calculateHeading);
+        void   AddVertex(Position pos, double time);
         int    Evaluate(double p, TrajectoryParamType ptype, TrajVertex &pos);
+        void   CalculatePolyLine() override;
         double GetLength()
         {
             return pline_.length_;
@@ -4025,7 +4119,7 @@ namespace roadmanager
 
         int    Evaluate(double p, TrajectoryParamType ptype, TrajVertex &pos);
         int    EvaluateInternal(double s, TrajVertex &pos);
-        void   CalculatePolyLine();
+        void   CalculatePolyLine() override;
         double GetLength()
         {
             return spiral_.GetLength();
@@ -4052,36 +4146,30 @@ namespace roadmanager
             double   time_;
             double   weight_;
             double   t_;
-            bool     calcHeading_;
 
-            ControlPoint(Position pos, double time, double weight, bool calcHeading)
-                : pos_(pos),
-                  time_(time),
-                  weight_(weight),
-                  calcHeading_(calcHeading)
+            ControlPoint(Position pos, double time, double weight) : pos_(pos), time_(time), weight_(weight)
             {
             }
         };
 
     public:
-        NurbsShape(int order) : order_(order), Shape(ShapeType::NURBS), length_(0)
+        NurbsShape(unsigned int order) : order_(order), Shape(ShapeType::NURBS), length_(0)
         {
-            pline_.interpolateHeading_ = true;
         }
 
-        void AddControlPoint(Position pos, double time, double weight, bool calcHeading);
+        void AddControlPoint(Position pos, double time, double weight);
         void AddKnots(std::vector<double> knots);
         int  Evaluate(double p, TrajectoryParamType ptype, TrajVertex &pos);
         int  EvaluateInternal(double s, TrajVertex &pos);
 
-        int                       order_;
+        unsigned int              order_;
         std::vector<ControlPoint> ctrlPoint_;
         std::vector<double>       knot_;
         std::vector<double>       d_;           // used for temporary storage of CoxDeBoor weigthed control points
         std::vector<double>       dPeakT_;      // used for storage of at what t value the corresponding ctrlPoint contribution peaks
         std::vector<double>       dPeakValue_;  // used for storage of at what t value the corresponding ctrlPoint contribution peaks
 
-        void   CalculatePolyLine();
+        void   CalculatePolyLine() override;
         double GetLength()
         {
             return length_;

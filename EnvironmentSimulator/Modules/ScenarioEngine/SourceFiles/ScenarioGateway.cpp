@@ -697,6 +697,26 @@ int ScenarioGateway::updateObjectWorldPosXYH(int id, double timestamp, double x,
     return 0;
 }
 
+int ScenarioGateway::updateObjectWorldPosXYHMode(int id, double timestamp, double x, double y, double h, int mode)
+{
+    ObjectState* obj_state = getObjectStatePtrById(id);
+
+    if (obj_state == 0)
+    {
+        // Create state and set permanent information
+        LOG("Object id: %d must be reported before updated", id);
+    }
+    else
+    {
+        // Update status
+        obj_state->state_.pos.SetInertiaPosMode(x, y, h, mode);
+        obj_state->state_.info.timeStamp = timestamp;
+        obj_state->dirty_ |= Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::LATERAL;
+    }
+
+    return 0;
+}
+
 int ScenarioGateway::updateObjectWorldPos(int id, double timestamp, double x, double y, double z, double h, double p, double r)
 {
     ObjectState* obj_state = getObjectStatePtrById(id);
@@ -710,6 +730,26 @@ int ScenarioGateway::updateObjectWorldPos(int id, double timestamp, double x, do
     {
         // Update status
         obj_state->state_.pos.SetInertiaPos(x, y, z, h, p, r);
+        obj_state->state_.info.timeStamp = timestamp;
+        obj_state->dirty_ |= Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::LATERAL;
+    }
+
+    return 0;
+}
+
+int ScenarioGateway::updateObjectWorldPosMode(int id, double timestamp, double x, double y, double z, double h, double p, double r, int mode)
+{
+    ObjectState* obj_state = getObjectStatePtrById(id);
+
+    if (obj_state == 0)
+    {
+        // Create state and set permanent information
+        LOG("Object id: %d must be reported before updated", id);
+    }
+    else
+    {
+        // Update status
+        obj_state->state_.pos.SetInertiaPosMode(x, y, z, h, p, r, mode);
         obj_state->state_.info.timeStamp = timestamp;
         obj_state->dirty_ |= Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::LATERAL;
     }
@@ -852,7 +892,7 @@ int ScenarioGateway::updateObjectVisibilityMask(int id, int visibilityMask)
     return 0;
 }
 
-int ScenarioGateway::setObjectAlignMode(int id, int mode)
+int ScenarioGateway::setObjectPositionMode(int id, int type, int mode)
 {
     ObjectState* obj_state = getObjectStatePtrById(id);
 
@@ -862,14 +902,43 @@ int ScenarioGateway::setObjectAlignMode(int id, int mode)
         return -1;
     }
 
-    obj_state->state_.pos.SetAlignMode(static_cast<roadmanager::Position::ALIGN_MODE>(mode));
-    obj_state->dirty_ |=
-        (Object::DirtyBit::ALIGN_MODE_H | Object::DirtyBit::ALIGN_MODE_P | Object::DirtyBit::ALIGN_MODE_R | Object::DirtyBit::ALIGN_MODE_Z);
+    if (type < 0 || type > 1)
+    {
+        LOG_ONCE("Unexpected ObjectPositionType %d, skipping", type);
+        return -1;
+    }
+
+    obj_state->state_.pos.SetMode(static_cast<roadmanager::Position::PosModeType>(type), mode);
+
+    if ((mode & roadmanager::Position::PosMode::Z_SET) != 0)
+    {
+        obj_state->dirty_ |=
+            (type == static_cast<int>(roadmanager::Position::PosModeType::SET) ? static_cast<int>(Object::DirtyBit::ALIGN_MODE_Z_SET)
+                                                                               : static_cast<int>(Object::DirtyBit::ALIGN_MODE_Z_UPDATE));
+    }
+    if ((mode & roadmanager::Position::PosMode::H_SET) != 0)
+    {
+        obj_state->dirty_ |=
+            (type == static_cast<int>(roadmanager::Position::PosModeType::SET) ? static_cast<int>(Object::DirtyBit::ALIGN_MODE_H_SET)
+                                                                               : static_cast<int>(Object::DirtyBit::ALIGN_MODE_H_UPDATE));
+    }
+    if ((mode & roadmanager::Position::PosMode::P_SET) != 0)
+    {
+        obj_state->dirty_ |=
+            (type == static_cast<int>(roadmanager::Position::PosModeType::SET) ? static_cast<int>(Object::DirtyBit::ALIGN_MODE_P_SET)
+                                                                               : static_cast<int>(Object::DirtyBit::ALIGN_MODE_P_UPDATE));
+    }
+    if ((mode & roadmanager::Position::PosMode::R_SET) != 0)
+    {
+        obj_state->dirty_ |=
+            (type == static_cast<int>(roadmanager::Position::PosModeType::SET) ? static_cast<int>(Object::DirtyBit::ALIGN_MODE_R_SET)
+                                                                               : static_cast<int>(Object::DirtyBit::ALIGN_MODE_R_UPDATE));
+    }
 
     return 0;
 }
 
-int ScenarioGateway::setObjectAlignModeH(int id, int mode)
+int ScenarioGateway::setObjectPositionModeDefault(int id, int type)
 {
     ObjectState* obj_state = getObjectStatePtrById(id);
 
@@ -879,56 +948,17 @@ int ScenarioGateway::setObjectAlignModeH(int id, int mode)
         return -1;
     }
 
-    obj_state->state_.pos.SetAlignModeH(static_cast<roadmanager::Position::ALIGN_MODE>(mode));
-    obj_state->dirty_ |= Object::DirtyBit::ALIGN_MODE_H;
-
-    return 0;
-}
-
-int ScenarioGateway::setObjectAlignModeP(int id, int mode)
-{
-    ObjectState* obj_state = getObjectStatePtrById(id);
-
-    if (obj_state == nullptr)
+    obj_state->state_.pos.SetModeDefault(static_cast<roadmanager::Position::PosModeType>(type));
+    if (type == static_cast<int>(roadmanager::Position::PosModeType::SET))
     {
-        LOG_ONCE("Can't set alignment mode for object %d yet. Please register object using reportObject() first.", id);
-        return -1;
+        obj_state->dirty_ |= (Object::DirtyBit::ALIGN_MODE_H_SET | Object::DirtyBit::ALIGN_MODE_P_SET | Object::DirtyBit::ALIGN_MODE_R_SET |
+                              Object::DirtyBit::ALIGN_MODE_Z_SET);
     }
-
-    obj_state->state_.pos.SetAlignModeP(static_cast<roadmanager::Position::ALIGN_MODE>(mode));
-    obj_state->dirty_ |= Object::DirtyBit::ALIGN_MODE_P;
-
-    return 0;
-}
-
-int ScenarioGateway::setObjectAlignModeR(int id, int mode)
-{
-    ObjectState* obj_state = getObjectStatePtrById(id);
-
-    if (obj_state == nullptr)
+    else
     {
-        LOG_ONCE("Can't set alignment mode for object %d yet. Please register object using reportObject() first.", id);
-        return -1;
+        obj_state->dirty_ |= (Object::DirtyBit::ALIGN_MODE_H_UPDATE | Object::DirtyBit::ALIGN_MODE_P_UPDATE | Object::DirtyBit::ALIGN_MODE_R_UPDATE |
+                              Object::DirtyBit::ALIGN_MODE_Z_UPDATE);
     }
-
-    obj_state->state_.pos.SetAlignModeR(static_cast<roadmanager::Position::ALIGN_MODE>(mode));
-    obj_state->dirty_ |= Object::DirtyBit::ALIGN_MODE_R;
-
-    return 0;
-}
-
-int ScenarioGateway::setObjectAlignModeZ(int id, int mode)
-{
-    ObjectState* obj_state = getObjectStatePtrById(id);
-
-    if (obj_state == nullptr)
-    {
-        LOG_ONCE("Can't set alignment mode for object %d yet. Please register object using reportObject() first.", id);
-        return -1;
-    }
-
-    obj_state->state_.pos.SetAlignModeZ(static_cast<roadmanager::Position::ALIGN_MODE>(mode));
-    obj_state->dirty_ |= Object::DirtyBit::ALIGN_MODE_Z;
 
     return 0;
 }

@@ -120,6 +120,36 @@ typedef struct
     int         towgs84_;
 } RM_GeoReference;
 
+// Modes for interpret Z, Head, Pitch, Roll coordinate value as absolute or relative
+// grouped as bitmask: 0000 => skip/use current, 0001=DEFAULT, 0011=ABS, 0111=REL
+// example: Relative Z, Absolute H, Default R, Current P = RM_Z_REL | RM_H_ABS | RM_R_DEF = 4151 = 0001 0000 0011 0111
+// Must match roadmanager::Position::PositionMode
+typedef enum
+{
+    RM_Z_SET = 1,  // 0001
+    RM_Z_DEF = 1,  // 0001
+    RM_Z_ABS = 3,  // 0011
+    RM_Z_REL = 7,  // 0111
+    RM_H_SET = RM_Z_SET << 4,
+    RM_H_DEF = RM_Z_DEF << 4,
+    RM_H_ABS = RM_Z_ABS << 4,
+    RM_H_REL = RM_Z_REL << 4,
+    RM_P_SET = RM_Z_SET << 8,
+    RM_P_DEF = RM_Z_DEF << 8,
+    RM_P_ABS = RM_Z_ABS << 8,
+    RM_P_REL = RM_Z_REL << 8,
+    RM_R_SET = RM_Z_SET << 12,
+    RM_R_DEF = RM_Z_DEF << 12,
+    RM_R_ABS = RM_Z_ABS << 12,
+    RM_R_REL = RM_Z_REL << 12,
+} RM_PositionMode;
+
+typedef enum
+{
+    RM_SET    = 0,  // Used by explicit set functions
+    RM_UPDATE = 1   // Used by controllers updating the position
+} RM_PositionModeType;
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -165,59 +195,25 @@ extern "C"
     RM_DLL_API int RM_CopyPosition(int handle);
 
     /**
-    Specify if and how position object will align to the road. This version
-    sets same mode for all components: Heading, Pitch, Roll and Z (elevation)
-    @param hande Handle to the position object. Set -1 to delete all.
-    @param mode as defined by roadmanager::Position::ALIGN_MODE:
-    0 = ALIGN_NONE // No alignment to road
-    1 = ALIGN_SOFT // Align to road but add relative orientation
-    2 = ALIGN_HARD // Completely align to road, disregard relative orientation
+    Specify if and how position object will align to the road. The setting is done for individual components:
+    Z (elevation), Heading, Pitch, Roll and separately for set- and update operation. Set operations represents
+    when position is affected by API calls, e.g. updateObjectWorldPos(). Update operations represents when the
+    position is updated implicitly by the scenarioengine, e.g. default controller moving a vehicle along the lane.
+    @param hande Handle to the position object
+    @param mode Bitmask combining values from roadmanager::PosMode enum
+    example: To set relative z and absolute roll: (Z_REL | R_ABS) or (7 | 12288) = (7 + 12288) = 12295
+    @param type Type of operations the setting applies to. SET (explicit set-functions) or UPDATE (updates by controllers),
+    according to roadmanager::PosModeType
     */
-    RM_DLL_API void RM_SetAlignMode(int handle, int mode);
+    RM_DLL_API void RM_SetObjectPositionMode(int handle, int type, int mode);
 
     /**
-    Specify if and how position object will align to the road. This version
-    sets same mode for only heading component.
-    @param hande Handle to the position object. Set -1 to delete all.
-    @param mode as defined by roadmanager::Position::ALIGN_MODE:
-    0 = ALIGN_NONE // No alignment to road
-    1 = ALIGN_SOFT // Align to road but add relative orientation
-    2 = ALIGN_HARD // Completely align to road, disregard relative orientation
+    Set to default mode how position object will align to the road
+    @param hande Handle to the position object
+    @param type Type of operations the setting applies to. SET (explicit set-functions) or UPDATE (updates by controllers),
+    according to roadmanager::PosModeType
     */
-    RM_DLL_API void RM_SetAlignModeH(int handle, int mode);
-
-    /**
-    Specify if and how position object will align to the road. This version
-    sets same mode for only pitch component.
-    @param hande Handle to the position object. Set -1 to delete all.
-    @param mode as defined by roadmanager::Position::ALIGN_MODE:
-    0 = ALIGN_NONE // No alignment to road
-    1 = ALIGN_SOFT // Align to road but add relative orientation
-    2 = ALIGN_HARD // Completely align to road, disregard relative orientation
-    */
-    RM_DLL_API void RM_SetAlignModeP(int handle, int mode);
-
-    /**
-    Specify if and how position object will align to the road. This version
-    sets same mode for only roll component.
-    @param hande Handle to the position object. Set -1 to delete all.
-    @param mode as defined by roadmanager::Position::ALIGN_MODE:
-    0 = ALIGN_NONE // No alignment to road
-    1 = ALIGN_SOFT // Align to road but add relative orientation
-    2 = ALIGN_HARD // Completely align to road, disregard relative orientation
-    */
-    RM_DLL_API void RM_SetAlignModeR(int handle, int mode);
-
-    /**
-    Specify if and how position object will align to the road. This version
-    sets same mode for only Z (elevation) component.
-    @param hande Handle to the position object. Set -1 to delete all.
-    @param mode as defined by roadmanager::Position::ALIGN_MODE:
-    0 = ALIGN_NONE // No alignment to road
-    1 = ALIGN_SOFT // Align to road but add relative orientation
-    2 = ALIGN_HARD // Completely align to road, disregard relative orientation
-    */
-    RM_DLL_API void RM_SetAlignModeZ(int handle, int mode);
+    RM_DLL_API void RM_SetObjectPositionModeDefault(int handle, int type);
 
     /**
     Specify which lane types the position object snaps to (is aware of)

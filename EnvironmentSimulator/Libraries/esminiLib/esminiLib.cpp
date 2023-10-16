@@ -320,11 +320,11 @@ static int GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, S
     roadmanager::Position pos;
     if (trailPos.road_id >= 0)
     {
-        pos.XYZH2TrackPos(trailPos.x, trailPos.y, 0.0, 0.0, false, trailPos.road_id, false);
+        pos.XYZ2TrackPos(trailPos.x, trailPos.y, 0.0, false, trailPos.road_id, false);
     }
     else
     {
-        pos.XYZH2TrackPos(trailPos.x, trailPos.y, 0.0, 0.0);
+        pos.XYZ2TrackPos(trailPos.x, trailPos.y, 0.0);
     }
 
     obj->pos_.CalcProbeTarget(&pos, &s_data);
@@ -388,11 +388,11 @@ static int GetRoadInfoAtGhostTrailTime(int object_id, float time, SE_RoadInfo *r
     roadmanager::Position pos;
     if (trailPos.road_id >= 0)
     {
-        pos.XYZH2TrackPos(trailPos.x, trailPos.y, 0.0, 0.0, false, trailPos.road_id, false);
+        pos.XYZ2TrackPos(trailPos.x, trailPos.y, 0.0, false, trailPos.road_id, false);
     }
     else
     {
-        pos.XYZH2TrackPos(trailPos.x, trailPos.y, 0.0, 0.0);
+        pos.XYZ2TrackPos(trailPos.x, trailPos.y, 0.0);
     }
 
     obj->pos_.CalcProbeTarget(&pos, &s_data);
@@ -964,7 +964,7 @@ extern "C"
         return static_cast<float>(SE_getSimTimeStep(time_stamp, 0.001, 0.1));
     }
 
-    SE_DLL_API void SE_SetAlignMode(int object_id, int mode)
+    SE_DLL_API void SE_SetObjectPositionMode(int object_id, int type, int mode)
     {
         if (player != nullptr)
         {
@@ -974,14 +974,11 @@ extern "C"
                 return;
             }
 
-            player->scenarioGateway->setObjectAlignModeH(object_id, mode);
-            player->scenarioGateway->setObjectAlignModeP(object_id, mode);
-            player->scenarioGateway->setObjectAlignModeR(object_id, mode);
-            player->scenarioGateway->setObjectAlignModeZ(object_id, mode);
+            player->scenarioGateway->setObjectPositionMode(object_id, type, mode);
         }
     }
 
-    SE_DLL_API void SE_SetAlignModeH(int object_id, int mode)
+    SE_DLL_API void SE_SetObjectPositionModeDefault(int object_id, int type)
     {
         if (player != nullptr)
         {
@@ -991,49 +988,7 @@ extern "C"
                 return;
             }
 
-            player->scenarioGateway->setObjectAlignModeH(object_id, mode);
-        }
-    }
-
-    SE_DLL_API void SE_SetAlignModeP(int object_id, int mode)
-    {
-        if (player != nullptr)
-        {
-            Object *obj = nullptr;
-            if (getObjectById(object_id, obj) == -1)
-            {
-                return;
-            }
-
-            player->scenarioGateway->setObjectAlignModeP(object_id, mode);
-        }
-    }
-
-    SE_DLL_API void SE_SetAlignModeR(int object_id, int mode)
-    {
-        if (player != nullptr)
-        {
-            Object *obj = nullptr;
-            if (getObjectById(object_id, obj) == -1)
-            {
-                return;
-            }
-
-            player->scenarioGateway->setObjectAlignModeR(object_id, mode);
-        }
-    }
-
-    SE_DLL_API void SE_SetAlignModeZ(int object_id, int mode)
-    {
-        if (player != nullptr)
-        {
-            Object *obj = nullptr;
-            if (getObjectById(object_id, obj) == -1)
-            {
-                return;
-            }
-
-            player->scenarioGateway->setObjectAlignModeZ(object_id, mode);
+            player->scenarioGateway->setObjectPositionModeDefault(object_id, type);
         }
     }
 
@@ -1166,6 +1121,19 @@ extern "C"
         }
 
         player->scenarioGateway->updateObjectWorldPos(object_id, timestamp, x, y, z, h, p, r);
+
+        return 0;
+    }
+
+    SE_DLL_API int SE_ReportObjectPosMode(int object_id, float timestamp, float x, float y, float z, float h, float p, float r, int mode)
+    {
+        Object *obj = nullptr;
+        if (getObjectById(object_id, obj) == -1)
+        {
+            return -1;
+        }
+
+        player->scenarioGateway->updateObjectWorldPosMode(object_id, timestamp, x, y, z, h, p, r, mode);
 
         return 0;
     }

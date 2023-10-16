@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSCENARIO>
+    <FileHeader revMajor="1" revMinor="1" date="2023-10-25T10:00:00" description="Demonstrate use of postition mode, road alignment and floating trajectories" author="esmini team"/>
+    <ParameterDeclarations>
+        <ParameterDeclaration name="Pedestrian" parameterType="string" value="pedestrian_adult"/>
+    </ParameterDeclarations>
+    <CatalogLocations>
+        <PedestrianCatalog>
+            <Directory path="../resources/xosc/Catalogs/Pedestrians"/>
+        </PedestrianCatalog>
+    </CatalogLocations>
+    <RoadNetwork>
+        <LogicFile filepath="../../EnvironmentSimulator/Unittest/xodr/straight_500_superelevation_elevation_curve.xodr"/>
+    </RoadNetwork>
+    <Entities>
+        <ScenarioObject name="Ego">
+            <CatalogReference catalogName="PedestrianCatalog" entryName="$Pedestrian"/>
+        </ScenarioObject>
+        <ScenarioObject name="Heli">
+            <MiscObject name="heli" miscObjectCategory="none" model3d="../../resources/models/box_cc_by.osgb" mass="200.0">
+                <ParameterDeclarations/>
+                <BoundingBox>
+                    <Center x="0.0" y="0.0" z="0.75"/>
+                    <Dimensions width="1.0" length="2.0" height="1.2"/>
+                </BoundingBox>
+                <Properties>
+                    <Property name="scaleMode" value="ModelToBB"/>
+                    <Property name="model_id" value="15"/>
+                </Properties>
+            </MiscObject>
+        </ScenarioObject>
+        <ScenarioObject name="Heli2">
+            <MiscObject name="heli2" miscObjectCategory="none" model3d="../../resources/models/box_cc_by.osgb" mass="200.0">
+                <ParameterDeclarations/>
+                <BoundingBox>
+                    <Center x="0.0" y="0.0" z="0.75"/>
+                    <Dimensions width="2.0" length="0.5" height="0.6"/>
+                </BoundingBox>
+                <Properties>
+                    <Property name="scaleMode" value="ModelToBB"/>
+                    <Property name="model_id" value="15"/>
+                </Properties>
+            </MiscObject>
+        </ScenarioObject>
+        <ScenarioObject name="Heli3">
+            <MiscObject name="heli3" miscObjectCategory="none" model3d="../../resources/models/box_cc_by.osgb" mass="200.0">
+                <ParameterDeclarations/>
+                <BoundingBox>
+                    <Center x="0.0" y="0.0" z="0.75"/>
+                    <Dimensions width="2.0" length="1.5" height="1.6"/>
+                </BoundingBox>
+                <Properties>
+                    <Property name="scaleMode" value="ModelToBB"/>
+                    <Property name="model_id" value="15"/>
+                </Properties>
+            </MiscObject>
+        </ScenarioObject>
+    </Entities>
+    <Storyboard>
+        <Init>
+            <Actions>
+                <Private entityRef="Ego">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="1" laneId="-1" offset="0" s="50">
+                                    <Orientation type="relative" h="0.0"/>
+                                </LanePosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsDimension="time" dynamicsShape="step" value="0"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Heli">
+                    <PrivateAction>
+                        <RoutingAction>
+                            <FollowTrajectoryAction>
+                                <TrajectoryRef>
+                                    <Trajectory closed="true" name="TrajectoryPLine">
+                                        <ParameterDeclarations/>
+                                        <Shape>
+                                            <Nurbs order="3">
+                                                <ControlPoint time="0" weight="1">
+                                                    <Position>
+                                                        <WorldPosition x="0.0" y="0.0" z="20.0"/>
+                                                    </Position>
+                                                </ControlPoint>
+                                                <ControlPoint time="5" weight="1">
+                                                    <Position>
+                                                        <WorldPosition x="100.0" y="0.0" z="20.0"/>
+                                                    </Position>
+                                                </ControlPoint>
+                                                <ControlPoint time="10" weight="1">
+                                                    <Position>
+                                                        <WorldPosition x="100.0" y="100.0" z="40.0"/>
+                                                    </Position>
+                                                </ControlPoint>
+                                                <ControlPoint time="20" weight="1">
+                                                    <Position>
+                                                        <WorldPosition x="-100.0" y="100.0" z="5.0"/>
+                                                    </Position>
+                                                </ControlPoint>
+                                                <ControlPoint time="25" weight="1">
+                                                    <Position>
+                                                        <WorldPosition x="-100.0" y="0.0" z="20.0"/>
+                                                    </Position>
+                                                </ControlPoint>
+                                                <ControlPoint time="30" weight="1">
+                                                    <Position>
+                                                        <WorldPosition x="0.0" y="0.0" z="20.0"/>
+                                                    </Position>
+                                                </ControlPoint>
+                                                <Knot value="0.0"/>
+                                                <Knot value="0.0"/>
+                                                <Knot value="0.0"/>
+                                                <Knot value="0.25"/>
+                                                <Knot value="0.5"/>
+                                                <Knot value="0.75"/>
+                                                <Knot value="1.0"/>
+                                                <Knot value="1.0"/>
+                                                <Knot value="1.0"/>
+                                            </Nurbs>
+                                        </Shape>
+                                    </Trajectory>
+                                </TrajectoryRef>
+                                <TimeReference>
+                                    <Timing domainAbsoluteRelative="relative" offset="0" scale="1"/>
+                                </TimeReference>
+                                <TrajectoryFollowingMode followingMode="position"/>
+                            </FollowTrajectoryAction>
+                        </RoutingAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Heli2">
+                    <PrivateAction>
+                        <RoutingAction>
+                            <FollowTrajectoryAction>
+                                <TrajectoryRef>
+                                    <Trajectory closed="true" name="TrajectoryPLine">
+                                        <ParameterDeclarations/>
+                                        <Shape>
+                                            <Nurbs order="3">
+                                                <ControlPoint time="0" weight="1">
+                                                    <Position>
+                                                        <WorldPosition x="20.0" y="0.0" z="30.0" r="0.0"/>
+                                                    </Position>
+                                                </ControlPoint>
+                                                <ControlPoint time="5" weight="1">
+                                                    <Position>
+                                                        <WorldPosition x="80.0" y="0.0" z="30.0" r="-1.0"/>
+                                                    </Position>
+                                                </ControlPoint>
+                                                <ControlPoint time="10" weight="1">
+                                                    <Position>
+                                                        <WorldPosition x="80.0" y="100.0" z="2.0" r="-1.0"/>
+                                                    </Position>
+                                                </ControlPoint>
+                                                <ControlPoint time="15" weight="1">
+                                                    <Position>
+                                                        <WorldPosition x="0.0" y="100.0" z="21.0" r="0.25"/>
+                                                    </Position>
+                                                </ControlPoint>
+                                                <ControlPoint time="20" weight="1">
+                                                    <Position>
+                                                        <WorldPosition x="-80.0" y="100.0" z="40.0" r="-1.0"/>
+                                                    </Position>
+                                                </ControlPoint>
+                                                <ControlPoint time="25" weight="1">
+                                                    <Position>
+                                                        <WorldPosition x="-80.0" y="0.0" z="30.0" r="-1.0"/>
+                                                    </Position>
+                                                </ControlPoint>
+                                                <ControlPoint time="30" weight="1">
+                                                    <Position>
+                                                        <WorldPosition x="20.0" y="0.0" z="30.0" r="0.0"/>
+                                                    </Position>
+                                                </ControlPoint>
+                                                <Knot value="0.0"/>
+                                                <Knot value="0.0"/>
+                                                <Knot value="0.0"/>
+                                                <Knot value="0.2"/>
+                                                <Knot value="0.4"/>
+                                                <Knot value="0.6"/>
+                                                <Knot value="0.8"/>
+                                                <Knot value="1.0"/>
+                                                <Knot value="1.0"/>
+                                                <Knot value="1.0"/>
+                                            </Nurbs>
+                                        </Shape>
+                                    </Trajectory>
+                                </TrajectoryRef>
+                                <TimeReference>
+                                    <Timing domainAbsoluteRelative="relative" offset="0" scale="1"/>
+                                </TimeReference>
+                                <TrajectoryFollowingMode followingMode="position"/>
+                            </FollowTrajectoryAction>
+                        </RoutingAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Heli3">
+                    <PrivateAction>
+                        <RoutingAction>
+                            <FollowTrajectoryAction>
+                                <Trajectory closed="true" name="TrajectoryPLine">
+                                    <ParameterDeclarations/>
+                                    <Shape>
+                                        <Polyline>
+                                            <Vertex time="0.0">
+                                                <Position>
+                                                    <WorldPosition x="40.0" y="30.0" z="30.0" r="0.0"/>
+                                                </Position>
+                                            </Vertex>
+                                            <Vertex time="5.0">
+                                                <Position>
+                                                    <WorldPosition x="60.0" y="30.0" z="30.0" r="-1.0"/>
+                                                </Position>
+                                            </Vertex>
+                                            <Vertex time="10.0">
+                                                <Position>
+                                                    <WorldPosition x="60.0" y="70.0" z="2.0" r="-1.0"/>
+                                                </Position>
+                                            </Vertex>
+                                            <Vertex time="20.0">
+                                                <Position>
+                                                    <WorldPosition x="-60.0" y="70.0" z="40.0" r="-1.0"/>
+                                                </Position>
+                                            </Vertex>
+                                            <Vertex time="25.0">
+                                                <Position>
+                                                    <WorldPosition x="-60.0" y="30.0" z="30.0" r="-1.0"/>
+                                                </Position>
+                                            </Vertex>
+                                            <Vertex time="30.0">
+                                                <Position>
+                                                    <WorldPosition x="40.0" y="30.0" z="30.0" r="0.0"/>
+                                                </Position>
+                                            </Vertex>
+                                        </Polyline>
+                                    </Shape>
+                                </Trajectory>
+                                <TimeReference>
+                                    <Timing domainAbsoluteRelative="relative" offset="0" scale="1"/>
+                                </TimeReference>
+                                <TrajectoryFollowingMode followingMode="position"/>
+                            </FollowTrajectoryAction>
+                        </RoutingAction>
+                    </PrivateAction>
+                </Private>
+            </Actions>
+        </Init>
+        <Story name="Story">
+            <ParameterDeclarations/>
+            <Act name="MyAct">
+                <ManeuverGroup maximumExecutionCount="1" name="mangroup">
+                    <Actors selectTriggeringEntities="false"/>
+                </ManeuverGroup>
+                <StartTrigger/>
+            </Act>
+        </Story>
+        <StopTrigger>
+            <ConditionGroup>
+                <Condition name="TimerTrigger" delay="0" conditionEdge="falling">
+                    <ByValueCondition>
+                        <SimulationTimeCondition rule="lessThan" value="29.9"/>
+                    </ByValueCondition>
+                </Condition>
+            </ConditionGroup>
+        </StopTrigger>
+    </Storyboard>
+</OpenSCENARIO>

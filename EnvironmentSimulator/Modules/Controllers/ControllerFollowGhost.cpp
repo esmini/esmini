@@ -252,9 +252,6 @@ void ControllerFollowGhost::Activate(DomainActivation lateral, DomainActivation 
         object_->sensor_pos_[0] = object_->pos_.GetX();
         object_->sensor_pos_[1] = object_->pos_.GetY();
         object_->sensor_pos_[2] = object_->pos_.GetZ();
-
-        object_->pos_.SetAlignModeZ(roadmanager::Position::ALIGN_MODE::ALIGN_HARD);
-        object_->pos_.SetAlignModeP(roadmanager::Position::ALIGN_MODE::ALIGN_HARD);
     }
 
     Controller::Activate(lateral, longitudinal);

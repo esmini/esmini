@@ -208,6 +208,46 @@ int ScenarioEngine::step(double deltaSimTime)
                 {
                     obj->SetDirtyBits(Object::DirtyBit::WHEEL_ROTATION);
                 }
+                if (o->dirty_ & Object::DirtyBit::ALIGN_MODE_H_SET)
+                {
+                    obj->pos_.SetMode(roadmanager::Position::PosModeType::SET,
+                                      roadmanager::Position::PosMode::H_MASK & o->state_.pos.GetMode(roadmanager::Position::PosModeType::SET));
+                }
+                if (o->dirty_ & Object::DirtyBit::ALIGN_MODE_P_SET)
+                {
+                    obj->pos_.SetMode(roadmanager::Position::PosModeType::SET,
+                                      roadmanager::Position::PosMode::P_MASK & o->state_.pos.GetMode(roadmanager::Position::PosModeType::SET));
+                }
+                if (o->dirty_ & Object::DirtyBit::ALIGN_MODE_R_SET)
+                {
+                    obj->pos_.SetMode(roadmanager::Position::PosModeType::SET,
+                                      roadmanager::Position::PosMode::R_MASK & o->state_.pos.GetMode(roadmanager::Position::PosModeType::SET));
+                }
+                if (o->dirty_ & Object::DirtyBit::ALIGN_MODE_Z_SET)
+                {
+                    obj->pos_.SetMode(roadmanager::Position::PosModeType::SET,
+                                      roadmanager::Position::PosMode::Z_MASK & o->state_.pos.GetMode(roadmanager::Position::PosModeType::SET));
+                }
+                if (o->dirty_ & Object::DirtyBit::ALIGN_MODE_H_UPDATE)
+                {
+                    obj->pos_.SetMode(roadmanager::Position::PosModeType::UPDATE,
+                                      roadmanager::Position::PosMode::H_MASK & o->state_.pos.GetMode(roadmanager::Position::PosModeType::UPDATE));
+                }
+                if (o->dirty_ & Object::DirtyBit::ALIGN_MODE_P_UPDATE)
+                {
+                    obj->pos_.SetMode(roadmanager::Position::PosModeType::UPDATE,
+                                      roadmanager::Position::PosMode::P_MASK & o->state_.pos.GetMode(roadmanager::Position::PosModeType::UPDATE));
+                }
+                if (o->dirty_ & Object::DirtyBit::ALIGN_MODE_R_UPDATE)
+                {
+                    obj->pos_.SetMode(roadmanager::Position::PosModeType::UPDATE,
+                                      roadmanager::Position::PosMode::R_MASK & o->state_.pos.GetMode(roadmanager::Position::PosModeType::UPDATE));
+                }
+                if (o->dirty_ & Object::DirtyBit::ALIGN_MODE_Z_UPDATE)
+                {
+                    obj->pos_.SetMode(roadmanager::Position::PosModeType::UPDATE,
+                                      roadmanager::Position::PosMode::Z_MASK & o->state_.pos.GetMode(roadmanager::Position::PosModeType::UPDATE));
+                }
             }
         }
     }
@@ -559,22 +599,6 @@ int ScenarioEngine::step(double deltaSimTime)
         ObjectState* o = scenarioGateway.getObjectStatePtrById(obj->id_);
         if (o != nullptr)
         {
-            if (o->dirty_ & Object::DirtyBit::ALIGN_MODE_H)
-            {
-                obj->pos_.SetAlignModeH(o->state_.pos.GetAlignModeH());
-            }
-            if (o->dirty_ & Object::DirtyBit::ALIGN_MODE_P)
-            {
-                obj->pos_.SetAlignModeP(o->state_.pos.GetAlignModeP());
-            }
-            if (o->dirty_ & Object::DirtyBit::ALIGN_MODE_R)
-            {
-                obj->pos_.SetAlignModeR(o->state_.pos.GetAlignModeR());
-            }
-            if (o->dirty_ & Object::DirtyBit::ALIGN_MODE_Z)
-            {
-                obj->pos_.SetAlignModeZ(o->state_.pos.GetAlignModeZ());
-            }
             if (o->dirty_ & (Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL))
             {
                 obj->pos_ = o->state_.pos;
@@ -1089,17 +1113,20 @@ void ScenarioEngine::prepareGroundTruth(double dt)
                     if (obj->trail_.GetNumberOfVertices() == 0 || fabs(obj->trail_.GetVertex(-1)->speed) > SMALL_NUMBER ||
                         fabs(obj->GetSpeed()) > SMALL_NUMBER)
                     {
-                        obj->trail_.AddVertex({0.0,
+                        obj->trail_.AddVertex({std::nan(""),
                                                obj->pos_.GetX(),
                                                obj->pos_.GetY(),
                                                obj->pos_.GetZ(),
                                                obj->pos_.GetH(),
+                                               obj->pos_.GetP(),
+                                               obj->pos_.GetR(),
                                                obj->pos_.GetTrackId(),
                                                simulationTime_,
                                                obj->GetSpeed(),
                                                obj->pos_.GetAcc(),
                                                0.0,
-                                               false});
+                                               roadmanager::Position::PosMode::H_REL,
+                                               0});
                     }
                 }
             }

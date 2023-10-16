@@ -317,12 +317,6 @@ void FollowTrajectoryAction::Start(double simTime, double dt)
 
     object_->pos_.SetTrajectoryS(initialDistanceOffset_);
     time_ = traj_->GetTimeAtS(initialDistanceOffset_);
-
-    // We want the trajectory to be projected on road surface.
-    object_->pos_.SetAlignMode(roadmanager::Position::ALIGN_MODE::ALIGN_HARD);
-
-    // But totally decouple trajectory positioning from road heading
-    object_->pos_.SetAlignModeH(roadmanager::Position::ALIGN_MODE::ALIGN_SOFT);
 }
 
 void FollowTrajectoryAction::End(double simTime)
@@ -336,9 +330,6 @@ void FollowTrajectoryAction::End(double simTime)
 
     // Disconnect trajectory
     object_->pos_.SetTrajectory(0);
-
-    // And reset align mode
-    object_->pos_.SetAlignMode(roadmanager::Position::ALIGN_MODE::ALIGN_SOFT);
 }
 
 void FollowTrajectoryAction::Step(double simTime, double dt)
@@ -422,7 +413,7 @@ void FollowTrajectoryAction::Step(double simTime, double dt)
     {
         // Reached end of trajectory
         // Calculate road coordinates from final inertia (X, Y) coordinates
-        object_->pos_.XYZH2TrackPos(object_->pos_.GetX(), object_->pos_.GetY(), object_->pos_.GetZ(), object_->pos_.GetH());
+        object_->pos_.XYZ2TrackPos(object_->pos_.GetX(), object_->pos_.GetY(), object_->pos_.GetZ());
 
         double remaningDistance = 0.0;
         if (timing_domain_ == TimingDomain::NONE && !traj_->closed_ && object_->pos_.GetTrajectoryS() > (traj_->GetLength() - SMALL_NUMBER))
@@ -441,7 +432,10 @@ void FollowTrajectoryAction::Step(double simTime, double dt)
         double dx = remaningDistance * cos(object_->pos_.GetH());
         double dy = remaningDistance * sin(object_->pos_.GetH());
 
-        object_->pos_.SetInertiaPos(object_->pos_.GetX() + dx, object_->pos_.GetY() + dy, object_->pos_.GetH());
+        object_->pos_.SetInertiaPosMode(object_->pos_.GetX() + dx,
+                                        object_->pos_.GetY() + dy,
+                                        object_->pos_.GetH(),
+                                        roadmanager::Position::GetModeDefault(roadmanager::Position::PosModeType::SET));
 
         End(simTime);
     }
@@ -588,7 +582,6 @@ void LatLaneChangeAction::Start(double simTime, double dt)
     object_->pos_.SetHeadingRelativeRoadDirection(0.0);
     object_->pos_.SetPitchRelative(0.0);
     object_->pos_.SetRollRelative(0.0);
-    object_->pos_.EvaluateOrientation();
 
     // Set initial state
     object_->pos_.ForceLaneId(target_lane_id_);
@@ -700,7 +693,7 @@ void LatLaneChangeAction::Step(double simTime, double dt)
         object_->pos_.SetHeadingRelativeRoadDirection((IsAngleForward(object_->pos_.GetHRelative()) ? 1 : -1) * SIGN(object_->pos_.GetLaneId()) *
                                                       angle);
     }
-    object_->pos_.EvaluateOrientation();
+    object_->pos_.EvaluateZHPR(object_->pos_.GetMode(roadmanager::Position::PosModeType::UPDATE));
 
     if (retval == roadmanager::Position::ReturnCode::ERROR_END_OF_ROAD)
     {
@@ -710,7 +703,7 @@ void LatLaneChangeAction::Step(double simTime, double dt)
     if (!(object_->pos_.GetRoute() && object_->pos_.GetRoute()->IsValid()))
     {
         // Attach object position to closest road and lane, look up via inertial coordinates
-        object_->pos_.XYZH2TrackPos(object_->pos_.GetX(), object_->pos_.GetY(), object_->pos_.GetZ(), object_->pos_.GetH());
+        object_->pos_.XYZ2TrackPos(object_->pos_.GetX(), object_->pos_.GetY(), object_->pos_.GetZ());
     }
 
     object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::SPEED);
@@ -1616,7 +1609,7 @@ void TeleportAction::Start(double simTime, double dt)
     {
         scenarioEngine_->SetGhostRestart();
 
-        object_->trail_.Reset();
+        object_->trail_.Reset(true);
 
         // The following code will copy speed from the Ego that ghost relates to
         if (object_->ghost_Ego_ != nullptr)
