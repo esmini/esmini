@@ -922,7 +922,7 @@ TEST(RoadOrientationTest, TestElevationPitchRoll)
     }
 
     // Check vehicle orientation
-    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetZ(), -0.568177, 1e-5);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetZ(), -0.61162, 1e-5);
     EXPECT_NEAR(se->entities_.object_[0]->pos_.GetP(), 0.0, 1e-5);
     EXPECT_NEAR(se->entities_.object_[0]->pos_.GetR(), 0.37917, 1e-5);
 
@@ -933,7 +933,7 @@ TEST(RoadOrientationTest, TestElevationPitchRoll)
         se->prepareGroundTruth(dt);
     }
 
-    EXPECT_NEAR(se->entities_.object_[1]->pos_.GetZ(), 0.47815, 1e-5);
+    EXPECT_NEAR(se->entities_.object_[1]->pos_.GetZ(), 0.50319, 1e-5);
     EXPECT_NEAR(se->entities_.object_[1]->pos_.GetP(), 0.0, 1e-5);
     EXPECT_NEAR(se->entities_.object_[1]->pos_.GetR(), 5.96641, 1e-5);
 

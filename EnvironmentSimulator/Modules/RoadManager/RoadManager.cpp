@@ -2890,7 +2890,7 @@ bool Road::UpdateZAndRollBySAndT(double s, double t, double* z, double* roadSupe
         {
             double ds = s - super_elevation->GetS();
             *roll     = super_elevation->poly3_.Evaluate(ds);
-            *z += sin(*roll) * (t + GetLaneOffset(s));
+            *z += tan(*roll) * (t + GetLaneOffset(s));
             *roadSuperElevationPrim = super_elevation->poly3_.EvaluatePrim(ds);
             return true;
         }
