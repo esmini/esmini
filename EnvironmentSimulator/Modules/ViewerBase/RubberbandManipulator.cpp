@@ -335,11 +335,12 @@ bool RubberbandManipulator::calcMovement(double dt, bool reset)
     osg::Quat     nodeRotation;
     osg::Matrix   cameraTargetRotation;
     float         springDC;
-    osg::Vec3     cameraOffset(0, 0, 0);
     osg::Vec3     cameraTargetPosition(0, 0, 0);
     osg::Vec3     cameraToTarget(0, 0, 0);
     float         x, y, z;
     CustomCamera* custom_cam = GetCurrentCustomCamera();
+
+    relative_pos_.set(0.0, 0.0, 0.0);
 
     computeNodeCenterAndRotation(nodeCenter, nodeRotation);
     osg::Matrix nodeRot;
@@ -352,17 +353,17 @@ bool RubberbandManipulator::calcMovement(double dt, bool reset)
         _cameraAngle    = 90;
         x               = -_cameraDistance * (cosf(_cameraRotation * 0.0174533f) * cosf(_cameraAngle * 0.0174533f));
         y               = -_cameraDistance * (sinf(_cameraRotation * 0.0174533f) * cosf(_cameraAngle * 0.0174533f));
-        cameraOffset.set(x, y, _cameraDistance);  // Put a small number to prevent undefined camera angle
+        relative_pos_.set(x, y, _cameraDistance);  // Put a small number to prevent undefined camera angle
     }
     else if (_mode == RB_MODE_RUBBER_BAND)
     {
-        cameraOffset.set(-_cameraDistance, 0.0, _cameraDistance * atan(_cameraAngle * 0.0174533f));
+        relative_pos_.set(-_cameraDistance, 0.0, _cameraDistance * atan(_cameraAngle * 0.0174533f));
     }
     else if (_mode == RB_MODE_DRIVER)
     {
         _cameraRotation = 0;
         _cameraAngle    = 0;
-        cameraOffset.set(1.0, 0.0, 0.0);
+        relative_pos_.set(1.0, 0.0, 0.0);
     }
     else if (_mode >= RB_MODE_CUSTOM)
     {
@@ -370,11 +371,11 @@ bool RubberbandManipulator::calcMovement(double dt, bool reset)
         _cameraAngle    = 0;
         if (custom_cam && !custom_cam->GetFixPos() && !custom_cam->GetFixRot())
         {
-            cameraOffset.set(custom_cam->GetPos());
+            relative_pos_.set(custom_cam->GetPos());
         }
         else
         {
-            cameraOffset.set(0.0, 0.0, 0.0);
+            relative_pos_.set(0.0, 0.0, 0.0);
         }
     }
     else
@@ -387,7 +388,7 @@ bool RubberbandManipulator::calcMovement(double dt, bool reset)
         y = -_cameraDistance * (sinf(_cameraRotation * 0.0174533f) * cosf(_cameraAngle * 0.0174533f));
         z = _cameraDistance * sinf(_cameraAngle * 0.0174533f);
 
-        cameraOffset.set(x, y, z);
+        relative_pos_.set(x, y, z);
     }
 
     // Transform the camera target offset position
@@ -398,7 +399,7 @@ bool RubberbandManipulator::calcMovement(double dt, bool reset)
     cameraTargetRotation.setRotate(nodeRotation);
 #endif
 
-    cameraTargetPosition = cameraTargetRotation.preMult(cameraOffset);
+    cameraTargetPosition = cameraTargetRotation.preMult(relative_pos_);
 
     if (reset)
     {

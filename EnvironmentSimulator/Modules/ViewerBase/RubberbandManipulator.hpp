@@ -146,6 +146,10 @@ namespace osgGA
         }
 
         CustomCamera* GetCurrentCustomCamera();
+        osg::Vec3     getRelativePos() const
+        {
+            return relative_pos_;
+        }
 
     protected:
         virtual ~RubberbandManipulator();
@@ -171,6 +175,7 @@ namespace osgGA
         osg::Matrix _matrix;
         osg::Vec3   cameraAcc;
         osg::Vec3   cameraVel;
+        osg::Vec3   relative_pos_;
 
         float _cameraDistance;
         float _cameraAngle;

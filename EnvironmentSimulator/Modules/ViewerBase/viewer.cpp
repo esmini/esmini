@@ -2059,6 +2059,13 @@ int Viewer::GetCameraPosAndRot(osg::Vec3& pos, osg::Vec3& rot)
     return 0;
 }
 
+int Viewer::GetCameraRelativePos(osg::Vec3& pos)
+{
+    pos = rubberbandManipulator_->getRelativePos();
+
+    return 0;
+}
+
 void Viewer::SetCameraMode(int mode)
 {
     if (mode < 0 || mode >= GetNumberOfCameraModes())
@@ -3780,15 +3787,19 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
             if (ea.getEventType() & osgGA::GUIEventAdapter::KEYDOWN)
             {
                 // Print current camera position
-                osg::Vec3 pos, rot;
+                osg::Vec3 pos, rot, rel_pos;
                 viewer_->GetCameraPosAndRot(pos, rot);
-                printf("Camera pos: %.5f, %.5f, %.5f rot: %.5f, %.5f, %.5f\n",
+                viewer_->GetCameraRelativePos(rel_pos);
+                printf("Camera pos: %.5f, %.5f, %.5f rot: %.5f, %.5f, %.5f rel_pos: %.5f, %.5f, %.5f\n",
                        static_cast<double>(pos[0]),
                        static_cast<double>(pos[1]),
                        static_cast<double>(pos[2]),
                        static_cast<double>(rot[0]),
                        static_cast<double>(rot[1]),
-                       static_cast<double>(rot[2]));
+                       static_cast<double>(rot[2]),
+                       static_cast<double>(rel_pos[0]),
+                       static_cast<double>(rel_pos[1]),
+                       static_cast<double>(rel_pos[2]));
             }
         }
         break;
