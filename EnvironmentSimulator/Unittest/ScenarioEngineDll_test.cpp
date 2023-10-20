@@ -3190,10 +3190,10 @@ TEST(APITest, TestFetchImage)
     EXPECT_EQ(image.pixelSize, 3);
 
     // Check RGB color values of a random pixel x=222, y=250
-    int pixelNr = ((400 - 1) - 250) * 800 + 222;                                      // image stored upside down
-    EXPECT_NEAR(image.data[pixelNr * image.pixelSize + 2], 70, max_pixel_deviation);  // R
-    EXPECT_NEAR(image.data[pixelNr * image.pixelSize + 1], 88, max_pixel_deviation);  // G
-    EXPECT_NEAR(image.data[pixelNr * image.pixelSize + 0], 43, max_pixel_deviation);  // B
+    int pixelNr = ((400 - 1) - 250) * 800 + 222;                                       // image stored upside down
+    EXPECT_NEAR(image.data[pixelNr * image.pixelSize + 2], 80, max_pixel_deviation);   // R
+    EXPECT_NEAR(image.data[pixelNr * image.pixelSize + 1], 100, max_pixel_deviation);  // G
+    EXPECT_NEAR(image.data[pixelNr * image.pixelSize + 0], 49, max_pixel_deviation);   // B
 
     // Save file for possible post processing or inspection
     SE_WriteTGA("offscreen0.tga", image.width, image.height, image.data, image.pixelSize, image.pixelFormat, true);

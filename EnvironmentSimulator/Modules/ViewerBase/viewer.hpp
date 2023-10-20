@@ -306,6 +306,7 @@ namespace viewer
         osg::Quat                                    quat_;
         osg::ref_ptr<osg::Group>                     parent_;
         osg::BoundingBox                             modelBB_;
+        osg::ref_ptr<osg::Group>                     bbGroup_;
 
         std::unique_ptr<Trajectory> trajectory_;
         static const EntityType     entity_type_ = EntityType::ENTITY;

@@ -2393,6 +2393,7 @@ EntityModel* Viewer::CreateEntityModel(std::string             modelFilepath,
 
     emodel->modelBB_ = modelBB;
     emodel->model_   = modelgroup;
+    emodel->bbGroup_ = bbGroup;
 
     if (emodel->IsMoving())
     {
@@ -3560,7 +3561,7 @@ void Viewer::SetVehicleInFocus(int idx)
     {
         // calculate distance only for first vehicle and non top views
         SetCameraTrackNode(
-            entities_[static_cast<unsigned int>(idx)]->model_,
+            entities_[static_cast<unsigned int>(idx)]->bbGroup_,
             (currentCarInFocus_ == -1 && rubberbandManipulator_->getMode() != osgGA::RubberbandManipulator::CAMERA_MODE::RB_MODE_TOP) ? true : false);
         rubberbandManipulator_->setTrackTransform(entities_[static_cast<unsigned int>(idx)]->txNode_);
 
