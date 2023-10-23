@@ -306,6 +306,11 @@ The above ffmpeg command will create a MPEG4 video with reasonable compression (
 
 ``ffmpeg -f image2 -framerate 30 -i screen_shot_%5d.tga -c:v libx264 -qp 0 out.mp4``
 
+To change framerate of the output video, use the fps filter. E.g. from input 30 fps to output 15 fps:
+
+``ffmpeg -f image2 -framerate 30 -i screen_shot_%5d.tga -c:v libx264 -vf format=yuv420p,fps=15 -crf 20 out.mp4``
+
+
 Get ffmpeg: http://ffmpeg.org/download.html
 
 Some details regarding H.264 encoding can be found https://trac.ffmpeg.org/wiki/Encode/H.264[here].
