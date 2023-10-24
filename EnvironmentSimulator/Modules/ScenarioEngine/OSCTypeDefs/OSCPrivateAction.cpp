@@ -2209,27 +2209,27 @@ void LightStateAction::AddVehicleLightActionStatus(Object::VehicleLightActionSta
 void LightStateAction::Start(double simTime, double dt)
 {
     // set initial values
-    transitionTimer_ = 0.0;
-    flashingTimer_   = 0.0;
-    perviousMode = object_->vehicleLightActionStatusList[vehicleLightActionStatus.type].mode;
+    transitionTimer_  = 0.0;
+    flashingTimer_    = 0.0;
+    perviousMode      = object_->vehicleLightActionStatusList[vehicleLightActionStatus.type].mode;
     perviousIntensity = object_->vehicleLightActionStatusList[vehicleLightActionStatus.type].luminousIntensity;
 
     initialEmissionRgb_[0] = object_->vehicleLightActionStatusList[vehicleLightActionStatus.type].emissionRgb[0];
     initialEmissionRgb_[1] = object_->vehicleLightActionStatusList[vehicleLightActionStatus.type].emissionRgb[1];
-    initialEmissionRgb_[2] = object_->vehicleLightActionStatusList[vehicleLightActionStatus.type].emissionRgb[2];;
+    initialEmissionRgb_[2] = object_->vehicleLightActionStatusList[vehicleLightActionStatus.type].emissionRgb[2];
+    ;
 
     // check base rbg from models- only once
     bool isModelRgbAccepted = false;
-    if ( object_->vehicleLightActionStatusList[vehicleLightActionStatus.type].type == Object::VehicleLightType::UNDEFINED)
+    if (object_->vehicleLightActionStatusList[vehicleLightActionStatus.type].type == Object::VehicleLightType::UNDEFINED)
     {
-        if (CheckArrayRange0to1(object_->vehicleLightActionStatusList[vehicleLightActionStatus.type].baseRgb, 3) &&
-            isRgbFromLightType)
-        {// use rbg from models only if scenario dont have base rgb. postprocessing the rbg from models
+        if (CheckArrayRange0to1(object_->vehicleLightActionStatusList[vehicleLightActionStatus.type].baseRgb, 3) && isRgbFromLightType)
+        {  // use rbg from models only if scenario dont have base rgb. postprocessing the rbg from models
             isModelRgbAccepted = true;
             adjustByOffsetArray(object_->vehicleLightActionStatusList[vehicleLightActionStatus.type].baseRgb, 0.4);
         }
         else
-        {// use base color from scenario if no base color from models
+        {  // use base color from scenario if no base color from models
             object_->vehicleLightActionStatusList[vehicleLightActionStatus.type].baseRgb[0] = vehicleLightActionStatus.baseRgb[0];
             object_->vehicleLightActionStatusList[vehicleLightActionStatus.type].baseRgb[1] = vehicleLightActionStatus.baseRgb[1];
             object_->vehicleLightActionStatusList[vehicleLightActionStatus.type].baseRgb[2] = vehicleLightActionStatus.baseRgb[2];
@@ -2238,32 +2238,30 @@ void LightStateAction::Start(double simTime, double dt)
 
     // consider pervious state intensity
     if (vehicleLightActionStatus.luminousIntensity == -1.0 &&
-        (vehicleLightActionStatus.mode == Object::VehicleLightMode::FLASHING ||
-        vehicleLightActionStatus.mode == Object::VehicleLightMode::ON))
+        (vehicleLightActionStatus.mode == Object::VehicleLightMode::FLASHING || vehicleLightActionStatus.mode == Object::VehicleLightMode::ON))
     {
-        if ( perviousIntensity != -1.0)
-        { // intensity missing for ON or flashing mode, then check pervious state
+        if (perviousIntensity != -1.0)
+        {  // intensity missing for ON or flashing mode, then check pervious state
             vehicleLightActionStatus.luminousIntensity = perviousIntensity;
         }
         else
-        { // intensity missing then 6k as ON/flashing intensity
+        {  // intensity missing then 6k as ON/flashing intensity
             vehicleLightActionStatus.luminousIntensity = 6000;
         }
     }
-    double final_lum_percent = (vehicleLightActionStatus.luminousIntensity / MAX_INTENSITY_LUM) > 1
-                            ? 1
-                            : (vehicleLightActionStatus.luminousIntensity / MAX_INTENSITY_LUM);
+    double final_lum_percent =
+        (vehicleLightActionStatus.luminousIntensity / MAX_INTENSITY_LUM) > 1 ? 1 : (vehicleLightActionStatus.luminousIntensity / MAX_INTENSITY_LUM);
 
     // consider pervious state base color
-    if ( object_->vehicleLightActionStatusList[vehicleLightActionStatus.type].type == Object::VehicleLightType::UNDEFINED)
+    if (object_->vehicleLightActionStatusList[vehicleLightActionStatus.type].type == Object::VehicleLightType::UNDEFINED)
     {
         object_->vehicleLightActionStatusList[vehicleLightActionStatus.type].colorName = vehicleLightActionStatus.colorName;
     }
     else
     {
-        if ( vehicleLightActionStatus.colorName != Object::VehicleLightColor::UNKNOWN)
-        {// pervious state keep base color until color change
-            object_->vehicleLightActionStatusList[vehicleLightActionStatus.type].colorName = vehicleLightActionStatus.colorName;
+        if (vehicleLightActionStatus.colorName != Object::VehicleLightColor::UNKNOWN)
+        {  // pervious state keep base color until color change
+            object_->vehicleLightActionStatusList[vehicleLightActionStatus.type].colorName  = vehicleLightActionStatus.colorName;
             object_->vehicleLightActionStatusList[vehicleLightActionStatus.type].baseRgb[0] = vehicleLightActionStatus.baseRgb[0];
             object_->vehicleLightActionStatusList[vehicleLightActionStatus.type].baseRgb[1] = vehicleLightActionStatus.baseRgb[1];
             object_->vehicleLightActionStatusList[vehicleLightActionStatus.type].baseRgb[2] = vehicleLightActionStatus.baseRgb[2];
@@ -2275,41 +2273,36 @@ void LightStateAction::Start(double simTime, double dt)
     baseRgb[1] = object_->vehicleLightActionStatusList[vehicleLightActionStatus.type].baseRgb[1];
     baseRgb[2] = object_->vehicleLightActionStatusList[vehicleLightActionStatus.type].baseRgb[2];
 
-    //base value as default initial diff value
+    // base value as default initial diff value
     initialDiffRgb_[0] = baseRgb[0];
     initialDiffRgb_[1] = baseRgb[1];
     initialDiffRgb_[2] = baseRgb[2];
 
-    if (perviousMode == Object::VehicleLightMode::ON ||
-        perviousMode == Object::VehicleLightMode::FLASHING ||
-        isModelRgbAccepted)
-    { // pervious state- use pervious state value as initial diff value value. On, flashing, base value is postprocessed in case for rbg from model.
+    if (perviousMode == Object::VehicleLightMode::ON || perviousMode == Object::VehicleLightMode::FLASHING || isModelRgbAccepted)
+    {  // pervious state- use pervious state value as initial diff value value. On, flashing, base value is postprocessed in case for rbg from model.
         initialDiffRgb_[0] = object_->vehicleLightActionStatusList[vehicleLightActionStatus.type].diffuseRgb[0];
         initialDiffRgb_[1] = object_->vehicleLightActionStatusList[vehicleLightActionStatus.type].diffuseRgb[1];
         initialDiffRgb_[2] = object_->vehicleLightActionStatusList[vehicleLightActionStatus.type].diffuseRgb[2];
     }
 
-    //find final rbg
-    if  (vehicleLightActionStatus.mode == Object::VehicleLightMode::ON ||
+    // find final rbg
+    if (vehicleLightActionStatus.mode == Object::VehicleLightMode::ON ||
         (vehicleLightActionStatus.mode == Object::VehicleLightMode::FLASHING &&
-        (perviousMode == Object::VehicleLightMode::OFF ||
-        perviousMode == Object::VehicleLightMode::UNKNOWN_MODE ||
-        perviousMode == Object::VehicleLightMode::FLASHING)))
+         (perviousMode == Object::VehicleLightMode::OFF || perviousMode == Object::VehicleLightMode::UNKNOWN_MODE ||
+          perviousMode == Object::VehicleLightMode::FLASHING)))
     {
         // increase to new rbg
         // initial value + (initial value * percentage to be increased)
-        finalEmissionRgb_[0] = baseRgb[0] +((lum_max - baseRgb[0]) * final_lum_percent);
-        finalEmissionRgb_[1] = baseRgb[1] +((lum_max - baseRgb[1]) * final_lum_percent);
-        finalEmissionRgb_[2] = baseRgb[2] +((lum_max - baseRgb[2]) * final_lum_percent);
+        finalEmissionRgb_[0] = baseRgb[0] + ((lum_max - baseRgb[0]) * final_lum_percent);
+        finalEmissionRgb_[1] = baseRgb[1] + ((lum_max - baseRgb[1]) * final_lum_percent);
+        finalEmissionRgb_[2] = baseRgb[2] + ((lum_max - baseRgb[2]) * final_lum_percent);
 
         finalDiffRgb_[0] = 0.0;
         finalDiffRgb_[1] = 0.0;
         finalDiffRgb_[2] = 0.0;
-
     }
     else if (vehicleLightActionStatus.mode == Object::VehicleLightMode::OFF ||
-            (vehicleLightActionStatus.mode == Object::VehicleLightMode::FLASHING &&
-            perviousMode == Object::VehicleLightMode::ON))
+             (vehicleLightActionStatus.mode == Object::VehicleLightMode::FLASHING && perviousMode == Object::VehicleLightMode::ON))
     {  // set to base rbg
 
         finalEmissionRgb_[0] = 0.0;
@@ -2323,9 +2316,9 @@ void LightStateAction::Start(double simTime, double dt)
 
     // set remaining light state
 
-    object_->vehicleLightActionStatusList[vehicleLightActionStatus.type].mode = vehicleLightActionStatus.mode;
+    object_->vehicleLightActionStatusList[vehicleLightActionStatus.type].mode              = vehicleLightActionStatus.mode;
     object_->vehicleLightActionStatusList[vehicleLightActionStatus.type].luminousIntensity = vehicleLightActionStatus.luminousIntensity;
-    object_->vehicleLightActionStatusList[vehicleLightActionStatus.type].type = vehicleLightActionStatus.type;
+    object_->vehicleLightActionStatusList[vehicleLightActionStatus.type].type              = vehicleLightActionStatus.type;
     checkColorError(initialEmissionRgb_, sizeof(initialEmissionRgb_) / sizeof(initialEmissionRgb_[0]));
     checkColorError(finalEmissionRgb_, sizeof(finalEmissionRgb_) / sizeof(finalEmissionRgb_[0]));
     checkColorError(initialDiffRgb_, sizeof(initialDiffRgb_) / sizeof(initialDiffRgb_[0]));
@@ -2348,7 +2341,7 @@ void LightStateAction::Step(double simTime, double dt)
                 flashingTimer_ += dt;
             }
             else if (flashingOnDuration_ + flashingOffDuration_ > flashingTimer_)
-            { // flash off time
+            {  // flash off time
                 flashStatus = flashingStatus::LOW;
                 setLightTransistionValues(Object::VehicleLightMode::FLASHING);
                 flashingTimer_ += dt;
@@ -2369,17 +2362,16 @@ void LightStateAction::Step(double simTime, double dt)
             object_->vehicleLightActionStatusList[vehicleLightActionStatus.type].diffuseRgb[1] = finalDiffRgb_[1];
             object_->vehicleLightActionStatusList[vehicleLightActionStatus.type].diffuseRgb[2] = finalDiffRgb_[2];
 
-
             OSCAction::End(simTime);
         }
     }
     else
     {
         // wait in off rgb if pervious mode is off and current mode flashing
-        if(!(perviousMode == Object::VehicleLightMode::OFF &&
-            object_->vehicleLightActionStatusList[vehicleLightActionStatus.type].mode == Object::VehicleLightMode::FLASHING))
+        if (!(perviousMode == Object::VehicleLightMode::OFF &&
+              object_->vehicleLightActionStatusList[vehicleLightActionStatus.type].mode == Object::VehicleLightMode::FLASHING))
         {
-            setLightTransistionValues(Object::VehicleLightMode::ON); // same for on or off
+            setLightTransistionValues(Object::VehicleLightMode::ON);  // same for on or off
         }
         transitionTimer_ += dt;
     }
@@ -2388,14 +2380,12 @@ void LightStateAction::Step(double simTime, double dt)
 
 int LightStateAction::setLightTransistionValues(Object::VehicleLightMode mode)
 {
-
     if (mode == Object::VehicleLightMode::FLASHING)
     {
         if (flashStatus == flashingStatus::HIGH)
-        {// set biggest value between initial and final value
+        {  // set biggest value between initial and final value
             if (perviousMode == Object::VehicleLightMode::OFF || perviousMode == Object::VehicleLightMode::UNKNOWN_MODE)
             {
-
                 object_->vehicleLightActionStatusList[vehicleLightActionStatus.type].emissionRgb[0] = finalEmissionRgb_[0];
                 object_->vehicleLightActionStatusList[vehicleLightActionStatus.type].emissionRgb[1] = finalEmissionRgb_[1];
                 object_->vehicleLightActionStatusList[vehicleLightActionStatus.type].emissionRgb[2] = finalEmissionRgb_[2];
@@ -2403,7 +2393,6 @@ int LightStateAction::setLightTransistionValues(Object::VehicleLightMode mode)
                 object_->vehicleLightActionStatusList[vehicleLightActionStatus.type].diffuseRgb[0] = finalDiffRgb_[0];
                 object_->vehicleLightActionStatusList[vehicleLightActionStatus.type].diffuseRgb[1] = finalDiffRgb_[1];
                 object_->vehicleLightActionStatusList[vehicleLightActionStatus.type].diffuseRgb[2] = finalDiffRgb_[2];
-
             }
             else
             {
@@ -2417,10 +2406,9 @@ int LightStateAction::setLightTransistionValues(Object::VehicleLightMode mode)
             }
         }
         else if (flashStatus == flashingStatus::LOW)
-        {// set lowest value between initial and final value
+        {  // set lowest value between initial and final value
             if (perviousMode == Object::VehicleLightMode::ON)
             {
-
                 object_->vehicleLightActionStatusList[vehicleLightActionStatus.type].emissionRgb[0] = finalEmissionRgb_[0];
                 object_->vehicleLightActionStatusList[vehicleLightActionStatus.type].emissionRgb[1] = finalEmissionRgb_[1];
                 object_->vehicleLightActionStatusList[vehicleLightActionStatus.type].emissionRgb[2] = finalEmissionRgb_[2];
@@ -2443,7 +2431,6 @@ int LightStateAction::setLightTransistionValues(Object::VehicleLightMode mode)
     }
     else
     {
-
         // initialValue + (proportion * (finalValue - initialValue))
         // set emission rgb
         object_->vehicleLightActionStatusList[vehicleLightActionStatus.type].emissionRgb[0] =
@@ -2460,7 +2447,6 @@ int LightStateAction::setLightTransistionValues(Object::VehicleLightMode mode)
             initialDiffRgb_[1] + ((transitionTimer_ / transitionTime_) * (finalDiffRgb_[1] - initialDiffRgb_[1]));
         object_->vehicleLightActionStatusList[vehicleLightActionStatus.type].diffuseRgb[2] =
             initialDiffRgb_[2] + ((transitionTimer_ / transitionTime_) * (finalDiffRgb_[2] - initialDiffRgb_[2]));
-
     }
 
     return 0;
@@ -2471,7 +2457,8 @@ int LightStateAction::setbaseRgbAndPrepare(Object::VehicleLightActionStatus& lig
     // part 1 - set rgb
     if (CheckArrayRange0to1(cmyk_, 4) && CheckArrayRange0to1(lightStatus.baseRgb, 3))
     {  // both rgb and cmyk value are provided
-        LOG("cmyk and Rgb values provided for % s light color description, Accepting only Rgb values", object_->LightType2Str(lightStatus.type).c_str());
+        LOG("cmyk and Rgb values provided for % s light color description, Accepting only Rgb values",
+            object_->LightType2Str(lightStatus.type).c_str());
     }
     else if (CheckArrayRange0to1(cmyk_, 4))
     {
@@ -2487,8 +2474,7 @@ int LightStateAction::setbaseRgbAndPrepare(Object::VehicleLightActionStatus& lig
     else
     {
         isUserSetRgb = false;
-        if (lightStatus.colorName == Object::VehicleLightColor::OTHER ||
-            lightStatus.colorName == Object::VehicleLightColor::UNKNOWN)
+        if (lightStatus.colorName == Object::VehicleLightColor::OTHER || lightStatus.colorName == Object::VehicleLightColor::UNKNOWN)
         {  // convert light type to Rgb values, Only when color node itself not provided(unknown) or other colorType without rgb or cmyk
             convertLightTypeAndSetBaseRgb(lightStatus);
             isRgbFromLightType = true;
@@ -2499,7 +2485,7 @@ int LightStateAction::setbaseRgbAndPrepare(Object::VehicleLightActionStatus& lig
         }
     }
     if (isUserSetRgb == true)
-    { // postprocessing the user given rbg
+    {  // postprocessing the user given rbg
         adjustByOffsetArray(lightStatus.baseRgb, 0.4);
     }
 
@@ -2603,7 +2589,7 @@ void LightStateAction::convertLightTypeAndSetBaseRgb(Object::VehicleLightActionS
     if (lightStatus.type == Object::VehicleLightType::BRAKE_LIGHTS)
     {
         lightStatus.baseRgb[0] = 0.5;
-        lightStatus.baseRgb[1]= 0.0;
+        lightStatus.baseRgb[1] = 0.0;
         lightStatus.baseRgb[2] = 0.0;
     }
     else if (lightStatus.type == Object::VehicleLightType::FOG_LIGHTS || lightStatus.type == Object::VehicleLightType::FOG_LIGHTS_FRONT ||
@@ -2614,7 +2600,8 @@ void LightStateAction::convertLightTypeAndSetBaseRgb(Object::VehicleLightActionS
         lightStatus.baseRgb[2] = 0.4;
     }
     else if (lightStatus.type == Object::VehicleLightType::HIGH_BEAM || lightStatus.type == Object::VehicleLightType::LOW_BEAM ||
-             lightStatus.type == Object::VehicleLightType::DAY_TIME_RUNNING_LIGHTS || lightStatus.type == Object::VehicleLightType::REVERSING_LIGHTS ||
+             lightStatus.type == Object::VehicleLightType::DAY_TIME_RUNNING_LIGHTS ||
+             lightStatus.type == Object::VehicleLightType::REVERSING_LIGHTS ||
              lightStatus.type == Object::VehicleLightType::LICENSE_PLATER_ILLUMINATION)
     {
         lightStatus.baseRgb[0] = 0.5;

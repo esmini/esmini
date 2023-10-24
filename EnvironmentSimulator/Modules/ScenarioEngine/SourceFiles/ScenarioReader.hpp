@@ -177,7 +177,7 @@ namespace scenarioengine
 
         static Parameters parameters;  // static to enable set via callback during creation of object
         static Parameters variables;
-        bool lightStatusOn = false;
+        bool              lightStatusOn = false;
 
     private:
         pugi::xml_document    doc_;

@@ -129,9 +129,9 @@ public:
     }
 
 protected:
-    std::string              _name;
+    std::string               _name;
     std::vector<osg::Group*>& _nodes;
-    osg::ref_ptr<osg::Group> _node;
+    osg::ref_ptr<osg::Group>  _node;
 };
 
 // Derive a class from NodeVisitor to find a node with a  specific name.
@@ -1176,51 +1176,49 @@ osg::ref_ptr<osg::PositionAttitudeTransform> CarModel::AddWheel(osg::ref_ptr<osg
 
 std::string LightTypeInd2Str(int index)
 {
-    switch(index)
+    switch (index)
     {
         case Object::VehicleLightType::DAY_TIME_RUNNING_LIGHTS:
             return "light_daytime_running";
         case Object::VehicleLightType::LOW_BEAM:
-          return "light_low_beam";
+            return "light_low_beam";
         case Object::VehicleLightType::HIGH_BEAM:
             return "light_high_beam";
         case Object::VehicleLightType::FOG_LIGHTS_FRONT:
-           return "light_fog_front";
+            return "light_fog_front";
         case Object::VehicleLightType::FOG_LIGHTS_REAR:
-           return "light_fog_rear";
+            return "light_fog_rear";
         case Object::VehicleLightType::BRAKE_LIGHTS:
             return "light_brake";
         case Object::VehicleLightType::INDICATOR_LEFT:
-           return "light_indicator_left";
+            return "light_indicator_left";
         case Object::VehicleLightType::INDICATOR_RIGHT:
-           return "light_indicator_right";
+            return "light_indicator_right";
         case Object::VehicleLightType::REVERSING_LIGHTS:
-           return "light_reversing";
+            return "light_reversing";
         case Object::VehicleLightType::LICENSE_PLATER_ILLUMINATION:
-           return "light_license_plate";
+            return "light_license_plate";
         case Object::VehicleLightType::SPECIAL_PURPOSE_LIGHTS:
-           return "light_special_purpose";
+            return "light_special_purpose";
         case Object::VehicleLightType::FOG_LIGHTS:
             return "fog_light";
         case Object::VehicleLightType::WARNING_LIGHTS:
-           return "warning_lights";
+            return "warning_lights";
         case Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS:
-           return "Unknown_light";
+            return "Unknown_light";
         default:
-            return  "none";
+            return "none";
     }
-
 }
 
 void CarModel::AddLights(osg::ref_ptr<osg::Group> group, bool light_action_state)
 {
-
-    for ( int j = 0; j < Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS; j++)
+    for (int j = 0; j < Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS; j++)
     {
         std::string lightName = LightTypeInd2Str(j);
         if (lightName == LightTypeInd2Str(Object::VehicleLightType::FOG_LIGHTS) ||
             lightName == LightTypeInd2Str(Object::VehicleLightType::WARNING_LIGHTS))
-        {// fog light is combination of front and back fog lights same for waring and indicator light
+        {  // fog light is combination of front and back fog lights same for waring and indicator light
             light_material_.push_back(nullptr);
             break;
         }
@@ -1232,23 +1230,23 @@ void CarModel::AddLights(osg::ref_ptr<osg::Group> group, bool light_action_state
 
         if (!nodes.empty())
         {
-            osg::ref_ptr<osg::Group>  groupNew;
+            osg::ref_ptr<osg::Group> groupNew;
             for (size_t i = 0; i < nodes.size(); i++)
             {
                 groupNew = nodes[i];
                 if (groupNew != NULL)
                 {
-                    groupNew = static_cast<osg::Group*>(groupNew->getChild(0));
+                    groupNew                       = static_cast<osg::Group*>(groupNew->getChild(0));
                     osg::ref_ptr<osg::Geode> geode = static_cast<osg::Geode*>(groupNew->getChild(0));
                     // LOG("light material name %s in vehicle model", geode->getName().c_str());
                     // osg::Material *mat = static_cast<osg::Material*>(geode->getOrCreateStateSet()->getAttribute( osg::StateAttribute::MATERIAL ));
-                    if (geode->getName().c_str() ==  (lightName + "-material"))
-                    { // material name in model is lightType_m
+                    if (geode->getName().c_str() == (lightName + "-material"))
+                    {  // material name in model is lightType_m
                         light_material_.push_back(geode);
                         geode->setNodeMask(NodeMask::NODE_MASK_LIGHTS_STATE);
                     }
                     else
-                    {// no visualization
+                    {  // no visualization
                         light_material_.push_back(nullptr);
                         LOG("Missing light material %s in vehicle model %s - ignoring visualization", lightName.c_str(), group->getName().c_str());
                     }
@@ -1259,7 +1257,7 @@ void CarModel::AddLights(osg::ref_ptr<osg::Group> group, bool light_action_state
         {
             light_material_.push_back(nullptr);
             if (light_action_state)
-            {// no visualization, node not found
+            {  // no visualization, node not found
                 LOG("Missing light node %s in vehicle model %s - ignoring visualization", lightName.c_str(), group->getName().c_str());
             }
         }
@@ -1356,10 +1354,10 @@ CarModel::CarModel(osgViewer::Viewer*       viewer,
     osg::ref_ptr<osg::Group> retval[4];
     osg::ref_ptr<osg::Node>  car_node = txNode_->getChild(0);
 
-    retval[0]                         = AddWheel(car_node, "wheel_fl");
-    retval[1]                         = AddWheel(car_node, "wheel_fr");
-    retval[2]                         = AddWheel(car_node, "wheel_rr");
-    retval[3]                         = AddWheel(car_node, "wheel_rl");
+    retval[0] = AddWheel(car_node, "wheel_fl");
+    retval[1] = AddWheel(car_node, "wheel_fr");
+    retval[2] = AddWheel(car_node, "wheel_rr");
+    retval[3] = AddWheel(car_node, "wheel_rl");
 
     // light material and light mask will be set.
     AddLights(group_, light_action_state);
@@ -1464,43 +1462,48 @@ void CarModel::UpdateLight(Object::VehicleLightActionStatus* list)
             osg::Vec4d diffuseRgb(list[i].diffuseRgb[0], list[i].diffuseRgb[1], list[i].diffuseRgb[2], 1.0);
             osg::Vec4d emissionRgb(list[i].emissionRgb[0], list[i].emissionRgb[1], list[i].emissionRgb[2], 1.0);
 
-            osg::Material *mat = nullptr;
-            if ( list[i].type == Object::VehicleLightType::WARNING_LIGHTS)
+            osg::Material* mat = nullptr;
+            if (list[i].type == Object::VehicleLightType::WARNING_LIGHTS)
             {
-                if (light_material_ [Object::VehicleLightType::INDICATOR_LEFT] != nullptr)
+                if (light_material_[Object::VehicleLightType::INDICATOR_LEFT] != nullptr)
                 {
-                    mat = static_cast<osg::Material*>(light_material_[Object::VehicleLightType::INDICATOR_LEFT]->getOrCreateStateSet()->getAttribute( osg::StateAttribute::MATERIAL ));
+                    mat = static_cast<osg::Material*>(light_material_[Object::VehicleLightType::INDICATOR_LEFT]->getOrCreateStateSet()->getAttribute(
+                        osg::StateAttribute::MATERIAL));
                     mat->setDiffuse(osg::Material::FRONT_AND_BACK, diffuseRgb);
                     mat->setEmission(osg::Material::FRONT_AND_BACK, emissionRgb);
                 }
-                if (light_material_ [Object::VehicleLightType::INDICATOR_RIGHT] != nullptr)
+                if (light_material_[Object::VehicleLightType::INDICATOR_RIGHT] != nullptr)
                 {
-                    mat = static_cast<osg::Material*>(light_material_[Object::VehicleLightType::INDICATOR_RIGHT]->getOrCreateStateSet()->getAttribute( osg::StateAttribute::MATERIAL ));
+                    mat = static_cast<osg::Material*>(light_material_[Object::VehicleLightType::INDICATOR_RIGHT]->getOrCreateStateSet()->getAttribute(
+                        osg::StateAttribute::MATERIAL));
                     mat->setDiffuse(osg::Material::FRONT_AND_BACK, diffuseRgb);
                     mat->setEmission(osg::Material::FRONT_AND_BACK, emissionRgb);
                 }
             }
-            else if ( list[i].type == Object::VehicleLightType::FOG_LIGHTS)
+            else if (list[i].type == Object::VehicleLightType::FOG_LIGHTS)
             {
-                if (light_material_ [Object::VehicleLightType::FOG_LIGHTS_FRONT] != nullptr)
+                if (light_material_[Object::VehicleLightType::FOG_LIGHTS_FRONT] != nullptr)
                 {
-                    mat = static_cast<osg::Material*>(light_material_[Object::VehicleLightType::FOG_LIGHTS_FRONT]->getOrCreateStateSet()->getAttribute( osg::StateAttribute::MATERIAL ));
+                    mat =
+                        static_cast<osg::Material*>(light_material_[Object::VehicleLightType::FOG_LIGHTS_FRONT]->getOrCreateStateSet()->getAttribute(
+                            osg::StateAttribute::MATERIAL));
                     mat->setDiffuse(osg::Material::FRONT_AND_BACK, diffuseRgb);
                     mat->setEmission(osg::Material::FRONT_AND_BACK, emissionRgb);
                 }
-                if (light_material_ [Object::VehicleLightType::FOG_LIGHTS_REAR] != nullptr)
+                if (light_material_[Object::VehicleLightType::FOG_LIGHTS_REAR] != nullptr)
                 {
-                    mat = static_cast<osg::Material*>(light_material_[Object::VehicleLightType::FOG_LIGHTS_REAR]->getOrCreateStateSet()->getAttribute( osg::StateAttribute::MATERIAL ));
+                    mat = static_cast<osg::Material*>(light_material_[Object::VehicleLightType::FOG_LIGHTS_REAR]->getOrCreateStateSet()->getAttribute(
+                        osg::StateAttribute::MATERIAL));
                     mat->setDiffuse(osg::Material::FRONT_AND_BACK, diffuseRgb);
                     mat->setEmission(osg::Material::FRONT_AND_BACK, emissionRgb);
                 }
-
             }
             else
             {
-                if (light_material_ [i] != nullptr)
+                if (light_material_[i] != nullptr)
                 {
-                    mat = static_cast<osg::Material*>(light_material_[list[i].type]->getOrCreateStateSet()->getAttribute( osg::StateAttribute::MATERIAL ));
+                    mat = static_cast<osg::Material*>(
+                        light_material_[list[i].type]->getOrCreateStateSet()->getAttribute(osg::StateAttribute::MATERIAL));
                     mat->setDiffuse(osg::Material::FRONT_AND_BACK, diffuseRgb);
                     mat->setEmission(osg::Material::FRONT_AND_BACK, emissionRgb);
                 }
@@ -2353,7 +2356,9 @@ EntityModel* Viewer::CreateEntityModel(std::string             modelFilepath,
     {
         if (entities_[i]->filename_ == modelFilepath)
         {
-            modelgroup = dynamic_cast<osg::Group*>(entities_[i]->group_->getChild(0)->asGroup()->getChild(0)->clone(osg::CopyOp::DEEP_COPY_DRAWABLES |osg::CopyOp::DEEP_COPY_NODES | osg::CopyOp::DEEP_COPY_STATEATTRIBUTES | osg::CopyOp::DEEP_COPY_STATESETS ));
+            modelgroup = dynamic_cast<osg::Group*>(entities_[i]->group_->getChild(0)->asGroup()->getChild(0)->clone(
+                osg::CopyOp::DEEP_COPY_DRAWABLES | osg::CopyOp::DEEP_COPY_NODES | osg::CopyOp::DEEP_COPY_STATEATTRIBUTES |
+                osg::CopyOp::DEEP_COPY_STATESETS));
             modelBB    = entities_[i]->modelBB_;
             break;
         }
@@ -2572,7 +2577,16 @@ EntityModel* Viewer::CreateEntityModel(std::string             modelFilepath,
     EntityModel* emodel;
     if (type == EntityModel::EntityType::VEHICLE)
     {
-        emodel = new CarModel(osgViewer_, group, rootnode_, trails_, trajectoryLines_, dot_node_, routewaypoints_, trail_color, name, this->isLightStateAction);
+        emodel = new CarModel(osgViewer_,
+                              group,
+                              rootnode_,
+                              trails_,
+                              trajectoryLines_,
+                              dot_node_,
+                              routewaypoints_,
+                              trail_color,
+                              name,
+                              this->isLightStateAction);
     }
     else if (type == EntityModel::EntityType::MOVING)
     {

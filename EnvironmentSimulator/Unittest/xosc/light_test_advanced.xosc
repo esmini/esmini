@@ -1,38 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- scnario with different lights on, off and flash mode -->
+<!-- scenario with different lights on, off and flash mode -->
 <OpenSCENARIO>
    <FileHeader revMajor="1"
                revMinor="2"
-               date="2017-06-09T10:00:00"
-               description="Another variant of cut-in"
+               date="2023-10-24T10:00:00"
+               description="Scenario with different lights on, off and flash mode"
                author="esmini-team"/>
    <ParameterDeclarations />
    <CatalogLocations>
       <VehicleCatalog>
-         <Directory path="../xosc/Catalogs/Vehicles" />
+         <Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
       </VehicleCatalog>
    </CatalogLocations>
    <RoadNetwork>
-      <LogicFile filepath="../../../esmini/EnvironmentSimulator/Unittest/xodr/straight_road.xodr" />
+      <LogicFile filepath="../xodr/straight_road.xodr" />
    </RoadNetwork>
    <Entities>
       <ScenarioObject name="Car1">
-         <CatalogReference catalogName="VehicleCatalog" entryName="car_white_lights" />
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_white" />
       </ScenarioObject>
       <ScenarioObject name="Car2">
-         <CatalogReference catalogName="VehicleCatalog" entryName="car_white_lights" />
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_white" />
       </ScenarioObject>
       <ScenarioObject name="Car3">
-         <CatalogReference catalogName="VehicleCatalog" entryName="car_white_lights" />
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_white" />
       </ScenarioObject>
       <ScenarioObject name="Car4">
-         <CatalogReference catalogName="VehicleCatalog" entryName="car_white_lights" />
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_white" />
       </ScenarioObject>
       <ScenarioObject name="Car5">
-         <CatalogReference catalogName="VehicleCatalog" entryName="car_white_lights" />
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_white" />
       </ScenarioObject>
       <ScenarioObject name="Car6">
-         <CatalogReference catalogName="VehicleCatalog" entryName="car_white_lights" />
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_white" />
       </ScenarioObject>
    </Entities>
    <Storyboard>

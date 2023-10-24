@@ -414,7 +414,6 @@ namespace viewer
         void                                         UpdateWheelsDelta(double wheel_angle, double wheel_rotation_delta);
         void                                         AddLights(osg::ref_ptr<osg::Group> group, bool light_action_status);
         void                                         UpdateLight(Object::VehicleLightActionStatus* list);
-
     };
 
     class VisibilityCallback : public osg::NodeCallback

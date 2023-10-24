@@ -93,7 +93,6 @@ namespace scenarioengine
             SHAPE_UNDEFINED
         };
 
-
         class TransitionDynamics
         {
         public:
@@ -162,10 +161,10 @@ namespace scenarioengine
             double rate_;
         };
 
-        ActionType               type_;
-        ControlDomains           domain_;
-        Object*                  object_;
-        ScenarioEngine*          scenarioEngine_;
+        ActionType      type_;
+        ControlDomains  domain_;
+        Object*         object_;
+        ScenarioEngine* scenarioEngine_;
 
         OSCPrivateAction(OSCPrivateAction::ActionType type, ControlDomains domain)
             : OSCAction(OSCAction::BaseType::PRIVATE),
@@ -1218,8 +1217,7 @@ namespace scenarioengine
         double cmyk_[4];
 
         LightStateAction()
-            : OSCPrivateAction(OSCPrivateAction::ActionType::LIGHT_STATE_ACTION,
-                               ControlDomains::DOMAIN_LIGHT),
+            : OSCPrivateAction(OSCPrivateAction::ActionType::LIGHT_STATE_ACTION, ControlDomains::DOMAIN_LIGHT),
               transitionTime_(0.0),
               flashingOffDuration_(0.5),
               flashingOnDuration_(0.5),
@@ -1234,23 +1232,21 @@ namespace scenarioengine
         double initialEmissionRgb_[3];
         double finalEmissionRgb_[3];
 
-        bool isUserSetRgb = true;
-        bool isRgbFromLightType = false;
-        double lum_max = 0.9;
-        double lum_default = 0.5;
+        bool                     isUserSetRgb       = true;
+        bool                     isRgbFromLightType = false;
+        double                   lum_max            = 0.9;
+        double                   lum_default        = 0.5;
         Object::VehicleLightMode perviousMode;
-        double perviousIntensity;
-        double baseRgb[3];
+        double                   perviousIntensity;
+        double                   baseRgb[3];
 
         enum class flashingStatus
         {
-            LOW = 1,
-            HIGH = 2,
+            LOW       = 1,
+            HIGH      = 2,
             UNDEFINED = 3
         };
         flashingStatus flashStatus;
-
-
 
         int parseVehicleLightType(std::string typeObject, Object::VehicleLightActionStatus& lightStatus);
         int parseVehicleLightMode(std::string mode, Object::VehicleLightActionStatus& lightStatus);

@@ -68,7 +68,7 @@ namespace scenarioengine
         int            scaleMode;       // 0=None, 1=BoundingBoxToModel, 2=ModelToBoundingBox (see enum EntityScaleMode)
         int            visibilityMask;  // bitmask according to Object::Visibility (1 = Graphics, 2 = Traffic, 4 = Sensors)
         // Object::VehicleLightActionStatus light_state[Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS];
-        unsigned char  rgb[13 * 4];
+        unsigned char rgb[13 * 4];
     };
 
     struct ObjectPositionStructDat

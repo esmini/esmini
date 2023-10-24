@@ -1088,29 +1088,30 @@ void ScenarioGateway::WriteStatesToFile()
                 }
 
                 // Convert doubles [0:1] into bytes (unsigned chars) [0:255]
-                for (int k=0;k<4;k++)
+                for (int k = 0; k < 4; k++)
                 {
                     // ensure range [0:1]
                     double adjusted_value = MIN(MAX(rgb_[k], 0.0), 255.0);
                     // convert
                     datState.info.rgb[(j * 4) + k] = static_cast<unsigned char>(adjusted_value * 255.0);
-                    // printf("Obj[%d]Light[%d]RGB[%d]: %.2f -> %.2f -> %d\n", static_cast<int>(i), j, (j * 4) + k, rgb_[k], adjusted_value, datState.info.rgb[k]);
+                    // printf("Obj[%d]Light[%d]RGB[%d]: %.2f -> %.2f -> %d\n", static_cast<int>(i), j, (j * 4) + k, rgb_[k], adjusted_value,
+                    // datState.info.rgb[k]);
                 }
             }
 
-            datState.info.wheel_angle    = static_cast<float>(objectState_[i]->state_.info.wheel_angle);
-            datState.info.wheel_rot      = static_cast<float>(objectState_[i]->state_.info.wheel_rot);
-            datState.pos.x               = static_cast<float>(objectState_[i]->state_.pos.GetX());
-            datState.pos.y               = static_cast<float>(objectState_[i]->state_.pos.GetY());
-            datState.pos.z               = static_cast<float>(objectState_[i]->state_.pos.GetZ());
-            datState.pos.h               = static_cast<float>(objectState_[i]->state_.pos.GetH());
-            datState.pos.p               = static_cast<float>(objectState_[i]->state_.pos.GetP());
-            datState.pos.r               = static_cast<float>(objectState_[i]->state_.pos.GetR());
-            datState.pos.roadId          = objectState_[i]->state_.pos.GetTrackId();
-            datState.pos.laneId          = objectState_[i]->state_.pos.GetLaneId();
-            datState.pos.offset          = static_cast<float>(objectState_[i]->state_.pos.GetOffset());
-            datState.pos.t               = static_cast<float>(objectState_[i]->state_.pos.GetT());
-            datState.pos.s               = static_cast<float>(objectState_[i]->state_.pos.GetS());
+            datState.info.wheel_angle = static_cast<float>(objectState_[i]->state_.info.wheel_angle);
+            datState.info.wheel_rot   = static_cast<float>(objectState_[i]->state_.info.wheel_rot);
+            datState.pos.x            = static_cast<float>(objectState_[i]->state_.pos.GetX());
+            datState.pos.y            = static_cast<float>(objectState_[i]->state_.pos.GetY());
+            datState.pos.z            = static_cast<float>(objectState_[i]->state_.pos.GetZ());
+            datState.pos.h            = static_cast<float>(objectState_[i]->state_.pos.GetH());
+            datState.pos.p            = static_cast<float>(objectState_[i]->state_.pos.GetP());
+            datState.pos.r            = static_cast<float>(objectState_[i]->state_.pos.GetR());
+            datState.pos.roadId       = objectState_[i]->state_.pos.GetTrackId();
+            datState.pos.laneId       = objectState_[i]->state_.pos.GetLaneId();
+            datState.pos.offset       = static_cast<float>(objectState_[i]->state_.pos.GetOffset());
+            datState.pos.t            = static_cast<float>(objectState_[i]->state_.pos.GetT());
+            datState.pos.s            = static_cast<float>(objectState_[i]->state_.pos.GetS());
             data_file_.write(reinterpret_cast<char*>(&datState), sizeof(datState));
         }
     }

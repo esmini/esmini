@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- scnario with different lights on, off and flash mode -->
+<!-- scenario with brake lights on, off and flash mode-->
 <OpenSCENARIO>
    <FileHeader revMajor="1"
                revMinor="2"
-               date="2017-06-09T10:00:00"
-               description="Another variant of cut-in"
+               date="2023-10-24T10:00:00"
+               description="Scenario with brake lights on, off and flash mode"
                author="esmini-team"/>
    <ParameterDeclarations>
-      <ParameterDeclaration name="HeadwayTime_LaneChange" parameterType="double" value="0.4"/>
-      <ParameterDeclaration name="HeadwayTime_Brake" parameterType="double" value="1.0"/>
    </ParameterDeclarations>
    <CatalogLocations>
       <VehicleCatalog>
@@ -20,7 +18,7 @@
    </RoadNetwork>
    <Entities>
         <ScenarioObject name="Ego">
-            <CatalogReference catalogName="VehicleCatalog" entryName="car_white_lights"/>
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
         </ScenarioObject>
    </Entities>
    <Storyboard>

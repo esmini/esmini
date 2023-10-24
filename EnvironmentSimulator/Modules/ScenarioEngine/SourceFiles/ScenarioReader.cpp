@@ -3271,7 +3271,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
             LightStateAction                *lightStateAction = new LightStateAction();
             Object::VehicleLightActionStatus LightActionStatus;
             pugi::xml_node                   appearanceActionChild = actionChild.first_child();
-            lightStatusOn = true;
+            lightStatusOn                                          = true;
 
             if (appearanceActionChild.name() == std::string("LightStateAction"))
             {
@@ -3289,9 +3289,9 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                         {
                             if (lightTypeChild.name() == std::string("VehicleLight"))
                             {
-                                if(lightStateAction->parseVehicleLightType(parameters.ReadAttribute(lightTypeChild, "vehicleLightType"),
-                                                                      LightActionStatus))
-                                { // unkown light type
+                                if (lightStateAction->parseVehicleLightType(parameters.ReadAttribute(lightTypeChild, "vehicleLightType"),
+                                                                            LightActionStatus))
+                                {  // unkown light type
                                     delete lightStateAction;
                                     return 0;
                                 }
@@ -3303,7 +3303,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                                 return nullptr;
                             }
                             else
-                            { // shall be stoped
+                            {  // shall be stoped
                                 LOG("Skipping, VehicleLight mandatory field in %s", lightTypeChild.name());
                                 delete lightStateAction;
                                 return nullptr;
@@ -3329,7 +3329,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                             lightStateAction->parseVehicleLightMode(parameters.ReadAttribute(LightStateActionChild, "mode"), LightActionStatus);
                         }
                         else
-                        { // shall be stoped
+                        {  // shall be stoped
                             LOG("Skipping, Mode in LightState is mandatory field in %s", LightStateActionChild.name());
                             delete lightStateAction;
                             return nullptr;
@@ -3337,13 +3337,13 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                         for (pugi::xml_node colourChild = LightStateActionChild.first_child(); colourChild; colourChild = colourChild.next_sibling())
                         {
                             if (colourChild.name() == std::string("Color"))
-                            { // set to Unkown if color node missing-default
+                            {  // set to Unkown if color node missing-default
                                 if (!parameters.ReadAttribute(colourChild, "colorType").empty())
                                 {
                                     lightStateAction->parseVehicleLightColor(parameters.ReadAttribute(colourChild, "colorType"), LightActionStatus);
                                 }
                                 else
-                                { // set to other if colorType missing
+                                {  // set to other if colorType missing
                                     lightStateAction->parseVehicleLightColor("other", LightActionStatus);
                                 }
                                 for (pugi::xml_node colourDesChild = colourChild.first_child(); colourDesChild;
@@ -3354,7 +3354,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                                         if (parameters.ReadAttribute(colourDesChild, "red").empty() ||
                                             parameters.ReadAttribute(colourDesChild, "green").empty() ||
                                             parameters.ReadAttribute(colourDesChild, "blue").empty())
-                                        { //shall be stoped
+                                        {  // shall be stoped
                                             LOG("Skipping, Any of Rgb values missing in %s", colourDesChild.name());
                                             delete lightStateAction;
                                             return nullptr;
@@ -3369,7 +3369,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                                             parameters.ReadAttribute(colourDesChild, "magenta").empty() ||
                                             parameters.ReadAttribute(colourDesChild, "yellow").empty() ||
                                             parameters.ReadAttribute(colourDesChild, "key").empty())
-                                        {// shall be stoped
+                                        {  // shall be stoped
                                             LOG("Exiting,Any of CMYK values missing %s", colourDesChild.name());
                                             delete lightStateAction;
                                             return nullptr;
@@ -3378,7 +3378,6 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                                         lightStateAction->cmyk_[1] = strtod(parameters.ReadAttribute(colourDesChild, "magenta"));
                                         lightStateAction->cmyk_[2] = strtod(parameters.ReadAttribute(colourDesChild, "yellow"));
                                         lightStateAction->cmyk_[3] = strtod(parameters.ReadAttribute(colourDesChild, "key"));
-
                                     }
                                 }
                             }

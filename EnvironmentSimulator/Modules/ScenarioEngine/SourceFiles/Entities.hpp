@@ -152,18 +152,18 @@ namespace scenarioengine
 
         enum class VehicleLightColor
         {
-            OTHER  = 0,
-            RED    = 1,
-            YELLOW = 2,
-            GREEN  = 3,
-            BLUE   = 4,
-            VIOLET = 5,
-            ORANGE = 6,
-            BROWN  = 7,
-            BLACK  = 8,
-            GREY   = 9,
-            WHITE  = 10,
-            UNKNOWN = 11 // Denotes color node itself missing
+            OTHER   = 0,
+            RED     = 1,
+            YELLOW  = 2,
+            GREEN   = 3,
+            BLUE    = 4,
+            VIOLET  = 5,
+            ORANGE  = 6,
+            BROWN   = 7,
+            BLACK   = 8,
+            GREY    = 9,
+            WHITE   = 10,
+            UNKNOWN = 11  // Denotes color node itself missing
 
         };
 
@@ -172,14 +172,14 @@ namespace scenarioengine
             VehicleLightType  type              = VehicleLightType::UNDEFINED;  // according to VehicleLightType
             VehicleLightMode  mode              = VehicleLightMode::UNKNOWN_MODE;
             VehicleLightColor colorName         = VehicleLightColor::UNKNOWN;
-            double            luminousIntensity = -1.0; // -1 denotes missing from scenario
+            double            luminousIntensity = -1.0;                // -1 denotes missing from scenario
             double            diffuseRgb[3]     = {-1.0, -1.0, -1.0};  // current diffuseRbg
-            double            emissionRgb[3]    = {0.0, 0.0, 0.0};  // current emissionRbg
+            double            emissionRgb[3]    = {0.0, 0.0, 0.0};     // current emissionRbg
             double            baseRgb[3]        = {-1.0, -1.0, -1.0};  // base rbg
         };
 
         VehicleLightActionStatus vehicleLightActionStatusList[VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS];
-        std::string LightType2Str(Object::VehicleLightType lightType);
+        std::string              LightType2Str(Object::VehicleLightType lightType);
 
         Type        type_;
         int         id_;

@@ -3732,17 +3732,26 @@ TEST(ParamDistTest, TestRunAll)
 
     SE_ResetParameterDistribution();
 }
-
+// todo: test will be enabled back when model is in place.
+#if 0
 TEST(TestLightStateAction, BrakeLightActionTest)
 {
     // std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/light_test.xosc";
 
-    const char* args[] =
-        {"--osc", "../../../EnvironmentSimulator/Unittest/xosc/light_test.xosc", "--headless", "--window", "60", "60", "800", "400", "--path", "../../../resources/models"};
+    const char* args[] = {"--osc",
+                          "../../../EnvironmentSimulator/Unittest/xosc/light_test.xosc",
+                          "--headless",
+                          "--window",
+                          "60",
+                          "60",
+                          "800",
+                          "400",
+                          "--path",
+                          "../../../resources/models"};
 
     // const char* Scenario_file = scenario_file.c_str();
-    float       dt            = 0.1f;
-    float       t             = 0.0f;
+    float dt = 0.1f;
+    float t  = 0.0f;
 
     int               sv_size = 0;
     osi3::GroundTruth osi_gt;
@@ -3757,16 +3766,17 @@ TEST(TestLightStateAction, BrakeLightActionTest)
 
     SE_VehicleLightState lightList;
 
-    osi3::MovingObject_VehicleClassification_LightState_BrakeLightState bState = osi_gt.mutable_moving_object(0)->mutable_vehicle_classification()->mutable_light_state()->brake_light_state();
+    osi3::MovingObject_VehicleClassification_LightState_BrakeLightState bState =
+        osi_gt.mutable_moving_object(0)->mutable_vehicle_classification()->mutable_light_state()->brake_light_state();
 
     EXPECT_EQ(SE_GetVehicleLightStatus(0, 5, &lightList), 0);
     EXPECT_EQ(lightList.lightType, -1);
     EXPECT_EQ(lightList.colorName, 11);
     EXPECT_DOUBLE_EQ(lightList.intensity, -1.0);
     EXPECT_EQ(lightList.lightMode, 4);
-    EXPECT_DOUBLE_EQ(lightList.diffuseRgb[0] + lightList.emissionRgb[0] , 0.5);
-    EXPECT_DOUBLE_EQ(lightList.diffuseRgb[1] + lightList.emissionRgb[1] , 0.0);
-    EXPECT_DOUBLE_EQ(lightList.diffuseRgb[2] + lightList.emissionRgb[2] , 0.0);
+    EXPECT_DOUBLE_EQ(lightList.diffuseRgb[0] + lightList.emissionRgb[0], 0.5);
+    EXPECT_DOUBLE_EQ(lightList.diffuseRgb[1] + lightList.emissionRgb[1], 0.0);
+    EXPECT_DOUBLE_EQ(lightList.diffuseRgb[2] + lightList.emissionRgb[2], 0.0);
     EXPECT_EQ(bState, 0);
 
     for (; t < 3.0f; t += dt)
@@ -3785,9 +3795,9 @@ TEST(TestLightStateAction, BrakeLightActionTest)
     EXPECT_EQ(lightList.colorName, 11);
     EXPECT_DOUBLE_EQ(lightList.intensity, 6000.0);
     EXPECT_EQ(lightList.lightMode, 1);
-    EXPECT_DOUBLE_EQ(lightList.diffuseRgb[0] + lightList.emissionRgb[0] , 0.56750000100582842);
-    EXPECT_DOUBLE_EQ(lightList.diffuseRgb[1] + lightList.emissionRgb[1] , 0.20250000301748514);
-    EXPECT_DOUBLE_EQ(lightList.diffuseRgb[2] + lightList.emissionRgb[2] , 0.20250000301748514);
+    EXPECT_DOUBLE_EQ(lightList.diffuseRgb[0] + lightList.emissionRgb[0], 0.56750000100582842);
+    EXPECT_DOUBLE_EQ(lightList.diffuseRgb[1] + lightList.emissionRgb[1], 0.20250000301748514);
+    EXPECT_DOUBLE_EQ(lightList.diffuseRgb[2] + lightList.emissionRgb[2], 0.20250000301748514);
     EXPECT_DOUBLE_EQ(lightList.baseRgb[0], 0.4);
     EXPECT_DOUBLE_EQ(lightList.baseRgb[1], 0.0);
     EXPECT_DOUBLE_EQ(lightList.baseRgb[2], 0.0);
@@ -3809,9 +3819,9 @@ TEST(TestLightStateAction, BrakeLightActionTest)
     EXPECT_EQ(lightList.colorName, 11);
     EXPECT_DOUBLE_EQ(lightList.intensity, -1.0);
     EXPECT_EQ(lightList.lightMode, 0);
-    EXPECT_DOUBLE_EQ(lightList.diffuseRgb[0] + lightList.emissionRgb[0] , 0.41249999646097424);
-    EXPECT_DOUBLE_EQ(lightList.diffuseRgb[1] + lightList.emissionRgb[1] , 0.022499993629753579);
-    EXPECT_DOUBLE_EQ(lightList.diffuseRgb[2] + lightList.emissionRgb[2] , 0.022499993629753579);
+    EXPECT_DOUBLE_EQ(lightList.diffuseRgb[0] + lightList.emissionRgb[0], 0.41249999646097424);
+    EXPECT_DOUBLE_EQ(lightList.diffuseRgb[1] + lightList.emissionRgb[1], 0.022499993629753579);
+    EXPECT_DOUBLE_EQ(lightList.diffuseRgb[2] + lightList.emissionRgb[2], 0.022499993629753579);
     EXPECT_DOUBLE_EQ(lightList.baseRgb[0], 0.4);
     EXPECT_DOUBLE_EQ(lightList.baseRgb[1], 0.0);
     EXPECT_DOUBLE_EQ(lightList.baseRgb[2], 0.0);
@@ -3819,7 +3829,8 @@ TEST(TestLightStateAction, BrakeLightActionTest)
 
     SE_Close();
 }
-
+#endif
+#ifdef _USE_OSI
 TEST(TestLightStateAction, AdvancedLightStateActionTest)
 {
     std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/light_test_advanced.xosc";
@@ -3840,13 +3851,20 @@ TEST(TestLightStateAction, AdvancedLightStateActionTest)
 
     SE_VehicleLightState lightList;
 
-    osi3::MovingObject_VehicleClassification_LightState_BrakeLightState car0BrakeState = osi_gt.mutable_moving_object(0)->mutable_vehicle_classification()->mutable_light_state()->brake_light_state();
-    osi3::MovingObject_VehicleClassification_LightState_IndicatorState car1IndState = osi_gt.mutable_moving_object(1)->mutable_vehicle_classification()->mutable_light_state()->indicator_state();
-    osi3::MovingObject_VehicleClassification_LightState_BrakeLightState car2BrakeState = osi_gt.mutable_moving_object(2)->mutable_vehicle_classification()->mutable_light_state()->brake_light_state();
-    osi3::MovingObject_VehicleClassification_LightState_BrakeLightState car3BrakeState = osi_gt.mutable_moving_object(3)->mutable_vehicle_classification()->mutable_light_state()->brake_light_state();
-    osi3::MovingObject_VehicleClassification_LightState_BrakeLightState car4BrakeState = osi_gt.mutable_moving_object(4)->mutable_vehicle_classification()->mutable_light_state()->brake_light_state();
-    osi3::MovingObject_VehicleClassification_LightState_GenericLightState car5genState = osi_gt.mutable_moving_object(5)->mutable_vehicle_classification()->mutable_light_state()->emergency_vehicle_illumination();
-    osi3::MovingObject_VehicleClassification_LightState_IndicatorState car5IndState = osi_gt.mutable_moving_object(5)->mutable_vehicle_classification()->mutable_light_state()->indicator_state();
+    osi3::MovingObject_VehicleClassification_LightState_BrakeLightState car0BrakeState =
+        osi_gt.mutable_moving_object(0)->mutable_vehicle_classification()->mutable_light_state()->brake_light_state();
+    osi3::MovingObject_VehicleClassification_LightState_IndicatorState car1IndState =
+        osi_gt.mutable_moving_object(1)->mutable_vehicle_classification()->mutable_light_state()->indicator_state();
+    osi3::MovingObject_VehicleClassification_LightState_BrakeLightState car2BrakeState =
+        osi_gt.mutable_moving_object(2)->mutable_vehicle_classification()->mutable_light_state()->brake_light_state();
+    osi3::MovingObject_VehicleClassification_LightState_BrakeLightState car3BrakeState =
+        osi_gt.mutable_moving_object(3)->mutable_vehicle_classification()->mutable_light_state()->brake_light_state();
+    osi3::MovingObject_VehicleClassification_LightState_BrakeLightState car4BrakeState =
+        osi_gt.mutable_moving_object(4)->mutable_vehicle_classification()->mutable_light_state()->brake_light_state();
+    osi3::MovingObject_VehicleClassification_LightState_GenericLightState car5genState =
+        osi_gt.mutable_moving_object(5)->mutable_vehicle_classification()->mutable_light_state()->emergency_vehicle_illumination();
+    osi3::MovingObject_VehicleClassification_LightState_IndicatorState car5IndState =
+        osi_gt.mutable_moving_object(5)->mutable_vehicle_classification()->mutable_light_state()->indicator_state();
 
     EXPECT_EQ(SE_GetVehicleLightStatus(0, 5, &lightList), 0);
     EXPECT_EQ(lightList.lightType, -1);
@@ -3912,9 +3930,9 @@ TEST(TestLightStateAction, AdvancedLightStateActionTest)
     osi_gt.ParseFromArray(gt, sv_size);
 
     car0BrakeState = osi_gt.mutable_moving_object(0)->mutable_vehicle_classification()->mutable_light_state()->brake_light_state();
-    car1IndState = osi_gt.mutable_moving_object(1)->mutable_vehicle_classification()->mutable_light_state()->indicator_state();
+    car1IndState   = osi_gt.mutable_moving_object(1)->mutable_vehicle_classification()->mutable_light_state()->indicator_state();
     car2BrakeState = osi_gt.mutable_moving_object(2)->mutable_vehicle_classification()->mutable_light_state()->brake_light_state();
-    car5IndState = osi_gt.mutable_moving_object(5)->mutable_vehicle_classification()->mutable_light_state()->indicator_state();
+    car5IndState   = osi_gt.mutable_moving_object(5)->mutable_vehicle_classification()->mutable_light_state()->indicator_state();
 
     EXPECT_EQ(SE_GetVehicleLightStatus(0, 5, &lightList), 0);
     EXPECT_EQ(lightList.lightType, 5);
@@ -4017,7 +4035,7 @@ TEST(TestLightStateAction, AdvancedLightStateActionTest)
     osi_gt.ParseFromArray(gt, sv_size);
 
     car0BrakeState = osi_gt.mutable_moving_object(0)->mutable_vehicle_classification()->mutable_light_state()->brake_light_state();
-    car1IndState = osi_gt.mutable_moving_object(1)->mutable_vehicle_classification()->mutable_light_state()->indicator_state();
+    car1IndState   = osi_gt.mutable_moving_object(1)->mutable_vehicle_classification()->mutable_light_state()->indicator_state();
     car2BrakeState = osi_gt.mutable_moving_object(2)->mutable_vehicle_classification()->mutable_light_state()->brake_light_state();
 
     EXPECT_EQ(SE_GetVehicleLightStatus(0, 5, &lightList), 0);
@@ -4228,7 +4246,7 @@ TEST(TestLightStateAction, AdvancedLightStateActionTest)
     EXPECT_EQ(SE_GetVehicleLightStatus(3, 5, &lightList), 0);
     EXPECT_EQ(lightList.lightType, 5);
     EXPECT_EQ(lightList.colorName, 3);
-    EXPECT_DOUBLE_EQ(lightList.intensity,-1.0);
+    EXPECT_DOUBLE_EQ(lightList.intensity, -1.0);
     EXPECT_EQ(lightList.lightMode, 0);
     EXPECT_DOUBLE_EQ(lightList.diffuseRgb[0] + lightList.emissionRgb[0], 0.0);
     EXPECT_DOUBLE_EQ(lightList.diffuseRgb[1] + lightList.emissionRgb[1], 0.5);
@@ -4343,7 +4361,7 @@ TEST(TestLightStateAction, AdvancedLightStateActionTest)
     EXPECT_EQ(SE_GetVehicleLightStatus(3, 5, &lightList), 0);
     EXPECT_EQ(lightList.lightType, 5);
     EXPECT_EQ(lightList.colorName, 4);
-    EXPECT_DOUBLE_EQ(lightList.intensity,6000);
+    EXPECT_DOUBLE_EQ(lightList.intensity, 6000);
     EXPECT_EQ(lightList.lightMode, 1);
     EXPECT_DOUBLE_EQ(lightList.diffuseRgb[0] + lightList.emissionRgb[0], 0.45);
     EXPECT_DOUBLE_EQ(lightList.diffuseRgb[1] + lightList.emissionRgb[1], 0.45);
@@ -4377,7 +4395,6 @@ TEST(TestLightStateAction, AdvancedLightStateActionTest)
     EXPECT_DOUBLE_EQ(lightList.baseRgb[2], 0.14);
     EXPECT_EQ(car1IndState, 5);
 
-
     for (; t < 21.0f; t += dt)
     {
         SE_StepDT(dt);
@@ -4392,7 +4409,7 @@ TEST(TestLightStateAction, AdvancedLightStateActionTest)
     EXPECT_EQ(SE_GetVehicleLightStatus(3, 5, &lightList), 0);
     EXPECT_EQ(lightList.lightType, 5);
     EXPECT_EQ(lightList.colorName, 4);
-    EXPECT_DOUBLE_EQ(lightList.intensity,-1.0);
+    EXPECT_DOUBLE_EQ(lightList.intensity, -1.0);
     EXPECT_EQ(lightList.lightMode, 0);
     EXPECT_DOUBLE_EQ(lightList.diffuseRgb[0] + lightList.emissionRgb[0], 0.0);
     EXPECT_DOUBLE_EQ(lightList.diffuseRgb[1] + lightList.emissionRgb[1], 0.0);
@@ -4440,7 +4457,6 @@ TEST(TestLightStateAction, AdvancedLightStateActionTest)
     EXPECT_DOUBLE_EQ(lightList.baseRgb[1], 0.14999999999999999);
     EXPECT_DOUBLE_EQ(lightList.baseRgb[2], 0.0);
     EXPECT_EQ(car5genState, 6);
-
 
     for (; t < 24.0f; t += dt)
     {
@@ -4514,10 +4530,9 @@ TEST(TestLightStateAction, AdvancedLightStateActionTest)
     EXPECT_DOUBLE_EQ(lightList.baseRgb[2], 0.14);
     EXPECT_EQ(car1IndState, 2);
 
-
     SE_Close();
 }
-
+#endif
 int main(int argc, char** argv)
 {
     testing::InitGoogleTest(&argc, argv);

@@ -251,9 +251,9 @@ void SwarmTrafficAction::Start(double simTime, double dt)
             for (size_t j = 0; j < catalogs->catalog_[i]->entry_.size(); j++)
             {
                 Vehicle* vehicle = reader_->parseOSCVehicle(catalogs->catalog_[i]->entry_[j]->GetNode());
-                if ((vehicle->category_ == Vehicle::Category::CAR || vehicle->category_ == Vehicle::Category::BUS ||
+                if (vehicle->category_ == Vehicle::Category::CAR || vehicle->category_ == Vehicle::Category::BUS ||
                     vehicle->category_ == Vehicle::Category::TRUCK || vehicle->category_ == Vehicle::Category::VAN ||
-                    vehicle->category_ == Vehicle::Category::MOTORBIKE) && (!strcmp(vehicle->GetTypeName().c_str(), "car_white_lights") == 0))
+                    vehicle->category_ == Vehicle::Category::MOTORBIKE)
                 {
                     vehicle_pool_.push_back(vehicle);
                 }

@@ -63,7 +63,7 @@ void Event::Start(double simTime, double dt)
                                         if (pa2->type_ == OSCPrivateAction::ActionType::LIGHT_STATE_ACTION &&
                                             pa->type_ == OSCPrivateAction::ActionType::LIGHT_STATE_ACTION)
                                         {
-                                            LightStateAction *action2 = static_cast<LightStateAction*>(pa2);
+                                            LightStateAction* action2 = static_cast<LightStateAction*>(pa2);
                                             if (action2->GetLightType() == (static_cast<LightStateAction*>(pa))->GetLightType())
                                             {
                                                 // LightType overlap, at least one light type in common. Terminate old action.
