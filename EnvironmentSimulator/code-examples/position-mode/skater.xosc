@@ -145,7 +145,7 @@
                         <RoutingAction>
                             <FollowTrajectoryAction>
                                 <TrajectoryRef>
-                                    <Trajectory closed="true" name="TrajectoryPLine">
+                                    <Trajectory closed="true" name="TrajectoryNURBS1">
                                         <ParameterDeclarations/>
                                         <Shape>
                                             <Nurbs order="3">
@@ -210,7 +210,7 @@
                     <PrivateAction>
                         <RoutingAction>
                             <FollowTrajectoryAction>
-                                <Trajectory closed="true" name="TrajectoryPLine">
+                                <Trajectory closed="true" name="TrajectoryNURBS2">
                                     <ParameterDeclarations/>
                                     <Shape>
                                         <Polyline>

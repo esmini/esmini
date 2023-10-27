@@ -571,7 +571,7 @@ Scenarios corresponding to IDs (300:399): sim_rss.dat
 
 ==== Runtime plotting
 
-From version 2.32.0 esmini can plot some pre-configured data values during simulation. Simply add launch flag `--plot`. 
+From version 2.32.0 esmini can plot some pre-configured data values during simulation. Simply add launch flag `--plot`.
 
 Features so far:
 
@@ -1133,6 +1133,305 @@ When FollowMode is `position` esmini will:
 
 . For world coordinates, apply whatever heading is specified in the vertices (note that 0.0 is default). Lane and road coordinates will align to road direction as default.
 . For each segment, calculate constant speed needed to reach next vertex on time. This approach results in a discontinuous speed profile.
+
+== Positioning
+
+esmini supports all OpenSCENARIO position types. To support various use cases esmini add some mechanisms and interpretations:
+
+- *Align by omit*: Lacking position component values (x, y, z, heading, pitch, roll) in the scenario file is interpreted as "please align this component to the road surface". E.g. missing z value will project the position on the road surface, missing pitch value will ensure object is aligned with road pitch (e.g. up- and downhill).
+
+- *PositionMode*: Any position/object can be set and configured with respect to alignment via API calls. For example: x, y and heading can be set as absolute values while pitch and roll can be set as relative to the road surface.
+
+See more details below in <<Position modes>>
+
+- *Trajectory interpolation*: Based omitted position components and followingMode setting esmini will apply different mechanisms to follow and interpolate trajectory vertices/control points.
+
+See details below in <<Trajectory interpolation and alignment>>
+
+=== Position modes
+
+The purpose of position modes is to allow flexible and detailed control whether to interpret Z (elevation), heading, pitch and roll as absolute values or relative to the road. X and Y will always be interpreted as absolute values.
+
+For some use cases orientation should be aligned to road surface, e.g. a vehicle simply driving along a hilly road. In some cases pitch and roll should be zero, e.g. signs and buildings along the road. External vehicle models can choose whether to report relative or absolute values. It can also be combination, e.g. explicit/absolute heading while z, roll and pitch are realative (to the road) - or any other combination.
+
+The mode can be specified explicitly when calling a set position function. Example:
+
+`pos.SetInertiaPosMode(x, y, z, h, p, r, PosMode::Z_REL | PosMode::H_ABS | PosMode::P_REL | PosMode::R_REL);`
+
+In above example x, y, and h will be interpretated as absolute values while z, p, and r as relative to the road.
+
+==== Persistent mode setting
+
+In most cases the same mode setting will be used throughout the simulation for each object. For this reason, as conveience, the mode can be set once per object. Example:
+
+`pos.SetMode(Position::PosModeType::SET, PosMode::Z_REL | PosMode::H_ABS | PosMode::P_REL | PosMode::R_REL);`
+
+Then, when calling set functions, mode can be set to zero. Example:
+
+`pos.SetInertiaPosMode(x, y, z, h, p, r, 0);`
+
+or use the simple variants skipping the mode argument. Example:
+
+`pos.SetInertiaPos(x, y, z, h, p, r);`
+
+These cases will utilize the current setting.
+
+==== Two types of settings
+
+Note the type=SET argument of the SetMode() example above. It specifies as to which type of operations the settings applies to. There are two types of modes: SET and UPDATE. SET applies to API calls setting Cartesian coordinates. UPDATE applies to position updates by default controller and API calls setting Lane and Road coordinates.
+
+This way a position object can, for example, maintain relative heading follow the curvature of the road when updated by the default controller, while heading can be set explicitly in terms of absolute value by API calls.
+
+`pos.SetMode(Position::PosModeType::UPDATE, PosMode::Z_REL | PosMode::H_REL | PosMode::P_REL | PosMode::R_REL);`
+
+`pos.SetMode(Position::PosModeType::SET, PosMode::Z_REL | PosMode::H_ABS | PosMode::P_REL | PosMode::R_REL);`
+
+==== Default values
+
+There will be a default setting for both SET and UPDATE which will be applied until changed by SetMode() function:
+
+[horizontal]
+*SET*:: PosMode::Z_REL | PosMode::H_ABS | PosMode::P_REL | PosMode::R_REL
+*UPDATE*:: PosMode::Z_REL | PosMode::H_REL | PosMode::P_REL | PosMode::R_REL
+
+*Further examples*
+
+Specify only mode for Z, reuse whatever setting for the remaining components:
+
+`pos.SetInertiaPosMode(x, y, z, h, p, r, PosMode::Z_ABS);`
+
+Set/reset default value for pitch, reuse whatever setting for the other components:
+
+`pos.SetInertiaPosMode(x, y, z, h, p, r, PosMode::Z_MASK & PosMode::Z_DEF);`
+
+=== Mode specification
+
+Mode is coded in four chunks of three bits. One chunk for each of the position components Z, Heading, Pitch and Roll. Chunks are padded and aligned to segments of four bytes.
+
+[cols="1,2,3,1,1"]
+|===
+||Z|Comment|Hex|Int
+
+|SKIP
+|XXXX XXXX XXXX XXX0
+|first bit is zero
+|0x0000
+|0
+
+|Z_DEF
+|XXXX XXXX XXXX XX01
+|first bit is one, second is zero
+|0x0001
+|1
+
+|Z_ABS
+|XXXX XXXX XXXX X011
+|first and second bit is one, third zero
+|0x0003
+|3
+
+|Z_REL
+|XXXX XXXX XXXX X111
+|first, second and third bits are all one
+|0x0007
+|7
+
+|===
+
+[cols="1,2,3,1,1"]
+|===
+||H|Comment|Hex|Int
+
+|SKIP
+|XXXX XXXX XXX0 XXXX
+|first bit is zero
+|0x0000
+|0
+
+|H_DEF
+|XXXX XXXX XX01 XXXX
+|first bit is one, second is zero
+|0x0010
+|16
+
+|H_ABS
+|XXXX XXXX X011 XXXX
+|first and second bit is one, third zero
+|0x0030
+|48
+
+|H_REL
+|XXXX XXXX X111 XXXX
+|first, second and third bits are all one
+|0x0070
+|112
+
+|===
+
+[cols="1,2,3,1,1"]
+|===
+||P|Comment|Hex|Int
+
+|SKIP
+|XXXX XXX0 XXXX XXXX
+|first bit is zero
+|0x0000
+|0
+
+|P_DEF
+|XXXX XX01 XXXX XXXX
+|first bit is one, second is zero
+|0x0100
+|256
+
+|P_ABS
+|XXXX X011 XXXX XXXX
+|first and second bit is one, third zero
+|0x0300
+|768
+
+|P_REL
+|XXXX X111 XXXX XXXX
+|first, second and third bits are all one
+|0x0700
+|1,792
+
+|===
+
+[cols="1,2,3,1,1"]
+|===
+||R|Comment|Hex|Int
+
+|SKIP
+|XXX0 XXXX XXXX XXXX
+|first bit is zero
+|0x0000
+|0
+
+|R_DEF
+|XX01 XXXX XXXX XXXX
+|first bit is one, second is zero
+|0x1000
+|4,096
+
+|R_ABS
+|X011 XXXX XXXX XXXX
+|first and second bit is one, third zero
+|0x3000
+|12,288
+
+|R_REL
+|X111 XXXX XXXX XXXX
+|first, second and third bits are all one
+|0x7000
+|28,672
+
+|===
+
+Looking up values in the table above, modes can be specified in numerous ways.
+
+For example: To set world position with relative Z and absolute Pitch, reusing setting for the other components, any of the following identical examples will work:
+
+`pos.SetInertiaPosMode(x, y, z, h, p, r, PosMode::Z_REL | PosMode::P_ABS);` +
+= +
+`pos.SetInertiaPosMode(x, y, z, h, p, r, 0x7 | 0x300);` +
+= +
+`pos.SetInertiaPosMode(x, y, z, h, p, r, 0x307);` +
+= +
+`pos.SetInertiaPosMode(x, y, z, h, p, r, 0x0307);` +
+= +
+`pos.SetInertiaPosMode(x, y, z, h, p, r, 7 | 768);` +
+= +
+`pos.SetInertiaPosMode(x, y, z, h, p, r, 7 + 768);` +
+= +
+`pos.SetInertiaPosMode(x, y, z, h, p, r, 775);`
+
+==== Use cases
+
+1. Simple 2D vehicle model. Report only X, Y and Heading. Align Z, pitch and roll to the road surface:
+`pos.SetMode(Position::PosModeType::SET, PosMode::H_ABS);` +
+`pos.SetInertiaPos(x, y, 0.0, h, 0.0, 0.0);` +
+or use short version of the same function, applying zero to z, p, r: +
+`pos.SetInertiaPos(x, y, h);` +
+
+2. Advanced 3D vehicle model. Report all 6 DOF: X, Y, Z, Heading, Pitch and Roll. I.e. no explicit alignment to road surface:
+`pos.SetMode(Position::PosModeType::SET, PosMode::Z_ABS | PosMode::H_ABS | PosMode::P_ABS | PosMode::R_ABS);` +
+`pos.SetInertiaPos(x, y, 0.0, h, 0.0, 0.0);` +
+or use short version of the same function, applying zero to z, p, r: +
+`pos.SetInertiaPos(x, y, h);` +
+
+3. Rotate a pedestrian 90 degree left to move forward facing the road driving direction, as on a hoverboard: +
+`pos.SetHeadingRelative(1.5708);` +
+`pos.SetMode(Position::PosModeType::UPDATE, PosMode::H_REL);` +
+Default controller will now move the pedestrian along the road but rotated 90 degree.
+
+4. Put pedestrian on a hoverboard moving sideways forward (heading=90 degrees) along the road, 1 meter above ground: +
+`pos.SetHeadingRelative(1.57);` +
+`pos.SetZRelative(1.0);` +
+`pos.SetMode(Position::PosModeType::UPDATE, PosMode::Z_REL | PosMode::H_REL);` +
+Default controller will now move the pedestrian along the road 1 meter above ground, with maintained heading relative to the road.
+
+=== Trajectory interpolation and alignment
+
+For convenience, esmini can calculate heading and align to the tangent of each segment (polyline and NURBS). Further, to smoothen motion esmini can interpolate corners of polyline trajectories. The behavior is based on omitted position components and `followingMode` settings.
+
+In general specified angles (heading, pitch and roll) will be interpolated over the segment between two vertices/control points. However, in many cases it's prefered to just align heading with the tangent of the curve. For these cases it should not be necessary to specify the angles, but rather have esmini calculate them.
+
+First, when z value is missing, i.e. elevation is not specified, esmini will project the points to the road surface. Availability of z will also affect alignment of orientation. General rule is that ground trajectories (elevation not specified) will align pitch and roll to the road surface, while these components will be set to zero for floating (specified z values) trajectories.
+
+Missing angles will be handled according to the table below:
+
+[%autowidth, cols="1,1,1"]
+|===
+||Input|Result
+|*missing angle component*|*z specified?*|*align orientation to*
+|heading|Yes|trajectory
+|heading|No|trajectory
+|pitch|Yes|trajectory
+|pitch|No|road surface
+|roll|Yes|trajectory
+|roll|No|road surface
+|===
+
+While moving along polylines, which tangent is not continuous, it's usually preferred to interpolate/smoothen orientation change at vertex corners.
+
+The table below shows the result for combinations of input settings of polyline trajectories:
+
+[%autowidth, cols="2,2,3,2"]
+|===
+2+|Input
+2+|Result
+|*Angle specified?*|*FollowingMode?*|*Interpolate angle along segment*|*Interpolate corners*
+|Yes|position|No|No
+|Yes|follow|Yes|No
+|No|position|No|Yes
+|No|follow|Yes|No
+|===
+
+=== Example
+There is a code and scenario example illustrating the various interpolation and position modes:
+
+https://github.com/esmini/esmini/tree/dev/EnvironmentSimulator/code-examples/position-mode
+
+Video clip:
+
+video::87TbahvpLBM[youtube,width=854,height=480,opts="autoplay,nocontrols,loop"]
+
+This specific example includes four objects:
+
+1. Pedestrian/skater on the road +
+Initially it's standing still, aligned along the road x-axis (relative heading = 0).
+
+2. Box2 moving along a NURBS trajectory +
+Specified z will make it "floating" (not projected on ground). Omitted heading will have esmini calculate heading along the tangent.
+
+3. Box3 moving along another NURBS trajectory +
+Also floating. Demonstrating specified roll will be interpolated between control points.
+
+4. Box1 moving along a polyline trajectory +
+followingMode = position will make smoothly transitions at vertex corners.
+
+The application will control and report the motion for the skater. At 5 seconds it will rotate 90 degree and move this way along the road, like riding a hoverboard. Then at 15 seconds it will move one meter up from road surface (z=1 relative road) and also rotate back 90 degrees (heading=0 relative road) and move this way along the road, like on a flyboard. During the complete scenario pitch and roll is set to 0 (absolute value - not aligned to road).
 
 == Controllers
 

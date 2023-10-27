@@ -1,5 +1,37 @@
 ## esmini release notes
 
+### 2023-10-27 Version 2.33.0
+
+New features:
+- Report parking spot on OSI
+- Add support for RelativeLanePosition dsLane mode
+- Add flexible interpolation and positioning modes
+  - introduce mode which can be RELATIVE or ABSOLUTE
+  - mode can be set per position component Z (elevation), heading, pitch and roll
+  - trajectory orientation interpolation
+  - see info in [User guide - Positioning](https://esmini.github.io/#_positioning)
+
+Updated behaviors:
+
+- Camera focus on OSC object bounding box center
+  - instead of bounding sphere of object 3D geometry
+- Accept zero stories as introduced in OSC 1.2
+- Output also relative camera position on 'K' key event
+
+Improvements and fixes:
+- Add some more details to the version string
+  - most recent tag
+  - nr builds from tag
+  - indicate local changes (dirty)
+  - based on `git describe`
+- Fix superelevation calculation
+  - project along Z instead of rotating road boundaries
+  - harmonizing with object orientation and positioning
+- Fix dashed road mark visualization bug
+- Fix condition delay issue preventing looped storyboard elements to trigger
+- Fix bug in cmake contibuting to sanitizer run failure
+- Update recent dropbox links for new policy ([issue #482](https://github.com/esmini/esmini/issues/482))
+
 ### 2023-09-29 Version 2.32.1
 
 New features:
@@ -8,7 +40,7 @@ New features:
 - Add ConnectTrailerAction prototype
   - action for connecting/disconnecting trailer
   - see [video clip](https://youtu.be/0NOX1we5dZ0) and example scenario [trailer_connect.xosc](https://github.com/esmini/esmini/blob/dev/resources/xosc/trailer_connect.xosc)
-  
+
 Updated behaviors:
 - Support activating controller on several domains in mulitple activation steps
   - see example in [distance_test.xosc](https://github.com/esmini/esmini/blob/2af9304767d8b196bb00c6ecc7cb0cb725123b31/resources/xosc/distance_test.xosc#L52)
@@ -36,7 +68,7 @@ New features:
   - Inject actions via UDP messages
   - Only a few actions supported so far
   - See [issue](https://github.com/esmini/esmini/issues/465#issuecomment-1693377535) and example [inject_actions.py](https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/code-examples/hello_world/inject_actions.py) for more info
-  
+
 Updated behaviors:
 - Relative lane-change/offset direction now based on the referenced entity orientation
 - Add road ID to trajectory vertices
@@ -71,7 +103,7 @@ Improvements and fixes:
 New behaviours:
 - Calculate omitted WorldPosition headings also when trajectory following mode is "position"
   - previously omitted heading was set to "0.0" (default according to standard)
-  
+
 Improvements and fixes:
 - Expose functions to control snappable lanes ([issue #448](https://github.com/esmini/esmini/issues/448))
   - both in [esminiLib](https://github.com/esmini/esmini/blob/d2f00135a2c43bd6a4430d07caa3d841d9100721/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L841) and [esminiRMLib](https://github.com/esmini/esmini/blob/d2f00135a2c43bd6a4430d07caa3d841d9100721/EnvironmentSimulator/Libraries/esminiRMLib/esminiRMLib.hpp#L229)
