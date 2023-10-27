@@ -16,6 +16,7 @@
 #include <osg/ComputeBoundsVisitor>
 #include <osg/LineWidth>
 #include <osg/Point>
+#include <osgAnimation/BasicAnimationManager>
 #include <osg/BlendFunc>
 #include <osg/BlendColor>
 #include <osg/Geode>
@@ -99,7 +100,30 @@ osg::Vec4 viewer::ODR2OSGColor(roadmanager::RoadMarkColor color)
     return osgc;
 }
 
-// Derive a class from NodeVisitor to find a node with a  specific name.
+struct AnimationManagerFinder : public osg::NodeVisitor
+{
+    osg::ref_ptr<osgAnimation::BasicAnimationManager> _am;
+    AnimationManagerFinder() : osg::NodeVisitor(osg::NodeVisitor::TRAVERSE_ALL_CHILDREN)
+    {
+    }
+    void apply(osg::Node& node)
+    {
+        if (_am.valid())
+            return;
+        if (node.getUpdateCallback())
+        {
+            osgAnimation::AnimationManagerBase* b = dynamic_cast<osgAnimation::AnimationManagerBase*>(node.getUpdateCallback());
+            if (b)
+            {
+                _am = new osgAnimation::BasicAnimationManager(*b);
+                return;
+            }
+        }
+        traverse(node);
+    }
+};
+
+// Derive a class from NodeVisitor to find a node with a specific name.
 class FindNamedNode : public osg::NodeVisitor
 {
 public:
@@ -2547,6 +2571,21 @@ osg::ref_ptr<osg::Group> Viewer::LoadEntityModel(const char* filename, osg::Boun
     if (!shadow_node_)
     {
         LoadShadowfile(filename);
+    }
+
+    // activate any animations
+    AnimationManagerFinder finder;
+    node->accept(finder);
+    if (finder._am.valid())
+    {
+        for (osgAnimation::AnimationList::const_iterator animIter = finder._am->getAnimationList().begin();
+             animIter != finder._am->getAnimationList().end();
+             ++animIter)
+        {
+            (*animIter)->setPlayMode(osgAnimation::Animation::LOOP);
+        }
+
+        node->setUpdateCallback(finder._am.get());
     }
 
     node->setNodeMask(NodeMask::NODE_MASK_ENTITY_MODEL);
