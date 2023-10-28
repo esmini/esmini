@@ -1389,7 +1389,7 @@ Missing angles will be handled according to the table below:
 |heading|No|trajectory
 |pitch|Yes|trajectory
 |pitch|No|road surface
-|roll|Yes|trajectory
+|roll|Yes|0.0
 |roll|No|road surface
 |===
 
