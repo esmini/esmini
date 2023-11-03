@@ -423,7 +423,11 @@ void ScenarioPlayer::ViewerFrame(bool init)
                 if (entity->IsVehicle())
                 {
                     viewer::CarModel* car = static_cast<viewer::CarModel*>(entity);
-                    car->UpdateWheels(obj->wheel_angle_, obj->wheel_rot_);
+
+                    if (this->scenarioEngine->scenarioReader->lightStatusOn)  // update material details only when right action
+                    {
+                        car->UpdateLight(obj->vehicleLightActionStatusList);
+                    }
                 }
 
                 viewer::MovingModel* mov = static_cast<viewer::MovingModel*>(entity);
@@ -732,6 +736,12 @@ int ScenarioPlayer::InitViewer()
     {
         viewer_->ClearNodeMaskBits(viewer::NodeMask::NODE_MASK_ODR_FEATURES);
     }
+
+    if (opt.GetOptionSet("lights") || this->scenarioEngine->scenarioReader->lightStatusOn)
+    {
+        viewer_->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_LIGHTS_STATE);
+    }
+    viewer_->ShowLights_ = opt.GetOptionSet("lights") || this->scenarioEngine->scenarioReader->lightStatusOn;  // set flag for viewer
 
     if (opt.GetOptionSet("hide_route_waypoints"))
     {
@@ -1123,7 +1133,68 @@ void ScenarioPlayer::InitVehicleModel(Object* obj, viewer::CarModel* model)
     {
         obj->SetVisibilityMask(obj->visibilityMask_ &= ~(Object::Visibility::SENSORS));
     }
+    if (this->scenarioEngine->scenarioReader->lightStatusOn)  // Fetch material details only if the light status is on
+    {
+        for (size_t i = 0; i < Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS; i++)
+        {
+            if (obj->vehicleLightActionStatusList[i].type == Object::VehicleLightType::UNDEFINED)
+            {
+                Object::VehicleLightType lightType = static_cast<Object::VehicleLightType>(i);
 
+                // Handle combined light types (e.g., fog lights, warning lights)
+                if (lightType == Object::VehicleLightType::FOG_LIGHTS)
+                {
+                    lightType = Object::VehicleLightType::FOG_LIGHTS_REAR;  // Use rear fog light as the base
+                }
+                else if (lightType == Object::VehicleLightType::WARNING_LIGHTS)
+                {
+                    lightType = Object::VehicleLightType::INDICATOR_LEFT;  // Use left indicator as the base
+                }
+
+                // Find the corresponding material in the model
+                for (size_t j = 0; j < model->light_material_.size(); j++)
+                {
+                    if (model->light_material_[j] != nullptr)
+                    {
+                        std::string materialName = model->light_material_[j]->getOrCreateStateSet()->getName();
+                        if (obj->LightType2Str(lightType) == materialName)
+                        {
+                            // Extract material properties
+                            osg::Material* material = static_cast<osg::Material*>(
+                                model->light_material_[j]->getOrCreateStateSet()->getAttribute(osg::StateAttribute::MATERIAL));
+
+                            if (material)
+                            {
+                                // Get diffuse and emission colors
+                                const osg::Vec4& diffuseColor = material->getDiffuseFrontAndBack()
+                                                                    ? material->getDiffuse(osg::Material::FRONT_AND_BACK)
+                                                                    : material->getDiffuse(osg::Material::FRONT);
+
+                                const osg::Vec4& emissionColor = material->getEmissionFrontAndBack()
+                                                                     ? material->getEmission(osg::Material::FRONT_AND_BACK)
+                                                                     : material->getEmission(osg::Material::FRONT);
+
+                                // Update light status with material colors
+                                obj->vehicleLightActionStatusList[i].baseRgb[0] = diffuseColor.r();
+                                obj->vehicleLightActionStatusList[i].baseRgb[1] = diffuseColor.g();
+                                obj->vehicleLightActionStatusList[i].baseRgb[2] = diffuseColor.b();
+
+                                obj->vehicleLightActionStatusList[i].diffuseRgb[0] = diffuseColor.r();
+                                obj->vehicleLightActionStatusList[i].diffuseRgb[1] = diffuseColor.g();
+                                obj->vehicleLightActionStatusList[i].diffuseRgb[2] = diffuseColor.b();
+
+                                obj->vehicleLightActionStatusList[i].emissionRgb[0] = emissionColor.r();
+                                obj->vehicleLightActionStatusList[i].emissionRgb[1] = emissionColor.g();
+                                obj->vehicleLightActionStatusList[i].emissionRgb[2] = emissionColor.b();
+
+                                break;  // Exit inner loop once the material is found
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
     viewer_->entities_.back()->routewaypoints_->SetWayPoints(obj->pos_.GetRoute());
 }
 #endif
@@ -1250,6 +1321,9 @@ int ScenarioPlayer::Init()
     opt.AddOption("ignore_p", "Ignore provided pitch values from OSC file and place vehicle relative to road");
     opt.AddOption("ignore_r", "Ignore provided roll values from OSC file and place vehicle relative to road");
     opt.AddOption("info_text", "Show on-screen info text. Modes: 0=None 1=current 2=per_object 3=both. Toggle key 'i'", "mode", "1", true);
+#ifdef _USE_OSG
+    opt.AddOption("lights", "Show lights for light state actions");
+#endif
     opt.AddOption("log_append", "Log all scenarios in the same txt file");
     opt.AddOption("logfile_path", "Logfile path/filename, e.g. \"../my_log.txt\"", "path", LOG_FILENAME, true);
     opt.AddOption("log_meta_data", "Log file name, function name and line number");

@@ -70,6 +70,7 @@ using idx_t = uint32_t;
 #define DAT_FILENAME                  "sim.dat"
 #define GHOST_TRAIL_SAMPLE_TIME       0.2
 #define LOGICAL_OR(X, Y)              ((X || Y) && !(X && Y))
+#define MAX_INTENSITY_LUM             (12E+3)
 
 // Time functions
 __int64 SE_getSystemTime();
@@ -606,6 +607,18 @@ void RotateVec3d(const double h0,
 void SwapByteOrder(unsigned char* buf, int data_type_size, int buf_size);
 
 bool IsNumber(const std::string& str, int max_digits = -1);
+/**
+       check two double values are equal with small margin
+*/
+bool IsEqualDouble(double val1, double val2);
+/**
+        Check whether array contains at least one non-zero element
+*/
+bool CheckArrayRange0to1(double array[], int size);
+/**
+        Adjust array values by limit
+*/
+int AdjustByOffsetArray(double (&array)[3], double limit);
 
 #if (defined WINVER && WINVER == _WIN32_WINNT_WIN7)
 #else

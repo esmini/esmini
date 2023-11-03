@@ -580,7 +580,7 @@
                 <Condition name="StopCondition" conditionEdge="none" delay="0.0">
                     <ByValueCondition>
                         <SimulationTimeCondition value="10.0" rule="greaterThan"/>
-                    </ByValueCondition>            
+                    </ByValueCondition>
                 </Condition>
             </ConditionGroup>
         </StopTrigger>

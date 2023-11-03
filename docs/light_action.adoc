@@ -1,0 +1,76 @@
+== Introduction
+
+Light state action is to control the lights. Definition of the light state are found here https://www.asam.net/static_downloads/ASAM_OpenSCENARIO_V1.2.0_Model_Documentation/modelDocumentation/content/LightState.html[here].
+
+=== Phrasing
+Below image explains about the light state phrasing especially where ever light state action is ignored and how base rbg is prioritized.
+
+.Light state action phrasing
+image::light_action_phrasing.png[]
+
+=== Example implementation
+
+Below flowchart explain the logic behind when light type, transition time and mode are provided.
+
+.Flow chart for light type, transition time and mode are provided
+image::Light_action_only_lightType.png[]
+
+
+=== Light Visualization
+
+**Press `L`** to toggle light visualization on and off.
+
+**When a scenario has light state actions,** light visualization will automatically be **ON** from the start of the simulation.
+
+To start esmini and the replayer with light visualization, use the `--lights` flag.
+
+**Models without light materials** shall be used for light state actions, The signals and logic will function, but their appearance will not change because they lack the necessary material to respond visually.
+
+**Light visualization is not supported** for models without light materials.
+
+=== Light State in Models
+
+
+Lights in the model can be remodeled, **but their names cannot be changed.**
+
+While you can remodel individual lights within the model to adjust their properties and behavior, **their pre-defined names like "light_daytime_running" or "fog_light" cannot be be changed.**
+
+Here are list of pre-defined light names you may encounter:
+
+- light_daytime_running
+- light_low_beam
+- light_high_beam
+- light_fog_front
+- light_fog_rear
+- light_brake
+- light_indicator_left
+- light_indicator_right
+- light_reversing
+- light_license_plate
+- light_special_purpose
+- fog_light
+- warning_lights
+
+**Note:** While names cannot be changed, you can still modify the light's appearance and other attributes.
+
+Similar to light mode, The model's light material can be updated, **but the material name cannot be changed.**
+
+**Note:** material name are defined as light model name + `-material`.
+
+=== Viewing Light Status in CSV Files
+
+To view light status in the SCV file, use the `--extended` tag during conversion from DAT to CSV.
+
+Values in the CSV file follow the format `#ffffff-ff`, where:
+
+* `#ffffff` is the RGB emission and diffuse color in hexadecimal format.
+* `Percentage` is an intensity value.
+
+=== OSG File Optimization
+
+Set the environment variable `OSG_OPTIMIZER` to `SHARE_DUPLICATE_STATE MERGE_GEODES` before exporting your new light model to an OSGB file.
+
+This optimizes the file by sharing common rendering states and combining similar objects.
+
+
+full lights workflow https://drive.google.com/file/d/1J7IDrlSXxA57qZo8bugY3ueljCgY-MMD/view?pli=1[here]

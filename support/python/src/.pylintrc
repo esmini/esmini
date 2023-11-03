@@ -1,0 +1,24 @@
+[MASTER]
+# should be in ['HIGH', 'CONTROL_FLOW', 'INFERENCE', 'INFERENCE_FAILURE', 'UNDEFINED']
+confidence=UNDEFINED
+
+[MESSAGES CONTROL]
+# Enable only E (Error) and F (Fatal) messages
+enable=
+    E,  # Enable all Error messages
+    F   # Enable all Fatal messages
+
+# Disable all other message types
+disable=
+    C,  # Disable Convention messages
+    R,  # Disable Refactor messages
+    W,  # Disable Warning messages
+    I   # Disable Info messages
+
+[FORMAT]
+# Set the output format (e.g., "text", "json", "parseable")
+output-format=text
+
+[REPORTS]
+# Disable the score report
+reports=no

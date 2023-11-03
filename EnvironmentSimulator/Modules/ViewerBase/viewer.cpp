@@ -97,6 +97,41 @@ osg::Vec4 viewer::ODR2OSGColor(roadmanager::RoadMarkColor color)
     return osgc;
 }
 
+class FindNamedGeode : public osg::NodeVisitor
+{
+public:
+    FindNamedGeode(const std::string& name, std::vector<osg::Group*>& nodes)
+        : osg::NodeVisitor(  // Traverse all children.
+              osg::NodeVisitor::TRAVERSE_ALL_CHILDREN),
+          _name(name),
+          _nodes(nodes)
+    {
+    }
+    // This method gets called for every node in the scene graph. Check each node
+    // to see if its name matches out target. If so, save the node's address.
+    using osg::NodeVisitor::apply;
+    void apply(osg::Group& node) override
+    {
+        if (node.getName().find(_name) != std::string::npos)
+        {
+            _nodes.push_back(&node);
+        }
+
+        // Keep traversing the rest of the scene graph.
+        traverse(node);
+    }
+
+    osg::Node* getNode()
+    {
+        return _node.get();
+    }
+
+protected:
+    std::string               _name;
+    std::vector<osg::Group*>& _nodes;
+    osg::ref_ptr<osg::Group>  _node;
+};
+
 // Derive a class from NodeVisitor to find a node with a  specific name.
 class FindNamedNode : public osg::NodeVisitor
 {
@@ -892,6 +927,102 @@ osg::ref_ptr<osg::PositionAttitudeTransform> CarModel::AddWheel(osg::ref_ptr<osg
     return tx_node;
 }
 
+std::string LightTypeInd2Str(int index)
+{
+    switch (index)
+    {
+        case Object::VehicleLightType::DAY_TIME_RUNNING_LIGHTS:
+            return "light_daytime_running";
+        case Object::VehicleLightType::LOW_BEAM:
+            return "light_low_beam";
+        case Object::VehicleLightType::HIGH_BEAM:
+            return "light_high_beam";
+        case Object::VehicleLightType::FOG_LIGHTS_FRONT:
+            return "light_fog_front";
+        case Object::VehicleLightType::FOG_LIGHTS_REAR:
+            return "light_fog_rear";
+        case Object::VehicleLightType::BRAKE_LIGHTS:
+            return "light_brake";
+        case Object::VehicleLightType::INDICATOR_LEFT:
+            return "light_indicator_left";
+        case Object::VehicleLightType::INDICATOR_RIGHT:
+            return "light_indicator_right";
+        case Object::VehicleLightType::REVERSING_LIGHTS:
+            return "light_reversing";
+        case Object::VehicleLightType::LICENSE_PLATER_ILLUMINATION:
+            return "light_license_plate";
+        case Object::VehicleLightType::SPECIAL_PURPOSE_LIGHTS:
+            return "light_special_purpose";
+        case Object::VehicleLightType::FOG_LIGHTS:
+            return "fog_light";
+        case Object::VehicleLightType::WARNING_LIGHTS:
+            return "warning_lights";
+        case Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS:
+            return "Unknown_light";
+        default:
+            return "none";
+    }
+}
+
+void CarModel::AddLights(osg::ref_ptr<osg::Group> group, bool showLights)
+{
+    // Early exit if the group is invalid
+    if (!group)
+    {
+        LOG_WARN("Invalid group provided to AddLights - skipping light addition.");
+        return;
+    }
+    for (int j = 0; j < Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS; j++)
+    {
+        std::string lightName = LightTypeInd2Str(j);
+
+        // Skip fog lights and warning lights as they are combinations of other lights
+        if (lightName == LightTypeInd2Str(Object::VehicleLightType::FOG_LIGHTS) ||
+            lightName == LightTypeInd2Str(Object::VehicleLightType::WARNING_LIGHTS))
+        {
+            light_material_.push_back(nullptr);
+            continue;
+        }
+
+        // Find light node
+        std::vector<osg::Group*> nodes;
+        FindNamedGeode           fnn(lightName, nodes);
+        group->accept(fnn);
+
+        if (nodes.empty())
+        {
+            light_material_.push_back(nullptr);
+            if (showLights)
+            {
+                LOG_WARN("Missing light materials node itself in vehicle model {} - ignoring visualization", group->getName());
+            }
+            continue;
+        }
+
+        // Process each found node
+        bool materialFound = false;
+        for (size_t i = 0; i < nodes.size(); i++)
+        {
+            osg::ref_ptr<osg::Group> groupNew = static_cast<osg::Group*>(nodes[i]->getChild(0));
+            osg::ref_ptr<osg::Geode> geode    = static_cast<osg::Geode*>(groupNew->getChild(0));
+
+            if (geode->getName() == (lightName + "-material"))
+            {
+                light_material_.push_back(geode);
+                geode->setNodeMask(NodeMask::NODE_MASK_LIGHTS_STATE);
+                materialFound = true;
+                break;  // Stop searching once the correct material is found
+            }
+        }
+
+        if (!materialFound)
+        {
+            light_material_.push_back(nullptr);
+            LOG_WARN("Missing light material {} in vehicle model {} - ignoring visualization", lightName, group->getName());
+        }
+    }
+}
+
 EntityModel::EntityModel(Viewer*                  viewer,
                          osg::ref_ptr<osg::Group> group,
                          osg::ref_ptr<osg::Group> parent,
@@ -972,7 +1103,8 @@ CarModel::CarModel(Viewer*                  viewer,
                    osg::ref_ptr<osg::Node>  dot_node,
                    osg::ref_ptr<osg::Group> route_waypoint_parent,
                    osg::Vec4                trail_color,
-                   std::string              name)
+                   std::string              name,
+                   bool                     showLights)
     : MovingModel(viewer, group, parent, trail_parent, traj_parent, dot_node, route_waypoint_parent, trail_color, name)
 {
     wheel_angle_ = 0;
@@ -980,10 +1112,14 @@ CarModel::CarModel(Viewer*                  viewer,
 
     osg::ref_ptr<osg::Group> retval[4];
     osg::ref_ptr<osg::Node>  car_node = txNode_->getChild(0);
-    retval[0]                         = AddWheel(car_node, "wheel_fl");
-    retval[1]                         = AddWheel(car_node, "wheel_fr");
-    retval[2]                         = AddWheel(car_node, "wheel_rr");
-    retval[3]                         = AddWheel(car_node, "wheel_rl");
+
+    retval[0] = AddWheel(car_node, "wheel_fl");
+    retval[1] = AddWheel(car_node, "wheel_fr");
+    retval[2] = AddWheel(car_node, "wheel_rr");
+    retval[3] = AddWheel(car_node, "wheel_rl");
+
+    // add light material.
+    AddLights(group_, showLights);
 
     // Print message only if some wheel nodes are missing
     if (retval[0] || retval[1] || retval[2] || retval[3])
@@ -1074,6 +1210,56 @@ void EntityModel::SetRotation(double h, double p, double r)
     );
 
     txNode_->setAttitude(quat_);
+}
+
+void CarModel::UpdateLight(Object::VehicleLightActionStatus* list)
+{
+    for (unsigned int i = 0; i < Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS; i++)
+    {
+        if (list[i].type == Object::VehicleLightType::UNDEFINED)
+        {
+            continue;  // Skip undefined light types
+        }
+
+        // Create OSG color vectors from the light status
+        osg::Vec4d diffuseRgb(list[i].diffuseRgb[0], list[i].diffuseRgb[1], list[i].diffuseRgb[2], 1.0);
+        osg::Vec4d emissionRgb(list[i].emissionRgb[0], list[i].emissionRgb[1], list[i].emissionRgb[2], 1.0);
+
+        // Handle special light types (e.g., warning lights and fog lights)
+        if (list[i].type == Object::VehicleLightType::WARNING_LIGHTS)
+        {
+            UpdateLightMaterial(Object::VehicleLightType::INDICATOR_LEFT, diffuseRgb, emissionRgb);
+            UpdateLightMaterial(Object::VehicleLightType::INDICATOR_RIGHT, diffuseRgb, emissionRgb);
+        }
+        else if (list[i].type == Object::VehicleLightType::FOG_LIGHTS)
+        {
+            UpdateLightMaterial(Object::VehicleLightType::FOG_LIGHTS_FRONT, diffuseRgb, emissionRgb);
+            UpdateLightMaterial(Object::VehicleLightType::FOG_LIGHTS_REAR, diffuseRgb, emissionRgb);
+        }
+        else
+        {
+            UpdateLightMaterial(static_cast<Object::VehicleLightType>(i), diffuseRgb, emissionRgb);
+        }
+    }
+}
+
+void CarModel::UpdateLightMaterial(Object::VehicleLightType lightType, const osg::Vec4d& diffuseRgb, const osg::Vec4d& emissionRgb)
+{
+    if (light_material_[lightType] != nullptr)
+    {
+        osg::Material* material =
+            static_cast<osg::Material*>(light_material_[lightType]->getOrCreateStateSet()->getAttribute(osg::StateAttribute::MATERIAL));
+
+        if (material)
+        {
+            material->setDiffuse(osg::Material::FRONT_AND_BACK, diffuseRgb);
+            material->setEmission(osg::Material::FRONT_AND_BACK, emissionRgb);
+        }
+    }
+    else
+    {
+        LOG_WARN_ONCE("Missing light node - {} - ignoring visualization", LightTypeInd2Str(lightType));
+    }
 }
 
 void CarModel::UpdateWheels(double wheel_angle, double wheel_rotation)
@@ -1463,6 +1649,11 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     SetNodeMaskBits(NodeMask::NODE_MASK_TRAJECTORY_LINES);
     SetNodeMaskBits(NodeMask::NODE_MASK_ROUTE_WAYPOINTS);
 
+    if (!opt->GetOptionSet("lights"))
+    {
+        ClearNodeMaskBits(NodeMask::NODE_MASK_LIGHTS_STATE);
+    }
+
     roadSensors_ = new osg::Group;
     roadSensors_->setNodeMask(NodeMask::NODE_MASK_ODR_FEATURES);
     root_origin2odr_->addChild(roadSensors_);
@@ -1718,9 +1909,16 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     osg::Light* light = osgViewer_->getLight();
     light->setPosition(osg::Vec4(-7500.0 + origin_[0], 5000.0 + origin_[1], 10000.0, 1.0));
     light->setDirection(osg::Vec3(7.5, -5., -10.));
+
+#if 1
     float ambient = 0.4f;
     light->setAmbient(osg::Vec4(ambient, ambient, 0.9f * ambient, 1.0f));
     light->setDiffuse(osg::Vec4(0.8f, 0.8f, 0.7f, 1.0f));
+#else  // dark
+    float ambient = 0.0f;
+    light->setAmbient(osg::Vec4(ambient, ambient, 0.9f * ambient, 1.0f));
+    light->setDiffuse(osg::Vec4(0.0f, 0.0f, 0.0f, 1.0f));
+#endif
 
     // Overlay text
     float font_size = 12.0f;
@@ -1924,6 +2122,7 @@ int Viewer::AddCustomLightSource(double x, double y, double z, double intensity)
     {
         return -1;
     }
+    // osg::ref_ptr<osg::LightSource> lightSource = new osg::LightSource;
 
     osg::ref_ptr<osg::Light> light = new osg::Light;
     light->setPosition(osg::Vec4(static_cast<float>(x), static_cast<float>(y), static_cast<float>(z), 1.0f));
@@ -1965,7 +2164,9 @@ EntityModel* Viewer::CreateEntityModel(std::string             modelFilepath,
     {
         if (entities_[i]->filename_ == modelFilepath)
         {
-            modelgroup = dynamic_cast<osg::Group*>(entities_[i]->group_->getChild(0)->asGroup()->getChild(0)->clone(osg::CopyOp::DEEP_COPY_NODES));
+            modelgroup = dynamic_cast<osg::Group*>(entities_[i]->group_->getChild(0)->asGroup()->getChild(0)->clone(
+                osg::CopyOp::DEEP_COPY_DRAWABLES | osg::CopyOp::DEEP_COPY_NODES | osg::CopyOp::DEEP_COPY_STATEATTRIBUTES |
+                osg::CopyOp::DEEP_COPY_STATESETS));
             modelBB    = entities_[i]->modelBB_;
             break;
         }
@@ -2182,7 +2383,7 @@ EntityModel* Viewer::CreateEntityModel(std::string             modelFilepath,
     EntityModel* emodel;
     if (type == EntityModel::EntityType::VEHICLE)
     {
-        emodel = new CarModel(this, group, root_origin2odr_, trails_, trajectoryLines_, dot_node_, routewaypoints_, trail_color, name);
+        emodel = new CarModel(this, group, root_origin2odr_, trails_, trajectoryLines_, dot_node_, routewaypoints_, trail_color, name, ShowLights_);
     }
     else if (type == EntityModel::EntityType::MOVING)
     {
@@ -3796,6 +3997,14 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
             if (ea.getEventType() & osgGA::GUIEventAdapter::KEYDOWN)
             {
                 viewer_->ToggleNodeMaskBits(viewer::NodeMask::NODE_MASK_OSI_POINTS);
+            }
+        }
+        break;
+        case ('L'):
+        {
+            if (ea.getEventType() & osgGA::GUIEventAdapter::KEYDOWN)
+            {
+                viewer_->ToggleNodeMaskBits(viewer::NodeMask::NODE_MASK_LIGHTS_STATE);
             }
         }
         break;

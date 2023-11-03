@@ -28,7 +28,8 @@ macro(
                 ${VIEWER_BASE_PATH}
                 ${PLAYER_BASE_PATH}
                 ${CONTROLLERS_PATH}
-                ${REPLAYER_PATH})
+                ${REPLAYER_PATH}
+                ${DAT2CSV_PATH})
 
     target_include_directories(
         ${TARGET}

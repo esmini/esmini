@@ -57,6 +57,5 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(add_help=False)
     unknown_args, command_args = parser.parse_known_args()
     command_args.insert(0, sys.argv[0])
-
     start = Start()
     start.execute(command_args)

@@ -47,6 +47,9 @@ macro(set_project_internal_paths)
     set(REPLAYER_PATH
         ${APPLICATIONS_PATH}/replayer)
 
+    set(DAT2CSV_PATH
+        ${APPLICATIONS_PATH}/dat2csv)
+
 endmacro()
 
 # ############################### Setting project external paths ###################################################

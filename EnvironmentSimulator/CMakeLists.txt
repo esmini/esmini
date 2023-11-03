@@ -35,6 +35,7 @@ add_subdirectory(Applications/odrplot)
 if(BUILD_REPLAYER)
     add_subdirectory(Applications/replayer)
 endif(BUILD_REPLAYER)
+add_subdirectory(Applications/dat2csv)
 add_subdirectory(code-examples)
 
 # ############################### Building Unittest ####################################################################

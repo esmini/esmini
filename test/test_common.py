@@ -11,6 +11,7 @@ from dat import *
 
 LOG_FILENAME = 'log.txt'
 DAT_FILENAME = 'sim.dat'
+CSV_FILENAME = 'sim.csv'
 STDOUT_FILENAME = 'stdout.txt'
 TIMEOUT = 40
 
@@ -98,7 +99,7 @@ def run_replayer(replayer_arguments = None):
                 elapsed += 1
 
         if return_code is None:
-            print('timeout ({}s). Terminating scenario ({}).'.format(TIMEOUT, os.path.basename(osc_filename)))
+            print('timeout ({}s). Terminating scenario.'.format(TIMEOUT))
             process.kill()
             assert False, 'Timeout'
 
@@ -109,18 +110,46 @@ def run_replayer(replayer_arguments = None):
 
     assert False, 'No log file'
 
-def generate_csv(filename=DAT_FILENAME):
+def run_dat2csv(dat2csv_arguments = None):
 
-    # Below is one/the old way of converting dat to csv. Keeping the lines for reference.
-    # args = [os.path.join(ESMINI_PATH,'bin','dat2csv'), DAT_FILENAME]
-    # process = subprocess.run(args, cwd=os.path.dirname(os.path.realpath(__file__)))
+    if os.path.exists(CSV_FILENAME):
+        os.remove(CSV_FILENAME)
+    if os.path.exists(STDOUT_FILENAME):
+        os.remove(STDOUT_FILENAME)
 
+    app = os.path.join(ESMINI_PATH,'bin','dat2csv')
+    return_code = None
+    args = [app] + dat2csv_arguments.split()
+    with open(STDOUT_FILENAME, "w") as f:
+        # process = subprocess.Popen(args, cwd=os.path.dirname(os.path.realpath(__file__)), stdout=f, env=env)
+        process = subprocess.Popen(args, cwd=os.path.dirname(os.path.realpath(__file__)), env=env)
+
+        elapsed = 0
+        while elapsed < TIMEOUT and return_code is None:
+            return_code = process.poll()
+            # watch dog
+            if return_code is None:
+                time.sleep(1)
+                elapsed += 1
+
+        if return_code is None:
+            print('timeout ({}s). Terminating dat2csv convert.'.format(TIMEOUT))
+            process.kill()
+            assert False, 'Timeout'
+
+    with open(STDOUT_FILENAME, 'r') as logfile:
+        log = logfile.read()
+        assert return_code == 0, log
+        return log
+
+    assert False, 'No log file'
+
+def generate_csv(filename=DAT_FILENAME, mode_ = "original", time_step_ = 0.05, extended = False, file_refs = False):
     # Below is the Python way of converting dat to csv
     dat = DATFile(filename)
-    dat.save_csv()
-    dat.close()
+    dat.save_csv(mode = mode_, step_time = time_step_, extended = extended, include_file_refs = file_refs)
 
-    with open(os.path.splitext(filename)[0] + '.csv', "r") as f:
+    with open(os.path.splitext(filename)[0] + '_py.csv', "r") as f:
         return f.read()
 
     assert False, 'No csv file'

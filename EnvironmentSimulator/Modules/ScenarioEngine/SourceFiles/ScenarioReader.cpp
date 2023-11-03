@@ -3650,6 +3650,137 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 
             action = visAction;
         }
+        else if (actionChild.name() == std::string("AppearanceAction"))
+        {
+            LightStateAction                *lightStateAction = new LightStateAction(parent);
+            Object::VehicleLightActionStatus LightActionStatus;
+            pugi::xml_node                   appearanceActionChild = actionChild.first_child();
+            lightStatusOn                                          = true;
+
+            if (appearanceActionChild.name() == std::string("LightStateAction"))
+            {
+                if (const auto &val = parameters.ReadAttribute(appearanceActionChild, "transitionTime"); !val.empty())
+                {
+                    lightStateAction->transitionTime_ = strtod(val);
+                }
+                for (pugi::xml_node LightStateActionChild = appearanceActionChild.first_child(); LightStateActionChild;
+                     LightStateActionChild                = LightStateActionChild.next_sibling())
+                {
+                    if (LightStateActionChild.name() == std::string("LightType"))
+                    {
+                        for (pugi::xml_node lightTypeChild = LightStateActionChild.first_child(); lightTypeChild;
+                             lightTypeChild                = lightTypeChild.next_sibling())
+                        {
+                            if (lightTypeChild.name() == std::string("VehicleLight"))
+                            {
+                                if (lightStateAction->ParseVehicleLightType(parameters.ReadAttribute(lightTypeChild, "vehicleLightType"),
+                                                                            LightActionStatus))
+                                {  // unkown light type
+                                    delete lightStateAction;
+                                    return nullptr;
+                                }
+                            }
+                            else if (lightTypeChild.name() == std::string("UserDefinedLight"))
+                            {
+                                LOG_WARN("Skipping, UserDefinedLight not supported yet");
+                                delete lightStateAction;
+                                return nullptr;
+                            }
+                            else
+                            {  // shall be stoped
+                                LOG_WARN("Skipping, VehicleLight mandatory field in {}", lightTypeChild.name());
+                                delete lightStateAction;
+                                return nullptr;
+                            }
+                        }
+                    }
+                    else if (LightStateActionChild.name() == std::string("LightState"))
+                    {
+                        if (const auto &val = parameters.ReadAttribute(LightStateActionChild, "flashingOffDuration"); !val.empty())
+                        {
+                            lightStateAction->flashingOffDuration_ = strtod(val);
+                        }
+                        if (const auto &val = parameters.ReadAttribute(LightStateActionChild, "flashingOnDuration"); !val.empty())
+                        {
+                            lightStateAction->flashingOnDuration_ = strtod(val);
+                        }
+                        if (const auto &val = parameters.ReadAttribute(LightStateActionChild, "luminousIntensity"); !val.empty())
+                        {
+                            LightActionStatus.luminousIntensity = strtod(val);
+                        }
+                        if (const auto &val = parameters.ReadAttribute(LightStateActionChild, "mode"); !val.empty())
+                        {
+                            lightStateAction->ParseVehicleLightMode(val, LightActionStatus);
+                        }
+                        else
+                        {  // shall be stoped
+                            LOG_WARN("Skipping, Mode in LightState is mandatory field in {}", LightStateActionChild.name());
+                            delete lightStateAction;
+                            return nullptr;
+                        }
+                        for (pugi::xml_node colourChild = LightStateActionChild.first_child(); colourChild; colourChild = colourChild.next_sibling())
+                        {
+                            if (colourChild.name() == std::string("Color"))
+                            {  // set to Unkown if color node missing-default
+                                if (const auto &val = parameters.ReadAttribute(colourChild, "colorType"); !val.empty())
+                                {
+                                    lightStateAction->ParseVehicleLightColor(val, LightActionStatus);
+                                }
+                                else
+                                {  // set to other if colorType missing
+                                    lightStateAction->ParseVehicleLightColor("other", LightActionStatus);
+                                }
+                                for (pugi::xml_node colourDesChild = colourChild.first_child(); colourDesChild;
+                                     colourDesChild                = colourDesChild.next_sibling())
+                                {
+                                    if (colourDesChild.name() == std::string("ColorRgb"))
+                                    {
+                                        const auto &red   = parameters.ReadAttribute(colourDesChild, "red");
+                                        const auto &green = parameters.ReadAttribute(colourDesChild, "green");
+                                        const auto &blue  = parameters.ReadAttribute(colourDesChild, "blue");
+                                        if (red.empty() || green.empty() || blue.empty())
+                                        {  // shall be stoped
+                                            LOG_WARN("Skipping, Any of Rgb values missing in {}", colourDesChild.name());
+                                            delete lightStateAction;
+                                            return nullptr;
+                                        }
+                                        LightActionStatus.baseRgb[0] = strtod(red);
+                                        LightActionStatus.baseRgb[1] = strtod(green);
+                                        LightActionStatus.baseRgb[2] = strtod(blue);
+                                    }
+                                    else if (colourDesChild.name() == std::string("ColorCmyk"))
+                                    {
+                                        const auto &cyan    = parameters.ReadAttribute(colourDesChild, "cyan");
+                                        const auto &magenta = parameters.ReadAttribute(colourDesChild, "magenta");
+                                        const auto &yellow  = parameters.ReadAttribute(colourDesChild, "yellow");
+                                        const auto &key     = parameters.ReadAttribute(colourDesChild, "key");
+                                        if (cyan.empty() || magenta.empty() || yellow.empty() || key.empty())
+                                        {  // shall be stoped
+                                            LOG_WARN("Skipping, Any of CMYK values missing in {}", colourDesChild.name());
+                                            delete lightStateAction;
+                                            return nullptr;
+                                        }
+                                        lightStateAction->cmyk_[0] = strtod(cyan);
+                                        lightStateAction->cmyk_[1] = strtod(magenta);
+                                        lightStateAction->cmyk_[2] = strtod(yellow);
+                                        lightStateAction->cmyk_[3] = strtod(key);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        LOG_WARN("Skipping, Either LightType or LightState missing in: {}", actionChild.name());
+                        delete lightStateAction;
+                        return nullptr;
+                    }
+                }
+                lightStateAction->SetbaseRgbAndPrepare(LightActionStatus);
+                lightStateAction->AddVehicleLightActionStatus(LightActionStatus);
+                action = lightStateAction;
+            }
+        }
         else
         {
             throw std::runtime_error("Action is not supported: " + std::string(actionChild.name()));
