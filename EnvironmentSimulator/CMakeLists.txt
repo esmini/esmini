@@ -35,6 +35,7 @@ endif(USE_OSG)
 
 add_subdirectory(Applications/odrplot)
 add_subdirectory(Applications/replayer)
+add_subdirectory(Applications/dat2csv)
 add_subdirectory(code-examples)
 
 # ############################### Building Unittest ####################################################################

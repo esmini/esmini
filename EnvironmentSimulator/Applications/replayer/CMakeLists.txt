@@ -4,9 +4,6 @@ set(TARGET1
     replayer)
 
 set(TARGET2
-    dat2csv)
-
-set(TARGET3
     osireceiver)
 
 # ############################### Loading desired rules ##############################################################
@@ -20,16 +17,13 @@ set(TARGET1_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Replay.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/helpText.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/collision.hpp)
+    ${CMAKE_CURRENT_SOURCE_DIR}/collision.hpp
+    ${SCENARIO_ENGINE_PATH}/SourceFiles/DatLogger.cpp)
 
 set(TARGET1_INCLUDES
     ${CMAKE_CURRENT_SOURCE_DIR}/Replay.hpp)
 
 set(TARGET2_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/dat2csv.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Replay.cpp)
-
-set(TARGET3_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/osi_receiver.cpp)
 
 # ############################### Creating executable for target1 (replayer) #########################################
@@ -91,74 +85,33 @@ if(USE_OSG)
 
 endif()
 
-# ############################### Creating executable for target2 (dat2csv) ##########################################
-
-add_executable(
-    ${TARGET2}
-    ${TARGET2_SOURCES})
-
-target_link_libraries(
-    ${TARGET2}
-    PRIVATE project_options
-            RoadManager
-            CommonMini
-            ${TIME_LIB})
-
-target_include_directories(
-    ${TARGET2}
-    PRIVATE ${COMMON_MINI_PATH}
-            ${SCENARIO_ENGINE_PATH}/SourceFiles
-            ${SCENARIO_ENGINE_PATH}/OSCTypeDefs)
-
-target_include_directories(
-    ${TARGET2}
-    SYSTEM
-    PUBLIC ${ROAD_MANAGER_PATH}
-           ${EXTERNALS_OSI_INCLUDES}
-           ${EXTERNALS_PUGIXML_PATH}
-           ${EXTERNALS_OSG_INCLUDES}
-           ${EXTERNALS_DIRENT_INCLUDES})
-
-if(USE_OSI)
-    target_link_libraries(
-        ${TARGET2}
-        PRIVATE ${OSI_LIBRARIES})
-endif()
-
-disable_static_analysis(${TARGET2})
-disable_iwyu(${TARGET2})
-
-install(
-    TARGETS ${TARGET2}
-    DESTINATION "${INSTALL_PATH}")
-
-# ############################### Creating executable for target3 (osireceiver) ######################################
+# ############################### Creating executable for TARGET2 (osireceiver) ######################################
 
 if(USE_OSI)
 
     add_executable(
-        ${TARGET3}
-        ${TARGET3_SOURCES})
+        ${TARGET2}
+        ${TARGET2_SOURCES})
 
     target_include_directories(
-        ${TARGET3}
+        ${TARGET2}
         SYSTEM
         PUBLIC ${ROAD_MANAGER_PATH}
                ${EXTERNALS_OSI_INCLUDES}
                ${EXTERNALS_DIRENT_INCLUDES})
 
     target_link_libraries(
-        ${TARGET3}
+        ${TARGET2}
         PRIVATE project_options
                 ${TIME_LIB}
                 ${SOCK_LIB}
                 ${OSI_LIBRARIES})
 
-    disable_static_analysis(${TARGET3})
-    disable_iwyu(${TARGET3})
+    disable_static_analysis(${TARGET2})
+    disable_iwyu(${TARGET2})
 
     install(
-        TARGETS ${TARGET3}
+        TARGETS ${TARGET2}
         DESTINATION "${INSTALL_PATH}")
 
 endif()
