@@ -1292,6 +1292,69 @@ namespace scenarioengine
         void Start(double simTime);
     };
 
+    class LightStateAction : public OSCPrivateAction
+    {
+    public:
+        LightStateAction(StoryBoardElement* parent)
+            : OSCPrivateAction(OSCPrivateAction::ActionType::LIGHT_STATE_ACTION, parent, static_cast<unsigned int>(ControlDomains::DOMAIN_LIGHT)),
+              transitionTime_(0.0),
+              flashingOffDuration_(0.5),
+              flashingOnDuration_(0.5),
+              cmyk_{-1.0, -1.0, -1.0, -1.0}
+        {
+        }
+        double transitionTime_;
+        double flashingOffDuration_;
+        double flashingOnDuration_;
+        double cmyk_[4];
+
+        enum class FlashingStatus
+        {
+            LOW       = 1,
+            HIGH      = 2,
+            UNDEFINED = 3
+        };
+
+        int                      ParseVehicleLightType(std::string typeObject, Object::VehicleLightActionStatus& lightStatus);
+        int                      ParseVehicleLightMode(std::string mode, Object::VehicleLightActionStatus& lightStatus);
+        int                      ParseVehicleLightColor(std::string colorType, Object::VehicleLightActionStatus& lightStatus);
+        void                     Step(double simTime, double dt);
+        void                     Start(double simTime);
+        void                     AddVehicleLightActionStatus(Object::VehicleLightActionStatus& lightStatus);
+        void                     SetbaseRgbAndPrepare(Object::VehicleLightActionStatus& lightStatus);
+        Object::VehicleLightType GetLightType();
+
+    private:
+        const int                        CMYK_ARRAY_SIZE_            = 4;
+        const int                        RGB_ARRAY_SIZE_             = 3;
+        const double                     RGB_OFFSET_                 = 0.4;
+        const double                     DEFAULT_LUMINOUS_INTENSITY_ = 6000.0;
+        bool                             isUserSetRgb_               = true;
+        bool                             isRgbFromLightType_         = false;
+        const double                     LUMINOUS_MAX_               = 0.9;
+        Object::VehicleLightMode         perviousMode_;
+        double                           perviousIntensity_;
+        double                           baseRgb_[3];
+        double                           transitionTimer_ = SMALL_NUMBER;
+        double                           flashingTimer_   = SMALL_NUMBER;
+        double                           initialDiffRgb_[3];
+        double                           finalDiffRgb_[3];
+        double                           initialEmissionRgb_[3];
+        double                           finalEmissionRgb_[3];
+        FlashingStatus                   flashStatus_ = FlashingStatus::UNDEFINED;
+        Object::VehicleLightActionStatus vehicleLightActionStatus_;
+        int                              SetLightTransitionValues(Object::VehicleLightMode mode);
+        int                              CheckAndSetColorError(double* value, int n);
+        void                             ConvertColorAndSetBaseRgb(Object::VehicleLightActionStatus& lightStatus);
+        void                             ConvertLightTypeAndSetBaseRgb(Object::VehicleLightActionStatus& lightStatus);
+        void                             ConvertCmykToRgb(const double* cmyk, double* rgb);
+        void                             DetermineSpecialPurposeLightColor(Object::VehicleLightActionStatus& lightStatus);
+        void                             HandleFlashingMode(double dt);
+        void                             SetFinalRgbValues(Object::VehicleLightActionStatus& lightStatus);
+        void                             HandleSmoothTransition(Object::VehicleLightActionStatus& lightStatus);
+        void                             HandleFlashingTransition(Object::VehicleLightActionStatus& lightStatus);
+    };
+
     class OverrideControlAction : public OSCPrivateAction
     {
     public:
