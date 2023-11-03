@@ -415,6 +415,10 @@ int ScenarioEngine::step(double deltaSimTime)
                 scenarioGateway.updateObjectControllerType(obj->id_, obj->GetControllerTypeActiveOnDomain(ControlDomains::DOMAIN_LONG));
             }
 
+            if (obj->CheckDirtyBits(Object::DirtyBit::LIGHT_STATE))
+            {
+                scenarioGateway.updateObjectLightState(obj->id_, obj->vehicleLightActionStatusList);
+            }
             // Friction is not considered
         }
         else
@@ -438,7 +442,8 @@ int ScenarioEngine::step(double deltaSimTime)
                                          obj->rear_axle_.positionZ,
                                          obj->front_axle_.positionX,
                                          obj->front_axle_.positionZ,
-                                         &obj->pos_);
+                                         &obj->pos_,
+                                         obj->vehicleLightActionStatusList);
 
             if (obj->type_ == Object::Type::VEHICLE)
             {

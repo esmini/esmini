@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Excercise speed action with teleport -->
+<OpenSCENARIO>
+    <FileHeader revMajor="1" revMinor="1" date="2021-12-29T10:00:00" description="Test dat2csv converter different mode with one frame speed change" author="esmini-team"/>
+    <ParameterDeclarations>
+        <ParameterDeclaration name="Tolerance" parameterType="double" value="1.0"/>
+    </ParameterDeclarations>
+    <CatalogLocations>
+        <VehicleCatalog>
+            <Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
+        </VehicleCatalog>
+    </CatalogLocations>
+    <RoadNetwork>
+        <LogicFile filepath="../../../resources/xodr/straight_500m.xodr"/>
+    </RoadNetwork>
+    <Entities>
+        <ScenarioObject name="Car">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>
+        </ScenarioObject>
+    </Entities>
+    <Storyboard>
+        <Init>
+            <Actions>
+                <Private entityRef="Car">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="1" laneId="-1" offset="0" s="10"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="sinusoidal" value="0.0" dynamicsDimension="distance"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="${0}"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                </Private>
+            </Actions>
+        </Init>
+        <Story name="MyStory">
+            <Act name="MyAct">
+                <ManeuverGroup maximumExecutionCount="1" name="Maneuver">
+                    <Actors selectTriggeringEntities="false">
+                        <EntityRef entityRef="Car"/>
+                    </Actors>
+                    <Maneuver name="MyManeuver">
+                        <Event name="ChangePosition1Event" priority="overwrite" maximumExecutionCount="1">
+                            <Action name="ChangePosition1Action">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <LanePosition roadId="1" laneId="-1" offset="0" s="25"/>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="ChangePosition1Condition" delay="0" conditionEdge="rising">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition rule="greaterThan" value="4"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                    </Maneuver>
+                    <Maneuver name="MyManeuver">
+                        <Event name="ChangePositionEvent" priority="overwrite" maximumExecutionCount="1">
+                            <Action name="ChangeSpeedAction">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <LanePosition roadId="1" laneId="-1" offset="0" s="50"/>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="PositionChangeCondition" delay="0" conditionEdge="rising">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition rule="greaterThan" value="8.329"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                    </Maneuver>
+                </ManeuverGroup>
+            </Act>
+        </Story>
+            <StopTrigger>
+                <ConditionGroup>
+                    <Condition name="QuitCondition" delay="0" conditionEdge="rising">
+                        <ByValueCondition>
+                            <SimulationTimeCondition rule="greaterThan" value="10"/>
+                        </ByValueCondition>
+                    </Condition>
+                </ConditionGroup>
+            </StopTrigger>
+    </Storyboard>
+</OpenSCENARIO>
