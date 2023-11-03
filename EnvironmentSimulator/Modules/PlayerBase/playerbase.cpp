@@ -419,6 +419,11 @@ void ScenarioPlayer::ViewerFrame(bool init)
                 {
                     viewer::CarModel* car = static_cast<viewer::CarModel*>(entity);
                     car->UpdateWheels(obj->wheel_angle_, obj->wheel_rot_);
+                    if (opt.GetOptionSet("lights") ||
+                        this->scenarioEngine->scenarioReader->lightStatusOn)  // update material details only when right action or show lights
+                    {
+                        car->UpdateLight(obj->vehicleLightActionStatusList);
+                    }
                 }
 
                 viewer::MovingModel* mov = static_cast<viewer::MovingModel*>(entity);
@@ -727,6 +732,12 @@ int ScenarioPlayer::InitViewer()
     {
         viewer_->ClearNodeMaskBits(viewer::NodeMask::NODE_MASK_ODR_FEATURES);
     }
+
+    if (opt.GetOptionSet("lights") || this->scenarioEngine->scenarioReader->lightStatusOn)
+    {
+        viewer_->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_LIGHTS_STATE);
+    }
+    viewer_->ShowLights = opt.GetOptionSet("lights") || this->scenarioEngine->scenarioReader->lightStatusOn;  // set flag for viewer
 
     if (opt.GetOptionSet("hide_route_waypoints"))
     {
@@ -1162,6 +1173,53 @@ void ScenarioPlayer::InitVehicleModel(Object* obj, viewer::CarModel* model)
         obj->SetVisibilityMask(obj->visibilityMask_ &= ~(Object::Visibility::SENSORS));
     }
 
+    if (opt.GetOptionSet("lights") || this->scenarioEngine->scenarioReader->lightStatusOn)  // fetch material details only right action or show lights
+    {
+        for (size_t i = 0; i < Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS; i++)
+        {
+            if (obj->vehicleLightActionStatusList[i].type == Object::VehicleLightType::UNDEFINED)
+            {
+                Object::VehicleLightType lightName = static_cast<Object::VehicleLightType>(i);
+                for (size_t j = 0; j < model->light_material_.size(); j++)
+                {
+                    if (model->light_material_[j] != nullptr)
+                    {
+                        if ((lightName == Object::VehicleLightType::FOG_LIGHTS))
+                        {  // fog light is combination of front and back fog lights same for waring and indicator light
+                            lightName = Object::VehicleLightType::FOG_LIGHTS_REAR;
+                        }
+                        else if (lightName == Object::VehicleLightType::WARNING_LIGHTS)
+                        {
+                            lightName = Object::VehicleLightType::INDICATOR_LEFT;
+                        }
+                        if (obj->LightType2Str(lightName) == model->light_material_[j]->getOrCreateStateSet()->getName().c_str())
+                        {
+                            osg::Material* mat = static_cast<osg::Material*>(
+                                model->light_material_[j]->getOrCreateStateSet()->getAttribute(osg::StateAttribute::MATERIAL));
+                            const osg::Vec4& dCol = mat->getDiffuseFrontAndBack() ? mat->getDiffuse(osg::Material::FRONT_AND_BACK)
+                                                                                  : mat->getDiffuse(osg::Material::FRONT);
+                            const osg::Vec4& eCol = mat->getEmissionFrontAndBack() ? mat->getEmission(osg::Material::FRONT_AND_BACK)
+                                                                                   : mat->getDiffuse(osg::Material::FRONT);
+
+                            obj->vehicleLightActionStatusList[i].baseRgb[0] = dCol.r();
+                            obj->vehicleLightActionStatusList[i].baseRgb[1] = dCol.g();
+                            obj->vehicleLightActionStatusList[i].baseRgb[2] = dCol.b();
+
+                            obj->vehicleLightActionStatusList[i].diffuseRgb[0]  = dCol.r();
+                            obj->vehicleLightActionStatusList[i].diffuseRgb[1]  = dCol.g();
+                            obj->vehicleLightActionStatusList[i].diffuseRgb[2]  = dCol.b();
+                            obj->vehicleLightActionStatusList[i].emissionRgb[0] = eCol.r();
+                            obj->vehicleLightActionStatusList[i].emissionRgb[1] = eCol.g();
+                            obj->vehicleLightActionStatusList[i].emissionRgb[2] = eCol.b();
+
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     viewer_->entities_.back()->routewaypoints_->SetWayPoints(obj->pos_.GetRoute());
 }
 #endif
@@ -1286,6 +1344,9 @@ int ScenarioPlayer::Init()
     opt.AddOption("hide_route_waypoints", "Disable route waypoint visualization (toggle with key 'R')");
     opt.AddOption("hide_trajectories", "Hide trajectories from start (toggle with key 'n')");
     opt.AddOption("info_text", "Show on-screen info text (toggle key 'i') mode 0=None 1=current (default) 2=per_object 3=both", "mode");
+#ifdef _USE_OSG
+    opt.AddOption("lights", "Show lights for light state actions");
+#endif
     opt.AddOption("logfile_path", "logfile path/filename, e.g. \"../esmini.log\" (default: log.txt)", "path");
     opt.AddOption("osc_str", "OpenSCENARIO XML string", "string");
     opt.AddOption("osg_screenshot_event_handler", "Revert to OSG default jpg images ('c'/'C' keys handler)");

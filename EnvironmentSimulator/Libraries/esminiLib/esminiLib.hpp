@@ -178,6 +178,17 @@ typedef struct
 
 typedef struct
 {
+    int    lightType;  // according to Entities.hpp::VehicleLightType
+    int    lightMode;  // according to Entities.hpp::VehicleLightMode
+    int    colorName;  // according to Entities.hpp::VehicleLightColor
+    double intensity;
+    double diffuseRgb[3];   // current diffuseRbg
+    double emissionRgb[3];  // current emissionRbg
+    double baseRgb[3];
+} SE_VehicleLightState;
+
+typedef struct
+{
     int         id;           // just an unique identifier of the sign
     float       x;            // global x coordinate of sign position
     float       y;            // global y coordinate of sign position
@@ -936,6 +947,22 @@ extern "C"
             @return 0 if successful, -1 if not
     */
     SE_DLL_API int SE_GetOverrideActionStatus(int objectId, SE_OverrideActionList *list);
+
+    /**
+            Get the number of lights for the specified object
+            @param objectId Id of the object
+            @return Number of lights
+    */
+    SE_DLL_API int SE_GetNumberOfVehicleLights(int objectId);
+
+    /**
+            Get the light state of specified object and light
+            @param objectId Id of the object
+            @param lightIndex Index of the light
+            @param list Pointer/reference to a SE_VehicleLightState struct to be filled in
+            @return 0 if successful, -1 if not
+    */
+    SE_DLL_API int SE_GetVehicleLightStatus(int objectId, int lightIndex, SE_VehicleLightState *lightState);
 
     /**
             Get the type name of the specifed vehicle-, pedestrian- or misc object

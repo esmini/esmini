@@ -107,6 +107,12 @@ if [[ "$OSTYPE" == "msys" ]] || [[ "$OSTYPE" == "linux-gnu"* ]]; then
     if ! ${EXE_FOLDER}/FollowRouteController_test; then
         exit_with_msg "FollowRouteController_test failed"
     fi
+
+    echo $'\n'Replayer_test:
+    if ! ${EXE_FOLDER}/Replayer_test; then
+        exit_with_msg "Replayer_test failed"
+    fi
+
 fi
 
 cd $SMOKE_TEST_FOLDER

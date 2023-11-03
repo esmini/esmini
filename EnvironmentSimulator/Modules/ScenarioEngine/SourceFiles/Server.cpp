@@ -108,7 +108,8 @@ namespace scenarioengine
                                               buf.z,
                                               buf.h,
                                               buf.p,
-                                              buf.r);
+                                              buf.r,
+                                              nullptr);
 
                 mutex.Unlock();
             }
