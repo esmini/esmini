@@ -1284,6 +1284,70 @@ namespace scenarioengine
         void Start(double simTime);
     };
 
+    class LightStateAction : public OSCPrivateAction
+    {
+    public:
+        double transitionTime_;
+        double flashingOffDuration_;
+        double flashingOnDuration_;
+        double cmyk_[4];
+
+        LightStateAction(StoryBoardElement* parent)
+            : OSCPrivateAction(OSCPrivateAction::ActionType::LIGHT_STATE_ACTION, parent, ControlDomains::DOMAIN_LIGHT),
+              transitionTime_(0.0),
+              flashingOffDuration_(0.5),
+              flashingOnDuration_(0.5),
+              cmyk_{-1.0, -1.0, -1.0, -1.0}
+        {
+        }
+
+        double transitionTimer_ = SMALL_NUMBER;
+        double flashingTimer_   = SMALL_NUMBER;
+        double initialDiffRgb_[3];
+        double finalDiffRgb_[3];
+        double initialEmissionRgb_[3];
+        double finalEmissionRgb_[3];
+
+        bool                     isUserSetRgb       = true;
+        bool                     isRgbFromLightType = false;
+        double                   lum_max            = 0.9;
+        double                   lum_default        = 0.5;
+        Object::VehicleLightMode perviousMode;
+        double                   perviousIntensity;
+        double                   baseRgb[3];
+
+        enum class flashingStatus
+        {
+            LOW       = 1,
+            HIGH      = 2,
+            UNDEFINED = 3
+        };
+        flashingStatus flashStatus;
+
+        int parseVehicleLightType(std::string typeObject, Object::VehicleLightActionStatus& lightStatus);
+        int parseVehicleLightMode(std::string mode, Object::VehicleLightActionStatus& lightStatus);
+        int parseVehicleLightColor(std::string colorType, Object::VehicleLightActionStatus& lightStatus);
+
+        void Step(double simTime, double dt);
+        void Start(double simTime);
+        void AddVehicleLightActionStatus(Object::VehicleLightActionStatus lightStatus);
+        int  setLightTransistionValues(Object::VehicleLightMode mode);
+
+        int  checkColorError(double* value, int n);
+        void convertColorAndSetBaseRgb(Object::VehicleLightActionStatus& lightStatus);
+        void convertLightTypeAndSetBaseRgb(Object::VehicleLightActionStatus& lightStatus);
+
+        int setbaseRgbAndPrepare(Object::VehicleLightActionStatus& lightStatus);
+
+        Object::VehicleLightType GetLightType()
+        {
+            return vehicleLightActionStatus.type;
+        }
+
+    private:
+        Object::VehicleLightActionStatus vehicleLightActionStatus;
+    };
+
     class OverrideControlAction : public OSCPrivateAction
     {
     public:

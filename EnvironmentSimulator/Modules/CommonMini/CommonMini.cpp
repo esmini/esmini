@@ -185,6 +185,10 @@ std::string ControlDomain2Str(unsigned int domains)
     {
         str = "None";
     }
+    else if (domains == ControlDomains::DOMAIN_LIGHT)
+    {
+        return "lights";
+    }
 
     return str;
 }
@@ -660,6 +664,34 @@ bool IsNumber(const std::string& str, int max_digits)
 
     return true;
 }
+bool CheckArrayRange0to1(double array[], int size)
+{
+    for (int i = 0; i < size; i++)
+    {
+        if (array[i] > 0.0 - SMALL_NUMBER && array[i] < 1.0 + SMALL_NUMBER)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+int adjustByOffsetArray(double (&array)[3], double limit)
+{
+    double fraction = 1.0;
+    double max_val  = MAX(array[0], MAX(array[1], array[2]));
+    if (max_val > SMALL_NUMBER)
+    {
+        fraction = limit / max_val;
+    }
+
+    array[0] = fraction * array[0];
+    array[1] = fraction * array[1];
+    array[2] = fraction * array[2];
+
+    return 0;
+}
 
 int strtoi(std::string s)
 {
@@ -678,6 +710,11 @@ void StrCopy(char* dest, const char* src, size_t size, bool terminate)
     {
         dest[size - 1] = 0;  // NULL termination
     }
+}
+
+bool isEqualDouble(double val1, double val2)
+{
+    return ((std::signbit(val1) == std::signbit(val2)) && (fabs(val1 - val2) < SMALL_NUMBER));
 }
 
 #if (defined WINVER && WINVER == _WIN32_WINNT_WIN7 || __MINGW32__)

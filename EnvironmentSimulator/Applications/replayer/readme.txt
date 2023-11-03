@@ -58,6 +58,8 @@ Options:
       Stop playing at timestamp (set equal to time_start for single frame)
   --text_scale [factor]  (default = 1.0)
       Scale screen overlay text
+  --show_restart
+      Show the restart time frame as well
   --time_scale <factor>
       Playback speed scale factor (1.0 == normal)
   --view_mode <view_mode>

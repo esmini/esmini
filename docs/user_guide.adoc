@@ -374,16 +374,63 @@ Developer info: Define the symbol DEBUG_TRACE (either as compile flag or by unco
 ==== Scenario recording (.dat)
 In addition esmini can save a `.dat` file which captures the state of all entities. This file can later be used either to replay (see <<Replay scenario>>) the scenario or converted to `.csv` for further analysis, e.g. in Excel.
 
+Dat files are designed to optimize storage space by omitting redundant data. When a vehicle remains stationary for a prolonged period, only the initial state is recorded to avoid unnecessary data duplication. The replayer, which plays back the recorded data, is responsible for filling the missing data points to ensure smooth motion representation.
+
+In essence, dat files prioritize efficiency by preserving only the distinctive states of the vehicle's movement, leaving the responsibility of filling in the gaps to the replayer. This approach conserves storage space and expedites data transfer, while the replayer ensures an accurate portrayal of the vehicle's trajectory.
+
 To create a recording with regular timesteps: +
 ``./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/slow-lead-vehicle.xosc --fixed_timestep 0.05 --record sim.dat``
 
-To convert the .dat file into .csv, do either of: +
-``./bin/dat2csv sim.dat`` +
-or +
-``python ./scripts/dat2csv.py sim.dat``
+Below options shall control the dat to csv converter. Default mode is original and default time step value is 0.05
+
+. Original Mode:
+    ** Read the dat file and extract the timestamps and corresponding data.
+    ** Write the timestamps and data to the csv file, maintaining the original frame rate.
+
+  ``./bin/dat2csv --file sim.dat`` +
+  or +
+  ``python ./scripts/dat2csv.py sim.dat``
+
+. Min Step Mode:
+    ** Read the dat file and calculate the minimum step time.
+    ** Reconstruct the frame sequence for minimum step time.
+    ** Write the reconstructed frame sequence to the csv file at the minimum step rate.
+
+  ``./bin/dat2csv --file sim.dat --time_mode min_step`` +
+  or +
+  ``python ./scripts/dat2csv.py sim.dat -m min_step``
+
+. Min Step Mixed Mode:
+    ** Perform the Min Step Mode conversion to create a min step csv file.
+    ** Read the original dat file and identify frames that were skipped during Min Step conversion.
+    ** Insert these skipped frames into the min step csv file, preserving the original frame order.
+
+  ``./bin/dat2csv --file sim.dat --time_mode min_step_mixed`` +
+  or +
+  ``python ./scripts/dat2csv.py sim.dat -m min_step_mixed``
+
+. Custom Time Step Mode:
+    ** Specify the desired time step for the csv file.
+    ** Reconstruct the frame sequence for specified step time.
+    ** Write the reconstructed frame sequence to the csv file at the specified time step rate.
+
+  ``./bin/dat2csv --file sim.dat --time_mode custom_time_step --time_step 0.1`` +
+  or +
+  ``python ./scripts/dat2csv.py sim.dat -m time_step --time_step 0.1``
+
+. Custom Time Step Mixed Mode:
+    ** Perform the Time Step Mode conversion to create a time step csv file.
+    ** Read the original dat file and identify frames that were skipped during Time Step conversion.
+    ** Insert these skipped frames into the time step csv file, preserving the original frame order.
+
+  ``./bin/dat2csv --file sim.dat --time_mode custom_time_step_mixed --time_step 0.1`` +
+  or +
+  ``python ./scripts/dat2csv.py sim.dat -m time_step --time_step_mixed 0.1``
 
 Only a subset of the .dat file information is extracted. To extract some more info, e.g. road coordinates, run:
-``./scripts/dat2csv --extended sim.dat`` +
+``./scripts/dat2csv --file sim.dat --extended`` +
+or +
+``python ./scripts/dat2csv.py sim.dat -e``
 
 You can create .dat files from multiple scenarios in a single command, like this on Linux (bash):
 
@@ -439,6 +486,8 @@ Some launch arguments:
 *--quit_at_end*:: Quit application when reaching end of scenario
 *--repeat*:: Loop scenario
 *--dir <path>*:: Directory containing replays to overlay, pair with "file" argument, where "file" is .dat filename match substring
+*--show_restart*:: shows restart frames as well
+
 
 Examples:
 

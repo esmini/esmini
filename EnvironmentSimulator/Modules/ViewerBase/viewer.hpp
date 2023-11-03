@@ -68,6 +68,7 @@ namespace viewer
         NODE_MASK_TRAJECTORY_LINES = (1 << 12),
         NODE_MASK_ROUTE_WAYPOINTS  = (1 << 13),
         NODE_MASK_SIGN             = (1 << 14),
+        NODE_MASK_LIGHTS_STATE     = (1 << 15),
     } NodeMask;
 
     osg::Vec4 ODR2OSGColor(roadmanager::RoadMarkColor color);
@@ -335,6 +336,7 @@ namespace viewer
     public:
         std::vector<osg::ref_ptr<osg::PositionAttitudeTransform>> front_wheel_;
         std::vector<osg::ref_ptr<osg::PositionAttitudeTransform>> rear_wheel_;
+        std::vector<osg::ref_ptr<osg::Geode>>                     light_material_;
         double                                                    wheel_angle_;
         double                                                    wheel_rot_;
         static const EntityType                                   entity_type_ = EntityType::VEHICLE;
@@ -351,11 +353,14 @@ namespace viewer
                  osg::ref_ptr<osg::Node>  dot_node,
                  osg::ref_ptr<osg::Group> route_waypoint_parent,
                  osg::Vec4                trail_color,
-                 std::string              name);
+                 std::string              name,
+                 bool                     showLights);
         ~CarModel();
         osg::ref_ptr<osg::PositionAttitudeTransform> AddWheel(osg::ref_ptr<osg::Node> carNode, const char* wheelName);
         void                                         UpdateWheels(double wheel_angle, double wheel_rotation);
         void                                         UpdateWheelsDelta(double wheel_angle, double wheel_rotation_delta);
+        void                                         AddLights(osg::ref_ptr<osg::Group> group, bool AddLights);
+        void                                         UpdateLight(Object::VehicleLightActionStatus* list);
     };
 
     class VisibilityCallback : public osg::NodeCallback
@@ -584,6 +589,7 @@ namespace viewer
         }
 
         void Frame();
+        bool ShowLights = false;
 
     private:
         bool                                         CreateRoadLines(Viewer* viewer, roadmanager::OpenDrive* od);

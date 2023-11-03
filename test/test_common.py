@@ -108,7 +108,7 @@ def run_replayer(replayer_arguments = None):
 
     assert False, 'No log file'
 
-def generate_csv(filename=DAT_FILENAME):
+def generate_csv(filename=DAT_FILENAME, mode_ = "original", time_step_ = 0.05):
 
     # Below is one/the old way of converting dat to csv. Keeping the lines for reference.
     # args = [os.path.join(ESMINI_PATH,'bin','dat2csv'), DAT_FILENAME]
@@ -116,7 +116,7 @@ def generate_csv(filename=DAT_FILENAME):
 
     # Below is the Python way of converting dat to csv
     dat = DATFile(filename)
-    dat.save_csv()
+    dat.save_csv(mode = mode_, step_time = time_step_)
     dat.close()
 
     with open(os.path.splitext(filename)[0] + '.csv', "r") as f:

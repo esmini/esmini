@@ -14,6 +14,7 @@
 #include "RoadManager.hpp"
 #include "OSCBoundingBox.hpp"
 #include "Entities.hpp"
+#include "DatLogger.hpp"
 
 #define DAT_FILE_FORMAT_VERSION 2
 #define DAT_FILENAME_SIZE       512
@@ -42,6 +43,7 @@ namespace scenarioengine
         int                    scaleMode;       // 0=None, 1=BoundingBoxToModel, 2=ModelToBoundingBox (see enum EntityScaleMode)
         int                    visibilityMask;  // bitmask according to Object::Visibility (1 = Graphics, 2 = Traffic, 4 = Sensors)
         std::vector<WheelData> wheel_data;      // make room for maximum number of wheels
+        Object::VehicleLightActionStatus light_state[Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS];
     };
 
     struct ObjectStateStruct
@@ -65,21 +67,23 @@ namespace scenarioengine
         OSCBoundingBox boundingbox;
         int            scaleMode;       // 0=None, 1=BoundingBoxToModel, 2=ModelToBoundingBox (see enum EntityScaleMode)
         int            visibilityMask;  // bitmask according to Object::Visibility (1 = Graphics, 2 = Traffic, 4 = Sensors)
+        // Object::VehicleLightActionStatus light_state[Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS];
+        unsigned char rgb[13 * 4];
     };
 
     struct ObjectPositionStructDat
     {
-        float x;
-        float y;
-        float z;
-        float h;
-        float p;
-        float r;
-        int   roadId;
-        int   laneId;
-        float offset;
-        float t;
-        float s;
+        double x;
+        double y;
+        double z;
+        double h;
+        double p;
+        double r;
+        int    roadId;
+        int    laneId;
+        double offset;
+        float  t;
+        float  s;
     };
 
     struct ObjectStateStructDat
@@ -99,83 +103,87 @@ namespace scenarioengine
     {
     public:
         ObjectState();
-        ObjectState(int                    id,
-                    std::string            name,
-                    int                    obj_type,
-                    int                    obj_category,
-                    int                    obj_role,
-                    int                    model_id,
-                    std::string            model3d,
-                    int                    ctrl_type,
-                    OSCBoundingBox         boundingbox,
-                    int                    scaleMode,
-                    int                    visibilityMask,
-                    double                 timestamp,
-                    double                 speed,
-                    double                 wheel_angle,
-                    double                 wheel_rot,
-                    double                 rear_axle_z_pos,
-                    double                 front_axle_x_pos,
-                    double                 front_axle_z_pos,
-                    roadmanager::Position *pos);
-        ObjectState(int            id,
-                    std::string    name,
-                    int            obj_type,
-                    int            obj_category,
-                    int            obj_role,
-                    int            model_id,
-                    int            ctrl_type,
-                    OSCBoundingBox boundingbox,
-                    int            scaleMode,
-                    int            visibilityMask,
-                    double         timestamp,
-                    double         speed,
-                    double         wheel_angle,
-                    double         wheel_rot,
-                    double         rear_axle_z_pos,
-                    double         x,
-                    double         y,
-                    double         z,
-                    double         h,
-                    double         p,
-                    double         r);
-        ObjectState(int            id,
-                    std::string    name,
-                    int            obj_type,
-                    int            obj_category,
-                    int            obj_role,
-                    int            model_id,
-                    int            ctrl_type,
-                    OSCBoundingBox boundingbox,
-                    int            scaleMode,
-                    int            visibilityMask,
-                    double         timestamp,
-                    double         speed,
-                    double         wheel_angle,
-                    double         wheel_rot,
-                    double         rear_axle_z_pos,
-                    int            roadId,
-                    int            laneId,
-                    double         laneOffset,
-                    double         s);
-        ObjectState(int            id,
-                    std::string    name,
-                    int            obj_type,
-                    int            obj_category,
-                    int            obj_role,
-                    int            model_id,
-                    int            ctrl_type,
-                    OSCBoundingBox boundingbox,
-                    int            scaleMode,
-                    int            visibilityMask,
-                    double         timestamp,
-                    double         speed,
-                    double         wheel_angle,
-                    double         wheel_rot,
-                    double         rear_axle_z_pos,
-                    int            roadId,
-                    double         lateralOffset,
-                    double         s);
+        ObjectState(int                               id,
+                    std::string                       name,
+                    int                               obj_type,
+                    int                               obj_category,
+                    int                               obj_role,
+                    int                               model_id,
+                    std::string                       model3d,
+                    int                               ctrl_type,
+                    OSCBoundingBox                    boundingbox,
+                    int                               scaleMode,
+                    int                               visibilityMask,
+                    double                            timestamp,
+                    double                            speed,
+                    double                            wheel_angle,
+                    double                            wheel_rot,
+                    double                            rear_axle_z_pos,
+                    double                            front_axle_x_pos,
+                    double                            front_axle_z_pos,
+                    roadmanager::Position            *pos,
+                    Object::VehicleLightActionStatus *light_state);
+        ObjectState(int                               id,
+                    std::string                       name,
+                    int                               obj_type,
+                    int                               obj_category,
+                    int                               obj_role,
+                    int                               model_id,
+                    int                               ctrl_type,
+                    OSCBoundingBox                    boundingbox,
+                    int                               scaleMode,
+                    int                               visibilityMask,
+                    double                            timestamp,
+                    double                            speed,
+                    double                            wheel_angle,
+                    double                            wheel_rot,
+                    double                            rear_axle_z_pos,
+                    double                            x,
+                    double                            y,
+                    double                            z,
+                    double                            h,
+                    double                            p,
+                    double                            r,
+                    Object::VehicleLightActionStatus *light_state);
+        ObjectState(int                               id,
+                    std::string                       name,
+                    int                               obj_type,
+                    int                               obj_category,
+                    int                               obj_role,
+                    int                               model_id,
+                    int                               ctrl_type,
+                    OSCBoundingBox                    boundingbox,
+                    int                               scaleMode,
+                    int                               visibilityMask,
+                    double                            timestamp,
+                    double                            speed,
+                    double                            wheel_angle,
+                    double                            wheel_rot,
+                    double                            rear_axle_z_pos,
+                    int                               roadId,
+                    int                               laneId,
+                    double                            laneOffset,
+                    double                            s,
+                    Object::VehicleLightActionStatus *light_state);
+        ObjectState(int                               id,
+                    std::string                       name,
+                    int                               obj_type,
+                    int                               obj_category,
+                    int                               obj_role,
+                    int                               model_id,
+                    int                               ctrl_type,
+                    OSCBoundingBox                    boundingbox,
+                    int                               scaleMode,
+                    int                               visibilityMask,
+                    double                            timestamp,
+                    double                            speed,
+                    double                            wheel_angle,
+                    double                            wheel_rot,
+                    double                            rear_axle_z_pos,
+                    int                               roadId,
+                    double                            lateralOffset,
+                    double                            s,
+                    Object::VehicleLightActionStatus *light_state);
 
         ObjectState(const ObjectState &)            = default;
         ObjectState &operator=(const ObjectState &) = default;
@@ -204,105 +212,110 @@ namespace scenarioengine
         ScenarioGateway();
         ~ScenarioGateway();
 
-        int reportObject(int                    id,
-                         std::string            name,
-                         int                    obj_type,
-                         int                    obj_category,
-                         int                    obj_role,
-                         int                    model_id,
-                         std::string            model3d,
-                         int                    ctrl_type,
-                         OSCBoundingBox         boundingbox,
-                         int                    scaleMode,
-                         int                    visibilityMask,
-                         double                 timestamp,
-                         double                 speed,
-                         double                 wheel_angle,
-                         double                 wheel_rot,
-                         double                 rear_axle_z_pos,
-                         double                 front_axle_x_pos,
-                         double                 front_axle_z_pos,
-                         roadmanager::Position *pos);
+        int reportObject(int                               id,
+                         std::string                       name,
+                         int                               obj_type,
+                         int                               obj_category,
+                         int                               obj_role,
+                         int                               model_id,
+                         std::string                       model3d,
+                         int                               ctrl_type,
+                         OSCBoundingBox                    boundingbox,
+                         int                               scaleMode,
+                         int                               visibilityMask,
+                         double                            timestamp,
+                         double                            speed,
+                         double                            wheel_angle,
+                         double                            wheel_rot,
+                         double                            rear_axle_z_pos,
+                         double                            front_axle_x_pos,
+                         double                            front_axle_z_pos,
+                         roadmanager::Position            *pos,
+                         Object::VehicleLightActionStatus *light_state);
 
-        int reportObject(int            id,
-                         std::string    name,
-                         int            obj_type,
-                         int            obj_category,
-                         int            obj_role,
-                         int            model_id,
-                         int            ctrl_type,
-                         OSCBoundingBox boundingbox,
-                         int            scaleMode,
-                         int            visibilityMask,
-                         double         timestamp,
-                         double         speed,
-                         double         wheel_angle,
-                         double         wheel_rot,
-                         double         rear_axle_z_pos,
-                         double         x,
-                         double         y,
-                         double         z,
-                         double         h,
-                         double         p,
-                         double         r);
+        int reportObject(int                               id,
+                         std::string                       name,
+                         int                               obj_type,
+                         int                               obj_category,
+                         int                               obj_role,
+                         int                               model_id,
+                         int                               ctrl_type,
+                         OSCBoundingBox                    boundingbox,
+                         int                               scaleMode,
+                         int                               visibilityMask,
+                         double                            timestamp,
+                         double                            speed,
+                         double                            wheel_angle,
+                         double                            wheel_rot,
+                         double                            rear_axle_z_pos,
+                         double                            x,
+                         double                            y,
+                         double                            z,
+                         double                            h,
+                         double                            p,
+                         double                            r,
+                         Object::VehicleLightActionStatus *light_state);
 
-        int reportObject(int            id,
-                         std::string    name,
-                         int            obj_type,
-                         int            obj_category,
-                         int            obj_role,
-                         int            model_id,
-                         int            ctrl_type,
-                         OSCBoundingBox boundingbox,
-                         int            scaleMode,
-                         int            visibilityMask,
-                         double         timestamp,
-                         double         speed,
-                         double         wheel_angle,
-                         double         wheel_rot,
-                         double         rear_axle_z_pos,
-                         double         x,
-                         double         y,
-                         double         h);
+        int reportObject(int                               id,
+                         std::string                       name,
+                         int                               obj_type,
+                         int                               obj_category,
+                         int                               obj_role,
+                         int                               model_id,
+                         int                               ctrl_type,
+                         OSCBoundingBox                    boundingbox,
+                         int                               scaleMode,
+                         int                               visibilityMask,
+                         double                            timestamp,
+                         double                            speed,
+                         double                            wheel_angle,
+                         double                            wheel_rot,
+                         double                            rear_axle_z_pos,
+                         double                            x,
+                         double                            y,
+                         double                            h,
+                         Object::VehicleLightActionStatus *light_state);
 
-        int reportObject(int            id,
-                         std::string    name,
-                         int            obj_type,
-                         int            obj_category,
-                         int            obj_role,
-                         int            model_id,
-                         int            ctrl_type,
-                         OSCBoundingBox boundingbox,
-                         int            scaleMode,
-                         int            visibilityMask,
-                         double         timestamp,
-                         double         speed,
-                         double         wheel_angle,
-                         double         wheel_rot,
-                         double         rear_axle_z_pos,
-                         int            roadId,
-                         int            laneId,
-                         double         laneOffset,
-                         double         s);
+        int reportObject(int                               id,
+                         std::string                       name,
+                         int                               obj_type,
+                         int                               obj_category,
+                         int                               obj_role,
+                         int                               model_id,
+                         int                               ctrl_type,
+                         OSCBoundingBox                    boundingbox,
+                         int                               scaleMode,
+                         int                               visibilityMask,
+                         double                            timestamp,
+                         double                            speed,
+                         double                            wheel_angle,
+                         double                            wheel_rot,
+                         double                            rear_axle_z_pos,
+                         int                               roadId,
+                         int                               laneId,
+                         double                            laneOffset,
+                         double                            s,
+                         Object::VehicleLightActionStatus *light_state);
 
-        int reportObject(int            id,
-                         std::string    name,
-                         int            obj_type,
-                         int            obj_category,
-                         int            obj_role,
-                         int            model_id,
-                         int            ctrl_type,
-                         OSCBoundingBox boundingbox,
-                         int            scaleMode,
-                         int            visibilityMask,
-                         double         timestamp,
-                         double         speed,
-                         double         wheel_angle,
-                         double         wheel_rot,
-                         double         rear_axle_z_pos,
-                         int            roadId,
-                         double         lateralOffset,
-                         double         s);
+        int reportObject(int                               id,
+                         std::string                       name,
+                         int                               obj_type,
+                         int                               obj_category,
+                         int                               obj_role,
+                         int                               model_id,
+                         int                               ctrl_type,
+                         OSCBoundingBox                    boundingbox,
+                         int                               scaleMode,
+                         int                               visibilityMask,
+                         double                            timestamp,
+                         double                            speed,
+                         double                            wheel_angle,
+                         double                            wheel_rot,
+                         double                            rear_axle_z_pos,
+                         int                               roadId,
+                         double                            lateralOffset,
+                         double                            s,
+                         Object::VehicleLightActionStatus *light_state);
 
         int updateObjectPos(int id, double timestamp, roadmanager::Position *pos);
         int updateObjectRoadPos(int id, double timestamp, int roadId, double lateralOffset, double s);
@@ -321,6 +334,7 @@ namespace scenarioengine
         int updateObjectVisibilityMask(int id, int visibilityMask);
         int updateObjectControllerType(int id, int controllerType);
         int updateObjectWheelData(int id, std::vector<WheelData> wheel_data);
+        int updateObjectLightState(int id, Object::VehicleLightActionStatus *light_state);
 
         /**
         Specify if and how position object will align to the road. The setting is done for individual components:
@@ -363,14 +377,20 @@ namespace scenarioengine
         }
         ObjectState *getObjectStatePtrById(int id);
         int          getObjectStateById(int idx, ObjectState &objState);
-        void         WriteStatesToFile();
+        int          WriteStatesToFile();
         int          RecordToFile(std::string filename, std::string odr_filename, std::string model_filename);
 
         std::vector<std::unique_ptr<ObjectState>> objectState_;
 
     private:
-        int updateObjectInfo(ObjectState *obj_state, double timestamp, int visibilityMask, double speed, double wheel_angle, double wheel_rot);
-        std::ofstream data_file_;
+        int                   updateObjectInfo(ObjectState                      *obj_state,
+                                               double                            timestamp,
+                                               int                               visibilityMask,
+                                               double                            speed,
+                                               double                            wheel_angle,
+                                               double                            wheel_rot,
+                                               Object::VehicleLightActionStatus *light_state);
+        datLogger::DatLogger *datLogger = nullptr;
     };
 
 }  // namespace scenarioengine
