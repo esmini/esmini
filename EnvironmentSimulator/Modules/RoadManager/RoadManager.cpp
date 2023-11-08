@@ -11097,7 +11097,7 @@ void NurbsShape::CalculatePolyLine()
         }
     }
 
-    length_ = pline_.vertex_.size() > 0 ? pline_.vertex_.back().s : 0.0;
+    length_ = pline_.length_ = pline_.vertex_.size() > 0 ? pline_.vertex_.back().s : 0.0;
 }
 
 int NurbsShape::EvaluateInternal(double t, TrajVertex& pos)
