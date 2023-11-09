@@ -567,6 +567,12 @@ namespace ESMini
         /// <returns>0 if successful, -1 if not</returns>
         public static extern int SE_SetOSITolerances(double maxLongitudinalDistance, double maxLateralDeviation);
 
+        [DllImport(LIB_NAME, EntryPoint = "SE_OpenOSISocket")]
+        /// <summary>Send OSI packages over UDP to specified IP address</summary>
+        /// <param name="ipaddr">ip address, e.g. "127.0.0.1" (local host)</param>
+        /// <returns>0 if successful, -1 if not</returns>
+        public static extern int SE_OpenOSISocket(string ipaddr);
+
         [DllImport(LIB_NAME, EntryPoint = "SE_DisableOSIFile")]
         /// <summary>Switch off logging to OSI file(s)</summary>
         /// <returns>0 if successful, -1 if not</returns>
