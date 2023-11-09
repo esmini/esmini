@@ -1515,8 +1515,16 @@ int Viewer::AddGroundSurface()
     // const osg::BoundingSphere bs = environment_->getBound();
 
     osg::ComputeBoundsVisitor cbv;
-    environment_->accept(cbv);
-    osg::BoundingBox bb = cbv.getBoundingBox();
+    osg::BoundingBox          bb;
+    if (environment_ != nullptr)
+    {
+        environment_->accept(cbv);
+        bb = cbv.getBoundingBox();
+    }
+    else
+    {
+        bb.set(osg::Vec3d(0.0, 0.0, 0.0), osg::Vec3d(1e4, 1e4, 1e4));
+    }
 
     osg::ref_ptr<osg::Geode>    ground = new osg::Geode;
     osg::ref_ptr<osg::Geometry> geom   = osg::createTexturedQuadGeometry(
