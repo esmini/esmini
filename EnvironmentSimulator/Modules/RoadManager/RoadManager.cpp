@@ -4079,56 +4079,10 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
         {
             for (pugi::xml_node object = objects.child("object"); object; object = object.next_sibling("object"))
             {
-                // Read any repeat element first, since its s-value overrides the one in the object element
+                RMObject* obj = nullptr;
+                Position  pos;
 
-                std::vector<Repeat*> Repeats;
-                for (pugi::xml_node repeat_node = object.child("repeat"); repeat_node; repeat_node = repeat_node.next_sibling("repeat"))
-                {
-                    std::string rattr;
-                    double      rs            = (rattr = ReadAttribute(repeat_node, "s", true)) == "" ? 0.0 : std::stod(rattr);
-                    double      rlength       = (rattr = ReadAttribute(repeat_node, "length", true)) == "" ? 0.0 : std::stod(rattr);
-                    double      rdistance     = (rattr = ReadAttribute(repeat_node, "distance", true)) == "" ? 0.0 : std::stod(rattr);
-                    double      rtStart       = (rattr = ReadAttribute(repeat_node, "tStart", true)) == "" ? 0.0 : std::stod(rattr);
-                    double      rtEnd         = (rattr = ReadAttribute(repeat_node, "tEnd", true)) == "" ? 0.0 : std::stod(rattr);
-                    double      rheightStart  = (rattr = ReadAttribute(repeat_node, "heightStart", true)) == "" ? 0.0 : std::stod(rattr);
-                    double      rheightEnd    = (rattr = ReadAttribute(repeat_node, "heightEnd", true)) == "" ? 0.0 : std::stod(rattr);
-                    double      rzOffsetStart = (rattr = ReadAttribute(repeat_node, "zOffsetStart", true)) == "" ? 0.0 : std::stod(rattr);
-                    double      rzOffsetEnd   = (rattr = ReadAttribute(repeat_node, "zOffsetEnd", true)) == "" ? 0.0 : std::stod(rattr);
-
-                    double rwidthStart  = (rattr = ReadAttribute(repeat_node, "widthStart", false)) == "" ? 0.0 : std::stod(rattr);
-                    double rwidthEnd    = (rattr = ReadAttribute(repeat_node, "widthEnd", false)) == "" ? 0.0 : std::stod(rattr);
-                    double rlengthStart = (rattr = ReadAttribute(repeat_node, "lengthStart", false)) == "" ? 0.0 : std::stod(rattr);
-                    double rlengthEnd   = (rattr = ReadAttribute(repeat_node, "lengthEnd", false)) == "" ? 0.0 : std::stod(rattr);
-                    double rradiusStart = (rattr = ReadAttribute(repeat_node, "radiusStart", false)) == "" ? 0.0 : std::stod(rattr);
-                    double rradiusEnd   = (rattr = ReadAttribute(repeat_node, "radiusEnd", false)) == "" ? 0.0 : std::stod(rattr);
-
-                    Repeat* repeat = new Repeat(rs, rlength, rdistance, rtStart, rtEnd, rheightStart, rheightEnd, rzOffsetStart, rzOffsetEnd);
-                    Repeats.push_back(repeat);
-
-                    if (fabs(rwidthStart) > SMALL_NUMBER)
-                        repeat->SetWidthStart(rwidthStart);
-                    if (fabs(rwidthEnd) > SMALL_NUMBER)
-                        repeat->SetWidthEnd(rwidthEnd);
-                    if (fabs(rlengthStart) > SMALL_NUMBER)
-                        repeat->SetLengthStart(rlengthStart);
-                    if (fabs(rlengthEnd) > SMALL_NUMBER)
-                        repeat->SetLengthEnd(rlengthEnd);
-
-                    if (fabs(rradiusStart) > SMALL_NUMBER)
-                        printf("Attribute object/repeat/radiusStart not supported yet\n");
-                    if (fabs(rradiusEnd) > SMALL_NUMBER)
-                        printf("Attribute object/repeat/radiusEnd not supported yet\n");
-                }
-
-                double s;
-                if (Repeats.size() > 0)
-                {
-                    s = Repeats[0]->GetS();
-                }
-                else
-                {
-                    s = atof(object.attribute("s").value());
-                }
+                double      s    = atof(object.attribute("s").value());
                 double      t    = atof(object.attribute("t").value());
                 int         ids  = atoi(object.attribute("id").value());
                 std::string name = object.attribute("name").value();
@@ -4164,25 +4118,152 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                 double               pitch    = atof(object.attribute("pitch").value());
                 double               roll     = atof(object.attribute("roll").value());
 
-                Position pos(rid, s, t);
+                // Read any repeat elements
 
-                RMObject* obj = new RMObject(s,
-                                             t,
-                                             ids,
-                                             name,
-                                             orientation,
-                                             z_offset,
-                                             type,
-                                             length,
-                                             height,
-                                             width,
-                                             heading,
-                                             pitch,
-                                             roll,
-                                             pos.GetX(),
-                                             pos.GetY(),
-                                             pos.GetZ(),
-                                             pos.GetHRoad());
+                std::vector<Repeat*> Repeats;
+                for (pugi::xml_node repeat_node = object.child("repeat"); repeat_node; repeat_node = repeat_node.next_sibling("repeat"))
+                {
+                    std::string rattr;
+                    double      rs            = (rattr = ReadAttribute(repeat_node, "s", true)) == "" ? 0.0 : std::stod(rattr);
+                    double      rlength       = (rattr = ReadAttribute(repeat_node, "length", true)) == "" ? 0.0 : std::stod(rattr);
+                    double      rdistance     = (rattr = ReadAttribute(repeat_node, "distance", true)) == "" ? 0.0 : std::stod(rattr);
+                    double      rtStart       = (rattr = ReadAttribute(repeat_node, "tStart", true)) == "" ? 0.0 : std::stod(rattr);
+                    double      rtEnd         = (rattr = ReadAttribute(repeat_node, "tEnd", true)) == "" ? 0.0 : std::stod(rattr);
+                    double      rheightStart  = (rattr = ReadAttribute(repeat_node, "heightStart", true)) == "" ? 0.0 : std::stod(rattr);
+                    double      rheightEnd    = (rattr = ReadAttribute(repeat_node, "heightEnd", true)) == "" ? 0.0 : std::stod(rattr);
+                    double      rzOffsetStart = (rattr = ReadAttribute(repeat_node, "zOffsetStart", true)) == "" ? 0.0 : std::stod(rattr);
+                    double      rzOffsetEnd   = (rattr = ReadAttribute(repeat_node, "zOffsetEnd", true)) == "" ? 0.0 : std::stod(rattr);
+
+                    double rwidthStart  = (rattr = ReadAttribute(repeat_node, "widthStart", false)) == "" ? 0.0 : std::stod(rattr);
+                    double rwidthEnd    = (rattr = ReadAttribute(repeat_node, "widthEnd", false)) == "" ? 0.0 : std::stod(rattr);
+                    double rlengthStart = (rattr = ReadAttribute(repeat_node, "lengthStart", false)) == "" ? 0.0 : std::stod(rattr);
+                    double rlengthEnd   = (rattr = ReadAttribute(repeat_node, "lengthEnd", false)) == "" ? 0.0 : std::stod(rattr);
+                    double rradiusStart = (rattr = ReadAttribute(repeat_node, "radiusStart", false)) == "" ? 0.0 : std::stod(rattr);
+                    double rradiusEnd   = (rattr = ReadAttribute(repeat_node, "radiusEnd", false)) == "" ? 0.0 : std::stod(rattr);
+
+                    if (obj == nullptr)
+                    {
+                        // create object with position of first repeat object
+                        pos.SetTrackPos(rid, rs, t);
+
+                        obj = new RMObject(rs,
+                                           t,
+                                           ids,
+                                           name,
+                                           orientation,
+                                           z_offset,
+                                           type,
+                                           length,
+                                           height,
+                                           width,
+                                           heading,
+                                           pitch,
+                                           roll,
+                                           pos.GetX(),
+                                           pos.GetY(),
+                                           pos.GetZ(),
+                                           pos.GetHRoad());
+                    }
+
+                    if (rdistance < SMALL_NUMBER)
+                    {
+                        // inter-distance is zero, treat as outline
+                        Outline*     outline            = new Outline(ids, Outline::FillType::FILL_TYPE_UNDEFINED, true);
+                        const double max_segment_length = 10.0;
+
+                        // find smallest value of length and rlength, but between SMALL_NUMBER and max_segment_length
+                        double segment_length = max_segment_length;
+                        if (length > SMALL_NUMBER && length < segment_length)
+                        {
+                            segment_length = length;
+                        }
+                        if (rlength > SMALL_NUMBER && rlength < segment_length)
+                        {
+                            segment_length = rlength;
+                        }
+
+                        unsigned int n_segments = static_cast<int>((MAX(1.0, rlength / segment_length)));
+
+                        // Create outline polygon, visiting corners counter clockwise
+                        for (unsigned int i = 0; i < 2; i++)
+                        {
+                            for (unsigned int j = 0; j < n_segments + 1; j++)
+                            {
+                                double       factor  = static_cast<double>((i == 0 ? j : (n_segments - j))) / n_segments;
+                                const double min_dim = 0.05;
+                                double       w_start = rwidthStart;
+                                double       w_end   = rwidthEnd;
+                                double       h_start = rheightStart;
+                                double       h_end   = rheightEnd;
+
+                                if (w_start < SMALL_NUMBER && w_end < SMALL_NUMBER)
+                                {
+                                    w_start = w_end = min_dim;
+                                }
+                                if (h_start < SMALL_NUMBER && h_end < SMALL_NUMBER)
+                                {
+                                    h_start = h_end = min_dim;
+                                }
+
+                                double         w_local = w_start + factor * (w_end - w_start);
+                                OutlineCorner* corner =
+                                    (OutlineCorner*)(new OutlineCornerRoad(r->GetId(),
+                                                                           rs + factor * rlength,
+                                                                           rtStart + factor * (rtEnd - rtStart) + (i == 0 ? -w_local : w_local),
+                                                                           rzOffsetStart + factor * (rzOffsetEnd - rzOffsetStart),
+                                                                           h_start + factor * (h_end - h_start),
+                                                                           s,
+                                                                           t,
+                                                                           heading));
+
+                                outline->AddCorner(corner);
+                            }
+                        }
+                        obj->AddOutline(outline);
+                    }
+
+                    // Always add the repeat object, even if treated as outline - in case 3D model should be used in visualization
+                    Repeat* repeat = new Repeat(rs, rlength, rdistance, rtStart, rtEnd, rheightStart, rheightEnd, rzOffsetStart, rzOffsetEnd);
+                    Repeats.push_back(repeat);
+
+                    if (fabs(rwidthStart) > SMALL_NUMBER)
+                        repeat->SetWidthStart(rwidthStart);
+                    if (fabs(rwidthEnd) > SMALL_NUMBER)
+                        repeat->SetWidthEnd(rwidthEnd);
+                    if (fabs(rlengthStart) > SMALL_NUMBER)
+                        repeat->SetLengthStart(rlengthStart);
+                    if (fabs(rlengthEnd) > SMALL_NUMBER)
+                        repeat->SetLengthEnd(rlengthEnd);
+
+                    if (fabs(rradiusStart) > SMALL_NUMBER)
+                        printf("Attribute object/repeat/radiusStart not supported yet\n");
+                    if (fabs(rradiusEnd) > SMALL_NUMBER)
+                        printf("Attribute object/repeat/radiusEnd not supported yet\n");
+                }
+
+                if (obj == nullptr)
+                {
+                    // create object with position of the object main element
+                    pos.SetTrackPos(rid, s, t);
+
+                    obj = new RMObject(s,
+                                       t,
+                                       ids,
+                                       name,
+                                       orientation,
+                                       z_offset,
+                                       type,
+                                       length,
+                                       height,
+                                       width,
+                                       heading,
+                                       pitch,
+                                       roll,
+                                       pos.GetX(),
+                                       pos.GetY(),
+                                       pos.GetZ(),
+                                       pos.GetHRoad());
+                }
 
                 if (Repeats.size() > 0)
                 {

@@ -105,6 +105,9 @@
                 <repeat s="180" length="50" distance="0.0" tStart="-5.0" tEnd="-5.0" heightStart="1.5" heightEnd="1.5" zOffsetStart="0.0" zOffsetEnd="0.0"/>
             </object>
             <object type="obstacle" name="cone-100" id="7" s="180" t="4"/>
+            <object type="barrier" length="5.0" hdg="0.0" orientation="none" id="8">
+                <repeat heightStart="0.1" heightEnd="4.0" widthStart="2.5" widthEnd="0.5" zOffsetEnd="0.0" zOffsetStart="0.0" tStart="15.0" tEnd="40.0" length="55" s="200.0"/>
+            </object>
         </objects>        
         <signals/>
         <surface/>

@@ -1876,6 +1876,10 @@ namespace roadmanager
         {
             return s_;
         }
+        void SetS(double s)
+        {
+            s_ = s;
+        }
         double GetT() const
         {
             return t_;
