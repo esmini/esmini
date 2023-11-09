@@ -9873,9 +9873,12 @@ double Position::GetT() const
 
 double Position::GetOffset() const
 {
-    if (rel_pos_ && rel_pos_ != this && type_ == PositionType::RELATIVE_ROAD)
+    if (rel_pos_ && rel_pos_ != this && type_ == PositionType::RELATIVE_LANE)
     {
-        return rel_pos_->GetOffset() + offset_;
+        if (GetDirectionMode() == DirectionMode::ALONG_LANE)
+        {
+            return rel_pos_->GetDrivingDirectionRelativeRoad() * offset_;
+        }
     }
 
     return offset_;

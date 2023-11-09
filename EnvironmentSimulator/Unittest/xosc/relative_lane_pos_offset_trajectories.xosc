@@ -1,0 +1,670 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSCENARIO>
+    <FileHeader revMajor="1" revMinor="1" date="2023-10-10T10:00:00" description="Exercise RelativeLanePosition variations" author="esmini team"/>
+    <ParameterDeclarations>
+        <ParameterDeclaration name="EgoSpeed" parameterType="double" value="${110.0/3.6}"/>
+    </ParameterDeclarations>
+    <CatalogLocations>
+        <VehicleCatalog>
+            <Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
+        </VehicleCatalog>
+    </CatalogLocations>
+    <RoadNetwork>
+        <LogicFile filepath="../xodr/straight_highway_500m.xodr"/>
+    </RoadNetwork>
+    <Entities>
+        <ScenarioObject name="Ego">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="Target">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>
+        </ScenarioObject>
+    </Entities>
+    <Storyboard>
+        <Init>
+            <Actions>
+                <Private entityRef="Ego">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="0" laneId="-2" s="30.0" offset="0.0"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="linear" dynamicsDimension="time" value="0.0"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="$EgoSpeed"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Target">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <RelativeLanePosition entityRef="Ego" dLane="1" dsLane="-20.0" offset="0.0"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="linear" dynamicsDimension="time" value="0.0"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="${1.5 * $EgoSpeed}"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                </Private>
+            </Actions>
+        </Init>
+        <Story name="story">
+            <Act name="MyAct">
+                <ManeuverGroup maximumExecutionCount="1" name="TargetManeuverGroup">
+                    <Actors selectTriggeringEntities="false">
+                        <EntityRef entityRef="Target"/>
+                    </Actors>
+                    <Maneuver name="TargetManeuver">
+                        <Event name="LaneChangeEvent1" priority="overwrite" maximumExecutionCount="1">
+                            <Action name="LaneChangeAction1">
+                                <PrivateAction>
+                                    <RoutingAction>
+                                        <FollowTrajectoryAction>
+                                            <TrajectoryRef>
+                                                <Trajectory name="LaneChangeTrajectory1" closed="false">
+                                                    <ParameterDeclarations/>
+                                                    <Shape>
+                                                        <Polyline>
+                                                            <Vertex>
+                                                                <Position>
+                                                                    <RelativeLanePosition entityRef="Target" dsLane="0.0" offset="0.0" dLane="0"/>
+                                                                </Position>
+                                                            </Vertex>
+                                                            <Vertex>
+                                                                <Position>
+                                                                    <RelativeLanePosition entityRef="Target" dsLane="10.0" offset="0.0" dLane="0"/>
+                                                                </Position>
+                                                            </Vertex>
+                                                            <Vertex>
+                                                                <Position>
+                                                                    <RelativeLanePosition entityRef="Target" dsLane="60.0" offset="-3.5" dLane="0"/>
+                                                                </Position>
+                                                            </Vertex>
+                                                            <Vertex>
+                                                                <Position>
+                                                                    <RelativeLanePosition entityRef="Target" dsLane="70.0" offset="-3.5" dLane="0"/>
+                                                                </Position>
+                                                            </Vertex>
+                                                        </Polyline>
+                                                    </Shape>
+                                                </Trajectory>
+                                            </TrajectoryRef>
+                                            <TimeReference>
+                                                <None/>
+                                            </TimeReference>
+                                            <TrajectoryFollowingMode followingMode="position"/>
+                                        </FollowTrajectoryAction>
+                                    </RoutingAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="LaneChangeTrigger1" delay="0.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="1.0" rule="greaterThan"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event name="TeleportEvent2" priority="overwrite" maximumExecutionCount="1">
+                            <Action name="TeleportAction2">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <RelativeLanePosition entityRef="Ego" dLane="-1" dsLane="-3.0" offset="0.0"/>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="TeleportTrigger2" delay="1.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <StoryboardElementStateCondition storyboardElementType="event" storyboardElementRef="LaneChangeEvent1" state="completeState"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>                        
+                        </Event>
+                        <Event name="LaneChangeEvent2" priority="overwrite" maximumExecutionCount="1">
+                            <Action name="LaneChangeAction2">
+                                <PrivateAction>
+                                    <RoutingAction>
+                                        <FollowTrajectoryAction>
+                                            <TrajectoryRef>
+                                                <Trajectory name="LaneChangeTrajectory2" closed="false">
+                                                    <ParameterDeclarations/>
+                                                    <Shape>
+                                                        <Polyline>
+                                                            <Vertex>
+                                                                <Position>
+                                                                    <RelativeLanePosition entityRef="Target" dsLane="0.0" offset="0.0" dLane="0"/>
+                                                                </Position>
+                                                            </Vertex>
+                                                            <Vertex>
+                                                                <Position>
+                                                                    <RelativeLanePosition entityRef="Target" dsLane="10.0" offset="0.0" dLane="0"/>
+                                                                </Position>
+                                                            </Vertex>
+                                                            <Vertex>
+                                                                <Position>
+                                                                    <RelativeLanePosition entityRef="Target" dsLane="60.0" offset="3.5" dLane="0"/>
+                                                                </Position>
+                                                            </Vertex>
+                                                            <Vertex>
+                                                                <Position>
+                                                                    <RelativeLanePosition entityRef="Target" dsLane="70.0" offset="3.5" dLane="0"/>
+                                                                </Position>
+                                                            </Vertex>
+                                                        </Polyline>
+                                                    </Shape>
+                                                </Trajectory>
+                                            </TrajectoryRef>
+                                            <TimeReference>
+                                                <None/>
+                                            </TimeReference>
+                                            <TrajectoryFollowingMode followingMode="position"/>
+                                        </FollowTrajectoryAction>
+                                    </RoutingAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="LaneChangeTrigger2" delay="0.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <StoryboardElementStateCondition storyboardElementType="event" storyboardElementRef="TeleportEvent2" state="completeState"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event name="TeleportEvent3" priority="overwrite" maximumExecutionCount="1">
+                            <Action name="TeleportAction3">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <RelativeLanePosition entityRef="Ego" dLane="1" ds="-3.0" offset="0.0"/>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="TeleportTrigger3" delay="1.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <StoryboardElementStateCondition storyboardElementType="event" storyboardElementRef="LaneChangeEvent2" state="completeState"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>                        
+                        </Event>                        
+                        <Event name="LaneChangeEvent3" priority="overwrite" maximumExecutionCount="1">
+                            <Action name="LaneChangeAction3">
+                                <PrivateAction>
+                                    <RoutingAction>
+                                        <FollowTrajectoryAction>
+                                            <TrajectoryRef>
+                                                <Trajectory name="LaneChangeTrajectory3" closed="false">
+                                                    <ParameterDeclarations/>
+                                                    <Shape>
+                                                        <Polyline>
+                                                            <Vertex>
+                                                                <Position>
+                                                                    <RelativeLanePosition entityRef="Target" ds="0.0" offset="0.0" dLane="0"/>
+                                                                </Position>
+                                                            </Vertex>
+                                                            <Vertex>
+                                                                <Position>
+                                                                    <RelativeLanePosition entityRef="Target" ds="10.0" offset="0.0" dLane="0"/>
+                                                                </Position>
+                                                            </Vertex>
+                                                            <Vertex>
+                                                                <Position>
+                                                                    <RelativeLanePosition entityRef="Target" ds="60.0" offset="-3.5" dLane="0"/>
+                                                                </Position>
+                                                            </Vertex>
+                                                            <Vertex>
+                                                                <Position>
+                                                                    <RelativeLanePosition entityRef="Target" ds="70.0" offset="-3.5" dLane="0"/>
+                                                                </Position>
+                                                            </Vertex>
+                                                        </Polyline>
+                                                    </Shape>
+                                                </Trajectory>
+                                            </TrajectoryRef>
+                                            <TimeReference>
+                                                <None/>
+                                            </TimeReference>
+                                            <TrajectoryFollowingMode followingMode="position"/>
+                                        </FollowTrajectoryAction>
+                                    </RoutingAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="LaneChangeTrigger3" delay="0.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <StoryboardElementStateCondition storyboardElementType="event" storyboardElementRef="TeleportEvent3" state="completeState"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event name="TeleportEvent4" priority="overwrite" maximumExecutionCount="1">
+                            <Action name="TeleportAction4">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <RelativeLanePosition entityRef="Ego" dLane="-1" dsLane="-3.0" offset="0.0"/>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="TeleportTrigger4" delay="1.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <StoryboardElementStateCondition storyboardElementType="event" storyboardElementRef="LaneChangeEvent3" state="completeState"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>                        
+                        </Event>                             
+                        <Event name="LaneChangeEvent4" priority="overwrite" maximumExecutionCount="1">
+                            <Action name="LaneChangeAction4">
+                                <PrivateAction>
+                                    <RoutingAction>
+                                        <FollowTrajectoryAction>
+                                            <TrajectoryRef>
+                                                <Trajectory name="LaneChangeTrajectory4" closed="false">
+                                                    <ParameterDeclarations/>
+                                                    <Shape>
+                                                        <Polyline>
+                                                            <Vertex>
+                                                                <Position>
+                                                                    <RelativeLanePosition entityRef="Target" ds="0.0" offset="0.0" dLane="0"/>
+                                                                </Position>
+                                                            </Vertex>
+                                                            <Vertex>
+                                                                <Position>
+                                                                    <RelativeLanePosition entityRef="Target" ds="10.0" offset="0.0" dLane="0"/>
+                                                                </Position>
+                                                            </Vertex>
+                                                            <Vertex>
+                                                                <Position>
+                                                                    <RelativeLanePosition entityRef="Target" ds="60.0" offset="3.5" dLane="0"/>
+                                                                </Position>
+                                                            </Vertex>
+                                                            <Vertex>
+                                                                <Position>
+                                                                    <RelativeLanePosition entityRef="Target" ds="70.0" offset="3.5" dLane="0"/>
+                                                                </Position>
+                                                            </Vertex>
+                                                        </Polyline>
+                                                    </Shape>
+                                                </Trajectory>
+                                            </TrajectoryRef>
+                                            <TimeReference>
+                                                <None/>
+                                            </TimeReference>
+                                            <TrajectoryFollowingMode followingMode="position"/>
+                                        </FollowTrajectoryAction>
+                                    </RoutingAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="LaneChangeTrigger4" delay="0.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <StoryboardElementStateCondition storyboardElementType="event" storyboardElementRef="TeleportEvent4" state="completeState"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event name="TeleportEvent5" priority="overwrite" maximumExecutionCount="1">
+                            <Action name="TeleportAction5">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <RelativeLanePosition entityRef="Ego" dLane="1" dsLane="-3.0" offset="0.0"/>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="TeleportTrigger5" delay="0.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <StoryboardElementStateCondition storyboardElementType="event" storyboardElementRef="ChangeSideEvent" state="completeState"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>                        
+                        </Event>                             
+                        <Event name="LaneChangeEvent5" priority="overwrite" maximumExecutionCount="1">
+                            <Action name="LaneChangeAction5">
+                                <PrivateAction>
+                                    <RoutingAction>
+                                        <FollowTrajectoryAction>
+                                            <TrajectoryRef>
+                                                <Trajectory name="LaneChangeTrajectory5" closed="false">
+                                                    <ParameterDeclarations/>
+                                                    <Shape>
+                                                        <Polyline>
+                                                            <Vertex>
+                                                                <Position>
+                                                                    <RelativeLanePosition entityRef="Target" dsLane="0.0" offset="0.0" dLane="0"/>
+                                                                </Position>
+                                                            </Vertex>
+                                                            <Vertex>
+                                                                <Position>
+                                                                    <RelativeLanePosition entityRef="Target" dsLane="10.0" offset="0.0" dLane="0"/>
+                                                                </Position>
+                                                            </Vertex>
+                                                            <Vertex>
+                                                                <Position>
+                                                                    <RelativeLanePosition entityRef="Target" dsLane="60.0" offset="-3.5" dLane="0"/>
+                                                                </Position>
+                                                            </Vertex>
+                                                            <Vertex>
+                                                                <Position>
+                                                                    <RelativeLanePosition entityRef="Target" dsLane="70.0" offset="-3.5" dLane="0"/>
+                                                                </Position>
+                                                            </Vertex>
+                                                        </Polyline>
+                                                    </Shape>
+                                                </Trajectory>
+                                            </TrajectoryRef>
+                                            <TimeReference>
+                                                <None/>
+                                            </TimeReference>
+                                            <TrajectoryFollowingMode followingMode="position"/>
+                                        </FollowTrajectoryAction>
+                                    </RoutingAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="LaneChangeTrigger5" delay="0.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <StoryboardElementStateCondition storyboardElementType="event" storyboardElementRef="TeleportEvent5" state="completeState"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event name="TeleportEvent6" priority="overwrite" maximumExecutionCount="1">
+                            <Action name="TeleportAction6">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <RelativeLanePosition entityRef="Ego" dLane="-1" dsLane="-3.0" offset="0.0"/>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="TeleportTrigger6" delay="1.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <StoryboardElementStateCondition storyboardElementType="event" storyboardElementRef="LaneChangeEvent5" state="completeState"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>                        
+                        </Event>                               
+                        <Event name="LaneChangeEvent6" priority="overwrite" maximumExecutionCount="1">
+                            <Action name="LaneChangeAction6">
+                                <PrivateAction>
+                                    <RoutingAction>
+                                        <FollowTrajectoryAction>
+                                            <TrajectoryRef>
+                                                <Trajectory name="LaneChangeTrajectory6" closed="false">
+                                                    <ParameterDeclarations/>
+                                                    <Shape>
+                                                        <Polyline>
+                                                            <Vertex>
+                                                                <Position>
+                                                                    <RelativeLanePosition entityRef="Target" dsLane="0.0" offset="0.0" dLane="0"/>
+                                                                </Position>
+                                                            </Vertex>
+                                                            <Vertex>
+                                                                <Position>
+                                                                    <RelativeLanePosition entityRef="Target" dsLane="10.0" offset="0.0" dLane="0"/>
+                                                                </Position>
+                                                            </Vertex>
+                                                            <Vertex>
+                                                                <Position>
+                                                                    <RelativeLanePosition entityRef="Target" dsLane="60.0" offset="3.5" dLane="0"/>
+                                                                </Position>
+                                                            </Vertex>
+                                                            <Vertex>
+                                                                <Position>
+                                                                    <RelativeLanePosition entityRef="Target" dsLane="70.0" offset="3.5" dLane="0"/>
+                                                                </Position>
+                                                            </Vertex>
+                                                        </Polyline>
+                                                    </Shape>
+                                                </Trajectory>
+                                            </TrajectoryRef>
+                                            <TimeReference>
+                                                <None/>
+                                            </TimeReference>
+                                            <TrajectoryFollowingMode followingMode="position"/>
+                                        </FollowTrajectoryAction>
+                                    </RoutingAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="LaneChangeTrigger6" delay="0.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <StoryboardElementStateCondition storyboardElementType="event" storyboardElementRef="TeleportEvent6" state="completeState"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event name="TeleportEvent7" priority="overwrite" maximumExecutionCount="1">
+                            <Action name="TeleportAction7">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <RelativeLanePosition entityRef="Ego" dLane="-1" ds="3.0" offset="0.0"/>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="TeleportTrigger7" delay="1.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <StoryboardElementStateCondition storyboardElementType="event" storyboardElementRef="LaneChangeEvent6" state="completeState"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>                        
+                        </Event>                         
+                        <Event name="LaneChangeEvent7" priority="overwrite" maximumExecutionCount="1">
+                            <Action name="LaneChangeAction7">
+                                <PrivateAction>
+                                    <RoutingAction>
+                                        <FollowTrajectoryAction>
+                                            <TrajectoryRef>
+                                                <Trajectory name="LaneChangeTrajectory7" closed="false">
+                                                    <ParameterDeclarations/>
+                                                    <Shape>
+                                                        <Polyline>
+                                                            <Vertex>
+                                                                <Position>
+                                                                    <RelativeLanePosition entityRef="Target" ds="0.0" offset="0.0" dLane="0"/>
+                                                                </Position>
+                                                            </Vertex>
+                                                            <Vertex>
+                                                                <Position>
+                                                                    <RelativeLanePosition entityRef="Target" ds="-3.0" offset="0.0" dLane="0"/>
+                                                                </Position>
+                                                            </Vertex>
+                                                            <Vertex>
+                                                                <Position>
+                                                                    <RelativeLanePosition entityRef="Target" ds="-60.0" offset="3.5" dLane="0"/>
+                                                                </Position>
+                                                            </Vertex>
+                                                            <Vertex>
+                                                                <Position>
+                                                                    <RelativeLanePosition entityRef="Target" ds="-70.0" offset="3.5" dLane="0"/>
+                                                                </Position>
+                                                            </Vertex>
+                                                        </Polyline>
+                                                    </Shape>
+                                                </Trajectory>
+                                            </TrajectoryRef>
+                                            <TimeReference>
+                                                <None/>
+                                            </TimeReference>
+                                            <TrajectoryFollowingMode followingMode="position"/>
+                                        </FollowTrajectoryAction>
+                                    </RoutingAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="LaneChangeTrigger7" delay="0.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <StoryboardElementStateCondition storyboardElementType="event" storyboardElementRef="TeleportEvent7" state="completeState"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event name="TeleportEvent8" priority="overwrite" maximumExecutionCount="1">
+                            <Action name="TeleportAction8">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <RelativeLanePosition entityRef="Ego" dLane="1" ds="3.0" offset="0.0"/>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="TeleportTrigger8" delay="1.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <StoryboardElementStateCondition storyboardElementType="event" storyboardElementRef="LaneChangeEvent7" state="completeState"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>                        
+                        </Event>                         
+                        <Event name="LaneChangeEvent8" priority="overwrite" maximumExecutionCount="1">
+                            <Action name="LaneChangeAction8">
+                                <PrivateAction>
+                                    <RoutingAction>
+                                        <FollowTrajectoryAction>
+                                            <TrajectoryRef>
+                                                <Trajectory name="LaneChangeTrajectory8" closed="false">
+                                                    <ParameterDeclarations/>
+                                                    <Shape>
+                                                        <Polyline>
+                                                            <Vertex>
+                                                                <Position>
+                                                                    <RelativeLanePosition entityRef="Target" ds="0.0" offset="0.0" dLane="0"/>
+                                                                </Position>
+                                                            </Vertex>
+                                                            <Vertex>
+                                                                <Position>
+                                                                    <RelativeLanePosition entityRef="Target" ds="-3.0" offset="0.0" dLane="0"/>
+                                                                </Position>
+                                                            </Vertex>
+                                                            <Vertex>
+                                                                <Position>
+                                                                    <RelativeLanePosition entityRef="Target" ds="-60.0" offset="-3.5" dLane="0"/>
+                                                                </Position>
+                                                            </Vertex>
+                                                            <Vertex>
+                                                                <Position>
+                                                                    <RelativeLanePosition entityRef="Target" ds="-70.0" offset="-3.5" dLane="0"/>
+                                                                </Position>
+                                                            </Vertex>
+                                                        </Polyline>
+                                                    </Shape>
+                                                </Trajectory>
+                                            </TrajectoryRef>
+                                            <TimeReference>
+                                                <None/>
+                                            </TimeReference>
+                                            <TrajectoryFollowingMode followingMode="position"/>
+                                        </FollowTrajectoryAction>
+                                    </RoutingAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="LaneChangeTrigger8" delay="0.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <StoryboardElementStateCondition storyboardElementType="event" storyboardElementRef="TeleportEvent8" state="completeState"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                    </Maneuver>
+                </ManeuverGroup>
+                <ManeuverGroup maximumExecutionCount="1" name="EgoManeuverGroup">
+                    <Actors selectTriggeringEntities="false">
+                        <EntityRef entityRef="Ego"/>
+                    </Actors>
+                    <Maneuver name="EgoManeuver">
+                        <Event name="ChangeSideEvent" priority="overwrite" maximumExecutionCount="1">
+                            <Action name="ChangeSideAction">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <LanePosition roadId="0" laneId="2" s="470.0" offset="0.0"/>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="ChangeSideTrigger" delay="1.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <StoryboardElementStateCondition storyboardElementType="event" storyboardElementRef="LaneChangeEvent4" state="completeState"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                    </Maneuver>
+                </ManeuverGroup>
+            </Act>
+        </Story>
+        <StopTrigger>
+            <ConditionGroup>
+                <Condition name="StopTrigger" delay="1.0" conditionEdge="none">
+                    <ByValueCondition>
+                        <StoryboardElementStateCondition storyboardElementType="event" storyboardElementRef="LaneChangeEvent8" state="completeState"/>
+                    </ByValueCondition>
+                </Condition>
+            </ConditionGroup>
+        </StopTrigger>
+    </Storyboard>
+</OpenSCENARIO>
