@@ -400,8 +400,30 @@ Below is a bit more flexible variant:
 include::{src-local-root}/{file}[]
 ----
 
+=== Initialize esmini by flexible argument list
+
+Instead of using the limited `SE_Init()` function you can pass any arguments using `SE_InitWithArgs()`
+
+:file: EnvironmentSimulator/code-examples/hello_world/init_by_args.py
+.link:{src-remote-root}/{file}[{file}]
+[source,python]
+----
+include::{src-local-root}/{file}[]
+----
+
+=== Forward command line arguments
+
+How to just forward any argument provided from command line:
+
+:file: EnvironmentSimulator/code-examples/hello_world/forward_cmd_args.py
+.link:{src-remote-root}/{file}[{file}]
+[source,python]
+----
+include::{src-local-root}/{file}[]
+----
+
 === Get object states
-Extend previous example to retrieve the state of all scenario objects
+How to retrieve the state of all scenario objects:
 
 :file: EnvironmentSimulator/code-examples/hello_world/get_states.py
 .link:{src-remote-root}/{file}[{file}]
