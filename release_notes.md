@@ -1,5 +1,24 @@
 ## esmini release notes
 
+### 2023-11-10 Version 2.33.1
+
+Updated behaviors:
+- Fix wrong t axis for offset in RelativeLanePosition with dsLane
+  - ds will alight s/t to road direction, dsLane will align s/t to lane direction
+  - for dsLane, negative offset will be right in lane direction and positive left
+
+Improvements and fixes:
+- Fix missing polyline length causing unintended trajectory loop
+- Improve continuous road objects ([issue #489](https://github.com/esmini/esmini/issues/489))
+  - model as 3D outline object instead of individual bounding boxes
+  - when 3D model is provided, individual objects are still populated
+  - OSI populated accordingly, as polygon vertices or bounding box
+- Add Python examples on how to initialize esmini with launch arguments
+  - [Initialize esmini by flexible argument list](https://esmini.github.io/#_initialize_esmini_by_flexible_argument_list)
+  - [Forward command line arguments](https://esmini.github.io/#_forward_command_line_arguments)
+- Add info on how to change fps with ffmpeg ([here](https://esmini.github.io/#_create_video_clip_of_a_scenario))
+- Add OSI UDP socket API to C# wrapper
+
 ### 2023-10-27 Version 2.33.0
 
 New features:
