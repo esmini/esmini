@@ -696,21 +696,21 @@ extern "C"
     when position is affected by API calls, e.g. updateObjectWorldPos(). Update operations represents when the
     position is updated implicitly by the scenarioengine, e.g. default controller moving a vehicle along the lane.
     @param object_id Id of the object
-    @param mode Bitmask combining values from roadmanager::PosMode enum
+    @param type Type of operations the setting applies to, according to SE_PositionModeType enum
+    @param mode Bitmask combining values from SE_PositionMode enum
     example: To set relative z and absolute roll: (SE_Z_REL | SE_R_ABS) or (7 | 12288) = (7 + 12288) = 12295
-    @param type Type of operations the setting applies to. SET (explicit set-functions) or UPDATE (updates by controllers),
     according to roadmanager::PosModeType
     */
-    SE_DLL_API void SE_SetObjectPositionMode(int object_id, int type, int mode);
+    SE_DLL_API void SE_SetObjectPositionMode(int object_id, SE_PositionModeType type, int mode);
 
     /**
     Set default alignment mode for SET or UPDATE operations. See roadmanager::Position::GetModeDefault() to find out
     what are the default modes.
     @param object_id Id of the object
-    @param type Type of operations the setting applies to. SET (explicit set-functions) or UPDATE (updates by controllers),
+    @param type Type of operations the setting applies to, according to SE_PositionModeType enum
     according to roadmanager::PosModeType
     */
-    SE_DLL_API void SE_SetObjectPositionModeDefault(int object_id, int type);
+    SE_DLL_API void SE_SetObjectPositionModeDefault(int object_id, SE_PositionModeType type);
 
     /**
             Add object with bounding box automatically adapted to 3D model (scale mode BB_TO_MODEL)

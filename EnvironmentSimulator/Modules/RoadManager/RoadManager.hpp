@@ -2823,7 +2823,7 @@ namespace roadmanager
         {
             SET    = 0,  // Used by explicit set functions
             UPDATE = 1,  // Used by controllers updating the position
-            INIT   = 2   // Indicate mode at initializatio, i.e. what components were set (ABS) and not (REL)
+            INIT   = 2   // Indicate mode at initialization, i.e. what components were set (ABS) and not (REL)
         };
 
         bool CheckBitsEqual(int input, int mask, int bits) const

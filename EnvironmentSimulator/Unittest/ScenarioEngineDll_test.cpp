@@ -3038,16 +3038,14 @@ TEST(ExternalController, TestPositionAlignment)
         if (test_index < 3)
         {
             SE_SetObjectPositionMode(0,
-
-                                     0,
+                                     SE_PositionModeType::SE_SET,
                                      SE_PositionMode::SE_H_ABS | SE_PositionMode::SE_Z_REL | SE_PositionMode::SE_P_REL | SE_PositionMode::SE_R_REL);
             SE_ReportObjectPos(0, 0, vehicleState.x, vehicleState.y, z_rel, vehicleState.h, p_rel, 0.0f);
         }
         else
         {
             SE_SetObjectPositionMode(0,
-
-                                     0,
+                                     SE_PositionModeType::SE_SET,
                                      SE_PositionMode::SE_H_ABS | SE_PositionMode::SE_Z_REL | SE_PositionMode::SE_P_ABS | SE_PositionMode::SE_R_REL);
             SE_ReportObjectPos(0, 0, vehicleState.x, vehicleState.y, 0.0f, vehicleState.h, 0.5f, 0.2f);
         }

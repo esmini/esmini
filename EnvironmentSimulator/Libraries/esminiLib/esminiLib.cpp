@@ -964,7 +964,7 @@ extern "C"
         return static_cast<float>(SE_getSimTimeStep(time_stamp, 0.001, 0.1));
     }
 
-    SE_DLL_API void SE_SetObjectPositionMode(int object_id, int type, int mode)
+    SE_DLL_API void SE_SetObjectPositionMode(int object_id, SE_PositionModeType type, int mode)
     {
         if (player != nullptr)
         {
@@ -978,7 +978,7 @@ extern "C"
         }
     }
 
-    SE_DLL_API void SE_SetObjectPositionModeDefault(int object_id, int type)
+    SE_DLL_API void SE_SetObjectPositionModeDefault(int object_id, SE_PositionModeType type)
     {
         if (player != nullptr)
         {
