@@ -5,7 +5,7 @@ int main(int argc, char* argv[])
 {
     const char*            filename = argc > 1 ? argv[1] : "../resources/xosc/cut-in_external.xosc";
     SE_ScenarioObjectState state;
-    float                  z = 0.0f;
+    double                 z = 0.0f;
 
     if (SE_Init(filename, 0, 1, 0, 0) != 0)
     {
@@ -14,7 +14,7 @@ int main(int argc, char* argv[])
 
     for (int i = 0; i < 500 && SE_GetQuitFlag() != 1; i++)
     {
-        SE_ReportObjectPos(SE_GetId(0), 0.0f, 8.0f, static_cast<float>(i), z, float(1.57 + 0.01 * i), 0.0f, 0.0f);
+        SE_ReportObjectPos(SE_GetId(0), 0.0f, 8.0f, static_cast<float>(i), static_cast<float>(z), float(1.57 + 0.01 * i), 0.0f, 0.0f);
 
         SE_Step();
 
@@ -26,11 +26,11 @@ int main(int argc, char* argv[])
                static_cast<double>(state.s),
                state.laneId,
                static_cast<double>(state.laneOffset),
-               state.z);
+               static_cast<double>(state.z));
 
         if (i == 100)
         {
-            z = 10.0f;
+            z = 10.0;
             printf("Release relative road alignment, set absolute z = %.2f\n", z);
             SE_SetObjectPositionMode(SE_GetId(0),
                                      SE_PositionModeType::SE_SET,
@@ -39,7 +39,7 @@ int main(int argc, char* argv[])
 
         if (i == 200)
         {
-            z = 0.0f;
+            z = 0.0;
             printf("Restore relative road alignment, set relative z = %.2f\n", z);
             SE_SetObjectPositionMode(SE_GetId(0),
                                      SE_PositionModeType::SE_SET,
