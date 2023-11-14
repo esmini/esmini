@@ -34,7 +34,7 @@ int main(int argc, char* argv[])
             printf("Release relative road alignment, set absolute z = %.2f\n", z);
             SE_SetObjectPositionMode(SE_GetId(0),
                                      SE_PositionModeType::SE_SET,
-                                     SE_PositionMode::SE_Z_ABS);  // release alignment to road surface
+                                     SE_PositionMode::SE_Z_ABS);  // release relative alignment to road surface
         }
 
         if (i == 200)
