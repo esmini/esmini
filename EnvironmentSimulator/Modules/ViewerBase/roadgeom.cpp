@@ -680,6 +680,9 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive* odr)
                             tex = tex_grass.get();
                         }
                         geom->getOrCreateStateSet()->setAttributeAndModes(materialGrass_.get());
+
+                        // Use PolygonOffset feature to avoid z-fighting with road surface
+                        geom->getOrCreateStateSet()->setAttributeAndModes(new osg::PolygonOffset(2.0, -1.0));
                     }
                     geom->setColorBinding(osg::Geometry::BIND_OVERALL);
 
