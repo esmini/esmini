@@ -1220,7 +1220,7 @@ roadmanager::RMTrajectory *ScenarioReader::parseTrajectory(pugi::xml_node node)
                 {
                     pugi::xml_node               posNode = segmentNode.child("PositionStart");
                     std::unique_ptr<OSCPosition> pos;
-                    roadmanager::Position *      rm_pos = nullptr;
+                    roadmanager::Position       *rm_pos = nullptr;
 
                     if (posNode)
                     {

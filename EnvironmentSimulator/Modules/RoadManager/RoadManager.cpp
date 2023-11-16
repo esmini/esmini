@@ -656,12 +656,12 @@ Spiral::Spiral(double s, double x, double y, double hdg, double length, double c
         // constant radius => clothoid is actually a line or an arc
         if (fabs(this->GetCurvStart()) < SMALL_NUMBER)  // Line
         {
-            line_ = Line(s, x, y, hdg, length);
+            line_          = Line(s, x, y, hdg, length);
             clothoid_type_ = LINE;
         }
         else  // Arc
         {
-            arc_ = Arc(s, x, y, hdg, length, curv_start);
+            arc_           = Arc(s, x, y, hdg, length, curv_start);
             clothoid_type_ = ARC;
         }
     }
@@ -11091,6 +11091,103 @@ double ClothoidSplineShape::GetDuration()
     return segments_.back().time_ - segments_.front().time_;
 }
 
+void ClothoidSplineShape::Freeze(Position* ref_pos)
+{
+    if (spirals_.size() > 0)
+    {
+        LOG("Freezing clothoid spline trajectory. Clothoid shape already existing. Clearing it.");
+        spirals_.clear();
+    }
+
+    for (size_t i = 0; i < segments_.size(); i++)
+    {
+        Segment* s = &segments_[i];
+
+        if (s->posStart_ != nullptr)
+        {
+            s->posStart_->ReleaseRelation();
+        }
+        else if (i > 0)
+        {
+            // Add a clothoid segment from end of last segment
+            s->posStart_ = new Position(segments_[i - 1].posEnd_);
+        }
+        else
+        {
+            // First segment, no start position specified, use reference position
+            s->posStart_ = new Position();
+            s->posStart_->SetInertiaPos(0.0, 0.0, 0.0, false);
+            s->posStart_->SetRelativePosition(ref_pos, Position::PositionType::RELATIVE_OBJECT);
+        }
+
+        double x = s->posStart_->GetX();
+        double y = s->posStart_->GetY();
+        double h = GetAngleInInterval2PI(s->posStart_->GetH() + s->h_offset_);
+
+        const roadmanager::Spiral spiral{0, x, y, h, s->length_, s->curvStart_, s->curvEnd_};
+        if (i < segments_.size() - 1 && segments_[i + 1].posStart_ != nullptr)
+        {
+            spiral.EvaluateDS(s->length_, &x, &y, &h);
+            x = segments_[i + 1].posStart_->GetX();
+            y = segments_[i + 1].posStart_->GetY();
+            h = segments_[i + 1].posStart_->GetH();
+        }
+        else
+        {
+            spiral.EvaluateDS(s->length_, &x, &y, &h);
+        }
+        s->posEnd_.SetInertiaPos(x, y, h);
+        spirals_.emplace_back(spiral);
+    }
+}
+
+void ClothoidSplineShape::CalculatePolyLine()
+{
+    // Create polyline placeholder representation
+    double stepLen = 1.0;
+    int    steps   = (int)(length_ / stepLen);
+    pline_.Reset(true);
+    TrajVertex v;
+
+    if (segments_.size() == 0)
+    {
+        LOG("Empty ClothoidSplineShape");
+        return;
+    }
+
+    size_t j          = 0;
+    double length_sum = 0;
+
+    for (size_t i = 0; i < steps + 1; i++)
+    {
+        if (i < steps)
+        {
+            if (i * stepLen > length_sum + segments_[j].length_)
+            {
+                // step segment
+                length_sum += segments_[j].length_;
+                j++;
+            }
+            EvaluateInternal(i * stepLen - length_sum, static_cast<int>(j), v);
+        }
+        else
+        {
+            // Add endpoint of last clothoid
+            EvaluateInternal(length_ - length_sum, static_cast<int>(spirals_.size() - 1), v);
+        }
+
+        // Resolve road coordinates to get elevation at point since the clothoid only provides 2D
+        Position pos;
+        pos.SetInertiaPos(v.x, v.y, v.h, true);
+        v.z = pos.GetZ();
+
+        v.param = v.s = i * stepLen;
+        v.time        = segments_.front().time_ + (i * stepLen / length_) * segments_.back().time_;
+
+        pline_.AddVertex(v);
+    }
+}
+
 int ClothoidSplineShape::EvaluateInternal(double s, int segment_idx, TrajVertex& pos)
 {
     spirals_[segment_idx].EvaluateDS(s, &pos.x, &pos.y, &pos.h);
@@ -11500,7 +11597,7 @@ void ClothoidShape::CalculatePolyLine()
             // calculate pitch
             if (i < steps)
             {
-                EvaluateInternal((double)i + mini_step, v_tmp);
+                EvaluateInternal(i * stepLen + mini_step, v_tmp);
             }
             else
             {
@@ -11518,7 +11615,7 @@ void ClothoidShape::CalculatePolyLine()
                 }
             }
         }
-        v.param = v.s = (double)i;
+        v.param = v.s = i * stepLen;
         v.time        = t_start_ + (i * stepLen / spiral_.GetLength()) * t_end_;
         v.interpolate = INTERPOLATE_HEADING | INTERPOLATE_PITCH | INTERPOLATE_ROLL;
 
@@ -12264,7 +12361,7 @@ std::string Route::getName() const
     return name_;
 }
 
-void RMTrajectory::Freeze(FollowingMode following_mode, double current_speed)
+void RMTrajectory::Freeze(FollowingMode following_mode, double current_speed, Position* ref_pos)
 {
     if (shape_->type_ == Shape::ShapeType::POLYLINE)
     {
@@ -12294,6 +12391,13 @@ void RMTrajectory::Freeze(FollowingMode following_mode, double current_speed)
         clothoid->spiral_.SetHdg(clothoid->pos_.GetH());
 
         clothoid->CalculatePolyLine();
+    }
+    else if (shape_->type_ == Shape::ShapeType::CLOTHOID_SPLINE)
+    {
+        ClothoidSplineShape* clothoid_spline = (ClothoidSplineShape*)shape_.get();
+
+        clothoid_spline->Freeze(ref_pos);
+        clothoid_spline->CalculatePolyLine();
     }
     else
     {

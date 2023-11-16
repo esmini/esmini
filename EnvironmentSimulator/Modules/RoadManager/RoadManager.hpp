@@ -4254,7 +4254,7 @@ namespace roadmanager
         {
         }
 
-        void   Freeze(FollowingMode following_mode, double current_speed);
+        void   Freeze(FollowingMode following_mode, double current_speed, Position *ref_pos = nullptr);
         double GetLength()
         {
             return shape_ ? shape_->GetLength() : 0.0;

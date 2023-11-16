@@ -312,7 +312,7 @@ void FollowTrajectoryAction::Start(double simTime, double dt)
 
     reverse_ = (object_->GetSpeed() < 0.0);
 
-    traj_->Freeze(following_mode_, object_->GetSpeed());
+    traj_->Freeze(following_mode_, object_->GetSpeed(), &object_->pos_);
     object_->pos_.SetTrajectory(traj_.get());
 
     object_->pos_.SetTrajectoryS(initialDistanceOffset_);
