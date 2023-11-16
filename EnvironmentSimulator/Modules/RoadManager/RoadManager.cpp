@@ -647,8 +647,7 @@ Spiral::Spiral(double s, double x, double y, double hdg, double length, double c
       y0_(0.0),
       h0_(0.0),
       s0_(0.0),
-      arc_(0),
-      line_(0)
+      clothoid_type_(CLOTHOID)
 {
     SetCDot((curv_end_ - curv_start_) / length_);
 
@@ -657,11 +656,13 @@ Spiral::Spiral(double s, double x, double y, double hdg, double length, double c
         // constant radius => clothoid is actually a line or an arc
         if (fabs(this->GetCurvStart()) < SMALL_NUMBER)  // Line
         {
-            line_ = new Line(s, x, y, hdg, length);
+            line_ = Line(s, x, y, hdg, length);
+            clothoid_type_ = LINE;
         }
         else  // Arc
         {
-            arc_ = new Arc(s, x, y, hdg, length, curv_start);
+            arc_ = Arc(s, x, y, hdg, length, curv_start);
+            clothoid_type_ = ARC;
         }
     }
     else
@@ -692,9 +693,9 @@ void Spiral::Print() const
         GetCurvStart(),
         GetCurvEnd(),
         GetLength(),
-        arc_ != 0    ? " - actually an Arc"
-        : line_ != 0 ? "- actually a Line"
-                     : "");
+        clothoid_type_ == ARC    ? " - actually an Arc"
+        : clothoid_type_ == LINE ? " - actually a Line"
+                                 : "");
 }
 
 void Spiral::EvaluateDS(double ds, double* x, double* y, double* h) const
@@ -703,13 +704,13 @@ void Spiral::EvaluateDS(double ds, double* x, double* y, double* h) const
 
     ds = MAX(MIN(ds, length_), 0.0);
 
-    if (line_ != 0)
+    if (clothoid_type_ == LINE)
     {
-        line_->EvaluateDS(ds, x, y, h);
+        line_.EvaluateDS(ds, x, y, h);
     }
-    else if (arc_ != 0)
+    else if (clothoid_type_ == ARC)
     {
-        arc_->EvaluateDS(ds, x, y, h);
+        arc_.EvaluateDS(ds, x, y, h);
     }
     else
     {
@@ -733,13 +734,13 @@ void Spiral::EvaluateDS(double ds, double* x, double* y, double* h) const
 
 double Spiral::EvaluateCurvatureDS(double ds) const
 {
-    if (line_ != 0)
+    if (clothoid_type_ == LINE)
     {
         return 0.0;
     }
-    else if (arc_ != 0)
+    else if (clothoid_type_ == ARC)
     {
-        return arc_->GetCurvature();
+        return arc_.GetCurvature();
     }
     else
     {
@@ -749,13 +750,13 @@ double Spiral::EvaluateCurvatureDS(double ds) const
 
 void Spiral::SetX(double x)
 {
-    if (line_ != 0)
+    if (clothoid_type_ == LINE)
     {
-        line_->SetX(x);
+        line_.SetX(x);
     }
-    else if (arc_ != 0)
+    else if (clothoid_type_ == ARC)
     {
-        arc_->SetX(x);
+        arc_.SetX(x);
     }
     else
     {
@@ -765,13 +766,13 @@ void Spiral::SetX(double x)
 
 void Spiral::SetY(double y)
 {
-    if (line_ != 0)
+    if (clothoid_type_ == LINE)
     {
-        line_->SetY(y);
+        line_.SetY(y);
     }
-    else if (arc_ != 0)
+    else if (clothoid_type_ == ARC)
     {
-        arc_->SetY(y);
+        arc_.SetY(y);
     }
     else
     {
@@ -781,13 +782,13 @@ void Spiral::SetY(double y)
 
 void Spiral::SetHdg(double h)
 {
-    if (line_ != 0)
+    if (clothoid_type_ == LINE)
     {
-        line_->SetHdg(h);
+        line_.SetHdg(h);
     }
-    else if (arc_ != 0)
+    else if (clothoid_type_ == ARC)
     {
-        arc_->SetHdg(h);
+        arc_.SetHdg(h);
     }
     else
     {
@@ -10967,6 +10968,134 @@ double PolyLineShape::GetDuration()
     }
 
     return vertex_.back().time_ - vertex_[0].time_;
+}
+
+ClothoidSplineShape::~ClothoidSplineShape()
+{
+    for (size_t i = 0; i < segments_.size(); i++)
+    {
+        if (segments_[i].posStart_ != nullptr)
+        {
+            delete segments_[i].posStart_;
+            segments_[i].posStart_ = nullptr;
+        }
+    }
+}
+
+void ClothoidSplineShape::AddSegment(Position* posStart, double curvStart, double curvEnd, double length, double h_offset, double time)
+{
+    length_ += length;
+
+    if (segments_.size() > 0)
+    {
+        if (std::isnan(curvStart))
+        {
+            curvStart = segments_.back().curvEnd_;
+            LOG("Start curvature of ClothoidSpline segment %d not specified, use end curvature from previous segment(%.2f)",
+                segments_.size(),
+                curvStart);
+        }
+    }
+    else
+    {
+        if (std::isnan(curvStart))
+        {
+            LOG("Start curvature of ClothoidSpline trajectory not specified, using default = 0.0");
+            curvStart = 0.0;
+        }
+    }
+
+    if (std::isnan(curvEnd))
+    {
+        LOG("End curvature of ClothoidSpline segment %d not specified, keep start curvature (%.2f)", segments_.size(), curvStart);
+        curvEnd = curvStart;
+    }
+
+    Position* pos = nullptr;
+
+    if (posStart != nullptr)
+    {
+        pos = new Position(*posStart);
+    }
+
+    segments_.emplace_back(pos, curvStart, curvEnd, length, h_offset, time);
+}
+
+int ClothoidSplineShape::Evaluate(double p, TrajectoryParamType ptype, TrajVertex& pos)
+{
+    int i = 0;
+
+    if (segments_.size() < 1)
+    {
+        LOG_AND_QUIT("You need to specify at least 1 segment in a ClothoidSpline shape");
+    }
+
+    if (ptype == TrajectoryParamType::TRAJ_PARAM_TYPE_S && p > pline_.GetVertex(-1)->s ||
+        ptype == TrajectoryParamType::TRAJ_PARAM_TYPE_TIME && p > pline_.GetVertex(-1)->time)
+    {
+        // End of trajectory
+        p = GetLength();
+        i = (int)segments_.size() - 1;
+    }
+    else
+    {
+        for (; i < segments_.size() - 1 && (ptype == TrajectoryParamType::TRAJ_PARAM_TYPE_S && pline_.vertex_[i + 1].s < p ||
+                                            ptype == TrajectoryParamType::TRAJ_PARAM_TYPE_TIME && pline_.vertex_[i + 1].time < p);
+             i++)
+            ;
+
+        if (ptype == TrajectoryParamType::TRAJ_PARAM_TYPE_TIME)
+        {
+            double dt = p - pline_.vertex_[i].time;
+
+            if (pline_.vertex_[i].acc < 0.0)
+            {
+                // Slowing down, check if need for early stop due to distance too short wrt time
+                double max_dt = -pline_.vertex_[i].speed / pline_.vertex_[i].acc;
+                dt            = MIN(dt, max_dt);
+            }
+
+            //  ds = v0 * t + 1/2 * acc * t^2
+            p = pline_.vertex_[i].s + dt * pline_.vertex_[i].speed + 0.5 * pline_.vertex_[i].acc * dt * dt;
+        }
+        else
+        {
+            p = p;
+        }
+    }
+
+    pline_.Evaluate(p, pos, i);
+
+    pos.s = p;
+
+    return 0;
+}
+
+double ClothoidSplineShape::GetStartTime()
+{
+    if (segments_.size() == 0)
+    {
+        return 0.0;
+    }
+
+    return segments_.front().time_;
+}
+
+double ClothoidSplineShape::GetDuration()
+{
+    if (segments_.size() == 0)
+    {
+        return 0.0;
+    }
+
+    return segments_.back().time_ - segments_.front().time_;
+}
+
+int ClothoidSplineShape::EvaluateInternal(double s, int segment_idx, TrajVertex& pos)
+{
+    spirals_[segment_idx].EvaluateDS(s, &pos.x, &pos.y, &pos.h);
+
+    return 0;
 }
 
 double NurbsShape::CoxDeBoor(double x, int i, int k, const std::vector<double>& t)

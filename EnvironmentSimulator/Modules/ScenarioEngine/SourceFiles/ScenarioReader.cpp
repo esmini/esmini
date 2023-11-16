@@ -1212,6 +1212,42 @@ roadmanager::RMTrajectory *ScenarioReader::parseTrajectory(pugi::xml_node node)
 
                 shape = clothoid;
             }
+            else if (shapeType == "ClothoidSpline")
+            {
+                roadmanager::ClothoidSplineShape *clothoidspline = new roadmanager::ClothoidSplineShape();
+
+                for (pugi::xml_node segmentNode = shapeNode.child("Segment"); segmentNode; segmentNode = segmentNode.next_sibling("Segment"))
+                {
+                    pugi::xml_node               posNode = segmentNode.child("PositionStart");
+                    std::unique_ptr<OSCPosition> pos;
+                    roadmanager::Position *      rm_pos = nullptr;
+
+                    if (posNode)
+                    {
+                        pos    = std::unique_ptr<OSCPosition>(parseOSCPosition(posNode));
+                        rm_pos = pos->GetRMPos();
+                    }
+
+                    double curvStart = std::nan("");  // default is to use end curvature of previous segment
+                    double curvEnd   = std::nan("");  // default is to use start curvature of current segment
+                    double length    = strtod(parameters.ReadAttribute(segmentNode, "length"));
+                    double h_offset  = strtod(parameters.ReadAttribute(segmentNode, "hOffset"));
+                    double time      = strtod(parameters.ReadAttribute(segmentNode, "time"));
+
+                    if (!segmentNode.attribute("curvStart").empty())
+                    {
+                        curvStart = strtod(parameters.ReadAttribute(segmentNode, "curvStart"));
+                    }
+
+                    if (!segmentNode.attribute("curvEnd").empty())
+                    {
+                        curvEnd = strtod(parameters.ReadAttribute(segmentNode, "curvEnd"));
+                    }
+
+                    clothoidspline->AddSegment(rm_pos, curvStart, curvEnd, length, h_offset, time);
+                }
+                shape = clothoidspline;
+            }
             else if (shapeType == "Nurbs")
             {
                 unsigned int order = static_cast<unsigned int>(strtoi(parameters.ReadAttribute(shapeNode, "order")));

@@ -261,22 +261,17 @@ namespace roadmanager
     class Spiral : public Geometry
     {
     public:
-        Spiral() : curv_start_(0.0), curv_end_(0.0), c_dot_(0.0), x0_(0.0), y0_(0.0), h0_(0.0), s0_(0.0), arc_(0), line_(0)
+        enum ClothoidType
+        {
+            CLOTHOID,
+            ARC,
+            LINE
+        };
+
+        Spiral() : curv_start_(0.0), curv_end_(0.0), c_dot_(0.0), x0_(0.0), y0_(0.0), h0_(0.0), s0_(0.0), clothoid_type_(CLOTHOID)
         {
         }
         Spiral(double s, double x, double y, double hdg, double length, double curv_start, double curv_end);
-
-        ~Spiral()
-        {
-            if (arc_)
-            {
-                delete arc_;
-            }
-            if (line_)
-            {
-                delete line_;
-            }
-        };
 
         double GetCurvStart() const
         {
@@ -333,8 +328,9 @@ namespace roadmanager
         void   SetY(double y);
         void   SetHdg(double h);
 
-        Arc  *arc_;
-        Line *line_;
+        ClothoidType clothoid_type_;
+        Arc          arc_;
+        Line         line_;
 
     private:
         double curv_start_;
@@ -4033,6 +4029,7 @@ namespace roadmanager
         {
             POLYLINE,
             CLOTHOID,
+            CLOTHOID_SPLINE,
             NURBS,
             SHAPE_TYPE_UNDEFINED
         } ShapeType;
@@ -4135,6 +4132,65 @@ namespace roadmanager
         roadmanager::Spiral spiral_;  // make use of the OpenDRIVE clothoid definition
         double              t_start_;
         double              t_end_;
+    };
+
+    class ClothoidSplineShape : public Shape
+    {
+    public:
+        class Segment
+        {
+        public:
+            Segment(Position *posStart, double curvStart, double curvEnd, double length, double h_offset, double time)
+                : curvStart_(curvStart),
+                  curvEnd_(curvEnd),
+                  length_(length),
+                  h_offset_(h_offset),
+                  time_(time)
+            {
+                if (posStart != nullptr)
+                {
+                    posStart_ = new Position(*posStart);
+                }
+                else
+                {
+                    posStart_ = nullptr;
+                }
+            }
+
+            Position *posStart_;
+            Position  posEnd_;
+            double    curvStart_;
+            double    curvEnd_;
+            double    length_;
+            double    h_offset_;
+            double    time_;
+        };
+
+        ClothoidSplineShape() : Shape(ShapeType::CLOTHOID_SPLINE)
+        {
+        }
+        ~ClothoidSplineShape();
+
+        void   AddSegment(Position *posStart, double curvStart, double curvEnd, double length, double h_offset, double time);
+        int    Evaluate(double p, TrajectoryParamType ptype, TrajVertex &pos);
+        int    EvaluateInternal(double s, int segment_idx, TrajVertex &pos);
+        void   CalculatePolyLine();
+        double GetLength()
+        {
+            return length_;
+        }
+        double GetStartTime();
+        double GetDuration();
+        void   Freeze(Position *ref_pos);
+        int    GetNumberOfSegments()
+        {
+            return static_cast<int>(segments_.size());
+        }
+
+    private:
+        std::vector<Segment>             segments_;
+        std::vector<roadmanager::Spiral> spirals_;  // make use of the OpenDRIVE clothoid definition
+        double                           length_ = 0.0;
     };
 
     /**
