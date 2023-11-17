@@ -1,5 +1,19 @@
 ## esmini release notes
 
+### 2023-11-17 Version 2.33.2
+
+New feature:
+- Add clothoid spline trajectory shape
+  - Enables sequence of clothoids in one trajectory
+  - Prototype implementation of OpenSCENARIO 1.3 feature candidate
+  - Example scenario: [lane-change_clothoid_spline_based_trajectory.xosc](https://github.com/esmini/esmini/blob/dev/resources/xosc/lane-change_clothoid_spline_based_trajectory.xosc)
+
+Improvements and fixes:
+- Fix graphics flickering of overlapping road, sidewalk, and grass areas
+- Identify bidirectional lane type as drivable
+- Fix wrong position mode setting in [Hello World external Ego example](https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/code-examples/hello_world/hw4_external_ego_control.cpp)
+
+
 ### 2023-11-10 Version 2.33.1
 
 Updated behaviors:
