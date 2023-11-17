@@ -26,10 +26,14 @@
 #include "CommonMini.hpp"
 #include "viewer.hpp"
 
-#define GEOM_TOLERANCE  (0.2 - SMALL_NUMBER)  // Minimum distance between two vertices along road s-axis
-#define TEXTURE_SCALE   0.5                   // Scale factor for asphalt and grass textures 1.0 means whole texture fits in 1 x 1 m square
-#define MAX_GEOM_ERROR  0.1                   // maximum distance from the 3D geometry to the OSI lines
-#define MAX_GEOM_LENGTH 50                    // maximum length of a road geometry mesh segment
+#define GEOM_TOLERANCE           (0.2 - SMALL_NUMBER)  // Minimum distance between two vertices along road s-axis
+#define TEXTURE_SCALE            0.5                   // Scale factor for asphalt and grass textures 1.0 means whole texture fits in 1 x 1 m square
+#define MAX_GEOM_ERROR           0.1                   // maximum distance from the 3D geometry to the OSI lines
+#define MAX_GEOM_LENGTH          50                    // maximum length of a road geometry mesh segment
+#define POLYGON_OFFSET_SIDEWALK  2.0
+#define POLYGON_OFFSET_ROADMARKS 1.0
+#define POLYGON_OFFSET_BORDER    -1.0
+#define POLYGON_OFFSET_GRASS     -2.0
 
 osg::ref_ptr<osg::Texture2D> RoadGeom::ReadTexture(std::string filename)
 {
@@ -87,7 +91,7 @@ void RoadGeom::AddRoadMarkGeom(osg::ref_ptr<osg::Vec3Array> vertices, osg::ref_p
     geom->setColorBinding(osg::Geometry::BIND_OVERALL);
 
     // Use PolygonOffset feature to avoid z-fighting with road surface
-    geom->getOrCreateStateSet()->setAttributeAndModes(new osg::PolygonOffset(-2.0, -1.0));
+    geom->getOrCreateStateSet()->setAttributeAndModes(new osg::PolygonOffset(-POLYGON_OFFSET_ROADMARKS, -SIGN(POLYGON_OFFSET_ROADMARKS)));
     osgUtil::SmoothingVisitor::smooth(*geom, 0.0);
 
     osg::ref_ptr<osg::Geode> geode = new osg::Geode;
@@ -665,12 +669,20 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive* odr)
                     {
                         geom->setColorArray(color_concrete.get());
                         geom->getOrCreateStateSet()->setAttributeAndModes(materialConcrete_.get());
+
+                        // Use PolygonOffset feature to avoid z-fighting with road surface
+                        geom->getOrCreateStateSet()->setAttributeAndModes(
+                            new osg::PolygonOffset(-POLYGON_OFFSET_SIDEWALK, -SIGN(POLYGON_OFFSET_SIDEWALK)));
                     }
                     else if (laneForMaterial->IsType(roadmanager::Lane::LaneType::LANE_TYPE_BORDER) && k != 1 &&
                              k != static_cast<unsigned int>(lsec->GetNumberOfLanes()) - 1)
                     {
                         geom->setColorArray(color_border_inner.get());
                         geom->getOrCreateStateSet()->setAttributeAndModes(materialBorderInner_.get());
+
+                        // Use PolygonOffset feature to avoid z-fighting with road surface
+                        geom->getOrCreateStateSet()->setAttributeAndModes(
+                            new osg::PolygonOffset(-POLYGON_OFFSET_BORDER, -SIGN(POLYGON_OFFSET_BORDER)));
                     }
                     else
                     {
@@ -682,7 +694,7 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive* odr)
                         geom->getOrCreateStateSet()->setAttributeAndModes(materialGrass_.get());
 
                         // Use PolygonOffset feature to avoid z-fighting with road surface
-                        geom->getOrCreateStateSet()->setAttributeAndModes(new osg::PolygonOffset(2.0, -1.0));
+                        geom->getOrCreateStateSet()->setAttributeAndModes(new osg::PolygonOffset(-POLYGON_OFFSET_GRASS, -SIGN(POLYGON_OFFSET_GRASS)));
                     }
                     geom->setColorBinding(osg::Geometry::BIND_OVERALL);
 
