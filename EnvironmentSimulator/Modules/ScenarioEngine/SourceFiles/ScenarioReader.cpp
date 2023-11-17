@@ -2880,7 +2880,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                             }
                             else
                             {
-                                LOG("Unexpected TimeReference element: %s, fallback to NONE", timingNode.name());
+                                LOG("Missing TimeReference child element, set to None");
                                 action_follow_trajectory->timing_domain_ = FollowTrajectoryAction::TimingDomain::NONE;
                             }
                         }
