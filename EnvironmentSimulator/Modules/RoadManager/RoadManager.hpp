@@ -843,9 +843,10 @@ namespace roadmanager
             LANE_TYPE_CURB            = (1 << 21),
             LANE_TYPE_CONNECTING_RAMP = (1 << 22),
             LANE_TYPE_REFERENCE_LINE  = (1 << 0),
-            LANE_TYPE_ANY_DRIVING     = LANE_TYPE_DRIVING | LANE_TYPE_ENTRY | LANE_TYPE_EXIT | LANE_TYPE_OFF_RAMP | LANE_TYPE_ON_RAMP,
-            LANE_TYPE_ANY_ROAD        = LANE_TYPE_ANY_DRIVING | LANE_TYPE_RESTRICTED | LANE_TYPE_STOP,
-            LANE_TYPE_ANY             = (-1)
+            LANE_TYPE_ANY_DRIVING =
+                LANE_TYPE_DRIVING | LANE_TYPE_ENTRY | LANE_TYPE_EXIT | LANE_TYPE_OFF_RAMP | LANE_TYPE_ON_RAMP | LANE_TYPE_BIDIRECTIONAL,
+            LANE_TYPE_ANY_ROAD = LANE_TYPE_ANY_DRIVING | LANE_TYPE_RESTRICTED | LANE_TYPE_STOP,
+            LANE_TYPE_ANY      = (-1)
         } LaneType;
 
         // Construct & Destruct

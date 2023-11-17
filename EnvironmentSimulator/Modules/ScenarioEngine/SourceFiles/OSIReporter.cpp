@@ -1131,11 +1131,12 @@ int OSIReporter::UpdateOSIIntersection()
                             static_cast<unsigned int>(incomming_road->GetDrivingLaneById(incomming_s_value, junctionlanelink->from_)->GetGlobalId()));
 
                         roadmanager::Lane *lane = connecting_road->GetDrivingLaneById(connecting_outgoing_s_value, junctionlanelink->to_);
-                        if (lane != nullptr)
+                        roadmanager::Lane *successor_lane =
+                            lane != nullptr ? outgoing_road->GetDrivingLaneById(outgoing_s_value, lane->GetLink(connecting_road_link_type)->GetId())
+                                            : nullptr;
+                        if (lane != nullptr && successor_lane != nullptr)
                         {
-                            laneparing->mutable_successor_lane_id()->set_value(static_cast<unsigned int>(
-                                outgoing_road->GetDrivingLaneById(outgoing_s_value, lane->GetLink(connecting_road_link_type)->GetId())
-                                    ->GetGlobalId()));
+                            laneparing->mutable_successor_lane_id()->set_value(static_cast<unsigned int>(successor_lane->GetGlobalId()));
                         }
                         else
                         {
