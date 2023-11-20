@@ -225,8 +225,15 @@ namespace OpenDRIVE
         [DllImport(LIB_NAME, EntryPoint = "RM_SetAlignModeZ")]
         public static extern void RM_SetAlignModeZ(int handle, int mode);
 
+        [DllImport(LIB_NAME, EntryPoint = "RM_SetSnapLaneTypes")]
+        /// <summary>Specify which lane types the position object snaps to (is aware of)</summary>
+        /// <param name="handle">Handle to the original position object.</param>
+        /// <parameter name="laneTypes">laneTypes A combination (bitmask) of lane types according to roadmanager::Lane::LaneType</parameter>
+        /// <return>0 if successful, -1 if not</return>
+        public static extern int SetSnapLaneTypes(int handle, int laneTypes);
+
         /// <summary>Controls whether to keep lane ID regardless of lateral position or snap to closest lane (default)</summary>
-        /// <param name="handle">Handle Handle to the original position object.</param>
+        /// <param name="handle">Handle to the original position object.</param>
         /// <param name="mode">True=keep lane False=Snap to closest (default)</param>
         /// <returns>Handle to new position object. -1 if unsuccessful.</returns>
         [DllImport(LIB_NAME, EntryPoint = "RM_SetLockOnLane")]

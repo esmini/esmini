@@ -13,7 +13,8 @@ if(NOT
     list(
         REMOVE_ITEM
         subdirectories
-        "osi-groundtruth-dyn")
+        "osi-groundtruth-dyn"
+        "rm-basic-cs")
 endif()
 
 # ############################### Building code-examples ###############################################################
@@ -26,9 +27,12 @@ foreach(
        STREQUAL
        "trig_lane_change"
        AND NOT
-           ${subdir}
-           STREQUAL
-           "osi-groundtruth-cs")
+           (${subdir}
+            STREQUAL
+            "osi-groundtruth-cs"
+            OR ${subdir}
+               STREQUAL
+               "rm-basic-cs"))
         add_subdirectory(${subdir})
         if(NOT
            ${subdir}

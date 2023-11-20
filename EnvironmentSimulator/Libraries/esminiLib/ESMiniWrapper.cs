@@ -302,11 +302,19 @@ namespace ESMini
         public static extern int SE_ReportObjectAngularAcc(int id, float timestamp, float h_acc, float p_acc, float r_acc);
 
         #endregion
+        [DllImport(LIB_NAME, EntryPoint = "SE_SetSnapLaneTypes")]
+        /// <summary>Specify which lane types the position object snaps to (is aware of)</summary>
+        /// <param name="object_id">Id of the object (not index, use GetId(index) to find out the id)</param>
+        /// <parameter name="laneTypes">laneTypes A combination (bitmask) of lane types according to roadmanager::Lane::LaneType</parameter>
+        /// <return>0 if successful, -1 if not</return>
+        public static extern int SE_SetSnapLaneTypes(int object_id, int laneTypes);
+
         [DllImport(LIB_NAME, EntryPoint = "SE_SetLockOnLane")]
         /// <summary>Controls whether to keep lane ID regardless of lateral position or snap to closest lane (default)</summary>
+        /// <param name="object_id">Id of the object (not index, use GetId(index) to find out the id)</param>
         /// <parameter name="mode">True=keep lane False=Snap to closest (default)</parameter>
         /// <return>0 if successful, -1 if not</return>
-        public static extern int SE_SetLockOnLane(int id, bool mode);
+        public static extern int SE_SetLockOnLane(int object_id, bool mode);
 
         [DllImport(LIB_NAME, EntryPoint = "SE_GetNumberOfObjects")]
         /// <summary>Get the number of entities in the current scenario</summary>
