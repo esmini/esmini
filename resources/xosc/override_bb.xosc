@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSCENARIO>
+    <FileHeader revMajor="1" revMinor="1" date="2020-10-04T10:00:00" description="Just put a vehicle on the road and drive" author="esmini team"/>
+    <ParameterDeclarations>
+        <ParameterDeclaration name="CarDimX" parameterType="double" value="5.0"/>
+        <ParameterDeclaration name="CarDimY" parameterType="double" value="2.0"/>
+    </ParameterDeclarations>
+    <CatalogLocations>
+        <VehicleCatalog>
+            <Directory path="../xosc/Catalogs/Vehicles"/>
+        </VehicleCatalog>
+    </CatalogLocations>
+    <RoadNetwork>
+        <LogicFile filepath="../xodr/straight_500m.xodr"/>
+    </RoadNetwork>
+    <Entities>
+        <ScenarioObject name="Ego">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_blue">
+                <ParameterAssignments>
+                    <ParameterAssignment parameterRef="DimX" value="$CarDimX"/>
+                    <ParameterAssignment parameterRef="DimY" value="$CarDimY"/>
+                </ParameterAssignments>
+            </CatalogReference>
+        </ScenarioObject>
+    </Entities>
+    <Storyboard>
+        <Init>
+            <Actions>
+                <Private entityRef="Ego">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="1" laneId="-1" s="100.0" offset="0.0"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="linear" dynamicsDimension="time" value="0.0"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="${90.0/3.6}"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                </Private>
+            </Actions>
+        </Init>
+        <Story name="story">
+            <Act name="MyAct">
+                <ManeuverGroup maximumExecutionCount="1" name="MG">
+                    <Actors selectTriggeringEntities="false"/>
+                </ManeuverGroup>
+                <StartTrigger/>
+            </Act>
+        </Story>
+        <StopTrigger/>
+    </Storyboard>
+</OpenSCENARIO>
