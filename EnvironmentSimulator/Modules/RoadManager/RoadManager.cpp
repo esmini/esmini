@@ -414,6 +414,22 @@ int roadmanager::GetNewGlobalLaneBoundaryId()
     return returnvalue;
 }
 
+int roadmanager::GetRelativeLaneId(int lane_id, int offset)
+{
+    int result = lane_id + offset;
+
+    if (lane_id == 0 || offset == 0)
+    {
+        return result;
+    }
+    else if (result == 0 || SIGN(result) != SIGN(lane_id))
+    {
+        result += 1 * SIGN(offset);  // skip reference lane
+    }
+
+    return result;
+}
+
 int roadmanager::CheckOverlapingOSIPoints(OSIPoints* first_set, OSIPoints* second_set, double tolerance)
 {
     std::vector<double> distances;
@@ -9756,19 +9772,21 @@ int Position::GetLaneId() const
                 if (GetDirectionMode() == DirectionMode::ALONG_LANE)
                 {
                     // Consider road rule (left hand or right hand traffic)
-                    if ((IsAngleForward(rel_pos_->GetH()) && (rel_pos_->GetLaneId() < 0 && road->GetRule() == Road::RoadRule::RIGHT_HAND_TRAFFIC)) ||
-                        (!IsAngleForward(rel_pos_->GetH()) && (rel_pos_->GetLaneId() > 0 && road->GetRule() == Road::RoadRule::LEFT_HAND_TRAFFIC)))
+                    if ((IsAngleForward(rel_pos_->GetHRelative()) &&
+                         (rel_pos_->GetLaneId() < 0 && road->GetRule() == Road::RoadRule::RIGHT_HAND_TRAFFIC)) ||
+                        (!IsAngleForward(rel_pos_->GetHRelative()) &&
+                         (rel_pos_->GetLaneId() > 0 && road->GetRule() == Road::RoadRule::LEFT_HAND_TRAFFIC)))
                     {
-                        return rel_pos_->GetLaneId() + lane_id_;  // along road s axis
+                        return GetRelativeLaneId(rel_pos_->GetLaneId(), lane_id_);  // along road s axis
                     }
                     else
                     {
-                        return rel_pos_->GetLaneId() - lane_id_;  // opposite side
+                        return GetRelativeLaneId(rel_pos_->GetLaneId(), -lane_id_);  // opposite side
                     }
                 }
                 else
                 {
-                    return rel_pos_->GetLaneId() + lane_id_;  // do not consider driving direction
+                    return GetRelativeLaneId(rel_pos_->GetLaneId(), lane_id_);  // do not consider driving direction
                 }
             }
         }
@@ -9841,8 +9859,7 @@ double Position::GetS() const
             {
                 if (GetDirectionMode() == DirectionMode::ALONG_LANE)
                 {
-                    if ((IsAngleForward(rel_pos_->GetH()) && (rel_pos_->GetLaneId() < 0 && road->GetRule() == Road::RoadRule::RIGHT_HAND_TRAFFIC)) ||
-                        (!IsAngleForward(rel_pos_->GetH()) && (rel_pos_->GetLaneId() > 0 && road->GetRule() == Road::RoadRule::LEFT_HAND_TRAFFIC)))
+                    if (IsAngleForward(rel_pos_->GetHRelative()))
                     {
                         return rel_pos_->GetS() + s_;  // along s
                     }
@@ -10024,7 +10041,21 @@ double Position::GetH() const
         {
             // Lane coordinate system not fully implemented yet. For now relate heading to the
             // driving direction of current lane, also considering road rule (right/left hand traffic)
-            return h_ + GetHRoadInDrivingDirection();
+            if (GetDirectionMode() == DirectionMode::ALONG_LANE)
+            {
+                if (IsAngleForward(rel_pos_->GetHRelative()))
+                {
+                    return h_ + GetRoadH();
+                }
+                else
+                {
+                    return GetAngleInInterval2PI(h_ + M_PI + GetRoadH());
+                }
+            }
+            else
+            {
+                return h_ + GetHRoadInDrivingDirection();
+            }
         }
     }
     else
@@ -11791,73 +11822,76 @@ Position::ReturnCode Position::SetRouteS(double route_s)
 void Position::ReleaseRelation()
 {
     // Fetch values and then disconnect
-    double       x      = GetX();
-    double       y      = GetY();
-    double       z      = GetZ();
-    int          roadId = GetTrackId();
-    int          laneId = GetLaneId();
-    double       s      = GetS();
-    double       t      = GetT();
-    double       offset = GetOffset();
-    double       p      = GetP();
-    double       r      = GetR();
-    double       h      = GetH();
-    double       hAbs   = h_;
-    double       hRel   = h_relative_;
-    double       pAbs   = p_;
-    double       rAbs   = r_;
-    PositionType type   = type_;
+    double       x       = GetX();
+    double       y       = GetY();
+    double       z       = GetZ();
+    int          roadId  = GetTrackId();
+    int          laneId  = GetLaneId();
+    double       s       = GetS();
+    double       t       = GetT();
+    double       offset  = GetOffset();
+    double       p       = GetP();
+    double       r       = GetR();
+    double       h       = GetH();
+    PositionType type    = type_;
+    Position*    rel_pos = GetRelativePosition();
 
     SetRelativePosition(0, PositionType::NORMAL);
 
-    if (type == Position::PositionType::RELATIVE_ROAD)
+    if (type == Position::PositionType::RELATIVE_LANE || type == Position::PositionType::RELATIVE_ROAD)
     {
-        // Resolve requested position
-        SetTrackPos(roadId, s, t);
+        // First find target position from reference entity by
+        roadmanager::Road* road = Position::GetOpenDrive()->GetRoadById(roadId);
+        if (road != nullptr && (s > road->GetLength() || s < 0))
+        {
+            // New position is outside current road. Resolve it, starting at s-value of the related base position
+            if (type == Position::PositionType::RELATIVE_LANE)
+            {
+                SetLanePos(roadId, laneId, rel_pos->GetS(), offset);
+            }
+            else
+            {
+                SetTrackPos(roadId, rel_pos->GetS(), t);
+            }
 
-        if (s - GetS() > SMALL_NUMBER)
-        {
-            // passed end of road - move remaining distance
-            MoveAlongS(s - GetS());
-        }
-        else if (s < 0)
-        {
-            // passed start of road - move backwards remaining distance
-            MoveAlongS(s);
-        }
-
-        if (orientation_type_ == OrientationType::ORIENTATION_ABSOLUTE)
-        {
-            SetHeading(hAbs);
-            SetPitch(pAbs);
-            SetRoll(rAbs);
-        }
-    }
-    else if (type == Position::PositionType::RELATIVE_LANE)
-    {
-        SetLanePos(roadId, laneId, s, offset);
-
-        if (s - GetS() > SMALL_NUMBER)
-        {
-            // passed end of road - move remaining distance
-            MoveAlongS(s - GetS());
-        }
-        else if (s < 0)
-        {
-            // passed start of road - move backwards remaining distance
-            MoveAlongS(s);
-        }
-
-        if (orientation_type_ == OrientationType::ORIENTATION_RELATIVE)
-        {
-            SetHeadingRelative(GetAngleSum(hRel, GetDrivingDirectionRelativeRoad() < 0 ? M_PI : 0.0));
+            if (s > road->GetLength())
+            {
+                // passed end of road - move remaining distance
+                MoveAlongS(s - s_);
+            }
+            else if (s < 0)
+            {
+                // passed start of road - move backwards remaining distance
+                MoveAlongS(s_ - s);
+            }
         }
         else
         {
-            SetHeading(hAbs);
-            SetPitch(pAbs);
-            SetRoll(rAbs);
+            if (type == Position::PositionType::RELATIVE_LANE)
+            {
+                SetLanePos(roadId, laneId, s, offset);
+            }
+            else
+            {
+                SetTrackPos(roadId, s, t);
+            }
         }
+
+        // Now when road orientation is known, set and update orientation of the position object
+        if (orientation_type_ == OrientationType::ORIENTATION_RELATIVE)
+        {
+            if (type == Position::PositionType::RELATIVE_LANE)
+            {
+                // check directionmode, coming from the choice of ds or dsLane
+                // ds -> s is along road, dsLane -> s is along road
+                if (GetDirectionMode() == Position::DirectionMode::ALONG_LANE)
+                {
+                    SetHeadingRelative(GetAngleSum(GetHRelative(), GetDrivingDirectionRelativeRoad() < 0 ? M_PI : 0.0));
+                }
+            }
+        }
+
+        EvaluateZHPR();
     }
     else if (type == PositionType::RELATIVE_OBJECT || type == PositionType::RELATIVE_WORLD)
     {

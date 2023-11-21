@@ -124,12 +124,12 @@
                                                         </Vertex>
                                                         <Vertex time="2">
                                                             <Position>
-                                                                <RelativeLanePosition dLane="1" ds="60" entityRef="Target" offset="2"/>
+                                                                <RelativeLanePosition dLane="1" ds="60" entityRef="Target" offset="0.465"/>
                                                             </Position>
                                                         </Vertex>
                                                         <Vertex time="4">
                                                             <Position>
-                                                                <RelativeLanePosition dLane="1" ds="110" entityRef="Target" offset="2"/>
+                                                                <RelativeLanePosition dLane="1" ds="110" entityRef="Target" offset="0.465"/>
                                                             </Position>
                                                         </Vertex>
                                                         <Vertex time="6">
@@ -219,17 +219,17 @@
                                                         </ControlPoint>
                                                         <ControlPoint time="6.7" weight="0.7">
                                                             <Position>
-                                                                <RelativeLanePosition dLane="-2" ds="100" entityRef="Target" offset="-10.0"/>
+                                                                <RelativeLanePosition dLane="-1" ds="100" entityRef="Target" offset="-10.0"/>
                                                             </Position>
                                                         </ControlPoint>
                                                         <ControlPoint time="9.7" weight="1.0">
                                                             <Position>
-                                                                <RelativeLanePosition dLane="-1" ds="180" entityRef="Target" offset="0.0"/>
+                                                                <RelativeLanePosition dLane="-1" ds="180" entityRef="Target" offset="1.535"/>
                                                             </Position>
                                                         </ControlPoint>                                                        
                                                         <ControlPoint time="12.2" weight="1.0">
                                                             <Position>
-                                                                <RelativeLanePosition dLane="-2" ds="220" entityRef="Target" offset="0.0"/>
+                                                                <RelativeLanePosition dLane="-1" ds="220" entityRef="Target" offset="0.0"/>
                                                             </Position>
                                                         </ControlPoint>                                                        
                                                         <Knot value="0.0" />

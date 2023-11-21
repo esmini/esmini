@@ -1545,9 +1545,18 @@ int ScenarioReader::parseEntities()
 
 void ScenarioReader::parseOSCOrientation(OSCOrientation &orientation, pugi::xml_node orientationNode)
 {
-    orientation.h_ = strtod(parameters.ReadAttribute(orientationNode, "h"));
-    orientation.p_ = strtod(parameters.ReadAttribute(orientationNode, "p"));
-    orientation.r_ = strtod(parameters.ReadAttribute(orientationNode, "r"));
+    if (!(orientationNode.attribute("h").empty()))
+    {
+        orientation.h_ = strtod(parameters.ReadAttribute(orientationNode, "h"));
+    }
+    if (!(orientationNode.attribute("p").empty()))
+    {
+        orientation.p_ = strtod(parameters.ReadAttribute(orientationNode, "p"));
+    }
+    if (!(orientationNode.attribute("r").empty()))
+    {
+        orientation.r_ = strtod(parameters.ReadAttribute(orientationNode, "r"));
+    }
 
     std::string type_str = parameters.ReadAttribute(orientationNode, "type");
 

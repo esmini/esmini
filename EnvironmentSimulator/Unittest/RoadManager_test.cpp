@@ -2589,6 +2589,63 @@ TEST(PositionModeTest, TestModeBitmasks)
     odr->Clear();
 }
 
+TEST(PositionModeTest, TestPositionTypes)
+{
+    ASSERT_EQ(roadmanager::Position::LoadOpenDrive("../../../EnvironmentSimulator/Unittest/xodr/straight_500_superelevation_elevation_curve.xodr"),
+              true);
+    roadmanager::OpenDrive *odr = Position::GetOpenDrive();
+    ASSERT_NE(odr, nullptr);
+
+    EXPECT_EQ(odr->GetNumOfRoads(), 1);
+
+    Road *road = odr->GetRoadByIdx(0);
+    EXPECT_EQ(road->GetId(), 1);
+
+    Position pos0;
+    Position pos1;
+    // Place car
+    pos0.SetLanePos(1, -1, 300.0, 0.0);
+    pos1.SetHeadingRelative(M_PI);
+    pos1.SetLanePos(1, 1, 300.0, 0.0);
+
+    EXPECT_NEAR(pos0.GetX(), 14.329, 1e-3);
+    EXPECT_NEAR(pos0.GetY(), 200.519, 1e-3);
+    EXPECT_NEAR(pos0.GetZ(), 10.0, 1e-3);
+    EXPECT_NEAR(pos0.GetH(), 3.0, 1e-3);
+    EXPECT_NEAR(pos0.GetP(), 5.992, 1e-3);
+    EXPECT_NEAR(pos0.GetR(), 0.0, 1e-3);
+
+    EXPECT_NEAR(pos1.GetX(), 13.895, 1e-3);
+    EXPECT_NEAR(pos1.GetY(), 197.480, 1e-3);
+    EXPECT_NEAR(pos1.GetZ(), 10.0, 1e-3);
+    EXPECT_NEAR(pos1.GetH(), 6.142, 1e-3);
+    EXPECT_NEAR(pos1.GetP(), 0.291, 1e-3);
+    EXPECT_NEAR(pos1.GetR(), 6.283, 1e-3);
+
+    odr->Clear();
+}
+
+TEST(LaneId, TestRelativeLaneIdCalculation)
+{
+    EXPECT_EQ(GetRelativeLaneId(0, 0), 0);
+    EXPECT_EQ(GetRelativeLaneId(0, 1), 1);
+    EXPECT_EQ(GetRelativeLaneId(0, 5), 5);
+    EXPECT_EQ(GetRelativeLaneId(1, 0), 1);
+    EXPECT_EQ(GetRelativeLaneId(4, 0), 4);
+    EXPECT_EQ(GetRelativeLaneId(-1, 0), -1);
+    EXPECT_EQ(GetRelativeLaneId(-3, 0), -3);
+    EXPECT_EQ(GetRelativeLaneId(0, -1), -1);
+    EXPECT_EQ(GetRelativeLaneId(0, -6), -6);
+    EXPECT_EQ(GetRelativeLaneId(-1, -1), -2);
+    EXPECT_EQ(GetRelativeLaneId(-5, -5), -10);
+    EXPECT_EQ(GetRelativeLaneId(1, 1), 2);
+    EXPECT_EQ(GetRelativeLaneId(5, 3), 8);
+    EXPECT_EQ(GetRelativeLaneId(-1, 2), 2);
+    EXPECT_EQ(GetRelativeLaneId(-3, 6), 4);
+    EXPECT_EQ(GetRelativeLaneId(1, -5), -5);
+    EXPECT_EQ(GetRelativeLaneId(3, -5), -3);
+}
+
 // Uncomment to print log output to console
 // #define LOG_TO_CONSOLE
 

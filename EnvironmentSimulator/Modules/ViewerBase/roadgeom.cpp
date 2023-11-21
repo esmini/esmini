@@ -272,6 +272,9 @@ int RoadGeom::AddRoadMarks(roadmanager::Lane* lane, osg::Group* parent)
                     for (size_t q = 0; q < osi_points.size(); q++)
                     {
                         // Find offset points of solid roadmark at each OSI point
+                        // each line has two points, beginning and end
+                        // from each point one left and one right point will be calculated based on width of marking
+                        // l1 is current line, l0 is previous
 
                         if (q < osi_points.size() - 1)
                         {

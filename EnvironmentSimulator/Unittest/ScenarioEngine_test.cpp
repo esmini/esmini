@@ -2415,6 +2415,74 @@ TEST(PositionTest, TestPositionMode)
     delete se;
 }
 
+TEST(PositionTest, TestPositionTypes)
+{
+    double dt = 0.1;
+
+    ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/position_types.xosc");
+    ASSERT_NE(se, nullptr);
+
+    se->step(0.0);
+    se->prepareGroundTruth(0.0);
+    scenarioengine::Entities* entities = &se->entities_;
+
+    ASSERT_NE(entities, nullptr);
+
+    EXPECT_EQ(entities->object_.size(), 8);
+    EXPECT_EQ(entities->object_[0]->GetName(), "Car0");
+    EXPECT_EQ(entities->object_[1]->GetName(), "Car1");
+    EXPECT_EQ(entities->object_[2]->GetName(), "Car2");
+    EXPECT_EQ(entities->object_[3]->GetName(), "Car3");
+
+    // Check lane position in lane along s-axis
+    EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 14.329, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetY(), 200.519, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetZ(), 10.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[0]->pos_.GetH(), 3.0), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[0]->pos_.GetP(), 5.991), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[0]->pos_.GetR(), 0.0), 0.0, 1E-3);
+
+    // Check lane position in opposite lane
+    EXPECT_NEAR(entities->object_[1]->pos_.GetX(), 9.006, 1E-3);
+    EXPECT_NEAR(entities->object_[1]->pos_.GetY(), 198.052, 1E-3);
+    EXPECT_NEAR(entities->object_[1]->pos_.GetZ(), 11.495, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[1]->pos_.GetH(), 6.192), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[1]->pos_.GetP(), 0.289), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[1]->pos_.GetR(), 6.283), 0.0, 1E-3);
+
+    // Check relative lane position in lane along s-axis
+    EXPECT_NEAR(entities->object_[2]->pos_.GetX(), entities->object_[0]->pos_.GetX(), 1E-3);
+    EXPECT_NEAR(entities->object_[2]->pos_.GetY(), entities->object_[0]->pos_.GetY(), 1E-3);
+    EXPECT_NEAR(entities->object_[2]->pos_.GetZ(), entities->object_[0]->pos_.GetZ(), 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[2]->pos_.GetH(), entities->object_[0]->pos_.GetH()), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[2]->pos_.GetP(), entities->object_[0]->pos_.GetP()), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[2]->pos_.GetR(), entities->object_[0]->pos_.GetR()), 0.0, 1E-3);
+
+    // Check relative lane position in opposite lane
+    EXPECT_NEAR(entities->object_[3]->pos_.GetX(), entities->object_[1]->pos_.GetX(), 1E-3);
+    EXPECT_NEAR(entities->object_[3]->pos_.GetY(), entities->object_[1]->pos_.GetY(), 1E-3);
+    EXPECT_NEAR(entities->object_[3]->pos_.GetZ(), entities->object_[1]->pos_.GetZ(), 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[3]->pos_.GetH(), entities->object_[1]->pos_.GetH()), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[3]->pos_.GetP(), entities->object_[1]->pos_.GetP()), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[3]->pos_.GetR(), entities->object_[1]->pos_.GetR()), 0.0, 1E-3);
+
+    // Check corresponding variants with RoadPosition instead of LanePosition
+    for (unsigned int i = 0; i < 4; i++)
+    {
+        EXPECT_NEAR(entities->object_[4 + i]->pos_.GetX(), entities->object_[i]->pos_.GetX(), 1E-3);
+        EXPECT_NEAR(entities->object_[4 + i]->pos_.GetY(), entities->object_[i]->pos_.GetY(), 1E-3);
+        EXPECT_NEAR(entities->object_[4 + i]->pos_.GetZ(), entities->object_[i]->pos_.GetZ(), 1E-3);
+        EXPECT_NEAR(GetAngleDifference(entities->object_[4 + i]->pos_.GetH(), entities->object_[i]->pos_.GetH()), 0.0, 1E-3);
+        EXPECT_NEAR(GetAngleDifference(entities->object_[4 + i]->pos_.GetP(), entities->object_[i]->pos_.GetP()), 0.0, 1E-3);
+        EXPECT_NEAR(GetAngleDifference(entities->object_[4 + i]->pos_.GetR(), entities->object_[i]->pos_.GetR()), 0.0, 1E-3);
+    }
+
+    se->step(dt);
+    se->prepareGroundTruth(dt);
+
+    delete se;
+}
+
 // Uncomment to print log output to console
 // #define LOG_TO_CONSOLE
 

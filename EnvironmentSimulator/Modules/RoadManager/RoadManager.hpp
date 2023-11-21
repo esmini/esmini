@@ -28,6 +28,14 @@ namespace roadmanager
     int GetNewGlobalLaneId();
     int GetNewGlobalLaneBoundaryId();
 
+    /**
+            Add offset to a laneId to find a relative landId considering reference lane 0
+            @param lane_id Start at this lane id
+            @param offset Move this number of lanes, direction based on road t-axis
+            @return target lane id
+    */
+    int GetRelativeLaneId(int lane_id, int offset);
+
     class Polynomial
     {
     public:
