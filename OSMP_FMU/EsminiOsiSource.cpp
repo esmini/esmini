@@ -131,6 +131,22 @@ void EsminiOsiSource::reset_fmi_sensor_view_out()
   integer_vars[FMI_INTEGER_SENSORVIEW_OUT_BASELO_IDX]=0;
 }
 
+void EsminiOsiSource::set_fmi_traffic_command_out(const osi3::TrafficCommand& data)
+{
+    data.SerializeToString(currentBuffer);
+    encode_pointer_to_integer(currentBuffer->data(),integer_vars[FMI_INTEGER_TRAFFICCOMMAND_OUT_BASEHI_IDX],integer_vars[FMI_INTEGER_TRAFFICCOMMAND_OUT_BASELO_IDX]);
+    integer_vars[FMI_INTEGER_TRAFFICCOMMAND_OUT_SIZE_IDX]=(fmi2Integer)currentBuffer->length();
+    normal_log("OSMP","Providing %08X %08X, writing from %p ...",integer_vars[FMI_INTEGER_TRAFFICCOMMAND_OUT_BASEHI_IDX],integer_vars[FMI_INTEGER_TRAFFICCOMMAND_OUT_BASELO_IDX],currentBuffer->data());
+    swap(currentBuffer,lastBuffer);
+}
+
+void EsminiOsiSource::reset_fmi_traffic_command_out()
+{
+    integer_vars[FMI_INTEGER_TRAFFICCOMMAND_OUT_SIZE_IDX]=0;
+    integer_vars[FMI_INTEGER_TRAFFICCOMMAND_OUT_BASEHI_IDX]=0;
+    integer_vars[FMI_INTEGER_TRAFFICCOMMAND_OUT_BASELO_IDX]=0;
+}
+
 /*
  * Actual Core Content
  */
@@ -257,6 +273,17 @@ fmi2Status EsminiOsiSource::doCalc(fmi2Real currentCommunicationPoint, fmi2Real 
   currentGT->CopyFrom(*se_osi_ground_truth);
 
   set_fmi_sensor_view_out(currentOut);
+
+  // Handle OSI TrafficCommand output
+  osi3::TrafficCommand traffic_command;
+  if (time > 20.0)
+  {
+      auto* test_action = traffic_command.add_action();
+      auto* speed_action = test_action->mutable_speed_action();
+      speed_action->set_absolute_target_speed(60.0 / 3.6);
+  }
+  set_fmi_traffic_command_out(traffic_command);
+
   set_fmi_valid(1);
   return fmi2OK;
 }
