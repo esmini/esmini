@@ -322,11 +322,13 @@ TEST(GetOSIRoadLaneTest, lane_no_obj)
     const char* Scenario_file = scenario_file.c_str();
 
     SE_Init(Scenario_file, 0, 0, 0, 0);
-    SE_OSIFileOpen("gt.osi");
+    SE_EnableOSIFile("gt.osi");
+
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
     EXPECT_EQ(fileStatus.st_size, 0);  // so far, nothing has been saved
 
     SE_StepDT(0.001f);
+    SE_UpdateOSIGroundTruth();
     SE_FlushOSIFile();
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
     EXPECT_EQ(fileStatus.st_size, 83642);  // initial OSI size, including static content
@@ -339,15 +341,18 @@ TEST(GetOSIRoadLaneTest, lane_no_obj)
     EXPECT_EQ(road_lane, nullptr);
 
     SE_StepDT(0.001f);  // Step for write another frame to osi file
+    SE_UpdateOSIGroundTruth();
     SE_FlushOSIFile();
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
     EXPECT_EQ(fileStatus.st_size, 84327);  // slight growth due to only dynamic updates
 
     SE_StepDT(0.001f);  // Step for write another frame to osi file
+    SE_UpdateOSIGroundTruth();
     SE_FlushOSIFile();
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
     EXPECT_EQ(fileStatus.st_size, 85013);  // slight growth due to only dynamic updates
 
+    SE_DisableOSIFile();
     SE_Close();
 }
 
@@ -688,12 +693,12 @@ TEST(OSIFile, writeosifile_two_step)
     const char*    Scenario_file = scenario_file.c_str();
     std::streamoff file_size1, file_size2;
 
+    SE_EnableOSIFile("");
     SE_Init(Scenario_file, 0, 0, 0, 0);
 
     SE_StepDT(0.001f);
     SE_UpdateOSIGroundTruth();
-    SE_OSIFileOpen(0);
-    SE_OSIFileWrite(true);
+    SE_FlushOSIFile();
 
     std::ifstream in_file("ground_truth.osi", std::ios::binary);
     in_file.seekg(0, std::ios::end);
@@ -702,24 +707,26 @@ TEST(OSIFile, writeosifile_two_step)
 
     SE_StepDT(0.001f);
     SE_UpdateOSIGroundTruth();
-    SE_OSIFileWrite(true);
+    SE_FlushOSIFile();
 
     in_file.seekg(0, std::ios::end);
     file_size2 = in_file.tellg();
     // std::cout <<"Size of the file at second step "<< file_size2 << " bytes" << std::endl;
 
     SE_Close();
+    SE_DisableOSIFile();
 
     EXPECT_LT(file_size1, file_size2);
+    EXPECT_GT(file_size1, file_size2 - file_size1);  // first package larger since including static stuff
 }
 
-TEST(OSIFile, writeosifile_no_init)
+TEST(OSIFile, updateosi_no_init)
 {
-    bool open  = SE_OSIFileOpen(0);
-    bool write = SE_OSIFileWrite();
+    SE_EnableOSIFile(0);
 
-    EXPECT_EQ(open, false);
-    EXPECT_EQ(write, false);
+    EXPECT_EQ(SE_UpdateOSIGroundTruth(), false);
+
+    SE_DisableOSIFile();
 }
 
 typedef struct
@@ -823,8 +830,8 @@ TEST(GroundTruthTests, check_GroundTruth_including_init_state)
     double                   x_vals[]      = {51.400, 51.600, 51.800};
     double                   time_stamps[] = {0.00, 0.01, 0.02};
 
+    SE_EnableOSIFile("gt.osi");
     ASSERT_EQ(SE_Init("../../../resources/xosc/cut-in_simple.xosc", 0, 0, 0, 0), 0);
-    SE_OSIFileOpen("gt.osi");
     SE_UpdateOSIGroundTruth();
 
     osi_gt_ptr = reinterpret_cast<const osi3::GroundTruth*>(SE_GetOSIGroundTruthRaw());
@@ -845,16 +852,163 @@ TEST(GroundTruthTests, check_GroundTruth_including_init_state)
         if (i < 2)  // skip step of the last round
         {
             SE_StepDT(0.01f);
+            SE_UpdateOSIGroundTruth();
+        }
+    }
+
+    SE_Close();
+    SE_DisableOSIFile();
+
+    ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
+    EXPECT_EQ(fileStatus.st_size, 7642);
+
+    // Read OSI file
+    FILE* file = FileOpen("gt.osi", "rb");
+    ASSERT_NE(file, nullptr);
+
+    const int max_msg_size = 10000;
+    int       msg_size;
+    char      msg_buf[max_msg_size];
+
+    for (int i = 0; i < 3; i++)
+    {
+        ASSERT_EQ(fread(reinterpret_cast<char*>(&msg_size), 1, sizeof(msg_size), file), sizeof(msg_size));
+
+        ASSERT_LE(msg_size, max_msg_size);
+        EXPECT_EQ(fread(msg_buf, 1, static_cast<size_t>(msg_size), file), msg_size);
+        osi_gt.ParseFromArray(msg_buf, msg_size);
+
+        EXPECT_EQ(osi_gt.mutable_moving_object()->size(), 2);
+        seconds = static_cast<double>(osi_gt.mutable_timestamp()->seconds()) + 1E-9 * static_cast<double>(osi_gt.mutable_timestamp()->nanos());
+        EXPECT_NEAR(seconds, time_stamps[i], 1E-5);
+        obj_x = osi_gt.mutable_moving_object(0)->mutable_base()->mutable_position()->x();
+        obj_y = osi_gt.mutable_moving_object(0)->mutable_base()->mutable_position()->y();
+        obj_z = osi_gt.mutable_moving_object(0)->mutable_base()->mutable_position()->z();
+        EXPECT_NEAR(obj_x, x_vals[i], 1E-5);
+        EXPECT_NEAR(obj_y, -1.535, 1E-5);
+        EXPECT_NEAR(obj_z, 0.75, 1E-5);
+    }
+
+    fclose(file);
+}
+
+TEST(GroundTruthTests, check_frequency_implicit)
+{
+    const osi3::GroundTruth* osi_gt_ptr;
+    osi3::GroundTruth        osi_gt;
+    struct stat              fileStatus;
+    double                   seconds       = 0.0, obj_x, obj_y, obj_z;
+    double                   x_vals[]      = {51.400, 51.800, 52.200};
+    double                   time_stamps[] = {0.00, 0.02, 0.04};
+
+    SE_EnableOSIFile("gt_implicit.osi");
+    ASSERT_EQ(SE_Init("../../../resources/xosc/cut-in_simple.xosc", 0, 0, 0, 0), 0);
+    SE_UpdateOSIGroundTruth();
+
+    osi_gt_ptr = reinterpret_cast<const osi3::GroundTruth*>(SE_GetOSIGroundTruthRaw());
+
+    for (int i = 0; i < 6; i++)
+    {
+        // Read OSI message, should be identical every two pair of frames - i/2 will result in 0, 0, 1, 1, 2, 2 and so on
+        EXPECT_EQ(osi_gt_ptr->moving_object().size(), 2);
+        seconds = static_cast<double>(osi_gt_ptr->timestamp().seconds()) + 1E-9 * static_cast<double>(osi_gt_ptr->timestamp().nanos());
+        EXPECT_NEAR(seconds, time_stamps[i / 2], 1E-5);
+        obj_x = osi_gt_ptr->moving_object(0).base().position().x();
+        obj_y = osi_gt_ptr->moving_object(0).base().position().y();
+        obj_z = osi_gt_ptr->moving_object(0).base().position().z();
+        EXPECT_NEAR(obj_x, x_vals[i / 2], 1E-5);
+        EXPECT_NEAR(obj_y, -1.535, 1E-5);
+        EXPECT_NEAR(obj_z, 0.75, 1E-5);
+        EXPECT_NEAR(osi_gt_ptr->moving_object(0).vehicle_attributes().bbcenter_to_rear().z(), -0.35, 1E-5);
+
+        if (i < 5)  // skip step of the last round
+        {
+            SE_StepDT(0.01f);
+            if ((i % 2) == 1)  // Update OSI every second time
+            {
+                SE_UpdateOSIGroundTruth();
+            }
+        }
+    }
+
+    SE_DisableOSIFile();
+    SE_Close();
+
+    ASSERT_EQ(stat("gt_implicit.osi", &fileStatus), 0);
+    EXPECT_EQ(fileStatus.st_size, 7642);
+
+    // Read OSI file
+    FILE* file = FileOpen("gt_implicit.osi", "rb");
+    ASSERT_NE(file, nullptr);
+
+    const int max_msg_size = 10000;
+    int       msg_size;
+    char      msg_buf[max_msg_size];
+
+    for (int i = 0; i < 3; i++)
+    {
+        ASSERT_EQ(fread(reinterpret_cast<char*>(&msg_size), 1, sizeof(msg_size), file), sizeof(msg_size));
+
+        ASSERT_LE(msg_size, max_msg_size);
+        EXPECT_EQ(fread(msg_buf, 1, static_cast<size_t>(msg_size), file), msg_size);
+        osi_gt.ParseFromArray(msg_buf, msg_size);
+
+        EXPECT_EQ(osi_gt.mutable_moving_object()->size(), 2);
+        seconds = static_cast<double>(osi_gt.mutable_timestamp()->seconds()) + 1E-9 * static_cast<double>(osi_gt.mutable_timestamp()->nanos());
+        EXPECT_NEAR(seconds, time_stamps[i], 1E-5);
+        obj_x = osi_gt.mutable_moving_object(0)->mutable_base()->mutable_position()->x();
+        obj_y = osi_gt.mutable_moving_object(0)->mutable_base()->mutable_position()->y();
+        obj_z = osi_gt.mutable_moving_object(0)->mutable_base()->mutable_position()->z();
+        EXPECT_NEAR(obj_x, x_vals[i], 1E-5);
+        EXPECT_NEAR(obj_y, -1.535, 1E-5);
+        EXPECT_NEAR(obj_z, 0.75, 1E-5);
+    }
+
+    fclose(file);
+}
+
+TEST(GroundTruthTests, check_frequency_explicit)
+{
+    const osi3::GroundTruth* osi_gt_ptr;
+    osi3::GroundTruth        osi_gt;
+    struct stat              fileStatus;
+    double                   seconds       = 0.0, obj_x, obj_y, obj_z;
+    double                   x_vals[]      = {51.400, 51.800, 52.200};
+    double                   time_stamps[] = {0.00, 0.02, 0.04};
+
+    const char* args[] = {"--osc", "../../../resources/xosc/cut-in_simple.xosc", "--headless", "--osi_file", "gt_explicit.osi", "--osi_freq", "2"};
+
+    ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
+
+    osi_gt_ptr = reinterpret_cast<const osi3::GroundTruth*>(SE_GetOSIGroundTruthRaw());
+
+    for (int i = 0; i < 6; i++)
+    {
+        // Read OSI message, should be identical every two pair of frames - i/2 will result in 0, 0, 1, 1, 2, 2 and so on
+        EXPECT_EQ(osi_gt_ptr->moving_object().size(), 2);
+        seconds = static_cast<double>(osi_gt_ptr->timestamp().seconds()) + 1E-9 * static_cast<double>(osi_gt_ptr->timestamp().nanos());
+        EXPECT_NEAR(seconds, time_stamps[i / 2], 1E-5);
+        obj_x = osi_gt_ptr->moving_object(0).base().position().x();
+        obj_y = osi_gt_ptr->moving_object(0).base().position().y();
+        obj_z = osi_gt_ptr->moving_object(0).base().position().z();
+        EXPECT_NEAR(obj_x, x_vals[i / 2], 1E-5);
+        EXPECT_NEAR(obj_y, -1.535, 1E-5);
+        EXPECT_NEAR(obj_z, 0.75, 1E-5);
+        EXPECT_NEAR(osi_gt_ptr->moving_object(0).vehicle_attributes().bbcenter_to_rear().z(), -0.35, 1E-5);
+
+        if (i < 5)  // skip step of the last round
+        {
+            SE_StepDT(0.01f);
         }
     }
 
     SE_Close();
 
-    ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 19870);
+    ASSERT_EQ(stat("gt_explicit.osi", &fileStatus), 0);
+    EXPECT_EQ(fileStatus.st_size, 7642);
 
     // Read OSI file
-    FILE* file = FileOpen("gt.osi", "rb");
+    FILE* file = FileOpen("gt_explicit.osi", "rb");
     ASSERT_NE(file, nullptr);
 
     const int max_msg_size = 10000;
@@ -3884,13 +4038,17 @@ TEST(ParamDistTest, TestRunAll)
         SE_Init(scenario_file.c_str(), 0, 0, 0, 1);
 
 #ifdef _USE_OSI
-        SE_OSIFileOpen("gt.osi");
+        SE_EnableOSIFile("gt.osi");
 #endif  // _USE_OSI
 
         for (int j = 0; j < 50 && SE_GetQuitFlag() == 0; j++)
         {
             SE_StepDT(0.1f);
         }
+
+#ifdef _USE_OSI
+        SE_DisableOSIFile();
+#endif  // _USE_OSI
 
         SE_Close();
     }
@@ -3928,16 +4086,14 @@ TEST(ParamDistTest, TestRunAll)
     do
     {
         SE_Init(scenario_file.c_str(), 0, 0, 0, 1);
-
-#ifdef _USE_OSI
-        SE_OSIFileOpen("gt.osi");
-#endif  // _USE_OSI
+        SE_EnableOSIFile("gt.osi");
 
         for (int j = 0; j < 50 && SE_GetQuitFlag() == 0; j++)
         {
             SE_StepDT(0.1f);
         }
 
+        SE_DisableOSIFile();
         SE_Close();
 
     } while (SE_GetPermutationIndex() < SE_GetNumberOfPermutations() - 1);

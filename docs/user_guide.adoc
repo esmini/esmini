@@ -2926,6 +2926,54 @@ Finally, to disable esmini image handling altogether and revert to OSG default h
 
 Note that disabling the this will permanently disable the callback mechanism for the complete esmini session (overriding any SE_SaveImagesToRAM() call).
 
+==== OSI data
+
+OSI data can be retrieved in three ways:
+
+. Storing OSI tracefile
+. Receive in UDP packages
+. Receive via API call
+
+===== OSI tracefile
+
+Call `SE_EnableOSIFile(filename)` in order to create a OSI tracefile. Specify custom filename or set 0 or "" to use default filename (currently "ground_truth.osi").
+
+===== OSI via UDP
+
+By launch argument `--osi_receiver_ip <ip addr>` you can have esmini sending OSI packeges in UDP frames. The socket port is hardcoded but can of course be changed in the code (OSI_OUT_PORT in https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Modules/ScenarioEngine/SourceFiles/OSIReporter.cpp)[OSIReporter.cpp]).
+
+See receiver side code example https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Applications/replayer/osi_receiver.cpp[osi_receiver.cpp].
+
+===== OSI data via API call
+
+Fetch OSI data by either one of the API calls:
+
+- `SE_GetOSIGroundTruthRaw()`
+- `SE_GetOSIGroundTruth(int* size)`
+
+The "raw" version will simply return a pointer to the already existing OSI data structure. No additional data copying will be performed. This is the preferered option if:
+
+1. The application is coded in C++, making the Protobuf data structures fully compatible
+2. The data is read before next call to `SE_UpdateOSIGroundTruth()`, which will update the data
+
+See code example: https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/code-examples/osi-groundtrut[osi-groundtruth], also covered in User guide - Hello world tutorial https://esmini.github.io/#_osi_groundtruth[OSI groundtruth].
+
+The second function will fetch the OSI data serialized into a string. This will be a true copy and also generic format which can be parsed in any environment, independent of OS and programming language. The backside is additional resources needed for the copying and serialization.
+
+See code examples in ScenarioEngineDLL test cases, e.g: https://github.com/esmini/esmini/blob/7d1249dc65883cb9eebb4a611ea401434b2b0e49/EnvironmentSimulator/Unittest/ScenarioEngineDll_test.cpp#L741-L786[receive_GroundTruth].
+
+[Note]
+====
+**Note:**
+
+`SE_UpdateOSIGroundTruth()` needs to be called after each SE_Step* in order to prepare and populate OSI data. This function will also save the OSI frame to file and send over UDP, if requested. Only after this preparation the SE_GetOSIGroundTruth* methods will get updated OSI data.
+
+An exception is when OSI file or UDP receiver is specified by corrsponding launch arguments `--osi_file [filename]` and `--osi_receiver_ip <ip addr>`. Then, OSI update will automatically be updated by esmini according to specified multiplier `--osi_freq <number>` (1 is default). For example, `--osi_freq 3` will update OSI every third step.
+
+The purpose of this explicit OSI update control is to support use cases where esmini is running at much higher frequency than needed for OSI data (e.g. for vehicle dynamics purposes). To optimize performance, OSI update can then be skipped most frames and only run when needed.
+
+BTW: Any additional explicit calls to `SE_UpdateOSIGroundTruth()` will be ignored. Which means that the programmer does not have to worry about additional performance penalty introduced by multiple calls to this function.
+====
 
 == Hello World programming tutorial
 include::../Hello-World_coding-example/tutorial.adoc[leveloffset=+1, lines=3..-1]

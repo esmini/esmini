@@ -203,14 +203,13 @@ void OSIReporter::ReportSensors(std::vector<ObjectSensor *> sensor)
 
 bool OSIReporter::OpenOSIFile(const char *filename)
 {
-    const char *f = (filename == 0 || !strcmp(filename, "")) ? DEFAULT_OSI_TRACE_FILENAME : filename;
-    osi_file.open(f, std::ios_base::binary);
+    osi_file.open(filename, std::ios_base::binary);
     if (!osi_file.good())
     {
-        LOG("Failed open OSI tracefile %s", f);
+        LOG("Failed open OSI tracefile %s", filename);
         return false;
     }
-    LOG("OSI tracefile %s opened", f);
+    LOG("OSI tracefile %s opened", filename);
     return true;
 }
 
@@ -263,9 +262,20 @@ int OSIReporter::ClearOSIGroundTruth()
 
 int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectState>> &objectState)
 {
-    if (osi_update_counter_ == 0)
+    if (GetUpdated() == true)
+    {
+        // already updated within this scenario frame, skip
+        return 0;
+    }
+
+    if (GetCounter() == 0)
     {
         UpdateOSIStaticGroundTruth(objectState);
+    }
+    else if (GetCounter() == 1)
+    {
+        // Clear the static data now when it has been reported once
+        ClearOSIGroundTruth();
     }
     UpdateOSIDynamicGroundTruth(objectState);
 
@@ -314,7 +324,9 @@ int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectSt
     {
         WriteOSIFile();
     }
-    osi_update_counter_++;
+
+    IncrementCounter();
+    SetUpdated(true);
 
     return 0;
 }

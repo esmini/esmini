@@ -60,7 +60,8 @@ ScenarioPlayer::ScenarioPlayer(int argc, char* argv[])
     launch_action_server = false;
     fixed_timestep_      = -1.0;
     osi_receiver_addr    = "";
-    osi_freq_            = 1;
+    osi_freq_            = 0;
+    osi_updated_         = false;
     CSV_Log              = NULL;
     osiReporter          = NULL;
     disable_controllers_ = false;
@@ -127,7 +128,19 @@ void ScenarioPlayer::SetOSIFileStatus(bool is_on, const char* filename)
     {
         if (is_on)
         {
-            osiReporter->OpenOSIFile(filename);
+            if (filename == nullptr || !strcmp(filename, ""))
+            {
+                filename = DEFAULT_OSI_TRACE_FILENAME;
+            }
+
+            if (OSCParameterDistribution::Inst().GetNumPermutations() > 0)
+            {
+                osiReporter->OpenOSIFile(OSCParameterDistribution::Inst().AddInfoToFilename(filename).c_str());
+            }
+            else
+            {
+                osiReporter->OpenOSIFile(filename);
+            }
         }
         else
         {
@@ -167,6 +180,9 @@ int ScenarioPlayer::Frame(double timestep_s)
 
     if (!IsPaused())
     {
+#ifdef _USE_OSI
+        osiReporter->SetUpdated(false);
+#endif
         scenarioEngine->mutex_.Lock();
         retval = ScenarioFrame(timestep_s, true);
 
@@ -281,16 +297,11 @@ void ScenarioPlayer::ScenarioPostFrame()
         osiReporter->ReportSensors(sensor);
 
         // Update OSI info
-        if (osiReporter->IsFileOpen() || osiReporter->GetUDPClientStatus() == 0)
+        if (osi_freq_ > 0)
         {
             if ((GetCounter() - 1) % osi_freq_ == 0)
             {
                 osiReporter->UpdateOSIGroundTruth(scenarioGateway->objectState_);
-                if (osiReporter->GetCounter() == 1)
-                {
-                    // Clear the static data now when it has been reported once
-                    osiReporter->ClearOSIGroundTruth();
-                }
             }
         }
     }
@@ -1547,18 +1558,32 @@ int ScenarioPlayer::Init()
     if (opt.GetOptionSet("osi_receiver_ip"))
     {
         osiReporter->OpenSocket(opt.GetOptionArg("osi_receiver_ip"));
+        if (osi_freq_ == 0)
+        {
+            osi_freq_ = 1;
+        }
     }
 
+    std::string osi_filename;
+    // First check arguments
     if (opt.GetOptionSet("osi_file"))
     {
-        std::string osi_filename = opt.GetOptionArg("osi_file");
-
-        if (dist.GetNumPermutations() > 0)
+        osi_filename = opt.GetOptionArg("osi_file");
+        if (osi_freq_ == 0)
         {
-            osi_filename = dist.AddInfoToFilename(osi_filename);
+            osi_freq_ = 1;
         }
+    }
 
-        osiReporter->OpenOSIFile(osi_filename.c_str());
+    // Secondly check esmini environment variables
+    if (osi_filename.empty())
+    {
+        osi_filename = SE_Env::Inst().GetOSIFilePath();
+    }
+
+    if (!osi_filename.empty() || SE_Env::Inst().GetOSIFileEnabled())
+    {
+        SetOSIFileStatus(true, osi_filename.c_str());
     }
 
     if ((arg_str = opt.GetOptionArg("osi_freq")) != "")

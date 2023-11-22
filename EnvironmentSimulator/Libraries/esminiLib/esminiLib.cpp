@@ -1638,47 +1638,6 @@ extern "C"
         return 0;
     }
 
-    SE_DLL_API bool SE_OSIFileOpen(const char *filename)
-    {
-#ifdef _USE_OSI
-        if (player != nullptr)
-        {
-            if (OSCParameterDistribution::Inst().GetNumPermutations() > 0)
-            {
-                return player->osiReporter->OpenOSIFile(OSCParameterDistribution::Inst().AddInfoToFilename(filename).c_str());
-            }
-            else
-            {
-                return player->osiReporter->OpenOSIFile(filename);
-            }
-        }
-#else
-        (void)filename;
-#endif  // _USE_OSI
-
-        return false;
-    }
-
-    SE_DLL_API bool SE_OSIFileWrite(bool flush)
-    {
-#ifdef _USE_OSI
-        bool retval = false;
-
-        if (player != nullptr)
-        {
-            retval = player->osiReporter->WriteOSIFile();
-            if (flush)
-            {
-                player->osiReporter->FlushOSIFile();
-            }
-        }
-        return retval;
-#else
-        (void)flush;
-        return false;
-#endif  // _USE_OSI
-    }
-
     SE_DLL_API int SE_OSISetTimeStamp(unsigned long long int nanoseconds)
     {
 #ifdef _USE_OSI
@@ -1849,16 +1808,18 @@ extern "C"
 
     SE_DLL_API void SE_DisableOSIFile()
     {
-        if (player == nullptr)
-        {
-            return;
-        }
+        SE_Env::Inst().DisableOSIFile();
 
-        player->SetOSIFileStatus(false);
+        if (player != nullptr)
+        {
+            player->SetOSIFileStatus(false);
+        }
     }
 
     SE_DLL_API void SE_EnableOSIFile(const char *filename)
     {
+        SE_Env::Inst().EnableOSIFile(filename == nullptr ? "" : filename);
+
         if (player != nullptr)
         {
             player->SetOSIFileStatus(true, filename);

@@ -1259,18 +1259,6 @@ extern "C"
     SE_DLL_API const char *SE_GetOSISensorDataRaw();
 
     /**
-            Create and open osi file
-            @param filename Optional filename, including path. Set to 0 to use default.
-            @return true=successful false=error
-    */
-    SE_DLL_API bool SE_OSIFileOpen(const char *filename);
-
-    /**
-            Create and open osi file
-    */
-    SE_DLL_API bool SE_OSIFileWrite(bool flush = false);
-
-    /**
             Set explicit OSI timestap
             Note that this timestamp does NOT affect esmini simulation time
             Also note that setting timestamp with this function will move into explicit time mode

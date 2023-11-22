@@ -133,7 +133,23 @@ public:
         return osi_file.is_open();
     }
     void ReportSensors(std::vector<ObjectSensor*> sensor);
-    int  GetCounter()
+
+    void IncrementCounter()
+    {
+        osi_update_counter_++;
+    }
+
+    void SetUpdated(bool value)
+    {
+        osi_updated_ = value;
+    }
+
+    bool GetUpdated()
+    {
+        return osi_updated_;
+    }
+
+    int GetCounter()
     {
         return osi_update_counter_;
     }
@@ -157,4 +173,5 @@ private:
     std::string            stationary_model_reference;
     void                   CreateMovingObjectFromSensorData(const osi3::SensorData& sd, int obj_nr);
     void                   CreateLaneBoundaryFromSensordata(const osi3::SensorData& sd, int lane_boundary_nr);
+    bool                   osi_updated_ = false;
 };
