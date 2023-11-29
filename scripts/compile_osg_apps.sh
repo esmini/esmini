@@ -44,7 +44,7 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     # [ ! -d fbxsdk ] && mkdir fbxsdk
     if [ ! -d fbxsdk ]; then
         if [ ! -f fbx202001_fbxsdk_linux.tar.gz ];then
-            curl --user-agent  "Mozilla/5.0" -L "https://www.autodesk.com/content/dam/autodesk/www/adn/fbx/2020-0-1/fbx202001_fbxsdk_linux.tar.gz" -o fbx202001_fbxsdk_linux.tar.gz
+            curl -k --user-agent  "Mozilla/5.0" -L "https://www.autodesk.com/content/dam/autodesk/www/adn/fbx/2020-0-1/fbx202001_fbxsdk_linux.tar.gz" -o fbx202001_fbxsdk_linux.tar.gz
         fi
         mkdir fbxsdk
         tar xzvf fbx202001_fbxsdk_linux.tar.gz --directory fbxsdk
