@@ -6,11 +6,11 @@
    esmini/scripts/osi3 folder is available
 
    How to run:
-   Open two terminals.
-   1. In first terminal, start esmini with specified OSI receiver IP addr:
-      ./bin/esmini.exe --window 60 60 800 400 --osc ./resources/xosc/cut-in.xosc --osi_receiver_ip 127.0.0.1
-   2. In second terminal, run this script:
+   1. Open two terminals.
+   2. In first terminal, run this script:
       ./EnvironmentSimulator/code-examples/hello_world/osi_groundtruth_from_udp.py
+   3. In second terminal, start esmini with specified OSI receiver IP addr:
+      ./bin/esmini.exe --window 60 60 800 400 --osc ./resources/xosc/cut-in.xosc --osi_receiver_ip 127.0.0.1
 '''
 
 import os
