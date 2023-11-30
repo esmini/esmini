@@ -105,7 +105,9 @@
                         <Event maximumExecutionCount="1" name="ConnectEvent" priority="overwrite">
                             <Action name="ConnectAction">
                                 <PrivateAction>
-                                    <ConnectTrailerAction trailer="Trailer"/>
+                                    <TrailerAction>
+                                        <ConnectTrailerAction trailer="Trailer"/>
+                                    </TrailerAction>
                                 </PrivateAction>
                             </Action>
                             <StartTrigger>
@@ -168,7 +170,9 @@
                         <Event maximumExecutionCount="1" name="DisconnectEvent" priority="parallel">
                             <Action name="ConnectAction">
                                 <PrivateAction>
-                                    <ConnectTrailerAction/>
+                                    <TrailerAction>
+                                        <DisconnectTrailerAction/>
+                                    </TrailerAction>
                                 </PrivateAction>
                             </Action>
                             <StartTrigger>

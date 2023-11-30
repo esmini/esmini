@@ -72,7 +72,8 @@ namespace scenarioengine
             FOLLOW_TRAJECTORY,
             Acquire_POSITION,
             SYNCHRONIZE_ACTION,
-            CONNECT_TRAILER_ACTION
+            CONNECT_TRAILER_ACTION,
+            DISCONNECT_TRAILER_ACTION
         };
 
         enum class DynamicsDimension
@@ -899,6 +900,36 @@ namespace scenarioengine
         void ReplaceObjectRefs(Object* obj1, Object* obj2);
 
         Object* trailer_object_ = nullptr;
+    };
+
+    class DisconnectTrailerAction : public OSCPrivateAction
+    {
+    public:
+        DisconnectTrailerAction() : OSCPrivateAction(OSCPrivateAction::ActionType::DISCONNECT_TRAILER_ACTION, ControlDomains::DOMAIN_NONE)
+        {
+        }
+
+        DisconnectTrailerAction(const DisconnectTrailerAction& action)
+            : OSCPrivateAction(OSCPrivateAction::ActionType::DISCONNECT_TRAILER_ACTION, ControlDomains::DOMAIN_NONE)
+        {
+            name_ = action.name_;
+        }
+
+        OSCPrivateAction* Copy()
+        {
+            DisconnectTrailerAction* new_action = new DisconnectTrailerAction(*this);
+            return new_action;
+        }
+
+        std::string Type2Str()
+        {
+            return "ConnectTrailerAction";
+        };
+
+        void Step(double simTime, double dt);
+        void Start(double simTime, double dt);
+
+        void ReplaceObjectRefs(Object* obj1, Object* obj2);
     };
 
     class AssignRouteAction : public OSCPrivateAction

@@ -549,6 +549,11 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
         vehicle->model_id_ = 10;  // magic number for motorcyclist, set as default
         vehicle->model3d_  = "mc.osgb";
     }
+    else if (vehicle->category_ == Vehicle::Category::TRAILER)
+    {
+        vehicle->model_id_ = 11;  // magic number for car trailer, set as default
+        vehicle->model3d_  = "car_trailer.osgb";
+    }
     else
     {
         // magic numbers: If first vehicle make it white, else red
@@ -2728,17 +2733,41 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
             action_pos->position_ = action_pos->position_OSCPosition_->GetRMPos();
             action                = action_pos;
         }
-        else if (actionChild.name() == std::string("ConnectTrailerAction"))
+        else if (actionChild.name() == std::string("TrailerAction"))
         {
-            ConnectTrailerAction *action_trailer = new ConnectTrailerAction;
-            std::string           trailer_ref    = parameters.ReadAttribute(actionChild, "trailer");
-
-            if (!trailer_ref.empty())
+            pugi::xml_node trailer_action_node = actionChild.first_child();
+            if (trailer_action_node.empty())
             {
-                action_trailer->trailer_object_ = ResolveObjectReference(parameters.ReadAttribute(actionChild, "trailer"));
+                LOG("TrailerAction: missing child element");
+                return nullptr;
             }
 
-            action = action_trailer;
+            if (trailer_action_node.name() == std::string("ConnectTrailerAction"))
+            {
+                ConnectTrailerAction *action_trailer = new ConnectTrailerAction;
+                std::string           trailer_ref    = parameters.ReadAttribute(trailer_action_node, "trailer");
+
+                if (!trailer_ref.empty())
+                {
+                    action_trailer->trailer_object_ = ResolveObjectReference(parameters.ReadAttribute(trailer_action_node, "trailer"));
+                }
+                else
+                {
+                    LOG("TrailerAction: Missing mandatory trailer reference, ignoring action");
+                    return nullptr;
+                }
+
+                action = action_trailer;
+            }
+            else if (trailer_action_node.name() == std::string("DisconnectTrailerAction"))
+            {
+                DisconnectTrailerAction *action_trailer = new DisconnectTrailerAction;
+                action                                  = action_trailer;
+            }
+            else
+            {
+                LOG("TrailerAction: Unexpected child element name: %s", trailer_action_node.name());
+            }
         }
         else if (actionChild.name() == std::string("RoutingAction"))
         {

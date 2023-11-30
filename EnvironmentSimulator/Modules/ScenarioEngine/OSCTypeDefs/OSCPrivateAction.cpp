@@ -1680,21 +1680,13 @@ void ConnectTrailerAction::Start(double simTime, double dt)
 
         if (trailer_object_ != object_->TrailerVehicle())
         {
-            LOG("Connect trailer %s", reinterpret_cast<Vehicle*>(trailer_object_)->GetName().c_str());
+            LOG("Connect trailer %s to %s", reinterpret_cast<Vehicle*>(trailer_object_)->GetName().c_str(), object_->GetName().c_str());
             reinterpret_cast<Vehicle*>(object_)->ConnectTrailer(reinterpret_cast<Vehicle*>(trailer_object_));
         }
     }
     else
     {
-        if (object_->TrailerVehicle())
-        {
-            LOG("Disconnecting currently connected trailer %s from %s", object_->TrailerVehicle()->GetName().c_str(), object_->GetName().c_str());
-            reinterpret_cast<Vehicle*>(object_)->DisconnectTrailer();
-        }
-        else
-        {
-            LOG("No trailer to disconnect from %s", object_->GetName().c_str());
-        }
+        LOG("No trailer to disconnect from %s", object_->GetName().c_str());
     }
 }
 
@@ -1705,6 +1697,40 @@ void ConnectTrailerAction::Step(double simTime, double dt)
 }
 
 void ConnectTrailerAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
+{
+    if (object_ == obj1)
+    {
+        object_ = obj2;
+    }
+
+    if (trailer_object_ == obj1)
+    {
+        trailer_object_ = obj2;
+    }
+}
+
+void DisconnectTrailerAction::Start(double simTime, double dt)
+{
+    OSCAction::Start(simTime, dt);
+
+    if (object_->TrailerVehicle())
+    {
+        LOG("Disconnecting %s from %s", object_->TrailerVehicle()->GetName().c_str(), object_->GetName().c_str());
+        reinterpret_cast<Vehicle*>(object_)->DisconnectTrailer();
+    }
+    else
+    {
+        LOG("DisconnectTrailerAction: No trailer connected, ignoring action");
+    }
+}
+
+void DisconnectTrailerAction::Step(double simTime, double dt)
+{
+    (void)dt;
+    OSCAction::End(simTime);
+}
+
+void DisconnectTrailerAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
 {
     if (object_ == obj1)
     {
