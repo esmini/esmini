@@ -385,6 +385,15 @@ or +
 Only a subset of the .dat file information is extracted. To extract some more info, e.g. road coordinates, run:
 ``./scripts/dat2csv --extended sim.dat`` +
 
+You can create .dat files from multiple scenarios in a single command, like this on Linux (bash):
+
+[source, bash]
+----
+for f in ./my_scenarios/*.xosc; do ./bin/esmini --headless --fixed_timestep 0.05 --osc $f --record `basename $f .xosc`.dat; done
+----
+
+It also works in Git bash on Windows.
+
 ==== CSV logger
 To create a more complete csv logfile, compared to the content of the .dat file, activate the CSV_Logger:
 
