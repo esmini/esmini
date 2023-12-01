@@ -279,6 +279,12 @@ OSCPositionTrajectory::OSCPositionTrajectory(roadmanager::RMTrajectory *traj, do
 {
     (void)orientation;
     (void)t;
+
+    // do initial and temporary evaluation of the trajectory
+    // it will be recalculated when related action is triggered
+    // so that relative positions will be evaluated correctly
+    traj->shape_->CalculatePolyLine();
+
     position_.SetTrajectory(traj);
     position_.SetTrajectoryS(s);
 }
