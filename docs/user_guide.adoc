@@ -3051,3 +3051,5 @@ Generate html: ``asciidoctor user_guide.adoc``
 [%hardbreaks]
 include::../version.txt[lines=2..2]
 include::../version.txt[lines=1..1]
+
+Full commit history is found https://github.com/esmini/esmini.github.io/commits/main[here]
