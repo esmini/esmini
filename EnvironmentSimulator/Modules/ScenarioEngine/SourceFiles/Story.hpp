@@ -69,7 +69,7 @@ namespace scenarioengine
             return false;
         }
 
-        bool AreAllManeuversComplete();
+        bool IsComplete() override;
 
         void UpdateState();
         void Start(double simTime, double dt);
@@ -100,15 +100,20 @@ namespace scenarioengine
             delete stop_trigger_;
         }
 
+        bool IsComplete() override;
+
         void UpdateState();
     };
 
-    class Story
+    class Story : public StoryBoardElement
     {
     public:
-        Story(std::string name)
+        Story() : StoryBoardElement(StoryBoardElement::ElementType::STORY)
         {
-            (void)name;
+        }
+        Story(std::string name) : StoryBoardElement(StoryBoardElement::ElementType::STORY)
+        {
+            name_ = name;
         }
         ~Story()
         {
@@ -126,15 +131,17 @@ namespace scenarioengine
         OSCAction*               FindActionByName(std::string name);
         void                     Print();
 
+        bool IsComplete() override;
+
         std::vector<Act*> act_;
-        std::string       name_;
     };
 
-    class StoryBoard
+    class StoryBoard : public StoryBoardElement
     {
     public:
-        StoryBoard() : stop_trigger_(0)
+        StoryBoard() : StoryBoardElement(StoryBoardElement::ElementType::STORY_BOARD), stop_trigger_(0)
         {
+            name_ = "storyBoard";
         }
         ~StoryBoard()
         {
@@ -151,6 +158,7 @@ namespace scenarioengine
         OSCAction*     FindActionByName(std::string name);
         Entities*      entities_;
         void           Print();
+        bool           IsComplete() override;
 
         std::vector<Story*> story_;
         Trigger*            stop_trigger_;

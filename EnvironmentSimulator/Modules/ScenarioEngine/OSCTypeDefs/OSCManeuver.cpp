@@ -134,7 +134,7 @@ bool Maneuver::IsAnyEventActive()
     return false;
 }
 
-bool Maneuver::AreAllEventsComplete()
+bool Maneuver::IsComplete()
 {
     for (size_t i = 0; i < event_.size(); i++)
     {

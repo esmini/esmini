@@ -3814,7 +3814,7 @@ TEST(EventCallbackTest, TestConditionCallback)
 void StoryBoardElementStateCallbackInstance1(const char* element_name, int type, int state)
 {
     static int counter = 0;
-    const int  n_runs  = 13;
+    const int  n_runs  = 16;
     struct
     {
         const char* name;
@@ -3822,19 +3822,22 @@ void StoryBoardElementStateCallbackInstance1(const char* element_name, int type,
         int         type;
         int         state;
     } state_target[n_runs] = {
-        {"maneuver", 0.1, 4, 2},                     // Maneuver, Running
-        {"maneuvuergroup_maneuver", 0.1, 3, 2},      // ManeuverGroup, Running
-        {"act_maneuvuergroup_maneuver", 0.1, 2, 2},  // Act, Running
-        {"slowdown", 3.5, 6, 2},                     // Action, Running
-        {"slowdown event", 3.5, 5, 2},               // Event, Running
-        {"slowdown", 4.5, 6, 3},                     // Action, Complete
-        {"slowdown event", 4.5, 5, 3},               // Event, Complete
-        {"lane change", 4.5, 6, 2},                  // Action, Running
-        {"lanechange event", 4.5, 5, 2},             // Event, Running
-        {"lane change", 8.4, 6, 3},                  // Action, Complete
-        {"lanechange event", 8.4, 5, 3},             // Event, Complete
-        {"maneuver", 8.5, 4, 3},                     // Maneuver, Complete
-        {"maneuvuergroup_maneuver", 8.5, 3, 3},      // ManeuverGroup, Complete
+        {"maneuver", 0.1, 5, 2},                           // Maneuver, Running
+        {"maneuvuergroup_maneuver", 0.1, 4, 2},            // ManeuverGroup, Running
+        {"act_maneuvuergroup_maneuver", 0.1, 3, 2},        // Act, Running
+        {"slowdown", 3.5, 7, 2},                           // Action, Running
+        {"slowdown event", 3.5, 6, 2},                     // Event, Running
+        {"slowdown", 4.5, 7, 3},                           // Action, Complete
+        {"slowdown event", 4.5, 6, 3},                     // Event, Complete
+        {"lane change", 4.5, 7, 2},                        // Action, Running
+        {"lanechange event", 4.5, 6, 2},                   // Event, Running
+        {"lane change", 8.4, 7, 3},                        // Action, Complete
+        {"lanechange event", 8.4, 6, 3},                   // Event, Complete
+        {"maneuver", 8.5, 5, 3},                           // Maneuver, Complete
+        {"maneuvuergroup_maneuver", 8.5, 4, 3},            // ManeuverGroup, Complete
+        {"act_maneuvuergroup_maneuver", 8.6, 3, 3},        // Act, Complete
+        {"story_act_maneuvuergroup_maneuver", 8.6, 2, 3},  // Story, Complete
+        {"storyBoard", 12.1, 1, 3},                        // StoryBoard, Complete
     };
 
     if (counter < n_runs)

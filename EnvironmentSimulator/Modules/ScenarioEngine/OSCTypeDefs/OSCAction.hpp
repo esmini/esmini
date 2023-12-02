@@ -27,12 +27,13 @@ namespace scenarioengine
          */
         typedef enum
         {
-            STORY                  = 1,
-            ACT                    = 2,
-            MANEUVER_GROUP         = 3,
-            MANEUVER               = 4,
-            EVENT                  = 5,
-            ACTION                 = 6,
+            STORY_BOARD            = 1,
+            STORY                  = 2,
+            ACT                    = 3,
+            MANEUVER_GROUP         = 4,
+            MANEUVER               = 5,
+            EVENT                  = 6,
+            ACTION                 = 7,
             UNDEFINED_ELEMENT_TYPE = 0
         } ElementType;
 
@@ -145,18 +146,22 @@ namespace scenarioengine
             if (state_ == State::RUNNING || state_ == State::STANDBY)
             {
                 transition_ = Transition::END_TRANSITION;
-                if (type_ == ElementType::ACT || type_ == ElementType::ACTION || type_ == ElementType::MANEUVER)
+
+                if (type_ == ElementType::MANEUVER_GROUP || type_ == ElementType::EVENT)
                 {
-                    next_state_ = State::COMPLETE;
-                }
-                else if (max_num_executions_ != -1 && num_executions_ >= max_num_executions_)
-                {
-                    LOG("%s complete after %d execution%s", name_.c_str(), num_executions_, num_executions_ > 1 ? "s" : "");
-                    next_state_ = State::COMPLETE;
+                    if (max_num_executions_ != -1 && num_executions_ >= max_num_executions_)
+                    {
+                        LOG("%s complete after %d execution%s", name_.c_str(), num_executions_, num_executions_ > 1 ? "s" : "");
+                        next_state_ = State::COMPLETE;
+                    }
+                    else
+                    {
+                        next_state_ = State::STANDBY;
+                    }
                 }
                 else
                 {
-                    next_state_ = State::STANDBY;
+                    next_state_ = State::COMPLETE;  // no number_of_execution attribute, just execute once
                 }
             }
             else
@@ -167,6 +172,11 @@ namespace scenarioengine
                     state2str(State::STANDBY).c_str(),
                     state2str(State::COMPLETE).c_str());
             }
+        }
+
+        virtual bool IsComplete()
+        {
+            return false;
         }
 
         void Standby()
@@ -223,6 +233,7 @@ namespace scenarioengine
         }
 
         virtual void Step(double simTime, double dt) = 0;
+        bool         IsComplete() override;
     };
 
     class OSCUserDefinedAction : public OSCAction

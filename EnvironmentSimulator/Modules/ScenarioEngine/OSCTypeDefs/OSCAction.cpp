@@ -86,6 +86,16 @@ std::string OSCAction::BaseType2Str()
     return "Undefined";
 }
 
+bool OSCAction::IsComplete()
+{
+    if (state_ == State::COMPLETE)
+    {
+        return true;
+    }
+
+    return false;
+}
+
 void StoryBoardElement::SetState(StoryBoardElement::State state)
 {
     if (state != state_)

@@ -119,6 +119,18 @@ void Story::Print()
     LOG("Story: %s", name_.c_str());
 }
 
+bool Story::IsComplete()
+{
+    for (size_t i = 0; i < act_.size(); i++)
+    {
+        if (act_[i]->state_ != State::COMPLETE)
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
 Act* StoryBoard::FindActByName(std::string name)
 {
     Act* act = 0;
@@ -198,6 +210,33 @@ void StoryBoard::Print()
     }
 }
 
+bool StoryBoard::IsComplete()
+{
+#if 1
+    if (stop_trigger_ == nullptr || stop_trigger_->conditionGroup_.size() == 0)
+    {
+        if (story_.size() == 0)
+        {
+            return false;  // no story and no stop trigger, assume run "forever" (until external stop)
+        }
+    }
+#else
+    if (story_.size() == 0)
+    {
+        return false;  // no story, assume run until stop trigger or "forever" until external stop
+    }
+#endif
+    for (size_t i = 0; i < story_.size(); i++)
+    {
+        if (story_[i]->state_ != State::COMPLETE)
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 void Act::UpdateState()
 {
     // Update state of sub elements - moving from transitions to stable states
@@ -209,11 +248,23 @@ void Act::UpdateState()
     StoryBoardElement::UpdateState();
 }
 
-bool ManeuverGroup::AreAllManeuversComplete()
+bool Act::IsComplete()
+{
+    for (size_t i = 0; i < maneuverGroup_.size(); i++)
+    {
+        if (maneuverGroup_[i]->state_ != State::COMPLETE)
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool ManeuverGroup::IsComplete()
 {
     for (size_t i = 0; i < maneuver_.size(); i++)
     {
-        if (!maneuver_[i]->AreAllEventsComplete())
+        if (!maneuver_[i]->IsComplete())
         {
             return false;
         }

@@ -105,7 +105,7 @@ namespace scenarioengine
         }
         bool GetQuitFlag()
         {
-            return quit_flag;
+            return storyBoard.state_ == StoryBoard::State::COMPLETE;
         }
         ScenarioReader *scenarioReader;
         ScenarioReader *GetScenarioReader()
@@ -177,7 +177,6 @@ namespace scenarioengine
         ScenarioGateway scenarioGateway;
 
         // execution control flags
-        bool         quit_flag;
         unsigned int frame_nr_;
         int          init_status_;
 

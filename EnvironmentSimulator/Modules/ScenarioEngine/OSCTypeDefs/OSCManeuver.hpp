@@ -82,7 +82,7 @@ namespace scenarioengine
         }
 
         bool IsAnyEventActive();
-        bool AreAllEventsComplete();
+        bool IsComplete() override;
         void UpdateState();
         void Reset();
 
