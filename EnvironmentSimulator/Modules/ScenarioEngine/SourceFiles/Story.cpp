@@ -237,6 +237,28 @@ bool StoryBoard::IsComplete()
     return true;
 }
 
+void StoryBoard::UpdateState()
+{
+    // Update state of sub elements - moving from transitions to stable states
+    for (size_t k = 0; k < story_.size(); k++)
+    {
+        story_[k]->UpdateState();
+    }
+
+    StoryBoardElement::UpdateState();
+}
+
+void Story::UpdateState()
+{
+    // Update state of sub elements - moving from transitions to stable states
+    for (size_t k = 0; k < act_.size(); k++)
+    {
+        act_[k]->UpdateState();
+    }
+
+    StoryBoardElement::UpdateState();
+}
+
 void Act::UpdateState()
 {
     // Update state of sub elements - moving from transitions to stable states
@@ -264,7 +286,7 @@ bool ManeuverGroup::IsComplete()
 {
     for (size_t i = 0; i < maneuver_.size(); i++)
     {
-        if (!maneuver_[i]->IsComplete())
+        if (maneuver_[i]->state_ != State::COMPLETE)
         {
             return false;
         }
@@ -295,12 +317,15 @@ void ManeuverGroup::Start(double simTime, double dt)
     // Make sure to call base class Start method
     StoryBoardElement::Start(simTime, dt);
 }
-
+#if 0
 void ManeuverGroup::End(double simTime)
 {
     for (size_t k = 0; k < maneuver_.size(); k++)
     {
-        maneuver_[k]->End(simTime);
+        if (maneuver_[k]->IsActive())
+        {
+            maneuver_[k]->End(simTime);
+        }
     }
 
     StoryBoardElement::End(simTime);
@@ -310,7 +335,12 @@ void ManeuverGroup::Stop()
 {
     for (size_t k = 0; k < maneuver_.size(); k++)
     {
-        maneuver_[k]->Stop();
+        if (maneuver_[k]->IsActive())
+        {
+            maneuver_[k]->Stop();
+        }
     }
+
     StoryBoardElement::Stop();
 }
+#endif

@@ -73,9 +73,10 @@ namespace scenarioengine
 
         void UpdateState();
         void Start(double simTime, double dt);
+#if 0
         void End(double simTime);
         void Stop();
-
+#endif
         std::vector<Actor*>    actor_;
         std::vector<Maneuver*> maneuver_;
     };
@@ -132,6 +133,7 @@ namespace scenarioengine
         void                     Print();
 
         bool IsComplete() override;
+        void UpdateState() override;
 
         std::vector<Act*> act_;
     };
@@ -159,6 +161,7 @@ namespace scenarioengine
         Entities*      entities_;
         void           Print();
         bool           IsComplete() override;
+        void           UpdateState() override;
 
         std::vector<Story*> story_;
         Trigger*            stop_trigger_;

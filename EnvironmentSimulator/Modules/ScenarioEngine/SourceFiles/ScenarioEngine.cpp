@@ -343,8 +343,6 @@ int ScenarioEngine::step(double deltaSimTime)
                         }
                     }
 
-                    act->UpdateState();
-
                     // Maneuvers
                     if (act->IsActive())
                     {
@@ -356,110 +354,116 @@ int ScenarioEngine::step(double deltaSimTime)
                                 for (size_t l = 0; l < mg->maneuver_.size(); l++)
                                 {
                                     Maneuver* maneuver = mg->maneuver_[l];
-
-                                    for (size_t m = 0; m < maneuver->event_.size(); m++)
+                                    if (maneuver->IsActive())
                                     {
-                                        Event* event = maneuver->event_[m];
-
-                                        // add event to objectEvents vector
-                                        if (event->IsTriggable() || event->IsActive())
+                                        for (size_t m = 0; m < maneuver->event_.size(); m++)
                                         {
-                                            for (size_t n = 0; n < event->action_.size(); n++)
+                                            Event* event = maneuver->event_[m];
+
+                                            // add event to objectEvents vector
+                                            if (event->IsTriggable() || event->IsActive())
                                             {
-                                                OSCAction* action = event->action_[n];
-                                                if (action->base_type_ == OSCAction::BaseType::PRIVATE)
+                                                for (size_t n = 0; n < event->action_.size(); n++)
                                                 {
-                                                    OSCPrivateAction* pa = static_cast<OSCPrivateAction*>(action);
-                                                    if (!pa->object_->containsEvent(event))
+                                                    OSCAction* action = event->action_[n];
+                                                    if (action->base_type_ == OSCAction::BaseType::PRIVATE)
                                                     {
-                                                        pa->object_->addEvent(event);
-                                                        break;
+                                                        OSCPrivateAction* pa = static_cast<OSCPrivateAction*>(action);
+                                                        if (!pa->object_->containsEvent(event))
+                                                        {
+                                                            pa->object_->addEvent(event);
+                                                            break;
+                                                        }
                                                     }
                                                 }
                                             }
-                                        }
 
-                                        // First evaluate which events are active
-                                        if (event->IsTriggable())
-                                        {
-                                            // Check event conditions
-                                            if (event->start_trigger_->Evaluate(&storyBoard, simulationTime_) == true)
+                                            // First evaluate which events are active
+                                            if (event->IsTriggable())
                                             {
-                                                bool startEvent = false;
-
-                                                // Check priority
-                                                if (event->priority_ == Event::Priority::OVERWRITE)
+                                                // Check event conditions
+                                                if (event->start_trigger_->Evaluate(&storyBoard, simulationTime_) == true)
                                                 {
-                                                    // Activate trigged event
-                                                    if (event->IsActive())
+                                                    bool startEvent = false;
+
+                                                    // Check priority
+                                                    if (event->priority_ == Event::Priority::OVERWRITE)
                                                     {
-                                                        LOG("Can't overwrite own running event (%s) - skip trig", event->name_.c_str());
-                                                    }
-                                                    else
-                                                    {
-                                                        // Deactivate any currently active event
-                                                        for (size_t n = 0; n < maneuver->event_.size(); n++)
+                                                        // Activate trigged event
+                                                        if (event->IsActive())
                                                         {
-                                                            if (maneuver->event_[n]->IsActive())
+                                                            LOG("Can't overwrite own running event (%s) - skip trig", event->name_.c_str());
+                                                        }
+                                                        else
+                                                        {
+                                                            // Deactivate any currently active event
+                                                            for (size_t n = 0; n < maneuver->event_.size(); n++)
                                                             {
-                                                                // remove event from objectEvents vector
-                                                                for (size_t o = 0; o < maneuver->event_[n]->action_.size(); o++)
+                                                                if (maneuver->event_[n]->IsActive())
                                                                 {
-                                                                    OSCAction* action = maneuver->event_[n]->action_[o];
-                                                                    if (action->base_type_ == OSCAction::BaseType::PRIVATE)
+                                                                    // remove event from objectEvents vector
+                                                                    for (size_t o = 0; o < maneuver->event_[n]->action_.size(); o++)
                                                                     {
-                                                                        OSCPrivateAction* pa = static_cast<OSCPrivateAction*>(action);
-                                                                        pa->object_->removeEvent(event);
+                                                                        OSCAction* action = maneuver->event_[n]->action_[o];
+                                                                        if (action->base_type_ == OSCAction::BaseType::PRIVATE)
+                                                                        {
+                                                                            OSCPrivateAction* pa = static_cast<OSCPrivateAction*>(action);
+                                                                            pa->object_->removeEvent(event);
 
-                                                                        break;
+                                                                            break;
+                                                                        }
                                                                     }
-                                                                }
 
-                                                                maneuver->event_[n]->End(simulationTime_);
-                                                                LOG("Event %s ended, overwritten by event %s",
-                                                                    maneuver->event_[n]->name_.c_str(),
-                                                                    event->name_.c_str());
+                                                                    maneuver->event_[n]->End(simulationTime_);
+                                                                    LOG("Event %s ended, overwritten by event %s",
+                                                                        maneuver->event_[n]->name_.c_str(),
+                                                                        event->name_.c_str());
+                                                                }
                                                             }
+
+                                                            startEvent = true;
+                                                        }
+                                                    }
+                                                    else if (event->priority_ == Event::Priority::SKIP)
+                                                    {
+                                                        if (maneuver->IsAnyEventActive())
+                                                        {
+                                                            LOG("Event is running, skipping trigged %s", event->name_.c_str());
+                                                        }
+                                                        else
+                                                        {
+                                                            startEvent = true;
+                                                        }
+                                                    }
+                                                    else if (event->priority_ == Event::Priority::PARALLEL)
+                                                    {
+                                                        // Don't care if any other action is ongoing, launch anyway
+                                                        if (event->IsActive())
+                                                        {
+                                                            LOG("Event %s already running, trigger ignored", event->name_.c_str());
+                                                        }
+                                                        else if (maneuver->IsAnyEventActive())
+                                                        {
+                                                            LOG("Event(s) ongoing, %s will run in parallel", event->name_.c_str());
                                                         }
 
                                                         startEvent = true;
                                                     }
-                                                }
-                                                else if (event->priority_ == Event::Priority::SKIP)
-                                                {
-                                                    if (maneuver->IsAnyEventActive())
-                                                    {
-                                                        LOG("Event is running, skipping trigged %s", event->name_.c_str());
-                                                    }
                                                     else
                                                     {
-                                                        startEvent = true;
-                                                    }
-                                                }
-                                                else if (event->priority_ == Event::Priority::PARALLEL)
-                                                {
-                                                    // Don't care if any other action is ongoing, launch anyway
-                                                    if (event->IsActive())
-                                                    {
-                                                        LOG("Event %s already running, trigger ignored", event->name_.c_str());
-                                                    }
-                                                    else if (maneuver->IsAnyEventActive())
-                                                    {
-                                                        LOG("Event(s) ongoing, %s will run in parallel", event->name_.c_str());
+                                                        LOG("Unknown event priority: %d", event->priority_);
                                                     }
 
-                                                    startEvent = true;
-                                                }
-                                                else
-                                                {
-                                                    LOG("Unknown event priority: %d", event->priority_);
-                                                }
-
-                                                if (startEvent)
-                                                {
-                                                    event->Start(simulationTime_, deltaSimTime);
+                                                    if (startEvent)
+                                                    {
+                                                        event->Start(simulationTime_, deltaSimTime);
+                                                    }
                                                 }
                                             }
+                                        }
+                                        if (maneuver->IsComplete())
+                                        {
+                                            maneuver->End(simulationTime_);
                                         }
                                     }
                                 }
@@ -469,20 +473,28 @@ int ScenarioEngine::step(double deltaSimTime)
                                 }
                             }
                         }
-                        if (act->IsComplete())
+
+                        if ((act->stop_trigger_ == nullptr || act->stop_trigger_->conditionGroup_.size() == 0) && act->IsComplete())
                         {
+                            // No stop trigger, but all manevuergroups in act are done
                             act->End(simulationTime_);
                         }
                     }
                 }
-
                 if (story->IsComplete())
                 {
                     story->End(simulationTime_);
                 }
-                else
+            }
+
+            // step storyboard
+            for (size_t i = 0; i < storyBoard.story_.size() && storyBoard.story_[i]->IsActive(); i++)
+            {
+                Story* story = storyBoard.story_[i];
+
+                if (story->IsActive())
                 {
-                    for (size_t j = 0; j < story->act_.size(); j++)
+                    for (size_t j = 0; j < story->act_.size(); j++) 
                     {
                         // Then step events
                         Act* act = story->act_[j];
@@ -566,7 +578,6 @@ int ScenarioEngine::step(double deltaSimTime)
                         }
                     }
                 }
-                story->UpdateState();
             }
         }
 
