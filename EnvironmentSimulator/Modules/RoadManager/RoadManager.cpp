@@ -651,10 +651,10 @@ Spiral::Spiral(double s, double x, double y, double hdg, double length, double c
 {
     SetCDot((curv_end_ - curv_start_) / length_);
 
-    if (fabs(GetCDot()) < SMALL_NUMBER)
+    if (fabs(curv_end_ - curv_start_) < SMALL_NUMBER)
     {
         // constant radius => clothoid is actually a line or an arc
-        if (fabs(this->GetCurvStart()) < SMALL_NUMBER)  // Line
+        if (fabs(curv_start_) < SMALL_NUMBER)  // Line
         {
             line_          = Line(s, x, y, hdg, length);
             clothoid_type_ = LINE;
