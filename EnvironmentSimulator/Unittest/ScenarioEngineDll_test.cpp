@@ -3769,15 +3769,15 @@ TEST(ReplayTest, TestMultiReplayDifferentTimeSteps)
         {
             EXPECT_NEAR(replay->data_[2012].state.pos.y, 130.995, 1E-3);
             EXPECT_NEAR(replay->data_[2015].state.pos.y, 207.378, 1E-3);
-            EXPECT_NEAR(replay->data_[5967].state.info.timeStamp, 19.52, 1E-3);
-            EXPECT_NEAR(replay->data_[5967].state.info.id, 1, 1E-3);
+            EXPECT_NEAR(replay->data_[5965].state.info.timeStamp, 19.51, 1E-3);
+            EXPECT_NEAR(replay->data_[5965].state.info.id, 1, 1E-3);
         }
         else
         {
             EXPECT_NEAR(replay->data_[2012].state.pos.y, 130.924, 1E-3);
             EXPECT_NEAR(replay->data_[2015].state.pos.y, 210.727, 1E-3);
-            EXPECT_NEAR(replay->data_[4203].state.info.timeStamp, 19.7, 1E-3);
-            EXPECT_NEAR(replay->data_[4203].state.info.id, 1, 1E-3);
+            EXPECT_NEAR(replay->data_[4201].state.info.timeStamp, 19.6, 1E-3);
+            EXPECT_NEAR(replay->data_[4201].state.info.id, 1, 1E-3);
         }
 
         delete replay;
@@ -3822,22 +3822,22 @@ void StoryBoardElementStateCallbackInstance1(const char* element_name, int type,
         int         type;
         int         state;
     } state_target[n_runs] = {
-        {"maneuver", 0.1, 5, 2},                           // Maneuver, Running
-        {"maneuvuergroup_maneuver", 0.1, 4, 2},            // ManeuverGroup, Running
-        {"act_maneuvuergroup_maneuver", 0.1, 3, 2},        // Act, Running
-        {"slowdown", 3.5, 7, 2},                           // Action, Running
-        {"slowdown event", 3.5, 6, 2},                     // Event, Running
-        {"slowdown", 4.5, 7, 3},                           // Action, Complete
-        {"slowdown event", 4.5, 6, 3},                     // Event, Complete
-        {"lane change", 4.5, 7, 2},                        // Action, Running
-        {"lanechange event", 4.5, 6, 2},                   // Event, Running
-        {"lane change", 8.4, 7, 3},                        // Action, Complete
-        {"lanechange event", 8.4, 6, 3},                   // Event, Complete
-        {"maneuver", 8.5, 5, 3},                           // Maneuver, Complete
-        {"maneuvuergroup_maneuver", 8.5, 4, 3},            // ManeuverGroup, Complete
-        {"act_maneuvuergroup_maneuver", 8.6, 3, 3},        // Act, Complete
-        {"story_act_maneuvuergroup_maneuver", 8.6, 2, 3},  // Story, Complete
-        {"storyBoard", 12.1, 1, 3},                        // StoryBoard, Complete
+        {"act_maneuvergroup_maneuver", 0.1, 3, 2},        // Maneuver, Running
+        {"maneuver", 0.1, 5, 2},                          // Maneuver, Running
+        {"maneuvergroup_maneuver", 0.1, 4, 2},            // ManeuverGroup, Running
+        {"slowdown", 3.4, 7, 2},                          // Action, Running
+        {"slowdown event", 3.4, 6, 2},                    // Event, Running
+        {"slowdown", 4.4, 7, 3},                          // Action, Complete
+        {"slowdown event", 4.4, 6, 3},                    // Event, Complete
+        {"lane change", 4.4, 7, 2},                       // Action, Running
+        {"lanechange event", 4.4, 6, 2},                  // Event, Running
+        {"lane change", 8.3, 7, 3},                       // Action, Complete
+        {"lanechange event", 8.3, 6, 3},                  // Event, Complete
+        {"maneuver", 8.4, 5, 3},                          // Maneuver, Complete
+        {"maneuvergroup_maneuver", 8.4, 4, 3},            // ManeuverGroup, Complete
+        {"act_maneuvergroup_maneuver", 8.4, 3, 3},        // Act, Complete
+        {"story_act_maneuvergroup_maneuver", 8.4, 2, 3},  // Story, Complete
+        {"storyBoard", 12.1, 1, 3},                       // StoryBoard, Complete
     };
 
     if (counter < n_runs)

@@ -59,29 +59,29 @@ namespace scenarioengine
 
         ElementType type_;
         State       state_;
-        State       next_state_;
         Transition  transition_;
         std::string name_;
         int         num_executions_;
         int         max_num_executions_;
+        bool        set_flag_;  // indicate state changed current timestep, keep transition next step
 
         StoryBoardElement(ElementType type)
             : type_(type),
               state_(State::STANDBY),
-              next_state_(State::STANDBY),
               transition_(Transition::UNDEFINED_ELEMENT_TRANSITION),
               num_executions_(0),
-              max_num_executions_(-1)
+              max_num_executions_(-1),
+              set_flag_(false)
         {
         }
 
         StoryBoardElement(ElementType type, int max_num_executions)
             : type_(type),
               state_(State::STANDBY),
-              next_state_(State::STANDBY),
               transition_(Transition::UNDEFINED_ELEMENT_TRANSITION),
               num_executions_(0),
-              max_num_executions_(max_num_executions)
+              max_num_executions_(max_num_executions),
+              set_flag_(false)
         {
         }
 
@@ -97,8 +97,7 @@ namespace scenarioengine
             // Also consider when just being activated - indicated by next_state == running
             // to avoid single frames of no updates (zero motion)
             // Elements on transition to end or stop states also considered not active
-            return ((state_ == State::RUNNING || next_state_ == State::RUNNING) &&
-                    (transition_ != Transition::END_TRANSITION && transition_ != Transition::STOP_TRANSITION));
+            return ((state_ == State::RUNNING) && (transition_ != Transition::END_TRANSITION && transition_ != Transition::STOP_TRANSITION));
         }
 
         bool IsTriggable()
@@ -110,10 +109,10 @@ namespace scenarioengine
         {
             (void)simTime;
             (void)dt;
-            if (state_ == State::STANDBY || next_state_ == State::STANDBY)
+            if (state_ == State::STANDBY)
             {
                 transition_ = Transition::START_TRANSITION;
-                next_state_ = State::RUNNING;
+                SetState(State::RUNNING);
                 num_executions_++;
             }
             else
@@ -127,7 +126,7 @@ namespace scenarioengine
             if (state_ == State::STANDBY || state_ == State::RUNNING)
             {
                 transition_ = Transition::STOP_TRANSITION;
-                next_state_ = State::COMPLETE;
+                SetState(state_ = State::COMPLETE);
             }
             else
             {
@@ -152,16 +151,16 @@ namespace scenarioengine
                     if (max_num_executions_ != -1 && num_executions_ >= max_num_executions_)
                     {
                         LOG("%s complete after %d execution%s", name_.c_str(), num_executions_, num_executions_ > 1 ? "s" : "");
-                        next_state_ = State::COMPLETE;
+                        SetState(State::COMPLETE);
                     }
                     else
                     {
-                        next_state_ = State::STANDBY;
+                        SetState(State::STANDBY);
                     }
                 }
                 else
                 {
-                    next_state_ = State::COMPLETE;  // no number_of_execution attribute, just execute once
+                    SetState(State::COMPLETE);  // no number_of_execution attribute, just execute once
                 }
             }
             else
@@ -184,12 +183,12 @@ namespace scenarioengine
             if (state_ == State::STANDBY)
             {
                 transition_ = Transition::SKIP_TRANSITION;
-                next_state_ = State::STANDBY;
+                SetState(State::STANDBY);
             }
             else if (state_ == State::RUNNING)
             {
                 transition_ = Transition::END_TRANSITION;
-                next_state_ = State::STANDBY;
+                SetState(State::STANDBY);
             }
             else
             {
@@ -200,9 +199,9 @@ namespace scenarioengine
         void Reset()
         {
             state_          = State::STANDBY;
-            next_state_     = State::STANDBY;
             transition_     = Transition::UNDEFINED_ELEMENT_TRANSITION;
             num_executions_ = 0;
+            set_flag_       = false;
         }
     };
 

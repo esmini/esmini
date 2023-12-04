@@ -212,20 +212,6 @@ void StoryBoard::Print()
 
 bool StoryBoard::IsComplete()
 {
-#if 1
-    if (stop_trigger_ == nullptr || stop_trigger_->conditionGroup_.size() == 0)
-    {
-        if (story_.size() == 0)
-        {
-            return false;  // no story and no stop trigger, assume run "forever" (until external stop)
-        }
-    }
-#else
-    if (story_.size() == 0)
-    {
-        return false;  // no story, assume run until stop trigger or "forever" until external stop
-    }
-#endif
     for (size_t i = 0; i < story_.size(); i++)
     {
         if (story_[i]->state_ != State::COMPLETE)

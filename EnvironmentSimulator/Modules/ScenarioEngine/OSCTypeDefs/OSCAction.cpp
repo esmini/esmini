@@ -106,19 +106,21 @@ void StoryBoardElement::SetState(StoryBoardElement::State state)
         {
             stateChangeCallback(name_.c_str(), static_cast<int>(type_), static_cast<int>(state));
         }
+        set_flag_ = true;
     }
     state_ = state;
 }
 
 void StoryBoardElement::UpdateState()
 {
-    if (next_state_ != state_)
+    if (set_flag_ == true)
     {
-        SetState(next_state_);
+        // first step, just reset set flag
+        set_flag_ = false;
     }
     else if (transition_ != Transition::UNDEFINED_ELEMENT_TRANSITION)
     {
-        // Reset transition indicator
+        // second step, reset transition indicator
         transition_ = Transition::UNDEFINED_ELEMENT_TRANSITION;
     }
 }

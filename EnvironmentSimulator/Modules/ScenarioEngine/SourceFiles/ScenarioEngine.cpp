@@ -171,15 +171,15 @@ int ScenarioEngine::step(double deltaSimTime)
         {
             Object* obj = entities_.object_[i];
 
-            obj->state_old.pos_x = obj->pos_.GetX();
-            obj->state_old.pos_y = obj->pos_.GetY();
-            obj->state_old.pos_z = obj->pos_.GetZ();
-            obj->state_old.vel_x = obj->pos_.GetVelX();
-            obj->state_old.vel_y = obj->pos_.GetVelY();
-            obj->state_old.vel_z = obj->pos_.GetVelZ();
-            obj->state_old.h = obj->pos_.GetH();
+            obj->state_old.pos_x  = obj->pos_.GetX();
+            obj->state_old.pos_y  = obj->pos_.GetY();
+            obj->state_old.pos_z  = obj->pos_.GetZ();
+            obj->state_old.vel_x  = obj->pos_.GetVelX();
+            obj->state_old.vel_y  = obj->pos_.GetVelY();
+            obj->state_old.vel_z  = obj->pos_.GetVelZ();
+            obj->state_old.h      = obj->pos_.GetH();
             obj->state_old.h_rate = obj->pos_.GetHRate();
-            obj->reset_ = true;
+            obj->reset_           = true;
         }
     }
     else
@@ -190,7 +190,7 @@ int ScenarioEngine::step(double deltaSimTime)
             Object* obj = entities_.object_[i];
 
             obj->ClearDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::SPEED | Object::DirtyBit::WHEEL_ANGLE |
-                Object::DirtyBit::WHEEL_ROTATION);
+                                Object::DirtyBit::WHEEL_ROTATION);
             obj->reset_ = false;
 
             // Fetch dirty bits from gateway, indicating what has been reported externally and needs to be protected
@@ -220,42 +220,42 @@ int ScenarioEngine::step(double deltaSimTime)
                 if (o->dirty_ & Object::DirtyBit::ALIGN_MODE_H_SET)
                 {
                     obj->pos_.SetMode(roadmanager::Position::PosModeType::SET,
-                        roadmanager::Position::PosMode::H_MASK & o->state_.pos.GetMode(roadmanager::Position::PosModeType::SET));
+                                      roadmanager::Position::PosMode::H_MASK & o->state_.pos.GetMode(roadmanager::Position::PosModeType::SET));
                 }
                 if (o->dirty_ & Object::DirtyBit::ALIGN_MODE_P_SET)
                 {
                     obj->pos_.SetMode(roadmanager::Position::PosModeType::SET,
-                        roadmanager::Position::PosMode::P_MASK & o->state_.pos.GetMode(roadmanager::Position::PosModeType::SET));
+                                      roadmanager::Position::PosMode::P_MASK & o->state_.pos.GetMode(roadmanager::Position::PosModeType::SET));
                 }
                 if (o->dirty_ & Object::DirtyBit::ALIGN_MODE_R_SET)
                 {
                     obj->pos_.SetMode(roadmanager::Position::PosModeType::SET,
-                        roadmanager::Position::PosMode::R_MASK & o->state_.pos.GetMode(roadmanager::Position::PosModeType::SET));
+                                      roadmanager::Position::PosMode::R_MASK & o->state_.pos.GetMode(roadmanager::Position::PosModeType::SET));
                 }
                 if (o->dirty_ & Object::DirtyBit::ALIGN_MODE_Z_SET)
                 {
                     obj->pos_.SetMode(roadmanager::Position::PosModeType::SET,
-                        roadmanager::Position::PosMode::Z_MASK & o->state_.pos.GetMode(roadmanager::Position::PosModeType::SET));
+                                      roadmanager::Position::PosMode::Z_MASK & o->state_.pos.GetMode(roadmanager::Position::PosModeType::SET));
                 }
                 if (o->dirty_ & Object::DirtyBit::ALIGN_MODE_H_UPDATE)
                 {
                     obj->pos_.SetMode(roadmanager::Position::PosModeType::UPDATE,
-                        roadmanager::Position::PosMode::H_MASK & o->state_.pos.GetMode(roadmanager::Position::PosModeType::UPDATE));
+                                      roadmanager::Position::PosMode::H_MASK & o->state_.pos.GetMode(roadmanager::Position::PosModeType::UPDATE));
                 }
                 if (o->dirty_ & Object::DirtyBit::ALIGN_MODE_P_UPDATE)
                 {
                     obj->pos_.SetMode(roadmanager::Position::PosModeType::UPDATE,
-                        roadmanager::Position::PosMode::P_MASK & o->state_.pos.GetMode(roadmanager::Position::PosModeType::UPDATE));
+                                      roadmanager::Position::PosMode::P_MASK & o->state_.pos.GetMode(roadmanager::Position::PosModeType::UPDATE));
                 }
                 if (o->dirty_ & Object::DirtyBit::ALIGN_MODE_R_UPDATE)
                 {
                     obj->pos_.SetMode(roadmanager::Position::PosModeType::UPDATE,
-                        roadmanager::Position::PosMode::R_MASK & o->state_.pos.GetMode(roadmanager::Position::PosModeType::UPDATE));
+                                      roadmanager::Position::PosMode::R_MASK & o->state_.pos.GetMode(roadmanager::Position::PosModeType::UPDATE));
                 }
                 if (o->dirty_ & Object::DirtyBit::ALIGN_MODE_Z_UPDATE)
                 {
                     obj->pos_.SetMode(roadmanager::Position::PosModeType::UPDATE,
-                        roadmanager::Position::PosMode::Z_MASK & o->state_.pos.GetMode(roadmanager::Position::PosModeType::UPDATE));
+                                      roadmanager::Position::PosMode::Z_MASK & o->state_.pos.GetMode(roadmanager::Position::PosModeType::UPDATE));
                 }
             }
         }
@@ -467,16 +467,17 @@ int ScenarioEngine::step(double deltaSimTime)
                                         }
                                     }
                                 }
-                                if (mg->IsComplete())
+                                if (mg->maneuver_.size() > 0 && mg->IsComplete())
                                 {
                                     mg->End(simulationTime_);
                                 }
                             }
                         }
 
-                        if ((act->stop_trigger_ == nullptr || act->stop_trigger_->conditionGroup_.size() == 0) && act->IsComplete())
+                        if ((act->stop_trigger_ == nullptr || act->stop_trigger_->conditionGroup_.size() == 0) && act->maneuverGroup_.size() > 0 &&
+                            act->IsComplete())
                         {
-                            // No stop trigger, but all manevuergroups in act are done
+                            // No stop trigger, but all manevuergroups in act are done (if no maneuvergroups, run forever)
                             act->End(simulationTime_);
                         }
                     }
@@ -494,7 +495,7 @@ int ScenarioEngine::step(double deltaSimTime)
 
                 if (story->IsActive())
                 {
-                    for (size_t j = 0; j < story->act_.size(); j++) 
+                    for (size_t j = 0; j < story->act_.size(); j++)
                     {
                         // Then step events
                         Act* act = story->act_[j];
@@ -581,9 +582,10 @@ int ScenarioEngine::step(double deltaSimTime)
             }
         }
 
-        if ((storyBoard.stop_trigger_ == nullptr || storyBoard.stop_trigger_->conditionGroup_.size() == 0) && storyBoard.IsComplete())
+        if ((storyBoard.stop_trigger_ == nullptr || storyBoard.stop_trigger_->conditionGroup_.size() == 0) && storyBoard.story_.size() > 0 &&
+            storyBoard.IsComplete())
         {
-            // No stop trigger, but all stories are done
+            // No stop trigger, but all stories are done (if no stories, run forever)
             LOG("All stories are done, quit now");
             storyBoard.End(simulationTime_);
         }
@@ -1370,7 +1372,7 @@ void ScenarioEngine::ResetEvents()
                     {
                         Event* event = maneuver->event_[m];
 
-                        if (event->state_ == StoryBoardElement::State::COMPLETE || event->next_state_ == StoryBoardElement::State::COMPLETE)
+                        if (event->state_ == StoryBoardElement::State::COMPLETE)
                         {
                             bool NoTele = true;
                             for (size_t n = 0; n < event->action_.size(); n++)
