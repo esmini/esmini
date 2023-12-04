@@ -4348,9 +4348,10 @@ void ScenarioReader::parseOSCManeuver(Maneuver *maneuver, pugi::xml_node maneuve
 
 int ScenarioReader::parseStoryBoard(StoryBoard &storyBoard)
 {
-    pugi::xml_node storyNode = osc_root_.child("Storyboard").child("Story");
+    pugi::xml_node storyBoardNode = osc_root_.child("Storyboard");
+    pugi::xml_node storyNode      = storyBoardNode.child("Story");
 
-    for (; storyNode; storyNode = storyNode.next_sibling())
+    for (; storyNode; storyNode = storyNode.next_sibling("Story"))
     {
         std::string storyNodeName(storyNode.name());
 
@@ -4474,10 +4475,13 @@ int ScenarioReader::parseStoryBoard(StoryBoard &storyBoard)
             storyBoard.story_.push_back(story);
             parameters.RestoreParameterDeclarations();
         }
-        else if (storyNodeName == "StopTrigger")
-        {
-            storyBoard.stop_trigger_ = parseTrigger(storyNode, false);
-        }
+    }
+
+    pugi::xml_node stopTrigger = storyBoardNode.child("StopTrigger");
+
+    if (!stopTrigger.empty())
+    {
+        storyBoard.stop_trigger_ = parseTrigger(stopTrigger, false);
     }
 
     // Log parameter declarations
