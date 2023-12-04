@@ -8745,7 +8745,7 @@ int Position::SetInertiaPosMode(double x, double y, double z, double h, double p
         }
         else
         {
-            SetH(h);
+            SetHeading(h);
         }
     }
 
@@ -8757,7 +8757,7 @@ int Position::SetInertiaPosMode(double x, double y, double z, double h, double p
         }
         else
         {
-            SetP(p);
+            SetPitch(p);
         }
     }
 
@@ -8769,7 +8769,7 @@ int Position::SetInertiaPosMode(double x, double y, double z, double h, double p
         }
         else
         {
-            SetR(r);
+            SetRoll(r);
         }
     }
 
