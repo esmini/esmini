@@ -6858,14 +6858,16 @@ void OpenDrive::SetRoadMarkOSIPoints()
                                         lane->GetId());
                                 }
                             }
+                            x0.clear();
+                            y0.clear();
+                            x1.clear();
+                            y1.clear();
+                            osi_point.clear();
                             // Explicit lines
                             if (lane_roadMark->GetNumberOfRoadMarkExplicit() > 0)
                             {
 
-                                x0.clear();
-                                y0.clear();
-                                x1.clear();
-                                y1.clear();
+
                                 lane_roadMarkExplicit = lane_roadMark->GetLaneRoadMarkExplicitByIdx(0);
 
                                 for (int n = 0; n < lane_roadMarkExplicit->GetNumberOfLaneRoadMarkExplicitLines(); n++){
@@ -7026,7 +7028,13 @@ void OpenDrive::SetRoadMarkOSIPoints()
                                         // Clear x-y collectors for next iteration
                                         x1.clear();
                                         y1.clear();
+
                                     }
+                                    x0.clear();
+                                    y0.clear();
+                                    x1.clear();
+                                    y1.clear();
+                                    osi_point.clear();
                                 }
                             }
                         }

@@ -2518,6 +2518,18 @@ TEST(ExplicitLineTest, TestExplicitRoadMark)
     EXPECT_NEAR(line->GetTOffset(), 0.2,1e-3);
     EXPECT_NEAR(line->GetWidth(), 0.2,1e-3);
     EXPECT_NEAR(line->GetSOffset(), 0.0 ,1e-3);
+    EXPECT_EQ(line->GetOSIPoints()->GetNumOfOSIPoints(), 2);
+    EXPECT_NEAR(line->GetOSIPoints()->GetXfromIdx(0), 2,1e-3);
+    EXPECT_NEAR(line->GetOSIPoints()->GetXfromIdx(1), 3,1e-3);
+
+    line = lane_road_mark_explicit->GetLaneRoadMarkExplicitLineByIdx(1);
+    EXPECT_NEAR(line->GetLength(), 1.0,1e-3);
+    EXPECT_NEAR(line->GetTOffset(), -0.2,1e-3);
+    EXPECT_NEAR(line->GetWidth(), 0.2,1e-3);
+    EXPECT_NEAR(line->GetSOffset(), 0.0 ,1e-3);
+    EXPECT_EQ(line->GetOSIPoints()->GetNumOfOSIPoints(), 2);
+    EXPECT_NEAR(line->GetOSIPoints()->GetXfromIdx(0), 2,1e-3);
+    EXPECT_NEAR(line->GetOSIPoints()->GetXfromIdx(1), 3,1e-3);
 
     // Check left lane (single line)
     lane = lane_section->GetLaneById(1);
