@@ -386,6 +386,158 @@ int RoadGeom::AddRoadMarks(roadmanager::Lane* lane, osg::Group* parent)
                 }
             }
         }
+
+        // Explicit roadmarks
+
+        for (int m = 0; m < lane_roadmark->GetNumberOfRoadMarkExplicit(); m++)
+        {
+            roadmanager::LaneRoadMarkExplicit* lane_roadmarkexplicit = lane_roadmark->GetLaneRoadMarkExplicitByIdx(m);
+
+            for (int n = 0; n < lane_roadmarkexplicit->GetNumberOfLaneRoadMarkExplicitLines(); n++)
+            {
+                roadmanager::LaneRoadMarkExplicitLine* lane_roadmarkexplicitline = lane_roadmarkexplicit->GetLaneRoadMarkExplicitLineByIdx(n);
+                roadmanager::OSIPoints*            curr_osi_rm           = lane_roadmarkexplicitline->GetOSIPoints();
+
+
+
+                std::vector<roadmanager::PointStruct> osi_points = curr_osi_rm->GetPoints();
+
+                if (osi_points.size() < 2)
+                {
+                    // No line - skip
+                    continue;
+                }
+
+                osg::ref_ptr<osg::Vec3Array>        vertices = new osg::Vec3Array(static_cast<unsigned int>(osi_points.size() * 2));
+                osg::ref_ptr<osg::DrawElementsUInt> indices =
+                    new osg::DrawElementsUInt(GL_TRIANGLE_STRIP, static_cast<unsigned int>(osi_points.size()) * 2);
+
+                double l0p0l[2] = {0.0, 0.0};
+                double l0p0r[2] = {0.0, 0.0};
+                double l0p1l[2] = {0.0, 0.0};
+                double l0p1r[2] = {0.0, 0.0};
+                double l1p0l[2] = {0.0, 0.0};
+                double l1p0r[2] = {0.0, 0.0};
+                double l1p1l[2] = {0.0, 0.0};
+                double l1p1r[2] = {0.0, 0.0};
+
+                for (size_t q = 0; q < osi_points.size(); q++)
+                {
+                    // Find offset points of solid roadmark at each OSI point
+
+                    if (q < osi_points.size() - 1)
+                    {
+                        OffsetVec2D(osi_points[q].x,
+                                    osi_points[q].y,
+                                    osi_points[q + 1].x,
+                                    osi_points[q + 1].y,
+                                    -lane_roadmarkexplicitline->GetWidth() / 2,
+                                    l1p0l[0],
+                                    l1p0l[1],
+                                    l1p1l[0],
+                                    l1p1l[1]);
+                        OffsetVec2D(osi_points[q].x,
+                                    osi_points[q].y,
+                                    osi_points[q + 1].x,
+                                    osi_points[q + 1].y,
+                                    lane_roadmarkexplicitline->GetWidth() / 2,
+                                    l1p0r[0],
+                                    l1p0r[1],
+                                    l1p1r[0],
+                                    l1p1r[1]);
+                    }
+
+                    if (q == 0)
+                    {
+                        // First point, no adjustment needed
+                        (*vertices)[q * 2 + 0].set(static_cast<float>(l1p0l[0]),
+                                                    static_cast<float>(l1p0l[1]),
+                                                    static_cast<float>(osi_points[q].z));
+                        (*vertices)[q * 2 + 1].set(static_cast<float>(l1p0r[0]),
+                                                    static_cast<float>(l1p0r[1]),
+                                                    static_cast<float>(osi_points[q].z));
+                    }
+                    else if (q == osi_points.size() - 1)
+                    {
+                        // Last point, no adjustment needed
+                        (*vertices)[q * 2 + 0].set(static_cast<float>(l1p1l[0]),
+                                                    static_cast<float>(l1p1l[1]),
+                                                    static_cast<float>(osi_points[q].z));
+                        (*vertices)[q * 2 + 1].set(static_cast<float>(l1p1r[0]),
+                                                    static_cast<float>(l1p1r[1]),
+                                                    static_cast<float>(osi_points[q].z));
+                    }
+                    else
+                    {
+                        // Find intersection of non parallel lines
+                        double isect[2];
+
+                        if (GetIntersectionOfTwoLineSegments(l0p0l[0],
+                                                                l0p0l[1],
+                                                                l0p1l[0],
+                                                                l0p1l[1],
+                                                                l1p0l[0],
+                                                                l1p0l[1],
+                                                                l1p1l[0],
+                                                                l1p1l[1],
+                                                                isect[0],
+                                                                isect[1]) == 0)
+                        {
+                            (*vertices)[q * 2 + 0].set(static_cast<float>(isect[0]),
+                                                        static_cast<float>(isect[1]),
+                                                        static_cast<float>(osi_points[q].z));
+                        }
+                        else
+                        {
+                            // lines parallel, no adjustment needed
+                            (*vertices)[q * 2 + 0].set(static_cast<float>(l1p0l[0]),
+                                                        static_cast<float>(l1p0l[1]),
+                                                        static_cast<float>(osi_points[q].z));
+                        }
+
+                        if (GetIntersectionOfTwoLineSegments(l0p0r[0],
+                                                                l0p0r[1],
+                                                                l0p1r[0],
+                                                                l0p1r[1],
+                                                                l1p0r[0],
+                                                                l1p0r[1],
+                                                                l1p1r[0],
+                                                                l1p1r[1],
+                                                                isect[0],
+                                                                isect[1]) == 0)
+                        {
+                            (*vertices)[q * 2 + 1].set(static_cast<float>(isect[0]),
+                                                        static_cast<float>(isect[1]),
+                                                        static_cast<float>(osi_points[q].z));
+                        }
+                        else
+                        {
+                            // lines parallel, no adjustment needed
+                            (*vertices)[q * 2 + 1].set(static_cast<float>(l1p0r[0]),
+                                                        static_cast<float>(l1p0r[1]),
+                                                        static_cast<float>(osi_points[q].z));
+                        }
+                    }
+
+                    if (q < osi_points.size() - 1)
+                    {
+                        // Shift points one step forward
+                        memcpy(l0p0l, l1p0l, sizeof(l0p0l));
+                        memcpy(l0p0r, l1p0r, sizeof(l0p0r));
+                        memcpy(l0p1l, l1p1l, sizeof(l0p0l));
+                        memcpy(l0p1r, l1p1r, sizeof(l0p0r));
+                    }
+
+                    // Set indices
+                    (*indices)[q * 2 + 0] = static_cast<unsigned int>(q) * 2 + 0;
+                    (*indices)[q * 2 + 1] = static_cast<unsigned int>(q) * 2 + 1;
+                }
+
+                // Finally create and add OSG geometries
+                AddRoadMarkGeom(vertices, indices, lane_roadmark->GetColor());
+
+            }
+        }
     }
 
     return 0;
