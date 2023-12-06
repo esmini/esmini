@@ -2485,6 +2485,67 @@ TEST(RoadEdgeTest, TestRoadEdge)
     odr->Clear();
 }
 
+TEST(ExplicitLineTest, TestExplicitRoadMark)
+{
+    ASSERT_EQ(roadmanager::Position::LoadOpenDrive("../../../EnvironmentSimulator/Unittest/xodr/explicit_line.xodr"), true);
+    roadmanager::OpenDrive *odr = Position::GetOpenDrive();
+    ASSERT_NE(odr, nullptr);
+
+    EXPECT_EQ(odr->GetNumOfRoads(), 1);
+    Road *road = odr->GetRoadById(1);
+    EXPECT_EQ(road->GetNumberOfLaneSections(), 2);
+
+    LaneSection  *lane_section = road->GetLaneSectionByIdx(0);
+    Lane         *lane         = lane_section->GetLaneById(0);
+    LaneRoadMark *roadmark     = lane->GetLaneRoadMarkByIdx(0);
+    EXPECT_EQ(roadmark->GetNumberOfRoadMarkExplicit(), 0);
+
+    lane_section = road->GetLaneSectionByIdx(1);
+
+    // Check centerlane (double line)
+    lane     = lane_section->GetLaneById(0);
+    roadmark = lane->GetLaneRoadMarkByIdx(0);
+    EXPECT_EQ(roadmark->GetNumberOfRoadMarkExplicit(), 1);
+    LaneRoadMarkExplicit *lane_road_mark_explicit = roadmark->GetLaneRoadMarkExplicitByIdx(0);
+
+    EXPECT_EQ(lane_road_mark_explicit->GetNumberOfLaneRoadMarkExplicitLines(), 2);
+    LaneRoadMarkExplicitLine *line = lane_road_mark_explicit->GetLaneRoadMarkExplicitLineByIdx(0);
+    EXPECT_NEAR(line->GetLength(), 1.0, 1e-3);
+    EXPECT_NEAR(line->GetTOffset(), 0.2, 1e-3);
+    EXPECT_NEAR(line->GetWidth(), 0.2, 1e-3);
+    EXPECT_NEAR(line->GetSOffset(), 0.0, 1e-3);
+    EXPECT_EQ(line->GetOSIPoints()->GetNumOfOSIPoints(), 2);
+    EXPECT_NEAR(line->GetOSIPoints()->GetXfromIdx(0), 2, 1e-3);
+    EXPECT_NEAR(line->GetOSIPoints()->GetXfromIdx(1), 3, 1e-3);
+
+    line = lane_road_mark_explicit->GetLaneRoadMarkExplicitLineByIdx(1);
+    EXPECT_NEAR(line->GetLength(), 1.0, 1e-3);
+    EXPECT_NEAR(line->GetTOffset(), -0.2, 1e-3);
+    EXPECT_NEAR(line->GetWidth(), 0.2, 1e-3);
+    EXPECT_NEAR(line->GetSOffset(), 0.0, 1e-3);
+    EXPECT_EQ(line->GetOSIPoints()->GetNumOfOSIPoints(), 2);
+    EXPECT_NEAR(line->GetOSIPoints()->GetXfromIdx(0), 2, 1e-3);
+    EXPECT_NEAR(line->GetOSIPoints()->GetXfromIdx(1), 3, 1e-3);
+
+    // Check left lane (single line)
+    lane     = lane_section->GetLaneById(1);
+    roadmark = lane->GetLaneRoadMarkByIdx(0);
+    EXPECT_EQ(roadmark->GetNumberOfRoadMarkExplicit(), 1);
+    lane_road_mark_explicit = roadmark->GetLaneRoadMarkExplicitByIdx(0);
+
+    EXPECT_EQ(lane_road_mark_explicit->GetNumberOfLaneRoadMarkExplicitLines(), 1);
+    line = lane_road_mark_explicit->GetLaneRoadMarkExplicitLineByIdx(0);
+    EXPECT_NEAR(line->GetLength(), 1.0, 1e-3);
+    EXPECT_NEAR(line->GetTOffset(), 0.0, 1e-3);
+    EXPECT_NEAR(line->GetWidth(), 0.15, 1e-3);
+    EXPECT_NEAR(line->GetSOffset(), 0.0, 1e-3);
+
+    EXPECT_EQ(line->GetOSIPoints()->GetNumOfOSIPoints(), 2);
+    EXPECT_NEAR(line->GetOSIPoints()->GetXfromIdx(0), 2, 1e-3);
+    EXPECT_NEAR(line->GetOSIPoints()->GetXfromIdx(1), 3, 1e-3);
+    odr->Clear();
+}
+
 TEST(PositionModeTest, TestModeBitmasks)
 {
     ASSERT_EQ(roadmanager::Position::LoadOpenDrive("../../../EnvironmentSimulator/Unittest/xodr/straight_500_superelevation_elevation_curve.xodr"),

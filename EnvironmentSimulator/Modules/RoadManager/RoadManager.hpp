@@ -631,6 +631,54 @@ namespace roadmanager
         RoadMarkColor        color_;      // if set, supersedes setting in <RoadMark>
     };
 
+    class LaneRoadMarkExplicitLine
+    {
+    public:
+        LaneRoadMarkExplicitLine(double length, double t_offset, double s_offset, LaneRoadMarkTypeLine::RoadMarkTypeLineRule rule, double width)
+            : length_(length),
+              t_offset_(t_offset),
+              s_offset_(s_offset),
+              rule_(rule),
+              width_(width)
+        {
+        }
+        ~LaneRoadMarkExplicitLine(){};
+        double GetSOffset() const
+        {
+            return s_offset_;
+        }
+        double GetTOffset() const
+        {
+            return t_offset_;
+        }
+        double GetLength() const
+        {
+            return length_;
+        }
+        double GetWidth() const
+        {
+            return width_;
+        }
+        OSIPoints *GetOSIPoints()
+        {
+            return &osi_points_;
+        }
+        OSIPoints osi_points_;
+        void      SetGlobalId();
+        int       GetGlobalId() const
+        {
+            return global_id_;
+        }
+
+    private:
+        double                                     length_;
+        double                                     t_offset_;
+        double                                     s_offset_;
+        LaneRoadMarkTypeLine::RoadMarkTypeLineRule rule_;
+        double                                     width_;
+        int                                        global_id_;  // Unique ID for OSI
+    };
+
     class LaneRoadMarkType
     {
     public:
@@ -657,6 +705,24 @@ namespace roadmanager
         std::string                                        name_;
         double                                             width_;
         std::vector<std::shared_ptr<LaneRoadMarkTypeLine>> lane_roadMarkTypeLine_;
+    };
+
+    class LaneRoadMarkExplicit
+    {
+    public:
+        LaneRoadMarkExplicit()
+        {
+        }
+
+        void                      AddLine(std::shared_ptr<LaneRoadMarkExplicitLine> lane_roadMarkExplicitLine);
+        LaneRoadMarkExplicitLine *GetLaneRoadMarkExplicitLineByIdx(int idx) const;
+        int                       GetNumberOfLaneRoadMarkExplicitLines() const
+        {
+            return (int)lane_roadMarkExplicitLine_.size();
+        }
+
+    private:
+        std::vector<std::shared_ptr<LaneRoadMarkExplicitLine>> lane_roadMarkExplicitLine_;
     };
 
     class LaneRoadMark
@@ -716,6 +782,8 @@ namespace roadmanager
 
         void AddType(std::shared_ptr<LaneRoadMarkType> lane_roadMarkType);
 
+        void AddExplicit(std::shared_ptr<LaneRoadMarkExplicit> lane_roadMarkExplicit);
+
         double GetSOffset() const
         {
             return s_offset_;
@@ -755,19 +823,26 @@ namespace roadmanager
         }
         LaneRoadMarkType *GetLaneRoadMarkTypeByIdx(int idx) const;
 
+        int GetNumberOfRoadMarkExplicit() const
+        {
+            return (int)lane_roadMarkExplicit_.size();
+        }
+        LaneRoadMarkExplicit *GetLaneRoadMarkExplicitByIdx(int idx) const;
+
         static RoadMarkColor ParseColor(pugi::xml_node node);
         static std::string   RoadMarkColor2Str(RoadMarkColor color);
 
     private:
-        double                                         s_offset_;
-        RoadMarkType                                   type_;
-        RoadMarkWeight                                 weight_;
-        RoadMarkColor                                  color_;
-        RoadMarkMaterial                               material_;
-        RoadMarkLaneChange                             lane_change_;
-        double                                         width_;
-        double                                         height_;
-        std::vector<std::shared_ptr<LaneRoadMarkType>> lane_roadMarkType_;
+        double                                             s_offset_;
+        RoadMarkType                                       type_;
+        RoadMarkWeight                                     weight_;
+        RoadMarkColor                                      color_;
+        RoadMarkMaterial                                   material_;
+        RoadMarkLaneChange                                 lane_change_;
+        double                                             width_;
+        double                                             height_;
+        std::vector<std::shared_ptr<LaneRoadMarkType>>     lane_roadMarkType_;
+        std::vector<std::shared_ptr<LaneRoadMarkExplicit>> lane_roadMarkExplicit_;
     };
 
     class LaneOffset
