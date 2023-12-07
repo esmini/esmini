@@ -1,5 +1,5 @@
 <OpenSCENARIO xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="OpenScenario.xsd">
-    <FileHeader description="Exercise positions in multiple road headings and slopes" author="esmini team" revMajor="1" revMinor="2" date="2023-12-04T22:12:40.974475"/>
+    <FileHeader description="Exercise positions in multiple road headings and slopes" author="esmini team" revMajor="1" revMinor="2" date="2023-12-07T18:54:16.112085"/>
     <ParameterDeclarations/>
     <CatalogLocations>
         <VehicleCatalog>
@@ -850,6 +850,28 @@
                                 </ConditionGroup>
                             </StartTrigger>
                         </Event>
+                        <Event name="event_relative_lane_position_abs_h_0_-1_8" priority="override" maximumExecutionCount="1">
+                            <Action name="action_relative_lane_position_abs_h_0_-1_8">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <RelativeLanePosition entityRef="car_0_-1" ds="-2.0" offset="0.0" dLane="0">
+                                                <Orientation h="3.141592653589793" type="absolute"/>
+                                            </RelativeLanePosition>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="time_trigger_0_-1_8" delay="0.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="0.8" rule="greaterOrEqual"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
                     </Maneuver>
                 </ManeuverGroup>
                 <ManeuverGroup name="star_maneuver_group_car_0_1" maximumExecutionCount="1">
@@ -1006,6 +1028,28 @@
                                     <Condition name="time_trigger_0_1_7" delay="0.0" conditionEdge="none">
                                         <ByValueCondition>
                                             <SimulationTimeCondition value="0.7000000000000001" rule="greaterOrEqual"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event name="event_relative_lane_position_ds_0_1_8" priority="override" maximumExecutionCount="1">
+                            <Action name="action_relative_lane_position_ds_0_1_8">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <RelativeLanePosition entityRef="car_0_1" ds="-2.0" offset="0.0" dLane="0">
+                                                <Orientation h="3.141592653589793" type="absolute"/>
+                                            </RelativeLanePosition>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="time_trigger_0_1_8" delay="0.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="0.8" rule="greaterOrEqual"/>
                                         </ByValueCondition>
                                     </Condition>
                                 </ConditionGroup>
@@ -1172,6 +1216,28 @@
                                 </ConditionGroup>
                             </StartTrigger>
                         </Event>
+                        <Event name="event_relative_lane_position_abs_h_1_-1_8" priority="override" maximumExecutionCount="1">
+                            <Action name="action_relative_lane_position_abs_h_1_-1_8">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <RelativeLanePosition entityRef="car_1_-1" ds="-2.0" offset="0.0" dLane="0">
+                                                <Orientation h="3.141592653589793" type="absolute"/>
+                                            </RelativeLanePosition>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="time_trigger_1_-1_8" delay="0.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="0.8" rule="greaterOrEqual"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
                     </Maneuver>
                 </ManeuverGroup>
                 <ManeuverGroup name="star_maneuver_group_car_1_1" maximumExecutionCount="1">
@@ -1328,6 +1394,28 @@
                                     <Condition name="time_trigger_1_1_7" delay="0.0" conditionEdge="none">
                                         <ByValueCondition>
                                             <SimulationTimeCondition value="0.7000000000000001" rule="greaterOrEqual"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event name="event_relative_lane_position_ds_1_1_8" priority="override" maximumExecutionCount="1">
+                            <Action name="action_relative_lane_position_ds_1_1_8">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <RelativeLanePosition entityRef="car_1_1" ds="-2.0" offset="0.0" dLane="0">
+                                                <Orientation h="3.141592653589793" type="absolute"/>
+                                            </RelativeLanePosition>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="time_trigger_1_1_8" delay="0.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="0.8" rule="greaterOrEqual"/>
                                         </ByValueCondition>
                                     </Condition>
                                 </ConditionGroup>
@@ -1494,6 +1582,28 @@
                                 </ConditionGroup>
                             </StartTrigger>
                         </Event>
+                        <Event name="event_relative_lane_position_abs_h_2_-1_8" priority="override" maximumExecutionCount="1">
+                            <Action name="action_relative_lane_position_abs_h_2_-1_8">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <RelativeLanePosition entityRef="car_2_-1" ds="-2.0" offset="0.0" dLane="0">
+                                                <Orientation h="3.141592653589793" type="absolute"/>
+                                            </RelativeLanePosition>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="time_trigger_2_-1_8" delay="0.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="0.8" rule="greaterOrEqual"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
                     </Maneuver>
                 </ManeuverGroup>
                 <ManeuverGroup name="star_maneuver_group_car_2_1" maximumExecutionCount="1">
@@ -1650,6 +1760,28 @@
                                     <Condition name="time_trigger_2_1_7" delay="0.0" conditionEdge="none">
                                         <ByValueCondition>
                                             <SimulationTimeCondition value="0.7000000000000001" rule="greaterOrEqual"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event name="event_relative_lane_position_ds_2_1_8" priority="override" maximumExecutionCount="1">
+                            <Action name="action_relative_lane_position_ds_2_1_8">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <RelativeLanePosition entityRef="car_2_1" ds="-2.0" offset="0.0" dLane="0">
+                                                <Orientation h="3.141592653589793" type="absolute"/>
+                                            </RelativeLanePosition>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="time_trigger_2_1_8" delay="0.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="0.8" rule="greaterOrEqual"/>
                                         </ByValueCondition>
                                     </Condition>
                                 </ConditionGroup>
@@ -1816,6 +1948,28 @@
                                 </ConditionGroup>
                             </StartTrigger>
                         </Event>
+                        <Event name="event_relative_lane_position_abs_h_3_-1_8" priority="override" maximumExecutionCount="1">
+                            <Action name="action_relative_lane_position_abs_h_3_-1_8">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <RelativeLanePosition entityRef="car_3_-1" ds="-2.0" offset="0.0" dLane="0">
+                                                <Orientation h="3.9269908169872414" type="absolute"/>
+                                            </RelativeLanePosition>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="time_trigger_3_-1_8" delay="0.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="0.8" rule="greaterOrEqual"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
                     </Maneuver>
                 </ManeuverGroup>
                 <ManeuverGroup name="star_maneuver_group_car_3_1" maximumExecutionCount="1">
@@ -1972,6 +2126,28 @@
                                     <Condition name="time_trigger_3_1_7" delay="0.0" conditionEdge="none">
                                         <ByValueCondition>
                                             <SimulationTimeCondition value="0.7000000000000001" rule="greaterOrEqual"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event name="event_relative_lane_position_ds_3_1_8" priority="override" maximumExecutionCount="1">
+                            <Action name="action_relative_lane_position_ds_3_1_8">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <RelativeLanePosition entityRef="car_3_1" ds="-2.0" offset="0.0" dLane="0">
+                                                <Orientation h="3.9269908169872414" type="absolute"/>
+                                            </RelativeLanePosition>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="time_trigger_3_1_8" delay="0.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="0.8" rule="greaterOrEqual"/>
                                         </ByValueCondition>
                                     </Condition>
                                 </ConditionGroup>
@@ -2138,6 +2314,28 @@
                                 </ConditionGroup>
                             </StartTrigger>
                         </Event>
+                        <Event name="event_relative_lane_position_abs_h_4_-1_8" priority="override" maximumExecutionCount="1">
+                            <Action name="action_relative_lane_position_abs_h_4_-1_8">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <RelativeLanePosition entityRef="car_4_-1" ds="-2.0" offset="0.0" dLane="0">
+                                                <Orientation h="3.9269908169872414" type="absolute"/>
+                                            </RelativeLanePosition>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="time_trigger_4_-1_8" delay="0.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="0.8" rule="greaterOrEqual"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
                     </Maneuver>
                 </ManeuverGroup>
                 <ManeuverGroup name="star_maneuver_group_car_4_1" maximumExecutionCount="1">
@@ -2294,6 +2492,28 @@
                                     <Condition name="time_trigger_4_1_7" delay="0.0" conditionEdge="none">
                                         <ByValueCondition>
                                             <SimulationTimeCondition value="0.7000000000000001" rule="greaterOrEqual"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event name="event_relative_lane_position_ds_4_1_8" priority="override" maximumExecutionCount="1">
+                            <Action name="action_relative_lane_position_ds_4_1_8">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <RelativeLanePosition entityRef="car_4_1" ds="-2.0" offset="0.0" dLane="0">
+                                                <Orientation h="3.9269908169872414" type="absolute"/>
+                                            </RelativeLanePosition>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="time_trigger_4_1_8" delay="0.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="0.8" rule="greaterOrEqual"/>
                                         </ByValueCondition>
                                     </Condition>
                                 </ConditionGroup>
@@ -2460,6 +2680,28 @@
                                 </ConditionGroup>
                             </StartTrigger>
                         </Event>
+                        <Event name="event_relative_lane_position_abs_h_5_-1_8" priority="override" maximumExecutionCount="1">
+                            <Action name="action_relative_lane_position_abs_h_5_-1_8">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <RelativeLanePosition entityRef="car_5_-1" ds="-2.0" offset="0.0" dLane="0">
+                                                <Orientation h="3.9269908169872414" type="absolute"/>
+                                            </RelativeLanePosition>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="time_trigger_5_-1_8" delay="0.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="0.8" rule="greaterOrEqual"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
                     </Maneuver>
                 </ManeuverGroup>
                 <ManeuverGroup name="star_maneuver_group_car_5_1" maximumExecutionCount="1">
@@ -2616,6 +2858,28 @@
                                     <Condition name="time_trigger_5_1_7" delay="0.0" conditionEdge="none">
                                         <ByValueCondition>
                                             <SimulationTimeCondition value="0.7000000000000001" rule="greaterOrEqual"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event name="event_relative_lane_position_ds_5_1_8" priority="override" maximumExecutionCount="1">
+                            <Action name="action_relative_lane_position_ds_5_1_8">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <RelativeLanePosition entityRef="car_5_1" ds="-2.0" offset="0.0" dLane="0">
+                                                <Orientation h="3.9269908169872414" type="absolute"/>
+                                            </RelativeLanePosition>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="time_trigger_5_1_8" delay="0.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="0.8" rule="greaterOrEqual"/>
                                         </ByValueCondition>
                                     </Condition>
                                 </ConditionGroup>
@@ -2782,6 +3046,28 @@
                                 </ConditionGroup>
                             </StartTrigger>
                         </Event>
+                        <Event name="event_relative_lane_position_abs_h_6_-1_8" priority="override" maximumExecutionCount="1">
+                            <Action name="action_relative_lane_position_abs_h_6_-1_8">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <RelativeLanePosition entityRef="car_6_-1" ds="-2.0" offset="0.0" dLane="0">
+                                                <Orientation h="4.71238898038469" type="absolute"/>
+                                            </RelativeLanePosition>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="time_trigger_6_-1_8" delay="0.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="0.8" rule="greaterOrEqual"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
                     </Maneuver>
                 </ManeuverGroup>
                 <ManeuverGroup name="star_maneuver_group_car_6_1" maximumExecutionCount="1">
@@ -2938,6 +3224,28 @@
                                     <Condition name="time_trigger_6_1_7" delay="0.0" conditionEdge="none">
                                         <ByValueCondition>
                                             <SimulationTimeCondition value="0.7000000000000001" rule="greaterOrEqual"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event name="event_relative_lane_position_ds_6_1_8" priority="override" maximumExecutionCount="1">
+                            <Action name="action_relative_lane_position_ds_6_1_8">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <RelativeLanePosition entityRef="car_6_1" ds="-2.0" offset="0.0" dLane="0">
+                                                <Orientation h="4.71238898038469" type="absolute"/>
+                                            </RelativeLanePosition>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="time_trigger_6_1_8" delay="0.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="0.8" rule="greaterOrEqual"/>
                                         </ByValueCondition>
                                     </Condition>
                                 </ConditionGroup>
@@ -3104,6 +3412,28 @@
                                 </ConditionGroup>
                             </StartTrigger>
                         </Event>
+                        <Event name="event_relative_lane_position_abs_h_7_-1_8" priority="override" maximumExecutionCount="1">
+                            <Action name="action_relative_lane_position_abs_h_7_-1_8">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <RelativeLanePosition entityRef="car_7_-1" ds="-2.0" offset="0.0" dLane="0">
+                                                <Orientation h="4.71238898038469" type="absolute"/>
+                                            </RelativeLanePosition>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="time_trigger_7_-1_8" delay="0.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="0.8" rule="greaterOrEqual"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
                     </Maneuver>
                 </ManeuverGroup>
                 <ManeuverGroup name="star_maneuver_group_car_7_1" maximumExecutionCount="1">
@@ -3260,6 +3590,28 @@
                                     <Condition name="time_trigger_7_1_7" delay="0.0" conditionEdge="none">
                                         <ByValueCondition>
                                             <SimulationTimeCondition value="0.7000000000000001" rule="greaterOrEqual"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event name="event_relative_lane_position_ds_7_1_8" priority="override" maximumExecutionCount="1">
+                            <Action name="action_relative_lane_position_ds_7_1_8">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <RelativeLanePosition entityRef="car_7_1" ds="-2.0" offset="0.0" dLane="0">
+                                                <Orientation h="4.71238898038469" type="absolute"/>
+                                            </RelativeLanePosition>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="time_trigger_7_1_8" delay="0.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="0.8" rule="greaterOrEqual"/>
                                         </ByValueCondition>
                                     </Condition>
                                 </ConditionGroup>
@@ -3426,6 +3778,28 @@
                                 </ConditionGroup>
                             </StartTrigger>
                         </Event>
+                        <Event name="event_relative_lane_position_abs_h_8_-1_8" priority="override" maximumExecutionCount="1">
+                            <Action name="action_relative_lane_position_abs_h_8_-1_8">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <RelativeLanePosition entityRef="car_8_-1" ds="-2.0" offset="0.0" dLane="0">
+                                                <Orientation h="4.71238898038469" type="absolute"/>
+                                            </RelativeLanePosition>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="time_trigger_8_-1_8" delay="0.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="0.8" rule="greaterOrEqual"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
                     </Maneuver>
                 </ManeuverGroup>
                 <ManeuverGroup name="star_maneuver_group_car_8_1" maximumExecutionCount="1">
@@ -3582,6 +3956,28 @@
                                     <Condition name="time_trigger_8_1_7" delay="0.0" conditionEdge="none">
                                         <ByValueCondition>
                                             <SimulationTimeCondition value="0.7000000000000001" rule="greaterOrEqual"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event name="event_relative_lane_position_ds_8_1_8" priority="override" maximumExecutionCount="1">
+                            <Action name="action_relative_lane_position_ds_8_1_8">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <RelativeLanePosition entityRef="car_8_1" ds="-2.0" offset="0.0" dLane="0">
+                                                <Orientation h="4.71238898038469" type="absolute"/>
+                                            </RelativeLanePosition>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="time_trigger_8_1_8" delay="0.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="0.8" rule="greaterOrEqual"/>
                                         </ByValueCondition>
                                     </Condition>
                                 </ConditionGroup>
@@ -3748,6 +4144,28 @@
                                 </ConditionGroup>
                             </StartTrigger>
                         </Event>
+                        <Event name="event_relative_lane_position_abs_h_9_-1_8" priority="override" maximumExecutionCount="1">
+                            <Action name="action_relative_lane_position_abs_h_9_-1_8">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <RelativeLanePosition entityRef="car_9_-1" ds="-2.0" offset="0.0" dLane="0">
+                                                <Orientation h="5.497787143782138" type="absolute"/>
+                                            </RelativeLanePosition>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="time_trigger_9_-1_8" delay="0.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="0.8" rule="greaterOrEqual"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
                     </Maneuver>
                 </ManeuverGroup>
                 <ManeuverGroup name="star_maneuver_group_car_9_1" maximumExecutionCount="1">
@@ -3904,6 +4322,28 @@
                                     <Condition name="time_trigger_9_1_7" delay="0.0" conditionEdge="none">
                                         <ByValueCondition>
                                             <SimulationTimeCondition value="0.7000000000000001" rule="greaterOrEqual"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event name="event_relative_lane_position_ds_9_1_8" priority="override" maximumExecutionCount="1">
+                            <Action name="action_relative_lane_position_ds_9_1_8">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <RelativeLanePosition entityRef="car_9_1" ds="-2.0" offset="0.0" dLane="0">
+                                                <Orientation h="5.497787143782138" type="absolute"/>
+                                            </RelativeLanePosition>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="time_trigger_9_1_8" delay="0.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="0.8" rule="greaterOrEqual"/>
                                         </ByValueCondition>
                                     </Condition>
                                 </ConditionGroup>
@@ -4070,6 +4510,28 @@
                                 </ConditionGroup>
                             </StartTrigger>
                         </Event>
+                        <Event name="event_relative_lane_position_abs_h_10_-1_8" priority="override" maximumExecutionCount="1">
+                            <Action name="action_relative_lane_position_abs_h_10_-1_8">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <RelativeLanePosition entityRef="car_10_-1" ds="-2.0" offset="0.0" dLane="0">
+                                                <Orientation h="5.497787143782138" type="absolute"/>
+                                            </RelativeLanePosition>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="time_trigger_10_-1_8" delay="0.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="0.8" rule="greaterOrEqual"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
                     </Maneuver>
                 </ManeuverGroup>
                 <ManeuverGroup name="star_maneuver_group_car_10_1" maximumExecutionCount="1">
@@ -4226,6 +4688,28 @@
                                     <Condition name="time_trigger_10_1_7" delay="0.0" conditionEdge="none">
                                         <ByValueCondition>
                                             <SimulationTimeCondition value="0.7000000000000001" rule="greaterOrEqual"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event name="event_relative_lane_position_ds_10_1_8" priority="override" maximumExecutionCount="1">
+                            <Action name="action_relative_lane_position_ds_10_1_8">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <RelativeLanePosition entityRef="car_10_1" ds="-2.0" offset="0.0" dLane="0">
+                                                <Orientation h="5.497787143782138" type="absolute"/>
+                                            </RelativeLanePosition>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="time_trigger_10_1_8" delay="0.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="0.8" rule="greaterOrEqual"/>
                                         </ByValueCondition>
                                     </Condition>
                                 </ConditionGroup>
@@ -4392,6 +4876,28 @@
                                 </ConditionGroup>
                             </StartTrigger>
                         </Event>
+                        <Event name="event_relative_lane_position_abs_h_11_-1_8" priority="override" maximumExecutionCount="1">
+                            <Action name="action_relative_lane_position_abs_h_11_-1_8">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <RelativeLanePosition entityRef="car_11_-1" ds="-2.0" offset="0.0" dLane="0">
+                                                <Orientation h="5.497787143782138" type="absolute"/>
+                                            </RelativeLanePosition>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="time_trigger_11_-1_8" delay="0.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="0.8" rule="greaterOrEqual"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
                     </Maneuver>
                 </ManeuverGroup>
                 <ManeuverGroup name="star_maneuver_group_car_11_1" maximumExecutionCount="1">
@@ -4548,6 +5054,28 @@
                                     <Condition name="time_trigger_11_1_7" delay="0.0" conditionEdge="none">
                                         <ByValueCondition>
                                             <SimulationTimeCondition value="0.7000000000000001" rule="greaterOrEqual"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event name="event_relative_lane_position_ds_11_1_8" priority="override" maximumExecutionCount="1">
+                            <Action name="action_relative_lane_position_ds_11_1_8">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <RelativeLanePosition entityRef="car_11_1" ds="-2.0" offset="0.0" dLane="0">
+                                                <Orientation h="5.497787143782138" type="absolute"/>
+                                            </RelativeLanePosition>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="time_trigger_11_1_8" delay="0.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="0.8" rule="greaterOrEqual"/>
                                         </ByValueCondition>
                                     </Condition>
                                 </ConditionGroup>
@@ -4714,6 +5242,28 @@
                                 </ConditionGroup>
                             </StartTrigger>
                         </Event>
+                        <Event name="event_relative_lane_position_abs_h_12_-1_8" priority="override" maximumExecutionCount="1">
+                            <Action name="action_relative_lane_position_abs_h_12_-1_8">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <RelativeLanePosition entityRef="car_12_-1" ds="-2.0" offset="0.0" dLane="0">
+                                                <Orientation h="6.283185307179586" type="absolute"/>
+                                            </RelativeLanePosition>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="time_trigger_12_-1_8" delay="0.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="0.8" rule="greaterOrEqual"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
                     </Maneuver>
                 </ManeuverGroup>
                 <ManeuverGroup name="star_maneuver_group_car_12_1" maximumExecutionCount="1">
@@ -4870,6 +5420,28 @@
                                     <Condition name="time_trigger_12_1_7" delay="0.0" conditionEdge="none">
                                         <ByValueCondition>
                                             <SimulationTimeCondition value="0.7000000000000001" rule="greaterOrEqual"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event name="event_relative_lane_position_ds_12_1_8" priority="override" maximumExecutionCount="1">
+                            <Action name="action_relative_lane_position_ds_12_1_8">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <RelativeLanePosition entityRef="car_12_1" ds="-2.0" offset="0.0" dLane="0">
+                                                <Orientation h="6.283185307179586" type="absolute"/>
+                                            </RelativeLanePosition>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="time_trigger_12_1_8" delay="0.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="0.8" rule="greaterOrEqual"/>
                                         </ByValueCondition>
                                     </Condition>
                                 </ConditionGroup>
@@ -5036,6 +5608,28 @@
                                 </ConditionGroup>
                             </StartTrigger>
                         </Event>
+                        <Event name="event_relative_lane_position_abs_h_13_-1_8" priority="override" maximumExecutionCount="1">
+                            <Action name="action_relative_lane_position_abs_h_13_-1_8">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <RelativeLanePosition entityRef="car_13_-1" ds="-2.0" offset="0.0" dLane="0">
+                                                <Orientation h="6.283185307179586" type="absolute"/>
+                                            </RelativeLanePosition>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="time_trigger_13_-1_8" delay="0.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="0.8" rule="greaterOrEqual"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
                     </Maneuver>
                 </ManeuverGroup>
                 <ManeuverGroup name="star_maneuver_group_car_13_1" maximumExecutionCount="1">
@@ -5192,6 +5786,28 @@
                                     <Condition name="time_trigger_13_1_7" delay="0.0" conditionEdge="none">
                                         <ByValueCondition>
                                             <SimulationTimeCondition value="0.7000000000000001" rule="greaterOrEqual"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event name="event_relative_lane_position_ds_13_1_8" priority="override" maximumExecutionCount="1">
+                            <Action name="action_relative_lane_position_ds_13_1_8">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <RelativeLanePosition entityRef="car_13_1" ds="-2.0" offset="0.0" dLane="0">
+                                                <Orientation h="6.283185307179586" type="absolute"/>
+                                            </RelativeLanePosition>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="time_trigger_13_1_8" delay="0.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="0.8" rule="greaterOrEqual"/>
                                         </ByValueCondition>
                                     </Condition>
                                 </ConditionGroup>
@@ -5358,6 +5974,28 @@
                                 </ConditionGroup>
                             </StartTrigger>
                         </Event>
+                        <Event name="event_relative_lane_position_abs_h_14_-1_8" priority="override" maximumExecutionCount="1">
+                            <Action name="action_relative_lane_position_abs_h_14_-1_8">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <RelativeLanePosition entityRef="car_14_-1" ds="-2.0" offset="0.0" dLane="0">
+                                                <Orientation h="6.283185307179586" type="absolute"/>
+                                            </RelativeLanePosition>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="time_trigger_14_-1_8" delay="0.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="0.8" rule="greaterOrEqual"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
                     </Maneuver>
                 </ManeuverGroup>
                 <ManeuverGroup name="star_maneuver_group_car_14_1" maximumExecutionCount="1">
@@ -5514,6 +6152,28 @@
                                     <Condition name="time_trigger_14_1_7" delay="0.0" conditionEdge="none">
                                         <ByValueCondition>
                                             <SimulationTimeCondition value="0.7000000000000001" rule="greaterOrEqual"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event name="event_relative_lane_position_ds_14_1_8" priority="override" maximumExecutionCount="1">
+                            <Action name="action_relative_lane_position_ds_14_1_8">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <RelativeLanePosition entityRef="car_14_1" ds="-2.0" offset="0.0" dLane="0">
+                                                <Orientation h="6.283185307179586" type="absolute"/>
+                                            </RelativeLanePosition>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="time_trigger_14_1_8" delay="0.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="0.8" rule="greaterOrEqual"/>
                                         </ByValueCondition>
                                     </Condition>
                                 </ConditionGroup>
@@ -5680,6 +6340,28 @@
                                 </ConditionGroup>
                             </StartTrigger>
                         </Event>
+                        <Event name="event_relative_lane_position_abs_h_15_-1_8" priority="override" maximumExecutionCount="1">
+                            <Action name="action_relative_lane_position_abs_h_15_-1_8">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <RelativeLanePosition entityRef="car_15_-1" ds="-2.0" offset="0.0" dLane="0">
+                                                <Orientation h="7.0685834705770345" type="absolute"/>
+                                            </RelativeLanePosition>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="time_trigger_15_-1_8" delay="0.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="0.8" rule="greaterOrEqual"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
                     </Maneuver>
                 </ManeuverGroup>
                 <ManeuverGroup name="star_maneuver_group_car_15_1" maximumExecutionCount="1">
@@ -5836,6 +6518,28 @@
                                     <Condition name="time_trigger_15_1_7" delay="0.0" conditionEdge="none">
                                         <ByValueCondition>
                                             <SimulationTimeCondition value="0.7000000000000001" rule="greaterOrEqual"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event name="event_relative_lane_position_ds_15_1_8" priority="override" maximumExecutionCount="1">
+                            <Action name="action_relative_lane_position_ds_15_1_8">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <RelativeLanePosition entityRef="car_15_1" ds="-2.0" offset="0.0" dLane="0">
+                                                <Orientation h="7.0685834705770345" type="absolute"/>
+                                            </RelativeLanePosition>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="time_trigger_15_1_8" delay="0.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="0.8" rule="greaterOrEqual"/>
                                         </ByValueCondition>
                                     </Condition>
                                 </ConditionGroup>
@@ -6002,6 +6706,28 @@
                                 </ConditionGroup>
                             </StartTrigger>
                         </Event>
+                        <Event name="event_relative_lane_position_abs_h_16_-1_8" priority="override" maximumExecutionCount="1">
+                            <Action name="action_relative_lane_position_abs_h_16_-1_8">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <RelativeLanePosition entityRef="car_16_-1" ds="-2.0" offset="0.0" dLane="0">
+                                                <Orientation h="7.0685834705770345" type="absolute"/>
+                                            </RelativeLanePosition>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="time_trigger_16_-1_8" delay="0.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="0.8" rule="greaterOrEqual"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
                     </Maneuver>
                 </ManeuverGroup>
                 <ManeuverGroup name="star_maneuver_group_car_16_1" maximumExecutionCount="1">
@@ -6158,6 +6884,28 @@
                                     <Condition name="time_trigger_16_1_7" delay="0.0" conditionEdge="none">
                                         <ByValueCondition>
                                             <SimulationTimeCondition value="0.7000000000000001" rule="greaterOrEqual"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event name="event_relative_lane_position_ds_16_1_8" priority="override" maximumExecutionCount="1">
+                            <Action name="action_relative_lane_position_ds_16_1_8">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <RelativeLanePosition entityRef="car_16_1" ds="-2.0" offset="0.0" dLane="0">
+                                                <Orientation h="7.0685834705770345" type="absolute"/>
+                                            </RelativeLanePosition>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="time_trigger_16_1_8" delay="0.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="0.8" rule="greaterOrEqual"/>
                                         </ByValueCondition>
                                     </Condition>
                                 </ConditionGroup>
@@ -6324,6 +7072,28 @@
                                 </ConditionGroup>
                             </StartTrigger>
                         </Event>
+                        <Event name="event_relative_lane_position_abs_h_17_-1_8" priority="override" maximumExecutionCount="1">
+                            <Action name="action_relative_lane_position_abs_h_17_-1_8">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <RelativeLanePosition entityRef="car_17_-1" ds="-2.0" offset="0.0" dLane="0">
+                                                <Orientation h="7.0685834705770345" type="absolute"/>
+                                            </RelativeLanePosition>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="time_trigger_17_-1_8" delay="0.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="0.8" rule="greaterOrEqual"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
                     </Maneuver>
                 </ManeuverGroup>
                 <ManeuverGroup name="star_maneuver_group_car_17_1" maximumExecutionCount="1">
@@ -6480,6 +7250,28 @@
                                     <Condition name="time_trigger_17_1_7" delay="0.0" conditionEdge="none">
                                         <ByValueCondition>
                                             <SimulationTimeCondition value="0.7000000000000001" rule="greaterOrEqual"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event name="event_relative_lane_position_ds_17_1_8" priority="override" maximumExecutionCount="1">
+                            <Action name="action_relative_lane_position_ds_17_1_8">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <RelativeLanePosition entityRef="car_17_1" ds="-2.0" offset="0.0" dLane="0">
+                                                <Orientation h="7.0685834705770345" type="absolute"/>
+                                            </RelativeLanePosition>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="time_trigger_17_1_8" delay="0.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="0.8" rule="greaterOrEqual"/>
                                         </ByValueCondition>
                                     </Condition>
                                 </ConditionGroup>
@@ -6646,6 +7438,28 @@
                                 </ConditionGroup>
                             </StartTrigger>
                         </Event>
+                        <Event name="event_relative_lane_position_abs_h_18_-1_8" priority="override" maximumExecutionCount="1">
+                            <Action name="action_relative_lane_position_abs_h_18_-1_8">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <RelativeLanePosition entityRef="car_18_-1" ds="-2.0" offset="0.0" dLane="0">
+                                                <Orientation h="7.853981633974483" type="absolute"/>
+                                            </RelativeLanePosition>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="time_trigger_18_-1_8" delay="0.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="0.8" rule="greaterOrEqual"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
                     </Maneuver>
                 </ManeuverGroup>
                 <ManeuverGroup name="star_maneuver_group_car_18_1" maximumExecutionCount="1">
@@ -6802,6 +7616,28 @@
                                     <Condition name="time_trigger_18_1_7" delay="0.0" conditionEdge="none">
                                         <ByValueCondition>
                                             <SimulationTimeCondition value="0.7000000000000001" rule="greaterOrEqual"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event name="event_relative_lane_position_ds_18_1_8" priority="override" maximumExecutionCount="1">
+                            <Action name="action_relative_lane_position_ds_18_1_8">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <RelativeLanePosition entityRef="car_18_1" ds="-2.0" offset="0.0" dLane="0">
+                                                <Orientation h="7.853981633974483" type="absolute"/>
+                                            </RelativeLanePosition>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="time_trigger_18_1_8" delay="0.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="0.8" rule="greaterOrEqual"/>
                                         </ByValueCondition>
                                     </Condition>
                                 </ConditionGroup>
@@ -6968,6 +7804,28 @@
                                 </ConditionGroup>
                             </StartTrigger>
                         </Event>
+                        <Event name="event_relative_lane_position_abs_h_19_-1_8" priority="override" maximumExecutionCount="1">
+                            <Action name="action_relative_lane_position_abs_h_19_-1_8">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <RelativeLanePosition entityRef="car_19_-1" ds="-2.0" offset="0.0" dLane="0">
+                                                <Orientation h="7.853981633974483" type="absolute"/>
+                                            </RelativeLanePosition>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="time_trigger_19_-1_8" delay="0.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="0.8" rule="greaterOrEqual"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
                     </Maneuver>
                 </ManeuverGroup>
                 <ManeuverGroup name="star_maneuver_group_car_19_1" maximumExecutionCount="1">
@@ -7124,6 +7982,28 @@
                                     <Condition name="time_trigger_19_1_7" delay="0.0" conditionEdge="none">
                                         <ByValueCondition>
                                             <SimulationTimeCondition value="0.7000000000000001" rule="greaterOrEqual"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event name="event_relative_lane_position_ds_19_1_8" priority="override" maximumExecutionCount="1">
+                            <Action name="action_relative_lane_position_ds_19_1_8">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <RelativeLanePosition entityRef="car_19_1" ds="-2.0" offset="0.0" dLane="0">
+                                                <Orientation h="7.853981633974483" type="absolute"/>
+                                            </RelativeLanePosition>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="time_trigger_19_1_8" delay="0.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="0.8" rule="greaterOrEqual"/>
                                         </ByValueCondition>
                                     </Condition>
                                 </ConditionGroup>
@@ -7290,6 +8170,28 @@
                                 </ConditionGroup>
                             </StartTrigger>
                         </Event>
+                        <Event name="event_relative_lane_position_abs_h_20_-1_8" priority="override" maximumExecutionCount="1">
+                            <Action name="action_relative_lane_position_abs_h_20_-1_8">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <RelativeLanePosition entityRef="car_20_-1" ds="-2.0" offset="0.0" dLane="0">
+                                                <Orientation h="7.853981633974483" type="absolute"/>
+                                            </RelativeLanePosition>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="time_trigger_20_-1_8" delay="0.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="0.8" rule="greaterOrEqual"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
                     </Maneuver>
                 </ManeuverGroup>
                 <ManeuverGroup name="star_maneuver_group_car_20_1" maximumExecutionCount="1">
@@ -7446,6 +8348,28 @@
                                     <Condition name="time_trigger_20_1_7" delay="0.0" conditionEdge="none">
                                         <ByValueCondition>
                                             <SimulationTimeCondition value="0.7000000000000001" rule="greaterOrEqual"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event name="event_relative_lane_position_ds_20_1_8" priority="override" maximumExecutionCount="1">
+                            <Action name="action_relative_lane_position_ds_20_1_8">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <RelativeLanePosition entityRef="car_20_1" ds="-2.0" offset="0.0" dLane="0">
+                                                <Orientation h="7.853981633974483" type="absolute"/>
+                                            </RelativeLanePosition>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="time_trigger_20_1_8" delay="0.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="0.8" rule="greaterOrEqual"/>
                                         </ByValueCondition>
                                     </Condition>
                                 </ConditionGroup>
@@ -7612,6 +8536,28 @@
                                 </ConditionGroup>
                             </StartTrigger>
                         </Event>
+                        <Event name="event_relative_lane_position_abs_h_21_-1_8" priority="override" maximumExecutionCount="1">
+                            <Action name="action_relative_lane_position_abs_h_21_-1_8">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <RelativeLanePosition entityRef="car_21_-1" ds="-2.0" offset="0.0" dLane="0">
+                                                <Orientation h="8.63937979737193" type="absolute"/>
+                                            </RelativeLanePosition>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="time_trigger_21_-1_8" delay="0.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="0.8" rule="greaterOrEqual"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
                     </Maneuver>
                 </ManeuverGroup>
                 <ManeuverGroup name="star_maneuver_group_car_21_1" maximumExecutionCount="1">
@@ -7768,6 +8714,28 @@
                                     <Condition name="time_trigger_21_1_7" delay="0.0" conditionEdge="none">
                                         <ByValueCondition>
                                             <SimulationTimeCondition value="0.7000000000000001" rule="greaterOrEqual"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event name="event_relative_lane_position_ds_21_1_8" priority="override" maximumExecutionCount="1">
+                            <Action name="action_relative_lane_position_ds_21_1_8">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <RelativeLanePosition entityRef="car_21_1" ds="-2.0" offset="0.0" dLane="0">
+                                                <Orientation h="8.63937979737193" type="absolute"/>
+                                            </RelativeLanePosition>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="time_trigger_21_1_8" delay="0.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="0.8" rule="greaterOrEqual"/>
                                         </ByValueCondition>
                                     </Condition>
                                 </ConditionGroup>
@@ -7934,6 +8902,28 @@
                                 </ConditionGroup>
                             </StartTrigger>
                         </Event>
+                        <Event name="event_relative_lane_position_abs_h_22_-1_8" priority="override" maximumExecutionCount="1">
+                            <Action name="action_relative_lane_position_abs_h_22_-1_8">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <RelativeLanePosition entityRef="car_22_-1" ds="-2.0" offset="0.0" dLane="0">
+                                                <Orientation h="8.63937979737193" type="absolute"/>
+                                            </RelativeLanePosition>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="time_trigger_22_-1_8" delay="0.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="0.8" rule="greaterOrEqual"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
                     </Maneuver>
                 </ManeuverGroup>
                 <ManeuverGroup name="star_maneuver_group_car_22_1" maximumExecutionCount="1">
@@ -8090,6 +9080,28 @@
                                     <Condition name="time_trigger_22_1_7" delay="0.0" conditionEdge="none">
                                         <ByValueCondition>
                                             <SimulationTimeCondition value="0.7000000000000001" rule="greaterOrEqual"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event name="event_relative_lane_position_ds_22_1_8" priority="override" maximumExecutionCount="1">
+                            <Action name="action_relative_lane_position_ds_22_1_8">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <RelativeLanePosition entityRef="car_22_1" ds="-2.0" offset="0.0" dLane="0">
+                                                <Orientation h="8.63937979737193" type="absolute"/>
+                                            </RelativeLanePosition>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="time_trigger_22_1_8" delay="0.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="0.8" rule="greaterOrEqual"/>
                                         </ByValueCondition>
                                     </Condition>
                                 </ConditionGroup>
@@ -8256,6 +9268,28 @@
                                 </ConditionGroup>
                             </StartTrigger>
                         </Event>
+                        <Event name="event_relative_lane_position_abs_h_23_-1_8" priority="override" maximumExecutionCount="1">
+                            <Action name="action_relative_lane_position_abs_h_23_-1_8">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <RelativeLanePosition entityRef="car_23_-1" ds="-2.0" offset="0.0" dLane="0">
+                                                <Orientation h="8.63937979737193" type="absolute"/>
+                                            </RelativeLanePosition>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="time_trigger_23_-1_8" delay="0.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="0.8" rule="greaterOrEqual"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
                     </Maneuver>
                 </ManeuverGroup>
                 <ManeuverGroup name="star_maneuver_group_car_23_1" maximumExecutionCount="1">
@@ -8412,6 +9446,28 @@
                                     <Condition name="time_trigger_23_1_7" delay="0.0" conditionEdge="none">
                                         <ByValueCondition>
                                             <SimulationTimeCondition value="0.7000000000000001" rule="greaterOrEqual"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event name="event_relative_lane_position_ds_23_1_8" priority="override" maximumExecutionCount="1">
+                            <Action name="action_relative_lane_position_ds_23_1_8">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <RelativeLanePosition entityRef="car_23_1" ds="-2.0" offset="0.0" dLane="0">
+                                                <Orientation h="8.63937979737193" type="absolute"/>
+                                            </RelativeLanePosition>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="time_trigger_23_1_8" delay="0.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="0.8" rule="greaterOrEqual"/>
                                         </ByValueCondition>
                                     </Condition>
                                 </ConditionGroup>

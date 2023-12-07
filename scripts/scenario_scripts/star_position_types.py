@@ -92,7 +92,7 @@ class Scenario(ScenarioGenerator):
                     maneuver_group.add_actor(objname)
                     maneuver = xosc.Maneuver("star_maneuver_" + objname)
 
-                    for j in range(8):  # range(7) / [0,6]
+                    for j in range(9):
                         # create event
                         label = str(id) + "_" + str(i) + "_" + str(j)
                         trigger = xosc.ValueTrigger(
@@ -146,6 +146,16 @@ class Scenario(ScenarioGenerator):
                                 event = xosc.Event("event_relative_lane_position_ds_" + label, xosc.Priority.override)
                                 event.add_action("action_relative_lane_position_ds_" +  label, xosc.TeleportAction(
                                     xosc.RelativeLanePosition(lane_id=1, entity=objname, offset=0.0, dsLane=1.5 * ds, orientation=xosc.Orientation(h = math.pi, reference = xosc.ReferenceContext.relative))))
+
+                        elif j == 8:
+                            if (i == -1):
+                                event = xosc.Event("event_relative_lane_position_abs_h_" + label, xosc.Priority.override)  # switch lanes
+                                event.add_action("action_relative_lane_position_abs_h_" +  label, xosc.TeleportAction(
+                                    xosc.RelativeLanePosition(0, objname, 0.0, -ds, orientation=xosc.Orientation(h + math.pi, reference = xosc.ReferenceContext.absolute))))
+                            else:
+                                event = xosc.Event("event_relative_lane_position_ds_" + label, xosc.Priority.override)
+                                event.add_action("action_relative_lane_position_ds_" +  label, xosc.TeleportAction(
+                                    xosc.RelativeLanePosition(0, objname, 0.0, -ds, orientation=xosc.Orientation(h + math.pi, reference = xosc.ReferenceContext.absolute))))
 
                         if (j > 0):
                             event.add_trigger(trigger)

@@ -12179,6 +12179,10 @@ void Position::ReleaseRelation()
                 }
             }
         }
+        else
+        {
+            SetHeading(h);  // restore absolute angle
+        }
 
         EvaluateZHPR();
     }
