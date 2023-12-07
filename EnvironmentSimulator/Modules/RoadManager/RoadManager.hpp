@@ -1639,6 +1639,54 @@ namespace roadmanager
         }
     };
 
+    class ParkingSpace
+    {
+    public:
+        typedef enum
+        {
+            ACCESS_ALL,
+            ACCESS_BUS,
+            ACCESS_CAR,
+            ACCESS_ELECTRIC,
+            ACCESS_HANDICAPPED,
+            ACCESS_RESIDENTS,
+            ACCESS_TRUCK,
+            ACCESS_WOMEN
+        } Access;
+
+        ParkingSpace(Access access, std::string restrictions) : access_(access), restrictions_(std::move(restrictions))
+        {
+        }
+
+        ParkingSpace() : access_(ACCESS_ALL)
+        {
+        }
+
+        void SetAccess(Access access)
+        {
+            access_ = access;
+        }
+
+        void SetRestrictions(const std::string &restrictions)
+        {
+            restrictions_ = restrictions;
+        }
+
+        Access GetAccess()
+        {
+            return access_;
+        }
+
+        std::string GetRestrictions()
+        {
+            return restrictions_;
+        }
+
+    private:
+        Access      access_{};
+        std::string restrictions_;
+    };
+
     class Repeat
     {
     public:
@@ -1921,6 +1969,10 @@ namespace roadmanager
         {
             width_ = width;
         }
+        void SetParkingSpace(ParkingSpace parking_space)
+        {
+            parking_space_ = std::move(parking_space);
+        }
         Orientation GetOrientation() const
         {
             return orientation_;
@@ -1956,6 +2008,10 @@ namespace roadmanager
         {
             return (0 <= i && i < repeats_.size()) ? repeats_[i] : 0;
         }
+        ParkingSpace GetParkingSpace()
+        {
+            return parking_space_;
+        }
 
     private:
         std::string            name_;
@@ -1974,6 +2030,7 @@ namespace roadmanager
         std::vector<Outline *> outlines_;
         Repeat                *repeat_;
         std::vector<Repeat *>  repeats_;
+        ParkingSpace           parking_space_;
     };
 
     enum class SpeedUnit

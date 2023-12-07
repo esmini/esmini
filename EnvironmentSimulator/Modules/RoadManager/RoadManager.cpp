@@ -52,6 +52,7 @@
 #include <algorithm>
 #include <map>
 #include <sstream>
+#include <string>
 
 #include "RoadManager.hpp"
 #include "odrSpiral.h"
@@ -4135,12 +4136,13 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                     double      rzOffsetStart = (rattr = ReadAttribute(repeat_node, "zOffsetStart", true)) == "" ? 0.0 : std::stod(rattr);
                     double      rzOffsetEnd   = (rattr = ReadAttribute(repeat_node, "zOffsetEnd", true)) == "" ? 0.0 : std::stod(rattr);
 
-                    double rwidthStart  = (rattr = ReadAttribute(repeat_node, "widthStart", false)) == "" ? 0.0 : std::stod(rattr);
-                    double rwidthEnd    = (rattr = ReadAttribute(repeat_node, "widthEnd", false)) == "" ? 0.0 : std::stod(rattr);
-                    double rlengthStart = (rattr = ReadAttribute(repeat_node, "lengthStart", false)) == "" ? 0.0 : std::stod(rattr);
-                    double rlengthEnd   = (rattr = ReadAttribute(repeat_node, "lengthEnd", false)) == "" ? 0.0 : std::stod(rattr);
-                    double rradiusStart = (rattr = ReadAttribute(repeat_node, "radiusStart", false)) == "" ? 0.0 : std::stod(rattr);
-                    double rradiusEnd   = (rattr = ReadAttribute(repeat_node, "radiusEnd", false)) == "" ? 0.0 : std::stod(rattr);
+                    std::string restrictions = rattr = ReadAttribute(repeat_node, "restrictions", false);
+                    double      rwidthStart          = (rattr = ReadAttribute(repeat_node, "widthStart", false)) == "" ? 0.0 : std::stod(rattr);
+                    double      rwidthEnd            = (rattr = ReadAttribute(repeat_node, "widthEnd", false)) == "" ? 0.0 : std::stod(rattr);
+                    double      rlengthStart         = (rattr = ReadAttribute(repeat_node, "lengthStart", false)) == "" ? 0.0 : std::stod(rattr);
+                    double      rlengthEnd           = (rattr = ReadAttribute(repeat_node, "lengthEnd", false)) == "" ? 0.0 : std::stod(rattr);
+                    double      rradiusStart         = (rattr = ReadAttribute(repeat_node, "radiusStart", false)) == "" ? 0.0 : std::stod(rattr);
+                    double      rradiusEnd           = (rattr = ReadAttribute(repeat_node, "radiusEnd", false)) == "" ? 0.0 : std::stod(rattr);
 
                     if (obj == nullptr)
                     {
@@ -4235,7 +4237,6 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                         repeat->SetLengthStart(rlengthStart);
                     if (fabs(rlengthEnd) > SMALL_NUMBER)
                         repeat->SetLengthEnd(rlengthEnd);
-
                     if (fabs(rradiusStart) > SMALL_NUMBER)
                         printf("Attribute object/repeat/radiusStart not supported yet\n");
                     if (fabs(rradiusEnd) > SMALL_NUMBER)
@@ -4311,6 +4312,55 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                         }
                         obj->AddOutline(outline);
                     }
+                }
+
+                pugi::xml_node parking_space_node = object.child("parkingSpace");
+                if (!parking_space_node.empty())
+                {
+                    ParkingSpace parking_space;
+
+                    std::string          access_string = parking_space_node.attribute("access").value();
+                    ParkingSpace::Access access;
+                    if (access_string == "all")
+                    {
+                        access = ParkingSpace::Access::ACCESS_ALL;
+                    }
+                    else if (access_string == "bus")
+                    {
+                        access = ParkingSpace::Access::ACCESS_BUS;
+                    }
+                    else if (access_string == "car")
+                    {
+                        access = ParkingSpace::Access::ACCESS_CAR;
+                    }
+                    else if (access_string == "electric")
+                    {
+                        access = ParkingSpace::Access::ACCESS_ELECTRIC;
+                    }
+                    else if (access_string == "handicapped")
+                    {
+                        access = ParkingSpace::Access::ACCESS_HANDICAPPED;
+                    }
+                    else if (access_string == "residents")
+                    {
+                        access = ParkingSpace::Access::ACCESS_RESIDENTS;
+                    }
+                    else if (access_string == "truck")
+                    {
+                        access = ParkingSpace::Access::ACCESS_TRUCK;
+                    }
+                    else if (access_string == "women")
+                    {
+                        access = ParkingSpace::Access::ACCESS_WOMEN;
+                    }
+                    else
+                    {
+                        access = ParkingSpace::Access::ACCESS_ALL;
+                    }
+
+                    std::string restrictions = parking_space_node.attribute("restrictions").value();
+
+                    obj->SetParkingSpace(roadmanager::ParkingSpace(access, restrictions));
                 }
 
                 for (pugi::xml_node validity_node = object.child("validity"); validity_node; validity_node = validity_node.next_sibling("validity"))
@@ -7464,9 +7514,10 @@ Position::ReturnCode Position::XYZ2TrackPos(double x3, double y3, double z3, boo
                     sNorm = angleToPosition / angleBetweenNormals;
                 }
 
-                // printf("road_id %d jMin %d kMin %d lx %.2f ly %.2f angle0 %.2f angle1 %.2f normalIntersectionX %.2f normalIntersectionY %.2f sNorm
-                // %.2f\n", 	roadMin->GetId(), jMin, kMin, lx, ly, angleToPosition, angleBetweenNormals, normalIntersectionX, normalIntersectionY,
-                // sNorm);
+                // printf("road_id %d jMin %d kMin %d lx %.2f ly %.2f angle0 %.2f angle1 %.2f normalIntersectionX %.2f normalIntersectionY %.2f
+                // sNorm
+                // %.2f\n", 	roadMin->GetId(), jMin, kMin, lx, ly, angleToPosition, angleBetweenNormals, normalIntersectionX,
+                // normalIntersectionY, sNorm);
             }
 
             closestS = (1 - sNorm) * osip_first.s + sNorm * osip_second.s;
@@ -8000,7 +8051,8 @@ Position::ReturnCode Position::MoveToConnectingRoad(RoadLink* road_link, Contact
 
         if (n_connections == 0)
         {
-            //			LOG("No connections from road id %d lane id %d in junction %d", road->GetId(), lane->GetId(), junction->GetId());
+            //			LOG("No connections from road id %d lane id %d in junction %d", road->GetId(), lane->GetId(),
+            // junction->GetId());
             return ReturnCode::ERROR_GENERIC;
         }
         else if (n_connections == 1)
@@ -10601,7 +10653,8 @@ int PolyLineBase::FindClosestPoint(double xin, double yin, TrajVertex& pos, int&
     int        i         = 0;
     int        step      = 1;
 
-    // If a teleportation is made by the Ghost, a reset of trajectory has been made. Hence, we can't look from the usual point. Set startAtIndex = 0
+    // If a teleportation is made by the Ghost, a reset of trajectory has been made. Hence, we can't look from the usual point. Set startAtIndex =
+    // 0
     if (startAtIndex > GetNumberOfVertices() - 1)
     {
         startAtIndex = 0;
