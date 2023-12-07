@@ -182,6 +182,48 @@
                                 </ConditionGroup>
                             </StartTrigger>
                         </Event>
+                        <Event name="TrajectoryWithTimestamps" priority="overwrite">
+                            <Action name="TrajectoryWithTimestampsAction">
+                                <PrivateAction>
+                                    <RoutingAction>
+                                        <FollowTrajectoryAction>
+                                            <TrajectoryRef>
+                                                <Trajectory name="WithTimestamps" closed="false">
+                                                    <ParameterDeclarations/>
+                                                    <Shape>
+                                                        <ClothoidSpline timeEnd="8.0">
+                                                            <Segment curvStart="0.02" length="10.0" timeStart="0.0">
+                                                                <PositionStart>
+                                                                    <RelativeObjectPosition entityRef="Car">
+                                                                        <Orientation type="relative" h="0.0"/>
+                                                                    </RelativeObjectPosition>
+                                                                </PositionStart>
+                                                            </Segment>
+                                                            <Segment curvStart="0.0" curvEnd="-0.05" length="14.0" timeStart="2.0"/>
+                                                            <Segment curStart="-0.05" curvEnd="0.05" length="10.0" timeStart="4.0"/>
+                                                            <Segment curvEnd="0.0" length="6.5" timeStart="7.0"/>
+                                                        </ClothoidSpline>
+                                                    </Shape>
+                                                </Trajectory>
+                                            </TrajectoryRef>
+                                            <TimeReference>
+                                                <Timing domainAbsoluteRelative="relative" offset="0.0" scale="1.0"/>
+                                            </TimeReference>
+                                            <TrajectoryFollowingMode followingMode="position"/>
+                                        </FollowTrajectoryAction>
+                                    </RoutingAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="SingleClothoidCondition" delay="4" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <StoryboardElementStateCondition state="completeState" storyboardElementRef="DiscontinuousHeadingEvent" storyboardElementType="event"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
                     </Maneuver>
                 </ManeuverGroup>
                 <StartTrigger>

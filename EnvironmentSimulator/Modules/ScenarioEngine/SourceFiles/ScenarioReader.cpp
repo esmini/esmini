@@ -1221,6 +1221,8 @@ roadmanager::RMTrajectory *ScenarioReader::parseTrajectory(pugi::xml_node node)
             {
                 roadmanager::ClothoidSplineShape *clothoidspline = new roadmanager::ClothoidSplineShape();
 
+                clothoidspline->SetEndTime(shapeNode.attribute("timeEnd").empty() ? 0.0 : strtod(parameters.ReadAttribute(shapeNode, "timeEnd")));
+
                 for (pugi::xml_node segmentNode = shapeNode.child("Segment"); segmentNode; segmentNode = segmentNode.next_sibling("Segment"))
                 {
                     pugi::xml_node               posNode = segmentNode.child("PositionStart");
@@ -1233,11 +1235,11 @@ roadmanager::RMTrajectory *ScenarioReader::parseTrajectory(pugi::xml_node node)
                         rm_pos = pos->GetRMPos();
                     }
 
-                    double curvStart = std::nan("");  // default is to use end curvature of previous segment
-                    double curvEnd   = std::nan("");  // default is to use start curvature of current segment
-                    double length    = strtod(parameters.ReadAttribute(segmentNode, "length"));
-                    double h_offset  = strtod(parameters.ReadAttribute(segmentNode, "hOffset"));
-                    double time      = strtod(parameters.ReadAttribute(segmentNode, "time"));
+                    double curvStart  = std::nan("");  // default is to use end curvature of previous segment
+                    double curvEnd    = std::nan("");  // default is to use start curvature of current segment
+                    double length     = strtod(parameters.ReadAttribute(segmentNode, "length"));
+                    double h_offset   = strtod(parameters.ReadAttribute(segmentNode, "hOffset"));
+                    double time_start = strtod(parameters.ReadAttribute(segmentNode, "timeStart"));
 
                     if (!segmentNode.attribute("curvStart").empty())
                     {
@@ -1249,7 +1251,7 @@ roadmanager::RMTrajectory *ScenarioReader::parseTrajectory(pugi::xml_node node)
                         curvEnd = strtod(parameters.ReadAttribute(segmentNode, "curvEnd"));
                     }
 
-                    clothoidspline->AddSegment(rm_pos, curvStart, curvEnd, length, h_offset, time);
+                    clothoidspline->AddSegment(rm_pos, curvStart, curvEnd, length, h_offset, time_start);
                 }
                 shape = clothoidspline;
             }

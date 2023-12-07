@@ -4265,8 +4265,16 @@ namespace roadmanager
         }
         double GetStartTime();
         double GetDuration();
-        void   Freeze(Position *ref_pos);
-        int    GetNumberOfSegments()
+        double GetEndTime()
+        {
+            return time_end_;
+        }
+        void SetEndTime(double time)
+        {
+            time_end_ = time;
+        }
+        void Freeze(Position *ref_pos);
+        int  GetNumberOfSegments()
         {
             return static_cast<int>(segments_.size());
         }
@@ -4274,7 +4282,8 @@ namespace roadmanager
     private:
         std::vector<Segment>             segments_;
         std::vector<roadmanager::Spiral> spirals_;  // make use of the OpenDRIVE clothoid definition
-        double                           length_ = 0.0;
+        double                           length_   = 0.0;
+        double                           time_end_ = 0.0;
     };
 
     /**

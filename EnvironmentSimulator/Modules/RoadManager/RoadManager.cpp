@@ -11330,48 +11330,61 @@ void ClothoidSplineShape::AddSegment(Position* posStart, double curvStart, doubl
 
 int ClothoidSplineShape::Evaluate(double p, TrajectoryParamType ptype, TrajVertex& pos)
 {
-    int i = 0;
+    unsigned int i = 0;
 
     if (segments_.size() < 1)
     {
         LOG_AND_QUIT("You need to specify at least 1 segment in a ClothoidSpline shape");
     }
 
-    if (ptype == TrajectoryParamType::TRAJ_PARAM_TYPE_S && p > pline_.GetVertex(-1)->s ||
-        ptype == TrajectoryParamType::TRAJ_PARAM_TYPE_TIME && p > pline_.GetVertex(-1)->time)
+    if (ptype == TrajectoryParamType::TRAJ_PARAM_TYPE_TIME)
     {
-        // End of trajectory
-        p = GetLength();
-        i = (int)segments_.size() - 1;
-    }
-    else
-    {
-        for (; i < segments_.size() - 1 && (ptype == TrajectoryParamType::TRAJ_PARAM_TYPE_S && pline_.vertex_[i + 1].s < p ||
-                                            ptype == TrajectoryParamType::TRAJ_PARAM_TYPE_TIME && pline_.vertex_[i + 1].time < p);
-             i++)
-            ;
-
-        if (ptype == TrajectoryParamType::TRAJ_PARAM_TYPE_TIME)
+        // Find segment including provided timestamp
+        if (p >= GetStartTime() && p <= GetEndTime())
         {
-            double dt = p - pline_.vertex_[i].time;
+            double                        s        = 0.0;
+            double                        time_end = 0.0;
+            ClothoidSplineShape::Segment* segment  = &segments_[0];
 
-            if (pline_.vertex_[i].acc < 0.0)
+            for (i = 0; i < segments_.size() - 1 && p > segments_[i + 1].time_ - SMALL_NUMBER; i++)
             {
-                // Slowing down, check if need for early stop due to distance too short wrt time
-                double max_dt = -pline_.vertex_[i].speed / pline_.vertex_[i].acc;
-                dt            = MIN(dt, max_dt);
+                s += segment->length_;
+                segment = &segments_[i + 1];
             }
 
-            //  ds = v0 * t + 1/2 * acc * t^2
-            p = pline_.vertex_[i].s + dt * pline_.vertex_[i].speed + 0.5 * pline_.vertex_[i].acc * dt * dt;
+            if (i == segments_.size() - 1)
+            {
+                // at last segment, fetch global end time
+                time_end = GetEndTime();
+            }
+            else
+            {
+                // fetch end time of segment from next segment start timestamp
+                time_end = segments_[i + 1].time_;
+            }
+
+            double duration = time_end - segment->time_;
+            double t        = p - segment->time_;
+
+            // Transform time parameter value into a s value
+            p = s + (t / duration) * segment->length_;
         }
         else
         {
-            p = p;
+            LOG("ClothoidSplineShape::Evaluate Requested time %.2f outside range [%.2f, %.2f]", p, GetStartTime(), GetEndTime());
+            p = GetLength();
         }
     }
+    else if (p > GetLength())
+    {
+        p = GetLength();
+    }
+    else if (p < 0.0)
+    {
+        p = 0.0;
+    }
 
-    pline_.Evaluate(p, pos, i);
+    pline_.Evaluate(p, pos, static_cast<int>(i));
 
     pos.s = p;
 
@@ -11395,7 +11408,7 @@ double ClothoidSplineShape::GetDuration()
         return 0.0;
     }
 
-    return segments_.back().time_ - segments_.front().time_;
+    return GetEndTime() - segments_.front().time_;
 }
 
 void ClothoidSplineShape::Freeze(Position* ref_pos)
@@ -11469,7 +11482,7 @@ void ClothoidSplineShape::CalculatePolyLine()
     {
         if (i < steps)
         {
-            if (i * stepLen > length_sum + segments_[j].length_)
+            if (i * stepLen > length_sum + segments_[j].length_ - SMALL_NUMBER)
             {
                 // step segment
                 length_sum += segments_[j].length_;

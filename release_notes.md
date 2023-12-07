@@ -1,5 +1,10 @@
 ## esmini release notes
 
+### 2023-12-07 Version 2.34.0
+
+- Add code example changing catalog parameter values
+  - find example changing car bounding box dimensions [here](https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/code-examples/parametric-init/override-bounding-box.cpp)
+
 ### 2023-11-17 Version 2.33.2
 
 New feature:

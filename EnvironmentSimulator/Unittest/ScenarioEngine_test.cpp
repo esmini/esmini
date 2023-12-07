@@ -2483,6 +2483,37 @@ TEST(PositionTest, TestPositionTypes)
     delete se;
 }
 
+TEST(ClothoidSplineTest, TestTrajectoryShape)
+{
+    double dt = 0.05;
+
+    ScenarioEngine* se = new ScenarioEngine("../../../resources/xosc/lane-change_clothoid_spline_based_trajectory.xosc");
+    ASSERT_NE(se, nullptr);
+    se->step(0.0);
+    se->prepareGroundTruth(0.0);
+
+    scenarioengine::Entities* entities = &se->entities_;
+    ASSERT_NE(entities, nullptr);
+    ASSERT_EQ(entities->object_.size(), 1);
+
+    while (se->getSimulationTime() < 26.4)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(0.0);
+    }
+
+    // Check car position at given time at end phase of the scenario
+    // Correct position indicates all trajectories have been evaluated correctly
+    EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 242.101, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetY(), 1.087, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetZ(), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[0]->pos_.GetH(), -0.031), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[0]->pos_.GetP(), 0.0), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[0]->pos_.GetR(), 0.0), 0.0, 1E-3);
+
+    delete se;
+}
+
 // Uncomment to print log output to console
 // #define LOG_TO_CONSOLE
 
