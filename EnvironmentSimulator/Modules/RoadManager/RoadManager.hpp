@@ -1652,9 +1652,9 @@ namespace roadmanager
             ACCESS_RESIDENTS,
             ACCESS_TRUCK,
             ACCESS_WOMEN
-        } Access;
+        } ParkingAccess;
 
-        ParkingSpace(Access access, std::string restrictions) : access_(access), restrictions_(std::move(restrictions))
+        ParkingSpace(ParkingAccess access, std::string restrictions) : access_(access), restrictions_(std::move(restrictions))
         {
         }
 
@@ -1662,7 +1662,7 @@ namespace roadmanager
         {
         }
 
-        void SetAccess(Access access)
+        void SetAccess(ParkingAccess access)
         {
             access_ = access;
         }
@@ -1672,7 +1672,7 @@ namespace roadmanager
             restrictions_ = restrictions;
         }
 
-        Access GetAccess()
+        ParkingAccess GetAccess()
         {
             return access_;
         }
@@ -1683,8 +1683,8 @@ namespace roadmanager
         }
 
     private:
-        Access      access_{};
-        std::string restrictions_;
+        ParkingAccess access_{};
+        std::string   restrictions_;
     };
 
     class Repeat
