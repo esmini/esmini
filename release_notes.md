@@ -2,8 +2,46 @@
 
 ### 2023-12-07 Version 2.34.0
 
+New features:
+- Support OpenDRIVE explicit road lines
+
+Improvements and fixes:
+- Fix issue with trajectory relative positions not updating
+  - too eager optimization skipped initial evaulation of trajectory
+  - bug introduced in v2.33.0
+- Restore OSI optimization and add documentation
+  - static OSI content should only written first step (not always been the case lately)
+  - add brief info on OSI API for programmers: [User guide - OSI data](https://esmini.github.io/#_osi_data)
+- Improve and simplify storyboard state handling
+  - identity act complete state
+  - support zero stories (Init actions only)
+  - make state transitions immediately
+    - Note: Might affect trigger timing slightly
+  - some code clean-up, e.g. centralize storyboard update
+- Fix low curvature clothoids mistakenly identified as lines
+- Fix position calculation issues
+  - skip reference lane in relative laneId calculations
+  - fix initialization bugs wrt relative/absolute orientation type
+  - fix bugs in relative position
+  - Note: These changes might affect pose (pos + rot) behavior
 - Add code example changing catalog parameter values
-  - find example changing car bounding box dimensions [here](https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/code-examples/parametric-init/override-bounding-box.cpp)
+  - [override-bounding-box.cpp](https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/code-examples/parametric-init/override-bounding-box.cpp)
+- Add rmlib c# example
+  - [rm-basic-cs](https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/code-examples/rm-basic-cs)
+- Fix FBX SDK download issue in osg apps build and update info to support DAE
+  - script: [compile_osg_apps.sh](https://github.com/esmini/esmini/blob/dev/scripts/compile_osg_apps.sh)
+  - info: [User guide - Get osgconv](https://esmini.github.io/#_get_osgconv)
+- Add Python OSI receiver example ([issue #500](https://github.com/esmini/esmini/issues/500))
+  - [osi_groundtruth_from_udp.py](https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/code-examples/hello_world/osi_groundtruth_from_udp.py)
+- Add hint how to create .dat files from multiple scenarios in one command
+  - See end of section [User guide - Scenario recording (.dat)](https://esmini.github.io/#_scenario_recording_dat)
+- Align trailer actions with updated concept (candidate for OpenSCENARIO 1.3)
+  - Introduce separate actions for connect and disconnect trailer
+  - Add parent umbrella action TrailerAction
+  - See updated example [trailer_connect.xosc](https://github.com/esmini/esmini/blob/dev/resources/xosc/trailer_connect.xosc)
+- Handle timestamps in ClothoidSpline prototype implementation
+  - ClothoidSpline shape is an OpenSCENARIO 1.3 feature candidate
+- Add link to User guide git commit history under [Version](https://esmini.github.io/#_version)
 
 ### 2023-11-17 Version 2.33.2
 
