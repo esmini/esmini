@@ -43,6 +43,7 @@ namespace scenarioengine
         OSCBoundingBox boundingbox;
         int            scaleMode;       // 0=None, 1=BoundingBoxToModel, 2=ModelToBoundingBox (see enum EntityScaleMode)
         int            visibilityMask;  // bitmask according to Object::Visibility (1 = Graphics, 2 = Traffic, 4 = Sensors)
+        double         friction[4];     // friction coefficient for wheels front_left, rear_left, rear_right, front_right
     };
 
     struct ObjectStateStruct
@@ -320,6 +321,7 @@ namespace scenarioengine
         int updateObjectWheelAngle(int id, double timestamp, double wheelAngle);
         int updateObjectWheelRotation(int id, double timestamp, double wheelRotation);
         int updateObjectVisibilityMask(int id, int visibilityMask);
+        int updateObjectFrictionCoefficients(int id, double friction[4]);
 
         /**
         Specify if and how position object will align to the road. The setting is done for individual components:

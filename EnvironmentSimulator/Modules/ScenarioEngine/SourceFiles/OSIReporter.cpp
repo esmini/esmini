@@ -889,8 +889,48 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState *objectState)
     // Set ego lane
     obj_osi_internal.mobj->add_assigned_lane_id()->set_value(static_cast<unsigned int>(objectState->state_.pos.GetLaneGlobalId()));
 
-    // Set OSI Wheel Angle Data (Yaw)
-    obj_osi_internal.mobj->mutable_vehicle_attributes()->add_wheel_data()->mutable_orientation()->set_yaw(objectState->state_.info.wheel_angle);
+    // simplified wheel info, set nr wheels based on object type
+    // can be improved by considering axels and actual wheel configuration
+    unsigned int n_wheels = 0;
+    if (objectState->state_.info.obj_type == static_cast<int>(Object::Type::VEHICLE))
+    {
+        if (objectState->state_.info.obj_category == static_cast<int>(Vehicle::Category::BICYCLE) ||
+            objectState->state_.info.obj_category == static_cast<int>(Vehicle::Category::MOTORBIKE) ||
+            objectState->state_.info.obj_category == static_cast<int>(Vehicle::Category::TRAILER))
+        {
+            n_wheels = 2;
+        }
+        else
+        {
+            n_wheels = 4;
+        }
+    }
+
+    // Set some data for each wheel
+    for (int i = 0; i < static_cast<int>(n_wheels); i++)
+    {
+        // create wheel data message
+        obj_osi_internal.mobj->mutable_vehicle_attributes()->add_wheel_data();
+
+        obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_wheel_data(i)->mutable_orientation()->set_pitch(
+            objectState->state_.info.wheel_rot);
+        obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_wheel_data(i)->set_friction_coefficient(objectState->state_.info.friction[i]);
+        obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_wheel_data(i)->set_index(i % 2);
+
+        if (i < static_cast<int>(n_wheels / 2))
+        {
+            // front wheel
+            obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_wheel_data(i)->set_axle(0);
+            obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_wheel_data(i)->mutable_orientation()->set_yaw(
+                objectState->state_.info.wheel_angle);
+        }
+        else
+        {
+            // rear wheel
+            obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_wheel_data(i)->set_axle(1);
+            obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_wheel_data(i)->mutable_orientation()->set_yaw(0.0);
+        }
+    }
 
     // Set 3D model file as OSI model reference
     obj_osi_internal.mobj->set_model_reference(objectState->state_.info.model3d);

@@ -892,6 +892,25 @@ int ScenarioGateway::updateObjectVisibilityMask(int id, int visibilityMask)
     return 0;
 }
 
+int ScenarioGateway::updateObjectFrictionCoefficients(int id, double friction[4])
+{
+    ObjectState* obj_state = getObjectStatePtrById(id);
+
+    if (obj_state == nullptr)
+    {
+        LOG_ONCE("Can't set friction coefficients for object %d yet. Please register object using reportObject() first.", id);
+        return -1;
+    }
+
+    for (int i = 0; i < 4; i++)
+    {
+        obj_state->state_.info.friction[i] = friction[i];
+    }
+    obj_state->dirty_ |= Object::DirtyBit::FRICTION;
+
+    return 0;
+}
+
 int ScenarioGateway::setObjectPositionMode(int id, int type, int mode)
 {
     ObjectState* obj_state = getObjectStatePtrById(id);

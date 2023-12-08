@@ -386,6 +386,8 @@ int ScenarioEngine::step(double deltaSimTime)
             {
                 scenarioGateway.updateObjectVisibilityMask(obj->id_, obj->visibilityMask_);
             }
+
+            // Friction is not considered
         }
         else
         {
@@ -850,6 +852,67 @@ void ScenarioEngine::prepareGroundTruth(double dt)
 
         // Report updated pos values to the gateway
         scenarioGateway.updateObjectPos(obj->id_, simulationTime_, &obj->pos_);
+
+        // Report friction coefficients to gateway
+
+        double friction[4];
+        double friction_global = roadmanager::Position::GetOpenDrive()->GetFriction();
+
+        roadmanager::Position wp;
+        wp.CopyRMPos(&obj->pos_);
+
+        if (std::isnan(friction_global))
+        {
+            for (int j = 0; j < 4; j++)
+            {
+                // multiple friction values in the road network, need to lookup for each wheel
+                Object::Axle* axle = j < 2 ? &obj->front_axle_ : &obj->rear_axle_;
+                int           side = j % 2 == 0 ? -1 : 1;
+
+                // Calculate position of the wheel
+                double w_pos[2];
+                double w_rel_pos[2];
+
+                w_rel_pos[0] = axle->positionX;
+                w_rel_pos[1] = side * axle->trackWidth / 2.0;
+                RotateVec2D(w_rel_pos[0], w_rel_pos[1], obj->pos_.GetH(), w_pos[0], w_pos[1]);
+
+                w_pos[0] += obj->pos_.GetX();
+                w_pos[1] += obj->pos_.GetY();
+
+                wp.SetInertiaPosMode(w_pos[0],
+                                     w_pos[1],
+                                     0.0,
+                                     0.0,
+                                     0.0,
+                                     0.0,
+                                     roadmanager::Position::PosMode::Z_REL | roadmanager::Position::PosMode::H_REL |
+                                         roadmanager::Position::PosMode::P_REL | roadmanager::Position::PosMode::R_REL);
+
+                roadmanager::RoadLaneInfo info;
+                wp.GetRoadLaneInfo(&info);
+                friction[j] = info.friction;
+
+                // Uncomment statement below to print some friction values in terminal
+                // printf("wheel %d lane %d offset %.2f x %.2f y %.2f friction %.2f\n",
+                //       (int)j,
+                //       (int)wp.GetLaneId(),
+                //       wp.GetOffset(),
+                //       wp.GetX(),
+                //       wp.GetY(),
+                //       friction[j]);
+            }
+        }
+        else
+        {
+            // same friction everywhere
+            for (int j = 0; j < 4; j++)
+            {
+                friction[j] = friction_global;
+            }
+        }
+
+        scenarioGateway.updateObjectFrictionCoefficients(obj->id_, friction);
 
         // Now that frame is complete, reset dirty bits to avoid circulation
         if (o)

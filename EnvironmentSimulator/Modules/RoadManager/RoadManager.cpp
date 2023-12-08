@@ -1100,6 +1100,66 @@ void Lane::AddLaneRoadMark(LaneRoadMark* lane_roadMark)
     lane_roadMark_.push_back(lane_roadMark);
 }
 
+Lane::Material* Lane::GetMaterialByIdx(int idx) const
+{
+    if (lane_material_.size() <= idx || lane_material_.size() == 0)
+    {
+        LOG("Lane::GetMaterialByIdx() -> index %d exceeds list size %d", idx, lane_material_.size());
+        return nullptr;
+    }
+
+    return lane_material_[idx];
+}
+
+Lane::Material* Lane::GetMaterialByS(double s) const
+{
+    if (lane_material_.size() == 0)
+    {
+        return 0;  // No lanewidth defined
+    }
+
+    for (int i = 0; i + 1 < (int)lane_material_.size(); i++)
+    {
+        if (s < lane_material_[i + 1]->s_offset)
+        {
+            return lane_material_[i];
+        }
+    }
+
+    return lane_material_.back();
+}
+
+void Lane::AddLaneMaterial(Lane::Material* lane_material)
+{
+    if (lane_material_.size() > 0 && lane_material->s_offset < lane_material_.back()->s_offset)
+    {
+        for (size_t i = 0; i < lane_material_.size(); i++)
+        {
+            if (NEAR_NUMBERS(lane_material->s_offset, lane_material_[i]->s_offset))
+            {
+                // same s_offset, replace the previous with this later one
+                *lane_material_[i] = *lane_material;
+                return;
+            }
+            else if (lane_material->s_offset < lane_material_[i]->s_offset)
+            {
+                lane_material_.insert(lane_material_.begin() + i, lane_material);
+                return;
+            }
+        }
+    }
+
+    lane_material_.push_back(lane_material);
+    // If first lane material is not at s = 0, add one with default friction for the initial segment
+    if (lane_material_.size() == 1 && lane_material_[0]->s_offset > SMALL_NUMBER)
+    {
+        Lane::Material* m = new Lane::Material();
+        m->friction       = std::nan("");
+        m->s_offset       = 0.0;
+        lane_material_.insert(lane_material_.begin(), m);
+    }
+}
+
 LaneLink* Lane::GetLink(LinkType type) const
 {
     for (int i = 0; i < (int)link_.size(); i++)
@@ -1647,6 +1707,29 @@ double Road::GetSpeedByS(double s) const
 
     // No type entries, fall back to a speed based on nr of lanes
     return 0;
+}
+
+Lane::Material* Road::GetLaneMaterialByS(double s, int lane_id) const
+{
+    LaneSection* lsec = GetLaneSectionByS(s, 0);
+
+    if (lsec == nullptr)
+    {
+        return nullptr;
+    }
+
+    Lane* lane = lsec->GetLaneById(lane_id);
+
+    if (lane != nullptr)
+    {
+        return lane->GetMaterialByS(s - lsec->GetS());
+    }
+    else
+    {
+        LOG("GetLaneMaterialByS: No valid lane %d at road %d s %.2f\n", lane_id, GetId(), s);
+    }
+
+    return nullptr;
 }
 
 Geometry* Road::GetGeometry(int idx) const
@@ -3131,6 +3214,7 @@ void OpenDrive::Clear()
     junction_.clear();
 
     SetSpeedUnit(SpeedUnit::UNDEFINED);
+    friction_.Reset();
 }
 
 bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
@@ -3525,95 +3609,94 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                             {
                                 LOG("Lane type error");
                             }
-                            if (!strcmp(lane_node->attribute("type").value(), "none"))
+                            std::string lane_type_str = lane_node->attribute("type").value();
+                            if (lane_type_str == "none")
                             {
                                 lane_type = Lane::LANE_TYPE_NONE;
                             }
-                            else if (!strcmp(lane_node->attribute("type").value(), "driving"))
+                            else if (lane_type_str == "driving")
                             {
                                 lane_type = Lane::LANE_TYPE_DRIVING;
                             }
-                            else if (!strcmp(lane_node->attribute("type").value(), "stop"))
+                            else if (lane_type_str == "stop")
                             {
                                 lane_type = Lane::LANE_TYPE_STOP;
                             }
-                            else if (!strcmp(lane_node->attribute("type").value(), "shoulder"))
+                            else if (lane_type_str == "shoulder")
                             {
                                 lane_type = Lane::LANE_TYPE_SHOULDER;
                             }
-                            else if (!strcmp(lane_node->attribute("type").value(), "biking"))
+                            else if (lane_type_str == "biking")
                             {
                                 lane_type = Lane::LANE_TYPE_BIKING;
                             }
-                            else if (!strcmp(lane_node->attribute("type").value(), "sidewalk"))
+                            else if (lane_type_str == "sidewalk")
                             {
                                 lane_type = Lane::LANE_TYPE_SIDEWALK;
                             }
-                            else if (!strcmp(lane_node->attribute("type").value(), "border"))
+                            else if (lane_type_str == "border")
                             {
                                 lane_type = Lane::LANE_TYPE_BORDER;
                             }
-                            else if (!strcmp(lane_node->attribute("type").value(), "restricted"))
+                            else if (lane_type_str == "restricted")
                             {
                                 lane_type = Lane::LANE_TYPE_RESTRICTED;
                             }
-                            else if (!strcmp(lane_node->attribute("type").value(), "parking"))
+                            else if (lane_type_str == "parking")
                             {
                                 lane_type = Lane::LANE_TYPE_PARKING;
                             }
-                            else if (!strcmp(lane_node->attribute("type").value(), "bidirectional"))
+                            else if (lane_type_str == "bidirectional")
                             {
                                 lane_type = Lane::LANE_TYPE_BIDIRECTIONAL;
                             }
-                            else if (!strcmp(lane_node->attribute("type").value(), "median"))
+                            else if (lane_type_str == "median")
                             {
                                 lane_type = Lane::LANE_TYPE_MEDIAN;
                             }
-                            else if (!strcmp(lane_node->attribute("type").value(), "special1"))
+                            else if (lane_type_str == "special1")
                             {
                                 lane_type = Lane::LANE_TYPE_SPECIAL1;
                             }
-                            else if (!strcmp(lane_node->attribute("type").value(), "special2"))
+                            else if (lane_type_str == "special2")
                             {
                                 lane_type = Lane::LANE_TYPE_SPECIAL2;
                             }
-                            else if (!strcmp(lane_node->attribute("type").value(), "special3"))
+                            else if (lane_type_str == "special3")
                             {
                                 lane_type = Lane::LANE_TYPE_SPECIAL3;
                             }
-                            else if (!strcmp(lane_node->attribute("type").value(), "roadmarks"))
+                            else if (lane_type_str == "roadmarks")
                             {
                                 lane_type = Lane::LANE_TYPE_ROADMARKS;
                             }
-                            else if (!strcmp(lane_node->attribute("type").value(), "tram"))
+                            else if (lane_type_str == "tram")
                             {
                                 lane_type = Lane::LANE_TYPE_TRAM;
                             }
-                            else if (!strcmp(lane_node->attribute("type").value(), "rail"))
+                            else if (lane_type_str == "rail")
                             {
                                 lane_type = Lane::LANE_TYPE_RAIL;
                             }
-                            else if (!strcmp(lane_node->attribute("type").value(), "entry") ||
-                                     !strcmp(lane_node->attribute("type").value(), "mwyEntry"))
+                            else if (lane_type_str == "entry" || lane_type_str == "mwyEntry")
                             {
                                 lane_type = Lane::LANE_TYPE_ENTRY;
                             }
-                            else if (!strcmp(lane_node->attribute("type").value(), "exit") ||
-                                     !strcmp(lane_node->attribute("type").value(), "mwyExit"))
+                            else if (lane_type_str == "exit" || lane_type_str == "mwyExit")
                             {
                                 lane_type = Lane::LANE_TYPE_EXIT;
                             }
-                            else if (!strcmp(lane_node->attribute("type").value(), "offRamp"))
+                            else if (lane_type_str == "offRamp")
                             {
                                 lane_type = Lane::LANE_TYPE_OFF_RAMP;
                             }
-                            else if (!strcmp(lane_node->attribute("type").value(), "onRamp"))
+                            else if (lane_type_str == "onRamp")
                             {
                                 lane_type = Lane::LANE_TYPE_ON_RAMP;
                             }
                             else
                             {
-                                LOG("unknown lane type: %s (road id=%d)", lane_node->attribute("type").value(), r->GetId());
+                                LOG("unknown lane type: %s (road id=%d)", lane_type_str.c_str(), r->GetId());
                             }
 
                             int lane_id = atoi(lane_node->attribute("id").value());
@@ -3974,6 +4057,29 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                                             lane_roadMarkExplicit->AddLine(std::shared_ptr<LaneRoadMarkExplicitLine>(lane_roadMarkExplicitLine));
                                         }
                                     }
+                                }
+                            }
+
+                            // Lane material - only friction supported
+                            for (pugi::xml_node material = lane_node->child("material"); material; material = material.next_sibling("material"))
+                            {
+                                Lane::Material* lane_material = new Lane::Material();
+                                if (lane_material != nullptr)
+                                {
+                                    lane_material->s_offset = atof(material.attribute("sOffset").value());
+                                    if (!material.attribute("friction").empty())
+                                    {
+                                        lane_material->friction = atof(material.attribute("friction").value());
+                                    }
+                                    else
+                                    {
+                                        lane_material->friction = FRICTION_DEFAULT;
+                                    }
+
+                                    // update global friction value used for optimization
+                                    Position::GetOpenDrive()->SetFriction(lane_material->friction);
+
+                                    lane->AddLaneMaterial(lane_material);
                                 }
                             }
                         }
@@ -5757,6 +5863,32 @@ void OpenDrive::Print() const
     }
 }
 
+void OpenDrive::GlobalFriction::Set(double friction)
+{
+    if (!set_)
+    {
+        // set first friction value
+        friction_ = friction;
+        set_      = true;
+    }
+    else if (!NEAR_NUMBERS(friction, friction_))
+    {
+        // multiple friciton values in the road network, reset global friction value accordingly
+        friction_ = std::nan("");
+    }
+}
+
+double OpenDrive::GlobalFriction::Get()
+{
+    return friction_;
+}
+
+void OpenDrive::GlobalFriction::Reset()
+{
+    set_      = false;
+    friction_ = FRICTION_DEFAULT;
+}
+
 GeoReference* OpenDrive::GetGeoReference()
 {
     return &geo_ref_;
@@ -7295,6 +7427,14 @@ Position::ReturnCode Position::XYZ2TrackPos(double x3, double y3, double z3, int
 
     if (GetOpenDrive()->GetNumOfRoads() == 0)
     {
+        SetX(x3);
+        SetY(y3);
+
+        if ((mode & PosMode::Z_SET) && ((mode & PosMode::Z_MASK) == PosMode::Z_ABS))
+        {
+            SetZ(z3);
+        }
+
         return ReturnCode::ERROR_GENERIC;
     }
 
@@ -7660,9 +7800,18 @@ Position::ReturnCode Position::XYZ2TrackPos(double x3, double y3, double z3, int
     // Now, find out exact road s-value based on interpolation of normal angles
     // for the two lines having the vertex in common
 
-    if (roadMin == 0)
+    if (roadMin == nullptr)
     {
         LOG("Error finding minimum distance");
+
+        SetX(x3);
+        SetY(y3);
+
+        if ((mode & PosMode::Z_SET) && ((mode & PosMode::Z_MASK) == PosMode::Z_ABS))
+        {
+            SetZ(z3);
+        }
+
         return ReturnCode::ERROR_GENERIC;
     }
 
@@ -7908,6 +8057,18 @@ Position::ReturnCode Position::XYZ2TrackPos(double x3, double y3, double z3, int
     else
     {
         EvaluateRoadZHPR();
+    }
+
+    if (mode & PosMode::Z_SET)
+    {
+        if ((mode & PosMode::Z_MASK) == PosMode::Z_REL)
+        {
+            SetZRelative(z3);
+        }
+        else if ((mode & PosMode::Z_MASK) == PosMode::Z_ABS)
+        {
+            SetZ(z3);
+        }
     }
 
     if ((mode & PosMode::H_MASK) == PosMode::H_REL)
@@ -9095,13 +9256,19 @@ int Position::SetInertiaPos(double x, double y, double z, double h, double p, do
 
 int Position::SetInertiaPosMode(double x, double y, double z, double h, double p, double r, int mode, bool updateTrackPos)
 {
-    x_ = std::isnan(x) ? x_ : x;
-    y_ = std::isnan(y) ? y_ : y;
+    x = std::isnan(x) ? x_ : x;
+    y = std::isnan(y) ? y_ : y;
 
-    if (!std::isnan(z) && CheckBitsEqual(mode, PosMode::Z_MASK, PosMode::Z_ABS))
+    if (std::isnan(z))
     {
-        // Update z only if absolute. If relative it will be updated after road z has been evaluated
-        z_ = z;
+        if (CheckBitsEqual(mode, PosMode::Z_MASK, PosMode::Z_ABS))
+        {
+            z = z_;
+        }
+        else
+        {
+            z = z_relative_;
+        }
     }
 
     // Apply default for unspecified modes
@@ -9127,19 +9294,11 @@ int Position::SetInertiaPosMode(double x, double y, double z, double h, double p
 
     if (updateTrackPos)
     {
-        XYZ2Track();
+        XYZ2TrackPos(x, y, z, mode);
     }
 
     // Now when road elevation and orientation is known, establish any absolute coordinate values
     // and calculate relative road as aresult
-
-    if (!std::isnan(z) && mode & PosMode::Z_SET)
-    {
-        if (CheckBitsEqual(mode, PosMode::Z_MASK, PosMode::Z_REL))
-        {
-            SetZRelative(z);
-        }
-    }
 
     if (!std::isnan(h) && mode & PosMode::H_SET)
     {
@@ -10082,12 +10241,21 @@ int Position::GetRoadLaneInfo(RoadLaneInfo* data) const
     data->t          = GetT();
     data->s          = GetS();
 
-    // Then find out the width of the lane at current s-value
+    // Then find out some additional properties of the lane at current s-value
     Road* road = GetRoadById(GetTrackId());
     if (road)
     {
         data->width       = road->GetLaneWidthByS(GetS(), GetLaneId());
         data->speed_limit = road->GetSpeedByS(GetS());
+        Lane::Material* m = road->GetLaneMaterialByS(GetS(), GetLaneId());
+        if (m != nullptr)
+        {
+            data->friction = m->friction;
+        }
+        else
+        {
+            data->friction = FRICTION_DEFAULT;
+        }
     }
 
     return 0;

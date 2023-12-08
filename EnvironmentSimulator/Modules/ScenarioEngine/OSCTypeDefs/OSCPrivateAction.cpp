@@ -710,7 +710,7 @@ void LatLaneChangeAction::Step(double simTime, double dt)
     if (!(object_->pos_.GetRoute() && object_->pos_.GetRoute()->IsValid()))
     {
         // Attach object position to closest road and lane, look up via inertial coordinates
-        object_->pos_.XYZ2TrackPos(object_->pos_.GetX(), object_->pos_.GetY(), object_->pos_.GetZ());
+        object_->pos_.XYZ2TrackPos(object_->pos_.GetX(), object_->pos_.GetY(), object_->pos_.GetZ(), roadmanager::Position::PosMode::Z_ABS);
     }
 
     object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::SPEED);

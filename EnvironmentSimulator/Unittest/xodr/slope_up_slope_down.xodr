@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <OpenDRIVE>
-    <header name="myroad" revMajor="1" revMinor="5" date="2023-09-20 15:31:17.469846" north="0.0" south="0.0" east="0.0" west="0.0"/>
+    <header name="up-and-downhill" revMajor="1" revMinor="5" date="2023-09-20 15:31:17.469846" north="0.0" south="0.0" east="0.0" west="0.0"/>
     <road rule="RHT" id="1" junction="-1" length="100">
         <link/>
         <planView>
-            <geometry s="0" x="0" y="0" hdg="0.7853981633974483" length="10">
+            <geometry s="0" x="0" y="0" hdg="0.7853981633974483" length="100">
                 <line/>
             </geometry>
         </planView>

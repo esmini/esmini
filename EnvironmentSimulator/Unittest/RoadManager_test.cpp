@@ -2877,6 +2877,61 @@ TEST(RotationTest, TestFindOutRelativeOrientation)
     EXPECT_NEAR(GetAngleDifference(pos.GetR(), 0.0), 0.0, 1e-3);
 }
 
+TEST(LaneMaterialTest, TestGlobalFriction)
+{
+    ASSERT_EQ(roadmanager::Position::LoadOpenDrive("../../../EnvironmentSimulator/Unittest/xodr/straight_road.xodr"), true);
+    roadmanager::OpenDrive *odr = Position::GetOpenDrive();
+    ASSERT_NE(odr, nullptr);
+
+    EXPECT_EQ(odr->GetNumOfRoads(), 1);
+    EXPECT_EQ(odr->GetFriction(), 0.5);  // multiple friction values
+
+    ASSERT_EQ(roadmanager::Position::LoadOpenDrive("../../../EnvironmentSimulator/Unittest/xodr/straight_2x100m_opposite.xodr"), true);
+    odr = Position::GetOpenDrive();
+    ASSERT_NE(odr, nullptr);
+
+    EXPECT_EQ(odr->GetNumOfRoads(), 2);
+    EXPECT_EQ(odr->GetFriction(), FRICTION_DEFAULT);  // no friction values, fall back to default
+}
+
+TEST(LaneMaterialTest, TestLaneFriction)
+{
+    ASSERT_EQ(roadmanager::Position::LoadOpenDrive("../../../EnvironmentSimulator/Unittest/xodr/straight_highway_500m.xodr"), true);
+    roadmanager::OpenDrive *odr = Position::GetOpenDrive();
+    ASSERT_NE(odr, nullptr);
+
+    EXPECT_EQ(odr->GetNumOfRoads(), 1);
+
+    EXPECT_EQ(std::isnan(odr->GetFriction()), true);  // multiple friction values
+
+    Road *road = odr->GetRoadById(0);
+    EXPECT_EQ(road->GetId(), 0);
+    LaneSection *lane_section = road->GetLaneSectionByIdx(0);
+    EXPECT_EQ(lane_section->GetNumberOfLanes(), 7);
+
+    Lane *lane = lane_section->GetLaneById(2);
+    EXPECT_EQ(lane->GetNumberOfMaterials(), 3);
+    EXPECT_NEAR(lane->GetMaterialByIdx(0)->s_offset, 0.0, 1e-3);
+    EXPECT_NEAR(lane->GetMaterialByIdx(0)->friction, 1.0, 1e-3);
+    EXPECT_NEAR(lane->GetMaterialByIdx(1)->s_offset, 100.0, 1e-3);
+    EXPECT_NEAR(lane->GetMaterialByIdx(1)->friction, 0.4, 1e-3);
+    EXPECT_NEAR(lane->GetMaterialByIdx(2)->s_offset, 120.0, 1e-3);
+    EXPECT_NEAR(lane->GetMaterialByIdx(2)->friction, 1.0, 1e-3);
+    EXPECT_EQ(lane->GetMaterialByIdx(3), nullptr);
+
+    lane = lane_section->GetLaneById(-3);
+    EXPECT_EQ(lane->GetNumberOfMaterials(), 5);
+    EXPECT_NEAR(lane->GetMaterialByIdx(0)->s_offset, 0.0, 1e-3);
+    EXPECT_NEAR(lane->GetMaterialByIdx(0)->friction, 1.0, 1e-3);
+    EXPECT_NEAR(lane->GetMaterialByIdx(1)->s_offset, 180.0, 1e-3);
+    EXPECT_NEAR(lane->GetMaterialByIdx(1)->friction, 0.1, 1e-3);
+    EXPECT_NEAR(lane->GetMaterialByIdx(2)->s_offset, 190.0, 1e-3);
+    EXPECT_NEAR(lane->GetMaterialByIdx(2)->friction, 0.5, 1e-3);
+    EXPECT_NEAR(lane->GetMaterialByIdx(3)->s_offset, 200.0, 1e-3);
+    EXPECT_NEAR(lane->GetMaterialByIdx(3)->friction, 5.5, 1e-3);
+    EXPECT_EQ(lane->GetMaterialByIdx(5), nullptr);
+}
+
 // Uncomment to print log output to console
 // #define LOG_TO_CONSOLE
 

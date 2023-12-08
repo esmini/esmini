@@ -22,6 +22,7 @@
 #include "CommonMini.hpp"
 
 #define PARAMPOLY3_STEPS 100
+#define FRICTION_DEFAULT 1.0
 
 namespace roadmanager
 {
@@ -908,6 +909,12 @@ namespace roadmanager
             LANE_POS_RIGHT
         };
 
+        typedef struct
+        {
+            double s_offset;
+            double friction;
+        } Material;
+
         typedef enum
         {
             LANE_TYPE_NONE            = (1 << 0),
@@ -995,6 +1002,7 @@ namespace roadmanager
         }
         void AddLaneWidth(LaneWidth *lane_width);
         void AddLaneRoadMark(LaneRoadMark *lane_roadMark);
+        void AddLaneMaterial(Lane::Material *material);
 
         // Get Functions
         int GetNumberOfRoadMarks() const
@@ -1009,11 +1017,17 @@ namespace roadmanager
         {
             return (int)lane_width_.size();
         }
+        int GetNumberOfMaterials() const
+        {
+            return (int)lane_material_.size();
+        }
 
-        LaneLink     *GetLink(LinkType type) const;
-        LaneWidth    *GetWidthByIndex(int index) const;
-        LaneWidth    *GetWidthByS(double s) const;
-        LaneRoadMark *GetLaneRoadMarkByIdx(int idx) const;
+        LaneLink       *GetLink(LinkType type) const;
+        LaneWidth      *GetWidthByIndex(int index) const;
+        LaneWidth      *GetWidthByS(double s) const;
+        LaneRoadMark   *GetLaneRoadMarkByIdx(int idx) const;
+        Lane::Material *GetMaterialByIdx(int idx) const;
+        Lane::Material *GetMaterialByS(double s) const;
 
         RoadMarkInfo GetRoadMarkInfoByS(int track_id, int lane_id, double s) const;
         OSIPoints   *GetOSIPoints()
@@ -1059,16 +1073,17 @@ namespace roadmanager
         }
 
     private:
-        int                         id_;               // center = 0, left > 0, right < 0
-        int                         global_id_;        // Unique ID for OSI
-        int                         osiintersection_;  // flag to see if the lane is part of an osi-lane section or not
-        LaneType                    type_;
-        int                         level_;  // boolean, true = keep lane on level
-        std::vector<LaneLink *>     link_;
-        std::vector<LaneWidth *>    lane_width_;
-        std::vector<LaneRoadMark *> lane_roadMark_;
-        LaneBoundaryOSI            *lane_boundary_;
-        bool                        road_edge_;  // indicates whether this is edge of the paved road (used for OSI ROAD_EDGE)
+        int                           id_;               // center = 0, left > 0, right < 0
+        int                           global_id_;        // Unique ID for OSI
+        int                           osiintersection_;  // flag to see if the lane is part of an osi-lane section or not
+        LaneType                      type_;
+        int                           level_;  // boolean, true = keep lane on level
+        std::vector<LaneLink *>       link_;
+        std::vector<LaneWidth *>      lane_width_;
+        std::vector<LaneRoadMark *>   lane_roadMark_;
+        std::vector<Lane::Material *> lane_material_;
+        LaneBoundaryOSI              *lane_boundary_;
+        bool                          road_edge_;  // indicates whether this is edge of the paved road (used for OSI ROAD_EDGE)
     };
 
     class LaneSection
@@ -2230,18 +2245,19 @@ namespace roadmanager
         */
         double GetCenterOffset(double s, int lane_id) const;
 
-        int            GetLaneInfoByS(double    s,
-                                      int       start_lane_link_idx,
-                                      int       start_lane_id,
-                                      LaneInfo &lane_info,
-                                      int       laneTypeMask = Lane::LaneType::LANE_TYPE_ANY_DRIVING) const;
-        int            GetConnectingLaneId(RoadLink *road_link, int fromLaneId, int connectingRoadId) const;
-        double         GetLaneWidthByS(double s, int lane_id) const;
-        Lane::LaneType GetLaneTypeByS(double s, int lane_id) const;
-        double         GetSpeedByS(double s) const;
-        bool           GetZAndPitchByS(double s, double *z, double *z_prim, double *z_primPrim, double *pitch, int *index) const;
-        bool           UpdateZAndRollBySAndT(double s, double t, double *z, double *roadSuperElevationPrim, double *roll, int *index);
-        int            GetNumberOfLaneSections() const
+        int             GetLaneInfoByS(double    s,
+                                       int       start_lane_link_idx,
+                                       int       start_lane_id,
+                                       LaneInfo &lane_info,
+                                       int       laneTypeMask = Lane::LaneType::LANE_TYPE_ANY_DRIVING) const;
+        int             GetConnectingLaneId(RoadLink *road_link, int fromLaneId, int connectingRoadId) const;
+        double          GetLaneWidthByS(double s, int lane_id) const;
+        Lane::LaneType  GetLaneTypeByS(double s, int lane_id) const;
+        Lane::Material *GetLaneMaterialByS(double s, int lane_id) const;
+        double          GetSpeedByS(double s) const;
+        bool            GetZAndPitchByS(double s, double *z, double *z_prim, double *z_primPrim, double *pitch, int *index) const;
+        bool            UpdateZAndRollBySAndT(double s, double t, double *z, double *roadSuperElevationPrim, double *roll, int *index);
+        int             GetNumberOfLaneSections() const
         {
             return (int)lane_section_.size();
         }
@@ -2781,7 +2797,28 @@ namespace roadmanager
             return versionMinor_;
         }
 
+        double GetFriction()
+        {
+            return friction_.Get();
+        }
+
+        void SetFriction(double friction)
+        {
+            return friction_.Set(friction);
+        }
+
         void Print() const;
+
+        // used for optimization when single friction value throughout the whole road network
+        struct GlobalFriction
+        {
+            bool   set_      = false;
+            double friction_ = FRICTION_DEFAULT;
+
+            void   Set(double friction);
+            double Get();
+            void   Reset();
+        };
 
     private:
         pugi::xml_node                     root_node_;
@@ -2794,6 +2831,7 @@ namespace roadmanager
         SpeedUnit                          speed_unit_;  // First specified speed unit. MS is default. Undefined if no speed entries.
         int                                versionMajor_;
         int                                versionMinor_;
+        GlobalFriction                     friction_;
     };
 
     typedef struct
@@ -2811,6 +2849,7 @@ namespace roadmanager
         double laneOffset;   // lane offset (lateral distance from lane center)
         double s;            // s (longitudinal distance along reference line)
         double t;            // t (lateral distance from reference line)
+        double friction;     // lane material friction
     } RoadLaneInfo;
 
     typedef struct

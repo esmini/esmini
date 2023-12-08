@@ -26,14 +26,24 @@
 #include "CommonMini.hpp"
 #include "viewer.hpp"
 
-#define GEOM_TOLERANCE           (0.2 - SMALL_NUMBER)  // Minimum distance between two vertices along road s-axis
-#define TEXTURE_SCALE            0.5                   // Scale factor for asphalt and grass textures 1.0 means whole texture fits in 1 x 1 m square
-#define MAX_GEOM_ERROR           0.1                   // maximum distance from the 3D geometry to the OSI lines
-#define MAX_GEOM_LENGTH          50                    // maximum length of a road geometry mesh segment
+#define GEOM_TOLERANCE  (0.2 - SMALL_NUMBER)  // Minimum distance between two vertices along road s-axis
+#define TEXTURE_SCALE   0.5                   // Scale factor for asphalt and grass textures 1.0 means whole texture fits in 1 x 1 m square
+#define MAX_GEOM_ERROR  0.1                   // maximum distance from the 3D geometry to the OSI lines
+#define MAX_GEOM_LENGTH 50                    // maximum length of a road geometry mesh segment
+#define MIN_GEOM_LENGTH 0.1                   // minimum length of a road geometry mesh segment, adjust if possible
+
 #define POLYGON_OFFSET_SIDEWALK  2.0
 #define POLYGON_OFFSET_ROADMARKS 1.0
 #define POLYGON_OFFSET_BORDER    -1.0
 #define POLYGON_OFFSET_GRASS     -2.0
+
+const static double friction_max     = 5.0;
+const static double friction_default = 1.0;
+
+bool compare_s_values(double s0, double s1)
+{
+    return (fabs(s1 - s0) < 0.1);
+}
 
 osg::ref_ptr<osg::Texture2D> RoadGeom::ReadTexture(std::string filename)
 {
@@ -571,23 +581,9 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive* odr)
     color_concrete->push_back(osg::Vec4(0.61f, 0.61f, 0.61f, 1.0f));
     color_border_inner->push_back(osg::Vec4(0.45f, 0.45f, 0.45f, 1.0f));
 
-    osg::ref_ptr<osg::Material> materialAsphalt_     = new osg::Material;
-    osg::ref_ptr<osg::Material> materialGrass_       = new osg::Material;
-    osg::ref_ptr<osg::Material> materialConcrete_    = new osg::Material;
-    osg::ref_ptr<osg::Material> materialBorderInner_ = new osg::Material;
-    materialAsphalt_->setDiffuse(osg::Material::FRONT_AND_BACK, color_asphalt->at(0));
-    materialAsphalt_->setAmbient(osg::Material::FRONT_AND_BACK, color_asphalt->at(0));
-    materialGrass_->setDiffuse(osg::Material::FRONT_AND_BACK, color_grass->at(0));
-    materialGrass_->setAmbient(osg::Material::FRONT_AND_BACK, color_grass->at(0));
-    materialConcrete_->setDiffuse(osg::Material::FRONT_AND_BACK, color_concrete->at(0));
-    materialConcrete_->setAmbient(osg::Material::FRONT_AND_BACK, color_concrete->at(0));
-    materialBorderInner_->setDiffuse(osg::Material::FRONT_AND_BACK, color_border_inner->at(0));
-    materialBorderInner_->setAmbient(osg::Material::FRONT_AND_BACK, color_border_inner->at(0));
-
     for (size_t i = 0; i < static_cast<unsigned int>(odr->GetNumOfRoads()); i++)
     {
-        roadmanager::Road*  road = odr->GetRoadByIdx(static_cast<int>(i));
-        std::vector<double> s_list;
+        roadmanager::Road* road = odr->GetRoadByIdx(static_cast<int>(i));
 
         for (size_t j = 0; j < static_cast<unsigned int>(road->GetNumberOfLaneSections()); j++)
         {
@@ -606,10 +602,7 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive* odr)
                 throw std::runtime_error("Missing OSI points");
             }
 
-            // create a list to keep track of current s-value for each lane
-            std::vector<int> s_index(static_cast<unsigned int>(lsec->GetNumberOfLanes()), 0);
-
-            // create a 2d list of positions for vertices, nr_of_lanes x nr_of_s-values
+            // create a 2d list of positions for vertices, nr_of_s-values x nr_of_lanes
             typedef struct
             {
                 double x;
@@ -619,37 +612,72 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive* odr)
                 double slope;
                 double s;
             } GeomPoint;
-            std::vector<std::vector<GeomPoint>> geom_point_list;
-            std::vector<GeomPoint>              geom_point;
 
-            roadmanager::Position pos;
-            s_list.clear();
+            typedef struct
+            {
+                int    geom_point_index;
+                double friction;
+            } GeomStrip;  // could be multiple of these per lane
 
-            bool done = false;
-            for (int counter = 1; !done && counter > 0; counter++)
+            struct GeomCacheEntry
+            {
+                GeomPoint point;
+                int       osi_point_index = 0;
+                double    friction        = 1.0;
+            };
+
+            std::vector<std::vector<GeomPoint>> geom_points_list;  // one list of points per lane
+            std::vector<std::vector<GeomStrip>> geom_strips_list;  // one list of strips info per lane
+            std::vector<GeomCacheEntry>         geom_cache;        // one cache entry per lane
+
+            roadmanager::Position pos;  // used for calculating points along the road
+
+            // First populate s values of the material elements
+            //   - for each material a new friction segment is to be added
+            //   - loop over material friction segments, insert new vertices if needed
+            std::vector<double> friction_s_list;
+            for (size_t k = 0; k < static_cast<unsigned int>(lsec->GetNumberOfLanes()); k++)
+            {
+                lane = lsec->GetLaneByIdx(k);
+                for (size_t l = 0; l < lane->GetNumberOfMaterials(); l++)
+                {
+                    friction_s_list.push_back(lsec->GetS() + lane->GetMaterialByIdx(l)->s_offset);
+                }
+            }
+
+            // sort friction s-values and remove duplicates
+            std::sort(friction_s_list.begin(), friction_s_list.end());
+            friction_s_list.erase(std::unique(friction_s_list.begin(), friction_s_list.end(), compare_s_values), friction_s_list.end());
+
+            // collect a list of s values where vertices are needed, considering all lanes
+            int  friction_s_list_index = friction_s_list.size() > 0 ? 1 : -1;
+            bool done_section          = false;
+            for (int counter = 1; !done_section && counter > 0; counter++)
             {
                 double s_min = lsec->GetS() + lsec->GetLength();
-                done         = true;
+                done_section = true;
 
                 if (counter == 1)
                 {
                     // First add s = start of lane section, to set start of mesh
-                    s_list.push_back(lsec->GetS());
-                    done = false;
+                    s_min        = lsec->GetS();
+                    done_section = false;
                 }
                 else
                 {
                     // find next s-value based on accumulated error of each lane
                     for (size_t k = 0; k < static_cast<unsigned int>(lsec->GetNumberOfLanes()); k++)
                     {
-                        lane                                            = lsec->GetLaneByIdx(static_cast<int>(k));
-                        std::vector<roadmanager::PointStruct> osiPoints = lane->GetOSIPoints()->GetPoints();
-                        unsigned int                          l         = static_cast<unsigned int>(s_index[k]) + 1;
+                        lane                                               = lsec->GetLaneByIdx(static_cast<int>(k));
+                        std::vector<roadmanager::PointStruct> osiPoints    = lane->GetOSIPoints()->GetPoints();
+                        unsigned int                          l            = geom_cache[k].osi_point_index;
+                        double                                next_s       = s_min;
+                        bool                                  insert_point = false;
 
                         // Find next s-value for this lane - go forward until error becomes too large
                         for (; l < osiPoints.size(); l++)
                         {
-                            // generate point at this s-value
+                            // generate point at next OSI point s-value
                             pos.SetTrackPos(road->GetId(),
                                             osiPoints[l].s,
                                             SIGN(lane->GetId()) * lsec->GetOuterOffset(osiPoints[l].s, lane->GetId()),
@@ -658,205 +686,340 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive* odr)
                             // calculate horizontal error at this s value
                             double error_horizontal = DistanceFromPointToLine2DWithAngle(pos.GetX(),
                                                                                          pos.GetY(),
-                                                                                         geom_point_list.back()[k].x,
-                                                                                         geom_point_list.back()[k].y,
-                                                                                         geom_point_list.back()[k].h);
+                                                                                         geom_cache[k].point.x,
+                                                                                         geom_cache[k].point.y,
+                                                                                         geom_cache[k].point.h);
 
                             // calculate vertical error at this s value
-                            double error_vertical = abs((pos.GetZ() - geom_point_list.back()[k].z) -
-                                                        geom_point_list.back()[k].slope * (pos.GetS() - geom_point_list.back()[k].s));
+                            double error_vertical =
+                                abs((pos.GetZ() - geom_cache[k].point.z) - geom_cache[k].point.slope * (pos.GetS() - geom_cache[k].point.s));
 
-                            if (error_horizontal > MAX_GEOM_ERROR || error_vertical > MAX_GEOM_ERROR)
+                            if (NEAR_NUMBERS(next_s, osiPoints[l - 1].s) && (error_horizontal > MAX_GEOM_ERROR || error_vertical > MAX_GEOM_ERROR))
                             {
-                                done = false;
-                                break;
-                            }
-                        }
-
-                        if (l < osiPoints.size())
-                        {
-                            if (s_index[k] != static_cast<int>(l) - 1)
-                            {
-                                // make sure previous s-value before error exceeded threshold is included
-                                s_index[k] = static_cast<int>(l) - 1;
+                                // the tested OSI point cause too large error, pick the previous one
+                                if (l > 0)
+                                {
+                                    if (static_cast<int>(l) - 1 > geom_cache[k].osi_point_index)
+                                    {
+                                        // make sure previous s-value before error exceeded threshold is included
+                                        l--;
+                                        next_s = osiPoints[l].s;
+                                    }
+                                    else
+                                    {
+                                        // avoid adding same value, accept adding s-value exceeding the threshold
+                                        next_s = osiPoints[l].s;
+                                    }
+                                }
+                                else
+                                {
+                                    LOG("Unexpected l == 0\n");
+                                    next_s = osiPoints[l].s;
+                                }
+                                insert_point = true;
                             }
                             else
                             {
-                                // add s-value exceeding the threshold
-                                s_index[k] = static_cast<int>(l);
+                                next_s = osiPoints[l].s;
+                            }
+
+                            // we have s-value of a OSI point, check if there is a new friction value before that
+                            // also check for maximum length
+                            double s_next_friction     = (friction_s_list_index > -1 && friction_s_list_index < friction_s_list.size())
+                                                             ? friction_s_list[friction_s_list_index]
+                                                             : lsec->GetS() + lsec->GetLength();
+                            double s_next_geom_max_len = geom_cache[k].point.s + MAX_GEOM_LENGTH;
+
+                            if (s_next_friction < next_s && s_next_friction < s_min &&
+                                s_next_friction < s_next_geom_max_len + MIN_GEOM_LENGTH)  // add min geom len to avoid mini patches
+                            {
+                                next_s = s_next_friction;
+                                friction_s_list_index++;
+                                insert_point = true;
+                            }
+                            else if (s_next_geom_max_len < next_s && s_next_geom_max_len < s_min &&
+                                     s_next_geom_max_len + MIN_GEOM_LENGTH < s_next_friction)  // add min geom len to avoid mini patches
+                            {
+                                next_s       = s_next_geom_max_len;
+                                insert_point = true;
+                            }
+
+                            if (insert_point)
+                            {
+                                done_section = false;
+                                break;
+                            }
+
+                            if (next_s > s_min - SMALL_NUMBER)
+                            {
+                                break;  // no need to check this lane further
                             }
                         }
-                        else
-                        {
-                            s_index[k] = static_cast<int>(osiPoints.size()) - 1;  // add last OSI point for end of mesh
-                        }
 
-                        if (osiPoints[static_cast<unsigned int>(s_index[k])].s < s_min)
+                        geom_cache[k].osi_point_index = l;
+
+                        if (next_s < s_min)
                         {
-                            s_min = osiPoints[static_cast<unsigned int>(s_index[k])].s;  // register pivot s-value
+                            s_min = next_s;
                         }
                     }
-
-                    s_list.push_back(s_min);
                 }
 
-                double total_segment_length = s_list.back();
-                if (s_list.size() > 1)
+                // s-value for next point established, create vertices for each lane
+                for (size_t k = 0; k < static_cast<unsigned int>(lsec->GetNumberOfLanes()); k++)
                 {
-                    total_segment_length -= s_list.rbegin()[1];
-                }
-                else
-                {
-                    total_segment_length -= lsec->GetS();
-                }
+                    roadmanager::Lane::Material* mat            = nullptr;
+                    int                          lane_id        = lsec->GetLaneIdByIdx(static_cast<int>(k));
+                    int                          friction_index = k;
 
-                // limit segment length - split if needed
-                int    n              = static_cast<int>((total_segment_length - SMALL_NUMBER) / MAX_GEOM_LENGTH) + 1;
-                double segment_length = total_segment_length / n;
-                for (int m = 0; m < n; m++)
-                {
-                    geom_point.clear();
-                    double s = 0.0;
-
-                    if (m == n - 1)
+                    if (k > 0)  // skip friction for first vertex strip (leftmost outer lane boundary)
                     {
-                        s = s_list.back();
+                        // For friction we need to work from left to right. For left lanes, it means shifting friction one lane right
+                        if (lane_id >= 0)
+                        {
+                            friction_index = k - 1;
+                        }
                     }
                     else
                     {
-                        s = s_list.rbegin()[1] + (m + 1) * segment_length;
+                        friction_index = lsec->GetLaneIdxById(0);
                     }
 
-                    for (size_t k = 0; k < static_cast<unsigned int>(lsec->GetNumberOfLanes()); k++)
+                    roadmanager::Lane* lane_for_friction;
+                    lane_for_friction = lsec->GetLaneByIdx(static_cast<int>(friction_index));
+                    mat               = lane_for_friction->GetMaterialByS(s_min - lsec->GetS());
+                    double friction   = mat != nullptr ? mat->friction : FRICTION_DEFAULT;
+
+                    // retrieve position at s-value
+                    pos.SetTrackPos(road->GetId(), s_min, SIGN(lane_id) * lsec->GetOuterOffset(s_min, lane_id), true);
+                    GeomPoint gp = {pos.GetX(), pos.GetY(), pos.GetZ(), pos.GetH(), pos.GetZRoadPrim(), pos.GetS()};
+
+                    if (counter == 1)
                     {
-                        lane = lsec->GetLaneByIdx(static_cast<int>(k));
-                        pos.SetTrackPos(road->GetId(), s, SIGN(lane->GetId()) * lsec->GetOuterOffset(s, lane->GetId()), true);
-                        geom_point.push_back({pos.GetX(), pos.GetY(), pos.GetZ(), pos.GetH(), pos.GetZRoadPrim(), pos.GetS()});
+                        // add geometry and strip list for the lane to
+                        std::vector<GeomPoint> geom_points;
+                        geom_points_list.push_back(geom_points);
+
+                        std::vector<GeomStrip> geom_strips;
+                        geom_strips_list.push_back(geom_strips);
                     }
 
-                    geom_point_list.push_back(geom_point);
+                    if (counter == 1 || !NEAR_NUMBERS(friction, geom_cache[k].friction))
+                    {
+                        // create initial strip or strip with new friction value
+                        geom_strips_list[k].push_back({static_cast<int>(geom_points_list[k].size()), friction});
+                    }
+
+                    geom_points_list[k].push_back(gp);
+
+                    if (geom_cache.size() <= k)
+                    {
+                        geom_cache.push_back({{pos.GetX(), pos.GetY(), pos.GetZ(), pos.GetH(), pos.GetZRoadPrim(), pos.GetS()}, 1, friction});
+                    }
+                    else
+                    {
+                        geom_cache[k].point    = {pos.GetX(), pos.GetY(), pos.GetZ(), pos.GetH(), pos.GetZRoadPrim(), pos.GetS()};
+                        geom_cache[k].friction = friction;
+                    }
                 }
             }
 
             // Then create actual vertices and triangle strips for the lane section
-            int                          nrOfVerticesTotal = static_cast<int>(geom_point_list.size()) * lsec->GetNumberOfLanes();
-            osg::ref_ptr<osg::Vec3Array> verticesAll       = new osg::Vec3Array(static_cast<unsigned int>(nrOfVerticesTotal));
-            osg::ref_ptr<osg::Vec2Array> texcoordsAll      = new osg::Vec2Array;
-            int                          vidxAll           = 0;
+            // Each strip is made of two lanes, so we need to create a separate geometry for each pair of lanes
+            // Also within each lane, we need to create a separate geometry for each material segment
+            unsigned int nr_vertices =
+                static_cast<unsigned int>(geom_points_list[0].size() * geom_strips_list.size());  // same nr vertices in all lanes
+            osg::ref_ptr<osg::Vec3Array> verticesAll  = new osg::Vec3Array(nr_vertices);
+            osg::ref_ptr<osg::Vec2Array> texcoordsAll = new osg::Vec2Array(nr_vertices);
 
             // Potential optimization: Swap loops, creating all vertices for same s-value for each step
-            for (size_t k = 0; k < static_cast<unsigned int>(lsec->GetNumberOfLanes()); k++)
+            int vertex_index_left_local      = 0;
+            int vertex_index_right_local     = 0;
+            int vertex_index_left_local_next = 0;
+            int vertex_idx_all               = 0;
+
+            for (size_t k = 0; k < geom_strips_list.size(); k++)  // loop over lanes
             {
                 osg::ref_ptr<osg::Vec3Array>        verticesLocal;
                 osg::ref_ptr<osg::Vec2Array>        texcoordsLocal;
+                osg::ref_ptr<osg::Vec4Array>        colorLocal;
                 osg::ref_ptr<osg::DrawElementsUInt> indices;
-                int                                 vidxLocal = 0;
-                lane                                          = lsec->GetLaneByIdx(static_cast<int>(k));
+                lane                               = lsec->GetLaneByIdx(static_cast<int>(k));
+                roadmanager::Lane* laneForMaterial = nullptr;
 
-                if (k > 0)
+                vertex_index_left_local      = vertex_index_left_local_next;
+                vertex_index_right_local     = vertex_idx_all;
+                vertex_index_left_local_next = vertex_index_right_local;
+
+                for (size_t m = 0; m < geom_strips_list[k].size(); m++)  // loop over lane patches with constant friction
                 {
-                    verticesLocal  = new osg::Vec3Array(static_cast<unsigned int>(geom_point_list.size()) * 2);
-                    indices        = new osg::DrawElementsUInt(GL_TRIANGLE_STRIP, static_cast<unsigned int>(geom_point_list.size()) * 2);
-                    texcoordsLocal = new osg::Vec2Array(static_cast<unsigned int>(geom_point_list.size()) * 2);
-                }
+                    double                  friction    = geom_strips_list[k][m].friction;
+                    unsigned int            gpi         = geom_strips_list[k][m].geom_point_index;
+                    std::vector<GeomPoint>& geom_points = geom_points_list[k];
+                    unsigned int            n_points    = 0;
 
-                for (size_t l = 0; l < geom_point_list.size(); l++)
-                {
-                    GeomPoint& gp = geom_point_list[l][k];
-                    (*verticesAll)[static_cast<unsigned int>(vidxAll++)].set(static_cast<float>(gp.x),
-                                                                             static_cast<float>(gp.y),
-                                                                             static_cast<float>(gp.z));
-                    double texscale = TEXTURE_SCALE;
-                    texcoordsAll->push_back(osg::Vec2(static_cast<float>(texscale * gp.x), static_cast<float>(texscale * gp.y)));
-
-                    // Create indices for the lane strip, referring to the vertex list
-                    if (k > 0)
+                    if (m < geom_strips_list[k].size() - 1)
                     {
-                        // vertex of left lane border
-                        (*verticesLocal)[static_cast<unsigned int>(vidxLocal)]  = (*verticesAll)[(k - 1) * geom_point_list.size() + l];
-                        (*texcoordsLocal)[static_cast<unsigned int>(vidxLocal)] = (*texcoordsAll)[(k - 1) * geom_point_list.size() + l];
-                        (*indices)[static_cast<unsigned int>(vidxLocal)]        = static_cast<unsigned int>(vidxLocal);
-                        vidxLocal++;
-                        // vertex of right
-                        (*verticesLocal)[static_cast<unsigned int>(vidxLocal)]  = (*verticesAll)[k * geom_point_list.size() + l];
-                        (*texcoordsLocal)[static_cast<unsigned int>(vidxLocal)] = (*texcoordsAll)[k * geom_point_list.size() + l];
-                        (*indices)[static_cast<unsigned int>(vidxLocal)]        = static_cast<unsigned int>(vidxLocal);
-                        vidxLocal++;
-                    }
-                }
-
-                if (k > 0)
-                {
-                    // Create geometry for the strip made of this and previous lane
-                    osg::ref_ptr<osg::Geometry> geom = new osg::Geometry;
-                    geom->setUseDisplayList(true);
-                    geom->setVertexArray(verticesLocal.get());
-                    geom->addPrimitiveSet(indices.get());
-                    geom->setTexCoordArray(0, texcoordsLocal.get());
-                    osgUtil::SmoothingVisitor::smooth(*geom, 0.5);
-
-                    osg::ref_ptr<osg::Texture2D> tex = nullptr;
-
-                    roadmanager::Lane* laneForMaterial = lsec->GetLaneByIdx(lane->GetId() < 0 ? static_cast<int>(k) : static_cast<int>(k) - 1);
-
-                    if (laneForMaterial->IsType(roadmanager::Lane::LaneType::LANE_TYPE_ANY_ROAD))
-                    {
-                        geom->setColorArray(color_asphalt.get());
-                        if (tex_asphalt)
-                        {
-                            tex = tex_asphalt.get();
-                        }
-                        geom->getOrCreateStateSet()->setAttributeAndModes(materialAsphalt_.get());
-                    }
-                    else if (laneForMaterial->IsType(roadmanager::Lane::LaneType::LANE_TYPE_BIKING) ||
-                             laneForMaterial->IsType(roadmanager::Lane::LaneType::LANE_TYPE_SIDEWALK))
-                    {
-                        geom->setColorArray(color_concrete.get());
-                        geom->getOrCreateStateSet()->setAttributeAndModes(materialConcrete_.get());
-
-                        // Use PolygonOffset feature to avoid z-fighting with road surface
-                        geom->getOrCreateStateSet()->setAttributeAndModes(
-                            new osg::PolygonOffset(-POLYGON_OFFSET_SIDEWALK, -SIGN(POLYGON_OFFSET_SIDEWALK)));
-                    }
-                    else if (laneForMaterial->IsType(roadmanager::Lane::LaneType::LANE_TYPE_BORDER) && k != 1 &&
-                             k != static_cast<unsigned int>(lsec->GetNumberOfLanes()) - 1)
-                    {
-                        geom->setColorArray(color_border_inner.get());
-                        geom->getOrCreateStateSet()->setAttributeAndModes(materialBorderInner_.get());
-
-                        // Use PolygonOffset feature to avoid z-fighting with road surface
-                        geom->getOrCreateStateSet()->setAttributeAndModes(
-                            new osg::PolygonOffset(-POLYGON_OFFSET_BORDER, -SIGN(POLYGON_OFFSET_BORDER)));
+                        n_points = geom_strips_list[k][m + 1].geom_point_index - gpi + 1;  // +
                     }
                     else
                     {
-                        geom->setColorArray(color_grass.get());
-                        if (tex_grass)
-                        {
-                            tex = tex_grass.get();
-                        }
-                        geom->getOrCreateStateSet()->setAttributeAndModes(materialGrass_.get());
-
-                        // Use PolygonOffset feature to avoid z-fighting with road surface
-                        geom->getOrCreateStateSet()->setAttributeAndModes(new osg::PolygonOffset(-POLYGON_OFFSET_GRASS, -SIGN(POLYGON_OFFSET_GRASS)));
+                        n_points = geom_points.size() - gpi;
                     }
-                    geom->setColorBinding(osg::Geometry::BIND_OVERALL);
 
-                    if (tex != nullptr)
+                    if (k > 0)
                     {
-                        geom->getOrCreateStateSet()->setTextureAttributeAndModes(0, tex.get());
-                        osg::ref_ptr<osg::TexEnv> texEnv = new osg::TexEnv;
-                        texEnv->setMode(osg::TexEnv::MODULATE);
-                        geom->getOrCreateStateSet()->setTextureAttribute(0, texEnv.get(), osg::StateAttribute::ON);
+                        verticesLocal   = new osg::Vec3Array(static_cast<unsigned int>(n_points * 2));
+                        indices         = new osg::DrawElementsUInt(GL_TRIANGLE_STRIP, static_cast<unsigned int>(n_points * 2));
+                        texcoordsLocal  = new osg::Vec2Array(static_cast<unsigned int>(n_points * 2));
+                        laneForMaterial = lsec->GetLaneByIdx(lane->GetId() < 0 ? static_cast<int>(k) : static_cast<int>(k) - 1);
                     }
 
-                    osg::ref_ptr<osg::Geode> geode = new osg::Geode;
-                    geode->addDrawable(geom.get());
+                    int index_counter = 0;
 
-                    // osgUtil::Optimizer optimizer;
-                    // optimizer.optimize(geode);
+                    for (size_t l = 0; l < n_points; l++)
+                    {
+                        GeomPoint& gp = geom_points[gpi + l];
+                        if (m == 0 || l > 0)
+                        {
+                            (*verticesAll)[static_cast<unsigned int>(vertex_idx_all)].set(static_cast<float>(gp.x),
+                                                                                          static_cast<float>(gp.y),
+                                                                                          static_cast<float>(gp.z));
+                            double texscale = TEXTURE_SCALE;
+                            (*texcoordsAll)[static_cast<unsigned int>(vertex_idx_all)].set(
+                                osg::Vec2(static_cast<float>(texscale * gp.x), static_cast<float>(texscale * gp.y)));
+                            vertex_idx_all++;
+                        }
+                        else
+                        {
+                            vertex_index_right_local--;  // reuse previous vertex
+                            vertex_index_left_local--;   // reuse previous vertex
+                        }
 
-                    root_->addChild(geode);
+                        // Create indices for the lane strip, referring to the vertex list
+                        if (k > 0)
+                        {
+                            // vertex of left lane border
+                            (*verticesLocal)[static_cast<unsigned int>(index_counter)]  = (*verticesAll)[vertex_index_left_local];
+                            (*texcoordsLocal)[static_cast<unsigned int>(index_counter)] = (*texcoordsAll)[vertex_index_left_local];
+                            (*indices)[index_counter]                                   = static_cast<unsigned int>(index_counter);
+                            if (l < geom_points.size() - 1)
+                            {
+                                vertex_index_left_local++;
+                            }
+                            index_counter++;
+
+                            // vertex of right
+                            (*verticesLocal)[static_cast<unsigned int>(index_counter)]  = (*verticesAll)[vertex_index_right_local];
+                            (*texcoordsLocal)[static_cast<unsigned int>(index_counter)] = (*texcoordsAll)[vertex_index_right_local];
+                            (*indices)[index_counter]                                   = static_cast<unsigned int>(index_counter);
+                            if (l < geom_points.size() - 1)
+                            {
+                                vertex_index_right_local++;
+                            }
+                            index_counter++;
+                        }
+                    }
+
+                    if (k != 0)
+                    {
+                        // Create geometry for the strip made of this and previous lane
+                        osg::ref_ptr<osg::Geometry> geom = new osg::Geometry;
+                        geom->setUseDisplayList(true);
+                        geom->setVertexArray(verticesLocal.get());
+                        geom->addPrimitiveSet(indices.get());
+                        geom->setTexCoordArray(0, texcoordsLocal.get());
+                        osgUtil::SmoothingVisitor::smooth(*geom, 0.5);
+
+                        osg::ref_ptr<osg::Texture2D> tex = nullptr;
+
+                        if (laneForMaterial->IsType(roadmanager::Lane::LaneType::LANE_TYPE_ANY_ROAD))
+                        {
+                            osg::ref_ptr<osg::Material> materialAsphalt_ = new osg::Material;
+                            osg::Vec4                   new_color        = color_asphalt->at(0);
+
+                            if (friction < friction_default - SMALL_NUMBER)  // low friction, make it blueish
+                            {
+                                double factor = (1.0 - friction) / friction_default;
+                                new_color[0] -= 0.75 * factor;
+                                new_color[1] -= 0.75 * factor;
+                                new_color[2] += factor;
+                            }
+                            else if (friction > friction_default + SMALL_NUMBER)  // high friction, make it redish
+                            {
+                                double factor = (MIN(friction, friction_max) - friction_default) / (friction_max - friction_default);
+                                new_color[0] += factor;
+                                new_color[1] -= 0.75 * factor;
+                                new_color[2] -= 0.75 * factor;
+                            }
+
+                            materialAsphalt_->setDiffuse(osg::Material::FRONT_AND_BACK, new_color);
+                            materialAsphalt_->setAmbient(osg::Material::FRONT_AND_BACK, new_color);
+
+                            if (tex_asphalt)
+                            {
+                                tex = tex_asphalt.get();
+                            }
+                            geom->getOrCreateStateSet()->setAttributeAndModes(materialAsphalt_.get());
+                        }
+                        else if (laneForMaterial->IsType(roadmanager::Lane::LaneType::LANE_TYPE_BIKING) ||
+                                 laneForMaterial->IsType(roadmanager::Lane::LaneType::LANE_TYPE_SIDEWALK))
+                        {
+                            osg::ref_ptr<osg::Material> materialConcrete_ = new osg::Material;
+                            materialConcrete_->setDiffuse(osg::Material::FRONT_AND_BACK, color_concrete->at(0));
+                            materialConcrete_->setAmbient(osg::Material::FRONT_AND_BACK, color_concrete->at(0));
+
+                            geom->getOrCreateStateSet()->setAttributeAndModes(materialConcrete_.get());
+
+                            // Use PolygonOffset feature to avoid z-fighting with road surface
+                            geom->getOrCreateStateSet()->setAttributeAndModes(
+                                new osg::PolygonOffset(-POLYGON_OFFSET_SIDEWALK, -SIGN(POLYGON_OFFSET_SIDEWALK)));
+                        }
+                        else if (laneForMaterial->IsType(roadmanager::Lane::LaneType::LANE_TYPE_BORDER) && k != 1 &&
+                                 k != static_cast<unsigned int>(lsec->GetNumberOfLanes()) - 1)
+                        {
+                            osg::ref_ptr<osg::Material> materialBorderInner_ = new osg::Material;
+                            materialBorderInner_->setDiffuse(osg::Material::FRONT_AND_BACK, color_border_inner->at(0));
+                            materialBorderInner_->setAmbient(osg::Material::FRONT_AND_BACK, color_border_inner->at(0));
+
+                            geom->getOrCreateStateSet()->setAttributeAndModes(materialBorderInner_.get());
+
+                            // Use PolygonOffset feature to avoid z-fighting with road surface
+                            geom->getOrCreateStateSet()->setAttributeAndModes(
+                                new osg::PolygonOffset(-POLYGON_OFFSET_BORDER, -SIGN(POLYGON_OFFSET_BORDER)));
+                        }
+                        else
+                        {
+                            osg::ref_ptr<osg::Material> materialGrass_ = new osg::Material;
+
+                            materialGrass_->setDiffuse(osg::Material::FRONT_AND_BACK, color_grass->at(0));
+                            materialGrass_->setAmbient(osg::Material::FRONT_AND_BACK, color_grass->at(0));
+
+                            if (tex_grass)
+                            {
+                                tex = tex_grass.get();
+                            }
+                            geom->getOrCreateStateSet()->setAttributeAndModes(materialGrass_.get());
+
+                            // Use PolygonOffset feature to avoid z-fighting with road surface
+                            geom->getOrCreateStateSet()->setAttributeAndModes(
+                                new osg::PolygonOffset(-POLYGON_OFFSET_GRASS, -SIGN(POLYGON_OFFSET_GRASS)));
+                        }
+                        geom->setColorBinding(osg::Geometry::BIND_OVERALL);
+
+                        if (tex != nullptr)
+                        {
+                            geom->getOrCreateStateSet()->setTextureAttributeAndModes(0, tex.get());
+                        }
+
+                        osg::ref_ptr<osg::Geode> geode = new osg::Geode;
+                        geode->addDrawable(geom.get());
+
+                        // osgUtil::Optimizer optimizer;
+                        // optimizer.optimize(geode);
+
+                        root_->addChild(geode);
+                    }
                 }
                 AddRoadMarks(lane, root_);
             }
