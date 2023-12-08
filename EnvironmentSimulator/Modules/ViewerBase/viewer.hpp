@@ -342,7 +342,7 @@ namespace viewer
 		std::vector<Wheel> wheel_;
 		double wheel_angle_;
 		double wheel_rot_;
-		osg::ref_ptr<osg::PositionAttitudeTransform> body_xform;
+		osg::MatrixTransform* body_node;
 		osg::BoundingBox body_bb;
 		static const EntityType entity_type_ = EntityType::VEHICLE;
 		virtual EntityType GetType() { return entity_type_; }

@@ -56,6 +56,7 @@ namespace scenarioengine
 		double friction_slip_;
 		double roll_influence_;
 		double connection_point_z_;
+		double ground_clearance_;
 	};
 
 	Controller* InstantiateControllerDynamics(void* args);

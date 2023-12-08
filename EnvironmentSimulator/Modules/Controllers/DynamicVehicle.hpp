@@ -52,10 +52,11 @@ namespace dynamicvehicle
 			double mass,
 			double wheel_diameter,
 			double connection_point_z,
+			double ground_clearance,
 			roadmanager::OpenDrive* odr
 		)
 		{
-			Init(length, width, height, mass, wheel_diameter, connection_point_z, odr, 20.0, 100.0, 0.5);
+			Init(length, width, height, mass, wheel_diameter, connection_point_z, ground_clearance, odr, 20.0, 100.0, 0.5);
 		}
 
 		void Init(
@@ -65,6 +66,7 @@ namespace dynamicvehicle
 			double mass,
 			double wheel_diameter,
 			double connection_point_z,
+			double ground_clearance,
 			roadmanager::OpenDrive* odr,
 			double suspension_stiffness,
 			double friction_slip,

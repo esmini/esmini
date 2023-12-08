@@ -27,10 +27,12 @@
         <Controller name="dynamicsController">
             <ParameterDeclarations>
                 <ParameterDeclaration name="ConnectionPointZ" parameterType="double" value="0.2"/>
+                <ParameterDeclaration name="GroundClearance" parameterType="double" value="0.25"/>
             </ParameterDeclarations>
             <Properties>
                 <Property name="esminiController" value="DynamicsController"/>
                 <Property name="connectionPointZ" value="$ConnectionPointZ"/>
+                <Property name="groundClearance" value="$GroundClearance"/>
             </Properties>
         </Controller>
         <Controller name="controllerRel2Abs">

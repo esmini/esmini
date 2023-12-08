@@ -87,6 +87,7 @@ void DynamicVehicle::Init(
 	double mass,
 	double wheel_diameter,
 	double connection_point_z,
+	double ground_clearance,
 	roadmanager::OpenDrive* odr,
 	double suspension_stiffness,
 	double friction_slip,
@@ -99,7 +100,7 @@ void DynamicVehicle::Init(
 		return;
 	}
 
-	height_ = height;
+	height_ = height - ground_clearance;
 	length_ = length;
 	width_ = width;
 	connection_point_z_ = connection_point_z;
@@ -118,13 +119,13 @@ void DynamicVehicle::Init(
 
 
 	// Create dynamic chassis object
-	btBoxShape* veh_shape_ = new btBoxShape(btVector3(0.5f * static_cast<float>(length), 0.5f * static_cast<float>(width), 0.5f * static_cast<float>(height)));
+	btBoxShape* veh_shape_ = new btBoxShape(btVector3(0.5f * static_cast<float>(length_), 0.5f * static_cast<float>(width_), 0.5f * static_cast<float>(height_)));
 	collision_shapes_.push_back(veh_shape_);
 
 	// shift the center of mass with respect to the chassis
 	btTransform veh_xform_;
 	veh_xform_.setIdentity();
-	veh_xform_.setOrigin(btVector3(0, 0, 1.0f * static_cast<float>(height)));
+	veh_xform_.setOrigin(btVector3(0, 0, 0.5f * static_cast<float>(height_)));
 	btCompoundShape* compound_ = new btCompoundShape();
 	compound_->addChildShape(veh_xform_, veh_shape_);
 
@@ -163,7 +164,7 @@ void DynamicVehicle::Init(
 
 	// wheel configuration assumes the vehicle is centered at the origin
 	connectionPointCS0 = btVector3(0.5f * static_cast<float>(length) - 1.0f, 0.5f * static_cast<float>(width) - wheel_width,
-		static_cast<float>(connection_point_z_ + 0.5 * height));
+		static_cast<float>(connection_point_z_));
 
 	vehicle_->addWheel(connectionPointCS0, wheel_dir, wheel_axle, suspension_rest_length, wheel_radius, tuning, is_front_wheel);
 	vehicle_->addWheel(connectionPointCS0 * btVector3(1, -1, 1), wheel_dir, wheel_axle, suspension_rest_length, wheel_radius, tuning, is_front_wheel);

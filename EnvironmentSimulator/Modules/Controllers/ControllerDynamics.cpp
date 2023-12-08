@@ -30,13 +30,18 @@ Controller* scenarioengine::InstantiateControllerDynamics(void* args)
 
 ControllerDynamics::ControllerDynamics(InitArgs* args) :
 	length_(5.0), width_(2.0), height_(1.5), mass_(800), suspension_stiffness_(2.3), friction_slip_(1.2),
-	roll_influence_(1.0), connection_point_z_(0.0), Controller(args)
+	roll_influence_(1.0), connection_point_z_(0.0), ground_clearance_(0.0), Controller(args)
 {
 	if (args && args->properties)
 	{
 		if (args->properties->ValueExists("connectionPointZ"))
 		{
 			connection_point_z_ = strtod(args->properties->GetValueStr("connectionPointZ"));
+		}
+
+		if (args->properties->ValueExists("groundClearance"))
+		{
+			ground_clearance_ = strtod(args->properties->GetValueStr("groundClearance"));
 		}
 	}
 }
@@ -51,7 +56,7 @@ void ControllerDynamics::Init()
 	printf("dynamics init\n");
 
 	vehicle_.Init(length_, width_, height_, mass_, object_->rear_axle_.wheelDiameter, connection_point_z_,
-		object_->pos_.GetOpenDrive(), suspension_stiffness_, friction_slip_, roll_influence_);
+		ground_clearance_, object_->pos_.GetOpenDrive(), suspension_stiffness_, friction_slip_, roll_influence_);
 	vehicle_.SetupFlatGround(100);
 
 	// Detach object from any constraints aligning to road
@@ -67,7 +72,7 @@ void ControllerDynamics::Step(double timeStep)
 	double x, y, z, h, p, r;
 	vehicle_.GetPosition(x, y, z);
 	vehicle_.GetRotation(h, p, r);
-	gateway_->updateObjectWorldPos(object_->GetId(), 0.0, x, y, z, h, p, r);
+	gateway_->updateObjectWorldPos(object_->GetId(), 0.0, x, y, z-ground_clearance_, h, p, r);
 
 	for (int i = 0; i < vehicle_.vehicle_->getNumWheels(); i++)
 	{

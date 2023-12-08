@@ -1114,21 +1114,11 @@ int CarModel::IdentifyBody(osg::ref_ptr<osg::Node> carNode)
 		return -1;
 	}
 
-	osg::MatrixTransform* node = dynamic_cast<osg::MatrixTransform*>(nodes[0]);
-	if (node != NULL)
+	body_node = dynamic_cast<osg::MatrixTransform*>(nodes[0]);
+	if (body_node != NULL)
 	{
-		body_xform = new osg::PositionAttitudeTransform;
-		body_xform->setName("TxBody");
-		// We found the body. Put it under a useful transform node
-		body_xform->addChild(node);
-
-		// reset pivot point
-		osg::Vec3 pos = node->getMatrix().getTrans();
-		body_xform->setPivotPoint(pos);
-		body_xform->setPosition(pos);
-
 		osg::ComputeBoundsVisitor cbv;
-		node->accept(cbv);
+		body_node->accept(cbv);
 		body_bb = cbv.getBoundingBox();
 
 		return 0;
@@ -1204,16 +1194,22 @@ CarModel::CarModel(osgViewer::Viewer* viewer, osg::ref_ptr<osg::Group> group, os
 {
 	wheel_angle_ = 0;
 	wheel_rot_ = 0;
-	body_xform = nullptr;
+	body_node = nullptr;
 	osg::ref_ptr<osg::Group> retval[4];
 	osg::ref_ptr<osg::Node> car_node = txNode_->getChild(0);
-	retval[0] = AddWheel(car_node, "wheel_fl");
-	retval[1] = AddWheel(car_node, "wheel_fr");
-	retval[2] = AddWheel(car_node, "wheel_rr");
-	retval[3] = AddWheel(car_node, "wheel_rl");
+
+	const char* wheel_name[4] = { "wheel_fl", "wheel_fr", "wheel_rr", "wheel_rl" };
+
+	for (int i = 0; i < 4; i++)
+	{
+		retval[i] = AddWheel(car_node, wheel_name[i]);
+		//if (retval[i])
+		//{
+		//	parent->addChild(wheel_.back().xform);
+		//}
+	}
 
 	IdentifyBody(car_node);
-	const char* wheel_name[4] = { "wheel_fl", "wheel_fr", "wheel_rr", "wheel_rl" };
 
 	// Print message only if some wheel nodes are missing
 	if (retval[0] || retval[1] || retval[2] || retval[3])
