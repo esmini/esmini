@@ -52,7 +52,6 @@
 #include <algorithm>
 #include <map>
 #include <sstream>
-#include <string>
 
 #include "RoadManager.hpp"
 #include "odrSpiral.h"
@@ -4318,43 +4317,43 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                 {
                     ParkingSpace parking_space;
 
-                    std::string          access_string = parking_space_node.attribute("access").value();
-                    ParkingSpace::Access access;
+                    std::string                 access_string = parking_space_node.attribute("access").value();
+                    ParkingSpace::ParkingAccess access;
                     if (access_string == "all")
                     {
-                        access = ParkingSpace::Access::ACCESS_ALL;
+                        access = ParkingSpace::ParkingAccess::ACCESS_ALL;
                     }
                     else if (access_string == "bus")
                     {
-                        access = ParkingSpace::Access::ACCESS_BUS;
+                        access = ParkingSpace::ParkingAccess::ACCESS_BUS;
                     }
                     else if (access_string == "car")
                     {
-                        access = ParkingSpace::Access::ACCESS_CAR;
+                        access = ParkingSpace::ParkingAccess::ACCESS_CAR;
                     }
                     else if (access_string == "electric")
                     {
-                        access = ParkingSpace::Access::ACCESS_ELECTRIC;
+                        access = ParkingSpace::ParkingAccess::ACCESS_ELECTRIC;
                     }
                     else if (access_string == "handicapped")
                     {
-                        access = ParkingSpace::Access::ACCESS_HANDICAPPED;
+                        access = ParkingSpace::ParkingAccess::ACCESS_HANDICAPPED;
                     }
                     else if (access_string == "residents")
                     {
-                        access = ParkingSpace::Access::ACCESS_RESIDENTS;
+                        access = ParkingSpace::ParkingAccess::ACCESS_RESIDENTS;
                     }
                     else if (access_string == "truck")
                     {
-                        access = ParkingSpace::Access::ACCESS_TRUCK;
+                        access = ParkingSpace::ParkingAccess::ACCESS_TRUCK;
                     }
                     else if (access_string == "women")
                     {
-                        access = ParkingSpace::Access::ACCESS_WOMEN;
+                        access = ParkingSpace::ParkingAccess::ACCESS_WOMEN;
                     }
                     else
                     {
-                        access = ParkingSpace::Access::ACCESS_ALL;
+                        access = ParkingSpace::ParkingAccess::ACCESS_ALL;
                     }
 
                     std::string restrictions = parking_space_node.attribute("restrictions").value();
