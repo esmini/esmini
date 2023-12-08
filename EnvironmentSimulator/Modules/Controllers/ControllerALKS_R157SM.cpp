@@ -198,11 +198,14 @@ void ControllerALKS_R157SM::Step(double timeStep)
     double speed = model_->Step(timeStep);
     elapsed_time_ += timeStep;
 
-    if (mode_ == Mode::MODE_ADDITIVE && elapsed_time_ > 4.0)
-    {
-        // switch to override mode
-        mode_ = Mode::MODE_OVERRIDE;
-    }
+    //if (mode_ == Mode::MODE_ADDITIVE && model_->GetModelMode() == ModelMode::CRITICAL)
+    //  or
+    //if ((model_->GetModelType() == ModelType::ReferenceDriver) &&
+    //    ((ReferenceDriver*)model_)->GetPhase() == ReferenceDriver::Phase::INACTIVE)
+    //{
+    //    // switch to override mode
+    //    mode_ = Mode::MODE_OVERRIDE;
+    //}
 
     if (mode_ == Mode::MODE_OVERRIDE)
     {
