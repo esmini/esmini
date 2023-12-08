@@ -10128,8 +10128,15 @@ int PolyLineBase::EvaluateSegmentByLocalS(int i, double local_s, double cornerRa
         pos.time  = (1 - a) * vp0->time + a * vp1->time;
         pos.speed = (1 - a) * vp0->speed + a * vp1->speed;
         pos.s     = (1 - a) * vp0->s + a * vp1->s;
+#if 0
         pos.p     = (1 - a) * vp0->p + a * vp1->p;
+#else
+        double ds = (i == 0 ? 0.0 : vp1->s - vp0->s);
+        double s = vertex_[i].s + local_s;
 
+        //pos.p     = vp0->a * pow(ds, 3) + vp0->b * pow(ds, 2) + vp0->c * ds + vp0->d;
+        pos.p     = vp0->a * s, 3 + vp0->b * pow(s, 2) + vp0->c * s + vp0->d;
+#endif
         if (vertex_[i + 1].calcHeading && !interpolateHeading_)
         {
             // Strategy: Align to line, interpolate only at corners
@@ -10538,7 +10545,7 @@ void PolyLineBase::Reset()
 void PolyLineShape::AddVertex(Position pos, double time, bool calculateHeading)
 {
     vertex_.emplace_back(pos);
-    pline_.AddVertex({pos.GetTrajectoryS(), pos.GetX(), pos.GetY(), pos.GetZ(), pos.GetH(), time, 0.0, 0.0, 0.0, calculateHeading});
+    pline_.AddVertex({pos.GetTrajectoryS(), pos.GetX(), pos.GetY(), pos.GetZ(), pos.GetH(), time, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, calculateHeading});
 }
 
 int PolyLineShape::Evaluate(double p, TrajectoryParamType ptype, TrajVertex& pos)
@@ -10689,10 +10696,16 @@ void NurbsShape::CalculatePolyLine()
         if (i < nSteps)
         {
             EvaluateInternal(MIN(t + MIN(0.001, p_steplen), t_max), tmppos);
+
+            // Calculate parameter derivative, dp/ds at vertex
+            pos.p_prim = (tmppos.p - pos.p) / PointDistance2D(tmppos.x, tmppos.y, pos.x, pos.y);
         }
         else
         {
             EvaluateInternal(MAX(t - MIN(0.001, p_steplen), 0.0), tmppos);
+
+            // Calculate parameter derivative, dp/ds at vertex
+            pos.p_prim = (pos.p - tmppos.p) / PointDistance2D(pos.x, pos.y, tmppos.x, tmppos.y);
         }
 
         if (PointDistance2D(tmppos.x, tmppos.y, pos.x, pos.y) < SMALL_NUMBER)
@@ -10735,6 +10748,63 @@ void NurbsShape::CalculatePolyLine()
         tmpRoadPos.SetInertiaPos(pos.x, pos.y, pos.h);
         pos.z               = tmpRoadPos.GetZ();
         pline_.vertex_[i].z = pos.z;
+
+        if (i > 0)
+        {
+            TrajVertex* prevpos = &pline_.vertex_[i - 1];
+            TrajVertex* curpos = &pline_.vertex_[i];
+
+            // Approximate t parameter for each segment by 3rd degree polymonial
+            // Below, x corresponds to s and y to p
+            // y₁ = ax₁³ + bx₁² + cx₁ + d
+            // y₂ = ax₂³ + bx₂² + cx₂ + d
+            // m₁ = 3ax₁² + 2bx₁ + c
+            // m₂ = 3ax₂² + 2bx₂ + c
+            //
+            // y=y₁, u=x₁, z=y₂, v=x₂, x=m₁, w=m₂
+            //
+            // solve
+            // y=a*u^3+b*u^2+c*u+d
+            // z=a*v^3+b*v^2+c*v+d
+            // x=3*a*u^2+2*b*u+c
+            // w=3*a*v^2+2*b*v+c
+            // for a,b,c,d
+            //
+            // a = (u (w + x) - v (w + x) - 2 y + 2 z)/(u - v)^3
+            // b = (u^2 (-(2 w + x)) + u (v w - v x + 3 y - 3 z) + v (v w + 2 v x + 3 y - 3 z))/(u - v)^3
+            // c = (u^3 w + u^2 v (w + 2 x) - u v (2 v w + v x + 6 y - 6 z) - v^3 x)/(u - v)^3
+            // d = (u^3 (z - v w) + u^2 v (v (w - x) - 3 z) + u v^2 (v x + 3 y) - v^3 y)/(u - v)^3
+
+            // Approximate t parameter for each segment by 3rd degree polymonial
+            // Below, x corresponds to local s (starting at 0) and y to p
+            // y₁ = ax₁³ + bx₁² + cx₁ + d => x₁ = 0 => y₁ = d
+            // y₂ = ax₂³ + bx₂² + cx₂ + d
+            // m₁ = 3ax₁² + 2bx₁ + c => x₁ = 0 => m₁ = c
+            // m₂ = 3ax₂² + 2bx₂ + c
+            //
+            // y=y₁, u=x₁, z=y₂, v=x₂, x=m₁, w=m₂
+            //
+            // solve
+            // z=a*v^3+b*v^2+c*v+d
+            // w=3*a*v^2+2*b*v+c
+            // for a,b
+            //
+            // a = (c v + 2 d + v w - 2 z)/v^3
+            // b = -(2 c v + 3 d + v w - 3 z)/v^2
+
+            // Calculate derivative, dp/ds at segment start
+            double x   = prevpos->p_prim;
+            double w   = curpos->p_prim;
+            double y   = prevpos->p;
+            double u   = prevpos->s;
+            double z   = curpos->p;
+            double v   = curpos->s;
+            prevpos->a = (u * (w + x) - v * (w + x) - 2 * y + 2 * z) / pow(u - v, 3);
+            prevpos->b = (pow(u, 2) * (-(2 * w + x)) + u * (v * w - v * x + 3 * y - 3 * z) + v * (v * w + 2 * v * x + 3 * y - 3 * z)) / pow(u - v, 3);
+            prevpos->c = (pow(u, 3) * w + pow(u, 2) * v * (w + 2 * x) - u * v * (2 * v * w + v * x + 6 * y - 6 * z) - pow(v, 3) * x) / pow(u - v, 3);
+            prevpos->d =
+                (pow(u, 3) * (z - v * w) + pow(u, 2) * v * (v * (w - x) - 3 * z) + u * pow(v, 2) * (v * x + 3 * y) - pow(v, 3) * y) / pow(u - v, 3);
+        }
     }
 
     // Calculate time interpolations

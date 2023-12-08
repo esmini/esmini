@@ -3825,15 +3825,20 @@ namespace roadmanager
 
     struct TrajVertex
     {
-        double s           = 0;
-        double x           = 0;
-        double y           = 0;
-        double z           = 0;
-        double h           = 0;
-        double time        = 0;
-        double speed       = 0;  // speed at vertex point/start of segment
-        double acc         = 0;  // acceleration along the segment
-        double p           = 0;
+        double s           = 0.0;
+        double x           = 0.0;
+        double y           = 0.0;
+        double z           = 0.0;
+        double h           = 0.0;
+        double time        = 0.0;
+        double speed       = 0.0;  // speed at vertex point/start of segment
+        double acc         = 0.0;  // acceleration along the segment
+        double p           = 0.0;
+        double p_prim      = 0.0;  // dp/ds - used only for NURBS
+        double a           = 0.0;  // polynomial coeff - used only for NURBS
+        double b           = 0.0;  // polynomial coeff - used only for NURBS
+        double c           = 0.0;  // polynomial coeff - used only for NURBS
+        double d           = 0.0;  // polynomial coeff - used only for NURBS
         bool   calcHeading = 0;
     };
 
