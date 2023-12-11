@@ -395,6 +395,7 @@ int main(int argc, char **argv)
     opt.AddOption("headless", "Run without viewer window");
     opt.AddOption("logfile_path", "logfile path/filename, e.g. \"../esmini.log\" (default: log.txt)", "path");
     opt.AddOption("model", "3D Model filename", "model_filename");
+    opt.AddOption("osg_screenshot_event_handler", "Revert to OSG default jpg images ('c'/'C' keys handler)");
     opt.AddOption("osi_lines", "Show OSI road lines (toggle during simulation by press 'u') ");
     opt.AddOption("osi_points", "Show OSI road points (toggle during simulation by press 'y') ");
     opt.AddOption("path", "Search path prefix for assets, e.g. car and sign model files", "path");
@@ -512,11 +513,6 @@ int main(int argc, char **argv)
             rule = roadmanager::Road::RoadRule::RIGHT_HAND_TRAFFIC;
             LOG("Enforce right hand traffic");
         }
-    }
-
-    if (opt.GetOptionSet("disable_off_screen"))
-    {
-        SE_Env::Inst().SetOffScreenRendering(false);
     }
 
     roadmanager::Position *lane_pos  = new roadmanager::Position();

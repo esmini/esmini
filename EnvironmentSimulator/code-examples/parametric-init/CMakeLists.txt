@@ -11,50 +11,46 @@ set(TARGET2
 include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_static_analysis.cmake)
 include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_iwyu.cmake)
 
-# ############################### Setting target files ###############################################################
-
-set(SOURCES1
-    ${CMAKE_CURRENT_SOURCE_DIR}/parametric-init.cpp)
-
-set(SOURCES2
-    ${CMAKE_CURRENT_SOURCE_DIR}/override-bounding-box.cpp)
-
 # ############################### Creating executable ################################################################
 
 add_executable(
     ${TARGET1}
-    ${SOURCES1})
+    ${CMAKE_CURRENT_SOURCE_DIR}/parametric-init.cpp)
 
 add_executable(
     ${TARGET2}
-    ${SOURCES2})
+    ${CMAKE_CURRENT_SOURCE_DIR}/override-bounding-box.cpp)
 
 foreach(
-    TARGET
+    target
     IN
     ITEMS ${TARGET1}
           ${TARGET2})
 
     target_link_libraries(
-        ${TARGET}
+        ${target}
         PRIVATE project_options)
 
     target_include_directories(
-        ${TARGET}
+        ${target}
         PRIVATE ${EXTERNALS_PUGIXML_PATH})
 
     target_include_directories(
-        ${TARGET}
+        ${target}
         SYSTEM
         PUBLIC ${ESMINI_LIB_PATH}
                ${COMMON_MINI_PATH})
 
     target_link_libraries(
-        ${TARGET}
+        ${target}
         PRIVATE esminiLib
                 CommonMini
                 RoadManager
                 ${TIME_LIB})
+
+    set_folder(
+        ${target}
+        ${CodeExamplesFolder})
 
 endforeach()
 

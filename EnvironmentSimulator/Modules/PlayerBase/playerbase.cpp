@@ -512,10 +512,12 @@ void ScenarioPlayer::ViewerFrame(bool init)
 
 int ScenarioPlayer::SaveImagesToRAM(bool state)
 {
+    SE_Env::Inst().SaveImagesToRAM(state);
+
     if (viewer_)
     {
         viewer_->imageMutex.Lock();
-        viewer_->SaveImagesToRAM(state);
+        viewer_->UpdateOffScreenStatus();
         viewer_->imageMutex.Unlock();
         return 0;
     }
@@ -540,7 +542,7 @@ OffScreenImage* ScenarioPlayer::FetchCapturedImagePtr()
 {
     static OffScreenImage img;
 
-    if (viewer_ && SE_Env::Inst().GetOffScreenRendering())
+    if (viewer_ && viewer_->IsOffScreenRequested())
     {
         viewer_->renderSemaphore.Wait();  // Wait until rendering is done
 
@@ -587,31 +589,40 @@ OffScreenImage* ScenarioPlayer::FetchCapturedImagePtr()
     return nullptr;
 }
 
-void ScenarioPlayer::AddCustomCamera(double x, double y, double z, double h, double p, bool fixed_pos)
+int ScenarioPlayer::AddCustomCamera(double x, double y, double z, double h, double p, bool fixed_pos)
 {
     if (viewer_)
     {
         viewer_->AddCustomCamera(x, y, z, h, p, fixed_pos);
         viewer_->SetCameraMode(-1);  // activate last camera which is the one just added
+        return viewer_->GetNumberOfCameraModes() - 1;
     }
+
+    return -1;
 }
 
-void ScenarioPlayer::AddCustomCamera(double x, double y, double z, bool fixed_pos)
+int ScenarioPlayer::AddCustomCamera(double x, double y, double z, bool fixed_pos)
 {
     if (viewer_)
     {
         viewer_->AddCustomCamera(x, y, z, fixed_pos);
         viewer_->SetCameraMode(-1);  // activate last camera which is the one just added
+        return viewer_->GetNumberOfCameraModes() - 1;
     }
+
+    return -1;
 }
 
-void ScenarioPlayer::AddCustomFixedTopCamera(double x, double y, double z, double rot)
+int ScenarioPlayer::AddCustomFixedTopCamera(double x, double y, double z, double rot)
 {
     if (viewer_)
     {
         viewer_->AddCustomFixedTopCamera(x, y, z, rot);
         viewer_->SetCameraMode(-1);  // activate last camera which is the one just added
+        return viewer_->GetNumberOfCameraModes() - 1;
     }
+
+    return -1;
 }
 
 int ScenarioPlayer::AddCustomLightSource(double x, double y, double z, double intensity)
@@ -1233,7 +1244,6 @@ int ScenarioPlayer::Init()
                   "position and intensity");
     opt.AddOption("disable_controllers", "Disable controllers");
     opt.AddOption("disable_log", "Prevent logfile from being created");
-    opt.AddOption("disable_off_screen", "Disable esmini off-screen rendering, revert to OSG viewer default handling");
     opt.AddOption("disable_stdout", "Prevent messages to stdout");
     opt.AddOption("enforce_generate_model", "Generate road 3D model even if SceneGraphFile is specified");
     opt.AddOption("fixed_timestep", "Run simulation decoupled from realtime, with specified timesteps", "timestep");
@@ -1247,6 +1257,7 @@ int ScenarioPlayer::Init()
     opt.AddOption("info_text", "Show on-screen info text (toggle key 'i') mode 0=None 1=current (default) 2=per_object 3=both", "mode");
     opt.AddOption("logfile_path", "logfile path/filename, e.g. \"../esmini.log\" (default: log.txt)", "path");
     opt.AddOption("osc_str", "OpenSCENARIO XML string", "string");
+    opt.AddOption("osg_screenshot_event_handler", "Revert to OSG default jpg images ('c'/'C' keys handler)");
 #ifdef _USE_OSI
     opt.AddOption("osi_file", "save osi trace file", "filename", DEFAULT_OSI_TRACE_FILENAME);
     opt.AddOption("osi_freq", "relative frequence for writing the .osi file e.g. --osi_freq=2 -> we write every two simulation steps", "frequence");
@@ -1468,11 +1479,6 @@ int ScenarioPlayer::Init()
     if (opt.GetOptionSet("collision"))
     {
         SE_Env::Inst().SetCollisionDetection(true);
-    }
-
-    if (opt.GetOptionSet("disable_off_screen"))
-    {
-        SE_Env::Inst().SetOffScreenRendering(false);
     }
 
     if (opt.GetOptionSet("plot"))

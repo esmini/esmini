@@ -1377,91 +1377,82 @@ void EntityModel::SetTransparency(double factor)
     blend_color_->setConstantColor(osg::Vec4(1.0f, 1.0f, 1.0f, 1.0f - static_cast<float>(factor)));
 }
 
-struct FetchImage : public osg::Camera::DrawCallback
+Viewer::FetchImage::FetchImage(Viewer* viewer)
 {
-    FetchImage(Viewer* viewer)
-    {
-        image_                  = new osg::Image;
-        viewer_                 = viewer;
-        viewer_->capturedImage_ = {0, 0, 0, 0, 0};
-    }
+    image_                  = new osg::Image;
+    viewer_                 = viewer;
+    viewer_->capturedImage_ = {0, 0, 0, 0, 0};
+}
 
-    using osg::Camera::DrawCallback::operator();
-    void                             operator()(osg::RenderInfo& renderInfo) const override
+void Viewer::FetchImage::operator()(osg::RenderInfo& renderInfo) const
+{
+    if (viewer_ != nullptr && !viewer_->GetQuitRequest() && viewer_->IsOffScreenRequested())
     {
-        if (viewer_ != nullptr && SE_Env::Inst().GetOffScreenRendering() && !viewer_->GetQuitRequest() &&
-            (viewer_->GetSaveImagesToRAM() || viewer_->frameCounter_ == 0 || viewer_->GetSaveImagesToFile() != 0 ||
-             viewer_->imgCallback_.func != nullptr))
+        osg::Camera*   camera   = renderInfo.getCurrentCamera();
+        osg::Viewport* viewport = camera ? camera->getViewport() : 0;
+
+        if (viewport && image_.valid())
         {
-            osg::Camera*   camera   = renderInfo.getCurrentCamera();
-            osg::Viewport* viewport = camera ? camera->getViewport() : 0;
+            viewer_->imageMutex.Lock();
 
-            if (viewport && image_.valid())
+            image_->readPixels(int(viewport->x()),
+                               int(viewport->y()),
+                               int(viewport->width()),
+                               int(viewport->height()),
+                               GL_BGR,  // only GL_RGB and GL_BGR supported for now
+                               GL_UNSIGNED_BYTE);
+
+            if (image_->getPixelFormat() == GL_RGB || image_->getPixelFormat() == GL_BGR)
             {
-                viewer_->imageMutex.Lock();
+                viewer_->capturedImage_.width       = image_->s();
+                viewer_->capturedImage_.height      = image_->t();
+                viewer_->capturedImage_.pixelSize   = 3;
+                viewer_->capturedImage_.pixelFormat = static_cast<int>(image_->getPixelFormat());
+                viewer_->capturedImage_.data        = image_->data();
 
-                image_->readPixels(int(viewport->x()),
-                                   int(viewport->y()),
-                                   int(viewport->width()),
-                                   int(viewport->height()),
-                                   GL_BGR,  // only GL_RGB and GL_BGR supported for now
-                                   GL_UNSIGNED_BYTE);
-
-                if (image_->getPixelFormat() == GL_RGB || image_->getPixelFormat() == GL_BGR)
+                if (viewer_->GetSaveImagesToFile() != 0)
                 {
-                    viewer_->capturedImage_.width       = image_->s();
-                    viewer_->capturedImage_.height      = image_->t();
-                    viewer_->capturedImage_.pixelSize   = 3;
-                    viewer_->capturedImage_.pixelFormat = static_cast<int>(image_->getPixelFormat());
-                    viewer_->capturedImage_.data        = image_->data();
+                    static char filename[64];
+                    snprintf(filename, 64, "screen_shot_%05d.tga", viewer_->captureCounter_);
+                    SE_WriteTGA(filename,
+                                viewer_->capturedImage_.width,
+                                viewer_->capturedImage_.height,
+                                viewer_->capturedImage_.data,
+                                viewer_->capturedImage_.pixelSize,
+                                viewer_->capturedImage_.pixelFormat,
+                                true);
+                    viewer_->captureCounter_++;
 
-                    if (viewer_->GetSaveImagesToFile() != 0)
+                    // If not continuous (-1), decrement frame counter
+                    if (viewer_->GetSaveImagesToFile() > 0)
                     {
-                        static char filename[64];
-                        snprintf(filename, 64, "screen_shot_%05d.tga", viewer_->captureCounter_);
-                        SE_WriteTGA(filename,
-                                    viewer_->capturedImage_.width,
-                                    viewer_->capturedImage_.height,
-                                    viewer_->capturedImage_.data,
-                                    viewer_->capturedImage_.pixelSize,
-                                    viewer_->capturedImage_.pixelFormat,
-                                    true);
-                        viewer_->captureCounter_++;
-
-                        // If not continuous (-1), decrement frame counter
-                        if (viewer_->GetSaveImagesToFile() > 0)
-                        {
-                            viewer_->SaveImagesToFile(viewer_->GetSaveImagesToFile() - 1);
-                        }
+                        viewer_->SaveImagesToFile(viewer_->GetSaveImagesToFile() - 1);
                     }
                 }
-                else
-                {
-                    printf("Unsupported pixel format 0x%x\n", image_->getPixelFormat());
-                    viewer_->capturedImage_ = {0, 0, 0, 0, 0};  // Reset image data
-                }
-
-                if (viewer_->imgCallback_.func != nullptr)
-                {
-                    viewer_->imgCallback_.func(&viewer_->capturedImage_, viewer_->imgCallback_.data);
-                }
-
-                viewer_->imageMutex.Unlock();
             }
-        }
-        else
-        {
-            viewer_->capturedImage_.data = nullptr;
-        }
+            else
+            {
+                printf("Unsupported pixel format 0x%x\n", image_->getPixelFormat());
+                viewer_->capturedImage_ = {0, 0, 0, 0, 0};  // Reset image data
+            }
 
-        viewer_->frameCounter_++;
+            if (viewer_->imgCallback_.func != nullptr)
+            {
+                viewer_->imgCallback_.func(&viewer_->capturedImage_, viewer_->imgCallback_.data);
+            }
 
-        viewer_->renderSemaphore.Release();  // Lower flag to indicate rendering done
+            viewer_->imageMutex.Unlock();
+        }
+    }
+    else
+    {
+        viewer_->capturedImage_.data = nullptr;
     }
 
-    mutable osg::ref_ptr<osg::Image> image_;
-    viewer::Viewer*                  viewer_;
-};
+    viewer_->frameCounter_++;
+
+    viewer_->renderSemaphore.Release();  // Lower flag to indicate rendering done
+}
 
 int Viewer::InitTraits(osg::ref_ptr<osg::GraphicsContext::Traits> traits,
                        int                                        x,
@@ -1567,26 +1558,26 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     // suppress OSG info messages
     osg::setNotifyLevel(osg::NotifySeverity::WARN);
 
-    lodScale_          = LOD_SCALE_DEFAULT;
-    currentCarInFocus_ = -1;
-    keyUp_             = false;
-    keyDown_           = false;
-    keyLeft_           = false;
-    keyRight_          = false;
-    quit_request_      = false;
-    camMode_           = osgGA::RubberbandManipulator::RB_MODE_ORBIT;
-    shadow_node_       = NULL;
-    environment_       = NULL;
-    roadGeom           = NULL;
-    captureCounter_    = 0;
-    frameCounter_      = 0;
-    lightCounter_      = 1;      // one default light in osg viewer
-    saveImagesToRAM_   = false;  // Default is to read back rendered image for possible fetch via API
-    saveImagesToFile_  = 0;
-    imgCallback_       = {nullptr, nullptr};
-    winDim_            = {-1, -1, -1, -1};
-    bool decoration    = true;
-    int  screenNum     = -1;
+    lodScale_                     = LOD_SCALE_DEFAULT;
+    currentCarInFocus_            = -1;
+    keyUp_                        = false;
+    keyDown_                      = false;
+    keyLeft_                      = false;
+    keyRight_                     = false;
+    quit_request_                 = false;
+    camMode_                      = osgGA::RubberbandManipulator::RB_MODE_ORBIT;
+    shadow_node_                  = NULL;
+    environment_                  = NULL;
+    roadGeom                      = NULL;
+    captureCounter_               = 0;
+    frameCounter_                 = 0;
+    lightCounter_                 = 1;  // one default light in osg viewer
+    saveImagesToFile_             = 0;
+    osg_screenshot_event_handler_ = false;
+    imgCallback_                  = {nullptr, nullptr};
+    winDim_                       = {-1, -1, -1, -1};
+    bool decoration               = true;
+    int  screenNum                = -1;
 
     int aa_mode = DEFAULT_AA_MULTISAMPLES;
     if (opt && (arg_str = opt->GetOptionArg("aa_mode")) != "")
@@ -1958,16 +1949,14 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     infoTextCamera->setProjectionMatrix(osg::Matrix::ortho2D(0, traits->width, 0, traits->height));
     rootnode_->addChild(infoTextCamera);
 
-    // Register callback for fetch rendered image into RAM buffer
-    if (SE_Env::Inst().GetOffScreenRendering())
+    fetch_image_ = new FetchImage(this);
+    if (opt->GetOptionSet("osg_screenshot_event_handler"))
     {
-        osgViewer_->getCamera()->setFinalDrawCallback(new FetchImage(this));
-    }
-    else
-    {
-        // add OSG default screen capture handler
+        osg_screenshot_event_handler_ = true;
         osgViewer_->addEventHandler(new osgViewer::ScreenCaptureHandler);
     }
+
+    SetOffScreenActive(SE_Env::Inst().GetSaveImagesToRAM());
 
     initialThreadingModel_ = osgViewer_->getThreadingModel();
 
@@ -2076,6 +2065,7 @@ int Viewer::GetCameraRelativePos(osg::Vec3& pos)
 
 void Viewer::SetCameraMode(int mode)
 {
+    renderSemaphore.Wait();
     if (mode < 0 || mode >= GetNumberOfCameraModes())
     {
         // set to last camera mode
@@ -3819,23 +3809,54 @@ void Viewer::RegisterImageCallback(ImageCallbackFunc func, void* data)
 {
     imgCallback_.func = func;
     imgCallback_.data = data;
+    UpdateOffScreenStatus();
 }
 
 void Viewer::SaveImagesToFile(int nrOfFrames)
 {
     saveImagesToFile_ = nrOfFrames;
+    UpdateOffScreenStatus();
+}
+
+bool Viewer::IsOffScreenRequested()
+{
+    return saveImagesToFile_ != 0 || SE_Env::Inst().GetSaveImagesToRAM() || imgCallback_.func != nullptr;
+}
+
+void Viewer::UpdateOffScreenStatus()
+{
+    SetOffScreenActive(IsOffScreenRequested());
+}
+
+void Viewer::SetOffScreenActive(bool state)
+{
+    // Register callback for fetch rendered image into RAM buffer
+    if (state == true)
+    {
+        if (osgViewer_->getCamera()->getFinalDrawCallback() != fetch_image_)
+        {
+            osgViewer_->getCamera()->setFinalDrawCallback(fetch_image_);
+        }
+    }
+    else
+    {
+        if (osgViewer_->getCamera()->getFinalDrawCallback() == fetch_image_)
+        {
+            osgViewer_->getCamera()->removeFinalDrawCallback(fetch_image_);
+        }
+    }
 }
 
 void Viewer::Frame()
 {
-    if (SE_Env::Inst().GetOffScreenRendering())
+    if (IsOffScreenRequested())
     {
         renderSemaphore.Set();  // Raise semaphore to flag rendering ongoing
     }
 
     osgViewer_->frame();
 
-    if (!SE_Env::Inst().GetOffScreenRendering())
+    if (!IsOffScreenRequested())
     {
         frameCounter_++;
     }
@@ -3891,22 +3912,25 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
     {
         case ('C'):
         case ('c'):
-            if (ea.getEventType() & osgGA::GUIEventAdapter::KEYDOWN)
+            if (!viewer_->GetOSGScreenShotHandlerActive())
             {
-                if (ea.getModKeyMask() & osgGA::GUIEventAdapter::MODKEY_SHIFT)
+                if (ea.getEventType() & osgGA::GUIEventAdapter::KEYDOWN)
                 {
-                    if (viewer_->GetSaveImagesToFile() == 0)
+                    if (ea.getModKeyMask() & osgGA::GUIEventAdapter::MODKEY_SHIFT)
                     {
-                        viewer_->SaveImagesToFile(-1);
+                        if (viewer_->GetSaveImagesToFile() == 0)
+                        {
+                            viewer_->SaveImagesToFile(-1);
+                        }
+                        else
+                        {
+                            viewer_->SaveImagesToFile(0);
+                        }
                     }
                     else
                     {
-                        viewer_->SaveImagesToFile(0);
+                        viewer_->SaveImagesToFile(1);  // single frame
                     }
-                }
-                else
-                {
-                    viewer_->SaveImagesToFile(1);  // single frame
                 }
             }
             break;

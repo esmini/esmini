@@ -1,7 +1,10 @@
 # ############################### Setting targets ####################################################################
 
-set(TARGET
+set(TARGET1
     image-capture)
+
+set(TARGET2
+    multiple-cameras)
 
 # ############################### Loading desired rules ##############################################################
 
@@ -10,38 +13,50 @@ include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_iwyu.cmake)
 
 # ############################### Setting target files ###############################################################
 
-set(SOURCES
+add_executable(
+    ${TARGET1}
     ${CMAKE_CURRENT_SOURCE_DIR}/image-capture.cpp)
 
-# ############################### Creating executable ################################################################
-
 add_executable(
-    ${TARGET}
-    ${SOURCES})
+    ${TARGET2}
+    ${CMAKE_CURRENT_SOURCE_DIR}/multiple-cameras.cpp)
 
-target_link_libraries(
-    ${TARGET}
-    PRIVATE project_options)
+# ############################### Creating executables ###############################################################
 
-target_include_directories(
-    ${TARGET}
-    PRIVATE ${EXTERNALS_PUGIXML_PATH})
+foreach(
+    target
+    ${TARGET1}
+    ${TARGET2})
 
-target_include_directories(
-    ${TARGET}
-    SYSTEM
-    PUBLIC ${ESMINI_LIB_PATH}
-           ${COMMON_MINI_PATH})
+    target_link_libraries(
+        ${target}
+        PRIVATE project_options)
 
-target_link_libraries(
-    ${TARGET}
-    PRIVATE esminiLib
-            CommonMini
-            RoadManager
-            ${TIME_LIB})
+    target_include_directories(
+        ${target}
+        PRIVATE ${EXTERNALS_PUGIXML_PATH})
+
+    target_include_directories(
+        ${target}
+        SYSTEM
+        PUBLIC ${ESMINI_LIB_PATH}
+               ${COMMON_MINI_PATH})
+
+    target_link_libraries(
+        ${target}
+        PRIVATE esminiLib
+                CommonMini
+                RoadManager
+                ${TIME_LIB})
+
+    set_folder(
+        ${target}
+        ${CodeExamplesFolder})
+endforeach()
 
 # ############################### Install ############################################################################
 
 install(
-    TARGETS ${TARGET}
+    TARGETS ${TARGET1}
+            ${TARGET2}
     DESTINATION "${CODE_EXAMPLES_BIN_PATH}")

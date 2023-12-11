@@ -1379,21 +1379,15 @@ extern "C"
     SE_DLL_API void SE_SimpleVehicleGetState(void *handleSimpleVehicle, SE_SimpleVehicleState *state);
 
     /**
-    Enable (default) or disable callback that handles framebuffer image capturing. NOTE: Needs to be called before SE_Init()
-    @param state true (default) = enable off-screen rendering callback, false = disable off-screen rendering callback
-    @return 0 if successful, -1 if not
-    */
-    SE_DLL_API int SE_SetOffScreenRendering(bool state);
-
-    /**
     Capture rendered image to RAM for possible fetch via API, e.g. SE_FetchImage()
+    Set true before calling SE_Init() to enable fetching first frame at time = 0
     @param state true=capture images, false=don't capture (default, might improve performance on some systems)
     @return 0 if successful, -1 if not
     */
     SE_DLL_API int SE_SaveImagesToRAM(bool state);
 
     /**
-    Capture rendered image to file
+    Capture rendered image to file. Call after SE_Init().
     @param nrOfFrames -1=continuously, 0=stop, >0=number of frames, e.g. 1=next frame only
     @return 0 if successful, -1 if not
     */
@@ -1452,7 +1446,7 @@ extern "C"
     @param z Z coordinate relative vehicle currently in focus
     @param h Heading (yaw) (radians) relative vehicle currently in focus
     @param p Pitch (radians) relative vehicle currently in focus
-    @return 0 if successful, -1 if not
+    @return index of the camera, can be used for SE_SetCameraMode(), -1 on error
     */
     SE_DLL_API int SE_AddCustomCamera(double x, double y, double z, double h, double p);
 
@@ -1463,7 +1457,7 @@ extern "C"
     @param z Z coordinate
     @param h Heading (yaw) (radians)
     @param p P Pitch (radians)
-    @return 0 if successful, -1 if not
+    @return index of the camera, can be used for SE_SetCameraMode(), -1 on error
     */
     SE_DLL_API int SE_AddCustomFixedCamera(double x, double y, double z, double h, double p);
 
@@ -1472,7 +1466,7 @@ extern "C"
     @param x X coordinate
     @param y Y coordinate
     @param z Z coordinate
-    @return 0 if successful, -1 if not
+    @return index of the camera, can be used for SE_SetCameraMode(), -1 on error
     */
     SE_DLL_API int SE_AddCustomAimingCamera(double x, double y, double z);
 
@@ -1482,7 +1476,7 @@ extern "C"
     @param y Y coordinate
     @param z Z coordinate
     @param fixed_pos Position is relative current vehicle (false) or fixed (true)
-    @return 0 if successful, -1 if not
+    @return index of the camera, can be used for SE_SetCameraMode(), -1 on error
     */
     SE_DLL_API int SE_AddCustomFixedAimingCamera(double x, double y, double z);
 
@@ -1492,7 +1486,7 @@ extern "C"
     @param y Y coordinate
     @param z Z coordinate
     @param rot Rotation (radians)
-    @return 0 if successful, -1 if not
+    @return index of the camera, can be used for SE_SetCameraMode(), -1 on error
     */
     SE_DLL_API int SE_AddCustomFixedTopCamera(double x, double y, double z, double rot);
 

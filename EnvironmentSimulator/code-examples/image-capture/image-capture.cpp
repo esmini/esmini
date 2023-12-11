@@ -29,16 +29,13 @@ int main(int argc, char* argv[])
     // Enable continuous save screenshot to file
     SE_Init("../resources/xosc/cut-in_simple.xosc", 0, 7, 0, 0);  // 7 = viewer + offscreen only + capture-to-file
 
-    // First frame is always saved to RAM. Fetch it.
-    // It should be identical with automatically created screenshot screen_shot_00000.tga
+    // Image capture should be activated by init arguments
+    // First fetched image should be identical with automatically created screenshot screen_shot_00000.tga
     if (SE_FetchImage(&img) != 0)
     {
         printf("Error 0\n");
     }
     SE_WriteTGAImage("snap0.tga", img.width, img.height, img.data, img.pixelSize, img.pixelFormat, true);
-
-    // In order to fetch further rendered images we need to activate transfer from frame buffer during rendering
-    SE_SaveImagesToRAM(true);
 
     SE_StepDT(0.1f);
     if (SE_FetchImage(&img) != 0)
@@ -47,11 +44,13 @@ int main(int argc, char* argv[])
     }
     SE_WriteTGAImage("snap1.tga", img.width, img.height, img.data, img.pixelSize, img.pixelFormat, true);
 
-    // Now when two screenshots have been saved, turn off automatic saveing screenshot to file
+    // Now when two screenshots have been saved, turn off automatic saving screenshot to file
     SE_SaveImagesToFile(0);
-    SE_StepDT(0.1f);
 
     // But still fetch the image via API
+    SE_SaveImagesToRAM(true);  // activate transfer from frame buffer during rendering
+
+    SE_StepDT(0.1f);
     if (SE_FetchImage(&img) != 0)
     {
         printf("Error 2\n");

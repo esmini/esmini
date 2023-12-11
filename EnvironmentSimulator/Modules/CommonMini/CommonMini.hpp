@@ -1103,8 +1103,8 @@ public:
           datFilePath_(""),
           osiFilePath_(""),
           osiFileEnabled_(false),
-          offScreenRendering_(true),
-          collisionDetection_(false)
+          collisionDetection_(false),
+          saveImagesToRAM_(false)
     {
     }
 
@@ -1125,14 +1125,6 @@ public:
     double GetOSIMaxLateralDeviation()
     {
         return osiMaxLateralDeviation_;
-    }
-    void SetOffScreenRendering(bool enable)
-    {
-        offScreenRendering_ = enable;
-    }
-    bool GetOffScreenRendering()
-    {
-        return offScreenRendering_;
     }
     void SetCollisionDetection(bool enable)
     {
@@ -1198,6 +1190,20 @@ public:
         return datFilePath_;
     }
 
+    /**
+        Set flag controlling whether rendered images are saved and hence can be fetched
+        @param state true/false
+    */
+    void SaveImagesToRAM(bool state)
+    {
+        saveImagesToRAM_ = state;
+    }
+
+    bool GetSaveImagesToRAM()
+    {
+        return saveImagesToRAM_;
+    }
+
     void        EnableOSIFile(std::string osiFilePath);
     void        DisableOSIFile();
     std::string GetOSIFilePath()
@@ -1230,8 +1236,8 @@ private:
     bool                       osiFileEnabled_;
     SE_SystemTime              systemTime_;
     SE_Rand                    rand_;
-    bool                       offScreenRendering_;
     bool                       collisionDetection_;
+    bool                       saveImagesToRAM_;
     std::map<int, std::string> entity_model_map;
 };
 

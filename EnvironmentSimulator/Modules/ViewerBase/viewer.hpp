@@ -457,6 +457,16 @@ namespace viewer
     class Viewer
     {
     public:
+        struct FetchImage : public osg::Camera::DrawCallback
+        {
+            FetchImage(Viewer* viewer);
+            using osg::Camera::DrawCallback::operator();
+            void                             operator()(osg::RenderInfo& renderInfo) const override;
+
+            mutable osg::ref_ptr<osg::Image> image_;
+            viewer::Viewer*                  viewer_;
+        };
+
         int                      currentCarInFocus_;
         int                      camMode_;
         osg::ref_ptr<osg::Group> line_node_;
@@ -609,15 +619,14 @@ namespace viewer
         {
             return saveImagesToFile_;
         }
-
-        void SaveImagesToRAM(bool state)
+        bool IsOffScreenRequested();
+        void UpdateOffScreenStatus();         // Update off-screen activation based on needed or not
+        void SetOffScreenActive(bool state);  // true = Activate esmini offscreen, false = Activate osg screen capture handling
+        bool GetOSGScreenShotHandlerActive()
         {
-            saveImagesToRAM_ = state;
-        };
-        bool GetSaveImagesToRAM()
-        {
-            return saveImagesToRAM_;
+            return osg_screenshot_event_handler_;
         }
+
         void Frame();
 
     private:
@@ -635,16 +644,17 @@ namespace viewer
                                                                 bool                                       decoration,
                                                                 int                                        screenNum,
                                                                 bool                                       headless);
-        int                                          AddGroundSurface();
-        bool                                         keyUp_;
-        bool                                         keyDown_;
-        bool                                         keyLeft_;
-        bool                                         keyRight_;
-        bool                                         quit_request_;
-        bool                                         saveImagesToRAM_;
-        int                                          saveImagesToFile_;
-        bool                                         disable_off_screen_;
-        osgViewer::ViewerBase::ThreadingModel        initialThreadingModel_;
+
+        int                                   AddGroundSurface();
+        bool                                  keyUp_;
+        bool                                  keyDown_;
+        bool                                  keyLeft_;
+        bool                                  keyRight_;
+        bool                                  quit_request_;
+        int                                   saveImagesToFile_;
+        bool                                  osg_screenshot_event_handler_;
+        osg::ref_ptr<FetchImage>              fetch_image_;
+        osgViewer::ViewerBase::ThreadingModel initialThreadingModel_;
 
         struct
         {

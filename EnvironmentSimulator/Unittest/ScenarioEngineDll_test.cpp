@@ -3549,8 +3549,8 @@ TEST(APITest, TestFetchImage)
     const char* args[] =
         {"--osc", "../../../resources/xosc/cut-in_simple.xosc", "--window", "60", "60", "800", "400", "--aa_mode", "4", "--headless"};
 
-    ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
     SE_SaveImagesToRAM(true);
+    ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
 
     ASSERT_EQ(SE_GetNumberOfObjects(), 2);
 
@@ -3637,6 +3637,7 @@ TEST(APITest, TestFetchImage)
     EXPECT_EQ(CheckFileExists(screenshotFilename5, oldModTime - 1), false);
 
     SE_Close();
+    SE_SaveImagesToRAM(false);
 }
 
 static void paramDeclCallbackSetRoute(void* args)

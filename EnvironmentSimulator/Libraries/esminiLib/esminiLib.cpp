@@ -2214,28 +2214,23 @@ extern "C"
         state->wheel_angle    = static_cast<float>(((vehicle::Vehicle *)handleSimpleVehicle)->wheelAngle_);
     }
 
-    SE_DLL_API int SE_SetOffScreenRendering(bool state)
-    {
-        SE_Env::Inst().SetOffScreenRendering(state);
-        return 0;
-    }
-
     SE_DLL_API int SE_SaveImagesToRAM(bool state)
     {
 #ifdef _USE_OSG
+        // prioritize setting via player, else update environment variable for next run
         if (player)
         {
             player->SaveImagesToRAM(state);
-            return 0;
         }
         else
         {
-            return -1;
+            SE_Env::Inst().SaveImagesToRAM(state);
         }
+        return 0;
 #else
         (void)state;
-        return -1;
 #endif
+        return -1;
     }
 
     SE_DLL_API int SE_SaveImagesToFile(int nrOfFrames)
@@ -2243,17 +2238,12 @@ extern "C"
 #ifdef _USE_OSG
         if (player)
         {
-            player->SaveImagesToFile(nrOfFrames);
-            return 0;
-        }
-        else
-        {
-            return -1;
+            return player->SaveImagesToFile(nrOfFrames);
         }
 #else
         (void)nrOfFrames;
-        return -1;
 #endif
+        return -1;
     }
 
     SE_DLL_API int SE_FetchImage(SE_Image *img)
@@ -2307,22 +2297,16 @@ extern "C"
 #ifdef _USE_OSG
         if (player)
         {
-            player->AddCustomCamera(x, y, z, h, p, false);
+            return player->AddCustomCamera(x, y, z, h, p, false);
         }
-        else
-        {
-            return -1;
-        }
-
-        return 0;
 #else
         (void)x;
         (void)y;
         (void)z;
         (void)h;
         (void)p;
-        return -1;
 #endif
+        return -1;
     }
 
     SE_DLL_API int SE_AddCustomFixedCamera(double x, double y, double z, double h, double p)
@@ -2330,22 +2314,16 @@ extern "C"
 #ifdef _USE_OSG
         if (player)
         {
-            player->AddCustomCamera(x, y, z, h, p, true);
+            return player->AddCustomCamera(x, y, z, h, p, true);
         }
-        else
-        {
-            return -1;
-        }
-
-        return 0;
 #else
         (void)x;
         (void)y;
         (void)z;
         (void)h;
         (void)p;
-        return -1;
 #endif
+        return -1;
     }
 
     SE_DLL_API int SE_AddCustomAimingCamera(double x, double y, double z)
@@ -2353,20 +2331,14 @@ extern "C"
 #ifdef _USE_OSG
         if (player)
         {
-            player->AddCustomCamera(x, y, z, false);
+            return player->AddCustomCamera(x, y, z, false);
         }
-        else
-        {
-            return -1;
-        }
-
-        return 0;
 #else
         (void)x;
         (void)y;
         (void)z;
-        return -1;
 #endif
+        return -1;
     }
 
     SE_DLL_API int SE_AddCustomFixedAimingCamera(double x, double y, double z)
@@ -2374,20 +2346,14 @@ extern "C"
 #ifdef _USE_OSG
         if (player)
         {
-            player->AddCustomCamera(x, y, z, true);
+            return player->AddCustomCamera(x, y, z, true);
         }
-        else
-        {
-            return -1;
-        }
-
-        return 0;
 #else
         (void)x;
         (void)y;
         (void)z;
-        return -1;
 #endif
+        return -1;
     }
 
     SE_DLL_API int SE_AddCustomFixedTopCamera(double x, double y, double z, double rot)
@@ -2395,21 +2361,15 @@ extern "C"
 #ifdef _USE_OSG
         if (player)
         {
-            player->AddCustomFixedTopCamera(x, y, z, rot);
+            return player->AddCustomFixedTopCamera(x, y, z, rot);
         }
-        else
-        {
-            return -1;
-        }
-
-        return 0;
 #else
         (void)x;
         (void)y;
         (void)z;
         (void)rot;
-        return -1;
 #endif
+        return -1;
     }
 
     SE_DLL_API int SE_SetCameraMode(int mode)

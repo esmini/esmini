@@ -82,6 +82,9 @@ set_folder(
     esminiLib
     ${LibrariesFolder})
 set_folder(
+    esminiLib_static
+    ${LibrariesFolder})
+set_folder(
     esminiRMLib
     ${LibrariesFolder})
 set_folder(
