@@ -1,6 +1,17 @@
 ## esmini release notes
 
-### 2023-12-07 Version 2.34.0
+### 2023-12-11 Version 2.34.1
+
+Improvements and fixes:
+- Fix bug preventing trigging and evaluation of subsequential stories
+  - bug introduced in 2.34.0
+- Improve image handling (fetch or save rendered images)  ([issue #173](https://github.com/esmini/esmini/issues/173))
+  - off-screen (to RAM) rendering off by default (for performance)
+  - API now allows to activate before init
+  - Example how to fetch images from multiple cameras: [multiple-cameras.cpp](https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/code-examples/image-capture/multiple-cameras.cpp)
+  - Note: Activating off-screen before init is now required to include initial frame
+
+### 2023-12-08 Version 2.34.0
 
 New features:
 - Support OpenDRIVE explicit road lines
