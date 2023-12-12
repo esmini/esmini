@@ -13,17 +13,17 @@
       <ParameterDeclaration name="HostSpeed" parameterType="double" value="10"/>
       <ParameterDeclaration name="PedestrianSpeed" parameterType="double" value="1.5"/>
       <ParameterDeclaration name="EX0" parameterType="double" value="43"/>
-      <ParameterDeclaration name="EY0" parameterType="double" value="-70"/>            
+      <ParameterDeclaration name="EY0" parameterType="double" value="-70"/>
       <ParameterDeclaration name="EXEnd" parameterType="double" value="20"/>
-      <ParameterDeclaration name="EYEnd" parameterType="double" value="39"/>         
+      <ParameterDeclaration name="EYEnd" parameterType="double" value="39"/>
       <ParameterDeclaration name="ESyncX" parameterType="double" value="29.0"/>
-      <ParameterDeclaration name="ESyncY" parameterType="double" value="-10.5"/>            
+      <ParameterDeclaration name="ESyncY" parameterType="double" value="-10.5"/>
       <ParameterDeclaration name="PX0" parameterType="double" value="40"/>
-      <ParameterDeclaration name="PY0" parameterType="double" value="-5"/>            
+      <ParameterDeclaration name="PY0" parameterType="double" value="-5"/>
       <ParameterDeclaration name="PXEnd" parameterType="double" value="10"/>
-      <ParameterDeclaration name="PYEnd" parameterType="double" value="-10"/>            
+      <ParameterDeclaration name="PYEnd" parameterType="double" value="-10"/>
       <ParameterDeclaration name="PSyncX" parameterType="double" value="28.5"/>
-      <ParameterDeclaration name="PSyncY" parameterType="double" value="-8.0"/>            
+      <ParameterDeclaration name="PSyncY" parameterType="double" value="-8.0"/>
    </ParameterDeclarations>
    <CatalogLocations>
       <RouteCatalog>
@@ -33,8 +33,8 @@
          <Directory path="../xosc/Catalogs/Vehicles"/>
       </VehicleCatalog>
       <ControllerCatalog>
-	     <Directory path="../xosc/Catalogs/Controllers"/>
-	  </ControllerCatalog>      
+         <Directory path="../xosc/Catalogs/Controllers"/>
+      </ControllerCatalog>
    </CatalogLocations>
    <RoadNetwork>
       <LogicFile filepath="../xodr/fabriksgatan.xodr"/>
@@ -123,10 +123,10 @@
                                 <SynchronizeAction masterEntityRef="Ego" targetToleranceMaster="1.0" targetTolerance="1.0" >
                                     <TargetPositionMaster>
                                         <WorldPosition x="$ESyncX" y="$ESyncY" h="3.3" />
-                                    </TargetPositionMaster>    
+                                    </TargetPositionMaster>
                                     <TargetPosition>
                                         <WorldPosition x="$PSyncX" y="$PSyncY" h="3.3" />
-                                    </TargetPosition>    
+                                    </TargetPosition>
                                     <FinalSpeed>
                                         <AbsoluteSpeed value="$PedestrianSpeed" />
                                         <SteadyState>
@@ -135,7 +135,7 @@
                                     </FinalSpeed>
                                 </SynchronizeAction>
                              </PrivateAction>
-                         </Action>                        
+                         </Action>
                     </Event>
                     <Event maximumExecutionCount="1" name="ped_follow_trajectory" priority="parallel">
                          <Action name="walk_trajectory">
@@ -203,7 +203,7 @@
                                   </ByValueCondition>
                                </Condition>
                             </ConditionGroup>
-                        </StartTrigger>                         
+                        </StartTrigger>
                     </Event>
                 </Maneuver>
             </ManeuverGroup>
@@ -235,7 +235,7 @@
                                                      <Position>
                                                          <WorldPosition x="$EXEnd" y="$EYEnd" h="1.7" />
                                                      </Position>
-                                                 </Vertex>                                                 
+                                                 </Vertex>
                                              </Polyline>
                                          </Shape>
                                      </Trajectory>
@@ -254,7 +254,7 @@
                              </ByValueCondition>
                           </Condition>
                        </ConditionGroup>
-                     </StartTrigger>                     
+                     </StartTrigger>
                   </Event>
                </Maneuver>
             </ManeuverGroup>
@@ -266,26 +266,26 @@
                      </ByValueCondition>
                   </Condition>
                </ConditionGroup>
-            </StartTrigger>            
-            <StopTrigger>
-               <ConditionGroup>
-                   <Condition name="QuitCondition" delay="0" conditionEdge="rising">
-					  <ByEntityCondition>
-						 <TriggeringEntities triggeringEntitiesRule="any">
-							<EntityRef entityRef="Ego"/>
-						 </TriggeringEntities>
-						 <EntityCondition>
-							<ReachPositionCondition tolerance="5.0">
-							   <Position>
-								  <WorldPosition x="$EXEnd" y="$EYEnd" h="3.14" />
-							   </Position>
-							</ReachPositionCondition>
-						 </EntityCondition>
-					  </ByEntityCondition>		
-			      </Condition>
-               </ConditionGroup>
-			</StopTrigger>
+            </StartTrigger>
          </Act>
       </Story>
+      <StopTrigger>
+         <ConditionGroup>
+             <Condition name="QuitCondition" delay="0" conditionEdge="rising">
+                <ByEntityCondition>
+                   <TriggeringEntities triggeringEntitiesRule="any">
+                      <EntityRef entityRef="Ego"/>
+                   </TriggeringEntities>
+                   <EntityCondition>
+                      <ReachPositionCondition tolerance="5.0">
+                         <Position>
+                            <WorldPosition x="$EXEnd" y="$EYEnd" h="3.14" />
+                         </Position>
+                      </ReachPositionCondition>
+                   </EntityCondition>
+                </ByEntityCondition>
+            </Condition>
+         </ConditionGroup>
+      </StopTrigger>
    </Storyboard>
 </OpenSCENARIO>

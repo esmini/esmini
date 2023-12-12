@@ -190,18 +190,17 @@
                         </Condition>
                     </ConditionGroup>
                 </StartTrigger>
-                <StopTrigger>
-                    <ConditionGroup>
-                        <!-- Normally check for simulationTime > value, but here test the inverted variant -->
-                        <Condition name="StopCondition" delay="1" conditionEdge="falling">
-                            <ByValueCondition>
-                                <SimulationTimeCondition value="7" rule="lessThan"/>
-                            </ByValueCondition>
-                        </Condition>
-                    </ConditionGroup>
-                </StopTrigger>
             </Act>
         </Story>
-        <StopTrigger/>
+        <StopTrigger>
+            <ConditionGroup>
+                <!-- Normally check for simulationTime > value, but here test the inverted variant -->
+                <Condition name="StopCondition" delay="1" conditionEdge="falling">
+                    <ByValueCondition>
+                        <SimulationTimeCondition value="7" rule="lessThan"/>
+                    </ByValueCondition>
+                </Condition>
+            </ConditionGroup>
+        </StopTrigger>
     </Storyboard>
 </OpenSCENARIO>

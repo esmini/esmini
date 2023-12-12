@@ -110,7 +110,7 @@
                                 <ByEntityCondition>
                                     <TriggeringEntities triggeringEntitiesRule="any">
                                         <EntityRef entityRef="Ego"/>
-                                    </TriggeringEntities>                                
+                                    </TriggeringEntities>
                                     <EntityCondition>
                                         <EndOfRoadCondition duration="2.5" rule="greaterThan"/>
                                     </EntityCondition>
@@ -130,18 +130,18 @@
                   </Condition>
                </ConditionGroup>
             </StartTrigger>
-            <StopTrigger>
-               <ConditionGroup>
-                  <Condition name="QuitCondition" delay="4" conditionEdge="rising">
-                     <ByValueCondition>
-                        <StoryboardElementStateCondition storyboardElementType="event"
-                                                         storyboardElementRef="End Of Road event"
-                                                         state="completeState"/>
-                     </ByValueCondition>
-                  </Condition>
-               </ConditionGroup>
-            </StopTrigger>       
-      </Act>
+         </Act>
       </Story>
+      <StopTrigger>
+         <ConditionGroup>
+            <Condition name="QuitCondition" delay="4" conditionEdge="rising">
+               <ByValueCondition>
+                  <StoryboardElementStateCondition storyboardElementType="event"
+                                                   storyboardElementRef="End Of Road event"
+                                                   state="completeState"/>
+               </ByValueCondition>
+            </Condition>
+         </ConditionGroup>
+      </StopTrigger>
    </Storyboard>
 </OpenSCENARIO>

@@ -167,25 +167,25 @@
                   </Condition>
                </ConditionGroup>
             </StartTrigger>
-            <StopTrigger>
-               <ConditionGroup>
-                   <Condition name="QuitCondition" delay="0" conditionEdge="rising">
-					  <ByEntityCondition>
-						 <TriggeringEntities triggeringEntitiesRule="any">
-							<EntityRef entityRef="Ego"/>
-						 </TriggeringEntities>
-						 <EntityCondition>
-							<ReachPositionCondition tolerance="5.0">
-							   <Position>
-								  <LanePosition roadId="2" laneId="1" s="270.0"/>
-							   </Position>
-							</ReachPositionCondition>
-						 </EntityCondition>
-					  </ByEntityCondition>		
-			      </Condition>
-               </ConditionGroup>
-			</StopTrigger>
          </Act>
       </Story>
+      <StopTrigger>
+         <ConditionGroup>
+            <Condition name="QuitCondition" delay="0" conditionEdge="rising">
+               <ByEntityCondition>
+                  <TriggeringEntities triggeringEntitiesRule="any">
+                     <EntityRef entityRef="Ego"/>
+                  </TriggeringEntities>
+                  <EntityCondition>
+                      <ReachPositionCondition tolerance="5.0">
+                         <Position>
+                            <LanePosition roadId="2" laneId="1" s="270.0"/>
+                         </Position>
+                      </ReachPositionCondition>
+                  </EntityCondition>
+               </ByEntityCondition>      
+            </Condition>
+         </ConditionGroup>
+      </StopTrigger>
    </Storyboard>
 </OpenSCENARIO>

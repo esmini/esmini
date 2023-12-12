@@ -125,22 +125,22 @@
                   </Condition>
                </ConditionGroup>
             </StartTrigger>
-			<StopTrigger>
-               <ConditionGroup>
-                   <Condition name="QuitCondition" delay="4" conditionEdge="rising">
-					  <ByEntityCondition>
-						 <TriggeringEntities triggeringEntitiesRule="any">
-							<EntityRef entityRef="Ego"/>
-						 </TriggeringEntities>
-						 <EntityCondition>
-                            <!-- Quit when Ego has come to a stop and Lead is moving away -->
-							<RelativeSpeedCondition rule="lessThan" value="0" entityRef="Lead"/>
-						 </EntityCondition>
-					  </ByEntityCondition>		
-			      </Condition>
-               </ConditionGroup>
-            </StopTrigger>
          </Act>
       </Story>
+      <StopTrigger>
+         <ConditionGroup>
+             <Condition name="QuitCondition" delay="4" conditionEdge="rising">
+                <ByEntityCondition>
+                   <TriggeringEntities triggeringEntitiesRule="any">
+                      <EntityRef entityRef="Ego"/>
+                   </TriggeringEntities>
+                   <EntityCondition>
+                      <!-- Quit when Ego has come to a stop and Lead is moving away -->
+                      <RelativeSpeedCondition rule="lessThan" value="0" entityRef="Lead"/>
+                   </EntityCondition>
+                </ByEntityCondition>      
+            </Condition>
+         </ConditionGroup>
+      </StopTrigger>
    </Storyboard>
 </OpenSCENARIO>

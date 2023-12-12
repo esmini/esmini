@@ -150,16 +150,16 @@
                         </Condition>
                     </ConditionGroup>
                 </StartTrigger>
-                <StopTrigger>
-                    <ConditionGroup>
-                        <Condition name="ActStopCondition" delay="10" conditionEdge="rising">
-                            <ByValueCondition>
-                                <StoryboardElementStateCondition storyboardElementType="event" storyboardElementRef="CutInEvent" state="endTransition"/>
-                            </ByValueCondition>
-                        </Condition>
-                    </ConditionGroup>
-                </StopTrigger>
             </Act>
         </Story>
+        <StopTrigger>
+            <ConditionGroup>
+                <Condition name="StopCondition" delay="10" conditionEdge="rising">
+                    <ByValueCondition>
+                        <StoryboardElementStateCondition storyboardElementType="event" storyboardElementRef="CutInEvent" state="endTransition"/>
+                    </ByValueCondition>
+                </Condition>
+            </ConditionGroup>
+        </StopTrigger>
     </Storyboard>
 </OpenSCENARIO>

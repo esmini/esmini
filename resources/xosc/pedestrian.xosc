@@ -38,7 +38,7 @@
              </BoundingBox>
              <Properties>
                 <!-- Scale modes: None, BBToModel, ModelToBB -->
-                <Property name="scaleMode" value="BBToModel"/>  
+                <Property name="scaleMode" value="BBToModel"/>
              </Properties>
           </Pedestrian>
        </ScenarioObject>
@@ -244,26 +244,26 @@
                      </ByValueCondition>
                   </Condition>
                </ConditionGroup>
-            </StartTrigger>            
-            <StopTrigger>
-               <ConditionGroup>
-                   <Condition name="QuitCondition" delay="0" conditionEdge="rising">
-					  <ByEntityCondition>
-						 <TriggeringEntities triggeringEntitiesRule="any">
-							<EntityRef entityRef="pedestrian_adult"/>
-						 </TriggeringEntities>
-						 <EntityCondition>
-							<ReachPositionCondition tolerance="5.0">
-							   <Position>
-								  <LanePosition roadId="0" laneId="-3" s="0"/>
-							   </Position>
-							</ReachPositionCondition>
-						 </EntityCondition>
-					  </ByEntityCondition>		
-			      </Condition>
-               </ConditionGroup>
-			</StopTrigger>
+            </StartTrigger>
          </Act>
       </Story>
+      <StopTrigger>
+         <ConditionGroup>
+             <Condition name="QuitCondition" delay="0" conditionEdge="rising">
+                <ByEntityCondition>
+                   <TriggeringEntities triggeringEntitiesRule="any">
+                      <EntityRef entityRef="pedestrian_adult"/>
+                   </TriggeringEntities>
+                   <EntityCondition>
+                      <ReachPositionCondition tolerance="5.0">
+                         <Position>
+                            <LanePosition roadId="0" laneId="-3" s="0"/>
+                         </Position>
+                      </ReachPositionCondition>
+                   </EntityCondition>
+                </ByEntityCondition>
+            </Condition>
+         </ConditionGroup>
+      </StopTrigger>
    </Storyboard>
 </OpenSCENARIO>

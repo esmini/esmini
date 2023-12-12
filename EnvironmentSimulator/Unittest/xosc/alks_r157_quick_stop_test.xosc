@@ -179,31 +179,30 @@
                         </Condition>
                     </ConditionGroup>
                 </StartTrigger>
-                <StopTrigger>
-                    <ConditionGroup>
-                        <Condition name="ActStopCondition" delay="7" conditionEdge="rising">
-                            <ByValueCondition>
-                                <StoryboardElementStateCondition storyboardElementType="event" storyboardElementRef="TargetCollideEvent" state="endTransition"/>
-                            </ByValueCondition>
-                        </Condition>
-                    </ConditionGroup>
-                    <ConditionGroup>
-                        <Condition name="CollisionCondition" delay="3" conditionEdge="rising">
-                            <ByEntityCondition>
-                                <TriggeringEntities triggeringEntitiesRule="any">
-                                    <EntityRef entityRef="Ego"/>
-                                </TriggeringEntities>
-                                <EntityCondition>
-                                    <CollisionCondition>
-                                        <EntityRef entityRef="Target"/>
-                                    </CollisionCondition>
-                                </EntityCondition>
-                            </ByEntityCondition>
-                        </Condition>
-                    </ConditionGroup>
-                </StopTrigger>
             </Act>
         </Story>
-        <StopTrigger/>
+        <StopTrigger>
+            <ConditionGroup>
+                <Condition name="StoryboardStopCondition" delay="7" conditionEdge="rising">
+                    <ByValueCondition>
+                        <StoryboardElementStateCondition storyboardElementType="event" storyboardElementRef="TargetCollideEvent" state="endTransition"/>
+                    </ByValueCondition>
+                </Condition>
+            </ConditionGroup>
+            <ConditionGroup>
+                <Condition name="CollisionCondition" delay="3" conditionEdge="rising">
+                    <ByEntityCondition>
+                        <TriggeringEntities triggeringEntitiesRule="any">
+                            <EntityRef entityRef="Ego"/>
+                        </TriggeringEntities>
+                        <EntityCondition>
+                            <CollisionCondition>
+                                <EntityRef entityRef="Target"/>
+                            </CollisionCondition>
+                        </EntityCondition>
+                    </ByEntityCondition>
+                </Condition>
+            </ConditionGroup>
+        </StopTrigger>
     </Storyboard>
 </OpenSCENARIO>

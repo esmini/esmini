@@ -214,16 +214,16 @@
                         </Condition>
                     </ConditionGroup>
                 </StartTrigger>
-                <StopTrigger>
-                    <ConditionGroup>
-                        <Condition name="QuitCondition" delay="3" conditionEdge="rising">
-                            <ByValueCondition>
-                                <StoryboardElementStateCondition storyboardElementType="event" storyboardElementRef="EgoGoOnRoadEvent" state="endTransition"/>
-                            </ByValueCondition>
-                        </Condition>
-                    </ConditionGroup>
-                </StopTrigger>
             </Act>
         </Story>
+        <StopTrigger>
+            <ConditionGroup>
+                <Condition name="QuitCondition" delay="3" conditionEdge="rising">
+                    <ByValueCondition>
+                        <StoryboardElementStateCondition storyboardElementType="event" storyboardElementRef="EgoGoOnRoadEvent" state="endTransition"/>
+                    </ByValueCondition>
+                </Condition>
+            </ConditionGroup>
+        </StopTrigger>
     </Storyboard>
 </OpenSCENARIO>

@@ -235,17 +235,16 @@
                     </Maneuver>
                 </ManeuverGroup>
                 <StartTrigger/>
-                <StopTrigger>
-                    <ConditionGroup>
-                        <Condition name="StopSimulationCondition" delay="3" conditionEdge="rising">
-                            <ByValueCondition>
-                                <StoryboardElementStateCondition storyboardElementType="event" storyboardElementRef="SpeedProfileEvent7" state="completeState"/>
-                            </ByValueCondition>
-                        </Condition>
-                    </ConditionGroup>
-                </StopTrigger>
             </Act>
         </Story>
-        <StopTrigger/>
+        <StopTrigger>
+            <ConditionGroup>
+                <Condition name="StopSimulationCondition" delay="3" conditionEdge="rising">
+                    <ByValueCondition>
+                        <StoryboardElementStateCondition storyboardElementType="event" storyboardElementRef="SpeedProfileEvent7" state="completeState"/>
+                    </ByValueCondition>
+                </Condition>
+            </ConditionGroup>
+        </StopTrigger>
     </Storyboard>
 </OpenSCENARIO>

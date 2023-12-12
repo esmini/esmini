@@ -124,18 +124,18 @@
                   </Condition>
                </ConditionGroup>
             </StartTrigger>
-            <StopTrigger>
-               <ConditionGroup>
-                   <Condition name="EventDoneCondition" delay="0" conditionEdge="none">
-                      <ByValueCondition>
-                         <StoryboardElementStateCondition storyboardElementType="event"
-                                                          storyboardElementRef="RestartEvent"
-                                                          state="completeState"/>
-                      </ByValueCondition>
-                   </Condition>               
-               </ConditionGroup>
-			</StopTrigger>
          </Act>
       </Story>
+      <StopTrigger>
+         <ConditionGroup>
+             <Condition name="EventDoneCondition" delay="0" conditionEdge="none">
+                <ByValueCondition>
+                   <StoryboardElementStateCondition storyboardElementType="event"
+                                                    storyboardElementRef="RestartEvent"
+                                                    state="completeState"/>
+                </ByValueCondition>
+             </Condition>               
+         </ConditionGroup>
+      </StopTrigger>
    </Storyboard>
 </OpenSCENARIO>

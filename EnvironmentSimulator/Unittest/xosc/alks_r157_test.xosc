@@ -209,17 +209,16 @@
                         </Condition>
                     </ConditionGroup>
                 </StartTrigger>
-                <StopTrigger>
-                    <ConditionGroup>
-                        <Condition name="ActStopCondition" delay="7" conditionEdge="rising">
-                            <ByValueCondition>
-                                <StoryboardElementStateCondition storyboardElementType="event" storyboardElementRef="TargetBrakeEvent" state="endTransition"/>
-                            </ByValueCondition>
-                        </Condition>
-                    </ConditionGroup>
-                </StopTrigger>
             </Act>
         </Story>
-        <StopTrigger/>
+        <StopTrigger>
+            <ConditionGroup>
+                <Condition name="StopCondition" delay="7" conditionEdge="rising">
+                    <ByValueCondition>
+                        <StoryboardElementStateCondition storyboardElementType="event" storyboardElementRef="TargetBrakeEvent" state="endTransition"/>
+                    </ByValueCondition>
+                </Condition>
+            </ConditionGroup>
+        </StopTrigger>
     </Storyboard>
 </OpenSCENARIO>

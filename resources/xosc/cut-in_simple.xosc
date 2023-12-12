@@ -175,13 +175,13 @@
                   <ByEntityCondition>
                       <TriggeringEntities triggeringEntitiesRule="any">
                           <EntityRef entityRef="OverTaker"/>
-                      </TriggeringEntities>                              
+                      </TriggeringEntities>
                       <EntityCondition>
                           <AccelerationCondition value="0.0" rule="equalTo"/>
                       </EntityCondition>
-                  </ByEntityCondition>              
+                  </ByEntityCondition>
               </Condition>
           </ConditionGroup>
-      </StopTrigger>      
+      </StopTrigger>
    </Storyboard>
 </OpenSCENARIO>

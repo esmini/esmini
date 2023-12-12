@@ -1,204 +1,204 @@
 <?xml version="1.0" ?>
 <!-- Demonstrate a way of integrating SUMO vehicles in esmini simulations -->
 <OpenSCENARIO xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceShemaLocation="OpenSccenario.xsd">
-	<FileHeader author="Mandolin" date="2020-08-14 08:57:00.756371" decription="adaptspeed_example" revMajor="1" revMinor="0"/>
-	<ParameterDeclarations/>
-	<CatalogLocations>
-		<VehicleCatalog>
-			<Directory path="../xosc/Catalogs/Vehicles"/>
-		</VehicleCatalog>
-		<ControllerCatalog>
-			<Directory path="../xosc/Catalogs/Controllers"/>
-		</ControllerCatalog>
-	</CatalogLocations>
-	<RoadNetwork>
-		<LogicFile filepath="../xodr/e6mini.xodr"/>
-		<SceneGraphFile filepath="../models/e6mini.osgb"/>
-	</RoadNetwork>
-	<Entities>
-		<ScenarioObject name="Ego">
-			<Vehicle name="car_white" vehicleCategory="car">
-				<ParameterDeclarations/>
-				<BoundingBox>
-					<Center x="2.0" y="0" z="0.9"/>
-					<Dimensions height="1.8" length="5" width="2"/>
-				</BoundingBox>
-				<Performance maxAcceleration="10" maxDeceleration="10" maxSpeed="69"/>
-				<Axles>
-					<FrontAxle maxSteering="30" positionX="2.98" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
-					<RearAxle maxSteering="30" positionX="0" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
-				</Axles>
-				<Properties>
-					<File filepath="../models/car_white.osgb"/>
-				</Properties>
-			</Vehicle>
-		</ScenarioObject>
-		<ScenarioObject name="Target1">
-			<CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>
-		</ScenarioObject>
-		<ScenarioObject name="SumoVehicles">
-			<CatalogReference catalogName="VehicleCatalog" entryName="car_yellow"/>
-			<ObjectController>
+    <FileHeader author="Mandolin" date="2020-08-14 08:57:00.756371" decription="adaptspeed_example" revMajor="1" revMinor="0"/>
+    <ParameterDeclarations/>
+    <CatalogLocations>
+        <VehicleCatalog>
+            <Directory path="../xosc/Catalogs/Vehicles"/>
+        </VehicleCatalog>
+        <ControllerCatalog>
+            <Directory path="../xosc/Catalogs/Controllers"/>
+        </ControllerCatalog>
+    </CatalogLocations>
+    <RoadNetwork>
+        <LogicFile filepath="../xodr/e6mini.xodr"/>
+        <SceneGraphFile filepath="../models/e6mini.osgb"/>
+    </RoadNetwork>
+    <Entities>
+        <ScenarioObject name="Ego">
+            <Vehicle name="car_white" vehicleCategory="car">
+                <ParameterDeclarations/>
+                <BoundingBox>
+                    <Center x="2.0" y="0" z="0.9"/>
+                    <Dimensions height="1.8" length="5" width="2"/>
+                </BoundingBox>
+                <Performance maxAcceleration="10" maxDeceleration="10" maxSpeed="69"/>
+                <Axles>
+                    <FrontAxle maxSteering="30" positionX="2.98" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+                    <RearAxle maxSteering="30" positionX="0" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+                </Axles>
+                <Properties>
+                    <File filepath="../models/car_white.osgb"/>
+                </Properties>
+            </Vehicle>
+        </ScenarioObject>
+        <ScenarioObject name="Target1">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>
+        </ScenarioObject>
+        <ScenarioObject name="SumoVehicles">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_yellow"/>
+            <ObjectController>
                 <CatalogReference catalogName="ControllerCatalog" entryName="sumoController"/>
-			</ObjectController>
-		</ScenarioObject>
-	</Entities>
-	<Storyboard>
-		<Init>
-			<Actions>
-				<Private entityRef="Ego">
-					<PrivateAction>
-						<LongitudinalAction>
-							<SpeedAction>
-								<SpeedActionDynamics dynamicsDimension="time" dynamicsShape="step" value="1"/>
-								<SpeedActionTarget>
-									<AbsoluteTargetSpeed value="3"/>
-								</SpeedActionTarget>
-							</SpeedAction>
-						</LongitudinalAction>
-					</PrivateAction>
-					<PrivateAction>
-						<TeleportAction>
-							<Position>
-								<LanePosition laneId="-3" offset="0" roadId="0" s="1"/>
-							</Position>
-						</TeleportAction>
-					</PrivateAction>
-				</Private>
-				<Private entityRef="Target1">
-					<PrivateAction>
-						<LongitudinalAction>
-							<SpeedAction>
-								<SpeedActionDynamics dynamicsDimension="time" dynamicsShape="step" value="1"/>
-								<SpeedActionTarget>
-									<AbsoluteTargetSpeed value="1"/>
-								</SpeedActionTarget>
-							</SpeedAction>
-						</LongitudinalAction>
-					</PrivateAction>
-					<PrivateAction>
-						<TeleportAction>
-							<Position>
-								<LanePosition laneId="-2" offset="0" roadId="0" s="1"/>
-							</Position>
-						</TeleportAction>
-					</PrivateAction>
-				</Private>
-			</Actions>
-		</Init>
-		<Story name="mystory">
-			<ParameterDeclarations/>
-			<Act name="my act">
-				<ManeuverGroup maximumExecutionCount="1" name="mangroup_red">
-					<Actors selectTriggeringEntities="False">
-						<EntityRef entityRef="Target1"/>
-					</Actors>
-					<Maneuver name="red_speed">
-						<Event maximumExecutionCount="1" name="targetspeedincrease" priority="overwrite">
-							<Action name="targetspeed">
-								<PrivateAction>
-									<LongitudinalAction>
-										<SpeedAction>
-											<SpeedActionDynamics dynamicsDimension="time" dynamicsShape="sinusoidal" value="6"/>
-											<SpeedActionTarget>
-												<AbsoluteTargetSpeed value="25"/>
-											</SpeedActionTarget>
-										</SpeedAction>
-									</LongitudinalAction>
-								</PrivateAction>
-							</Action>
-							<StartTrigger>
-								<ConditionGroup>
-									<Condition conditionEdge="rising" delay="0" name="starttrigger">
-										<ByValueCondition>
-											<SimulationTimeCondition rule="greaterThan" value="13"/>
-										</ByValueCondition>
-									</Condition>
-								</ConditionGroup>
-							</StartTrigger>
-						</Event>
-					</Maneuver>
-					<Maneuver name="red_overtake">
-						<Event maximumExecutionCount="1" name="first_lane_change" priority="overwrite">
-							<Action name="lane_change_red">
-								<PrivateAction>
-									<LateralAction>
-										<LaneChangeAction>
-											<LaneChangeActionDynamics dynamicsDimension="time" dynamicsShape="sinusoidal" value="4"/>
-											<LaneChangeTarget>
-												<AbsoluteTargetLane value="-3"/>
-											</LaneChangeTarget>
-										</LaneChangeAction>
-									</LateralAction>
-								</PrivateAction>
-							</Action>
-							<StartTrigger>
-								<ConditionGroup>
-									<Condition conditionEdge="rising" delay="0.2" name="redtrigger">
-										<ByEntityCondition>
-											<TriggeringEntities triggeringEntitiesRule="any">
-												<EntityRef entityRef="Ego"/>
-											</TriggeringEntities>
-											<EntityCondition>
-												<TimeHeadwayCondition alongRoute="True" entityRef="Target1" freespace="True" rule="greaterThan" value="0.1"/>
-											</EntityCondition>
-										</ByEntityCondition>
-									</Condition>
-								</ConditionGroup>
-							</StartTrigger>
-						</Event>
-					</Maneuver>
-				</ManeuverGroup>
-				<ManeuverGroup maximumExecutionCount="1" name="mangroup_ego">
-					<Actors selectTriggeringEntities="False">
-						<EntityRef entityRef="Ego"/>
-					</Actors>
-					<Maneuver name="ego_speed">
-						<Event maximumExecutionCount="1" name="egospeedincrease" priority="overwrite">
-							<Action name="egospeed">
-								<PrivateAction>
-									<LongitudinalAction>
-										<SpeedAction>
-											<SpeedActionDynamics dynamicsDimension="time" dynamicsShape="linear" value="10"/>
-											<SpeedActionTarget>
-												<AbsoluteTargetSpeed value="20"/>
-											</SpeedActionTarget>
-										</SpeedAction>
-									</LongitudinalAction>
-								</PrivateAction>
-							</Action>
-							<StartTrigger>
-								<ConditionGroup>
-									<Condition conditionEdge="rising" delay="0" name="starttrigger">
-										<ByValueCondition>
-											<SimulationTimeCondition rule="greaterThan" value="13"/>
-										</ByValueCondition>
-									</Condition>
-								</ConditionGroup>
-							</StartTrigger>
-						</Event>
-					</Maneuver>
-				</ManeuverGroup>
-				<StartTrigger>
-					<ConditionGroup>
-						<Condition conditionEdge="rising" delay="0" name="starttrigger">
-							<ByValueCondition>
-								<SimulationTimeCondition rule="greaterThan" value="0"/>
-							</ByValueCondition>
-						</Condition>
-					</ConditionGroup>
-				</StartTrigger>
-				<StopTrigger/>
-			</Act>
-		</Story>
-		<StopTrigger>
-			<ConditionGroup>
-				<Condition conditionEdge="rising" delay="0" name="stop_simulation">
-					<ByValueCondition>
-						<SimulationTimeCondition rule="greaterThan" value="40"/>
-					</ByValueCondition>
-				</Condition>
-			</ConditionGroup>
-		</StopTrigger>
-	</Storyboard>
+            </ObjectController>
+        </ScenarioObject>
+    </Entities>
+    <Storyboard>
+        <Init>
+            <Actions>
+                <Private entityRef="Ego">
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsDimension="time" dynamicsShape="step" value="1"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="3"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition laneId="-3" offset="0" roadId="0" s="1"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Target1">
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsDimension="time" dynamicsShape="step" value="1"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="1"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition laneId="-2" offset="0" roadId="0" s="1"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                </Private>
+            </Actions>
+        </Init>
+        <Story name="mystory">
+            <ParameterDeclarations/>
+            <Act name="my act">
+                <ManeuverGroup maximumExecutionCount="1" name="mangroup_red">
+                    <Actors selectTriggeringEntities="False">
+                        <EntityRef entityRef="Target1"/>
+                    </Actors>
+                    <Maneuver name="red_speed">
+                        <Event maximumExecutionCount="1" name="targetspeedincrease" priority="overwrite">
+                            <Action name="targetspeed">
+                                <PrivateAction>
+                                    <LongitudinalAction>
+                                        <SpeedAction>
+                                            <SpeedActionDynamics dynamicsDimension="time" dynamicsShape="sinusoidal" value="6"/>
+                                            <SpeedActionTarget>
+                                                <AbsoluteTargetSpeed value="25"/>
+                                            </SpeedActionTarget>
+                                        </SpeedAction>
+                                    </LongitudinalAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition conditionEdge="rising" delay="0" name="starttrigger">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition rule="greaterThan" value="13"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                    </Maneuver>
+                    <Maneuver name="red_overtake">
+                        <Event maximumExecutionCount="1" name="first_lane_change" priority="overwrite">
+                            <Action name="lane_change_red">
+                                <PrivateAction>
+                                    <LateralAction>
+                                        <LaneChangeAction>
+                                            <LaneChangeActionDynamics dynamicsDimension="time" dynamicsShape="sinusoidal" value="4"/>
+                                            <LaneChangeTarget>
+                                                <AbsoluteTargetLane value="-3"/>
+                                            </LaneChangeTarget>
+                                        </LaneChangeAction>
+                                    </LateralAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition conditionEdge="rising" delay="0.2" name="redtrigger">
+                                        <ByEntityCondition>
+                                            <TriggeringEntities triggeringEntitiesRule="any">
+                                                <EntityRef entityRef="Ego"/>
+                                            </TriggeringEntities>
+                                            <EntityCondition>
+                                                <TimeHeadwayCondition alongRoute="True" entityRef="Target1" freespace="True" rule="greaterThan" value="0.1"/>
+                                            </EntityCondition>
+                                        </ByEntityCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                    </Maneuver>
+                </ManeuverGroup>
+                <ManeuverGroup maximumExecutionCount="1" name="mangroup_ego">
+                    <Actors selectTriggeringEntities="False">
+                        <EntityRef entityRef="Ego"/>
+                    </Actors>
+                    <Maneuver name="ego_speed">
+                        <Event maximumExecutionCount="1" name="egospeedincrease" priority="overwrite">
+                            <Action name="egospeed">
+                                <PrivateAction>
+                                    <LongitudinalAction>
+                                        <SpeedAction>
+                                            <SpeedActionDynamics dynamicsDimension="time" dynamicsShape="linear" value="10"/>
+                                            <SpeedActionTarget>
+                                                <AbsoluteTargetSpeed value="20"/>
+                                            </SpeedActionTarget>
+                                        </SpeedAction>
+                                    </LongitudinalAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition conditionEdge="rising" delay="0" name="starttrigger">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition rule="greaterThan" value="13"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                    </Maneuver>
+                </ManeuverGroup>
+                <StartTrigger>
+                    <ConditionGroup>
+                        <Condition conditionEdge="rising" delay="0" name="starttrigger">
+                            <ByValueCondition>
+                                <SimulationTimeCondition rule="greaterThan" value="0"/>
+                            </ByValueCondition>
+                        </Condition>
+                    </ConditionGroup>
+                </StartTrigger>
+                <StopTrigger/>
+            </Act>
+        </Story>
+        <StopTrigger>
+            <ConditionGroup>
+                <Condition conditionEdge="rising" delay="0" name="stop_simulation">
+                    <ByValueCondition>
+                        <SimulationTimeCondition rule="greaterThan" value="40"/>
+                    </ByValueCondition>
+                </Condition>
+            </ConditionGroup>
+        </StopTrigger>
+    </Storyboard>
 </OpenSCENARIO>

@@ -218,7 +218,7 @@
                                         </TriggeringEntities>
                                         <EntityCondition>
                                             <CollisionCondition>
-                                                <EntityRef entityRef="pedestrian_adult" /> 
+                                                <EntityRef entityRef="pedestrian_adult" />
                                             </CollisionCondition>
                                         </EntityCondition>
                                     </ByEntityCondition>
@@ -242,12 +242,12 @@
                             <ConditionGroup>
                                 <Condition conditionEdge="rising" delay="0.8" name="ped_raise_condition">
                                     <ByValueCondition>
-                                        <StoryboardElementStateCondition 
-                                            storyboardElementType="action" 
-                                            storyboardElementRef="be_still_action" 
+                                        <StoryboardElementStateCondition
+                                            storyboardElementType="action"
+                                            storyboardElementRef="be_still_action"
                                             state="endTransition"
                                         />
-                                    </ByValueCondition>		
+                                    </ByValueCondition>
                                 </Condition>
                             </ConditionGroup>
                         </StartTrigger>
@@ -262,21 +262,21 @@
                      </ByValueCondition>
                   </Condition>
                </ConditionGroup>
-            </StartTrigger>            
-            <StopTrigger>
-               <ConditionGroup>
-                   <Condition name="QuitCondition" delay="3" conditionEdge="rising">
-					  <ByValueCondition>
-                        <StoryboardElementStateCondition 
-                            storyboardElementType="action" 
-                            storyboardElementRef="raise_action" 
-                            state="completeState"
-                        />
-					  </ByValueCondition>		
-			      </Condition>
-               </ConditionGroup>
-			</StopTrigger>
+            </StartTrigger>
          </Act>
       </Story>
+      <StopTrigger>
+         <ConditionGroup>
+             <Condition name="QuitCondition" delay="3" conditionEdge="rising">
+                <ByValueCondition>
+                  <StoryboardElementStateCondition
+                      storyboardElementType="action"
+                      storyboardElementRef="raise_action"
+                      state="completeState"
+                  />
+                </ByValueCondition>
+            </Condition>
+         </ConditionGroup>
+      </StopTrigger>
    </Storyboard>
 </OpenSCENARIO>

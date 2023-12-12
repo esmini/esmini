@@ -137,28 +137,28 @@
                         </Condition>
                     </ConditionGroup>
                 </StartTrigger>
-                <StopTrigger>
-                    <ConditionGroup>
-                        <Condition name="End Of Road condition" delay="0" conditionEdge="rising">
-                            <ByEntityCondition>
-                                <TriggeringEntities triggeringEntitiesRule="any">
-                                    <EntityRef entityRef="Ego"/>
-                                </TriggeringEntities>
-                                <EntityCondition>
-                                    <EndOfRoadCondition duration="0.0" rule="greaterThan"/>
-                                </EntityCondition>
-                            </ByEntityCondition>
-                        </Condition>
-                    </ConditionGroup>
-                    <ConditionGroup>
-                        <Condition name="time_trigger" delay="0" conditionEdge="none">
-                            <ByValueCondition>
-                                <SimulationTimeCondition value="34" rule="greaterOrEqual"/>
-                            </ByValueCondition>
-                        </Condition>
-                    </ConditionGroup>
-                </StopTrigger>
             </Act>
         </Story>
+        <StopTrigger>
+            <ConditionGroup>
+                <Condition name="End Of Road condition" delay="0" conditionEdge="rising">
+                    <ByEntityCondition>
+                        <TriggeringEntities triggeringEntitiesRule="any">
+                            <EntityRef entityRef="Ego"/>
+                        </TriggeringEntities>
+                        <EntityCondition>
+                            <EndOfRoadCondition duration="0.0" rule="greaterThan"/>
+                        </EntityCondition>
+                    </ByEntityCondition>
+                </Condition>
+            </ConditionGroup>
+            <ConditionGroup>
+                <Condition name="time_trigger" delay="0" conditionEdge="none">
+                    <ByValueCondition>
+                        <SimulationTimeCondition value="34" rule="greaterOrEqual"/>
+                    </ByValueCondition>
+                </Condition>
+            </ConditionGroup>
+        </StopTrigger>
     </Storyboard>
 </OpenSCENARIO>

@@ -189,18 +189,18 @@
                   </Condition>
                </ConditionGroup>
             </StartTrigger>
-            <StopTrigger>
-                <ConditionGroup>
-                   <Condition name="ActStopCondition" delay="5" conditionEdge="rising">
-                      <ByValueCondition>
-                         <StoryboardElementStateCondition storyboardElementType="event"
-                                                          storyboardElementRef="OvertakerBrakeEvent"
-                                                          state="endTransition"/>
-                      </ByValueCondition>
-                   </Condition>
-                </ConditionGroup>
-            </StopTrigger>
          </Act>
       </Story>
+      <StopTrigger>
+          <ConditionGroup>
+             <Condition name="StopCondition" delay="5" conditionEdge="rising">
+                <ByValueCondition>
+                   <StoryboardElementStateCondition storyboardElementType="event"
+                                                    storyboardElementRef="OvertakerBrakeEvent"
+                                                    state="endTransition"/>
+                </ByValueCondition>
+             </Condition>
+          </ConditionGroup>
+      </StopTrigger>
    </Storyboard>
 </OpenSCENARIO>

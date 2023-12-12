@@ -129,18 +129,18 @@
                   </Condition>
                </ConditionGroup>
             </StartTrigger>
-            <StopTrigger>
-               <ConditionGroup>
-                  <Condition name="QuitCondition" delay="4" conditionEdge="rising">
-                     <ByValueCondition>
-                        <StoryboardElementStateCondition storyboardElementType="event"
-                                                         storyboardElementRef="Lane change"
-                                                         state="endTransition"/>
-                     </ByValueCondition>
-                  </Condition>
-               </ConditionGroup>
-            </StopTrigger>
          </Act>
       </Story>
+      <StopTrigger>
+         <ConditionGroup>
+            <Condition name="QuitCondition" delay="4" conditionEdge="rising">
+               <ByValueCondition>
+                  <StoryboardElementStateCondition storyboardElementType="event"
+                                                   storyboardElementRef="Lane change"
+                                                   state="endTransition"/>
+               </ByValueCondition>
+            </Condition>
+         </ConditionGroup>
+      </StopTrigger>
    </Storyboard>
 </OpenSCENARIO>

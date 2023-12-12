@@ -1,130 +1,130 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <OpenSCENARIO>
-	<FileHeader revMajor="1" revMinor="2" date="2023-07-11T10:00:00" description="Combine TTC and relative lateral distance conditions" author="esmini team"/>
+    <FileHeader revMajor="1" revMinor="2" date="2023-07-11T10:00:00" description="Combine TTC and relative lateral distance conditions" author="esmini team"/>
     <ParameterDeclarations>
         <ParameterDeclaration name="LateralDist" parameterType="double" value="5.0"/>
     </ParameterDeclarations>
-	<CatalogLocations>
-		<VehicleCatalog>
-			<Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
-		</VehicleCatalog>
-	</CatalogLocations>
-	<RoadNetwork>
-		<LogicFile filepath="../../../resources/xodr/straight_500m.xodr"/>
-	</RoadNetwork>
-	<Entities>
-		<ScenarioObject name="Ego">
-			<CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
-		</ScenarioObject>
-		<ScenarioObject name="Target">
-			<CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>
-		</ScenarioObject>
-	</Entities>
-	<Storyboard>
-		<Init>
-			<Actions>
-				<Private entityRef="Ego">
-					<PrivateAction>
-						<TeleportAction>
-							<Position>
-								<LanePosition roadId="1" laneId="-1" s="50"/>
-							</Position>
-						</TeleportAction>
-					</PrivateAction>
-					<PrivateAction>
-						<LongitudinalAction>
-							<SpeedAction>
-								<SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
-								<SpeedActionTarget>
-									<AbsoluteTargetSpeed value="10"/>
-								</SpeedActionTarget>
-							</SpeedAction>
-						</LongitudinalAction>
-					</PrivateAction>
-				</Private>
-				<Private entityRef="Target">
-					<PrivateAction>
-						<TeleportAction>
-							<Position>
-								<LanePosition roadId="1" laneId="1" s="150"/>
-							</Position>
-						</TeleportAction>
-					</PrivateAction>
-					<PrivateAction>
-						<LongitudinalAction>
-							<SpeedAction>
-								<SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
-								<SpeedActionTarget>
-									<AbsoluteTargetSpeed value="15"/>
-								</SpeedActionTarget>
-							</SpeedAction>
-						</LongitudinalAction>
-					</PrivateAction>
-				</Private>
-			</Actions>
-		</Init>
-		<Story name="story">
-			<Act name="MyAct">
-				<ManeuverGroup maximumExecutionCount="1" name="MG">
-					<Actors selectTriggeringEntities="false">
-						<EntityRef entityRef="Ego"/>
-					</Actors>
-					<Maneuver name="Manevuer">
-						<Event name="Event" priority="overwrite">
-							<Action name="Action">
-								<PrivateAction>
-									<LongitudinalAction>
-										<SpeedAction>
-											<SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
-											<SpeedActionTarget>
-												<AbsoluteTargetSpeed value="1.0"/>
-											</SpeedActionTarget>
-										</SpeedAction>
-									</LongitudinalAction>
-								</PrivateAction>
-							</Action>
-							<StartTrigger>
-								<ConditionGroup>
-									<Condition name="TTC condition" delay="0" conditionEdge="none">
-										<ByEntityCondition>
-											<TriggeringEntities triggeringEntitiesRule="any">
-												<EntityRef entityRef="Ego"/>
-											</TriggeringEntities>
-											<EntityCondition>
-												<TimeToCollisionCondition coordinateSystem="road" freespace="false" relativeDistanceType="longitudinal" rule="lessThan" value="2.5">
-													<TimeToCollisionConditionTarget>
-														<EntityRef entityRef="Target"/>
-													</TimeToCollisionConditionTarget>
-												</TimeToCollisionCondition>
-											</EntityCondition>
-										</ByEntityCondition>
-									</Condition>
-									<Condition name="Relative lateral distance condition" delay="0" conditionEdge="none">
-										<ByEntityCondition>
-											<TriggeringEntities triggeringEntitiesRule="any">
-												<EntityRef entityRef="Ego"/>
-											</TriggeringEntities>
-											<EntityCondition>
-												<RelativeDistanceCondition coordinateSystem="road" entityRef="Target" freespace="true" relativeDistanceType="lateral" rule="lessThan" value="$LateralDist"/>
-											</EntityCondition>
-										</ByEntityCondition>
-									</Condition>
-								</ConditionGroup>
-							</StartTrigger>
-						</Event>
-					</Maneuver>
-				</ManeuverGroup>
-				<StartTrigger/>
-			</Act>
-		</Story>
-		<StopTrigger>
-			<ConditionGroup>
-				<Condition name="StopCondition" delay="0.0" conditionEdge="none">
-					<ByValueCondition>
-						<SimulationTimeCondition value="10.0" rule="greaterOrEqual"/>
-					</ByValueCondition>
-				</Condition>
-			</ConditionGroup>
-		</StopTrigger>
-	</Storyboard>
+    <CatalogLocations>
+        <VehicleCatalog>
+            <Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
+        </VehicleCatalog>
+    </CatalogLocations>
+    <RoadNetwork>
+        <LogicFile filepath="../../../resources/xodr/straight_500m.xodr"/>
+    </RoadNetwork>
+    <Entities>
+        <ScenarioObject name="Ego">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="Target">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>
+        </ScenarioObject>
+    </Entities>
+    <Storyboard>
+        <Init>
+            <Actions>
+                <Private entityRef="Ego">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="1" laneId="-1" s="50"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="10"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Target">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="1" laneId="1" s="150"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="15"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                </Private>
+            </Actions>
+        </Init>
+        <Story name="story">
+            <Act name="MyAct">
+                <ManeuverGroup maximumExecutionCount="1" name="MG">
+                    <Actors selectTriggeringEntities="false">
+                        <EntityRef entityRef="Ego"/>
+                    </Actors>
+                    <Maneuver name="Manevuer">
+                        <Event name="Event" priority="overwrite">
+                            <Action name="Action">
+                                <PrivateAction>
+                                    <LongitudinalAction>
+                                        <SpeedAction>
+                                            <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
+                                            <SpeedActionTarget>
+                                                <AbsoluteTargetSpeed value="1.0"/>
+                                            </SpeedActionTarget>
+                                        </SpeedAction>
+                                    </LongitudinalAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="TTC condition" delay="0" conditionEdge="none">
+                                        <ByEntityCondition>
+                                            <TriggeringEntities triggeringEntitiesRule="any">
+                                                <EntityRef entityRef="Ego"/>
+                                            </TriggeringEntities>
+                                            <EntityCondition>
+                                                <TimeToCollisionCondition coordinateSystem="road" freespace="false" relativeDistanceType="longitudinal" rule="lessThan" value="2.5">
+                                                    <TimeToCollisionConditionTarget>
+                                                        <EntityRef entityRef="Target"/>
+                                                    </TimeToCollisionConditionTarget>
+                                                </TimeToCollisionCondition>
+                                            </EntityCondition>
+                                        </ByEntityCondition>
+                                    </Condition>
+                                    <Condition name="Relative lateral distance condition" delay="0" conditionEdge="none">
+                                        <ByEntityCondition>
+                                            <TriggeringEntities triggeringEntitiesRule="any">
+                                                <EntityRef entityRef="Ego"/>
+                                            </TriggeringEntities>
+                                            <EntityCondition>
+                                                <RelativeDistanceCondition coordinateSystem="road" entityRef="Target" freespace="true" relativeDistanceType="lateral" rule="lessThan" value="$LateralDist"/>
+                                            </EntityCondition>
+                                        </ByEntityCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                    </Maneuver>
+                </ManeuverGroup>
+                <StartTrigger/>
+            </Act>
+        </Story>
+        <StopTrigger>
+            <ConditionGroup>
+                <Condition name="StopCondition" delay="0.0" conditionEdge="none">
+                    <ByValueCondition>
+                        <SimulationTimeCondition value="10.0" rule="greaterOrEqual"/>
+                    </ByValueCondition>
+                </Condition>
+            </ConditionGroup>
+        </StopTrigger>
+    </Storyboard>
 </OpenSCENARIO>

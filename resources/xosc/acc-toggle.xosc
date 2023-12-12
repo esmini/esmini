@@ -158,7 +158,7 @@
                         </Event>
                     </Maneuver>
                 </ManeuverGroup>
-                <ManeuverGroup maximumExecutionCount="1" name="TargetChangeSpeedMG" maximumExecutionCount="1">
+                <ManeuverGroup maximumExecutionCount="1" name="TargetChangeSpeedMG">
                     <Actors selectTriggeringEntities="false">
                         <EntityRef entityRef="Target"/>
                     </Actors>
@@ -212,22 +212,21 @@
                     </Maneuver>
                 </ManeuverGroup>
                 <StartTrigger/>
-                <StopTrigger>
-                    <ConditionGroup>
-                        <Condition name="EndOfRoadCondition" delay="0" conditionEdge="rising">
-                            <ByEntityCondition>
-                                <TriggeringEntities triggeringEntitiesRule="any">
-                                    <EntityRef entityRef="Target"/>
-                                </TriggeringEntities>
-                                <EntityCondition>
-                                    <EndOfRoadCondition duration="2.5" rule="greaterThan"/>
-                                </EntityCondition>
-                            </ByEntityCondition>
-                        </Condition>
-                    </ConditionGroup>
-                </StopTrigger>
             </Act>
         </Story>
-        <StopTrigger/>
+        <StopTrigger>
+            <ConditionGroup>
+                <Condition name="EndOfRoadCondition" delay="0" conditionEdge="rising">
+                    <ByEntityCondition>
+                        <TriggeringEntities triggeringEntitiesRule="any">
+                            <EntityRef entityRef="Target"/>
+                        </TriggeringEntities>
+                        <EntityCondition>
+                            <EndOfRoadCondition duration="2.5" rule="greaterThan"/>
+                        </EntityCondition>
+                    </ByEntityCondition>
+                </Condition>
+            </ConditionGroup>
+        </StopTrigger>
     </Storyboard>
 </OpenSCENARIO>

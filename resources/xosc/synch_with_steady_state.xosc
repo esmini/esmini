@@ -163,21 +163,21 @@
                   </Event>
                   <Event name="SyncEvent" priority="overwrite">
                      <Action name="SyncActionTarget">
-						<PrivateAction>
-							<SynchronizeAction masterEntityRef="Ego" >
-								<TargetPositionMaster>
-									<LanePosition roadId="240" laneId="-1" offset="1.5" s="6" />
-								</TargetPositionMaster>    
-								<TargetPosition>
-									<LanePosition roadId="236" laneId="-1" offset="1.5" s="12.5" />
-								</TargetPosition>    
-								<FinalSpeed>
-									<AbsoluteSpeed value="$TargetFinalSpeed" >
+                        <PrivateAction>
+                            <SynchronizeAction masterEntityRef="Ego" >
+                                <TargetPositionMaster>
+                                    <LanePosition roadId="240" laneId="-1" offset="1.5" s="6" />
+                                </TargetPositionMaster>    
+                                <TargetPosition>
+                                    <LanePosition roadId="236" laneId="-1" offset="1.5" s="12.5" />
+                                </TargetPosition>    
+                                <FinalSpeed>
+                                    <AbsoluteSpeed value="$TargetFinalSpeed" >
                                         <TargetDistanceSteadyState distance="10" />
                                     </AbsoluteSpeed>
-								</FinalSpeed>
-							</SynchronizeAction>
-						</PrivateAction>
+                                </FinalSpeed>
+                            </SynchronizeAction>
+                        </PrivateAction>
                      </Action>
                      <StartTrigger>
                         <ConditionGroup>
@@ -202,25 +202,25 @@
                   </Condition>
                </ConditionGroup>
             </StartTrigger>
-            <StopTrigger>
-               <ConditionGroup>
-                   <Condition name="QuitCondition" delay="0" conditionEdge="rising">
-					  <ByEntityCondition>
-						 <TriggeringEntities triggeringEntitiesRule="any">
-							<EntityRef entityRef="Ego"/>
-						 </TriggeringEntities>
-						 <EntityCondition>
-							<ReachPositionCondition tolerance="5.0">
-							   <Position>
-								  <LanePosition roadId="235" laneId="-1" s="30.0"/>
-							   </Position>
-							</ReachPositionCondition>
-						 </EntityCondition>
-					  </ByEntityCondition>		
-			      </Condition>
-               </ConditionGroup>
-			</StopTrigger>
          </Act>
       </Story>
+      <StopTrigger>
+         <ConditionGroup>
+             <Condition name="QuitCondition" delay="0" conditionEdge="rising">
+                <ByEntityCondition>
+                   <TriggeringEntities triggeringEntitiesRule="any">
+                      <EntityRef entityRef="Ego"/>
+                   </TriggeringEntities>
+                   <EntityCondition>
+                      <ReachPositionCondition tolerance="5.0">
+                         <Position>
+                            <LanePosition roadId="235" laneId="-1" s="30.0"/>
+                         </Position>
+                      </ReachPositionCondition>
+                   </EntityCondition>
+                </ByEntityCondition>      
+            </Condition>
+         </ConditionGroup>
+      </StopTrigger>
    </Storyboard>
 </OpenSCENARIO>

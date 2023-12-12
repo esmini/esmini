@@ -131,7 +131,7 @@
                            </Condition>
                         </ConditionGroup>
                      </StartTrigger>
-                  </Event>                  
+                  </Event>
                </Maneuver>
             </ManeuverGroup>
             <StartTrigger>
@@ -143,18 +143,18 @@
                   </Condition>
                </ConditionGroup>
             </StartTrigger>
-            <StopTrigger>
-               <ConditionGroup>
-                  <Condition name="QuitCondition" delay="4" conditionEdge="rising">
-                     <ByValueCondition>
-                        <StoryboardElementStateCondition storyboardElementType="event"
-                                                         storyboardElementRef="Stop event"
-                                                         state="completeState"/>
-                     </ByValueCondition>
-                  </Condition>
-               </ConditionGroup>
-            </StopTrigger>       
         </Act>
       </Story>
+      <StopTrigger>
+         <ConditionGroup>
+            <Condition name="QuitCondition" delay="4" conditionEdge="rising">
+               <ByValueCondition>
+                  <StoryboardElementStateCondition storyboardElementType="event"
+                                                   storyboardElementRef="Stop event"
+                                                   state="completeState"/>
+               </ByValueCondition>
+            </Condition>
+         </ConditionGroup>
+      </StopTrigger>
    </Storyboard>
 </OpenSCENARIO>

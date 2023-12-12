@@ -587,14 +587,6 @@ int ScenarioEngine::step(double deltaSimTime)
                 }
             }
         }
-
-        if ((storyBoard.stop_trigger_ == nullptr || storyBoard.stop_trigger_->conditionGroup_.size() == 0) && storyBoard.story_.size() > 0 &&
-            storyBoard.IsComplete())
-        {
-            // No stop trigger, but all stories are done (if no stories, run forever)
-            LOG("All stories are done, quit now");
-            storyBoard.End(simulationTime_);
-        }
     }
     storyBoard.UpdateState();
 

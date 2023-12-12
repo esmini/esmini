@@ -133,7 +133,7 @@
         </Story>
         <StopTrigger>
             <ConditionGroup>
-                <Condition name="MyActStopCondition" delay="0" conditionEdge="none">
+                <Condition name="MyStopCondition" delay="0" conditionEdge="none">
                     <ByEntityCondition>
                         <TriggeringEntities triggeringEntitiesRule="any">
                             <EntityRef entityRef="Car0"/>
