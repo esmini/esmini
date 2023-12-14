@@ -13,6 +13,8 @@
 #include "CommonMini.hpp"
 #include "OSIReporter.hpp"
 #include <cmath>
+#include <string>
+#include <utility>
 
 #ifdef _WIN32
 #include <winsock2.h>
@@ -507,8 +509,10 @@ int OSIReporter::UpdateOSIStationaryObjectODR(int road_id, roadmanager::RMObject
             osi3::StationaryObject_Classification_Color::StationaryObject_Classification_Color_COLOR_GREY);
 
         osi3::ExternalReference *scource_reference = obj_osi_internal.sobj->add_source_reference();
-        std::string             *identifier_string = scource_reference->add_identifier();
-        identifier_string->assign(object->GetParkingSpace().GetRestrictions());
+        std::string             *identifier        = scource_reference->add_identifier();
+
+        std::string restrictions_string = object->GetParkingSpace().GetRestrictions();
+        identifier->assign(restrictions_string);
     }
     else if (object->GetType() == roadmanager::RMObject::ObjectType::OBSTACLE || object->GetType() == roadmanager::RMObject::ObjectType::RAILING ||
              object->GetType() == roadmanager::RMObject::ObjectType::PATCH || object->GetType() == roadmanager::RMObject::ObjectType::TRAFFICISLAND ||
