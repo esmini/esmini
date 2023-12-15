@@ -1,5 +1,19 @@
 ## esmini release notes
 
+### 2023-12-15 Version 2.35.0
+
+New features:
+- Add support for OpenDRIVE parking space
+- Support string concatenation expressions
+  - see info in [User guide - Expressions/Strings](https://esmini.github.io/#_strings)
+  - example: OvertakerBrakeEvent startTrigger in [cut-in.xosc](https://github.com/esmini/esmini/blob/3a7c3027f93b690bcb49f768a1604dce2cb66d49/resources/xosc/cut-in.xosc#L162-L163)
+
+Improvements and fixes:
+- Don't automatically stop when all acts are done
+  - continue until storyboard stop trigger hits
+  - or, if such is missing, continue "for ever"
+  - Note: This change might require moving act stop trigger to storyboard
+
 ### 2023-12-11 Version 2.34.1
 
 Improvements and fixes:
@@ -45,7 +59,7 @@ Improvements and fixes:
 - Add Python OSI receiver example ([issue #500](https://github.com/esmini/esmini/issues/500))
   - [osi_groundtruth_from_udp.py](https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/code-examples/hello_world/osi_groundtruth_from_udp.py)
 - Add hint how to create .dat files from multiple scenarios in one command
-  - See end of section [User guide - Scenario recording (.dat)](https://esmini.github.io/#_scenario_recording_dat)
+  -- See end of section [User guide - Scenario recording (.dat)](https://esmini.github.io/#_scenario_recording_dat)
 - Align trailer actions with updated concept (candidate for OpenSCENARIO 1.3)
   - Introduce separate actions for connect and disconnect trailer
   - Add parent umbrella action TrailerAction

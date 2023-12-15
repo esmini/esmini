@@ -971,7 +971,8 @@ h and (speed value) evaluates to 0.707106 and 30.55558 respectively
 [discrete]
 ==== Supported expression operators and functions
 
-*Operators*
+[discrete]
+===== Operators
 
 [%autowidth,frame=none,grid=none,cols="1a,1"]
 |===
@@ -993,7 +994,8 @@ h and (speed value) evaluates to 0.707106 and 30.55558 respectively
 
 See https://github.com/esmini/esmini/blob/a53f09d85194509aa9d0c12971b1c73963c21d34/externals/expr/expr.h#L169[expr.h] for complete and updated list.
 
-*Functions*
+[discrete]
+===== Functions
 
 [%autowidth,frame=none,grid=none,cols="1a,1"]
 |===
@@ -1022,7 +1024,8 @@ Following functions are supported by esmini, but not specified in OpenSCENARIO \
 
 See https://github.com/esmini/esmini/blob/c9dc63c45be0dc479c22b78be74d047fc4449e7c/EnvironmentSimulator/Modules/ScenarioEngine/SourceFiles/simple_expr.c#L101[simple_expr.c] for complete and updated list.
 
-*Strings*
+[discrete]
+===== Strings
 
 From v2.35.0 string concatenation is supported. Whenever a string is detected that is netiher an opeator nor a function, the complete expression is treated as a string and '+' (plus) operator will merge surrounding evaluated strings which also can be evaluated parameters.
 

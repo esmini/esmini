@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <OpenSCENARIO>
-    <FileHeader revMajor="1" revMinor="1" date="2023-11-23T10:00:00" description="For checking some initial positions" author="esmini team"/>
+    <FileHeader revMajor="1" revMinor="2" date="2023-11-23T10:00:00" description="For checking some initial positions" author="esmini team"/>
     <ParameterDeclarations>
         <ParameterDeclaration name="ds" parameterType="double" value="5.0" />
     </ParameterDeclarations>
@@ -83,7 +83,7 @@
                     <PrivateAction>
                         <TeleportAction>
                             <Position>
-                                <RoadPosition roadId="1" t="-1.535" offset="0" s="300.0"/>
+                                <RoadPosition roadId="1" t="-1.535" s="300.0"/>
                             </Position>
                         </TeleportAction>
                     </PrivateAction>
@@ -92,7 +92,7 @@
                     <PrivateAction>
                         <TeleportAction>
                             <Position>
-                                <RoadPosition roadId="1" t="1.535" offset="0" s="${300.0 + $ds}">
+                                <RoadPosition roadId="1" t="1.535" s="${300.0 + $ds}">
                                     <Orientation type="relative" h="3.14159"/>
                                 </RoadPosition>
                             </Position>
@@ -124,6 +124,7 @@
                 <ManeuverGroup maximumExecutionCount="1" name="MG">
                     <Actors selectTriggeringEntities="false"/>
                 </ManeuverGroup>
+				<StartTrigger/>
             </Act>
         </Story>
         <StopTrigger/>
