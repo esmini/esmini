@@ -18,7 +18,7 @@ class TestSuite(unittest.TestCase):
 
         # Check some scenario events
         self.assertTrue(re.search('0.010.* CutInActStart == true, 0.0100 > 0.00 edge: none', log)  is not None)
-        self.assertTrue(re.search('\n[789].* BrakeCondition == true, HWT: 0.70 > 0.70, edge rising', log)  is not None)
+        self.assertTrue(re.search('\n7.740: BrakeCondition_HWT_0.7 == true, HWT: 0.70 > 0.70, edge rising', log)  is not None)
         self.assertTrue(re.search('\n21.[678].* StopCondition timer expired at 5.00 seconds', log)  is not None)
 
     def test_ltap_od(self):

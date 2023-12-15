@@ -13,6 +13,7 @@
 // expression implementation is based on https://github.com/zserge/expr
 
 #include "expr.h"
+#include "simple_expr.h"
 
 // Custom function that returns the floor of its argument
 static double round_(struct expr_func* f, vec_expr_t* args, void* c)
@@ -165,20 +166,48 @@ static struct expr_func user_funcs[] = {
     {NULL, NULL, NULL, 0},
 };
 
-double eval_expr(const char* str)
+ExprReturnStruct eval_expr(const char* str)
 {
+    ExprReturnStruct     rs   = {EXPR_RETURN_UNDEFINED, NAN, {0, 0}};
     struct expr_var_list vars = {0};
     struct expr*         e    = expr_create(str, strlen(str), &vars, user_funcs);
-    if (e == 0)
+    if (e == 0 || e->type == OP_UNKNOWN)
     {
-        return NAN;
+        return rs;
     }
-
-    double retval = expr_eval(e);
+    else if (e->type == OP_STR)
+    {
+        rs.type           = EXPR_RETURN_STRING;
+        rs._double        = NAN;
+        rs._string.string = e->param.str.value;
+        rs._string.len    = e->param.str.len;
+    }
+    else
+    {
+        double value = expr_eval(e);
+        if (!isnan(value))
+        {
+            rs.type    = EXPR_RETURN_DOUBLE;
+            rs._double = value;
+        }
+    }
 
     expr_destroy(e, 0);
 
-    return retval;
+    return rs;
+}
+
+void clear_expr_result(ExprReturnStruct* rs)
+{
+    if (rs->_string.string != 0)
+    {
+        if (rs->_string.len == 0)
+        {
+            printf("simple_expr: Warning: clearing an 0 length expression string");
+        }
+        free(rs->_string.string);
+        rs->_string.len = 0;
+    }
 }
 
 #ifdef __cplusplus

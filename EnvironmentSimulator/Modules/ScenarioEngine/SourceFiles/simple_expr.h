@@ -17,12 +17,39 @@ extern "C"
 {
 #endif
 
+    // Repeat type declarations from expr.h
+    // avoid including that module to keep it isolated from static code analysis
+
+    enum expr_return_type
+    {
+        EXPR_RETURN_UNDEFINED,
+        EXPR_RETURN_DOUBLE,
+        EXPR_RETURN_STRING,
+    };
+
+    typedef struct expr_return_struct
+    {
+        enum expr_return_type type;
+        double                _double;
+        struct
+        {
+            char*  string;
+            size_t len;
+        } _string;
+    } ExprReturnStruct;
+
     /**
      * Evaluate expression
-     * @param str Experssion
+     * @param str Expression
      * @return evaluated resulting value as float
      */
-    double eval_expr(const char* str);
+    ExprReturnStruct eval_expr(const char* str);
+
+    /**
+     * Clear allocated data in the result struct
+     * @param rs The result struct
+     */
+    void clear_expr_result(ExprReturnStruct* rs);
 
 #ifdef __cplusplus
 } /* extern "C" */

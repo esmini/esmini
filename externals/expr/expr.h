@@ -17,7 +17,7 @@ extern "C" {
 
 // Portable string copy with enforced null termination
 // size_t = total size of dest buffer including null termination
-static void StrCopy(char* dest, const char* src, size_t size)
+static void expr_str_copy(char* dest, const char* src, size_t size)
 {
     memcpy(dest, src, (unsigned int)(size * sizeof(char)));
     if (size > 0)
@@ -107,6 +107,7 @@ enum expr_type {
   OP_CONST,
   OP_VAR,
   OP_FUNC,
+  OP_STR,
 };
 
 static int prec[] = {0, 1, 1, 1, 2, 2, 2, 2, 3,  3,  4,  4, 5, 5,
@@ -133,6 +134,10 @@ struct expr {
       vec_expr_t args;
       void *context;
     } func;
+    struct {
+      char* value;
+      size_t len;
+    } str;
   } param;
 };
 
@@ -308,13 +313,14 @@ static struct expr_var *expr_var(struct expr_var_list *vars, const char *s,
       return v;
     }
   }
-  v = (struct expr_var *)calloc(1, sizeof(struct expr_var) + len + 1);
+  v = (struct expr_var *)calloc(1, sizeof(struct expr_var));
   if (v == NULL) {
     return NULL; /* allocation failed */
   }
   v->next = vars->head;
   v->value = 0;
-  StrCopy(v->name, s, len + 1);
+  v->name = (char *)calloc(1, len + 1);
+  expr_str_copy(v->name, s, len + 1);
   v->name[len] = '\0';
   vars->head = v;
   return v;
@@ -479,7 +485,11 @@ static int expr_next_token(const char *s, size_t len, int *flags) {
     return i;
   } else if (isfirstvarchr(c)) {
     if ((*flags & EXPR_TWORD) == 0) {
-      return -2; // unexpected word
+#if 1
+      return -6;  // string found
+#else
+      return -2;  // unexpected word
+#endif
     }
     *flags = EXPR_TOP | EXPR_TOPEN | EXPR_TCLOSE;
     while ((isvarchr(c)) && i < len) {
@@ -619,7 +629,10 @@ static struct expr *expr_create(const char *s, size_t len,
   struct expr_var *ev;
   const char *id = NULL;
   size_t idn = 0;
+  int string_found = 0;
   struct expr *result = NULL;
+  char *str_expr = 0;
+  const char *s_orig   = s;
 
   vec_expr_t es = vec_init();
   vec_str_t os = vec_init();
@@ -636,8 +649,15 @@ static struct expr *expr_create(const char *s, size_t len,
   for (;;) {
     int n = expr_next_token(s, len, &flags);
     if (n == 0) {
+      if (idn > 0) {
+        string_found = 1;
+      }
       break;
     } else if (n < 0) {
+      if (n == -6) {
+        string_found = 1;
+        break;
+      }
       goto cleanup;
     }
     const char *tok = s;
@@ -694,8 +714,13 @@ static struct expr *expr_create(const char *s, size_t len,
           goto cleanup; /* invalid function name */
         }
       } else if ((ev = expr_var(vars, id, idn)) != NULL) {
+#if 1  // Support strings instead of variables
+        string_found = 1;
+        break;
+#else  // original code
         vec_push(&es, expr_varref(ev));
         paren = EXPR_PAREN_FORBIDDEN;
+#endif
       }
       id = NULL;
       idn = 0;
@@ -854,26 +879,71 @@ static struct expr *expr_create(const char *s, size_t len,
     paren = paren_next;
   }
 
-  if (idn > 0) {
-    vec_push(&es, expr_varref(expr_var(vars, id, idn)));
-  }
+  if (string_found)
+  {
+    // skip the previous expression brakedown
+    // instead concatenate strings only, leaving the rest of the expression as is
+    str_expr      = (char *)calloc(1, strlen(s_orig) + 1);
+    char *tmp_ptr  = str_expr;
 
-  while (vec_len(&os) > 0) {
-    struct expr_string rest = vec_pop(&os);
-    if (rest.n == 1 && (*rest.s == '(' || *rest.s == ')')) {
-      goto cleanup; // Bad paren
+    for (int i = 0; i < strlen(s_orig); i++)
+    {
+      if (isspace(s_orig[i]))
+      {
+        int found_plus = 0;
+        int j          = i;
+        while (j < strlen(s_orig) && (isspace(s_orig[j]) || s_orig[j] == '+') && s_orig[j] != 0)
+        {
+          found_plus = found_plus || s_orig[j] == '+';
+          j++;
+        }
+        if (found_plus)
+        {
+          i = j;  // skip segment including '+' and trim whitespaces
+        }
+      }
+      *tmp_ptr = s_orig[i];
+      if (s_orig[i] == 0) {
+        break;  // done, found terminating 0
+      }
+      tmp_ptr++;
     }
-    if (expr_bind(rest.s, rest.n, &es) == -1) {
-      goto cleanup;
+  }
+  else
+  {
+    if (idn > 0)
+    {
+        vec_push(&es, expr_varref(expr_var(vars, id, idn)));
+    }
+
+    while (vec_len(&os) > 0) {
+      struct expr_string rest = vec_pop(&os);
+      if (rest.n == 1 && (*rest.s == '(' || *rest.s == ')')) {
+        goto cleanup; // Bad paren
+      }
+      if (expr_bind(rest.s, rest.n, &es) == -1) {
+        goto cleanup;
+      }
     }
   }
 
   result = (struct expr *)calloc(1, sizeof(struct expr));
-  if (result != NULL) {
-    if (vec_len(&es) == 0) {
-      result->type = OP_CONST;
-    } else {
-      *result = vec_pop(&es);
+
+  if (str_expr != 0)
+  {
+      result->param.str.value = str_expr;
+      result->param.str.len   = strlen(str_expr);
+      result->type            = OP_STR;
+      goto cleanup;
+  }
+  else
+  {
+    if (result != NULL) {
+      if (vec_len(&es) == 0) {
+        result->type = OP_CONST;
+      } else {
+        *result = vec_pop(&es);
+      }
     }
   }
 
@@ -915,7 +985,7 @@ static void expr_destroy_args(struct expr *e) {
       }
       free(e->param.func.context);
     }
-  } else if (e->type != OP_CONST && e->type != OP_VAR) {
+  } else if (e->type != OP_CONST && e->type != OP_VAR && e->type != OP_STR) {
     vec_foreach(&e->param.op.args, arg, i) { expr_destroy_args(&arg); }
     vec_free(&e->param.op.args);
   }
@@ -929,6 +999,7 @@ static void expr_destroy(struct expr *e, struct expr_var_list *vars) {
   if (vars != NULL) {
     for (struct expr_var *v = vars->head; v;) {
       struct expr_var *next = v->next;
+      free(v->name);
       free(v);
       v = next;
     }

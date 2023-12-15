@@ -159,7 +159,7 @@
                      </Action>
                      <StartTrigger>
                         <ConditionGroup>
-                           <Condition name="BrakeCondition" delay="0" conditionEdge="rising">
+                           <Condition name="${BrakeCondition_HWT + _ + $HeadwayTime_Brake}" delay="0" conditionEdge="rising">
                               <ByEntityCondition>
                                  <TriggeringEntities triggeringEntitiesRule="any">
                                     <EntityRef entityRef="Ego"/>

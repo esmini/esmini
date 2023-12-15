@@ -397,13 +397,15 @@ static void ReplaceStringInPlace(std::string& subject, const std::string& search
 
 std::string Parameters::ReadAttribute(pugi::xml_node node, std::string attribute_name, bool required)
 {
+    std::string return_value;
+
     if (!strcmp(attribute_name.c_str(), ""))
     {
         if (required)
         {
             LOG_AND_QUIT("Warning: Request to read empty attribute name in XML node %s", node.name());
         }
-        return "";
+        return return_value;
     }
 
     pugi::xml_attribute attr;
@@ -430,14 +432,23 @@ std::string Parameters::ReadAttribute(pugi::xml_node node, std::string attribute
                     ReplaceStringInPlace(expr, "true ", "1 ");
                     ReplaceStringInPlace(expr, "false ", "0 ");
 
-                    double value = eval_expr(expr.c_str());
-                    if (isnan(value))
+                    ExprReturnStruct rs = eval_expr(expr.c_str());
+                    if (rs.type == EXPR_RETURN_UNDEFINED && isnan(rs._double))
                     {
                         LOG_AND_QUIT("Failed to evaluate the expression : % s\n", attr.value());
                     }
 
-                    LOG("Expr %s = %s = %.10lf", attr.value(), expr.c_str(), value);
-                    return std::to_string(value);
+                    if (rs.type == EXPR_RETURN_DOUBLE)
+                    {
+                        LOG("Expr %s = %s = %.10lf", attr.value(), expr.c_str(), rs._double);
+                        return_value = std::to_string(rs._double);
+                    }
+                    else if (rs.type == EXPR_RETURN_STRING)
+                    {
+                        LOG("Expr %s = %s = %s", attr.value(), expr.c_str(), rs._string.string);
+                        return_value = rs._string.string;
+                    }
+                    clear_expr_result(&rs);
                 }
                 else
                 {
@@ -447,12 +458,12 @@ std::string Parameters::ReadAttribute(pugi::xml_node node, std::string attribute
             else
             {
                 // Resolve variable
-                return getParameter(parameterDeclarations_, attr.value());
+                return_value = getParameter(parameterDeclarations_, attr.value());
             }
         }
         else
         {
-            return attr.value();
+            return_value = attr.value();
         }
     }
     else
@@ -463,7 +474,7 @@ std::string Parameters::ReadAttribute(pugi::xml_node node, std::string attribute
         }
     }
 
-    return "";
+    return return_value;
 }
 
 void Parameters::parseParameterDeclarations(pugi::xml_node declarationsNode, OSCParameterDeclarations* pd)

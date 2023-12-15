@@ -406,63 +406,150 @@ TEST(TrajectoryTest, FollowTrajectoryReverse)
     delete se;
 }
 
+TEST(ExpressionTest, ConcatenateStrings)
+{
+    ExprReturnStruct rs;
+
+    rs = eval_expr("2 + 45 + ab c +  5 +   61");
+    EXPECT_EQ(rs.type, EXPR_RETURN_STRING);
+    EXPECT_EQ(rs._string.len, 10);
+    EXPECT_STREQ(rs._string.string, "245ab c561");
+    clear_expr_result(&rs);
+
+    rs = eval_expr("1 + a + 2 * 6");
+    EXPECT_EQ(rs.type, EXPR_RETURN_STRING);
+    EXPECT_EQ(rs._string.len, 7);
+    EXPECT_STREQ(rs._string.string, "1a2 * 6");
+    clear_expr_result(&rs);
+
+    rs = eval_expr("AC/DC 23 + 1 + ABBA * 7");
+    EXPECT_EQ(rs.type, EXPR_RETURN_STRING);
+    EXPECT_EQ(rs._string.len, 17);
+    EXPECT_STREQ(rs._string.string, "AC/DC 231ABBA * 7");
+    clear_expr_result(&rs);
+
+    rs = eval_expr("2 + 4 + a + 5 + 6");
+    EXPECT_EQ(rs.type, EXPR_RETURN_STRING);
+    EXPECT_EQ(rs._string.len, 5);
+    EXPECT_STREQ(rs._string.string, "24a56");
+    clear_expr_result(&rs);
+
+    rs = eval_expr("1 + a + 2");
+    EXPECT_EQ(rs.type, EXPR_RETURN_STRING);
+    EXPECT_EQ(rs._string.len, 3);
+    EXPECT_STREQ(rs._string.string, "1a2");
+    clear_expr_result(&rs);
+
+    rs = eval_expr("ab + cde");
+    EXPECT_EQ(rs.type, EXPR_RETURN_STRING);
+    EXPECT_EQ(rs._string.len, 5);
+    EXPECT_STREQ(rs._string.string, "abcde");
+    clear_expr_result(&rs);
+
+    rs = eval_expr("123 + _cde");
+    EXPECT_EQ(rs.type, EXPR_RETURN_STRING);
+    EXPECT_EQ(rs._string.len, 7);
+    EXPECT_STREQ(rs._string.string, "123_cde");
+    clear_expr_result(&rs);
+
+    rs = eval_expr("_abc + 456");
+    EXPECT_EQ(rs.type, EXPR_RETURN_STRING);
+    EXPECT_EQ(rs._string.len, 7);
+    EXPECT_STREQ(rs._string.string, "_abc456");
+    clear_expr_result(&rs);
+
+    rs = eval_expr("a + 7");
+    EXPECT_EQ(rs.type, EXPR_RETURN_STRING);
+    EXPECT_EQ(rs._string.len, 2);
+    EXPECT_STREQ(rs._string.string, "a7");
+    clear_expr_result(&rs);
+
+    rs = eval_expr("7 + a");
+    EXPECT_EQ(rs.type, EXPR_RETURN_STRING);
+    EXPECT_EQ(rs._string.len, 2);
+    EXPECT_STREQ(rs._string.string, "7a");
+    clear_expr_result(&rs);
+
+    rs = eval_expr("1 + a + 2");
+    EXPECT_EQ(rs.type, EXPR_RETURN_STRING);
+    EXPECT_EQ(rs._string.len, 3);
+    EXPECT_STREQ(rs._string.string, "1a2");
+    clear_expr_result(&rs);
+
+    // missing 1st operand returns nan
+    rs = eval_expr(" + cde");
+    EXPECT_EQ(rs.type, EXPR_RETURN_UNDEFINED);
+    EXPECT_EQ(std::isnan(rs._double), true);
+    clear_expr_result(&rs);
+
+    // missing 2nd operand will still return first string
+    rs = eval_expr("abc + ");
+    EXPECT_EQ(rs.type, EXPR_RETURN_STRING);
+    EXPECT_EQ(rs._string.len, 3);
+    EXPECT_STREQ(rs._string.string, "abc");
+    clear_expr_result(&rs);
+
+    return;
+}
+
 TEST(ExpressionTest, EnsureResult)
 {
-    ASSERT_DOUBLE_EQ(eval_expr("1 + 1"), 2.0);
-    ASSERT_DOUBLE_EQ(eval_expr("5 * 10 + 1"), 51.0);
-    ASSERT_DOUBLE_EQ(eval_expr("5 * (10 + 1)"), 55.0);
-    ASSERT_DOUBLE_EQ(eval_expr("15/3.5"), 15.0 / 3.5);
-    ASSERT_DOUBLE_EQ(eval_expr("15 % 6"), 3.0);
-    ASSERT_DOUBLE_EQ(eval_expr("-15 % 6"), -3.0);
-    ASSERT_DOUBLE_EQ(eval_expr("180 % 360"), 180.0);
-    ASSERT_DOUBLE_EQ(eval_expr("-15 % 360"), -15.0);
-    ASSERT_DOUBLE_EQ(eval_expr("345 % 360"), -15.0);
-    ASSERT_DOUBLE_EQ(eval_expr("-345 % 360"), 15.0);
-    ASSERT_DOUBLE_EQ(eval_expr("705 % 360"), -15.0);
-    ASSERT_DOUBLE_EQ(eval_expr("-705 % 360"), 15.0);
-    ASSERT_DOUBLE_EQ(eval_expr("1 == 1"), 1.0);
-    ASSERT_DOUBLE_EQ(eval_expr("1 == 2"), 0.0);
-    ASSERT_DOUBLE_EQ(eval_expr("(4 == 4) && (10 == 10)"), 1.0);
-    ASSERT_DOUBLE_EQ(eval_expr("4 == 4 && 10 == 10"), 1.0);
-    ASSERT_DOUBLE_EQ(eval_expr("4 == 4 && 9 < 10"), 1.0);
-    ASSERT_DOUBLE_EQ(eval_expr("4 == 4 || 11 == 10"), 1.0);
-    ASSERT_DOUBLE_EQ(eval_expr("4 == 3 || 9 < 8"), 0.0);
-    ASSERT_DOUBLE_EQ(eval_expr("ceil(11.1) == 12"), 1.0);
-    ASSERT_DOUBLE_EQ(eval_expr("round(11.1) == 11"), 1.0);
-    ASSERT_DOUBLE_EQ(eval_expr("floor(11.9) == 11"), 1.0);
-    ASSERT_DOUBLE_EQ(eval_expr("ceil(-11.1) == -11"), 1.0);
-    ASSERT_DOUBLE_EQ(eval_expr("round(-11.1) == -11"), 1.0);
-    ASSERT_DOUBLE_EQ(eval_expr("floor(-11.9) == -12"), 1.0);
-    ASSERT_DOUBLE_EQ(eval_expr("pow(2,3)"), 8.0);
-    ASSERT_DOUBLE_EQ(eval_expr("2**3"), 8.0);
-    ASSERT_DOUBLE_EQ(eval_expr("13.88888888888889 - 1.0"), 12.88888888888889);
-    ASSERT_DOUBLE_EQ(eval_expr("13.88888888888889 - 0.0"), 13.88888888888889);
+    ASSERT_DOUBLE_EQ(eval_expr("1 + 1")._double, 2.0);
+    ASSERT_DOUBLE_EQ(eval_expr("5 + 10 + 1")._double, 16.0);
+    ASSERT_DOUBLE_EQ(eval_expr("5 * 10 + 1")._double, 51.0);
+    ASSERT_DOUBLE_EQ(eval_expr("5 * (10 + 1)")._double, 55.0);
+    ASSERT_DOUBLE_EQ(eval_expr("15/3.5")._double, 15.0 / 3.5);
+    ASSERT_DOUBLE_EQ(eval_expr("15 % 6")._double, 3.0);
+    ASSERT_DOUBLE_EQ(eval_expr("-15 % 6")._double, -3.0);
+    ASSERT_DOUBLE_EQ(eval_expr("180 % 360")._double, 180.0);
+    ASSERT_DOUBLE_EQ(eval_expr("-15 % 360")._double, -15.0);
+    ASSERT_DOUBLE_EQ(eval_expr("345 % 360")._double, -15.0);
+    ASSERT_DOUBLE_EQ(eval_expr("-345 % 360")._double, 15.0);
+    ASSERT_DOUBLE_EQ(eval_expr("705 % 360")._double, -15.0);
+    ASSERT_DOUBLE_EQ(eval_expr("-705 % 360")._double, 15.0);
+    ASSERT_DOUBLE_EQ(eval_expr("1 == 1")._double, 1.0);
+    ASSERT_DOUBLE_EQ(eval_expr("1 == 2")._double, 0.0);
+    ASSERT_DOUBLE_EQ(eval_expr("(4 == 4) && (10 == 10)")._double, 1.0);
+    ASSERT_DOUBLE_EQ(eval_expr("4 == 4 && 10 == 10")._double, 1.0);
+    ASSERT_DOUBLE_EQ(eval_expr("4 == 4 && 9 < 10")._double, 1.0);
+    ASSERT_DOUBLE_EQ(eval_expr("4 == 4 || 11 == 10")._double, 1.0);
+    ASSERT_DOUBLE_EQ(eval_expr("4 == 3 || 9 < 8")._double, 0.0);
+    ASSERT_DOUBLE_EQ(eval_expr("ceil(11.1) == 12")._double, 1.0);
+    ASSERT_DOUBLE_EQ(eval_expr("round(11.1) == 11")._double, 1.0);
+    ASSERT_DOUBLE_EQ(eval_expr("floor(11.9) == 11")._double, 1.0);
+    ASSERT_DOUBLE_EQ(eval_expr("ceil(-11.1) == -11")._double, 1.0);
+    ASSERT_DOUBLE_EQ(eval_expr("round(-11.1) == -11")._double, 1.0);
+    ASSERT_DOUBLE_EQ(eval_expr("floor(-11.9) == -12")._double, 1.0);
+    ASSERT_DOUBLE_EQ(eval_expr("pow(2,3)")._double, 8.0);
+    ASSERT_DOUBLE_EQ(eval_expr("2**3")._double, 8.0);
+    ASSERT_DOUBLE_EQ(eval_expr("13.88888888888889 - 1.0")._double, 12.88888888888889);
+    ASSERT_DOUBLE_EQ(eval_expr("13.88888888888889 - 0.0")._double, 13.88888888888889);
 
     // round returns the integral value that is nearest to x, with halfway cases rounded away from zero.
-    ASSERT_DOUBLE_EQ(eval_expr("round(-2.5)"), -2.0);
-    ASSERT_DOUBLE_EQ(eval_expr("round(-3.5)"), -4.0);
-    ASSERT_DOUBLE_EQ(eval_expr("round(2.5)"), 2.0);
-    ASSERT_DOUBLE_EQ(eval_expr("round(3.5)"), 4.0);
+    ASSERT_DOUBLE_EQ(eval_expr("round(-2.5)")._double, -2.0);
+    ASSERT_DOUBLE_EQ(eval_expr("round(-3.5)")._double, -4.0);
+    ASSERT_DOUBLE_EQ(eval_expr("round(2.5)")._double, 2.0);
+    ASSERT_DOUBLE_EQ(eval_expr("round(3.5)")._double, 4.0);
 
     // additional expressions not specified in OSC <=1.2
     // may not work in other OpenSCENARIO compliant tools
-    EXPECT_DOUBLE_EQ(eval_expr("min(7,7.1)"), 7.0);
-    EXPECT_DOUBLE_EQ(eval_expr("max(7,7.1)"), 7.1);
-    EXPECT_DOUBLE_EQ(eval_expr("min(-7,-7.1)"), -7.1);
-    EXPECT_DOUBLE_EQ(eval_expr("max(-7,-7.1)"), -7.0);
-    EXPECT_DOUBLE_EQ(eval_expr("sign(7)"), 1);
-    EXPECT_DOUBLE_EQ(eval_expr("sign(-7)"), -1);
-    EXPECT_NEAR(eval_expr("sin(1.1)"), 0.89120, 1e-5);
-    EXPECT_NEAR(eval_expr("sin(7.0)"), 0.65698, 1e-5);
-    EXPECT_NEAR(eval_expr("cos(-2.0)"), -0.41614, 1e-5);
-    EXPECT_NEAR(eval_expr("atan(20.0)"), 1.52083, 1e-5);
-    EXPECT_NEAR(eval_expr("atan(-20.0)"), -1.52083, 1e-5);
-    EXPECT_NEAR(eval_expr("asin(0.5)"), 0.523598, 1e-5);
-    EXPECT_NEAR(eval_expr("acos(-0.5)"), 2.09440, 1e-5);
-    EXPECT_NEAR(eval_expr("abs(-0.5)"), 0.5, 1e-5);
-    EXPECT_NEAR(eval_expr("abs(0.5)"), 0.5, 1e-5);
-    EXPECT_NEAR(eval_expr("abs(2.9)"), 2.9, 1e-5);
-    EXPECT_NEAR(eval_expr("abs(-2.9)"), 2.9, 1e-5);
+    EXPECT_DOUBLE_EQ(eval_expr("min(7,7.1)")._double, 7.0);
+    EXPECT_DOUBLE_EQ(eval_expr("max(7,7.1)")._double, 7.1);
+    EXPECT_DOUBLE_EQ(eval_expr("min(-7,-7.1)")._double, -7.1);
+    EXPECT_DOUBLE_EQ(eval_expr("max(-7,-7.1)")._double, -7.0);
+    EXPECT_DOUBLE_EQ(eval_expr("sign(7)")._double, 1);
+    EXPECT_DOUBLE_EQ(eval_expr("sign(-7)")._double, -1);
+    EXPECT_NEAR(eval_expr("sin(1.1)")._double, 0.89120, 1e-5);
+    EXPECT_NEAR(eval_expr("sin(7.0)")._double, 0.65698, 1e-5);
+    EXPECT_NEAR(eval_expr("cos(-2.0)")._double, -0.41614, 1e-5);
+    EXPECT_NEAR(eval_expr("atan(20.0)")._double, 1.52083, 1e-5);
+    EXPECT_NEAR(eval_expr("atan(-20.0)")._double, -1.52083, 1e-5);
+    EXPECT_NEAR(eval_expr("asin(0.5)")._double, 0.523598, 1e-5);
+    EXPECT_NEAR(eval_expr("acos(-0.5)")._double, 2.09440, 1e-5);
+    EXPECT_NEAR(eval_expr("abs(-0.5)")._double, 0.5, 1e-5);
+    EXPECT_NEAR(eval_expr("abs(0.5)")._double, 0.5, 1e-5);
+    EXPECT_NEAR(eval_expr("abs(2.9)")._double, 2.9, 1e-5);
+    EXPECT_NEAR(eval_expr("abs(-2.9)")._double, 2.9, 1e-5);
 }
 
 TEST(OptionsTest, TestOptionHandling)

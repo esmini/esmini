@@ -1022,6 +1022,18 @@ Following functions are supported by esmini, but not specified in OpenSCENARIO \
 
 See https://github.com/esmini/esmini/blob/c9dc63c45be0dc479c22b78be74d047fc4449e7c/EnvironmentSimulator/Modules/ScenarioEngine/SourceFiles/simple_expr.c#L101[simple_expr.c] for complete and updated list.
 
+*Strings*
+
+From v2.35.0 string concatenation is supported. Whenever a string is detected that is netiher an opeator nor a function, the complete expression is treated as a string and '+' (plus) operator will merge surrounding evaluated strings which also can be evaluated parameters.
+
+This can be useful when running permutations of scenarios, where names of actors or storyboard elements can be made unique by including parameters values.
+
+Examples:
+
+`${Event_overtake_ + $ActorName}` -> `Event_overtake_Target4`
+
+`${Event_change_speed_to_ + $Speed}` -> `Event_change_speed_to_110`
+
 === Parameter distributions
 
 Parameter values and distributions can be specified in a separate https://www.asam.net/index.php?eID=dumpFile&t=f&f=4908&token=ae9d9b44ab9257e817072a653b5d5e98ee0babf8#_parameter_value_distribution_file[Parameter value distribution file]. This is a convenient way of running multiple variations, or parameter value permutations, of a single scenario.
