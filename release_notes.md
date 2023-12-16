@@ -1,6 +1,6 @@
 ## esmini release notes
 
-### 2023-12-15 Version 2.35.0
+### 2023-12-16 Version 2.35.0
 
 New features:
 - Add support for OpenDRIVE parking space
@@ -10,9 +10,15 @@ New features:
 
 Improvements and fixes:
 - Don't automatically stop when all acts are done
-  - continue until storyboard stop trigger hits
-  - or, if such is missing, continue "for ever"
+  - continue until storyboard stopTrigger hits
+  - or, if stopTrigger is missing, continue "for ever"
   - Note: This change might require moving act stop trigger to storyboard
+
+Additional information:
+- Due to a mistake leading to master branch out of synch with dev branch and <br>
+  release tag v2.34.1 stuck on dev, it was decided to revert master history back <br>
+  to v2.34.0. This might lead to issues when pulling master. If that happens, resync <br>
+  your local master branch as described in [User guide - Branch strategy](https://esmini.github.io/#_branch_strategy).
 
 ### 2023-12-11 Version 2.34.1
 

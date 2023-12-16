@@ -2768,6 +2768,18 @@ Continuous integration job will be launched for pushed commits on the following 
 
 Pull requests should be targeting the `dev` branch.
 
+Master branch represent the latest released software. It should be in synch with dev.
+
+==== Branch out of synch
+
+`dev` and `master` branches should be in perfect sync, i.e. based on common history. Unfortunately, to keep this true and to avoid messy history and lost tags, branch history might be changed in rare cases. That can lead to local branch clones out of synch. If that is the case, follow these steps to restore sync of your local branch:
+
+1. `git branch backup`  (only needed if you have local commits you want to preserve for later cherry-picking)
+2. `git fetch origin`
+3. `git reset --hard origin/<branch name>`
+
+`<branch name>` might be `master` or `dev`, or whatever branch to be restored.
+
 === Formatting
 
 From esmini v2.30.0 the CI will include formatting checks, in addition to static analysis and tests. The code styles are defined by following schemes:
