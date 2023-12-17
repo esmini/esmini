@@ -54,6 +54,7 @@ void ScenarioEngine::InitScenarioCommon(bool disable_controllers)
     frame_nr_            = 0;
     ghost_mode_          = GhostMode::NORMAL;
     scenarioReader       = new ScenarioReader(&entities_, &catalogs, disable_controllers);
+    injected_actions_    = nullptr;
 }
 
 int ScenarioEngine::InitScenario(std::string oscFilename, bool disable_controllers)
@@ -596,9 +597,20 @@ int ScenarioEngine::step(double deltaSimTime)
     }
 
     // Step any externally injected actions
-    if (serverActions_.NumberOfActions() > 0)
+    if (injected_actions_ && injected_actions_->size() > 0)
     {
-        serverActions_.Step(simulationTime_, deltaSimTime);
+        for (OSCAction* action : *injected_actions_)
+        {
+            if (!action->IsActive())
+            {
+                action->Start(simulationTime_, deltaSimTime);
+            }
+            else
+            {
+                action->Step(simulationTime_, deltaSimTime);
+                action->UpdateState();
+            }
+        }
     }
 
     // This timestep calculation is due to the Ghost vehicle

@@ -14,14 +14,15 @@
 #include <string>
 #include <random>
 
+#include "PlayerServer.hpp"
 #include "ScenarioEngine.hpp"
 #include "RoadManager.hpp"
 #include "CommonMini.hpp"
 #include "Server.hpp"
-#include "ActionServer.hpp"
 #include "playerbase.hpp"
 #include "helpText.hpp"
 #include "OSCParameterDistribution.hpp"
+
 #ifdef _USE_OSG
 #include "viewer.hpp"
 #endif
@@ -57,7 +58,6 @@ ScenarioPlayer::ScenarioPlayer(int argc, char* argv[])
     quit_request         = false;
     threads              = false;
     launch_server        = false;
-    launch_action_server = false;
     fixed_timestep_      = -1.0;
     osi_receiver_addr    = "";
     osi_freq_            = 0;
@@ -69,6 +69,7 @@ ScenarioPlayer::ScenarioPlayer(int argc, char* argv[])
     scenarioEngine       = nullptr;
     osiReporter          = nullptr;
     viewer_              = nullptr;
+    player_server_       = nullptr;
 
 #ifdef _USE_OSG
     viewerState_ = ViewerState::VIEWER_STATE_NOT_STARTED;
@@ -85,9 +86,9 @@ ScenarioPlayer::~ScenarioPlayer()
         StopServer();
     }
 
-    if (launch_action_server)
+    if (opt.GetOptionSet("player_server"))
     {
-        actionserver::StopActionServer();
+        player_server_->Stop();
     }
 
 #ifdef _USE_OSG
@@ -172,13 +173,13 @@ void ScenarioPlayer::Draw()
     }
 }
 
-int ScenarioPlayer::Frame(double timestep_s)
+int ScenarioPlayer::Frame(double timestep_s, bool server_mode)
 {
     static bool messageShown  = false;
     int         retval        = 0;
     double      ghost_solo_dt = 0.05;
 
-    if (!IsPaused())
+    if (!IsPaused() || server_mode)
     {
 #ifdef _USE_OSI
         osiReporter->SetUpdated(false);
@@ -210,29 +211,37 @@ int ScenarioPlayer::Frame(double timestep_s)
         scenarioEngine->mutex_.Unlock();
     }
 
-    Draw();
-
-    if (scenarioEngine->getSimulationTime() > 3600 && !messageShown)
+    if (!server_mode)
     {
-        LOG("Info: Simulation time > 1 hour. Put a stopTrigger for automatic ending");
-        messageShown = true;
+        Draw();
+
+        if (scenarioEngine->getSimulationTime() > 3600 && !messageShown)
+        {
+            LOG("Info: Simulation time > 1 hour. Put a stopTrigger for automatic ending");
+            messageShown = true;
+        }
+
+        if (player_server_)
+        {
+            player_server_->Step();
+        }
     }
 
     return retval;
 }
 
-int ScenarioPlayer::Frame()
+int ScenarioPlayer::Frame(bool server_mode)
 {
     static __int64 time_stamp = 0;
     double         dt;
 
     if ((dt = GetFixedTimestep()) < 0.0)
     {
-        return Frame(SE_getSimTimeStep(time_stamp, minStepSize, maxStepSize));
+        return Frame(SE_getSimTimeStep(time_stamp, minStepSize, maxStepSize), server_mode);
     }
     else
     {
-        return Frame(dt);
+        return Frame(dt, server_mode);
     }
 }
 
@@ -271,7 +280,9 @@ int ScenarioPlayer::ScenarioFrame(double timestep_s, bool keyframe)
         }
 
         if (keyframe)
+        {
             frame_counter_++;
+        }
     }
 
     scenarioEngine->UpdateGhostMode();
@@ -1225,7 +1236,6 @@ int ScenarioPlayer::Init()
     // use an ArgumentParser object to manage the program arguments.
     opt.AddOption("osc", "OpenSCENARIO filename (required) - if path includes spaces, enclose with \"\"", "filename");
     opt.AddOption("aa_mode", "Anti-alias mode=number of multisamples (subsamples, 0=off, 4=default)", "mode");
-    opt.AddOption("action_server", "Launch UDP server for injected actions");
     opt.AddOption("bounding_boxes", "Show entities as bounding boxes (toggle modes on key ',') ");
     opt.AddOption("capture_screen", "Continuous screen capture. Warning: Many jpeg files will be created");
     opt.AddOption(
@@ -1267,7 +1277,9 @@ int ScenarioPlayer::Init()
 #endif
     opt.AddOption("param_dist", "Run variations of the scenario according to specified parameter distribution file", "filename");
     opt.AddOption("param_permutation", "Run specific permutation of parameter distribution", "index (0 .. NumberOfPermutations-1)");
+    opt.AddOption("pause", "Pause simulation after initialization");
     opt.AddOption("path", "Search path prefix for assets, e.g. OpenDRIVE files (multiple occurrences supported)", "path");
+    opt.AddOption("player_server", "Launch UDP server for action/command injection");
 #ifdef _USE_IMPLOT
     opt.AddOption("plot", "Show window with line-plots of interesting data", "mode (asynchronous|synchronous)", "asynchronous");
 #endif
@@ -1433,12 +1445,6 @@ int ScenarioPlayer::Init()
     {
         launch_server = true;
         LOG("Launch server to receive state of external Ego simulator");
-    }
-
-    if (opt.GetOptionSet("action_server"))
-    {
-        launch_action_server = true;
-        LOG("Launch server to receive actions to inject");
     }
 
     for (int index = 0; (arg_str = opt.GetOptionArg("fixed_timestep", index)) != ""; index++)
@@ -1662,10 +1668,12 @@ int ScenarioPlayer::Init()
         StartServer(scenarioEngine);
     }
 
-    if (launch_action_server)
+    if (opt.GetOptionSet("player_server"))
     {
+        LOG("Launch server to receive actions to inject");
+        player_server_ = new PlayerServer(this);
         // Launch UDP server to receive actions from external process
-        actionserver::StartActionServer(scenarioEngine);
+        player_server_->Start();
     }
 
     player_init_semaphore.Set();
@@ -1724,6 +1732,11 @@ int ScenarioPlayer::Init()
     }
 
     Frame(0.0);
+
+    if (opt.GetOptionSet("pause"))
+    {
+        SetState(PlayerState::PLAYER_STATE_PAUSE);
+    }
 
     player_init_semaphore.Release();
 

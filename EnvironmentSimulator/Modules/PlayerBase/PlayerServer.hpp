@@ -20,7 +20,7 @@
 
 #define ESMINI_DEFAULT_ACTION_INPORT 48197
 
-namespace actionserver
+namespace scenarioengine
 {
     enum class UDP_ACTION_TYPE
     {
@@ -28,7 +28,12 @@ namespace actionserver
         SPEED_ACTION       = 1,
         LANE_CHANGE_ACTION = 2,
         LANE_OFFSET_ACTION = 3,
-        NR_OF_ACTIONS      = 3
+        PLAY               = 4,
+        PAUSE              = 5,
+        STEP               = 6,
+        STEP_DT            = 7,
+        QUIT               = 8,
+        NR_OF_ACTIONS      = 9,
     };
 
     struct SpeedActionStruct
@@ -58,6 +63,11 @@ namespace actionserver
         int   transition_shape;  // 0 = cubic, 1 = linear, 2 = sinusoidal, 3 = step
     };
 
+    struct StepDTStruct
+    {
+        float dt;  // timestep in seconds
+    };
+
     struct ActionStruct
     {
         int action_type = 0;
@@ -66,32 +76,43 @@ namespace actionserver
             SpeedActionStruct      speed;
             LaneChangeActionStruct laneChange;
             LaneOffsetActionStruct laneOffset;
+            StepDTStruct           stepDT;
         } message;
     };
 
-    class ServerActions
+    class ScenarioPlayer;  // forward declaration
+
+    class PlayerServer
     {
     public:
-        struct ServerAction
+        PlayerServer(ScenarioPlayer* player)
         {
-            UDP_ACTION_TYPE            type_;
-            scenarioengine::OSCAction* osc_action_;
-        };
+            player_ = player;
+        }
+        ~PlayerServer();
 
-        ~ServerActions();
+        void InjectSpeedAction(SpeedActionStruct& action);
+        void InjectLaneChangeAction(LaneChangeActionStruct& action);
+        void InjectLaneOffsetAction(LaneOffsetActionStruct& action);
 
-        int         AddAction(ServerAction action);
-        void        DeleteAction(int index);
-        int         NumberOfActions();
-        void        Step(double simTime, double dt);
-        std::string Type2Name(UDP_ACTION_TYPE type);
+        int                                      AddAction(OSCAction* action);
+        void                                     DeleteAction(int index);
+        int                                      NumberOfActions();
+        void                                     Step();
+        std::string                              Type2Name(UDP_ACTION_TYPE type);
+        std::vector<scenarioengine::OSCAction*>* GetInjectedActionsPtr()
+        {
+            return &action_;
+        }
+
+        void Start();
+        void Stop();
+
+        SE_Semaphore semaphore_;
 
     private:
-        std::vector<ServerAction> action_;
-        SE_Mutex                  mutex;
+        std::vector<OSCAction*> action_;
+        ScenarioPlayer*         player_;
     };
 
-    void StartActionServer(scenarioengine::ScenarioEngine* scenarioEngine);
-    void StopActionServer();
-
-}  // namespace actionserver
+}  // namespace scenarioengine

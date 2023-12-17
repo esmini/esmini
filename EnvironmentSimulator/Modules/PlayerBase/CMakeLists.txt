@@ -16,7 +16,8 @@ endif(USE_OSG)
 # ############################### Setting target files ###############################################################
 
 set(SOURCES
-    playerbase.cpp)
+    playerbase.cpp
+    PlayerServer.cpp)
 
 if(USE_IMPLOT)
     list(
@@ -27,6 +28,7 @@ endif(USE_IMPLOT)
 
 set(INCLUDES
     playerbase.hpp
+    PlayerServer.hpp
     helpText.hpp)
 
 if(USE_IMPLOT)

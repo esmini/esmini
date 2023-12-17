@@ -24,7 +24,6 @@
 #include "ScenarioGateway.hpp"
 #include "ScenarioReader.hpp"
 #include "RoadNetwork.hpp"
-#include "ActionServer.hpp"
 
 namespace scenarioengine
 {
@@ -54,9 +53,9 @@ namespace scenarioengine
     class ScenarioEngine
     {
     public:
-        Entities                    entities_;
-        std::vector<CollisionPair>  collision_pair_;
-        actionserver::ServerActions serverActions_;
+        Entities                   entities_;
+        std::vector<CollisionPair> collision_pair_;
+        std::vector<OSCAction *>  *injected_actions_;
 
         ScenarioEngine(std::string oscFilename, bool disable_controllers = false);
         ScenarioEngine(const pugi::xml_document &xml_doc, bool disable_controllers = false);
@@ -65,6 +64,10 @@ namespace scenarioengine
         void InitScenarioCommon(bool disable_controllers);
         int  InitScenario(std::string oscFilename, bool disable_controllers = false);
         int  InitScenario(const pugi::xml_document &xml_doc, bool disable_controllers = false);
+        void SetInjectedActionsPtr(std::vector<OSCAction *> *injected_actions)
+        {
+            injected_actions_ = injected_actions;
+        }
 
         /**
         Step scenario, i.e. evaluate conditions and step actions

@@ -15,10 +15,12 @@
 #include <random>
 
 #include "ScenarioEngine.hpp"
+#include "PlayerServer.hpp"
 #include "RoadManager.hpp"
 #include "CommonMini.hpp"
 #include "Server.hpp"
 #include "IdealSensor.hpp"
+
 #ifdef _USE_OSI
 #include "OSIReporter.hpp"
 #endif  // _USE_OSI
@@ -88,9 +90,9 @@ namespace scenarioengine
             return quit_request;
         }
         void SetOSIFileStatus(bool is_on, const char *filename = 0);
-        int  Frame();  // let player calculate actual time step
+        int  Frame(bool server_mode = false);  // let player calculate actual time step
         void Draw();
-        int  Frame(double timestep_s);
+        int  Frame(double timestep_s, bool server_mode = false);
         void ScenarioPostFrame();
         int  ScenarioFrame(double timestep_s, bool keyframe);
         void ShowObjectSensors(bool mode);
@@ -174,6 +176,8 @@ namespace scenarioengine
         CSV_Logger      *CSV_Log;
         ScenarioEngine  *scenarioEngine;
         ScenarioGateway *scenarioGateway;
+        PlayerServer    *player_server_;
+
 #ifdef _USE_OSI
         OSIReporter *osiReporter;
 #else
@@ -219,7 +223,6 @@ namespace scenarioengine
         bool        quit_request;
         bool        threads;
         bool        launch_server;
-        bool        launch_action_server;
         bool        disable_controllers_;
         double      fixed_timestep_;
         int         osi_freq_;
