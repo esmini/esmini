@@ -243,7 +243,6 @@ namespace scenarioengine
 #ifdef SWAP_BYTE_ORDER_ESMINI
             SwapByteOrder((unsigned char *)&buf, 4, sizeof(buf));
 #endif
-            player->player_server_->semaphore_.Wait();
             if (ret >= 0)
             {
                 switch (buf.action_type)
@@ -278,7 +277,6 @@ namespace scenarioengine
                         LOG("Action of type %d not supported", buf.action_type);
                 }
             }
-            player->player_server_->semaphore_.Release();
         }
 
         delete udpServer;

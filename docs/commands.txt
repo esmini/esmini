@@ -4,8 +4,6 @@ Options:
       OpenSCENARIO filename (required) - if path includes spaces, enclose with ""
   --aa_mode <mode>
       Anti-alias mode=number of multisamples (subsamples, 0=off, 4=default)
-  --action_server
-      Launch UDP server for injected actions
   --bounding_boxes
       Show entities as bounding boxes (toggle modes on key ',')
   --capture_screen
@@ -28,8 +26,6 @@ Options:
       Disable controllers
   --disable_log
       Prevent logfile from being created
-  --disable_off_screen
-      Disable esmini off-screen rendering, revert to OSG viewer default handling
   --disable_stdout
       Prevent messages to stdout
   --enforce_generate_model
@@ -56,6 +52,8 @@ Options:
       logfile path/filename, e.g. "../esmini.log" (default: log.txt)
   --osc_str <string>
       OpenSCENARIO XML string
+  --osg_screenshot_event_handler
+      Revert to OSG default jpg images ('c'/'C' keys handler)
   --osi_file [filename]  (default = ground_truth.osi)
       save osi trace file
   --osi_freq <frequence>
@@ -70,8 +68,12 @@ Options:
       Run variations of the scenario according to specified parameter distribution file
   --param_permutation <index (0 .. NumberOfPermutations-1)>
       Run specific permutation of parameter distribution
+  --pause
+      Pause simulation after initialization
   --path <path>
       Search path prefix for assets, e.g. OpenDRIVE files (multiple occurrences supported)
+  --player_server
+      Launch UDP server for action/command injection
   --plot [mode (asynchronous|synchronous)]  (default = asynchronous)
       Show window with line-plots of interesting data
   --record <filename>

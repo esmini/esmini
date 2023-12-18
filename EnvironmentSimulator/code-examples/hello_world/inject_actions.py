@@ -9,7 +9,9 @@
    How to run:
    1. Open two terminals in esmini root folder
    2. From terminal 1, run: ./EnvironmentSimulator/code-examples/hello_world/inject_actions.py
-   3. From terminal 2, run: ./bin/esmini --window 80 80 800 400 --osc ./EnvironmentSimulator/Unittest/xosc/dummy_mw.xosc --action_server
+   3. From terminal 2, run: ./bin/esmini --window 80 80 800 400 --osc ./EnvironmentSimulator/Unittest/xosc/dummy_mw.xosc --player_server
+
+   In step 3, add --pause to make esmini stop after initialization and wait for further commands
 
    Note: Default is local host (127.0.0.1) but IP address can be specified with -a argument, e.g:
        ./EnvironmentSimulator/code-examples/hello_world/inject_actions.py -a 192.168.123.132

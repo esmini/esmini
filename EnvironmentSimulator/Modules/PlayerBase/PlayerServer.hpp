@@ -108,8 +108,6 @@ namespace scenarioengine
         void Start();
         void Stop();
 
-        SE_Semaphore semaphore_;
-
     private:
         std::vector<OSCAction*> action_;
         ScenarioPlayer*         player_;
