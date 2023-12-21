@@ -1447,10 +1447,23 @@ int ScenarioPlayer::Init()
         LOG("Launch server to receive state of external Ego simulator");
     }
 
-    for (int index = 0; (arg_str = opt.GetOptionArg("fixed_timestep", index)) != ""; index++)
+    int index = 0;
+    for (; (arg_str = opt.GetOptionArg("fixed_timestep", index)) != ""; index++)
     {
-        SetFixedTimestep(std::stod(arg_str));
-        LOG("Run simulation decoupled from realtime, with fixed timestep: %.2f", GetFixedTimestep());
+        double timestep = std::stod(arg_str);
+        if (timestep > SMALL_NUMBER)
+        {
+            SetFixedTimestep(std::stod(arg_str));
+            LOG("Run simulation decoupled from realtime, with fixed timestep: %.2f", GetFixedTimestep());
+        }
+        else
+        {
+            LOG("Zero timestep ignored, running in realtime speed");
+        }
+    }
+    if (index == 0)
+    {
+        LOG("No fixed timestep specified - running in realtime speed");
     }
 
     if (opt.GetOptionArg("path") != "")
