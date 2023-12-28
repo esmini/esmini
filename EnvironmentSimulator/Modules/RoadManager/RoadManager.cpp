@@ -11622,7 +11622,7 @@ void NurbsShape::CalculatePolyLine()
 
     if (length_ == 0)
     {
-        throw std::runtime_error("Nurbs zero length - check controlpoints");
+        LOG("Warning: Zero length NURBS");
     }
 
     // Calculate arc length
