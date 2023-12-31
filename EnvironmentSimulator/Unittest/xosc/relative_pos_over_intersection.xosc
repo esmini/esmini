@@ -1,0 +1,292 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSCENARIO>
+    <FileHeader revMajor="1" revMinor="2" date="2023-11-23T10:00:00" description="For checking some initial positions" author="esmini team"/>
+    <ParameterDeclarations/>
+    <CatalogLocations>
+        <VehicleCatalog>
+            <Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
+        </VehicleCatalog>
+    </CatalogLocations>
+    <RoadNetwork>
+        <LogicFile filepath="../../../resources/xodr/fabriksgatan.xodr"/>
+    </RoadNetwork>
+    <Entities>
+        <ScenarioObject name="Ego">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="Target_going_straight">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_blue"/>
+        </ScenarioObject>
+        <ScenarioObject name="Target_going_left">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>
+        </ScenarioObject>
+        <ScenarioObject name="Target_going_right">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_yellow"/>
+        </ScenarioObject>
+        <ScenarioObject name="Target_going_along_Ego_route">
+            <CatalogReference catalogName="VehicleCatalog" entryName="van_red"/>
+        </ScenarioObject>
+        <ScenarioObject name="Target_starting_behind_route">
+            <CatalogReference catalogName="VehicleCatalog" entryName="bus_blue"/>
+        </ScenarioObject>
+    </Entities>
+    <Storyboard>
+        <Init>
+            <Actions>
+                <Private entityRef="Ego">
+                    <PrivateAction>
+                        <RoutingAction>
+                            <AssignRouteAction>
+                                <Route name="Target0_route" closed="false">
+                                    <ParameterDeclarations/>
+                                    <Waypoint routeStrategy="fastest">
+                                        <Position>
+                                            <LanePosition roadId="0" laneId="1" offset="0" s="80.0"/>
+                                        </Position>
+                                    </Waypoint>
+                                    <Waypoint routeStrategy="fastest">
+                                        <Position>
+                                            <LanePosition roadId="2" laneId="1" s="150.0" offset="0.0"/>
+                                        </Position>
+                                    </Waypoint>
+                                </Route>
+                            </AssignRouteAction>
+                        </RoutingAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="0" laneId="1" offset="0" s="50.0"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Target_going_straight">
+                    <PrivateAction>
+                        <RoutingAction>
+                            <AssignRouteAction>
+                                <Route name="Target_going_straight_route" closed="false">
+                                    <ParameterDeclarations/>
+                                    <Waypoint routeStrategy="fastest">
+                                        <Position>
+                                            <LanePosition roadId="0" laneId="1" offset="0" s="100.0"/>
+                                        </Position>
+                                    </Waypoint>
+                                    <Waypoint routeStrategy="fastest">
+                                        <Position>
+                                            <LanePosition roadId="2" laneId="1" s="50.0" offset="0.0"/>
+                                        </Position>
+                                    </Waypoint>
+                                </Route>
+                            </AssignRouteAction>
+                        </RoutingAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <RelativeLanePosition entityRef="Ego" dsLane="100.0" offset="0.0" dLane="0"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Target_going_left">
+                    <PrivateAction>
+                        <RoutingAction>
+                            <AssignRouteAction>
+                                <Route name="Target_going_left_route" closed="false">
+                                    <ParameterDeclarations/>
+                                    <Waypoint routeStrategy="fastest">
+                                        <Position>
+                                            <LanePosition roadId="0" laneId="1" offset="0" s="80.0"/>
+                                        </Position>
+                                    </Waypoint>
+                                    <Waypoint routeStrategy="fastest">
+                                        <Position>
+                                            <LanePosition roadId="3" laneId="1" s="50.0" offset="0.0"/>
+                                        </Position>
+                                    </Waypoint>
+                                </Route>
+                            </AssignRouteAction>
+                        </RoutingAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <RelativeLanePosition dLane="0" dsLane="100.0" entityRef="Ego"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Target_going_right">
+                    <PrivateAction>
+                        <RoutingAction>
+                            <AssignRouteAction>
+                                <Route name="Target_going_right_route" closed="false">
+                                    <ParameterDeclarations/>
+                                    <Waypoint routeStrategy="fastest">
+                                        <Position>
+                                            <LanePosition roadId="0" laneId="1" offset="0" s="100.0"/>
+                                        </Position>
+                                    </Waypoint>
+                                    <Waypoint routeStrategy="fastest">
+                                        <Position>
+                                            <LanePosition roadId="1" laneId="-1" s="10.0" offset="0.0"/>
+                                        </Position>
+                                    </Waypoint>
+                                </Route>
+                            </AssignRouteAction>
+                        </RoutingAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <RelativeRoadPosition dt="0" ds="-70.0" entityRef="Ego"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Target_going_along_Ego_route">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <RelativeLanePosition dLane="0" dsLane="120.0" entityRef="Ego"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Target_starting_behind_route">
+                    <PrivateAction>
+                        <RoutingAction>
+                            <AssignRouteAction>
+                                <Route name="Target_starting_behind_route_route" closed="false">
+                                    <ParameterDeclarations/>
+                                    <Waypoint routeStrategy="fastest">
+                                        <Position>
+                                            <LanePosition roadId="0" laneId="1" offset="0" s="70.0"/>
+                                        </Position>
+                                    </Waypoint>
+                                    <Waypoint routeStrategy="fastest">
+                                        <Position>
+                                            <LanePosition roadId="2" laneId="1" s="70.0" offset="0.0"/>
+                                        </Position>
+                                    </Waypoint>
+                                </Route>
+                            </AssignRouteAction>
+                        </RoutingAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="0" laneId="1" s="80.0"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="2.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                </Private>
+            </Actions>
+        </Init>
+        <Story name="story">
+            <Act name="MyAct">
+                <ManeuverGroup maximumExecutionCount="1" name="MGTarget_going_straight">
+                    <Actors selectTriggeringEntities="false">
+                        <EntityRef entityRef="Target_going_straight"/>
+                    </Actors>
+                    <Maneuver name="ManeuverTarget_going_straight">
+                        <Event name="EventTarget_going_straight" priority="override">
+                            <Action name="AddEntityActionTarget_going_straight">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <RelativeLanePosition entityRef="Ego" dsLane="100.0" offset="3.5" dLane="0"/>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                        </Event>
+                    </Maneuver>
+                </ManeuverGroup>
+                <ManeuverGroup maximumExecutionCount="1" name="MGTarget_going_left">
+                    <Actors selectTriggeringEntities="false">
+                        <EntityRef entityRef="Target_going_left"/>
+                    </Actors>
+                    <Maneuver name="ManeuverTarget_going_left">
+                        <Event name="EventTarget_going_left" priority="override">
+                            <Action name="AddEntityActionTarget_going_left">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <RelativeLanePosition dLane="1" dsLane="100.0" entityRef="Ego"/>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                        </Event>
+                    </Maneuver>
+                </ManeuverGroup>
+                <ManeuverGroup maximumExecutionCount="1" name="MGTarget_going_right">
+                    <Actors selectTriggeringEntities="false">
+                        <EntityRef entityRef="Target_going_right"/>
+                    </Actors>
+                    <Maneuver name="ManeuverTarget_going_right">
+                        <Event name="EventTarget_going_right" priority="override">
+                            <Action name="AddEntityActionTarget_going_right">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <RelativeRoadPosition dt="3.5" ds="-70.0" entityRef="Ego"/>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                        </Event>
+                    </Maneuver>
+                </ManeuverGroup>
+                <ManeuverGroup maximumExecutionCount="1" name="MGTarget_going_along_Ego_route">
+                    <Actors selectTriggeringEntities="false">
+                        <EntityRef entityRef="Target_going_along_Ego_route"/>
+                    </Actors>
+                    <Maneuver name="ManeuverTarget_going_along_Ego_route">
+                        <Event name="EventTarget_going_along_Ego_route" priority="override">
+                            <Action name="AddEntityActionTarget_going_along_Ego_route">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <RelativeLanePosition dLane="0" dsLane="120.0" entityRef="Ego"/>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                        </Event>
+                    </Maneuver>
+                </ManeuverGroup>
+                <StartTrigger>
+                    <ConditionGroup>
+                        <Condition name="ActStartCondition" delay="0" conditionEdge="none">
+                            <ByValueCondition>
+                                <SimulationTimeCondition value="1.0" rule="greaterOrEqual"/>
+                            </ByValueCondition>
+                        </Condition>
+                    </ConditionGroup>
+                </StartTrigger>
+            </Act>
+        </Story>
+        <StopTrigger>
+            <ConditionGroup>
+                <Condition name="StopCondition" delay="0" conditionEdge="none">
+                    <ByValueCondition>
+                        <SimulationTimeCondition value="3.0" rule="greaterOrEqual"/>
+                    </ByValueCondition>
+                </Condition>
+            </ConditionGroup>
+        </StopTrigger>
+    </Storyboard>
+</OpenSCENARIO>

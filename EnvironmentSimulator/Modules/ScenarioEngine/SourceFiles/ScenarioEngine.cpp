@@ -1249,8 +1249,15 @@ void ScenarioEngine::CreateGhostTeleport(Object* obj1, Object* obj2, Event* even
 {
     TeleportAction*        myNewAction = new TeleportAction;
     roadmanager::Position* pos         = new roadmanager::Position();
-    pos->SetOrientationType(roadmanager::Position::OrientationType::ORIENTATION_RELATIVE);
-    pos->SetInertiaPos(0, 0, 0);
+    pos->SetMode(roadmanager::Position::PosModeType::INIT,
+                 roadmanager::Position::PosMode::Z_REL | roadmanager::Position::PosMode::H_REL | roadmanager::Position::PosMode::P_REL |
+                     roadmanager::Position::PosMode::R_REL);
+    pos->relative_.dx = 0.0;
+    pos->relative_.dy = 0.0;
+    pos->relative_.dz = 0.0;
+    pos->relative_.dh = 0.0;
+    pos->relative_.dp = 0.0;
+    pos->relative_.dr = 0.0;
     pos->SetRelativePosition(&obj1->pos_, roadmanager::Position::PositionType::RELATIVE_OBJECT);
 
     myNewAction->position_       = pos;

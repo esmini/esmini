@@ -215,9 +215,9 @@ namespace scenarioengine
         OSCPositionRoute() : OSCPosition(PositionType::ROUTE)
         {
         }
-        OSCPositionRoute(roadmanager::Route *route, double s, int laneId, double laneOffset);
+        OSCPositionRoute(std::shared_ptr<roadmanager::Route> route, double s, int laneId, double laneOffset);
 
-        void SetRoute(roadmanager::Route *route)
+        void SetRoute(std::shared_ptr<roadmanager::Route> route)
         {
             position_.SetRoute(route);
         }

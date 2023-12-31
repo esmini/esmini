@@ -2933,34 +2933,44 @@ namespace roadmanager
         // example: Relative Z, Absolute H, Default R, Current P = Z_REL | H_ABS | R_DEF = 4151 = 0001 0000 0011 0111
         typedef enum
         {
-            Z_SET  = 1,   // 0001
-            Z_DEF  = 1,   // 0001
-            Z_ABS  = 3,   // 0011
-            Z_REL  = 7,   // 0111
-            Z_MASK = 15,  // 1111
-            H_SET  = Z_SET << 4,
-            H_DEF  = Z_DEF << 4,
-            H_ABS  = Z_ABS << 4,
-            H_REL  = Z_REL << 4,
-            H_MASK = Z_MASK << 4,
-            P_SET  = Z_SET << 8,
-            P_DEF  = Z_DEF << 8,
-            P_ABS  = Z_ABS << 8,
-            P_REL  = Z_REL << 8,
-            P_MASK = Z_MASK << 8,
-            R_SET  = Z_SET << 12,
-            R_DEF  = Z_DEF << 12,
-            R_ABS  = Z_ABS << 12,
-            R_REL  = Z_REL << 12,
-            R_MASK = Z_MASK << 12,
+            UNDEFINED = 0,
+            Z_SET     = 1,  // 0001
+            Z_DEFAULT = 1,  // 0001
+            Z_ABS     = 3,  // 0011
+            Z_REL     = 7,  // 0111
+            Z_MASK    = 7,  // 0111
+            H_SET     = Z_SET << 4,
+            H_ABS     = Z_ABS << 4,
+            H_REL     = Z_REL << 4,
+            H_DEFAULT = Z_DEFAULT << 4,
+            H_MASK    = Z_MASK << 4,
+            P_SET     = Z_SET << 8,
+            P_ABS     = Z_ABS << 8,
+            P_REL     = Z_REL << 8,
+            P_DEFAULT = Z_DEFAULT << 8,
+            P_MASK    = Z_MASK << 8,
+            R_SET     = Z_SET << 12,
+            R_DEFAULT = Z_DEFAULT << 12,
+            R_ABS     = Z_ABS << 12,
+            R_REL     = Z_REL << 12,
+            R_MASK    = Z_MASK << 12,
         } PosMode;
 
         // Types of position modes
         enum class PosModeType
         {
-            SET    = 0,  // Used by explicit set functions
-            UPDATE = 1,  // Used by controllers updating the position
-            INIT   = 2   // Indicate mode at initialization, i.e. what components were set (ABS) and not (REL)
+            SET    = 1,  // 0x001 Used by explicit set functions
+            UPDATE = 2,  // 0x010 Used by controllers updating the position
+            INIT   = 4,  // 0x100 Indicate mode at initialization, i.e. what components were set (ABS) and not (REL)
+            ALL    = 7,  // 0x111 Used to set all modes at once
+        };
+
+        // Direction strategy for moving along the s axis
+        enum class MoveDirectionMode
+        {
+            HEADING_DIRECTION = 0,  // based on entity heading
+            ROAD_DIRECTION    = 1,  // reference line s axis
+            LANE_DIRECTION    = 2,  // driving direction
         };
 
         bool CheckBitsEqual(int input, int mask, int bits) const
@@ -3125,7 +3135,13 @@ namespace roadmanager
         @param check_overlapping_roads If true all roads ovlerapping the position will be registered (with some performance penalty)
         @return Non zero return value indicates error of some kind
         */
-        ReturnCode XYZ2TrackPos(double x, double y, double z, bool connectedOnly = false, int roadId = -1, bool check_overlapping_roads = false);
+        ReturnCode XYZ2TrackPos(double x,
+                                double y,
+                                double z,
+                                int    pos_mode                = PosMode::UNDEFINED,
+                                bool   connectedOnly           = false,
+                                int    roadId                  = -1,
+                                bool   check_overlapping_roads = false);
 
         int TeleportTo(Position *pos);
 
@@ -3142,17 +3158,21 @@ namespace roadmanager
             return rel_pos_;
         }
 
-        void ReleaseRelation();
+        void EvaluateRelation(bool release = false);
 
-        int                       SetRoute(Route *route);
-        int                       CalcRoutePosition();
-        const roadmanager::Route *GetRoute() const
+        int          SetRoute(std::shared_ptr<Route> route);
+        int          CalcRoutePosition();
+        const Route *GetRoute() const
         {
-            return route_;
+            return route_.get();
         }
         Route *GetRoute()
         {
-            return route_;
+            return route_.get();
+        }
+        void CopyRouteSharedPtr(Position *position)
+        {
+            route_ = position->route_;
         }
         RMTrajectory *GetTrajectory()
         {
@@ -3324,14 +3344,21 @@ namespace roadmanager
         /**
         Move position along the road network, forward or backward, from the current position
         It will automatically follow connecting lanes between connected roads
-        If reaching a junction, choose way according to specified junctionSelectorAngle
+        If reaching a junction, choose way according to specified junctionSelectorAngle (-1.0 = random)
         @param ds distance to move from current position
         @param dLaneOffset delta lane offset (adding to current position lane offset)
         @param junctionSelectorAngle Desired direction [0:2pi] from incoming road direction (angle = 0), set -1 to randomize
         @param actualDistance Distance considering lateral offset and curvature (true/default) or along centerline (false)
+        @param mode Reference for the s value: driving, heading or route direction. See Position::MoveDirectionMode
+        @param updateRoute Consider and update route info (true) or not (false)
         @return >= 0 on success, < 0 on error. For all codes see esmini roadmanager::Position::enum class ReturnCode
         */
-        ReturnCode MoveAlongS(double ds, double dLaneOffset, double junctionSelectorAngle, bool actualDistance = true);
+        ReturnCode MoveAlongS(double            ds,
+                              double            dLaneOffset,
+                              double            junctionSelectorAngle,
+                              bool              actualDistance,
+                              MoveDirectionMode mode,
+                              bool              updateRoute);
 
         /**
         Move position along the road network, forward or backward, from the current position
@@ -3342,7 +3369,7 @@ namespace roadmanager
         */
         ReturnCode MoveAlongS(double ds, bool actualDistance = true)
         {
-            return MoveAlongS(ds, 0.0, -1.0, actualDistance);
+            return MoveAlongS(ds, 0.0, -1.0, actualDistance, MoveDirectionMode::HEADING_DIRECTION, true);
         }
 
         /**
@@ -3731,16 +3758,6 @@ namespace roadmanager
             return status_;
         }
 
-        void SetOrientationType(OrientationType type)
-        {
-            orientation_type_ = type;
-        }
-
-        OrientationType GetOrientationType() const
-        {
-            return orientation_type_;
-        }
-
         /**
         Set default road alignment for object
         @param type 0=Set (for all explicit set-functions), 1=Update (when object is updated by any controller)
@@ -3785,6 +3802,8 @@ namespace roadmanager
         */
         void SetMode(PosModeType type, int mode);
 
+        void SetModes(int types, int mode);
+
         int GetMode(PosModeType type);
 
         /**
@@ -3802,7 +3821,14 @@ namespace roadmanager
             return snapToLaneTypes_;
         }
 
-        void CopyRMPos(Position *from);
+        /**
+        Copy selected content of another position object
+        basically everything except vel, acc, snap settings and route
+        @param from Position object to copy from
+        @param deep skip (false) or include (true) acc, vel and route, fields true = copy all fields including making a unique copy of any route
+        @return -
+        */
+        void CopyRMPos(const Position *from, bool deep = false);
 
         void PrintTrackPos() const;
         void PrintLanePos() const;
@@ -3863,6 +3889,22 @@ namespace roadmanager
             return direction_mode_;
         }
 
+        // Relative values
+        struct RelativeInfo
+        {
+            double dx     = 0.0;
+            double dy     = 0.0;
+            double dz     = 0.0;
+            double ds     = 0.0;
+            double dt     = 0.0;
+            int    dLane  = 0;
+            double dsLane = 0.0;
+            double offset = 0.0;
+            double dh     = 0.0;
+            double dp     = 0.0;
+            double dr     = 0.0;
+        } relative_;
+
     protected:
         void       Track2Lane();
         ReturnCode Track2XYZ();
@@ -3872,7 +3914,7 @@ namespace roadmanager
         Set position to the border of lane (right border for right lanes, left border for left lanes)
         */
         void       LaneBoundary2Track();
-        void       XYZ2Track();
+        void       XYZ2Track(int mode = PosMode::UNDEFINED);
         ReturnCode SetLongitudinalTrackPos(int track_id, double s);
         bool       EvaluateRoadZHPR();
 
@@ -3887,9 +3929,9 @@ namespace roadmanager
         bool lockOnLane_;  // if true then keep logical lane regardless of lateral position, default false
 
         // route reference
-        Route *route_;  // if pointer set, the position corresponds to a point along (s) the route
+        std::shared_ptr<Route> route_;  // if pointer set, the position corresponds to a point along (s) the route
 
-        // route reference
+        // trajectory reference
         RMTrajectory *trajectory_;  // if pointer set, the position corresponds to a point along (s) the trajectory
 
         // track reference
@@ -3915,9 +3957,8 @@ namespace roadmanager
         PositionType  type_;
         DirectionMode direction_mode_;
 
-        OrientationType orientation_type_;  // Applicable for relative positions
-        int             snapToLaneTypes_;   // Bitmask of lane types that the position will snap to
-        int             status_;            // Bitmask of various states, e.g. off_road, end_of_road
+        int snapToLaneTypes_;  // Bitmask of lane types that the position will snap to
+        int status_;           // Bitmask of various states, e.g. off_road, end_of_road
 
         // inertial reference
         double x_;
@@ -3962,9 +4003,6 @@ namespace roadmanager
 
         // Store roads overlapping position, updated by XYZ2TrackPos()
         std::vector<int> overlapping_roads;  // road ids overlapping position evaluated by XYZ2TrackPos()
-
-        int  orientationSetMask;  // use values from OrientationSetMask
-        bool zSet;                // indicates whether z was explicitly set
     };
 
     // A route is a sequence of positions, at least one per road along the route
@@ -3981,6 +4019,12 @@ namespace roadmanager
         @return Non zero return value indicates error of some kind
         */
         int AddWaypoint(Position *position);
+
+        /**
+        Return direction Adds a waypoint to the route. One waypoint per road. At most one junction between waypoints.
+        @param position A regular position created with road, lane or world coordinates
+        @return Non zero return value indicates error of some kind
+        */
         int GetWayPointDirection(int index);
 
         void        setName(std::string name);
@@ -4043,11 +4087,22 @@ namespace roadmanager
 
         Position::ReturnCode CopySFractionOfLength(Position *pos);
 
+        void CopyFrom(Route &route)
+        {
+            *this = route;
+        }
+
+        void CopyTo(Route &route)
+        {
+            route = *this;
+        }
+
         std::vector<Position> scenario_waypoints_;  // contains waypoints defined in .xosc file
         std::vector<Position> minimal_waypoints_;   // used only for the default controllers
         std::vector<Position> all_waypoints_;       // used for user-defined controllers
         std::string           name_;
         bool                  invalid_route_;
+        bool                  active_;
         double                path_s_;
         Position              currentPos_;
         double                length_;

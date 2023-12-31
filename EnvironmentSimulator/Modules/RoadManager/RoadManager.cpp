@@ -6004,7 +6004,6 @@ void Position::Init()
     rel_pos_                = 0;
     direction_mode_         = DirectionMode::ALONG_S;  // Default is along road construction direction
     type_                   = PositionType::NORMAL;
-    orientation_type_       = OrientationType::ORIENTATION_ABSOLUTE;
     snapToLaneTypes_        = Lane::LaneType::LANE_TYPE_ANY_DRIVING;
     status_                 = 0;
     lockOnLane_             = false;
@@ -6019,12 +6018,6 @@ void Position::Init()
     osi_point_idx_       = -1;
     route_               = 0;
     trajectory_          = 0;
-
-    // Assume all values are defined. Set resp. mask value explicitly to zero in order to make it undefined.
-    orientationSetMask = 3;
-
-    // Assume z value defined. Set to zero to make it undefined.
-    zSet = true;
 
     mode_set_    = 0;
     mode_update_ = 0;
@@ -7246,7 +7239,7 @@ typedef struct
     PointStruct* osi_point;  // osi point reference
 } XYZHVertex;
 
-Position::ReturnCode Position::XYZ2TrackPos(double x3, double y3, double z3, bool connectedOnly, int roadId, bool check_overlapping_roads)
+Position::ReturnCode Position::XYZ2TrackPos(double x3, double y3, double z3, int mode, bool connectedOnly, int roadId, bool check_overlapping_roads)
 {
     // Overall method:
     //   1. Iterate over all roads, looking at OSI points of each lane sections center line (lane 0)
@@ -7270,6 +7263,12 @@ Position::ReturnCode Position::XYZ2TrackPos(double x3, double y3, double z3, boo
     double           curvatureAbsMin               = INFINITY;
     bool             closestPointDirectlyConnected = false;
     std::vector<int> overlapping_roads_tmp;
+
+    if (mode == PosMode::UNDEFINED)
+    {
+        // mode "set" is default
+        mode = GetMode(PosModeType::SET);
+    }
 
     if (check_overlapping_roads)
     {
@@ -7892,7 +7891,14 @@ Position::ReturnCode Position::XYZ2TrackPos(double x3, double y3, double z3, boo
         EvaluateRoadZHPR();
     }
 
-    SetHeading(h_);  // update relative heading given world heading (h_) and road heading
+    if ((mode & PosMode::H_MASK) == PosMode::H_REL)
+    {
+        SetHeading(h_road_ + h_relative_);  // update heading wrt relative heading
+    }
+    else
+    {
+        SetHeading(h_);  // update relative heading given world heading (h_) and road heading
+    }
 
     // If on a route, calculate corresponding route position
     if (route_ && route_->IsValid())
@@ -8025,9 +8031,9 @@ void Position::RoadMark2Track()
     }
 }
 
-void Position::XYZ2Track()
+void Position::XYZ2Track(int mode)
 {
-    XYZ2TrackPos(x_, y_, z_);
+    XYZ2TrackPos(x_, y_, z_, mode == PosMode::UNDEFINED ? GetMode(PosModeType::SET) : mode);
 }
 
 Position::ReturnCode Position::SetLongitudinalTrackPos(int track_id, double s)
@@ -8241,13 +8247,13 @@ int Position::TeleportTo(Position* position)
         position->SetRelativePosition(&tmpPos, position->GetType());
     }
 
-    CopyRMPos(position);
-
     if (position->GetRelativePosition() != nullptr)
     {
-        // Resolve any relative positions
-        ReleaseRelation();
+        // Resolve and release any relation
+        position->EvaluateRelation(true);
     }
+
+    CopyRMPos(position);
 
     if (GetRoute())  // on a route
     {
@@ -8545,7 +8551,7 @@ double Position::DistanceToDS(double ds)
         if (curvature * offset > 1.0 - SMALL_NUMBER)
         {
             // Radius not large enough for offset, probably being closer to another road segment
-            XYZ2TrackPos(GetX(), GetY(), GetY(), true);
+            XYZ2TrackPos(GetX(), GetY(), GetY(), PosMode::UNDEFINED, true);
             SetHeadingRelative(GetHRelative());
             curvature = GetCurvature();
             offset    = GetT();
@@ -8557,38 +8563,53 @@ double Position::DistanceToDS(double ds)
     return ds;
 }
 
-Position::ReturnCode Position::MoveAlongS(double ds, double dLaneOffset, double junctionSelectorAngle, bool actualDistance)
+Position::ReturnCode Position::MoveAlongS(double            ds,
+                                          double            dLaneOffset,
+                                          double            junctionSelectorAngle,
+                                          bool              actualDistance,
+                                          MoveDirectionMode mode,
+                                          bool              updateRoute)
 {
     RoadLink*        link      = nullptr;
     int              max_links = 8;  // limit lookahead through junctions/links
     ContactPointType contact_point_type;
     ReturnCode       ret_val = ReturnCode::OK;
     Road*            road    = nullptr;
+    const double     max_ds  = 5.0;
 
+    // find out ds along road s-axis
+    double ds_road = ds;
     if (actualDistance)
     {
-        ds = DistanceToDS(ds);
+        ds_road = DistanceToDS(ds_road);
     }
 
-    if (type_ == PositionType::RELATIVE_LANE)
+    if (mode == MoveDirectionMode::HEADING_DIRECTION)
     {
-        // Create a temporary position to evaluate in relative lane coordinates
-        Position pos = *this->rel_pos_;
+        ds_road = ds_road * (IsAngleForward(GetHRelative()) ? 1 : -1);
+    }
+    else if (mode == MoveDirectionMode::LANE_DIRECTION)
+    {
+        road = GetOpenDrive()->GetRoadById(track_id_);
+        if (road->GetRule() == Road::RoadRule::LEFT_HAND_TRAFFIC)
+        {
+            ds_road = ds_road * SIGN(GetLaneId());
+        }
+        else
+        {
+            ds_road = ds_road * -SIGN(GetLaneId());
+        }
+    }
 
-        // First move position along s
-        pos.MoveAlongS(ds);
+    if (updateRoute && route_ && route_->IsValid())
+    {
+        ReturnCode route_status = MoveRouteDS(ds_road, false);
 
-        // Then move laterally
-        pos.SetLanePos(pos.track_id_, pos.lane_id_ + this->lane_id_, pos.s_, pos.offset_ + this->offset_);
-
-        this->x_ = pos.x_;
-        this->y_ = pos.y_;
-        this->z_ = pos.z_;
-        this->h_ = pos.h_;
-        this->p_ = pos.p_;
-        this->r_ = pos.r_;
-
-        return ret_val;
+        if (route_status != ReturnCode::ERROR_GENERIC && route_status != ReturnCode::ERROR_NOT_ON_ROUTE)
+        {
+            return route_status;
+        }
+        // else, couldn't move alone route - continue as without route
     }
 
     if (GetOpenDrive()->GetNumOfRoads() == 0 || track_idx_ < 0)
@@ -8598,27 +8619,26 @@ Position::ReturnCode Position::MoveAlongS(double ds, double dLaneOffset, double 
     }
 
     double s_stop             = 0;
-    double ds_signed          = ds * (IsAngleForward(GetHRelative()) ? 1 : -1);
     double signed_dLaneOffset = dLaneOffset;
     bool   done               = false;
 
     // move from road to road until ds-value is within road length or maximum of connections has been crossed
     for (int i = 0; done == false && i < max_links; i++)
     {
-        if (s_ + ds_signed > GetOpenDrive()->GetRoadByIdx(track_idx_)->GetLength())
+        if (s_ + ds_road > GetOpenDrive()->GetRoadByIdx(track_idx_)->GetLength())
         {
             // Calculate remaining s-value once we moved to the connected road
-            ds_signed = s_ + ds_signed - GetOpenDrive()->GetRoadByIdx(track_idx_)->GetLength();
-            link      = GetOpenDrive()->GetRoadByIdx(track_idx_)->GetLink(SUCCESSOR);
+            ds_road = s_ + ds_road - GetOpenDrive()->GetRoadByIdx(track_idx_)->GetLength();
+            link    = GetOpenDrive()->GetRoadByIdx(track_idx_)->GetLink(SUCCESSOR);
 
             // register s-value at end of the road, to be used in case of bad connection
             s_stop = GetOpenDrive()->GetRoadByIdx(track_idx_)->GetLength();
         }
-        else if (s_ + ds_signed < 0)
+        else if (s_ + ds_road < 0)
         {
             // Calculate remaining s-value once we moved to the connected road
-            ds_signed = s_ + ds_signed;
-            link      = GetOpenDrive()->GetRoadByIdx(track_idx_)->GetLink(PREDECESSOR);
+            ds_road = s_ + ds_road;
+            link    = GetOpenDrive()->GetRoadByIdx(track_idx_)->GetLink(PREDECESSOR);
 
             // register s-value at end of the road, to be used in case of bad connection
             s_stop = 0;
@@ -8644,12 +8664,12 @@ Position::ReturnCode Position::MoveAlongS(double ds, double dLaneOffset, double 
             // Adjust sign of ds based on connection point
             if (contact_point_type == ContactPointType::CONTACT_POINT_END)
             {
-                ds_signed          = -fabs(ds_signed);
+                ds_road            = -fabs(ds_road);
                 signed_dLaneOffset = -dLaneOffset;
             }
             else
             {
-                ds_signed          = fabs(ds_signed);
+                ds_road            = fabs(ds_road);
                 signed_dLaneOffset = dLaneOffset;
             }
         }
@@ -8658,7 +8678,7 @@ Position::ReturnCode Position::MoveAlongS(double ds, double dLaneOffset, double 
         road = GetOpenDrive()->GetRoadById(track_id_);
 
         Position   pos_save = *this;
-        ReturnCode ret_val2 = SetLanePos(track_id_, lane_id_, s_ + (done ? ds_signed : 0.0), offset_ + signed_dLaneOffset);
+        ReturnCode ret_val2 = SetLanePos(track_id_, lane_id_, s_ + (done ? ds_road : 0.0), offset_ + signed_dLaneOffset);
 
         if (SIGN(lane_id_) != SIGN(pos_save.lane_id_))
         {
@@ -8727,6 +8747,15 @@ Position::ReturnCode Position::MoveAlongS(double ds, double dLaneOffset, double 
         else
         {
             status_ &= ~static_cast<int>(Position::PositionStatusMode::POS_STATUS_END_OF_ROAD);
+        }
+    }
+
+    if (updateRoute && route_ && route_->IsValid())
+    {
+        if (route_->waypoint_idx_ < 0)
+        {
+            // Check if new position is on route
+            CalcRoutePosition();
         }
     }
 
@@ -9046,22 +9075,22 @@ int Position::SetInertiaPosMode(double x, double y, double z, double h, double p
     // Apply default for unspecified modes
     if ((mode & PosMode::Z_SET) == 0)
     {
-        mode = (mode & ~PosMode::Z_MASK) | PosMode::Z_DEF;
+        mode = (mode & ~PosMode::Z_MASK) | PosMode::Z_DEFAULT;
     }
 
     if ((mode & PosMode::H_SET) == 0)
     {
-        mode = (mode & ~PosMode::H_MASK) | PosMode::H_DEF;
+        mode = (mode & ~PosMode::H_MASK) | PosMode::H_DEFAULT;
     }
 
     if ((mode & PosMode::P_SET) == 0)
     {
-        mode = (mode & ~PosMode::P_MASK) | PosMode::P_DEF;
+        mode = (mode & ~PosMode::P_MASK) | PosMode::P_DEFAULT;
     }
 
     if ((mode & PosMode::R_SET) == 0)
     {
-        mode = (mode & ~PosMode::R_MASK) | PosMode::R_DEF;
+        mode = (mode & ~PosMode::R_MASK) | PosMode::R_DEFAULT;
     }
 
     if (updateTrackPos)
@@ -9452,6 +9481,14 @@ void Position::SetMode(PosModeType type, int mode)
 {
     int* mode_ref = nullptr;
 
+    if (type == PosModeType::ALL)
+    {
+        SetMode(PosModeType::INIT, mode);
+        mode_set_    = mode_init_;
+        mode_update_ = mode_init_;
+        return;
+    }
+
     if (type == PosModeType::SET)
     {
         mode_ref = &mode_set_;
@@ -9474,7 +9511,7 @@ void Position::SetMode(PosModeType type, int mode)
     {
         int mask     = PosMode::Z_MASK << i * 4;
         int set_mask = PosMode::Z_SET << i * 4;
-        int def_mask = PosMode::Z_DEF << i * 4;
+        int def_mask = PosMode::Z_DEFAULT << i * 4;
 
         if (mode & set_mask)
         {
@@ -9492,6 +9529,30 @@ void Position::SetMode(PosModeType type, int mode)
     // printf("Mode %s: 0x%X\n", type == PosModeType::SET ? "Set" : "Update", mode);
 
     return;
+}
+
+void Position::SetModes(int types, int mode)
+{
+    if (types == static_cast<int>(PosModeType::ALL))
+    {
+        SetMode(PosModeType::ALL, mode);
+        return;
+    }
+
+    if (types & static_cast<int>(PosModeType::INIT))
+    {
+        SetMode(PosModeType::INIT, mode);
+    }
+
+    if (types & static_cast<int>(PosModeType::SET))
+    {
+        SetMode(PosModeType::SET, mode);
+    }
+
+    if (types & static_cast<int>(PosModeType::UPDATE))
+    {
+        SetMode(PosModeType::UPDATE, mode);
+    }
 }
 
 int Position::GetMode(PosModeType type)
@@ -9526,26 +9587,66 @@ double Position::GetAcc() const
     return SIGN(x) * sqrt(pow(GetAccX(), 2) + pow(GetAccY(), 2));
 }
 
-void Position::CopyRMPos(Position* from)
+void Position::CopyRMPos(const Position* from, bool deep)
 {
-    // Use a temporary pos object to preserve some fields
-    Position tmp_pos = *this;
+    if (this == from)
+    {
+        return;
+    }
 
-    *this            = *from;
-    route_           = tmp_pos.route_;
-    velX_            = tmp_pos.velX_;
-    velY_            = tmp_pos.velY_;
-    velZ_            = tmp_pos.velZ_;
-    accX_            = tmp_pos.accX_;
-    accY_            = tmp_pos.accY_;
-    accZ_            = tmp_pos.accZ_;
-    h_rate_          = tmp_pos.h_rate_;
-    p_rate_          = tmp_pos.p_rate_;
-    r_rate_          = tmp_pos.r_rate_;
-    h_acc_           = tmp_pos.h_acc_;
-    p_acc_           = tmp_pos.p_acc_;
-    r_acc_           = tmp_pos.r_acc_;
-    snapToLaneTypes_ = tmp_pos.snapToLaneTypes_;
+    if (!deep)
+    {
+        // copy only specific fields
+        x_                      = from->x_;
+        y_                      = from->y_;
+        z_                      = from->z_;
+        h_                      = from->h_;
+        p_                      = from->p_;
+        r_                      = from->r_;
+        h_relative_             = from->h_relative_;
+        p_relative_             = from->p_relative_;
+        r_relative_             = from->r_relative_;
+        h_road_                 = from->h_road_;
+        p_road_                 = from->p_road_;
+        r_road_                 = from->r_road_;
+        s_                      = from->s_;
+        t_                      = from->t_;
+        track_id_               = from->track_id_;
+        lane_id_                = from->lane_id_;
+        offset_                 = from->offset_;
+        curvature_              = from->curvature_;
+        elevation_idx_          = from->elevation_idx_;
+        track_idx_              = from->track_idx_;
+        lane_idx_               = from->lane_idx_;
+        geometry_idx_           = from->geometry_idx_;
+        z_road_                 = from->z_road_;
+        z_roadPrim_             = from->z_roadPrim_;
+        z_roadPrimPrim_         = from->z_roadPrimPrim_;
+        z_relative_             = from->z_relative_;
+        h_offset_               = from->h_offset_;
+        lane_section_idx_       = from->lane_section_idx_;
+        osi_point_idx_          = from->osi_point_idx_;
+        roadmarkline_idx_       = from->roadmarkline_idx_;
+        roadmarktype_idx_       = from->roadmarktype_idx_;
+        roadmark_idx_           = from->roadmark_idx_;
+        roadSuperElevationPrim_ = from->roadSuperElevationPrim_;
+    }
+    else
+    {
+        if (route_.get() != nullptr)
+        {
+            // free any old route before copying
+            route_.reset();
+        }
+
+        *this = *from;
+
+        if (from->route_.get() != nullptr)
+        {
+            // make a copy of the route
+            this->route_.reset(from->route_.get());
+        }
+    }
 }
 
 void Position::PrintTrackPos() const
@@ -9611,7 +9712,7 @@ bool Position::IsInJunction() const
 
 int Position::GetNumberOfRoadsOverlapping()
 {
-    XYZ2TrackPos(GetX(), GetY(), GetZ(), false, -1, true);
+    XYZ2TrackPos(GetX(), GetY(), GetZ(), PosMode::UNDEFINED, false, -1, true);
 
     return static_cast<int>(overlapping_roads.size());
 }
@@ -9668,9 +9769,12 @@ int Position::CalcRoutePosition()
     }
 }
 
-int Position::SetRoute(Route* route)
+int Position::SetRoute(std::shared_ptr<Route> route)
 {
-    route_ = route;
+    if (route_.get() != route.get())
+    {
+        route_ = route;
+    }
 
     // Also find out current position in terms of route position
     return CalcRoutePosition();
@@ -9933,7 +10037,14 @@ int Position::GetRoadLaneInfo(RoadLaneInfo* data) const
 
 int Position::GetRoadLaneInfo(double lookahead_distance, RoadLaneInfo* data, LookAheadMode lookAheadMode) const
 {
-    Position target(*this);  // Make a copy of current position
+    Position target;  // Make a copy of current position
+    target.CopyRMPos(this, false);
+
+    Route route_backup;
+    if (GetRoute())
+    {
+        route_->CopyTo(route_backup);
+    }
 
     if (lookAheadMode == LookAheadMode::LOOKAHEADMODE_AT_ROAD_CENTER)
     {
@@ -9949,13 +10060,18 @@ int Position::GetRoadLaneInfo(double lookahead_distance, RoadLaneInfo* data, Loo
 
     if (fabs(lookahead_distance) > SMALL_NUMBER)
     {
-        if ((int)target.MoveAlongS(lookahead_distance, 0.0, 0.0) < 0)
+        if ((int)target.MoveAlongS(lookahead_distance, 0.0, 0.0, true, MoveDirectionMode::HEADING_DIRECTION, true) < 0)
         {
             return -1;
         }
     }
 
     target.GetRoadLaneInfo(data);
+
+    if (GetRoute())
+    {
+        route_->CopyFrom(route_backup);
+    }
 
     return 0;
 }
@@ -10006,13 +10122,15 @@ Position::ReturnCode Position::GetProbeInfo(double lookahead_distance, RoadProbe
     {
         return ReturnCode::ERROR_GENERIC;
     }
-    Position target(*this);  // Make a copy of current position
+    Position target;  // Make a copy of current position
+    Route    route_backup;
 
-    Route saveRoute;
-    if (this->route_)
+    if (route_)
     {
-        saveRoute = *this->route_;  // Preserve route
+        route_->CopyTo(route_backup);
     }
+
+    target.CopyRMPos(this, false);
 
     if (lookAheadMode == LookAheadMode::LOOKAHEADMODE_AT_ROAD_CENTER)
     {
@@ -10028,14 +10146,12 @@ Position::ReturnCode Position::GetProbeInfo(double lookahead_distance, RoadProbe
 
     if (fabs(lookahead_distance) > SMALL_NUMBER)
     {
-        if (target.route_ && target.route_->IsValid())
-        {
-            retval = target.MoveRouteDS(lookahead_distance, lookAheadMode == LookAheadMode::LOOKAHEADMODE_AT_LANE_CENTER);
-        }
-        else
-        {
-            retval = target.MoveAlongS(lookahead_distance, 0.0, 0.0, lookAheadMode == LookAheadMode::LOOKAHEADMODE_AT_LANE_CENTER);
-        }
+        retval = target.MoveAlongS(lookahead_distance,
+                                   0.0,
+                                   0.0,
+                                   lookAheadMode == LookAheadMode::LOOKAHEADMODE_AT_LANE_CENTER,
+                                   Position::MoveDirectionMode::HEADING_DIRECTION,
+                                   true);
     }
 
     if (retval != ReturnCode::ERROR_GENERIC)
@@ -10043,9 +10159,9 @@ Position::ReturnCode Position::GetProbeInfo(double lookahead_distance, RoadProbe
         CalcProbeTarget(&target, data);
     }
 
-    if (this->route_)
+    if (route_)
     {
-        *this->route_ = saveRoute;  // Restore route
+        route_->CopyFrom(route_backup);
     }
 
     return retval;
@@ -10063,21 +10179,11 @@ Position::ReturnCode Position::GetProbeInfo(Position* target_pos, RoadProbeInfo*
 
 int Position::GetTrackId() const
 {
-    if (rel_pos_ && rel_pos_ != this && (type_ == PositionType::RELATIVE_LANE || type_ == PositionType::RELATIVE_ROAD))
-    {
-        return rel_pos_->GetTrackId();
-    }
-
     return track_id_;
 }
 
 int Position::GetJunctionId() const
 {
-    if (rel_pos_ && rel_pos_ != this && (type_ == PositionType::RELATIVE_LANE || type_ == PositionType::RELATIVE_ROAD))
-    {
-        return rel_pos_->GetJunctionId();
-    }
-
     Road* road = GetOpenDrive()->GetRoadByIdx(track_idx_);
     if (road)
     {
@@ -10089,36 +10195,6 @@ int Position::GetJunctionId() const
 
 int Position::GetLaneId() const
 {
-    if (rel_pos_ && rel_pos_ != this && type_ == PositionType::RELATIVE_LANE)
-    {
-        if (GetTrackId() >= 0)
-        {
-            Road* road = GetRoadById(GetTrackId());
-            if (road != nullptr)
-            {
-                if (GetDirectionMode() == DirectionMode::ALONG_LANE)
-                {
-                    // Consider road rule (left hand or right hand traffic)
-                    if ((IsAngleForward(rel_pos_->GetHRelative()) &&
-                         (rel_pos_->GetLaneId() < 0 && road->GetRule() == Road::RoadRule::RIGHT_HAND_TRAFFIC)) ||
-                        (!IsAngleForward(rel_pos_->GetHRelative()) &&
-                         (rel_pos_->GetLaneId() > 0 && road->GetRule() == Road::RoadRule::LEFT_HAND_TRAFFIC)))
-                    {
-                        return GetRelativeLaneId(rel_pos_->GetLaneId(), lane_id_);  // along road s axis
-                    }
-                    else
-                    {
-                        return GetRelativeLaneId(rel_pos_->GetLaneId(), -lane_id_);  // opposite side
-                    }
-                }
-                else
-                {
-                    return GetRelativeLaneId(rel_pos_->GetLaneId(), lane_id_);  // do not consider driving direction
-                }
-            }
-        }
-    }
-
     return lane_id_;
 }
 
@@ -10176,400 +10252,61 @@ int Position::GetLaneGlobalId() const
 
 double Position::GetS() const
 {
-    if (rel_pos_ && rel_pos_ != this && (type_ == PositionType::RELATIVE_LANE || type_ == PositionType::RELATIVE_ROAD))
-    {
-        // Adjust delta lane heading to road direction also considering traffic rule (left/right hand traffic)
-        if (GetTrackId() >= 0)
-        {
-            Road* road = GetRoadById(GetTrackId());
-            if (road != nullptr)
-            {
-                if (GetDirectionMode() == DirectionMode::ALONG_LANE)
-                {
-                    if (IsAngleForward(rel_pos_->GetHRelative()))
-                    {
-                        return rel_pos_->GetS() + s_;  // along s
-                    }
-                    else
-                    {
-                        return rel_pos_->GetS() - s_;  // opposite side
-                    }
-                }
-                else
-                {
-                    return rel_pos_->GetS() + s_;  // along s
-                }
-            }
-        }
-    }
-
     return s_;
 }
 
 double Position::GetT() const
 {
-    if (rel_pos_ && rel_pos_ != this && type_ == PositionType::RELATIVE_ROAD)
-    {
-        return rel_pos_->GetT() + t_;
-    }
-
     return t_;
 }
 
 double Position::GetOffset() const
 {
-    if (rel_pos_ && rel_pos_ != this && type_ == PositionType::RELATIVE_LANE)
-    {
-        if (GetDirectionMode() == DirectionMode::ALONG_LANE)
-        {
-            return rel_pos_->GetDrivingDirectionRelativeRoad() * offset_;
-        }
-    }
-
     return offset_;
 }
 
 double Position::GetX() const
 {
-    if (!rel_pos_ || rel_pos_ == this)
-    {
-        return x_;
-    }
-    else if (type_ == PositionType::RELATIVE_OBJECT)
-    {
-        return rel_pos_->GetX() + x_ * cos(rel_pos_->GetH()) - y_ * sin(rel_pos_->GetH());
-    }
-    else if (type_ == PositionType::RELATIVE_WORLD)
-    {
-        return x_ + rel_pos_->GetX();
-    }
-    else if (type_ == PositionType::RELATIVE_LANE || type_ == PositionType::RELATIVE_ROAD)
-    {
-        // Create a temporary position to evaluate in relative lane coordinates
-        Position pos = *this->rel_pos_;
-
-        // If valid road ID, then move laterally
-        if (pos.GetTrackId() != -1)
-        {
-            pos.SetLanePos(pos.GetTrackId(), pos.GetLaneId() + lane_id_, pos.GetS() + s_, pos.GetOffset() + offset_);
-        }
-
-        return pos.GetX();
-    }
-    else
-    {
-        LOG("Unexpected PositionType: %d", type_);
-    }
-
     return x_;
 }
 
 double Position::GetY() const
 {
-    if (!rel_pos_ || rel_pos_ == this)
-    {
-        return y_;
-    }
-    else if (type_ == PositionType::RELATIVE_OBJECT)
-    {
-        return rel_pos_->GetY() + y_ * cos(rel_pos_->GetH()) + x_ * sin(rel_pos_->GetH());
-    }
-    else if (type_ == PositionType::RELATIVE_WORLD)
-    {
-        return y_ + rel_pos_->GetY();
-    }
-    else if (type_ == PositionType::RELATIVE_LANE || type_ == PositionType::RELATIVE_ROAD)
-    {
-        // Create a temporary position to evaluate in relative lane coordinates
-        Position pos = *this->rel_pos_;
-
-        // If valid road ID, then move laterally
-        if (pos.GetTrackId() != -1)
-        {
-            pos.SetLanePos(pos.GetTrackId(), pos.GetLaneId() + lane_id_, pos.GetS() + s_, pos.GetOffset() + offset_);
-        }
-
-        return pos.GetY();
-    }
-    else
-    {
-        LOG("Unexpected PositionType: %d", type_);
-    }
-
     return y_;
 }
 
 double Position::GetZ() const
 {
-    if (!rel_pos_ || rel_pos_ == this)
-    {
-        return z_;
-    }
-    else if (type_ == PositionType::RELATIVE_OBJECT || type_ == PositionType::RELATIVE_WORLD)
-    {
-        return z_ + rel_pos_->GetZ();
-    }
-    else if (type_ == PositionType::RELATIVE_LANE || type_ == PositionType::RELATIVE_ROAD)
-    {
-        // Create a temporary position to evaluate in relative lane coordinates
-        Position pos = *this->rel_pos_;
-
-        // If valid road ID, then move laterally
-        if (pos.GetTrackId() != -1)
-        {
-            pos.SetLanePos(pos.GetTrackId(), pos.GetLaneId() + lane_id_, pos.GetS() + s_, pos.GetOffset() + offset_);
-        }
-
-        return pos.GetZ();
-    }
-    else
-    {
-        LOG("Unexpected PositionType: %d", type_);
-    }
-
     return z_;
 }
 
 double Position::GetH() const
 {
-    if (!rel_pos_ || rel_pos_ == this)
-    {
-        return h_;
-    }
-    else if (type_ == PositionType::RELATIVE_WORLD || type_ == PositionType::RELATIVE_OBJECT)
-    {
-        if (orientation_type_ == OrientationType::ORIENTATION_ABSOLUTE)
-        {
-            return h_;
-        }
-        else
-        {
-            return h_ + rel_pos_->GetH();
-        }
-    }
-    else if (type_ == PositionType::RELATIVE_ROAD)
-    {
-        if (orientation_type_ == OrientationType::ORIENTATION_ABSOLUTE)
-        {
-            return h_;
-        }
-        else
-        {
-            return h_ + GetHRoad();
-        }
-    }
-    else if (type_ == PositionType::RELATIVE_LANE)
-    {
-        if (orientation_type_ == OrientationType::ORIENTATION_ABSOLUTE)
-        {
-            return h_;
-        }
-        else
-        {
-            // Lane coordinate system not fully implemented yet. For now relate heading to the
-            // driving direction of current lane, also considering road rule (right/left hand traffic)
-            if (GetDirectionMode() == DirectionMode::ALONG_LANE)
-            {
-                if (IsAngleForward(rel_pos_->GetHRelative()))
-                {
-                    return h_ + GetRoadH();
-                }
-                else
-                {
-                    return GetAngleInInterval2PI(h_ + M_PI + GetRoadH());
-                }
-            }
-            else
-            {
-                return h_ + GetHRoadInDrivingDirection();
-            }
-        }
-    }
-    else
-    {
-        LOG("Unexpected PositionType: %d", type_);
-    }
-
     return h_;
 }
 
 double Position::GetHRelative() const
 {
-    if (!rel_pos_ || rel_pos_ == this)
-    {
-        return h_relative_;
-    }
-    else if (type_ == PositionType::RELATIVE_WORLD || type_ == PositionType::RELATIVE_OBJECT)
-    {
-        if (orientation_type_ == OrientationType::ORIENTATION_ABSOLUTE)
-        {
-            return h_relative_;
-        }
-        else
-        {
-            return GetAngleInInterval2PI(h_relative_ + rel_pos_->GetHRelative());
-        }
-    }
-    else if (type_ == PositionType::RELATIVE_LANE || type_ == PositionType::RELATIVE_ROAD)
-    {
-        if (orientation_type_ == OrientationType::ORIENTATION_ABSOLUTE)
-        {
-            return h_relative_;
-        }
-        else
-        {
-            return GetAngleInInterval2PI(h_relative_ + GetHRoadInDrivingDirection());
-        }
-    }
-    else
-    {
-        LOG("Unexpected PositionType: %d", type_);
-    }
-
     return h_relative_;
 }
 
 double Position::GetP() const
 {
-    if (!rel_pos_ || rel_pos_ == this)
-    {
-        return p_;
-    }
-    else if (type_ == PositionType::RELATIVE_WORLD || type_ == PositionType::RELATIVE_OBJECT)
-    {
-        if (orientation_type_ == OrientationType::ORIENTATION_ABSOLUTE)
-        {
-            return p_;
-        }
-        else
-        {
-            return GetAngleSum(p_, rel_pos_->GetP());
-        }
-    }
-    else if (type_ == PositionType::RELATIVE_LANE || type_ == PositionType::RELATIVE_ROAD)
-    {
-        if (orientation_type_ == OrientationType::ORIENTATION_ABSOLUTE)
-        {
-            return p_;
-        }
-        else
-        {
-            return GetAngleSum(p_, GetPRoadInDrivingDirection());
-        }
-    }
-    else
-    {
-        LOG("Unexpected PositionType: %d", type_);
-    }
-
     return p_;
 }
 
 double Position::GetPRelative() const
 {
-    if (!rel_pos_ || rel_pos_ == this)
-    {
-        return p_relative_;
-    }
-    else if (type_ == PositionType::RELATIVE_WORLD || type_ == PositionType::RELATIVE_OBJECT)
-    {
-        if (orientation_type_ == OrientationType::ORIENTATION_ABSOLUTE)
-        {
-            return p_relative_;
-        }
-        else
-        {
-            return GetAngleInInterval2PI(p_relative_ + rel_pos_->GetPRelative());
-        }
-    }
-    else if (type_ == PositionType::RELATIVE_LANE || type_ == PositionType::RELATIVE_ROAD)
-    {
-        if (orientation_type_ == OrientationType::ORIENTATION_ABSOLUTE)
-        {
-            return p_relative_;
-        }
-        else
-        {
-            return GetAngleInInterval2PI(p_relative_ + GetPRoadInDrivingDirection());
-        }
-    }
-    else
-    {
-        LOG("Unexpected PositionType: %d", type_);
-    }
-
     return p_relative_;
 }
 
 double Position::GetR() const
 {
-    if (!rel_pos_ || rel_pos_ == this)
-    {
-        return r_;
-    }
-    else if (type_ == PositionType::RELATIVE_WORLD || type_ == PositionType::RELATIVE_OBJECT)
-    {
-        if (orientation_type_ == OrientationType::ORIENTATION_ABSOLUTE)
-        {
-            return r_;
-        }
-        else
-        {
-            return GetAngleSum(r_, rel_pos_->GetR());
-        }
-    }
-    else if (type_ == PositionType::RELATIVE_LANE || type_ == PositionType::RELATIVE_ROAD)
-    {
-        if (orientation_type_ == OrientationType::ORIENTATION_ABSOLUTE)
-        {
-            return r_;
-        }
-        else
-        {
-            return r_;  // road R not implemented yet
-        }
-    }
-    else
-    {
-        LOG("Unexpected PositionType: %d", type_);
-    }
-
     return r_;
 }
 
 double Position::GetRRelative() const
 {
-    if (!rel_pos_ || rel_pos_ == this)
-    {
-        return r_relative_;
-    }
-    else if (type_ == PositionType::RELATIVE_WORLD || type_ == PositionType::RELATIVE_OBJECT)
-    {
-        if (orientation_type_ == OrientationType::ORIENTATION_ABSOLUTE)
-        {
-            return r_relative_;
-        }
-        else
-        {
-            return GetAngleInInterval2PI(r_relative_ + rel_pos_->GetRRelative());
-        }
-    }
-    else if (type_ == PositionType::RELATIVE_LANE || type_ == PositionType::RELATIVE_ROAD)
-    {
-        if (orientation_type_ == OrientationType::ORIENTATION_ABSOLUTE)
-        {
-            return r_relative_;
-        }
-        else
-        {
-            return GetAngleInInterval2PI(r_relative_ + r_road_);
-        }
-    }
-    else
-    {
-        LOG("Unexpected PositionType: %d", type_);
-    }
-
     return r_relative_;
 }
 
@@ -10586,9 +10323,7 @@ int Position::SetRoutePosition(Position* position)
         if (route_->minimal_waypoints_[i].GetTrackId() == position->GetTrackId())  // Same road
         {
             // Update current position
-            Route* tmp = route_;  // save route pointer, copy the
-            *this      = *position;
-            route_     = tmp;
+            CopyRMPos(position, false);
             return 0;
         }
     }
@@ -10633,20 +10368,17 @@ Position::ReturnCode Position::MoveRouteDS(double ds, bool actualDistance)
     //   else if only one entered junction:
     // 	   Sync both to end of incoming road
 
-    if (actualDistance)
-    {
-        ds = DistanceToDS(ds);
-    }
-
     Road* entity_road = Position::GetOpenDrive()->GetRoadById(GetTrackId());
     if (entity_road == nullptr)
     {
         return ReturnCode::ERROR_GENERIC;
     }
 
+    bool same_init_road_and_lane = (route_->GetTrackId() == GetTrackId() && route_->GetLaneId() == GetLaneId());
+
     if (entity_road->GetJunction() > -1)
     {
-        MoveAlongS(ds, false);  // actual distance = false since ds is already adjusted
+        MoveAlongS(ds, 0.0, 0.0, actualDistance, MoveDirectionMode::ROAD_DIRECTION, false);
 
         if (Position::GetOpenDrive()->GetRoadById(GetTrackId())->GetJunction() > -1)
         {
@@ -10661,8 +10393,15 @@ Position::ReturnCode Position::MoveRouteDS(double ds, bool actualDistance)
     }
     else
     {
-        retval = route_->MovePathDS(ds * (IsAngleForward(GetHRelative()) ? 1 : -1));
-        MoveAlongS(ds, false);  // actual distance = false since ds is already adjusted
+        // adjust direction based on route direction relative lane direction
+        // retval = route_->MovePathDS(ds * (IsAngleForward(GetHRelative()) ? 1 : -1));
+
+        retval = route_->MovePathDS(actualDistance ? route_->currentPos_.DistanceToDS(ds) : ds);
+        if (retval == ReturnCode::ERROR_NOT_ON_ROUTE)
+        {
+            return retval;
+        }
+        MoveAlongS(ds, 0.0, 0.0, actualDistance, MoveDirectionMode::ROAD_DIRECTION, false);  // actualDistance = false since ds already adjusted
 
         Road* route_road2  = Position::GetOpenDrive()->GetRoadById(route_->GetTrackId());
         Road* entity_road2 = Position::GetOpenDrive()->GetRoadById(GetTrackId());
@@ -10672,10 +10411,15 @@ Position::ReturnCode Position::MoveRouteDS(double ds, bool actualDistance)
             // Both entity and route pos entered junction, synchronize s-value of positions
             retval = route_->CopySFractionOfLength(this);
         }
-        else if (entity_road2->GetJunction() > -1 || route_road2->GetJunction() > -1)
+        else if (entity_road2->GetJunction() > -1 || route_road2->GetJunction() > -1)  // one of the positions exited junction
         {
-            // Entity and route position not both in junction. Enforce synchronization.
-            XYZ2TrackPos(GetX(), GetY(), GetZ(), false, route_->GetTrackId(), false);
+            // Entity and route position not both in junction. Enforce road id synchronization.
+            XYZ2TrackPos(GetX(), GetY(), GetZ(), PosMode::UNDEFINED, false, route_->GetTrackId(), false);
+        }
+        else if (same_init_road_and_lane && entity_road2 != route_road2)
+        {
+            // paths have diverged, probably due to long ds which caused objects to end up at different paths
+            this->CopyRMPos(route_->GetCurrentPosition());
         }
     }
 
@@ -11140,9 +10884,9 @@ void PolyLineShape::CalculatePolyLine()
         pv->x        = v->pos_.GetX();
         pv->y        = v->pos_.GetY();
         pv->z        = v->pos_.GetZ();
-        pv->h        = (v->pos_.GetMode(Position::PosModeType::SET) & Position::PosMode::H_MASK) == Position::PosMode::H_REL ? 0.0 : v->pos_.GetH();
-        pv->pitch    = (v->pos_.GetMode(Position::PosModeType::SET) & Position::PosMode::P_MASK) == Position::PosMode::P_REL ? 0.0 : v->pos_.GetP();
-        pv->r        = (v->pos_.GetMode(Position::PosModeType::SET) & Position::PosMode::R_MASK) == Position::PosMode::R_REL ? 0.0 : v->pos_.GetR();
+        pv->h        = v->pos_.GetH();
+        pv->pitch    = v->pos_.GetP();
+        pv->r        = v->pos_.GetR();
         pv->road_id  = v->pos_.GetTrackId();
         pv->pos_mode = v->pos_.GetMode(Position::PosModeType::INIT);
         pv->param    = 0.0;  // skip p, s or time is used instead.
@@ -11477,7 +11221,7 @@ void ClothoidSplineShape::Freeze(Position* ref_pos)
 
         if (s->posStart_ != nullptr)
         {
-            s->posStart_->ReleaseRelation();
+            s->posStart_->EvaluateRelation(true);
         }
         else if (i > 0)
         {
@@ -11487,9 +11231,12 @@ void ClothoidSplineShape::Freeze(Position* ref_pos)
         else
         {
             // First segment, no start position specified, use reference position
-            s->posStart_ = new Position();
-            s->posStart_->SetInertiaPos(0.0, 0.0, 0.0, false);
+            s->posStart_               = new Position();
+            s->posStart_->relative_.dx = 0.0;
+            s->posStart_->relative_.dy = 0.0;
+            s->posStart_->relative_.dz = 0.0;
             s->posStart_->SetRelativePosition(ref_pos, Position::PositionType::RELATIVE_OBJECT);
+            s->posStart_->EvaluateRelation(true);
         }
 
         double x = s->posStart_->GetX();
@@ -11611,7 +11358,7 @@ void NurbsShape::CalculatePolyLine()
     double steplen = NURBS_STEPLENGTH;  // steplen in meters
     for (size_t i = 0; i < ctrlPoint_.size(); i++)
     {
-        ctrlPoint_[i].pos_.ReleaseRelation();
+        ctrlPoint_[i].pos_.EvaluateRelation(true);
         ctrlPoint_[i].t_ = knot_[i + order_ - 1];
         if (i > 0)
         {
@@ -11622,7 +11369,7 @@ void NurbsShape::CalculatePolyLine()
 
     if (length_ == 0)
     {
-        LOG("Warning: Zero length NURBS");
+        throw std::runtime_error("Nurbs zero length - check controlpoints");
     }
 
     // Calculate arc length
@@ -12128,7 +11875,7 @@ Position::ReturnCode Position::SetRouteS(double route_s)
 {
     Position::ReturnCode retval = Position::ReturnCode::OK;
 
-    if (!GetRoute())
+    if (!(GetRoute() && GetRoute()->IsValid()))
     {
         return ReturnCode::ERROR_GENERIC;
     }
@@ -12160,87 +11907,181 @@ Position::ReturnCode Position::SetRouteS(double route_s)
     return ReturnCode::OK;
 }
 
-void Position::ReleaseRelation()
+void Position::EvaluateRelation(bool release)
 {
-    // Fetch values and then disconnect
-    double       x       = GetX();
-    double       y       = GetY();
-    double       z       = GetZ();
-    int          roadId  = GetTrackId();
-    int          laneId  = GetLaneId();
-    double       s       = GetS();
-    double       t       = GetT();
-    double       offset  = GetOffset();
-    double       p       = GetP();
-    double       r       = GetR();
-    double       h       = GetH();
-    PositionType type    = type_;
-    Position*    rel_pos = GetRelativePosition();
-
-    SetRelativePosition(0, PositionType::NORMAL);
-
-    if (type == Position::PositionType::RELATIVE_LANE || type == Position::PositionType::RELATIVE_ROAD)
+    if (rel_pos_ == nullptr || rel_pos_ == this || GetType() == Position::PositionType::NORMAL || GetType() == Position::PositionType::ROUTE)
     {
-        // First find target position from reference entity by
-        roadmanager::Road* road = Position::GetOpenDrive()->GetRoadById(roadId);
-        if (road != nullptr && (s > road->GetLength() || s < 0))
-        {
-            // New position is outside current road. Resolve it, starting at s-value of the related base position
-            if (type == Position::PositionType::RELATIVE_LANE)
-            {
-                SetLanePos(roadId, laneId, rel_pos->GetS(), offset);
-            }
-            else
-            {
-                SetTrackPos(roadId, rel_pos->GetS(), t);
-            }
+        // relation not defined or not relevant for the position type
+        return;
+    }
 
-            if (s > road->GetLength())
-            {
-                // passed end of road - move remaining distance
-                MoveAlongS(s - s_);
-            }
-            else if (s < 0)
-            {
-                // passed start of road - move backwards remaining distance
-                MoveAlongS(s_ - s);
-            }
-        }
-        else
+    if (GetType() == Position::PositionType::RELATIVE_LANE || GetType() == Position::PositionType::RELATIVE_ROAD)
+    {
+        Position          pos_tmp;
+        Route             route_backup;
+        shared_ptr<Route> route;
+
+        pos_tmp.CopyRMPos(rel_pos_);  // copy referred entity's route as a starting point
+
+        // Prioritize any own route. Secondly, use a route of referred entity
+        if (route_)
         {
-            if (type == Position::PositionType::RELATIVE_LANE)
-            {
-                SetLanePos(roadId, laneId, s, offset);
-            }
-            else
-            {
-                SetTrackPos(roadId, s, t);
-            }
+            pos_tmp.CopyRouteSharedPtr(this);
+        }
+        else if (rel_pos_->route_)
+        {
+            // instead of deep copy, use actual route of referred object and restore it afterwards
+            rel_pos_->route_->CopyTo(route_backup);
+            pos_tmp.CopyRouteSharedPtr(rel_pos_);
         }
 
-        // Now when road orientation is known, set and update orientation of the position object
-        if (orientation_type_ == OrientationType::ORIENTATION_RELATIVE)
+        if (pos_tmp.route_)
         {
-            if (type == Position::PositionType::RELATIVE_LANE)
+            pos_tmp.CalcRoutePosition();
+        }
+
+        pos_tmp.MoveAlongS(relative_.ds,
+                           0.0,
+                           0.0,
+                           false,
+                           GetDirectionMode() == DirectionMode::ALONG_LANE ? MoveDirectionMode::LANE_DIRECTION : MoveDirectionMode::ROAD_DIRECTION,
+                           true);
+        CopyRMPos(&pos_tmp);
+
+        if (!route_ && rel_pos_->route_)
+        {
+            rel_pos_->route_->CopyFrom(route_backup);  // restore referred entity's route
+        }
+
+        // Find out lane Id
+        int    new_lane_id = GetLaneId();
+        double new_offset  = GetOffset();
+        if (type_ == PositionType::RELATIVE_LANE)
+        {
+            if (GetTrackId() >= 0)
             {
-                // check directionmode, coming from the choice of ds or dsLane
-                // ds -> s is along road, dsLane -> s is along road
-                if (GetDirectionMode() == Position::DirectionMode::ALONG_LANE)
+                Road* road = GetRoadById(GetTrackId());
+                if (road != nullptr)
                 {
-                    SetHeadingRelative(GetAngleSum(GetHRelative(), GetDrivingDirectionRelativeRoad() < 0 ? M_PI : 0.0));
+                    if (GetDirectionMode() == DirectionMode::ALONG_LANE)
+                    {
+                        // Consider road rule (left hand or right hand traffic)
+                        if ((IsAngleForward(rel_pos_->GetHRelative()) &&
+                             (rel_pos_->GetLaneId() < 0 && road->GetRule() == Road::RoadRule::RIGHT_HAND_TRAFFIC)) ||
+                            (!IsAngleForward(rel_pos_->GetHRelative()) &&
+                             (rel_pos_->GetLaneId() > 0 && road->GetRule() == Road::RoadRule::LEFT_HAND_TRAFFIC)))
+                        {
+                            new_lane_id = GetRelativeLaneId(rel_pos_->GetLaneId(), relative_.dLane);  // along road s axis
+                            new_offset  = relative_.offset;
+                        }
+                        else
+                        {
+                            new_lane_id = GetRelativeLaneId(rel_pos_->GetLaneId(), -relative_.dLane);  // opposite s axis
+                            new_offset  = -relative_.offset;
+                        }
+                    }
+                    else
+                    {
+                        new_lane_id = GetRelativeLaneId(rel_pos_->GetLaneId(), relative_.dLane);  // do not consider driving direction
+                        new_offset  = relative_.offset;
+                    }
                 }
             }
         }
+
+        // Update road or lane position now as a first step, do orientation later in a second step
+        if (GetType() == Position::PositionType::RELATIVE_LANE)
+        {
+            SetLanePos(pos_tmp.GetTrackId(), new_lane_id, pos_tmp.GetS(), new_offset);
+        }
         else
         {
-            SetHeading(h);  // restore absolute angle
+            SetTrackPos(pos_tmp.GetTrackId(), pos_tmp.GetS(), pos_tmp.GetT() + relative_.dt);
+        }
+    }
+    else if (GetType() == PositionType::RELATIVE_OBJECT)
+    {
+        // No relation to road or lane, set both position and orientation
+        SetInertiaPosMode(rel_pos_->GetX() + relative_.dx * cos(rel_pos_->GetH()) - relative_.dy * sin(rel_pos_->GetH()),
+                          rel_pos_->GetY() + relative_.dy * cos(rel_pos_->GetH()) + relative_.dx * sin(rel_pos_->GetH()),
+                          rel_pos_->GetZ() + relative_.dz,
+                          ((GetMode(Position::PosModeType::INIT) & Position::PosMode::H_MASK) == Position::PosMode::H_ABS)
+                              ? relative_.dh
+                              : GetAngleSum(relative_.dh, rel_pos_->GetH()),
+                          ((GetMode(Position::PosModeType::INIT) & Position::PosMode::P_MASK) == Position::PosMode::P_ABS)
+                              ? relative_.dr
+                              : GetAngleSum(relative_.dp, rel_pos_->GetP()),
+                          ((GetMode(Position::PosModeType::INIT) & Position::PosMode::R_MASK) == Position::PosMode::R_ABS)
+                              ? relative_.dp
+                              : GetAngleSum(relative_.dr, rel_pos_->GetR()),
+                          Position::PosMode::Z_ABS | Position::PosMode::H_ABS | Position::PosMode::P_ABS | Position::PosMode::R_ABS,
+                          true);
+    }
+    else if (GetType() == PositionType::RELATIVE_WORLD)
+    {
+        // No relation to road or lane, set both position and orientation
+        SetInertiaPosMode(rel_pos_->GetX() + relative_.dx * cos(rel_pos_->GetH()) - relative_.dy * sin(rel_pos_->GetH()),
+                          rel_pos_->GetY() + relative_.dy * cos(rel_pos_->GetH()) + relative_.dx * sin(rel_pos_->GetH()),
+                          rel_pos_->GetZ() + relative_.dz,
+                          ((GetMode(Position::PosModeType::INIT) & Position::PosMode::H_MASK) == Position::PosMode::H_ABS)
+                              ? relative_.dh
+                              : GetAngleSum(relative_.dh, rel_pos_->GetH()),
+                          ((GetMode(Position::PosModeType::INIT) & Position::PosMode::P_MASK) == Position::PosMode::P_ABS)
+                              ? relative_.dr
+                              : GetAngleSum(relative_.dp, rel_pos_->GetP()),
+                          ((GetMode(Position::PosModeType::INIT) & Position::PosMode::R_MASK) == Position::PosMode::R_ABS)
+                              ? relative_.dp
+                              : GetAngleSum(relative_.dr, rel_pos_->GetR()),
+                          Position::PosMode::Z_ABS | Position::PosMode::H_ABS | Position::PosMode::P_ABS | Position::PosMode::R_ABS,
+                          true);
+    }
+
+    // Now when road orientation is known, set and update orientation of the position object
+    if (GetType() == Position::PositionType::RELATIVE_LANE || GetType() == Position::PositionType::RELATIVE_ROAD)
+    {
+        if ((GetMode(Position::PosModeType::INIT) & Position::PosMode::H_MASK) == Position::PosMode::H_REL)
+        {
+            if (GetType() == Position::PositionType::RELATIVE_LANE && GetDirectionMode() == Position::DirectionMode::ALONG_LANE)
+            {
+                // ds -> s is along road, dsLane -> s is along road
+                // for dsLane, adjust relative heading to the driving direction of the lane
+                SetHeadingRelative(GetAngleSum(relative_.dh, GetDrivingDirectionRelativeRoad() < 0 ? M_PI : 0.0));
+            }
+            else
+            {
+                SetHeadingRelative(relative_.dh);
+            }
+        }
+        else
+        {
+            SetHeading(relative_.dh);
         }
 
-        EvaluateZHPR();
+        if ((GetMode(Position::PosModeType::INIT) & Position::PosMode::P_MASK) == Position::PosMode::P_REL)
+        {
+            SetPitchRelative(relative_.dp);
+        }
+        else
+        {
+            SetPitch(relative_.dp);
+        }
+
+        if ((GetMode(Position::PosModeType::INIT) & Position::PosMode::R_MASK) == Position::PosMode::R_REL)
+        {
+            SetPitchRelative(relative_.dr);
+        }
+        else
+        {
+            SetPitch(relative_.dr);
+        }
     }
-    else if (type == PositionType::RELATIVE_OBJECT || type == PositionType::RELATIVE_WORLD)
+
+    EvaluateZHPR();
+
+    if (release)
     {
-        SetInertiaPos(x, y, z, h, p, r, true);
+        // disconnect relation to another object
+        SetRelativePosition(0, PositionType::NORMAL);
     }
 }
 
@@ -12302,7 +12143,8 @@ int Route::AddWaypoint(Position* position)
                     // Find out lane ID of the connecting road and add the waypoint at 1/3 of the road length
                     Position connected_pos;
                     connected_pos.SetLanePos(nodes[i - 1]->fromRoad->GetId(), nodes[i - 1]->fromLaneId, 0.0, 0.0);
-                    connected_pos.MoveAlongS(nodes[i - 1]->fromRoad->GetLength() * 0.33);
+                    connected_pos
+                        .MoveAlongS(nodes[i - 1]->fromRoad->GetLength() * 0.33, 0.0, 0.0, false, Position::MoveDirectionMode::ROAD_DIRECTION, false);
 
                     if (connected_pos.GetLaneId() < 0)
                     {
@@ -12600,7 +12442,12 @@ Position::ReturnCode Route::SetPathS(double s)
             waypoint_idx_ = (int)i;
             currentPos_.SetLanePos(GetWaypoint(waypoint_idx_)->GetTrackId(), GetWaypoint(waypoint_idx_)->GetLaneId(), local_s, 0.0);
 
-            if (s < GetLength())
+            if (s < 0.0)
+            {
+                path_s_ = 0.0;
+                return Position::ReturnCode::ERROR_NOT_ON_ROUTE;
+            }
+            else if (s < GetLength())
             {
                 path_s_ = s;
                 return Position::ReturnCode::OK;
@@ -12751,7 +12598,7 @@ void RMTrajectory::Freeze(FollowingMode following_mode, double current_speed, Po
         for (size_t i = 0; i < pline->vertex_.size(); i++)
         {
             Position* pos = &pline->vertex_[i].pos_;
-            pos->ReleaseRelation();
+            pos->EvaluateRelation(true);
         }
 
         pline->following_mode_ = following_mode;
@@ -12763,7 +12610,7 @@ void RMTrajectory::Freeze(FollowingMode following_mode, double current_speed, Po
     {
         ClothoidShape* clothoid = (ClothoidShape*)shape_.get();
 
-        clothoid->pos_.ReleaseRelation();
+        clothoid->pos_.EvaluateRelation(true);
 
         clothoid->spiral_.SetX(clothoid->pos_.GetX());
         clothoid->spiral_.SetY(clothoid->pos_.GetY());

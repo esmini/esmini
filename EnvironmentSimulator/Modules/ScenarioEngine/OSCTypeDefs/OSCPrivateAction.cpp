@@ -471,7 +471,7 @@ void AcquirePositionAction::Start(double simTime, double dt)
     route_->AddWaypoint(&object_->pos_);
     route_->AddWaypoint(target_position_);
 
-    object_->pos_.SetRoute(route_.get());
+    object_->pos_.SetRoute(route_);
     object_->SetDirtyBits(Object::DirtyBit::ROUTE);
 
     OSCAction::Start(simTime, dt);
@@ -645,16 +645,8 @@ void LatLaneChangeAction::Step(double simTime, double dt)
     double ds     = object_->pos_.DistanceToDS(d_long);                                    // find correspondning delta s along road reference line
 
     roadmanager::Position::ReturnCode retval = roadmanager::Position::ReturnCode::OK;
-    if (object_->pos_.GetRoute() && object_->pos_.GetRoute()->IsValid())
-    {
-        retval = object_->pos_.MoveRouteDS(ds, false);
-        internal_pos_.SetLanePos(object_->pos_.GetTrackId(), object_->pos_.GetLaneId(), object_->pos_.GetS(), object_->pos_.GetOffset());
-    }
-    else
-    {
-        retval = object_->pos_.MoveAlongS(ds, 0.0, -1.0);
-        internal_pos_.SetLanePos(object_->pos_.GetTrackId(), object_->pos_.GetLaneId(), object_->pos_.GetS(), object_->pos_.GetOffset());
-    }
+    retval = object_->pos_.MoveAlongS(ds, 0.0, -1.0, false, roadmanager::Position::MoveDirectionMode::HEADING_DIRECTION, true);
+    internal_pos_.SetLanePos(object_->pos_.GetTrackId(), object_->pos_.GetLaneId(), object_->pos_.GetS(), object_->pos_.GetOffset());
 
     if (object_->pos_.GetRoute())
     {
@@ -1631,6 +1623,8 @@ void TeleportAction::Start(double simTime, double dt)
         return;  // position controlled by tow vehicle
     }
 
+    // consider any assigned route for relative positions
+    position_->CopyRouteSharedPtr(&object_->pos_);
     object_->pos_.TeleportTo(position_);
     if (!object_->TowVehicle() && object_->TrailerVehicle())
     {

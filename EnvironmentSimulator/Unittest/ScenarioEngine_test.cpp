@@ -2601,6 +2601,111 @@ TEST(ClothoidSplineTest, TestTrajectoryShape)
     delete se;
 }
 
+TEST(RelativePositionRouting, TestRelativePositionWithRoutes)
+{
+    ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/relative_pos_over_intersection.xosc");
+    ASSERT_NE(se, nullptr);
+    se->step(0.0);
+    se->prepareGroundTruth(0.0);
+
+    scenarioengine::Entities* entities = &se->entities_;
+    ASSERT_NE(entities, nullptr);
+    ASSERT_EQ(entities->object_.size(), 6);
+
+    // Check car position at given time at end phase of the scenario
+    // Correct position indicates all trajectories have been evaluated correctly
+    EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 40.210, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetY(), -58.518, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetZ(), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[0]->pos_.GetH(), 1.793), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[0]->pos_.GetP(), 0.0), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[0]->pos_.GetR(), 0.0), 0.0, 1E-3);
+
+    EXPECT_NEAR(entities->object_[1]->pos_.GetX(), 19.690, 1E-3);
+    EXPECT_NEAR(entities->object_[1]->pos_.GetY(), 39.310, 1E-3);
+    EXPECT_NEAR(entities->object_[1]->pos_.GetZ(), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[1]->pos_.GetH(), 1.752), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[1]->pos_.GetP(), 0.0), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[1]->pos_.GetR(), 0.0), 0.0, 1E-3);
+
+    EXPECT_NEAR(entities->object_[2]->pos_.GetX(), -16.886, 1E-3);
+    EXPECT_NEAR(entities->object_[2]->pos_.GetY(), -7.189, 1E-3);
+    EXPECT_NEAR(entities->object_[2]->pos_.GetZ(), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[2]->pos_.GetH(), 3.287), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[2]->pos_.GetP(), 0.0), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[2]->pos_.GetR(), 0.0), 0.0, 1E-3);
+
+    EXPECT_NEAR(entities->object_[3]->pos_.GetX(), 44.132, 1E-3);
+    EXPECT_NEAR(entities->object_[3]->pos_.GetY(), -0.885, 1E-3);
+    EXPECT_NEAR(entities->object_[3]->pos_.GetZ(), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[3]->pos_.GetH(), 0.193), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[3]->pos_.GetP(), 0.0), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[3]->pos_.GetR(), 0.0), 0.0, 1E-3);
+
+    EXPECT_NEAR(entities->object_[4]->pos_.GetX(), 16.064, 1E-3);
+    EXPECT_NEAR(entities->object_[4]->pos_.GetY(), 58.981, 1E-3);
+    EXPECT_NEAR(entities->object_[4]->pos_.GetZ(), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[4]->pos_.GetH(), 1.754), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[4]->pos_.GetP(), 0.0), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[4]->pos_.GetR(), 0.0), 0.0, 1E-3);
+
+    EXPECT_NEAR(entities->object_[5]->pos_.GetX(), 46.198, 1E-3);
+    EXPECT_NEAR(entities->object_[5]->pos_.GetY(), -88.003, 1E-3);
+    EXPECT_NEAR(entities->object_[5]->pos_.GetZ(), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[5]->pos_.GetH(), 1.742), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[5]->pos_.GetP(), 0.0), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[5]->pos_.GetR(), 0.0), 0.0, 1E-3);
+
+    while (se->getSimulationTime() < 1.0 + SMALL_NUMBER)
+    {
+        se->step(0.5);
+    }
+
+    EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 40.210, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetY(), -58.518, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetZ(), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[0]->pos_.GetH(), 1.793), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[0]->pos_.GetP(), 0.0), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[0]->pos_.GetR(), 0.0), 0.0, 1E-3);
+
+    EXPECT_NEAR(entities->object_[1]->pos_.GetX(), 16.248, 1E-3);
+    EXPECT_NEAR(entities->object_[1]->pos_.GetY(), 38.678, 1E-3);
+    EXPECT_NEAR(entities->object_[1]->pos_.GetZ(), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[1]->pos_.GetH(), 1.752), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[1]->pos_.GetP(), 0.0), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[1]->pos_.GetR(), 0.0), 0.0, 1E-3);
+
+    EXPECT_NEAR(entities->object_[2]->pos_.GetX(), -16.378, 1E-3);
+    EXPECT_NEAR(entities->object_[2]->pos_.GetY(), -10.652, 1E-3);
+    EXPECT_NEAR(entities->object_[2]->pos_.GetZ(), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[2]->pos_.GetH(), 0.146), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[2]->pos_.GetP(), 0.0), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[2]->pos_.GetR(), 0.0), 0.0, 1E-3);
+
+    EXPECT_NEAR(entities->object_[3]->pos_.GetX(), 43.461, 1E-3);
+    EXPECT_NEAR(entities->object_[3]->pos_.GetY(), 2.550, 1E-3);
+    EXPECT_NEAR(entities->object_[3]->pos_.GetZ(), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[3]->pos_.GetH(), 0.193), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[3]->pos_.GetP(), 0.0), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[3]->pos_.GetR(), 0.0), 0.0, 1E-3);
+
+    EXPECT_NEAR(entities->object_[4]->pos_.GetX(), 16.064, 1E-3);
+    EXPECT_NEAR(entities->object_[4]->pos_.GetY(), 58.981, 1E-3);
+    EXPECT_NEAR(entities->object_[4]->pos_.GetZ(), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[4]->pos_.GetH(), 1.754), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[4]->pos_.GetP(), 0.0), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[4]->pos_.GetR(), 0.0), 0.0, 1E-3);
+
+    EXPECT_NEAR(entities->object_[5]->pos_.GetX(), 46.0261, 1E-3);
+    EXPECT_NEAR(entities->object_[5]->pos_.GetY(), -87.017, 1E-3);
+    EXPECT_NEAR(entities->object_[5]->pos_.GetZ(), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[5]->pos_.GetH(), 1.744), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[5]->pos_.GetP(), 0.0), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[5]->pos_.GetR(), 0.0), 0.0, 1E-3);
+
+    delete se;
+}
+
 // Uncomment to print log output to console
 // #define LOG_TO_CONSOLE
 

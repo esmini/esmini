@@ -117,29 +117,7 @@ void Object::SetStandStill(bool state, double time)
 
 Position::ReturnCode Object::MoveAlongS(double ds, bool actualDistance)
 {
-    Position::ReturnCode ret_val = Position::ReturnCode::OK;
-
-    if (pos_.GetRoute() && pos_.GetRoute()->IsValid())
-    {
-        if (pos_.GetRoute()->waypoint_idx_ < 0)
-        {
-            // Not on route (yet?). Move along s using standard method.
-            ret_val = pos_.MoveAlongS(ds, 0.0, GetJunctionSelectorAngle(), actualDistance);
-
-            // Then check if we reached the route
-            pos_.GetRoute()->SetTrackS(pos_.GetTrackId(), pos_.GetS());
-        }
-        else
-        {
-            ret_val = pos_.MoveRouteDS(ds, actualDistance);
-        }
-    }
-    else
-    {
-        ret_val = pos_.MoveAlongS(ds, 0.0, GetJunctionSelectorAngle(), actualDistance);
-    }
-
-    return ret_val;
+    return pos_.MoveAlongS(ds, 0.0, GetJunctionSelectorAngle(), actualDistance, Position::MoveDirectionMode::HEADING_DIRECTION, true);
 }
 
 int Object::GetAssignedControllerType()
@@ -736,7 +714,7 @@ int Object::FreeSpaceDistancePointRoadLane(double x, double y, double* latDist, 
         pos[j] = pos_;
         pos[j].SetRoute(0);  // don't mess with the route of the original position object
         // Map bounding box points to road coordinates, consider only roads reachable from current position
-        if (static_cast<int>(pos[j].XYZ2TrackPos(vertices[j][0], vertices[j][1], 0, true)) < 0)
+        if (static_cast<int>(pos[j].XYZ2TrackPos(vertices[j][0], vertices[j][1], 0, roadmanager::Position::PosMode::UNDEFINED, true)) < 0)
         {
             return -1;
         }
@@ -861,7 +839,8 @@ int Object::FreeSpaceDistanceObjectRoadLane(Object* target, PositionDiff* posDif
 
             // Map XY points to road coordinates, but consider only roads reachable from point
             pos[i][j] = pos_;
-            if (static_cast<int>(pos[i][j].XYZ2TrackPos(vertices[i][j][0], vertices[i][j][1], 0, true)) < 0)
+            if (static_cast<int>(pos[i][j].XYZ2TrackPos(vertices[i][j][0], vertices[i][j][1], 0, roadmanager::Position::PosMode::UNDEFINED, true)) <
+                0)
             {
                 return -1;
             }

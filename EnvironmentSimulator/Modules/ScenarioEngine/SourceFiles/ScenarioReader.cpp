@@ -1810,8 +1810,10 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPo
                     {
                         // Parse inline route
                         route.reset(parseOSCRoute(routeRefChild));
-                        if (route == nullptr)
+                        if (route.get() == nullptr)
+                        {
                             LOG_AND_QUIT("Failed to resolve inline route");
+                        }
                     }
                     else if (routeRefChildName == "CatalogReference")
                     {
@@ -1828,6 +1830,10 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPo
                         {
                             // Make a new instance from catalog entry
                             route.reset(parseOSCRoute(entry->GetNode()));
+                            if (route.get() == nullptr)
+                            {
+                                LOG_AND_QUIT("Failed to resolve catalog route");
+                            }
                         }
                         else
                         {
@@ -2792,8 +2798,8 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                         if (assignRouteChild.name() == std::string("Route"))
                         {
                             AssignRouteAction *action_follow_route = new AssignRouteAction;
-                            action_follow_route->route_            = parseOSCRoute(assignRouteChild);
-                            action                                 = action_follow_route;
+                            action_follow_route->route_.reset(parseOSCRoute(assignRouteChild));
+                            action = action_follow_route;
                         }
                         else if (assignRouteChild.name() == std::string("CatalogReference"))
                         {
@@ -2810,8 +2816,8 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                             if (entry->type_ == CatalogType::CATALOG_ROUTE)
                             {
                                 // Make a new instance from catalog entry
-                                action_assign_route->route_ = parseOSCRoute(entry->GetNode());
-                                action                      = action_assign_route;
+                                action_assign_route->route_.reset(parseOSCRoute(entry->GetNode()));
+                                action = action_assign_route;
                                 break;
                             }
                             else

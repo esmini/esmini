@@ -105,7 +105,7 @@
                                                 <EntityRef entityRef="Car0"/>
                                             </TriggeringEntities>
                                             <EntityCondition>
-                                                <ReachPositionCondition tolerance="1.0">
+                                                <ReachPositionCondition tolerance="1.5">
                                                     <Position>
                                                         <RelativeLanePosition entityRef="Car0">
                                                             <Orientation type="relative" h="0.1"/>
@@ -148,7 +148,10 @@
                             </ReachPositionCondition>
                         </EntityCondition>
                     </ByEntityCondition>
-                </Condition>
+                            <!-- <ByValueCondition> -->
+                                <!-- <SimulationTimeCondition value="10" rule="greaterThan"/> -->
+                            <!-- </ByValueCondition> -->
+                            </Condition>
             </ConditionGroup>
         </StopTrigger>
     </Storyboard>

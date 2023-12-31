@@ -1462,6 +1462,17 @@ followingMode = position will make smoothly transitions at vertex corners.
 
 The application will control and report the motion for the skater. At 5 seconds it will rotate 90 degree and move this way along the road, like riding a hoverboard. Then at 15 seconds it will move one meter up from road surface (z=1 relative road) and also rotate back 90 degrees (heading=0 relative road) and move this way along the road, like on a flyboard. During the complete scenario pitch and roll is set to 0 (absolute value - not aligned to road).
 
+=== Relative positions and routes
+
+For the OpenSCENARIO `RelativeRoadPosition` and `RelativeLanePosition` the `ds` and `dsLane` attributes specifies an offset along the s-axis of the road and lane respectively. In case the offset results in a s-value outside the boundary of the current road, the target location will be searched via connected roads and lanes, even through junctions.
+
+In case the action object (the one being positioned) has been assigned a route, the route will be respected, i.e. the target location will be along the route. If the action object lacks a route, any route of the referenced entity will be respected instead. If neither objects has a route assigned the default routing rules will apply.
+
+In the image below two cars, red and blue, are being positioned by means of `RelativeRoadPosition` or `RelativeLanePosition` with the white car as the reference entity. They have both the same `ds` value, i.e. same longitudinal distance (along s-axis) from the white car. Since the red car has an assigned route, it ends up along that route. The blue car, lacking a route, will end up along the route of the referenced white car.
+
+.Relative positioning with and without own route
+image::relative_position_routing.jpg[]
+
 == Controllers
 
 === Controller concept

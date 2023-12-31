@@ -509,7 +509,8 @@ extern "C"
             roadmanager::Position* pos = &position[static_cast<unsigned int>(handle)];
             if (pos)
             {
-                return static_cast<int>(pos->XYZ2TrackPos(pos->GetX(), pos->GetY(), pos->GetZ(), false, roadId, false));
+                return static_cast<int>(
+                    pos->XYZ2TrackPos(pos->GetX(), pos->GetY(), pos->GetZ(), roadmanager::Position::PosMode::UNDEFINED, false, roadId, false));
             }
         }
 
@@ -565,7 +566,8 @@ extern "C"
 
             if (pos)
             {
-                return static_cast<int>(pos->MoveAlongS(dist, 0.0, junctionSelectorAngle));
+                return static_cast<int>(
+                    pos->MoveAlongS(dist, 0.0, junctionSelectorAngle, true, roadmanager::Position::MoveDirectionMode::HEADING_DIRECTION, true));
             }
         }
 

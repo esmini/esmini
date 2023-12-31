@@ -902,13 +902,13 @@ int ScenarioGateway::setObjectPositionMode(int id, int type, int mode)
         return -1;
     }
 
-    if (type < 0 || type > 1)
+    if (type < 0 || type > static_cast<int>(roadmanager::Position::PosModeType::UPDATE))
     {
-        LOG_ONCE("Unexpected ObjectPositionType %d, skipping", type);
+        LOG_ONCE("Unexpected ObjectPositionMode type %d, skipping", type);
         return -1;
     }
 
-    obj_state->state_.pos.SetMode(static_cast<roadmanager::Position::PosModeType>(type), mode);
+    obj_state->state_.pos.SetModes(type, mode);
 
     if ((mode & roadmanager::Position::PosMode::Z_SET) != 0)
     {

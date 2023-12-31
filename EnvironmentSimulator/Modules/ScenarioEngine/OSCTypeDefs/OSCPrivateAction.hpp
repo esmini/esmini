@@ -935,7 +935,7 @@ namespace scenarioengine
     class AssignRouteAction : public OSCPrivateAction
     {
     public:
-        roadmanager::Route* route_;
+        std::shared_ptr<roadmanager::Route> route_;
 
         AssignRouteAction() : OSCPrivateAction(OSCPrivateAction::ActionType::ASSIGN_ROUTE, ControlDomains::DOMAIN_NONE), route_(0)
         {
@@ -944,12 +944,7 @@ namespace scenarioengine
         AssignRouteAction(const AssignRouteAction& action) : OSCPrivateAction(OSCPrivateAction::ActionType::ASSIGN_ROUTE, ControlDomains::DOMAIN_NONE)
         {
             name_  = action.name_;
-            route_ = new roadmanager::Route(*action.route_);
-        }
-
-        ~AssignRouteAction()
-        {
-            delete route_;
+            route_ = action.route_;
         }
 
         OSCPrivateAction* Copy()

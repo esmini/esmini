@@ -2813,9 +2813,9 @@ bool Viewer::CreateRoadMarkLines(roadmanager::OpenDrive* od)
 
 bool Viewer::CreateRoadLines(roadmanager::OpenDrive* od)
 {
-    double                 z_offset = 0.10;
-    roadmanager::Position* pos      = new roadmanager::Position();
-    osg::Vec3              point(0, 0, 0);
+    double                z_offset = 0.10;
+    roadmanager::Position pos;
+    osg::Vec3             point(0, 0, 0);
 
     roadmanager::OSIPoints* curr_osi = nullptr;
 
@@ -2835,14 +2835,14 @@ bool Viewer::CreateRoadLines(roadmanager::OpenDrive* od)
             if (i < road->GetNumberOfGeometries())
             {
                 geom = road->GetGeometry(i);
-                pos->SetTrackPos(road->GetId(), geom->GetS(), 0);
+                pos.SetTrackPos(road->GetId(), geom->GetS(), 0);
             }
             else
             {
-                pos->SetTrackPos(road->GetId(), geom->GetS() + geom->GetLength(), 0);
+                pos.SetTrackPos(road->GetId(), geom->GetS() + geom->GetLength(), 0);
             }
 
-            point.set(static_cast<float>(pos->GetX()), static_cast<float>(pos->GetY()), static_cast<float>(pos->GetZ() + z_offset));
+            point.set(static_cast<float>(pos.GetX()), static_cast<float>(pos.GetY()), static_cast<float>(pos.GetZ() + z_offset));
             kp_points->push_back(point);
 
             if (i == 0)
@@ -2932,8 +2932,6 @@ bool Viewer::CreateRoadLines(roadmanager::OpenDrive* od)
             }
         }
     }
-
-    delete pos;
 
     return true;
 }

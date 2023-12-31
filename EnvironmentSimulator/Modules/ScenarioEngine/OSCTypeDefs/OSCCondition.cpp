@@ -826,7 +826,7 @@ bool TrigByReachPosition::CheckCondition(StoryBoard* storyBoard, double sim_time
 
     triggered_by_entities_.clear();
     bool   result = false;
-    double x, y;
+    double dist_x, dist_y;
     dist_ = 0;
 
     for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
@@ -842,9 +842,10 @@ bool TrigByReachPosition::CheckCondition(StoryBoard* storyBoard, double sim_time
         {
             LOG_AND_QUIT("missing road manager position");
         }
+        pos->EvaluateRelation();
 
-        dist_ = fabs(trigObj->pos_.getRelativeDistance(pos->GetX(), pos->GetY(), x, y));
-        if (dist_ < tolerance_)
+        dist_ = fabs(trigObj->pos_.getRelativeDistance(pos->GetX(), pos->GetY(), dist_x, dist_y));
+        if (dist_ < tolerance_)  // dist may reach half lane width, since offset of relative position is 0
         {
             // Check for any orientation condition
             if (checkOrientation_)
@@ -883,32 +884,16 @@ void TrigByReachPosition::Log()
 {
     if (checkOrientation_)
     {
-        if (position_->GetRMPos()->GetOrientationType() == Position::OrientationType::ORIENTATION_ABSOLUTE)
-        {
-            LOG("%s == %s, distance %.2f < tolerance (%.2f), abs orientation [%.2f, %.2f, %.2f] (tolerance %.2f), edge: % s",
-                name_.c_str(),
-                last_result_ ? "true" : "false",
-                dist_,
-                tolerance_,
-                triggered_by_entities_[0]->pos_.GetH(),
-                triggered_by_entities_[0]->pos_.GetP(),
-                triggered_by_entities_[0]->pos_.GetR(),
-                angularTolerance_,
-                Edge2Str().c_str());
-        }
-        else
-        {
-            LOG("%s == %s, distance %.2f < tolerance (%.2f), rel orientation [%.2f, %.2f, %.2f] (tolerance %.2f), edge: % s",
-                name_.c_str(),
-                last_result_ ? "true" : "false",
-                dist_,
-                tolerance_,
-                triggered_by_entities_[0]->pos_.GetHRelative(),
-                triggered_by_entities_[0]->pos_.GetPRelative(),
-                triggered_by_entities_[0]->pos_.GetRRelative(),
-                angularTolerance_,
-                Edge2Str().c_str());
-        }
+        LOG("%s == %s, distance %.2f < tolerance (%.2f), orientation [%.2f, %.2f, %.2f] (tolerance %.2f), edge: % s",
+            name_.c_str(),
+            last_result_ ? "true" : "false",
+            dist_,
+            tolerance_,
+            triggered_by_entities_[0]->pos_.GetH(),
+            triggered_by_entities_[0]->pos_.GetP(),
+            triggered_by_entities_[0]->pos_.GetR(),
+            angularTolerance_,
+            Edge2Str().c_str());
     }
     else
     {

@@ -42,7 +42,7 @@
                     <PrivateAction>
                         <TeleportAction>
                             <Position>
-                                <WorldPosition x="${$X0 - $TrajRadius}" y="${$Y0 + $TrajRadius + 4.7}" z="0.0" h="3.1415" p="0.0" r="0.0"/>
+                                <WorldPosition x="${$X0 - $TrajRadius}" y="${$Y0 + $TrajRadius + 4.7}" z="0.0" h="3.141592" p="0.0" r="0.0"/>
                             </Position>
                         </TeleportAction>
                     </PrivateAction>
@@ -79,6 +79,7 @@
                                                     <Clothoid curvature="${-1.0/$TrajRadius}" curvatureDot="0.0" length="${0.25 * 2.0 * 3.141592 * $TrajRadius}">
                                                         <Position>
                                                             <RelativeWorldPosition dx="0.0" dy="0.0" entityRef="Car">
+                                                                <Orientation type="relative" h="3.1415"/>
                                                             </RelativeWorldPosition>
                                                         </Position>
                                                     </Clothoid>
