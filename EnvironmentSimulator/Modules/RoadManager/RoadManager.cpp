@@ -8603,11 +8603,21 @@ Position::ReturnCode Position::MoveAlongS(double            ds,
 
     if (updateRoute && route_ && route_->IsValid())
     {
-        ReturnCode route_status = MoveRouteDS(ds_road, false);
+        double     remaining_dist = 0.0;
+        ReturnCode route_status   = MoveRouteDS(ds_road, &remaining_dist, false);
 
-        if (route_status != ReturnCode::ERROR_GENERIC && route_status != ReturnCode::ERROR_NOT_ON_ROUTE)
+        if (route_status == ReturnCode::OK)
         {
             return route_status;
+        }
+        else if (route_status == ReturnCode::ERROR_END_OF_ROUTE)
+        {
+            // reached out of route, move any remaining distance
+            ds_road = SIGN(ds_road) * fabs(remaining_dist);
+            if (ds_road < SMALL_NUMBER)
+            {
+                return route_status;
+            }
         }
         // else, couldn't move alone route - continue as without route
     }
@@ -10341,7 +10351,7 @@ double Position::GetRouteS() const
     return route_->GetPathS();
 }
 
-Position::ReturnCode Position::MoveRouteDS(double ds, bool actualDistance)
+Position::ReturnCode Position::MoveRouteDS(double ds, double* remaining_dist, bool actualDistance)
 {
     Position::ReturnCode retval = ReturnCode::OK;
 
@@ -10389,6 +10399,10 @@ Position::ReturnCode Position::MoveRouteDS(double ds, bool actualDistance)
         {
             // If out of junction, sync positions again
             retval = route_->SetTrackS(GetTrackId(), GetS());
+            if (retval != ReturnCode::OK)
+            {
+                // entity and route paths has diverged, skip route
+            }
         }
     }
     else
@@ -10397,7 +10411,7 @@ Position::ReturnCode Position::MoveRouteDS(double ds, bool actualDistance)
         // retval = route_->MovePathDS(ds * (IsAngleForward(GetHRelative()) ? 1 : -1));
 
         retval = route_->MovePathDS(actualDistance ? route_->currentPos_.DistanceToDS(ds) : ds);
-        if (retval == ReturnCode::ERROR_NOT_ON_ROUTE)
+        if (retval == ReturnCode::ERROR_GENERIC || retval == ReturnCode::ERROR_NOT_ON_ROUTE)
         {
             return retval;
         }
@@ -12292,8 +12306,9 @@ Position::ReturnCode Route::CopySFractionOfLength(Position* pos)
 Position::ReturnCode Route::SetTrackS(int trackId, double s)
 {
     // Loop over waypoints - look for current track ID and sum the distance (route s) up to current position
-    double dist = 0;
-    double local_s;
+    double               dist = 0;
+    double               local_s;
+    Position::ReturnCode retval = Position::ReturnCode::OK;
 
     if (s < 0 || minimal_waypoints_.size() == 0)
     {
@@ -12352,27 +12367,48 @@ Position::ReturnCode Route::SetTrackS(int trackId, double s)
                 dist -= s;
             }
 
+            if (dist > GetLength() || dist < 0.0)
+            {
+                if (waypoint_idx_ < 0)
+                {
+                    return Position::ReturnCode::ERROR_NOT_ON_ROUTE;
+                }
+                else
+                {
+                    LOG("Entity %s moved out of route", getObjName().c_str());
+                    retval = Position::ReturnCode::ERROR_END_OF_ROUTE;
+                }
+            }
+            else if (waypoint_idx_ < 0)
+            {
+                LOG("Entity %s on route", getObjName().c_str());
+            }
+
             path_s_       = dist;
             local_s       = s;
             waypoint_idx_ = (int)i;
             currentPos_.SetLanePos(GetWaypoint(waypoint_idx_)->GetTrackId(), GetWaypoint(waypoint_idx_)->GetLaneId(), local_s, 0.0);
 
-            if (path_s_ < 0 || path_s_ > GetLength())
+            if (retval == Position::ReturnCode::ERROR_END_OF_ROUTE)
             {
-                return Position::ReturnCode::ERROR_END_OF_ROUTE;
+                waypoint_idx_ = -1;
             }
-            else
-            {
-                return Position::ReturnCode::OK;
-            }
+
+            return retval;
         }
     }
 
     // Failed to map current position to the current route
+    if (waypoint_idx_ >= 0)
+    {
+        LOG("Entity %s moved away from route", getObjName().c_str());
+        waypoint_idx_ = -1;
+    }
+
     return Position::ReturnCode::ERROR_NOT_ON_ROUTE;
 }
 
-Position::ReturnCode Route::MovePathDS(double ds)
+Position::ReturnCode Route::MovePathDS(double ds, double* remaining_dist)
 {
     if (minimal_waypoints_.size() == 0)
     {
@@ -12382,14 +12418,15 @@ Position::ReturnCode Route::MovePathDS(double ds)
     // Consider route direction
     ds *= GetWayPointDirection(waypoint_idx_);
 
-    return SetPathS(GetPathS() + ds);
+    return SetPathS(GetPathS() + ds, remaining_dist);
 }
 
-Position::ReturnCode Route::SetPathS(double s)
+Position::ReturnCode Route::SetPathS(double s, double* remaining_dist)
 {
     // Loop over waypoints - until reaching s meters
-    double dist    = 0;
-    double local_s = 0.0;
+    double               dist    = 0;
+    double               local_s = 0.0;
+    Position::ReturnCode retval  = Position::ReturnCode::OK;
 
     if (minimal_waypoints_.size() == 0)
     {
@@ -12439,44 +12476,84 @@ Position::ReturnCode Route::SetPathS(double s)
                 local_s = dist - s;
             }
 
-            waypoint_idx_ = (int)i;
+            if (s > GetLength() || s < 0.0)
+            {
+                if (remaining_dist)
+                {
+                    *remaining_dist = s < 0.0 ? -s : s - GetLength();
+                }
+
+                if (waypoint_idx_ < 0)
+                {
+                    return Position::ReturnCode::ERROR_NOT_ON_ROUTE;
+                }
+                else
+                {
+                    LOG("Entity %s moved out of route", getObjName().c_str());
+                    retval = Position::ReturnCode::ERROR_END_OF_ROUTE;
+                }
+            }
+
+            if (waypoint_idx_ < 0)
+            {
+                LOG("Entity %s on route", getObjName().c_str());
+            }
+
+            waypoint_idx_ = static_cast<int>(i);
+
             currentPos_.SetLanePos(GetWaypoint(waypoint_idx_)->GetTrackId(), GetWaypoint(waypoint_idx_)->GetLaneId(), local_s, 0.0);
 
-            if (s < 0.0)
+            if (retval == Position::ReturnCode::ERROR_END_OF_ROUTE)
             {
-                path_s_ = 0.0;
-                return Position::ReturnCode::ERROR_NOT_ON_ROUTE;
-            }
-            else if (s < GetLength())
-            {
-                path_s_ = s;
-                return Position::ReturnCode::OK;
+                waypoint_idx_ = -1;
+                if (s < 0)
+                {
+                    path_s_ = 0.0;
+                }
+                else
+                {
+                    path_s_ = GetLength();
+                }
             }
             else
             {
-                path_s_ = GetLength();
-                return Position::ReturnCode::ERROR_END_OF_ROUTE;
+                path_s_ = s;
             }
+            return retval;
         }
         else if (i == minimal_waypoints_.size() - 1)
         {
+            if (waypoint_idx_ < 0)
+            {
+                return Position::ReturnCode::ERROR_NOT_ON_ROUTE;
+            }
+
             // Past end of route
             if (route_direction > 0)
             {
                 local_s = Position::GetOpenDrive()->GetRoadById(minimal_waypoints_[i].GetTrackId())->GetLength();
+                path_s_ = GetLength();
             }
             else
             {
                 local_s = 0.0;
+                path_s_ = 0.0;
             }
-            waypoint_idx_ = (int)i;
-            currentPos_.SetLanePos(GetWaypoint(waypoint_idx_)->GetTrackId(), GetWaypoint(waypoint_idx_)->GetLaneId(), local_s, 0.0);
+
+            currentPos_.SetLanePos(GetWaypoint(waypoint_idx_)->GetTrackId(), GetWaypoint(static_cast<int>(i))->GetLaneId(), local_s, 0.0);
+
+            if (remaining_dist)
+            {
+                *remaining_dist = s < 0.0 ? -s : s - GetLength();
+            }
+
+            LOG("Entity %s moved passed route", getObjName().c_str());
+            waypoint_idx_ = -1;
+            return Position::ReturnCode::ERROR_END_OF_ROUTE;
         }
     }
 
-    // Failed to map current position, past the end of route
-    path_s_ = GetLength();
-    return Position::ReturnCode::ERROR_END_OF_ROUTE;
+    return Position::ReturnCode::ERROR_GENERIC;  // not expected
 }
 
 Position* Route::GetWaypoint(int index)
@@ -12543,7 +12620,7 @@ int Route::GetWayPointDirection(int index)
         }
         else
         {
-            LOG("Warning: Relative heading not aligned with route direction");
+            //  LOG("Warning: Relative heading not aligned with route direction");
             return -1 * direction;
         }
     }
@@ -12560,7 +12637,7 @@ int Route::GetWayPointDirection(int index)
         }
         else
         {
-            LOG("Warning: Relative heading not aligned with route direction");
+            //  LOG("Warning: Relative heading not aligned with route direction");
             return -1 * direction;
         }
     }

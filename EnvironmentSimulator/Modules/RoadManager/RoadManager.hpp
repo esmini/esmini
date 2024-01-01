@@ -3199,7 +3199,7 @@ namespace roadmanager
         @param actualDistance Distance considering lateral offset and curvature (true/default) or along centerline (false)
         @return Non zero return value indicates error of some kind, most likely End Of Route
         */
-        ReturnCode MoveRouteDS(double ds, bool actualDistance = true);
+        ReturnCode MoveRouteDS(double ds, double *remaining_distance = nullptr, bool actualDistance = true);
 
         /**
         Move current position to specified S-value along the route
@@ -4029,7 +4029,15 @@ namespace roadmanager
 
         void        setName(std::string name);
         std::string getName() const;
-        double      GetLength() const
+        void        setObjName(std::string obj_name)
+        {
+            obj_name_ = obj_name;
+        }
+        std::string getObjName() const
+        {
+            return obj_name_;
+        }
+        double GetLength() const
         {
             return length_;
         }
@@ -4076,14 +4084,14 @@ namespace roadmanager
         @param actualDistance Distance considering lateral offset and curvature (true/default) or along centerline (false)
         @return Non zero return value indicates error of some kind, most likely End Of Route
         */
-        Position::ReturnCode MovePathDS(double ds);
+        Position::ReturnCode MovePathDS(double ds, double *remaining_dist = nullptr);
 
         /**
         Move current position to specified S-value along the route
         @param route_s Distance to move, negative will move backwards
         @return Non zero return value indicates error of some kind, most likely End Of Route
         */
-        Position::ReturnCode SetPathS(double s);
+        Position::ReturnCode SetPathS(double s, double *remaining_dist = nullptr);
 
         Position::ReturnCode CopySFractionOfLength(Position *pos);
 
@@ -4101,6 +4109,7 @@ namespace roadmanager
         std::vector<Position> minimal_waypoints_;   // used only for the default controllers
         std::vector<Position> all_waypoints_;       // used for user-defined controllers
         std::string           name_;
+        std::string           obj_name_;
         bool                  invalid_route_;
         bool                  active_;
         double                path_s_;

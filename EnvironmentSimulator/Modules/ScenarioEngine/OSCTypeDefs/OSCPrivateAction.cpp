@@ -274,6 +274,7 @@ void OSCPrivateAction::TransitionDynamics::UpdateRate()
 
 void AssignRouteAction::Start(double simTime, double dt)
 {
+    route_->setObjName(object_->GetName());
     object_->pos_.SetRoute(route_);
     object_->SetDirtyBits(Object::DirtyBit::ROUTE);
 
@@ -467,6 +468,7 @@ void AcquirePositionAction::Start(double simTime, double dt)
     // Resolve route
     route_.reset(new roadmanager::Route);
     route_->setName("AcquirePositionRoute");
+    route_->setObjName(object_->GetName());
 
     route_->AddWaypoint(&object_->pos_);
     route_->AddWaypoint(target_position_);
@@ -1626,6 +1628,7 @@ void TeleportAction::Start(double simTime, double dt)
     // consider any assigned route for relative positions
     position_->CopyRouteSharedPtr(&object_->pos_);
     object_->pos_.TeleportTo(position_);
+
     if (!object_->TowVehicle() && object_->TrailerVehicle())
     {
         (static_cast<Vehicle*>(object_))->AlignTrailers();
