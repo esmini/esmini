@@ -289,7 +289,7 @@ int ScenarioPlayer::ScenarioFrame(double timestep_s, bool keyframe)
 
     mutex.Unlock();
 
-    quit_request = scenarioEngine->GetQuitFlag();
+    quit_request |= scenarioEngine->GetQuitFlag();
 
     return retval;
 }
@@ -1073,7 +1073,7 @@ void viewer_thread(void* args)
     }
 
     player->viewer_->renderSemaphore.Wait();
-    player->SetQuitRequest(2);
+    player->SetQuitRequest(true);
     player->CloseViewer();
 }
 
