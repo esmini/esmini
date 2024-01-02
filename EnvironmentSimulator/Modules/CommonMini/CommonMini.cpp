@@ -920,6 +920,54 @@ void R0R12EulerAngles(double h0, double p0, double r0, double h1, double p1, dou
     r = GetAngleInInterval2PI(atan2(R2[2][1], R2[2][2]));
 }
 
+void MultMatrixVector3d(const double m[3][3], const double v0[3], double v1[3])
+{
+    for (int i = 0; i < 3; i++)
+    {
+        v1[i] = 0.0;
+        for (int j = 0; j < 3; j++)
+            v1[i] += m[i][j] * v0[j];
+    }
+}
+
+void RotateVec3d(const double h0,
+                 const double p0,
+                 const double r0,
+                 const double x0,
+                 const double y0,
+                 const double z0,
+                 double&      x1,
+                 double&      y1,
+                 double&      z1)
+{
+    // 1. Create the rotation matrix
+    // 2. Multiply the vector
+
+    double v0[3] = {x0, y0, z0};
+    double cx    = cos(h0);
+    double cy    = cos(p0);
+    double cz    = cos(r0);
+    double sx    = sin(h0);
+    double sy    = sin(p0);
+    double sz    = sin(r0);
+
+    double R[3][3] = {{cx * cy, cx * sy * sz - sx * cz, sx * sz + cx * sy * cz},
+                      {sx * cy, cx * cz + sx * sy * sz, sx * sy * cz - cx * sz},
+                      {-sy, cy * sz, cy * cz}};
+
+    // Avoid gimbal lock
+    if (fabs(R[0][0]) < SMALL_NUMBER)
+        R[0][0] = SIGN(R[0][0]) * SMALL_NUMBER;
+    if (fabs(R[2][2]) < SMALL_NUMBER)
+        R[2][2] = SIGN(R[2][2]) * SMALL_NUMBER;
+
+    double v1[3] = {0.0, 0.0, 0.0};
+    MultMatrixVector3d(R, v0, v1);
+    x1 = v1[0];
+    y1 = v1[1];
+    z1 = v1[2];
+}
+
 int SE_Env::AddPath(std::string path)
 {
     // Check if path already in list

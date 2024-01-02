@@ -543,6 +543,18 @@ void ZYZ2EulerAngles(double z0, double y, double z1, double& h, double& p, doubl
 */
 void R0R12EulerAngles(double h0, double p0, double r0, double h1, double p1, double r1, double& h, double& p, double& r);
 
+void MultMatrixVector3d(const double m[3][3], const double v0[3], double v1[3]);
+
+void RotateVec3d(const double h0,
+                 const double p0,
+                 const double r0,
+                 const double x0,
+                 const double y0,
+                 const double z0,
+                 double&      x1,
+                 double&      y1,
+                 double&      z1);
+
 /**
         Change byte order - can be useful for IP communication with non Intel platforms
 */

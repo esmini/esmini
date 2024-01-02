@@ -12016,9 +12016,12 @@ void Position::EvaluateRelation(bool release)
     else if (GetType() == PositionType::RELATIVE_OBJECT)
     {
         // No relation to road or lane, set both position and orientation
-        SetInertiaPosMode(rel_pos_->GetX() + relative_.dx * cos(rel_pos_->GetH()) - relative_.dy * sin(rel_pos_->GetH()),
-                          rel_pos_->GetY() + relative_.dy * cos(rel_pos_->GetH()) + relative_.dx * sin(rel_pos_->GetH()),
-                          rel_pos_->GetZ() + relative_.dz,
+        // consider complete orientation, i.e. including heading, pitch and roll
+        double v[3];
+        RotateVec3d(rel_pos_->GetH(), rel_pos_->GetP(), rel_pos_->GetR(), relative_.dx, relative_.dy, relative_.dz, v[0], v[1], v[2]);
+        SetInertiaPosMode(rel_pos_->GetX() + v[0],
+                          rel_pos_->GetY() + v[1],
+                          rel_pos_->GetZ() + v[2],
                           ((GetMode(Position::PosModeType::INIT) & Position::PosMode::H_MASK) == Position::PosMode::H_ABS)
                               ? relative_.dh
                               : GetAngleSum(relative_.dh, rel_pos_->GetH()),
