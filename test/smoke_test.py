@@ -1588,7 +1588,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^4.400, 1, pedestrian_adult, 34.067, -18.893, 0.000, 3.364, 0.000, 0.000, 1.500, 0.247, 2.319', csv, re.MULTILINE))
         self.assertTrue(re.search('^4.500, 1, pedestrian_adult, 33.921, -18.926, 0.000, 3.364, 0.000, 0.000, 1.500, 0.197, 2.748', csv, re.MULTILINE))
         self.assertTrue(re.search('^5.600, 0, Ego, 32.406, -25.172, 0.000, 1.799, 0.000, 0.000, 0.820, -0.002, 3.136', csv, re.MULTILINE))
-        self.assertTrue(re.search('^5.700, 0, Ego, 32.399, -25.142, 0.000, 1.799, 0.000, 0.000, 0.310, -0.002, 3.225', csv, re.MULTILINE))
+        self.assertTrue(re.search('^5.700, 0, Ego, 32.399, -25.142, 0.000, 1.799, 0.000, 0.000, 0.310, -0.001, 3.225', csv, re.MULTILINE))
         self.assertTrue(re.search('^11.000, 1, pedestrian_adult, 24.456, -20.843, 0.000, 2.646, 0.000, 0.000, 1.500, -0.151, 5.472', csv, re.MULTILINE))
         self.assertTrue(re.search('^11.300, 1, pedestrian_adult, 24.116, -20.574, 0.000, 1.792, 0.000, 0.000, 1.500, -0.301, 0.475', csv, re.MULTILINE))
 

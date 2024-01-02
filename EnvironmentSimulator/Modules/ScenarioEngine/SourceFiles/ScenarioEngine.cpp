@@ -1077,7 +1077,8 @@ void ScenarioEngine::prepareGroundTruth(double dt)
                                 (obj->pos_.GetVelZ() - obj->state_old.vel_z) / dt);
                 }
 
-                double heading_rate_new = GetAngleDifference(obj->pos_.GetH(), obj->state_old.h) / dt;
+                double heading_diff     = GetAngleDifference(obj->pos_.GetH(), obj->state_old.h);
+                double heading_rate_new = heading_diff / dt;
                 if (!obj->CheckDirtyBits(Object::DirtyBit::ANGULAR_RATE))
                 {
                     // If not already reported, calculate angular velocity/rate
@@ -1094,7 +1095,7 @@ void ScenarioEngine::prepareGroundTruth(double dt)
                 if (!obj->CheckDirtyBits(Object::DirtyBit::WHEEL_ANGLE))
                 {
                     // An improvised calculation of a steering angle based on yaw rate and enitity speed
-                    double steeringAngleTarget = SIGN(obj->GetSpeed()) * M_PI * heading_rate_new / MAX(fabs(obj->GetSpeed()), SMALL_NUMBER);
+                    double steeringAngleTarget = SIGN(obj->GetSpeed()) * M_PI * heading_rate_new / MAX(fabs(obj->GetSpeed()), 1.0);
                     double steeringAngleDiff   = steeringAngleTarget - obj->wheel_angle_;
 
                     // Turn wheel gradually towards target
