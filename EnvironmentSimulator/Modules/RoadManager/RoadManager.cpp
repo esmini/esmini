@@ -8392,7 +8392,7 @@ Position::ReturnCode Position::MoveToConnectingRoad(RoadLink* road_link, Contact
             }
             else if (junctionSelectorAngle >= 0.0)
             {
-                // Find the straighest link
+                // Find the link best matching selected angle
                 int    best_road_index  = 0;
                 double min_heading_diff = 1E10;  // set huge number
                 for (int i = 0; i < n_connections; i++)
@@ -8422,8 +8422,11 @@ Position::ReturnCode Position::MoveToConnectingRoad(RoadLink* road_link, Contact
                     // Compare heading angle difference, find smallest
                     double deltaHeading = GetAngleInInterval2PI(GetAngleDifference(outHeading, GetHRoadInDrivingDirection()));
                     double heading_diff = GetAbsAngleDifference(deltaHeading, junctionSelectorAngle);
-                    if (heading_diff < min_heading_diff)
+                    if (heading_diff < min_heading_diff ||  // closest angle so far
+                        (fabs(heading_diff - min_heading_diff) < SMALL_NUMBER &&
+                         SE_Env::Inst().GetRand().GetNumberBetween(0, 1) == 1))  // if angle is equal to previous candidate, randomize choice
                     {
+                        // closest heading so far, or equal to previous candidate
                         min_heading_diff = heading_diff;
                         best_road_index  = i;
                     }
