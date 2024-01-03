@@ -1,5 +1,33 @@
 ## esmini release notes
 
+### 2024-01-03 Version 2.36.0
+
+Improvements and fixes:
+- Fix relative positioning over connections and junctions ([issue #502](https://github.com/esmini/esmini/issues/502))
+  - prioritize own route over referenced object's one
+  - if neither entities has assigned route, use default routing
+- Improve route handling, don't get stuck outside defined route path ([issue #501](https://github.com/esmini/esmini/issues/501))
+- Consider full orientation for relative object positioning ([issue #509](https://github.com/esmini/esmini/issues/509))
+  - align the relative delta x, y, z components with reference entity
+- Accept zero length NURBS trajectories
+- Randomize equal weighting junction choices
+  - randomize choice between candidate roads with equal outgoing angle
+- Fix outdated list of storyboard element states in [storyboard_state_callback.py](https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/code-examples/hello_world/storyboard_state_callback.py)
+- Fix `--threads` mode missing quit request from viewer
+- Cosmetics: Limit steering rate for calculated steering angle
+
+New features:
+- Add `--pause` launch flag
+  - halt after initialization
+  - press `Space` or `Enter` to continue or step
+- Add runtime control to player server (former action server) ([issue #497](https://github.com/esmini/esmini/issues/497))
+    - new feature: support play, pause, step commands
+    - see example: [inject_actions.py](https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/code-examples/hello_world/inject_actions.py) and [video clip](https://youtu.be/FmLtwj518No)
+    - improvement: avoid duplicate actions on same object
+
+Updated behaviors:
+- Treat fixed timestep = 0 as non fixed (realtime)
+
 ### 2023-12-16 Version 2.35.0
 
 New features:
