@@ -4,6 +4,7 @@
 
 Fixes:
 - Fix and update esminiRMLib functions for recent positioning updates
+- Support trailerRef attribute name in ConnectTrailerAction
 
 Compile and CI updates:
 - Restore default setting not treating warnings as errors (still enabled for CI)
