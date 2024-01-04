@@ -81,16 +81,14 @@ if [[ "$OSTYPE" == "msys" ]] || [[ "$OSTYPE" == "linux-gnu"* ]]; then
         exit_with_msg "ScenarioPlayer_test failed"
     fi
 
-    if [[ "$skipOpenGLTests" == false ]]; then
-        echo $'\n'ScenarioEngineDll_test:
-        if ! ${EXE_FOLDER}/ScenarioEngineDll_test; then
-            exit_with_msg "ScenarioEngineDll_test failed"
-        fi
+    echo $'\n'ScenarioEngineDll_test:
+    if ! ${EXE_FOLDER}/ScenarioEngineDll_test; then
+        exit_with_msg "ScenarioEngineDll_test failed"
+    fi
 
-        echo $'\n'ScenarioEngine_test:
-        if ! ${EXE_FOLDER}/ScenarioEngine_test; then
-            exit_with_msg "ScenarioEngine_test failed"
-        fi
+    echo $'\n'ScenarioEngine_test:
+    if ! ${EXE_FOLDER}/ScenarioEngine_test; then
+        exit_with_msg "ScenarioEngine_test failed"
     fi
 
     ls -al *.tga *.ppm
