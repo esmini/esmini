@@ -1,5 +1,15 @@
 ## esmini release notes
 
+### 2024-01-04 Version 2.36.1
+
+Fixes:
+- Fix and update esminiRMLib functions for recent positioning updates
+
+Compile and CI updates:
+- Restore default setting not treating warnings as errors (still enabled for CI)
+- Fix compiler warning in OSI + non-OSG builds
+- Run all relevant unit tests also for non-OSG builds
+
 ### 2024-01-03 Version 2.36.0
 
 Improvements and fixes:
