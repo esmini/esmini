@@ -455,7 +455,14 @@ extern "C"
             roadmanager::Position* pos = &position[static_cast<unsigned int>(handle)];
             if (pos)
             {
-                return pos->SetInertiaPos(x, y, z, h, p, r);
+                return pos->SetInertiaPosMode(
+                    x,
+                    y,
+                    z,
+                    h,
+                    p,
+                    r,
+                    Position::PosMode::Z_ABS | Position::PosMode::H_ABS | Position::PosMode::P_ABS | Position::PosMode::R_ABS);
             }
         }
 
@@ -473,7 +480,7 @@ extern "C"
             roadmanager::Position* pos = &position[static_cast<unsigned int>(handle)];
             if (pos)
             {
-                return pos->SetInertiaPos(x, y, pos->GetZ(), h);
+                return pos->SetInertiaPos(x, y, h);
             }
         }
 
@@ -491,7 +498,25 @@ extern "C"
             roadmanager::Position* pos = &position[static_cast<unsigned int>(handle)];
             if (pos)
             {
-                return pos->SetInertiaPos(x, y, z, h);
+                return pos->SetInertiaPos(x, y, z, h, std::nan(""), std::nan(""));
+            }
+        }
+
+        return -1;
+    }
+
+    RM_DLL_API int RM_SetWorldPositionMode(int handle, float x, float y, float z, float h, float p, float r, int mode)
+    {
+        if (odrManager == nullptr || handle >= static_cast<int>(position.size()))
+        {
+            return -1;
+        }
+        else
+        {
+            roadmanager::Position* pos = &position[static_cast<unsigned int>(handle)];
+            if (pos)
+            {
+                return pos->SetInertiaPosMode(x, y, z, h, p, r, mode);
             }
         }
 

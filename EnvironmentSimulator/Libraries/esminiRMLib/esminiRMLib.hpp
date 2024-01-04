@@ -144,12 +144,6 @@ typedef enum
     RM_R_REL = RM_Z_REL << 12,
 } RM_PositionMode;
 
-typedef enum
-{
-    RM_SET    = 0,  // Used by explicit set functions
-    RM_UPDATE = 1   // Used by controllers updating the position
-} RM_PositionModeType;
-
 #ifdef __cplusplus
 extern "C"
 {
@@ -314,6 +308,7 @@ extern "C"
 
     /**
     Set position from world coordinates, road coordinates being calculated
+    Any value set to std::nanf("") will be ignored/no change
     @param handle Handle to the position object
     @param x cartesian coordinate x value
     @param y cartesian coordinate y value
@@ -327,6 +322,7 @@ extern "C"
 
     /**
     Set position from world X, Y and heading coordinates; Z, pitch and road coordinates being calculated
+    Any value set to std::nanf("") will be ignored/no change
     @param handle Handle to the position object
     @param x cartesian coordinate x value
     @param y cartesian coordinate y value
@@ -337,6 +333,7 @@ extern "C"
 
     /**
     Set position from world X, Y, Z and heading coordinates; pitch and road coordinates being calculated
+    Any value set to std::nanf("") will be ignored/no change
     Setting a Z value may have effect in mapping the position to the closest road, e.g. overpass
     @param handle Handle to the position object
     @param x cartesian coordinate x value
@@ -345,6 +342,22 @@ extern "C"
     @return >= 0 on success. For all codes see roadmanager.hpp::Position::enum class ReturnCode
     */
     RM_DLL_API int RM_SetWorldXYZHPosition(int handle, float x, float y, float z, float h);
+
+    /**
+    Set position from world X, Y, Z and heading coordinates; pitch and road coordinates being calculated
+    Any value set to std::nanf("") will be ignored/no change
+    Setting a Z value may have effect in mapping the position to the closest road, e.g. overpass
+    @param handle Handle to the position object
+    @param x cartesian coordinate x value
+    @param y cartesian coordinate y value
+    @param z cartesian coordinate z value
+    @param h rotation heading value
+    @param p rotation pitch value
+    @param r rotation roll value
+    @param mode Bitmask specifying whether z, h, p, and r is absolute or relative road. See RM_PositionMode
+    @return >= 0 on success. For all codes see roadmanager.hpp::Position::enum class ReturnCode
+    */
+    RM_DLL_API int RM_SetWorldPositionMode(int handle, float x, float y, float z, float h, float p, float r, int mode);
 
     /**
     Change road belonging of position object, keeping actual x,y location, regardless other roads being closer
