@@ -3513,6 +3513,8 @@ TEST(APITest, TestGetRoute)
     SE_Close();
 }
 
+#ifdef _USE_OSG
+
 static bool CheckFileExists(std::string filename, long long timestamp)
 {
     struct stat fileStatus;
@@ -3639,6 +3641,8 @@ TEST(APITest, TestFetchImage)
     SE_Close();
     SE_SaveImagesToRAM(false);
 }
+
+#endif  // _USE_OSG
 
 static void paramDeclCallbackSetRoute(void* args)
 {

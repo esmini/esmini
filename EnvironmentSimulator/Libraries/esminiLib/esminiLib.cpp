@@ -1494,6 +1494,8 @@ extern "C"
 
     SE_DLL_API int SE_SetOSISensorDataRaw(const char *sensordata)
     {
+        (void)sensordata;
+
 #ifdef _USE_OSI
         if (player != nullptr)
         {
@@ -1512,8 +1514,6 @@ extern "C"
             }
 #endif
         }
-#else
-        (void)sensordata;
 #endif  // _USE_OSI
 
         return 0;
