@@ -2762,11 +2762,20 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
             if (trailer_action_node.name() == std::string("ConnectTrailerAction"))
             {
                 ConnectTrailerAction *action_trailer = new ConnectTrailerAction;
-                std::string           trailer_ref    = parameters.ReadAttribute(trailer_action_node, "trailer");
+                std::string           trailer_ref    = parameters.ReadAttribute(trailer_action_node, "trailerRef");
+                if (trailer_ref.empty())
+                {
+                    // Try with attribute name from old prototype implementation
+                    trailer_ref = parameters.ReadAttribute(trailer_action_node, "trailer");
+                    if (!trailer_ref.empty())
+                    {
+                        LOG("Warning: Accepting trailer ref attribute 'trailer'. Consider use correct 'trailerRef' instead.");
+                    }
+                }
 
                 if (!trailer_ref.empty())
                 {
-                    action_trailer->trailer_object_ = ResolveObjectReference(parameters.ReadAttribute(trailer_action_node, "trailer"));
+                    action_trailer->trailer_object_ = ResolveObjectReference(trailer_ref);
                 }
                 else
                 {

@@ -49,15 +49,15 @@
                 </Private>
             </Actions>
         </Init>
-        <Story name="MyStory">
-            <Act name="DummyAct">
+        <Story name="TrailerStory">
+            <Act name="TrailerAct">
                 <ManeuverGroup maximumExecutionCount="1" name="DummyManueverGroup">
                     <Actors selectTriggeringEntities="false">
                         <EntityRef entityRef="Car"/>
                     </Actors>
                     <Maneuver name="ConnectManeuver">
                         <Event maximumExecutionCount="1" name="ReverseEvent" priority="overwrite">
-                            <Action name="ReverseSpeed">
+                            <Action name="ReverseSpeedAction">
                                 <PrivateAction>
                                     <LongitudinalAction>
                                         <SpeedAction>
@@ -107,7 +107,7 @@
                             <Action name="ConnectAction">
                                 <PrivateAction>
                                     <TrailerAction>
-                                        <ConnectTrailerAction trailer="Trailer"/>
+                                        <ConnectTrailerAction trailerRef="Trailer"/>
                                     </TrailerAction>
                                 </PrivateAction>
                             </Action>
