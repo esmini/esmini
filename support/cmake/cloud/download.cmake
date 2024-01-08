@@ -5,25 +5,43 @@ function(
     url
     target_folder
     target_filename)
-    message(STATUS "downloading ${target_filename} ...")
+
+    set(download_result
+        1
+        PARENT_SCOPE) # assume failure
+
     file(
         DOWNLOAD
         ${url}
         ${target_folder}/${target_filename}
         STATUS DOWNLOAD_STATUS
-        LOG DOWNLOAD_LOG)
+        LOG DOWNLOAD_LOG
+        INACTIVITY_TIMEOUT 60)
 
-    if(DOWNLOAD_STATUS
-       AND NOT
-           DOWNLOAD_STATUS
-           EQUAL
-           0)
-        message(FATAL_ERROR "FAILED to download ${target_filename} (Status: ${DOWNLOAD_STATUS}) - ${DOWNLOAD_LOG}")
+    set(log_file
+        ${target_filename}.log)
+
+    if(NOT
+       DOWNLOAD_STATUS
+       OR NOT
+          DOWNLOAD_STATUS
+          EQUAL
+          0)
+        message(STATUS "FAILED to download ${target_filename} Status: ${DOWNLOAD_STATUS} (see ${log_file} for details)")
+        file(
+            WRITE
+            ${log_file}
+            ${DOWNLOAD_LOG})
+        return()
     endif()
+
+    set(download_result
+        0
+        PARENT_SCOPE) # update result status
 
     execute_process(COMMAND sleep 1) # allow for file to be completely flushed
 
-    message(STATUS "extracting ${target_filename} ... ")
+    message(STATUS "Download OK. Extracting... ")
     execute_process(
         COMMAND ${CMAKE_COMMAND} -E tar xfz ${target_filename}
         WORKING_DIRECTORY ${target_folder}
@@ -34,7 +52,10 @@ function(
            STATUS
            EQUAL
            0)
-        message(FATAL_ERROR "FAILED to unpack ${target_filename}")
+        message(STATUS "FAILED to unpack ${target_filename}")
+        set(download_result
+            1
+            PARENT_SCOPE) # update status at failed extraction
     endif()
 
     file(
@@ -47,21 +68,36 @@ function(
     entity_name
     path
     os_specific_path
-    url)
+    urls)
 
-    set(PACKAGE_NAME
-        "${entity_name}.7z")
-    if(DEFINED
-       os_specific_path
-       AND (FORCE_DOWNLOAD_BINARIES
-            OR NOT
-               EXISTS
-               ${os_specific_path}
-           ))
+    if(NOT
+       FORCE_DOWNLOAD_BINARIES
+       AND EXISTS
+           ${os_specific_path})
+        message(STATUS "${entity_name} already exists, skipping")
+        return()
+    endif()
+
+    foreach(
+        url
+        IN
+        LISTS urls)
+        set(package_name
+            "${entity_name}.7z")
+
+        message(STATUS "Downloading ${package_name} from ${url}")
+
         download_and_extract(
             ${url}
             ${path}
-            ${PACKAGE_NAME})
-    endif()
+            ${package_name})
+
+        if(${download_result}
+           EQUAL
+           0)
+            return()
+        endif()
+
+    endforeach()
 
 endfunction()

@@ -138,64 +138,44 @@ set_special_build_flags()
 include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/utils/get_subdirectories.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/utils/set_folder.cmake)
 
-# ############################### Loading cloud packages ##############################################################
-
-set(FILE_STORAGE
-    "esmini") # "dropbox", "google", "esmini"  (limited GB/Day)
-set(MODEL_STORAGE
-    "esmini") # "dropbox", "google", "esmini"  (limited GB/Day)
-
-include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/cloud/dropbox.cmake)
-include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/cloud/esmini.cmake)
-include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/cloud/googledrive.cmake)
-
-if(${FILE_STORAGE}
-   STREQUAL
-   "dropbox")
-    set_dropbox_cloud_links()
-elseif(
-    ${FILE_STORAGE}
-    STREQUAL
-    "google")
-    set_googledrive_cloud_links()
-elseif(
-    ${FILE_STORAGE}
-    STREQUAL
-    "esmini")
-    set_esmini_cloud_links()
-else()
-    message(
-        "Unknown storage type: "
-        ${FILE_STORAGE})
-endif()
-
 # ############################### Downloading cloud packages #########################################################
 
+include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/cloud/set_cloud_links.cmake)
+set_cloud_links()
+
 include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/cloud/download.cmake)
+
+message(STATUS "Downloading dependencies...")
 
 download(
     osg
     ${EXTERNALS_OSG_PATH}
     ${EXTERNALS_OSG_OS_SPECIFIC_PATH}
-    ${OSG_PACKAGE_URL})
+    "${OSG_PACKAGE_URL}")
 
 download(
     osi
     ${EXTERNALS_OSI_PATH}
     ${EXTERNALS_OSI_OS_SPECIFIC_PATH}
-    ${OSI_PACKAGE_URL})
+    "${OSI_PACKAGE_URL}")
 
 download(
     sumo
     ${EXTERNALS_SUMO_PATH}
     ${EXTERNALS_SUMO_OS_SPECIFIC_PATH}
-    ${SUMO_PACKAGE_URL})
+    "${SUMO_PACKAGE_URL}")
 
 download(
     implot
     ${EXTERNALS_IMPLOT_PATH}
     ${EXTERNALS_IMPLOT_OS_SPECIFIC_PATH}
-    ${IMPLOT_PACKAGE_URL})
+    "${IMPLOT_PACKAGE_URL}")
+
+download(
+    models
+    ${RESOURCES_PATH}
+    ${MODELS_PATH}
+    "${MODELS_PACKAGE_URL}")
 
 if(NOT
    (APPLE
@@ -205,14 +185,7 @@ if(NOT
         ${EXTERNALS_GOOGLETEST_PATH}
         ${EXTERNALS_GOOGLETEST_OS_SPECIFIC_PATH}
         ${GTEST_PACKAGE_URL})
-
 endif()
-
-download(
-    models
-    ${RESOURCES_PATH}
-    ${MODELS_PATH}
-    ${MODELS_PACKAGE_URL})
 
 # ############################### Loading external packages ##########################################################
 

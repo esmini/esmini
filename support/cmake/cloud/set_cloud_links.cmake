@@ -1,0 +1,96 @@
+include_guard()
+
+macro(set_cloud_links)
+
+    set(MODELS_PACKAGE_URL
+        https://esmini.asuscomm.com/AICLOUD779364751/models/models.7z;
+        https://drive.google.com/u/1/uc?id=1c3cqRzwY41gWXbg0rmugQkL5I_5L6DH_&export=download;
+        https://dl.dropboxusercontent.com/s/5gk8bvgzqiaaoco/models.7z?dl=1)
+
+    if(APPLE)
+        set(OSG_PACKAGE_URL
+            https://esmini.asuscomm.com/AICLOUD766065121/libs/OpenSceneGraph_mac.7z;
+            https://drive.google.com/u/1/uc?id=1mfn_vrcXBoFBekR_t8RXTWB4sD59JD7p&export=download;
+            https://www.dropbox.com/s/d0czj6b89p9jyvv/OpenSceneGraph_mac.7z?dl=1)
+        if(OSI_VERSION_3_3_1)
+            set(OSI_PACKAGE_URL
+                https://esmini.asuscomm.com/AICLOUD766065121/libs/osi_mac.7z;
+                https://drive.google.com/u/1/uc?id=1UVzO8cPQaDU9KVn9v2v8Suj0uUw1dzYI&export=download;
+                https://www.dropbox.com/s/m62v19gp0m73dte/osi_mac.7z?dl=1)
+        else()
+            set(OSI_PACKAGE_URL
+                https://esmini.asuscomm.com/AICLOUD766065121/libs/osi_3_5_0_mac_clang_1200.7z;
+                https://drive.google.com/u/1/uc?id=1Owvoy9N_PGXe-s9GUgDxg-4h2AhlQ_Pi&export=download;
+                https://www.dropbox.com/s/3pp3ijt9evvawep/osi_3_5_0_mac_clang_1200.7z?dl=1)
+        endif()
+        set(SUMO_PACKAGE_URL
+            https://esmini.asuscomm.com/AICLOUD766065121/libs/sumo_mac.7z;
+            https://drive.google.com/u/1/uc?id=1FAve0-MlJPv6lUZy0HvriZI7xstLAzvX&export=download;
+            https://www.dropbox.com/s/0x8kwztk7nmacs1/sumo_mac.7z?dl=1)
+        set(IMPLOT_PACKAGE_URL
+            https://esmini.asuscomm.com/AICLOUD766065121/libs/implot_mac.7z;
+            https://drive.google.com/u/1/uc?id=1Cjda4pzyOGpOBiKAJ0_nBAeK8wcWzPuT&export=download;
+            https://www.dropbox.com/scl/fi/kg6km3plk755vnz8gv1me/implot_mac.7z?rlkey=zzbpujrhoprlwnjeudv9pcb1o&dl=1)
+    elseif(LINUX)
+        set(OSG_PACKAGE_URL
+            https://esmini.asuscomm.com/AICLOUD766065121/libs/osg_linux_glibc_2_31_gcc_7_5_0.7z;
+            https://drive.google.com/u/1/uc?id=1Ya1bLp_0-qqlhs67WAwbGW7l37wqP3o2&export=download;
+            https://www.dropbox.com/s/4ug0gmkgdavzyb4/osg_linux_glibc_2_31_gcc_7_5_0.7z?dl=1)
+        if(OSI_VERSION_3_3_1)
+            set(OSI_PACKAGE_URL
+                https://esmini.asuscomm.com/AICLOUD766065121/libs/osi_linux.7z;
+                https://drive.google.com/u/1/uc?id=1Q8O9YciIC0BPEszIKtQ2UW9KcVRZS4iB&export=download;
+                https://dl.dropboxusercontent.com/s/kwtdg0c1c8pawa1/osi_linux.7z?dl=1)
+        else()
+            set(OSI_PACKAGE_URL
+                https://esmini.asuscomm.com/AICLOUD766065121/libs/osi_3_5_0_linux_glibc_2_31_gcc_7_5_0.7z;
+                https://drive.google.com/u/1/uc?id=1Xq_zQ5xaszYuN6G_dgSFHchXdnDxN6hS&export=download;
+                https://www.dropbox.com/s/c7r04x85h92gw5z/osi_3_5_0_linux_glibc_2_31_gcc_7_5_0.7z?dl=1)
+        endif()
+        set(SUMO_PACKAGE_URL
+            https://esmini.asuscomm.com/AICLOUD766065121/libs/sumo_linux.7z;
+            https://drive.google.com/u/1/uc?id=1m4znxNIXapP0D-l21oIm2l7L5ti-JbZH&export=download;
+            https://dl.dropboxusercontent.com/s/gfwtqd3gf76f86a/sumo_linux.7z?dl=1)
+        set(GTEST_PACKAGE_URL
+            https://esmini.asuscomm.com/AICLOUD766065121/libs/googletest_linux.7z;
+            https://drive.google.com/u/1/uc?id=1Hyr9eJX2GmgpYwZhx14xOoXlZ2j-FY_p&export=download;
+            https://dl.dropboxusercontent.com/s/si7jsjjsy5bpoym/googletest_linux.7z?dl=1)
+        set(IMPLOT_PACKAGE_URL
+            https://esmini.asuscomm.com/AICLOUD766065121/libs/implot_linux_glibc_2_31_gcc_7_5_0.7z;
+            https://drive.google.com/u/1/uc?id=1YVetAhT7IBLTvkbDeyCDgZ3mjbExcxFY&export=download;
+            https://www.dropbox.com/scl/fi/d5h6vdqqf6q890d53541b/implot_linux_glibc_2_31_gcc_7_5_0.7z?rlkey=galhhylarlx70lhzfdmih4jim&dl=1)
+    elseif(MSVC)
+        set(OSG_PACKAGE_URL
+            https://esmini.asuscomm.com/AICLOUD766065121/libs/OpenSceneGraph_v10.7z;
+            https://drive.google.com/u/1/uc?id=1RTag0aUn_pJPK697j0-E72ABW10wZvOm&export=download;
+            https://dl.dropboxusercontent.com/s/e95hnoo782p40uc/OpenSceneGraph_v10.7z?dl=1)
+        if(OSI_VERSION_3_3_1)
+            set(OSI_PACKAGE_URL
+                https://esmini.asuscomm.com/AICLOUD766065121/libs/osi_v10.7z;
+                https://drive.google.com/u/1/uc?id=1pcQcVHUESOk2Wmi-zUA7uzdxxE6iwRJx&export=download;
+                https://dl.dropboxusercontent.com/s/an58ckp2qfx5069/osi_v10.7z?dl=1)
+        else()
+            set(OSI_PACKAGE_URL
+                https://esmini.asuscomm.com/AICLOUD766065121/libs/osi_3_5_0_win_vs_sdk_141.7z;
+                https://drive.google.com/u/1/uc?id=1v490rg7s4kpuT28O5DI-fXc9BxyHqhVA&export=download;
+                https://www.dropbox.com/s/1xjb16ilsm4ir7x/osi_3_5_0_win_vs_sdk_141.7z?dl=1)
+        endif()
+        set(SUMO_PACKAGE_URL
+            https://esmini.asuscomm.com/AICLOUD766065121/libs/sumo_v10.7z;
+            https://drive.google.com/u/1/uc?id=18PhbSLyvs0IGWTAY3YBoYzpVnMFPbOuR&export=download;
+            https://dl.dropboxusercontent.com/s/5jtpnnd61wonxuh/sumo_v10.7z?dl=1)
+        set(GTEST_PACKAGE_URL
+            https://esmini.asuscomm.com/AICLOUD766065121/libs/googletest_v10.7z;
+            https://drive.google.com/u/1/uc?id=1So-3gtrmEdW9RhEvVQisj1QFksHM_otU&export=download;
+            https://dl.dropboxusercontent.com/s/aaiehwzc6woqbc6/googletest_v10.7z?dl=1)
+        set(IMPLOT_PACKAGE_URL
+            https://esmini.asuscomm.com/AICLOUD766065121/libs/implot_v10.7z;
+            https://drive.google.com/u/1/uc?id=1k7dEITeu3vy6RTqKUw2o4FiTYljVuHkk&export=download;
+            https://www.dropbox.com/scl/fi/txl0jqi49ysreoegcoqk9/implot_v10.7z?rlkey=jh0cd5bkpzrxxt8sn0q4frjpr&dl=1)
+    elseif(MINGW)
+        message("MinGW, enforcing slimmed esmini")
+    else()
+        message("Unsupported configuration")
+    endif()
+
+endmacro()
