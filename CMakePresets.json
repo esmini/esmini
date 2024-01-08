@@ -42,6 +42,13 @@
       }
     },
     {
+      "name": "disable-implot",
+      "hidden": true,
+      "cacheVariables": {
+        "USE_IMPLOT": "OFF"
+      }
+    },
+    {
       "name": "sanitize-build",
       "hidden": true,
       "cacheVariables": {
@@ -161,7 +168,8 @@
         "ci-windows-test",
         "disable-osg",
         "disable-osi",
-        "disable-sumo"
+        "disable-sumo",
+        "disable-implot"
       ]
     },
     {
@@ -170,7 +178,8 @@
         "ci-macos-test",
         "disable-osg",
         "disable-osi",
-        "disable-sumo"
+        "disable-sumo",
+        "disable-implot"
       ],
       "cacheVariables": {
         "ENABLE_WARNINGS_AS_ERRORS": "OFF"
@@ -182,7 +191,8 @@
         "ci-ubuntu-test",
         "disable-osg",
         "disable-osi",
-        "disable-sumo"
+        "disable-sumo",
+        "disable-implot"
       ]
     }
   ]

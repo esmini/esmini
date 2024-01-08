@@ -78,6 +78,7 @@ jobs:
             externals/osg
             externals/osi
             externals/sumo
+            externals/implot
             resources/models
           key: ${{ runner.os }}-external-resources
 
@@ -171,6 +172,7 @@ jobs:
             externals/osg
             externals/osi
             externals/sumo
+            externals/implot
             resources/models
           key: ${{ runner.os }}-external-resources
 
