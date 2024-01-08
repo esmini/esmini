@@ -1067,6 +1067,12 @@ extern "C"
     SE_DLL_API int SE_AddObjectSensor(int object_id, float x, float y, float z, float h, float rangeNear, float rangeFar, float fovH, int maxObj);
 
     /**
+            Retrieve the total number of sensors attached to any objects
+            @return -1 on failure, else the number of sensors
+    */
+    SE_DLL_API int SE_GetNumberOfObjectSensors();
+
+    /**
             Allow to view detected sensor data.
             @param object_id Handle to the object to which the sensor should be attached
             @return Sensor ID (Global index of sensor), -1 if unsucessful

@@ -96,8 +96,35 @@ namespace scenarioengine
         void ScenarioPostFrame();
         int  ScenarioFrame(double timestep_s, bool keyframe);
         void ShowObjectSensors(bool mode);
-        void
-        AddObjectSensor(int object_index, double pos_x, double pos_y, double pos_z, double heading, double near, double far, double fovH, int maxObj);
+
+        /**
+        Add an ideal sensor to an object
+        @param obj Pointer to the object
+        @param pos_x The x coordinate of the sensor in object local coordinate system
+        @param pos_y The y coordinate of the sensor in object local coordinate system
+        @param pos_z The z coordinate of the sensor in object local coordinate system
+        @param heading The heading of the sensor in object local coordinate system
+        @param heading The heading of the sensor in object local coordinate system
+        @param near The distance from object reference point to start of sensor view frustum
+        @param far The distance from object reference point to end of sensor view frustum
+        @param fovH The horizontal width, in radians, of the sensor view frustum
+        @return -1 on failure, else the sensor ID (Global index of sensor)
+        */
+        int AddObjectSensor(Object *obj, double pos_x, double pos_y, double pos_z, double heading, double near, double far, double fovH, int maxObj);
+
+        /**
+        Retrieve the total number of ideal sensors attached to any objects
+        @return -1 on failure, else the number of sensors
+        */
+        int GetNumberOfObjectSensors();
+
+        /**
+        Retrieve the number of ideal sensors attached to an object
+        @param obj Pointer to the object
+        @return -1 on failure, else the number of sensors attached to the object
+        */
+        int GetNumberOfSensorsAttachedToObject(Object *obj);
+
 #ifdef _USE_OSG
         void InitVehicleModel(Object *obj, viewer::CarModel *model);
 #endif

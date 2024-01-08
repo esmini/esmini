@@ -10,15 +10,19 @@ int main(int argc, char* argv[])
 
     SE_Init("../resources/xosc/cut-in.xosc", 0, 1, 0, 0);
 
-    SE_AddObjectSensor(0, 2.0f, 1.0f, 0.5f, 1.57f, 1.0f, 50.0f, 1.57f, MAX_HITS);
-    SE_AddObjectSensor(0, -1.0f, 0.0f, 0.5f, 3.14f, 0.5f, 20.0f, 1.57f, MAX_HITS);
+    int sensor_id = -1;
+    sensor_id     = SE_AddObjectSensor(0, 2.0f, 1.0f, 0.5f, 1.57f, 1.0f, 50.0f, 1.57f, MAX_HITS);
+    printf("Added sensor %d to object %s\n", sensor_id, SE_GetObjectName(SE_GetId(0)));
+
+    sensor_id = SE_AddObjectSensor(0, -1.0f, 0.0f, 0.5f, 3.14f, 0.5f, 20.0f, 1.57f, MAX_HITS);
+    printf("Added sensor %d to object %s\n", sensor_id, SE_GetObjectName(SE_GetId(0)));
 
     for (int i = 0; i < 2000 && !(SE_GetQuitFlag() == 1); i++)
     {
         SE_Step();
 
         int objList[MAX_HITS];
-        for (int j = 0; j < 2; j++)  // iterate over added sensors
+        for (int j = 0; j < SE_GetNumberOfObjectSensors(); j++)  // iterate over added sensors
         {
             int nHits = SE_FetchSensorObjectList(j, objList);
             for (int k = 0; k < nHits; k++)

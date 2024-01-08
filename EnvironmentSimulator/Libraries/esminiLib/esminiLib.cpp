@@ -1782,14 +1782,28 @@ extern "C"
     SE_DLL_API int SE_AddObjectSensor(int object_id, float x, float y, float z, float h, float rangeNear, float rangeFar, float fovH, int maxObj)
     {
         Object *obj = nullptr;
+
+        if (player == nullptr)
+        {
+            return -1;
+        }
+
         if (getObjectById(object_id, obj) == -1)
         {
             return -1;
         }
 
-        player->AddObjectSensor(object_id, x, y, z, h, rangeNear, rangeFar, fovH, maxObj);
+        return player->AddObjectSensor(obj, x, y, z, h, rangeNear, rangeFar, fovH, maxObj);
+    }
 
-        return 0;
+    SE_DLL_API int SE_GetNumberOfObjectSensors()
+    {
+        if (player == nullptr)
+        {
+            return -1;
+        }
+
+        return player->GetNumberOfObjectSensors();
     }
 
     SE_DLL_API int SE_ViewSensorData(int object_id)

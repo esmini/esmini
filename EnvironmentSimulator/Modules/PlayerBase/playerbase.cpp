@@ -1079,35 +1079,54 @@ void viewer_thread(void* args)
 
 #endif
 
-void ScenarioPlayer::AddObjectSensor(int    object_index,
-                                     double x,
-                                     double y,
-                                     double z,
-                                     double h,
-                                     double near_dist,
-                                     double far_dist,
-                                     double fovH,
-                                     int    maxObj)
+int ScenarioPlayer::AddObjectSensor(Object* obj, double x, double y, double z, double h, double near_dist, double far_dist, double fovH, int maxObj)
 {
-    sensor.push_back(new ObjectSensor(&scenarioEngine->entities_,
-                                      scenarioEngine->entities_.object_[static_cast<unsigned int>(object_index)],
-                                      x,
-                                      y,
-                                      z,
-                                      h,
-                                      near_dist,
-                                      far_dist,
-                                      fovH,
-                                      maxObj));
+    if (obj == nullptr)
+    {
+        return -1;
+    }
+
+    sensor.push_back(new ObjectSensor(&scenarioEngine->entities_, obj, x, y, z, h, near_dist, far_dist, fovH, maxObj));
 
 #ifdef _USE_OSG
     if (viewer_)
     {
-        mutex.Lock();
-        sensorFrustum.push_back(new viewer::SensorViewFrustum(sensor.back(), viewer_->entities_[static_cast<unsigned int>(object_index)]->txNode_));
-        mutex.Unlock();
+        int object_index = scenarioEngine->entities_.GetObjectIdxById(obj->GetId());
+        if (object_index >= 0)
+        {
+            mutex.Lock();
+            sensorFrustum.push_back(
+                new viewer::SensorViewFrustum(sensor.back(), viewer_->entities_[static_cast<unsigned int>(object_index)]->txNode_));
+            mutex.Unlock();
+        }
     }
 #endif
+
+    return static_cast<int>(sensor.size()) - 1;
+}
+
+int ScenarioPlayer::GetNumberOfObjectSensors()
+{
+    return static_cast<int>(sensor.size());
+}
+
+int ScenarioPlayer::GetNumberOfSensorsAttachedToObject(Object* obj)
+{
+    if (obj == nullptr)
+    {
+        return -1;
+    }
+
+    int counter = 0;
+    for (size_t i = 0; i < sensor.size(); i++)
+    {
+        if (sensor[i]->host_ == obj)
+        {
+            counter++;
+        }
+    }
+
+    return counter;
 }
 
 #ifdef _USE_OSG
