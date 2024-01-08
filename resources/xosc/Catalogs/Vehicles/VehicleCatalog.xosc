@@ -15,12 +15,15 @@
             <ParameterDeclarations>
                 <ParameterDeclaration name="EgoModelId" parameterType="integer" value="0"/>
                 <ParameterDeclaration name="TrailerRef" parameterType="string" value=""/>
+                <ParameterDeclaration name="MaxSpeed" parameterType="double" value="${250/3.6}"/>
+                <ParameterDeclaration name="MaxDeceleration" parameterType="double" value="10"/>
+                <ParameterDeclaration name="MaxAcceleration" parameterType="double" value="5"/>
             </ParameterDeclarations>
             <BoundingBox>
                 <Center x="1.4" y="0.0" z="0.75"/>
                 <Dimensions width="2.0" length="5.04" height="1.5"/>
             </BoundingBox>
-            <Performance maxSpeed="${250/3.6}" maxDeceleration="10" maxAcceleration="5"/>
+            <Performance maxSpeed="$MaxSpeed" maxDeceleration="$MaxDeceleration" maxAcceleration="$MaxAcceleration"/>
             <Axles>
                 <FrontAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="2.98" positionZ="0.4"/>
                 <RearAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="0" positionZ="0.4"/>
@@ -42,12 +45,15 @@
                 <ParameterDeclaration name="DimX" parameterType="double" value="4.5"/>
                 <ParameterDeclaration name="DimY" parameterType="double" value="1.8"/>
                 <ParameterDeclaration name="DimZ" parameterType="double" value="1.5"/>
+                <ParameterDeclaration name="MaxSpeed" parameterType="double" value="69"/>
+                <ParameterDeclaration name="MaxDeceleration" parameterType="double" value="10"/>
+                <ParameterDeclaration name="MaxAcceleration" parameterType="double" value="5"/>                
             </ParameterDeclarations>
             <BoundingBox>
                 <Center x="1.3" y="0.0" z="0.75"/>
                 <Dimensions width="$DimY" length="$DimX" height="$DimZ"/>
             </BoundingBox>
-            <Performance maxSpeed="69" maxDeceleration="10" maxAcceleration="5"/>
+                <Performance maxSpeed="$MaxSpeed" maxDeceleration="$MaxDeceleration" maxAcceleration="$MaxAcceleration"/>
             <Axles>
                 <FrontAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="2.98" positionZ="0.4"/>
                 <RearAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="0" positionZ="0.4"/>
@@ -63,11 +69,16 @@
 
         <Vehicle name="car_red" vehicleCategory="car" model3d="../models/car_red.osgb">
             <!-- model bounding box xyz: 1.46, 0.00, 0.77 lwh: 5.04, 2.04, 1.49 -->
+            <ParameterDeclarations>
+                <ParameterDeclaration name="MaxSpeed" parameterType="double" value="70.0"/>
+                <ParameterDeclaration name="MaxDeceleration" parameterType="double" value="10"/>
+                <ParameterDeclaration name="MaxAcceleration" parameterType="double" value="5"/>               
+            </ParameterDeclarations>
             <BoundingBox>
                 <Center x="1.45" y="0.0" z="0.75"/>
                 <Dimensions width="2.0" length="5.04" height="1.5"/>
             </BoundingBox>
-            <Performance maxSpeed="70" maxDeceleration="10" maxAcceleration="5"/>
+            <Performance maxSpeed="$MaxSpeed" maxDeceleration="$MaxDeceleration" maxAcceleration="$MaxAcceleration"/>
             <Axles>
                 <FrontAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="2.98" positionZ="0.4"/>
                 <RearAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="0" positionZ="0.4"/>

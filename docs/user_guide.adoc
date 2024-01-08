@@ -1979,6 +1979,16 @@ Demo (running a somewhat outdated https://github.com/esmini/esmini/blob/master/s
 
 video::IuwuGE3BzKw[youtube,width=854,height=480,opts="autoplay,nocontrols,loop"]
 
+==== OffroadFollowerController
+
+A simple "follow-the-leader" controller which aims to keep a specified distance to a specified leading vehicle. The controller utilizes a simple 2D "bicycle" vehicle model. Each time-step the controller finds out the direction and distance to the lead vehicle. Based on this, the acceleration and steering input is calculated and provided to the vehicle model.
+
+The term off-road indicates that the controller does not consider any road network features. Note that it still can run on roads, parking lots, just that it's ignoring it in terms of lanes and road-marks.
+
+Below is a video clip showing the controller in action on an open paved area. The white lead vehicle is controlled interactively by the user via arrow keys. The controller is assigned to the red car which then strives to follow the lead car at the distance of 20 meters.
+
+video::uHqdsORPsGE[youtube,width=854,height=480,opts="autoplay,nocontrols,loop"]
+
 ===  How to add a new controller
 
 Below are the steps to add new controller in esmini:

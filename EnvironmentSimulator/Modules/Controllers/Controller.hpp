@@ -49,6 +49,7 @@ namespace scenarioengine
             CONTROLLER_TYPE_ECE_ALKS_REF_DRIVER,
             CONTROLLER_ALKS_R157SM,
             CONTROLLER_TYPE_LOOMING,
+            CONTROLLER_TYPE_OFFROAD_FOLLOWER,
             N_CONTROLLER_TYPES,
             GHOST_RESERVED_TYPE       = 100,
             USER_CONTROLLER_TYPE_BASE = 1000,

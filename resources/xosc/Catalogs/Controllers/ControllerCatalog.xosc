@@ -233,5 +233,20 @@
                 <Property name="execMode" value="$ExecMode" />
             </Properties>
         </Controller>
+        <Controller name="offroadFollower">
+            <ParameterDeclarations>
+                <ParameterDeclaration name="FollowEntity" parameterType="string" value="Ego" />
+                <ParameterDeclaration name="TargetDistance" parameterType="double" value="20.0" />
+                <ParameterDeclaration name="SteeringRate" parameterType="double" value="4.0" />
+                <ParameterDeclaration name="SpeedFactor" parameterType="double" value="1.0" />                
+            </ParameterDeclarations>
+            <Properties>
+                <Property name="esminiController" value="OffroadFollower" />
+                <Property name="followEntity" value="$FollowEntity" />
+                <Property name="targetDistance" value="$TargetDistance" />
+                <Property name="steeringRate" value="$SteeringRate" />
+                <Property name="speedFactor" value="$SpeedFactor" />
+            </Properties>
+        </Controller>        
     </Catalog>
 </OpenSCENARIO>

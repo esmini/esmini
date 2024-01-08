@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Demonstrate offroad follower controller -->
+<!-- The controller will try to follow a lead vehicle disregarding any road lanes -->
+<!-- More precisely, the follower aims for a point 20 meter straigh behind the lead vehicle -->
+<!-- Lead vehicle is controlled with arrow keys -->
+<OpenSCENARIO>
+    <FileHeader revMajor="1" revMinor="2" date="2024-01-08T10:00:00" description="Offroad Follower Controller demo" author="esmini-team"/>
+    <ParameterDeclarations/>
+    <CatalogLocations>
+        <VehicleCatalog>
+            <Directory path="../xosc/Catalogs/Vehicles"/>
+        </VehicleCatalog>
+        <ControllerCatalog>
+            <Directory path="../xosc/Catalogs/Controllers"/>
+        </ControllerCatalog>
+    </CatalogLocations>
+    <RoadNetwork>
+        <SceneGraphFile filepath="../models/parking_lot.osgb"/>
+    </RoadNetwork>
+    <Entities>
+        <ScenarioObject name="Ego">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+            <ObjectController>
+                <CatalogReference catalogName="ControllerCatalog" entryName="interactiveDriver">
+                    <ParameterAssignments>
+                        <ParameterAssignment parameterRef="SteeringRate" value="1.0"/>
+                    </ParameterAssignments>
+                </CatalogReference>
+            </ObjectController>
+        </ScenarioObject>
+        <ScenarioObject name="Follower">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_red">
+                <ParameterAssignments>
+                    <ParameterAssignment parameterRef="MaxSpeed" value="${1.2 * 180.0 / 3.6}"/>
+                </ParameterAssignments>                
+            </CatalogReference>
+            <ObjectController>
+                <CatalogReference catalogName="ControllerCatalog" entryName="offroadFollower">
+                    <ParameterAssignments>
+                        <ParameterAssignment parameterRef="FollowEntity" value="Ego"/>
+                        <ParameterAssignment parameterRef="TargetDistance" value="20.0"/>
+                        <ParameterAssignment parameterRef="SteeringRate" value="4.0"/>
+                    </ParameterAssignments>
+                </CatalogReference>
+            </ObjectController>
+        </ScenarioObject>
+    </Entities>
+    <Storyboard>
+        <Init>
+            <Actions>
+                <Private entityRef="Ego">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <WorldPosition x="1.8" y="-358" z="0" h="1.57" p="0" r="0"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <ActivateControllerAction longitudinal="true" lateral="true"/>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Follower">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <WorldPosition x="1.8" y="-380" z="0" h="1.57" p="0" r="0"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <ActivateControllerAction longitudinal="true" lateral="true"/>
+                    </PrivateAction>
+                </Private>
+            </Actions>
+        </Init>
+        <StopTrigger/>
+    </Storyboard>
+</OpenSCENARIO>

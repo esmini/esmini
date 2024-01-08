@@ -28,6 +28,7 @@
 #include "ControllerECE_ALKS_RefDriver.hpp"
 #include "ControllerALKS_R157SM.hpp"
 #include "ControllerLooming.hpp"
+#include "ControllerOffroadFollower.hpp"
 
 #include <cstdlib>
 
@@ -77,6 +78,7 @@ void ScenarioReader::LoadControllers()
     RegisterController(ControllerECE_ALKS_REF_DRIVER::GetTypeNameStatic(), InstantiateControllerECE_ALKS_REF_DRIVER);
     RegisterController(ControllerALKS_R157SM::GetTypeNameStatic(), InstantiateControllerALKS_R157SM);
     RegisterController(ControllerLooming::GetTypeNameStatic(), InstantiateControllerLooming);
+    RegisterController(ControllerOffroadFollower::GetTypeNameStatic(), InstantiateControllerOffroadFollower);
 }
 
 void ScenarioReader::UnloadControllers()
