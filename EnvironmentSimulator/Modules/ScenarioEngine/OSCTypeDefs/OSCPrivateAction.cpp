@@ -849,6 +849,7 @@ void LongSpeedAction::Start(double simTime, double dt)
 {
     OSCAction::Start(simTime, dt);
     transition_.Reset();
+    target_speed_reached_ = false;
 
     if (object_->GetControllerMode() == Controller::Mode::MODE_OVERRIDE && object_->IsControllerActiveOnDomains(ControlDomains::DOMAIN_LONG))
     {

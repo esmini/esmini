@@ -1592,6 +1592,40 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^11.000, 1, pedestrian_adult, 24.456, -20.843, 0.000, 2.646, 0.000, 0.000, 1.500, -0.151, 5.472', csv, re.MULTILINE))
         self.assertTrue(re.search('^11.300, 1, pedestrian_adult, 24.116, -20.574, 0.000, 1.792, 0.000, 0.000, 1.500, -0.301, 0.475', csv, re.MULTILINE))
 
+    def test_drive_when_close(self):
+        # this test case exercises restarting events within same maneuver. A car will drive only when near another specific one, otherwise stop.
+
+        log = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/drive_when_close.xosc'), COMMON_ARGS + "--fixed_timestep 0.1 --disable_controllers")
+
+        # Check some initialization steps
+        self.assertTrue(re.search('Loading .*drive_when_close.xosc', log)  is not None)
+
+        # Check some scenario events
+        self.assertTrue(re.search('6.000: DriveCondition == true, rel_dist: 29.50 < 30.00, edge: rising', log)  is not None)
+        self.assertTrue(re.search('9.900: SpeedAction runningState -> endTransition -> completeState', log)  is not None)
+        self.assertTrue(re.search('10.000: StopCondition == true, rel_dist: 30.50 > 30.00, edge: rising', log)  is not None)
+        self.assertTrue(re.search('30.000: DriveCondition == true, rel_dist: 29.50 < 30.00, edge: rising', log)  is not None)
+        self.assertTrue(re.search('34.000: StopCondition == true, rel_dist: 30.50 > 30.00, edge: rising', log)  is not None)
+        self.assertTrue(re.search('37.900: StopEvent runningState -> endTransition -> standbyState', log)  is not None)
+
+        # Check vehicle key positions
+        csv = generate_csv()
+
+        self.assertTrue(re.search('^5.000, 0, Ego, 60.500, -1.535, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 2.617', csv, re.MULTILINE))
+        self.assertTrue(re.search('^5.000, 1, Target, 100.000, -1.535, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000', csv, re.MULTILINE))
+        self.assertTrue(re.search('^9.900, 0, Ego, 109.500, -1.535, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 4.387', csv, re.MULTILINE))
+        self.assertTrue(re.search('^9.900, 1, Target, 139.000, -1.535, 0.000, 0.000, 0.000, 0.000, 19.500, 0.000, 4.614', csv, re.MULTILINE))
+        self.assertTrue(re.search('^10.000, 0, Ego, 110.500, -1.535, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 0.961', csv, re.MULTILINE))
+        self.assertTrue(re.search('^10.000, 1, Target, 141.000, -1.535, 0.000, 0.000, 0.000, 0.000, 20.000, 0.000, 4.046', csv, re.MULTILINE))
+        self.assertTrue(re.search('^10.100, 0, Ego, 111.500, -1.535, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 3.818', csv, re.MULTILINE))
+        self.assertTrue(re.search('^10.100, 1, Target, 142.950, -1.535, 0.000, 0.000, 0.000, 0.000, 19.500, 0.000, 3.334', csv, re.MULTILINE))
+        self.assertTrue(re.search('^13.900, 0, Ego, 149.500, -1.535, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 5.575', csv, re.MULTILINE))
+        self.assertTrue(re.search('^13.900, 1, Target, 180.000, -1.535, 0.000, 0.000, 0.000, 0.000, 0.500, 0.000, 2.377', csv, re.MULTILINE))
+        self.assertTrue(re.search('^14.000, 0, Ego, 150.500, -1.535, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 2.149', csv, re.MULTILINE))
+        self.assertTrue(re.search('^14.000, 1, Target, 180.000, -1.535, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 2.377', csv, re.MULTILINE))
+        self.assertTrue(re.search('^14.100, 0, Ego, 151.500, -1.535, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 5.006', csv, re.MULTILINE))
+        self.assertTrue(re.search('^14.100, 1, Target, 180.050, -1.535, 0.000, 0.000, 0.000, 0.000, 0.500, 0.000, 2.520', csv, re.MULTILINE))
+
 
 if __name__ == "__main__":
     # execute only if run as a script
