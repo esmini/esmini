@@ -5,7 +5,7 @@
 New features:
 - Add "off-road" follower controller
   - a simple "follow-the-leader" controller for open spaces
-  - see more info in [User guide - OffroadFollowerController](https://esmini.github.io/#_)
+  - see more info in [User guide - OffroadFollowerController](https://esmini.github.io/#_offroadfollowercontroller)
   - example scenario [offroad_follower.xosc](https://github.com/esmini/esmini/blob/dev/resources/xosc/offroad_follower.xosc) and [video clip](https://youtu.be/uHqdsORPsGE)
   - code module: [ControllerOffroadFollower.cpp](https://github.com/esmini/esmini/blob/feature/add_offroad_follower/EnvironmentSimulator/Modules/Controllers/ControllerOffroadFollower.cpp)
 
