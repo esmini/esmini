@@ -1,5 +1,27 @@
 ## esmini release notes
 
+### 2024-01-10 Version 2.36.2
+
+New features:
+- Add "off-road" follower controller
+  - a simple "follow-the-leader" controller for open spaces
+  - see more info in [User guide - OffroadFollowerController](https://esmini.github.io/#_)
+  - example scenario [offroad_follower.xosc](https://github.com/esmini/esmini/blob/dev/resources/xosc/offroad_follower.xosc) and [video clip](https://youtu.be/uHqdsORPsGE)
+  - code module: [ControllerOffroadFollower.cpp](https://github.com/esmini/esmini/blob/feature/add_offroad_follower/EnvironmentSimulator/Modules/Controllers/ControllerOffroadFollower.cpp)
+
+Improvements and fixes:
+- Fix and update ideal sensor API ([issue #514](https://github.com/esmini/esmini/issues/514))
+  - Fix wrong return code in SE_AddObjSensor, now returning unique sensor ID
+  - Add functions to retrieve number of sensors, both total and per object
+- Reset status in SpeedAction for any additional run
+  - enables same speed action to be correctly re-triggered
+  - example scenario: [drive_when_close.xosc](https://github.com/esmini/esmini/blob/dev/resources/xosc/drive_when_close.xosc), drive while close to another car else stop
+
+Build improvements:
+- Automatically attempt download dependent packages from all (3) available sources
+- Add implot package to CI cache (faster total build time)
+- Exclude implot from [slim esmini](https://esmini.github.io/#_slim_esmini_customize_configration) build (in CI)
+
 ### 2024-01-04 Version 2.36.1
 
 Fixes:
