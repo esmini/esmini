@@ -4,6 +4,12 @@ message(
 
 # ############################# Project generate options ###########################################################
 
+project(
+    esmini
+    DESCRIPTION "esmini"
+    LANGUAGES C
+              CXX)
+
 set(ENABLE_COLORED_DIAGNOSTICS
     OFF
     CACHE BOOL
@@ -86,12 +92,6 @@ else()
         VERSION 2.8.12
         FATAL_ERROR)
 endif()
-
-project(
-    esmini
-    DESCRIPTION "esmini"
-    LANGUAGES C
-              CXX)
 
 set_property(
     GLOBAL
