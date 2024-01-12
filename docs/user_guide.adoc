@@ -2556,14 +2556,47 @@ Also, g\++ version >= 5 is needed for c++14 code support.
 
 Windows and Mac: Install the https://cmake.org/[cmake] application
 
-=== Run with Linux and visual studio code
+=== Run and Debug with Linux and visual studio code
+
 When want to run from the visual studio code below steps might help with setup configuration.
+==== With preset.
+Note: Make sure cmake.preset set to auto to hide the preset. Open setting (cltr+, ) type cmake.preset, set auto in drop down box
+
+For run,
+
+``1. Open the Command Palette (Ctrl+Shift+P) and run CMake: Configure. Select ubuntu_release ``
+
+``2. Press f7, which build with defalut argument all (press shift+f7 and select specific target to build in case for specific need)``
+
+Now launch.json file to be configured
+
+``Open the run and debug window (Ctrl+Shift+P)``
+
+``Select Create new lanuch.json file``
+
+``Select add configuration``
+
+``Change Program argument as "${workspaceFolder}/build/EnvironmentSimulator/Applications/esmini/esmini"``
+
+``Change args argument as ["--window", "60", "60", "800", "400", "--osc", "../resources/xosc/cut-in.xosc"]``
+
+``3 Press f5``
+
+For Debug,
+Repeat step 1 and select ubuntu_debug. Repeat step 2 to build debug binaries and then step 3 with breakpoints in program which is argument in json porgram coloumn.( create json file incase in case it is not created)
+
+
+==== Without preset.
+
+Note: Make sure cmake.preset set to never to hide the preset. Open setting (cltr+, ) type cmake.preset, set never in drop down box
+
+For run,
 
 ``1. Open the Command Palette (Ctrl+Shift+P) and run CMake: Select a Kit. Select the compiler you want to use. For example GCC 11.3.0``
 
-``2. open the Command Palette (Ctrl+Shift+P) run the CMake: Select Variant command. Select Debug``
+``2. open the Command Palette (Ctrl+Shift+P) run the CMake: Select Variant command. Select Release``
 
-``3. open the Command Palette (Ctrl+Shift+P) run the CMake:Set Build Target. Select install``
+``3. open the Command Palette (Ctrl+Shift+P) run the CMake:Set Build Target. Select all``
 
 ``4. Open the Command Palette (Ctrl+Shift+P) and run the CMake: Build command, or select the Build button from the Status bar.``
 
@@ -2579,27 +2612,11 @@ Now launch.json file to be configured
 
 ``Change args argument as ["--window", "60", "60", "800", "400", "--osc", "../resources/xosc/cut-in.xosc"]``
 
-``Press RUN-->run without debug button``
+``5 Press f5``
 
-=== Debug with Linux and visual studio code
+For debug,
+Repeat step 2 and select debug. Repeat step 3 to 5 with breakpoints in program which is argument in json porgram coloumn.( create json file incase in case it is not created)
 
-Open launch.json file already created.
-
-``Select add configuration``
-
-``Change Program argument as "${workspaceFolder}/build/EnvironmentSimulator/Applications/esmini-dyn/esmini-dyn"``
-
-``Rename name as some meaningfull eg "name": "(gdb) Launch esmini/debug"``
-
-``args argument as []``
-
-``Open the Command Palette (Ctrl+Shift+P) and run the CMake: Build command, or select the Build button from the Status bar.``
-
-``Copy the content from the Hello-World_coding-example/main.cpp to build/EnvironmentSimulator/Applications/esmini-dyn/main.cpp``
-
-``Open the run and debug window (Ctrl+Shift+P) and select newly created configuration``
-
-``Press RUN-->start debuging button``
 
 Refer https://code.visualstudio.com/docs/cpp/CMake-linux[Here] for more information
 

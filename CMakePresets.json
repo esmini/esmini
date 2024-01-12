@@ -118,23 +118,26 @@
       ]
     },
     {
-      "name": "ci-ubuntu",
+      "name": "ci-ubuntu_release",
       "inherits": [
         "ci-build",
         "ci-unix"
-      ]
+      ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
     },
     {
       "name": "ci-sanitize-ubuntu",
       "inherits": [
-        "ci-ubuntu",
+        "ci-ubuntu_release",
         "sanitize-build"
       ]
     },
     {
       "name": "ci-sanitize-macos",
       "inherits": [
-        "ci-ubuntu",
+        "ci-ubuntu_release",
         "sanitize-build"
       ]
     },
@@ -158,7 +161,7 @@
     {
       "name": "ci-ubuntu-test",
       "inherits": [
-        "ci-ubuntu",
+        "ci-ubuntu_release",
         "test-linux"
       ]
     },
@@ -194,6 +197,86 @@
         "disable-sumo",
         "disable-implot"
       ]
+    },
+    {
+      "name": "ubuntu_release",
+      "inherits": [
+        "ci-build",
+        "ci-unix"
+      ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "ubuntu_debug",
+      "inherits": [
+        "ci-build",
+        "ci-unix"
+      ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "windows-2019_release",
+      "inherits": [
+        "ci-build",
+        "ci-win64-2019"
+      ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "windows-2019_debug",
+      "inherits": [
+        "ci-build",
+        "ci-win64-2019"
+      ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "windows-2022_release",
+      "inherits": [
+        "ci-build",
+        "ci-win64-2022"
+      ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "windows-2022_debug",
+      "inherits": [
+        "ci-build",
+        "ci-win64-2022"
+      ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "macos_release",
+      "inherits": [
+        "ci-build",
+        "ci-unix"
+      ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "macos_debug",
+      "inherits": [
+        "ci-build",
+        "ci-unix"
+      ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
     }
   ]
 }
