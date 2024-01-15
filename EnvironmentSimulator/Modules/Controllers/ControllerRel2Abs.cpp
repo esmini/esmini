@@ -386,7 +386,7 @@ void ControllerRel2Abs::Step(double timeStep)
                 {
                     // Assumes object has reached steady state and want to continue in that state.
                     double           currentSpeed = lda->object_->GetSpeed();
-                    LongSpeedAction* lsa          = new LongSpeedAction();
+                    LongSpeedAction* lsa          = new LongSpeedAction(nullptr);
                     lsa->object_                  = object_;
                     lsa->transition_.shape_       = OSCPrivateAction::DynamicsShape::LINEAR;
                     lsa->transition_.dimension_   = OSCPrivateAction::DynamicsDimension::RATE;
@@ -447,7 +447,7 @@ void ControllerRel2Abs::Step(double timeStep)
                         {
                             // This is the last part of the action, assume final speed is to be reached
                             double           trgSpeed   = sa->final_speed_->GetValue();
-                            LongSpeedAction* lsa        = new LongSpeedAction();
+                            LongSpeedAction* lsa        = new LongSpeedAction(nullptr);
                             lsa->object_                = object_;
                             lsa->transition_.shape_     = OSCPrivateAction::DynamicsShape::LINEAR;
                             lsa->transition_.dimension_ = OSCPrivateAction::DynamicsDimension::DISTANCE;
@@ -545,7 +545,7 @@ void ControllerRel2Abs::Step(double timeStep)
                     else
                     {
                         double           currentSpeed = sa->object_->GetSpeed();
-                        LongSpeedAction* lsa          = new LongSpeedAction();
+                        LongSpeedAction* lsa          = new LongSpeedAction(nullptr);
                         lsa->object_                  = object_;
                         lsa->transition_.shape_       = OSCPrivateAction::DynamicsShape::LINEAR;
                         lsa->transition_.dimension_   = OSCPrivateAction::DynamicsDimension::RATE;

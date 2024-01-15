@@ -3791,7 +3791,7 @@ TEST(ReplayTest, TestMultiReplayDifferentTimeSteps)
 
 void ConditionCallbackInstance1(const char* element_name, double timestamp)
 {
-    EXPECT_STREQ(element_name, "act_start");
+    EXPECT_STREQ(element_name, "act_start_condition");
     EXPECT_NEAR(timestamp, 0.1, 1E-4);
     EXPECT_NEAR(static_cast<float>(timestamp), SE_GetSimulationTime(), 1E-4);
 }
@@ -3816,7 +3816,7 @@ TEST(EventCallbackTest, TestConditionCallback)
     SE_Close();
 }
 
-void StoryBoardElementStateCallbackInstance1(const char* element_name, int type, int state)
+void StoryBoardElementStateCallbackInstance1(const char* element_name, int type, int state, const char* full_path)
 {
     static int counter = 0;
     const int  n_runs  = 16;
@@ -3826,23 +3826,24 @@ void StoryBoardElementStateCallbackInstance1(const char* element_name, int type,
         double      time;
         int         type;
         int         state;
+        const char* full_path;
     } state_target[n_runs] = {
-        {"act_maneuvergroup_maneuver", 0.1, 3, 2},        // Maneuver, Running
-        {"maneuver", 0.1, 5, 2},                          // Maneuver, Running
-        {"maneuvergroup_maneuver", 0.1, 4, 2},            // ManeuverGroup, Running
-        {"slowdown", 3.4, 7, 2},                          // Action, Running
-        {"slowdown event", 3.4, 6, 2},                    // Event, Running
-        {"slowdown", 4.4, 7, 3},                          // Action, Complete
-        {"slowdown event", 4.4, 6, 3},                    // Event, Complete
-        {"lane change", 4.4, 7, 2},                       // Action, Running
-        {"lanechange event", 4.4, 6, 2},                  // Event, Running
-        {"lane change", 8.3, 7, 3},                       // Action, Complete
-        {"lanechange event", 8.3, 6, 3},                  // Event, Complete
-        {"maneuver", 8.4, 5, 3},                          // Maneuver, Complete
-        {"maneuvergroup_maneuver", 8.4, 4, 3},            // ManeuverGroup, Complete
-        {"act_maneuvergroup_maneuver", 8.4, 3, 3},        // Act, Complete
-        {"story_act_maneuvergroup_maneuver", 8.4, 2, 3},  // Story, Complete
-        {"storyBoard", 12.1, 1, 3},                       // StoryBoard, Complete
+        {"hwe_act", 0.1, 3, 2, "/hwe_story/hwe_act"},                                                                  // Act, Running
+        {"hwe_maneuver", 0.1, 5, 2, "/hwe_story/hwe_act/hwe_maneuvergroup/hwe_maneuver"},                              // Maneuver, Running
+        {"hwe_maneuvergroup", 0.1, 4, 2, "/hwe_story/hwe_act/hwe_maneuvergroup"},                                      // ManeuverGroup, Running
+        {"slowdown", 3.4, 7, 2, "/hwe_story/hwe_act/hwe_maneuvergroup/hwe_maneuver/slowdown event/slowdown"},          // Action, Running
+        {"slowdown event", 3.4, 6, 2, "/hwe_story/hwe_act/hwe_maneuvergroup/hwe_maneuver/slowdown event"},             // Event, Running
+        {"slowdown", 4.4, 7, 3, "/hwe_story/hwe_act/hwe_maneuvergroup/hwe_maneuver/slowdown event/slowdown"},          // Action, Complete
+        {"slowdown event", 4.4, 6, 3, "/hwe_story/hwe_act/hwe_maneuvergroup/hwe_maneuver/slowdown event"},             // Event, Complete
+        {"lane change", 4.4, 7, 2, "/hwe_story/hwe_act/hwe_maneuvergroup/hwe_maneuver/lanechange event/lane change"},  // Action, Running
+        {"lanechange event", 4.4, 6, 2, "/hwe_story/hwe_act/hwe_maneuvergroup/hwe_maneuver/lanechange event"},         // Event, Running
+        {"lane change", 8.3, 7, 3, "/hwe_story/hwe_act/hwe_maneuvergroup/hwe_maneuver/lanechange event/lane change"},  // Action, Complete
+        {"lanechange event", 8.3, 6, 3, "/hwe_story/hwe_act/hwe_maneuvergroup/hwe_maneuver/lanechange event"},         // Event, Complete
+        {"hwe_maneuver", 8.4, 5, 3, "/hwe_story/hwe_act/hwe_maneuvergroup/hwe_maneuver"},                              // Maneuver, Complete
+        {"hwe_maneuvergroup", 8.4, 4, 3, "/hwe_story/hwe_act/hwe_maneuvergroup"},                                      // ManeuverGroup, Complete
+        {"hwe_act", 8.4, 3, 3, "/hwe_story/hwe_act"},                                                                  // Act, Complete
+        {"hwe_story", 8.4, 2, 3, "/hwe_story"},                                                                        // Story, Complete
+        {"storyBoard", 12.1, 1, 3, "/"},                                                                               // StoryBoard, Complete
     };
 
     if (counter < n_runs)
@@ -3851,6 +3852,7 @@ void StoryBoardElementStateCallbackInstance1(const char* element_name, int type,
         EXPECT_NEAR(SE_GetSimulationTime(), state_target[counter].time, 1E-4);
         EXPECT_EQ(type, state_target[counter].type);
         EXPECT_EQ(state, state_target[counter].state);
+        EXPECT_STREQ(full_path, state_target[counter].full_path);
     }
 
     counter++;

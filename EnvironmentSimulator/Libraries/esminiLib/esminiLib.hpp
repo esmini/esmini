@@ -1108,7 +1108,7 @@ extern "C"
 
     /**
     Registers a function to be called back from esmini every time a StoryBoardElement changes its state.
-    The name of the respective StoryBoardElement, the type and the state will be returned.
+    The name of the respective StoryBoardElement, the type, state, and full path (parent names delimited by /) will be returned.
 
      Values for the StoryBoardElement type
         STORY = 1,
@@ -1128,7 +1128,7 @@ extern "C"
     Registered callbacks will be cleared between SE_Init calls.
     @param fnPtr A pointer to the function to be invoked
     */
-    SE_DLL_API void SE_RegisterStoryBoardElementStateChangeCallback(void (*fnPtr)(const char *name, int type, int state));
+    SE_DLL_API void SE_RegisterStoryBoardElementStateChangeCallback(void (*fnPtr)(const char *name, int type, int state, const char *full_path));
 
     /**
             Get the number of road signs along specified road

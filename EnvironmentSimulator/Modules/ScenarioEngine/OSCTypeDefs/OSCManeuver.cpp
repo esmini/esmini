@@ -37,7 +37,7 @@ void Event::Start(double simTime, double dt)
                         {
                             // Domains overlap, at least one domain in common. Terminate old action.
                             LOG("Stopping %s on conflicting %s domain(s)",
-                                obj->initActions_[j]->name_.c_str(),
+                                obj->initActions_[j]->GetName().c_str(),
                                 ControlDomain2Str(obj->initActions_[j]->GetDomain()).c_str());
                             obj->initActions_[j]->End(simTime);
                         }
@@ -60,8 +60,8 @@ void Event::Start(double simTime, double dt)
                                 {
                                     // Domains overlap, at least one domain in common. Terminate old action.
                                     LOG("Stopping object %s %s on conflicting %s domain(s)",
-                                        obj->name_.c_str(),
-                                        pa2->name_.c_str(),
+                                        obj->GetName().c_str(),
+                                        pa2->GetName().c_str(),
                                         ControlDomain2Str(pa2->GetDomain()).c_str());
                                     pa2->End(simTime);
                                 }

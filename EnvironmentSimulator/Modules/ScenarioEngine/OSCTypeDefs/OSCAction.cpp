@@ -14,7 +14,7 @@
 
 using namespace scenarioengine;
 
-void (*StoryBoardElement::stateChangeCallback)(const char* name, int type, int state) = nullptr;
+void (*StoryBoardElement::stateChangeCallback)(const char* name, int type, int state, const char* full_path) = nullptr;
 
 std::string StoryBoardElement::state2str(StoryBoardElement::State state)
 {
@@ -104,7 +104,7 @@ void StoryBoardElement::SetState(StoryBoardElement::State state)
 
         if (stateChangeCallback != nullptr)
         {
-            stateChangeCallback(name_.c_str(), static_cast<int>(type_), static_cast<int>(state));
+            stateChangeCallback(GetName().c_str(), static_cast<int>(type_), static_cast<int>(state), GetFullPath().c_str());
         }
         set_flag_ = true;
     }
@@ -122,5 +122,29 @@ void StoryBoardElement::UpdateState()
     {
         // second step, reset transition indicator
         transition_ = Transition::UNDEFINED_ELEMENT_TRANSITION;
+    }
+}
+
+void StoryBoardElement::SetName(std::string name)
+{
+    name_ = name;
+    if (type_ == STORY_BOARD)
+    {
+        full_path_ = "/";
+    }
+    else if (parent_ == nullptr)
+    {
+        full_path_ = name;
+    }
+    else
+    {
+        if (parent_->type_ == STORY_BOARD)
+        {
+            full_path_ = "/" + name;
+        }
+        else
+        {
+            full_path_ = parent_->GetFullPath() + "/" + name;
+        }
     }
 }

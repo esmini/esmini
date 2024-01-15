@@ -41,7 +41,10 @@ namespace scenarioengine
 
         Trigger* start_trigger_;
 
-        Event() : StoryBoardElement(StoryBoardElement::ElementType::EVENT), start_trigger_(0)
+        Event(StoryBoardElement* parent)
+            : StoryBoardElement(StoryBoardElement::ElementType::EVENT, parent),
+              priority_(Event::Priority::UNDEFINED_PRIORITY),
+              start_trigger_(0)
         {
         }
         ~Event()
@@ -70,7 +73,7 @@ namespace scenarioengine
         OSCParameterDeclarations parameter_declarations_;
         std::vector<Event*>      event_;
 
-        Maneuver() : StoryBoardElement(StoryBoardElement::ElementType::MANEUVER)
+        Maneuver(StoryBoardElement* parent) : StoryBoardElement(StoryBoardElement::ElementType::MANEUVER, parent)
         {
         }
         ~Maneuver()
@@ -88,7 +91,7 @@ namespace scenarioengine
 
         void Print()
         {
-            LOG("\tname = %s", name_.c_str());
+            LOG("\tname = %s", GetName().c_str());
         };
     };
 }  // namespace scenarioengine

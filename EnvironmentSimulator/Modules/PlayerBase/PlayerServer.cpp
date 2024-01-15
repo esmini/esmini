@@ -60,17 +60,17 @@ namespace scenarioengine
                         action->Type2Str().c_str(),
                         (reinterpret_cast<scenarioengine::OSCPrivateAction *>(action))->object_->GetId(),
                         (reinterpret_cast<scenarioengine::OSCPrivateAction *>(action))->object_->GetName().c_str(),
-                        action_[i]->name_.c_str());
+                        action_[i]->GetName().c_str());
                 }
                 else
                 {
-                    LOG("UDP action of type %s already ongoing. Skipping UDP %s action.", action->Type2Str().c_str(), action_[i]->name_.c_str());
+                    LOG("UDP action of type %s already ongoing. Skipping UDP %s action.", action->Type2Str().c_str(), action_[i]->GetName().c_str());
                 }
                 return -1;
             }
         }
 
-        LOG("Adding action %s", action->name_.c_str());
+        LOG("Adding action %s", action->GetName().c_str());
         action_.push_back(action);
 
         return 0;
@@ -92,7 +92,7 @@ namespace scenarioengine
         {
             if (action_[i]->state_ == OSCAction::State::COMPLETE)
             {
-                LOG("UDP action %s finished", action_[i]->name_.c_str());
+                LOG("UDP action %s finished", action_[i]->GetName().c_str());
                 DeleteAction(static_cast<int>(i));
                 i++;
             }
@@ -155,9 +155,9 @@ namespace scenarioengine
 
     void PlayerServer::InjectSpeedAction(SpeedActionStruct &action)
     {
-        LongSpeedAction *a = new LongSpeedAction;
-        a->name_           = "SpeedAction";
-        a->object_         = player_->scenarioEngine->entities_.GetObjectById(action.id);
+        LongSpeedAction *a = new LongSpeedAction(nullptr);
+        a->SetName("SpeedAction");
+        a->object_ = player_->scenarioEngine->entities_.GetObjectById(action.id);
 
         SetTransitionShape(a->transition_, action.transition_shape);
         SetTransitionDimension(a->transition_, action.transition_dim);
@@ -173,9 +173,9 @@ namespace scenarioengine
 
     void PlayerServer::InjectLaneChangeAction(LaneChangeActionStruct &action)
     {
-        LatLaneChangeAction *a = new LatLaneChangeAction;
-        a->name_               = "LaneChangeAction";
-        a->object_             = player_->scenarioEngine->entities_.GetObjectById(action.id);
+        LatLaneChangeAction *a = new LatLaneChangeAction(nullptr);
+        a->SetName("LaneChangeAction");
+        a->object_ = player_->scenarioEngine->entities_.GetObjectById(action.id);
 
         SetTransitionShape(a->transition_, action.transition_shape);
         SetTransitionDimension(a->transition_, action.transition_dim);
@@ -201,9 +201,9 @@ namespace scenarioengine
 
     void PlayerServer::InjectLaneOffsetAction(LaneOffsetActionStruct &action)
     {
-        LatLaneOffsetAction *a = new LatLaneOffsetAction;
-        a->name_               = "LaneOffsetAction";
-        a->object_             = player_->scenarioEngine->entities_.GetObjectById(action.id);
+        LatLaneOffsetAction *a = new LatLaneOffsetAction(nullptr);
+        a->SetName("LaneOffsetAction");
+        a->object_ = player_->scenarioEngine->entities_.GetObjectById(action.id);
 
         SetTransitionShape(a->transition_, action.transition_shape);
         a->max_num_executions_ = 1;

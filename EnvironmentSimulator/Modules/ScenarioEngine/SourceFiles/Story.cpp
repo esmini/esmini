@@ -19,7 +19,7 @@ Act* Story::FindActByName(std::string name)
 {
     for (size_t i = 0; i < act_.size(); i++)
     {
-        if (name == act_[i]->name_)
+        if (name == act_[i]->GetName())
         {
             return act_[i];
         }
@@ -35,7 +35,7 @@ ManeuverGroup* Story::FindManeuverGroupByName(std::string name)
         for (size_t j = 0; j < act_[i]->maneuverGroup_.size(); j++)
         {
             ManeuverGroup* mg = act_[i]->maneuverGroup_[j];
-            if (name == mg->name_)
+            if (name == mg->GetName())
             {
                 return mg;
             }
@@ -54,7 +54,7 @@ Maneuver* Story::FindManeuverByName(std::string name)
             for (size_t k = 0; k < act_[i]->maneuverGroup_[j]->maneuver_.size(); k++)
             {
                 Maneuver* maneuver = act_[i]->maneuverGroup_[j]->maneuver_[k];
-                if (maneuver->name_ == name)
+                if (maneuver->GetName() == name)
                 {
                     return maneuver;
                 }
@@ -76,7 +76,7 @@ Event* Story::FindEventByName(std::string name)
                 for (size_t l = 0; l < act_[i]->maneuverGroup_[j]->maneuver_[k]->event_.size(); l++)
                 {
                     Event* event = act_[i]->maneuverGroup_[j]->maneuver_[k]->event_[l];
-                    if (name == event->name_)
+                    if (name == event->GetName())
                     {
                         return event;
                     }
@@ -101,7 +101,7 @@ OSCAction* Story::FindActionByName(std::string name)
                     for (size_t m = 0; m < act_[i]->maneuverGroup_[j]->maneuver_[k]->event_[l]->action_.size(); m++)
                     {
                         OSCAction* action = act_[i]->maneuverGroup_[j]->maneuver_[k]->event_[l]->action_[m];
-                        if (name == action->name_)
+                        if (name == action->GetName())
                         {
                             return action;
                         }
@@ -116,7 +116,7 @@ OSCAction* Story::FindActionByName(std::string name)
 
 void Story::Print()
 {
-    LOG("Story: %s", name_.c_str());
+    LOG("Story: %s", GetName().c_str());
 }
 
 bool Story::IsComplete()

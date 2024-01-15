@@ -20,7 +20,7 @@ namespace scenarioengine
     class StoryBoardElement
     {
     public:
-        static void (*stateChangeCallback)(const char* name, int type, int state);
+        static void (*stateChangeCallback)(const char* name, int type, int state, const char* full_path);
 
         /**
          * Take note, changing this enum will alter the public API in esminiLib.hpp
@@ -57,16 +57,17 @@ namespace scenarioengine
             UNDEFINED_ELEMENT_TRANSITION
         } Transition;
 
-        ElementType type_;
-        State       state_;
-        Transition  transition_;
-        std::string name_;
-        int         num_executions_;
-        int         max_num_executions_;
-        bool        set_flag_;  // indicate state changed current timestep, keep transition next step
+        ElementType        type_;
+        StoryBoardElement* parent_;
+        State              state_;
+        Transition         transition_;
+        int                num_executions_;
+        int                max_num_executions_;
+        bool               set_flag_;  // indicate state changed current timestep, keep transition next step
 
-        StoryBoardElement(ElementType type)
+        StoryBoardElement(ElementType type, StoryBoardElement* parent)
             : type_(type),
+              parent_(parent),
               state_(State::STANDBY),
               transition_(Transition::UNDEFINED_ELEMENT_TRANSITION),
               num_executions_(0),
@@ -75,8 +76,9 @@ namespace scenarioengine
         {
         }
 
-        StoryBoardElement(ElementType type, int max_num_executions)
+        StoryBoardElement(ElementType type, StoryBoardElement* parent, int max_num_executions)
             : type_(type),
+              parent_(parent),
               state_(State::STANDBY),
               transition_(Transition::UNDEFINED_ELEMENT_TRANSITION),
               num_executions_(0),
@@ -203,6 +205,22 @@ namespace scenarioengine
             num_executions_ = 0;
             set_flag_       = false;
         }
+
+        void SetName(std::string name);
+
+        const std::string GetName() const
+        {
+            return name_;
+        };
+
+        const std::string GetFullPath() const
+        {
+            return full_path_;
+        };
+
+    private:
+        std::string name_;
+        std::string full_path_;
     };
 
     class OSCAction : public StoryBoardElement
@@ -217,7 +235,7 @@ namespace scenarioengine
 
         BaseType base_type_;
 
-        OSCAction(BaseType type) : StoryBoardElement(StoryBoardElement::ElementType::ACTION), base_type_(type)
+        OSCAction(BaseType type, StoryBoardElement* parent) : StoryBoardElement(StoryBoardElement::ElementType::ACTION, parent), base_type_(type)
         {
         }
 
@@ -238,13 +256,13 @@ namespace scenarioengine
     class OSCUserDefinedAction : public OSCAction
     {
     public:
-        OSCUserDefinedAction() : OSCAction(OSCAction::BaseType::USER_DEFINED)
+        OSCUserDefinedAction(StoryBoardElement* parent) : OSCAction(OSCAction::BaseType::USER_DEFINED, parent)
         {
         }
 
-        OSCUserDefinedAction(const OSCUserDefinedAction& action) : OSCAction(OSCAction::BaseType::USER_DEFINED)
+        OSCUserDefinedAction(const OSCUserDefinedAction& action) : OSCAction(OSCAction::BaseType::USER_DEFINED, action.parent_)
         {
-            name_    = action.name_;
+            SetName(action.GetName());
             type_    = action.type_;
             content_ = action.content_;
         }

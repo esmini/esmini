@@ -2020,7 +2020,7 @@ int ScenarioReader::ParseTransitionDynamics(pugi::xml_node node, OSCPrivateActio
     return 0;
 }
 
-OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode)
+OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode, Event *parent)
 {
     OSCGlobalAction *action = 0;
 
@@ -2037,7 +2037,7 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode)
             {
                 if (paramChild.name() == std::string("SetAction"))
                 {
-                    ParameterSetAction *paramSetAction = new ParameterSetAction();
+                    ParameterSetAction *paramSetAction = new ParameterSetAction(action);
 
                     // give user a message about depricated action.. use variable instead...
                     LOG("Parameter SetAction depricated from OSC 1.2. Please use Variable SetAction instead. Accepting for this time.");
@@ -2060,7 +2060,7 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode)
             {
                 if (varChild.name() == std::string("SetAction"))
                 {
-                    VariableSetAction *varSetAction = new VariableSetAction();
+                    VariableSetAction *varSetAction = new VariableSetAction(parent);
 
                     varSetAction->name_      = variables.ReadAttribute(actionChild, "variableRef");
                     varSetAction->value_     = variables.ReadAttribute(varChild, "value");
@@ -2079,7 +2079,7 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode)
             pugi::xml_node trafficChild = actionChild.first_child();
             if (!strcmp(trafficChild.name(), "TrafficSwarmAction"))
             {
-                SwarmTrafficAction *trafficSwarmAction = new SwarmTrafficAction();
+                SwarmTrafficAction *trafficSwarmAction = new SwarmTrafficAction(parent);
 
                 pugi::xml_node childNode = trafficChild.child("CentralObject");
                 if (childNode.empty())
@@ -2141,7 +2141,7 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode)
             {
                 if (eaChild.name() == std::string("AddEntityAction"))
                 {
-                    AddEntityAction *addEntityAction = new AddEntityAction(entity);
+                    AddEntityAction *addEntityAction = new AddEntityAction(entity, parent);
 
                     addEntityAction->pos_OSCPosition_.reset(parseOSCPosition(eaChild.child("Position")));
                     addEntityAction->pos_ = addEntityAction->pos_OSCPosition_->GetRMPos();
@@ -2151,7 +2151,7 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode)
                 }
                 else if (eaChild.name() == std::string("DeleteEntityAction"))
                 {
-                    DeleteEntityAction *deleteEntityAction = new DeleteEntityAction(entity);
+                    DeleteEntityAction *deleteEntityAction = new DeleteEntityAction(entity, parent);
                     deleteEntityAction->SetEntities(entities_);
                     deleteEntityAction->SetGateway(gateway_);
 
@@ -2173,42 +2173,42 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode)
     {
         if (actionNode.parent().attribute("name"))
         {
-            action->name_ = parameters.ReadAttribute(actionNode.parent(), "name");
+            action->SetName(parameters.ReadAttribute(actionNode.parent(), "name"));
         }
         else
         {
-            action->name_ = "no name";
+            action->SetName("no name");
         }
     }
 
     return action;
 }
 
-OSCUserDefinedAction *ScenarioReader::parseOSCUserDefinedAction(pugi::xml_node actionNode)
+OSCUserDefinedAction *ScenarioReader::parseOSCUserDefinedAction(pugi::xml_node actionNode, Event *parent)
 {
     OSCUserDefinedAction *action = nullptr;
 
     pugi::xml_node actionChild = actionNode.first_child();
     if (actionChild && actionChild.name() == std::string("CustomCommandAction"))
     {
-        action           = new OSCUserDefinedAction();
+        action           = new OSCUserDefinedAction(parent);
         action->type_    = parameters.ReadAttribute(actionChild, "type");
         action->content_ = actionChild.first_child().value();
     }
 
     if (action && actionNode.parent().attribute("name"))
     {
-        action->name_ = parameters.ReadAttribute(actionNode.parent(), "name");
+        action->SetName(parameters.ReadAttribute(actionNode.parent(), "name"));
     }
     else
     {
-        action->name_ = "no name";
+        action->SetName("no name");
     }
 
     return action;
 }
 
-ActivateControllerAction *ScenarioReader::parseActivateControllerAction(pugi::xml_node node)
+ActivateControllerAction *ScenarioReader::parseActivateControllerAction(pugi::xml_node node, Event *parent)
 {
     Controller::DomainActivation lateral      = Controller::DomainActivation::UNDEFINED;
     Controller::DomainActivation longitudinal = Controller::DomainActivation::UNDEFINED;
@@ -2233,7 +2233,7 @@ ActivateControllerAction *ScenarioReader::parseActivateControllerAction(pugi::xm
         longitudinal = Controller::DomainActivation::ON;
     }
 
-    ActivateControllerAction *activateControllerAction = new ActivateControllerAction(lateral, longitudinal);
+    ActivateControllerAction *activateControllerAction = new ActivateControllerAction(lateral, longitudinal, parent);
 
     return activateControllerAction;
 }
@@ -2289,7 +2289,7 @@ int ScenarioReader::parseDynamicConstraints(pugi::xml_node dynamics_node, Dynami
     return 0;
 }
 
-OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNode, Object *object)
+OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNode, Object *object, Event *parent)
 {
     OSCPrivateAction *action = 0;
 
@@ -2302,7 +2302,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
             {
                 if (longitudinalChild.name() == std::string("SpeedAction"))
                 {
-                    LongSpeedAction *action_speed = new LongSpeedAction();
+                    LongSpeedAction *action_speed = new LongSpeedAction(parent);
 
                     for (pugi::xml_node speedChild = longitudinalChild.first_child(); speedChild; speedChild = speedChild.next_sibling())
                     {
@@ -2363,7 +2363,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                 }
                 else if (longitudinalChild.name() == std::string("SpeedProfileAction"))  // v1.2
                 {
-                    LongSpeedProfileAction *action_speed_profile = new LongSpeedProfileAction();
+                    LongSpeedProfileAction *action_speed_profile = new LongSpeedProfileAction(parent);
 
                     if (longitudinalChild.attribute("followingMode").empty())
                     {
@@ -2429,7 +2429,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                 }
                 else if (longitudinalChild.name() == std::string("LongitudinalDistanceAction"))
                 {
-                    LongDistanceAction *action_dist = new LongDistanceAction();
+                    LongDistanceAction *action_dist = new LongDistanceAction(parent);
 
                     pugi::xml_node dynamics_node = longitudinalChild.child("DynamicConstraints");
                     if (dynamics_node != NULL)
@@ -2509,7 +2509,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
             {
                 if (lateralChild.name() == std::string("LaneChangeAction"))
                 {
-                    LatLaneChangeAction *action_lane = new LatLaneChangeAction();
+                    LatLaneChangeAction *action_lane = new LatLaneChangeAction(parent);
 
                     if (!lateralChild.attribute("targetLaneOffset").empty())
                     {
@@ -2563,7 +2563,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                 }
                 else if (lateralChild.name() == std::string("LaneOffsetAction"))
                 {
-                    LatLaneOffsetAction         *action_lane = new LatLaneOffsetAction();
+                    LatLaneOffsetAction         *action_lane = new LatLaneOffsetAction(parent);
                     LatLaneOffsetAction::Target *target      = nullptr;
                     for (pugi::xml_node laneOffsetChild = lateralChild.first_child(); laneOffsetChild;
                          laneOffsetChild                = laneOffsetChild.next_sibling())
@@ -2623,7 +2623,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
         }
         else if (actionChild.name() == std::string("SynchronizeAction"))
         {
-            SynchronizeAction *action_synch = new SynchronizeAction();
+            SynchronizeAction *action_synch = new SynchronizeAction(parent);
 
             std::string master_object_str = parameters.ReadAttribute(actionChild, "masterEntityRef");
             action_synch->master_object_  = ResolveObjectReference(master_object_str);
@@ -2747,7 +2747,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
         }
         else if (actionChild.name() == std::string("TeleportAction"))
         {
-            TeleportAction *action_pos = new TeleportAction;
+            TeleportAction *action_pos = new TeleportAction(parent);
             action_pos->position_OSCPosition_.reset(parseOSCPosition(actionChild.first_child()));
             action_pos->position_ = action_pos->position_OSCPosition_->GetRMPos();
             action                = action_pos;
@@ -2763,7 +2763,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 
             if (trailer_action_node.name() == std::string("ConnectTrailerAction"))
             {
-                ConnectTrailerAction *action_trailer = new ConnectTrailerAction;
+                ConnectTrailerAction *action_trailer = new ConnectTrailerAction(parent);
                 std::string           trailer_ref    = parameters.ReadAttribute(trailer_action_node, "trailerRef");
                 if (trailer_ref.empty())
                 {
@@ -2789,7 +2789,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
             }
             else if (trailer_action_node.name() == std::string("DisconnectTrailerAction"))
             {
-                DisconnectTrailerAction *action_trailer = new DisconnectTrailerAction;
+                DisconnectTrailerAction *action_trailer = new DisconnectTrailerAction(parent);
                 action                                  = action_trailer;
             }
             else
@@ -2808,13 +2808,13 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                     {
                         if (assignRouteChild.name() == std::string("Route"))
                         {
-                            AssignRouteAction *action_follow_route = new AssignRouteAction;
+                            AssignRouteAction *action_follow_route = new AssignRouteAction(parent);
                             action_follow_route->route_.reset(parseOSCRoute(assignRouteChild));
                             action = action_follow_route;
                         }
                         else if (assignRouteChild.name() == std::string("CatalogReference"))
                         {
-                            AssignRouteAction *action_assign_route = new AssignRouteAction;
+                            AssignRouteAction *action_assign_route = new AssignRouteAction(parent);
 
                             // Find route in catalog
                             Entry *entry = ResolveCatalogReference(assignRouteChild);
@@ -2842,7 +2842,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                 }
                 else if (routingChild.name() == std::string("FollowTrajectoryAction"))
                 {
-                    FollowTrajectoryAction *action_follow_trajectory = new FollowTrajectoryAction;
+                    FollowTrajectoryAction *action_follow_trajectory = new FollowTrajectoryAction(parent);
 
                     if (!routingChild.attribute("initialDistanceOffset").empty())
                     {
@@ -2948,7 +2948,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                         action_follow_trajectory->traj_->GetDuration() < SMALL_NUMBER)
                     {
                         LOG("Warning: FollowTrajectoryAction timeref is != NONE but trajectory duration is 0. Applying timeref=NONE.",
-                            action_follow_trajectory->name_.c_str());
+                            action_follow_trajectory->GetName().c_str());
                         action_follow_trajectory->timing_domain_ = FollowTrajectoryAction::TimingDomain::NONE;
                     }
 
@@ -2967,7 +2967,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                 }
                 else if (routingChild.name() == std::string("AcquirePositionAction"))
                 {
-                    AcquirePositionAction *acqPosAction = new AcquirePositionAction;
+                    AcquirePositionAction *acqPosAction = new AcquirePositionAction(parent);
                     acqPosAction->target_position_OSCPosition_.reset(parseOSCPosition(routingChild.first_child()));
                     acqPosAction->target_position_ = acqPosAction->target_position_OSCPosition_->GetRMPos();
                     action                         = acqPosAction;
@@ -2989,7 +2989,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                 LOG("In OSC 1.1 ActivateControllerAction should be placed under ControllerAction. Accepting anyway.");
             }
 
-            ActivateControllerAction *activateControllerAction = parseActivateControllerAction(actionChild);
+            ActivateControllerAction *activateControllerAction = parseActivateControllerAction(actionChild, parent);
 
             action = activateControllerAction;
         }
@@ -3066,14 +3066,14 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                             longitudinal = Controller::DomainActivation::ON;
                         }
 
-                        AssignControllerAction *assignControllerAction = new AssignControllerAction(controller, lateral, longitudinal);
+                        AssignControllerAction *assignControllerAction = new AssignControllerAction(controller, lateral, longitudinal, parent);
 
                         action = assignControllerAction;
                     }
                 }
                 else if (controllerChild.name() == std::string("OverrideControllerValueAction"))
                 {
-                    OverrideControlAction       *override_action = new OverrideControlAction();
+                    OverrideControlAction       *override_action = new OverrideControlAction(parent);
                     Object::OverrideActionStatus overrideStatus;
                     bool                         verFromMinor2 = (GetVersionMajor() == 1 && GetVersionMinor() >= 2);
 
@@ -3344,7 +3344,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                     {
                         LOG("In OSC 1.0 ActivateControllerAction should be placed under PrivateAction. Accepting anyway.");
                     }
-                    ActivateControllerAction *activateControllerAction = parseActivateControllerAction(controllerChild);
+                    ActivateControllerAction *activateControllerAction = parseActivateControllerAction(controllerChild, parent);
 
                     action = activateControllerAction;
                 }
@@ -3379,7 +3379,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                 sensors = false;
             }
 
-            VisibilityAction *visAction = new VisibilityAction();
+            VisibilityAction *visAction = new VisibilityAction(parent);
             visAction->graphics_        = graphics;
             visAction->traffic_         = traffic;
             visAction->sensors_         = sensors;
@@ -3396,11 +3396,11 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
     {
         if (actionNode.parent().attribute("name"))
         {
-            action->name_ = parameters.ReadAttribute(actionNode.parent(), "name");
+            action->SetName(parameters.ReadAttribute(actionNode.parent(), "name"));
         }
         else
         {
-            action->name_ = "no name";
+            action->SetName("no name");
         }
         action->object_ = object;
     }
@@ -3419,10 +3419,10 @@ void ScenarioReader::parseInit(Init &init)
         if (actionsChildName == "GlobalAction")
         {
             LOG("Parsing global action %s", actionsChild.first_child().name());
-            OSCGlobalAction *action = parseOSCGlobalAction(actionsChild);
+            OSCGlobalAction *action = parseOSCGlobalAction(actionsChild, nullptr);
             if (action != 0)
             {
-                action->name_ = "Init " + std::string(actionsChild.first_child().name());
+                action->SetName("Init " + std::string(actionsChild.first_child().name()));
                 init.global_action_.push_back(action);
             }
         }
@@ -3441,10 +3441,10 @@ void ScenarioReader::parseInit(Init &init)
                 for (pugi::xml_node privateChild = actionsChild.first_child(); privateChild; privateChild = privateChild.next_sibling())
                 {
                     // Assume children are PrivateActions
-                    OSCPrivateAction *action = parseOSCPrivateAction(privateChild, entityRef);
+                    OSCPrivateAction *action = parseOSCPrivateAction(privateChild, entityRef, nullptr);
                     if (action != 0)
                     {
-                        action->name_ = "Init " + entityRef->name_ + " " + privateChild.first_child().name();
+                        action->SetName("Init " + entityRef->name_ + " " + privateChild.first_child().name());
 
                         if (action->type_ == OSCPrivateAction::ActionType::TELEPORT)
                         {
@@ -4231,7 +4231,7 @@ Trigger *ScenarioReader::parseTrigger(pugi::xml_node triggerNode, bool defaultVa
 
 void ScenarioReader::parseOSCManeuver(Maneuver *maneuver, pugi::xml_node maneuverNode, ManeuverGroup *mGroup)
 {
-    maneuver->name_ = parameters.ReadAttribute(maneuverNode, "name");
+    maneuver->SetName(parameters.ReadAttribute(maneuverNode, "name"));
 
     for (pugi::xml_node maneuverChild = maneuverNode.first_child(); maneuverChild; maneuverChild = maneuverChild.next_sibling())
     {
@@ -4243,9 +4243,9 @@ void ScenarioReader::parseOSCManeuver(Maneuver *maneuver, pugi::xml_node maneuve
         }
         else if (maneuverChildName == "Event")
         {
-            Event *event = new Event;
+            Event *event = new Event(maneuver);
 
-            event->name_ = parameters.ReadAttribute(maneuverChild, "name");
+            event->SetName(parameters.ReadAttribute(maneuverChild, "name"));
 
             std::string prio = parameters.ReadAttribute(maneuverChild, "priority");
             if (prio == "overwrite")
@@ -4298,7 +4298,7 @@ void ScenarioReader::parseOSCManeuver(Maneuver *maneuver, pugi::xml_node maneuve
 
                         if (actionChildName == "GlobalAction")
                         {
-                            OSCGlobalAction *action = parseOSCGlobalAction(actionChild);
+                            OSCGlobalAction *action = parseOSCGlobalAction(actionChild, event);
                             if (action != 0)
                             {
                                 event->action_.push_back(static_cast<OSCAction *>(action));
@@ -4306,7 +4306,7 @@ void ScenarioReader::parseOSCManeuver(Maneuver *maneuver, pugi::xml_node maneuve
                         }
                         else if (actionChildName == "UserDefinedAction")
                         {
-                            OSCUserDefinedAction *action = parseOSCUserDefinedAction(actionChild);
+                            OSCUserDefinedAction *action = parseOSCUserDefinedAction(actionChild, event);
                             if (action != nullptr)
                             {
                                 event->action_.push_back(static_cast<OSCAction *>(action));
@@ -4323,14 +4323,14 @@ void ScenarioReader::parseOSCManeuver(Maneuver *maneuver, pugi::xml_node maneuve
 
                             for (size_t i = 0; i < mGroup->actor_.size(); i++)
                             {
-                                OSCPrivateAction *action = parseOSCPrivateAction(actionChild, mGroup->actor_[i]->object_);
+                                OSCPrivateAction *action = parseOSCPrivateAction(actionChild, mGroup->actor_[i]->object_, event);
                                 if (action != 0)
                                 {
                                     event->action_.push_back(static_cast<OSCAction *>(action));
                                 }
                                 else
                                 {
-                                    LOG("Failed to parse event %s - continue regardless", event->name_.c_str());
+                                    LOG("Failed to parse event %s - continue regardless", event->GetName().c_str());
                                 }
                             }
                         }
@@ -4386,7 +4386,7 @@ int ScenarioReader::parseStoryBoard(StoryBoard &storyBoard)
         if (storyNodeName == "Story")
         {
             std::string name  = parameters.ReadAttribute(storyNode, "name", false);
-            Story      *story = new Story(name);
+            Story      *story = new Story(name, &storyBoard);
 
             parameters.CreateRestorePoint();
 
@@ -4401,9 +4401,9 @@ int ScenarioReader::parseStoryBoard(StoryBoard &storyBoard)
 
                 if (childName == "Act")
                 {
-                    Act *act = new Act;
+                    Act *act = new Act(story);
 
-                    act->name_ = parameters.ReadAttribute(storyChild, "name");
+                    act->SetName(parameters.ReadAttribute(storyChild, "name"));
 
                     for (pugi::xml_node actChild = storyChild.first_child(); actChild; actChild = actChild.next_sibling())
                     {
@@ -4411,7 +4411,7 @@ int ScenarioReader::parseStoryBoard(StoryBoard &storyBoard)
 
                         if (actChildName == "ManeuverGroup")
                         {
-                            ManeuverGroup *mGroup = new ManeuverGroup;
+                            ManeuverGroup *mGroup = new ManeuverGroup(act);
 
                             if (parameters.ReadAttribute(actChild, "maximumExecutionCount") != "")
                             {
@@ -4422,7 +4422,7 @@ int ScenarioReader::parseStoryBoard(StoryBoard &storyBoard)
                                 mGroup->max_num_executions_ = 1;  // 1 is Default
                             }
 
-                            mGroup->name_ = parameters.ReadAttribute(actChild, "name");
+                            mGroup->SetName(parameters.ReadAttribute(actChild, "name"));
 
                             pugi::xml_node actors_node = actChild.child("Actors");
                             if (actors_node != NULL)
@@ -4462,7 +4462,7 @@ int ScenarioReader::parseStoryBoard(StoryBoard &storyBoard)
 
                                 if (entry->type_ == CatalogType::CATALOG_MANEUVER)
                                 {
-                                    Maneuver *maneuver = new Maneuver;
+                                    Maneuver *maneuver = new Maneuver(mGroup);
 
                                     // Make a new instance from catalog entry
                                     parseOSCManeuver(maneuver, entry->GetNode(), mGroup);
@@ -4480,7 +4480,7 @@ int ScenarioReader::parseStoryBoard(StoryBoard &storyBoard)
                             for (pugi::xml_node maneuver_n = actChild.child("Maneuver"); maneuver_n; maneuver_n = maneuver_n.next_sibling("Maneuver"))
                                 if (maneuver_n != NULL)
                                 {
-                                    Maneuver *maneuver = new Maneuver;
+                                    Maneuver *maneuver = new Maneuver(mGroup);
 
                                     parseOSCManeuver(maneuver, maneuver_n, mGroup);
                                     mGroup->maneuver_.push_back(maneuver);

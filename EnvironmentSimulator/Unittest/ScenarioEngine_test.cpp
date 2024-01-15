@@ -1324,7 +1324,7 @@ TEST(OrientationTest, TestRelativeRoadHeading)
 
 TEST(SpeedProfileTest, TestSpeedProfileFirstEntryOffset)
 {
-    LongSpeedProfileAction        sp_action;
+    LongSpeedProfileAction        sp_action(nullptr);
     DynamicConstraints            dynamics;  // initalized with default values
     LongSpeedProfileAction::Entry entry;
 
@@ -1354,7 +1354,7 @@ TEST(SpeedProfileTest, TestSpeedProfileFirstEntryOffset)
 
 TEST(SpeedProfileTest, TestSpeedProfileLinear)
 {
-    LongSpeedProfileAction        sp_action;
+    LongSpeedProfileAction        sp_action(nullptr);
     DynamicConstraints            dynamics;  // initalized with default values
     LongSpeedProfileAction::Entry entry;
 
@@ -1406,7 +1406,7 @@ TEST(SpeedProfileTest, TestSpeedProfileLinear)
 
 TEST(SpeedProfileTest, TestSpeedProfileConstraints)
 {
-    LongSpeedProfileAction        sp_action;
+    LongSpeedProfileAction        sp_action(nullptr);
     LongSpeedProfileAction::Entry entry;
     DynamicConstraints            dynamics;
 
@@ -1453,7 +1453,7 @@ TEST(SpeedProfileTest, TestSpeedProfileConstraints)
 
 TEST(SpeedProfileTest, TestSpeedProfileSingleEntry)
 {
-    LongSpeedProfileAction        sp_action;
+    LongSpeedProfileAction        sp_action(nullptr);
     LongSpeedProfileAction::Entry entry;
 
     sp_action.dynamics_.max_acceleration_      = 4.0;
@@ -1509,7 +1509,7 @@ TEST(SpeedProfileTest, TestSpeedProfileSingleEntry)
 
 TEST(SpeedProfileTest, TestSpeedProfileNoTime)
 {
-    LongSpeedProfileAction        sp_action;
+    LongSpeedProfileAction        sp_action(nullptr);
     LongSpeedProfileAction::Entry entry;
 
     Object obj(Object::Type::VEHICLE);
@@ -1557,7 +1557,7 @@ TEST(SpeedProfileTest, TestSpeedProfileNoTime)
 
 TEST(SpeedProfileTest, TestSpeedProfileFromNonZeroTime)
 {
-    LongSpeedProfileAction        sp_action;
+    LongSpeedProfileAction        sp_action(nullptr);
     LongSpeedProfileAction::Entry entry;
 
     Object obj(Object::Type::VEHICLE);
@@ -1605,7 +1605,7 @@ TEST(SpeedProfileTest, TestSpeedProfileFromNonZeroTime)
 
 TEST(SpeedProfileTest, TestSpeedProfileNonZeroInitalAcc)
 {
-    LongSpeedProfileAction        sp_action;
+    LongSpeedProfileAction        sp_action(nullptr);
     DynamicConstraints            dynamics;  // initalized with default values
     LongSpeedProfileAction::Entry entry;
 
@@ -1940,7 +1940,7 @@ TEST(SpeedTest, TestAbsoluteSpeed)
 
 TEST(SpeedTest, TestChangeSpeedOverDistance)
 {
-    LongSpeedAction action;
+    LongSpeedAction action(nullptr);
     Object          obj(Object::Type::VEHICLE);
     action.object_ = &obj;
 

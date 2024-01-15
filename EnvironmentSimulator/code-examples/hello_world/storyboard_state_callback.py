@@ -38,12 +38,12 @@ sbe_state = {
 # Define callback for scenario storyboard element state changes
 # according to function type: void (*fnPtr)(const char* name, int type, int state)
 # required by SE_RegisterStoryBoardElementStateChangeCallback()
-def callback(name, type, state):
+def callback(name, type, state, full_path):
     # just print the received info
     print(type)
-    print("callback: {} ({}) state: {}".format(codecs.decode(name), sbe_type[type], sbe_state[state]))
+    print("callback: {} ({}) state: {} full path: {}".format(codecs.decode(name), sbe_type[type], sbe_state[state], codecs.decode(full_path), ))
 
-callback_type = ct.CFUNCTYPE(None, ct.c_char_p, ct.c_int, ct.c_int)
+callback_type = ct.CFUNCTYPE(None, ct.c_char_p, ct.c_int, ct.c_int, ct.c_char_p)
 callback_func = callback_type(callback)
 
 # Initialize esmini before register the callback

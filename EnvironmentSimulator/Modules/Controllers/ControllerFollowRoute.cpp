@@ -228,8 +228,8 @@ void ControllerFollowRoute::CalculateWaypoints()
 
 void ControllerFollowRoute::CreateLaneChange(int lane)
 {
-    LatLaneChangeAction *action_lanechange    = new LatLaneChangeAction;
-    action_lanechange->name_                  = "LaneChange";
+    LatLaneChangeAction *action_lanechange = new LatLaneChangeAction(nullptr);
+    action_lanechange->SetName("LaneChange");
     action_lanechange->object_                = object_;
     action_lanechange->transition_.shape_     = OSCPrivateAction::DynamicsShape::SINUSOIDAL;
     action_lanechange->transition_.dimension_ = OSCPrivateAction::DynamicsDimension::TIME;

@@ -61,14 +61,14 @@
                 </Private>
             </Actions>
         </Init>
-        <Story name="story_act_maneuvergroup_maneuver">
+        <Story name="hwe_story">
             <ParameterDeclarations/>
-            <Act name="act_maneuvergroup_maneuver">
-                <ManeuverGroup name="maneuvergroup_maneuver" maximumExecutionCount="1">
+            <Act name="hwe_act">
+                <ManeuverGroup name="hwe_maneuvergroup" maximumExecutionCount="1">
                     <Actors selectTriggeringEntities="false">
                         <EntityRef entityRef="Target"/>
                     </Actors>
-                    <Maneuver name="maneuver">
+                    <Maneuver name="hwe_maneuver">
                         <Event name="slowdown event" priority="overwrite" maximumExecutionCount="1">
                             <Action name="slowdown">
                                 <PrivateAction>
@@ -137,7 +137,7 @@
                 </ManeuverGroup>
                 <StartTrigger>
                     <ConditionGroup>
-                        <Condition name="act_start" delay="0" conditionEdge="rising">
+                        <Condition name="act_start_condition" delay="0" conditionEdge="rising">
                             <ByValueCondition>
                                 <SimulationTimeCondition value="0" rule="greaterThan"/>
                             </ByValueCondition>
@@ -149,7 +149,7 @@
         </Story>
         <StopTrigger>
             <ConditionGroup>
-                <Condition name="start_trigger " delay="0" conditionEdge="none">
+                <Condition name="start_trigger" delay="0" conditionEdge="none">
                     <ByValueCondition>
                         <SimulationTimeCondition value="12" rule="greaterThan"/>
                     </ByValueCondition>

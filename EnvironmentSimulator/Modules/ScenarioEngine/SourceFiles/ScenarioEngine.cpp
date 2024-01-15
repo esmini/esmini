@@ -395,7 +395,7 @@ int ScenarioEngine::step(double deltaSimTime)
                                                             // Activate trigged event
                                                             if (event->IsActive())
                                                             {
-                                                                LOG("Can't overwrite own running event (%s) - skip trig", event->name_.c_str());
+                                                                LOG("Can't overwrite own running event (%s) - skip trig", event->GetName().c_str());
                                                             }
                                                             else
                                                             {
@@ -419,8 +419,8 @@ int ScenarioEngine::step(double deltaSimTime)
 
                                                                         maneuver->event_[n]->End(simulationTime_);
                                                                         LOG("Event %s ended, overwritten by event %s",
-                                                                            maneuver->event_[n]->name_.c_str(),
-                                                                            event->name_.c_str());
+                                                                            maneuver->event_[n]->GetName().c_str(),
+                                                                            event->GetName().c_str());
                                                                     }
                                                                 }
 
@@ -431,7 +431,7 @@ int ScenarioEngine::step(double deltaSimTime)
                                                         {
                                                             if (maneuver->IsAnyEventActive())
                                                             {
-                                                                LOG("Event is running, skipping trigged %s", event->name_.c_str());
+                                                                LOG("Event is running, skipping trigged %s", event->GetName().c_str());
                                                             }
                                                             else
                                                             {
@@ -443,11 +443,11 @@ int ScenarioEngine::step(double deltaSimTime)
                                                             // Don't care if any other action is ongoing, launch anyway
                                                             if (event->IsActive())
                                                             {
-                                                                LOG("Event %s already running, trigger ignored", event->name_.c_str());
+                                                                LOG("Event %s already running, trigger ignored", event->GetName().c_str());
                                                             }
                                                             else if (maneuver->IsAnyEventActive())
                                                             {
-                                                                LOG("Event(s) ongoing, %s will run in parallel", event->name_.c_str());
+                                                                LOG("Event(s) ongoing, %s will run in parallel", event->GetName().c_str());
                                                             }
 
                                                             startEvent = true;
@@ -1248,7 +1248,7 @@ void ScenarioEngine::ReplaceObjectInTrigger(Trigger* trigger, Object* obj1, Obje
 
 void ScenarioEngine::CreateGhostTeleport(Object* obj1, Object* obj2, Event* event)
 {
-    TeleportAction*        myNewAction = new TeleportAction;
+    TeleportAction*        myNewAction = new TeleportAction(nullptr);
     roadmanager::Position* pos         = new roadmanager::Position();
     pos->SetMode(roadmanager::Position::PosModeType::INIT,
                  roadmanager::Position::PosMode::Z_REL | roadmanager::Position::PosMode::H_REL | roadmanager::Position::PosMode::P_REL |
@@ -1265,7 +1265,7 @@ void ScenarioEngine::CreateGhostTeleport(Object* obj1, Object* obj2, Event* even
     myNewAction->type_           = OSCPrivateAction::ActionType::TELEPORT;
     myNewAction->object_         = obj2;
     myNewAction->scenarioEngine_ = this;
-    myNewAction->name_           = "AddedGhostTeleport";
+    myNewAction->SetName("AddedGhostTeleport");
     myNewAction->SetGhostRestart(true);
 
     event->action_.insert(event->action_.begin(), myNewAction);
@@ -1297,7 +1297,7 @@ void ScenarioEngine::SetupGhost(Object* object)
             if (action->type_ != OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER)
             {
                 OSCPrivateAction* newAction = action->Copy();
-                action->name_ += "_ghost-copy";
+                action->SetName(action->GetName() + "_ghost-copy");
                 newAction->object_         = ghost;
                 newAction->scenarioEngine_ = this;
                 init.private_action_.push_back(newAction);
@@ -1416,7 +1416,7 @@ void ScenarioEngine::ResetEvents()
                                     // tigger again
                                     if (NoTele && pa->object_->IsGhost() && event->start_trigger_->Evaluate(&storyBoard, simulationTime_) == false)
                                     {
-                                        LOG("Reset event %s: ", event->name_.c_str());
+                                        LOG("Reset event %s: ", event->GetName().c_str());
                                         event->Reset();
                                     }
                                     // if (event->start_trigger_->Evaluate(&storyBoard, simulationTime_) == true)

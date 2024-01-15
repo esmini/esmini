@@ -30,7 +30,7 @@ namespace scenarioengine
             Object* object_;
         } Actor;
 
-        ManeuverGroup() : StoryBoardElement(StoryBoardElement::ElementType::MANEUVER_GROUP)
+        ManeuverGroup(StoryBoardElement* parent) : StoryBoardElement(StoryBoardElement::ElementType::MANEUVER_GROUP, parent)
         {
         }
         ~ManeuverGroup()
@@ -88,7 +88,7 @@ namespace scenarioengine
         Trigger*                    start_trigger_;
         Trigger*                    stop_trigger_;
 
-        Act() : StoryBoardElement(StoryBoardElement::ElementType::ACT), start_trigger_(0), stop_trigger_(0)
+        Act(StoryBoardElement* parent) : StoryBoardElement(StoryBoardElement::ElementType::ACT, parent), start_trigger_(0), stop_trigger_(0)
         {
         }
         ~Act()
@@ -109,12 +109,12 @@ namespace scenarioengine
     class Story : public StoryBoardElement
     {
     public:
-        Story() : StoryBoardElement(StoryBoardElement::ElementType::STORY)
+        Story(StoryBoardElement* parent) : StoryBoardElement(StoryBoardElement::ElementType::STORY, parent)
         {
         }
-        Story(std::string name) : StoryBoardElement(StoryBoardElement::ElementType::STORY)
+        Story(std::string name, StoryBoardElement* parent) : StoryBoardElement(StoryBoardElement::ElementType::STORY, parent)
         {
-            name_ = name;
+            SetName(name);
         }
         ~Story()
         {
@@ -141,9 +141,9 @@ namespace scenarioengine
     class StoryBoard : public StoryBoardElement
     {
     public:
-        StoryBoard() : StoryBoardElement(StoryBoardElement::ElementType::STORY_BOARD), stop_trigger_(0)
+        StoryBoard() : StoryBoardElement(StoryBoardElement::ElementType::STORY_BOARD, nullptr), stop_trigger_(0)
         {
-            name_ = "storyBoard";
+            SetName("storyBoard");  // don't need name for root level
         }
         ~StoryBoard()
         {

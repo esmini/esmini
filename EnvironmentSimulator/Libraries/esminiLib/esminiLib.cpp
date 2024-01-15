@@ -1996,7 +1996,7 @@ extern "C"
         OSCCondition::conditionCallback = fnPtr;
     }
 
-    SE_DLL_API void SE_RegisterStoryBoardElementStateChangeCallback(void (*fnPtr)(const char *name, int type, int state))
+    SE_DLL_API void SE_RegisterStoryBoardElementStateChangeCallback(void (*fnPtr)(const char *name, int type, int state, const char *full_path))
     {
         StoryBoardElement::stateChangeCallback = fnPtr;
     }
