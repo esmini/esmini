@@ -2558,67 +2558,55 @@ Windows and Mac: Install the https://cmake.org/[cmake] application
 
 === Run and Debug with Linux and visual studio code
 
-When want to run from the visual studio code below steps might help with setup configuration.
-==== With preset.
-Note: Make sure cmake.preset set to auto to hide the preset. Open setting (cltr+, ) type cmake.preset, set auto in drop down box
+To run from the visual studio, the steps below might help with setup configuration.
 
-For run,
+==== With preset
+*Note:* Make sure cmake.preset set to auto to recognize the presets (defined in the `CMakePresets.json` file). Open setting (Ctrl + ,) type `cmake.preset`, set `auto` in drop down box. This is a global setting.
 
-``1. Open the Command Palette (Ctrl+Shift+P) and run CMake: Configure. Select ubuntu_release ``
+To run:
 
-``2. Press f7, which build with defalut argument all (press shift+f7 and select specific target to build in case for specific need)``
-
-Now launch.json file to be configured
-
-``Open the run and debug window (Ctrl+Shift+P)``
-
-``Select Create new lanuch.json file``
-
-``Select add configuration``
-
-``Change Program argument as "${workspaceFolder}/build/EnvironmentSimulator/Applications/esmini/esmini"``
-
-``Change args argument as ["--window", "60", "60", "800", "400", "--osc", "../resources/xosc/cut-in.xosc"]``
-
-``3 Press f5``
+. Open the Command Palette (Ctrl+Shift+P) and run CMake: Configure. Select `ubuntu_release`
+. Shift + F7 to select and build specific target
+  ** e.g. `install` to build and copy all targets to bin folder
+. Configure custom run arguments (create launch.json)
+  ** Open the run and debug window (Ctrl+Shift+D)
+  ** Select `create a launch.json file`
+  ** In the drop down list, select `C++ (GDB/LLDB)`
+  ** Select `Add Configuration...` (in the lower right corner of the sub window)
+  ** Select `C/C++: (gdb) Launch`
+  ** Change `program` setting as `"${workspaceFolder}/build/EnvironmentSimulator/Applications/esmini/esmini"`
+  ** Change `args` as `["--window", "60", "60", "800", "400", "--osc", "../resources/xosc/cut-in.xosc"]`
+. Press F5
 
 For Debug,
-Repeat step 1 and select ubuntu_debug. Repeat step 2 to build debug binaries and then step 3 with breakpoints in program which is argument in json porgram coloumn.( create json file incase in case it is not created)
+Repeat step 1 and select `ubuntu_debug`. Repeat step 2 to build debug binaries and then step 4. Breakpoints can be added to the program specified in the `launch.json` file (do step 3 if not already done).
 
+Build target can also be changed in the status bar, click `Set the default build target`. If not cmake commands are visible in status bar, check global settings: Ctrl + ,  then write "cmake status bar" to find `Status Bar Visibility` setting. Set to `visible`.
 
-==== Without preset.
+Another way to set build target is via Ctrl+Shift+P, then write "set build target" to find `CMake: Set Build Target` setting. Select it and choose build target in the drop down list that should appear.
 
-Note: Make sure cmake.preset set to never to hide the preset. Open setting (cltr+, ) type cmake.preset, set never in drop down box
+==== Without preset
 
-For run,
+Make sure `cmake.preset` set to never to ignore the preset file (`CMakePresets.json`):
 
-``1. Open the Command Palette (Ctrl+Shift+P) and run CMake: Select a Kit. Select the compiler you want to use. For example GCC 11.3.0``
+* Open setting (Ctrl+,) type cmake.preset, select `never` in drop down box
 
-``2. open the Command Palette (Ctrl+Shift+P) run the CMake: Select Variant command. Select Release``
+*Note:* This is a global setting, i.e. will affect other VSCode instances. Reset to `auto` if needed. Another way to ignore the presets is simply to remove the `CMakePresets.json` file and restart VSCode.
 
-``3. open the Command Palette (Ctrl+Shift+P) run the CMake:Set Build Target. Select all``
+To run:
 
-``4. Open the Command Palette (Ctrl+Shift+P) and run the CMake: Build command, or select the Build button from the Status bar.``
+. Open the Command Palette (Ctrl+Shift+P) and run `CMake: Select a Kit`. Select the compiler you want to use. For example GCC 11.3.0
+. Open the Command Palette (Ctrl+Shift+P) run the `CMake: Select Variant` command. Select `Release`
+. Open the Command Palette (Ctrl+Shift+P) run the `CMake: Set Build Target`. Select `install`
+. Open the Command Palette (Ctrl+Shift+P) and run the `CMake: Build` command, or select the Build button from the Status bar. (If cmake commands are not visible in status bar, check global settings: Ctrl + ,  then write "cmake status bar" to find `Status Bar Visibility` setting. Set to `visible`.)
+. To configure launch arguments, see step 3 in <<With preset>>.
+. Press F5
 
-Now launch.json file to be configured
+For debug:
 
-``Open the run and debug window (Ctrl+Shift+P)``
+Repeat step 2 and select `Debug`. Repeat step 3 to 6. Breakpoints can be added to the program specified in the `launch.json`.
 
-``Select Create new lanuch.json file``
-
-``Select add configuration``
-
-``Change Program argument as "${workspaceFolder}/build/EnvironmentSimulator/Applications/esmini/esmini"``
-
-``Change args argument as ["--window", "60", "60", "800", "400", "--osc", "../resources/xosc/cut-in.xosc"]``
-
-``5 Press f5``
-
-For debug,
-Repeat step 2 and select debug. Repeat step 3 to 5 with breakpoints in program which is argument in json porgram coloumn.( create json file incase in case it is not created)
-
-
-Refer https://code.visualstudio.com/docs/cpp/CMake-linux[Here] for more information
+For more info see: https://code.visualstudio.com/docs/cpp/CMake-linux
 
 === Dynamic protobuf linking
 When linking esmini with software already dependent on Google protobuf there might be need for dynamic linking of shared protobuf library. This can be achieved by defining cmake symbol DYN_PROTOBUF as following example:
