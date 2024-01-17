@@ -34,22 +34,24 @@ PARALLEL_BUILDS=8
 ZIP_MIN_VERSION=12
 
 if [ "$OSTYPE" == "msys" ]; then
-    # Visual Studio 2019 - toolkit from Visual Studio 2017
-    GENERATOR=("Visual Studio 16 2019")
+    # Visual Studio 2022 using toolkit from Visual Studio 2017
+    GENERATOR=("Visual Studio 17 2022")
     GENERATOR_TOOLSET="v141"
     GENERATOR_ARGUMENTS="-A x64 -T ${GENERATOR_TOOLSET}"
+
+    # Visual Studio 2019 using default toolkit
+    # GENERATOR=("Visual Studio 16 2019")
+    # GENERATOR_ARGUMENTS="-A x64 -T ${GENERATOR_TOOLSET}"
+
+    # Visual Studio 2017 using default toolkit
+    # GENERATOR=("Visual Studio 15 2017 Win64")
+    # GENERATOR_ARGUMENTS="-T ${GENERATOR_TOOLSET}"
+
     LIB_EXT="lib"
     CXXFLAGS=""
     CFLAGS=""
     LIB_PREFIX=""
 
-    # Visual Studio 2019 - default toolkit
-    # GENERATOR=("Visual Studio 16 2019")
-    # GENERATOR_ARGUMENTS="-A x64 -T ${GENERATOR_TOOLSET}"
-
-    # Visual Studio 2017 - default toolkit
-    # GENERATOR=("Visual Studio 15 2017 Win64")
-    # GENERATOR_ARGUMENTS="-T ${GENERATOR_TOOLSET}"
 elif [[ "$OSTYPE" == "darwin"* ]] || [[ "$OSTYPE" == "linux"* ]]; then
     # Unix Makefiles (for Ubuntu and other Linux systems)
     GENERATOR=("Unix Makefiles")

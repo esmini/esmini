@@ -33,12 +33,12 @@ PARALLEL_BUILDS=4
 ZIP_MIN_VERSION=12
 
 if [ "$OSTYPE" == "msys" ]; then
-    # Visual Studio 2019 - toolkit from Visual Studio 2017
-    GENERATOR=("Visual Studio 16 2019")
+    # Visual Studio 2022 - toolkit from Visual Studio 2017
+    GENERATOR=("Visual Studio 17 2022")
     GENERATOR_TOOLSET="v141"
     GENERATOR_ARGUMENTS="-A x64 -T ${GENERATOR_TOOLSET}"
 
-    # Visual Studio 2019 - default toolkit
+    # Visual Studio 2019 using default toolkit
     # GENERATOR=("Visual Studio 16 2019")
     # GENERATOR_ARGUMENTS="-A x64 -T ${GENERATOR_TOOLSET}"
 
