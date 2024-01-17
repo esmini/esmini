@@ -916,6 +916,8 @@ bool TrigByDistance::CheckCondition(StoryBoard* storyBoard, double sim_time)
     dist_                      = 0;
     roadmanager::Position* pos = position_->GetRMPos();
 
+    pos->EvaluateRelation();
+
     for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
     {
         Object* trigObj = triggering_entities_.entity_[i].object_;
