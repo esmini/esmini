@@ -90,7 +90,7 @@ namespace scenarioengine
     {
         for (size_t i = 0; i < action_.size(); i++)
         {
-            if (action_[i]->state_ == OSCAction::State::COMPLETE)
+            if (action_[i]->GetCurrentState() == OSCAction::State::COMPLETE)
             {
                 LOG("UDP action %s finished", action_[i]->GetName().c_str());
                 DeleteAction(static_cast<int>(i));

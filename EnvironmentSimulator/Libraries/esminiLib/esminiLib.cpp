@@ -24,7 +24,7 @@
 #include "pugixml.hpp"
 #include "ControllerExternal.hpp"
 #include "OSCCondition.hpp"
-#include "OSCManeuver.hpp"
+#include "Storyboard.hpp"
 #include "OSCParameterDistribution.hpp"
 
 using namespace scenarioengine;
@@ -57,7 +57,7 @@ typedef struct
 static std::vector<SE_ObjCallback> objCallback;
 
 // List of 3D models populated from any found found model_ids.txt file
-static std::map<int, std::string> entity_model_map;
+static std::map<int, std::string> entity_model_map_;
 
 static void log_callback(const char *str)
 {

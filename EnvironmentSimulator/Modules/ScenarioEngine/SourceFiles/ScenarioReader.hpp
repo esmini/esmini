@@ -14,8 +14,7 @@
 #include "RoadNetwork.hpp"
 #include "Catalogs.hpp"
 #include "Entities.hpp"
-#include "Init.hpp"
-#include "Story.hpp"
+#include "Storyboard.hpp"
 #include "OSCPosition.hpp"
 #include "OSCProperties.hpp"
 #include "pugixml.hpp"
@@ -190,6 +189,7 @@ namespace scenarioengine
         int                   versionMajor_;
         int                   versionMinor_;
         std::string           description_;
+        StoryBoard*           story_board_;
 
         int             ParseTransitionDynamics(pugi::xml_node node, OSCPrivateAction::TransitionDynamics& td);
         ConditionGroup* ParseConditionGroup(pugi::xml_node node);

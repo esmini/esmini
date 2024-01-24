@@ -19,8 +19,7 @@
 
 #include "Catalogs.hpp"
 #include "Entities.hpp"
-#include "Init.hpp"
-#include "Story.hpp"
+#include "Storyboard.hpp"
 #include "ScenarioGateway.hpp"
 #include "ScenarioReader.hpp"
 #include "RoadNetwork.hpp"
@@ -42,13 +41,6 @@ namespace scenarioengine
         Object *object0;
         Object *object1;
     } CollisionPair;
-
-    enum class GhostMode
-    {
-        NORMAL,
-        RESTART,    // the frame ghost is requested to restart
-        RESTARTING  // ghost restart is ongoing, including the final restart timestep
-    };
 
     class ScenarioEngine
     {
@@ -102,26 +94,18 @@ namespace scenarioengine
         }
 
         ScenarioGateway *getScenarioGateway();
-        double           getSimulationTime()
+        double           getSimulationTime() const
         {
             return simulationTime_;
         }
         bool GetQuitFlag()
         {
-            return storyBoard.state_ == StoryBoard::State::COMPLETE;
+            return storyBoard.GetCurrentState() == StoryBoard::State::COMPLETE;
         }
         ScenarioReader *scenarioReader;
         ScenarioReader *GetScenarioReader()
         {
             return scenarioReader;
-        }
-        void SetHeadstartTime(double headstartTime)
-        {
-            headstart_time_ = headstartTime;
-        }
-        double GetHeadstartTime()
-        {
-            return headstart_time_;
         }
         void SetSimulationTime(double time)
         {
@@ -145,14 +129,7 @@ namespace scenarioengine
             return &trueTime_;
         }
         void CreateGhostTeleport(Object *obj1, Object *obj2, Event *event);
-        void SetGhostRestart()
-        {
-            ghost_mode_ = GhostMode::RESTART;
-        }
-        GhostMode GetGhostMode()
-        {
-            return ghost_mode_;
-        }
+
         void UpdateGhostMode();
         int  GetInitStatus()
         {
@@ -163,21 +140,20 @@ namespace scenarioengine
         bool     doOnce = true;
         SE_Mutex mutex_;
 
+        StoryBoard storyBoard;
+
     private:
         // OpenSCENARIO parameters
         Catalogs                catalogs;
-        Init                    init;
-        StoryBoard              storyBoard;
         RoadNetwork             roadNetwork;
         roadmanager::OpenDrive *odrManager;
         bool                    disable_controllers_;
 
         // Simulation parameters
         double          simulationTime_;
-        double          headstart_time_;
-        GhostMode       ghost_mode_;
         Vehicle         sumotemplate;
         ScenarioGateway scenarioGateway;
+        Object         *ghost_;
 
         // execution control flags
         unsigned int frame_nr_;

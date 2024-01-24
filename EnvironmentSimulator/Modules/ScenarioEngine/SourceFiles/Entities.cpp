@@ -13,8 +13,7 @@
 #include <random>
 #include "Entities.hpp"
 #include "Controller.hpp"
-#include "OSCPrivateAction.hpp"
-#include "OSCManeuver.hpp"
+#include "Storyboard.hpp"
 
 using namespace scenarioengine;
 using namespace roadmanager;
@@ -1598,7 +1597,7 @@ std::vector<OSCPrivateAction*> Object::getPrivateActions()
             if (action->base_type_ == OSCAction::BaseType::PRIVATE)
             {
                 OSCPrivateAction* pa = static_cast<OSCPrivateAction*>(action);
-                if (pa->IsActive() || pa->IsTriggable())
+                if (pa->GetCurrentState() == StoryBoardElement::State::RUNNING || pa->GetCurrentState() == StoryBoardElement::State::STANDBY)
                 {
                     actions.push_back(pa);
                 }

@@ -13,7 +13,7 @@
 #pragma once
 #include <iostream>
 #include <random>
-#include "OSCAction.hpp"
+#include "Action.hpp"
 #include "CommonMini.hpp"
 #include "Parameters.hpp"
 #include "Entities.hpp"
@@ -99,7 +99,7 @@ namespace scenarioengine
             return "ParameterSetAction";
         };
 
-        void Start(double simTime, double dt);
+        void Start(double simTime);
         void Step(double simTime, double dt);
 
         void print()
@@ -137,7 +137,7 @@ namespace scenarioengine
             return "VariableSetAction";
         };
 
-        void Start(double simTime, double dt);
+        void Start(double simTime);
         void Step(double simTime, double dt);
 
         void print()
@@ -178,7 +178,7 @@ namespace scenarioengine
             return new_action;
         }
 
-        void Start(double simTime, double dt);
+        void Start(double simTime);
         void Step(double simTime, double dt);
 
         void SetEntities(Entities* entities)
@@ -224,7 +224,7 @@ namespace scenarioengine
             return new_action;
         }
 
-        void Start(double simTime, double dt);
+        void Start(double simTime);
         void Step(double simTime, double dt);
 
         void SetEntities(Entities* entities)
@@ -278,7 +278,7 @@ namespace scenarioengine
             return new_action;
         }
 
-        void Start(double simTime, double dt);
+        void Start(double simTime);
 
         void Step(double simTime, double dt);
 

@@ -12,15 +12,113 @@
 
 #pragma once
 
-#include "OSCManeuver.hpp"
+#include "StoryboardElement.hpp"
+#include "Action.hpp"
+#include "OSCPrivateAction.hpp"
+#include "OSCGlobalAction.hpp"
+#include "OSCParameterDeclarations.hpp"
+#include "CommonMini.hpp"
 #include "OSCCondition.hpp"
 
 #include <iostream>
 #include <string>
 #include <vector>
+#include <OSCPrivateAction.hpp>
+#include <OSCGlobalAction.hpp>
+
+class OSIReporter;  // Forward declaration
 
 namespace scenarioengine
 {
+    class TrigByState;  // Forward declaration
+    class Trigger;      // Forward declaration
+
+    class Init
+    {
+    public:
+        ~Init()
+        {
+            for (auto* entry : private_action_)
+            {
+                delete entry;
+            }
+
+            for (auto* entry : global_action_)
+            {
+                delete entry;
+            }
+        }
+
+        std::vector<OSCPrivateAction*> private_action_;
+        std::vector<OSCGlobalAction*>  global_action_;
+    };
+
+    class Event : public StoryBoardElement
+    {
+    public:
+        typedef enum
+        {
+            OVERWRITE,
+            SKIP,
+            PARALLEL,
+            UNDEFINED_PRIORITY
+        } Priority;
+
+        Priority priority_;
+
+        std::vector<OSCAction*> action_;
+
+        Event(StoryBoardElement* parent)
+            : StoryBoardElement(StoryBoardElement::ElementType::EVENT, parent),
+              priority_(Event::Priority::UNDEFINED_PRIORITY)
+        {
+        }
+
+        ~Event()
+        {
+            for (auto* entry : action_)
+            {
+                delete entry;
+            }
+        }
+
+        void Start(double simTime) override;
+
+        void Step(double simTime, double dt) override;
+
+        std::vector<StoryBoardElement*>* GetChildren() override
+        {
+            return reinterpret_cast<std::vector<StoryBoardElement*>*>(&action_);
+        }
+    };
+
+    class Maneuver : public StoryBoardElement
+    {
+    public:
+        OSCParameterDeclarations parameter_declarations_;
+        std::vector<Event*>      event_;
+
+        Maneuver(StoryBoardElement* parent) : StoryBoardElement(StoryBoardElement::ElementType::MANEUVER, parent)
+        {
+        }
+        ~Maneuver()
+        {
+            for (auto* entry : event_)
+            {
+                delete entry;
+            }
+        }
+
+        std::vector<StoryBoardElement*>* GetChildren() override
+        {
+            return reinterpret_cast<std::vector<StoryBoardElement*>*>(&event_);
+        }
+
+        void Print()
+        {
+            LOG("\tname = %s", GetName().c_str());
+        };
+    };
 
     class ManeuverGroup : public StoryBoardElement
     {
@@ -69,14 +167,11 @@ namespace scenarioengine
             return false;
         }
 
-        bool IsComplete() override;
+        std::vector<StoryBoardElement*>* GetChildren() override
+        {
+            return reinterpret_cast<std::vector<StoryBoardElement*>*>(&maneuver_);
+        }
 
-        void UpdateState();
-        void Start(double simTime, double dt);
-#if 0
-        void End(double simTime);
-        void Stop();
-#endif
         std::vector<Actor*>    actor_;
         std::vector<Maneuver*> maneuver_;
     };
@@ -85,10 +180,8 @@ namespace scenarioengine
     {
     public:
         std::vector<ManeuverGroup*> maneuverGroup_;
-        Trigger*                    start_trigger_;
-        Trigger*                    stop_trigger_;
 
-        Act(StoryBoardElement* parent) : StoryBoardElement(StoryBoardElement::ElementType::ACT, parent), start_trigger_(0), stop_trigger_(0)
+        Act(StoryBoardElement* parent) : StoryBoardElement(StoryBoardElement::ElementType::ACT, parent)
         {
         }
         ~Act()
@@ -97,13 +190,12 @@ namespace scenarioengine
             {
                 delete entry;
             }
-            delete start_trigger_;
-            delete stop_trigger_;
         }
 
-        bool IsComplete() override;
-
-        void UpdateState();
+        std::vector<StoryBoardElement*>* GetChildren() override
+        {
+            return reinterpret_cast<std::vector<StoryBoardElement*>*>(&maneuverGroup_);
+        }
     };
 
     class Story : public StoryBoardElement
@@ -132,8 +224,10 @@ namespace scenarioengine
         OSCAction*               FindActionByName(std::string name);
         void                     Print();
 
-        bool IsComplete() override;
-        void UpdateState() override;
+        std::vector<StoryBoardElement*>* GetChildren() override
+        {
+            return reinterpret_cast<std::vector<StoryBoardElement*>*>(&act_);
+        }
 
         std::vector<Act*> act_;
     };
@@ -141,7 +235,7 @@ namespace scenarioengine
     class StoryBoard : public StoryBoardElement
     {
     public:
-        StoryBoard() : StoryBoardElement(StoryBoardElement::ElementType::STORY_BOARD, nullptr), stop_trigger_(0)
+        StoryBoard() : StoryBoardElement(StoryBoardElement::ElementType::STORY_BOARD, nullptr)
         {
             SetName("storyBoard");  // don't need name for root level
         }
@@ -151,19 +245,24 @@ namespace scenarioengine
             {
                 delete entry;
             }
-            delete stop_trigger_;
         }
+        Story*         FindStoryByName(std::string name);
         Act*           FindActByName(std::string name);
         ManeuverGroup* FindManeuverGroupByName(std::string name);
         Maneuver*      FindManeuverByName(std::string name);
         Event*         FindEventByName(std::string name);
         OSCAction*     FindActionByName(std::string name);
+        Init           init_;
         Entities*      entities_;
         void           Print();
-        bool           IsComplete() override;
-        void           UpdateState() override;
+        void           Start(double simTime) override;
+        void           Step(double simTime, double dt) override;
+
+        std::vector<StoryBoardElement*>* GetChildren() override
+        {
+            return reinterpret_cast<std::vector<StoryBoardElement*>*>(&story_);
+        }
 
         std::vector<Story*> story_;
-        Trigger*            stop_trigger_;
     };
 }  // namespace scenarioengine

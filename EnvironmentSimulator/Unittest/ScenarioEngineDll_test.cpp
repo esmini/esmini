@@ -3772,14 +3772,14 @@ TEST(ReplayTest, TestMultiReplayDifferentTimeSteps)
 
         if (k == 0)
         {
-            EXPECT_NEAR(replay->data_[2012].state.pos.y, 130.995, 1E-3);
+            EXPECT_NEAR(replay->data_[2012].state.pos.y, 130.994, 1E-3);
             EXPECT_NEAR(replay->data_[2015].state.pos.y, 207.387, 1E-3);
             EXPECT_NEAR(replay->data_[5965].state.info.timeStamp, 19.51, 1E-3);
             EXPECT_NEAR(replay->data_[5965].state.info.id, 1, 1E-3);
         }
         else
         {
-            EXPECT_NEAR(replay->data_[2012].state.pos.y, 130.924, 1E-3);
+            EXPECT_NEAR(replay->data_[2012].state.pos.y, 130.913, 1E-3);
             EXPECT_NEAR(replay->data_[2015].state.pos.y, 210.738, 1E-3);
             EXPECT_NEAR(replay->data_[4201].state.info.timeStamp, 19.6, 1E-3);
             EXPECT_NEAR(replay->data_[4201].state.info.id, 1, 1E-3);
@@ -3819,7 +3819,7 @@ TEST(EventCallbackTest, TestConditionCallback)
 void StoryBoardElementStateCallbackInstance1(const char* element_name, int type, int state, const char* full_path)
 {
     static int counter = 0;
-    const int  n_runs  = 16;
+    const int  n_runs  = 18;
     struct
     {
         const char* name;
@@ -3829,20 +3829,22 @@ void StoryBoardElementStateCallbackInstance1(const char* element_name, int type,
         const char* full_path;
     } state_target[n_runs] = {
         {"hwe_act", 0.1, 3, 2, "/hwe_story/hwe_act"},                                                                  // Act, Running
-        {"hwe_maneuver", 0.1, 5, 2, "/hwe_story/hwe_act/hwe_maneuvergroup/hwe_maneuver"},                              // Maneuver, Running
         {"hwe_maneuvergroup", 0.1, 4, 2, "/hwe_story/hwe_act/hwe_maneuvergroup"},                                      // ManeuverGroup, Running
-        {"slowdown", 3.4, 7, 2, "/hwe_story/hwe_act/hwe_maneuvergroup/hwe_maneuver/slowdown event/slowdown"},          // Action, Running
+        {"hwe_maneuver", 0.1, 5, 2, "/hwe_story/hwe_act/hwe_maneuvergroup/hwe_maneuver"},                              // Maneuver, Running
+        {"slowdown event", 0.1, 6, 1, "/hwe_story/hwe_act/hwe_maneuvergroup/hwe_maneuver/slowdown event"},             // Event, Standby
+        {"lanechange event", 0.1, 6, 1, "/hwe_story/hwe_act/hwe_maneuvergroup/hwe_maneuver/lanechange event"},         // Event, Standby
         {"slowdown event", 3.4, 6, 2, "/hwe_story/hwe_act/hwe_maneuvergroup/hwe_maneuver/slowdown event"},             // Event, Running
+        {"slowdown", 3.4, 7, 2, "/hwe_story/hwe_act/hwe_maneuvergroup/hwe_maneuver/slowdown event/slowdown"},          // Action, Running
         {"slowdown", 4.4, 7, 3, "/hwe_story/hwe_act/hwe_maneuvergroup/hwe_maneuver/slowdown event/slowdown"},          // Action, Complete
         {"slowdown event", 4.4, 6, 3, "/hwe_story/hwe_act/hwe_maneuvergroup/hwe_maneuver/slowdown event"},             // Event, Complete
-        {"lane change", 4.4, 7, 2, "/hwe_story/hwe_act/hwe_maneuvergroup/hwe_maneuver/lanechange event/lane change"},  // Action, Running
         {"lanechange event", 4.4, 6, 2, "/hwe_story/hwe_act/hwe_maneuvergroup/hwe_maneuver/lanechange event"},         // Event, Running
+        {"lane change", 4.4, 7, 2, "/hwe_story/hwe_act/hwe_maneuvergroup/hwe_maneuver/lanechange event/lane change"},  // Action, Running
         {"lane change", 8.3, 7, 3, "/hwe_story/hwe_act/hwe_maneuvergroup/hwe_maneuver/lanechange event/lane change"},  // Action, Complete
         {"lanechange event", 8.3, 6, 3, "/hwe_story/hwe_act/hwe_maneuvergroup/hwe_maneuver/lanechange event"},         // Event, Complete
-        {"hwe_maneuver", 8.4, 5, 3, "/hwe_story/hwe_act/hwe_maneuvergroup/hwe_maneuver"},                              // Maneuver, Complete
-        {"hwe_maneuvergroup", 8.4, 4, 3, "/hwe_story/hwe_act/hwe_maneuvergroup"},                                      // ManeuverGroup, Complete
-        {"hwe_act", 8.4, 3, 3, "/hwe_story/hwe_act"},                                                                  // Act, Complete
-        {"hwe_story", 8.4, 2, 3, "/hwe_story"},                                                                        // Story, Complete
+        {"hwe_maneuver", 8.3, 5, 3, "/hwe_story/hwe_act/hwe_maneuvergroup/hwe_maneuver"},                              // Maneuver, Complete
+        {"hwe_maneuvergroup", 8.3, 4, 3, "/hwe_story/hwe_act/hwe_maneuvergroup"},                                      // ManeuverGroup, Complete
+        {"hwe_act", 8.3, 3, 3, "/hwe_story/hwe_act"},                                                                  // Act, Complete
+        {"hwe_story", 8.3, 2, 3, "/hwe_story"},                                                                        // Story, Complete
         {"storyBoard", 12.1, 1, 3, "/"},                                                                               // StoryBoard, Complete
     };
 

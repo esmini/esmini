@@ -42,31 +42,37 @@ using std::vector;
 
 int SwarmTrafficAction::counter_ = 0;
 
-void ParameterSetAction::Start(double simTime, double dt)
+void ParameterSetAction::Start(double simTime)
 {
     LOG("Set parameter %s = %s", name_.c_str(), value_.c_str());
     parameters_->setParameterValueByString(name_, value_);
-    OSCAction::Start(simTime, dt);
+    OSCAction::Start(simTime);
 }
 
-void ParameterSetAction::Step(double, double)
+void ParameterSetAction::Step(double simTime, double dt)
 {
+    (void)simTime;
+    (void)dt;
+
     OSCAction::Stop();
 }
 
-void VariableSetAction::Start(double simTime, double dt)
+void VariableSetAction::Start(double simTime)
 {
     LOG("Set variable %s = %s", name_.c_str(), value_.c_str());
     variables_->setParameterValueByString(name_, value_);
-    OSCAction::Start(simTime, dt);
+    OSCAction::Start(simTime);
 }
 
-void VariableSetAction::Step(double, double)
+void VariableSetAction::Step(double simTime, double dt)
 {
+    (void)simTime;
+    (void)dt;
+
     OSCAction::Stop();
 }
 
-void AddEntityAction::Start(double simTime, double dt)
+void AddEntityAction::Start(double simTime)
 {
     if (entity_ == nullptr)
     {
@@ -84,15 +90,18 @@ void AddEntityAction::Start(double simTime, double dt)
 
     LOG("Added entity %s", entity_->GetName().c_str());
 
-    OSCAction::Start(simTime, dt);
+    OSCAction::Start(simTime);
 }
 
-void AddEntityAction::Step(double, double)
+void AddEntityAction::Step(double simTime, double dt)
 {
+    (void)simTime;
+    (void)dt;
+
     OSCAction::Stop();
 }
 
-void DeleteEntityAction::Start(double simTime, double dt)
+void DeleteEntityAction::Start(double simTime)
 {
     if (entity_ == nullptr)
     {
@@ -110,11 +119,13 @@ void DeleteEntityAction::Start(double simTime, double dt)
 
     LOG("Deleted entity %s", entity_->GetName().c_str());
 
-    OSCAction::Start(simTime, dt);
+    OSCAction::Start(simTime);
 }
 
-void DeleteEntityAction::Step(double, double)
+void DeleteEntityAction::Step(double simTime, double dt)
 {
+    (void)simTime;
+    (void)dt;
     OSCAction::Stop();
 }
 
@@ -216,7 +227,7 @@ SwarmTrafficAction::~SwarmTrafficAction()
     }
 }
 
-void SwarmTrafficAction::Start(double simTime, double dt)
+void SwarmTrafficAction::Start(double simTime)
 {
     LOG("Swarm IR: %.2f, SMjA: %.2f, SMnA: %.2f, maxV: %i vel: %.2f", innerRadius_, semiMajorAxis_, semiMinorAxis_, numberOfVehicles, velocity_);
     double x0, y0, x1, y1;
@@ -277,12 +288,14 @@ void SwarmTrafficAction::Start(double simTime, double dt)
         }
     }
 
-    OSCAction::Start(simTime, dt);
+    OSCAction::Start(simTime);
 }
 
 void SwarmTrafficAction::Step(double simTime, double dt)
 {
+    (void)simTime;
     (void)dt;
+
     // Executes the step at each TIME_INTERVAL
     if (lastTime < 0 || abs(simTime - lastTime) > SWARM_TIME_INTERVAL)
     {

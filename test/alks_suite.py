@@ -29,7 +29,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('.*Loading .*ALKS_Scenario_4.1_2', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('19.98.* SwerveAction2 standbyState -> startTransition -> runningState.*', log)  is not None)
+        self.assertTrue(re.search('19.98.* SwerveAction2 initState -> startTransition -> runningState.*', log)  is not None)
 
         # Check vehicle state
         csv = generate_csv()
@@ -67,7 +67,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('.*Loading .*ALKS_Scenario_4.2_2', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('0.000.* Init TargetBlocking TeleportAction standbyState -> startTransition -> runningState', log)  is not None)
+        self.assertTrue(re.search('0.000.* Init TargetBlocking TeleportAction initState -> startTransition -> runningState', log)  is not None)
 
         # Check vehicle state
         csv = generate_csv()
@@ -232,7 +232,7 @@ class TestSuite(unittest.TestCase):
 
         # Check some scenario events
         self.assertTrue(re.search('10.00.* SwerveEventStart == true, 10.0000 >= 10.00 edge: rising', log)  is not None)
-        self.assertTrue(re.search('10.00.*: SwerveAction standbyState -> startTransition -> runningState', log)  is not None)
+        self.assertTrue(re.search('10.00.*: SwerveAction initState -> startTransition -> runningState', log)  is not None)
         self.assertTrue(re.search('26.10.*: SwerveEvent runningState -> endTransition -> completeState', log)  is not None)
 
 

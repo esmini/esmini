@@ -156,6 +156,13 @@ struct OffScreenImage
     unsigned char* data;
 };
 
+enum class GhostMode
+{
+    NORMAL,
+    RESTART,    // the frame ghost is requested to restart
+    RESTARTING  // ghost restart is ongoing, including the final restart timestep
+};
+
 class SE_Vector
 {
 public:
@@ -1116,7 +1123,9 @@ public:
           osiFilePath_(""),
           osiFileEnabled_(false),
           collisionDetection_(false),
-          saveImagesToRAM_(false)
+          saveImagesToRAM_(false),
+          ghost_mode_(GhostMode::NORMAL),
+          ghost_headstart_(0.0)
     {
     }
 
@@ -1230,12 +1239,32 @@ public:
     std::string GetModelFilenameById(int model_id);
     void        ClearModelFilenames()
     {
-        entity_model_map.clear();
+        entity_model_map_.clear();
     }
 
     SE_Rand& GetRand()
     {
         return rand_;
+    }
+
+    GhostMode GetGhostMode()
+    {
+        return ghost_mode_;
+    }
+
+    void SetGhostMode(GhostMode mode)
+    {
+        ghost_mode_ = mode;
+    }
+
+    double GetGhostHeadstart(void)
+    {
+        return ghost_headstart_;
+    }
+
+    void SetGhostHeadstart(double headstart_time)
+    {
+        ghost_headstart_ = headstart_time;
     }
 
 private:
@@ -1250,7 +1279,9 @@ private:
     SE_Rand                    rand_;
     bool                       collisionDetection_;
     bool                       saveImagesToRAM_;
-    std::map<int, std::string> entity_model_map;
+    std::map<int, std::string> entity_model_map_;
+    GhostMode                  ghost_mode_;
+    double                     ghost_headstart_;
 };
 
 /**

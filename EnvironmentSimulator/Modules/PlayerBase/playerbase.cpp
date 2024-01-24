@@ -187,9 +187,9 @@ int ScenarioPlayer::Frame(double timestep_s, bool server_mode)
         scenarioEngine->mutex_.Lock();
         retval = ScenarioFrame(timestep_s, true);
 
-        if (scenarioEngine->GetGhostMode() != GhostMode::NORMAL)
+        if (SE_Env::Inst().GetGhostMode() != GhostMode::NORMAL)
         {
-            while (retval == 0 && scenarioEngine->GetGhostMode() != GhostMode::NORMAL && !IsQuitRequested())
+            while (retval == 0 && SE_Env::Inst().GetGhostMode() != GhostMode::NORMAL && !IsQuitRequested())
             {
                 Draw();
                 if (!IsPaused() && !IsQuitRequested())
@@ -269,7 +269,7 @@ int ScenarioPlayer::ScenarioFrame(double timestep_s, bool keyframe)
 
         scenarioEngine->prepareGroundTruth(timestep_s);
 
-        if (scenarioEngine->GetGhostMode() != GhostMode::RESTART)
+        if (SE_Env::Inst().GetGhostMode() != GhostMode::RESTART)
         {
             scenarioGateway->WriteStatesToFile();
 

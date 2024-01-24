@@ -1344,7 +1344,7 @@ TEST(SpeedProfileTest, TestSpeedProfileFirstEntryOffset)
     entry.time_  = 2.0;
     sp_action.AddEntry(entry);
 
-    sp_action.Start(0.0, 0.1);
+    sp_action.Start(0.1);
 
     // Evaluate at a time before first entry time, speed should interpolate towards first entry
     sp_action.Step(1.0);
@@ -1631,7 +1631,7 @@ TEST(SpeedProfileTest, TestSpeedProfileNonZeroInitalAcc)
     entry.time_  = 5.0;
     sp_action.AddEntry(entry);
 
-    sp_action.Start(0.0, 0.1);
+    sp_action.Start(0.1);
 
     // Evaluate small time step ahead. Although the speed profile entry slope is negative,
     // the speed is still increasing due to inital positive acceleration.
@@ -1961,7 +1961,7 @@ TEST(SpeedTest, TestChangeSpeedOverDistance)
         target->value_ = v1[i];
         action.transition_.SetParamTargetVal(dist[i]);  // distance
 
-        action.Start(0.0, 0.0);
+        action.Start(0.0);
         EXPECT_NEAR(action.transition_.GetParamTargetVal(), time[i], 1E-5);
     }
 }

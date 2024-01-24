@@ -87,7 +87,7 @@ const char* esmini_build_version(void)
 
 std::map<int, std::string> ParseModelIds()
 {
-    std::map<int, std::string> entity_model_map;
+    std::map<int, std::string> entity_model_map_;
 
     const std::string filename = "model_ids.txt";
 
@@ -115,7 +115,7 @@ std::map<int, std::string> ParseModelIds()
                 std::string model3d;
                 while (infile >> id >> model3d)
                 {
-                    entity_model_map[id] = model3d;
+                    entity_model_map_[id] = model3d;
                 }
                 break;
             }
@@ -134,12 +134,12 @@ std::map<int, std::string> ParseModelIds()
         printf("  continue with internal hard coded list: \n");
         for (int j = 0; static_cast<unsigned int>(j) < sizeof(entityModelsFilesFallbackList_) / sizeof(char*); j++)
         {
-            entity_model_map[j] = entityModelsFilesFallbackList_[j];
-            LOG("    %2d: %s", j, entity_model_map[j].c_str());
+            entity_model_map_[j] = entityModelsFilesFallbackList_[j];
+            LOG("    %2d: %s", j, entity_model_map_[j].c_str());
         }
     }
 
-    return entity_model_map;
+    return entity_model_map_;
 }
 
 std::string ControlDomain2Str(ControlDomains domains)
@@ -986,18 +986,18 @@ int SE_Env::AddPath(std::string path)
 std::string SE_Env::GetModelFilenameById(int model_id)
 {
     std::string name;
-    if (entity_model_map.size() == 0)
+    if (entity_model_map_.size() == 0)
     {
-        entity_model_map = ParseModelIds();
+        entity_model_map_ = ParseModelIds();
     }
 
-    name = entity_model_map[model_id];
+    name = entity_model_map_[model_id];
 
     if (name.empty())
     {
         LOG("Failed to lookup 3d model filename for model_id %d in list:", model_id);
         std::map<int, std::string>::iterator it;
-        for (it = entity_model_map.begin(); it != entity_model_map.end(); ++it)
+        for (it = entity_model_map_.begin(); it != entity_model_map_.end(); ++it)
         {
             LOG("  %d %s", it->first, it->second.c_str());
         }

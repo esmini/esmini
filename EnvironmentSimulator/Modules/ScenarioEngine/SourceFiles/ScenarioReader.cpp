@@ -43,10 +43,22 @@ namespace scenarioengine
     Parameters ScenarioReader::variables;
 }  // namespace scenarioengine
 
+typedef struct
+{
+    std::string                    element_name;
+    StoryBoardElement::ElementType type;
+    TrigByState::CondElementState  state;
+    StoryBoardElement             *element;
+    TrigByState                   *condition;
+} StoryBoardElementTriggerInfo;
+
+static std::vector<StoryBoardElementTriggerInfo> storyboard_element_triggers;
+
 ScenarioReader::ScenarioReader(Entities *entities, Catalogs *catalogs, bool disable_controllers)
     : entities_(entities),
       catalogs_(catalogs),
-      disable_controllers_(disable_controllers)
+      disable_controllers_(disable_controllers),
+      story_board_(nullptr)
 {
     parameters.Clear();
 }
@@ -1164,19 +1176,6 @@ roadmanager::RMTrajectory *ScenarioReader::parseTrajectory(pugi::xml_node node)
                     }
                     std::unique_ptr<OSCPosition> pos  = std::unique_ptr<OSCPosition>{parseOSCPosition(posNode)};
                     double                       time = strtod(parameters.ReadAttribute(vertexNode, "time"));
-#if 0
-                    if (pos->type_ != OSCPosition::PositionType::WORLD)
-                    {
-                        if (!posNode.first_child().child("Orientation"))
-                        {
-                            pos->GetRMPos()->SetMode(roadmanager::Position::PosModeType::INIT, roadmanager::Position::PosMode::H_REL);
-                        }
-                        else
-                        {
-                            pos->GetRMPos()->SetMode(roadmanager::Position::PosModeType::INIT, roadmanager::Position::PosMode::H_ABS);
-                        }
-                    }
-#endif
                     pline->AddVertex(*pos->GetRMPos(), time);
                 }
                 shape = pline;
@@ -3456,6 +3455,10 @@ void ScenarioReader::parseInit(Init &init)
                         }
 
                         init.private_action_.push_back(action);
+                        if (entityRef)
+                        {
+                            entityRef->initActions_.push_back(action);
+                        }
                     }
                 }
                 entities_->activateObject(entityRef);
@@ -3860,6 +3863,7 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
                             trigger->object_      = ResolveObjectReference(parameters.ReadAttribute(target, "entityRef"));
                             trigger->type_        = Object::Type::TYPE_NONE;
                         }
+                        trigger->storyBoard_ = story_board_;
 
                         condition = trigger;
                     }
@@ -4070,6 +4074,8 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
                             }
                         }
 
+                        trigger->storyBoard_ = story_board_;
+
                         condition = trigger;
                     }
                     else
@@ -4152,11 +4158,17 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
                 }
                 else if (condition_type == "StoryboardElementStateCondition")
                 {
-                    StoryBoardElement::ElementType element_type = ParseElementType(parameters.ReadAttribute(byValueChild, "storyboardElementType"));
-                    TrigByState::CondElementState  state        = ParseState(parameters.ReadAttribute(byValueChild, "state"));
-                    std::string                    element_name = parameters.ReadAttribute(byValueChild, "storyboardElementRef");
+                    TrigByState                 *trigger = new TrigByState();
+                    StoryBoardElementTriggerInfo info;
 
-                    TrigByState *trigger = new TrigByState(state, element_type, element_name);
+                    info.element_name = parameters.ReadAttribute(byValueChild, "storyboardElementRef");
+                    info.type         = ParseElementType(parameters.ReadAttribute(byValueChild, "storyboardElementType"));
+                    info.state        = ParseState(parameters.ReadAttribute(byValueChild, "state"));
+                    info.element      = nullptr;
+                    info.condition    = trigger;
+
+                    // register this trigger for later resolving storyboard element references
+                    storyboard_element_triggers.push_back(info);
 
                     condition = trigger;
                 }
@@ -4286,6 +4298,8 @@ void ScenarioReader::parseOSCManeuver(Maneuver *maneuver, pugi::xml_node maneuve
                 event->max_num_executions_ = 1;  // 1 is default
             }
 
+            bool event_added_to_objects = false;
+
             for (pugi::xml_node eventChild = maneuverChild.first_child(); eventChild; eventChild = eventChild.next_sibling())
             {
                 std::string childName(eventChild.name());
@@ -4327,12 +4341,18 @@ void ScenarioReader::parseOSCManeuver(Maneuver *maneuver, pugi::xml_node maneuve
                                 if (action != 0)
                                 {
                                     event->action_.push_back(static_cast<OSCAction *>(action));
+                                    if (!event_added_to_objects)
+                                    {
+                                        mGroup->actor_[i]->object_->addEvent(event);
+                                    }
                                 }
                                 else
                                 {
                                     LOG("Failed to parse event %s - continue regardless", event->GetName().c_str());
                                 }
                             }
+
+                            event_added_to_objects = true;
                         }
                     }
                 }
@@ -4364,6 +4384,7 @@ void ScenarioReader::parseOSCManeuver(Maneuver *maneuver, pugi::xml_node maneuve
                     LOG("%s not supported", childName.c_str());
                 }
             }
+
             if (event->start_trigger_ == 0)
             {
                 // Add a default (empty) trigger
@@ -4376,6 +4397,7 @@ void ScenarioReader::parseOSCManeuver(Maneuver *maneuver, pugi::xml_node maneuve
 
 int ScenarioReader::parseStoryBoard(StoryBoard &storyBoard)
 {
+    story_board_                  = &storyBoard;
     pugi::xml_node storyBoardNode = osc_root_.child("Storyboard");
     pugi::xml_node storyNode      = storyBoardNode.child("Story");
 
@@ -4387,6 +4409,7 @@ int ScenarioReader::parseStoryBoard(StoryBoard &storyBoard)
         {
             std::string name  = parameters.ReadAttribute(storyNode, "name", false);
             Story      *story = new Story(name, &storyBoard);
+            storyBoard.story_.push_back(story);
 
             parameters.CreateRestorePoint();
 
@@ -4402,6 +4425,7 @@ int ScenarioReader::parseStoryBoard(StoryBoard &storyBoard)
                 if (childName == "Act")
                 {
                     Act *act = new Act(story);
+                    story->act_.push_back(act);
 
                     act->SetName(parameters.ReadAttribute(storyChild, "name"));
 
@@ -4412,6 +4436,7 @@ int ScenarioReader::parseStoryBoard(StoryBoard &storyBoard)
                         if (actChildName == "ManeuverGroup")
                         {
                             ManeuverGroup *mGroup = new ManeuverGroup(act);
+                            act->maneuverGroup_.push_back(mGroup);
 
                             if (parameters.ReadAttribute(actChild, "maximumExecutionCount") != "")
                             {
@@ -4463,10 +4488,10 @@ int ScenarioReader::parseStoryBoard(StoryBoard &storyBoard)
                                 if (entry->type_ == CatalogType::CATALOG_MANEUVER)
                                 {
                                     Maneuver *maneuver = new Maneuver(mGroup);
+                                    mGroup->maneuver_.push_back(maneuver);
 
                                     // Make a new instance from catalog entry
                                     parseOSCManeuver(maneuver, entry->GetNode(), mGroup);
-                                    mGroup->maneuver_.push_back(maneuver);
                                 }
                                 else
                                 {
@@ -4478,15 +4503,15 @@ int ScenarioReader::parseStoryBoard(StoryBoard &storyBoard)
                             }
 
                             for (pugi::xml_node maneuver_n = actChild.child("Maneuver"); maneuver_n; maneuver_n = maneuver_n.next_sibling("Maneuver"))
+                            {
                                 if (maneuver_n != NULL)
                                 {
                                     Maneuver *maneuver = new Maneuver(mGroup);
+                                    mGroup->maneuver_.push_back(maneuver);
 
                                     parseOSCManeuver(maneuver, maneuver_n, mGroup);
-                                    mGroup->maneuver_.push_back(maneuver);
                                 }
-
-                            act->maneuverGroup_.push_back(mGroup);
+                            }
                         }
                         else if (actChildName == "StartTrigger")
                         {
@@ -4497,10 +4522,8 @@ int ScenarioReader::parseStoryBoard(StoryBoard &storyBoard)
                             act->stop_trigger_ = parseTrigger(actChild, false);
                         }
                     }
-                    story->act_.push_back(act);
                 }
             }
-            storyBoard.story_.push_back(story);
             parameters.RestoreParameterDeclarations();
         }
     }
@@ -4514,6 +4537,50 @@ int ScenarioReader::parseStoryBoard(StoryBoard &storyBoard)
 
     // Log parameter declarations
     parameters.Print("parameters");
+
+    // Now when complete storyboard is parsed, resolve storyboard element triggers
+    for (auto trigger_info : storyboard_element_triggers)
+    {
+        // locate storyboard element
+        switch (trigger_info.type)
+        {
+            case StoryBoardElement::ElementType::STORY:
+                trigger_info.element = story_board_->FindChildByTypeAndName(StoryBoardElement::ElementType::STORY, trigger_info.element_name);
+                break;
+            case StoryBoardElement::ElementType::ACT:
+                trigger_info.element = story_board_->FindChildByTypeAndName(StoryBoardElement::ElementType::ACT, trigger_info.element_name);
+                break;
+            case StoryBoardElement::ElementType::MANEUVER_GROUP:
+                trigger_info.element =
+                    story_board_->FindChildByTypeAndName(StoryBoardElement::ElementType::MANEUVER_GROUP, trigger_info.element_name);
+                break;
+            case StoryBoardElement::ElementType::MANEUVER:
+                trigger_info.element = story_board_->FindChildByTypeAndName(StoryBoardElement::ElementType::MANEUVER, trigger_info.element_name);
+                break;
+            case StoryBoardElement::ElementType::EVENT:
+                trigger_info.element = story_board_->FindChildByTypeAndName(StoryBoardElement::ElementType::EVENT, trigger_info.element_name);
+                break;
+            case StoryBoardElement::ElementType::ACTION:
+                trigger_info.element = story_board_->FindChildByTypeAndName(StoryBoardElement::ElementType::ACTION, trigger_info.element_name);
+                break;
+            case StoryBoardElement::ElementType::STORY_BOARD:
+            default:
+                break;
+        }
+
+        if (trigger_info.element != nullptr)
+        {
+            trigger_info.condition->element_              = trigger_info.element;
+            trigger_info.condition->target_element_state_ = trigger_info.state;
+            trigger_info.element->AddTriggerRef(trigger_info.condition);
+        }
+        else
+        {
+            LOG_AND_QUIT("Error: StoryboardElement %s not found. Quit.", trigger_info.element_name.c_str());
+        }
+    }
+
+    storyboard_element_triggers.clear();
 
     return 0;
 }

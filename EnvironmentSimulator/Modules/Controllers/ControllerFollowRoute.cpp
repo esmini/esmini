@@ -19,7 +19,7 @@
 #include "CommonMini.hpp"
 #include "Entities.hpp"
 #include "ScenarioGateway.hpp"
-#include "OSCManeuver.hpp"
+#include "Storyboard.hpp"
 #include "ScenarioEngine.hpp"
 #include "LaneIndependentRouter.hpp"
 
@@ -247,14 +247,14 @@ void ControllerFollowRoute::CreateLaneChange(int lane)
 
 void ControllerFollowRoute::ChangeLane(double timeStep)
 {
-    if (laneChangeAction_ == nullptr || laneChangeAction_->state_ == OSCAction::State::COMPLETE)
+    if (laneChangeAction_ == nullptr || laneChangeAction_->GetCurrentState() == OSCAction::State::COMPLETE)
     {
         return;
     }
 
-    if (!laneChangeAction_->IsActive())
+    if (!(laneChangeAction_->GetCurrentState() == StoryBoardElement::State::RUNNING))
     {
-        laneChangeAction_->Start(scenarioEngine_->getSimulationTime(), timeStep);
+        laneChangeAction_->Start(scenarioEngine_->getSimulationTime());
 
         mode_ = Mode::MODE_OVERRIDE;  // override mode to prevent default controller from moving the entity
 
@@ -266,8 +266,7 @@ void ControllerFollowRoute::ChangeLane(double timeStep)
         laneChangeAction_->Step(scenarioEngine_->getSimulationTime(), timeStep);
         mode_ = Mode::MODE_OVERRIDE;  // restore override mode to prevent default controller from moving the entity
 
-        laneChangeAction_->UpdateState();
-        if (laneChangeAction_->state_ == OSCAction::State::COMPLETE)
+        if (laneChangeAction_->GetCurrentState() == OSCAction::State::COMPLETE)
         {
             changingLane_ = false;
             delete laneChangeAction_;

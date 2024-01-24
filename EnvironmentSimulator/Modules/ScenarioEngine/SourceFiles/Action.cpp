@@ -1,0 +1,38 @@
+/*
+ * esmini - Environment Simulator Minimalistic
+ * https://github.com/esmini/esmini
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ * Copyright (c) partners of Simulation Scenarios
+ * https://sites.google.com/view/simulationscenarios
+ */
+
+#include "Action.hpp"
+#include "CommonMini.hpp"
+
+using namespace scenarioengine;
+
+std::string OSCAction::BaseType2Str()
+{
+    if (base_type_ == BaseType::GLOBAL)
+    {
+        return "Global";
+    }
+    else if (base_type_ == BaseType::PRIVATE)
+    {
+        return "Private";
+    }
+    else if (base_type_ == BaseType::USER_DEFINED)
+    {
+        return "User defined";
+    }
+    else
+    {
+        LOG("Undefined Base Type: %d", base_type_);
+    }
+
+    return "Undefined";
+}

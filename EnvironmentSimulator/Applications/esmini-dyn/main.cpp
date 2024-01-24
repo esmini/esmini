@@ -119,7 +119,7 @@ int main(int argc, const char* argv[])
             if (SE_Init(filename, 0, 1, DEMONSTRATE_THREAD, 0) != 0)
             {
                 printf("Failed to load %s", filename);
-                break;
+                return -1;
             }
 #else
             std::ifstream f(filename);  // taking file as inputstream

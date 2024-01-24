@@ -12,7 +12,7 @@
 
 #pragma once
 
-#include "OSCAction.hpp"
+#include "Action.hpp"
 #include "OSCPosition.hpp"
 #include "Entities.hpp"
 #include "CommonMini.hpp"
@@ -308,7 +308,7 @@ namespace scenarioengine
             return "SpeedAction";
         };
 
-        void Start(double simTime, double dt);
+        void Start(double simTime);
         void Step(double simTime, double dt);
 
         void print()
@@ -413,7 +413,7 @@ namespace scenarioengine
             return "SpeedProfileAction";
         };
 
-        void Start(double simTime, double dt = 0.0);
+        void Start(double simTime);
         void Step(double simTime, double dt = 0.0);
 
         void print()
@@ -515,7 +515,7 @@ namespace scenarioengine
             return "LongitudinalDistanceAction";
         };
 
-        void Start(double simTime, double dt);
+        void Start(double simTime);
         void Step(double simTime, double dt);
 
         void print()
@@ -602,7 +602,7 @@ namespace scenarioengine
         };
 
         void Step(double simTime, double dt);
-        void Start(double simTime, double dt);
+        void Start(double simTime);
 
         void ReplaceObjectRefs(Object* obj1, Object* obj2);
 
@@ -681,7 +681,7 @@ namespace scenarioengine
             return "LaneOffsetAction";
         };
 
-        void Start(double simTime, double dt);
+        void Start(double simTime);
         void Step(double simTime, double dt);
 
         void ReplaceObjectRefs(Object* obj1, Object* obj2);
@@ -793,7 +793,7 @@ namespace scenarioengine
         };
 
         void Step(double simTime, double dt);
-        void Start(double simTime, double dt);
+        void Start(double simTime);
 
         const char* Mode2Str(SynchMode mode);
 
@@ -858,7 +858,7 @@ namespace scenarioengine
         };
 
         void Step(double simTime, double dt);
-        void Start(double simTime, double dt);
+        void Start(double simTime);
 
         void ReplaceObjectRefs(Object* obj1, Object* obj2);
         void SetGhostRestart(bool value)
@@ -902,7 +902,7 @@ namespace scenarioengine
         };
 
         void Step(double simTime, double dt);
-        void Start(double simTime, double dt);
+        void Start(double simTime);
 
         void ReplaceObjectRefs(Object* obj1, Object* obj2);
 
@@ -935,7 +935,7 @@ namespace scenarioengine
         };
 
         void Step(double simTime, double dt);
-        void Start(double simTime, double dt);
+        void Start(double simTime);
 
         void ReplaceObjectRefs(Object* obj1, Object* obj2);
     };
@@ -969,7 +969,7 @@ namespace scenarioengine
             return "AssignRouteAction";
         };
 
-        void Start(double simTime, double dt);
+        void Start(double simTime);
         void Step(double simTime, double dt);
 
         void ReplaceObjectRefs(Object* obj1, Object* obj2);
@@ -1033,8 +1033,8 @@ namespace scenarioengine
         };
 
         void Step(double simTime, double dt);
-        void Start(double simTime, double dt);
-        void End(double simTime);
+        void Start(double simTime);
+        void End();
 
         void ReplaceObjectRefs(Object* obj1, Object* obj2);
     };
@@ -1073,7 +1073,7 @@ namespace scenarioengine
             return "AcquirePositionAction";
         };
 
-        void Start(double simTime, double dt);
+        void Start(double simTime);
         void Step(double simTime, double dt);
 
         void ReplaceObjectRefs(Object* obj1, Object* obj2);
@@ -1121,7 +1121,7 @@ namespace scenarioengine
         {
         }
 
-        void Start(double simTime, double dt);
+        void Start(double simTime);
     };
 
     class ActivateControllerAction : public OSCPrivateAction
@@ -1166,7 +1166,7 @@ namespace scenarioengine
             return new_action;
         }
 
-        void Start(double simTime, double dt)
+        void Start(double simTime)
         {
             if (object_->GetAssignedControllerType() != 0)
             {
@@ -1176,7 +1176,7 @@ namespace scenarioengine
                     DomainActivation2Str(lateral_).c_str(),
                     DomainActivation2Str(longitudinal_).c_str(),
                     object_->controller_->GetDomain());
-                OSCAction::Start(simTime, dt);
+                OSCAction::Start(simTime);
             }
             else
             {
@@ -1193,7 +1193,7 @@ namespace scenarioengine
         {
         }
 
-        void End(double simTime)
+        void End()
         {
             if (object_->GetActivatedControllerType() != 0 && object_->controller_ != nullptr)
             {
@@ -1201,7 +1201,7 @@ namespace scenarioengine
             }
             // Make sure heading is aligned with road driving direction
             object_->pos_.SetHeadingRelative((object_->pos_.GetHRelative() > M_PI_2 && object_->pos_.GetHRelative() < 3 * M_PI_2) ? M_PI : 0.0);
-            OSCAction::End(simTime);
+            OSCAction::End();
         }
     };
 
@@ -1244,7 +1244,7 @@ namespace scenarioengine
         };
 
         void Step(double simTime, double dt);
-        void Start(double simTime, double dt);
+        void Start(double simTime);
     };
 
     class OverrideControlAction : public OSCPrivateAction
@@ -1278,7 +1278,7 @@ namespace scenarioengine
         }
 
         void Step(double simTime, double dt);
-        void Start(double simTime, double dt);
+        void Start(double simTime);
 
         OSCPrivateAction* Copy()
         {
