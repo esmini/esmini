@@ -1514,6 +1514,7 @@ void LongDistanceAction::Step(double simTime, double)
 
     double speed_diff = object_->speed_ - target_object_->speed_;
     double acc;
+    double jerk;
     double spring_constant = 0.4;
     double dc;
     double requested_dist = 0;
@@ -1563,13 +1564,25 @@ void LongDistanceAction::Step(double simTime, double)
         if (acc > dynamics_.max_acceleration_)
         {
             acc = dynamics_.max_acceleration_;
+            jerk = dynamics_.max_acceleration_rate_;
         }
         else if (acc < -dynamics_.max_deceleration_)
         {
             acc = -dynamics_.max_deceleration_;
+            jerk = -dynamics_.max_deceleration_rate_;
+        }
+        //Apply simple linear model for jerk
+        if (jerk < 0.0 && acc < acceleration_)
+        {
+            acc = MAX(acceleration_ + jerk*dt,acc);
+        }
+        else if (jerk > 0.0 && acc > acceleration_)
+        {
+            acc = MIN(acceleration_ + jerk*dt,acc);
         }
 
-        object_->SetSpeed(object_->GetSpeed() + acc * dt);
+        acceleration_ = acc;
+        object_->SetSpeed(object_->GetSpeed() + acceleration_ * dt);
 
         if (object_->GetSpeed() > dynamics_.max_speed_)
         {
