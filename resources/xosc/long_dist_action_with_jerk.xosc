@@ -125,7 +125,7 @@
                                 <PrivateAction>
                                     <LongitudinalAction>
                                         <LongitudinalDistanceAction entityRef="Target" freespace="true" continuous="true" timeGap="2.0" coordinateSystem="entity" displacement="any">
-                                            <DynamicConstraints maxSpeed="30.0" maxDeceleration="3.0" maxAcceleration="3.0" maxAccelerationRate="0.5" maxDecelerationRate="0.5"/>
+                                            <DynamicConstraints maxSpeed="30.0" maxDeceleration="3.0" maxAcceleration="3.0" maxAccelerationRate="1.0" maxDecelerationRate="1.0"/>
                                         </LongitudinalDistanceAction>
                                     </LongitudinalAction>
                                 </PrivateAction>
@@ -163,7 +163,7 @@
             <ConditionGroup>
                 <Condition name="stop_simulation" delay="0.0" conditionEdge="rising">
                     <ByValueCondition>
-                        <SimulationTimeCondition value="35.0" rule="greaterThan"/>
+                        <SimulationTimeCondition value="20.0" rule="greaterThan"/>
                     </ByValueCondition>
                 </Condition>
             </ConditionGroup>

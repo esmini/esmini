@@ -1514,7 +1514,7 @@ void LongDistanceAction::Step(double simTime, double)
 
     double speed_diff = object_->speed_ - target_object_->speed_;
     double acc;
-    double jerk;
+    double jerk            = 0.0;
     double spring_constant = 0.4;
     double dc;
     double requested_dist = 0;
@@ -1561,24 +1561,31 @@ void LongDistanceAction::Step(double simTime, double)
         double spring_constant_adjusted = tension * spring_constant;
         dc                              = 2 * sqrt(spring_constant_adjusted);
         acc                             = distance_diff * spring_constant_adjusted - speed_diff * dc;
-        if (acc > dynamics_.max_acceleration_)
+        if (acc < 0.0)
         {
-            acc = dynamics_.max_acceleration_;
-            jerk = dynamics_.max_acceleration_rate_;
-        }
-        else if (acc < -dynamics_.max_deceleration_)
-        {
-            acc = -dynamics_.max_deceleration_;
             jerk = -dynamics_.max_deceleration_rate_;
+            if (acc < -dynamics_.max_deceleration_)
+            {
+                acc = -dynamics_.max_deceleration_;
+            }
         }
-        //Apply simple linear model for jerk
+        else
+        {
+            jerk = dynamics_.max_acceleration_rate_;
+            if (acc > dynamics_.max_acceleration_)
+            {
+                acc = dynamics_.max_acceleration_;
+            }
+        }
+
+        // Apply simple linear model for jerk
         if (jerk < 0.0 && acc < acceleration_)
         {
-            acc = MAX(acceleration_ + jerk*dt,acc);
+            acc = MAX(acceleration_ + jerk * dt, acc);
         }
         else if (jerk > 0.0 && acc > acceleration_)
         {
-            acc = MIN(acceleration_ + jerk*dt,acc);
+            acc = MIN(acceleration_ + jerk * dt, acc);
         }
 
         acceleration_ = acc;

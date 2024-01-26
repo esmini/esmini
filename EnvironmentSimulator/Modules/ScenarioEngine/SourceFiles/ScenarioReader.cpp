@@ -2251,9 +2251,9 @@ int ScenarioReader::parseDynamicConstraints(pugi::xml_node dynamics_node, Dynami
     value values[] = {
         {&dc.max_speed_, 250.0 / 3.6, obj->performance_.maxSpeed, "maxSpeed"},
         {&dc.max_acceleration_, 5.0, obj->performance_.maxAcceleration, "maxAcceleration"},
-        {&dc.max_acceleration_rate_, 2.0, dc.max_acceleration_rate_, "maxAccelerationRate"},
+        {&dc.max_acceleration_rate_, LARGE_NUMBER, dc.max_acceleration_rate_, "maxAccelerationRate"},
         {&dc.max_deceleration_, 10.0, obj->performance_.maxDeceleration, "maxDeceleration"},
-        {&dc.max_deceleration_rate_, 2.0, dc.max_deceleration_rate_, "maxDecelerationRate"},
+        {&dc.max_deceleration_rate_, LARGE_NUMBER, dc.max_deceleration_rate_, "maxDecelerationRate"},
     };
 
     for (unsigned int i = 0; i < sizeof(values) / sizeof(value); i++)
