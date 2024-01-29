@@ -15,12 +15,15 @@
 #include "UDP.hpp"
 #include "IdealSensor.hpp"
 #include "ScenarioGateway.hpp"
+#include "ScenarioEngine.hpp"
 #include "osi_sensordata.pb.h"
 #include "osi_object.pb.h"
 #include "osi_groundtruth.pb.h"
 #include "osi_sensorview.pb.h"
 #include "osi_version.pb.h"
 #include "osi_common.pb.h"
+#include "osi_trafficcommand.pb.h"
+#include "osi_trafficupdate.pb.h"
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -35,8 +38,15 @@ using namespace scenarioengine;
 class OSIReporter
 {
 public:
-    OSIReporter();
+    OSIReporter(ScenarioEngine* scenarioengine);
     ~OSIReporter();
+
+    typedef struct
+    {
+        OSCPrivateAction*             action;
+        StoryBoardElement::State      state;
+        StoryBoardElement::Transition transition;
+    } TrafficCommandStateChange;
 
     /**
     Creates and opens osi file
@@ -103,6 +113,17 @@ public:
     Fills the Traffic Signals
     */
     int UpdateTrafficSignals();
+    /**
+    Fills the Traffic Commands (scenario events)
+    */
+    int UpdateOSITrafficCommand();
+
+    std::vector<TrafficCommandStateChange> traffic_command_state_changes_;
+
+    void RegisterTrafficCommandStateChange(OSCPrivateAction* action, StoryBoardElement::State state, StoryBoardElement::Transition transition)
+    {
+        traffic_command_state_changes_.push_back({action, state, transition});
+    }
 
     /**
     Set model reference for stationary environment as defined in OpenScenario
@@ -116,6 +137,7 @@ public:
 
     const char*       GetOSIGroundTruth(int* size);
     const char*       GetOSIGroundTruthRaw();
+    const char*       GetOSITrafficCommandRaw();
     const char*       GetOSIRoadLane(const std::vector<std::unique_ptr<ObjectState>>& objectState, int* size, int object_id);
     const char*       GetOSIRoadLaneBoundary(int* size, int global_id);
     void              GetOSILaneBoundaryIds(const std::vector<std::unique_ptr<ObjectState>>& objectState, std::vector<int>& ids, int object_id);
@@ -167,6 +189,7 @@ public:
 
 private:
     UDPClient*             udp_client_;
+    ScenarioEngine*        scenario_engine_;
     unsigned long long int nanosec_;
     std::ofstream          osi_file;
     int                    osi_update_counter_;

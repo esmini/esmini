@@ -30,7 +30,7 @@ namespace scenarioengine
 
         OSCAction(BaseType type, StoryBoardElement* parent) : StoryBoardElement(StoryBoardElement::ElementType::ACTION, parent), base_type_(type)
         {
-            // children_ = nullptr;
+            id_ = OSCAction::CreateUniqeActionId();
         }
 
         virtual ~OSCAction()
@@ -59,9 +59,20 @@ namespace scenarioengine
             return &dummy_child_list_;
         }
 
+        unsigned int GetId() const
+        {
+            return id_;
+        }
+
     private:
         // add dummy child list to avoid nullptr checks - don't add elments to this list
         std::vector<StoryBoardElement*> dummy_child_list_;
+        unsigned int                    id_;  // unique ID for each action
+        static unsigned int             n_actions_;
+        static unsigned int             CreateUniqeActionId()
+        {
+            return n_actions_++;
+        }
     };
 
     class OSCUserDefinedAction : public OSCAction

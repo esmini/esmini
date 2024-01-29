@@ -1217,16 +1217,27 @@ extern "C"
     SE_DLL_API int SE_UpdateOSIDynamicGroundTruth(bool reportGhost = true);
 
     /**
+            @return 0
+    */
+    SE_DLL_API int SE_UpdateOSITrafficCommand();
+
+    /**
             The SE_GetOSIGroundTruth function returns a char array containing the osi GroundTruth serialized to a string
             @return osi3::GroundTruth*
     */
     SE_DLL_API const char *SE_GetOSIGroundTruth(int *size);
 
     /**
-            The SE_GetOSIGroundTruthRaw function returns a char array containing the OSI GroundTruth information
+            Get a pointer to the internal OSI data structure, useful for direct access to OSI data in a C/C++ environment
             @return osi3::GroundTruth*
     */
     SE_DLL_API const char *SE_GetOSIGroundTruthRaw();
+
+    /**
+            Get a pointer to the internal OSI data structure, useful for direct access to OSI data in a C/C++ environment
+            @return osi3::TrafficCommand*
+     */
+    SE_DLL_API const char *SE_GetOSITrafficCommandRaw();
 
     /**
             The SE_SetOSISensorDataRaw function returns a char array containing the OSI GroundTruth information

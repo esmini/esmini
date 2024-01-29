@@ -12,12 +12,16 @@
 
 #include "CommonMini.hpp"
 #include "StoryboardElement.hpp"
+#include "OSIReporter.hpp"
+#include "OSITrafficCommand.hpp"
 #include "OSCCondition.hpp"
 #include "Action.hpp"
 
 using namespace scenarioengine;
 
 void (*StoryBoardElement::stateChangeCallback)(const char* name, int type, int state, const char* full_path) = nullptr;
+
+OSIReporter* StoryBoardElement::osi_reporter_ = nullptr;
 
 std::string StoryBoardElement::state2str(StoryBoardElement::State state)
 {
@@ -337,6 +341,16 @@ void StoryBoardElement::SetState(StoryBoardElement::State state)
             // For all monitoring triggers, register this state change
             trigger_ref_[i]->RegisterStateChange(this, state, GetCurrentTransition());
         }
+
+#ifdef _USE_OSI
+        // register all events for private actions to OSI reporter
+        if (osi_reporter_ != nullptr && this->type_ == StoryBoardElement::ElementType::ACTION &&
+            (reinterpret_cast<OSCAction*>(this))->base_type_ == OSCAction::BaseType::PRIVATE)
+        {
+            osi_reporter_->RegisterTrafficCommandStateChange(reinterpret_cast<OSCPrivateAction*>(this), state, GetCurrentTransition());
+        }
+#endif
+
         state_ = state;
     }
 }

@@ -12,6 +12,7 @@
 
 #include "CommonMini.hpp"
 #include "OSIReporter.hpp"
+#include "OSITrafficCommand.hpp"
 #include <cmath>
 #include <string>
 #include <utility>
@@ -57,6 +58,12 @@ typedef struct
     unsigned int size;
 } OSIRoadLaneBoundary;
 
+typedef struct
+{
+    std::string  traffic_command;
+    unsigned int size;
+} OSITrafficCommand;
+
 static struct
 {
     osi3::SensorData                 *sd;
@@ -70,8 +77,9 @@ static struct
 
 static struct
 {
-    osi3::GroundTruth *gt;
-    osi3::SensorView  *sv;
+    osi3::GroundTruth    *gt;
+    osi3::SensorView     *sv;
+    osi3::TrafficCommand *tc;
 } obj_osi_external;
 
 using namespace scenarioengine;
@@ -79,16 +87,19 @@ using namespace scenarioengine;
 static OSIGroundTruth      osiGroundTruth;
 static OSIRoadLane         osiRoadLane;
 static OSIRoadLaneBoundary osiRoadLaneBoundary;
+static OSITrafficCommand   osiTrafficCommand;
 
 // ScenarioGateway
 
-OSIReporter::OSIReporter()
+OSIReporter::OSIReporter(ScenarioEngine *scenarioengine)
 {
-    udp_client_ = nullptr;
+    udp_client_      = nullptr;
+    scenario_engine_ = scenarioengine;
 
     obj_osi_internal.gt = new osi3::GroundTruth();
     obj_osi_external.gt = new osi3::GroundTruth();
     obj_osi_external.sv = new osi3::SensorView();
+    obj_osi_external.tc = new osi3::TrafficCommand();
 
     obj_osi_internal.gt->mutable_version()->set_version_major(3);
 #ifdef _OSI_VERSION_3_3_1
@@ -101,6 +112,9 @@ OSIReporter::OSIReporter()
 
     obj_osi_internal.gt->mutable_timestamp()->set_seconds(0);
     obj_osi_internal.gt->mutable_timestamp()->set_nanos(0);
+
+    obj_osi_external.tc->mutable_timestamp()->set_seconds(0);
+    obj_osi_external.tc->mutable_timestamp()->set_nanos(0);
 
     // Sensor Data
     obj_osi_internal.sd = new osi3::SensorData();
@@ -137,11 +151,18 @@ OSIReporter::~OSIReporter()
         delete obj_osi_external.sv;
     }
 
+    if (obj_osi_external.tc)
+    {
+        obj_osi_external.tc->Clear();
+        delete obj_osi_external.tc;
+    }
+
     obj_osi_internal.ln.clear();
     obj_osi_internal.lnb.clear();
 
-    osiGroundTruth.size = 0;
-    osiRoadLane.size    = 0;
+    osiGroundTruth.size    = 0;
+    osiRoadLane.size       = 0;
+    osiTrafficCommand.size = 0;
 
     delete udp_client_;
 
@@ -233,6 +254,12 @@ bool OSIReporter::WriteOSIFile()
     // write to file, actual message - the groundtruth object including timestamp and moving objects
     osi_file.write(osiGroundTruth.ground_truth.c_str(), osiGroundTruth.size);
 
+    // write to file, first size of message
+    // osi_file.write(reinterpret_cast<char *>(&osiTrafficCommand.size), sizeof(osiTrafficCommand.size));
+
+    // write to file, actual message - the groundtruth object including timestamp and moving objects
+    // osi_file.write(osiTrafficCommand.traffic_command.c_str(), osiTrafficCommand.size);
+
     if (!osi_file.good())
     {
         LOG("Failed write osi file");
@@ -279,6 +306,7 @@ int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectSt
         // Clear the static data now when it has been reported once
         ClearOSIGroundTruth();
     }
+
     UpdateOSIDynamicGroundTruth(objectState);
 
     if (GetUDPClientStatus() == 0 || IsFileOpen())
@@ -2293,6 +2321,29 @@ int OSIReporter::UpdateTrafficSignals()
     return 0;
 }
 
+int OSIReporter::UpdateOSITrafficCommand()
+{
+    obj_osi_external.tc->clear_action();
+
+    if (GetUDPClientStatus() == 0 || IsFileOpen())
+    {
+        obj_osi_external.tc->SerializeToString(&osiTrafficCommand.traffic_command);
+        osiTrafficCommand.size = static_cast<unsigned int>(obj_osi_external.tc->ByteSizeLong());
+    }
+
+    for (auto state_change : traffic_command_state_changes_)
+    {
+        if (state_change.transition == StoryBoardElement::Transition::START_TRANSITION)
+        {
+            ReportTrafficCommand(obj_osi_external.tc, state_change.action, scenario_engine_->getSimulationTime());
+        }
+    }
+
+    traffic_command_state_changes_.clear();
+
+    return 0;
+}
+
 int OSIReporter::CreateSensorViewFromSensorData(const osi3::SensorData &sd)
 {
     obj_osi_external.sv->Clear();
@@ -2389,6 +2440,11 @@ const char *OSIReporter::GetOSIGroundTruth(int *size)
 const char *OSIReporter::GetOSIGroundTruthRaw()
 {
     return reinterpret_cast<char *>(obj_osi_external.gt);
+}
+
+const char *OSIReporter::GetOSITrafficCommandRaw()
+{
+    return reinterpret_cast<char *>(obj_osi_external.tc);
 }
 
 const char *OSIReporter::GetOSIRoadLane(const std::vector<std::unique_ptr<ObjectState>> &objectState, int *size, int object_id)

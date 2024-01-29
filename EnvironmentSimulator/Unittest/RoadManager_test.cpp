@@ -2736,6 +2736,29 @@ TEST(LaneId, TestRelativeLaneIdCalculation)
     EXPECT_EQ(GetRelativeLaneId(3, -5), -3);
 }
 
+TEST(LaneId, TestLaneIdDeltaCalculation)
+{
+    EXPECT_EQ(GetLaneIdDelta(0, 0), 0);
+    EXPECT_EQ(GetLaneIdDelta(0, 1), 0);
+    EXPECT_EQ(GetLaneIdDelta(0, 5), 4);
+    EXPECT_EQ(GetLaneIdDelta(1, 0), 0);
+    EXPECT_EQ(GetLaneIdDelta(4, 0), -3);
+    EXPECT_EQ(GetLaneIdDelta(-1, 0), 0);
+    EXPECT_EQ(GetLaneIdDelta(-3, 0), 2);
+    EXPECT_EQ(GetLaneIdDelta(0, -1), 0);
+    EXPECT_EQ(GetLaneIdDelta(0, -6), -5);
+    EXPECT_EQ(GetLaneIdDelta(-1, -1), 0);
+    EXPECT_EQ(GetLaneIdDelta(-5, -5), 0);
+    EXPECT_EQ(GetLaneIdDelta(-1, -5), -4);
+    EXPECT_EQ(GetLaneIdDelta(-2, -5), -3);
+    EXPECT_EQ(GetLaneIdDelta(1, 1), 0);
+    EXPECT_EQ(GetLaneIdDelta(5, 3), -2);
+    EXPECT_EQ(GetLaneIdDelta(-1, 2), 2);
+    EXPECT_EQ(GetLaneIdDelta(-3, 6), 8);
+    EXPECT_EQ(GetLaneIdDelta(1, -5), -5);
+    EXPECT_EQ(GetLaneIdDelta(3, -5), -7);
+}
+
 // Uncomment to print log output to console
 // #define LOG_TO_CONSOLE
 
