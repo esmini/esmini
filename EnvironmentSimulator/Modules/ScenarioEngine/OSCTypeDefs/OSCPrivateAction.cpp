@@ -1659,7 +1659,8 @@ void TeleportAction::Start(double simTime)
 
     LOG("%s New position:", object_->name_.c_str());
     object_->pos_.Print();
-    object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::SPEED);
+
+    object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::SPEED | Object::DirtyBit::TELEPORT);
     object_->reset_ = true;
 }
 

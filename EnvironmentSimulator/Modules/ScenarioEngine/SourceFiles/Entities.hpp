@@ -54,15 +54,16 @@ namespace scenarioengine
             ANGULAR_RATE        = (1 << 7),
             ACCELERATION        = (1 << 8),
             ANGULAR_ACC         = (1 << 9),
-            ROUTE               = (1 << 10),
-            ALIGN_MODE_Z_SET    = (1 << 11),
-            ALIGN_MODE_H_SET    = (1 << 12),
-            ALIGN_MODE_P_SET    = (1 << 13),
-            ALIGN_MODE_R_SET    = (1 << 14),
-            ALIGN_MODE_Z_UPDATE = (1 << 15),
-            ALIGN_MODE_H_UPDATE = (1 << 16),
-            ALIGN_MODE_P_UPDATE = (1 << 17),
-            ALIGN_MODE_R_UPDATE = (1 << 18)
+            TELEPORT            = (1 << 10),
+            ROUTE               = (1 << 11),
+            ALIGN_MODE_Z_SET    = (1 << 12),
+            ALIGN_MODE_H_SET    = (1 << 13),
+            ALIGN_MODE_P_SET    = (1 << 14),
+            ALIGN_MODE_R_SET    = (1 << 15),
+            ALIGN_MODE_Z_UPDATE = (1 << 16),
+            ALIGN_MODE_H_UPDATE = (1 << 17),
+            ALIGN_MODE_P_UPDATE = (1 << 18),
+            ALIGN_MODE_R_UPDATE = (1 << 19)
         } DirtyBit;
 
         typedef enum

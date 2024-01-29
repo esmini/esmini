@@ -725,8 +725,16 @@ void ScenarioEngine::prepareGroundTruth(double dt)
                 // If velocity has not been reported, calculate it based on movement
                 if (!obj->CheckDirtyBits(Object::DirtyBit::VELOCITY))
                 {
-                    // If not already reported, calculate linear velocity
-                    obj->SetVel(dx / dt, dy / dt, dz / dt);
+                    if (obj->CheckDirtyBits(Object::DirtyBit::TELEPORT))
+                    {
+                        // if teleport occured, calculate approximated velocity vector based on current heading
+                        obj->SetVel(obj->speed_ * cos(obj->pos_.GetH()), obj->speed_ * sin(obj->pos_.GetH()), 0.0);
+                    }
+                    else
+                    {
+                        // calculate linear velocity
+                        obj->SetVel(dx / dt, dy / dt, dz / dt);
+                    }
                 }
 
                 // If speed has not been reported or set by any controller, calculate it based on velocity
@@ -846,9 +854,9 @@ void ScenarioEngine::prepareGroundTruth(double dt)
         if (o)
             o->clearDirtyBits();
 
-        // Clear dirty/update bits for any reported velocity and acceleration values
+        // Clear dirty/update bits for any reported velocity and acceleration values, and flag indicating teleport action
         obj->ClearDirtyBits(Object::DirtyBit::VELOCITY | Object::DirtyBit::ANGULAR_RATE | Object::DirtyBit::ACCELERATION |
-                            Object::DirtyBit::ANGULAR_ACC);
+                            Object::DirtyBit::ANGULAR_ACC | Object::DirtyBit::TELEPORT);
     }
 }
 
