@@ -36,6 +36,14 @@ namespace roadmanager
     */
     int GetRelativeLaneId(int lane_id, int offset);
 
+    /**
+            Find delta between two lane ids, skipping reference lane 0
+            @param from_lane Start counting from this lane id
+            @param to_lane Stop counting at this lane
+            @return delta between from_lane and to_lane, excl ref lane
+    */
+    int GetLaneIdDelta(int from_lane, int to_lane);
+
     class Polynomial
     {
     public:

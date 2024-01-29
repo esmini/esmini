@@ -305,15 +305,17 @@ void ScenarioPlayer::ScenarioPostFrame()
 #ifdef _USE_OSI
     if (NEAR_NUMBERS(scenarioEngine->getSimulationTime(), scenarioEngine->GetTrueTime()))
     {
-        osiReporter->ReportSensors(sensor);
-
         // Update OSI info
         if (osi_freq_ > 0)
         {
+            osiReporter->ReportSensors(sensor);
+
             if ((GetCounter() - 1) % osi_freq_ == 0)
             {
                 osiReporter->UpdateOSIGroundTruth(scenarioGateway->objectState_);
             }
+
+            osiReporter->UpdateOSITrafficCommand();
         }
     }
 #endif  // _USE_OSI
@@ -1596,8 +1598,9 @@ int ScenarioPlayer::Init()
     odr_manager     = scenarioEngine->getRoadManager();
 
 #ifdef _USE_OSI
-    osiReporter = new OSIReporter();
+    osiReporter = new OSIReporter(scenarioEngine);
     osiReporter->SetStationaryModelReference(scenarioEngine->getSceneGraphFilename());
+    scenarioEngine->storyBoard.SetOSIReporter(osiReporter);
 
     if (opt.GetOptionSet("osi_receiver_ip"))
     {

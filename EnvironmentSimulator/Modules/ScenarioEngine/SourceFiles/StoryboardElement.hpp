@@ -17,6 +17,8 @@
 #include <string>
 #include <vector>
 
+class OSIReporter;  // Forward declaration
+
 namespace scenarioengine
 {
     class TrigByState;  // Forward declaration
@@ -73,6 +75,17 @@ namespace scenarioengine
 
         Trigger* start_trigger_;
         Trigger* stop_trigger_;
+
+        static OSIReporter* osi_reporter_;
+        static void         SetOSIReporter(OSIReporter* osi_reporter)
+        {
+            osi_reporter_ = osi_reporter;
+        };
+
+        OSIReporter* GetOSIReporter()
+        {
+            return osi_reporter_;
+        };
 
         State GetCurrentState()
         {

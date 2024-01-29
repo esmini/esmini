@@ -1492,6 +1492,18 @@ extern "C"
         return 0;
     }
 
+    SE_DLL_API const char *SE_GetOSITrafficCommandRaw()
+    {
+#ifdef _USE_OSI
+        if (player != nullptr)
+        {
+            return player->osiReporter->GetOSITrafficCommandRaw();
+        }
+#endif  // _USE_OSI
+
+        return 0;
+    }
+
     SE_DLL_API int SE_SetOSISensorDataRaw(const char *sensordata)
     {
         (void)sensordata;
@@ -1621,6 +1633,18 @@ extern "C"
         }
 #else
         (void)reportGhost;
+#endif  // _USE_OSI
+
+        return 0;
+    }
+
+    SE_DLL_API int SE_UpdateOSITrafficCommand()
+    {
+#ifdef _USE_OSI
+        if (player != nullptr)
+        {
+            return player->osiReporter->UpdateOSITrafficCommand();
+        }
 #endif  // _USE_OSI
 
         return 0;

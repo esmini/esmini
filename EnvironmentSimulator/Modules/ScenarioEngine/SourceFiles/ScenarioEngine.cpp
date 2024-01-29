@@ -597,6 +597,7 @@ int ScenarioEngine::parseScenario()
     scenarioReader->parseInit(storyBoard.init_);
     scenarioReader->parseStoryBoard(storyBoard);
     storyBoard.entities_ = &entities_;
+    storyBoard.SetOSIReporter(nullptr);
 
     // Now when all entities have been loaded, initialize the controllers
     if (!disable_controllers_)

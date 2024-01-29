@@ -431,6 +431,20 @@ int roadmanager::GetRelativeLaneId(int lane_id, int offset)
     return result;
 }
 
+int roadmanager::GetLaneIdDelta(int from_lane, int to_lane)
+{
+    int result = to_lane - from_lane;
+
+    if (from_lane != to_lane)
+    {
+        if (from_lane == 0 || to_lane == 0 || SIGN(from_lane) != SIGN(to_lane))
+        {
+            result -= 1 * SIGN(result);  // skip reference lane
+        }
+    }
+    return result;
+}
+
 int roadmanager::CheckOverlapingOSIPoints(OSIPoints* first_set, OSIPoints* second_set, double tolerance)
 {
     std::vector<double> distances;

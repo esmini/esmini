@@ -9,12 +9,9 @@ if(NOT
     list(
         REMOVE_ITEM
         subdirectories
-        "osi-groundtruth")
-    list(
-        REMOVE_ITEM
-        subdirectories
+        "osi-groundtruth"
         "osi-groundtruth-dyn"
-        "rm-basic-cs")
+        "osi-traffic_command")
 endif()
 
 # ############################### Building code-examples ###############################################################

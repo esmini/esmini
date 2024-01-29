@@ -136,6 +136,11 @@ namespace scenarioengine
             return init_status_;
         }
 
+        void SetOSIReporter(OSIReporter *osi_reporter)
+        {
+            storyBoard.SetOSIReporter(osi_reporter);
+        }
+
         double   trueTime_;
         bool     doOnce = true;
         SE_Mutex mutex_;
