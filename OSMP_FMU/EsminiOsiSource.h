@@ -55,7 +55,13 @@ using namespace std;
 #define FMI_INTEGER_SENSORVIEW_OUT_BASELO_IDX 3
 #define FMI_INTEGER_SENSORVIEW_OUT_BASEHI_IDX 4
 #define FMI_INTEGER_SENSORVIEW_OUT_SIZE_IDX 5
-#define FMI_INTEGER_LAST_IDX FMI_INTEGER_SENSORVIEW_OUT_SIZE_IDX
+#define FMI_INTEGER_TRAFFICCOMMANDUPDATE_IN_BASELO_IDX 6
+#define FMI_INTEGER_TRAFFICCOMMANDUPDATE_IN_BASEHI_IDX 7
+#define FMI_INTEGER_TRAFFICCOMMANDUPDATE_IN_SIZE_IDX 8
+#define FMI_INTEGER_TRAFFICCOMMAND_OUT_BASELO_IDX 9
+#define FMI_INTEGER_TRAFFICCOMMAND_OUT_BASEHI_IDX 10
+#define FMI_INTEGER_TRAFFICCOMMAND_OUT_SIZE_IDX 11
+#define FMI_INTEGER_LAST_IDX FMI_INTEGER_TRAFFICCOMMAND_OUT_SIZE_IDX
 #define FMI_INTEGER_VARS (FMI_INTEGER_LAST_IDX+1)
 
 /* Real Variables */
@@ -76,6 +82,7 @@ using namespace std;
 #undef min
 #undef max
 #include "osi_sensorview.pb.h"
+#include "osi_trafficcommand.pb.h"
 
 /* FMU Class */
 class EsminiOsiSource {
@@ -210,4 +217,7 @@ protected:
     bool get_fmi_traffic_update_in(osi3::TrafficUpdate& data);
     void set_fmi_sensor_view_out(const osi3::SensorView& data);
     void reset_fmi_sensor_view_out();
+    //bool get_fmi_traffic_command_update_in(osi3::TrafficCommandUpdate& data);     //TODO: Wait for OSI update
+    void set_fmi_traffic_command_out(const osi3::TrafficCommand& data);
+    void reset_fmi_traffic_command_out();
 };
