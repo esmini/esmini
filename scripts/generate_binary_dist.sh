@@ -80,6 +80,7 @@ resources/models/curve_r100.osgb \
 resources/models/walkman.osgb \
 resources/models/cyclist.osgb \
 resources/models/mc.osgb \
+resources/models/scooter.osgb \
 resources/models/moose_cc0.osgb \
 resources/models/multi_intersections.osgb \
 resources/models/curves_elevation.osgb \
