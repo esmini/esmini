@@ -3,7 +3,7 @@
   fmiVersion="2.0"
   modelName="esmini"
   guid="@FMUGUID@"
-  description="esmini scnario player packaged as OSMP FMU outputting an osi3::SensorView with GoundTruth from the scenario"
+  description="esmini scnario player packaged as OSMP FMU outputting an osi3::SensorView with GoundTruth from the scenario and osi3::TrafficCommand with actions from OpenScenario"
   author="Persival GmbH"
   version="@VERSION@"
   generationTool="manual"
@@ -63,6 +63,42 @@
         <Tool name="net.pmsf.osmp" xmlns:osmp="http://xsd.pmsf.net/OSISensorModelPackaging"><osmp:osmp-binary-variable name="OSMPSensorViewOut" role="size" mime-type="application/x-open-simulation-interface; type=SensorView; version=@OSIVERSION@"/></Tool>
       </Annotations>
     </ScalarVariable>
+    <ScalarVariable name="OSMPTrafficCommandUpdateIn.base.lo" valueReference="6" causality="input" variability="discrete">
+      <Integer start="0"/>
+      <Annotations>
+        <Tool name="net.pmsf.osmp" xmlns:osmp="http://xsd.pmsf.net/OSISensorModelPackaging"><osmp:osmp-binary-variable name="OSMPTrafficCommandUpdateIn" role="base.lo" mime-type="application/x-open-simulation-interface; type=TrafficUpdate; version=@OSIVERSION@"/></Tool>
+      </Annotations>
+    </ScalarVariable>
+    <ScalarVariable name="OSMPTrafficCommandUpdateIn.base.hi" valueReference="7" causality="input" variability="discrete">
+      <Integer start="0"/>
+      <Annotations>
+        <Tool name="net.pmsf.osmp" xmlns:osmp="http://xsd.pmsf.net/OSISensorModelPackaging"><osmp:osmp-binary-variable name="OSMPTrafficCommandUpdateIn" role="base.hi" mime-type="application/x-open-simulation-interface; type=TrafficUpdate; version=@OSIVERSION@"/></Tool>
+      </Annotations>
+    </ScalarVariable>
+    <ScalarVariable name="OSMPTrafficCommandUpdateIn.size" valueReference="8" causality="input" variability="discrete">
+      <Integer start="0"/>
+      <Annotations>
+        <Tool name="net.pmsf.osmp" xmlns:osmp="http://xsd.pmsf.net/OSISensorModelPackaging"><osmp:osmp-binary-variable name="OSMPTrafficCommandUpdateIn" role="size" mime-type="application/x-open-simulation-interface; type=TrafficUpdate; version=@OSIVERSION@"/></Tool>
+      </Annotations>
+    </ScalarVariable>
+    <ScalarVariable name="OSMPTrafficCommandOut.base.lo" valueReference="9" causality="output" variability="discrete" initial="exact">
+      <Integer start="0"/>
+      <Annotations>
+        <Tool name="net.pmsf.osmp" xmlns:osmp="http://xsd.pmsf.net/OSISensorModelPackaging"><osmp:osmp-binary-variable name="OSMPTrafficCommandOut" role="base.lo" mime-type="application/x-open-simulation-interface; type=SensorView; version=@OSIVERSION@"/></Tool>
+      </Annotations>
+    </ScalarVariable>
+    <ScalarVariable name="OSMPTrafficCommandOut.base.hi" valueReference="10" causality="output" variability="discrete" initial="exact">
+      <Integer start="0"/>
+      <Annotations>
+        <Tool name="net.pmsf.osmp" xmlns:osmp="http://xsd.pmsf.net/OSISensorModelPackaging"><osmp:osmp-binary-variable name="OSMPTrafficCommandOut" role="base.hi" mime-type="application/x-open-simulation-interface; type=SensorView; version=@OSIVERSION@"/></Tool>
+      </Annotations>
+    </ScalarVariable>
+    <ScalarVariable name="OSMPTrafficCommandOut.size" valueReference="11" causality="output" variability="discrete" initial="exact">
+      <Integer start="0"/>
+      <Annotations>
+        <Tool name="net.pmsf.osmp" xmlns:osmp="http://xsd.pmsf.net/OSISensorModelPackaging"><osmp:osmp-binary-variable name="OSMPTrafficCommandOut" role="size" mime-type="application/x-open-simulation-interface; type=SensorView; version=@OSIVERSION@"/></Tool>
+      </Annotations>
+    </ScalarVariable>
     <ScalarVariable name="valid" valueReference="0" causality="output" variability="discrete" initial="exact">
       <Boolean start="false"/>
     </ScalarVariable>
@@ -78,7 +114,10 @@
       <Unknown index="4"/>
       <Unknown index="5"/>
       <Unknown index="6"/>
-      <Unknown index="7"/>
+      <Unknown index="10"/>
+      <Unknown index="11"/>
+      <Unknown index="12"/>
+      <Unknown index="13"/>
     </Outputs>
   </ModelStructure>
 </fmiModelDescription>
