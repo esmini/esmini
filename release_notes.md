@@ -6,11 +6,11 @@ New features:
 - Add full element path name to the storyboard element state change callback function
   - including all parent names delimited by '/'
   - see updated test case: [StoryBoardElementStateCallbackInstance1](https://github.com/esmini/esmini/blob/da3e8006acddc03fe69d36f7eadace436ef21e21/EnvironmentSimulator/Unittest/ScenarioEngineDll_test.cpp#L3819-L3862)
-  - and Python example code: [hello_world/storyboard_state_callback.py](https://github.com/esmini/esmini/blob/feature/osi_traffic_cmd/EnvironmentSimulator/code-examples/hello_world/storyboard_state_callback.py)
+  - and Python example code: [hello_world/storyboard_state_callback.py](https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/code-examples/hello_world/storyboard_state_callback.py)
 - Add OSITrafficCommand embryo ([issue #499](https://github.com/esmini/esmini/issues/499))
   - some initial code outlining a possible approach
   - recent storyboard state handling updates ensures no command is missed
-  - code example: [osi-traffic_command](https://github.com/esmini/esmini/tree/feature/osi_traffic_cmd/EnvironmentSimulator/code-examples/osi-traffic_command)
+  - code example: [osi-traffic_command](https://github.com/esmini/esmini/tree/dev/EnvironmentSimulator/code-examples/osi-traffic_command)
 - Respect and apply jerk settings (acc/dec change rate) in LongitudinalDistanceAction
 - Add scooter vehicle
   - add entry in vehicle catalog
