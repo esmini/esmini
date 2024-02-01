@@ -4054,6 +4054,10 @@ namespace roadmanager
         {
             return !invalid_route_;
         }
+        bool OnRoute()
+        {
+            return waypoint_idx_ > -1;
+        }
 
         // Current route position data
         // Actual object position might differ, e.g. laneId or even trackId in junctions
