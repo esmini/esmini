@@ -677,6 +677,7 @@ std::string              FileNameOf(const std::string& fname);
 bool                     IsDirectoryName(const std::string& string);
 std::string              FileNameExtOf(const std::string& fname);
 std::string              FileNameWithoutExtOf(const std::string& fname);
+std::string              FilePathWithoutExtOf(const std::string& fpath);
 std::string              ToLower(const std::string in_str);
 std::string              ToLower(const char* in_str);
 FILE*                    FileOpen(const char* filename, const char* mode);

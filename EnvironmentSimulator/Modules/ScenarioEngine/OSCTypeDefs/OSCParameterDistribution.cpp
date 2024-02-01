@@ -354,6 +354,28 @@ std::string OSCParameterDistribution::AddInfoToFilename(std::string filename)
 #endif
 }
 
+std::string OSCParameterDistribution::AddInfoToFilepath(std::string filepath)
+{
+    std::string base_path = FilePathWithoutExtOf(filepath);
+    std::string ext       = FileNameExtOf(filepath);
+
+#if 1  // no leading zeros
+    return base_path + "_" + std::to_string(GetIndex() + 1) + "_of_" + std::to_string(GetNumPermutations()) + ext;
+#else  // leading zeros
+    int number     = GetNumPermutations();
+    int num_digits = 0;
+    while (number != 0)
+    {
+        number /= 10;
+        num_digits++;
+    }
+    std::ostringstream str;
+    str << FileNameWithoutExtOf(base_name) << "_" << std::setw(num_digits) << std::setfill('0') << GetIndex() + 1 << "_of_"
+        << std::to_string(GetNumPermutations()) << ext;
+    return str.str();
+#endif
+}
+
 void OSCParameterDistribution::Reset()
 {
     for (size_t i = 0; i < param_list_.size(); i++)

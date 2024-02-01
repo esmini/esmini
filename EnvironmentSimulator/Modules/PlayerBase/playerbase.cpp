@@ -136,7 +136,7 @@ void ScenarioPlayer::SetOSIFileStatus(bool is_on, const char* filename)
 
             if (OSCParameterDistribution::Inst().GetNumPermutations() > 0)
             {
-                osiReporter->OpenOSIFile(OSCParameterDistribution::Inst().AddInfoToFilename(filename).c_str());
+                osiReporter->OpenOSIFile(OSCParameterDistribution::Inst().AddInfoToFilepath(filename).c_str());
             }
             else
             {
@@ -1439,7 +1439,7 @@ int ScenarioPlayer::Init()
 
     if (dist.GetNumPermutations() > 0)
     {
-        log_filename = dist.AddInfoToFilename(log_filename);
+        log_filename = dist.AddInfoToFilepath(log_filename);
     }
 
     Logger::Inst().OpenLogfile(log_filename);
@@ -1588,7 +1588,7 @@ int ScenarioPlayer::Init()
 
         if (xml_doc)
         {
-            filename = dist.AddInfoToFilename(filename);
+            filename = dist.AddInfoToFilepath(filename);
             xml_doc->save_file(filename.c_str());
         }
     }
@@ -1655,7 +1655,7 @@ int ScenarioPlayer::Init()
 
             if (dist.GetNumPermutations() > 0)
             {
-                filename = dist.AddInfoToFilename(filename);
+                filename = dist.AddInfoToFilepath(filename);
             }
 
             CSV_Log->Open(scenarioEngine->getScenarioFilename(), static_cast<int>(scenarioEngine->entities_.object_.size()), filename);
@@ -1690,7 +1690,7 @@ int ScenarioPlayer::Init()
 
         if (dist.GetNumPermutations() > 0)
         {
-            filename = dist.AddInfoToFilename(filename);
+            filename = dist.AddInfoToFilepath(filename);
         }
 
         LOG("Recording data to file %s", filename.c_str());

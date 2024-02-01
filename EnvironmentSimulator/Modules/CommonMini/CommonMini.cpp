@@ -774,6 +774,19 @@ std::string FileNameWithoutExtOf(const std::string& fname)
     }
 }
 
+std::string FilePathWithoutExtOf(const std::string& fpath)
+{
+    size_t end_pos = fpath.find_last_of(".");
+    if (end_pos != std::string::npos)
+    {
+        return (fpath.substr(0, end_pos));
+    }
+    else
+    {
+        return fpath;
+    }
+}
+
 std::string ToLower(const std::string in_str)
 {
     std::locale loc;

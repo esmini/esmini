@@ -67,5 +67,6 @@ namespace scenarioengine
         std::string         GetParamName(unsigned int param_index);
         std::string         GetParamValue(unsigned int param_index);
         std::string         AddInfoToFilename(std::string filename);
+        std::string         AddInfoToFilepath(std::string filepath);
     };
 }  // namespace scenarioengine
