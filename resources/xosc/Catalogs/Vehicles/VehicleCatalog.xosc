@@ -200,6 +200,24 @@
             </Properties>
         </Vehicle>
 
+        <Vehicle name="scooter" vehicleCategory="motorbike" model3d="../models/scooter.osgb">
+            <!-- model bounding box xyz: 0.76, 0.00, 0.77 lwh: 1.63, 0.63, 1.57 -->
+            <BoundingBox>
+                <Center x="0.615" y="0" z="0.785"/>
+                <Dimensions width="0.63" length="1.63" height="1.57"/>
+            </BoundingBox>
+            <Performance maxSpeed="100" maxDeceleration="10" maxAcceleration="5"/>
+            <Axles>
+                <FrontAxle maxSteering="1.0" wheelDiameter="0.4" trackWidth="0.0" positionX="1.23" positionZ="0.2"/>
+                <RearAxle maxSteering="0.0" wheelDiameter="0.4" trackWidth="0.0" positionX="0" positionZ="0.2"/>
+            </Axles>
+            <Properties>
+                <Property name="model_id" value="20"/>
+                <!-- Scale modes: None, BBToModel, ModelToBB -->
+                <Property name="scaleMode" value="None"/>
+            </Properties>
+        </Vehicle>
+
         <!-- Truck tractor only (no trailer) -->
         <Vehicle name="semi_tractor" vehicleCategory="truck" model3d="../models/semi_tractor.osgb">
             <!-- model bounding box xyz: 2.20, -0.00, 1.68 lwh: 5.70, 2.60, 3.36 -->

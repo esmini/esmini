@@ -18,3 +18,4 @@
 17 cone-100.osgb
 18 car_police.osgb
 19 trailer_rotating_axle.osgb
+20 scooter.osgb

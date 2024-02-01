@@ -1038,6 +1038,40 @@ TEST(GroundTruthTests, check_frequency_explicit)
     fclose(file);
 }
 
+TEST(GroundTruthTests, check_teleport_not_affecting_vel_and_acc)
+{
+    const osi3::GroundTruth* osi_gt_ptr;
+    osi3::GroundTruth        osi_gt;
+    double                   seconds = 0.0;
+
+    const char* args[] = {"--osc",
+                          "../../../EnvironmentSimulator/Unittest/xosc/sudden_teleport.xosc",
+                          "--headless",
+                          "--osi_file",
+                          "gt_sudden_teleport.osi"};
+
+    ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
+
+    osi_gt_ptr = reinterpret_cast<const osi3::GroundTruth*>(SE_GetOSIGroundTruthRaw());
+
+    // Read OSI message, should be identical every two pair of frames - i/2 will result in 0, 0, 1, 1, 2, 2 and so on
+    EXPECT_EQ(osi_gt_ptr->moving_object().size(), 1);
+    seconds = static_cast<double>(osi_gt_ptr->timestamp().seconds()) + 1E-9 * static_cast<double>(osi_gt_ptr->timestamp().nanos());
+    EXPECT_NEAR(seconds, 0.0, 1e-5);
+    EXPECT_NEAR(osi_gt_ptr->moving_object(0).base().position().x(), 21.4, 1e-5);  // OSI center is center of entity bounding box
+    EXPECT_NEAR(osi_gt_ptr->moving_object(0).base().velocity().x(), 10.0, 1e-5);
+    EXPECT_NEAR(osi_gt_ptr->moving_object(0).base().acceleration().x(), 0.0, 1e-5);
+
+    while (SE_GetSimulationTime() < 1.5f)
+    {
+        SE_StepDT(0.1f);
+        EXPECT_NEAR(osi_gt_ptr->moving_object(0).base().velocity().x(), 10.0, 1e-5);
+        EXPECT_NEAR(osi_gt_ptr->moving_object(0).base().acceleration().x(), 0.0, 1e-5);
+    }
+
+    SE_Close();
+}
+
 TEST(GetMiscObjFromGroundTruth, receive_miscobj)
 {
     int               sv_size = 0;

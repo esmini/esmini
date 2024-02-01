@@ -1,5 +1,33 @@
 ## esmini release notes
 
+### 2024-01-31 Version 2.36.3
+
+New features:
+- Add full element path name to the storyboard element state change callback function
+  - including all parent names delimited by '/'
+  - see updated test case: [StoryBoardElementStateCallbackInstance1](https://github.com/esmini/esmini/blob/da3e8006acddc03fe69d36f7eadace436ef21e21/EnvironmentSimulator/Unittest/ScenarioEngineDll_test.cpp#L3819-L3862)
+  - and Python example code: [hello_world/storyboard_state_callback.py](https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/code-examples/hello_world/storyboard_state_callback.py)
+- Add OSITrafficCommand embryo ([issue #499](https://github.com/esmini/esmini/issues/499))
+  - some initial code outlining a possible approach
+  - recent storyboard state handling updates ensures no command is missed
+  - code example: [osi-traffic_command](https://github.com/esmini/esmini/tree/dev/EnvironmentSimulator/code-examples/osi-traffic_command)
+- Respect and apply jerk settings (acc/dec change rate) in LongitudinalDistanceAction
+- Add scooter vehicle
+  - add entry in vehicle catalog
+  - add simple 3D model to model pack
+    - remove esmini/resources/models folder and re-run `cmake ..` to download
+    - or fetch latest pack manually from [here](https://esmini.asuscomm.com/AICLOUD779364751/models/models.7z)
+
+Improvements and fixes:
+- Skip velocity and acceleration updates after teleport action, avoiding spikes
+- Fix bug in DistanceCondition not resolving relative positions correctly
+- Fix presets for Linux VSCode including debug support
+  - User guide updated as well, see [Run and Debug with Linux and visual studio code](https://esmini.github.io/#_run_and_debug_with_linux_and_visual_studio_code)
+-  Major storyboard code refactorization
+    - replace mega nested loop with full OO approach
+    - improve element state condition handling, no transition misses
+
+
 ### 2024-01-10 Version 2.36.2
 
 New features:

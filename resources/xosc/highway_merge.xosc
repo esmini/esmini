@@ -37,7 +37,7 @@
          <CatalogReference catalogName="VehicleCatalog" entryName="car_yellow"/>
       </ScenarioObject>
       <ScenarioObject name="A4">
-         <CatalogReference catalogName="VehicleCatalog" entryName="van_red"/>
+         <CatalogReference catalogName="VehicleCatalog" entryName="scooter"/>
       </ScenarioObject>
       <ScenarioObject name="A5">
          <CatalogReference catalogName="VehicleCatalog" entryName="bus_blue"/>

@@ -7297,7 +7297,7 @@ Position::ReturnCode Position::XYZ2TrackPos(double x3, double y3, double z3, int
     // First step is to identify closest road and OSI line segment
 
     size_t nrOfRoads;
-    if (route_ && route_->IsValid())
+    if (route_ && route_->IsValid() && route_->OnRoute())
     {
         // Route assigned. Iterate over all roads in the route. I.e. check all waypoints road ID.
         nrOfRoads = route_->minimal_waypoints_.size();
@@ -7338,20 +7338,21 @@ Position::ReturnCode Position::XYZ2TrackPos(double x3, double y3, double z3, int
         }
         else
         {
-            if (current_road && i == track_idx_)
+            if (route_ && route_->IsValid() && route_->OnRoute())
+            {
+                road = GetOpenDrive()->GetRoadById(route_->minimal_waypoints_[i].GetTrackId());
+            }
+            else
+            {
+                road = GetOpenDrive()->GetRoadByIdx(i);
+            }
+
+            if (current_road && current_road == road)
             {
                 continue;  // Skip, already checked this one
             }
             else
             {
-                if (route_ && route_->IsValid())
-                {
-                    road = GetOpenDrive()->GetRoadById(route_->minimal_waypoints_[i].GetTrackId());
-                }
-                else
-                {
-                    road = GetOpenDrive()->GetRoadByIdx(i);
-                }
                 if (connectedOnly)
                 {
                     // Check whether the road is reachble from current position
@@ -8373,7 +8374,7 @@ Position::ReturnCode Position::MoveToConnectingRoad(RoadLink* road_link, Contact
         else
         {
             // find valid connecting road, if multiple choices choose either most straight one OR by random
-            if (GetRoute() && GetRoute()->IsValid() && GetRoute()->waypoint_idx_ >= 0)
+            if (GetRoute() && GetRoute()->IsValid() && GetRoute()->OnRoute())
             {
                 // Choose direction of the route
                 Route* r = GetRoute();
@@ -8779,7 +8780,7 @@ Position::ReturnCode Position::MoveAlongS(double            ds,
 
     if (updateRoute && route_ && route_->IsValid())
     {
-        if (route_->waypoint_idx_ < 0)
+        if (!route_->OnRoute())
         {
             // Check if new position is on route
             CalcRoutePosition();
@@ -10377,7 +10378,7 @@ Position::ReturnCode Position::MoveRouteDS(double ds, double* remaining_dist, bo
         return ReturnCode::ERROR_GENERIC;
     }
 
-    if (route_->waypoint_idx_ < 0)
+    if (!route_->OnRoute())
     {
         return ReturnCode::ERROR_NOT_ON_ROUTE;
     }
@@ -12389,7 +12390,7 @@ Position::ReturnCode Route::SetTrackS(int trackId, double s)
 
             if (dist > GetLength() || dist < 0.0)
             {
-                if (waypoint_idx_ < 0)
+                if (!OnRoute())
                 {
                     return Position::ReturnCode::ERROR_NOT_ON_ROUTE;
                 }
@@ -12399,7 +12400,7 @@ Position::ReturnCode Route::SetTrackS(int trackId, double s)
                     retval = Position::ReturnCode::ERROR_END_OF_ROUTE;
                 }
             }
-            else if (waypoint_idx_ < 0)
+            else if (!OnRoute())
             {
                 LOG("Entity %s on route", getObjName().c_str());
             }
@@ -12419,7 +12420,7 @@ Position::ReturnCode Route::SetTrackS(int trackId, double s)
     }
 
     // Failed to map current position to the current route
-    if (waypoint_idx_ >= 0)
+    if (OnRoute())
     {
         LOG("Entity %s moved away from route", getObjName().c_str());
         waypoint_idx_ = -1;
@@ -12503,7 +12504,7 @@ Position::ReturnCode Route::SetPathS(double s, double* remaining_dist)
                     *remaining_dist = s < 0.0 ? -s : s - GetLength();
                 }
 
-                if (waypoint_idx_ < 0)
+                if (!OnRoute())
                 {
                     return Position::ReturnCode::ERROR_NOT_ON_ROUTE;
                 }
@@ -12514,7 +12515,7 @@ Position::ReturnCode Route::SetPathS(double s, double* remaining_dist)
                 }
             }
 
-            if (waypoint_idx_ < 0)
+            if (!OnRoute())
             {
                 LOG("Entity %s on route", getObjName().c_str());
             }
@@ -12543,7 +12544,7 @@ Position::ReturnCode Route::SetPathS(double s, double* remaining_dist)
         }
         else if (i == minimal_waypoints_.size() - 1)
         {
-            if (waypoint_idx_ < 0)
+            if (!OnRoute())
             {
                 return Position::ReturnCode::ERROR_NOT_ON_ROUTE;
             }
