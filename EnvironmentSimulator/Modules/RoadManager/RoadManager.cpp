@@ -7338,20 +7338,21 @@ Position::ReturnCode Position::XYZ2TrackPos(double x3, double y3, double z3, int
         }
         else
         {
-            if (current_road && i == track_idx_)
+            if (route_ && route_->IsValid() && route_->OnRoute())
+            {
+                road = GetOpenDrive()->GetRoadById(route_->minimal_waypoints_[i].GetTrackId());
+            }
+            else
+            {
+                road = GetOpenDrive()->GetRoadByIdx(i);
+            }
+
+            if (current_road && current_road == road)
             {
                 continue;  // Skip, already checked this one
             }
             else
             {
-                if (route_ && route_->IsValid() && route_->OnRoute())
-                {
-                    road = GetOpenDrive()->GetRoadById(route_->minimal_waypoints_[i].GetTrackId());
-                }
-                else
-                {
-                    road = GetOpenDrive()->GetRoadByIdx(i);
-                }
                 if (connectedOnly)
                 {
                     // Check whether the road is reachble from current position
