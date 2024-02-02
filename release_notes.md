@@ -1,5 +1,21 @@
 ## esmini release notes
 
+### 2024-02-02 Version 2.36.4
+
+New features:
+- Add OSI Traffic Command to [OSMP](https://github.com/esmini/esmini/tree/dev/OSMP_FMU)
+  - initial version with limited coverage
+  - only a few actions supported yet (teleport, lane change, speed change)
+
+Improvements and fixes:
+- Fix bugs in World (X,Y) to Road/Route position conversion when off route ([issue #523](https://github.com/esmini/esmini/issues/523))
+  - don't limit search to route roads only
+  - especially when current position is out of route bounds
+- Respect full path for permutation artifacts ([issue #526](https://github.com/esmini/esmini/issues/526))
+  - e.g. log, dat, osi and csv files
+  - include any specified folder path
+- Maintain longitudinal speed in step (immediate) lane change actions
+
 ### 2024-01-31 Version 2.36.3
 
 New features:
