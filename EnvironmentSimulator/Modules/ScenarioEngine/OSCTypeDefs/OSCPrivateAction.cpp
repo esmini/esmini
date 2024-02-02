@@ -644,11 +644,20 @@ void LatLaneChangeAction::Step(double simTime, double dt)
                              internal_pos_.GetS(),
                              offset_agnostic * SIGN(internal_pos_.GetLaneId()));
 
-    // Update longitudinal position, considering absolute speed and lateral speed component
-    double dist   = object_->speed_ * dt;                                                  // travel distance total
-    double d_lat  = object_->pos_.GetOffset() - old_offset;                                // travel distance lateral component
-    double d_long = SIGN(object_->speed_) * sqrt(MAX(0.0, pow(dist, 2) - pow(d_lat, 2)));  // travel distance longitudinal component
-    double ds     = object_->pos_.DistanceToDS(d_long);                                    // find correspondning delta s along road reference line
+    double dist   = object_->speed_ * dt;  // travel distance total
+    double d_long = 0.0;
+    if (transition_.shape_ != DynamicsShape::STEP)
+    {
+        // Update longitudinal position, considering absolute speed and lateral speed component
+        double d_lat = object_->pos_.GetOffset() - old_offset;                                // travel distance lateral component
+        d_long       = SIGN(object_->speed_) * sqrt(MAX(0.0, pow(dist, 2) - pow(d_lat, 2)));  // travel distance longitudinal component
+    }
+    else
+    {
+        // not for step shape, since it is not a continuous function. Maintain longitudinal motion
+        d_long = dist;
+    }
+    double ds = object_->pos_.DistanceToDS(d_long);  // find correspondning delta s along road reference line
 
     roadmanager::Position::ReturnCode retval = roadmanager::Position::ReturnCode::OK;
     retval = object_->pos_.MoveAlongS(ds, 0.0, -1.0, false, roadmanager::Position::MoveDirectionMode::HEADING_DIRECTION, true);
