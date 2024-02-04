@@ -3113,10 +3113,13 @@ namespace roadmanager
         void SetHeading(double heading);
         void SetHeadingRelative(double heading);
         void SetHeadingRelativeRoadDirection(double heading);
+        void SetHeadingRoad(double heading);
         void SetRoll(double roll);
         void SetRollRelative(double roll);
+        void SetRollRoad(double heading);
         void SetPitch(double roll);
         void SetPitchRelative(double pitch);
+        void SetPitchRoad(double heading);
         void SetZ(double z);
         void SetZRelative(double z);
 

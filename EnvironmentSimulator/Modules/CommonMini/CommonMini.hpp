@@ -550,7 +550,24 @@ void ZYZ2EulerAngles(double z0, double y, double z1, double& h, double& p, doubl
 */
 void R0R12EulerAngles(double h0, double p0, double r0, double h1, double p1, double r1, double& h, double& p, double& r);
 
+int InvertMatrix3(const double m[3][3], double m_out[3][3]);
+
+/**
+        Get Euler angles for the orientation relative road surface orientation
+        Rotation_rel = Rotation_road_inverse * Rotation_abs
+*/
+void CalcRelAnglesFromRoadAndAbsAngles(double  h_road,
+                                       double  p_road,
+                                       double  r_road,
+                                       double  h_abs,
+                                       double  p_abs,
+                                       double  r_abs,
+                                       double& h_rel,
+                                       double& p_rel,
+                                       double& r_rel);
+
 void MultMatrixVector3d(const double m[3][3], const double v0[3], double v1[3]);
+void MultMatrixMatrix3d(const double m0[3][3], const double m1[3][3], double m_out[3][3]);
 
 void RotateVec3d(const double h0,
                  const double p0,

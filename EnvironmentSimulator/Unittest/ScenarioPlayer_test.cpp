@@ -222,8 +222,165 @@ TEST(SensorTest, TestSensorFunctionsReturnValuesAndCounters)
     delete player;
 }
 
+TEST(AlignmentTest, TestPosMode)
+{
+    const char* args[] = {"esmini", "--headless", "--osc", "../../../EnvironmentSimulator/Unittest/xosc/curve_slope_simple.xosc", "--disable_stdout"};
+    int         argc   = sizeof(args) / sizeof(char*);
+    ScenarioPlayer* player = new ScenarioPlayer(argc, const_cast<char**>(args));
+
+    ASSERT_NE(player, nullptr);
+    int retval = player->Init();
+    ASSERT_EQ(retval, 0);
+
+    roadmanager::Position& pos  = player->scenarioEngine->entities_.object_[0]->pos_;
+    roadmanager::Road*     road = player->GetODRManager()->GetRoadByIdx(0);
+
+    EXPECT_EQ(pos.GetMode(Position::PosModeType::SET), Position::GetModeDefault(Position::PosModeType::SET));
+    EXPECT_EQ(pos.GetMode(Position::PosModeType::UPDATE), Position::GetModeDefault(Position::PosModeType::UPDATE));
+
+    // Test some operations
+    pos.SetLanePos(road->GetId(), -1, 140.0, 0.0);
+    player->scenarioEngine->entities_.object_[0]->SetSpeed(0.0);
+    EXPECT_NEAR(pos.GetH(), 1.4, 1e-3);
+    EXPECT_NEAR(pos.GetP(), 0.0, 1e-3);
+    EXPECT_NEAR(pos.GetR(), 0.486, 1e-3);
+    player->Frame(0.1);
+
+    pos.SetMode(Position::PosModeType::UPDATE, Position::PosMode::R_REL);
+    EXPECT_EQ(pos.GetMode(Position::PosModeType::SET),
+              roadmanager::Position::PosMode::Z_REL | roadmanager::Position::PosMode::H_ABS | roadmanager::Position::PosMode::P_REL |
+                  roadmanager::Position::PosMode::R_REL);
+    EXPECT_EQ(pos.GetMode(Position::PosModeType::UPDATE),
+              roadmanager::Position::PosMode::Z_REL | roadmanager::Position::PosMode::H_REL | roadmanager::Position::PosMode::P_REL |
+                  roadmanager::Position::PosMode::R_REL);
+    pos.SetRollRelative(0.1);
+    pos.SetLanePos(road->GetId(), -1, 150.0, 0.0);
+    player->scenarioEngine->entities_.object_[0]->SetSpeed(0.0);
+
+    EXPECT_NEAR(pos.GetH(), 1.5, 1e-3);
+    EXPECT_NEAR(pos.GetP(), 0.0, 1e-3);
+    EXPECT_NEAR(pos.GetR(), 0.6, 1e-3);
+    EXPECT_NEAR(pos.GetRRoad(), 0.6 - 0.1, 1e-3);
+    player->Frame(0.1);
+
+    pos.SetLanePos(road->GetId(), -1, 140.0, 0.0);
+    player->scenarioEngine->entities_.object_[0]->SetSpeed(0.0);
+    EXPECT_NEAR(pos.GetH(), 1.4, 1e-3);
+    EXPECT_NEAR(pos.GetP(), 0.0, 1e-3);
+    EXPECT_NEAR(pos.GetR(), 0.486 + 0.1, 1e-3);
+    player->Frame(0.1);
+
+    pos.SetMode(Position::PosModeType::UPDATE, Position::PosMode::R_ABS);
+    EXPECT_EQ(pos.GetMode(Position::PosModeType::SET),
+              roadmanager::Position::PosMode::Z_REL | roadmanager::Position::PosMode::H_ABS | roadmanager::Position::PosMode::P_REL |
+                  roadmanager::Position::PosMode::R_REL);
+    EXPECT_EQ(pos.GetMode(Position::PosModeType::UPDATE),
+              roadmanager::Position::PosMode::Z_REL | roadmanager::Position::PosMode::H_REL | roadmanager::Position::PosMode::P_REL |
+                  roadmanager::Position::PosMode::R_ABS);
+    pos.SetRoll(0.1);
+    pos.SetLanePos(road->GetId(), -1, 150.0, 0.0);
+    player->scenarioEngine->entities_.object_[0]->SetSpeed(0.0);
+    EXPECT_NEAR(pos.GetH(), 1.5, 1e-3);
+    EXPECT_NEAR(pos.GetP(), 0.0, 1e-3);
+    EXPECT_NEAR(pos.GetR(), 0.1, 1e-3);
+    player->Frame(0.1);
+
+    pos.SetLanePos(road->GetId(), -1, 140.0, 0.0);
+    player->scenarioEngine->entities_.object_[0]->SetSpeed(0.0);
+    EXPECT_NEAR(GetAngleDifference(pos.GetH(), 1.4), 0.0, 1e-3);
+    EXPECT_NEAR(GetAngleDifference(pos.GetP(), 0.0), 0.0, 1e-3);
+    EXPECT_NEAR(GetAngleDifference(pos.GetR(), 0.1), 0.0, 1e-3);
+    player->Frame(0.1);
+
+    pos.SetLanePos(road->GetId(), -1, 300.0, 0.0);
+    player->scenarioEngine->entities_.object_[0]->SetSpeed(0.0);
+    EXPECT_NEAR(pos.GetH(), 3.0, 1e-3);
+    EXPECT_NEAR(pos.GetP(), 5.991, 1e-3);
+    EXPECT_NEAR(pos.GetR(), 0.1, 1e-3);
+    player->Frame(0.1);
+
+    pos.SetMode(Position::PosModeType::UPDATE, Position::PosMode::R_REL);
+    EXPECT_EQ(pos.GetMode(Position::PosModeType::SET),
+              roadmanager::Position::PosMode::Z_REL | roadmanager::Position::PosMode::H_ABS | roadmanager::Position::PosMode::P_REL |
+                  roadmanager::Position::PosMode::R_REL);
+    EXPECT_EQ(pos.GetMode(Position::PosModeType::UPDATE),
+              roadmanager::Position::PosMode::Z_REL | roadmanager::Position::PosMode::H_REL | roadmanager::Position::PosMode::P_REL |
+                  roadmanager::Position::PosMode::R_REL);
+    pos.SetRollRelative(0.0);
+    pos.SetLanePos(road->GetId(), -1, 300.0, 0.0);
+    player->scenarioEngine->entities_.object_[0]->SetSpeed(0.0);
+    EXPECT_NEAR(pos.GetH(), 3.0, 1e-3);
+    EXPECT_NEAR(pos.GetP(), 5.991, 1e-3);
+    EXPECT_NEAR(pos.GetR(), 0.0, 1e-3);
+
+    pos.SetInertiaPos(0.0, 200.0, 0.5);
+    player->scenarioEngine->entities_.object_[0]->SetSpeed(0.0);
+    EXPECT_NEAR(pos.GetH(), 0.5156, 1e-3);
+    EXPECT_NEAR(pos.GetP(), 0.2356, 1e-3);
+    EXPECT_NEAR(pos.GetR(), 0.1315, 1e-3);
+
+    pos.SetInertiaPos(-100.0, 83.0, 0.5);
+    player->scenarioEngine->entities_.object_[0]->SetSpeed(0.0);
+    EXPECT_NEAR(pos.GetH(), 0.5, 1e-3);
+    EXPECT_NEAR(pos.GetP(), 0.0, 1e-3);
+    EXPECT_NEAR(pos.GetR(), 0.0, 1e-3);
+
+    pos.SetModeDefault(Position::PosModeType::SET);
+    pos.SetInertiaPos(100.0, 85.0, -10.0, 0.5, 0.0, 0.3);
+    player->scenarioEngine->entities_.object_[0]->SetSpeed(0.0);
+    EXPECT_NEAR(pos.GetH(), 0.5615, 1e-3);
+    EXPECT_NEAR(pos.GetP(), 0.3853, 1e-3);
+    EXPECT_NEAR(pos.GetR(), 0.6127, 1e-3);
+
+    pos.SetMode(Position::PosModeType::SET, Position::PosMode::R_ABS);
+    EXPECT_EQ(pos.GetMode(Position::PosModeType::SET),
+              roadmanager::Position::PosMode::Z_REL | roadmanager::Position::PosMode::H_ABS | roadmanager::Position::PosMode::P_REL |
+                  roadmanager::Position::PosMode::R_ABS);
+    pos.SetInertiaPos(100.0, 85.0, -10.0, 0.5, 0.0, 0.3);
+    player->scenarioEngine->entities_.object_[0]->SetSpeed(0.0);
+    EXPECT_NEAR(pos.GetH(), 0.5, 1e-3);
+    EXPECT_NEAR(pos.GetP(), 0.0, 1e-3);
+    EXPECT_NEAR(pos.GetR(), 0.3, 1e-3);
+
+    // Test some settings
+    pos.SetMode(Position::PosModeType::UPDATE, Position::PosMode::H_REL | Position::PosMode::Z_ABS);
+    EXPECT_EQ(pos.GetMode(Position::PosModeType::UPDATE),
+              roadmanager::Position::PosMode::Z_ABS | roadmanager::Position::PosMode::H_REL | roadmanager::Position::PosMode::P_REL |
+                  roadmanager::Position::PosMode::R_REL);
+
+    pos.SetMode(Position::PosModeType::SET, Position::PosMode::H_REL | Position::PosMode::Z_ABS | Position::PosMode::P_ABS);
+    EXPECT_EQ(pos.GetMode(Position::PosModeType::SET),
+              roadmanager::Position::PosMode::Z_ABS | roadmanager::Position::PosMode::H_REL | roadmanager::Position::PosMode::P_ABS |
+                  roadmanager::Position::PosMode::R_ABS);
+    pos.SetMode(Position::PosModeType::SET, Position::PosMode::Z_MASK & Position::PosMode::Z_DEFAULT);
+    EXPECT_EQ(pos.GetMode(Position::PosModeType::SET),
+              roadmanager::Position::PosMode::Z_REL | roadmanager::Position::PosMode::H_REL | roadmanager::Position::PosMode::P_ABS |
+                  roadmanager::Position::PosMode::R_ABS);
+    EXPECT_EQ(pos.GetMode(Position::PosModeType::UPDATE),
+              roadmanager::Position::PosMode::Z_ABS | roadmanager::Position::PosMode::H_REL | roadmanager::Position::PosMode::P_REL |
+                  roadmanager::Position::PosMode::R_REL);
+
+    delete player;
+}
+
+// #define LOG_TO_CONSOLE
+
+#ifdef LOG_TO_CONSOLE
+static void log_callback(const char* str)
+{
+    printf("%s\n", str);
+}
+#endif
+
 int main(int argc, char** argv)
 {
+#ifdef LOG_TO_CONSOLE
+    if (!(Logger::Inst().IsCallbackSet()))
+    {
+        Logger::Inst().SetCallback(log_callback);
+    }
+#endif
+
     // testing::GTEST_FLAG(filter) = "*TestCustomCameraVariants*";
 
     testing::InitGoogleTest(&argc, argv);

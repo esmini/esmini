@@ -2607,12 +2607,12 @@ TEST(PositionModeTest, TestModeBitmasks)
     pos.SetRoll(0.1);
     pos.SetLanePos(road->GetId(), -1, 150.0, 0.0);
     EXPECT_NEAR(pos.GetH(), 1.5, 1e-3);
-    EXPECT_NEAR(pos.GetP(), 0.0, 1e-3);
+    EXPECT_NEAR(GetAngleDifference(pos.GetP(), 0.0), 0.0, 1e-3);
     EXPECT_NEAR(pos.GetR(), 0.1, 1e-3);
 
     pos.SetLanePos(road->GetId(), -1, 140.0, 0.0);
     EXPECT_NEAR(pos.GetH(), 1.4, 1e-3);
-    EXPECT_NEAR(pos.GetP(), 0.0, 1e-3);
+    EXPECT_NEAR(GetAngleDifference(pos.GetP(), 0.0), 0.0, 1e-3);
     EXPECT_NEAR(pos.GetR(), 0.1, 1e-3);
 
     pos.SetLanePos(road->GetId(), -1, 300.0, 0.0);
@@ -2631,7 +2631,7 @@ TEST(PositionModeTest, TestModeBitmasks)
     pos.SetLanePos(road->GetId(), -1, 300.0, 0.0);
     EXPECT_NEAR(pos.GetH(), 3.0, 1e-3);
     EXPECT_NEAR(pos.GetP(), 5.991, 1e-3);
-    EXPECT_NEAR(pos.GetR(), 0.0, 1e-3);
+    EXPECT_NEAR(GetAngleDifference(pos.GetR(), 0.0), 0.0, 1e-3);
 
     pos.SetInertiaPos(0.0, 200.0, 0.5);
     EXPECT_NEAR(pos.GetH(), 0.5156, 1e-3);
@@ -2640,8 +2640,8 @@ TEST(PositionModeTest, TestModeBitmasks)
 
     pos.SetInertiaPos(-100.0, 83.0, 0.5);
     EXPECT_NEAR(pos.GetH(), 0.5, 1e-3);
-    EXPECT_NEAR(pos.GetP(), 0.0, 1e-3);
-    EXPECT_NEAR(pos.GetR(), 0.0, 1e-3);
+    EXPECT_NEAR(GetAngleDifference(pos.GetP(), 0.0), 0.0, 1e-3);
+    EXPECT_NEAR(GetAngleDifference(pos.GetR(), 0.0), 0.0, 1e-3);
 
     pos.SetModeDefault(Position::PosModeType::SET);
     pos.SetInertiaPos(100.0, 85.0, -10.0, 0.5, 0.0, 0.3);
@@ -2655,7 +2655,7 @@ TEST(PositionModeTest, TestModeBitmasks)
                   roadmanager::Position::PosMode::R_ABS);
     pos.SetInertiaPos(100.0, 85.0, -10.0, 0.5, 0.0, 0.3);
     EXPECT_NEAR(pos.GetH(), 0.5, 1e-3);
-    EXPECT_NEAR(pos.GetP(), 0.0, 1e-3);
+    EXPECT_NEAR(GetAngleDifference(pos.GetP(), 0.0), 0.0, 1e-3);
     EXPECT_NEAR(pos.GetR(), 0.3, 1e-3);
 
     // Test some settings
@@ -2757,6 +2757,124 @@ TEST(LaneId, TestLaneIdDeltaCalculation)
     EXPECT_EQ(GetLaneIdDelta(-3, 6), 8);
     EXPECT_EQ(GetLaneIdDelta(1, -5), -5);
     EXPECT_EQ(GetLaneIdDelta(3, -5), -7);
+}
+
+// Check that orientation (pitch) is correctly adjusted when moving along s after absolute orientation has been specified.
+// Also after changing side of road and pitch is inverted.
+// Verifies that relative orientation are correctly calculated from the absolute values
+TEST(RotationTest, TestFindOutRelativeOrientation)
+{
+    ASSERT_EQ(roadmanager::Position::LoadOpenDrive("../../../EnvironmentSimulator/Unittest/xodr/slope_up_slope_down.xodr"), true);
+    roadmanager::OpenDrive *odr = Position::GetOpenDrive();
+    ASSERT_NE(odr, nullptr);
+
+    Position pos;
+    double   start_pos_orig[3] = {25.0, 1.5, 12.5};
+    double   start_pos_xform[3];
+    RotateVec2D(start_pos_orig[0], start_pos_orig[1], M_PI_4, start_pos_xform[0], start_pos_xform[1]);
+    start_pos_xform[2] = start_pos_orig[2];
+
+    pos.SetMode(roadmanager::Position::PosModeType::UPDATE,
+                roadmanager::Position::PosMode::Z_REL | roadmanager::Position::PosMode::H_REL | roadmanager::Position::PosMode::P_REL |
+                    roadmanager::Position::PosMode::R_REL);
+
+    // first put car with all absolute values on right side
+    pos.SetInertiaPosMode(start_pos_xform[0],
+                          start_pos_xform[1],
+                          start_pos_xform[2],
+                          M_PI_4,
+                          -0.463647609,  // atan(25/50)
+                          0.0,
+                          roadmanager::Position::PosMode::Z_ABS | roadmanager::Position::PosMode::H_ABS | roadmanager::Position::PosMode::P_ABS |
+                              roadmanager::Position::PosMode::R_ABS);
+
+    EXPECT_NEAR(pos.GetX(), 16.617, 1e-3);
+    EXPECT_NEAR(pos.GetY(), 18.738, 1e-3);
+    EXPECT_NEAR(pos.GetZ(), 12.5, 1e-3);
+    EXPECT_NEAR(pos.GetH(), 0.785, 1e-3);
+    EXPECT_NEAR(pos.GetP(), -0.464, 1e-3);
+    EXPECT_NEAR(GetAngleDifference(pos.GetR(), 0.0), 0.0, 1e-3);
+    // move slightly forward
+    pos.MoveAlongS(0.1);
+    EXPECT_NEAR(pos.GetX(), 16.688, 1e-3);
+    EXPECT_NEAR(pos.GetY(), 18.809, 1e-3);
+    EXPECT_NEAR(pos.GetZ(), 12.550, 1e-3);
+    EXPECT_NEAR(pos.GetH(), 0.785, 1e-3);
+    EXPECT_NEAR(pos.GetP(), 5.820, 1e-3);
+    EXPECT_NEAR(GetAngleDifference(pos.GetR(), 0.0), 0.0, 1e-3);
+
+    // then move car to other side, turned around.
+    pos.SetInertiaPosMode(start_pos_xform[0],
+                          start_pos_xform[1],
+                          start_pos_xform[2],
+                          M_PI + M_PI_4,
+                          0.463647609,  // atan(25/50)
+                          0.0,
+                          roadmanager::Position::PosMode::Z_ABS | roadmanager::Position::PosMode::H_ABS | roadmanager::Position::PosMode::P_ABS |
+                              roadmanager::Position::PosMode::R_ABS);
+
+    EXPECT_NEAR(pos.GetX(), 16.617, 1e-3);
+    EXPECT_NEAR(pos.GetY(), 18.738, 1e-3);
+    EXPECT_NEAR(pos.GetZ(), 12.5, 1e-3);
+    EXPECT_NEAR(pos.GetH(), 3.927, 1e-3);
+    EXPECT_NEAR(pos.GetP(), 0.464, 1e-3);
+    EXPECT_NEAR(GetAngleDifference(pos.GetR(), 0.0), 0.0, 1e-3);
+    // move slightly forward
+    pos.MoveAlongS(0.1);
+    EXPECT_NEAR(pos.GetX(), 16.546, 1e-3);
+    EXPECT_NEAR(pos.GetY(), 18.668, 1e-3);
+    EXPECT_NEAR(pos.GetZ(), 12.450, 1e-3);
+    EXPECT_NEAR(pos.GetH(), 3.927, 1e-3);
+    EXPECT_NEAR(pos.GetP(), 0.464, 1e-3);
+    EXPECT_NEAR(GetAngleDifference(pos.GetR(), 0.0), 0.0, 1e-3);
+
+    // Same as above, but now with relative roll
+    pos.SetInertiaPosMode(start_pos_xform[0],
+                          start_pos_xform[1],
+                          start_pos_xform[2],
+                          M_PI + M_PI_4,
+                          0.463647609,  // atan(25/50)
+                          0.0,
+                          roadmanager::Position::PosMode::Z_ABS | roadmanager::Position::PosMode::H_ABS | roadmanager::Position::PosMode::P_ABS |
+                              roadmanager::Position::PosMode::R_REL);
+
+    EXPECT_NEAR(pos.GetX(), 16.617, 1e-3);
+    EXPECT_NEAR(pos.GetY(), 18.738, 1e-3);
+    EXPECT_NEAR(pos.GetZ(), 12.5, 1e-3);
+    EXPECT_NEAR(pos.GetH(), 3.927, 1e-3);
+    EXPECT_NEAR(pos.GetP(), 0.464, 1e-3);
+    EXPECT_NEAR(GetAngleDifference(pos.GetR(), 0.0), 0.0, 1e-3);
+    pos.MoveAlongS(0.1);
+    EXPECT_NEAR(pos.GetX(), 16.546, 1e-3);
+    EXPECT_NEAR(pos.GetY(), 18.668, 1e-3);
+    EXPECT_NEAR(pos.GetZ(), 12.450, 1e-3);
+    EXPECT_NEAR(pos.GetH(), 3.927, 1e-3);
+    EXPECT_NEAR(pos.GetP(), 0.464, 1e-3);
+    EXPECT_NEAR(GetAngleDifference(pos.GetR(), 0.0), 0.0, 1e-3);
+
+    // relative pitch
+    pos.SetInertiaPosMode(start_pos_xform[0],
+                          start_pos_xform[1],
+                          start_pos_xform[2],
+                          M_PI + M_PI_4,
+                          0.463647609,  // atan(25/50)
+                          0.0,
+                          roadmanager::Position::PosMode::Z_ABS | roadmanager::Position::PosMode::H_ABS | roadmanager::Position::PosMode::P_REL |
+                              roadmanager::Position::PosMode::R_REL);
+
+    EXPECT_NEAR(pos.GetX(), 16.617, 1e-3);
+    EXPECT_NEAR(pos.GetY(), 18.738, 1e-3);
+    EXPECT_NEAR(pos.GetZ(), 12.5, 1e-3);
+    EXPECT_NEAR(pos.GetH(), 3.927, 1e-3);
+    EXPECT_NEAR(pos.GetP(), 0.927, 1e-3);
+    EXPECT_NEAR(GetAngleDifference(pos.GetR(), 0.0), 0.0, 1e-3);
+    pos.MoveAlongS(0.1);
+    EXPECT_NEAR(pos.GetX(), 16.546, 1e-3);
+    EXPECT_NEAR(pos.GetY(), 18.668, 1e-3);
+    EXPECT_NEAR(pos.GetZ(), 12.450, 1e-3);
+    EXPECT_NEAR(pos.GetH(), 3.927, 1e-3);
+    EXPECT_NEAR(pos.GetP(), 0.927, 1e-3);
+    EXPECT_NEAR(GetAngleDifference(pos.GetR(), 0.0), 0.0, 1e-3);
 }
 
 // Uncomment to print log output to console

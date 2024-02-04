@@ -29,6 +29,11 @@ TEST_P(Local2Global, RotationAndTranslation)
     EXPECT_DOUBLE_EQ(result.y, target_global.y);
 }
 
+INSTANTIATE_TEST_SUITE_P(CommonMini,
+                         Local2Global,
+                         ::testing::Values(std::make_tuple(Coordinate2D{0, 1}, Coordinate2D{1, 1}, -M_PI / 2, Coordinate2D{2, 1}),
+                                           std::make_tuple(Coordinate2D{1, 0}, Coordinate2D{1, 1}, -M_PI / 2, Coordinate2D{1, 0})));
+
 TEST(VectorOperations, TestIsPointWithinSectorBetweenTwoLines)
 {
     // Parallel lines
@@ -110,11 +115,47 @@ TEST(VectorOperations, TestProjectPointOnVector)
     EXPECT_NEAR(v_result[1], -8.45588, 1E-5);
 }
 
-INSTANTIATE_TEST_SUITE_P(CommonMini,
-                         Local2Global,
-                         ::testing::Values(std::make_tuple(Coordinate2D{0, 1}, Coordinate2D{1, 1}, -M_PI / 2, Coordinate2D{2, 1}),
+TEST(MatrixOperations, TestMatrixInvert)
+{
+    double m[3][3] = {{1.0, 0.0, 2.0}, {0.0, 1.0, 0.0}, {0.0, 0.0, 1.0}}, m_out[3][3];
 
-                                           std::make_tuple(Coordinate2D{1, 0}, Coordinate2D{1, 1}, -M_PI / 2, Coordinate2D{1, 0})));
+    InvertMatrix3(m, m_out);
+
+    EXPECT_NEAR(m_out[0][0], 1.0, 1E-5);
+    EXPECT_NEAR(m_out[0][1], 0.0, 1E-5);
+    EXPECT_NEAR(m_out[0][2], -2.0, 1E-5);
+    EXPECT_NEAR(m_out[1][0], 0.0, 1E-5);
+    EXPECT_NEAR(m_out[1][1], 1.0, 1E-5);
+    EXPECT_NEAR(m_out[1][2], 0.0, 1E-5);
+    EXPECT_NEAR(m_out[2][0], 0.0, 1E-5);
+    EXPECT_NEAR(m_out[2][1], 0.0, 1E-5);
+    EXPECT_NEAR(m_out[2][2], 1.0, 1E-5);
+
+    double m2[3][3] = {{1.0, 2.0, 3.0}, {3.0, 2.0, 1.0}, {2.0, 1.0, 3.0}};
+    InvertMatrix3(m2, m_out);
+
+    EXPECT_NEAR(m_out[0][0], -0.416667, 1E-5);
+    EXPECT_NEAR(m_out[0][1], 0.25, 1E-5);
+    EXPECT_NEAR(m_out[0][2], 0.333333, 1E-5);
+    EXPECT_NEAR(m_out[1][0], 0.583333, 1E-5);
+    EXPECT_NEAR(m_out[1][1], 0.25, 1E-5);
+    EXPECT_NEAR(m_out[1][2], -0.666667, 1E-5);
+    EXPECT_NEAR(m_out[2][0], 0.0833333, 1E-5);
+    EXPECT_NEAR(m_out[2][1], -0.25, 1E-5);
+    EXPECT_NEAR(m_out[2][2], 0.333333, 1E-5);
+
+    double m3[3][3] = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}};
+    MultMatrixMatrix3d(m2, m_out, m3);
+    EXPECT_NEAR(m3[0][0], 1.0, 1E-5);
+    EXPECT_NEAR(m3[0][1], 0.0, 1E-5);
+    EXPECT_NEAR(m3[0][2], 0.0, 1E-5);
+    EXPECT_NEAR(m3[1][0], 0.0, 1E-5);
+    EXPECT_NEAR(m3[1][1], 1.0, 1E-5);
+    EXPECT_NEAR(m3[1][2], 0.0, 1E-5);
+    EXPECT_NEAR(m3[2][0], 0.0, 1E-5);
+    EXPECT_NEAR(m3[2][1], 0.0, 1E-5);
+    EXPECT_NEAR(m3[2][2], 1.0, 1E-5);
+}
 
 int main(int argc, char **argv)
 {

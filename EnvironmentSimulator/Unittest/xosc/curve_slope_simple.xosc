@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSCENARIO>
+	<FileHeader revMajor="1" revMinor="1" date="2020-10-04T10:00:00" description="Just put a vehicle on the road and drive" author="esmini team"/>
+	<ParameterDeclarations>
+		<ParameterDeclaration name="EgoLaneId" parameterType="int" value="3"/>
+	</ParameterDeclarations>
+	<CatalogLocations>
+		<VehicleCatalog>
+			<Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
+		</VehicleCatalog>
+	</CatalogLocations>
+	<RoadNetwork>
+		<LogicFile filepath="../xodr/straight_500_superelevation_elevation_curve.xodr"/>
+	</RoadNetwork>
+	<Entities>
+		<ScenarioObject name="Ego">
+			<CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+		</ScenarioObject>
+	</Entities>
+	<Storyboard>
+		<Init>
+			<Actions>
+				<Private entityRef="Ego">
+					<PrivateAction>
+						<TeleportAction>
+							<Position>
+								<LanePosition roadId="1" laneId="-1" s="140"/>
+							</Position>
+						</TeleportAction>
+					</PrivateAction>
+				</Private>
+			</Actions>
+		</Init>
+		<StopTrigger>
+			<ConditionGroup>
+				<Condition name="StopCondition" delay="0" conditionEdge="none">
+					<ByValueCondition>
+						<SimulationTimeCondition value="200" rule="greaterOrEqual"/>
+					</ByValueCondition>
+				</Condition>
+			</ConditionGroup>
+		</StopTrigger>
+	</Storyboard>
+</OpenSCENARIO>

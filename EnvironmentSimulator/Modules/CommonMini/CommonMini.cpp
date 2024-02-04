@@ -933,6 +933,119 @@ void R0R12EulerAngles(double h0, double p0, double r0, double h1, double p1, dou
     r = GetAngleInInterval2PI(atan2(R2[2][1], R2[2][2]));
 }
 
+int InvertMatrix3(const double m[3][3], double mi[3][3])
+{
+    // Augmenting the matrix with the identity matrix
+    double augmented_matrix[3][6];
+
+    for (int i = 0; i < 3; i++)
+    {
+        for (int j = 0; j < 3; j++)
+        {
+            augmented_matrix[i][j]     = m[i][j];
+            augmented_matrix[i][j + 3] = (i == j) ? 1.0 : 0.0;
+        }
+    }
+
+    // Applying Gauss-Jordan elimination
+    for (int i = 0; i < 3; i++)
+    {
+        // Make the diagonal element 1
+        double pivot = augmented_matrix[i][i];
+        if (pivot == 0)
+        {
+            LOG("Matrix is singular. Inversion not possible.");
+            return -1;
+        }
+
+        for (int j = 0; j < 2 * 3; j++)
+        {
+            augmented_matrix[i][j] /= pivot;
+        }
+
+        // Make other elements in the column zero
+        for (int k = 0; k < 3; k++)
+        {
+            if (k != i)
+            {
+                double factor = augmented_matrix[k][i];
+                for (int j = 0; j < 2 * 3; j++)
+                {
+                    augmented_matrix[k][j] -= factor * augmented_matrix[i][j];
+                }
+            }
+        }
+    }
+
+    // Extracting the inverse matrix from the augmented matrix
+    for (int i = 0; i < 3; i++)
+    {
+        for (int j = 0; j < 3; j++)
+        {
+            mi[i][j] = augmented_matrix[i][j + 3];
+        }
+    }
+    return 0;
+}
+
+void CalcRelAnglesFromRoadAndAbsAngles(double  h_road,
+                                       double  p_road,
+                                       double  r_road,
+                                       double  h_abs,
+                                       double  p_abs,
+                                       double  r_abs,
+                                       double& h_rel,
+                                       double& p_rel,
+                                       double& r_rel)
+{
+    // 1. Create inverse rotation matrix from road orientation
+    // 2. Calculate relative rotation matrix as: Rotation_rel = Rotation_road_inverse * Rotation_abs
+    // 3. Extract yaw. pitch , roll
+
+    double R_inv[3][3] = {{}, {}, {}};
+
+    double cx = cos(h_road);
+    double cy = cos(p_road);
+    double cz = cos(r_road);
+    double sx = sin(h_road);
+    double sy = sin(p_road);
+    double sz = sin(r_road);
+
+    double R[3][3] = {{cx * cy, cx * sy * sz - sx * cz, sx * sz + cx * sy * cz},
+                      {sx * cy, cx * cz + sx * sy * sz, sx * sy * cz - cx * sz},
+                      {-sy, cy * sz, cy * cz}};
+
+    InvertMatrix3(R, R_inv);
+
+    cx = cos(h_abs);
+    cy = cos(p_abs);
+    cz = cos(r_abs);
+    sx = sin(h_abs);
+    sy = sin(p_abs);
+    sz = sin(r_abs);
+
+    double R1[3][3] = {{cx * cy, cx * sy * sz - sx * cz, sx * sz + cx * sy * cz},
+                       {sx * cy, cx * cz + sx * sy * sz, sx * sy * cz - cx * sz},
+                       {-sy, cy * sz, cy * cz}};
+
+    // Multiply
+    double R2[3][3] = {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}};
+    for (int i = 0; i < 3; i++)
+        for (int j = 0; j < 3; j++)
+            for (int k = 0; k < 3; k++)
+                R2[i][j] += R_inv[i][k] * R1[k][j];
+
+    // Avoid gimbal lock
+    if (fabs(R2[0][0]) < SMALL_NUMBER)
+        R2[0][0] = SIGN(R2[0][0]) * SMALL_NUMBER;
+    if (fabs(R2[2][2]) < SMALL_NUMBER)
+        R2[2][2] = SIGN(R2[2][2]) * SMALL_NUMBER;
+
+    h_rel = GetAngleInInterval2PI(atan2(R2[1][0], R2[0][0]));
+    p_rel = GetAngleInInterval2PI(atan2(-R2[2][0], sqrt(R2[2][1] * R2[2][1] + R2[2][2] * R2[2][2])));
+    r_rel = GetAngleInInterval2PI(atan2(R2[2][1], R2[2][2]));
+}
+
 void MultMatrixVector3d(const double m[3][3], const double v0[3], double v1[3])
 {
     for (int i = 0; i < 3; i++)
@@ -940,6 +1053,21 @@ void MultMatrixVector3d(const double m[3][3], const double v0[3], double v1[3])
         v1[i] = 0.0;
         for (int j = 0; j < 3; j++)
             v1[i] += m[i][j] * v0[j];
+    }
+}
+
+void MultMatrixMatrix3d(const double m0[3][3], const double m1[3][3], double m_out[3][3])
+{
+    for (int i = 0; i < 3; i++)
+    {
+        for (int j = 0; j < 3; j++)
+        {
+            m_out[i][j] = 0.0;
+            for (int k = 0; k < 3; k++)
+            {
+                m_out[i][j] += m0[i][k] * m1[k][j];
+            }
+        }
     }
 }
 

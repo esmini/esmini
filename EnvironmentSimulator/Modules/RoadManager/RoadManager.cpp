@@ -9207,6 +9207,24 @@ void Position::SetHeadingRelative(double heading)
     h_          = GetAngleSum(h_road_, h_relative_);
 }
 
+void Position::SetHeadingRoad(double heading)
+{
+    h_road_ = GetAngleInInterval2PI(heading);
+    h_      = GetAngleSum(h_road_, h_relative_);
+}
+
+void Position::SetPitchRoad(double pitch)
+{
+    p_road_ = GetAngleInInterval2PI(pitch);
+    p_      = GetAngleSum(p_road_, p_relative_);
+}
+
+void Position::SetRollRoad(double roll)
+{
+    r_road_ = GetAngleInInterval2PI(roll);
+    r_      = GetAngleSum(r_road_, r_relative_);
+}
+
 void Position::SetHeadingRelativeRoadDirection(double heading)
 {
     if (h_relative_ > M_PI_2 && h_relative_ < 3 * M_PI_2)
@@ -9278,19 +9296,25 @@ void Position::EvaluateZHPR(int mode)
                          p_,
                          r_);
 
-        if (CheckBitsEqual(mode, PosMode::H_MASK, PosMode::H_ABS))
+        if (CheckBitsEqual(mode, PosMode::H_MASK, PosMode::H_ABS) || CheckBitsEqual(mode, PosMode::P_MASK, PosMode::P_ABS) ||
+            CheckBitsEqual(mode, PosMode::R_MASK, PosMode::R_ABS))
         {
-            h_relative_ = GetAngleInInterval2PI(h_ - GetHRoad());
-        }
+            // at least one orientation component is absolute, calculate relative angles for these
+            double h_rel_tmp, p_rel_tmp, r_rel_tmp;
+            CalcRelAnglesFromRoadAndAbsAngles(GetHRoad(), GetPRoad(), GetRRoad(), h_, p_, r_, h_rel_tmp, p_rel_tmp, r_rel_tmp);
 
-        if (CheckBitsEqual(mode, PosMode::P_MASK, PosMode::P_ABS))
-        {
-            p_relative_ = GetAngleInInterval2PI(p_ - GetPRoad());
-        }
-
-        if (CheckBitsEqual(mode, PosMode::R_MASK, PosMode::R_ABS))
-        {
-            r_relative_ = GetAngleInInterval2PI(r_ - GetRRoad());
+            if (CheckBitsEqual(mode, PosMode::H_MASK, PosMode::H_ABS))
+            {
+                h_relative_ = h_rel_tmp;
+            }
+            if (CheckBitsEqual(mode, PosMode::P_MASK, PosMode::P_ABS))
+            {
+                p_relative_ = p_rel_tmp;
+            }
+            if (CheckBitsEqual(mode, PosMode::R_MASK, PosMode::R_ABS))
+            {
+                r_relative_ = r_rel_tmp;
+            }
         }
     }
     else
@@ -9298,6 +9322,8 @@ void Position::EvaluateZHPR(int mode)
         h_ = GetH();
         p_ = GetP();
         r_ = GetR();
+
+        CalcRelAnglesFromRoadAndAbsAngles(GetHRoad(), GetPRoad(), GetRRoad(), h_, p_, r_, h_relative_, p_relative_, r_relative_);
     }
 
     if (CheckBitsEqual(mode, PosMode::Z_MASK, PosMode::Z_REL))
@@ -12103,11 +12129,11 @@ void Position::EvaluateRelation(bool release)
 
         if ((GetMode(Position::PosModeType::INIT) & Position::PosMode::R_MASK) == Position::PosMode::R_REL)
         {
-            SetPitchRelative(relative_.dr);
+            SetRollRelative(relative_.dr);
         }
         else
         {
-            SetPitch(relative_.dr);
+            SetRoll(relative_.dr);
         }
     }
 
