@@ -371,7 +371,7 @@ void StoryBoardElement::SetName(std::string name)
     name_ = name;
     if (type_ == STORY_BOARD)
     {
-        full_path_ = "/";
+        full_path_ = "";
     }
     else if (parent_ == nullptr)
     {
@@ -381,11 +381,11 @@ void StoryBoardElement::SetName(std::string name)
     {
         if (parent_->type_ == STORY_BOARD)
         {
-            full_path_ = "/" + name;
+            full_path_ = name;  // skip storyboard level
         }
         else
         {
-            full_path_ = parent_->GetFullPath() + "/" + name;
+            full_path_ = parent_->GetFullPath() + "::" + name;
         }
     }
 }
