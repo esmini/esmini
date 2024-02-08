@@ -82,8 +82,6 @@ for trajectory in trajectories:
             print('Warning: Found a non world position, skipping trajectory')
             continue
 
-        if ('x' in w_pos):
-            print('yes')
         if w_pos.get('x') is None or w_pos.get('y') is None or w_pos.get('h') is None:
             print('Error: Need all attributes \'x\', \'y\' and \'h\' in trajectory world position')
             exit(-1)
