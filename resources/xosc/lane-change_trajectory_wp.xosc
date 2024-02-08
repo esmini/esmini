@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Simple lane change defined by world position based trajectory                           -->
+<!-- Can be used with EnvironmentSimulator/code-examples/convert_position_type code examples -->
+<!-- demonstrating conversion of position types                                              -->
+
+<OpenSCENARIO>
+    <FileHeader revMajor="1"
+                revMinor="2"
+                date="2024-02-08T10:00:00"
+                description="Simple trajectory defined by world positions"
+                author="esmini team"/>
+    <ParameterDeclarations>
+        <ParameterDeclaration name="Speed" parameterType="double" value="50"/>
+    </ParameterDeclarations>
+    <CatalogLocations>
+        <VehicleCatalog>
+            <Directory path="../xosc/Catalogs/Vehicles"/>
+        </VehicleCatalog>
+    </CatalogLocations>
+    <RoadNetwork>
+        <LogicFile filepath="../xodr/straight_500m.xodr"/>
+    </RoadNetwork>
+    <Entities>
+        <ScenarioObject name="Car">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+    </Entities>
+    <Storyboard>
+        <Init>
+            <Actions>
+                <Private entityRef="Car">
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="${$Speed / 3.6}"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <RoutingAction>
+                            <FollowTrajectoryAction>
+                                <TrajectoryRef>
+                                    <Trajectory name="LaneChangePart1" closed="false">
+                                        <ParameterDeclarations/>
+                                        <Shape>
+                                            <Polyline>
+                                                <Vertex> <Position> <WorldPosition x="50.00" y="-1.53" h="0.00"/> </Position> </Vertex>
+                                                <Vertex> <Position> <WorldPosition x="53.47" y="-1.53" h="0.00"/> </Position> </Vertex>
+                                                <Vertex> <Position> <WorldPosition x="56.94" y="-1.53" h="0.00"/> </Position> </Vertex>
+                                                <Vertex> <Position> <WorldPosition x="60.42" y="-1.53" h="0.00"/> </Position> </Vertex>
+                                                <Vertex> <Position> <WorldPosition x="63.89" y="-1.53" h="0.00"/> </Position> </Vertex>
+                                                <Vertex> <Position> <WorldPosition x="67.36" y="-1.53" h="0.00"/> </Position> </Vertex>
+                                                <Vertex> <Position> <WorldPosition x="70.83" y="-1.53" h="0.00"/> </Position> </Vertex>
+                                                <Vertex> <Position> <WorldPosition x="74.31" y="-1.53" h="0.00"/> </Position> </Vertex>
+                                                <Vertex> <Position> <WorldPosition x="77.78" y="-1.53" h="0.00"/> </Position> </Vertex>
+                                                <Vertex> <Position> <WorldPosition x="81.25" y="-1.49" h="0.03"/> </Position> </Vertex>
+                                                <Vertex> <Position> <WorldPosition x="84.72" y="-1.32" h="0.07"/> </Position> </Vertex>
+                                                <Vertex> <Position> <WorldPosition x="88.18" y="-1.03" h="0.10"/> </Position> </Vertex>
+                                                <Vertex> <Position> <WorldPosition x="91.63" y="-0.62" h="0.14"/> </Position> </Vertex>
+                                                <Vertex> <Position> <WorldPosition x="95.06" y="-0.11" h="0.15"/> </Position> </Vertex>
+                                                <Vertex> <Position> <WorldPosition x="98.49" y="0.41"  h="0.15"/> </Position> </Vertex>
+                                                <Vertex> <Position> <WorldPosition x="101.93" y="0.87" h="0.12"/> </Position> </Vertex>
+                                                <Vertex> <Position> <WorldPosition x="105.39" y="1.21" h="0.08"/> </Position> </Vertex>
+                                                <Vertex> <Position> <WorldPosition x="108.86" y="1.43" h="0.05"/> </Position> </Vertex>
+                                                <Vertex> <Position> <WorldPosition x="112.33" y="1.52" h="0.01"/> </Position> </Vertex>
+                                                <Vertex> <Position> <WorldPosition x="115.80" y="1.53" h="0.00"/> </Position> </Vertex>
+                                                <Vertex> <Position> <WorldPosition x="119.27" y="1.53" h="0.00"/> </Position> </Vertex>
+                                                <Vertex> <Position> <WorldPosition x="122.74" y="1.53" h="0.00"/> </Position> </Vertex>
+                                                <Vertex> <Position> <WorldPosition x="126.21" y="1.53" h="0.00"/> </Position> </Vertex>
+                                                <Vertex> <Position> <WorldPosition x="129.69" y="1.53" h="0.00"/> </Position> </Vertex>
+                                                <Vertex> <Position> <WorldPosition x="133.16" y="1.53" h="0.00"/> </Position> </Vertex>
+                                                <Vertex> <Position> <WorldPosition x="136.63" y="1.53" h="0.00"/> </Position> </Vertex>
+                                                <Vertex> <Position> <WorldPosition x="140.10" y="1.53" h="0.00"/> </Position> </Vertex>
+                                                <Vertex> <Position> <WorldPosition x="143.58" y="1.53" h="0.00"/> </Position> </Vertex>
+                                                <Vertex> <Position> <WorldPosition x="147.05" y="1.53" h="0.00"/> </Position> </Vertex>
+                                                <Vertex> <Position> <WorldPosition x="150.52" y="1.53" h="0.00"/> </Position> </Vertex>
+                                                <Vertex> <Position> <WorldPosition x="153.99" y="1.53" h="0.00"/> </Position> </Vertex>
+                                                <Vertex> <Position> <WorldPosition x="157.46" y="1.53" h="0.00"/> </Position> </Vertex>
+                                                <Vertex> <Position> <WorldPosition x="160.94" y="1.53" h="0.00"/> </Position> </Vertex>
+                                            </Polyline>
+                                        </Shape>
+                                    </Trajectory>
+                                </TrajectoryRef>
+                                <TimeReference>
+                                    <None/>
+                                </TimeReference>
+                                <TrajectoryFollowingMode followingMode="position"/>
+                            </FollowTrajectoryAction>
+                        </RoutingAction>
+                    </PrivateAction>                    
+                </Private>
+            </Actions>
+        </Init>
+        <StopTrigger>
+            <ConditionGroup>
+                <Condition name="StopCondition" delay="0.0" conditionEdge="none">
+                    <ByValueCondition>
+                        <SimulationTimeCondition value="8" rule="greaterThan"/>
+                    </ByValueCondition>
+                </Condition>
+            </ConditionGroup>
+        </StopTrigger>
+    </Storyboard>
+</OpenSCENARIO>

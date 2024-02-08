@@ -29,7 +29,10 @@ foreach(
             "osi-groundtruth-cs"
             OR ${subdir}
                STREQUAL
-               "rm-basic-cs"))
+               "rm-basic-cs"
+            OR ${subdir}
+               STREQUAL
+               "convert_position_type"))
         add_subdirectory(${subdir})
         if(NOT
            ${subdir}
