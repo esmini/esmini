@@ -28,28 +28,35 @@ StoryBoardElement* StoryBoardElement::FindChildByName(std::string name)
     return nullptr;
 }
 
-StoryBoardElement* StoryBoardElement::FindChildByTypeAndName(ElementType type, std::string name)
+std::vector<StoryBoardElement*> StoryBoardElement::FindChildByTypeAndName(ElementType type, std::string name)
 {
-    if (type == type_)
+    std::vector<StoryBoardElement*> elements;
+
+    if (type == type_ &&                        // types should match
+        name.size() <= GetFullPath().size() &&  // size of given name path must not be longer than element full path
+        name.size() >= GetName().size())        // size of given name path must not be shorter than element name
     {
-        if (GetName() == name)
+        // compare rightmost part of element name with the given name to check
+        if (GetFullPath().substr(GetFullPath().size() - name.size()) == name)
         {
-            return this;
+            elements.push_back(this);
+            return elements;
         }
     }
     else if (type > type_)
     {
         for (auto child : *GetChildren())
         {
-            StoryBoardElement* element = child->FindChildByTypeAndName(type, name);
-            if (element != nullptr)
+            std::vector<StoryBoardElement*> elements_tmp = child->FindChildByTypeAndName(type, name);
+
+            if (elements_tmp.size() > 0)
             {
-                return element;
+                elements.insert(elements.end(), elements_tmp.begin(), elements_tmp.end());
             }
         }
     }
 
-    return nullptr;
+    return elements;
 }
 
 void Story::Print()

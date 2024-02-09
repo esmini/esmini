@@ -2706,6 +2706,82 @@ TEST(RelativePositionRouting, TestRelativePositionWithRoutes)
     delete se;
 }
 
+TEST(StoryboardTest, TestStoryboardElementNaming)
+{
+    StoryBoard sb;
+
+    // Create a storyboard hierarchy as:
+    // story1
+    //    act1
+    //       mg1
+    //       mg1 (duplicate maneuvergroup name)
+    //    act1   (duplicate act name)
+    //       mg1 (duplicate maneuvergroup name)
+    // story2
+    //    act3
+    //       mg1 (duplicate maneuvergroup name)
+    //       mg4
+
+    Story* story1 = new Story(&sb);
+    Story* story2 = new Story(&sb);
+    story1->SetName("story1");
+    story2->SetName("story2");
+    sb.story_.push_back(story1);
+    sb.story_.push_back(story2);
+
+    Act* act1 = new Act(story1);
+    Act* act2 = new Act(story1);
+    Act* act3 = new Act(story2);
+    act1->SetName("act1");
+    act2->SetName("act1");  // duplicate name
+    act3->SetName("act3");
+    story1->act_.push_back(act1);
+    story1->act_.push_back(act2);
+    story2->act_.push_back(act3);
+
+    ManeuverGroup* mg1 = new ManeuverGroup(act1);
+    ManeuverGroup* mg2 = new ManeuverGroup(act2);
+    ManeuverGroup* mg3 = new ManeuverGroup(act3);
+    ManeuverGroup* mg4 = new ManeuverGroup(act3);
+    mg1->SetName("mg1");
+    mg2->SetName("mg1");  // duplicate name
+    mg3->SetName("mg1");  // duplicate name
+    mg4->SetName("mg4");
+    act1->maneuverGroup_.push_back(mg1);
+    act2->maneuverGroup_.push_back(mg2);
+    act3->maneuverGroup_.push_back(mg3);
+    act3->maneuverGroup_.push_back(mg4);
+
+    EXPECT_EQ(mg1->GetName(), "mg1");
+    EXPECT_EQ(mg2->GetName(), "mg1");
+    EXPECT_EQ(mg3->GetName(), "mg1");
+    EXPECT_EQ(mg4->GetName(), "mg4");
+    EXPECT_EQ(act1->GetName(), "act1");
+    EXPECT_EQ(act2->GetName(), "act1");
+    EXPECT_EQ(act3->GetName(), "act3");
+
+    std::vector<StoryBoardElement*> elements = sb.FindChildByTypeAndName(StoryBoardElement::ElementType::MANEUVER_GROUP, "mg1");
+    EXPECT_EQ(elements.size(), 3);
+
+    elements = sb.FindChildByTypeAndName(StoryBoardElement::ElementType::MANEUVER_GROUP, "act1::mg1");
+    EXPECT_EQ(elements.size(), 2);
+
+    elements = sb.FindChildByTypeAndName(StoryBoardElement::ElementType::MANEUVER_GROUP, "story1::act1::mg1");
+    EXPECT_EQ(elements.size(), 2);
+
+    elements = sb.FindChildByTypeAndName(StoryBoardElement::ElementType::MANEUVER_GROUP, "story2::act3::mg1");
+    EXPECT_EQ(elements.size(), 1);
+
+    elements = sb.FindChildByTypeAndName(StoryBoardElement::ElementType::MANEUVER_GROUP, "act1");
+    EXPECT_EQ(elements.size(), 0);
+
+    elements = sb.FindChildByTypeAndName(StoryBoardElement::ElementType::ACT, "act1");
+    EXPECT_EQ(elements.size(), 2);
+
+    elements = sb.FindChildByTypeAndName(StoryBoardElement::ElementType::MANEUVER_GROUP, "");
+    EXPECT_EQ(elements.size(), 0);
+}
+
 // Uncomment to print log output to console
 // #define LOG_TO_CONSOLE
 

@@ -4542,34 +4542,15 @@ int ScenarioReader::parseStoryBoard(StoryBoard &storyBoard)
     for (auto trigger_info : storyboard_element_triggers)
     {
         // locate storyboard element
-        switch (trigger_info.type)
-        {
-            case StoryBoardElement::ElementType::STORY:
-                trigger_info.element = story_board_->FindChildByTypeAndName(StoryBoardElement::ElementType::STORY, trigger_info.element_name);
-                break;
-            case StoryBoardElement::ElementType::ACT:
-                trigger_info.element = story_board_->FindChildByTypeAndName(StoryBoardElement::ElementType::ACT, trigger_info.element_name);
-                break;
-            case StoryBoardElement::ElementType::MANEUVER_GROUP:
-                trigger_info.element =
-                    story_board_->FindChildByTypeAndName(StoryBoardElement::ElementType::MANEUVER_GROUP, trigger_info.element_name);
-                break;
-            case StoryBoardElement::ElementType::MANEUVER:
-                trigger_info.element = story_board_->FindChildByTypeAndName(StoryBoardElement::ElementType::MANEUVER, trigger_info.element_name);
-                break;
-            case StoryBoardElement::ElementType::EVENT:
-                trigger_info.element = story_board_->FindChildByTypeAndName(StoryBoardElement::ElementType::EVENT, trigger_info.element_name);
-                break;
-            case StoryBoardElement::ElementType::ACTION:
-                trigger_info.element = story_board_->FindChildByTypeAndName(StoryBoardElement::ElementType::ACTION, trigger_info.element_name);
-                break;
-            case StoryBoardElement::ElementType::STORY_BOARD:
-            default:
-                break;
-        }
+        std::vector<StoryBoardElement *> elements = story_board_->FindChildByTypeAndName(trigger_info.type, trigger_info.element_name);
 
-        if (trigger_info.element != nullptr)
+        if (elements.size() > 0)
         {
+            if (elements.size() > 1)
+            {
+                LOG("Warning: Non unique element name: %s, picking first occurrence", trigger_info.element_name.c_str());
+            }
+            trigger_info.element                          = elements[0];
             trigger_info.condition->element_              = trigger_info.element;
             trigger_info.condition->target_element_state_ = trigger_info.state;
             trigger_info.element->AddTriggerRef(trigger_info.condition);

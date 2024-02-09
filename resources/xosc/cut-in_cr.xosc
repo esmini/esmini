@@ -84,7 +84,7 @@
                             </Action>
                         </Event>
                         <Event name="LaneChangeEvent" priority="overwrite">
-                            <Action name="LaneChangeAction">
+                            <Action name="Action">
                                 <PrivateAction>
                                     <LateralAction>
                                         <LaneOffsetAction continuous="true">
@@ -112,7 +112,7 @@
                             </StartTrigger>
                         </Event>
                         <Event name="CutInEvent" priority="overwrite">
-                            <Action name="CutInAction">
+                            <Action name="Action">
                                 <PrivateAction>
                                     <LateralAction>
                                         <LaneOffsetAction continuous="true">
@@ -156,7 +156,7 @@
             <ConditionGroup>
                 <Condition name="StopCondition" delay="10" conditionEdge="rising">
                     <ByValueCondition>
-                        <StoryboardElementStateCondition storyboardElementType="event" storyboardElementRef="CutInEvent" state="endTransition"/>
+                        <StoryboardElementStateCondition storyboardElementType="action" storyboardElementRef="CutInEvent::Action" state="endTransition"/>
                     </ByValueCondition>
                 </Condition>
             </ConditionGroup>
