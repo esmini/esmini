@@ -509,7 +509,7 @@ int OSIReporter::UpdateOSIStationaryObjectODR(int road_id, roadmanager::RMObject
 
     // Set OSI Stationary Object Mutable ID
     int sobj_size = obj_osi_internal.gt->mutable_stationary_object()->size();
-    obj_osi_internal.sobj->mutable_id()->set_value(static_cast<unsigned int>(sobj_size - 1));
+    obj_osi_internal.sobj->mutable_id()->set_value(static_cast<unsigned int>(sobj_size));
 
     // Set OSI Stationary Object Type and Classification
     if (object->GetType() == roadmanager::RMObject::ObjectType::POLE)
