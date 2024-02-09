@@ -31,11 +31,6 @@ add_library(
     ${SOURCES}
     ${INCLUDES})
 
-target_link_libraries(
-    ViewerBase
-    PRIVATE ScenarioEngine
-            project_options)
-
 target_include_directories(
     ${TARGET}
     PRIVATE ${SCENARIO_ENGINE_PATH}/SourceFiles

@@ -41,10 +41,6 @@ if(USE_OSG)
         ${TARGET1_SOURCES}
         ${TARGET1_INCLUDES})
 
-    target_link_libraries(
-        ${TARGET1}
-        PRIVATE project_options)
-
     target_include_directories(
         ${TARGET1}
         PRIVATE ${SCENARIO_ENGINE_PATH}/SourceFiles
@@ -73,6 +69,8 @@ if(USE_OSG)
         target_link_libraries(
             ${TARGET1}
             PRIVATE ViewerBase
+                    ScenarioEngine
+                    Controllers
                     ${OSG_LIBRARIES})
     endif()
 

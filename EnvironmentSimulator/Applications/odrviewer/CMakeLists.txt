@@ -20,10 +20,6 @@ add_executable(
     ${TARGET}
     ${SOURCES})
 
-target_link_libraries(
-    ${TARGET}
-    PRIVATE project_options)
-
 target_include_directories(
     ${TARGET}
     PRIVATE ${SCENARIO_ENGINE_PATH}/SourceFiles
@@ -50,6 +46,8 @@ if(USE_OSG)
     target_link_libraries(
         ${TARGET}
         PRIVATE ViewerBase
+                ScenarioEngine
+                Controllers
                 ${OSG_LIBRARIES})
 endif()
 
