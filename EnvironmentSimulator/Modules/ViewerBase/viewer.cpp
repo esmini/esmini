@@ -1682,6 +1682,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     SetNodeMaskBits(NodeMask::NODE_MASK_INFO);
     SetNodeMaskBits(NodeMask::NODE_MASK_TRAJECTORY_LINES);
     SetNodeMaskBits(NodeMask::NODE_MASK_ROUTE_WAYPOINTS);
+    ClearNodeMaskBits(NodeMask::NODE_MASK_SIGN_BB);
 
     roadSensors_ = new osg::Group;
     roadSensors_->setNodeMask(NodeMask::NODE_MASK_ODR_FEATURES);
@@ -3073,10 +3074,27 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
                 tx = LoadRoadFeature(road, signal->GetName() + ".osgb");
             }
 
+            // create a bounding for the sign
+            osg::ref_ptr<osg::PositionAttitudeTransform> tx_bb = new osg::PositionAttitudeTransform;
+
+            // avoid zero width, length and width - set to a minimum value of 0.05m
+            osg::ref_ptr<osg::ShapeDrawable> shape =
+                new osg::ShapeDrawable(new osg::Box(osg::Vec3(0.0f, 0.0f, 0.5f * MAX(0.05f, static_cast<float>(signal->GetHeight()))),
+                                                    MAX(0.05f, static_cast<float>(signal->GetDepth())),
+                                                    MAX(0.05f, static_cast<float>(signal->GetWidth())),
+                                                    MAX(0.05f, static_cast<float>(signal->GetHeight()))));
+
+            shape->setColor(osg::Vec4(0.8f, 0.8f, 0.8f, 1.0f));
+            tx_bb->addChild(shape);
+
+            tx_bb->setPosition(osg::Vec3(static_cast<float>(signal->GetX()),
+                                         static_cast<float>(signal->GetY()),
+                                         static_cast<float>(signal->GetZ() + signal->GetZOffset())));
+            tx_bb->setAttitude(osg::Quat(signal->GetH() + signal->GetHOffset(), osg::Vec3(0, 0, 1)));
+
             if (tx == nullptr)
             {
-                LOG("Failed to load signal %s / %s", (filename + ".osgb").c_str(), (signal->GetName() + ".osgb").c_str());
-                continue;
+                LOG("Failed to load signal %s / %s - use simple bounding box", (filename + ".osgb").c_str(), (signal->GetName() + ".osgb").c_str());
             }
             else
             {
@@ -3084,9 +3102,15 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
                                           static_cast<float>(signal->GetY()),
                                           static_cast<float>(signal->GetZ() + signal->GetZOffset())));
                 tx->setAttitude(osg::Quat(signal->GetH() + signal->GetHOffset(), osg::Vec3(0, 0, 1)));
-
                 objGroup->addChild(tx);
+
+                // In this case, where a 3D model exists, set bounding box to wireframe mode
+                osg::PolygonMode* polygonMode = new osg::PolygonMode;
+                polygonMode->setMode(osg::PolygonMode::FRONT_AND_BACK, osg::PolygonMode::LINE);
+                shape->getOrCreateStateSet()->setAttributeAndModes(polygonMode, osg::StateAttribute::OVERRIDE | osg::StateAttribute::ON);
+                tx_bb->setNodeMask(NODE_MASK_SIGN_BB);
             }
+            objGroup->addChild(tx_bb);
         }
 
         for (size_t o = 0; o < static_cast<unsigned int>(road->GetNumberOfObjects()); o++)
@@ -3959,11 +3983,19 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
             }
         }
         break;
-        case (osgGA::GUIEventAdapter::KEY_O):
+        case ('o'):
         {
             if (ea.getEventType() & osgGA::GUIEventAdapter::KEYDOWN)
             {
                 viewer_->ToggleNodeMaskBits(viewer::NodeMask::NODE_MASK_ODR_FEATURES);
+            }
+        }
+        break;
+        case ('O'):
+        {
+            if (ea.getEventType() & osgGA::GUIEventAdapter::KEYDOWN)
+            {
+                viewer_->ToggleNodeMaskBits(viewer::NodeMask::NODE_MASK_SIGN_BB);
             }
         }
         break;

@@ -76,6 +76,7 @@ Key shortcuts
     Space:         Toggle pause / play
     g:             Toggle show / hide ghost models
     o:             Toggle show / hide OpenDRIVE road feature lines
+    O:             Toggle show / hide odr signal 3D model bounding boxes
     u:             Toggle show / hide OSI road lines
     y:             Toggle show / hide OSI road points
     p:             Toggle show / hide environment 3D model

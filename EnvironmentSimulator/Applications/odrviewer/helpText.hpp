@@ -19,7 +19,8 @@ Key shortcuts \n\
     TAB:           Move camera to next vehicle \n\
     Shift + TAB:   Move camera to previoius vehicle \n\
     Delete:        Same as above (Shift + TAB) \n\
-    o:             Toggle show/hide OpenDRIVE road feature lines \n\
+    o:             Toggle show / hide OpenDRIVE road feature lines \n\
+    O:             Toggle show / hide odr signal 3D model bounding boxes \n\
     u:             Toggle show / hide OSI road lines \n\
     y:             Toggle show / hide OSI road points \n\
     p:             Toggle show / hide environment 3D model \n\

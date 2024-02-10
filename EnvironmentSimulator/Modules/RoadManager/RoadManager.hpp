@@ -1525,6 +1525,7 @@ namespace roadmanager
                std::string unit,
                double      height,
                double      width,
+               double      depth,  // i.e. length of the bounding box
                std::string text,
                double      h_offset,
                double      pitch,
@@ -1594,6 +1595,10 @@ namespace roadmanager
         {
             return width_;
         }
+        double GetDepth() const
+        {
+            return depth_;
+        }
         bool IsDynamic() const
         {
             return dynamic_;
@@ -1642,6 +1647,7 @@ namespace roadmanager
         std::string                                 unit_;
         double                                      height_;
         double                                      width_;
+        double                                      depth_;
         std::string                                 text_;
         double                                      h_offset_;
         double                                      pitch_;

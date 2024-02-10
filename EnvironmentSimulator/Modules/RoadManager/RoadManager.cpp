@@ -337,6 +337,7 @@ Signal::Signal(double      s,
                std::string unit,
                double      height,
                double      width,
+               double      depth,
                std::string text,
                double      h_offset,
                double      pitch,
@@ -360,11 +361,12 @@ Signal::Signal(double      s,
       unit_(unit),
       height_(height),
       width_(width),
+      depth_(depth),
+      length_(0.0),
       text_(text),
       h_offset_(h_offset),
       pitch_(pitch),
       roll_(roll),
-      length_(0),
       RoadObject(x, y, z, h)
 {
     value_ = strtod(value_str);
@@ -4148,6 +4150,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                     std::string unit     = signal.attribute("unit").value();
                     double      height   = atof(signal.attribute("height").value());
                     double      width    = atof(signal.attribute("width").value());
+                    double      depth    = atof(signal.attribute("length").value());
                     std::string text     = signal.attribute("text").value();
                     double      h_offset = atof(signal.attribute("hOffset").value());
                     double      pitch    = atof(signal.attribute("pitch").value());
@@ -4170,6 +4173,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                                              unit,
                                              height,
                                              width,
+                                             depth,
                                              text,
                                              h_offset,
                                              pitch,
