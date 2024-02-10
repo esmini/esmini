@@ -1,5 +1,26 @@
 ## esmini release notes
 
+### 2024-02-10 Version 2.36.5
+
+New features:
+- Support paths in StoryboardElementStateCondition ([issue #529](https://github.com/esmini/esmini/issues/529))
+  - allows for prefix element name with parent name
+  - e.g. Event2::MyAction
+- Add odr signal bounding box ([issue #530](https://github.com/esmini/esmini/issues/530))
+  - use as stand-in 3D model if none could be loaded
+  - for signal 3D models, optional wire frame bounding box (toggle on key 'O')
+
+New behaviors:
+- Replace storyboard element path separator '/' with '::'
+- Fix OSI stationary object ids, now start at 1 and not 0 (which is reserved for undefined)
+
+Improvements and fixes:
+- Fix issue in calculation of relative orientation components #496
+- Add position conversion code example ([convert_position_type](https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/code-examples/convert_position_type))
+  - shows ways to print or convert world positions (x,y) to road coordinates
+  - [manipulate_positions.py](https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/code-examples/convert_position_type/manipulate_positions.py) makes trajectories portable wrt road characteristics
+- Fix link issue with gcc 7.5 on Ubuntu
+
 ### 2024-02-02 Version 2.36.4
 
 New features:
