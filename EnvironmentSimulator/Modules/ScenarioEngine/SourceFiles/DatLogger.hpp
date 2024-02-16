@@ -185,10 +185,10 @@ namespace datLogger
 
     struct LightRGB
     {
-        unsigned char red       = 255.0;
-        unsigned char green     = 255.0;
-        unsigned char blue      = 255.0;
-        unsigned char intensity = 255.0;
+        unsigned char red;
+        unsigned char green;
+        unsigned char blue;
+        unsigned char intensity;
     };
 
     struct LightState
@@ -274,11 +274,12 @@ namespace datLogger
             }
         }
 
-        bool   isFirstEntry  = true;
-        bool   notFirstEnd   = false;
-        bool   TimePkgAdded  = false;
-        bool   ObjIdPkgAdded = false;
-        double simTimeTemp   = SMALL_NUMBER;
+        bool   isFirstEntry    = true;
+        bool   notFirstEnd     = false;
+        bool   TimePkgAdded    = false;
+        bool   ObjIdPkgAdded   = false;
+        bool   isFirstLightPkg = true;
+        double simTimeTemp     = SMALL_NUMBER;
 
         CompleteObjectState     completeObjectState;
         std::vector<ObjIdAdded> objIdAdded_;
