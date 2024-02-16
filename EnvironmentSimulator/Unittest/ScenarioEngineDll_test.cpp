@@ -4161,7 +4161,7 @@ TEST(ParamDistTest, TestRunAll)
     SE_ResetParameterDistribution();
 }
 // todo: test will be enabled back when model is in place.
-
+#if (0)
 TEST(TestLightStateAction, BrakeLightActionTest)
 {
     // std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/light_test.xosc";
@@ -4257,7 +4257,7 @@ TEST(TestLightStateAction, BrakeLightActionTest)
 
     SE_Close();
 }
-
+#endif
 #ifdef _USE_OSI
 TEST(TestLightStateAction, AdvancedLightStateActionTest)
 {

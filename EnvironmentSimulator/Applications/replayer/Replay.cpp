@@ -567,7 +567,7 @@ int Replay::RecordPkgs(const std::string& fileName)
                     }
                 }
                 perviouslightState = lightState;
-                if (perviouslightState != nullptr)
+                if (defaultLightState == nullptr)
                 {
                     defaultLightState = lightState;
                 }
@@ -1454,11 +1454,9 @@ void Replay::GetRgbValues(int obj_id, Object::VehicleLightActionStatus* vehicleL
     for (size_t i = 0; i < numLights; ++i)
     {
         datLogger::LightRGB* light         = reinterpret_cast<datLogger::LightRGB*>(&lightState_) + i;
-        datLogger::LightRGB* default_light = reinterpret_cast<datLogger::LightRGB*>(&defaultLightState) + i;
-        if ((light->red != default_light->red || light->green != default_light->green || light->blue != default_light->blue ||
-             light->intensity != default_light->intensity) &&
-            (light->red != 0 && light->green != 0 && light->blue != 0 &&
-             light->intensity != 0))  // rgbi shall be zero in case no material found and no light action
+        datLogger::LightRGB* default_light = reinterpret_cast<datLogger::LightRGB*>(defaultLightState) + i;
+        if (light->red != default_light->red || light->green != default_light->green || light->blue != default_light->blue ||
+            light->intensity != default_light->intensity)
         {
             vehicleLightActionStatusList[i].type          = static_cast<Object::VehicleLightType>(i);
             vehicleLightActionStatusList[i].diffuseRgb[0] = light->red / 255.0;

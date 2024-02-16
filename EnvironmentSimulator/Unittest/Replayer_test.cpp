@@ -1148,7 +1148,7 @@ TEST(TestLightStateInReplayer, SimpleTest)
     double p     = 6.0;
     double speed = 1.0;
 
-    double diffuseRgb[3]  = {0.5, 0.0, 0.0};
+    double diffuseRgb[3]  = {0.4, 0.0, 0.0};
     double emissionRgb[3] = {0.0, 0.0, 0.0};
 
     datLogger::LightState lightState_;
@@ -1181,6 +1181,24 @@ TEST(TestLightStateInReplayer, SimpleTest)
         {
             h = 6.0;
         }
+        if (i == 1)
+        {
+            diffuseRgb[0] = 0.5;
+            rgb_[0]       = diffuseRgb[0] + emissionRgb[0];
+            rgb_[1]       = diffuseRgb[1] + emissionRgb[1];
+            rgb_[2]       = diffuseRgb[2] + emissionRgb[2];
+            rgb_[3]       = emissionRgb[0] / rgb_[0];
+
+            rgb_value.red       = static_cast<unsigned char>(MIN(MAX(rgb_[0], 0.0), 255.0) * 255.0);
+            rgb_value.green     = static_cast<unsigned char>(MIN(MAX(rgb_[1], 0.0), 255.0) * 255.0);
+            rgb_value.blue      = static_cast<unsigned char>(MIN(MAX(rgb_[2], 0.0), 255.0) * 255.0);
+            rgb_value.intensity = static_cast<unsigned char>(MIN(MAX(rgb_[3], 0.0), 255.0) * 255.0);
+
+            lightState_.brake_lights.red       = rgb_value.red;
+            lightState_.brake_lights.blue      = rgb_value.green;
+            lightState_.brake_lights.green     = rgb_value.blue;
+            lightState_.brake_lights.intensity = rgb_value.intensity;
+        }
         logger->simTimeTemp = current_time;
         for (int j = 0; j < no_of_obj; j++)
         {
@@ -1206,7 +1224,7 @@ TEST(TestLightStateInReplayer, SimpleTest)
 
     Object::VehicleLightActionStatus light_state[Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS];
 
-    ASSERT_EQ(replayer_->pkgs_.size(), 22);
+    ASSERT_EQ(replayer_->pkgs_.size(), 23);
     ASSERT_EQ(replayer_->scenarioState.sim_time, replayer_->GetTimeFromCnt(1));
     ASSERT_EQ(replayer_->scenarioState.obj_states.size(), 1);
     ASSERT_EQ(replayer_->scenarioState.obj_states[0].pkgs.size(), 3);
