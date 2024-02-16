@@ -185,10 +185,10 @@ namespace datLogger
 
     struct LightRGB
     {
-        unsigned char red;
-        unsigned char green;
-        unsigned char blue;
-        unsigned char intensity;
+        unsigned char red       = 255;
+        unsigned char green     = 255;
+        unsigned char blue      = 255;
+        unsigned char intensity = 255;
     };
 
     struct LightState
