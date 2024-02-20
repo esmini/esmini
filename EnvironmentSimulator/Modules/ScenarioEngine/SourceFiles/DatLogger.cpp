@@ -689,31 +689,24 @@ void DatLogger::WriteLightState(int obj_id, LightState rgb_data)
                 continue;
             }
             completeObjectState.obj_states[i].active = true;
-
-            if ((!IsEqualRgb(rgb_data.day_time_running_lights, completeObjectState.obj_states[i].lightStates_.day_time_running_lights) ||
-                 !IsEqualRgb(rgb_data.low_beam, completeObjectState.obj_states[i].lightStates_.low_beam) ||
-                 !IsEqualRgb(rgb_data.high_beam, completeObjectState.obj_states[i].lightStates_.high_beam) ||
-                 !IsEqualRgb(rgb_data.fog_lights_front, completeObjectState.obj_states[i].lightStates_.fog_lights_front) ||
-                 !IsEqualRgb(rgb_data.fog_lights_rear, completeObjectState.obj_states[i].lightStates_.fog_lights_rear) ||
-                 !IsEqualRgb(rgb_data.brake_lights, completeObjectState.obj_states[i].lightStates_.brake_lights) ||
-                 !IsEqualRgb(rgb_data.indicator_left, completeObjectState.obj_states[i].lightStates_.indicator_left) ||
-                 !IsEqualRgb(rgb_data.indicator_right, completeObjectState.obj_states[i].lightStates_.indicator_right) ||
-                 !IsEqualRgb(rgb_data.reversing_lights, completeObjectState.obj_states[i].lightStates_.reversing_lights) ||
-                 !IsEqualRgb(rgb_data.license_plater_illumination, completeObjectState.obj_states[i].lightStates_.license_plater_illumination) ||
-                 !IsEqualRgb(rgb_data.special_purpose_lights, completeObjectState.obj_states[i].lightStates_.special_purpose_lights) ||
-                 !IsEqualRgb(rgb_data.fog_lights, completeObjectState.obj_states[i].lightStates_.fog_lights) ||
-                 !IsEqualRgb(rgb_data.warning_lights, completeObjectState.obj_states[i].lightStates_.warning_lights)) ||
-                isFirstLightPkg)
+            const size_t numLights                   = sizeof(rgb_data) / sizeof(datLogger::LightRGB);
+            for (size_t j = 0; j < numLights; ++j)
             {
-                WriteManPkg(obj_id);
-                // create pkg
-                CommonPkg pkg;
-                pkg.hdr.id           = static_cast<int>(PackageId::LIGHT_STATES);
-                pkg.hdr.content_size = sizeof(rgb_data);
-                pkg.content          = reinterpret_cast<char*>(&rgb_data);
-                writePackage(pkg);
-                completeObjectState.obj_states[i].lightStates_ = rgb_data;
-                isFirstLightPkg                                = false;
+                LightRGB* lightNew = reinterpret_cast<datLogger::LightRGB*>(&rgb_data) + j;
+                LightRGB* lightOld = reinterpret_cast<datLogger::LightRGB*>(&completeObjectState.obj_states[i].lightStates_) + j;
+                if (lightNew->red != lightOld->red || lightNew->green != lightOld->green || lightNew->blue != lightOld->blue ||
+                    lightNew->intensity != lightOld->intensity)
+                {
+                    WriteManPkg(obj_id);
+                    // create pkg
+                    CommonPkg pkg;
+                    pkg.hdr.id           = static_cast<int>(PackageId::LIGHT_STATES);
+                    pkg.hdr.content_size = sizeof(rgb_data);
+                    pkg.content          = reinterpret_cast<char*>(&rgb_data);
+                    writePackage(pkg);
+                    completeObjectState.obj_states[i].lightStates_ = rgb_data;
+                    break;
+                }
             }
         }
     }

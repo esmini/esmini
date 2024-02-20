@@ -274,12 +274,11 @@ namespace datLogger
             }
         }
 
-        bool   isFirstEntry    = true;
-        bool   notFirstEnd     = false;
-        bool   TimePkgAdded    = false;
-        bool   ObjIdPkgAdded   = false;
-        bool   isFirstLightPkg = true;
-        double simTimeTemp     = SMALL_NUMBER;
+        bool   isFirstEntry  = true;
+        bool   notFirstEnd   = false;
+        bool   TimePkgAdded  = false;
+        bool   ObjIdPkgAdded = false;
+        double simTimeTemp   = SMALL_NUMBER;
 
         CompleteObjectState     completeObjectState;
         std::vector<ObjIdAdded> objIdAdded_;

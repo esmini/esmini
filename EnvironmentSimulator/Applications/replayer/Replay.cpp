@@ -547,23 +547,20 @@ int Replay::RecordPkgs(const std::string& fileName)
 
                 cmnPkg.content = reinterpret_cast<char*>(lightState);
                 pkgs_.push_back(cmnPkg);
+
                 if (perviouslightState != nullptr && !show_lights)
                 {
-                    if (!IsEqualLightRgb(perviouslightState->day_time_running_lights, lightState->day_time_running_lights) ||
-                        !IsEqualLightRgb(perviouslightState->low_beam, lightState->low_beam) ||
-                        !IsEqualLightRgb(perviouslightState->high_beam, lightState->high_beam) ||
-                        !IsEqualLightRgb(perviouslightState->fog_lights_front, lightState->fog_lights_front) ||
-                        !IsEqualLightRgb(perviouslightState->fog_lights_rear, lightState->fog_lights_rear) ||
-                        !IsEqualLightRgb(perviouslightState->brake_lights, lightState->brake_lights) ||
-                        !IsEqualLightRgb(perviouslightState->indicator_left, lightState->indicator_left) ||
-                        !IsEqualLightRgb(perviouslightState->indicator_right, lightState->indicator_right) ||
-                        !IsEqualLightRgb(perviouslightState->reversing_lights, lightState->reversing_lights) ||
-                        !IsEqualLightRgb(perviouslightState->license_plater_illumination, lightState->license_plater_illumination) ||
-                        !IsEqualLightRgb(perviouslightState->special_purpose_lights, lightState->special_purpose_lights) ||
-                        !IsEqualLightRgb(perviouslightState->fog_lights, lightState->fog_lights) ||
-                        !IsEqualLightRgb(perviouslightState->warning_lights, lightState->warning_lights))
+                    const size_t numLights = sizeof(lightState) / sizeof(datLogger::LightRGB);
+                    for (size_t i = 0; i < numLights; ++i)
                     {
-                        show_lights = true;
+                        datLogger::LightRGB* lightNew = reinterpret_cast<datLogger::LightRGB*>(&lightState) + i;
+                        datLogger::LightRGB* lightOld = reinterpret_cast<datLogger::LightRGB*>(&perviouslightState) + i;
+                        if (lightNew->red != lightOld->red || lightNew->green != lightOld->green || lightNew->blue != lightOld->blue ||
+                            lightNew->intensity != lightOld->intensity)
+                        {
+                            show_lights = true;
+                            break;
+                        }
                     }
                 }
                 perviouslightState = lightState;
@@ -1454,7 +1451,7 @@ void Replay::GetRgbValues(int obj_id, Object::VehicleLightActionStatus* vehicleL
     for (size_t i = 0; i < numLights; ++i)
     {
         datLogger::LightRGB* light         = reinterpret_cast<datLogger::LightRGB*>(&lightState_) + i;
-        datLogger::LightRGB* default_light = reinterpret_cast<datLogger::LightRGB*>(defaultLightState) + i;
+        datLogger::LightRGB* default_light = reinterpret_cast<datLogger::LightRGB*>(&defaultLightState) + i;
         if (light->red != default_light->red || light->green != default_light->green || light->blue != default_light->blue ||
             light->intensity != default_light->intensity)
         {
