@@ -157,6 +157,7 @@ static void copyStateFromScenarioGateway(SE_ScenarioObjectState *state, ObjectSt
     state->objectCategory = gw_state->info.obj_category;
     state->wheel_angle    = static_cast<float>(gw_state->info.wheel_angle);
     state->wheel_rot      = static_cast<float>(gw_state->info.wheel_rot);
+    state->visibilityMask = gw_state->info.visibilityMask;
 }
 
 static int getObjectById(int object_id, Object *&obj)
