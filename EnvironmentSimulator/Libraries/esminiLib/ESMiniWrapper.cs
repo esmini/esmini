@@ -52,6 +52,7 @@ namespace ESMini
         public int objectCategory; // Sub category within type, according to entities.hpp / Vehicle, Pedestrian, MiscObject / Category
         public float wheel_angle;
         public float wheel_rotation;
+        public int visibilityMask;  // bitmask according to Object::Visibility (1 = Graphics, 2 = Traffic, 4 = Sensors)
     };
 
     [StructLayout(LayoutKind.Sequential)]

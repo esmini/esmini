@@ -49,6 +49,7 @@ typedef struct
     int   objectCategory;  // Sub category within type, according to entities.hpp / Vehicle, Pedestrian, MiscObject / Category
     float wheel_angle;     // Steering angle of the wheel
     float wheel_rot;       // Rotation angle of the wheel
+    int   visibilityMask;  // bitmask according to Object::Visibility (1 = Graphics, 2 = Traffic, 4 = Sensors)
 } SE_ScenarioObjectState;
 
 // asciidoc tag::SE_RoadInfo_struct[]
