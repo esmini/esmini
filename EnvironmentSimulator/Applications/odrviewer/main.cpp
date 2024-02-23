@@ -34,7 +34,6 @@
 #define ROAD_MIN_LENGTH 30.0
 #define SIGN(X)         ((X < 0) ? -1 : 1)
 
-static bool         run_only_once       = false;
 static const double stepSize            = 0.01;
 static const double maxStepSize         = 0.1;
 static const double minStepSize         = 0.01;
@@ -44,6 +43,7 @@ static double       global_speed_factor = 1.0;
 static int          first_car_in_focus  = -1;
 static double       fixed_timestep      = -1.0;
 static bool         stop_at_end_of_road = false;
+static double       duration            = -1.0;
 
 static struct
 {
@@ -389,6 +389,7 @@ int main(int argc, char **argv)
     opt.AddOption("disable_log", "Prevent logfile from being created");
     opt.AddOption("disable_off_screen", "Disable esmini off-screen rendering, revert to OSG viewer default handling");
     opt.AddOption("disable_stdout", "Prevent messages to stdout");
+    opt.AddOption("duration", "Quit automatically after specified time (seconds, floating point)", "duration");
     opt.AddOption("fixed_timestep", "Run simulation decoupled from realtime, with specified timesteps", "timestep");
     opt.AddOption("generate_no_road_objects", "Do not generate any OpenDRIVE road objects (e.g. when part of referred 3D model)");
     opt.AddOption("ground_plane", "Add a large flat ground surface");
@@ -513,6 +514,11 @@ int main(int argc, char **argv)
             rule = roadmanager::Road::RoadRule::RIGHT_HAND_TRAFFIC;
             LOG("Enforce right hand traffic");
         }
+    }
+
+    if (opt.GetOptionArg("duration") != "")
+    {
+        duration = strtod(opt.GetOptionArg("duration"));
     }
 
     roadmanager::Position *lane_pos  = new roadmanager::Position();
@@ -662,12 +668,23 @@ int main(int argc, char **argv)
         }
         LOG("%d cars added", static_cast<int>(cars.size()));
 
-        __int64 now, lastTimeStamp = 0;
+        __int64 now            = 0;
+        __int64 lastTimeStamp  = 0;
+        __int64 firstTimeStamp = 0;
 
-        static bool first_time = true;
+        static bool first_time  = true;
+        double      system_time = 0.0;
 
         while (!viewer->osgViewer_->done())
         {
+            now = SE_getSystemTime();
+            if (first_time)
+            {
+                firstTimeStamp = now;
+                lastTimeStamp  = now;
+            }
+            system_time = static_cast<double>(now - firstTimeStamp) / 1000.0;  // system time time in seconds
+
             if (run_state.step || !run_state.pause)
             {
                 if (fixed_timestep > 0)
@@ -677,10 +694,8 @@ int main(int argc, char **argv)
                 else
                 {
                     // Get milliseconds since Jan 1 1970
-                    now           = SE_getSystemTime();
-                    deltaSimTime  = static_cast<double>(now - lastTimeStamp) / 1000.0;  // step size in seconds
-                    lastTimeStamp = now;
-                    if (deltaSimTime > maxStepSize)  // limit step size
+                    deltaSimTime = static_cast<double>(now - lastTimeStamp) / 1000.0;  // step size in seconds
+                    if (deltaSimTime > maxStepSize)                                    // limit step size
                     {
                         deltaSimTime = maxStepSize;
                     }
@@ -691,13 +706,12 @@ int main(int argc, char **argv)
                     }
                 }
 
-                if (!(run_only_once && !first_time))
+                if (!first_time)
                 {
                     for (size_t i = 0; i < cars.size(); i++)
                     {
                         updateCar(odrManager, cars[i], deltaSimTime);
                     }
-                    first_time = false;
                 }
 
                 // Set info text
@@ -725,6 +739,15 @@ int main(int argc, char **argv)
 
             // Step the simulation
             viewer->osgViewer_->frame();
+
+            if (duration > -SMALL_NUMBER && system_time > duration - SMALL_NUMBER)
+            {
+                printf("Stop after %.2f seconds\n", system_time);
+                break;
+            }
+
+            lastTimeStamp = now;
+            first_time    = false;
         }
         delete viewer;
     }

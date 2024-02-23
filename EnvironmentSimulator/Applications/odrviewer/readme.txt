@@ -28,6 +28,8 @@ Options:
       Disable esmini off-screen rendering, revert to OSG viewer default handling
   --disable_stdout
       Prevent messages to stdout
+  --duration <duration>
+      Quit automatically after specified time (seconds, floating point)
   --fixed_timestep <timestep>
       Run simulation decoupled from realtime, with specified timesteps
   --generate_no_road_objects
@@ -40,6 +42,8 @@ Options:
       logfile path/filename, e.g. "../esmini.log" (default: log.txt)
   --model <model_filename>
       3D Model filename
+  --osg_screenshot_event_handler
+      Revert to OSG default jpg images ('c'/'C' keys handler)
   --osi_lines
       Show OSI road lines (toggle during simulation by press 'u')
   --osi_points
