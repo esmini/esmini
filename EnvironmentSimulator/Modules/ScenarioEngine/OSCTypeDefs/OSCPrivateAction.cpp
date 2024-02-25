@@ -170,28 +170,33 @@ double OSCPrivateAction::TransitionDynamics::EvaluateScaledPrim()
     return EvaluatePrim() / AVOID_ZERO(scale_factor_);
 }
 
-double OSCPrivateAction::TransitionDynamics::Evaluate()
+double OSCPrivateAction::TransitionDynamics::Evaluate(DynamicsShape shape)
 {
-    if (shape_ == DynamicsShape::STEP)
+    if (shape == DynamicsShape::SHAPE_UNDEFINED)
+    {
+        shape = shape_;
+    }
+
+    if (shape == DynamicsShape::STEP)
     {
         return GetTargetVal();
     }
-    else if (shape_ == DynamicsShape::LINEAR)
+    else if (shape == DynamicsShape::LINEAR)
     {
         return GetStartVal() + GetParamVal() * (GetTargetVal() - GetStartVal()) / (AVOID_ZERO(GetParamTargetVal()));
     }
-    else if (shape_ == DynamicsShape::SINUSOIDAL)
+    else if (shape == DynamicsShape::SINUSOIDAL)
     {
         return GetStartVal() - (GetTargetVal() - GetStartVal()) * (cos(M_PI * GetParamVal() / AVOID_ZERO(GetParamTargetVal())) - 1) / 2;
     }
-    else if (shape_ == DynamicsShape::CUBIC)
+    else if (shape == DynamicsShape::CUBIC)
     {
         return GetStartVal() + (GetTargetVal() - GetStartVal()) * pow(GetParamVal() / AVOID_ZERO(GetParamTargetVal()), 2) *
                                    (3 - 2 * GetParamVal() / AVOID_ZERO(GetParamTargetVal()));
     }
     else
     {
-        LOG("Invalid Dynamics shape: %d", shape_);
+        LOG("Invalid Dynamics shape: %d", shape);
     }
 
     return GetTargetVal();
@@ -601,7 +606,6 @@ void LatLaneChangeAction::Start(double simTime)
 void LatLaneChangeAction::Step(double simTime, double dt)
 {
     double offset_agnostic = internal_pos_.GetOffset() * SIGN(internal_pos_.GetLaneId());
-    double angle           = 0;
 
     if (object_->GetControllerMode() == Controller::Mode::MODE_OVERRIDE && object_->IsControllerActiveOnDomains(ControlDomains::DOMAIN_LAT))
     {
@@ -623,20 +627,46 @@ void LatLaneChangeAction::Step(double simTime, double dt)
         return;
     }
 
-    if (transition_.dimension_ == DynamicsDimension::DISTANCE)
+    double rate       = transition_.EvaluateScaledPrim();
+    double step_len   = fabs(object_->speed_) * dt;  // travel distance total
+    double delta_long = 0.0;
+    if (transition_.dimension_ == DynamicsDimension::TIME || transition_.dimension_ == DynamicsDimension::RATE)
     {
-        transition_.Step(dt * object_->GetSpeed());
+        // ds^2 = steplen^2 - dt^2
+        double delta_lat = dt * fabs(rate);
+        delta_long       = sqrt(pow(step_len, 2.0) - pow(MIN(delta_lat, step_len), 2.0));
+
+        if (delta_lat < step_len + SMALL_NUMBER)
+        {
+            // requested delta lateral motion is less than total step length
+            transition_.Step(dt);
+            offset_agnostic   = transition_.Evaluate();
+            heading_agnostic_ = GetAngleInInterval2PI(atan2(SIGN(object_->speed_) * SIGN(rate) * delta_lat, delta_long));
+        }
+        else
+        {
+            // requested lateral motion too large wrt speed, skip long motion and limit lateral one
+            // fall back to linear interpolation
+            transition_.Step(step_len * transition_.GetParamTargetVal() / abs(transition_.GetTargetVal() - transition_.GetStartVal()));
+            if (!NEAR_NUMBERS(heading_agnostic_, SIGN(object_->speed_) * (M_PI_2 - SMALL_NUMBER)) && transition_.shape_ != DynamicsShape::LINEAR)
+            {
+                LOG("LatLaneChangeAction: Limiting lateral motion and falling back to linear interpolation");
+            }
+            offset_agnostic   = transition_.Evaluate(DynamicsShape::LINEAR);
+            heading_agnostic_ = SIGN(object_->speed_) * SIGN(rate) * (M_PI_2 - SMALL_NUMBER);  // avoid ambiguous driving direction
+        }
+    }
+    else if (transition_.dimension_ == DynamicsDimension::DISTANCE)
+    {
+        delta_long = sqrt(pow(step_len, 2.0) / (1.0 + pow(rate, 2.0)));
+        transition_.Step(delta_long);
+        offset_agnostic   = transition_.Evaluate();
+        heading_agnostic_ = atan(rate);  // heading for the step movement
     }
     else
     {
-        transition_.Step(dt);
+        LOG("Unexpected, unsupported transition dimension: %d", transition_.dimension_);
     }
-
-    // Add a constraint that lateral speed may not exceed longitudinal
-    transition_.SetMaxRate(object_->GetSpeed());
-    offset_agnostic   = transition_.Evaluate();
-    double rate       = transition_.EvaluateScaledPrim();
-    double old_offset = internal_pos_.GetOffset();
 
     // Restore position to target lane and new offset
     object_->pos_.SetLanePos(internal_pos_.GetTrackId(),
@@ -644,20 +674,13 @@ void LatLaneChangeAction::Step(double simTime, double dt)
                              internal_pos_.GetS(),
                              offset_agnostic * SIGN(internal_pos_.GetLaneId()));
 
-    double dist   = object_->speed_ * dt;  // travel distance total
-    double d_long = 0.0;
-    if (transition_.shape_ != DynamicsShape::STEP)
-    {
-        // Update longitudinal position, considering absolute speed and lateral speed component
-        double d_lat = object_->pos_.GetOffset() - old_offset;                                // travel distance lateral component
-        d_long       = SIGN(object_->speed_) * sqrt(MAX(0.0, pow(dist, 2) - pow(d_lat, 2)));  // travel distance longitudinal component
-    }
-    else
+    if (transition_.shape_ == DynamicsShape::STEP)
     {
         // not for step shape, since it is not a continuous function. Maintain longitudinal motion
-        d_long = dist;
+        delta_long = step_len;
     }
-    double ds = object_->pos_.DistanceToDS(d_long);  // find correspondning delta s along road reference line
+
+    double ds = object_->pos_.DistanceToDS(SIGN(object_->speed_) * delta_long);  // find correspondning delta s along road reference line
 
     roadmanager::Position::ReturnCode retval = roadmanager::Position::ReturnCode::OK;
     retval = object_->pos_.MoveAlongS(ds, 0.0, -1.0, false, roadmanager::Position::MoveDirectionMode::HEADING_DIRECTION, true);
@@ -688,17 +711,8 @@ void LatLaneChangeAction::Step(double simTime, double dt)
     }
     else
     {
-        if (transition_.dimension_ == DynamicsDimension::DISTANCE)
-        {
-            angle = atan(rate);
-        }
-        else
-        {
-            // Convert rate (lateral-movment/time) to lateral-movement/long-movement
-            angle = atan(rate / AVOID_ZERO(object_->GetSpeed()));
-        }
         object_->pos_.SetHeadingRelativeRoadDirection((IsAngleForward(object_->pos_.GetHRelative()) ? 1 : -1) * SIGN(object_->pos_.GetLaneId()) *
-                                                      angle);
+                                                      heading_agnostic_);
     }
     object_->pos_.EvaluateZHPR(object_->pos_.GetMode(roadmanager::Position::PosModeType::UPDATE));
 

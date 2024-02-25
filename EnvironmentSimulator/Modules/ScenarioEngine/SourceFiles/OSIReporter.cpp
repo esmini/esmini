@@ -915,7 +915,7 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState *objectState)
         obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_wheel_data(i)->mutable_orientation()->set_pitch(
             objectState->state_.info.wheel_rot);
         obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_wheel_data(i)->set_friction_coefficient(objectState->state_.info.friction[i]);
-        obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_wheel_data(i)->set_index(i % 2);
+        obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_wheel_data(i)->set_index(static_cast<unsigned int>(i) % 2);
 
         if (i < static_cast<int>(n_wheels / 2))
         {

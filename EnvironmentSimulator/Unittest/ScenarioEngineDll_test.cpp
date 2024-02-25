@@ -2760,7 +2760,7 @@ TEST(ParameterTest, SetParameterValuesBeforeInit)
 {
     double positions[3][2] = {
         {5.34382, 186.68216},  // TargetSpeedFactor = 1.1
-        {8.83780, 240.59726},  // TargetSpeedFactor = 1.5
+        {8.83781, 240.59825},  // TargetSpeedFactor = 1.5
         {5.46731, 201.38162}   // TargetSpeedFactor = Default = 1.2
     };
     SE_ScenarioObjectState state;
@@ -3084,14 +3084,14 @@ TEST(ExternalController, TestExternalDriver)
                         SE_RoadInfo road_info2;
                         SE_GetRoadInfoGhostTrailTime(0, SE_GetSimulationTime(), &road_info2, &speed2);
                         EXPECT_NEAR(road_info2.global_pos_x, 206.716, 1e-3);
-                        EXPECT_NEAR(road_info2.global_pos_y, 92.448, 1e-3);
+                        EXPECT_NEAR(road_info2.global_pos_y, 92.447, 1e-3);
                     }
                 }
                 else if (abs(SE_GetSimulationTime() - 30.0f) < static_cast<float>(SMALL_NUMBER))
                 {
                     SE_GetObjectState(0, &objectState);
-                    EXPECT_NEAR(objectState.x, 382.111, 1e-3);
-                    EXPECT_NEAR(objectState.y, 301.634, 1e-3);
+                    EXPECT_NEAR(objectState.x, 382.113, 1e-3);
+                    EXPECT_NEAR(objectState.y, 301.632, 1e-3);
                     EXPECT_NEAR(objectState.h, 5.272, 1e-3);
                     EXPECT_NEAR(objectState.p, 0.025, 1e-3);
                     if (ghostMode[i] == true)
@@ -3118,7 +3118,7 @@ TEST(ExternalController, TestExternalDriver)
                     {
                         SE_GetRoadInfoGhostTrailTime(0, SE_GetSimulationTime(), &road_info2, &speed3);
                         EXPECT_NEAR(road_info2.global_pos_x, 206.716, 1e-3);
-                        EXPECT_NEAR(road_info2.global_pos_y, 92.448, 1e-3);
+                        EXPECT_NEAR(road_info2.global_pos_y, 92.447, 1e-3);
                     }
                 }
                 else if (abs(SE_GetSimulationTime() - 30.0f) < static_cast<float>(SMALL_NUMBER))
@@ -3807,7 +3807,7 @@ TEST(ReplayTest, TestMultiReplayDifferentTimeSteps)
         if (k == 0)
         {
             EXPECT_NEAR(replay->data_[2012].state.pos.y, 130.994, 1E-3);
-            EXPECT_NEAR(replay->data_[2015].state.pos.y, 207.387, 1E-3);
+            EXPECT_NEAR(replay->data_[2015].state.pos.y, 207.392, 1E-3);
             EXPECT_NEAR(replay->data_[5965].state.info.timeStamp, 19.51, 1E-3);
             EXPECT_NEAR(replay->data_[5965].state.info.id, 1, 1E-3);
         }

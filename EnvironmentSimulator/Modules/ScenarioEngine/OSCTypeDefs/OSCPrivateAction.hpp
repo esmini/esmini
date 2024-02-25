@@ -112,7 +112,7 @@ namespace scenarioengine
             }
             void Reset();
 
-            double Evaluate();  // 0 = start_value, 1 = end_value
+            double Evaluate(DynamicsShape shape = DynamicsShape::SHAPE_UNDEFINED);  // 0 = start_value, 1 = end_value
             double EvaluatePrim();
             double EvaluateScaledPrim();
             double EvaluatePrimPeak();
@@ -575,7 +575,8 @@ namespace scenarioengine
             : OSCPrivateAction(OSCPrivateAction::ActionType::LAT_LANE_CHANGE, parent, ControlDomains::DOMAIN_LAT),
               target_(0),
               target_lane_offset_(0.0),
-              start_offset_(0.0)
+              start_offset_(0.0),
+              heading_agnostic_(0.0)
         {
             transition_.dimension_ = timing_type;
         }
@@ -585,7 +586,8 @@ namespace scenarioengine
               target_(action.target_),
               transition_(action.transition_),
               target_lane_offset_(action.target_lane_offset_),
-              start_offset_(action.start_offset_)
+              start_offset_(action.start_offset_),
+              heading_agnostic_(action.heading_agnostic_)
         {
             SetName(action.GetName());
         }
@@ -609,6 +611,7 @@ namespace scenarioengine
     private:
         double                start_offset_;
         roadmanager::Position internal_pos_;  // Internal position representation
+        double                heading_agnostic_;
     };
 
     class LatLaneOffsetAction : public OSCPrivateAction
