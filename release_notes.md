@@ -1,5 +1,31 @@
 ## esmini release notes
 
+### 2024-02-26 Version 2.37.0
+
+New features:
+- Add friction support
+  - support OpenDRIVE lane material friction
+  - populate OSI wheel data ([issue #527](https://github.com/esmini/esmini/issues/527))
+  - visualize low friction as blue, high as red
+  - see brief info in [User guide - Friction](https://esmini.github.io/#_friction)
+- Add duration option (`--duration <time>`) in odrviewer
+  - play for specified duration
+  - `--duration 0` will quit immediately after one frame
+- Flag to skip create signs when external scene-graph is loaded ([issue #530](https://github.com/esmini/esmini/issues/530))
+  - always create wire-frame sign bounding boxes (toggle 'O')
+  - skip load or create sign model when external scene-graph loaded and flag set
+
+Improvements and fixes:
+- New method for controller initialization after player (and viewer) init
+  - enables e.g. adding sensors to objects from controller ([issue #532](https://github.com/esmini/esmini/issues/532))
+  - see example in [ControllerACC.cpp](https://github.com/esmini/esmini/blob/1bed88b588f77ce230128ccb05554c1453b99382/EnvironmentSimulator/Modules/Controllers/ControllerACC.cpp#L70-L74) (enable line 73, and press 'r' to see frustum)
+- Expose visibilityMask in esmini lib ([issue #535](https://github.com/esmini/esmini/issues/535))
+- Improve LaneChangeAction and fix edge case
+  - fix slightly wrong heading calculation
+  - ensure total speed (lat + long) is maintained
+  - handle edge case of requested lateral movement exceeding speed
+  - support only lateral speed component (edge case above)
+
 ### 2024-02-10 Version 2.36.5
 
 New features:
@@ -15,7 +41,7 @@ New behaviors:
 - Fix OSI stationary object ids, now start at 1 and not 0 (which is reserved for undefined)
 
 Improvements and fixes:
-- Fix issue in calculation of relative orientation components #496
+- Fix issue in calculation of relative orientation components ([issue #496](https://github.com/esmini/esmini/issues/496))
 - Add position conversion code example ([convert_position_type](https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/code-examples/convert_position_type))
   - shows ways to print or convert world positions (x,y) to road coordinates
   - [manipulate_positions.py](https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/code-examples/convert_position_type/manipulate_positions.py) makes trajectories portable wrt road characteristics
