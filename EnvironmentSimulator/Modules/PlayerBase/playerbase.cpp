@@ -1323,10 +1323,13 @@ int ScenarioPlayer::Init()
     opt.AddOption("server", "Launch server to receive state of external Ego simulator");
     opt.AddOption("threads", "Run viewer in a separate thread, parallel to scenario engine");
     opt.AddOption("trail_mode", "Show trail lines and/or dots (toggle key 'j') mode 0=None 1=lines 2=dots 3=both", "mode");
+    opt.AddOption("use_signs_from_external_model", "When external scenegraph 3D model is loaded, skip creating signs from OpenDRIVE");
     opt.AddOption("version", "Show version and quit");
 
     exe_path_ = argv_[0];
     SE_Env::Inst().AddPath(DirNameOf(exe_path_));  // Add location of exe file to search paths
+
+    SE_Env::Inst().SetUseExternalSigns(false);
 
     if (opt.ParseArgs(argc_, argv_) != 0)
     {
@@ -1349,6 +1352,12 @@ int ScenarioPlayer::Init()
     if (opt.GetOptionSet("disable_stdout"))
     {
         Logger::Inst().SetCallback(0);
+    }
+
+    if (opt.GetOptionSet("use_signs_from_external_model"))
+    {
+        LOG("Use sign models in external scene graph model, skip creating sign models");
+        SE_Env::Inst().SetUseExternalSigns(true);
     }
 
     OSCParameterDistribution& dist = OSCParameterDistribution::Inst();

@@ -1578,6 +1578,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     winDim_                       = {-1, -1, -1, -1};
     bool decoration               = true;
     int  screenNum                = -1;
+    stand_in_model_               = false;
 
     int aa_mode = DEFAULT_AA_MULTISAMPLES;
     if (opt && (arg_str = opt->GetOptionArg("aa_mode")) != "")
@@ -1743,8 +1744,9 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
         }
     }
 
-    if (environment_ == 0 || opt->GetOptionSet("enforce_generate_model"))
+    if (environment_ == nullptr || opt->GetOptionSet("enforce_generate_model"))
     {
+        stand_in_model_ = true;
         if (odrManager->GetNumOfRoads() > 0)
         {
             // No visual model of the road network loaded
@@ -3050,29 +3052,11 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
     for (int r = 0; r < od->GetNumOfRoads(); r++)
     {
         roadmanager::Road* road = od->GetRoadByIdx(r);
+
         for (size_t s = 0; s < static_cast<unsigned int>(road->GetNumberOfSignals()); s++)
         {
             tx                          = nullptr;
             roadmanager::Signal* signal = road->GetSignal(static_cast<int>(s));
-
-            // Road sign filename is the combination of type_subtype_value
-            std::string filename = signal->GetCountry() + "_" + signal->GetType();
-            if (!(signal->GetSubType().empty() || signal->GetSubType() == "none" || signal->GetSubType() == "-1"))
-            {
-                filename += "_" + signal->GetSubType();
-            }
-
-            if (!signal->GetValueStr().empty())
-            {
-                filename += "-" + signal->GetValueStr();
-            }
-            tx = LoadRoadFeature(road, filename + ".osgb");
-
-            if (tx == nullptr)
-            {
-                // if file according to type, subtype and value could not be resolved, try from name
-                tx = LoadRoadFeature(road, signal->GetName() + ".osgb");
-            }
 
             // create a bounding for the sign
             osg::ref_ptr<osg::PositionAttitudeTransform> tx_bb = new osg::PositionAttitudeTransform;
@@ -3086,30 +3070,59 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
 
             shape->setColor(osg::Vec4(0.8f, 0.8f, 0.8f, 1.0f));
             tx_bb->addChild(shape);
-
             tx_bb->setPosition(osg::Vec3(static_cast<float>(signal->GetX()),
                                          static_cast<float>(signal->GetY()),
                                          static_cast<float>(signal->GetZ() + signal->GetZOffset())));
             tx_bb->setAttitude(osg::Quat(signal->GetH() + signal->GetHOffset(), osg::Vec3(0, 0, 1)));
 
-            if (tx == nullptr)
+            if (stand_in_model_ == true || !SE_Env::Inst().GetUseExternalSigns())
             {
-                LOG("Failed to load signal %s / %s - use simple bounding box", (filename + ".osgb").c_str(), (signal->GetName() + ".osgb").c_str());
-            }
-            else
-            {
-                tx->setPosition(osg::Vec3(static_cast<float>(signal->GetX()),
-                                          static_cast<float>(signal->GetY()),
-                                          static_cast<float>(signal->GetZ() + signal->GetZOffset())));
-                tx->setAttitude(osg::Quat(signal->GetH() + signal->GetHOffset(), osg::Vec3(0, 0, 1)));
-                objGroup->addChild(tx);
+                // Road sign filename is the combination of type_subtype_value
+                std::string filename = signal->GetCountry() + "_" + signal->GetType();
+                if (!(signal->GetSubType().empty() || signal->GetSubType() == "none" || signal->GetSubType() == "-1"))
+                {
+                    filename += "_" + signal->GetSubType();
+                }
 
-                // In this case, where a 3D model exists, set bounding box to wireframe mode
-                osg::PolygonMode* polygonMode = new osg::PolygonMode;
-                polygonMode->setMode(osg::PolygonMode::FRONT_AND_BACK, osg::PolygonMode::LINE);
-                shape->getOrCreateStateSet()->setAttributeAndModes(polygonMode, osg::StateAttribute::OVERRIDE | osg::StateAttribute::ON);
-                tx_bb->setNodeMask(NODE_MASK_SIGN_BB);
+                if (!signal->GetValueStr().empty())
+                {
+                    filename += "-" + signal->GetValueStr();
+                }
+                tx = LoadRoadFeature(road, filename + ".osgb");
+
+                if (tx == nullptr)
+                {
+                    // if file according to type, subtype and value could not be resolved, try from name
+                    tx = LoadRoadFeature(road, signal->GetName() + ".osgb");
+                }
+
+                if (tx != nullptr)
+                {
+                    tx->setPosition(osg::Vec3(static_cast<float>(signal->GetX()),
+                                              static_cast<float>(signal->GetY()),
+                                              static_cast<float>(signal->GetZ() + signal->GetZOffset())));
+                    tx->setAttitude(osg::Quat(signal->GetH() + signal->GetHOffset(), osg::Vec3(0, 0, 1)));
+                    tx->setNodeMask(NODE_MASK_SIGN);
+                    objGroup->addChild(tx);
+                }
+                else
+                {
+                    LOG("Failed to load signal %s / %s - use simple bounding box",
+                        (filename + ".osgb").c_str(),
+                        (signal->GetName() + ".osgb").c_str());
+                    osg::ref_ptr<osg::PositionAttitudeTransform> obj_standin =
+                        dynamic_cast<osg::PositionAttitudeTransform*>(tx_bb->clone(osg::CopyOp::DEEP_COPY_ALL));
+                    obj_standin->setNodeMask(NODE_MASK_SIGN);
+                    objGroup->addChild(obj_standin);
+                }
             }
+
+            // set bounding box to wireframe mode
+            osg::PolygonMode* polygonMode = new osg::PolygonMode;
+            polygonMode->setMode(osg::PolygonMode::FRONT_AND_BACK, osg::PolygonMode::LINE);
+            shape->getOrCreateStateSet()->setAttributeAndModes(polygonMode, osg::StateAttribute::OVERRIDE | osg::StateAttribute::ON);
+            tx_bb->setNodeMask(NODE_MASK_SIGN_BB);
+
             objGroup->addChild(tx_bb);
         }
 

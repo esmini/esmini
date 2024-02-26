@@ -64,7 +64,8 @@ namespace viewer
         NODE_MASK_ROAD_SENSORS     = (1 << 11),
         NODE_MASK_TRAJECTORY_LINES = (1 << 12),
         NODE_MASK_ROUTE_WAYPOINTS  = (1 << 13),
-        NODE_MASK_SIGN_BB          = (1 << 14),
+        NODE_MASK_SIGN             = (1 << 14),
+        NODE_MASK_SIGN_BB          = (1 << 15),
     } NodeMask;
 
     osg::Vec4 ODR2OSGColor(roadmanager::RoadMarkColor color);
@@ -656,6 +657,7 @@ namespace viewer
         bool                                  osg_screenshot_event_handler_;
         osg::ref_ptr<FetchImage>              fetch_image_;
         osgViewer::ViewerBase::ThreadingModel initialThreadingModel_;
+        bool                                  stand_in_model_;
 
         struct
         {

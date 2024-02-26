@@ -62,6 +62,8 @@ Options:
       Instead of respawning elsewhere, stop when no connection exists
   --traffic_rule <rule (right/left)>
       Enforce left or right hand traffic, regardless OpenDRIVE rule attribute (default: right)
+  --use_signs_from_external_model
+      When external scenegraph 3D model is loaded, skip creating signs from OpenDRIVE
   --version
       Show version and quit
 

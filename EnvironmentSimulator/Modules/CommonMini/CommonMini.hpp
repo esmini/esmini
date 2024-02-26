@@ -1143,7 +1143,8 @@ public:
           collisionDetection_(false),
           saveImagesToRAM_(false),
           ghost_mode_(GhostMode::NORMAL),
-          ghost_headstart_(0.0)
+          ghost_headstart_(0.0),
+          use_external_signs_(false)
     {
     }
 
@@ -1285,6 +1286,16 @@ public:
         ghost_headstart_ = headstart_time;
     }
 
+    bool GetUseExternalSigns()
+    {
+        return use_external_signs_;
+    }
+
+    void SetUseExternalSigns(bool state)
+    {
+        use_external_signs_ = state;
+    }
+
 private:
     std::vector<std::string>   paths_;
     double                     osiMaxLongitudinalDistance_;
@@ -1300,6 +1311,7 @@ private:
     std::map<int, std::string> entity_model_map_;
     GhostMode                  ghost_mode_;
     double                     ghost_headstart_;
+    bool                       use_external_signs_;
 };
 
 /**
