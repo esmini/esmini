@@ -1163,6 +1163,21 @@ When FollowMode is `position` esmini will:
 . For world coordinates, apply whatever heading is specified in the vertices (note that 0.0 is default). Lane and road coordinates will align to road direction as default.
 . For each segment, calculate constant speed needed to reach next vertex on time. This approach results in a discontinuous speed profile.
 
+=== Friction
+
+From v2.37.0 esmini supports road friction defined in https://publications.pages.asam.net/standards/ASAM_OpenDRIVE/ASAM_OpenDRIVE_Specification/latest/specification/11_lanes/11_07_lane_properties.html#sec-8345bf25-d584-4a5b-8fa7-e15c920ab219[OpenDRIVE lane material].
+
+Each lane within a lane section can have one or multiple segments of individual friction values, specified by s-value and friction coefficient.
+
+Default friction coefficient is 1.0 as of v2.37.0, but might change in later versions. Lower friction (<1.0, slippery) will be visualized as bluish color. The lower friction the more blue color. High friction values (>1.0,  "grippy")
+
+The friction is calculated per wheel. The values are reported in OSI ground-truth.
+
+Example road: https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Unittest/xodr/straight_highway_500m.xodr[straight_highway_500m.xodr] (used by test scenario https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Unittest/xosc/friction_and_lane_change_edge_case.xosc[friction_and_lane_change_edge_case.xosc])
+
+.Road with various friction segments, coefficient evaluated per wheel
+image::friction.jpg[]
+
 == Positioning
 
 esmini supports all OpenSCENARIO position types. To support various use cases esmini add some mechanisms and interpretations:
