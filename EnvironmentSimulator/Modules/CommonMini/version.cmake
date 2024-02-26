@@ -33,6 +33,9 @@ else()
                 "${GIT_REV}")
 
     string(
+        STRIP "${GIT_REV}"
+              GIT_REV)
+    string(
         STRIP "${GIT_TAG}"
               GIT_TAG)
     string(
