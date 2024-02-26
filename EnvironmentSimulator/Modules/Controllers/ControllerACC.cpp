@@ -67,6 +67,12 @@ void ControllerACC::Init()
     Controller::Init();
 }
 
+void ControllerACC::InitPostPlayer()
+{
+    // Uncomment line below to enable example how to add sensors. Press 'r' to visualize sensor frustum.
+    // player_->AddObjectSensor(object_, 4.0, 0.0, 0.5, 0.0, 1.0, 50.0, 1.2, 100);
+}
+
 void ControllerACC::Step(double timeStep)
 {
     double minGapLength = LARGE_NUMBER;

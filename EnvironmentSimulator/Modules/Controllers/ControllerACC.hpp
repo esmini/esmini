@@ -44,6 +44,7 @@ namespace scenarioengine
         }
 
         void Init();
+        void InitPostPlayer();
         void Step(double timeStep);
         void Activate(DomainActivation lateral, DomainActivation longitudinal);
         void ReportKeyEvent(int key, bool down);

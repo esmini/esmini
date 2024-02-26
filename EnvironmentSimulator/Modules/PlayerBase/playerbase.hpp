@@ -200,6 +200,8 @@ namespace scenarioengine
             return odr_manager;
         }
 
+        void InitControllersPostPlayer();
+
         CSV_Logger      *CSV_Log;
         ScenarioEngine  *scenarioEngine;
         ScenarioGateway *scenarioGateway;

@@ -131,7 +131,13 @@ namespace scenarioengine
         {
             domain_ = ControlDomains::DOMAIN_NONE;
         };
+
+        // Executed by scenarioengine before first step
         virtual void Init(){};
+
+        // Executed by player after player and viewer intialization
+        virtual void InitPostPlayer(){};
+
         virtual void ReportKeyEvent(int key, bool down);
         virtual void SetScenarioEngine(ScenarioEngine* scenario_engine)
         {

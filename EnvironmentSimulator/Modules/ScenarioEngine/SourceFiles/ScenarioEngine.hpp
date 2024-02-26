@@ -75,7 +75,10 @@ namespace scenarioengine
         void SetupGhost(Object *object);
         void ResetEvents();
         int  DetectCollisions();
-
+        bool GetDisableControllersFlag()
+        {
+            return disable_controllers_;
+        }
         std::string getScenarioFilename()
         {
             return scenarioReader->getScenarioFilename();

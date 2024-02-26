@@ -658,6 +658,22 @@ void ScenarioPlayer::CloseViewer()
     viewerState_ = ScenarioPlayer::ViewerState::VIEWER_STATE_DONE;
 }
 
+void ScenarioPlayer::InitControllersPostPlayer()
+{
+    if (!scenarioEngine->GetDisableControllersFlag())
+    {
+        //  Create relation between controllers and player
+        for (size_t i = 0; i < scenarioEngine->entities_.object_.size(); i++)
+        {
+            if (scenarioEngine->entities_.object_[i]->controller_)
+            {
+                scenarioEngine->entities_.object_[i]->controller_->SetPlayer(this);
+                scenarioEngine->entities_.object_[i]->controller_->InitPostPlayer();
+            }
+        }
+    }
+}
+
 int ScenarioPlayer::InitViewer()
 {
     std::string arg_str;
@@ -957,15 +973,6 @@ int ScenarioPlayer::InitViewer()
         viewer_->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_ENTITY_BB);
     }
 
-    //  Create relation between controllers and player
-    for (size_t i = 0; i < scenarioEngine->entities_.object_.size(); i++)
-    {
-        if (scenarioEngine->entities_.object_[i]->controller_)
-        {
-            scenarioEngine->entities_.object_[i]->controller_->SetPlayer(this);
-        }
-    }
-
     //  Create visual models
     for (size_t i = 0; i < scenarioEngine->entities_.object_.size(); i++)
     {
@@ -1065,6 +1072,8 @@ void viewer_thread(void* args)
     {
         return;
     }
+
+    player->InitControllersPostPlayer();
 
     player->viewer_init_semaphore.Release();
     player->player_init_semaphore.Wait();
@@ -1748,6 +1757,8 @@ int ScenarioPlayer::Init()
                 LOG("Viewer initialization failed");
                 return -1;
             }
+
+            InitControllersPostPlayer();
         }
 
 #else
