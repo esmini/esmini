@@ -894,7 +894,8 @@ void ScenarioEngine::prepareGroundTruth(double dt)
                 friction[j] = info.friction;
 
                 // Uncomment statement below to print some friction values in terminal
-                // printf("wheel %d lane %d offset %.2f x %.2f y %.2f friction %.2f\n",
+                // printf("time %.2f wheel %d lane %d offset %.2f x %.2f y %.2f friction %.2f\n",
+                //       simulationTime_,
                 //       (int)j,
                 //       (int)wp.GetLaneId(),
                 //       wp.GetOffset(),

@@ -2782,6 +2782,229 @@ TEST(StoryboardTest, TestStoryboardElementNaming)
     EXPECT_EQ(elements.size(), 0);
 }
 
+TEST(Friction, TestFrictionPerWheel)
+{
+    ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/friction_and_lane_change_edge_case.xosc");
+    ASSERT_NE(se, nullptr);
+    se->step(0.0);
+    se->prepareGroundTruth(0.0);
+
+    scenarioengine::Entities* entities = &se->entities_;
+    ASSERT_NE(entities, nullptr);
+    ASSERT_EQ(entities->object_.size(), 1);
+
+    ScenarioGateway* gw = se->getScenarioGateway();
+
+    // Check friction per wheel at some key time stamps
+
+    // time = 0.0
+    ObjectStateStruct* state = &gw->objectState_[0]->state_;
+    EXPECT_NEAR(state->info.friction[0], 1.0, 1E-3);
+    EXPECT_NEAR(state->info.friction[1], 1.0, 1E-3);
+    EXPECT_NEAR(state->info.friction[2], 1.0, 1E-3);
+    EXPECT_NEAR(state->info.friction[3], 1.0, 1E-3);
+
+    while (se->getSimulationTime() < 1.8 + SMALL_NUMBER)
+    {
+        se->step(0.1);
+        se->prepareGroundTruth(0.0);
+    }
+    state = &gw->objectState_[0]->state_;
+    EXPECT_NEAR(state->info.friction[0], 1.0, 1E-3);
+    EXPECT_NEAR(state->info.friction[1], 1.0, 1E-3);
+    EXPECT_NEAR(state->info.friction[2], 1.0, 1E-3);
+    EXPECT_NEAR(state->info.friction[3], 1.0, 1E-3);
+
+    while (se->getSimulationTime() < 1.9 + SMALL_NUMBER)
+    {
+        se->step(0.1);
+        se->prepareGroundTruth(0.0);
+    }
+    state = &gw->objectState_[0]->state_;
+    EXPECT_NEAR(state->info.friction[0], 1.0, 1E-3);
+    EXPECT_NEAR(state->info.friction[1], 0.8, 1E-3);
+    EXPECT_NEAR(state->info.friction[2], 1.0, 1E-3);
+    EXPECT_NEAR(state->info.friction[3], 1.0, 1E-3);
+
+    while (se->getSimulationTime() < 3.9 + SMALL_NUMBER)
+    {
+        se->step(0.1);
+        se->prepareGroundTruth(0.0);
+    }
+    state = &gw->objectState_[0]->state_;
+    EXPECT_NEAR(state->info.friction[0], 1.0, 1E-3);
+    EXPECT_NEAR(state->info.friction[1], 1.0, 1E-3);
+    EXPECT_NEAR(state->info.friction[2], 1.0, 1E-3);
+    EXPECT_NEAR(state->info.friction[3], 1.0, 1E-3);
+
+    while (se->getSimulationTime() < 4.0 + SMALL_NUMBER)
+    {
+        se->step(0.1);
+        se->prepareGroundTruth(0.0);
+    }
+    state = &gw->objectState_[0]->state_;
+    EXPECT_NEAR(state->info.friction[0], 1.0, 1E-3);
+    EXPECT_NEAR(state->info.friction[1], 1.0, 1E-3);
+    EXPECT_NEAR(state->info.friction[2], 1.0, 1E-3);
+    EXPECT_NEAR(state->info.friction[3], 0.8, 1E-3);
+
+    while (se->getSimulationTime() < 12.1 + SMALL_NUMBER)
+    {
+        se->step(0.1);
+        se->prepareGroundTruth(0.0);
+    }
+    state = &gw->objectState_[0]->state_;
+    EXPECT_NEAR(state->info.friction[0], 0.4, 1E-3);
+    EXPECT_NEAR(state->info.friction[1], 0.4, 1E-3);
+    EXPECT_NEAR(state->info.friction[2], 1.0, 1E-3);
+    EXPECT_NEAR(state->info.friction[3], 1.0, 1E-3);
+
+    while (se->getSimulationTime() < 13.7 + SMALL_NUMBER)
+    {
+        se->step(0.1);
+        se->prepareGroundTruth(0.0);
+    }
+    state = &gw->objectState_[0]->state_;
+    EXPECT_NEAR(state->info.friction[0], 0.4, 1E-3);
+    EXPECT_NEAR(state->info.friction[1], 0.4, 1E-3);
+    EXPECT_NEAR(state->info.friction[2], 1.0, 1E-3);
+    EXPECT_NEAR(state->info.friction[3], 0.4, 1E-3);
+
+    while (se->getSimulationTime() < 20.0 + SMALL_NUMBER)
+    {
+        se->step(0.1);
+        se->prepareGroundTruth(0.0);
+    }
+    state = &gw->objectState_[0]->state_;
+    EXPECT_NEAR(state->info.friction[0], 1.0, 1E-3);
+    EXPECT_NEAR(state->info.friction[1], 1.0, 1E-3);
+    EXPECT_NEAR(state->info.friction[2], 1.0, 1E-3);
+    EXPECT_NEAR(state->info.friction[3], 1.0, 1E-3);
+
+    delete se;
+}
+
+TEST(LaneChange, TestLaneChangeEdgeCase)
+{
+    ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/friction_and_lane_change_edge_case.xosc");
+    ASSERT_NE(se, nullptr);
+    se->step(0.0);
+    se->prepareGroundTruth(0.0);
+
+    scenarioengine::Entities* entities = &se->entities_;
+    ASSERT_NE(entities, nullptr);
+    ASSERT_EQ(entities->object_.size(), 1);
+
+    ScenarioGateway* gw = se->getScenarioGateway();
+
+    // Check expected position and orientation at some specific time stamps
+    while (se->getSimulationTime() < 21.0 + SMALL_NUMBER)
+    {
+        se->step(0.1);
+        se->prepareGroundTruth(0.0);
+    }
+    ObjectStateStruct* state = &gw->objectState_[0]->state_;
+    EXPECT_NEAR(state->pos.GetX(), 121.059, 1E-3);
+    EXPECT_NEAR(state->pos.GetY(), 5.245, 1E-3);
+    EXPECT_NEAR(state->pos.GetZ(), 0.000, 1E-3);
+    EXPECT_NEAR(state->pos.GetH(), 0.000, 1E-3);
+    EXPECT_NEAR(state->pos.GetP(), 0.000, 1E-3);
+    EXPECT_NEAR(state->pos.GetR(), 0.000, 1E-3);
+
+    while (se->getSimulationTime() < 21.6 + SMALL_NUMBER)
+    {
+        se->step(0.1);
+        se->prepareGroundTruth(0.0);
+    }
+    state = &gw->objectState_[0]->state_;
+    EXPECT_NEAR(state->pos.GetX(), 121.604, 1E-3);
+    EXPECT_NEAR(state->pos.GetY(), 4.992, 1E-3);
+    EXPECT_NEAR(state->pos.GetZ(), 0.000, 1E-3);
+    EXPECT_NEAR(state->pos.GetH(), 5.609, 1E-3);
+    EXPECT_NEAR(state->pos.GetP(), 0.000, 1E-3);
+    EXPECT_NEAR(state->pos.GetR(), 0.000, 1E-3);
+
+    while (se->getSimulationTime() < 22.3 + SMALL_NUMBER)
+    {
+        se->step(0.1);
+        se->prepareGroundTruth(0.0);
+    }
+    state = &gw->objectState_[0]->state_;
+    EXPECT_NEAR(state->pos.GetX(), 121.802, 1E-3);
+    EXPECT_NEAR(state->pos.GetY(), 3.987, 1E-3);
+    EXPECT_NEAR(state->pos.GetZ(), 0.000, 1E-3);
+    EXPECT_NEAR(state->pos.GetH(), 4.712, 1E-3);
+    EXPECT_NEAR(state->pos.GetP(), 0.000, 1E-3);
+    EXPECT_NEAR(state->pos.GetR(), 0.000, 1E-3);
+
+    while (se->getSimulationTime() < 22.3 + SMALL_NUMBER)
+    {
+        se->step(0.1);
+        se->prepareGroundTruth(0.0);
+    }
+    state = &gw->objectState_[0]->state_;
+    EXPECT_NEAR(state->pos.GetX(), 121.802, 1E-3);
+    EXPECT_NEAR(state->pos.GetY(), 3.987, 1E-3);
+    EXPECT_NEAR(state->pos.GetZ(), 0.000, 1E-3);
+    EXPECT_NEAR(state->pos.GetH(), 4.712, 1E-3);
+    EXPECT_NEAR(state->pos.GetP(), 0.000, 1E-3);
+    EXPECT_NEAR(state->pos.GetR(), 0.000, 1E-3);
+
+    while (se->getSimulationTime() < 25.7 + SMALL_NUMBER)
+    {
+        se->step(0.1);
+        se->prepareGroundTruth(0.0);
+    }
+    state = &gw->objectState_[0]->state_;
+    EXPECT_NEAR(state->pos.GetX(), 123.581, 1E-3);
+    EXPECT_NEAR(state->pos.GetY(), 1.751, 1E-3);
+    EXPECT_NEAR(state->pos.GetZ(), 0.000, 1E-3);
+    EXPECT_NEAR(state->pos.GetH(), 0.000, 1E-3);
+    EXPECT_NEAR(state->pos.GetP(), 0.000, 1E-3);
+    EXPECT_NEAR(state->pos.GetR(), 0.000, 1E-3);
+
+    while (se->getSimulationTime() < 26.7 + SMALL_NUMBER)
+    {
+        se->step(0.1);
+        se->prepareGroundTruth(0.0);
+    }
+    state = &gw->objectState_[0]->state_;
+    EXPECT_NEAR(state->pos.GetX(), 124.400, 1E-3);
+    EXPECT_NEAR(state->pos.GetY(), 2.263, 1E-3);
+    EXPECT_NEAR(state->pos.GetZ(), 0.000, 1E-3);
+    EXPECT_NEAR(state->pos.GetH(), 1.103, 1E-3);
+    EXPECT_NEAR(state->pos.GetP(), 0.000, 1E-3);
+    EXPECT_NEAR(state->pos.GetR(), 0.000, 1E-3);
+
+    while (se->getSimulationTime() < 28.4 + SMALL_NUMBER)
+    {
+        se->step(0.1);
+        se->prepareGroundTruth(0.0);
+    }
+    state = &gw->objectState_[0]->state_;
+    EXPECT_NEAR(state->pos.GetX(), 124.424, 1E-3);
+    EXPECT_NEAR(state->pos.GetY(), 4.313, 1E-3);
+    EXPECT_NEAR(state->pos.GetZ(), 0.000, 1E-3);
+    EXPECT_NEAR(state->pos.GetH(), 1.571, 1E-3);
+    EXPECT_NEAR(state->pos.GetP(), 0.000, 1E-3);
+    EXPECT_NEAR(state->pos.GetR(), 0.000, 1E-3);
+
+    while (se->getSimulationTime() < 29.5 + SMALL_NUMBER)
+    {
+        se->step(0.1);
+        se->prepareGroundTruth(0.0);
+    }
+    state = &gw->objectState_[0]->state_;
+    EXPECT_NEAR(state->pos.GetX(), 125.203, 1E-3);
+    EXPECT_NEAR(state->pos.GetY(), 5.249, 1E-3);
+    EXPECT_NEAR(state->pos.GetZ(), 0.000, 1E-3);
+    EXPECT_NEAR(state->pos.GetH(), 0.000, 1E-3);
+    EXPECT_NEAR(state->pos.GetP(), 0.000, 1E-3);
+    EXPECT_NEAR(state->pos.GetR(), 0.000, 1E-3);
+
+    delete se;
+}
+
 // Uncomment to print log output to console
 // #define LOG_TO_CONSOLE
 
