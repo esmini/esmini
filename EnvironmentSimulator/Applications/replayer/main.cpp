@@ -348,7 +348,9 @@ int main(int argc, char** argv)
     SE_Env::Inst().AddPath(DirNameOf(argv[0]));  // Add location of exe file to search paths
 
     // use common options parser to manage the program arguments
-    SE_Options opt;
+    SE_Options& opt = SE_Env::Inst().GetOptions();
+    opt.Reset();
+
     opt.AddOption("file", "Simulation recording data file (.dat)", "filename");
     opt.AddOption("aa_mode", "Anti-alias mode=number of multisamples (subsamples, 0=off, 4=default)", "mode");
     opt.AddOption(
@@ -383,6 +385,7 @@ int main(int argc, char** argv)
     opt.AddOption("stop_time", "Stop playing at timestamp (set equal to time_start for single frame)", "ms");
     opt.AddOption("time_scale", "Playback speed scale factor (1.0 == normal)", "factor");
     opt.AddOption("view_mode", "Entity visualization: \"model\"(default)/\"boundingbox\"/\"both\"", "view_mode");
+    opt.AddOption("use_signs_in_external_model", "When external scenegraph 3D model is loaded, skip creating signs from OpenDRIVE");
 
     if (opt.ParseArgs(argc, argv) != 0 || argc < 2)
     {
@@ -418,6 +421,11 @@ int main(int argc, char** argv)
     if (!arg_str.empty())
     {
         SE_Env::Inst().AddPath(arg_str);
+    }
+
+    if (opt.GetOptionSet("use_signs_in_external_model"))
+    {
+        LOG("Use sign models in external scene graph model, skip creating sign models");
     }
 
     // Create player

@@ -86,7 +86,7 @@ ScenarioPlayer::~ScenarioPlayer()
         StopServer();
     }
 
-    if (opt.GetOptionSet("player_server"))
+    if (SE_Env::Inst().GetOptions().GetOptionSet("player_server"))
     {
         player_server_->Stop();
     }
@@ -678,6 +678,8 @@ int ScenarioPlayer::InitViewer()
 {
     std::string arg_str;
 
+    SE_Options& opt = SE_Env::Inst().GetOptions();
+
     // osg::ArgumentParser modifies given args array so we copy it for safe modification
     std::vector<char*> args      = {argv_, std::next(argv_, argc_)};
     int                arg_count = static_cast<int>(args.size());
@@ -1245,7 +1247,7 @@ void ScenarioPlayer::ShowObjectSensors(bool mode)
 
 void ScenarioPlayer::PrintUsage()
 {
-    opt.PrintUsage();
+    SE_Env::Inst().GetOptions().PrintUsage();
 #ifdef _USE_OSG
     viewer::Viewer::PrintUsage();
 #endif
@@ -1260,6 +1262,8 @@ int ScenarioPlayer::Init()
     }
 
     std::string arg_str;
+
+    SE_Options& opt = SE_Env::Inst().GetOptions();
 
     opt.Reset();
 
@@ -1323,13 +1327,11 @@ int ScenarioPlayer::Init()
     opt.AddOption("server", "Launch server to receive state of external Ego simulator");
     opt.AddOption("threads", "Run viewer in a separate thread, parallel to scenario engine");
     opt.AddOption("trail_mode", "Show trail lines and/or dots (toggle key 'j') mode 0=None 1=lines 2=dots 3=both", "mode");
-    opt.AddOption("use_signs_from_external_model", "When external scenegraph 3D model is loaded, skip creating signs from OpenDRIVE");
+    opt.AddOption("use_signs_in_external_model", "When external scenegraph 3D model is loaded, skip creating signs from OpenDRIVE");
     opt.AddOption("version", "Show version and quit");
 
     exe_path_ = argv_[0];
     SE_Env::Inst().AddPath(DirNameOf(exe_path_));  // Add location of exe file to search paths
-
-    SE_Env::Inst().SetUseExternalSigns(false);
 
     if (opt.ParseArgs(argc_, argv_) != 0)
     {
@@ -1354,10 +1356,9 @@ int ScenarioPlayer::Init()
         Logger::Inst().SetCallback(0);
     }
 
-    if (opt.GetOptionSet("use_signs_from_external_model"))
+    if (opt.GetOptionSet("use_signs_in_external_model"))
     {
         LOG("Use sign models in external scene graph model, skip creating sign models");
-        SE_Env::Inst().SetUseExternalSigns(true);
     }
 
     OSCParameterDistribution& dist = OSCParameterDistribution::Inst();

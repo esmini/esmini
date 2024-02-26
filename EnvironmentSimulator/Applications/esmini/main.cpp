@@ -33,8 +33,9 @@ static void signal_handler(int s)
 
 static int execute_scenario(int argc, char* argv[])
 {
-    __int64 time_stamp = 0;
-    int     retval     = 0;
+    __int64     time_stamp = 0;
+    int         retval     = 0;
+    SE_Options& opt        = SE_Env::Inst().GetOptions();
 
     std::unique_ptr<ScenarioPlayer> player;
 
@@ -49,7 +50,7 @@ static int execute_scenario(int argc, char* argv[])
             return -1;
         }
 
-        if (player->opt.GetOptionSet("return_nr_permutations"))
+        if (opt.GetOptionSet("return_nr_permutations"))
         {
             // Skip scenario, return immediately
             return static_cast<int>(OSCParameterDistribution::Inst().GetNumPermutations());
@@ -65,10 +66,10 @@ static int execute_scenario(int argc, char* argv[])
     // Initialize ImPlot
     std::unique_ptr<Plot> plot;
 
-    if (player->opt.GetOptionSet("plot"))
+    if (opt.GetOptionSet("plot"))
     {
         // Create and run plot in a separate thread as default
-        plot = std::make_unique<Plot>(player->scenarioEngine, player->opt.GetOptionArg("plot") == "synchronous");
+        plot = std::make_unique<Plot>(player->scenarioEngine, opt.GetOptionArg("plot") == "synchronous");
     }
 #endif  // _USE_IMPLOT
 
@@ -94,7 +95,7 @@ static int execute_scenario(int argc, char* argv[])
 #endif  // _USE_IMPLOT
     }
 
-    if (player->opt.IsOptionArgumentSet("param_permutation"))
+    if (opt.IsOptionArgumentSet("param_permutation"))
     {
         // Single permutation requested and executed, quit now
         quit = true;

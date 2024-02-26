@@ -364,7 +364,9 @@ void updateCar(roadmanager::OpenDrive *odrManager, Car *car, double dt)
 int main(int argc, char **argv)
 {
     static char str_buf[128];
-    SE_Options  opt;
+
+    SE_Options &opt = SE_Env::Inst().GetOptions();
+    opt.Reset();
 
     // Use logger callback
     Logger::Inst().SetCallback(log_callback);
@@ -406,7 +408,7 @@ int main(int argc, char **argv)
     opt.AddOption("speed_factor", "speed_factor <number>", "speed_factor", std::to_string(global_speed_factor));
     opt.AddOption("stop_at_end_of_road", "Instead of respawning elsewhere, stop when no connection exists");
     opt.AddOption("traffic_rule", "Enforce left or right hand traffic, regardless OpenDRIVE rule attribute (default: right)", "rule (right/left)");
-    opt.AddOption("use_signs_from_external_model", "When external scenegraph 3D model is loaded, skip creating signs from OpenDRIVE");
+    opt.AddOption("use_signs_in_external_model", "When external scenegraph 3D model is loaded, skip creating signs from OpenDRIVE");
     opt.AddOption("version", "Show version and quit");
 
     if (opt.ParseArgs(argc, argv) != 0)
@@ -525,10 +527,9 @@ int main(int argc, char **argv)
     roadmanager::Position *lane_pos  = new roadmanager::Position();
     roadmanager::Position *track_pos = new roadmanager::Position();
 
-    if (opt.GetOptionSet("use_signs_from_external_model"))
+    if (opt.GetOptionSet("use_signs_in_external_model"))
     {
         LOG("Use sign models in external scene graph model, skip creating sign models");
-        SE_Env::Inst().SetUseExternalSigns(true);
     }
 
     try

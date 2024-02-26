@@ -3075,7 +3075,7 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
                                          static_cast<float>(signal->GetZ() + signal->GetZOffset())));
             tx_bb->setAttitude(osg::Quat(signal->GetH() + signal->GetHOffset(), osg::Vec3(0, 0, 1)));
 
-            if (stand_in_model_ == true || !SE_Env::Inst().GetUseExternalSigns())
+            if (stand_in_model_ == true || !SE_Env::Inst().GetOptions().GetOptionSet("use_signs_in_external_model"))
             {
                 // Road sign filename is the combination of type_subtype_value
                 std::string filename = signal->GetCountry() + "_" + signal->GetType();

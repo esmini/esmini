@@ -22,8 +22,6 @@ Options:
       Additional custom top camera <x,y,z,rot> (multiple occurrences supported)
   --dir <path>
       Directory containing replays to overlay, pair with "file" argument, where "file" is .dat filename match substring
-  --disable_off_screen
-      Disable esmini off-screen rendering, revert to OSG viewer default handling
   --ground_plane
       Add a large flat ground surface
   --headless
@@ -36,6 +34,8 @@ Options:
       Remove ghost entities
   --no_ghost_model
       Remove only ghost model, show trajectory (toggle with key 'g')
+  --osg_screenshot_event_handler
+      Revert to OSG default jpg images ('c'/'C' keys handler)
   --path <path>
       Search path prefix for assets, e.g. model_ids.txt file (multiple occurrences supported)
   --quit_at_end
@@ -58,6 +58,8 @@ Options:
       Playback speed scale factor (1.0 == normal)
   --view_mode <view_mode>
       Entity visualization: "model"(default)/"boundingbox"/"both"
+  --use_signs_in_external_model
+      When external scenegraph 3D model is loaded, skip creating signs from OpenDRIVE
 
 Additional OSG graphics options:
   --clear-color <color>                      Set the background color of the viewer in the form "r,g,b[,a]"
