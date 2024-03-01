@@ -1683,7 +1683,6 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     SetNodeMaskBits(NodeMask::NODE_MASK_INFO);
     SetNodeMaskBits(NodeMask::NODE_MASK_TRAJECTORY_LINES);
     SetNodeMaskBits(NodeMask::NODE_MASK_ROUTE_WAYPOINTS);
-    ClearNodeMaskBits(NodeMask::NODE_MASK_SIGN_BB);
 
     roadSensors_ = new osg::Group;
     roadSensors_->setNodeMask(NodeMask::NODE_MASK_ODR_FEATURES);
@@ -3121,7 +3120,7 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
             osg::PolygonMode* polygonMode = new osg::PolygonMode;
             polygonMode->setMode(osg::PolygonMode::FRONT_AND_BACK, osg::PolygonMode::LINE);
             shape->getOrCreateStateSet()->setAttributeAndModes(polygonMode, osg::StateAttribute::OVERRIDE | osg::StateAttribute::ON);
-            tx_bb->setNodeMask(NODE_MASK_SIGN_BB);
+            tx_bb->setNodeMask(NODE_MASK_ODR_FEATURES);
 
             objGroup->addChild(tx_bb);
         }
@@ -4001,14 +4000,6 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
             if (ea.getEventType() & osgGA::GUIEventAdapter::KEYDOWN)
             {
                 viewer_->ToggleNodeMaskBits(viewer::NodeMask::NODE_MASK_ODR_FEATURES);
-            }
-        }
-        break;
-        case ('O'):
-        {
-            if (ea.getEventType() & osgGA::GUIEventAdapter::KEYDOWN)
-            {
-                viewer_->ToggleNodeMaskBits(viewer::NodeMask::NODE_MASK_SIGN_BB);
             }
         }
         break;
