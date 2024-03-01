@@ -2,6 +2,17 @@ message(
     STATUS "CMake version: "
            ${CMAKE_VERSION})
 
+if(WIN32)
+    cmake_minimum_required(
+        VERSION 3.7.1 # for cmake generator VisualStudio 2017 support
+        # VERSION 3.14   # for cmake generator VisualStudio 2019 support VERSION 3.19   # for cmake presets support
+        FATAL_ERROR)
+else()
+    cmake_minimum_required(
+        VERSION 2.8.12
+        FATAL_ERROR)
+endif()
+
 # ############################# Project generate options ###########################################################
 
 project(
@@ -81,17 +92,6 @@ set(ESMINI_BUILD_VERSION
           "Esmini CI Build Version")
 
 # ############################### Setting project rules ############################################################
-
-if(WIN32)
-    cmake_minimum_required(
-        VERSION 3.7.1 # for cmake generator VisualStudio 2017 support
-        # VERSION 3.14   # for cmake generator VisualStudio 2019 support VERSION 3.19   # for cmake presets support
-        FATAL_ERROR)
-else()
-    cmake_minimum_required(
-        VERSION 2.8.12
-        FATAL_ERROR)
-endif()
 
 set_property(
     GLOBAL
