@@ -77,6 +77,8 @@ ScenarioPlayer::ScenarioPlayer(int argc, char* argv[])
     OSISensorDetection = nullptr;
 #endif  // _USE_OSI
 #endif
+
+    player_server_ = std::make_unique<PlayerServer>(this);
 }
 
 ScenarioPlayer::~ScenarioPlayer()
@@ -1594,6 +1596,9 @@ int ScenarioPlayer::Init()
         return -1;
     }
 
+    // register list of injected actions to the scenario engine
+    scenarioEngine->SetInjectedActionsPtr(player_server_->GetInjectedActionsPtr());
+
     if (scenarioEngine->GetInitStatus() != 0)
     {
         return -1;
@@ -1725,7 +1730,7 @@ int ScenarioPlayer::Init()
     if (opt.GetOptionSet("player_server"))
     {
         LOG("Launch server to receive actions to inject");
-        player_server_ = new PlayerServer(this);
+
         // Launch UDP server to receive actions from external process
         player_server_->Start();
     }

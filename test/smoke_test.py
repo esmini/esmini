@@ -1632,6 +1632,31 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^14.100, 0, Ego, 151.500, -1.535, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 5.006', csv, re.MULTILINE))
         self.assertTrue(re.search('^14.100, 1, Target, 180.050, -1.535, 0.000, 0.000, 0.000, 0.000, 0.500, 0.000, 2.520', csv, re.MULTILINE))
 
+    def test_action_injection(self):
+        # this test case exercises the action injection mechanism
+
+        log = run_scenario(esmini_arguments='--osc ../resources/xosc/cut-in.xosc ' + COMMON_ARGS, application='code-examples-bin/action_injection')
+
+        # Check some initialization steps
+        self.assertTrue(re.search('Loading .*cut-in.xosc', log)  is not None)
+
+        # Check some scenario events
+        self.assertTrue(re.search('0.010: CutInActStart == true, 0.0100 > 0.00 edge: none', log)  is not None)
+        self.assertTrue(re.search('2.010: Adding action LaneOffsetAction', log)  is not None)
+        self.assertTrue(re.search('4.350: LaneOffsetAction runningState -> endTransition -> completeState', log)  is not None)
+        self.assertTrue(re.search('7.010: Adding action LaneChangeAction', log)  is not None)
+        self.assertTrue(re.search('14.010: Adding action SpeedAction', log)  is not None)
+        self.assertTrue(re.search('20.440: SpeedAction runningState -> endTransition -> completeState', log)  is not None)
+
+        # Check vehicle key positions
+        csv = generate_csv()
+
+        self.assertTrue(re.search('^5.000, 0, Ego, 9.480, 199.965, -0.348, 1.562, 0.002, 0.000, 30.000, -0.000, 1.315', csv, re.MULTILINE))
+        self.assertTrue(re.search('^8.350, 0, Ego, 8.997, 300.139, -0.528, 1.625, 0.002, 0.000, 30.000, 0.001, 5.714', csv, re.MULTILINE))
+        self.assertTrue(re.search('^11.000, 0, Ego, 8.194, 379.596, -0.682, 1.546, 0.002, 6.283, 30.000, -0.001, 0.379', csv, re.MULTILINE))
+        self.assertTrue(re.search('^20.430, 0, Ego, 17.077, 566.244, -0.838, 1.495, 6.283, 6.283, 0.001, -0.000, 0.247', csv, re.MULTILINE))
+        self.assertTrue(re.search('^20.440, 0, Ego, 17.077, 566.244, -0.838, 1.495, 6.283, 6.283, 0.000, -0.000, 0.247', csv, re.MULTILINE))
+
 
 if __name__ == "__main__":
     # execute only if run as a script

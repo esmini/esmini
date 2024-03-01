@@ -1,11 +1,12 @@
-ESMINI_PATH = '../'
-
 import os
 import subprocess
 import time
 import re
 import sys
-sys.path.insert(0, ESMINI_PATH + 'scripts')
+
+ESMINI_PATH = os.pardir
+
+sys.path.insert(0, os.path.join(ESMINI_PATH, 'scripts'))
 from dat import *
 
 LOG_FILENAME = 'log.txt'
@@ -14,46 +15,61 @@ CSV_FILENAME = 'sim.csv'
 STDOUT_FILENAME = 'stdout.txt'
 TIMEOUT = 40
 
+# Add path to esmini shared library
+# needed only on Mac and Linux, Windows looks in folder of the executable
+env = os.environ.copy()
+if sys.platform == "linux" or sys.platform == "linux2":
+    env['LD_LIBRARY_PATH'] = ':'.join([env.get('LD_LIBRARY_PATH', ''), os.path.join(ESMINI_PATH, 'bin')])
+elif sys.platform == "darwin":
+    env['DYLD_LIBRARY_PATH'] = ':'.join([env.get('DYLD_LIBRARY_PATH', ''), os.path.join(ESMINI_PATH, 'bin')])
 
-def run_scenario(osc_filename, esmini_arguments, xosc_str = None):
-    
+
+def run_scenario(osc_filename = None, esmini_arguments = None, xosc_str = None, application = None):
+
     if os.path.exists(LOG_FILENAME):
         os.remove(LOG_FILENAME)
     if os.path.exists(STDOUT_FILENAME):
         os.remove(STDOUT_FILENAME)
 
+    if application is None:
+        app = os.path.join(ESMINI_PATH,'bin','esmini')
+    else:
+        app = os.path.join(ESMINI_PATH, application)
+
     if osc_filename is not None:
-        args = [os.path.join(ESMINI_PATH,'bin','esmini'), '--osc', osc_filename] + esmini_arguments.split()
+        args = [app, '--osc', osc_filename] + esmini_arguments.split()
         #print('running: {}'.format(' '.join(args)))
-    elif xosc_str is not None:
-        args = [os.path.join(ESMINI_PATH,'bin','esmini')] + esmini_arguments.split() + ['--osc_str', xosc_str]
-    
-    return_code = None    
+    else:
+        args = [app] + esmini_arguments.split()
+        if xosc_str is not None:
+            args +=  ['--osc_str', xosc_str]
+
+    return_code = None
     with open(STDOUT_FILENAME, "w") as f:
-        process = subprocess.Popen(args, cwd=os.path.dirname(os.path.realpath(__file__)), 
-                            stdout=f)
+        process = subprocess.Popen(args, cwd=os.path.dirname(os.path.realpath(__file__)),
+                            stdout=f, env=env)
 
         elapsed = 0
 
         while elapsed < TIMEOUT and return_code is None:
 
             return_code = process.poll()
-            
+
             # watch dog
-            if return_code is None:        
+            if return_code is None:
                 time.sleep(1)
                 elapsed += 1
-        
+
         if return_code is None:
             print('timeout ({}s). Terminating scenario ({}).'.format(TIMEOUT, os.path.basename(osc_filename)))
             process.kill()
             assert False, 'Timeout'
-    
+
     assert return_code == 0
 
     with open(LOG_FILENAME, 'r') as logfile:
         return logfile.read()
-    
+
     assert False, 'No log file'
 
 

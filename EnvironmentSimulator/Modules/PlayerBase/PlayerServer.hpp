@@ -59,7 +59,7 @@ namespace scenarioengine
     {
         int   id;  // id of object to perform action
         float offset;
-        float maxLateralAcc;     // 0 = distance, 1 = rate, 2 = time
+        float maxLateralAcc;
         int   transition_shape;  // 0 = cubic, 1 = linear, 2 = sinusoidal, 3 = step
     };
 

@@ -56,7 +56,7 @@ namespace scenarioengine
                     ((reinterpret_cast<scenarioengine::OSCPrivateAction *>(action_[i]))->object_ ==
                      (reinterpret_cast<scenarioengine::OSCPrivateAction *>(action))->object_))
                 {
-                    LOG("UDP action of type %s already ongoing for object %d / %s. Skipping UDP %s action.",
+                    LOG("Injected action of type %s already ongoing for object %d / %s. Skipping UDP %s action.",
                         action->Type2Str().c_str(),
                         (reinterpret_cast<scenarioengine::OSCPrivateAction *>(action))->object_->GetId(),
                         (reinterpret_cast<scenarioengine::OSCPrivateAction *>(action))->object_->GetName().c_str(),
@@ -92,7 +92,7 @@ namespace scenarioengine
         {
             if (action_[i]->GetCurrentState() == OSCAction::State::COMPLETE)
             {
-                LOG("UDP action %s finished", action_[i]->GetName().c_str());
+                LOG("Injected action %s finished", action_[i]->GetName().c_str());
                 DeleteAction(static_cast<int>(i));
                 i++;
             }
@@ -231,8 +231,6 @@ namespace scenarioengine
         }
 
         LOG("PlayerServer listening on port %d", ESMINI_DEFAULT_ACTION_INPORT);
-
-        player->scenarioEngine->SetInjectedActionsPtr(player->player_server_->GetInjectedActionsPtr());
 
         state = SERV_RUNNING;
 

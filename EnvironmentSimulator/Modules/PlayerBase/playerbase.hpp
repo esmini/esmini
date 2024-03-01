@@ -202,10 +202,10 @@ namespace scenarioengine
 
         void InitControllersPostPlayer();
 
-        CSV_Logger      *CSV_Log;
-        ScenarioEngine  *scenarioEngine;
-        ScenarioGateway *scenarioGateway;
-        PlayerServer    *player_server_;
+        CSV_Logger                   *CSV_Log;
+        ScenarioEngine               *scenarioEngine;
+        ScenarioGateway              *scenarioGateway;
+        std::unique_ptr<PlayerServer> player_server_;
 
 #ifdef _USE_OSI
         OSIReporter *osiReporter;

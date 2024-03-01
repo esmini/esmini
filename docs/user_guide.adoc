@@ -2630,9 +2630,13 @@ When linking esmini with software already dependent on Google protobuf there mig
 
 Then build as usual. It will link with protobuf shared library instead of linking with a static library.
 
-When running esmini protobuf shared library need to be available. Set LD_LIBRARY_PATH to point to the folder where the library is, example:
+When running esmini, the protobuf shared library needs to be found. Set dynamic library path environment variable to the folder where the library is. Example:
 
+Linux: +
 ``export LD_LIBRARY_PATH=./externals/OSI/linux/lib-dyn``
+
+macOS: +
+``export DYLD_LIBRARY_PATH=./externals/OSI/linux/lib-dyn``
 
 *Note:* +
 The dynamic versions of protobuf were added Aug 31 2021. So you might need to update the OSI library package. Get the latest from following links:

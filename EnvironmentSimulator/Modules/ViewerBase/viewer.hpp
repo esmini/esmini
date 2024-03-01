@@ -33,6 +33,10 @@
 #include "Entities.hpp"
 #include "OSCParameterDistribution.hpp"
 
+#ifdef _USE_OSI
+#include "OSIReporter.hpp"
+#endif  // _USE_OSI
+
 extern float color_green[3];
 extern float color_gray[3];
 extern float color_dark_gray[3];

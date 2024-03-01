@@ -2495,4 +2495,28 @@ extern "C"
 
         return 0;
     }
+
+    SE_DLL_API void SE_InjectSpeedAction(SE_SpeedActionStruct *action)
+    {
+        if (player)
+        {
+            player->player_server_->InjectSpeedAction(*((SpeedActionStruct *)action));
+        }
+    }
+
+    SE_DLL_API void SE_InjectLaneChangeAction(SE_LaneChangeActionStruct *action)
+    {
+        if (player)
+        {
+            player->player_server_->InjectLaneChangeAction(*((LaneChangeActionStruct *)action));
+        }
+    }
+
+    SE_DLL_API void SE_InjectLaneOffsetAction(SE_LaneOffsetActionStruct *action)
+    {
+        if (player)
+        {
+            player->player_server_->InjectLaneOffsetAction(*((LaneOffsetActionStruct *)action));
+        }
+    }
 }

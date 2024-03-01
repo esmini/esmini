@@ -79,7 +79,7 @@ then: +
   `cmake --build .` or just +
   `make` +
 . Tell system where to look for esmini shared library (maybe not necessary) +
-  `export LD_LIBRARY_PATH=../../bin`
+  `export LD_LIBRARY_PATH=../../bin`  (on macOS: DYLD_LIBRARY_PATH)
 . Launch application +
   `./esmini-player`
 
@@ -240,9 +240,61 @@ include::{src-local-root}/{file}[]
 
 *Note:* It uses the same scenario file as the above (<<1. By scenario>>) but the complete "CollisionManeuver" could be removed since no CollisionCondition is needed for API based collision detection. Actually, if maneuver is present the console will show log info from both the condition and the API driven collision detections.
 
+=== Simple speed control
+
+As an alternative to the external control examples above, you can control the speed of an object directly. Just note that any triggered scenario actions involving the object might conflict with speed settings via lib API. Recommendation is control an object either via API or scenario file. That said, the combination can be useful for some use cases.
+
+The code will modulate speed of Ego (first vehicle) between 2 and 20 mps.
+
+:file: EnvironmentSimulator/code-examples/hello_world/speed_controller.cpp
+.link:{src-remote-root}/{file}[{file}]
+[source,c++]
+----
+include::{src-local-root}/{file}[]
+----
+
+Example run command, from `esmini/code-examples-bin` folder: +
+`./speed_controller ../resources/xosc/cut-in.xosc`
+
+:file: EnvironmentSimulator/code-examples/hello_world/speed_controller.py
+
+There is also a Python version of this example: +
+link:{src-remote-root}/{file}[{file}]
+
+=== Inject actions
+
+This example demonstrates how you can control longitudinal and lateral motion by applying the following actions:
+
+- SpeedAction
+- LaneChangeAction
+- LaneOffsetAction
+
+Currently (v2.37.0) the action injection feature is limited to these three actions, but it's rather easy to extend if needed.
+
+The code will apply three actions according as follows:
+
+- after 2 seconds, make a slight movement (lane offset) of 0.45m to the right
+- after 7 seconds, make a lane change to the left
+- after 14 seconds, brake to a stop
+
+:file: EnvironmentSimulator/code-examples/hello_world/action_injection.cpp
+.link:{src-remote-root}/{file}[{file}]
+[source,c++]
+----
+include::{src-local-root}/{file}[]
+----
+
+Example run command, from `esmini/code-examples-bin` folder: +
+`./action_injection ../resources/xosc/cut-in.xosc`
+
+:file: EnvironmentSimulator/code-examples/hello_world/action_injection.py
+
+There is also a Python version of this example: +
+link:{src-remote-root}/{file}[{file}]
+
 === Driver model
 
-Using a simple vehicle model this example demonstrates how a driver model can interact with the scenario, once again using the ``ExternalController``.
+Using a simple vehicle model this example demonstrates how a driver model can interact with the scenario in terms of pedal and steering input. This time we use the ``ExternalController`` again to ensure any scenario actions is not conflicting with the driver model.
 
 To show different variants we also show how to set scenario parameters during intialization, via callbacks. In effect this is a way to achieve runtime variants of the same basic scenario.
 
@@ -364,6 +416,7 @@ The following code will update, fetch and print some OSI data each frame.
 ----
 include::{src-local-root}/{file}[]
 ----
+
 
 == Python binding
 :listing-caption: Example
