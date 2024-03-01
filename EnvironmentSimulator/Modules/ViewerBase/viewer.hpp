@@ -31,7 +31,6 @@
 #include "CommonMini.hpp"
 #include "roadgeom.hpp"
 #include "Entities.hpp"
-#include "OSIReporter.hpp"
 #include "OSCParameterDistribution.hpp"
 
 extern float color_green[3];

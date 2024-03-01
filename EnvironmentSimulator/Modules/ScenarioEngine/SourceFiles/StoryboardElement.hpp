@@ -17,7 +17,9 @@
 #include <string>
 #include <vector>
 
+#ifdef _USE_OSI
 class OSIReporter;  // Forward declaration
+#endif              // _USE_OSI
 
 namespace scenarioengine
 {
@@ -76,6 +78,7 @@ namespace scenarioengine
         Trigger* start_trigger_;
         Trigger* stop_trigger_;
 
+#ifdef _USE_OSI
         static OSIReporter* osi_reporter_;
         static void         SetOSIReporter(OSIReporter* osi_reporter)
         {
@@ -86,6 +89,7 @@ namespace scenarioengine
         {
             return osi_reporter_;
         };
+#endif  // _USE_OSI
 
         State GetCurrentState()
         {

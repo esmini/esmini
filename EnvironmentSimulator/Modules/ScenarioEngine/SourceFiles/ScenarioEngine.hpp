@@ -139,10 +139,12 @@ namespace scenarioengine
             return init_status_;
         }
 
+#ifdef _USE_OSI
         void SetOSIReporter(OSIReporter *osi_reporter)
         {
             storyBoard.SetOSIReporter(osi_reporter);
         }
+#endif  // _USE_OSI
 
         double   trueTime_;
         bool     doOnce = true;

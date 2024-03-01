@@ -29,11 +29,13 @@ if(NOT
     list(
         REMOVE_ITEM
         SRC_SOURCEFILES
-        "${CMAKE_CURRENT_LIST_DIR}/SourceFiles/OSIReporter.hpp")
+        "${CMAKE_CURRENT_LIST_DIR}/SourceFiles/OSIReporter.hpp"
+        "${CMAKE_CURRENT_LIST_DIR}/SourceFiles/OSITrafficCommand.hpp")
     list(
         REMOVE_ITEM
         SRC_SOURCEFILES
-        "${CMAKE_CURRENT_LIST_DIR}/SourceFiles/OSIReporter.cpp")
+        "${CMAKE_CURRENT_LIST_DIR}/SourceFiles/OSIReporter.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/SourceFiles/OSITrafficCommand.cpp")
 endif(
     NOT
     USE_OSI)

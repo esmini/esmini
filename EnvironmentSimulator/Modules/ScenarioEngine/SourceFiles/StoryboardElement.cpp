@@ -12,16 +12,21 @@
 
 #include "CommonMini.hpp"
 #include "StoryboardElement.hpp"
-#include "OSIReporter.hpp"
-#include "OSITrafficCommand.hpp"
 #include "OSCCondition.hpp"
 #include "Action.hpp"
+
+#ifdef _USE_OSI
+#include "OSIReporter.hpp"
+#include "OSITrafficCommand.hpp"
+#endif  // _USE_OSI
 
 using namespace scenarioengine;
 
 void (*StoryBoardElement::stateChangeCallback)(const char* name, int type, int state, const char* full_path) = nullptr;
 
+#ifdef _USE_OSI
 OSIReporter* StoryBoardElement::osi_reporter_ = nullptr;
+#endif  // _USE_OSI
 
 std::string StoryBoardElement::state2str(StoryBoardElement::State state)
 {
