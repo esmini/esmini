@@ -2519,4 +2519,14 @@ extern "C"
             player->player_server_->InjectLaneOffsetAction(*((LaneOffsetActionStruct *)action));
         }
     }
+
+    SE_DLL_API bool SE_InjectedActionOngoing(int action_type)
+    {
+        if (player)
+        {
+            return player->player_server_->InjectedActionOngoing(action_type);
+        }
+
+        return false;
+    }
 }

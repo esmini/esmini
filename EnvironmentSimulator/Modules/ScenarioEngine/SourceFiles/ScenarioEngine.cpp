@@ -1003,7 +1003,7 @@ void ScenarioEngine::CreateGhostTeleport(Object* obj1, Object* obj2, Event* even
     pos->SetRelativePosition(&obj1->pos_, roadmanager::Position::PositionType::RELATIVE_OBJECT);
 
     myNewAction->position_       = pos;
-    myNewAction->type_           = OSCPrivateAction::ActionType::TELEPORT;
+    myNewAction->action_type_    = OSCPrivateAction::ActionType::TELEPORT;
     myNewAction->object_         = obj2;
     myNewAction->scenarioEngine_ = this;
     myNewAction->SetName("AddedGhostTeleport");
@@ -1035,7 +1035,7 @@ void ScenarioEngine::SetupGhost(Object* object)
         if (action->object_ == object)
         {
             // Copy all actions except ActivateController
-            if (action->type_ != OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER)
+            if (action->action_type_ != OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER)
             {
                 OSCPrivateAction* newAction = action->Copy();
                 action->SetName(action->GetName() + "_ghost-copy");
@@ -1076,7 +1076,7 @@ void ScenarioEngine::SetupGhost(Object* object)
                         for (size_t n = 0; n < event->action_.size(); n++)
                         {
                             OSCAction* action = event->action_[n];
-                            if (action->base_type_ == OSCAction::BaseType::PRIVATE)
+                            if (action->GetBaseType() == OSCAction::BaseType::PRIVATE)
                             {
                                 OSCPrivateAction* pa = static_cast<OSCPrivateAction*>(action);
                                 pa->scenarioEngine_  = this;
@@ -1085,14 +1085,14 @@ void ScenarioEngine::SetupGhost(Object* object)
                                     // If at least one of the event actions is of relevant subset of action types
                                     // then move the action to the ghost object instance, and also make needed
                                     // changes to the event trigger
-                                    if (pa->type_ == OSCPrivateAction::ActionType::LONG_SPEED ||
-                                        pa->type_ == OSCPrivateAction::ActionType::LONG_SPEED_PROFILE ||
-                                        pa->type_ == OSCPrivateAction::ActionType::LAT_LANE_CHANGE ||
-                                        pa->type_ == OSCPrivateAction::ActionType::LAT_LANE_OFFSET ||
-                                        pa->type_ == OSCPrivateAction::ActionType::SYNCHRONIZE_ACTION ||
-                                        pa->type_ == OSCPrivateAction::ActionType::FOLLOW_TRAJECTORY ||
-                                        pa->type_ == OSCPrivateAction::ActionType::ASSIGN_ROUTE ||
-                                        pa->type_ == OSCPrivateAction::ActionType::TELEPORT)
+                                    if (pa->action_type_ == OSCPrivateAction::ActionType::LONG_SPEED ||
+                                        pa->action_type_ == OSCPrivateAction::ActionType::LONG_SPEED_PROFILE ||
+                                        pa->action_type_ == OSCPrivateAction::ActionType::LAT_LANE_CHANGE ||
+                                        pa->action_type_ == OSCPrivateAction::ActionType::LAT_LANE_OFFSET ||
+                                        pa->action_type_ == OSCPrivateAction::ActionType::SYNCHRONIZE_ACTION ||
+                                        pa->action_type_ == OSCPrivateAction::ActionType::FOLLOW_TRAJECTORY ||
+                                        pa->action_type_ == OSCPrivateAction::ActionType::ASSIGN_ROUTE ||
+                                        pa->action_type_ == OSCPrivateAction::ActionType::TELEPORT)
                                     {
                                         // Replace object
                                         pa->ReplaceObjectRefs(object, ghost);
@@ -1141,10 +1141,10 @@ void ScenarioEngine::ResetEvents()
                             for (size_t n = 0; n < event->action_.size(); n++)
                             {
                                 OSCAction* action = event->action_[n];
-                                if (action->base_type_ == OSCAction::BaseType::PRIVATE)
+                                if (action->GetBaseType() == OSCAction::BaseType::PRIVATE)
                                 {
                                     OSCPrivateAction* pa = static_cast<OSCPrivateAction*>(action);
-                                    if (pa->type_ == OSCPrivateAction::ActionType::TELEPORT)
+                                    if (pa->action_type_ == OSCPrivateAction::ActionType::TELEPORT)
                                     {
                                         HasTele = true;
                                         break;
@@ -1156,7 +1156,7 @@ void ScenarioEngine::ResetEvents()
                                 for (size_t n = 0; n < event->action_.size(); n++)
                                 {
                                     OSCAction* action = event->action_[n];
-                                    if (action->base_type_ == OSCAction::BaseType::PRIVATE)
+                                    if (action->GetBaseType() == OSCAction::BaseType::PRIVATE)
                                     {
                                         OSCPrivateAction* pa = static_cast<OSCPrivateAction*>(action);
 

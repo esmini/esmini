@@ -54,28 +54,6 @@ namespace scenarioengine
     class OSCPrivateAction : public OSCAction
     {
     public:
-        enum class ActionType
-        {
-            LONG_SPEED,
-            LONG_SPEED_PROFILE,
-            LONG_DISTANCE,
-            LAT_LANE_CHANGE,
-            LAT_LANE_OFFSET,
-            LAT_DISTANCE,
-            VISIBILITY,
-            CONTROLLER,
-            ASSIGN_CONTROLLER,
-            ACTIVATE_CONTROLLER,
-            OVERRIDE_CONTROLLER,
-            TELEPORT,
-            ASSIGN_ROUTE,
-            FOLLOW_TRAJECTORY,
-            Acquire_POSITION,
-            SYNCHRONIZE_ACTION,
-            CONNECT_TRAILER_ACTION,
-            DISCONNECT_TRAILER_ACTION
-        };
-
         enum class DynamicsDimension
         {
             RATE,
@@ -161,14 +139,12 @@ namespace scenarioengine
             double rate_;
         };
 
-        ActionType      type_;
         ControlDomains  domain_;
         Object*         object_;
         ScenarioEngine* scenarioEngine_;
 
-        OSCPrivateAction(OSCPrivateAction::ActionType type, StoryBoardElement* parent, ControlDomains domain)
-            : OSCAction(OSCAction::BaseType::PRIVATE, parent),
-              type_(type),
+        OSCPrivateAction(OSCAction::ActionType action_type, StoryBoardElement* parent, ControlDomains domain)
+            : OSCAction(action_type, parent),
               domain_(domain),
               object_(0),
               scenarioEngine_(0)

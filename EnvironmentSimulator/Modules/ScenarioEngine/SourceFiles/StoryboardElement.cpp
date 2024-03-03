@@ -90,7 +90,7 @@ std::string StoryBoardElement::transition2str(StoryBoardElement::Transition tran
 
 void StoryBoardElement::PropagateStateFromChildren()
 {
-    if (type_ != StoryBoardElement::ElementType::STORY_BOARD && GetCurrentState() != State::COMPLETE)
+    if (element_type_ != StoryBoardElement::ElementType::STORY_BOARD && GetCurrentState() != State::COMPLETE)
     {
         if (AllChildrenComplete())
         {
@@ -149,7 +149,7 @@ void StoryBoardElement::Start(double simTime)
 
     // Start children for all element types except events
     // which will handle execution of actions based on domain and priority
-    if (type_ != ElementType::EVENT && GetCurrentState() == State::RUNNING)
+    if (element_type_ != ElementType::EVENT && GetCurrentState() == State::RUNNING)
     {
         // Start chilren
 
@@ -179,7 +179,7 @@ void StoryBoardElement::EvalTriggers(double simTime)
         {
             Stop();
 
-            if (type_ == ElementType::STORY_BOARD)
+            if (element_type_ == ElementType::STORY_BOARD)
             {
                 // states are not propagated from children to story board, stop explicitly
                 StoryBoardElement::Stop();
@@ -260,7 +260,7 @@ void StoryBoardElement::End()
     //   some actions are atomic, and don't need run time
     if (GetCurrentState() == State::RUNNING || GetCurrentState() == State::STANDBY)
     {
-        if (type_ == ElementType::MANEUVER_GROUP || type_ == ElementType::EVENT)
+        if (element_type_ == ElementType::MANEUVER_GROUP || element_type_ == ElementType::EVENT)
         {
             if (max_num_executions_ != -1 && num_executions_ >= max_num_executions_)
             {
@@ -338,7 +338,7 @@ void StoryBoardElement::SetState(StoryBoardElement::State state)
 
         if (stateChangeCallback != nullptr)
         {
-            stateChangeCallback(GetName().c_str(), static_cast<int>(type_), static_cast<int>(state), GetFullPath().c_str());
+            stateChangeCallback(GetName().c_str(), static_cast<int>(element_type_), static_cast<int>(state), GetFullPath().c_str());
         }
 
         for (size_t i = 0; i < trigger_ref_.size(); i++)
@@ -349,8 +349,8 @@ void StoryBoardElement::SetState(StoryBoardElement::State state)
 
 #ifdef _USE_OSI
         // register all events for private actions to OSI reporter
-        if (osi_reporter_ != nullptr && this->type_ == StoryBoardElement::ElementType::ACTION &&
-            (reinterpret_cast<OSCAction*>(this))->base_type_ == OSCAction::BaseType::PRIVATE)
+        if (osi_reporter_ != nullptr && this->element_type_ == StoryBoardElement::ElementType::ACTION &&
+            (reinterpret_cast<OSCAction*>(this))->GetBaseType() == OSCAction::BaseType::PRIVATE)
         {
             osi_reporter_->RegisterTrafficCommandStateChange(reinterpret_cast<OSCPrivateAction*>(this), state, GetCurrentTransition());
         }
@@ -374,7 +374,7 @@ void StoryBoardElement::Reset(State state)
 void StoryBoardElement::SetName(std::string name)
 {
     name_ = name;
-    if (type_ == STORY_BOARD)
+    if (element_type_ == STORY_BOARD)
     {
         full_path_ = "";
     }
@@ -384,7 +384,7 @@ void StoryBoardElement::SetName(std::string name)
     }
     else
     {
-        if (parent_->type_ == STORY_BOARD)
+        if (parent_->element_type_ == STORY_BOARD)
         {
             full_path_ = name;  // skip storyboard level
         }

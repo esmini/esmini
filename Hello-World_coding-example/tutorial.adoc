@@ -275,7 +275,7 @@ The code will apply three actions according as follows:
 
 - after 2 seconds, make a slight movement (lane offset) of 0.45m to the right
 - after 7 seconds, make a lane change to the left
-- after 14 seconds, brake to a stop
+- after 9.5 seconds, brake to a stop (braking will start before lane change is done)
 
 :file: EnvironmentSimulator/code-examples/hello_world/action_injection.cpp
 .link:{src-remote-root}/{file}[{file}]

@@ -176,7 +176,8 @@ void ControllerRel2Abs::Step(double timeStep)
                 {
                     OSCPrivateAction* action_copy = activeActions[j]->Copy();
                     action_copy->object_          = entities_->object_[i];
-                    if (std::find(std::begin(action_whitelist), std::end(action_whitelist), activeActions[j]->type_) != std::end(action_whitelist))
+                    if (std::find(std::begin(action_whitelist), std::end(action_whitelist), activeActions[j]->action_type_) !=
+                        std::end(action_whitelist))
                     {
                         activeActionsCopies.push_back(static_cast<OSCAction*>(action_copy));
                     }
@@ -364,7 +365,7 @@ void ControllerRel2Abs::Step(double timeStep)
 
         for (unsigned int i = 0; i < activeActions.size(); i++)
         {
-            if (activeActions[i]->type_ == OSCPrivateAction::ActionType::LONG_SPEED)
+            if (activeActions[i]->action_type_ == OSCPrivateAction::ActionType::LONG_SPEED)
             {
                 LongSpeedAction* lsa = static_cast<LongSpeedAction*>(activeActions[i]);
                 if (lsa->target_->type_ == LongSpeedAction::Target::TargetType::RELATIVE_SPEED)
@@ -379,7 +380,7 @@ void ControllerRel2Abs::Step(double timeStep)
                     }
                 }
             }
-            else if (activeActions[i]->type_ == OSCPrivateAction::ActionType::LONG_DISTANCE)
+            else if (activeActions[i]->action_type_ == OSCPrivateAction::ActionType::LONG_DISTANCE)
             {
                 LongDistanceAction* lda = static_cast<LongDistanceAction*>(activeActions[i]);
                 if (lda->target_object_ == ego)
@@ -420,19 +421,19 @@ void ControllerRel2Abs::Step(double timeStep)
                         currentSpeed);
                 }
             }
-            else if (activeActions[i]->type_ == OSCPrivateAction::ActionType::LAT_LANE_CHANGE)
+            else if (activeActions[i]->action_type_ == OSCPrivateAction::ActionType::LAT_LANE_CHANGE)
             {
                 // Only samples relative lane at start, will not need to be handled
             }
-            else if (activeActions[i]->type_ == OSCPrivateAction::ActionType::LAT_LANE_OFFSET)
+            else if (activeActions[i]->action_type_ == OSCPrivateAction::ActionType::LAT_LANE_OFFSET)
             {
                 // No relative object setup possible, will not need to be handled
             }
-            else if (activeActions[i]->type_ == OSCPrivateAction::ActionType::LAT_DISTANCE)
+            else if (activeActions[i]->action_type_ == OSCPrivateAction::ActionType::LAT_DISTANCE)
             {
                 // Action type not currently implemented in esmini
             }
-            else if (activeActions[i]->type_ == OSCPrivateAction::ActionType::SYNCHRONIZE_ACTION)
+            else if (activeActions[i]->action_type_ == OSCPrivateAction::ActionType::SYNCHRONIZE_ACTION)
             {
                 SynchronizeAction* sa = static_cast<SynchronizeAction*>(activeActions[i]);
                 if (sa->master_object_ == ego)
@@ -577,7 +578,7 @@ void ControllerRel2Abs::Step(double timeStep)
                     }
                 }
             }
-            else if (activeActions[i]->type_ == OSCPrivateAction::ActionType::FOLLOW_TRAJECTORY)
+            else if (activeActions[i]->action_type_ == OSCPrivateAction::ActionType::FOLLOW_TRAJECTORY)
             {
                 // Trajectory frozen at action start, will not need to be handled
             }

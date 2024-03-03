@@ -1594,7 +1594,7 @@ std::vector<OSCPrivateAction*> Object::getPrivateActions()
         for (size_t n = 0; n < event->action_.size(); n++)
         {
             OSCAction* action = event->action_[n];
-            if (action->base_type_ == OSCAction::BaseType::PRIVATE)
+            if (action->GetBaseType() == OSCAction::BaseType::PRIVATE)
             {
                 OSCPrivateAction* pa = static_cast<OSCPrivateAction*>(action);
                 if (pa->GetCurrentState() == StoryBoardElement::State::RUNNING || pa->GetCurrentState() == StoryBoardElement::State::STANDBY)

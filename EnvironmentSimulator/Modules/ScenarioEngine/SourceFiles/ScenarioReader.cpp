@@ -2190,9 +2190,9 @@ OSCUserDefinedAction *ScenarioReader::parseOSCUserDefinedAction(pugi::xml_node a
     pugi::xml_node actionChild = actionNode.first_child();
     if (actionChild && actionChild.name() == std::string("CustomCommandAction"))
     {
-        action           = new OSCUserDefinedAction(parent);
-        action->type_    = parameters.ReadAttribute(actionChild, "type");
-        action->content_ = actionChild.first_child().value();
+        action                    = new OSCUserDefinedAction(parent);
+        action->user_action_type_ = parameters.ReadAttribute(actionChild, "type");
+        action->content_          = actionChild.first_child().value();
     }
 
     if (action && actionNode.parent().attribute("name"))
@@ -3445,11 +3445,11 @@ void ScenarioReader::parseInit(Init &init)
                     {
                         action->SetName("Init " + entityRef->name_ + " " + privateChild.first_child().name());
 
-                        if (action->type_ == OSCPrivateAction::ActionType::TELEPORT)
+                        if (action->action_type_ == OSCPrivateAction::ActionType::TELEPORT)
                         {
                             teleport = true;
                         }
-                        else if (teleport == false && action->type_ == OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER)
+                        else if (teleport == false && action->action_type_ == OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER)
                         {
                             LOG("WARNING: Controller activated before positioning (TeleportAction) the entity %s", entityRef->GetName().c_str());
                         }
@@ -3473,7 +3473,7 @@ void ScenarioReader::parseInit(Init &init)
         for (size_t j = 0; j < i; j++)
         {
             roadmanager::Position *pos = 0;
-            if (init.private_action_[j]->type_ == OSCPrivateAction::ActionType::TELEPORT)
+            if (init.private_action_[j]->action_type_ == OSCPrivateAction::ActionType::TELEPORT)
             {
                 TeleportAction *action = static_cast<TeleportAction *>(init.private_action_[j]);
                 if (action->position_->GetType() == roadmanager::Position::PositionType::RELATIVE_LANE)

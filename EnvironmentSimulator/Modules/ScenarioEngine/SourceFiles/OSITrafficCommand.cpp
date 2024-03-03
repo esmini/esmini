@@ -27,7 +27,7 @@ int ReportTrafficCommand(osi3::TrafficCommand *tc, OSCPrivateAction *action, dou
         return -1;
     }
 
-    switch (action->type_)
+    switch (action->action_type_)
     {
         case OSCPrivateAction::ActionType::LAT_LANE_CHANGE:
         {
@@ -179,7 +179,7 @@ int ReportTrafficCommand(osi3::TrafficCommand *tc, OSCPrivateAction *action, dou
 
         default:
 
-            LOG("OSITrafficCommand: Unsupported type %d of action %s", action->type_, action->GetName().c_str());
+            LOG("OSITrafficCommand: Unsupported type %d of action %s", action->action_type_, action->GetName().c_str());
     }
 
     return 0;

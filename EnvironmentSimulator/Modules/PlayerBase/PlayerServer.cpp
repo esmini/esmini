@@ -50,9 +50,9 @@ namespace scenarioengine
         // add only if no action of the same type is already running
         for (size_t i = 0; i < action_.size(); i++)
         {
-            if (action_[i]->type_ == action->type_)
+            if (action_[i]->action_type_ == action->action_type_)
             {
-                if (action->base_type_ == OSCAction::BaseType::PRIVATE &&
+                if (action->GetBaseType() == OSCAction::BaseType::PRIVATE &&
                     ((reinterpret_cast<scenarioengine::OSCPrivateAction *>(action_[i]))->object_ ==
                      (reinterpret_cast<scenarioengine::OSCPrivateAction *>(action))->object_))
                 {
@@ -111,6 +111,21 @@ namespace scenarioengine
                 return "SPEED";
             default:
                 return "Unknown";
+        }
+    }
+
+    OSCAction::ActionType PlayerServer::Type2OSCActionType(UDP_ACTION_TYPE type)
+    {
+        switch (type)
+        {
+            case UDP_ACTION_TYPE::LANE_CHANGE_ACTION:
+                return OSCAction::ActionType::LAT_LANE_CHANGE;
+            case UDP_ACTION_TYPE::LANE_OFFSET_ACTION:
+                return OSCAction::ActionType::LAT_LANE_OFFSET;
+            case UDP_ACTION_TYPE::SPEED_ACTION:
+                return OSCAction::ActionType::LONG_SPEED;
+            default:
+                return OSCAction::ActionType::UNDEFINED;
         }
     }
 
@@ -214,6 +229,26 @@ namespace scenarioengine
         a->max_lateral_acc_ = action.maxLateralAcc;
 
         AddAction(a);
+    }
+
+    bool PlayerServer::InjectedActionOngoing(int action_type)
+    {
+        if (action_type < 0)
+        {
+            return action_.size() > 0;
+        }
+        else
+        {
+            for (size_t i = 0; i < action_.size(); i++)
+            {
+                if (action_[i]->action_type_ == static_cast<OSCAction::ActionType>(action_type))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     static void ServerThread(void *args)

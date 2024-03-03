@@ -68,7 +68,7 @@ namespace scenarioengine
             UNDEFINED_ELEMENT_TRANSITION
         } Transition;
 
-        ElementType        type_;
+        ElementType        element_type_;
         StoryBoardElement* parent_;
         int                num_executions_;
         int                max_num_executions_;
@@ -122,7 +122,7 @@ namespace scenarioengine
         }
 
         StoryBoardElement(ElementType type, StoryBoardElement* parent, int max_num_executions = -1)
-            : type_(type),
+            : element_type_(type),
               parent_(parent),
               num_executions_(0),
               max_num_executions_(max_num_executions),

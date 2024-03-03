@@ -94,12 +94,14 @@ namespace scenarioengine
         void InjectSpeedAction(SpeedActionStruct& action);
         void InjectLaneChangeAction(LaneChangeActionStruct& action);
         void InjectLaneOffsetAction(LaneOffsetActionStruct& action);
+        bool InjectedActionOngoing(int action_type = -1);
 
         int                                      AddAction(OSCAction* action);
         void                                     DeleteAction(int index);
         int                                      NumberOfActions();
         void                                     Step();
         std::string                              Type2Name(UDP_ACTION_TYPE type);
+        OSCAction::ActionType                    Type2OSCActionType(UDP_ACTION_TYPE type);
         std::vector<scenarioengine::OSCAction*>* GetInjectedActionsPtr()
         {
             return &action_;

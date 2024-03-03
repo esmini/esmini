@@ -33,20 +33,7 @@ namespace scenarioengine
     class OSCGlobalAction : public OSCAction
     {
     public:
-        typedef enum
-        {
-            ENVIRONMENT,  // not supported yet
-            ADD_ENTITY,
-            DELETE_ENTITY,
-            PARAMETER_SET,
-            VARIABLE_SET,
-            INFRASTRUCTURE,  // not supported yet
-            SWARM_TRAFFIC,
-        } Type;
-
-        Type type_;
-
-        OSCGlobalAction(OSCGlobalAction::Type type, StoryBoardElement* parent) : OSCAction(OSCAction::BaseType::GLOBAL, parent), type_(type)
+        OSCGlobalAction(OSCAction::ActionType action_type, StoryBoardElement* parent) : OSCAction(action_type, parent)
         {
         }
         virtual ~OSCGlobalAction() = default;
@@ -75,13 +62,9 @@ namespace scenarioengine
         std::string value_;
         Parameters* parameters_;
 
-        ParameterSetAction(StoryBoardElement* parent)
-            : OSCGlobalAction(OSCGlobalAction::Type::PARAMETER_SET, parent),
-              name_(""),
-              value_(""),
-              parameters_(0){};
+        ParameterSetAction(StoryBoardElement* parent) : OSCGlobalAction(ActionType::PARAMETER_SET, parent), name_(""), value_(""), parameters_(0){};
 
-        ParameterSetAction(const ParameterSetAction& action) : OSCGlobalAction(OSCGlobalAction::Type::PARAMETER_SET, action.parent_)
+        ParameterSetAction(const ParameterSetAction& action) : OSCGlobalAction(ActionType::PARAMETER_SET, action.parent_)
         {
             name_   = action.name_;
             value_  = action.value_;
@@ -114,13 +97,9 @@ namespace scenarioengine
         std::string value_;
         Parameters* variables_;
 
-        VariableSetAction(StoryBoardElement* parent)
-            : OSCGlobalAction(OSCGlobalAction::Type::VARIABLE_SET, parent),
-              name_(""),
-              value_(""),
-              variables_(0){};
+        VariableSetAction(StoryBoardElement* parent) : OSCGlobalAction(ActionType::VARIABLE_SET, parent), name_(""), value_(""), variables_(0){};
 
-        VariableSetAction(const ParameterSetAction& action) : OSCGlobalAction(OSCGlobalAction::Type::VARIABLE_SET, action.parent_)
+        VariableSetAction(const ParameterSetAction& action) : OSCGlobalAction(ActionType::VARIABLE_SET, action.parent_)
         {
             name_  = action.name_;
             value_ = action.value_;
@@ -153,19 +132,15 @@ namespace scenarioengine
         roadmanager::Position*       pos_;
         Entities*                    entities_;
 
-        AddEntityAction(StoryBoardElement* parent)
-            : OSCGlobalAction(OSCGlobalAction::Type::ADD_ENTITY, parent),
-              entity_(nullptr),
-              pos_(0),
-              entities_(nullptr){};
+        AddEntityAction(StoryBoardElement* parent) : OSCGlobalAction(ActionType::ADD_ENTITY, parent), entity_(nullptr), pos_(0), entities_(nullptr){};
 
         AddEntityAction(Object* entity, StoryBoardElement* parent)
-            : OSCGlobalAction(OSCGlobalAction::Type::ADD_ENTITY, parent),
+            : OSCGlobalAction(ActionType::ADD_ENTITY, parent),
               entity_(entity),
               pos_(0),
               entities_(nullptr){};
 
-        AddEntityAction(const AddEntityAction& action) : OSCGlobalAction(OSCGlobalAction::Type::ADD_ENTITY, action.parent_)
+        AddEntityAction(const AddEntityAction& action) : OSCGlobalAction(ActionType::ADD_ENTITY, action.parent_)
         {
             entity_   = action.entity_;
             entities_ = action.entities_;
@@ -199,19 +174,18 @@ namespace scenarioengine
         ScenarioGateway* gateway_;
 
         DeleteEntityAction(StoryBoardElement* parent)
-            : OSCGlobalAction(OSCGlobalAction::Type::DELETE_ENTITY, parent),
+            : OSCGlobalAction(ActionType::DELETE_ENTITY, parent),
               entity_(nullptr),
               entities_(nullptr),
               gateway_(nullptr){};
 
         DeleteEntityAction(Object* entity, StoryBoardElement* parent)
-            : OSCGlobalAction(OSCGlobalAction::Type::DELETE_ENTITY, parent),
+            : OSCGlobalAction(ActionType::DELETE_ENTITY, parent),
               entity_(entity),
               entities_(nullptr),
               gateway_(nullptr){};
 
-        DeleteEntityAction(const DeleteEntityAction& action, StoryBoardElement* parent)
-            : OSCGlobalAction(OSCGlobalAction::Type::DELETE_ENTITY, parent)
+        DeleteEntityAction(const DeleteEntityAction& action, StoryBoardElement* parent) : OSCGlobalAction(ActionType::DELETE_ENTITY, parent)
         {
             entity_   = action.entity_;
             entities_ = action.entities_;
@@ -265,8 +239,7 @@ namespace scenarioengine
         SwarmTrafficAction(StoryBoardElement* parent);
         ~SwarmTrafficAction();
 
-        SwarmTrafficAction(const SwarmTrafficAction& action, StoryBoardElement* parent)
-            : OSCGlobalAction(OSCGlobalAction::Type::SWARM_TRAFFIC, parent)
+        SwarmTrafficAction(const SwarmTrafficAction& action, StoryBoardElement* parent) : OSCGlobalAction(ActionType::SWARM_TRAFFIC, parent)
         {
             spawnedV.clear();
             centralObject_ = action.centralObject_;

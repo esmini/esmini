@@ -1645,17 +1645,19 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('2.010: Adding action LaneOffsetAction', log)  is not None)
         self.assertTrue(re.search('4.350: LaneOffsetAction runningState -> endTransition -> completeState', log)  is not None)
         self.assertTrue(re.search('7.010: Adding action LaneChangeAction', log)  is not None)
-        self.assertTrue(re.search('14.010: Adding action SpeedAction', log)  is not None)
-        self.assertTrue(re.search('20.440: SpeedAction runningState -> endTransition -> completeState', log)  is not None)
+        self.assertTrue(re.search('9.510: Adding action SpeedAction', log)  is not None)
+        self.assertTrue(re.search('10.020: Injected action LaneChangeAction finished', log)  is not None)
+        self.assertTrue(re.search('18.510: SpeedAction runningState -> endTransition -> completeState', log)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv()
 
         self.assertTrue(re.search('^5.000, 0, Ego, 9.480, 199.965, -0.348, 1.562, 0.002, 0.000, 30.000, -0.000, 1.315', csv, re.MULTILINE))
         self.assertTrue(re.search('^8.350, 0, Ego, 8.997, 300.139, -0.528, 1.625, 0.002, 0.000, 30.000, 0.001, 5.714', csv, re.MULTILINE))
-        self.assertTrue(re.search('^11.000, 0, Ego, 8.194, 379.596, -0.682, 1.546, 0.002, 6.283, 30.000, -0.001, 0.379', csv, re.MULTILINE))
-        self.assertTrue(re.search('^20.430, 0, Ego, 17.077, 566.244, -0.838, 1.495, 6.283, 6.283, 0.001, -0.000, 0.247', csv, re.MULTILINE))
-        self.assertTrue(re.search('^20.440, 0, Ego, 17.077, 566.244, -0.838, 1.495, 6.283, 6.283, 0.000, -0.000, 0.247', csv, re.MULTILINE))
+        self.assertTrue(re.search('^9.700, 0, Ego, 7.439, 340.602, -0.607, 1.575, 0.002, 0.000, 29.964, -0.008, 2.041', csv, re.MULTILINE))
+        self.assertTrue(re.search('^11.000, 0, Ego, 8.166, 378.486, -0.679, 1.546, 0.002, 6.283, 27.833, -0.000, 3.483', csv, re.MULTILINE))
+        self.assertTrue(re.search('^17.780, 0, Ego, 11.273, 469.854, -0.817, 1.526, 0.001, 6.283, 0.575, -0.001, 0.794', csv, re.MULTILINE))
+        self.assertTrue(re.search('^17.790, 0, Ego, 11.273, 469.860, -0.818, 1.526, 0.001, 6.283, 0.560, -0.000, 0.810', csv, re.MULTILINE))
 
 
 if __name__ == "__main__":

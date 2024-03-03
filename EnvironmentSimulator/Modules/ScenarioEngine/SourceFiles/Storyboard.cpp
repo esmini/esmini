@@ -32,7 +32,7 @@ std::vector<StoryBoardElement*> StoryBoardElement::FindChildByTypeAndName(Elemen
 {
     std::vector<StoryBoardElement*> elements;
 
-    if (type == type_ &&                        // types should match
+    if (type == element_type_ &&                // types should match
         name.size() <= GetFullPath().size() &&  // size of given name path must not be longer than element full path
         name.size() >= GetName().size())        // size of given name path must not be shorter than element name
     {
@@ -43,7 +43,7 @@ std::vector<StoryBoardElement*> StoryBoardElement::FindChildByTypeAndName(Elemen
             return elements;
         }
     }
-    else if (type > type_)
+    else if (type > element_type_)
     {
         for (auto child : *GetChildren())
         {
@@ -189,7 +189,7 @@ void Event::Start(double simTime)
     for (size_t i = 0; i < action_.size(); i++)
     {
         // Terminate any ongoing action on same object and domain
-        if (action_[i]->base_type_ == OSCAction::BaseType::PRIVATE)
+        if (action_[i]->GetBaseType() == OSCAction::BaseType::PRIVATE)
         {
             OSCPrivateAction* pa  = static_cast<OSCPrivateAction*>(action_[i]);
             Object*           obj = pa->object_;
@@ -198,7 +198,7 @@ void Event::Start(double simTime)
                 // First check init actions
                 for (size_t j = 0; j < obj->initActions_.size(); j++)
                 {
-                    if (obj->initActions_[j]->base_type_ == OSCAction::BaseType::PRIVATE &&
+                    if (obj->initActions_[j]->GetBaseType() == OSCAction::BaseType::PRIVATE &&
                         obj->initActions_[j]->GetCurrentState() == StoryBoardElement::State::RUNNING)
                     {
                         if (static_cast<int>(obj->initActions_[j]->GetDomain()) & static_cast<int>(pa->GetDomain()))
@@ -218,11 +218,11 @@ void Event::Start(double simTime)
                     for (size_t k = 0; k < obj->objectEvents_[j]->action_.size(); k++)
                     {
                         // Make sure the object's action is of private type
-                        if (obj->objectEvents_[j]->action_[k]->base_type_ == OSCAction::BaseType::PRIVATE)
+                        if (obj->objectEvents_[j]->action_[k]->GetBaseType() == OSCAction::BaseType::PRIVATE)
                         {
                             OSCPrivateAction* pa2 = static_cast<OSCPrivateAction*>(obj->objectEvents_[j]->action_[k]);
                             if (pa2 != pa && pa2->object_->GetId() == pa->object_->GetId() &&
-                                pa2->GetCurrentState() == StoryBoardElement::State::RUNNING && pa2->base_type_ == OSCAction::BaseType::PRIVATE)
+                                pa2->GetCurrentState() == StoryBoardElement::State::RUNNING && pa2->GetBaseType() == OSCAction::BaseType::PRIVATE)
                             {
                                 if (static_cast<int>(pa2->GetDomain()) & static_cast<int>(pa->GetDomain()))
                                 {
@@ -242,13 +242,13 @@ void Event::Start(double simTime)
         // Restart actions
         action_[i]->Start(adjustedTime);
 
-        if (action_[i]->base_type_ == OSCAction::BaseType::PRIVATE)
+        if (action_[i]->GetBaseType() == OSCAction::BaseType::PRIVATE)
         {
             // When using a TeleportAction for the Ghost-vehicle, we need to set back the starting simTime for other Actions in the same Event.
             // This is an easy solution. A nicer one could be to access ScenarioEngines getSimulationTime() when calling action Start.
             OSCAction*        action = action_[i];
             OSCPrivateAction* pa     = static_cast<OSCPrivateAction*>(action);
-            if (pa->object_->IsGhost() && pa->type_ == OSCPrivateAction::ActionType::TELEPORT)
+            if (pa->object_->IsGhost() && pa->action_type_ == OSCPrivateAction::ActionType::TELEPORT)
             {
                 adjustedTime = simTime - pa->object_->GetHeadstartTime();
             }
@@ -264,7 +264,7 @@ void Event::Step(double simTime, double dt)
         {
             bool is_private_ghost = [&]()
             {
-                if (action->base_type_ == OSCAction::BaseType::PRIVATE)
+                if (action->GetBaseType() == OSCAction::BaseType::PRIVATE)
                 {
                     return (static_cast<OSCPrivateAction*>(action)->object_->IsGhost());
                 }

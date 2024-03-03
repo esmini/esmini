@@ -58,7 +58,7 @@ se.SE_Init(sys.argv[1].encode('ascii'), 0, 1, 0, 0)
 
 state = 0  # minimalistic state machine for trigging various actoins
 
-while se.SE_GetQuitFlag() == 0 and se.SE_GetSimulationTime() < 22.0:
+while se.SE_GetQuitFlag() == 0 and se.SE_GetSimulationTime() < 20.0:
 
     if state == 0 and se.SE_GetSimulationTime() > 2.0:
         print("Injecting lane offset action");
@@ -78,13 +78,13 @@ while se.SE_GetQuitFlag() == 0 and se.SE_GetSimulationTime() < 22.0:
         lane_change_action.transition_value = 3.0;
         se.SE_InjectLaneChangeAction(ct.byref(lane_change_action));
         state += 1
-    elif state == 2 and se.SE_GetSimulationTime() > 14.0:
+    elif state == 2 and se.SE_GetSimulationTime() > 9.5:
         print("Injecting speed action");
         speed_action.id               = 0;
         speed_action.speed            = 0.0;
         speed_action.transition_shape = 0;
         speed_action.transition_dim   = 1;
-        speed_action.transition_value = 7.0;
+        speed_action.transition_value = 5.0;
         se.SE_InjectSpeedAction(ct.byref(speed_action));
         state += 1
 

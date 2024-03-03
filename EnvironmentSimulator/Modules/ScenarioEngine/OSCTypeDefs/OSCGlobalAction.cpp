@@ -195,7 +195,7 @@ void printTree(aabbTree::Tree& tree, char filename[])
     file.close();
 }
 
-SwarmTrafficAction::SwarmTrafficAction(StoryBoardElement* parent) : OSCGlobalAction(OSCGlobalAction::Type::SWARM_TRAFFIC, parent), centralObject_(0)
+SwarmTrafficAction::SwarmTrafficAction(StoryBoardElement* parent) : OSCGlobalAction(ActionType::SWARM_TRAFFIC, parent), centralObject_(0)
 {
     spawnedV.clear();
     counter_ = 0;

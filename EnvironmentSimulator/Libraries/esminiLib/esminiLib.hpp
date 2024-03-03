@@ -1582,6 +1582,12 @@ extern "C"
     */
     SE_DLL_API void SE_InjectLaneOffsetAction(SE_LaneOffsetActionStruct *action);
 
+    /**
+            Check whether any injected action is ongoing
+            @param action_type Type of action, see SE_ActionType enum. Set to -1 to check for any action.
+    */
+    SE_DLL_API bool SE_InjectedActionOngoing(int action_type);
+
 #ifdef __cplusplus
 }
 #endif

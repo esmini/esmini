@@ -19,21 +19,22 @@ unsigned int OSCAction::n_actions_ = 0;
 
 std::string OSCAction::BaseType2Str()
 {
-    if (base_type_ == BaseType::GLOBAL)
+    BaseType base_type = GetBaseType();
+    if (base_type == BaseType::GLOBAL)
     {
         return "Global";
     }
-    else if (base_type_ == BaseType::PRIVATE)
+    else if (base_type == BaseType::PRIVATE)
     {
         return "Private";
     }
-    else if (base_type_ == BaseType::USER_DEFINED)
+    else if (base_type == BaseType::USER_DEFINED)
     {
         return "User defined";
     }
     else
     {
-        LOG("Undefined Base Type: %d", base_type_);
+        LOG("Undefined Base Type: %d", base_type);
     }
 
     return "Undefined";
