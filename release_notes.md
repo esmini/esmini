@@ -1,5 +1,16 @@
 ## esmini release notes
 
+### 2024-03-04 Version 2.37.1
+
+New features:
+- Add action injection capabilities to [esminiLib API](https://github.com/esmini/esmini/blob/8baa199fb3a5b49c7dfb3accf33be5a3410241f7/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L1552C1-L1575C1)
+  - see example [User guide - Inject actions](https://esmini.github.io/#_inject_actions) (C++ and Python)
+
+Improvements and fixes:
+- Fix OSI header file dependency for non OSI builds ([issue #540](https://github.com/esmini/esmini/issues/540))
+- Group sign bounding boxes with odr features, toggle key 'o' ([issue #530](https://github.com/esmini/esmini/issues/530))
+- In lib header, replace outdated element state description with enum reference ([issue #541](https://github.com/esmini/esmini/issues/541))
+
 ### 2024-02-26 Version 2.37.0
 
 New features:
