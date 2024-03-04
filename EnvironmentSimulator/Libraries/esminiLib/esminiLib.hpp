@@ -1137,22 +1137,7 @@ extern "C"
     /**
     Registers a function to be called back from esmini every time a StoryBoardElement changes its state.
     The name of the respective StoryBoardElement, the type, state, and full path (parent names delimited by /) will be returned.
-
-     Values for the StoryBoardElement type
-        STORY = 1,
-        ACT = 2,
-        MANEUVER_GROUP = 3,
-        MANEUVER = 4,
-        EVENT = 5,
-        ACTION = 6,
-        UNDEFINED_ELEMENT_TYPE = 0
-
-     Values for the StoryBoardElement state
-        STANDBY = 1,
-        RUNNING = 2,
-        COMPLETE = 3,
-        UNDEFINED_ELEMENT_STATE = 0
-
+    See StoryBoardElement.hpp -> StoryBoardElement class ElementType and State enums for type and state values.
     Registered callbacks will be cleared between SE_Init calls.
     @param fnPtr A pointer to the function to be invoked
     */
