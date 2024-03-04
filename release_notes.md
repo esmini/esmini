@@ -25,6 +25,7 @@ Improvements and fixes:
   - ensure total speed (lat + long) is maintained
   - handle edge case of requested lateral movement exceeding speed
   - support only lateral speed component (edge case above)
+- Fix CommonMini version generation ([PR #537](https://github.com/esmini/esmini/issues/537))
 
 ### 2024-02-10 Version 2.36.5
 
