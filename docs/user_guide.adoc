@@ -1169,7 +1169,7 @@ From v2.37.0 esmini supports road friction defined in https://publications.pages
 
 Each lane within a lane section can have one or multiple segments of individual friction values, specified by s-value and friction coefficient.
 
-Default friction coefficient is 1.0 as of v2.37.0, but might change in later versions. Lower friction (<1.0, slippery) will be visualized as bluish color. The lower friction the more blue color. High friction values (>1.0,  "grippy")
+Default friction coefficient is 1.0 as of v2.37.0, but might change in later versions. Lower friction (<1.0, slippery) will be visualized as bluish color. The lower friction, the more blue color. High friction values (>1.0,  "grippy") is indicated by redish color.
 
 The friction is calculated per wheel. The values are reported in OSI ground-truth.
 
@@ -1177,6 +1177,138 @@ Example road: https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Uni
 
 .Road with various friction segments, coefficient evaluated per wheel
 image::friction.jpg[]
+
+=== SUMO integration
+
+https://eclipse.dev/sumo/[SUMO] is a great open source traffic simulation tool. It has been integrated with esmini, making it possible to run SUMO simulations in esmini, and even mix or co-simulate SUMO vehicles with OpenSCENARIO vehicles.
+
+*NOTE:* Even though SUMO has been linked with esmini for quite long, it's on a experimental level and has not been used a lot. Hence, expect shortcomings and issues. The currently integrated SUMO version, as of esmini v2.37.1, is 1.6.0 while the current SUMO version is 1.19.0. There is plans to update SUMO version in esmini in a soon future.
+
+This chapter explains how to create a SUMO simulation and then how to use it in esmini. For just using SUMO simulations there is no need to install SUMO, it is already embedded with esmini (as long as it has not been explicitly excluded, see <<Slim esmini - customize configration>>). Only to create SUMO content it has to be installed.
+
+==== Install SUMO
+
+1. Get SUMO from here: https://eclipse.dev/sumo/
+2. Install normally, check any option to add sumo to environment path variable
+
+==== Try example from esmini
+
+. Launch `sumo-gui` application
+. File -> Open Simulation
+. Navigate to `esmini/resources/sumo_inputs` and select `multi_intersections.sumocfg`
+. Set Delay (ms) to 100, otherwise simulation will run super-quick
+. Run (Play button or Simulation -> Run)
+
+==== Running the same scenario in esmini
+
+. In a terminal, from esmini root folder, run:
+. `./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/sumo-test.xosc`
+
+==== Create a SUMO simulation
+
+First, there is a great complete guide at https://sumo.dlr.de/docs/
+
+The main flow of our example is:
+
+. Convert an OpenDRIVE file into a SUMO road network
+. Identify some trips (start and end points) within the road network
+. From the trips, resolve complete routes wthich are assigned to vehicles and distribute over time
+. Create a configuration referring to the road network and route definition
+
+Step-by-step:
+
+. Create a new folder, e.g. "my_sumo", for this example
+. Copy esmini/EnvironmentSimulator/Unittest/xodr/simple_3way_motorway.xodr into the new folder
+. Open a terminal in the new folder
+. Convert the xodr into a SUMO https://sumo.dlr.de/docs/Networks/SUMO_Road_Networks.html[road network]: +
+   `netconvert --opendrive fabriksgatan.xodr -o my_sumo.net.xml`
+. Create some traffic using https://sumo.dlr.de/docs/Tools/Trip.html#randomtripspy[randomTrips.py] (and https://sumo.dlr.de/docs/duarouter.html[duarouter]): +
+    `randomTrips.py -n my_sumo.net.xml -e 60 -o my_sumo.trips.xml --route-file my_sumo.rou.xml`
++
+If this fails, it may be because of lacking .py file association. Try:
++
+```
+python3 randomTrips.py ...
+python randomTrips.py ...
+python3 tools/randomTrips.py ...
+python tools/randomTrips.py ...
+```
+
+[start=6]
+. Create the configuration file
++
+Save the following lines into a new file named "my_sumo.sumocfg":
++
+[source,xml]
+----
+<?xml version="1.0" encoding="iso-8859-1"?>
+<configuration>
+    <input>
+        <net-file value="my_sumo.net.xml"/>
+        <route-files value="my_sumo.rou.xml"/>
+    </input>
+    <time>
+        <begin value="0"/>
+        <end value="60"/>
+        <step-length value="0.01"/>
+    </time>
+</configuration>
+----
+
+. Open Sumo, load the created config file "my_sumo.sumocfg" and run as in first example, <<Try example from esmini>>.
+
+==== Connect a SUMO simulation to a scenario in esmini
+
+Currently, as of esmini v2.37.1, SUMO is integrated in terms of a controller. To add a SUMO simulation, define an entity as usual, assign the SumoController and set its "filepath" property to the sumocfg file.
+
+Now when we have a complete SUMO configuration, do the following steps in order to use it in esmini:
+
+. Copy the three files: my_sumo.net.xml, my_sumo.rou.xml and my_sumo.sumocfg (roadnetwork, routes, config) to `esmini/resources/sumo_inputs`
+
+. Create a file named "my_sumo.xosc", in `esmini/resources/xosc` with the following content:
++
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSCENARIO>
+    <FileHeader author="esmini team" date="2024-03-06T10:00:00" description="sumo integration example" revMajor="1" revMinor="2"/>
+    <ParameterDeclarations/>
+    <CatalogLocations>
+        <VehicleCatalog>
+            <Directory path="../xosc/Catalogs/Vehicles"/>
+        </VehicleCatalog>
+        <ControllerCatalog>
+            <Directory path="../xosc/Catalogs/Controllers"/>
+        </ControllerCatalog>
+    </CatalogLocations>
+    <RoadNetwork>
+        <LogicFile filepath="../xodr/fabriksgatan.xodr"/>
+    </RoadNetwork>
+    <Entities>
+        <ScenarioObject name="SumoVehicles">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>
+            <ObjectController>
+                <Controller name="SumoController">
+                    <Properties>
+                        <File filepath="../sumo_inputs/my_sumo.sumocfg"/>
+                    </Properties>
+                </Controller>
+            </ObjectController>
+        </ScenarioObject>
+    </Entities>
+    <Storyboard>
+        <Init>
+            <Actions/>
+        </Init>
+        <StopTrigger/>
+    </Storyboard>
+</OpenSCENARIO>
+----
+
+[start=3]
+. Run from esmini root folder:
++
+`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/my_sumo.xosc`
 
 == Positioning
 
@@ -2414,6 +2546,25 @@ This should be it.
 
 . `pip uninstall protobuf`
 . `pip uninstall open-simulation-interface`
+
+==== The scenario runs too fast or too slow
+
+esmini can run in two different time modes: 1. Real-time and 2. Fixed-time. Default is real-time.
+
+The following command, from esmini root, will run real-time: +
+`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in.xosc` +
+
+This one fixed-time: +
+`./bin/esmini --window 60 60 800 400 --fixed_timestep 0.05 --osc ./resources/xosc/cut-in.xosc`
+
+The difference is basically that real-time will run with as small time-steps as possible (actually limit at 1 ms to avoid unnecessary CPU load), maxim
+zing precision but constrained by system clock. In other words, the scenario will play out in "natural" speed, good for previewing or demonstrating sc
+narios. Each timestep is calculated by esmini based on passed system-time since last frame.
+
+The fixed-time is simpler, esmini will simply execute the scenario as fast as possible applying the specified delta-time for each step. Good for runni
+g tests for later post processing of resulting logs, data or OSI files.
+
+A common use-case is to run esmini quick/headless and then utilize the replayer for viewing the result. See more info here: <<Replay scenario>>
 
 === Further issues at esmini GitHub page
 The https://github.com/esmini/esmini/issues[Issues tab at esmini GitHub page] is a valuable source of questions and answers. To search in all issues, make sure to set filter: `is:issue`.
