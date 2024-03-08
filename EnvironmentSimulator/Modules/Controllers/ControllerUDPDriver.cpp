@@ -112,7 +112,7 @@ ControllerUDPDriver::ControllerUDPDriver(InitArgs* args)
             LOG("ExternalDriverModelController only support override mode, ignoring requested additive mode");
         }
     }
-    mode_ = Mode::MODE_OVERRIDE;
+    mode_ = ControlOperationMode::MODE_OVERRIDE;
 
     memset(static_cast<void*>(&msg), 0, sizeof(msg));
     memset(static_cast<void*>(&lastMsg), 0, sizeof(lastMsg));
@@ -346,7 +346,10 @@ void ControllerUDPDriver::Step(double timeStep)
     Controller::Step(timeStep);
 }
 
-void ControllerUDPDriver::Activate(DomainActivation lateral, DomainActivation longitudinal)
+int ControllerUDPDriver::Activate(ControlActivationMode lat_activation_mode,
+                                  ControlActivationMode long_activation_mode,
+                                  ControlActivationMode light_activation_mode,
+                                  ControlActivationMode anim_activation_mode)
 {
     if (object_)
     {
@@ -385,7 +388,7 @@ void ControllerUDPDriver::Activate(DomainActivation lateral, DomainActivation lo
     steer      = vehicle::STEERING_NONE;
     accelerate = vehicle::THROTTLE_NONE;
 
-    Controller::Activate(lateral, longitudinal);
+    return Controller::Activate(lat_activation_mode, long_activation_mode, light_activation_mode, anim_activation_mode);
 }
 
 void ControllerUDPDriver::ReportKeyEvent(int key, bool down)

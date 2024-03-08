@@ -142,22 +142,50 @@ std::map<int, std::string> ParseModelIds()
     return entity_model_map_;
 }
 
-std::string ControlDomain2Str(ControlDomains domains)
+std::string ControlDomain2Str(unsigned int domains)
 {
-    if (domains == ControlDomains::DOMAIN_BOTH)
+    std::string str;
+
+    if (domains != static_cast<unsigned int>(ControlDomains::DOMAIN_NONE))
     {
-        return "lateral and longitudinal";
+        if (domains & static_cast<unsigned int>(ControlDomains::DOMAIN_LAT))
+        {
+            str += "Lateral";
+        }
+
+        if (domains & static_cast<unsigned int>(ControlDomains::DOMAIN_LONG))
+        {
+            if (!str.empty())
+            {
+                str += " & ";
+            }
+            str += "Longitudinal";
+        }
+
+        if (domains & static_cast<unsigned int>(ControlDomains::DOMAIN_LIGHT))
+        {
+            if (!str.empty())
+            {
+                str += " & ";
+            }
+            str += "lighting";
+        }
+
+        if (domains & static_cast<unsigned int>(ControlDomains::DOMAIN_ANIM))
+        {
+            if (!str.empty())
+            {
+                str += " & ";
+            }
+            str += "Animation";
+        }
     }
-    else if (domains == ControlDomains::DOMAIN_LAT)
+    else
     {
-        return "lateral";
-    }
-    else if (domains == ControlDomains::DOMAIN_LONG)
-    {
-        return "longitudinal";
+        str = "None";
     }
 
-    return "none";
+    return str;
 }
 
 bool FileExists(const char* fileName)

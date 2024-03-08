@@ -1492,7 +1492,8 @@ int ScenarioReader::parseEntities()
                         if (ctrl)
                         {
                             // ObjectControllers are assigned automatically
-                            ctrl->Assign(obj);
+                            obj->AssignController(ctrl);
+                            ctrl->LinkObject(obj);
                         }
                     }
                 }
@@ -1526,7 +1527,7 @@ int ScenarioReader::parseEntities()
                     obj->id_ = -1;
 
                     // SUMO controller is special in the sense that it is always active
-                    ctrl->Activate(Controller::DomainActivation::ON, Controller::DomainActivation::ON);
+                    ctrl->Activate(ControlActivationMode::ON, ControlActivationMode::ON, ControlActivationMode::ON, ControlActivationMode::ON);
 
                     // SUMO controller is not assigned to any scenario vehicle
                 }
@@ -2209,30 +2210,55 @@ OSCUserDefinedAction *ScenarioReader::parseOSCUserDefinedAction(pugi::xml_node a
 
 ActivateControllerAction *ScenarioReader::parseActivateControllerAction(pugi::xml_node node, Event *parent)
 {
-    Controller::DomainActivation lateral      = Controller::DomainActivation::UNDEFINED;
-    Controller::DomainActivation longitudinal = Controller::DomainActivation::UNDEFINED;
-    std::string                  lat_str      = parameters.ReadAttribute(node, "lateral");
-    std::string                  long_str     = parameters.ReadAttribute(node, "longitudinal");
+    ControlActivationMode lat_mode   = ControlActivationMode::UNDEFINED;
+    ControlActivationMode long_mode  = ControlActivationMode::UNDEFINED;
+    ControlActivationMode light_mode = ControlActivationMode::UNDEFINED;
+    ControlActivationMode anim_mode  = ControlActivationMode::UNDEFINED;
+
+    std::string lat_str   = parameters.ReadAttribute(node, "lateral");
+    std::string long_str  = parameters.ReadAttribute(node, "longitudinal");
+    std::string light_str = parameters.ReadAttribute(node, "lighting");
+    std::string anim_str  = parameters.ReadAttribute(node, "animation");
+    std::string name_str  = parameters.ReadAttribute(node, "controllerRef");
 
     if (lat_str == "false")
     {
-        lateral = Controller::DomainActivation::OFF;
+        lat_mode = ControlActivationMode::OFF;
     }
     else if (lat_str == "true")
     {
-        lateral = Controller::DomainActivation::ON;
+        lat_mode = ControlActivationMode::ON;
     }
 
     if (long_str == "false")
     {
-        longitudinal = Controller::DomainActivation::OFF;
+        long_mode = ControlActivationMode::OFF;
     }
     else if (long_str == "true")
     {
-        longitudinal = Controller::DomainActivation::ON;
+        long_mode = ControlActivationMode::ON;
     }
 
-    ActivateControllerAction *activateControllerAction = new ActivateControllerAction(lateral, longitudinal, parent);
+    if (light_str == "false")
+    {
+        light_mode = ControlActivationMode::OFF;
+    }
+    else if (light_str == "true")
+    {
+        light_mode = ControlActivationMode::ON;
+    }
+
+    if (anim_str == "false")
+    {
+        anim_mode = ControlActivationMode::OFF;
+    }
+    else if (anim_str == "true")
+    {
+        LOG("Animation activation is not supported yet");
+        anim_mode = ControlActivationMode::ON;
+    }
+
+    ActivateControllerAction *activateControllerAction = new ActivateControllerAction(name_str, lat_mode, long_mode, light_mode, anim_mode, parent);
 
     return activateControllerAction;
 }
@@ -2955,11 +2981,11 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                     // otherwise only lateral
                     if (action_follow_trajectory->timing_domain_ == FollowTrajectoryAction::TimingDomain::NONE)
                     {
-                        action_follow_trajectory->domain_ = ControlDomains::DOMAIN_LAT;
+                        action_follow_trajectory->domains_ = static_cast<unsigned int>(ControlDomains::DOMAIN_LAT);
                     }
                     else
                     {
-                        action_follow_trajectory->domain_ = ControlDomains::DOMAIN_BOTH;
+                        action_follow_trajectory->domains_ = static_cast<unsigned int>(ControlDomains::DOMAIN_LAT_AND_LONG);
                     }
 
                     action = action_follow_trajectory;
@@ -3003,6 +3029,17 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
             {
                 if (controllerChild.name() == std::string("AssignControllerAction"))
                 {
+                    std::string ctrl_name;
+                    if (GetVersionMinor() >= 3)
+                    {
+                        // expect an "ObjectController" parent umbrella element
+                        if (!controllerChild.child("ObjectController").empty())
+                        {
+                            controllerChild = controllerChild.child("ObjectController");
+                            ctrl_name       = parameters.ReadAttribute(controllerChild, "name");
+                        }
+                    }
+
                     for (pugi::xml_node controllerDefNode = controllerChild.first_child(); controllerDefNode;
                          controllerDefNode                = controllerDefNode.next_sibling())
                     {
@@ -3039,33 +3076,60 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 
                         if (controller)
                         {
+                            controller->SetName(ctrl_name);
                             controller_.push_back(controller);
+                            controller->LinkObject(object);
                         }
 
-                        Controller::DomainActivation lateral      = Controller::DomainActivation::UNDEFINED;
-                        Controller::DomainActivation longitudinal = Controller::DomainActivation::UNDEFINED;
-                        std::string                  lat_str      = parameters.ReadAttribute(controllerDefNode, "lateral");
-                        std::string                  long_str     = parameters.ReadAttribute(controllerDefNode, "longitudinal");
+                        ControlActivationMode lat_mode   = ControlActivationMode::UNDEFINED;
+                        ControlActivationMode long_mode  = ControlActivationMode::UNDEFINED;
+                        ControlActivationMode light_mode = ControlActivationMode::UNDEFINED;
+                        ControlActivationMode anim_mode  = ControlActivationMode::UNDEFINED;
+
+                        std::string lat_str   = parameters.ReadAttribute(controllerDefNode, "lateral");
+                        std::string long_str  = parameters.ReadAttribute(controllerDefNode, "longitudinal");
+                        std::string light_str = parameters.ReadAttribute(controllerDefNode, "lighting");
+                        std::string anim_str  = parameters.ReadAttribute(controllerDefNode, "animation");
 
                         if (lat_str == "false")
                         {
-                            lateral = Controller::DomainActivation::OFF;
+                            lat_mode = ControlActivationMode::OFF;
                         }
                         else if (lat_str == "true")
                         {
-                            lateral = Controller::DomainActivation::ON;
+                            lat_mode = ControlActivationMode::ON;
                         }
 
                         if (long_str == "false")
                         {
-                            longitudinal = Controller::DomainActivation::OFF;
+                            long_mode = ControlActivationMode::OFF;
                         }
                         else if (long_str == "true")
                         {
-                            longitudinal = Controller::DomainActivation::ON;
+                            long_mode = ControlActivationMode::ON;
                         }
 
-                        AssignControllerAction *assignControllerAction = new AssignControllerAction(controller, lateral, longitudinal, parent);
+                        if (light_str == "false")
+                        {
+                            light_mode = ControlActivationMode::OFF;
+                        }
+                        else if (light_str == "true")
+                        {
+                            light_mode = ControlActivationMode::ON;
+                        }
+
+                        if (anim_str == "false")
+                        {
+                            anim_mode = ControlActivationMode::OFF;
+                        }
+                        else if (anim_str == "true")
+                        {
+                            LOG("Animation activation is not supported yet");
+                            anim_mode = ControlActivationMode::ON;
+                        }
+
+                        AssignControllerAction *assignControllerAction =
+                            new AssignControllerAction(controller, lat_mode, long_mode, light_mode, anim_mode, parent);
 
                         action = assignControllerAction;
                     }
@@ -3343,7 +3407,15 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                     {
                         LOG("In OSC 1.0 ActivateControllerAction should be placed under PrivateAction. Accepting anyway.");
                     }
+
+                    std::string ctrl_name;
+                    if (GetVersionMinor() >= 3)
+                    {
+                        ctrl_name = parameters.ReadAttribute(controllerChild, "objectControllerRef");
+                    }
+
                     ActivateControllerAction *activateControllerAction = parseActivateControllerAction(controllerChild, parent);
+                    activateControllerAction->ctrl_name_               = ctrl_name;
 
                     action = activateControllerAction;
                 }
@@ -3402,6 +3474,8 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
             action->SetName("no name");
         }
         action->object_ = object;
+
+        action->SetScenarioEngine(scenarioEngine_);
     }
 
     return action;

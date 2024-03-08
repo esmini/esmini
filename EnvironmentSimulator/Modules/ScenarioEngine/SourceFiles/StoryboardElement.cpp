@@ -211,6 +211,11 @@ void StoryBoardElement::Stop()
         child->Stop();
     }
 
+    if (GetCurrentState() == State::INIT)
+    {
+        return;  // not even standby yet
+    }
+
     if (GetCurrentState() == State::COMPLETE)
     {
         return;  // already complete

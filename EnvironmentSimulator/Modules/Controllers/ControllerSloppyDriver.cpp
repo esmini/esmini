@@ -61,15 +61,17 @@ void ControllerSloppyDriver::Step(double timeStep)
 
     time_ += timeStep;
 
-    if (object_->CheckDirtyBits(Object::DirtyBit::SPEED))
+    // First check if speed has been set from somewhere else (another action or controller), respect it and update setSpeed
+    if (abs(object_->GetSpeed() - currentSpeed_) > 1e-3)
     {
         // Speed has been updated by Default Driver, update our reference speed
         referenceSpeed_ = object_->GetSpeed();
     }
+
     currentSpeed_ = object_->GetSpeed();
 
     // Do modification to a local position object and then report to gateway
-    if (object_ && IsActiveOnDomains(ControlDomains::DOMAIN_LONG))
+    if (object_ && IsActiveOnDomains(static_cast<unsigned int>(ControlDomains::DOMAIN_LONG)))
     {
         if (speedTimer_.Expired(time_))
         {
@@ -79,7 +81,7 @@ void ControllerSloppyDriver::Step(double timeStep)
 
             // target speed +/- 35%
             initSpeed_    = referenceSpeed_ * targetFactor_;
-            targetFactor_ = 1 + 0.7 * sloppiness_ * MIN(sloppiness_, 1.0) * SE_Env::Inst().GetRand().GetRealBetween(0.5, 1.5);
+            targetFactor_ = 1.0 + sloppiness_ * SE_Env::Inst().GetRand().GetRealBetween(-0.35, 0.35);
         }
 
         double steplen = 0;
@@ -88,7 +90,7 @@ void ControllerSloppyDriver::Step(double timeStep)
         currentSpeed_ = initSpeed_ * (1 - weight) + targetFactor_ * referenceSpeed_ * weight;
         currentSpeed_ = MAX(currentSpeed_, 0);
 
-        if (mode_ == Mode::MODE_OVERRIDE)
+        if (mode_ == ControlOperationMode::MODE_OVERRIDE)
         {
             steplen = currentSpeed_ * timeStep;
             object_->SetSpeed(currentSpeed_);
@@ -113,7 +115,7 @@ void ControllerSloppyDriver::Step(double timeStep)
         }
     }
 
-    if (object_ && IsActiveOnDomains(ControlDomains::DOMAIN_LAT))
+    if (object_ && IsActiveOnDomains(static_cast<unsigned int>(ControlDomains::DOMAIN_LAT)))
     {
         if (lateralTimer_.Expired(time_))
         {
@@ -126,7 +128,7 @@ void ControllerSloppyDriver::Step(double timeStep)
             lateralTimer_.Start(time_, timerValue);
         }
         double h_error{};
-        if (mode_ == Mode::MODE_OVERRIDE)
+        if (mode_ == ControlOperationMode::MODE_OVERRIDE)
         {
             h_error = object_->pos_.GetHRelative();
         }
@@ -151,7 +153,7 @@ void ControllerSloppyDriver::Step(double timeStep)
         if (object_->GetSpeed() > SMALL_NUMBER)  // Use old speed set by Default Controller to decide whether heading should be updated
         {
             object_->pos_.SetTrackPos(object_->pos_.GetTrackId(), object_->pos_.GetS(), object_->pos_.GetT() + dt);
-            if (mode_ == Mode::MODE_OVERRIDE)
+            if (mode_ == ControlOperationMode::MODE_OVERRIDE)
             {
                 object_->pos_.SetHeading(currentH_ + dh);
             }
@@ -166,15 +168,15 @@ void ControllerSloppyDriver::Step(double timeStep)
     }
 
     gateway_->updateObjectPos(object_->id_, 0.0, &object_->pos_);
-    if (mode_ == Mode::MODE_OVERRIDE)
-    {
-        gateway_->updateObjectSpeed(object_->id_, 0.0, object_->GetSpeed());
-    }
+    gateway_->updateObjectSpeed(object_->GetId(), 0.0, currentSpeed_);
 
     Controller::Step(timeStep);
 }
 
-void ControllerSloppyDriver::Activate(DomainActivation lateral, DomainActivation longitudinal)
+int ControllerSloppyDriver::Activate(ControlActivationMode lat_activation_mode,
+                                     ControlActivationMode long_activation_mode,
+                                     ControlActivationMode light_activation_mode,
+                                     ControlActivationMode anim_activation_mode)
 {
     if (object_)
     {
@@ -195,7 +197,7 @@ void ControllerSloppyDriver::Activate(DomainActivation lateral, DomainActivation
         currentH_   = object_->pos_.GetHRelative();
     }
 
-    Controller::Activate(lateral, longitudinal);
+    return Controller::Activate(lat_activation_mode, long_activation_mode, light_activation_mode, anim_activation_mode);
 }
 
 void ControllerSloppyDriver::ReportKeyEvent(int key, bool down)

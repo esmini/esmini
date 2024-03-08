@@ -321,8 +321,8 @@ int ScenarioEngine::step(double deltaSimTime)
         }
 
         // Do not move objects when speed is zero,
-        // and only ghosts allowed to execute during ghost (restart
-        if (!(obj->IsControllerActiveOnDomains(ControlDomains::DOMAIN_BOTH) && obj->GetControllerMode() == Controller::Mode::MODE_OVERRIDE) &&
+        // and only ghosts allowed to execute during ghost restart
+        if (!(obj->IsControllerModeOnDomains(ControlOperationMode::MODE_OVERRIDE, static_cast<unsigned int>(ControlDomains::DOMAIN_LAT_AND_LONG))) &&
             fabs(obj->speed_) > SMALL_NUMBER &&
             // Skip update for non ghost objects during ghost restart
             !(!obj->IsGhost() && SE_Env::Inst().GetGhostMode() == GhostMode::RESTARTING) && !obj->TowVehicle())  // update trailers later
@@ -399,7 +399,7 @@ int ScenarioEngine::step(double deltaSimTime)
                                          obj->role_,
                                          obj->model_id_,
                                          obj->model3d_,
-                                         obj->GetActivatedControllerType(),
+                                         obj->GetControllerTypeActiveOnDomain(ControlDomains::DOMAIN_LONG),
                                          obj->boundingbox_,
                                          static_cast<int>(obj->scaleMode_),
                                          obj->visibilityMask_,
@@ -520,11 +520,12 @@ int ScenarioEngine::parseScenario()
     scenarioReader->LoadControllers();
 
     scenarioReader->SetGateway(&scenarioGateway);
+    scenarioReader->SetScenarioEngine(this);
 
     scenarioReader->parseOSCHeader();
     if (scenarioReader->GetVersionMajor() < 1)
     {
-        LOG_AND_QUIT("OpenSCENARIO v%d.%d not supported. Please migrate scenario to v1.0 or v1.1 and try again.",
+        LOG_AND_QUIT("OpenSCENARIO v%d.%d not supported. Please migrate scenario to v1.0 or higher and try again.",
                      scenarioReader->GetVersionMajor(),
                      scenarioReader->GetVersionMinor());
     }
@@ -617,9 +618,9 @@ int ScenarioEngine::parseScenario()
         {
             Object* obj = entities_.object_[i];
 
-            if (obj->GetAssignedControllerType() == Controller::Type::CONTROLLER_TYPE_FOLLOW_GHOST ||
-                (obj->GetAssignedControllerType() == Controller::Type::CONTROLLER_TYPE_EXTERNAL &&
-                 (static_cast<ControllerExternal*>((obj->controller_))->UseGhost())))
+            if (obj->IsAnyAssignedControllerOfType(Controller::Type::CONTROLLER_TYPE_FOLLOW_GHOST) ||
+                (obj->IsAnyAssignedControllerOfType(Controller::Type::CONTROLLER_TYPE_EXTERNAL) &&
+                 (static_cast<ControllerExternal*>(obj->GetAssignedControllerOftype(Controller::Type::CONTROLLER_TYPE_EXTERNAL))->UseGhost())))
             {
                 SetupGhost(obj);
 
@@ -662,7 +663,7 @@ int ScenarioEngine::defaultController(Object* obj, double dt)
 
     if (!obj->CheckDirtyBits(Object::DirtyBit::LONGITUDINAL))  // No action has updated longitudinal dimension
     {
-        if (obj->GetControllerMode() == Controller::Mode::MODE_ADDITIVE || !obj->IsControllerActiveOnDomains(ControlDomains::DOMAIN_LONG))
+        if (!obj->IsControllerModeOnDomains(ControlOperationMode::MODE_OVERRIDE, static_cast<unsigned int>(ControlDomains::DOMAIN_LONG)))
         {
             Vehicle* tow_vehicle = static_cast<Vehicle*>(obj->TowVehicle());
             if (tow_vehicle == nullptr)
@@ -673,7 +674,9 @@ int ScenarioEngine::defaultController(Object* obj, double dt)
                     // Something went wrong, couldn't move vehicle forward. Stop.
                     obj->SetSpeed(0.0);
                 }
-                obj->SetDirtyBits(Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::SPEED);
+                obj->SetDirtyBits(Object::DirtyBit::LONGITUDINAL |
+                                  Object::DirtyBit::SPEED  // indicate that speed has been applied, prevent automatically set from velocity
+                );
             }
         }
     }
@@ -1020,10 +1023,10 @@ void ScenarioEngine::SetupGhost(Object* object)
     Vehicle* ghost = new Vehicle(*(static_cast<Vehicle*>(object)));
     object->SetGhost(ghost);
     ghost->name_ += "_ghost";
-    ghost->ghost_      = 0;
-    ghost->ghost_Ego_  = object;
-    ghost->controller_ = 0;
-    ghost->isGhost_    = true;
+    ghost->ghost_     = 0;
+    ghost->ghost_Ego_ = object;
+    ghost->UnassignControllers();
+    ghost->isGhost_ = true;
     ghost->SetHeadstartTime(object->headstart_time_);
     entities_.addObject(ghost, true);
     object->SetHeadstartTime(0);
@@ -1039,8 +1042,8 @@ void ScenarioEngine::SetupGhost(Object* object)
             {
                 OSCPrivateAction* newAction = action->Copy();
                 action->SetName(action->GetName() + "_ghost-copy");
-                newAction->object_         = ghost;
-                newAction->scenarioEngine_ = this;
+                newAction->object_ = ghost;
+                newAction->SetScenarioEngine(this);
                 storyBoard.init_.private_action_.push_back(newAction);
                 ghost->initActions_.push_back(newAction);
             }

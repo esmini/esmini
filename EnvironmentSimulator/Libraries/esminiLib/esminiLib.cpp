@@ -277,15 +277,11 @@ static int GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, S
         return -1;
     }
 
-    Object *ghost = 0;
-    if (obj->GetAssignedControllerType() != Controller::Type::CONTROLLER_TYPE_DEFAULT)
+    Object *ghost = obj->GetGhost();
+    if (ghost == 0)
     {
-        ghost = obj->GetGhost();
-        if (ghost == 0)
-        {
-            LOG("Ghost object not available for object id %d", object_id);
-            return -1;
-        }
+        LOG("Ghost object not available for object id %d", object_id);
+        return -1;
     }
 
     double x{};
@@ -359,10 +355,7 @@ static int GetRoadInfoAtGhostTrailTime(int object_id, float time, SE_RoadInfo *r
     Object *ghost = obj->GetGhost();
     if (ghost == nullptr)
     {
-        if (obj->GetAssignedControllerType() != Controller::Type::CONTROLLER_TYPE_DEFAULT)
-        {
-            LOG("Ghost object not available for object id %d", object_id);
-        }
+        LOG("Ghost object not available for object id %d", object_id);
 
         return -1;
     }
@@ -1056,8 +1049,12 @@ extern "C"
 
                 Controller::InitArgs args = {"", "", 0, 0, 0, 0};
                 args.type                 = ControllerExternal::GetTypeNameStatic();
-                vehicle->controller_      = InstantiateControllerExternal(&args);
-                vehicle->controller_->Activate(Controller::DomainActivation::ON, Controller::DomainActivation::ON);
+                Controller *ctrl          = InstantiateControllerExternal(&args);
+                if (ctrl != nullptr)
+                {
+                    vehicle->AssignController(ctrl);
+                    ctrl->Activate(ControlActivationMode::ON, ControlActivationMode::ON, ControlActivationMode::OFF, ControlActivationMode::OFF);
+                }
             }
             else
             {
@@ -1071,7 +1068,7 @@ extern "C"
                                                       object_category,
                                                       object_role,
                                                       model_id,
-                                                      vehicle->GetActivatedControllerType(),
+                                                      vehicle->GetControllerTypeActiveOnDomain(ControlDomains::DOMAIN_LONG),
                                                       bb,
                                                       scale_mode,
                                                       0xff,
@@ -1191,7 +1188,7 @@ extern "C"
                                               obj->category_,
                                               obj->role_,
                                               obj->model_id_,
-                                              obj->GetActivatedControllerType(),
+                                              obj->GetControllerTypeActiveOnDomain(ControlDomains::DOMAIN_LONG),
                                               obj->boundingbox_,
                                               static_cast<int>(obj->scaleMode_),
                                               obj->visibilityMask_,
@@ -1222,7 +1219,7 @@ extern "C"
                                               obj->category_,
                                               obj->role_,
                                               obj->model_id_,
-                                              obj->GetActivatedControllerType(),
+                                              obj->GetControllerTypeActiveOnDomain(ControlDomains::DOMAIN_LONG),
                                               obj->boundingbox_,
                                               static_cast<int>(obj->scaleMode_),
                                               obj->visibilityMask_,
@@ -1691,12 +1688,7 @@ extern "C"
             return 0;
         }
 
-        Object *ghost = 0;
-        if (obj->GetAssignedControllerType() != Controller::Type::CONTROLLER_TYPE_DEFAULT)
-        {
-            ghost = obj->GetGhost();
-        }
-        return ghost != 0 ? 1 : 0;
+        return obj->GetGhost() == nullptr ? 0 : 1;
     }
 
     SE_DLL_API int SE_GetObjectGhostState(int object_id, SE_ScenarioObjectState *state)
@@ -1708,18 +1700,20 @@ extern "C"
             return -1;
         }
 
-        if (obj->GetAssignedControllerType() != Controller::Type::CONTROLLER_TYPE_DEFAULT)
-        {
-            ghost = obj->GetGhost();
-        }
+        ghost = obj->GetGhost();
+
         if (ghost)
         {
             scenarioengine::ObjectState obj_state;
             player->scenarioGateway->getObjectStateById(ghost->id_, obj_state);
             copyStateFromScenarioGateway(state, &obj_state.state_);
         }
+        else
+        {
+            return -1;
+        }
 
-        return ghost != 0 ? 0 : -1;
+        return 0;
     }
 
     SE_DLL_API int SE_GetSpeedUnit()

@@ -9,230 +9,213 @@
 <!-- time 30.0: SloppyDriver long domain, low sloppiness                                          -->
 <!-- time 40.0: DefaultController                                                                 -->
 <OpenSCENARIO>
-   <FileHeader revMajor="1"
-               revMinor="0"
-               date="2020-10-04T10:00:00"
-               description="Demonstrate controller concept"
-               author="esmini-team"/>
-   <ParameterDeclarations>
-      <ParameterDeclaration name="EgoVehicle" parameterType="string" value="car_white"/>
-   </ParameterDeclarations>
-   <CatalogLocations>
-      <VehicleCatalog>
-         <Directory path="../xosc/Catalogs/Vehicles"/>
-      </VehicleCatalog>
-      <ControllerCatalog>
-	     <Directory path="../xosc/Catalogs/Controllers"/>
-	  </ControllerCatalog>      
-   </CatalogLocations>
-   <RoadNetwork>
-      <LogicFile filepath="../xodr/curve_r100.xodr"/>
-      <SceneGraphFile filepath="../models/curve_r100.osgb"/>
-   </RoadNetwork>
-   <Entities>
-      <ScenarioObject name="Ego">
-         <CatalogReference catalogName="VehicleCatalog" entryName="$EgoVehicle"/>
-      </ScenarioObject>
-   </Entities>
-   <Storyboard>
-      <Init>
-         <Actions>
-            <Private entityRef="Ego">
-               <PrivateAction>
-                  <TeleportAction>
-                     <Position>
-                        <LanePosition roadId="0" laneId="-1" offset="0" s="20"/>
-                     </Position>
-                  </TeleportAction>
-               </PrivateAction>
-               <PrivateAction>
-                  <LongitudinalAction>
-                     <SpeedAction>
-                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
-                        <SpeedActionTarget>
-                           <AbsoluteTargetSpeed value="15"/>
-                        </SpeedActionTarget>
-                     </SpeedAction>
-                  </LongitudinalAction>
-               </PrivateAction>
-            </Private>
-         </Actions>
-      </Init>
-      <Story name="Story">
-         <Act name="Act">
-            <ManeuverGroup maximumExecutionCount="1" name="EgoManueverGroup">
-               <Actors selectTriggeringEntities="false">
-                  <EntityRef entityRef="Ego"/>
-               </Actors>
-               <Maneuver name="ControllerManuever">
-                  <Event name="SloppyDriverEvent" maximumExecutionCount="1" priority="overwrite">
-                     <Action name="AssignSloppyDriverControllerAction">
-                       <PrivateAction>
-                          <ControllerAction>
-                            <AssignControllerAction>
-                                <CatalogReference catalogName="ControllerCatalog" entryName="sloppyDriver">
-                                    <ParameterAssignments>
-                                        <ParameterAssignment parameterRef="$Sloppiness" value="0.7" />
-                                    </ParameterAssignments>
-                                </CatalogReference>
-                            </AssignControllerAction>
-                          </ControllerAction>
-                       </PrivateAction>
-                     </Action>
-                     <Action name="ActivateSloppyDriverControllerAction">
-                       <PrivateAction>
-                            <ActivateControllerAction longitudinal="false" lateral="true" />
-                       </PrivateAction>
-                     </Action>
-                    <StartTrigger>
-                       <ConditionGroup>
-                          <Condition name="" delay="0" conditionEdge="none">
-                             <ByValueCondition>
-                                <SimulationTimeCondition value="2" rule="greaterThan"/>
-                             </ByValueCondition>
-                          </Condition>
-                       </ConditionGroup>
-                    </StartTrigger>
-                  </Event>
-                  <Event name="LateralnteractiveEvent" maximumExecutionCount="1" priority="overwrite">
-                     <Action name="AssignInteractiveControllerAction">
-                       <PrivateAction>
-                            <ControllerAction>
-                                <AssignControllerAction >
-                                    <CatalogReference catalogName="ControllerCatalog" entryName="interactiveDriver" />
-                                </AssignControllerAction> 
-                            </ControllerAction>
-                        </PrivateAction>
-                     </Action>
-                     <Action name="ActivateLateralInteractiveControllerAction">
-                        <PrivateAction>
-                            <ActivateControllerAction longitudinal="false" lateral="true" />
-                        </PrivateAction>
-                     </Action>
-                    <StartTrigger>
-                       <ConditionGroup>
-                          <Condition name="" delay="0" conditionEdge="none">
-                             <ByValueCondition>
-                                <SimulationTimeCondition value="10" rule="greaterThan"/>
-                             </ByValueCondition>
-                          </Condition>
-                       </ConditionGroup>
-                    </StartTrigger>
-                  </Event>                  
-                  <Event name="LongitudinalInteractiveInteractiveEvent" maximumExecutionCount="1" priority="overwrite">
-                     <Action name="AssignLongitudinalInteractiveControllerAction">
-                       <PrivateAction>
-                            <ControllerAction>
-                                <AssignControllerAction >
-                                    <CatalogReference catalogName="ControllerCatalog" entryName="interactiveDriver" />
-                                </AssignControllerAction> 
-                            </ControllerAction>
-                        </PrivateAction>
-                     </Action>
-                     <Action name="ActivateInteractiveControllerAction">
-                        <PrivateAction>
-                            <ActivateControllerAction longitudinal="true" lateral="false" />
-                        </PrivateAction>
-                     </Action>
-                    <StartTrigger>
-                       <ConditionGroup>
-                          <Condition name="" delay="0" conditionEdge="none">
-                             <ByValueCondition>
-                                <SimulationTimeCondition value="20" rule="greaterThan"/>
-                             </ByValueCondition>
-                          </Condition>
-                       </ConditionGroup>
-                    </StartTrigger>
-                  </Event>
-                  <Event name="BetterSloppyDriverEvent" maximumExecutionCount="1" priority="overwrite">
-                     <Action name="AssignBetterSloppyDriverControllerAction">
-                       <PrivateAction>
-                            <ControllerAction>
-                            <AssignControllerAction>
-                                <CatalogReference catalogName="ControllerCatalog" entryName="sloppyDriver" >
-                                    <ParameterAssignments>
-                                        <ParameterAssignment parameterRef="$Sloppiness" value="0.4" />
-                                    </ParameterAssignments>
-                                </CatalogReference>
-                            </AssignControllerAction>
-                            </ControllerAction>
-                        </PrivateAction>
-                     </Action>
-                     <Action name="ActivateBetterSloppyDriverControllerAction">
-                        <PrivateAction>
-                            <ActivateControllerAction longitudinal="true" lateral="false" />
-                        </PrivateAction>
-                     </Action>
-                    <StartTrigger>
-                       <ConditionGroup>
-                          <Condition name="" delay="0" conditionEdge="none">
-                             <ByValueCondition>
-                                <SimulationTimeCondition value="30" rule="greaterThan"/>
-                             </ByValueCondition>
-                          </Condition>
-                       </ConditionGroup>
-                    </StartTrigger>
-                  </Event>                  
-                  <Event name="DefaultControllerEvent" maximumExecutionCount="1" priority="overwrite">
-                     <Action name="AssignDefaultControllerAction">
-                       <PrivateAction>
-                            <ControllerAction>
-                                <AssignControllerAction>
-                                    <Controller name="defaultController" >
-                                        <Properties>
-                                            <Property name="esminiController" value="DefaultController" />
-                                        </Properties>
-                                    </Controller>
-                                </AssignControllerAction>
-                            </ControllerAction>
-                        </PrivateAction>
-                     </Action>
-                     <Action name="ActivateDefaultControllerAction">
-                        <PrivateAction>
-                            <ActivateControllerAction longitudinal="true" lateral="true" />
-                        </PrivateAction>
-                     </Action>
-                    <StartTrigger>
-                       <ConditionGroup>
-                          <Condition name="" delay="0" conditionEdge="none">
-                             <ByValueCondition>
-                                <SimulationTimeCondition value="40" rule="greaterThan"/>
-                             </ByValueCondition>
-                          </Condition>
-                       </ConditionGroup>
-                    </StartTrigger>
-                  </Event>
-               </Maneuver>
-            </ManeuverGroup>
-            <StartTrigger>
-               <ConditionGroup>
-                  <Condition name="ActStart" delay="0" conditionEdge="none">
-                     <ByValueCondition>
-                        <SimulationTimeCondition value="0" rule="greaterThan"/>
-                     </ByValueCondition>
-                  </Condition>
-               </ConditionGroup>
-            </StartTrigger>
-         </Act>
-      </Story>
-      <StopTrigger>
-          <ConditionGroup>
-             <Condition name="EgoLaneChangeCondition" delay="0.0" conditionEdge="none">
-                <ByEntityCondition>
-                   <TriggeringEntities triggeringEntitiesRule="any">
-                      <EntityRef entityRef="Ego"/>
-                   </TriggeringEntities>
-                   <EntityCondition>
-                      <ReachPositionCondition tolerance="10.0">
-                         <Position>
-                            <LanePosition roadId="0" laneId="0" s="750.0"/>
-                         </Position>
-                      </ReachPositionCondition>
-                   </EntityCondition>
-                </ByEntityCondition>
-             </Condition>
-          </ConditionGroup>
-      </StopTrigger> 
-   </Storyboard>
+    <FileHeader revMajor="1" revMinor="0" date="2020-10-04T10:00:00" description="Demonstrate controller concept" author="esmini-team"/>
+    <ParameterDeclarations>
+        <ParameterDeclaration name="EgoVehicle" parameterType="string" value="car_white"/>
+    </ParameterDeclarations>
+    <CatalogLocations>
+        <VehicleCatalog>
+            <Directory path="../xosc/Catalogs/Vehicles"/>
+        </VehicleCatalog>
+        <ControllerCatalog>
+            <Directory path="../xosc/Catalogs/Controllers"/>
+        </ControllerCatalog>
+    </CatalogLocations>
+    <RoadNetwork>
+        <LogicFile filepath="../xodr/curve_r100.xodr"/>
+        <SceneGraphFile filepath="../models/curve_r100.osgb"/>
+    </RoadNetwork>
+    <Entities>
+        <ScenarioObject name="Ego">
+            <CatalogReference catalogName="VehicleCatalog" entryName="$EgoVehicle"/>
+        </ScenarioObject>
+    </Entities>
+    <Storyboard>
+        <Init>
+            <Actions>
+                <Private entityRef="Ego">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="0" laneId="-1" offset="0" s="20"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="15"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                </Private>
+            </Actions>
+        </Init>
+        <Story name="Story">
+            <Act name="Act">
+                <ManeuverGroup maximumExecutionCount="1" name="EgoManueverGroup">
+                    <Actors selectTriggeringEntities="false">
+                        <EntityRef entityRef="Ego"/>
+                    </Actors>
+                    <Maneuver name="ControllerManuever">
+                        <Event name="SloppyDriverEvent" maximumExecutionCount="1" priority="overwrite">
+                            <Action name="AssignSloppyDriverControllerAction">
+                                <PrivateAction>
+                                    <ControllerAction>
+                                        <AssignControllerAction>
+                                            <CatalogReference catalogName="ControllerCatalog" entryName="sloppyDriver">
+                                                <ParameterAssignments>
+                                                    <ParameterAssignment parameterRef="$Sloppiness" value="0.7"/>
+                                                </ParameterAssignments>
+                                            </CatalogReference>
+                                        </AssignControllerAction>
+                                    </ControllerAction>
+                                </PrivateAction>
+                            </Action>
+                            <Action name="ActivateSloppyDriverControllerAction">
+                                <PrivateAction>
+                                    <ActivateControllerAction longitudinal="false" lateral="true"/>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="SloppyDriverCondition" delay="0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="2" rule="greaterThan"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event name="LateralnteractiveEvent" maximumExecutionCount="1" priority="overwrite">
+                            <Action name="AssignInteractiveControllerAction">
+                                <PrivateAction>
+                                    <ControllerAction>
+                                        <AssignControllerAction>
+                                            <CatalogReference catalogName="ControllerCatalog" entryName="interactiveDriver"/>
+                                        </AssignControllerAction>
+                                    </ControllerAction>
+                                </PrivateAction>
+                            </Action>
+                            <Action name="ActivateInteractiveDriverControllerActionLateral">
+                                <PrivateAction>
+                                    <ActivateControllerAction longitudinal="false" lateral="true"/>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="InteractiveDriverLateralCondition" delay="0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="10" rule="greaterThan"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event name="LongitudinalInteractiveInteractiveEvent" maximumExecutionCount="1" priority="overwrite">
+                            <Action name="AssignLongitudinalInteractiveControllerAction">
+                                <PrivateAction>
+                                    <ControllerAction>
+                                        <AssignControllerAction>
+                                            <CatalogReference catalogName="ControllerCatalog" entryName="interactiveDriver"/>
+                                        </AssignControllerAction>
+                                    </ControllerAction>
+                                </PrivateAction>
+                            </Action>
+                            <Action name="ActivateInteractiveDriverControllerActionLongitudinal">
+                                <PrivateAction>
+                                    <ActivateControllerAction longitudinal="true" lateral="false"/>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="InteractiveDriverLongitudinalCondition" delay="0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="20" rule="greaterThan"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event name="BetterSloppyDriverEvent" maximumExecutionCount="1" priority="overwrite">
+                            <Action name="AssignBetterSloppyDriverControllerAction">
+                                <PrivateAction>
+                                    <ControllerAction>
+                                        <AssignControllerAction>
+                                            <CatalogReference catalogName="ControllerCatalog" entryName="sloppyDriver">
+                                                <ParameterAssignments>
+                                                    <ParameterAssignment parameterRef="$Sloppiness" value="0.4"/>
+                                                </ParameterAssignments>
+                                            </CatalogReference>
+                                        </AssignControllerAction>
+                                    </ControllerAction>
+                                </PrivateAction>
+                            </Action>
+                            <Action name="ActivateBetterSloppyDriverControllerAction">
+                                <PrivateAction>
+                                    <ActivateControllerAction longitudinal="true" lateral="false"/>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="BetterSloppyDriverCondition" delay="0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="30" rule="greaterThan"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event name="DefaultControllerEvent" maximumExecutionCount="1" priority="overwrite">
+                            <Action name="ActivateDefaultControllerAction">
+                                <PrivateAction>
+                                    <ActivateControllerAction longitudinal="false" lateral="false"/>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="DefaultControllerCondition" delay="0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="40" rule="greaterThan"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                    </Maneuver>
+                </ManeuverGroup>
+                <StartTrigger>
+                    <ConditionGroup>
+                        <Condition name="ActStart" delay="0" conditionEdge="none">
+                            <ByValueCondition>
+                                <SimulationTimeCondition value="0" rule="greaterThan"/>
+                            </ByValueCondition>
+                        </Condition>
+                    </ConditionGroup>
+                </StartTrigger>
+            </Act>
+        </Story>
+        <StopTrigger>
+            <ConditionGroup>
+                <Condition name="QuitWhenReachPositionCondition" delay="0.0" conditionEdge="none">
+                    <ByEntityCondition>
+                        <TriggeringEntities triggeringEntitiesRule="any">
+                            <EntityRef entityRef="Ego"/>
+                        </TriggeringEntities>
+                        <EntityCondition>
+                            <ReachPositionCondition tolerance="10.0">
+                                <Position>
+                                    <LanePosition roadId="0" laneId="0" s="750.0"/>
+                                </Position>
+                            </ReachPositionCondition>
+                        </EntityCondition>
+                    </ByEntityCondition>
+                </Condition>
+            </ConditionGroup>
+        </StopTrigger>
+    </Storyboard>
 </OpenSCENARIO>
 

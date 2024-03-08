@@ -8,6 +8,7 @@
     <Catalog name="ControllerCatalog">
         <Controller name="sloppyDriver">
             <ParameterDeclarations>
+                <!-- Sloppiness recommended range [0.0 .. 1.0] -->
                 <ParameterDeclaration name="Sloppiness" parameterType="double" value="0.5" />
                 <ParameterDeclaration name="Mode" parameterType="string" value="additive" />
             </ParameterDeclarations>
@@ -222,7 +223,7 @@
                 <!-- multiple controllers -->
                 <ParameterDeclaration name="BasePort" parameterType="integer" value="49950" />
                 <!-- execModeasynchronus blocking: true = run as separate port number [1, 65535] port number of first instance, additional instances -->
-                <!-- execMode: synchronous/asynchronous Default = asynchronous
+                <!-- execMode: synchronous/asynchronous Default = asynchronous -->
                 <!-- synchronous: wait for and read only one (oldest) message each timestep. Blocking with timeout 500 ms -->
                 <!-- asynchronous: consume all received messages and ignore all but the latest. Non blocking (don't wait) -->
                 <ParameterDeclaration name="ExecMode" parameterType="string" value="asynchronous" />

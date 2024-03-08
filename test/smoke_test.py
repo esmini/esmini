@@ -260,11 +260,11 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^0.00.*TeleportAction runningState -> endTransition -> completeState', log, re.MULTILINE))
 
         # Check some scenario events
-        self.assertTrue(re.search('^2.00.*: Stopping Init Ego LongitudinalAction on conflicting longitudinal domain\\(s\\)', log, re.MULTILINE))
+        self.assertTrue(re.search('^2.00.*: Stopping Init Ego LongitudinalAction on conflicting Longitudinal domain\\(s\\)', log, re.MULTILINE))
         self.assertTrue(re.search('^2.00.*: Speed action 2 initState -> startTransition -> runningState', log, re.MULTILINE))
         self.assertTrue(re.search('^2.00.*: Lane offset action 1 initState -> startTransition -> runningState', log, re.MULTILINE))
 
-        self.assertTrue(re.search('^4.01.*: Stopping object Ego Lane offset action 1 on conflicting lateral domain\\(s\\)', log, re.MULTILINE))
+        self.assertTrue(re.search('^4.01.*: Stopping object Ego Lane offset action 1 on conflicting Lateral domain\\(s\\)', log, re.MULTILINE))
         self.assertTrue(re.search('^4.01.*: Lane offset action 1 runningState -> endTransition -> completeState', log, re.MULTILINE))
         self.assertTrue(re.search('^4.01.*: Lane offset action 2 initState -> startTransition -> runningState', log, re.MULTILINE))
 
@@ -1470,7 +1470,7 @@ class TestSuite(unittest.TestCase):
             # Verify that the scenario was executed as expected
             self.assertTrue(re.search('^Loading inline', log[-1], re.MULTILINE)  is not None)
             self.assertTrue(re.search('^0.000: Recording data to file sim_', log[-1], re.MULTILINE)  is not None)
-            self.assertTrue(re.search('^0.000: Controller ALKS_R157SM_Controller activated \\(lat OFF, long ON\\), domain mask=0x1', log[-1], re.MULTILINE)  is not None)
+            self.assertTrue(re.search('^0.000: Controller ALKS_R157SM_Controller active on domains: Longitudinal \\(mask=0x1\\)', log[-1], re.MULTILINE)  is not None)
 
         if len(models) > 0:
             with open(STDOUT_FILENAME, "w") as f:
@@ -1658,6 +1658,37 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^11.000, 0, Ego, 8.166, 378.486, -0.679, 1.546, 0.002, 6.283, 27.833, -0.000, 3.483', csv, re.MULTILINE))
         self.assertTrue(re.search('^17.780, 0, Ego, 11.273, 469.854, -0.817, 1.526, 0.001, 6.283, 0.575, -0.001, 0.794', csv, re.MULTILINE))
         self.assertTrue(re.search('^17.790, 0, Ego, 11.273, 469.860, -0.818, 1.526, 0.001, 6.283, 0.560, -0.000, 0.810', csv, re.MULTILINE))
+
+    def test_multi_controller(self):
+        # this test case exercises assignment and activation of two controllers, partly overlapping in time
+        log = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/multi_controller.xosc'), COMMON_ARGS + "--seed 397860069 --fixed_timestep 0.1")
+
+        # Check some initialization steps
+        self.assertTrue(re.search('Loading .*multi_controller.xosc', log)  is not None)
+
+        # Check some scenario events
+        self.assertTrue(re.search('1.100: SloppyDriverActivateCondition == true, 1.1000 > 1.00 edge: none', log)  is not None)
+        self.assertTrue(re.search('1.100: Controller sloppy_driver active on domains: Lateral \\(mask=0x2\\)', log)  is not None)
+        self.assertTrue(re.search('5.100: InteractiveDriverLateralCondition == true, 5.1000 > 5.00 edge: none', log)  is not None)
+        self.assertTrue(re.search('5.100: Controller interactive_driver active on domains: Longitudinal \\(mask=0x1\\)', log)  is not None)
+        self.assertTrue(re.search('10.100: Controller sloppy_driver active on domains: None \\(mask=0x0\\)', log)  is not None)
+        self.assertTrue(re.search('15.100: Controller interactive_driver active on domains: None \\(mask=0x0\\)', log)  is not None)
+        self.assertTrue(re.search('15.100: Story runningState -> endTransition -> completeState', log)  is not None)
+        self.assertTrue(re.search('20.100: storyBoard runningState -> stopTransition -> completeState', log)  is not None)
+
+        # Check vehicle key positions
+        csv = generate_csv()
+
+        self.assertTrue(re.search('^2.600, 0, Ego, 59.000, -1.535, 0.000, 0.000, 0.000, 0.000, 15.000, 0.000, 4.614', csv, re.MULTILINE))
+        self.assertTrue(re.search('^3.200, 0, Ego, 68.000, -2.081, 0.000, 6.157, 0.000, 0.000, 15.000, -0.062, 5.196', csv, re.MULTILINE))
+        self.assertTrue(re.search('^5.100, 0, Ego, 96.500, -5.485, 0.000, 0.045, 0.000, 0.000, 15.000, 0.032, 4.943', csv, re.MULTILINE))
+        self.assertTrue(re.search('^5.200, 0, Ego, 97.998, -5.401, 0.000, 0.011, 0.000, 0.000, 14.985, -0.018, 2.941', csv, re.MULTILINE))
+        self.assertTrue(re.search('^10.100, 0, Ego, 169.618, -4.388, 0.000, 0.103, 0.000, 0.000, 14.268, 0.029, 0.224', csv, re.MULTILINE))
+        self.assertTrue(re.search('^10.200, 0, Ego, 171.044, -4.388, 0.000, 0.000, 0.000, 0.000, 14.254, -0.021, 4.297', csv, re.MULTILINE))
+        self.assertTrue(re.search('^10.300, 0, Ego, 172.468, -4.388, 0.000, 0.000, 0.000, 0.000, 14.240, 0.000, 2.082', csv, re.MULTILINE))
+        self.assertTrue(re.search('^15.000, 0, Ego, 237.812, -4.388, 0.000, 0.000, 0.000, 0.000, 13.585, 0.000, 0.284', csv, re.MULTILINE))
+        self.assertTrue(re.search('^15.100, 0, Ego, 239.169, -4.388, 0.000, 0.000, 0.000, 0.000, 13.572, 0.000, 4.162', csv, re.MULTILINE))
+        self.assertTrue(re.search('^16.000, 0, Ego, 251.384, -4.388, 0.000, 0.000, 0.000, 0.000, 13.572, 0.000, 1.362', csv, re.MULTILINE))
 
 
 if __name__ == "__main__":

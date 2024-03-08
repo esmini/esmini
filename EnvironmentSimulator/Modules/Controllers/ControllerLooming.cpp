@@ -28,6 +28,8 @@ Controller* scenarioengine::InstantiateControllerLooming(void* args)
 
 ControllerLooming::ControllerLooming(InitArgs* args) : Controller(args)
 {
+    operating_domains_ = static_cast<unsigned int>(ControlDomains::DOMAIN_LONG);
+
     if (args && args->properties && args->properties->ValueExists("timeGap"))
     {
         timeGap_ = strtod(args->properties->GetValueStr("timeGap"));
@@ -422,10 +424,13 @@ void ControllerLooming::Init()
     Controller::Init();
 }
 
-void ControllerLooming::Activate(DomainActivation lateral, DomainActivation longitudinal)
+int ControllerLooming::Activate(ControlActivationMode lat_activation_mode,
+                                ControlActivationMode long_activation_mode,
+                                ControlActivationMode light_activation_mode,
+                                ControlActivationMode anim_activation_mode)
 {
     currentSpeed_ = object_->GetSpeed();
-    if (mode_ == Mode::MODE_ADDITIVE || setSpeedSet_ == false)
+    if (mode_ == ControlOperationMode::MODE_ADDITIVE || setSpeedSet_ == false)
     {
         setSpeed_ = object_->GetSpeed();
     }
@@ -441,9 +446,9 @@ void ControllerLooming::Activate(DomainActivation lateral, DomainActivation long
         vehicle_.SetSteeringRate(steering_rate_);
     }
 
-    Controller::Activate(lateral, longitudinal);
+    Controller::Activate(lat_activation_mode, long_activation_mode, light_activation_mode, anim_activation_mode);
 
-    if (IsActiveOnDomains(ControlDomains::DOMAIN_LAT))
+    if (IsActiveOnDomains(static_cast<unsigned int>(ControlDomains::DOMAIN_LAT)))
     {
         // Make sure heading is aligned with road driving direction
         object_->pos_.SetHeadingRelative((object_->pos_.GetHRelative() > M_PI_2 && object_->pos_.GetHRelative() < 3 * M_PI_2) ? M_PI : 0.0);
@@ -452,6 +457,8 @@ void ControllerLooming::Activate(DomainActivation lateral, DomainActivation long
     {
         player_->SteeringSensorSetVisible(object_->GetId(), true);
     }
+
+    return 0;
 }
 
 void ControllerLooming::ReportKeyEvent(int key, bool down)

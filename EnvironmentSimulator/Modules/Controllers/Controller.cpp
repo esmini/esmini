@@ -23,9 +23,10 @@ Controller* scenarioengine::InstantiateController(void* args)
     return new Controller(static_cast<Controller::InitArgs*>(args));
 }
 
-Controller::Controller(InitArgs* args)
-    : domain_(ControlDomains::DOMAIN_NONE),
-      mode_(Controller::Mode::MODE_OVERRIDE),
+Controller::Controller(InitArgs* args)  // init operatingdomains
+    : operating_domains_(static_cast<unsigned int>(ControlDomains::DOMAIN_LAT_AND_LONG)),
+      active_domains_(static_cast<unsigned int>(ControlDomains::DOMAIN_NONE)),
+      mode_(ControlOperationMode::MODE_OVERRIDE),
       object_(0),
       entities_(0),
       gateway_(0),
@@ -49,21 +50,21 @@ Controller::Controller(InitArgs* args)
         std::string mode = args->properties->GetValueStr("mode");
         if (mode == "override")
         {
-            mode_ = Mode::MODE_OVERRIDE;
+            mode_ = ControlOperationMode::MODE_OVERRIDE;
         }
         else if (mode == "additive")
         {
-            mode_ = Mode::MODE_ADDITIVE;
+            mode_ = ControlOperationMode::MODE_ADDITIVE;
         }
         else
         {
             LOG("Unexpected mode \"%s\", falling back to default \"override\"", mode.c_str());
-            mode_ = Mode::MODE_OVERRIDE;
+            mode_ = ControlOperationMode::MODE_OVERRIDE;
         }
     }
     else
     {
-        mode_ = Mode::MODE_OVERRIDE;
+        mode_ = ControlOperationMode::MODE_OVERRIDE;
     }
 }
 
@@ -72,14 +73,14 @@ void Controller::Step(double timeStep)
     (void)timeStep;
     if (object_)
     {
-        if (mode_ == Mode::MODE_OVERRIDE)
+        if (mode_ == ControlOperationMode::MODE_OVERRIDE)
         {
-            if (IsActiveOnDomains(ControlDomains::DOMAIN_LAT))
+            if (IsActiveOnDomains(static_cast<unsigned int>(ControlDomains::DOMAIN_LAT)))
             {
                 object_->SetDirtyBits(Object::DirtyBit::LATERAL);
             }
 
-            if (IsActiveOnDomains(ControlDomains::DOMAIN_LONG))
+            if (IsActiveOnDomains(static_cast<unsigned int>(ControlDomains::DOMAIN_LONG)))
             {
                 object_->SetDirtyBits(Object::DirtyBit::LONGITUDINAL);
             }
@@ -91,24 +92,50 @@ void Controller::Step(double timeStep)
     }
 }
 
-void Controller::Assign(Object* object)
+void Controller::LinkObject(Object* object)
 {
-    if (object == 0)
-    {
-        if (object_)
-        {
-            // Detach any existing object from controller
-            object_->SetAssignedController(0);
-        }
-        object_ = 0;
-    }
-    else
-    {
-        object_ = object;
+    object_ = object;
+}
 
-        // Attach controller to object
-        object_->SetAssignedController(this);
+void Controller::UnlinkObject()
+{
+    object_ = nullptr;
+}
+
+int Controller::Activate(ControlActivationMode lat_mode,
+                         ControlActivationMode long_mode,
+                         ControlActivationMode light_mode,
+                         ControlActivationMode anim_mode)
+{
+    unsigned int control_domains[4] = {static_cast<unsigned int>(ControlDomains::DOMAIN_LAT),
+                                       static_cast<unsigned int>(ControlDomains::DOMAIN_LONG),
+                                       static_cast<unsigned int>(ControlDomains::DOMAIN_LIGHT),
+                                       static_cast<unsigned int>(ControlDomains::DOMAIN_ANIM)};
+
+    ControlActivationMode modes[4] = {lat_mode, long_mode, light_mode, anim_mode};
+
+    for (unsigned int i = 0; i < 4; i++)
+    {
+        if (modes[i] == ControlActivationMode::OFF)
+        {
+            active_domains_ &= ~control_domains[i];
+        }
+        else if (modes[i] == ControlActivationMode::ON)
+        {
+            if ((operating_domains_ & control_domains[i]) == 0)
+            {
+                LOG("Warning: Controller %s operating domains: %s. Skipping activation on domain %s",
+                    GetName().c_str(),
+                    ControlDomain2Str(operating_domains_).c_str(),
+                    ControlDomain2Str(control_domains[i]).c_str());
+            }
+            else
+            {
+                active_domains_ |= control_domains[i];
+            }
+        }
     }
+    return 0;
 }
 
 void Controller::ReportKeyEvent(int key, bool down)
@@ -116,17 +143,17 @@ void Controller::ReportKeyEvent(int key, bool down)
     LOG("Key %c %s", key, down ? "down" : "up");
 }
 
-std::string Controller::Mode2Str(int mode)
+std::string Controller::Mode2Str(ControlOperationMode mode)
 {
-    if (mode == Controller::Mode::MODE_OVERRIDE)
+    if (mode == ControlOperationMode::MODE_OVERRIDE)
     {
         return "override";
     }
-    else if (mode == Controller::Mode::MODE_ADDITIVE)
+    else if (mode == ControlOperationMode::MODE_ADDITIVE)
     {
         return "additive";
     }
-    else if (mode == Controller::Mode::MODE_NONE)
+    else if (mode == ControlOperationMode::MODE_NONE)
     {
         return "none";
     }
@@ -137,17 +164,27 @@ std::string Controller::Mode2Str(int mode)
     }
 }
 
-bool Controller::IsActiveOnDomains(ControlDomains domainMask)
+bool Controller::IsActiveOnDomainsOnly(unsigned int domainMask)
 {
-    return (static_cast<int>(GetDomain()) & static_cast<int>(domainMask)) == static_cast<int>(domainMask);
+    return (GetActiveDomains() == domainMask);
 }
 
-bool Controller::IsActiveOnAnyOfDomains(ControlDomains domainMask)
+bool Controller::IsActiveOnDomains(unsigned int domainMask)
 {
-    return (static_cast<int>(GetDomain()) & static_cast<int>(domainMask)) != 0;
+    return (domainMask & GetActiveDomains()) == domainMask;
+}
+
+bool Controller::IsNotActiveOnDomains(unsigned int domainMask)
+{
+    return (domainMask & GetActiveDomains()) == 0;
+}
+
+bool Controller::IsActiveOnAnyOfDomains(unsigned int domainMask)
+{
+    return (domainMask & GetActiveDomains()) != 0;
 }
 
 bool Controller::IsActive()
 {
-    return GetDomain() != ControlDomains::DOMAIN_NONE;
+    return GetActiveDomains() != static_cast<unsigned int>(ControlDomains::DOMAIN_NONE);
 }

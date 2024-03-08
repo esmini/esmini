@@ -42,10 +42,10 @@ ControllerRel2Abs::ControllerRel2Abs(InitArgs* args)
       switching_threshold_speed(1.5)
 {
     // ControllerRel2Abs forced into additive mode - will only react on scenario actions
-    if (mode_ != Mode::MODE_ADDITIVE)
+    if (mode_ != ControlOperationMode::MODE_ADDITIVE)
     {
         LOG("ControllerRel2Abs mode \"%s\" not applicable. Using additive mode instead.", Mode2Str(mode_).c_str());
-        mode_ = Controller::Mode::MODE_ADDITIVE;
+        mode_ = ControlOperationMode::MODE_ADDITIVE;
     }
     if (args->properties->ValueExists("horizon"))
     {
@@ -90,7 +90,7 @@ void ControllerRel2Abs::findEgo()
         {
             if (entities_->object_[i]->type_ == Object::Type::VEHICLE)
             {
-                if (entities_->object_[i]->GetActivatedControllerType() == Controller::Type::CONTROLLER_TYPE_EXTERNAL)
+                if (entities_->object_[i]->IsAnyActiveControllerOfType(Controller::Type::CONTROLLER_TYPE_EXTERNAL))
                 {
                     ego_obj = static_cast<int>(i);
                     LOG("Object named \"%s\" used as ego vehicle due to being controlled externally.", entities_->object_[i]->name_.c_str());
@@ -342,7 +342,7 @@ void ControllerRel2Abs::Step(double timeStep)
     }
     // ----------------------- prediction & switching algorithm - end -----------------------
 
-    if (switchNow && mode_ != Controller::Mode::MODE_OVERRIDE)
+    if (switchNow && mode_ != ControlOperationMode::MODE_OVERRIDE)
     {
         std::vector<OSCPrivateAction*> actions =
             object_->getPrivateActions();  // getActions creates the vector => it's not updated by SE (only event vector is)
@@ -601,7 +601,7 @@ void ControllerRel2Abs::Step(double timeStep)
                            object_->role_,
                            object_->model_id_,
                            object_->model3d_,
-                           object_->GetActivatedControllerType(),
+                           object_->GetControllerTypeActiveOnDomain(ControlDomains::DOMAIN_LONG),
                            object_->boundingbox_,
                            static_cast<int>(object_->scaleMode_),
                            object_->visibilityMask_,
@@ -617,7 +617,10 @@ void ControllerRel2Abs::Step(double timeStep)
     Controller::Step(timeStep);
 }
 
-void ControllerRel2Abs::Activate(DomainActivation lateral, DomainActivation longitudinal)
+int ControllerRel2Abs::Activate(ControlActivationMode lat_activation_mode,
+                                ControlActivationMode long_activation_mode,
+                                ControlActivationMode light_activation_mode,
+                                ControlActivationMode anim_activation_mode)
 {
 #ifdef CONTROLLER_REL2ABS_DEBUG
     logData.open("LogData.csv");
@@ -633,7 +636,8 @@ void ControllerRel2Abs::Activate(DomainActivation lateral, DomainActivation long
 
     pred_timestep      = 0.1;
     pred_nbr_timesteps = pred_horizon / pred_timestep;
-    Controller::Activate(lateral, longitudinal);
+
+    return Controller::Activate(lat_activation_mode, long_activation_mode, light_activation_mode, anim_activation_mode);
 }
 
 void ControllerRel2Abs::ReportKeyEvent(int key, bool down)

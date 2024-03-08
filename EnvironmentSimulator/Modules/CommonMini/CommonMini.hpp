@@ -119,10 +119,27 @@ enum class ModKeyMask
 
 enum class ControlDomains
 {
-    DOMAIN_NONE = 0,
-    DOMAIN_LONG = 1,
-    DOMAIN_LAT  = 2,
-    DOMAIN_BOTH = 3  // can also be interpreted as bitwise OR: DIM_LONG | DIM_LAT
+    DOMAIN_NONE         = 0,
+    DOMAIN_LONG         = 1,
+    DOMAIN_LAT          = 1 << 1,
+    DOMAIN_LIGHT        = 1 << 2,
+    DOMAIN_ANIM         = 1 << 3,
+    DOMAIN_LAT_AND_LONG = DOMAIN_LAT | DOMAIN_LONG,                               // = 3 (1+2)
+    DOMAIN_ALL          = DOMAIN_LAT | DOMAIN_LONG | DOMAIN_LIGHT | DOMAIN_ANIM,  // = 15 (1+2+4+8)
+};
+
+enum class ControlOperationMode
+{
+    MODE_NONE     = 0,  // Controller not available or it is not active
+    MODE_OVERRIDE = 1,  // Actions from the scenario are not applied, default
+    MODE_ADDITIVE = 2,  // Actions from the scenario are applied
+};
+
+enum class ControlActivationMode
+{
+    UNDEFINED = 0,
+    OFF       = 1,
+    ON        = 2
 };
 
 enum class EntityScaleMode
@@ -138,7 +155,7 @@ enum class FollowingMode
     POSITION
 };
 
-std::string ControlDomain2Str(ControlDomains domains);
+std::string ControlDomain2Str(unsigned int domains);
 
 enum class PixelFormat
 {

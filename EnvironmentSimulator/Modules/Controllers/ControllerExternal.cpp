@@ -80,9 +80,12 @@ void ControllerExternal::Step(double timeStep)
     Controller::Step(timeStep);
 }
 
-void ControllerExternal::Activate(DomainActivation lateral, DomainActivation longitudinal)
+int ControllerExternal::Activate(ControlActivationMode lat_activation_mode,
+                                 ControlActivationMode long_activation_mode,
+                                 ControlActivationMode light_activation_mode,
+                                 ControlActivationMode anim_activation_mode)
 {
-    Controller::Activate(lateral, longitudinal);
+    return Controller::Activate(lat_activation_mode, long_activation_mode, light_activation_mode, anim_activation_mode);
 }
 
 void ControllerExternal::ReportKeyEvent(int key, bool down)

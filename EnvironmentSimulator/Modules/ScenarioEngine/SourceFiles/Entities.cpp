@@ -34,7 +34,6 @@ Object::Object(Type type)
       off_road_timestamp_(0.0),
       stand_still_timestamp_(0),
       reset_(0),
-      controller_(0),
       headstart_time_(0),
       ghost_(0),
       ghost_Ego_(0),
@@ -119,85 +118,186 @@ Position::ReturnCode Object::MoveAlongS(double ds, bool actualDistance)
     return pos_.MoveAlongS(ds, 0.0, GetJunctionSelectorAngle(), actualDistance, Position::MoveDirectionMode::HEADING_DIRECTION, true);
 }
 
-int Object::GetAssignedControllerType()
+void Object::AssignController(Controller* controller)
 {
-    if (controller_)
-    {
-        return controller_->GetType();
-    }
-    else
-    {
-        // Report 0 (DefaultController) if not assigned or not activated on any domain
-        return Controller::Type::CONTROLLER_TYPE_DEFAULT;
-    }
+    // if already assigned, first remove it from list of assigned controllers
+    controllers_.erase(std::remove(controllers_.begin(), controllers_.end(), controller), controllers_.end());
+
+    // add assigned controller to the end of list, which indicates the last assigned controller
+    controllers_.push_back(controller);
 }
 
-int Object::GetActivatedControllerType()
+void Object::UnassignController(Controller* controller)
 {
-    if (controller_ && (controller_->GetDomain() != ControlDomains::DOMAIN_NONE))
+    for (auto ctrl : controllers_)
     {
-        return controller_->GetType();
-    }
-    else
-    {
-        if (IsGhost())
+        if (ctrl == controller)
         {
-            return Controller::Type::GHOST_RESERVED_TYPE;
-        }
-        else
-        {
-            // Report 0 if not assigned or not activated on any domain
-            return 0;
+            ctrl->UnlinkObject();
+            ctrl->Deactivate();
+            break;
         }
     }
+
+    controllers_.erase(std::remove(controllers_.begin(), controllers_.end(), controller), controllers_.end());
 }
 
-bool Object::IsControllerActiveOnDomains(ControlDomains domainMask)
+void Object::UnassignControllers()
 {
-    if (controller_)
+    for (auto ctrl : controllers_)
     {
-        return controller_->IsActiveOnDomains(domainMask);
+        ctrl->Deactivate();
     }
-    else
-    {
-        return false;
-    }
+    controllers_.clear();
 }
 
-bool Object::IsControllerActiveOnAnyOfDomains(ControlDomains domainMask)
+bool Object::IsControllerActiveOnDomains(unsigned int domainMask, Controller::Type type)
 {
-    if (controller_)
+    for (auto ctrl : controllers_)
     {
-        return controller_->IsActiveOnAnyOfDomains(domainMask);
+        if (ctrl->IsActiveOnDomains(domainMask))
+        {
+            if (type == Controller::Type::CONTROLLER_TYPE_UNDEFINED || ctrl->GetType() == ctrl->GetType())
+            {
+                return true;
+            }
+        }
     }
-    else
-    {
-        return false;
-    }
+
+    return false;
 }
 
-bool Object::IsControllerActive()
+bool Object::IsControllerActiveOnAnyOfDomains(unsigned int domainMask, Controller::Type type)
 {
-    if (controller_)
+    for (auto ctrl : controllers_)
     {
-        return controller_->IsActive();
+        if (ctrl->IsActiveOnAnyOfDomains(domainMask))
+        {
+            if (type == Controller::Type::CONTROLLER_TYPE_UNDEFINED || ctrl->GetType() == ctrl->GetType())
+            {
+                return true;
+            }
+        }
     }
-    else
-    {
-        return false;
-    }
+
+    return false;
 }
 
-int Object::GetControllerMode()
+bool Object::IsControllerModeOnDomains(ControlOperationMode mode, unsigned int domainMask, Controller::Type type)
 {
-    if (controller_)
+    for (auto ctrl : controllers_)
     {
-        return controller_->GetMode();
+        if (ctrl->IsActiveOnDomains(domainMask))
+        {
+            if (ctrl->GetMode() == mode && (type == Controller::Type::CONTROLLER_TYPE_UNDEFINED || ctrl->GetType() == ctrl->GetType()))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
     }
-    else
+
+    return false;
+}
+
+bool Object::IsControllerModeOnAnyOfDomains(ControlOperationMode mode, unsigned int domainMask, Controller::Type type)
+{
+    for (auto ctrl : controllers_)
     {
-        return 0;  // default
+        if (ctrl->IsActiveOnAnyOfDomains(domainMask))
+        {
+            if (ctrl->GetMode() == mode && (type == Controller::Type::CONTROLLER_TYPE_UNDEFINED || ctrl->GetType() == ctrl->GetType()))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
     }
+
+    return false;
+}
+
+scenarioengine::Controller* scenarioengine::Object::GetAssignedControllerOftype(Controller::Type type)
+{
+    for (auto ctrl : controllers_)
+    {
+        if (ctrl->GetType() == type)
+        {
+            return ctrl;
+        }
+    }
+
+    return nullptr;
+}
+
+bool scenarioengine::Object::IsAnyAssignedControllerOfType(Controller::Type type)
+{
+    for (auto ctrl : controllers_)
+    {
+        if (ctrl->GetType() == type)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool Object::IsAnyActiveControllerOfType(Controller::Type type)
+{
+    for (auto ctrl : controllers_)
+    {
+        if (ctrl->IsActive() && ctrl->GetType() == type)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+scenarioengine::Controller* Object::GetControllerActiveOnDomain(ControlDomains domain)
+{
+    for (auto ctrl : controllers_)
+    {
+        if (ctrl->IsActiveOnDomains(static_cast<unsigned int>(domain)))
+        {
+            return ctrl;
+        }
+    }
+
+    return nullptr;
+}
+
+scenarioengine::Controller::Type Object::GetControllerTypeActiveOnDomain(ControlDomains domain)
+{
+    scenarioengine::Controller* ctrl = GetControllerActiveOnDomain(domain);
+
+    if (ctrl != nullptr)
+    {
+        return static_cast<Controller::Type>(ctrl->GetType());
+    }
+
+    return Controller::Type::CONTROLLER_TYPE_DEFAULT;
+}
+
+scenarioengine::Controller* Object::GetController(std::string name)
+{
+    for (auto ctrl_tmp : controllers_)
+    {
+        if (ctrl_tmp->GetName() == name)
+        {
+            return ctrl_tmp;
+        }
+    }
+
+    return nullptr;
 }
 
 void Object::SetVisibilityMask(int mask)

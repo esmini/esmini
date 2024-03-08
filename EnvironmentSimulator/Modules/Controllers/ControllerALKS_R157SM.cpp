@@ -197,7 +197,7 @@ void ControllerALKS_R157SM::Step(double timeStep)
 {
     double speed = model_->Step(timeStep);
 
-    if (mode_ == Mode::MODE_OVERRIDE)
+    if (mode_ == ControlOperationMode::MODE_OVERRIDE)
     {
         object_->MoveAlongS(speed * timeStep);
         gateway_->updateObjectPos(object_->GetId(), 0.0, &object_->pos_);
@@ -208,7 +208,7 @@ void ControllerALKS_R157SM::Step(double timeStep)
     Controller::Step(timeStep);
 }
 
-void ControllerALKS_R157SM::Assign(Object* object)
+void ControllerALKS_R157SM::LinkObject(Object* object)
 {
     if (!object)
     {
@@ -226,16 +226,20 @@ void ControllerALKS_R157SM::Assign(Object* object)
         model_->SetVehicle(static_cast<Vehicle*>(object));
     }
 
-    Controller::Assign(object);
+    Controller::LinkObject(object);
 }
 
-void ControllerALKS_R157SM::Activate(DomainActivation lateral, DomainActivation longitudinal)
+int ControllerALKS_R157SM::Activate(ControlActivationMode lat_activation_mode,
+                                    ControlActivationMode long_activation_mode,
+                                    ControlActivationMode light_activation_mode,
+                                    ControlActivationMode anim_activation_mode)
 {
     if (model_)
     {
         model_->set_speed_ = object_->GetSpeed();
     }
-    Controller::Activate(lateral, longitudinal);
+
+    return Controller::Activate(lat_activation_mode, long_activation_mode, light_activation_mode, anim_activation_mode);
 }
 
 void ControllerALKS_R157SM::SetScenarioEngine(ScenarioEngine* scenario_engine)

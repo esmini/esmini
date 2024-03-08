@@ -310,7 +310,7 @@ void FollowTrajectoryAction::Start(double simTime)
 {
     OSCAction::Start(simTime);
 
-    if (object_->GetControllerMode() == Controller::Mode::MODE_OVERRIDE && object_->IsControllerActiveOnDomains(ControlDomains::DOMAIN_LAT))
+    if (object_->IsControllerModeOnDomains(ControlOperationMode::MODE_OVERRIDE, static_cast<unsigned int>(ControlDomains::DOMAIN_LAT)))
     {
         // lateral motion controlled elsewhere
         // other action or controller already updated lateral dimension of object
@@ -331,7 +331,7 @@ void FollowTrajectoryAction::End()
 {
     OSCAction::End();
 
-    if (object_->GetControllerMode() == Controller::Mode::MODE_OVERRIDE && object_->IsControllerActiveOnDomains(ControlDomains::DOMAIN_LAT))
+    if (object_->IsControllerModeOnDomains(ControlOperationMode::MODE_OVERRIDE, static_cast<unsigned int>(ControlDomains::DOMAIN_LAT)))
     {
         return;
     }
@@ -342,7 +342,7 @@ void FollowTrajectoryAction::End()
 
 void FollowTrajectoryAction::Step(double simTime, double dt)
 {
-    if (object_->GetControllerMode() == Controller::Mode::MODE_OVERRIDE && object_->IsControllerActiveOnDomains(ControlDomains::DOMAIN_LAT))
+    if (object_->IsControllerModeOnDomains(ControlOperationMode::MODE_OVERRIDE, static_cast<unsigned int>(ControlDomains::DOMAIN_LAT)))
     {
         // lateral motion controlled elsewhere
         // other action or controller already updated lateral dimension of object
@@ -370,7 +370,7 @@ void FollowTrajectoryAction::Step(double simTime, double dt)
         // Ignore any timing info in trajectory
         timing_domain_ == TimingDomain::NONE ||
         // Speed is controlled elsewhere - just follow trajectory with current speed
-        (object_->GetControllerMode() == Controller::Mode::MODE_OVERRIDE && object_->IsControllerActiveOnDomains(ControlDomains::DOMAIN_LONG)))
+        (object_->IsControllerModeOnDomains(ControlOperationMode::MODE_OVERRIDE, static_cast<unsigned int>(ControlDomains::DOMAIN_LONG))))
     {
         object_->pos_.MoveTrajectoryDS(dir * object_->speed_ * dt);
     }
@@ -485,7 +485,7 @@ void AcquirePositionAction::Start(double simTime)
 
     OSCAction::Start(simTime);
 
-    if (object_->GetControllerMode() == Controller::Mode::MODE_OVERRIDE && object_->IsControllerActiveOnDomains(ControlDomains::DOMAIN_LAT))
+    if (object_->IsControllerModeOnDomains(ControlOperationMode::MODE_OVERRIDE, static_cast<unsigned int>(ControlDomains::DOMAIN_LAT)))
     {
         // lateral motion controlled elsewhere
         return;
@@ -510,46 +510,98 @@ void AcquirePositionAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
 
 void AssignControllerAction::Start(double simTime)
 {
-    if (controller_ == 0 || object_->controller_ != controller_)
-    {
-        // Detach any other controller from object
-        if (object_->controller_)
-        {
-            Controller* ctrl = object_->controller_;
-            ctrl->Assign(0);
-            ctrl->Deactivate();
-            object_->SetAssignedController(0);
-        }
-    }
-
     if (controller_)
     {
-        controller_->Assign(object_);
-
-        if (object_->controller_)
+        if (object_ != nullptr)
         {
-            if (!object_->controller_->Active())
+            object_->AssignController(controller_);
+        }
+
+        if (controller_)
+        {
+            if (!controller_->Active())
             {
-                if (lateral_ != Controller::DomainActivation::UNDEFINED || longitudinal_ != Controller::DomainActivation::UNDEFINED)
+                if (lat_activation_mode_ != ControlActivationMode::UNDEFINED || long_activation_mode_ != ControlActivationMode::UNDEFINED ||
+                    light_activation_mode_ != ControlActivationMode::UNDEFINED || anim_activation_mode_ != ControlActivationMode::UNDEFINED)
                 {
-                    object_->controller_->Activate(lateral_, longitudinal_);
-                    LOG("Controller %s activated (lat %s, long %s), domain mask=0x%X",
-                        object_->controller_->GetName().c_str(),
-                        DomainActivation2Str(lateral_).c_str(),
-                        DomainActivation2Str(longitudinal_).c_str(),
-                        object_->controller_->GetDomain());
+                    controller_->Activate(lat_activation_mode_, long_activation_mode_, light_activation_mode_, anim_activation_mode_);
+                    LOG("Controller %s activated (lat %s, long %s, light %s, anim %s), domain mask=0x%X",
+                        controller_->GetName().c_str(),
+                        DomainActivation2Str(lat_activation_mode_).c_str(),
+                        DomainActivation2Str(long_activation_mode_).c_str(),
+                        DomainActivation2Str(light_activation_mode_).c_str(),
+                        DomainActivation2Str(anim_activation_mode_).c_str(),
+                        controller_->GetActiveDomains());
                 }
             }
             else
             {
                 LOG("Controller %s already active (domainmask 0x%X), should not happen when just assigned!",
-                    object_->controller_->GetName().c_str(),
-                    object_->controller_->GetDomain());
+                    controller_->GetName().c_str(),
+                    controller_->GetActiveDomains());
             }
         }
     }
 
     OSCAction::Start(simTime);
+}
+
+void ActivateControllerAction::Start(double simTime)
+{
+    if (object_->controllers_.size() == 0)
+    {
+        LOG("No controller assigned to object %s!", object_->name_.c_str());
+    }
+    else
+    {
+        controller_ = nullptr;
+
+        if (ctrl_name_.empty())
+        {
+            controller_ = object_->controllers_.back();
+
+            if (scenarioEngine_->GetScenarioReader()->GetVersionMinor() > 2)
+            {
+                LOG("Warning: No controller name given for activation on object %s, %s: %s",
+                    object_->name_.c_str(),
+                    object_->GetNrOfAssignedControllers() > 1 ? "pick most recently assigned" : "using assigned controller",
+                    controller_->GetName().c_str());
+            }
+        }
+        else
+        {
+            controller_ = object_->GetController(ctrl_name_);
+            if (controller_ == nullptr)
+            {
+                LOG("Error: Controller %s is not assigned to object %s", ctrl_name_.c_str(), object_->GetName().c_str());
+            }
+        }
+
+        if (controller_ != nullptr)
+        {
+            if (controller_->Activate(lat_activation_mode_, long_activation_mode_, light_activation_mode_, anim_activation_mode_) == 0)
+            {
+                LOG("Controller %s active on domains: %s (mask=0x%x)",
+                    controller_->GetName().c_str(),
+                    ControlDomain2Str(controller_->GetActiveDomains()).c_str(),
+                    controller_->GetActiveDomains());
+                OSCAction::Start(simTime);
+            }
+            else
+            {
+                LOG("Error: Failed to activate controller %s assigned to object %s!", controller_->GetName().c_str(), object_->GetName().c_str());
+            }
+        }
+    }
+
+    End();
+}
+
+void ActivateControllerAction::End()
+{
+    // Make sure heading is aligned with road driving direction
+    object_->pos_.SetHeadingRelative((object_->pos_.GetHRelative() > M_PI_2 && object_->pos_.GetHRelative() < 3 * M_PI_2) ? M_PI : 0.0);
+    OSCAction::End();
 }
 
 void LatLaneChangeAction::Start(double simTime)
@@ -559,7 +611,7 @@ void LatLaneChangeAction::Start(double simTime)
 
     transition_.Reset();
 
-    if (object_->GetControllerMode() == Controller::Mode::MODE_OVERRIDE && object_->IsControllerActiveOnDomains(ControlDomains::DOMAIN_LAT))
+    if (object_->IsControllerModeOnDomains(ControlOperationMode::MODE_OVERRIDE, static_cast<unsigned int>(ControlDomains::DOMAIN_LAT)))
     {
         // lateral motion controlled elsewhere
         return;
@@ -607,7 +659,7 @@ void LatLaneChangeAction::Step(double simTime, double dt)
 {
     double offset_agnostic = internal_pos_.GetOffset() * SIGN(internal_pos_.GetLaneId());
 
-    if (object_->GetControllerMode() == Controller::Mode::MODE_OVERRIDE && object_->IsControllerActiveOnDomains(ControlDomains::DOMAIN_LAT))
+    if (object_->IsControllerModeOnDomains(ControlOperationMode::MODE_OVERRIDE, static_cast<unsigned int>(ControlDomains::DOMAIN_LAT)))
     {
         // lateral motion controlled elsewhere
         return;
@@ -751,7 +803,7 @@ void LatLaneOffsetAction::Start(double simTime)
     OSCAction::Start(simTime);
     transition_.Reset();
 
-    if (object_->GetControllerMode() == Controller::Mode::MODE_OVERRIDE && object_->IsControllerActiveOnDomains(ControlDomains::DOMAIN_LAT))
+    if (object_->IsControllerModeOnDomains(ControlOperationMode::MODE_OVERRIDE, static_cast<unsigned int>(ControlDomains::DOMAIN_LAT)))
     {
         // lateral motion controlled elsewhere
         return;
@@ -787,7 +839,7 @@ void LatLaneOffsetAction::Step(double simTime, double dt)
     (void)dt;
     double offset_agnostic;
 
-    if (object_->GetControllerMode() == Controller::Mode::MODE_OVERRIDE && object_->IsControllerActiveOnDomains(ControlDomains::DOMAIN_LAT))
+    if (object_->IsControllerModeOnDomains(ControlOperationMode::MODE_OVERRIDE, static_cast<unsigned int>(ControlDomains::DOMAIN_LAT)))
     {
         // lateral motion controlled elsewhere
         return;
@@ -880,7 +932,7 @@ void LongSpeedAction::Start(double simTime)
     transition_.Reset();
     target_speed_reached_ = false;
 
-    if (object_->GetControllerMode() == Controller::Mode::MODE_OVERRIDE && object_->IsControllerActiveOnDomains(ControlDomains::DOMAIN_LONG))
+    if (object_->IsControllerModeOnDomains(ControlOperationMode::MODE_OVERRIDE, static_cast<unsigned int>(ControlDomains::DOMAIN_LONG)))
     {
         // longitudinal motion controlled elsewhere
         OSCAction::End();
@@ -941,7 +993,7 @@ void LongSpeedAction::Step(double simTime, double dt)
     (void)dt;
     double new_speed = 0;
 
-    if (object_->GetControllerMode() == Controller::Mode::MODE_OVERRIDE && object_->IsControllerActiveOnDomains(ControlDomains::DOMAIN_LONG))
+    if (object_->IsControllerModeOnDomains(ControlOperationMode::MODE_OVERRIDE, static_cast<unsigned int>(ControlDomains::DOMAIN_LONG)))
     {
         // longitudinal motion controlled elsewhere
         OSCAction::End();
@@ -1510,7 +1562,7 @@ void LongDistanceAction::Start(double simTime)
 
 void LongDistanceAction::Step(double simTime, double)
 {
-    if (object_->GetControllerMode() == Controller::Mode::MODE_OVERRIDE && object_->IsControllerActiveOnDomains(ControlDomains::DOMAIN_LONG))
+    if (object_->IsControllerModeOnDomains(ControlOperationMode::MODE_OVERRIDE, static_cast<unsigned int>(ControlDomains::DOMAIN_LONG)))
     {
         // longitudinal motion controlled elsewhere
         return;
@@ -1660,7 +1712,7 @@ void TeleportAction::Start(double simTime)
         scenarioEngine_->ResetEvents();  // Ghost-project. Reset events finished by ghost.
     }
 
-    if (object_->GetControllerMode() == Controller::Mode::MODE_OVERRIDE && object_->IsControllerActive())
+    if (object_->IsControllerModeOnAnyOfDomains(ControlOperationMode::MODE_OVERRIDE, static_cast<unsigned int>(ControlDomains::DOMAIN_LAT_AND_LONG)))
     {
         // motion controlled elsewhere
         return;
@@ -1882,7 +1934,7 @@ void SynchronizeAction::Start(double simTime)
 
     OSCAction::Start(simTime);
 
-    if (object_->GetControllerMode() == Controller::Mode::MODE_OVERRIDE && object_->IsControllerActiveOnDomains(ControlDomains::DOMAIN_LONG))
+    if (object_->IsControllerModeOnDomains(ControlOperationMode::MODE_OVERRIDE, static_cast<unsigned int>(ControlDomains::DOMAIN_LONG)))
     {
         // longitudinal motion controlled elsewhere
         return;
@@ -1895,7 +1947,7 @@ void SynchronizeAction::Step(double simTime, double dt)
     (void)dt;
     bool done = false;
 
-    if (object_->GetControllerMode() == Controller::Mode::MODE_OVERRIDE && object_->IsControllerActiveOnDomains(ControlDomains::DOMAIN_LONG))
+    if (object_->IsControllerModeOnDomains(ControlOperationMode::MODE_OVERRIDE, static_cast<unsigned int>(ControlDomains::DOMAIN_LONG)))
     {
         // longitudinal motion controlled elsewhere
         return;
@@ -2284,22 +2336,22 @@ int OverrideControlAction::AddOverrideStatus(Object::OverrideActionStatus status
         {
             if (status.active)
             {
-                domain_ = static_cast<ControlDomains>(static_cast<int>(domain_) | static_cast<int>(ControlDomains::DOMAIN_LAT));
+                domains_ = domains_ | static_cast<unsigned int>(ControlDomains::DOMAIN_LAT);
             }
             else
             {
-                domain_ = static_cast<ControlDomains>(static_cast<int>(domain_) & ~static_cast<int>(ControlDomains::DOMAIN_LAT));
+                domains_ = domains_ & ~static_cast<unsigned int>(ControlDomains::DOMAIN_LAT);
             }
         }
         else
         {
             if (status.active)
             {
-                domain_ = static_cast<ControlDomains>(static_cast<int>(domain_) | static_cast<int>(ControlDomains::DOMAIN_LONG));
+                domains_ = domains_ | static_cast<unsigned int>(ControlDomains::DOMAIN_LONG);
             }
             else
             {
-                domain_ = static_cast<ControlDomains>(static_cast<int>(domain_) & ~static_cast<int>(ControlDomains::DOMAIN_LONG));
+                domains_ = domains_ & ~static_cast<unsigned int>(ControlDomains::DOMAIN_LONG);
             }
         }
     }

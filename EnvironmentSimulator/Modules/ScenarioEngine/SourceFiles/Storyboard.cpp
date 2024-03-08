@@ -201,12 +201,12 @@ void Event::Start(double simTime)
                     if (obj->initActions_[j]->GetBaseType() == OSCAction::BaseType::PRIVATE &&
                         obj->initActions_[j]->GetCurrentState() == StoryBoardElement::State::RUNNING)
                     {
-                        if (static_cast<int>(obj->initActions_[j]->GetDomain()) & static_cast<int>(pa->GetDomain()))
+                        if (static_cast<int>(obj->initActions_[j]->GetDomains()) & static_cast<int>(pa->GetDomains()))
                         {
                             // Domains overlap, at least one domain in common. Terminate old action.
                             LOG("Stopping %s on conflicting %s domain(s)",
                                 obj->initActions_[j]->GetName().c_str(),
-                                ControlDomain2Str(obj->initActions_[j]->GetDomain()).c_str());
+                                ControlDomain2Str(obj->initActions_[j]->GetDomains()).c_str());
                             obj->initActions_[j]->End();
                         }
                     }
@@ -224,13 +224,13 @@ void Event::Start(double simTime)
                             if (pa2 != pa && pa2->object_->GetId() == pa->object_->GetId() &&
                                 pa2->GetCurrentState() == StoryBoardElement::State::RUNNING && pa2->GetBaseType() == OSCAction::BaseType::PRIVATE)
                             {
-                                if (static_cast<int>(pa2->GetDomain()) & static_cast<int>(pa->GetDomain()))
+                                if (static_cast<int>(pa2->GetDomains()) & static_cast<int>(pa->GetDomains()))
                                 {
                                     // Domains overlap, at least one domain in common. Terminate old action.
                                     LOG("Stopping object %s %s on conflicting %s domain(s)",
                                         obj->GetName().c_str(),
                                         pa2->GetName().c_str(),
-                                        ControlDomain2Str(pa2->GetDomain()).c_str());
+                                        ControlDomain2Str(pa2->GetDomains()).c_str());
                                     pa2->End();
                                 }
                             }

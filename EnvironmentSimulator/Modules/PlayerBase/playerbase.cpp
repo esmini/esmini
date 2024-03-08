@@ -667,10 +667,13 @@ void ScenarioPlayer::InitControllersPostPlayer()
         //  Create relation between controllers and player
         for (size_t i = 0; i < scenarioEngine->entities_.object_.size(); i++)
         {
-            if (scenarioEngine->entities_.object_[i]->controller_)
+            if (scenarioEngine->entities_.object_[i]->controllers_.size() > 0)
             {
-                scenarioEngine->entities_.object_[i]->controller_->SetPlayer(this);
-                scenarioEngine->entities_.object_[i]->controller_->InitPostPlayer();
+                for (auto ctrl : scenarioEngine->entities_.object_[i]->controllers_)
+                {
+                    ctrl->SetPlayer(this);
+                    ctrl->InitPostPlayer();
+                }
             }
         }
     }
@@ -992,7 +995,7 @@ int ScenarioPlayer::InitViewer()
         {
             trail_color.set(color_black[0], color_black[1], color_black[2], 1.0);
         }
-        else if (obj->GetAssignedControllerType() == Controller::Type::CONTROLLER_TYPE_EXTERNAL)
+        else if (obj->IsAnyAssignedControllerOfType(Controller::Type::CONTROLLER_TYPE_EXTERNAL))
         {
             trail_color.set(color_yellow[0], color_yellow[1], color_yellow[2], 1.0);
         }
@@ -1003,7 +1006,7 @@ int ScenarioPlayer::InitViewer()
 
         //  Create vehicles for visualization
         bool road_sensor = false;
-        if (obj->GetGhost() || obj->GetAssignedControllerType() != Controller::Type::CONTROLLER_TYPE_DEFAULT)
+        if (obj->GetGhost() || obj->IsControllerActiveOnAnyOfDomains(static_cast<unsigned int>(ControlDomains::DOMAIN_LAT_AND_LONG)))
         {
             road_sensor = true;
         }
@@ -1047,9 +1050,9 @@ int ScenarioPlayer::InitViewer()
     {
         Object* obj = scenarioEngine->entities_.object_[i];
 
-        if (obj->GetAssignedControllerType() == Controller::Type::CONTROLLER_TYPE_INTERACTIVE ||
-            obj->GetAssignedControllerType() == Controller::Type::CONTROLLER_TYPE_EXTERNAL ||
-            obj->GetAssignedControllerType() == Controller::Type::CONTROLLER_TYPE_FOLLOW_GHOST)
+        if (obj->IsAnyAssignedControllerOfType(Controller::Type::CONTROLLER_TYPE_INTERACTIVE) ||
+            obj->IsAnyAssignedControllerOfType(Controller::Type::CONTROLLER_TYPE_EXTERNAL) ||
+            obj->IsAnyAssignedControllerOfType(Controller::Type::CONTROLLER_TYPE_FOLLOW_GHOST))
         {
             if (viewer_->GetEntityInFocus() == 0)
             {

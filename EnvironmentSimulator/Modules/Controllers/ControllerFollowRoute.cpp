@@ -63,10 +63,10 @@ ControllerFollowRoute::ControllerFollowRoute(InitArgs *args) : Controller(args),
 void ControllerFollowRoute::Init()
 {
     // FollowRoute controller forced into additive mode - will perform scenario actions, except during lane changes
-    if (mode_ != Mode::MODE_ADDITIVE)
+    if (mode_ != ControlOperationMode::MODE_ADDITIVE)
     {
         LOG("FollowRoute controller mode \"%s\" not applicable. Using additive mode (except during lane changes).", Mode2Str(mode_).c_str());
-        mode_ = Controller::Mode::MODE_ADDITIVE;
+        mode_ = ControlOperationMode::MODE_ADDITIVE;
     }
 
     LOG("FollowRoute init");
@@ -123,7 +123,10 @@ void ControllerFollowRoute::Step(double timeStep)
     Controller::Step(timeStep);
 }
 
-void ControllerFollowRoute::Activate(DomainActivation lateral, DomainActivation longitudinal)
+int ControllerFollowRoute::Activate(ControlActivationMode lat_activation_mode,
+                                    ControlActivationMode long_activation_mode,
+                                    ControlActivationMode light_activation_mode,
+                                    ControlActivationMode anim_activation_mode)
 {
     LOG("FollowRoute activate");
 
@@ -137,7 +140,8 @@ void ControllerFollowRoute::Activate(DomainActivation lateral, DomainActivation 
     changingLane_          = false;
     waypoints_             = {};
     laneChangeAction_      = nullptr;
-    Controller::Activate(lateral, longitudinal);
+
+    return Controller::Activate(lat_activation_mode, long_activation_mode, light_activation_mode, anim_activation_mode);
 }
 
 void ControllerFollowRoute::ReportKeyEvent(int key, bool down)
@@ -256,22 +260,22 @@ void ControllerFollowRoute::ChangeLane(double timeStep)
     {
         laneChangeAction_->Start(scenarioEngine_->getSimulationTime());
 
-        mode_ = Mode::MODE_OVERRIDE;  // override mode to prevent default controller from moving the entity
+        mode_ = ControlOperationMode::MODE_OVERRIDE;  // override mode to prevent default controller from moving the entity
 
         // skip step at this timestep since default controller already update the entity
     }
     else
     {
-        mode_ = Mode::MODE_ADDITIVE;  // disable override mode to enable use of default controller actions
+        mode_ = ControlOperationMode::MODE_ADDITIVE;  // disable override mode to enable use of default controller actions
         laneChangeAction_->Step(scenarioEngine_->getSimulationTime(), timeStep);
-        mode_ = Mode::MODE_OVERRIDE;  // restore override mode to prevent default controller from moving the entity
+        mode_ = ControlOperationMode::MODE_OVERRIDE;  // restore override mode to prevent default controller from moving the entity
 
         if (laneChangeAction_->GetCurrentState() == OSCAction::State::COMPLETE)
         {
             changingLane_ = false;
             delete laneChangeAction_;
             laneChangeAction_ = nullptr;
-            mode_             = Mode::MODE_ADDITIVE;
+            mode_             = ControlOperationMode::MODE_ADDITIVE;
             return;
         }
 

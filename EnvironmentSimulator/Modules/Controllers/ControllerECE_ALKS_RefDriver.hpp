@@ -48,7 +48,10 @@ namespace scenarioengine
 
         void Init();
         void Step(double timeStep);
-        void Activate(DomainActivation lateral, DomainActivation longitudinal);
+        int  Activate(ControlActivationMode lat_activation_mode,
+                      ControlActivationMode long_activation_mode,
+                      ControlActivationMode light_activation_mode,
+                      ControlActivationMode anim_activation_mode);
         void Reset();
         void ReportKeyEvent(int key, bool down);
 

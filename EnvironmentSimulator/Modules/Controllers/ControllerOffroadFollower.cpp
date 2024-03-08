@@ -111,7 +111,10 @@ void ControllerOffroadFollower::Step(double timeStep)
     Controller::Step(timeStep);
 }
 
-void ControllerOffroadFollower::Activate(DomainActivation lateral, DomainActivation longitudinal)
+int ControllerOffroadFollower::Activate(ControlActivationMode lat_activation_mode,
+                                        ControlActivationMode long_activation_mode,
+                                        ControlActivationMode light_activation_mode,
+                                        ControlActivationMode anim_activation_mode)
 {
     if (object_)
     {
@@ -127,7 +130,7 @@ void ControllerOffroadFollower::Activate(DomainActivation lateral, DomainActivat
     object_->SetJunctionSelectorStrategy(roadmanager::Junction::JunctionStrategyType::SELECTOR_ANGLE);
     object_->SetJunctionSelectorAngle(0.0);
 
-    Controller::Activate(lateral, longitudinal);
+    return Controller::Activate(lat_activation_mode, long_activation_mode, light_activation_mode, anim_activation_mode);
 }
 
 void ControllerOffroadFollower::ReportKeyEvent(int key, bool down)

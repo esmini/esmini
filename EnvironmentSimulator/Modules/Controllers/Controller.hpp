@@ -51,16 +51,10 @@ namespace scenarioengine
             CONTROLLER_TYPE_LOOMING,
             CONTROLLER_TYPE_OFFROAD_FOLLOWER,
             N_CONTROLLER_TYPES,
+            CONTROLLER_TYPE_UNDEFINED,
             GHOST_RESERVED_TYPE       = 100,
             USER_CONTROLLER_TYPE_BASE = 1000,
         };
-
-        typedef enum
-        {
-            MODE_NONE,      // Controller not available or it is not active
-            MODE_OVERRIDE,  // Actions from the scenario are not applied, default
-            MODE_ADDITIVE,  // Actions from the scenario are applied
-        } Mode;
 
         typedef struct
         {
@@ -72,17 +66,7 @@ namespace scenarioengine
             Parameters*      parameters;
         } InitArgs;
 
-        enum class DomainActivation
-        {
-            UNDEFINED = 0,
-            OFF       = 1,
-            ON        = 2
-        };
-
-        Controller() : object_(0), entities_(0), gateway_(0), scenario_engine_(0), player_(0)
-        {
-        }
-        Controller(InitArgs* args);
+        Controller(InitArgs* args = nullptr);
         virtual ~Controller() = default;
 
         static const char* GetTypeNameStatic()
@@ -102,34 +86,16 @@ namespace scenarioengine
             return GetTypeStatic();
         }
 
-        virtual void Assign(Object* object);
-        virtual void Activate(DomainActivation lateral, DomainActivation longitudinal)
-        {
-            int domain_mask = static_cast<int>(domain_);
+        virtual void LinkObject(Object* object);
+        virtual void UnlinkObject();
+        virtual int  Activate(ControlActivationMode lat_mode,
+                              ControlActivationMode long_mode,
+                              ControlActivationMode light_mode,
+                              ControlActivationMode anim_mode);
 
-            if (lateral == DomainActivation::OFF)
-            {
-                domain_mask &= ~static_cast<int>(ControlDomains::DOMAIN_LAT);
-            }
-            else if (lateral == DomainActivation::ON)
-            {
-                domain_mask |= static_cast<int>(ControlDomains::DOMAIN_LAT);
-            }
-
-            if (longitudinal == DomainActivation::OFF)
-            {
-                domain_mask &= ~static_cast<int>(ControlDomains::DOMAIN_LONG);
-            }
-            else if (longitudinal == DomainActivation::ON)
-            {
-                domain_mask |= static_cast<int>(ControlDomains::DOMAIN_LONG);
-            }
-
-            domain_ = static_cast<ControlDomains>(domain_mask);
-        };
         virtual void Deactivate()
         {
-            domain_ = ControlDomains::DOMAIN_NONE;
+            active_domains_ = static_cast<unsigned int>(ControlDomains::DOMAIN_NONE);
         };
 
         // Executed by scenarioengine before first step
@@ -153,40 +119,60 @@ namespace scenarioengine
 
         bool Active()
         {
-            return static_cast<int>(domain_) != 0;
+            return (active_domains_ != static_cast<unsigned int>(ControlDomains::DOMAIN_NONE));
         };
+
         std::string GetName()
         {
             return name_;
         }
-        ControlDomains GetDomain()
+
+        void SetName(std::string name)
         {
-            return domain_;
+            name_ = name;
         }
-        int GetMode()
+
+        unsigned int GetOperatingDomains()
+        {
+            return operating_domains_;
+        }
+
+        unsigned int GetActiveDomains()
+        {
+            return active_domains_;
+        }
+
+        ControlOperationMode GetMode()
         {
             return mode_;
         }
-        std::string Mode2Str(int mode);
+        std::string Mode2Str(ControlOperationMode mode);
         Object*     GetRoadObject()
         {
             return object_;
         }
 
-        bool IsActiveOnDomains(ControlDomains domainMask);
-        bool IsActiveOnAnyOfDomains(ControlDomains domainMask);
-        bool IsActive();
+        bool    IsActiveOnDomainsOnly(unsigned int domainMask);
+        bool    IsActiveOnDomains(unsigned int domainMask);
+        bool    IsNotActiveOnDomains(unsigned int domainMask);
+        bool    IsActiveOnAnyOfDomains(unsigned int domainMask);
+        bool    IsActive();
+        Object* GetLinkedObject()
+        {
+            return object_;
+        }
 
     protected:
-        ControlDomains   domain_;  // bitmask according to ControllerDomain type
-        int              mode_;    // add to scenario actions or replace
-        Object*          object_;  // The object to which the controller is attached and hence controls
-        std::string      name_;
-        std::string      type_name_;
-        Entities*        entities_;
-        ScenarioGateway* gateway_;
-        ScenarioEngine*  scenario_engine_;
-        ScenarioPlayer*  player_;
+        unsigned int         operating_domains_;  // bitmask representing domains controller is operating on
+        unsigned int         active_domains_;     // bitmask representing domains controller is currently active on
+        ControlOperationMode mode_;               // add to scenario actions or replace
+        Object*              object_;             // The object to which the controller is attached and hence controls
+        std::string          name_;
+        std::string          type_name_;
+        Entities*            entities_;
+        ScenarioGateway*     gateway_;
+        ScenarioEngine*      scenario_engine_;
+        ScenarioPlayer*      player_;
     };
 
     typedef Controller* (*ControllerInstantiateFunction)(void* args);

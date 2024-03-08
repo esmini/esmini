@@ -90,10 +90,10 @@ ControllerFollowGhost::ControllerFollowGhost(InitArgs* args)
 void ControllerFollowGhost::Init()
 {
     // FollowGhost controller forced into override mode - will not perform any scenario actions
-    if (mode_ != Mode::MODE_OVERRIDE)
+    if (mode_ != ControlOperationMode::MODE_OVERRIDE)
     {
         LOG("FollowGhost controller mode \"%s\" not applicable. Using override mode instead.", Mode2Str(mode_).c_str());
-        mode_ = Controller::Mode::MODE_OVERRIDE;
+        mode_ = ControlOperationMode::MODE_OVERRIDE;
     }
 
     object_->SetHeadstartTime(headstart_time_);
@@ -225,12 +225,12 @@ void ControllerFollowGhost::Step(double timeStep)
     gateway_->updateObjectSpeed(object_->id_, 0.0, vehicle_.speed_);
 
     // Update wheels wrt domains
-    if (IsActiveOnDomains(ControlDomains::DOMAIN_LONG))
+    if (IsActiveOnDomains(static_cast<unsigned int>(ControlDomains::DOMAIN_LONG)))
     {
         gateway_->updateObjectWheelRotation(object_->id_, 0.0, vehicle_.wheelRotation_);
     }
 
-    if (IsActiveOnDomains(ControlDomains::DOMAIN_LAT))
+    if (IsActiveOnDomains(static_cast<unsigned int>(ControlDomains::DOMAIN_LAT)))
     {
         gateway_->updateObjectWheelAngle(object_->id_, 0.0, vehicle_.wheelAngle_);
     }
@@ -238,7 +238,10 @@ void ControllerFollowGhost::Step(double timeStep)
     Controller::Step(timeStep);
 }
 
-void ControllerFollowGhost::Activate(DomainActivation lateral, DomainActivation longitudinal)
+int ControllerFollowGhost::Activate(ControlActivationMode lat_activation_mode,
+                                    ControlActivationMode long_activation_mode,
+                                    ControlActivationMode light_activation_mode,
+                                    ControlActivationMode anim_activation_mode)
 {
     if (object_)
     {
@@ -254,7 +257,7 @@ void ControllerFollowGhost::Activate(DomainActivation lateral, DomainActivation 
         object_->sensor_pos_[2] = object_->pos_.GetZ();
     }
 
-    Controller::Activate(lateral, longitudinal);
+    return Controller::Activate(lat_activation_mode, long_activation_mode, light_activation_mode, anim_activation_mode);
 }
 
 void ControllerFollowGhost::ReportKeyEvent(int key, bool down)

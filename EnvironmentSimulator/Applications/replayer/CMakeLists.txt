@@ -106,7 +106,8 @@ target_include_directories(
     ${TARGET2}
     PRIVATE ${COMMON_MINI_PATH}
             ${SCENARIO_ENGINE_PATH}/SourceFiles
-            ${SCENARIO_ENGINE_PATH}/OSCTypeDefs)
+            ${SCENARIO_ENGINE_PATH}/OSCTypeDefs
+            ${CONTROLLERS_PATH})
 
 target_include_directories(
     ${TARGET2}

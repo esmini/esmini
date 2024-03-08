@@ -621,8 +621,11 @@ namespace scenarioengine
 
         void Init();
         void Step(double timeStep);
-        void Assign(Object* object);
-        void Activate(DomainActivation lateral, DomainActivation longitudinal);
+        void LinkObject(Object* object);
+        int  Activate(ControlActivationMode lat_activation_mode,
+                      ControlActivationMode long_activation_mode,
+                      ControlActivationMode light_activation_mode,
+                      ControlActivationMode anim_activation_mode);
         void ReportKeyEvent(int key, bool down);
         void SetScenarioEngine(ScenarioEngine* scenario_engine) override;
     };

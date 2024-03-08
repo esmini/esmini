@@ -816,12 +816,15 @@ TEST(ControllerTest, UDPDriverModelTestAsynchronous)
         args.properties->property_.push_back(property);
         ControllerUDPDriver* controller = reinterpret_cast<ControllerUDPDriver*>(InstantiateControllerUDPDriver(&args));
 
-        delete se->entities_.object_[i]->controller_;
+        for (auto ctrl : se->entities_.object_[i]->controllers_)
+        {
+            se->entities_.object_[i]->UnassignController(ctrl);
+            delete ctrl;
+        }
         delete args.properties;
-
-        controller->Assign(se->entities_.object_[i]);
-        se->scenarioReader->controller_[i]    = controller;
-        se->entities_.object_[i]->controller_ = controller;
+        se->scenarioReader->controller_[i] = controller;
+        se->entities_.object_[i]->AssignController(controller);
+        controller->LinkObject(se->entities_.object_[i]);
     }
 
     // assign controllers
@@ -912,12 +915,15 @@ TEST(ControllerTest, UDPDriverModelTestSynchronous)
         args.properties->property_.push_back(property);
         ControllerUDPDriver* controller = reinterpret_cast<ControllerUDPDriver*>(InstantiateControllerUDPDriver(&args));
 
-        delete se->entities_.object_[i]->controller_;
+        for (auto ctrl : se->entities_.object_[i]->controllers_)
+        {
+            se->entities_.object_[i]->UnassignController(ctrl);
+            delete ctrl;
+        }
         delete args.properties;
-
-        controller->Assign(se->entities_.object_[i]);
-        se->scenarioReader->controller_[i]    = controller;
-        se->entities_.object_[i]->controller_ = controller;
+        se->scenarioReader->controller_[i] = controller;
+        se->entities_.object_[i]->AssignController(controller);
+        controller->LinkObject(se->entities_.object_[i]);
     }
 
     // assign controllers
@@ -1670,12 +1676,16 @@ TEST(ControllerTest, ALKS_R157_TestR157RegulationMinDist)
     controller->SetScenarioEngine(se);
 
     Object* obj = se->entities_.object_[0];
-    delete obj->controller_;
-    delete args.properties;
 
-    controller->Assign(obj);
+    for (auto ctrl : obj->controllers_)
+    {
+        obj->UnassignController(ctrl);
+        delete ctrl;
+    }
+    delete args.properties;
     se->scenarioReader->controller_[0] = controller;
-    obj->controller_                   = controller;
+    obj->AssignController(controller);
+    controller->LinkObject(obj);
 
     // assign controllers
     se->step(dt);

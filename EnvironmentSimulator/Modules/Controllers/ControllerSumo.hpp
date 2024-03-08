@@ -46,7 +46,10 @@ namespace scenarioengine
 
         void Init();
         void Step(double time);
-        void Activate(DomainActivation lateral, DomainActivation longitudinal);
+        int  Activate(ControlActivationMode lat_activation_mode,
+                      ControlActivationMode long_activation_mode,
+                      ControlActivationMode light_activation_mode,
+                      ControlActivationMode anim_activation_mode);
 
         void SetSumoVehicle(Object* object);
 

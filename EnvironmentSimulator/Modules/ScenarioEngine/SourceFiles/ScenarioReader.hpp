@@ -78,6 +78,10 @@ namespace scenarioengine
         {
             gateway_ = gateway;
         }
+        void SetScenarioEngine(ScenarioEngine* scenarioEngine)
+        {
+            scenarioEngine_ = scenarioEngine;
+        }
         int RegisterCatalogDirectory(pugi::xml_node catalogDirChild);
 
         int parseOSCHeader();
@@ -184,6 +188,7 @@ namespace scenarioengine
         Entities*             entities_;
         Catalogs*             catalogs_;
         ScenarioGateway*      gateway_;
+        ScenarioEngine*       scenarioEngine_;
         bool                  disable_controllers_;
         static ControllerPool controllerPool_;
         int                   versionMajor_;

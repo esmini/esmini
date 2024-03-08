@@ -33,10 +33,10 @@ Controller* scenarioengine::InstantiateControllerSumo(void* args)
 ControllerSumo::ControllerSumo(InitArgs* args) : Controller(args)
 {
     // SUMO controller forced into override mode - will not perform any scenario actions
-    if (mode_ != Mode::MODE_OVERRIDE)
+    if (mode_ != ControlOperationMode::MODE_OVERRIDE)
     {
         LOG("SUMO controller mode \"%s\" not applicable. Using override mode instead.", Mode2Str(mode_).c_str());
-        mode_ = Controller::Mode::MODE_OVERRIDE;
+        mode_ = ControlOperationMode::MODE_OVERRIDE;
     }
 
     if (args->properties->file_.filepath_.empty())
@@ -111,13 +111,13 @@ void ControllerSumo::Step(double timeStep)
                 Vehicle* vehicle = new Vehicle();
                 // copy the default vehicle stuff here (add bounding box and so on)
                 LOG("SUMO controller: Add vehicle to scenario: %s", deplist[i].c_str());
-                vehicle->name_       = deplist[i];
-                vehicle->controller_ = this;
-                vehicle->model3d_    = template_vehicle_->model3d_;
-                vehicle->scaleMode_  = EntityScaleMode::BB_TO_MODEL;
-                vehicle->role_       = Vehicle::Role::CIVIL;
-                vehicle->category_   = Vehicle::Category::CAR;
-                vehicle->odometer_   = 0.0;
+                vehicle->name_ = deplist[i];
+                vehicle->AssignController(this);
+                vehicle->model3d_   = template_vehicle_->model3d_;
+                vehicle->scaleMode_ = EntityScaleMode::BB_TO_MODEL;
+                vehicle->role_      = Vehicle::Role::CIVIL;
+                vehicle->category_  = Vehicle::Category::CAR;
+                vehicle->odometer_  = 0.0;
                 entities_->addObject(vehicle, true);
             }
         }
@@ -182,7 +182,7 @@ void ControllerSumo::Step(double timeStep)
     {
         if (entities_->object_[i]->IsActive())
         {
-            if (entities_->object_[i]->GetActivatedControllerType() == Controller::Type::CONTROLLER_TYPE_SUMO)
+            if (entities_->object_[i]->IsAnyActiveControllerOfType(Controller::Type::CONTROLLER_TYPE_SUMO))
             {
                 Object* obj = entities_->object_[i];
 
@@ -206,7 +206,7 @@ void ControllerSumo::Step(double timeStep)
                                        obj->role_,
                                        obj->model_id_,
                                        obj->model3d_,
-                                       obj->GetActivatedControllerType(),
+                                       obj->GetControllerTypeActiveOnDomain(ControlDomains::DOMAIN_LONG),
                                        obj->boundingbox_,
                                        static_cast<int>(obj->scaleMode_),
                                        0xff,
@@ -237,24 +237,27 @@ void ControllerSumo::Step(double timeStep)
     Controller::Step(timeStep);
 }
 
-void ControllerSumo::Activate(DomainActivation lateral, DomainActivation longitudinal)
+int ControllerSumo::Activate(ControlActivationMode lat_activation_mode,
+                             ControlActivationMode long_activation_mode,
+                             ControlActivationMode light_activation_mode,
+                             ControlActivationMode anim_activation_mode)
 {
     // Reset time
     time_ = 0;
 
     // SUMO controller forced into both domains
-    if (lateral != Controller::DomainActivation::ON || longitudinal != Controller::DomainActivation::ON)
+    if (lat_activation_mode != ControlActivationMode::ON || long_activation_mode != ControlActivationMode::ON)
     {
         LOG("SUMO controller forced into operation of both domains (lat/long)");
-        lateral = longitudinal = Controller::DomainActivation::ON;
+        lat_activation_mode = long_activation_mode = ControlActivationMode::ON;
     }
 
-    Controller::Activate(lateral, longitudinal);
+    return Controller::Activate(lat_activation_mode, long_activation_mode, light_activation_mode, anim_activation_mode);
 }
 
 void ControllerSumo::SetSumoVehicle(Object* object)
 {
     template_vehicle_ = object;
     object_           = object;
-    object_->SetAssignedController(this);
+    object_->AssignController(this);
 }

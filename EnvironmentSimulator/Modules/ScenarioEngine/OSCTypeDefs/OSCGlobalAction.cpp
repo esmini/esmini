@@ -566,7 +566,6 @@ void SwarmTrafficAction::spawn(Solutions sols, int replace, double simTime)
             Vehicle* vehicle = new Vehicle(*vehicle_pool_[static_cast<unsigned int>(number)]);
             vehicle->pos_.SetLanePos(inf.pos.GetTrackId(), laneID, inf.pos.GetS(), 0.0);
             vehicle->pos_.SetHeadingRelativeRoadDirection(laneID < 0 ? 0.0 : M_PI);
-            vehicle->controller_ = acc;
             vehicle->SetSpeed(velocity_);
             // vehicle->scaleMode_ = EntityScaleMode::BB_TO_MODEL;
             vehicle->name_ = "swarm_" + std::to_string(counter_++);
@@ -579,8 +578,9 @@ void SwarmTrafficAction::spawn(Solutions sols, int replace, double simTime)
                 v->AlignTrailers();
             }
 
-            acc->Assign(entities_->GetObjectById(id));
-            acc->Activate(Controller::DomainActivation::OFF, Controller::DomainActivation::ON);
+            vehicle->AssignController(acc);
+            acc->LinkObject(vehicle);
+            acc->Activate(ControlActivationMode::OFF, ControlActivationMode::ON, ControlActivationMode::OFF, ControlActivationMode::OFF);
 
             SpawnInfo sInfo = {
                 id,                    // Vehicle ID
@@ -665,7 +665,12 @@ int SwarmTrafficAction::despawn(double simTime)
 
         if (deleteVehicle)
         {
-            reader_->RemoveController(vehicle->controller_);
+            for (auto ctrl : vehicle->controllers_)
+            {
+                vehicle->UnassignController(ctrl);
+                ctrl->UnlinkObject();
+                reader_->RemoveController(ctrl);
+            }
 
             if (vehicle->type_ == Object::Type::VEHICLE)
             {

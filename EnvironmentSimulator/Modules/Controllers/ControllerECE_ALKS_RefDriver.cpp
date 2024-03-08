@@ -50,7 +50,7 @@ ControllerECE_ALKS_REF_DRIVER::ControllerECE_ALKS_REF_DRIVER(InitArgs* args)
       currentSpeed_(0),
       logging_(false)
 {
-    mode_ = Mode::MODE_ADDITIVE;
+    mode_ = ControlOperationMode::MODE_ADDITIVE;
 
     if (args->properties->ValueExists("logging"))
     {
@@ -475,10 +475,16 @@ void ControllerECE_ALKS_REF_DRIVER::Step(double timeStep)
     Controller::Step(timeStep);
 }
 
-void ControllerECE_ALKS_REF_DRIVER::Activate(DomainActivation lateral, DomainActivation longitudinal)
+int ControllerECE_ALKS_REF_DRIVER::Activate(ControlActivationMode lat_activation_mode,
+                                            ControlActivationMode long_activation_mode,
+                                            ControlActivationMode light_activation_mode,
+                                            ControlActivationMode anim_activation_mode)
 {
     Reset();
-    Controller::Activate(lateral, longitudinal);
+
+    Controller::Activate(lat_activation_mode, long_activation_mode, light_activation_mode, anim_activation_mode);
+
+    return 0;
 }
 
 void ControllerECE_ALKS_REF_DRIVER::Reset()

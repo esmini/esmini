@@ -18,7 +18,8 @@
 #include "RoadManager.hpp"
 #include "CommonMini.hpp"
 #include "OSCBoundingBox.hpp"
-#include "OSCProperties.hpp"  //todo
+#include "OSCProperties.hpp"
+#include "Controller.hpp"
 #include <algorithm>
 
 namespace scenarioengine
@@ -144,7 +145,7 @@ namespace scenarioengine
         double      stand_still_timestamp_;
         bool        reset_;  // indicate discreet movement, teleporting, no odometer update
 
-        Controller*                                 controller_;  // reference to any assigned controller object
+        std::vector<Controller*>                    controllers_;  // reference to all assigned controller objects
         double                                      headstart_time_;
         Object*                                     ghost_;
         Object*                                     ghost_Ego_;
@@ -349,17 +350,33 @@ namespace scenarioengine
         {
             return speed_;
         }
-        void SetAssignedController(Controller* controller)
+
+        void AssignController(Controller* controller);
+        void UnassignController(Controller* controller);
+        void UnassignControllers();
+
+        bool IsControllerActiveOnDomains(unsigned int domainMask, Controller::Type type = Controller::Type::CONTROLLER_TYPE_UNDEFINED);
+        bool IsControllerActiveOnAnyOfDomains(unsigned int domainMask, Controller::Type type = Controller::Type::CONTROLLER_TYPE_UNDEFINED);
+        bool IsControllerModeOnDomains(ControlOperationMode mode,
+                                       unsigned int         domainMask,
+                                       Controller::Type     type = Controller::Type::CONTROLLER_TYPE_UNDEFINED);
+        bool IsControllerModeOnAnyOfDomains(ControlOperationMode mode,
+                                            unsigned int         domainMask,
+                                            Controller::Type     type = Controller::Type::CONTROLLER_TYPE_UNDEFINED);
+
+        Controller*      GetAssignedControllerOftype(Controller::Type type);
+        bool             IsAnyAssignedControllerOfType(Controller::Type type);
+        bool             IsAnyActiveControllerOfType(Controller::Type type);
+        Controller*      GetControllerActiveOnDomain(ControlDomains domain);
+        Controller::Type GetControllerTypeActiveOnDomain(ControlDomains domain);
+        unsigned int     GetNrOfAssignedControllers()
         {
-            controller_ = controller;
+            return static_cast<unsigned int>(controllers_.size());
         }
-        int  GetAssignedControllerType();
-        int  GetActivatedControllerType();
-        bool IsControllerActiveOnDomains(ControlDomains domainMask);
-        bool IsControllerActiveOnAnyOfDomains(ControlDomains domainMask);
-        bool IsControllerActive();
-        int  GetControllerMode();
-        int  GetId()
+
+        Controller* GetController(std::string name);
+
+        int GetId()
         {
             return id_;
         }
