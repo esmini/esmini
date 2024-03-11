@@ -60,7 +60,8 @@ if(USE_OSG)
 
     target_link_libraries(
         ${TARGET1}
-        PRIVATE RoadManager
+        PRIVATE project_options
+                RoadManager
                 ScenarioEngine
                 CommonMini
                 ${TIME_LIB})

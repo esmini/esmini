@@ -43,7 +43,8 @@ foreach(
 
     target_link_libraries(
         ${target}
-        PRIVATE esminiLib
+        PRIVATE project_options
+                esminiLib
                 CommonMini
                 RoadManager
                 ${TIME_LIB})

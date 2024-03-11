@@ -26,7 +26,8 @@ target_include_directories(
 
 target_link_libraries(
     ${TARGET}
-    PRIVATE esminiLib_static
+    PRIVATE project_options
+            esminiLib_static
             PlayerBase
             ScenarioEngine
             CommonMini

@@ -36,10 +36,6 @@ foreach(
         ${module_name}
         ${filename})
 
-    target_link_libraries(
-        ${module_name}
-        PRIVATE project_options)
-
     target_include_directories(
         ${module_name}
         PRIVATE ${EXTERNALS_PUGIXML_PATH}
@@ -49,7 +45,8 @@ foreach(
 
     target_link_libraries(
         ${module_name}
-        PRIVATE esminiLib)
+        PRIVATE project_options
+                esminiLib)
 
     set_folder(
         ${module_name}

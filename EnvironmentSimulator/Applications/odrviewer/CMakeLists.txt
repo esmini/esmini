@@ -38,9 +38,10 @@ target_include_directories(
 
 target_link_libraries(
     ${TARGET}
-    PRIVATE RoadManager
-    PRIVATE CommonMini
-    PRIVATE ${TIME_LIB})
+    PRIVATE project_options
+            RoadManager
+            CommonMini
+            ${TIME_LIB})
 
 if(USE_OSG)
     target_link_libraries(

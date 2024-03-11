@@ -35,7 +35,8 @@ target_include_directories(
 
 target_link_libraries(
     ${TARGET}
-    PRIVATE esminiRMLib
+    PRIVATE project_options
+            esminiRMLib
             CommonMini
             ${TIME_LIB})
 

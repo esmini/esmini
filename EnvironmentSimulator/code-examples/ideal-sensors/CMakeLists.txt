@@ -35,10 +35,11 @@ target_include_directories(
 
 target_link_libraries(
     ${TARGET}
-    PRIVATE esminiLib
-    PRIVATE CommonMini
-    PRIVATE RoadManager
-    PRIVATE ${TIME_LIB})
+    PRIVATE project_options
+            esminiLib
+            CommonMini
+            RoadManager
+            ${TIME_LIB})
 
 # ############################### Install ############################################################################
 
