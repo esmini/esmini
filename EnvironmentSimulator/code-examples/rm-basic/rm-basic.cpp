@@ -26,7 +26,7 @@ int main(int argc, char* argv[])
     (void)argc;
     (void)argv;
 
-    if (RM_Init("C:/tmp/esmini_light/resources/tmp/knee.xodr") != 0)
+    if (RM_Init("../resources/xodr/straight_500m.xodr") != 0)
     {
         printf("Failed init xodr/n");
         return -1;

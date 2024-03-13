@@ -179,8 +179,12 @@ ExprReturnStruct eval_expr(const char* str)
     {
         rs.type           = EXPR_RETURN_STRING;
         rs._double        = NAN;
-        rs._string.string = e->param.str.value;
-        rs._string.len    = e->param.str.len;
+        rs._string.string = malloc(e->param.str.len + 1);
+        if (rs._string.string != 0)
+        {
+            memcpy(rs._string.string, e->param.str.value, e->param.str.len + 1);
+            rs._string.len = e->param.str.len;
+        }
     }
     else
     {

@@ -715,6 +715,8 @@ static struct expr *expr_create(const char *s, size_t len,
         }
       } else if ((ev = expr_var(vars, id, idn)) != NULL) {
 #if 1  // Support strings instead of variables
+        free(ev->name);
+        free(ev);
         string_found = 1;
         break;
 #else  // original code
@@ -985,7 +987,9 @@ static void expr_destroy_args(struct expr *e) {
       }
       free(e->param.func.context);
     }
-  } else if (e->type != OP_CONST && e->type != OP_VAR && e->type != OP_STR) {
+  } else if (e->type == OP_STR) {
+      free(e->param.str.value);
+  } else if (e->type != OP_CONST && e->type != OP_VAR) {
     vec_foreach(&e->param.op.args, arg, i) { expr_destroy_args(&arg); }
     vec_free(&e->param.op.args);
   }

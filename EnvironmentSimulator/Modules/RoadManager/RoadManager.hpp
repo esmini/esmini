@@ -974,6 +974,12 @@ namespace roadmanager
             }
             lane_roadMark_.clear();
 
+            for (size_t i = 0; i < lane_material_.size(); i++)
+            {
+                delete lane_material_[i];
+            }
+            lane_material_.clear();
+
             if (lane_boundary_)
             {
                 delete lane_boundary_;

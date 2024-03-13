@@ -57,15 +57,15 @@ double deltaSimTime;  // external - used by Viewer::RubberBandCamera
 
 struct Car
 {
-    int                    road_id_init;
-    int                    lane_id_init;
-    double                 heading_init;
-    double                 s_init;
-    roadmanager::Position *pos;
-    double                 speed_factor;  // speed vary bewtween lanes, m/s
-    viewer::EntityModel   *model;
-    int                    id;
-    bool                   stopped = false;
+    int                   road_id_init;
+    int                   lane_id_init;
+    double                heading_init;
+    double                s_init;
+    roadmanager::Position pos;
+    double                speed_factor;  // speed vary bewtween lanes, m/s
+    viewer::EntityModel  *model;
+    int                   id;
+    bool                  stopped = false;
 };
 
 typedef struct
@@ -199,16 +199,16 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
                 car_->road_id_init = odrManager->GetRoadByIdx(r)->GetId();
                 car_->lane_id_init = lane->GetId();
                 car_->s_init       = s;
-                car_->pos          = new roadmanager::Position(odrManager->GetRoadByIdx(r)->GetId(), lane->GetId(), s, 0);
+                car_->pos.SetLanePos(odrManager->GetRoadByIdx(r)->GetId(), lane->GetId(), s, 0);
                 if (rrule == roadmanager::Road::RoadRule::LEFT_HAND_TRAFFIC)
                 {
-                    car_->pos->SetHeadingRelative(lane->GetId() < 0 ? M_PI : 0);
+                    car_->pos.SetHeadingRelative(lane->GetId() < 0 ? M_PI : 0);
                 }
                 else
                 {
-                    car_->pos->SetHeadingRelative(lane->GetId() < 0 ? 0 : M_PI);
+                    car_->pos.SetHeadingRelative(lane->GetId() < 0 ? 0 : M_PI);
                 }
-                car_->heading_init = car_->pos->GetHRelative();
+                car_->heading_init = car_->pos.GetHRelative();
 
                 if ((car_->model = viewer->CreateEntityModel(carModelsFiles_[carModelID],
                                                              osg::Vec4(0.5, 0.5, 0.5, 1.0),
@@ -255,9 +255,9 @@ int SetupCarsSpecial(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
     car_->road_id_init = 1;
     car_->lane_id_init = -1;
     car_->s_init       = 40;
-    car_->pos          = new roadmanager::Position(car_->road_id_init, car_->lane_id_init, car_->s_init, 0);
-    car_->pos->SetHeadingRelative(car_->lane_id_init < 0 ? 0 : M_PI);
-    car_->heading_init = car_->pos->GetHRelative();
+    car_->pos.SetLanePos(car_->road_id_init, car_->lane_id_init, car_->s_init, 0);
+    car_->pos.SetHeadingRelative(car_->lane_id_init < 0 ? 0 : M_PI);
+    car_->heading_init = car_->pos.GetHRelative();
 
     if ((car_->model = viewer->CreateEntityModel(carModelsFiles_[0],
                                                  osg::Vec4(0.5, 0.5, 0.5, 1.0),
@@ -292,17 +292,17 @@ void updateCar(roadmanager::OpenDrive *odrManager, Car *car, double dt)
         return;
     }
 
-    double new_speed = car->pos->GetSpeedLimit() * car->speed_factor * global_speed_factor;
+    double new_speed = car->pos.GetSpeedLimit() * car->speed_factor * global_speed_factor;
     double ds        = new_speed * dt;  // right lane is < 0 in road dir;
 
-    roadmanager::Road::RoadRule rrule = odrManager->GetRoadById(car->pos->GetTrackId())->GetRule();
+    roadmanager::Road::RoadRule rrule = odrManager->GetRoadById(car->pos.GetTrackId())->GetRule();
     if (rule != roadmanager::Road::RoadRule::ROAD_RULE_UNDEFINED)
     {
         // Enforce specified rule
         rrule = rule;
     }
 
-    if (static_cast<int>(car->pos->MoveAlongS(ds)) < 0)
+    if (static_cast<int>(car->pos.MoveAlongS(ds)) < 0)
     {
         if (stop_at_end_of_road)
         {
@@ -318,8 +318,8 @@ void updateCar(roadmanager::OpenDrive *odrManager, Car *car, double dt)
             {
                 start_s = ls->GetS() + ls->GetLength() - 5;
             }
-            car->pos->SetLanePos(car->road_id_init, car->lane_id_init, start_s, 0);
-            car->pos->SetHeadingRelative(car->heading_init);
+            car->pos.SetLanePos(car->road_id_init, car->lane_id_init, start_s, 0);
+            car->pos.SetHeadingRelative(car->heading_init);
         }
         else
         {
@@ -331,7 +331,7 @@ void updateCar(roadmanager::OpenDrive *odrManager, Car *car, double dt)
             roadmanager::Road *road      = odrManager->GetRoadById(oe->roadId);
             roadmanager::Lane *lane      = road->GetDrivingLaneSideByIdx(oe->s, oe->side, laneIndex);
 
-            car->pos->SetLanePos(road->GetId(), lane->GetId(), oe->s, 0);
+            car->pos.SetLanePos(road->GetId(), lane->GetId(), oe->s, 0);
 
             // Ensure car is oriented along lane driving direction
             rrule = road->GetRule();
@@ -342,11 +342,11 @@ void updateCar(roadmanager::OpenDrive *odrManager, Car *car, double dt)
             }
             if (rrule == roadmanager::Road::RoadRule::LEFT_HAND_TRAFFIC)
             {
-                car->pos->SetHeadingRelative(SIGN(lane->GetId()) > 0 ? 0.0 : M_PI);
+                car->pos.SetHeadingRelative(SIGN(lane->GetId()) > 0 ? 0.0 : M_PI);
             }
             else
             {
-                car->pos->SetHeadingRelative(SIGN(lane->GetId()) > 0 ? M_PI : 0.0);
+                car->pos.SetHeadingRelative(SIGN(lane->GetId()) > 0 ? M_PI : 0.0);
             }
         }
     }
@@ -354,9 +354,9 @@ void updateCar(roadmanager::OpenDrive *odrManager, Car *car, double dt)
     if (car->model->txNode_ != 0)
     {
         double h, p, r;
-        R0R12EulerAngles(car->pos->GetHRoad(), car->pos->GetPRoad(), car->pos->GetRRoad(), car->pos->GetHRelative(), 0.0, 0.0, h, p, r);
+        R0R12EulerAngles(car->pos.GetHRoad(), car->pos.GetPRoad(), car->pos.GetRRoad(), car->pos.GetHRelative(), 0.0, 0.0, h, p, r);
 
-        car->model->SetPosition(car->pos->GetX(), car->pos->GetY(), car->pos->GetZ());
+        car->model->SetPosition(car->pos.GetX(), car->pos.GetY(), car->pos.GetZ());
         car->model->SetRotation(h, p, r);
     }
 }
@@ -523,9 +523,6 @@ int main(int argc, char **argv)
     {
         duration = strtod(opt.GetOptionArg("duration"));
     }
-
-    roadmanager::Position *lane_pos  = new roadmanager::Position();
-    roadmanager::Position *track_pos = new roadmanager::Position();
 
     if (opt.GetOptionSet("use_signs_in_external_model"))
     {
@@ -731,14 +728,14 @@ int main(int argc, char **argv)
                              sizeof(str_buf),
                              "entity[%d]: %.2fkm/h (%d, %d, %.2f, %.2f) / (%.2f, %.2f %.2f)",
                              viewer->currentCarInFocus_,
-                             3.6 * car->pos->GetSpeedLimit() * car->speed_factor * global_speed_factor,
-                             car->pos->GetTrackId(),
-                             car->pos->GetLaneId(),
-                             fabs(car->pos->GetOffset()) < SMALL_NUMBER ? 0 : car->pos->GetOffset(),
-                             car->pos->GetS(),
-                             car->pos->GetX(),
-                             car->pos->GetY(),
-                             car->pos->GetH());
+                             3.6 * car->pos.GetSpeedLimit() * car->speed_factor * global_speed_factor,
+                             car->pos.GetTrackId(),
+                             car->pos.GetLaneId(),
+                             fabs(car->pos.GetOffset()) < SMALL_NUMBER ? 0 : car->pos.GetOffset(),
+                             car->pos.GetS(),
+                             car->pos.GetX(),
+                             car->pos.GetY(),
+                             car->pos.GetH());
                     viewer->SetInfoText(str_buf);
                 }
             }
@@ -774,8 +771,5 @@ int main(int argc, char **argv)
     {
         delete (cars[i]);
     }
-    delete track_pos;
-    delete lane_pos;
-
     return 0;
 }
