@@ -11,7 +11,7 @@ jobs:
     strategy:
       matrix:
         configuration: [Debug, Release]
-        os: [macos-latest]
+        os: [ubuntu-20.04]
         #ubuntu-latest
 
     runs-on: ${{ matrix.os }}
@@ -58,4 +58,4 @@ jobs:
       - name: Run Tests
         uses: GabrielBB/xvfb-action@v1.6
         with:
-          run: ./scripts/run_tests.sh
+          run: ./scripts/run_tests.sh ${{ matrix.configuration }} true
