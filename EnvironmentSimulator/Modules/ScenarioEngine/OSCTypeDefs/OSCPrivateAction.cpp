@@ -586,6 +586,7 @@ void ActivateControllerAction::Start(double simTime)
                     ControlDomain2Str(controller_->GetActiveDomains()).c_str(),
                     controller_->GetActiveDomains());
                 OSCAction::Start(simTime);
+                End();  // action ends immediately
             }
             else
             {
@@ -593,8 +594,6 @@ void ActivateControllerAction::Start(double simTime)
             }
         }
     }
-
-    End();
 }
 
 void ActivateControllerAction::End()

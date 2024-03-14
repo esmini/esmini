@@ -363,6 +363,81 @@ TEST(AlignmentTest, TestPosMode)
     delete player;
 }
 
+TEST(Controllers, TestSeparateControllersOnLatLong)
+{
+    const char*     args[] = {"esmini",
+                              "--osc",
+                              "../../../EnvironmentSimulator/Unittest/xosc/acc_with_interactive_steering.xosc",
+                              "--window",
+                              "60",
+                              "60",
+                              "800",
+                              "600",
+                              "--headless",
+                              "--disable_stdout"};
+    int             argc   = sizeof(args) / sizeof(char*);
+    double          dt     = 0.1f;
+    ScenarioPlayer* player = new ScenarioPlayer(argc, const_cast<char**>(args));
+
+    ASSERT_NE(player, nullptr);
+    int retval = player->Init();
+    ASSERT_EQ(retval, 0);
+
+    ScenarioEngine* se = player->scenarioEngine;
+    ASSERT_EQ(se->entities_.object_.size(), 2);
+    EXPECT_EQ(se->entities_.object_[0]->controllers_.size(), 2);
+
+    scenarioengine::Controller* ctrl = se->entities_.object_[0]->controllers_[0];
+
+    // Check expected position and orientation at some specific time stamps
+    while (!player->IsQuitRequested())
+    {
+        // steer left
+        if (fabs(se->getSimulationTime() - 5.0) < 0.1 * dt)
+        {
+            ctrl->ReportKeyEvent(static_cast<int>(KeyType::KEY_Left), true);
+        }
+        if (fabs(se->getSimulationTime() - 5.4) < 0.1 * dt)
+        {
+            ctrl->ReportKeyEvent(static_cast<int>(KeyType::KEY_Left), false);
+        }
+
+        // steer right
+        if (fabs(se->getSimulationTime() - 6.0) < 0.1 * dt)
+        {
+            ctrl->ReportKeyEvent(static_cast<int>(KeyType::KEY_Right), true);
+        }
+        if (fabs(se->getSimulationTime() - 6.6) < 0.1 * dt)
+        {
+            ctrl->ReportKeyEvent(static_cast<int>(KeyType::KEY_Right), false);
+            EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 106.762, 1e-3);
+            EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), 1.339, 1e-3);
+        }
+
+        // steer left
+        if (fabs(se->getSimulationTime() - 8.0) < 0.1 * dt)
+        {
+            ctrl->ReportKeyEvent(static_cast<int>(KeyType::KEY_Left), true);
+        }
+        if (fabs(se->getSimulationTime() - 8.2) < 0.1 * dt)
+        {
+            ctrl->ReportKeyEvent(static_cast<int>(KeyType::KEY_Left), false);
+            EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 125.572, 1e-3);
+            EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), -1.060, 1e-3);
+        }
+
+        if (fabs(se->getSimulationTime() - 31.3) < 0.1 * dt)
+        {
+            EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 353.371, 1e-3);
+            EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), -1.539, 1e-3);
+        }
+
+        player->Frame(dt);
+    }
+
+    delete se;
+}
+
 // #define LOG_TO_CONSOLE
 
 #ifdef LOG_TO_CONSOLE

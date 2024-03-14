@@ -1398,112 +1398,146 @@ int ScenarioReader::parseEntities()
             Object     *obj  = 0;
             Controller *ctrl = 0;
 
-            for (pugi::xml_node objectChild = entitiesChild.first_child(); objectChild; objectChild = objectChild.next_sibling())
+            // First read the object
+            pugi::xml_node objectChild;
+            if (!(objectChild = entitiesChild.child("CatalogReference")).empty())
             {
-                std::string objectChildName(objectChild.name());
+                parameters.CreateRestorePoint();
+                Entry *entry = ResolveCatalogReference(objectChild);
 
-                if (objectChildName == "CatalogReference")
+                if (entry == 0)
                 {
-                    parameters.CreateRestorePoint();
-                    Entry *entry = ResolveCatalogReference(objectChild);
-
-                    if (entry == 0)
-                    {
-                        // Invalid catalog reference - create random vehicle as fall-back
-                        LOG("Could not find catalog vehicle, creating a random car as fall-back");
-                        std::string entry_name = parameters.ReadAttribute(objectChild, "entryName");
-                        Vehicle    *vehicle    = createRandomOSCVehicle(entry_name);
-                        obj                    = vehicle;
-                    }
-                    else
-                    {
-                        if (entry->type_ == CatalogType::CATALOG_VEHICLE)
-                        {
-                            // Make a new instance from catalog entry
-                            Vehicle *vehicle = parseOSCVehicle(entry->GetNode());
-                            obj              = vehicle;
-                        }
-                        else if (entry->type_ == CatalogType::CATALOG_PEDESTRIAN)
-                        {
-                            // Make a new instance from catalog entry
-                            Pedestrian *pedestrian = parseOSCPedestrian(entry->GetNode());
-                            obj                    = pedestrian;
-                        }
-                        else if (entry->type_ == CatalogType::CATALOG_MISC_OBJECT)
-                        {
-                            // Make a new instance from catalog entry
-                            MiscObject *miscobj = parseOSCMiscObject(entry->GetNode());
-                            obj                 = miscobj;
-                        }
-                        else
-                        {
-                            LOG("Unexpected catalog type %s", entry->GetTypeAsStr().c_str());
-                        }
-                    }
-
-                    parameters.RestoreParameterDeclarations();
-                }
-                else if (objectChildName == "Vehicle")
-                {
-                    Vehicle *vehicle = parseOSCVehicle(objectChild);
-                    obj              = vehicle;
-                }
-                else if (objectChildName == "Pedestrian")
-                {
-                    Pedestrian *pedestrian = parseOSCPedestrian(objectChild);
-                    obj                    = pedestrian;
-                }
-                else if (objectChildName == "MiscObject")
-                {
-                    MiscObject *miscObject = parseOSCMiscObject(objectChild);
-                    obj                    = miscObject;
-                }
-                else if (objectChildName == "ObjectController")
-                {
-                    if (!disable_controllers_)
-                    {
-                        // get the sub child under ObjectController (should only be one)
-                        pugi::xml_node objectSubChild = objectChild.first_child();
-                        std::string    objectSubChildName(objectSubChild.name());
-                        if (objectSubChildName == "CatalogReference")
-                        {
-                            Entry *entry = ResolveCatalogReference(objectSubChild);
-
-                            if (entry == 0)
-                            {
-                                LOG("No entry found");
-                            }
-                            else
-                            {
-                                if (entry->type_ == CatalogType::CATALOG_CONTROLLER)
-                                {
-                                    ctrl = parseOSCObjectController(entry->GetNode());
-                                }
-                                else
-                                {
-                                    LOG("Unexpected catalog type %s", entry->GetTypeAsStr().c_str());
-                                }
-                            }
-                        }
-                        else
-                        {
-                            ctrl = parseOSCObjectController(objectSubChild);
-                        }
-                        if (ctrl)
-                        {
-                            // ObjectControllers are assigned automatically
-                            obj->AssignController(ctrl);
-                            ctrl->LinkObject(obj);
-                        }
-                    }
+                    // Invalid catalog reference - create random vehicle as fall-back
+                    LOG("Could not find catalog vehicle, creating a random car as fall-back");
+                    std::string entry_name = parameters.ReadAttribute(objectChild, "entryName");
+                    Vehicle    *vehicle    = createRandomOSCVehicle(entry_name);
+                    obj                    = vehicle;
                 }
                 else
                 {
-                    LOG("Unexpected scenario object element: %s", objectChildName.c_str());
+                    if (entry->type_ == CatalogType::CATALOG_VEHICLE)
+                    {
+                        // Make a new instance from catalog entry
+                        Vehicle *vehicle = parseOSCVehicle(entry->GetNode());
+                        obj              = vehicle;
+                    }
+                    else if (entry->type_ == CatalogType::CATALOG_PEDESTRIAN)
+                    {
+                        // Make a new instance from catalog entry
+                        Pedestrian *pedestrian = parseOSCPedestrian(entry->GetNode());
+                        obj                    = pedestrian;
+                    }
+                    else if (entry->type_ == CatalogType::CATALOG_MISC_OBJECT)
+                    {
+                        // Make a new instance from catalog entry
+                        MiscObject *miscobj = parseOSCMiscObject(entry->GetNode());
+                        obj                 = miscobj;
+                    }
+                    else
+                    {
+                        LOG("Unexpected catalog type %s", entry->GetTypeAsStr().c_str());
+                    }
+                }
+
+                parameters.RestoreParameterDeclarations();
+            }
+            else if (!(objectChild = entitiesChild.child("Vehicle")).empty())
+            {
+                Vehicle *vehicle = parseOSCVehicle(objectChild);
+                obj              = vehicle;
+            }
+            else if (!(objectChild = entitiesChild.child("Pedestrian")).empty())
+            {
+                Pedestrian *pedestrian = parseOSCPedestrian(objectChild);
+                obj                    = pedestrian;
+            }
+            else if (!(objectChild = entitiesChild.child("MiscObject")).empty())
+            {
+                MiscObject *miscObject = parseOSCMiscObject(objectChild);
+                obj                    = miscObject;
+            }
+            else if (!(objectChild = entitiesChild.child("ExternalObjectReference")).empty())
+            {
+                LOG("ExternalObjectReference not supported yet");
+                return -1;
+            }
+            else
+            {
+                LOG("Missing EntityObject");
+                return -1;
+            }
+
+            if (obj == nullptr)
+            {
+                LOG("Error: Failed to resolve entity object");
+                return -1;
+            }
+
+            // Then read any controllers
+            for (pugi::xml_node ctrlNode = entitiesChild.child("ObjectController"); ctrlNode; ctrlNode = ctrlNode.next_sibling("ObjectController"))
+            {
+                if (!disable_controllers_)
+                {
+                    // get the sub child under ObjectController (should only be one)
+                    pugi::xml_node ctrlChild = ctrlNode.first_child();
+                    std::string    ctrlChildName(ctrlChild.name());
+                    if (ctrlChildName == "CatalogReference")
+                    {
+                        Entry *entry = ResolveCatalogReference(ctrlChild);
+
+                        if (entry == 0)
+                        {
+                            LOG("No entry found");
+                        }
+                        else
+                        {
+                            if (entry->type_ == CatalogType::CATALOG_CONTROLLER)
+                            {
+                                ctrl = parseOSCObjectController(entry->GetNode());
+                            }
+                            else
+                            {
+                                LOG("Unexpected catalog type %s", entry->GetTypeAsStr().c_str());
+                            }
+                        }
+                    }
+                    else
+                    {
+                        ctrl = parseOSCObjectController(ctrlChild);
+                    }
+
+                    if (ctrl)
+                    {
+                        // ObjectControllers are assigned automatically
+                        if (!ctrlNode.attribute("name").empty())
+                        {
+                            ctrl->SetName(parameters.ReadAttribute(ctrlNode, "name"));
+                        }
+                        controller_.push_back(ctrl);
+                        obj->AssignController(ctrl);
+                        ctrl->LinkObject(obj);
+
+#ifdef _USE_SUMO
+                        if (ctrl->GetType() == Controller::Type::CONTROLLER_TYPE_SUMO)
+                        {
+                            // Set template vehicle to be used for all vehicles spawned from SUMO
+                            (static_cast<ControllerSumo *>(ctrl))->SetSumoVehicle(obj);
+                            obj->id_ = -1;
+
+                            // SUMO controller is special in the sense that it is always active
+                            ctrl->Activate(ControlActivationMode::ON,
+                                           ControlActivationMode::ON,
+                                           ControlActivationMode::ON,
+                                           ControlActivationMode::ON);
+
+                            // SUMO controller is not assigned to any scenario vehicle
+                        }
+#endif  // _USE_SUMO
+                    }
                 }
             }
 
-            if (obj != 0 && !(ctrl && ctrl->GetType() == Controller::Type::CONTROLLER_TYPE_SUMO))
+            if (!obj->IsAnyAssignedControllerOfType(Controller::Type::CONTROLLER_TYPE_SUMO))
             {
                 // Add all vehicles to the entity collection, except SUMO template vehicles
                 if (entitiesChild.attribute("name").empty())
@@ -1516,24 +1550,6 @@ int ScenarioReader::parseEntities()
                 }
                 entities_->addObject(obj, false);
             }
-
-            if (ctrl)
-            {
-#ifdef _USE_SUMO
-                if (ctrl->GetType() == Controller::Type::CONTROLLER_TYPE_SUMO)
-                {
-                    // Set template vehicle to be used for all vehicles spawned from SUMO
-                    (static_cast<ControllerSumo *>(ctrl))->SetSumoVehicle(obj);
-                    obj->id_ = -1;
-
-                    // SUMO controller is special in the sense that it is always active
-                    ctrl->Activate(ControlActivationMode::ON, ControlActivationMode::ON, ControlActivationMode::ON, ControlActivationMode::ON);
-
-                    // SUMO controller is not assigned to any scenario vehicle
-                }
-#endif  // _USE_SUMO
-                controller_.push_back(ctrl);
-            }
         }
         else if (entitiesChildName == "EntitySelection")
         {
@@ -1541,7 +1557,7 @@ int ScenarioReader::parseEntities()
         }
         else
         {
-            // DO NOTHING
+            LOG("Unexpected XML element: %s", entitiesChildName.c_str());
         }
     }
     return 0;
