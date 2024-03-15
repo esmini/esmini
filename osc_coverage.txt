@@ -25,7 +25,8 @@ OpenSCENARIO
         Entities
             ScenarioObject
                 ObjectController                                               Yes
-                    ControllerType (1.2)                                       No
+                    ControllerType (1.2)                                       Partly (long/lat)
+                    Multiple assigned controllers per object (1.2)             Yes
                 EntityObject
                     CatalogReference                                           Yes
                     Vehicle                                                    Yes
