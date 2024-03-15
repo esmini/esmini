@@ -57,6 +57,11 @@ void Vehicle::SetWheelRotation(double rotation)
     wheelRotation_ = rotation;
 }
 
+void Vehicle::SetSpeed(double speed)
+{
+    speed_ = speed;
+}
+
 void Vehicle::SetMaxSpeed(double maxSpeed)
 {
     max_speed_ = maxSpeed;

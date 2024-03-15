@@ -49,6 +49,7 @@ namespace vehicle
         void DrivingControlAnalog(double dt, double throttle, double steering);
         void SetWheelAngle(double angle);
         void SetWheelRotation(double rotation);
+        void SetSpeed(double speed);
         void SetLength(double length)
         {
             length_ = length;

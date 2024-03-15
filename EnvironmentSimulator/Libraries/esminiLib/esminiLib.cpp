@@ -2158,6 +2158,36 @@ extern "C"
         ((vehicle::Vehicle *)handleSimpleVehicle)->DrivingControlAnalog(dt, throttle, steering);
     }
 
+    SE_DLL_API void SE_SimpleVehicleSetSpeed(void *handleSimpleVehicle, float speed)
+    {
+        if (handleSimpleVehicle == 0)
+        {
+            return;
+        }
+
+        ((vehicle::Vehicle *)handleSimpleVehicle)->SetSpeed(speed);
+    }
+
+    SE_DLL_API void SE_SimpleVehicleSetThrottleDisabled(void *handleSimpleVehicle, bool disabled)
+    {
+        if (handleSimpleVehicle == 0)
+        {
+            return;
+        }
+
+        ((vehicle::Vehicle *)handleSimpleVehicle)->SetThrottleDisabled(disabled);
+    }
+
+    SE_DLL_API void SE_SimpleVehicleSetSteeringDisabled(void *handleSimpleVehicle, bool disabled)
+    {
+        if (handleSimpleVehicle == 0)
+        {
+            return;
+        }
+
+        ((vehicle::Vehicle *)handleSimpleVehicle)->SetSteeringDisabled(disabled);
+    }
+
     SE_DLL_API void SE_SimpleVehicleControlTarget(void *handleSimpleVehicle, double dt, double target_speed, double heading_to_target)
     {
         if (handleSimpleVehicle == 0)

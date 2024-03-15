@@ -28,7 +28,11 @@
 			</ObjectController>
 		</ScenarioObject>
 		<ScenarioObject name="LeadVehicle">
-			<CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>
+			<CatalogReference catalogName="VehicleCatalog" entryName="car_red">
+				<ParameterAssignments>
+					<ParameterAssignment parameterRef="ScaleMode" value="ModelToBB"/>
+				</ParameterAssignments>
+			</CatalogReference>
 		</ScenarioObject>
 	</Entities>
 	<Storyboard>

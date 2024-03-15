@@ -1352,6 +1352,30 @@ extern "C"
                                                   double steering);  // throttle and steering [-1, 0 or 1]
 
     /**
+            Set speed, use together with control binary/analog with throttle set to zero
+            @param speed Speed (m/s)
+    */
+    SE_DLL_API void SE_SimpleVehicleSetSpeed(void *handleSimpleVehicle, float speed);
+
+    /**
+            Deactivate or re-activate throttle/brake
+            @param disabled True: throttle disable, False: throttle enable
+    */
+    SE_DLL_API void SE_SimpleVehicleSetThrottleDisabled(void *handleSimpleVehicle, bool disabled);
+
+    /**
+            Deactivate or re-activate steering
+            @param disabled True: steering disable, False: steering enable
+    */
+    SE_DLL_API void SE_SimpleVehicleSetSteeringDisabled(void *handleSimpleVehicle, bool disabled);
+
+    /**
+            Set speed, use together with control binary/analog with throttle set to zero
+            @param speed Speed (m/s)
+    */
+    SE_DLL_API void SE_SimpleVehicleSetSpeed(void *handleSimpleVehicle, float speed);
+
+    /**
             Control the speed and steering by providing steering and speed targets
             The function also steps the vehicle model, updating its position according to motion state and timestep.
             @param dt timesStep (s)

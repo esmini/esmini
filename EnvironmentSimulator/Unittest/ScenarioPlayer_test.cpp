@@ -410,7 +410,7 @@ TEST(Controllers, TestSeparateControllersOnLatLong)
         if (fabs(se->getSimulationTime() - 6.6) < 0.1 * dt)
         {
             ctrl->ReportKeyEvent(static_cast<int>(KeyType::KEY_Right), false);
-            EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 106.762, 1e-3);
+            EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 106.756, 1e-3);
             EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), 1.339, 1e-3);
         }
 
@@ -422,13 +422,13 @@ TEST(Controllers, TestSeparateControllersOnLatLong)
         if (fabs(se->getSimulationTime() - 8.2) < 0.1 * dt)
         {
             ctrl->ReportKeyEvent(static_cast<int>(KeyType::KEY_Left), false);
-            EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 125.572, 1e-3);
+            EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 125.565, 1e-3);
             EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), -1.060, 1e-3);
         }
 
         if (fabs(se->getSimulationTime() - 31.3) < 0.1 * dt)
         {
-            EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 353.371, 1e-3);
+            EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 353.365, 1e-3);
             EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), -1.539, 1e-3);
         }
 
