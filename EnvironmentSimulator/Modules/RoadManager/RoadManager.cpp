@@ -4445,15 +4445,15 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                                 }
 
                                 double         w_local = w_start + factor * (w_end - w_start);
-                                OutlineCorner* corner =
-                                    (OutlineCorner*)(new OutlineCornerRoad(r->GetId(),
-                                                                           rs + factor * rlength,
-                                                                           rtStart + factor * (rtEnd - rtStart) + (i == 0 ? -w_local : w_local),
-                                                                           rzOffsetStart + factor * (rzOffsetEnd - rzOffsetStart),
-                                                                           h_start + factor * (h_end - h_start),
-                                                                           s,
-                                                                           t,
-                                                                           heading));
+                                OutlineCorner* corner  = (OutlineCorner*)(new OutlineCornerRoad(
+                                    r->GetId(),
+                                    rs + factor * rlength,
+                                    rtStart + factor * (rtEnd - rtStart) + (i == 0 ? -w_local / 2.0 : w_local / 2.0),
+                                    rzOffsetStart + factor * (rzOffsetEnd - rzOffsetStart),
+                                    h_start + factor * (h_end - h_start),
+                                    s,
+                                    t,
+                                    heading));
 
                                 outline->AddCorner(corner);
                             }
