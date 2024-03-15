@@ -4,7 +4,7 @@
 
 New features:
 - Support multiple assigned controllers per object (introduced in OpenSCENARIO XML v1.2)
-  - example (external app steering while ACC ctrl active): [dual_controllers.cpp](https://github.com/esmini/esmini/blob/86dd33c8f394cac681343a0b1d11bbec046290e5/EnvironmentSimulator/code-examples/hello_world/dual_controllers.cpp) / [acc_with_external_controller.xosc](https://github.com/esmini/esmini/blob/86dd33c8f394cac681343a0b1d11bbec046290e5/EnvironmentSimulator/code-examples/hello_world/acc_with_external_controller.xosc)
+  - example (external app steering while ACC ctrl active): [dual_controllers.cpp](https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/code-examples/hello_world/dual_controllers.cpp) / [acc_with_external_controller.xosc](https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/code-examples/hello_world/acc_with_external_controller.xosc)
 
 Improvements and fixes:
 - Fix continuous repeat object double width issue
