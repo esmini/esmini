@@ -283,6 +283,10 @@ scenarioengine::Controller::Type Object::GetControllerTypeActiveOnDomain(Control
     {
         return static_cast<Controller::Type>(ctrl->GetType());
     }
+    else if (IsGhost())
+    {
+        return Controller::Type::GHOST_RESERVED_TYPE;
+    }
 
     return Controller::Type::CONTROLLER_TYPE_DEFAULT;
 }
