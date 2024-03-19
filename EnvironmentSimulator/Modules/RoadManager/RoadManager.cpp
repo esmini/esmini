@@ -12242,10 +12242,10 @@ void Position::EvaluateRelation(bool release)
                               ? relative_.dh
                               : GetAngleSum(relative_.dh, rel_pos_->GetH()),
                           ((GetMode(Position::PosModeType::INIT) & Position::PosMode::P_MASK) == Position::PosMode::P_ABS)
-                              ? relative_.dr
+                              ? relative_.dp
                               : GetAngleSum(relative_.dp, rel_pos_->GetP()),
                           ((GetMode(Position::PosModeType::INIT) & Position::PosMode::R_MASK) == Position::PosMode::R_ABS)
-                              ? relative_.dp
+                              ? relative_.dr
                               : GetAngleSum(relative_.dr, rel_pos_->GetR()),
                           Position::PosMode::Z_ABS | Position::PosMode::H_ABS | Position::PosMode::P_ABS | Position::PosMode::R_ABS,
                           true);
@@ -12260,10 +12260,10 @@ void Position::EvaluateRelation(bool release)
                               ? relative_.dh
                               : GetAngleSum(relative_.dh, rel_pos_->GetH()),
                           ((GetMode(Position::PosModeType::INIT) & Position::PosMode::P_MASK) == Position::PosMode::P_ABS)
-                              ? relative_.dr
+                              ? relative_.dp
                               : GetAngleSum(relative_.dp, rel_pos_->GetP()),
                           ((GetMode(Position::PosModeType::INIT) & Position::PosMode::R_MASK) == Position::PosMode::R_ABS)
-                              ? relative_.dp
+                              ? relative_.dr
                               : GetAngleSum(relative_.dr, rel_pos_->GetR()),
                           Position::PosMode::Z_ABS | Position::PosMode::H_ABS | Position::PosMode::P_ABS | Position::PosMode::R_ABS,
                           true);
