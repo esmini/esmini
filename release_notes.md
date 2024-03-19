@@ -1,5 +1,13 @@
 ## esmini release notes
 
+### 2024-03-19 Version 2.37.3
+
+Improvements and fixes:
+- Fix ghost controller type wrongly reported as default instead of ghost reserved type
+  - bug introduced in v2.37.2
+- Fix pitch/roll mix-up in relative world- and object positions
+  - bug introduced in v2.36.0
+
 ### 2024-03-15 Version 2.37.2
 
 New features:
