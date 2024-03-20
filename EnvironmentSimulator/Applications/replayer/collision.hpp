@@ -16,6 +16,7 @@ typedef struct
     bool                           visible;
     OSCBoundingBox                 bounding_box;
     std::vector<SE_Vector>         corners;
+    std::vector<int>               overlap_entity_ids;
 } ScenarioEntity;
 
 void updateCorners(ScenarioEntity& entity)

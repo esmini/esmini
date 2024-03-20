@@ -12,8 +12,8 @@ Options:
       Initial camera mode ("orbit" (default), "fixed", "flex", "flex-orbit", "top", "driver") (toggle during simulation by press 'k')
   --capture_screen
       Continuous screen capture. Warning: Many jpeg files will be created
-  --collision
-      Pauses the replay if the ego collides with another entity
+  --collision [mode]  (default = pause)
+      Detect collisions and optionally pauses the replay <pause/continue> (pause is default)
   --custom_camera <position>
       Additional custom camera position <x,y,z>[,h,p] (multiple occurrences supported)
   --custom_fixed_camera <position and optional orientation>

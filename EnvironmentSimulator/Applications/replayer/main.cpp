@@ -337,7 +337,6 @@ int main(int argc, char** argv)
     std::unique_ptr<Replay> player;
     double                  simTime   = 0;
     double                  view_mode = viewer::NodeMask::NODE_MASK_ENTITY_MODEL;
-    bool                    overlap   = false;
     static char             info_str_buf[256];
     std::string             arg_str;
 
@@ -358,7 +357,7 @@ int main(int argc, char** argv)
         "Initial camera mode (\"orbit\" (default), \"fixed\", \"flex\", \"flex-orbit\", \"top\", \"driver\") (toggle during simulation by press 'k') ",
         "mode");
     opt.AddOption("capture_screen", "Continuous screen capture. Warning: Many jpeg files will be created");
-    opt.AddOption("collision", "Pauses the replay if the ego collides with another entity");
+    opt.AddOption("collision", "Detect collisions and optionally pauses the replay <pause/continue> (pause is default)", "mode", "pause");
     opt.AddOption("custom_camera", "Additional custom camera position <x,y,z>[,h,p] (multiple occurrences supported)", "position");
     opt.AddOption("custom_fixed_camera",
                   "Additional custom fixed camera position <x,y,z>[,h,p] (multiple occurrences supported)",
@@ -799,7 +798,7 @@ int main(int argc, char** argv)
             return -1;
         }
 
-        const int ghost_id = GetGhostIdx();
+        const int ghost_idx = GetGhostIdx();
 
         /* TODO: Some functionality to distinguish "main replay" from variations
         for (size_t i = 0; i < viewer->entities_.size(); i++)
@@ -860,9 +859,14 @@ int main(int argc, char** argv)
         }
 
         bool col_analysis = false;
+        bool col_pause    = true;
         if (opt.GetOptionSet("collision"))
         {
             col_analysis = true;
+            if (opt.GetOptionArg("collision") == "continue")
+            {
+                col_pause = false;
+            }
         }
 
         while (!(viewer->osgViewer_->done() || (opt.GetOptionSet("quit_at_end") && simTime >= (player->GetStopTime() - SMALL_NUMBER))))
@@ -995,6 +999,7 @@ int main(int argc, char** argv)
                     }
                 }
 
+                // Collision detection
                 if (col_analysis && scenarioEntity.size() > 1)
                 {
                     state = player->GetState(scenarioEntity[0].id);
@@ -1002,44 +1007,59 @@ int main(int argc, char** argv)
                     {
                         for (size_t i = 0; i < scenarioEntity.size(); i++)
                         {
-                            if (static_cast<int>(i) != ghost_id)  // Ignore ghost
+                            if (static_cast<int>(i) != ghost_idx)  // Ignore ghost
                             {
                                 updateCorners(scenarioEntity[i]);
                             }
                         }
 
-                        bool overlap_now = false;
-                        for (size_t i = 1; i < scenarioEntity.size(); i++)
+                        for (size_t i = 0; i < scenarioEntity.size(); i++)
                         {
-                            state = player->GetState(scenarioEntity[i].id);
-
-                            if (static_cast<int>(i) != ghost_id &&         // Ignore ghost and
-                                state && state->info.visibilityMask != 0)  // and objects invisible for graphics, traffic and sensors
+                            if (static_cast<int>(i) == ghost_idx)
                             {
-                                if (separating_axis_intersect(scenarioEntity[0], scenarioEntity[i]))
+                                continue;
+                            }
+                            for (size_t j = i + 1; j < scenarioEntity.size(); j++)
+                            {
+                                if (static_cast<int>(j) == ghost_idx)
                                 {
-                                    overlap_now = true;
-                                    if (!overlap)
+                                    continue;
+                                }
+
+                                if (separating_axis_intersect(scenarioEntity[i], scenarioEntity[j]))
+                                {
+                                    if (std::find(scenarioEntity[i].overlap_entity_ids.begin(),
+                                                  scenarioEntity[i].overlap_entity_ids.end(),
+                                                  scenarioEntity[j].id) == scenarioEntity[i].overlap_entity_ids.end())
                                     {
-                                        overlap          = true;
-                                        pause_player     = true;
-                                        double rel_speed = abs((player->GetState(scenarioEntity[0].id))->info.speed -
-                                                               (player->GetState(scenarioEntity[i].id)->info.speed)) *
+                                        // overlap not registered, do it
+                                        scenarioEntity[i].overlap_entity_ids.push_back(scenarioEntity[j].id);
+                                        pause_player     = col_pause ? true : false;
+                                        double rel_speed = abs((player->GetState(scenarioEntity[i].id))->info.speed -
+                                                               (player->GetState(scenarioEntity[j].id)->info.speed)) *
                                                            3.6f;
-                                        double rel_angle = static_cast<double>(scenarioEntity[0].pos.h - scenarioEntity[i].pos.h) * 180.0 / M_PI;
-                                        LOG("Collision between %d and %d at time %.2f.\n- Relative speed %.2f km/h\n- Angle %.2f degrees (ego to target)",
-                                            0,
-                                            i,
+                                        double rel_angle = static_cast<double>(scenarioEntity[i].pos.h - scenarioEntity[j].pos.h) * 180.0 / M_PI;
+                                        LOG("Collision between %s (id %d) and %s (id %d) at time %.2f.\n- Relative speed %.2f km/h\n- Angle %.2f degrees (ego to target)",
+                                            scenarioEntity[i].name.c_str(),
+                                            scenarioEntity[i].id,
+                                            scenarioEntity[j].name.c_str(),
+                                            scenarioEntity[j].id,
                                             simTime,
                                             rel_speed,
                                             rel_angle);
                                     }
                                 }
+                                else if (std::find(scenarioEntity[i].overlap_entity_ids.begin(),
+                                                   scenarioEntity[i].overlap_entity_ids.end(),
+                                                   scenarioEntity[j].id) != scenarioEntity[i].overlap_entity_ids.end())
+                                {
+                                    // not overlapping anymore, unregister
+                                    scenarioEntity[i].overlap_entity_ids.erase(std::remove(scenarioEntity[i].overlap_entity_ids.begin(),
+                                                                                           scenarioEntity[i].overlap_entity_ids.end(),
+                                                                                           scenarioEntity[j].id),
+                                                                               scenarioEntity[i].overlap_entity_ids.end());
+                                }
                             }
-                        }
-                        if (!overlap_now)
-                        {
-                            overlap = false;
                         }
                     }
                 }
