@@ -1037,9 +1037,9 @@ roadmanager::Route *ScenarioReader::parseOSCRoute(pugi::xml_node routeNode)
     {
         std::string routeChildName(routeChild.name());
 
-        if (routeChildName == "ParameterDeclaration")
+        if (routeChildName == "ParameterDeclarations")
         {
-            LOG("%s is not implemented", routeChildName.c_str());
+            parameters.addParameterDeclarations(routeChild);
         }
         else if (routeChildName == "Waypoint")
         {
