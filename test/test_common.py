@@ -72,6 +72,44 @@ def run_scenario(osc_filename = None, esmini_arguments = None, xosc_str = None, 
 
     assert False, 'No log file'
 
+def run_replayer(dat_filename = None, replayer_arguments = None):
+
+    if os.path.exists(LOG_FILENAME):
+        os.remove(LOG_FILENAME)
+    if os.path.exists(STDOUT_FILENAME):
+        os.remove(STDOUT_FILENAME)
+
+    app = os.path.join(ESMINI_PATH,'bin','replayer')
+
+    return_code = None
+
+    if dat_filename is not None:
+        args = [app] + '--headless --time_scale 10 --window 60 60 800 400 --res_path ../resources --quit_at_end --file'.split() + [dat_filename] + replayer_arguments.split()
+        with open(STDOUT_FILENAME, "w") as f:
+            process = subprocess.Popen(args, cwd=os.path.dirname(os.path.realpath(__file__)),
+                                stdout=f, env=env)
+            elapsed = 0
+
+            while elapsed < TIMEOUT and return_code is None:
+
+                return_code = process.poll()
+
+                # watch dog
+                if return_code is None:
+                    time.sleep(1)
+                    elapsed += 1
+
+            if return_code is None:
+                print('timeout ({}s). Terminating scenario ({}).'.format(TIMEOUT, os.path.basename(osc_filename)))
+                process.kill()
+                assert False, 'Timeout'
+
+    assert return_code == 0
+
+    with open(STDOUT_FILENAME, 'r') as logfile:
+        return logfile.read()
+
+    assert False, 'No log file'
 
 def generate_csv():
 
