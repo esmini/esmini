@@ -1656,18 +1656,20 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('4.350: LaneOffsetAction runningState -> endTransition -> completeState', log)  is not None)
         self.assertTrue(re.search('7.010: Adding action LaneChangeAction', log)  is not None)
         self.assertTrue(re.search('9.510: Adding action SpeedAction', log)  is not None)
+        self.assertTrue(re.search('11.010: Adding action SpeedAction', log)  is not None)
         self.assertTrue(re.search('10.020: Injected action LaneChangeAction finished', log)  is not None)
-        self.assertTrue(re.search('18.510: SpeedAction runningState -> endTransition -> completeState', log)  is not None)
+        self.assertTrue(re.search('14.670: SpeedAction runningState -> endTransition -> completeState', log)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv()
 
         self.assertTrue(re.search('^5.000, 0, Ego, 9.480, 199.965, -0.348, 1.562, 0.002, 0.000, 30.000, -0.000, 1.315', csv, re.MULTILINE))
         self.assertTrue(re.search('^8.350, 0, Ego, 8.997, 300.139, -0.528, 1.625, 0.002, 0.000, 30.000, 0.001, 5.714', csv, re.MULTILINE))
-        self.assertTrue(re.search('^9.700, 0, Ego, 7.439, 340.602, -0.607, 1.575, 0.002, 0.000, 29.964, -0.008, 2.041', csv, re.MULTILINE))
-        self.assertTrue(re.search('^11.000, 0, Ego, 8.166, 378.486, -0.679, 1.546, 0.002, 6.283, 27.833, -0.000, 3.483', csv, re.MULTILINE))
-        self.assertTrue(re.search('^17.780, 0, Ego, 11.273, 469.854, -0.817, 1.526, 0.001, 6.283, 0.575, -0.001, 0.794', csv, re.MULTILINE))
-        self.assertTrue(re.search('^17.790, 0, Ego, 11.273, 469.860, -0.818, 1.526, 0.001, 6.283, 0.560, -0.000, 0.810', csv, re.MULTILINE))
+        self.assertTrue(re.search('^9.550, 0, Ego, 7.480, 336.104, -0.598, 1.586, 0.002, 0.000, 30.000, -0.007, 1.757', csv, re.MULTILINE))
+        self.assertTrue(re.search('^9.560, 0, Ego, 7.475, 336.404, -0.598, 1.585, 0.002, 0.000, 29.999, -0.007, 2.614', csv, re.MULTILINE))
+        self.assertTrue(re.search('^10.500, 0, Ego, 7.832, 364.478, -0.653, 1.548, 0.002, 6.283, 29.633, -0.000, 1.152', csv, re.MULTILINE))
+        self.assertTrue(re.search('^12.500, 0, Ego, 9.163, 414.088, -0.742, 1.539, 0.002, 6.283, 17.320, -0.001, 4.715', csv, re.MULTILINE))
+        self.assertTrue(re.search('^12.600, 0, Ego, 9.216, 415.775, -0.745, 1.539, 0.002, 6.283, 16.520, -0.001, 3.255', csv, re.MULTILINE))
 
     def test_multi_controller(self):
         # this test case exercises assignment and activation of two controllers, partly overlapping in time

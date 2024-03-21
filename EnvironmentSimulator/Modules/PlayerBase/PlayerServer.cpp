@@ -47,29 +47,6 @@ namespace scenarioengine
 
     int PlayerServer::AddAction(OSCAction *action)
     {
-        // add only if no action of the same type is already running
-        for (size_t i = 0; i < action_.size(); i++)
-        {
-            if (action_[i]->action_type_ == action->action_type_)
-            {
-                if (action->GetBaseType() == OSCAction::BaseType::PRIVATE &&
-                    ((reinterpret_cast<scenarioengine::OSCPrivateAction *>(action_[i]))->object_ ==
-                     (reinterpret_cast<scenarioengine::OSCPrivateAction *>(action))->object_))
-                {
-                    LOG("Injected action of type %s already ongoing for object %d / %s. Skipping UDP %s action.",
-                        action->Type2Str().c_str(),
-                        (reinterpret_cast<scenarioengine::OSCPrivateAction *>(action))->object_->GetId(),
-                        (reinterpret_cast<scenarioengine::OSCPrivateAction *>(action))->object_->GetName().c_str(),
-                        action_[i]->GetName().c_str());
-                }
-                else
-                {
-                    LOG("UDP action of type %s already ongoing. Skipping UDP %s action.", action->Type2Str().c_str(), action_[i]->GetName().c_str());
-                }
-                return -1;
-            }
-        }
-
         LOG("Adding action %s", action->GetName().c_str());
         action_.push_back(action);
 

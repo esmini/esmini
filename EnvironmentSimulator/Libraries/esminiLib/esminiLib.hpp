@@ -1593,7 +1593,7 @@ extern "C"
 
     /**
             Check whether any injected action is ongoing
-            @param action_type Type of action, see SE_ActionType enum. Set to -1 to check for any action.
+            @param action_type Type of action, see esmini Action.hpp::ActionType enum. Set to -1 to check for any action.
     */
     SE_DLL_API bool SE_InjectedActionOngoing(int action_type);
 
