@@ -452,15 +452,19 @@ video::ltap-od_collision.mp4?raw=true[opts="loop,autoplay"]
 The .dat file in the clip above was created with the command: +
 ``./bin/esmini --headless --osc ./resources/xosc/ltap-od.xosc --disable_controllers --fixed_timestep 0.033 --record sim.dat ``
 
-and then launched in replayer:
-
+and then launched in replayer: +
 ``./bin/replayer --window 60 60 800 400 --file sim.dat --res_path ./resources --collision``
 
 *Note:* The --disable_controllers flag is just specified to disable the interactive controller that normally is activated in that specific scenario. For more information about controllers, see https://github.com/esmini/esmini/blob/master/docs/Controllers.md[Controllers in esmini].
 
 
-Combine esmini and replayer in a one-liner command:
+Combine esmini and replayer in a one-liner command: +
 ``./bin/esmini --headless --fixed_timestep 0.05 --record sim.dat --osc ./resources/xosc/cut-in.xosc;./bin/replayer --window 60 60 800 400 --res_path ./resources --file sim.dat``
+
+With bash (use Git Bash on Windows) preview all scenarios (.xosc files) in a folder, at double speed: +
+``for f in my_scenarios/*.xosc; do ./bin/esmini --headless --fixed_timestep 0.05 --osc $f --record `basename $f .xosc`.dat;./bin/replayer --window 60 60 1200 600 --res_path ./resources --file `basename $f .xosc`.dat --time_scale 2 --quit_at_end; done``
+
+just replace `my_scenarios` with your folder path
 
 ==== Multiple scenarios in parallel
 
