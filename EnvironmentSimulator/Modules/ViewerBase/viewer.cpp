@@ -1763,7 +1763,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     }
 
     // Add an optional large ground surface
-    if (opt->GetOptionSet("ground_plane"))
+    if (opt->GetOptionSet("ground_plane") || environment_ == nullptr)
     {
         AddGroundSurface();
     }
