@@ -18,6 +18,9 @@ Improvements and fixes:
   - detect multiple simultaneous overlaps
 - Add example how to run all scenarios in a folder
   - see end of [User guide - Replay scenario](https://esmini.github.io/#_replay_scenario)
+- Update [coverage](https://github.com/esmini/esmini/blob/dev/osc_coverage.txt) and [osc-extensions](https://github.com/esmini/esmini/blob/dev/docs/osc-extensions.xml) info
+  - Trailer support now part of OpenSCENARIO (v1.3), add to coverage
+  - SteadyState added to SynchronizeAction (osc v1.1), remove from extensions
 
 ### 2024-03-19 Version 2.37.3
 
