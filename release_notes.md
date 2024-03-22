@@ -1,5 +1,24 @@
 ## esmini release notes
 
+### 2024-03-22 Version 2.37.4
+
+Updated behaviors:
+- Injected action cancels any ongoing action of same type
+  - use function `SE_InjectedActionOngoing()` to check for ongoing actions
+  - see updated examples [action_injection.cpp](https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/code-examples/hello_world/action_injection.cpp) and [action_injection.py](https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/code-examples/hello_world/action_injection.py)
+- Add ground plane when environment missing
+  - when specified environment file failed to load
+  - or when no OpenDRIVE has been specified
+
+Improvements and fixes:
+- Fix route catalog parameter handling ([issue #544](https://github.com/esmini/esmini/issues/544))
+- Add replayer capability to smoke test framework
+- Improve replayer collision detection ([issue #483](https://github.com/esmini/esmini/issues/483))
+  - detect collision between any objects
+  - detect multiple simultaneous overlaps
+- Add example how to run all scenarios in a folder
+  - see end of [User guide - Replay scenario](https://esmini.github.io/#_replay_scenario)
+
 ### 2024-03-19 Version 2.37.3
 
 Improvements and fixes:
