@@ -114,7 +114,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('.*Loading .*ALKS_Scenario_4.3_1', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('10.000.* VaryingSpeedStartCondition == true, 10.0000 >= 10.00 edge: rising', log)  is not None)
+        self.assertTrue(re.search('10.000.* VaryingSpeedStartCondition == true, 10.0000 >= 10.0000 edge: rising', log)  is not None)
         self.assertTrue(re.search('24.930: VaryingSpeedEvent2Start == true, element: VaryingSpeedAction state: END_TRANSITION, edge: rising', log)  is not None)
 
         # Check vehicle state
@@ -131,7 +131,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('.*Loading .*ALKS_Scenario_4.3_2', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('10.000.* BrakeStartCondition == true, 10.0000 >= 10.00 edge: rising', log)  is not None)
+        self.assertTrue(re.search('10.000.* BrakeStartCondition == true, 10.0000 >= 10.0000 edge: rising', log)  is not None)
 
         # Check vehicle state
         csv = generate_csv()
@@ -231,7 +231,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('.*Loading .*ALKS_Scenario_4.6_2', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('10.00.* SwerveEventStart == true, 10.0000 >= 10.00 edge: rising', log)  is not None)
+        self.assertTrue(re.search('10.00.* SwerveEventStart == true, 10.0000 >= 10.0000 edge: rising', log)  is not None)
         self.assertTrue(re.search('10.00.*: SwerveAction initState -> startTransition -> runningState', log)  is not None)
         self.assertTrue(re.search('26.10.*: SwerveEvent runningState -> endTransition -> completeState', log)  is not None)
 

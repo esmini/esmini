@@ -554,7 +554,7 @@ bool TrigBySimulationTime::CheckCondition(double sim_time)
 
 void TrigBySimulationTime::Log()
 {
-    LOG("%s == %s, %.4f %s %.2f edge: %s",
+    LOG("%s == %s, %.4f %s %.4f edge: %s",
         name_.c_str(),
         last_result_ ? "true" : "false",
         sim_time_,
