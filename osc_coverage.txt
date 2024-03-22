@@ -192,6 +192,7 @@ Common classes
         polyLine                               Yes
         clothoid                               Yes
         nurbs                                  Yes
+        ClothoidSpline (v1.3)                  Yes
     Route
         closed                                 No
         ParameterDeclaration                   No
