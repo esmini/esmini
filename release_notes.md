@@ -6,9 +6,9 @@ Updated behaviors:
 - Injected action cancels any ongoing action of same type
   - use function `SE_InjectedActionOngoing()` to check for ongoing actions
   - see updated examples [action_injection.cpp](https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/code-examples/hello_world/action_injection.cpp) and [action_injection.py](https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/code-examples/hello_world/action_injection.py)
-- Add ground plane when environment missing
-  - when specified environment file failed to load
-  - or when no OpenDRIVE has been specified
+- Add ground plane when environment is missing, i.e:
+  - when no OpenDRIVE specified and specified scenegraph failed to load
+  - when neither OpenDRIVE nor scenegraph specified
 
 Improvements and fixes:
 - Fix route catalog parameter handling ([issue #544](https://github.com/esmini/esmini/issues/544))
