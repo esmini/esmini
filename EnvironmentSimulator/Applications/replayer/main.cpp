@@ -382,6 +382,7 @@ int main(int argc, char** argv)
     opt.AddOption("save_merged", "Save merged data into one dat file, instead of viewing", "filename");
     opt.AddOption("start_time", "Start playing at timestamp", "ms");
     opt.AddOption("stop_time", "Stop playing at timestamp (set equal to time_start for single frame)", "ms");
+    opt.AddOption("text_scale", "Scale screen overlay text", "factor", "1.0");
     opt.AddOption("time_scale", "Playback speed scale factor (1.0 == normal)", "factor");
     opt.AddOption("view_mode", "Entity visualization: \"model\"(default)/\"boundingbox\"/\"both\"", "view_mode");
     opt.AddOption("use_signs_in_external_model", "When external scenegraph 3D model is loaded, skip creating signs from OpenDRIVE");

@@ -92,6 +92,8 @@ Options:
       Show sensor frustums (toggle during simulation by press 'r')
   --server
       Launch server to receive state of external Ego simulator
+  --text_scale [factor]  (default = 1.0)
+      Scale screen overlay text
   --threads
       Run viewer in a separate thread, parallel to scenario engine
   --trail_mode <mode>

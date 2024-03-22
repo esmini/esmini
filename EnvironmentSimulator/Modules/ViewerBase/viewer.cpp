@@ -1924,10 +1924,15 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     light->setDiffuse(osg::Vec4(0.8f, 0.8f, 0.7f, 1.0f));
 
     // Overlay text
+    float font_size = 12.0f;
+    if (opt->IsOptionArgumentSet("text_scale"))
+    {
+        font_size *= atof(opt->GetOptionArg("text_scale").c_str());
+    }
     osg::ref_ptr<osg::Geode> textGeode = new osg::Geode;
     infoText                           = new osgText::Text;
     infoText->setColor(osg::Vec4(0.9f, 0.9f, 0.9f, 1.0f));
-    infoText->setCharacterSize(12.0f);
+    infoText->setCharacterSize(font_size);
     infoText->setAxisAlignment(osgText::Text::SCREEN);
     infoText->setPosition(osg::Vec3(10, 10, 0));
     infoText->setDataVariance(osg::Object::DYNAMIC);
@@ -2421,7 +2426,12 @@ EntityModel* Viewer::CreateEntityModel(std::string             modelFilepath,
     emodel->on_screen_info_.geode_    = new osg::Geode;
     emodel->on_screen_info_.osg_text_ = new osgText::Text;
     emodel->on_screen_info_.osg_text_->setColor(osg::Vec4(1.0f, 1.0f, 0.1f, 1.0f));
-    emodel->on_screen_info_.osg_text_->setCharacterSize(10.0);
+    float font_size = 10.0f;
+    if (SE_Env::Inst().GetOptions().IsOptionArgumentSet("text_scale"))
+    {
+        font_size *= atof(SE_Env::Inst().GetOptions().GetOptionArg("text_scale").c_str());
+    }
+    emodel->on_screen_info_.osg_text_->setCharacterSize(font_size);
     emodel->on_screen_info_.osg_text_->setCharacterSizeMode(osgText::TextBase::CharacterSizeMode::SCREEN_COORDS);
     emodel->on_screen_info_.osg_text_->setAxisAlignment(osgText::Text::SCREEN);
     emodel->on_screen_info_.osg_text_->setDrawMode(osgText::Text::TEXT);

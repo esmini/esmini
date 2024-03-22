@@ -54,6 +54,8 @@ Options:
       Start playing at timestamp
   --stop_time <ms>
       Stop playing at timestamp (set equal to time_start for single frame)
+  --text_scale [factor]  (default = 1.0)
+      Scale screen overlay text
   --time_scale <factor>
       Playback speed scale factor (1.0 == normal)
   --view_mode <view_mode>

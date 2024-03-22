@@ -1761,7 +1761,12 @@ bool SE_Options::GetOptionSet(std::string opt)
 
 bool SE_Options::IsOptionArgumentSet(std::string opt)
 {
-    return GetOption(opt)->set_;
+    if (GetOption(opt) != nullptr)
+    {
+        return GetOption(opt)->set_;
+    }
+
+    return false;
 }
 
 std::string SE_Options::GetOptionArg(std::string opt, int index)

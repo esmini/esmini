@@ -60,6 +60,8 @@ Options:
       speed_factor <number>
   --stop_at_end_of_road
       Instead of respawning elsewhere, stop when no connection exists
+  --text_scale [factor]  (default = 1.0)
+      Scale screen overlay text
   --traffic_rule <rule (right/left)>
       Enforce left or right hand traffic, regardless OpenDRIVE rule attribute (default: right)
   --use_signs_in_external_model

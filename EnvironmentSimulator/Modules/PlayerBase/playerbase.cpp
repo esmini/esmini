@@ -1330,6 +1330,7 @@ int ScenarioPlayer::Init()
     opt.AddOption("seed", "Specify seed number for random generator", "number");
     opt.AddOption("sensors", "Show sensor frustums (toggle during simulation by press 'r') ");
     opt.AddOption("server", "Launch server to receive state of external Ego simulator");
+    opt.AddOption("text_scale", "Scale screen overlay text", "factor", "1.0");
     opt.AddOption("threads", "Run viewer in a separate thread, parallel to scenario engine");
     opt.AddOption("trail_mode", "Show trail lines and/or dots (toggle key 'j') mode 0=None 1=lines 2=dots 3=both", "mode");
     opt.AddOption("use_signs_in_external_model", "When external scenegraph 3D model is loaded, skip creating signs from OpenDRIVE");
