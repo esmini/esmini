@@ -31,6 +31,7 @@ OpenSCENARIO
                     CatalogReference                                           Yes
                     Vehicle                                                    Yes
                         Role (1.2)                                             No
+                        Trailer (1.3)                                          Yes
                     Pedestrian                                                 Yes
                     MiscObject                                                 Yes
                     ExternalObjectReference (1.1)                              No
@@ -357,16 +358,4 @@ Extensions:
 
     Note: The following features are not part of the OpenSCENARIO standard, and should be regarded as experimental stuff that potentially will be proposed to future versions of the standard.
 
-    Trailer support
-        The Vehicle class has been extended with the following elements:
-            <TrailerCoupler dx/>  # mounting point for any tow vehicle, relative vehicle ref point
-            <TrailerHitch dx/>  # mounting point for optional trailer, relative vehicle ref point
-            <Trailer>  # xor
-                <Vehicle vehicle/>
-                <EntityRef entityRef/>
-                <CatalogReference catalogName entryName/>
-            </Trailer>
-
-            Both EntityRef and CatalogReference will be checked. If EntityRef resolves sucessfully CatalogReference will be ignored.
-
-        [More info](https://docs.google.com/document/u/1/d/e/2PACX-1vR7jXggp_LaEIzNyKsFEpJxWrYdC_W2GEDayQIeeCBU4fzyrEyJ22Ihbq4Ra7JXmbWqgPOydfB6WZ0j/pub)
+    Currently no extensions (previous extensions now covered by OpenSCENARIO standard)
