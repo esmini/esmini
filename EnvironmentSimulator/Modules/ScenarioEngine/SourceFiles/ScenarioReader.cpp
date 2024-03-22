@@ -591,6 +591,7 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
     if (!modelIdStr.empty())
     {
         vehicle->model_id_ = strtoi(modelIdStr);
+        CheckModelId(vehicle);
     }
 
     OSCBoundingBox boundingbox = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
@@ -847,6 +848,7 @@ Pedestrian *ScenarioReader::parseOSCPedestrian(pugi::xml_node pedestrianNode)
     if (!modelIdStr.empty())
     {
         pedestrian->model_id_ = strtoi(modelIdStr);
+        CheckModelId(pedestrian);
     }
 
     std::string scaleModeStr = pedestrian->properties_.GetValueStr("scaleMode");
@@ -915,6 +917,7 @@ MiscObject *ScenarioReader::parseOSCMiscObject(pugi::xml_node miscObjectNode)
     if (!modelIdStr.empty())
     {
         miscObject->model_id_ = strtoi(modelIdStr);
+        CheckModelId(miscObject);
     }
 
     std::string scaleModeStr = miscObject->properties_.GetValueStr("scaleMode");
@@ -1384,6 +1387,23 @@ Entry *ScenarioReader::ResolveCatalogReference(pugi::xml_node node)
     }
 
     return entry;
+}
+
+bool scenarioengine::ScenarioReader::CheckModelId(Object *object)
+{
+    std::string filename = SE_Env::Inst().GetModelFilenameById(object->model_id_).c_str();
+    if (filename != FileNameOf(object->model3d_))
+    {
+        LOG("Warning: %s %s model_id %d correponds to %s, not specified 3D model %s",
+            Object::Type2String(object->GetType()).c_str(),
+            object->GetTypeName().c_str(),
+            object->model_id_,
+            filename.empty() ? "Unknown" : filename.c_str(),
+            FileNameOf(object->model3d_).c_str());
+        return false;
+    }
+
+    return true;
 }
 
 int ScenarioReader::parseEntities()

@@ -118,6 +118,7 @@ namespace scenarioengine
         // Enitites
         int    parseEntities();
         Entry* ResolveCatalogReference(pugi::xml_node node);
+        bool   CheckModelId(Object* object);
 
         // Storyboard - Init
         void                      parseInit(Init& init);
