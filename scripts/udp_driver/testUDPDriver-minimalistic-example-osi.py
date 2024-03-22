@@ -6,7 +6,7 @@
       Python 3
 
    Python dependencies:
-      pip install protobuf==3.19
+      pip install protobuf==3.20.2
 
    To run it:
    1. Open two terminals

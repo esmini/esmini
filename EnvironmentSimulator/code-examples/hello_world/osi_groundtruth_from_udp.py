@@ -1,6 +1,6 @@
 '''
    Python dependencies:
-      pip install protobuf==3.19
+      pip install protobuf==3.20.2
 
    Note: No need to install OSI as long as
    esmini/scripts/osi3 folder is available

@@ -4,7 +4,7 @@
       Python 3
 
    Python dependencies:
-      pip install protobuf==3.19
+      pip install protobuf==3.20.2
 '''
 
 from socket import *
