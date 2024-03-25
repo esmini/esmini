@@ -1558,8 +1558,8 @@ void CSV_Logger::Open(std::string scenario_filename, int numvehicles, std::strin
     // Index and TimeStamp are included in this first set of columns
     snprintf(message,
              max_csv_entry_length,
-             "Index [-] , TimeStamp [s] , #1 Entitity_Name [-] , "
-             "#1 Entitity_ID [-] , #1 Current_Speed [m/s] , #1 Wheel_Angle [deg] , #1 Wheel_Rotation [-] , "
+             "Index [-] , TimeStamp [s] , #1 Entity_Name [-] , "
+             "#1 Entity_ID [-] , #1 Current_Speed [m/s] , #1 Wheel_Angle [deg] , #1 Wheel_Rotation [-] , "
              "#1 bb_x [m] , #1 bb_y [m] , #1 bb_z [m] , "
              "#1 bb_length [m] , #1 bb_width [m] , #1 bb_height [m] , "
              "#1 World_Position_X [m] , #1 World_Position_Y [m] , "
@@ -1577,7 +1577,7 @@ void CSV_Logger::Open(std::string scenario_filename, int numvehicles, std::strin
     {
         snprintf(message,
                  max_csv_entry_length,
-                 "#%d Entitity_Name [-] , #%d Entitity_ID [-] , "
+                 "#%d Entity_Name [-] , #%d Entity_ID [-] , "
                  "#%d Current_Speed [m/s] , #%d Wheel_Angle [deg] , #%d Wheel_Rotation [-] , "
                  "#%d bb_x [m] , #%d bb_y [m] , #%d bb_z [m] , "
                  "#%d bb_length [m] , #%d bb_width [m] , #%d bb_height [m] , "
