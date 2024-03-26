@@ -3015,6 +3015,80 @@ TEST(LaneChange, TestLaneChangeEdgeCase)
     delete se;
 }
 
+TEST(Trajectory, TestOrientationInterpolation)
+{
+    ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/bike_tilt_smooth.xosc");
+    const double    dt = 0.05;
+    ASSERT_NE(se, nullptr);
+    se->step(0.0);
+    se->prepareGroundTruth(0.0);
+
+    scenarioengine::Entities* entities = &se->entities_;
+    ASSERT_NE(entities, nullptr);
+    ASSERT_EQ(entities->object_.size(), 1);
+
+    ScenarioGateway* gw = se->getScenarioGateway();
+
+    // Check expected position and orientation at some specific time stamps
+    while (se->getSimulationTime() < 2.95 + SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(0.0);
+    }
+    ObjectStateStruct* state = &gw->objectState_[0]->state_;
+    EXPECT_NEAR(state->pos.GetX(), 120.83, 1E-2);
+    EXPECT_NEAR(state->pos.GetY(), -2.54, 1E-2);
+    EXPECT_NEAR(state->pos.GetZ(), 0.00, 1E-2);
+    EXPECT_NEAR(state->pos.GetH(), 0.00, 1E-2);
+    EXPECT_NEAR(state->pos.GetP(), 0.00, 1E-2);
+    EXPECT_NEAR(state->pos.GetR(), 0.00, 1E-2);
+    EXPECT_NEAR(state->info.speed, 6.94, 1E-2);
+
+    while (se->getSimulationTime() < 3.90 + SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(0.0);
+    }
+    state = &gw->objectState_[0]->state_;
+    EXPECT_NEAR(state->pos.GetX(), 127.08, 1E-2);
+    EXPECT_NEAR(state->pos.GetY(), -2.54, 1E-2);
+    EXPECT_NEAR(state->pos.GetZ(), 0.00, 1E-2);
+    EXPECT_NEAR(state->pos.GetH(), 0.00, 1E-2);
+    EXPECT_NEAR(state->pos.GetP(), 0.00, 1E-2);
+    EXPECT_NEAR(state->pos.GetR(), 1.31, 1E-2);
+    EXPECT_NEAR(state->info.speed, 6.94, 1E-2);
+
+    while (se->getSimulationTime() < 4.80 + SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(0.0);
+    }
+    state = &gw->objectState_[0]->state_;
+    EXPECT_NEAR(state->pos.GetX(), 130.61, 1E-2);
+    EXPECT_NEAR(state->pos.GetY(), -2.54, 1E-2);
+    EXPECT_NEAR(state->pos.GetZ(), 0.00, 1E-2);
+    EXPECT_NEAR(state->pos.GetH(), 0.00, 1E-2);
+    EXPECT_NEAR(state->pos.GetP(), 0.00, 1E-2);
+    EXPECT_NEAR(state->pos.GetR(), 1.57, 1E-2);
+    EXPECT_NEAR(state->info.speed, 0.54, 1E-2);
+
+    while (se->getSimulationTime() < 5.0 + SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(0.0);
+    }
+    state = &gw->objectState_[0]->state_;
+    EXPECT_NEAR(state->pos.GetX(), 130.62, 1E-2);
+    EXPECT_NEAR(state->pos.GetY(), -2.54, 1E-2);
+    EXPECT_NEAR(state->pos.GetZ(), 0.00, 1E-2);
+    EXPECT_NEAR(state->pos.GetH(), 0.00, 1E-2);
+    EXPECT_NEAR(state->pos.GetP(), 0.00, 1E-2);
+    EXPECT_NEAR(state->pos.GetR(), 1.57, 1E-2);
+    EXPECT_NEAR(state->info.speed, 0.0, 1E-2);
+
+    delete se;
+}
+
 // Uncomment to print log output to console
 // #define LOG_TO_CONSOLE
 

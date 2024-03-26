@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSCENARIO>
+    <FileHeader revMajor="1" revMinor="2" date="2024-03-26T10:00:00" description="Bike tilting gradually" author="esmini team"/>
+    <ParameterDeclarations>
+        <ParameterDeclaration name="StartS" parameterType="double" value="100.0"/>
+        <ParameterDeclaration name="Speed" parameterType="double" value="${25.0 / 3.6}"/>
+        <ParameterDeclaration name="TrigTime" parameterType="double" value="3.0"/>
+        <ParameterDeclaration name="StartTiltS" parameterType="double" value="${$StartS + $Speed * $TrigTime}"/>
+        <ParameterDeclaration name="TiltDuration" parameterType="double" value="1.0"/>
+    </ParameterDeclarations>
+    <CatalogLocations>
+        <VehicleCatalog>
+            <Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
+        </VehicleCatalog>
+    </CatalogLocations>
+    <RoadNetwork>
+        <LogicFile filepath="../../../resources/xodr/straight_500m.xodr"/>
+    </RoadNetwork>
+    <Entities>
+        <ScenarioObject name="Cyclist">
+            <CatalogReference catalogName="VehicleCatalog" entryName="bicycle"/>
+        </ScenarioObject>
+    </Entities>
+    <Storyboard>
+        <Init>
+            <Actions>
+                <Private entityRef="Cyclist">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="1" laneId="-1" s="$StartS" offset="-1.0"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="linear" dynamicsDimension="time" value="0.0"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="$Speed"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                </Private>
+            </Actions>
+        </Init>
+        <Story name="Story">
+            <Act name="Act">
+                <ManeuverGroup maximumExecutionCount="1" name="ManueverGroup">
+                    <Actors selectTriggeringEntities="false">
+                        <EntityRef entityRef="Cyclist"/>
+                    </Actors>
+                    <Maneuver name="Maneuver">
+                        <Event name="TiltEvent" maximumExecutionCount="1" priority="override">
+                            <Action name="TiltAction">
+                                <PrivateAction>
+                                    <RoutingAction>
+                                        <FollowTrajectoryAction>
+                                            <Trajectory closed="false" name="TrajectoryPLine">
+                                                <ParameterDeclarations/>
+                                                <Shape>
+                                                    <Polyline>
+                                                        <Vertex time="0">
+                                                            <Position>
+                                                                <WorldPosition x="${$StartS + $Speed * $TrigTime}" y="-2.54" z="0.0" r="0.0"/>
+                                                            </Position>
+                                                        </Vertex>
+                                                        <Vertex time="${1.0 * $TiltDuration / 3.0}">
+                                                            <Position>
+                                                                <WorldPosition x="${$StartS + $Speed * ($TrigTime + 1.0 * $TiltDuration / 3.0)}" y="-2.54" z="0.0" r="${1.5708 * pow(1.0 / 3.0, 2)}"/>
+                                                            </Position>
+                                                        </Vertex>
+                                                        <Vertex time="${2.0 * $TiltDuration / 3.0}">
+                                                            <Position>
+                                                                <WorldPosition x="${$StartS + $Speed * ($TrigTime + 2.0 * $TiltDuration / 3.0)}" y="-2.54" z="0.0" r="${1.5708 * pow(2.0 / 3.0, 2)}"/>
+                                                            </Position>
+                                                        </Vertex>
+                                                        <Vertex time="${3.0 * $TiltDuration / 3.0}">
+                                                            <Position>
+                                                                <WorldPosition x="${$StartS + $Speed * ($TrigTime + 3.0 * $TiltDuration / 3.0)}" y="-2.54" z="0.0" r="${1.5708 * pow(3.0 / 3.0, 2)}"/>
+                                                            </Position>
+                                                        </Vertex>
+                                                    </Polyline>
+                                                </Shape>
+                                            </Trajectory>
+                                            <TimeReference>
+                                                <Timing domainAbsoluteRelative="relative" offset="0" scale="1"/>
+                                            </TimeReference>
+                                            <TrajectoryFollowingMode followingMode="follow"/>
+                                        </FollowTrajectoryAction>
+                                    </RoutingAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="TiltCondition" delay="0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="$TrigTime" rule="greaterThan"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event name="BrakeEvent" maximumExecutionCount="1" priority="override">
+                            <Action name="BrakeAction">
+                                <PrivateAction>
+                                    <LongitudinalAction>
+                                        <SpeedAction>
+                                            <SpeedActionDynamics dynamicsShape="linear" dynamicsDimension="rate" value="8.0"/>
+                                            <SpeedActionTarget>
+                                                <AbsoluteTargetSpeed value="0.0"/>
+                                            </SpeedActionTarget>
+                                        </SpeedAction>
+                                    </LongitudinalAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="brakeCondition" delay="0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <StoryboardElementStateCondition storyboardElementType="event" storyboardElementRef="TiltEvent" state="endTransition"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                    </Maneuver>
+                </ManeuverGroup>
+                <StartTrigger/>
+            </Act>
+        </Story>
+        <StopTrigger>
+            <ConditionGroup>
+                <Condition name="StopTrigger" delay="2.0" conditionEdge="none">
+                    <ByValueCondition>
+                        <StoryboardElementStateCondition storyboardElementType="event" storyboardElementRef="BrakeEvent" state="endTransition"/>
+                    </ByValueCondition>
+                </Condition>
+            </ConditionGroup>
+        </StopTrigger>
+    </Storyboard>
+</OpenSCENARIO>

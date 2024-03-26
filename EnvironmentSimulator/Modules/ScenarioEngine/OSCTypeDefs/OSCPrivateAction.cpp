@@ -420,9 +420,6 @@ void FollowTrajectoryAction::Step(double simTime, double dt)
         (timing_domain_ != TimingDomain::NONE && time_ + timeOffset >= traj_->GetStartTime() + traj_->GetDuration()))
     {
         // Reached end of trajectory
-        // Calculate road coordinates from final inertia (X, Y) coordinates
-        object_->pos_.XYZ2TrackPos(object_->pos_.GetX(), object_->pos_.GetY(), object_->pos_.GetZ());
-
         double remaningDistance = 0.0;
         if (timing_domain_ == TimingDomain::NONE && !traj_->closed_ && object_->pos_.GetTrajectoryS() > (traj_->GetLength() - SMALL_NUMBER))
         {
@@ -440,10 +437,12 @@ void FollowTrajectoryAction::Step(double simTime, double dt)
         double dx = remaningDistance * cos(object_->pos_.GetH());
         double dy = remaningDistance * sin(object_->pos_.GetH());
 
-        object_->pos_.SetInertiaPosMode(object_->pos_.GetX() + dx,
-                                        object_->pos_.GetY() + dy,
-                                        object_->pos_.GetH(),
-                                        roadmanager::Position::GetModeDefault(roadmanager::Position::PosModeType::SET));
+        object_->pos_.SetInertiaPos(object_->pos_.GetX() + dx,
+                                    object_->pos_.GetY() + dy,
+                                    std::nan(""),   // don't update Z
+                                    std::nan(""),   // don't update Heading
+                                    std::nan(""),   // don't update Pitch
+                                    std::nan(""));  // don't update Roll
 
         End();
     }

@@ -10757,14 +10757,15 @@ int PolyLineBase::EvaluateSegmentByLocalS(int i, double local_s, double cornerRa
                     *angle = angle_current;
 
                     // Strategy: Align to line, interpolate only at corners
-                    double radius = MIN(2.0, length / 2.0);
+                    double radius   = MIN(2.0, length / 2.0);
+                    double a_corner = 0.0;
                     if (local_s < radius)
                     {
                         // passed a corner
-                        a = (radius + local_s) / (2 * radius);
+                        a_corner = (radius + local_s) / (2 * radius);
                         if (i > 0)
                         {
-                            *angle = GetAngleInInterval2PI(angle_previous + a * GetAngleDifference(angle_current, angle_previous));
+                            *angle = GetAngleInInterval2PI(angle_previous + a_corner * GetAngleDifference(angle_current, angle_previous));
                         }
                         else
                         {
@@ -10774,15 +10775,15 @@ int PolyLineBase::EvaluateSegmentByLocalS(int i, double local_s, double cornerRa
                     }
                     else if (local_s > length - radius)
                     {
-                        a = (radius + (length - local_s)) / (2 * radius);
+                        a_corner = (radius + (length - local_s)) / (2 * radius);
                         if (i > GetNumberOfVertices() - 2)
                         {
                             // Last segment, no next point to interpolate
-                            *angle = a * angle_current;
+                            *angle = a_corner * angle_current;
                         }
                         else
                         {
-                            *angle = GetAngleInInterval2PI(angle_current + (1 - a) * GetAngleDifference(angle_next, angle_current));
+                            *angle = GetAngleInInterval2PI(angle_current + (1 - a_corner) * GetAngleDifference(angle_next, angle_current));
                         }
                     }
                     else
@@ -11131,6 +11132,30 @@ void PolyLineShape::CalculatePolyLine()
             else
             {
                 pv->interpolate &= ~INTERPOLATE_HEADING;
+            }
+        }
+
+        if ((pv->pos_mode & Position::PosMode::P_MASK) == Position::PosMode::P_ABS)
+        {
+            if (following_mode_ == FollowingMode::FOLLOW)
+            {
+                pv->interpolate |= INTERPOLATE_PITCH;
+            }
+            else
+            {
+                pv->interpolate &= ~INTERPOLATE_PITCH;
+            }
+        }
+
+        if ((pv->pos_mode & Position::PosMode::R_MASK) == Position::PosMode::R_ABS)
+        {
+            if (following_mode_ == FollowingMode::FOLLOW)
+            {
+                pv->interpolate |= INTERPOLATE_ROLL;
+            }
+            else
+            {
+                pv->interpolate &= ~INTERPOLATE_ROLL;
             }
         }
 
