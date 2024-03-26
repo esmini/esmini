@@ -52,6 +52,13 @@ def parse_args() -> any:
         help="The name of the entity to replace, all replaces all of them (TODO)"
     )
     parser.add_argument(
+        "--search-string",
+        type=str,
+        default="",
+        required=False,
+        help="If searching should be done for a specific xosc to be re-used"
+    )
+    parser.add_argument(
         "--trajectory-type",
         type=str,
         default="WorldPosition",
@@ -155,16 +162,16 @@ def create_destination_folder(path: str) -> None:
             exit()
     return
 
-def copy_xosc(xosc_to_copy: str, path: str) -> None:
-    xosc_name = xosc_to_copy.split(os.path.sep)[-1]
-    new_xosc = os.path.join(path, xosc_name)
+def copy_xosc(xosc_to_copy: str, path: str, new_xosc: str) -> None:
+    source = os.path.join(path, xosc_to_copy)
+    target = os.path.join(path, f"{new_xosc}.xosc")
     try:
-        os.system(f"cp {xosc_to_copy} {new_xosc}")
+        os.system(f"cp {source} {target}")
     except:
         print(f"Failed to copy {xosc_to_copy} to {new_xosc}")
         exit()
     
-    return new_xosc
+    return target
 
 def delete_entity_maneuvergroup(xosc_tree: ET, entity: str) -> None:
     xosc_root = xosc_tree.getroot()
@@ -249,18 +256,22 @@ def parse_xosc(xosc_path: str) -> ET:
 
     return xosc_tree
 
-def generate_xosc(dat_name: str, output_path: str, replace_entity: list, keep_controllers: bool, xosc_path: list, depth: list, trajectory_type: str, modulo: int) -> None:
+def generate_xosc(dat_name: str, output_path: str, replace_entity: list, keep_controllers: bool, xosc_path: list, depth: list, trajectory_type: str, modulo: int, filename: str) -> None:
     dat_data = DATFile(dat_name)
     polylines = {entity: {} for entity in replace_entity}
     for entity in replace_entity:
         polylines[entity] = create_polyline_from_dat(dat_data, entity, modulo)
 
     dat_filename = dat_name.split(f"{os.path.sep}")[-1].split(".dat")[0]
+
+    if not filename:
+        filename = dat_filename
+
     if xosc_path:
-        xosc_to_modify = find_file(xosc_path, dat_filename, depth)
+        xosc_to_modify = find_file(xosc_path, filename, depth)
         if len(xosc_to_modify) != 1:
             print("Found too many matching xosc files, proceeding with index 0")
-        new_xosc = copy_xosc(xosc_to_modify[0], output_path)
+        new_xosc = copy_xosc(xosc_to_modify[0], output_path, dat_filename)
     else:
         pass
         # TODO: Needs to be completely from scratch xosc, scenariogeneration?
@@ -299,8 +310,9 @@ def main():
                           args.keep_controllers, 
                           args.xosc_path, 
                           args.xosc_depth, 
-                          args.trajectory_typ, 
-                          args.modulo)
+                          args.trajectory_type, 
+                          args.modulo,
+                          args.search_string)
     else:
         results = []
         pool = mp.Pool(args.pool)
@@ -312,7 +324,8 @@ def main():
                                                       args.xosc_path, 
                                                       args.xosc_depth, 
                                                       args.trajectory_type, 
-                                                      args.modulo)
+                                                      args.modulo,
+                                                      args.search_string)
                                                       )
             results.append(result)
         for result in results:
