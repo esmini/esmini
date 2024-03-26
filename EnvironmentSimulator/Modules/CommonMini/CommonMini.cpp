@@ -101,6 +101,7 @@ std::map<int, std::string> ParseModelIds()
     {
         file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], filename));
         file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i] + "/../resources", filename));
+        file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i] + "/..", filename));
     }
 
     size_t i;
@@ -131,7 +132,7 @@ std::map<int, std::string> ParseModelIds()
             LOG("  %s", file_name_candidates[j].c_str());
         }
 
-        printf("  continue with internal hard coded list: \n");
+        LOG("  continue with internal hard coded list:");
         for (int j = 0; static_cast<unsigned int>(j) < sizeof(entityModelsFilesFallbackList_) / sizeof(char*); j++)
         {
             entity_model_map_[j] = entityModelsFilesFallbackList_[j];

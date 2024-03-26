@@ -591,7 +591,10 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
     if (!modelIdStr.empty())
     {
         vehicle->model_id_ = strtoi(modelIdStr);
-        CheckModelId(vehicle);
+        if (SE_Env::Inst().GetOptions().IsOptionArgumentSet("record"))
+        {
+            CheckModelId(vehicle);
+        }
     }
 
     OSCBoundingBox boundingbox = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
@@ -848,7 +851,10 @@ Pedestrian *ScenarioReader::parseOSCPedestrian(pugi::xml_node pedestrianNode)
     if (!modelIdStr.empty())
     {
         pedestrian->model_id_ = strtoi(modelIdStr);
-        CheckModelId(pedestrian);
+        if (SE_Env::Inst().GetOptions().IsOptionArgumentSet("record"))
+        {
+            CheckModelId(pedestrian);
+        }
     }
 
     std::string scaleModeStr = pedestrian->properties_.GetValueStr("scaleMode");
@@ -917,7 +923,10 @@ MiscObject *ScenarioReader::parseOSCMiscObject(pugi::xml_node miscObjectNode)
     if (!modelIdStr.empty())
     {
         miscObject->model_id_ = strtoi(modelIdStr);
-        CheckModelId(miscObject);
+        if (SE_Env::Inst().GetOptions().IsOptionArgumentSet("record"))
+        {
+            CheckModelId(miscObject);
+        }
     }
 
     std::string scaleModeStr = miscObject->properties_.GetValueStr("scaleMode");
