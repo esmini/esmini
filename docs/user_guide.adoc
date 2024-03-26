@@ -3240,6 +3240,28 @@ The purpose of this explicit OSI update control is to support use cases where es
 BTW: Any additional explicit calls to `SE_UpdateOSIGroundTruth()` will be ignored. Which means that the programmer does not have to worry about additional performance penalty introduced by multiple calls to this function.
 ====
 
+==== Simple ideal sensors
+
+OSI provides information needed for sensor models at bounding box level for both moving and stationary objects, including ones defined in OpenDRIVE. Sensor models can then detect overlap, occlusion and collisions between those bounding boxes. Although sensor models are not within scope of esmini, there is a code example on how to retrieve and extract OSI data. It can perhaps be a starting point: https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/code-examples/osi-groundtruth/osi-groundtruth.cpp[osi-groundtruth.cpp]
+
+For even simpler use cases esmini provides a sensor mechanism, basically collecting scenario objects which reference point is within a sensor view frustum. This is too rough for collision detection, but can be useful for low-pass features like adaptive cruse control (ACC) or just optimizing CPU load by filtering objects for some processing.
+
+The view frustum is defined by a horizontal `field of view` combined with `near` and `far` limits. Basically an object is detected by a ideal sensor if the object reference point is within the view frustum, i.e:
+
+- angle from sensor mounting point is within the `field of view`
+- distance from sensor mounting point is larger than `near` and less than `far`
+
+.A few ideal sensors mounted at various positions and orientations
+image::ideal_sensors.jpg[]
+
+The sensors are added from the code, see the https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Applications/esmini-dyn[esmini-dyn] code example. API is found https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L1082-L1095[here].
+
+Limitations:
+
+- OpenDRIVE stationary objects not considered
+- Only reference point checking (part of the object can be inside frustum and still not detected)
+
+
 == Hello World programming tutorial
 include::../Hello-World_coding-example/tutorial.adoc[leveloffset=+1, lines=3..-1]
 
