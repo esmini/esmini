@@ -1035,6 +1035,8 @@ namespace scenarioengine
         void Start(double simTime);
         void End();
 
+        void Move(double simTime, double dt);
+
         void ReplaceObjectRefs(Object* obj1, Object* obj2);
     };
 

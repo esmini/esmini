@@ -3044,7 +3044,7 @@ TEST(Trajectory, TestOrientationInterpolation)
     EXPECT_NEAR(state->pos.GetR(), 0.00, 1E-2);
     EXPECT_NEAR(state->info.speed, 6.94, 1E-2);
 
-    while (se->getSimulationTime() < 3.90 + SMALL_NUMBER)
+    while (se->getSimulationTime() < 3.85 + SMALL_NUMBER)
     {
         se->step(dt);
         se->prepareGroundTruth(0.0);
@@ -3058,7 +3058,7 @@ TEST(Trajectory, TestOrientationInterpolation)
     EXPECT_NEAR(state->pos.GetR(), 1.31, 1E-2);
     EXPECT_NEAR(state->info.speed, 6.94, 1E-2);
 
-    while (se->getSimulationTime() < 4.80 + SMALL_NUMBER)
+    while (se->getSimulationTime() < 4.75 + SMALL_NUMBER)
     {
         se->step(dt);
         se->prepareGroundTruth(0.0);
@@ -3072,7 +3072,7 @@ TEST(Trajectory, TestOrientationInterpolation)
     EXPECT_NEAR(state->pos.GetR(), 1.57, 1E-2);
     EXPECT_NEAR(state->info.speed, 0.54, 1E-2);
 
-    while (se->getSimulationTime() < 5.0 + SMALL_NUMBER)
+    while (se->getSimulationTime() < 4.95 + SMALL_NUMBER)
     {
         se->step(dt);
         se->prepareGroundTruth(0.0);

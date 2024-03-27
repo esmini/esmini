@@ -4540,6 +4540,7 @@ namespace roadmanager
             return shape_ ? shape_->GetLength() : 0.0;
         }
         double GetTimeAtS(double s);
+        double GetSpeedAtS(double s);
         double GetStartTime();
         double GetDuration();
 

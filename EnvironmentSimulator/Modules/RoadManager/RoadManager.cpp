@@ -12963,6 +12963,15 @@ double RMTrajectory::GetTimeAtS(double s)
     return v.time;
 }
 
+double RMTrajectory::GetSpeedAtS(double s)
+{
+    // Find out corresponding time-value using polyline representation
+    TrajVertex v;
+    shape_->pline_.Evaluate(s, v);
+
+    return v.speed;
+}
+
 double RMTrajectory::GetStartTime()
 {
     return shape_->GetStartTime();

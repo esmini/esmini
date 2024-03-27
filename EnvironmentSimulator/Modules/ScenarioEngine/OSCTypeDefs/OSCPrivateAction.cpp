@@ -325,6 +325,15 @@ void FollowTrajectoryAction::Start(double simTime)
 
     object_->pos_.SetTrajectoryS(initialDistanceOffset_);
     time_ = traj_->GetTimeAtS(initialDistanceOffset_);
+
+    // establish initial position
+    Move(simTime, 0.0);
+
+    // establish initial speed if time reference is defined
+    if (timing_domain_ != TimingDomain::NONE)
+    {
+        object_->SetSpeed(traj_->GetSpeedAtS(object_->pos_.GetTrajectoryS()));
+    }
 }
 
 void FollowTrajectoryAction::End()
@@ -359,6 +368,56 @@ void FollowTrajectoryAction::Step(double simTime, double dt)
         return;
     }
 
+    int    dir   = reverse_ ? -1 : 1;
+    double old_s = object_->pos_.GetTrajectoryS();
+
+    // Adjust absolute time for any ghost headstart
+    double timeOffset = (timing_domain_ == TimingDomain::TIMING_ABSOLUTE && object_->IsGhost()) ? object_->GetHeadstartTime() : 0.0;
+
+    Move(simTime, dt);
+
+    // Check end conditions:
+    // Trajectories with no time stamps:
+    //     closed trajectories have no end
+    //     open trajectories simply ends when s >= length of trajectory
+    // Trajectories with time stamps:
+    //     always ends when time >= trajectory duration (last timestamp)
+    if (((timing_domain_ == TimingDomain::NONE && !traj_->closed_) && dt > 0.0 &&
+         ((dir * object_->GetSpeed() > 0.0 && object_->pos_.GetTrajectoryS() > (traj_->GetLength() - SMALL_NUMBER)) ||
+          (dir * object_->GetSpeed() < 0.0 && object_->pos_.GetTrajectoryS() < SMALL_NUMBER))) ||
+        (timing_domain_ != TimingDomain::NONE && time_ + timeOffset >= traj_->GetStartTime() + traj_->GetDuration()))
+    {
+        // Reached end of trajectory
+        double remaningDistance = 0.0;
+        if (timing_domain_ == TimingDomain::NONE && !traj_->closed_ && object_->pos_.GetTrajectoryS() > (traj_->GetLength() - SMALL_NUMBER))
+        {
+            // Move the remaning distance along road at current lane offset
+            remaningDistance = object_->speed_ * dt - (object_->pos_.GetTrajectoryS() - old_s);
+        }
+        else if (timing_domain_ != TimingDomain::NONE && time_ + timeOffset >= traj_->GetStartTime() + traj_->GetDuration())
+        {
+            // Move the remaning distance along road at current lane offset
+            double remaningTime = time_ + timeOffset - (traj_->GetStartTime() + traj_->GetDuration());
+            remaningDistance    = remaningTime * object_->speed_;
+        }
+
+        // Move the remainder of distance along the current heading
+        double dx = remaningDistance * cos(object_->pos_.GetH());
+        double dy = remaningDistance * sin(object_->pos_.GetH());
+
+        object_->pos_.SetInertiaPos(object_->pos_.GetX() + dx,
+                                    object_->pos_.GetY() + dy,
+                                    std::nan(""),   // don't update Z
+                                    std::nan(""),   // don't update Heading
+                                    std::nan(""),   // don't update Pitch
+                                    std::nan(""));  // don't update Roll
+
+        End();
+    }
+}
+
+void scenarioengine::FollowTrajectoryAction::Move(double simTime, double dt)
+{
     int    dir   = reverse_ ? -1 : 1;
     double old_s = object_->pos_.GetTrajectoryS();
 
@@ -406,45 +465,6 @@ void FollowTrajectoryAction::Step(double simTime, double dt)
     if (reverse_)
     {
         object_->pos_.SetHeading(GetAngleInInterval2PI(object_->pos_.GetH() + M_PI));
-    }
-
-    // Check end conditions:
-    // Trajectories with no time stamps:
-    //     closed trajectories have no end
-    //     open trajectories simply ends when s >= length of trajectory
-    // Trajectories with time stamps:
-    //     always ends when time >= trajectory duration (last timestamp)
-    if (((timing_domain_ == TimingDomain::NONE && !traj_->closed_) && dt > 0.0 &&
-         ((dir * object_->GetSpeed() > 0.0 && object_->pos_.GetTrajectoryS() > (traj_->GetLength() - SMALL_NUMBER)) ||
-          (dir * object_->GetSpeed() < 0.0 && object_->pos_.GetTrajectoryS() < SMALL_NUMBER))) ||
-        (timing_domain_ != TimingDomain::NONE && time_ + timeOffset >= traj_->GetStartTime() + traj_->GetDuration()))
-    {
-        // Reached end of trajectory
-        double remaningDistance = 0.0;
-        if (timing_domain_ == TimingDomain::NONE && !traj_->closed_ && object_->pos_.GetTrajectoryS() > (traj_->GetLength() - SMALL_NUMBER))
-        {
-            // Move the remaning distance along road at current lane offset
-            remaningDistance = object_->speed_ * dt - (object_->pos_.GetTrajectoryS() - old_s);
-        }
-        else if (timing_domain_ != TimingDomain::NONE && time_ + timeOffset >= traj_->GetStartTime() + traj_->GetDuration())
-        {
-            // Move the remaning distance along road at current lane offset
-            double remaningTime = time_ + timeOffset - (traj_->GetStartTime() + traj_->GetDuration());
-            remaningDistance    = remaningTime * object_->speed_;
-        }
-
-        // Move the remainder of distance along the current heading
-        double dx = remaningDistance * cos(object_->pos_.GetH());
-        double dy = remaningDistance * sin(object_->pos_.GetH());
-
-        object_->pos_.SetInertiaPos(object_->pos_.GetX() + dx,
-                                    object_->pos_.GetY() + dy,
-                                    std::nan(""),   // don't update Z
-                                    std::nan(""),   // don't update Heading
-                                    std::nan(""),   // don't update Pitch
-                                    std::nan(""));  // don't update Roll
-
-        End();
     }
 }
 

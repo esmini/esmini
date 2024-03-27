@@ -96,7 +96,7 @@
                                 <ConditionGroup>
                                     <Condition name="TiltCondition" delay="0" conditionEdge="none">
                                         <ByValueCondition>
-                                            <SimulationTimeCondition value="$TrigTime" rule="greaterThan"/>
+                                            <SimulationTimeCondition value="$TrigTime" rule="greaterOrEqual"/>
                                         </ByValueCondition>
                                     </Condition>
                                 </ConditionGroup>
