@@ -1972,13 +1972,17 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
 
 Viewer::~Viewer()
 {
-    renderSemaphore.Wait();     //  wait for any ongoing rendering
-    osgViewer_->setDone(true);  // flag OSG to tear down
+    renderSemaphore.Wait();  //  wait for any ongoing rendering
 
-    while (!osgViewer_->done() || osgViewer_->areThreadsRunning())
+    if (osgViewer_ != nullptr)
     {
-        osgViewer_->stopThreading();
-        SE_sleep(100);  // In case viewer still not closed
+        osgViewer_->setDone(true);  // flag OSG to tear down
+
+        while (!osgViewer_->done() || osgViewer_->areThreadsRunning())
+        {
+            osgViewer_->stopThreading();
+            SE_sleep(100);  // In case viewer still not closed
+        }
     }
 
     for (size_t i = 0; i < entities_.size(); i++)
