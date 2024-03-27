@@ -1,5 +1,29 @@
 ## esmini release notes
 
+### 2024-03-27 Version 2.37.5
+
+New features:
+- Support overlay text scaling ([issue #548](https://github.com/esmini/esmini/issues/548))
+
+Improvements and fixes:
+- Indicate ClothoidSpline support in [osc_coverage.txt](https://github.com/esmini/esmini/blob/dev/osc_coverage.txt)
+- Recommend newer protobuf version for Python scripts
+  - root cause is missing builder.py in older versions
+  - changing recommended version from 3.19 to 3.20.2
+- Align float precision in print statement ([issue #549](https://github.com/esmini/esmini/issues/549))
+- Check model id and warn if not matching model3d attribute ([issue #547](https://github.com/esmini/esmini/issues/547))
+  - but only if scenario is being recorded (into a dat file)
+- Fix typo in CSV Logger, replace "Entitity" label by "Entity" ([PR #552](https://github.com/esmini/esmini/issues/552))
+  - might affect processing of files created with `--csv_logger` argument
+- Add brief info on ideal sensors ([issue #553](https://github.com/esmini/esmini/issues/553))
+  - see [User guide - Simple ideal sensors](https://esmini.github.io/#_simple_ideal_sensors)
+- Add another search path for model_id file, solving load failure
+- Support trajectory pitch and roll interpolation ([issue #543](https://github.com/esmini/esmini/issues/543))
+  - only for floating trajectories, i.e. world pos with explicit z values
+  - see [videoclip](https://youtu.be/zlSE6kKN-fc) of [bike_tilt_smooth.xosc](https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Unittest/xosc/bike_tilt_smooth.xosc)
+- Establish initial speed from trajectories during initialization
+- Avoid crash (null ptr ref) after viewer failure
+
 ### 2024-03-22 Version 2.37.4
 
 Updated behaviors:
