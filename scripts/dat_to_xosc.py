@@ -150,7 +150,9 @@ def find_file(search_path: str, name: str, depth: list = [0, ""]) -> list:
                     if name in file and not os.path.isdir(file):
                         files.append(os.path.join(search_path, file))
             else:
-                search_path = os.path.join(search_path, depth[i])
+                for subdir in os.listdir(search_path):
+                    if depth[i] in subdir and os.path.isdir(subdir):
+                        search_path = os.path.join(search_path, depth[i])
                 if not os.path.exists(search_path):
                     print(f"Path {search_path} does not exist, exiting")
                     exit()
