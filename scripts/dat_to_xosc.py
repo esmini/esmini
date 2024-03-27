@@ -151,14 +151,14 @@ def find_file(search_path: str, name: str, depth: list = [0, ""]) -> list:
                         files.append(os.path.join(search_path, file))
             else:
                 for subdir in os.listdir(search_path):
-                    if depth[i] in subdir and os.path.isdir(subdir):
-                        search_path = os.path.join(search_path, depth[i])
+                    if depth[i] in subdir and os.path.isdir(os.path.join(search_path, subdir)):
+                        search_path = os.path.join(search_path, subdir)
+                        for file in os.listdir(search_path):
+                            if name in file and not os.path.isdir(file):
+                                files.append(os.path.join(search_path, file))
                 if not os.path.exists(search_path):
                     print(f"Path {search_path} does not exist, exiting")
                     exit()
-                for file in os.listdir(search_path):
-                    if name in file and not os.path.isdir(file):
-                        files.append(os.path.join(search_path, file))
                     
     return files 
 
