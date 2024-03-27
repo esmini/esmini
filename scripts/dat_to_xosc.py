@@ -66,6 +66,13 @@ def parse_args() -> any:
         help="The type of trajectory to create, WorldPosition (default) or LanePosition supported"
     )
     parser.add_argument(
+        "--match",
+        type=str,
+        default="dat",
+        required=False,
+        help="Whether to find one xosc per [dat] (default) or to find all dats matching substring of one [xosc]"
+    )
+    parser.add_argument(
         "--modulo",
         type=int,
         default=10,
@@ -132,7 +139,7 @@ def create_polyline_from_dat(datfile: DATFile, entity: str, modulo: int) -> dict
 
     return polyline
 
-def find_file(search_path: str, name: str, depth: list) -> list:
+def find_file(search_path: str, name: str, depth: list = [0, ""]) -> list:
     if depth[0] == int(0) and depth[1] == "":
         files = [os.path.join(search_path, file) for file in os.listdir(search_path) if name in file]
     else:
@@ -256,25 +263,17 @@ def parse_xosc(xosc_path: str) -> ET:
 
     return xosc_tree
 
-def generate_xosc(dat_name: str, output_path: str, replace_entity: list, keep_controllers: bool, xosc_path: list, depth: list, trajectory_type: str, modulo: int, filename: str) -> None:
+def generate_xosc(dat_name: str, output_path: str, replace_entity: list, keep_controllers: bool, trajectory_type: str, modulo: int) -> None:
     dat_data = DATFile(dat_name)
     polylines = {entity: {} for entity in replace_entity}
     for entity in replace_entity:
         polylines[entity] = create_polyline_from_dat(dat_data, entity, modulo)
 
     dat_filename = dat_name.split(f"{os.path.sep}")[-1].split(".dat")[0]
-
-    if not filename:
-        filename = dat_filename
-
-    if xosc_path:
-        xosc_to_modify = find_file(xosc_path, filename, depth)
-        if len(xosc_to_modify) != 1:
-            print("Found too many matching xosc files, proceeding with index 0")
-        new_xosc = copy_xosc(xosc_to_modify[0], output_path, dat_filename)
-    else:
-        pass
-        # TODO: Needs to be completely from scratch xosc, scenariogeneration?
+    new_xosc = find_file(output_path, f"{dat_filename}.xosc")
+    if len(new_xosc) > 1:
+        print("Found too many matching xosc files, proceeding with index 0")
+    new_xosc = new_xosc[0]
 
     xosc_tree = parse_xosc(new_xosc)
     
@@ -286,6 +285,41 @@ def generate_xosc(dat_name: str, output_path: str, replace_entity: list, keep_co
 
     return
 
+def match_xosc(xosc_path: str, xosc_depth: int, dat_path: str, dat_depth: int, output_path: str) -> list:
+    xosc_files = find_file(xosc_path, "xosc", xosc_depth)
+    if len(xosc_files) == 0:
+        print(f"No xoscfiles found in {xosc_path}")
+        return
+    dat_files = []
+    for osc in xosc_files:
+        osc_name = osc.split(os.path.sep)[-1].split(".xosc")[0]
+        dat_matching_xosc = find_file(dat_path, osc_name, dat_depth)
+        dat_files += dat_matching_xosc
+        for dat in dat_matching_xosc:
+            dat_name = dat.split(os.path.sep)[-1].split(".dat")[0]
+            copy_xosc(osc, output_path, dat_name)
+    
+    return dat_files
+
+def match_dat(xosc_path: str, xosc_depth: int, dat_path: str, dat_depth: int, output_path: str) -> list:
+    dat_files = find_file(dat_path, ".dat", dat_depth)
+    if len(dat_files) == 0:
+        print(f"No datfiles found in {dat_path}")
+        return
+
+    for i in range(len(dat_files) - 1 , -1, -1):
+        dat_name = dat_files[i].split(f"{os.path.sep}")[-1].split(".dat")[0]
+        xosc_to_modify = find_file(xosc_path, dat_name, xosc_depth)
+        if len(xosc_to_modify) == 0:
+            print(f"No matching xosc found for {dat_name}, skipping")
+            dat_files.pop(i)
+            continue
+        if len(xosc_to_modify) != 1:
+            print("Found too many matching xosc files, proceeding with index 0")
+        copy_xosc(xosc_to_modify[0], output_path, dat_name)
+    
+    return dat_files
+
 def main():
     args = parse_args()
 
@@ -293,14 +327,16 @@ def main():
         print("Must give an xosc-file to replace an entity")
         return
 
-    if args.output_path:
-        print(f"Creating {args.output_path} to put new xosc in")
-        create_destination_folder(args.output_path)
-
-    dat_files = find_file(args.dat_path, ".dat", args.dat_depth)
-    if len(dat_files) == 0:
-        print(f"No datfiles found in {args.dat_path}")
-        return 
+    print(f"Creating {args.output_path} to put new xosc in")
+    create_destination_folder(args.output_path)
+    
+    if args.match == "xosc":
+        dat_files = match_xosc(args.xosc_path, args.xosc_depth, args.dat_path, args.dat_depth, args.output_path)
+    elif args.match == "dat":
+        dat_files = match_dat(args.xosc_path, args.xosc_depth, args.dat_path, args.dat_depth, args.output_path)
+    else:
+        print(f"Match argument must be [dat] or [xosc], not {args.match}")
+        return
     
     if args.pool == 1:
         for dat in dat_files:
@@ -308,11 +344,8 @@ def main():
                           args.output_path, 
                           args.replace_entity, 
                           args.keep_controllers, 
-                          args.xosc_path, 
-                          args.xosc_depth, 
                           args.trajectory_type, 
-                          args.modulo,
-                          args.search_string)
+                          args.modulo)
     else:
         results = []
         pool = mp.Pool(args.pool)
@@ -321,12 +354,8 @@ def main():
                                                       args.output_path, 
                                                       args.replace_entity, 
                                                       args.keep_controllers, 
-                                                      args.xosc_path, 
-                                                      args.xosc_depth, 
                                                       args.trajectory_type, 
-                                                      args.modulo,
-                                                      args.search_string)
-                                                      )
+                                                      args.modulo))
             results.append(result)
         for result in results:
             result.get() 
