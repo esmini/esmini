@@ -3,6 +3,7 @@ import lxml.etree as ET
 import multiprocessing as mp
 from argparse import ArgumentParser
 from dat import DATFile
+import fnmatch
 import pdb
 
 def parse_args() -> any:
@@ -16,27 +17,11 @@ def parse_args() -> any:
         help="Specify the path to the folder containing the dat-files",
     )
     parser.add_argument(
-        "--dat-depth",
-        nargs="+",
-        default=[0, ""],
-        required=False,       
-        action="store",        
-        help="The search depth for datfiles, if a depth is given with a matching string, it will find the subfolders in that order"
-    )
-    parser.add_argument(
         "--xosc-path",
         type=str,
         default="",
         required=False,
         help="Specify the path to the folder containing the xosc-files which shall be copied and have trajectories inserted",
-    )
-    parser.add_argument(
-        "--xosc-depth",
-        nargs="+",
-        default=[0, ""],
-        required=False,       
-        action="store",        
-        help="The search depth for xosc-files, if a depth is given with a matching string, it will find the subfolders in that order"
     )
     parser.add_argument(
         "--output-path",
@@ -50,13 +35,6 @@ def parse_args() -> any:
         default=["all"],
         required=False,
         help="The name of the entity to replace, all replaces all of them (TODO)"
-    )
-    parser.add_argument(
-        "--search-string",
-        type=str,
-        default="",
-        required=False,
-        help="If searching should be done for a specific xosc to be re-used"
     )
     parser.add_argument(
         "--trajectory-type",
@@ -265,6 +243,7 @@ def parse_xosc(xosc_path: str) -> ET:
 
     return xosc_tree
 
+"""
 def generate_xosc(dat_name: str, output_path: str, replace_entity: list, keep_controllers: bool, trajectory_type: str, modulo: int) -> None:
     dat_data = DATFile(dat_name)
     polylines = {entity: {} for entity in replace_entity}
@@ -286,20 +265,34 @@ def generate_xosc(dat_name: str, output_path: str, replace_entity: list, keep_co
         write_xosc(xosc_tree, new_xosc)
 
     return
+"""
+def generate_xosc(dat_path: str, xosc_path: str, output_path: str, replace_entity: list, keep_controllers: bool, trajectory_type: str, modulo: int) -> None:
+    for dat in dat_path:
+        dat_data = DATFile(dat)
+        new_xosc = os.path.join(output_path, f"{dat.split(os.path.sep)[-1].split('.dat')[0]}.xosc")
+        polylines = {entity: {} for entity in replace_entity}
+        for entity in replace_entity:
+            polylines[entity] = create_polyline_from_dat(dat_data, entity, modulo)
 
-def match_xosc(xosc_path: str, xosc_depth: int, dat_path: str, dat_depth: int, output_path: str) -> list:
-    xosc_files = find_file(xosc_path, "xosc", xosc_depth)
-    if len(xosc_files) == 0:
-        print(f"No xoscfiles found in {xosc_path}")
-        return
-    dat_files = []
-    for osc in xosc_files:
-        osc_name = osc.split(os.path.sep)[-1].split(".xosc")[0]
-        dat_matching_xosc = find_file(dat_path, osc_name, dat_depth)
-        dat_files += dat_matching_xosc
-        for dat in dat_matching_xosc:
-            dat_name = dat.split(os.path.sep)[-1].split(".dat")[0]
-            copy_xosc(osc, output_path, dat_name)
+        xosc_tree = parse_xosc(xosc_path)
+        
+        for entity in polylines:
+            delete_entity_init_actions(xosc_tree, entity, keep_controllers)
+            delete_entity_maneuvergroup(xosc_tree, entity)
+            add_entity_trajectory(xosc_tree, entity, polylines[entity], trajectory_type)
+            write_xosc(xosc_tree, new_xosc)
+
+    return
+
+def match_xosc(xosc_path: str, dat_path: str) -> dict:
+    xosc_files = [os.path.join(xosc_path, osc) for osc in os.listdir(xosc_path) if osc.endswith(".xosc")]
+    dat_files = { osc : [] for osc in xosc_files}
+    for root, _, files in os.walk(dat_path):
+        for file in files:
+            for osc in xosc_files:
+                osc_name = osc.split(os.path.sep)[-1].split(".xosc")[0]
+                if osc_name in file:
+                    dat_files[osc].append(os.path.join(root, file))
     
     return dat_files
 
@@ -333,16 +326,18 @@ def main():
     create_destination_folder(args.output_path)
     
     if args.match == "xosc":
-        dat_files = match_xosc(args.xosc_path, args.xosc_depth, args.dat_path, args.dat_depth, args.output_path)
+        dat_dict = match_xosc(args.xosc_path, args.dat_path)
     elif args.match == "dat":
-        dat_files = match_dat(args.xosc_path, args.xosc_depth, args.dat_path, args.dat_depth, args.output_path)
+        pass
+        # dat_dict = match_dat(args.xosc_path, args.xosc_depth, args.dat_path, args.dat_depth, args.output_path)
     else:
         print(f"Match argument must be [dat] or [xosc], not {args.match}")
         return
     
     if args.pool == 1:
-        for dat in dat_files:
-            generate_xosc(dat, 
+        for osc in dat_dict:
+            generate_xosc(dat_dict[osc],
+                            osc, 
                           args.output_path, 
                           args.replace_entity, 
                           args.keep_controllers, 
@@ -351,8 +346,9 @@ def main():
     else:
         results = []
         pool = mp.Pool(args.pool)
-        for dat in dat_files:
-            result = pool.apply_async(generate_xosc, (dat, 
+        for osc in dat_dict:
+            result = pool.apply_async(generate_xosc, (dat_dict[osc],
+                                                      osc, 
                                                       args.output_path, 
                                                       args.replace_entity, 
                                                       args.keep_controllers, 
