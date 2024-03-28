@@ -3,8 +3,6 @@ import lxml.etree as ET
 import multiprocessing as mp
 from argparse import ArgumentParser
 from dat import DATFile
-import fnmatch
-import pdb
 
 def parse_args() -> any:
     parser = ArgumentParser(
@@ -243,29 +241,6 @@ def parse_xosc(xosc_path: str) -> ET:
 
     return xosc_tree
 
-"""
-def generate_xosc(dat_name: str, output_path: str, replace_entity: list, keep_controllers: bool, trajectory_type: str, modulo: int) -> None:
-    dat_data = DATFile(dat_name)
-    polylines = {entity: {} for entity in replace_entity}
-    for entity in replace_entity:
-        polylines[entity] = create_polyline_from_dat(dat_data, entity, modulo)
-
-    dat_filename = dat_name.split(f"{os.path.sep}")[-1].split(".dat")[0]
-    new_xosc = find_file(output_path, f"{dat_filename}.xosc")
-    if len(new_xosc) > 1:
-        print("Found too many matching xosc files, proceeding with index 0")
-    new_xosc = new_xosc[0]
-
-    xosc_tree = parse_xosc(new_xosc)
-    
-    for entity in polylines:
-        delete_entity_init_actions(xosc_tree, entity, keep_controllers)
-        delete_entity_maneuvergroup(xosc_tree, entity)
-        add_entity_trajectory(xosc_tree, entity, polylines[entity], trajectory_type)
-        write_xosc(xosc_tree, new_xosc)
-
-    return
-"""
 def generate_xosc(dat_path: str, xosc_path: str, output_path: str, replace_entity: list, keep_controllers: bool, trajectory_type: str, modulo: int) -> None:
     for dat in dat_path:
         dat_data = DATFile(dat)
@@ -286,35 +261,35 @@ def generate_xosc(dat_path: str, xosc_path: str, output_path: str, replace_entit
 
 def match_xosc(xosc_path: str, dat_path: str) -> dict:
     xosc_files = [os.path.join(xosc_path, osc) for osc in os.listdir(xosc_path) if osc.endswith(".xosc")]
-    dat_files = { osc : [] for osc in xosc_files}
+    ret = { osc : [] for osc in xosc_files}
     for root, _, files in os.walk(dat_path):
         for file in files:
             for osc in xosc_files:
                 osc_name = osc.split(os.path.sep)[-1].split(".xosc")[0]
-                if osc_name in file:
-                    dat_files[osc].append(os.path.join(root, file))
+                if osc_name in file and file.endswith(".dat"):
+                    ret[osc].append(os.path.join(root, file))
     
-    return dat_files
+    return ret
 
-def match_dat(xosc_path: str, xosc_depth: int, dat_path: str, dat_depth: int, output_path: str) -> list:
-    dat_files = find_file(dat_path, ".dat", dat_depth)
+def match_dat(xosc_path: str, dat_path: str) -> dict:
+    dat_files = []
+    ret = {}
+    for root, _, files in os.walk(dat_path):
+        for file in files:
+            if file.endswith(".dat"):
+                dat_files.append(os.path.join(root, file))
     if len(dat_files) == 0:
         print(f"No datfiles found in {dat_path}")
         return
-
-    for i in range(len(dat_files) - 1 , -1, -1):
-        dat_name = dat_files[i].split(f"{os.path.sep}")[-1].split(".dat")[0]
-        xosc_to_modify = find_file(xosc_path, dat_name, xosc_depth)
-        if len(xosc_to_modify) == 0:
-            print(f"No matching xosc found for {dat_name}, skipping")
-            dat_files.pop(i)
-            continue
-        if len(xosc_to_modify) != 1:
-            print("Found too many matching xosc files, proceeding with index 0")
-        copy_xosc(xosc_to_modify[0], output_path, dat_name)
+    for dat in dat_files:
+        dat_name = dat.split(os.path.sep)[-1].split(".dat")[0]
+        for root, _, files in os.walk(xosc_path):
+            for file in files:
+                if file.endswith(".xosc") and dat_name in file:
+                    ret[os.path.join(root, file)] = [dat]
     
-    return dat_files
-
+    return ret
+    
 def main():
     args = parse_args()
 
@@ -326,18 +301,17 @@ def main():
     create_destination_folder(args.output_path)
     
     if args.match == "xosc":
-        dat_dict = match_xosc(args.xosc_path, args.dat_path)
+        run_dict = match_xosc(args.xosc_path, args.dat_path)
     elif args.match == "dat":
-        pass
-        # dat_dict = match_dat(args.xosc_path, args.xosc_depth, args.dat_path, args.dat_depth, args.output_path)
+        run_dict = match_dat(args.xosc_path, args.dat_path)
     else:
         print(f"Match argument must be [dat] or [xosc], not {args.match}")
         return
     
     if args.pool == 1:
-        for osc in dat_dict:
-            generate_xosc(dat_dict[osc],
-                            osc, 
+        for key in run_dict:
+            generate_xosc(run_dict[key],
+                            key, 
                           args.output_path, 
                           args.replace_entity, 
                           args.keep_controllers, 
@@ -346,9 +320,9 @@ def main():
     else:
         results = []
         pool = mp.Pool(args.pool)
-        for osc in dat_dict:
-            result = pool.apply_async(generate_xosc, (dat_dict[osc],
-                                                      osc, 
+        for key in run_dict:
+            result = pool.apply_async(generate_xosc, (run_dict[key],
+                                                      key, 
                                                       args.output_path, 
                                                       args.replace_entity, 
                                                       args.keep_controllers, 
