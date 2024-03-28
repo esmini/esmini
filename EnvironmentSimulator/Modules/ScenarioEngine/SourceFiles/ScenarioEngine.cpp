@@ -836,6 +836,13 @@ void ScenarioEngine::prepareGroundTruth(double dt)
                     if (obj->trail_.GetNumberOfVertices() == 0 || fabs(obj->trail_.GetVertex(-1)->speed) > SMALL_NUMBER ||
                         fabs(obj->GetSpeed()) > SMALL_NUMBER)
                     {
+                        // If considerable time has passed, copy previous steady-state sample
+                        if (obj->trail_.vertex_.size() > 0 && simulationTime_ - obj->trail_.GetVertex(-1)->time > 2 * GHOST_TRAIL_SAMPLE_TIME)
+                        {
+                            obj->trail_.AddVertex(obj->trail_.vertex_.back());
+                            // with modified timestamp
+                            obj->trail_.vertex_.back().time = simulationTime_ - GHOST_TRAIL_SAMPLE_TIME;
+                        }
                         obj->trail_.AddVertex({std::nan(""),
                                                obj->pos_.GetX(),
                                                obj->pos_.GetY(),
