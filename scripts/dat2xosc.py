@@ -1,12 +1,23 @@
 '''
     Replace complete ManeuverGroup with a single FollowTrajectory action for specified entities ("all" is default)
-    
-    The new action will be located in the Storyboard Init section.
 
-    Run without arguments to see Usage info, e.g.
-        python dat_to_xosc.py
-        
+    The new actions will be located in the Storyboard Init section.
+
+    Simple example, from esmini root:
+        First create a dat recording from a scenario:
+            ./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/lane_change_crest.xosc --fixed_timestep 0.05 --record sim.dat
+        Then create the copy with fixed trajectories for all entities:
+            python ./scripts/dat2xosc.py --dat-path ./sim.dat --xosc-path ./resources/xosc/lane_change_crest.xosc --output-path ./sim.xosc --modulo 4
+        Play resulting scenario:
+            ./bin/esmini --window 60 60 800 400 --osc ./sim.xosc --path ./resources/xodr
+
+    The script supports batch operations, e.g. processing all xosc files in a folder
+
+    Run without arguments or with -h or --help to see Usage info, e.g.
+        python dat2xosc.py
+
     Limitations:
+       - xosc file must be specified even when all entities are trajectified (needed for vehicle definitions, for now)
        - Parameters are not resolved. So, for example, $owner as actor will not be identified and ManeuverGroup not deleted
        - Conditions referring to elements in removed ManeuverGroup will fail
 '''
@@ -25,14 +36,14 @@ def parse_args() -> any:
         "--dat-path",
         type=str,
         required=True,
-        help="Specify the path to the folder containing the dat-files",
+        help="Specify the path to the dat file or folder containing the dat-files",
     )
     parser.add_argument(
         "--xosc-path",
         type=str,
         default="",
         required=False,
-        help="Specify the path to the folder containing the xosc-files which shall be copied and have trajectories inserted",
+        help="Specify the path to the xosc file or folder containing the xosc-files which shall be copied and have trajectories inserted",
     )
     parser.add_argument(
         "--output-path",
@@ -45,7 +56,7 @@ def parse_args() -> any:
         nargs="+",
         default=["all"],
         required=False,
-        help="The name of the entity to replace, all replaces all of them (TODO)"
+        help="The name of the entity to replace, \"all\" replaces all of them"
     )
     parser.add_argument(
         "--trajectory-type",
@@ -66,7 +77,7 @@ def parse_args() -> any:
         type=int,
         default=10,
         required=False,
-        help="How many timesteps to skip when creating the trajectory, i.e. 1000Hz trajectory to 100Hz, use modulo (%) 10"
+        help="How many timesteps to skip when creating the trajectory, i.e. 1000Hz trajectory to 100Hz, use modulo (%%) 10"
     )
     parser.add_argument(
         "--keep-controllers",
@@ -151,6 +162,7 @@ def delete_entity_maneuvergroup(xosc_tree: ET, entity: str) -> None:
     maneuver_groups = [key for key in xosc_root.findall("Storyboard/Story/Act/") if key.tag == 'ManeuverGroup']
     for maneuver_group in maneuver_groups:
         if maneuver_group.find("Actors/EntityRef").values()[0] == entity: # can be list somehow?
+            print('  - remove ManeuverGroup', maneuver_group.attrib['name'])
             maneuver_group.getparent().remove(maneuver_group)
 
     return
@@ -162,6 +174,7 @@ def delete_entity_init_actions(xosc_tree, entity, keep_controller_action) -> Non
     for action in init_action.getchildren():
         if keep_controller_action and action.getchildren()[0].tag == "ControllerAction":
             continue
+        print('  - remove Init', action.getchildren()[0].tag)
         action.getparent().remove(action)
 
     return
@@ -177,6 +190,7 @@ def add_entity_trajectory(xosc_tree: ET, entity: str, trajectory: dict, trajecto
     for name in traj_tree_names:
         entry = ET.SubElement(entry, name)
         if name == "FollowTrajectoryAction":
+            print('  - add Init', name)
             time_reference = ET.SubElement(entry, "TimeReference")
             timing = ET.SubElement(time_reference, "Timing")
             timing.set("domainAbsoluteRelative", "absolute")
@@ -249,6 +263,7 @@ def generate_xosc(dat_path: str, xosc_path: str, output_path: str, replace_entit
             polylines[entity] = create_polyline_from_dat(dat_data, entity, modulo)
 
         for entity in polylines:
+            print('Trajectifying actions of', entity)
             delete_entity_init_actions(xosc_tree, entity, keep_controllers)
             delete_entity_maneuvergroup(xosc_tree, entity)
             add_entity_trajectory(xosc_tree, entity, polylines[entity], trajectory_type)
@@ -303,8 +318,8 @@ def match_dat(xosc_path: str, dat_path: str) -> dict:
 def main():
     args = parse_args()
 
-    if args.replace_entity[0] != "all" and not args.xosc_path:
-        print("Must give an xosc-file to replace an entity")
+    if not args.xosc_path:
+        print("Must give an xosc-file to replace entities")
         return
 
     output_folder = os.path.dirname(os.path.abspath(args.output_path))
@@ -320,7 +335,10 @@ def main():
         print(f"Match argument must be [dat] or [xosc], not {args.match}")
         return
 
-    if args.pool == 1:
+    if len(run_dict) == 0:
+        print("Error: No xosc specified or found")
+        return
+    elif args.pool == 1:
         for key in run_dict:
             generate_xosc(run_dict[key],
                             key,
