@@ -113,11 +113,12 @@ void ControllerSumo::Step(double timeStep)
                 LOG("SUMO controller: Add vehicle to scenario: %s", deplist[i].c_str());
                 vehicle->name_ = deplist[i];
                 vehicle->AssignController(this);
-                vehicle->model3d_   = template_vehicle_->model3d_;
-                vehicle->scaleMode_ = EntityScaleMode::BB_TO_MODEL;
-                vehicle->role_      = Vehicle::Role::CIVIL;
-                vehicle->category_  = Vehicle::Category::CAR;
-                vehicle->odometer_  = 0.0;
+                vehicle->model3d_     = template_vehicle_->model3d_;
+                vehicle->scaleMode_   = EntityScaleMode::BB_TO_MODEL;
+                vehicle->role_        = Vehicle::Role::CIVIL;
+                vehicle->category_    = Vehicle::Category::CAR;
+                vehicle->odometer_    = 0.0;
+                vehicle->boundingbox_ = template_vehicle_->boundingbox_;
                 entities_->addObject(vehicle, true);
             }
         }
