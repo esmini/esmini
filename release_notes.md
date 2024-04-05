@@ -1,9 +1,35 @@
 ## esmini release notes
 
+### 2024-04-05 Version 2.37.6
+
+New content:
+- Add script, [dat2xosc.py](https://github.com/esmini/esmini/blob/dev/scripts/dat2xosc.py), to convert selected dat content to xosc
+  - fixates trajectory for one or several actors
+  - brief info in file header comment
+
+Improvements and fixes:
+- Add lib [function](https://github.com/esmini/esmini/blob/03a4015a1fe6cd667f1667f7d03fd1fb215497ca/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L1019-L1024) to retrieve object acceleration
+- Add Python example, [drive.py](https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/code-examples/hello_world/drive.py), using SimpleVehicle model ([issue #555](https://github.com/esmini/esmini/issues/555))
+  - run from esmini/bin:<br>
+    `python ../EnvironmentSimulator/code-examples/hello_world/drive.py`
+  - drive using arrow keys
+- Add controller experimental virtual operation mode
+  - in this mode the controller only calculates acceleration, not applying it
+  - for use cases with an external vehicle dynamics model
+  - example code and scenario: [mixed_control](https://github.com/esmini/esmini/blob/feature/fix_update_ctrl/EnvironmentSimulator/code-examples/mixed_control)
+  - brief info in [mixed_control.cpp](https://github.com/esmini/esmini/blob/feature/fix_update_ctrl/EnvironmentSimulator/code-examples/mixed_control/mixed_control.cpp) file header comment
+- Fix ghost trail issue after long standstill
+  - at end of standstill phase, add another sample
+  - avoiding slightly wrong interpolated speed
+- Fix controller type not being updated in object state
+  - type now set whenever a controller is activated on longitudinal domain
+  - not only for the initially assigned controller, which was the case
+
 ### 2024-03-27 Version 2.37.5
 
 New features:
 - Support overlay text scaling ([issue #548](https://github.com/esmini/esmini/issues/548))
+  - launch argument: `--text_scale <scale factor>`
 
 Improvements and fixes:
 - Indicate ClothoidSpline support in [osc_coverage.txt](https://github.com/esmini/esmini/blob/dev/osc_coverage.txt)
