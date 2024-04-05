@@ -637,13 +637,15 @@ will create ground_truth.csv. +
 
 However the .csv file created with osi2csv will not contain all OSI information. To get a readable text file including the complete content of a OSI trace file you can make use of this Python script from the OSI project: +
 
-https://github.com/OpenSimulationInterface/open-simulation-interface/blob/master/format/osi2read.py +
+https://github.com/OpenSimulationInterface/open-simulation-interface/blob/master/osi3trace/osi2read.py +
 
 Use as following example:
 
 `../open-simulation-interface/format/osi2read.py --data ./ground_truth.osi --output ground_truth --type GroundTruth`
 
 it should create `ground_truth.txth` which is readable in a text editor.
+
+*Note:* See <<OSI for Python on Windows>> for hints how to install dependencies (OSI and Protobuf)
 
 == Scenario features
 === Speed profile
