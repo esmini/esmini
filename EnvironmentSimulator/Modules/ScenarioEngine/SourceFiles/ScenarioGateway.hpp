@@ -321,6 +321,7 @@ namespace scenarioengine
         int updateObjectWheelAngle(int id, double timestamp, double wheelAngle);
         int updateObjectWheelRotation(int id, double timestamp, double wheelRotation);
         int updateObjectVisibilityMask(int id, int visibilityMask);
+        int updateObjectControllerType(int id, int controllerType);
         int updateObjectFrictionCoefficients(int id, double friction[4]);
 
         /**

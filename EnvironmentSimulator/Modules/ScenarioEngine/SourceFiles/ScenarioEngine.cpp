@@ -387,6 +387,11 @@ int ScenarioEngine::step(double deltaSimTime)
                 scenarioGateway.updateObjectVisibilityMask(obj->id_, obj->visibilityMask_);
             }
 
+            if (obj->CheckDirtyBits(Object::DirtyBit::CONTROLLER))
+            {
+                scenarioGateway.updateObjectControllerType(obj->id_, obj->GetControllerTypeActiveOnDomain(ControlDomains::DOMAIN_LONG));
+            }
+
             // Friction is not considered
         }
         else
@@ -702,6 +707,11 @@ void ScenarioEngine::prepareGroundTruth(double dt)
             {
                 obj->pos_ = o->state_.pos;
                 obj->SetDirtyBits(o->dirty_ & (Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL));
+            }
+            if (o->dirty_ & Object::DirtyBit::ACCELERATION)
+            {
+                obj->pos_.SetAcc(o->state_.pos.GetAccX(), o->state_.pos.GetAccY(), o->state_.pos.GetAccZ());
+                obj->SetDirtyBits(Object::DirtyBit::ACCELERATION);
             }
             if (o->dirty_ & Object::DirtyBit::SPEED)
             {

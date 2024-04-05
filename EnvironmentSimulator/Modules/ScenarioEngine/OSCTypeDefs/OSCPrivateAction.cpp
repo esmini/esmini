@@ -600,6 +600,7 @@ void ActivateControllerAction::Start(double simTime)
         {
             if (controller_->Activate(lat_activation_mode_, long_activation_mode_, light_activation_mode_, anim_activation_mode_) == 0)
             {
+                object_->SetDirtyBits(Object::DirtyBit::CONTROLLER);
                 LOG("Controller %s active on domains: %s (mask=0x%x)",
                     controller_->GetName().c_str(),
                     ControlDomain2Str(controller_->GetActiveDomains()).c_str(),
