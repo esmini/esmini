@@ -9,6 +9,8 @@ New content:
 
 Improvements and fixes:
 - Add lib [function](https://github.com/esmini/esmini/blob/03a4015a1fe6cd667f1667f7d03fd1fb215497ca/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L1019-L1024) to retrieve object acceleration
+- Add lib [function]() to close log file
+  - it will otherwise stay open for concatenating further runs
 - Add Python example, [drive.py](https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/code-examples/hello_world/drive.py), using SimpleVehicle model ([issue #555](https://github.com/esmini/esmini/issues/555))
   - run from esmini/bin:<br>
     `python ../EnvironmentSimulator/code-examples/hello_world/drive.py`
