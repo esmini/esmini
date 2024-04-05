@@ -1756,6 +1756,20 @@ extern "C"
         return obj->collisions_[static_cast<unsigned int>(index)]->GetId();
     }
 
+    SE_DLL_API float SE_GetObjectAcceleration(int object_id)
+    {
+        if (player != nullptr)
+        {
+            Object *obj = player->scenarioEngine->entities_.GetObjectById(object_id);
+            if (obj != nullptr)
+            {
+                return obj->pos_.GetAcc();
+            }
+        }
+
+        return std::nan("");
+    }
+
     /*SE_DLL_API int SE_GetObjectGhostStateFromOSI(const char* output, int index)
     {
             if (player)

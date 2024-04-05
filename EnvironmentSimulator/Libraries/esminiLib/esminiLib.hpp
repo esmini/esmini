@@ -1017,6 +1017,13 @@ extern "C"
     SE_DLL_API int SE_GetObjectCollision(int object_id, int index);
 
     /**
+            Get the acceleration magnitude of specified object
+            @param object_id Id of the object
+            @return 0 if successful, -1 if not
+    */
+    SE_DLL_API float SE_GetObjectAcceleration(int object_id);
+
+    /**
             Get the unit of specified speed (in OpenDRIVE road type element).
             All roads will be looped in search for such an element. First found will be used.
             If speed is specified withouth the optional unit, SI unit m/s is assumed.
