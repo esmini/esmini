@@ -1763,11 +1763,11 @@ extern "C"
             Object *obj = player->scenarioEngine->entities_.GetObjectById(object_id);
             if (obj != nullptr)
             {
-                return obj->pos_.GetAcc();
+                return static_cast<float>(obj->pos_.GetAcc());
             }
         }
 
-        return std::nan("");
+        return std::nanf("");
     }
 
     /*SE_DLL_API int SE_GetObjectGhostStateFromOSI(const char* output, int index)

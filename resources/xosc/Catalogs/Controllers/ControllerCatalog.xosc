@@ -143,6 +143,8 @@
                 <!-- Do not consider vehicles otside the lateral space specified by LateralDist -->
                 <ParameterDeclaration name="LateralDist" parameterType="double" value="5" />
                 <ParameterDeclaration name="Mode" parameterType="string" value="additive" />
+                <!-- Virtual operation will only do calculations, assuming external regulation -->
+                <ParameterDeclaration name="Virtual" parameterType="boolean" value="false" />
             </ParameterDeclarations>
             <Properties>
                 <Property name="esminiController" value="ACCController" />
@@ -150,6 +152,7 @@
                 <Property name="setSpeed"  value="$SetSpeed" />
                 <Property name="lateralDist"  value="$LateralDist" />
                 <Property name="timeGap"  value="$TimeGap" />
+                <Property name="virtual"  value="$Virtual" />
             </Properties>
         </Controller>
         <Controller name="ALKSController">

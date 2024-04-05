@@ -36,7 +36,8 @@ ControllerACC::ControllerACC(InitArgs* args)
       setSpeed_(0),
       lateralDist_(5.0),
       currentSpeed_(0),
-      setSpeedSet_(false)
+      setSpeedSet_(false),
+      virtual_(false)
 {
     operating_domains_ = static_cast<unsigned int>(ControlDomains::DOMAIN_LONG);
 
@@ -62,6 +63,10 @@ ControllerACC::ControllerACC(InitArgs* args)
         // used as setSpeed)
         mode_ = ControlOperationMode::MODE_ADDITIVE;
     }
+    if (args && args->properties && args->properties->ValueExists("virtual"))
+    {
+        virtual_ = args->properties->GetValueStr("virtual") == "true" ? true : false;
+    }
 }
 
 void ControllerACC::Init()
@@ -84,7 +89,13 @@ void ControllerACC::Step(double timeStep)
     const double accelerationFactor = 0.7;
 
     // First check if speed has been set from somewhere else (another action or controller), respect it and update setSpeed
-    if (abs(object_->GetSpeed() - currentSpeed_) > 1e-3)
+    if (virtual_)
+    {
+        currentSpeed_ = object_->GetSpeed();
+    }
+    else if (
+        // mode_ == ControlOperationMode::MODE_ADDITIVE &&
+        abs(object_->GetSpeed() - currentSpeed_) > 1e-3)
     {
         LOG("New setspeed: %.2f", setSpeed_);
         setSpeed_ = object_->GetSpeed();
@@ -152,6 +163,7 @@ void ControllerACC::Step(double timeStep)
         }
     }
 
+    double acc = 0.0;
     if (minObjIndex > -1)
     {
         if (minGapLength < 1)
@@ -164,7 +176,6 @@ void ControllerACC::Step(double timeStep)
             double speedForTimeGap = MAX(currentSpeed_, entities_->object_[static_cast<unsigned int>(minObjIndex)]->GetSpeed());
             double followDist      = minDist + timeGap_ * fabs(speedForTimeGap);  // (m)
             double dist            = minGapLength - followDist;
-            double acc             = 0.0;
             double distFactor      = MIN(1.0, dist / followDist);
 
             double dvMin = currentSpeed_ - MIN(setSpeed_, entities_->object_[static_cast<unsigned int>(minObjIndex)]->GetSpeed());
@@ -184,7 +195,10 @@ void ControllerACC::Step(double timeStep)
     else
     {
         // no lead vehicle to adapt to, adjust according to setSpeed
-        double tmpSpeed = currentSpeed_ + SIGN(setSpeed_ - currentSpeed_) * accelerationFactor * object_->GetMaxAcceleration() * timeStep;
+        acc             = (setSpeed_ - currentSpeed_) * accelerationFactor * object_->GetMaxAcceleration();
+        acc             = CLAMP(acc, -object_->GetMaxDeceleration(), accelerationFactor * object_->GetMaxAcceleration());
+        double tmpSpeed = currentSpeed_ + acc * timeStep;
+
         if (abs(tmpSpeed - setSpeed_) > abs(currentSpeed_ - setSpeed_))
         {
             // passed target speed
@@ -198,13 +212,22 @@ void ControllerACC::Step(double timeStep)
         object_->SetSensorPosition(object_->pos_.GetX(), object_->pos_.GetY(), object_->pos_.GetZ());
     }
 
-    if (mode_ == ControlOperationMode::MODE_OVERRIDE)
+    if (mode_ == ControlOperationMode::MODE_OVERRIDE && !virtual_)
     {
         object_->MoveAlongS(currentSpeed_ * timeStep);
         gateway_->updateObjectPos(object_->GetId(), 0.0, &object_->pos_);
     }
 
-    gateway_->updateObjectSpeed(object_->GetId(), 0.0, currentSpeed_);
+    if (virtual_)
+    {
+        double acc_v[2] = {0.0, 0.0};
+        RotateVec2D(acc, 0.0, object_->pos_.GetH(), acc_v[0], acc_v[1]);
+        gateway_->updateObjectAcc(object_->GetId(), 0.0, acc_v[0], acc_v[1], 0.0);
+    }
+    else
+    {
+        gateway_->updateObjectSpeed(object_->GetId(), 0.0, currentSpeed_);
+    }
 
     Controller::Step(timeStep);
 }

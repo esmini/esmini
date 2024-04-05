@@ -1019,7 +1019,7 @@ extern "C"
     /**
             Get the acceleration magnitude of specified object
             @param object_id Id of the object
-            @return 0 if successful, -1 if not
+            @return the acceleration if successful, std::nanf if not
     */
     SE_DLL_API float SE_GetObjectAcceleration(int object_id);
 

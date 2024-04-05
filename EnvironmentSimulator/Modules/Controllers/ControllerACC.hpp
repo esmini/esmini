@@ -64,6 +64,7 @@ namespace scenarioengine
         double           lateralDist_;
         double           currentSpeed_;
         bool             setSpeedSet_;
+        bool             virtual_;
     };
 
     Controller* InstantiateControllerACC(void* args);
