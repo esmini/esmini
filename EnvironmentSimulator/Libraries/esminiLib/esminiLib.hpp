@@ -1309,6 +1309,8 @@ extern "C"
 
     SE_DLL_API void SE_LogMessage(const char *message);
 
+    SE_DLL_API void SE_CloseLogFile();
+
     // Viewer settings
     /**
             Switch on/off visualization of specified features

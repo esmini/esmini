@@ -1287,6 +1287,16 @@ void Logger::OpenLogfile(std::string filename)
 #endif
 }
 
+void Logger::CloseLogFile()
+{
+#ifndef SUPPRESS_LOG
+    if (file_.is_open())
+    {
+        file_.close();
+    }
+#endif
+}
+
 void Logger::LogVersion()
 {
     static char message[1024];

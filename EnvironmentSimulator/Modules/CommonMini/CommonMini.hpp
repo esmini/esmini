@@ -743,6 +743,7 @@ public:
         time_ = timePtr;
     }
     void OpenLogfile(std::string filename);
+    void CloseLogFile();
     void LogVersion();
     bool IsFileOpen()
     {

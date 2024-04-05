@@ -1680,6 +1680,11 @@ extern "C"
         LOG(message);
     }
 
+    SE_DLL_API void SE_CloseLogFile()
+    {
+        Logger::Inst().CloseLogFile();
+    }
+
     SE_DLL_API int SE_ObjectHasGhost(int object_id)
     {
         Object *obj = nullptr;
