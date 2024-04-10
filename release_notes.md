@@ -1,5 +1,11 @@
 ## esmini release notes
 
+### 2024-04-10 Version 2.37.7
+
+Improvements and fixes:
+- Add missing bounding box to SUMO vehicles
+- Fix broken link to osi2read.py script in [User guide - Save OSI data](https://esmini.github.io/#_save_osi_data)
+
 ### 2024-04-05 Version 2.37.6
 
 New content:
@@ -18,8 +24,8 @@ Improvements and fixes:
 - Add controller experimental virtual operation mode
   - in this mode the controller only calculates acceleration, not applying it
   - for use cases with an external vehicle dynamics model
-  - example code and scenario: [mixed_control](https://github.com/esmini/esmini/blob/feature/fix_update_ctrl/EnvironmentSimulator/code-examples/mixed_control)
-  - brief info in [mixed_control.cpp](https://github.com/esmini/esmini/blob/feature/fix_update_ctrl/EnvironmentSimulator/code-examples/mixed_control/mixed_control.cpp) file header comment
+  - example code and scenario: [mixed_control](https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/code-examples/mixed_control)
+  - brief info in [mixed_control.cpp](https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/code-examples/mixed_control/mixed_control.cpp) file header comment
 - Fix ghost trail issue after long standstill
   - at end of standstill phase, add another sample
   - avoiding slightly wrong interpolated speed

@@ -635,9 +635,7 @@ esmini provides a script, osi2csv.py, that converts an OSI trace file into .csv 
 will create ground_truth.csv. +
 (if file type association is not setup, try: ``python ./scripts/osi2csv.py ground_truth.osi``)
 
-However the .csv file created with osi2csv will not contain all OSI information. To get a readable text file including the complete content of a OSI trace file you can make use of this Python script from the OSI project: +
-
-https://github.com/OpenSimulationInterface/open-simulation-interface/blob/master/osi3trace/osi2read.py +
+However the .csv file created with osi2csv will not contain all OSI information. To get a readable text file including the complete content of a OSI trace file you can make use of the Python script https://github.com/OpenSimulationInterface/open-simulation-interface/blob/v3.5.0/format/osi2read.py[format/osi2read.py] in the OSI project.
 
 Use as following example:
 
@@ -645,7 +643,14 @@ Use as following example:
 
 it should create `ground_truth.txth` which is readable in a text editor.
 
-*Note:* See <<OSI for Python on Windows>> for hints how to install dependencies (OSI and Protobuf)
+[Note]
+====
+**Note**:
+
+See <<OSI for Python on Windows>> for hints how to install dependencies (OSI and Protobuf).
+
+The above script link points to OSI tag v3.5.0. In more recent OSI versions the script has moved to another folder: https://github.com/OpenSimulationInterface/open-simulation-interface/blob/master/osi3trace/osi2read.py[osi3trace/osi2read.py].
+====
 
 == Scenario features
 === Speed profile
