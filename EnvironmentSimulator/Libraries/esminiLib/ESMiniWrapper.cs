@@ -306,14 +306,14 @@ namespace ESMini
         [DllImport(LIB_NAME, EntryPoint = "SE_SetSnapLaneTypes")]
         /// <summary>Specify which lane types the position object snaps to (is aware of)</summary>
         /// <param name="object_id">Id of the object (not index, use GetId(index) to find out the id)</param>
-        /// <parameter name="laneTypes">laneTypes A combination (bitmask) of lane types according to roadmanager::Lane::LaneType</parameter>
+        /// <param name="laneTypes">laneTypes A combination (bitmask) of lane types according to roadmanager::Lane::LaneType</parameter>
         /// <return>0 if successful, -1 if not</return>
         public static extern int SE_SetSnapLaneTypes(int object_id, int laneTypes);
 
         [DllImport(LIB_NAME, EntryPoint = "SE_SetLockOnLane")]
         /// <summary>Controls whether to keep lane ID regardless of lateral position or snap to closest lane (default)</summary>
         /// <param name="object_id">Id of the object (not index, use GetId(index) to find out the id)</param>
-        /// <parameter name="mode">True=keep lane False=Snap to closest (default)</parameter>
+        /// <param name="mode">True=keep lane False=Snap to closest (default)</parameter>
         /// <return>0 if successful, -1 if not</return>
         public static extern int SE_SetLockOnLane(int object_id, bool mode);
 
@@ -363,8 +363,14 @@ namespace ESMini
         /// <return>0 if successful, -1 if not</return>
         public static extern int SE_GetObjectGhostState(int object_id, ref ScenarioObjectState state);
 
+        [DllImport(LIB_NAME, EntryPoint = "SE_GetObjectAcceleration")]
+        /// <summary>Get the acceleration magnitude of specified object</summary>
+        /// <param name="object_id">Id of the object to which the ghost is attached</param>
+        /// <returns>the acceleration if successful, std::nanf if not</returns>
+        public static extern float SE_GetObjectAcceleration(int object_id);
+
         [DllImport(LIB_NAME, EntryPoint = "SE_GetSpeedUnit")]
-        /// <summaryGet the unit of specified speed</summary>
+        /// <summary>Get the unit of specified speed</summary>
         /// All roads will be looped in search for such an element. First found will be used.
         /// If speed is specified withouth the optional unit, SI unit m/s is assumed.
         /// If no speed entries is found, undefined will be returned.
