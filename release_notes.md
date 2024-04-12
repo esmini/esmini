@@ -1,5 +1,12 @@
 ## esmini release notes
 
+### 2024-04-12 Version 2.37.8
+
+Improvements and fixes:
+- Add missing GetObjectAcceleration() declaration to C# wrapper
+- Resolve controller domain conflicts
+  - when activating a controller, disable any active one on conflicting domains
+
 ### 2024-04-10 Version 2.37.7
 
 Improvements and fixes:
