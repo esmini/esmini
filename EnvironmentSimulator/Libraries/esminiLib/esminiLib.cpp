@@ -734,6 +734,30 @@ extern "C"
         return returnString.c_str();
     }
 
+    SE_DLL_API int SE_GetNumberOfVariables()
+    {
+        if (player == nullptr)
+        {
+            return -1;
+        }
+
+        return player->GetNumberOfVariables();
+    }
+
+    SE_DLL_API const char *SE_GetVariableName(int index, int *type)
+    {
+        static std::string returnString;
+
+        if (player == nullptr)
+        {
+            return 0;
+        }
+
+        returnString = player->GetVariableName(index, (OSCParameterDeclarations::ParameterType *)type);
+
+        return returnString.c_str();
+    }
+
     SE_DLL_API int SE_GetNumberOfProperties(int index)
     {
         if (player != nullptr && index >= 0 && index < player->scenarioGateway->getNumberOfObjects())
