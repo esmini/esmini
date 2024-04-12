@@ -598,6 +598,41 @@ void ActivateControllerAction::Start(double simTime)
 
         if (controller_ != nullptr)
         {
+            // first deactivate any controller active on the requested domain(s)
+            Controller* ctrl = nullptr;
+            if (long_activation_mode_ == ControlActivationMode::ON &&
+                (ctrl = object_->GetControllerActiveOnDomain(ControlDomains::DOMAIN_LONG)) != nullptr)
+            {
+                LOG("Deactivating conflicting ctrl %s on domain %s",
+                    ctrl->GetName().c_str(),
+                    ControlDomain2Str(static_cast<unsigned int>(ControlDomains::DOMAIN_LONG)).c_str());
+                ctrl->DeactivateDomains(static_cast<unsigned int>(ControlDomains::DOMAIN_LONG));
+            }
+            if (lat_activation_mode_ == ControlActivationMode::ON &&
+                (ctrl = object_->GetControllerActiveOnDomain(ControlDomains::DOMAIN_LAT)) != nullptr)
+            {
+                LOG("Deactivating conflicting ctrl %s on domain %s",
+                    ctrl->GetName().c_str(),
+                    ControlDomain2Str(static_cast<unsigned int>(ControlDomains::DOMAIN_LAT)).c_str());
+                ctrl->DeactivateDomains(static_cast<unsigned int>(ControlDomains::DOMAIN_LAT));
+            }
+            if (anim_activation_mode_ == ControlActivationMode::ON &&
+                (ctrl = object_->GetControllerActiveOnDomain(ControlDomains::DOMAIN_ANIM)) != nullptr)
+            {
+                LOG("Deactivating conflicting ctrl %s on domain %s",
+                    ctrl->GetName().c_str(),
+                    ControlDomain2Str(static_cast<unsigned int>(ControlDomains::DOMAIN_ANIM)).c_str());
+                ctrl->DeactivateDomains(static_cast<unsigned int>(ControlDomains::DOMAIN_ANIM));
+            }
+            if (light_activation_mode_ == ControlActivationMode::ON &&
+                (ctrl = object_->GetControllerActiveOnDomain(ControlDomains::DOMAIN_LIGHT)) != nullptr)
+            {
+                LOG("Deactivating conflicting ctrl %s on domain %s",
+                    ctrl->GetName().c_str(),
+                    ControlDomain2Str(static_cast<unsigned int>(ControlDomains::DOMAIN_LIGHT)).c_str());
+                ctrl->DeactivateDomains(static_cast<unsigned int>(ControlDomains::DOMAIN_LIGHT));
+            }
+
             if (controller_->Activate(lat_activation_mode_, long_activation_mode_, light_activation_mode_, anim_activation_mode_) == 0)
             {
                 object_->SetDirtyBits(Object::DirtyBit::CONTROLLER);

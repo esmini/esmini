@@ -134,7 +134,7 @@ namespace scenarioengine
          * @brief Wrapper for controller::deactivate, to include testMode
          *
          */
-        void Deactivate();
+        void Deactivate() override;
 
         /**
          * @brief Get the Waypoint Status, checks if entity has missed, reached, or passed waypoint.

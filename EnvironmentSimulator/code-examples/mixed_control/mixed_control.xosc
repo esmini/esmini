@@ -1,155 +1,195 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <OpenSCENARIO>
-    <FileHeader revMajor="1" revMinor="2" date="2024-04-04T10:00:00" description="scenario for the mixed_control.cpp code example" author="esmini team"/>
-    <ParameterDeclarations>
-        <ParameterDeclaration name="EgoSpeed" parameterType="double" value="${110.0 / 3.6}"/>
-    </ParameterDeclarations>
-    <CatalogLocations>
-        <VehicleCatalog>
-            <Directory path="../resources/xosc/Catalogs/Vehicles"/>
-        </VehicleCatalog>
-    </CatalogLocations>
-    <RoadNetwork>
-        <LogicFile filepath="../resources/xodr/curves_elevation.xodr"/>
-    </RoadNetwork>
-    <Entities>
-        <ScenarioObject name="Ego">
-            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
-            <ObjectController>
-                <Controller name="ACCController">
-                    <Properties>
-                        <Property name="timeGap" value="1.0"/>
-                        <Property name="mode" value="override"/>
-                        <Property name="setSpeed" value="$EgoSpeed"/>
-                        <Property name="virtual" value="true"/>
-                    </Properties>
-                </Controller>
-            </ObjectController>
-        </ScenarioObject>
-        <ScenarioObject name="Target">
-            <CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>
-        </ScenarioObject>
-    </Entities>
-    <Storyboard>
-        <Init>
-            <Actions>
-                <Private entityRef="Ego">
-                    <PrivateAction>
-                        <TeleportAction>
-                            <Position>
-                                <LanePosition roadId="1" laneId="-1" offset="0" s="20"/>
-                            </Position>
-                        </TeleportAction>
-                    </PrivateAction>
-                    <PrivateAction>
-                        <LongitudinalAction>
-                            <SpeedAction>
-                                <SpeedActionDynamics dynamicsDimension="time" dynamicsShape="step" value="0"/>
-                                <SpeedActionTarget>
-                                    <AbsoluteTargetSpeed value="$EgoSpeed"/>
-                                </SpeedActionTarget>
-                            </SpeedAction>
-                        </LongitudinalAction>
-                    </PrivateAction>
-                </Private>
-                <Private entityRef="Target">
-                    <PrivateAction>
-                        <TeleportAction>
-                            <Position>
-                                <LanePosition roadId="1" laneId="-1" offset="0" s="400"/>
-                            </Position>
-                        </TeleportAction>
-                    </PrivateAction>
-                </Private>
-            </Actions>
-        </Init>
-        <Story name="MyStory">
-            <ParameterDeclarations/>
-            <Act name="Act">
-                <ManeuverGroup maximumExecutionCount="1" name="ManeuverGroup">
-                    <Actors selectTriggeringEntities="false">
-                        <EntityRef entityRef="Ego"/>
-                    </Actors>
-                    <Maneuver name="Maneuver">
-                        <Event name="ActivateControllerEvent" priority="overwrite" maximumExecutionCount="1">
-                            <Action name="ActivateControllerAction">
-                                <PrivateAction>
-                                    <ActivateControllerAction longitudinal="true" lateral="false"/>
-                                </PrivateAction>
-                            </Action>
-                            <StartTrigger>
-                                <ConditionGroup>
-                                    <Condition conditionEdge="rising" delay="0" name="ActivateACCTrigger">
-                                        <ByEntityCondition>
-                                            <TriggeringEntities triggeringEntitiesRule="any">
-                                                <EntityRef entityRef="Ego"/>
-                                            </TriggeringEntities>
-                                            <EntityCondition>
-                                                <RelativeDistanceCondition entityRef="Target" rule="lessThan" value="40.0" freespace="false" relativeDistanceType="longitudinal"/>
-                                            </EntityCondition>
-                                        </ByEntityCondition>
-                                    </Condition>
-                                </ConditionGroup>
-                            </StartTrigger>
-                        </Event>
-                    </Maneuver>
-                </ManeuverGroup>
-                <ManeuverGroup maximumExecutionCount="1" name="ManeuverGroup">
-                    <Actors selectTriggeringEntities="false">
-                        <EntityRef entityRef="Target"/>
-                    </Actors>
-                    <Maneuver name="Maneuver">
-                        <Event name="AccelerateEvent" priority="overwrite" maximumExecutionCount="1">
-                            <Action name="AccelerateAction">
-                                <PrivateAction>
-                                    <LongitudinalAction>
-                                        <SpeedProfileAction followingMode="follow">
-                                            <SpeedProfileEntry time="0.0" speed="0.0"/>
-                                            <SpeedProfileEntry time="5.0" speed="${50.0 / 3.6}"/>
-                                            <SpeedProfileEntry time="3.0" speed="${30.0 / 3.6}"/>
-                                            <SpeedProfileEntry time="5.0" speed="${80.0 / 3.6}"/>
-                                            <SpeedProfileEntry time="5.0" speed="${10.0 / 3.6}"/>
-                                            <SpeedProfileEntry time="2.0" speed="${10.0 / 3.6}"/>
-                                            <SpeedProfileEntry time="5.0" speed="${50.0 / 3.6}"/>
-                                            <SpeedProfileEntry time="5.0" speed="${50.0 / 3.6}"/>
-                                            <SpeedProfileEntry time="5.0" speed="${0.0 / 3.6}"/>
-                                        </SpeedProfileAction>
-                                    </LongitudinalAction>
-                                </PrivateAction>
-                            </Action>
-                            <StartTrigger>
-                                <ConditionGroup>
-                                    <Condition conditionEdge="rising" delay="0" name="AccelerateTrigger">
-                                        <ByEntityCondition>
-                                            <TriggeringEntities triggeringEntitiesRule="any">
-                                                <EntityRef entityRef="Ego"/>
-                                            </TriggeringEntities>
-                                            <EntityCondition>
-                                                <RelativeDistanceCondition entityRef="Target" rule="lessThan" value="70.0" freespace="false" relativeDistanceType="longitudinal"/>
-                                            </EntityCondition>
-                                        </ByEntityCondition>
-                                    </Condition>
-                                </ConditionGroup>
-                            </StartTrigger>
-                        </Event>
-                    </Maneuver>
-                </ManeuverGroup>
-                <StartTrigger/>
-            </Act>
-        </Story>
-        <StopTrigger>
-            <ConditionGroup>
-                <Condition name="StandStillCondition" delay="0" conditionEdge="none">
-                    <ByEntityCondition>
-                        <TriggeringEntities triggeringEntitiesRule="any">
-                            <EntityRef entityRef="Ego"/>
-                        </TriggeringEntities>
-                        <EntityCondition>
-                            <StandStillCondition duration="1.0"/>
-                        </EntityCondition>
-                    </ByEntityCondition>
-                </Condition>
-            </ConditionGroup>
-        </StopTrigger>
-    </Storyboard>
+   <FileHeader revMajor="1" revMinor="2" date="2024-04-04T10:00:00" description="scenario for the mixed_control.cpp code example" author="esmini team"/>
+   <ParameterDeclarations>
+      <ParameterDeclaration name="EgoSpeed" parameterType="double" value="${110.0 / 3.6}"/>
+   </ParameterDeclarations>
+   <CatalogLocations>
+      <VehicleCatalog>
+         <Directory path="../resources/xosc/Catalogs/Vehicles"/>
+      </VehicleCatalog>
+   </CatalogLocations>
+   <RoadNetwork>
+      <LogicFile filepath="../resources/xodr/curves_elevation.xodr"/>
+   </RoadNetwork>
+   <Entities>
+      <ScenarioObject name="Ego">
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+         <ObjectController>
+            <Controller name="ExternalController">
+               <Properties/>
+            </Controller>
+         </ObjectController>
+         <ObjectController>
+            <Controller name="ACCController">
+               <Properties>
+                  <Property name="timeGap" value="1.0"/>
+                  <Property name="mode" value="override"/>
+                  <Property name="setSpeed" value="$EgoSpeed"/>
+                  <Property name="virtual" value="true"/>
+               </Properties>
+            </Controller>
+         </ObjectController>
+      </ScenarioObject>
+      <ScenarioObject name="Target">
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>
+      </ScenarioObject>
+   </Entities>
+   <Storyboard>
+      <Init>
+         <Actions>
+            <Private entityRef="Ego">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="1" laneId="-1" offset="0" s="20"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsDimension="time" dynamicsShape="step" value="0"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="$EgoSpeed"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <ActivateControllerAction controllerRef="ExternalController" longitudinal="true" lateral="true"/>
+               </PrivateAction>
+            </Private>
+            <Private entityRef="Target">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="1" laneId="-1" offset="0" s="400"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+            </Private>
+         </Actions>
+      </Init>
+      <Story name="MyStory">
+         <ParameterDeclarations/>
+         <Act name="Act">
+            <ManeuverGroup maximumExecutionCount="1" name="ManeuverGroup">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="Ego"/>
+               </Actors>
+               <Maneuver name="Maneuver">
+                  <Event name="ActivateACCControllerEvent" priority="overwrite" maximumExecutionCount="1">
+                     <Action name="ActivateACCControllerAction">
+                        <PrivateAction>
+                           <ActivateControllerAction controllerRef="ACCController" longitudinal="true" lateral="false"/>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition conditionEdge="rising" delay="0" name="ActivateACCTrigger">
+                              <ByEntityCondition>
+                                 <TriggeringEntities triggeringEntitiesRule="any">
+                                    <EntityRef entityRef="Ego"/>
+                                 </TriggeringEntities>
+                                 <EntityCondition>
+                                    <RelativeDistanceCondition entityRef="Target" rule="lessThan" value="40.0" freespace="false" relativeDistanceType="longitudinal"/>
+                                 </EntityCondition>
+                              </ByEntityCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+                  <Event name="ActivateExtCtrlControllerEvent" priority="overwrite" maximumExecutionCount="1">
+                     <Action name="ActivateExtCtrlControllerAction">
+                        <PrivateAction>
+                           <ActivateControllerAction controllerRef="ExternalController" longitudinal="true" lateral="false"/>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition conditionEdge="rising" delay="0" name="ActivateExtCtrlTrigger">
+                              <ByValueCondition>
+                                 <SimulationTimeCondition value="24.0" rule="greaterThan"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+                  <Event name="ActivateACCControllerAgainEvent" priority="overwrite" maximumExecutionCount="1">
+                     <Action name="ActivateACCControllerAgainAction">
+                        <PrivateAction>
+                           <ActivateControllerAction controllerRef="ACCController" longitudinal="true" lateral="false"/>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition conditionEdge="none" delay="0" name="ActivateACCTrigger2">
+                              <ByValueCondition>
+                                 <SimulationTimeCondition value="28.0" rule="greaterThan"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+            </ManeuverGroup>
+            <ManeuverGroup maximumExecutionCount="1" name="ManeuverGroup">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="Target"/>
+               </Actors>
+               <Maneuver name="Maneuver">
+                  <Event name="AccelerateEvent" priority="overwrite" maximumExecutionCount="1">
+                     <Action name="AccelerateAction">
+                        <PrivateAction>
+                           <LongitudinalAction>
+                              <SpeedProfileAction followingMode="follow">
+                                 <SpeedProfileEntry time="0.0" speed="0.0"/>
+                                 <SpeedProfileEntry time="5.0" speed="${50.0 / 3.6}"/>
+                                 <SpeedProfileEntry time="3.0" speed="${30.0 / 3.6}"/>
+                                 <SpeedProfileEntry time="5.0" speed="${80.0 / 3.6}"/>
+                                 <SpeedProfileEntry time="5.0" speed="${10.0 / 3.6}"/>
+                                 <SpeedProfileEntry time="2.0" speed="${10.0 / 3.6}"/>
+                                 <SpeedProfileEntry time="5.0" speed="${50.0 / 3.6}"/>
+                                 <SpeedProfileEntry time="5.0" speed="${50.0 / 3.6}"/>
+                                 <SpeedProfileEntry time="5.0" speed="${0.0 / 3.6}"/>
+                              </SpeedProfileAction>
+                           </LongitudinalAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition conditionEdge="rising" delay="0" name="AccelerateTrigger">
+                              <ByEntityCondition>
+                                 <TriggeringEntities triggeringEntitiesRule="any">
+                                    <EntityRef entityRef="Ego"/>
+                                 </TriggeringEntities>
+                                 <EntityCondition>
+                                    <RelativeDistanceCondition entityRef="Target" rule="lessThan" value="70.0" freespace="false" relativeDistanceType="longitudinal"/>
+                                 </EntityCondition>
+                              </ByEntityCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+            </ManeuverGroup>
+            <StartTrigger/>
+         </Act>
+      </Story>
+      <StopTrigger>
+         <ConditionGroup>
+            <Condition name="StandStillCondition" delay="0" conditionEdge="none">
+               <ByEntityCondition>
+                  <TriggeringEntities triggeringEntitiesRule="any">
+                     <EntityRef entityRef="Ego"/>
+                  </TriggeringEntities>
+                  <EntityCondition>
+                     <StandStillCondition duration="1.0"/>
+                  </EntityCondition>
+               </ByEntityCondition>
+            </Condition>
+         </ConditionGroup>
+      </StopTrigger>
+   </Storyboard>
 </OpenSCENARIO>

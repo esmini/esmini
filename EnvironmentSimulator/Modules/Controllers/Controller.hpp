@@ -98,6 +98,11 @@ namespace scenarioengine
             active_domains_ = static_cast<unsigned int>(ControlDomains::DOMAIN_NONE);
         };
 
+        virtual void DeactivateDomains(unsigned int domains)
+        {
+            active_domains_ = active_domains_ & ~domains;
+        };
+
         // Executed by scenarioengine before first step
         virtual void Init(){};
 

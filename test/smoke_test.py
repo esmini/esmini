@@ -1715,15 +1715,19 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('14.800: AccelerateEvent standbyState -> startTransition -> runningState', log)  is not None)
         self.assertTrue(re.search('16.200: ActivateACCTrigger == true, rel_dist: 38.99 < 40.00, edge: rising', log)  is not None)
         self.assertTrue(re.search('16.200: Controller ACCController active on domains: Longitudinal \\(mask=0x1\\)', log)  is not None)
+        self.assertTrue(re.search('24.100: Deactivating conflicting ctrl ACCController on domain Longitudinal', log)  is not None)
+        self.assertTrue(re.search('24.100: Controller ExternalController active on domains: Longitudinal \\(mask=0x1\\)', log)  is not None)
+        self.assertTrue(re.search('28.100: ActivateACCControllerAgainEvent standbyState -> startTransition -> runningState', log)  is not None)
+        self.assertTrue(re.search('28.100: Controller ACCController active on domains: Longitudinal \\(mask=0x1\\)', log)  is not None)
         self.assertTrue(re.search('49.700: AccelerateAction runningState -> endTransition -> completeState', log)  is not None)
         self.assertTrue(re.search('61.300: StandStillCondition == true, stand_still duration: 1.00 >= 1.00, edge: none', log)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv('mixed_control.dat')
 
-        self.assertTrue(re.search('^35.000, 0, Ego, 333.975, 343.161, 14.272, 5.907, 0.031, 0.000, 3.500, -0.036, 2.984', csv, re.MULTILINE))
+        self.assertTrue(re.search('^35.000, 0, Ego, 334.073, 343.129, 14.269, 5.907, 0.031, 0.000, 3.409, -0.038, 3.205', csv, re.MULTILINE))
         self.assertTrue(re.search('^35.000, 1, Target, 344.284, 338.329, 13.847, 5.787, 0.041, 0.000, 3.222, -0.032, 6.132', csv, re.MULTILINE))
-        self.assertTrue(re.search('^55.700, 0, Ego, 415.817, 225.261, 10.713, 5.154, 6.278, 0.000, 0.051, 0.015, 6.262', csv, re.MULTILINE))
+        self.assertTrue(re.search('^55.700, 0, Ego, 415.817, 225.261, 10.713, 5.154, 6.278, 0.000, 0.051, 0.015, 6.193', csv, re.MULTILINE))
 
 
 if __name__ == "__main__":
