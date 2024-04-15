@@ -553,6 +553,20 @@ extern "C"
     SE_DLL_API const char *SE_GetParameterName(int index, int *type);
 
     /**
+            Get the number of named variables within the current scenario
+            @return number of variables
+    */
+    SE_DLL_API int SE_GetNumberOfVariables();
+
+    /**
+            Get the name of a named variable
+            @param index The index of the variable, range [0:numberOfVariables-1]
+            @param Output variable type 0=int, 1=double, 2=string (const char*), 3=bool, see OSCParameterDeclarations/ParameterType
+            @return name if found, else 0
+    */
+    SE_DLL_API const char *SE_GetVariableName(int index, int *type);
+
+    /**
             Get the number of vehicle properties by index
             @param index The index of the vehicle
             @return number of parameters if found, -1 indicating some error
