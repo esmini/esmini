@@ -13,6 +13,9 @@
 # - Git (with Bash) (https://git-scm.com/download/win)
 # - cmake (https://cmake.org/download/)
 # - Visual Studio (with C++ toolkit) (https://visualstudio.microsoft.com/downloads/)
+# - zip or 7zip
+#   Linux: 7za. Install: "sudo apt install p7zip-full"
+#   Mac: 7z
 #
 # Usage:
 # - put this script in an empty folder
@@ -148,7 +151,7 @@ if [ ! -d xerces-c ]; then
             # Build debug version only on Linux (and Win)
             cmake . -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX=xerces-install -DCMAKE_BUILD_TYPE=Debug $ADDITIONAL_CMAKE_PARAMETERS
             cmake --build . -j $PARALLEL_BUILDS --target install
-            mv xerces-install/lib/libxerces-c-3.2.${LIB_EXT} xerces-install/lib/libxerces-c_3D.${LIB_EXT}
+            cp xerces-install/lib/libxerces-c.${LIB_EXT} xerces-install/lib/libxerces-c_3D.${LIB_EXT}
             rm CMakeCache.txt
         else
             ADDITIONAL_CMAKE_PARAMETERS+=" -DCMAKE_OSX_ARCHITECTURES=$macos_arch"
@@ -156,7 +159,7 @@ if [ ! -d xerces-c ]; then
 
         cmake . -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX=xerces-install -DCMAKE_BUILD_TYPE=Release $ADDITIONAL_CMAKE_PARAMETERS
         cmake --build . -j $PARALLEL_BUILDS --target install
-        mv xerces-install/lib/libxerces-c-3.2.${LIB_EXT} xerces-install/lib/libxerces-c_3.${LIB_EXT}
+        cp xerces-install/lib/libxerces-c.${LIB_EXT} xerces-install/lib/libxerces-c_3.${LIB_EXT}
 
     elif [ "$OSTYPE" == "msys" ]; then
         cmake . -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX=xerces-install -Dnetwork=OFF
@@ -185,7 +188,7 @@ if [ ! -d sumo ]; then
     XercesC_LIBRARY_RELEASE=$sumo_root_dir/xerces-c/xerces-install/lib/${LIB_PREFIX}xerces-c_3.${LIB_EXT}
     XercesC_LIBRARY_DEBUG=$sumo_root_dir/xerces-c/xerces-install/lib/${LIB_PREFIX}xerces-c_3D.${LIB_EXT}
     XercesC_INCLUDE_DIR=$sumo_root_dir/xerces-c/xerces-install/include
-    XercesC_VERSION=3.2.2
+    XercesC_VERSION=${XERCES_VERSION:1}  # skip first "v" character in version tag
 
     ADDITIONAL_CMAKE_PARAMETERS="-DXercesC_INCLUDE_DIR=${XercesC_INCLUDE_DIR} -DENABLE_PYTHON_BINDINGS=OFF -DENABLE_JAVA_BINDINGS=OFF -DCHECK_OPTIONAL_LIBS=OFF -DXercesC_VERSION=${XercesC_VERSION} -DPROJ_LIBRARY= -DFOX_CONFIG="
 
@@ -264,16 +267,16 @@ then
     echo Copying libraries
 
     cp $sumo_root_dir/zlib/install/lib/${LIB_PREFIX}zlibstatic*.${LIB_EXT} $sumo_root_dir/$target_dir/lib
-    cp $sumo_root_dir/xerces-c/xerces-install/lib/${LIB_PREFIX}xerces-c_3.${LIB_EXT} $sumo_root_dir/$target_dir/lib
-    cp $sumo_root_dir/xerces-c/xerces-install/lib/${LIB_PREFIX}xerces-c_3D.${LIB_EXT} $sumo_root_dir/$target_dir/lib/${LIB_PREFIX}xerces-c_3d.${LIB_EXT}
+    cp $sumo_root_dir/xerces-c/xerces-install/lib/${LIB_PREFIX}xerces-c_3*.${LIB_EXT} $sumo_root_dir/$target_dir/lib
+    # cp $sumo_root_dir/xerces-c/xerces-install/lib/${LIB_PREFIX}xerces-c_3D.${LIB_EXT} $sumo_root_dir/$target_dir/lib/${LIB_PREFIX}xerces-c_3d.${LIB_EXT}
 
     cd $sumo_root_dir
-    cp "./sumo/bin/${LIB_PREFIX}libsumostaticD.${LIB_EXT}" "$target_dir/lib/${LIB_PREFIX}libsumostaticd.${LIB_EXT}"
-    cp "./sumo/bin/${LIB_PREFIX}libsumostatic.${LIB_EXT}" "$target_dir/lib/${LIB_PREFIX}libsumostatic.${LIB_EXT}"
+    cp "./sumo/bin/libsumostaticD.${LIB_EXT}" "$target_dir/lib/libsumostaticd.${LIB_EXT}"
+    cp "./sumo/bin/libsumostatic.${LIB_EXT}" "$target_dir/lib/libsumostatic.${LIB_EXT}"
 
     cd $sumo_root_dir/sumo/build-code/src
 
-    for f in microsim_engine foreign_tcpip utils_traction_wire microsim_trigger microsim_actions traciserver mesosim foreign_phemlight microsim_cfmodels utils_iodevices microsim_lcmodels microsim_traffic_lights utils_shapes utils_emissions microsim_output netload microsim_devices microsim_transportables microsim utils_xml utils_vehicle utils_geom utils_common utils_distribution utils_options
+    for f in sumostatic microsim_engine foreign_tcpip utils_traction_wire microsim_trigger microsim_actions traciserver mesosim foreign_phemlight microsim_cfmodels utils_iodevices microsim_lcmodels microsim_traffic_lights utils_shapes utils_emissions microsim_output netload microsim_devices microsim_transportables microsim utils_xml utils_vehicle utils_geom utils_common utils_distribution utils_options
     do
         find . -type f -regex .*${LIB_PREFIX}"$f"d?.${LIB_EXT} -exec cp {} $sumo_root_dir/$target_dir/lib/ \;
     done
