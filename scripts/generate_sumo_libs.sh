@@ -31,7 +31,9 @@
 # Review and update settings in this section according to your system and preferences
 
 PARALLEL_BUILDS=8
-ZIP_MIN_VERSION=12
+ZLIB_VERSION=v1.2.12
+XERCES_VERSION=v3.2.5
+SUMO_VERSION=v1_19_0
 
 if [ "$OSTYPE" == "msys" ]; then
     # Visual Studio 2022 using toolkit from Visual Studio 2017
@@ -92,13 +94,10 @@ sumo_root_dir=$(pwd)
 echo ------------------------ Installing zlib ------------------------------------
 cd $sumo_root_dir
 
-if [ ! -d zlib-1.2.$ZIP_MIN_VERSION ]
+if [ ! -d zlib ]
 then
-    if [ ! -f zlib12$ZIP_MIN_VERSION.zip ]; then
-        curl "https://zlib.net/zlib12$ZIP_MIN_VERSION.zip" -o zlib12$ZIP_MIN_VERSION.zip
-    fi
-    unzip zlib12$ZIP_MIN_VERSION.zip
-    cd zlib-1.2.$ZIP_MIN_VERSION
+    git clone https://github.com/madler/zlib.git --depth 1 --branch $ZLIB_VERSION
+    cd zlib
     mkdir install
     mkdir build
     cd build
@@ -135,14 +134,9 @@ fi
 echo ------------------------ Installing Xerces ------------------------------------
 cd $sumo_root_dir
 
-# in module cmake/XercesICU.cmake, comment out FIND statement: #find_package(ICU COMPONENTS uc data)
-
-if [ ! -d xerces-c-3.2.2 ]; then
-    if [ ! -f xerces-c-3.2.2.zip ]; then
-        curl "https://archive.apache.org/dist/xerces/c/3/sources/xerces-c-3.2.2.zip" -o xerces-c-3.2.2.zip
-    fi
-    unzip xerces-c-3.2.2.zip
-    cd xerces-c-3.2.2
+if [ ! -d xerces-c ]; then
+    git clone https://github.com/apache/xerces-c.git --depth 1 --branch $XERCES_VERSION
+    cd xerces-c
     mkdir xerces-install
 
     # Patch config to exlude ICU
@@ -179,35 +173,38 @@ echo ------------------------ Installing Sumo ----------------------------------
 cd $sumo_root_dir
 
 if [ ! -d sumo ]; then
-    git clone https://github.com/eclipse/sumo.git --depth 1 --branch v1_6_0
+    git clone https://github.com/eclipse/sumo.git --depth 1 --branch $SUMO_VERSION
     cd sumo
 
-    mkdir build-code; cd build-code
+    mkdir build-code
+    cd build-code
 
-    ZLIB_LIBRARY_RELEASE=$sumo_root_dir/zlib-1.2.$ZIP_MIN_VERSION/install/lib/${LIB_PREFIX}zlibstatic.${LIB_EXT}
-    ZLIB_LIBRARY_DEBUG=$sumo_root_dir/zlib-1.2.$ZIP_MIN_VERSION/install/lib/${LIB_PREFIX}zlibstaticd.${LIB_EXT}
+    ZLIB_LIBRARY_RELEASE=$sumo_root_dir/zlib/install/lib/${LIB_PREFIX}zlibstatic.${LIB_EXT}
+    ZLIB_LIBRARY_DEBUG=$sumo_root_dir/zlib/install/lib/${LIB_PREFIX}zlibstaticd.${LIB_EXT}
 
-    XercesC_LIBRARY_RELEASE=$sumo_root_dir/xerces-c-3.2.2/xerces-install/lib/${LIB_PREFIX}xerces-c_3.${LIB_EXT}
-    XercesC_LIBRARY_DEBUG=$sumo_root_dir/xerces-c-3.2.2/xerces-install/lib/${LIB_PREFIX}xerces-c_3D.${LIB_EXT}
-    XercesC_INCLUDE_DIR=$sumo_root_dir/xerces-c-3.2.2/xerces-install/include
+    XercesC_LIBRARY_RELEASE=$sumo_root_dir/xerces-c/xerces-install/lib/${LIB_PREFIX}xerces-c_3.${LIB_EXT}
+    XercesC_LIBRARY_DEBUG=$sumo_root_dir/xerces-c/xerces-install/lib/${LIB_PREFIX}xerces-c_3D.${LIB_EXT}
+    XercesC_INCLUDE_DIR=$sumo_root_dir/xerces-c/xerces-install/include
     XercesC_VERSION=3.2.2
 
     ADDITIONAL_CMAKE_PARAMETERS="-DXercesC_INCLUDE_DIR=${XercesC_INCLUDE_DIR} -DENABLE_PYTHON_BINDINGS=OFF -DENABLE_JAVA_BINDINGS=OFF -DCHECK_OPTIONAL_LIBS=OFF -DXercesC_VERSION=${XercesC_VERSION} -DPROJ_LIBRARY= -DFOX_CONFIG="
 
     if [[ "$OSTYPE" != "darwin"* ]]; then
-        cmake .. -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DZLIB_INCLUDE_DIR=${sumo_root_dir}/zlib-1.2.$ZIP_MIN_VERSION/install/include -DZLIB_LIBRARY=${ZLIB_LIBRARY_DEBUG} -DCMAKE_BUILD_TYPE=Debug  -DXercesC_LIBRARY=${XercesC_LIBRARY_DEBUG} $ADDITIONAL_CMAKE_PARAMETERS
+        echo skip build
+        cmake .. -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DZLIB_INCLUDE_DIR=${sumo_root_dir}/zlib/install/include -DZLIB_LIBRARY=${ZLIB_LIBRARY_DEBUG} -DCMAKE_BUILD_TYPE=Debug  -DXercesC_LIBRARY=${XercesC_LIBRARY_DEBUG} $ADDITIONAL_CMAKE_PARAMETERS
         cmake --build . -j $PARALLEL_BUILDS --config Debug
 
-        for f in ${LIB_PREFIX}libsumostatic.${LIB_EXT} ${LIB_PREFIX}microsim_engine.${LIB_EXT} ${LIB_PREFIX}foreign_tcpip.${LIB_EXT} ${LIB_PREFIX}utils_traction_wire.${LIB_EXT} ${LIB_PREFIX}microsim_trigger.${LIB_EXT} ${LIB_PREFIX}microsim_actions.${LIB_EXT} ${LIB_PREFIX}traciserver.${LIB_EXT} ${LIB_PREFIX}mesosim.${LIB_EXT} ${LIB_PREFIX}foreign_phemlight.${LIB_EXT} ${LIB_PREFIX}microsim_cfmodels.${LIB_EXT} ${LIB_PREFIX}utils_iodevices.${LIB_EXT} ${LIB_PREFIX}microsim_lcmodels.${LIB_EXT} ${LIB_PREFIX}microsim_traffic_lights.${LIB_EXT} ${LIB_PREFIX}utils_shapes.${LIB_EXT} ${LIB_PREFIX}utils_emissions.${LIB_EXT} ${LIB_PREFIX}microsim_output.${LIB_EXT} ${LIB_PREFIX}netload.${LIB_EXT} ${LIB_PREFIX}microsim_devices.${LIB_EXT} ${LIB_PREFIX}microsim_transportables.${LIB_EXT} ${LIB_PREFIX}microsim.${LIB_EXT} ${LIB_PREFIX}utils_xml.${LIB_EXT} ${LIB_PREFIX}utils_vehicle.${LIB_EXT} ${LIB_PREFIX}utils_geom.${LIB_EXT} ${LIB_PREFIX}utils_common.${LIB_EXT} ${LIB_PREFIX}utils_distribution.${LIB_EXT} ${LIB_PREFIX}utils_options.${LIB_EXT}
+        for f in microsim_engine foreign_tcpip utils_traction_wire microsim_trigger microsim_actions traciserver mesosim foreign_phemlight microsim_cfmodels utils_iodevices microsim_lcmodels microsim_traffic_lights utils_shapes utils_emissions microsim_output netload microsim_devices microsim_transportables microsim utils_xml utils_vehicle utils_geom utils_common utils_distribution utils_options
         do
+            echo $f
             if [[ "$OSTYPE" = "msys" ]]; then
-                file_path=`find . -path "*Debug/$f"`
+                file_path=`find . -path "*Debug/${LIB_PREFIX}$f.${LIB_EXT}"`
             else
-                file_path=`find . -name "$f"`
+                file_path=`find . -name "${LIB_PREFIX}$f.${LIB_EXT}"`
             fi
             new_file=$(echo $file_path | sed s/\\.${LIB_EXT}/d\\.${LIB_EXT}/)
-            echo "Renaming $file_path -> $new_file"
-            mv $file_path $new_file
+            echo "Copy $file_path -> $new_file"
+            cp $file_path $new_file
         done
 
         rm CMakeCache.txt
@@ -216,7 +213,7 @@ if [ ! -d sumo ]; then
         export LDFLAGS="-framework CoreServices"
     fi
 
-    cmake .. -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DZLIB_INCLUDE_DIR=${sumo_root_dir}/zlib-1.2.$ZIP_MIN_VERSION/install/include -DZLIB_LIBRARY=${ZLIB_LIBRARY_RELEASE} -DCMAKE_BUILD_TYPE=Release -DXercesC_LIBRARY=${XercesC_LIBRARY_RELEASE} $ADDITIONAL_CMAKE_PARAMETERS
+    cmake .. -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DZLIB_INCLUDE_DIR=${sumo_root_dir}/zlib/install/include -DZLIB_LIBRARY=${ZLIB_LIBRARY_RELEASE} -DCMAKE_BUILD_TYPE=Release -DXercesC_LIBRARY=${XercesC_LIBRARY_RELEASE} $ADDITIONAL_CMAKE_PARAMETERS
 
     cmake --build . -j $PARALLEL_BUILDS --config Release --clean-first
 
@@ -266,15 +263,19 @@ then
 
     echo Copying libraries
 
-    cp $sumo_root_dir/zlib-1.2.$ZIP_MIN_VERSION/install/lib/${LIB_PREFIX}zlibstatic*.${LIB_EXT} $sumo_root_dir/$target_dir/lib
-    cp $sumo_root_dir/xerces-c-3.2.2/xerces-install/lib/${LIB_PREFIX}xerces-c_3*.${LIB_EXT} $sumo_root_dir/$target_dir/lib
+    cp $sumo_root_dir/zlib/install/lib/${LIB_PREFIX}zlibstatic*.${LIB_EXT} $sumo_root_dir/$target_dir/lib
+    cp $sumo_root_dir/xerces-c/xerces-install/lib/${LIB_PREFIX}xerces-c_3.${LIB_EXT} $sumo_root_dir/$target_dir/lib
+    cp $sumo_root_dir/xerces-c/xerces-install/lib/${LIB_PREFIX}xerces-c_3D.${LIB_EXT} $sumo_root_dir/$target_dir/lib/${LIB_PREFIX}xerces-c_3d.${LIB_EXT}
+
+    cd $sumo_root_dir
+    cp "./sumo/bin/${LIB_PREFIX}libsumostaticD.${LIB_EXT}" "$target_dir/lib/${LIB_PREFIX}libsumostaticd.${LIB_EXT}"
+    cp "./sumo/bin/${LIB_PREFIX}libsumostatic.${LIB_EXT}" "$target_dir/lib/${LIB_PREFIX}libsumostatic.${LIB_EXT}"
 
     cd $sumo_root_dir/sumo/build-code/src
 
-    for f in ${LIB_PREFIX}libsumostaticd?.${LIB_EXT} ${LIB_PREFIX}microsim_engined?.${LIB_EXT} ${LIB_PREFIX}foreign_tcpipd?.${LIB_EXT} ${LIB_PREFIX}utils_traction_wired?.${LIB_EXT} ${LIB_PREFIX}microsim_triggerd?.${LIB_EXT} ${LIB_PREFIX}microsim_actionsd?.${LIB_EXT} ${LIB_PREFIX}traciserverd?.${LIB_EXT} ${LIB_PREFIX}mesosimd?.${LIB_EXT} ${LIB_PREFIX}foreign_phemlightd?.${LIB_EXT} ${LIB_PREFIX}microsim_cfmodelsd?.${LIB_EXT} ${LIB_PREFIX}utils_iodevicesd?.${LIB_EXT} ${LIB_PREFIX}microsim_lcmodelsd?.${LIB_EXT} ${LIB_PREFIX}microsim_traffic_lightsd?.${LIB_EXT} ${LIB_PREFIX}utils_shapesd?.${LIB_EXT} ${LIB_PREFIX}utils_emissionsd?.${LIB_EXT} ${LIB_PREFIX}microsim_outputd?.${LIB_EXT} ${LIB_PREFIX}netloadd?.${LIB_EXT} ${LIB_PREFIX}microsim_devicesd?.${LIB_EXT} ${LIB_PREFIX}microsim_transportablesd?.${LIB_EXT} ${LIB_PREFIX}microsimd?.${LIB_EXT} ${LIB_PREFIX}utils_xmld?.${LIB_EXT} ${LIB_PREFIX}utils_vehicled?.${LIB_EXT} ${LIB_PREFIX}utils_geomd?.${LIB_EXT} ${LIB_PREFIX}utils_commond?.${LIB_EXT} ${LIB_PREFIX}utils_distributiond?.${LIB_EXT} ${LIB_PREFIX}utils_optionsd?.${LIB_EXT}
+    for f in microsim_engine foreign_tcpip utils_traction_wire microsim_trigger microsim_actions traciserver mesosim foreign_phemlight microsim_cfmodels utils_iodevices microsim_lcmodels microsim_traffic_lights utils_shapes utils_emissions microsim_output netload microsim_devices microsim_transportables microsim utils_xml utils_vehicle utils_geom utils_common utils_distribution utils_options
     do
-        echo $f
-        find -E . -type f -regex ".*$f" -exec cp {} $sumo_root_dir/$target_dir/lib/ \;
+        find . -type f -regex .*${LIB_PREFIX}"$f"d?.${LIB_EXT} -exec cp {} $sumo_root_dir/$target_dir/lib/ \;
     done
 
 else
