@@ -175,11 +175,13 @@ fi
 echo ------------------------ Installing Sumo ------------------------------------
 cd $sumo_root_dir
 
+liblist="sumostatic "
+
 if [ ! -d sumo ]; then
     git clone https://github.com/eclipse/sumo.git --depth 1 --branch $SUMO_VERSION
     cd sumo
 
-    mkdir build-code
+    # mkdir build-code
     cd build-code
 
     ZLIB_LIBRARY_RELEASE=$sumo_root_dir/zlib/install/lib/${LIB_PREFIX}zlibstatic.${LIB_EXT}
@@ -193,20 +195,17 @@ if [ ! -d sumo ]; then
     ADDITIONAL_CMAKE_PARAMETERS="-DXercesC_INCLUDE_DIR=${XercesC_INCLUDE_DIR} -DENABLE_PYTHON_BINDINGS=OFF -DENABLE_JAVA_BINDINGS=OFF -DCHECK_OPTIONAL_LIBS=OFF -DXercesC_VERSION=${XercesC_VERSION} -DPROJ_LIBRARY= -DFOX_CONFIG="
 
     if [[ "$OSTYPE" != "darwin"* ]]; then
-        echo skip build
         cmake .. -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DZLIB_INCLUDE_DIR=${sumo_root_dir}/zlib/install/include -DZLIB_LIBRARY=${ZLIB_LIBRARY_DEBUG} -DCMAKE_BUILD_TYPE=Debug  -DXercesC_LIBRARY=${XercesC_LIBRARY_DEBUG} $ADDITIONAL_CMAKE_PARAMETERS
         cmake --build . -j $PARALLEL_BUILDS --config Debug
 
-        for f in microsim_engine foreign_tcpip utils_traction_wire microsim_trigger microsim_actions traciserver mesosim foreign_phemlight foreign_phemlight_V5 microsim_cfmodels utils_iodevices microsim_lcmodels microsim_traffic_lights utils_shapes utils_emissions microsim_output netload microsim_devices microsim_transportables microsim utils_xml utils_vehicle utils_geom utils_common utils_distribution utils_options
+        for f in utils_common utils_options utils_distribution utils_geom utils_vehicle utils_xml microsim microsim_transportables microsim_devices netload utils_emissions microsim_output foreign_tcpip microsim_traffic_lights microsim_trigger utils_shapes utils_iodevices mesosim traciserver microsim_lcmodels microsim_cfmodels utils_traction_wire microsim_actions foreign_phemlight_V5 foreign_phemlight microsim_engine
         do
-            echo $f
             if [[ "$OSTYPE" = "msys" ]]; then
                 file_path=`find . -path "*Debug/${LIB_PREFIX}$f.${LIB_EXT}"`
             else
                 file_path=`find . -name "${LIB_PREFIX}$f.${LIB_EXT}"`
             fi
             new_file=$(echo $file_path | sed s/\\.${LIB_EXT}/d\\.${LIB_EXT}/)
-            echo "Copy $file_path -> $new_file"
             cp $file_path $new_file
         done
 
@@ -217,7 +216,6 @@ if [ ! -d sumo ]; then
     fi
 
     cmake .. -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DZLIB_INCLUDE_DIR=${sumo_root_dir}/zlib/install/include -DZLIB_LIBRARY=${ZLIB_LIBRARY_RELEASE} -DCMAKE_BUILD_TYPE=Release -DXercesC_LIBRARY=${XercesC_LIBRARY_RELEASE} $ADDITIONAL_CMAKE_PARAMETERS
-
     cmake --build . -j $PARALLEL_BUILDS --config Release --clean-first
 
 else
@@ -268,7 +266,6 @@ then
 
     cp $sumo_root_dir/zlib/install/lib/${LIB_PREFIX}zlibstatic*.${LIB_EXT} $sumo_root_dir/$target_dir/lib
     cp $sumo_root_dir/xerces-c/xerces-install/lib/${LIB_PREFIX}xerces-c_3*.${LIB_EXT} $sumo_root_dir/$target_dir/lib
-    # cp $sumo_root_dir/xerces-c/xerces-install/lib/${LIB_PREFIX}xerces-c_3D.${LIB_EXT} $sumo_root_dir/$target_dir/lib/${LIB_PREFIX}xerces-c_3d.${LIB_EXT}
 
     cd $sumo_root_dir
     cp "./sumo/bin/libsumostaticD.${LIB_EXT}" "$target_dir/lib/libsumostaticd.${LIB_EXT}"
@@ -276,7 +273,7 @@ then
 
     cd $sumo_root_dir/sumo/build-code/src
 
-    for f in sumostatic microsim_engine foreign_tcpip utils_traction_wire microsim_trigger microsim_actions traciserver mesosim foreign_phemlight foreign_phemlight_V5 microsim_cfmodels utils_iodevices microsim_lcmodels microsim_traffic_lights utils_shapes utils_emissions microsim_output netload microsim_devices microsim_transportables microsim utils_xml utils_vehicle utils_geom utils_common utils_distribution utils_options
+    for f in sumostatic utils_common utils_options utils_distribution utils_geom utils_vehicle utils_xml microsim microsim_transportables microsim_devices netload utils_emissions microsim_output foreign_tcpip microsim_traffic_lights microsim_trigger utils_shapes utils_iodevices mesosim traciserver microsim_lcmodels microsim_cfmodels utils_traction_wire microsim_actions foreign_phemlight_V5 foreign_phemlight microsim_engine
     do
         find . -type f -regex .*${LIB_PREFIX}"$f"d?.${LIB_EXT} -exec cp {} $sumo_root_dir/$target_dir/lib/ \;
     done
