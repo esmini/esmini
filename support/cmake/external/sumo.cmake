@@ -159,118 +159,118 @@ macro(set_sumo_libs)
             optimized
             ${EXTERNALS_SUMO_LIBRARY_PATH}/libsumostatic.lib
             optimized
-            ${EXTERNALS_SUMO_LIBRARY_PATH}/netload.lib
-            optimized
-            ${EXTERNALS_SUMO_LIBRARY_PATH}/traciserver.lib
-            optimized
-            ${EXTERNALS_SUMO_LIBRARY_PATH}/libsumostatic.lib
-            optimized
-            ${EXTERNALS_SUMO_LIBRARY_PATH}/utils_vehicle.lib
-            optimized
-            ${EXTERNALS_SUMO_LIBRARY_PATH}/utils_distribution.lib
-            optimized
-            ${EXTERNALS_SUMO_LIBRARY_PATH}/utils_shapes.lib
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/utils_common.lib
             optimized
             ${EXTERNALS_SUMO_LIBRARY_PATH}/utils_options.lib
             optimized
-            ${EXTERNALS_SUMO_LIBRARY_PATH}/utils_xml.lib
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/utils_distribution.lib
             optimized
             ${EXTERNALS_SUMO_LIBRARY_PATH}/utils_geom.lib
             optimized
-            ${EXTERNALS_SUMO_LIBRARY_PATH}/utils_common.lib
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/utils_vehicle.lib
             optimized
-            ${EXTERNALS_SUMO_LIBRARY_PATH}/utils_iodevices.lib
-            optimized
-            ${EXTERNALS_SUMO_LIBRARY_PATH}/utils_traction_wire.lib
-            optimized
-            ${EXTERNALS_SUMO_LIBRARY_PATH}/utils_emissions.lib
-            optimized
-            ${EXTERNALS_SUMO_LIBRARY_PATH}/microsim_engine.lib
-            optimized
-            ${EXTERNALS_SUMO_LIBRARY_PATH}/microsim_lcmodels.lib
-            optimized
-            ${EXTERNALS_SUMO_LIBRARY_PATH}/microsim_devices.lib
-            optimized
-            ${EXTERNALS_SUMO_LIBRARY_PATH}/microsim_trigger.lib
-            optimized
-            ${EXTERNALS_SUMO_LIBRARY_PATH}/microsim_output.lib
-            optimized
-            ${EXTERNALS_SUMO_LIBRARY_PATH}/microsim_transportables.lib
-            optimized
-            ${EXTERNALS_SUMO_LIBRARY_PATH}/microsim_actions.lib
-            optimized
-            ${EXTERNALS_SUMO_LIBRARY_PATH}/microsim_traffic_lights.lib
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/utils_xml.lib
             optimized
             ${EXTERNALS_SUMO_LIBRARY_PATH}/microsim.lib
             optimized
-            ${EXTERNALS_SUMO_LIBRARY_PATH}/mesosim.lib
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/microsim_transportables.lib
             optimized
-            ${EXTERNALS_SUMO_LIBRARY_PATH}/foreign_phemlight.lib
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/microsim_devices.lib
+            optimized
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/netload.lib
+            optimized
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/utils_emissions.lib
+            optimized
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/microsim_output.lib
             optimized
             ${EXTERNALS_SUMO_LIBRARY_PATH}/foreign_tcpip.lib
             optimized
-            ${EXTERNALS_SUMO_LIBRARY_PATH}/microsim_cfmodels.lib
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/microsim_traffic_lights.lib
+            optimized
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/microsim_trigger.lib
+            optimized
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/utils_shapes.lib
+            optimized
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/xerces-c_3.lib
+            optimized
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/utils_iodevices.lib
             optimized
             ${EXTERNALS_SUMO_LIBRARY_PATH}/zlibstatic.lib
             optimized
-            ${EXTERNALS_SUMO_LIBRARY_PATH}/xerces-c_3.lib
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/mesosim.lib
+            optimized
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/traciserver.lib
+            optimized
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/microsim_lcmodels.lib
+            optimized
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/microsim_cfmodels.lib
+            optimized
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/utils_traction_wire.lib
+            optimized
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/microsim_actions.lib
+            optimized
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/foreign_phemlight_V5.lib
+            optimized
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/foreign_phemlight.lib
+            optimized
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/microsim_engine.lib
             debug
             ${EXTERNALS_SUMO_LIBRARY_PATH}/libsumostaticd.lib
-            debug
-            ${EXTERNALS_SUMO_LIBRARY_PATH}/netloadd.lib
-            debug
-            ${EXTERNALS_SUMO_LIBRARY_PATH}/traciserverd.lib
-            debug
-            ${EXTERNALS_SUMO_LIBRARY_PATH}/libsumostaticd.lib
-            debug
-            ${EXTERNALS_SUMO_LIBRARY_PATH}/utils_vehicled.lib
-            debug
-            ${EXTERNALS_SUMO_LIBRARY_PATH}/utils_distributiond.lib
-            debug
-            ${EXTERNALS_SUMO_LIBRARY_PATH}/utils_shapesd.lib
-            debug
-            ${EXTERNALS_SUMO_LIBRARY_PATH}/utils_optionsd.lib
-            debug
-            ${EXTERNALS_SUMO_LIBRARY_PATH}/utils_xmld.lib
-            debug
-            ${EXTERNALS_SUMO_LIBRARY_PATH}/utils_geomd.lib
             debug
             ${EXTERNALS_SUMO_LIBRARY_PATH}/utils_commond.lib
             debug
-            ${EXTERNALS_SUMO_LIBRARY_PATH}/utils_iodevicesd.lib
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/utils_optionsd.lib
             debug
-            ${EXTERNALS_SUMO_LIBRARY_PATH}/utils_traction_wired.lib
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/utils_distributiond.lib
             debug
-            ${EXTERNALS_SUMO_LIBRARY_PATH}/utils_emissionsd.lib
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/utils_geomd.lib
             debug
-            ${EXTERNALS_SUMO_LIBRARY_PATH}/microsim_engined.lib
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/utils_vehicled.lib
             debug
-            ${EXTERNALS_SUMO_LIBRARY_PATH}/microsim_lcmodelsd.lib
-            debug
-            ${EXTERNALS_SUMO_LIBRARY_PATH}/microsim_devicesd.lib
-            debug
-            ${EXTERNALS_SUMO_LIBRARY_PATH}/microsim_triggerd.lib
-            debug
-            ${EXTERNALS_SUMO_LIBRARY_PATH}/microsim_outputd.lib
-            debug
-            ${EXTERNALS_SUMO_LIBRARY_PATH}/microsim_transportablesd.lib
-            debug
-            ${EXTERNALS_SUMO_LIBRARY_PATH}/microsim_actionsd.lib
-            debug
-            ${EXTERNALS_SUMO_LIBRARY_PATH}/microsim_traffic_lightsd.lib
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/utils_xmld.lib
             debug
             ${EXTERNALS_SUMO_LIBRARY_PATH}/microsimd.lib
             debug
-            ${EXTERNALS_SUMO_LIBRARY_PATH}/mesosimd.lib
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/microsim_transportablesd.lib
             debug
-            ${EXTERNALS_SUMO_LIBRARY_PATH}/foreign_phemlightd.lib
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/microsim_devicesd.lib
+            debug
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/netloadd.lib
+            debug
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/utils_emissionsd.lib
+            debug
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/microsim_outputd.lib
             debug
             ${EXTERNALS_SUMO_LIBRARY_PATH}/foreign_tcpipd.lib
             debug
-            ${EXTERNALS_SUMO_LIBRARY_PATH}/microsim_cfmodelsd.lib
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/microsim_traffic_lightsd.lib
+            debug
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/microsim_triggerd.lib
+            debug
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/utils_shapesd.lib
+            debug
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/xerces-c_3D.lib
+            debug
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/utils_iodevicesd.lib
             debug
             ${EXTERNALS_SUMO_LIBRARY_PATH}/zlibstaticd.lib
             debug
-            ${EXTERNALS_SUMO_LIBRARY_PATH}/xerces-c_3D.lib)
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/mesosimd.lib
+            debug
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/traciserverd.lib
+            debug
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/microsim_lcmodelsd.lib
+            debug
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/microsim_cfmodelsd.lib
+            debug
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/utils_traction_wired.lib
+            debug
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/microsim_actionsd.lib
+            debug
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/foreign_phemlight_V5d.lib
+            debug
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/foreign_phemlightd.lib
+            debug
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/microsim_engined.lib)
     endif()
 endmacro()
