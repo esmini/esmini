@@ -197,7 +197,7 @@ if [ ! -d sumo ]; then
         cmake .. -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DZLIB_INCLUDE_DIR=${sumo_root_dir}/zlib/install/include -DZLIB_LIBRARY=${ZLIB_LIBRARY_DEBUG} -DCMAKE_BUILD_TYPE=Debug  -DXercesC_LIBRARY=${XercesC_LIBRARY_DEBUG} $ADDITIONAL_CMAKE_PARAMETERS
         cmake --build . -j $PARALLEL_BUILDS --config Debug
 
-        for f in microsim_engine foreign_tcpip utils_traction_wire microsim_trigger microsim_actions traciserver mesosim foreign_phemlight microsim_cfmodels utils_iodevices microsim_lcmodels microsim_traffic_lights utils_shapes utils_emissions microsim_output netload microsim_devices microsim_transportables microsim utils_xml utils_vehicle utils_geom utils_common utils_distribution utils_options
+        for f in microsim_engine foreign_tcpip utils_traction_wire microsim_trigger microsim_actions traciserver mesosim foreign_phemlight foreign_phemlight_V5 microsim_cfmodels utils_iodevices microsim_lcmodels microsim_traffic_lights utils_shapes utils_emissions microsim_output netload microsim_devices microsim_transportables microsim utils_xml utils_vehicle utils_geom utils_common utils_distribution utils_options
         do
             echo $f
             if [[ "$OSTYPE" = "msys" ]]; then
@@ -276,7 +276,7 @@ then
 
     cd $sumo_root_dir/sumo/build-code/src
 
-    for f in sumostatic microsim_engine foreign_tcpip utils_traction_wire microsim_trigger microsim_actions traciserver mesosim foreign_phemlight microsim_cfmodels utils_iodevices microsim_lcmodels microsim_traffic_lights utils_shapes utils_emissions microsim_output netload microsim_devices microsim_transportables microsim utils_xml utils_vehicle utils_geom utils_common utils_distribution utils_options
+    for f in sumostatic microsim_engine foreign_tcpip utils_traction_wire microsim_trigger microsim_actions traciserver mesosim foreign_phemlight foreign_phemlight_V5 microsim_cfmodels utils_iodevices microsim_lcmodels microsim_traffic_lights utils_shapes utils_emissions microsim_output netload microsim_devices microsim_transportables microsim utils_xml utils_vehicle utils_geom utils_common utils_distribution utils_options
     do
         find . -type f -regex .*${LIB_PREFIX}"$f"d?.${LIB_EXT} -exec cp {} $sumo_root_dir/$target_dir/lib/ \;
     done
