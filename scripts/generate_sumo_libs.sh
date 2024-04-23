@@ -175,7 +175,7 @@ fi
 echo ------------------------ Installing Sumo ------------------------------------
 cd $sumo_root_dir
 
-liblist="sumostatic "
+modules="utils_common utils_options utils_distribution utils_geom utils_vehicle utils_xml microsim microsim_transportables microsim_devices netload utils_emissions microsim_output foreign_tcpip microsim_traffic_lights microsim_trigger utils_shapes utils_iodevices mesosim traciserver microsim_lcmodels microsim_cfmodels utils_traction_wire microsim_actions foreign_phemlight_V5 foreign_phemlight microsim_engine"
 
 if [ ! -d sumo ]; then
     git clone https://github.com/eclipse/sumo.git --depth 1 --branch $SUMO_VERSION
@@ -198,7 +198,7 @@ if [ ! -d sumo ]; then
         cmake .. -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DZLIB_INCLUDE_DIR=${sumo_root_dir}/zlib/install/include -DZLIB_LIBRARY=${ZLIB_LIBRARY_DEBUG} -DCMAKE_BUILD_TYPE=Debug  -DXercesC_LIBRARY=${XercesC_LIBRARY_DEBUG} $ADDITIONAL_CMAKE_PARAMETERS
         cmake --build . -j $PARALLEL_BUILDS --config Debug
 
-        for f in utils_common utils_options utils_distribution utils_geom utils_vehicle utils_xml microsim microsim_transportables microsim_devices netload utils_emissions microsim_output foreign_tcpip microsim_traffic_lights microsim_trigger utils_shapes utils_iodevices mesosim traciserver microsim_lcmodels microsim_cfmodels utils_traction_wire microsim_actions foreign_phemlight_V5 foreign_phemlight microsim_engine
+        for f in $modules
         do
             if [[ "$OSTYPE" = "msys" ]]; then
                 file_path=`find . -path "*Debug/${LIB_PREFIX}$f.${LIB_EXT}"`
@@ -273,7 +273,7 @@ then
 
     cd $sumo_root_dir/sumo/build-code/src
 
-    for f in sumostatic utils_common utils_options utils_distribution utils_geom utils_vehicle utils_xml microsim microsim_transportables microsim_devices netload utils_emissions microsim_output foreign_tcpip microsim_traffic_lights microsim_trigger utils_shapes utils_iodevices mesosim traciserver microsim_lcmodels microsim_cfmodels utils_traction_wire microsim_actions foreign_phemlight_V5 foreign_phemlight microsim_engine
+    for f in sumostatic $modules
     do
         find . -type f -regex .*${LIB_PREFIX}"$f"d?.${LIB_EXT} -exec cp {} $sumo_root_dir/$target_dir/lib/ \;
     done
