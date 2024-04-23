@@ -1139,6 +1139,7 @@ void Lane::AddLaneMaterial(Lane::Material* lane_material)
             {
                 // same s_offset, replace the previous with this later one
                 *lane_material_[i] = *lane_material;
+                delete lane_material;  // free memory of the unused material entry
                 return;
             }
             else if (lane_material->s_offset < lane_material_[i]->s_offset)
