@@ -71,15 +71,15 @@ fi
 
 if [ "$OSTYPE" == "msys" ]; then
     target_dir="v10"
-    zfilename="sumo_v10.7z"
+    zfilename="sumo_v10_${SUMO_VERSION}.7z"
     z_exe="/c/Program Files/7-Zip/7z.exe"
 elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
     target_dir="linux"
-    zfilename="sumo_linux.7z"
+    zfilename="sumo_linux_${SUMO_VERSION}.7z"
     z_exe=7za
 elif [[ "$OSTYPE" == "darwin"* ]]; then
     target_dir="mac"
-    zfilename="sumo_mac.7z"
+    zfilename="sumo_mac_${SUMO_VERSION}.7z"
     z_exe=7z
     macos_arch="arm64;x86_64"
 else
@@ -106,11 +106,11 @@ then
     cd build
 
     if [[ "$OSTYPE" == "darwin"* ]] || [[ "$OSTYPE" == "linux"* ]]; then
-        ADDITIONAL_CMAKE_PARAMETERS="-DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_FLAGS=-fPIC"
+        ADDITIONAL_CMAKE_PARAMETERS="-DCMAKE_C_FLAGS=-fPIC"
 
         if [[ "$OSTYPE" == "linux"* ]]; then
             # Also build debug version on Linux
-            cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -D CMAKE_INSTALL_PREFIX=../install $ADDITIONAL_CMAKE_PARAMETERS ..
+            cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -D CMAKE_INSTALL_PREFIX=../install -D CMAKE_BUILD_TYPE=Debug $ADDITIONAL_CMAKE_PARAMETERS ..
             cmake --build . -j $PARALLEL_BUILDS --target install
             mv ../install/lib/libz.${LIB_EXT} ../install/lib/libzlibstaticd.${LIB_EXT}
             rm CMakeCache.txt
@@ -283,9 +283,9 @@ else
 fi
 
 cd $sumo_root_dir
-"$z_exe" a -r $zfilename -m0=LZMA -bb1 -spf $target_dir/*
+if [ ! -f $zfilename ]; then
+    "$z_exe" a -r $zfilename -m0=LZMA -bb1 -spf $target_dir/*
+fi
 # unpack with: 7z x <filename>
 
 echo ------------------------ Done ------------------------------------
-
-
