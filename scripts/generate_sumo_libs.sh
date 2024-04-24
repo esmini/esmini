@@ -181,7 +181,7 @@ if [ ! -d sumo ]; then
     git clone https://github.com/eclipse/sumo.git --depth 1 --branch $SUMO_VERSION
     cd sumo
 
-    # mkdir build-code
+    mkdir build-code
     cd build-code
 
     ZLIB_LIBRARY_RELEASE=$sumo_root_dir/zlib/install/lib/${LIB_PREFIX}zlibstatic.${LIB_EXT}
