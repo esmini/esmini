@@ -1121,6 +1121,11 @@ public:
     // Get an integer in the range (min, max) NOTE: including max
     int GetNumberBetween(int min, int max)
     {
+        if (max < min)
+        {
+            return min;
+        }
+
         return std::uniform_int_distribution<>{min, max}(gen_);
     }
 

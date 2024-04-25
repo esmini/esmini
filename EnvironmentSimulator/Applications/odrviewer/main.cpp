@@ -174,11 +174,21 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
                  s += average_distance + 0.2 * average_distance * SE_Env::Inst().GetRand().GetReal())
             {
                 // Pick lane by random
-                int                lane_idx = SE_Env::Inst().GetRand().GetNumberBetween(0, road->GetNumberOfDrivingLanes(s) - 1);
-                roadmanager::Lane *lane     = road->GetDrivingLaneByIdx(s, lane_idx);
-                if (lane == 0)
+                int                n_lanes = road->GetNumberOfDrivingLanes(s);
+                roadmanager::Lane *lane    = nullptr;
+                if (n_lanes > 0)
                 {
-                    LOG("Failed locate driving lane %d at s %d", lane_idx, s);
+                    int lane_idx = SE_Env::Inst().GetRand().GetNumberBetween(0, -1);
+                    lane         = road->GetDrivingLaneByIdx(s, lane_idx);
+                    if (lane == nullptr)
+                    {
+                        LOG("Spawn: Failed locate driving lane %d at s %.2f", lane_idx, s);
+                        continue;
+                    }
+                }
+                else
+                {
+                    LOG("Spawn: No driving lanes on road %d at s %.2f", road->GetId(), s);
                     continue;
                 }
 
