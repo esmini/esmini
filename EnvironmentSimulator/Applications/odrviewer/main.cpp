@@ -148,7 +148,7 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
             openEnd.roadId = road->GetId();
             openEnd.s      = 0;
             openEnd.side   = rrule == roadmanager::Road::RoadRule::LEFT_HAND_TRAFFIC ? 1 : -1;
-            openEnd.nLanes = road->GetNumberOfDrivingLanesSide(openEnd.s, -1);
+            openEnd.nLanes = road->GetNumberOfDrivingLanesSide(openEnd.s, openEnd.side);
             if (openEnd.nLanes > 0)
             {
                 openEnds.push_back(openEnd);
@@ -160,7 +160,7 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
             openEnd.roadId = road->GetId();
             openEnd.s      = road->GetLength();
             openEnd.side   = rrule == roadmanager::Road::RoadRule::LEFT_HAND_TRAFFIC ? -1 : 1;
-            openEnd.nLanes = road->GetNumberOfDrivingLanesSide(openEnd.s, 1);
+            openEnd.nLanes = road->GetNumberOfDrivingLanesSide(openEnd.s, openEnd.side);
             if (openEnd.nLanes > 0)
             {
                 openEnds.push_back(openEnd);
