@@ -1,5 +1,15 @@
 ## esmini release notes
 
+### 2024-04-26 Version 2.37.9
+
+Improvements and fixes:
+- Add missing esminiLib interface for OSC variables
+- odrviewer bugfix, avoid crash when respawning left hand traffic ([issue #563](https://github.com/esmini/esmini/issues/563))
+  - consider RHT/LFT rule when finding available driving lanes
+- odrviewer bugfix, avoid crash for no driving lane road networks ([issue #562](https://github.com/esmini/esmini/issues/562))
+  - prevent feeding bad range to randomizer
+- Add script for multiple comparison runs ([run_repeat_compare.sh](https://github.com/esmini/esmini/blob/dev/scripts/run_repeat_compare.sh)).
+
 ### 2024-04-12 Version 2.37.8
 
 Improvements and fixes:
