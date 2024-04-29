@@ -816,11 +816,11 @@ Pedestrian *ScenarioReader::parseOSCPedestrian(pugi::xml_node pedestrianNode)
 
     if (parameters.ReadAttribute(pedestrianNode, "role").empty())
     {
-        pedestrian->setPedRole("none");
+        pedestrian->SetRole("none");
     }
     else if (!parameters.ReadAttribute(pedestrianNode, "role").empty())
     {
-        pedestrian->setPedRole(parameters.ReadAttribute(pedestrianNode, "role"));
+        pedestrian->SetRole(parameters.ReadAttribute(pedestrianNode, "role"));
     }
 
     // Set default model_id, will be overwritten if that property is defined

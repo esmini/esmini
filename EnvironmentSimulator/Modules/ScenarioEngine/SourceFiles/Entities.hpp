@@ -90,6 +90,18 @@ namespace scenarioengine
             OVERRIDE_UNDEFINED      = 7
         } OverrideType;
 
+        enum class Role
+        {
+            NONE             = 0,
+            AMBULANCE        = 1,
+            CIVIL            = 2,
+            FIRE             = 3,
+            MILITARY         = 4,
+            POLICE           = 5,
+            PUBLIC_TRANSPORT = 6,
+            ROAD_ASSISTANCE  = 7
+        };
+
         enum class OverrideGearType
         {
             Manual    = 0,
@@ -544,6 +556,7 @@ namespace scenarioengine
         Object*            TowVehicle();
         Object*            TrailerVehicle();
         static std::string Type2String(int type);
+        static std::string Role2String(int role);
 
     private:
         int  dirty_;
@@ -594,18 +607,6 @@ namespace scenarioengine
             TRAIN       = 8,
             TRAM        = 9
         } Category;
-
-        typedef enum
-        {
-            NONE             = 0,
-            AMBULANCE        = 1,
-            CIVIL            = 2,
-            FIRE             = 3,
-            MILITARY         = 4,
-            POLICE           = 5,
-            PUBLIC_TRANSPORT = 6,
-            ROAD_ASSISTANCE  = 7
-        } Role;
 
         Vehicle();
         Vehicle(const Vehicle& v);
@@ -658,42 +659,42 @@ namespace scenarioengine
         {
             if (role == "ambulance")
             {
-                role_ = static_cast<int>(Vehicle::Role::AMBULANCE);
+                role_ = static_cast<int>(Object::Role::AMBULANCE);
             }
             else if (role == "civil")
             {
-                role_ = static_cast<int>(Vehicle::Role::CIVIL);
+                role_ = static_cast<int>(Object::Role::CIVIL);
             }
             else if (role == "fire")
             {
-                role_ = static_cast<int>(Vehicle::Role::FIRE);
+                role_ = static_cast<int>(Object::Role::FIRE);
             }
             else if (role == "military")
             {
-                role_ = static_cast<int>(Vehicle::Role::MILITARY);
+                role_ = static_cast<int>(Object::Role::MILITARY);
             }
             else if (role == "police")
             {
-                role_ = static_cast<int>(Vehicle::Role::POLICE);
+                role_ = static_cast<int>(Object::Role::POLICE);
             }
             else if (role == "public_transport")
             {
-                role_ = static_cast<int>(Vehicle::Role::PUBLIC_TRANSPORT);
+                role_ = static_cast<int>(Object::Role::PUBLIC_TRANSPORT);
             }
             else if (role == "road_assistance")
             {
-                role_ = static_cast<int>(Vehicle::Role::ROAD_ASSISTANCE);
+                role_ = static_cast<int>(Object::Role::ROAD_ASSISTANCE);
             }
             else
             {
-                role_ = static_cast<int>(Vehicle::Role::NONE);
+                role_ = static_cast<int>(Object::Role::NONE);
             }
         }
+
         int                             ConnectTrailer(Vehicle* trailer);
         int                             DisconnectTrailer();
         void                            AlignTrailers();
         static std::string              Category2String(int category);
-        static std::string              Role2String(int role);
         std::shared_ptr<TrailerCoupler> trailer_coupler_;  // mounting point to any tow vehicle
         std::shared_ptr<TrailerHitch>   trailer_hitch_;    // mounting point to any tow vehicle
     };
@@ -708,12 +709,7 @@ namespace scenarioengine
             ANIMAL     = 2
         } Category;
 
-        double   mass_; /**< The mass of a pedestrian in kg. */
-        Vehicle* veh = new Vehicle();
-        void     setPedRole(std::string role)
-        {
-            veh->SetRole(role);
-        }
+        double mass_; /**< The mass of a pedestrian in kg. */
 
         Pedestrian() : Object(Object::Type::PEDESTRIAN), mass_(0.0)
         {

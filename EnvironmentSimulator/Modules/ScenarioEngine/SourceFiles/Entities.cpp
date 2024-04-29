@@ -1614,9 +1614,9 @@ std::string Vehicle::Category2String(int category)
     }
 }
 
-std::string Vehicle::Role2String(int role)
+std::string Object::Role2String(int role)
 {
-    switch (role)
+    switch (static_cast<Object::Role>(role))
     {
         case Role::AMBULANCE:
             return "AMBULANCE";

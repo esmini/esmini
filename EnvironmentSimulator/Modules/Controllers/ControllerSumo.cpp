@@ -115,7 +115,7 @@ void ControllerSumo::Step(double timeStep)
                 vehicle->AssignController(this);
                 vehicle->model3d_     = template_vehicle_->model3d_;
                 vehicle->scaleMode_   = EntityScaleMode::BB_TO_MODEL;
-                vehicle->role_        = Vehicle::Role::CIVIL;
+                vehicle->role_        = static_cast<int>(Object::Role::CIVIL);
                 vehicle->category_    = Vehicle::Category::CAR;
                 vehicle->odometer_    = 0.0;
                 vehicle->boundingbox_ = template_vehicle_->boundingbox_;
