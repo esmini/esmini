@@ -135,6 +135,7 @@ int main(int argc, char* argv[])
         SE_GetObjectState(0, &objectState);
     }
 
+    SE_SimpleVehicleDelete(vehicleHandle);
     SE_Close();
 
     return 0;

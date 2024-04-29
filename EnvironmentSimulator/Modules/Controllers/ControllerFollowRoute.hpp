@@ -18,6 +18,7 @@
 #include "Parameters.hpp"
 #include "Entities.hpp"
 #include "vehicle.hpp"
+#include "OSCPrivateAction.hpp"
 #include <queue>
 
 // Enable test mode, which stops the vehicle when reaching a target
@@ -39,6 +40,7 @@ namespace scenarioengine
     {
     public:
         ControllerFollowRoute(InitArgs *args);
+        ~ControllerFollowRoute();
 
         static const char *GetTypeNameStatic()
         {
@@ -145,10 +147,10 @@ namespace scenarioengine
          */
         WaypointStatus GetWaypointStatus(roadmanager::Position vehiclePos, roadmanager::Position waypoint);
 
-        ScenarioEngine                    *scenarioEngine_;
+        ScenarioEngine                    *scenarioEngine_ = nullptr;
         vehicle::Vehicle                   vehicle_;
-        OSCPrivateAction                  *laneChangeAction_;
-        roadmanager::OpenDrive            *odr_;
+        LatLaneChangeAction               *laneChangeAction_ = nullptr;
+        roadmanager::OpenDrive            *odr_              = nullptr;
         std::vector<roadmanager::Position> waypoints_;
         int                                currentWaypointIndex_;
         int                                scenarioWaypointIndex_;

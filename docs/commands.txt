@@ -24,6 +24,8 @@ Options:
       Additional custom light source <x,y,z,intensity> intensity range 0..1 (multiple occurrences supported)
   --disable_controllers
       Disable controllers
+  --disable_pline_interpolation
+      Do not apply orientation interpolation of polyline trajectories
   --disable_log
       Prevent logfile from being created
   --disable_stdout

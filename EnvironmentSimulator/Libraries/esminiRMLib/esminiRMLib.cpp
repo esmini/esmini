@@ -583,6 +583,28 @@ extern "C"
             roadmanager::Position* pos = &position[static_cast<unsigned int>(handle)];
             if (pos)
             {
+                // No bits set (zero) is treated as default, apply absolute mode.
+                if (((mode & roadmanager::Position::PosMode::Z_MASK) == 0) ||
+                    ((mode & roadmanager::Position::PosMode::Z_MASK) == roadmanager::Position::PosMode::Z_DEFAULT))
+                {
+                    mode |= roadmanager::Position::PosMode::Z_ABS;
+                }
+                if (((mode & roadmanager::Position::PosMode::H_MASK) == 0) ||
+                    ((mode & roadmanager::Position::PosMode::H_MASK) == roadmanager::Position::PosMode::H_DEFAULT))
+                {
+                    mode |= roadmanager::Position::PosMode::H_ABS;
+                }
+                if (((mode & roadmanager::Position::PosMode::P_MASK) == 0) ||
+                    ((mode & roadmanager::Position::PosMode::P_MASK) == roadmanager::Position::PosMode::P_DEFAULT))
+                {
+                    mode |= roadmanager::Position::PosMode::P_ABS;
+                }
+                if (((mode & roadmanager::Position::PosMode::R_MASK) == 0) ||
+                    ((mode & roadmanager::Position::PosMode::R_MASK) == roadmanager::Position::PosMode::R_DEFAULT))
+                {
+                    mode |= roadmanager::Position::PosMode::R_ABS;
+                }
+
                 return pos->SetInertiaPosMode(x, y, z, h, p, r, mode);
             }
         }
@@ -601,8 +623,14 @@ extern "C"
             roadmanager::Position* pos = &position[static_cast<unsigned int>(handle)];
             if (pos)
             {
-                return static_cast<int>(
-                    pos->XYZ2TrackPos(pos->GetX(), pos->GetY(), pos->GetZ(), roadmanager::Position::PosMode::UNDEFINED, false, roadId, false));
+                return static_cast<int>(pos->XYZ2TrackPos(pos->GetX(),
+                                                          pos->GetY(),
+                                                          pos->GetZ(),
+                                                          roadmanager::Position::PosMode::Z_ABS | roadmanager::Position::PosMode::H_ABS |
+                                                              roadmanager::Position::PosMode::P_ABS | roadmanager::Position::PosMode::R_ABS,
+                                                          false,
+                                                          roadId,
+                                                          false));
             }
         }
 

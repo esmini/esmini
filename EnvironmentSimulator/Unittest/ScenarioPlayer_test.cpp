@@ -171,11 +171,13 @@ TEST(AlignmentTest, TestPositionAlignmentVariants)
     EXPECT_NEAR(player->scenarioEngine->entities_.object_[0]->pos_.GetZ(), 6.919, 1E-3);
 
     // Ensure absolute update mode preserves z level
-    player->scenarioEngine->entities_.object_[0]->pos_.SetMode(roadmanager::Position::PosModeType::UPDATE, roadmanager::Position::PosMode::Z_ABS);
+    player->scenarioGateway->setObjectPositionMode(0,
+                                                   static_cast<int>(roadmanager::Position::PosModeType::UPDATE),
+                                                   static_cast<int>(roadmanager::Position::PosMode::Z_ABS));
+    player->Frame(0.0);
     EXPECT_EQ(player->scenarioEngine->entities_.object_[0]->pos_.GetMode(roadmanager::Position::PosModeType::UPDATE) &
                   roadmanager::Position::PosMode::Z_MASK,
               roadmanager::Position::PosMode::Z_ABS);
-    player->Frame(0.0);
     player->scenarioGateway->updateObjectWorldPosMode(0, 0.0, 221.381, -22.974, 3.0, 5.575, 0.0, 0.0, roadmanager::Position::PosMode::Z_ABS);
     player->scenarioGateway->updateObjectSpeed(0, 0.0, 15.0);
     player->Frame(0.1);
@@ -235,7 +237,9 @@ TEST(AlignmentTest, TestPosMode)
     roadmanager::Position& pos  = player->scenarioEngine->entities_.object_[0]->pos_;
     roadmanager::Road*     road = player->GetODRManager()->GetRoadByIdx(0);
 
-    EXPECT_EQ(pos.GetMode(Position::PosModeType::SET), Position::GetModeDefault(Position::PosModeType::SET));
+    EXPECT_EQ(pos.GetMode(Position::PosModeType::SET),
+              roadmanager::Position::PosMode::Z_REL | roadmanager::Position::PosMode::H_ABS | roadmanager::Position::PosMode::P_REL |
+                  roadmanager::Position::PosMode::R_REL);
     EXPECT_EQ(pos.GetMode(Position::PosModeType::UPDATE), Position::GetModeDefault(Position::PosModeType::UPDATE));
 
     // Test some operations
@@ -280,9 +284,9 @@ TEST(AlignmentTest, TestPosMode)
     pos.SetRoll(0.1);
     pos.SetLanePos(road->GetId(), -1, 150.0, 0.0);
     player->scenarioEngine->entities_.object_[0]->SetSpeed(0.0);
-    EXPECT_NEAR(pos.GetH(), 1.5, 1e-3);
-    EXPECT_NEAR(pos.GetP(), 0.0, 1e-3);
-    EXPECT_NEAR(pos.GetR(), 0.1, 1e-3);
+    EXPECT_NEAR(GetAngleDifference(pos.GetH(), 1.5), 0.0, 1e-3);
+    EXPECT_NEAR(GetAngleDifference(pos.GetP(), 0.0), 0.0, 1e-3);
+    EXPECT_NEAR(GetAngleDifference(pos.GetR(), 0.1), 0.0, 1e-3);
     player->Frame(0.1);
 
     pos.SetLanePos(road->GetId(), -1, 140.0, 0.0);
@@ -435,7 +439,7 @@ TEST(Controllers, TestSeparateControllersOnLatLong)
         player->Frame(dt);
     }
 
-    delete se;
+    delete player;
 }
 
 // #define LOG_TO_CONSOLE

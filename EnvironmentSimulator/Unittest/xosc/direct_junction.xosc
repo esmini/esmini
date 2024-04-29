@@ -30,9 +30,6 @@
     <Entities>
         <ScenarioObject name="Car">
             <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
-            <ObjectController>
-                <CatalogReference catalogName="ControllerCatalog" entryName="interactiveDriver"/>
-            </ObjectController>
         </ScenarioObject>
     </Entities>
     <Storyboard>
@@ -69,9 +66,6 @@
                                 </LanePosition>
                             </Position>
                         </TeleportAction>
-                    </PrivateAction>
-                    <PrivateAction>
-                        <ActivateControllerAction longitudinal="true" lateral="true"/>
                     </PrivateAction>
                     <PrivateAction>
                         <LongitudinalAction>

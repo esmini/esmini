@@ -530,6 +530,7 @@ namespace scenarioengine
             Target(Type type) : type_(type)
             {
             }
+
             virtual ~Target() = default;
         };
 
@@ -538,6 +539,11 @@ namespace scenarioengine
         public:
             TargetAbsolute() : Target(Target::Type::ABSOLUTE_LANE)
             {
+            }
+
+            TargetAbsolute(const TargetAbsolute& target) : Target(target.type_)
+            {
+                value_ = target.value_;
             }
         };
 
@@ -549,11 +555,17 @@ namespace scenarioengine
             TargetRelative() : Target(Target::Type::RELATIVE_LANE), object_(0)
             {
             }
+
+            TargetRelative(const TargetRelative& target) : Target(target.type_)
+            {
+                value_  = target.value_;
+                object_ = target.object_;
+            }
         };
 
-        std::shared_ptr<Target> target_;
-        TransitionDynamics      transition_;
-        double                  target_lane_offset_;
+        Target*            target_;
+        TransitionDynamics transition_;
+        double             target_lane_offset_;
 
         LatLaneChangeAction(StoryBoardElement* parent, LatLaneChangeAction::DynamicsDimension timing_type = DynamicsDimension::TIME)
             : OSCPrivateAction(OSCPrivateAction::ActionType::LAT_LANE_CHANGE, parent, static_cast<unsigned int>(ControlDomains::DOMAIN_LAT)),
@@ -567,12 +579,22 @@ namespace scenarioengine
 
         LatLaneChangeAction(const LatLaneChangeAction& action)
             : OSCPrivateAction(OSCPrivateAction::ActionType::LAT_LANE_CHANGE, action.parent_, static_cast<unsigned int>(ControlDomains::DOMAIN_LAT)),
-              target_(action.target_),
               transition_(action.transition_),
               target_lane_offset_(action.target_lane_offset_),
               start_offset_(action.start_offset_),
               heading_agnostic_(action.heading_agnostic_)
         {
+            if (action.target_ != nullptr)
+            {
+                if (action.target_->type_ == Target::Type::ABSOLUTE_LANE)
+                {
+                    target_ = new TargetAbsolute(*static_cast<TargetAbsolute*>(action.target_));
+                }
+                else if (action.target_->type_ == Target::Type::RELATIVE_LANE)
+                {
+                    target_ = new TargetRelative(*static_cast<TargetRelative*>(action.target_));
+                }
+            }
             SetName(action.GetName());
         }
 
@@ -580,6 +602,15 @@ namespace scenarioengine
         {
             LatLaneChangeAction* new_action = new LatLaneChangeAction(*this);
             return new_action;
+        }
+
+        ~LatLaneChangeAction()
+        {
+            if (target_ != nullptr)
+            {
+                delete target_;
+                target_ = nullptr;
+            }
         }
 
         std::string Type2Str()
@@ -809,8 +840,7 @@ namespace scenarioengine
     class TeleportAction : public OSCPrivateAction
     {
     public:
-        std::shared_ptr<OSCPosition> position_OSCPosition_;
-        roadmanager::Position*       position_;
+        roadmanager::Position position_;
 
         TeleportAction(StoryBoardElement* parent)
             : OSCPrivateAction(OSCPrivateAction::ActionType::TELEPORT, parent, static_cast<unsigned int>(ControlDomains::DOMAIN_LAT_AND_LONG)),
@@ -822,16 +852,16 @@ namespace scenarioengine
             : OSCPrivateAction(OSCPrivateAction::ActionType::TELEPORT, action.parent_, static_cast<unsigned int>(ControlDomains::DOMAIN_LAT_AND_LONG))
         {
             SetName(action.GetName());
-            position_OSCPosition_ = action.position_OSCPosition_;
-            position_             = action.position_;
-            ghost_restart_        = action.ghost_restart_;
+            position_      = action.position_;
+            ghost_restart_ = action.ghost_restart_;
         }
 
         ~TeleportAction()
         {
-            if (!position_OSCPosition_ && position_ != nullptr)
+            if (position_.route_ != nullptr)
             {
-                delete position_;
+                delete position_.route_;
+                position_.route_ = nullptr;
             }
         }
 
@@ -938,7 +968,9 @@ namespace scenarioengine
     class AssignRouteAction : public OSCPrivateAction
     {
     public:
-        std::shared_ptr<roadmanager::Route> route_;
+        roadmanager::Route* route_;
+
+        ~AssignRouteAction();
 
         AssignRouteAction(StoryBoardElement* parent)
             : OSCPrivateAction(OSCPrivateAction::ActionType::ASSIGN_ROUTE, parent, static_cast<unsigned int>(ControlDomains::DOMAIN_NONE)),
@@ -947,10 +979,16 @@ namespace scenarioengine
         }
 
         AssignRouteAction(const AssignRouteAction& action)
-            : OSCPrivateAction(OSCPrivateAction::ActionType::ASSIGN_ROUTE, action.parent_, static_cast<unsigned int>(ControlDomains::DOMAIN_NONE))
+            : OSCPrivateAction(OSCPrivateAction::ActionType::ASSIGN_ROUTE, action.parent_, static_cast<unsigned int>(ControlDomains::DOMAIN_NONE)),
+              route_(0)
         {
             SetName(action.GetName());
-            route_ = action.route_;
+            if (route_ == nullptr)
+            {
+                printf("Route not defined! Creating one\n");
+                route_ = new roadmanager::Route;
+            }
+            route_->CopyFrom(*action.route_);
         }
 
         OSCPrivateAction* Copy()
@@ -1043,9 +1081,18 @@ namespace scenarioengine
     class AcquirePositionAction : public OSCPrivateAction
     {
     public:
-        std::shared_ptr<OSCPosition>        target_position_OSCPosition_;
-        roadmanager::Position*              target_position_;
-        std::shared_ptr<roadmanager::Route> route_;
+        std::shared_ptr<OSCPosition> target_position_OSCPosition_;
+        roadmanager::Position*       target_position_;
+        roadmanager::Route*          route_;
+
+        ~AcquirePositionAction()
+        {
+            if (route_ != nullptr)
+            {
+                delete route_;
+                route_ = nullptr;
+            }
+        }
 
         AcquirePositionAction(StoryBoardElement* parent)
             : OSCPrivateAction(OSCPrivateAction::ActionType::Acquire_POSITION, parent, static_cast<unsigned int>(ControlDomains::DOMAIN_LONG)),
@@ -1055,7 +1102,11 @@ namespace scenarioengine
         }
 
         AcquirePositionAction(const AcquirePositionAction& action)
-            : OSCPrivateAction(OSCPrivateAction::ActionType::Acquire_POSITION, action.parent_, static_cast<unsigned int>(ControlDomains::DOMAIN_LONG))
+            : OSCPrivateAction(OSCPrivateAction::ActionType::Acquire_POSITION,
+                               action.parent_,
+                               static_cast<unsigned int>(ControlDomains::DOMAIN_LONG)),
+              target_position_(0),
+              route_(0)
         {
             SetName(action.GetName());
             target_position_OSCPosition_ = action.target_position_OSCPosition_;

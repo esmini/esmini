@@ -711,7 +711,7 @@ void ScenarioEngine::prepareGroundTruth(double dt)
         {
             if (o->dirty_ & (Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL))
             {
-                obj->pos_ = o->state_.pos;
+                obj->pos_.Duplicate(o->state_.pos);
                 obj->SetDirtyBits(o->dirty_ & (Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL));
             }
             if (o->dirty_ & Object::DirtyBit::ACCELERATION)
@@ -871,8 +871,7 @@ void ScenarioEngine::prepareGroundTruth(double dt)
                                                obj->GetSpeed(),
                                                obj->pos_.GetAcc(),
                                                0.0,
-                                               roadmanager::Position::PosMode::H_REL,
-                                               0});
+                                               roadmanager::Position::PosMode::H_REL});
                     }
                 }
             }
@@ -887,7 +886,7 @@ void ScenarioEngine::prepareGroundTruth(double dt)
         double friction_global = roadmanager::Position::GetOpenDrive()->GetFriction();
 
         roadmanager::Position wp;
-        wp.CopyRMPos(&obj->pos_);
+        wp.Duplicate(obj->pos_);
 
         if (std::isnan(friction_global))
         {
@@ -1016,7 +1015,7 @@ void ScenarioEngine::ReplaceObjectInTrigger(Trigger* trigger, Object* obj1, Obje
 void ScenarioEngine::CreateGhostTeleport(Object* obj1, Object* obj2, Event* event)
 {
     TeleportAction*        myNewAction = new TeleportAction(nullptr);
-    roadmanager::Position* pos         = new roadmanager::Position();
+    roadmanager::Position* pos         = &myNewAction->position_;
     pos->SetMode(roadmanager::Position::PosModeType::INIT,
                  roadmanager::Position::PosMode::Z_REL | roadmanager::Position::PosMode::H_REL | roadmanager::Position::PosMode::P_REL |
                      roadmanager::Position::PosMode::R_REL);
@@ -1028,7 +1027,6 @@ void ScenarioEngine::CreateGhostTeleport(Object* obj1, Object* obj2, Event* even
     pos->relative_.dr = 0.0;
     pos->SetRelativePosition(&obj1->pos_, roadmanager::Position::PositionType::RELATIVE_OBJECT);
 
-    myNewAction->position_       = pos;
     myNewAction->action_type_    = OSCPrivateAction::ActionType::TELEPORT;
     myNewAction->object_         = obj2;
     myNewAction->scenarioEngine_ = this;

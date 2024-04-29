@@ -1070,12 +1070,13 @@ roadmanager::Route *ScenarioReader::parseOSCRoute(pugi::xml_node routeNode)
                 rs = roadmanager::Position::RouteStrategy::SHORTEST;
             }
 
-            std::unique_ptr<OSCPosition> pos = std::unique_ptr<OSCPosition>{parseOSCPosition(routeChild.first_child())};
-            if (pos)
+            OSCPosition *pos = parseOSCPosition(routeChild.first_child());
+            if (pos != nullptr)
             {
                 roadmanager::Position *p = pos->GetRMPos();
                 p->SetRouteStrategy(rs);
-                route->AddWaypoint(p);
+                route->AddWaypoint(*p);
+                delete pos;
             }
             else
             {
@@ -1676,9 +1677,7 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPo
             LOG_AND_QUIT("Missing x or y attributes!\n");
         }
 
-        OSCPositionWorld *pos = new OSCPositionWorld(x, y, z, h, p, r, base_on_pos);
-
-        pos_return = reinterpret_cast<OSCPosition *>(pos);
+        pos_return = new OSCPositionWorld(x, y, z, h, p, r, base_on_pos);
     }
     else if (positionChildName == "RelativeWorldPosition")
     {
@@ -1698,9 +1697,7 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPo
             parseOSCOrientation(orientation, orientation_node);
         }
 
-        OSCPositionRelativeWorld *pos = new OSCPositionRelativeWorld(object, dx, dy, dz, orientation);
-
-        pos_return = reinterpret_cast<OSCPosition *>(pos);
+        pos_return = new OSCPositionRelativeWorld(object, dx, dy, dz, orientation);
     }
     else if (positionChildName == "RelativeObjectPosition")
     {
@@ -1719,9 +1716,7 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPo
             parseOSCOrientation(orientation, orientation_node);
         }
 
-        OSCPositionRelativeObject *pos = new OSCPositionRelativeObject(object, dx, dy, dz, orientation);
-
-        pos_return = reinterpret_cast<OSCPosition *>(pos);
+        pos_return = new OSCPositionRelativeObject(object, dx, dy, dz, orientation);
     }
     else if (positionChildName == "RelativeLanePosition")
     {
@@ -1758,9 +1753,7 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPo
             direction_mode = roadmanager::Position::DirectionMode::ALONG_LANE;
         }
 
-        OSCPositionRelativeLane *pos = new OSCPositionRelativeLane(object, dLane, ds, offset, orientation, direction_mode);
-
-        pos_return = reinterpret_cast<OSCPosition *>(pos);
+        pos_return = new OSCPositionRelativeLane(object, dLane, ds, offset, orientation, direction_mode);
     }
     else if (positionChildName == "RelativeRoadPosition")
     {
@@ -1783,9 +1776,7 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPo
             orientation.type_ = roadmanager::Position::OrientationType::ORIENTATION_RELATIVE;
         }
 
-        OSCPositionRelativeRoad *pos = new OSCPositionRelativeRoad(object, ds, dt, orientation);
-
-        pos_return = reinterpret_cast<OSCPosition *>(pos);
+        pos_return = new OSCPositionRelativeRoad(object, ds, dt, orientation);
     }
     else if (positionChildName == "RoadPosition")
     {
@@ -1807,9 +1798,7 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPo
             orientation.type_ = roadmanager::Position::OrientationType::ORIENTATION_RELATIVE;
         }
 
-        OSCPositionRoad *pos = new OSCPositionRoad(road_id, s, t, orientation);
-
-        pos_return = reinterpret_cast<OSCPosition *>(pos);
+        pos_return = new OSCPositionRoad(road_id, s, t, orientation);
     }
     else if (positionChildName == "LanePosition")
     {
@@ -1837,15 +1826,13 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPo
             orientation.type_ = roadmanager::Position::OrientationType::ORIENTATION_RELATIVE;
         }
 
-        OSCPositionLane *pos = new OSCPositionLane(road_id, lane_id, s, offset, orientation);
-
-        pos_return = reinterpret_cast<OSCPosition *>(pos);
+        pos_return = new OSCPositionLane(road_id, lane_id, s, offset, orientation);
     }
     else if (positionChildName == "RoutePosition")
     {
-        std::unique_ptr<roadmanager::Route> route;
-        OSCPositionRoute                   *pos         = new OSCPositionRoute;
-        OSCOrientation                     *orientation = 0;
+        roadmanager::Route *route       = nullptr;
+        OSCPositionRoute   *pos         = new OSCPositionRoute;
+        OSCOrientation     *orientation = 0;
 
         for (pugi::xml_node routeChild = positionChild.first_child(); routeChild; routeChild = routeChild.next_sibling())
         {
@@ -1858,8 +1845,8 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPo
                     if (routeRefChildName == "Route")
                     {
                         // Parse inline route
-                        route.reset(parseOSCRoute(routeRefChild));
-                        if (route.get() == nullptr)
+                        route = parseOSCRoute(routeRefChild);
+                        if (route == nullptr)
                         {
                             LOG_AND_QUIT("Failed to resolve inline route");
                         }
@@ -1878,8 +1865,8 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPo
                         if (entry->type_ == CatalogType::CATALOG_ROUTE)
                         {
                             // Make a new instance from catalog entry
-                            route.reset(parseOSCRoute(entry->GetNode()));
-                            if (route.get() == nullptr)
+                            route = parseOSCRoute(entry->GetNode());
+                            if (route == nullptr)
                             {
                                 LOG_AND_QUIT("Failed to resolve catalog route");
                             }
@@ -1933,11 +1920,11 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPo
                         }
                         if (orientation)
                         {
-                            pos->SetRouteRefLaneCoord(route.get(), s, lane_id, lane_offset, orientation);
+                            pos->SetRouteRefLaneCoord(route, s, lane_id, lane_offset, orientation);
                         }
                         else
                         {
-                            pos->SetRouteRefLaneCoord(route.get(), s, lane_id, lane_offset);
+                            pos->SetRouteRefLaneCoord(route, s, lane_id, lane_offset);
                             if (lane_id > 0)
                             {
                                 pos->SetRouteRelativeHeading(M_PI);
@@ -1953,7 +1940,12 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPo
             delete orientation;
         }
 
-        pos_return = reinterpret_cast<OSCPosition *>(pos);
+        if (route)
+        {
+            delete route;
+        }
+
+        pos_return = pos;
     }
     else if (positionChildName == "TrajectoryPosition")
     {
@@ -1982,9 +1974,7 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPo
             parseOSCOrientation(orientation, orientation_node);
         }
 
-        OSCPositionTrajectory *pos = new OSCPositionTrajectory(traj, s, t, orientation);
-
-        pos_return = reinterpret_cast<OSCPosition *>(pos);
+        pos_return = new OSCPositionTrajectory(traj, s, t, orientation);
     }
 
     if (pos_return == 0)
@@ -2630,7 +2620,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                             }
                             if (target)
                             {
-                                action_lane->target_.reset(target);
+                                action_lane->target_ = target;
                             }
                         }
                     }
@@ -2823,9 +2813,10 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
         else if (actionChild.name() == std::string("TeleportAction"))
         {
             TeleportAction *action_pos = new TeleportAction(parent);
-            action_pos->position_OSCPosition_.reset(parseOSCPosition(actionChild.first_child()));
-            action_pos->position_ = action_pos->position_OSCPosition_->GetRMPos();
-            action                = action_pos;
+            OSCPosition    *pos        = parseOSCPosition(actionChild.first_child());
+            action_pos->position_      = *pos->GetRMPos();
+            action                     = action_pos;
+            delete pos;
         }
         else if (actionChild.name() == std::string("TrailerAction"))
         {
@@ -2884,8 +2875,8 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                         if (assignRouteChild.name() == std::string("Route"))
                         {
                             AssignRouteAction *action_follow_route = new AssignRouteAction(parent);
-                            action_follow_route->route_.reset(parseOSCRoute(assignRouteChild));
-                            action = action_follow_route;
+                            action_follow_route->route_            = parseOSCRoute(assignRouteChild);
+                            action                                 = action_follow_route;
                         }
                         else if (assignRouteChild.name() == std::string("CatalogReference"))
                         {
@@ -2902,8 +2893,8 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                             if (entry->type_ == CatalogType::CATALOG_ROUTE)
                             {
                                 // Make a new instance from catalog entry
-                                action_assign_route->route_.reset(parseOSCRoute(entry->GetNode()));
-                                action = action_assign_route;
+                                action_assign_route->route_ = parseOSCRoute(entry->GetNode());
+                                action                      = action_assign_route;
                                 break;
                             }
                             else
@@ -3600,13 +3591,13 @@ void ScenarioReader::parseInit(Init &init)
             if (init.private_action_[j]->action_type_ == OSCPrivateAction::ActionType::TELEPORT)
             {
                 TeleportAction *action = static_cast<TeleportAction *>(init.private_action_[j]);
-                if (action->position_->GetType() == roadmanager::Position::PositionType::RELATIVE_LANE)
+                if (action->position_.GetType() == roadmanager::Position::PositionType::RELATIVE_LANE)
                 {
-                    pos = action->position_->GetRelativePosition();
+                    pos = action->position_.GetRelativePosition();
                 }
-                else if (action->position_->GetType() == roadmanager::Position::PositionType::RELATIVE_OBJECT)
+                else if (action->position_.GetType() == roadmanager::Position::PositionType::RELATIVE_OBJECT)
                 {
-                    pos = action->position_->GetRelativePosition();
+                    pos = action->position_.GetRelativePosition();
                 }
             }
             if (pos == &init.private_action_[i]->object_->pos_)

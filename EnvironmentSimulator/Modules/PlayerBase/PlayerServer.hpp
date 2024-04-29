@@ -101,7 +101,7 @@ namespace scenarioengine
         bool InjectedActionOngoing(int action_type = -1);
 
         int                                      AddAction(OSCAction* action);
-        void                                     DeleteAction(int index);
+        void                                     DeleteAction(unsigned int index);
         int                                      NumberOfActions();
         void                                     Step();
         std::string                              Type2Name(UDP_ACTION_TYPE type);

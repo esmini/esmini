@@ -72,8 +72,12 @@ namespace scenarioengine
         return 0;
     }
 
-    void PlayerServer::DeleteAction(int index)
+    void PlayerServer::DeleteAction(unsigned int index)
     {
+        if (index < action_.size())
+        {
+            delete action_[index];
+        }
         action_.erase(action_.begin() + index);
     }
 
@@ -89,7 +93,7 @@ namespace scenarioengine
             if (action_[i]->GetCurrentState() == OSCAction::State::COMPLETE)
             {
                 LOG("Injected action %s finished", action_[i]->GetName().c_str());
-                DeleteAction(static_cast<int>(i));
+                DeleteAction(static_cast<unsigned int>(i));
                 i++;
             }
         }
@@ -197,14 +201,14 @@ namespace scenarioengine
         {
             LatLaneChangeAction::TargetAbsolute *target = new LatLaneChangeAction::TargetAbsolute;
             target->value_                              = action.target;
-            a->target_.reset(target);
+            a->target_                                  = target;
         }
         else
         {
             LatLaneChangeAction::TargetRelative *target = new LatLaneChangeAction::TargetRelative;
             target->object_                             = a->object_;
             target->value_                              = action.target;
-            a->target_.reset(target);
+            a->target_                                  = target;
         }
 
         AddAction(a);

@@ -1580,20 +1580,18 @@ Missing angles will be handled according to the table below:
 |roll|No|road surface
 |===
 
-While moving along polylines, which tangent is not continuous, it's usually preferred to interpolate/smoothen orientation change at vertex corners.
+While moving along polylines, which tangent is not continuous, it's usually preferred to interpolate/smoothen orientation along whole linear segments or at least when passing vertex corners.
 
-The table below shows the result for combinations of input settings of polyline trajectories:
+The table below shows what interpolation method will be applied based on FollowingMode setting for the trajectory:
 
-[%autowidth, cols="2,2,3,2"]
+[%autowidth, cols="2,2"]
 |===
-2+|Input
-2+|Result
-|*Angle specified?*|*FollowingMode?*|*Interpolate angle along segment*|*Interpolate corners*
-|Yes|position|No|No
-|Yes|follow|Yes|No
-|No|position|No|Yes
-|No|follow|Yes|No
+|*FollowingMode*|*Interpolate mode*
+|position|corner
+|follow|segment
 |===
+
+Polyline trajectory orientation interpolation can be disabled altogether by setting the `disable_pline_interpolation` option (see esmini <<Launch commands>>).
 
 === Example
 There is a code and scenario example illustrating the various interpolation and position modes:

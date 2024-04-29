@@ -60,6 +60,15 @@ ControllerFollowRoute::ControllerFollowRoute(InitArgs *args) : Controller(args),
     }
 }
 
+ControllerFollowRoute::~ControllerFollowRoute()
+{
+    if (laneChangeAction_ != nullptr)
+    {
+        delete laneChangeAction_;
+        laneChangeAction_ = nullptr;
+    }
+}
+
 void ControllerFollowRoute::Init()
 {
     // FollowRoute controller forced into additive mode - will perform scenario actions, except during lane changes
@@ -197,8 +206,8 @@ void ControllerFollowRoute::CalculateWaypoints()
 {
     roadmanager::LaneIndependentRouter router(odr_);
 
-    roadmanager::Position startPos  = object_->pos_;
-    roadmanager::Position targetPos = object_->pos_.GetRoute()->scenario_waypoints_[static_cast<unsigned int>(scenarioWaypointIndex_)];
+    roadmanager::Position startPos(object_->pos_);
+    roadmanager::Position targetPos(object_->pos_.GetRoute()->scenario_waypoints_[static_cast<unsigned int>(scenarioWaypointIndex_)]);
 
     // If start and target is on same road, set next waypoint as target
     if (startPos.GetTrackId() == targetPos.GetTrackId())
@@ -243,7 +252,7 @@ void ControllerFollowRoute::CreateLaneChange(int lane)
     LatLaneChangeAction::TargetAbsolute *target = new LatLaneChangeAction::TargetAbsolute;
     target->value_                              = lane;
 
-    action_lanechange->target_.reset(target);
+    action_lanechange->target_ = target;
 
     // Set lane change to be performed by ChangeLane function
     laneChangeAction_ = action_lanechange;

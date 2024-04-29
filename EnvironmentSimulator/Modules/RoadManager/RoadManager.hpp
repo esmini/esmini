@@ -2944,29 +2944,21 @@ namespace roadmanager
     class Route;
     class RMTrajectory;
 
-    typedef enum
-    {
-        INTERPOLATE_HEADING = 0x1,
-        INTERPOLATE_PITCH   = 0x2,
-        INTERPOLATE_ROLL    = 0x4
-    } InterpolationComponent;
-
     struct TrajVertex
     {
-        double s           = 0;
-        double x           = 0;
-        double y           = 0;
-        double z           = 0;
-        double h           = 0;
-        double pitch       = 0;
-        double r           = 0;
-        int    road_id     = -1;  // -1 indicates no valid road position. Use X, Y instead.
-        double time        = 0;
-        double speed       = 0;  // speed at vertex point/start of segment
-        double acc         = 0;  // acceleration along the segment
-        double param       = 0;
-        int    pos_mode    = 0;  // resolved alignment bitmask after calculation, see Position::PosMode enum
-        int    interpolate = 0;  // interpolation bitmask, see InterpolateComponent enum
+        double s        = 0;
+        double x        = 0;
+        double y        = 0;
+        double z        = 0;
+        double h        = 0;
+        double pitch    = 0;
+        double r        = 0;
+        int    road_id  = -1;  // -1 indicates no valid road position. Use X, Y instead.
+        double time     = 0;
+        double speed    = 0;  // speed at vertex point/start of segment
+        double acc      = 0;  // acceleration along the segment
+        double param    = 0;
+        int    pos_mode = 0;  // resolved alignment bitmask after calculation, see Position::PosMode enum
     };
 
     class Position
@@ -3095,7 +3087,13 @@ namespace roadmanager
         explicit Position(int track_id, int lane_id, double s, double offset);
         explicit Position(double x, double y, double z, double h, double p, double r);
         explicit Position(double x, double y, double z, double h, double p, double r, bool calculateTrackPosition);
+        Position(const Position &other);
+        Position(Position &&other);
+        Position &operator=(const Position &other);
+        Position &operator=(Position &&other);
         ~Position();
+        void Duplicate(const Position &other);
+        void CopyLocation(const Position &from);
 
         void              Init();
         static bool       LoadOpenDrive(const char *filename);
@@ -3208,16 +3206,16 @@ namespace roadmanager
         @return Non zero return value indicates error of some kind
         */
         int  SetInertiaPosMode(double x, double y, double h, int mode, bool updateTrackPos = true);
-        void SetHeading(double heading);
-        void SetHeadingRelative(double heading);
-        void SetHeadingRelativeRoadDirection(double heading);
-        void SetHeadingRoad(double heading);
-        void SetRoll(double roll);
-        void SetRollRelative(double roll);
-        void SetRollRoad(double heading);
-        void SetPitch(double roll);
-        void SetPitchRelative(double pitch);
-        void SetPitchRoad(double heading);
+        void SetHeading(double heading, bool evaluate = true);
+        void SetHeadingRelative(double heading, bool evaluate = true);
+        void SetHeadingRelativeRoadDirection(double heading, bool evaluate = true);
+        void SetHeadingRoad(double heading, bool evaluate = true);
+        void SetRoll(double roll, bool evaluate = true);
+        void SetRollRelative(double roll, bool evaluate = true);
+        void SetRollRoad(double heading, bool evaluate = true);
+        void SetPitch(double roll, bool evaluate = true);
+        void SetPitchRelative(double pitch, bool evaluate = true);
+        void SetPitchRoad(double heading, bool evaluate = true);
         void SetZ(double z);
         void SetZRelative(double z);
 
@@ -3256,11 +3254,7 @@ namespace roadmanager
 
         ReturnCode MoveToConnectingRoad(RoadLink *road_link, ContactPointType &contact_point_type, double junctionSelectorAngle = -1.0);
 
-        void SetRelativePosition(Position *rel_pos, PositionType type)
-        {
-            rel_pos_ = rel_pos;
-            type_    = type;
-        }
+        void SetRelativePosition(Position *rel_pos, PositionType type);
 
         Position *GetRelativePosition() const
         {
@@ -3269,20 +3263,18 @@ namespace roadmanager
 
         void EvaluateRelation(bool release = false);
 
-        int          SetRoute(std::shared_ptr<Route> route);
+        int          SetRoute(Route *route);
         int          CalcRoutePosition();
         const Route *GetRoute() const
         {
-            return route_.get();
+            return route_;
         }
         Route *GetRoute()
         {
-            return route_.get();
+            return route_;
         }
-        void CopyRouteSharedPtr(Position *position)
-        {
-            route_ = position->route_;
-        }
+        void CopyRoute(const Position &position);
+
         RMTrajectory *GetTrajectory()
         {
             return trajectory_;
@@ -3703,18 +3695,6 @@ namespace roadmanager
         {
             y_ = y;
         }
-        void SetH(double h)
-        {
-            h_ = h;
-        }
-        void SetP(double p)
-        {
-            p_ = p;
-        }
-        void SetR(double r)
-        {
-            r_ = r;
-        }
         void SetVel(double x_vel, double y_vel, double z_vel)
         {
             velX_ = x_vel, velY_ = y_vel, velZ_ = z_vel;
@@ -3902,16 +3882,29 @@ namespace roadmanager
         }
 
         /**
-        Specify if and how position object will align to the road. This version
-        sets same mode for all components: Heading, Pitch, Roll and Z (elevation)
-        @param id Id of the object
+        Specify if and how position object will align to the road. This variant
+        sets specified mode for specified mode type(s).
         @param mode Bitmask combining values from roadmanager::PosMode enum
         example: To set relative z and absolute roll: (Z_REL | R_ABS) or (7 | 12288) = (7 + 12288) = 12295
-        @param type 0=Set (for all explicit set-functions), 1=Update (when object is updated by any controller)
+        @param type SET, UPDATE, INIT, ALL. See enum class PosModeType.
         */
         void SetMode(PosModeType type, int mode);
 
+        /**
+        Specify if and how position object will align to the road. This variant
+        specify type(s) as bitmask, allowing for any combination of SET, UPDATE and/or INIT
+        @param mode Bitmask combining values from roadmanager::PosMode enum
+        example: To set relative z and absolute roll: (Z_REL | R_ABS) or (7 | 12288) = (7 + 12288) = 12295
+        @param type SET, UPDATE, INIT, ALL. See enum class PosModeType.
+        */
         void SetModes(int types, int mode);
+
+        /**
+        Specify if and how position object will align to the road. This variant
+        allows specifying mode as raw bitmask for specified mode type(s).
+        @param type SET, UPDATE, INIT, ALL. See enum class PosModeType.
+        */
+        void SetModeBits(PosModeType type, int bits);
 
         int GetMode(PosModeType type);
 
@@ -3999,6 +3992,8 @@ namespace roadmanager
             return direction_mode_;
         }
 
+        bool EvaluateRoadZHPR(int mode);
+
         // Relative values
         struct RelativeInfo
         {
@@ -4015,9 +4010,12 @@ namespace roadmanager
             double dr     = 0.0;
         } relative_;
 
+        // route reference
+        Route *route_;  // if pointer set, the position corresponds to a point along (s) the route
+
     protected:
         void       Track2Lane();
-        ReturnCode Track2XYZ();
+        ReturnCode Track2XYZ(int mode);
         void       Lane2Track();
         void       RoadMark2Track();
         /**
@@ -4026,7 +4024,6 @@ namespace roadmanager
         void       LaneBoundary2Track();
         void       XYZ2Track(int mode = PosMode::UNDEFINED);
         ReturnCode SetLongitudinalTrackPos(int track_id, double s);
-        bool       EvaluateRoadZHPR();
 
         /**
         Update trajectory position
@@ -4037,9 +4034,6 @@ namespace roadmanager
 
         // Control lane belonging
         bool lockOnLane_;  // if true then keep logical lane regardless of lateral position, default false
-
-        // route reference
-        std::shared_ptr<Route> route_;  // if pointer set, the position corresponds to a point along (s) the route
 
         // trajectory reference
         RMTrajectory *trajectory_;  // if pointer set, the position corresponds to a point along (s) the trajectory
@@ -4119,7 +4113,7 @@ namespace roadmanager
     class Route
     {
     public:
-        Route() : invalid_route_(false), waypoint_idx_(-1), path_s_(0), length_(0)
+        Route() : invalid_route_(false), active_(false), waypoint_idx_(-1), path_s_(0), length_(0)
         {
         }
 
@@ -4128,7 +4122,7 @@ namespace roadmanager
         @param position A regular position created with road, lane or world coordinates
         @return Non zero return value indicates error of some kind
         */
-        int AddWaypoint(Position *position);
+        int AddWaypoint(const Position &position);
 
         /**
         Return direction Adds a waypoint to the route. One waypoint per road. At most one junction between waypoints.
@@ -4283,6 +4277,13 @@ namespace roadmanager
     class PolyLineBase
     {
     public:
+        enum class InterpolationMode
+        {
+            INTERPOLATE_NONE    = 0,
+            INTERPOLATE_SEGMENT = 1,
+            INTERPOLATE_CORNER  = 2
+        };
+
         PolyLineBase() : length_(0), current_index_(0), current_s_(0.0)
         {
         }
@@ -4335,6 +4336,7 @@ namespace roadmanager
         int                     current_index_;
         double                  current_s_;
         double                  length_;
+        InterpolationMode       interpolation_mode_ = InterpolationMode::INTERPOLATE_NONE;
 
     protected:
         int EvaluateSegmentByLocalS(int i, double local_s, double cornerRadius, TrajVertex &pos);
@@ -4538,6 +4540,8 @@ namespace roadmanager
             ControlPoint(Position pos, double time, double weight) : pos_(pos), time_(time), weight_(weight)
             {
             }
+
+            ~ControlPoint() = default;
         };
 
     public:

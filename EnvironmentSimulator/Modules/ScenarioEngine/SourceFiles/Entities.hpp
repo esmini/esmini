@@ -548,6 +548,42 @@ namespace scenarioengine
             dirty_ = 0;
         }
 
+        void SetRole(std::string role)
+        {
+            if (role == "ambulance")
+            {
+                role_ = static_cast<int>(Object::Role::AMBULANCE);
+            }
+            else if (role == "civil")
+            {
+                role_ = static_cast<int>(Object::Role::CIVIL);
+            }
+            else if (role == "fire")
+            {
+                role_ = static_cast<int>(Object::Role::FIRE);
+            }
+            else if (role == "military")
+            {
+                role_ = static_cast<int>(Object::Role::MILITARY);
+            }
+            else if (role == "police")
+            {
+                role_ = static_cast<int>(Object::Role::POLICE);
+            }
+            else if (role == "public_transport")
+            {
+                role_ = static_cast<int>(Object::Role::PUBLIC_TRANSPORT);
+            }
+            else if (role == "road_assistance")
+            {
+                role_ = static_cast<int>(Object::Role::ROAD_ASSISTANCE);
+            }
+            else
+            {
+                role_ = static_cast<int>(Object::Role::NONE);
+            }
+        }
+
         void SetActive(bool active)
         {
             is_active_ = active;
@@ -653,42 +689,6 @@ namespace scenarioengine
             }
 
             return;
-        }
-
-        void SetRole(std::string role)
-        {
-            if (role == "ambulance")
-            {
-                role_ = static_cast<int>(Object::Role::AMBULANCE);
-            }
-            else if (role == "civil")
-            {
-                role_ = static_cast<int>(Object::Role::CIVIL);
-            }
-            else if (role == "fire")
-            {
-                role_ = static_cast<int>(Object::Role::FIRE);
-            }
-            else if (role == "military")
-            {
-                role_ = static_cast<int>(Object::Role::MILITARY);
-            }
-            else if (role == "police")
-            {
-                role_ = static_cast<int>(Object::Role::POLICE);
-            }
-            else if (role == "public_transport")
-            {
-                role_ = static_cast<int>(Object::Role::PUBLIC_TRANSPORT);
-            }
-            else if (role == "road_assistance")
-            {
-                role_ = static_cast<int>(Object::Role::ROAD_ASSISTANCE);
-            }
-            else
-            {
-                role_ = static_cast<int>(Object::Role::NONE);
-            }
         }
 
         int                             ConnectTrailer(Vehicle* trailer);

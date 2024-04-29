@@ -2001,7 +2001,7 @@ TEST_F(StraightRoadTest, TestObjectOverlap)
     EXPECT_EQ(ego.OverlappingFront(&target, 0.02), Object::OverlapType::PART);
 
     // Rotate ego 90 deg
-    ego.pos_.SetH(M_PI_2);
+    ego.pos_.SetHeading(M_PI_2, false);
     target.pos_.SetInertiaPos(0.0, 10.0, 0.0);
     EXPECT_EQ(ego.OverlappingFront(&target, 0.01), Object::OverlapType::INSIDE_AND_FULL);
 }
@@ -2489,8 +2489,8 @@ TEST(ConditionTest, TestTTC)
     Object obj(Object::Type::VEHICLE);
 
     TrigByTimeToCollision t;
-    t.object_                    = &obj;
-    t.triggering_entities_.rule_ = TrigByTimeToCollision::TriggeringEntitiesRule::ANY;
+    t.object_                 = &obj;
+    t.triggering_entity_rule_ = TrigByTimeToCollision::TriggeringEntitiesRule::ANY;
     t.triggering_entities_.entity_.push_back({&trig_obj});
     t.value_       = 3.0;
     t.freespace_   = false;
@@ -2882,9 +2882,9 @@ TEST(ClothoidSplineTest, TestTrajectoryShape)
     // Check car position at given time at end phase of the scenario
     // Correct position indicates all trajectories have been evaluated correctly
     EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 242.101, 1E-3);
-    EXPECT_NEAR(entities->object_[0]->pos_.GetY(), 1.087, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetY(), 1.085, 1E-3);
     EXPECT_NEAR(entities->object_[0]->pos_.GetZ(), 0.0, 1E-3);
-    EXPECT_NEAR(GetAngleDifference(entities->object_[0]->pos_.GetH(), -0.031), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[0]->pos_.GetH(), 6.262), 0.0, 1E-3);
     EXPECT_NEAR(GetAngleDifference(entities->object_[0]->pos_.GetP(), 0.0), 0.0, 1E-3);
     EXPECT_NEAR(GetAngleDifference(entities->object_[0]->pos_.GetR(), 0.0), 0.0, 1E-3);
 
@@ -2897,7 +2897,6 @@ TEST(RelativePositionRouting, TestRelativePositionWithRoutes)
     ASSERT_NE(se, nullptr);
     se->step(0.0);
     se->prepareGroundTruth(0.0);
-
     scenarioengine::Entities* entities = &se->entities_;
     ASSERT_NE(entities, nullptr);
     ASSERT_EQ(entities->object_.size(), 6);

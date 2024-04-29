@@ -107,6 +107,12 @@ ScenarioPlayer::~ScenarioPlayer()
         }
     }
 #endif  // _USE_OSG
+
+    for (auto& s : sensor)
+    {
+        delete s;
+    }
+
     Logger::Inst().SetTimePtr(0);
     if (scenarioEngine)
     {
@@ -1290,6 +1296,7 @@ int ScenarioPlayer::Init()
                   "Additional custom light source <x,y,z,intensity> intensity range 0..1 (multiple occurrences supported)",
                   "position and intensity");
     opt.AddOption("disable_controllers", "Disable controllers");
+    opt.AddOption("disable_pline_interpolation", "Do not apply orientation interpolation of polyline trajectories");
     opt.AddOption("disable_log", "Prevent logfile from being created");
     opt.AddOption("disable_stdout", "Prevent messages to stdout");
     opt.AddOption("enforce_generate_model", "Generate road 3D model even if SceneGraphFile is specified");

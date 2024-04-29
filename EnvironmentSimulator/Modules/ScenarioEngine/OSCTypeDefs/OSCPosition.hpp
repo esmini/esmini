@@ -100,7 +100,7 @@ namespace scenarioengine
         roadmanager::Position position_;
     };
 
-    class OSCPositionWorld : OSCPosition
+    class OSCPositionWorld : public OSCPosition
     {
     public:
         OSCPositionWorld() : OSCPosition(PositionType::WORLD)
@@ -116,7 +116,7 @@ namespace scenarioengine
         }
     };
 
-    class OSCPositionLane : OSCPosition
+    class OSCPositionLane : public OSCPosition
     {
     public:
         OSCPositionLane() : OSCPosition(PositionType::LANE)
@@ -130,7 +130,7 @@ namespace scenarioengine
         }
     };
 
-    class OSCPositionRoad : OSCPosition
+    class OSCPositionRoad : public OSCPosition
     {
     public:
         OSCPositionRoad() : OSCPosition(PositionType::LANE)
@@ -144,7 +144,7 @@ namespace scenarioengine
         }
     };
 
-    class OSCPositionRelativeObject : OSCPosition
+    class OSCPositionRelativeObject : public OSCPosition
     {
     public:
         Object *object_;
@@ -159,7 +159,7 @@ namespace scenarioengine
         }
     };
 
-    class OSCPositionRelativeWorld : OSCPosition
+    class OSCPositionRelativeWorld : public OSCPosition
     {
     public:
         Object *object_;
@@ -173,7 +173,7 @@ namespace scenarioengine
         }
     };
 
-    class OSCPositionRelativeLane : OSCPosition
+    class OSCPositionRelativeLane : public OSCPosition
     {
     public:
         Object        *object_;
@@ -193,7 +193,7 @@ namespace scenarioengine
         }
     };
 
-    class OSCPositionRelativeRoad : OSCPosition
+    class OSCPositionRelativeRoad : public OSCPosition
     {
     public:
         Object *object_;
@@ -209,15 +209,15 @@ namespace scenarioengine
         }
     };
 
-    class OSCPositionRoute : OSCPosition
+    class OSCPositionRoute : public OSCPosition
     {
     public:
         OSCPositionRoute() : OSCPosition(PositionType::ROUTE)
         {
         }
-        OSCPositionRoute(std::shared_ptr<roadmanager::Route> route, double s, int laneId, double laneOffset);
+        OSCPositionRoute(roadmanager::Route *route, double s, int laneId, double laneOffset);
 
-        void SetRoute(std::shared_ptr<roadmanager::Route> route)
+        void SetRoute(roadmanager::Route *route)
         {
             position_.SetRoute(route);
         }
@@ -234,7 +234,7 @@ namespace scenarioengine
         }
     };
 
-    class OSCPositionTrajectory : OSCPosition
+    class OSCPositionTrajectory : public OSCPosition
     {
     public:
         OSCPositionTrajectory() : OSCPosition(PositionType::TRAJECTORY)
