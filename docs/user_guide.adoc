@@ -184,7 +184,7 @@ image::cut-in_trail_and_bb.png[]
 
 ==== Camera control
 
-In addition to several OSG standard camera models esmini adds a set of special purpose camera modes that follows following scenario entities in various ways. Further, the user can add custom cameras via API or launch arguments.
+In addition to several OSG standard camera models esmini adds a set of special purpose camera modes that follows following scenario entities in various ways. Further, the user can add custom cameras via <<Custom camera positions,API>> or launch arguments.
 
 Top level camera mode is selected on keys '1' to '8'. Mode 2-8 are OpenSceneGraph standard cameras. Mode 1 hands over camera control to esmini. In this mode, switch camera model by pressing 'k' which will toggle between all available esmini camera model.
 
@@ -3197,6 +3197,28 @@ Finally, to disable esmini image handling altogether and revert to OSG default h
 ``SE_SetOffScreenRendering(false);``
 
 Note that disabling the this will permanently disable the callback mechanism for the complete esmini session (overriding any SE_SaveImagesToRAM() call).
+
+==== Custom camera positions
+Similarly as with camera related launch arguments, <<Camera control, camera positioning>> can be controlled via esmini lib API.
+
+- `SE_AddCustomCamera()` +
+  Add a camera with relative position and orientation (heading and pitch)
+- `SE_AddCustomFixedCamera()` +
+  Add a fixed camera at custom global position and orientation (heading and pitch)
+- `SE_AddCustomAimingCamera()` +
+  Add a camera with relative position looking at current entity
+- `SE_AddCustomFixedAimingCamera()` +
+  Add a camera at fixed location but always looking at current entity
+- `SE_AddCustomFixedTopCamera()` +
+  Add a top view camera with fixed position and rotation
+- `SE_SetCameraObjectFocus` +
+  Set/change object to focus on
+
+More info, see https://github.com/esmini/esmini/blob/91c82fb78deb4355f736f87510069f52cc0e6be5/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L1519C1-L1582C59[headerfile].
+
+Any number of cameras can be defined. These cameras can then be activated via function: `SE_SetCameraMode()`.
+
+Applications can even loop through the camera modes to produce images from several cameras. See code example https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/code-examples/image-capture/multiple-cameras.cpp[multiple-cameras.cpp].
 
 ==== OSI data
 
