@@ -2371,6 +2371,18 @@ void VisibilityAction::Start(double simTime)
     OSCAction::Start(simTime);
     object_->SetVisibilityMask((graphics_ ? Object::Visibility::GRAPHICS : 0) | (traffic_ ? Object::Visibility::TRAFFIC : 0) |
                                (sensors_ ? Object::Visibility::SENSORS : 0));
+    auto towVehicle = object_->TowVehicle();
+    if (towVehicle)
+    {
+        towVehicle->SetVisibilityMask((graphics_ ? Object::Visibility::GRAPHICS : 0) | (traffic_ ? Object::Visibility::TRAFFIC : 0) |
+                                      (sensors_ ? Object::Visibility::SENSORS : 0));
+    }
+    auto TrailerVehicle = object_->TrailerVehicle();
+    if (TrailerVehicle)
+    {
+        TrailerVehicle->SetVisibilityMask((graphics_ ? Object::Visibility::GRAPHICS : 0) | (traffic_ ? Object::Visibility::TRAFFIC : 0) |
+                                          (sensors_ ? Object::Visibility::SENSORS : 0));
+    }
 }
 
 void VisibilityAction::Step(double simTime, double dt)
