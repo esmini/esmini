@@ -73,7 +73,7 @@ Additional OSG graphics options:
 
 Key shortcuts
 
-    H (shift + h): This help text
+    H (shift + h): Print this help text to console
     TAB:           Move camera to next vehicle
     Shift + TAB:   Move camera to previoius vehicle
     Delete:        Same as above (Shift + TAB)
@@ -86,6 +86,7 @@ Key shortcuts
     i:             Toggle on-screen info text modes
     n:             Toggle show active trajectories
     , (comma):     Switch entity view : Model only / Bounding box / Model + Bounding box / None
+    K:             Print current camera position and orientation to console
     ESC:           quit
 
     Arrow keys

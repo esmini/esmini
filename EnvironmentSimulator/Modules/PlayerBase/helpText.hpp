@@ -13,7 +13,7 @@
 const char* helpText = "\n\
 Key shortcuts \n\
     \n\
-    H (shift + h): This help text \n\
+    H (shift + h): Print this help text to console \n\
     Space:         Toggle pause/play simulation \n\
     Return:        Step simulation (one timestep) then pause \n\
     TAB:           Move camera to next vehicle \n\
@@ -30,6 +30,7 @@ Key shortcuts \n\
     j:             Toggle show trails after vehicles(4 modes: none / dots / lines / both) \n\
     n:             Toggle show active trajectories \n\
     , (comma):     Switch entity view : Model only / Bounding box / Model + Bounding box / None \n\
+    K:             Print current camera position and orientation to console \n\
     ESC:           quit \n\
     \n\
     Arrow keys is used to drive externally controlled Ego vehicle: \n\

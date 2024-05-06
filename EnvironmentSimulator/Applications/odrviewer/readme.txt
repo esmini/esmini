@@ -94,7 +94,7 @@ Examples:
 
 Key shortcuts
 
-    H (shift + h): This help text
+    H (shift + h): Print this help text to console
     Space:         Toggle pause/play simulation
     Return:        Step simulation(one timestep) then pause
     TAB:           Move camera to next vehicle
@@ -105,7 +105,8 @@ Key shortcuts
     y:             Toggle show / hide OSI road points
     p:             Toggle show / hide environment 3D model
     i:             Toggle info text showing time and speed
-    , (comma):     Toggle entity view : Model / None
+    , (comma):     Switch entity view : Model only / Bounding box / Model + Bounding box / None
+    K:             Print current camera position and orientation to console
     ESC:           quit
 
     1 - 9: Camera models acording to :

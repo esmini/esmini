@@ -13,7 +13,7 @@
 const char* helpText = "\n\
 Key shortcuts \n\
     \n\
-    H (shift + h): This help text \n\
+    H (shift + h): Print this help text to console \n\
     Space:         Toggle pause/play simulation \n\
     Return:        Step simulation(one timestep) then pause \n\
     TAB:           Move camera to next vehicle \n\
@@ -24,7 +24,8 @@ Key shortcuts \n\
     y:             Toggle show / hide OSI road points \n\
     p:             Toggle show / hide environment 3D model \n\
     i:             Toggle info text showing time and speed \n\
-    , (comma):     Toggle entity view : Model / None \n\
+    , (comma):     Switch entity view : Model only / Bounding box / Model + Bounding box / None \n\
+    K:             Print current camera position and orientation to console \n\
     ESC:           quit \n\
     \n\
     1 - 9: Camera models acording to : \n\

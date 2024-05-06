@@ -13,7 +13,7 @@
 static const char* helpText = "\n\
 Key shortcuts \n\
     \n\
-    H (shift + h): This help text \n\
+    H (shift + h): Print this help text to console \n\
     TAB:           Move camera to next vehicle \n\
     Shift + TAB:   Move camera to previoius vehicle \n\
     Delete:        Same as above (Shift + TAB) \n\
@@ -26,6 +26,7 @@ Key shortcuts \n\
     i:             Toggle on-screen info text modes \n\
     n:             Toggle show active trajectories \n\
     , (comma):     Switch entity view : Model only / Bounding box / Model + Bounding box / None \n\
+    K:             Print current camera position and orientation to console \n\
     ESC:           quit \n\
     \n\
     Arrow keys \n\
