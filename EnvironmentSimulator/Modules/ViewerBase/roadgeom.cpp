@@ -37,6 +37,8 @@
 #define POLYGON_OFFSET_BORDER    -1.0
 #define POLYGON_OFFSET_GRASS     -2.0
 
+#define ROADMARK_Z_OFFSET 0.02
+
 const static double friction_max     = 5.0;
 const static double friction_default = 1.0;
 
@@ -241,10 +243,10 @@ int RoadGeom::AddRoadMarks(roadmanager::Lane* lane, osg::Group* parent)
                                     y1r);
 
                         // Set vertices and indices
-                        (*vertices)[0].set(static_cast<float>(x0l), static_cast<float>(y0l), static_cast<float>(osi_point0.z));
-                        (*vertices)[1].set(static_cast<float>(x0r), static_cast<float>(y0r), static_cast<float>(osi_point0.z));
-                        (*vertices)[2].set(static_cast<float>(x1l), static_cast<float>(y1l), static_cast<float>(osi_point1.z));
-                        (*vertices)[3].set(static_cast<float>(x1r), static_cast<float>(y1r), static_cast<float>(osi_point1.z));
+                        (*vertices)[0].set(static_cast<float>(x0l), static_cast<float>(y0l), static_cast<float>(osi_point0.z + ROADMARK_Z_OFFSET));
+                        (*vertices)[1].set(static_cast<float>(x0r), static_cast<float>(y0r), static_cast<float>(osi_point0.z + ROADMARK_Z_OFFSET));
+                        (*vertices)[2].set(static_cast<float>(x1l), static_cast<float>(y1l), static_cast<float>(osi_point1.z + ROADMARK_Z_OFFSET));
+                        (*vertices)[3].set(static_cast<float>(x1r), static_cast<float>(y1r), static_cast<float>(osi_point1.z + ROADMARK_Z_OFFSET));
 
                         (*indices)[0] = 0;
                         (*indices)[1] = 1;
@@ -313,20 +315,20 @@ int RoadGeom::AddRoadMarks(roadmanager::Lane* lane, osg::Group* parent)
                             // First point, no adjustment needed
                             (*vertices)[q * 2 + 0].set(static_cast<float>(l1p0l[0]),
                                                        static_cast<float>(l1p0l[1]),
-                                                       static_cast<float>(osi_points[q].z));
+                                                       static_cast<float>(osi_points[q].z + ROADMARK_Z_OFFSET));
                             (*vertices)[q * 2 + 1].set(static_cast<float>(l1p0r[0]),
                                                        static_cast<float>(l1p0r[1]),
-                                                       static_cast<float>(osi_points[q].z));
+                                                       static_cast<float>(osi_points[q].z + ROADMARK_Z_OFFSET));
                         }
                         else if (q == osi_points.size() - 1)
                         {
                             // Last point, no adjustment needed
                             (*vertices)[q * 2 + 0].set(static_cast<float>(l1p1l[0]),
                                                        static_cast<float>(l1p1l[1]),
-                                                       static_cast<float>(osi_points[q].z));
+                                                       static_cast<float>(osi_points[q].z + ROADMARK_Z_OFFSET));
                             (*vertices)[q * 2 + 1].set(static_cast<float>(l1p1r[0]),
                                                        static_cast<float>(l1p1r[1]),
-                                                       static_cast<float>(osi_points[q].z));
+                                                       static_cast<float>(osi_points[q].z + ROADMARK_Z_OFFSET));
                         }
                         else
                         {
@@ -346,14 +348,14 @@ int RoadGeom::AddRoadMarks(roadmanager::Lane* lane, osg::Group* parent)
                             {
                                 (*vertices)[q * 2 + 0].set(static_cast<float>(isect[0]),
                                                            static_cast<float>(isect[1]),
-                                                           static_cast<float>(osi_points[q].z));
+                                                           static_cast<float>(osi_points[q].z + ROADMARK_Z_OFFSET));
                             }
                             else
                             {
                                 // lines parallel, no adjustment needed
                                 (*vertices)[q * 2 + 0].set(static_cast<float>(l1p0l[0]),
                                                            static_cast<float>(l1p0l[1]),
-                                                           static_cast<float>(osi_points[q].z));
+                                                           static_cast<float>(osi_points[q].z + ROADMARK_Z_OFFSET));
                             }
 
                             if (GetIntersectionOfTwoLineSegments(l0p0r[0],
@@ -369,14 +371,14 @@ int RoadGeom::AddRoadMarks(roadmanager::Lane* lane, osg::Group* parent)
                             {
                                 (*vertices)[q * 2 + 1].set(static_cast<float>(isect[0]),
                                                            static_cast<float>(isect[1]),
-                                                           static_cast<float>(osi_points[q].z));
+                                                           static_cast<float>(osi_points[q].z + ROADMARK_Z_OFFSET));
                             }
                             else
                             {
                                 // lines parallel, no adjustment needed
                                 (*vertices)[q * 2 + 1].set(static_cast<float>(l1p0r[0]),
                                                            static_cast<float>(l1p0r[1]),
-                                                           static_cast<float>(osi_points[q].z));
+                                                           static_cast<float>(osi_points[q].z + ROADMARK_Z_OFFSET));
                             }
                         }
 
