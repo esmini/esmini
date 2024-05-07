@@ -3299,7 +3299,16 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
                         break;  // object would reach outside specified total length
                     }
 
-                    clone = tx != nullptr ? dynamic_cast<osg::PositionAttitudeTransform*>(tx->clone(osg::CopyOp::SHALLOW_COPY)) : nullptr;
+                    if (nCopies == 0)
+                    {
+                        // first object
+                        clone = tx;
+                    }
+                    else
+                    {
+                        clone = tx != nullptr ? dynamic_cast<osg::PositionAttitudeTransform*>(tx->clone(osg::CopyOp::DEEP_COPY_ALL)) : nullptr;
+                        clone->setDataVariance(osg::Object::STATIC);
+                    }
 
                     if (rep == nullptr)
                     {
@@ -3499,8 +3508,12 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
         }
     }
 
-    osgUtil::Optimizer optimizer;
-    optimizer.optimize(objGroup, osgUtil::Optimizer::FLATTEN_STATIC_TRANSFORMS);
+    if (!SE_Env::Inst().GetOptions().GetOptionSet("save_generated_model"))
+    {
+        // For some reason this operation ruins the positioning of road objects in exported model
+        osgUtil::Optimizer optimizer;
+        optimizer.optimize(objGroup, osgUtil::Optimizer::FLATTEN_STATIC_TRANSFORMS);
+    }
 
     envTx_->addChild(objGroup);
 
