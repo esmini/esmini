@@ -367,6 +367,7 @@ int main(int argc, char** argv)
                   "Directory containing replays to overlay, pair with \"file\" argument, where \"file\" is .dat filename match substring",
                   "path");
     opt.AddOption("ground_plane", "Add a large flat ground surface");
+    opt.AddOption("generate_without_textures", "Do not apply textures on any generated road model (set colors instead as for missing textures)");
     opt.AddOption("headless", "Run without viewer window");
     opt.AddOption("hide_trajectories", "Hide trajectories from start (toggle with key 'n')");
     opt.AddOption("info_text", "Show on-screen info text (toggle key 'i') mode 0=None 1=current (default) 2=per_object 3=both", "mode");

@@ -554,8 +554,13 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive* odr)
 
     root_->addChild(rm_group_);
 
-    osg::ref_ptr<osg::Texture2D> tex_asphalt = ReadTexture("asphalt.jpg");
-    osg::ref_ptr<osg::Texture2D> tex_grass   = ReadTexture("grass.jpg");
+    osg::ref_ptr<osg::Texture2D> tex_asphalt;
+    osg::ref_ptr<osg::Texture2D> tex_grass;
+    if (!SE_Env::Inst().GetOptions().GetOptionSet("generate_without_textures"))
+    {
+        tex_asphalt = ReadTexture("asphalt.jpg");
+        tex_grass   = ReadTexture("grass.jpg");
+    }
 
     osg::ref_ptr<osg::Vec4Array> color_asphalt      = new osg::Vec4Array;
     osg::ref_ptr<osg::Vec4Array> color_concrete     = new osg::Vec4Array;

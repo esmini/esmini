@@ -24,6 +24,8 @@ Options:
       Directory containing replays to overlay, pair with "file" argument, where "file" is .dat filename match substring
   --ground_plane
       Add a large flat ground surface
+  --generate_without_textures
+      Do not apply textures on any generated road model (set colors instead as for missing textures)
   --headless
       Run without viewer window
   --hide_trajectories

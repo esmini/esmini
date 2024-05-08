@@ -2,7 +2,7 @@ odrviewer is a simple application for viewing OpenDRIVE files.
 
 Optionally it can populate the road lanes with randomized dummy vehicles, which will go until end of road then starting over from initial position. If reaching a junction with multiple options, it will randomly chose its way out.
 
-Application is launched from command line (or batch file). 
+Application is launched from command line (or batch file).
 
 Usage: odrviewer [options]
 Options:
@@ -34,6 +34,8 @@ Options:
       Run simulation decoupled from realtime, with specified timesteps
   --generate_no_road_objects
       Do not generate any OpenDRIVE road objects (e.g. when part of referred 3D model)
+  --generate_without_textures
+      Do not apply textures on any generated road model (set colors instead as for missing textures)
   --ground_plane
       Add a large flat ground surface
   --headless

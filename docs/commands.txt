@@ -36,6 +36,8 @@ Options:
       Set index of intial object for camera to follow (change with Tab/shift-Tab)
   --generate_no_road_objects
       Do not generate any OpenDRIVE road objects (e.g. when part of referred 3D model)
+  --generate_without_textures
+      Do not apply textures on any generated road model (set colors instead as for missing textures)
   --ground_plane
       Add a large flat ground surface
   --headless
