@@ -1,5 +1,16 @@
 ## esmini release notes
 
+### 2024-05-08 Version 2.37.10
+
+Improvements and fixes:
+- Add brief info on custom camera API to [User guide - Custom camera positions](https://esmini.github.io/#_custom_camera_positions)
+- Apply VisbilityAction to connected tow and trailer vehicles ([PR #565](https://github.com/esmini/esmini/issues/565))
+- Add missing print camera pose key command ('K') to help
+- Bump jinja2 from 3.1.3 to 3.1.4 ([PR #567](https://github.com/esmini/esmini/issues/567))
+- Add slight Z offset to road markings, avoiding flickering in exported models
+- Fix bug causing generated objects end up at origin (skip destructive optimization)
+- Add option to skip textures in generated model (--generate_without_textures)
+
 ### 2024-04-26 Version 2.37.9
 
 Improvements and fixes:
