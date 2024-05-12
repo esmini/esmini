@@ -115,6 +115,50 @@ TEST(VectorOperations, TestProjectPointOnVector)
     EXPECT_NEAR(v_result[1], -8.45588, 1E-5);
 }
 
+TEST(VectorOperations, TestProjectPointOnVectorSignedLength)
+{
+    // https://www.desmos.com/calculator/wu0xiyqcnj
+
+    double v_result[2]   = {0.0, 0.0};
+    double signed_length = 0.0;
+
+    signed_length = ProjectPointOnVector2DSignedLength(5.0, 1.0, 0.1, 0.0, v_result[0], v_result[1]);
+    EXPECT_NEAR(v_result[0], 5.0, 1E-5);
+    EXPECT_NEAR(v_result[1], 0.0, 1E-5);
+    EXPECT_NEAR(signed_length, 5.0, 1E-5);
+
+    signed_length = ProjectPointOnVector2DSignedLength(0.1, -1.0, 4.0, 0.0, v_result[0], v_result[1]);
+    EXPECT_NEAR(v_result[0], 0.1, 1E-5);
+    EXPECT_NEAR(v_result[1], 0.0, 1E-5);
+    EXPECT_NEAR(signed_length, 0.1, 1E-5);
+
+    signed_length = ProjectPointOnVector2DSignedLength(-1.0, -1.0, 2.0, 0.0, v_result[0], v_result[1]);
+    EXPECT_NEAR(v_result[0], -1.0, 1E-5);
+    EXPECT_NEAR(v_result[1], 0.0, 1E-5);
+    EXPECT_NEAR(signed_length, -1.0, 1E-5);
+
+    // zero vector, undefined
+    signed_length = ProjectPointOnVector2DSignedLength(-1.0, -1.0, 0.0, 0.0, v_result[0], v_result[1]);
+    EXPECT_NEAR(v_result[0], 0.0, 1E-5);
+    EXPECT_NEAR(v_result[1], 0.0, 1E-5);
+    EXPECT_NEAR(signed_length, 0.0, 1E-5);
+
+    signed_length = ProjectPointOnVector2DSignedLength(1.0, 0.0, 5.0, 5.0, v_result[0], v_result[1]);
+    EXPECT_NEAR(v_result[0], 0.5, 1E-5);
+    EXPECT_NEAR(v_result[1], 0.5, 1E-5);
+    EXPECT_NEAR(signed_length, 0.70711, 1E-5);
+
+    signed_length = ProjectPointOnVector2DSignedLength(1.0, 0.0, -5.0, 5.0, v_result[0], v_result[1]);
+    EXPECT_NEAR(v_result[0], 0.5, 1E-5);
+    EXPECT_NEAR(v_result[1], -0.5, 1E-5);
+    EXPECT_NEAR(signed_length, -0.70711, 1E-5);
+
+    signed_length = ProjectPointOnVector2DSignedLength(2.5, -10.0, -3.0, 5.0, v_result[0], v_result[1]);
+    EXPECT_NEAR(v_result[0], 5.07353, 1E-5);
+    EXPECT_NEAR(v_result[1], -8.45588, 1E-5);
+    EXPECT_NEAR(signed_length, -9.86117, 1E-5);
+}
+
 TEST(MatrixOperations, TestMatrixInvert)
 {
     double m[3][3] = {{1.0, 0.0, 2.0}, {0.0, 1.0, 0.0}, {0.0, 0.0, 1.0}}, m_out[3][3];

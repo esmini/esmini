@@ -3980,8 +3980,8 @@ TEST(RoadmanagerTest, TestGetPositionDiff)
     EXPECT_EQ(diff.dLaneId, 0);
     EXPECT_NEAR(diff.ds, 31.729, 1e-3);
     EXPECT_NEAR(diff.dt, 0.0, 1e-3);
-    EXPECT_NEAR(diff.dx, 21.283, 1e-3);
-    EXPECT_NEAR(diff.dy, -17.780, 1e-3);
+    EXPECT_NEAR(diff.dx, 21.235, 1e-3);
+    EXPECT_NEAR(diff.dy, -17.838, 1e-3);
     EXPECT_EQ(diff.oppositeLanes, false);
 
     while (SE_GetSimulationTime() < 35.0f)
@@ -3993,8 +3993,8 @@ TEST(RoadmanagerTest, TestGetPositionDiff)
     EXPECT_EQ(diff.dLaneId, -1);
     EXPECT_NEAR(diff.ds, -93.045, 1e-3);
     EXPECT_NEAR(diff.dt, -2.923, 1e-3);
-    EXPECT_NEAR(diff.dx, -31.340, 1e-3);
-    EXPECT_NEAR(diff.dy, -68.577, 1e-3);
+    EXPECT_NEAR(diff.dx, -30.870, 1e-3);
+    EXPECT_NEAR(diff.dy, -68.789, 1e-3);
     EXPECT_EQ(diff.oppositeLanes, true);
 
     SE_Close();

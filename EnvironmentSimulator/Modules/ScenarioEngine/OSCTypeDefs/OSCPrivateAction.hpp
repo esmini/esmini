@@ -453,14 +453,15 @@ namespace scenarioengine
             ANY
         } DisplacementType;
 
-        Object*            target_object_;
-        double             distance_;
-        DistType           dist_type_;
-        double             freespace_;
-        bool               continuous_;
-        double             sim_time_;
-        DisplacementType   displacement_;
-        DynamicConstraints dynamics_;
+        Object*                       target_object_;
+        double                        distance_;
+        DistType                      dist_type_;
+        double                        freespace_;
+        bool                          continuous_;
+        double                        sim_time_;
+        DisplacementType              displacement_;
+        DynamicConstraints            dynamics_;
+        roadmanager::CoordinateSystem cs_;
 
         LongDistanceAction(StoryBoardElement* parent)
             : OSCPrivateAction(OSCPrivateAction::ActionType::LONG_DISTANCE, parent, static_cast<unsigned int>(ControlDomains::DOMAIN_LONG)),
@@ -470,6 +471,7 @@ namespace scenarioengine
               freespace_(0),
               sim_time_(0),
               displacement_(DisplacementType::NONE),
+              cs_(roadmanager::CoordinateSystem::CS_ENTITY),
               acceleration_(0)
         {
         }
@@ -486,6 +488,7 @@ namespace scenarioengine
             acceleration_  = action.acceleration_;
             sim_time_      = action.sim_time_;
             displacement_  = action.displacement_;
+            cs_            = action.cs_;
         }
 
         OSCPrivateAction* Copy()

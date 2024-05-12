@@ -2569,6 +2569,8 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                         LOG("LongitudinalDistanceAction displacement not supported in OSC version %d.%d", GetVersionMajor(), GetVersionMinor());
                     }
 
+                    action_dist->cs_ = ParseCoordinateSystem(longitudinalChild, roadmanager::CoordinateSystem::CS_ENTITY);
+
                     action = action_dist;
                 }
             }

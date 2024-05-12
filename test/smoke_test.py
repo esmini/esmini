@@ -452,14 +452,15 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('Loading .*drop-bike.xosc', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('5.010: drop trigger == true, 5.0100 > 5.0000 edge: none', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('4.310: drop trigger == true, 4.3100 > 4.3000 edge: none', log, re.MULTILINE)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv()
-        self.assertTrue(re.search('^5.010, 1, Target, 225.300, -1.535, 0.000, 0.000, 0.000, 0.000, 30.000', csv, re.MULTILINE))
-        self.assertTrue(re.search('^5.010, 2, bike, 224.100, -2.135, 0.200, 1.570, 0.000, 0.000, 30.000', csv, re.MULTILINE))
-        self.assertTrue(re.search('^5.020, 2, bike, 224.100, -2.135, 0.100, 1.570, 0.000, 1.570, 0.000', csv, re.MULTILINE))
-        self.assertTrue(re.search('^5.100, 2, bike, 224.100, -2.135, 0.100, 1.570, 0.000, 1.570, 0.000', csv, re.MULTILINE))
+        self.assertTrue(re.search('^4.300, 1, Target, 216.950, -1.535, 0.000, 0.000, 0.000, 0.000, 40.000, 0.000, 3.448', csv, re.MULTILINE))
+        self.assertTrue(re.search('^4.300, 2, bike, 215.750, -2.135, 0.200, 1.570, 0.000, 0.000, 40.000, 0.000, 3.162', csv, re.MULTILINE))
+        self.assertTrue(re.search('^4.310, 2, bike, 216.150, -2.135, 0.200, 1.570, 0.000, 0.000, 40.000, 0.000, 4.305', csv, re.MULTILINE))
+        self.assertTrue(re.search('^4.320, 2, bike, 216.150, -2.135, 0.100, 1.570, 0.000, 1.570, 0.000, 0.000, 4.305', csv, re.MULTILINE))
+        self.assertTrue(re.search('^4.330, 2, bike, 216.150, -2.135, 0.100, 1.570, 0.000, 1.570, 0.000, 0.000, 4.305', csv, re.MULTILINE))
 
     def test_speed_over_distance(self):
         log = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/speed_over_distance.xosc'), COMMON_ESMINI_ARGS)
@@ -1711,9 +1712,9 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('Loading .*mixed_control.xosc', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('14.800: AccelerateTrigger == true, rel_dist: 69.81 < 70.00, edge: rising', log)  is not None)
+        self.assertTrue(re.search('14.800: AccelerateTrigger == true, rel_dist: 69.80 < 70.00, edge: rising', log)  is not None)
         self.assertTrue(re.search('14.800: AccelerateEvent standbyState -> startTransition -> runningState', log)  is not None)
-        self.assertTrue(re.search('16.200: ActivateACCTrigger == true, rel_dist: 38.99 < 40.00, edge: rising', log)  is not None)
+        self.assertTrue(re.search('16.200: ActivateACCTrigger == true, rel_dist: 38.95 < 40.00, edge: rising', log)  is not None)
         self.assertTrue(re.search('16.200: Controller ACCController active on domains: Longitudinal \\(mask=0x1\\)', log)  is not None)
         self.assertTrue(re.search('24.100: Deactivating conflicting ctrl ACCController on domain Longitudinal', log)  is not None)
         self.assertTrue(re.search('24.100: Controller ExternalController active on domains: Longitudinal \\(mask=0x1\\)', log)  is not None)

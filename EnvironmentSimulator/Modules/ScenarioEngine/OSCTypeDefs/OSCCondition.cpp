@@ -723,8 +723,8 @@ bool TrigByTimeToCollision::CheckCondition(double sim_time)
     (void)sim_time;
 
     triggered_by_entities_.clear();
-    bool   result = false;
-    double rel_dist, rel_speed;
+    bool   result   = false;
+    double rel_dist = LARGE_NUMBER, rel_speed = 0.0;
 
     ttc_ = -1;
 
@@ -752,6 +752,7 @@ bool TrigByTimeToCollision::CheckCondition(double sim_time)
             roadmanager::Position* pos = position_->GetRMPos();
             retVal                     = trigObj->Distance(pos->GetX(), pos->GetY(), cs_, relDistType_, freespace_, rel_dist);
         }
+
         if (retVal != 0)
         {
             rel_dist = LARGE_NUMBER;
@@ -759,15 +760,36 @@ bool TrigByTimeToCollision::CheckCondition(double sim_time)
 
         if (object_)
         {
-            // Calculate relative speed along triggering object's velocity direction
             double rel_vel[2] = {0.0, 0.0};
-            ProjectPointOnVector2D(object_->pos_.GetVelX(),
-                                   object_->pos_.GetVelY(),
-                                   trigObj->pos_.GetVelX(),
-                                   trigObj->pos_.GetVelY(),
-                                   rel_vel[0],
-                                   rel_vel[1]);
-            rel_speed = GetLengthOfVector2D(trigObj->pos_.GetVelX() - rel_vel[0], trigObj->pos_.GetVelY() - rel_vel[1]);
+            double proj_speed = 0.0;
+
+            if (fabs(object_->pos_.GetVelX()) < SMALL_NUMBER && fabs(object_->pos_.GetVelY()) < SMALL_NUMBER)
+            {
+                // object standing still, consider only speed of triggering entity
+                rel_speed = trigObj->GetSpeed();
+            }
+            else
+            {
+                // Calculate relative speed of triggering entity along object's velocity direction
+                proj_speed = ProjectPointOnVector2DSignedLength(trigObj->pos_.GetVelX(),
+                                                                trigObj->pos_.GetVelY(),
+                                                                object_->pos_.GetVelX(),
+                                                                object_->pos_.GetVelY(),
+                                                                rel_vel[0],
+                                                                rel_vel[1]);
+
+                // calculate trig object relative speed as projected velocity absolute difference considering
+                rel_speed = SIGN(trigObj->GetSpeed()) * SIGN(proj_speed) * (proj_speed - fabs(object_->GetSpeed()));
+            }
+            // printf("rel_dist %.2f obj vel (%.2f, %.2f) speed %.2f trig_obj vel (%.2f, %.2f) speed %.2f proj_speed %.2f rel_speed %.2f\n",
+            //     rel_dist, object_->pos_.GetVelX(),
+            //     object_->pos_.GetVelY(),
+            //     object_->GetSpeed(),
+            //     trigObj->pos_.GetVelX(),
+            //     trigObj->pos_.GetVelY(),
+            //     trigObj->GetSpeed(),
+            //     proj_speed,
+            //     rel_speed);
         }
         else
         {
@@ -775,18 +797,24 @@ bool TrigByTimeToCollision::CheckCondition(double sim_time)
         }
 
         // TimeToCollision (TTC) not defined for cases:
-        //  - when target object is behind
-        //  - when triggering entity speed is <=0 (still or going reverse)
-        //  - when distance is constant or increasing
-        if (rel_dist < 0 || trigObj->speed_ < SMALL_NUMBER || rel_speed <= SMALL_NUMBER)
+        //  - no distance between entities
+        //  - moving away from each other
+        if (fabs(rel_dist) < SMALL_NUMBER || fabs(rel_speed) < SMALL_NUMBER)
         {
             ttc_ = -1;
         }
         else
         {
-            ttc_ = fabs(rel_dist / rel_speed);
+            ttc_ = rel_dist / rel_speed;
 
-            result = EvaluateRule(ttc_, value_, rule_);
+            if (ttc_ < 0.0)
+            {
+                ttc_ = -1.0;
+            }
+            else
+            {
+                result = EvaluateRule(ttc_, value_, rule_);
+            }
 
             if (result == true)
             {

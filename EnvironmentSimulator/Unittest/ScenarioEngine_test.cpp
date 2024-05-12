@@ -2231,6 +2231,195 @@ TEST(ControllerTest, TestLoomingControllerAdvanced)
     delete se;
 }
 
+static void EvaluateRelativeSpeed(Object& trig_obj, Object& obj, TrigByTimeToCollision& t, double heading)
+{
+    // object in front of triggering object
+    double obj_pos[2]      = {0.0, 0.0};
+    double trig_obj_pos[2] = {0.0, 0.0};
+    RotateVec2D(0.0, 0.0, heading, trig_obj_pos[0], trig_obj_pos[1]);
+    trig_obj.pos_.SetInertiaPos(trig_obj_pos[0], trig_obj_pos[1], heading, false);
+    RotateVec2D(100.0, 0.0, heading, obj_pos[0], obj_pos[1]);
+    obj.pos_.SetInertiaPos(obj_pos[0], obj_pos[1], heading, false);
+
+    trig_obj.SetSpeed(10.0);
+    trig_obj.SetVel(trig_obj.GetSpeed() * cos(trig_obj.pos_.GetH()), trig_obj.GetSpeed() * sin(trig_obj.pos_.GetH()), 0.0);
+    obj.SetSpeed(0.0);
+    obj.SetVel(obj.GetSpeed() * cos(obj.pos_.GetH()), obj.GetSpeed() * sin(obj.pos_.GetH()), 0.0);
+    EXPECT_EQ(t.CheckCondition(0.0), false);
+    EXPECT_NEAR(t.ttc_, 10.0, 1e-3);
+
+    obj.SetSpeed(-20.0);
+    obj.SetVel(obj.GetSpeed() * cos(obj.pos_.GetH()), obj.GetSpeed() * sin(obj.pos_.GetH()), 0.0);
+    EXPECT_EQ(t.CheckCondition(0.0), false);
+    EXPECT_NEAR(t.ttc_, 3.33333, 1e-3);
+
+    obj.SetSpeed(10.0);
+    obj.SetVel(obj.GetSpeed() * cos(obj.pos_.GetH()), obj.GetSpeed() * sin(obj.pos_.GetH()), 0.0);
+    trig_obj.SetSpeed(50.0);
+    trig_obj.SetVel(trig_obj.GetSpeed() * cos(trig_obj.pos_.GetH()), trig_obj.GetSpeed() * sin(trig_obj.pos_.GetH()), 0.0);
+    EXPECT_EQ(t.CheckCondition(0.0), true);
+    EXPECT_NEAR(t.ttc_, 2.5, 1e-3);
+
+    obj.SetSpeed(20.0);
+    obj.SetVel(obj.GetSpeed() * cos(obj.pos_.GetH()), obj.GetSpeed() * sin(obj.pos_.GetH()), 0.0);
+    trig_obj.SetSpeed(10.0);
+    trig_obj.SetVel(trig_obj.GetSpeed() * cos(trig_obj.pos_.GetH()), trig_obj.GetSpeed() * sin(trig_obj.pos_.GetH()), 0.0);
+    EXPECT_EQ(t.CheckCondition(0.0), false);
+    EXPECT_NEAR(t.ttc_, -1.0, 1e-3);
+
+    obj.SetSpeed(20.0);
+    obj.SetVel(obj.GetSpeed() * cos(obj.pos_.GetH()), obj.GetSpeed() * sin(obj.pos_.GetH()), 0.0);
+    trig_obj.SetSpeed(-10.0);
+    trig_obj.SetVel(trig_obj.GetSpeed() * cos(trig_obj.pos_.GetH()), trig_obj.GetSpeed() * sin(trig_obj.pos_.GetH()), 0.0);
+    EXPECT_EQ(t.CheckCondition(0.0), false);
+    EXPECT_NEAR(t.ttc_, -1.0, 1e-3);
+
+    // triggering object in front of object
+    RotateVec2D(100.0, 0.0, heading, trig_obj_pos[0], trig_obj_pos[1]);
+    trig_obj.pos_.SetInertiaPos(trig_obj_pos[0], trig_obj_pos[1], heading, false);
+    RotateVec2D(0.0, 0.0, heading, obj_pos[0], obj_pos[1]);
+    obj.pos_.SetInertiaPos(obj_pos[0], obj_pos[1], heading, false);
+
+    trig_obj.SetSpeed(10.0);
+    trig_obj.SetVel(trig_obj.GetSpeed() * cos(trig_obj.pos_.GetH()), trig_obj.GetSpeed() * sin(trig_obj.pos_.GetH()), 0.0);
+    obj.SetSpeed(0.0);
+    obj.SetVel(obj.GetSpeed() * cos(obj.pos_.GetH()), obj.GetSpeed() * sin(obj.pos_.GetH()), 0.0);
+    EXPECT_EQ(t.CheckCondition(0.0), false);
+    EXPECT_NEAR(t.ttc_, -1.0, 1e-3);
+
+    obj.SetSpeed(-20.0);
+    obj.SetVel(obj.GetSpeed() * cos(obj.pos_.GetH()), obj.GetSpeed() * sin(obj.pos_.GetH()), 0.0);
+    EXPECT_EQ(t.CheckCondition(0.0), false);
+    EXPECT_NEAR(t.ttc_, -1.0, 1e-3);
+
+    obj.SetSpeed(10.0);
+    obj.SetVel(obj.GetSpeed() * cos(obj.pos_.GetH()), obj.GetSpeed() * sin(obj.pos_.GetH()), 0.0);
+    trig_obj.SetSpeed(50.0);
+    trig_obj.SetVel(trig_obj.GetSpeed() * cos(trig_obj.pos_.GetH()), trig_obj.GetSpeed() * sin(trig_obj.pos_.GetH()), 0.0);
+    EXPECT_EQ(t.CheckCondition(0.0), false);
+    EXPECT_NEAR(t.ttc_, -1, 1e-3);
+
+    obj.SetSpeed(20.0);
+    obj.SetVel(obj.GetSpeed() * cos(obj.pos_.GetH()), obj.GetSpeed() * sin(obj.pos_.GetH()), 0.0);
+    trig_obj.SetSpeed(10.0);
+    trig_obj.SetVel(trig_obj.GetSpeed() * cos(trig_obj.pos_.GetH()), trig_obj.GetSpeed() * sin(trig_obj.pos_.GetH()), 0.0);
+    EXPECT_EQ(t.CheckCondition(0.0), false);
+    EXPECT_NEAR(t.ttc_, 10.0, 1e-3);
+
+    obj.SetSpeed(20.0);
+    obj.SetVel(obj.GetSpeed() * cos(obj.pos_.GetH()), obj.GetSpeed() * sin(obj.pos_.GetH()), 0.0);
+    trig_obj.SetSpeed(-10.0);
+    trig_obj.SetVel(trig_obj.GetSpeed() * cos(trig_obj.pos_.GetH()), trig_obj.GetSpeed() * sin(trig_obj.pos_.GetH()), 0.0);
+    EXPECT_EQ(t.CheckCondition(0.0), false);
+    EXPECT_NEAR(t.ttc_, 3.33333, 1e-3);
+
+    // object in front of object and opposite direction
+    RotateVec2D(0.0, 0.0, heading, trig_obj_pos[0], trig_obj_pos[1]);
+    trig_obj.pos_.SetInertiaPos(trig_obj_pos[0], trig_obj_pos[1], heading, false);
+    RotateVec2D(100.0, 0.0, heading, obj_pos[0], obj_pos[1]);
+    obj.pos_.SetInertiaPos(obj_pos[0], obj_pos[1], heading + M_PI, false);
+
+    trig_obj.SetSpeed(10.0);
+    trig_obj.SetVel(trig_obj.GetSpeed() * cos(trig_obj.pos_.GetH()), trig_obj.GetSpeed() * sin(trig_obj.pos_.GetH()), 0.0);
+    obj.SetSpeed(0.0);
+    obj.SetVel(obj.GetSpeed() * cos(obj.pos_.GetH()), obj.GetSpeed() * sin(obj.pos_.GetH()), 0.0);
+    EXPECT_EQ(t.CheckCondition(0.0), false);
+    EXPECT_NEAR(t.ttc_, 10.0, 1e-3);
+
+    obj.SetSpeed(-20.0);
+    obj.SetVel(obj.GetSpeed() * cos(obj.pos_.GetH()), obj.GetSpeed() * sin(obj.pos_.GetH()), 0.0);
+    EXPECT_EQ(t.CheckCondition(0.0), false);
+    EXPECT_NEAR(t.ttc_, -1, 1e-3);
+
+    obj.SetSpeed(10.0);
+    obj.SetVel(obj.GetSpeed() * cos(obj.pos_.GetH()), obj.GetSpeed() * sin(obj.pos_.GetH()), 0.0);
+    trig_obj.SetSpeed(50.0);
+    trig_obj.SetVel(trig_obj.GetSpeed() * cos(trig_obj.pos_.GetH()), trig_obj.GetSpeed() * sin(trig_obj.pos_.GetH()), 0.0);
+    EXPECT_EQ(t.CheckCondition(0.0), true);
+    EXPECT_NEAR(t.ttc_, 1.66667, 1e-3);
+
+    obj.SetSpeed(20.0);
+    obj.SetVel(obj.GetSpeed() * cos(obj.pos_.GetH()), obj.GetSpeed() * sin(obj.pos_.GetH()), 0.0);
+    trig_obj.SetSpeed(10.0);
+    trig_obj.SetVel(trig_obj.GetSpeed() * cos(trig_obj.pos_.GetH()), trig_obj.GetSpeed() * sin(trig_obj.pos_.GetH()), 0.0);
+    EXPECT_EQ(t.CheckCondition(0.0), false);
+    EXPECT_NEAR(t.ttc_, 3.33333, 1e-3);
+
+    obj.SetSpeed(20.0);
+    obj.SetVel(obj.GetSpeed() * cos(obj.pos_.GetH()), obj.GetSpeed() * sin(obj.pos_.GetH()), 0.0);
+    trig_obj.SetSpeed(-10.0);
+    trig_obj.SetVel(trig_obj.GetSpeed() * cos(trig_obj.pos_.GetH()), trig_obj.GetSpeed() * sin(trig_obj.pos_.GetH()), 0.0);
+    EXPECT_EQ(t.CheckCondition(0.0), false);
+    EXPECT_NEAR(t.ttc_, 10.0, 1e-3);
+
+    // Trig obj in front of object and opposite direction
+    RotateVec2D(100.0, 0.0, heading, trig_obj_pos[0], trig_obj_pos[1]);
+    trig_obj.pos_.SetInertiaPos(trig_obj_pos[0], trig_obj_pos[1], heading + M_PI, false);
+    RotateVec2D(0.0, 0.0, heading, obj_pos[0], obj_pos[1]);
+    obj.pos_.SetInertiaPos(obj_pos[0], obj_pos[1], heading, false);
+
+    trig_obj.SetSpeed(10.0);
+    trig_obj.SetVel(trig_obj.GetSpeed() * cos(trig_obj.pos_.GetH()), trig_obj.GetSpeed() * sin(trig_obj.pos_.GetH()), 0.0);
+    obj.SetSpeed(0.0);
+    obj.SetVel(obj.GetSpeed() * cos(obj.pos_.GetH()), obj.GetSpeed() * sin(obj.pos_.GetH()), 0.0);
+    EXPECT_EQ(t.CheckCondition(0.0), false);
+    EXPECT_NEAR(t.ttc_, 10.0, 1e-3);
+
+    obj.SetSpeed(-20.0);
+    obj.SetVel(obj.GetSpeed() * cos(obj.pos_.GetH()), obj.GetSpeed() * sin(obj.pos_.GetH()), 0.0);
+    EXPECT_EQ(t.CheckCondition(0.0), false);
+    EXPECT_NEAR(t.ttc_, -1.0, 1e-3);
+
+    obj.SetSpeed(10.0);
+    obj.SetVel(obj.GetSpeed() * cos(obj.pos_.GetH()), obj.GetSpeed() * sin(obj.pos_.GetH()), 0.0);
+    trig_obj.SetSpeed(50.0);
+    trig_obj.SetVel(trig_obj.GetSpeed() * cos(trig_obj.pos_.GetH()), trig_obj.GetSpeed() * sin(trig_obj.pos_.GetH()), 0.0);
+    EXPECT_EQ(t.CheckCondition(0.0), true);
+    EXPECT_NEAR(t.ttc_, 1.66667, 1e-3);
+
+    obj.SetSpeed(20.0);
+    obj.SetVel(obj.GetSpeed() * cos(obj.pos_.GetH()), obj.GetSpeed() * sin(obj.pos_.GetH()), 0.0);
+    trig_obj.SetSpeed(10.0);
+    trig_obj.SetVel(trig_obj.GetSpeed() * cos(trig_obj.pos_.GetH()), trig_obj.GetSpeed() * sin(trig_obj.pos_.GetH()), 0.0);
+    EXPECT_EQ(t.CheckCondition(0.0), false);
+    EXPECT_NEAR(t.ttc_, 3.33333, 1e-3);
+
+    obj.SetSpeed(20.0);
+    obj.SetVel(obj.GetSpeed() * cos(obj.pos_.GetH()), obj.GetSpeed() * sin(obj.pos_.GetH()), 0.0);
+    trig_obj.SetSpeed(-10.0);
+    trig_obj.SetVel(trig_obj.GetSpeed() * cos(trig_obj.pos_.GetH()), trig_obj.GetSpeed() * sin(trig_obj.pos_.GetH()), 0.0);
+    EXPECT_EQ(t.CheckCondition(0.0), false);
+    EXPECT_NEAR(t.ttc_, 10.0, 1e-3);
+}
+
+TEST(ConditionTest, TestTTC)
+{
+    Object trig_obj(Object::Type::VEHICLE);
+    Object obj(Object::Type::VEHICLE);
+
+    TrigByTimeToCollision t;
+    t.object_                    = &obj;
+    t.triggering_entities_.rule_ = TrigByTimeToCollision::TriggeringEntitiesRule::ANY;
+    t.triggering_entities_.entity_.push_back({&trig_obj});
+    t.value_       = 3.0;
+    t.freespace_   = false;
+    t.cs_          = roadmanager::CoordinateSystem::CS_ENTITY;
+    t.relDistType_ = roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL;
+    t.rule_        = Rule::LESS_OR_EQUAL;
+
+    trig_obj.SetActive(true);
+    obj.SetActive(true);
+
+    EvaluateRelativeSpeed(trig_obj, obj, t, 0.0 * M_PI_4);
+    EvaluateRelativeSpeed(trig_obj, obj, t, 1.0 * M_PI_4);
+    EvaluateRelativeSpeed(trig_obj, obj, t, 2.0 * M_PI_4);
+    EvaluateRelativeSpeed(trig_obj, obj, t, 3.0 * M_PI_4);
+    EvaluateRelativeSpeed(trig_obj, obj, t, 4.0 * M_PI_4);
+    EvaluateRelativeSpeed(trig_obj, obj, t, 5.0 * M_PI_4);
+    EvaluateRelativeSpeed(trig_obj, obj, t, 6.0 * M_PI_4);
+    EvaluateRelativeSpeed(trig_obj, obj, t, 7.0 * M_PI_4);
+}
+
 static void TTCAndLateralDistParamDeclCallback(void*)
 {
     static int counter  = 0;

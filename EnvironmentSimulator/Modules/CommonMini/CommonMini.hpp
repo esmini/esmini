@@ -431,6 +431,18 @@ void ProjectPointOnLine2D(double x, double y, double vx1, double vy1, double vx2
 void ProjectPointOnVector2D(double x0, double y0, double x1, double y1, double& px, double& py);
 
 /**
+        Project a 2D point on a 2D vector (from origin to specified point). Return signed length of resultant.
+        @param x0 X coordinate of point
+        @param y0 Y coordinate of point
+        @param x1 X coordinate of vector
+        @param y1 Y coordinate of vector
+        @param px X coordinate of projected point (reference parameter)
+        @param py Y coordinate of projected point (reference parameter)
+        @return Length of projected point relative given vector, negative if opposite direction
+*/
+double ProjectPointOnVector2DSignedLength(double x0, double y0, double x1, double y1, double& px, double& py);
+
+/**
         Check whether projected point is in area formed by the two given vectors
         @param p Point to check
         @param l0p0 First point of the first vector

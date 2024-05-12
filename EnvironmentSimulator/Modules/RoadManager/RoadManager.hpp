@@ -3322,8 +3322,8 @@ namespace roadmanager
         /**
         Straight (not route) distance between the current position and the one specified in argument
         @param target_position The position to measure distance from current position.
-        @param x (meter). X component of the relative distance.
-        @param y (meter). Y component of the relative distance.
+        @param x (meter). X component, in local coordinate system, of the relative distance vector.
+        @param y (meter). Y component, in local coordinate system, of the relative distance vector.
         @return distance (meter). Negative if the specified position is behind the current one.
         */
         double getRelativeDistance(double targetX, double targetY, double &x, double &y) const;

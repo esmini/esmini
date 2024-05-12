@@ -519,6 +519,19 @@ void ProjectPointOnVector2D(double x0, double y0, double x1, double y1, double& 
     }
 }
 
+double ProjectPointOnVector2DSignedLength(double x0, double y0, double x1, double y1, double& px, double& py)
+{
+    ProjectPointOnVector2D(x0, y0, x1, y1, px, py);
+
+    double length = GetLengthOfVector2D(px, py);
+    if (SIGN(px) != SIGN(x1) || SIGN(py) != SIGN(y1))
+    {
+        length *= -1;  // projected point in opposite direction
+    }
+
+    return length;
+}
+
 bool IsPointWithinSectorBetweenTwoLines(SE_Vector p, SE_Vector l0p0, SE_Vector l0p1, SE_Vector l1p0, SE_Vector l1p1, double& sNorm)
 {
     // If point is on the right side of first normal and to the left side of the second normal, then it's in between else not

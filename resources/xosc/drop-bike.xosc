@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <OpenSCENARIO xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="OpenSccenario.xsd">
-    <FileHeader description="Lead vehicle drops a bike" author="Mandolin" revMajor="1" revMinor="0" date="2021-06-17T14:48:00.821351"/>
+    <FileHeader description="Lead vehicle drops a bike" author="Mandolin" revMajor="1" revMinor="1" date="2021-06-17T14:48:00.821351"/>
     <ParameterDeclarations>
         <ParameterDeclaration name="name" parameterType="integer" value="0"/>
     </ParameterDeclarations>
@@ -23,17 +23,17 @@
             <CatalogReference catalogName="VehicleCatalog" entryName="bicycle"/>
         </ScenarioObject>
         <ScenarioObject name="Box">
-          <MiscObject name="box" miscObjectCategory="obstacle" model3d="../models/box_cc_by.osgb" mass="200.0">
-              <ParameterDeclarations/>
-              <BoundingBox>
-                  <Center x="0.0" y="0.0" z="0.75"/>
-                  <Dimensions width="1.0" length="2.0" height="1.2"/>
-              </BoundingBox>
-              <Properties>
-                  <Property name="scaleMode" value="ModelToBB"/>
-                  <Property name="model_id" value="15"/>
-              </Properties>
-          </MiscObject>
+            <MiscObject name="box" miscObjectCategory="obstacle" model3d="../models/box_cc_by.osgb" mass="200.0">
+                <ParameterDeclarations/>
+                <BoundingBox>
+                    <Center x="0.0" y="0.0" z="0.75"/>
+                    <Dimensions width="1.0" length="2.0" height="1.2"/>
+                </BoundingBox>
+                <Properties>
+                    <Property name="scaleMode" value="ModelToBB"/>
+                    <Property name="model_id" value="15"/>
+                </Properties>
+            </MiscObject>
         </ScenarioObject>
     </Entities>
     <Storyboard>
@@ -62,7 +62,7 @@
                     <PrivateAction>
                         <TeleportAction>
                             <Position>
-                                <LanePosition roadId="1" laneId="-1" s="75" offset="0" />
+                                <LanePosition roadId="1" laneId="-1" s="75" offset="0"/>
                             </Position>
                         </TeleportAction>
                     </PrivateAction>
@@ -81,7 +81,7 @@
                     <PrivateAction>
                         <TeleportAction>
                             <Position>
-                                <RelativeObjectPosition entityRef="Target" dy="-0.6" dz="0.2">
+                                <RelativeObjectPosition entityRef="Target" dx="0.0" dy="-0.6" dz="0.2">
                                     <Orientation type="relative" h="1.57"/>
                                 </RelativeObjectPosition>
                             </Position>
@@ -89,20 +89,20 @@
                     </PrivateAction>
                     <PrivateAction>
                         <LongitudinalAction>
-                            <LongitudinalDistanceAction entityRef="Target" freespace="false" continuous="true" distance="1.2"/>
+                            <LongitudinalDistanceAction entityRef="Target" freespace="false" continuous="true" distance="1.2" coordinateSystem="road"/>
                         </LongitudinalAction>
                     </PrivateAction>
                 </Private>
                 <Private entityRef="Box">
-                   <PrivateAction>
-                      <TeleportAction>
-                         <Position>
-                            <LanePosition roadId="1" laneId="-1" offset="-2" s="150">
-                                <Orientation type="relative" h="0.1"/>
-                            </LanePosition>
-                         </Position>
-                      </TeleportAction>
-                   </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="1" laneId="-1" offset="-2" s="150">
+                                    <Orientation type="relative" h="0.1"/>
+                                </LanePosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
                 </Private>
             </Actions>
         </Init>
@@ -142,7 +142,37 @@
                                 <ConditionGroup>
                                     <Condition name="drop trigger" delay="0" conditionEdge="none">
                                         <ByValueCondition>
-                                            <SimulationTimeCondition value="5" rule="greaterThan"/>
+                                            <SimulationTimeCondition value="4.3" rule="greaterThan"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                    </Maneuver>
+                </ManeuverGroup>
+                <ManeuverGroup name="maneuvuergroup_car_accelerate" maximumExecutionCount="1">
+                    <Actors selectTriggeringEntities="false">
+                        <EntityRef entityRef="Target"/>
+                    </Actors>
+                    <Maneuver name="accelerate maneuver">
+                        <Event name="accelerate event" priority="overwrite" maximumExecutionCount="1">
+                            <Action name="accelerate action">
+                                <PrivateAction>
+                                    <LongitudinalAction>
+                                        <SpeedAction>
+                                            <SpeedActionDynamics dynamicsShape="linear" value="2" dynamicsDimension="time"/>
+                                            <SpeedActionTarget>
+                                                <AbsoluteTargetSpeed value="40"/>
+                                            </SpeedActionTarget>
+                                        </SpeedAction>
+                                    </LongitudinalAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="accelerate trigger" delay="0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="2" rule="greaterThan"/>
                                         </ByValueCondition>
                                     </Condition>
                                 </ConditionGroup>
@@ -166,7 +196,7 @@
             <ConditionGroup>
                 <Condition name="start_trigger " delay="0" conditionEdge="none">
                     <ByValueCondition>
-                        <SimulationTimeCondition value="10" rule="greaterThan"/>
+                        <SimulationTimeCondition value="8" rule="greaterThan"/>
                     </ByValueCondition>
                 </Condition>
             </ConditionGroup>

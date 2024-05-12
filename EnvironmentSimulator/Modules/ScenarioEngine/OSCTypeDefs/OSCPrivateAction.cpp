@@ -1636,11 +1636,7 @@ void LongDistanceAction::Step(double simTime, double)
     }
     else
     {
-        double x, y;
-        distance = object_->pos_.getRelativeDistance(target_object_->pos_.GetX(), target_object_->pos_.GetY(), x, y);
-
-        // Just interested in the x-axis component of the distance
-        distance = x;
+        object_->pos_.Distance(&target_object_->pos_, cs_, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, distance);
     }
 
     double speed_diff = object_->speed_ - target_object_->speed_;

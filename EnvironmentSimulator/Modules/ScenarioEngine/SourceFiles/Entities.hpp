@@ -536,6 +536,11 @@ namespace scenarioengine
             dirty_ = 0;
         }
 
+        void SetActive(bool active)
+        {
+            is_active_ = active;
+        }
+
         Object*            TowVehicle();
         Object*            TrailerVehicle();
         static std::string Type2String(int type);
@@ -543,11 +548,6 @@ namespace scenarioengine
     private:
         int  dirty_;
         bool is_active_;
-
-        void SetActive(bool active)
-        {
-            is_active_ = active;
-        }
     };
 
     class Vehicle : public Object
