@@ -450,10 +450,15 @@ void scenarioengine::FollowTrajectoryAction::Move(double simTime, double dt)
     }
     else if (timing_domain_ == TimingDomain::TIMING_ABSOLUTE)
     {
-        time_ = (simTime + dt) * timing_scale_;
+        if (simTime > -SMALL_NUMBER)
+        {
+            time_ = (simTime + dt) * timing_scale_;
+        }
 
         object_->pos_.SetTrajectoryPosByTime(time_ + timeOffset + timing_offset_);
-        if (time_ + timeOffset < traj_->GetStartTime() + traj_->GetDuration() + SMALL_NUMBER)
+
+        if ((dt > SMALL_NUMBER) &&  // skip speed update if timestep is zero
+            (time_ + timeOffset < traj_->GetStartTime() + traj_->GetDuration() + SMALL_NUMBER))
         {
             // don't calculate and update actual speed when reached end of trajectory,
             // since the movement is based on remaining length of trajectory, not speed

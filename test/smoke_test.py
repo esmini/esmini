@@ -599,7 +599,7 @@ class TestSuite(unittest.TestCase):
             'Rot\\(0.00, 0.00, 0.00\\) roadId 1 laneId -1 offset 0.00 t -1.53', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('^-2.000: Ego_ghost New position:\\n-2.000: Pos\\(200.00, -1.53, 0.00\\) '\
             'Rot\\(0.00, 0.00, 0.00\\) roadId 1 laneId -1 offset 0.00 t -1.53', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^-2.000: Init OverTaker1 LongitudinalAction runningState -> endTransition -> completeState', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^0.000: Init OverTaker1 LongitudinalAction runningState -> endTransition -> completeState', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('^0.990: Init OverTaker1 RoutingAction runningState -> endTransition -> completeState', log, re.MULTILINE)  is not None)
 
         # Check vehicle key positions

@@ -94,14 +94,17 @@ void StoryBoard::Step(double simTime, double dt)
 
     for (auto action : init_.private_action_)
     {
-        if (action->GetCurrentState() == StoryBoardElement::State::RUNNING)
+        if (action->GetCurrentState() == StoryBoardElement::State::RUNNING &&
+            // skip update for non ghost objects during ghost restart phases
+            !(!action->object_->IsGhost() && SE_Env::Inst().GetGhostMode() == GhostMode::RESTARTING))
         {
             action->Step(simTime, dt);
         }
     }
     for (auto action : init_.global_action_)
     {
-        if (action->GetCurrentState() == StoryBoardElement::State::RUNNING)
+        // skip update for during ghost restart phases
+        if (action->GetCurrentState() == StoryBoardElement::State::RUNNING && !(SE_Env::Inst().GetGhostMode() == GhostMode::RESTARTING))
         {
             action->Step(simTime, dt);
         }
