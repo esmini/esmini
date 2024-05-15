@@ -450,7 +450,7 @@ void scenarioengine::FollowTrajectoryAction::Move(double simTime, double dt)
     }
     else if (timing_domain_ == TimingDomain::TIMING_ABSOLUTE)
     {
-        if (simTime > -SMALL_NUMBER)
+        if (object_->IsGhost() || simTime > -SMALL_NUMBER)
         {
             time_ = (simTime + dt) * timing_scale_;
         }
