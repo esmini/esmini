@@ -2839,6 +2839,11 @@ bool Viewer::CreateRoadLines(roadmanager::OpenDrive* od)
     {
         roadmanager::Road* road = od->GetRoadByIdx(r);
 
+        if (road->GetNumberOfGeometries() == 0)
+        {
+            continue;
+        }
+
         // Road key points
         osg::ref_ptr<osg::Geometry>  kp_geom   = new osg::Geometry;
         osg::ref_ptr<osg::Vec3Array> kp_points = new osg::Vec3Array;

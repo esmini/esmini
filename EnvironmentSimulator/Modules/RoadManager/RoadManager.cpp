@@ -1737,8 +1737,11 @@ Geometry* Road::GetGeometry(int idx) const
 {
     if (idx < 0 || idx + 1 > (int)geometry_.size())
     {
-        LOG("Road::GetGeometry index %d out of range [0:%d]", idx, (int)geometry_.size());
-        return 0;
+        if (idx != 0)  // skip error message for index 0, probably caused by empty road
+        {
+            LOG("Road::GetGeometry index %d out of range [0:%d]", idx, (int)geometry_.size());
+        }
+        return nullptr;
     }
     return geometry_[idx];
 }
@@ -7516,11 +7519,7 @@ Position::ReturnCode Position::XYZ2TrackPos(double x3, double y3, double z3, int
 
         if (road->GetNumberOfGeometries() == 0)
         {
-            // accept empty road (no geometries) only if no road been found yet
-            if (roadMin == nullptr && i >= 0)
-            {
-                roadMin = GetOpenDrive()->GetRoadByIdx(i);
-            }
+            // Do not consider empty roads, i.e. roads lacking geometries
             continue;
         }
 
@@ -7816,8 +7815,6 @@ Position::ReturnCode Position::XYZ2TrackPos(double x3, double y3, double z3, int
 
     if (roadMin == nullptr)
     {
-        LOG("Error finding minimum distance");
-
         SetX(x3);
         SetY(y3);
 
@@ -8241,7 +8238,10 @@ Position::ReturnCode Position::SetLongitudinalTrackPos(int track_id, double s)
 
     if ((road = GetOpenDrive()->GetRoadById(track_id)) == 0)
     {
-        LOG("Position::Set Error: track %d not found", track_id);
+        if (track_id >= 0)
+        {
+            LOG("Position::Set Error: track %d not found", track_id);
+        }
 
         // Just hard code values and return
         track_id_ = track_id;
