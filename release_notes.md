@@ -1,5 +1,18 @@
 ## esmini release notes
 
+### 2024-05-16 Version 2.37.11
+
+Improvements and fixes:
+- Support empty roads, i.e. without geometries and lanes
+  - useful for infinite open space with additional properties, e.g. speed limit
+  - clarification: esmini also supports skipping OpenDRIVE altogether
+- Fix TTC calculation issue ([issue #569](https://github.com/esmini/esmini/issues/569))
+  - Consider direction of motion
+  - Relative distance based on entity heading instead of lane direction
+- Fix trajectory issues
+  - Skip speed update for zero timestep
+  - Skip update of non ghost objects during ghost headstart
+
 ### 2024-05-08 Version 2.37.10
 
 Improvements and fixes:
