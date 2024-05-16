@@ -4128,20 +4128,23 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                         }
                     }
 
-                    if (last_road_lane_right_id < 0)
+                    if (lane_section->GetNumberOfLanes() > 0)
                     {
-                        lane_section->GetLaneById(last_road_lane_right_id)->SetRoadEdge(true);
-                    }
+                        if (last_road_lane_right_id < 0)
+                        {
+                            lane_section->GetLaneById(last_road_lane_right_id)->SetRoadEdge(true);
+                        }
 
-                    if (last_road_lane_left_id > 0)
-                    {
-                        lane_section->GetLaneById(last_road_lane_left_id)->SetRoadEdge(true);
-                    }
+                        if (last_road_lane_left_id > 0)
+                        {
+                            lane_section->GetLaneById(last_road_lane_left_id)->SetRoadEdge(true);
+                        }
 
-                    if (last_road_lane_right_id == 0 || last_road_lane_left_id == 0)
-                    {
-                        // at least one side of reference lane is empty, set as road boundary
-                        lane_section->GetLaneById(0)->SetRoadEdge(true);
+                        if (last_road_lane_right_id == 0 || last_road_lane_left_id == 0)
+                        {
+                            // at least one side of reference lane is empty, set as road boundary
+                            lane_section->GetLaneById(0)->SetRoadEdge(true);
+                        }
                     }
                 }
                 else
@@ -7401,7 +7404,7 @@ Position::ReturnCode Position::XYZ2TrackPos(double x3, double y3, double z3, int
     //      between angle from xyz point to projected point and the difference of angle normals
 
     Road *           road, *current_road = 0;
-    Road*            roadMin           = 0;
+    Road*            roadMin           = nullptr;
     bool             directlyConnected = false;
     double           weight            = 0;  // Add some resistance to switch from current road, applying a stronger bound to current road
     double           curvature         = 0;
@@ -7509,6 +7512,16 @@ Position::ReturnCode Position::XYZ2TrackPos(double x3, double y3, double z3, int
                     }
                 }
             }
+        }
+
+        if (road->GetNumberOfGeometries() == 0)
+        {
+            // accept empty road (no geometries) only if no road been found yet
+            if (roadMin == nullptr && i >= 0)
+            {
+                roadMin = GetOpenDrive()->GetRoadByIdx(i);
+            }
+            continue;
         }
 
         // Check whether complete road is too far away - then skip to next
