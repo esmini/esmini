@@ -5,7 +5,7 @@
 Improvements and fixes:
 - Support empty roads, i.e. without geometries and lanes
   - useful for infinite open space with additional properties, e.g. speed limit
-  - clarification: esmini also supports skipping OpenDRIVE altogether
+  - clarification: esmini also supports skipping OpenDRIVE file altogether
 - Fix TTC calculation issue ([issue #569](https://github.com/esmini/esmini/issues/569))
   - Consider direction of motion
   - Relative distance based on entity heading instead of lane direction
