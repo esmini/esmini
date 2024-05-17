@@ -5,10 +5,12 @@
 # (exact filename depending on platform) is available, either in this folder or in
 # the original location (relative this folder).
 
+cmake_minimum_required(VERSION 3.7.1)
+
 set(TARGET esmini-player)
 
-include_directories(. ${CMAKE_CURRENT_SOURCE_DIR}/../EnvironmentSimulator/Libraries/esminiLib)
-link_directories(. ${CMAKE_CURRENT_SOURCE_DIR}/../bin)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../EnvironmentSimulator/Libraries/esminiLib)
+link_directories(${CMAKE_CURRENT_SOURCE_DIR}/../bin)
 
 project(${TARGET})
 
