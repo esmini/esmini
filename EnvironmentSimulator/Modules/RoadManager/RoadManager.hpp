@@ -917,34 +917,34 @@ namespace roadmanager
 
         typedef enum
         {
-            LANE_TYPE_NONE            = (1 << 0),
-            LANE_TYPE_DRIVING         = (1 << 1),
-            LANE_TYPE_STOP            = (1 << 2),
-            LANE_TYPE_SHOULDER        = (1 << 3),
-            LANE_TYPE_BIKING          = (1 << 4),
-            LANE_TYPE_SIDEWALK        = (1 << 5),
-            LANE_TYPE_BORDER          = (1 << 6),
-            LANE_TYPE_RESTRICTED      = (1 << 7),
-            LANE_TYPE_PARKING         = (1 << 8),
-            LANE_TYPE_BIDIRECTIONAL   = (1 << 9),
-            LANE_TYPE_MEDIAN          = (1 << 10),
-            LANE_TYPE_SPECIAL1        = (1 << 11),
-            LANE_TYPE_SPECIAL2        = (1 << 12),
-            LANE_TYPE_SPECIAL3        = (1 << 13),
-            LANE_TYPE_ROADMARKS       = (1 << 14),
-            LANE_TYPE_TRAM            = (1 << 15),
-            LANE_TYPE_RAIL            = (1 << 16),
-            LANE_TYPE_ENTRY           = (1 << 17),
-            LANE_TYPE_EXIT            = (1 << 18),
-            LANE_TYPE_OFF_RAMP        = (1 << 19),
-            LANE_TYPE_ON_RAMP         = (1 << 20),
-            LANE_TYPE_CURB            = (1 << 21),
-            LANE_TYPE_CONNECTING_RAMP = (1 << 22),
-            LANE_TYPE_REFERENCE_LINE  = (1 << 0),
+            LANE_TYPE_NONE            = (1 << 0),   // 1
+            LANE_TYPE_DRIVING         = (1 << 1),   // 2
+            LANE_TYPE_STOP            = (1 << 2),   // 4
+            LANE_TYPE_SHOULDER        = (1 << 3),   // 8
+            LANE_TYPE_BIKING          = (1 << 4),   // 16
+            LANE_TYPE_SIDEWALK        = (1 << 5),   // 32
+            LANE_TYPE_BORDER          = (1 << 6),   // 64
+            LANE_TYPE_RESTRICTED      = (1 << 7),   // 128
+            LANE_TYPE_PARKING         = (1 << 8),   // 256
+            LANE_TYPE_BIDIRECTIONAL   = (1 << 9),   // 512
+            LANE_TYPE_MEDIAN          = (1 << 10),  // 1024
+            LANE_TYPE_SPECIAL1        = (1 << 11),  // 2048
+            LANE_TYPE_SPECIAL2        = (1 << 12),  // 4096
+            LANE_TYPE_SPECIAL3        = (1 << 13),  // 8192
+            LANE_TYPE_ROADMARKS       = (1 << 14),  // 16384
+            LANE_TYPE_TRAM            = (1 << 15),  // 32768
+            LANE_TYPE_RAIL            = (1 << 16),  // 65536
+            LANE_TYPE_ENTRY           = (1 << 17),  // 131072
+            LANE_TYPE_EXIT            = (1 << 18),  // 262144
+            LANE_TYPE_OFF_RAMP        = (1 << 19),  // 524288
+            LANE_TYPE_ON_RAMP         = (1 << 20),  // 1048576
+            LANE_TYPE_CURB            = (1 << 21),  // 2097152
+            LANE_TYPE_CONNECTING_RAMP = (1 << 22),  // 4194304
+            LANE_TYPE_REFERENCE_LINE  = (1 << 0),   // 1
             LANE_TYPE_ANY_DRIVING =
-                LANE_TYPE_DRIVING | LANE_TYPE_ENTRY | LANE_TYPE_EXIT | LANE_TYPE_OFF_RAMP | LANE_TYPE_ON_RAMP | LANE_TYPE_BIDIRECTIONAL,
-            LANE_TYPE_ANY_ROAD = LANE_TYPE_ANY_DRIVING | LANE_TYPE_RESTRICTED | LANE_TYPE_STOP,
-            LANE_TYPE_ANY      = (-1)
+                LANE_TYPE_DRIVING | LANE_TYPE_ENTRY | LANE_TYPE_EXIT | LANE_TYPE_OFF_RAMP | LANE_TYPE_ON_RAMP | LANE_TYPE_BIDIRECTIONAL,  // 1966594
+            LANE_TYPE_ANY_ROAD = LANE_TYPE_ANY_DRIVING | LANE_TYPE_RESTRICTED | LANE_TYPE_STOP,                                           // 1966726
+            LANE_TYPE_ANY      = (-1)                                                                                                     // 1
         } LaneType;
 
         // Construct & Destruct
@@ -3901,6 +3901,7 @@ namespace roadmanager
 
         bool IsOffRoad() const;
         bool IsInJunction() const;
+        int  GetInLaneType() const;
 
         /**
         Get the number of roads overlapping the position

@@ -957,9 +957,9 @@ extern "C"
     SE_DLL_API int SE_GetId(int index);
 
     /**
-    Get the Id of an entity present in the current scenario
-    @param name Name of the object.
-    @return Id of the object, -1 on error e.g. scenario not initialized
+            Get the Id of an entity present in the current scenario
+            @param name Name of the object.
+            @return Id of the object, -1 on error e.g. scenario not initialized
     */
     SE_DLL_API int SE_GetIdByName(const char *name);
 
@@ -970,6 +970,18 @@ extern "C"
             @return 0 if successful, -1 if not
     */
     SE_DLL_API int SE_GetObjectState(int object_id, SE_ScenarioObjectState *state);
+
+    /**
+        Find out what lane type object is currently in, reference point projected on road
+        Can be used for checking exact lane type or combinations by bitmask.
+        Example 1: Check if on border lane: SE_GetObjectLaneType(id) == (1 << 6)
+        Example 2: Check if on any drivable lane: SE_GetObjectLaneType(id) & 1966594
+        Example 3: Check if on any road lane: SE_GetObjectLaneType(id) & 1966726
+        Example 4: Check for no lane (outside defined lanes): SE_GetObjectLaneType(id) == 1
+        @param object_id Id of the object
+        @return lane type according to enum roadmanager::Lane::LaneType
+    */
+    SE_DLL_API int SE_GetObjectInLaneType(int object_id);
 
     /**
             Get the overrideActionStatus of specified object

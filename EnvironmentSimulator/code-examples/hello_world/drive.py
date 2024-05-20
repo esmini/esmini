@@ -130,3 +130,13 @@ while se.SE_GetQuitFlag() == 0:
     se.SE_ReportObjectPosXYH(se.SE_GetId(0), 0.0, vehicle.vh_state.x, ct.c_float(vehicle.vh_state.y), vehicle.vh_state.h)
     se.SE_ReportObjectWheelStatus(0, vehicle.vh_state.wheel_rotation, vehicle.vh_state.wheel_angle)
     se.SE_Step()
+
+    # check position lane status
+    lane_type = se.SE_GetObjectInLaneType(se.SE_GetId(0))
+    print('Lane type: {:7d}   In driving lane: {:d}   On road: {:d}   On defined area: {:d}'.format(
+        lane_type,
+        (lane_type & 1966594) != 0,
+        (lane_type & 1966726) != 0,
+        lane_type != 1))
+
+se.SE_Close()

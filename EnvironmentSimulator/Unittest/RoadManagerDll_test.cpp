@@ -168,6 +168,53 @@ TEST(TestProbe, TestSimpleProbe)
     RM_Close();
 }
 
+TEST(TestLaneType, TestDetailedLaneType)
+{
+    const char* odr_file = "../../../EnvironmentSimulator/Unittest/xodr/mw_100m.xodr";
+
+    ASSERT_EQ(RM_Init(odr_file), 0);
+
+    int pos_handle = RM_CreatePosition();
+
+    EXPECT_EQ(pos_handle, 0);
+
+    RM_SetSnapLaneTypes(pos_handle, -1);
+    RM_SetLanePosition(pos_handle, 1, -3, 0.0, 100.0, false);
+    EXPECT_EQ(RM_GetInLaneType(pos_handle), 2);
+
+    RM_SetWorldXYHPosition(pos_handle, 34.35f, -13.40f, 0.0f);
+    int lane_type = RM_GetInLaneType(pos_handle);
+    EXPECT_EQ(lane_type, 128);
+    EXPECT_EQ(lane_type & 1966594, 0);
+    EXPECT_NE(lane_type & 1966726, 0);
+
+    RM_SetWorldXYHPosition(pos_handle, 43.17f, -14.81f, 0.0f);
+    lane_type = RM_GetInLaneType(pos_handle);
+    EXPECT_EQ(lane_type, 4);
+    EXPECT_EQ(lane_type & 1966594, 0);
+    EXPECT_NE(lane_type & 1966726, 0);
+
+    RM_SetWorldXYHPosition(pos_handle, 49.65f, -16.95f, 0.0f);
+    lane_type = RM_GetInLaneType(pos_handle);
+    EXPECT_EQ(lane_type, 64);
+    EXPECT_EQ(lane_type & 1966594, 0);
+    EXPECT_EQ(lane_type & 1966726, 0);
+
+    RM_SetWorldXYHPosition(pos_handle, 60.24f, -20.29f, 0.0f);
+    lane_type = RM_GetInLaneType(pos_handle);
+    EXPECT_EQ(lane_type, 64);
+    EXPECT_EQ(lane_type & 1966594, 0);
+    EXPECT_EQ(lane_type & 1966726, 0);
+
+    RM_SetWorldXYHPosition(pos_handle, 74.24f, -24.69f, 0.0f);
+    lane_type = RM_GetInLaneType(pos_handle);
+    EXPECT_EQ(lane_type, 1);
+    EXPECT_EQ(lane_type & 1966594, 0);
+    EXPECT_EQ(lane_type & 1966726, 0);
+
+    RM_Close();
+}
+
 // Uncomment to print log output to console
 // #define LOG_TO_CONSOLE
 

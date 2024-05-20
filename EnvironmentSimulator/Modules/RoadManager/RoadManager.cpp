@@ -9930,6 +9930,32 @@ bool Position::IsOffRoad() const
     return false;
 }
 
+int Position::GetInLaneType() const
+{
+    if (!IsOffRoad())
+    {
+        Road* road = GetOpenDrive()->GetRoadByIdx(track_idx_);
+        if (road)
+        {
+            // Check whether outside road width
+            Position pos;
+            pos.SetSnapLaneTypes(Lane::LaneType::LANE_TYPE_ANY);
+            pos.SetTrackPos(GetTrackId(), GetS(), GetT());
+            LaneSection* lsec = road->GetLaneSectionByS(lane_section_idx_);
+            if (lsec != nullptr)
+            {
+                Lane* lane = lsec->GetLaneById(pos.GetLaneId());
+                if (lane != nullptr)
+                {
+                    return lane->GetLaneType();
+                }
+            }
+        }
+    }
+
+    return Lane::LaneType::LANE_TYPE_NONE;
+}
+
 bool Position::IsInJunction() const
 {
     Road* road = GetOpenDrive()->GetRoadByIdx(track_idx_);

@@ -1423,11 +1423,23 @@ extern "C"
         return -1;
     }
 
+    SE_DLL_API int SE_GetObjectInLaneType(int object_id)
+    {
+        Object *obj = nullptr;
+        if (getObjectById(object_id, obj) == -1)
+        {
+            return 1;
+        }
+
+        return obj->pos_.GetInLaneType();
+    }
+
     SE_DLL_API int SE_GetOverrideActionStatus(int object_id, SE_OverrideActionList *list)
     {
         Object *obj = nullptr;
         if (getObjectById(object_id, obj) == -1)
         {
+            printf("no obj\n");
             return -1;
         }
 

@@ -442,6 +442,18 @@ extern "C"
     RM_DLL_API int RM_GetLaneType(int handle, int lane_id);
 
     /**
+    Find out what lane type object is currently in, reference point projected on road
+    Can be used for checking exact lane type or combinations by bitmask.
+    Example 1: Check if on border lane: SE_GetObjectLaneType(id) == (1 << 6)
+    Example 2: Check if on any drivable lane: SE_GetObjectLaneType(id) & 1966594
+    Example 3: Check if on any road lane: SE_GetObjectLaneType(id) & 1966726
+    Example 4: Check for no lane (outside defined lanes): SE_GetObjectLaneType(id) == 1
+    @param handle Handle to the position object to check
+    @return lane type according to enum roadmanager::Lane::LaneType
+    */
+    RM_DLL_API int RM_GetInLaneType(int handle);
+
+    /**
     Get type of lane with specified lane id, at specified road and longitudinal position
     For valid types, see RoadManager.hpp::Lane::LaneType enum
     @param road_id Id of the road

@@ -704,6 +704,16 @@ extern "C"
         return road->GetLaneTypeByS(position[static_cast<unsigned int>(handle)].GetS(), lane_id);
     }
 
+    RM_DLL_API int RM_GetInLaneType(int handle)
+    {
+        if (odrManager == nullptr || handle < 0 || handle >= static_cast<int>(position.size()))
+        {
+            return 1;  // 1 means none in this case
+        }
+
+        return position[static_cast<unsigned int>(handle)].GetInLaneType();
+    }
+
     RM_DLL_API int RM_GetLaneTypeByRoadId(int road_id, int lane_id, float s)
     {
         if (odrManager == nullptr)

@@ -2170,7 +2170,6 @@ TEST(LaneInfoTest, TestLaneWidthAndType)
     EXPECT_NE(road, nullptr);
 
     EXPECT_NEAR(road->GetLaneWidthByS(80, -2), 3.000, 1e-3);
-    ;
     EXPECT_EQ(road->GetLaneTypeByS(80, 0), 1);
     EXPECT_EQ(road->GetLaneTypeByS(80, -2), 2);
 
@@ -2178,6 +2177,56 @@ TEST(LaneInfoTest, TestLaneWidthAndType)
     EXPECT_NEAR(road->GetLaneWidthByS(105, -3), 0.084, 1e-3);
     EXPECT_NEAR(road->GetLaneWidthByS(140, -3), 2.688, 1e-3);
     EXPECT_NEAR(road->GetLaneWidthByS(150, -3), 3.000, 1e-3);
+}
+
+TEST(LaneInfoTest, TestDetailedLaneType)
+{
+    Position::GetOpenDrive()->LoadOpenDriveFile("../../../EnvironmentSimulator/Unittest/xodr/mw_100m.xodr");
+    OpenDrive *odr = Position::GetOpenDrive();
+    ASSERT_NE(odr, nullptr);
+    EXPECT_EQ(odr->GetNumOfRoads(), 1);
+
+    Road *road = odr->GetRoadById(1);
+    EXPECT_NE(road, nullptr);
+
+    Position pos(1, -3, 100.0, 0.0);
+    pos.SetSnapLaneTypes(Lane::LaneType::LANE_TYPE_ANY);
+    EXPECT_EQ(pos.GetInLaneType(), Lane::LaneType::LANE_TYPE_DRIVING);
+
+    pos.SetInertiaPos(34.35, -13.40, 0.0);
+    EXPECT_EQ(pos.GetLaneId(), -5);
+    int lane_type = pos.GetInLaneType();
+    EXPECT_EQ(lane_type, Lane::LaneType::LANE_TYPE_RESTRICTED);
+    EXPECT_EQ(lane_type & Lane::LaneType::LANE_TYPE_ANY_DRIVING, 0);
+    EXPECT_NE(lane_type & Lane::LaneType::LANE_TYPE_ANY_ROAD, 0);
+
+    pos.SetInertiaPos(43.17, -14.81, 0.0);
+    EXPECT_EQ(pos.GetLaneId(), -6);
+    lane_type = pos.GetInLaneType();
+    EXPECT_EQ(lane_type, Lane::LaneType::LANE_TYPE_STOP);
+    EXPECT_EQ(lane_type & Lane::LaneType::LANE_TYPE_ANY_DRIVING, 0);
+    EXPECT_NE(lane_type & Lane::LaneType::LANE_TYPE_ANY_ROAD, 0);
+
+    pos.SetInertiaPos(49.65, -16.95, 0.0);
+    EXPECT_EQ(pos.GetLaneId(), -7);
+    lane_type = pos.GetInLaneType();
+    EXPECT_EQ(lane_type, Lane::LaneType::LANE_TYPE_BORDER);
+    EXPECT_EQ(lane_type & Lane::LaneType::LANE_TYPE_ANY_DRIVING, 0);
+    EXPECT_EQ(lane_type & Lane::LaneType::LANE_TYPE_ANY_ROAD, 0);
+
+    pos.SetInertiaPos(60.24, -20.29, 0.0);
+    EXPECT_EQ(pos.GetLaneId(), -8);
+    lane_type = pos.GetInLaneType();
+    EXPECT_EQ(lane_type, Lane::LaneType::LANE_TYPE_BORDER);
+    EXPECT_EQ(lane_type & Lane::LaneType::LANE_TYPE_ANY_DRIVING, 0);
+    EXPECT_EQ(lane_type & Lane::LaneType::LANE_TYPE_ANY_ROAD, 0);
+
+    pos.SetInertiaPos(74.24, -24.69, 0.0);
+    EXPECT_EQ(pos.GetLaneId(), -8);  // not in it, but it's the outermost and closest lane
+    lane_type = pos.GetInLaneType();
+    EXPECT_EQ(lane_type, Lane::LaneType::LANE_TYPE_NONE);
+    EXPECT_EQ(lane_type & Lane::LaneType::LANE_TYPE_ANY_DRIVING, 0);
+    EXPECT_EQ(lane_type & Lane::LaneType::LANE_TYPE_ANY_ROAD, 0);
 }
 
 TEST(RoadInfoTest, TestGetNrRoadsOverlappingPos)
