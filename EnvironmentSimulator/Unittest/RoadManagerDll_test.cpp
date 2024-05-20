@@ -116,6 +116,134 @@ TEST(TestSetMethods, SetWorldPosition)
     RM_Close();
 }
 
+TEST(TestRelativeChecks, SubtractPositionsIntersection)
+{
+    const char* odr_file = "../../../resources/xodr/fabriksgatan.xodr";
+
+    ASSERT_EQ(RM_Init(odr_file), 0);
+
+    int             pA = RM_CreatePosition();
+    int             pB = RM_CreatePosition();
+    RM_PositionData pos_data;
+
+    EXPECT_EQ(pA, 0);
+    EXPECT_EQ(pB, 1);
+
+    RM_SetWorldXYHPosition(pA, 33.0f, -27.0f, 1.57f);
+    RM_GetPositionData(pA, &pos_data);
+    EXPECT_NEAR(pos_data.roadId, 0, 1E-5);
+    EXPECT_EQ(pos_data.laneId, 1);
+
+    RM_SetWorldXYHPosition(pB, 22.0f, 27.0f, 1.57f);
+    RM_GetPositionData(pB, &pos_data);
+    EXPECT_NEAR(pos_data.roadId, 2, 1E-5);
+    EXPECT_EQ(pos_data.laneId, 1);
+
+    // B in front of A through intersection
+    RM_PositionDiff pos_diff;
+    RM_SubtractAFromB(pA, pB, &pos_diff);
+    EXPECT_NEAR(pos_diff.ds, 55.152, 1E-3);
+    EXPECT_NEAR(pos_diff.dt, -0.114, 1E-3);
+    EXPECT_EQ(pos_diff.dLaneId, 0);
+
+    // A behind B through intersection
+    RM_SubtractAFromB(pB, pA, &pos_diff);
+    EXPECT_NEAR(pos_diff.ds, -55.152, 1E-3);
+    EXPECT_NEAR(pos_diff.dt, 0.114, 1E-3);
+    EXPECT_EQ(pos_diff.dLaneId, 0);
+
+    // Place A in opposite lane
+    RM_SetWorldXYHPosition(pA, 29.0f, -26.0f, 4.71f);
+    RM_GetPositionData(pA, &pos_data);
+    EXPECT_NEAR(pos_data.roadId, 0, 1E-5);
+    EXPECT_EQ(pos_data.laneId, -1);
+
+    // B behind A through intersection, different lanes
+    RM_SubtractAFromB(pA, pB, &pos_diff);
+    EXPECT_NEAR(pos_diff.ds, -53.378, 1E-3);
+    EXPECT_NEAR(pos_diff.dt, 3.555, 1E-3);
+    EXPECT_EQ(pos_diff.dLaneId, 1);
+
+    RM_Close();
+}
+
+TEST(TestRelativeChecks, SubtractPositionsHW)
+{
+    const char* odr_file = "../../../EnvironmentSimulator/Unittest/xodr/mw_100m.xodr";
+
+    ASSERT_EQ(RM_Init(odr_file), 0);
+
+    int             pA = RM_CreatePosition();
+    int             pB = RM_CreatePosition();
+    RM_PositionData pos_data;
+
+    EXPECT_EQ(pA, 0);
+    EXPECT_EQ(pB, 1);
+
+    // A at right side of road in middle lane at s=50
+    RM_SetLanePosition(pA, 1, -3, 0.0, 50.0, true);
+    RM_GetPositionData(pA, &pos_data);
+    EXPECT_NEAR(pos_data.x, 50.0, 1E-3);
+    EXPECT_NEAR(pos_data.y, -8.0, 1E-3);
+    EXPECT_NEAR(pos_data.h, 0.0, 1E-3);
+
+    // B 20 m in front of A, one lane to the right
+    RM_SetLanePosition(pB, 1, -4, 0.0, 70.0, true);
+    RM_GetPositionData(pB, &pos_data);
+    EXPECT_NEAR(pos_data.x, 70.0, 1E-3);
+    EXPECT_NEAR(pos_data.y, -11.5, 1E-3);
+    EXPECT_NEAR(pos_data.h, 0.0, 1E-3);
+
+    RM_PositionDiff pos_diff;
+    RM_SubtractAFromB(pA, pB, &pos_diff);
+    EXPECT_NEAR(pos_diff.ds, 20.0, 1E-3);
+    EXPECT_NEAR(pos_diff.dt, -3.5, 1E-3);
+
+    // B 20 m behind A, one lane to the left
+    RM_SetLanePosition(pB, 1, -2, 0.0, 30.0, true);
+    RM_GetPositionData(pB, &pos_data);
+    EXPECT_NEAR(pos_data.x, 30.0, 1E-3);
+    EXPECT_NEAR(pos_data.y, -4.425, 1E-3);
+    EXPECT_NEAR(pos_data.h, 0.0, 1E-3);
+
+    RM_SubtractAFromB(pA, pB, &pos_diff);
+    EXPECT_NEAR(pos_diff.ds, -20.0, 1E-3);
+    EXPECT_NEAR(pos_diff.dt, 3.575, 1E-3);
+
+    // Same tests in opposite direction
+
+    // A at left side of road in middle lane at s=50
+    RM_SetLanePosition(pA, 1, 3, 0.0, 50.0, true);
+    RM_GetPositionData(pA, &pos_data);
+    EXPECT_NEAR(pos_data.x, 50.0, 1E-3);
+    EXPECT_NEAR(pos_data.y, 8.0, 1E-3);
+    EXPECT_NEAR(pos_data.h, 3.142, 1E-3);
+
+    // B 20 m in front of A, one lane to the right
+    RM_SetLanePosition(pB, 1, 4, 0.0, 30.0, true);
+    RM_GetPositionData(pB, &pos_data);
+    EXPECT_NEAR(pos_data.x, 30.0, 1E-3);
+    EXPECT_NEAR(pos_data.y, 11.7, 1E-3);
+    EXPECT_NEAR(pos_data.h, 3.142, 1E-3);
+
+    RM_SubtractAFromB(pA, pB, &pos_diff);
+    EXPECT_NEAR(pos_diff.ds, 20.0, 1E-3);
+    EXPECT_NEAR(pos_diff.dt, 3.7, 1E-3);
+
+    // B 20 m behind A, one lane to the left
+    RM_SetLanePosition(pB, 1, 2, 0.0, 70.0, true);
+    RM_GetPositionData(pB, &pos_data);
+    EXPECT_NEAR(pos_data.x, 70.0, 1E-3);
+    EXPECT_NEAR(pos_data.y, 4.425, 1E-3);
+    EXPECT_NEAR(pos_data.h, 3.142, 1E-3);
+
+    RM_SubtractAFromB(pA, pB, &pos_diff);
+    EXPECT_NEAR(pos_diff.ds, -20.0, 1E-3);
+    EXPECT_NEAR(pos_diff.dt, -3.575, 1E-3);
+
+    RM_Close();
+}
+
 TEST(TestProbe, TestSimpleProbe)
 {
     const char* odr_file = "../../../resources/xodr/straight_500m.xodr";
