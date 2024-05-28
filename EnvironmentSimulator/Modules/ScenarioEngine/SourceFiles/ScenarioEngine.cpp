@@ -62,15 +62,17 @@ int ScenarioEngine::InitScenario(std::string oscFilename, bool disable_controlle
 {
     InitScenarioCommon(disable_controllers);
 
+    std::string oscFilename_no_path = FileNameOf(oscFilename);
+
     std::vector<std::string> file_name_candidates;
 
-    // Filename as is - look in current directory
+    // Filename as is - look in current directory or absolute path if provided
     file_name_candidates.push_back(oscFilename);
 
-    // Finally check registered paths
+    // Also check registered paths
     for (size_t i = 0; i < SE_Env::Inst().GetPaths().size(); i++)
     {
-        file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], oscFilename));
+        file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], oscFilename_no_path));
     }
     size_t i;
     for (i = 0; i < file_name_candidates.size(); i++)
@@ -79,7 +81,7 @@ int ScenarioEngine::InitScenario(std::string oscFilename, bool disable_controlle
         {
             if (scenarioReader->loadOSCFile(file_name_candidates[i].c_str()) != 0)
             {
-                LOG(("Failed to load OpenSCENARIO file " + oscFilename).c_str());
+                LOG(("Failed to load OpenSCENARIO file " + oscFilename_no_path).c_str());
                 return -3;
             }
             else
@@ -91,13 +93,13 @@ int ScenarioEngine::InitScenario(std::string oscFilename, bool disable_controlle
 
     if (i == file_name_candidates.size())
     {
-        LOG(("Couldn't locate OpenSCENARIO file " + oscFilename).c_str());
+        LOG(("Couldn't locate OpenSCENARIO file " + oscFilename_no_path).c_str());
         return -1;
     }
 
     if (!scenarioReader->IsLoaded())
     {
-        LOG(("Couldn't load OpenSCENARIO file " + oscFilename).c_str());
+        LOG(("Couldn't load OpenSCENARIO file " + oscFilename_no_path).c_str());
         return -2;
     }
 

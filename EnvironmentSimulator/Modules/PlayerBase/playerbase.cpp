@@ -1571,8 +1571,8 @@ int ScenarioPlayer::Init()
     {
         if ((arg_str = opt.GetOptionArg("osc")) != "")
         {
-            SE_Env::Inst().AddPath(DirNameOf(arg_str));
-            scenarioEngine = new ScenarioEngine(FileNameOf(arg_str), disable_controllers_);
+            SE_Env::Inst().AddPath(DirNameOf(arg_str));  // add scenario directory to list pf paths
+            scenarioEngine = new ScenarioEngine(arg_str, disable_controllers_);
             Logger::Inst().SetTimePtr(scenarioEngine->GetSimulationTimePtr());
         }
         else if ((arg_str = opt.GetOptionArg("osc_str")) != "")
