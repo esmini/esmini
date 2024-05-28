@@ -870,7 +870,7 @@ OSIDetectedCar::OSIDetectedCar(const osg::Vec3 point, double h, double w, double
     car_->addChild(osi_detection_geode_center_);
 
     osi_detection_tx_->addChild(osi_detection_geode_box_);
-    osi_detection_tx_->getOrCreateStateSet()->setMode(GL_RESCALE_NORMAL, osg::StateAttribute::ON);
+    osi_detection_tx_->getOrCreateStateSet()->setMode(GL_NORMALIZE, osg::StateAttribute::ON);
     osi_detection_tx_->getOrCreateStateSet()->setAttribute(material);
     osi_detection_tx_->getOrCreateStateSet()->setDataVariance(osg::Object::DYNAMIC);
     car_->setName("BoundingBox");
@@ -2346,7 +2346,7 @@ EntityModel* Viewer::CreateEntityModel(std::string             modelFilepath,
     else if (scaleMode == EntityScaleMode::MODEL_TO_BB)
     {
         // Scale loaded 3d model
-        modeltx->getOrCreateStateSet()->setMode(GL_RESCALE_NORMAL, osg::StateAttribute::ON);
+        modeltx->getOrCreateStateSet()->setMode(GL_NORMALIZE, osg::StateAttribute::ON);
 
         double sx = boundingBox->dimensions_.length_ / (modelBB._max.x() - modelBB._min.x());
         double sy = boundingBox->dimensions_.width_ / (modelBB._max.y() - modelBB._min.y());
@@ -2578,6 +2578,7 @@ osg::ref_ptr<osg::Group> Viewer::LoadEntityModel(const char* filename, osg::Boun
         shadow_tx = new osg::PositionAttitudeTransform;
         shadow_tx->setName("shadow_tx");
         shadow_tx->setPosition(osg::Vec3d(xc, yc, 0.05 * elev));
+        shadow_tx->getOrCreateStateSet()->setMode(GL_NORMALIZE, osg::StateAttribute::ON);
         shadow_tx->setScale(osg::Vec3d(SHADOW_SCALE * (dx / 2), SHADOW_SCALE * (dy / 2), 1.0));
         shadow_tx->addChild(shadow_node_);
 
@@ -3342,7 +3343,9 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
                                             roadmanager::Position::PosMode::H_REL | roadmanager::Position::PosMode::Z_REL |
                                                 roadmanager::Position::PosMode::P_REL | roadmanager::Position::PosMode::R_REL);
 
+                        clone->getOrCreateStateSet()->setMode(GL_NORMALIZE, osg::StateAttribute::ON);
                         clone->setScale(osg::Vec3(static_cast<float>(scale_x), static_cast<float>(scale_y), static_cast<float>(scale_z)));
+
                         clone->setPosition(osg::Vec3(static_cast<float>(pos.GetX()),
                                                      static_cast<float>(pos.GetY()),
                                                      static_cast<float>(object->GetZOffset() + pos.GetZ())));
@@ -3412,7 +3415,7 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
                                 scale_z = (rep->GetHeightStart() + factor * (rep->GetHeightEnd() - rep->GetHeightStart())) / dim_z;
                             }
 
-                            clone->getOrCreateStateSet()->setMode(GL_RESCALE_NORMAL, osg::StateAttribute::ON);
+                            clone->getOrCreateStateSet()->setMode(GL_NORMALIZE, osg::StateAttribute::ON);
                             clone->setScale(osg::Vec3(static_cast<float>(scale_x), static_cast<float>(scale_y), static_cast<float>(scale_z)));
                             clone->setPosition(
                                 osg::Vec3(static_cast<float>(pos.GetX()), static_cast<float>(pos.GetY()), static_cast<float>(pos.GetZ() + zOffset)));
