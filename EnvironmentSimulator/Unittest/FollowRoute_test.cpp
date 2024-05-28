@@ -173,7 +173,7 @@ TEST_F(FollowRouteTestSmall, CreateWaypointSmall2)
     ASSERT_EQ(Position::GetOpenDrive()->GetOpenDriveFilename(),
               "../../../EnvironmentSimulator/Unittest/xodr/highway_example_with_merge_and_split.xodr");
 
-    std::vector<Position> expectedWaypoints = {Position(0, -3, 105, 0),
+    std::vector<Position> expectedWaypoints = {Position(0, -3, 10, 0),
                                                Position(3, -3, 25, 0),
                                                Position(1, -3, 57.5, 0),
                                                Position(6, -3, 15, 0),
@@ -263,7 +263,7 @@ TEST_F(FollowRouteTestMedium, CreateWaypointMedium)
     ASSERT_NE(Position::GetOpenDrive(), nullptr);
     ASSERT_EQ(Position::GetOpenDrive()->GetOpenDriveFilename(), "../../../resources/xodr/multi_intersections.xodr");
 
-    std::vector<Position> expectedWaypoints = {Position(266, 1, 25, 0),
+    std::vector<Position> expectedWaypoints = {Position(266, 1, 50, 0),
                                                Position(258, -1, 8.85, 0),
                                                Position(261, -1, 54.5, 0),
                                                Position(196, 1, 54.5, 0),

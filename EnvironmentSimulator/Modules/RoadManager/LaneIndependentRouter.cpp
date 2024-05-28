@@ -378,7 +378,7 @@ std::vector<Position> LaneIndependentRouter::GetWaypoints(std::vector<Node> path
             sPos = current->road->GetLength() - (laneLength / 2);
             if (idx == 0 && start.GetS() > current->road->GetLength() - laneLength)
             {
-                sPos = (start.GetS() + current->road->GetLength()) / 2;
+                sPos = start.GetS();
             }
         }
         else if (current->link->GetType() == LinkType::PREDECESSOR)
@@ -398,7 +398,7 @@ std::vector<Position> LaneIndependentRouter::GetWaypoints(std::vector<Node> path
             sPos = laneLength / 2;
             if (idx == 0 && start.GetS() < laneLength)
             {
-                sPos = start.GetS() / 2;
+                sPos = start.GetS();
             }
         }
         Position p(current->road->GetId(), next->fromLaneId, sPos, 0.0);
