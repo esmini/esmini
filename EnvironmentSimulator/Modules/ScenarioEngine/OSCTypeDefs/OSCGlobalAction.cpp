@@ -565,7 +565,22 @@ void SwarmTrafficAction::spawn(Solutions sols, int replace, double simTime)
 
             Vehicle* vehicle = new Vehicle(*vehicle_pool_[static_cast<unsigned int>(number)]);
             vehicle->pos_.SetLanePos(inf.pos.GetTrackId(), laneID, inf.pos.GetS(), 0.0);
-            vehicle->pos_.SetHeadingRelativeRoadDirection(laneID < 0 ? 0.0 : M_PI);
+
+            // Set swarm traffic direction based on RHT or LHT
+            if (inf.road->GetRule() == roadmanager::Road::RoadRule::RIGHT_HAND_TRAFFIC)
+            {
+                vehicle->pos_.SetHeadingRelativeRoadDirection(laneID < 0 ? 0.0 : M_PI);
+            }
+            else if (inf.road->GetRule() == roadmanager::Road::RoadRule::LEFT_HAND_TRAFFIC)
+            {
+                vehicle->pos_.SetHeadingRelativeRoadDirection(laneID > 0 ? 0.0 : M_PI);
+            }
+            else
+            {
+                // do something if undefined... maybe default to RHT?
+                vehicle->pos_.SetHeadingRelativeRoadDirection(laneID < 0 ? 0.0 : M_PI);
+            }
+
             vehicle->SetSpeed(velocity_);
             // vehicle->scaleMode_ = EntityScaleMode::BB_TO_MODEL;
             vehicle->name_ = "swarm_" + std::to_string(counter_++);
