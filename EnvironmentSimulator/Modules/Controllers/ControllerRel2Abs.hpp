@@ -13,7 +13,7 @@
 #pragma once
 
 #include <string>
-#include "Controller.hpp"
+#include "EmbeddedController.hpp"
 #include "pugixml.hpp"
 #include "Parameters.hpp"
 #include "Entities.hpp"
@@ -21,10 +21,10 @@
 
 #define CONTROLLER_REL2ABS_TYPE_NAME "ControllerRel2Abs"
 
-namespace scenarioengine
+namespace scenarioengine::controller
 {
     // base class for controllers
-    class ControllerRel2Abs : public Controller
+    class ControllerRel2Abs : public controller::EmbeddedController
     {
     public:
         struct PreSimData
@@ -74,15 +74,20 @@ namespace scenarioengine
 
         ControllerRel2Abs(InitArgs* args);
 
+        //std::string GetName() const override;
+    
+        controller::Type GetType() const override;
+
         void Init();
         void Step(double timeStep);
         int  Activate(ControlActivationMode lat_activation_mode,
                       ControlActivationMode long_activation_mode,
                       ControlActivationMode light_activation_mode,
                       ControlActivationMode anim_activation_mode);
-        void ReportKeyEvent(int key, bool down);
+        virtual void ReportKeyEvent(int key, bool down);
         void CopyPosition(Object* object, position_copy* obj_copy);
-
+        // Riz
+        /*
         static const char* GetTypeNameStatic()
         {
             return CONTROLLER_REL2ABS_TYPE_NAME;
@@ -93,13 +98,13 @@ namespace scenarioengine
         }
         static int GetTypeStatic()
         {
-            return Controller::Type::CONTROLLER_TYPE_REL2ABS;
+            return controller::Type::CONTROLLER_TYPE_REL2ABS;
         }
         virtual int GetType()
         {
             return GetTypeStatic();
         }
-
+        */
     private:
         int    ego_obj;
         double prev_ego_speed;
@@ -112,5 +117,5 @@ namespace scenarioengine
         void findEgo();
     };
 
-    Controller* InstantiateControllerRel2Abs(void* args);
-}  // namespace scenarioengine
+    EmbeddedController* InstantiateControllerRel2Abs(void* args);
+}  // namespace scenarioengine::controller

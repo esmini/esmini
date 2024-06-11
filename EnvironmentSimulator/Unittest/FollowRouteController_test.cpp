@@ -221,8 +221,8 @@ TEST_F(FollowRouteControllerTest, FollowRouteSetParameters)
     ScenarioEngine *se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/follow_route_set_parameters.xosc");
     ASSERT_NE(se, nullptr);
 
-    scenarioengine::ControllerFollowRoute *controller = static_cast<scenarioengine::ControllerFollowRoute *>(
-        se->entities_.object_[0]->GetAssignedControllerOftype(scenarioengine::Controller::Type::CONTROLLER_TYPE_FOLLOW_ROUTE));
+    scenarioengine::controller::ControllerFollowRoute *controller = static_cast<scenarioengine::controller::ControllerFollowRoute *>(
+        se->entities_.object_[0]->GetAssignedControllerOftype(scenarioengine::controller::Type::CONTROLLER_TYPE_FOLLOW_ROUTE));
     ASSERT_NEAR(controller->GetMinDistForCollision(), 69, 0.01);
     ASSERT_NEAR(controller->GetLaneChangeTime(), 420, 0.01);
 

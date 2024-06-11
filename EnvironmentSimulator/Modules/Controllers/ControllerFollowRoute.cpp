@@ -23,16 +23,18 @@
 #include "ScenarioEngine.hpp"
 #include "LaneIndependentRouter.hpp"
 
-using namespace scenarioengine;
+//using namespace scenarioengine::controller;
 
-Controller *scenarioengine::InstantiateControllerFollowRoute(void *args)
+namespace scenarioengine::controller
 {
-    Controller::InitArgs *initArgs = static_cast<Controller::InitArgs *>(args);
+EmbeddedController* InstantiateControllerFollowRoute(void *args)
+{
+    InitArgs *initArgs = static_cast<InitArgs *>(args);
 
     return new ControllerFollowRoute(initArgs);
 }
 
-ControllerFollowRoute::ControllerFollowRoute(InitArgs *args) : Controller(args), testMode_(false)
+ControllerFollowRoute::ControllerFollowRoute(InitArgs *args) : EmbeddedController(args), testMode_(false)
 {
     if (args->properties)
     {
@@ -65,13 +67,13 @@ void ControllerFollowRoute::Init()
     // FollowRoute controller forced into additive mode - will perform scenario actions, except during lane changes
     if (mode_ != ControlOperationMode::MODE_ADDITIVE)
     {
-        LOG("FollowRoute controller mode \"%s\" not applicable. Using additive mode (except during lane changes).", Mode2Str(mode_).c_str());
+        LOG("FollowRoute controller mode \"%s\" not applicable. Using additive mode (except during lane changes).", ToStr(mode_).c_str());
         mode_ = ControlOperationMode::MODE_ADDITIVE;
     }
 
     LOG("FollowRoute init");
 
-    Controller::Init();
+    EmbeddedController::Init();
 }
 
 void ControllerFollowRoute::Step(double timeStep)
@@ -79,7 +81,7 @@ void ControllerFollowRoute::Step(double timeStep)
     if (object_->pos_.GetRoute() == nullptr)
     {
         // LOG("Route = nullptr");
-        Controller::Step(timeStep);
+        EmbeddedController::Step(timeStep);
         return;
     }
 
@@ -120,7 +122,7 @@ void ControllerFollowRoute::Step(double timeStep)
     ChangeLane(timeStep);
     UpdateWaypoints(vehiclePos, nextWaypoint);
 
-    Controller::Step(timeStep);
+    EmbeddedController::Step(timeStep);
 }
 
 int ControllerFollowRoute::Activate(ControlActivationMode lat_activation_mode,
@@ -141,7 +143,7 @@ int ControllerFollowRoute::Activate(ControlActivationMode lat_activation_mode,
     waypoints_             = {};
     laneChangeAction_      = nullptr;
 
-    return Controller::Activate(lat_activation_mode, long_activation_mode, light_activation_mode, anim_activation_mode);
+    return EmbeddedController::Activate(lat_activation_mode, long_activation_mode, light_activation_mode, anim_activation_mode);
 }
 
 void ControllerFollowRoute::ReportKeyEvent(int key, bool down)
@@ -373,7 +375,7 @@ void ControllerFollowRoute::Deactivate()
         gateway_->updateObjectSpeed(object_->GetId(), 0.0, 0.0);
     }
     LOG("ControllerFollowRoute - Deactivated");
-    Controller::Deactivate();
+    EmbeddedController::Deactivate();
 }
 
 WaypointStatus ControllerFollowRoute::GetWaypointStatus(roadmanager::Position vehiclePos, roadmanager::Position waypoint)
@@ -433,4 +435,15 @@ WaypointStatus ControllerFollowRoute::GetWaypointStatus(roadmanager::Position ve
     }
 
     return WAYPOINT_NOT_REACHED;
+}
+/*
+std::string ControllerFollowRoute::GetName() const
+{
+    return CONTROLLER_FOLLOW_ROUTE_TYPE_NAME;
+}
+*/    
+controller::Type ControllerFollowRoute::GetType() const 
+{
+    return CONTROLLER_TYPE_FOLLOW_ROUTE;
+}
 }

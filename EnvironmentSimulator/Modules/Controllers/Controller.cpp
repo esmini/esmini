@@ -1,73 +1,104 @@
-/*
- * esmini - Environment Simulator Minimalistic
- * https://github.com/esmini/esmini
- *
- * This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
- *
- * Copyright (c) partners of Simulation Scenarios
- * https://sites.google.com/view/simulationscenarios
- */
-
 #include "Controller.hpp"
-#include "Entities.hpp"
-#include "ScenarioGateway.hpp"
 
-using namespace scenarioengine;
+#include "CommonMini.hpp"
 
-Controller* scenarioengine::InstantiateController(void* args)
+namespace scenarioengine::controller
 {
-    LOG("The base class should not be instantiated");
 
-    return new Controller(static_cast<Controller::InitArgs*>(args));
-}
-
-Controller::Controller(InitArgs* args)  // init operatingdomains
-    : operating_domains_(static_cast<unsigned int>(ControlDomains::DOMAIN_LAT_AND_LONG)),
-      active_domains_(static_cast<unsigned int>(ControlDomains::DOMAIN_NONE)),
-      mode_(ControlOperationMode::MODE_OVERRIDE),
-      object_(0),
-      entities_(0),
-      gateway_(0),
-      scenario_engine_(0),
-      player_(0)
+std::string ToStr(Type type)
 {
-    if (args)
+    switch (type)
     {
-        name_      = args->name;
-        type_name_ = args->type;
-        entities_  = args->entities;
-        gateway_   = args->gateway;
-    }
-    else
-    {
-        LOG_AND_QUIT("Controller constructor missing args");
-    }
-
-    if (args->properties && args->properties->ValueExists("mode"))
-    {
-        std::string mode = args->properties->GetValueStr("mode");
-        if (mode == "override")
-        {
-            mode_ = ControlOperationMode::MODE_OVERRIDE;
-        }
-        else if (mode == "additive")
-        {
-            mode_ = ControlOperationMode::MODE_ADDITIVE;
-        }
-        else
-        {
-            LOG("Unexpected mode \"%s\", falling back to default \"override\"", mode.c_str());
-            mode_ = ControlOperationMode::MODE_OVERRIDE;
-        }
-    }
-    else
-    {
-        mode_ = ControlOperationMode::MODE_OVERRIDE;
+        case CONTROLLER_TYPE_DEFAULT:
+            return "CONTROLLER_TYPE_DEFAULT";
+        case CONTROLLER_TYPE_EXTERNAL:
+            return "CONTROLLER_TYPE_EXTERNAL";
+        case CONTROLLER_TYPE_FOLLOW_GHOST:
+            return "CONTROLLER_TYPE_EXTERNAL";
+        case CONTROLLER_TYPE_FOLLOW_ROUTE:
+            return "CONTROLLER_TYPE_EXTERNAL";
+        case CONTROLLER_TYPE_INTERACTIVE:
+            return "CONTROLLER_TYPE_EXTERNAL";
+        case CONTROLLER_TYPE_SLOPPY_DRIVER:
+            return "CONTROLLER_TYPE_EXTERNAL";
+        case CONTROLLER_TYPE_SUMO:
+            return "CONTROLLER_TYPE_EXTERNAL";
+        case CONTROLLER_TYPE_REL2ABS:
+            return "CONTROLLER_TYPE_EXTERNAL";
+        case CONTROLLER_TYPE_ACC:
+            return "CONTROLLER_TYPE_EXTERNAL";
+        case CONTROLLER_TYPE_ALKS:
+            return "CONTROLLER_TYPE_EXTERNAL";
+        case CONTROLLER_TYPE_UDP_DRIVER:
+            return "CONTROLLER_TYPE_EXTERNAL";
+        case CONTROLLER_TYPE_ECE_ALKS_REF_DRIVER:
+            return "CONTROLLER_TYPE_EXTERNAL";
+        case CONTROLLER_ALKS_R157SM:
+            return "CONTROLLER_TYPE_EXTERNAL";
+        case CONTROLLER_TYPE_LOOMING:
+            return "CONTROLLER_TYPE_EXTERNAL";
+        case CONTROLLER_TYPE_OFFROAD_FOLLOWER:
+            return "CONTROLLER_TYPE_EXTERNAL";
+        case N_CONTROLLER_TYPES:
+            return "CONTROLLER_TYPE_EXTERNAL";
+        case CONTROLLER_TYPE_UNDEFINED:
+            return "CONTROLLER_TYPE_EXTERNAL";
+        case GHOST_RESERVED_TYPE:
+            return "CONTROLLER_TYPE_EXTERNAL";
+        case USER_CONTROLLER_TYPE_BASE:
+            return "CONTROLLER_TYPE_EXTERNAL";
+        default:
+            return "CONTROLLER_UNKNOWN";
     }
 }
 
+
+std::string ToStr(ControlOperationMode mode)
+{
+    if (mode == ControlOperationMode::MODE_OVERRIDE)
+    {
+        return "override";
+    }
+    else if (mode == ControlOperationMode::MODE_ADDITIVE)
+    {
+        return "additive";
+    }
+    else if (mode == ControlOperationMode::MODE_NONE)
+    {
+        return "none";
+    }
+    else
+    {
+        //Riz LOG("Unexpected mode \"%d\"", mode);
+        return "invalid mode";
+    }
+}
+
+std::string ToStr(ControlActivationMode mode)
+{
+    switch(mode)
+    {
+        case ControlActivationMode::UNDEFINED:
+            return "UNDEFINED";
+        case ControlActivationMode::OFF:
+            return "OFF";
+        case ControlActivationMode::ON:
+            return "ON";
+        default:
+            return "MODE_UNKOWN";
+    }
+}
+
+const std::any& BaseController::GetProperty(const std::string& propertyName) const
+{
+    return properties_.at(propertyName);
+}
+
+void BaseController::SetProperty(const std::string& propertyName, const std::any& propertyValue)
+{
+    properties_[propertyName] = propertyValue;
+}
+/*
 void Controller::Step(double timeStep)
 {
     (void)timeStep;
@@ -91,18 +122,34 @@ void Controller::Step(double timeStep)
         }
     }
 }
-
-void Controller::LinkObject(Object* object)
+*/
+uint32_t BaseController::GetOperatingDomains() const
 {
-    object_ = object;
+    return operating_domains_;
 }
 
-void Controller::UnlinkObject()
+uint32_t BaseController::GetActiveDomains() const 
 {
-    object_ = nullptr;
+    return active_domains_;
 }
 
-int Controller::Activate(ControlActivationMode lat_mode,
+controller::ControlOperationMode BaseController::GetMode() const 
+{
+    return mode_;
+}
+
+void BaseController::LinkObjectByID(uint64_t id)
+{
+    // do we need any validation here that if there is an object present with the given id
+    linkedObjectID_ = id;
+}
+
+void BaseController::UnlinkObject()
+{
+    linkedObjectID_ = 0;
+}
+
+int BaseController::Activate(ControlActivationMode lat_mode,
                          ControlActivationMode long_mode,
                          ControlActivationMode light_mode,
                          ControlActivationMode anim_mode)
@@ -138,53 +185,68 @@ int Controller::Activate(ControlActivationMode lat_mode,
     return 0;
 }
 
-void Controller::ReportKeyEvent(int key, bool down)
+void BaseController::Deactivate()
+{
+    active_domains_ = static_cast<unsigned int>(ControlDomains::DOMAIN_NONE);
+}
+
+void BaseController::DeactivateDomains(uint32_t domains)
+{
+    active_domains_ = active_domains_ & ~domains;
+}
+
+void BaseController::Init()
+{
+
+}
+
+void BaseController::InitPostPlayer()
+{
+
+}
+
+uint64_t BaseController::GetLinkedObjectID() const
+{
+    return linkedObjectID_;
+}
+
+void BaseController::ReportKeyEvent(int key, bool down)
 {
     LOG("Key %c %s", key, down ? "down" : "up");
 }
 
-std::string Controller::Mode2Str(ControlOperationMode mode)
-{
-    if (mode == ControlOperationMode::MODE_OVERRIDE)
-    {
-        return "override";
-    }
-    else if (mode == ControlOperationMode::MODE_ADDITIVE)
-    {
-        return "additive";
-    }
-    else if (mode == ControlOperationMode::MODE_NONE)
-    {
-        return "none";
-    }
-    else
-    {
-        LOG("Unexpected mode \"%d\"", mode);
-        return "invalid mode";
-    }
-}
-
-bool Controller::IsActiveOnDomainsOnly(unsigned int domainMask)
+bool BaseController::IsActiveOnDomainsOnly(uint32_t domainMask) const
 {
     return (GetActiveDomains() == domainMask);
 }
 
-bool Controller::IsActiveOnDomains(unsigned int domainMask)
+bool BaseController::IsActiveOnDomains(uint32_t domainMask) const
 {
     return (domainMask & GetActiveDomains()) == domainMask;
 }
 
-bool Controller::IsNotActiveOnDomains(unsigned int domainMask)
+bool BaseController::IsNotActiveOnDomains(uint32_t domainMask) const
 {
     return (domainMask & GetActiveDomains()) == 0;
 }
 
-bool Controller::IsActiveOnAnyOfDomains(unsigned int domainMask)
+bool BaseController::IsActiveOnAnyOfDomains(uint32_t domainMask) const
 {
     return (domainMask & GetActiveDomains()) != 0;
 }
 
-bool Controller::IsActive()
+bool BaseController::IsActive() const
 {
     return GetActiveDomains() != static_cast<unsigned int>(ControlDomains::DOMAIN_NONE);
+}
+
+void BaseController::SetName(const std::string& name)
+{
+    name_ = name;
+}
+
+const std::string& BaseController::GetName() const
+{
+    return name_;
+}
 }

@@ -17,16 +17,16 @@
 #include "ScenarioGateway.hpp"
 #include "playerbase.hpp"
 
-using namespace scenarioengine;
-
-Controller* scenarioengine::InstantiateControllerLooming(void* args)
+namespace scenarioengine::controller
 {
-    Controller::InitArgs* initArgs = static_cast<Controller::InitArgs*>(args);
+EmbeddedController* InstantiateControllerLooming(void* args)
+{
+    InitArgs* initArgs = static_cast<InitArgs*>(args);
 
     return new ControllerLooming(initArgs);
 }
 
-ControllerLooming::ControllerLooming(InitArgs* args) : Controller(args)
+ControllerLooming::ControllerLooming(InitArgs* args) : EmbeddedController(args)
 {
     operating_domains_ = static_cast<unsigned int>(ControlDomains::DOMAIN_LONG);
 
@@ -416,12 +416,12 @@ void ControllerLooming::Step(double timeStep)
 
     object_->SetSensorPosition(far_x, far_y, 0.0);
 
-    Controller::Step(timeStep);
+    EmbeddedController::Step(timeStep);
 }
 
 void ControllerLooming::Init()
 {
-    Controller::Init();
+    EmbeddedController::Init();
 }
 
 int ControllerLooming::Activate(ControlActivationMode lat_activation_mode,
@@ -446,7 +446,7 @@ int ControllerLooming::Activate(ControlActivationMode lat_activation_mode,
         vehicle_.SetSteeringRate(steering_rate_);
     }
 
-    Controller::Activate(lat_activation_mode, long_activation_mode, light_activation_mode, anim_activation_mode);
+    EmbeddedController::Activate(lat_activation_mode, long_activation_mode, light_activation_mode, anim_activation_mode);
 
     if (IsActiveOnDomains(static_cast<unsigned int>(ControlDomains::DOMAIN_LAT)))
     {
@@ -465,4 +465,15 @@ void ControllerLooming::ReportKeyEvent(int key, bool down)
 {
     (void)key;
     (void)down;
+}
+/*
+std::string ControllerLooming::GetName() const
+{
+    return CONTROLLER_LOOMING_TYPE_NAME;
+}
+*/    
+controller::Type ControllerLooming::GetType() const 
+{
+    return CONTROLLER_TYPE_LOOMING;
+}
 }

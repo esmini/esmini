@@ -22,7 +22,7 @@
 #include "Entities.hpp"
 #include "ScenarioGateway.hpp"
 
-using namespace scenarioengine;
+//using namespace scenarioengine;
 
 #define ALKS_LOG(...)         \
     {                         \
@@ -35,22 +35,23 @@ using namespace scenarioengine;
             (void)0;          \
         }                     \
     }
-
-Controller* scenarioengine::InstantiateControllerECE_ALKS_REF_DRIVER(void* args)
+namespace scenarioengine::controller
 {
-    Controller::InitArgs* initArgs = static_cast<Controller::InitArgs*>(args);
+EmbeddedController* InstantiateControllerECE_ALKS_REF_DRIVER(void* args)
+{
+    InitArgs* initArgs = static_cast<InitArgs*>(args);
 
-    return new ControllerECE_ALKS_REF_DRIVER(initArgs);
+    return new  ControllerECE_ALKS_REF_DRIVER(initArgs);
 }
 
 ControllerECE_ALKS_REF_DRIVER::ControllerECE_ALKS_REF_DRIVER(InitArgs* args)
-    : Controller(args),
+    : EmbeddedController(args),
       active_(false),
       setSpeed_(0),
       currentSpeed_(0),
       logging_(false)
 {
-    mode_ = ControlOperationMode::MODE_ADDITIVE;
+    mode_ = controller::ControlOperationMode::MODE_ADDITIVE;
 
     if (args->properties->ValueExists("logging"))
     {
@@ -63,7 +64,7 @@ ControllerECE_ALKS_REF_DRIVER::ControllerECE_ALKS_REF_DRIVER(InitArgs* args)
 
 void ControllerECE_ALKS_REF_DRIVER::Init()
 {
-    Controller::Init();
+    EmbeddedController::Init();
 }
 
 void ControllerECE_ALKS_REF_DRIVER::Step(double timeStep)
@@ -472,7 +473,7 @@ void ControllerECE_ALKS_REF_DRIVER::Step(double timeStep)
         Reset();
     }
 
-    Controller::Step(timeStep);
+    EmbeddedController::Step(timeStep);
 }
 
 int ControllerECE_ALKS_REF_DRIVER::Activate(ControlActivationMode lat_activation_mode,
@@ -482,7 +483,7 @@ int ControllerECE_ALKS_REF_DRIVER::Activate(ControlActivationMode lat_activation
 {
     Reset();
 
-    Controller::Activate(lat_activation_mode, long_activation_mode, light_activation_mode, anim_activation_mode);
+    EmbeddedController::Activate(lat_activation_mode, long_activation_mode, light_activation_mode, anim_activation_mode);
 
     return 0;
 }
@@ -502,4 +503,15 @@ void ControllerECE_ALKS_REF_DRIVER::ReportKeyEvent(int key, bool down)
 {
     (void)key;
     (void)down;
+}
+/*
+std::string ControllerECE_ALKS_REF_DRIVER::GetName() const
+{
+    return CONTROLLER_ECE_ALKS_REF_DRIVER_TYPE_NAME;
+}
+*/    
+controller::Type ControllerECE_ALKS_REF_DRIVER::GetType() const 
+{
+    return CONTROLLER_TYPE_ECE_ALKS_REF_DRIVER;
+}
 }

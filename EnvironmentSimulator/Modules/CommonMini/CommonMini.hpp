@@ -127,7 +127,8 @@ enum class ControlDomains
     DOMAIN_LAT_AND_LONG = DOMAIN_LAT | DOMAIN_LONG,                               // = 3 (1+2)
     DOMAIN_ALL          = DOMAIN_LAT | DOMAIN_LONG | DOMAIN_LIGHT | DOMAIN_ANIM,  // = 15 (1+2+4+8)
 };
-
+// Riz
+/*
 enum class ControlOperationMode
 {
     MODE_NONE     = 0,  // Controller not available or it is not active
@@ -141,7 +142,7 @@ enum class ControlActivationMode
     OFF       = 1,
     ON        = 2
 };
-
+*/
 enum class EntityScaleMode
 {
     NONE,

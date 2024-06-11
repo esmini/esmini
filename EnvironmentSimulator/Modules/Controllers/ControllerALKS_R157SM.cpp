@@ -16,7 +16,7 @@
 #include "ScenarioEngine.hpp"
 #include "ScenarioGateway.hpp"
 
-using namespace scenarioengine;
+//using namespace scenarioengine::controller;
 
 #define R157_LOG(level, format, ...)                                                                 \
     {                                                                                                \
@@ -41,7 +41,8 @@ using namespace scenarioengine;
             (void)0;                                                                  \
         }                                                                             \
     }
-
+namespace scenarioengine::controller
+{
 std::map<ControllerALKS_R157SM::ScenarioType, std::string> ControllerALKS_R157SM::ScenarioTypeName = {
     {ControllerALKS_R157SM::ScenarioType::None, "None"},
     {ControllerALKS_R157SM::ScenarioType::CutIn, "CutIn"},
@@ -61,14 +62,14 @@ std::map<ControllerALKS_R157SM::ReferenceDriver::Phase, std::string> ControllerA
     {ControllerALKS_R157SM::ReferenceDriver::Phase::BRAKE_REF, "BRAKE_REF"},
     {ControllerALKS_R157SM::ReferenceDriver::Phase::BRAKE_AEB, "BRAKE_AEB"}};
 
-Controller* scenarioengine::InstantiateControllerALKS_R157SM(void* args)
+EmbeddedController* InstantiateControllerALKS_R157SM(void* args)
 {
-    Controller::InitArgs* initArgs = static_cast<Controller::InitArgs*>(args);
+    InitArgs* initArgs = static_cast<InitArgs*>(args);
 
     return new ControllerALKS_R157SM(initArgs);
 }
 
-ControllerALKS_R157SM::ControllerALKS_R157SM(InitArgs* args) : Controller(args), model_(0), entities_(0)
+ControllerALKS_R157SM::ControllerALKS_R157SM(InitArgs* args) : EmbeddedController(args), model_(0), entities_(0)
 {
     if (args && args->properties)
     {
@@ -190,7 +191,7 @@ ControllerALKS_R157SM::~ControllerALKS_R157SM()
 
 void ControllerALKS_R157SM::Init()
 {
-    Controller::Init();
+    EmbeddedController::Init();
 }
 
 void ControllerALKS_R157SM::Step(double timeStep)
@@ -205,7 +206,7 @@ void ControllerALKS_R157SM::Step(double timeStep)
 
     gateway_->updateObjectSpeed(object_->GetId(), 0.0, speed);
 
-    Controller::Step(timeStep);
+    EmbeddedController::Step(timeStep);
 }
 
 void ControllerALKS_R157SM::LinkObject(Object* object)
@@ -226,7 +227,7 @@ void ControllerALKS_R157SM::LinkObject(Object* object)
         model_->SetVehicle(static_cast<Vehicle*>(object));
     }
 
-    Controller::LinkObject(object);
+    EmbeddedController::LinkObject(object);
 }
 
 int ControllerALKS_R157SM::Activate(ControlActivationMode lat_activation_mode,
@@ -239,7 +240,7 @@ int ControllerALKS_R157SM::Activate(ControlActivationMode lat_activation_mode,
         model_->set_speed_ = object_->GetSpeed();
     }
 
-    return Controller::Activate(lat_activation_mode, long_activation_mode, light_activation_mode, anim_activation_mode);
+    return EmbeddedController::Activate(lat_activation_mode, long_activation_mode, light_activation_mode, anim_activation_mode);
 }
 
 void ControllerALKS_R157SM::SetScenarioEngine(ScenarioEngine* scenario_engine)
@@ -1529,4 +1530,15 @@ double ControllerALKS_R157SM::FSM::ReactCritical()
     R157_LOG(3, "acc %.2f", acc_);
 
     return MAX(veh_->GetSpeed() + acc_ * dt_, 0);
+}
+/*
+std::string ControllerALKS_R157SM::GetName() const
+{
+    return CONTROLLER_ALKS_R157SM_TYPE_NAME;
+}
+*/    
+controller::Type ControllerALKS_R157SM::GetType() const 
+{
+    return CONTROLLER_ALKS_R157SM;
+}
 }

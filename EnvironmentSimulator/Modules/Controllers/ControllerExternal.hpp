@@ -20,53 +20,58 @@
 #pragma once
 
 #include <string>
-#include "Controller.hpp"
+#include "EmbeddedController.hpp"
 #include "Parameters.hpp"
 
 #define CONTROLLER_EXTERNAL_TYPE_NAME "ExternalController"
 
-namespace scenarioengine
+namespace scenarioengine::controller
 {
-    // base class for controllers
-    class ControllerExternal : public Controller
+// base class for controllers
+class ControllerExternal : public controller::EmbeddedController
+{
+public:
+    ControllerExternal(InitArgs* args);
+
+    //std::string GetName() const override;
+
+    controller::Type GetType() const override;
+
+    /*
+    static const char* GetTypeNameStatic()
     {
-    public:
-        ControllerExternal(InitArgs* args);
+        return CONTROLLER_EXTERNAL_TYPE_NAME;
+    }
+    virtual const char* GetTypeName()
+    {
+        return GetTypeNameStatic();
+    }
+    static int GetTypeStatic()
+    {
+        return CONTROLLER_TYPE_EXTERNAL;
+    }
+    virtual int GetType()
+    {
+        return GetTypeStatic();
+    }
+    */
+    void Init();
+    void Step(double timeStep);
+    int  Activate(ControlActivationMode lat_activation_mode,
+                    ControlActivationMode long_activation_mode,
+                    ControlActivationMode light_activation_mode,
+                    ControlActivationMode anim_activation_mode);
+    virtual void ReportKeyEvent(int key, bool down);
+    bool UseGhost()
+    {
+        return useGhost_;
+    }
 
-        static const char* GetTypeNameStatic()
-        {
-            return CONTROLLER_EXTERNAL_TYPE_NAME;
-        }
-        virtual const char* GetTypeName()
-        {
-            return GetTypeNameStatic();
-        }
-        static int GetTypeStatic()
-        {
-            return CONTROLLER_TYPE_EXTERNAL;
-        }
-        virtual int GetType()
-        {
-            return GetTypeStatic();
-        }
+private:
+    bool   useGhost_;
+    double headstart_time_;
+};
+    
+controller::EmbeddedController* InstantiateControllerExternal(void* args);
 
-        void Init();
-        void Step(double timeStep);
-        int  Activate(ControlActivationMode lat_activation_mode,
-                      ControlActivationMode long_activation_mode,
-                      ControlActivationMode light_activation_mode,
-                      ControlActivationMode anim_activation_mode);
-        void ReportKeyEvent(int key, bool down);
-        bool UseGhost()
-        {
-            return useGhost_;
-        }
-
-    private:
-        bool   useGhost_;
-        double headstart_time_;
-    };
-
-    Controller* InstantiateControllerExternal(void* args);
-
-}  // namespace scenarioengine
+}  // namespace scenarioengine::controller

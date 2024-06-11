@@ -13,7 +13,7 @@
 #pragma once
 
 #include <string>
-#include "Controller.hpp"
+#include "EmbeddedController.hpp"
 #include "Parameters.hpp"
 #include "vehicle.hpp"
 #include "UDP.hpp"
@@ -24,10 +24,10 @@
 #define DEFAULT_UDP_DRIVER_PORT         49950
 #define UDP_SYNCHRONOUS_MODE_TIMEOUT_MS 500
 
-namespace scenarioengine
+namespace scenarioengine::controller
 {
     // base class for controllers
-    class ControllerUDPDriver : public Controller
+    class ControllerUDPDriver : public controller::EmbeddedController
     {
     public:
         enum class InputMode
@@ -105,17 +105,22 @@ namespace scenarioengine
 
         ControllerUDPDriver(InitArgs* args);
         ~ControllerUDPDriver();
+
+        //std::string GetName() const override;
+    
+        controller::Type GetType() const override;
+
         std::string InputMode2Str(InputMode inputMode);
         std::string ExecMode2Str(ExecMode execMode);
 
         void Init();
         void Step(double timeStep);
-        int  Activate(ControlActivationMode lat_activation_mode,
-                      ControlActivationMode long_activation_mode,
-                      ControlActivationMode light_activation_mode,
-                      ControlActivationMode anim_activation_mode);
-        void ReportKeyEvent(int key, bool down);
-
+        int  Activate(controller::ControlActivationMode lat_activation_mode,
+                      controller::ControlActivationMode long_activation_mode,
+                      controller::ControlActivationMode light_activation_mode,
+                      controller::ControlActivationMode anim_activation_mode);
+        virtual void ReportKeyEvent(int key, bool down);
+        /*
         static const char* GetTypeNameStatic()
         {
             return CONTROLLER_UDP_DRIVER_TYPE_NAME;
@@ -126,13 +131,13 @@ namespace scenarioengine
         }
         static int GetTypeStatic()
         {
-            return Controller::Type::CONTROLLER_TYPE_UDP_DRIVER;
+            return controller::Type::CONTROLLER_TYPE_UDP_DRIVER;
         }
         virtual int GetType()
         {
             return GetTypeStatic();
         }
-
+        */
     private:
         vehicle::Vehicle  vehicle_;
         vehicle::THROTTLE accelerate = vehicle::THROTTLE_NONE;
@@ -146,5 +151,5 @@ namespace scenarioengine
         DMMessage         lastMsg;
     };
 
-    Controller* InstantiateControllerUDPDriver(void* args);
+    controller::EmbeddedController* InstantiateControllerUDPDriver(void* args);
 }  // namespace scenarioengine

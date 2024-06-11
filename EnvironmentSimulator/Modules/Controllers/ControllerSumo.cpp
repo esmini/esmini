@@ -21,21 +21,21 @@
 #include <libsumo/Vehicle.h>
 #include <libsumo/TraCIDefs.h>
 
-using namespace scenarioengine;
-
-Controller* scenarioengine::InstantiateControllerSumo(void* args)
+namespace scenarioengine::controller
 {
-    Controller::InitArgs* initArgs = static_cast<Controller::InitArgs*>(args);
+EmbeddedController* InstantiateControllerSumo(void* args)
+{
+    InitArgs* initArgs = static_cast<InitArgs*>(args);
 
     return new ControllerSumo(initArgs);
 }
 
-ControllerSumo::ControllerSumo(InitArgs* args) : Controller(args)
+ControllerSumo::ControllerSumo(InitArgs* args) : EmbeddedController(args)
 {
     // SUMO controller forced into override mode - will not perform any scenario actions
     if (mode_ != ControlOperationMode::MODE_OVERRIDE)
     {
-        LOG("SUMO controller mode \"%s\" not applicable. Using override mode instead.", Mode2Str(mode_).c_str());
+        LOG("SUMO controller mode \"%s\" not applicable. Using override mode instead.", ToStr(mode_).c_str());
         mode_ = ControlOperationMode::MODE_OVERRIDE;
     }
 
@@ -183,7 +183,7 @@ void ControllerSumo::Step(double timeStep)
     {
         if (entities_->object_[i]->IsActive())
         {
-            if (entities_->object_[i]->IsAnyActiveControllerOfType(Controller::Type::CONTROLLER_TYPE_SUMO))
+            if (entities_->object_[i]->IsAnyActiveControllerOfType(controller::Type::CONTROLLER_TYPE_SUMO))
             {
                 Object* obj = entities_->object_[i];
 
@@ -235,7 +235,7 @@ void ControllerSumo::Step(double timeStep)
         }
     }
 
-    Controller::Step(timeStep);
+    EmbeddedController::Step(timeStep);
 }
 
 int ControllerSumo::Activate(ControlActivationMode lat_activation_mode,
@@ -253,7 +253,7 @@ int ControllerSumo::Activate(ControlActivationMode lat_activation_mode,
         lat_activation_mode = long_activation_mode = ControlActivationMode::ON;
     }
 
-    return Controller::Activate(lat_activation_mode, long_activation_mode, light_activation_mode, anim_activation_mode);
+    return EmbeddedController::Activate(lat_activation_mode, long_activation_mode, light_activation_mode, anim_activation_mode);
 }
 
 void ControllerSumo::SetSumoVehicle(Object* object)
@@ -261,4 +261,15 @@ void ControllerSumo::SetSumoVehicle(Object* object)
     template_vehicle_ = object;
     object_           = object;
     object_->AssignController(this);
+}
+/*
+std::string ControllerSumo::GetName() const
+{
+    return CONTROLLER_SUMO_TYPE_NAME;
+}
+*/    
+controller::Type ControllerSumo::GetType() const 
+{
+    return CONTROLLER_TYPE_SUMO;
+}
 }

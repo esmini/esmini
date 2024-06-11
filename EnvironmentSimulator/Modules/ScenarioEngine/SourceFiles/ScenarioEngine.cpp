@@ -326,7 +326,7 @@ int ScenarioEngine::step(double deltaSimTime)
 
         // Do not move objects when speed is zero,
         // and only ghosts allowed to execute during ghost restart
-        if (!(obj->IsControllerModeOnDomains(ControlOperationMode::MODE_OVERRIDE, static_cast<unsigned int>(ControlDomains::DOMAIN_LAT_AND_LONG))) &&
+        if (!(obj->IsControllerModeOnDomains(controller::ControlOperationMode::MODE_OVERRIDE, static_cast<unsigned int>(ControlDomains::DOMAIN_LAT_AND_LONG))) &&
             fabs(obj->speed_) > SMALL_NUMBER &&
             // Skip update for non ghost objects during ghost restart
             !(!obj->IsGhost() && SE_Env::Inst().GetGhostMode() == GhostMode::RESTARTING) && !obj->TowVehicle())  // update trailers later
@@ -425,7 +425,7 @@ int ScenarioEngine::step(double deltaSimTime)
 
     for (size_t i = 0; i < scenarioReader->controller_.size(); i++)
     {
-        if (scenarioReader->controller_[i]->Active())
+        if (scenarioReader->controller_[i]->IsActive())
         {
             if (SE_Env::Inst().GetGhostMode() != GhostMode::RESTARTING)
             {
@@ -627,9 +627,9 @@ int ScenarioEngine::parseScenario()
         {
             Object* obj = entities_.object_[i];
 
-            if (obj->IsAnyAssignedControllerOfType(Controller::Type::CONTROLLER_TYPE_FOLLOW_GHOST) ||
-                (obj->IsAnyAssignedControllerOfType(Controller::Type::CONTROLLER_TYPE_EXTERNAL) &&
-                 (static_cast<ControllerExternal*>(obj->GetAssignedControllerOftype(Controller::Type::CONTROLLER_TYPE_EXTERNAL))->UseGhost())))
+            if (obj->IsAnyAssignedControllerOfType(controller::Type::CONTROLLER_TYPE_FOLLOW_GHOST) ||
+                (obj->IsAnyAssignedControllerOfType(controller::Type::CONTROLLER_TYPE_EXTERNAL) &&
+                 (static_cast<controller::ControllerExternal*>(obj->GetAssignedControllerOftype(controller::Type::CONTROLLER_TYPE_EXTERNAL))->UseGhost())))
             {
                 SetupGhost(obj);
 
@@ -672,7 +672,7 @@ int ScenarioEngine::defaultController(Object* obj, double dt)
 
     if (!obj->CheckDirtyBits(Object::DirtyBit::LONGITUDINAL))  // No action has updated longitudinal dimension
     {
-        if (!obj->IsControllerModeOnDomains(ControlOperationMode::MODE_OVERRIDE, static_cast<unsigned int>(ControlDomains::DOMAIN_LONG)))
+        if (!obj->IsControllerModeOnDomains(controller::ControlOperationMode::MODE_OVERRIDE, static_cast<unsigned int>(ControlDomains::DOMAIN_LONG)))
         {
             Vehicle* tow_vehicle = static_cast<Vehicle*>(obj->TowVehicle());
             if (tow_vehicle == nullptr)

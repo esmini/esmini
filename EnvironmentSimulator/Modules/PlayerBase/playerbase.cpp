@@ -995,7 +995,7 @@ int ScenarioPlayer::InitViewer()
         {
             trail_color.set(color_black[0], color_black[1], color_black[2], 1.0);
         }
-        else if (obj->IsAnyAssignedControllerOfType(Controller::Type::CONTROLLER_TYPE_EXTERNAL))
+        else if (obj->IsAnyAssignedControllerOfType(controller::Type::CONTROLLER_TYPE_EXTERNAL))
         {
             trail_color.set(color_yellow[0], color_yellow[1], color_yellow[2], 1.0);
         }
@@ -1050,9 +1050,9 @@ int ScenarioPlayer::InitViewer()
     {
         Object* obj = scenarioEngine->entities_.object_[i];
 
-        if (obj->IsAnyAssignedControllerOfType(Controller::Type::CONTROLLER_TYPE_INTERACTIVE) ||
-            obj->IsAnyAssignedControllerOfType(Controller::Type::CONTROLLER_TYPE_EXTERNAL) ||
-            obj->IsAnyAssignedControllerOfType(Controller::Type::CONTROLLER_TYPE_FOLLOW_GHOST))
+        if (obj->IsAnyAssignedControllerOfType(controller::Type::CONTROLLER_TYPE_INTERACTIVE) ||
+            obj->IsAnyAssignedControllerOfType(controller::Type::CONTROLLER_TYPE_EXTERNAL) ||
+            obj->IsAnyAssignedControllerOfType(controller::Type::CONTROLLER_TYPE_FOLLOW_GHOST))
         {
             if (viewer_->GetEntityInFocus() == 0)
             {

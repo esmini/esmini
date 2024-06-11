@@ -75,22 +75,22 @@ ScenarioReader::~ScenarioReader()
 void ScenarioReader::LoadControllers()
 {
     // Register all internal controllers. The user may register custom ones as well before reading the scenario.
-    RegisterController(ControllerSloppyDriver::GetTypeNameStatic(), InstantiateControllerSloppyDriver);
-    RegisterController(ControllerInteractive::GetTypeNameStatic(), InstantiateControllerInteractive);
-    RegisterController(ControllerFollowGhost::GetTypeNameStatic(), InstantiateControllerFollowGhost);
-    RegisterController(ControllerFollowRoute::GetTypeNameStatic(), InstantiateControllerFollowRoute);
+    RegisterController(controller::ToStr(controller::Type::CONTROLLER_TYPE_SLOPPY_DRIVER), controller::InstantiateControllerSloppyDriver);
+    RegisterController(controller::ToStr(controller::Type::CONTROLLER_TYPE_INTERACTIVE), controller::InstantiateControllerInteractive);
+    RegisterController( controller::ToStr(controller::Type::CONTROLLER_TYPE_FOLLOW_GHOST) , controller::InstantiateControllerFollowGhost);
+    RegisterController(controller::ToStr(controller::Type::CONTROLLER_TYPE_FOLLOW_ROUTE), controller::InstantiateControllerFollowRoute);
 #ifdef _USE_SUMO
-    RegisterController(ControllerSumo::GetTypeNameStatic(), InstantiateControllerSumo);
+    RegisterController(controller::ToStr(controller::Type::CONTROLLER_TYPE_SUMO), controller::InstantiateControllerSumo);
 #endif
-    RegisterController(ControllerExternal::GetTypeNameStatic(), InstantiateControllerExternal);
-    RegisterController(ControllerRel2Abs::GetTypeNameStatic(), InstantiateControllerRel2Abs);
-    RegisterController(ControllerACC::GetTypeNameStatic(), InstantiateControllerACC);
-    RegisterController(ControllerALKS::GetTypeNameStatic(), InstantiateControllerALKS);
-    RegisterController(ControllerUDPDriver::GetTypeNameStatic(), InstantiateControllerUDPDriver);
-    RegisterController(ControllerECE_ALKS_REF_DRIVER::GetTypeNameStatic(), InstantiateControllerECE_ALKS_REF_DRIVER);
-    RegisterController(ControllerALKS_R157SM::GetTypeNameStatic(), InstantiateControllerALKS_R157SM);
-    RegisterController(ControllerLooming::GetTypeNameStatic(), InstantiateControllerLooming);
-    RegisterController(ControllerOffroadFollower::GetTypeNameStatic(), InstantiateControllerOffroadFollower);
+    RegisterController(controller::ToStr(controller::Type::CONTROLLER_TYPE_EXTERNAL), controller::InstantiateControllerExternal);
+    RegisterController(controller::ToStr(controller::Type::CONTROLLER_TYPE_REL2ABS), controller::InstantiateControllerRel2Abs);
+    RegisterController(controller::ToStr(controller::Type::CONTROLLER_TYPE_ACC), controller::InstantiateControllerACC);
+    RegisterController(controller::ToStr(controller::Type::CONTROLLER_TYPE_ALKS), controller::InstantiateControllerALKS);
+    RegisterController(controller::ToStr(controller::Type::CONTROLLER_TYPE_UDP_DRIVER), controller::InstantiateControllerUDPDriver);
+    RegisterController(controller::ToStr(controller::Type::CONTROLLER_TYPE_ECE_ALKS_REF_DRIVER), controller::InstantiateControllerECE_ALKS_REF_DRIVER);
+    RegisterController(controller::ToStr(controller::Type::CONTROLLER_ALKS_R157SM), controller::InstantiateControllerALKS_R157SM);
+    RegisterController(controller::ToStr(controller::Type::CONTROLLER_TYPE_LOOMING), controller::InstantiateControllerLooming);
+    RegisterController(controller::ToStr(controller::Type::CONTROLLER_TYPE_OFFROAD_FOLLOWER), controller::InstantiateControllerOffroadFollower);
 }
 
 void ScenarioReader::UnloadControllers()
@@ -98,7 +98,7 @@ void ScenarioReader::UnloadControllers()
     ScenarioReader::controllerPool_.Clear();
 }
 
-int ScenarioReader::RemoveController(Controller *controller)
+int ScenarioReader::RemoveController(controller::EmbeddedController *controller)
 {
     for (size_t i = 0; i < controller_.size(); i++)
     {
@@ -955,10 +955,10 @@ MiscObject *ScenarioReader::parseOSCMiscObject(pugi::xml_node miscObjectNode)
     return miscObject;
 }
 
-Controller *ScenarioReader::parseOSCObjectController(pugi::xml_node controllerNode)
+controller::EmbeddedController *ScenarioReader::parseOSCObjectController(pugi::xml_node controllerNode)
 {
     std::string   name       = parameters.ReadAttribute(controllerNode, "name");
-    Controller   *controller = 0;
+    controller::EmbeddedController   *controller = 0;
     OSCProperties properties;
 
     // First check for parameter declaration
@@ -1008,7 +1008,7 @@ Controller *ScenarioReader::parseOSCObjectController(pugi::xml_node controllerNo
     ControllerPool::ControllerEntry *ctrl_entry = ScenarioReader::controllerPool_.GetControllerByType(ctrlType);
     if (ctrl_entry)
     {
-        Controller::InitArgs args;
+        controller::InitArgs args;
         args.name       = name;
         args.type       = ctrlType;
         args.entities   = entities_;
@@ -1425,7 +1425,7 @@ int ScenarioReader::parseEntities()
         if (entitiesChildName == "ScenarioObject")
         {
             Object     *obj  = 0;
-            Controller *ctrl = 0;
+            controller::EmbeddedController *ctrl = 0;
 
             // First read the object
             pugi::xml_node objectChild;
@@ -1547,17 +1547,17 @@ int ScenarioReader::parseEntities()
                         ctrl->LinkObject(obj);
 
 #ifdef _USE_SUMO
-                        if (ctrl->GetType() == Controller::Type::CONTROLLER_TYPE_SUMO)
+                        if (ctrl->GetType() == controller::Type::CONTROLLER_TYPE_SUMO)
                         {
                             // Set template vehicle to be used for all vehicles spawned from SUMO
-                            (static_cast<ControllerSumo *>(ctrl))->SetSumoVehicle(obj);
+                            (static_cast<controller::ControllerSumo *>(ctrl))->SetSumoVehicle(obj);
                             obj->id_ = -1;
 
                             // SUMO controller is special in the sense that it is always active
-                            ctrl->Activate(ControlActivationMode::ON,
-                                           ControlActivationMode::ON,
-                                           ControlActivationMode::ON,
-                                           ControlActivationMode::ON);
+                            ctrl->Activate(controller::ControlActivationMode::ON,
+                                           controller::ControlActivationMode::ON,
+                                           controller::ControlActivationMode::ON,
+                                           controller::ControlActivationMode::ON);
 
                             // SUMO controller is not assigned to any scenario vehicle
                         }
@@ -1566,7 +1566,7 @@ int ScenarioReader::parseEntities()
                 }
             }
 
-            if (!obj->IsAnyAssignedControllerOfType(Controller::Type::CONTROLLER_TYPE_SUMO))
+            if (!obj->IsAnyAssignedControllerOfType(controller::Type::CONTROLLER_TYPE_SUMO))
             {
                 // Add all vehicles to the entity collection, except SUMO template vehicles
                 if (entitiesChild.attribute("name").empty())
@@ -2255,10 +2255,10 @@ OSCUserDefinedAction *ScenarioReader::parseOSCUserDefinedAction(pugi::xml_node a
 
 ActivateControllerAction *ScenarioReader::parseActivateControllerAction(pugi::xml_node node, Event *parent)
 {
-    ControlActivationMode lat_mode   = ControlActivationMode::UNDEFINED;
-    ControlActivationMode long_mode  = ControlActivationMode::UNDEFINED;
-    ControlActivationMode light_mode = ControlActivationMode::UNDEFINED;
-    ControlActivationMode anim_mode  = ControlActivationMode::UNDEFINED;
+    controller::ControlActivationMode lat_mode   = controller::ControlActivationMode::UNDEFINED;
+    controller::ControlActivationMode long_mode  = controller::ControlActivationMode::UNDEFINED;
+    controller::ControlActivationMode light_mode = controller::ControlActivationMode::UNDEFINED;
+    controller::ControlActivationMode anim_mode  = controller::ControlActivationMode::UNDEFINED;
 
     std::string lat_str   = parameters.ReadAttribute(node, "lateral");
     std::string long_str  = parameters.ReadAttribute(node, "longitudinal");
@@ -2268,39 +2268,39 @@ ActivateControllerAction *ScenarioReader::parseActivateControllerAction(pugi::xm
 
     if (lat_str == "false")
     {
-        lat_mode = ControlActivationMode::OFF;
+        lat_mode = controller::ControlActivationMode::OFF;
     }
     else if (lat_str == "true")
     {
-        lat_mode = ControlActivationMode::ON;
+        lat_mode = controller::ControlActivationMode::ON;
     }
 
     if (long_str == "false")
     {
-        long_mode = ControlActivationMode::OFF;
+        long_mode = controller::ControlActivationMode::OFF;
     }
     else if (long_str == "true")
     {
-        long_mode = ControlActivationMode::ON;
+        long_mode = controller::ControlActivationMode::ON;
     }
 
     if (light_str == "false")
     {
-        light_mode = ControlActivationMode::OFF;
+        light_mode = controller::ControlActivationMode::OFF;
     }
     else if (light_str == "true")
     {
-        light_mode = ControlActivationMode::ON;
+        light_mode = controller::ControlActivationMode::ON;
     }
 
     if (anim_str == "false")
     {
-        anim_mode = ControlActivationMode::OFF;
+        anim_mode = controller::ControlActivationMode::OFF;
     }
     else if (anim_str == "true")
     {
         LOG("Animation activation is not supported yet");
-        anim_mode = ControlActivationMode::ON;
+        anim_mode = controller::ControlActivationMode::ON;
     }
 
     ActivateControllerAction *activateControllerAction = new ActivateControllerAction(name_str, lat_mode, long_mode, light_mode, anim_mode, parent);
@@ -3090,7 +3090,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                     for (pugi::xml_node controllerDefNode = controllerChild.first_child(); controllerDefNode;
                          controllerDefNode                = controllerDefNode.next_sibling())
                     {
-                        Controller *controller = 0;
+                        controller::EmbeddedController *controller = 0;
                         if (controllerDefNode.name() == std::string("Controller"))
                         {
                             controller = parseOSCObjectController(controllerDefNode);
@@ -3128,10 +3128,10 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                             controller->LinkObject(object);
                         }
 
-                        ControlActivationMode lat_mode   = ControlActivationMode::UNDEFINED;
-                        ControlActivationMode long_mode  = ControlActivationMode::UNDEFINED;
-                        ControlActivationMode light_mode = ControlActivationMode::UNDEFINED;
-                        ControlActivationMode anim_mode  = ControlActivationMode::UNDEFINED;
+                        controller::ControlActivationMode lat_mode   = controller::ControlActivationMode::UNDEFINED;
+                        controller::ControlActivationMode long_mode  = controller::ControlActivationMode::UNDEFINED;
+                        controller::ControlActivationMode light_mode = controller::ControlActivationMode::UNDEFINED;
+                        controller::ControlActivationMode anim_mode  = controller::ControlActivationMode::UNDEFINED;
 
                         std::string lat_str   = parameters.ReadAttribute(controllerDefNode, "lateral");
                         std::string long_str  = parameters.ReadAttribute(controllerDefNode, "longitudinal");
@@ -3140,39 +3140,39 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 
                         if (lat_str == "false")
                         {
-                            lat_mode = ControlActivationMode::OFF;
+                            lat_mode = controller::ControlActivationMode::OFF;
                         }
                         else if (lat_str == "true")
                         {
-                            lat_mode = ControlActivationMode::ON;
+                            lat_mode = controller::ControlActivationMode::ON;
                         }
 
                         if (long_str == "false")
                         {
-                            long_mode = ControlActivationMode::OFF;
+                            long_mode = controller::ControlActivationMode::OFF;
                         }
                         else if (long_str == "true")
                         {
-                            long_mode = ControlActivationMode::ON;
+                            long_mode = controller::ControlActivationMode::ON;
                         }
 
                         if (light_str == "false")
                         {
-                            light_mode = ControlActivationMode::OFF;
+                            light_mode = controller::ControlActivationMode::OFF;
                         }
                         else if (light_str == "true")
                         {
-                            light_mode = ControlActivationMode::ON;
+                            light_mode = controller::ControlActivationMode::ON;
                         }
 
                         if (anim_str == "false")
                         {
-                            anim_mode = ControlActivationMode::OFF;
+                            anim_mode = controller::ControlActivationMode::OFF;
                         }
                         else if (anim_str == "true")
                         {
                             LOG("Animation activation is not supported yet");
-                            anim_mode = ControlActivationMode::ON;
+                            anim_mode = controller::ControlActivationMode::ON;
                         }
 
                         AssignControllerAction *assignControllerAction =

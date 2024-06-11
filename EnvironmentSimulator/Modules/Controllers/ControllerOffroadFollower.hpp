@@ -17,20 +17,24 @@
 #pragma once
 
 #include <string>
-#include "Controller.hpp"
+#include "EmbeddedController.hpp"
 #include "pugixml.hpp"
 #include "Parameters.hpp"
 #include "vehicle.hpp"
 
 #define CONTROLLER_OFFROAD_FOLLOWER_TYPE_NAME "OffroadFollower"
 
-namespace scenarioengine
+namespace scenarioengine::controller
 {
     // base class for controllers
-    class ControllerOffroadFollower : public Controller
+    class ControllerOffroadFollower : public controller::EmbeddedController
     {
     public:
         ControllerOffroadFollower(InitArgs* args);
+
+        //std::string GetName() const override;
+    
+        controller::Type GetType() const override;
 
         void Init();
         void Step(double timeStep);
@@ -38,8 +42,9 @@ namespace scenarioengine
                       ControlActivationMode long_activation_mode,
                       ControlActivationMode light_activation_mode,
                       ControlActivationMode anim_activation_mode);
-        void ReportKeyEvent(int key, bool down);
-
+        virtual void ReportKeyEvent(int key, bool down);
+        // Riz
+        /*
         static const char* GetTypeNameStatic()
         {
             return CONTROLLER_OFFROAD_FOLLOWER_TYPE_NAME;
@@ -50,13 +55,13 @@ namespace scenarioengine
         }
         static int GetTypeStatic()
         {
-            return Controller::Type::CONTROLLER_TYPE_INTERACTIVE;
+            return controller::Type::CONTROLLER_TYPE_INTERACTIVE;
         }
         virtual int GetType()
         {
             return GetTypeStatic();
         }
-
+        */
     private:
         vehicle::Vehicle vehicle_;
         Object*          follow_entity_;
@@ -65,5 +70,5 @@ namespace scenarioengine
         double           speed_factor_;
     };
 
-    Controller* InstantiateControllerOffroadFollower(void* args);
+    EmbeddedController* InstantiateControllerOffroadFollower(void* args);
 }  // namespace scenarioengine

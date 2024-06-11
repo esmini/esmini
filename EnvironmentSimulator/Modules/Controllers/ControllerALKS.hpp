@@ -21,32 +21,36 @@
 
 // As a starting point the ALKS controller inherit all functionality of the ACC controller
 
-namespace scenarioengine
+namespace scenarioengine::controller
 {
-    class ControllerALKS : public ControllerACC
+class ControllerALKS : public ControllerACC
+{
+public:
+    ControllerALKS(InitArgs* args) : ControllerACC(args)
     {
-    public:
-        ControllerALKS(InitArgs* args) : ControllerACC(args)
-        {
-        }
+    }
 
-        static const char* GetTypeNameStatic()
-        {
-            return CONTROLLER_ALKS_TYPE_NAME;
-        }
-        virtual const char* GetTypeName()
-        {
-            return GetTypeNameStatic();
-        }
-        static int GetTypeStatic()
-        {
-            return CONTROLLER_TYPE_ALKS;
-        }
-        virtual int GetType()
-        {
-            return GetTypeStatic();
-        }
-    };
+    //std::string GetName() const override;
+    controller::Type GetType() const override;
 
-    Controller* InstantiateControllerALKS(void* args);
-}  // namespace scenarioengine
+    /*
+    static const char* GetTypeNameStatic()
+    {
+        return CONTROLLER_ALKS_TYPE_NAME;
+    }
+    virtual const char* GetTypeName()
+    {
+        return GetTypeNameStatic();
+    }
+    static int GetTypeStatic()
+    {
+        return CONTROLLER_TYPE_ALKS;
+    }
+    virtual int GetType()
+    {
+        return GetTypeStatic();
+    }
+    */
+};
+EmbeddedController* InstantiateControllerALKS(void* args);
+}  // namespace scenarioengine::controller

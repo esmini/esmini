@@ -14,16 +14,17 @@
 #include "Entities.hpp"
 #include "ScenarioGateway.hpp"
 
-using namespace scenarioengine;
-
-Controller* scenarioengine::InstantiateControllerExternal(void* args)
+//using namespace scenarioengine::controller;
+namespace scenarioengine::controller
 {
-    Controller::InitArgs* initArgs = static_cast<Controller::InitArgs*>(args);
+EmbeddedController* InstantiateControllerExternal(void* args)
+{
+    InitArgs* initArgs = static_cast<InitArgs*>(args);
 
     return new ControllerExternal(initArgs);
 }
 
-ControllerExternal::ControllerExternal(InitArgs* args) : Controller(args), useGhost_(false), headstart_time_(3.0)
+ControllerExternal::ControllerExternal(InitArgs* args) : EmbeddedController(args), useGhost_(false), headstart_time_(3.0)
 {
     if (args && args->properties && args->properties->ValueExists("useGhost"))
     {
@@ -49,7 +50,7 @@ void ControllerExternal::Init()
         LOG("  -> ignoring the headstartTime attribute.");
     }
 
-    Controller::Init();
+    EmbeddedController::Init();
 }
 
 void ControllerExternal::Step(double timeStep)
@@ -77,7 +78,7 @@ void ControllerExternal::Step(double timeStep)
         }
     }
 
-    Controller::Step(timeStep);
+    EmbeddedController::Step(timeStep);
 }
 
 int ControllerExternal::Activate(ControlActivationMode lat_activation_mode,
@@ -85,11 +86,22 @@ int ControllerExternal::Activate(ControlActivationMode lat_activation_mode,
                                  ControlActivationMode light_activation_mode,
                                  ControlActivationMode anim_activation_mode)
 {
-    return Controller::Activate(lat_activation_mode, long_activation_mode, light_activation_mode, anim_activation_mode);
+    return EmbeddedController::Activate(lat_activation_mode, long_activation_mode, light_activation_mode, anim_activation_mode);
 }
 
 void ControllerExternal::ReportKeyEvent(int key, bool down)
 {
     (void)key;
     (void)down;
+}
+/*
+std::string ControllerExternal::GetName() const
+{
+    return CONTROLLER_EXTERNAL_TYPE_NAME;
+}
+*/    
+controller::Type ControllerExternal::GetType() const 
+{
+    return CONTROLLER_TYPE_EXTERNAL;
+}
 }

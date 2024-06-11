@@ -23,19 +23,19 @@
 
 #include <random>
 
-using namespace scenarioengine;
-
+namespace scenarioengine::controller
+{
 int ControllerUDPDriver::basePort_ = DEFAULT_UDP_DRIVER_PORT;
 
-Controller* scenarioengine::InstantiateControllerUDPDriver(void* args)
+EmbeddedController* InstantiateControllerUDPDriver(void* args)
 {
-    Controller::InitArgs* initArgs = static_cast<Controller::InitArgs*>(args);
+    InitArgs* initArgs = static_cast<InitArgs*>(args);
 
     return new ControllerUDPDriver(initArgs);
 }
 
 ControllerUDPDriver::ControllerUDPDriver(InitArgs* args)
-    : Controller(args),
+    : EmbeddedController(args),
       inputMode_(InputMode::DRIVER_INPUT),
       udpServer_(nullptr),
       port_(0),
@@ -169,7 +169,7 @@ void ControllerUDPDriver::Init()
         basePort_ = DEFAULT_UDP_DRIVER_PORT;
         LOG("ControllerUDPDriver: using default baseport %d", basePort_);
     }
-    Controller::Init();
+    EmbeddedController::Init();
 }
 
 void ControllerUDPDriver::Step(double timeStep)
@@ -343,7 +343,7 @@ void ControllerUDPDriver::Step(double timeStep)
         vehicle_.SetPitch(pos->GetP());
     }
 
-    Controller::Step(timeStep);
+    EmbeddedController::Step(timeStep);
 }
 
 int ControllerUDPDriver::Activate(ControlActivationMode lat_activation_mode,
@@ -388,11 +388,22 @@ int ControllerUDPDriver::Activate(ControlActivationMode lat_activation_mode,
     steer      = vehicle::STEERING_NONE;
     accelerate = vehicle::THROTTLE_NONE;
 
-    return Controller::Activate(lat_activation_mode, long_activation_mode, light_activation_mode, anim_activation_mode);
+    return EmbeddedController::Activate(lat_activation_mode, long_activation_mode, light_activation_mode, anim_activation_mode);
 }
 
 void ControllerUDPDriver::ReportKeyEvent(int key, bool down)
 {
     (void)key;
     (void)down;
+}
+/*
+std::string ControllerUDPDriver::GetName() const
+{
+    return CONTROLLER_UDP_DRIVER_TYPE_NAME;
+}
+*/    
+controller::Type ControllerUDPDriver::GetType() const 
+{
+    return controller::Type::CONTROLLER_TYPE_UDP_DRIVER;
+}
 }

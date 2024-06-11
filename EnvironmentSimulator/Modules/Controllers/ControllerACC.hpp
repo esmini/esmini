@@ -13,19 +13,23 @@
 #pragma once
 
 #include <string>
-#include "Controller.hpp"
+#include "EmbeddedController.hpp"
 #include "Entities.hpp"
 #include "vehicle.hpp"
 
 #define CONTROLLER_ACC_TYPE_NAME "ACCController"
 
-namespace scenarioengine
+namespace scenarioengine::controller
 {
-    class ControllerACC : public Controller
+    class ControllerACC : public controller::EmbeddedController
     {
     public:
         ControllerACC(InitArgs* args);
 
+        //virtual std::string GetName() const;
+    
+        virtual controller::Type GetType() const;
+        /*
         static const char* GetTypeNameStatic()
         {
             return CONTROLLER_ACC_TYPE_NAME;
@@ -42,7 +46,7 @@ namespace scenarioengine
         {
             return GetTypeStatic();
         }
-
+        */
         void Init();
         void InitPostPlayer();
         void Step(double timeStep);
@@ -50,11 +54,8 @@ namespace scenarioengine
                       ControlActivationMode long_activation_mode,
                       ControlActivationMode light_activation_mode,
                       ControlActivationMode anim_activation_mode);
-        void ReportKeyEvent(int key, bool down);
-        void SetSetSpeed(double setSpeed)
-        {
-            setSpeed_ = setSpeed;
-        }
+        virtual void ReportKeyEvent(int key, bool down);
+        void SetSetSpeed(double setSpeed);
 
     private:
         vehicle::Vehicle vehicle_;
@@ -67,5 +68,5 @@ namespace scenarioengine
         bool             virtual_;
     };
 
-    Controller* InstantiateControllerACC(void* args);
-}  // namespace scenarioengine
+    EmbeddedController* InstantiateControllerACC(void* args);
+}  // namespace scenarioengine::controller

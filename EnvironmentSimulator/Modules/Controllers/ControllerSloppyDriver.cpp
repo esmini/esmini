@@ -32,14 +32,16 @@ double SinusoidalTransition::GetHeading()
     return -amplitude_ * sin(startAngle_ + factor_ * M_PI);
 }
 
-Controller* scenarioengine::InstantiateControllerSloppyDriver(void* args)
+namespace scenarioengine::controller
 {
-    Controller::InitArgs* initArgs = static_cast<Controller::InitArgs*>(args);
+EmbeddedController* InstantiateControllerSloppyDriver(void* args)
+{
+    InitArgs* initArgs = static_cast<InitArgs*>(args);
 
     return new ControllerSloppyDriver(initArgs);
 }
 
-ControllerSloppyDriver::ControllerSloppyDriver(InitArgs* args) : Controller(args), sloppiness_(0.5), time_(0)
+ControllerSloppyDriver::ControllerSloppyDriver(InitArgs* args) : EmbeddedController(args), sloppiness_(0.5), time_(0)
 {
     if (args->properties->ValueExists("sloppiness"))
     {
@@ -49,7 +51,7 @@ ControllerSloppyDriver::ControllerSloppyDriver(InitArgs* args) : Controller(args
 
 void ControllerSloppyDriver::Init()
 {
-    Controller::Init();
+    EmbeddedController::Init();
 }
 
 void ControllerSloppyDriver::Step(double timeStep)
@@ -170,7 +172,7 @@ void ControllerSloppyDriver::Step(double timeStep)
     gateway_->updateObjectPos(object_->id_, 0.0, &object_->pos_);
     gateway_->updateObjectSpeed(object_->GetId(), 0.0, currentSpeed_);
 
-    Controller::Step(timeStep);
+    EmbeddedController::Step(timeStep);
 }
 
 int ControllerSloppyDriver::Activate(ControlActivationMode lat_activation_mode,
@@ -197,11 +199,22 @@ int ControllerSloppyDriver::Activate(ControlActivationMode lat_activation_mode,
         currentH_   = object_->pos_.GetHRelative();
     }
 
-    return Controller::Activate(lat_activation_mode, long_activation_mode, light_activation_mode, anim_activation_mode);
+    return EmbeddedController::Activate(lat_activation_mode, long_activation_mode, light_activation_mode, anim_activation_mode);
 }
 
 void ControllerSloppyDriver::ReportKeyEvent(int key, bool down)
 {
     (void)key;
     (void)down;
+}
+/*
+std::string ControllerSloppyDriver::GetName() const
+{
+    return CONTROLLER_SLOPPY_DRIVER_TYPE_NAME;
+}
+*/    
+controller::Type ControllerSloppyDriver::GetType() const 
+{
+    return controller::Type::CONTROLLER_TYPE_SLOPPY_DRIVER;
+}
 }

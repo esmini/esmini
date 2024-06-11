@@ -20,17 +20,18 @@
 #include "ScenarioGateway.hpp"
 #include "playerbase.hpp"
 
-using namespace scenarioengine;
-
-Controller* scenarioengine::InstantiateControllerACC(void* args)
+namespace scenarioengine::controller
 {
-    Controller::InitArgs* initArgs = static_cast<Controller::InitArgs*>(args);
+
+EmbeddedController* InstantiateControllerACC(void* args)
+{
+    InitArgs* initArgs = static_cast<InitArgs*>(args);
 
     return new ControllerACC(initArgs);
 }
 
 ControllerACC::ControllerACC(InitArgs* args)
-    : Controller(args),
+    : EmbeddedController(args),
       active_(false),
       timeGap_(1.5),
       setSpeed_(0),
@@ -71,7 +72,22 @@ ControllerACC::ControllerACC(InitArgs* args)
 
 void ControllerACC::Init()
 {
-    Controller::Init();
+    EmbeddedController::Init();
+}
+/*
+std::string ControllerACC::GetName() const
+{
+    return CONTROLLER_ACC_TYPE_NAME;
+}
+*/    
+Type ControllerACC::GetType() const 
+{
+    return CONTROLLER_TYPE_ACC;
+}
+
+void ControllerACC::SetSetSpeed(double setSpeed)
+{
+    setSpeed_ = setSpeed;
 }
 
 void ControllerACC::InitPostPlayer()
@@ -229,7 +245,7 @@ void ControllerACC::Step(double timeStep)
         gateway_->updateObjectSpeed(object_->GetId(), 0.0, currentSpeed_);
     }
 
-    Controller::Step(timeStep);
+    EmbeddedController::Step(timeStep);
 }
 
 int ControllerACC::Activate(ControlActivationMode lat_activation_mode,
@@ -243,7 +259,7 @@ int ControllerACC::Activate(ControlActivationMode lat_activation_mode,
         setSpeed_ = object_->GetSpeed();
     }
 
-    Controller::Activate(lat_activation_mode, long_activation_mode, light_activation_mode, anim_activation_mode);
+    EmbeddedController::Activate(lat_activation_mode, long_activation_mode, light_activation_mode, anim_activation_mode);
 
     if (IsActiveOnDomains(static_cast<unsigned int>(ControlDomains::DOMAIN_LAT)))
     {
@@ -264,3 +280,5 @@ void ControllerACC::ReportKeyEvent(int key, bool down)
     (void)key;
     (void)down;
 }
+
+} //namespace scenarioengine::controller

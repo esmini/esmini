@@ -456,7 +456,7 @@ int OSIReporter::UpdateOSIDynamicGroundTruth(const std::vector<std::unique_ptr<O
             }
             else
             {
-                if (objectState[i]->state_.info.ctrl_type != Controller::Type::GHOST_RESERVED_TYPE)
+                if (objectState[i]->state_.info.ctrl_type != controller::Type::GHOST_RESERVED_TYPE)
                 {
                     UpdateOSIMovingObject(objectState[i].get());
                 }

@@ -1071,13 +1071,13 @@ extern "C"
                 vehicle->role_        = object_role;
                 vehicle->boundingbox_ = bb;
 
-                Controller::InitArgs args = {"", "", 0, 0, 0, 0};
-                args.type                 = ControllerExternal::GetTypeNameStatic();
-                Controller *ctrl          = InstantiateControllerExternal(&args);
+                controller::InitArgs args = {"", "", 0, 0, 0, 0};
+                args.type                 = controller::ToStr(controller::Type::CONTROLLER_TYPE_EXTERNAL); //ControllerExternal::GetTypeNameStatic();
+                controller::EmbeddedController *ctrl          = InstantiateControllerExternal(&args);
                 if (ctrl != nullptr)
                 {
                     vehicle->AssignController(ctrl);
-                    ctrl->Activate(ControlActivationMode::ON, ControlActivationMode::ON, ControlActivationMode::OFF, ControlActivationMode::OFF);
+                    ctrl->Activate(controller::ControlActivationMode::ON, controller::ControlActivationMode::ON, controller::ControlActivationMode::OFF, controller::ControlActivationMode::OFF);
                 }
             }
             else

@@ -23,19 +23,21 @@
 #include "ScenarioGateway.hpp"
 #include "ScenarioEngine.hpp"
 
-using namespace scenarioengine;
+//using namespace scenarioengine::controller;
 
 #define FOLLOW_GHOST_BY_POSITION  // comment out to run time based following instead
 
-Controller* scenarioengine::InstantiateControllerFollowGhost(void* args)
+namespace scenarioengine::controller
 {
-    Controller::InitArgs* initArgs = static_cast<Controller::InitArgs*>(args);
+EmbeddedController* InstantiateControllerFollowGhost(void* args)
+{
+    InitArgs* initArgs = static_cast<InitArgs*>(args);
 
     return new ControllerFollowGhost(initArgs);
 }
 
 ControllerFollowGhost::ControllerFollowGhost(InitArgs* args)
-    : Controller(args),
+    : EmbeddedController(args),
       headstart_time_(3.0),
       follow_mode_(FollowMode::FOLLOW_MODE_TIME),
       lookahead_speed_(0.1),
@@ -92,13 +94,13 @@ void ControllerFollowGhost::Init()
     // FollowGhost controller forced into override mode - will not perform any scenario actions
     if (mode_ != ControlOperationMode::MODE_OVERRIDE)
     {
-        LOG("FollowGhost controller mode \"%s\" not applicable. Using override mode instead.", Mode2Str(mode_).c_str());
+        LOG("FollowGhost controller mode \"%s\" not applicable. Using override mode instead.", ToStr(mode_).c_str());
         mode_ = ControlOperationMode::MODE_OVERRIDE;
     }
 
     object_->SetHeadstartTime(headstart_time_);
 
-    Controller::Init();
+    EmbeddedController::Init();
 }
 
 void ControllerFollowGhost::Step(double timeStep)
@@ -235,7 +237,7 @@ void ControllerFollowGhost::Step(double timeStep)
         gateway_->updateObjectWheelAngle(object_->id_, 0.0, vehicle_.wheelAngle_);
     }
 
-    Controller::Step(timeStep);
+    EmbeddedController::Step(timeStep);
 }
 
 int ControllerFollowGhost::Activate(ControlActivationMode lat_activation_mode,
@@ -257,11 +259,22 @@ int ControllerFollowGhost::Activate(ControlActivationMode lat_activation_mode,
         object_->sensor_pos_[2] = object_->pos_.GetZ();
     }
 
-    return Controller::Activate(lat_activation_mode, long_activation_mode, light_activation_mode, anim_activation_mode);
+    return EmbeddedController::Activate(lat_activation_mode, long_activation_mode, light_activation_mode, anim_activation_mode);
 }
 
 void ControllerFollowGhost::ReportKeyEvent(int key, bool down)
 {
     (void)key;
     (void)down;
+}
+/*
+std::string ControllerFollowGhost::GetName() const
+{
+    return CONTROLLER_FOLLOW_GHOST_TYPE_NAME;
+}
+*/    
+controller::Type ControllerFollowGhost::GetType() const 
+{
+    return CONTROLLER_TYPE_FOLLOW_GHOST;
+}
 }

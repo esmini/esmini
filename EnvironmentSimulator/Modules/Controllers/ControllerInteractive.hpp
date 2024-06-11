@@ -17,20 +17,24 @@
 #pragma once
 
 #include <string>
-#include "Controller.hpp"
+#include "EmbeddedController.hpp"
 #include "pugixml.hpp"
 #include "Parameters.hpp"
 #include "vehicle.hpp"
 
 #define CONTROLLER_INTERACTIVE_TYPE_NAME "InteractiveController"
 
-namespace scenarioengine
+namespace scenarioengine::controller
 {
     // base class for controllers
-    class ControllerInteractive : public Controller
+    class ControllerInteractive : public controller::EmbeddedController
     {
     public:
         ControllerInteractive(InitArgs* args);
+
+        //std::string GetName() const override;
+    
+        controller::Type GetType() const override;
 
         void Init();
         void Step(double timeStep);
@@ -38,8 +42,9 @@ namespace scenarioengine
                       ControlActivationMode long_activation_mode,
                       ControlActivationMode light_activation_mode,
                       ControlActivationMode anim_activation_mode);
-        void ReportKeyEvent(int key, bool down);
-
+        virtual void ReportKeyEvent(int key, bool down);
+        // Riz
+        /*
         static const char* GetTypeNameStatic()
         {
             return CONTROLLER_INTERACTIVE_TYPE_NAME;
@@ -50,13 +55,13 @@ namespace scenarioengine
         }
         static int GetTypeStatic()
         {
-            return Controller::Type::CONTROLLER_TYPE_INTERACTIVE;
+            return controller::Type::CONTROLLER_TYPE_INTERACTIVE;
         }
         virtual int GetType()
         {
             return GetTypeStatic();
         }
-
+        */
     private:
         vehicle::Vehicle  vehicle_;
         vehicle::THROTTLE accelerate = vehicle::THROTTLE_NONE;
@@ -65,5 +70,5 @@ namespace scenarioengine
         double            speed_factor_;
     };
 
-    Controller* InstantiateControllerInteractive(void* args);
-}  // namespace scenarioengine
+    EmbeddedController* InstantiateControllerInteractive(void* args);
+}  // namespace scenarioengine::controller

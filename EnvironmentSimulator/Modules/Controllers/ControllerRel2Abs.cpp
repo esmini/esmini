@@ -26,17 +26,17 @@
 
 // #define CONTROLLER_REL2ABS_DEBUG
 
-using namespace scenarioengine;
-
-Controller* scenarioengine::InstantiateControllerRel2Abs(void* args)
+namespace scenarioengine::controller
 {
-    Controller::InitArgs* initArgs = static_cast<Controller::InitArgs*>(args);
+EmbeddedController* InstantiateControllerRel2Abs(void* args)
+{
+    InitArgs* initArgs = static_cast<InitArgs*>(args);
 
     return new ControllerRel2Abs(initArgs);
 }
 
 ControllerRel2Abs::ControllerRel2Abs(InitArgs* args)
-    : Controller(args),
+    : EmbeddedController(args),
       pred_horizon(1),
       switching_threshold_dist(1.5),
       switching_threshold_speed(1.5)
@@ -44,7 +44,7 @@ ControllerRel2Abs::ControllerRel2Abs(InitArgs* args)
     // ControllerRel2Abs forced into additive mode - will only react on scenario actions
     if (mode_ != ControlOperationMode::MODE_ADDITIVE)
     {
-        LOG("ControllerRel2Abs mode \"%s\" not applicable. Using additive mode instead.", Mode2Str(mode_).c_str());
+        LOG("ControllerRel2Abs mode \"%s\" not applicable. Using additive mode instead.", ToStr(mode_).c_str());
         mode_ = ControlOperationMode::MODE_ADDITIVE;
     }
     if (args->properties->ValueExists("horizon"))
@@ -63,7 +63,7 @@ ControllerRel2Abs::ControllerRel2Abs(InitArgs* args)
 
 void ControllerRel2Abs::Init()
 {
-    Controller::Init();
+    EmbeddedController::Init();
 }
 
 void ControllerRel2Abs::findEgo()
@@ -90,7 +90,7 @@ void ControllerRel2Abs::findEgo()
         {
             if (entities_->object_[i]->type_ == Object::Type::VEHICLE)
             {
-                if (entities_->object_[i]->IsAnyActiveControllerOfType(Controller::Type::CONTROLLER_TYPE_EXTERNAL))
+                if (entities_->object_[i]->IsAnyActiveControllerOfType(controller::Type::CONTROLLER_TYPE_EXTERNAL))
                 {
                     ego_obj = static_cast<int>(i);
                     LOG("Object named \"%s\" used as ego vehicle due to being controlled externally.", entities_->object_[i]->name_.c_str());
@@ -614,7 +614,7 @@ void ControllerRel2Abs::Step(double timeStep)
                            object_->front_axle_.positionZ,
                            &object_->pos_);
 
-    Controller::Step(timeStep);
+    EmbeddedController::Step(timeStep);
 }
 
 int ControllerRel2Abs::Activate(ControlActivationMode lat_activation_mode,
@@ -637,7 +637,7 @@ int ControllerRel2Abs::Activate(ControlActivationMode lat_activation_mode,
     pred_timestep      = 0.1;
     pred_nbr_timesteps = pred_horizon / pred_timestep;
 
-    return Controller::Activate(lat_activation_mode, long_activation_mode, light_activation_mode, anim_activation_mode);
+    return EmbeddedController::Activate(lat_activation_mode, long_activation_mode, light_activation_mode, anim_activation_mode);
 }
 
 void ControllerRel2Abs::ReportKeyEvent(int key, bool down)
@@ -660,4 +660,15 @@ void ControllerRel2Abs::CopyPosition(Object* object, position_copy* obj_copy)
     obj_copy->pos       = saved_pos;
     obj_copy->speed     = saved_speed;
     obj_copy->dirtyBits = object->GetDirtyBitMask();
+}
+/*
+std::string ControllerRel2Abs::GetName() const
+{
+    return CONTROLLER_REL2ABS_TYPE_NAME;
+}
+*/    
+controller::Type ControllerRel2Abs::GetType() const 
+{
+    return controller::Type::CONTROLLER_TYPE_REL2ABS;
+}
 }

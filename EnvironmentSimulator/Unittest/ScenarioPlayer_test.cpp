@@ -387,7 +387,7 @@ TEST(Controllers, TestSeparateControllersOnLatLong)
     ASSERT_EQ(se->entities_.object_.size(), 2);
     EXPECT_EQ(se->entities_.object_[0]->controllers_.size(), 2);
 
-    scenarioengine::Controller* ctrl = se->entities_.object_[0]->controllers_[0];
+    scenarioengine::controller::EmbeddedController* ctrl = se->entities_.object_[0]->controllers_[0];
 
     // Check expected position and orientation at some specific time stamps
     while (!player->IsQuitRequested())

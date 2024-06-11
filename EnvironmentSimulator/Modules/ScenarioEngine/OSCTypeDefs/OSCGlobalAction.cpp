@@ -537,9 +537,9 @@ void SwarmTrafficAction::spawn(Solutions sols, int replace, double simTime)
             if (!ensureDistance(inf.pos, laneID, MIN(MAX(40.0, velocity_ * 2.0), 0.7 * semiMajorAxis_)))
                 continue;  // distance = speed * 2 seconds
 
-            Controller::InitArgs args;
+            controller::InitArgs args;
             args.name       = "Swarm ACC controller";
-            args.type       = ControllerACC::GetTypeNameStatic();
+            args.type       = controller::ToStr( controller::Type::CONTROLLER_TYPE_ACC);
             args.entities   = entities_;
             args.gateway    = gateway_;
             args.parameters = 0;
@@ -552,10 +552,10 @@ void SwarmTrafficAction::spawn(Solutions sols, int replace, double simTime)
             property.value_ = std::to_string(velocity_);
             args.properties->property_.push_back(property);
 #endif
-            Controller* acc = InstantiateControllerACC(&args);
+            controller::EmbeddedController* acc = InstantiateControllerACC(&args);
 
 #if 1  // This is another way of setting the ACC setSpeed property
-            (static_cast<ControllerACC*>(acc))->SetSetSpeed(velocity_);
+            (static_cast<controller::ControllerACC*>(acc))->SetSetSpeed(velocity_);
 #endif
             reader_->AddController(acc);
 
@@ -580,7 +580,7 @@ void SwarmTrafficAction::spawn(Solutions sols, int replace, double simTime)
 
             vehicle->AssignController(acc);
             acc->LinkObject(vehicle);
-            acc->Activate(ControlActivationMode::OFF, ControlActivationMode::ON, ControlActivationMode::OFF, ControlActivationMode::OFF);
+            acc->Activate(controller::ControlActivationMode::OFF, controller::ControlActivationMode::ON, controller::ControlActivationMode::OFF, controller::ControlActivationMode::OFF);
 
             SpawnInfo sInfo = {
                 id,                    // Vehicle ID

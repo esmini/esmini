@@ -39,16 +39,16 @@
 
 #include <string>
 #include <map>
-#include "Controller.hpp"
+#include "EmbeddedController.hpp"
 #include "Entities.hpp"
 #include "vehicle.hpp"
 
 #define CONTROLLER_ALKS_R157SM_TYPE_NAME "ALKS_R157SM_Controller"
 
-namespace scenarioengine
+namespace scenarioengine::controller
 {
 
-    class ControllerALKS_R157SM : public Controller
+    class ControllerALKS_R157SM : public controller::EmbeddedController
     {
     public:
         enum class ScenarioType
@@ -602,6 +602,11 @@ namespace scenarioengine
         ControllerALKS_R157SM(InitArgs* args);
         ~ControllerALKS_R157SM();
 
+        //std::string GetName() const override;
+    
+        controller::Type GetType() const override;
+
+        /*
         static const char* GetTypeNameStatic()
         {
             return CONTROLLER_ALKS_R157SM_TYPE_NAME;
@@ -618,7 +623,7 @@ namespace scenarioengine
         {
             return GetTypeStatic();
         }
-
+        */
         void Init();
         void Step(double timeStep);
         void LinkObject(Object* object);
@@ -626,9 +631,9 @@ namespace scenarioengine
                       ControlActivationMode long_activation_mode,
                       ControlActivationMode light_activation_mode,
                       ControlActivationMode anim_activation_mode);
-        void ReportKeyEvent(int key, bool down);
+        virtual void ReportKeyEvent(int key, bool down);
         void SetScenarioEngine(ScenarioEngine* scenario_engine) override;
     };
 
-    Controller* InstantiateControllerALKS_R157SM(void* args);
+    EmbeddedController* InstantiateControllerALKS_R157SM(void* args);
 }  // namespace scenarioengine

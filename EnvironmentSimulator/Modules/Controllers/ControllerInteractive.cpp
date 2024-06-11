@@ -17,16 +17,16 @@
 
 #include <random>
 
-using namespace scenarioengine;
-
-Controller* scenarioengine::InstantiateControllerInteractive(void* args)
+namespace scenarioengine::controller
 {
-    Controller::InitArgs* initArgs = static_cast<Controller::InitArgs*>(args);
+EmbeddedController* InstantiateControllerInteractive(void* args)
+{
+    InitArgs* initArgs = static_cast<InitArgs*>(args);
 
     return new ControllerInteractive(initArgs);
 }
 
-ControllerInteractive::ControllerInteractive(InitArgs* args) : Controller(args), steering_rate_(4.0), speed_factor_(1.0)
+ControllerInteractive::ControllerInteractive(InitArgs* args) : EmbeddedController(args), steering_rate_(4.0), speed_factor_(1.0)
 {
     if (args && args->properties)
     {
@@ -44,7 +44,7 @@ ControllerInteractive::ControllerInteractive(InitArgs* args) : Controller(args),
 
 void ControllerInteractive::Init()
 {
-    Controller::Init();
+    EmbeddedController::Init();
 }
 
 void ControllerInteractive::Step(double timeStep)
@@ -107,7 +107,7 @@ void ControllerInteractive::Step(double timeStep)
         gateway_->updateObjectWheelAngle(object_->id_, 0.0, vehicle_.wheelAngle_);
     }
 
-    Controller::Step(timeStep);
+    EmbeddedController::Step(timeStep);
 }
 
 int ControllerInteractive::Activate(ControlActivationMode lat_activation_mode,
@@ -132,7 +132,7 @@ int ControllerInteractive::Activate(ControlActivationMode lat_activation_mode,
     object_->SetJunctionSelectorStrategy(roadmanager::Junction::JunctionStrategyType::SELECTOR_ANGLE);
     object_->SetJunctionSelectorAngle(0.0);
 
-    return Controller::Activate(lat_activation_mode, long_activation_mode, light_activation_mode, anim_activation_mode);
+    return EmbeddedController::Activate(lat_activation_mode, long_activation_mode, light_activation_mode, anim_activation_mode);
 }
 
 void ControllerInteractive::ReportKeyEvent(int key, bool down)
@@ -181,4 +181,15 @@ void ControllerInteractive::ReportKeyEvent(int key, bool down)
             accelerate = vehicle::THROTTLE_NONE;
         }
     }
+}
+/*
+std::string ControllerInteractive::GetName() const
+{
+    return CONTROLLER_INTERACTIVE_TYPE_NAME;
+}
+*/    
+controller::Type ControllerInteractive::GetType() const 
+{
+    return controller::Type::CONTROLLER_TYPE_INTERACTIVE;
+}
 }

@@ -21,7 +21,7 @@
 #include "OSCGlobalAction.hpp"
 #include "OSCBoundingBox.hpp"
 #include "Parameters.hpp"
-#include "Controller.hpp"
+#include "EmbeddedController.hpp"
 #include "ScenarioGateway.hpp"
 
 #include <iostream>
@@ -36,14 +36,14 @@ namespace scenarioengine
         typedef struct
         {
             std::string                   type;
-            ControllerInstantiateFunction instantiateFunction;
+            controller::ControllerInstantiateFunction instantiateFunction;
         } ControllerEntry;
 
         ControllerPool(){};
 
         std::vector<ControllerEntry> controller_;
 
-        void AddController(std::string name, ControllerInstantiateFunction function)
+        void AddController(std::string name, controller::ControllerInstantiateFunction function)
         {
             ControllerEntry entry = {name, function};
             controller_.push_back(entry);
@@ -108,7 +108,7 @@ namespace scenarioengine
         Pedestrian*                       parseOSCPedestrian(pugi::xml_node pedestrianNode);
         MiscObject*                       parseOSCMiscObject(pugi::xml_node miscObjectNode);
         Vehicle*                          createRandomOSCVehicle(std::string name);
-        Controller*                       parseOSCObjectController(pugi::xml_node vehicleNode);
+        controller::EmbeddedController*                       parseOSCObjectController(pugi::xml_node vehicleNode);
         void                              parseGlobalParameterDeclarations()
         {
             parameters.parseGlobalParameterDeclarations(osc_root_.child("ParameterDeclarations"));
@@ -146,7 +146,7 @@ namespace scenarioengine
             return !osc_root_.empty();
         }
 
-        static void RegisterController(std::string type_name, ControllerInstantiateFunction function)
+        static void RegisterController(std::string type_name, controller::ControllerInstantiateFunction function)
         {
             ScenarioReader::controllerPool_.AddController(type_name, function);
         }
@@ -167,8 +167,8 @@ namespace scenarioengine
             return versionMinor_;
         }
 
-        int  RemoveController(Controller* controller);
-        void AddController(Controller* controller)
+        int  RemoveController(controller::EmbeddedController* controller);
+        void AddController(controller::EmbeddedController* controller)
         {
             controller_.push_back(controller);
         }
@@ -177,7 +177,7 @@ namespace scenarioengine
             return &doc_;
         }
 
-        std::vector<Controller*> controller_;
+        std::vector<controller::EmbeddedController*> controller_;
 
         static Parameters parameters;  // static to enable set via callback during creation of object
         static Parameters variables;

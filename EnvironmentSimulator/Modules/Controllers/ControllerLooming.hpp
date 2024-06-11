@@ -26,19 +26,25 @@
 #pragma once
 
 #include <string>
-#include "Controller.hpp"
+#include "EmbeddedController.hpp"
 #include "Entities.hpp"
 #include "vehicle.hpp"
 
 #define CONTROLLER_LOOMING_TYPE_NAME "LoomingController"
 
-namespace scenarioengine
+namespace scenarioengine::controller
 {
-    class ControllerLooming : public Controller
+    class ControllerLooming : public controller::EmbeddedController
     {
     public:
         ControllerLooming(InitArgs* args);
 
+        //std::string GetName() const override;
+    
+        controller::Type GetType() const override;
+
+        // Riz
+        /*
         static const char* GetTypeNameStatic()
         {
             return CONTROLLER_LOOMING_TYPE_NAME;
@@ -55,18 +61,18 @@ namespace scenarioengine
         {
             return GetTypeStatic();
         }
-
+        */
         void Init();
         int  Activate(ControlActivationMode lat_activation_mode,
                       ControlActivationMode long_activation_mode,
                       ControlActivationMode light_activation_mode,
                       ControlActivationMode anim_activation_mode);
-        void ReportKeyEvent(int key, bool down);
+        virtual void ReportKeyEvent(int key, bool down);
         void SetSetSpeed(double setSpeed)
         {
             setSpeed_ = setSpeed;
         }
-        void Step(double timeStep);
+        virtual void Step(double timeStep);
         bool hasFarTan;
         bool getHasFarTan()
         {
@@ -88,5 +94,5 @@ namespace scenarioengine
         double           angleDiff      = 0.0;
     };
 
-    Controller* InstantiateControllerLooming(void* args);
+    EmbeddedController* InstantiateControllerLooming(void* args);
 }  // namespace scenarioengine

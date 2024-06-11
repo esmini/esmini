@@ -16,7 +16,7 @@
 #include "OSCPosition.hpp"
 #include "Entities.hpp"
 #include "CommonMini.hpp"
-#include "Controller.hpp"
+#include "EmbeddedController.hpp"
 
 #include <iostream>
 #include <string>
@@ -182,19 +182,21 @@ namespace scenarioengine
 
         virtual void ReplaceObjectRefs(Object*, Object*){};
 
-        const std::string DomainActivation2Str(ControlActivationMode mode) const
+        /*
+        const std::string DomainActivation2Str(controller::ControlActivationMode mode) const
         {
             switch (mode)
             {
-                case ControlActivationMode::UNDEFINED:
+                case controller::ControlActivationMode::UNDEFINED:
                     return "UNDEFINED";
-                case ControlActivationMode::OFF:
+                case controller::ControlActivationMode::OFF:
                     return "OFF";
-                case ControlActivationMode::ON:
+                case controller::ControlActivationMode::ON:
                     return "ON";
             }
             return "UNKNOWN";
         }
+        */
     };
 
     class LongSpeedAction : public OSCPrivateAction
@@ -1086,17 +1088,17 @@ namespace scenarioengine
     class AssignControllerAction : public OSCPrivateAction
     {
     public:
-        Controller*           controller_;
-        ControlActivationMode lat_activation_mode_   = ControlActivationMode::UNDEFINED;
-        ControlActivationMode long_activation_mode_  = ControlActivationMode::UNDEFINED;
-        ControlActivationMode light_activation_mode_ = ControlActivationMode::UNDEFINED;
-        ControlActivationMode anim_activation_mode_  = ControlActivationMode::UNDEFINED;
+        controller::EmbeddedController*           controller_;
+        controller::ControlActivationMode lat_activation_mode_   = controller::ControlActivationMode::UNDEFINED;
+        controller::ControlActivationMode long_activation_mode_  = controller::ControlActivationMode::UNDEFINED;
+        controller::ControlActivationMode light_activation_mode_ = controller::ControlActivationMode::UNDEFINED;
+        controller::ControlActivationMode anim_activation_mode_  = controller::ControlActivationMode::UNDEFINED;
 
-        AssignControllerAction(Controller*           controller,
-                               ControlActivationMode lat_activation_mode,
-                               ControlActivationMode long_activation_mode,
-                               ControlActivationMode light_activation_mode,
-                               ControlActivationMode anim_activation_mode,
+        AssignControllerAction(controller::EmbeddedController*           controller,
+                               controller::ControlActivationMode lat_activation_mode,
+                               controller::ControlActivationMode long_activation_mode,
+                               controller::ControlActivationMode light_activation_mode,
+                               controller::ControlActivationMode anim_activation_mode,
                                StoryBoardElement*    parent)
             : OSCPrivateAction(OSCPrivateAction::ActionType::ASSIGN_CONTROLLER, parent, static_cast<unsigned int>(ControlDomains::DOMAIN_NONE)),
               controller_(controller),
@@ -1142,21 +1144,21 @@ namespace scenarioengine
     {
     public:
         std::string           ctrl_name_;
-        Controller*           controller_;
-        ControlActivationMode lat_activation_mode_   = ControlActivationMode::OFF;
-        ControlActivationMode long_activation_mode_  = ControlActivationMode::OFF;
-        ControlActivationMode light_activation_mode_ = ControlActivationMode::OFF;
-        ControlActivationMode anim_activation_mode_  = ControlActivationMode::OFF;
+        controller::EmbeddedController*           controller_;
+        controller::ControlActivationMode lat_activation_mode_   = controller::ControlActivationMode::OFF;
+        controller::ControlActivationMode long_activation_mode_  = controller::ControlActivationMode::OFF;
+        controller::ControlActivationMode light_activation_mode_ = controller::ControlActivationMode::OFF;
+        controller::ControlActivationMode anim_activation_mode_  = controller::ControlActivationMode::OFF;
 
         /**
         Constructor with domain specification
         @param domainMask bitmask according to Controller::Domain type
         */
         ActivateControllerAction(std::string           ctrl_name,
-                                 ControlActivationMode lat_activation_mode,
-                                 ControlActivationMode long_activation_mode,
-                                 ControlActivationMode light_activation_mode,
-                                 ControlActivationMode anim_activation_mode,
+                                 controller::ControlActivationMode lat_activation_mode,
+                                 controller::ControlActivationMode long_activation_mode,
+                                 controller::ControlActivationMode light_activation_mode,
+                                 controller::ControlActivationMode anim_activation_mode,
                                  StoryBoardElement*    parent)
             : OSCPrivateAction(OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER, parent, static_cast<unsigned int>(ControlDomains::DOMAIN_NONE)),
               ctrl_name_(ctrl_name),

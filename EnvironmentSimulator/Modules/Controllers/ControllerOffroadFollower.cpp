@@ -17,17 +17,17 @@
 
 #include <random>
 
-using namespace scenarioengine;
-
-Controller* scenarioengine::InstantiateControllerOffroadFollower(void* args)
+namespace scenarioengine::controller
 {
-    Controller::InitArgs* initArgs = static_cast<Controller::InitArgs*>(args);
+EmbeddedController* InstantiateControllerOffroadFollower(void* args)
+{
+    InitArgs* initArgs = static_cast<InitArgs*>(args);
 
     return new ControllerOffroadFollower(initArgs);
 }
 
 ControllerOffroadFollower::ControllerOffroadFollower(InitArgs* args)
-    : Controller(args),
+    : EmbeddedController(args),
       follow_entity_(nullptr),
       target_distance_(20.0),
       steering_rate_(4.0),
@@ -65,7 +65,7 @@ ControllerOffroadFollower::ControllerOffroadFollower(InitArgs* args)
 
 void ControllerOffroadFollower::Init()
 {
-    Controller::Init();
+    EmbeddedController::Init();
 }
 
 void ControllerOffroadFollower::Step(double timeStep)
@@ -108,7 +108,7 @@ void ControllerOffroadFollower::Step(double timeStep)
     gateway_->updateObjectWheelAngle(object_->id_, 0.0, vehicle_.wheelAngle_);
 
     // run step method of the base class
-    Controller::Step(timeStep);
+    EmbeddedController::Step(timeStep);
 }
 
 int ControllerOffroadFollower::Activate(ControlActivationMode lat_activation_mode,
@@ -130,11 +130,22 @@ int ControllerOffroadFollower::Activate(ControlActivationMode lat_activation_mod
     object_->SetJunctionSelectorStrategy(roadmanager::Junction::JunctionStrategyType::SELECTOR_ANGLE);
     object_->SetJunctionSelectorAngle(0.0);
 
-    return Controller::Activate(lat_activation_mode, long_activation_mode, light_activation_mode, anim_activation_mode);
+    return EmbeddedController::Activate(lat_activation_mode, long_activation_mode, light_activation_mode, anim_activation_mode);
 }
 
 void ControllerOffroadFollower::ReportKeyEvent(int key, bool down)
 {
     (void)key;
     (void)down;
+}
+/*
+std::string ControllerOffroadFollower::GetName() const
+{
+    return CONTROLLER_OFFROAD_FOLLOWER_TYPE_NAME;
+}
+*/    
+controller::Type ControllerOffroadFollower::GetType() const 
+{
+    return controller::Type::CONTROLLER_TYPE_INTERACTIVE;
+}
 }

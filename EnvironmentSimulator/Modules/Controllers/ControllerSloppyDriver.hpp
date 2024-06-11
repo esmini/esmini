@@ -19,7 +19,7 @@
 #pragma once
 
 #include <string>
-#include "Controller.hpp"
+#include "EmbeddedController.hpp"
 #include "pugixml.hpp"
 #include "Parameters.hpp"
 
@@ -60,13 +60,20 @@ namespace scenarioengine
             factor_ = factor;
         }
     };
-
+    namespace controller
+    {
     // base class for controllers
-    class ControllerSloppyDriver : public Controller
+    class ControllerSloppyDriver : public controller::EmbeddedController
     {
     public:
         ControllerSloppyDriver(InitArgs* args);
 
+        //std::string GetName() const override;
+    
+        controller::Type GetType() const override;
+
+        // Riz
+        /*
         static const char* GetTypeNameStatic()
         {
             return CONTROLLER_SLOPPY_DRIVER_TYPE_NAME;
@@ -77,20 +84,20 @@ namespace scenarioengine
         }
         static int GetTypeStatic()
         {
-            return Controller::Type::CONTROLLER_TYPE_SLOPPY_DRIVER;
+            return controller::Type::CONTROLLER_TYPE_SLOPPY_DRIVER;
         }
         virtual int GetType()
         {
             return GetTypeStatic();
         }
-
+        */
         void Init();
         void Step(double timeStep);
-        int  Activate(ControlActivationMode lat_activation_mode,
-                      ControlActivationMode long_activation_mode,
-                      ControlActivationMode light_activation_mode,
-                      ControlActivationMode anim_activation_mode);
-        void ReportKeyEvent(int key, bool down);
+        int  Activate(controller::ControlActivationMode lat_activation_mode,
+                      controller::ControlActivationMode long_activation_mode,
+                      controller::ControlActivationMode light_activation_mode,
+                      controller::ControlActivationMode anim_activation_mode);
+        virtual void ReportKeyEvent(int key, bool down);
 
     private:
         double        sloppiness_;  // range [0-1], default = 0.5
@@ -114,5 +121,6 @@ namespace scenarioengine
         const char* type_name_ = "SloppyDriver";
     };
 
-    Controller* InstantiateControllerSloppyDriver(void* args);
+    controller::EmbeddedController* InstantiateControllerSloppyDriver(void* args);
+    } //namespace controller
 }  // namespace scenarioengine

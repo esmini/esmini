@@ -13,20 +13,25 @@
 #pragma once
 
 #include <string>
-#include "Controller.hpp"
+#include "EmbeddedController.hpp"
 #include "pugixml.hpp"
 #include "Parameters.hpp"
 
 #define CONTROLLER_SUMO_TYPE_NAME "SumoController"
 
-namespace scenarioengine
+namespace scenarioengine::controller
 {
     // base class for controllers
-    class ControllerSumo : public Controller
+    class ControllerSumo : public controller::EmbeddedController
     {
     public:
         ControllerSumo(InitArgs* args);
 
+        //std::string GetName() const override;
+    
+        controller::Type GetType() const override;
+
+        /*
         static const char* GetTypeNameStatic()
         {
             return CONTROLLER_SUMO_TYPE_NAME;
@@ -43,9 +48,9 @@ namespace scenarioengine
         {
             return GetTypeStatic();
         }
-
+        */
         void Init();
-        void Step(double time);
+        virtual void Step(double time);
         int  Activate(ControlActivationMode lat_activation_mode,
                       ControlActivationMode long_activation_mode,
                       ControlActivationMode light_activation_mode,
@@ -62,5 +67,5 @@ namespace scenarioengine
         Object*            template_vehicle_;
     };
 
-    Controller* InstantiateControllerSumo(void* args);
+    EmbeddedController* InstantiateControllerSumo(void* args);
 }  // namespace scenarioengine

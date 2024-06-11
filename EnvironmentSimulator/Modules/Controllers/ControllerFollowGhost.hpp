@@ -13,7 +13,7 @@
 #pragma once
 
 #include <string>
-#include "Controller.hpp"
+#include "EmbeddedController.hpp"
 #include "pugixml.hpp"
 #include "Parameters.hpp"
 #include "Entities.hpp"
@@ -23,11 +23,14 @@
 
 namespace scenarioengine
 {
-    class ScenarioPlayer;
-    class ScenarioEngine;
 
+class ScenarioPlayer;
+class ScenarioEngine;
+
+namespace controller
+{
     // base class for controllers
-    class ControllerFollowGhost : public Controller
+    class ControllerFollowGhost : public controller::EmbeddedController
     {
     public:
         enum class FollowMode
@@ -39,6 +42,12 @@ namespace scenarioengine
 
         ControllerFollowGhost(InitArgs* args);
 
+        //std::string GetName() const override;
+    
+        controller::Type GetType() const override;
+
+        // Riz
+        /*
         static const char* GetTypeNameStatic()
         {
             return CONTROLLER_FOLLOW_GHOST_TYPE_NAME;
@@ -55,7 +64,7 @@ namespace scenarioengine
         {
             return GetTypeStatic();
         }
-
+        */
         void SetScenarioEngine(ScenarioEngine* scenarioEngine)
         {
             scenarioEngine_ = scenarioEngine;
@@ -67,7 +76,7 @@ namespace scenarioengine
                       ControlActivationMode long_activation_mode,
                       ControlActivationMode light_activation_mode,
                       ControlActivationMode anim_activation_mode);
-        void ReportKeyEvent(int key, bool down);
+        virtual void ReportKeyEvent(int key, bool down);
 
     private:
         vehicle::Vehicle vehicle_;
@@ -80,5 +89,6 @@ namespace scenarioengine
         double           min_lookahead_steering_;
     };
 
-    Controller* InstantiateControllerFollowGhost(void* args);
+    EmbeddedController* InstantiateControllerFollowGhost(void* args);
+} //namespace controller    
 }  // namespace scenarioengine

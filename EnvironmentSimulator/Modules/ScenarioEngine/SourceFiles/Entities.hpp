@@ -19,12 +19,16 @@
 #include "CommonMini.hpp"
 #include "OSCBoundingBox.hpp"
 #include "OSCProperties.hpp"
-#include "Controller.hpp"
+#include "EmbeddedController.hpp"
 #include <algorithm>
 
 namespace scenarioengine
 {
-    class Controller;  // Forward declaration
+namespace controller
+{
+class EmbeddedController;  // Forward declaration    
+}
+    
     class OSCPrivateAction;
     class Event;
 
@@ -146,7 +150,7 @@ namespace scenarioengine
         double      stand_still_timestamp_;
         bool        reset_;  // indicate discreet movement, teleporting, no odometer update
 
-        std::vector<Controller*>                    controllers_;  // reference to all assigned controller objects
+        std::vector<controller::EmbeddedController*>                    controllers_;  // reference to all assigned controller objects
         double                                      headstart_time_;
         Object*                                     ghost_;
         Object*                                     ghost_Ego_;
@@ -352,30 +356,30 @@ namespace scenarioengine
             return speed_;
         }
 
-        void AssignController(Controller* controller);
-        void UnassignController(Controller* controller);
+        void AssignController(controller::EmbeddedController* controller);
+        void UnassignController(controller::EmbeddedController* controller);
         void UnassignControllers();
 
-        bool IsControllerActiveOnDomains(unsigned int domainMask, Controller::Type type = Controller::Type::CONTROLLER_TYPE_UNDEFINED);
-        bool IsControllerActiveOnAnyOfDomains(unsigned int domainMask, Controller::Type type = Controller::Type::CONTROLLER_TYPE_UNDEFINED);
-        bool IsControllerModeOnDomains(ControlOperationMode mode,
+        bool IsControllerActiveOnDomains(unsigned int domainMask, controller::Type type = controller::CONTROLLER_TYPE_UNDEFINED);
+        bool IsControllerActiveOnAnyOfDomains(unsigned int domainMask, controller::Type type = controller::CONTROLLER_TYPE_UNDEFINED);
+        bool IsControllerModeOnDomains(controller::ControlOperationMode mode,
                                        unsigned int         domainMask,
-                                       Controller::Type     type = Controller::Type::CONTROLLER_TYPE_UNDEFINED);
-        bool IsControllerModeOnAnyOfDomains(ControlOperationMode mode,
+                                       controller::Type     type = controller::CONTROLLER_TYPE_UNDEFINED);
+        bool IsControllerModeOnAnyOfDomains(controller::ControlOperationMode mode,
                                             unsigned int         domainMask,
-                                            Controller::Type     type = Controller::Type::CONTROLLER_TYPE_UNDEFINED);
+                                            controller::Type     type = controller::CONTROLLER_TYPE_UNDEFINED);
 
-        Controller*      GetAssignedControllerOftype(Controller::Type type);
-        bool             IsAnyAssignedControllerOfType(Controller::Type type);
-        bool             IsAnyActiveControllerOfType(Controller::Type type);
-        Controller*      GetControllerActiveOnDomain(ControlDomains domain);
-        Controller::Type GetControllerTypeActiveOnDomain(ControlDomains domain);
+        controller::EmbeddedController*      GetAssignedControllerOftype(controller::Type type);
+        bool             IsAnyAssignedControllerOfType(controller::Type type);
+        bool             IsAnyActiveControllerOfType(controller::Type type);
+        controller::EmbeddedController*      GetControllerActiveOnDomain(ControlDomains domain);
+        controller::Type GetControllerTypeActiveOnDomain(ControlDomains domain);
         unsigned int     GetNrOfAssignedControllers()
         {
             return static_cast<unsigned int>(controllers_.size());
         }
 
-        Controller* GetController(std::string name);
+        controller::EmbeddedController* GetController(std::string name);
 
         int GetId()
         {

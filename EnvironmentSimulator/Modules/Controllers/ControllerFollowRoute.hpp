@@ -13,7 +13,7 @@
 #pragma once
 
 #include <string>
-#include "Controller.hpp"
+#include "EmbeddedController.hpp"
 #include "pugixml.hpp"
 #include "Parameters.hpp"
 #include "Entities.hpp"
@@ -25,7 +25,7 @@
 
 #define CONTROLLER_FOLLOW_ROUTE_TYPE_NAME "FollowRouteController"
 
-namespace scenarioengine
+namespace scenarioengine::controller
 {
     typedef enum
     {
@@ -35,11 +35,17 @@ namespace scenarioengine
     } WaypointStatus;
 
     // base class for controllers
-    class ControllerFollowRoute : public Controller
+    class ControllerFollowRoute : public controller::EmbeddedController
     {
     public:
         ControllerFollowRoute(InitArgs *args);
 
+        //std::string GetName() const override;
+    
+        controller::Type GetType() const override;
+
+        // Riz
+        /*
         static const char *GetTypeNameStatic()
         {
             return CONTROLLER_FOLLOW_ROUTE_TYPE_NAME;
@@ -56,14 +62,14 @@ namespace scenarioengine
         {
             return GetTypeStatic();
         }
-
+        */
         void Init();
         void Step(double timeStep);
         int  Activate(ControlActivationMode lat_activation_mode,
                       ControlActivationMode long_activation_mode,
                       ControlActivationMode light_activation_mode,
                       ControlActivationMode anim_activation_mode);
-        void ReportKeyEvent(int key, bool down);
+        virtual void ReportKeyEvent(int key, bool down);
         void SetScenarioEngine(ScenarioEngine *scenarioEngine)
         {
             scenarioEngine_ = scenarioEngine;
@@ -161,5 +167,5 @@ namespace scenarioengine
         bool                               testMode_;
     };
 
-    Controller *InstantiateControllerFollowRoute(void *args);
+    EmbeddedController *InstantiateControllerFollowRoute(void *args);
 }  // namespace scenarioengine

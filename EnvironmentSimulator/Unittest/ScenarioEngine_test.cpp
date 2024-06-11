@@ -798,9 +798,9 @@ TEST(ControllerTest, UDPDriverModelTestAsynchronous)
     // Replace controllers
     for (size_t i = 0; i < 2; i++)
     {
-        scenarioengine::Controller::InitArgs args;
+        scenarioengine::controller::InitArgs args;
         args.name       = "UDPDriverModel Controller";
-        args.type       = ControllerUDPDriver::GetTypeNameStatic();
+        args.type       = controller::ToStr(controller::Type::CONTROLLER_TYPE_UDP_DRIVER); //controller::ControllerUDPDriver::GetTypeNameStatic();
         args.parameters = 0;
         args.gateway    = se->getScenarioGateway();
         args.properties = new OSCProperties();
@@ -814,7 +814,7 @@ TEST(ControllerTest, UDPDriverModelTestAsynchronous)
         property.name_  = "inputMode";
         property.value_ = "vehicleStateXYH";
         args.properties->property_.push_back(property);
-        ControllerUDPDriver* controller = reinterpret_cast<ControllerUDPDriver*>(InstantiateControllerUDPDriver(&args));
+        controller::ControllerUDPDriver* controller = reinterpret_cast<controller::ControllerUDPDriver*>(controller::InstantiateControllerUDPDriver(&args));
 
         for (auto ctrl : se->entities_.object_[i]->controllers_)
         {
@@ -833,12 +833,12 @@ TEST(ControllerTest, UDPDriverModelTestAsynchronous)
     // stimulate driver input
     UDPClient* udpClient = new UDPClient(61900, "127.0.0.1");
 
-    ControllerUDPDriver::DMMessage msg;
+    controller::ControllerUDPDriver::DMMessage msg;
 
     msg.header.frameNumber = 0;
     msg.header.version     = 1;
     msg.header.objectId    = 0;
-    msg.header.inputMode   = static_cast<int>(ControllerUDPDriver::InputMode::VEHICLE_STATE_XYH);
+    msg.header.inputMode   = static_cast<int>(controller::ControllerUDPDriver::InputMode::VEHICLE_STATE_XYH);
 
     msg.message.stateXYH.x          = 20.0;
     msg.message.stateXYH.y          = 30.0;
@@ -891,9 +891,9 @@ TEST(ControllerTest, UDPDriverModelTestSynchronous)
     // Replace controllers
     for (size_t i = 0; i < 2; i++)
     {
-        scenarioengine::Controller::InitArgs args;
+        scenarioengine::controller::InitArgs args;
         args.name       = "UDPDriverModel Controller";
-        args.type       = ControllerUDPDriver::GetTypeNameStatic();
+        args.type       =  controller::ToStr(controller::Type::CONTROLLER_TYPE_UDP_DRIVER); //controller::ControllerUDPDriver::GetTypeNameStatic();
         args.parameters = 0;
         args.gateway    = se->getScenarioGateway();
         args.properties = new OSCProperties();
@@ -913,7 +913,7 @@ TEST(ControllerTest, UDPDriverModelTestSynchronous)
         property.name_  = "timoutMs";
         property.value_ = std::to_string(500);
         args.properties->property_.push_back(property);
-        ControllerUDPDriver* controller = reinterpret_cast<ControllerUDPDriver*>(InstantiateControllerUDPDriver(&args));
+        controller::ControllerUDPDriver* controller = reinterpret_cast<controller::ControllerUDPDriver*>(controller::InstantiateControllerUDPDriver(&args));
 
         for (auto ctrl : se->entities_.object_[i]->controllers_)
         {
@@ -932,12 +932,12 @@ TEST(ControllerTest, UDPDriverModelTestSynchronous)
     // stimulate driver input
     UDPClient* udpClient = new UDPClient(61910, "127.0.0.1");
 
-    ControllerUDPDriver::DMMessage msg;
+    controller::ControllerUDPDriver::DMMessage msg;
 
     msg.header.frameNumber = 0;
     msg.header.version     = 1;
     msg.header.objectId    = 0;
-    msg.header.inputMode   = static_cast<int>(ControllerUDPDriver::InputMode::VEHICLE_STATE_XYZHPR);
+    msg.header.inputMode   = static_cast<int>(controller::ControllerUDPDriver::InputMode::VEHICLE_STATE_XYZHPR);
 
     msg.message.stateXYZHPR.h          = 0.3;
     msg.message.stateXYZHPR.x          = 20.0;
@@ -976,7 +976,7 @@ TEST(ControllerTest, UDPDriverModelTestSynchronous)
     msg.header.frameNumber = 0;
     msg.header.version     = 1;
     msg.header.objectId    = 1;
-    msg.header.inputMode   = static_cast<int>(ControllerUDPDriver::InputMode::VEHICLE_STATE_XYZHPR);
+    msg.header.inputMode   = static_cast<int>(controller::ControllerUDPDriver::InputMode::VEHICLE_STATE_XYZHPR);
 
     msg.message.stateXYZHPR.h          = 0.3;
     msg.message.stateXYZHPR.x          = 90.0;
@@ -1662,9 +1662,9 @@ TEST(ControllerTest, ALKS_R157_TestR157RegulationMinDist)
     ASSERT_EQ(se->entities_.object_.size(), 2);
 
     // Set controller
-    scenarioengine::Controller::InitArgs args;
+    scenarioengine::controller::InitArgs args;
     args.name       = "ALKS_R157SM_Controller";
-    args.type       = ControllerALKS_R157SM::GetTypeNameStatic();
+    args.type       = controller::ToStr(controller::Type::CONTROLLER_ALKS_R157SM); //ControllerALKS_R157SM::GetTypeNameStatic();
     args.parameters = 0;
     args.gateway    = se->getScenarioGateway();
     args.properties = new OSCProperties();
@@ -1672,7 +1672,7 @@ TEST(ControllerTest, ALKS_R157_TestR157RegulationMinDist)
     property.name_  = "model";
     property.value_ = "Regulation";
     args.properties->property_.push_back(property);
-    ControllerALKS_R157SM* controller = reinterpret_cast<ControllerALKS_R157SM*>(InstantiateControllerALKS_R157SM(&args));
+    controller::ControllerALKS_R157SM* controller = reinterpret_cast<controller::ControllerALKS_R157SM*>(InstantiateControllerALKS_R157SM(&args));
     controller->SetScenarioEngine(se);
 
     Object* obj = se->entities_.object_[0];
@@ -2034,9 +2034,9 @@ TEST(ControllerTest, TestLoomingSimpleFarTan)
     ASSERT_NE(se, nullptr);
 
     // Get handle to first controller, which we know is a looming controller
-    ASSERT_EQ(se->scenarioReader->controller_[0]->GetType(), scenarioengine::Controller::Type::CONTROLLER_TYPE_LOOMING);
+    ASSERT_EQ(se->scenarioReader->controller_[0]->GetType(), scenarioengine::controller::Type::CONTROLLER_TYPE_LOOMING);
 
-    ControllerLooming* ctrl = reinterpret_cast<ControllerLooming*>(se->scenarioReader->controller_[0]);
+    controller::ControllerLooming* ctrl = reinterpret_cast<controller::ControllerLooming*>(se->scenarioReader->controller_[0]);
     ASSERT_NE(ctrl, nullptr);
 
     while (se->getSimulationTime() < 5.0 - SMALL_NUMBER)
@@ -2199,9 +2199,9 @@ TEST(ControllerTest, TestLoomingControllerAdvanced)
     ASSERT_NE(se, nullptr);
 
     // Get handle to first controller, which we know is a looming controller
-    ASSERT_EQ(se->scenarioReader->controller_[0]->GetType(), scenarioengine::Controller::Type::CONTROLLER_TYPE_LOOMING);
+    ASSERT_EQ(se->scenarioReader->controller_[0]->GetType(), scenarioengine::controller::Type::CONTROLLER_TYPE_LOOMING);
 
-    ControllerLooming* ctrl = reinterpret_cast<ControllerLooming*>(se->scenarioReader->controller_[0]);
+    controller::ControllerLooming* ctrl = reinterpret_cast<controller::ControllerLooming*>(se->scenarioReader->controller_[0]);
     ASSERT_NE(ctrl, nullptr);
 
     while (se->getSimulationTime() < 2.5 - SMALL_NUMBER)
