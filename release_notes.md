@@ -1,5 +1,21 @@
 ## esmini release notes
 
+### 2024-06-13 Version 2.37.12
+
+Improvements and fixes:
+
+- Make the swarm traffic direction based on RHT or LHT ([PR #575](https://github.com/esmini/esmini/issues/575))
+- Add lib [function](https://github.com/esmini/esmini/blob/96f270531c1b4c2d57041a9d783352e256d64427/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L974-L984) to get type of lane object is within
+  - ignoring any lane type snap settings
+  - add to both esmini and esminiRM libs
+- Try any specified scenario file full path first, avoiding wrong file being loaded
+- Ensure normalized normals in scaled 3D models
+  - previously lighting could be strange for non-uniform scaled objects
+- Bugfix: Prevent adding duplicate trailers causing segmentation fault at exit
+- Fix FollowRouteController first waypoint to include current position
+  - getting rid of "Entity moved out of route" message
+- Restore odrviewer even lane distribution for initial spawning
+
 ### 2024-05-16 Version 2.37.11
 
 Improvements and fixes:
