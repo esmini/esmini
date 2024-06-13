@@ -178,7 +178,7 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
                 roadmanager::Lane *lane    = nullptr;
                 if (n_lanes > 0)
                 {
-                    int lane_idx = SE_Env::Inst().GetRand().GetNumberBetween(0, -1);
+                    int lane_idx = SE_Env::Inst().GetRand().GetNumberBetween(0, n_lanes);
                     lane         = road->GetDrivingLaneByIdx(s, lane_idx);
                     if (lane == nullptr)
                     {
