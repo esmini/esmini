@@ -1293,7 +1293,23 @@ int Entities::addObject(Object* obj, bool activate, int call_index)
         {
             trailer_vehicle->name_ = obj->GetName() + "+";
         }
-        addObject(trailer_vehicle, activate, call_index + 1);
+
+        // avoid adding trailers twice
+        bool in_active_list  = std::find(object_.begin(), object_.end(), trailer_vehicle) != object_.end();
+        bool in_passive_list = std::find(object_pool_.begin(), object_pool_.end(), trailer_vehicle) != object_pool_.end();
+
+        if (in_active_list && !activate)
+        {
+            deactivateObject(trailer_vehicle, call_index);
+        }
+        else if (in_passive_list && activate)
+        {
+            activateObject(trailer_vehicle, call_index);
+        }
+        else if (!in_active_list && !in_passive_list)
+        {
+            addObject(trailer_vehicle, activate, call_index + 1);
+        }
     }
 
     return obj->id_;
