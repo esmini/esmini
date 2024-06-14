@@ -2310,25 +2310,25 @@ namespace roadmanager
         // Get or create markings points for the given object. This points shall be used to draw markings
         std::vector<std::vector<Point3D>> GetMarkingsPoints(RMObject *object);
         // create and fill markings points in itself for the given object.
-        void                              CreateMarkingsPoints(RMObject *object);
+        void CreateMarkingsPoints(RMObject *object);
         // create and fill markings points in itself for the given outlines. e.g for non repeat outline object
-        void                              FillPointsFromOutlines(std::vector<Outline> &outlines);
+        void FillPointsFromOutlines(std::vector<Outline> &outlines);
         // create and fill markings points in itself for the given Unique outlines. e.g repeat with atleast one road corner in any of outlines
-        void                              FillPointsFromUniqueOutlines(std::vector<std::vector<Outline>> &outlines);
+        void FillPointsFromUniqueOutlines(std::vector<std::vector<Outline>> &outlines);
         // create and fill markings points in itself for the given Unique outlines. e.g repeat with all outline as local corner
-        void                              FillPointsFromLocalOutlineTransformationInfo(std::vector<Outline> &outlines, Repeat &repeats);
+        void FillPointsFromLocalOutlineTransformationInfo(std::vector<Outline> &outlines, Repeat &repeats);
         // create and fill markings points in itself for the given outlines and scales. e.g repeat with all outline as local corner
-        void                              FillPointsFromScales(Outline &outline, Repeat::RepeatTransformationInfoScale repeatScales);
+        void FillPointsFromScales(Outline &outline, Repeat::RepeatTransformationInfoScale repeatScales);
         // create and fill markings points in itself for the given repeat and dimension. e.g for non outline repeat object
-        void                              FillPointsFromRepeatTransformationInfoDimensions(Repeat &repeat, const double length, const double width);
+        void FillPointsFromRepeatTransformationInfoDimensions(Repeat &repeat, const double length, const double width);
         // create and fill markings points in itself for the given outlines. e.g for non outline repeat object
-        void                              FillPointsFromObject(RMObject *object);
+        void FillPointsFromObject(RMObject *object);
         // create and fill markings points in itself for the given two points
-        void                              FillMarkingPoints(const Point2D &point1, const Point2D &point2, OutlineCorner::CornerType cornerType);
+        void FillMarkingPoints(const Point2D &point1, const Point2D &point2, OutlineCorner::CornerType cornerType);
         // get points in world coordinates
-        Point3D                           GetPoint(const Point2D &point, OutlineCorner::CornerType cornerType);
+        Point3D GetPoint(const Point2D &point, OutlineCorner::CornerType cornerType);
         // get reference to the corners for given corner reference id and outlines.
-        void             GetCorners(std::vector<int> cornerReferenceIds, Outline &outline, std::vector<OutlineCorner *> &cornerReferences);
+        void GetCorners(std::vector<int> cornerReferenceIds, Outline &outline, std::vector<OutlineCorner *> &cornerReferences);
 
         ~Marking()
         {
@@ -2566,12 +2566,12 @@ namespace roadmanager
             return road_id_;
         }
         // Get the difference between object reference S and repeat reference S
-        double GetDifferenceOfRepeatAndObjectS(Repeat& repeat)
+        double GetDifferenceOfRepeatAndObjectS(Repeat &repeat)
         {
             return repeat.GetS() - GetS();
         }
         // Get the difference between object reference T and repeat reference T
-        double GetDifferenceOfRepeatAndObjectT(Repeat& repeat)
+        double GetDifferenceOfRepeatAndObjectT(Repeat &repeat)
         {
             return repeat.GetTStart() - GetT();
         }
@@ -2579,38 +2579,40 @@ namespace roadmanager
         const std::vector<Repeat::RepeatTransformationInfoDimension> &GetRepeatTransformationInfoDimensions(Repeat &repeat);
         // Get or create transformation info for repeat which shall be used to create more models e.g repeat with all outline as local corner
         const std::vector<Repeat::RepeatTransformationInfoScale> &GetRepeatLocalOutlineTransformationInfo(Repeat &repeat);
-        // Get or create unique outlines for repeat which shall be used to create more models e.g repeat with atleast one road corner in any of outlines
+        // Get or create unique outlines for repeat which shall be used to create more models e.g repeat with atleast one road corner in any of
+        // outlines
         std::vector<std::vector<Outline>> &GetUniqueOutlines(Repeat &repeat);
         // Get or create unique outlines for repeat which shall be used to create model e.g  non outline repeat with zero distance
-        std::vector<Outline>              &GetUniqueOutlinesZeroDistance(Repeat &repeat);
+        std::vector<Outline> &GetUniqueOutlinesZeroDistance(Repeat &repeat);
 
         // create transformation info and store itself in given repeat
-        int                                                       CreateRepeatDimensions(Repeat &repeat);
+        int CreateRepeatDimensions(Repeat &repeat);
         // calculate transformation info repeat which shall be used to create more models
-        void                                                      CalculateLocalOutlineTransformationInfo(Repeat &repeat);
+        void CalculateLocalOutlineTransformationInfo(Repeat &repeat);
         // calculate unique outlines and store itself in given repeat. e.g repeat with atleast one road corner in any of outlines
-        int                                                       CalculateUniqueOutlines(Repeat &repeat);
+        int CalculateUniqueOutlines(Repeat &repeat);
         // calculate unique outlines and store itself in given repeat. e.g. non outline repeat with zero distance
-        int                                                       CalculateUniqueOutlineZeroDistance(Repeat &repeat);
+        int CalculateUniqueOutlineZeroDistance(Repeat &repeat);
 
         // Get all points for all the outlines. Each vector for one outline
-        std::vector<std::vector<Outline::point>>                  GetPointsFromOutlines();
+        std::vector<std::vector<Outline::point>> GetPointsFromOutlines();
         // Get all points for all the outlines and convert it local. Each vector for one outline
-        std::vector<std::vector<Outline::point>>                  GetLocalPointsFromOutlines();
-        // check whether all corners in all outlines are local, In which each all outlines shall have same shape. Hence e.g. shallow copies is possible
-        bool                                                      IsAllCornersLocal();
+        std::vector<std::vector<Outline::point>> GetLocalPointsFromOutlines();
+        // check whether all corners in all outlines are local, In which each all outlines shall have same shape. Hence e.g. shallow copies is
+        // possible
+        bool IsAllCornersLocal();
         // check whether all outlines not have same corner type
-        bool                                                      IsMixedCorners();
+        bool IsMixedCorners();
 
         // Get length from repeat given factor. Priority 1.repeat start - end length, 2.Object length, 3.Zero
-        double                                                    GetRepeatLengthWithFactor(Repeat &rep, double factor);
+        double GetRepeatLengthWithFactor(Repeat &rep, double factor);
         // Get width from repeat given factor. Priority 1.repeat start - end width, 2.Object width, 3.Zero
-        double                                                    GetRepeatWidthWithFactor(Repeat &rep, double factor);
+        double GetRepeatWidthWithFactor(Repeat &rep, double factor);
         // Get z offset from repeat start and end z offset for given factor
-        double                                                    GetRepeatZOffsetWithFactor(Repeat &rep, double factor);
+        double GetRepeatZOffsetWithFactor(Repeat &rep, double factor);
         // Get height from repeat given factor. Priority 1.repeat start - end height, 2.Object height, 3.Zero
-        double                                                    GetRepeatHeightWithFactor(Repeat &rep, double factor);
-        void TransformToLocal(std::vector<std::vector<Outline::point>>& localPoints);
+        double GetRepeatHeightWithFactor(Repeat &rep, double factor);
+        void   TransformToLocal(std::vector<std::vector<Outline::point>> &localPoints);
 
     private:
         std::string                name_;

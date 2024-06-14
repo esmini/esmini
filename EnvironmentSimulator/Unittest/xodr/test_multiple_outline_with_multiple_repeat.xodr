@@ -89,12 +89,6 @@
                 <repeat s="0" length="100" distance ="15.0" tStart="-30.0" tEnd="-30.0" lengthStart="6" lengthEnd="6" widthStart="5" widthEnd="5" heightStart="4.0" heightEnd="14.0"/>
                 <repeat s="200" length="100" distance ="0.0" tStart="-13.0" tEnd="-13.0" lengthStart="6" lengthEnd="6" widthStart="5" widthEnd="5" heightStart="4.0" heightEnd="4.0"/>
                 <repeat s="200" length="100" distance ="7.0" tStart="13.0" tEnd="13.0" lengthStart="6" lengthEnd="6" widthStart="5" widthEnd="5" heightStart="4.0" heightEnd="4.0"/>
-                <!-- <markings>
-                    <marking width="0.1" color="white" zOffset="0.02" spaceLength ="0.4" lineLength ="0.5" startOffset="0.0" stopOffset="0.0">
-                        <cornerReference id="1"/>
-                        <cornerReference id="0"/>
-                    </marking>
-                </markings> -->
             </object>
             <object type="barrier" id="0" s="0" t="0">
                 <outlines>
@@ -114,12 +108,6 @@
                 <repeat s="0" length="100" distance ="15.0" tStart="30.0" tEnd="30.0" lengthStart="6" lengthEnd="6" widthStart="5" widthEnd="5" heightStart="4.0" heightEnd="14.0"/>
                 <repeat s="200" length="100" distance ="0.0" tStart="-7.0" tEnd="-7.0" lengthStart="6" lengthEnd="6" widthStart="5" widthEnd="5" heightStart="4.0" heightEnd="4.0"/>
                 <repeat s="200" length="100" distance ="7.0" tStart="7.0" tEnd="7.0" lengthStart="6" lengthEnd="6" widthStart="5" widthEnd="5" heightStart="4.0" heightEnd="4.0"/>
-                <!-- <markings>
-                    <marking width="0.1" color="white" zOffset="0.02" spaceLength ="0.4" lineLength ="0.5" startOffset="0.0" stopOffset="0.0">
-                        <cornerReference id="1"/>
-                        <cornerReference id="0"/>
-                    </marking>
-                </markings> -->
             </object>
         </objects>
         <signals>

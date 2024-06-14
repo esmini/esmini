@@ -614,9 +614,7 @@ namespace viewer
         // Update model from given object and scales eg. Set position, scale, rotation
         void UpdateModel(const Viewer::ViewerObjectDetail& objectDetails, osg::ref_ptr<osg::PositionAttitudeTransform> tx);
         // Add model to the given graphics group
-        void AddModel(roadmanager::RMObject*                       object,
-                       osg::ref_ptr<osg::PositionAttitudeTransform> tx,
-                       osg::ref_ptr<osg::Group>                     objGroup);
+        void AddModel(roadmanager::RMObject* object, osg::ref_ptr<osg::PositionAttitudeTransform> tx, osg::ref_ptr<osg::Group> objGroup);
         // validate and throw warning only if viewer default value used
         void ValidateDimensionsForViewing(roadmanager::RMObject& object) const;
         // Update RM object and get scale only if RM object cant be updated. eg. respect RM object dimension
@@ -629,20 +627,23 @@ namespace viewer
         osg::ref_ptr<osg::ShapeDrawable> GetBoxShapeModel(roadmanager::RMObject* object) const;
         bool                             CreateRoadLines(Viewer* viewer, roadmanager::OpenDrive* od);
         bool                             CreateRoadMarkLines(roadmanager::OpenDrive* od);
-        // create outline shape model for given outline
-        int                              CreateOutlineModel(roadmanager::Outline& outline, osg::Vec4 color, bool isMarkingAvailable);
         // Loop each outline and create outline shape model for each outline
         void CreateOutlinesModel(std::vector<roadmanager::Outline>& Outlines, osg::Vec4 color, bool isMarkingAvailable);
         // Loop each outline and create outline shape model for each outline e.g for atleast one corner as road corner in any of outlines
         void CreateUniqueModels(roadmanager::RMObject* object);
         // create one unique model and remaining as shallow copies
-        void  CreateShallowCopyModels(roadmanager::RMObject* object);
-        // create one unique model with local coordinates or world coordinates depends on UseLocalDim
-        void CreateOutlineModel(roadmanager::Outline& outline, osg::Vec4 color, bool UseLocalDim, osg::ref_ptr<osg::Geode> geode);
+        void CreateShallowCopyModels(roadmanager::RMObject* object, osg::ref_ptr<osg::Group> objGroup);
+        // create one unique model with local coordinates or world coordinates depends on UseLocalDim. IsForCopy shall decide model shall be aligned
+        // to origin or not
+        void CreateOutlineModel(roadmanager::Outline&    outline,
+                                osg::Vec4                color,
+                                osg::ref_ptr<osg::Geode> geode,
+                                bool                     UseLocalDim,
+                                bool                     IsForCopy = false);
         // change viewer object as wireframe for better marking view
         void ChangeModelAsWireFrame(osg::ref_ptr<osg::Geode> geode, bool isMarkingAvailable);
         // create marking for the object
-        int  DrawMarking(roadmanager::RMObject* object);
+        int DrawMarking(roadmanager::RMObject* object);
         // load and return the model for this given model name
         osg::ref_ptr<osg::PositionAttitudeTransform> GetModel(std::string filename);
         osg::ref_ptr<osg::PositionAttitudeTransform> LoadRoadFeature(std::string filename);
