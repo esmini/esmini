@@ -3201,7 +3201,7 @@ int RMObject::CalculateUniqueOutlines(Repeat& repeat)
         double widthOutline;
         double zOutline;
         double heightOutline;
-        GetBoundingBoxFromCorners(localPoints, lengthOutline, widthOutline, zOutline, heightOutline);
+        GetBoundingBoxFromCorners(localPoints, lengthOutline, widthOutline, heightOutline, zOutline);
         double cur_length = lengthOutline;
         double cur_width  = widthOutline;
         double cur_z      = zOutline;
@@ -3287,7 +3287,7 @@ int RMObject::CalculateUniqueOutlines(Repeat& repeat)
                         }
                         else
                         {
-                            h_to_add = cur_height * (localPoints[i][j].h / zOutline);
+                            h_to_add = cur_height * (localPoints[i][j].h / heightOutline);
                             scale_h  = abs(cur_height / heightOutline);
                         }
                     }
@@ -3379,7 +3379,7 @@ void RMObject::CalculateLocalOutlineTransformationInfo(Repeat& repeat)
         double widthOutline;
         double zOutline;
         double heightOutline;
-        GetBoundingBoxFromCorners(localPointsList, lengthOutline, widthOutline, zOutline, heightOutline);
+        GetBoundingBoxFromCorners(localPointsList, lengthOutline, widthOutline, heightOutline, zOutline);
         double                                cur_length = lengthOutline;
         double                                cur_width  = widthOutline;
         double                                cur_z      = zOutline;
@@ -3410,7 +3410,6 @@ void RMObject::CalculateLocalOutlineTransformationInfo(Repeat& repeat)
             {
                 break;
             }
-
             double scale_u = abs(cur_length / lengthOutline);
             double scale_v = abs(cur_width / widthOutline);
             double scale_z = abs(cur_z + cur_height) / (zOutline + heightOutline);

@@ -2713,10 +2713,10 @@ int Viewer::DrawMarking(roadmanager::RMObject* object)
 
             for (int i = 0; i < points.size(); i += 4)
             {
-                (*vertices_top)[i + 0].set(points[i + 0].x, points[i + 0].y, points[i + 0].z);
-                (*vertices_top)[i + 1].set(points[i + 1].x, points[i + 1].y, points[i + 1].z);
-                (*vertices_top)[i + 2].set(points[i + 2].x, points[i + 2].y, points[i + 2].z);
-                (*vertices_top)[i + 3].set(points[i + 3].x, points[i + 3].y, points[i + 3].z);
+                (*vertices_top)[i + 0].set(points[i + 0].x - origin_[0], points[i + 0].y - origin_[1], points[i + 0].z);
+                (*vertices_top)[i + 1].set(points[i + 1].x - origin_[0], points[i + 1].y - origin_[1], points[i + 1].z);
+                (*vertices_top)[i + 2].set(points[i + 2].x - origin_[0], points[i + 2].y - origin_[1], points[i + 2].z);
+                (*vertices_top)[i + 3].set(points[i + 3].x - origin_[0], points[i + 3].y - origin_[1], points[i + 3].z);
             }
 
             // Finally create and add geometry
@@ -2767,7 +2767,7 @@ osg::Vec4 GetObjectColor(roadmanager::RMObject::ObjectType type)
     return color;
 }
 
-void Viewer::CreateOutlineModel(roadmanager::Outline& outline, osg::Vec4 color, bool UseLocalDim, osg::ref_ptr<osg::Geode> geode)
+void Viewer::CreateOutlineModel(roadmanager::Outline& outline, osg::Vec4 color, osg::ref_ptr<osg::Geode> geode, bool UseLocalDim, bool IsForCopy)
 {
     bool roof = outline.GetAreaType() == roadmanager::Outline::CLOSED ? true : false;
 
@@ -2789,9 +2789,18 @@ void Viewer::CreateOutlineModel(roadmanager::Outline& outline, osg::Vec4 color, 
             corner->GetPos(x, y, z_bottom);
         }
         double z_top = z_bottom + corner->GetHeight();
-        (*vertices_sides)[i * 2 + 0].set(static_cast<float>(x - origin_[0]), static_cast<float>(y - origin_[1]), static_cast<float>(z_top));
-        (*vertices_sides)[i * 2 + 1].set(static_cast<float>(x - origin_[0]), static_cast<float>(y - origin_[1]), static_cast<float>(z_bottom));
-        (*vertices_top)[i].set(static_cast<float>(x - origin_[0]), static_cast<float>(y - origin_[1]), static_cast<float>(z_top));
+        if (IsForCopy)
+        {
+            (*vertices_sides)[i * 2 + 0].set(static_cast<float>(x), static_cast<float>(y), static_cast<float>(z_top));
+            (*vertices_sides)[i * 2 + 1].set(static_cast<float>(x), static_cast<float>(y), static_cast<float>(z_bottom));
+            (*vertices_top)[i].set(static_cast<float>(x), static_cast<float>(y), static_cast<float>(z_top));
+        }
+        else
+        {
+            (*vertices_sides)[i * 2 + 0].set(static_cast<float>(x - origin_[0]), static_cast<float>(y - origin_[1]), static_cast<float>(z_top));
+            (*vertices_sides)[i * 2 + 1].set(static_cast<float>(x - origin_[0]), static_cast<float>(y - origin_[1]), static_cast<float>(z_bottom));
+            (*vertices_top)[i].set(static_cast<float>(x - origin_[0]), static_cast<float>(y - origin_[1]), static_cast<float>(z_top));
+        }
     }
 
     // Close geometry
@@ -2841,7 +2850,7 @@ void Viewer::ChangeModelAsWireFrame(osg::ref_ptr<osg::Geode> geode, bool isMarki
     }
 }
 
-void Viewer::CreateShallowCopyModels(roadmanager::RMObject* object)
+void Viewer::CreateShallowCopyModels(roadmanager::RMObject* object, osg::ref_ptr<osg::Group> objGroup)
 {
     osg::Vec4 color = GetObjectColor(object->GetType());
     for (auto& repeat : object->GetRepeats())
@@ -2849,7 +2858,7 @@ void Viewer::CreateShallowCopyModels(roadmanager::RMObject* object)
         osg::ref_ptr<osg::Geode> geode = new osg::Geode;
         for (auto& outline : object->GetOutlines())
         {
-            CreateOutlineModel(outline, color, true, geode);  // create outline model
+            CreateOutlineModel(outline, color, geode, true, true);  // create outline model
         }
         for (const auto& repeatScale : object->GetRepeatLocalOutlineTransformationInfo(repeat))  // scale the model as per repeat info
         {
@@ -2857,31 +2866,18 @@ void Viewer::CreateShallowCopyModels(roadmanager::RMObject* object)
             osg::ref_ptr<osg::PositionAttitudeTransform> xform = new osg::PositionAttitudeTransform();
             xform->addChild(geode);
             xform->setScale(osg::Vec3d(repeatScale.scale_x, repeatScale.scale_y, repeatScale.scale_z));
-
-            xform->setPosition(osg::Vec3d(repeatScale.x, repeatScale.y, repeatScale.z));
-
+            xform->setPosition(osg::Vec3d(repeatScale.x - origin_[0], repeatScale.y - origin_[1], repeatScale.z));
             // First align to road orientation
             osg::Quat quatRoad(osg::Quat(repeatScale.roll, osg::X_AXIS, repeatScale.pitch, osg::Y_AXIS, repeatScale.heading, osg::Z_AXIS));
             // Specified local rotation
             osg::Quat quatLocal(repeatScale.hOffset, osg::Vec3(osg::Z_AXIS));  // Heading
-
             // Combine
             xform->setAttitude(quatLocal * quatRoad);
-            env_origin2odr_->addChild(xform);
+            // env_origin2odr_->addChild(xform);
+            AddModel(object, xform, objGroup);
         }
         ChangeModelAsWireFrame(geode, object->GetNumberOfMarkings() > 0);
     }
-}
-
-int Viewer::CreateOutlineModel(roadmanager::Outline& outline, osg::Vec4 color, bool isMarkingAvailable)
-{
-    osg::ref_ptr<osg::Geode> geode = new osg::Geode;
-    CreateOutlineModel(outline, color, false, geode);  // create outline model
-    osg::ref_ptr<osg::Group> group = new osg::Group();
-    group->addChild(geode);
-    env_origin2odr_->addChild(group);
-    ChangeModelAsWireFrame(geode, isMarkingAvailable);
-    return 0;
 }
 
 osg::ref_ptr<osg::PositionAttitudeTransform> Viewer::LoadRoadFeature(std::string filename)
@@ -2997,7 +2993,12 @@ void Viewer::CreateOutlinesModel(std::vector<roadmanager::Outline>& Outlines, os
 {
     for (auto& outline : Outlines)
     {
-        CreateOutlineModel(outline, color, isMarkingAvailable);
+        osg::ref_ptr<osg::Geode> geode = new osg::Geode;
+        CreateOutlineModel(outline, color, geode, false);  // create outline model
+        osg::ref_ptr<osg::Group> group = new osg::Group();
+        group->addChild(geode);
+        env_origin2odr_->addChild(group);
+        ChangeModelAsWireFrame(geode, isMarkingAvailable);
     }
 }
 
@@ -3048,15 +3049,15 @@ void Viewer::ValidateDimensionsForViewing(roadmanager::RMObject& object) const
 {
     if (IsEqualDouble(object.GetLength().Get(), 0.0))
     {
-        LOG("Object %s missing length, set to %.2f for viewer purpose", object.GetName(), 0.01);
+        LOG("Object %s missing length, set to %.2f for viewer purpose", object.GetName().c_str(), 0.01);
     }
     if (IsEqualDouble(object.GetWidth().Get(), 0.0))
     {
-        LOG("Object %s missing width, set to %.2f for viewer purpose", object.GetName(), 0.01);
+        LOG("Object %s missing width, set to %.2f for viewer purpose", object.GetName().c_str(), 0.01);
     }
     if (IsEqualDouble(object.GetHeight().Get(), 0.0))
     {
-        LOG("Object %s missing height, set to %.2f for viewer purpose", object.GetName(), 0.01);
+        LOG("Object %s missing height, set to %.2f for viewer purpose", object.GetName().c_str(), 0.01);
     }
 }
 
@@ -3164,9 +3165,9 @@ Viewer::ViewerObjectDetail Viewer::ViewerObjectDetail::copy(const roadmanager::R
 // create object from given object and repeat dimension
 void Viewer::UpdateModel(const Viewer::ViewerObjectDetail& objectDetails, osg::ref_ptr<osg::PositionAttitudeTransform> clone)
 {
-    clone->getOrCreateStateSet()->setMode(GL_RESCALE_NORMAL, osg::StateAttribute::ON);
+    clone->getOrCreateStateSet()->setMode(GL_NORMALIZE, osg::StateAttribute::ON);
     clone->setScale(osg::Vec3d(objectDetails.scale_x, objectDetails.scale_y, objectDetails.scale_z));
-    clone->setPosition(osg::Vec3d(objectDetails.x, objectDetails.y, objectDetails.z));
+    clone->setPosition(osg::Vec3d(objectDetails.x - origin_[0], objectDetails.y - origin_[1], objectDetails.z));
 
     // First align to road orientation
     osg::Quat quatRoad(osg::Quat(objectDetails.roll, osg::X_AXIS, objectDetails.pitch, osg::Y_AXIS, objectDetails.heading, osg::Z_AXIS));
@@ -3253,7 +3254,7 @@ void Viewer::CreateRepeatObject(roadmanager::RMObject* object, osg::ref_ptr<osg:
     {
         if (object->IsAllCornersLocal())  // all corner are local in all outline
         {
-            CreateShallowCopyModels(object);
+            CreateShallowCopyModels(object, objGroup);
         }
         else  // any corner is road corner in any of outlines
         {
