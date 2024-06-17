@@ -10,43 +10,43 @@ std::string ToStr(Type type)
     switch (type)
     {
         case CONTROLLER_TYPE_DEFAULT:
-            return "CONTROLLER_TYPE_DEFAULT";
+            return "ControllerClass";
         case CONTROLLER_TYPE_EXTERNAL:
-            return "CONTROLLER_TYPE_EXTERNAL";
+            return "ExternalController";
         case CONTROLLER_TYPE_FOLLOW_GHOST:
-            return "CONTROLLER_TYPE_EXTERNAL";
+            return "FollowGhostController";
         case CONTROLLER_TYPE_FOLLOW_ROUTE:
-            return "CONTROLLER_TYPE_EXTERNAL";
+            return "FollowRouteController";
         case CONTROLLER_TYPE_INTERACTIVE:
-            return "CONTROLLER_TYPE_EXTERNAL";
+            return "InteractiveController";
         case CONTROLLER_TYPE_SLOPPY_DRIVER:
-            return "CONTROLLER_TYPE_EXTERNAL";
+            return "SloppyDriverController";
         case CONTROLLER_TYPE_SUMO:
-            return "CONTROLLER_TYPE_EXTERNAL";
+            return "SumoController";
         case CONTROLLER_TYPE_REL2ABS:
-            return "CONTROLLER_TYPE_EXTERNAL";
+            return "ControllerRel2Abs";
         case CONTROLLER_TYPE_ACC:
-            return "CONTROLLER_TYPE_EXTERNAL";
+            return "ACCController";
         case CONTROLLER_TYPE_ALKS:
-            return "CONTROLLER_TYPE_EXTERNAL";
+            return "ALKSController";
         case CONTROLLER_TYPE_UDP_DRIVER:
-            return "CONTROLLER_TYPE_EXTERNAL";
+            return "UDPDriverController";
         case CONTROLLER_TYPE_ECE_ALKS_REF_DRIVER:
-            return "CONTROLLER_TYPE_EXTERNAL";
+            return "ECE_ALKS_RefDriverController";
         case CONTROLLER_ALKS_R157SM:
-            return "CONTROLLER_TYPE_EXTERNAL";
+            return "ALKS_R157SM_Controller";
         case CONTROLLER_TYPE_LOOMING:
-            return "CONTROLLER_TYPE_EXTERNAL";
+            return "LoomingController";
         case CONTROLLER_TYPE_OFFROAD_FOLLOWER:
-            return "CONTROLLER_TYPE_EXTERNAL";
+            return "OffroadFollower";
         case N_CONTROLLER_TYPES:
-            return "CONTROLLER_TYPE_EXTERNAL";
+            return "NController";
         case CONTROLLER_TYPE_UNDEFINED:
-            return "CONTROLLER_TYPE_EXTERNAL";
+            return "UndefinedController";
         case GHOST_RESERVED_TYPE:
-            return "CONTROLLER_TYPE_EXTERNAL";
+            return "GhostReservedController";
         case USER_CONTROLLER_TYPE_BASE:
-            return "CONTROLLER_TYPE_EXTERNAL";
+            return "UserController";
         default:
             return "CONTROLLER_UNKNOWN";
     }

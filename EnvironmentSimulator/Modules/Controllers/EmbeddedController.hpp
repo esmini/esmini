@@ -18,7 +18,7 @@
 #include "Parameters.hpp"
 #include "Controller.hpp"
 
-#define CONTROLLER_BASE_TYPE_NAME "EmbeddedControllerClass"
+#define CONTROLLER_BASE_TYPE_NAME "ControllerClass"
 #define CONTROLLER_BASE_TYPE_ID   -1
 
 namespace scenarioengine

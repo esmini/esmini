@@ -28,11 +28,8 @@ EmbeddedController::EmbeddedController(InitArgs* args)  // init operatingdomains
         operating_domains_ = static_cast<unsigned int>(ControlDomains::DOMAIN_LAT_AND_LONG);
         active_domains_ = static_cast<unsigned int>(ControlDomains::DOMAIN_NONE);
         mode_ = ControlOperationMode::MODE_OVERRIDE;
-        // Riz
-        /*
         name_      = args->name;
-        type_name_ = args->type;
-        */
+        //type_name_ = args->type;    
         entities_  = args->entities;
         gateway_   = args->gateway;
     }
