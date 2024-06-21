@@ -71,9 +71,9 @@ macro(set_cloud_links)
                 https://dl.dropboxusercontent.com/s/an58ckp2qfx5069/osi_v10.7z?dl=1)
         else()
             set(OSI_PACKAGE_URL
-                https://esmini.asuscomm.com/AICLOUD766065121/libs/osi_3_5_0_win_vs_sdk_141.7z;
-                https://drive.google.com/u/1/uc?id=1v490rg7s4kpuT28O5DI-fXc9BxyHqhVA&export=download;
-                https://www.dropbox.com/s/1xjb16ilsm4ir7x/osi_3_5_0_win_vs_sdk_141.7z?dl=1)
+                https://esmini.asuscomm.com/AICLOUD766065121/libs/osi_3_5_0_win_vs_sdk_142.7z;
+                https://drive.google.com/uc?export=download&id=1XssJjvqzpx8DUxca2yfge1sQaGmyCt95;
+                https://www.dropbox.com/scl/fi/l6lgpcr2b399ixwj9htg8/osi_3_5_0_win_vs_sdk_142.7z?rlkey=8x4aczrbs0iwndqfkxj1336fd&st=as1gp8yk&dl=1)
         endif()
         set(SUMO_PACKAGE_URL
             https://esmini.asuscomm.com/AICLOUD766065121/libs/sumo_v10.7z;

@@ -41,7 +41,7 @@ fi
 if [ "$OSTYPE" == "msys" ]; then
     # Visual Studio 2022 using toolkit from Visual Studio 2017
     GENERATOR=("Visual Studio 17 2022")
-    GENERATOR_TOOLSET="v141"
+    GENERATOR_TOOLSET="v142"
     GENERATOR_ARGUMENTS="-A x64 -T ${GENERATOR_TOOLSET}"
 
     # Visual Studio 2019 using default toolkit
@@ -98,9 +98,8 @@ cd $osi_root_dir
 
 if [ ! -d zlib ]
 then
-    git clone https://github.com/madler/zlib.git
+    git clone https://github.com/madler/zlib.git --depth 1 --branch v1.2.$ZIP_MIN_VERSION
     cd  zlib
-    git checkout v1.2.$ZIP_MIN_VERSION
     mkdir install
     mkdir build
     cd build
@@ -125,7 +124,6 @@ then
 else
     echo zlib folder already exists, continue with next step...
 fi
-
 
 echo ------------------------ Installing OSI proto2cpp -----------------------------------
 
@@ -159,9 +157,8 @@ function build {
 
     if [ ! -d protobuf$folder_postfix ]
     then
-        git clone https://github.com/protocolbuffers/protobuf.git protobuf$folder_postfix
+        git clone https://github.com/protocolbuffers/protobuf.git --depth 1 --branch v$PROTOBUF_VERSION protobuf$folder_postfix
         cd protobuf$folder_postfix
-        git checkout v$PROTOBUF_VERSION
         mkdir build-code
         cd build-code
 
@@ -212,9 +209,8 @@ function build {
 
     if [ ! -d open-simulation-interface$folder_postfix ]
     then
-        git clone https://github.com/OpenSimulationInterface/open-simulation-interface.git open-simulation-interface$folder_postfix
+        git clone https://github.com/OpenSimulationInterface/open-simulation-interface.git --depth 1 --branch v$OSI_VERSION open-simulation-interface$folder_postfix
         cd open-simulation-interface$folder_postfix
-        git checkout v$OSI_VERSION
         sh ./convert-to-proto3.sh
         mkdir build
         cd build
@@ -285,6 +281,7 @@ function build {
             cp open-simulation-interface$folder_postfix/install/osi-lib/lib/osi3/open_simulation_interface*.dll $target_dir/$target_lib_dir
             cp open-simulation-interface$folder_postfix/install/osi-lib/lib/osi3/open_simulation_interface_pic*.lib $target_dir/$target_lib_dir
             cp protobuf$folder_postfix/protobuf-install/lib/libprotobuf*.lib $target_dir/$target_lib_dir
+            cp protobuf$folder_postfix/protobuf-install/bin/libprotobuf*.dll $target_dir/$target_lib_dir
         elif [[ "$OSTYPE" == "darwin"* ]]; then
             cp -P open-simulation-interface$folder_postfix/install/osi-lib/lib/osi3/libopen_simulation_interface.dylib $target_dir/$target_lib_dir
             cp -P open-simulation-interface$folder_postfix/install/osi-lib/lib/osi3/libopen_simulation_interfaced.dylib $target_dir/$target_lib_dir
