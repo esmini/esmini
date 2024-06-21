@@ -1554,7 +1554,7 @@ extern "C"
                 {
                     if (player->OSISensorDetection)
                     {
-                        player->OSISensorDetection->Update(player->osiReporter->GetSensorView());
+                        player->OSISensorDetection->SensorUpdate(player->osiReporter->GetSensorView());
                     }
                 }
             }

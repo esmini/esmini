@@ -26,6 +26,7 @@
 #endif  // _USE_OSI
 #ifdef _USE_OSG
 #include "viewer.hpp"
+#include "OSISensorView.hpp"
 #endif
 
 using namespace scenarioengine;
