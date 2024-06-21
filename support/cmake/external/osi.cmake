@@ -41,11 +41,11 @@ macro(set_osi_libs)
         if(DYN_PROTOBUF)
             set(OSI_LIBRARIES
                 optimized
-                ${EXTERNALS_OSI_LIBRARY_PATH}/open_simulation_interface.dll
+                ${EXTERNALS_OSI_LIBRARY_PATH}/open_simulation_interface_pic.lib
                 optimized
                 ${EXTERNALS_OSI_LIBRARY_PATH}/libprotobuf.lib
                 debug
-                ${EXTERNALS_OSI_LIBRARY_PATH}/open_simulation_interfaced.dll
+                ${EXTERNALS_OSI_LIBRARY_PATH}/open_simulation_interface_picd.lib
                 debug
                 ${EXTERNALS_OSI_LIBRARY_PATH}/libprotobufd.lib)
         else()
