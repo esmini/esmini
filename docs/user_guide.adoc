@@ -3290,6 +3290,44 @@ Limitations:
 - OpenDRIVE stationary objects not considered
 - Only reference point checking (part of the object can be inside frustum and still not detected)
 
+=== Simplest example
+
+Below example is just to show the simplicity of using esmini library. For more information and realistic examples, e.g. involving cmake, please go ahead to <<Hello World programming tutorial>>.
+
+If not already done, download and unpack https://github.com/esmini/esmini/releases/latest[latest esmini demo]. Make sure to pick demo, not bin, for your platform.
+
+In esmini root folder, create a file named `main.cpp` and add the following lines:
+
+*Code:*
+
+[source, c++]
+----
+#include "./EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp"
+
+int main()
+{
+    SE_Init("./resources/xosc/cut-in.xosc", 0, 1, 0, 0);
+
+    while (SE_GetQuitFlag() == 0)
+        SE_Step();
+
+    SE_Close();
+    return 0;
+}
+----
+
+*Compile:*
+
+- Linux: +
+`gcc main.cpp ./bin/libesminiLib.so -Wl,-rpath,\$ORIGIN -o bin/my_player`
+
+- Windows (x64 Native Tools Command Prompt for Visual Studio): +
+`cl main.cpp ./bin/esminiLib.lib /Fe:bin/my_player`
+
+*Run:*
+
+from Linux terminal or Windows PowerShell: +
+`./bin/my_player`
 
 == Hello World programming tutorial
 include::../Hello-World_coding-example/tutorial.adoc[leveloffset=+1, lines=3..-1]

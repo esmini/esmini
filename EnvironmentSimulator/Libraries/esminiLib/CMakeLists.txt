@@ -29,6 +29,23 @@ add_library(
     ${SOURCES}
     ${INCLUDES})
 
+# embed $origin (location of exe file) and link dirs as execution dyn lib search paths
+set(RPATH_DIRS
+    "$ORIGIN")
+
+if(DYN_PROTOBUF)
+    # add OSI library folder to execution lib search paths
+    set(RPATH_DIRS
+        "${RPATH_DIRS}:${EXTERNALS_OSI_LIBRARY_PATH}")
+endif()
+
+set_target_properties(
+    ${TARGET_SHARED}
+    PROPERTIES BUILD_WITH_INSTALL_RPATH
+               true
+               INSTALL_RPATH
+               "${RPATH_DIRS}")
+
 add_library(
     ${TARGET_STATIC}
     STATIC

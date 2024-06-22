@@ -24,6 +24,23 @@ add_executable(
     ${TARGET}
     ${SOURCES})
 
+# embed $origin (location of exe file) and install (bin) dirs as execution dyn lib search paths
+set(RPATH_DIRS
+    "$ORIGIN:${INSTALL_PATH}")
+
+if(DYN_PROTOBUF)
+    # add OSI library folder to execution lib search paths
+    set(RPATH_DIRS
+        "${RPATH_DIRS}:${EXTERNALS_OSI_LIBRARY_PATH}")
+endif()
+
+set_target_properties(
+    ${TARGET}
+    PROPERTIES BUILD_WITH_INSTALL_RPATH
+               true
+               INSTALL_RPATH
+               "${RPATH_DIRS}")
+
 target_include_directories(
     ${TARGET}
     PRIVATE ${ROAD_MANAGER_PATH}
