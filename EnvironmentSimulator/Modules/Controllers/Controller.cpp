@@ -1,6 +1,7 @@
 #include "Controller.hpp"
-
 #include "CommonMini.hpp"
+#include "OSCProperties.hpp"
+#include "Parameters.hpp"
 
 namespace scenarioengine::controller
 {
@@ -89,6 +90,10 @@ std::string ToStr(ControlActivationMode mode)
     }
 }
 
+BaseController::BaseController(InitArgs* args)
+{
+}
+
 const std::any& BaseController::GetProperty(const std::string& propertyName) const
 {
     return properties_.at(propertyName);
@@ -98,31 +103,7 @@ void BaseController::SetProperty(const std::string& propertyName, const std::any
 {
     properties_[propertyName] = propertyValue;
 }
-/*
-void Controller::Step(double timeStep)
-{
-    (void)timeStep;
-    if (object_)
-    {
-        if (mode_ == ControlOperationMode::MODE_OVERRIDE)
-        {
-            if (IsActiveOnDomains(static_cast<unsigned int>(ControlDomains::DOMAIN_LAT)))
-            {
-                object_->SetDirtyBits(Object::DirtyBit::LATERAL);
-            }
 
-            if (IsActiveOnDomains(static_cast<unsigned int>(ControlDomains::DOMAIN_LONG)))
-            {
-                object_->SetDirtyBits(Object::DirtyBit::LONGITUDINAL);
-            }
-        }
-        else
-        {
-            object_->ClearDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);
-        }
-    }
-}
-*/
 uint32_t BaseController::GetOperatingDomains() const
 {
     return operating_domains_;

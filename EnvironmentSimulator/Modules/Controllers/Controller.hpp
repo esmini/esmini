@@ -32,8 +32,31 @@
 #endif
 
 
-namespace scenarioengine::controller
+namespace scenarioengine
 {
+
+// Forward declarations
+class ScenarioPlayer;
+class ScenarioGateway;
+class ScenarioEngine;
+class Entities;
+class Object;
+class OSCProperties;
+class Parameters;
+
+namespace controller
+{
+
+typedef struct
+{
+  std::string      name;
+  std::string      type;
+  OSCProperties*   properties;
+  Entities*        entities;
+  ScenarioGateway* gateway;
+  Parameters*      parameters;
+} InitArgs;
+
 enum Type
 {
     CONTROLLER_TYPE_DEFAULT,
@@ -79,7 +102,8 @@ std::string ToStr(ControlActivationMode mode);
 class BaseController
 {
 public:
-    //public interface 
+    //public interface
+    BaseController(InitArgs* args = nullptr); 
     virtual ~BaseController() = default; 
     // Returns name of the controller
     const std::string& GetName() const;
@@ -124,5 +148,7 @@ protected:
     uint64_t             linkedObjectID_ = 0;
     std::string name_;   
 };
-    
-} // namespace scenarioengine::controller
+
+} // namespace controller
+
+} // namespace scenarioengine
