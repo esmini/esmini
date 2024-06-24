@@ -1,5 +1,18 @@
 ## esmini release notes
 
+### 2024-06-24 Version 2.37.13
+
+Improvements and fixes:
+
+- Embed execution search paths for dynamic libraries on Linux
+  - $origin (location of exe file) and expected lib location
+  - applies to esmini-dyn and dynamically linked protobuf
+- Relax (totally remove) replayer dependency to OSI and protobuf
+- Bump OSI lib to Visual Studio toolset v142 and add missing protobuf DLLs
+  - remove externals/osi folder and re-run cmake command to get latest
+- Fix wrong filename reference for dynamic protobuf lib on Windows
+- Add [minimalistic build example](https://esmini.github.io/#_simplest_example) to User guide
+
 ### 2024-06-13 Version 2.37.12
 
 Improvements and fixes:
