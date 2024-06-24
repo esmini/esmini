@@ -151,5 +151,5 @@ namespace scenarioengine::controller
         DMMessage         lastMsg;
     };
 
-    controller::EmbeddedController* InstantiateControllerUDPDriver(void* args);
+    ControllerBase* InstantiateControllerUDPDriver(void* args);
 }  // namespace scenarioengine

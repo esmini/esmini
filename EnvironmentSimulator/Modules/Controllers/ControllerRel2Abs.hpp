@@ -117,5 +117,5 @@ namespace scenarioengine::controller
         void findEgo();
     };
 
-    EmbeddedController* InstantiateControllerRel2Abs(void* args);
+    ControllerBase* InstantiateControllerRel2Abs(void* args);
 }  // namespace scenarioengine::controller

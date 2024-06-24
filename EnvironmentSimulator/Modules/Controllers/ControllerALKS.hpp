@@ -52,5 +52,6 @@ public:
     }
     */
 };
-EmbeddedController* InstantiateControllerALKS(void* args);
+
+ControllerBase* InstantiateControllerALKS(void* args);
 }  // namespace scenarioengine::controller

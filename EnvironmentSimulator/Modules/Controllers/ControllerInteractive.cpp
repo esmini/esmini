@@ -19,7 +19,7 @@
 
 namespace scenarioengine::controller
 {
-EmbeddedController* InstantiateControllerInteractive(void* args)
+ControllerBase* InstantiateControllerInteractive(void* args)
 {
     InitArgs* initArgs = static_cast<InitArgs*>(args);
 

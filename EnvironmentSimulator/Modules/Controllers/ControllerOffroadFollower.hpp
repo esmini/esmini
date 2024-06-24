@@ -70,5 +70,5 @@ namespace scenarioengine::controller
         double           speed_factor_;
     };
 
-    EmbeddedController* InstantiateControllerOffroadFollower(void* args);
+    ControllerBase* InstantiateControllerOffroadFollower(void* args);
 }  // namespace scenarioengine

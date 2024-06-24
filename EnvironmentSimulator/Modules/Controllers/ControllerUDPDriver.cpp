@@ -27,7 +27,7 @@ namespace scenarioengine::controller
 {
 int ControllerUDPDriver::basePort_ = DEFAULT_UDP_DRIVER_PORT;
 
-EmbeddedController* InstantiateControllerUDPDriver(void* args)
+ControllerBase* InstantiateControllerUDPDriver(void* args)
 {
     InitArgs* initArgs = static_cast<InitArgs*>(args);
 

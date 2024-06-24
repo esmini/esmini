@@ -29,7 +29,7 @@
 
 namespace scenarioengine::controller
 {
-EmbeddedController* InstantiateControllerFollowGhost(void* args)
+ControllerBase* InstantiateControllerFollowGhost(void* args)
 {
     InitArgs* initArgs = static_cast<InitArgs*>(args);
 

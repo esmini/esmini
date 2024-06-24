@@ -9,7 +9,8 @@
 namespace scenarioengine::controller
 {
 
-using ControllerInitiazer = BaseController* (*) ();
+//using ControllerInitiazer = ControllerBase* (*) ();
+using ControllerInitiazer = ControllerBase* (*) (void*);
 
 class ControllerIntegrator
 {

@@ -37,7 +37,7 @@
     }
 namespace scenarioengine::controller
 {
-EmbeddedController* InstantiateControllerECE_ALKS_REF_DRIVER(void* args)
+ControllerBase* InstantiateControllerECE_ALKS_REF_DRIVER(void* args)
 {
     InitArgs* initArgs = static_cast<InitArgs*>(args);
 

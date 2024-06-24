@@ -28,7 +28,7 @@
 
 namespace scenarioengine::controller
 {
-EmbeddedController* InstantiateControllerRel2Abs(void* args)
+ControllerBase* InstantiateControllerRel2Abs(void* args)
 {
     InitArgs* initArgs = static_cast<InitArgs*>(args);
 

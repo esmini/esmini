@@ -605,7 +605,7 @@ void ActivateControllerAction::Start(double simTime)
         if (controller_ != nullptr)
         {
             // first deactivate any controller active on the requested domain(s)
-            controller::EmbeddedController* ctrl = nullptr;
+            controller::ControllerBase* ctrl = nullptr;     
             if (long_activation_mode_ == controller::ControlActivationMode::ON &&
                 (ctrl = object_->GetControllerActiveOnDomain(ControlDomains::DOMAIN_LONG)) != nullptr)
             {

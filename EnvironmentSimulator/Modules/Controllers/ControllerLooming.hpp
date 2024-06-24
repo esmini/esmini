@@ -94,5 +94,5 @@ namespace scenarioengine::controller
         double           angleDiff      = 0.0;
     };
 
-    EmbeddedController* InstantiateControllerLooming(void* args);
+    ControllerBase* InstantiateControllerLooming(void* args);
 }  // namespace scenarioengine

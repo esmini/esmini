@@ -23,7 +23,7 @@
 namespace scenarioengine::controller
 {
 
-EmbeddedController* InstantiateControllerACC(void* args)
+ControllerBase* InstantiateControllerACC(void* args)
 {
     InitArgs* initArgs = static_cast<InitArgs*>(args);
 

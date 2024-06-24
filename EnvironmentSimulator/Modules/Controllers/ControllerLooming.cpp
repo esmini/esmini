@@ -19,7 +19,7 @@
 
 namespace scenarioengine::controller
 {
-EmbeddedController* InstantiateControllerLooming(void* args)
+ControllerBase* InstantiateControllerLooming(void* args)
 {
     InitArgs* initArgs = static_cast<InitArgs*>(args);
 

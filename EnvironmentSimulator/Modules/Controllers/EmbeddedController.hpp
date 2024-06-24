@@ -34,33 +34,35 @@ namespace controller
 {
 
 // base class for embedded controllers
-class EmbeddedController : public controller::BaseController
+class EmbeddedController : public controller::ControllerBase
 {
 public:
 
     EmbeddedController(InitArgs* args = nullptr);
     virtual ~EmbeddedController() = default;
-
+    /*
     virtual void LinkObject(Object* object);
     virtual void UnlinkObject();
     virtual void SetScenarioEngine(ScenarioEngine* scenario_engine);
     virtual void SetPlayer(ScenarioPlayer* player);
+    */
     Object*     GetRoadObject();
     Object* GetLinkedObject();
     // Base class Step function should be called from derived classes
     virtual void Step(double timeStep) override;      
 
 protected:
-    
+    /*
     Object*              object_;             // The object to which the controller is attached and hence controls
     Entities*            entities_;
     ScenarioGateway*     gateway_;
     ScenarioEngine*      scenario_engine_;
     ScenarioPlayer*      player_;
+    */
 };
 
-typedef EmbeddedController* (*ControllerInstantiateFunction)(void* args);
-EmbeddedController* InstantiateController(void* args);
+typedef ControllerBase* (*ControllerInstantiateFunction)(void* args);
+ControllerBase* InstantiateController(void* args);
 
 }   // namespace controller
     

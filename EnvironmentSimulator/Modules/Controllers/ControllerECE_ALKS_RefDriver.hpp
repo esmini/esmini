@@ -77,6 +77,9 @@ private:
     bool   aebBraking_;
     double timeSinceBraking_;
 };
-    EmbeddedController* InstantiateControllerECE_ALKS_REF_DRIVER(void* args);
+    
+    ControllerBase* InstantiateControllerECE_ALKS_REF_DRIVER(void* args);
+
 }  //namespace controller
+
 }  // namespace scenarioengine

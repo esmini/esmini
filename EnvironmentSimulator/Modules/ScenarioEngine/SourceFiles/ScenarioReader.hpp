@@ -108,7 +108,7 @@ namespace scenarioengine
         Pedestrian*                       parseOSCPedestrian(pugi::xml_node pedestrianNode);
         MiscObject*                       parseOSCMiscObject(pugi::xml_node miscObjectNode);
         Vehicle*                          createRandomOSCVehicle(std::string name);
-        controller::EmbeddedController*                       parseOSCObjectController(pugi::xml_node vehicleNode);
+        controller::ControllerBase*       parseOSCObjectController(pugi::xml_node vehicleNode);
         void                              parseGlobalParameterDeclarations()
         {
             parameters.parseGlobalParameterDeclarations(osc_root_.child("ParameterDeclarations"));
@@ -167,8 +167,8 @@ namespace scenarioengine
             return versionMinor_;
         }
 
-        int  RemoveController(controller::EmbeddedController* controller);
-        void AddController(controller::EmbeddedController* controller)
+        int  RemoveController(controller::ControllerBase* controller);
+        void AddController(controller::ControllerBase* controller)
         {
             controller_.push_back(controller);
         }
@@ -177,7 +177,7 @@ namespace scenarioengine
             return &doc_;
         }
 
-        std::vector<controller::EmbeddedController*> controller_;
+        std::vector<controller::ControllerBase*> controller_;
 
         static Parameters parameters;  // static to enable set via callback during creation of object
         static Parameters variables;

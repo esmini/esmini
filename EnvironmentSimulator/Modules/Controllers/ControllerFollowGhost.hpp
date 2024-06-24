@@ -89,6 +89,6 @@ namespace controller
         double           min_lookahead_steering_;
     };
 
-    EmbeddedController* InstantiateControllerFollowGhost(void* args);
+    ControllerBase* InstantiateControllerFollowGhost(void* args);
 } //namespace controller    
 }  // namespace scenarioengine

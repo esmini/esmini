@@ -23,7 +23,8 @@
 
 namespace scenarioengine::controller
 {
-EmbeddedController* InstantiateControllerALKS(void* args)
+
+ControllerBase* InstantiateControllerALKS(void* args)
 {
     InitArgs* initArgs = static_cast<InitArgs*>(args);
 
@@ -39,4 +40,5 @@ controller::Type ControllerALKS::GetType() const
 {
     return CONTROLLER_TYPE_ALKS;
 }
+
 }

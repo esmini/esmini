@@ -552,7 +552,7 @@ void SwarmTrafficAction::spawn(Solutions sols, int replace, double simTime)
             property.value_ = std::to_string(velocity_);
             args.properties->property_.push_back(property);
 #endif
-            controller::EmbeddedController* acc = InstantiateControllerACC(&args);
+            controller::ControllerBase* acc = InstantiateControllerACC(&args);
 
 #if 1  // This is another way of setting the ACC setSpeed property
             (static_cast<controller::ControllerACC*>(acc))->SetSetSpeed(velocity_);

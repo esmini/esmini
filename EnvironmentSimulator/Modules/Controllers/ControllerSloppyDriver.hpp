@@ -121,6 +121,6 @@ namespace scenarioengine
         const char* type_name_ = "SloppyDriver";
     };
 
-    controller::EmbeddedController* InstantiateControllerSloppyDriver(void* args);
+    ControllerBase* InstantiateControllerSloppyDriver(void* args);
     } //namespace controller
 }  // namespace scenarioengine

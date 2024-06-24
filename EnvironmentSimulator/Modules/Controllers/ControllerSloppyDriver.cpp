@@ -34,7 +34,8 @@ double SinusoidalTransition::GetHeading()
 
 namespace scenarioengine::controller
 {
-EmbeddedController* InstantiateControllerSloppyDriver(void* args)
+    
+ControllerBase* InstantiateControllerSloppyDriver(void* args)
 {
     InitArgs* initArgs = static_cast<InitArgs*>(args);
 

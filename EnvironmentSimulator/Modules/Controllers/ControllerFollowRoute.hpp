@@ -167,5 +167,5 @@ namespace scenarioengine::controller
         bool                               testMode_;
     };
 
-    EmbeddedController *InstantiateControllerFollowRoute(void *args);
+    ControllerBase *InstantiateControllerFollowRoute(void *args);
 }  // namespace scenarioengine

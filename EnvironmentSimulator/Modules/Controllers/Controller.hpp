@@ -99,12 +99,12 @@ enum class ControlActivationMode
 };
 std::string ToStr(ControlActivationMode mode);
 
-class BaseController
+class ControllerBase
 {
 public:
     //public interface
-    BaseController(InitArgs* args = nullptr); 
-    virtual ~BaseController() = default; 
+    ControllerBase(InitArgs* args = nullptr); 
+    virtual ~ControllerBase() = default; 
     // Returns name of the controller
     const std::string& GetName() const;
     // Returns type of the controller
@@ -136,6 +136,13 @@ public:
     virtual void Init();
     virtual void InitPostPlayer();
     virtual void ReportKeyEvent(int key, bool down);
+
+    virtual void LinkObject(Object* object);
+    virtual void SetScenarioEngine(ScenarioEngine* scenario_engine);
+    virtual void SetPlayer(ScenarioPlayer* player);
+    Object*     GetRoadObject();
+    Object* GetLinkedObject();
+
     // Base class Step function should be called from derived classes
     virtual void Step(double timeStep) = 0;
 
@@ -147,6 +154,12 @@ protected:
     ControlOperationMode mode_;               // add to scenario actions or replace
     uint64_t             linkedObjectID_ = 0;
     std::string name_;   
+
+    Object*              object_;             // The object to which the controller is attached and hence controls
+    Entities*            entities_;
+    ScenarioGateway*     gateway_;
+    ScenarioEngine*      scenario_engine_;
+    ScenarioPlayer*      player_;
 };
 
 } // namespace controller

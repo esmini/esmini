@@ -635,5 +635,5 @@ namespace scenarioengine::controller
         void SetScenarioEngine(ScenarioEngine* scenario_engine) override;
     };
 
-    EmbeddedController* InstantiateControllerALKS_R157SM(void* args);
+    ControllerBase* InstantiateControllerALKS_R157SM(void* args);
 }  // namespace scenarioengine

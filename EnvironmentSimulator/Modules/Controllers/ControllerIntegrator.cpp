@@ -60,7 +60,7 @@ std::optional<ControllerInitiazer> ControllerIntegrator::GetControllerInitialize
     else
     {
         ControllerInitiazer controllerInitiazer;
-        *(void**) (&controllerInitiazer) = dlsym(libHandle, "GetController");
+        *(void**) (&controllerInitiazer) = dlsym(libHandle, "InstantiateController");
         if( controllerInitiazer == nullptr)
         {
             //log error

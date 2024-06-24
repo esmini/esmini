@@ -17,50 +17,11 @@
 namespace scenarioengine::controller
 {
 EmbeddedController::EmbeddedController(InitArgs* args)  // init operatingdomains
-    : object_(0),
-      entities_(0),
-      gateway_(0),
-      scenario_engine_(0),
-      player_(0)
+    : ControllerBase(args)    
 {
-    if (args)
-    {
-        operating_domains_ = static_cast<unsigned int>(ControlDomains::DOMAIN_LAT_AND_LONG);
-        active_domains_ = static_cast<unsigned int>(ControlDomains::DOMAIN_NONE);
-        mode_ = ControlOperationMode::MODE_OVERRIDE;
-        name_      = args->name;
-        //type_name_ = args->type;    
-        entities_  = args->entities;
-        gateway_   = args->gateway;
-    }
-    else
-    {
-        LOG_AND_QUIT("Controller constructor missing args");
-    }
-
-    if (args->properties && args->properties->ValueExists("mode"))
-    {
-        std::string mode = args->properties->GetValueStr("mode");
-        if (mode == "override")
-        {
-            mode_ = ControlOperationMode::MODE_OVERRIDE;
-        }
-        else if (mode == "additive")
-        {
-            mode_ = ControlOperationMode::MODE_ADDITIVE;
-        }
-        else
-        {
-            LOG("Unexpected mode \"%s\", falling back to default \"override\"", mode.c_str());
-            mode_ = ControlOperationMode::MODE_OVERRIDE;
-        }
-    }
-    else
-    {
-        mode_ = ControlOperationMode::MODE_OVERRIDE;
-    }
+    
 }
-
+/*
 void EmbeddedController::LinkObject(Object* object)
 {
     object_ = object;
@@ -76,7 +37,7 @@ void EmbeddedController::SetScenarioEngine(ScenarioEngine* scenario_engine)
     scenario_engine_ = scenario_engine;
 }
 
-void EmbeddedController::SetPlayer(ScenarioPlayer* player)
+void EmbeddedController::SetPlayver(ScenarioPlayer* player)
 {
     player_ = player;
 }
@@ -90,7 +51,7 @@ Object* EmbeddedController::GetLinkedObject()
 {
     return object_;
 }
-
+*/
 void EmbeddedController::Step(double timeStep)
 {
     (void)timeStep;

@@ -68,5 +68,5 @@ namespace scenarioengine::controller
         bool             virtual_;
     };
 
-    EmbeddedController* InstantiateControllerACC(void* args);
+    ControllerBase* InstantiateControllerACC(void* args);
 }  // namespace scenarioengine::controller

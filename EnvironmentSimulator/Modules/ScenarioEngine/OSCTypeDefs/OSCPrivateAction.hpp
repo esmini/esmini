@@ -1088,13 +1088,13 @@ namespace scenarioengine
     class AssignControllerAction : public OSCPrivateAction
     {
     public:
-        controller::EmbeddedController*           controller_;
+        controller::ControllerBase*           controller_;
         controller::ControlActivationMode lat_activation_mode_   = controller::ControlActivationMode::UNDEFINED;
         controller::ControlActivationMode long_activation_mode_  = controller::ControlActivationMode::UNDEFINED;
         controller::ControlActivationMode light_activation_mode_ = controller::ControlActivationMode::UNDEFINED;
         controller::ControlActivationMode anim_activation_mode_  = controller::ControlActivationMode::UNDEFINED;
 
-        AssignControllerAction(controller::EmbeddedController*           controller,
+        AssignControllerAction(controller::ControllerBase*           controller,
                                controller::ControlActivationMode lat_activation_mode,
                                controller::ControlActivationMode long_activation_mode,
                                controller::ControlActivationMode light_activation_mode,
@@ -1144,7 +1144,7 @@ namespace scenarioengine
     {
     public:
         std::string           ctrl_name_;
-        controller::EmbeddedController*           controller_;
+        controller::ControllerBase*           controller_;
         controller::ControlActivationMode lat_activation_mode_   = controller::ControlActivationMode::OFF;
         controller::ControlActivationMode long_activation_mode_  = controller::ControlActivationMode::OFF;
         controller::ControlActivationMode light_activation_mode_ = controller::ControlActivationMode::OFF;

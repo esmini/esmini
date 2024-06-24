@@ -90,47 +90,88 @@ std::string ToStr(ControlActivationMode mode)
     }
 }
 
-BaseController::BaseController(InitArgs* args)
+ControllerBase::ControllerBase(InitArgs* args)
+    : object_(0),
+      entities_(0),
+      gateway_(0),
+      scenario_engine_(0),
+      player_(0)
 {
+    if (args)
+    {
+        operating_domains_ = static_cast<unsigned int>(ControlDomains::DOMAIN_LAT_AND_LONG);
+        active_domains_ = static_cast<unsigned int>(ControlDomains::DOMAIN_NONE);
+        mode_ = ControlOperationMode::MODE_OVERRIDE;
+        name_      = args->name;
+        //type_name_ = args->type;    
+        entities_  = args->entities;
+        gateway_   = args->gateway;
+    }
+    else
+    {
+        LOG_AND_QUIT("Controller constructor missing args");
+    }
+
+    if (args->properties && args->properties->ValueExists("mode"))
+    {
+        std::string mode = args->properties->GetValueStr("mode");
+        if (mode == "override")
+        {
+            mode_ = ControlOperationMode::MODE_OVERRIDE;
+        }
+        else if (mode == "additive")
+        {
+            mode_ = ControlOperationMode::MODE_ADDITIVE;
+        }
+        else
+        {
+            LOG("Unexpected mode \"%s\", falling back to default \"override\"", mode.c_str());
+            mode_ = ControlOperationMode::MODE_OVERRIDE;
+        }
+    }
+    else
+    {
+        mode_ = ControlOperationMode::MODE_OVERRIDE;
+    }
 }
 
-const std::any& BaseController::GetProperty(const std::string& propertyName) const
+const std::any& ControllerBase::GetProperty(const std::string& propertyName) const
 {
     return properties_.at(propertyName);
 }
 
-void BaseController::SetProperty(const std::string& propertyName, const std::any& propertyValue)
+void ControllerBase::SetProperty(const std::string& propertyName, const std::any& propertyValue)
 {
     properties_[propertyName] = propertyValue;
 }
 
-uint32_t BaseController::GetOperatingDomains() const
+uint32_t ControllerBase::GetOperatingDomains() const
 {
     return operating_domains_;
 }
 
-uint32_t BaseController::GetActiveDomains() const 
+uint32_t ControllerBase::GetActiveDomains() const 
 {
     return active_domains_;
 }
 
-controller::ControlOperationMode BaseController::GetMode() const 
+controller::ControlOperationMode ControllerBase::GetMode() const 
 {
     return mode_;
 }
 
-void BaseController::LinkObjectByID(uint64_t id)
+void ControllerBase::LinkObjectByID(uint64_t id)
 {
     // do we need any validation here that if there is an object present with the given id
     linkedObjectID_ = id;
 }
 
-void BaseController::UnlinkObject()
+void ControllerBase::UnlinkObject()
 {
     linkedObjectID_ = 0;
 }
 
-int BaseController::Activate(ControlActivationMode lat_mode,
+int ControllerBase::Activate(ControlActivationMode lat_mode,
                          ControlActivationMode long_mode,
                          ControlActivationMode light_mode,
                          ControlActivationMode anim_mode)
@@ -166,68 +207,94 @@ int BaseController::Activate(ControlActivationMode lat_mode,
     return 0;
 }
 
-void BaseController::Deactivate()
+void ControllerBase::Deactivate()
 {
     active_domains_ = static_cast<unsigned int>(ControlDomains::DOMAIN_NONE);
 }
 
-void BaseController::DeactivateDomains(uint32_t domains)
+void ControllerBase::DeactivateDomains(uint32_t domains)
 {
     active_domains_ = active_domains_ & ~domains;
 }
 
-void BaseController::Init()
+void ControllerBase::Init()
 {
 
 }
 
-void BaseController::InitPostPlayer()
+void ControllerBase::InitPostPlayer()
 {
 
 }
 
-uint64_t BaseController::GetLinkedObjectID() const
+uint64_t ControllerBase::GetLinkedObjectID() const
 {
     return linkedObjectID_;
 }
 
-void BaseController::ReportKeyEvent(int key, bool down)
+void ControllerBase::ReportKeyEvent(int key, bool down)
 {
     LOG("Key %c %s", key, down ? "down" : "up");
 }
 
-bool BaseController::IsActiveOnDomainsOnly(uint32_t domainMask) const
+bool ControllerBase::IsActiveOnDomainsOnly(uint32_t domainMask) const
 {
     return (GetActiveDomains() == domainMask);
 }
 
-bool BaseController::IsActiveOnDomains(uint32_t domainMask) const
+bool ControllerBase::IsActiveOnDomains(uint32_t domainMask) const
 {
     return (domainMask & GetActiveDomains()) == domainMask;
 }
 
-bool BaseController::IsNotActiveOnDomains(uint32_t domainMask) const
+bool ControllerBase::IsNotActiveOnDomains(uint32_t domainMask) const
 {
     return (domainMask & GetActiveDomains()) == 0;
 }
 
-bool BaseController::IsActiveOnAnyOfDomains(uint32_t domainMask) const
+bool ControllerBase::IsActiveOnAnyOfDomains(uint32_t domainMask) const
 {
     return (domainMask & GetActiveDomains()) != 0;
 }
 
-bool BaseController::IsActive() const
+bool ControllerBase::IsActive() const
 {
     return GetActiveDomains() != static_cast<unsigned int>(ControlDomains::DOMAIN_NONE);
 }
 
-void BaseController::SetName(const std::string& name)
+void ControllerBase::SetName(const std::string& name)
 {
     name_ = name;
 }
 
-const std::string& BaseController::GetName() const
+const std::string& ControllerBase::GetName() const
 {
     return name_;
 }
+
+void ControllerBase::LinkObject(Object* object)
+{
+    object_ = object;
+}
+
+void ControllerBase::SetScenarioEngine(ScenarioEngine* scenario_engine)
+{
+    scenario_engine_ = scenario_engine;
+}
+
+void ControllerBase::SetPlayer(ScenarioPlayer* player)
+{
+    player_ = player;
+}
+
+Object* ControllerBase::GetRoadObject()
+{
+    return object_;
+}
+
+Object* ControllerBase::GetLinkedObject()
+{
+    return object_;
+}
+
 }

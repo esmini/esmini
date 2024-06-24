@@ -17,7 +17,7 @@
 //using namespace scenarioengine::controller;
 namespace scenarioengine::controller
 {
-EmbeddedController* InstantiateControllerExternal(void* args)
+ControllerBase* InstantiateControllerExternal(void* args)
 {
     InitArgs* initArgs = static_cast<InitArgs*>(args);
 

@@ -19,7 +19,7 @@
 
 namespace scenarioengine::controller
 {
-EmbeddedController* InstantiateControllerOffroadFollower(void* args)
+ControllerBase* InstantiateControllerOffroadFollower(void* args)
 {
     InitArgs* initArgs = static_cast<InitArgs*>(args);
 

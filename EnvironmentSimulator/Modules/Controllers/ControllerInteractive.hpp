@@ -70,5 +70,5 @@ namespace scenarioengine::controller
         double            speed_factor_;
     };
 
-    EmbeddedController* InstantiateControllerInteractive(void* args);
+    ControllerBase* InstantiateControllerInteractive(void* args);
 }  // namespace scenarioengine::controller

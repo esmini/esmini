@@ -72,6 +72,6 @@ private:
     double headstart_time_;
 };
     
-controller::EmbeddedController* InstantiateControllerExternal(void* args);
+ControllerBase* InstantiateControllerExternal(void* args);
 
 }  // namespace scenarioengine::controller

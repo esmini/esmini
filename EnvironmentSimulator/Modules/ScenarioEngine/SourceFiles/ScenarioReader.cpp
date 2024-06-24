@@ -29,6 +29,7 @@
 #include "ControllerALKS_R157SM.hpp"
 #include "ControllerLooming.hpp"
 #include "ControllerOffroadFollower.hpp"
+#include "ControllerIntegrator.hpp"
 
 #include <cstdlib>
 
@@ -91,6 +92,16 @@ void ScenarioReader::LoadControllers()
     RegisterController(controller::ToStr(controller::Type::CONTROLLER_ALKS_R157SM), controller::InstantiateControllerALKS_R157SM);
     RegisterController(controller::ToStr(controller::Type::CONTROLLER_TYPE_LOOMING), controller::InstantiateControllerLooming);
     RegisterController(controller::ToStr(controller::Type::CONTROLLER_TYPE_OFFROAD_FOLLOWER), controller::InstantiateControllerOffroadFollower);
+    
+    // Loading integrated controllers
+    controller::ControllerIntegrator controllerIntegrator("/home/mrizwans/volvo/esmini/IntegratedControllers");
+    auto integratedControllers = controllerIntegrator.LoadControllersInitializers();
+
+    for( const auto& ctrl : integratedControllers)
+    {
+        RegisterController(ctrl.first, ctrl.second);
+    }
+    
 }
 
 void ScenarioReader::UnloadControllers()
@@ -98,7 +109,7 @@ void ScenarioReader::UnloadControllers()
     ScenarioReader::controllerPool_.Clear();
 }
 
-int ScenarioReader::RemoveController(controller::EmbeddedController *controller)
+int ScenarioReader::RemoveController(controller::ControllerBase *controller)
 {
     for (size_t i = 0; i < controller_.size(); i++)
     {
@@ -955,10 +966,10 @@ MiscObject *ScenarioReader::parseOSCMiscObject(pugi::xml_node miscObjectNode)
     return miscObject;
 }
 
-controller::EmbeddedController *ScenarioReader::parseOSCObjectController(pugi::xml_node controllerNode)
+controller::ControllerBase* ScenarioReader::parseOSCObjectController(pugi::xml_node controllerNode)
 {
     std::string   name       = parameters.ReadAttribute(controllerNode, "name");
-    controller::EmbeddedController   *controller = 0;
+    controller::ControllerBase* controller = 0;
     OSCProperties properties;
 
     // First check for parameter declaration
@@ -1425,7 +1436,7 @@ int ScenarioReader::parseEntities()
         if (entitiesChildName == "ScenarioObject")
         {
             Object     *obj  = 0;
-            controller::EmbeddedController *ctrl = 0;
+            controller::ControllerBase* ctrl = 0;
 
             // First read the object
             pugi::xml_node objectChild;
@@ -3090,7 +3101,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                     for (pugi::xml_node controllerDefNode = controllerChild.first_child(); controllerDefNode;
                          controllerDefNode                = controllerDefNode.next_sibling())
                     {
-                        controller::EmbeddedController *controller = 0;
+                        controller::ControllerBase* controller = 0;
                         if (controllerDefNode.name() == std::string("Controller"))
                         {
                             controller = parseOSCObjectController(controllerDefNode);

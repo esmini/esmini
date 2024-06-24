@@ -62,7 +62,7 @@ std::map<ControllerALKS_R157SM::ReferenceDriver::Phase, std::string> ControllerA
     {ControllerALKS_R157SM::ReferenceDriver::Phase::BRAKE_REF, "BRAKE_REF"},
     {ControllerALKS_R157SM::ReferenceDriver::Phase::BRAKE_AEB, "BRAKE_AEB"}};
 
-EmbeddedController* InstantiateControllerALKS_R157SM(void* args)
+ControllerBase* InstantiateControllerALKS_R157SM(void* args)
 {
     InitArgs* initArgs = static_cast<InitArgs*>(args);
 

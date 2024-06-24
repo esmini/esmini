@@ -67,5 +67,5 @@ namespace scenarioengine::controller
         Object*            template_vehicle_;
     };
 
-    EmbeddedController* InstantiateControllerSumo(void* args);
+    ControllerBase* InstantiateControllerSumo(void* args);
 }  // namespace scenarioengine

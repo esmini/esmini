@@ -150,7 +150,7 @@ class EmbeddedController;  // Forward declaration
         double      stand_still_timestamp_;
         bool        reset_;  // indicate discreet movement, teleporting, no odometer update
 
-        std::vector<controller::EmbeddedController*>                    controllers_;  // reference to all assigned controller objects
+        std::vector<controller::ControllerBase*>                    controllers_;  // reference to all assigned controller objects
         double                                      headstart_time_;
         Object*                                     ghost_;
         Object*                                     ghost_Ego_;
@@ -356,8 +356,8 @@ class EmbeddedController;  // Forward declaration
             return speed_;
         }
 
-        void AssignController(controller::EmbeddedController* controller);
-        void UnassignController(controller::EmbeddedController* controller);
+        void AssignController(controller::ControllerBase* controller);
+        void UnassignController(controller::ControllerBase* controller);
         void UnassignControllers();
 
         bool IsControllerActiveOnDomains(unsigned int domainMask, controller::Type type = controller::CONTROLLER_TYPE_UNDEFINED);
@@ -369,17 +369,17 @@ class EmbeddedController;  // Forward declaration
                                             unsigned int         domainMask,
                                             controller::Type     type = controller::CONTROLLER_TYPE_UNDEFINED);
 
-        controller::EmbeddedController*      GetAssignedControllerOftype(controller::Type type);
+        controller::ControllerBase*      GetAssignedControllerOftype(controller::Type type);
         bool             IsAnyAssignedControllerOfType(controller::Type type);
         bool             IsAnyActiveControllerOfType(controller::Type type);
-        controller::EmbeddedController*      GetControllerActiveOnDomain(ControlDomains domain);
+        controller::ControllerBase*      GetControllerActiveOnDomain(ControlDomains domain);
         controller::Type GetControllerTypeActiveOnDomain(ControlDomains domain);
         unsigned int     GetNrOfAssignedControllers()
         {
             return static_cast<unsigned int>(controllers_.size());
         }
 
-        controller::EmbeddedController* GetController(std::string name);
+        controller::ControllerBase* GetController(std::string name);
 
         int GetId()
         {

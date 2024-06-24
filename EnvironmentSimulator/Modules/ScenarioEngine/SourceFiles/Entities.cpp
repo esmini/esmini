@@ -118,7 +118,7 @@ Position::ReturnCode Object::MoveAlongS(double ds, bool actualDistance)
     return pos_.MoveAlongS(ds, 0.0, GetJunctionSelectorAngle(), actualDistance, Position::MoveDirectionMode::HEADING_DIRECTION, true);
 }
 
-void Object::AssignController(controller::EmbeddedController* controller)
+void Object::AssignController(controller::ControllerBase* controller)
 {
     // if already assigned, first remove it from list of assigned controllers
     controllers_.erase(std::remove(controllers_.begin(), controllers_.end(), controller), controllers_.end());
@@ -127,7 +127,7 @@ void Object::AssignController(controller::EmbeddedController* controller)
     controllers_.push_back(controller);
 }
 
-void Object::UnassignController(controller::EmbeddedController* controller)
+void Object::UnassignController(controller::ControllerBase* controller)
 {
     for (auto ctrl : controllers_)
     {
@@ -223,7 +223,7 @@ bool Object::IsControllerModeOnAnyOfDomains(controller::ControlOperationMode mod
     return false;
 }
 
-scenarioengine::controller::EmbeddedController* scenarioengine::Object::GetAssignedControllerOftype(controller::Type type)
+scenarioengine::controller::ControllerBase* scenarioengine::Object::GetAssignedControllerOftype(controller::Type type)
 {
     for (auto ctrl : controllers_)
     {
@@ -262,7 +262,7 @@ bool Object::IsAnyActiveControllerOfType(controller::Type type)
     return false;
 }
 
-scenarioengine::controller::EmbeddedController* Object::GetControllerActiveOnDomain(ControlDomains domain)
+scenarioengine::controller::ControllerBase* Object::GetControllerActiveOnDomain(ControlDomains domain)
 {
     for (auto ctrl : controllers_)
     {
@@ -277,7 +277,7 @@ scenarioengine::controller::EmbeddedController* Object::GetControllerActiveOnDom
 
 scenarioengine::controller::Type Object::GetControllerTypeActiveOnDomain(ControlDomains domain)
 {
-    scenarioengine::controller::EmbeddedController* ctrl = GetControllerActiveOnDomain(domain);
+    scenarioengine::controller::ControllerBase* ctrl = GetControllerActiveOnDomain(domain);
 
     if (ctrl != nullptr)
     {
@@ -291,7 +291,7 @@ scenarioengine::controller::Type Object::GetControllerTypeActiveOnDomain(Control
     return controller::Type::CONTROLLER_TYPE_DEFAULT;
 }
 
-scenarioengine::controller::EmbeddedController* Object::GetController(std::string name)
+scenarioengine::controller::ControllerBase* Object::GetController(std::string name)
 {
     for (auto ctrl_tmp : controllers_)
     {
