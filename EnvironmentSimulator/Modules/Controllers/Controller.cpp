@@ -2,6 +2,7 @@
 #include "CommonMini.hpp"
 #include "OSCProperties.hpp"
 #include "Parameters.hpp"
+#include "Entities.hpp"
 
 namespace scenarioengine::controller
 {
@@ -295,6 +296,30 @@ Object* ControllerBase::GetRoadObject()
 Object* ControllerBase::GetLinkedObject()
 {
     return object_;
+}
+
+void ControllerBase::Step(double timeStep)
+{
+    (void)timeStep;
+    if (object_)
+    {
+        if (mode_ == ControlOperationMode::MODE_OVERRIDE)
+        {
+            if (IsActiveOnDomains(static_cast<unsigned int>(ControlDomains::DOMAIN_LAT)))
+            {
+                object_->SetDirtyBits(Object::DirtyBit::LATERAL);
+            }
+
+            if (IsActiveOnDomains(static_cast<unsigned int>(ControlDomains::DOMAIN_LONG)))
+            {
+                object_->SetDirtyBits(Object::DirtyBit::LONGITUDINAL);
+            }
+        }
+        else
+        {
+            object_->ClearDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);
+        }
+    }
 }
 
 }

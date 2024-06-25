@@ -53,27 +53,8 @@ Object* EmbeddedController::GetLinkedObject()
 }
 */
 void EmbeddedController::Step(double timeStep)
-{
-    (void)timeStep;
-    if (object_)
-    {
-        if (mode_ == ControlOperationMode::MODE_OVERRIDE)
-        {
-            if (IsActiveOnDomains(static_cast<unsigned int>(ControlDomains::DOMAIN_LAT)))
-            {
-                object_->SetDirtyBits(Object::DirtyBit::LATERAL);
-            }
-
-            if (IsActiveOnDomains(static_cast<unsigned int>(ControlDomains::DOMAIN_LONG)))
-            {
-                object_->SetDirtyBits(Object::DirtyBit::LONGITUDINAL);
-            }
-        }
-        else
-        {
-            object_->ClearDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);
-        }
-    }
+{    
+    ControllerBase::Step(timeStep);
 }
 }
 // Riz - This should not be needed

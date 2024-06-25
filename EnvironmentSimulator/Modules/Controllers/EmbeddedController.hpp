@@ -23,12 +23,14 @@
 
 namespace scenarioengine
 {
+    /*
     // Forward declarations
     class ScenarioPlayer;
     class ScenarioGateway;
     class ScenarioEngine;
     class Entities;
     class Object;
+    */
 
 namespace controller
 {

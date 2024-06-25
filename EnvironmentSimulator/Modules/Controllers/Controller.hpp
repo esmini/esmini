@@ -144,7 +144,7 @@ public:
     Object* GetLinkedObject();
 
     // Base class Step function should be called from derived classes
-    virtual void Step(double timeStep) = 0;
+    virtual void Step(double timeStep);
 
 protected:
 
