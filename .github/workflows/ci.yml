@@ -55,7 +55,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-20.04, macos-11, windows-2019]
+        os: [ubuntu-20.04, macos-12, windows-2019]
         configuration: [Debug, Release]
 
     runs-on: ${{ matrix.os }}
@@ -152,7 +152,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-20.04, macos-11, windows-2019]
+        os: [ubuntu-20.04, macos-12, windows-2019]
         configuration: [Debug, Release]
 
     runs-on: ${{ matrix.os }}
@@ -240,7 +240,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-20.04, macos-11, windows-2019]
+        os: [ubuntu-20.04, macos-12, windows-2019]
 
     runs-on: ${{ matrix.os }}
 
