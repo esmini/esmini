@@ -385,15 +385,22 @@ int ControllerALKS_R157SM::Model::Process(ObjectInfo& info)
                 // Calculate relative speed across road (t axis), from ego point of view
                 info.dv_t = (veh_v_t - obj_v_t) * SIGN(info.obj->pos_.GetT() - veh_->pos_.GetT());  // ignore side
 
-                if (info.dv_s > 0.0)
+                if (veh_v_s > 0.0)
                 {
-                    info.ttc = info.dist_long / info.dv_s;
                     info.thw = info.dist_long / veh_v_s;
                 }
                 else
                 {
-                    info.ttc = LARGE_NUMBER;
                     info.thw = LARGE_NUMBER;
+                }
+
+                if (info.dv_s > 0.0)
+                {
+                    info.ttc = info.dist_long / info.dv_s;
+                }
+                else
+                {
+                    info.ttc = LARGE_NUMBER;
                 }
 
                 R157_LOG(3,
