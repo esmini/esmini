@@ -1811,6 +1811,54 @@ extern "C"
         return std::nanf("");
     }
 
+    SE_DLL_API int SE_GetObjectAccelerationGlobalXYZ(int object_id, float *acc_x, float *acc_y, float *acc_z)
+    {
+        if (player != nullptr)
+        {
+            Object *obj = player->scenarioEngine->entities_.GetObjectById(object_id);
+            if (obj != nullptr && (acc_x != nullptr || acc_y != nullptr || acc_z != nullptr))
+            {
+                if (acc_x != nullptr)
+                {
+                    *acc_x = static_cast<float>(obj->pos_.GetAccX());
+                }
+                if (acc_y != nullptr)
+                {
+                    *acc_y = static_cast<float>(obj->pos_.GetAccY());
+                }
+                if (acc_z != nullptr)
+                {
+                    *acc_z = static_cast<float>(obj->pos_.GetAccZ());
+                }
+                return 0;
+            }
+        }
+
+        return -1;
+    }
+
+    SE_DLL_API int SE_GetObjectAccelerationLocalLatLong(int object_id, float *acc_lat, float *acc_long)
+    {
+        if (player != nullptr)
+        {
+            Object *obj = player->scenarioEngine->entities_.GetObjectById(object_id);
+            if (obj != nullptr && (acc_lat != nullptr || acc_long != nullptr))
+            {
+                if (acc_lat != nullptr)
+                {
+                    *acc_lat = static_cast<float>(obj->pos_.GetAccLat());
+                }
+                if (acc_long != nullptr)
+                {
+                    *acc_long = static_cast<float>(obj->pos_.GetAccLong());
+                }
+                return 0;
+            }
+        }
+
+        return -1;
+    }
+
     /*SE_DLL_API int SE_GetObjectGhostStateFromOSI(const char* output, int index)
     {
             if (player)

@@ -1050,6 +1050,25 @@ extern "C"
     SE_DLL_API float SE_GetObjectAcceleration(int object_id);
 
     /**
+            Get the acceleration components of specified object in global x, y, z coordinates
+            @param object_id Id of the object
+            @param x reference to a variable returning the acceleration along global x-axis
+            @param y reference to a variable returning the acceleration along global y-axis
+            @param z reference to a variable returning the acceleration along global z-axis
+            @return 0 if successful, -1 if not
+    */
+    SE_DLL_API int SE_GetObjectAccelerationGlobalXYZ(int object_id, float *acc_x, float *acc_y, float *acc_z);
+
+    /**
+            Get the acceleration components of specified object in local x,y coordinates
+            @param object_id Id of the object
+            @param lat reference to a variable returning the acceleration along local y-axis
+            @param long reference to a variable returning the acceleration along local x-axis
+            @return 0 if successful, -1 if not
+    */
+    SE_DLL_API int SE_GetObjectAccelerationLocalLatLong(int object_id, float *acc_lat, float *acc_long);
+
+    /**
             Get the unit of specified speed (in OpenDRIVE road type element).
             All roads will be looped in search for such an element. First found will be used.
             If speed is specified withouth the optional unit, SI unit m/s is assumed.
@@ -1064,7 +1083,7 @@ extern "C"
             @param lookahead_distance The distance, along the road, to the point
             @param data Struct including all result values, see typedef for details
             @param lookAheadMode Measurement strategy: Along 0=lane center, 1=road center (ref line) or 2=current lane offset. See
-       roadmanager::Position::LookAheadMode enum
+            roadmanager::Position::LookAheadMode enum
             @param inRoadDrivingDirection If true look along lane driving direction. If false, look in closest direction according to object heading.
             @return 0 = OK,
                     ERROR_OFF_ROAD = -4,

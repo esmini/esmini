@@ -4156,6 +4156,74 @@ TEST(ParamDistTest, TestRunAll)
     SE_ResetParameterDistribution();
 }
 
+TEST(GetFunctionsTest, TestGetAccelerations)
+{
+    std::string scenario_file = "../../../resources/xosc/cut-in_simple.xosc";
+
+    EXPECT_EQ(SE_Init(scenario_file.c_str(), 0, 0, 0, 0), 0);
+    EXPECT_EQ(SE_GetNumberOfObjects(), 2);
+
+    int   state    = 0;
+    float acc_x    = 0.0f;
+    float acc_y    = 0.0f;
+    float acc_z    = 0.0f;
+    float acc_lat  = 0.0f;
+    float acc_long = 0.0f;
+
+    while (SE_GetSimulationTime() < 8.0f && state < 4)
+    {
+        SE_StepDT(0.1f);
+        if (state == 0 && SE_GetSimulationTime() > 6.5f)
+        {
+            EXPECT_EQ(SE_GetObjectAccelerationGlobalXYZ(1, &acc_x, &acc_y, &acc_z), 0);
+            EXPECT_NEAR(acc_x, 0.0, 1e-3);
+            EXPECT_NEAR(acc_y, 0.0, 1e-3);
+            EXPECT_NEAR(acc_z, 0.0, 1e-3);
+
+            EXPECT_EQ(SE_GetObjectAccelerationLocalLatLong(1, &acc_lat, &acc_long), 0);
+            EXPECT_NEAR(acc_lat, 0.0, 1e-3);
+            EXPECT_NEAR(acc_long, 0.0, 1e-3);
+
+            state++;
+        }
+        else if (state == 1 && SE_GetSimulationTime() > 7.5f)
+        {
+            EXPECT_EQ(SE_GetObjectAccelerationGlobalXYZ(1, &acc_x, &acc_y, &acc_z), 0);
+            EXPECT_NEAR(acc_x, -0.054, 1e-3);
+            EXPECT_NEAR(acc_y, -0.998, 1e-3);
+            EXPECT_NEAR(acc_z, 0.0, 1e-3);
+
+            EXPECT_EQ(SE_GetObjectAccelerationLocalLatLong(1, &acc_lat, &acc_long), 0);
+            EXPECT_NEAR(acc_lat, -1.000, 1e-3);
+            EXPECT_NEAR(acc_long, -0.001, 1e-3);
+
+            state++;
+        }
+        else if (state == 2)
+        {
+            // Set explicit acceleration
+            SE_ReportObjectAcc(1, 0.0, 1.0, 2.0, 3.0);
+
+            state++;
+        }
+        else if (state == 3)
+        {
+            EXPECT_EQ(SE_GetObjectAccelerationGlobalXYZ(1, &acc_x, &acc_y, &acc_z), 0);
+            EXPECT_NEAR(acc_x, 1.0, 1e-3);
+            EXPECT_NEAR(acc_y, 2.0, 1e-3);
+            EXPECT_NEAR(acc_z, 3.0, 1e-3);
+
+            EXPECT_EQ(SE_GetObjectAccelerationLocalLatLong(1, &acc_lat, &acc_long), 0);
+            EXPECT_NEAR(acc_lat, 2.056, 1e-3);
+            EXPECT_NEAR(acc_long, 0.880, 1e-3);
+
+            state++;
+        }
+    }
+
+    SE_Close();
+}
+
 int main(int argc, char** argv)
 {
     testing::InitGoogleTest(&argc, argv);
