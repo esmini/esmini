@@ -428,7 +428,18 @@ extern "C"
                 int retval = static_cast<int>(pos->SetLanePos(roadId, laneId, s, laneOffset));
                 if (align)
                 {
-                    if (laneId < 0)
+                    roadmanager::OpenDrive* odr = roadmanager::Position::GetOpenDrive();
+                    if (odr == nullptr)
+                    {
+                        return -1;
+                    }
+                    roadmanager::Road* road = odr->GetRoadById(roadId);
+                    if (road == nullptr)
+                    {
+                        return -1;
+                    }
+                    if ((laneId < 0 && road->GetRule() == roadmanager::Road::RoadRule::RIGHT_HAND_TRAFFIC) ||
+                        (laneId > 0 && road->GetRule() == roadmanager::Road::RoadRule::LEFT_HAND_TRAFFIC))
                     {
                         pos->SetHeadingRelative(0);
                     }

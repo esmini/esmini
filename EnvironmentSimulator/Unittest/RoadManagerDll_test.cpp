@@ -343,6 +343,49 @@ TEST(TestLaneType, TestDetailedLaneType)
     RM_Close();
 }
 
+TEST(TestLaneDirection, TestLaneDirectionByRule)
+{
+    const char* odr_file[2] = {"../../../resources/xodr/e6mini.xodr", "../../../resources/xodr/e6mini-lht.xodr"};
+
+    for (int i = 0; i < 2; i++)
+    {
+        ASSERT_EQ(RM_Init(odr_file[i]), 0);
+
+        int             pos_handle = RM_CreatePosition();
+        RM_PositionData r_data;
+
+        EXPECT_EQ(pos_handle, 0);
+
+        // going along road s-axis
+        RM_SetLanePosition(pos_handle, 0, -3, 0.0, 100.0, true);
+        RM_GetPositionData(pos_handle, &r_data);
+
+        if (i == 0)
+        {
+            EXPECT_NEAR(r_data.h, 1.566, 1e-3);
+        }
+        else
+        {
+            EXPECT_NEAR(r_data.h, 4.708, 1e-3);
+        }
+
+        // going opposite road s-axis
+        RM_SetLanePosition(pos_handle, 0, 3, 0.0, 100.0, true);
+        RM_GetPositionData(pos_handle, &r_data);
+
+        if (i == 0)
+        {
+            EXPECT_NEAR(r_data.h, 4.708, 1e-3);
+        }
+        else
+        {
+            EXPECT_NEAR(r_data.h, 1.566, 1e-3);
+        }
+
+        RM_Close();
+    }
+}
+
 // Uncomment to print log output to console
 // #define LOG_TO_CONSOLE
 
