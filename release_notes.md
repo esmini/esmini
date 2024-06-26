@@ -1,5 +1,21 @@
 ## esmini release notes
 
+### 2024-06-26 Version 2.37.14
+
+Improvements and fixes:
+
+- Fix ALKS ref driver wrong TimeHeadway edge case calculation
+  - was wrongly set to inf (along with ttc) when relative speed < 0
+- Add a few parameters to ALKS ref driver
+  - Driver brake rate
+  - AEB brake rate
+  - AEB available (or not)
+- Bump CI to macos-12
+- Add GetAcceleration components functions
+  - [SE_GetObjectAccelerationGlobalXYZ()](https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L1060)
+  - [SE_GetObjectAccelerationLocalLatLong()](https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L1069)
+- Respect road rule for LH or RH traffic ([issue #581](https://github.com/esmini/esmini/issues/581))
+
 ### 2024-06-24 Version 2.37.13
 
 Improvements and fixes:
