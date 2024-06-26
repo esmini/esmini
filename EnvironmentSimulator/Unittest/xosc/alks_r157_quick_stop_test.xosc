@@ -8,11 +8,12 @@
     <ParameterDeclarations>
         <ParameterDeclaration name="EgoSpeed" parameterType="double" value="15"/>
         <ParameterDeclaration name="TargetSpeed" parameterType="double" value="25"/>
-        <ParameterDeclaration name="EgoS" parameterType="double" value="30"/>
+        <ParameterDeclaration name="EgoS" parameterType="double" value="20"/>
         <ParameterDeclaration name="TargetS" parameterType="double" value="50"/>
         <ParameterDeclaration name="$TargetBrakeDistance" parameterType="double" value="20"/>
         <ParameterDeclaration name="$TargetBrakeRate" parameterType="double" value="8"/>
         <ParameterDeclaration name="TargetStationaryS" parameterType="double" value="100"/>
+        <ParameterDeclaration name="AEBAvailableInEgo" parameterType="boolean" value="true"/>
     </ParameterDeclarations>
     <CatalogLocations>
         <VehicleCatalog>
@@ -29,13 +30,18 @@
         <ScenarioObject name="Ego">
             <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
             <ObjectController>
-                <Controller name="ALKS_R157SM_Controller">
-                    <Properties>
-                        <Property name="model" value="Regulation"/>
-                        <Property name="logLevel" value="2"/>
-                        <Property name="cruise" value="false"/>
-                    </Properties>
-                </Controller>
+                <CatalogReference catalogName="ControllerCatalog" entryName="ALKS_R157SM_Controller">
+                    <ParameterAssignments>
+                        <ParameterAssignment parameterRef="Model" value="ReferenceDriver"/>
+                        <ParameterAssignment parameterRef="LogLevel" value="2"/>
+                        <ParameterAssignment parameterRef="Cruise" value="false"/>
+                        <ParameterAssignment parameterRef="AlwaysTrigOnScenario" value="true"/>
+                        <ParameterAssignment parameterRef="FullStop" value="true"/>
+                        <ParameterAssignment parameterRef="AEBAvailable" value="$AEBAvailableInEgo"/>
+                        <ParameterAssignment parameterRef="AEBDeceleration" value="10.0"/>
+                        <ParameterAssignment parameterRef="DriverDeceleration" value="3.0"/>
+                    </ParameterAssignments>
+                </CatalogReference>
             </ObjectController>
         </ScenarioObject>
         <ScenarioObject name="Target">
@@ -109,7 +115,7 @@
                     <Actors selectTriggeringEntities="false">
                         <EntityRef entityRef="Target"/>
                     </Actors>
-                    <Maneuver name="LaneChangeManeuvers">
+                    <Maneuver name="CriticalManeuver">
                         <Event name="TargetreduceSpeedEvent" priority="overwrite">
                             <Action name="TargetBrakeAction">
                                 <PrivateAction>

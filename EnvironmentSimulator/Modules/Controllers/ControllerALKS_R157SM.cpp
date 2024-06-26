@@ -114,6 +114,21 @@ ControllerALKS_R157SM::ControllerALKS_R157SM(InitArgs* args) : Controller(args),
             }
             LOG("ALKS_R157SM AEB TTC: %.2f", ref_driver->aeb_.ttc_critical_aeb_);
 
+            if (args->properties->ValueExists("aebDeceleration"))
+            {
+                ref_driver->aeb_.max_dec_ = strtod(args->properties->GetValueStr("aebDeceleration"));
+            }
+            LOG("ALKS_R157SM AEB deceleration: %.2f", ref_driver->aeb_.max_dec_);
+
+            if (args->properties->ValueExists("aebAvailable"))
+            {
+                if (args->properties->GetValueStr("aebAvailable") == "false")
+                {
+                    ref_driver->aeb_.available_ = false;
+                }
+            }
+            LOG("ALKS_R157SM AEB %savailable", ref_driver->aeb_.available_ ? "" : "not ");
+
             if (args->properties->ValueExists("lateralTrigDistance"))
             {
                 ref_driver->lateral_dist_trigger_             = new ReferenceDriver::LateralDistTrigger(ref_driver);
@@ -136,6 +151,12 @@ ControllerALKS_R157SM::ControllerALKS_R157SM(InitArgs* args) : Controller(args),
             }
 
             model_ = reinterpret_cast<ControllerALKS_R157SM::Model*>(ref_driver);
+
+            if (args->properties->ValueExists("driverDeceleration"))
+            {
+                model_->max_dec_ = strtod(args->properties->GetValueStr("driverDeceleration"));
+            }
+            LOG("ALKS_R157SM driver deceleration: %.2f", model_->max_dec_);
         }
         else if (args->properties->GetValueStr("model") == "RSS")
         {
@@ -715,7 +736,7 @@ ControllerALKS_R157SM::ReferenceDriver::~ReferenceDriver()
 
 void ControllerALKS_R157SM::ReferenceDriver::UpdateAEB(Vehicle* ego, ObjectInfo* info)
 {
-    if (!aeb_.active_ && info->ttc < aeb_.ttc_critical_aeb_ &&
+    if (aeb_.available_ && !aeb_.active_ && info->ttc < aeb_.ttc_critical_aeb_ &&
         ego->OverlappingFront(info->obj, overlap_tolerance_) > Object::OverlapType::PART)  // object fully inside or covering ego front extension
     {
         R157_LOG(2, "AEB activated at ttc %.2f (< critical ttc %.2f)", info->ttc, aeb_.ttc_critical_aeb_);
@@ -1240,15 +1261,15 @@ double ControllerALKS_R157SM::ReferenceDriver::ReactCritical()
     }
     else if (GetPhase() == Phase::BRAKE_REF)
     {
-        acc_ -= dt_ * 0.774 * g / 0.6;
+        acc_ -= dt_ * max_dec_ / 0.6;
     }
 
     if (aeb_.active_)
     {
-        acc_ -= dt_ * 0.85 * g / 0.6;
+        acc_ -= dt_ * aeb_.max_dec_ / 0.6;
     }
 
-    (aeb_.active_) ? acc_ = MAX(acc_, -0.85 * g) : acc_ = MAX(acc_, -0.774 * g);
+    (aeb_.active_) ? acc_ = MAX(acc_, -aeb_.max_dec_) : acc_ = MAX(acc_, -max_dec_);
 
     double speed = MAX(0.0, veh_->GetSpeed() + acc_ * dt_);
 

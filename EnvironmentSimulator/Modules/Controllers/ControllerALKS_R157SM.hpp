@@ -351,7 +351,7 @@ namespace scenarioengine
 
             struct AEB
             {
-                AEB() : ttc_critical_aeb_(1.5)
+                AEB()
                 {
                     Reset();
                 }
@@ -361,8 +361,10 @@ namespace scenarioengine
                     active_ = false;
                 }
 
-                double ttc_critical_aeb_;
-                bool   active_;
+                double ttc_critical_aeb_ = 1.5;
+                double max_dec_          = 0.85 * 9.81;
+                bool   active_           = false;
+                bool   available_        = true;
             };
 
             class LateralDistTrigger

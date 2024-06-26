@@ -200,6 +200,12 @@
                 <ParameterDeclaration name="LateralTrigDistance" parameterType="double" value="0.0" />
                 <!-- overlapTolerance: Tolerance for overlap check between target object and Ego vehicle front (ref driver only) -->
                 <ParameterDeclaration name="OverlapTolerance" parameterType="double" value="0.1" />
+                <!-- driverDeceleration: Applied deceleration (m/s2) by the reference driver (ref driver only) -->
+                <ParameterDeclaration name="DriverDeceleration" parameterType="double" value="7.59294" />
+                <!-- aebDeceleration: Applied deceleration (m/s2) by the AEB as part of the reference driver model (ref driver only) -->
+                <ParameterDeclaration name="AEBDeceleration" parameterType="double" value="8.3385" />
+                <!-- aebAvailable: "true" = AEB available, "false" = AEB unavailable (ref driver only) -->
+                <ParameterDeclaration name="AEBAvailable" parameterType="boolean" value="true" />
             </ParameterDeclarations>
             <Properties>
                 <Property name="mode" value="$Mode" />
@@ -213,6 +219,9 @@
                 <Property name="aebTTC"  value="$AEBTTC" />
                 <Property name="lateralTrigDistance"  value="$LateralTrigDistance" />
                 <Property name="overlapTolerance"  value="$OverlapTolerance" />
+                <Property name="driverDeceleration"  value="$DriverDeceleration" />
+                <Property name="aebDeceleration"  value="$AEBDeceleration" />
+                <Property name="aebAvailable"  value="$AEBAvailable" />
             </Properties>
         </Controller>        
         <Controller name="UDPDriverController">

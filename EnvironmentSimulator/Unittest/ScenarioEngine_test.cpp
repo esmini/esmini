@@ -1726,6 +1726,97 @@ TEST(ControllerTest, ALKS_R157_TestR157RegulationMinDist)
     delete se;
 }
 
+static void alksRefDriverParamDeclCallback(void* arg)
+{
+    bool aeb_available = *(static_cast<bool*>(arg));
+
+    ScenarioReader::parameters.setParameterValue("AEBAvailableInEgo", aeb_available);
+}
+
+TEST(ControllerTest, ALKS_R157_TestR157RefDriverBrakeRate)
+{
+    double dt               = 0.05;
+    bool   aeb_available[2] = {true, false};
+
+    // Run first with AEB enabled, then without
+    for (int i = 0; i < 2; i++)
+    {
+        RegisterParameterDeclarationCallback(alksRefDriverParamDeclCallback, &(aeb_available[i]));
+        ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/alks_r157_quick_stop_test.xosc");
+        ASSERT_NE(se, nullptr);
+        ASSERT_EQ(se->entities_.object_.size(), 3);
+        Object* obj = se->entities_.object_[0];
+
+        int state = 0;
+        while (se->getSimulationTime() < 7.5)
+        {
+            se->step(dt);
+            se->prepareGroundTruth(dt);
+
+            if (state == 0 && se->getSimulationTime() > 2.0)
+            {
+                if (i == 0)
+                {
+                    EXPECT_NEAR(obj->pos_.GetX(), 49.250, 1e-3);
+                    EXPECT_NEAR(obj->pos_.GetY(), -1.535, 1e-3);
+                }
+                else
+                {
+                    EXPECT_NEAR(obj->pos_.GetX(), 49.250, 1e-3);
+                    EXPECT_NEAR(obj->pos_.GetY(), -1.535, 1e-3);
+                }
+                state++;
+            }
+            else if (state == 1 && se->getSimulationTime() > 3.4)
+            {
+                if (i == 0)
+                {
+                    EXPECT_NEAR(obj->pos_.GetX(), 70.322, 1e-3);
+                    EXPECT_NEAR(obj->pos_.GetY(), -1.535, 1e-3);
+                }
+                else
+                {
+                    EXPECT_NEAR(obj->pos_.GetX(), 70.322, 1e-3);
+                    EXPECT_NEAR(obj->pos_.GetY(), -1.535, 1e-3);
+                }
+                state++;
+            }
+            else if (state == 2 && se->getSimulationTime() > 5.0)
+            {
+                if (i == 0)
+                {
+                    EXPECT_NEAR(obj->pos_.GetX(), 81.982, 1e-3);
+                    EXPECT_NEAR(obj->pos_.GetY(), -1.535, 1e-3);
+                }
+                else
+                {
+                    EXPECT_NEAR(obj->pos_.GetX(), 87.362, 1e-3);
+                    EXPECT_NEAR(obj->pos_.GetY(), -1.535, 1e-3);
+                }
+                state++;
+            }
+            else if (state == 3 && se->getSimulationTime() > 8.0)
+            {
+                if (i == 0)
+                {
+                    EXPECT_NEAR(obj->pos_.GetX(), 82.571, 1e-3);
+                    EXPECT_NEAR(obj->pos_.GetY(), -1.535, 1e-3);
+                }
+                else
+                {
+                    EXPECT_NEAR(obj->pos_.GetX(), 89.908, 1e-3);
+                    EXPECT_NEAR(obj->pos_.GetY(), -1.535, 1e-3);
+                }
+                state++;
+            }
+        }
+
+        delete se;
+    }
+
+    RegisterParameterDeclarationCallback(nullptr, nullptr);
+}
+
 TEST(OverlapTest, TestOverlapCalculations)
 {
     SE_Vector line_v0(2.0, 1.0);
