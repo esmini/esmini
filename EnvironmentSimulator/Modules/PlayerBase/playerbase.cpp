@@ -1304,6 +1304,9 @@ int ScenarioPlayer::Init()
     opt.AddOption("help", "Show this help message");
     opt.AddOption("hide_route_waypoints", "Disable route waypoint visualization (toggle with key 'R')");
     opt.AddOption("hide_trajectories", "Hide trajectories from start (toggle with key 'n')");
+    opt.AddOption("ignore_z", "Ignore provided z values from OSC file and place vehicle relative to road");
+    opt.AddOption("ignore_p", "Ignore provided pitch values from OSC file and place vehicle relative to road");
+    opt.AddOption("ignore_r", "Ignore provided roll values from OSC file and place vehicle relative to road");
     opt.AddOption("info_text", "Show on-screen info text (toggle key 'i') mode 0=None 1=current (default) 2=per_object 3=both", "mode");
     opt.AddOption("logfile_path", "logfile path/filename, e.g. \"../esmini.log\" (default: log.txt)", "path");
     opt.AddOption("osc_str", "OpenSCENARIO XML string", "string");
@@ -1528,6 +1531,21 @@ int ScenarioPlayer::Init()
     {
         disable_controllers_ = true;
         LOG("Disable entity controllers");
+    }
+
+    if (opt.GetOptionSet("ignore_z"))
+    {
+        LOG("Ignoring z values and placing vehicle relative to road");
+    }
+
+    if (opt.GetOptionSet("ignore_p"))
+    {
+        LOG("Ignoring pitch values and placing vehicle relative to road");
+    }
+
+    if (opt.GetOptionSet("ignore_r"))
+    {
+        LOG("Ignoring roll values and placing vehicle relative to road");
     }
 
     // Use specific seed for repeatable scenarios?
