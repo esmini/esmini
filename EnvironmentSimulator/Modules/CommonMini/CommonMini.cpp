@@ -1857,6 +1857,38 @@ int SE_Options::ChangeOptionArg(std::string opt, std::string new_value, int inde
     return 0;
 }
 
+int SE_Options::SetOptionValue(std::string opt, std::string value, bool add)
+{
+    SE_Option* option = GetOption(opt);
+
+    if (option == nullptr)
+    {
+        AddOption(opt, opt, value);
+        option = GetOption(opt);
+    }
+
+    if (!value.empty())
+    {
+        if (!option->opt_arg_.empty())
+        {
+            if (!add)
+            {
+                option->arg_value_.clear();
+            }
+            option->arg_value_.push_back(value);
+        }
+        else
+        {
+            LOG("Argument parser error: Missing option %s argument", opt.c_str());
+            return -1;
+        }
+    }
+
+    option->set_ = true;
+
+    return 0;
+}
+
 int SE_Options::ParseArgs(int argc, const char* const argv[])
 {
     std::vector<const char*> args = {argv, std::next(argv, argc)};

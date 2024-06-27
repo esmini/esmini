@@ -893,6 +893,7 @@ public:
     bool HasUnknownArgs();
     void Reset();
     int  ChangeOptionArg(std::string opt, std::string new_value, int index = 0);
+    int  SetOptionValue(std::string opt, std::string value, bool add = false);
 
 private:
     std::vector<SE_Option>   option_;
