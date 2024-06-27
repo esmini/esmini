@@ -482,6 +482,16 @@ extern "C"
         SE_Env::Inst().GetRand().SetSeed(seed);
     }
 
+    SE_DLL_API int SE_SetOption(const char *name)
+    {
+        return SE_Env::Inst().GetOptions().SetOptionValue(name, "");
+    }
+
+    SE_DLL_API int SE_SetOptionValue(const char *name, const char *value)
+    {
+        return SE_Env::Inst().GetOptions().SetOptionValue(name, value);
+    }
+
     SE_DLL_API int SE_SetParameterDistribution(const char *filename)
     {
         return OSCParameterDistribution::Inst().Load(filename);

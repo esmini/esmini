@@ -1654,7 +1654,7 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPo
         {
             y = strtod(parameters.ReadAttribute(positionChild, "y", true));
         }
-        if (!positionChild.attribute("z").empty())
+        if (!SE_Env::Inst().GetOptions().GetOptionSet("ignore_z") && !positionChild.attribute("z").empty())
         {
             z = strtod(parameters.ReadAttribute(positionChild, "z", true));
         }
@@ -1662,11 +1662,11 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPo
         {
             h = strtod(parameters.ReadAttribute(positionChild, "h", true));
         }
-        if (!positionChild.attribute("p").empty())
+        if (!SE_Env::Inst().GetOptions().GetOptionSet("ignore_p") && !positionChild.attribute("p").empty())
         {
             p = strtod(parameters.ReadAttribute(positionChild, "p", true));
         }
-        if (!positionChild.attribute("r").empty())
+        if (!SE_Env::Inst().GetOptions().GetOptionSet("ignore_r") && !positionChild.attribute("r").empty())
         {
             r = strtod(parameters.ReadAttribute(positionChild, "r", true));
         }

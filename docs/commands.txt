@@ -48,6 +48,12 @@ Options:
       Disable route waypoint visualization (toggle with key 'R')
   --hide_trajectories
       Hide trajectories from start (toggle with key 'n')
+  --ignore_z
+      Ignore provided z values from OSC file and place vehicle relative to road
+  --ignore_p
+      Ignore provided pitch values from OSC file and place vehicle relative to road
+  --ignore_r
+      Ignore provided roll values from OSC file and place vehicle relative to road
   --info_text <mode>
       Show on-screen info text (toggle key 'i') mode 0=None 1=current (default) 2=per_object 3=both
   --logfile_path <path>

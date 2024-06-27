@@ -360,6 +360,9 @@ extern "C"
     */
     SE_DLL_API void SE_SetSeed(unsigned int seed);
 
+    SE_DLL_API int SE_SetOption(const char *name);
+    SE_DLL_API int SE_SetOptionValue(const char *name, const char *value);
+
     /**
     Set window position and size. Must be called prior to SE_Init.
     @param x Screen coordinate in pixels for left side of window

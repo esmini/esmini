@@ -120,6 +120,8 @@ ScenarioPlayer::~ScenarioPlayer()
         delete osiReporter;
     }
 #endif  // _USE_OSI
+
+    SE_Env::Inst().GetOptions().Reset();
 }
 
 void ScenarioPlayer::SetOSIFileStatus(bool is_on, const char* filename)
@@ -1269,8 +1271,6 @@ int ScenarioPlayer::Init()
     std::string arg_str;
 
     SE_Options& opt = SE_Env::Inst().GetOptions();
-
-    opt.Reset();
 
     // use an ArgumentParser object to manage the program arguments.
     opt.AddOption("osc", "OpenSCENARIO filename (required) - if path includes spaces, enclose with \"\"", "filename");
