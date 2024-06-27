@@ -253,6 +253,9 @@ namespace scenarioengine
         bool        threads;
         bool        launch_server;
         bool        disable_controllers_;
+        bool        ignore_z_;
+        bool        ignore_p_;
+        bool        ignore_r_;
         double      fixed_timestep_;
         int         osi_freq_;
         int         frame_counter_;

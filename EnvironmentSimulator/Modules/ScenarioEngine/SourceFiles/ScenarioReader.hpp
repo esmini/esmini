@@ -70,7 +70,12 @@ namespace scenarioengine
     class ScenarioReader
     {
     public:
-        ScenarioReader(Entities* entities, Catalogs* catalogs, bool disable_controllers = false);
+        ScenarioReader(Entities* entities,
+                       Catalogs* catalogs,
+                       bool      disable_controllers = false,
+                       bool      ignore_z            = false,
+                       bool      ignore_p            = false,
+                       bool      ignore_r            = false);
         ~ScenarioReader();
         int  loadOSCFile(const char* path);
         int  loadOSCMem(const pugi::xml_document& xml_doch);
@@ -191,6 +196,9 @@ namespace scenarioengine
         ScenarioGateway*      gateway_;
         ScenarioEngine*       scenarioEngine_;
         bool                  disable_controllers_;
+        bool                  ignore_z_;
+        bool                  ignore_p_;
+        bool                  ignore_r_;
         static ControllerPool controllerPool_;
         int                   versionMajor_;
         int                   versionMinor_;

@@ -49,13 +49,29 @@ namespace scenarioengine
         std::vector<CollisionPair> collision_pair_;
         std::vector<OSCAction *>  *injected_actions_;
 
-        ScenarioEngine(std::string oscFilename, bool disable_controllers = false);
-        ScenarioEngine(const pugi::xml_document &xml_doc, bool disable_controllers = false);
+        ScenarioEngine(std::string oscFilename,
+                       bool        disable_controllers = false,
+                       bool        ignore_z            = false,
+                       bool        ignore_p            = false,
+                       bool        ignore_r            = false);
+        ScenarioEngine(const pugi::xml_document &xml_doc,
+                       bool                      disable_controllers = false,
+                       bool                      ignore_z            = false,
+                       bool                      ignore_p            = false,
+                       bool                      ignore_r            = false);
         ~ScenarioEngine();
 
-        void InitScenarioCommon(bool disable_controllers);
-        int  InitScenario(std::string oscFilename, bool disable_controllers = false);
-        int  InitScenario(const pugi::xml_document &xml_doc, bool disable_controllers = false);
+        void InitScenarioCommon(bool disable_controllers, bool ignore_z, bool ignore_p, bool ignore_r);
+        int  InitScenario(std::string oscFilename,
+                          bool        disable_controllers = false,
+                          bool        ignore_z            = false,
+                          bool        ignore_p            = false,
+                          bool        ignore_r            = false);
+        int  InitScenario(const pugi::xml_document &xml_doc,
+                          bool                      disable_controllers = false,
+                          bool                      ignore_z            = false,
+                          bool                      ignore_p            = false,
+                          bool                      ignore_r            = false);
         void SetInjectedActionsPtr(std::vector<OSCAction *> *injected_actions)
         {
             injected_actions_ = injected_actions;
@@ -158,6 +174,9 @@ namespace scenarioengine
         RoadNetwork             roadNetwork;
         roadmanager::OpenDrive *odrManager;
         bool                    disable_controllers_;
+        bool                    ignore_z_;
+        bool                    ignore_p_;
+        bool                    ignore_r_;
 
         // Simulation parameters
         double          simulationTime_;

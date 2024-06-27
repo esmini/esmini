@@ -34,33 +34,36 @@ namespace scenarioengine
     }
 }  // namespace scenarioengine
 
-ScenarioEngine::ScenarioEngine(std::string oscFilename, bool disable_controllers)
+ScenarioEngine::ScenarioEngine(std::string oscFilename, bool disable_controllers, bool ignore_z, bool ignore_p, bool ignore_r)
 {
-    init_status_ = InitScenario(oscFilename, disable_controllers);
+    init_status_ = InitScenario(oscFilename, disable_controllers, ignore_z, ignore_p, ignore_r);
 }
 
-ScenarioEngine::ScenarioEngine(const pugi::xml_document& xml_doc, bool disable_controllers)
+ScenarioEngine::ScenarioEngine(const pugi::xml_document& xml_doc, bool disable_controllers, bool ignore_z, bool ignore_p, bool ignore_r)
 {
-    init_status_ = InitScenario(xml_doc, disable_controllers);
+    init_status_ = InitScenario(xml_doc, disable_controllers, ignore_z, ignore_p, ignore_r);
 }
 
-void ScenarioEngine::InitScenarioCommon(bool disable_controllers)
+void ScenarioEngine::InitScenarioCommon(bool disable_controllers, bool ignore_z, bool ignore_p, bool ignore_r)
 {
     init_status_         = 0;
     disable_controllers_ = disable_controllers;
+    ignore_z_            = ignore_z;
+    ignore_p_            = ignore_p;
+    ignore_r_            = ignore_r;
     simulationTime_      = 0;
     trueTime_            = 0;
     frame_nr_            = 0;
-    scenarioReader       = new ScenarioReader(&entities_, &catalogs, disable_controllers);
+    scenarioReader       = new ScenarioReader(&entities_, &catalogs, disable_controllers, ignore_z, ignore_p, ignore_r);
     injected_actions_    = nullptr;
     ghost_               = nullptr;
     SE_Env::Inst().SetGhostMode(GhostMode::NORMAL);
     SE_Env::Inst().SetGhostHeadstart(0.0);
 }
 
-int ScenarioEngine::InitScenario(std::string oscFilename, bool disable_controllers)
+int ScenarioEngine::InitScenario(std::string oscFilename, bool disable_controllers, bool ignore_z, bool ignore_p, bool ignore_r)
 {
-    InitScenarioCommon(disable_controllers);
+    InitScenarioCommon(disable_controllers, ignore_z, ignore_p, ignore_r);
 
     std::string oscFilename_no_path = FileNameOf(oscFilename);
 
@@ -106,9 +109,9 @@ int ScenarioEngine::InitScenario(std::string oscFilename, bool disable_controlle
     return parseScenario();
 }
 
-int ScenarioEngine::InitScenario(const pugi::xml_document& xml_doc, bool disable_controllers)
+int ScenarioEngine::InitScenario(const pugi::xml_document& xml_doc, bool disable_controllers, bool ignore_z, bool ignore_p, bool ignore_r)
 {
-    InitScenarioCommon(disable_controllers);
+    InitScenarioCommon(disable_controllers, ignore_z, ignore_p, ignore_r);
 
     if (scenarioReader->loadOSCMem(xml_doc) != 0)
     {

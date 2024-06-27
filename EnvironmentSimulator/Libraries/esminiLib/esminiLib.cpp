@@ -537,7 +537,7 @@ extern "C"
         return InitScenario();
     }
 
-    static int AddCommonArguments(int disable_ctrls, int use_viewer, int threads, int record)
+    static int AddCommonArguments(int disable_ctrls, int use_viewer, int threads, int record, bool ignore_z, bool ignore_p, bool ignore_r)
     {
         (void)record;
         if ((use_viewer & 1) == 0)
@@ -581,10 +581,32 @@ extern "C"
             AddArgument("--disable_controllers");
         }
 
+        if (ignore_z)
+        {
+            AddArgument("--ignore_z");
+        }
+
+        if (ignore_p)
+        {
+            AddArgument("--ignore_p");
+        }
+
+        if (ignore_r)
+        {
+            AddArgument("--ignore_r");
+        }
+
         return 0;
     }
 
-    SE_DLL_API int SE_InitWithString(const char *oscAsXMLString, int disable_ctrls, int use_viewer, int threads, int record)
+    SE_DLL_API int SE_InitWithString(const char *oscAsXMLString,
+                                     int         disable_ctrls,
+                                     int         use_viewer,
+                                     int         threads,
+                                     int         record,
+                                     bool        ignore_z,
+                                     bool        ignore_p,
+                                     bool        ignore_r)
     {
 #ifndef _USE_OSG
         if (use_viewer)
@@ -604,7 +626,7 @@ extern "C"
             AddArgument(SE_Env::Inst().GetDatFilePath().c_str(), false);
         }
 
-        AddCommonArguments(disable_ctrls, use_viewer, threads, record);
+        AddCommonArguments(disable_ctrls, use_viewer, threads, record, ignore_z, ignore_p, ignore_r);
 
         return InitScenario();
     }
@@ -614,7 +636,8 @@ extern "C"
         RegisterParameterDeclarationCallback(fnPtr, user_data);
     }
 
-    SE_DLL_API int SE_Init(const char *oscFilename, int disable_ctrls, int use_viewer, int threads, int record)
+    SE_DLL_API int
+    SE_Init(const char *oscFilename, int disable_ctrls, int use_viewer, int threads, int record, bool ignore_z, bool ignore_p, bool ignore_r)
     {
 #ifndef _USE_OSG
         if (use_viewer)
@@ -643,7 +666,7 @@ extern "C"
             AddArgument(datFilename.c_str(), false);
         }
 
-        AddCommonArguments(disable_ctrls, use_viewer, threads, record);
+        AddCommonArguments(disable_ctrls, use_viewer, threads, record, ignore_z, ignore_p, ignore_r);
 
         return InitScenario();
     }

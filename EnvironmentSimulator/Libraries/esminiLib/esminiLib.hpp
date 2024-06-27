@@ -428,6 +428,9 @@ extern "C"
        1+2=3=>Off-screen
             @param threads 0=single thread, 1=viewer in a separate thread, parallel to scenario engine
             @param record Create recording for later playback 0=no recording 1=recording
+            @param ignore_z 0=use z values from OSC file, 1=ignore z values from OSC file and place vehicle relative to road (z=0)
+            @param ignore_p 0=use pitch values from OSC file, 1=ignore pitch values from OSC file and rotate vehicle relative to road (p=0)
+            @param ignore_r 0=use roll values from OSC file, 1=ignore roll values from OSC file and rotate vehicle relative to road (r=0)
             @return 0 if successful, -1 if not
 
             \use_viewer bitmask examples:
@@ -437,7 +440,14 @@ extern "C"
                             7 (1+2+4): Off-screen + save screenshots to file
                        11 (1+2+8): Off-screen + disable info-text for better remote/virtual desktop support
     */
-    SE_DLL_API int SE_Init(const char *oscFilename, int disable_ctrls, int use_viewer, int threads, int record);
+    SE_DLL_API int SE_Init(const char *oscFilename,
+                           int         disable_ctrls,
+                           int         use_viewer,
+                           int         threads,
+                           int         record,
+                           bool        ignore_z = false,
+                           bool        ignore_p = false,
+                           bool        ignore_r = false);
 
     /**
             Initialize the scenario engine
@@ -448,6 +458,9 @@ extern "C"
        1+2=3=>Off-screen
             @param threads 0=single thread, 1=viewer in a separate thread, parallel to scenario engine
             @param record Create recording for later playback 0=no recording 1=recording
+            @param ignore_z 0=use z values from OSC file, 1=ignore z values from OSC file and place vehicle relative to road (z=0)
+            @param ignore_p 0=use pitch values from OSC file, 1=ignore pitch values from OSC file and rotate vehicle relative to road (p=0)
+            @param ignore_r 0=use roll values from OSC file, 1=ignore roll values from OSC file and rotate vehicle relative to road (r=0)
             @return 0 if successful, -1 if not
 
             \use_viewer bitmask examples:
@@ -457,7 +470,14 @@ extern "C"
                             7 (1+2+4): Off-screen + save screenshots to file
                        11 (1+2+8): Off-screen + disable info-text for better remote/virtual desktop support
     */
-    SE_DLL_API int SE_InitWithString(const char *oscAsXMLString, int disable_ctrls, int use_viewer, int threads, int record);
+    SE_DLL_API int SE_InitWithString(const char *oscAsXMLString,
+                                     int         disable_ctrls,
+                                     int         use_viewer,
+                                     int         threads,
+                                     int         record,
+                                     bool        ignore_z = false,
+                                     bool        ignore_p = false,
+                                     bool        ignore_r = false);
 
     /**
             Initialize the scenario engine

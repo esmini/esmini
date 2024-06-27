@@ -65,6 +65,9 @@ ScenarioPlayer::ScenarioPlayer(int argc, char* argv[])
     CSV_Log              = NULL;
     osiReporter          = NULL;
     disable_controllers_ = false;
+    ignore_z_            = false;
+    ignore_p_            = false;
+    ignore_r_            = false;
     frame_counter_       = 0;
     scenarioEngine       = nullptr;
     osiReporter          = nullptr;
@@ -1304,6 +1307,9 @@ int ScenarioPlayer::Init()
     opt.AddOption("help", "Show this help message");
     opt.AddOption("hide_route_waypoints", "Disable route waypoint visualization (toggle with key 'R')");
     opt.AddOption("hide_trajectories", "Hide trajectories from start (toggle with key 'n')");
+    opt.AddOption("ignore_z", "Ignore provided z values from OSC file and place vehicle relative to road");
+    opt.AddOption("ignore_p", "Ignore provided pitch values from OSC file and place vehicle relative to road");
+    opt.AddOption("ignore_r", "Ignore provided roll values from OSC file and place vehicle relative to road");
     opt.AddOption("info_text", "Show on-screen info text (toggle key 'i') mode 0=None 1=current (default) 2=per_object 3=both", "mode");
     opt.AddOption("logfile_path", "logfile path/filename, e.g. \"../esmini.log\" (default: log.txt)", "path");
     opt.AddOption("osc_str", "OpenSCENARIO XML string", "string");
@@ -1530,6 +1536,24 @@ int ScenarioPlayer::Init()
         LOG("Disable entity controllers");
     }
 
+    if (opt.GetOptionSet("ignore_z"))
+    {
+        ignore_z_ = true;
+        LOG("Ignoring z values and placing vehicle relative to road");
+    }
+
+    if (opt.GetOptionSet("ignore_p"))
+    {
+        ignore_p_ = true;
+        LOG("Ignoring pitch values and placing vehicle relative to road");
+    }
+
+    if (opt.GetOptionSet("ignore_r"))
+    {
+        ignore_r_ = true;
+        LOG("Ignoring roll values and placing vehicle relative to road");
+    }
+
     // Use specific seed for repeatable scenarios?
     if ((arg_str = opt.GetOptionArg("seed")) != "")
     {
@@ -1572,7 +1596,7 @@ int ScenarioPlayer::Init()
         if ((arg_str = opt.GetOptionArg("osc")) != "")
         {
             SE_Env::Inst().AddPath(DirNameOf(arg_str));  // add scenario directory to list pf paths
-            scenarioEngine = new ScenarioEngine(arg_str, disable_controllers_);
+            scenarioEngine = new ScenarioEngine(arg_str, disable_controllers_, ignore_z_, ignore_p_, ignore_r_);
             Logger::Inst().SetTimePtr(scenarioEngine->GetSimulationTimePtr());
         }
         else if ((arg_str = opt.GetOptionArg("osc_str")) != "")
@@ -1584,7 +1608,7 @@ int ScenarioPlayer::Init()
             {
                 return -1;
             }
-            scenarioEngine = new ScenarioEngine(doc, disable_controllers_);
+            scenarioEngine = new ScenarioEngine(doc, disable_controllers_, ignore_z_, ignore_p_, ignore_r_);
             Logger::Inst().SetTimePtr(scenarioEngine->GetSimulationTimePtr());
         }
         else

@@ -54,10 +54,13 @@ typedef struct
 
 static std::vector<StoryBoardElementTriggerInfo> storyboard_element_triggers;
 
-ScenarioReader::ScenarioReader(Entities *entities, Catalogs *catalogs, bool disable_controllers)
+ScenarioReader::ScenarioReader(Entities *entities, Catalogs *catalogs, bool disable_controllers, bool ignore_z, bool ignore_p, bool ignore_r)
     : entities_(entities),
       catalogs_(catalogs),
       disable_controllers_(disable_controllers),
+      ignore_z_(ignore_z),
+      ignore_p_(ignore_p),
+      ignore_r_(ignore_r),
       story_board_(nullptr)
 {
     parameters.Clear();
@@ -1654,7 +1657,7 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPo
         {
             y = strtod(parameters.ReadAttribute(positionChild, "y", true));
         }
-        if (!positionChild.attribute("z").empty())
+        if (!ignore_z_ && !positionChild.attribute("z").empty())
         {
             z = strtod(parameters.ReadAttribute(positionChild, "z", true));
         }
@@ -1662,11 +1665,11 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPo
         {
             h = strtod(parameters.ReadAttribute(positionChild, "h", true));
         }
-        if (!positionChild.attribute("p").empty())
+        if (!ignore_p_ && !positionChild.attribute("p").empty())
         {
             p = strtod(parameters.ReadAttribute(positionChild, "p", true));
         }
-        if (!positionChild.attribute("r").empty())
+        if (!ignore_r_ && !positionChild.attribute("r").empty())
         {
             r = strtod(parameters.ReadAttribute(positionChild, "r", true));
         }
