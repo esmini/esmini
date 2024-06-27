@@ -40,6 +40,8 @@ ControllerInteractive::ControllerInteractive(InitArgs* args) : Controller(args),
             speed_factor_ = strtod(args->properties->GetValueStr("speedFactor"));
         }
     }
+    align_to_road_heading_on_deactivation_ = true;
+    align_to_road_heading_on_activation_   = true;
 }
 
 void ControllerInteractive::Init()

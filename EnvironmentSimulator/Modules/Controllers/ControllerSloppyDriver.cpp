@@ -45,6 +45,9 @@ ControllerSloppyDriver::ControllerSloppyDriver(InitArgs* args) : Controller(args
     {
         sloppiness_ = strtod(args->properties->GetValueStr("sloppiness"));
     }
+
+    align_to_road_heading_on_deactivation_ = true;
+    align_to_road_heading_on_activation_   = true;
 }
 
 void ControllerSloppyDriver::Init()

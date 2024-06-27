@@ -107,6 +107,21 @@ int Controller::Activate(ControlActivationMode lat_mode,
                          ControlActivationMode light_mode,
                          ControlActivationMode anim_mode)
 {
+    if (lat_mode == ControlActivationMode::OFF && align_to_road_heading_on_deactivation_)
+    {
+        // Make sure heading is aligned with driving direction when controller is deactivated on the lateral domain
+        if (IsActiveOnDomains(static_cast<int>(ControlDomains::DOMAIN_LAT)))
+        {
+            AlignToRoadHeading();
+        }
+    }
+
+    if (lat_mode == ControlActivationMode::ON && align_to_road_heading_on_activation_)
+    {
+        // Make sure heading is aligned with driving direction when controller is activated on the lateral domain
+        AlignToRoadHeading();
+    }
+
     unsigned int control_domains[4] = {static_cast<unsigned int>(ControlDomains::DOMAIN_LAT),
                                        static_cast<unsigned int>(ControlDomains::DOMAIN_LONG),
                                        static_cast<unsigned int>(ControlDomains::DOMAIN_LIGHT),
@@ -136,6 +151,18 @@ int Controller::Activate(ControlActivationMode lat_mode,
         }
     }
     return 0;
+}
+
+void scenarioengine::Controller::DeactivateDomains(unsigned int domains)
+{
+    // Make sure heading is aligned with driving direction when controller is deactivated on the lateral domain
+    if (align_to_road_heading_on_deactivation_ && IsActiveOnDomains(static_cast<int>(ControlDomains::DOMAIN_LAT)) &&
+        (domains & static_cast<int>(ControlDomains::DOMAIN_LAT)))
+    {
+        AlignToRoadHeading();
+    }
+
+    active_domains_ = active_domains_ & ~domains;
 }
 
 void Controller::ReportKeyEvent(int key, bool down)
@@ -187,4 +214,12 @@ bool Controller::IsActiveOnAnyOfDomains(unsigned int domainMask)
 bool Controller::IsActive()
 {
     return GetActiveDomains() != static_cast<unsigned int>(ControlDomains::DOMAIN_NONE);
+}
+
+void scenarioengine::Controller::AlignToRoadHeading()
+{
+    if (object_ != nullptr)
+    {
+        object_->pos_.SetHeading(object_->pos_.GetHRoadInDrivingDirection());
+    }
 }

@@ -82,8 +82,8 @@
                                 </ConditionGroup>
                             </StartTrigger>
                         </Event>
-                        <Event name="DeactivateSloppyDriverControllerLongitudinalEvent" maximumExecutionCount="1" priority="override">
-                            <Action name="DeactivateSloppyDriverControllerLongitudinalAction">
+                        <Event name="DeactivateSloppyDriverControllerLateralEvent" maximumExecutionCount="1" priority="override">
+                            <Action name="DeactivateSloppyDriverControllerLateralAction">
                                 <PrivateAction>
                                     <ControllerAction>
                                         <ActivateControllerAction longitudinal="false" lateral="false" objectControllerRef="sloppy_driver"/>

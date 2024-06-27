@@ -95,13 +95,10 @@ namespace scenarioengine
 
         virtual void Deactivate()
         {
-            active_domains_ = static_cast<unsigned int>(ControlDomains::DOMAIN_NONE);
+            DeactivateDomains(static_cast<unsigned int>(ControlDomains::DOMAIN_ALL));
         };
 
-        virtual void DeactivateDomains(unsigned int domains)
-        {
-            active_domains_ = active_domains_ & ~domains;
-        };
+        virtual void DeactivateDomains(unsigned int domains);
 
         // Executed by scenarioengine before first step
         virtual void Init(){};
@@ -178,6 +175,10 @@ namespace scenarioengine
         ScenarioGateway*     gateway_;
         ScenarioEngine*      scenario_engine_;
         ScenarioPlayer*      player_;
+        bool                 align_to_road_heading_on_deactivation_ = false;
+        bool                 align_to_road_heading_on_activation_   = false;
+
+        void AlignToRoadHeading();
     };
 
     typedef Controller* (*ControllerInstantiateFunction)(void* args);

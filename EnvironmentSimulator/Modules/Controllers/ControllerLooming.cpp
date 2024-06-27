@@ -39,6 +39,8 @@ ControllerLooming::ControllerLooming(InitArgs* args) : Controller(args)
         setSpeed_    = strtod(args->properties->GetValueStr("setSpeed"));
         setSpeedSet_ = true;
     }
+    align_to_road_heading_on_deactivation_ = true;
+    align_to_road_heading_on_activation_   = true;
 }
 
 void ControllerLooming::Step(double timeStep)
