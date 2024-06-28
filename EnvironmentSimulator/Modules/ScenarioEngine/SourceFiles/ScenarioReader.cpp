@@ -92,16 +92,14 @@ void ScenarioReader::LoadControllers()
     RegisterController(controller::ToStr(controller::Type::CONTROLLER_ALKS_R157SM), controller::InstantiateControllerALKS_R157SM);
     RegisterController(controller::ToStr(controller::Type::CONTROLLER_TYPE_LOOMING), controller::InstantiateControllerLooming);
     RegisterController(controller::ToStr(controller::Type::CONTROLLER_TYPE_OFFROAD_FOLLOWER), controller::InstantiateControllerOffroadFollower);
-    
-    // Loading integrated controllers
+
+    // Loading integrated controllers    
     controller::ControllerIntegrator controllerIntegrator("/home/mrizwans/volvo/esmini/IntegratedControllers");
     auto integratedControllers = controllerIntegrator.LoadControllersInitializers();
-
     for( const auto& ctrl : integratedControllers)
     {
         RegisterController(ctrl.first, ctrl.second);
-    }
-    
+    }    
 }
 
 void ScenarioReader::UnloadControllers()
