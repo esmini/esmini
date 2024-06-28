@@ -74,12 +74,7 @@ void ControllerACC::Init()
 {
     EmbeddedController::Init();
 }
-/*
-std::string ControllerACC::GetName() const
-{
-    return CONTROLLER_ACC_TYPE_NAME;
-}
-*/    
+
 Type ControllerACC::GetType() const 
 {
     return CONTROLLER_TYPE_ACC;

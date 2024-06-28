@@ -25,28 +25,7 @@ namespace scenarioengine::controller
     {
     public:
         ControllerACC(InitArgs* args);
-
-        //virtual std::string GetName() const;
-    
         virtual controller::Type GetType() const;
-        /*
-        static const char* GetTypeNameStatic()
-        {
-            return CONTROLLER_ACC_TYPE_NAME;
-        }
-        virtual const char* GetTypeName()
-        {
-            return GetTypeNameStatic();
-        }
-        static int GetTypeStatic()
-        {
-            return CONTROLLER_TYPE_ACC;
-        }
-        virtual int GetType()
-        {
-            return GetTypeStatic();
-        }
-        */
         void Init();
         void InitPostPlayer();
         void Step(double timeStep);
