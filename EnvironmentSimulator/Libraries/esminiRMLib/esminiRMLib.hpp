@@ -255,6 +255,34 @@ extern "C"
     RM_DLL_API float RM_GetRoadLength(int id);
 
     /**
+    Get original string ID associated with specified road
+    @param road_id The integer ID road
+    @return string ID, empty string if not found
+    */
+    RM_DLL_API const char* RM_GetRoadIdString(int road_id);
+
+    /**
+    Get integer road ID associated with specified road string ID
+    @param road_id_str The road string ID
+    @return road ID, -1 if not found
+    */
+    RM_DLL_API int RM_GetRoadIdFromString(const char* road_id_str);
+
+    /**
+    Get original string ID associated with specified junction
+    @param road_id The integer ID junction
+    @return string ID, empty string if not found
+    */
+    RM_DLL_API const char* RM_GetJunctionIdString(int junction_id);
+
+    /**
+    Get integer junction ID associated with specified junction string ID
+    @param road_id_str The junction string ID
+    @return junction ID, -1 if not found
+    */
+    RM_DLL_API int RM_GetJunctionIdFromString(const char* junction_id_str);
+
+    /**
     Get the number of drivable lanes of specified road
     @param roadId The road ID
     @param s The distance along the road at what point to check number of lanes (which can vary along the road)

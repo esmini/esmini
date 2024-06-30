@@ -2212,6 +2212,62 @@ extern "C"
         return -1;
     }
 
+    SE_DLL_API const char *SE_GetRoadIdString(int road_id)
+    {
+        if (player != nullptr)
+        {
+            roadmanager::Road *road = player->odr_manager->GetRoadById(road_id);
+            if (road != NULL)
+            {
+                return road->GetIdStrRef().c_str();
+            }
+        }
+
+        return "";
+    }
+
+    SE_DLL_API int SE_GetRoadIdFromString(const char *road_id_str)
+    {
+        if (player != nullptr)
+        {
+            roadmanager::Road *road = player->odr_manager->GetRoadByIdStr(road_id_str);
+            if (road != NULL)
+            {
+                return road->GetId();
+            }
+        }
+
+        return -1;
+    }
+
+    SE_DLL_API const char *SE_GetJunctionIdString(int junction_id)
+    {
+        if (player != nullptr)
+        {
+            roadmanager::Junction *junction = player->odr_manager->GetJunctionById(junction_id);
+            if (junction != NULL)
+            {
+                return junction->GetIdStrRef().c_str();
+            }
+        }
+
+        return "";
+    }
+
+    SE_DLL_API int SE_GetJunctionIdFromString(const char *junction_id_str)
+    {
+        if (player != nullptr)
+        {
+            roadmanager::Junction *junction = player->odr_manager->GetJunctionByIdStr(junction_id_str);
+            if (junction != NULL)
+            {
+                return junction->GetId();
+            }
+        }
+
+        return -1;
+    }
+
     SE_DLL_API void SE_ViewerShowFeature(int featureType, bool enable)
     {
 #ifdef _USE_OSG

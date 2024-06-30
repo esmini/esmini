@@ -613,6 +613,8 @@ void RotateVec3d(const double h0,
 */
 void SwapByteOrder(unsigned char* buf, int data_type_size, int buf_size);
 
+bool IsNumber(const std::string& str, int max_digits = -1);
+
 #if (defined WINVER && WINVER == _WIN32_WINNT_WIN7)
 #else
 #include <thread>

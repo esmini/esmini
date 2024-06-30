@@ -2981,6 +2981,41 @@ TEST(LaneMaterialTest, TestLaneFriction)
     EXPECT_EQ(lane->GetMaterialByIdx(5), nullptr);
 }
 
+TEST(RoadId, TestStringRoadId)
+{
+    ASSERT_EQ(roadmanager::Position::LoadOpenDrive("../../../EnvironmentSimulator/Unittest/xodr/fabriksgatan_mixed_id_types.xodr"), true);
+    roadmanager::OpenDrive *odr = Position::GetOpenDrive();
+    ASSERT_NE(odr, nullptr);
+
+    EXPECT_EQ(odr->GetNumOfRoads(), 16);
+
+    EXPECT_EQ(odr->GetRoadByIdStr("Kalle")->GetId(), 2);
+    EXPECT_EQ(odr->GetRoadByIdStr("1")->GetId(), 1);
+    EXPECT_EQ(odr->GetRoadByIdStr("2Kalle3")->GetId(), 12);
+    EXPECT_EQ(odr->GetJunctionByIdStr("Junction4")->GetId(), 0);
+
+    roadmanager::Position pos;
+
+    pos.SetLanePos(3, -1, 20.0, 0.0);
+    EXPECT_EQ(pos.GetTrackId(), 3);
+
+    pos.SetLanePos(0, 1, 10.0, 0.0);
+    EXPECT_EQ(pos.GetTrackId(), 0);
+
+    pos.SetLanePos(odr->GetRoadByIdStr("3")->GetId(), 1, 10.0, 0.0);
+    EXPECT_EQ(pos.GetTrackId(), 3);
+
+    pos.SetLanePos(odr->GetRoadByIdStr("Kalle")->GetId(), 1, 10.0, 0.0);
+    EXPECT_EQ(pos.GetTrackId(), 2);
+    EXPECT_EQ(pos.GetJunctionId(), -1);
+
+    pos.SetLanePos(odr->GetRoadByIdStr("2Kalle3")->GetId(), 1, 10.0, 0.0);
+    EXPECT_EQ(pos.GetTrackId(), 12);
+    EXPECT_EQ(pos.GetJunctionId(), 0);
+
+    odr->Clear();
+}
+
 // Uncomment to print log output to console
 // #define LOG_TO_CONSOLE
 

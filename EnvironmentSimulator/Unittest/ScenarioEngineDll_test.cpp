@@ -4224,6 +4224,59 @@ TEST(GetFunctionsTest, TestGetAccelerations)
     SE_Close();
 }
 
+TEST(StringIds, TestRoadStringIds)
+{
+    std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/test_string_ids.xosc";
+
+    EXPECT_EQ(SE_Init(scenario_file.c_str(), 0, 0, 0, 0), 0);
+    EXPECT_EQ(SE_GetNumberOfObjects(), 1);
+
+    int                    test_state = 0;
+    SE_ScenarioObjectState obj_state;
+    while (SE_GetQuitFlag() == 0)
+    {
+        if (test_state == 0 && SE_GetSimulationTime() > 0.1f)
+        {
+            SE_GetObjectState(SE_GetId(0), &obj_state);
+            EXPECT_EQ(obj_state.roadId, 0);
+            EXPECT_STREQ(SE_GetRoadIdString(obj_state.roadId), "0");
+            test_state++;
+        }
+        else if (test_state == 1 && SE_GetSimulationTime() > 1.25f)
+        {
+            SE_GetObjectState(SE_GetId(0), &obj_state);
+            EXPECT_EQ(obj_state.roadId, 9);
+            EXPECT_STREQ(SE_GetRoadIdString(obj_state.roadId), "ConnectingRoad9");
+            test_state++;
+        }
+        else if (test_state == 2 && SE_GetSimulationTime() > 2.0f)
+        {
+            SE_GetObjectState(SE_GetId(0), &obj_state);
+            EXPECT_EQ(obj_state.roadId, 2);
+            EXPECT_STREQ(SE_GetRoadIdString(obj_state.roadId), "Kalle");
+            test_state++;
+        }
+        else if (test_state == 3)
+        {
+            SE_ReportObjectRoadPos(SE_GetId(0), 0.0f, SE_GetRoadIdFromString("2Kalle3"), -1, 0.0, 1.0);
+            test_state++;
+        }
+        else if (test_state == 4)
+        {
+            SE_GetObjectState(SE_GetId(0), &obj_state);
+            EXPECT_EQ(obj_state.roadId, 12);
+            EXPECT_STREQ(SE_GetRoadIdString(obj_state.roadId), "2Kalle3");
+            EXPECT_NEAR(obj_state.x, 19.183f, 1e-3);
+            EXPECT_NEAR(obj_state.y, -5.431f, 1e-3);
+            break;
+        }
+
+        SE_StepDT(0.1f);
+    }
+
+    SE_Close();
+}
+
 int main(int argc, char** argv)
 {
     testing::InitGoogleTest(&argc, argv);

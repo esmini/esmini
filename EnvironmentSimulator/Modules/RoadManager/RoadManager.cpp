@@ -2197,12 +2197,12 @@ RoadMarkInfo Lane::GetRoadMarkInfoByS(int track_id, int lane_id, double s) const
     return rm_info;
 }
 
-RoadLink::RoadLink(LinkType type, pugi::xml_node node) : contact_point_type_(ContactPointType::CONTACT_POINT_UNDEFINED)
+RoadLink::RoadLink(LinkType type, pugi::xml_node node) : contact_point_type_(ContactPointType::CONTACT_POINT_UNDEFINED), element_id_(-1)
 {
-    string element_type       = node.attribute("elementType").value();
-    string contact_point_type = "";
-    type_                     = type;
-    element_id_               = atoi(node.attribute("elementId").value());
+    string element_type        = node.attribute("elementType").value();
+    string contact_point_type  = "";
+    type_                      = type;
+    std::string element_id_str = node.attribute("elementId").value();
 
     if (node.attribute("contactPoint") != NULL)
     {
@@ -2211,6 +2211,8 @@ RoadLink::RoadLink(LinkType type, pugi::xml_node node) : contact_point_type_(Con
 
     if (element_type == "road")
     {
+        element_id_ = Position::GetOpenDrive()->LookupRoadIdFromStr(element_id_str);
+
         element_type_ = ELEMENT_TYPE_ROAD;
         if (contact_point_type == "start")
         {
@@ -2232,6 +2234,7 @@ RoadLink::RoadLink(LinkType type, pugi::xml_node node) : contact_point_type_(Con
     }
     else if (element_type == "junction")
     {
+        element_id_         = Position::GetOpenDrive()->LookupJunctionIdFromStr(element_id_str);
         element_type_       = ELEMENT_TYPE_JUNCTION;
         contact_point_type_ = CONTACT_POINT_JUNCTION;
     }
@@ -3098,6 +3101,30 @@ Road* OpenDrive::GetRoadByIdx(int idx) const
     }
 }
 
+Road* roadmanager::OpenDrive::GetRoadByIdStr(std::string id_str) const
+{
+    for (auto r : road_)
+    {
+        if (r->GetIdStr() == id_str)
+        {
+            return r;
+        }
+    }
+    return nullptr;
+}
+
+Junction* roadmanager::OpenDrive::GetJunctionByIdStr(std::string id_str) const
+{
+    for (auto j : junction_)
+    {
+        if (j->GetIdStr() == id_str)
+        {
+            return j;
+        }
+    }
+    return nullptr;
+}
+
 Geometry* OpenDrive::GetGeometryByIdx(int road_idx, int geom_idx) const
 {
     if (road_idx >= 0 && road_idx < (int)road_.size())
@@ -3205,6 +3232,9 @@ void OpenDrive::Clear()
 {
     InitGlobalLaneIds();
 
+    road_ids_.clear();
+    junction_ids_.clear();
+
     for (size_t i = 0; i < road_.size(); i++)
     {
         delete road_[i];
@@ -3289,22 +3319,16 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
         }
     }
 
-    for (pugi::xml_node road_node = node.child("road"); road_node; road_node = road_node.next_sibling("road"))
-    {
-        std::string rname = road_node.attribute("name").value();
+    EstablishUniqueIds(node, "road", road_ids_);
+    EstablishUniqueIds(node, "junction", junction_ids_);
 
-        int rid = (int)road_.size();  // preliminary road id, use if not specified in OpenDRIVE file
-        if (road_node.attribute("id").empty() || !strcmp(road_node.attribute("id").value(), ""))
-        {
-            LOG("Id for road \"%s\" missing, assigning id %d", rname.c_str(), rid);
-        }
-        else
-        {
-            rid = atoi(road_node.attribute("id").value());
-        }
+    for (pugi::xml_node road_node : node.children("road"))
+    {
+        std::string rname   = road_node.attribute("name").value();
+        std::string rid_str = road_node.attribute("id").value();
 
         double         roadlength  = atof(road_node.attribute("length").value());
-        int            junction_id = atoi(road_node.attribute("junction").value());
+        int            junction_id = LookupJunctionIdFromStr(road_node.attribute("junction").value());
         Road::RoadRule rrule       = Road::RoadRule::RIGHT_HAND_TRAFFIC;  // right hand traffic is default
 
         if (!road_node.attribute("rule").empty())
@@ -3316,7 +3340,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
             }
         }
 
-        Road* r = new Road(rid, rname, rrule);
+        Road* r = new Road(road_ids_[road_.size()].first, rid_str, rname, rrule);
         r->SetLength(roadlength);
         r->SetJunction(junction_id);
 
@@ -4269,7 +4293,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                     double      pitch    = atof(signal.attribute("pitch").value());
                     double      roll     = atof(signal.attribute("roll").value());
 
-                    Position pos(rid, s, t);
+                    Position pos(r->GetId(), s, t);
 
                     Signal* sig = new Signal(s,
                                              t,
@@ -4390,7 +4414,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                     if (obj == nullptr)
                     {
                         // create object with position of first repeat object
-                        pos.SetTrackPos(rid, rs, t);
+                        pos.SetTrackPos(r->GetId(), rs, t);
 
                         obj = new RMObject(rs,
                                            t,
@@ -4489,7 +4513,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                 if (obj == nullptr)
                 {
                     // create object with position of the object main element
-                    pos.SetTrackPos(rid, s, t);
+                    pos.SetTrackPos(r->GetId(), s, t);
 
                     obj = new RMObject(s,
                                        t,
@@ -4655,9 +4679,9 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
 
     for (pugi::xml_node junction_node = node.child("junction"); junction_node; junction_node = junction_node.next_sibling("junction"))
     {
-        int         idj               = atoi(junction_node.attribute("id").value());
         std::string name              = junction_node.attribute("name").value();
         std::string junction_type_str = junction_node.attribute("type").value();
+        std::string jid_str           = junction_node.attribute("id").value();
 
         Junction::JunctionType junction_type = Junction::JunctionType::DEFAULT;
         if (junction_type_str == "direct")
@@ -4670,7 +4694,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
             junction_type = Junction::JunctionType::DEFAULT;
         }
 
-        Junction* j = new Junction(idj, name, junction_type);
+        Junction* j = new Junction(junction_ids_[junction_.size()].first, jid_str, name, junction_type);
 
         for (pugi::xml_node connection_node = junction_node.child("connection"); connection_node;
              connection_node                = connection_node.next_sibling("connection"))
@@ -4679,23 +4703,23 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
             {
                 int idc = atoi(connection_node.attribute("id").value());
                 (void)idc;
-                int   incoming_road_id = atoi(connection_node.attribute("incomingRoad").value());
-                Road* incoming_road    = GetRoadById(incoming_road_id);
+                std::string incoming_road_id_str = connection_node.attribute("incomingRoad").value();
+                Road*       incoming_road        = GetRoadByIdStr(incoming_road_id_str);
 
-                int connecting_road_id = -1;
+                std::string connecting_road_id_str;
                 if (junction_type == Junction::JunctionType::DIRECT)
                 {
-                    connecting_road_id = atoi(connection_node.attribute("linkedRoad").value());
+                    connecting_road_id_str = connection_node.attribute("linkedRoad").value();
                 }
                 else
                 {
-                    connecting_road_id = atoi(connection_node.attribute("connectingRoad").value());
+                    connecting_road_id_str = connection_node.attribute("connectingRoad").value();
                 }
-                Road* connecting_road = GetRoadById(connecting_road_id);
+                Road* connecting_road = GetRoadByIdStr(connecting_road_id_str);
 
                 if (connecting_road == nullptr)
                 {
-                    LOG("Missing connecting road with id %d", connecting_road_id);
+                    LOG("Missing connecting road with id %s", connecting_road_id_str.c_str());
                     return false;
                 }
 
@@ -5839,16 +5863,17 @@ int OpenDrive::CheckConnections()
     int       counter = 0;
     RoadLink* link;
 
-    for (size_t i = 0; i < road_.size(); i++)
+    for (auto road : road_)
     {
         // Check for connections
-        if ((link = road_[i]->GetLink(LinkType::PREDECESSOR)) != 0)
+        if ((link = road->GetLink(LinkType::PREDECESSOR)) != 0)
         {
-            CheckLink(road_[i], link, ContactPointType::CONTACT_POINT_START);
+            // resolve road ID
+            CheckLink(road, link, ContactPointType::CONTACT_POINT_START);
         }
-        if ((link = road_[i]->GetLink(LinkType::SUCCESSOR)) != 0)
+        if ((link = road->GetLink(LinkType::SUCCESSOR)) != 0)
         {
-            CheckLink(road_[i], link, ContactPointType::CONTACT_POINT_END);
+            CheckLink(road, link, ContactPointType::CONTACT_POINT_END);
         }
     }
 
@@ -5868,6 +5893,102 @@ void OpenDrive::Print() const
     {
         junction_[i]->Print();
     }
+}
+
+void OpenDrive::EstablishUniqueIds(pugi::xml_node& parent, std::string name, std::vector<std::pair<int, std::string>>& ids)
+{
+    // First loop through all roads to establish unique road ids
+    int next_id = 0;
+    int max_id  = -1;
+    for (auto node : parent.children(name.c_str()))
+    {
+        std::string id_str = node.attribute("id").value();
+        int         id     = -1;
+
+        if (IsNumber(id_str, 9))
+        {
+            id = atoi(id_str.c_str());
+
+            // this id has priority, change any same id
+            for (size_t i = 0; i < ids.size(); i++)
+            {
+                if (ids[i].first == id)
+                {
+                    ids[i].first = next_id;
+                }
+            }
+        }
+        else
+        {
+            id = max_id + 1;
+            LOG("Assign internal id %d for %s %s", id, name.c_str(), id_str.c_str());
+        }
+
+        if (id > max_id)
+        {
+            max_id = id;
+        }
+
+        ids.push_back(std::make_pair(id, id_str));
+    }
+}
+
+int OpenDrive::LookupIdFromStr(std::vector<std::pair<int, std::string>>& ids, std::string id_str)
+{
+    for (auto& id : ids)
+    {
+        if (id.second == id_str)
+        {
+            return id.first;
+        }
+    }
+
+    return -1;
+}
+
+int OpenDrive::LookupRoadIdFromStr(std::string id_str)
+{
+    int id = LookupIdFromStr(road_ids_, id_str);
+
+    if (id == -1)
+    {
+        LOG("Failed to lookup road id from string %s", id_str.c_str());
+    }
+
+    return id;
+}
+
+int OpenDrive::LookupJunctionIdFromStr(std::string id_str)
+{
+    if (id_str == "-1")
+    {
+        return -1;
+    }
+
+    int id = LookupIdFromStr(junction_ids_, id_str);
+
+    if (id == -1)
+    {
+        LOG("Failed to lookup junction id from string %s", id_str.c_str());
+    }
+
+    return id;
+}
+
+int roadmanager::OpenDrive::GenerateRoadId()
+{
+    int max_id = 0;
+
+    // generate new id as current maximum id + 1
+    for (auto r : road_)
+    {
+        if (r->GetId() > max_id)
+        {
+            max_id = r->GetId();
+        }
+    }
+
+    return max_id + 1;
 }
 
 void OpenDrive::GlobalFriction::Set(double friction)

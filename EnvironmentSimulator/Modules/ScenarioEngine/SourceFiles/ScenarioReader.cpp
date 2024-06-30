@@ -1789,9 +1789,10 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPo
     }
     else if (positionChildName == "RoadPosition")
     {
-        int    road_id = strtoi(parameters.ReadAttribute(positionChild, "roadId"));
-        double s       = strtod(parameters.ReadAttribute(positionChild, "s"));
-        double t       = strtod(parameters.ReadAttribute(positionChild, "t"));
+        std::string road_id_str = parameters.ReadAttribute(positionChild, "roadId");
+        int         road_id     = roadmanager::Position::GetOpenDrive()->LookupRoadIdFromStr(parameters.ReadAttribute(positionChild, "roadId"));
+        double      s           = strtod(parameters.ReadAttribute(positionChild, "s"));
+        double      t           = strtod(parameters.ReadAttribute(positionChild, "t"));
 
         // Check for optional Orientation element
         pugi::xml_node orientation_node = positionChild.child("Orientation");
@@ -1812,9 +1813,10 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPo
     }
     else if (positionChildName == "LanePosition")
     {
-        int    road_id = strtoi(parameters.ReadAttribute(positionChild, "roadId"));
-        int    lane_id = strtoi(parameters.ReadAttribute(positionChild, "laneId"));
-        double s       = strtod(parameters.ReadAttribute(positionChild, "s"));
+        std::string road_id_str = parameters.ReadAttribute(positionChild, "roadId");
+        int         road_id     = roadmanager::Position::GetOpenDrive()->LookupRoadIdFromStr(parameters.ReadAttribute(positionChild, "roadId"));
+        int         lane_id     = strtoi(parameters.ReadAttribute(positionChild, "laneId"));
+        double      s           = strtod(parameters.ReadAttribute(positionChild, "s"));
 
         double offset = 0;  // Default value of optional parameter
         if (positionChild.attribute("offset"))

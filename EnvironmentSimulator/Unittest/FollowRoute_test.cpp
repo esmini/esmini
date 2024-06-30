@@ -609,7 +609,7 @@ TEST_F(FollowRouteTestMediumChangedSpeeds, LogWaypointMedium)
 TEST(FollowRouteTest, CalcWeightShortest)
 {
     RoadCalculations roadCalc;
-    Road             road1(1, "test");
+    Road             road1(1, "1", "test");
     road1.SetLength(200);
     double weigth = roadCalc.CalcWeight(nullptr, Position::RouteStrategy::SHORTEST, road1.GetLength(), &road1);
     ASSERT_NEAR(200, weigth, 0.01);
@@ -618,7 +618,7 @@ TEST(FollowRouteTest, CalcWeightShortest)
 TEST(FollowRouteTest, CalcWeightFastest)
 {
     RoadCalculations roadCalc;
-    Road             road1(1, "test");
+    Road             road1(1, "1", "test");
     road1.SetLength(200);
     Road::RoadTypeEntry* motorway = new Road::RoadTypeEntry;
     motorway->road_type_          = Road::RoadType::ROADTYPE_MOTORWAY;
@@ -632,17 +632,17 @@ TEST(FollowRouteTest, CalcWeightFastest)
 TEST(FollowRouteTest, CalcWeightMinIntersections)
 {
     RoadCalculations roadCalc;
-    Road             road1(1, "test");
+    Road             road1(1, "1", "test");
     road1.SetLength(200);
-    RoadLink plink(LinkType::SUCCESSOR, RoadLink::ELEMENT_TYPE_JUNCTION, 1, ContactPointType::CONTACT_POINT_UNDEFINED);
+    RoadLink plink(LinkType::SUCCESSOR, RoadLink::ELEMENT_TYPE_JUNCTION, "1", ContactPointType::CONTACT_POINT_UNDEFINED);
     Node     pNode;
     pNode.link    = &plink;
     double weigth = roadCalc.CalcWeight(&pNode, Position::RouteStrategy::MIN_INTERSECTIONS, road1.GetLength(), &road1);
     ASSERT_NEAR(1, weigth, 0.01);
 
-    Road road2(2, "test");
+    Road road2(2, "2", "test");
     road1.SetLength(200);
-    RoadLink plink2(LinkType::SUCCESSOR, RoadLink::ELEMENT_TYPE_ROAD, 1, ContactPointType::CONTACT_POINT_UNDEFINED);
+    RoadLink plink2(LinkType::SUCCESSOR, RoadLink::ELEMENT_TYPE_ROAD, "1", ContactPointType::CONTACT_POINT_UNDEFINED);
     Node     pNode2;
     pNode2.link    = &plink2;
     double weigth2 = roadCalc.CalcWeight(&pNode2, Position::RouteStrategy::MIN_INTERSECTIONS, road1.GetLength(), &road1);
@@ -653,10 +653,10 @@ TEST(FollowRouteTest, CalcAverageSpeedForRoadsWithoutSpeed)
 {
     RoadCalculations roadCalc;
 
-    Road                 road1(1, "420");
-    Road                 road2(2, "420");
-    Road                 road3(3, "420");
-    Road                 road4(4, "420");
+    Road                 road1(1, "1", "420");
+    Road                 road2(2, "2", "420");
+    Road                 road3(3, "3", "420");
+    Road                 road4(4, "4", "420");
     Road::RoadTypeEntry* lowSpeed = new Road::RoadTypeEntry;
     Road::RoadTypeEntry* town     = new Road::RoadTypeEntry;
     Road::RoadTypeEntry* rural    = new Road::RoadTypeEntry;
@@ -692,10 +692,10 @@ TEST(FollowRouteTest, CalcAverageSpeedForRoadsWithDefinedSpeed)
 {
     RoadCalculations roadCalc;
 
-    Road                 road1(1, "420");
-    Road                 road2(2, "420");
-    Road                 road3(3, "420");
-    Road                 road4(4, "420");
+    Road                 road1(1, "1", "420");
+    Road                 road2(2, "2", "420");
+    Road                 road3(3, "3", "420");
+    Road                 road4(4, "4", "420");
     Road::RoadTypeEntry* lowSpeed = new Road::RoadTypeEntry;
     Road::RoadTypeEntry* town     = new Road::RoadTypeEntry;
     Road::RoadTypeEntry* rural    = new Road::RoadTypeEntry;
@@ -735,7 +735,7 @@ TEST(FollowRouteTest, CalcAverageSpeedForTwoRoadTypes)
 {
     RoadCalculations roadCalc;
 
-    Road                 road(1, "420");
+    Road                 road(1, "1", "420");
     Road::RoadTypeEntry* lowSpeed = new Road::RoadTypeEntry;
     Road::RoadTypeEntry* town     = new Road::RoadTypeEntry;
     lowSpeed->road_type_          = Road::RoadType::ROADTYPE_LOWSPEED;

@@ -325,6 +325,62 @@ extern "C"
         }
     }
 
+    RM_DLL_API const char* RM_GetRoadIdString(int road_id)
+    {
+        if (odrManager != nullptr)
+        {
+            roadmanager::Road* road = odrManager->GetRoadById(road_id);
+            if (road != NULL)
+            {
+                return road->GetIdStrRef().c_str();
+            }
+        }
+
+        return "";
+    }
+
+    RM_DLL_API int RM_GetRoadIdFromString(const char* road_id_str)
+    {
+        if (odrManager != nullptr)
+        {
+            roadmanager::Road* road = odrManager->GetRoadByIdStr(road_id_str);
+            if (road != NULL)
+            {
+                return road->GetId();
+            }
+        }
+
+        return -1;
+    }
+
+    RM_DLL_API const char* RM_GetJunctionIdString(int junction_id)
+    {
+        if (odrManager != nullptr)
+        {
+            roadmanager::Junction* junction = odrManager->GetJunctionById(junction_id);
+            if (junction != NULL)
+            {
+                return junction->GetIdStrRef().c_str();
+            }
+        }
+
+        return "";
+    }
+
+    RM_DLL_API int RM_GetJunctionIdFromString(const char* junction_id_str)
+    {
+        if (odrManager != nullptr)
+        {
+            roadmanager::Junction* junction = odrManager->GetJunctionByIdStr(junction_id_str);
+            if (junction != NULL)
+            {
+                return junction->GetId();
+            }
+        }
+
+        return -1;
+    }
+
     RM_DLL_API int RM_GetRoadNumberOfLanes(int roadId, float s)
     {
         int numberOfDrivableLanes = 0;

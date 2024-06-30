@@ -641,6 +641,26 @@ void SwapByteOrder(unsigned char* buf, int data_type_size, int buf_size)
     }
 }
 
+bool IsNumber(const std::string& str, int max_digits)
+{
+    if (str.empty())
+    {
+        return false;
+    }
+
+    int counter = 0;
+    for (auto& c : str)
+    {
+        counter++;
+        if (!isdigit(c) || (max_digits > -1 && counter > max_digits))
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 int strtoi(std::string s)
 {
     return atoi(s.c_str());

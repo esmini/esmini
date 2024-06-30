@@ -1229,6 +1229,34 @@ extern "C"
     */
     SE_DLL_API int SE_GetRoadSignValidityRecord(int road_id, int signIndex, int validityIndex, SE_RoadObjValidity *validity);
 
+    /**
+            Get original string ID asoociated with specified road
+            @param road_id The integer ID road
+            @return string ID, empty string if not found
+    */
+    SE_DLL_API const char *SE_GetRoadIdString(int road_id);
+
+    /**
+            Get integer road ID associated with specified road string ID
+            @param road_id_str The road string ID
+            @return road ID, -1 if not found
+    */
+    SE_DLL_API int SE_GetRoadIdFromString(const char *road_id_str);
+
+    /**
+            Get original string ID asoociated with specified junction
+            @param road_id The integer ID junction
+            @return string ID, empty string if not found
+    */
+    SE_DLL_API const char *SE_GetJunctionIdString(int junction_id);
+
+    /**
+            Get integer junction ID associated with specified junction string ID
+            @param road_id_str The junction string ID
+            @return junction ID, -1 if not found
+    */
+    SE_DLL_API int SE_GetJunctionIdFromString(const char *junction_id_str);
+
     // OSI interface
     //
 

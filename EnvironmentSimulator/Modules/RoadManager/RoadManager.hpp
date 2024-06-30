@@ -1189,12 +1189,12 @@ namespace roadmanager
             ELEMENT_TYPE_JUNCTION,
         } ElementType;
 
-        RoadLink() : type_(NONE), element_id_(-1), element_type_(ELEMENT_TYPE_UNKNOWN), contact_point_type_(CONTACT_POINT_UNDEFINED)
+        RoadLink() : type_(NONE), element_type_(ELEMENT_TYPE_UNKNOWN), element_id_(-1), contact_point_type_(CONTACT_POINT_UNDEFINED)
         {
         }
-        RoadLink(LinkType type, ElementType element_type, int element_id, ContactPointType contact_point_type)
+        RoadLink(LinkType type, ElementType element_type, std::string element_id, ContactPointType contact_point_type)
             : type_(type),
-              element_id_(element_id),
+              element_id_(-1),
               element_type_(element_type),
               contact_point_type_(contact_point_type)
         {
@@ -1217,6 +1217,10 @@ namespace roadmanager
         ContactPointType GetContactPointType() const
         {
             return contact_point_type_;
+        }
+        void SetElementId(int id)
+        {
+            element_id_ = id;
         }
 
         void Print() const;
@@ -2188,7 +2192,13 @@ namespace roadmanager
             ROAD_RULE_UNDEFINED
         };
 
-        Road(int id, std::string name, RoadRule rule = RoadRule::RIGHT_HAND_TRAFFIC) : id_(id), name_(name), length_(0), junction_(-1), rule_(rule)
+        Road(int id, std::string id_str, std::string name, RoadRule rule = RoadRule::RIGHT_HAND_TRAFFIC)
+            : id_(id),
+              id_str_(id_str),
+              name_(name),
+              length_(0),
+              junction_(-1),
+              rule_(rule)
         {
         }
         ~Road();
@@ -2202,6 +2212,17 @@ namespace roadmanager
         {
             return id_;
         }
+
+        const std::string &GetIdStrRef() const
+        {
+            return id_str_;
+        }
+
+        std::string GetIdStr() const
+        {
+            return id_str_;
+        }
+
         RoadRule GetRule() const
         {
             return rule_;
@@ -2393,8 +2414,11 @@ namespace roadmanager
         */
         double GetWidth(double s, int side, int laneTypeMask = Lane::LaneType::LANE_TYPE_ANY) const;  // side: -1=right, 1=left, 0=both
 
+        int GetIntIdByStringId(std::string string_id);
+
     protected:
         int         id_;
+        std::string id_str_;
         std::string name_;
         double      length_;
         int         junction_;
@@ -2583,7 +2607,7 @@ namespace roadmanager
             SELECTOR_ANGLE,  // choose road which heading (relative incoming road) is closest to specified angle
         } JunctionStrategyType;
 
-        Junction(int id, std::string name, JunctionType type) : id_(id), name_(name), type_(type)
+        Junction(int id, std::string id_str, std::string name, JunctionType type) : id_(id), id_str_(id_str), name_(name), type_(type)
         {
             SetGlobalId();
         }
@@ -2636,11 +2660,24 @@ namespace roadmanager
         {
             return type_;
         }
+        const std::string &GetIdStrRef() const
+        {
+            return id_str_;
+        }
+        std::string GetIdStr() const
+        {
+            return id_str_;
+        }
+        void SetId(int id)
+        {
+            id_ = id;
+        }
 
     private:
         std::vector<Connection *>       connection_;
         std::vector<JunctionController> controller_;
         int                             id_;
+        std::string                     id_str_;
         int                             global_id_;
         std::string                     name_;
         JunctionType                    type_;
@@ -2732,6 +2769,8 @@ namespace roadmanager
                 @param idx index into the vector of roads
         */
         Road     *GetRoadByIdx(int idx) const;
+        Road     *GetRoadByIdStr(std::string id_str) const;
+        Junction *GetJunctionByIdStr(std::string id_str) const;
         Geometry *GetGeometryByIdx(int road_idx, int geom_idx) const;
         int       GetTrackIdxById(int id) const;
         int       GetTrackIdByIdx(int idx) const;
@@ -2826,18 +2865,26 @@ namespace roadmanager
             void   Reset();
         };
 
+        int  GenerateRoadId();
+        void EstablishUniqueIds(pugi::xml_node &parent, std::string name, std::vector<std::pair<int, std::string>> &ids);
+        int  LookupRoadIdFromStr(std::string id_str);
+        int  LookupJunctionIdFromStr(std::string id_str);
+
     private:
-        pugi::xml_node                     root_node_;
-        std::vector<Road *>                road_;
-        std::vector<Junction *>            junction_;
-        std::vector<Controller>            controller_;
-        GeoReference                       geo_ref_;
-        std::string                        odr_filename_;
-        std::map<std::string, std::string> signals_types_;
-        SpeedUnit                          speed_unit_;  // First specified speed unit. MS is default. Undefined if no speed entries.
-        int                                versionMajor_;
-        int                                versionMinor_;
-        GlobalFriction                     friction_;
+        pugi::xml_node                           root_node_;
+        std::vector<Road *>                      road_;
+        std::vector<Junction *>                  junction_;
+        std::vector<Controller>                  controller_;
+        GeoReference                             geo_ref_;
+        std::string                              odr_filename_;
+        std::map<std::string, std::string>       signals_types_;
+        SpeedUnit                                speed_unit_;  // First specified speed unit. MS is default. Undefined if no speed entries.
+        int                                      versionMajor_;
+        int                                      versionMinor_;
+        GlobalFriction                           friction_;
+        std::vector<std::pair<int, std::string>> road_ids_;
+        std::vector<std::pair<int, std::string>> junction_ids_;
+        int                                      LookupIdFromStr(std::vector<std::pair<int, std::string>> &ids, std::string id_str);
     };
 
     typedef struct
