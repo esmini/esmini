@@ -2973,13 +2973,13 @@ RoadLink* Road::GetLink(LinkType type) const
 
 void Road::AddLaneSection(LaneSection* lane_section)
 {
-    // Adjust last elevation section length
+    // Adjust last lane section length
     if (lane_section_.size() > 0)
     {
         LaneSection* ls_previous = lane_section_.back();
-        ls_previous->SetLength(lane_section->GetS() - ls_previous->GetS());
+        ls_previous->SetLength(MIN(lane_section->GetS() - ls_previous->GetS(), GetLength()));
     }
-    lane_section->SetLength(length_ - lane_section->GetS());
+    lane_section->SetLength(MIN(length_ - lane_section->GetS(), GetLength()));
 
     lane_section_.push_back((LaneSection*)lane_section);
 }
@@ -3595,7 +3595,15 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                 }
                 else if (!strcmp(child->name(), "laneSection"))
                 {
-                    double       s            = atof(child->attribute("s").value());
+                    double s = atof(child->attribute("s").value());
+                    if (s > r->GetLength())
+                    {
+                        LOG("Truncating lane section %d of road %s at s=%.2f (road length)",
+                            r->GetNumberOfLaneSections(),
+                            r->GetIdStr().c_str(),
+                            r->GetLength());
+                        s = r->GetLength();
+                    }
                     LaneSection* lane_section = new LaneSection(s);
                     r->AddLaneSection(lane_section);
 
@@ -6718,7 +6726,10 @@ void OpenDrive::SetLaneBoundaryPoints()
                         counter++;
 
                         // Make sure we stay within lane section length
-                        s1 = MIN(s1, lsec_end - OSI_TANGENT_LINE_TOLERANCE);
+                        if (s1 + OSI_TANGENT_LINE_TOLERANCE > lsec_end)
+                        {
+                            s1 = lsec_end - OSI_TANGENT_LINE_TOLERANCE;
+                        }
 
                         // [XO, YO] = closest position with given (-) tolerance
                         pos.SetLaneBoundaryPos(road->GetId(), lane->GetId(), MAX(0, s0 - OSI_TANGENT_LINE_TOLERANCE), 0, j);
@@ -6738,7 +6749,7 @@ void OpenDrive::SetLaneBoundaryPoints()
                         }
 
                         // [XO, YO] = closest position with given (+) tolerance
-                        pos.SetLaneBoundaryPos(road->GetId(), lane->GetId(), s0 + OSI_TANGENT_LINE_TOLERANCE, 0, j);
+                        pos.SetLaneBoundaryPos(road->GetId(), lane->GetId(), MIN(s0 + OSI_TANGENT_LINE_TOLERANCE, lsec_end), 0, j);
                         x0.push_back(pos.GetX());
                         y0.push_back(pos.GetY());
 
