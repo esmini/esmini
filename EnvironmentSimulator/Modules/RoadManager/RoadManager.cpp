@@ -4983,7 +4983,7 @@ JunctionController* Junction::GetJunctionControllerByIdx(int index)
 
 Road* Junction::GetRoadAtOtherEndOfConnectingRoad(Road* connecting_road, Road* incoming_road) const
 {
-    if (connecting_road->GetJunction() == 0)
+    if (connecting_road->GetJunction() == -1)
     {
         LOG("Unexpected: Road %d not a connecting road", connecting_road->GetId());
         return 0;
