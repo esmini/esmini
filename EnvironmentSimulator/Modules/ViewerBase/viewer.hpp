@@ -135,6 +135,8 @@ namespace viewer
         osg::ref_ptr<osg::DrawArrays> dots_array_;
     };
 
+    class Viewer;  // forward declaration
+
     class SensorViewFrustum
     {
     public:
@@ -164,7 +166,7 @@ namespace viewer
         osg::Node*                 node_;
         roadmanager::RMTrajectory* activeRMTrajectory_;
 
-        Trajectory(osg::Group* parent, osgViewer::Viewer* viewer);
+        Trajectory(osg::Group* parent, Viewer* viewer);
         ~Trajectory()
         {
         }
@@ -173,7 +175,7 @@ namespace viewer
         void Disable();
 
     private:
-        osgViewer::Viewer*        viewer_;
+        Viewer*                   viewer_;
         std::unique_ptr<PolyLine> pline_;
     };
 
@@ -273,7 +275,7 @@ namespace viewer
         osg::ref_ptr<osg::BlendColor> blend_color_;
         osg::ref_ptr<osg::StateSet>   state_set_;
 
-        EntityModel(osgViewer::Viewer*       viewer,
+        EntityModel(Viewer*                  viewer,
                     osg::ref_ptr<osg::Group> group,
                     osg::ref_ptr<osg::Group> parent,
                     osg::ref_ptr<osg::Group> trail_parent,
@@ -291,7 +293,7 @@ namespace viewer
 
         std::unique_ptr<PolyLine>       trail_;
         std::unique_ptr<RouteWayPoints> routewaypoints_;
-        osgViewer::Viewer*              viewer_;
+        Viewer*                         viewer_;
         OnScreenText                    on_screen_info_;
     };
 
@@ -309,7 +311,7 @@ namespace viewer
             return entity_type_;
         }
 
-        MovingModel(osgViewer::Viewer*       viewer,
+        MovingModel(Viewer*                  viewer,
                     osg::ref_ptr<osg::Group> group,
                     osg::ref_ptr<osg::Group> parent,
                     osg::ref_ptr<osg::Group> trail_parent,
@@ -337,7 +339,7 @@ namespace viewer
             return entity_type_;
         }
 
-        CarModel(osgViewer::Viewer*       viewer,
+        CarModel(Viewer*                  viewer,
                  osg::ref_ptr<osg::Group> group,
                  osg::ref_ptr<osg::Group> parent,
                  osg::ref_ptr<osg::Group> trail_parent,
@@ -419,22 +421,24 @@ namespace viewer
         osg::ref_ptr<osg::Node> dot_node_;
 
         // Road debug visualization
-        osg::ref_ptr<osg::Group>                     odrLines_;
-        osg::ref_ptr<osg::Group>                     osiFeatures_;
-        osg::ref_ptr<osg::Group>                     trajectoryLines_;
-        osg::ref_ptr<osg::Group>                     routewaypoints_;
-        osg::ref_ptr<osg::PositionAttitudeTransform> envTx_;
-        osg::ref_ptr<osg::Node>                      environment_;
-        osg::ref_ptr<osgGA::RubberbandManipulator>   rubberbandManipulator_;
-        osg::ref_ptr<osgGA::NodeTrackerManipulator>  nodeTrackerManipulator_;
-        std::vector<EntityModel*>                    entities_;
-        float                                        lodScale_;
-        osg::ref_ptr<osgViewer::Viewer>              osgViewer_;
-        osg::MatrixTransform*                        rootnode_;
-        osg::ref_ptr<osg::Group>                     roadSensors_;
-        osg::ref_ptr<osg::Group>                     trails_;
-        roadmanager::OpenDrive*                      odrManager_;
-        std::unique_ptr<RoadGeom>                    roadGeom;
+        osg::ref_ptr<osg::Group>                    odrLines_;
+        osg::ref_ptr<osg::Group>                    osiFeatures_;
+        osg::ref_ptr<osg::Group>                    trajectoryLines_;
+        osg::ref_ptr<osg::Group>                    routewaypoints_;
+        osg::ref_ptr<osg::Group>                    envGroup_;
+        osg::ref_ptr<osg::Node>                     environment_;
+        osg::ref_ptr<osgGA::RubberbandManipulator>  rubberbandManipulator_;
+        osg::ref_ptr<osgGA::NodeTrackerManipulator> nodeTrackerManipulator_;
+        std::vector<EntityModel*>                   entities_;
+        float                                       lodScale_;
+        osg::ref_ptr<osgViewer::Viewer>             osgViewer_;
+        osg::MatrixTransform*                       rootnode_;
+        osg::ref_ptr<osg::Group>                    roadSensors_;
+        osg::ref_ptr<osg::Group>                    trails_;
+        roadmanager::OpenDrive*                     odrManager_;
+        std::unique_ptr<RoadGeom>                   roadGeom;
+        osg::ref_ptr<osg::MatrixTransform>          env_origin2odr_;   // transform the environment to the OpenDRIVE origin
+        osg::ref_ptr<osg::MatrixTransform>          root_origin2odr_;  // transform objects to the OpenDRIVE origin
 
         std::string                   exe_path_;
         std::vector<KeyEventCallback> callback_;
@@ -452,6 +456,8 @@ namespace viewer
 
         SE_Semaphore renderSemaphore;
         SE_Mutex     imageMutex;
+
+        osg::Vec3d origin_ = {0.0, 0.0, 0.0};  // origin of the visual model in the OpenDRIVE coordinate system
 
         Viewer(roadmanager::OpenDrive* odrManager,
                const char*             modelFilename,

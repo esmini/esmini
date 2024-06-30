@@ -80,14 +80,14 @@ namespace osgGA
             }
 
         private:
-            osg::Vec3 pos_;
-            osg::Vec3 rot_;
-            bool      fixed_pos_;
-            bool      fixed_rot_;
-            bool      ortho_;
+            osg::Vec3d pos_;
+            osg::Vec3d rot_;
+            bool       fixed_pos_;
+            bool       fixed_rot_;
+            bool       ortho_;
         };
 
-        RubberbandManipulator(unsigned int mode = RB_MODE_RUBBER_BAND_ORBIT);
+        RubberbandManipulator(unsigned int mode = RB_MODE_RUBBER_BAND_ORBIT, osg::Vec3d origin = {0.0, 0.0, 0.0});
 
         virtual const char* className() const
         {
@@ -146,10 +146,11 @@ namespace osgGA
         }
 
         CustomCamera* GetCurrentCustomCamera();
-        osg::Vec3     getRelativePos() const
+        osg::Vec3d    getRelativePos() const
         {
             return relative_pos_;
         }
+        osg::Vec3d origin_;
 
     protected:
         virtual ~RubberbandManipulator();
@@ -173,13 +174,13 @@ namespace osgGA
 
         osg::Vec3d  _eye;
         osg::Matrix _matrix;
-        osg::Vec3   cameraAcc;
-        osg::Vec3   cameraVel;
-        osg::Vec3   relative_pos_;
+        osg::Vec3d  cameraAcc;
+        osg::Vec3d  cameraVel;
+        osg::Vec3d  relative_pos_;
 
-        float _cameraDistance;
-        float _cameraAngle;
-        float _cameraRotation;
+        double _cameraDistance;
+        double _cameraAngle;
+        double _cameraRotation;
 
         unsigned int _mode;
         bool         fix_camera_;

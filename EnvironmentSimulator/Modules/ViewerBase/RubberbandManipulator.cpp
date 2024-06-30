@@ -40,13 +40,14 @@ const float orbitCameraRotation = -14.0f;
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
-RubberbandManipulator::RubberbandManipulator(unsigned int mode)
+RubberbandManipulator::RubberbandManipulator(unsigned int mode, osg::Vec3d origin)
 {
     _cameraAngle    = orbitCameraAngle;
     _cameraDistance = orbitCameraDistance;
     _cameraRotation = orbitCameraRotation;
     track_node_     = nullptr;
     track_tx_       = nullptr;
+    origin_         = origin;
     setMode(mode);
 }
 
@@ -285,7 +286,7 @@ void RubberbandManipulator::computeNodeCenterAndRotation(osg::Vec3d& nodeCenter,
         nodeRotation = track_tx_->getAttitude();
         if (track_node_ != nullptr)
         {
-            nodeCenter = track_tx_->getPosition() + nodeRotation * track_node_->getBound().center();
+            nodeCenter = (track_tx_->getPosition() + origin_) + nodeRotation * track_node_->getBound().center();
         }
         else
         {
@@ -330,14 +331,14 @@ osg::Matrixd RubberbandManipulator::getInverseMatrix() const
 
 bool RubberbandManipulator::calcMovement(double dt, bool reset)
 {
-    osg::Vec3     up(0.0, 0.0, 1.0);
+    osg::Vec3d    up(0.0, 0.0, 1.0);
     osg::Vec3d    nodeCenter;
     osg::Quat     nodeRotation;
     osg::Matrix   cameraTargetRotation;
     float         springDC;
-    osg::Vec3     cameraTargetPosition(0, 0, 0);
-    osg::Vec3     cameraToTarget(0, 0, 0);
-    float         x, y, z;
+    osg::Vec3d    cameraTargetPosition(0, 0, 0);
+    osg::Vec3d    cameraToTarget(0, 0, 0);
+    double        x, y, z;
     CustomCamera* custom_cam = GetCurrentCustomCamera();
 
     relative_pos_.set(0.0, 0.0, 0.0);
@@ -345,7 +346,7 @@ bool RubberbandManipulator::calcMovement(double dt, bool reset)
     computeNodeCenterAndRotation(nodeCenter, nodeRotation);
     osg::Matrix nodeRot;
     nodeRot.makeRotate(nodeRotation);
-    osg::Vec3 nodeFocusPoint = osg::Vec3(NODE_CENTER_OFFSET_X, NODE_CENTER_OFFSET_Y, NODE_CENTER_OFFSET_Z) + nodeCenter;
+    osg::Vec3d nodeFocusPoint = osg::Vec3d(NODE_CENTER_OFFSET_X, NODE_CENTER_OFFSET_Y, NODE_CENTER_OFFSET_Z) + nodeCenter;
 
     if (_mode == RB_MODE_TOP)
     {

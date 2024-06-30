@@ -41,6 +41,7 @@
 
 const static double friction_max     = 5.0;
 const static double friction_default = 1.0;
+static osg::Vec3d   origin_          = {0.0, 0.0, 0.0};
 
 bool compare_s_values(double s0, double s1)
 {
@@ -201,8 +202,9 @@ int RoadGeom::AddRoadMarks(roadmanager::Lane* lane, osg::Group* parent)
                         roadmanager::PointStruct osi_point0 = curr_osi_rm->GetPoint(static_cast<int>(q));
 
                         osg::ref_ptr<osg::PositionAttitudeTransform> tx = new osg::PositionAttitudeTransform;
-                        tx->setPosition(
-                            osg::Vec3(static_cast<float>(osi_point0.x), static_cast<float>(osi_point0.y), static_cast<float>(osi_point0.z)));
+                        tx->setPosition(osg::Vec3(static_cast<float>(osi_point0.x - origin_[0]),
+                                                  static_cast<float>(osi_point0.y - origin_[1]),
+                                                  static_cast<float>(osi_point0.z)));
                         tx->addChild(dot);
                         rm_group_->addChild(tx);
                     }
@@ -220,10 +222,10 @@ int RoadGeom::AddRoadMarks(roadmanager::Lane* lane, osg::Group* parent)
 
                         // Find left points of roadmark
                         double x0l, x1l, y0l, y1l;
-                        OffsetVec2D(osi_point0.x,
-                                    osi_point0.y,
-                                    osi_point1.x,
-                                    osi_point1.y,
+                        OffsetVec2D(osi_point0.x - origin_[0],
+                                    osi_point0.y - origin_[1],
+                                    osi_point1.x - origin_[0],
+                                    osi_point1.y - origin_[1],
                                     -lane_roadmarktypeline->GetWidth() / 2,
                                     x0l,
                                     y0l,
@@ -232,10 +234,10 @@ int RoadGeom::AddRoadMarks(roadmanager::Lane* lane, osg::Group* parent)
 
                         // Find right points of roadmark
                         double x0r, x1r, y0r, y1r;
-                        OffsetVec2D(osi_point0.x,
-                                    osi_point0.y,
-                                    osi_point1.x,
-                                    osi_point1.y,
+                        OffsetVec2D(osi_point0.x - origin_[0],
+                                    osi_point0.y - origin_[1],
+                                    osi_point1.x - origin_[0],
+                                    osi_point1.y - origin_[1],
                                     lane_roadmarktypeline->GetWidth() / 2,
                                     x0r,
                                     y0r,
@@ -290,19 +292,19 @@ int RoadGeom::AddRoadMarks(roadmanager::Lane* lane, osg::Group* parent)
 
                         if (q < osi_points.size() - 1)
                         {
-                            OffsetVec2D(osi_points[q].x,
-                                        osi_points[q].y,
-                                        osi_points[q + 1].x,
-                                        osi_points[q + 1].y,
+                            OffsetVec2D(osi_points[q].x - origin_[0],
+                                        osi_points[q].y - origin_[1],
+                                        osi_points[q + 1].x - origin_[0],
+                                        osi_points[q + 1].y - origin_[1],
                                         -lane_roadmarktypeline->GetWidth() / 2,
                                         l1p0l[0],
                                         l1p0l[1],
                                         l1p1l[0],
                                         l1p1l[1]);
-                            OffsetVec2D(osi_points[q].x,
-                                        osi_points[q].y,
-                                        osi_points[q + 1].x,
-                                        osi_points[q + 1].y,
+                            OffsetVec2D(osi_points[q].x - origin_[0],
+                                        osi_points[q].y - origin_[1],
+                                        osi_points[q + 1].x - origin_[0],
+                                        osi_points[q + 1].y - origin_[1],
                                         lane_roadmarktypeline->GetWidth() / 2,
                                         l1p0r[0],
                                         l1p0r[1],
@@ -440,19 +442,19 @@ int RoadGeom::AddRoadMarks(roadmanager::Lane* lane, osg::Group* parent)
 
                     if (q < osi_points.size() - 1)
                     {
-                        OffsetVec2D(osi_points[q].x,
-                                    osi_points[q].y,
-                                    osi_points[q + 1].x,
-                                    osi_points[q + 1].y,
+                        OffsetVec2D(osi_points[q].x - origin_[0],
+                                    osi_points[q].y - origin_[1],
+                                    osi_points[q + 1].x - origin_[0],
+                                    osi_points[q + 1].y - origin_[1],
                                     -lane_roadmarkexplicitline->GetWidth() / 2,
                                     l1p0l[0],
                                     l1p0l[1],
                                     l1p1l[0],
                                     l1p1l[1]);
-                        OffsetVec2D(osi_points[q].x,
-                                    osi_points[q].y,
-                                    osi_points[q + 1].x,
-                                    osi_points[q + 1].y,
+                        OffsetVec2D(osi_points[q].x - origin_[0],
+                                    osi_points[q].y - origin_[1],
+                                    osi_points[q + 1].x - origin_[0],
+                                    osi_points[q + 1].y - origin_[1],
                                     lane_roadmarkexplicitline->GetWidth() / 2,
                                     l1p0r[0],
                                     l1p0r[1],
@@ -547,11 +549,11 @@ int RoadGeom::AddRoadMarks(roadmanager::Lane* lane, osg::Group* parent)
     return 0;
 }
 
-RoadGeom::RoadGeom(roadmanager::OpenDrive* odr)
+RoadGeom::RoadGeom(roadmanager::OpenDrive* odr, osg::Vec3d origin)
 {
     root_     = new osg::Group;
     rm_group_ = new osg::Group;
-
+    origin_   = origin;
     root_->addChild(rm_group_);
 
     osg::ref_ptr<osg::Texture2D> tex_asphalt;
@@ -889,12 +891,12 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive* odr)
                         GeomPoint& gp = geom_points[gpi + l];
                         if (m == 0 || l > 0)
                         {
-                            (*verticesAll)[static_cast<unsigned int>(vertex_idx_all)].set(static_cast<float>(gp.x),
-                                                                                          static_cast<float>(gp.y),
+                            (*verticesAll)[static_cast<unsigned int>(vertex_idx_all)].set(static_cast<float>(gp.x - origin_[0]),
+                                                                                          static_cast<float>(gp.y - origin_[1]),
                                                                                           static_cast<float>(gp.z));
                             double texscale = TEXTURE_SCALE;
                             (*texcoordsAll)[static_cast<unsigned int>(vertex_idx_all)].set(
-                                osg::Vec2(static_cast<float>(texscale * gp.x), static_cast<float>(texscale * gp.y)));
+                                osg::Vec2(static_cast<float>(texscale * (gp.x - origin_[0])), static_cast<float>(texscale * (gp.y - origin_[1]))));
                             vertex_idx_all++;
                         }
                         else
