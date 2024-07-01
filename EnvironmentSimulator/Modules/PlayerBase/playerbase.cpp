@@ -453,17 +453,15 @@ void ScenarioPlayer::ViewerFrame(bool init)
                 entity->trail_->Reset();
                 for (size_t j = 0; j < static_cast<unsigned int>(obj->trail_.GetNumberOfVertices()); j++)
                 {
-                    entity->trail_->AddPoint(osg::Vec3(static_cast<float>(obj->trail_.vertex_[j].x),
-                                                       static_cast<float>(obj->trail_.vertex_[j].y),
-                                                       static_cast<float>(obj->trail_.vertex_[j].z + (obj->GetId() + 1) * TRAIL_Z_OFFSET)));
+                    entity->trail_->AddPoint(obj->trail_.vertex_[j].x,
+                                             obj->trail_.vertex_[j].y,
+                                             obj->trail_.vertex_[j].z + (obj->GetId() + 1) * TRAIL_Z_OFFSET);
                 }
             }
 
             if (static_cast<unsigned int>(obj->trail_.GetNumberOfVertices()) > entity->trail_->pline_vertex_data_->size())
             {
-                entity->trail_->AddPoint(osg::Vec3(static_cast<float>(obj->pos_.GetX()),
-                                                   static_cast<float>(obj->pos_.GetY()),
-                                                   static_cast<float>(obj->pos_.GetZ() + (obj->GetId() + 1) * TRAIL_Z_OFFSET)));
+                entity->trail_->AddPoint(obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ() + (obj->GetId() + 1) * TRAIL_Z_OFFSET);
             }
 
             // on screen text following each entity
@@ -1116,7 +1114,7 @@ int ScenarioPlayer::AddObjectSensor(Object* obj, double x, double y, double z, d
         {
             mutex.Lock();
             sensorFrustum.push_back(
-                new viewer::SensorViewFrustum(sensor.back(), viewer_->entities_[static_cast<unsigned int>(object_index)]->txNode_));
+                new viewer::SensorViewFrustum(viewer_, sensor.back(), viewer_->entities_[static_cast<unsigned int>(object_index)]->txNode_));
             mutex.Unlock();
         }
     }

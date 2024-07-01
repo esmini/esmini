@@ -48,6 +48,8 @@ using namespace scenarioengine;
 
 namespace viewer
 {
+    class Viewer;  // forward declaration
+
     typedef enum
     {
         NODE_MASK_NONE             = (0),
@@ -90,7 +92,7 @@ namespace viewer
          * @param dotsize Size of the dots. Set to 0.0 to disable dots. Size unit is meter for 3D dots and pixels for default GL points
          * @param dots3D If true the dots are represented by 3D shape, otherwise just a OpenGL point
          */
-        PolyLine(osg::Group* parent, osg::ref_ptr<osg::Vec3Array> points, osg::Vec4 color, double width, double dotsize, bool dots3D);
+        PolyLine(Viewer* viewer, osg::Group* parent, osg::ref_ptr<osg::Vec3Array> points, osg::Vec4 color, double width, double dotsize, bool dots3D);
 
         /**
          * Create and visualize a set of connected line segments defined by an array of points.
@@ -101,8 +103,8 @@ namespace viewer
          * @param widh Width of the polyline
          * @param dotsize Size of the dots. Set to 0.0 to disable dots. Size unit is meter for 3D dots and pixel for default GL points
          */
-        PolyLine(osg::Group* parent, osg::ref_ptr<osg::Vec3Array> points, osg::Vec4 color, double width, double dotsize)
-            : PolyLine(parent, points, color, width, dotsize, false)
+        PolyLine(Viewer* viewer, osg::Group* parent, osg::ref_ptr<osg::Vec3Array> points, osg::Vec4 color, double width, double dotsize)
+            : PolyLine(viewer, parent, points, color, width, dotsize, false)
         {
         }
 
@@ -115,13 +117,13 @@ namespace viewer
          * @param color Red, green, blue and alpha (transparency) of the line segments and optional vertex dots range [0.0:1.0]
          * @param widh Width of the polyline
          */
-        PolyLine(osg::Group* parent, osg::ref_ptr<osg::Vec3Array> points, osg::Vec4 color, double width)
-            : PolyLine(parent, points, color, width, 0.0, false)
+        PolyLine(Viewer* viewer, osg::Group* parent, osg::ref_ptr<osg::Vec3Array> points, osg::Vec4 color, double width)
+            : PolyLine(viewer, parent, points, color, width, 0.0, false)
         {
         }
 
         void SetPoints(osg::ref_ptr<osg::Vec3Array> points);
-        void AddPoint(osg::Vec3 point);
+        void AddPoint(double x, double y, double z);
         void Reset();
         void Update();
         void Redraw();
@@ -129,13 +131,12 @@ namespace viewer
         void SetNodeMaskDots(unsigned int nodemask);
 
     private:
+        Viewer*                       viewer_;
         bool                          dots3D_;
         void                          Add3DDot(osg::Vec3 pos);
         osg::ref_ptr<osg::DrawArrays> pline_array_;
         osg::ref_ptr<osg::DrawArrays> dots_array_;
     };
-
-    class Viewer;  // forward declaration
 
     class SensorViewFrustum
     {
@@ -145,7 +146,7 @@ namespace viewer
         std::vector<PolyLine*>                       plines_;
         ObjectSensor*                                sensor_;
 
-        SensorViewFrustum(ObjectSensor* sensor, osg::Group* parent);
+        SensorViewFrustum(Viewer* viewer, ObjectSensor* sensor, osg::Group* parent);
         ~SensorViewFrustum();
         void Update();
     };
@@ -184,8 +185,9 @@ namespace viewer
     public:
         osg::ref_ptr<osg::Group> parent_;
         osg::ref_ptr<osg::Group> group_;
+        Viewer*                  viewer_;
 
-        RouteWayPoints(osg::ref_ptr<osg::Group> parent, osg::Vec4 color);
+        RouteWayPoints(osg::ref_ptr<osg::Group> parent, osg::Vec4 color, Viewer* viewer);
         ~RouteWayPoints();
 
         osg::ref_ptr<osg::Geode> CreateWayPointGeometry(double x, double y, double z, double h, double scale);
@@ -558,8 +560,13 @@ namespace viewer
         void         SetWindowTitleFromArgs(int argc, char* argv[]);
         void         RegisterKeyEventCallback(KeyEventCallbackFunc func, void* data);
         void         RegisterImageCallback(ImageCallbackFunc func, void* data);
-        PolyLine*    AddPolyLine(osg::ref_ptr<osg::Vec3Array> points, osg::Vec4 color, double width, double dotsize = 0);
-        PolyLine*    AddPolyLine(osg::Group* parent, osg::ref_ptr<osg::Vec3Array> points, osg::Vec4 color, double width, double dotsize = 0);
+        PolyLine*    AddPolyLine(Viewer* viewer, osg::ref_ptr<osg::Vec3Array> points, osg::Vec4 color, double width, double dotsize = 0);
+        PolyLine*    AddPolyLine(Viewer*                      viewer,
+                                 osg::Group*                  parent,
+                                 osg::ref_ptr<osg::Vec3Array> points,
+                                 osg::Vec4                    color,
+                                 double                       width,
+                                 double                       dotsize = 0);
 
         void SaveImagesToFile(int nrOfFrames);
         int  GetSaveImagesToFile()
@@ -577,7 +584,7 @@ namespace viewer
         void Frame();
 
     private:
-        bool                                         CreateRoadLines(roadmanager::OpenDrive* od);
+        bool                                         CreateRoadLines(Viewer* viewer, roadmanager::OpenDrive* od);
         bool                                         CreateRoadMarkLines(roadmanager::OpenDrive* od);
         int                                          CreateOutlineObject(roadmanager::Outline* outline, osg::Vec4 color);
         osg::ref_ptr<osg::PositionAttitudeTransform> LoadRoadFeature(roadmanager::Road* road, std::string filename);

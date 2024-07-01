@@ -195,7 +195,9 @@ int ParseEntities(viewer::Viewer* viewer, Replay* player)
 
         if (sc->trajPoints->size() == 0)
         {
-            sc->trajPoints->push_back(osg::Vec3d(state->pos.x, state->pos.y, state->pos.z + static_cast<float>(z_offset)));
+            sc->trajPoints->push_back(osg::Vec3f(static_cast<float>(static_cast<double>(state->pos.x) - viewer->origin_[0]),
+                                                 static_cast<float>(static_cast<double>(state->pos.y) - viewer->origin_[1]),
+                                                 state->pos.z + static_cast<float>(z_offset)));
         }
         else
         {
@@ -205,11 +207,15 @@ int ParseEntities(viewer::Viewer* viewer, Replay* player)
                                                                 (*sc->trajPoints)[sc->trajPoints->size() - 2][1]) < minTrajPointDist)
             {
                 // Replace last point until distance is above threshold
-                sc->trajPoints->back() = osg::Vec3d(state->pos.x, state->pos.y, state->pos.z + static_cast<float>(z_offset));
+                sc->trajPoints->back() = osg::Vec3f(static_cast<float>(static_cast<double>(state->pos.x) - viewer->origin_[0]),
+                                                    static_cast<float>(static_cast<double>(state->pos.y) - viewer->origin_[1]),
+                                                    state->pos.z + static_cast<float>(z_offset));
             }
             else
             {
-                sc->trajPoints->push_back(osg::Vec3d(state->pos.x, state->pos.y, state->pos.z + static_cast<float>(z_offset)));
+                sc->trajPoints->push_back(osg::Vec3f(static_cast<float>(static_cast<double>(state->pos.x) - viewer->origin_[0]),
+                                                     static_cast<float>(static_cast<double>(state->pos.y) - viewer->origin_[1]),
+                                                     state->pos.z + static_cast<float>(z_offset)));
             }
         }
 
@@ -237,7 +243,7 @@ int ParseEntities(viewer::Viewer* viewer, Replay* player)
             color = osg::Vec4d(0.9, 0.7, 0.3, 1.0);
         }
         scenarioEntity[static_cast<unsigned int>(i)].trajectory =
-            viewer->AddPolyLine(viewer->trajectoryLines_, scenarioEntity[static_cast<unsigned int>(i)].trajPoints, color, width);
+            viewer->AddPolyLine(viewer, viewer->trajectoryLines_, scenarioEntity[static_cast<unsigned int>(i)].trajPoints, color, width);
     }
 
     return 0;

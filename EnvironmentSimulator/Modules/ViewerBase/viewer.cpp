@@ -221,8 +221,15 @@ osg::ref_ptr<osg::Geode> CreateDotGeometry(double size, osg::Vec4 color, int nrP
     return geode;
 }
 
-PolyLine::PolyLine(osg::Group* parent, osg::ref_ptr<osg::Vec3Array> points, osg::Vec4 color, double width, double dotsize, bool dots3D)
-    : dots_geom_(nullptr),
+PolyLine::PolyLine(Viewer*                      viewer,
+                   osg::Group*                  parent,
+                   osg::ref_ptr<osg::Vec3Array> points,
+                   osg::Vec4                    color,
+                   double                       width,
+                   double                       dotsize,
+                   bool                         dots3D)
+    : viewer_(viewer),
+      dots_geom_(nullptr),
       dot3D_geode_(nullptr),
       dots3D_(dots3D),
       dots_array_(nullptr)
@@ -346,8 +353,10 @@ void PolyLine::SetPoints(osg::ref_ptr<osg::Vec3Array> points)
     Update();
 }
 
-void PolyLine::AddPoint(osg::Vec3 point)
+void PolyLine::AddPoint(double x, double y, double z)
 {
+    osg::Vec3 point(static_cast<float>(x - viewer_->origin_[0]), static_cast<float>(y - viewer_->origin_[1]), static_cast<float>(z));
+
     pline_vertex_data_->push_back(point);
 
     if (dots3D_)
@@ -376,7 +385,7 @@ void PolyLine::Add3DDot(osg::Vec3 pos)
     dots3D_group_->addChild(tx);
 }
 
-SensorViewFrustum::SensorViewFrustum(ObjectSensor* sensor, osg::Group* parent)
+SensorViewFrustum::SensorViewFrustum(Viewer* viewer, ObjectSensor* sensor, osg::Group* parent)
 {
     sensor_ = sensor;
     txNode_ = new osg::PositionAttitudeTransform;
@@ -397,7 +406,7 @@ SensorViewFrustum::SensorViewFrustum(ObjectSensor* sensor, osg::Group* parent)
         osg::ref_ptr<osg::Vec3Array> varray = new osg::Vec3Array;
         varray->push_back(osg::Vec3(0.0f, 0.0f, 0.0f));
         varray->push_back(osg::Vec3(1.0f, 0.0f, 0.0f));
-        PolyLine* pline = new PolyLine(line_group_, varray, osg::Vec4(0.8f, 0.8f, 0.8f, 1.0f), 2.0);
+        PolyLine* pline = new PolyLine(viewer, line_group_, varray, osg::Vec4(0.8f, 0.8f, 0.8f, 1.0f), 2.0);
         plines_.push_back(pline);
     }
 
@@ -646,7 +655,7 @@ void VisibilityCallback::operator()(osg::Node* sa, osg::NodeVisitor* nv)
 
 Trajectory::Trajectory(osg::Group* parent, Viewer* viewer) : parent_(parent), activeRMTrajectory_(0), viewer_(viewer)
 {
-    pline_ = std::make_unique<PolyLine>(parent_, new osg::Vec3Array, osg::Vec4(0.9f, 0.7f, 0.3f, 1.0f), 3.0);
+    pline_ = std::make_unique<PolyLine>(viewer, parent_, new osg::Vec3Array, osg::Vec4(0.9f, 0.7f, 0.3f, 1.0f), 3.0);
 }
 
 void Trajectory::SetActiveRMTrajectory(roadmanager::RMTrajectory* RMTrajectory)
@@ -685,10 +694,11 @@ void Trajectory::Disable()
     pline_->Update();
 }
 
-RouteWayPoints::RouteWayPoints(osg::ref_ptr<osg::Group> parent, osg::Vec4 color) : parent_(parent)
+RouteWayPoints::RouteWayPoints(osg::ref_ptr<osg::Group> parent, osg::Vec4 color, Viewer* viewer) : parent_(parent)
 {
     group_ = new osg::Group;
     group_->setNodeMask(NodeMask::NODE_MASK_ROUTE_WAYPOINTS);
+    viewer_ = viewer;
 
     // Finally attach a simple material for shading properties
     osg::ref_ptr<osg::Material> material_ = new osg::Material;
@@ -782,8 +792,8 @@ void RouteWayPoints::SetWayPoints(roadmanager::Route* route)
     // First put all waypoints on ground
     for (int i = 0; i < static_cast<int>(route->all_waypoints_.size()); i++)
     {
-        group_->addChild(CreateWayPointGeometry(route->all_waypoints_[static_cast<unsigned int>(i)].GetX(),
-                                                route->all_waypoints_[static_cast<unsigned int>(i)].GetY(),
+        group_->addChild(CreateWayPointGeometry(route->all_waypoints_[static_cast<unsigned int>(i)].GetX() - viewer_->origin_[0],
+                                                route->all_waypoints_[static_cast<unsigned int>(i)].GetY() - viewer_->origin_[1],
                                                 route->all_waypoints_[static_cast<unsigned int>(i)].GetZ(),
                                                 route->all_waypoints_[static_cast<unsigned int>(i)].GetH(),
                                                 1.0));
@@ -883,11 +893,11 @@ EntityModel::EntityModel(Viewer*                  viewer,
     blend_color_ = 0;
 
     // Prepare trail of dots
-    trail_ = std::make_unique<PolyLine>(trail_parent, nullptr, trail_color, TRAIL_WIDTH, TRAIL_DOT3D_SIZE, true);
+    trail_ = std::make_unique<PolyLine>(viewer_, trail_parent, nullptr, trail_color, TRAIL_WIDTH, TRAIL_DOT3D_SIZE, true);
     trail_->SetNodeMaskLines(NodeMask::NODE_MASK_TRAIL_LINES);
     trail_->SetNodeMaskDots(NodeMask::NODE_MASK_TRAIL_DOTS);
 
-    routewaypoints_ = std::make_unique<RouteWayPoints>(route_waypoint_parent, trail_color);
+    routewaypoints_ = std::make_unique<RouteWayPoints>(route_waypoint_parent, trail_color, viewer_);
 }
 
 EntityModel::~EntityModel()
@@ -1500,7 +1510,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
         AddGroundSurface();
     }
 
-    if (odrManager->GetNumOfRoads() > 0 && !CreateRoadLines(odrManager))
+    if (odrManager->GetNumOfRoads() > 0 && !CreateRoadLines(this, odrManager))
     {
         LOG("Viewer::Viewer Failed to create road lines!");
     }
@@ -2558,7 +2568,7 @@ bool Viewer::CreateRoadMarkLines(roadmanager::OpenDrive* od)
     return true;
 }
 
-bool Viewer::CreateRoadLines(roadmanager::OpenDrive* od)
+bool Viewer::CreateRoadLines(Viewer* viewer, roadmanager::OpenDrive* od)
 {
     double                z_offset = 0.10;
     roadmanager::Position pos;
@@ -2668,15 +2678,15 @@ bool Viewer::CreateRoadLines(roadmanager::OpenDrive* od)
                     PolyLine* pline = nullptr;
                     if (lane->GetId() == 0)
                     {
-                        pline = AddPolyLine(odrLines_, vertices, osg::Vec4(color_red[0], color_red[1], color_red[2], 1.0), 4.0, 3.0);
+                        pline = AddPolyLine(viewer, odrLines_, vertices, osg::Vec4(color_red[0], color_red[1], color_red[2], 1.0), 4.0, 3.0);
                     }
                     else if (k == 0)
                     {
-                        pline = AddPolyLine(odrLines_, vertices, osg::Vec4(color_blue[0], color_blue[1], color_blue[2], 1.0), 1.5, 3.0);
+                        pline = AddPolyLine(viewer, odrLines_, vertices, osg::Vec4(color_blue[0], color_blue[1], color_blue[2], 1.0), 1.5, 3.0);
                     }
                     else
                     {
-                        pline = AddPolyLine(odrLines_, vertices, osg::Vec4(color_gray[0], color_gray[1], color_gray[2], 1.0), 1.5, 3.0);
+                        pline = AddPolyLine(viewer, odrLines_, vertices, osg::Vec4(color_gray[0], color_gray[1], color_gray[2], 1.0), 1.5, 3.0);
                     }
                     if (pline != nullptr)
                     {
@@ -3590,16 +3600,16 @@ void Viewer::SetWindowTitleFromArgs(int argc, char* argv[])
     SetWindowTitleFromArgs(args);
 }
 
-PolyLine* Viewer::AddPolyLine(osg::ref_ptr<osg::Vec3Array> points, osg::Vec4 color, double width, double dotsize)
+PolyLine* Viewer::AddPolyLine(Viewer* viewer, osg::ref_ptr<osg::Vec3Array> points, osg::Vec4 color, double width, double dotsize)
 {
-    PolyLine* pline = new PolyLine(rootnode_, points, color, width, dotsize);
+    PolyLine* pline = new PolyLine(viewer, root_origin2odr_, points, color, width, dotsize);
     polyLine_.push_back(pline);
     return polyLine_.back();
 }
 
-PolyLine* Viewer::AddPolyLine(osg::Group* parent, osg::ref_ptr<osg::Vec3Array> points, osg::Vec4 color, double width, double dotsize)
+PolyLine* Viewer::AddPolyLine(Viewer* viewer, osg::Group* parent, osg::ref_ptr<osg::Vec3Array> points, osg::Vec4 color, double width, double dotsize)
 {
-    PolyLine* pline = new PolyLine(parent, points, color, width, dotsize);
+    PolyLine* pline = new PolyLine(viewer, parent, points, color, width, dotsize);
     polyLine_.push_back(pline);
     return pline;
 }
