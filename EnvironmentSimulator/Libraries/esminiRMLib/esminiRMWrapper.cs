@@ -202,50 +202,25 @@ namespace OpenDRIVE
         [DllImport(LIB_NAME, EntryPoint = "RM_DeletePosition")]
         public static extern int CopyPosition(int handle);
 
-        /// <summary>Specify if and how position object will align to the road. This version
-        /// sets same mode for all components: Heading, Pitch, Roll and Z (elevation)</summary>
-        /// <param name="mode">@param mode as defined by roadmanager::Position::ALIGN_MODE:
-        /// 0 = ALIGN_NONE // No alignment to road
-        /// 1 = ALIGN_SOFT // Align to road but add relative orientation
-        /// 2 = ALIGN_HARD // Completely align to road, disregard relative orientation </param>
-        [DllImport(LIB_NAME, EntryPoint = "RM_SetAlignMode")]
-        public static extern void RM_SetAlignMode(int handle, int mode);
+        /// <summary>Specify if and how position object will align to the road. The setting is done for individual components:
+        /// Z (elevation), Heading, Pitch, Roll and separately for set- and update operation. Set operations represents
+        /// when position is affected by API calls, e.g. updateObjectWorldPos(). Update operations represents when the
+        /// position is updated implicitly by the scenarioengine, e.g. default controller moving a vehicle along the lane.
+        /// </summary>
+        /// <param hande Handle to the position object/>
+        /// <param> mode Bitmask combining values from roadmanager::PosMode enum
+        /// example: To set relative z and absolute roll: (Z_REL | R_ABS) or (7 | 12288) = (7 + 12288) = 12295</param>
+        /// <param> type Type of operations the setting applies to. SET (explicit set-functions) or UPDATE (updates by controllers),
+        /// according to roadmanager::PosModeType</param>
+        [DllImport(LIB_NAME, EntryPoint = "RM_SetObjectPositionMode")]
+        public static extern void RM_SetObjectPositionMode(int handle, int type, int mode);
 
-        /// <summary>Specify if and how position object will align to the road. This version
-        /// sets same mode for only heading component.</summary>
-        /// <param name="mode">@param mode as defined by roadmanager::Position::ALIGN_MODE:
-        /// 0 = ALIGN_NONE // No alignment to road
-        /// 1 = ALIGN_SOFT // Align to road but add relative orientation
-        /// 2 = ALIGN_HARD // Completely align to road, disregard relative orientation </param>
-        [DllImport(LIB_NAME, EntryPoint = "RM_SetAlignModeH")]
-        public static extern void RM_SetAlignModeH(int handle, int mode);
-
-        /// <summary>Specify if and how position object will align to the road. This version
-        /// sets same mode for only pitch component.</summary>
-        /// <param name="mode">@param mode as defined by roadmanager::Position::ALIGN_MODE:
-        /// 0 = ALIGN_NONE // No alignment to road
-        /// 1 = ALIGN_SOFT // Align to road but add relative orientation
-        /// 2 = ALIGN_HARD // Completely align to road, disregard relative orientation </param>
-        [DllImport(LIB_NAME, EntryPoint = "RM_SetAlignModeP")]
-        public static extern void RM_SetAlignModeP(int handle, int mode);
-
-        /// <summary>Specify if and how position object will align to the road. This version
-        /// sets same mode for only roll component.</summary>
-        /// <param name="mode">@param mode as defined by roadmanager::Position::ALIGN_MODE:
-        /// 0 = ALIGN_NONE // No alignment to road
-        /// 1 = ALIGN_SOFT // Align to road but add relative orientation
-        /// 2 = ALIGN_HARD // Completely align to road, disregard relative orientation </param>
-        [DllImport(LIB_NAME, EntryPoint = "RM_SetAlignModeR")]
-        public static extern void RM_SetAlignModeR(int handle, int mode);
-
-        /// <summary>Specify if and how position object will align to the road. This version
-        /// sets same mode for only Z (elevation) component.</summary>
-        /// <param name="mode">@param mode as defined by roadmanager::Position::ALIGN_MODE:
-        /// 0 = ALIGN_NONE // No alignment to road
-        /// 1 = ALIGN_SOFT // Align to road but add relative orientation
-        /// 2 = ALIGN_HARD // Completely align to road, disregard relative orientation </param>
-        [DllImport(LIB_NAME, EntryPoint = "RM_SetAlignModeZ")]
-        public static extern void RM_SetAlignModeZ(int handle, int mode);
+        /// <summary Set to default mode how position object will align to the road/>
+        /// <param hande Handle to the position object/>
+        /// <param> type Type of operations the setting applies to. SET (explicit set-functions) or UPDATE (updates by controllers),
+        /// according to roadmanager::PosModeType</param>
+        [DllImport(LIB_NAME, EntryPoint = "RM_SetObjectPositionModeDefault")]
+        public static extern void RM_SetObjectPositionModeDefault(int handle, int type);
 
         [DllImport(LIB_NAME, EntryPoint = "RM_SetSnapLaneTypes")]
         /// <summary>Specify which lane types the position object snaps to (is aware of)</summary>
