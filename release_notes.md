@@ -1,9 +1,28 @@
 ## esmini release notes
 
+### 2024-07-01 Version 2.37.15
+
+Improvements and fixes:
+- Support (partly) string IDs for roads and junctions
+  - integer ID is generated and assigned for internal use
+  - the integer ID is the one being logged and reported
+- Add arguments to ignore z, pitch and roll inputs ([PR #583](https://github.com/esmini/esmini/issues/583))
+  - aligning the vehicle to the road instead
+- Improve support for distant road networks
+  - very high coordinates (>1+E6) previously resulted in shaky graphics
+  - now fixed by coordinate transformation
+- Fix outdated C# RMLib wrapper functions ([issue #584](https://github.com/esmini/esmini/issues/584))
+- Make road alignment on Controller activation optional
+  - previously heading was always aligned at activation/deactivation
+  - now behavior is set by each controller
+- Fix range for lane Id randomizer in odrviewer
+- Fix bug in junction Id check
+  - junction ID 0 mistaken for no junction
+- Accept and adjust lane section s-value beyond road length
+
 ### 2024-06-26 Version 2.37.14
 
 Improvements and fixes:
-
 - Fix ALKS ref driver wrong TimeHeadway edge case calculation
   - was wrongly set to inf (along with ttc) when relative speed < 0
 - Add a few parameters to ALKS ref driver
@@ -19,7 +38,6 @@ Improvements and fixes:
 ### 2024-06-24 Version 2.37.13
 
 Improvements and fixes:
-
 - Embed execution search paths for dynamic libraries on Linux
   - $origin (location of exe file) and expected lib location
   - applies to esmini-dyn and dynamically linked protobuf
@@ -32,7 +50,6 @@ Improvements and fixes:
 ### 2024-06-13 Version 2.37.12
 
 Improvements and fixes:
-
 - Make the swarm traffic direction based on RHT or LHT ([PR #575](https://github.com/esmini/esmini/issues/575))
 - Add lib [function](https://github.com/esmini/esmini/blob/96f270531c1b4c2d57041a9d783352e256d64427/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L974-L984) to get type of lane object is within
   - ignoring any lane type snap settings
