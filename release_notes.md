@@ -1,5 +1,11 @@
 ## esmini release notes
 
+### 2024-07-01 Version 2.37.16
+
+Fixes of bugs introduced in v2.37.15:
+- Fix wrong positioning of waypoint and trajectory visualization
+- Fix intermittent coloring issue in viewer (due to scenegraph misconfig)
+
 ### 2024-07-01 Version 2.37.15
 
 Improvements and fixes:
