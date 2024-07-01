@@ -1406,20 +1406,20 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
 
     roadSensors_ = new osg::Group;
     roadSensors_->setNodeMask(NodeMask::NODE_MASK_ODR_FEATURES);
-    env_origin2odr_->addChild(roadSensors_);
+    root_origin2odr_->addChild(roadSensors_);
     trails_ = new osg::Group;
-    rootnode_->addChild(trails_);
+    root_origin2odr_->addChild(trails_);
     odrLines_ = new osg::Group;
     odrLines_->setNodeMask(NodeMask::NODE_MASK_ODR_FEATURES);
-    env_origin2odr_->addChild(odrLines_);
+    root_origin2odr_->addChild(odrLines_);
     osiFeatures_ = new osg::Group;
-    env_origin2odr_->addChild(osiFeatures_);
+    root_origin2odr_->addChild(osiFeatures_);
     trajectoryLines_ = new osg::Group;
     trajectoryLines_->setNodeMask(NodeMask::NODE_MASK_TRAJECTORY_LINES);
-    env_origin2odr_->addChild(trajectoryLines_);
+    root_origin2odr_->addChild(trajectoryLines_);
     routewaypoints_ = new osg::Group;
     routewaypoints_->setNodeMask(NodeMask::NODE_MASK_ROUTE_WAYPOINTS);
-    env_origin2odr_->addChild(routewaypoints_);
+    root_origin2odr_->addChild(routewaypoints_);
 
     exe_path_ = exe_path;
 
