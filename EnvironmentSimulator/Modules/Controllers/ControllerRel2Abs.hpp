@@ -74,18 +74,18 @@ namespace scenarioengine::controller
 
         ControllerRel2Abs(InitArgs* args);
 
-        //std::string GetName() const override;
-    
+        // std::string GetName() const override;
+
         controller::Type GetType() const override;
 
-        void Init();
-        void Step(double timeStep);
-        int  Activate(ControlActivationMode lat_activation_mode,
-                      ControlActivationMode long_activation_mode,
-                      ControlActivationMode light_activation_mode,
-                      ControlActivationMode anim_activation_mode);
+        void         Init();
+        void         Step(double timeStep);
+        int          Activate(ControlActivationMode lat_activation_mode,
+                              ControlActivationMode long_activation_mode,
+                              ControlActivationMode light_activation_mode,
+                              ControlActivationMode anim_activation_mode);
         virtual void ReportKeyEvent(int key, bool down);
-        void CopyPosition(Object* object, position_copy* obj_copy);
+        void         CopyPosition(Object* object, position_copy* obj_copy);
         // Riz
         /*
         static const char* GetTypeNameStatic()

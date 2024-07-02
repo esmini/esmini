@@ -546,8 +546,10 @@ void AssignControllerAction::Start(double simTime)
         {
             if (!controller_->IsActive())
             {
-                if (lat_activation_mode_ != controller::ControlActivationMode::UNDEFINED || long_activation_mode_ != controller::ControlActivationMode::UNDEFINED ||
-                    light_activation_mode_ != controller::ControlActivationMode::UNDEFINED || anim_activation_mode_ != controller::ControlActivationMode::UNDEFINED)
+                if (lat_activation_mode_ != controller::ControlActivationMode::UNDEFINED ||
+                    long_activation_mode_ != controller::ControlActivationMode::UNDEFINED ||
+                    light_activation_mode_ != controller::ControlActivationMode::UNDEFINED ||
+                    anim_activation_mode_ != controller::ControlActivationMode::UNDEFINED)
                 {
                     controller_->Activate(lat_activation_mode_, long_activation_mode_, light_activation_mode_, anim_activation_mode_);
                     LOG("Controller %s activated (lat %s, long %s, light %s, anim %s), domain mask=0x%X",
@@ -605,7 +607,7 @@ void ActivateControllerAction::Start(double simTime)
         if (controller_ != nullptr)
         {
             // first deactivate any controller active on the requested domain(s)
-            controller::ControllerBase* ctrl = nullptr;     
+            controller::ControllerBase* ctrl = nullptr;
             if (long_activation_mode_ == controller::ControlActivationMode::ON &&
                 (ctrl = object_->GetControllerActiveOnDomain(ControlDomains::DOMAIN_LONG)) != nullptr)
             {
@@ -1768,7 +1770,8 @@ void TeleportAction::Start(double simTime)
         scenarioEngine_->ResetEvents();  // Ghost-project. Reset events finished by ghost.
     }
 
-    if (object_->IsControllerModeOnAnyOfDomains(controller::ControlOperationMode::MODE_OVERRIDE, static_cast<unsigned int>(ControlDomains::DOMAIN_LAT_AND_LONG)))
+    if (object_->IsControllerModeOnAnyOfDomains(controller::ControlOperationMode::MODE_OVERRIDE,
+                                                static_cast<unsigned int>(ControlDomains::DOMAIN_LAT_AND_LONG)))
     {
         // motion controlled elsewhere
         return;

@@ -32,16 +32,16 @@ namespace scenarioengine::controller
     public:
         ControllerInteractive(InitArgs* args);
 
-        //std::string GetName() const override;
-    
+        // std::string GetName() const override;
+
         controller::Type GetType() const override;
 
-        void Init();
-        void Step(double timeStep);
-        int  Activate(ControlActivationMode lat_activation_mode,
-                      ControlActivationMode long_activation_mode,
-                      ControlActivationMode light_activation_mode,
-                      ControlActivationMode anim_activation_mode);
+        void         Init();
+        void         Step(double timeStep);
+        int          Activate(ControlActivationMode lat_activation_mode,
+                              ControlActivationMode long_activation_mode,
+                              ControlActivationMode light_activation_mode,
+                              ControlActivationMode anim_activation_mode);
         virtual void ReportKeyEvent(int key, bool down);
         // Riz
         /*

@@ -24,71 +24,71 @@
 namespace scenarioengine
 {
 
-class ScenarioPlayer;
-class ScenarioEngine;
+    class ScenarioPlayer;
+    class ScenarioEngine;
 
-namespace controller
-{
-    // base class for controllers
-    class ControllerFollowGhost : public controller::EmbeddedController
+    namespace controller
     {
-    public:
-        enum class FollowMode
+        // base class for controllers
+        class ControllerFollowGhost : public controller::EmbeddedController
         {
-            FOLLOW_MODE_NONE,
-            FOLLOW_MODE_TIME,
-            FOLLOW_MODE_POSITION,
+        public:
+            enum class FollowMode
+            {
+                FOLLOW_MODE_NONE,
+                FOLLOW_MODE_TIME,
+                FOLLOW_MODE_POSITION,
+            };
+
+            ControllerFollowGhost(InitArgs* args);
+
+            // std::string GetName() const override;
+
+            controller::Type GetType() const override;
+
+            // Riz
+            /*
+            static const char* GetTypeNameStatic()
+            {
+                return CONTROLLER_FOLLOW_GHOST_TYPE_NAME;
+            }
+            virtual const char* GetTypeName()
+            {
+                return GetTypeNameStatic();
+            }
+            static int GetTypeStatic()
+            {
+                return CONTROLLER_TYPE_FOLLOW_GHOST;
+            }
+            virtual int GetType()
+            {
+                return GetTypeStatic();
+            }
+            */
+            void SetScenarioEngine(ScenarioEngine* scenarioEngine)
+            {
+                scenarioEngine_ = scenarioEngine;
+            };
+
+            void         Init();
+            void         Step(double timeStep);
+            int          Activate(ControlActivationMode lat_activation_mode,
+                                  ControlActivationMode long_activation_mode,
+                                  ControlActivationMode light_activation_mode,
+                                  ControlActivationMode anim_activation_mode);
+            virtual void ReportKeyEvent(int key, bool down);
+
+        private:
+            vehicle::Vehicle vehicle_;
+            double           headstart_time_;
+            FollowMode       follow_mode_;
+            ScenarioEngine*  scenarioEngine_;
+            double           lookahead_speed_;
+            double           min_lookahead_speed_;
+            double           lookahead_steering_;
+            double           min_lookahead_steering_;
         };
 
-        ControllerFollowGhost(InitArgs* args);
-
-        //std::string GetName() const override;
-    
-        controller::Type GetType() const override;
-
-        // Riz
-        /*
-        static const char* GetTypeNameStatic()
-        {
-            return CONTROLLER_FOLLOW_GHOST_TYPE_NAME;
-        }
-        virtual const char* GetTypeName()
-        {
-            return GetTypeNameStatic();
-        }
-        static int GetTypeStatic()
-        {
-            return CONTROLLER_TYPE_FOLLOW_GHOST;
-        }
-        virtual int GetType()
-        {
-            return GetTypeStatic();
-        }
-        */
-        void SetScenarioEngine(ScenarioEngine* scenarioEngine)
-        {
-            scenarioEngine_ = scenarioEngine;
-        };
-
-        void Init();
-        void Step(double timeStep);
-        int  Activate(ControlActivationMode lat_activation_mode,
-                      ControlActivationMode long_activation_mode,
-                      ControlActivationMode light_activation_mode,
-                      ControlActivationMode anim_activation_mode);
-        virtual void ReportKeyEvent(int key, bool down);
-
-    private:
-        vehicle::Vehicle vehicle_;
-        double           headstart_time_;
-        FollowMode       follow_mode_;
-        ScenarioEngine*  scenarioEngine_;
-        double           lookahead_speed_;
-        double           min_lookahead_speed_;
-        double           lookahead_steering_;
-        double           min_lookahead_steering_;
-    };
-
-    ControllerBase* InstantiateControllerFollowGhost(void* args);
-} //namespace controller    
+        ControllerBase* InstantiateControllerFollowGhost(void* args);
+    }  // namespace controller
 }  // namespace scenarioengine

@@ -40,8 +40,8 @@ namespace scenarioengine::controller
     public:
         ControllerFollowRoute(InitArgs *args);
 
-        //std::string GetName() const override;
-    
+        // std::string GetName() const override;
+
         controller::Type GetType() const override;
 
         // Riz
@@ -63,14 +63,14 @@ namespace scenarioengine::controller
             return GetTypeStatic();
         }
         */
-        void Init();
-        void Step(double timeStep);
-        int  Activate(ControlActivationMode lat_activation_mode,
-                      ControlActivationMode long_activation_mode,
-                      ControlActivationMode light_activation_mode,
-                      ControlActivationMode anim_activation_mode);
+        void         Init();
+        void         Step(double timeStep);
+        int          Activate(ControlActivationMode lat_activation_mode,
+                              ControlActivationMode long_activation_mode,
+                              ControlActivationMode light_activation_mode,
+                              ControlActivationMode anim_activation_mode);
         virtual void ReportKeyEvent(int key, bool down);
-        void SetScenarioEngine(ScenarioEngine *scenarioEngine)
+        void         SetScenarioEngine(ScenarioEngine *scenarioEngine)
         {
             scenarioEngine_ = scenarioEngine;
         };
@@ -168,4 +168,4 @@ namespace scenarioengine::controller
     };
 
     ControllerBase *InstantiateControllerFollowRoute(void *args);
-}  // namespace scenarioengine
+}  // namespace scenarioengine::controller

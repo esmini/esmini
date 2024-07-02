@@ -539,7 +539,7 @@ void SwarmTrafficAction::spawn(Solutions sols, int replace, double simTime)
 
             controller::InitArgs args;
             args.name       = "Swarm ACC controller";
-            args.type       = controller::ToStr( controller::Type::CONTROLLER_TYPE_ACC);
+            args.type       = controller::ToStr(controller::Type::CONTROLLER_TYPE_ACC);
             args.entities   = entities_;
             args.gateway    = gateway_;
             args.parameters = 0;
@@ -580,7 +580,10 @@ void SwarmTrafficAction::spawn(Solutions sols, int replace, double simTime)
 
             vehicle->AssignController(acc);
             acc->LinkObject(vehicle);
-            acc->Activate(controller::ControlActivationMode::OFF, controller::ControlActivationMode::ON, controller::ControlActivationMode::OFF, controller::ControlActivationMode::OFF);
+            acc->Activate(controller::ControlActivationMode::OFF,
+                          controller::ControlActivationMode::ON,
+                          controller::ControlActivationMode::OFF,
+                          controller::ControlActivationMode::OFF);
 
             SpawnInfo sInfo = {
                 id,                    // Vehicle ID

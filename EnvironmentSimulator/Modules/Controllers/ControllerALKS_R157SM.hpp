@@ -602,8 +602,8 @@ namespace scenarioengine::controller
         ControllerALKS_R157SM(InitArgs* args);
         ~ControllerALKS_R157SM();
 
-        //std::string GetName() const override;
-    
+        // std::string GetName() const override;
+
         controller::Type GetType() const override;
 
         /*
@@ -624,16 +624,16 @@ namespace scenarioengine::controller
             return GetTypeStatic();
         }
         */
-        void Init();
-        void Step(double timeStep);
-        void LinkObject(Object* object);
-        int  Activate(ControlActivationMode lat_activation_mode,
-                      ControlActivationMode long_activation_mode,
-                      ControlActivationMode light_activation_mode,
-                      ControlActivationMode anim_activation_mode);
+        void         Init();
+        void         Step(double timeStep);
+        void         LinkObject(Object* object);
+        int          Activate(ControlActivationMode lat_activation_mode,
+                              ControlActivationMode long_activation_mode,
+                              ControlActivationMode light_activation_mode,
+                              ControlActivationMode anim_activation_mode);
         virtual void ReportKeyEvent(int key, bool down);
-        void SetScenarioEngine(ScenarioEngine* scenario_engine) override;
+        void         SetScenarioEngine(ScenarioEngine* scenario_engine) override;
     };
 
     ControllerBase* InstantiateControllerALKS_R157SM(void* args);
-}  // namespace scenarioengine
+}  // namespace scenarioengine::controller

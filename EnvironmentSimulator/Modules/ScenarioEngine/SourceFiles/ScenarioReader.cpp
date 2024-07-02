@@ -78,7 +78,7 @@ void ScenarioReader::LoadControllers()
     // Register all internal controllers. The user may register custom ones as well before reading the scenario.
     RegisterController(controller::ToStr(controller::Type::CONTROLLER_TYPE_SLOPPY_DRIVER), controller::InstantiateControllerSloppyDriver);
     RegisterController(controller::ToStr(controller::Type::CONTROLLER_TYPE_INTERACTIVE), controller::InstantiateControllerInteractive);
-    RegisterController( controller::ToStr(controller::Type::CONTROLLER_TYPE_FOLLOW_GHOST) , controller::InstantiateControllerFollowGhost);
+    RegisterController(controller::ToStr(controller::Type::CONTROLLER_TYPE_FOLLOW_GHOST), controller::InstantiateControllerFollowGhost);
     RegisterController(controller::ToStr(controller::Type::CONTROLLER_TYPE_FOLLOW_ROUTE), controller::InstantiateControllerFollowRoute);
 #ifdef _USE_SUMO
     RegisterController(controller::ToStr(controller::Type::CONTROLLER_TYPE_SUMO), controller::InstantiateControllerSumo);
@@ -88,19 +88,20 @@ void ScenarioReader::LoadControllers()
     RegisterController(controller::ToStr(controller::Type::CONTROLLER_TYPE_ACC), controller::InstantiateControllerACC);
     RegisterController(controller::ToStr(controller::Type::CONTROLLER_TYPE_ALKS), controller::InstantiateControllerALKS);
     RegisterController(controller::ToStr(controller::Type::CONTROLLER_TYPE_UDP_DRIVER), controller::InstantiateControllerUDPDriver);
-    RegisterController(controller::ToStr(controller::Type::CONTROLLER_TYPE_ECE_ALKS_REF_DRIVER), controller::InstantiateControllerECE_ALKS_REF_DRIVER);
+    RegisterController(controller::ToStr(controller::Type::CONTROLLER_TYPE_ECE_ALKS_REF_DRIVER),
+                       controller::InstantiateControllerECE_ALKS_REF_DRIVER);
     RegisterController(controller::ToStr(controller::Type::CONTROLLER_ALKS_R157SM), controller::InstantiateControllerALKS_R157SM);
     RegisterController(controller::ToStr(controller::Type::CONTROLLER_TYPE_LOOMING), controller::InstantiateControllerLooming);
     RegisterController(controller::ToStr(controller::Type::CONTROLLER_TYPE_OFFROAD_FOLLOWER), controller::InstantiateControllerOffroadFollower);
 
-    // Loading integrated controllers    
+    // Loading integrated controllers
     controller::ControllerIntegrator controllerIntegrator("/home/mrizwans/volvo/esmini/bin/IntegratedControllers");
-    auto integratedControllers = controllerIntegrator.LoadControllersInitializers();
+    auto                             integratedControllers = controllerIntegrator.LoadControllersInitializers();
     std::cout << "----found " << integratedControllers.size() << " integrated controllers" << std::endl;
-    for( const auto& ctrl : integratedControllers)
+    for (const auto &ctrl : integratedControllers)
     {
         RegisterController(ctrl.first, ctrl.second);
-    }    
+    }
 }
 
 void ScenarioReader::UnloadControllers()
@@ -965,11 +966,11 @@ MiscObject *ScenarioReader::parseOSCMiscObject(pugi::xml_node miscObjectNode)
     return miscObject;
 }
 
-controller::ControllerBase* ScenarioReader::parseOSCObjectController(pugi::xml_node controllerNode)
+controller::ControllerBase *ScenarioReader::parseOSCObjectController(pugi::xml_node controllerNode)
 {
-    std::string   name       = parameters.ReadAttribute(controllerNode, "name");
-    controller::ControllerBase* controller = 0;
-    OSCProperties properties;
+    std::string                 name       = parameters.ReadAttribute(controllerNode, "name");
+    controller::ControllerBase *controller = 0;
+    OSCProperties               properties;
 
     // First check for parameter declaration
     pugi::xml_node paramDecl = controllerNode.child("ParameterDeclarations");
@@ -1434,8 +1435,8 @@ int ScenarioReader::parseEntities()
         std::string entitiesChildName(entitiesChild.name());
         if (entitiesChildName == "ScenarioObject")
         {
-            Object     *obj  = 0;
-            controller::ControllerBase* ctrl = 0;
+            Object                     *obj  = 0;
+            controller::ControllerBase *ctrl = 0;
 
             // First read the object
             pugi::xml_node objectChild;
@@ -3100,7 +3101,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                     for (pugi::xml_node controllerDefNode = controllerChild.first_child(); controllerDefNode;
                          controllerDefNode                = controllerDefNode.next_sibling())
                     {
-                        controller::ControllerBase* controller = 0;
+                        controller::ControllerBase *controller = 0;
                         if (controllerDefNode.name() == std::string("Controller"))
                         {
                             controller = parseOSCObjectController(controllerDefNode);

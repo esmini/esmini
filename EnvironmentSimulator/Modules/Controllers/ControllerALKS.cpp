@@ -24,21 +24,21 @@
 namespace scenarioengine::controller
 {
 
-ControllerBase* InstantiateControllerALKS(void* args)
-{
-    InitArgs* initArgs = static_cast<InitArgs*>(args);
+    ControllerBase* InstantiateControllerALKS(void* args)
+    {
+        InitArgs* initArgs = static_cast<InitArgs*>(args);
 
-    return new ControllerALKS(initArgs);
-}
-/*
-std::string ControllerALKS::GetName() const
-{
-    return CONTROLLER_ALKS_TYPE_NAME;
-}
-*/  
-controller::Type ControllerALKS::GetType() const 
-{
-    return CONTROLLER_TYPE_ALKS;
-}
+        return new ControllerALKS(initArgs);
+    }
+    /*
+    std::string ControllerALKS::GetName() const
+    {
+        return CONTROLLER_ALKS_TYPE_NAME;
+    }
+    */
+    controller::Type ControllerALKS::GetType() const
+    {
+        return CONTROLLER_TYPE_ALKS;
+    }
 
-}
+}  // namespace scenarioengine::controller

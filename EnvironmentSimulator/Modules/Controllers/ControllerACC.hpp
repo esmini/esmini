@@ -26,15 +26,15 @@ namespace scenarioengine::controller
     public:
         ControllerACC(InitArgs* args);
         virtual controller::Type GetType() const;
-        void Init();
-        void InitPostPlayer();
-        void Step(double timeStep);
-        int  Activate(ControlActivationMode lat_activation_mode,
-                      ControlActivationMode long_activation_mode,
-                      ControlActivationMode light_activation_mode,
-                      ControlActivationMode anim_activation_mode);
-        virtual void ReportKeyEvent(int key, bool down);
-        void SetSetSpeed(double setSpeed);
+        void                     Init();
+        void                     InitPostPlayer();
+        void                     Step(double timeStep);
+        int                      Activate(ControlActivationMode lat_activation_mode,
+                                          ControlActivationMode long_activation_mode,
+                                          ControlActivationMode light_activation_mode,
+                                          ControlActivationMode anim_activation_mode);
+        virtual void             ReportKeyEvent(int key, bool down);
+        void                     SetSetSpeed(double setSpeed);
 
     private:
         vehicle::Vehicle vehicle_;

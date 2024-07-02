@@ -106,19 +106,19 @@ namespace scenarioengine::controller
         ControllerUDPDriver(InitArgs* args);
         ~ControllerUDPDriver();
 
-        //std::string GetName() const override;
-    
+        // std::string GetName() const override;
+
         controller::Type GetType() const override;
 
         std::string InputMode2Str(InputMode inputMode);
         std::string ExecMode2Str(ExecMode execMode);
 
-        void Init();
-        void Step(double timeStep);
-        int  Activate(controller::ControlActivationMode lat_activation_mode,
-                      controller::ControlActivationMode long_activation_mode,
-                      controller::ControlActivationMode light_activation_mode,
-                      controller::ControlActivationMode anim_activation_mode);
+        void         Init();
+        void         Step(double timeStep);
+        int          Activate(controller::ControlActivationMode lat_activation_mode,
+                              controller::ControlActivationMode long_activation_mode,
+                              controller::ControlActivationMode light_activation_mode,
+                              controller::ControlActivationMode anim_activation_mode);
         virtual void ReportKeyEvent(int key, bool down);
         /*
         static const char* GetTypeNameStatic()
@@ -152,4 +152,4 @@ namespace scenarioengine::controller
     };
 
     ControllerBase* InstantiateControllerUDPDriver(void* args);
-}  // namespace scenarioengine
+}  // namespace scenarioengine::controller

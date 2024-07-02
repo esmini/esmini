@@ -14,94 +14,94 @@
 #include "Entities.hpp"
 #include "ScenarioGateway.hpp"
 
-//using namespace scenarioengine::controller;
+// using namespace scenarioengine::controller;
 namespace scenarioengine::controller
 {
-ControllerBase* InstantiateControllerExternal(void* args)
-{
-    InitArgs* initArgs = static_cast<InitArgs*>(args);
-
-    return new ControllerExternal(initArgs);
-}
-
-ControllerExternal::ControllerExternal(InitArgs* args) : EmbeddedController(args), useGhost_(false), headstart_time_(3.0)
-{
-    if (args && args->properties && args->properties->ValueExists("useGhost"))
+    ControllerBase* InstantiateControllerExternal(void* args)
     {
-        useGhost_ = (args->properties->GetValueStr("useGhost") == "true" || args->properties->GetValueStr("useGhost") == "True");
+        InitArgs* initArgs = static_cast<InitArgs*>(args);
+
+        return new ControllerExternal(initArgs);
     }
 
-    if (args && args->properties && args->properties->ValueExists("headstartTime"))
+    ControllerExternal::ControllerExternal(InitArgs* args) : EmbeddedController(args), useGhost_(false), headstart_time_(3.0)
     {
-        headstart_time_ = strtod(args->properties->GetValueStr("headstartTime"));
-    }
-}
-
-void ControllerExternal::Init()
-{
-    if (object_)
-    {
-        object_->SetHeadstartTime(headstart_time_);
-    }
-    else if (useGhost_)
-    {
-        LOG("External controller with ghost needs to be assigned by ObjectController");
-        LOG("  in the Init section, in order for the headstart time to be correctly registered.");
-        LOG("  -> ignoring the headstartTime attribute.");
-    }
-
-    EmbeddedController::Init();
-}
-
-void ControllerExternal::Step(double timeStep)
-{
-    if (object_->ghost_)
-    {
-        if (object_->ghost_->trail_.FindClosestPoint(object_->pos_.GetX(),
-                                                     object_->pos_.GetY(),
-                                                     object_->trail_closest_pos_,
-                                                     object_->trail_follow_index_,
-                                                     object_->trail_follow_index_) == 0)
+        if (args && args->properties && args->properties->ValueExists("useGhost"))
         {
-            /*if (object_->ghost_->trail_.FindClosestPoint(object_->pos_.GetX(), object_->pos_.GetY(),
-            object_->trail_closest_pos_[0], object_->trail_closest_pos_[1],
-            object_->trail_follow_s_, object_->trail_follow_index_, object_->trail_follow_index_) == 0)
-    {*/
-            object_->trail_closest_pos_.z = object_->pos_.GetZ();
+            useGhost_ = (args->properties->GetValueStr("useGhost") == "true" || args->properties->GetValueStr("useGhost") == "True");
         }
-        else
+
+        if (args && args->properties && args->properties->ValueExists("headstartTime"))
         {
-            // Failed find point along trail, copy entity position
-            object_->trail_closest_pos_.x = object_->pos_.GetX();
-            object_->trail_closest_pos_.y = object_->pos_.GetY();
-            object_->trail_closest_pos_.z = object_->pos_.GetZ();
+            headstart_time_ = strtod(args->properties->GetValueStr("headstartTime"));
         }
     }
 
-    EmbeddedController::Step(timeStep);
-}
+    void ControllerExternal::Init()
+    {
+        if (object_)
+        {
+            object_->SetHeadstartTime(headstart_time_);
+        }
+        else if (useGhost_)
+        {
+            LOG("External controller with ghost needs to be assigned by ObjectController");
+            LOG("  in the Init section, in order for the headstart time to be correctly registered.");
+            LOG("  -> ignoring the headstartTime attribute.");
+        }
 
-int ControllerExternal::Activate(ControlActivationMode lat_activation_mode,
-                                 ControlActivationMode long_activation_mode,
-                                 ControlActivationMode light_activation_mode,
-                                 ControlActivationMode anim_activation_mode)
-{
-    return EmbeddedController::Activate(lat_activation_mode, long_activation_mode, light_activation_mode, anim_activation_mode);
-}
+        EmbeddedController::Init();
+    }
 
-void ControllerExternal::ReportKeyEvent(int key, bool down)
-{
-    (void)key;
-    (void)down;
-}
-/*
-std::string ControllerExternal::GetName() const
-{
-    return CONTROLLER_EXTERNAL_TYPE_NAME;
-}
-*/    
-controller::Type ControllerExternal::GetType() const 
-{
-    return CONTROLLER_TYPE_EXTERNAL;
-}
-}
+    void ControllerExternal::Step(double timeStep)
+    {
+        if (object_->ghost_)
+        {
+            if (object_->ghost_->trail_.FindClosestPoint(object_->pos_.GetX(),
+                                                         object_->pos_.GetY(),
+                                                         object_->trail_closest_pos_,
+                                                         object_->trail_follow_index_,
+                                                         object_->trail_follow_index_) == 0)
+            {
+                /*if (object_->ghost_->trail_.FindClosestPoint(object_->pos_.GetX(), object_->pos_.GetY(),
+                object_->trail_closest_pos_[0], object_->trail_closest_pos_[1],
+                object_->trail_follow_s_, object_->trail_follow_index_, object_->trail_follow_index_) == 0)
+        {*/
+                object_->trail_closest_pos_.z = object_->pos_.GetZ();
+            }
+            else
+            {
+                // Failed find point along trail, copy entity position
+                object_->trail_closest_pos_.x = object_->pos_.GetX();
+                object_->trail_closest_pos_.y = object_->pos_.GetY();
+                object_->trail_closest_pos_.z = object_->pos_.GetZ();
+            }
+        }
+
+        EmbeddedController::Step(timeStep);
+    }
+
+    int ControllerExternal::Activate(ControlActivationMode lat_activation_mode,
+                                     ControlActivationMode long_activation_mode,
+                                     ControlActivationMode light_activation_mode,
+                                     ControlActivationMode anim_activation_mode)
+    {
+        return EmbeddedController::Activate(lat_activation_mode, long_activation_mode, light_activation_mode, anim_activation_mode);
+    }
+
+    void ControllerExternal::ReportKeyEvent(int key, bool down)
+    {
+        (void)key;
+        (void)down;
+    }
+    /*
+    std::string ControllerExternal::GetName() const
+    {
+        return CONTROLLER_EXTERNAL_TYPE_NAME;
+    }
+    */
+    controller::Type ControllerExternal::GetType() const
+    {
+        return CONTROLLER_TYPE_EXTERNAL;
+    }
+}  // namespace scenarioengine::controller

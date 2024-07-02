@@ -39,8 +39,8 @@ namespace scenarioengine::controller
     public:
         ControllerLooming(InitArgs* args);
 
-        //std::string GetName() const override;
-    
+        // std::string GetName() const override;
+
         controller::Type GetType() const override;
 
         // Riz
@@ -62,19 +62,19 @@ namespace scenarioengine::controller
             return GetTypeStatic();
         }
         */
-        void Init();
-        int  Activate(ControlActivationMode lat_activation_mode,
-                      ControlActivationMode long_activation_mode,
-                      ControlActivationMode light_activation_mode,
-                      ControlActivationMode anim_activation_mode);
+        void         Init();
+        int          Activate(ControlActivationMode lat_activation_mode,
+                              ControlActivationMode long_activation_mode,
+                              ControlActivationMode light_activation_mode,
+                              ControlActivationMode anim_activation_mode);
         virtual void ReportKeyEvent(int key, bool down);
-        void SetSetSpeed(double setSpeed)
+        void         SetSetSpeed(double setSpeed)
         {
             setSpeed_ = setSpeed;
         }
         virtual void Step(double timeStep);
-        bool hasFarTan;
-        bool getHasFarTan()
+        bool         hasFarTan;
+        bool         getHasFarTan()
         {
             return hasFarTan;
         }
@@ -95,4 +95,4 @@ namespace scenarioengine::controller
     };
 
     ControllerBase* InstantiateControllerLooming(void* args);
-}  // namespace scenarioengine
+}  // namespace scenarioengine::controller

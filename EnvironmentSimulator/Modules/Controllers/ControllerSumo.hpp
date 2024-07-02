@@ -27,8 +27,8 @@ namespace scenarioengine::controller
     public:
         ControllerSumo(InitArgs* args);
 
-        //std::string GetName() const override;
-    
+        // std::string GetName() const override;
+
         controller::Type GetType() const override;
 
         /*
@@ -49,12 +49,12 @@ namespace scenarioengine::controller
             return GetTypeStatic();
         }
         */
-        void Init();
+        void         Init();
         virtual void Step(double time);
-        int  Activate(ControlActivationMode lat_activation_mode,
-                      ControlActivationMode long_activation_mode,
-                      ControlActivationMode light_activation_mode,
-                      ControlActivationMode anim_activation_mode);
+        int          Activate(ControlActivationMode lat_activation_mode,
+                              ControlActivationMode long_activation_mode,
+                              ControlActivationMode light_activation_mode,
+                              ControlActivationMode anim_activation_mode);
 
         void SetSumoVehicle(Object* object);
 
@@ -68,4 +68,4 @@ namespace scenarioengine::controller
     };
 
     ControllerBase* InstantiateControllerSumo(void* args);
-}  // namespace scenarioengine
+}  // namespace scenarioengine::controller

@@ -1072,12 +1072,15 @@ extern "C"
                 vehicle->boundingbox_ = bb;
 
                 controller::InitArgs args = {"", "", 0, 0, 0, 0};
-                args.type                 = controller::ToStr(controller::Type::CONTROLLER_TYPE_EXTERNAL); //ControllerExternal::GetTypeNameStatic();
-                controller::ControllerBase * ctrl          = InstantiateControllerExternal(&args);
+                args.type = controller::ToStr(controller::Type::CONTROLLER_TYPE_EXTERNAL);  // ControllerExternal::GetTypeNameStatic();
+                controller::ControllerBase *ctrl = InstantiateControllerExternal(&args);
                 if (ctrl != nullptr)
                 {
                     vehicle->AssignController(ctrl);
-                    ctrl->Activate(controller::ControlActivationMode::ON, controller::ControlActivationMode::ON, controller::ControlActivationMode::OFF, controller::ControlActivationMode::OFF);
+                    ctrl->Activate(controller::ControlActivationMode::ON,
+                                   controller::ControlActivationMode::ON,
+                                   controller::ControlActivationMode::OFF,
+                                   controller::ControlActivationMode::OFF);
                 }
             }
             else

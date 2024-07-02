@@ -326,7 +326,8 @@ int ScenarioEngine::step(double deltaSimTime)
 
         // Do not move objects when speed is zero,
         // and only ghosts allowed to execute during ghost restart
-        if (!(obj->IsControllerModeOnDomains(controller::ControlOperationMode::MODE_OVERRIDE, static_cast<unsigned int>(ControlDomains::DOMAIN_LAT_AND_LONG))) &&
+        if (!(obj->IsControllerModeOnDomains(controller::ControlOperationMode::MODE_OVERRIDE,
+                                             static_cast<unsigned int>(ControlDomains::DOMAIN_LAT_AND_LONG))) &&
             fabs(obj->speed_) > SMALL_NUMBER &&
             // Skip update for non ghost objects during ghost restart
             !(!obj->IsGhost() && SE_Env::Inst().GetGhostMode() == GhostMode::RESTARTING) && !obj->TowVehicle())  // update trailers later
@@ -629,7 +630,8 @@ int ScenarioEngine::parseScenario()
 
             if (obj->IsAnyAssignedControllerOfType(controller::Type::CONTROLLER_TYPE_FOLLOW_GHOST) ||
                 (obj->IsAnyAssignedControllerOfType(controller::Type::CONTROLLER_TYPE_EXTERNAL) &&
-                 (static_cast<controller::ControllerExternal*>(obj->GetAssignedControllerOftype(controller::Type::CONTROLLER_TYPE_EXTERNAL))->UseGhost())))
+                 (static_cast<controller::ControllerExternal*>(obj->GetAssignedControllerOftype(controller::Type::CONTROLLER_TYPE_EXTERNAL))
+                      ->UseGhost())))
             {
                 SetupGhost(obj);
 

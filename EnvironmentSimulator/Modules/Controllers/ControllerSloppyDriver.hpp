@@ -62,65 +62,65 @@ namespace scenarioengine
     };
     namespace controller
     {
-    // base class for controllers
-    class ControllerSloppyDriver : public controller::EmbeddedController
-    {
-    public:
-        ControllerSloppyDriver(InitArgs* args);
-
-        //std::string GetName() const override;
-    
-        controller::Type GetType() const override;
-
-        // Riz
-        /*
-        static const char* GetTypeNameStatic()
+        // base class for controllers
+        class ControllerSloppyDriver : public controller::EmbeddedController
         {
-            return CONTROLLER_SLOPPY_DRIVER_TYPE_NAME;
-        }
-        virtual const char* GetTypeName()
-        {
-            return GetTypeNameStatic();
-        }
-        static int GetTypeStatic()
-        {
-            return controller::Type::CONTROLLER_TYPE_SLOPPY_DRIVER;
-        }
-        virtual int GetType()
-        {
-            return GetTypeStatic();
-        }
-        */
-        void Init();
-        void Step(double timeStep);
-        int  Activate(controller::ControlActivationMode lat_activation_mode,
-                      controller::ControlActivationMode long_activation_mode,
-                      controller::ControlActivationMode light_activation_mode,
-                      controller::ControlActivationMode anim_activation_mode);
-        virtual void ReportKeyEvent(int key, bool down);
+        public:
+            ControllerSloppyDriver(InitArgs* args);
 
-    private:
-        double        sloppiness_;  // range [0-1], default = 0.5
-        OSCProperties properties_;
-        double        time_;
+            // std::string GetName() const override;
 
-        SE_SimulationTimer speedTimer_;
-        double             speedTimerAverage_;
-        double             referenceSpeed_;  // set by default driver
-        double             initSpeed_;       // start speed for each timer period
-        double             currentSpeed_;
-        double             targetFactor_;  // factor to multiply reference speed
+            controller::Type GetType() const override;
 
-        SE_SimulationTimer lateralTimer_;
-        double             lateralTimerAverage_;
-        double             currentT_;
-        double             tFuzz0;
-        double             tFuzzTarget;
-        double             currentH_;
+            // Riz
+            /*
+            static const char* GetTypeNameStatic()
+            {
+                return CONTROLLER_SLOPPY_DRIVER_TYPE_NAME;
+            }
+            virtual const char* GetTypeName()
+            {
+                return GetTypeNameStatic();
+            }
+            static int GetTypeStatic()
+            {
+                return controller::Type::CONTROLLER_TYPE_SLOPPY_DRIVER;
+            }
+            virtual int GetType()
+            {
+                return GetTypeStatic();
+            }
+            */
+            void         Init();
+            void         Step(double timeStep);
+            int          Activate(controller::ControlActivationMode lat_activation_mode,
+                                  controller::ControlActivationMode long_activation_mode,
+                                  controller::ControlActivationMode light_activation_mode,
+                                  controller::ControlActivationMode anim_activation_mode);
+            virtual void ReportKeyEvent(int key, bool down);
 
-        const char* type_name_ = "SloppyDriver";
-    };
+        private:
+            double        sloppiness_;  // range [0-1], default = 0.5
+            OSCProperties properties_;
+            double        time_;
 
-    ControllerBase* InstantiateControllerSloppyDriver(void* args);
-    } //namespace controller
+            SE_SimulationTimer speedTimer_;
+            double             speedTimerAverage_;
+            double             referenceSpeed_;  // set by default driver
+            double             initSpeed_;       // start speed for each timer period
+            double             currentSpeed_;
+            double             targetFactor_;  // factor to multiply reference speed
+
+            SE_SimulationTimer lateralTimer_;
+            double             lateralTimerAverage_;
+            double             currentT_;
+            double             tFuzz0;
+            double             tFuzzTarget;
+            double             currentH_;
+
+            const char* type_name_ = "SloppyDriver";
+        };
+
+        ControllerBase* InstantiateControllerSloppyDriver(void* args);
+    }  // namespace controller
 }  // namespace scenarioengine

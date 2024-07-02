@@ -800,7 +800,7 @@ TEST(ControllerTest, UDPDriverModelTestAsynchronous)
     {
         scenarioengine::controller::InitArgs args;
         args.name       = "UDPDriverModel Controller";
-        args.type       = controller::ToStr(controller::Type::CONTROLLER_TYPE_UDP_DRIVER); //controller::ControllerUDPDriver::GetTypeNameStatic();
+        args.type       = controller::ToStr(controller::Type::CONTROLLER_TYPE_UDP_DRIVER);  // controller::ControllerUDPDriver::GetTypeNameStatic();
         args.parameters = 0;
         args.gateway    = se->getScenarioGateway();
         args.properties = new OSCProperties();
@@ -814,7 +814,8 @@ TEST(ControllerTest, UDPDriverModelTestAsynchronous)
         property.name_  = "inputMode";
         property.value_ = "vehicleStateXYH";
         args.properties->property_.push_back(property);
-        controller::ControllerUDPDriver* controller = reinterpret_cast<controller::ControllerUDPDriver*>(controller::InstantiateControllerUDPDriver(&args));
+        controller::ControllerUDPDriver* controller =
+            reinterpret_cast<controller::ControllerUDPDriver*>(controller::InstantiateControllerUDPDriver(&args));
 
         for (auto ctrl : se->entities_.object_[i]->controllers_)
         {
@@ -893,7 +894,7 @@ TEST(ControllerTest, UDPDriverModelTestSynchronous)
     {
         scenarioengine::controller::InitArgs args;
         args.name       = "UDPDriverModel Controller";
-        args.type       =  controller::ToStr(controller::Type::CONTROLLER_TYPE_UDP_DRIVER); //controller::ControllerUDPDriver::GetTypeNameStatic();
+        args.type       = controller::ToStr(controller::Type::CONTROLLER_TYPE_UDP_DRIVER);  // controller::ControllerUDPDriver::GetTypeNameStatic();
         args.parameters = 0;
         args.gateway    = se->getScenarioGateway();
         args.properties = new OSCProperties();
@@ -913,7 +914,8 @@ TEST(ControllerTest, UDPDriverModelTestSynchronous)
         property.name_  = "timoutMs";
         property.value_ = std::to_string(500);
         args.properties->property_.push_back(property);
-        controller::ControllerUDPDriver* controller = reinterpret_cast<controller::ControllerUDPDriver*>(controller::InstantiateControllerUDPDriver(&args));
+        controller::ControllerUDPDriver* controller =
+            reinterpret_cast<controller::ControllerUDPDriver*>(controller::InstantiateControllerUDPDriver(&args));
 
         for (auto ctrl : se->entities_.object_[i]->controllers_)
         {
@@ -1664,7 +1666,7 @@ TEST(ControllerTest, ALKS_R157_TestR157RegulationMinDist)
     // Set controller
     scenarioengine::controller::InitArgs args;
     args.name       = "ALKS_R157SM_Controller";
-    args.type       = controller::ToStr(controller::Type::CONTROLLER_ALKS_R157SM); //ControllerALKS_R157SM::GetTypeNameStatic();
+    args.type       = controller::ToStr(controller::Type::CONTROLLER_ALKS_R157SM);  // ControllerALKS_R157SM::GetTypeNameStatic();
     args.parameters = 0;
     args.gateway    = se->getScenarioGateway();
     args.properties = new OSCProperties();
@@ -3288,16 +3290,16 @@ TEST(ControllerTest, TestAEBControllerSlowLeadVehicle)
 
     scenarioengine::Entities* entities = &se->entities_;
     ASSERT_NE(entities, nullptr);
-    
+
     ScenarioGateway* gw = se->getScenarioGateway();
     ASSERT_NE(gw, nullptr);
     EXPECT_EQ(gw->objectState_.size(), 2);
-    
+
     while (se->getSimulationTime() < 5.0 - SMALL_NUMBER)
     {
         se->step(dt);
         se->prepareGroundTruth(dt);
-    }        
+    }
     ObjectStateStruct* state = &gw->objectState_[0]->state_;
     EXPECT_NEAR(state->pos.GetX(), 300.000, 1E-3);
     EXPECT_NEAR(state->pos.GetY(), -1.534, 1E-3);
@@ -3305,36 +3307,35 @@ TEST(ControllerTest, TestAEBControllerSlowLeadVehicle)
     EXPECT_NEAR(state->pos.GetH(), 0.000, 1E-3);
     EXPECT_NEAR(state->pos.GetP(), 0.000, 1E-3);
     EXPECT_NEAR(state->pos.GetR(), 0.000, 1E-3);
-    
+
     //----------let some time pass------------
     while (se->getSimulationTime() < 10.0 - SMALL_NUMBER)
     {
         se->step(dt);
         se->prepareGroundTruth(dt);
-    }        
+    }
     EXPECT_NEAR(state->pos.GetX(), 500.000, 1E-3);
     EXPECT_NEAR(state->pos.GetY(), -1.534, 1E-3);
     EXPECT_NEAR(state->pos.GetZ(), 0.000, 1E-3);
     EXPECT_NEAR(state->pos.GetH(), 0.000, 1E-3);
     EXPECT_NEAR(state->pos.GetP(), 0.000, 1E-3);
     EXPECT_NEAR(state->pos.GetR(), 0.000, 1E-3);
-    
+
     //----------let some time pass------------
     while (se->getSimulationTime() < 13.0 - SMALL_NUMBER)
     {
         se->step(dt);
         se->prepareGroundTruth(dt);
-    }        
+    }
     EXPECT_NEAR(state->pos.GetX(), 500.00, 1E-3);
     EXPECT_NEAR(state->pos.GetY(), -1.534, 1E-3);
     EXPECT_NEAR(state->pos.GetZ(), 0.000, 1E-3);
     EXPECT_NEAR(state->pos.GetH(), 0.000, 1E-3);
     EXPECT_NEAR(state->pos.GetP(), 0.000, 1E-3);
     EXPECT_NEAR(state->pos.GetR(), 0.000, 1E-3);
-    
+
     delete se;
 }
-
 
 TEST(ControllerTest, TestAEBControllerCutIn)
 {
@@ -3346,16 +3347,16 @@ TEST(ControllerTest, TestAEBControllerCutIn)
 
     scenarioengine::Entities* entities = &se->entities_;
     ASSERT_NE(entities, nullptr);
-    
+
     ScenarioGateway* gw = se->getScenarioGateway();
     ASSERT_NE(gw, nullptr);
     EXPECT_EQ(gw->objectState_.size(), 2);
-    
+
     while (se->getSimulationTime() < 5.0 - SMALL_NUMBER)
     {
         se->step(dt);
         se->prepareGroundTruth(dt);
-    }        
+    }
     ObjectStateStruct* state = &gw->objectState_[0]->state_;
     EXPECT_NEAR(state->pos.GetX(), 89.444, 1E-3);
     EXPECT_NEAR(state->pos.GetY(), -1.534, 1E-3);
@@ -3369,7 +3370,7 @@ TEST(ControllerTest, TestAEBControllerCutIn)
     {
         se->step(dt);
         se->prepareGroundTruth(dt);
-    }        
+    }
     EXPECT_NEAR(state->pos.GetX(), 158.888, 1E-3);
     EXPECT_NEAR(state->pos.GetY(), -1.534, 1E-3);
     EXPECT_NEAR(state->pos.GetZ(), 0.000, 1E-3);
@@ -3382,7 +3383,7 @@ TEST(ControllerTest, TestAEBControllerCutIn)
     {
         se->step(dt);
         se->prepareGroundTruth(dt);
-    }        
+    }
     EXPECT_NEAR(state->pos.GetX(), 179.916, 1E-3);
     EXPECT_NEAR(state->pos.GetY(), -1.534, 1E-3);
     EXPECT_NEAR(state->pos.GetZ(), 0.000, 1E-3);
@@ -3402,10 +3403,9 @@ TEST(ControllerTest, TestAEBControllerCutIn)
     EXPECT_NEAR(state->pos.GetH(), 0.000, 1E-3);
     EXPECT_NEAR(state->pos.GetP(), 0.000, 1E-3);
     EXPECT_NEAR(state->pos.GetR(), 0.000, 1E-3);
-    
+
     delete se;
 }
-
 
 TEST(ControllerTest, TestAEBControllerCutOut)
 {
@@ -3417,16 +3417,16 @@ TEST(ControllerTest, TestAEBControllerCutOut)
 
     scenarioengine::Entities* entities = &se->entities_;
     ASSERT_NE(entities, nullptr);
-    
+
     ScenarioGateway* gw = se->getScenarioGateway();
     ASSERT_NE(gw, nullptr);
     EXPECT_EQ(gw->objectState_.size(), 3);
-    
+
     while (se->getSimulationTime() < 5.0 - SMALL_NUMBER)
     {
         se->step(dt);
         se->prepareGroundTruth(dt);
-    }        
+    }
     ObjectStateStruct* state = &gw->objectState_[0]->state_;
     EXPECT_NEAR(state->pos.GetX(), 118.780, 1E-3);
     EXPECT_NEAR(state->pos.GetY(), -1.534, 1E-3);
@@ -3434,13 +3434,13 @@ TEST(ControllerTest, TestAEBControllerCutOut)
     EXPECT_NEAR(state->pos.GetH(), 0.000, 1E-3);
     EXPECT_NEAR(state->pos.GetP(), 0.000, 1E-3);
     EXPECT_NEAR(state->pos.GetR(), 0.000, 1E-3);
-    
+
     //----------let some time pass------------
     while (se->getSimulationTime() < 9.0 - SMALL_NUMBER)
     {
         se->step(dt);
         se->prepareGroundTruth(dt);
-    }        
+    }
     EXPECT_NEAR(state->pos.GetX(), 121.500, 1E-3);
     EXPECT_NEAR(state->pos.GetY(), -1.534, 1E-3);
     EXPECT_NEAR(state->pos.GetZ(), 0.000, 1E-3);
@@ -3453,7 +3453,7 @@ TEST(ControllerTest, TestAEBControllerCutOut)
     {
         se->step(dt);
         se->prepareGroundTruth(dt);
-    }        
+    }
     EXPECT_NEAR(state->pos.GetX(), 121.500, 1E-3);
     EXPECT_NEAR(state->pos.GetY(), -1.534, 1E-3);
     EXPECT_NEAR(state->pos.GetZ(), 0.000, 1E-3);
@@ -3463,7 +3463,6 @@ TEST(ControllerTest, TestAEBControllerCutOut)
 
     delete se;
 }
-
 
 // Uncomment to print log output to console
 // #define LOG_TO_CONSOLE

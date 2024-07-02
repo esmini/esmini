@@ -23,35 +23,35 @@
 
 namespace scenarioengine::controller
 {
-class ControllerALKS : public ControllerACC
-{
-public:
-    ControllerALKS(InitArgs* args) : ControllerACC(args)
+    class ControllerALKS : public ControllerACC
     {
-    }
+    public:
+        ControllerALKS(InitArgs* args) : ControllerACC(args)
+        {
+        }
 
-    //std::string GetName() const override;
-    controller::Type GetType() const override;
+        // std::string GetName() const override;
+        controller::Type GetType() const override;
 
-    /*
-    static const char* GetTypeNameStatic()
-    {
-        return CONTROLLER_ALKS_TYPE_NAME;
-    }
-    virtual const char* GetTypeName()
-    {
-        return GetTypeNameStatic();
-    }
-    static int GetTypeStatic()
-    {
-        return CONTROLLER_TYPE_ALKS;
-    }
-    virtual int GetType()
-    {
-        return GetTypeStatic();
-    }
-    */
-};
+        /*
+        static const char* GetTypeNameStatic()
+        {
+            return CONTROLLER_ALKS_TYPE_NAME;
+        }
+        virtual const char* GetTypeName()
+        {
+            return GetTypeNameStatic();
+        }
+        static int GetTypeStatic()
+        {
+            return CONTROLLER_TYPE_ALKS;
+        }
+        virtual int GetType()
+        {
+            return GetTypeStatic();
+        }
+        */
+    };
 
-ControllerBase* InstantiateControllerALKS(void* args);
+    ControllerBase* InstantiateControllerALKS(void* args);
 }  // namespace scenarioengine::controller

@@ -35,7 +35,7 @@ namespace scenarioengine
     public:
         typedef struct
         {
-            std::string                   type;
+            std::string                               type;
             controller::ControllerInstantiateFunction instantiateFunction;
         } ControllerEntry;
 
