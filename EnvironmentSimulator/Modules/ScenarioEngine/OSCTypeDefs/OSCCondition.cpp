@@ -368,7 +368,8 @@ bool Trigger::Evaluate(double sim_time)
         {
             for (size_t j = 0; j < conditionGroup_[i]->condition_.size(); j++)
             {
-                if (conditionGroup_[i]->condition_[j]->state_ == OSCCondition::ConditionState::TRIGGERED) {
+                if (conditionGroup_[i]->condition_[j]->state_ == OSCCondition::ConditionState::TRIGGERED) 
+                {
                     conditionGroup_[i]->condition_[j]->Log();
                 }
                 // restart the condition state for next execution iteration
