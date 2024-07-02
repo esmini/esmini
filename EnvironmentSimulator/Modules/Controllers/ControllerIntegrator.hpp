@@ -9,7 +9,6 @@
 namespace scenarioengine::controller
 {
 
-//using ControllerInitiazer = ControllerBase* (*) ();
 using ControllerInitiazer = ControllerBase* (*) (void*);
 
 class ControllerIntegrator
@@ -17,7 +16,7 @@ class ControllerIntegrator
 public:
     // Ctor takes path of controller libs folder
     ControllerIntegrator(const std::string& path);
-    
+        
     std::vector<std::pair<std::string, ControllerInitiazer>> LoadControllersInitializers() const;
 
 private:

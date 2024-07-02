@@ -25,14 +25,14 @@
    </ParameterDeclarations>
    <CatalogLocations>
       <VehicleCatalog>
-         <Directory path="../xosc/Catalogs/Vehicles"/>
+         <Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
       </VehicleCatalog>
       <ControllerCatalog>
-	     <Directory path="../xosc/Catalogs/Controllers"/>
+	     <Directory path="../../../resources/xosc/Catalogs/Controllers"/>
 	  </ControllerCatalog>
    </CatalogLocations>
    <RoadNetwork>
-      <LogicFile filepath="../xodr/curve_r100.xodr"/>
+      <LogicFile filepath="../../../resources/xodr/curve_r100.xodr"/>
       <SceneGraphFile filepath="../models/curve_r100.osgb"/>
    </RoadNetwork>
    <Entities>

@@ -1073,7 +1073,7 @@ extern "C"
 
                 controller::InitArgs args = {"", "", 0, 0, 0, 0};
                 args.type                 = controller::ToStr(controller::Type::CONTROLLER_TYPE_EXTERNAL); //ControllerExternal::GetTypeNameStatic();
-                controller::EmbeddedController *ctrl          = InstantiateControllerExternal(&args);
+                controller::ControllerBase * ctrl          = InstantiateControllerExternal(&args);
                 if (ctrl != nullptr)
                 {
                     vehicle->AssignController(ctrl);

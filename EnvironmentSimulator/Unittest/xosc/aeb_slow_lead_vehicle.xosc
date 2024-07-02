@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Demonstrate use of TimeToCollision trigger -->
+<OpenSCENARIO>
+   <FileHeader revMajor="1"
+               revMinor="0"
+               date="2019-10-09T10:00:00"
+               description="Slow vehicle ahead"
+               author="esmini-team"/>
+   <ParameterDeclarations>
+      <ParameterDeclaration name="EgoVehicle" parameterType="string" value="car_white"/>
+      <ParameterDeclaration name="LeadVehicle" parameterType="string" value="car_red"/>
+   </ParameterDeclarations>
+   <CatalogLocations>
+      <VehicleCatalog>
+         <Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
+      </VehicleCatalog>
+      <ControllerCatalog>
+	     <Directory path="../../../resources/xosc/Catalogs/Controllers"/>
+	     </ControllerCatalog>
+   </CatalogLocations>
+   <RoadNetwork>
+      <LogicFile filepath="../../../resources/xodr/straight_500m_signs.xodr"/>
+   </RoadNetwork>
+   <Entities>
+      <ScenarioObject name="Ego">
+         <CatalogReference catalogName="VehicleCatalog" entryName="$EgoVehicle"/>
+	<ObjectController>
+            <Controller name="AEBController" />
+        </ObjectController> 	
+      </ScenarioObject>
+      <ScenarioObject name="Lead">
+         <CatalogReference catalogName="VehicleCatalog" entryName="$LeadVehicle"/>
+      </ScenarioObject>
+   </Entities>
+   <Storyboard>
+      <Init>
+         <Actions>
+            <Private entityRef="Ego">
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" />
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="50"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="1" laneId="-1" offset="0" s="50"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+                <PrivateAction>
+                    <ActivateControllerAction longitudinal="true" lateral="false" />
+               </PrivateAction>
+            </Private>
+            <Private entityRef="Lead">
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" />
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="10"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="1" laneId="-1" offset="0" s="0"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+            </Private>
+         </Actions>
+      </Init>
+      <Story name="brake-for-slow-lead-vehicle_Story">
+         <ParameterDeclarations>
+            <ParameterDeclaration parameterType="string" name="owner" value="Ego"/>
+         </ParameterDeclarations>
+         <Act name="brake-for-slow-lead-vehicle_Act">
+         </Act>
+      </Story>
+      <StopTrigger>
+      </StopTrigger>
+   </Storyboard>
+</OpenSCENARIO>

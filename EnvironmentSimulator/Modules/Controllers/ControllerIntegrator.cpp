@@ -31,9 +31,7 @@ std::vector<std::pair<std::string, ControllerInitiazer>> ControllerIntegrator::L
     {
         if ( ".so" == entry.path().extension() )
         {
-            //++soLibrariesCount;
             std::string libPath = entry.path();
-            //std::cout << "\n.so file found " << libPath << '\n';
             if( auto initializer = GetControllerInitializerFromLib(libPath); initializer.has_value())
             {
                 auto controllerName = GetControllerNameFromFile(entry.path().stem().string());

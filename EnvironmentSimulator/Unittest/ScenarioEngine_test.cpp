@@ -3278,6 +3278,193 @@ TEST(Trajectory, TestOrientationInterpolation)
     delete se;
 }
 
+TEST(ControllerTest, TestAEBControllerSlowLeadVehicle)
+{
+    double          dt = 0.05;
+    ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/aeb_slow_lead_vehicle.xosc");
+    ASSERT_NE(se, nullptr);
+    se->step(0.0);
+    se->prepareGroundTruth(0.0);
+
+    scenarioengine::Entities* entities = &se->entities_;
+    ASSERT_NE(entities, nullptr);
+    
+    ScenarioGateway* gw = se->getScenarioGateway();
+    ASSERT_NE(gw, nullptr);
+    EXPECT_EQ(gw->objectState_.size(), 2);
+    
+    while (se->getSimulationTime() < 5.0 - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }        
+    ObjectStateStruct* state = &gw->objectState_[0]->state_;
+    EXPECT_NEAR(state->pos.GetX(), 300.000, 1E-3);
+    EXPECT_NEAR(state->pos.GetY(), -1.534, 1E-3);
+    EXPECT_NEAR(state->pos.GetZ(), 0.000, 1E-3);
+    EXPECT_NEAR(state->pos.GetH(), 0.000, 1E-3);
+    EXPECT_NEAR(state->pos.GetP(), 0.000, 1E-3);
+    EXPECT_NEAR(state->pos.GetR(), 0.000, 1E-3);
+    
+    //----------let some time pass------------
+    while (se->getSimulationTime() < 10.0 - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }        
+    EXPECT_NEAR(state->pos.GetX(), 500.000, 1E-3);
+    EXPECT_NEAR(state->pos.GetY(), -1.534, 1E-3);
+    EXPECT_NEAR(state->pos.GetZ(), 0.000, 1E-3);
+    EXPECT_NEAR(state->pos.GetH(), 0.000, 1E-3);
+    EXPECT_NEAR(state->pos.GetP(), 0.000, 1E-3);
+    EXPECT_NEAR(state->pos.GetR(), 0.000, 1E-3);
+    
+    //----------let some time pass------------
+    while (se->getSimulationTime() < 13.0 - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }        
+    EXPECT_NEAR(state->pos.GetX(), 500.00, 1E-3);
+    EXPECT_NEAR(state->pos.GetY(), -1.534, 1E-3);
+    EXPECT_NEAR(state->pos.GetZ(), 0.000, 1E-3);
+    EXPECT_NEAR(state->pos.GetH(), 0.000, 1E-3);
+    EXPECT_NEAR(state->pos.GetP(), 0.000, 1E-3);
+    EXPECT_NEAR(state->pos.GetR(), 0.000, 1E-3);
+    
+    delete se;
+}
+
+
+TEST(ControllerTest, TestAEBControllerCutIn)
+{
+    double          dt = 0.05;
+    ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/aeb_cut_in.xosc");
+    ASSERT_NE(se, nullptr);
+    se->step(0.0);
+    se->prepareGroundTruth(0.0);
+
+    scenarioengine::Entities* entities = &se->entities_;
+    ASSERT_NE(entities, nullptr);
+    
+    ScenarioGateway* gw = se->getScenarioGateway();
+    ASSERT_NE(gw, nullptr);
+    EXPECT_EQ(gw->objectState_.size(), 2);
+    
+    while (se->getSimulationTime() < 5.0 - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }        
+    ObjectStateStruct* state = &gw->objectState_[0]->state_;
+    EXPECT_NEAR(state->pos.GetX(), 89.444, 1E-3);
+    EXPECT_NEAR(state->pos.GetY(), -1.534, 1E-3);
+    EXPECT_NEAR(state->pos.GetZ(), 0.000, 1E-3);
+    EXPECT_NEAR(state->pos.GetH(), 0.000, 1E-3);
+    EXPECT_NEAR(state->pos.GetP(), 0.000, 1E-3);
+    EXPECT_NEAR(state->pos.GetR(), 0.000, 1E-3);
+
+    //----------let some time pass------------
+    while (se->getSimulationTime() < 10.0 - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }        
+    EXPECT_NEAR(state->pos.GetX(), 158.888, 1E-3);
+    EXPECT_NEAR(state->pos.GetY(), -1.534, 1E-3);
+    EXPECT_NEAR(state->pos.GetZ(), 0.000, 1E-3);
+    EXPECT_NEAR(state->pos.GetH(), 0.000, 1E-3);
+    EXPECT_NEAR(state->pos.GetP(), 0.000, 1E-3);
+    EXPECT_NEAR(state->pos.GetR(), 0.000, 1E-3);
+
+    //----------let some time pass------------
+    while (se->getSimulationTime() < 13.0 - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }        
+    EXPECT_NEAR(state->pos.GetX(), 179.916, 1E-3);
+    EXPECT_NEAR(state->pos.GetY(), -1.534, 1E-3);
+    EXPECT_NEAR(state->pos.GetZ(), 0.000, 1E-3);
+    EXPECT_NEAR(state->pos.GetH(), 0.000, 1E-3);
+    EXPECT_NEAR(state->pos.GetP(), 0.000, 1E-3);
+    EXPECT_NEAR(state->pos.GetR(), 0.000, 1E-3);
+
+    //----------let some time pass------------
+    while (se->getSimulationTime() < 15.0 - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }
+    EXPECT_NEAR(state->pos.GetX(), 179.916, 1E-3);
+    EXPECT_NEAR(state->pos.GetY(), -1.534, 1E-3);
+    EXPECT_NEAR(state->pos.GetZ(), 0.000, 1E-3);
+    EXPECT_NEAR(state->pos.GetH(), 0.000, 1E-3);
+    EXPECT_NEAR(state->pos.GetP(), 0.000, 1E-3);
+    EXPECT_NEAR(state->pos.GetR(), 0.000, 1E-3);
+    
+    delete se;
+}
+
+
+TEST(ControllerTest, TestAEBControllerCutOut)
+{
+    double          dt = 0.05;
+    ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/aeb_cut_out.xosc");
+    ASSERT_NE(se, nullptr);
+    se->step(0.0);
+    se->prepareGroundTruth(0.0);
+
+    scenarioengine::Entities* entities = &se->entities_;
+    ASSERT_NE(entities, nullptr);
+    
+    ScenarioGateway* gw = se->getScenarioGateway();
+    ASSERT_NE(gw, nullptr);
+    EXPECT_EQ(gw->objectState_.size(), 3);
+    
+    while (se->getSimulationTime() < 5.0 - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }        
+    ObjectStateStruct* state = &gw->objectState_[0]->state_;
+    EXPECT_NEAR(state->pos.GetX(), 118.780, 1E-3);
+    EXPECT_NEAR(state->pos.GetY(), -1.534, 1E-3);
+    EXPECT_NEAR(state->pos.GetZ(), 0.000, 1E-3);
+    EXPECT_NEAR(state->pos.GetH(), 0.000, 1E-3);
+    EXPECT_NEAR(state->pos.GetP(), 0.000, 1E-3);
+    EXPECT_NEAR(state->pos.GetR(), 0.000, 1E-3);
+    
+    //----------let some time pass------------
+    while (se->getSimulationTime() < 9.0 - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }        
+    EXPECT_NEAR(state->pos.GetX(), 121.500, 1E-3);
+    EXPECT_NEAR(state->pos.GetY(), -1.534, 1E-3);
+    EXPECT_NEAR(state->pos.GetZ(), 0.000, 1E-3);
+    EXPECT_NEAR(state->pos.GetH(), 0.000, 1E-3);
+    EXPECT_NEAR(state->pos.GetP(), 0.000, 1E-3);
+    EXPECT_NEAR(state->pos.GetR(), 0.000, 1E-3);
+
+    //----------let some time pass------------
+    while (se->getSimulationTime() < 9.5 - SMALL_NUMBER && !se->GetQuitFlag())
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }        
+    EXPECT_NEAR(state->pos.GetX(), 121.500, 1E-3);
+    EXPECT_NEAR(state->pos.GetY(), -1.534, 1E-3);
+    EXPECT_NEAR(state->pos.GetZ(), 0.000, 1E-3);
+    EXPECT_NEAR(state->pos.GetH(), 0.000, 1E-3);
+    EXPECT_NEAR(state->pos.GetP(), 0.000, 1E-3);
+    EXPECT_NEAR(state->pos.GetR(), 0.000, 1E-3);
+
+    delete se;
+}
+
+
 // Uncomment to print log output to console
 // #define LOG_TO_CONSOLE
 
