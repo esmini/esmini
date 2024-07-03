@@ -3384,7 +3384,7 @@ TEST(ControllerTest, TestAEBControllerCutIn)
         se->step(dt);
         se->prepareGroundTruth(dt);
     }
-    EXPECT_NEAR(state->pos.GetX(), 179.916, 1E-3);
+    EXPECT_NEAR(state->pos.GetX(), 190.805, 1E-3);
     EXPECT_NEAR(state->pos.GetY(), -1.534, 1E-3);
     EXPECT_NEAR(state->pos.GetZ(), 0.000, 1E-3);
     EXPECT_NEAR(state->pos.GetH(), 0.000, 1E-3);
@@ -3397,7 +3397,20 @@ TEST(ControllerTest, TestAEBControllerCutIn)
         se->step(dt);
         se->prepareGroundTruth(dt);
     }
-    EXPECT_NEAR(state->pos.GetX(), 179.916, 1E-3);
+    EXPECT_NEAR(state->pos.GetX(), 192.416, 1E-3);
+    EXPECT_NEAR(state->pos.GetY(), -1.534, 1E-3);
+    EXPECT_NEAR(state->pos.GetZ(), 0.000, 1E-3);
+    EXPECT_NEAR(state->pos.GetH(), 0.000, 1E-3);
+    EXPECT_NEAR(state->pos.GetP(), 0.000, 1E-3);
+    EXPECT_NEAR(state->pos.GetR(), 0.000, 1E-3);
+
+    //----------let some time pass------------
+    while (se->getSimulationTime() < 17.0 - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }
+    EXPECT_NEAR(state->pos.GetX(), 192.416, 1E-3);
     EXPECT_NEAR(state->pos.GetY(), -1.534, 1E-3);
     EXPECT_NEAR(state->pos.GetZ(), 0.000, 1E-3);
     EXPECT_NEAR(state->pos.GetH(), 0.000, 1E-3);

@@ -43,7 +43,7 @@ void ControllerAEB::FindNearestObjectAndDistanceAhead(scenarioengine::Object* &n
         if (object_->pos_.Delta(&obj->pos_, diff, false, lookaheadDist) == true)  // look only double timeGap ahead
         {
             double distance = diff.ds;
-            double dHeading = GetAbsAngleDifference(object_->pos_.GetH(), obj->pos_.GetH());
+            //double dHeading = GetAbsAngleDifference(object_->pos_.GetH(), obj->pos_.GetH());
 
             if (diff.dLaneId == 0 && distance > 0 && distance < minDistance && abs(diff.dt) < lateralDist)
             {
@@ -71,7 +71,7 @@ void ControllerAEB::Step(double timeStep)
             double distance = 0;
             FindNearestObjectAndDistanceAhead(nearest, distance);    
             if( nearest != nullptr)
-            {
+            {                
                 IsEmergencyBrakingNeeded(nearest, distance);        
             }
         }
@@ -81,25 +81,62 @@ void ControllerAEB::Step(double timeStep)
 
 
 void ControllerAEB::IsEmergencyBrakingNeeded(scenarioengine::Object* nearest, double distanceToNearest)
-{
-    double speedDiff = object_->GetSpeed() - nearest->GetSpeed();
+{    
+    double freeSpaceToNearest = distanceToNearest;
+    double speedDiff;// = object_->GetSpeed() - nearest->GetSpeed();
+    double dHeading          = GetAbsAngleDifference(object_->pos_.GetH(), nearest->pos_.GetH());
+    // assuming vehicle speed in same or opposite direction
+    if (dHeading < M_PI_2)  // objects are pointing roughly in the same direction
+    {
+        freeSpaceToNearest -=
+            (static_cast<double>(object_->boundingbox_.dimensions_.length_) / 2.0 + static_cast<double>(object_->boundingbox_.center_.x_)) +
+            (static_cast<double>(nearest->boundingbox_.dimensions_.length_) / 2.0 -
+                static_cast<double>(nearest->boundingbox_.center_.x_));
+        speedDiff = object_->GetSpeed() - nearest->GetSpeed();        
+    }
+    else  // objects are pointing roughly in the opposite direction
+    {
+        freeSpaceToNearest -=
+            (static_cast<double>(object_->boundingbox_.dimensions_.length_) / 2.0 + static_cast<double>(object_->boundingbox_.center_.x_)) +
+            (static_cast<double>(nearest->boundingbox_.dimensions_.length_) / 2.0 +
+                static_cast<double>(nearest->boundingbox_.center_.x_));
+        speedDiff = object_->GetSpeed() + nearest->GetSpeed();        // as they are moving in opposite direction
+    }
+    
     if( speedDiff <= 0)
     {
         // The nearest vehicle is faster then EGO, so there is no chance of collision under given circumstances
         std::cout << "no danger of collision" << '\n';;
         return;
     }
-    const double safetyDistance = 20;
-    double collisionAvoidanceDistance = distanceToNearest - safetyDistance;
-    double timeToCollision = collisionAvoidanceDistance / speedDiff;    
-    double acceleration = -speedDiff/(2*timeToCollision);
-    std::cout << "speedDiff:" << speedDiff << ", collisionAvoidanceDistance:" << collisionAvoidanceDistance << ", timeToCollision:" 
-        << timeToCollision << ", acceleration:" << acceleration << '\n';;
-    if( acceleration < -brakeRate_)
+    const double safetyDistance = 10;
+    //double collisionAvoidanceDistance = freeSpaceToNearest - safetyDistance;
+    
+
+    // Calculate required required distance to reach delta speed 0
+    // solve s=v*t+(a*t^2)/2, v+a*t=0 for s,t
+    // https://www.wolframalpha.com/input?i=solve+s%3Dv*t%2B%28a*t%5E2%29%2F2%2C+v%2Ba*t%3D0+for+s%2Ct
+
+    double requiredDistanceToAvoidCollision = -(speedDiff * speedDiff) / (2 * -brakeRate_);
+
+    std::cout << "freeSpaceToNearest:" << freeSpaceToNearest << ", requiredDistanceToAvoidCollision:" << requiredDistanceToAvoidCollision << '\n';  
+    if ( freeSpaceToNearest < requiredDistanceToAvoidCollision + safetyDistance)
     {
         std::cout << "------!!!going to apply emergency brake!!!--------\n";
-        EmergencyBraking_ = true;        
+        EmergencyBraking_ = true;
     }
+
+
+    // double timeToCollision = collisionAvoidanceDistance / speedDiff;    
+    // double acceleration = -speedDiff/(2*timeToCollision);
+    // std::cout << "speedDiff:" << speedDiff << ", collisionAvoidanceDistance:" << collisionAvoidanceDistance << ", timeToCollision:" 
+    //     << timeToCollision << ", acceleration:" << acceleration << '\n';;
+    // if( acceleration < -brakeRate_)
+    // {
+    //     std::cout << "------!!!going to apply emergency brake!!!--------\n";
+    //     EmergencyBraking_ = true;        
+    // }
+    
 }
 
 
