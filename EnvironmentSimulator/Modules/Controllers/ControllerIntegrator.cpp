@@ -36,7 +36,7 @@ namespace scenarioengine::controller
     std::vector<std::pair<std::string, ControllerInitiazer>> ControllerIntegrator::LoadControllersInitializers() const
     {
         std::vector<std::pair<std::string, ControllerInitiazer>> initializers;
-        for (const auto& entry : std::filesystem::directory_iterator(path_))
+        for (const auto& entry : fs::directory_iterator(path_))
         {
             if (".so" == entry.path().extension())
             {
@@ -66,7 +66,8 @@ namespace scenarioengine::controller
         else
         {
             ControllerInitiazer controllerInitiazer;
-            *(void**)(&controllerInitiazer) = dlsym(libHandle, "InstantiateController");
+            //*(void**)(&controllerInitiazer) = dlsym(libHandle, "InstantiateController");
+            *reinterpret_cast<void**>(&controllerInitiazer) = dlsym(libHandle, "InstantiateController");
             if (controllerInitiazer == nullptr)
             {
                 // log error

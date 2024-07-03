@@ -97,7 +97,7 @@ void ScenarioReader::LoadControllers()
     // Loading integrated controllers
     controller::ControllerIntegrator controllerIntegrator("/home/mrizwans/volvo/esmini/bin/IntegratedControllers");
     auto                             integratedControllers = controllerIntegrator.LoadControllersInitializers();
-    std::cout << "----found " << integratedControllers.size() << " integrated controllers" << std::endl;
+    std::cout << "----found " << integratedControllers.size() << " integrated controller(s)" << std::endl;
     for (const auto &ctrl : integratedControllers)
     {
         RegisterController(ctrl.first, ctrl.second);

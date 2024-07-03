@@ -6,11 +6,11 @@ set(ESMINI_PATH ../../)
 project(AEBController)
 
 include_directories(
-    "${ESMINI_PATH}/EnvironmentSimulator/Modules/CommonMini",
-    "${ESMINI_PATH}/EnvironmentSimulator/Modules/Controllers",
-    "${ESMINI_PATH}/EnvironmentSimulator/Modules/ScenarioEngine/SourceFiles",
-    "${ESMINI_PATH}/EnvironmentSimulator/Modules/ScenarioEngine/OSCTypeDefs",
-    "${ESMINI_PATH}/EnvironmentSimulator/Modules/RoadManager",
+    "${ESMINI_PATH}/EnvironmentSimulator/Modules/CommonMini"
+    "${ESMINI_PATH}/EnvironmentSimulator/Modules/Controllers"
+    "${ESMINI_PATH}/EnvironmentSimulator/Modules/ScenarioEngine/SourceFiles"
+    "${ESMINI_PATH}/EnvironmentSimulator/Modules/ScenarioEngine/OSCTypeDefs"
+    "${ESMINI_PATH}/EnvironmentSimulator/Modules/RoadManager"
     "${ESMINI_PATH}/externals/pugixml"
 )
 
