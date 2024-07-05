@@ -3301,7 +3301,7 @@ TEST(ControllerTest, TestAEBControllerSlowLeadVehicle)
         se->prepareGroundTruth(dt);
     }
     ObjectStateStruct* state = &gw->objectState_[0]->state_;
-    EXPECT_NEAR(state->pos.GetX(), 300.000, 1E-3);
+    EXPECT_NEAR(state->pos.GetX(), 174.800, 1E-3);
     EXPECT_NEAR(state->pos.GetY(), -1.534, 1E-3);
     EXPECT_NEAR(state->pos.GetZ(), 0.000, 1E-3);
     EXPECT_NEAR(state->pos.GetH(), 0.000, 1E-3);
@@ -3314,7 +3314,7 @@ TEST(ControllerTest, TestAEBControllerSlowLeadVehicle)
         se->step(dt);
         se->prepareGroundTruth(dt);
     }
-    EXPECT_NEAR(state->pos.GetX(), 500.000, 1E-3);
+    EXPECT_NEAR(state->pos.GetX(), 194.75, 1E-3);
     EXPECT_NEAR(state->pos.GetY(), -1.534, 1E-3);
     EXPECT_NEAR(state->pos.GetZ(), 0.000, 1E-3);
     EXPECT_NEAR(state->pos.GetH(), 0.000, 1E-3);
@@ -3327,7 +3327,7 @@ TEST(ControllerTest, TestAEBControllerSlowLeadVehicle)
         se->step(dt);
         se->prepareGroundTruth(dt);
     }
-    EXPECT_NEAR(state->pos.GetX(), 500.00, 1E-3);
+    EXPECT_NEAR(state->pos.GetX(), 194.75, 1E-3);
     EXPECT_NEAR(state->pos.GetY(), -1.534, 1E-3);
     EXPECT_NEAR(state->pos.GetZ(), 0.000, 1E-3);
     EXPECT_NEAR(state->pos.GetH(), 0.000, 1E-3);

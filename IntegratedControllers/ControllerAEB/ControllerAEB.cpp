@@ -30,7 +30,7 @@ Type ControllerAEB::GetType() const
 
 void ControllerAEB::FindNearestObjectAndDistanceAhead(scenarioengine::Object* &nearest, double& distanceToNearest)
 {
-    constexpr double lookaheadDist = 100;  // We are only interested in objects within 100m range    
+    constexpr double lookaheadDist = 280;  // We are only interested in objects within 100m range    
     constexpr double lateralDist = 5;
     double minDistance = LARGE_NUMBER;
     for ( const auto& obj : entities_->object_)
@@ -131,7 +131,7 @@ void ControllerAEB::IsEmergencyBrakingNeeded(scenarioengine::Object* nearest, do
     // double acceleration = -speedDiff/(2*timeToCollision);
     // std::cout << "speedDiff:" << speedDiff << ", collisionAvoidanceDistance:" << collisionAvoidanceDistance << ", timeToCollision:" 
     //     << timeToCollision << ", acceleration:" << acceleration << '\n';;
-    // if( acceleration < -brakeRate_)
+    // if( acceleration < -brakeRate_)${50/3.6}"
     // {
     //     std::cout << "------!!!going to apply emergency brake!!!--------\n";
     //     EmergencyBraking_ = true;        

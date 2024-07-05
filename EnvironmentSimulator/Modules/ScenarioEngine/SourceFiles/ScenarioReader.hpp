@@ -23,6 +23,7 @@
 #include "Parameters.hpp"
 #include "EmbeddedController.hpp"
 #include "ScenarioGateway.hpp"
+#include "ControllerIntegrator.hpp"
 
 #include <iostream>
 #include <string>
@@ -183,6 +184,8 @@ namespace scenarioengine
         static Parameters variables;
 
     private:
+        void LoadIntegratedControllers();
+
         pugi::xml_document    doc_;
         pugi::xml_node        osc_root_;
         std::string           oscFilename_;
@@ -197,9 +200,10 @@ namespace scenarioengine
         std::string           description_;
         StoryBoard*           story_board_;
 
-        int             ParseTransitionDynamics(pugi::xml_node node, OSCPrivateAction::TransitionDynamics& td);
-        ConditionGroup* ParseConditionGroup(pugi::xml_node node);
-        Object*         ResolveObjectReference(std::string name);
+        int                              ParseTransitionDynamics(pugi::xml_node node, OSCPrivateAction::TransitionDynamics& td);
+        ConditionGroup*                  ParseConditionGroup(pugi::xml_node node);
+        Object*                          ResolveObjectReference(std::string name);
+        controller::ControllerIntegrator controllerIntegrator_;
     };
 
 }  // namespace scenarioengine

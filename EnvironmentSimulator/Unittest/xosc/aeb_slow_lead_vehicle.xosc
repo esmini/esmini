@@ -41,7 +41,7 @@
                      <SpeedAction>
                         <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" />
                         <SpeedActionTarget>
-                           <AbsoluteTargetSpeed value="50"/>
+                           <AbsoluteTargetSpeed value="30.0"/>
                         </SpeedActionTarget>
                      </SpeedAction>
                   </LongitudinalAction>
@@ -63,7 +63,7 @@
                      <SpeedAction>
                         <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" />
                         <SpeedActionTarget>
-                           <AbsoluteTargetSpeed value="10"/>
+                           <AbsoluteTargetSpeed value="1.0"/>
                         </SpeedActionTarget>
                      </SpeedAction>
                   </LongitudinalAction>
@@ -71,7 +71,7 @@
                <PrivateAction>
                   <TeleportAction>
                      <Position>
-                        <LanePosition roadId="1" laneId="-1" offset="0" s="0"/>
+                        <LanePosition roadId="1" laneId="-1" offset="0" s="200"/>
                      </Position>
                   </TeleportAction>
                </PrivateAction>

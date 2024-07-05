@@ -1,7 +1,6 @@
 #include "ControllerIntegrator.hpp"
 
 #include <dlfcn.h>
-// #include <filesystem>
 #include <iostream>
 
 #if __has_include(<filesystem>)
@@ -16,9 +15,17 @@ namespace fs = std::experimental::filesystem;
 
 namespace scenarioengine::controller
 {
-
-    ControllerIntegrator::ControllerIntegrator(const std::string& path) : path_(path)
+    ControllerIntegrator::~ControllerIntegrator()
     {
+        for (auto& libHandle : libHandles)
+        {
+            dlclose(libHandle);
+        }
+    }
+
+    void ControllerIntegrator::SetPathsToSearchControllers(std::vector<std::string> pathsToSearchControllers)
+    {
+        pathsToSearchControllers_ = std::move(pathsToSearchControllers);
     }
 
     std::string ControllerIntegrator::GetControllerNameFromFile(const std::string& fileName) const
@@ -33,49 +40,55 @@ namespace scenarioengine::controller
         }
     }
 
-    std::vector<std::pair<std::string, ControllerInitiazer>> ControllerIntegrator::LoadControllersInitializers() const
+    std::vector<std::pair<std::string, ControllerInitializer>> ControllerIntegrator::LoadControllersInitializers()
     {
-        std::vector<std::pair<std::string, ControllerInitiazer>> initializers;
-        for (const auto& entry : fs::directory_iterator(path_))
+        std::vector<std::pair<std::string, ControllerInitializer>> initializers;
+        for (const auto& path : pathsToSearchControllers_)
         {
-            if (".so" == entry.path().extension())
+            std::cout << "Searching for integrated controllers in : " << path << '\n';
+            if (fs::exists(path))
             {
-                std::string libPath = entry.path();
-                if (auto initializer = GetControllerInitializerFromLib(libPath); initializer.has_value())
+                for (const auto& entry : fs::directory_iterator(path))
                 {
-                    auto controllerName = GetControllerNameFromFile(entry.path().stem().string());
-                    initializers.emplace_back(std::make_pair(controllerName, initializer.value()));
+                    if (".so" == entry.path().extension())
+                    {
+                        std::string libPath = entry.path();
+                        if (auto initializer = GetControllerInitializerFromLib(libPath); initializer.has_value())
+                        {
+                            auto controllerName = GetControllerNameFromFile(entry.path().stem().string());
+                            initializers.emplace_back(std::make_pair(controllerName, initializer.value()));
+                        }
+                    }
                 }
-                else
-                {
-                    // log error
-                }
+            }
+            if (!initializers.empty())  // only one folder is taken as source for controller libs
+            {
+                break;
             }
         }
         return initializers;
     }
 
-    std::optional<ControllerInitiazer> ControllerIntegrator::GetControllerInitializerFromLib(const std::string& path) const
+    std::optional<ControllerInitializer> ControllerIntegrator::GetControllerInitializerFromLib(const std::string& path)
     {
         void* libHandle = dlopen(path.c_str(), RTLD_LAZY);
         if (libHandle == NULL)
         {
-            // log error
-            // std::cout << "unable to open lib error : " << dlerror() << '\n';
+            std::cout << path << " unable to open, error : " << dlerror() << '\n';
         }
         else
         {
-            ControllerInitiazer controllerInitiazer;
-            //*(void**)(&controllerInitiazer) = dlsym(libHandle, "InstantiateController");
-            *reinterpret_cast<void**>(&controllerInitiazer) = dlsym(libHandle, "InstantiateController");
-            if (controllerInitiazer == nullptr)
+            ControllerInitializer controllerInitializer;
+            *reinterpret_cast<void**>(&controllerInitializer) = dlsym(libHandle, "InstantiateController");
+            if (controllerInitializer == nullptr)
             {
-                // log error
-                // std::cout << "unable to find GetController error : " << dlerror() << '\n';
+                dlclose(libHandle);
+                std::cout << path << " is loaded but couldn't find InstantiateController function, error: " << dlerror() << '\n';
             }
             else
             {
-                return controllerInitiazer;
+                libHandles.emplace_back(libHandle);
+                return controllerInitializer;
             }
         }
         return std::nullopt;

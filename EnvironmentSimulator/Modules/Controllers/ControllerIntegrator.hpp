@@ -9,22 +9,26 @@
 namespace scenarioengine::controller
 {
 
-    using ControllerInitiazer = ControllerBase* (*)(void*);
+    using ControllerInitializer = ControllerBase* (*)(void*);
 
     class ControllerIntegrator
     {
     public:
-        // Ctor takes path of controller libs folder
-        ControllerIntegrator(const std::string& path);
-
-        std::vector<std::pair<std::string, ControllerInitiazer>> LoadControllersInitializers() const;
+        // Destructor
+        ~ControllerIntegrator();
+        // Sets the paths to folders in which integrated controllers will be searched
+        void SetPathsToSearchControllers(std::vector<std::string> pathsToSearchControllers);
+        //
+        std::vector<std::pair<std::string, ControllerInitializer>> LoadControllersInitializers();
 
     private:
         std::string GetControllerNameFromFile(const std::string& fileName) const;
         // Try to get controller from a shared/dynamic libs
-        std::optional<ControllerInitiazer> GetControllerInitializerFromLib(const std::string& libPath) const;
-        // Path of controller libs folder
-        std::string path_;
+        std::optional<ControllerInitializer> GetControllerInitializerFromLib(const std::string& libPath);
+        // Paths to search controller libs in
+        std::vector<std::string> pathsToSearchControllers_;
+        // Handles to all loaded libs
+        std::vector<void*> libHandles;
     };
 
 }  // namespace scenarioengine::controller

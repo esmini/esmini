@@ -29,7 +29,6 @@
 #include "ControllerALKS_R157SM.hpp"
 #include "ControllerLooming.hpp"
 #include "ControllerOffroadFollower.hpp"
-#include "ControllerIntegrator.hpp"
 
 #include <cstdlib>
 
@@ -94,10 +93,25 @@ void ScenarioReader::LoadControllers()
     RegisterController(controller::ToStr(controller::Type::CONTROLLER_TYPE_LOOMING), controller::InstantiateControllerLooming);
     RegisterController(controller::ToStr(controller::Type::CONTROLLER_TYPE_OFFROAD_FOLLOWER), controller::InstantiateControllerOffroadFollower);
 
-    // Loading integrated controllers
-    controller::ControllerIntegrator controllerIntegrator("/home/mrizwans/volvo/esmini/bin/IntegratedControllers");
-    auto                             integratedControllers = controllerIntegrator.LoadControllersInitializers();
-    std::cout << "----found " << integratedControllers.size() << " integrated controller(s)" << std::endl;
+    LoadIntegratedControllers();
+}
+
+void ScenarioReader::LoadIntegratedControllers()
+{
+    std::cout << "Loading integrated controllers\n";
+    const std::string        folderName = "/IntegratedControllers";
+    std::vector<std::string> pathCandidates;
+
+    for (auto path : SE_Env::Inst().GetPaths())
+    {
+        path.append(folderName);
+        pathCandidates.emplace_back(path);
+    }
+    pathCandidates.emplace_back("../../../bin/IntegratedControllers");
+    pathCandidates.emplace_back("../../../../bin/IntegratedControllers");
+    controllerIntegrator_.SetPathsToSearchControllers(std::move(pathCandidates));
+    auto integratedControllers = controllerIntegrator_.LoadControllersInitializers();
+    std::cout << "found " << integratedControllers.size() << " integrated controller(s)" << '\n';
     for (const auto &ctrl : integratedControllers)
     {
         RegisterController(ctrl.first, ctrl.second);
