@@ -45,7 +45,7 @@ namespace scenarioengine::controller
         std::vector<std::pair<std::string, ControllerInitializer>> initializers;
         for (const auto& path : pathsToSearchControllers_)
         {
-            std::cout << "Searching for integrated controllers in : " << path << '\n';
+            std::cout << "Searching integrated controllers in: " << path << '\n';
             if (fs::exists(path))
             {
                 for (const auto& entry : fs::directory_iterator(path))

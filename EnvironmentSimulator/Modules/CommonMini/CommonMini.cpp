@@ -20,6 +20,9 @@
 #include <locale>
 #include <array>
 
+#include <unistd.h>
+#include <limits.h>
+
 // UDP network includes
 #ifndef _WIN32
 /* Assume that any non-Windows platform uses POSIX-style sockets instead. */
@@ -30,6 +33,21 @@
 #else
 #include <winsock2.h>
 #include <Ws2tcpip.h>
+#endif
+
+#if defined(_WIN32)
+#include <windows.h>
+#define MAX_PATH_LENGTH MAX_PATH
+#elif defined(__linux__)
+#include <unistd.h>
+#include <limits.h>
+#define MAX_PATH_LENGTH PATH_MAX
+#elif defined(__APPLE__)
+#include <mach-o/dyld.h>
+#include <limits.h>
+#define MAX_PATH_LENGTH PATH_MAX
+#else
+#error "Unsupported platform"
 #endif
 
 #include "CommonMini.hpp"
@@ -865,7 +883,7 @@ FILE* FileOpen(const char* filename, const char* mode)
         return nullptr;
     }
 #else
-    file    = fopen(filename, mode);
+    file        = fopen(filename, mode);
 #endif
 
     return file;
@@ -1187,6 +1205,38 @@ std::string SE_Env::GetModelFilenameById(int model_id)
     }
 
     return name;
+}
+
+const std::string& SE_Env::GetExeFolderPath() const
+{
+    return exeFolderPath_;
+}
+
+void SE_Env::SetExeFolderPath()
+{
+    char buffer[MAX_PATH_LENGTH];
+#if defined(_WIN32)
+    if (GetModuleFileName(NULL, buffer, MAX_PATH))
+    {
+        exeFolderPath_ = std::string(buffer);
+    }
+#elif defined(__linux__)
+    ssize_t len = readlink("/proc/self/exe", buffer, sizeof(buffer) - 1);
+    if (len != -1)
+    {
+        buffer[len]    = '\0';
+        exeFolderPath_ = std::string(buffer);
+    }
+#elif defined(__APPLE__)
+    uint32_t size = sizeof(buffer);
+    if (_NSGetExecutablePath(buffer, &size) == 0)
+    {
+        return std::string(buffer);
+    }
+#endif
+
+    size_t pos     = exeFolderPath_.find_last_of('/');  // find exe name from the end of path
+    exeFolderPath_ = exeFolderPath_.substr(0, pos);
 }
 
 Logger::Logger() : callback_(0), time_(0)

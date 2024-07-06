@@ -3282,7 +3282,8 @@ TEST(Trajectory, TestOrientationInterpolation)
 
 TEST(ControllerTest, TestAEBControllerSlowLeadVehicle)
 {
-    double          dt = 0.05;
+    double dt = 0.05;
+    SE_Env::Inst().AddPath("../../../bin/IntegratedControllers");  // add path of integrated controllers
     ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/aeb_slow_lead_vehicle.xosc");
     ASSERT_NE(se, nullptr);
     se->step(0.0);
@@ -3335,11 +3336,13 @@ TEST(ControllerTest, TestAEBControllerSlowLeadVehicle)
     EXPECT_NEAR(state->pos.GetR(), 0.000, 1E-3);
 
     delete se;
+    SE_Env::Inst().ClearPaths();
 }
 
 TEST(ControllerTest, TestAEBControllerCutIn)
 {
-    double          dt = 0.05;
+    double dt = 0.05;
+    SE_Env::Inst().AddPath("../../../bin/IntegratedControllers");  // add path of integrated controllers
     ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/aeb_cut_in.xosc");
     ASSERT_NE(se, nullptr);
     se->step(0.0);
@@ -3418,11 +3421,13 @@ TEST(ControllerTest, TestAEBControllerCutIn)
     EXPECT_NEAR(state->pos.GetR(), 0.000, 1E-3);
 
     delete se;
+    SE_Env::Inst().ClearPaths();
 }
 
 TEST(ControllerTest, TestAEBControllerCutOut)
 {
-    double          dt = 0.05;
+    double dt = 0.05;
+    SE_Env::Inst().AddPath("../../../bin/IntegratedControllers");  // add path of integrated controllers
     ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/aeb_cut_out.xosc");
     ASSERT_NE(se, nullptr);
     se->step(0.0);
@@ -3475,6 +3480,7 @@ TEST(ControllerTest, TestAEBControllerCutOut)
     EXPECT_NEAR(state->pos.GetR(), 0.000, 1E-3);
 
     delete se;
+    SE_Env::Inst().ClearPaths();
 }
 
 // Uncomment to print log output to console

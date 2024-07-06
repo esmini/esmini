@@ -1181,6 +1181,7 @@ public:
           ghost_mode_(GhostMode::NORMAL),
           ghost_headstart_(0.0)
     {
+        SetExeFolderPath();
     }
 
     static SE_Env& Inst();
@@ -1326,13 +1327,17 @@ public:
         return opt;
     };
 
+    const std::string& GetExeFolderPath() const;
+
 private:
+    void                       SetExeFolderPath();
     std::vector<std::string>   paths_;
     double                     osiMaxLongitudinalDistance_;
     double                     osiMaxLateralDeviation_;
     std::string                logFilePath_;
     std::string                datFilePath_;
     std::string                osiFilePath_;
+    std::string                exeFolderPath_;
     bool                       osiFileEnabled_;
     SE_SystemTime              systemTime_;
     SE_Rand                    rand_;

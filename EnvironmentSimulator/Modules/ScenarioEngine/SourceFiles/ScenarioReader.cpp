@@ -98,17 +98,22 @@ void ScenarioReader::LoadControllers()
 
 void ScenarioReader::LoadIntegratedControllers()
 {
-    std::cout << "Loading integrated controllers\n";
-    const std::string        folderName = "/IntegratedControllers";
+    std::cout << "exe path: " << SE_Env::Inst().GetExeFolderPath() << std::endl;
+
+    // std::cout << "Loading integrated controllers\n";
     std::vector<std::string> pathCandidates;
 
-    for (auto path : SE_Env::Inst().GetPaths())
+    if (!SE_Env::Inst().GetExeFolderPath().empty())
     {
-        path.append(folderName);
+        pathCandidates.emplace_back(SE_Env::Inst().GetExeFolderPath() + "/IntegratedControllers");  // folder path of the executable is the first
+    }
+
+    for (const auto &path : SE_Env::Inst().GetPaths())
+    {
         pathCandidates.emplace_back(path);
     }
-    pathCandidates.emplace_back("../../../bin/IntegratedControllers");
-    pathCandidates.emplace_back("../../../../bin/IntegratedControllers");
+    // pathCandidates.emplace_back("../../../bin/IntegratedControllers");
+    // pathCandidates.emplace_back("../../../../bin/IntegratedControllers");
     controllerIntegrator_.SetPathsToSearchControllers(std::move(pathCandidates));
     auto integratedControllers = controllerIntegrator_.LoadControllersInitializers();
     std::cout << "found " << integratedControllers.size() << " integrated controller(s)" << '\n';
