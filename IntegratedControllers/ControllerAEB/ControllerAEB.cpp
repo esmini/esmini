@@ -50,7 +50,7 @@ void ControllerAEB::FindNearestObjectAndDistanceAhead(scenarioengine::Object* &n
                 minDistance = distance;
                 nearest = obj;
                 distanceToNearest = minDistance;
-                std::cout << "found " << obj->GetName() << " nearby with distance:" << distance << '\n';              
+                //std::cout << "found " << obj->GetName() << " nearby with distance:" << distance << '\n';              
             }            
         }
     }
@@ -106,7 +106,7 @@ void ControllerAEB::IsEmergencyBrakingNeeded(scenarioengine::Object* nearest, do
     if( speedDiff <= 0)
     {
         // The nearest vehicle is faster then EGO, so there is no chance of collision under given circumstances
-        std::cout << "no danger of collision" << '\n';;
+        //std::cout << "no danger of collision" << '\n';;
         return;
     }
     const double safetyDistance = 10;
@@ -119,10 +119,11 @@ void ControllerAEB::IsEmergencyBrakingNeeded(scenarioengine::Object* nearest, do
 
     double requiredDistanceToAvoidCollision = -(speedDiff * speedDiff) / (2 * -brakeRate_);
 
-    std::cout << "freeSpaceToNearest:" << freeSpaceToNearest << ", requiredDistanceToAvoidCollision:" << requiredDistanceToAvoidCollision << '\n';  
+    //std::cout << "freeSpaceToNearest:" << freeSpaceToNearest << ", requiredDistanceToAvoidCollision:" << requiredDistanceToAvoidCollision << '\n';  
     if ( freeSpaceToNearest < requiredDistanceToAvoidCollision + safetyDistance)
     {
         std::cout << "------!!!going to apply emergency brake!!!--------\n";
+        std::cout << "freeSpaceToNearest:" << freeSpaceToNearest << ", requiredDistanceToAvoidCollision:" << requiredDistanceToAvoidCollision << '\n'; 
         EmergencyBraking_ = true;
     }
 

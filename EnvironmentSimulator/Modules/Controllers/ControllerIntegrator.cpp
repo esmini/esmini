@@ -1,6 +1,6 @@
 #include "ControllerIntegrator.hpp"
 
-#include <dlfcn.h>
+// #include <dlfcn.h>
 #include <iostream>
 
 #if __has_include(<filesystem>)
@@ -13,13 +13,38 @@ namespace fs = std::experimental::filesystem;
 #error "Missing <filesystem> header"
 #endif
 
+#if defined(_WIN32)
+#include <windows.h>
+typedef HMODULE LibHandle;
+typedef FARPROC FuncHandle;
+#define LOAD_LIBRARY(name)      LoadLibrary(TEXT(name))
+#define GET_FUNCTION(lib, func) GetProcAddress(lib, func)
+#define CLOSE_LIBRARY(lib)      FreeLibrary(lib)
+#define LIB_EXTENSION           ".dll"
+#elif defined(__linux__) || defined(__APPLE__)
+#include <dlfcn.h>
+typedef void* LibHandle;
+typedef void* FuncHandle;
+#define LOAD_LIBRARY(name)      dlopen(name, RTLD_LAZY)
+#define GET_FUNCTION(lib, func) dlsym(lib, func)
+#define CLOSE_LIBRARY(lib)      dlclose(lib)
+#else
+#error "Unsupported platform"
+#endif
+
+#if defined(__linux__)
+#define LIB_EXTENSION ".so"
+#elif defined(__APPLE__)
+#define LIB_EXTENSION ".dylib"
+#endif
+
 namespace scenarioengine::controller
 {
     ControllerIntegrator::~ControllerIntegrator()
     {
         for (auto& libHandle : libHandles)
         {
-            dlclose(libHandle);
+            CLOSE_LIBRARY(libHandle);
         }
     }
 
@@ -50,7 +75,8 @@ namespace scenarioengine::controller
             {
                 for (const auto& entry : fs::directory_iterator(path))
                 {
-                    if (".so" == entry.path().extension())
+                    // if (".so" == entry.path().extension())
+                    if (LIB_EXTENSION == entry.path().extension())
                     {
                         std::string libPath = entry.path();
                         if (auto initializer = GetControllerInitializerFromLib(libPath); initializer.has_value())
@@ -71,7 +97,7 @@ namespace scenarioengine::controller
 
     std::optional<ControllerInitializer> ControllerIntegrator::GetControllerInitializerFromLib(const std::string& path)
     {
-        void* libHandle = dlopen(path.c_str(), RTLD_LAZY);
+        void* libHandle = LOAD_LIBRARY(path.c_str());
         if (libHandle == NULL)
         {
             std::cout << path << " unable to open, error : " << dlerror() << '\n';
@@ -79,10 +105,11 @@ namespace scenarioengine::controller
         else
         {
             ControllerInitializer controllerInitializer;
-            *reinterpret_cast<void**>(&controllerInitializer) = dlsym(libHandle, "InstantiateController");
+            //*reinterpret_cast<void**>(&controllerInitializer) = dlsym(libHandle, "InstantiateController");
+            *reinterpret_cast<void**>(&controllerInitializer) = GET_FUNCTION(libHandle, "InstantiateController");
             if (controllerInitializer == nullptr)
             {
-                dlclose(libHandle);
+                CLOSE_LIBRARY(libHandle);
                 std::cout << path << " is loaded but couldn't find InstantiateController function, error: " << dlerror() << '\n';
             }
             else
