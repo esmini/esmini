@@ -1,8 +1,7 @@
 #include "ControllerIntegrator.hpp"
 
-// #include <dlfcn.h>
 #include <iostream>
-
+// include filesystem from C++17
 #if __has_include(<filesystem>)
 #include <filesystem>
 namespace fs = std::filesystem;
@@ -13,6 +12,7 @@ namespace fs = std::experimental::filesystem;
 #error "Missing <filesystem> header"
 #endif
 
+// includes to use with dynamic libs on supported platforms
 #if defined(_WIN32)
 #include <windows.h>
 typedef HMODULE LibHandle;
@@ -38,10 +38,13 @@ typedef void* FuncHandle;
 #define LIB_EXTENSION ".dylib"
 #endif
 
+#include "CommonMini.hpp"       // for log
+
 namespace scenarioengine::controller
 {
     ControllerIntegrator::~ControllerIntegrator()
     {
+        // close all the handles of loaded libs
         for (auto& libHandle : libHandles)
         {
             CLOSE_LIBRARY(libHandle);
@@ -53,24 +56,51 @@ namespace scenarioengine::controller
         pathsToSearchControllers_ = std::move(pathsToSearchControllers);
     }
 
-    std::string ControllerIntegrator::GetControllerNameFromFile(const std::string& fileName) const
+    std::string ControllerIntegrator::GetControllerNameFromFile(const std::string& filePath) const
     {
-        if (size_t pos = fileName.find("lib"); pos != std::string::npos && fileName.size() > 3)
+        
+        size_t slashPos = filePath.find_last_of('/');
+        size_t extensionPos = filePath.find(LIB_EXTENSION);
+        size_t controllerNameStart = slashPos == std::string::npos ? 0 : slashPos + 1;
+        size_t controllerNameSize = extensionPos == std::string::npos ? filePath.size() : extensionPos - controllerNameStart;
+        
+        std::string fileNameWithoutExtension = filePath.substr( controllerNameStart, controllerNameSize);
+        // on Linux and Mac, dynamic libs are prefixed with 'lib', stripping it to get actual name of the lib; we will use it as name of integrated controller
+        if (size_t pos = fileNameWithoutExtension.find("lib"); pos != std::string::npos && fileNameWithoutExtension.size() > 3)
         {
-            return fileName.substr(3, fileName.size() - 3);
+            return fileNameWithoutExtension.substr(3, fileNameWithoutExtension.size() - 3);
         }
         else
         {
-            return fileName;
+            return fileNameWithoutExtension;
         }
     }
 
-    std::vector<std::pair<std::string, ControllerInitializer>> ControllerIntegrator::LoadControllersInitializers()
+    [[nodiscard]] std::optional<std::pair<std::string, ControllerInitializer>> ControllerIntegrator::LoadSpecificController(const std::string& path)
+    {
+        std::optional<std::pair<std::string, ControllerInitializer>> controller  = std::nullopt;
+        if (fs::exists(path))
+        {           
+            if (auto initializer = GetControllerInitializerFromLib(path); initializer.has_value())
+            {
+                auto controllerName = GetControllerNameFromFile(path);
+                controller = std::make_pair(controllerName, initializer.value());
+            }
+            
+        }
+        else
+        {
+            LOG("Controllers integrator couldn't load specific controller as the given path does't exist: %s", path.c_str());
+        }
+        return controller;
+    }
+
+    [[nodiscard]] std::vector<std::pair<std::string, ControllerInitializer>> ControllerIntegrator::LoadControllersInitializers()
     {
         std::vector<std::pair<std::string, ControllerInitializer>> initializers;
         for (const auto& path : pathsToSearchControllers_)
         {
-            std::cout << "Searching integrated controllers in: " << path << '\n';
+            LOG("Controllers integrator searching in: %s", path.c_str());
             if (fs::exists(path))
             {
                 for (const auto& entry : fs::directory_iterator(path))
@@ -100,17 +130,16 @@ namespace scenarioengine::controller
         void* libHandle = LOAD_LIBRARY(path.c_str());
         if (libHandle == NULL)
         {
-            std::cout << path << " unable to open, error : " << dlerror() << '\n';
+            LOG("Controllers integrator unable to open lib error: %s", dlerror());
         }
         else
         {
             ControllerInitializer controllerInitializer;
-            //*reinterpret_cast<void**>(&controllerInitializer) = dlsym(libHandle, "InstantiateController");
             *reinterpret_cast<void**>(&controllerInitializer) = GET_FUNCTION(libHandle, "InstantiateController");
             if (controllerInitializer == nullptr)
             {
                 CLOSE_LIBRARY(libHandle);
-                std::cout << path << " is loaded but couldn't find InstantiateController function, error: " << dlerror() << '\n';
+                LOG("Controllers integrator loaded lib but couldn't find InstantiateController function: %s", dlerror());
             }
             else
             {

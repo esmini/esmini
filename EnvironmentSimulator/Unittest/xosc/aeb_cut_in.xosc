@@ -39,12 +39,12 @@
       <ScenarioObject name="Ego">
         <CatalogReference catalogName="VehicleCatalog" entryName="$HostVehicle"/>
          <ObjectController>
-            <Controller name="AEBController" />
-            <!-- <CatalogReference catalogName="ControllerCatalog" entryName="ECE_ALKS_RefDriverController"> -->
-               <!-- <ParameterAssignments> -->
-                   <!-- <ParameterAssignment parameterRef="Logging" value="false" /> -->
-               <!-- </ParameterAssignments> -->
-            <!-- </CatalogReference> -->
+            <Controller name="AEBController">
+                    <Properties>
+                        <Property name="brakeRate" value="5.0"/>
+                        <Property name="IntegratedControllerLib" value="../../../bin/IntegratedControllers/libAEBController.so"/>
+                    </Properties>
+                </Controller>	
 	     </ObjectController>         
       </ScenarioObject>
       <ScenarioObject name="Target">

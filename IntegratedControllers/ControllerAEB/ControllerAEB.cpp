@@ -17,10 +17,8 @@ ControllerAEB::ControllerAEB(InitArgs* args)
     {
         brakeRate_ = strtod(args->properties->GetValueStr("brakeRate"));
     }
-    else
-    {
-        std::cout << "brakeRate not found in scenario file, setting default value:" << brakeRate_ << '\n';
-    }
+
+    LOG("AEB controller initialized with brake rate: %f", brakeRate_);
 }
 
 Type ControllerAEB::GetType() const
@@ -43,14 +41,12 @@ void ControllerAEB::FindNearestObjectAndDistanceAhead(scenarioengine::Object* &n
         if (object_->pos_.Delta(&obj->pos_, diff, false, lookaheadDist) == true)  // look only double timeGap ahead
         {
             double distance = diff.ds;
-            //double dHeading = GetAbsAngleDifference(object_->pos_.GetH(), obj->pos_.GetH());
 
             if (diff.dLaneId == 0 && distance > 0 && distance < minDistance && abs(diff.dt) < lateralDist)
             {
                 minDistance = distance;
                 nearest = obj;
-                distanceToNearest = minDistance;
-                //std::cout << "found " << obj->GetName() << " nearby with distance:" << distance << '\n';              
+                distanceToNearest = minDistance;          
             }            
         }
     }
@@ -106,38 +102,22 @@ void ControllerAEB::IsEmergencyBrakingNeeded(scenarioengine::Object* nearest, do
     if( speedDiff <= 0)
     {
         // The nearest vehicle is faster then EGO, so there is no chance of collision under given circumstances
-        //std::cout << "no danger of collision" << '\n';;
         return;
     }
-    const double safetyDistance = 10;
-    //double collisionAvoidanceDistance = freeSpaceToNearest - safetyDistance;
-    
+
+    const double safetyDistance = 10;    
 
     // Calculate required required distance to reach delta speed 0
     // solve s=v*t+(a*t^2)/2, v+a*t=0 for s,t
     // https://www.wolframalpha.com/input?i=solve+s%3Dv*t%2B%28a*t%5E2%29%2F2%2C+v%2Ba*t%3D0+for+s%2Ct
 
     double requiredDistanceToAvoidCollision = -(speedDiff * speedDiff) / (2 * -brakeRate_);
-
-    //std::cout << "freeSpaceToNearest:" << freeSpaceToNearest << ", requiredDistanceToAvoidCollision:" << requiredDistanceToAvoidCollision << '\n';  
     if ( freeSpaceToNearest < requiredDistanceToAvoidCollision + safetyDistance)
     {
-        std::cout << "------!!!going to apply emergency brake!!!--------\n";
-        std::cout << "freeSpaceToNearest:" << freeSpaceToNearest << ", requiredDistanceToAvoidCollision:" << requiredDistanceToAvoidCollision << '\n'; 
+        LOG("AEB controller going to apply emergency brake, freeSpaceToNearest:%f, requiredDistanceToAvoidCollision:%f", freeSpaceToNearest, requiredDistanceToAvoidCollision);
         EmergencyBraking_ = true;
     }
 
-
-    // double timeToCollision = collisionAvoidanceDistance / speedDiff;    
-    // double acceleration = -speedDiff/(2*timeToCollision);
-    // std::cout << "speedDiff:" << speedDiff << ", collisionAvoidanceDistance:" << collisionAvoidanceDistance << ", timeToCollision:" 
-    //     << timeToCollision << ", acceleration:" << acceleration << '\n';;
-    // if( acceleration < -brakeRate_)${50/3.6}"
-    // {
-    //     std::cout << "------!!!going to apply emergency brake!!!--------\n";
-    //     EmergencyBraking_ = true;        
-    // }
-    
 }
 
 
@@ -148,8 +128,5 @@ void ControllerAEB::ApplyEmergencyBrake( double deltaTime)
     {
         newSpeed = 0;
     }
-    // roadmanager::PositionDiff diff;
-    // object_->pos_.Delta(&entities_->object_[1]->pos_, diff, false, 200); 
-    // std::cout << "Applying AEB, EGO CurrentSpeed:" << object_->GetSpeed() << " newSpeed:" <<  newSpeed << " dist: " << diff.ds << '\n';;
     gateway_->updateObjectSpeed(object_->GetId(), 0.0, newSpeed);
 }

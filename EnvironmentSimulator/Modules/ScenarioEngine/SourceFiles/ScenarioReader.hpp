@@ -184,7 +184,7 @@ namespace scenarioengine
         static Parameters variables;
 
     private:
-        void LoadIntegratedControllers();
+        void LoadIntegratedControllers(const std::string& libPath);
 
         pugi::xml_document    doc_;
         pugi::xml_node        osc_root_;

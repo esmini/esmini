@@ -18,12 +18,15 @@ namespace scenarioengine::controller
         ~ControllerIntegrator();
         // Sets the paths to folders in which integrated controllers will be searched
         void SetPathsToSearchControllers(std::vector<std::string> pathsToSearchControllers);
-        //
-        std::vector<std::pair<std::string, ControllerInitializer>> LoadControllersInitializers();
+        // Loads multiple integrated controllers in the path(s) to search
+        [[nodiscard]] std::vector<std::pair<std::string, ControllerInitializer>> LoadControllersInitializers();
+        // Loads one integrated controller in the path sent in parameter 
+        [[nodiscard]] std::optional<std::pair<std::string, ControllerInitializer>> LoadSpecificController(const std::string& path);
 
     private:
+        // Utility function to obtain controller name fromm names of .so/.dll file
         std::string GetControllerNameFromFile(const std::string& fileName) const;
-        // Try to get controller from a shared/dynamic libs
+        // Try to get controller from a shared/dynamic lib
         std::optional<ControllerInitializer> GetControllerInitializerFromLib(const std::string& libPath);
         // Paths to search controller libs in
         std::vector<std::string> pathsToSearchControllers_;

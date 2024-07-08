@@ -28,6 +28,7 @@
                 <Controller name="AEBController">
                     <Properties>
                         <Property name="brakeRate" value="8.0"/>
+                        <Property name="IntegratedControllerLib" value="../../../bin/IntegratedControllers/libAEBController.so"/>
                     </Properties>
                 </Controller>
             </ObjectController>

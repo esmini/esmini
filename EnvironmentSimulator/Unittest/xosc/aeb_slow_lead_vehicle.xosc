@@ -25,7 +25,11 @@
       <ScenarioObject name="Ego">
          <CatalogReference catalogName="VehicleCatalog" entryName="$EgoVehicle"/>
 	<ObjectController>
-            <Controller name="AEBController" />
+            <Controller name="AEBController">		    
+		<Properties>
+			<Property name="brakeRate" value="8.0"/>
+		</Properties>
+            </Controller>
         </ObjectController> 	
       </ScenarioObject>
       <ScenarioObject name="Lead">
@@ -86,6 +90,13 @@
          </Act>
       </Story>
       <StopTrigger>
+          <ConditionGroup>
+             <Condition name="ActStopCondition" delay="0" conditionEdge="rising">
+                <ByValueCondition>
+                        <SimulationTimeCondition value="14" rule="greaterThan"/>
+                     </ByValueCondition>
+             </Condition>
+          </ConditionGroup>
       </StopTrigger>
    </Storyboard>
 </OpenSCENARIO>

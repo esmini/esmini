@@ -92,15 +92,26 @@ void ScenarioReader::LoadControllers()
     RegisterController(controller::ToStr(controller::Type::CONTROLLER_ALKS_R157SM), controller::InstantiateControllerALKS_R157SM);
     RegisterController(controller::ToStr(controller::Type::CONTROLLER_TYPE_LOOMING), controller::InstantiateControllerLooming);
     RegisterController(controller::ToStr(controller::Type::CONTROLLER_TYPE_OFFROAD_FOLLOWER), controller::InstantiateControllerOffroadFollower);
-
-    LoadIntegratedControllers();
 }
 
-void ScenarioReader::LoadIntegratedControllers()
+void ScenarioReader::LoadIntegratedControllers(const std::string& libPath)
 {
-    std::cout << "exe path: " << SE_Env::Inst().GetExeFolderPath() << std::endl;
-
-    // std::cout << "Loading integrated controllers\n";
+    if( !libPath.empty())
+    {
+        LOG("try to load controller from specific path: %s", libPath.c_str());
+        const auto& integratedController = controllerIntegrator_.LoadSpecificController(libPath);
+        if( integratedController.has_value())
+        {
+            LOG("adding integrated controller with name: %s", integratedController.value().first.c_str());
+            RegisterController(integratedController.value().first, integratedController.value().second);    
+            return;
+        }
+    }
+    else
+    {
+        LOG("no specific path is given to load integrated controller, will try to scan relative path from the executable");
+    }
+    LOG("exe path: %s", SE_Env::Inst().GetExeFolderPath().c_str());
     std::vector<std::string> pathCandidates;
 
     if (!SE_Env::Inst().GetExeFolderPath().empty())
@@ -108,17 +119,12 @@ void ScenarioReader::LoadIntegratedControllers()
         pathCandidates.emplace_back(SE_Env::Inst().GetExeFolderPath() + "/IntegratedControllers");  // folder path of the executable is the first
     }
 
-    for (const auto &path : SE_Env::Inst().GetPaths())
-    {
-        pathCandidates.emplace_back(path);
-    }
-    // pathCandidates.emplace_back("../../../bin/IntegratedControllers");
-    // pathCandidates.emplace_back("../../../../bin/IntegratedControllers");
     controllerIntegrator_.SetPathsToSearchControllers(std::move(pathCandidates));
     auto integratedControllers = controllerIntegrator_.LoadControllersInitializers();
-    std::cout << "found " << integratedControllers.size() << " integrated controller(s)" << '\n';
+    LOG("found %u integrated controller(s)", integratedControllers.size());
     for (const auto &ctrl : integratedControllers)
     {
+        LOG("adding integrated controller with name: %s", ctrl.first.c_str());
         RegisterController(ctrl.first, ctrl.second);
     }
 }
@@ -1006,6 +1012,8 @@ controller::ControllerBase *ScenarioReader::parseOSCObjectController(pugi::xml_n
         LOG("Warning: Empty controller node");
     }
 
+    LoadIntegratedControllers( properties.GetValueStr("IntegratedControllerLib"));
+
     if (!properties.file_.filepath_.empty())
     {
         // Localize file
@@ -1035,6 +1043,7 @@ controller::ControllerBase *ScenarioReader::parseOSCObjectController(pugi::xml_n
         ctrlType = name;
     }
 
+
     ControllerPool::ControllerEntry *ctrl_entry = ScenarioReader::controllerPool_.GetControllerByType(ctrlType);
     if (ctrl_entry)
     {
@@ -1046,9 +1055,9 @@ controller::ControllerBase *ScenarioReader::parseOSCObjectController(pugi::xml_n
         args.parameters = &parameters;
         args.properties = &properties;
         controller      = ctrl_entry->instantiateFunction(&args);
-    }
+    }    
     else
-    {
+    {        
         LOG("Unsupported controller type: %s. Falling back to default controller", ctrlType.c_str());
         controller = 0;
     }

@@ -1730,6 +1730,25 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^35.000, 1, Target, 344.284, 338.329, 13.847, 5.787, 0.041, 0.000, 3.222, -0.032, 6.132', csv, re.MULTILINE))
         self.assertTrue(re.search('^55.700, 0, Ego, 415.817, 225.261, 10.713, 5.154, 6.278, 0.000, 0.051, 0.015, 6.193', csv, re.MULTILINE))
 
+    def test_integrated_ctrl_slow_lead_vehicle(self):
+        # this test case exercises the dynamically linking of integrated controllers 
+
+        log = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/aeb_slow_lead_vehicle.xosc'), COMMON_ESMINI_ARGS + ' --fixed_timestep 0.1 --headless')
+
+        # Check some initialization steps
+        self.assertTrue(re.search('Loading .*aeb_slow_lead_vehicle.xosc', log)  is not None)
+
+        # Check some scenario events
+        self.assertTrue(re.search('0.000: Controller AEBController active on domains: Longitudinal \\(mask=0x1\\)', log)  is not None)
+        self.assertTrue(re.search('14.100: ActStopCondition == true, 14.1000 > 14.0000 edge: rising', log)  is not None)
+
+        # Check vehicle key positions
+        csv = generate_csv()
+
+        self.assertTrue(re.search('^2.900, 0, Ego, 137.000, -1.535, 0.000, 0.000, 0.000, 0.000, 30.000, 0.000, 3.527', csv, re.MULTILINE))
+        self.assertTrue(re.search('^3.000, 0, Ego, 140.000, -1.535, 0.000, 0.000, 0.000, 0.000, 29.200, 0.000, 5.587', csv, re.MULTILINE))
+        self.assertTrue(re.search('^6.600, 0, Ego, 194.720, -1.535, 0.000, 0.000, 0.000, 0.000, 0.400, 0.000, 2.905', csv, re.MULTILINE))
+        self.assertTrue(re.search('^6.700, 0, Ego, 194.760, -1.535, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 2.905', csv, re.MULTILINE))
 
 if __name__ == "__main__":
     # execute only if run as a script
