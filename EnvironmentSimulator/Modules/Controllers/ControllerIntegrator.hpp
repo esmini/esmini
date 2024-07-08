@@ -6,6 +6,15 @@
 #include <vector>
 #include <optional>
 
+#if defined(_WIN32)
+#include <windows.h>
+typedef HMODULE LibHandle;
+#elif defined(__linux__) || defined(__APPLE__)
+typedef void* LibHandle;
+#else
+#error "Unsupported platform"
+#endif
+
 namespace scenarioengine::controller
 {
 
@@ -31,7 +40,7 @@ namespace scenarioengine::controller
         // Paths to search controller libs in
         std::vector<std::string> pathsToSearchControllers_;
         // Handles to all loaded libs
-        std::vector<void*> libHandles;
+        std::vector<LibHandle> libHandles;
     };
 
 }  // namespace scenarioengine::controller

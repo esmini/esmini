@@ -15,7 +15,7 @@ namespace fs = std::experimental::filesystem;
 // includes to use with dynamic libs on supported platforms
 #if defined(_WIN32)
 #include <windows.h>
-typedef HMODULE LibHandle;
+// typedef HMODULE LibHandle;
 typedef FARPROC FuncHandle;
 #define LOAD_LIBRARY(name)      LoadLibrary(TEXT(name))
 #define GET_FUNCTION(lib, func) GetProcAddress(lib, func)
@@ -23,7 +23,7 @@ typedef FARPROC FuncHandle;
 #define LIB_EXTENSION           ".dll"
 #elif defined(__linux__) || defined(__APPLE__)
 #include <dlfcn.h>
-typedef void* LibHandle;
+// typedef void* LibHandle;
 typedef void* FuncHandle;
 #define LOAD_LIBRARY(name)      dlopen(name, RTLD_LAZY)
 #define GET_FUNCTION(lib, func) dlsym(lib, func)
@@ -126,7 +126,7 @@ namespace scenarioengine::controller
 
     std::optional<ControllerInitializer> ControllerIntegrator::GetControllerInitializerFromLib(const std::string& path)
     {
-        void* libHandle = LOAD_LIBRARY(path.c_str());
+        LibHandle libHandle = LOAD_LIBRARY(path.c_str());
         if (libHandle == NULL)
         {
             LOG("Controllers integrator unable to open lib error: %s", dlerror());
