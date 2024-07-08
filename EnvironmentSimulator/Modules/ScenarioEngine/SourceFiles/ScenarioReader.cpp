@@ -94,16 +94,16 @@ void ScenarioReader::LoadControllers()
     RegisterController(controller::ToStr(controller::Type::CONTROLLER_TYPE_OFFROAD_FOLLOWER), controller::InstantiateControllerOffroadFollower);
 }
 
-void ScenarioReader::LoadIntegratedControllers(const std::string& libPath)
+void ScenarioReader::LoadIntegratedControllers(const std::string &libPath)
 {
-    if( !libPath.empty())
+    if (!libPath.empty())
     {
         LOG("try to load controller from specific path: %s", libPath.c_str());
-        const auto& integratedController = controllerIntegrator_.LoadSpecificController(libPath);
-        if( integratedController.has_value())
+        const auto &integratedController = controllerIntegrator_.LoadSpecificController(libPath);
+        if (integratedController.has_value())
         {
             LOG("adding integrated controller with name: %s", integratedController.value().first.c_str());
-            RegisterController(integratedController.value().first, integratedController.value().second);    
+            RegisterController(integratedController.value().first, integratedController.value().second);
             return;
         }
     }
@@ -1012,7 +1012,7 @@ controller::ControllerBase *ScenarioReader::parseOSCObjectController(pugi::xml_n
         LOG("Warning: Empty controller node");
     }
 
-    LoadIntegratedControllers( properties.GetValueStr("IntegratedControllerLib"));
+    LoadIntegratedControllers(properties.GetValueStr("IntegratedControllerLib"));
 
     if (!properties.file_.filepath_.empty())
     {
@@ -1043,7 +1043,6 @@ controller::ControllerBase *ScenarioReader::parseOSCObjectController(pugi::xml_n
         ctrlType = name;
     }
 
-
     ControllerPool::ControllerEntry *ctrl_entry = ScenarioReader::controllerPool_.GetControllerByType(ctrlType);
     if (ctrl_entry)
     {
@@ -1055,9 +1054,9 @@ controller::ControllerBase *ScenarioReader::parseOSCObjectController(pugi::xml_n
         args.parameters = &parameters;
         args.properties = &properties;
         controller      = ctrl_entry->instantiateFunction(&args);
-    }    
+    }
     else
-    {        
+    {
         LOG("Unsupported controller type: %s. Falling back to default controller", ctrlType.c_str());
         controller = 0;
     }

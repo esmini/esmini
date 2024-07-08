@@ -38,7 +38,7 @@ typedef void* FuncHandle;
 #define LIB_EXTENSION ".dylib"
 #endif
 
-#include "CommonMini.hpp"       // for log
+#include "CommonMini.hpp"  // for log
 
 namespace scenarioengine::controller
 {
@@ -58,14 +58,14 @@ namespace scenarioengine::controller
 
     std::string ControllerIntegrator::GetControllerNameFromFile(const std::string& filePath) const
     {
-        
-        size_t slashPos = filePath.find_last_of('/');
-        size_t extensionPos = filePath.find(LIB_EXTENSION);
+        size_t slashPos            = filePath.find_last_of('/');
+        size_t extensionPos        = filePath.find(LIB_EXTENSION);
         size_t controllerNameStart = slashPos == std::string::npos ? 0 : slashPos + 1;
-        size_t controllerNameSize = extensionPos == std::string::npos ? filePath.size() : extensionPos - controllerNameStart;
-        
-        std::string fileNameWithoutExtension = filePath.substr( controllerNameStart, controllerNameSize);
-        // on Linux and Mac, dynamic libs are prefixed with 'lib', stripping it to get actual name of the lib; we will use it as name of integrated controller
+        size_t controllerNameSize  = extensionPos == std::string::npos ? filePath.size() : extensionPos - controllerNameStart;
+
+        std::string fileNameWithoutExtension = filePath.substr(controllerNameStart, controllerNameSize);
+        // on Linux and Mac, dynamic libs are prefixed with 'lib', stripping it to get actual name of the lib; we will use it as name of integrated
+        // controller
         if (size_t pos = fileNameWithoutExtension.find("lib"); pos != std::string::npos && fileNameWithoutExtension.size() > 3)
         {
             return fileNameWithoutExtension.substr(3, fileNameWithoutExtension.size() - 3);
@@ -78,15 +78,14 @@ namespace scenarioengine::controller
 
     [[nodiscard]] std::optional<std::pair<std::string, ControllerInitializer>> ControllerIntegrator::LoadSpecificController(const std::string& path)
     {
-        std::optional<std::pair<std::string, ControllerInitializer>> controller  = std::nullopt;
+        std::optional<std::pair<std::string, ControllerInitializer>> controller = std::nullopt;
         if (fs::exists(path))
-        {           
+        {
             if (auto initializer = GetControllerInitializerFromLib(path); initializer.has_value())
             {
                 auto controllerName = GetControllerNameFromFile(path);
-                controller = std::make_pair(controllerName, initializer.value());
+                controller          = std::make_pair(controllerName, initializer.value());
             }
-            
         }
         else
         {

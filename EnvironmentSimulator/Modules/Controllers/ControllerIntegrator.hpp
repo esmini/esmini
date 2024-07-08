@@ -20,7 +20,7 @@ namespace scenarioengine::controller
         void SetPathsToSearchControllers(std::vector<std::string> pathsToSearchControllers);
         // Loads multiple integrated controllers in the path(s) to search
         [[nodiscard]] std::vector<std::pair<std::string, ControllerInitializer>> LoadControllersInitializers();
-        // Loads one integrated controller in the path sent in parameter 
+        // Loads one integrated controller in the path sent in parameter
         [[nodiscard]] std::optional<std::pair<std::string, ControllerInitializer>> LoadSpecificController(const std::string& path);
 
     private:
