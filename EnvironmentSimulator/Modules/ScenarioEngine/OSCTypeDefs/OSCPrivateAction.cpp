@@ -1097,6 +1097,11 @@ void LongSpeedAction::Step(double simTime, double dt)
         }
     }
 
+    if (target_->type_ == Target::TargetType::RELATIVE_SPEED)
+    {
+        target_speed_reached_ = false;
+    }
+
     object_->SetSpeed(ABS_LIMIT(new_speed, object_->performance_.maxSpeed));
 
     if (target_speed_reached_ &&
