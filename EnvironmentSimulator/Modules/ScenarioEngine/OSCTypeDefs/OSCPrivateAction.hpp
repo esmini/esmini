@@ -252,7 +252,7 @@ namespace scenarioengine
             ValueType value_type_;
             bool      continuous_;
 
-            TargetRelative() : Target(TargetType::RELATIVE_SPEED), continuous_(false), consumed_(false), object_speed_(0)
+            TargetRelative() : Target(TargetType::RELATIVE_SPEED), continuous_(false), object_speed_(0)
             {
             }
 
@@ -260,7 +260,6 @@ namespace scenarioengine
             void   Reset();
 
         private:
-            bool   consumed_;
             double object_speed_;
         };
 

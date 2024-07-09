@@ -1730,6 +1730,30 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^35.000, 1, Target, 344.284, 338.329, 13.847, 5.787, 0.041, 0.000, 3.222, -0.032, 6.132', csv, re.MULTILINE))
         self.assertTrue(re.search('^55.700, 0, Ego, 415.817, 225.261, 10.713, 5.154, 6.278, 0.000, 0.051, 0.015, 6.193', csv, re.MULTILINE))
 
+    def test_repeats_and_relative_speed(self):
+        # this test case exercises restarting events and maneuvers to maintain relative speed using SpeedAction without continuous flag.
+
+        log = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/repeated_relative_speed.xosc'), COMMON_ESMINI_ARGS + "--fixed_timestep 0.1")
+
+        # Check some initialization steps
+        self.assertTrue(re.search('Loading .*repeated_relative_speed.xosc', log)  is not None)
+
+        # Check some scenario events
+        self.assertTrue(re.search('5.100: actor_1_action_accelerate initState -> startTransition -> runningState', log)  is not None)
+        self.assertTrue(re.search('13.100: event_reach_same_speed completed run 2 \\(of max 100\\)', log)  is not None)
+        self.assertTrue(re.search('24.200: event_reach_same_speed_trigger == true, relative_speed: -2.50 < -2.00, edge: none', log)  is not None)
+        self.assertTrue(re.search('29.800: event_reach_same_speed_trigger == true, relative_speed: 3.00 > 2.00, edge: none', log)  is not None)
+        self.assertTrue(re.search('31.300: actor_1_maneuver_group complete after 3 executions', log)  is not None)
+
+        # Check vehicle key positions
+        csv = generate_csv()
+
+        self.assertTrue(re.search('^7.600, 0, ego, 58.500, -1.535, 0.000, 0.000, 0.000, 0.000, 15.000, 0.000, 0.341', csv, re.MULTILINE))
+        self.assertTrue(re.search('^7.600, 1, actor_1, 104.250, -1.535, 0.000, 0.000, 0.000, 0.000, 17.500, 0.000, 4.204', csv, re.MULTILINE))
+        self.assertTrue(re.search('^26.200, 0, ego, 259.480, -1.535, 0.000, 0.000, 0.000, 0.000, 11.000, 0.000, 2.800', csv, re.MULTILINE))
+        self.assertTrue(re.search('^26.200, 1, actor_1, 295.350, -1.535, 0.000, 0.000, 0.000, 0.000, 13.500, 0.000, 3.566', csv, re.MULTILINE))
+        self.assertTrue(re.search('^40.100, 0, ego, 358.970, -1.535, 0.000, 0.000, 0.000, 0.000, 1.000, 0.000, 4.314', csv, re.MULTILINE))
+        self.assertTrue(re.search('^40.100, 1, actor_1, 385.150, -1.535, 0.000, 0.000, 0.000, 0.000, 1.000, 0.000, 2.527', csv, re.MULTILINE))
 
 if __name__ == "__main__":
     # execute only if run as a script

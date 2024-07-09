@@ -1,0 +1,205 @@
+<?xml version='1.0' encoding='utf-8'?>
+<OpenSCENARIO xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="OpenScenario.xsd">
+    <FileHeader author="esmini team" date="2024-07-09T09:00:00.00" description="Exercise repeated executions and relative speed" revMajor="1" revMinor="2"/>
+    <ParameterDeclarations/>
+    <VariableDeclarations/>
+    <CatalogLocations>
+        <VehicleCatalog>
+            <Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
+        </VehicleCatalog>
+    </CatalogLocations>
+    <RoadNetwork>
+        <LogicFile filepath="../../../resources/xodr/straight_500m.xodr"/>
+    </RoadNetwork>
+    <Entities>
+        <ScenarioObject name="ego">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="actor_1">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>
+        </ScenarioObject>
+    </Entities>
+    <Storyboard>
+        <Init>
+            <Actions>
+                <Private entityRef="ego">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition laneId="-1" offset="0.0" roadId="1" s="10.0">
+                                    <Orientation h="0.0" type="relative"/>
+                                </LanePosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsDimension="time" dynamicsShape="step" value="0.0"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="5.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="actor_1">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition laneId="-1" offset="0.0" roadId="1" s="50.0">
+                                    <Orientation h="0.0" type="relative"/>
+                                </LanePosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsDimension="time" dynamicsShape="step" value="0.0"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="5.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                </Private>
+            </Actions>
+        </Init>
+        <Story name="Story1">
+            <Act name="act1">
+                <ManeuverGroup maximumExecutionCount="1" name="ego_maneuver_group">
+                    <Actors selectTriggeringEntities="false">
+                        <EntityRef entityRef="ego"/>
+                    </Actors>
+                    <Maneuver name="ego_maneuver">
+                        <Event maximumExecutionCount="100" name="event_reach_same_speed" priority="override">
+                            <Action name="action_reach_same_speed">
+                                <PrivateAction>
+                                    <LongitudinalAction>
+                                        <SpeedAction>
+                                            <SpeedActionDynamics dynamicsDimension="rate" dynamicsShape="linear" value="7"/>
+                                            <SpeedActionTarget>
+                                                <RelativeTargetSpeed continuous="false" entityRef="actor_1" speedTargetValueType="delta" value="0.0"/>
+                                            </SpeedActionTarget>
+                                        </SpeedAction>
+                                    </LongitudinalAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition conditionEdge="none" delay="0.0" name="event_reach_same_speed_trigger">
+                                        <ByEntityCondition>
+                                            <TriggeringEntities triggeringEntitiesRule="any">
+                                                <EntityRef entityRef="ego"/>
+                                            </TriggeringEntities>
+                                            <EntityCondition>
+                                                <RelativeSpeedCondition value="2.0" rule="greaterThan" entityRef="actor_1"/>
+                                            </EntityCondition>
+                                        </ByEntityCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                                <ConditionGroup>
+                                    <Condition conditionEdge="none" delay="0.0" name="event_reach_same_speed_trigger">
+                                        <ByEntityCondition>
+                                            <TriggeringEntities triggeringEntitiesRule="any">
+                                                <EntityRef entityRef="ego"/>
+                                            </TriggeringEntities>
+                                            <EntityCondition>
+                                                <RelativeSpeedCondition value="-2.0" rule="lessThan" entityRef="actor_1"/>
+                                            </EntityCondition>
+                                        </ByEntityCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                    </Maneuver>
+                </ManeuverGroup>
+                <StartTrigger>
+                    <ConditionGroup>
+                        <Condition conditionEdge="rising" delay="0.0" name="start_trigger7">
+                            <ByValueCondition>
+                                <SimulationTimeCondition rule="greaterThan" value="1.0"/>
+                            </ByValueCondition>
+                        </Condition>
+                    </ConditionGroup>
+                </StartTrigger>
+                <StopTrigger/>
+            </Act>
+            <Act name="act2">
+                <ManeuverGroup maximumExecutionCount="3" name="actor_1_maneuver_group">
+                    <Actors selectTriggeringEntities="false">
+                        <EntityRef entityRef="actor_1"/>
+                    </Actors>
+                    <Maneuver name="actor_1_maneuver">
+                        <Event maximumExecutionCount="1" name="event_high_speed" priority="override">
+                            <Action name="actor_1_action_accelerate">
+                                <PrivateAction>
+                                    <LongitudinalAction>
+                                        <SpeedAction>
+                                            <SpeedActionDynamics dynamicsDimension="rate" dynamicsShape="linear" value="10.0"/>
+                                            <SpeedActionTarget>
+                                                <AbsoluteTargetSpeed value="20.0"/>
+                                            </SpeedActionTarget>
+                                        </SpeedAction>
+                                    </LongitudinalAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition conditionEdge="none" delay="2.0" name="trigger_high_speed">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition rule="greaterThan" value="0.0"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event maximumExecutionCount="1" name="event_low_speed" priority="parallel">
+                            <Action name="actor_1_action_decelerate">
+                                <PrivateAction>
+                                    <LongitudinalAction>
+                                        <SpeedAction>
+                                            <SpeedActionDynamics dynamicsDimension="rate" dynamicsShape="linear" value="10.0"/>
+                                            <SpeedActionTarget>
+                                                <AbsoluteTargetSpeed value="1.0"/>
+                                            </SpeedActionTarget>
+                                        </SpeedAction>
+                                    </LongitudinalAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition conditionEdge="none" delay="2.0" name="trigger_low_speed">
+                                        <ByValueCondition>
+                                            <StoryboardElementStateCondition storyboardElementType="event" storyboardElementRef="event_high_speed" state="completeState"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                    </Maneuver>
+                </ManeuverGroup>
+                <StartTrigger>
+                    <ConditionGroup>
+                        <Condition conditionEdge="none" delay="0.0" name="start_trigger13">
+                            <ByValueCondition>
+                                <SimulationTimeCondition rule="greaterThan" value="3.0"/>
+                            </ByValueCondition>
+                        </Condition>
+                    </ConditionGroup>
+                </StartTrigger>
+                <StopTrigger/>
+            </Act>
+        </Story>
+        <StopTrigger>
+            <ConditionGroup>
+                <Condition conditionEdge="rising" delay="0.0" name="stop_simulation">
+                    <ByValueCondition>
+                        <SimulationTimeCondition rule="greaterThan" value="40.0"/>
+                    </ByValueCondition>
+                </Condition>
+            </ConditionGroup>
+        </StopTrigger>
+    </Storyboard>
+</OpenSCENARIO>

@@ -953,19 +953,7 @@ void LatLaneOffsetAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
 }
 double LongSpeedAction::TargetRelative::GetValue()
 {
-    if (!continuous_)
-    {
-        // sample relative object speed once
-        if (!consumed_)
-        {
-            object_speed_ = object_->speed_;
-            consumed_     = true;
-        }
-    }
-    else
-    {
-        object_speed_ = object_->speed_;
-    }
+    object_speed_ = object_->speed_;
 
     if (value_type_ == ValueType::DELTA)
     {
@@ -985,7 +973,6 @@ double LongSpeedAction::TargetRelative::GetValue()
 
 void LongSpeedAction::TargetRelative::Reset()
 {
-    consumed_     = false;
     continuous_   = false;
     object_speed_ = 0.0;
 }
