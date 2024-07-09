@@ -221,6 +221,9 @@ namespace scenarioengine
             {
             }
             virtual double GetValue() = 0;
+            virtual void   Reset()
+            {
+            }
         };
 
         class TargetAbsolute : public Target
@@ -254,6 +257,7 @@ namespace scenarioengine
             }
 
             double GetValue();
+            void   Reset();
 
         private:
             bool   consumed_;

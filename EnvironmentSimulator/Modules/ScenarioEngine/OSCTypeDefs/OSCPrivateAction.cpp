@@ -983,11 +983,19 @@ double LongSpeedAction::TargetRelative::GetValue()
     return 0;
 }
 
+void LongSpeedAction::TargetRelative::Reset()
+{
+    consumed_     = false;
+    continuous_   = false;
+    object_speed_ = 0.0;
+}
+
 void LongSpeedAction::Start(double simTime)
 {
     OSCAction::Start(simTime);
     transition_.Reset();
     target_speed_reached_ = false;
+    target_->Reset();
 
     if (object_->IsControllerModeOnDomains(ControlOperationMode::MODE_OVERRIDE, static_cast<unsigned int>(ControlDomains::DOMAIN_LONG)))
     {
