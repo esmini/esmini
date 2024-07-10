@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<OpenDRIVE>
+    <header name="ref_point" revMajor="1" revMinor="5" date="2024-07-10 08:43:50.820657" north="0.0" south="0.0" east="0.0" west="0.0"/>
+    <road rule="RHT" id="0" junction="-1" length="87.854">
+        <link/>
+        <planView>
+            <geometry s="0" x="0" y="0" hdg="0" length="40">
+                <line/>
+            </geometry>
+            <geometry s="40" x="40.0" y="0.0" hdg="0" length="7.854000000000001">
+                <arc curvature="0.2"/>
+            </geometry>
+            <geometry s="47.854" x="44.99999999996627" y="5.000018366025518" hdg="1.5708000000000002" length="40">
+                <line/>
+            </geometry>
+        </planView>
+        <elevationProfile/>
+        <lateralProfile/>
+        <lanes>
+            <laneSection s="0">
+                <left>
+                    <lane id="1" type="driving" level="false">
+                        <link/>
+                        <width a="3.0" b="0.0" c="0.0" d="0.0" sOffset="0"/>
+                        <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>
+                    </lane>
+                </left>
+                <center>
+                    <lane id="0" type="none" level="false">
+                        <roadMark sOffset="0" type="broken" weight="standard" color="standard" height="0.02" width="0.2">
+                            <type name="broken" width="0.2">
+                                <line length="3" space="9" tOffset="0" width="0.15" sOffset="0"/>
+                            </type>
+                        </roadMark>
+                    </lane>
+                </center>
+                <right>
+                    <lane id="-1" type="driving" level="false">
+                        <link/>
+                        <width a="3.0" b="0.0" c="0.0" d="0.0" sOffset="0"/>
+                        <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>
+                    </lane>
+                </right>
+            </laneSection>
+        </lanes>
+    </road>
+</OpenDRIVE>

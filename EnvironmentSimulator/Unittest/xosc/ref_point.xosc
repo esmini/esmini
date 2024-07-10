@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSCENARIO>
+    <FileHeader revMajor="1" revMinor="2" date="2024-07-10T09:00:00" description="Various ref-points" author="esmini team"/>
+    <ParameterDeclarations>
+        <ParameterDeclaration name="Speed" parameterType="double" value="5.0"/>
+    </ParameterDeclarations>
+    <CatalogLocations>
+        <RouteCatalog>
+            <Directory path="../xosc/Catalogs/Routes"/>
+        </RouteCatalog>
+        <VehicleCatalog>
+            <Directory path="../xosc/Catalogs/Vehicles"/>
+        </VehicleCatalog>
+    </CatalogLocations>
+    <RoadNetwork>
+        <LogicFile filepath="../xodr/ref_point.xodr"/>
+    </RoadNetwork>
+    <Entities>
+        <ScenarioObject name="car_ref_point_rear_axle">
+            <Vehicle name="simple_car" vehicleCategory="car">
+                <BoundingBox>
+                    <Center x="1.46" y="0.0" z="0.77"/>
+                    <Dimensions width="2.04" length="5.04" height="1.49"/>
+                </BoundingBox>
+                <Performance maxSpeed="69.0" maxDeceleration="10.0" maxAcceleration="10.0"/>
+                <Axles>
+                    <FrontAxle maxSteering="0.5" wheelDiameter="0.8" trackWidth="1.68" positionX="2.98" positionZ="0.4"/>
+                    <RearAxle maxSteering="0.5" wheelDiameter="0.8" trackWidth="1.68" positionX="0" positionZ="0.4"/>
+                </Axles>
+                <Properties/>
+            </Vehicle>
+        </ScenarioObject>
+        <ScenarioObject name="car_ref_point_rear">
+            <Vehicle name="simple_car" vehicleCategory="car">
+                <BoundingBox>
+                    <Center x="2.52" y="0.0" z="0.745"/>
+                    <Dimensions width="2.04" length="5.04" height="1.49"/>
+                </BoundingBox>
+                <Performance maxSpeed="69.0" maxDeceleration="10.0" maxAcceleration="10.0"/>
+                <Axles>
+                    <FrontAxle maxSteering="0.5" wheelDiameter="0.8" trackWidth="1.68" positionX="2.98" positionZ="0.4"/>
+                    <RearAxle maxSteering="0.5" wheelDiameter="0.8" trackWidth="1.68" positionX="0" positionZ="0.4"/>
+                </Axles>
+                <Properties/>
+            </Vehicle>
+        </ScenarioObject>
+        <ScenarioObject name="car_ref_point_front">
+            <Vehicle name="simple_car" vehicleCategory="car">
+                <BoundingBox>
+                    <Center x="-2.52" y="0.0" z="0.745"/>
+                    <Dimensions width="2.04" length="5.04" height="1.49"/>
+                </BoundingBox>
+                <Performance maxSpeed="69.0" maxDeceleration="10.0" maxAcceleration="10.0"/>
+                <Axles>
+                    <FrontAxle maxSteering="0.5" wheelDiameter="0.8" trackWidth="1.68" positionX="2.98" positionZ="0.4"/>
+                    <RearAxle maxSteering="0.5" wheelDiameter="0.8" trackWidth="1.68" positionX="0" positionZ="0.4"/>
+                </Axles>
+                <Properties/>
+            </Vehicle>
+        </ScenarioObject>
+    </Entities>
+    <Storyboard>
+        <Init>
+            <Actions>
+                <Private entityRef="car_ref_point_rear_axle">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="0" laneId="-1" s="28.0"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="0.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="$Speed"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="car_ref_point_rear">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="0" laneId="-1" s="15.0"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="0.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="$Speed"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="car_ref_point_front">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="0" laneId="-1" s="8.0"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="0.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="$Speed"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                </Private>
+            </Actions>
+        </Init>
+        <StopTrigger>
+            <ConditionGroup>
+                <Condition name="DoneCondition" delay="0" conditionEdge="none">
+                    <ByValueCondition>
+                        <SimulationTimeCondition value="13" rule="greaterThan"/>
+                    </ByValueCondition>
+                </Condition>
+            </ConditionGroup>
+        </StopTrigger>
+    </Storyboard>
+</OpenSCENARIO>
