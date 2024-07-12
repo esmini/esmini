@@ -221,9 +221,6 @@ namespace scenarioengine
             {
             }
             virtual double GetValue() = 0;
-            virtual void   Reset()
-            {
-            }
         };
 
         class TargetAbsolute : public Target
