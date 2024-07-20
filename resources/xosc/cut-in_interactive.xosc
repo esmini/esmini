@@ -34,7 +34,22 @@
         </ObjectController>
       </ScenarioObject>
       <ScenarioObject name="OverTaker">
-         <CatalogReference catalogName="VehicleCatalog" entryName="$TargetVehicle"/>
+        <Vehicle name="car_red" vehicleCategory="car" model3d="../models/car_red.osgb">
+            <ParameterDeclarations/>
+            <BoundingBox>
+                <Center x="1.45" y="0.0" z="0.75"/>
+                <Dimensions width="2.0" length="5.04" height="1.5"/>
+            </BoundingBox>
+            <Performance maxSpeed="100.0" maxDeceleration="100.0" maxAcceleration="100.0"/>
+            <Axles>
+                <FrontAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="2.98" positionZ="0.4"/>
+                <RearAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="0" positionZ="0.4"/>
+            </Axles>
+            <Properties>
+                <Property name="model_id" value="2"/>
+                <Property name="scaleMode" value="BBToModel"/>
+            </Properties>
+        </Vehicle> 
       </ScenarioObject>
    </Entities>
    <Storyboard>

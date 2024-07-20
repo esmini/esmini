@@ -249,15 +249,12 @@ namespace scenarioengine
             ValueType value_type_;
             bool      continuous_;
 
-            TargetRelative() : Target(TargetType::RELATIVE_SPEED), continuous_(false), object_speed_(0)
+            TargetRelative() : Target(TargetType::RELATIVE_SPEED), object_(0), value_type_(ValueType::DELTA), continuous_(false)
             {
             }
 
             double GetValue();
             void   Reset();
-
-        private:
-            double object_speed_;
         };
 
         std::shared_ptr<Target> target_;

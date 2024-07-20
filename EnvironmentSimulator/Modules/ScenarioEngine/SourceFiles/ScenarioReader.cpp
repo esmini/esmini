@@ -2056,7 +2056,8 @@ int ScenarioReader::ParseTransitionDynamics(pugi::xml_node node, OSCPrivateActio
     {
         // dimension and value not used in this case - relax attribute requirement
         td.dimension_ = ParseDynamicsDimension(parameters.ReadAttribute(node, "dynamicsDimension", false));
-        td.SetParamTargetVal(strtod(parameters.ReadAttribute(node, "value", false)));
+        // enforce value 0 for step shape
+        td.SetParamTargetVal(0.0);
     }
     else
     {

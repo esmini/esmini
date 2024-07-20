@@ -23,6 +23,11 @@ using namespace scenarioengine;
 
 // Equations used in TransitionDynamics
 // ------------------------------------
+// a = start value
+// b = target delta (target value = start value + b)
+// c = parameter range (e.g. duration or distance)
+// Example: Starting at lateral position 0.5 (a), move 1.0 (b) to 1.5 in 2 seconds (c)
+//
 // Step: Trivial
 // Linear: Trivial
 // Sinusoidal:
@@ -58,7 +63,7 @@ double OSCPrivateAction::TransitionDynamics::EvaluatePrimPeak()
     }
     else
     {
-        if (shape_ == DynamicsShape::STEP)
+        if (shape_ == DynamicsShape::STEP || (dimension_ != DynamicsDimension::RATE && GetParamTargetVal() < SMALL_NUMBER))
         {
             return LARGE_NUMBER * SIGN(GetTargetVal() - GetStartVal());
         }
@@ -141,7 +146,7 @@ double OSCPrivateAction::TransitionDynamics::GetTargetParamValByPrimPrimPeak(dou
 
 double OSCPrivateAction::TransitionDynamics::EvaluatePrim()
 {
-    if (shape_ == DynamicsShape::STEP)
+    if (shape_ == DynamicsShape::STEP || (dimension_ != DynamicsDimension::RATE && GetParamTargetVal() < SMALL_NUMBER))
     {
         return LARGE_NUMBER * SIGN(GetTargetVal() - GetStartVal());
     }
@@ -177,8 +182,9 @@ double OSCPrivateAction::TransitionDynamics::Evaluate(DynamicsShape shape)
         shape = shape_;
     }
 
-    if (shape == DynamicsShape::STEP)
+    if (shape_ == DynamicsShape::STEP || (dimension_ != DynamicsDimension::RATE && GetParamTargetVal() < SMALL_NUMBER))
     {
+        // consider empty parameter range (start = target = 0) as step function
         return GetTargetVal();
     }
     else if (shape == DynamicsShape::LINEAR)
@@ -214,6 +220,15 @@ int OSCPrivateAction::TransitionDynamics::Step(double delta_param_val)
 {
     param_val_ += delta_param_val / scale_factor_;
 
+    if (param_val_ > param_target_val_)
+    {
+        param_val_ = param_target_val_;
+    }
+    else if (param_val_ < 0.0)
+    {
+        param_val_ = 0.0;
+    }
+
     return 0;
 }
 
@@ -233,7 +248,7 @@ void OSCPrivateAction::TransitionDynamics::SetParamTargetVal(double target_value
 {
     if (dimension_ != DynamicsDimension::RATE)
     {
-        param_target_val_ = AVOID_ZERO(target_value);
+        param_target_val_ = target_value;
     }
     else
     {
@@ -783,7 +798,8 @@ void LatLaneChangeAction::Step(double simTime, double dt)
                              internal_pos_.GetS(),
                              offset_agnostic * SIGN(internal_pos_.GetLaneId()));
 
-    if (transition_.shape_ == DynamicsShape::STEP)
+    if (transition_.shape_ == DynamicsShape::STEP ||
+        (transition_.dimension_ != DynamicsDimension::RATE && transition_.GetParamTargetVal() < SMALL_NUMBER))
     {
         // not for step shape, since it is not a continuous function. Maintain longitudinal motion
         delta_long = step_len;
@@ -953,15 +969,15 @@ void LatLaneOffsetAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
 }
 double LongSpeedAction::TargetRelative::GetValue()
 {
-    object_speed_ = object_->speed_;
+    double object_speed = object_ ? object_->speed_ : 0.0;
 
     if (value_type_ == ValueType::DELTA)
     {
-        return object_speed_ + value_;
+        return object_speed + value_;
     }
     else if (value_type_ == ValueType::FACTOR)
     {
-        return object_speed_ * value_;
+        return object_speed * value_;
     }
     else
     {
@@ -1026,7 +1042,24 @@ void LongSpeedAction::Start(double simTime)
         }
     }
 
-    transition_.SetTargetVal(target_->GetValue());
+    transition_.SetTargetVal(ABS_LIMIT(target_->GetValue(), object_->performance_.maxSpeed));
+
+    if (transition_.GetTargetVal() > transition_.GetStartVal())
+    {
+        // Acceleration
+        transition_.SetMaxRate(object_->performance_.maxAcceleration);
+    }
+    else
+    {
+        // Deceleration
+        transition_.SetMaxRate(object_->performance_.maxDeceleration);
+    }
+
+    // Make sure sign of rate is correct
+    if (transition_.dimension_ == DynamicsDimension::RATE)
+    {
+        transition_.SetRate(SIGN(transition_.GetTargetVal() - transition_.GetStartVal()) * abs(transition_.GetRate()));
+    }
 
     // Set initial state
     object_->SetSpeed(transition_.Evaluate());
@@ -1045,47 +1078,54 @@ void LongSpeedAction::Step(double simTime, double dt)
         return;
     }
 
-    // Get target speed, which might be dynamic (relative other entitity)
-    transition_.SetTargetVal(ABS_LIMIT(target_->GetValue(), object_->performance_.maxSpeed));
-
-    if (target_speed_reached_)
+    if (target_->type_ == Target::TargetType::RELATIVE_SPEED)
     {
-        new_speed = target_->GetValue();
+        transition_.SetTargetVal(ABS_LIMIT(target_->GetValue(), object_->performance_.maxSpeed));
+    }
+
+    if (transition_.GetParamTargetVal() > 0.0 && (transition_.GetParamVal() > transition_.GetParamTargetVal() - SMALL_NUMBER))
+    {
+        double acc = dt > SMALL_NUMBER ? (target_->GetValue() - object_->GetSpeed()) / dt : 0.0;
+
+        // respect performance constraints after transition phase
+        acc = CLAMP(acc, -object_->performance_.maxDeceleration, object_->performance_.maxAcceleration);
+
+        new_speed = ABS_LIMIT(object_->GetSpeed() + acc * dt, object_->performance_.maxSpeed);
     }
     else
     {
-        if (transition_.GetTargetVal() > transition_.GetStartVal())
-        {
-            // Acceleration
-            transition_.SetMaxRate(object_->performance_.maxAcceleration);
-        }
-        else
-        {
-            // Deceleration
-            transition_.SetMaxRate(object_->performance_.maxDeceleration);
-        }
-
-        // Make sure sign of rate is correct
-        if (transition_.dimension_ == DynamicsDimension::RATE)
-        {
-            transition_.SetRate(SIGN(transition_.GetTargetVal() - transition_.GetStartVal()) * abs(transition_.GetRate()));
-        }
-
         transition_.Step(dt);
-        new_speed = transition_.Evaluate();
+        new_speed           = transition_.Evaluate();
+        double acc_required = dt > SMALL_NUMBER ? (new_speed - object_->GetSpeed()) / dt : 0.0;
 
-        if (transition_.GetParamVal() > transition_.GetParamTargetVal() - SMALL_NUMBER ||
-            // Close enough?
-            abs(new_speed - transition_.GetTargetVal()) < SMALL_NUMBER ||
-            // Already passed target value (perhaps due to strange initial conditions)?
-            SIGN(target_->GetValue() - transition_.GetStartVal()) != SIGN(target_->GetValue() - object_->GetSpeed()))
+        // too big step?
+        if (acc_required > object_->performance_.maxAcceleration + SMALL_NUMBER ||
+            acc_required < -(object_->performance_.maxDeceleration + SMALL_NUMBER))
         {
-            target_speed_reached_ = true;
-            new_speed             = target_->GetValue();
+            double acc = CLAMP(acc_required, -object_->performance_.maxDeceleration, object_->performance_.maxAcceleration);
+
+            // find new speed based on limited acceleration
+            new_speed = ABS_LIMIT(object_->GetSpeed() + acc * dt, object_->performance_.maxSpeed);
+
+            // linear interpolation to find approximate step
+            double step_approx = (new_speed - object_->GetSpeed()) / acc_required;
+
+            // adjust transition step accordingly
+            transition_.Step(-(dt - step_approx));
         }
     }
 
-    object_->SetSpeed(ABS_LIMIT(new_speed, object_->performance_.maxSpeed));
+    if (transition_.GetParamVal() > transition_.GetParamTargetVal() - SMALL_NUMBER)
+    {
+        // Close enough?
+        if (abs(new_speed - transition_.GetTargetVal()) < SMALL_NUMBER)
+        {
+            target_speed_reached_ = true;
+            new_speed             = ABS_LIMIT(target_->GetValue(), object_->performance_.maxSpeed);
+        }
+    }
+
+    object_->SetSpeed(new_speed);
 
     if (target_speed_reached_ &&
         !(target_->type_ == Target::TargetType::RELATIVE_SPEED && (static_cast<TargetRelative*>(target_.get()))->continuous_ == true))

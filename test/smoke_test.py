@@ -396,7 +396,7 @@ class TestSuite(unittest.TestCase):
         # Check some scenario events
         self.assertTrue(re.search('2.010: LaneChange1Condition == true, 2.0100 > 2.0000 edge: none', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('16.330: LaneChange2Event complete after 1 execution', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('21.520: LaneChange3Event complete after 1 execution', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('21.510: LaneChange3Event complete after 1 execution', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('23.010: LaneOffset1Condition == true, 23.0100 > 23.0000 edge: none', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('28.960: QuitCondition == true, element: LaneOffset1Event state: END_TRANSITION, edge: rising', log, re.MULTILINE)  is not None)
 
@@ -409,8 +409,8 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^7.010, 0, Car, 67.894, -2.535, 0.000, 0.000, 0.000, 0.000, 4.000, -0.055, 2.551', csv, re.MULTILINE))
         self.assertTrue(re.search('^14.400, 0, Car, 97.247, 0.151, 0.000, 0.154, 0.000, 0.000, 4.000, 0.000, 5.327', csv, re.MULTILINE))
         self.assertTrue(re.search('^16.330, 0, Car, 104.876, 1.341, 0.000, 0.153, 0.000, 0.000, 4.000, 0.000, 2.252', csv, re.MULTILINE))
-        self.assertTrue(re.search('^18.150, 0, Car, 112.130, 0.917, 0.000, 6.106, 0.000, 0.000, 4.019, -0.089, 4.205', csv, re.MULTILINE))
-        self.assertTrue(re.search('^22.540, 0, Car, 138.566, -1.529, 0.000, 6.283, 0.000, 0.000, 7.000, 0.000, 4.990', csv, re.MULTILINE))
+        self.assertTrue(re.search('^18.150, 0, Car, 112.130, 0.914, 0.000, 6.106, 0.000, 0.000, 4.019, -0.089, 4.205', csv, re.MULTILINE))
+        self.assertTrue(re.search('^22.540, 0, Car, 138.567, -1.529, 0.000, 6.283, 0.000, 0.000, 7.000, 0.000, 4.990', csv, re.MULTILINE))
         self.assertTrue(re.search('^24.800, 0, Car, 154.387, 0.790, 0.000, 0.247, 0.000, 0.000, 7.000, -0.039, 6.207', csv, re.MULTILINE))
         self.assertTrue(re.search('^26.000, 0, Car, 162.787, 1.968, 0.000, 6.283, 0.000, 0.000, 7.000, -0.103, 5.074', csv, re.MULTILINE))
 
@@ -1654,12 +1654,13 @@ class TestSuite(unittest.TestCase):
         # Check some scenario events
         self.assertTrue(re.search('0.010: CutInActStart == true, 0.0100 > 0.0000 edge: none', log)  is not None)
         self.assertTrue(re.search('2.010: Adding action LaneOffsetAction', log)  is not None)
-        self.assertTrue(re.search('4.350: LaneOffsetAction runningState -> endTransition -> completeState', log)  is not None)
-        self.assertTrue(re.search('7.010: Adding action LaneChangeAction', log)  is not None)
-        self.assertTrue(re.search('9.510: Adding action SpeedAction', log)  is not None)
-        self.assertTrue(re.search('11.010: Adding action SpeedAction', log)  is not None)
-        self.assertTrue(re.search('10.020: Injected action LaneChangeAction finished', log)  is not None)
-        self.assertTrue(re.search('14.670: SpeedAction runningState -> endTransition -> completeState', log)  is not None)
+        self.assertTrue(re.search('4.350: LaneOffsetAction_0 runningState -> endTransition -> completeState', log)  is not None)
+        self.assertTrue(re.search('7.010: Adding action LaneChangeAction_1', log)  is not None)
+        self.assertTrue(re.search('9.510: Adding action SpeedAction_2', log)  is not None)
+        self.assertTrue(re.search('11.010: Adding action SpeedAction_3', log)  is not None)
+        self.assertTrue(re.search('11.010: Action SpeedAction_2 of type SpeedAction already ongoing for Ego, stopping it', log)  is not None)
+        self.assertTrue(re.search('10.020: Injected action LaneChangeAction_1 finished', log)  is not None)
+        self.assertTrue(re.search('14.660: SpeedAction_3 runningState -> endTransition -> completeState', log)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv()

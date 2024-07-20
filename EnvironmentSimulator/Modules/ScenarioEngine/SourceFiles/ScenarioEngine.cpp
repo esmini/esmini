@@ -270,7 +270,7 @@ int ScenarioEngine::step(double deltaSimTime)
     {
         for (OSCAction* action : *injected_actions_)
         {
-            if (action->GetCurrentState() != StoryBoardElement::State::RUNNING)
+            if (action->GetCurrentState() == StoryBoardElement::State::INIT || action->GetCurrentState() == StoryBoardElement::State::STANDBY)
             {
                 action->Start(simulationTime_);
             }
