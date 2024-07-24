@@ -90,6 +90,10 @@ namespace scenarioengine
             player_ = player;
         }
         ~PlayerServer();
+        void Reset()
+        {
+            counter_ = 0;
+        }
 
         void InjectSpeedAction(SpeedActionStruct& action);
         void InjectLaneChangeAction(LaneChangeActionStruct& action);
@@ -113,6 +117,7 @@ namespace scenarioengine
     private:
         std::vector<OSCAction*> action_;
         ScenarioPlayer*         player_;
+        unsigned int            counter_ = 0;
     };
 
 }  // namespace scenarioengine

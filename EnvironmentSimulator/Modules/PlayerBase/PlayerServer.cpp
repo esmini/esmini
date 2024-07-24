@@ -48,7 +48,26 @@ namespace scenarioengine
     int PlayerServer::AddAction(OSCAction *action)
     {
         LOG("Adding action %s", action->GetName().c_str());
+
+        // abort any action of same type and object
+        for (auto &a : action_)
+        {
+            if (a->action_type_ == action->action_type_ &&
+                ((a->GetBaseType() != OSCAction::BaseType::PRIVATE) ||
+                 (static_cast<OSCPrivateAction *>(a)->object_ == static_cast<OSCPrivateAction *>(action)->object_)))
+            {
+                LOG("Action %s of type %s already ongoing%s, stopping it",
+                    a->GetName().c_str(),
+                    a->Type2Str().c_str(),
+                    a->GetBaseType() == OSCAction::BaseType::PRIVATE ? (" for " + static_cast<OSCPrivateAction *>(a)->object_->GetName()).c_str()
+                                                                     : "");
+                a->End();
+            }
+        }
+
         action_.push_back(action);
+
+        counter_++;
 
         return 0;
     }
@@ -148,7 +167,7 @@ namespace scenarioengine
     void PlayerServer::InjectSpeedAction(SpeedActionStruct &action)
     {
         LongSpeedAction *a = new LongSpeedAction(nullptr);
-        a->SetName("SpeedAction");
+        a->SetName("SpeedAction_" + std::to_string(counter_));
         a->object_ = player_->scenarioEngine->entities_.GetObjectById(action.id);
 
         SetTransitionShape(a->transition_, action.transition_shape);
@@ -166,7 +185,7 @@ namespace scenarioengine
     void PlayerServer::InjectLaneChangeAction(LaneChangeActionStruct &action)
     {
         LatLaneChangeAction *a = new LatLaneChangeAction(nullptr);
-        a->SetName("LaneChangeAction");
+        a->SetName("LaneChangeAction_" + std::to_string(counter_));
         a->object_ = player_->scenarioEngine->entities_.GetObjectById(action.id);
 
         SetTransitionShape(a->transition_, action.transition_shape);
@@ -194,7 +213,7 @@ namespace scenarioengine
     void PlayerServer::InjectLaneOffsetAction(LaneOffsetActionStruct &action)
     {
         LatLaneOffsetAction *a = new LatLaneOffsetAction(nullptr);
-        a->SetName("LaneOffsetAction");
+        a->SetName("LaneOffsetAction_" + std::to_string(counter_));
         a->object_ = player_->scenarioEngine->entities_.GetObjectById(action.id);
 
         SetTransitionShape(a->transition_, action.transition_shape);
@@ -316,6 +335,8 @@ namespace scenarioengine
 
         // Wait/block until UDP server closed gracefully
         thread.Wait();
+
+        Reset();
     }
 
 }  // namespace scenarioengine
