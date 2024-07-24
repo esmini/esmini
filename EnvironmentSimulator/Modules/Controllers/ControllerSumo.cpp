@@ -190,12 +190,14 @@ void ControllerSumo::Step(double timeStep)
                 std::string            sumoid = obj->name_;
                 libsumo::TraCIPosition pos    = libsumo::Vehicle::getPosition3D(sumoid);
                 obj->speed_                   = libsumo::Vehicle::getSpeed(sumoid);
-                obj->pos_.SetInertiaPos(pos.x - static_cast<double>(sumo_x_offset_),
-                                        pos.y - static_cast<double>(sumo_y_offset_),
-                                        pos.z,
-                                        -libsumo::Vehicle::getAngle(sumoid) * M_PI / 180 + M_PI / 2,
-                                        libsumo::Vehicle::getSlope(sumoid) * M_PI / 180,
-                                        0);
+                obj->pos_.SetInertiaPosMode(pos.x - static_cast<double>(sumo_x_offset_),
+                                            pos.y - static_cast<double>(sumo_y_offset_),
+                                            pos.z,
+                                            -libsumo::Vehicle::getAngle(sumoid) * M_PI / 180 + M_PI / 2,
+                                            libsumo::Vehicle::getSlope(sumoid) * M_PI / 180,
+                                            0,
+                                            roadmanager::Position::PosMode::Z_ABS | roadmanager::Position::PosMode::H_ABS |
+                                                roadmanager::Position::PosMode::P_ABS | roadmanager::Position::PosMode::R_REL);
 
                 obj->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);
 
