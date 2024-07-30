@@ -2115,6 +2115,34 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode,
 
                     action = varSetAction;
                 }
+                else if (varChild.name() == std::string("ModifyAction"))
+                {
+                    pugi::xml_node ruleChild = varChild.first_child();
+                    pugi::xml_node valueChild = ruleChild.first_child();
+                    if (ruleChild && valueChild)
+                    {
+                        if (valueChild.name() == std::string("AddValue"))
+                        {
+                            VariableAddAction *varAddAction = new VariableAddAction(parent);
+
+                            varAddAction->name_      = variables.ReadAttribute(actionChild, "variableRef");
+                            varAddAction->value_     = strtod(variables.ReadAttribute(valueChild, "value"));
+                            varAddAction->variables_ = &variables;
+
+                            action = varAddAction;
+                        }
+                        else if (valueChild.name() == std::string("MultiplyByValue"))
+                        {
+                            VariableMultiplyByAction *varMulAction = new VariableMultiplyByAction(parent);
+
+                            varMulAction->name_      = variables.ReadAttribute(actionChild, "variableRef");
+                            varMulAction->value_     = strtod(variables.ReadAttribute(valueChild, "value"));
+                            varMulAction->variables_ = &variables;
+
+                            action = varMulAction;
+                        }
+                    }
+                }
                 else
                 {
                     LOG("VariableAction %s not supported yet", varChild.name());
