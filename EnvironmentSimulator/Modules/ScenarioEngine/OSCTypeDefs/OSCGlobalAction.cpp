@@ -72,6 +72,77 @@ void VariableSetAction::Step(double simTime, double dt)
     OSCAction::Stop();
 }
 
+void VariableAddAction::Start(double simTime)
+{
+    OSCParameterDeclarations::ParameterStruct* ps = variables_->getParameterEntry(name_);
+    if (!ps)
+    {
+        return;
+    }
+
+    if (ps->type == OSCParameterDeclarations::ParameterType::PARAM_TYPE_INTEGER)
+    {
+        LOG("Add variable %s += %.0f", name_.c_str(), value_);
+        int v = 0;
+        variables_->getParameterValueInt(name_, v);
+        v += static_cast<int>(value_);
+        variables_->setParameterValue(name_, v);
+    }
+    else if (ps->type == OSCParameterDeclarations::ParameterType::PARAM_TYPE_DOUBLE)
+    {
+        LOG("Add variable %s += %f", name_.c_str(), value_);
+        double v = 0.0;
+        variables_->getParameterValueDouble(name_, v);
+        v += value_;
+        variables_->setParameterValue(name_, v);
+    }
+
+    OSCAction::Start(simTime);
+}
+
+void VariableAddAction::Step(double simTime, double dt)
+{
+    (void)simTime;
+    (void)dt;
+
+    OSCAction::Stop();
+}
+
+void VariableMultiplyByAction::Start(double simTime)
+{
+    OSCParameterDeclarations::ParameterStruct* ps = variables_->getParameterEntry(name_);
+    if (!ps)
+    {
+        return;
+    }
+
+    LOG("Multiply variable %s *= %f", name_.c_str(), value_);
+    if (ps->type == OSCParameterDeclarations::ParameterType::PARAM_TYPE_INTEGER)
+    {
+        int v = 0;
+        variables_->getParameterValueInt(name_, v);
+        v = static_cast<int>(v * value_);
+        variables_->setParameterValue(name_, v);
+    }
+    else if (ps->type == OSCParameterDeclarations::ParameterType::PARAM_TYPE_DOUBLE)
+    {
+        double v = 0.0;
+        variables_->getParameterValueDouble(name_, v);
+        v *= value_;
+        variables_->setParameterValue(name_, v);
+    }
+
+    OSCAction::Start(simTime);
+}
+
+void VariableMultiplyByAction::Step(double simTime, double dt)
+{
+    (void)simTime;
+    (void)dt;
+
+    OSCAction::Stop();
+}
+
 void AddEntityAction::Start(double simTime)
 {
     if (entity_ == nullptr)

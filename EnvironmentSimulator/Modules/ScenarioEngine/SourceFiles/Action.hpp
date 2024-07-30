@@ -53,6 +53,8 @@ namespace scenarioengine
             VARIABLE_SET             = 35,
             INFRASTRUCTURE           = 36,  // not supported yet
             SWARM_TRAFFIC            = 37,
+            VARIABLE_ADD             = 38,
+            VARIABLE_MULTIPLY_BY     = 39,
 
             // User defined action
             USER_DEFINED_ACTION_BASE_INDEX = 50,
