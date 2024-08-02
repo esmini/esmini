@@ -105,6 +105,7 @@ typedef struct
     float x;           // Route point in the global coordinate system
     float y;           // Route point in the global coordinate system
     float z;           // Route point in the global coordinate system
+    float h;           // Route point, heading in the global coordinate system
     id_t  roadId;      // Route point, road ID
     id_t  junctionId;  // Route point, junction ID (-1 if not in a junction)
     int   laneId;      // Route point, lane ID

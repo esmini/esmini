@@ -2783,6 +2783,7 @@ extern "C"
         routeinfo->x          = static_cast<float>(route->all_waypoints_[static_cast<unsigned int>(route_index)].GetX());
         routeinfo->y          = static_cast<float>(route->all_waypoints_[static_cast<unsigned int>(route_index)].GetY());
         routeinfo->z          = static_cast<float>(route->all_waypoints_[static_cast<unsigned int>(route_index)].GetZ());
+        routeinfo->h          = static_cast<float>(route->all_waypoints_[static_cast<unsigned int>(route_index)].GetH());
         routeinfo->roadId     = route->all_waypoints_[static_cast<unsigned int>(route_index)].GetTrackId();
         routeinfo->junctionId = route->all_waypoints_[static_cast<unsigned int>(route_index)].GetJunctionId();
         routeinfo->laneId     = route->all_waypoints_[static_cast<unsigned int>(route_index)].GetLaneId();
