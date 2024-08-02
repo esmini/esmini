@@ -2676,6 +2676,7 @@ extern "C"
         routeinfo->x          = static_cast<float>(obj->pos_.GetRoute()->all_waypoints_[static_cast<unsigned int>(route_index)].GetX());
         routeinfo->y          = static_cast<float>(obj->pos_.GetRoute()->all_waypoints_[static_cast<unsigned int>(route_index)].GetY());
         routeinfo->z          = static_cast<float>(obj->pos_.GetRoute()->all_waypoints_[static_cast<unsigned int>(route_index)].GetZ());
+        routeinfo->h          = static_cast<float>(obj->pos_.GetRoute()->all_waypoints_[static_cast<unsigned int>(route_index)].GetH());
         routeinfo->roadId     = obj->pos_.GetRoute()->all_waypoints_[static_cast<unsigned int>(route_index)].GetTrackId();
         routeinfo->junctionId = obj->pos_.GetRoute()->all_waypoints_[static_cast<unsigned int>(route_index)].GetJunctionId();
         routeinfo->laneId     = obj->pos_.GetRoute()->all_waypoints_[static_cast<unsigned int>(route_index)].GetLaneId();
