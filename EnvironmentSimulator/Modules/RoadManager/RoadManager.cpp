@@ -9568,8 +9568,9 @@ void Position::EvaluateZHPR()
 
 void Position::EvaluateZHPR(int mode)
 {
-    if (CheckBitsEqual(mode, PosMode::H_MASK, PosMode::H_REL) || CheckBitsEqual(mode, PosMode::P_MASK, PosMode::P_REL) ||
-        CheckBitsEqual(mode, PosMode::R_MASK, PosMode::R_REL))
+    if (CheckBitsEqual(mode, PosMode::H_MASK, PosMode::H_REL) || CheckBitsEqual(mode, PosMode::H_MASK, 0) ||
+        CheckBitsEqual(mode, PosMode::P_MASK, PosMode::P_REL) || CheckBitsEqual(mode, PosMode::P_MASK, 0) ||
+        CheckBitsEqual(mode, PosMode::R_MASK, PosMode::R_REL) || CheckBitsEqual(mode, PosMode::R_MASK, 0))
     {
         R0R12EulerAngles(GetHRoad(),
                          CheckBitsEqual(mode, PosMode::P_MASK, PosMode::P_ABS) ? 0.0 : GetPRoad(),
