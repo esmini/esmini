@@ -3159,16 +3159,16 @@ namespace roadmanager
         @return Non zero return value indicates error of some kind
         */
         int  SetInertiaPosMode(double x, double y, double h, int mode, bool updateTrackPos = true);
-        void SetHeading(double heading);
-        void SetHeadingRelative(double heading);
-        void SetHeadingRelativeRoadDirection(double heading);
-        void SetHeadingRoad(double heading);
-        void SetRoll(double roll);
-        void SetRollRelative(double roll);
-        void SetRollRoad(double heading);
-        void SetPitch(double roll);
-        void SetPitchRelative(double pitch);
-        void SetPitchRoad(double heading);
+        void SetHeading(double heading, bool evaluate = true);
+        void SetHeadingRelative(double heading, bool evaluate = true);
+        void SetHeadingRelativeRoadDirection(double heading, bool evaluate = true);
+        void SetHeadingRoad(double heading, bool evaluate = true);
+        void SetRoll(double roll, bool evaluate = true);
+        void SetRollRelative(double roll, bool evaluate = true);
+        void SetRollRoad(double heading, bool evaluate = true);
+        void SetPitch(double roll, bool evaluate = true);
+        void SetPitchRelative(double pitch, bool evaluate = true);
+        void SetPitchRoad(double heading, bool evaluate = true);
         void SetZ(double z);
         void SetZRelative(double z);
 
@@ -3652,18 +3652,6 @@ namespace roadmanager
         {
             y_ = y;
         }
-        void SetH(double h)
-        {
-            h_ = h;
-        }
-        void SetP(double p)
-        {
-            p_ = p;
-        }
-        void SetR(double r)
-        {
-            r_ = r;
-        }
         void SetVel(double x_vel, double y_vel, double z_vel)
         {
             velX_ = x_vel, velY_ = y_vel, velZ_ = z_vel;
@@ -3960,6 +3948,8 @@ namespace roadmanager
             return direction_mode_;
         }
 
+        bool EvaluateRoadZHPR(int mode);
+
         // Relative values
         struct RelativeInfo
         {
@@ -3981,7 +3971,7 @@ namespace roadmanager
 
     protected:
         void       Track2Lane();
-        ReturnCode Track2XYZ();
+        ReturnCode Track2XYZ(int mode);
         void       Lane2Track();
         void       RoadMark2Track();
         /**
@@ -3990,7 +3980,6 @@ namespace roadmanager
         void       LaneBoundary2Track();
         void       XYZ2Track(int mode = PosMode::UNDEFINED);
         ReturnCode SetLongitudinalTrackPos(int track_id, double s);
-        bool       EvaluateRoadZHPR();
 
         /**
         Update trajectory position

@@ -8172,13 +8172,16 @@ Position::ReturnCode Position::XYZ2TrackPos(double x3, double y3, double z3, int
     {
         // if outside road endpoint boundries, ignore road pitch and roll but use latest z_road
         p_road_ = 0.0;
-        SetPitch(0.0);
+        SetPitch(0.0, false);
+
         r_road_ = 0.0;
-        SetRoll(0.0);
+        SetRoll(0.0, false);
+
+        EvaluateZHPR();
     }
     else
     {
-        EvaluateRoadZHPR();
+        EvaluateRoadZHPR(mode);
     }
 
     if (mode & PosMode::Z_SET)
@@ -8193,15 +8196,6 @@ Position::ReturnCode Position::XYZ2TrackPos(double x3, double y3, double z3, int
         }
     }
 
-    if ((mode & PosMode::H_MASK) == PosMode::H_REL)
-    {
-        SetHeading(h_road_ + h_relative_);  // update heading wrt relative heading
-    }
-    else
-    {
-        SetHeading(h_);  // update relative heading given world heading (h_) and road heading
-    }
-
     // If on a route, calculate corresponding route position
     if (route_ && route_->IsValid())
     {
@@ -8211,7 +8205,7 @@ Position::ReturnCode Position::XYZ2TrackPos(double x3, double y3, double z3, int
     return retvalue;
 }
 
-bool Position::EvaluateRoadZHPR()
+bool Position::EvaluateRoadZHPR(int mode)
 {
     if (track_id_ < 0)
     {
@@ -8234,10 +8228,12 @@ bool Position::EvaluateRoadZHPR()
         LOG("Failed to lookup road id %d", track_id_);
     }
 
+    EvaluateZHPR(mode);
+
     return ret_value;
 }
 
-Position::ReturnCode Position::Track2XYZ()
+Position::ReturnCode Position::Track2XYZ(int mode)
 {
     if (GetOpenDrive()->GetNumOfRoads() == 0)
     {
@@ -8267,7 +8263,7 @@ Position::ReturnCode Position::Track2XYZ()
     x_ += x_local;
     y_ += y_local;
 
-    EvaluateRoadZHPR();
+    EvaluateRoadZHPR(mode);
 
     return ReturnCode::OK;
 }
@@ -8442,7 +8438,7 @@ Position::ReturnCode Position::SetTrackPosMode(int track_id, double s, double t,
         Track2Lane();
         if (UpdateXY)
         {
-            ReturnCode retval_lat = Track2XYZ();
+            ReturnCode retval_lat = Track2XYZ(mode);
             if ((int)retval_lat < 0)
             {
                 return retval_lat;
@@ -9146,8 +9142,7 @@ Position::ReturnCode Position::SetLanePosMode(int track_id, int lane_id, double 
     }
 
     Lane2Track();
-    Track2XYZ();
-    EvaluateZHPR(mode);
+    Track2XYZ(mode);
 
     return retvalue;
 }
@@ -9229,8 +9224,7 @@ void Position::SetLaneBoundaryPos(int track_id, int lane_id, double s, double of
 
     // Lane2Track();
     LaneBoundary2Track();
-    Track2XYZ();
-    EvaluateZHPR(Position::PosMode::Z_REL | Position::PosMode::H_REL | Position::PosMode::P_REL | Position::PosMode::R_REL);
+    Track2XYZ(Position::PosMode::Z_REL | Position::PosMode::H_REL | Position::PosMode::P_REL | Position::PosMode::R_REL);
 
     return;
 }
@@ -9367,8 +9361,7 @@ void Position::SetRoadMarkPos(int    track_id,
     }
 
     RoadMark2Track();
-    Track2XYZ();
-    EvaluateZHPR(Position::PosMode::Z_REL | Position::PosMode::H_REL | Position::PosMode::P_REL | Position::PosMode::R_REL);
+    Track2XYZ(Position::PosMode::Z_REL | Position::PosMode::H_REL | Position::PosMode::P_REL | Position::PosMode::R_REL);
 }
 
 int Position::SetInertiaPos(double x, double y, double z, double h, double p, double r, bool updateTrackPos)
@@ -9480,37 +9473,52 @@ int Position::SetInertiaPosMode(double x, double y, double h, int mode, bool upd
     return SetInertiaPosMode(x, y, 0.0, h, 0.0, 0.0, mode);
 }
 
-void Position::SetHeading(double heading)
+void Position::SetHeading(double heading, bool evaluate)
 {
-    h_          = heading;
-    h_relative_ = GetAngleInInterval2PI(GetAngleDifference(h_, h_road_));  // Something wrong with -angles
+    h_ = heading;
+    if (evaluate)
+    {
+        EvaluateZHPR();
+    }
 }
 
-void Position::SetHeadingRelative(double heading)
+void Position::SetHeadingRelative(double heading, bool evaluate)
 {
     h_relative_ = GetAngleInInterval2PI(heading);
-    h_          = GetAngleSum(h_road_, h_relative_);
+    if (evaluate)
+    {
+        EvaluateZHPR();
+    }
 }
 
-void Position::SetHeadingRoad(double heading)
+void Position::SetHeadingRoad(double heading, bool evaluate)
 {
     h_road_ = GetAngleInInterval2PI(heading);
-    h_      = GetAngleSum(h_road_, h_relative_);
+    if (evaluate)
+    {
+        EvaluateZHPR();
+    }
 }
 
-void Position::SetPitchRoad(double pitch)
+void Position::SetPitchRoad(double pitch, bool evaluate)
 {
     p_road_ = GetAngleInInterval2PI(pitch);
-    p_      = GetAngleSum(p_road_, p_relative_);
+    if (evaluate)
+    {
+        EvaluateZHPR();
+    }
 }
 
-void Position::SetRollRoad(double roll)
+void Position::SetRollRoad(double roll, bool evaluate)
 {
     r_road_ = GetAngleInInterval2PI(roll);
-    r_      = GetAngleSum(r_road_, r_relative_);
+    if (evaluate)
+    {
+        EvaluateZHPR();
+    }
 }
 
-void Position::SetHeadingRelativeRoadDirection(double heading)
+void Position::SetHeadingRelativeRoadDirection(double heading, bool evaluate)
 {
     if (h_relative_ > M_PI_2 && h_relative_ < 3 * M_PI_2)
     {
@@ -9521,31 +9529,46 @@ void Position::SetHeadingRelativeRoadDirection(double heading)
     {
         h_relative_ = GetAngleInInterval2PI(heading);
     }
-    h_ = GetAngleSum(h_road_, h_relative_);
+    if (evaluate)
+    {
+        EvaluateZHPR();
+    }
 }
 
-void Position::SetRoll(double roll)
+void Position::SetRoll(double roll, bool evaluate)
 {
     r_          = roll;
-    r_relative_ = GetAngleInInterval2PI(GetAngleDifference(r_, r_road_));
+    if (evaluate)
+    {
+        EvaluateZHPR();
+    }
 }
 
-void Position::SetRollRelative(double roll)
+void Position::SetRollRelative(double roll, bool evaluate)
 {
     r_relative_ = GetAngleInInterval2PI(roll);
-    r_          = GetAngleSum(r_road_, r_relative_);
+    if (evaluate)
+    {
+        EvaluateZHPR();
+    }
 }
 
-void Position::SetPitch(double pitch)
+void Position::SetPitch(double pitch, bool evaluate)
 {
     p_          = pitch;
-    p_relative_ = GetAngleInInterval2PI(GetAngleDifference(p_, p_road_));
+    if (evaluate)
+    {
+        EvaluateZHPR();
+    }
 }
 
-void Position::SetPitchRelative(double pitch)
+void Position::SetPitchRelative(double pitch, bool evaluate)
 {
     p_relative_ = GetAngleInInterval2PI(pitch);
-    p_          = GetAngleSum(p_road_, p_relative_);
+    if (evaluate)
+    {
+        EvaluateZHPR();
+    }
 }
 
 void Position::SetZ(double z)
@@ -9612,7 +9635,7 @@ void Position::EvaluateZHPR(int mode)
         CalcRelAnglesFromRoadAndAbsAngles(GetHRoad(), GetPRoad(), GetRRoad(), h_, p_, r_, h_relative_, p_relative_, r_relative_);
     }
 
-    if (CheckBitsEqual(mode, PosMode::Z_MASK, PosMode::Z_REL))
+    if (CheckBitsEqual(mode, PosMode::Z_MASK, PosMode::Z_REL) || CheckBitsEqual(mode, PosMode::Z_MASK, 0))
     {
         z_ = z_road_ + z_relative_;
     }

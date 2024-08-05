@@ -1910,7 +1910,7 @@ TEST_F(StraightRoadTest, TestObjectOverlap)
     EXPECT_EQ(ego.OverlappingFront(&target, 0.02), Object::OverlapType::PART);
 
     // Rotate ego 90 deg
-    ego.pos_.SetH(M_PI_2);
+    ego.pos_.SetHeading(M_PI_2, false);
     target.pos_.SetInertiaPos(0.0, 10.0, 0.0);
     EXPECT_EQ(ego.OverlappingFront(&target, 0.01), Object::OverlapType::INSIDE_AND_FULL);
 }
