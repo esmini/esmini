@@ -187,7 +187,7 @@ namespace ESMini
         [DllImport(LIB_NAME, EntryPoint = "SE_RegisterStoryBoardElementStateChangeCallback")]
         /// <summary>
         /// Registers a function to be called back from esmini every time a storyboard element state change is triggered.
-        /// The name of the respective condition and the current timestamp will be returned.
+        /// The name of the respective condition, the type, state and full path will be returned.
         /// Registered callbacks will be cleared between SE_Init calls.
         /// </summary>
         /// <param name="scc">The callback function to be invoked</param>
