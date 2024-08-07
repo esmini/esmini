@@ -183,7 +183,7 @@ namespace ESMini
         /// <param name="cc">The callback function to be invoked</param>
         public static extern void SE_RegisterConditionCallback(ConditionCallback cc);
     
-	    public delegate void StateChangeCallback(string name, int type, int state, string full_path);
+	public delegate void StateChangeCallback(string name, int type, int state, string full_path);
         [DllImport(LIB_NAME, EntryPoint = "SE_RegisterStoryBoardElementStateChangeCallback")]
         /// <summary>
         /// Registers a function to be called back from esmini every time a storyboard element state change is triggered.
@@ -667,8 +667,8 @@ namespace ESMini
         /// <param name="ids">Reference to a struct which will be filled with the Ids</param>
         public static extern IntPtr SE_GetOSILaneBoundaryIds(int object_id, ref LaneBoundaryId ids);
 
-	    [DllImport(LIB_NAME, EntryPoint = "SE_ClearOSIGroundTruth")]
-	    /// <summary>
+        [DllImport(LIB_NAME, EntryPoint = "SE_ClearOSIGroundTruth")]
+        /// <summary>
         /// The SE_ClearOSIGroundTruth clears the certain groundtruth data. 
         /// This function should only be used together with SE_UpdateOSIStaticGroundTruth and SE_UpdateOSIDynamicGroundTruth 
         /// </summary>
