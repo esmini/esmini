@@ -379,6 +379,11 @@ void ScenarioPlayer::ViewerFrame(bool init)
                                                            obj->name_,
                                                            &obj->boundingbox_,
                                                            obj->scaleMode_));
+
+        // Connect callback for setting transparency
+        viewer::VisibilityCallback* cb = new viewer::VisibilityCallback(obj, viewer_->entities_.back());
+        viewer_->entities_.back()->txNode_->setUpdateCallback(cb);
+
         InitVehicleModel(obj, static_cast<viewer::CarModel*>(viewer_->entities_.back()));
     }
 
