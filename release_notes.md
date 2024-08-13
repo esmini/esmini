@@ -1,5 +1,21 @@
 ## esmini release notes
 
+### 2024-08-13 Version 2.37.17
+
+Updated behaviors:
+- Update target speed for relative speed action continuously
+  - previously target speed was sampled only once (at start of action)
+
+Improvements and fixes:
+- Fix relative target speed not reset for repeated actions ([issue #589](https://github.com/esmini/esmini/issues/589))
+- Fix bug in condition group logging ([PR #587](https://github.com/esmini/esmini/pull/587))
+- Add [ref_point.xosc](https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Unittest/xosc/ref_point.xosc) demonstrating effect of various ref points ([issue #590](https://github.com/esmini/esmini/issues/590))
+- For injected actions, create unique name and replace ongoing similar action
+  - compose name of action type and action counter
+  - abort any ongoing action of same type and object
+- Fix SUMO controller elevation bug
+  - use SUMO z value as is (absolute, not relative)
+
 ### 2024-07-01 Version 2.37.16
 
 Fixes of bugs introduced in v2.37.15:
@@ -12,7 +28,7 @@ Improvements and fixes:
 - Support (partly) string IDs for roads and junctions
   - integer ID is generated and assigned for internal use
   - the integer ID is the one being logged and reported
-- Add arguments to ignore z, pitch and roll inputs ([PR #583](https://github.com/esmini/esmini/issues/583))
+- Add arguments to ignore z, pitch and roll inputs ([PR #583](https://github.com/esmini/esmini/pull/583))
   - aligning the vehicle to the road instead
 - Improve support for distant road networks
   - very high coordinates (>1+E6) previously resulted in shaky graphics
