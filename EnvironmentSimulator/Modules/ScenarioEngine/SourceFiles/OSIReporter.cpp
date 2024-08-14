@@ -16,6 +16,7 @@
 #include <cmath>
 #include <string>
 #include <utility>
+#include <array>
 
 #ifdef _WIN32
 #include <winsock2.h>
@@ -858,12 +859,39 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState *objectState)
     obj_osi_internal.mobj->mutable_base()->mutable_dimension()->set_length(objectState->state_.info.boundingbox.dimensions_.length_);
 
     // Set OSI Moving Object Position
-    obj_osi_internal.mobj->mutable_base()->mutable_position()->set_x(
-        objectState->state_.pos.GetX() + static_cast<double>(objectState->state_.info.boundingbox.center_.x_) * cos(objectState->state_.pos.GetH()));
-    obj_osi_internal.mobj->mutable_base()->mutable_position()->set_y(
-        objectState->state_.pos.GetY() + static_cast<double>(objectState->state_.info.boundingbox.center_.x_) * sin(objectState->state_.pos.GetH()));
-    obj_osi_internal.mobj->mutable_base()->mutable_position()->set_z(
-        objectState->state_.pos.GetZ() + static_cast<double>(objectState->state_.info.boundingbox.dimensions_.height_) / 2.0);
+    // As OSI defines the origin of the object coordinates in the center of the bounding box and esmini (as OpenSCENARIO)
+    // at the center of the rear axle, the position needs to be transformed.
+    // For the transformation the orientation of the object has to be taken into account.
+    std::array<std::array<double, 3>, 3> rotation_matrix{};
+    rotation_matrix[0][0] = cos(objectState->state_.pos.GetP()) * cos(objectState->state_.pos.GetH());
+    rotation_matrix[0][1] = cos(objectState->state_.pos.GetP()) * sin(objectState->state_.pos.GetH());
+    rotation_matrix[0][2] = -sin(objectState->state_.pos.GetP());
+    rotation_matrix[1][0] = sin(objectState->state_.pos.GetR()) * sin(objectState->state_.pos.GetP()) * cos(objectState->state_.pos.GetH()) -
+                            cos(objectState->state_.pos.GetR()) * sin(objectState->state_.pos.GetH());
+    rotation_matrix[1][1] = sin(objectState->state_.pos.GetR()) * sin(objectState->state_.pos.GetP()) * sin(objectState->state_.pos.GetH()) +
+                            cos(objectState->state_.pos.GetR()) * cos(objectState->state_.pos.GetH());
+    rotation_matrix[1][2] = sin(objectState->state_.pos.GetR()) * cos(objectState->state_.pos.GetP());
+    rotation_matrix[2][0] = cos(objectState->state_.pos.GetR()) * sin(objectState->state_.pos.GetP()) * cos(objectState->state_.pos.GetH()) +
+                            sin(objectState->state_.pos.GetH()) * sin(objectState->state_.pos.GetR());
+    rotation_matrix[2][1] = cos(objectState->state_.pos.GetR()) * sin(objectState->state_.pos.GetP()) * sin(objectState->state_.pos.GetH()) -
+                            sin(objectState->state_.pos.GetR()) * cos(objectState->state_.pos.GetH());
+    rotation_matrix[2][2] = cos(objectState->state_.pos.GetR()) * cos(objectState->state_.pos.GetP());
+
+    osi3::Vector3d bounding_box_center;
+    bounding_box_center.set_x(objectState->state_.info.boundingbox.center_.x_);
+    bounding_box_center.set_y(objectState->state_.info.boundingbox.center_.y_);
+    bounding_box_center.set_z(objectState->state_.info.boundingbox.center_.z_);
+
+    const double x_rel = bounding_box_center.x() * rotation_matrix[0][0] + bounding_box_center.y() * rotation_matrix[1][0] +
+                         bounding_box_center.z() * rotation_matrix[2][0];
+    const double y_rel = bounding_box_center.x() * rotation_matrix[0][1] + bounding_box_center.y() * rotation_matrix[1][1] +
+                         bounding_box_center.z() * rotation_matrix[2][1];
+    const double z_rel = bounding_box_center.x() * rotation_matrix[0][2] + bounding_box_center.y() * rotation_matrix[1][2] +
+                         bounding_box_center.z() * rotation_matrix[2][2];
+
+    obj_osi_internal.mobj->mutable_base()->mutable_position()->set_x(objectState->state_.pos.GetX() + x_rel);
+    obj_osi_internal.mobj->mutable_base()->mutable_position()->set_y(objectState->state_.pos.GetY() + y_rel);
+    obj_osi_internal.mobj->mutable_base()->mutable_position()->set_z(objectState->state_.pos.GetZ() + z_rel);
 
     // Set OSI Moving Object Orientation
     obj_osi_internal.mobj->mutable_base()->mutable_orientation()->set_roll(GetAngleInIntervalMinusPIPlusPI(objectState->state_.pos.GetR()));

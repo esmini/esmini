@@ -472,9 +472,9 @@ TEST(OSI, TestOrientation)
     EXPECT_NEAR(obj->pos_.GetR(), 0.48599, 1e-3);
 
     // OSI position
-    EXPECT_NEAR(osi_gt_ptr->moving_object(0).base().position().x(), 100.2955, 1e-3);
-    EXPECT_NEAR(osi_gt_ptr->moving_object(0).base().position().y(), 84.1220, 1e-3);
-    EXPECT_NEAR(osi_gt_ptr->moving_object(0).base().position().z(), -0.0608, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->moving_object(0).base().position().x(), 100.6408, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->moving_object(0).base().position().y(), 84.0624, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->moving_object(0).base().position().z(), -0.1477, 1e-3);
     EXPECT_NEAR(GetAngleDifference(osi_gt_ptr->moving_object(0).base().orientation().yaw(), 1.4000), 0.0, 1e-3);
     EXPECT_NEAR(GetAngleDifference(osi_gt_ptr->moving_object(0).base().orientation().pitch(), 0.0), 0.0, 1e-3);
     EXPECT_NEAR(GetAngleDifference(osi_gt_ptr->moving_object(0).base().orientation().roll(), 0.48599), 0.0, 1e-3);
@@ -492,9 +492,9 @@ TEST(OSI, TestOrientation)
     EXPECT_NEAR(obj->pos_.GetR(), 0.0, 1e-3);
 
     // OSI position
-    EXPECT_NEAR(osi_gt_ptr->moving_object(0).base().position().x(), 5.4306, 1e-3);
-    EXPECT_NEAR(osi_gt_ptr->moving_object(0).base().position().y(), 201.3993, 1e-3);
-    EXPECT_NEAR(osi_gt_ptr->moving_object(0).base().position().z(), 12.9625, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->moving_object(0).base().position().x(), 5.6977, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->moving_object(0).base().position().y(), 201.3813, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->moving_object(0).base().position().z(), 13.3263, 1e-3);
     EXPECT_NEAR(GetAngleDifference(osi_gt_ptr->moving_object(0).base().orientation().yaw(), 3.0742), 0.0, 1e-3);
     EXPECT_NEAR(GetAngleDifference(osi_gt_ptr->moving_object(0).base().orientation().pitch(), 5.9978), 0.0, 1e-3);
     EXPECT_NEAR(GetAngleDifference(osi_gt_ptr->moving_object(0).base().orientation().roll(), 0.0), 0.0, 1e-3);
