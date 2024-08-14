@@ -865,11 +865,15 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState *objectState)
     rotation_matrix[0][0] = cos(objectState->state_.pos.GetP()) * cos(objectState->state_.pos.GetH());
     rotation_matrix[0][1] = cos(objectState->state_.pos.GetP()) * sin(objectState->state_.pos.GetH());
     rotation_matrix[0][2] = -sin(objectState->state_.pos.GetP());
-    rotation_matrix[1][0] = sin(objectState->state_.pos.GetR()) * sin(objectState->state_.pos.GetP()) * cos(objectState->state_.pos.GetH()) - cos(objectState->state_.pos.GetR()) * sin(objectState->state_.pos.GetH());
-    rotation_matrix[1][1] = sin(objectState->state_.pos.GetR()) * sin(objectState->state_.pos.GetP()) * sin(objectState->state_.pos.GetH()) + cos(objectState->state_.pos.GetR()) * cos(objectState->state_.pos.GetH());
+    rotation_matrix[1][0] = sin(objectState->state_.pos.GetR()) * sin(objectState->state_.pos.GetP()) *
+        cos(objectState->state_.pos.GetH()) - cos(objectState->state_.pos.GetR()) * sin(objectState->state_.pos.GetH());
+    rotation_matrix[1][1] = sin(objectState->state_.pos.GetR()) * sin(objectState->state_.pos.GetP()) *
+        sin(objectState->state_.pos.GetH()) + cos(objectState->state_.pos.GetR()) * cos(objectState->state_.pos.GetH());
     rotation_matrix[1][2] = sin(objectState->state_.pos.GetR()) * cos(objectState->state_.pos.GetP());
-    rotation_matrix[2][0] = cos(objectState->state_.pos.GetR()) * sin(objectState->state_.pos.GetP()) * cos(objectState->state_.pos.GetH()) + sin(objectState->state_.pos.GetH()) * sin(objectState->state_.pos.GetR());
-    rotation_matrix[2][1] = cos(objectState->state_.pos.GetR()) * sin(objectState->state_.pos.GetP()) * sin(objectState->state_.pos.GetH()) - sin(objectState->state_.pos.GetR()) * cos(objectState->state_.pos.GetH());
+    rotation_matrix[2][0] = cos(objectState->state_.pos.GetR()) * sin(objectState->state_.pos.GetP()) *
+        cos(objectState->state_.pos.GetH()) + sin(objectState->state_.pos.GetH()) * sin(objectState->state_.pos.GetR());
+    rotation_matrix[2][1] = cos(objectState->state_.pos.GetR()) * sin(objectState->state_.pos.GetP()) *
+        sin(objectState->state_.pos.GetH()) - sin(objectState->state_.pos.GetR()) * cos(objectState->state_.pos.GetH());
     rotation_matrix[2][2] = cos(objectState->state_.pos.GetR()) * cos(objectState->state_.pos.GetP());
 
     osi3::Vector3d bounding_box_center;
@@ -877,15 +881,12 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState *objectState)
     bounding_box_center.set_y(objectState->state_.info.boundingbox.center_.y_);
     bounding_box_center.set_z(objectState->state_.info.boundingbox.center_.z_);
 
-    const double x_rel = bounding_box_center.x() * rotation_matrix[0][0] +
-                         bounding_box_center.y() * rotation_matrix[1][0] +
-                         bounding_box_center.z() * rotation_matrix[2][0];
-    const double y_rel = bounding_box_center.x() * rotation_matrix[0][1] +
-                         bounding_box_center.y() * rotation_matrix[1][1] +
-                         bounding_box_center.z() * rotation_matrix[2][1];
-    const double z_rel = bounding_box_center.x() * rotation_matrix[0][2] +
-                         bounding_box_center.y() * rotation_matrix[1][2] +
-                         bounding_box_center.z() * rotation_matrix[2][2];
+    const double x_rel = bounding_box_center.x() * rotation_matrix[0][0] + bounding_box_center.y() * rotation_matrix[1][0] +
+        bounding_box_center.z() * rotation_matrix[2][0];
+    const double y_rel = bounding_box_center.x() * rotation_matrix[0][1] + bounding_box_center.y() * rotation_matrix[1][1] +
+        bounding_box_center.z() * rotation_matrix[2][1];
+    const double z_rel = bounding_box_center.x() * rotation_matrix[0][2] + bounding_box_center.y() * rotation_matrix[1][2] +
+        bounding_box_center.z() * rotation_matrix[2][2];
 
     obj_osi_internal.mobj->mutable_base()->mutable_position()->set_x(objectState->state_.pos.GetX() + x_rel);
     obj_osi_internal.mobj->mutable_base()->mutable_position()->set_y(objectState->state_.pos.GetY() + y_rel);
