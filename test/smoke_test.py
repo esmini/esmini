@@ -3,6 +3,7 @@ import sys
 from sys import platform
 from test_common import *
 import unittest
+import argparse
 
 ESMINI_PATH = '../'
 COMMON_ESMINI_ARGS = '--headless --fixed_timestep 0.01 --record sim.dat '
@@ -1758,11 +1759,18 @@ class TestSuite(unittest.TestCase):
 
 if __name__ == "__main__":
     # execute only if run as a script
-    # unittest.main(argv=['ignored', '-v', 'TestSuite.test_lane_change_at_hw_exit'])
 
-    if len(sys.argv) > 1:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-t", "--timeout", type=int, default=40, help="timeout per testcase")
+    parser.add_argument("testcase", nargs="?", help="run only this testcase")
+    args = parser.parse_args()
+
+    print("timeout:", args.timeout, file=sys.stderr)
+    set_timeout(args.timeout)
+
+    if args.testcase:
         # Add test case name as argument to run only that test
         # example: smoke_test.py test_follow_ghost
-        unittest.main(argv=['ignored', '-v', 'TestSuite.' + sys.argv[1]])
+        unittest.main(argv=['ignored', '-v', 'TestSuite.' + args.testcase])
     else:
-        unittest.main(verbosity=2)
+        unittest.main(argv=[''], verbosity=2)

@@ -47,15 +47,10 @@ jobs:
         shell: pwsh
         run: cmake "--preset=ci-sanitize-$("${{ matrix.os }}".split("-")[0])" -DCMAKE_BUILD_TYPE:STRING=${{ matrix.configuration }}
 
-      - name: CMake Configure - macOS
-        if: runner.os == 'macOS'
-        shell: pwsh
-        run: cmake "--preset=ci-sanitize-$("${{ matrix.os }}".split("-")[0])" -DCMAKE_BUILD_TYPE:STRING=${{ matrix.configuration }} -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
-
       - name: CMake Build
         run: cmake --build build --config ${{ matrix.configuration }} --target install -j 2
 
       - name: Run Tests
         uses: GabrielBB/xvfb-action@v1.6
         with:
-          run: ./scripts/run_tests.sh ${{ matrix.configuration }} true
+          run: ./scripts/run_tests.sh ${{ matrix.configuration }} false 60  # timeout=60s allowing for slow execution
