@@ -723,7 +723,7 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
                 std::string trailer_child_node_name(trailer_child_node.name());
                 Object     *object = nullptr;
 
-                if (trailer_child_node_name == "EntityRef")
+                if (trailer_child_node_name == "TrailerRef" || trailer_child_node_name == "EntityRef")  // support legacy EntityRef
                 {
                     if (!trailer_child_node.attribute("entityRef").empty())
                     {
@@ -743,26 +743,36 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
                         }
                     }
                 }
-                else if (trailer_child_node_name == "CatalogReference")
+                else if (trailer_child_node_name == "Trailer")
                 {
-                    Entry *entry = ResolveCatalogReference(trailer_child_node);
+                    pugi::xml_node trailer_trailer_chile_node = trailer_child_node.first_child();
+                    std::string    trailer_trailer_child_node_name(trailer_trailer_chile_node.name());
 
-                    if (entry != nullptr)
+                    if (trailer_trailer_child_node_name == "CatalogReference")
                     {
-                        if (entry->type_ == CatalogType::CATALOG_VEHICLE)
+                        Entry *entry = ResolveCatalogReference(trailer_trailer_chile_node);
+
+                        if (entry != nullptr)
                         {
-                            // Make a new instance from catalog entry
-                            trailer = parseOSCVehicle(entry->GetNode());
-                        }
-                        else
-                        {
-                            LOG("Unexpected catalog type %s for trailer", entry->GetTypeAsStr().c_str());
+                            if (entry->type_ == CatalogType::CATALOG_VEHICLE)
+                            {
+                                // Make a new instance from catalog entry
+                                trailer = parseOSCVehicle(entry->GetNode());
+                            }
+                            else
+                            {
+                                LOG("Unexpected catalog type %s for trailer", entry->GetTypeAsStr().c_str());
+                            }
                         }
                     }
-                }
-                else if (trailer_child_node_name == "Vehicle")
-                {
-                    trailer = parseOSCVehicle(trailer_child_node);
+                    else if (trailer_trailer_child_node_name == "Vehicle")
+                    {
+                        trailer = parseOSCVehicle(trailer_trailer_chile_node);
+                    }
+                    else
+                    {
+                        LOG("Unexpected Trailer/Trailer child element %s", trailer_trailer_child_node_name.c_str());
+                    }
                 }
                 else
                 {
