@@ -16,6 +16,7 @@
 #include <cmath>
 #include <string>
 #include <utility>
+#include <array>
 
 #ifdef _WIN32
 #include <winsock2.h>
