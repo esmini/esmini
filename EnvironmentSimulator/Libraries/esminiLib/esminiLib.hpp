@@ -52,6 +52,23 @@ typedef struct
     int   visibilityMask;  // bitmask according to Object::Visibility (1 = Graphics, 2 = Traffic, 4 = Sensors)
 } SE_ScenarioObjectState;
 
+typedef struct
+{
+    float x;  // global x coordinate of position
+    float y;  // global y coordinate of position
+    float z;  // global z coordinate of position
+    float h;  // heading/yaw in global coordinate system
+    float p;  // pitch in global coordinate system
+    // float r;                     // roll in global coordinate system
+    // float width;                 // median width of the tire
+    float wheel_radius;          // median radius of the wheel measured from the center of the wheel to the outer part of the tire
+    float friction_coefficient;  // the value describes the kinetic friction of the tyre's contact point
+    // float rotation_rate;         // rotation rate of the wheel
+    // float rim_radius;  // 	median radius of the rim measured from the center to the outer, visible part of the rim
+    int axle;   // 0=front, 1=next axle from front and so on. -1 indicates wheel is not existing.
+    int index;  // The index of the wheel on the axle, counting in the direction of positive-y, that is, right-to-left. -1 indicates wheel
+} SE_WheelData;
+
 // asciidoc tag::SE_RoadInfo_struct[]
 typedef struct
 {

@@ -155,8 +155,9 @@ static void copyStateFromScenarioGateway(SE_ScenarioObjectState *state, ObjectSt
     state->height         = gw_state->info.boundingbox.dimensions_.height_;
     state->objectType     = gw_state->info.obj_type;
     state->objectCategory = gw_state->info.obj_category;
-    state->wheel_angle    = static_cast<float>(gw_state->info.wheel_angle);
-    state->wheel_rot      = static_cast<float>(gw_state->info.wheel_rot);
+    // assume first wheel is on front axle and steering
+    state->wheel_angle    = static_cast<float>(gw_state->info.wheel_data[0].h);
+    state->wheel_rot      = static_cast<float>(gw_state->info.wheel_data[0].p);
     state->visibilityMask = gw_state->info.visibilityMask;
 }
 

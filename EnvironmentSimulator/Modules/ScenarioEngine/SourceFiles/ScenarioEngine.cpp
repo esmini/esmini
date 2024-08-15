@@ -16,6 +16,7 @@
 #include "ControllerExternal.hpp"
 #include "ControllerRel2Abs.hpp"
 #include "ControllerFollowRoute.hpp"
+#include "Entities.hpp"
 #include "OSCParameterDistribution.hpp"
 
 #define WHEEL_RADIUS          0.35
@@ -315,13 +316,15 @@ int ScenarioEngine::step(double deltaSimTime)
             {
                 obj->speed_ = o->state_.info.speed;
             }
+
+            // Update wheel info, assuming first wheel is steering wheel on front axle
             if (o->dirty_ & Object::DirtyBit::WHEEL_ANGLE)
             {
-                obj->wheel_angle_ = o->state_.info.wheel_angle;
+                obj->wheel_angle_ = o->state_.info.wheel_data[0].h;
             }
             if (o->dirty_ & Object::DirtyBit::WHEEL_ROTATION)
             {
-                obj->wheel_rot_ = o->state_.info.wheel_rot;
+                obj->wheel_rot_ = o->state_.info.wheel_data[0].p;
             }
             o->clearDirtyBits();
         }
@@ -422,6 +425,11 @@ int ScenarioEngine::step(double deltaSimTime)
                                          obj->front_axle_.positionX,
                                          obj->front_axle_.positionZ,
                                          &obj->pos_);
+
+            if (obj->type_ == Object::Type::VEHICLE)
+            {
+                scenarioGateway.updateObjectWheelData(obj->id_, static_cast<Vehicle*>(obj)->GetWheelData());
+            }
         }
     }
 
@@ -726,12 +734,12 @@ void ScenarioEngine::prepareGroundTruth(double dt)
             }
             if (o->dirty_ & Object::DirtyBit::WHEEL_ANGLE)
             {
-                obj->wheel_angle_ = o->state_.info.wheel_angle;
+                obj->wheel_angle_ = o->state_.info.wheel_data[0].h;
                 obj->SetDirtyBits(Object::DirtyBit::WHEEL_ANGLE);
             }
             if (o->dirty_ & Object::DirtyBit::WHEEL_ROTATION)
             {
-                obj->wheel_rot_ = o->state_.info.wheel_rot;
+                obj->wheel_rot_ = o->state_.info.wheel_data[0].p;
                 obj->SetDirtyBits(Object::DirtyBit::WHEEL_ROTATION);
             }
         }
@@ -819,16 +827,6 @@ void ScenarioEngine::prepareGroundTruth(double dt)
                 }
             }
 
-            if (obj->CheckDirtyBits(Object::DirtyBit::WHEEL_ANGLE))
-            {
-                scenarioGateway.updateObjectWheelAngle(obj->id_, simulationTime_, obj->wheel_angle_);
-            }
-
-            if (obj->CheckDirtyBits(Object::DirtyBit::WHEEL_ROTATION))
-            {
-                scenarioGateway.updateObjectWheelRotation(obj->id_, simulationTime_, obj->wheel_rot_);
-            }
-
             // store current values for next loop
             obj->state_old.pos_x  = obj->pos_.GetX();
             obj->state_old.pos_y  = obj->pos_.GetY();
@@ -880,67 +878,66 @@ void ScenarioEngine::prepareGroundTruth(double dt)
         // Report updated pos values to the gateway
         scenarioGateway.updateObjectPos(obj->id_, simulationTime_, &obj->pos_);
 
-        // Report friction coefficients to gateway
-
-        double friction[4];
-        double friction_global = roadmanager::Position::GetOpenDrive()->GetFriction();
-
-        roadmanager::Position wp;
-        wp.Duplicate(obj->pos_);
-
-        if (std::isnan(friction_global))
+        // Wheels (including friction) only needs updates for vehicles
+        if (obj->type_ == Object::Type::VEHICLE)
         {
-            for (int j = 0; j < 4; j++)
+            auto*                   vehicle    = dynamic_cast<Vehicle*>(obj);
+            std::vector<WheelData>& wheel_data = vehicle->GetWheelData();
+
+            roadmanager::Position wp;
+            wp.Duplicate(obj->pos_);
+            double friction_global = roadmanager::Position::GetOpenDrive()->GetFriction();
+
+            // Update wheel positions
+            for (auto& wheel : wheel_data)
             {
-                // multiple friction values in the road network, need to lookup for each wheel
-                Object::Axle* axle = j < 2 ? &obj->front_axle_ : &obj->rear_axle_;
-                int           side = j % 2 == 0 ? -1 : 1;
+                if (wheel.axle == 0 && obj->CheckDirtyBits(Object::DirtyBit::WHEEL_ANGLE))
+                {
+                    wheel.h = static_cast<float>(obj->wheel_angle_);  // I assume always 0 due to fixed rear axis. Better to have = 0?
+                }
 
-                // Calculate position of the wheel
-                double w_pos[2];
-                double w_rel_pos[2];
+                if (obj->CheckDirtyBits(Object::DirtyBit::WHEEL_ROTATION))
+                {
+                    wheel.p = static_cast<float>(obj->wheel_rot_);
+                }
 
-                w_rel_pos[0] = axle->positionX;
-                w_rel_pos[1] = side * axle->trackWidth / 2.0;
-                RotateVec2D(w_rel_pos[0], w_rel_pos[1], obj->pos_.GetH(), w_pos[0], w_pos[1]);
+                // Update wheel frictions
+                if (std::isnan(friction_global))
+                {
+                    Object::Axle* axle = wheel.axle == 0 ? &obj->front_axle_ : &obj->rear_axle_;
+                    int           side = wheel.index == 0 ? -1 : 1;
+                    // Calculate global position of the wheel
+                    double w_pos[2];
+                    double w_rel_pos[2];
 
-                w_pos[0] += obj->pos_.GetX();
-                w_pos[1] += obj->pos_.GetY();
+                    w_rel_pos[0] = axle->positionX;
+                    w_rel_pos[1] = side * axle->trackWidth / 2.0;
+                    RotateVec2D(w_rel_pos[0], w_rel_pos[1], obj->pos_.GetH(), w_pos[0], w_pos[1]);
 
-                wp.SetInertiaPosMode(w_pos[0],
-                                     w_pos[1],
-                                     0.0,
-                                     0.0,
-                                     0.0,
-                                     0.0,
-                                     roadmanager::Position::PosMode::Z_REL | roadmanager::Position::PosMode::H_REL |
-                                         roadmanager::Position::PosMode::P_REL | roadmanager::Position::PosMode::R_REL);
+                    w_pos[0] += obj->pos_.GetX();
+                    w_pos[1] += obj->pos_.GetY();
 
-                roadmanager::RoadLaneInfo info;
-                wp.GetRoadLaneInfo(&info);
-                friction[j] = info.friction;
+                    wp.SetInertiaPosMode(w_pos[0],
+                                         w_pos[1],
+                                         0.0,
+                                         0.0,
+                                         0.0,
+                                         0.0,
+                                         roadmanager::Position::PosMode::Z_REL | roadmanager::Position::PosMode::H_REL |
+                                             roadmanager::Position::PosMode::P_REL | roadmanager::Position::PosMode::R_REL);
 
-                // Uncomment statement below to print some friction values in terminal
-                // printf("time %.2f wheel %d lane %d offset %.2f x %.2f y %.2f friction %.2f\n",
-                //       simulationTime_,
-                //       (int)j,
-                //       (int)wp.GetLaneId(),
-                //       wp.GetOffset(),
-                //       wp.GetX(),
-                //       wp.GetY(),
-                //       friction[j]);
+                    roadmanager::RoadLaneInfo info;
+                    wp.GetRoadLaneInfo(&info);
+                    wheel.friction_coefficient = info.friction;
+                }
+                else
+                {
+                    // same friction everywhere
+                    wheel.friction_coefficient = friction_global;
+                }
             }
+            scenarioGateway.updateObjectWheelData(obj->id_, wheel_data);
         }
-        else
-        {
-            // same friction everywhere
-            for (int j = 0; j < 4; j++)
-            {
-                friction[j] = friction_global;
-            }
-        }
-
-        scenarioGateway.updateObjectFrictionCoefficients(obj->id_, friction);
 
         // Now that frame is complete, reset dirty bits to avoid circulation
         if (o)
