@@ -1,5 +1,29 @@
 ## esmini release notes
 
+### 2024-08-15 Version 2.38.0
+
+Updated behaviors:
+- Polyline trajectory heading interpolation now purely depends on followingMode
+  - "position" -> interpolate only around corner
+  - "follow" -> interpolate along whole linear segment
+  - not considering whether heading was specified or not
+  - see updated table in [User guide - Trajectory interpolation and alignment](https://esmini.github.io/#_trajectory_interpolation_and_alignment)
+  - new [option](https://esmini.github.io/#_esmini), `--disable_pline_interpolation`, to skip interpolation altogether
+
+- Adapt Trailer implementation to OpenSCENARIO 1.3
+  - changes from previous prototype implementation:
+    - rename EntityRef element to TrailerRef
+    - Add Trailer parent element for inline and catalog trailers
+- VehicleCatalog updated to match OpenSCENARIO 1.3
+  - trailer configurations updated accordingly
+
+Improvements and fixes:
+- Refactor Position implementation and handling
+  - simplify and clarify relative/absolute mode handling in code
+  - reduce memory leaks
+
+NOTE: Unexpected side effects may have been introduced by the refactorization. Please raise issue if encountered.
+
 ### 2024-08-13 Version 2.37.17
 
 Updated behaviors:
