@@ -24,6 +24,26 @@
 
 namespace scenarioengine
 {
+
+    struct WheelData
+    {
+        double x = 0.0;  // x coordinate in vehicle coordinate system
+        double y = 0.0;  // y coordinate in vehicle coordinate system
+        double z = 0.0;  // z coordinate in vehicle coordinate system
+        double h = 0.0;  // heading/yaw in global coordinate system
+        double p = 0.0;  // pitch in global coordinate system
+        // double r;                     // roll in global coordinate system
+        // double width;                 // median width of the tire
+        // double wheel_radius;          // median radius of the wheel measured from the center of the wheel to the outer part of the tire
+        double friction_coefficient = 0.0;  // the value describes the kinetic friction of the tyre's contact point
+        // double rotation_rate;         // rotation rate of the wheel
+        // double rim_radius;  // 	median radius of the rim measured from the center to the outer, visible part of the rim
+        int axle  = -1;  // 0=front, 1=next axle from front and so on. -1 indicates wheel is not existing.
+        int index = -1;  // The index of the wheel on the axle, counting in the direction of positive-y, that is, right-to-left. -1 indicates wheel
+                         // not existing.
+        // std::string model_reference; // Opaque reference of an associated 3D model of the wheel
+    };
+
     class Controller;  // Forward declaration
     class OSCPrivateAction;
     class Event;
@@ -602,6 +622,8 @@ namespace scenarioengine
     class Vehicle : public Object
     {
     public:
+        static const int MAX_WHEELS = 4;
+
         class TrailerHitch
         {
         public:
@@ -688,7 +710,41 @@ namespace scenarioengine
                 LOG("Vehicle category %s not supported yet", category.c_str());
             }
 
+            SetWheelData();
+
             return;
+        }
+
+        void SetWheelData()
+        {
+            if (category_ == Category::CAR || category_ == Category::VAN || category_ == Category::TRUCK || category_ == Category::SEMITRAILER ||
+                category_ == Category::BUS || category_ == Category::TRAIN || category_ == Category::TRAM)
+            {
+                WheelData frontrightwheel{front_axle_.positionX, -front_axle_.trackWidth / 2.0, 0.0, 0.0, 0.0, 1.0, 0, 0};
+                WheelData frontleftwheel{front_axle_.positionX, front_axle_.trackWidth / 2.0, 0.0, 0.0, 0.0, 1.0, 0, 1};
+                WheelData rearrightwheel{0.0, -rear_axle_.trackWidth / 2.0, 0.0, 0.0, 0.0, 1.0, 1, 0};
+                WheelData rearleftwheel{0.0, rear_axle_.trackWidth / 2.0, 0.0, 0.0, 0.0, 1.0, 1, 1};
+
+                // order according to OSI, front-to-rear and right-to-left
+                wheel_data = {frontrightwheel, frontleftwheel, rearrightwheel, rearleftwheel};
+            }
+            else if (category_ == Category::MOTORBIKE || category_ == Category::BICYCLE)
+            {
+                WheelData frontwheel{front_axle_.positionX, 0.0, 0.0, 0.0, 0.0, 1.0, 0, 0};
+                WheelData rearwheel{0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1, 0};
+                wheel_data = {frontwheel, rearwheel};
+            }
+            else if (category_ == Category::TRAILER)
+            {
+                WheelData leftwheel{rear_axle_.positionX, -rear_axle_.trackWidth / 2.0, 0.0, 0.0, 0.0, 1.0, 0, 1};
+                WheelData rightwheel{rear_axle_.positionX, rear_axle_.trackWidth / 2.0, 0.0, 0.0, 0.0, 1.0, 0, 0};
+                wheel_data = {leftwheel, rightwheel};
+            }
+        }
+
+        std::vector<WheelData>& GetWheelData()
+        {
+            return wheel_data;
         }
 
         int                             ConnectTrailer(Vehicle* trailer);
@@ -697,6 +753,7 @@ namespace scenarioengine
         static std::string              Category2String(int category);
         std::shared_ptr<TrailerCoupler> trailer_coupler_;  // mounting point to any tow vehicle
         std::shared_ptr<TrailerHitch>   trailer_hitch_;    // mounting point to any tow vehicle
+        std::vector<WheelData>          wheel_data;
     };
 
     class Pedestrian : public Object

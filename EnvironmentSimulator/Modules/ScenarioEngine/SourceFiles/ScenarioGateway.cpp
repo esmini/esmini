@@ -22,6 +22,8 @@
 #include <arpa/inet.h>
 #include <netdb.h>  /* Needed for getaddrinfo() and freeaddrinfo() */
 #include <unistd.h> /* Needed for close() */
+
+#include <utility>
 #endif
 
 using namespace scenarioengine;
@@ -63,14 +65,18 @@ ObjectState::ObjectState(int                    id,
     StrCopy(state_.info.name, name.c_str(), MIN(name.length() + 1, NAME_LEN));
     state_.pos                   = *pos;
     state_.info.speed            = speed;
-    state_.info.wheel_angle      = wheel_angle;
-    state_.info.wheel_rot        = wheel_rot;
     state_.info.rear_axle_z_pos  = rear_axle_z_pos;
     state_.info.front_axle_x_pos = front_axle_x_pos;
     state_.info.front_axle_z_pos = front_axle_z_pos;
     state_.info.boundingbox      = boundingbox;
     state_.info.scaleMode        = scaleMode;
     state_.info.visibilityMask   = visibilityMask;
+
+    for (auto& w : state_.info.wheel_data)
+    {
+        w.h = static_cast<float>(wheel_angle);
+        w.p = static_cast<float>(wheel_rot);
+    }
 
     dirty_ = Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::LATERAL | Object::DirtyBit::SPEED | Object::DirtyBit::WHEEL_ANGLE |
              Object::DirtyBit::WHEEL_ROTATION;
@@ -111,12 +117,16 @@ ObjectState::ObjectState(int            id,
     state_.pos.Init();
     state_.pos.SetInertiaPos(x, y, z, h, p, r);
     state_.info.speed           = speed;
-    state_.info.wheel_angle     = wheel_angle;
-    state_.info.wheel_rot       = wheel_rot;
     state_.info.rear_axle_z_pos = rear_axle_z_pos;
     state_.info.boundingbox     = boundingbox;
     state_.info.scaleMode       = scaleMode;
     state_.info.visibilityMask  = visibilityMask;
+
+    for (auto& w : state_.info.wheel_data)
+    {
+        w.h = static_cast<float>(wheel_angle);
+        w.p = static_cast<float>(wheel_rot);
+    }
 
     dirty_ = Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::LATERAL | Object::DirtyBit::SPEED | Object::DirtyBit::WHEEL_ANGLE |
              Object::DirtyBit::WHEEL_ROTATION;
@@ -153,12 +163,16 @@ ObjectState::ObjectState(int            id,
     StrCopy(state_.info.name, name.c_str(), MIN(name.length() + 1, NAME_LEN));
     state_.pos.SetLanePos(roadId, laneId, s, laneOffset);
     state_.info.speed           = speed;
-    state_.info.wheel_angle     = wheel_angle;
-    state_.info.wheel_rot       = wheel_rot;
     state_.info.rear_axle_z_pos = rear_axle_z_pos;
     state_.info.boundingbox     = boundingbox;
     state_.info.scaleMode       = scaleMode;
     state_.info.visibilityMask  = visibilityMask;
+
+    for (auto& w : state_.info.wheel_data)
+    {
+        w.h = static_cast<float>(wheel_angle);
+        w.p = static_cast<float>(wheel_rot);
+    }
 
     dirty_ = Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::LATERAL | Object::DirtyBit::SPEED | Object::DirtyBit::WHEEL_ANGLE |
              Object::DirtyBit::WHEEL_ROTATION;
@@ -193,12 +207,16 @@ ObjectState::ObjectState(int            id,
     StrCopy(state_.info.name, name.c_str(), MIN(name.length() + 1, NAME_LEN));
     state_.pos.SetTrackPos(roadId, s, lateralOffset);
     state_.info.speed           = speed;
-    state_.info.wheel_angle     = wheel_angle;
-    state_.info.wheel_rot       = wheel_rot;
     state_.info.rear_axle_z_pos = rear_axle_z_pos;
     state_.info.boundingbox     = boundingbox;
     state_.info.scaleMode       = scaleMode;
     state_.info.visibilityMask  = visibilityMask;
+
+    for (auto& w : state_.info.wheel_data)
+    {
+        w.h = static_cast<float>(wheel_angle);
+        w.p = static_cast<float>(wheel_rot);
+    }
 
     dirty_ = Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::LATERAL | Object::DirtyBit::SPEED | Object::DirtyBit::WHEEL_ANGLE |
              Object::DirtyBit::WHEEL_ROTATION;
@@ -216,7 +234,7 @@ void ObjectState::Print()
         state_.pos.GetY(),
         state_.pos.GetZ(),
         state_.info.speed,
-        state_.info.wheel_angle,
+        state_.info.wheel_data[0].h,
         state_.info.obj_type,
         state_.info.obj_category,
         state_.info.obj_role);
@@ -287,9 +305,16 @@ int ScenarioGateway::updateObjectInfo(ObjectState* obj_state,
 
     obj_state->state_.info.speed          = speed;
     obj_state->state_.info.timeStamp      = timestamp;
-    obj_state->state_.info.wheel_angle    = wheel_angle;
-    obj_state->state_.info.wheel_rot      = wheel_rot;
     obj_state->state_.info.visibilityMask = visibilityMask;
+
+    for (auto& w : obj_state->state_.info.wheel_data)
+    {
+        if (w.axle == 0)
+        {
+            w.h = static_cast<float>(wheel_angle);
+        }
+        w.p = static_cast<float>(wheel_rot);
+    }
 
     obj_state->dirty_ |= Object::DirtyBit::SPEED | Object::DirtyBit::WHEEL_ANGLE | Object::DirtyBit::WHEEL_ROTATION;
 
@@ -569,8 +594,8 @@ int ScenarioGateway::reportObject(int            id,
                                   double         timestamp,
                                   double         speed,
                                   double         wheel_angle,
-                                  double         rear_axle_z_pos,
                                   double         wheel_rot,
+                                  double         rear_axle_z_pos,
                                   int            roadId,
                                   double         lateralOffset,
                                   double         s)
@@ -853,8 +878,15 @@ int ScenarioGateway::updateObjectWheelAngle(int id, double timestamp, double whe
         return -1;
     }
 
-    obj_state->state_.info.wheel_angle = wheelAngle;
-    obj_state->dirty_ |= Object::DirtyBit::WHEEL_ANGLE;
+    // update any wheel on front axle
+    for (auto& w : obj_state->state_.info.wheel_data)
+    {
+        if (w.axle == 0)
+        {
+            w.h = static_cast<float>(wheelAngle);
+            obj_state->dirty_ |= Object::DirtyBit::WHEEL_ANGLE;
+        }
+    }
 
     return 0;
 }
@@ -870,8 +902,12 @@ int ScenarioGateway::updateObjectWheelRotation(int id, double timestamp, double 
         return -1;
     }
 
-    obj_state->state_.info.wheel_rot = wheelRotation;
-    obj_state->dirty_ |= Object::DirtyBit::WHEEL_ROTATION;
+    // update all wheels
+    for (auto& w : obj_state->state_.info.wheel_data)
+    {
+        w.p = static_cast<float>(wheelRotation);
+        obj_state->dirty_ |= Object::DirtyBit::WHEEL_ROTATION;
+    }
 
     return 0;
 }
@@ -908,7 +944,7 @@ int ScenarioGateway::updateObjectControllerType(int id, int controllerType)
     return 0;
 }
 
-int ScenarioGateway::updateObjectFrictionCoefficients(int id, double friction[4])
+int ScenarioGateway::updateObjectWheelData(int id, std::vector<WheelData> wheel_data)
 {
     ObjectState* obj_state = getObjectStatePtrById(id);
 
@@ -918,11 +954,12 @@ int ScenarioGateway::updateObjectFrictionCoefficients(int id, double friction[4]
         return -1;
     }
 
-    for (int i = 0; i < 4; i++)
+    for (unsigned int i = 0; i < wheel_data.size(); i++)
     {
-        obj_state->state_.info.friction[i] = friction[i];
+        obj_state->state_.info.wheel_data[i] = std::move(wheel_data[i]);
     }
-    obj_state->dirty_ |= Object::DirtyBit::FRICTION;
+
+    obj_state->dirty_ |= Object::DirtyBit::FRICTION | Object::DirtyBit::WHEEL_ANGLE | Object::DirtyBit::WHEEL_ROTATION;
 
     return 0;
 }
@@ -1062,8 +1099,10 @@ void ScenarioGateway::WriteStatesToFile()
             datState.info.speed          = static_cast<float>(objectState_[i]->state_.info.speed);
             datState.info.timeStamp      = static_cast<float>(objectState_[i]->state_.info.timeStamp);
             datState.info.visibilityMask = objectState_[i]->state_.info.visibilityMask;
-            datState.info.wheel_angle    = static_cast<float>(objectState_[i]->state_.info.wheel_angle);
-            datState.info.wheel_rot      = static_cast<float>(objectState_[i]->state_.info.wheel_rot);
+
+            // assume first wheel is on front axle and steering
+            datState.info.wheel_angle = static_cast<float>(objectState_[i]->state_.info.wheel_data[0].h);
+            datState.info.wheel_rot   = static_cast<float>(objectState_[i]->state_.info.wheel_data[0].p);
 
             datState.pos.x      = static_cast<float>(objectState_[i]->state_.pos.GetX());
             datState.pos.y      = static_cast<float>(objectState_[i]->state_.pos.GetY());

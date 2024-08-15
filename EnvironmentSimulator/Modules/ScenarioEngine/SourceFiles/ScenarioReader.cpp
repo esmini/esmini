@@ -541,61 +541,6 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
     parameters.addParameterDeclarations(paramDecl);
 
     vehicle->typeName_ = parameters.ReadAttribute(vehicleNode, "name");
-    vehicle->SetCategory(parameters.ReadAttribute(vehicleNode, "vehicleCategory"));
-
-    if (parameters.ReadAttribute(vehicleNode, "role").empty())
-    {
-        vehicle->SetRole("none");
-    }
-    else if (!parameters.ReadAttribute(vehicleNode, "role").empty())
-    {
-        vehicle->SetRole(parameters.ReadAttribute(vehicleNode, "role"));
-    }
-
-    // get File based on Category, and set default 3D model id
-    if (vehicle->category_ == Vehicle::Category::BICYCLE)
-    {
-        vehicle->model_id_ = 9;  // magic number for cyclist, set as default
-        vehicle->model3d_  = "cyclist.osgb";
-    }
-    else if (vehicle->category_ == Vehicle::Category::MOTORBIKE)
-    {
-        vehicle->model_id_ = 10;  // magic number for motorcyclist, set as default
-        vehicle->model3d_  = "mc.osgb";
-    }
-    else if (vehicle->category_ == Vehicle::Category::TRAILER)
-    {
-        vehicle->model_id_ = 11;  // magic number for car trailer, set as default
-        vehicle->model3d_  = "car_trailer.osgb";
-    }
-    else
-    {
-        // magic numbers: If first vehicle make it white, else red
-        vehicle->model_id_ = entities_->object_.size() == 0 ? 0 : 2;
-        vehicle->model3d_  = entities_->object_.size() == 0 ? "car_white.osgb" : "car_red.osgb";
-    }
-
-    ParseOSCProperties(vehicle->properties_, vehicleNode);
-
-    // Overwrite default values if 3D model specified
-    if (!vehicleNode.attribute("model3d").empty())
-    {
-        vehicle->model3d_ = parameters.ReadAttribute(vehicleNode, "model3d");
-    }
-    else if (vehicle->properties_.file_.filepath_ != "")
-    {
-        vehicle->model3d_ = vehicle->properties_.file_.filepath_;
-    }
-
-    std::string modelIdStr = vehicle->properties_.GetValueStr("model_id");
-    if (!modelIdStr.empty())
-    {
-        vehicle->model_id_ = strtoi(modelIdStr);
-        if (SE_Env::Inst().GetOptions().IsOptionArgumentSet("record"))
-        {
-            CheckModelId(vehicle);
-        }
-    }
 
     OSCBoundingBox boundingbox = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
     ParseOSCBoundingBox(boundingbox, vehicleNode);
@@ -692,6 +637,62 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
                 axle->trackWidth    = std::stof(parameters.ReadAttribute(axle_node, "trackWidth"));
                 axle->wheelDiameter = std::stof(parameters.ReadAttribute(axle_node, "wheelDiameter"));
             }
+        }
+    }
+
+    vehicle->SetCategory(parameters.ReadAttribute(vehicleNode, "vehicleCategory"));
+
+    if (parameters.ReadAttribute(vehicleNode, "role").empty())
+    {
+        vehicle->SetRole("none");
+    }
+    else if (!parameters.ReadAttribute(vehicleNode, "role").empty())
+    {
+        vehicle->SetRole(parameters.ReadAttribute(vehicleNode, "role"));
+    }
+
+    // get File based on Category, and set default 3D model id
+    if (vehicle->category_ == Vehicle::Category::BICYCLE)
+    {
+        vehicle->model_id_ = 9;  // magic number for cyclist, set as default
+        vehicle->model3d_  = "cyclist.osgb";
+    }
+    else if (vehicle->category_ == Vehicle::Category::MOTORBIKE)
+    {
+        vehicle->model_id_ = 10;  // magic number for motorcyclist, set as default
+        vehicle->model3d_  = "mc.osgb";
+    }
+    else if (vehicle->category_ == Vehicle::Category::TRAILER)
+    {
+        vehicle->model_id_ = 11;  // magic number for car trailer, set as default
+        vehicle->model3d_  = "car_trailer.osgb";
+    }
+    else
+    {
+        // magic numbers: If first vehicle make it white, else red
+        vehicle->model_id_ = entities_->object_.size() == 0 ? 0 : 2;
+        vehicle->model3d_  = entities_->object_.size() == 0 ? "car_white.osgb" : "car_red.osgb";
+    }
+
+    ParseOSCProperties(vehicle->properties_, vehicleNode);
+
+    // Overwrite default values if 3D model specified
+    if (!vehicleNode.attribute("model3d").empty())
+    {
+        vehicle->model3d_ = parameters.ReadAttribute(vehicleNode, "model3d");
+    }
+    else if (vehicle->properties_.file_.filepath_ != "")
+    {
+        vehicle->model3d_ = vehicle->properties_.file_.filepath_;
+    }
+
+    std::string modelIdStr = vehicle->properties_.GetValueStr("model_id");
+    if (!modelIdStr.empty())
+    {
+        vehicle->model_id_ = strtoi(modelIdStr);
+        if (SE_Env::Inst().GetOptions().IsOptionArgumentSet("record"))
+        {
+            CheckModelId(vehicle);
         }
     }
 
