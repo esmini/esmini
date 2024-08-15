@@ -1081,22 +1081,15 @@ namespace scenarioengine
     class AcquirePositionAction : public OSCPrivateAction
     {
     public:
-        std::shared_ptr<OSCPosition> target_position_OSCPosition_;
-        roadmanager::Position*       target_position_;
-        roadmanager::Route*          route_;
+        roadmanager::Position target_position_;
+        roadmanager::Route*   route_;
 
         ~AcquirePositionAction()
         {
-            if (route_ != nullptr)
-            {
-                delete route_;
-                route_ = nullptr;
-            }
         }
 
         AcquirePositionAction(StoryBoardElement* parent)
             : OSCPrivateAction(OSCPrivateAction::ActionType::Acquire_POSITION, parent, static_cast<unsigned int>(ControlDomains::DOMAIN_LONG)),
-              target_position_(0),
               route_(0)
         {
         }
@@ -1105,13 +1098,11 @@ namespace scenarioengine
             : OSCPrivateAction(OSCPrivateAction::ActionType::Acquire_POSITION,
                                action.parent_,
                                static_cast<unsigned int>(ControlDomains::DOMAIN_LONG)),
-              target_position_(0),
               route_(0)
         {
             SetName(action.GetName());
-            target_position_OSCPosition_ = action.target_position_OSCPosition_;
-            target_position_             = action.target_position_;
-            route_                       = action.route_;
+            target_position_ = action.target_position_;
+            route_           = action.route_;
         }
 
         OSCPrivateAction* Copy()

@@ -3044,9 +3044,12 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                 else if (routingChild.name() == std::string("AcquirePositionAction"))
                 {
                     AcquirePositionAction *acqPosAction = new AcquirePositionAction(parent);
-                    acqPosAction->target_position_OSCPosition_.reset(parseOSCPosition(routingChild.first_child()));
-                    acqPosAction->target_position_ = acqPosAction->target_position_OSCPosition_->GetRMPos();
-                    action                         = acqPosAction;
+
+                    OSCPosition *pos               = parseOSCPosition(routingChild.first_child());
+                    acqPosAction->target_position_ = *pos->GetRMPos();
+                    delete pos;
+
+                    action = acqPosAction;
                 }
                 else
                 {

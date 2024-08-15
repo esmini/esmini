@@ -532,7 +532,7 @@ void AcquirePositionAction::Start(double simTime)
     route_->setObjName(object_->GetName());
 
     route_->AddWaypoint(object_->pos_);
-    route_->AddWaypoint(*target_position_);
+    route_->AddWaypoint(target_position_);
 
     object_->pos_.SetRoute(route_);
     object_->SetDirtyBits(Object::DirtyBit::ROUTE);
