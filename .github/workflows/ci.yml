@@ -17,6 +17,8 @@ on:
       - master
       - dev
 
+  workflow_dispatch:
+
 jobs:
   lint:
     runs-on: ubuntu-latest
