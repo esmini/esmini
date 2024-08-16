@@ -1,5 +1,12 @@
 ## esmini release notes
 
+### 2024-08-16 Version 2.38.1
+
+Improvements and fixes:
+- Accept negative values for deceleration parameters in ALKS controller
+  - i.e. consider only absolute values of DriverDeceleration and AEBDeceleration
+- Increase test coverage by enabling all relevant tests also for non OSG builds in CI
+
 ### 2024-08-15 Version 2.38.0
 
 Updated behaviors:
