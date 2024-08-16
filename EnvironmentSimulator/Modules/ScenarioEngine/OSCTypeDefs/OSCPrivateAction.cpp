@@ -519,6 +519,14 @@ void FollowTrajectoryAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
     }
 }
 
+AcquirePositionAction::~AcquirePositionAction()
+{
+    if (route_ != nullptr)
+    {
+        delete route_;
+    }
+}
+
 void AcquirePositionAction::Start(double simTime)
 {
     // Resolve route

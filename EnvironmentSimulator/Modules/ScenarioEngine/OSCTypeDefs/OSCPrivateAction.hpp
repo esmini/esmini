@@ -1084,9 +1084,7 @@ namespace scenarioengine
         roadmanager::Position target_position_;
         roadmanager::Route*   route_;
 
-        ~AcquirePositionAction()
-        {
-        }
+        ~AcquirePositionAction();
 
         AcquirePositionAction(StoryBoardElement* parent)
             : OSCPrivateAction(OSCPrivateAction::ActionType::Acquire_POSITION, parent, static_cast<unsigned int>(ControlDomains::DOMAIN_LONG)),
