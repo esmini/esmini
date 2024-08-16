@@ -117,6 +117,11 @@ ControllerALKS_R157SM::ControllerALKS_R157SM(InitArgs* args) : Controller(args),
             if (args->properties->ValueExists("aebDeceleration"))
             {
                 ref_driver->aeb_.max_dec_ = strtod(args->properties->GetValueStr("aebDeceleration"));
+                if (ref_driver->aeb_.max_dec_ < 0)
+                {
+                    LOG("ALKS_R157SM AEB Swapping sign of negative aebDeceleration (%.2f)", ref_driver->aeb_.max_dec_);
+                    ref_driver->aeb_.max_dec_ = fabs(ref_driver->aeb_.max_dec_);
+                }
             }
             LOG("ALKS_R157SM AEB deceleration: %.2f", ref_driver->aeb_.max_dec_);
 
@@ -155,6 +160,11 @@ ControllerALKS_R157SM::ControllerALKS_R157SM(InitArgs* args) : Controller(args),
             if (args->properties->ValueExists("driverDeceleration"))
             {
                 model_->max_dec_ = strtod(args->properties->GetValueStr("driverDeceleration"));
+                if (model_->max_dec_ < 0)
+                {
+                    LOG("ALKS_R157SM Swapping sign of negative driverDeceleration (%.2f)", model_->max_dec_);
+                    model_->max_dec_ = fabs(model_->max_dec_);
+                }
             }
             LOG("ALKS_R157SM driver deceleration: %.2f", model_->max_dec_);
         }
