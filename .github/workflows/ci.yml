@@ -224,7 +224,7 @@ jobs:
         if: runner.os != 'Windows'
         uses: GabrielBB/xvfb-action@v1.6
         with:
-          run: ./scripts/run_tests.sh ${{ matrix.configuration }} true
+          run: ./scripts/run_tests.sh ${{ matrix.configuration }} false
 
       - name: Run Tests - Windows
         if: runner.os == 'Windows'
@@ -232,7 +232,7 @@ jobs:
           GALLIUM_DRIVER: softpipe
           MESA_GL_VERSION_OVERRIDE: 4.5
         shell: bash
-        run: ./scripts/run_tests.sh ${{ matrix.configuration }} true
+        run: ./scripts/run_tests.sh ${{ matrix.configuration }} false
 
   release:
     needs: [test, test-no-external-modules]
