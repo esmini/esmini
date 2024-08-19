@@ -157,21 +157,24 @@ static void copyStateFromScenarioGateway(SE_ScenarioObjectState *state, ObjectSt
     state->objectType     = gw_state->info.obj_type;
     state->objectCategory = gw_state->info.obj_category;
     // assume first wheel is on front axle and steering
-    state->wheel_angle    = static_cast<float>(gw_state->info.wheel_data[0].h);
-    state->wheel_rot      = static_cast<float>(gw_state->info.wheel_data[0].p);
+    state->wheel_angle    = gw_state->info.wheel_data.size() > 0 ? static_cast<float>(gw_state->info.wheel_data[0].h) : 0.0f;
+    state->wheel_rot      = gw_state->info.wheel_data.size() > 0 ? static_cast<float>(gw_state->info.wheel_data[0].p) : 0.0f;
     state->visibilityMask = gw_state->info.visibilityMask;
 }
 
 static void copyWheelDataFromScenarioGateway(SE_WheelData *wheeldata, ObjectStateStruct *gw_state, int wheel_index)
 {
-    wheeldata->x                    = static_cast<float>(gw_state->info.wheel_data[wheel_index].x);
-    wheeldata->y                    = static_cast<float>(gw_state->info.wheel_data[wheel_index].y);
-    wheeldata->z                    = static_cast<float>(gw_state->info.wheel_data[wheel_index].z);
-    wheeldata->h                    = static_cast<float>(gw_state->info.wheel_data[wheel_index].h);
-    wheeldata->p                    = static_cast<float>(gw_state->info.wheel_data[wheel_index].p);
-    wheeldata->friction_coefficient = static_cast<float>(gw_state->info.wheel_data[wheel_index].friction_coefficient);
-    wheeldata->axle                 = gw_state->info.wheel_data[wheel_index].axle;
-    wheeldata->index                = gw_state->info.wheel_data[wheel_index].index;
+    if (wheel_index >= 0 && wheel_index < static_cast<int>(gw_state->info.wheel_data.size()))
+    {
+        wheeldata->x                    = static_cast<float>(gw_state->info.wheel_data[static_cast<unsigned int>(wheel_index)].x);
+        wheeldata->y                    = static_cast<float>(gw_state->info.wheel_data[static_cast<unsigned int>(wheel_index)].y);
+        wheeldata->z                    = static_cast<float>(gw_state->info.wheel_data[static_cast<unsigned int>(wheel_index)].z);
+        wheeldata->h                    = static_cast<float>(gw_state->info.wheel_data[static_cast<unsigned int>(wheel_index)].h);
+        wheeldata->p                    = static_cast<float>(gw_state->info.wheel_data[static_cast<unsigned int>(wheel_index)].p);
+        wheeldata->friction_coefficient = static_cast<float>(gw_state->info.wheel_data[static_cast<unsigned int>(wheel_index)].friction_coefficient);
+        wheeldata->axle                 = gw_state->info.wheel_data[static_cast<unsigned int>(wheel_index)].axle;
+        wheeldata->index                = gw_state->info.wheel_data[static_cast<unsigned int>(wheel_index)].index;
+    }
 }
 
 static int getObjectById(int object_id, Object *&obj)
@@ -1883,7 +1886,7 @@ extern "C"
         return -1;
     }
 
-    SE_DLL_API int SE_GetNumberOfWheels(int object_id)
+    SE_DLL_API int SE_GetObjectNumberOfWheels(int object_id)
     {
         scenarioengine::ObjectState gw_obj_state;
 
@@ -1895,15 +1898,15 @@ extern "C"
         return -1;
     }
 
-    SE_DLL_API int SE_GetObjectWheelData(int object_id, SE_WheelData *wheeldata, int wheel_index)
+    SE_DLL_API int SE_GetObjectWheelData(int object_id, int wheel_index, SE_WheelData *wheeldata)
     {
         scenarioengine::ObjectState gw_obj_state;
 
         if (player->scenarioGateway->getObjectStateById(object_id, gw_obj_state) != -1)
         {
-            int number_of_wheels = gw_obj_state.state_.info.wheel_data.size();
+            int number_of_wheels = static_cast<int>(gw_obj_state.state_.info.wheel_data.size());
 
-            if (0 < number_of_wheels && number_of_wheels <= wheel_index)
+            if (wheel_index >= 0 && wheel_index < number_of_wheels)
             {
                 copyWheelDataFromScenarioGateway(wheeldata, &gw_obj_state.state_, wheel_index);
                 return 0;

@@ -1090,20 +1090,20 @@ extern "C"
     SE_DLL_API int SE_GetObjectAccelerationLocalLatLong(int object_id, float *acc_lat, float *acc_long);
 
     /**
-                Get the number of wheels on an object
-                @param object_id Id of the object
-                @return number of wheels on object if successful, -1 if not
-        */
-    SE_DLL_API int SE_GetNumberOfWheels(int object_id);
+            Get the number of wheels of an object
+            @param object_id Id of the object
+            @return number of wheels on object if successful, -1 if not
+    */
+    SE_DLL_API int SE_GetObjectNumberOfWheels(int object_id);
 
     /**
-                Get the acceleration components of specified object in local x,y coordinates
-                @param object_id Id of the object
-                @param wheeldata reference to a variable returning the wheeldata
-                @param wheel_index index of wheeldata to return
-                @return 0 if successful, -1 if not
-        */
-    SE_DLL_API int SE_GetObjectWheelData(int object_id, SE_WheelData *wheeldata, int wheel_index);
+            Get wheel information of specified object
+            @param object_id Id of the object
+            @param wheeldata reference to a struct in which to return the wheeldata
+            @param wheel_index index of wheeldata to return
+            @return 0 if successful, -1 if not
+    */
+    SE_DLL_API int SE_GetObjectWheelData(int object_id, int wheel_index, SE_WheelData *wheeldata);
 
     /**
             Get the unit of specified speed (in OpenDRIVE road type element).

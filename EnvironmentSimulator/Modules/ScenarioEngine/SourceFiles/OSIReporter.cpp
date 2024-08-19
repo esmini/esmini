@@ -895,30 +895,29 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState *objectState)
     if (objectState->state_.info.obj_type == static_cast<int>(Object::Type::VEHICLE))
     {
         // Set some data for each wheel
-        int number_of_wheels = objectState->state_.info.wheel_data.size();
-        for (int i = 0; i < number_of_wheels; i++)
+        for (int i = 0; i < static_cast<int>(objectState->state_.info.wheel_data.size()); i++)
         {
-            if (objectState->state_.info.wheel_data[i].axle > -1)
+            if (objectState->state_.info.wheel_data[static_cast<unsigned int>(i)].axle > -1)
             {
                 // create wheel data message
                 obj_osi_internal.mobj->mutable_vehicle_attributes()->add_wheel_data();
                 obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_wheel_data(i)->mutable_position()->set_x(
-                    objectState->state_.info.wheel_data[i].x);
+                    objectState->state_.info.wheel_data[static_cast<unsigned int>(i)].x);
                 obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_wheel_data(i)->mutable_position()->set_y(
-                    objectState->state_.info.wheel_data[i].y);
+                    objectState->state_.info.wheel_data[static_cast<unsigned int>(i)].y);
                 obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_wheel_data(i)->mutable_position()->set_z(
-                    objectState->state_.info.wheel_data[i].z);
+                    objectState->state_.info.wheel_data[static_cast<unsigned int>(i)].z);
 
                 obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_wheel_data(i)->mutable_orientation()->set_yaw(
-                    objectState->state_.info.wheel_data[i].h);
+                    objectState->state_.info.wheel_data[static_cast<unsigned int>(i)].h);
                 obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_wheel_data(i)->mutable_orientation()->set_pitch(
-                    objectState->state_.info.wheel_data[i].p);
+                    objectState->state_.info.wheel_data[static_cast<unsigned int>(i)].p);
                 obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_wheel_data(i)->set_friction_coefficient(
-                    objectState->state_.info.wheel_data[i].friction_coefficient);
+                    objectState->state_.info.wheel_data[static_cast<unsigned int>(i)].friction_coefficient);
                 obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_wheel_data(i)->set_axle(
-                    static_cast<unsigned int>(objectState->state_.info.wheel_data[i].axle));
+                    static_cast<unsigned int>(objectState->state_.info.wheel_data[static_cast<unsigned int>(i)].axle));
                 obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_wheel_data(i)->set_index(
-                    static_cast<unsigned int>(objectState->state_.info.wheel_data[i].index));  // Index along axis
+                    static_cast<unsigned int>(objectState->state_.info.wheel_data[static_cast<unsigned int>(i)].index));  // Index along axis
             }
         }
     }

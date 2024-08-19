@@ -333,7 +333,7 @@ TEST(GetOSIRoadLaneTest, lane_no_obj)
     SE_UpdateOSIGroundTruth();
     SE_FlushOSIFile();
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 83927);  // initial OSI size, including static content
+    EXPECT_EQ(fileStatus.st_size, 83999);  // initial OSI size, including static content
 
     int road_lane_size;
 
@@ -346,13 +346,13 @@ TEST(GetOSIRoadLaneTest, lane_no_obj)
     SE_UpdateOSIGroundTruth();
     SE_FlushOSIFile();
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 84940);  // slight growth due to only dynamic updates
+    EXPECT_EQ(fileStatus.st_size, 85084);  // slight growth due to only dynamic updates
 
     SE_StepDT(0.001f);  // Step for write another frame to osi file
     SE_UpdateOSIGroundTruth();
     SE_FlushOSIFile();
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 85954);  // slight growth due to only dynamic updates
+    EXPECT_EQ(fileStatus.st_size, 86170);  // slight growth due to only dynamic updates
 
     SE_DisableOSIFile();
     SE_Close();
@@ -862,7 +862,7 @@ TEST(GroundTruthTests, check_GroundTruth_including_init_state)
     SE_DisableOSIFile();
 
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 8500);
+    EXPECT_EQ(fileStatus.st_size, 8716);
 
     // Read OSI file
     FILE* file = FileOpen("gt.osi", "rb");
@@ -937,7 +937,7 @@ TEST(GroundTruthTests, check_frequency_implicit)
     SE_Close();
 
     ASSERT_EQ(stat("gt_implicit.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 8500);
+    EXPECT_EQ(fileStatus.st_size, 8716);
 
     // Read OSI file
     FILE* file = FileOpen("gt_implicit.osi", "rb");
@@ -1007,7 +1007,7 @@ TEST(GroundTruthTests, check_frequency_explicit)
     SE_Close();
 
     ASSERT_EQ(stat("gt_explicit.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 8500);
+    EXPECT_EQ(fileStatus.st_size, 8716);
 
     // Read OSI file
     FILE* file = FileOpen("gt_explicit.osi", "rb");
@@ -4229,7 +4229,7 @@ TEST(StringIds, TestRoadStringIds)
 {
     std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/test_string_ids.xosc";
 
-    EXPECT_EQ(SE_Init(scenario_file.c_str(), 0, 0, 0, 0), 0);
+    ASSERT_EQ(SE_Init(scenario_file.c_str(), 0, 0, 0, 0), 0);
     EXPECT_EQ(SE_GetNumberOfObjects(), 1);
 
     int                    test_state = 0;
@@ -4274,6 +4274,101 @@ TEST(StringIds, TestRoadStringIds)
 
         SE_StepDT(0.1f);
     }
+
+    SE_Close();
+}
+
+TEST(APITest, TestWheelData)
+{
+    std::string scenario_file = "../../../resources/xosc/lane_change_crest.xosc";
+
+    ASSERT_EQ(SE_Init(scenario_file.c_str(), 0, 0, 0, 0), 0);
+    EXPECT_EQ(SE_GetNumberOfObjects(), 3);
+
+    EXPECT_EQ(SE_GetObjectNumberOfWheels(SE_GetId(0)), 4);
+    EXPECT_EQ(SE_GetObjectNumberOfWheels(SE_GetId(1)), 4);
+    EXPECT_EQ(SE_GetObjectNumberOfWheels(SE_GetId(2)), 4);
+    EXPECT_EQ(SE_GetObjectNumberOfWheels(-1), -1);
+    EXPECT_EQ(SE_GetObjectNumberOfWheels(3), -1);
+
+    SE_WheelData wheel_data;
+
+    SE_GetObjectWheelData(SE_GetId(0), 0, &wheel_data);
+    EXPECT_EQ(wheel_data.axle, 0);
+    EXPECT_NEAR(wheel_data.h, 0.0, 1E-3);
+    EXPECT_EQ(wheel_data.index, 0);
+    EXPECT_NEAR(wheel_data.p, 0.0, 1E-3);
+    EXPECT_NEAR(wheel_data.x, 2.98, 1E-3);
+    EXPECT_NEAR(wheel_data.y, -0.840, 1E-3);
+    EXPECT_NEAR(wheel_data.z, 0.4, 1E-3);
+
+    SE_GetObjectWheelData(SE_GetId(0), 1, &wheel_data);
+    EXPECT_EQ(wheel_data.axle, 0);
+    EXPECT_NEAR(wheel_data.h, 0.0, 1E-3);
+    EXPECT_EQ(wheel_data.index, 1);
+    EXPECT_NEAR(wheel_data.p, 0.0, 1E-3);
+    EXPECT_NEAR(wheel_data.x, 2.98, 1E-3);
+    EXPECT_NEAR(wheel_data.y, 0.840, 1E-3);
+    EXPECT_NEAR(wheel_data.z, 0.4, 1E-3);
+
+    SE_GetObjectWheelData(SE_GetId(0), 2, &wheel_data);
+    EXPECT_EQ(wheel_data.axle, 1);
+    EXPECT_NEAR(wheel_data.h, 0.0, 1E-3);
+    EXPECT_EQ(wheel_data.index, 0);
+    EXPECT_NEAR(wheel_data.p, 0.0, 1E-3);
+    EXPECT_NEAR(wheel_data.x, 0.0, 1E-3);
+    EXPECT_NEAR(wheel_data.y, -0.840, 1E-3);
+    EXPECT_NEAR(wheel_data.z, 0.4, 1E-3);
+
+    SE_GetObjectWheelData(SE_GetId(0), 3, &wheel_data);
+    EXPECT_EQ(wheel_data.axle, 1);
+    EXPECT_NEAR(wheel_data.h, 0.0, 1E-3);
+    EXPECT_EQ(wheel_data.index, 1);
+    EXPECT_NEAR(wheel_data.p, 0.0, 1E-3);
+    EXPECT_NEAR(wheel_data.x, 0.0, 1E-3);
+    EXPECT_NEAR(wheel_data.y, 0.840, 1E-3);
+    EXPECT_NEAR(wheel_data.z, 0.4, 1E-3);
+
+    while (SE_GetSimulationTime() < 5.81f)
+    {
+        SE_StepDT(0.1f);
+    }
+
+    SE_GetObjectWheelData(SE_GetId(2), 0, &wheel_data);
+    EXPECT_EQ(wheel_data.axle, 0);
+    EXPECT_NEAR(wheel_data.h, 0.054, 1E-3);
+    EXPECT_EQ(wheel_data.index, 0);
+    EXPECT_NEAR(wheel_data.p, 1.989, 1E-3);
+    EXPECT_NEAR(wheel_data.x, 2.98, 1E-3);
+    EXPECT_NEAR(wheel_data.y, -0.840, 1E-3);
+    EXPECT_NEAR(wheel_data.z, 0.4, 1E-3);
+
+    SE_GetObjectWheelData(SE_GetId(2), 1, &wheel_data);
+    EXPECT_EQ(wheel_data.axle, 0);
+    EXPECT_NEAR(wheel_data.h, 0.054, 1E-3);
+    EXPECT_EQ(wheel_data.index, 1);
+    EXPECT_NEAR(wheel_data.p, 1.989, 1E-3);
+    EXPECT_NEAR(wheel_data.x, 2.98, 1E-3);
+    EXPECT_NEAR(wheel_data.y, 0.840, 1E-3);
+    EXPECT_NEAR(wheel_data.z, 0.4, 1E-3);
+
+    SE_GetObjectWheelData(SE_GetId(2), 2, &wheel_data);
+    EXPECT_EQ(wheel_data.axle, 1);
+    EXPECT_NEAR(wheel_data.h, 0.0, 1E-3);
+    EXPECT_EQ(wheel_data.index, 0);
+    EXPECT_NEAR(wheel_data.p, 1.989, 1E-3);
+    EXPECT_NEAR(wheel_data.x, 0.0, 1E-3);
+    EXPECT_NEAR(wheel_data.y, -0.840, 1E-3);
+    EXPECT_NEAR(wheel_data.z, 0.4, 1E-3);
+
+    SE_GetObjectWheelData(SE_GetId(2), 3, &wheel_data);
+    EXPECT_EQ(wheel_data.axle, 1);
+    EXPECT_NEAR(wheel_data.h, 0.0, 1E-3);
+    EXPECT_EQ(wheel_data.index, 1);
+    EXPECT_NEAR(wheel_data.p, 1.989, 1E-3);
+    EXPECT_NEAR(wheel_data.x, 0.0, 1E-3);
+    EXPECT_NEAR(wheel_data.y, 0.840, 1E-3);
+    EXPECT_NEAR(wheel_data.z, 0.4, 1E-3);
 
     SE_Close();
 }

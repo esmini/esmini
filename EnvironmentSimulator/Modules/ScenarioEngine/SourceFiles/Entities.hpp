@@ -718,24 +718,24 @@ namespace scenarioengine
             if (category_ == Category::CAR || category_ == Category::VAN || category_ == Category::TRUCK || category_ == Category::SEMITRAILER ||
                 category_ == Category::BUS || category_ == Category::TRAIN || category_ == Category::TRAM)
             {
-                WheelData frontrightwheel{front_axle_.positionX, -front_axle_.trackWidth / 2.0, 0.0, 0.0, 0.0, 1.0, 0, 0};
-                WheelData frontleftwheel{front_axle_.positionX, front_axle_.trackWidth / 2.0, 0.0, 0.0, 0.0, 1.0, 0, 1};
-                WheelData rearrightwheel{0.0, -rear_axle_.trackWidth / 2.0, 0.0, 0.0, 0.0, 1.0, 1, 0};
-                WheelData rearleftwheel{0.0, rear_axle_.trackWidth / 2.0, 0.0, 0.0, 0.0, 1.0, 1, 1};
+                WheelData frontrightwheel{front_axle_.positionX, -front_axle_.trackWidth / 2.0, front_axle_.positionZ, 0.0, 0.0, 1.0, 0, 0};
+                WheelData frontleftwheel{front_axle_.positionX, front_axle_.trackWidth / 2.0, front_axle_.positionZ, 0.0, 0.0, 1.0, 0, 1};
+                WheelData rearrightwheel{0.0, -rear_axle_.trackWidth / 2.0, rear_axle_.positionZ, 0.0, 0.0, 1.0, 1, 0};
+                WheelData rearleftwheel{0.0, rear_axle_.trackWidth / 2.0, rear_axle_.positionZ, 0.0, 0.0, 1.0, 1, 1};
 
                 // order according to OSI, front-to-rear and right-to-left
                 wheel_data = {frontrightwheel, frontleftwheel, rearrightwheel, rearleftwheel};
             }
             else if (category_ == Category::MOTORBIKE || category_ == Category::BICYCLE)
             {
-                WheelData frontwheel{front_axle_.positionX, 0.0, 0.0, 0.0, 0.0, 1.0, 0, 0};
-                WheelData rearwheel{0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1, 0};
+                WheelData frontwheel{front_axle_.positionX, 0.0, front_axle_.positionZ, 0.0, 0.0, 1.0, 0, 0};
+                WheelData rearwheel{0.0, 0.0, rear_axle_.positionZ, 0.0, 0.0, 1.0, 1, 0};
                 wheel_data = {frontwheel, rearwheel};
             }
             else if (category_ == Category::TRAILER)
             {
-                WheelData leftwheel{rear_axle_.positionX, -rear_axle_.trackWidth / 2.0, 0.0, 0.0, 0.0, 1.0, 0, 1};
-                WheelData rightwheel{rear_axle_.positionX, rear_axle_.trackWidth / 2.0, 0.0, 0.0, 0.0, 1.0, 0, 0};
+                WheelData leftwheel{rear_axle_.positionX, -rear_axle_.trackWidth / 2.0, rear_axle_.positionZ, 0.0, 0.0, 1.0, 0, 1};
+                WheelData rightwheel{rear_axle_.positionX, rear_axle_.trackWidth / 2.0, rear_axle_.positionZ, 0.0, 0.0, 1.0, 0, 0};
                 wheel_data = {leftwheel, rightwheel};
             }
         }

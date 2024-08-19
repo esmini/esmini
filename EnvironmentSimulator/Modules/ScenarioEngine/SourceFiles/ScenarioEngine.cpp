@@ -734,12 +734,12 @@ void ScenarioEngine::prepareGroundTruth(double dt)
             }
             if (o->dirty_ & Object::DirtyBit::WHEEL_ANGLE)
             {
-                obj->wheel_angle_ = o->state_.info.wheel_data[0].h;
+                obj->wheel_angle_ = o->state_.info.wheel_data.size() > 0 ? o->state_.info.wheel_data[0].h : 0.0;
                 obj->SetDirtyBits(Object::DirtyBit::WHEEL_ANGLE);
             }
             if (o->dirty_ & Object::DirtyBit::WHEEL_ROTATION)
             {
-                obj->wheel_rot_ = o->state_.info.wheel_data[0].p;
+                obj->wheel_rot_ = o->state_.info.wheel_data.size() > 0 ? o->state_.info.wheel_data[0].p : 0.0;
                 obj->SetDirtyBits(Object::DirtyBit::WHEEL_ROTATION);
             }
         }

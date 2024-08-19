@@ -3173,6 +3173,106 @@ TEST(Friction, TestFrictionPerWheel)
     delete se;
 }
 
+TEST(WheelData, TestWheelData)
+{
+    ScenarioEngine* se = new ScenarioEngine("../../../resources/xosc/lane_change_crest.xosc");
+    ASSERT_NE(se, nullptr);
+    se->step(0.0);
+    se->prepareGroundTruth(0.0);
+
+    scenarioengine::Entities* entities = &se->entities_;
+    ASSERT_NE(entities, nullptr);
+    ASSERT_EQ(entities->object_.size(), 3);
+
+    ScenarioGateway* gw = se->getScenarioGateway();
+
+    // Check friction per wheel at some key time stamps
+
+    // time = 0.0
+    ObjectStateStruct* state = &gw->objectState_[0]->state_;
+    EXPECT_EQ(state->info.wheel_data[0].axle, 0);
+    EXPECT_EQ(state->info.wheel_data[1].axle, 0);
+    EXPECT_EQ(state->info.wheel_data[2].axle, 1);
+    EXPECT_EQ(state->info.wheel_data[3].axle, 1);
+
+    EXPECT_NEAR(state->info.wheel_data[0].h, 0.0, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[1].h, 0.0, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[2].h, 0.0, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[3].h, 0.0, 1E-3);
+
+    EXPECT_EQ(state->info.wheel_data[0].index, 0);
+    EXPECT_EQ(state->info.wheel_data[1].index, 1);
+    EXPECT_EQ(state->info.wheel_data[2].index, 0);
+    EXPECT_EQ(state->info.wheel_data[3].index, 1);
+
+    EXPECT_NEAR(state->info.wheel_data[0].p, 0.0, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[1].p, 0.0, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[2].p, 0.0, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[3].p, 0.0, 1E-3);
+
+    EXPECT_NEAR(state->info.wheel_data[0].x, 2.98, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[1].x, 2.98, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[2].x, 0.0, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[3].x, 0.0, 1E-3);
+
+    EXPECT_NEAR(state->info.wheel_data[0].y, -0.840, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[1].y, 0.840, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[2].y, -0.840, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[3].y, 0.840, 1E-3);
+
+    EXPECT_NEAR(state->info.wheel_data[0].z, 0.4, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[1].z, 0.4, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[2].z, 0.4, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[3].z, 0.4, 1E-3);
+
+    while (se->getSimulationTime() < 5.8 + SMALL_NUMBER)
+    {
+        se->step(0.1);
+        se->prepareGroundTruth(0.1);
+    }
+
+    // check overtaking car, some wheel heading expected
+    state = &gw->objectState_[2]->state_;
+
+    EXPECT_EQ(state->info.wheel_data[0].axle, 0);
+    EXPECT_EQ(state->info.wheel_data[1].axle, 0);
+    EXPECT_EQ(state->info.wheel_data[2].axle, 1);
+    EXPECT_EQ(state->info.wheel_data[3].axle, 1);
+
+    EXPECT_NEAR(state->info.wheel_data[0].h, 0.054, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[1].h, 0.054, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[2].h, 0.0, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[3].h, 0.0, 1E-3);
+
+    EXPECT_EQ(state->info.wheel_data[0].index, 0);
+    EXPECT_EQ(state->info.wheel_data[1].index, 1);
+    EXPECT_EQ(state->info.wheel_data[2].index, 0);
+    EXPECT_EQ(state->info.wheel_data[3].index, 1);
+
+    EXPECT_NEAR(state->info.wheel_data[0].p, 1.989, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[1].p, 1.989, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[2].p, 1.989, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[3].p, 1.989, 1E-3);
+
+    EXPECT_NEAR(state->info.wheel_data[0].x, 2.98, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[1].x, 2.98, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[2].x, 0.0, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[3].x, 0.0, 1E-3);
+
+    EXPECT_NEAR(state->info.wheel_data[0].y, -0.840, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[1].y, 0.840, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[2].y, -0.840, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[3].y, 0.840, 1E-3);
+
+    // ensure z=0 even when the car is on a crest
+    EXPECT_NEAR(state->info.wheel_data[0].z, 0.4, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[1].z, 0.4, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[2].z, 0.4, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[3].z, 0.4, 1E-3);
+
+    delete se;
+}
+
 TEST(LaneChange, TestLaneChangeEdgeCase)
 {
     ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/friction_and_lane_change_edge_case.xosc");

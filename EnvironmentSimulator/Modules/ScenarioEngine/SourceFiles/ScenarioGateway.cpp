@@ -956,7 +956,16 @@ int ScenarioGateway::updateObjectWheelData(int id, std::vector<WheelData> wheel_
 
     for (unsigned int i = 0; i < wheel_data.size(); i++)
     {
-        obj_state->state_.info.wheel_data[i] = std::move(wheel_data[i]);
+        if (obj_state->state_.info.wheel_data.size() <= i)
+        {
+            // push first time
+            obj_state->state_.info.wheel_data.push_back(std::move(wheel_data[i]));
+        }
+        else
+        {
+            // update existing
+            obj_state->state_.info.wheel_data[i] = std::move(wheel_data[i]);
+        }
     }
 
     obj_state->dirty_ |= Object::DirtyBit::FRICTION | Object::DirtyBit::WHEEL_ANGLE | Object::DirtyBit::WHEEL_ROTATION;
@@ -1101,8 +1110,10 @@ void ScenarioGateway::WriteStatesToFile()
             datState.info.visibilityMask = objectState_[i]->state_.info.visibilityMask;
 
             // assume first wheel is on front axle and steering
-            datState.info.wheel_angle = static_cast<float>(objectState_[i]->state_.info.wheel_data[0].h);
-            datState.info.wheel_rot   = static_cast<float>(objectState_[i]->state_.info.wheel_data[0].p);
+            datState.info.wheel_angle =
+                objectState_[i]->state_.info.wheel_data.size() > 0 ? static_cast<float>(objectState_[i]->state_.info.wheel_data[0].h) : 0.0f;
+            datState.info.wheel_rot =
+                objectState_[i]->state_.info.wheel_data.size() > 0 ? static_cast<float>(objectState_[i]->state_.info.wheel_data[0].p) : 0.0f;
 
             datState.pos.x      = static_cast<float>(objectState_[i]->state_.pos.GetX());
             datState.pos.y      = static_cast<float>(objectState_[i]->state_.pos.GetY());
