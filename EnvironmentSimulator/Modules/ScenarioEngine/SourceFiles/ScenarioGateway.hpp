@@ -25,23 +25,23 @@ namespace scenarioengine
 
     struct ObjectInfoStruct
     {
-        int            id;
-        int            model_id;
-        std::string    model3d;
-        int            obj_type;      // 0=None, 1=Vehicle, 2=Pedestrian, 3=MiscObj (see Object::Type enum)
-        int            obj_category;  // sub type for vehicle, pedestrian and miscobj
-        int            obj_role;      // role for vehicle and pedestrian
-        int            ctrl_type;     // See Controller::Type enum
-        double         timeStamp;
-        char           name[NAME_LEN];
-        double         speed;
-        double         rear_axle_z_pos;   // z coordinate of the middle of rear axle under neutral load conditions
-        double         front_axle_x_pos;  // x coordinate of the middle of front axle under neutral load conditions
-        double         front_axle_z_pos;  // z coordinate of the middle of front axle under neutral load conditions
-        OSCBoundingBox boundingbox;
-        int            scaleMode;                        // 0=None, 1=BoundingBoxToModel, 2=ModelToBoundingBox (see enum EntityScaleMode)
-        int            visibilityMask;                   // bitmask according to Object::Visibility (1 = Graphics, 2 = Traffic, 4 = Sensors)
-        WheelData      wheel_data[Vehicle::MAX_WHEELS];  // make room for maximum number of wheels
+        int                    id;
+        int                    model_id;
+        std::string            model3d;
+        int                    obj_type;      // 0=None, 1=Vehicle, 2=Pedestrian, 3=MiscObj (see Object::Type enum)
+        int                    obj_category;  // sub type for vehicle, pedestrian and miscobj
+        int                    obj_role;      // role for vehicle and pedestrian
+        int                    ctrl_type;     // See Controller::Type enum
+        double                 timeStamp;
+        char                   name[NAME_LEN];
+        double                 speed;
+        double                 rear_axle_z_pos;   // z coordinate of the middle of rear axle under neutral load conditions
+        double                 front_axle_x_pos;  // x coordinate of the middle of front axle under neutral load conditions
+        double                 front_axle_z_pos;  // z coordinate of the middle of front axle under neutral load conditions
+        OSCBoundingBox         boundingbox;
+        int                    scaleMode;       // 0=None, 1=BoundingBoxToModel, 2=ModelToBoundingBox (see enum EntityScaleMode)
+        int                    visibilityMask;  // bitmask according to Object::Visibility (1 = Graphics, 2 = Traffic, 4 = Sensors)
+        std::vector<WheelData> wheel_data;      // make room for maximum number of wheels
     };
 
     struct ObjectStateStruct

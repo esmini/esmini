@@ -622,8 +622,6 @@ namespace scenarioengine
     class Vehicle : public Object
     {
     public:
-        static const int MAX_WHEELS = 4;
-
         class TrailerHitch
         {
         public:

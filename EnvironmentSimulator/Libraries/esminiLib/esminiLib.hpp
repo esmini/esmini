@@ -67,6 +67,7 @@ typedef struct
     // float rim_radius;  // 	median radius of the rim measured from the center to the outer, visible part of the rim
     int axle;   // 0=front, 1=next axle from front and so on. -1 indicates wheel is not existing.
     int index;  // The index of the wheel on the axle, counting in the direction of positive-y, that is, right-to-left. -1 indicates wheel
+    // not existing.
 } SE_WheelData;
 
 // asciidoc tag::SE_RoadInfo_struct[]
@@ -1087,6 +1088,22 @@ extern "C"
             @return 0 if successful, -1 if not
     */
     SE_DLL_API int SE_GetObjectAccelerationLocalLatLong(int object_id, float *acc_lat, float *acc_long);
+
+    /**
+                Get the number of wheels on an object
+                @param object_id Id of the object
+                @return number of wheels on object if successful, -1 if not
+        */
+    SE_DLL_API int SE_GetNumberOfWheels(int object_id);
+
+    /**
+                Get the acceleration components of specified object in local x,y coordinates
+                @param object_id Id of the object
+                @param wheeldata reference to a variable returning the wheeldata
+                @param wheel_index index of wheeldata to return
+                @return 0 if successful, -1 if not
+        */
+    SE_DLL_API int SE_GetObjectWheelData(int object_id, SE_WheelData *wheeldata, int wheel_index);
 
     /**
             Get the unit of specified speed (in OpenDRIVE road type element).

@@ -895,7 +895,8 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState *objectState)
     if (objectState->state_.info.obj_type == static_cast<int>(Object::Type::VEHICLE))
     {
         // Set some data for each wheel
-        for (int i = 0; i < Vehicle::MAX_WHEELS; i++)
+        int number_of_wheels = objectState->state_.info.wheel_data.size();
+        for (int i = 0; i < number_of_wheels; i++)
         {
             if (objectState->state_.info.wheel_data[i].axle > -1)
             {
