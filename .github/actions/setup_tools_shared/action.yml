@@ -12,16 +12,16 @@ runs:
         && sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 200
         && sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 200
 
-    - uses: actions/setup-python@v4.5.0
+    - uses: actions/setup-python@v5.1.1
       with:
         python-version: '3.8'
         cache: 'pip'
     - run: pip install -r support/python/requirements.txt
       shell: bash
 
-    - uses: seanmiddleditch/gha-setup-ninja@v3
+    - uses: seanmiddleditch/gha-setup-ninja@v5
 
-    - uses: jwlawson/actions-setup-cmake@v1.13.1
+    - uses: jwlawson/actions-setup-cmake@v2.0.2
       if: runner.os != 'macOS'
 
     - name: Setup VS Dev Environment - Windows
@@ -46,7 +46,7 @@ runs:
       run: curl.exe -L --output wglinfo64.exe --url https://github.com/gkv311/wglinfo/releases/download/22_03/wglinfo64.exe
 
     - name: Output glxinfo - Ubuntu
-      uses: GabrielBB/xvfb-action@v1.6
+      uses: coactions/setup-xvfb@v1.0.1
       if: runner.os == 'Linux'
       with:
         run: glxinfo

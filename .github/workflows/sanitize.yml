@@ -19,7 +19,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v3.3.0
+      - uses: actions/checkout@v4.1.7
         with:
           ref: dev
           submodules: true
@@ -27,7 +27,7 @@ jobs:
       - uses: ./.github/actions/setup_tools_shared
 
       - name: Cache
-        uses: actions/cache@v3.2.5
+        uses: actions/cache@v4.0.2
         with:
           path: |
             externals/googletest
@@ -53,6 +53,6 @@ jobs:
         run: cmake --build build --config ${{ matrix.configuration }} --target install -j 2
 
       - name: Run Tests
-        uses: GabrielBB/xvfb-action@v1.6
+        uses: coactions/setup-xvfb@v1.0.1
         with:
           run: ./scripts/run_tests.sh ${{ matrix.configuration }} false 120  # extended timeout allowing for slow execution
