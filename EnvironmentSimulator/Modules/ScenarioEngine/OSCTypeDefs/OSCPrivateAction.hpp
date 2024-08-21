@@ -983,12 +983,15 @@ namespace scenarioengine
               route_(0)
         {
             SetName(action.GetName());
-            if (route_ == nullptr)
+            if (action.route_ != nullptr)
             {
-                printf("Route not defined! Creating one\n");
                 route_ = new roadmanager::Route;
+                route_->CopyFrom(*action.route_);
             }
-            route_->CopyFrom(*action.route_);
+            else
+            {
+                route_ = nullptr;
+            }
         }
 
         OSCPrivateAction* Copy()

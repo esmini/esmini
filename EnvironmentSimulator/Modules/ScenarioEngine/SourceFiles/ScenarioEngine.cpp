@@ -311,6 +311,7 @@ int ScenarioEngine::step(double deltaSimTime)
             if (o->dirty_ & (Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL))
             {
                 obj->pos_ = o->state_.pos;
+                obj->pos_.CalcRoutePosition();  // synch route info
             }
             if (o->dirty_ & Object::DirtyBit::SPEED)
             {
@@ -720,6 +721,11 @@ void ScenarioEngine::prepareGroundTruth(double dt)
             if (o->dirty_ & (Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL))
             {
                 obj->pos_.Duplicate(o->state_.pos);
+                if (obj->pos_.route_ != nullptr)
+                {
+                    // update assigned route info
+                    obj->pos_.route_->SetTrackS(obj->pos_.GetTrackId(), obj->pos_.GetS());
+                }
                 obj->SetDirtyBits(o->dirty_ & (Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL));
             }
             if (o->dirty_ & Object::DirtyBit::ACCELERATION)
@@ -1059,7 +1065,7 @@ void ScenarioEngine::SetupGhost(Object* object)
             if (action->action_type_ != OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER)
             {
                 OSCPrivateAction* newAction = action->Copy();
-                action->SetName(action->GetName() + "_ghost-copy");
+                newAction->SetName(action->GetName() + "_ghost-copy");
                 newAction->object_ = ghost;
                 newAction->SetScenarioEngine(this);
                 storyBoard.init_.private_action_.push_back(newAction);

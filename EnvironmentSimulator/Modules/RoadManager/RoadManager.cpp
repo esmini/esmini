@@ -8590,6 +8590,7 @@ Position::ReturnCode Position::SetTrackPosMode(int track_id, double s, double t,
     }
 
     EvaluateZHPR(mode);
+    CalcRoutePosition();  // sync route info
 
     return retval_long;
 }
@@ -9295,6 +9296,7 @@ Position::ReturnCode Position::SetLanePosMode(int track_id, int lane_id, double 
 
     Lane2Track();
     Track2XYZ(mode);
+    CalcRoutePosition();  // sync route info
 
     return retvalue;
 }
@@ -9604,6 +9606,7 @@ int Position::SetInertiaPosMode(double x, double y, double z, double h, double p
     }
 
     EvaluateZHPR(mode);
+    CalcRoutePosition();  // sync route info
 
     return 0;
 }
@@ -10262,7 +10265,7 @@ int Position::CalcRoutePosition()
         return -1;
     }
 
-    if ((int)route_->SetTrackS(GetTrackId(), GetS()) >= 0)
+    if (static_cast<int>(route_->SetTrackS(GetTrackId(), GetS())) >= 0)
     {
         return 0;
     }
