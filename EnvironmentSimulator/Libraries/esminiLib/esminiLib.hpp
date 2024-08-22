@@ -1694,6 +1694,13 @@ extern "C"
     SE_DLL_API int SE_GetRoutePoint(int object_id, int route_index, SE_RouteInfo *routeinfo);
 
     /**
+        Get the total length of the route assigned to specified object
+        @param object_id Id of the object
+        @return Length (m) of route, 0.0 if no route is assigned
+    */
+    SE_DLL_API float SE_GetRouteTotalLength(int object_id);
+
+    /**
             Inject a speed action
             @param action Struct including needed info for the action, see SE_SpeedActionStruct definition
     */

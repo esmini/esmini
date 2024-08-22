@@ -2737,6 +2737,24 @@ extern "C"
         return 0;
     }
 
+    SE_DLL_API float SE_GetRouteTotalLength(int object_id)
+    {
+        Object *obj = nullptr;
+        if (getObjectById(object_id, obj) == -1)
+        {
+            return -1;
+        }
+
+        roadmanager::Route *route = obj->pos_.GetRoute();
+
+        if (route != nullptr)
+        {
+            return static_cast<float>(route->GetLength());
+        }
+
+        return 0.0f;
+    }
+
     SE_DLL_API void SE_InjectSpeedAction(SE_SpeedActionStruct *action)
     {
         if (player)
