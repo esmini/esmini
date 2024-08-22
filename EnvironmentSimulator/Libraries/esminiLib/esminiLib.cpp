@@ -284,7 +284,7 @@ static int GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_Roa
     return static_cast<int>(retval);
 }
 
-static int GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, SE_RoadInfo *r_data, float *speed_ghost)
+static int GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, SE_RoadInfo *r_data, float *speed_ghost, float *timestamp)
 {
     roadmanager::RoadProbeInfo s_data;
 
@@ -347,6 +347,7 @@ static int GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, S
     r_data->trail_heading = static_cast<float>(trailPos.h);
 
     *speed_ghost = static_cast<float>(trailPos.speed);
+    *timestamp   = static_cast<float>(trailPos.time);
 
     // Update object sensor position for visualization
     if (obj->sensor_pos_)
@@ -2076,7 +2077,7 @@ extern "C"
         return GetRoadInfoAtDistance(object_id, adjustedLookaheadDistance, data, lookAheadMode);
     }
 
-    SE_DLL_API int SE_GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, SE_RoadInfo *data, float *speed_ghost)
+    SE_DLL_API int SE_GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, SE_RoadInfo *data, float *speed_ghost, float *timestamp)
     {
         Object *obj = nullptr;
         if (getObjectById(object_id, obj) == -1)
@@ -2084,7 +2085,7 @@ extern "C"
             return -1;
         }
 
-        if (GetRoadInfoAlongGhostTrail(object_id, lookahead_distance, data, speed_ghost) != 0)
+        if (GetRoadInfoAlongGhostTrail(object_id, lookahead_distance, data, speed_ghost, timestamp) != 0)
         {
             return -1;
         }

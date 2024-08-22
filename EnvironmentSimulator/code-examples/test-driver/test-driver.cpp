@@ -63,6 +63,7 @@ int main(int argc, char* argv[])
             {
                 // ghost version
                 float ghost_speed = 0.0f;
+                float timestamp   = 0.0f;
 
                 if (i % 2 == 0)  // alternate between time based and position based look ahead modes
                 {
@@ -72,7 +73,7 @@ int main(int argc, char* argv[])
                 else
                 {
                     // Position based Time based look ahead
-                    SE_GetRoadInfoAlongGhostTrail(0, 5 + 0.75f * vehicleState.speed, &roadInfo, &ghost_speed);
+                    SE_GetRoadInfoAlongGhostTrail(0, 5 + 0.75f * vehicleState.speed, &roadInfo, &ghost_speed, &timestamp);
                 }
                 targetSpeed = ghost_speed;
             }

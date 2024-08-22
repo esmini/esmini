@@ -1143,9 +1143,10 @@ extern "C"
             @param lookahead_distance The distance, along the ghost trail, to the point from the current Ego vehicle location
             @param data Struct including all result values, see typedef for details
             @param speed_ghost reference to a variable returning the speed that the ghost had at this point along trail
+            @param timestamp reference to a variable returning the timestamp of this point along trail
             @return 0 if successful, -1 if not
     */
-    SE_DLL_API int SE_GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, SE_RoadInfo *data, float *speed_ghost);
+    SE_DLL_API int SE_GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, SE_RoadInfo *data, float *speed_ghost, float *timestamp);
 
     /**
             Get information suitable for driver modeling of a ghost vehicle driving ahead of the ego vehicle

@@ -3017,10 +3017,11 @@ TEST(ExternalController, TestExternalDriver)
             if (ghostMode[i] == true)
             {
                 // ghost version
-                float ghost_speed;
+                float ghost_speed = 0.0;
+                float timestamp   = 0.0;
                 if (i < 2)
                 {
-                    SE_GetRoadInfoAlongGhostTrail(0, 5 + 0.75f * vehicleState.speed, &roadInfo, &ghost_speed);
+                    SE_GetRoadInfoAlongGhostTrail(0, 5 + 0.75f * vehicleState.speed, &roadInfo, &ghost_speed, &timestamp);
                 }
                 else
                 {
