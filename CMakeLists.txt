@@ -189,7 +189,7 @@ if(NOT
         googletest
         ${EXTERNALS_GOOGLETEST_PATH}
         ${EXTERNALS_GOOGLETEST_OS_SPECIFIC_PATH}
-        ${GTEST_PACKAGE_URL})
+        "${GTEST_PACKAGE_URL}")
 endif()
 
 # ############################### Loading external packages ##########################################################
