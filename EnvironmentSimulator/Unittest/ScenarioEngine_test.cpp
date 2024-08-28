@@ -5,11 +5,13 @@
 #include <stdexcept>
 #include <array>
 
+#include "CommonMini.hpp"
 #include "ScenarioEngine.hpp"
 #include "ScenarioReader.hpp"
 #include "ControllerUDPDriver.hpp"
 #include "ControllerLooming.hpp"
 #include "ControllerALKS_R157SM.hpp"
+#include "ControllerInteractive.hpp"
 #include "OSCParameterDistribution.hpp"
 #include "pugixml.hpp"
 #include "simple_expr.h"
@@ -3852,8 +3854,50 @@ TEST(RouteingTest, TestPositionOffRoute)
     delete se;
 }
 
+TEST(PositioningTest, TestElevationMapping)
+{
+    ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/test_elevation_mapping.xosc", false);
+    const double    dt = 0.1;
+    ASSERT_NE(se, nullptr);
+    se->step(0.0);
+    se->prepareGroundTruth(0.0);
+
+    scenarioengine::Entities* entities = &se->entities_;
+    ASSERT_NE(entities, nullptr);
+    ASSERT_EQ(entities->object_.size(), 1);
+
+    // Check expected position and orientation at some specific time stamps
+    EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 8.0, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetY(), -1.75, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetZ(), 3.0, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetH(), 0.0, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetP(), 0.0, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetR(), 0.0, 1E-3);
+
+    ControllerInteractive* ctrl = static_cast<ControllerInteractive*>(entities->object_[0]->GetController("interactiveDriver"));
+    ASSERT_NE(ctrl, nullptr);
+
+    // drive car forward, so that it reaches end of top road, dropping to the below road
+    while (se->getSimulationTime() < 1.0 + SMALL_NUMBER)
+    {
+        ctrl->ReportKeyEvent(static_cast<int>(KeyType::KEY_Up), true);
+        se->step(dt);
+        se->prepareGroundTruth(0.0);
+    }
+
+    // Verify that car has moved to lower road
+    EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 11.3, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetY(), -1.75, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetZ(), 0.0, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetH(), 0.0, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetP(), 0.0, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetR(), 0.0, 1E-3);
+
+    delete se;
+}
+
 // Uncomment to print log output to console
-// #define LOG_TO_CONSOLE
+#define LOG_TO_CONSOLE
 
 #ifdef LOG_TO_CONSOLE
 static void log_callback(const char* str)

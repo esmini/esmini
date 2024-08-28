@@ -8005,10 +8005,12 @@ Position::XYZ2TrackPos(double x3, double y3, double z3, int mode, bool connected
 
                 weightedDist = distTmp;
 
-                if (fabs(z3 - z) > 2.0)
+                double z_input = CheckBitsEqual(mode, PosMode::Z_MASK, PosMode::Z_REL) ? GetZ() + z3 : z3;
+
+                if (fabs(z_input - z) > 2.0)
                 {
                     // Add threshold for considering z - to avoid noise in co-planar distance calculations
-                    weightedDist += fabs(z3 - z);
+                    weightedDist += fabs(z_input - z);
                 }
 
                 if (!insideCurrentRoad && road == current_road)
