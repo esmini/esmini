@@ -9,7 +9,7 @@ if(WIN32)
         FATAL_ERROR)
 else()
     cmake_minimum_required(
-        VERSION 2.8.12
+        VERSION 2.8.12...3.5
         FATAL_ERROR)
 endif()
 
