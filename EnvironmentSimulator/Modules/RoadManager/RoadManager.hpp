@@ -2673,6 +2673,11 @@ namespace roadmanager
             id_ = id;
         }
 
+        const std::vector<Connection *> &GetConnections() const
+        {
+            return connection_;
+        }
+
     private:
         std::vector<Connection *>       connection_;
         std::vector<JunctionController> controller_;
@@ -3106,9 +3111,10 @@ namespace roadmanager
         @param track_id Id of the road (track)
         @param s Distance to the position along and from the start of the road (track)
         @param updateXY update world coordinates x, y... as well - or not
+        @param updateRoute update route position, find closest point along route
         @return Non zero return value indicates error of some kind
         */
-        ReturnCode SetTrackPos(int track_id, double s, double t, bool UpdateXY = true);
+        ReturnCode SetTrackPos(int track_id, double s, double t, bool UpdateXY = true, bool updateRoute = true);
 
         /**
         Specify position by lane coordinate (road_id, s, t) with specified mode
@@ -3119,7 +3125,7 @@ namespace roadmanager
         @param updateXY update world coordinates x, y... as well - or not
         @return Non zero return value indicates error of some kind
         */
-        ReturnCode SetTrackPosMode(int track_id, double s, double t, int mode, bool UpdateXY = true);
+        ReturnCode SetTrackPosMode(int track_id, double s, double t, int mode, bool UpdateXY = true, bool updateRoute = true);
         void       ForceLaneId(int lane_id);
 
         /**
@@ -3240,6 +3246,7 @@ namespace roadmanager
         @param connectedOnly If true only roads that can be reached from current position will be considered, if false all roads will be considered
         @param roadId If != -1 only this road will be considered else all roads will be searched
         @param check_overlapping_roads If true all roads ovlerapping the position will be registered (with some performance penalty)
+        @param along_route If true only roads along currently assigned route, if any, are considered
         @return Non zero return value indicates error of some kind
         */
         ReturnCode XYZ2TrackPos(double x,
@@ -3248,7 +3255,8 @@ namespace roadmanager
                                 int    pos_mode                = PosMode::UNDEFINED,
                                 bool   connectedOnly           = false,
                                 int    roadId                  = -1,
-                                bool   check_overlapping_roads = false);
+                                bool   check_overlapping_roads = false,
+                                bool   along_route             = false);
 
         int TeleportTo(Position *pos);
 
@@ -4021,9 +4029,10 @@ namespace roadmanager
         /**
         Set position to the border of lane (right border for right lanes, left border for left lanes)
         */
-        void       LaneBoundary2Track();
-        void       XYZ2Track(int mode = PosMode::UNDEFINED);
-        ReturnCode SetLongitudinalTrackPos(int track_id, double s);
+        void                 LaneBoundary2Track();
+        void                 XYZ2Track(int mode = PosMode::UNDEFINED);
+        Position::ReturnCode XYZ2Route(int mode = PosMode::UNDEFINED);
+        ReturnCode           SetLongitudinalTrackPos(int track_id, double s);
 
         /**
         Update trajectory position
@@ -4113,7 +4122,7 @@ namespace roadmanager
     class Route
     {
     public:
-        Route() : invalid_route_(false), active_(false), waypoint_idx_(-1), path_s_(0), length_(0)
+        Route() : invalid_route_(false), active_(false), waypoint_idx_(-1), path_s_(0), length_(0), on_route_(false)
         {
         }
 
@@ -4152,7 +4161,7 @@ namespace roadmanager
         }
         bool OnRoute()
         {
-            return waypoint_idx_ > -1;
+            return on_route_;
         }
 
         // Current route position data
@@ -4174,6 +4183,7 @@ namespace roadmanager
             return currentPos_.GetTrackId();
         }
         Position *GetWaypoint(int index = -1);  // -1 means current
+        Road     *GetRoadAtOtherEndOfIncomingRoad(Junction *junction, Road *incoming_road) const;
         Road     *GetRoadAtOtherEndOfConnectingRoad(Road *incoming_road) const;
         Position *GetCurrentPosition()
         {
@@ -4184,7 +4194,7 @@ namespace roadmanager
         Specify route position in terms of a track ID and track S value
         @return Non zero return value indicates error of some kind
         */
-        Position::ReturnCode SetTrackS(int trackId, double s);
+        Position::ReturnCode SetTrackS(int trackId, double s, bool update_state = true);
 
         /**
         Move current position forward, or backwards, ds meters along the route
@@ -4192,16 +4202,14 @@ namespace roadmanager
         @param actualDistance Distance considering lateral offset and curvature (true/default) or along centerline (false)
         @return Non zero return value indicates error of some kind, most likely End Of Route
         */
-        Position::ReturnCode MovePathDS(double ds, double *remaining_dist = nullptr);
+        Position::ReturnCode MovePathDS(double ds, double *remaining_dist = nullptr, bool update_state = true);
 
         /**
         Move current position to specified S-value along the route
         @param route_s Distance to move, negative will move backwards
         @return Non zero return value indicates error of some kind, most likely End Of Route
         */
-        Position::ReturnCode SetPathS(double s, double *remaining_dist = nullptr);
-
-        Position::ReturnCode CopySFractionOfLength(Position *pos);
+        Position::ReturnCode SetPathS(double s, double *remaining_dist = nullptr, bool update_state = true);
 
         void CopyFrom(Route &route)
         {
@@ -4224,6 +4232,7 @@ namespace roadmanager
         Position              currentPos_;
         double                length_;
         int                   waypoint_idx_;
+        bool                  on_route_;
     };
 
     // A Road Path is a linked list of road links (road connections or junctions)

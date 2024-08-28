@@ -234,7 +234,8 @@ void ControllerFollowRoute::CalculateWaypoints()
 
         object_->pos_.GetRoute()->minimal_waypoints_.clear();
         object_->pos_.GetRoute()->minimal_waypoints_ = {waypoints_[0], waypoints_[1]};
-        object_->pos_.CalcRoutePosition();  // Reset route object according to new route waypoints and current position
+        object_->pos_.CalcRoutePosition();               // Reset route object according to new route waypoints and current position
+        object_->SetDirtyBits(Object::DirtyBit::ROUTE);  // Set dirty bit to notify that route has changed
         pathCalculated_ = true;
     }
 }
@@ -292,8 +293,6 @@ void ControllerFollowRoute::ChangeLane(double timeStep)
         vehicle_.posX_    = object_->pos_.GetX();
         vehicle_.posY_    = object_->pos_.GetY();
         vehicle_.heading_ = object_->pos_.GetH();
-
-        gateway_->updateObjectWorldPosXYH(object_->id_, 0.0, vehicle_.posX_, vehicle_.posY_, vehicle_.heading_);
     }
 }
 

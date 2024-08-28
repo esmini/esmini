@@ -724,7 +724,7 @@ void ScenarioEngine::prepareGroundTruth(double dt)
                 if (obj->pos_.route_ != nullptr)
                 {
                     // update assigned route info
-                    obj->pos_.route_->SetTrackS(obj->pos_.GetTrackId(), obj->pos_.GetS());
+                    obj->pos_.CalcRoutePosition();
                 }
                 obj->SetDirtyBits(o->dirty_ & (Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL));
             }

@@ -3681,6 +3681,177 @@ TEST(ActionTest, TestInstantLaneChange)
     delete se;
 }
 
+TEST(RouteingTest, TestPositionOffRoute)
+{
+    ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/route_detour.xosc", true);
+    const double    dt = 0.05;
+    ASSERT_NE(se, nullptr);
+    se->step(0.0);
+    se->prepareGroundTruth(0.0);
+
+    scenarioengine::Entities* entities = &se->entities_;
+    ASSERT_NE(entities, nullptr);
+    ASSERT_EQ(entities->object_.size(), 1);
+
+    // Check expected position and orientation at some specific time stamps
+    EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 221.5, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetY(), 45.0, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetZ(), 0.0, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetH(), 1.5708, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetP(), 0.0, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetR(), 0.0, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->GetSpeed(), 40.0, 1E-3);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->currentPos_.GetTrackId(), 2);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->currentPos_.GetLaneId(), -1);
+    EXPECT_NEAR(entities->object_[0]->pos_.route_->currentPos_.GetS(), 25.0, 1E-3);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->OnRoute(), true);
+
+    while (se->getSimulationTime() < 1.0 + SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(0.0);
+    }
+    EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 216.982, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetY(), 86.012, 1E-3);
+    EXPECT_EQ(entities->object_[0]->pos_.GetTrackId(), 200);
+    EXPECT_EQ(entities->object_[0]->pos_.GetLaneId(), -1);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->currentPos_.GetTrackId(), 201);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->currentPos_.GetLaneId(), -1);
+    EXPECT_NEAR(entities->object_[0]->pos_.route_->currentPos_.GetS(), 16.012, 1E-3);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->OnRoute(), false);
+
+    while (se->getSimulationTime() < 3.15 + SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(0.0);
+    }
+    EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 132.565, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetY(), 91.5, 1E-3);
+    EXPECT_EQ(entities->object_[0]->pos_.GetTrackId(), 3);
+    EXPECT_EQ(entities->object_[0]->pos_.GetLaneId(), -1);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->currentPos_.GetTrackId(), 201);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->currentPos_.GetLaneId(), -1);
+    EXPECT_NEAR(entities->object_[0]->pos_.route_->currentPos_.GetS(), 21.5, 1E-3);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->OnRoute(), false);
+
+    while (se->getSimulationTime() < 3.20 + SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(0.0);
+    }
+    EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 130.565, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetY(), 91.5, 1E-3);
+    EXPECT_EQ(entities->object_[0]->pos_.GetTrackId(), 3);
+    EXPECT_EQ(entities->object_[0]->pos_.GetLaneId(), -1);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->currentPos_.GetTrackId(), 4);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->currentPos_.GetLaneId(), -1);
+    EXPECT_NEAR(entities->object_[0]->pos_.route_->currentPos_.GetS(), 150.851, 1E-3);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->OnRoute(), false);
+
+    while (se->getSimulationTime() < 5.75 + SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(0.0);
+    }
+    EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 28.565, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetY(), 91.5, 1E-3);
+    EXPECT_EQ(entities->object_[0]->pos_.GetTrackId(), 3);
+    EXPECT_EQ(entities->object_[0]->pos_.GetLaneId(), -1);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->currentPos_.GetTrackId(), 4);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->currentPos_.GetLaneId(), -1);
+    EXPECT_NEAR(entities->object_[0]->pos_.route_->currentPos_.GetS(), 252.851, 1E-3);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->OnRoute(), false);
+
+    while (se->getSimulationTime() < 5.8 + SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(0.0);
+    }
+    EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 26.565, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetY(), 91.5, 1E-3);
+    EXPECT_EQ(entities->object_[0]->pos_.GetTrackId(), 3);
+    EXPECT_EQ(entities->object_[0]->pos_.GetLaneId(), -1);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->currentPos_.GetTrackId(), 302);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->currentPos_.GetLaneId(), -1);
+    EXPECT_NEAR(entities->object_[0]->pos_.route_->currentPos_.GetS(), 18.5, 1E-3);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->OnRoute(), false);
+
+    while (se->getSimulationTime() < 8.0 + SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(0.0);
+    }
+    EXPECT_NEAR(entities->object_[0]->pos_.GetX(), -58.592, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetY(), 83.938, 1E-3);
+    EXPECT_EQ(entities->object_[0]->pos_.GetTrackId(), 301);
+    EXPECT_EQ(entities->object_[0]->pos_.GetLaneId(), -1);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->currentPos_.GetTrackId(), 302);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->currentPos_.GetLaneId(), -1);
+    EXPECT_NEAR(entities->object_[0]->pos_.route_->currentPos_.GetS(), 26.062, 1E-3);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->OnRoute(), false);
+
+    while (se->getSimulationTime() < 8.4 + SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(0.0);
+    }
+    EXPECT_NEAR(entities->object_[0]->pos_.GetX(), -61.500, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetY(), 68.564, 1E-3);
+    EXPECT_EQ(entities->object_[0]->pos_.GetTrackId(), 6);
+    EXPECT_EQ(entities->object_[0]->pos_.GetLaneId(), -1);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->currentPos_.GetTrackId(), 6);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->currentPos_.GetLaneId(), -1);
+    EXPECT_NEAR(entities->object_[0]->pos_.route_->currentPos_.GetS(), 1.435, 1E-3);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->OnRoute(), true);
+
+    while (se->getSimulationTime() < 11.25 + SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(0.0);
+    }
+    EXPECT_NEAR(entities->object_[0]->pos_.GetX(), -61.500, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetY(), -45.435, 1E-3);
+    EXPECT_EQ(entities->object_[0]->pos_.GetTrackId(), 5);
+    EXPECT_EQ(entities->object_[0]->pos_.GetLaneId(), -1);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetS(), 25.435, 1E-3);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->currentPos_.GetTrackId(), 5);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->currentPos_.GetLaneId(), -1);
+    EXPECT_NEAR(entities->object_[0]->pos_.route_->currentPos_.GetS(), 25.435, 1E-3);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->OnRoute(), true);
+
+    while (se->getSimulationTime() < 11.50 + SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(0.0);
+    }
+    EXPECT_NEAR(entities->object_[0]->pos_.GetX(), -61.500, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetY(), -55.435, 1E-3);
+    EXPECT_EQ(entities->object_[0]->pos_.GetTrackId(), 5);
+    EXPECT_EQ(entities->object_[0]->pos_.GetLaneId(), -1);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetS(), 35.435, 1E-3);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->currentPos_.GetTrackId(), 5);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->currentPos_.GetLaneId(), -1);
+    EXPECT_NEAR(entities->object_[0]->pos_.route_->currentPos_.GetS(), 30.0, 1E-3);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->OnRoute(), false);
+
+    while (se->getSimulationTime() < 11.60 + SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(0.0);
+    }
+    EXPECT_NEAR(entities->object_[0]->pos_.GetX(), -61.500, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetY(), -59.435, 1E-3);
+    EXPECT_EQ(entities->object_[0]->pos_.GetTrackId(), 5);
+    EXPECT_EQ(entities->object_[0]->pos_.GetLaneId(), -1);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetS(), 39.435, 1E-3);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->currentPos_.GetTrackId(), 5);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->currentPos_.GetLaneId(), -1);
+    EXPECT_NEAR(entities->object_[0]->pos_.route_->currentPos_.GetS(), 30.0, 1E-3);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->OnRoute(), false);
+
+    delete se;
+}
+
 // Uncomment to print log output to console
 // #define LOG_TO_CONSOLE
 

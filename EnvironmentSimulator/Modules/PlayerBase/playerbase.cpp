@@ -418,7 +418,7 @@ void ScenarioPlayer::ViewerFrame(bool init)
                 entity->routewaypoints_->SetWayPoints(obj->pos_.GetRoute());
                 obj->ClearDirtyBits(Object::DirtyBit::ROUTE);
             }
-            else if (entity->routewaypoints_->group_->getNumChildren() && obj->pos_.GetRoute() == nullptr)
+            else if (entity->routewaypoints_->group_all_wp_->getNumChildren() && obj->pos_.GetRoute() == nullptr)
             {
                 entity->routewaypoints_->SetWayPoints(nullptr);
             }

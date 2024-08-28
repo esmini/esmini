@@ -7647,7 +7647,8 @@ typedef struct
     PointStruct* osi_point;  // osi point reference
 } XYZHVertex;
 
-Position::ReturnCode Position::XYZ2TrackPos(double x3, double y3, double z3, int mode, bool connectedOnly, int roadId, bool check_overlapping_roads)
+Position::ReturnCode
+Position::XYZ2TrackPos(double x3, double y3, double z3, int mode, bool connectedOnly, int roadId, bool check_overlapping_roads, bool along_route)
 {
     // Overall method:
     //   1. Iterate over all roads, looking at OSI points of each lane sections center line (lane 0)
@@ -7699,7 +7700,7 @@ Position::ReturnCode Position::XYZ2TrackPos(double x3, double y3, double z3, int
     // First step is to identify closest road and OSI line segment
 
     size_t nrOfRoads;
-    if (route_ && route_->IsValid() && route_->OnRoute())
+    if (along_route && route_ && route_->IsValid())
     {
         // Route assigned. Iterate over all roads in the route. I.e. check all waypoints road ID.
         nrOfRoads = route_->minimal_waypoints_.size();
@@ -7731,6 +7732,29 @@ Position::ReturnCode Position::XYZ2TrackPos(double x3, double y3, double z3, int
             // First check current road (from last known position).
             if (current_road)
             {
+                if (along_route)
+                {
+                    // check whether current road is part of the route
+                    if (route_ != nullptr && route_->IsValid())
+                    {
+                        bool road_on_route = false;
+                        for (auto& wp : route_->minimal_waypoints_)
+                        {
+                            if (wp.GetTrackId() == current_road->GetId())
+                            {
+                                road_on_route = true;
+                                break;
+                            }
+                        }
+
+                        if (!road_on_route)
+                        {
+                            // only consider roads that are part of the route, skip current one
+                            continue;
+                        }
+                    }
+                }
+                // is current
                 road = current_road;
             }
             else
@@ -7740,7 +7764,7 @@ Position::ReturnCode Position::XYZ2TrackPos(double x3, double y3, double z3, int
         }
         else
         {
-            if (route_ && route_->IsValid() && route_->OnRoute())
+            if (along_route && route_ && route_->IsValid())
             {
                 road = GetOpenDrive()->GetRoadById(route_->minimal_waypoints_[i].GetTrackId());
             }
@@ -7787,7 +7811,8 @@ Position::ReturnCode Position::XYZ2TrackPos(double x3, double y3, double z3, int
 
         // Add resistance to leave current road or directly connected ones
         // actual weights are totally unscientific... up to tuning
-        if (road != current_road)
+        // but when looking only along route, disregard connectivity wrt current road
+        if (!along_route && road != current_road)
         {
             if (current_road && current_road->IsDirectlyConnected(road, &curvature, lane_id_))
             {
@@ -7998,6 +8023,13 @@ Position::ReturnCode Position::XYZ2TrackPos(double x3, double y3, double z3, int
                     // longitudinal (end points) and lateral (road width)
                     weightedDist += weight;
                 }
+
+                if (!inside)
+                {
+                    // additional penalty weight/dist for projected point not being inside road endpoints
+                    weightedDist += 3.0;
+                }
+
                 if (weightedDist < closestPointDist + SMALL_NUMBER)
                 {
                     bool directlyConnectedCandidate = directlyConnected;
@@ -8280,7 +8312,7 @@ Position::ReturnCode Position::XYZ2TrackPos(double x3, double y3, double z3, int
     }
 
     // Set position exact on center line
-    ReturnCode retvalue = SetTrackPosMode(roadMin->GetId(), closestS, 0.0, 0, true);  // skip z, h, p, r
+    ReturnCode retvalue = SetTrackPosMode(roadMin->GetId(), closestS, 0.0, 0, true, false);  // skip z, h, p, r
 
     double xCenterLine = x_;
     double yCenterLine = y_;
@@ -8295,7 +8327,7 @@ Position::ReturnCode Position::XYZ2TrackPos(double x3, double y3, double z3, int
     }
     else
     {
-        SetTrackPosMode(roadMin->GetId(), closestS, latOffset, 0, false);  // skip z, h, p, r
+        SetTrackPosMode(roadMin->GetId(), closestS, latOffset, 0, false, false);  // skip z, h, p, r
     }
 
     static int rid = 0;
@@ -8334,12 +8366,6 @@ Position::ReturnCode Position::XYZ2TrackPos(double x3, double y3, double z3, int
         {
             SetZ(z3);
         }
-    }
-
-    // If on a route, calculate corresponding route position
-    if (route_ && route_->IsValid())
-    {
-        CalcRoutePosition();
     }
 
     return retvalue;
@@ -8474,6 +8500,11 @@ void Position::XYZ2Track(int mode)
     XYZ2TrackPos(x_, y_, z_, mode == PosMode::UNDEFINED ? GetMode(PosModeType::SET) : mode);
 }
 
+Position::ReturnCode Position::XYZ2Route(int mode)
+{
+    return XYZ2TrackPos(x_, y_, z_, mode == PosMode::UNDEFINED ? GetMode(PosModeType::SET) : mode, false, -1, false, true);
+}
+
 Position::ReturnCode Position::SetLongitudinalTrackPos(int track_id, double s)
 {
     Road* road;
@@ -8566,12 +8597,12 @@ Position::ReturnCode Position::SetLongitudinalTrackPos(int track_id, double s)
     return ReturnCode::OK;
 }
 
-Position::ReturnCode Position::SetTrackPos(int track_id, double s, double t, bool UpdateXY)
+Position::ReturnCode Position::SetTrackPos(int track_id, double s, double t, bool UpdateXY, bool updateRoute)
 {
-    return SetTrackPosMode(track_id, s, t, GetMode(PosModeType::UPDATE), UpdateXY);
+    return SetTrackPosMode(track_id, s, t, GetMode(PosModeType::UPDATE), UpdateXY, updateRoute);
 }
 
-Position::ReturnCode Position::SetTrackPosMode(int track_id, double s, double t, int mode, bool UpdateXY)
+Position::ReturnCode Position::SetTrackPosMode(int track_id, double s, double t, int mode, bool UpdateXY, bool updateRoute)
 {
     ReturnCode retval_long = SetLongitudinalTrackPos(track_id, s);
 
@@ -8590,7 +8621,11 @@ Position::ReturnCode Position::SetTrackPosMode(int track_id, double s, double t,
     }
 
     EvaluateZHPR(mode);
-    CalcRoutePosition();  // sync route info
+
+    if (updateRoute)
+    {
+        CalcRoutePosition();  // sync route info
+    }
 
     return retval_long;
 }
@@ -8801,14 +8836,15 @@ Position::ReturnCode Position::MoveToConnectingRoad(RoadLink* road_link, Contact
         else
         {
             // find valid connecting road, if multiple choices choose either most straight one OR by random
-            if (GetRoute() && GetRoute()->IsValid() && GetRoute()->OnRoute())
+            if (GetRoute() && GetRoute()->IsValid())
             {
                 // Choose direction of the route
                 Route* r = GetRoute();
 
                 // Find next road in route
-                Road* outgoing_road_target   = r->GetRoadAtOtherEndOfConnectingRoad(road);
-                int   optimal_connection_idx = -1;
+                Road* outgoing_road_target = r->GetRoadAtOtherEndOfIncomingRoad(junction, road);
+
+                int optimal_connection_idx = -1;
                 for (int i = 0; i < n_connections; i++)
                 {
                     LaneRoadLaneConnection lane_road_lane_connection =
@@ -9060,20 +9096,19 @@ Position::ReturnCode Position::MoveAlongS(double            ds,
         double     remaining_dist = 0.0;
         ReturnCode route_status   = MoveRouteDS(ds_road, &remaining_dist, false);
 
-        if (route_status == ReturnCode::OK)
+        if (route_status == ReturnCode::ERROR_END_OF_ROUTE)
+        {
+            status_ |= static_cast<int>(PositionStatusMode::POS_STATUS_END_OF_ROUTE);
+        }
+        else
+        {
+            status_ &= ~static_cast<int>(PositionStatusMode::POS_STATUS_END_OF_ROUTE);
+        }
+
+        if (route_status == ReturnCode::ERROR_GENERIC)
         {
             return route_status;
         }
-        else if (route_status == ReturnCode::ERROR_END_OF_ROUTE)
-        {
-            // reached out of route, move any remaining distance
-            ds_road = SIGN(ds_road) * fabs(remaining_dist);
-            if (ds_road < SMALL_NUMBER)
-            {
-                return route_status;
-            }
-        }
-        // else, couldn't move alone route - continue as without route
     }
 
     if (GetOpenDrive()->GetNumOfRoads() == 0 || track_idx_ < 0)
@@ -10267,11 +10302,29 @@ int Position::CalcRoutePosition()
 
     if (static_cast<int>(route_->SetTrackS(GetTrackId(), GetS())) >= 0)
     {
-        return 0;
+        return 0;  // on route
     }
     else
     {
-        return -1;
+        // road not found in route, look up closest point along route
+        Position pos_tmp(*this);
+
+        // borrow route from main position
+        pos_tmp.route_ = route_;
+
+        // find closest point on route
+        ReturnCode ret_code = pos_tmp.XYZ2Route();
+
+        // release borrowed route
+        pos_tmp.route_ = nullptr;
+
+        if (ret_code != ReturnCode::ERROR_GENERIC)
+        {
+            // update position along route
+            route_->SetTrackS(pos_tmp.GetTrackId(), pos_tmp.GetS(), false);
+        }
+
+        return -1;  // indicate not on route
     }
 }
 
@@ -10883,11 +10936,6 @@ Position::ReturnCode Position::MoveRouteDS(double ds, double* remaining_dist, bo
         return ReturnCode::ERROR_GENERIC;
     }
 
-    if (!route_->OnRoute())
-    {
-        return ReturnCode::ERROR_NOT_ON_ROUTE;
-    }
-
     // Idea:
     // Calculate adjusted ds for entity actual distance
     // if already in junction:
@@ -10907,63 +10955,14 @@ Position::ReturnCode Position::MoveRouteDS(double ds, double* remaining_dist, bo
         return ReturnCode::ERROR_GENERIC;
     }
 
-    bool same_init_road_and_lane = (route_->GetTrackId() == GetTrackId() && route_->GetLaneId() == GetLaneId());
-
-    if (entity_road->GetJunction() > -1)
+    if (route_->OnRoute())
     {
-        MoveAlongS(ds, 0.0, 0.0, actualDistance, MoveDirectionMode::ROAD_DIRECTION, false);
-
-        if (Position::GetOpenDrive()->GetRoadById(GetTrackId())->GetJunction() > -1)
-        {
-            // Synchronize route path, potentially on a different connecting road, with entity position
-            retval = route_->CopySFractionOfLength(this);
-        }
-        else
-        {
-            // If out of junction, sync positions again
-            retval = route_->SetTrackS(GetTrackId(), GetS());
-            if (retval != ReturnCode::OK)
-            {
-                // entity and route paths has diverged, skip route
-            }
-        }
-    }
-    else
-    {
-        // adjust direction based on route direction relative lane direction
-        // retval = route_->MovePathDS(ds * (IsAngleForward(GetHRelative()) ? 1 : -1));
-
         retval = route_->MovePathDS(actualDistance ? route_->currentPos_.DistanceToDS(ds) : ds);
-        if (retval == ReturnCode::ERROR_GENERIC || retval == ReturnCode::ERROR_NOT_ON_ROUTE)
-        {
-            return retval;
-        }
-        MoveAlongS(ds, 0.0, 0.0, actualDistance, MoveDirectionMode::ROAD_DIRECTION, false);  // actualDistance = false since ds already adjusted
-
-        Road* route_road2  = Position::GetOpenDrive()->GetRoadById(route_->GetTrackId());
-        Road* entity_road2 = Position::GetOpenDrive()->GetRoadById(GetTrackId());
-
-        if (entity_road2->GetJunction() > -1 && route_road2->GetJunction() > -1)
-        {
-            // Both entity and route pos entered junction, synchronize s-value of positions
-            retval = route_->CopySFractionOfLength(this);
-        }
-        else if (entity_road2->GetJunction() > -1 || route_road2->GetJunction() > -1)  // one of the positions exited junction
-        {
-            // Entity and route position not both in junction. Enforce road id synchronization.
-            XYZ2TrackPos(GetX(), GetY(), GetZ(), PosMode::UNDEFINED, false, route_->GetTrackId(), false);
-        }
-        else if (same_init_road_and_lane && entity_road2 != route_road2)
-        {
-            // paths have diverged, probably due to long ds which caused objects to end up at different paths
-            this->Duplicate(*route_->GetCurrentPosition());
-        }
     }
 
     if (retval == ReturnCode::ERROR_END_OF_ROUTE)
     {
-        LOG("End of route at road_id %d lane_id %d s %.2f", GetTrackId(), GetLaneId(), GetS());
-        SetRoute(nullptr);
+        LOG("End of route at road_id=%d, lane_id=%d, s=%.2f", GetTrackId(), GetLaneId(), GetS());
     }
 
     return retval;
@@ -12712,8 +12711,10 @@ int Route::AddWaypoint(const Position& wp_pos)
                     {
                         connected_pos.SetHeadingRelative(M_PI);
                     }
+
                     all_waypoints_.push_back(connected_pos);
                     minimal_waypoints_.push_back(connected_pos);
+
                     LOG("Route::AddWaypoint Added intermediate waypoint %d roadId %d laneId %d",
                         (int)minimal_waypoints_.size() - 1,
                         connected_pos.GetTrackId(),
@@ -12738,8 +12739,9 @@ int Route::AddWaypoint(const Position& wp_pos)
         // Add waypoint defined by scenario
         scenario_waypoints_.push_back(wp_pos);
 
-        // Add all waypoints including a valid road ID (retval == -2 indicates invalid road ID)
+        // Add all waypoints including invalid road ID (retval == -2 indicates invalid road ID)
         all_waypoints_.push_back(wp_pos);
+
         LOG("Route::AddWaypoint Added waypoint %d: %d, %d, %.2f",
             (int)all_waypoints_.size() - 1,
             wp_pos.GetTrackId(),
@@ -12777,95 +12779,25 @@ void Route::CheckValid()
     }
 }
 
-Position::ReturnCode Route::CopySFractionOfLength(Position* pos)
-{
-    Road* road0 = Position::GetOpenDrive()->GetRoadById(pos->GetTrackId());
-    Road* road1 = Position::GetOpenDrive()->GetRoadById(GetTrackId());
-
-    Position::ReturnCode retval = Position::ReturnCode::OK;
-
-    if (road0 == nullptr || road1 == nullptr)
-    {
-        return Position::ReturnCode::ERROR_GENERIC;
-    }
-
-    // Check direction, same of not
-    int direction = 0;
-    if (road0 == road1)
-    {
-        direction = 1;
-    }
-    else if (road0->GetJunction() == road1->GetJunction())
-    {
-        // connecting roads in same junction
-        RoadLink* link0_pre = road0->GetLink(LinkType::PREDECESSOR);
-        RoadLink* link1_pre = road1->GetLink(LinkType::PREDECESSOR);
-        RoadLink* link0_suc = road0->GetLink(LinkType::SUCCESSOR);
-        RoadLink* link1_suc = road1->GetLink(LinkType::SUCCESSOR);
-
-        if (link0_pre && link1_pre && *link0_pre == *link1_pre)
-        {
-            direction = 1;
-        }
-        else if (link0_suc && link1_suc && *link0_suc == *link1_suc)
-        {
-            direction = 1;
-        }
-        else if (link0_pre && link1_suc)
-        {
-            if ((link0_pre->GetType() == LinkType::PREDECESSOR && link1_suc->GetType() == LinkType::SUCCESSOR) ||
-                (link0_pre->GetType() == LinkType::SUCCESSOR && link1_suc->GetType() == LinkType::PREDECESSOR) &&
-                    link0_pre->GetElementType() == link1_suc->GetElementType() && link0_pre->GetElementId() == link1_suc->GetElementId() &&
-                    link0_pre->GetContactPointType() == link1_suc->GetContactPointType())
-                direction = -1;
-        }
-        else if (link0_suc && link1_pre)
-        {
-            if ((link0_suc->GetType() == LinkType::PREDECESSOR && link1_pre->GetType() == LinkType::SUCCESSOR) ||
-                (link0_suc->GetType() == LinkType::SUCCESSOR && link1_pre->GetType() == LinkType::PREDECESSOR) &&
-                    link0_suc->GetElementType() == link1_pre->GetElementType() && link0_suc->GetElementId() == link1_pre->GetElementId() &&
-                    link0_suc->GetContactPointType() == link1_pre->GetContactPointType())
-                direction = -1;
-        }
-        else
-        {
-            retval = Position::ReturnCode::ERROR_GENERIC;
-        }
-    }
-
-    if (direction != 0)
-    {
-        double fraction = CLAMP(pos->GetS() / MAX(SMALL_NUMBER, road0->GetLength()), 0.0, 1.0);
-        if (direction < 0)
-        {
-            fraction = 1 - fraction;
-        }
-        currentPos_.SetLanePos(GetTrackId(), GetLaneId(), fraction * road1->GetLength(), 0.0);
-        SetTrackS(GetTrackId(), fraction * road1->GetLength());
-    }
-
-    return retval;
-}
-
-Position::ReturnCode Route::SetTrackS(int trackId, double s)
+Position::ReturnCode Route::SetTrackS(int trackId, double s, bool update_state)
 {
     // Loop over waypoints - look for current track ID and sum the distance (route s) up to current position
-    double               dist = 0;
-    double               local_s;
-    Position::ReturnCode retval = Position::ReturnCode::OK;
+    double dist = 0;
+    double local_s;
+    struct
+    {
+        int                  wp_index;
+        double               dist_to_wp;
+        double               dist_along_route_at_wp;
+        Position::ReturnCode retval;
+        double               s;
+    } info_for_closest_wp = {-1, LARGE_NUMBER, 0.0, Position::ReturnCode::ERROR_NOT_ON_ROUTE, 0.0};
 
-    if (s < 0 || minimal_waypoints_.size() == 0)
+    if (minimal_waypoints_.size() == 0)
     {
         path_s_       = 0.0;
-        waypoint_idx_ = 0;
-        if (minimal_waypoints_.size() > 0)
-        {
-            currentPos_.SetTrackPos(GetWaypoint(waypoint_idx_)->GetTrackId(), 0.0, 0.0);
-        }
-        else
-        {
-            currentPos_.SetTrackPos(-1, 0.0, 0.0);
-        }
+        waypoint_idx_ = -1;
+        currentPos_.SetTrackPos(-1, 0.0, 0.0);
 
         return Position::ReturnCode::ERROR_END_OF_ROUTE;
     }
@@ -12900,59 +12832,114 @@ Position::ReturnCode Route::SetTrackS(int trackId, double s)
 
         if (trackId == minimal_waypoints_[i].GetTrackId())
         {
+            Position set_pos(trackId, s, 0.0);
+            double   distance_to_waypoint = LARGE_NUMBER;
+            minimal_waypoints_[i].Distance(&set_pos, CoordinateSystem::CS_ENTITY, RelativeDistanceType::REL_DIST_EUCLIDIAN, distance_to_waypoint);
+
+            if (fabs(distance_to_waypoint) > info_for_closest_wp.dist_to_wp - SMALL_NUMBER)
+            {
+                // this waypoint is further away, skip it
+                continue;
+            }
+
+            info_for_closest_wp.s          = s;
+            info_for_closest_wp.wp_index   = static_cast<int>(i);
+            info_for_closest_wp.dist_to_wp = fabs(distance_to_waypoint);
+
             // current position is at the road of this waypoint - i.e. along the route
             // remove remaming s from road
             if (route_direction > 0)
             {
-                dist -= (Position::GetOpenDrive()->GetRoadById(minimal_waypoints_[i].GetTrackId())->GetLength() - s);
+                info_for_closest_wp.dist_along_route_at_wp =
+                    dist - (Position::GetOpenDrive()->GetRoadById(minimal_waypoints_[i].GetTrackId())->GetLength() - s);
             }
             else
             {
-                dist -= s;
+                info_for_closest_wp.dist_along_route_at_wp = dist - s;
             }
 
-            if (dist > GetLength() || dist < 0.0)
+            // need to adjust s value, on first or last wp?
+            if (info_for_closest_wp.wp_index == 0 || info_for_closest_wp.wp_index == minimal_waypoints_.size() - 1)
             {
-                if (!OnRoute())
+                if (route_direction > 0)
                 {
-                    return Position::ReturnCode::ERROR_NOT_ON_ROUTE;
+                    info_for_closest_wp.s = MIN(s, minimal_waypoints_[i].GetS());
                 }
                 else
                 {
-                    LOG("Entity %s moved out of route (SetTrackS())", getObjName().c_str());
-                    retval = Position::ReturnCode::ERROR_END_OF_ROUTE;
+                    info_for_closest_wp.s = MAX(s, minimal_waypoints_[i].GetS());
                 }
             }
-            else if (!OnRoute())
+
+            if (info_for_closest_wp.dist_along_route_at_wp > GetLength() + SMALL_NUMBER ||
+                info_for_closest_wp.dist_along_route_at_wp < 0.0 - SMALL_NUMBER)
             {
-                LOG("Entity %s on route", getObjName().c_str());
+                if (!OnRoute())
+                {
+                    info_for_closest_wp.retval = Position::ReturnCode::ERROR_NOT_ON_ROUTE;
+                }
+                else
+                {
+                    info_for_closest_wp.retval = Position::ReturnCode::ERROR_END_OF_ROUTE;
+                }
             }
-
-            path_s_       = dist;
-            local_s       = s;
-            waypoint_idx_ = (int)i;
-            currentPos_.SetLanePos(GetWaypoint(waypoint_idx_)->GetTrackId(), GetWaypoint(waypoint_idx_)->GetLaneId(), local_s, 0.0);
-
-            if (retval == Position::ReturnCode::ERROR_END_OF_ROUTE)
+            else
             {
-                waypoint_idx_ = -1;
+                info_for_closest_wp.retval = Position::ReturnCode::OK;
             }
-
-            return retval;
         }
     }
 
-    // Failed to map current position to the current route
-    if (OnRoute())
+    if (info_for_closest_wp.wp_index >= 0)
     {
-        LOG("Entity %s moved away from route", getObjName().c_str());
+        path_s_       = CLAMP(info_for_closest_wp.dist_along_route_at_wp, 0.0, GetLength());
+        local_s       = info_for_closest_wp.s;
+        waypoint_idx_ = info_for_closest_wp.wp_index;
+
+        currentPos_.SetLanePos(GetWaypoint(waypoint_idx_)->GetTrackId(), GetWaypoint(waypoint_idx_)->GetLaneId(), local_s, 0.0);
+
+        if (info_for_closest_wp.retval == Position::ReturnCode::ERROR_END_OF_ROUTE ||
+            info_for_closest_wp.retval == Position::ReturnCode::ERROR_NOT_ON_ROUTE)
+        {
+            waypoint_idx_ = -1;
+
+            if (update_state)
+            {
+                if (OnRoute() && info_for_closest_wp.retval == Position::ReturnCode::ERROR_END_OF_ROUTE)
+                {
+                    LOG("Entity %s moved out of route at roadId=%d, s=%.2f (SetTrackS())", getObjName().c_str(), trackId, s);
+                }
+
+                on_route_ = false;
+            }
+        }
+        else if (update_state)
+        {
+            if (!OnRoute())
+            {
+                LOG("Entity %s on route at roadId=%d, s=%.2f", getObjName().c_str(), trackId, s);
+            }
+            on_route_ = true;
+        }
+    }
+    else
+    {
+        // Failed to map current position to the current route
         waypoint_idx_ = -1;
+        if (update_state)
+        {
+            if (on_route_)
+            {
+                LOG("Entity %s moved away from route at roadId=%d, s=%.2f", getObjName().c_str(), trackId, s);
+            }
+            on_route_ = false;
+        }
     }
 
-    return Position::ReturnCode::ERROR_NOT_ON_ROUTE;
+    return info_for_closest_wp.retval;
 }
 
-Position::ReturnCode Route::MovePathDS(double ds, double* remaining_dist)
+Position::ReturnCode Route::MovePathDS(double ds, double* remaining_dist, bool update_state)
 {
     if (minimal_waypoints_.size() == 0)
     {
@@ -12962,10 +12949,10 @@ Position::ReturnCode Route::MovePathDS(double ds, double* remaining_dist)
     // Consider route direction
     ds *= GetWayPointDirection(waypoint_idx_);
 
-    return SetPathS(GetPathS() + ds, remaining_dist);
+    return SetPathS(GetPathS() + ds, remaining_dist, update_state);
 }
 
-Position::ReturnCode Route::SetPathS(double s, double* remaining_dist)
+Position::ReturnCode Route::SetPathS(double s, double* remaining_dist, bool update_state)
 {
     // Loop over waypoints - until reaching s meters
     double               dist    = 0;
@@ -13027,20 +13014,32 @@ Position::ReturnCode Route::SetPathS(double s, double* remaining_dist)
                     *remaining_dist = s < 0.0 ? -s : s - GetLength();
                 }
 
+                retval = Position::ReturnCode::ERROR_END_OF_ROUTE;
+
                 if (!OnRoute())
                 {
-                    return Position::ReturnCode::ERROR_NOT_ON_ROUTE;
-                }
-                else
-                {
-                    LOG("Entity %s moved out of route (SetPathS())", getObjName().c_str());
-                    retval = Position::ReturnCode::ERROR_END_OF_ROUTE;
+                    return retval;
                 }
             }
 
             if (!OnRoute())
             {
-                LOG("Entity %s on route", getObjName().c_str());
+                if (update_state)
+                {
+                    LOG("Entity %s on route at roadId=%d, s=%.2f", getObjName().c_str(), minimal_waypoints_[i].GetTrackId(), local_s);
+                    on_route_ = true;
+                }
+            }
+            else if (retval == Position::ReturnCode::ERROR_END_OF_ROUTE)
+            {
+                if (update_state)
+                {
+                    LOG("Entity %s moved out of route at roadId=%d, s=%.2f (SetPathS())",
+                        getObjName().c_str(),
+                        GetWaypoint(waypoint_idx_)->GetTrackId(),
+                        local_s);
+                    on_route_ = false;
+                }
             }
 
             waypoint_idx_ = static_cast<int>(i);
@@ -13091,7 +13090,7 @@ Position::ReturnCode Route::SetPathS(double s, double* remaining_dist)
                 *remaining_dist = s < 0.0 ? -s : s - GetLength();
             }
 
-            LOG("Entity %s moved passed route", getObjName().c_str());
+            LOG("Entity %s moved passed route at roadId=%d, s=%.2f", getObjName().c_str(), minimal_waypoints_[i].GetTrackId(), local_s);
             waypoint_idx_ = -1;
             return Position::ReturnCode::ERROR_END_OF_ROUTE;
         }
@@ -13114,6 +13113,55 @@ Position* Route::GetWaypoint(int index)
     }
 
     return &minimal_waypoints_[index];
+}
+
+Road* Route::GetRoadAtOtherEndOfIncomingRoad(Junction* junction, Road* incoming_road) const
+{
+    if (junction == nullptr || incoming_road == nullptr)
+    {
+        return nullptr;
+    }
+
+    for (auto& wp : minimal_waypoints_)
+    {
+        OpenDrive* odr  = Position::GetOpenDrive();
+        Road*      road = odr->GetRoadById(wp.GetTrackId());
+
+        if (road == nullptr)
+        {
+            continue;
+        }
+        Junction* junction_tmp = odr->GetJunctionById(road->GetJunction());
+        if (junction_tmp != nullptr && junction_tmp == junction)
+        {
+            // found a connecting road, look for incoming road
+            for (auto& connection : junction->GetConnections())
+            {
+                if (connection->GetIncomingRoad() == incoming_road)
+                {
+                    if (connection->GetConnectingRoad() == road)
+                    {
+                        // found connecting road as waypoint, now look for road at other end
+                        RoadLink* link = road->GetLink(LinkType::SUCCESSOR);
+                        if (link->GetElementType() == RoadLink::ElementType::ELEMENT_TYPE_ROAD && link->GetElementId() != incoming_road->GetId())
+                        {
+                            // found road at other end as successor
+                            return odr->GetRoadById(link->GetElementId());
+                        }
+
+                        link = road->GetLink(LinkType::PREDECESSOR);
+                        if (link->GetElementType() == RoadLink::ElementType::ELEMENT_TYPE_ROAD && link->GetElementId() != incoming_road->GetId())
+                        {
+                            // found road at other end as predecessor
+                            return odr->GetRoadById(link->GetElementId());
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return nullptr;
 }
 
 Road* Route::GetRoadAtOtherEndOfConnectingRoad(Road* incoming_road) const

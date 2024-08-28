@@ -222,20 +222,7 @@ void ControllerRel2Abs::Step(double timeStep)
 
                     if (!object->CheckDirtyBits(Object::DirtyBit::LONGITUDINAL))
                     {
-                        if (object->pos_.GetRoute())
-                        {
-                            object->pos_.MoveRouteDS(steplen);
-                        }
-                        else
-                        {
-                            // Adjustment movement to heading and road direction
-                            if (GetAbsAngleDifference(object->pos_.GetH(), object->pos_.GetDrivingDirection()) > M_PI_2)
-                            {
-                                // If pointing in other direction
-                                steplen *= -1;
-                            }
-                            object->pos_.MoveAlongS(steplen);
-                        }
+                        object->pos_.MoveAlongS(steplen);
                     }
 
                     // LOG("Object[%d] speed = %lf, y: %lf", object->id_, object->GetSpeed(), object->pos_.GetY());

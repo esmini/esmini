@@ -407,6 +407,7 @@ std::vector<Position> LaneIndependentRouter::GetWaypoints(std::vector<Node> path
     }
 
     waypoints.push_back(target);
+
     return waypoints;
 }
 
@@ -416,7 +417,7 @@ double RoadCalculations::CalcAverageSpeed(Road *road)
     if (roadTypeCount == 0)
     {
         // Assume road is rural
-        LOG("Warning: Road %d has no road types (and speed limit)", road->GetId());
+        // LOG("Info: Road %d has no road type and speed limit, assuming rural", road->GetId());
         return roadTypeToSpeed[Road::RoadType::ROADTYPE_RURAL];
     }
 
