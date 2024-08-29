@@ -11,6 +11,8 @@ Improvements and fixes:
   - always map position to closest point on route
   - fix missing route position update, e.g. for externally reported positions
   - refactor and simplify code
+  - add visuals for followRouteController waypoints (dim colored)
+  - indicate start and end waypoints by larger scaled visuals
 - Add a few functions for route info
   - [SE_GetRouteTotalLength()](https://github.com/esmini/esmini/blob/d6308edad511ee37a76009117c834619435960ac/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L1703-L1708C60)
   - [SE_GetObjectRouteStatus()](https://github.com/esmini/esmini/blob/d6308edad511ee37a76009117c834619435960ac/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L995C1-L1000C59)
