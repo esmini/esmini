@@ -7,6 +7,8 @@ Improvements and fixes:
   - both in lib and OSI
   - see [struct](https://github.com/esmini/esmini/blob/d6308edad511ee37a76009117c834619435960ac/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L55-L71) for what's populated
   - see API [here](https://github.com/esmini/esmini/blob/d6308edad511ee37a76009117c834619435960ac/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L1099-L1113)
+- Add timestamp to ghost trail info
+  - as return argument to [SE_GetRoadInfoAlongGhostTrail()](https://github.com/esmini/esmini/blob/fac842e13679afcbc7897fc10d60ff9721ec2405/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L1147-L1156) function
 - Improve route handling
   - always map position to closest point on route
   - fix missing route position update, e.g. for externally reported positions
