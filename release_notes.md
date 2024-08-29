@@ -1,5 +1,29 @@
 ## esmini release notes
 
+### 2024-08-29 Version 2.38.2
+
+Improvements and fixes:
+- Add further wheel info, not only friction
+  - both in lib and OSI
+  - see [struct](https://github.com/esmini/esmini/blob/d6308edad511ee37a76009117c834619435960ac/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L55-L71) for what's populated
+  - see API [here](https://github.com/esmini/esmini/blob/d6308edad511ee37a76009117c834619435960ac/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L1099-L1113)
+- Improve route handling
+  - always map position to closest point on route
+  - fix missing route position update, e.g. for externally reported positions
+  - refactor and simplify code
+- Add a few functions for route info
+  - [SE_GetRouteTotalLength()](https://github.com/esmini/esmini/blob/d6308edad511ee37a76009117c834619435960ac/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L1703-L1708C60)
+  - [SE_GetObjectRouteStatus()](https://github.com/esmini/esmini/blob/d6308edad511ee37a76009117c834619435960ac/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L995C1-L1000C59)
+- Fix elevation mapping bug
+  - could cause entity to drop to lowest road, e.g. from bridge
+  - bug was introduced in v2.37.0 (Feb 2024)
+
+Build improvements:
+- Establish nightly sanitizer job
+- Add manual CI and sanitizer job triggers
+- Fix download issue for build dependent packages
+- Fix cmake version deprecation
+
 ### 2024-08-16 Version 2.38.1
 
 Improvements and fixes:
