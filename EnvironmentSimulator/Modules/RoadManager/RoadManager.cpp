@@ -12861,7 +12861,18 @@ Position::ReturnCode Route::SetTrackS(int trackId, double s, bool update_state)
             }
 
             // need to adjust s value, on first or last wp?
-            if (info_for_closest_wp.wp_index == 0 || info_for_closest_wp.wp_index == minimal_waypoints_.size() - 1)
+            if (info_for_closest_wp.wp_index == 0)
+            {
+                if (route_direction > 0)
+                {
+                    info_for_closest_wp.s = MAX(s, minimal_waypoints_[i].GetS());
+                }
+                else
+                {
+                    info_for_closest_wp.s = MIN(s, minimal_waypoints_[i].GetS());
+                }
+            }
+            else if (info_for_closest_wp.wp_index == minimal_waypoints_.size() - 1)
             {
                 if (route_direction > 0)
                 {
