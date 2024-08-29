@@ -993,6 +993,13 @@ extern "C"
     SE_DLL_API int SE_GetObjectState(int object_id, SE_ScenarioObjectState *state);
 
     /**
+            Get the object route status
+            @param object_id Id of the object
+            @return 0 if route not assigned, 1 if outside assigned route, 2 if on assigned route, -1 on error
+    */
+    SE_DLL_API int SE_GetObjectRouteStatus(int object_id);
+
+    /**
         Find out what lane type object is currently in, reference point projected on road
         Can be used for checking exact lane type or combinations by bitmask.
         Example 1: Check if on border lane: SE_GetObjectLaneType(id) == (1 << 6)

@@ -4374,6 +4374,29 @@ TEST(APITest, TestWheelData)
     SE_Close();
 }
 
+TEST(RoutingTest, TestRouteStatus)
+{
+    std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/route_detour.xosc";
+
+    ASSERT_EQ(SE_Init(scenario_file.c_str(), 1, 0, 0, 0), 0);
+    EXPECT_EQ(SE_GetNumberOfObjects(), 1);
+    EXPECT_EQ(SE_GetObjectRouteStatus(SE_GetId(0)), 2);
+
+    while (SE_GetSimulationTime() < 0.7f)
+    {
+        SE_StepDT(0.1f);
+    }
+    EXPECT_EQ(SE_GetObjectRouteStatus(SE_GetId(0)), 1);
+
+    while (SE_GetSimulationTime() < 8.9f)
+    {
+        SE_StepDT(0.1f);
+    }
+    EXPECT_EQ(SE_GetObjectRouteStatus(SE_GetId(0)), 2);
+
+    SE_Close();
+}
+
 int main(int argc, char** argv)
 {
     testing::InitGoogleTest(&argc, argv);

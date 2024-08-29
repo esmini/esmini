@@ -1442,12 +1442,40 @@ extern "C"
     SE_DLL_API int SE_GetObjectState(int object_id, SE_ScenarioObjectState *state)
     {
         scenarioengine::ObjectState obj_state;
+
+        if (player == nullptr)
+        {
+            return -1;
+        }
+
         if (player->scenarioGateway->getObjectStateById(object_id, obj_state) != -1)
         {
             copyStateFromScenarioGateway(state, &obj_state.state_);
             return 0;
         }
 
+        return -1;
+    }
+
+    SE_DLL_API int SE_GetObjectRouteStatus(int object_id)
+    {
+        if (player != nullptr)
+        {
+            Object *obj = player->scenarioEngine->entities_.GetObjectById(object_id);
+            if (obj == nullptr)
+            {
+                return -1;
+            }
+
+            if (obj->pos_.route_ == nullptr)
+            {
+                return 0;
+            }
+            else
+            {
+                return obj->pos_.route_->OnRoute() ? 2 : 1;
+            }
+        }
         return -1;
     }
 
