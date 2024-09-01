@@ -3897,7 +3897,7 @@ TEST(PositioningTest, TestElevationMapping)
 }
 
 // Uncomment to print log output to console
-#define LOG_TO_CONSOLE
+// #define LOG_TO_CONSOLE
 
 #ifdef LOG_TO_CONSOLE
 static void log_callback(const char* str)

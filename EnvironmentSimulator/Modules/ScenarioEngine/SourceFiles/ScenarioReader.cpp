@@ -541,6 +541,7 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
     parameters.addParameterDeclarations(paramDecl);
 
     vehicle->typeName_ = parameters.ReadAttribute(vehicleNode, "name");
+    ParseOSCProperties(vehicle->properties_, vehicleNode);
 
     OSCBoundingBox boundingbox = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
     ParseOSCBoundingBox(boundingbox, vehicleNode);
@@ -673,8 +674,6 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
         vehicle->model_id_ = entities_->object_.size() == 0 ? 0 : 2;
         vehicle->model3d_  = entities_->object_.size() == 0 ? "car_white.osgb" : "car_red.osgb";
     }
-
-    ParseOSCProperties(vehicle->properties_, vehicleNode);
 
     // Overwrite default values if 3D model specified
     if (!vehicleNode.attribute("model3d").empty())
