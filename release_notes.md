@@ -1,5 +1,17 @@
 ## esmini release notes
 
+### 2024-09-02 Version 2.38.3
+
+Improvements and fixes:
+
+- Consider trailers for freespace distance calc ([issue #594](https://github.com/esmini/esmini/issues/594))
+- Add lib function ([SE_GetObjectGhostId()](https://github.com/esmini/esmini/blob/707c5b93e6158fca7d6fe0e9d9d6ca2dbc51f06c/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L1050-L1055)) to get ghost ID
+- Support UserDefinedAction in Init section
+  - previously only supported in storyboard
+- Adjust order of Init action execution according to OSC xsd sequence
+- Fix parsing bug causing wrong bounding box settings
+  - bug was introduced in v2.38.2 (previous version)
+
 ### 2024-08-29 Version 2.38.2
 
 Improvements and fixes:
