@@ -18,6 +18,9 @@
     <Storyboard>
         <Init>
             <Actions>
+                <UserDefinedAction>
+                    <CustomCommandAction type="info">Initialize</CustomCommandAction>
+                </UserDefinedAction>
                 <Private entityRef="Ego">
                     <PrivateAction>
                         <TeleportAction>

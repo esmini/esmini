@@ -1557,9 +1557,10 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('Loading .*user_defined_action.xosc', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('4.890: Starting UserDefinedAction type: noop content: Wait', log)  is not None)
-        self.assertTrue(re.search('\\n7.000: Event WaitEvent ended, overwritten by event DecelerateEvent', log)  is not None)
-        self.assertTrue(re.search('\\n9.950: DecelerateDoneCondition timer expired at 1.00 seconds', log)  is not None)
+        self.assertTrue(re.search('^0.000: Starting UserDefinedAction type: info content: Initialize', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^4.890: Starting UserDefinedAction type: noop content: Wait', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^7.000: Event WaitEvent ended, overwritten by event DecelerateEvent', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^9.950: DecelerateDoneCondition timer expired at 1.00 seconds', log, re.MULTILINE)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv()

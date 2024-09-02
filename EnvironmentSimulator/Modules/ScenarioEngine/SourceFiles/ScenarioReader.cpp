@@ -2264,16 +2264,20 @@ OSCUserDefinedAction *ScenarioReader::parseOSCUserDefinedAction(pugi::xml_node a
     {
         action                    = new OSCUserDefinedAction(parent);
         action->user_action_type_ = parameters.ReadAttribute(actionChild, "type");
-        action->content_          = actionChild.first_child().value();
+        action->content_          = parameters.ResolveParametersInString(actionChild.first_child().value());
     }
 
-    if (action && actionNode.parent().attribute("name"))
+    if (action != nullptr)
     {
-        action->SetName(parameters.ReadAttribute(actionNode.parent(), "name"));
-    }
-    else
-    {
-        action->SetName("no name");
+        std::string action_name = parameters.ReadAttribute(actionNode.parent(), "name");
+        if (!action_name.empty())
+        {
+            action->SetName(action_name);
+        }
+        else
+        {
+            action->SetName("No name UserDefinedAction");
+        }
     }
 
     return action;
@@ -3570,15 +3574,20 @@ void ScenarioReader::parseInit(Init &init)
         {
             LOG("Parsing global action %s", actionsChild.first_child().name());
             OSCGlobalAction *action = parseOSCGlobalAction(actionsChild, nullptr);
-            if (action != 0)
+            if (action != nullptr)
             {
                 action->SetName("Init " + std::string(actionsChild.first_child().name()));
                 init.global_action_.push_back(action);
             }
         }
-        else if (actionsChildName == "UserDefined")
+        else if (actionsChildName == "UserDefinedAction")
         {
-            LOG("Init %s is not implemented", actionsChildName.c_str());
+            OSCUserDefinedAction *action = parseOSCUserDefinedAction(actionsChild, nullptr);
+            if (action != nullptr)
+            {
+                action->SetName("Init " + std::string(actionsChild.first_child().name()));
+                init.user_defined_action_.push_back(action);
+            }
         }
         else if (actionsChildName == "Private")
         {

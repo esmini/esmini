@@ -76,11 +76,17 @@ void StoryBoard::Print()
 void StoryBoard::Start(double simTime)
 {
     // kick off init actions
-    for (auto action : init_.private_action_)
+    for (auto action : init_.global_action_)
     {
         action->Start(simTime);
     }
-    for (auto action : init_.global_action_)
+
+    for (auto action : init_.user_defined_action_)
+    {
+        action->Start(simTime);
+    }
+
+    for (auto action : init_.private_action_)
     {
         action->Start(simTime);
     }
@@ -92,19 +98,29 @@ void StoryBoard::Step(double simTime, double dt)
 {
     EvalTriggers(simTime);
 
+    for (auto action : init_.global_action_)
+    {
+        // skip update for during ghost restart phases
+        if (action->GetCurrentState() == StoryBoardElement::State::RUNNING && !(SE_Env::Inst().GetGhostMode() == GhostMode::RESTARTING))
+        {
+            action->Step(simTime, dt);
+        }
+    }
+
+    for (auto action : init_.user_defined_action_)
+    {
+        // skip update for during ghost restart phases
+        if (action->GetCurrentState() == StoryBoardElement::State::RUNNING && !(SE_Env::Inst().GetGhostMode() == GhostMode::RESTARTING))
+        {
+            action->Step(simTime, dt);
+        }
+    }
+
     for (auto action : init_.private_action_)
     {
         if (action->GetCurrentState() == StoryBoardElement::State::RUNNING &&
             // skip update for non ghost objects during ghost restart phases
             !(!action->object_->IsGhost() && SE_Env::Inst().GetGhostMode() == GhostMode::RESTARTING))
-        {
-            action->Step(simTime, dt);
-        }
-    }
-    for (auto action : init_.global_action_)
-    {
-        // skip update for during ghost restart phases
-        if (action->GetCurrentState() == StoryBoardElement::State::RUNNING && !(SE_Env::Inst().GetGhostMode() == GhostMode::RESTARTING))
         {
             action->Step(simTime, dt);
         }
