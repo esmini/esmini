@@ -40,12 +40,12 @@ TEST(DistanceTest, CalcDistanceVariations)
     EXPECT_NEAR(dist, 10.0, 1e-5);
 
     // same point but measure now in road coordinates
-    Object obj0(Object::Type::VEHICLE);
+    Vehicle obj0;
     obj0.boundingbox_.center_     = {1.0, 0.0, 0.0};
     obj0.boundingbox_.dimensions_ = {2.0, 2.0, 2.0};
     obj0.pos_                     = pos0;
 
-    Object obj1(Object::Type::VEHICLE);
+    Vehicle obj1;
     obj1.pos_                     = pos1;
     obj1.boundingbox_.center_     = {1.0, 0.0, 0.0};
     obj1.boundingbox_.dimensions_ = {2.0, 2.0, 2.0};
@@ -139,7 +139,7 @@ TEST(DistanceTest, CalcDistancePoint)
     Position pos0 = Position(0, -1, 400.0, 0);
     pos0.SetHeading(0.0);
 
-    Object obj0(Object::Type::VEHICLE);
+    Vehicle obj0;
     obj0.boundingbox_.center_     = {1.0, 0.0, 0.0};
     obj0.boundingbox_.dimensions_ = {2.0, 2.0, 2.0};
     obj0.pos_                     = pos0;
@@ -182,7 +182,7 @@ TEST(DistanceTest, CalcDistancePointAcrossIntersection)
     Position pos0 = Position(0, 1, 10.0, 0);
     pos0.SetHeading(0.0);
 
-    Object obj0(Object::Type::VEHICLE);
+    Vehicle obj0;
     obj0.boundingbox_.center_     = {1.0, 0.0, 0.0};
     obj0.boundingbox_.dimensions_ = {2.0, 2.0, 2.0};
     obj0.pos_                     = pos0;
@@ -207,13 +207,13 @@ TEST(DistanceTest, CalcEntityDistanceFreespace)
     ASSERT_NE(odr, nullptr);
     EXPECT_EQ(odr->GetNumOfRoads(), 1);
 
-    Object obj0(Object::Type::VEHICLE);
+    Vehicle obj0;
     obj0.boundingbox_.center_     = {1.5, 0.0, 0.0};
     obj0.boundingbox_.dimensions_ = {2.0, 5.0, 2.0};
     obj0.pos_.SetLanePos(1, -1, 20.0, 0);
     obj0.pos_.SetHeading(0.0);
 
-    Object obj1(Object::Type::VEHICLE);
+    Vehicle obj1;
     obj1.boundingbox_.center_     = {1.5, 0.0, 0.0};
     obj1.boundingbox_.dimensions_ = {2.0, 5.0, 2.0};
     obj1.pos_.SetLanePos(1, -1, 30.0, 0);
@@ -271,6 +271,301 @@ TEST(DistanceTest, CalcEntityDistanceFreespace)
     EXPECT_NEAR(latDist, 1.204715, 1e-5);
     EXPECT_NEAR(longDist, 4.64299, 1e-5);
     EXPECT_NEAR(dist = obj0.FreeSpaceDistance(&obj1, &latDist, &longDist), 5.876278, 1e-3);
+}
+
+TEST(DistanceTest, DistanceWithTrailers)
+{
+    double dt       = 0.1;
+    double distance = LARGE_NUMBER;
+
+    ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/distance_with_trailers.xosc");
+
+    ASSERT_NE(se, nullptr);
+    EXPECT_EQ(se->entities_.object_.size(), 7);
+
+    // initialize
+    se->step(0.0);
+    se->prepareGroundTruth(0.0);
+
+    ASSERT_EQ(se->entities_.object_[2]->GetType(), Object::Type::VEHICLE);
+    ASSERT_EQ(se->entities_.object_[0]->GetType(), Object::Type::VEHICLE);
+    ASSERT_EQ(se->entities_.object_[6]->GetType(), Object::Type::VEHICLE);
+    ASSERT_EQ(se->entities_.object_[3]->GetType(), Object::Type::VEHICLE);
+
+    Vehicle* car1            = static_cast<Vehicle*>(se->entities_.object_[2]);
+    Vehicle* truck1          = static_cast<Vehicle*>(se->entities_.object_[0]);
+    Vehicle* car2            = static_cast<Vehicle*>(se->entities_.object_[6]);
+    Vehicle* truck2          = static_cast<Vehicle*>(se->entities_.object_[3]);
+    Vehicle* truck2_trailer2 = static_cast<Vehicle*>(se->entities_.object_[5]);
+
+    // first check some reference point distance variants
+
+    // euclidian reference point distance between car1 and truck1
+    car1->Distance(truck1, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, false, distance);
+    EXPECT_NEAR(distance, 68.887, 1e-3);
+    truck1->Distance(car1, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, false, distance);
+    EXPECT_NEAR(distance, 68.887, 1e-3);
+
+    // longitudinal reference point distance, in entity coordinate system, between car1 and truck1
+    car1->Distance(truck1, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, false, distance);
+    EXPECT_NEAR(distance, 66.230, 1e-3);
+    truck1->Distance(car1, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, false, distance);
+    EXPECT_NEAR(distance, 67.207, 1e-3);
+
+    // longitudinal road reference point distance between car1 and truck1
+    car1->Distance(truck1, roadmanager::CoordinateSystem::CS_ROAD, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, false, distance);
+    EXPECT_NEAR(distance, 70.0, 1e-3);
+    truck1->Distance(car1, roadmanager::CoordinateSystem::CS_ROAD, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, false, distance);
+    EXPECT_NEAR(distance, 70.0, 1e-3);
+
+    // longitudinal lane reference point distance between car1 and truck1
+    car1->Distance(truck1, roadmanager::CoordinateSystem::CS_LANE, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, false, distance);
+    EXPECT_NEAR(distance, 70.0, 1e-3);
+    truck1->Distance(car1, roadmanager::CoordinateSystem::CS_LANE, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, false, distance);
+    EXPECT_NEAR(distance, 70.0, 1e-3);
+
+    // lateral road reference point distance between car1 and truck1
+    car1->Distance(truck1, roadmanager::CoordinateSystem::CS_ROAD, roadmanager::RelativeDistanceType::REL_DIST_LATERAL, false, distance);
+    EXPECT_NEAR(distance, -3.07, 1e-3);
+    truck1->Distance(car1, roadmanager::CoordinateSystem::CS_ROAD, roadmanager::RelativeDistanceType::REL_DIST_LATERAL, false, distance);
+    EXPECT_NEAR(distance, 3.07, 1e-3);
+
+    // lateral lane reference point distance between car1 and truck1
+    car1->Distance(truck1, roadmanager::CoordinateSystem::CS_LANE, roadmanager::RelativeDistanceType::REL_DIST_LATERAL, false, distance);
+    EXPECT_NEAR(distance, -3.07, 1e-3);
+    truck1->Distance(car1, roadmanager::CoordinateSystem::CS_LANE, roadmanager::RelativeDistanceType::REL_DIST_LATERAL, false, distance);
+    EXPECT_NEAR(distance, 3.07, 1e-3);
+
+    // then check some freespace variants
+
+    // euclidian freespace distance between car1 and truck1
+    car1->Distance(truck1, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, true, distance);
+    EXPECT_NEAR(distance, 59.6319, 1e-3);
+    truck1->Distance(car1, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, true, distance);
+    EXPECT_NEAR(distance, 59.6319, 1e-3);
+
+    // longitudinal freespace distance, in entity coordinate system, between car1 and truck1
+    car1->Distance(truck1, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    EXPECT_NEAR(distance, 57.2550, 1e-3);
+    truck1->Distance(car1, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    EXPECT_NEAR(distance, 58.2370, 1e-3);
+
+    // longitudinal road freespace distance between car1 and truck1
+    car1->Distance(truck1, roadmanager::CoordinateSystem::CS_ROAD, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    EXPECT_NEAR(distance, 60.9302, 1e-3);
+    truck1->Distance(car1, roadmanager::CoordinateSystem::CS_ROAD, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    EXPECT_NEAR(distance, 60.9302, 1e-3);
+
+    // longitudinal lane freespace distance between car1 and truck1
+    car1->Distance(truck1, roadmanager::CoordinateSystem::CS_LANE, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    EXPECT_NEAR(distance, 60.9302, 1e-3);
+    truck1->Distance(car1, roadmanager::CoordinateSystem::CS_LANE, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    EXPECT_NEAR(distance, 60.9302, 1e-3);
+
+    // lateral road freespace distance between car1 and truck1
+    car1->Distance(truck1, roadmanager::CoordinateSystem::CS_ROAD, roadmanager::RelativeDistanceType::REL_DIST_LATERAL, true, distance);
+    EXPECT_NEAR(distance, -0.692, 1e-3);
+    truck1->Distance(car1, roadmanager::CoordinateSystem::CS_ROAD, roadmanager::RelativeDistanceType::REL_DIST_LATERAL, true, distance);
+    EXPECT_NEAR(distance, 0.692, 1e-3);
+
+    // lateral lane freespace distance between car1 and truck1
+    car1->Distance(truck1, roadmanager::CoordinateSystem::CS_LANE, roadmanager::RelativeDistanceType::REL_DIST_LATERAL, true, distance);
+    EXPECT_NEAR(distance, -0.692, 1e-3);
+    truck1->Distance(car1, roadmanager::CoordinateSystem::CS_LANE, roadmanager::RelativeDistanceType::REL_DIST_LATERAL, true, distance);
+    EXPECT_NEAR(distance, 0.692, 1e-3);
+
+    // move forward in time a bit
+    while (se->getSimulationTime() < 1.2 - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }
+
+    EXPECT_NEAR(car1->pos_.GetX(), 513.193, 1e-3);
+    EXPECT_NEAR(car1->pos_.GetY(), 2.423, 1e-3);
+
+    // euclidian freespace distance between car1 and truck1
+    car1->Distance(truck1, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, true, distance);
+    EXPECT_NEAR(distance, 24.3254, 1e-3);
+    truck1->Distance(car1, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, true, distance);
+    EXPECT_NEAR(distance, 24.3254, 1e-3);
+
+    // longitudinal freespace distance, in entity coordinate system, between car1 and truck1
+    car1->Distance(truck1, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    EXPECT_NEAR(distance, 24.3250, 1e-3);
+    truck1->Distance(car1, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    EXPECT_NEAR(distance, 24.1240, 1e-3);
+
+    // move forward until car1 is very close to truck1
+    while (se->getSimulationTime() < 2.0 - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }
+
+    EXPECT_NEAR(car1->pos_.GetX(), 489.205, 1e-3);
+    EXPECT_NEAR(car1->pos_.GetY(), 1.535, 1e-3);
+
+    // euclidian freespace distance between car1 and truck1
+    car1->Distance(truck1, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, true, distance);
+    EXPECT_NEAR(distance, 0.8050, 1e-3);
+    truck1->Distance(car1, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, true, distance);
+    EXPECT_NEAR(distance, 0.8050, 1e-3);
+
+    // longitudinal freespace distance, in entity coordinate system, between car1 and truck1, should now be same since straight road segment
+    car1->Distance(truck1, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    EXPECT_NEAR(distance, 0.2349, 1e-3);
+    truck1->Distance(car1, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    EXPECT_NEAR(distance, 0.2349, 1e-3);
+
+    // move forward until car1 is overlapping truck1 longitudinally
+    while (se->getSimulationTime() < 2.1 - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }
+
+    // euclidian freespace distance between car1 and truck1
+    car1->Distance(truck1, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, true, distance);
+    EXPECT_NEAR(distance, 0.7700, 1e-3);
+    truck1->Distance(car1, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, true, distance);
+    EXPECT_NEAR(distance, 0.7700, 1e-3);
+
+    // longitudinal freespace distance, in entity coordinate system, between car1 and truck1
+    car1->Distance(truck1, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    EXPECT_NEAR(distance, 0.0, 1e-3);
+    truck1->Distance(car1, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    EXPECT_NEAR(distance, 0.0, 1e-3);
+
+    // move forward until car1 is behind truck1 longitudinally
+    while (se->getSimulationTime() < 2.7 - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }
+
+    // euclidian freespace distance between car1 and truck1
+    car1->Distance(truck1, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, true, distance);
+    EXPECT_NEAR(distance, -1.7937, 1e-3);
+    truck1->Distance(car1, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, true, distance);
+    EXPECT_NEAR(distance, -1.7937, 1e-3);
+
+    // longitudinal freespace distance, in entity coordinate system, between car1 and truck1
+    car1->Distance(truck1, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    EXPECT_NEAR(distance, -1.6200, 1e-3);
+    truck1->Distance(car1, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    EXPECT_NEAR(distance, -1.6200, 1e-3);
+
+    // move forward until car2 is close to truck2 longitudinally
+    while (se->getSimulationTime() < 3.0 - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }
+
+    // euclidian freespace distance between car2 and truck2
+    car2->Distance(truck2, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, true, distance);
+    EXPECT_NEAR(distance, 1.0500, 1e-3);
+    truck2->Distance(car2, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, true, distance);
+    EXPECT_NEAR(distance, 1.0500, 1e-3);
+
+    // longitudinal freespace distance, in entity coordinate system, between car2 and truck2
+    // image: https://drive.google.com/file/d/12FFP8DBfNpJgCpjdIpk7_kbd6xczWy79/view?usp=sharing
+    car2->Distance(truck2, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    EXPECT_NEAR(distance, 0.4782, 1e-3);
+    truck2->Distance(car2, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    EXPECT_NEAR(distance, 0.8017, 1e-3);
+
+    // move forward until car2 is overlapping truck2 longitudinally, and close laterally at corner of trailer
+    while (se->getSimulationTime() < 3.2 - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }
+
+    // euclidian freespace distance between car2 and truck2
+    car2->Distance(truck2, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, true, distance);
+    EXPECT_NEAR(distance, 0.6629, 1e-3);
+    truck2->Distance(car2, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, true, distance);
+    EXPECT_NEAR(distance, 0.6629, 1e-3);
+
+    // longitudinal freespace distance, in entity coordinate system, between car2 and truck2
+    car2->Distance(truck2, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    EXPECT_NEAR(distance, 0.0, 1e-3);
+    truck2->Distance(car2, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    EXPECT_NEAR(distance, 0.0, 1e-3);
+
+    // move forward until car2 is at longitudinal middle of trailer body, hence less close laterally since in curve
+    while (se->getSimulationTime() < 3.5 - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }
+
+    // euclidian freespace distance between car2 and truck2
+    car2->Distance(truck2, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, true, distance);
+    EXPECT_NEAR(distance, 1.0767, 1e-3);
+    truck2->Distance(car2, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, true, distance);
+    EXPECT_NEAR(distance, 1.0767, 1e-3);
+
+    // longitudinal freespace distance, in entity coordinate system, between car2 and truck2
+    car2->Distance(truck2, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    EXPECT_NEAR(distance, 0.0, 1e-3);
+    truck2->Distance(car2, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    EXPECT_NEAR(distance, 0.0, 1e-3);
+
+    // move forward until car2 is behind truck2
+    while (se->getSimulationTime() < 4.1 - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }
+
+    // euclidian freespace distance between car2 and truck2
+    car2->Distance(truck2, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, true, distance);
+    EXPECT_NEAR(distance, -1.9655, 1e-3);
+    truck2->Distance(car2, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, true, distance);
+    EXPECT_NEAR(distance, -1.9655, 1e-3);
+
+    // longitudinal freespace distance, in entity coordinate system, between car2 and truck2
+    car2->Distance(truck2, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    EXPECT_NEAR(distance, -0.9049, 1e-3);
+    truck2->Distance(car2, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    EXPECT_NEAR(distance, -1.0600, 1e-3);
+
+    // Finally test point distance with and without trailers involved
+    truck1->Distance(468.8, 1.53, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    EXPECT_NEAR(distance, -2.1450, 1e-3);
+    truck1->Distance(468.8, 1.53, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, true, distance);
+    EXPECT_NEAR(distance, -2.7778, 1e-3);
+    truck2->Distance(468.8, 1.53, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, true, distance);
+    EXPECT_NEAR(distance, 122.8735, 1e-3);
+    truck2->Distance(468.8, 1.53, roadmanager::CoordinateSystem::CS_ROAD, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    EXPECT_NEAR(distance, 132.2590, 1e-3);
+
+    truck2->Distance(597.83, 72.84, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, true, distance);
+    EXPECT_NEAR(distance, -3.3915, 1e-3);
+    truck2_trailer2
+        ->Distance(597.83, 72.84, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, true, distance);
+    EXPECT_NEAR(distance, -3.3915, 1e-3);
+
+    truck2
+        ->Distance(597.83, 72.84, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    EXPECT_NEAR(distance, -2.1645, 1e-3);
+    truck2_trailer2
+        ->Distance(597.83, 72.84, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    EXPECT_NEAR(distance, -2.1645, 1e-3);
+
+    truck2->Distance(597.83, 72.84, roadmanager::CoordinateSystem::CS_ROAD, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    EXPECT_NEAR(distance, -2.0509, 1e-3);
+    truck2_trailer2
+        ->Distance(597.83, 72.84, roadmanager::CoordinateSystem::CS_ROAD, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    EXPECT_NEAR(distance, -2.0509, 1e-3);
+
+    car1->Distance(300.0, 1.53, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    EXPECT_NEAR(distance, 122.2849, 1e-3);
+    car1->Distance(420.0, 1.53, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    EXPECT_NEAR(distance, 2.2849, 1e-3);
 }
 
 TEST(TrajectoryTest, EnsureContinuation)

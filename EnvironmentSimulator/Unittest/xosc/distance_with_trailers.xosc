@@ -1,0 +1,113 @@
+<?xml version='1.0' encoding='utf-8'?>
+<OpenSCENARIO xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="OpenScenario.xsd">
+    <FileHeader author="author" date="2024-08-30T10:00:00" description="For testing distance with trailers" revMajor="1" revMinor="3"/>
+    <CatalogLocations>
+        <VehicleCatalog>
+            <Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
+        </VehicleCatalog>
+    </CatalogLocations>
+    <RoadNetwork>
+        <LogicFile filepath="../../../resources/xodr/curve_r100.xodr"/>
+    </RoadNetwork>
+    <Entities>
+        <ScenarioObject name="car1">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white">
+                <ParameterAssignments>
+                    <ParameterAssignment parameterRef="ScaleMode" value="ModelToBB"/>
+                </ParameterAssignments>
+            </CatalogReference>
+        </ScenarioObject>
+        <ScenarioObject name="car2">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_red">
+                <ParameterAssignments>
+                    <ParameterAssignment parameterRef="ScaleMode" value="ModelToBB"/>
+                </ParameterAssignments>
+            </CatalogReference>
+        </ScenarioObject>
+        <ScenarioObject name="truck1">
+            <CatalogReference catalogName="VehicleCatalog" entryName="semi_truck">
+                <ParameterAssignments>
+                    <ParameterAssignment parameterRef="ScaleMode" value="ModelToBB"/>
+                </ParameterAssignments>
+            </CatalogReference>
+        </ScenarioObject>
+        <ScenarioObject name="truck2">
+            <CatalogReference catalogName="VehicleCatalog" entryName="semi_truck_with_extra_trailer">
+                <ParameterAssignments>
+                    <ParameterAssignment parameterRef="ScaleMode" value="ModelToBB"/>
+                </ParameterAssignments>
+            </CatalogReference>
+        </ScenarioObject>
+    </Entities>
+    <Storyboard>
+        <Init>
+            <Actions>
+                <Private entityRef="truck1">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="0" laneId="-1" offset="0.0" s="480.0"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="car1">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="0" laneId="1" offset="0.0" s="550.0"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="30.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="truck2">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="0" laneId="1" offset="0.0" s="730.0"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="30.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="car2">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="0" laneId="-1" offset="0.0" s="630.0"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                </Private>
+            </Actions>
+        </Init>
+        <StopTrigger>
+            <ConditionGroup>
+                <Condition conditionEdge="none" delay="0.0" name="stop_simulation">
+                    <ByValueCondition>
+                        <SimulationTimeCondition rule="greaterThan" value="10.0"/>
+                    </ByValueCondition>
+                </Condition>
+            </ConditionGroup>
+        </StopTrigger>
+    </Storyboard>
+</OpenSCENARIO>
