@@ -631,8 +631,13 @@ namespace viewer
         void CreateUniqueModels(roadmanager::RMObject* object);
         // create one unique model and remaining as shallow copies
         void CreateShallowCopyModels(roadmanager::RMObject* object, osg::ref_ptr<osg::Group> objGroup);
-        // create one unique model with local coordinates or world coordinates depends on UseLocalDim. IsForCopy shall decide model shall be aligned to origin or not
-        void CreateOutlineModel(roadmanager::Outline& outline, osg::Vec4 color, osg::ref_ptr<osg::Geode> geode, bool UseLocalDim, bool IsForCopy = false);
+        // create one unique model with local coordinates or world coordinates depends on UseLocalDim. IsForCopy shall decide model shall be aligned
+        // to origin or not
+        void CreateOutlineModel(roadmanager::Outline&    outline,
+                                osg::Vec4                color,
+                                osg::ref_ptr<osg::Geode> geode,
+                                bool                     UseLocalDim,
+                                bool                     IsForCopy = false);
         // change viewer object as wireframe for better marking view
         void ChangeModelAsWireFrame(osg::ref_ptr<osg::Geode> geode, bool isMarkingAvailable);
         // create marking for the object

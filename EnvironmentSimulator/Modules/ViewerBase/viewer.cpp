@@ -2931,8 +2931,8 @@ int Viewer::CreateRoadSignals(osg::ref_ptr<osg::Group> objGroup, std::vector<roa
         shape->setColor(osg::Vec4(0.8f, 0.8f, 0.8f, 1.0f));
         tx_bb->addChild(shape);
         tx_bb->setPosition(osg::Vec3(static_cast<float>(signal->GetX() - origin_[0]),
-                                        static_cast<float>(signal->GetY() - origin_[1]),
-                                        static_cast<float>(signal->GetZ() + signal->GetZOffset())));
+                                     static_cast<float>(signal->GetY() - origin_[1]),
+                                     static_cast<float>(signal->GetZ() + signal->GetZOffset())));
         tx_bb->setAttitude(osg::Quat(signal->GetH() + signal->GetHOffset(), osg::Vec3(0, 0, 1)));
 
         osg::ref_ptr<osg::PositionAttitudeTransform> tx = nullptr;
@@ -2960,17 +2960,15 @@ int Viewer::CreateRoadSignals(osg::ref_ptr<osg::Group> objGroup, std::vector<roa
             if (tx != nullptr)
             {
                 tx->setPosition(osg::Vec3(static_cast<float>(signal->GetX() - origin_[0]),
-                                            static_cast<float>(signal->GetY() - origin_[1]),
-                                            static_cast<float>(signal->GetZ() + signal->GetZOffset())));
+                                          static_cast<float>(signal->GetY() - origin_[1]),
+                                          static_cast<float>(signal->GetZ() + signal->GetZOffset())));
                 tx->setAttitude(osg::Quat(signal->GetH() + signal->GetHOffset(), osg::Vec3(0, 0, 1)));
                 tx->setNodeMask(NODE_MASK_SIGN);
                 objGroup->addChild(tx);
             }
             else
             {
-                LOG("Failed to load signal %s / %s - use simple bounding box",
-                    (filename + ".osgb").c_str(),
-                    (signal->GetName() + ".osgb").c_str());
+                LOG("Failed to load signal %s / %s - use simple bounding box", (filename + ".osgb").c_str(), (signal->GetName() + ".osgb").c_str());
                 osg::ref_ptr<osg::PositionAttitudeTransform> obj_standin =
                     dynamic_cast<osg::PositionAttitudeTransform*>(tx_bb->clone(osg::CopyOp::DEEP_COPY_ALL));
                 obj_standin->setNodeMask(NODE_MASK_SIGN);
