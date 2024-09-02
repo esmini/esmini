@@ -1788,6 +1788,23 @@ extern "C"
         return obj->GetGhost() == nullptr ? 0 : 1;
     }
 
+    SE_DLL_API int SE_GetObjectGhostId(int object_id)
+    {
+        Object *obj = nullptr;
+        if (getObjectById(object_id, obj) == -1)
+        {
+            return -1;
+        }
+
+        Object *ghost = obj->GetGhost();
+        if (ghost != nullptr)
+        {
+            return ghost->GetId();
+        }
+
+        return -1;
+    }
+
     SE_DLL_API int SE_GetObjectGhostState(int object_id, SE_ScenarioObjectState *state)
     {
         Object *ghost = nullptr;
@@ -2740,27 +2757,34 @@ extern "C"
             return -1;
         }
 
-        if (route_index >= static_cast<int>(obj->pos_.GetRoute()->all_waypoints_.size()))
+        roadmanager::Route *route = obj->pos_.GetRoute();
+
+        if (route == nullptr)
         {
-            LOG("Requested waypoint index %d invalid, only %d registered", route_index, obj->pos_.GetRoute()->all_waypoints_.size());
+            LOG("Object %s (id %d) has currently no assigned route", obj->GetName().c_str(), object_id);
             return -1;
         }
 
-        roadmanager::Road *road =
-            player->odr_manager->GetRoadById(obj->pos_.GetRoute()->all_waypoints_[static_cast<unsigned int>(route_index)].GetTrackId());
+        if (route_index < 0 || route_index >= static_cast<int>(route->all_waypoints_.size()))
+        {
+            LOG("Requested waypoint index %d invalid, only %d registered", route_index, route->all_waypoints_.size());
+            return -1;
+        }
 
-        routeinfo->x          = static_cast<float>(obj->pos_.GetRoute()->all_waypoints_[static_cast<unsigned int>(route_index)].GetX());
-        routeinfo->y          = static_cast<float>(obj->pos_.GetRoute()->all_waypoints_[static_cast<unsigned int>(route_index)].GetY());
-        routeinfo->z          = static_cast<float>(obj->pos_.GetRoute()->all_waypoints_[static_cast<unsigned int>(route_index)].GetZ());
-        routeinfo->roadId     = obj->pos_.GetRoute()->all_waypoints_[static_cast<unsigned int>(route_index)].GetTrackId();
-        routeinfo->junctionId = obj->pos_.GetRoute()->all_waypoints_[static_cast<unsigned int>(route_index)].GetJunctionId();
-        routeinfo->laneId     = obj->pos_.GetRoute()->all_waypoints_[static_cast<unsigned int>(route_index)].GetLaneId();
-        routeinfo->osiLaneId  = road->GetDrivingLaneById(obj->pos_.GetRoute()->all_waypoints_[static_cast<unsigned int>(route_index)].GetS(),
-                                                        obj->pos_.GetRoute()->all_waypoints_[static_cast<unsigned int>(route_index)].GetLaneId())
+        roadmanager::Road *road = player->odr_manager->GetRoadById(route->all_waypoints_[static_cast<unsigned int>(route_index)].GetTrackId());
+
+        routeinfo->x          = static_cast<float>(route->all_waypoints_[static_cast<unsigned int>(route_index)].GetX());
+        routeinfo->y          = static_cast<float>(route->all_waypoints_[static_cast<unsigned int>(route_index)].GetY());
+        routeinfo->z          = static_cast<float>(route->all_waypoints_[static_cast<unsigned int>(route_index)].GetZ());
+        routeinfo->roadId     = route->all_waypoints_[static_cast<unsigned int>(route_index)].GetTrackId();
+        routeinfo->junctionId = route->all_waypoints_[static_cast<unsigned int>(route_index)].GetJunctionId();
+        routeinfo->laneId     = route->all_waypoints_[static_cast<unsigned int>(route_index)].GetLaneId();
+        routeinfo->osiLaneId  = road->GetDrivingLaneById(route->all_waypoints_[static_cast<unsigned int>(route_index)].GetS(),
+                                                        route->all_waypoints_[static_cast<unsigned int>(route_index)].GetLaneId())
                                    ->GetGlobalId();
-        routeinfo->laneOffset = static_cast<float>(obj->pos_.GetRoute()->all_waypoints_[static_cast<unsigned int>(route_index)].GetOffset());
-        routeinfo->s          = static_cast<float>(obj->pos_.GetRoute()->all_waypoints_[static_cast<unsigned int>(route_index)].GetS());
-        routeinfo->t          = static_cast<float>(obj->pos_.GetRoute()->all_waypoints_[static_cast<unsigned int>(route_index)].GetT());
+        routeinfo->laneOffset = static_cast<float>(route->all_waypoints_[static_cast<unsigned int>(route_index)].GetOffset());
+        routeinfo->s          = static_cast<float>(route->all_waypoints_[static_cast<unsigned int>(route_index)].GetS());
+        routeinfo->t          = static_cast<float>(route->all_waypoints_[static_cast<unsigned int>(route_index)].GetT());
 
         return 0;
     }

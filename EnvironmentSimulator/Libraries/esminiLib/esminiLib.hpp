@@ -1048,6 +1048,13 @@ extern "C"
     SE_DLL_API int SE_ObjectHasGhost(int object_id);
 
     /**
+            Get ID of the ghost associated with given object
+            @param object_id Id of the ghost object
+            @return ghost object ID, -1 if ghost does not exist for given object
+    */
+    SE_DLL_API int SE_GetObjectGhostId(int object_id);
+
+    /**
             Get the state of specified object's ghost (special purpose lead vehicle)
             @param object_id Id of the object to which the ghost is attached
             @param state Pointer/reference to a SE_ScenarioObjectState struct to be filled in

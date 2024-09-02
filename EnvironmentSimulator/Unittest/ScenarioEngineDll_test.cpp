@@ -4397,6 +4397,56 @@ TEST(RoutingTest, TestRouteStatus)
     SE_Close();
 }
 
+TEST(RoutingTest, TestRoutePointsWithGhost)
+{
+    std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/ghost_route.xosc";
+
+    ASSERT_EQ(SE_Init(scenario_file.c_str(), 0, 0, 0, 0), 0);
+    EXPECT_EQ(SE_GetNumberOfObjects(), 2);
+    EXPECT_EQ(SE_GetObjectRouteStatus(SE_GetId(0)), 2);
+
+    int ghost_id = SE_GetObjectGhostId(SE_GetId(0));
+    ASSERT_EQ(ghost_id, 1);
+
+    EXPECT_EQ(SE_GetObjectRouteStatus(ghost_id), 2);
+
+    int n_wp = SE_GetNumberOfRoutePoints(SE_GetId(0));
+    EXPECT_EQ(n_wp, 9);
+
+    SE_RouteInfo ri[2];
+    for (int i = 0; i < n_wp; i++)
+    {
+        SE_GetRoutePoint(SE_GetId(0), i, &ri[0]);
+        SE_GetRoutePoint(ghost_id, i, &ri[1]);
+        EXPECT_EQ(ri[0].junctionId, ri[1].junctionId);
+        EXPECT_EQ(ri[0].laneId, ri[1].laneId);
+        EXPECT_EQ(ri[0].osiLaneId, ri[1].osiLaneId);
+        EXPECT_EQ(ri[0].roadId, ri[1].roadId);
+        EXPECT_EQ(ri[0].s, ri[1].s);
+        EXPECT_EQ(ri[0].t, ri[1].t);
+        EXPECT_EQ(ri[0].x, ri[1].x);
+        EXPECT_EQ(ri[0].y, ri[1].y);
+    }
+
+    SE_GetRoutePoint(SE_GetId(0), 0, &ri[0]);
+    EXPECT_EQ(ri[0].junctionId, -1);
+    EXPECT_EQ(ri[0].roadId, 5);
+    EXPECT_EQ(ri[0].laneId, -1);
+    EXPECT_NEAR(ri[0].s, 490.0, 1e-3);
+    EXPECT_NEAR(ri[0].x, 221.5, 1e-3);
+    EXPECT_NEAR(ri[0].y, -32.8318, 1e-3);
+
+    SE_GetRoutePoint(SE_GetId(0), 5, &ri[0]);
+    EXPECT_EQ(ri[0].junctionId, 300);
+    EXPECT_EQ(ri[0].roadId, 302);
+    EXPECT_EQ(ri[0].laneId, -1);
+    EXPECT_NEAR(ri[0].s, 13.2, 1e-3);
+    EXPECT_NEAR(ri[0].x, -61.5, 1e-3);
+    EXPECT_NEAR(ri[0].y, 96.8, 1e-3);
+
+    SE_Close();
+}
+
 int main(int argc, char** argv)
 {
     testing::InitGoogleTest(&argc, argv);
