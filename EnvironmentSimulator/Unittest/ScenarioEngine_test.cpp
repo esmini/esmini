@@ -566,6 +566,8 @@ TEST(DistanceTest, DistanceWithTrailers)
     EXPECT_NEAR(distance, 122.2849, 1e-3);
     car1->Distance(420.0, 1.53, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
     EXPECT_NEAR(distance, 2.2849, 1e-3);
+
+    delete se;
 }
 
 TEST(TrajectoryTest, EnsureContinuation)
