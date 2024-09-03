@@ -255,11 +255,11 @@ jobs:
       # Generate build number based on offset from former AppVeyor CI machine
       - uses: ./.github/actions/generate_offset_run_number
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4.1.7
         with:
           name: esmini-bin_${{ runner.os }}
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4.1.7
         with:
           name: esmini-demo_${{ runner.os }}
 
