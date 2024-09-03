@@ -278,13 +278,19 @@ void SwarmTrafficAction::Start(double simTime)
 
     if (vehicle_pool_.size() == 0)
     {
-        if (centralObject_->type_ == Object::Type::VEHICLE)
+        if (centralObject_ && centralObject_->type_ == Object::Type::VEHICLE)
         {
-            vehicle_pool_.push_back(static_cast<Vehicle*>(centralObject_));
+            // Create a copy of central object
+            Vehicle* vehicle = new Vehicle(*static_cast<Vehicle*>(centralObject_));
+
+            // remove any duplicate controller references
+            vehicle->controllers_.clear();
+
+            vehicle_pool_.push_back(vehicle);
         }
         else
         {
-            LOG_AND_QUIT("No vehicles available to populate swarm traffic. Vehicle catalog empty?");
+            LOG("TrafficSwarmAction: No vehicles available to populate swarm traffic. Missing both Vehicle catalog and central vehicle object");
         }
     }
 
