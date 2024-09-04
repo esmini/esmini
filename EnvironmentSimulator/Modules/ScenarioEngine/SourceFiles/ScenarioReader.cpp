@@ -2134,7 +2134,7 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode,
                     VariableSetAction *varSetAction = new VariableSetAction(parent);
 
                     varSetAction->name_      = variables.ReadAttribute(actionChild, "variableRef");
-                    varSetAction->value_     = variables.ReadAttribute(varChild, "value");
+                    varSetAction->value_     = parameters.ReadAttribute(varChild, "value");
                     varSetAction->variables_ = &variables;
 
                     action = varSetAction;
