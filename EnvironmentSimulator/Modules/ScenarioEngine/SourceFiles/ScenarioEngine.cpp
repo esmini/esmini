@@ -310,8 +310,12 @@ int ScenarioEngine::step(double deltaSimTime)
         {
             if (o->dirty_ & (Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL))
             {
-                obj->pos_ = o->state_.pos;
-                obj->pos_.CalcRoutePosition();  // synch route info
+                obj->pos_.Duplicate(o->state_.pos);
+                if (obj->pos_.route_ != nullptr)
+                {
+                    // update assigned route info
+                    obj->pos_.CalcRoutePosition();
+                }
             }
             if (o->dirty_ & Object::DirtyBit::SPEED)
             {
