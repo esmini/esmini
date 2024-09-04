@@ -849,6 +849,14 @@ TEST(ExpressionTest, EnsureResult)
     EXPECT_NEAR(eval_expr("abs(0.5)")._double, 0.5, 1e-5);
     EXPECT_NEAR(eval_expr("abs(2.9)")._double, 2.9, 1e-5);
     EXPECT_NEAR(eval_expr("abs(-2.9)")._double, 2.9, 1e-5);
+
+    // constants
+    EXPECT_NEAR(eval_expr("pi")._double, 3.141592, 1e-5);
+    EXPECT_NEAR(eval_expr("e")._double, 2.718281, 1e-5);
+    EXPECT_NEAR(eval_expr("2*pi")._double, 6.283185, 1e-5);
+    EXPECT_NEAR(eval_expr("2 * e")._double, 5.436563, 1e-5);
+    EXPECT_NEAR(eval_expr("2*pi*pi+e")._double, 22.457490, 1e-5);
+    EXPECT_NEAR(eval_expr("pow(pi,3) / e")._double, 11.406571, 1e-5);
 }
 
 TEST(OptionsTest, TestOptionHandling)
