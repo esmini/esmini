@@ -1,11 +1,11 @@
-FBX 
+FBX
 https://www.autodesk.com/products/fbx/overview
 
-googletest 
+googletest
 https://github.com/google/googletest
 
-odrSpiral 
-http://www.opendrive.org/download.html 
+odrSpiral
+http://www.opendrive.org/download.html
 http://www.opendrive.org/tools/odrSpiral.zip
 
 OpenSceneGraph
@@ -50,3 +50,9 @@ https://github.com/ocornut/imgui
 
 implot
 https://github.com/epezent/implot
+
+OSC-ALKS-scenarios
+https://github.com/asam-oss/OSC-ALKS-scenarios
+
+OSC-NCAP-scenarios
+https://github.com/vectorgrp/OSC-NCAP-scenarios
