@@ -223,6 +223,8 @@ namespace scenarioengine
         }
         void SetRouteRefLaneCoord(roadmanager::Route *route, double pathS, int laneId, double laneOffset, OSCOrientation *orientation);
         void SetRouteRefLaneCoord(roadmanager::Route *route, double pathS, int laneId, double laneOffset);
+        void SetRouteRefRoadCoord(roadmanager::Route *route, double pathS, double t, OSCOrientation *orientation);
+        void SetRouteRefRoadCoord(roadmanager::Route *route, double pathS, double t);
         void SetRouteRelativeHeading(double h_relative)
         {
             position_.SetHeadingRelative(h_relative);

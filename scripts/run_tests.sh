@@ -132,3 +132,9 @@ echo $'\n'Run ALKS test suite:
 if ! ${PYTHON} alks_suite.py -t $timeout; then
     exit_with_msg "alks_suite test failed"
 fi
+
+echo $'\n'Run NCAP test suite:
+
+if ! ${PYTHON} ncap_suite.py -t $timeout; then
+    exit_with_msg "ncap_suite test failed"
+fi

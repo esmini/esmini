@@ -1197,9 +1197,10 @@ roadmanager::RMTrajectory *ScenarioReader::parseTrajectory(pugi::xml_node node)
                     {
                         throw std::runtime_error("Missing Trajectory/Polyline/Vertex/Position node");
                     }
-                    std::unique_ptr<OSCPosition> pos  = std::unique_ptr<OSCPosition>{parseOSCPosition(posNode)};
-                    double                       time = strtod(parameters.ReadAttribute(vertexNode, "time"));
-                    pline->AddVertex(*pos->GetRMPos(), time);
+                    std::unique_ptr<OSCPosition> pos    = std::unique_ptr<OSCPosition>(parseOSCPosition(posNode));
+                    roadmanager::Position       *rm_pos = pos->GetRMPos();
+                    double                       time   = strtod(parameters.ReadAttribute(vertexNode, "time"));
+                    pline->AddVertex(rm_pos, time);
                 }
                 shape = pline;
             }
@@ -1247,35 +1248,51 @@ roadmanager::RMTrajectory *ScenarioReader::parseTrajectory(pugi::xml_node node)
 
                 clothoidspline->SetEndTime(shapeNode.attribute("timeEnd").empty() ? 0.0 : strtod(parameters.ReadAttribute(shapeNode, "timeEnd")));
 
-                for (pugi::xml_node segmentNode = shapeNode.child("Segment"); segmentNode; segmentNode = segmentNode.next_sibling("Segment"))
+                for (pugi::xml_node segmentNode = shapeNode.first_child(); segmentNode; segmentNode = segmentNode.next_sibling())
                 {
-                    pugi::xml_node               posNode = segmentNode.child("PositionStart");
-                    std::unique_ptr<OSCPosition> pos;
-                    roadmanager::Position       *rm_pos = nullptr;
-
-                    if (posNode)
+                    // allow for both ClothoidSplineSegment and Segment. Segment was the original name in the prototype.
+                    if (std::string(segmentNode.name()) == "ClothoidSplineSegment" || std::string(segmentNode.name()) == "Segment")
                     {
-                        pos    = std::unique_ptr<OSCPosition>(parseOSCPosition(posNode));
-                        rm_pos = pos->GetRMPos();
+                        pugi::xml_node               posNode = segmentNode.child("PositionStart");
+                        std::unique_ptr<OSCPosition> pos;
+                        roadmanager::Position       *rm_pos = nullptr;
+
+                        if (posNode)
+                        {
+                            pos    = std::unique_ptr<OSCPosition>(parseOSCPosition(posNode));
+                            rm_pos = pos->GetRMPos();
+                        }
+
+                        double curvStart  = std::nan("");  // default is to use end curvature of previous segment
+                        double curvEnd    = std::nan("");  // default is to use start curvature of current segment
+                        double length     = strtod(parameters.ReadAttribute(segmentNode, "length"));
+                        double h_offset   = strtod(parameters.ReadAttribute(segmentNode, "hOffset"));
+                        double time_start = strtod(parameters.ReadAttribute(segmentNode, "timeStart"));
+
+                        if (!segmentNode.attribute("curvatureStart").empty())
+                        {
+                            curvStart = strtod(parameters.ReadAttribute(segmentNode, "curvatureStart"));
+                        }
+                        else if (!segmentNode.attribute("curvStart").empty())
+                        {
+                            curvStart = strtod(parameters.ReadAttribute(segmentNode, "curvStart"));
+                        }
+
+                        if (!segmentNode.attribute("curvatureEnd").empty())
+                        {
+                            curvEnd = strtod(parameters.ReadAttribute(segmentNode, "curvatureEnd"));
+                        }
+                        else if (!segmentNode.attribute("curvEnd").empty())
+                        {
+                            curvEnd = strtod(parameters.ReadAttribute(segmentNode, "curvEnd"));
+                        }
+
+                        clothoidspline->AddSegment(rm_pos, curvStart, curvEnd, length, h_offset, time_start);
                     }
-
-                    double curvStart  = std::nan("");  // default is to use end curvature of previous segment
-                    double curvEnd    = std::nan("");  // default is to use start curvature of current segment
-                    double length     = strtod(parameters.ReadAttribute(segmentNode, "length"));
-                    double h_offset   = strtod(parameters.ReadAttribute(segmentNode, "hOffset"));
-                    double time_start = strtod(parameters.ReadAttribute(segmentNode, "timeStart"));
-
-                    if (!segmentNode.attribute("curvStart").empty())
+                    else
                     {
-                        curvStart = strtod(parameters.ReadAttribute(segmentNode, "curvStart"));
+                        LOG_AND_QUIT(("Unexpected/unsupported child element in ClothoidSpline: " + std::string(segmentNode.name())).c_str());
                     }
-
-                    if (!segmentNode.attribute("curvEnd").empty())
-                    {
-                        curvEnd = strtod(parameters.ReadAttribute(segmentNode, "curvEnd"));
-                    }
-
-                    clothoidspline->AddSegment(rm_pos, curvStart, curvEnd, length, h_offset, time_start);
                 }
                 shape = clothoidspline;
             }
@@ -1353,7 +1370,7 @@ roadmanager::RMTrajectory *ScenarioReader::parseTrajectory(pugi::xml_node node)
             {
                 throw std::runtime_error("Missing Trajectory/Shape element");
             }
-            traj->shape_.reset(shape);
+            traj->shape_ = shape;
         }
     }
 
@@ -1938,7 +1955,17 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPo
                     }
                     else if (rPositionChildName == "FromRoadCoordinates")
                     {
-                        LOG("%s is not implemented", rPositionChildName.c_str());
+                        double s = strtod(parameters.ReadAttribute(rPositionChild, "pathS"));
+                        int    t = strtoi(parameters.ReadAttribute(rPositionChild, "t"));
+
+                        if (orientation)
+                        {
+                            pos->SetRouteRefRoadCoord(route, s, t, orientation);
+                        }
+                        else
+                        {
+                            pos->SetRouteRefRoadCoord(route, s, t);
+                        }
                     }
                     else if (rPositionChildName == "FromLaneCoordinates")
                     {
@@ -1993,11 +2020,8 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPo
         roadmanager::RMTrajectory *traj = parseTrajectoryRef(trajectoryRef);
 
         double s = strtod(parameters.ReadAttribute(positionChild, "s"));
-        if (!positionChild.attribute("t").empty())
-        {
-            LOG("TrajectoryPosition -> t not supported yet, set to zero");
-        }
-        double t = 0;
+
+        double t = strtod(parameters.ReadAttribute(positionChild, "t"));
 
         // Check for optional Orientation element
         pugi::xml_node orientation_node = positionChild.child("Orientation");
@@ -2852,7 +2876,11 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
             TeleportAction *action_pos = new TeleportAction(parent);
             OSCPosition    *pos        = parseOSCPosition(actionChild.first_child());
             action_pos->position_      = *pos->GetRMPos();
-            action                     = action_pos;
+            if (pos->GetRMPos()->GetTrajectory() != nullptr)
+            {
+                action_pos->position_.SetTrajectory(pos->GetRMPos()->GetTrajectory());
+            }
+            action = action_pos;
             delete pos;
         }
         else if (actionChild.name() == std::string("TrailerAction"))
@@ -2984,11 +3012,11 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                     {
                         if (followTrajectoryChild.name() == std::string("TrajectoryRef"))
                         {
-                            action_follow_trajectory->traj_.reset(parseTrajectoryRef(followTrajectoryChild));
+                            action_follow_trajectory->traj_ = parseTrajectoryRef(followTrajectoryChild);
                         }
                         else if (followTrajectoryChild.name() == std::string("Trajectory"))
                         {
-                            action_follow_trajectory->traj_.reset(parseTrajectory(followTrajectoryChild));
+                            action_follow_trajectory->traj_ = parseTrajectory(followTrajectoryChild);
                         }
                         else if (followTrajectoryChild.name() == std::string("CatalogReference"))
                         {
@@ -3003,7 +3031,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                             if (entry->type_ == CatalogType::CATALOG_TRAJECTORY)
                             {
                                 // Make a new instance from catalog entry
-                                action_follow_trajectory->traj_.reset(parseTrajectory(entry->GetNode()));
+                                action_follow_trajectory->traj_ = parseTrajectory(entry->GetNode());
                             }
                             else
                             {

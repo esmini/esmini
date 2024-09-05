@@ -6463,6 +6463,8 @@ void Position::Duplicate(const Position& from)
     snapToLaneTypes_ = from.snapToLaneTypes_;
     lockOnLane_      = from.lockOnLane_;
     rel_pos_         = from.rel_pos_;
+    s_trajectory_    = from.s_trajectory_;
+    t_trajectory_    = from.t_trajectory_;
 }
 
 bool Position::LoadOpenDrive(const char* filename)
@@ -8726,7 +8728,7 @@ int Position::TeleportTo(Position* position)
         position->SetRelativePosition(&tmpPos, position->GetType());
     }
 
-    if (position->GetRelativePosition() != nullptr)
+    if (position->GetRelativePosition() != nullptr || position->GetTrajectory() != nullptr)
     {
         // Resolve and release any relation
         position->EvaluateRelation(true);
@@ -8737,6 +8739,15 @@ int Position::TeleportTo(Position* position)
     if (GetRoute())  // on a route
     {
         CalcRoutePosition();
+    }
+
+    if (GetTrajectory())  // on a trajectory
+    {
+        if (position->GetTrajectory() != nullptr)
+        {
+            // assume compatible trajectories and use s value of teleport action
+            position->SetTrajectoryS(GetTrajectoryS());
+        }
     }
 
     return 0;
@@ -10364,8 +10375,22 @@ void Position::SetTrajectory(RMTrajectory* trajectory)
     trajectory_ = trajectory;
 
     // Reset trajectory S value
-    s_trajectory_ = 0;
+    // s_trajectory_ = 0;
 }
+
+// void Position::CopyTrajectory(const Position& position)
+//{
+//     if (trajectory_ != nullptr && position.trajectory_ != nullptr)
+//     {
+//         LOG("Warning: Overriding trajectory in position object\n");
+//     }
+//
+//     if (position.trajectory_ != nullptr)
+//     {
+//         trajectory_ = new RMTrajectory;
+//         *trajectory_ = *position.trajectory_;
+//     }
+// }
 
 bool Position::Delta(Position* pos_b, PositionDiff& diff, bool bothDirections, double maxDist) const
 {
@@ -10979,6 +11004,15 @@ int Position::SetRouteLanePosition(Route* route, double path_s, int lane_id, dou
     return 0;
 }
 
+int Position::SetRouteRoadPosition(Route* route, double path_s, double t)
+{
+    route->SetPathS(path_s);
+
+    SetTrackPos(route->GetTrackId(), route->GetTrackS(), t);
+
+    return 0;
+}
+
 int PolyLineBase::EvaluateSegmentByLocalS(int i, double local_s, double cornerRadius, TrajVertex& pos)
 {
     TrajVertex* vp0 = &vertex_[i];
@@ -11408,9 +11442,11 @@ void PolyLineBase::Reset(bool clear_vertices)
     interpolation_mode_ = PolyLineBase::InterpolationMode::INTERPOLATE_NONE;
 }
 
-void PolyLineShape::AddVertex(Position pos, double time)
+void PolyLineShape::AddVertex(Position* pos, double time)
 {
-    vertex_.emplace_back(pos, time);
+    Position* pos_copy = new Position(*pos);
+    pos_copy->SetTrajectory(pos->GetTrajectory());
+    vertex_.emplace_back(pos_copy, time);
     pline_.AddVertex(TrajVertex());  // Add one polyline vertex per trajectory vertex
 }
 
@@ -11431,6 +11467,11 @@ void PolyLineShape::CalculatePolyLine()
     {
         pline_.interpolation_mode_ = PolyLineBase::InterpolationMode::INTERPOLATE_CORNER;
     }
+    else
+    {
+        // fallback to no interpolation
+        pline_.interpolation_mode_ = PolyLineBase::InterpolationMode::INTERPOLATE_NONE;
+    }
 
     for (size_t i = 0; i < vertex_.size(); i++)
     {
@@ -11447,14 +11488,14 @@ void PolyLineShape::CalculatePolyLine()
             return;
         }
 
-        pv->x        = v->pos_.GetX();
-        pv->y        = v->pos_.GetY();
-        pv->z        = v->pos_.GetZ();
-        pv->h        = v->pos_.GetH();
-        pv->pitch    = v->pos_.GetP();
-        pv->r        = v->pos_.GetR();
-        pv->road_id  = v->pos_.GetTrackId();
-        pv->pos_mode = v->pos_.GetMode(Position::PosModeType::INIT);
+        pv->x        = v->pos_->GetX();
+        pv->y        = v->pos_->GetY();
+        pv->z        = v->pos_->GetZ();
+        pv->h        = v->pos_->GetH();
+        pv->pitch    = v->pos_->GetP();
+        pv->r        = v->pos_->GetR();
+        pv->road_id  = v->pos_->GetTrackId();
+        pv->pos_mode = v->pos_->GetMode(Position::PosModeType::INIT);
         pv->param    = 0.0;  // skip p, s or time is used instead.
         pv->time     = v->time_;
 
@@ -11671,6 +11712,7 @@ void ClothoidSplineShape::AddSegment(Position* posStart, double curvStart, doubl
     }
 
     segments_.emplace_back(pos, curvStart, curvEnd, length, h_offset, time);
+    spirals_.emplace_back(Spiral());  // Add one spiral per trajectory segment
 }
 
 int ClothoidSplineShape::Evaluate(double p, TrajectoryParamType ptype, TrajVertex& pos)
@@ -11758,12 +11800,6 @@ double ClothoidSplineShape::GetDuration()
 
 void ClothoidSplineShape::Freeze(Position* ref_pos)
 {
-    if (spirals_.size() > 0)
-    {
-        LOG("Freezing clothoid spline trajectory. Clothoid shape already existing. Clearing it.");
-        spirals_.clear();
-    }
-
     for (size_t i = 0; i < segments_.size(); i++)
     {
         Segment* s = &segments_[i];
@@ -11805,7 +11841,7 @@ void ClothoidSplineShape::Freeze(Position* ref_pos)
             spiral.EvaluateDS(s->length_, &x, &y, &h);
         }
         s->posEnd_.SetInertiaPos(x, y, h);
-        spirals_.emplace_back(spiral);
+        spirals_[i] = spiral;
     }
 }
 
@@ -11859,7 +11895,22 @@ void ClothoidSplineShape::CalculatePolyLine()
 
 int ClothoidSplineShape::EvaluateInternal(double s, int segment_idx, TrajVertex& pos)
 {
-    spirals_[segment_idx].EvaluateDS(s, &pos.x, &pos.y, &pos.h);
+    if (segment_idx >= 0 && segment_idx < static_cast<int>(spirals_.size()))
+    {
+        spirals_[segment_idx].EvaluateDS(s, &pos.x, &pos.y, &pos.h);
+    }
+    else
+    {
+        if (spirals_.size() == 0)
+        {
+            LOG("ClothoidSplineShape has no segments, freeze trajectory first");
+        }
+        else
+        {
+            LOG("ClothoidSplineShape segment index %d out of range [0, %d]", segment_idx, static_cast<int>(spirals_.size()) - 1);
+        }
+        return -1;
+    }
 
     return 0;
 }
@@ -12373,17 +12424,43 @@ int Position::SetTrajectoryPosByTime(double time)
     return UpdateTrajectoryPos(v);
 }
 
-int Position::SetTrajectoryS(double s)
+int Position::SetTrajectoryS(double s, bool update)
 {
-    if (!trajectory_)
+    s_trajectory_ = s;
+
+    if (update)
     {
-        return -1;
+        if (!trajectory_)
+        {
+            return -1;
+        }
+
+        TrajVertex v;
+        trajectory_->shape_->Evaluate(s, Shape::TrajectoryParamType::TRAJ_PARAM_TYPE_S, v);
+
+        return UpdateTrajectoryPos(v);
     }
 
-    TrajVertex v;
-    trajectory_->shape_->Evaluate(s, Shape::TrajectoryParamType::TRAJ_PARAM_TYPE_S, v);
+    return 0;
+}
 
-    return UpdateTrajectoryPos(v);
+int Position::SetTrajectoryT(double trajectory_t, bool update)
+{
+    t_trajectory_ = trajectory_t;
+
+    if (update)
+    {
+        if (!trajectory_)
+        {
+            return -1;
+        }
+
+        TrajVertex v;
+        trajectory_->shape_->Evaluate(GetTrajectoryS(), Shape::TrajectoryParamType::TRAJ_PARAM_TYPE_S, v);
+
+        UpdateTrajectoryPos(v);
+    }
+    return 0;
 }
 
 int Position::UpdateTrajectoryPos(TrajVertex v)
@@ -12391,6 +12468,15 @@ int Position::UpdateTrajectoryPos(TrajVertex v)
     if (!trajectory_)
     {
         return -1;
+    }
+
+    // First adjust lateral offset
+    if (!NEAR_ZERO(t_trajectory_))
+    {
+        double p[2] = {0.0, 0.0};
+        RotateVec2D(0.0, t_trajectory_, v.h, p[0], p[1]);
+        v.x += p[0];
+        v.y += p[1];
     }
 
     int pos_mode = v.pos_mode;
@@ -12458,6 +12544,12 @@ Position::ReturnCode Position::SetRouteS(double route_s)
 
 void Position::EvaluateRelation(bool release)
 {
+    if (trajectory_ != nullptr)
+    {
+        trajectory_->Freeze(FollowingMode::POSITION, 0.0);
+        SetTrajectoryS(s_trajectory_);
+    }
+
     if (rel_pos_ == nullptr || GetType() == Position::PositionType::NORMAL || GetType() == Position::PositionType::ROUTE)
     {
         // relation not defined or not relevant for the position type
@@ -13278,13 +13370,13 @@ void RMTrajectory::Freeze(FollowingMode following_mode, double current_speed, Po
 {
     if (shape_->type_ == Shape::ShapeType::POLYLINE)
     {
-        PolyLineShape* pline = (PolyLineShape*)shape_.get();
+        PolyLineShape* pline = static_cast<PolyLineShape*>(shape_);
 
         double speed = current_speed;
 
         for (size_t i = 0; i < pline->vertex_.size(); i++)
         {
-            Position* pos = &pline->vertex_[i].pos_;
+            Position* pos = pline->vertex_[i].pos_;
             pos->EvaluateRelation(true);
         }
 
@@ -13295,7 +13387,7 @@ void RMTrajectory::Freeze(FollowingMode following_mode, double current_speed, Po
     }
     else if (shape_->type_ == Shape::ShapeType::CLOTHOID)
     {
-        ClothoidShape* clothoid = (ClothoidShape*)shape_.get();
+        ClothoidShape* clothoid = static_cast<ClothoidShape*>(shape_);
 
         clothoid->pos_.EvaluateRelation(true);
 
@@ -13307,14 +13399,14 @@ void RMTrajectory::Freeze(FollowingMode following_mode, double current_speed, Po
     }
     else if (shape_->type_ == Shape::ShapeType::CLOTHOID_SPLINE)
     {
-        ClothoidSplineShape* clothoid_spline = (ClothoidSplineShape*)shape_.get();
+        ClothoidSplineShape* clothoid_spline = static_cast<ClothoidSplineShape*>(shape_);
 
         clothoid_spline->Freeze(ref_pos);
         clothoid_spline->CalculatePolyLine();
     }
     else
     {
-        NurbsShape* nurbs = (NurbsShape*)shape_.get();
+        NurbsShape* nurbs = static_cast<NurbsShape*>(shape_);
 
         nurbs->CalculatePolyLine();
     }

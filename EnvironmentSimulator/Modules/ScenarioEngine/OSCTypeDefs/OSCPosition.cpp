@@ -297,16 +297,27 @@ void OSCPositionRoute::SetRouteRefLaneCoord(roadmanager::Route *route, double pa
     position_.SetRouteLanePosition(route, pathS, laneId, laneOffset);
 }
 
+void OSCPositionRoute::SetRouteRefRoadCoord(roadmanager::Route *route, double pathS, double t, OSCOrientation *orientation)
+{
+    position_.SetRouteRoadPosition(route, pathS, t);
+
+    // Adjust heading to road direction also considering traffic rule (left/right hand traffic)
+    position_.SetHeadingRelative(std::isnan(orientation->h_) ? 0.0 : orientation->h_);
+    position_.SetPitchRelative(std::isnan(orientation->p_) ? 0.0 : orientation->p_);
+    position_.SetRollRelative(std::isnan(orientation->r_) ? 0.0 : orientation->r_);
+}
+
+void OSCPositionRoute::SetRouteRefRoadCoord(roadmanager::Route *route, double pathS, double t)
+{
+    position_.SetRouteRoadPosition(route, pathS, t);
+}
+
 OSCPositionTrajectory::OSCPositionTrajectory(roadmanager::RMTrajectory *traj, double s, double t, OSCOrientation orientation)
 {
     (void)orientation;
     (void)t;
 
-    // do initial and temporary evaluation of the trajectory
-    // it will be recalculated when related action is triggered
-    // so that relative positions will be evaluated correctly
-    traj->shape_->CalculatePolyLine();
-
     position_.SetTrajectory(traj);
-    position_.SetTrajectoryS(s);
+    position_.SetTrajectoryS(s, false);
+    position_.SetTrajectoryT(t, false);
 }

@@ -8,7 +8,7 @@
 
     <!-- Cars -->
 
-    <Catalog name="VehicleCatalog">
+    <Catalog name="VehicleCatalogKnabe">
 
         <Vehicle name="car_white" vehicleCategory="car" model3d="../models/car_white.osgb">
             <!-- model bounding box xyz: 1.46, 0.00, 0.77 lwh: 5.04, 2.04, 1.49 -->

@@ -346,7 +346,7 @@ void FollowTrajectoryAction::Start(double simTime)
     reverse_ = (object_->GetSpeed() < 0.0);
 
     traj_->Freeze(following_mode_, object_->GetSpeed(), &object_->pos_);
-    object_->pos_.SetTrajectory(traj_.get());
+    object_->pos_.SetTrajectory(traj_);
 
     object_->pos_.SetTrajectoryS(initialDistanceOffset_);
     time_ = traj_->GetTimeAtS(initialDistanceOffset_);
@@ -370,8 +370,9 @@ void FollowTrajectoryAction::End()
         return;
     }
 
-    // Disconnect trajectory
-    object_->pos_.SetTrajectory(0);
+    // Delete and disconnect trajectory
+    delete object_->pos_.GetTrajectory();
+    object_->pos_.SetTrajectory(nullptr);
 }
 
 void FollowTrajectoryAction::Step(double simTime, double dt)
@@ -506,15 +507,15 @@ void FollowTrajectoryAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
     }
     if (traj_->shape_->type_ == roadmanager::Shape::ShapeType::CLOTHOID)
     {
-        roadmanager::ClothoidShape* cl = static_cast<roadmanager::ClothoidShape*>(traj_->shape_.get());
+        roadmanager::ClothoidShape* cl = static_cast<roadmanager::ClothoidShape*>(traj_->shape_);
         cl->pos_.ReplaceObjectRefs(&obj1->pos_, &obj2->pos_);
     }
     else if (traj_->shape_->type_ == roadmanager::Shape::ShapeType::POLYLINE)
     {
-        roadmanager::PolyLineShape* pl = static_cast<roadmanager::PolyLineShape*>(traj_->shape_.get());
+        roadmanager::PolyLineShape* pl = static_cast<roadmanager::PolyLineShape*>(traj_->shape_);
         for (size_t i = 0; i < pl->vertex_.size(); i++)
         {
-            pl->vertex_[i].pos_.ReplaceObjectRefs(&obj1->pos_, &obj2->pos_);
+            pl->vertex_[i].pos_->ReplaceObjectRefs(&obj1->pos_, &obj2->pos_);
         }
     }
 }
@@ -1824,6 +1825,12 @@ void TeleportAction::Start(double simTime)
     if (object_->TowVehicle())
     {
         return;  // position controlled by tow vehicle
+    }
+
+    // layout trajectory if defined
+    if (position_.GetTrajectory() != nullptr)
+    {
+        position_.GetTrajectory()->Freeze(FollowingMode::POSITION, 0);
     }
 
     // consider any assigned route for relative positions

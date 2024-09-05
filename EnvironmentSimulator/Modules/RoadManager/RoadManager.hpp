@@ -3287,6 +3287,7 @@ namespace roadmanager
         {
             return trajectory_;
         }
+        // void CopyTrajectory(const Position &position);
 
         void SetTrajectory(RMTrajectory *trajectory);
 
@@ -3318,11 +3319,21 @@ namespace roadmanager
         ReturnCode SetRouteS(double route_s);
 
         /**
-        Move current position along the route
-        @param ds Distance to move, negative will move backwards
+        Move to specified lane position along the route
+        @param path_s Longitudinal distance along the route from start of route
+        @param lane_id Lane ID at target position
+        @param lane_offset Lateral lane offset at target position
         @return Non zero return value indicates error of some kind
         */
         int SetRouteLanePosition(Route *route, double path_s, int lane_id, double lane_offset);
+
+        /**
+        Move to specified road position along the route
+        @param path_s Longitudinal distance along the route from start of route
+        @param t Lateral offset from road centerline at target position
+        @return Non zero return value indicates error of some kind
+        */
+        int SetRouteRoadPosition(Route *route, double path_s, double t);
 
         /**
         Move current position forward, or backwards, ds meters along the trajectory
@@ -3336,7 +3347,7 @@ namespace roadmanager
         @param trajectory_s Distance from start of the trajectory
         @return Non zero return value indicates error of some kind
         */
-        int SetTrajectoryS(double trajectory_s);
+        int SetTrajectoryS(double trajectory_s, bool evaluate = true);
 
         int SetTrajectoryPosByTime(double time);
 
@@ -3353,10 +3364,7 @@ namespace roadmanager
         @param trajectory_t Lateral distance from trajectory at current s-value
         @return Non zero return value indicates error of some kind
         */
-        void SetTrajectoryT(double trajectory_t)
-        {
-            t_trajectory_ = trajectory_t;
-        }
+        int SetTrajectoryT(double trajectory_t, bool evaluate = true);
 
         /**
         Retrieve the T-value of the current trajectory position
@@ -4371,7 +4379,11 @@ namespace roadmanager
             TRAJ_PARAM_TYPE_TIME
         } TrajectoryParamType;
 
-        Shape(ShapeType type) : type_(type)
+        Shape() : type_(SHAPE_TYPE_UNDEFINED), following_mode_(FollowingMode::POSITION), initial_speed_(0.0)
+        {
+        }
+
+        Shape(ShapeType type) : type_(type), following_mode_(FollowingMode::POSITION), initial_speed_(0.0)
         {
         }
         virtual ~Shape() = default;
@@ -4421,17 +4433,25 @@ namespace roadmanager
         class Vertex
         {
         public:
-            Vertex(const Position &pos, double time) : pos_(pos), time_(time)
+            Vertex(Position *pos, double time) : pos_(pos), time_(time)
             {
             }
-            Position pos_;
-            double   time_;
+            Position *pos_;
+            double    time_;
         };
 
         PolyLineShape() : Shape(ShapeType::POLYLINE)
         {
         }
-        void   AddVertex(Position pos, double time);
+        ~PolyLineShape()
+        {
+            for (auto &v : vertex_)
+            {
+                delete v.pos_;
+            }
+            vertex_.clear();
+        }
+        void   AddVertex(Position *pos, double time);
         int    Evaluate(double p, TrajectoryParamType ptype, TrajVertex &pos);
         void   CalculatePolyLine() override;
         double GetLength()
@@ -4587,11 +4607,6 @@ namespace roadmanager
     class RMTrajectory
     {
     public:
-        std::unique_ptr<Shape> shape_;
-
-        RMTrajectory(std::unique_ptr<Shape> shape, std::string name, bool closed) : shape_(std::move(shape)), name_(name), closed_(closed)
-        {
-        }
         RMTrajectory() : closed_(false)
         {
         }
@@ -4599,13 +4614,14 @@ namespace roadmanager
         void   Freeze(FollowingMode following_mode, double current_speed, Position *ref_pos = nullptr);
         double GetLength()
         {
-            return shape_ ? shape_->GetLength() : 0.0;
+            return shape_->GetLength();
         }
         double GetTimeAtS(double s);
         double GetSpeedAtS(double s);
         double GetStartTime();
         double GetDuration();
 
+        Shape      *shape_;
         std::string name_;
         bool        closed_;
     };

@@ -227,7 +227,10 @@ add_subdirectory(EnvironmentSimulator)
 
 if(NOT
    EXISTS
-   "test/OSC-ALKS-scenarios/.git")
+   "test/OSC-ALKS-scenarios/.git"
+   OR NOT
+      EXISTS
+      "test/OSC-NCAP-scenarios/.git")
     execute_process(
         COMMAND git submodule update --init
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})

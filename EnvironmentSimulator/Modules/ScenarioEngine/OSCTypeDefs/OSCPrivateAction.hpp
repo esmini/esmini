@@ -1021,14 +1021,14 @@ namespace scenarioengine
             TIMING_ABSOLUTE
         };
 
-        std::shared_ptr<roadmanager::RMTrajectory> traj_;
-        TimingDomain                               timing_domain_;
-        FollowingMode                              following_mode_;
-        double                                     timing_scale_;
-        double                                     timing_offset_;
-        double                                     time_;
-        double                                     initialDistanceOffset_;
-        bool                                       reverse_;
+        roadmanager::RMTrajectory* traj_;
+        TimingDomain               timing_domain_;
+        FollowingMode              following_mode_;
+        double                     timing_scale_;
+        double                     timing_offset_;
+        double                     time_;
+        double                     initialDistanceOffset_;
+        bool                       reverse_;
 
         FollowTrajectoryAction(StoryBoardElement* parent)
             : OSCPrivateAction(OSCPrivateAction::ActionType::FOLLOW_TRAJECTORY,

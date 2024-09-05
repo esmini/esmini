@@ -3,6 +3,9 @@ from test_common import *
 import unittest
 import argparse
 
+# run all scenarios from https://github.com/asam-oss/OSC-ALKS-scenarios
+# check some key events and positions
+
 ESMINI_PATH = '../'
 COMMON_ARGS = '--headless --fixed_timestep 0.05 --record sim.dat '
 ALKS_PREFIX = './OSC-ALKS-scenarios/Scenarios/'
