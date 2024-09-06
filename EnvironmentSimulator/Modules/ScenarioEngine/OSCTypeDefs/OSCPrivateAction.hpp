@@ -1293,7 +1293,7 @@ namespace scenarioengine
         double cmyk_[4];
 
         LightStateAction(StoryBoardElement* parent)
-            : OSCPrivateAction(OSCPrivateAction::ActionType::LIGHT_STATE_ACTION, parent, ControlDomains::DOMAIN_LIGHT),
+            : OSCPrivateAction(OSCPrivateAction::ActionType::LIGHT_STATE_ACTION, parent, static_cast<unsigned int>(ControlDomains::DOMAIN_LIGHT)),
               transitionTime_(0.0),
               flashingOffDuration_(0.5),
               flashingOnDuration_(0.5),

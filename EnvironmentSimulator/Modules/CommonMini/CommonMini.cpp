@@ -185,10 +185,6 @@ std::string ControlDomain2Str(unsigned int domains)
     {
         str = "None";
     }
-    else if (domains == ControlDomains::DOMAIN_LIGHT)
-    {
-        return "lights";
-    }
 
     return str;
 }

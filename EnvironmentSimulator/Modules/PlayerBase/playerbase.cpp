@@ -429,7 +429,7 @@ void ScenarioPlayer::ViewerFrame(bool init)
                 {
                     viewer::CarModel* car = static_cast<viewer::CarModel*>(entity);
                     car->UpdateWheels(obj->wheel_angle_, obj->wheel_rot_);
-                    if (opt.GetOptionSet("lights") ||
+                    if (SE_Env::Inst().GetOptions().GetOptionSet("lights") ||
                         this->scenarioEngine->scenarioReader->lightStatusOn)  // update material details only when right action or show lights
                     {
                         car->UpdateLight(obj->vehicleLightActionStatusList);
@@ -1195,7 +1195,7 @@ void ScenarioPlayer::InitVehicleModel(Object* obj, viewer::CarModel* model)
         obj->SetVisibilityMask(obj->visibilityMask_ &= ~(Object::Visibility::SENSORS));
     }
 
-    if (opt.GetOptionSet("lights") || this->scenarioEngine->scenarioReader->lightStatusOn)  // fetch material details only right action or show lights
+    if (SE_Env::Inst().GetOptions().GetOptionSet("lights") || this->scenarioEngine->scenarioReader->lightStatusOn)  // fetch material details only right action or show lights
     {
         for (size_t i = 0; i < Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS; i++)
         {

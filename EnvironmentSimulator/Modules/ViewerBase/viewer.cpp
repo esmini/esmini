@@ -2388,7 +2388,7 @@ EntityModel* Viewer::CreateEntityModel(std::string             modelFilepath,
     EntityModel* emodel;
     if (type == EntityModel::EntityType::VEHICLE)
     {
-        emodel = new CarModel(osgViewer_, group, rootnode_, trails_, trajectoryLines_, dot_node_, routewaypoints_, trail_color, name, ShowLights);
+        emodel = new CarModel(this, group, rootnode_, trails_, trajectoryLines_, dot_node_, routewaypoints_, trail_color, name, ShowLights);
     }
     else if (type == EntityModel::EntityType::MOVING)
     {

@@ -1181,8 +1181,8 @@ int ScenarioGateway::WriteStatesToFile()
             datLogger->WriteObjCategory(objId, objectState_[i]->state_.info.obj_category);
             datLogger->WriteObjType(objId, objectState_[i]->state_.info.obj_type);
             datLogger->WriteCtrlType(objId, objectState_[i]->state_.info.ctrl_type);
-            datLogger->WriteWheelAngle(objId, objectState_[i]->state_.info.wheel_data.size() > 0 ? static_cast<float>(objectState_[i]->state_.info.wheel_data[0].h) : 0.0f);
-            datLogger->WriteWheelRot(objId, objectState_[i]->state_.info.wheel_data.size() > 0 ? static_cast<float>(objectState_[i]->state_.info.wheel_data[0].p) : 0.0f);
+            datLogger->WriteWheelAngle(objId, objectState_[i]->state_.info.wheel_data.size() > 0 ? objectState_[i]->state_.info.wheel_data[0].h : 0.0);
+            datLogger->WriteWheelRot(objId, objectState_[i]->state_.info.wheel_data.size() > 0 ? objectState_[i]->state_.info.wheel_data[0].p : 0.0);
             datLogger->WriteBB(objId,
                                objectState_[i]->state_.info.boundingbox.center_.x_,
                                objectState_[i]->state_.info.boundingbox.center_.y_,

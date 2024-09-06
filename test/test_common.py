@@ -85,6 +85,7 @@ def run_replayer(replayer_arguments = None):
     app = os.path.join(ESMINI_PATH,'bin','replayer')
     return_code = None
     args = [app] + replayer_arguments.split()
+    print("argument", args)
     with open(STDOUT_FILENAME, "w") as f:
         process = subprocess.Popen(args, cwd=os.path.dirname(os.path.realpath(__file__)), stdout=f, env=env)
 
@@ -117,7 +118,6 @@ def generate_csv(filename=DAT_FILENAME, mode_ = "original", time_step_ = 0.05):
     # Below is the Python way of converting dat to csv
     dat = DATFile(filename)
     dat.save_csv(mode = mode_, step_time = time_step_)
-    dat.close()
 
     with open(os.path.splitext(filename)[0] + '.csv', "r") as f:
         return f.read()
