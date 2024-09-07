@@ -7,7 +7,7 @@ import argparse
 # check some key events and positions
 
 ESMINI_PATH = '../'
-COMMON_ARGS = '--headless --fixed_timestep 0.05 --record sim.dat '
+COMMON_ARGS = '--headless --fixed_timestep 0.05 --record sim.dat --align_routepositions '
 NCAP_PREFIX = './OSC-NCAP-scenarios/OpenSCENARIO/NCAP/'
 
 
@@ -41,14 +41,20 @@ class TestSuite(unittest.TestCase):
 
         # Check some scenario events
         self.assertTrue(re.search('\n0.000: EgoSpeedReached == true, speed: 8.33 > 8.17, edge: none', log)  is not None)
-        self.assertTrue(re.search('\n7.400: StopAfterVRUCrossed == true, traveled_dist: 40.83 >= 40.75, edge: none', log)  is not None)
+        self.assertTrue(re.search('\n6.750: collision 0 between Ego and VRU', log)  is not None)
+        self.assertTrue(re.search('\n7.800: storyBoard runningState -> stopTransition -> completeState', log)  is not None)
 
         # Check vehicle state
         csv = generate_csv()
-        self.assertTrue(re.search('\n7.000, 0, Ego, 158.333, -1.750, 0.000, 0.000, 0.000, 0.000, 8.333, 0.000, 3.304', csv))
-        self.assertTrue(re.search('\n7.000, 1, VRU, 159.750, -11.361, 0.000, 4.712, 0.000, 0.000, 5.556, 0.000, 3.503', csv))
-        self.assertTrue(re.search('\n7.000, 3, ObstructionLarge, 157.590, 21.060, 0.000, 4.712, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
-        self.assertTrue(re.search('\n7.000, 2, ObstructionSmall, 157.575, 16.442, 0.000, 4.712, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
+        self.assertTrue(re.search('\n6.700, 0, Ego, 155.833, -1.750, 0.000, 0.000, 0.000, 0.000, 8.333, 0.000, 2.444', csv))
+        self.assertTrue(re.search('\n6.700, 1, VRU, 159.750, -1.043, 0.000, 4.712, 0.000, 0.000, 5.556, 0.000, 5.438', csv))
+        self.assertTrue(re.search('\n6.700, 3, ObstructionLarge, 157.590, 21.060, 0.000, 4.712, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
+        self.assertTrue(re.search('\n6.700, 2, ObstructionSmall, 157.575, 16.442, 0.000, 4.712, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
+        self.assertTrue(re.search('\n6.750, 0, Ego, 156.250, -1.750, 0.000, 0.000, 0.000, 0.000, 8.333, 0.000, 3.635', csv))
+        self.assertTrue(re.search('\n6.750, 1, VRU, 159.750, -1.320, 0.000, 4.712, 0.000, 0.000, 5.556, 0.000, 6.231', csv))
+        self.assertTrue(re.search('\n6.750, 3, ObstructionLarge, 157.590, 21.060, 0.000, 4.712, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
+        self.assertTrue(re.search('\n6.750, 2, ObstructionSmall, 157.575, 16.442, 0.000, 4.712, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
+
 
     def test_AEB_VRU_2023_NCAP_AEB_VRU_CBLA_2023(self):
 
@@ -81,15 +87,21 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('.*Loading .*NCAP_AEB_VRU_CBNAO_2023', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('\n0.050: Synchronize masterDist increasing \\(133.48 > 133.34\\) - missed destination', log)  is not None)
-        self.assertTrue(re.search('\n9.700: StopAfterVRUCrossed == true, traveled_dist: 26.81 >= 26.75, edge: none', log)  is not None)
+        self.assertTrue(re.search('\n0.000: VRU_SynchronizeEvent standbyState -> startTransition -> runningState', log)  is not None)
+        self.assertTrue(re.search('\n9.400: Synchronize masterTimeToDest \\(0.010\\) reached within this timestep \\(0.050\\)', log)  is not None)
+        self.assertTrue(re.search('\n9.450: collision 0 between Ego and VRU', log)  is not None)
+        self.assertTrue(re.search('\n10.500: StopAfterCollision timer expired at 1.00 seconds', log)  is not None)
 
         # Check vehicle state
         csv = generate_csv()
-        self.assertTrue(re.search('\n9.700, 0, Ego, 160.278, -1.750, 0.000, 0.000, 0.000, 0.000, 2.778, 0.000, 1.586', csv))
-        self.assertTrue(re.search('\n9.700, 1, VRU, 163.250, 13.556, 0.000, 1.571, 0.000, 0.000, 2.778, 0.000, 1.189', csv))
-        self.assertTrue(re.search('\n9.700, 3, ObstructionLarge, 165.710, -6.110, 0.000, 1.571, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
-        self.assertTrue(re.search('\n9.700, 2, ObstructionSmall, 165.695, -1.492, 0.000, 1.571, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
+        self.assertTrue(re.search('\n9.400, 0, Ego, 159.444, -1.750, 0.000, 0.000, 0.000, 0.000, 2.778, 0.000, 5.488', csv))
+        self.assertTrue(re.search('\n9.400, 1, VRU, 163.250, -2.397, 0.000, 1.571, 0.000, 0.000, 2.778, 0.000, 5.875', csv))
+        self.assertTrue(re.search('\n9.400, 3, ObstructionLarge, 157.290, -6.110, 0.000, 4.712, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
+        self.assertTrue(re.search('\n9.400, 2, ObstructionSmall, 157.305, -10.728, 0.000, 4.712, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
+        self.assertTrue(re.search('\n9.450, 0, Ego, 159.583, -1.750, 0.000, 0.000, 0.000, 0.000, 2.778, 0.000, 5.885', csv))
+        self.assertTrue(re.search('\n9.450, 1, VRU, 163.250, -2.258, 0.000, 1.571, 0.000, 0.000, 2.778, 0.000, 6.272', csv))
+        self.assertTrue(re.search('\n9.450, 3, ObstructionLarge, 157.290, -6.110, 0.000, 4.712, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
+        self.assertTrue(re.search('\n9.450, 2, ObstructionSmall, 157.305, -10.728, 0.000, 4.712, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
 
     def test_AEB_VRU_2023_NCAP_AEB_VRU_CBNA_2023(self):
 
@@ -99,15 +111,20 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('.*Loading .*NCAP_AEB_VRU_CBNA_2023', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('\n0.050: Synchronize masterDist increasing \\(100.43 > 100.02\\) - missed destination', log)  is not None)
-        self.assertTrue(re.search('\n9.500: StopAfterVRUCrossed == true, traveled_dist: 39.38 >= 39.25, edge: none', log)  is not None)
+        self.assertTrue(re.search('\n6.950: Synchronize masterTimeToDest \\(0.026\\) reached within this timestep \\(0.050\\)', log)  is not None)
+        self.assertTrue(re.search('\n7.000: collision 0 between Ego and VRU', log)  is not None)
+        self.assertTrue(re.search('\n8.050: storyBoard runningState -> stopTransition -> completeState', log)  is not None)
 
         # Check vehicle state
         csv = generate_csv()
-        self.assertTrue(re.search('\n9.500, 0, Ego, 179.167, -1.750, 0.000, 0.000, 0.000, 0.000, 8.333, 0.000, 6.279', csv))
-        self.assertTrue(re.search('\n9.500, 1, VRU, 161.910, 13.625, 0.000, 1.571, 0.000, 0.000, 4.167, 0.000, 5.686', csv))
-        self.assertTrue(re.search('\n9.500, 3, ObstructionLarge, 163.250, -19.560, 0.000, 1.571, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
-        self.assertTrue(re.search('\n9.500, 2, ObstructionSmall, 163.235, -14.942, 0.000, 1.571, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
+        self.assertTrue(re.search('\n6.950, 0, Ego, 157.917, -1.750, 0.000, 0.000, 0.000, 0.000, 8.333, 0.000, 2.113', csv))
+        self.assertTrue(re.search('\n6.950, 1, VRU, 161.910, -2.478, 0.000, 1.571, 0.000, 0.000, 4.167, 0.000, 3.661', csv))
+        self.assertTrue(re.search('\n6.950, 3, ObstructionLarge, 159.750, -19.560, 0.000, 4.712, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
+        self.assertTrue(re.search('\n6.950, 2, ObstructionSmall, 159.765, -24.178, 0.000, 4.712, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
+        self.assertTrue(re.search('\n7.000, 0, Ego, 158.333, -1.750, 0.000, 0.000, 0.000, 0.000, 8.333, 0.000, 3.304', csv))
+        self.assertTrue(re.search('\n7.000, 1, VRU, 161.910, -2.269, 0.000, 1.571, 0.000, 0.000, 4.167, 0.000, 4.256', csv))
+        self.assertTrue(re.search('\n7.000, 3, ObstructionLarge, 159.750, -19.560, 0.000, 4.712, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
+        self.assertTrue(re.search('\n7.000, 2, ObstructionSmall, 159.765, -24.178, 0.000, 4.712, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
 
     def test_AEB_VRU_2023_NCAP_AEB_VRU_CPNA_2023(self):
 
@@ -117,15 +134,16 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('.*Loading .*NCAP_AEB_VRU_CPNA_2023', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('\n1.850: Synchronize dist \\(0.97\\) < tolerance \\(1.00\\)', log)  is not None)
-        self.assertTrue(re.search('\n6.650: StopAfterCrossingVRUTrajectory == true, traveled_dist: 55.42 >= 55.00, edge: none', log)  is not None)
+        self.assertTrue(re.search('\n5.500: Synchronize masterTimeToDest \\(0.047\\) reached within this timestep \\(0.050\\)', log)  is not None)
+        self.assertTrue(re.search('\n5.550: collision 0 between Ego and VRU', log)  is not None)
+        self.assertTrue(re.search('\n6.600: StopAfterCollision timer expired at 1.00 seconds', log)  is not None)
 
         # Check vehicle state
         csv = generate_csv()
-        self.assertTrue(re.search('\n2.850, 0, Ego, 73.750, -14.000, 0.000, 0.000, 0.000, 0.000, 8.333, 0.000, 5.025', csv))
-        self.assertTrue(re.search('\n2.850, 1, VRU, 100.000, -14.042, 0.000, 1.571, 0.000, 0.000, 1.389, 0.000, 0.000', csv))
-        self.assertTrue(re.search('\n6.650, 0, Ego, 105.417, -14.000, 0.000, 0.000, 0.000, 0.000, 8.333, 0.000, 1.254', csv))
-        self.assertTrue(re.search('\n6.650, 1, VRU, 101.181, -9.944, 0.000, 1.571, 0.000, 0.000, 1.389, 0.000, 0.000', csv))
+        self.assertTrue(re.search('\n5.500, 0, Ego, 95.833, -14.000, 0.000, 0.000, 0.000, 0.000, 8.333, 0.000, 5.289', csv))
+        self.assertTrue(re.search('\n5.500, 1, VRU, 100.000, -14.527, 0.000, 1.571, 0.000, 0.000, 1.389, 0.000, 0.000', csv))
+        self.assertTrue(re.search('\n5.550, 0, Ego, 96.250, -14.000, 0.000, 0.000, 0.000, 0.000, 8.333, 0.000, 0.196', csv))
+        self.assertTrue(re.search('\n5.550, 1, VRU, 100.000, -14.458, 0.000, 1.571, 0.000, 0.000, 1.389, 0.000, 0.000', csv))
 
     def test_AEB_VRU_2023_NCAP_AEB_VRU_CPNCO_2023(self):
 
@@ -135,17 +153,17 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('.*Loading .*NCAP_AEB_VRU_CPNCO_2023', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('\n5.400: Synchronize masterTimeToDest \\(0.039\\) reached within this timestep \\(0.050\\)', log)  is not None)
+        self.assertTrue(re.search('\n3.400: Entering Stead State according to criteria but not enough time to reach destination', log)  is not None)
         self.assertTrue(re.search('\n5.600: collision 0 between Ego and VRU', log)  is not None)
 
         # Check vehicle state
         csv = generate_csv()
         self.assertTrue(re.search('\n5.550, 0, Ego, 96.250, -14.000, 0.000, 0.000, 0.000, 0.000, 8.333, 0.000, 0.196', csv))
-        self.assertTrue(re.search('\n5.550, 1, VRU, 100.000, -14.944, 0.000, 1.571, 0.000, 0.000, 1.389, 0.000, 0.000', csv))
+        self.assertTrue(re.search('\n5.550, 1, VRU, 100.000, -14.041, 0.000, 1.571, 0.000, 0.000, 1.389, 0.000, 0.000', csv))
         self.assertTrue(re.search('\n5.550, 2, ObstructionSmall, 95.325, -16.817, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
         self.assertTrue(re.search('\n5.550, 3, ObstructionLarge, 89.927, -16.817, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
         self.assertTrue(re.search('\n5.600, 0, Ego, 96.667, -14.000, 0.000, 0.000, 0.000, 0.000, 8.333, 0.000, 1.386', csv))
-        self.assertTrue(re.search('\n5.600, 1, VRU, 100.000, -14.875, 0.000, 1.571, 0.000, 0.000, 1.389, 0.000, 0.000', csv))
+        self.assertTrue(re.search('\n5.600, 1, VRU, 100.000, -13.972, 0.000, 1.571, 0.000, 0.000, 1.389, 0.000, 0.000', csv))
         self.assertTrue(re.search('\n5.600, 2, ObstructionSmall, 95.325, -16.817, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
         self.assertTrue(re.search('\n5.600, 3, ObstructionLarge, 89.927, -16.817, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
 
@@ -157,19 +175,15 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('.*Loading .*NCAP_AEB_VRU_CPTA_2023', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('\n5.400: Synchronize masterTimeToDest \\(0.039\\) reached within this timestep \\(0.050\\)', log)  is not None)
-        self.assertTrue(re.search('\n5.600: collision 0 between Ego and VRU', log)  is not None)
+        self.assertTrue(re.search('\n26.800: Synchronize dist increasing \\(0.04 > 0.03\\) - missed destination', log)  is not None)
+        self.assertTrue(re.search('\n27.550: collision 0 between Ego and VRU', log)  is not None)
 
         # Check vehicle state
         csv = generate_csv()
-        self.assertTrue(re.search('\n5.550, 0, Ego, 96.250, -14.000, 0.000, 0.000, 0.000, 0.000, 8.333, 0.000, 0.196', csv))
-        self.assertTrue(re.search('\n5.550, 1, VRU, 100.000, -14.944, 0.000, 1.571, 0.000, 0.000, 1.389, 0.000, 0.000', csv))
-        self.assertTrue(re.search('\n5.550, 2, ObstructionSmall, 95.325, -16.817, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
-        self.assertTrue(re.search('\n5.550, 3, ObstructionLarge, 89.927, -16.817, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
-        self.assertTrue(re.search('\n5.600, 0, Ego, 96.667, -14.000, 0.000, 0.000, 0.000, 0.000, 8.333, 0.000, 1.386', csv))
-        self.assertTrue(re.search('\n5.600, 1, VRU, 100.000, -14.875, 0.000, 1.571, 0.000, 0.000, 1.389, 0.000, 0.000', csv))
-        self.assertTrue(re.search('\n5.600, 2, ObstructionSmall, 95.325, -16.817, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
-        self.assertTrue(re.search('\n5.600, 3, ObstructionLarge, 89.927, -16.817, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
+        self.assertTrue(re.search('\n27.500, 0, Ego, 162.808, 5.716, 0.000, 1.356, 0.000, 0.000, 2.778, 0.262, 4.626', csv))
+        self.assertTrue(re.search('\n27.500, 1, VRU, 164.227, 9.500, 0.000, 4.712, 0.000, 0.000, 1.389, 0.000, 0.000', csv))
+        self.assertTrue(re.search('\n27.550, 0, Ego, 162.836, 5.852, 0.000, 1.368, 0.000, 0.000, 2.778, 0.262, 5.023', csv))
+        self.assertTrue(re.search('\n27.550, 1, VRU, 164.297, 9.500, 0.000, 4.712, 0.000, 0.000, 1.389, 0.000, 0.000', csv))
 
 if __name__ == "__main__":
     # execute only if run as a script
