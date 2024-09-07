@@ -232,7 +232,7 @@
             </ManeuverGroup>
             <StartTrigger>
                <ConditionGroup>
-                  <Condition name="Synchronize_Condition" delay="0">
+                  <Condition name="Synchronize_Condition" delay="0" conditionEdge="none">
                      <ByValueCondition>
                         <SimulationTimeCondition value="0" rule="greaterThan"/>
                      </ByValueCondition>
@@ -243,7 +243,7 @@
       </Story>
       <StopTrigger>
          <ConditionGroup>
-             <Condition name="EndCondition1" delay="0">
+             <Condition name="EndCondition1" delay="0" conditionEdge="none">
                  <ByEntityCondition>
                      <TriggeringEntities triggeringEntitiesRule="any">
                         <EntityRef entityRef="Ego"/>
@@ -253,7 +253,7 @@
                      </EntityCondition>
                  </ByEntityCondition>
              </Condition>
-             <Condition name="EndCondition2" delay="0">
+             <Condition name="EndCondition2" delay="0" conditionEdge="none">
                  <ByEntityCondition>
                      <TriggeringEntities triggeringEntitiesRule="any">
                         <EntityRef entityRef="NPC4"/>

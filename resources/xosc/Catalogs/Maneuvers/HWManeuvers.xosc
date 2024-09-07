@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <OpenSCENARIO>
    <FileHeader revMajor="1"
-               revMinor="0"
+               revMinor="1"
                date="2019-12-04T10:00:00"
                description="Overtake and accelerate"
                author="Emil Knabe"/>
@@ -18,7 +18,7 @@
          <Event name="Synchronize_NPC_Event" priority="overwrite">
             <Action name="Synchronize_NPC_Action">
 				<PrivateAction>
-					<SynchronizeAction masterEntityRef="Ego" >
+					<SynchronizeAction masterEntityRef="Ego" targetToleranceMaster="1.0" targetTolerance="1.0">
 						<TargetPositionMaster>
 							<LanePosition roadId="0" laneId="$EgoTargetLaneId" offset="0" s="$MS1EgoS" />
 						</TargetPositionMaster>    

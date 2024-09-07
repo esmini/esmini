@@ -27,7 +27,7 @@ namespace scenarioengine
 {
 
 #define DISTANCE_TOLERANCE       (0.5)  // meter
-#define SYNCH_DISTANCE_TOLERANCE (1.0)  // meter
+#define SYNCH_DISTANCE_TOLERANCE (0.0)  // meter
 #define IS_ZERO(x)               (x < SMALL_NUMBER && x > -SMALL_NUMBER)
 
     class ScenarioEngine;
