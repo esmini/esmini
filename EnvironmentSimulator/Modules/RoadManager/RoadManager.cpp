@@ -13032,7 +13032,11 @@ Position::ReturnCode Route::SetTrackS(int trackId, double s, bool update_state)
             {
                 if (OnRoute() && info_for_closest_wp.retval == Position::ReturnCode::ERROR_END_OF_ROUTE)
                 {
-                    LOG("Entity %s moved out of route at roadId=%d, s=%.2f (SetTrackS())", getObjName().c_str(), trackId, s);
+                    LOG("%s%smoved out of route at roadId=%d, s=%.2f (SetTrackS())",
+                        getObjName().empty() ? "Position " : "Entity ",
+                        getObjName().empty() ? "" : getObjName().c_str(),
+                        trackId,
+                        s);
                 }
 
                 on_route_ = false;
@@ -13042,7 +13046,11 @@ Position::ReturnCode Route::SetTrackS(int trackId, double s, bool update_state)
         {
             if (!OnRoute())
             {
-                LOG("Entity %s on route at roadId=%d, s=%.2f", getObjName().c_str(), trackId, s);
+                LOG("%s%s on route at roadId=%d, s=%.2f",
+                    getObjName().empty() ? "Position " : "Entity ",
+                    getObjName().empty() ? "" : getObjName().c_str(),
+                    trackId,
+                    s);
             }
             on_route_ = true;
         }
@@ -13055,7 +13063,11 @@ Position::ReturnCode Route::SetTrackS(int trackId, double s, bool update_state)
         {
             if (on_route_)
             {
-                LOG("Entity %s moved away from route at roadId=%d, s=%.2f", getObjName().c_str(), trackId, s);
+                LOG("%s%s moved away from route at roadId=%d, s=%.2f",
+                    getObjName().empty() ? "Position " : "Entity ",
+                    getObjName().empty() ? "" : getObjName().c_str(),
+                    trackId,
+                    s);
             }
             on_route_ = false;
         }
@@ -13151,7 +13163,11 @@ Position::ReturnCode Route::SetPathS(double s, double* remaining_dist, bool upda
             {
                 if (update_state)
                 {
-                    LOG("Entity %s on route at roadId=%d, s=%.2f", getObjName().c_str(), minimal_waypoints_[i].GetTrackId(), local_s);
+                    LOG("%s%son route at roadId=%d, s=%.2f",
+                        getObjName().empty() ? "Position " : "Entity ",
+                        getObjName().empty() ? "" : getObjName().c_str(),
+                        minimal_waypoints_[i].GetTrackId(),
+                        local_s);
                     on_route_ = true;
                 }
             }
@@ -13159,8 +13175,9 @@ Position::ReturnCode Route::SetPathS(double s, double* remaining_dist, bool upda
             {
                 if (update_state)
                 {
-                    LOG("Entity %s moved out of route at roadId=%d, s=%.2f (SetPathS())",
-                        getObjName().c_str(),
+                    LOG("%s%smoved out of route at roadId=%d, s=%.2f (SetPathS())",
+                        getObjName().empty() ? "Position " : "Entity ",
+                        getObjName().empty() ? "" : getObjName().c_str(),
                         GetWaypoint(waypoint_idx_)->GetTrackId(),
                         local_s);
                     on_route_ = false;
