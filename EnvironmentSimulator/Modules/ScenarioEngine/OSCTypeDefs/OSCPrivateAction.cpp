@@ -2027,6 +2027,9 @@ void SynchronizeAction::PrintStatus(const char* custom_msg)
 
 void SynchronizeAction::Start(double simTime)
 {
+    target_position_master_->EvaluateRelation();
+    target_position_->EvaluateRelation();
+
     // resolve steady state -> translate into dist
     if (steadyState_.type_ == SteadyStateType::STEADY_STATE_TIME)
     {
