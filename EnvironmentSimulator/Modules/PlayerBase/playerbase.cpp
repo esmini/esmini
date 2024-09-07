@@ -1279,6 +1279,7 @@ int ScenarioPlayer::Init()
     // use an ArgumentParser object to manage the program arguments.
     opt.AddOption("osc", "OpenSCENARIO filename (required) - if path includes spaces, enclose with \"\"", "filename");
     opt.AddOption("aa_mode", "Anti-alias mode=number of multisamples (subsamples, 0=off, 4=default)", "mode");
+    opt.AddOption("align_routepositions", "Align t-axis of route positions to the direction of the route");
     opt.AddOption("bounding_boxes", "Show entities as bounding boxes (toggle modes on key ',') ");
     opt.AddOption("capture_screen", "Continuous screen capture. Warning: Many jpeg files will be created");
     opt.AddOption(

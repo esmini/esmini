@@ -4142,9 +4142,9 @@ namespace roadmanager
         int AddWaypoint(const Position &position);
 
         /**
-        Return direction Adds a waypoint to the route. One waypoint per road. At most one junction between waypoints.
-        @param position A regular position created with road, lane or world coordinates
-        @return Non zero return value indicates error of some kind
+        Return Direction of route versus road direction
+        @param index Index of the waypoint
+        @return 1 if route is aligned with road direction, else -1
         */
         int GetWayPointDirection(int index);
 

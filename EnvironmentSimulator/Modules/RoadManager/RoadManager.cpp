@@ -10999,7 +10999,14 @@ int Position::SetRouteLanePosition(Route* route, double path_s, int lane_id, dou
 {
     route->SetPathS(path_s);
 
-    SetLanePos(route->GetTrackId(), lane_id, route->GetTrackS(), lane_offset);
+    int dir = 1;
+    if (SE_Env::Inst().GetOptions().GetOptionSet("align_routepositions"))
+    {
+        dir = route->GetWayPointDirection(route->waypoint_idx_);
+    }
+
+    SetLanePos(route->GetTrackId(), SIGN(dir) * lane_id, route->GetTrackS(), SIGN(dir) * lane_offset);
+    SetHeadingRelative(dir == 1 ? 0.0 : M_PI);
 
     return 0;
 }
@@ -11008,7 +11015,15 @@ int Position::SetRouteRoadPosition(Route* route, double path_s, double t)
 {
     route->SetPathS(path_s);
 
-    SetTrackPos(route->GetTrackId(), route->GetTrackS(), t);
+    int dir = 1;
+    if (SE_Env::Inst().GetOptions().GetOptionSet("align_routepositions"))
+    {
+        dir = route->GetWayPointDirection(route->waypoint_idx_);
+    }
+
+    SetTrackPos(route->GetTrackId(), route->GetTrackS(), SIGN(dir) * t);
+
+    SetHeadingRelative(dir == 1 ? 0.0 : M_PI);
 
     return 0;
 }
