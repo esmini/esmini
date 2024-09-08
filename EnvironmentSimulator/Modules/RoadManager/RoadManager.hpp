@@ -3882,26 +3882,7 @@ namespace roadmanager
         Get default road alignment for object
         @param type 0=Set (for all explicit set-functions), 1=Update (when object is updated by any controller)
         */
-        static const int GetModeDefault(PosModeType type)
-        {
-            if (type == PosModeType::SET)
-            {
-                return PosMode::Z_REL | PosMode::H_ABS | PosMode::P_REL | PosMode::R_REL;
-            }
-            else if (type == PosModeType::UPDATE)
-            {
-                return PosMode::Z_REL | PosMode::H_REL | PosMode::P_REL | PosMode::R_REL;
-            }
-            else if (type == PosModeType::INIT)
-            {
-                return PosMode::Z_REL | PosMode::H_ABS | PosMode::P_REL | PosMode::R_REL;
-            }
-            else
-            {
-                LOG("Unexpected position mode type: %d", type);
-                return 0;
-            }
-        }
+        static const int GetModeDefault(PosModeType type);
 
         /**
         Specify if and how position object will align to the road. This variant

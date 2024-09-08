@@ -10074,6 +10074,27 @@ void Position::SetModeBits(PosModeType type, int bits)
     }
 }
 
+const int Position::GetModeDefault(PosModeType type)
+{
+    if (type == PosModeType::SET)
+    {
+        return PosMode::Z_REL | PosMode::H_ABS | PosMode::P_REL | PosMode::R_REL;
+    }
+    else if (type == PosModeType::UPDATE)
+    {
+        return PosMode::Z_REL | PosMode::H_REL | PosMode::P_REL | PosMode::R_REL;
+    }
+    else if (type == PosModeType::INIT)
+    {
+        return 0;
+    }
+    else
+    {
+        LOG("Unexpected position mode type: %d", type);
+        return 0;
+    }
+}
+
 void Position::SetMode(PosModeType type, int mode)
 {
     int* mode_ref = nullptr;
