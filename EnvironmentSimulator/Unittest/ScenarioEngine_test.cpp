@@ -570,6 +570,73 @@ TEST(DistanceTest, DistanceWithTrailers)
     delete se;
 }
 
+TEST(DistanceTest, TestTrajectoryDistance)
+{
+    double dt = 0.1;
+
+    ScenarioEngine* se = new ScenarioEngine("../../../resources/xosc/lane-change_clothoid_based_trajectory.xosc");
+    ASSERT_NE(se, nullptr);
+    se->step(0.0);
+    se->prepareGroundTruth(0.0);
+
+    scenarioengine::Entities* entities = &se->entities_;
+    ASSERT_NE(entities, nullptr);
+    ASSERT_EQ(entities->object_.size(), 1);
+    Object* obj0 = entities->object_[0];
+
+    while (se->getSimulationTime() < 3.1 - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(0.0);
+    }
+
+    // Check car position at given time at end phase of the scenario
+    // Correct position indicates all trajectories have been evaluated correctly
+    EXPECT_NEAR(obj0->pos_.GetX(), 93.0109, 1E-3);
+    EXPECT_NEAR(obj0->pos_.GetY(), -0.5720, 1E-3);
+    EXPECT_NEAR(obj0->pos_.GetZ(), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(obj0->pos_.GetH(), 0.1388), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(obj0->pos_.GetP(), 0.0), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(obj0->pos_.GetR(), 0.0), 0.0, 1E-3);
+
+    Object obj1(Object::Type::VEHICLE);
+    obj1.pos_.SetTrackPos(1, 93, 0);
+
+    double dist = LARGE_NUMBER;
+    EXPECT_EQ(obj0->Distance(&obj1, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, false, dist), 0);
+    EXPECT_NEAR(dist, 0.5721, 1E-3);
+    EXPECT_EQ(
+        obj0->Distance(&obj1, roadmanager::CoordinateSystem::CS_TRAJECTORY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, false, dist),
+        0);
+    EXPECT_NEAR(dist, 0.0661, 1E-3);
+
+    // test with same trajectory in both objects
+    obj1.pos_.SetTrajectory(obj0->pos_.GetTrajectory());
+    obj1.pos_.SetTrajectoryS(obj0->pos_.GetTrajectoryS() + 0.9);
+    EXPECT_EQ(
+        obj0->Distance(&obj1, roadmanager::CoordinateSystem::CS_TRAJECTORY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, false, dist),
+        0);
+    EXPECT_NEAR(dist, 0.9, 1E-3);
+
+    obj1.pos_.SetTrajectory(nullptr);
+    obj1.pos_.MoveAlongS(2.0);
+    EXPECT_EQ(obj0->Distance(&obj1, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, false, dist), 0);
+    EXPECT_NEAR(dist, 2.8936, 1E-3);
+
+    // while obj1 has passed beyond the trajectory, it's trajectory related pos will be stuck at end of the trajectory
+    EXPECT_EQ(
+        obj0->Distance(&obj1, roadmanager::CoordinateSystem::CS_TRAJECTORY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, false, dist),
+        0);
+    EXPECT_NEAR(dist, 1.1111, 1E-3);
+
+    // trajectory distance with freespace not supported yet
+    EXPECT_EQ(
+        obj0->Distance(&obj1, roadmanager::CoordinateSystem::CS_TRAJECTORY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, dist),
+        -1);
+
+    delete se;
+}
+
 TEST(TrajectoryTest, EnsureContinuation)
 {
     double          dt = 0.01;

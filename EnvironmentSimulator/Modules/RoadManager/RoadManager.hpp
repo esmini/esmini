@@ -3283,7 +3283,7 @@ namespace roadmanager
         }
         void CopyRoute(const Position &position);
 
-        RMTrajectory *GetTrajectory()
+        RMTrajectory *GetTrajectory() const
         {
             return trajectory_;
         }
@@ -3397,7 +3397,10 @@ namespace roadmanager
         /**
         Find out the distance, on specified system and type, between two position objects
         @param pos_b The position from which to subtract the current position (this position object)
+        @param cs Coordinate system used for the measurement, see roadmanager::Position::CoordinateSystem enum
+        @param relDistType Relative distance type, see roadmanager::Position::RelativeDistanceType enum
         @param dist Distance (output parameter)
+        @param maxDist Don't look further than this
         @return 0 if position found and parameter values are valid, else -1
         */
         int Distance(Position *pos_b, CoordinateSystem cs, RelativeDistanceType relDistType, double &dist, double maxDist = LARGE_NUMBER) const;
@@ -3406,7 +3409,10 @@ namespace roadmanager
         Find out the distance, on specified system and type, to a world x, y position
         @param x X coordinate of position from which to subtract the current position (this position object)
         @param y Y coordinate of position from which to subtract the current position (this position object)
+        @param cs Coordinate system used for the measurement, see roadmanager::Position::CoordinateSystem enum
+        @param relDistType Relative distance type, see roadmanager::Position::RelativeDistanceType enum
         @param dist Distance (output parameter)
+        @param maxDist Don't look further than this
         @return 0 if position found and parameter values are valid, else -1
         */
         int Distance(double x, double y, CoordinateSystem cs, RelativeDistanceType relDistType, double &dist, double maxDist = LARGE_NUMBER) const;
@@ -4403,12 +4409,10 @@ namespace roadmanager
                 @param pos Output parameter: Closest trajectory position
                 @param index Output parameter: Index of closest underlying polyline segment, can be used as start index in next call
                 @param startAtIndex: <= 0: Search global minimum along the whole path, > 0: Look for local minimum around this index.
-                @return true if connection exist, else false
+                @return 0 if successful, else -1 indicating error, e.g. empty shape
         */
-        int FindClosestPoint(double xin, double yin, TrajVertex &pos, int &index, int startAtIndex = 0)
-        {
-            return -1;
-        };
+        virtual int FindClosestPoint(double xin, double yin, TrajVertex &pos, int &index, int startAtIndex = 0);
+
         virtual double GetLength()
         {
             return 0.0;

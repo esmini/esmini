@@ -10373,24 +10373,7 @@ void Position::CopyRoute(const Position& position)
 void Position::SetTrajectory(RMTrajectory* trajectory)
 {
     trajectory_ = trajectory;
-
-    // Reset trajectory S value
-    // s_trajectory_ = 0;
 }
-
-// void Position::CopyTrajectory(const Position& position)
-//{
-//     if (trajectory_ != nullptr && position.trajectory_ != nullptr)
-//     {
-//         LOG("Warning: Overriding trajectory in position object\n");
-//     }
-//
-//     if (position.trajectory_ != nullptr)
-//     {
-//         trajectory_ = new RMTrajectory;
-//         *trajectory_ = *position.trajectory_;
-//     }
-// }
 
 bool Position::Delta(Position* pos_b, PositionDiff& diff, bool bothDirections, double maxDist) const
 {
@@ -10445,21 +10428,21 @@ bool Position::Delta(Position* pos_b, PositionDiff& diff, bool bothDirections, d
         diff.ds = dist;
 
 #if 0  // Change to 1 to print some info on stdout - e.g. for debugging
-		printf("Dist %.2f Path (reversed): %d", dist, pos_b.GetTrackId());
-		if (path->visited_.size() > 0)
-		{
-			RoadPath::PathNode* node = path->visited_.back();
+        printf("Dist %.2f Path (reversed): %d", dist, pos_b.GetTrackId());
+        if (path->visited_.size() > 0)
+        {
+            RoadPath::PathNode* node = path->visited_.back();
 
-			while (node)
-			{
-				if (node->fromRoad != 0)
-				{
-					printf(" <- %d", node->fromRoad->GetId());
-				}
-				node = node->previous;
-			}
-		}
-		printf("\n");
+            while (node)
+            {
+                if (node->fromRoad != 0)
+                {
+                    printf(" <- %d", node->fromRoad->GetId());
+                }
+                node = node->previous;
+            }
+        }
+        printf("\n");
 #endif
     }
     else  // no valid route found
@@ -10517,7 +10500,49 @@ int Position::Distance(Position* pos_b, CoordinateSystem cs, RelativeDistanceTyp
         }
         else if (cs == CoordinateSystem::CS_TRAJECTORY)
         {
-            dist = relDistType == RelativeDistanceType::REL_DIST_LATERAL ? GetTrajectoryT() : GetTrajectoryS();
+            if (GetTrajectory() == nullptr)
+            {
+                LOG("Dist warning: No trajectory for pos_a. Measuring Euclidian distance.");
+                double dx, dy;
+                dist = getRelativeDistance(pos_b->GetX(), pos_b->GetY(), dx, dy);
+            }
+            else if (pos_b->GetTrajectory() != nullptr && GetTrajectory()->name_ == pos_b->GetTrajectory()->name_)
+            {
+                // assume same trajectory for both positions
+                if (relDistType == RelativeDistanceType::REL_DIST_LONGITUDINAL)
+                {
+                    dist = pos_b->GetTrajectoryS() - GetTrajectoryS();
+                }
+                else
+                {
+                    dist = pos_b->GetTrajectoryT() - GetTrajectoryT();
+                }
+            }
+            else
+            {
+                // treat pos_b as a position outside trajectory, first find it's closest point on trajectory
+                TrajVertex v;
+                int        index = 0;
+                double     dx, dy;
+                if (GetTrajectory()->shape_->FindClosestPoint(pos_b->GetX(), pos_b->GetY(), v, index) == 0)
+                {
+                    if (relDistType == RelativeDistanceType::REL_DIST_LONGITUDINAL)
+                    {
+                        dist = v.s - GetTrajectoryS();
+                    }
+                    else
+                    {
+                        // assume distance to closest point on trajectory is the lateral distance
+                        // which should be true except when point is outside the endpoints of the trajectory
+                        dist = getRelativeDistance(pos_b->GetX(), pos_b->GetY(), dx, dy);
+                    }
+                }
+                else
+                {
+                    LOG("Dist warning: No closest point found on trajectory. Measuring Euclidian distance.");
+                    dist = getRelativeDistance(pos_b->GetX(), pos_b->GetY(), dx, dy);
+                }
+            }
         }
     }
     else
@@ -10571,6 +10596,37 @@ int Position::Distance(double x, double y, CoordinateSystem cs, RelativeDistance
         }
         else if (cs == CoordinateSystem::CS_TRAJECTORY)
         {
+            if (GetTrajectory() == nullptr)
+            {
+                LOG("Dist warning: No trajectory for pos_a. Measuring Euclidian distance.");
+                double dx, dy;
+                dist = getRelativeDistance(x, y, dx, dy);
+            }
+            else
+            {
+                // treat pos_b as a position outside trajectory, first find it's closest point on trajectory
+                TrajVertex v;
+                int        index = 0;
+                double     dx, dy;
+                if (GetTrajectory()->shape_->FindClosestPoint(x, y, v, index) == 0)
+                {
+                    if (relDistType == RelativeDistanceType::REL_DIST_LONGITUDINAL)
+                    {
+                        dist = v.s - GetTrajectoryS();
+                    }
+                    else
+                    {
+                        // assume distance to closest point on trajectory is the lateral distance
+                        // which should be true except when point is outside the endpoints of the trajectory
+                        dist = getRelativeDistance(x, y, dx, dy);
+                    }
+                }
+                else
+                {
+                    LOG("Dist warning: No closest point found on trajectory. Measuring Euclidian distance.");
+                    dist = getRelativeDistance(x, y, dx, dy);
+                }
+            }
             dist = relDistType == RelativeDistanceType::REL_DIST_LATERAL ? GetTrajectoryT() : GetTrajectoryS();
         }
     }
@@ -13470,4 +13526,14 @@ double RMTrajectory::GetStartTime()
 double RMTrajectory::GetDuration()
 {
     return shape_->GetDuration();
+}
+
+int Shape::FindClosestPoint(double xin, double yin, TrajVertex& pos, int& index, int startAtIndex)
+{
+    if (pline_.vertex_.size() > 0)
+    {
+        return pline_.FindClosestPoint(xin, yin, pos, index, startAtIndex);
+    }
+
+    return -1;
 }

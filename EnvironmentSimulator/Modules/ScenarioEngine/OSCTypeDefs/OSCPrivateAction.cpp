@@ -2067,25 +2067,50 @@ void SynchronizeAction::Step(double simTime, double dt)
     }
 
     // Calculate distance along road/route
-    double                    masterDist, dist;
+    double                    masterDist = LARGE_NUMBER;
+    double                    dist       = LARGE_NUMBER;
     roadmanager::PositionDiff diff;
 
-    if (master_object_->pos_.GetTrajectory() || !master_object_->pos_.Delta(target_position_master_, diff))
+    int retval = -1;
+    if (master_object_->pos_.GetTrajectory())
     {
-        // No road network path between master vehicle and master target pos - using world coordinate distance
-        diff.ds = GetLengthOfLine2D(master_object_->pos_.GetX(),
-                                    master_object_->pos_.GetY(),
-                                    target_position_master_->GetX(),
-                                    target_position_master_->GetY());
+        retval = master_object_->pos_.Distance(target_position_master_,
+                                               roadmanager::CoordinateSystem::CS_TRAJECTORY,
+                                               roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL,
+                                               masterDist);
     }
-    masterDist = fabs(diff.ds);
 
-    if (object_->pos_.GetTrajectory() || !object_->pos_.Delta(target_position_, diff))
+    if (retval == -1 || masterDist > LARGE_NUMBER - SMALL_NUMBER)
     {
-        // No road network path between action vehicle and action target pos - using world coordinate distance
-        diff.ds = GetLengthOfLine2D(object_->pos_.GetX(), object_->pos_.GetY(), target_position_->GetX(), target_position_->GetY());
+        if (!master_object_->pos_.Delta(target_position_master_, diff))
+        {
+            // No road network path between master vehicle and master target pos - using world coordinate distance
+            diff.ds = GetLengthOfLine2D(master_object_->pos_.GetX(),
+                                        master_object_->pos_.GetY(),
+                                        target_position_master_->GetX(),
+                                        target_position_master_->GetY());
+        }
+        masterDist = fabs(diff.ds);
     }
-    dist = fabs(diff.ds);
+
+    retval = -1;
+    if (object_->pos_.GetTrajectory())
+    {
+        retval = object_->pos_.Distance(target_position_,
+                                        roadmanager::CoordinateSystem::CS_TRAJECTORY,
+                                        roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL,
+                                        dist);
+    }
+
+    if (retval == -1 || dist > LARGE_NUMBER - SMALL_NUMBER)
+    {
+        if (!object_->pos_.Delta(target_position_, diff))
+        {
+            // No road network path between action vehicle and action target pos - using world coordinate distance
+            diff.ds = GetLengthOfLine2D(object_->pos_.GetX(), object_->pos_.GetY(), target_position_->GetX(), target_position_->GetY());
+        }
+        dist = fabs(diff.ds);
+    }
 
     // Done when distance increases, indicating that destination just has been reached or passed
     if (dist < tolerance_ + SMALL_NUMBER)

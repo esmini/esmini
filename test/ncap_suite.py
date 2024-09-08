@@ -175,15 +175,16 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('.*Loading .*NCAP_AEB_VRU_CPTA_2023', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('\n26.800: Synchronize dist increasing \\(0.04 > 0.03\\) - missed destination', log)  is not None)
-        self.assertTrue(re.search('\n27.550: collision 0 between Ego and VRU', log)  is not None)
+        self.assertTrue(re.search('\n21.350: Entering Stead State according to criteria but not enough time to reach destination', log)  is not None)
+        self.assertTrue(re.search('\n27.500: collision 0 between Ego and VRU', log)  is not None)
+        self.assertTrue(re.search('\n27.500: Synchronization_CollisionDetection runningState -> endTransition -> completeState', log)  is not None)
 
         # Check vehicle state
         csv = generate_csv()
+        self.assertTrue(re.search('\n27.450, 0, Ego, 162.780, 5.580, 0.000, 1.345, 0.000, 0.000, 2.778, 0.266, 4.229', csv))
+        self.assertTrue(re.search('\n27.450, 1, VRU, 163.241, 9.500, 0.000, 6.283, 0.000, 0.000, 1.389, 0.000, 0.000', csv))
         self.assertTrue(re.search('\n27.500, 0, Ego, 162.808, 5.716, 0.000, 1.356, 0.000, 0.000, 2.778, 0.262, 4.626', csv))
-        self.assertTrue(re.search('\n27.500, 1, VRU, 164.227, 9.500, 0.000, 4.712, 0.000, 0.000, 1.389, 0.000, 0.000', csv))
-        self.assertTrue(re.search('\n27.550, 0, Ego, 162.836, 5.852, 0.000, 1.368, 0.000, 0.000, 2.778, 0.262, 5.023', csv))
-        self.assertTrue(re.search('\n27.550, 1, VRU, 164.297, 9.500, 0.000, 4.712, 0.000, 0.000, 1.389, 0.000, 0.000', csv))
+        self.assertTrue(re.search('\n27.500, 1, VRU, 163.310, 9.500, 0.000, 6.283, 0.000, 0.000, 1.389, 0.000, 0.000', csv))
 
 if __name__ == "__main__":
     # execute only if run as a script
