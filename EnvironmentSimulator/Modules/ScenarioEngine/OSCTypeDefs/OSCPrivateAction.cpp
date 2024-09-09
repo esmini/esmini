@@ -361,6 +361,15 @@ void FollowTrajectoryAction::Start(double simTime)
     }
 }
 
+FollowTrajectoryAction::~FollowTrajectoryAction()
+{
+    if (traj_)
+    {
+        delete traj_;
+        traj_ = nullptr;
+    }
+}
+
 void FollowTrajectoryAction::End()
 {
     OSCAction::End();
@@ -369,10 +378,6 @@ void FollowTrajectoryAction::End()
     {
         return;
     }
-
-    // Delete and disconnect trajectory
-    delete object_->pos_.GetTrajectory();
-    object_->pos_.SetTrajectory(nullptr);
 }
 
 void FollowTrajectoryAction::Step(double simTime, double dt)
@@ -2027,8 +2032,8 @@ void SynchronizeAction::PrintStatus(const char* custom_msg)
 
 void SynchronizeAction::Start(double simTime)
 {
-    target_position_master_->EvaluateRelation();
-    target_position_->EvaluateRelation();
+    target_position_master_.EvaluateRelation();
+    target_position_.EvaluateRelation();
 
     // resolve steady state -> translate into dist
     if (steadyState_.type_ == SteadyStateType::STEADY_STATE_TIME)
@@ -2040,7 +2045,7 @@ void SynchronizeAction::Start(double simTime)
     {
         // Find out distance between steady state position and final destination
         roadmanager::PositionDiff diff;
-        target_position_->Delta(steadyState_.pos_, diff);
+        target_position_.Delta(&steadyState_.pos_, diff);
         steadyState_.dist_ = diff.ds;
         steadyState_.type_ = SteadyStateType::STEADY_STATE_DIST;
     }
@@ -2051,6 +2056,24 @@ void SynchronizeAction::Start(double simTime)
     {
         // longitudinal motion controlled elsewhere
         return;
+    }
+}
+
+SynchronizeAction::~SynchronizeAction()
+{
+    if (target_position_master_.GetTrajectory() != nullptr)
+    {
+        delete target_position_master_.GetTrajectory();
+    }
+
+    if (target_position_.GetTrajectory() != nullptr)
+    {
+        delete target_position_.GetTrajectory();
+    }
+
+    if (steadyState_.type_ == SteadyStateType::STEADY_STATE_POS && steadyState_.pos_.GetTrajectory() != nullptr)
+    {
+        delete steadyState_.pos_.GetTrajectory();
     }
 }
 
@@ -2074,7 +2097,7 @@ void SynchronizeAction::Step(double simTime, double dt)
     int retval = -1;
     if (master_object_->pos_.GetTrajectory())
     {
-        retval = master_object_->pos_.Distance(target_position_master_,
+        retval = master_object_->pos_.Distance(&target_position_master_,
                                                roadmanager::CoordinateSystem::CS_TRAJECTORY,
                                                roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL,
                                                masterDist);
@@ -2082,13 +2105,13 @@ void SynchronizeAction::Step(double simTime, double dt)
 
     if (retval == -1 || masterDist > LARGE_NUMBER - SMALL_NUMBER)
     {
-        if (!master_object_->pos_.Delta(target_position_master_, diff))
+        if (!master_object_->pos_.Delta(&target_position_master_, diff))
         {
             // No road network path between master vehicle and master target pos - using world coordinate distance
             diff.ds = GetLengthOfLine2D(master_object_->pos_.GetX(),
                                         master_object_->pos_.GetY(),
-                                        target_position_master_->GetX(),
-                                        target_position_master_->GetY());
+                                        target_position_master_.GetX(),
+                                        target_position_master_.GetY());
         }
         masterDist = fabs(diff.ds);
     }
@@ -2096,7 +2119,7 @@ void SynchronizeAction::Step(double simTime, double dt)
     retval = -1;
     if (object_->pos_.GetTrajectory())
     {
-        retval = object_->pos_.Distance(target_position_,
+        retval = object_->pos_.Distance(&target_position_,
                                         roadmanager::CoordinateSystem::CS_TRAJECTORY,
                                         roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL,
                                         dist);
@@ -2104,10 +2127,10 @@ void SynchronizeAction::Step(double simTime, double dt)
 
     if (retval == -1 || dist > LARGE_NUMBER - SMALL_NUMBER)
     {
-        if (!object_->pos_.Delta(target_position_, diff))
+        if (!object_->pos_.Delta(&target_position_, diff))
         {
             // No road network path between action vehicle and action target pos - using world coordinate distance
-            diff.ds = GetLengthOfLine2D(object_->pos_.GetX(), object_->pos_.GetY(), target_position_->GetX(), target_position_->GetY());
+            diff.ds = GetLengthOfLine2D(object_->pos_.GetX(), object_->pos_.GetY(), target_position_.GetX(), target_position_.GetY());
         }
         dist = fabs(diff.ds);
     }

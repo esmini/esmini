@@ -734,25 +734,19 @@ namespace scenarioengine
             SUBMODE_CONCAVE
         } SynchSubmode;
 
-        std::shared_ptr<OSCPosition> steadyState_OSCPosition_;
         struct
         {
-            SteadyStateType type_;
-            union
-            {
-                roadmanager::Position* pos_;
-                double                 time_;
-                double                 dist_;
-            };
+            SteadyStateType       type_;
+            roadmanager::Position pos_;
+            double                time_;
+            double                dist_;
         } steadyState_;
 
         SynchMode    mode_;
         SynchSubmode submode_;
 
-        std::shared_ptr<OSCPosition>             target_position_master_OSCPosition_;
-        std::shared_ptr<OSCPosition>             target_position_OSCPosition_;
-        roadmanager::Position*                   target_position_master_;
-        roadmanager::Position*                   target_position_;
+        roadmanager::Position                    target_position_master_;
+        roadmanager::Position                    target_position_;
         Object*                                  master_object_;
         std::shared_ptr<LongSpeedAction::Target> final_speed_;
         double                                   tolerance_;
@@ -765,18 +759,15 @@ namespace scenarioengine
         SynchronizeAction(StoryBoardElement* parent)
             : OSCPrivateAction(OSCPrivateAction::ActionType::SYNCHRONIZE_ACTION, parent, static_cast<unsigned int>(ControlDomains::DOMAIN_LONG))
         {
-            steadyState_OSCPosition_ = nullptr;
-            master_object_           = 0;
-            final_speed_             = 0;
-            target_position_master_  = 0;
-            target_position_         = 0;
-            mode_                    = SynchMode::MODE_NONE;
-            submode_                 = SynchSubmode::SUBMODE_NONE;
-            lastDist_                = LARGE_NUMBER;
-            lastMasterDist_          = LARGE_NUMBER;
-            tolerance_               = SYNCH_DISTANCE_TOLERANCE;
-            tolerance_master_        = SYNCH_DISTANCE_TOLERANCE;
-            steadyState_.type_       = SteadyStateType::STEADY_STATE_NONE;
+            master_object_     = 0;
+            final_speed_       = 0;
+            mode_              = SynchMode::MODE_NONE;
+            submode_           = SynchSubmode::SUBMODE_NONE;
+            lastDist_          = LARGE_NUMBER;
+            lastMasterDist_    = LARGE_NUMBER;
+            tolerance_         = SYNCH_DISTANCE_TOLERANCE;
+            tolerance_master_  = SYNCH_DISTANCE_TOLERANCE;
+            steadyState_.type_ = SteadyStateType::STEADY_STATE_NONE;
         }
 
         SynchronizeAction(const SynchronizeAction& action)
@@ -785,21 +776,32 @@ namespace scenarioengine
                                static_cast<unsigned int>(ControlDomains::DOMAIN_LONG))
         {
             SetName(action.GetName());
-            steadyState_OSCPosition_            = action.steadyState_OSCPosition_;
-            target_position_master_OSCPosition_ = action.target_position_master_OSCPosition_;
-            target_position_OSCPosition_        = action.target_position_OSCPosition_;
-            master_object_                      = action.master_object_;
-            final_speed_                        = action.final_speed_;
-            target_position_master_             = action.target_position_master_;
-            target_position_                    = action.target_position_;
-            mode_                               = action.mode_;
-            submode_                            = action.submode_;
-            lastDist_                           = LARGE_NUMBER;
-            lastMasterDist_                     = LARGE_NUMBER;
-            tolerance_                          = SYNCH_DISTANCE_TOLERANCE;
-            tolerance_master_                   = SYNCH_DISTANCE_TOLERANCE;
-            steadyState_                        = action.steadyState_;
+            master_object_          = action.master_object_;
+            final_speed_            = action.final_speed_;
+            target_position_master_ = action.target_position_master_;
+            target_position_        = action.target_position_;
+            mode_                   = action.mode_;
+            submode_                = action.submode_;
+            lastDist_               = LARGE_NUMBER;
+            lastMasterDist_         = LARGE_NUMBER;
+            tolerance_              = SYNCH_DISTANCE_TOLERANCE;
+            tolerance_master_       = SYNCH_DISTANCE_TOLERANCE;
+            if (steadyState_.type_ == SteadyStateType::STEADY_STATE_DIST)
+            {
+                steadyState_.dist_ = action.steadyState_.dist_;
+            }
+            else if (steadyState_.type_ == SteadyStateType::STEADY_STATE_TIME)
+            {
+                steadyState_.dist_ = action.steadyState_.time_;
+            }
+            else if (steadyState_.type_ == SteadyStateType::STEADY_STATE_POS)
+            {
+                steadyState_.pos_ = action.steadyState_.pos_;
+            }
+            steadyState_.type_ = action.steadyState_.type_;
         }
+
+        ~SynchronizeAction();
 
         OSCPrivateAction* Copy()
         {
@@ -1060,6 +1062,8 @@ namespace scenarioengine
             reverse_               = action.reverse_;
             time_                  = 0;
         }
+
+        ~FollowTrajectoryAction();
 
         OSCPrivateAction* Copy()
         {

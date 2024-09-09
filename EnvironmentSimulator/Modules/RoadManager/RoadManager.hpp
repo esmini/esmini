@@ -3099,6 +3099,7 @@ namespace roadmanager
         ~Position();
         void Duplicate(const Position &other);
         void CopyLocation(const Position &from);
+        void Clean();
 
         void              Init();
         static bool       LoadOpenDrive(const char *filename);
@@ -4428,14 +4429,8 @@ namespace roadmanager
         PolyLineShape() : Shape(ShapeType::POLYLINE)
         {
         }
-        ~PolyLineShape()
-        {
-            for (auto &v : vertex_)
-            {
-                delete v.pos_;
-            }
-            vertex_.clear();
-        }
+        ~PolyLineShape();
+
         void   AddVertex(Position *pos, double time);
         int    Evaluate(double p, TrajectoryParamType ptype, TrajVertex &pos);
         void   CalculatePolyLine() override;
@@ -4556,13 +4551,15 @@ namespace roadmanager
             {
             }
 
-            ~ControlPoint() = default;
+            ~ControlPoint();
         };
 
     public:
         NurbsShape(unsigned int order) : order_(order), Shape(ShapeType::NURBS), length_(0)
         {
         }
+
+        ~NurbsShape();
 
         void AddControlPoint(Position pos, double time, double weight);
         void AddKnots(std::vector<double> knots);
@@ -4595,6 +4592,8 @@ namespace roadmanager
         RMTrajectory() : closed_(false)
         {
         }
+
+        ~RMTrajectory();
 
         void   Freeze(FollowingMode following_mode, double current_speed, Position *ref_pos = nullptr);
         double GetLength()

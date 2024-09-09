@@ -2760,8 +2760,14 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                 LOG("Missing required element \"TargetPositionMaster\"");
                 return 0;
             }
-            action_synch->target_position_master_OSCPosition_.reset(parseOSCPosition(target_position_master_node));
-            action_synch->target_position_master_ = action_synch->target_position_master_OSCPosition_->GetRMPos();
+            OSCPosition *pos_osc                  = parseOSCPosition(target_position_master_node);
+            action_synch->target_position_master_ = *pos_osc->GetRMPos();
+            if (pos_osc->GetRMPos()->GetTrajectory() != nullptr)
+            {
+                action_synch->target_position_master_.SetTrajectory(pos_osc->GetRMPos()->GetTrajectory());
+            }
+            delete pos_osc;
+
             if (parameters.ReadAttribute(actionChild, "targetToleranceMaster") != "")
             {
                 action_synch->tolerance_master_ = strtod(parameters.ReadAttribute(actionChild, "targetToleranceMaster"));
@@ -2773,8 +2779,15 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                 LOG("Missing required element \"TargetPosition\"");
                 return 0;
             }
-            action_synch->target_position_OSCPosition_.reset(parseOSCPosition(target_position_node));
-            action_synch->target_position_ = action_synch->target_position_OSCPosition_->GetRMPos();
+
+            pos_osc                        = parseOSCPosition(target_position_node);
+            action_synch->target_position_ = *pos_osc->GetRMPos();
+            if (pos_osc->GetRMPos()->GetTrajectory() != nullptr)
+            {
+                action_synch->target_position_.SetTrajectory(pos_osc->GetRMPos()->GetTrajectory());
+            }
+            delete pos_osc;
+
             if (parameters.ReadAttribute(actionChild, "targetTolerance") != "")
             {
                 action_synch->tolerance_ = strtod(parameters.ReadAttribute(actionChild, "targetTolerance"));
@@ -2858,9 +2871,14 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                     }
                     else if (!strcmp(steady_state_node.name(), "TargetPositionSteadyState"))
                     {
-                        action_synch->steadyState_OSCPosition_.reset(parseOSCPosition(steady_state_node));
+                        pos_osc                         = parseOSCPosition(steady_state_node);
+                        action_synch->steadyState_.pos_ = *pos_osc->GetRMPos();
+                        if (pos_osc->GetRMPos()->GetTrajectory() != nullptr)
+                        {
+                            action_synch->steadyState_.pos_.SetTrajectory(pos_osc->GetRMPos()->GetTrajectory());
+                        }
+                        delete pos_osc;
                         action_synch->steadyState_.type_ = SynchronizeAction::SteadyStateType::STEADY_STATE_POS;
-                        action_synch->steadyState_.pos_  = action_synch->steadyState_OSCPosition_->GetRMPos();
                     }
                     else
                     {

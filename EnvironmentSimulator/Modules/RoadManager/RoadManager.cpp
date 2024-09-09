@@ -6467,6 +6467,21 @@ void Position::Duplicate(const Position& from)
     t_trajectory_    = from.t_trajectory_;
 }
 
+void Position::Clean()
+{
+    if (route_ != nullptr)
+    {
+        delete route_;
+        route_ = nullptr;
+    }
+
+    if (trajectory_ != nullptr)
+    {
+        delete trajectory_;
+        trajectory_ = nullptr;
+    }
+}
+
 bool Position::LoadOpenDrive(const char* filename)
 {
     return (GetOpenDrive()->LoadOpenDriveFile(filename));
@@ -11534,6 +11549,20 @@ void PolyLineBase::Reset(bool clear_vertices)
     interpolation_mode_ = PolyLineBase::InterpolationMode::INTERPOLATE_NONE;
 }
 
+PolyLineShape::~PolyLineShape()
+{
+    for (auto& v : vertex_)
+    {
+        if (v.pos_->GetTrajectory() != nullptr)
+        {
+            delete v.pos_->GetTrajectory();
+            v.pos_->SetTrajectory(nullptr);
+        }
+        delete v.pos_;
+    }
+    vertex_.clear();
+}
+
 void PolyLineShape::AddVertex(Position* pos, double time)
 {
     Position* pos_copy = new Position(*pos);
@@ -11761,6 +11790,10 @@ ClothoidSplineShape::~ClothoidSplineShape()
     {
         if (segments_[i].posStart_ != nullptr)
         {
+            if (segments_[i].posStart_->GetTrajectory() != nullptr)
+            {
+                segments_[i].posStart_->GetTrajectory();
+            }
             delete segments_[i].posStart_;
             segments_[i].posStart_ = nullptr;
         }
@@ -12303,6 +12336,19 @@ int NurbsShape::EvaluateInternal(double t, TrajVertex& pos)
     }
 
     return 0;
+}
+
+NurbsShape::ControlPoint::~ControlPoint()
+{
+    pos_.Clean();
+}
+
+NurbsShape::~NurbsShape()
+{
+    for (auto& cp : ctrlPoint_)
+    {
+        cp.pos_.Clean();
+    }
 }
 
 void NurbsShape::AddControlPoint(Position pos, double time, double weight)
@@ -13473,6 +13519,14 @@ void Route::setName(std::string name)
 std::string Route::getName() const
 {
     return name_;
+}
+
+RMTrajectory::~RMTrajectory()
+{
+    if (shape_ != nullptr)
+    {
+        delete shape_;
+    }
 }
 
 void RMTrajectory::Freeze(FollowingMode following_mode, double current_speed, Position* ref_pos)

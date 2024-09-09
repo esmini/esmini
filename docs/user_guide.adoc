@@ -3090,6 +3090,25 @@ For easy execution of all tests, both unit tests and smoke tests, run this main 
 
 Tip: On Windows, run it from GIT bash.
 
+=== Sanitizers
+
+Google sanitizers framework is utilized to detect memory related errors, for example memory leaks. It's executed nighly as a GitHub CI actions job on dev branch. The job can also be trigged manually, but will only run checks on dev branch. Sanitizers is currently only applied to Linux builds.
+
+To run the sanitizer checks locally, on Ubuntu:
+
+1. Set the following environment variables, run from esmini root: +
+`export LSAN_OPTIONS="print_suppressions=false:suppressions=$(pwd)/scripts/LSAN.supp"`
+`export ASAN_OPTIONS="detect_invalid_pointer_pairs=1:strict_string_checks=1:detect_stack_use_after_return=1:check_initialization_order=1:strict_init_order=1:fast_unwind_on_malloc=0:suppressions=$(pwd)/scripts/ASAN.supp"`
+
+2. Configure and build emsini with sanitizers enabled +
+`cd build` +
+`cmake -G Ninja -DUSE_OSG=FALSE -DCMAKE_BUILD_TYPE=RelWithDebInfo -DENABLE_SANITIZERS=TRUE ..` +
+`ninja install` +
+`cd ..`
+
+3. Run the test suites, including both unit- and smoke tests, from esmini root: +
+`./scripts/run_tests.sh`
+
 == esmini lib programming
 
 === About the lib itself

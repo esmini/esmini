@@ -1,5 +1,18 @@
 ## esmini release notes
 
+### 2024-09-09 Version 2.38.4
+
+Improvements and fixes:
+
+- Fix crash due to swarm traffic inherit controllers ([issue #601](https://github.com/esmini/esmini/issues/601))
+  - when no vehicle catalog available, central object is used for swarm
+  - issue was that controller reference was reused and eventually deleted
+  - now controller will be unassigned for the swarm copy vehicle
+
+
+Build improvements:
+- Add symbols to sanitizer build for increased readability
+
 ### 2024-09-02 Version 2.38.3
 
 Improvements and fixes:
