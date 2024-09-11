@@ -13,6 +13,7 @@
 #pragma once
 
 #include "CommonMini.hpp"
+#include "logger.hpp"
 
 #include <string>
 #include <vector>
@@ -174,7 +175,7 @@ namespace scenarioengine
             }
             else
             {
-                LOG("Invalid transition requested from %s to %s", state2str(GetCurrentState()).c_str(), state2str(State::STANDBY).c_str());
+                LOG_ERROR("Invalid transition requested from {} to {}", state2str(GetCurrentState()), state2str(State::STANDBY));
             }
         }
 

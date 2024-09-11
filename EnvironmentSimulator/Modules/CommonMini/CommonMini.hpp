@@ -66,29 +66,6 @@ using id_t = uint32_t;
 #define GHOST_TRAIL_SAMPLE_TIME       0.2
 #define LOGICAL_OR(X, Y)              ((X || Y) && !(X && Y))
 
-#define LOG(...)       Logger::Inst().Log(false, false, __FILENAME__, __FUNCTION__, __LINE__, __VA_ARGS__)
-#define LOG_TRACE(...) Logger::Inst().Log(false, true, __FILENAME__, __FUNCTION__, __LINE__, __VA_ARGS__)
-#define LOG_ONCE(...)                                                                            \
-    {                                                                                            \
-        static bool firstTime = true;                                                            \
-        if (firstTime)                                                                           \
-        {                                                                                        \
-            Logger::Inst().Log(false, false, __FILENAME__, __FUNCTION__, __LINE__, __VA_ARGS__); \
-            firstTime = false;                                                                   \
-        }                                                                                        \
-    }
-#define LOG_TRACE_ONCE(...)                                                                     \
-    {                                                                                           \
-        static bool firstTime = true;                                                           \
-        if (firstTime)                                                                          \
-        {                                                                                       \
-            Logger::Inst().Log(false, true, __FILENAME__, __FUNCTION__, __LINE__, __VA_ARGS__); \
-            firstTime = false;                                                                  \
-        }                                                                                       \
-    }
-#define LOG_AND_QUIT(...)       Logger::Inst().Log(true, false, __FILENAME__, __FUNCTION__, __LINE__, __VA_ARGS__)
-#define LOG_TRACE_AND_QUIT(...) Logger::Inst().Log(true, true, __FILENAME__, __FUNCTION__, __LINE__, __VA_ARGS__)
-
 // Time functions
 __int64 SE_getSystemTime();
 void    SE_sleep(unsigned int msec);
@@ -745,8 +722,8 @@ double strtod(std::string s);
         @param size Maximum character written, including optional added terminating null (see terminate parameter)
         @param terminate If true the dest will always be terminated, at latest at dest[size-1]
 */
-void StrCopy(char* dest, const char* src, size_t size, bool terminate = true);
-
+void        StrCopy(char* dest, const char* src, size_t size, bool terminate = true);
+std::string GetVersionInfoForLog();
 // Global Logger class
 class Logger
 {
@@ -1245,7 +1222,7 @@ public:
             Note: Needs to be called prior to calling SE_Init()
             @param path Logfile path
     */
-    void        SetLogFilePath(std::string logFilePath);
+    // void        SetLogFilePath(std::string logFilePath);
     std::string GetLogFilePath()
     {
         return logFilePath_;

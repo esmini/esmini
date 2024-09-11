@@ -18,6 +18,7 @@
 #include "PlayerServer.hpp"
 #include "playerbase.hpp"
 #include "UDP.hpp"
+#include "logger.hpp"
 
 using namespace scenarioengine;
 
@@ -47,7 +48,7 @@ namespace scenarioengine
 
     int PlayerServer::AddAction(OSCAction *action)
     {
-        LOG("Adding action %s", action->GetName().c_str());
+        LOG_INFO("Adding action {}", action->GetName());
 
         // abort any action of same type and object
         for (auto &a : action_)
@@ -56,11 +57,10 @@ namespace scenarioengine
                 ((a->GetBaseType() != OSCAction::BaseType::PRIVATE) ||
                  (static_cast<OSCPrivateAction *>(a)->object_ == static_cast<OSCPrivateAction *>(action)->object_)))
             {
-                LOG("Action %s of type %s already ongoing%s, stopping it",
-                    a->GetName().c_str(),
-                    a->Type2Str().c_str(),
-                    a->GetBaseType() == OSCAction::BaseType::PRIVATE ? (" for " + static_cast<OSCPrivateAction *>(a)->object_->GetName()).c_str()
-                                                                     : "");
+                LOG_WARN("Action {} of type {} already ongoing{}, stopping it",
+                         a->GetName(),
+                         a->Type2Str(),
+                         a->GetBaseType() == OSCAction::BaseType::PRIVATE ? (" for " + static_cast<OSCPrivateAction *>(a)->object_->GetName()) : "");
                 a->End();
             }
         }
@@ -92,7 +92,7 @@ namespace scenarioengine
         {
             if (action_[i]->GetCurrentState() == OSCAction::State::COMPLETE)
             {
-                LOG("Injected action %s finished", action_[i]->GetName().c_str());
+                LOG_INFO("Injected action {} finished", action_[i]->GetName().c_str());
                 DeleteAction(static_cast<unsigned int>(i));
                 i++;
             }
@@ -146,7 +146,7 @@ namespace scenarioengine
                 t.shape_ = OSCPrivateAction::DynamicsShape::STEP;
                 break;
             default:
-                LOG("Unsupported transition shape: %d", shape);
+                LOG_ERROR("Unsupported transition shape: {}", shape);
         }
     }
 
@@ -164,7 +164,7 @@ namespace scenarioengine
                 t.dimension_ = OSCPrivateAction::DynamicsDimension::TIME;
                 break;
             default:
-                LOG("Unsupported transition dimension: %d", dimension);
+                LOG_ERROR("Unsupported transition dimension: {}", dimension);
         }
     }
 
@@ -261,11 +261,11 @@ namespace scenarioengine
         UDPServer *udpServer = new UDPServer(ESMINI_DEFAULT_ACTION_INPORT);
         if (udpServer->GetStatus() != 0)
         {
-            LOG("PlayerServer: Failed to open UDP socket");
+            LOG_ERROR("PlayerServer: Failed to open UDP socket");
             return;
         }
 
-        LOG("PlayerServer listening on port %d", ESMINI_DEFAULT_ACTION_INPORT);
+        LOG_INFO("PlayerServer listening on port %d", ESMINI_DEFAULT_ACTION_INPORT);
 
         state = SERV_RUNNING;
 
@@ -307,7 +307,7 @@ namespace scenarioengine
                         player->SetQuitRequest(true);
                         break;
                     default:
-                        LOG("Action of type %d not supported", buf.action_type);
+                        LOG_ERROR("Action of type {} not supported", buf.action_type);
                 }
             }
         }

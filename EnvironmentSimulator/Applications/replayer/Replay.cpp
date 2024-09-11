@@ -22,31 +22,31 @@ Replay::Replay(std::string filename, bool clean) : time_(0.0), index_(0), repeat
     file_.open(filename, std::ofstream::binary);
     if (file_.fail())
     {
-        LOG("Cannot open file: %s", filename.c_str());
+        LOG_ERROR("Cannot open file: {}", filename);
         throw std::invalid_argument(std::string("Cannot open file: ") + filename);
     }
 
     file_.read(reinterpret_cast<char*>(&header_), sizeof(header_));
-    LOG("Recording %s opened. dat version: %d odr: %s model: %s",
-        FileNameOf(filename).c_str(),
-        header_.version,
-        FileNameOf(header_.odr_filename).c_str(),
-        FileNameOf(header_.model_filename).c_str());
+    LOG_INFO("Recording {} opened. dat version: {} odr: {} model: {}",
+             FileNameOf(filename),
+             header_.version,
+             FileNameOf(header_.odr_filename),
+             FileNameOf(header_.model_filename));
 
     if (header_.version != DAT_FILE_FORMAT_VERSION)
     {
-        LOG_AND_QUIT("Version mismatch. %s is version %d while supported version is %d. Please re-create dat file.",
-                     filename.c_str(),
-                     header_.version,
-                     DAT_FILE_FORMAT_VERSION);
+        LOG_ERROR_AND_QUIT("Version mismatch. {} is version {} while supported version is {}. Please re-create dat file.",
+                           filename,
+                           header_.version,
+                           DAT_FILE_FORMAT_VERSION);
     }
 
     if (header_.version != DAT_FILE_FORMAT_VERSION)
     {
-        LOG_AND_QUIT("Version mismatch. %s is version %d while supported version is %d. Please re-create dat file.",
-                     filename.c_str(),
-                     header_.version,
-                     DAT_FILE_FORMAT_VERSION);
+        LOG_ERROR_AND_QUIT("Version mismatch. {} is version {} while supported version is {}. Please re-create dat file.",
+                           filename,
+                           header_.version,
+                           DAT_FILE_FORMAT_VERSION);
     }
 
     while (!file_.eof())
@@ -93,22 +93,22 @@ Replay::Replay(const std::string directory, const std::string scenario, std::str
         file_.open(scenarios_[i], std::ofstream::binary);
         if (file_.fail())
         {
-            LOG("Cannot open file: %s", scenarios_[i].c_str());
+            LOG_ERROR("Cannot open file: {}", scenarios_[i]);
             throw std::invalid_argument(std::string("Cannot open file: ") + scenarios_[i]);
         }
         file_.read(reinterpret_cast<char*>(&header_), sizeof(header_));
-        LOG("Recording %s opened. dat version: %d odr: %s model: %s",
-            FileNameOf(scenarios_[i]).c_str(),
-            header_.version,
-            FileNameOf(header_.odr_filename).c_str(),
-            FileNameOf(header_.model_filename).c_str());
+        LOG_INFO("Recording {} opened. dat version: {} odr: {} model: {}",
+                 FileNameOf(scenarios_[i]),
+                 header_.version,
+                 FileNameOf(header_.odr_filename),
+                 FileNameOf(header_.model_filename));
 
         if (header_.version != DAT_FILE_FORMAT_VERSION)
         {
-            LOG_AND_QUIT("Version mismatch. %s is version %d while supported version is %d. Please re-create dat file.",
-                         scenarios_[i].c_str(),
-                         header_.version,
-                         DAT_FILE_FORMAT_VERSION);
+            LOG_ERROR_AND_QUIT("Version mismatch. {} is version {} while supported version is {}. Please re-create dat file.",
+                               scenarios_[i],
+                               header_.version,
+                               DAT_FILE_FORMAT_VERSION);
         }
         while (!file_.eof())
         {
@@ -129,7 +129,7 @@ Replay::Replay(const std::string directory, const std::string scenario, std::str
 
     if (scenarioData.size() < 2)
     {
-        LOG_AND_QUIT("Too few scenarios loaded, use single replay feature instead\n");
+        LOG_ERROR_AND_QUIT("Too few scenarios loaded, use single replay feature instead\n");
     }
 
     // Scenario with smallest start time first
@@ -141,7 +141,7 @@ Replay::Replay(const std::string directory, const std::string scenario, std::str
     for (size_t i = 0; i < scenarioData.size(); i++)
     {
         std::string scenario_tmp = scenarioData[i].first;
-        LOG("Scenarios corresponding to IDs (%d:%d): %s", i * 100, (i + 1) * 100 - 1, FileNameOf(scenario_tmp.c_str()).c_str());
+        LOG_INFO("Scenarios corresponding to IDs ({}:{}): {}", i * 100, (i + 1) * 100 - 1, FileNameOf(scenario_tmp));
     }
 
     // Ensure increasing timestamps. Remove any other entries.
@@ -179,7 +179,7 @@ void Replay::GetReplaysFromDirectory(const std::string dir, const std::string sc
     // If no directory found, write error
     if (directory == nullptr)
     {
-        LOG_AND_QUIT("No valid directory given, couldn't open %s", dir.c_str());
+        LOG_ERROR_AND_QUIT("No valid directory given, couldn't open {}", dir);
     }
 
     // While directory is open, check the filename
@@ -192,7 +192,7 @@ void Replay::GetReplaysFromDirectory(const std::string dir, const std::string sc
             DIR* nested_dir = opendir((dir + filename).c_str());
             if (nested_dir == nullptr)
             {
-                LOG("Couldn't open nested directory %s", (dir + filename).c_str());
+                LOG_ERROR("Couldn't open nested directory {}{}", dir, filename);
             }
 
             struct dirent* nested_file;
@@ -221,7 +221,7 @@ void Replay::GetReplaysFromDirectory(const std::string dir, const std::string sc
 
     if (scenarios_.empty())
     {
-        LOG_AND_QUIT("Couldn't read any scenarios named %s in path %s", sce.c_str(), dir.c_str());
+        LOG_ERROR_AND_QUIT("Couldn't read any scenarios named {} in path {}", sce, dir);
     }
 }
 
@@ -587,7 +587,7 @@ void Replay::CreateMergedDatfile(const std::string filename)
     data_file_.open(filename, std::ofstream::binary);
     if (data_file_.fail())
     {
-        LOG("Cannot open file: %s", filename.c_str());
+        LOG_ERROR("Cannot open file: {}", filename);
         exit(-1);
     }
 

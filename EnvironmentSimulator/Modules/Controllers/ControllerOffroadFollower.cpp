@@ -14,6 +14,7 @@
 #include "CommonMini.hpp"
 #include "Entities.hpp"
 #include "ScenarioGateway.hpp"
+#include "logger.hpp"
 
 #include <random>
 
@@ -42,7 +43,7 @@ ControllerOffroadFollower::ControllerOffroadFollower(InitArgs* args)
             follow_entity_ = entities_->GetObjectByName(follow_entity_str.c_str());
             if (follow_entity_ == nullptr)
             {
-                LOG("Failed to find followEntity %s", follow_entity_str.c_str());
+                LOG_ERROR("Failed to find followEntity {}", follow_entity_str);
             }
         }
 

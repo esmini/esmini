@@ -27,6 +27,7 @@
 #include "OSCCondition.hpp"
 #include "Storyboard.hpp"
 #include "OSCParameterDistribution.hpp"
+#include "Utils.h"
 
 using namespace scenarioengine;
 
@@ -125,7 +126,7 @@ static void ConvertArguments()
         StrCopy(argv_[i], args_v[i].c_str(), static_cast<unsigned int>(args_v[i].size()) + 1);
         argument_list += std::string(" ") + argv_[i];
     }
-    LOG("Player arguments: %s", argument_list.c_str());
+    LOG_INFO("Player arguments: {}", argument_list);
 }
 
 static void copyStateFromScenarioGateway(SE_ScenarioObjectState *state, ObjectStateStruct *gw_state)
@@ -188,7 +189,7 @@ static int getObjectById(int object_id, Object *&obj)
         obj = player->scenarioEngine->entities_.GetObjectById(object_id);
         if (obj == nullptr)
         {
-            LOG("Invalid object_id (%d)", object_id);
+            LOG_ERROR("Invalid object_id ({})", object_id);
             return -1;
         }
     }
@@ -297,7 +298,7 @@ static int GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, S
     Object *ghost = obj->GetGhost();
     if (ghost == 0)
     {
-        LOG("Ghost object not available for object id %d", object_id);
+        LOG_ERROR("Ghost object not available for object id {}", object_id);
         return -1;
     }
 
@@ -373,7 +374,7 @@ static int GetRoadInfoAtGhostTrailTime(int object_id, float time, SE_RoadInfo *r
     Object *ghost = obj->GetGhost();
     if (ghost == nullptr)
     {
-        LOG("Ghost object not available for object id %d", object_id);
+        LOG_ERROR("Ghost object not available for object id {}", object_id);
 
         return -1;
     }
@@ -386,10 +387,10 @@ static int GetRoadInfoAtGhostTrailTime(int object_id, float time, SE_RoadInfo *r
 
     if (ghost->trail_.FindPointAtTime(static_cast<double>(time) - ghost->GetHeadstartTime(), trailPos, index_out, obj->trail_follow_index_) != 0)
     {
-        LOG("Failed to lookup point at time %.2f (time arg = %.2f) along ghost (%d) trail",
-            player->scenarioEngine->getSimulationTime() - ghost->GetHeadstartTime() + static_cast<double>(time),
-            static_cast<double>(time),
-            ghost->GetId());
+        LOG_ERROR("Failed to lookup point at time {:.2f} (time arg = {:.2f}) along ghost ({}) trail",
+                  player->scenarioEngine->getSimulationTime() - ghost->GetHeadstartTime() + static_cast<double>(time),
+                  static_cast<double>(time),
+                  ghost->GetId());
         return -1;
     }
     else
@@ -431,9 +432,34 @@ static int InitScenario()
     std::setlocale(LC_ALL, "C.UTF-8");
 
     Logger::Inst().SetCallback(log_callback);
-    Logger::Inst().OpenLogfile(SE_Env::Inst().GetLogFilePath());
-    Logger::Inst().LogVersion();
+    // Logger::Inst().OpenLogfile(SE_Env::Inst().GetLogFilePath());
+    // Logger::Inst().LogVersion();
+    //  riz temp
 
+    LoggerConfig logConfig;
+    SE_Options  &opt = SE_Env::Inst().GetOptions();
+    if (opt.IsOptionArgumentSet("log_only_modules"))
+    {
+        auto       arg_str  = opt.GetOptionArg("log_only_modules");
+        const auto splitted = utils::SplitString(arg_str, ',');
+        if (!splitted.empty())
+        {
+            logConfig.enabledFiles_.insert(splitted.begin(), splitted.end());
+        }
+    }
+
+    if (opt.IsOptionArgumentSet("log_skip_modules"))
+    {
+        auto       arg_str  = opt.GetOptionArg("log_skip_modules");
+        const auto splitted = utils::SplitString(arg_str, ',');
+        if (!splitted.empty())
+        {
+            logConfig.disabledFiles_.insert(splitted.begin(), splitted.end());
+        }
+    }
+    SetupLogger(logConfig);
+    CreateNewFileForLogging(SE_Env::Inst().GetLogFilePath());
+    LogTimeOnly();
     ConvertArguments();
 
     // Create scenario engine
@@ -441,14 +467,14 @@ static int InitScenario()
     {
         // Initialize the scenario engine and viewer
         player     = new ScenarioPlayer(argc_, argv_);
-        int retval = player->Init();
+        int retval = player->Init(false);
         if (retval == -1)
         {
-            LOG("Failed to initialize scenario player");
+            LOG_ERROR("Failed to initialize scenario player");
         }
         else if (retval == -2)
         {
-            LOG("Skipped initialize scenario player");
+            LOG_ERROR("Skipped initialize scenario player");
         }
 
         if (retval != 0)
@@ -459,7 +485,7 @@ static int InitScenario()
     }
     catch (const std::exception &e)
     {
-        LOG(e.what());
+        LOG_ERROR(e.what());
         resetScenario();
         return -1;
     }
@@ -482,7 +508,10 @@ extern "C"
 
     SE_DLL_API void SE_SetLogFilePath(const char *logFilePath)
     {
-        SE_Env::Inst().SetLogFilePath(logFilePath);
+        // SE_Env::Inst().SetLogFilePath(logFilePath);
+        LOG_INFO("calling CreateNewFileForLogging");
+        SE_SetOptionValue("--logfile_path", logFilePath);
+        CreateNewFileForLogging(logFilePath);
     }
 
     SE_DLL_API void SE_SetDatFilePath(const char *datFilePath)
@@ -595,7 +624,7 @@ extern "C"
 
             if (use_viewer & ~(0xf))  // check for invalid bits 0xf == 1+2+4+8
             {
-                LOG("Unexpected use_viewer value: %d. Valid range: (0, %d) / (0x0, 0x%x) (%d, %d)", use_viewer, 0, 0xf, 0xf);
+                LOG_ERROR("Unexpected use_viewer value: {}. Valid range: (0, {}) / (0x0, 0x{}) ({}, {})", use_viewer, 0, 0xf, 0xf);
             }
         }
 
@@ -617,7 +646,7 @@ extern "C"
 #ifndef _USE_OSG
         if (use_viewer)
         {
-            LOG("use_viewer flag set, but no viewer available (compiled without -D _USE_OSG");
+            LOG_ERROR("use_viewer flag set, but no viewer available (compiled without -D _USE_OSG");
         }
 #endif
         resetScenario();
@@ -647,7 +676,7 @@ extern "C"
 #ifndef _USE_OSG
         if (use_viewer)
         {
-            LOG("use_viewer flag set, but no viewer available (compiled without -D _USE_OSG");
+            LOG_ERROR("use_viewer flag set, but no viewer available (compiled without -D _USE_OSG");
         }
 #endif
         resetScenario();
@@ -944,6 +973,7 @@ extern "C"
 
     SE_DLL_API void SE_LogToConsole(bool mode)
     {
+        // SetOptions()
         logToConsole = mode;
     }
 
@@ -1111,7 +1141,7 @@ extern "C"
             }
             else
             {
-                LOG("SE_AddObject: Object type %d not supported yet", object_type);
+                LOG_ERROR("SE_AddObject: Object type {} not supported yet", object_type);
                 return -1;
             }
 
@@ -1776,12 +1806,13 @@ extern "C"
 
     SE_DLL_API void SE_LogMessage(const char *message)
     {
-        LOG(message);
+        LOG_INFO(message);
     }
 
     SE_DLL_API void SE_CloseLogFile()
     {
-        Logger::Inst().CloseLogFile();
+        // Logger::Inst().CloseLogFile();
+        StopFileLogging();
     }
 
     SE_DLL_API int SE_ObjectHasGhost(int object_id)
@@ -2088,7 +2119,7 @@ extern "C"
         {
             if (sensor_id < 0 || sensor_id >= static_cast<int>(player->sensor.size()))
             {
-                LOG("Invalid sensor_id (%d specified / %d available)", sensor_id, player->sensor.size());
+                LOG_ERROR("Invalid sensor_id ({} specified / {} available)", sensor_id, player->sensor.size());
                 return -1;
             }
 
@@ -2767,8 +2798,8 @@ extern "C"
         roadmanager::Route *route = obj->pos_.GetRoute();
 
         if (route == nullptr)
-        {
-            LOG("Object %s (id %d) has currently no assigned route", obj->GetName().c_str(), object_id);
+        {            
+            LOG_ERROR("Object {} (id {}) has currently no assigned route", obj->GetName(), object_id);
             return -1;
         }
 

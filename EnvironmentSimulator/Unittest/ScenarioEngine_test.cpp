@@ -15,6 +15,7 @@
 #include "OSCParameterDistribution.hpp"
 #include "pugixml.hpp"
 #include "simple_expr.h"
+#include "TestHelper.hpp"
 
 using namespace roadmanager;
 using namespace scenarioengine;
@@ -4403,7 +4404,7 @@ int main(int argc, char** argv)
     testing::GTEST_FLAG(filter) = "*ALKS_R157_TestR157RegulationMinDist*";
     // Or make use of launch argument, e.g. --gtest_filter=*ALKS_R157_TestR157RegulationMinDist*
 #endif
-
+    ParseAndSetLoggerOptions(argc, argv);
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }

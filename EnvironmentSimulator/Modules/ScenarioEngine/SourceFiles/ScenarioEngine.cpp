@@ -82,7 +82,7 @@ int ScenarioEngine::InitScenario(std::string oscFilename, bool disable_controlle
         {
             if (scenarioReader->loadOSCFile(file_name_candidates[i].c_str()) != 0)
             {
-                LOG(("Failed to load OpenSCENARIO file " + oscFilename_no_path).c_str());
+                LOG_ERROR("Failed to load OpenSCENARIO file {}", oscFilename_no_path);
                 return -3;
             }
             else
@@ -94,13 +94,13 @@ int ScenarioEngine::InitScenario(std::string oscFilename, bool disable_controlle
 
     if (i == file_name_candidates.size())
     {
-        LOG(("Couldn't locate OpenSCENARIO file " + oscFilename_no_path).c_str());
+        LOG_ERROR("Couldn't locate OpenSCENARIO file {}", oscFilename_no_path);
         return -1;
     }
 
     if (!scenarioReader->IsLoaded())
     {
-        LOG(("Couldn't load OpenSCENARIO file " + oscFilename_no_path).c_str());
+        LOG_ERROR("Couldn't load OpenSCENARIO file {}", oscFilename_no_path);
         return -2;
     }
 
@@ -124,7 +124,8 @@ ScenarioEngine::~ScenarioEngine()
     scenarioReader->UnloadControllers();
     delete scenarioReader;
     scenarioReader = 0;
-    LOG("Closing");
+    LOG_INFO("Closing");
+    StopFileLogging();
 }
 
 void ScenarioEngine::UpdateGhostMode()
@@ -182,7 +183,7 @@ int ScenarioEngine::step(double deltaSimTime)
             ObjectState* o = scenarioGateway.getObjectStatePtrById(obj->id_);
             if (o == nullptr)
             {
-                LOG("Gateway did not provide state for external car %d", obj->id_);
+                LOG_WARN("Gateway did not provide state for external car {}", obj->id_);
             }
             else
             {
@@ -534,7 +535,7 @@ int ScenarioEngine::step(double deltaSimTime)
 
 void ScenarioEngine::printSimulationTime()
 {
-    LOG("simulationTime = %.2f", simulationTime_);
+    LOG_INFO("simulationTime = {:.2f}", simulationTime_);
 }
 
 ScenarioGateway* ScenarioEngine::getScenarioGateway()
@@ -555,11 +556,11 @@ int ScenarioEngine::parseScenario()
     scenarioReader->parseOSCHeader();
     if (scenarioReader->GetVersionMajor() < 1)
     {
-        LOG_AND_QUIT("OpenSCENARIO v%d.%d not supported. Please migrate scenario to v1.0 or higher and try again.",
-                     scenarioReader->GetVersionMajor(),
-                     scenarioReader->GetVersionMinor());
+        LOG_ERROR_AND_QUIT("OpenSCENARIO v{}.{} not supported. Please migrate scenario to v1.0 or higher and try again.",
+                           scenarioReader->GetVersionMajor(),
+                           scenarioReader->GetVersionMinor());
     }
-    LOG("Loading %s (v%d.%d)", scenarioReader->getScenarioFilename().c_str(), scenarioReader->GetVersionMajor(), scenarioReader->GetVersionMinor());
+    LOG_INFO("Loading {} (v{}.{})", scenarioReader->getScenarioFilename(), scenarioReader->GetVersionMajor(), scenarioReader->GetVersionMinor());
 
     scenarioReader->parseGlobalParameterDeclarations();
     scenarioReader->variables.Print("variables");  // All variables parsed at this point (not the case with parameters)
@@ -575,7 +576,7 @@ int ScenarioEngine::parseScenario()
 
     if (getOdrFilename().empty())
     {
-        LOG("No OpenDRIVE file specified, continue without");
+        LOG_WARN("No OpenDRIVE file specified, continue without");
     }
     else
     {
@@ -601,15 +602,15 @@ int ScenarioEngine::parseScenario()
                 located = true;
                 if (roadmanager::Position::LoadOpenDrive(file_name_candidates[i].c_str()) == true)
                 {
-                    LOG("Loaded OpenDRIVE: %s", file_name_candidates[i].c_str());
+                    LOG_INFO("Loaded OpenDRIVE: {}", file_name_candidates[i]);
                     break;
                 }
                 else
                 {
-                    LOG("Failed to load OpenDRIVE file: %s", file_name_candidates[i].c_str());
+                    LOG_ERROR("Failed to load OpenDRIVE file: {}", file_name_candidates[i]);
                     if (i < file_name_candidates.size() - 1)
                     {
-                        LOG("  -> trying: %s", file_name_candidates[i + 1].c_str());
+                        LOG_INFO("  -> trying: {}", file_name_candidates[i + 1]);
                     }
                 }
             }
@@ -617,7 +618,7 @@ int ScenarioEngine::parseScenario()
 
         if (i == file_name_candidates.size())
         {
-            LOG((std::string("Failed to ") + (located ? "load" : "find") + " OpenDRIVE file " + getOdrFilename().c_str()).c_str());
+            LOG_ERROR("Failed to {} OpenDRIVE file {}", located ? "load" : "find", getOdrFilename());
             return -1;
         }
     }
@@ -656,7 +657,7 @@ int ScenarioEngine::parseScenario()
 
                 if (obj->ghost_)
                 {
-                    LOG_ONCE("NOTE: Ghost feature activated. Consider headstart time offset (-%.2f s) when reading log.",
+                    LOG_INFO("NOTE: Ghost feature activated. Consider headstart time offset (-{:.2f} s) when reading log.",
                              obj->ghost_->GetHeadstartTime());
 
                     if (obj->ghost_->GetHeadstartTime() > SE_Env::Inst().GetGhostHeadstart())
@@ -724,7 +725,7 @@ void ScenarioEngine::prepareGroundTruth(double dt)
 
         if (o == nullptr)
         {
-            LOG("Gateway did not provide state for external car %d", obj->id_);
+            LOG_WARN("Gateway did not provide state for external car {}", obj->id_);
         }
         else
         {
@@ -986,7 +987,7 @@ void ScenarioEngine::ReplaceObjectInTrigger(Trigger* trigger, Object* obj1, Obje
                     trig->type_ == TrigByEntity::EntityConditionType::ACCELERATION || trig->type_ == TrigByEntity::EntityConditionType::END_OF_ROAD ||
                     trig->type_ == TrigByEntity::EntityConditionType::OFF_ROAD || trig->type_ == TrigByEntity::EntityConditionType::STAND_STILL)
                 {
-                    LOG("Handing over trigger %s to ghost", cond->name_.c_str());
+                    LOG_INFO("Handing over trigger {} to ghost", cond->name_);
 
                     for (size_t k = 0; k < trig->triggering_entities_.entity_.size(); k++)
                     {
@@ -997,16 +998,16 @@ void ScenarioEngine::ReplaceObjectInTrigger(Trigger* trigger, Object* obj1, Obje
                         else
                         {
                             CreateGhostTeleport(obj1, obj2, event);
-                            LOG("Created new teleport action for ghost and %s trigger (entity %s)",
-                                cond->name_.c_str(),
-                                trig->triggering_entities_.entity_[k].object_->GetName().c_str());
+                            LOG_INFO("Created new teleport action for ghost and {} trigger (entity {})",
+                                     cond->name_,
+                                     trig->triggering_entities_.entity_[k].object_->GetName());
                         }
                     }
                 }
                 else if (event != nullptr)
                 {
                     CreateGhostTeleport(obj1, obj2, event);
-                    LOG("Created new teleport action for ghost and %s trigger", cond->name_.c_str());
+                    LOG_INFO("Created new teleport action for ghost and {} trigger", cond->name_);
                 }
             }
             else if (cond->base_type_ == OSCCondition::ConditionType::BY_VALUE)
@@ -1019,7 +1020,7 @@ void ScenarioEngine::ReplaceObjectInTrigger(Trigger* trigger, Object* obj1, Obje
                 else if (event != nullptr)
                 {
                     CreateGhostTeleport(obj1, obj2, event);
-                    LOG("Created new teleport action for ghost and %s trigger", cond->name_.c_str());
+                    LOG_INFO("Created new teleport action for ghost and {} trigger", cond->name_);
                 }
             }
         }
@@ -1202,7 +1203,7 @@ void ScenarioEngine::ResetEvents()
                                         // able to tigger again
                                         if (pa->object_->IsGhost() && event->GetCurrentState() == StoryBoardElement::State::COMPLETE)
                                         {
-                                            LOG("Reset event %s: ", event->GetName().c_str());
+                                            LOG_INFO("Reset event {}: ", event->GetName());
                                             event->Reset(StoryBoardElement::State::STANDBY);
                                             event->num_executions_ = 0;
                                         }
@@ -1236,7 +1237,7 @@ int ScenarioEngine::DetectCollisions()
                 if (std::find(obj0->collisions_.begin(), obj0->collisions_.end(), obj1) == obj0->collisions_.end())
                 {
                     // was not overlapping last timestep, but are now
-                    LOG("Collision between %s and %s", obj0->GetName().c_str(), obj1->GetName().c_str());
+                    LOG_WARN("Collision between {} and {}", obj0->GetName(), obj1->GetName());
                     obj0->collisions_.push_back(obj1);
                     obj1->collisions_.push_back(obj0);
                 }
@@ -1246,7 +1247,7 @@ int ScenarioEngine::DetectCollisions()
                 if (std::find(obj0->collisions_.begin(), obj0->collisions_.end(), obj1) != obj0->collisions_.end())
                 {
                     // was overlapping last frame, but not anymore
-                    LOG("Collision between %s and %s dissolved", obj0->GetName().c_str(), obj1->GetName().c_str());
+                    LOG_WARN("Collision between {} and {} dissolved", obj0->GetName(), obj1->GetName());
                     obj0->collisions_.erase(std::remove(obj0->collisions_.begin(), obj0->collisions_.end(), obj1), obj0->collisions_.end());
                     obj1->collisions_.erase(std::remove(obj1->collisions_.begin(), obj1->collisions_.end(), obj0), obj1->collisions_.end());
                 }
@@ -1263,7 +1264,7 @@ int ScenarioEngine::DetectCollisions()
             if (std::find(entities_.object_.begin(), entities_.object_.end(), obj->collisions_[j]) == entities_.object_.end())
             {
                 // object previously collided with pivot object has vanished from the set of entities, remove it from collision list
-                LOG("Unregister collision between %s and vanished entity", obj->GetName().c_str());
+                LOG_ERROR("Unregister collision between {} and vanished entity", obj->GetName());
                 obj->collisions_.erase(obj->collisions_.begin() + static_cast<int>(j));
                 j--;
             }

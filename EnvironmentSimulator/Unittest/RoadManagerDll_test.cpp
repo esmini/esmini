@@ -2,6 +2,7 @@
 #include <gmock/gmock.h>
 #include "esminiRMLib.hpp"
 #include "CommonMini.hpp"
+#include "TestHelper.hpp"
 
 TEST(TestSetMethods, SetRoadId)
 {
@@ -448,7 +449,7 @@ int main(int argc, char** argv)
         Logger::Inst().SetCallback(log_callback);
     }
 #endif
-
+    ParseAndSetLoggerOptions(argc, argv);
     // testing::GTEST_FLAG(filter) = "*check_GroundTruth_including_init_state*";
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

@@ -217,7 +217,7 @@ int main(int argc, const char* argv[])
             double value;
             if (SE_GetParameterDouble("DummyParameter", &value) != 0)
             {
-                LOG("Failed to receive parameter");
+                LOG_ERROR("Failed to receive parameter");
             }
             static bool triggered = false;
 

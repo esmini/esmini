@@ -13,6 +13,7 @@
 #pragma once
 
 #include "StoryboardElement.hpp"
+#include "logger.hpp"
 
 namespace scenarioengine
 {
@@ -166,7 +167,7 @@ namespace scenarioengine
 
         void Start(double simTime) override
         {
-            LOG("Starting %s type: %s content: %s", Type2Str().c_str(), user_action_type_.c_str(), content_.c_str());
+            LOG_INFO("Starting {} type: {} content: {}", Type2Str(), user_action_type_, content_);
             OSCAction::Start(simTime);
         }
 

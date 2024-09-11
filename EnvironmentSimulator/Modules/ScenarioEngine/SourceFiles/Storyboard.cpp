@@ -61,12 +61,12 @@ std::vector<StoryBoardElement*> StoryBoardElement::FindChildByTypeAndName(Elemen
 
 void Story::Print()
 {
-    LOG("Story: %s", GetName().c_str());
+    LOG_INFO("Story: %s", GetName().c_str());
 }
 
 void StoryBoard::Print()
 {
-    LOG("Storyboard:");
+    LOG_INFO("Storyboard:");
     for (size_t i = 0; i < story_.size(); i++)
     {
         story_[i]->Print();
@@ -141,7 +141,7 @@ void Event::Start(double simTime)
         // Activate trigged event
         if (GetCurrentState() == StoryBoardElement::State::RUNNING)
         {
-            LOG("Event already running, can't overwrite itself (%s) - skip trig", GetName().c_str());
+            LOG_WARN("Event already running, can't overwrite itself ({}) - skip trig", GetName());
         }
         else
         {
@@ -150,7 +150,7 @@ void Event::Start(double simTime)
                 if (tmp_event != this && tmp_event->GetCurrentState() == StoryBoardElement::State::RUNNING)
                 {
                     tmp_event->End();
-                    LOG("Event %s ended, overwritten by event %s", tmp_event->GetName().c_str(), GetName().c_str());
+                    LOG_INFO("Event {} ended, overwritten by event {}", tmp_event->GetName(), GetName());
                 }
             }
             start_event = true;
@@ -160,7 +160,7 @@ void Event::Start(double simTime)
     {
         if (maneuver->AnyChildRunning())
         {
-            LOG("Some event is already running within the maneuver %s, skipping trigged %s", maneuver->GetName().c_str(), GetName().c_str());
+            LOG_WARN("Some event is already running within the maneuver {}, skipping trigged {}", maneuver->GetName(), GetName());
         }
         else
         {
@@ -174,17 +174,17 @@ void Event::Start(double simTime)
         // Don't care if any other action is ongoing, launch anyway
         if (GetCurrentState() == StoryBoardElement::State::RUNNING)
         {
-            LOG("Event %s already running, trigger ignored", GetName().c_str());
+            LOG_WARN("Event {} already running, trigger ignored", GetName());
             start_event = false;
         }
         else if (maneuver->AnyChildRunning())
         {
-            LOG("Other events ongoing, %s will run in parallel", GetName().c_str());
+            LOG_INFO("Other events ongoing, {} will run in parallel", GetName());
         }
     }
     else
     {
-        LOG("Unknown event priority: %d", priority_);
+        LOG_WARN("Unknown event priority: {}", priority_);
     }
 
     if (!start_event)
@@ -223,9 +223,9 @@ void Event::Start(double simTime)
                         if (static_cast<int>(obj->initActions_[j]->GetDomains()) & static_cast<int>(pa->GetDomains()))
                         {
                             // Domains overlap, at least one domain in common. Terminate old action.
-                            LOG("Stopping %s on conflicting %s domain(s)",
-                                obj->initActions_[j]->GetName().c_str(),
-                                ControlDomain2Str(obj->initActions_[j]->GetDomains()).c_str());
+                            LOG_WARN("Stopping {} on conflicting {} domain(s)",
+                                     obj->initActions_[j]->GetName(),
+                                     ControlDomain2Str(obj->initActions_[j]->GetDomains()));
                             obj->initActions_[j]->End();
                         }
                     }
@@ -246,10 +246,10 @@ void Event::Start(double simTime)
                                 if (static_cast<int>(pa2->GetDomains()) & static_cast<int>(pa->GetDomains()))
                                 {
                                     // Domains overlap, at least one domain in common. Terminate old action.
-                                    LOG("Stopping object %s %s on conflicting %s domain(s)",
-                                        obj->GetName().c_str(),
-                                        pa2->GetName().c_str(),
-                                        ControlDomain2Str(pa2->GetDomains()).c_str());
+                                    LOG_WARN("Stopping object {} {} on conflicting {} domain(s)",
+                                             obj->GetName(),
+                                             pa2->GetName(),
+                                             ControlDomain2Str(pa2->GetDomains()));
                                     pa2->End();
                                 }
                             }

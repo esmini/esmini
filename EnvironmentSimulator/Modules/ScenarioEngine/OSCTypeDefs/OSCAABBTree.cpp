@@ -14,6 +14,8 @@
 #include "OSCTriangle2D.hpp"
 #include "RoadManager.hpp"
 #include "OSCSwarmTrafficGeometry.hpp"
+#include "logger.hpp"
+
 #include <cmath>
 #include <vector>
 #include <memory>
@@ -360,7 +362,7 @@ void aabbTree::findPoints(vector<ptTriangle> const &triangles, EllipseInfo &eInf
             geometryIntersect(*tr, eInfo, points);
         }
         else
-            LOG("Warning: triangle without a geometry found");
+            LOG_WARN("Warning: triangle without a geometry found");
     }
 }
 

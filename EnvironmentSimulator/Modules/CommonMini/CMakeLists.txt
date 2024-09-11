@@ -14,11 +14,13 @@ include(${CMAKE_SOURCE_DIR}/support/cmake/rule/enable_fpic.cmake)
 set(SOURCES
     CommonMini.cpp
     UDP.cpp
-    version.cpp)
+    version.cpp
+    logger.cpp)
 
 set(INCLUDES
     CommonMini.hpp
-    UDP.hpp)
+    UDP.hpp
+    logger.hpp)
 
 # ############################### Creating library ###################################################################
 

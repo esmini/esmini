@@ -593,7 +593,7 @@ double OSIPoints::GetLength() const
 
 void Geometry::Print() const
 {
-    LOG("Geometry virtual Print");
+    LOG_INFO("Geometry virtual Print");
 }
 
 void Geometry::EvaluateDS(double ds, double* x, double* y, double* h) const
@@ -602,12 +602,12 @@ void Geometry::EvaluateDS(double ds, double* x, double* y, double* h) const
     (void)x;
     (void)y;
     (void)h;
-    LOG("Geometry virtual Evaluate");
+    LOG_INFO("Geometry virtual Evaluate");
 }
 
 void Line::Print() const
 {
-    LOG("Line x: %.2f, y: %.2f, h: %.2f length: %.2f", GetX(), GetY(), GetHdg(), GetLength());
+    LOG_INFO("Line x: {:.2f}, y: {:.2f}, h: {:.2f} length: {:.2f}", GetX(), GetY(), GetHdg(), GetLength());
 }
 
 void Line::EvaluateDS(double ds, double* x, double* y, double* h) const
@@ -631,7 +631,7 @@ double Arc::GetRadius() const
 
 void Arc::Print() const
 {
-    LOG("Arc x: %.2f, y: %.2f, h: %.2f curvature: %.2f length: %.2f", GetX(), GetY(), GetHdg(), curvature_, GetLength());
+    LOG_INFO("Arc x: {:.2f}, y: {:.2f}, h: {:.2f} curvature: {:.2f} length: {:.2f}", GetX(), GetY(), GetHdg(), curvature_, GetLength());
 }
 
 void Arc::EvaluateDS(double ds, double* x, double* y, double* h) const
@@ -719,16 +719,16 @@ Spiral::Spiral(double s, double x, double y, double hdg, double length, double c
 
 void Spiral::Print() const
 {
-    LOG("Spiral x: %.2f, y: %.2f, h: %.2f start curvature: %.4f end curvature: %.4f length: %.2f %s",
-        GetX(),
-        GetY(),
-        GetHdg(),
-        GetCurvStart(),
-        GetCurvEnd(),
-        GetLength(),
-        clothoid_type_ == ARC    ? " - actually an Arc"
-        : clothoid_type_ == LINE ? " - actually a Line"
-                                 : "");
+    LOG_INFO("Spiral x: {:.2f}, y: {:.2f}, h: {:.2f} start curvature: {:.2f} end curvature: {:.2f} length: {:.2f} {}",
+             GetX(),
+             GetY(),
+             GetHdg(),
+             GetCurvStart(),
+             GetCurvEnd(),
+             GetLength(),
+             clothoid_type_ == ARC    ? " - actually an Arc"
+             : clothoid_type_ == LINE ? " - actually a Line"
+                                      : "");
 }
 
 void Spiral::EvaluateDS(double ds, double* x, double* y, double* h) const
@@ -844,15 +844,15 @@ Poly3::Poly3(double s, double x, double y, double hdg, double length, double a, 
 
 void Poly3::Print() const
 {
-    LOG("Poly3 x: %.2f, y: %.2f, h: %.2f length: %.2f a: %.2f b: %.2f c: %.2f d: %.2f",
-        GetX(),
-        GetY(),
-        GetHdg(),
-        GetLength(),
-        poly3_.GetA(),
-        poly3_.GetB(),
-        poly3_.GetC(),
-        poly3_.GetD());
+    LOG_INFO("Poly3 x: {:.2f}, y: {:.2f}, h: {:.2f} length: {:.2f} a: {:.2f} b: {:.2f} c: {:.2f} d: {:.2f}",
+             GetX(),
+             GetY(),
+             GetHdg(),
+             GetLength(),
+             poly3_.GetA(),
+             poly3_.GetB(),
+             poly3_.GetC(),
+             poly3_.GetD());
 }
 
 void Poly3::EvaluateDSLocal(double ds, double& u, double& v) const
@@ -908,19 +908,19 @@ double Poly3::EvaluateCurvatureDS(double ds) const
 
 void ParamPoly3::Print() const
 {
-    LOG("ParamPoly3 x: %.2f, y: %.2f, h: %.2f length: %.2f U: %.8f, %.8f, %.8f, %.8f V: %.8f, %.8f, %.8f, %.8f",
-        GetX(),
-        GetY(),
-        GetHdg(),
-        GetLength(),
-        poly3U_.GetA(),
-        poly3U_.GetB(),
-        poly3U_.GetC(),
-        poly3U_.GetD(),
-        poly3V_.GetA(),
-        poly3V_.GetB(),
-        poly3V_.GetC(),
-        poly3V_.GetD());
+    LOG_INFO("ParamPoly3 x: {:.2f}, y: {:.2f}, h: {:.2f} length: {:.2f} U: {:.8f}, {:.8f}, {:.8f}, {:.8f} V: {:.8f}, {:.8f}, {:.8f}, {:.8f}",
+             GetX(),
+             GetY(),
+             GetHdg(),
+             GetLength(),
+             poly3U_.GetA(),
+             poly3U_.GetB(),
+             poly3U_.GetC(),
+             poly3U_.GetD(),
+             poly3V_.GetA(),
+             poly3V_.GetB(),
+             poly3V_.GetC(),
+             poly3V_.GetD());
 }
 
 void ParamPoly3::EvaluateDS(double ds, double* x, double* y, double* h) const
@@ -1006,12 +1006,12 @@ double ParamPoly3::S2P(double s) const
 
 void Elevation::Print() const
 {
-    LOG("Elevation: s: %.2f A: %.4f B: %.4f C: %.4f D: %.4f", GetS(), poly3_.GetA(), poly3_.GetB(), poly3_.GetC(), poly3_.GetD());
+    LOG_INFO("Elevation: s: {:.2f} A: {:.4f} B: {:.4f} C: {:.4f} D: {:.4f}", GetS(), poly3_.GetA(), poly3_.GetB(), poly3_.GetC(), poly3_.GetD());
 }
 
 void LaneLink::Print() const
 {
-    LOG("LaneLink type: %d id: %d", type_, id_);
+    LOG_INFO("LaneLink type: {} id: {}", type_, id_);
 }
 
 void Lane::SetGlobalId()
@@ -1101,7 +1101,7 @@ Lane::Material* Lane::GetMaterialByIdx(int idx) const
 {
     if (lane_material_.size() <= idx || lane_material_.size() == 0)
     {
-        LOG("Lane::GetMaterialByIdx() -> index %d exceeds list size %d", idx, lane_material_.size());
+        LOG_INFO("Lane::GetMaterialByIdx() -> index {} exceeds list size {}", idx, lane_material_.size());
         return nullptr;
     }
 
@@ -1168,7 +1168,12 @@ LaneLink* Lane::GetLink(LinkType type) const
 
 void LaneWidth::Print() const
 {
-    LOG("LaneWidth: sOffset: %.2f, a: %.2f, b: %.2f, c: %.2f, d: %.2f", s_offset_, poly3_.GetA(), poly3_.GetB(), poly3_.GetC(), poly3_.GetD());
+    LOG_INFO("LaneWidth: sOffset: {:.2f}, a: {:.2f}, b: {:.2f}, c: {:.2f}, d: {:.2f}",
+             s_offset_,
+             poly3_.GetA(),
+             poly3_.GetB(),
+             poly3_.GetC(),
+             poly3_.GetD());
 }
 
 LaneRoadMark* Lane::GetLaneRoadMarkByIdx(int idx) const
@@ -1253,7 +1258,7 @@ RoadMarkColor LaneRoadMark::ParseColor(pugi::xml_node node)
         else
         {
             color = RoadMarkColor::UNKNOWN;
-            LOG("Unexpected and unsupported roadmark color %s", node.attribute("color").value());
+            LOG_ERROR("Unexpected and unsupported roadmark color {}", node.attribute("color").value());
         }
     }
 
@@ -1390,13 +1395,13 @@ void Lane::SetLaneBoundary(LaneBoundaryOSI* lane_boundary)
 
 void LaneOffset::Print() const
 {
-    LOG("LaneOffset s %.2f a %.4f b %.2f c %.2f d %.2f length %.2f",
-        s_,
-        polynomial_.GetA(),
-        polynomial_.GetB(),
-        polynomial_.GetC(),
-        polynomial_.GetD(),
-        length_);
+    LOG_INFO("LaneOffset s {:.2f} a {:.4f} b {:.2f} c {:.2f} d {:.2f} length {:.2f}",
+             s_,
+             polynomial_.GetA(),
+             polynomial_.GetB(),
+             polynomial_.GetC(),
+             polynomial_.GetD(),
+             length_);
 }
 
 double LaneOffset::GetLaneOffset(double s) const
@@ -1411,7 +1416,7 @@ double LaneOffset::GetLaneOffsetPrim(double s) const
 
 void Lane::Print() const
 {
-    LOG("Lane: %d, type: %d, level: %d", id_, type_, level_);
+    LOG_INFO("Lane: {}, type: {}, level: {}", id_, type_, level_);
 
     for (size_t i = 0; i < link_.size(); i++)
     {
@@ -1512,7 +1517,7 @@ int Road::GetLaneInfoByS(double s, int start_lane_section_idx, int start_lane_id
 
     if (lane_info.lane_section_idx_ >= (int)lane_section_.size() || lane_info.lane_section_idx_ < 0)
     {
-        LOG("Error idx %d > n_lane_sections %d", lane_info.lane_section_idx_, (int)lane_section_.size());
+        LOG_ERROR("Error idx {} > n_lane_sections {}", lane_info.lane_section_idx_, lane_section_.size());
     }
     else
     {
@@ -1557,14 +1562,15 @@ int Road::GetLaneInfoByS(double s, int start_lane_section_idx, int start_lane_id
 
                 if (lane == 0)
                 {
-                    LOG("GetLaneInfoByS: No valid connecting lane (rid: %d s: %.2f lane_id %d) - looking for closest valid lane",
-                        GetId(),
-                        s,
-                        lane_info.lane_id_);
+                    LOG_WARN("GetLaneInfoByS: No valid connecting lane (rid: {} s: {:.2f} lane_id {}) - looking for closest valid lane",
+                             GetId(),
+                             s,
+                             lane_info.lane_id_);
                 }
                 else
                 {
-                    LOG("GetLaneInfoByS: No connecting lane (rid: %d s: %.2f lane_id %d) matching type mask 0x%X - looking for closest valid lane",
+                    LOG_WARN(
+                        "GetLaneInfoByS: No connecting lane (rid: {} s: {:.2f} lane_id {}) matching type mask 0x%X - looking for closest valid lane",
                         GetId(),
                         s,
                         lane_info.lane_id_);
@@ -1574,13 +1580,13 @@ int Road::GetLaneInfoByS(double s, int start_lane_section_idx, int start_lane_id
 
                 if (new_lane_index < 0)
                 {
-                    LOG("Failed to find a closest snapping lane - fall back to reference lane (id 0)");
+                    LOG_WARN("Failed to find a closest snapping lane - fall back to reference lane (id 0)");
                     lane_info.lane_id_ = 0;
                     return -1;
                 }
 
                 lane_info.lane_id_ = lane_section->GetLaneByIdx(new_lane_index)->GetId();
-                LOG("GetLaneInfoByS: Moved to %d", lane_info.lane_id_);
+                LOG_INFO("GetLaneInfoByS: Moved to %d", lane_info.lane_id_);
             }
         }
     }
@@ -1594,7 +1600,7 @@ int Road::GetConnectingLaneId(RoadLink* road_link, int fromLaneId, id_t connecti
 
     if (road_link->GetElementId() == -1)
     {
-        LOG("No connecting road or junction at rid %d link_type %s", GetId(), OpenDrive::LinkType2Str(road_link->GetType()).c_str());
+        LOG_ERROR("No connecting road or junction at rid {} link_type {}", GetId(), OpenDrive::LinkType2Str(road_link->GetType()).c_str());
         return 0;
     }
 
@@ -1609,7 +1615,7 @@ int Road::GetConnectingLaneId(RoadLink* road_link, int fromLaneId, id_t connecti
 
     if (lane == nullptr)
     {
-        LOG("Failed to get connecting lane %d %d %d", GetId(), fromLaneId, connectingRoadId);
+        LOG_ERROR("Failed to get connecting lane {} {} {}", GetId(), fromLaneId, connectingRoadId);
         return 0;
     }
 
@@ -1617,7 +1623,7 @@ int Road::GetConnectingLaneId(RoadLink* road_link, int fromLaneId, id_t connecti
     {
         if (road_link->GetElementId() != connectingRoadId)
         {
-            LOG("Wrong connectingRoadId %d (expected %d)", road_link->GetElementId(), connectingRoadId);
+            LOG_ERROR("Wrong connectingRoadId {} (expected {})", road_link->GetElementId(), connectingRoadId);
             return 0;
         }
 
@@ -1637,7 +1643,7 @@ int Road::GetConnectingLaneId(RoadLink* road_link, int fromLaneId, id_t connecti
 
         if (junction == 0)
         {
-            LOG("Error: junction %d not existing", road_link->GetElementId());
+            LOG_ERROR("Error: junction {} not existing", road_link->GetElementId());
             return 0;
         }
 
@@ -1719,7 +1725,7 @@ Lane::Material* Road::GetLaneMaterialByS(double s, int lane_id) const
     }
     else
     {
-        LOG("GetLaneMaterialByS: No valid lane %d at road %d s %.2f\n", lane_id, GetId(), s);
+        LOG_WARN("GetLaneMaterialByS: No valid lane {} at road {} s {:.2f}\n", lane_id, GetId(), s);
     }
 
     return nullptr;
@@ -1731,7 +1737,7 @@ Geometry* Road::GetGeometry(int idx) const
     {
         if (idx != 0)  // skip error message for index 0, probably caused by empty road
         {
-            LOG("Road::GetGeometry index %d out of range [0:%d]", idx, (int)geometry_.size());
+            LOG_ERROR("Road::GetGeometry index {} out of range [0:{}]", idx, geometry_.size());
         }
         return nullptr;
     }
@@ -1740,7 +1746,7 @@ Geometry* Road::GetGeometry(int idx) const
 
 void LaneSection::Print() const
 {
-    LOG("LaneSection: %.2f, %d lanes:", s_, (int)lane_.size());
+    LOG_INFO("LaneSection: {:.2f}, {} lanes:", s_, lane_.size());
 
     for (size_t i = 0; i < lane_.size(); i++)
     {
@@ -1787,7 +1793,7 @@ int LaneSection::GetLaneIdByIdx(int idx) const
 {
     if (idx > (int)lane_.size() - 1)
     {
-        LOG("LaneSection::GetLaneIdByIdx Error: index %d, only %d lanes", idx, (int)lane_.size());
+        LOG_ERROR("LaneSection::GetLaneIdByIdx Error: index {}, only {} lanes", idx, lane_.size());
         return 0;
     }
     else
@@ -1812,7 +1818,7 @@ int LaneSection::GetLaneGlobalIdByIdx(int idx) const
 {
     if (idx < 0 || idx > (int)lane_.size() - 1)
     {
-        LOG("LaneSection::GetLaneIdByIdx Error: index %d, only %d lanes", idx, (int)lane_.size());
+        LOG_ERROR("LaneSection::GetLaneIdByIdx Error: index {}, only {} lanes", idx, lane_.size());
         return 0;
     }
     else
@@ -2039,7 +2045,7 @@ int LaneSection::GetConnectingLaneId(int incoming_lane_id, LinkType link_type) c
 
     if (GetLaneById(id) == 0)
     {
-        LOG("Lane id %d not available in lane section!", id);
+        LOG_ERROR("Lane id {} not available in lane section!", id);
         return 0;
     }
 
@@ -2086,7 +2092,7 @@ RoadMarkInfo Lane::GetRoadMarkInfoByS(id_t track_id, int lane_id, double s) cons
     double                s_roadmark, s_roadmarkline, s_end_roadmark, s_end_roadmarkline = 0, lsec_end = 0;
     if (road == 0)
     {
-        LOG("Position::Set Error: track %d not available", track_id);
+        LOG_ERROR("Position::Set Error: track {} not available", track_id);
         lsec_idx = -1;
     }
     else
@@ -2098,7 +2104,7 @@ RoadMarkInfo Lane::GetRoadMarkInfoByS(id_t track_id, int lane_id, double s) cons
 
     if (lsec == 0)
     {
-        LOG("Position::Set Error: lane section %d not available", lsec_idx);
+        LOG_ERROR("Position::Set Error: lane section {} not available", lsec_idx);
     }
     else
     {
@@ -2116,7 +2122,7 @@ RoadMarkInfo Lane::GetRoadMarkInfoByS(id_t track_id, int lane_id, double s) cons
     lane = lsec->GetLaneById(lane_id);
     if (lane == 0)
     {
-        LOG("Position::Set Error: lane section %d not available", lane_id);
+        LOG_ERROR("Position::Set Error: lane section {} not available", lane_id);
     }
 
     number_of_roadmarks = lane->GetNumberOfRoadMarks();
@@ -2216,11 +2222,11 @@ RoadLink::RoadLink(LinkType type, pugi::xml_node node) : contact_point_type_(Con
         }
         else if (contact_point_type.empty())
         {
-            LOG("Missing contact point type");
+            LOG_ERROR("Missing contact point type");
         }
         else
         {
-            LOG("Unsupported contact point type: %s", contact_point_type.c_str());
+            LOG_ERROR("Unsupported contact point type: {}", contact_point_type);
             contact_point_type_ = CONTACT_POINT_UNDEFINED;
         }
     }
@@ -2232,11 +2238,11 @@ RoadLink::RoadLink(LinkType type, pugi::xml_node node) : contact_point_type_(Con
     }
     else if (element_type.empty())
     {
-        LOG("Missing element type");
+        LOG_ERROR("Missing element type");
     }
     else
     {
-        LOG("Unsupported element type: %s", element_type.c_str());
+        LOG_ERROR("Unsupported element type: %s", element_type.c_str());
         element_type_ = ELEMENT_TYPE_UNKNOWN;
     }
 }
@@ -2305,7 +2311,7 @@ Road::~Road()
 
 void Road::Print() const
 {
-    LOG("Road id: %d length: %.2f", id_, GetLength());
+    LOG_INFO("Road id: {} length: {:.2f}", id_, GetLength());
     cout << "Geometries:" << endl;
 
     for (size_t i = 0; i < geometry_.size(); i++)
@@ -2410,8 +2416,12 @@ void Road::AddSignal(Signal* signal)
     }
     signal->SetLength(length_ - signal->GetS());
 
-    // LOG("Add signal[%d]: \"%s\" type %d subtype %d to road %d", (int)signal_.size(), signal->GetName().c_str(),
-    //	signal->GetType(), signal->GetSubType(), GetId());
+    LOG_DEBUG("Add signal[{}]: \"{}\" type {} subtype {} to road {}",
+              signal_.size(),
+              signal->GetName(),
+              signal->GetType(),
+              signal->GetSubType(),
+              GetId());
     signal_.push_back((Signal*)signal);
 }
 
@@ -2432,7 +2442,6 @@ Signal* Road::GetSignal(int idx) const
 
 void Road::AddObject(RMObject* object)
 {
-    /*LOG("Add object[%d]: %s", (int)object_.size(), object->GetName().c_str());*/
     object_.push_back(object);
 }
 
@@ -2541,7 +2550,7 @@ std::string RMObject::Type2Str(RMObject::ObjectType type)
     }
     else
     {
-        LOG("Unsupported object type: %d", t);
+        LOG_ERROR("Unsupported object type: {}", t);
     }
 
     return "";
@@ -2559,7 +2568,7 @@ RMObject::ObjectType RMObject::Str2Type(std::string type)
         }
     }
 
-    LOG("Unsupported object type: %s - interpret as NONE", type.c_str());
+    LOG_ERROR("Unsupported object type: {} - interpret as NONE", type);
 
     return RMObject::ObjectType::NONE;
 }
@@ -2849,7 +2858,7 @@ bool Road::IsDirectlyConnected(Road* road, double* curvature, int fromLaneId) co
         }
         else
         {
-            LOG("Unexpected contact type %d between roads %d and %d", contact_point, GetId(), road->GetId());
+            LOG_ERROR("Unexpected contact type {} between roads {} and {}", contact_point, GetId(), road->GetId());
         }
         return true;
     }
@@ -2996,7 +3005,7 @@ bool Road::GetZAndPitchByS(double s, double* z, double* z_prim, double* z_primPr
         Elevation* elevation = GetElevation(*index);
         if (elevation == NULL)
         {
-            LOG("Elevation error NULL, nelev: %d elev_idx: %d", GetNumberOfElevations(), *index);
+            LOG_ERROR("Elevation error NULL, nelev: {} elev_idx: {}", GetNumberOfElevations(), *index);
             return false;
         }
 
@@ -3045,7 +3054,7 @@ bool Road::UpdateZAndRollBySAndT(double s, double t, double* z, double* roadSupe
         Elevation* super_elevation = GetSuperElevation(*index);
         if (super_elevation == NULL)
         {
-            LOG("Superelevation error NULL, nelev: %d elev_idx: %d", GetNumberOfSuperElevations(), *index);
+            LOG_ERROR("Superelevation error NULL, nelev: {} elev_idx: {}", GetNumberOfSuperElevations(), *index);
             return false;
         }
 
@@ -3158,7 +3167,7 @@ Junction* OpenDrive::GetJunctionByIdx(int idx) const
     }
     else
     {
-        LOG("GetJunctionByIdx error (idx %d, njunctions %d)", idx, (int)junction_.size());
+        LOG_ERROR("GetJunctionByIdx error (idx {}, njunctions {})", idx, junction_.size());
         return 0;
     }
 }
@@ -3207,7 +3216,7 @@ std::string ReadAttribute(pugi::xml_node node, std::string attribute_name, bool 
     {
         if (required)
         {
-            LOG("Warning: Required but empty attribute");
+            LOG_WARN("Warning: Required but empty attribute");
         }
         return "";
     }
@@ -3222,7 +3231,7 @@ std::string ReadAttribute(pugi::xml_node node, std::string attribute_name, bool 
     {
         if (required)
         {
-            LOG("Warning: missing required attribute: %s -> %s", node.name(), attribute_name.c_str());
+            LOG_WARN("Warning: missing required attribute: {} -> {}", node.name(), attribute_name);
         }
     }
 
@@ -3272,14 +3281,14 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
     pugi::xml_parse_result result = doc.load_file(filename);
     if (!result)
     {
-        LOG("%s at offset (character position): %d", result.description(), result.offset);
+        LOG_WARN("{} at offset (character position): {}", result.description(), result.offset);
         return false;
     }
 
     pugi::xml_node node = doc.child("OpenDRIVE");
     if (node == NULL)
     {
-        LOG("Invalid OpenDRIVE file, can't find OpenDRIVE element");
+        LOG_ERROR("Invalid OpenDRIVE file, can't find OpenDRIVE element");
         return false;
     }
 
@@ -3385,12 +3394,12 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
             }
             else if (type == "")
             {
-                LOG("Missing road type - setting default (rural)");
+                LOG_WARN("Missing road type - setting default (rural)");
                 r_type->road_type_ = Road::RoadType::ROADTYPE_RURAL;
             }
             else
             {
-                LOG("Unsupported road type: %s - assuming rural", type.c_str());
+                LOG_WARN("Unsupported road type: {} - assuming rural", type.c_str());
                 r_type->road_type_ = Road::RoadType::ROADTYPE_RURAL;
             }
 
@@ -3419,7 +3428,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                 }
                 else
                 {
-                    LOG("Unsupported speed unit: %s - set UNDEFINED", unit.c_str());
+                    LOG_WARN("Unsupported speed unit: {} - set UNDEFINED", unit.c_str());
                     r_type->unit_ = SpeedUnit::UNDEFINED;
                 }
             }
@@ -3451,11 +3460,11 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                 // As connecting road it is expected to have connections in both ends
                 if (successor == NULL)
                 {
-                    LOG("Warning: connecting road %d in junction %d lacks successor", r->GetId(), r->GetJunction());
+                    LOG_WARN("Warning: connecting road {} in junction {} lacks successor", r->GetId(), r->GetJunction());
                 }
                 if (predecessor == NULL)
                 {
-                    LOG("Warning: connecting road %d in junction %d lacks predesessor", r->GetId(), r->GetJunction());
+                    LOG_WARN("Warning: connecting road {} in junction {} lacks predesessor", r->GetId(), r->GetJunction());
                 }
             }
         }
@@ -3523,7 +3532,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                         }
                         else
                         {
-                            LOG("ParamPoly3: Major error");
+                            LOG_ERROR("ParamPoly3: Major error");
                         }
                     }
                     else
@@ -3556,7 +3565,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                 }
                 else
                 {
-                    LOG("Elevation: Major error");
+                    LOG_ERROR("Elevation: Major error");
                 }
             }
         }
@@ -3580,7 +3589,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                 }
                 else
                 {
-                    LOG("SuperElevation: Major error");
+                    LOG_ERROR("SuperElevation: Major error");
                 }
             }
         }
@@ -3604,10 +3613,10 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                     double s = atof(child->attribute("s").value());
                     if (s > r->GetLength())
                     {
-                        LOG("Truncating lane section %d of road %s at s=%.2f (road length)",
-                            r->GetNumberOfLaneSections(),
-                            r->GetIdStr().c_str(),
-                            r->GetLength());
+                        LOG_INFO("Truncating lane section {} of road {} at s={:.2f} (road length)",
+                                 r->GetNumberOfLaneSections(),
+                                 r->GetIdStr(),
+                                 r->GetLength());
                         s = r->GetLength();
                     }
                     LaneSection* lane_section = new LaneSection(s);
@@ -3615,41 +3624,33 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
 
                     for (pugi::xml_node_iterator child2 = child->children().begin(); child2 != child->children().end(); child2++)
                     {
-                        if (!strcmp(child2->name(), "left"))
+                        // check for expected lane sides: left, right, center
+                        if (strcmp(child2->name(), "left") != 0 && strcmp(child2->name(), "right") != 0 && strcmp(child2->name(), "center") != 0)
                         {
-                            // LOG("Lane left");
-                        }
-                        else if (!strcmp(child2->name(), "right"))
-                        {
-                            // LOG("Lane right");
-                        }
-                        else if (!strcmp(child2->name(), "center"))
-                        {
-                            // LOG("Lane center");
-                        }
-                        else if (!strcmp(child2->name(), "userData"))
-                        {
-                            // Not supported
-                            continue;
-                        }
-                        else
-                        {
-                            LOG("Unsupported lane side: %s", child2->name());
-                            continue;
+                            if (!strcmp(child2->name(), "userData"))
+                            {
+                                LOG_WARN("Lane side userData is note supported");
+                                continue;
+                            }
+                            else
+                            {
+                                LOG_ERROR("Unexpected lane side: {}", child2->name());
+                                continue;
+                            }
                         }
 
                         for (pugi::xml_node_iterator lane_node = child2->children().begin(); lane_node != child2->children().end(); lane_node++)
                         {
                             if (strcmp(lane_node->name(), "lane"))
                             {
-                                LOG("Unexpected element: %s, expected \"lane\"", lane_node->name());
+                                LOG_ERROR("Unexpected element: %s, expected \"lane\"", lane_node->name());
                                 continue;
                             }
 
                             Lane::LaneType lane_type = Lane::LANE_TYPE_NONE;
                             if (lane_node->attribute("type") == 0 || !strcmp(lane_node->attribute("type").value(), ""))
                             {
-                                LOG("Lane type error");
+                                LOG_ERROR("Lane type error");
                             }
                             std::string lane_type_str = lane_node->attribute("type").value();
                             if (lane_type_str == "none")
@@ -3738,7 +3739,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                             }
                             else
                             {
-                                LOG("unknown lane type: %s (road id=%d)", lane_type_str.c_str(), r->GetId());
+                                LOG_ERROR("unknown lane type: {} (road id={})", lane_type_str, r->GetId());
                             }
 
                             int lane_id = atoi(lane_node->attribute("id").value());
@@ -3752,7 +3753,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                             Lane* lane = new Lane(lane_id, lane_type);
                             if (lane == NULL)
                             {
-                                LOG("Error: creating lane");
+                                LOG_ERROR("Error: creating lane");
                                 return false;
                             }
                             lane_section->AddLane(lane);
@@ -3794,7 +3795,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                                 LaneRoadMark::RoadMarkType roadMark_type = LaneRoadMark::NONE_TYPE;
                                 if (roadMark.attribute("type") == 0 || !strcmp(roadMark.attribute("type").value(), ""))
                                 {
-                                    LOG("Lane road mark type error");
+                                    LOG_ERROR("Lane road mark type error");
                                 }
                                 if (!strcmp(roadMark.attribute("type").value(), "none"))
                                 {
@@ -3838,7 +3839,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                                 }
                                 else
                                 {
-                                    LOG("unknown lane road mark type: %s (road id=%d)", roadMark.attribute("type").value(), r->GetId());
+                                    LOG_ERROR("unknown lane road mark type: {} (road id={})", roadMark.attribute("type").value(), r->GetId());
                                 }
 
                                 // weight - consider it optional with default value = STANDARD
@@ -3855,9 +3856,9 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                                     }
                                     else
                                     {
-                                        LOG("unknown lane road mark weight: %s (road id=%d) setting to standard",
-                                            roadMark.attribute("type").value(),
-                                            r->GetId());
+                                        LOG_ERROR("unknown lane road mark weight: {} (road id={}) setting to standard",
+                                                  roadMark.attribute("type").value(),
+                                                  r->GetId());
                                         roadMark_weight = LaneRoadMark::STANDARD;
                                     }
                                 }
@@ -3866,9 +3867,9 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                                 RoadMarkColor roadMark_color = LaneRoadMark::ParseColor(roadMark);
                                 if (GetVersionMajor() == 1 && GetVersionMinor() > 4 && roadMark_color == RoadMarkColor::UNDEFINED)
                                 {
-                                    LOG("Missing lane road mark color: %s (road id=%d), set to standard (white)",
-                                        LaneRoadMark::RoadMarkColor2Str(roadMark_color).c_str(),
-                                        r->GetId());
+                                    LOG_WARN("Missing lane road mark color: {} (road id={}), set to standard (white)",
+                                             LaneRoadMark::RoadMarkColor2Str(roadMark_color),
+                                             r->GetId());
                                     roadMark_color = RoadMarkColor::STANDARD_COLOR;
                                 }
 
@@ -3881,7 +3882,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                                 {
                                     if (!strcmp(roadMark.attribute("laneChange").value(), ""))
                                     {
-                                        LOG("Lane roadmark lanechange error");
+                                        LOG_ERROR("Lane roadmark lanechange error");
                                     }
                                     else
                                     {
@@ -3903,9 +3904,9 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                                         }
                                         else
                                         {
-                                            LOG("unknown lane road mark lane change: %s (road id=%d)",
-                                                roadMark.attribute("laneChange").value(),
-                                                r->GetId());
+                                            LOG_ERROR("unknown lane road mark lane change: {} (road id={})",
+                                                      roadMark.attribute("laneChange").value(),
+                                                      r->GetId());
                                         }
                                     }
                                 }
@@ -3977,9 +3978,9 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                                                 }
                                                 else
                                                 {
-                                                    LOG("unknown lane road mark type line rule: %s (road id=%d)",
-                                                        line.attribute("rule").value(),
-                                                        r->GetId());
+                                                    LOG_ERROR("unknown lane road mark type line rule: %s (road id=%d)",
+                                                              line.attribute("rule").value(),
+                                                              r->GetId());
                                                 }
                                             }
 
@@ -4046,7 +4047,8 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                                     }
                                     else
                                     {
-                                        LOG("No road mark created for road %d lane %d. Type %d not supported. Either switch type or add a roadMark <type> element.",
+                                        LOG_WARN(
+                                            "No road mark created for road {} lane {}. Type {} not supported. Either switch type or add a roadMark <type> element.",
                                             r->GetId(),
                                             lane_id,
                                             roadMark_type);
@@ -4086,9 +4088,9 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                                                 }
                                                 else
                                                 {
-                                                    LOG("unknown lane road mark type line rule: %s (road id=%d)",
-                                                        line.attribute("rule").value(),
-                                                        r->GetId());
+                                                    LOG_ERROR("unknown lane road mark type line rule: {} (road id={})",
+                                                              line.attribute("rule").value(),
+                                                              r->GetId());
                                                 }
                                             }
 
@@ -4138,11 +4140,11 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
 
                         if (i > 0 && lane->GetId() != lastLaneId - 1)
                         {
-                            LOG("Warning: expected laneId %d missing of roadId %d. Found laneIds %d and %d",
-                                lastLaneId - 1,
-                                r->GetId(),
-                                lastLaneId,
-                                lane->GetId());
+                            LOG_WARN("Warning: expected laneId {} missing of roadId {}. Found laneIds {} and {}",
+                                     lastLaneId - 1,
+                                     r->GetId(),
+                                     lastLaneId,
+                                     lane->GetId());
                         }
                         lastLaneId = lane->GetId();
 
@@ -4164,7 +4166,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                             }
                             else
                             {
-                                LOG("Unexpected lane id %d", lane->GetId());
+                                LOG_ERROR("Unexpected lane id {}", lane->GetId());
                             }
                         }
                     }
@@ -4190,7 +4192,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                 }
                 else
                 {
-                    LOG("Unsupported lane type: %s", child->name());
+                    LOG_ERROR("Unsupported lane type: {}", child->name());
                 }
             }
         }
@@ -4216,7 +4218,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                     bool dynamic = false;
                     if (!strcmp(signal.attribute("dynamic").value(), ""))
                     {
-                        LOG("Signal dynamic check error");
+                        LOG_ERROR("Signal dynamic check error");
                     }
                     if (!strcmp(signal.attribute("dynamic").value(), "no"))
                     {
@@ -4228,14 +4230,14 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                     }
                     else
                     {
-                        LOG("unknown dynamic signal identification: %s (road ids=%d)", signal.attribute("dynamic").value(), r->GetId());
+                        LOG_WARN("unknown dynamic signal identification: {} (road ids={})", signal.attribute("dynamic").value(), r->GetId());
                     }
 
                     // orientation
                     Signal::Orientation orientation = Signal::NONE;
                     if (signal.attribute("orientation") == 0 || !strcmp(signal.attribute("orientation").value(), ""))
                     {
-                        LOG("Road signal orientation error");
+                        LOG_ERROR("Road signal orientation error");
                     }
                     if (!strcmp(signal.attribute("orientation").value(), "none"))
                     {
@@ -4251,7 +4253,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                     }
                     else
                     {
-                        LOG("unknown road signal orientation: %s (road ids=%d)", signal.attribute("orientation").value(), r->GetId());
+                        LOG_ERROR("unknown road signal orientation: {} (road ids={})", signal.attribute("orientation").value(), r->GetId());
                     }
 
                     double      z_offset = atof(signal.attribute("zOffset").value());
@@ -4293,7 +4295,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                             }
                             if (osi_type == static_cast<int>(Signal::OSIType::TYPE_UNKNOWN))
                             {
-                                LOG("Signal Type %s doesn't exists for country %s", type_to_find.c_str(), country.c_str());
+                                LOG_WARN("Signal Type {} doesn't exists for country {}", type_to_find, country);
                             }
                         }
                     }
@@ -4339,7 +4341,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                     }
                     else
                     {
-                        LOG("Signal: Major error");
+                        LOG_ERROR("Signal: Major error");
                     }
 
                     for (pugi::xml_node validity_node = signal.child("validity"); validity_node;
@@ -4353,7 +4355,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                 }
                 else
                 {
-                    LOG_ONCE("INFO: signal element \"%s\" not supported yet", signal.name());
+                    LOG_ERROR_ONCE("INFO: signal element \"{}\" not supported yet", signal.name());
                 }
             }
         }
@@ -4389,7 +4391,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                     }
                     else
                     {
-                        LOG("unknown road object orientation: %s (road ids=%d)", object.attribute("orientation").value(), r->GetId());
+                        LOG_WARN("unknown road object orientation: {} (road ids={})", object.attribute("orientation").value(), r->GetId());
                     }
                 }
                 std::string          type_str = object.attribute("type").value();
@@ -4658,7 +4660,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                 }
                 else
                 {
-                    LOG("RMObject: Major error");
+                    LOG_ERROR("RMObject: Major error");
                 }
             }
         }
@@ -4704,7 +4706,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
         }
         else if (junction_type_str == "virtual")
         {
-            LOG("Virtual junction type found. Not supported yet. Continue treating it as default type");
+            LOG_WARN("Virtual junction type found. Not supported yet. Continue treating it as default type");
             junction_type = Junction::JunctionType::DEFAULT;
         }
 
@@ -4733,14 +4735,15 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
 
                 if (connecting_road == nullptr)
                 {
-                    LOG("Missing connecting road with id %s", connecting_road_id_str.c_str());
+                    LOG_WARN("Missing connecting road with id {}", connecting_road_id_str);
                     return false;
                 }
 
                 // Check that the connecting road is referring back to this junction
                 if (j->GetType() != Junction::JunctionType::DIRECT && connecting_road->GetJunction() != j->GetId())
                 {
-                    LOG("Warning: Connecting road (id %d) junction attribute (%d) is not referring back to junction %d which is making use of it",
+                    LOG_WARN(
+                        "Warning: Connecting road (id {}) junction attribute ({}) is not referring back to junction {} which is making use of it",
                         connecting_road->GetId(),
                         connecting_road->GetJunction(),
                         j->GetId());
@@ -4758,7 +4761,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                 }
                 else
                 {
-                    LOG("Unsupported contact point: %s", contact_point_str.c_str());
+                    LOG_ERROR("Unsupported contact point: {}", contact_point_str);
                 }
 
                 Connection* connection = new Connection(incoming_road, connecting_road, contact_point);
@@ -4791,7 +4794,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
 
     if (!SetRoadOSI())
     {
-        LOG("Failed to create OSI points for OpenDrive road!");
+        LOG_ERROR("Failed to create OSI points for OpenDrive road!");
     }
 
     return true;
@@ -4837,7 +4840,7 @@ int Connection::GetConnectingLaneId(int incoming_lane_id) const
 
 void Connection::Print() const
 {
-    LOG("Connection: incoming %d connecting %d", incoming_road_->GetId(), connecting_road_->GetId());
+    LOG_INFO("Connection: incoming {} connecting {}", incoming_road_->GetId(), connecting_road_->GetId());
     for (size_t i = 0; i < lane_link_.size(); i++)
     {
         lane_link_[i]->Print();
@@ -4910,19 +4913,19 @@ LaneRoadLaneConnection Junction::GetRoadConnectionByIdx(id_t roadId, int laneId,
 
                         if (lane == nullptr)
                         {
-                            LOG("Error: OpenDrive::GetJunctionConnection target lane not found! from %d, %d to %d, %d",
-                                roadId,
-                                laneId,
-                                connection->GetConnectingRoad()->GetId(),
-                                lane_link->to_);
+                            LOG_ERROR("Error: OpenDrive::GetJunctionConnection target lane not found! from {}, {} to {}, {}",
+                                      roadId,
+                                      laneId,
+                                      connection->GetConnectingRoad()->GetId(),
+                                      lane_link->to_);
                         }
                         else if (!(lane->GetLaneType() & laneTypeMask))
                         {
-                            LOG("OpenDrive::GetJunctionConnection target lane not driving! from %d, %d to %d, %d",
-                                roadId,
-                                laneId,
-                                connection->GetConnectingRoad()->GetId(),
-                                lane_link->to_);
+                            LOG_WARN("OpenDrive::GetJunctionConnection target lane not driving! from %d, %d to %d, %d",
+                                     roadId,
+                                     laneId,
+                                     connection->GetConnectingRoad()->GetId(),
+                                     lane_link->to_);
                         }
 
                         return lane_road_lane_connection;
@@ -4961,7 +4964,7 @@ bool Junction::IsOsiIntersection() const
     }
     else
     {
-        LOG_ONCE("Type of roads are missing, cannot determine for OSI intersection or not, assuming that it is an intersection.");
+        LOG_ERROR_ONCE("Type of roads are missing, cannot determine for OSI intersection or not, assuming that it is an intersection.");
         return true;
     }
 }
@@ -5006,7 +5009,7 @@ id_t Junction::GetConnectingRoadIdFromIncomingRoadId(id_t incomingRoadId, int in
 
 void Junction::Print() const
 {
-    LOG("Junction %d %s:", id_, name_.c_str());
+    LOG_INFO("Junction {} {}:", id_, name_.c_str());
 
     for (size_t i = 0; i < connection_.size(); i++)
     {
@@ -5028,7 +5031,7 @@ Road* Junction::GetRoadAtOtherEndOfConnectingRoad(Road* connecting_road, Road* i
 {
     if (connecting_road->GetJunction() == -1)
     {
-        LOG("Unexpected: Road %d not a connecting road", connecting_road->GetId());
+        LOG_WARN("Unexpected: Road {} not a connecting road", connecting_road->GetId());
         return 0;
     }
 
@@ -5051,7 +5054,7 @@ Road* Junction::GetRoadAtOtherEndOfConnectingRoad(Road* connecting_road, Road* i
         }
     }
 
-    LOG("Failed to find road at other end of the connecting road %d from road %d", connecting_road->GetId(), incoming_road->GetId());
+    LOG_ERROR("Failed to find road at other end of the connecting road {} from road {}", connecting_road->GetId(), incoming_road->GetId());
     return nullptr;
 }
 
@@ -5196,13 +5199,13 @@ int RoadPath::Calculate(double& dist, bool bothDirections, double maxDist)
 
     if (pivotRoad == nullptr)
     {
-        LOG("Invalid startpos road ID: %d", startPos_->GetTrackId());
+        LOG_ERROR("Invalid startpos road ID: {}", startPos_->GetTrackId());
         return -2;
     }
 
     if (targetRoad == nullptr)
     {
-        LOG("Invalid targetpos road ID: %d", targetPos_->GetTrackId());
+        LOG_ERROR("Invalid targetpos road ID: {}", targetPos_->GetTrackId());
         return -2;
     }
 
@@ -5255,7 +5258,7 @@ int RoadPath::Calculate(double& dist, bool bothDirections, double maxDist)
             }
             else
             {
-                LOG("Unexpected contact point type: %d", contact_point);
+                LOG_ERROR("Unexpected contact point type: {}", contact_point);
             }
 
             pNode->fromLaneId   = pivotLaneId;
@@ -5364,7 +5367,7 @@ int RoadPath::Calculate(double& dist, bool bothDirections, double maxDist)
             junction = odr->GetJunctionById(link->GetElementId());
             if (junction == nullptr)
             {
-                LOG("Failed to lookup junction with id %d", link->GetElementId());
+                LOG_ERROR("Failed to lookup junction with id {}", link->GetElementId());
             }
             for (size_t j = 0; junction && j < junction->GetNoConnectionsFromRoadId(pivotRoad->GetId()); j++)
             {
@@ -5390,13 +5393,13 @@ int RoadPath::Calculate(double& dist, bool bothDirections, double maxDist)
                         }
                         else
                         {
-                            LOG("Unexpected contact point %s", OpenDrive::ContactPointType2Str(contact_point).c_str());
+                            LOG_ERROR("Unexpected contact point {}", OpenDrive::ContactPointType2Str(contact_point));
                             return -1;
                         }
                     }
                     else
                     {
-                        LOG("Failed to check link in junction");
+                        LOG_ERROR("Failed to check link in junction");
                         return -1;
                     }
                     found = true;
@@ -5488,7 +5491,7 @@ int OpenDrive::GetTrackIdxById(id_t id) const
             return i;
         }
     }
-    LOG("OpenDrive::GetTrackIdxById Error: Road id %d not found", id);
+    LOG_ERROR("OpenDrive::GetTrackIdxById Error: Road id {} not found", id);
     return -1;
 }
 
@@ -5498,7 +5501,7 @@ id_t OpenDrive::GetTrackIdByIdx(int idx) const
     {
         return (road_[idx]->GetId());
     }
-    LOG("OpenDrive::GetTrackIdByIdx: idx %d out of range [0:%d]", idx, (int)road_.size());
+    LOG_ERROR("OpenDrive::GetTrackIdByIdx: idx {} out of range [0:{}]", idx, road_.size());
     return 0;
 }
 
@@ -5539,12 +5542,12 @@ bool OpenDrive::IsIndirectlyConnected(id_t road1_id, id_t road2_id, id_t*& conne
                     }
                     else
                     {
-                        LOG("Error LinkType %d not suppoered", link_type[k]);
+                        LOG_ERROR("Error LinkType {} not suppoered", link_type[k]);
                         return false;
                     }
                     if (lane_section == 0)
                     {
-                        LOG("Error lane section == 0");
+                        LOG_ERROR("Error lane section == 0");
                         return false;
                     }
                     Lane* lane = lane_section->GetLaneById(lane1_id);
@@ -5603,7 +5606,7 @@ bool OpenDrive::IsIndirectlyConnected(id_t road1_id, id_t road2_id, id_t*& conne
                         lane_section = connecting_road->GetLaneSectionByIdx(0);
                         if (lane_section == 0)
                         {
-                            LOG("Error lane section == 0");
+                            LOG_ERROR("Error lane section == 0");
                             return false;
                         }
                         for (int j = 0; j < lane_section->GetNumberOfLanes(); j++)
@@ -5638,11 +5641,11 @@ bool OpenDrive::IsIndirectlyConnected(id_t road1_id, id_t road2_id, id_t*& conne
         }
         else
         {
-            LOG("Error: LinkElementType %d unsupported", link->GetElementType());
+            LOG_ERROR("Error: LinkElementType {} unsupported", link->GetElementType());
         }
     }
 
-    LOG("Link not found");
+    LOG_ERROR("Link not found");
 
     return false;
 }
@@ -5660,8 +5663,8 @@ int OpenDrive::CheckConnectedRoad(Road* road, RoadLink* link, ContactPointType e
         {
             if (link->GetContactPointType() != expected_contact_point_type)
             {
-                LOG("Found connecting road from other end, but contact point is wrong (expected START, got %s)",
-                    ContactPointType2Str(link->GetContactPointType()).c_str());
+                LOG_ERROR("Found connecting road from other end, but contact point is wrong (expected START, got {})",
+                          ContactPointType2Str(link->GetContactPointType()).c_str());
                 return -1;
             }
         }
@@ -5681,7 +5684,7 @@ int OpenDrive::CheckJunctionConnection(Junction* junction, Connection* connectio
     Road* road = connection->GetConnectingRoad();
     if (road == 0)
     {
-        LOG("Error no connecting road");
+        LOG_ERROR("Error no connecting road");
         return -1;
     }
 
@@ -5701,7 +5704,7 @@ int OpenDrive::CheckJunctionConnection(Junction* junction, Connection* connectio
                      connection->GetContactPoint() == ContactPointType::CONTACT_POINT_END &&
                      link[i]->GetContactPointType() == ContactPointType::CONTACT_POINT_JUNCTION && link[i]->GetElementId() != junction->GetId()))
                 {
-                    LOG("Expected direct junction linkedRoad to connect back to junction id %d, found id %d", link[i]->GetElementId());
+                    LOG_ERROR("Expected direct junction linkedRoad to connect back to junction id {}, found id {}", link[i]->GetElementId());
                     return -1;
                 }
 
@@ -5722,7 +5725,7 @@ int OpenDrive::CheckJunctionConnection(Junction* junction, Connection* connectio
                     }
                     else
                     {
-                        LOG("Failed to find out contactpoint of direct junction incoming road");
+                        LOG_ERROR("Failed to find out contactpoint of direct junction incoming road");
                         return -1;
                     }
 
@@ -5753,7 +5756,7 @@ int OpenDrive::CheckJunctionConnection(Junction* junction, Connection* connectio
             {
                 if (link[i]->GetElementType() != RoadLink::ElementType::ELEMENT_TYPE_ROAD)
                 {
-                    LOG("Expected element type ROAD, found %s", ElementType2Str(link[i]->GetElementType()).c_str());
+                    LOG_ERROR("Expected element type ROAD, found {}", ElementType2Str(link[i]->GetElementType()).c_str());
                     return -1;
                 }
 
@@ -5763,7 +5766,7 @@ int OpenDrive::CheckJunctionConnection(Junction* junction, Connection* connectio
                     Road* roadc = GetRoadById(link[i]->GetElementId());
                     if (roadc == nullptr)
                     {
-                        LOG("Failed to resolve road %d in junction %d", link[i]->GetElementId(), junction->GetId());
+                        LOG_ERROR("Failed to resolve road {} in junction {}", link[i]->GetElementId(), junction->GetId());
                         return 0;
                     }
                     RoadLink* link2[2];
@@ -5848,9 +5851,9 @@ int OpenDrive::CheckLink(Road* road, RoadLink* link, ContactPointType expected_c
             }
             else
             {
-                LOG("Warning: Reversed road link %d->%d not found. Might be a flaw in the OpenDRIVE description.",
-                    road->GetId(),
-                    connecting_road->GetId());
+                LOG_WARN("Warning: Reversed road link {}->{} not found. Might be a flaw in the OpenDRIVE description.",
+                         road->GetId(),
+                         connecting_road->GetId());
             }
         }
     }
@@ -5861,7 +5864,7 @@ int OpenDrive::CheckLink(Road* road, RoadLink* link, ContactPointType expected_c
         // Check all outgoing connections
         if (junction == nullptr)
         {
-            LOG("Info: Junction id %d, referred to by road %d, does not exist", link->GetElementId(), road->GetId());
+            LOG_ERROR("Info: Junction id {}, referred to by road {}, does not exist", link->GetElementId(), road->GetId());
             return -1;
         }
 
@@ -5904,13 +5907,13 @@ int OpenDrive::CheckConnections()
 
 void OpenDrive::Print() const
 {
-    LOG("Roads:");
+    LOG_INFO("Roads:");
     for (size_t i = 0; i < road_.size(); i++)
     {
         road_[i]->Print();
     }
 
-    LOG("junctions");
+    LOG_INFO("junctions");
     for (size_t i = 0; i < junction_.size(); i++)
     {
         junction_[i]->Print();
@@ -5953,9 +5956,9 @@ void OpenDrive::EstablishUniqueIds(pugi::xml_node& parent, std::string name, std
             {
                 if (id_long == ID_UNDEFINED)
                 {
-                    LOG("Found %s with reserved ID %u", name.c_str(), ID_UNDEFINED);
+                    LOG_INFO("Found %s with reserved ID %u", name.c_str(), ID_UNDEFINED);
                 }
-                LOG("Assign internal id %d for %s %s", id_next, name.c_str(), id_str.c_str());
+                LOG_INFO("Assign internal id {} for {} {}", id_next, name, id_str);
             }
             id_current = id_next++;
         }
@@ -5988,7 +5991,7 @@ id_t OpenDrive::LookupRoadIdFromStr(std::string id_str)
 
     if (id == -1)
     {
-        LOG("Failed to lookup road id from string %s", id_str.c_str());
+        LOG_ERROR("Failed to lookup road id from string {}", id_str);
     }
 
     return id;
@@ -6005,7 +6008,7 @@ id_t OpenDrive::LookupJunctionIdFromStr(std::string id_str)
 
     if (id == ID_UNDEFINED)
     {
-        LOG("Failed to lookup junction id from string %s", id_str.c_str());
+        LOG_ERROR("Failed to lookup junction id from string {}", id_str);
     }
 
     return id;
@@ -6192,13 +6195,13 @@ void OpenDrive::ParseGeoLocalization(const std::string& geoLocalization)
         }
         else
         {
-            LOG("Unsupported geo reference attr: %s", attr.first.c_str());
+            LOG_ERROR("Unsupported geo reference attr: {}", attr.first);
         }
     }
 
     if (std::isnan(geo_ref_.lat_0_) || std::isnan(geo_ref_.lon_0_))
     {
-        LOG("cannot parse georeference: '%s'. Using default values.", geoLocalization.c_str());
+        LOG_WARN("cannot parse georeference: '{}'. Using default values.", geoLocalization);
         geo_ref_.lat_0_ = 0.0;
         geo_ref_.lon_0_ = 0.0;
     }
@@ -6241,10 +6244,10 @@ bool OpenDrive::LoadSignalsByCountry(const std::string& country)
 
             if (fs.fail())
             {
-                LOG("Signal: Error to load traffic signals file - %s", file_name_candidates[i].c_str());
+                LOG_ERROR("Signal: Error to load traffic signals file - {}", file_name_candidates[i]);
                 if (i < file_name_candidates.size() - 1)
                 {
-                    LOG("  -> trying: %s", file_name_candidates[i + 1].c_str());
+                    LOG_INFO("  -> trying: {}", file_name_candidates[i + 1]);
                 }
             }
             else
@@ -6273,10 +6276,10 @@ bool OpenDrive::LoadSignalsByCountry(const std::string& country)
 
     if (i == file_name_candidates.size())
     {
-        LOG("Failed to load %s file. Tried:", sign_filename.c_str());
+        LOG_ERROR("Failed to load {} file. Tried:", sign_filename);
         for (int j = 0; j < file_name_candidates.size(); j++)
         {
-            LOG("  %s", file_name_candidates[j].c_str());
+            LOG_INFO("  %s", file_name_candidates[j]);
         }
         return false;
     }
@@ -7098,7 +7101,7 @@ void OpenDrive::SetRoadMarkOSIPoints()
                             {
                                 if (number_of_roadmarklines < 2)
                                 {
-                                    LOG_AND_QUIT("You need to specify at least 2 line for broken solid or solid broken roadmark type");
+                                    LOG_ERROR_AND_QUIT("You need to specify at least 2 line for broken solid or solid broken roadmark type");
                                 }
                                 std::vector<double> sort_solidbroken_brokensolid;
                                 for (int q = 0; q < number_of_roadmarklines; q++)
@@ -7163,7 +7166,7 @@ void OpenDrive::SetRoadMarkOSIPoints()
                                             {
                                                 if (s_roadmarkline < SMALL_NUMBER)
                                                 {
-                                                    LOG("Roadmark length + space = 0 - ignoring");
+                                                    LOG_WARN("Roadmark length + space = 0 - ignoring");
                                                 }
                                                 break;
                                             }
@@ -7197,7 +7200,7 @@ void OpenDrive::SetRoadMarkOSIPoints()
                                             {
                                                 if (s_roadmarkline < SMALL_NUMBER)
                                                 {
-                                                    LOG("Roadmark length + space = 0 - ignoring");
+                                                    LOG_WARN("Roadmark length + space = 0 - ignoring");
                                                 }
                                                 break;
                                             }
@@ -7368,10 +7371,10 @@ void OpenDrive::SetRoadMarkOSIPoints()
                                 }
                                 else
                                 {
-                                    LOG("LaneRoadMarkTypeLine %d for LaneRoadMarkType for LaneRoadMark %d for lane %d is not defined",
-                                        n,
-                                        m,
-                                        lane->GetId());
+                                    LOG_ERROR("LaneRoadMarkTypeLine {} for LaneRoadMarkType for LaneRoadMark {} for lane {} is not defined",
+                                              n,
+                                              m,
+                                              lane->GetId());
                                 }
                             }
                             // Explicit lines
@@ -7617,7 +7620,7 @@ int Position::GotoClosestDrivingLaneAtCurrentPosition()
     Road* road = GetOpenDrive()->GetRoadByIdx(track_idx_);
     if (road == 0)
     {
-        LOG("No road %d", track_idx_);
+        LOG_ERROR("No road {}", track_idx_);
         return -1;
     }
 
@@ -7625,7 +7628,7 @@ int Position::GotoClosestDrivingLaneAtCurrentPosition()
 
     if (lane_section == 0)
     {
-        LOG("No lane section for idx %d - keeping current lane setting", lane_section_idx_);
+        LOG_ERROR("No lane section for idx {} - keeping current lane setting", lane_section_idx_);
         return -1;
     }
 
@@ -7634,7 +7637,7 @@ int Position::GotoClosestDrivingLaneAtCurrentPosition()
 
     if (lane_idx == -1)
     {
-        LOG("Failed to find a valid drivable lane");
+        LOG_ERROR("Failed to find a valid drivable lane");
         return -1;
     }
 
@@ -7650,14 +7653,14 @@ void Position::Track2Lane()
     Road* road = GetOpenDrive()->GetRoadByIdx(track_idx_);
     if (road == 0)
     {
-        LOG("Position::Track2Lane Error: No road %d", track_idx_);
+        LOG_ERROR("Position::Track2Lane Error: No road {}", track_idx_);
         return;
     }
 
     Geometry* geometry = road->GetGeometry(geometry_idx_);
     if (geometry == 0)
     {
-        LOG("Position::Track2Lane Error: No geometry %d", geometry_idx_);
+        LOG_ERROR("Position::Track2Lane Error: No geometry {}", geometry_idx_);
         return;
     }
 
@@ -7666,7 +7669,7 @@ void Position::Track2Lane()
     LaneSection* lane_section     = road->GetLaneSectionByIdx(lane_section_idx);
     if (lane_section == 0)
     {
-        LOG("No lane section for idx %d - keeping current lane setting", lane_section_idx_);
+        LOG_WARN("No lane section for idx {} - keeping current lane setting", lane_section_idx_);
         return;
     }
 
@@ -7676,7 +7679,7 @@ void Position::Track2Lane()
 
     if (lane_idx == -1)
     {
-        LOG("Failed find closest lane");
+        LOG_ERROR("Failed find closest lane");
         return;
     }
 
@@ -8331,7 +8334,7 @@ Position::XYZ2TrackPos(double x3, double y3, double z3, int mode, bool connected
     }
     else
     {
-        LOG("Unexpected: No closest OSI point found!");
+        LOG_ERROR("Unexpected: No closest OSI point found!");
     }
 
     double fixedLaneOffset = 0;
@@ -8444,7 +8447,7 @@ bool Position::EvaluateRoadZHPR(int mode)
     }
     else
     {
-        LOG("Failed to lookup road id %d", track_id_);
+        LOG_ERROR("Failed to lookup road id {}", track_id_);
     }
 
     EvaluateZHPR(mode);
@@ -8462,14 +8465,14 @@ Position::ReturnCode Position::Track2XYZ(int mode)
     Road* road = GetOpenDrive()->GetRoadByIdx(track_idx_);
     if (road == 0)
     {
-        LOG("Position::Track2XYZ Error: No road %d", track_idx_);
+        LOG_ERROR("Position::Track2XYZ Error: No road {}", track_idx_);
         return ReturnCode::ERROR_GENERIC;
     }
 
     Geometry* geometry = road->GetGeometry(geometry_idx_);
     if (geometry == 0)
     {
-        LOG("Position::Track2XYZ Error: No geometry %d", geometry_idx_);
+        LOG_ERROR("Position::Track2XYZ Error: No geometry {}", geometry_idx_);
         return ReturnCode::ERROR_GENERIC;
     }
 
@@ -8571,7 +8574,7 @@ Position::ReturnCode Position::SetLongitudinalTrackPos(id_t track_id, double s)
     {
         if (track_id >= 0)
         {
-            LOG("Position::Set Error: track %d not found", track_id);
+            LOG_ERROR("Position::Set Error: track {} not found", track_id);
         }
 
         // Just hard code values and return
@@ -8622,7 +8625,7 @@ Position::ReturnCode Position::SetLongitudinalTrackPos(id_t track_id, double s)
     {
         if (s > road->GetLength() + SMALL_NUMBER)
         {
-            LOG("Position::Set Warning: s (%.2f) too large, track %d only %.2f m long", s, track_id_, road->GetLength());
+            LOG_WARN("Position::Set Warning: s ({:.2f}) too large, track {} only {:.2f} m long", s, track_id_, road->GetLength());
         }
         s_ = road->GetLength();
         status_ |= static_cast<int>(PositionStatusMode::POS_STATUS_END_OF_ROAD);
@@ -8813,19 +8816,19 @@ Position::ReturnCode Position::MoveToConnectingRoad(RoadLink* road_link, Contact
 
     if (road == 0)
     {
-        LOG("Invalid road id %d", road->GetId());
+        LOG_ERROR("Invalid road id {}", road->GetId());
         return ReturnCode::ERROR_GENERIC;
     }
 
     if (road_link == 0)
     {
-        LOG("Lacking link of road id %d", road->GetId());
+        LOG_ERROR("Lacking link of road id {}", road->GetId());
         return ReturnCode::ERROR_GENERIC;
     }
 
     if (road_link->GetElementId() == -1)
     {
-        LOG("No connecting road or junction at rid %d link_type %s", road->GetId(), OpenDrive::LinkType2Str(road_link->GetType()).c_str());
+        LOG_ERROR("No connecting road or junction at rid {} link_type {}", road->GetId(), OpenDrive::LinkType2Str(road_link->GetType()));
         return ReturnCode::ERROR_GENERIC;
     }
 
@@ -8833,22 +8836,19 @@ Position::ReturnCode Position::MoveToConnectingRoad(RoadLink* road_link, Contact
     lane_section = road->GetLaneSectionByIdx(lane_section_idx_);
     if (lane_section == 0)
     {
-        LOG("No lane section rid %d ls_idx %d link_type  %s",
-            road->GetId(),
-            lane_section_idx_,
-            OpenDrive::LinkType2Str(road_link->GetType()).c_str());
+        LOG_ERROR("No lane section rid {} ls_idx {} link_type  {}", road->GetId(), lane_section_idx_, OpenDrive::LinkType2Str(road_link->GetType()));
         return ReturnCode::ERROR_GENERIC;
     }
 
     lane = lane_section->GetLaneByIdx(lane_idx_);
     if (lane == 0)
     {
-        LOG("No lane rid %d lidx %d nlanes %d link_type %s lsecidx %d",
-            road->GetId(),
-            lane_idx_,
-            lane_section->GetNumberOfLanes(),
-            OpenDrive::LinkType2Str(road_link->GetType()).c_str(),
-            lane_section_idx_);
+        LOG_WARN("No lane rid {} lidx {} nlanes {} link_type {} lsecidx {}",
+                 road->GetId(),
+                 lane_idx_,
+                 lane_section->GetNumberOfLanes(),
+                 OpenDrive::LinkType2Str(road_link->GetType()),
+                 lane_section_idx_);
         return ReturnCode::ERROR_GENERIC;
     }
 
@@ -8860,12 +8860,12 @@ Position::ReturnCode Position::MoveToConnectingRoad(RoadLink* road_link, Contact
             new_lane_id = lane->GetLink(road_link->GetType())->GetId();
             if (new_lane_id == 0)
             {
-                LOG("Road+ new lane id %d", new_lane_id);
+                LOG_INFO("Road+ new lane id {}", new_lane_id);
             }
         }
         else
         {
-            // LOG("No lane link from rid %d lid %d to rid %d", GetTrackId(), GetLaneId(), road_link->GetElementId());
+            LOG_DEBUG("No lane link from rid {} lid {} to rid {}", GetTrackId(), GetLaneId(), road_link->GetElementId());
         }
         contact_point_type = road_link->GetContactPointType();
         next_road          = GetOpenDrive()->GetRoadById(road_link->GetElementId());
@@ -8878,7 +8878,7 @@ Position::ReturnCode Position::MoveToConnectingRoad(RoadLink* road_link, Contact
 
         if (junction == 0)
         {
-            LOG("Error: junction %d not existing", road_link->GetElementId());
+            LOG_ERROR("Error: junction {} not existing", road_link->GetElementId());
             return ReturnCode::ERROR_GENERIC;
         }
 
@@ -8956,7 +8956,7 @@ Position::ReturnCode Position::MoveToConnectingRoad(RoadLink* road_link, Contact
                     }
                     else
                     {
-                        LOG("Unexpected contact point type: %d", lane_road_lane_connection.contact_point_);
+                        LOG_ERROR("Unexpected contact point type: {}", lane_road_lane_connection.contact_point_);
                     }
 
                     // Compare heading angle difference, find smallest
@@ -8991,17 +8991,17 @@ Position::ReturnCode Position::MoveToConnectingRoad(RoadLink* road_link, Contact
 
     if (next_road == 0)
     {
-        LOG("No next road");
+        LOG_ERROR("No next road");
         return ReturnCode::ERROR_GENERIC;
     }
 
     if (new_lane_id == 0)
     {
-        LOG("No connection from rid %d lid %d -> rid %d eltype %d - trying move to closest lane",
-            road->GetId(),
-            lane->GetId(),
-            road_link->GetElementId(),
-            road_link->GetElementType());
+        LOG_WARN("No connection from rid %d lid %d -> rid %d eltype %d - trying move to closest lane",
+                 road->GetId(),
+                 lane->GetId(),
+                 road_link->GetElementId(),
+                 road_link->GetElementType());
 
         // Find closest lane on new road - by convert to track pos and then set lane offset = 0
         if (contact_point_type == CONTACT_POINT_START)
@@ -9014,11 +9014,11 @@ Position::ReturnCode Position::MoveToConnectingRoad(RoadLink* road_link, Contact
         }
         else
         {
-            LOG("MoveToConnectingRoad: Unexpected contact point type: %d", (int)contact_point_type);
+            LOG_ERROR("MoveToConnectingRoad: Unexpected contact point type: {}", (int)contact_point_type);
             return ReturnCode::ERROR_GENERIC;
         }
 
-        LOG("%sonnection found (rid %d lid %d)", ret_val < ReturnCode::OK ? "No c" : "C", GetTrackId(), GetLaneId());
+        LOG_INFO("{}onnection found (rid {} lid {})", ret_val < ReturnCode::OK ? "No c" : "C", GetTrackId(), GetLaneId());
 
         offset_ = 0;  // Reset lane offset when new move to new lane was enforced
 
@@ -9060,12 +9060,12 @@ Position::ReturnCode Position::MoveToConnectingRoad(RoadLink* road_link, Contact
         }
         else
         {
-            LOG("Unexpected contact point: %d", contact_point_type);
+            LOG_ERROR("Unexpected contact point: {}", contact_point_type);
         }
     }
     else
     {
-        LOG("Unsupported contact point type %d", road_link->GetContactPointType());
+        LOG_ERROR("Unsupported contact point type {}", road_link->GetContactPointType());
         return ReturnCode::ERROR_GENERIC;
     }
 
@@ -9243,7 +9243,7 @@ Position::ReturnCode Position::MoveAlongS(double            ds,
 
         if (SIGN(lane_id_) != SIGN(pos_save.lane_id_))
         {
-            LOG("MoveAlongS: Prevent move from road %d lane %d to opposite directed lane %d", track_id_, pos_save.lane_id_, lane_id_);
+            LOG_ERROR("MoveAlongS: Prevent move from road {} lane {} to opposite directed lane {}", track_id_, pos_save.lane_id_, lane_id_);
             ret_val = ReturnCode::ERROR_GENERIC;
         }
         else if (ret_val2 >= ReturnCode::OK)
@@ -9269,19 +9269,19 @@ Position::ReturnCode Position::MoveAlongS(double            ds,
                     int new_lane_id = road->GetLaneSectionByIdx(li.lane_section_idx_)->GetLaneByIdx(new_lane_idx)->GetId();
                     if (new_lane_id == 0 && GetSnapLaneTypes() != Lane::LaneType::LANE_TYPE_ANY)
                     {
-                        LOG("MoveAlongS Lane %d on road %d is or became zero width. Failed to move to a close lane with matching type 0x%X",
-                            road->GetId(),
-                            old_lane_id,
-                            GetSnapLaneTypes());
+                        LOG_ERROR("MoveAlongS Lane {} on road {} is or became zero width. Failed to move to a close lane with matching type 0x{}",
+                                  road->GetId(),
+                                  old_lane_id,
+                                  GetSnapLaneTypes());
                         ret_val = ReturnCode::ERROR_GENERIC;
                     }
                     else
                     {
                         SetLanePos(track_id_, new_lane_id, GetS(), 0);
-                        LOG("MoveAlongS Lane %d on road %d is or became zero width, moved to closest available lane: %d",
-                            old_lane_id,
-                            road->GetId(),
-                            GetLaneId());
+                        LOG_INFO("MoveAlongS Lane {} on road {} is or became zero width, moved to closest available lane: {}",
+                                 old_lane_id,
+                                 road->GetId(),
+                                 GetLaneId());
                     }
                 }
             }
@@ -9343,7 +9343,7 @@ Position::ReturnCode Position::SetLanePosMode(id_t track_id, int lane_id, double
     Road* road = GetOpenDrive()->GetRoadById(track_id);
     if (road == 0)
     {
-        LOG("Position::Set Error: track %d not available", track_id);
+        LOG_ERROR("Position::Set Error: track {} not available", track_id);
         lane_id_ = lane_id;
         offset_  = offset;
         return ReturnCode::ERROR_GENERIC;
@@ -9382,13 +9382,13 @@ Position::ReturnCode Position::SetLanePosMode(id_t track_id, int lane_id, double
         lane_idx_ = lane_section->GetLaneIdxById(lane_id_);
         if (lane_idx_ == -1)
         {
-            LOG("lane_idx %d fail for lane id %d", lane_idx_, lane_id_);
+            LOG_ERROR("lane_idx {} fail for lane id {}", lane_idx_, lane_id_);
             lane_idx_ = 0;
         }
     }
     else
     {
-        LOG("Position::Set (lanepos) Error - lanesection NULL lsidx %d rid %d lid %d", lane_section_idx_, road->GetId(), lane_id_);
+        LOG_ERROR("Position::Set (lanepos) Error - lanesection NULL lsidx {} rid {} lid {}", lane_section_idx_, road->GetId(), lane_id_);
     }
 
     Lane2Track();
@@ -9415,7 +9415,7 @@ void Position::SetLaneBoundaryPos(id_t track_id, int lane_id, double s, double o
     Road* road = GetOpenDrive()->GetRoadById(track_id);
     if (road == 0)
     {
-        LOG("Position::Set Error: track %d not available", track_id);
+        LOG_ERROR("Position::Set Error: track {} not available", track_id);
         lane_id_ = lane_id;
         offset_  = offset;
         return;
@@ -9452,13 +9452,13 @@ void Position::SetLaneBoundaryPos(id_t track_id, int lane_id, double s, double o
         lane_idx_ = lane_section->GetLaneIdxById(lane_id_);
         if (lane_idx_ == -1)
         {
-            LOG("lane_idx %d fail for lane id %d", lane_idx_, lane_id_);
+            LOG_ERROR("lane_idx {} fail for lane id {}", lane_idx_, lane_id_);
             lane_idx_ = 0;
         }
     }
     else
     {
-        LOG("Position::Set (lanepos) Error - lanesection NULL lsidx %d rid %d lid %d", lane_section_idx_, road->GetId(), lane_id_);
+        LOG_ERROR("Position::Set (lanepos) Error - lanesection NULL lsidx {} rid {} lid {}", lane_section_idx_, road->GetId(), lane_id_);
     }
 
     // Check road direction when on new track
@@ -9496,7 +9496,7 @@ void Position::SetRoadMarkPos(id_t   track_id,
     Road* road = GetOpenDrive()->GetRoadById(track_id);
     if (road == 0)
     {
-        LOG("Position::Set Error: track %d not available", track_id);
+        LOG_ERROR("Position::Set Error: track {} not available", track_id);
         lane_id_ = lane_id;
         offset_  = offset;
         return;
@@ -9549,13 +9549,13 @@ void Position::SetRoadMarkPos(id_t   track_id,
         lane_idx_ = lane_section->GetLaneIdxById(lane_id_);
         if (lane_idx_ == -1)
         {
-            LOG("lane_idx %d fail for lane id %d", lane_idx_, lane_id_);
+            LOG_ERROR("lane_idx {} fail for lane id {}", lane_idx_, lane_id_);
             lane_idx_ = 0;
         }
     }
     else
     {
-        LOG("Position::Set (lanepos) Error - lanesection NULL lsidx %d rid %d lid %d", lane_section_idx_, road->GetId(), lane_id_);
+        LOG_ERROR("Position::Set (lanepos) Error - lanesection NULL lsidx {} rid {} lid {}", lane_section_idx_, road->GetId(), lane_id_);
     }
 
     // Check road direction when on new track
@@ -9577,7 +9577,7 @@ void Position::SetRoadMarkPos(id_t   track_id,
     }
     else
     {
-        LOG("roadmark_idx_ %d fail for lane id %d", roadmark_idx_, lane_idx_);
+        LOG_ERROR("roadmark_idx_ {} fail for lane id {}", roadmark_idx_, lane_idx_);
         roadmark_idx_ = 0;
     }
 
@@ -9601,13 +9601,13 @@ void Position::SetRoadMarkPos(id_t   track_id,
         }
         else
         {
-            LOG("roadmarktypeline_idx_ %d fail for roadmarktype_idx %d", roadmarkline_idx_, roadmarktype_idx_);
+            LOG_ERROR("roadmarktypeline_idx_ {} fail for roadmarktype_idx {}", roadmarkline_idx_, roadmarktype_idx_);
             roadmarkline_idx_ = 0;
         }
     }
     else
     {
-        LOG("roadmarktype_idx_ %d fail for roadmark_idx %d", roadmarktype_idx_, roadmark_idx_);
+        LOG_ERROR("roadmarktype_idx_ {} fail for roadmark_idx {}", roadmarktype_idx_, roadmark_idx_);
         roadmarkline_idx_ = 0;
     }
 
@@ -10195,7 +10195,7 @@ void Position::SetMode(PosModeType type, int mode)
     }
     else
     {
-        LOG("Unexpected Position SetMode type: %d", type);
+        LOG_ERROR("Unexpected Position SetMode type: {}", type);
         return;
     }
 
@@ -10263,7 +10263,7 @@ int Position::GetMode(PosModeType type)
     }
     else
     {
-        LOG("Unknown PosModeType: %d - returning 0", type);
+        LOG_ERROR("Unknown PosModeType: {} - returning 0", type);
     }
 
     return 0;
@@ -10281,37 +10281,37 @@ double Position::GetAcc() const
 
 void Position::PrintTrackPos() const
 {
-    LOG("	Track pos: (road_id %d, s %.2f, t %.2f, h %.2f)", track_id_, s_, t_, h_);
+    LOG_INFO("	Track pos: (road_id {}, s {:.2f}, t {:.2f}, h {:.2f})", track_id_, s_, t_, h_);
 }
 
 void Position::PrintLanePos() const
 {
-    LOG("	Lane pos: (road_id %d, lane_id %d, s %.2f, offset %.2f, h %.2f)", track_id_, lane_id_, s_, offset_, h_);
+    LOG_INFO("	Lane pos: (road_id {}, lane_id {}, s {:.2f}, offset {:.2f}, h {:.2f})", track_id_, lane_id_, s_, offset_, h_);
 }
 
 void Position::PrintInertialPos() const
 {
-    LOG("	Inertial pos: (x %.2f, y %.2f, z %.2f, h %.2f, p %.2f, r %.2f)", x_, y_, z_, h_, p_, r_);
+    LOG_INFO("	Inertial pos: (x {:.2f}, y {:.2f}, z {:.2f}, h {:.2f}, p {:.2f}, r {:.2f})", x_, y_, z_, h_, p_, r_);
 }
 
 void Position::Print() const
 {
-    LOG("Pos(%.2f, %.2f, %.2f) Rot(%.2f, %.2f, %.2f) roadId %d laneId %d offset %.2f t %.2f",
-        GetX(),
-        GetY(),
-        GetZ(),
-        GetH(),
-        GetP(),
-        GetR(),
-        GetTrackId(),
-        GetLaneId(),
-        GetOffset(),
-        GetT());
+    LOG_INFO("Pos({:.2f}, {:.2f}, {:.2f}) Rot({:.2f}, {:.2f}, {:.2f}) roadId {} laneId {} offset {:.2f} t {:.2f}",
+             GetX(),
+             GetY(),
+             GetZ(),
+             GetH(),
+             GetP(),
+             GetR(),
+             GetTrackId(),
+             GetLaneId(),
+             GetOffset(),
+             GetT());
 }
 
 void Position::PrintXY() const
 {
-    LOG("%.2f, %.2f", x_, y_);
+    LOG_INFO("{:.2f}, {:.2f}", x_, y_);
 }
 
 bool Position::IsOffRoad() const
@@ -10522,23 +10522,28 @@ bool Position::Delta(Position* pos_b, PositionDiff& diff, bool bothDirections, d
         diff.dt = tB - (abs(GetT()) * SIGN(adjustedLaneIdA));
         diff.ds = dist;
 
-#if 0  // Change to 1 to print some info on stdout - e.g. for debugging
-        printf("Dist %.2f Path (reversed): %d", dist, pos_b.GetTrackId());
+        // #if 0  // Change to 1 to print some info on stdout - e.g. for debugging
+
+        std::string roadIds;
+        // printf("Dist %.2f Path (reversed): %d", dist, pos_b->GetTrackId());
         if (path->visited_.size() > 0)
         {
+            std::ostringstream  oss;
             RoadPath::PathNode* node = path->visited_.back();
-
             while (node)
             {
                 if (node->fromRoad != 0)
                 {
-                    printf(" <- %d", node->fromRoad->GetId());
+                    oss << " <- " << node->fromRoad->GetId();
+                    // printf(" <- %d", node->fromRoad->GetId());
                 }
                 node = node->previous;
             }
+            roadIds = oss.str();
         }
-        printf("\n");
-#endif
+        LOG_DEBUG("Dist {:.2f} Path (reversed): {} {}", dist, pos_b->GetTrackId(), roadIds);
+        // printf("\n");
+        // #endif
     }
     else  // no valid route found
     {
@@ -10571,7 +10576,7 @@ int Position::Distance(Position* pos_b, CoordinateSystem cs, RelativeDistanceTyp
     {
         if (cs == CoordinateSystem::CS_LANE)
         {
-            LOG_ONCE("Lane coordinateSystem not supported yet. Falling back to Road coordinate system.");
+            LOG_WARN_ONCE("Lane coordinateSystem not supported yet. Falling back to Road coordinate system.");
             cs = CoordinateSystem::CS_ROAD;
         }
 
@@ -10642,7 +10647,7 @@ int Position::Distance(Position* pos_b, CoordinateSystem cs, RelativeDistanceTyp
     }
     else
     {
-        LOG("Unhandled case: cs %d reDistType %d freeSpace false", cs, relDistType);
+        LOG_ERROR("Unhandled case: cs {} reDistType {} freeSpace false", cs, relDistType);
         return -1;
     }
 
@@ -10666,7 +10671,7 @@ int Position::Distance(double x, double y, CoordinateSystem cs, RelativeDistance
     {
         if (cs == CoordinateSystem::CS_LANE)
         {
-            LOG_ONCE("Lane coordinateSystem not supported yet. Falling back to Road coordinate system.");
+            LOG_WARN_ONCE("Lane coordinateSystem not supported yet. Falling back to Road coordinate system.");
             cs = CoordinateSystem::CS_ROAD;
         }
 
@@ -10727,7 +10732,7 @@ int Position::Distance(double x, double y, CoordinateSystem cs, RelativeDistance
     }
     else
     {
-        LOG("Unhandled case: cs %d reDistType %d freeSpace false", cs, relDistType);
+        LOG_ERROR("Unhandled case: cs {} reDistType {} freeSpace false", cs, relDistType);
         return -1;
     }
 
@@ -10983,7 +10988,7 @@ int Position::GetLaneGlobalId() const
 
     if (lane_section == 0)
     {
-        LOG("No lane section for idx %d - keeping current lane setting", lane_section_idx_);
+        LOG_WARN("No lane section for idx {} - keeping current lane setting", lane_section_idx_);
         return -2;
     }
 
@@ -10992,7 +10997,7 @@ int Position::GetLaneGlobalId() const
 
     if (lane_idx == -1)
     {
-        LOG("Failed to find a valid drivable lane");
+        LOG_ERROR("Failed to find a valid drivable lane");
         return -3;
     }
 
@@ -11140,7 +11145,7 @@ Position::ReturnCode Position::MoveRouteDS(double ds, double* remaining_dist, bo
 
     if (retval == ReturnCode::ERROR_END_OF_ROUTE)
     {
-        LOG("End of route at road_id=%d, lane_id=%d, s=%.2f", GetTrackId(), GetLaneId(), GetS());
+        LOG_ERROR("End of route at road_id={}, lane_id={}, s={:.2f}", GetTrackId(), GetLaneId(), GetS());
     }
 
     return retval;
@@ -11678,7 +11683,7 @@ void PolyLineShape::CalculatePolyLine()
         }
         else
         {
-            LOG("Unexpected too few items in PolyLineShape vertex list");
+            LOG_ERROR("Unexpected too few items in PolyLineShape vertex list");
             return;
         }
 
@@ -11966,23 +11971,23 @@ void ClothoidSplineShape::AddSegment(Position* posStart, double curvStart, doubl
         if (std::isnan(curvStart))
         {
             curvStart = segments_.back().curvEnd_;
-            LOG("Start curvature of ClothoidSpline segment %d not specified, use end curvature from previous segment(%.2f)",
-                segments_.size(),
-                curvStart);
+            LOG_WARN("Start curvature of ClothoidSpline segment {} not specified, use end curvature from previous segment({:.2f})",
+                     segments_.size(),
+                     curvStart);
         }
     }
     else
     {
         if (std::isnan(curvStart))
         {
-            LOG("Start curvature of ClothoidSpline trajectory not specified, using default = 0.0");
+            LOG_WARN("Start curvature of ClothoidSpline trajectory not specified, using default = 0.0");
             curvStart = 0.0;
         }
     }
 
     if (std::isnan(curvEnd))
     {
-        LOG("End curvature of ClothoidSpline segment %d not specified, keep start curvature (%.2f)", segments_.size(), curvStart);
+        LOG_WARN("End curvature of ClothoidSpline segment {} not specified, keep start curvature ({:.2f})", segments_.size(), curvStart);
         curvEnd = curvStart;
     }
 
@@ -12003,7 +12008,7 @@ int ClothoidSplineShape::Evaluate(double p, TrajectoryParamType ptype, TrajVerte
 
     if (segments_.size() < 1)
     {
-        LOG_AND_QUIT("You need to specify at least 1 segment in a ClothoidSpline shape");
+        LOG_ERROR_AND_QUIT("You need to specify at least 1 segment in a ClothoidSpline shape");
     }
 
     if (ptype == TrajectoryParamType::TRAJ_PARAM_TYPE_TIME)
@@ -12040,7 +12045,7 @@ int ClothoidSplineShape::Evaluate(double p, TrajectoryParamType ptype, TrajVerte
         }
         else
         {
-            LOG("ClothoidSplineShape::Evaluate Requested time %.2f outside range [%.2f, %.2f]", p, GetStartTime(), GetEndTime());
+            LOG_WARN("ClothoidSplineShape::Evaluate Requested time {:.2f} outside range [{:.2f}, {:.2f}]", p, GetStartTime(), GetEndTime());
             p = GetLength();
         }
     }
@@ -12148,7 +12153,7 @@ void ClothoidSplineShape::CalculatePolyLine()
 
     if (segments_.size() == 0)
     {
-        LOG("Empty ClothoidSplineShape");
+        LOG_WARN("Empty ClothoidSplineShape");
         return;
     }
 
@@ -12398,12 +12403,12 @@ void NurbsShape::CalculatePolyLine()
     // Calculate time interpolations and resolve missing angles
     if (std::isnan(pline_.vertex_.back().h))
     {
-        LOG("No valid heading in nurbs, set to zero");
+        LOG_WARN("No valid heading in nurbs, set to zero");
         pline_.vertex_.back().h = 0.0;
     }
     if (std::isnan(pline_.vertex_.back().pitch))
     {
-        LOG("No valid pitch in nurbs, set to zero");
+        LOG_WARN("No valid pitch in nurbs, set to zero");
         pline_.vertex_.back().pitch = 0.0;
     }
     int currentCtrlPoint = 0;
@@ -12721,7 +12726,7 @@ int ClothoidShape::Evaluate(double p, TrajectoryParamType ptype, TrajVertex& pos
         }
         else
         {
-            LOG("Requested time %.2f outside range [%.2f, %.2f]", p, t_start_, t_end_);
+            LOG_ERROR("Requested time {:.2f} outside range [{:.2f}, {:.2f}]", p, t_start_, t_end_);
             p = GetLength();
         }
     }
@@ -12905,7 +12910,7 @@ Position::ReturnCode Position::SetRouteS(double route_s)
 
     if (retval == ReturnCode::ERROR_END_OF_ROUTE)
     {
-        LOG("Reached end of route, reset and continue");
+        LOG_INFO("Reached end of route, reset and continue");
         SetRoute(nullptr);
         status_ |= static_cast<int>(PositionStatusMode::POS_STATUS_END_OF_ROUTE);
         return ReturnCode::ERROR_END_OF_ROUTE;
@@ -13132,16 +13137,17 @@ int Route::AddWaypoint(const Position& wp_pos)
             if (minimal_waypoints_.size() == 1)
             {
                 // Ignore
-                LOG("Ignoring additional waypoint for road %d (s %.2f)", wp_pos.GetTrackId(), wp_pos.GetS());
+                LOG_INFO("Ignoring additional waypoint for road {} (s {:.2f})", wp_pos.GetTrackId(), wp_pos.GetS());
                 all_waypoints_.push_back(wp_pos);
+
                 return -1;
             }
             else  // at least two road-unique waypoints
             {
                 // Keep this, remove previous
-                LOG("Removing previous waypoint for same road %d (at s %.2f)",
-                    minimal_waypoints_.back().GetTrackId(),
-                    minimal_waypoints_.back().GetS());
+                LOG_INFO("Removing previous waypoint for same road {} (at s {:.2f})",
+                         minimal_waypoints_.back().GetTrackId(),
+                         minimal_waypoints_.back().GetS());
                 minimal_waypoints_.pop_back();
             }
         }
@@ -13189,11 +13195,10 @@ int Route::AddWaypoint(const Position& wp_pos)
 
                     all_waypoints_.push_back(connected_pos);
                     minimal_waypoints_.push_back(connected_pos);
-
-                    LOG("Route::AddWaypoint Added intermediate waypoint %d roadId %d laneId %d",
-                        (int)minimal_waypoints_.size() - 1,
-                        connected_pos.GetTrackId(),
-                        nodes[i - 1]->fromLaneId);
+                    LOG_INFO("Route::AddWaypoint Added intermediate waypoint {} roadId {} laneId {}",
+                             (int)minimal_waypoints_.size() - 1,
+                             connected_pos.GetTrackId(),
+                             nodes[i - 1]->fromLaneId);
                 }
             }
 
@@ -13217,7 +13222,7 @@ int Route::AddWaypoint(const Position& wp_pos)
         // Add all waypoints including invalid road ID (retval == -2 indicates invalid road ID)
         all_waypoints_.push_back(wp_pos);
 
-        LOG("Route::AddWaypoint Added waypoint %d: %d, %d, %.2f",
+        LOG("Route::AddWaypoint Added waypoint {}: {}, {}, {:.2f}",
             (int)all_waypoints_.size() - 1,
             wp_pos.GetTrackId(),
             wp_pos.GetLaneId(),
@@ -13230,12 +13235,12 @@ int Route::AddWaypoint(const Position& wp_pos)
         }
         else
         {
-            LOG("Route::AddWaypoint Skip waypoint for scenario routes since path not found");
+            LOG_WARN("Route::AddWaypoint Skip waypoint for scenario routes since path not found");
         }
     }
     else
     {
-        LOG("Route::AddWaypoint Failed to add waypoint %d: %d, %d, %.2f",
+        LOG_ERROR("Route::AddWaypoint Failed to add waypoint {}: {}, {}, {:.2f}",
             (int)minimal_waypoints_.size() - 1,
             wp_pos.GetTrackId(),
             wp_pos.GetLaneId(),
@@ -13249,7 +13254,7 @@ void Route::CheckValid()
 {
     if (invalid_route_)
     {
-        LOG("Warning: Route %s is not valid, will be ignored for the default controller.", getName().c_str());
+        LOG_WARN("Warning: Route {} is not valid, will be ignored for the default controller.", getName());
         minimal_waypoints_.clear();
     }
 }
@@ -13283,7 +13288,7 @@ Position::ReturnCode Route::SetTrackS(id_t trackId, double s, bool update_state)
 
         if (route_direction == 0)
         {
-            LOG("Unexpected lack of connection in route at waypoint %d", i);
+            LOG_ERROR("Unexpected lack of connection in route at waypoint {}", i);
             return Position::ReturnCode::ERROR_GENERIC;
         }
 
@@ -13407,9 +13412,9 @@ Position::ReturnCode Route::SetTrackS(id_t trackId, double s, bool update_state)
         {
             if (!OnRoute())
             {
-                LOG("%s%s on route at roadId=%d, s=%.2f",
+                LOG_INFO("{}{} on route at roadId={}, s={:.2f}",
                     getObjName().empty() ? "Position " : "Entity ",
-                    getObjName().empty() ? "" : getObjName().c_str(),
+                    getObjName().empty() ? "" : getObjName(),
                     trackId,
                     s);
             }
@@ -13471,7 +13476,7 @@ Position::ReturnCode Route::SetPathS(double s, double* remaining_dist, bool upda
 
         if (route_direction == 0)
         {
-            LOG("Unexpected lack of connection in route at waypoint %d", i);
+            LOG_ERROR("Unexpected lack of connection in route at waypoint {}", i);
             return Position::ReturnCode::ERROR_GENERIC;
         }
 
@@ -13524,9 +13529,9 @@ Position::ReturnCode Route::SetPathS(double s, double* remaining_dist, bool upda
             {
                 if (update_state)
                 {
-                    LOG("%s%son route at roadId=%d, s=%.2f",
+                    LOG_INFO("{}{}on route at roadId={}, s={:.2f}",
                         getObjName().empty() ? "Position " : "Entity ",
-                        getObjName().empty() ? "" : getObjName().c_str(),
+                        getObjName().empty() ? "" : getObjName(),
                         minimal_waypoints_[i].GetTrackId(),
                         local_s);
                     on_route_ = true;
@@ -13536,9 +13541,9 @@ Position::ReturnCode Route::SetPathS(double s, double* remaining_dist, bool upda
             {
                 if (update_state)
                 {
-                    LOG("%s%smoved out of route at roadId=%d, s=%.2f (SetPathS())",
+                    LOG_INFO("{}{}moved out of route at roadId={}, s={:.2f} (SetPathS())",
                         getObjName().empty() ? "Position " : "Entity ",
-                        getObjName().empty() ? "" : getObjName().c_str(),
+                        getObjName().empty() ? "" : getObjName(),
                         GetWaypoint(waypoint_idx_)->GetTrackId(),
                         local_s);
                     on_route_ = false;
@@ -13592,8 +13597,7 @@ Position::ReturnCode Route::SetPathS(double s, double* remaining_dist, bool upda
             {
                 *remaining_dist = s < 0.0 ? -s : s - GetLength();
             }
-
-            LOG("Entity %s moved passed route at roadId=%d, s=%.2f", getObjName().c_str(), minimal_waypoints_[i].GetTrackId(), local_s);
+            LOG_ERROR("Entity {} moved passed route at roadId={}, s={:.2f}", getObjName(), minimal_waypoints_[i].GetTrackId(), local_s);
             waypoint_idx_ = -1;
             return Position::ReturnCode::ERROR_END_OF_ROUTE;
         }
@@ -13611,7 +13615,7 @@ Position* Route::GetWaypoint(int index)
 
     if (minimal_waypoints_.size() == 0 || index < 0 || index >= minimal_waypoints_.size())
     {
-        LOG("Waypoint index %d out of range (%d)", index, minimal_waypoints_.size());
+        LOG_ERROR("Waypoint index {} out of range ({})", index, minimal_waypoints_.size());
         return 0;
     }
 
@@ -13674,7 +13678,7 @@ Road* Route::GetRoadAtOtherEndOfConnectingRoad(Road* incoming_road) const
 
     if (junction == 0)
     {
-        LOG("Unexpected: Road %d not a connecting road", connecting_road->GetId());
+        LOG_ERROR("Unexpected: Road {} not a connecting road", connecting_road->GetId());
         return 0;
     }
 
@@ -13685,7 +13689,7 @@ int Route::GetWayPointDirection(int index)
 {
     if (minimal_waypoints_.size() == 0 || index < 0 || index >= minimal_waypoints_.size())
     {
-        LOG("Waypoint index %d out of range (%d)", index, minimal_waypoints_.size());
+        LOG_ERROR("Waypoint index {} out of range ({})", index, minimal_waypoints_.size());
         return 0;
     }
 
@@ -13693,7 +13697,7 @@ int Route::GetWayPointDirection(int index)
     Road*      road = od->GetRoadById(minimal_waypoints_[index].GetTrackId());
     if (road == nullptr)
     {
-        LOG("Waypoint %d invalid road id %d!", index, minimal_waypoints_[index].GetTrackId());
+        LOG_ERROR("Waypoint {} invalid road id {}!", index, minimal_waypoints_[index].GetTrackId());
         return 0;
     }
 
@@ -13715,7 +13719,7 @@ int Route::GetWayPointDirection(int index)
         }
         else
         {
-            //  LOG("Warning: Relative heading not aligned with route direction");
+            LOG_DEBUG("Relative heading not aligned with route direction");
             return -1 * direction;
         }
     }
@@ -13732,7 +13736,7 @@ int Route::GetWayPointDirection(int index)
         }
         else
         {
-            //  LOG("Warning: Relative heading not aligned with route direction");
+            LOG_DEBUG("Relative heading not aligned with route direction");
             return -1 * direction;
         }
     }
@@ -13744,7 +13748,7 @@ int Route::GetWayPointDirection(int index)
     }
     else
     {
-        LOG("Only one waypoint, no direction");
+        LOG_WARN("Only one waypoint, no direction");
         return 0;
     }
 }

@@ -17,6 +17,7 @@
 #include "Entities.hpp"
 #include "CommonMini.hpp"
 #include "Controller.hpp"
+#include "logger.hpp"
 
 #include <iostream>
 #include <string>
@@ -156,12 +157,12 @@ namespace scenarioengine
 
         virtual void print()
         {
-            LOG("Virtual, should be overridden");
+            LOG_WARN("Virtual, should be overridden");
         };
 
         virtual OSCPrivateAction* Copy()
         {
-            LOG("Virtual, should be overridden");
+            LOG_WARN("Virtual, should be overridden");
             return 0;
         };
 
@@ -399,7 +400,7 @@ namespace scenarioengine
 
         void print()
         {
-            LOG("");
+            LOG_INFO("");
         }
 
         void ReplaceObjectRefs(Object* obj1, Object* obj2);

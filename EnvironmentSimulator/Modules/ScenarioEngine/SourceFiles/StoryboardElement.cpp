@@ -48,7 +48,7 @@ std::string StoryBoardElement::state2str(StoryBoardElement::State state)
     }
     else
     {
-        LOG("Undefined element state: %d", state);
+        LOG_ERROR("Undefined element state: {}", state);
     }
 
     return "Undefined";
@@ -82,7 +82,7 @@ std::string StoryBoardElement::transition2str(StoryBoardElement::Transition tran
     }
     else
     {
-        LOG("Unexpected transition: %d", transition);
+        LOG_ERROR("Unexpected transition: {}", transition);
     }
 
     return "Undefined";
@@ -140,11 +140,11 @@ void StoryBoardElement::Start(double simTime)
     }
     else
     {
-        LOG("%s Invalid Start transition request from %s to %s, %sstart_trigger",
-            name_.c_str(),
-            state2str(GetCurrentState()).c_str(),
-            state2str(State::RUNNING).c_str(),
-            start_trigger_ ? "" : "no ");
+        LOG_ERROR("{} Invalid Start transition request from {} to {}, {}start_trigger",
+                  name_,
+                  state2str(GetCurrentState()),
+                  state2str(State::RUNNING),
+                  start_trigger_ ? "" : "no ");
     }
 
     // Start children for all element types except events
@@ -228,10 +228,7 @@ void StoryBoardElement::Stop()
     }
     else
     {
-        LOG("%s Invalid Stop transition requested from %s to %s",
-            name_.c_str(),
-            state2str(GetCurrentState()).c_str(),
-            state2str(State::COMPLETE).c_str());
+        LOG_ERROR("{} Invalid Stop transition requested from {} to {}", name_, state2str(GetCurrentState()), state2str(State::COMPLETE));
     }
 
     if (parent_)
@@ -269,7 +266,7 @@ void StoryBoardElement::End()
         {
             if (max_num_executions_ != -1 && num_executions_ >= max_num_executions_)
             {
-                LOG("%s complete after %d execution%s", name_.c_str(), num_executions_, num_executions_ > 1 ? "s" : "");
+                LOG_INFO("{} complete after {} execution{}", name_, num_executions_, num_executions_ > 1 ? "s" : "");
                 SetTransition(Transition::END_TRANSITION);
                 SetState(State::COMPLETE);
             }
@@ -286,7 +283,7 @@ void StoryBoardElement::End()
                     stop_trigger_->Reset();
                 }
 
-                LOG("%s completed run %d (of max %d)", name_.c_str(), num_executions_, max_num_executions_);
+                LOG_INFO("{} completed run {} (of max {})", name_, num_executions_, max_num_executions_);
                 SetTransition(Transition::END_TRANSITION);
                 SetState(State::STANDBY);
 
@@ -305,11 +302,11 @@ void StoryBoardElement::End()
     }
     else
     {
-        LOG("%s Invalid End transition requested from %s to %s or %s",
-            name_.c_str(),
-            state2str(GetCurrentState()).c_str(),
-            state2str(State::STANDBY).c_str(),
-            state2str(State::COMPLETE).c_str());
+        LOG_ERROR("{} Invalid End transition requested from {} to {} or {}",
+                  name_,
+                  state2str(GetCurrentState()),
+                  state2str(State::STANDBY),
+                  state2str(State::COMPLETE));
     }
 
     if (parent_)
@@ -335,11 +332,7 @@ void StoryBoardElement::SetState(StoryBoardElement::State state)
 {
     if (GetCurrentState() != state)
     {
-        LOG("%s %s -> %s -> %s",
-            name_.c_str(),
-            state2str(GetCurrentState()).c_str(),
-            transition2str(GetCurrentTransition()).c_str(),
-            state2str(state).c_str());
+        LOG_INFO("{} {} -> {} -> {}", name_, state2str(GetCurrentState()), transition2str(GetCurrentTransition()), state2str(state));
 
         if (stateChangeCallback != nullptr)
         {

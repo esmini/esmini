@@ -6,6 +6,7 @@
 #include "CommonMini.hpp"
 #include "RoadManager.hpp"
 #include <unordered_map>
+#include "logger.hpp"
 
 namespace roadmanager
 {
@@ -23,7 +24,7 @@ namespace roadmanager
         Node     *previous;
         void      Print()
         {
-            LOG("road=%d, cl=%d, fl=%d, w=%f", road->GetId(), currentLaneId, fromLaneId, weight);
+            LOG_INFO("road={}, cl={}, fl={}, w={}", road->GetId(), currentLaneId, fromLaneId, weight);
         }
         bool operator==(const Node &rhs)
         {

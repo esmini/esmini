@@ -14,6 +14,7 @@
 #include <iostream>
 #include <string>
 #include "CommonMini.hpp"
+#include "logger.hpp"
 
 namespace scenarioengine
 {
@@ -25,7 +26,7 @@ namespace scenarioengine
 
         void Print()
         {
-            LOG("file: %s", filepath.c_str());
+            LOG_INFO("file: {}", filepath);
         };
     };
 

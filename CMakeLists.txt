@@ -124,7 +124,8 @@ if(NOT
 endif()
 
 # ############################### Loading common packages ############################################################
-
+# Add spdlog include directory
+include_directories(${CMAKE_SOURCE_DIR}/externals/)
 include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/common/color.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/common/locations.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/common/definitions.cmake)

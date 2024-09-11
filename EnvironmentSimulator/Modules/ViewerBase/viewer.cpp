@@ -990,19 +990,19 @@ CarModel::CarModel(Viewer*                  viewer,
     {
         if (!retval[0])
         {
-            LOG_ONCE("Missing wheel node %s in vehicle model %s - ignoring", "wheel_fl", car_node->getName().c_str());
+            LOG_WARN_ONCE("Missing wheel node {} in vehicle model {} - ignoring", "wheel_fl", car_node->getName());
         }
         if (!retval[1])
         {
-            LOG_ONCE("Missing wheel node %s in vehicle model %s - ignoring", "wheel_fr", car_node->getName().c_str());
+            LOG_WARN_ONCE("Missing wheel node {} in vehicle model {} - ignoring", "wheel_fr", car_node->getName());
         }
         if (!retval[2])
         {
-            LOG_ONCE("Missing wheel node %s in vehicle model %s - ignoring", "wheel_rr", car_node->getName().c_str());
+            LOG_WARN_ONCE("Missing wheel node {} in vehicle model {} - ignoring", "wheel_rr", car_node->getName());
         }
         if (!retval[3])
         {
-            LOG_ONCE("Missing wheel node %s in vehicle model %s - ignoring", "wheel_rl", car_node->getName().c_str());
+            LOG_WARN_ONCE("Missing wheel node {} in vehicle model {} - ignoring", "wheel_rl", car_node->getName());
         }
     }
 }
@@ -1128,7 +1128,7 @@ void EntityModel::SetTransparency(double factor)
 {
     if (factor < 0 || factor > 1)
     {
-        LOG("Clamping transparency factor %.2f to [0:1]", factor);
+        LOG_INFO("Clamping transparency factor {:.2f} to [0:1]", factor);
         factor = CLAMP(factor, 0, 1);
     }
     blend_color_->setConstantColor(osg::Vec4(1.0f, 1.0f, 1.0f, 1.0f - static_cast<float>(factor)));
@@ -1372,7 +1372,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     {
         // Viewer failed to create graphics context. Probably Anti Aliasing is not supported on executing platform.
         // Make another attempt without AA
-        LOG("Failed to create window %d %d %d %d. Maybe the Anti Aliasing setting (%d multisamples) is not supported. Making another attempt without Anti-Alias and on first screen.",
+        LOG_ERROR("Failed to create window {} {} {} {}. Maybe the Anti Aliasing setting ({} multisamples) is not supported. Making another attempt without Anti-Alias and on first screen.",
             winDim_.x,
             winDim_.y,
             winDim_.w,
@@ -1385,7 +1385,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
 
         if (!gc.valid())
         {
-            LOG("Failed 2nd attempt to create viewer, giving up. Try --headless option to run without viewer");
+            LOG_ERROR("Failed 2nd attempt to create viewer, giving up. Try --headless option to run without viewer");
             return;
         }
     }
@@ -1393,7 +1393,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     osgViewer::GraphicsWindow* gw = dynamic_cast<osgViewer::GraphicsWindow*>(gc.get());
     if (!opt->GetOptionSet("headless") && gw == nullptr)
     {
-        LOG("Failed to create viewer window %d %d %d %d. Try --headless option to run without window", winDim_.x, winDim_.y, winDim_.w, winDim_.h);
+        LOG_ERROR("Failed to create viewer window {} {} {} {}. Try --headless option to run without window", winDim_.x, winDim_.y, winDim_.w, winDim_.h);
         return;
     }
 
@@ -1402,7 +1402,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     osgViewer_ = new osgViewer::Viewer;
     if (osgViewer_ == nullptr)
     {
-        LOG("Failed to initialize OSG viewer");
+        LOG_ERROR("Failed to initialize OSG viewer");
         return;
     }
 
@@ -1514,7 +1514,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
             {
                 if (AddEnvironment(file_name_candidates[i].c_str()) == 0)
                 {
-                    LOG("Loaded scenegraph: %s", file_name_candidates[i].c_str());
+                    LOG_INFO("Loaded scenegraph: {}", file_name_candidates[i]);
                     break;
                 }
             }
@@ -1522,7 +1522,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
 
         if (i == file_name_candidates.size())
         {
-            LOG("Failed to read environment model %s!", modelFilename);
+            LOG_ERROR("Failed to read environment model {!", modelFilename);
         }
     }
 
@@ -1533,7 +1533,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
         {
             // No visual model of the road network loaded
             // Generate a simplistic 3D model based on OpenDRIVE content
-            LOG("No scenegraph 3D model loaded. Generating a simplistic one...");
+            LOG_WARN("No scenegraph 3D model loaded. Generating a simplistic one...");
 
             roadGeom     = std::make_unique<RoadGeom>(odrManager, origin_);
             environment_ = roadGeom->root_;
@@ -1556,19 +1556,19 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
 
     if (odrManager->GetNumOfRoads() > 0 && !CreateRoadLines(this, odrManager))
     {
-        LOG("Viewer::Viewer Failed to create road lines!");
+        LOG_ERROR("Viewer::Viewer Failed to create road lines!");
     }
 
     if (odrManager->GetNumOfRoads() > 0 && !CreateRoadMarkLines(odrManager))
     {
-        LOG("Viewer::Viewer Failed to create road mark lines!");
+        LOG_ERROR("Viewer::Viewer Failed to create road mark lines!");
     }
 
     if (!(opt && opt->GetOptionSet("generate_no_road_objects")))
     {
         if (odrManager->GetNumOfRoads() > 0 && CreateRoadSignsAndObjects(odrManager) != 0)
         {
-            LOG("Viewer::Viewer Failed to create road signs and objects!");
+            LOG_ERROR("Viewer::Viewer Failed to create road signs and objects!");
         }
     }
 
@@ -1577,11 +1577,11 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
         // If road model was generated AND user want to save it
         if (osgDB::writeNodeFile(*envGroup_, "generated_road.osgb"))
         {
-            LOG("Saved generated 3D model in \"generated_road.osgb\"");
+            LOG_INFO("Saved generated 3D model in \"generated_road.osgb\"");
         }
         else
         {
-            LOG("Failed to save generated 3D model");
+            LOG_ERROR("Failed to save generated 3D model");
         }
     }
 
@@ -1645,7 +1645,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
         }
         else
         {
-            LOG("Invalid clear color \"%s\" - setting some default", colorStr.c_str());
+            LOG_WARN("Invalid clear color \"{}\" - setting some default", colorStr);
         }
     }
 
@@ -2004,18 +2004,18 @@ EntityModel* Viewer::CreateEntityModel(std::string             modelFilepath,
     {
         if (modelFilepath.empty())
         {
-            LOG("No filename specified for model! - creating a dummy model");
+            LOG_WARN("No filename specified for model! - creating a dummy model");
         }
         else
         {
-            LOG("Failed to load visual model %s. %s",
-                modelFilepath.c_str(),
-                file_name_candidates.size() > 1 ? "Also tried the following paths:" : "");
+            LOG_ERROR("Failed to load visual model %s. %s",
+                      modelFilepath.c_str(),
+                      file_name_candidates.size() > 1 ? "Also tried the following paths:" : "");
             for (size_t i = 1; i < file_name_candidates.size(); i++)
             {
-                LOG("    %s", file_name_candidates[i].c_str());
+                LOG_INFO("    %s", file_name_candidates[i].c_str());
             }
-            LOG("Creating a dummy model instead");
+            LOG_WARN("Creating a dummy model instead");
         }
 
         // Create a dummy cuboid
@@ -2069,13 +2069,13 @@ EntityModel* Viewer::CreateEntityModel(std::string             modelFilepath,
         {
             if (scaleMode == EntityScaleMode::MODEL_TO_BB)
             {
-                LOG("Request to scale model (%s / %s) to non existing or 0 size bounding box. Created a dummy BB of typical car dimension.",
-                    name.c_str(),
-                    modelFilepath.c_str());
+                LOG_WARN("Request to scale model ({} / {}) to non existing or 0 size bounding box. Created a dummy BB of typical car dimension.",
+                         name,
+                         modelFilepath);
             }
             else if (scaleMode == EntityScaleMode::NONE)
             {
-                LOG("Non existing or 0 size bounding box. Created a dummy BB of typical car dimension.");
+                LOG_WARN("Non existing or 0 size bounding box. Created a dummy BB of typical car dimension.");
             }
 
             // No bounding box specified. Create a bounding box of typical car dimension.
@@ -2116,15 +2116,15 @@ EntityModel* Viewer::CreateEntityModel(std::string             modelFilepath,
             boundingBox->dimensions_.width_  = modelBB._max.y() - modelBB._min.y();
             boundingBox->dimensions_.height_ = modelBB._max.z() - modelBB._min.z();
 
-            LOG("Adjusted %s bounding box to model %s - xyz: %.2f, %.2f, %.2f lwh: %.2f, %.2f, %.2f",
-                name.c_str(),
-                FileNameOf(modelFilepath).c_str(),
-                static_cast<double>(boundingBox->center_.x_),
-                static_cast<double>(boundingBox->center_.y_),
-                static_cast<double>(boundingBox->center_.z_),
-                static_cast<double>(boundingBox->dimensions_.length_),
-                static_cast<double>(boundingBox->dimensions_.width_),
-                static_cast<double>(boundingBox->dimensions_.height_));
+            LOG_INFO("Adjusted {} bounding box to model {} - xyz: {:.2f}, {:.2f}, {:.2f} lwh: {:.2f}, {:.2f}, {:.2f}",
+                     name,
+                     FileNameOf(modelFilepath),
+                     static_cast<double>(boundingBox->center_.x_),
+                     static_cast<double>(boundingBox->center_.y_),
+                     static_cast<double>(boundingBox->center_.z_),
+                     static_cast<double>(boundingBox->dimensions_.length_),
+                     static_cast<double>(boundingBox->dimensions_.width_),
+                     static_cast<double>(boundingBox->dimensions_.height_));
         }
     }
     else if (scaleMode == EntityScaleMode::MODEL_TO_BB)
@@ -2914,9 +2914,7 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
                 }
                 else
                 {
-                    LOG("Failed to load signal %s / %s - use simple bounding box",
-                        (filename + ".osgb").c_str(),
-                        (signal->GetName() + ".osgb").c_str());
+                    LOG_ERROR("Failed to load signal {}.osgb / {}.osgb - use simple bounding box", filename, signal->GetName());
                     osg::ref_ptr<osg::PositionAttitudeTransform> obj_standin =
                         dynamic_cast<osg::PositionAttitudeTransform*>(tx_bb->clone(osg::CopyOp::DEEP_COPY_ALL));
                     obj_standin->setNodeMask(NODE_MASK_SIGN);
@@ -2966,9 +2964,9 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
                     roadmanager::Outline* outline = object->GetOutline(static_cast<int>(j));
                     CreateOutlineObject(outline, color);
                 }
-                LOG("Created outline geometry for object %s.", object->GetName().c_str());
-                LOG("  if it looks strange, e.g.faces too dark or light color, ");
-                LOG("  check that corners are defined counter-clockwise (as OpenGL default).");
+                LOG_INFO("Created outline geometry for object {}.", object->GetName());
+                LOG_INFO("  if it looks strange, e.g.faces too dark or light color, ");
+                LOG_INFO("  check that corners are defined counter-clockwise (as OpenGL default).");
             }
             else
             {
@@ -2991,9 +2989,7 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
 
                     if (tx == nullptr)
                     {
-                        LOG("Failed to load road object model file: %s (%s). Creating a bounding box as stand in.",
-                            filename.c_str(),
-                            object->GetName().c_str());
+                        LOG_WARN("Failed to load road object model file: {} ({}). Creating a bounding box as stand in.", filename, object->GetName());
                     }
                 }
 
@@ -3060,17 +3056,17 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
                     dim_z = boundingBox._max.z() - boundingBox._min.z();
                     if (object->GetLength() < SMALL_NUMBER && dim_x > SMALL_NUMBER)
                     {
-                        LOG("Object %s missing length, set to bounding box length %.2f", object->GetName().c_str(), dim_x);
+                        LOG_WARN("Object {} missing length, set to bounding box length {:.2f}", object->GetName(), dim_x);
                         object->SetLength(dim_x);
                     }
                     if (object->GetWidth() < SMALL_NUMBER && dim_y > SMALL_NUMBER)
                     {
-                        LOG("Object %s missing width, set to bounding box width %.2f", object->GetName().c_str(), dim_y);
+                        LOG_WARN("Object {} missing width, set to bounding box width {:.2f}", object->GetName(), dim_y);
                         object->SetWidth(dim_y);
                     }
                     if (object->GetHeight() < SMALL_NUMBER && dim_z > SMALL_NUMBER)
                     {
-                        LOG("Object %s missing height, set to bounding box height %.2f", object->GetName().c_str(), dim_z);
+                        LOG_WARN("Object {} missing height, set to bounding box height {:.2f}", object->GetName(), dim_z);
                         object->SetHeight(dim_z);
                     }
                 }
@@ -3467,9 +3463,9 @@ int Viewer::LoadShadowfile(std::string vehicleModelFilename)
 
     if (!shadow_node_)
     {
-        LOG("Failed to locate shadow model %s based on vehicle model filename %s - continue without",
-            SHADOW_MODEL_FILEPATH,
-            vehicleModelFilename.c_str());
+        LOG_WARN("Failed to locate shadow model {} based on vehicle model filename {} - continue without",
+                 SHADOW_MODEL_FILEPATH,
+                 vehicleModelFilename.c_str());
         return -1;
     }
 
@@ -3497,7 +3493,7 @@ int Viewer::AddEnvironment(const char* filename)
     }
     else
     {
-        LOG("AddEnvironment: No environment 3D model specified (%s) - go ahead without\n", filename);
+        LOG_WARN("AddEnvironment: No environment 3D model specified ({}) - go ahead without", filename);
     }
 
     return 0;

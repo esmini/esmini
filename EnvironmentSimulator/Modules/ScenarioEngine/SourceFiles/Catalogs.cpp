@@ -47,7 +47,7 @@ CatalogType Entry::GetTypeByNodeName(pugi::xml_node node)
     }
     else
     {
-        LOG("Unsupported catalog entry type: %s", node.name());
+        LOG_ERROR("Unsupported catalog entry type: {}", node.name());
     }
 
     return CatalogType::CATALOG_UNDEFINED;
@@ -128,7 +128,7 @@ std::string Entry::GetTypeAsStr_(CatalogType type)
     else if (type == CATALOG_UNDEFINED)
         return "UNDEFINED";
     else
-        LOG("Type %d not recognized", type);
+        LOG_ERROR("Type {} not recognized", type);
 
     return "";
 }

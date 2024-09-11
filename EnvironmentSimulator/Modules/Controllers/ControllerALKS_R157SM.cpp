@@ -15,31 +15,33 @@
 #include "Entities.hpp"
 #include "ScenarioEngine.hpp"
 #include "ScenarioGateway.hpp"
+#include "logger.hpp"
+#include "spdlog/fmt/fmt.h"
 
 using namespace scenarioengine;
 
-#define R157_LOG(level, format, ...)                                                                 \
-    {                                                                                                \
-        if (level > 0 && level <= GetLogLevel())                                                     \
-        {                                                                                            \
-            LOG((std::string("ALKS R157 ") + GetModelName() + " " + format).c_str(), ##__VA_ARGS__); \
-        }                                                                                            \
-        else                                                                                         \
-        {                                                                                            \
-            (void)0;                                                                                 \
-        }                                                                                            \
+#define R157_LOG(level, format, ...)                                                                      \
+    {                                                                                                     \
+        if (level > 0 && level <= GetLogLevel())                                                          \
+        {                                                                                                 \
+            LOG_INFO((std::string("ALKS R157 ") + GetModelName() + " " + format).c_str(), ##__VA_ARGS__); \
+        }                                                                                                 \
+        else                                                                                              \
+        {                                                                                                 \
+            (void)0;                                                                                      \
+        }                                                                                                 \
     }
 
-#define R157_LOG_SIMPLE(level, format)                                                \
-    {                                                                                 \
-        if (level > 0 && level <= GetLogLevel())                                      \
-        {                                                                             \
-            LOG((std::string("ALKS R157 ") + GetModelName() + " " + format).c_str()); \
-        }                                                                             \
-        else                                                                          \
-        {                                                                             \
-            (void)0;                                                                  \
-        }                                                                             \
+#define R157_LOG_SIMPLE(level, format)                                                     \
+    {                                                                                      \
+        if (level > 0 && level <= GetLogLevel())                                           \
+        {                                                                                  \
+            LOG_INFO((std::string("ALKS R157 ") + GetModelName() + " " + format).c_str()); \
+        }                                                                                  \
+        else                                                                               \
+        {                                                                                  \
+            (void)0;                                                                       \
+        }                                                                                  \
     }
 
 std::map<ControllerALKS_R157SM::ScenarioType, std::string> ControllerALKS_R157SM::ScenarioTypeName = {
@@ -95,24 +97,24 @@ ControllerALKS_R157SM::ControllerALKS_R157SM(InitArgs* args) : Controller(args),
                 }
                 else
                 {
-                    LOG("ControllerALKS_R157SM: Unexpected cutInPerceptionDelayMode: %s",
-                        args->properties->GetValueStr("cutInPerceptionDelayMode").c_str());
+                    LOG_WARN("ControllerALKS_R157SM: Unexpected cutInPerceptionDelayMode: {}",
+                             args->properties->GetValueStr("cutInPerceptionDelayMode"));
                 }
             }
-            LOG("ALKS_R157SM ReferenceDriver perceptionDelayMode: %s",
-                ref_driver->cut_in_perception_delay_mode_ == ReferenceDriver::CutInPerceptionDelayMode::TIME ? "Time" : "Dist");
+            LOG_INFO("ALKS_R157SM ReferenceDriver perceptionDelayMode: {}",
+                     ref_driver->cut_in_perception_delay_mode_ == ReferenceDriver::CutInPerceptionDelayMode::TIME ? "Time" : "Dist");
 
             if (args->properties->ValueExists("pedestrianRiskEvaluationTime"))
             {
                 ref_driver->SetPedestrianRiskEvaluationTime(strtod(args->properties->GetValueStr("pedestrianRiskEvaluationTime")));
             }
-            LOG("ALKS_R157SM PedestrianRiskEvaluationTime: %.2f", ref_driver->GetPedestrianRiskEvaluationTime());
+            LOG_INFO("ALKS_R157SM PedestrianRiskEvaluationTime: {:.2f}", ref_driver->GetPedestrianRiskEvaluationTime());
 
             if (args->properties->ValueExists("aebTTC"))
             {
                 ref_driver->aeb_.ttc_critical_aeb_ = strtod(args->properties->GetValueStr("aebTTC"));
             }
-            LOG("ALKS_R157SM AEB TTC: %.2f", ref_driver->aeb_.ttc_critical_aeb_);
+            LOG_INFO("ALKS_R157SM AEB TTC: {:.2f}", ref_driver->aeb_.ttc_critical_aeb_);
 
             if (args->properties->ValueExists("aebDeceleration"))
             {
@@ -123,7 +125,7 @@ ControllerALKS_R157SM::ControllerALKS_R157SM(InitArgs* args) : Controller(args),
                     ref_driver->aeb_.max_dec_ = fabs(ref_driver->aeb_.max_dec_);
                 }
             }
-            LOG("ALKS_R157SM AEB deceleration: %.2f", ref_driver->aeb_.max_dec_);
+            LOG_INFO("ALKS_R157SM AEB deceleration: {:.2f}", ref_driver->aeb_.max_dec_);
 
             if (args->properties->ValueExists("aebAvailable"))
             {
@@ -132,21 +134,21 @@ ControllerALKS_R157SM::ControllerALKS_R157SM(InitArgs* args) : Controller(args),
                     ref_driver->aeb_.available_ = false;
                 }
             }
-            LOG("ALKS_R157SM AEB %savailable", ref_driver->aeb_.available_ ? "" : "not ");
+            LOG_INFO("ALKS_R157SM AEB {}available", ref_driver->aeb_.available_ ? "" : "not ");
 
             if (args->properties->ValueExists("lateralTrigDistance"))
             {
                 ref_driver->lateral_dist_trigger_             = new ReferenceDriver::LateralDistTrigger(ref_driver);
                 ref_driver->lateral_dist_trigger_->threshold_ = strtod(args->properties->GetValueStr("lateralTrigDistance"));
                 ref_driver->lateral_dist_trigger_->SetName("LateralDistTrigger");
-                LOG("ALKS_R157SM AEB LateralTrigDistance: %.2f", ref_driver->lateral_dist_trigger_->threshold_);
+                LOG_INFO("ALKS_R157SM AEB LateralTrigDistance: {:.2f}", ref_driver->lateral_dist_trigger_->threshold_);
             }
 
             if (args->properties->ValueExists("overlapTolerance"))
             {
                 ref_driver->overlap_tolerance_ = strtod(args->properties->GetValueStr("overlapTolerance"));
             }
-            LOG("ALKS_R157SM Overlap tolerance: %.2f", ref_driver->overlap_tolerance_);
+            LOG_INFO("ALKS_R157SM Overlap tolerance: {:.2f}", ref_driver->overlap_tolerance_);
 
             if (!ref_driver->lateral_dist_trigger_)
             {
@@ -166,7 +168,7 @@ ControllerALKS_R157SM::ControllerALKS_R157SM(InitArgs* args) : Controller(args),
                     model_->max_dec_ = fabs(model_->max_dec_);
                 }
             }
-            LOG("ALKS_R157SM driver deceleration: %.2f", model_->max_dec_);
+            LOG_INFO("ALKS_R157SM driver deceleration: {:.2f}", model_->max_dec_);
         }
         else if (args->properties->GetValueStr("model") == "RSS")
         {
@@ -174,27 +176,27 @@ ControllerALKS_R157SM::ControllerALKS_R157SM(InitArgs* args) : Controller(args),
         }
         else
         {
-            LOG_AND_QUIT("ControllerALKS_R157SM unexpected model %s", args->properties->GetValueStr("model").c_str());
+            LOG_ERROR_AND_QUIT("ControllerALKS_R157SM unexpected model {}", args->properties->GetValueStr("model"));
         }
-        LOG("ALKS_R157SM model: %s", model_->GetModelName().c_str());
+        LOG_INFO("ALKS_R157SM model: {}", model_->GetModelName());
 
         if (args->properties->ValueExists("logLevel"))
         {
             model_->SetLogging(strtoi(args->properties->GetValueStr("logLevel")));
         }
-        LOG("ALKS_R157SM logLevel: %d", model_->log_level_);
+        LOG_INFO("ALKS_R157SM logLevel: {}", model_->log_level_);
 
         if (args->properties->ValueExists("fullStop"))
         {
             model_->SetFullStop(args->properties->GetValueStr("fullStop") == "true" ? true : false);
         }
-        LOG("ALKS_R157SM fullStop: %s", model_->GetFullStop() ? "true" : "false");
+        LOG_INFO("ALKS_R157SM fullStop: {}", model_->GetFullStop() ? "true" : "false");
 
         if (args->properties->ValueExists("alwaysTrigOnScenario"))
         {
             model_->SetAlwaysTrigOnScenario(args->properties->GetValueStr("alwaysTrigOnScenario") == "true" ? true : false);
         }
-        LOG("ALKS_R157SM alwaysTrigOnScenario: %s", model_->GetAlwaysTrigOnScenario() ? "true" : "false");
+        LOG_INFO("ALKS_R157SM alwaysTrigOnScenario: {}", model_->GetAlwaysTrigOnScenario() ? "true" : "false");
 
         if (args->properties->ValueExists("cruise"))
         {
@@ -207,7 +209,7 @@ ControllerALKS_R157SM::ControllerALKS_R157SM(InitArgs* args) : Controller(args),
                 model_->SetCruise(false);
             }
         }
-        LOG("ALKS_R157SM cruise: %s", model_->cruise_ ? "true" : "false");
+        LOG_INFO("ALKS_R157SM cruise: {}", model_->cruise_ ? "true" : "false");
     }
 }
 
@@ -226,6 +228,8 @@ void ControllerALKS_R157SM::Init()
 
 void ControllerALKS_R157SM::Step(double timeStep)
 {
+    // LOG_INFO("ALKS_R157SM step called with {:.2f}", timeStep);
+    // LOG_ERROR_AND_QUIT("I m qutting {} {} {} {}", 1, 2, 3, "go");
     double speed = model_->Step(timeStep);
 
     if (mode_ == ControlOperationMode::MODE_OVERRIDE)
@@ -248,7 +252,7 @@ void ControllerALKS_R157SM::LinkObject(Object* object)
 
     if (object->type_ != Object::Type::VEHICLE)
     {
-        LOG("Failed attempt to assign ControllerALKS_R157SM controller to a non vehicle object %s", object->GetName().c_str());
+        LOG_ERROR("Failed attempt to assign ControllerALKS_R157SM controller to a non vehicle object {}", object->GetName());
         return;
     }
 
@@ -294,7 +298,7 @@ int ControllerALKS_R157SM::Model::Detect()
 
     if (entities_ == 0)
     {
-        R157_LOG_SIMPLE(1, "No entities! Register scenarioengine - SetScenarioEngine()");
+        LOG_ERROR("ALKS_R157SM: No entities! Register scenarioengine - SetScenarioEngine()");
         return -1;
     }
 
@@ -354,10 +358,7 @@ int ControllerALKS_R157SM::Model::Detect()
         // New object or scenario detected, register scenario type
         SetScenarioType(candidate_obj_info.action);
 
-        R157_LOG(1,
-                 "Detected object: %s Scenario: %s",
-                 candidate_obj_info.obj->GetName().c_str(),
-                 ScenarioType2Str(candidate_obj_info.action).c_str());
+        R157_LOG(1, "Detected object: {} Scenario: {}", candidate_obj_info.obj->GetName(), ScenarioType2Str(candidate_obj_info.action));
     }
 
     object_in_focus_ = candidate_obj_info;
@@ -435,8 +436,8 @@ int ControllerALKS_R157SM::Model::Process(ObjectInfo& info)
                 }
 
                 R157_LOG(3,
-                         "%s relative speed s, t: %.2f, %.2f dist: %.2f, %.2f dLane %d TTC: %.2f",
-                         info.obj->GetName().c_str(),
+                         "{} relative speed s, t: {:.2f}, {:.2f} dist: {:.2f}, {:.2f} dLane {} TTC: {:.2f}",
+                         info.obj->GetName(),
                          info.dv_s,
                          info.dv_t,
                          info.dist_long,
@@ -484,7 +485,7 @@ void ControllerALKS_R157SM::Model::ResetObjectInFocus()
 
 void ControllerALKS_R157SM::Model::ResetReactionTime()
 {
-    R157_LOG(2, "Reaction timer (%.2fs) started", GetReactionTime());
+    R157_LOG(2, "Reaction timer ({:.2f}s) started", GetReactionTime());
     rt_counter_ = GetReactionTime();
 }
 
@@ -567,7 +568,7 @@ double ControllerALKS_R157SM::Model::Cruise()
                 acc_ = CLAMP(acc_, -cruise_max_dec_, cruise_max_acc_);
             }
 
-            R157_LOG(3, "Cruise with target, acc: %.2f", acc_);
+            R157_LOG(3, "Cruise with target, acc: {:.2f}", acc_);
             return CLAMP(veh_->GetSpeed() + acc_ * dt_, 0, set_speed_);
         }
     }
@@ -601,7 +602,7 @@ void ControllerALKS_R157SM::Model::SetModelMode(ModelMode mode, bool log)
     {
         if (log)
         {
-            R157_LOG(1, "R157_Model mode: %s -> %s", Mode2Str(model_mode_).c_str(), Mode2Str(mode).c_str());
+            R157_LOG(1, "R157_Model mode: {} -> {}", Mode2Str(model_mode_), Mode2Str(mode));
         }
         model_mode_ = mode;
     }
@@ -726,7 +727,7 @@ double ControllerALKS_R157SM::Regulation::ReactCritical()
     acc_         = -GetMaxDec();
     double speed = MAX(0.0, veh_->GetSpeed() + acc_ * dt_);
 
-    R157_LOG(3, "Critical: acc %.2f speed %.2f", acc_, speed);
+    R157_LOG(3, "Critical: acc {:.2f} speed {:.2f}", acc_, speed);
 
     return speed;
 }
@@ -749,7 +750,7 @@ void ControllerALKS_R157SM::ReferenceDriver::UpdateAEB(Vehicle* ego, ObjectInfo*
     if (aeb_.available_ && !aeb_.active_ && info->ttc < aeb_.ttc_critical_aeb_ &&
         ego->OverlappingFront(info->obj, overlap_tolerance_) > Object::OverlapType::PART)  // object fully inside or covering ego front extension
     {
-        R157_LOG(2, "AEB activated at ttc %.2f (< critical ttc %.2f)", info->ttc, aeb_.ttc_critical_aeb_);
+        R157_LOG(2, "AEB activated at ttc {:.2f} (< critical ttc {:.2f})", info->ttc, aeb_.ttc_critical_aeb_);
         aeb_.active_ = true;
     }
 }
@@ -760,7 +761,7 @@ void ControllerALKS_R157SM::ReferenceDriver::LateralDistTrigger::Update(ObjectIn
     {
         if (active_)
         {
-            R157_LOG(2, "%s deactivated", name_.c_str());
+            R157_LOG(2, "{} deactivated", name_);
             Reset();
         }
         return;
@@ -772,7 +773,7 @@ void ControllerALKS_R157SM::ReferenceDriver::LateralDistTrigger::Update(ObjectIn
         active_ = true;
         t0_     = info->obj->pos_.GetT();
 
-        R157_LOG(2, "%s activated on %s at t %.3f with dist delta threshold %.3f", name_.c_str(), info->obj->GetName().c_str(), t0_, threshold_);
+        R157_LOG(2, "{} activated on {} at t {:.3f} with dist delta threshold {:.3f}", name_, info->obj->GetName(), t0_, threshold_);
     }
 }
 
@@ -782,7 +783,7 @@ void ControllerALKS_R157SM::ReferenceDriver::WanderingTrigger::Update(ObjectInfo
     {
         if (active_)
         {
-            R157_LOG(2, "%s deactivated", name_.c_str());
+            R157_LOG(2, "{} deactivated", name_);
             Reset();
         }
         return;
@@ -816,9 +817,9 @@ void ControllerALKS_R157SM::ReferenceDriver::WanderingTrigger::Update(ObjectInfo
         }
 
         R157_LOG(2,
-                 "%s activated on %s (%s) at t %.3f with delta dist threshold %.3f",
-                 name_.c_str(),
-                 info->obj->GetName().c_str(),
+                 "{} activated on {} ({}) at t {:.3f} with delta dist threshold {:.3f}",
+                 name_,
+                 info->obj->GetName(),
                  mc ? "MC" : "non MC",
                  t0_,
                  threshold_);
@@ -907,7 +908,7 @@ bool ControllerALKS_R157SM::ReferenceDriver::CheckPerceptionCutIn()
             if (lateral_dist_trigger_ && lateral_dist_trigger_->Evaluate() == true)
             {
                 R157_LOG(2,
-                         "Trig perception on lateral distance: %.2f (>%.2f)",
+                         "Trig perception on lateral distance: {:.2f} (>{:.2f})",
                          lateral_dist_trigger_->GetDistance(),
                          lateral_dist_trigger_->threshold_);
                 trig = true;
@@ -915,7 +916,7 @@ bool ControllerALKS_R157SM::ReferenceDriver::CheckPerceptionCutIn()
             else if (wandering_trigger_ && wandering_trigger_->Evaluate() == true)
             {
                 R157_LOG(2,
-                         "Trig perception on lateral wandering threshold: %.3f (>%.3f)",
+                         "Trig perception on lateral wandering threshold: {:.3f} (>{:.2f})",
                          abs(wandering_trigger_->obj_->pos_.GetT() - wandering_trigger_->t0_),
                          wandering_trigger_->threshold_);
                 trig = true;
@@ -950,7 +951,7 @@ bool ControllerALKS_R157SM::ReferenceDriver::CheckPerceptionCutIn()
                 if (timer_ < SMALL_NUMBER)
                 {
                     SetPhase(Phase::REACT);
-                    R157_LOG(2, "Pedestrian %s perceived after %.2fs", object_in_focus_.obj->GetName().c_str(), GetPedestrianRiskEvaluationTime());
+                    R157_LOG(2, "Pedestrian {} perceived after {:.2f}s", object_in_focus_.obj->GetName(), GetPedestrianRiskEvaluationTime());
                 }
             }
         }
@@ -966,7 +967,7 @@ bool ControllerALKS_R157SM::ReferenceDriver::CheckPerceptionCutIn()
                          object_in_focus_.obj->pos_.GetT() < perception_t_ - perception_dist_)
                 {
                     R157_LOG(2,
-                             "Reached lateral perception distance (t %.3f < t0 %.3f - perc dist %.2f)",
+                             "Reached lateral perception distance (t {:.3f} < t0 {:.3f} - perc dist {:.2f})",
                              object_in_focus_.obj->pos_.GetT(),
                              perception_t_,
                              perception_dist_);
@@ -976,7 +977,7 @@ bool ControllerALKS_R157SM::ReferenceDriver::CheckPerceptionCutIn()
                          object_in_focus_.obj->pos_.GetT() > perception_t_ + perception_dist_)
                 {
                     R157_LOG(2,
-                             "Reached lateral perception distance (t %.3f > t0 %.3f + perc dist %.2f)",
+                             "Reached lateral perception distance (t {:.3f} > t0 {:.3f} + perc dist {:.2f})",
                              object_in_focus_.obj->pos_.GetT(),
                              perception_t_,
                              perception_dist_);
@@ -990,7 +991,7 @@ bool ControllerALKS_R157SM::ReferenceDriver::CheckPerceptionCutIn()
                 {
                     SetPhase(Phase::REACT);
                     R157_LOG(2,
-                             "Reached lateral perception time at t %.2fm (t0 %.3fm + perc time %.2f)",
+                             "Reached lateral perception time at t {:.2f}m (t0 {:.3f}m + perc time {:.2f})",
                              object_in_focus_.obj->pos_.GetT(),
                              perception_t_,
                              perception_time_);
@@ -1056,7 +1057,7 @@ bool ControllerALKS_R157SM::ReferenceDriver::CheckCriticalCutIn()
             if (timer_ < SMALL_NUMBER)
             {
                 R157_LOG(2,
-                         "Reacting to cut-in at TTC %.2f (< %.2f) (%s)",
+                         "Reacting to cut-in at TTC {:.2f} (< {:.2f}) ({})",
                          object_in_focus_.ttc,
                          critical_ttc_,
                          object_in_focus_.thw < critical_thw_ ? "Critical" : "Non critical");
@@ -1070,7 +1071,7 @@ bool ControllerALKS_R157SM::ReferenceDriver::CheckCriticalCutIn()
         if (GetPhase() == Phase::REACT)
         {
             // not considered a cut-in scenario
-            R157_LOG(2, "Perceived cut-in at TTC %.2f (> %.2f) => non critical", object_in_focus_.ttc, critical_ttc_);
+            R157_LOG(2, "Perceived cut-in at TTC {:.2f} (> {:.2f}) => non critical", object_in_focus_.ttc, critical_ttc_);
             Reset();
         }
         else if (GetModelMode() == ModelMode::CRITICAL)
@@ -1101,7 +1102,7 @@ bool ControllerALKS_R157SM::ReferenceDriver::CheckCriticalCutOut()
             if (timer_ < SMALL_NUMBER)
             {
                 R157_LOG(2,
-                         "Reacting to cut-out THW = %.2f (< %.2f) (%s)",
+                         "Reacting to cut-out THW = {:.2f} (< {:.2f}) ({})",
                          object_in_focus_.thw,
                          critical_thw_,
                          object_in_focus_.thw < critical_thw_ ? "Critical" : "Non critical");
@@ -1115,7 +1116,7 @@ bool ControllerALKS_R157SM::ReferenceDriver::CheckCriticalCutOut()
         if (GetPhase() == Phase::REACT)
         {
             // not considered a cut-out scenario
-            R157_LOG(2, "Reacting to cut-out but THW = %.2f (>%.2f) => non critical", object_in_focus_.thw, critical_thw_);
+            R157_LOG(2, "Reacting to cut-out but THW = {:.2f} (>{:.2f}) => non critical", object_in_focus_.thw, critical_thw_);
             Reset();
         }
         else if (GetModelMode() == ModelMode::CRITICAL)
@@ -1146,7 +1147,7 @@ bool ControllerALKS_R157SM::ReferenceDriver::CheckCriticalDeceleration()
             if (timer_ < SMALL_NUMBER)
             {
                 R157_LOG(2,
-                         "Reacting to dececleration THW < %.2f (%.2f) (%s)",
+                         "Reacting to dececleration THW < {:.2f} ({:.2f}) ({})",
                          object_in_focus_.thw,
                          critical_thw_,
                          object_in_focus_.thw < critical_thw_ ? "Critical" : "Non critical");
@@ -1160,7 +1161,7 @@ bool ControllerALKS_R157SM::ReferenceDriver::CheckCriticalDeceleration()
         if (GetPhase() == Phase::REACT)
         {
             // not considered a cut-out scenario
-            R157_LOG(2, "Reacting to dececleration but THW > %.2f (%.2f) => non critical", object_in_focus_.thw, critical_thw_);
+            R157_LOG(2, "Reacting to dececleration but THW > {:.2f} ({:.2f}) => non critical", object_in_focus_.thw, critical_thw_);
             Reset();
         }
         else if (GetModelMode() == ModelMode::CRITICAL)
@@ -1184,7 +1185,7 @@ void ControllerALKS_R157SM::ReferenceDriver::SetPhase(Phase phase)
 {
     if (phase != phase_)
     {
-        R157_LOG(2, "phase: %s -> %s", Phase2Str(phase_).c_str(), Phase2Str(phase).c_str());
+        R157_LOG(2, "phase: {} -> {}", Phase2Str(phase_), Phase2Str(phase));
         phase_ = phase;
     }
 }
@@ -1201,8 +1202,8 @@ bool ControllerALKS_R157SM::ReferenceDriver::CheckCritical()
         if (CheckPerception())
         {
             R157_LOG(3,
-                     "Perceived critical %s scenario ttc %.2f hwt %.2f",
-                     ScenarioType2Str(GetScenarioType()).c_str(),
+                     "Perceived critical {} scenario ttc {:.2f} hwt {:.2f}",
+                     ScenarioType2Str(GetScenarioType()),
                      object_in_focus_.ttc,
                      object_in_focus_.thw);
             SetPhase(Phase::REACT);
@@ -1283,7 +1284,7 @@ double ControllerALKS_R157SM::ReferenceDriver::ReactCritical()
 
     double speed = MAX(0.0, veh_->GetSpeed() + acc_ * dt_);
 
-    R157_LOG(3, "React critical: acc %.2f vel %.2f timer %.2f", acc_, speed, timer_);
+    R157_LOG(3, "React critical: acc {:.2f} vel {:.2f} timer {:.2f}", acc_, speed, timer_);
 
     return speed;
 }
@@ -1314,7 +1315,7 @@ bool ControllerALKS_R157SM::RSS::CheckSafety(ObjectInfo* info)
     double d_safe_rss_lat =
         mu_ + abs((2.0 * cut_in_lat + max_acc_lat_ * rt_) * rt_ / 2.0) + pow(cut_in_lat + max_acc_lat_ * rt_, 2) / (2 * max_acc_lat_);
 
-    R157_LOG(3, "CheckSafety: dist_lat % .2f d_safe_rss_lat %.2f", info->dist_lat, d_safe_rss_lat);
+    R157_LOG(3, "CheckSafety: dist_lat {:.2f} d_safe_rss_lat {:.2f}", info->dist_lat, d_safe_rss_lat);
 
     if (abs(info->dist_lat) < d_safe_rss_lat)
     {
@@ -1338,7 +1339,7 @@ bool ControllerALKS_R157SM::RSS::CheckCritical()
         double d_safe_rss_long = veh_->GetSpeed() * rt_ + max_acc_ * pow(rt_, 2) / 2.0 + pow(veh_->GetSpeed() + rt_ * max_acc_, 2) / (2 * max_dec_) -
                                  pow(object_in_focus_.obj->GetSpeed(), 2) / (2 * max_dec_);
 
-        R157_LOG(3, "CheckCritical: dist %.2f d_safe_rss_long %.2f", object_in_focus_.dist_long, d_safe_rss_long);
+        R157_LOG(3, "CheckCritical: dist {:.2f} d_safe_rss_long {:.2f}", object_in_focus_.dist_long, d_safe_rss_long);
 
         if (object_in_focus_.dist_long < d_safe_rss_long)
         {
@@ -1365,7 +1366,7 @@ double ControllerALKS_R157SM::RSS::ReactCritical()
     }
 
     acc_ = MIN(acc_ - min_jerk_ * dt_, max_dec_);
-    R157_LOG(3, "critical acc %.2f", acc_);
+    R157_LOG(3, "critical acc {:.2f}", acc_);
 
     return MAX(veh_->GetSpeed() + acc_ * dt_, 0);
 }
@@ -1383,7 +1384,7 @@ double ControllerALKS_R157SM::FSM::MinDist()
     double min_dist = margin_dist_ + veh_->GetSpeed() * rt_ + pow(veh_->GetSpeed(), 2) / (2 * br_min_) -
                       pow(object_in_focus_.obj->GetSpeed(), 2) / (2 * bl_) + margin_safe_dist_;
 
-    R157_LOG(3, "Min dist: %.2f", min_dist);
+    R157_LOG(3, "Min dist: {:.2f}", min_dist);
 
     return min_dist;
 }
@@ -1523,7 +1524,7 @@ bool ControllerALKS_R157SM::FSM::CheckCritical()
                    margin_dist_,
                    margin_safe_dist_);
 
-        R157_LOG(3, "cfs %.2f pfs %.2f", cfs_, pfs_);
+        R157_LOG(3, "cfs {:.2f} pfs {:.2f}", cfs_, pfs_);
 
         if (cfs_ + pfs_ < SMALL_NUMBER)
         {
@@ -1564,7 +1565,7 @@ double ControllerALKS_R157SM::FSM::ReactCritical()
 
     acc_ = MAX(MAX(acc_ - min_jerk_ * dt_, -max_dec_), -acc);
 
-    R157_LOG(3, "acc %.2f", acc_);
+    R157_LOG(3, "acc {:.2f}", acc_);
 
     return MAX(veh_->GetSpeed() + acc_ * dt_, 0);
 }

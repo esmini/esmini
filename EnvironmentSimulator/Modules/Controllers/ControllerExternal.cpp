@@ -13,6 +13,7 @@
 #include "ControllerExternal.hpp"
 #include "Entities.hpp"
 #include "ScenarioGateway.hpp"
+#include "logger.hpp"
 
 using namespace scenarioengine;
 
@@ -44,9 +45,9 @@ void ControllerExternal::Init()
     }
     else if (useGhost_)
     {
-        LOG("External controller with ghost needs to be assigned by ObjectController");
-        LOG("  in the Init section, in order for the headstart time to be correctly registered.");
-        LOG("  -> ignoring the headstartTime attribute.");
+        LOG_INFO("External controller with ghost needs to be assigned by ObjectController");
+        LOG_INFO("  in the Init section, in order for the headstart time to be correctly registered.");
+        LOG_INFO("  -> ignoring the headstartTime attribute.");
     }
 
     Controller::Init();

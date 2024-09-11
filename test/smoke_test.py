@@ -21,8 +21,8 @@ class TestSuite(unittest.TestCase):
 
         # Check some scenario events
         self.assertTrue(re.search('0.010.* CutInActStart == true, 0.0100 > 0.0000 edge: none', log)  is not None)
-        self.assertTrue(re.search('\\n7.740: BrakeCondition_HWT_0.7 == true, HWT: 0.70 > 0.70, edge rising', log)  is not None)
-        self.assertTrue(re.search('\\n21.[678].* StopCondition timer expired at 5.00 seconds', log)  is not None)
+        self.assertTrue(re.search('\\n.7.740.* BrakeCondition_HWT_0.7 == true, HWT: 0.70 > 0.70, edge rising', log)  is not None)
+        self.assertTrue(re.search('\\n.21.[678].* StopCondition timer expired at 5.00 seconds', log)  is not None)
 
     def test_ltap_od(self):
         log = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/ltap-od.xosc'), COMMON_ESMINI_ARGS \
@@ -33,8 +33,8 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('.*Route::AddWaypoint Added intermediate waypoint 1 roadId 15 laneId -1', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('\\n5.500: Synchronize masterTimeToDest \\(0.003\\) reached within this timestep \\(0.010\\)', log)  is not None)
-        self.assertTrue(re.search('\\n9.5.* QuitCondition timer expired at 4.0. seconds', log)  is not None)
+        self.assertTrue(re.search('\\n.5.500.* Synchronize masterTimeToDest \\(0.003\\) reached within this timestep \\(0.010\\)', log)  is not None)
+        self.assertTrue(re.search('\\n.9.5.* QuitCondition timer expired at 4.0. seconds', log)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv()
@@ -46,7 +46,7 @@ class TestSuite(unittest.TestCase):
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*lane_change_trig_by_variable.xosc', log)  is not None)
-        self.assertTrue(re.search('\\n3.010: Lane change Target condition by variable == true, 3.0100 > 3.0000 edge: rising', log)  is not None)
+        self.assertTrue(re.search('\\n.*3.010.* Lane change Target condition by variable == true, 3.0100 > 3.0000 edge: rising', log)  is not None)
 
         csv = generate_csv()
         self.assertTrue(re.search('\\n0.500, 0, Truck, 55.800, -47.582, 0.000, 6.170, 0.000, 0.000, 20.000, 0.000, 3.439', csv))
@@ -62,8 +62,8 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('Loading .*trajectory-test.xosc', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('\\n8.00.*FollowTrajectoryClothoidTrigger == true, element: FollowTrajectoryPLineEvent state: END_TRANSITION', log)  is not None)
-        self.assertTrue(re.search('\\n24.21.* FollowTrajectoryNurbsAction runningState -> endTransition -> completeState', log)  is not None)
+        self.assertTrue(re.search('\\n.8.00.*FollowTrajectoryClothoidTrigger == true, element: FollowTrajectoryPLineEvent state: END_TRANSITION', log)  is not None)
+        self.assertTrue(re.search('\\n.24.21.* FollowTrajectoryNurbsAction runningState -> endTransition -> completeState', log)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv()
@@ -85,11 +85,11 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('Loading .*synchronize.xosc', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('9.940: Synchronize masterTimeToDest \\(0.006\\) reached within this timestep \\(0.010\\)', log)  is not None)
-        self.assertTrue(re.search('\\n9.9.* Synchronize_NPC_Event complete after 1 execution', log)  is not None)
-        self.assertTrue(re.search('\\n19.74.* Free_Speed_Condition_NPC == true, distance 4.81 < tolerance \\(5.00\\), edge: rising', log)  is not None)
-        self.assertTrue(re.search('\\n19.74.* Triggering entity 0: Ego', log)  is not None)
-        self.assertTrue(re.search('\\n32.170: storyBoard runningState -> stopTransition -> completeState', log)  is not None)
+        self.assertTrue(re.search('.9.940.* Synchronize masterTimeToDest \\(0.006\\) reached within this timestep \\(0.010\\)', log)  is not None)
+        self.assertTrue(re.search('\\n.9.9.* Synchronize_NPC_Event complete after 1 execution', log)  is not None)
+        self.assertTrue(re.search('\\n.19.74.* Free_Speed_Condition_NPC == true, distance 4.81 < tolerance \\(5.00\\), edge: rising', log)  is not None)
+        self.assertTrue(re.search('\\n.19.74.* Triggering entity 0: Ego', log)  is not None)
+        self.assertTrue(re.search('\\n.32.170.* storyBoard runningState -> stopTransition -> completeState', log)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv()
@@ -115,10 +115,10 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('Loading .*left-hand-traffic_by_heading.xosc', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('\\n3.75.* Lane change == true, rel_dist: 10.02 > 10.00, edge: rising', log)  is not None)
-        self.assertTrue(re.search('\\n5.74.* Lane change complete after 1 execution', log)  is not None)
-        self.assertTrue(re.search('\\n9.75.* QuitCondition timer expired at 4.00 seconds', log)  is not None)
-        self.assertTrue(re.search('\\n9.75.* storyBoard runningState -> stopTransition -> completeState', log)  is not None)
+        self.assertTrue(re.search('\\n.3.75.* Lane change == true, rel_dist: 10.02 > 10.00, edge: rising', log)  is not None)
+        self.assertTrue(re.search('\\n.5.74.* Lane change complete after 1 execution', log)  is not None)
+        self.assertTrue(re.search('\\n.9.75.* QuitCondition timer expired at 4.00 seconds', log)  is not None)
+        self.assertTrue(re.search('\\n.9.75.* storyBoard runningState -> stopTransition -> completeState', log)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv()
@@ -138,10 +138,10 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('Loading .*left-hand-traffic_using_road_rule.xosc', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('\\n3.75.* Lane change == true, rel_dist: 10.02 > 10.00, edge: rising', log)  is not None)
-        self.assertTrue(re.search('\\n5.74.* Lane change complete after 1 execution', log)  is not None)
-        self.assertTrue(re.search('\\n9.75.* QuitCondition timer expired at 4.00 seconds', log)  is not None)
-        self.assertTrue(re.search('\\n9.75.* storyBoard runningState -> stopTransition -> completeState', log)  is not None)
+        self.assertTrue(re.search('\\n.3.75.* Lane change == true, rel_dist: 10.02 > 10.00, edge: rising', log)  is not None)
+        self.assertTrue(re.search('\\n.5.74.* Lane change complete after 1 execution', log)  is not None)
+        self.assertTrue(re.search('\\n.9.75.* QuitCondition timer expired at 4.00 seconds', log)  is not None)
+        self.assertTrue(re.search('\\n.9.75.* storyBoard runningState -> stopTransition -> completeState', log)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv()
@@ -162,13 +162,13 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('.*Route::AddWaypoint Added intermediate waypoint 7 roadId 260 laneId -1', log)  is not None)
         self.assertTrue(re.search('.*Route::AddWaypoint Added intermediate waypoint 11 roadId 220 laneId -1', log)  is not None)
         self.assertTrue(re.search('.*Route::AddWaypoint Added waypoint 12: 222, -1, 20.00', log)  is not None)
-        self.assertTrue(re.search('\\n25.46.* Route::AddWaypoint Added intermediate waypoint 3 roadId 280 laneId -1', log)  is not None)
+        self.assertTrue(re.search('\\n.*25.46.* Route::AddWaypoint Added intermediate waypoint 3 roadId 280 laneId -1', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('\\n25.46.* AquirePosition condition == true, distance 1.5. < tolerance \\(2.00\\), edge: rising', log)  is not None)
-        self.assertTrue(re.search('\\n25.46.: AquirePosition event complete after 1 execution', log)  is not None)
-        self.assertTrue(re.search('\\n38.31.* Stop condition == true, distance 1.85 < tolerance \\(2.00\\), edge: rising', log)  is not None)
-        self.assertTrue(re.search('\\n47.31.* QuitCondition timer expired at 4.00 seconds', log)  is not None)
+        self.assertTrue(re.search('\\n.*25.46.* AquirePosition condition == true, distance 1.5. < tolerance \\(2.00\\), edge: rising', log)  is not None)
+        self.assertTrue(re.search('\\n.*25.46.* AquirePosition event complete after 1 execution', log)  is not None)
+        self.assertTrue(re.search('\\n.*38.31.* Stop condition == true, distance 1.85 < tolerance \\(2.00\\), edge: rising', log)  is not None)
+        self.assertTrue(re.search('\\n.*47.31.* QuitCondition timer expired at 4.00 seconds', log)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv()
@@ -186,12 +186,12 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('.*Target New position:.*$\\n^.*Pos\\(100.00, -1.53, 0.00\\) Rot\\(0.00, 0.00, 0.00\\) roadId 1 laneId -1 offset 0.00 t -1.53', log, re.MULTILINE))
 
         # Check some scenario events
-        self.assertTrue(re.search('^5.010: LaneChange1Condition == true, 5.0100 > 5.0000 edge: rising', log, re.MULTILINE))
-        self.assertTrue(re.search('^7.010: LaneChange2Condition == true, 7.0100 > 7.0000 edge: rising', log, re.MULTILINE))
-        self.assertTrue(re.search('^11.010: BrakeCondition == true, 11.0100 > 11.0000 edge: rising', log, re.MULTILINE))
-        self.assertTrue(re.search('^17.010: BrakeCondition == true, 17.0100 > 17.0000 edge: rising', log, re.MULTILINE))
-        self.assertTrue(re.search('^20.010: Brake2Condition == true, 20.0100 > 20.0000 edge: rising', log, re.MULTILINE))
-        self.assertTrue(re.search('^33.260: StopCondition == true, element: TargetBrake2Event state: END_TRANSITION, edge: rising', log, re.MULTILINE))
+        self.assertTrue(re.search('^.5.010.* LaneChange1Condition == true, 5.0100 > 5.0000 edge: rising', log, re.MULTILINE))
+        self.assertTrue(re.search('^.7.010.* LaneChange2Condition == true, 7.0100 > 7.0000 edge: rising', log, re.MULTILINE))
+        self.assertTrue(re.search('^.11.010.* BrakeCondition == true, 11.0100 > 11.0000 edge: rising', log, re.MULTILINE))
+        self.assertTrue(re.search('^.17.010.* BrakeCondition == true, 17.0100 > 17.0000 edge: rising', log, re.MULTILINE))
+        self.assertTrue(re.search('^.20.010.* Brake2Condition == true, 20.0100 > 20.0000 edge: rising', log, re.MULTILINE))
+        self.assertTrue(re.search('^.33.260.* StopCondition == true, element: TargetBrake2Event state: END_TRANSITION, edge: rising', log, re.MULTILINE))
 
         # Check vehicle key positions
         csv = generate_csv()
@@ -217,14 +217,13 @@ class TestSuite(unittest.TestCase):
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*swarm.xosc', log)  is not None)
         self.assertTrue(re.search('Using specified seed 0', log)  is not None)
-        self.assertTrue(re.search('^0.00.*Ego New position:.*$\\n^.*Pos\\(10.20, 299.87, -0.53\\) Rot\\(1.56, 0.00, 0.00\\) roadId 0 laneId -3 offset 0.00 t -8.00', log, re.MULTILINE))
-        self.assertTrue(re.search('^0.00.*Init Ego TeleportAction initState -> startTransition -> runningState', log, re.MULTILINE))
-        self.assertTrue(re.search('^0.00.*Init Ego LongitudinalAction runningState -> endTransition -> completeState', log, re.MULTILINE))
+        self.assertTrue(re.search('^.0.00.*Ego New position:.*$\\n^.*Pos\\(10.20, 299.87, -0.53\\) Rot\\(1.56, 0.00, 0.00\\) roadId 0 laneId -3 offset 0.00 t -8.00', log, re.MULTILINE))
+        self.assertTrue(re.search('^.0.00.*Init Ego TeleportAction initState -> startTransition -> runningState', log, re.MULTILINE))
+        self.assertTrue(re.search('^.0.00.*Init Ego LongitudinalAction runningState -> endTransition -> completeState', log, re.MULTILINE))
 
         # Check some scenario events
-        self.assertTrue(re.search('^0.00.*: Swarm IR: 200.00, SMjA: 300.00, SMnA: 500.00, maxV: 75 vel: 30.00', log, re.MULTILINE))
-        self.assertTrue(re.search('^60.10.*: SwarmStopTrigger == true, 60.1000 > 60.0000 edge: none', log, re.MULTILINE))
-
+        self.assertTrue(re.search('^.0.00.*: Swarm IR: 200.00, SMjA: 300.00, SMnA: 500.00, maxV: 75 vel: 30.00', log, re.MULTILINE))
+        self.assertTrue(re.search('^.60.10.*: SwarmStopTrigger == true, 60.1000 > 60.0000 edge: none', log, re.MULTILINE))
         # Check vehicle key positions
         csv = generate_csv()
 
@@ -257,24 +256,24 @@ class TestSuite(unittest.TestCase):
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*conflicting-domains.xosc', log))
-        self.assertTrue(re.search('^0.00.*Ego New position:.*$\\n^.*Pos\\(20.00, -1.53, 0.00\\) Rot\\(0.00, 0.00, 0.00\\) roadId 0 laneId -1 offset 0.00 t -1.53', log, re.MULTILINE))
-        self.assertTrue(re.search('^0.00.*Init Ego TeleportAction initState -> startTransition -> runningState', log, re.MULTILINE))
-        self.assertTrue(re.search('^0.00.*Init Ego LongitudinalAction initState -> startTransition -> runningState', log, re.MULTILINE))
-        self.assertTrue(re.search('^0.00.*TeleportAction runningState -> endTransition -> completeState', log, re.MULTILINE))
+        self.assertTrue(re.search('^.0.00.*Ego New position:.*$\\n^.*Pos\\(20.00, -1.53, 0.00\\) Rot\\(0.00, 0.00, 0.00\\) roadId 0 laneId -1 offset 0.00 t -1.53', log, re.MULTILINE))
+        self.assertTrue(re.search('^.0.00.*Init Ego TeleportAction initState -> startTransition -> runningState', log, re.MULTILINE))
+        self.assertTrue(re.search('^.0.00.*Init Ego LongitudinalAction initState -> startTransition -> runningState', log, re.MULTILINE))
+        self.assertTrue(re.search('^.0.00.*TeleportAction runningState -> endTransition -> completeState', log, re.MULTILINE))
 
         # Check some scenario events
-        self.assertTrue(re.search('^2.00.*: Stopping Init Ego LongitudinalAction on conflicting Longitudinal domain\\(s\\)', log, re.MULTILINE))
-        self.assertTrue(re.search('^2.00.*: Speed action 2 initState -> startTransition -> runningState', log, re.MULTILINE))
-        self.assertTrue(re.search('^2.00.*: Lane offset action 1 initState -> startTransition -> runningState', log, re.MULTILINE))
+        self.assertTrue(re.search('^.2.00.* Stopping Init Ego LongitudinalAction on conflicting Longitudinal domain\\(s\\)', log, re.MULTILINE))
+        self.assertTrue(re.search('^.2.00.* Speed action 2 initState -> startTransition -> runningState', log, re.MULTILINE))
+        self.assertTrue(re.search('^.2.00.* Lane offset action 1 initState -> startTransition -> runningState', log, re.MULTILINE))
 
-        self.assertTrue(re.search('^4.01.*: Stopping object Ego Lane offset action 1 on conflicting Lateral domain\\(s\\)', log, re.MULTILINE))
-        self.assertTrue(re.search('^4.01.*: Lane offset action 1 runningState -> endTransition -> completeState', log, re.MULTILINE))
-        self.assertTrue(re.search('^4.01.*: Lane offset action 2 initState -> startTransition -> runningState', log, re.MULTILINE))
+        self.assertTrue(re.search('^.4.01.* Stopping object Ego Lane offset action 1 on conflicting Lateral domain\\(s\\)', log, re.MULTILINE))
+        self.assertTrue(re.search('^.4.01.* Lane offset action 1 runningState -> endTransition -> completeState', log, re.MULTILINE))
+        self.assertTrue(re.search('^.4.01.* Lane offset action 2 initState -> startTransition -> runningState', log, re.MULTILINE))
 
-        self.assertTrue(re.search('^5.530: Lane offset action 2 runningState -> endTransition -> completeState', log, re.MULTILINE))
-        self.assertTrue(re.search('^8.990.*: Speed action 2 runningState -> endTransition -> completeState', log, re.MULTILINE))
-        self.assertTrue(re.search('^13.00.*: Stop condition timer expired at 4.00 seconds', log, re.MULTILINE))
-        self.assertTrue(re.search('^13.00.*: Stop condition == true, speed: 20.00 >= 20.00, edge: none', log, re.MULTILINE))
+        self.assertTrue(re.search('^.5.530.* Lane offset action 2 runningState -> endTransition -> completeState', log, re.MULTILINE))
+        self.assertTrue(re.search('^.8.990.* Speed action 2 runningState -> endTransition -> completeState', log, re.MULTILINE))
+        self.assertTrue(re.search('^.13.00.* Stop condition timer expired at 4.00 seconds', log, re.MULTILINE))
+        self.assertTrue(re.search('^.13.00.* Stop condition == true, speed: 20.00 >= 20.00, edge: none', log, re.MULTILINE))
 
         # Check vehicle key positions
         csv = generate_csv()
@@ -291,9 +290,9 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('Loading .*follow_ghost.xosc', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('^3.050.* SpeedEvent1 complete after 1 execution', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^3.510: LaneChangeCondition1 == true, 3.5100 > 3.5000 edge: rising', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^19.510: StopCondition == true, element: StopEvent state: COMPLETE, edge: none', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.3.050.* SpeedEvent1 complete after 1 execution', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.3.510.* LaneChangeCondition1 == true, 3.5100 > 3.5000 edge: rising', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.19.510.* StopCondition == true, element: StopEvent state: COMPLETE, edge: none', log, re.MULTILINE)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv()
@@ -311,9 +310,9 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('Loading .*traj-heading-trig.xosc', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('^0.010: MyLaneChangeEvent standbyState -> startTransition -> runningState', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^1.300: MyAlignOrientationStartCondition == true, distance 0.48 < tolerance \\(1.50\\), orientation \\[0.05, 0.00, 0.00\\] \\(tolerance 0.05\\), edge: none', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^12.690: MyStopCondition == true, distance 0.48 < tolerance \\(1.00\\), orientation \\[0.95, 0.00, 0.00\\] \\(tolerance 0.05\\), edge: none', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.0.010.* MyLaneChangeEvent standbyState -> startTransition -> runningState', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.1.300.* MyAlignOrientationStartCondition == true, distance 0.48 < tolerance \\(1.50\\), orientation \\[0.05, 0.00, 0.00\\] \\(tolerance 0.05\\), edge: none', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.12.690.* MyStopCondition == true, distance 0.48 < tolerance \\(1.00\\), orientation \\[0.95, 0.00, 0.00\\] \\(tolerance 0.05\\), edge: none', log, re.MULTILINE)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv()
@@ -328,9 +327,9 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('Loading .*direction_dimension_trig.xosc', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('^2.680: EgoAccelRelCondition == true, relative_speed: -8.00 > -8.00, edge: rising', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^2.680: EgoAccelRelEvent standbyState -> startTransition -> runningState', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^4.670: EgoAccelRelEvent runningState -> endTransition -> completeState', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.2.680.* EgoAccelRelCondition == true, relative_speed: -8.00 > -8.00, edge: rising', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.2.680.* EgoAccelRelEvent standbyState -> startTransition -> runningState', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.4.670.* EgoAccelRelEvent runningState -> endTransition -> completeState', log, re.MULTILINE)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv()
@@ -348,10 +347,10 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('Loading .*highway_exit.xosc', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('^3.380: position trigger == true, distance 1.70 < tolerance \\(2.00\\), edge: none', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^3.380: slowdown initState -> startTransition -> runningState', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^4.380: position trigger == true, distance 1.70 < tolerance \\(2.00\\), edge: none', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^4.380: Event slowdown event ended, overwritten by event lanechange event', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.3.380.* position trigger == true, distance 1.70 < tolerance \\(2.00\\), edge: none', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.3.380.* slowdown initState -> startTransition -> runningState', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.4.380.* position trigger == true, distance 1.70 < tolerance \\(2.00\\), edge: none', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.4.380.* Event slowdown event ended, overwritten by event lanechange event', log, re.MULTILINE)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv()
@@ -369,17 +368,17 @@ class TestSuite(unittest.TestCase):
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*lane-change_clothoid_based_trajectory.xosc', log)  is not None)
-        self.assertTrue(re.search('^Adding clothoid\\(x=0.00 y=0.00 h=0.00 curv=0.01 curvDot=0.00 len=15.00 startTime=0.00 stopTime=0.00\\)', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^Adding clothoid\\(x=0.00 y=0.00 h=0.00 curv=0.00 curvDot=0.00 len=5.00 startTime=0.00 stopTime=0.00\\)', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^Adding clothoid\\(x=0.00 y=0.00 h=0.00 curv=-0.01 curvDot=0.00 len=15.00 startTime=0.00 stopTime=0.00\\)', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.*Adding clothoid\\(x=0.00 y=0.00 h=0.00 curv=0.01 curvDot=0.00 len=15.00 startTime=0.00 stopTime=0.00\\)', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.*Adding clothoid\\(x=0.00 y=0.00 h=0.00 curv=0.00 curvDot=0.00 len=5.00 startTime=0.00 stopTime=0.00\\)', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.*Adding clothoid\\(x=0.00 y=0.00 h=0.00 curv=-0.01 curvDot=0.00 len=15.00 startTime=0.00 stopTime=0.00\\)', log, re.MULTILINE)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('^3.090: LaneChangeCondition2 == true, element: LaneChangeEvent1 state: COMPLETE, edge: none', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^3.450: LaneChangeCondition3 == true, element: LaneChangeEvent2 state: COMPLETE, edge: none', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^4.520: LaneChangeEvent3 runningState -> endTransition -> completeState', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^7.000: StopCondition timer 1.00s started', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^8.000: StopCondition == false, 7.0000 < 7.0000 edge: falling', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^8.000: storyBoard runningState -> stopTransition -> completeState', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.3.090.* LaneChangeCondition2 == true, element: LaneChangeEvent1 state: COMPLETE, edge: none', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.3.450.* LaneChangeCondition3 == true, element: LaneChangeEvent2 state: COMPLETE, edge: none', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.4.520.* LaneChangeEvent3 runningState -> endTransition -> completeState', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.7.000.* StopCondition timer 1.00s started', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.8.000.* StopCondition == false, 7.0000 < 7.0000 edge: falling', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.8.000.* storyBoard runningState -> stopTransition -> completeState', log, re.MULTILINE)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv()
@@ -396,11 +395,11 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('Loading .*test_action_dynamics.xosc', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('2.010: LaneChange1Condition == true, 2.0100 > 2.0000 edge: none', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('16.330: LaneChange2Event complete after 1 execution', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('21.510: LaneChange3Event complete after 1 execution', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('23.010: LaneOffset1Condition == true, 23.0100 > 23.0000 edge: none', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('28.960: QuitCondition == true, element: LaneOffset1Event state: END_TRANSITION, edge: rising', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('.2.010.* LaneChange1Condition == true, 2.0100 > 2.0000 edge: none', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('.16.330.* LaneChange2Event complete after 1 execution', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('.21.510.* LaneChange3Event complete after 1 execution', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('.23.010.* LaneOffset1Condition == true, 23.0100 > 23.0000 edge: none', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('.28.960.* QuitCondition == true, element: LaneOffset1Event state: END_TRANSITION, edge: rising', log, re.MULTILINE)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv()
@@ -426,9 +425,9 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('Route::AddWaypoint Added waypoint 0: 2, -1, 100.00', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('Route::AddWaypoint Added intermediate waypoint 1 roadId 15 laneId -1', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('Route::AddWaypoint Added waypoint 2: 1, -1, 5.00', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('0.000: Pos\\(22.11, 6.78, 0.00\\) Rot\\(4.89, 0.00, 0.00\\) roadId 2 laneId -1 offset 0.00 t -1.75', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('31.300: LaneChangeCondition6 == true, element: LaneChangeEvent5 state: END_TRANSITION, edge: none', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('38.300: QuitCondition == true, element: LaneChangeEvent6 state: END_TRANSITION, edge: rising', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('.0.000.* Pos\\(22.11, 6.78, 0.00\\) Rot\\(4.89, 0.00, 0.00\\) roadId 2 laneId -1 offset 0.00 t -1.75', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('.31.300.* LaneChangeCondition6 == true, element: LaneChangeEvent5 state: END_TRANSITION, edge: none', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('.38.300.* QuitCondition == true, element: LaneChangeEvent6 state: END_TRANSITION, edge: rising', log, re.MULTILINE)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv()
@@ -454,7 +453,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('Loading .*drop-bike.xosc', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('4.310: drop trigger == true, 4.3100 > 4.3000 edge: none', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('.4.310.* drop trigger == true, 4.3100 > 4.3000 edge: none', log, re.MULTILINE)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv()
@@ -471,8 +470,8 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('Loading .*speed_over_distance.xosc', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('^10.080: SpeedChangeCondition2 == true, distance 0.93 < tolerance \\(1.00\\), edge: none', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^26.880: SpeedChangeCondition3 == true, distance 0.99 < tolerance \\(1.00\\), edge: none', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.10.080.* SpeedChangeCondition2 == true, distance 0.93 < tolerance \\(1.00\\), edge: none', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.26.880.* SpeedChangeCondition3 == true, distance 0.99 < tolerance \\(1.00\\), edge: none', log, re.MULTILINE)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv()
@@ -492,9 +491,9 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('Loading .*test-collision-detection.xosc', log)  is not None)
 
         # Check some scenario events
-        self.assertFalse(re.search('^6.260: Collision between Ego and NPC1', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^5.250: collision 0 between Ego and NPC2', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^6.260: collision 0 between Ego and NPC1', log, re.MULTILINE)  is not None)
+        self.assertFalse(re.search('^.6.260.* Collision between Ego and NPC1', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.5.250.* collision 0 between Ego and NPC2', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.6.260.* collision 0 between Ego and NPC1', log, re.MULTILINE)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv()
@@ -513,11 +512,11 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('Loading .*test-collision-detection.xosc', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('^5.250: Collision between Ego and NPC2', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^5.250: collision 0 between Ego and NPC2', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^6.260: Collision between Ego and NPC1', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^6.260: collision 0 between Ego and NPC1', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^7.100: Collision between Ego and NPC2 dissolved', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.5.250.* Collision between Ego and NPC2', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.5.250.* collision 0 between Ego and NPC2', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.6.260.* Collision between Ego and NPC1', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.6.260.* collision 0 between Ego and NPC1', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.7.100.* Collision between Ego and NPC2 dissolved', log, re.MULTILINE)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv()
@@ -548,14 +547,14 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('Loading .*add_delete_entity.xosc', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('^2.000: Failed to activate obj Car1. Already active \\(1 instances in active list\\)', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^3.010: Added entity Car2', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^7.010: Deleted entity Car2', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^9.010: Failed to deactivate obj Car2. Already inactive \\(0 in active list\\)', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^10.010: Deleted entity Car1', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^12.010: Added entity Car1', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^15.900: Deleted entity Car1', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^17.910: StopCondition timer expired at 2.00 seconds', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.2.000.* Failed to activate obj Car1. Already active \\(1 instances in active list\\)', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.3.010.* Added entity Car2', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.7.010.* Deleted entity Car2', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.9.010.* Failed to deactivate obj Car2. Already inactive \\(0 in active list\\)', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.10.010.* Deleted entity Car1', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.12.010.* Added entity Car1', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.15.900.* Deleted entity Car1', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.17.910.* StopCondition timer expired at 2.00 seconds', log, re.MULTILINE)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv()
@@ -574,11 +573,11 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('Loading .*multi_lane_changes.xosc', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('^0.010: act_start == true, 0.0100 > 0.0000 edge: none', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^1.140: start_trigger1 == true, rel_dist: 0.08 < 0.10, edge: none', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^3.350: start_trigger2 == true, rel_dist: 0.08 < 0.10, edge: none', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^7.350: start_trigger3 timer expired at 1.00 seconds', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^15.330: start_trigger6 == true, HWT: 1.00 > 1.00, edge none', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.0.010.* act_start == true, 0.0100 > 0.0000 edge: none', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.1.140.* start_trigger1 == true, rel_dist: 0.08 < 0.10, edge: none', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.3.350.* start_trigger2 == true, rel_dist: 0.08 < 0.10, edge: none', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.7.350.* start_trigger3 timer expired at 1.00 seconds', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.15.330.* start_trigger6 == true, HWT: 1.00 > 1.00, edge none', log, re.MULTILINE)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv()
@@ -602,14 +601,14 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('Loading .*init_test.xosc', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('^-2.000: Ego New position:\\n-2.000: Pos\\(200.00, -1.53, 0.00\\) '\
+        self.assertTrue(re.search('^.-2.000.* Ego New position:\\n.-2.000.* Pos\\(200.00, -1.53, 0.00\\) '\
             'Rot\\(0.00, 0.00, 0.00\\) roadId 1 laneId -1 offset 0.00 t -1.53', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^-2.000: OverTaker2 New position:\\n-2.000: Pos\\(280.00, -1.53, 0.00\\) '\
+        self.assertTrue(re.search('^.-2.000.* OverTaker2 New position:\\n.-2.000.* Pos\\(280.00, -1.53, 0.00\\) '\
             'Rot\\(0.00, 0.00, 0.00\\) roadId 1 laneId -1 offset 0.00 t -1.53', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^-2.000: Ego_ghost New position:\\n-2.000: Pos\\(200.00, -1.53, 0.00\\) '\
+        self.assertTrue(re.search('^.-2.000.* Ego_ghost New position:\\n.-2.000.* Pos\\(200.00, -1.53, 0.00\\) '\
             'Rot\\(0.00, 0.00, 0.00\\) roadId 1 laneId -1 offset 0.00 t -1.53', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^0.000: Init OverTaker1 LongitudinalAction runningState -> endTransition -> completeState', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^0.990: Init OverTaker1 RoutingAction runningState -> endTransition -> completeState', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.0.000.* Init OverTaker1 LongitudinalAction runningState -> endTransition -> completeState', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.0.990.* Init OverTaker1 RoutingAction runningState -> endTransition -> completeState', log, re.MULTILINE)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv()
@@ -651,10 +650,10 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('Loading .*reverse_lane_change.xosc', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('^1.010: reverse_trigger == true, 1.0100 > 1.0000 edge: none', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^5.010: lateral_event_trigger == true, 5.0100 > 5.0000 edge: none', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^5.370: reverse_event complete after 1 execution', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^8.000: lateral_event complete after 1 execution', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.1.010.* reverse_trigger == true, 1.0100 > 1.0000 edge: none', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.5.010.* lateral_event_trigger == true, 5.0100 > 5.0000 edge: none', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.5.370.* reverse_event complete after 1 execution', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.8.000.* lateral_event complete after 1 execution', log, re.MULTILINE)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv()
@@ -671,12 +670,12 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('Loading .*ghost_restart.xosc', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('^-0.500: Pos\\(50.00, -11.50, 0.00\\) Rot\\(0.00, 0.00, 0.00\\) roadId 1 laneId -4 offset 0.00 t -11.50', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^1.000: Set parameter myparam = true', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^1.010: parameter myparam 0 == true edge: none', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^1.010: Pos\\(60.10, -11.50, 0.00\\) Rot\\(0.00, 0.00, 0.00\\) roadId 1 laneId -4 offset 0.00 t -11.50', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^1.010: AddedGhostTeleport runningState -> endTransition -> completeState', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^2.500: newspeed runningState -> endTransition -> completeState', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.-0.500.* Pos\\(50.00, -11.50, 0.00\\) Rot\\(0.00, 0.00, 0.00\\) roadId 1 laneId -4 offset 0.00 t -11.50', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.1.000.* Set parameter myparam = true', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.1.010.* parameter myparam 0 == true edge: none', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.1.010.* Pos\\(60.10, -11.50, 0.00\\) Rot\\(0.00, 0.00, 0.00\\) roadId 1 laneId -4 offset 0.00 t -11.50', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.1.010.* AddedGhostTeleport runningState -> endTransition -> completeState', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.2.500.* newspeed runningState -> endTransition -> completeState', log, re.MULTILINE)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv()
@@ -696,12 +695,12 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('Loading .*ghost_restart2.xosc', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('^-2.000: Car New position:\\n-2.000: Pos\\(20.00, -1.53, 0.00\\) Rot\\(0.00, 0.00, 0.00\\) roadId 1 laneId -1 offset 0.00 t -1.53', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^3.000: Set parameter myparam = 1', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^3.010: parameter myparam 1 == 1 edge: rising', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^3.010: Car_ghost New position:\\n3.010: Pos\\(50.10, -1.53, 0.00\\) Rot\\(0.00, 0.00, 0.00\\) roadId 1 laneId -1 offset 0.00 t -1.53', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^3.010: AddedGhostTeleport runningState -> endTransition -> completeState', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^5.010: BrakeAction1 runningState -> endTransition -> completeState', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.-2.000.* Car New position:\\n.-2.000.* Pos\\(20.00, -1.53, 0.00\\) Rot\\(0.00, 0.00, 0.00\\) roadId 1 laneId -1 offset 0.00 t -1.53', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.3.000.* Set parameter myparam = 1', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.3.010.* parameter myparam 1 == 1 edge: rising', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.3.010.* Car_ghost New position:\\n.3.010.* Pos\\(50.10, -1.53, 0.00\\) Rot\\(0.00, 0.00, 0.00\\) roadId 1 laneId -1 offset 0.00 t -1.53', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.3.010.* AddedGhostTeleport runningState -> endTransition -> completeState', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.5.010.* BrakeAction1 runningState -> endTransition -> completeState', log, re.MULTILINE)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv()
@@ -741,12 +740,12 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('Loading .*maneuver_groups_x_3.xosc', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('^0.010: MyMG initState -> startTransition -> runningState', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^1.130: MyAction2Trigger == true, element: MyEvent1 state: END_TRANSITION, edge: none', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^3.370: MyAction2Trigger == true, element: MyEvent1 state: END_TRANSITION, edge: none', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^5.610: MyAction2Trigger == true, element: MyEvent1 state: END_TRANSITION, edge: none', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^6.720: MyMG complete after 3 executions', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^8.010: storyBoard runningState -> stopTransition -> completeState', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.0.010.* MyMG initState -> startTransition -> runningState', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.1.130.* MyAction2Trigger == true, element: MyEvent1 state: END_TRANSITION, edge: none', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.3.370.* MyAction2Trigger == true, element: MyEvent1 state: END_TRANSITION, edge: none', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.5.610.* MyAction2Trigger == true, element: MyEvent1 state: END_TRANSITION, edge: none', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.6.720.* MyMG complete after 3 executions', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.8.010.* storyBoard runningState -> stopTransition -> completeState', log, re.MULTILINE)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv()
@@ -761,14 +760,14 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('Loading .*speed-profile_test.xosc', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('^2.000: EventTrigger1 == true, 2.0000 >= 2.0000 edge: none', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^2.000: EventTrigger2 == true, 2.0000 >= 2.0000 edge: none', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^2.000: SpeedProfileAction1 initState -> startTransition -> runningState', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^23.340: SpeedProfile: Can\'t reach.* speed 5.00 on.* time 26.34s.* extend to 26.76s', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^25.340: SpeedProfile: Can\'t reach.* speed 0.00 on.* time 26.24s.* extend to 27.54s', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^29.550: SpeedProfile: Can\'t reach.* speed 0.00 on.* time 30.05s.* extend to 34.49s', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^37.490: StopSimulationCondition == true, element: SpeedProfileEvent7 state: COMPLETE, edge: rising', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^37.490: storyBoard runningState -> stopTransition -> completeState', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.2.000.* EventTrigger1 == true, 2.0000 >= 2.0000 edge: none', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.2.000.* EventTrigger2 == true, 2.0000 >= 2.0000 edge: none', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.2.000.* SpeedProfileAction1 initState -> startTransition -> runningState', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.23.340.* SpeedProfile: Can\'t reach.* speed 5.00 on.* time 26.34s.* extend to 26.76s', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.25.340.* SpeedProfile: Can\'t reach.* speed 0.00 on.* time 26.24s.* extend to 27.54s', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.29.550.* SpeedProfile: Can\'t reach.* speed 0.00 on.* time 30.05s.* extend to 34.49s', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.37.490.* StopSimulationCondition == true, element: SpeedProfileEvent7 state: COMPLETE, edge: rising', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.37.490.* storyBoard runningState -> stopTransition -> completeState', log, re.MULTILINE)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv()
@@ -807,8 +806,8 @@ class TestSuite(unittest.TestCase):
 
         # Check some scenario events
 
-        self.assertTrue(re.search('^0.000: Ego_0_-1 New position:$\\n^0.000: Pos\\(45.00, -1.75, 0.00\\) Rot\\(0.00, 0.00, 0.00\\) roadId 0 laneId -1 offset 0.00 t -1.75', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^4.990: Init Ego_23_1 LateralAction runningState -> endTransition -> completeState', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.0.000.* Ego_0_-1 New position:$\\n^.0.000.* Pos\\(45.00, -1.75, 0.00\\) Rot\\(0.00, 0.00, 0.00\\) roadId 0 laneId -1 offset 0.00 t -1.75', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.4.990.* Init Ego_23_1 LateralAction runningState -> endTransition -> completeState', log, re.MULTILINE)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv()
@@ -969,8 +968,8 @@ class TestSuite(unittest.TestCase):
 
         # Check some scenario events
 
-        self.assertTrue(re.search('^0.000: car_0_-1 New position:$\\n^0.000: Pos\\(55.00, -1.75, 0.00\\) Rot\\(3.14, 0.00, 0.00\\) roadId 0 laneId -1 offset 0.00 t -1.75', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^0.400: event_road_position_rel_heading_0_-1_4 standbyState -> startTransition -> runningState', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.0.000.* car_0_-1 New position:$\\n^.0.000.* Pos\\(55.00, -1.75, 0.00\\) Rot\\(3.14, 0.00, 0.00\\) roadId 0 laneId -1 offset 0.00 t -1.75', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.0.400.* event_road_position_rel_heading_0_-1_4 standbyState -> startTransition -> runningState', log, re.MULTILINE)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv()
@@ -1488,9 +1487,9 @@ class TestSuite(unittest.TestCase):
             log.append(run_scenario(None, args + ' --record sim_model_' + model + '.dat', tmp_xosc_str))
 
             # Verify that the scenario was executed as expected
-            self.assertTrue(re.search('^Loading inline', log[-1], re.MULTILINE)  is not None)
-            self.assertTrue(re.search('^0.000: Recording data to file sim_', log[-1], re.MULTILINE)  is not None)
-            self.assertTrue(re.search('^0.000: Controller ALKS_R157SM_Controller active on domains: Longitudinal \\(mask=0x1\\)', log[-1], re.MULTILINE)  is not None)
+            self.assertTrue(re.search('^.* Loading inline', log[-1], re.MULTILINE)  is not None)
+            self.assertTrue(re.search('^.0.000.* Recording data to file sim_', log[-1], re.MULTILINE)  is not None)
+            self.assertTrue(re.search('^.0.000.* Controller ALKS_R157SM_Controller active on domains: Longitudinal \\(mask=0x1\\)', log[-1], re.MULTILINE)  is not None)
 
         # make sure replayer is available, which is not the case when USE_OSG=FALSE has been defined in build configuration
         if (os.path.isfile('../bin/replayer') or os.path.isfile('../bin/replayer.exe')):
@@ -1551,11 +1550,10 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('Loading .*user_defined_action.xosc', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('^0.000: Starting UserDefinedAction type: info content: Initialize', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^4.890: Starting UserDefinedAction type: noop content: Wait', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^7.000: Event WaitEvent ended, overwritten by event DecelerateEvent', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^9.950: DecelerateDoneCondition timer expired at 1.00 seconds', log, re.MULTILINE)  is not None)
-
+        self.assertTrue(re.search('^.0.000.* Starting UserDefinedAction type: info content: Initialize', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.4.890.* Starting UserDefinedAction type: noop content: Wait', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.7.000.* Event WaitEvent ended, overwritten by event DecelerateEvent', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.9.950.* DecelerateDoneCondition timer expired at 1.00 seconds', log, re.MULTILINE)  is not None)
         # Check vehicle key positions
         csv = generate_csv()
 
@@ -1573,9 +1571,9 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('Loading .*trailer_connect.xosc', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('2.000: ReverseTrigger == true, 2.0000 >= 1.0000 edge: none', log)  is not None)
-        self.assertTrue(re.search('8.720: ConnectEvent complete after 1 execution', log)  is not None)
-        self.assertTrue(re.search('18.980: DisconnectEvent == true, element: ForwardEvent state: END_TRANSITION, edge: rising', log)  is not None)
+        self.assertTrue(re.search('.2.000.* ReverseTrigger == true, 2.0000 >= 1.0000 edge: none', log)  is not None)
+        self.assertTrue(re.search('.8.720.* ConnectEvent complete after 1 execution', log)  is not None)
+        self.assertTrue(re.search('.18.980.* DisconnectEvent == true, element: ForwardEvent state: END_TRANSITION, edge: rising', log)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv()
@@ -1600,9 +1598,9 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('Loading .*pedestrian.xosc', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('0.600: ped_walk_event == true, traveled_dist: 6.00 >= 5.00, edge: rising', log)  is not None)
-        self.assertTrue(re.search('3.800: brake_Condition == true, TTC: 1.20 < 1.20, edge rising', log)  is not None)
-        self.assertTrue(re.search('14.400: QuitCondition == true, distance 4.87 < tolerance \\(5.00\\), edge: rising', log)  is not None)
+        self.assertTrue(re.search('.0.600.* ped_walk_event == true, traveled_dist: 6.00 >= 5.00, edge: rising', log)  is not None)
+        self.assertTrue(re.search('.3.800.* brake_Condition == true, TTC: 1.20 < 1.20, edge rising', log)  is not None)
+        self.assertTrue(re.search('.14.400.* QuitCondition == true, distance 4.87 < tolerance \\(5.00\\), edge: rising', log)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv()
@@ -1630,12 +1628,12 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('Loading .*drive_when_close.xosc', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('6.000: DriveCondition == true, rel_dist: 29.50 < 30.00, edge: rising', log)  is not None)
-        self.assertTrue(re.search('9.900: SpeedAction runningState -> endTransition -> completeState', log)  is not None)
-        self.assertTrue(re.search('10.000: StopCondition == true, rel_dist: 30.50 > 30.00, edge: rising', log)  is not None)
-        self.assertTrue(re.search('30.000: DriveCondition == true, rel_dist: 29.50 < 30.00, edge: rising', log)  is not None)
-        self.assertTrue(re.search('34.000: StopCondition == true, rel_dist: 30.50 > 30.00, edge: rising', log)  is not None)
-        self.assertTrue(re.search('37.900: StopEvent runningState -> endTransition -> standbyState', log)  is not None)
+        self.assertTrue(re.search('.6.000.* DriveCondition == true, rel_dist: 29.50 < 30.00, edge: rising', log)  is not None)
+        self.assertTrue(re.search('.9.900.* SpeedAction runningState -> endTransition -> completeState', log)  is not None)
+        self.assertTrue(re.search('.10.000.* StopCondition == true, rel_dist: 30.50 > 30.00, edge: rising', log)  is not None)
+        self.assertTrue(re.search('.30.000.* DriveCondition == true, rel_dist: 29.50 < 30.00, edge: rising', log)  is not None)
+        self.assertTrue(re.search('.34.000.* StopCondition == true, rel_dist: 30.50 > 30.00, edge: rising', log)  is not None)
+        self.assertTrue(re.search('.37.900.* StopEvent runningState -> endTransition -> standbyState', log)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv()
@@ -1664,15 +1662,15 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('Loading .*cut-in.xosc', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('0.010: CutInActStart == true, 0.0100 > 0.0000 edge: none', log)  is not None)
-        self.assertTrue(re.search('2.010: Adding action LaneOffsetAction', log)  is not None)
-        self.assertTrue(re.search('4.350: LaneOffsetAction_0 runningState -> endTransition -> completeState', log)  is not None)
-        self.assertTrue(re.search('7.010: Adding action LaneChangeAction_1', log)  is not None)
-        self.assertTrue(re.search('9.510: Adding action SpeedAction_2', log)  is not None)
-        self.assertTrue(re.search('11.010: Adding action SpeedAction_3', log)  is not None)
-        self.assertTrue(re.search('11.010: Action SpeedAction_2 of type SpeedAction already ongoing for Ego, stopping it', log)  is not None)
-        self.assertTrue(re.search('10.020: Injected action LaneChangeAction_1 finished', log)  is not None)
-        self.assertTrue(re.search('14.660: SpeedAction_3 runningState -> endTransition -> completeState', log)  is not None)
+        self.assertTrue(re.search('.0.010.* CutInActStart == true, 0.0100 > 0.0000 edge: none', log)  is not None)
+        self.assertTrue(re.search('.2.010.* Adding action LaneOffsetAction', log)  is not None)
+        self.assertTrue(re.search('.4.350.* LaneOffsetAction_0 runningState -> endTransition -> completeState', log)  is not None)
+        self.assertTrue(re.search('.7.010.* Adding action LaneChangeAction_1', log)  is not None)
+        self.assertTrue(re.search('.9.510.* Adding action SpeedAction_2', log)  is not None)
+        self.assertTrue(re.search('.11.010.* Adding action SpeedAction_3', log)  is not None)
+        self.assertTrue(re.search('.11.010.* Action SpeedAction_2 of type SpeedAction already ongoing for Ego, stopping it', log)  is not None)
+        self.assertTrue(re.search('.10.020.* Injected action LaneChangeAction_1 finished', log)  is not None)
+        self.assertTrue(re.search('.14.660.* SpeedAction_3 runningState -> endTransition -> completeState', log)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv()
@@ -1693,14 +1691,14 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('Loading .*multi_controller.xosc', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('1.100: SloppyDriverActivateCondition == true, 1.1000 > 1.0000 edge: none', log)  is not None)
-        self.assertTrue(re.search('1.100: Controller sloppy_driver active on domains: Lateral \\(mask=0x2\\)', log)  is not None)
-        self.assertTrue(re.search('5.100: InteractiveDriverLateralCondition == true, 5.1000 > 5.0000 edge: none', log)  is not None)
-        self.assertTrue(re.search('5.100: Controller interactive_driver active on domains: Longitudinal \\(mask=0x1\\)', log)  is not None)
-        self.assertTrue(re.search('10.100: Controller sloppy_driver active on domains: None \\(mask=0x0\\)', log)  is not None)
-        self.assertTrue(re.search('15.100: Controller interactive_driver active on domains: None \\(mask=0x0\\)', log)  is not None)
-        self.assertTrue(re.search('15.100: Story runningState -> endTransition -> completeState', log)  is not None)
-        self.assertTrue(re.search('20.100: storyBoard runningState -> stopTransition -> completeState', log)  is not None)
+        self.assertTrue(re.search('.1.100.* SloppyDriverActivateCondition == true, 1.1000 > 1.0000 edge: none', log)  is not None)
+        self.assertTrue(re.search('.1.100.* Controller sloppy_driver active on domains: Lateral \\(mask=0x2\\)', log)  is not None)
+        self.assertTrue(re.search('.5.100.* InteractiveDriverLateralCondition == true, 5.1000 > 5.0000 edge: none', log)  is not None)
+        self.assertTrue(re.search('.5.100.* Controller interactive_driver active on domains: Longitudinal \\(mask=0x1\\)', log)  is not None)
+        self.assertTrue(re.search('.10.100.* Controller sloppy_driver active on domains: None \\(mask=0x0\\)', log)  is not None)
+        self.assertTrue(re.search('.15.100.* Controller interactive_driver active on domains: None \\(mask=0x0\\)', log)  is not None)
+        self.assertTrue(re.search('.15.100.* Story runningState -> endTransition -> completeState', log)  is not None)
+        self.assertTrue(re.search('.20.100.* storyBoard runningState -> stopTransition -> completeState', log)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv()
@@ -1725,16 +1723,16 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('Loading .*mixed_control.xosc', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('14.800: AccelerateTrigger == true, rel_dist: 69.80 < 70.00, edge: rising', log)  is not None)
-        self.assertTrue(re.search('14.800: AccelerateEvent standbyState -> startTransition -> runningState', log)  is not None)
-        self.assertTrue(re.search('16.200: ActivateACCTrigger == true, rel_dist: 38.95 < 40.00, edge: rising', log)  is not None)
-        self.assertTrue(re.search('16.200: Controller ACCController active on domains: Longitudinal \\(mask=0x1\\)', log)  is not None)
-        self.assertTrue(re.search('24.100: Deactivating conflicting ctrl ACCController on domain Longitudinal', log)  is not None)
-        self.assertTrue(re.search('24.100: Controller ExternalController active on domains: Longitudinal \\(mask=0x1\\)', log)  is not None)
-        self.assertTrue(re.search('28.100: ActivateACCControllerAgainEvent standbyState -> startTransition -> runningState', log)  is not None)
-        self.assertTrue(re.search('28.100: Controller ACCController active on domains: Longitudinal \\(mask=0x1\\)', log)  is not None)
-        self.assertTrue(re.search('49.700: AccelerateAction runningState -> endTransition -> completeState', log)  is not None)
-        self.assertTrue(re.search('61.300: StandStillCondition == true, stand_still duration: 1.00 >= 1.00, edge: none', log)  is not None)
+        self.assertTrue(re.search('.14.800.* AccelerateTrigger == true, rel_dist: 69.80 < 70.00, edge: rising', log)  is not None)
+        self.assertTrue(re.search('.14.800.* AccelerateEvent standbyState -> startTransition -> runningState', log)  is not None)
+        self.assertTrue(re.search('.16.200.* ActivateACCTrigger == true, rel_dist: 38.95 < 40.00, edge: rising', log)  is not None)
+        self.assertTrue(re.search('.16.200.* Controller ACCController active on domains: Longitudinal \\(mask=0x1\\)', log)  is not None)
+        self.assertTrue(re.search('.24.100.* Deactivating conflicting ctrl ACCController on domain Longitudinal', log)  is not None)
+        self.assertTrue(re.search('.24.100.* Controller ExternalController active on domains: Longitudinal \\(mask=0x1\\)', log)  is not None)
+        self.assertTrue(re.search('.28.100.* ActivateACCControllerAgainEvent standbyState -> startTransition -> runningState', log)  is not None)
+        self.assertTrue(re.search('.28.100.* Controller ACCController active on domains: Longitudinal \\(mask=0x1\\)', log)  is not None)
+        self.assertTrue(re.search('.49.700.* AccelerateAction runningState -> endTransition -> completeState', log)  is not None)
+        self.assertTrue(re.search('.61.300.* StandStillCondition == true, stand_still duration: 1.00 >= 1.00, edge: none', log)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv('mixed_control.dat')
@@ -1752,11 +1750,11 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('Loading .*repeated_relative_speed.xosc', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('5.100: actor_1_action_accelerate initState -> startTransition -> runningState', log)  is not None)
-        self.assertTrue(re.search('13.100: event_reach_same_speed completed run 2 \\(of max 100\\)', log)  is not None)
-        self.assertTrue(re.search('24.200: event_reach_same_speed_trigger == true, relative_speed: -2.50 < -2.00, edge: none', log)  is not None)
-        self.assertTrue(re.search('29.800: event_reach_same_speed_trigger == true, relative_speed: 3.00 > 2.00, edge: none', log)  is not None)
-        self.assertTrue(re.search('31.300: actor_1_maneuver_group complete after 3 executions', log)  is not None)
+        self.assertTrue(re.search('.5.100.* actor_1_action_accelerate initState -> startTransition -> runningState', log)  is not None)
+        self.assertTrue(re.search('.13.100.* event_reach_same_speed completed run 2 \\(of max 100\\)', log)  is not None)
+        self.assertTrue(re.search('.24.200.* event_reach_same_speed_trigger == true, relative_speed: -2.50 < -2.00, edge: none', log)  is not None)
+        self.assertTrue(re.search('.29.800.* event_reach_same_speed_trigger == true, relative_speed: 3.00 > 2.00, edge: none', log)  is not None)
+        self.assertTrue(re.search('.31.300.* actor_1_maneuver_group complete after 3 executions', log)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv()

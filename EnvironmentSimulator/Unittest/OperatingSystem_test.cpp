@@ -1,5 +1,6 @@
 #include <iostream>
 #include <gtest/gtest.h>
+// #include "TestHelper.hpp"
 
 TEST(UnixSuite, CheckUnix)
 {
@@ -28,7 +29,7 @@ int main(int argc, char **argv)
 #else
     ::testing::GTEST_FLAG(filter) = "UnixSuite.*";
 #endif
-
+    // ParseAndSetLoggerOptions(argc, argv);
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }

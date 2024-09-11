@@ -56,3 +56,9 @@ https://github.com/asam-oss/OSC-ALKS-scenarios
 
 OSC-NCAP-scenarios
 https://github.com/vectorgrp/OSC-NCAP-scenarios
+
+spdlog
+https://github.com/gabime/spdlog
+
+fmt
+https://github.com/fmtlib/fmt

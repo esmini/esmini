@@ -22,6 +22,7 @@
 #include "Entities.hpp"
 #include "ScenarioGateway.hpp"
 #include "ScenarioEngine.hpp"
+#include "logger.hpp"
 
 using namespace scenarioengine;
 
@@ -61,7 +62,7 @@ ControllerFollowGhost::ControllerFollowGhost(InitArgs* args)
         }
         else
         {
-            LOG("Unexpected follow mode \"%s\", falling back to default \"time\"", follow_mode.c_str());
+            LOG_INFO("Unexpected follow mode \"{}\", falling back to default \"time\"", follow_mode);
             follow_mode_ = FollowMode::FOLLOW_MODE_TIME;
         }
     }
@@ -92,7 +93,7 @@ void ControllerFollowGhost::Init()
     // FollowGhost controller forced into override mode - will not perform any scenario actions
     if (mode_ != ControlOperationMode::MODE_OVERRIDE)
     {
-        LOG("FollowGhost controller mode \"%s\" not applicable. Using override mode instead.", Mode2Str(mode_).c_str());
+        LOG_INFO("FollowGhost controller mode \"{}\" not applicable. Using override mode instead.", Mode2Str(mode_));
         mode_ = ControlOperationMode::MODE_OVERRIDE;
     }
 

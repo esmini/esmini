@@ -16,6 +16,7 @@
 #include "ScenarioEngine.hpp"
 #include "ScenarioGateway.hpp"
 #include "playerbase.hpp"
+#include "logger.hpp"
 
 using namespace scenarioengine;
 
@@ -76,7 +77,7 @@ void ControllerLooming::Step(double timeStep)
         roadmanager::Road* road = odr->GetRoadById(object_->pos_.GetTrackId());
         if (road == nullptr)
         {
-            LOG("Road ID %d", object_->pos_.GetTrackId());
+            LOG_INFO("Road ID {}", object_->pos_.GetTrackId());
             return;
         }
 
@@ -153,7 +154,7 @@ void ControllerLooming::Step(double timeStep)
                 lsec = roadTemp->GetLaneSectionByIdx(current_laneSec_idx);  // pick lanesec by lanesec id
                 if (lsec == nullptr)
                 {
-                    LOG("Unexpected missing lane Section");
+                    LOG_WARN("Unexpected missing lane Section");
                     return;
                 }
                 if (road_counter == 0)
@@ -176,7 +177,7 @@ void ControllerLooming::Step(double timeStep)
                         lane->GetLink(direction_prev == 1 ? roadmanager::LinkType::SUCCESSOR : roadmanager::LinkType::PREDECESSOR);
                     if (link == nullptr)
                     {
-                        LOG("Unexpected missing lane link");
+                        LOG_WARN("Unexpected missing lane link");
                         return;
                     }
 
@@ -249,7 +250,7 @@ void ControllerLooming::Step(double timeStep)
                                 if (abs(angleDiff) > SMALL_NUMBER &&  // skip points at same angle (e.g. identical position)
                                     SIGN(angleDiff) != SIGN(angle_diff_prev[m]))
                                 {
-                                    // LOG("has far tan");
+                                    LOG_DEBUG("has far tan");
                                     hasFarTan = true;
                                     far_x     = far_x_prev[m];
                                     far_y     = far_y_prev[m];
@@ -350,7 +351,7 @@ void ControllerLooming::Step(double timeStep)
                     hasLeadFar = true;
                     far_angle  = GetAngleInIntervalMinusPIPlusPI(
                         atan2(object_->pos_.GetY() - pivot_obj->pos_.GetY(), object_->pos_.GetX() - pivot_obj->pos_.GetX()) - object_->pos_.GetH());
-                    // LOG("new far: %.2f, %.2f\n", pivot_obj->pos_.GetX(), pivot_obj->pos_.GetY());
+                    LOG_DEBUG("new far: {:.2f}, {:.2f}", pivot_obj->pos_.GetX(), pivot_obj->pos_.GetY());
                     far_x = pivot_obj->pos_.GetX();
                     far_y = pivot_obj->pos_.GetY();
                 }

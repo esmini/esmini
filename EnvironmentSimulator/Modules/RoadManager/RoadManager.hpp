@@ -20,6 +20,7 @@
 #include <list>
 #include "pugixml.hpp"
 #include "CommonMini.hpp"
+#include "logger.hpp"
 
 #define PARAMPOLY3_STEPS 100
 #define FRICTION_DEFAULT 1.0

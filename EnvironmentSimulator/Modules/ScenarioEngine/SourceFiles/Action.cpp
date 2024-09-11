@@ -34,7 +34,7 @@ std::string OSCAction::BaseType2Str()
     }
     else
     {
-        LOG("Undefined Base Type: %d", base_type);
+        LOG_ERROR("Undefined Base Type: {}", base_type);
     }
 
     return "Undefined";

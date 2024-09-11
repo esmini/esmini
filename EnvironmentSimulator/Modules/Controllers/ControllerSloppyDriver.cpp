@@ -14,6 +14,7 @@
 #include "CommonMini.hpp"
 #include "Entities.hpp"
 #include "ScenarioGateway.hpp"
+#include "logger.hpp"
 
 #include <random>
 
@@ -185,7 +186,7 @@ int ControllerSloppyDriver::Activate(ControlActivationMode lat_activation_mode,
     {
         if (sloppiness_ < 0 || sloppiness_ > 1)
         {
-            LOG("Warning, sloppiness is %.2f recommended range is [0:1]", sloppiness_);
+            LOG_WARN("Warning, sloppiness is {:.2f} recommended range is [0:1]", sloppiness_);
         }
         speedTimerAverage_ = 3.0;
         speedTimer_.Start(0, speedTimerAverage_);

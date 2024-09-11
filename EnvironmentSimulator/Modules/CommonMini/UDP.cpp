@@ -18,6 +18,7 @@
 
 #include "UDP.hpp"
 #include "CommonMini.hpp"
+#include "logger.hpp"
 
 UDPBase::UDPBase(unsigned short int port) : port_(port), sock_(SE_INVALID_SOCKET)
 {
@@ -35,7 +36,7 @@ UDPBase::UDPBase(unsigned short int port) : port_(port), sock_(SE_INVALID_SOCKET
 
     if ((sock_ = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == SE_INVALID_SOCKET)
     {
-        LOG_AND_QUIT("socket failed");
+        LOG_ERROR_AND_QUIT("socket failed");
         return;
     }
 }
@@ -46,13 +47,13 @@ int UDPBase::Bind(struct sockaddr_in& addr)
     if (retval != 0)
     {
 #ifdef _WIN32
-        LOG("bind error %d", WSAGetLastError());
+        LOG_ERROR("bind error {}", WSAGetLastError());
 #else
         perror("bind socket");
-        LOG("bind socket error");
+        LOG_ERROR("bind socket error");
 #endif
         CloseGracefully();
-        LOG_AND_QUIT("Bind UDP socket on port %d failed (return code %d)", port_, retval);
+        LOG_ERROR_AND_QUIT("Bind UDP socket on port {} failed (return code {})", port_, retval);
         return -1;
     }
 
@@ -68,10 +69,10 @@ void UDPBase::CloseGracefully()
 #endif
     {
 #ifdef _WIN32
-        LOG("Failed closing socket %d", WSAGetLastError());
+        LOG_ERROR("Failed closing socket {}", WSAGetLastError());
 #else
         perror("close socket");
-        LOG("close socket error");
+        LOG_ERROR("close socket error");
 #endif
     }
 

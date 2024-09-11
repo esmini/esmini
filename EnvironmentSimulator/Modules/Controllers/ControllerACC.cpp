@@ -19,6 +19,7 @@
 #include "Entities.hpp"
 #include "ScenarioGateway.hpp"
 #include "playerbase.hpp"
+#include "logger.hpp"
 
 using namespace scenarioengine;
 
@@ -97,7 +98,7 @@ void ControllerACC::Step(double timeStep)
         // mode_ == ControlOperationMode::MODE_ADDITIVE &&
         abs(object_->GetSpeed() - currentSpeed_) > 1e-3)
     {
-        LOG("New setspeed: %.2f", setSpeed_);
+        LOG_INFO("New setspeed: {:5.2f}", setSpeed_);
         setSpeed_ = object_->GetSpeed();
     }
 

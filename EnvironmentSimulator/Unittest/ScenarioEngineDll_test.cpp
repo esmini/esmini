@@ -18,6 +18,8 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
+#include "TestHelper.hpp"
+
 class GetNumberOfObjectsTest : public ::testing::TestWithParam<std::tuple<std::string, int>>
 {
 };
@@ -4469,6 +4471,7 @@ TEST(RoutingTest, TestRoutePointsWithGhost)
 
 int main(int argc, char** argv)
 {
+    ParseAndSetLoggerOptions(argc, argv);
     testing::InitGoogleTest(&argc, argv);
 
 #if 0  // set to 1 and modify filter to run one single test

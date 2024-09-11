@@ -22,6 +22,8 @@
 #include "Storyboard.hpp"
 #include "ScenarioEngine.hpp"
 #include "RoadManager.hpp"
+#include "logger.hpp"
+
 #include <ctype.h>
 
 // #define CONTROLLER_REL2ABS_DEBUG
@@ -44,7 +46,7 @@ ControllerRel2Abs::ControllerRel2Abs(InitArgs* args)
     // ControllerRel2Abs forced into additive mode - will only react on scenario actions
     if (mode_ != ControlOperationMode::MODE_ADDITIVE)
     {
-        LOG("ControllerRel2Abs mode \"%s\" not applicable. Using additive mode instead.", Mode2Str(mode_).c_str());
+        LOG_WARN("ControllerRel2Abs mode \"{}\" not applicable. Using additive mode instead.", Mode2Str(mode_));
         mode_ = ControlOperationMode::MODE_ADDITIVE;
     }
     if (args->properties->ValueExists("horizon"))
@@ -70,7 +72,7 @@ void ControllerRel2Abs::findEgo()
 {
     if (ego_obj == -1)
     {
-        LOG("Searching for vehicle named \"Ego\".");
+        LOG_INFO("Searching for vehicle named \"Ego\".");
         for (unsigned int i = 0; i < entities_->object_.size(); i++)
         {
             if (entities_->object_[i]->type_ == Object::Type::VEHICLE)
@@ -80,12 +82,12 @@ void ControllerRel2Abs::findEgo()
                 if (name == "ego")
                 {
                     ego_obj = static_cast<int>(i);
-                    LOG("Object named \"%s\" used as ego vehicle.", entities_->object_[i]->name_.c_str());
+                    LOG_INFO("Object named \"{}\" used as ego vehicle.", entities_->object_[i]->name_);
                     return;
                 }
             }
         }
-        LOG("Ego not found, searching for externally controlled vehicles instead.");
+        LOG_WARN("Ego not found, searching for externally controlled vehicles instead.");
         for (unsigned int i = 0; i < entities_->object_.size(); i++)
         {
             if (entities_->object_[i]->type_ == Object::Type::VEHICLE)
@@ -93,12 +95,12 @@ void ControllerRel2Abs::findEgo()
                 if (entities_->object_[i]->IsAnyActiveControllerOfType(Controller::Type::CONTROLLER_TYPE_EXTERNAL))
                 {
                     ego_obj = static_cast<int>(i);
-                    LOG("Object named \"%s\" used as ego vehicle due to being controlled externally.", entities_->object_[i]->name_.c_str());
+                    LOG_INFO("Object named \"{}\" used as ego vehicle due to being controlled externally.", entities_->object_[i]->name_);
                     return;
                 }
             }
         }
-        LOG("Ego not found, assuming ego is first object added: \"%s\"", entities_->object_[0]->name_.c_str());
+        LOG_WARN("Ego not found, assuming ego is first object added: \"{}\"", entities_->object_[0]->name_);
         ego_obj = 0;
     }
 }
@@ -225,7 +227,7 @@ void ControllerRel2Abs::Step(double timeStep)
                         object->pos_.MoveAlongS(steplen);
                     }
 
-                    // LOG("Object[%d] speed = %lf, y: %lf", object->id_, object->GetSpeed(), object->pos_.GetY());
+                    LOG_DEBUG("Object[{}] speed = {:.2f}, y: {:.2f}", object->id_, object->GetSpeed(), object->pos_.GetY());
 
                     object->ClearDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::SPEED |
                                            Object::DirtyBit::WHEEL_ANGLE | Object::DirtyBit::WHEEL_ROTATION);
@@ -291,7 +293,7 @@ void ControllerRel2Abs::Step(double timeStep)
                 if (errorDist > switching_threshold_dist || errorSpeed > switching_threshold_speed)
                 {
                     switchNow = true;
-                    LOG("Switch now, pos error = %lf, speed error = %lf", errorDist, errorSpeed);
+                    LOG_WARN("Switch now, pos error = {:.2f}, speed error = {:.2f}", errorDist, errorSpeed);
                 }
                 break;
             }
@@ -307,7 +309,7 @@ void ControllerRel2Abs::Step(double timeStep)
                 if (errorDist > switching_threshold_dist || errorSpeed > switching_threshold_speed)
                 {
                     switchNow = true;
-                    LOG("Switch now, pos error = %lf, speed error = %lf", errorDist, errorSpeed);
+                    LOG_WARN("Switch now, pos error = {:.2f}, speed error ={:.2f}", errorDist, errorSpeed);
                 }
                 break;
             }
@@ -363,7 +365,7 @@ void ControllerRel2Abs::Step(double timeStep)
                         double trgSpeed = lsa->target_->GetValue();
                         lsa->target_.reset(new LongSpeedAction::TargetAbsolute);
                         lsa->target_->value_ = trgSpeed;
-                        LOG("LongSpeedAction Target has switched to absolute from relative with the value: %lf", trgSpeed);
+                        LOG_INFO("LongSpeedAction Target has switched to absolute from relative with the value: {:.2f}", trgSpeed);
                     }
                 }
             }
@@ -404,8 +406,8 @@ void ControllerRel2Abs::Step(double timeStep)
                     }
                     lda->End();
                     lsa->Start(scenario_engine_->getSimulationTime());
-                    LOG("Replacing the relative target LongDistanceAction with an absolute target LongSpeedAction and target value: %lf",
-                        currentSpeed);
+                    LOG_INFO("Replacing the relative target LongDistanceAction with an absolute target LongSpeedAction and target value: {:.2f}",
+                             currentSpeed);
                 }
             }
             else if (activeActions[i]->action_type_ == OSCPrivateAction::ActionType::LAT_LANE_CHANGE)
@@ -514,7 +516,8 @@ void ControllerRel2Abs::Step(double timeStep)
                             }
                             sa->End();
                             lsa->Start(scenario_engine_->getSimulationTime());
-                            LOG("Replacing the SynchronizeAction (with final speed) with an absolute target LongSpeedAction and target value: %lf",
+                            LOG_INFO(
+                                "Replacing the SynchronizeAction (with final speed) with an absolute target LongSpeedAction and target value: {:.2f}",
                                 trgSpeed);
                         }
                         else if (sa->mode_ == SynchronizeAction::SynchMode::MODE_NON_LINEAR)
@@ -560,8 +563,8 @@ void ControllerRel2Abs::Step(double timeStep)
                         }
                         sa->End();
                         lsa->Start(scenario_engine_->getSimulationTime());
-                        LOG("Replacing the SynchronizeAction (no final speed) with an absolute target LongSpeedAction and target value: %lf",
-                            currentSpeed);
+                        LOG_INFO("Replacing the SynchronizeAction (no final speed) with an absolute target LongSpeedAction and target value: {:.2f}",
+                                 currentSpeed);
                     }
                 }
             }

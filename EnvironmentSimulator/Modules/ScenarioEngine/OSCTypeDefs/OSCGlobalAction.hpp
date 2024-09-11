@@ -22,6 +22,7 @@
 #include <vector>
 #include "OSCUtils.hpp"
 #include "OSCPosition.hpp"
+#include "logger.hpp"
 
 namespace scenarioengine
 {
@@ -40,12 +41,12 @@ namespace scenarioengine
 
         virtual void print()
         {
-            LOG("Virtual, should be overridden");
+            LOG_WARN("Virtual, should be overridden");
         }
 
         virtual OSCGlobalAction* Copy()
         {
-            LOG("Virtual, should be overridden");
+            LOG_WARN("Virtual, should be overridden");
             return 0;
         };
 

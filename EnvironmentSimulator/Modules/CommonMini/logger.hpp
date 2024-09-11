@@ -1,0 +1,181 @@
+#pragma once
+
+#include "CommonMini.hpp"
+#include "spdlog/spdlog.h"
+#include <unordered_set>
+#include <string>
+#include <iostream>
+
+// Convert enum to its underlying integer type and format it
+template <typename T>
+struct fmt::formatter<T, std::enable_if_t<std::is_enum_v<T>, char>> : fmt::formatter<int>
+{
+    template <typename FormatContext>
+    auto format(T t, FormatContext& ctx)
+    {
+        return fmt::formatter<int>::format(static_cast<int>(t), ctx);
+    }
+};
+
+struct LoggerConfig
+{
+    std::string                     logFilePath_ = "log.txt";
+    std::unordered_set<std::string> enabledFiles_;
+    std::unordered_set<std::string> disabledFiles_;
+    double*                         time_ = nullptr;
+};
+
+static LoggerConfig       loggerConfig;
+void                      SetupLogger(const LoggerConfig& logConfig);
+void                      InitIndivisualLogger(std::shared_ptr<spdlog::logger>& logger);
+bool                      ShouldLogModule(char const* file);
+void                      LogVersion();
+std::string               AddTimeAndMetaData(char const* function, char const* file, long line, const std::string& level, const std::string& log);
+spdlog::level::level_enum GetLogLevelFromStr(const std::string& str);
+void                      LogTimeOnly();
+void                      SetLoggerTime(double* ptr);
+bool                      LogConsole();
+bool                      LogFile(const std::string& filePath = "");
+void                      StopFileLogging();
+void                      StopConsoleLogging();
+void                      CreateNewFileForLogging(const std::string& filePath);
+extern std::shared_ptr<spdlog::logger> consoleLogger;
+extern std::shared_ptr<spdlog::logger> fileLogger;
+
+template <class... ARGS>
+void __LOG_DEBUG__(char const* function, char const* file, long line, const std::string& log, ARGS... args)
+{
+    if (!ShouldLogModule(file))
+    {
+        return;
+    }
+    std::string logWithTimeAndMeta;
+    if (LogConsole())
+    {
+        logWithTimeAndMeta = AddTimeAndMetaData(function, file, line, "debug", log);
+        consoleLogger->debug(logWithTimeAndMeta, args...);
+    }
+    if (LogFile())
+    {
+        if (logWithTimeAndMeta.empty())
+        {
+            logWithTimeAndMeta = AddTimeAndMetaData(function, file, line, "debug", log);
+        }
+        fileLogger->debug(logWithTimeAndMeta, args...);
+    }
+}
+
+template <class... ARGS>
+void __LOG_INFO__(char const* function, char const* file, long line, const std::string& log, ARGS... args)
+{
+    if (!ShouldLogModule(file))
+    {
+        return;
+    }
+    std::string logWithTimeAndMeta;
+    if (LogConsole())
+    {
+        logWithTimeAndMeta = AddTimeAndMetaData(function, file, line, "info", log);
+        consoleLogger->info(logWithTimeAndMeta, args...);
+    }
+    if (LogFile())
+    {
+        if (logWithTimeAndMeta.empty())
+        {
+            logWithTimeAndMeta = AddTimeAndMetaData(function, file, line, "info", log);
+        }
+        fileLogger->info(logWithTimeAndMeta, args...);
+    }
+}
+
+template <class... ARGS>
+void __LOG_WARN__(char const* function, char const* file, long line, const std::string& log, ARGS... args)
+{
+    if (!ShouldLogModule(file))
+    {
+        return;
+    }
+    std::string logWithTimeAndMeta;
+    if (LogConsole())
+    {
+        logWithTimeAndMeta = AddTimeAndMetaData(function, file, line, "warn", log);
+        consoleLogger->warn(logWithTimeAndMeta, args...);
+    }
+    if (LogFile())
+    {
+        if (logWithTimeAndMeta.empty())
+        {
+            logWithTimeAndMeta = AddTimeAndMetaData(function, file, line, "warn", log);
+        }
+        fileLogger->warn(logWithTimeAndMeta, args...);
+    }
+}
+
+template <class... ARGS>
+void __LOG_ERROR__(char const* function, char const* file, long line, const std::string& log, ARGS... args)
+{
+    if (!ShouldLogModule(file))
+    {
+        return;
+    }
+    std::string logWithTimeAndMeta;
+    if (LogConsole())
+    {
+        logWithTimeAndMeta = AddTimeAndMetaData(function, file, line, "error", log);
+        consoleLogger->error(logWithTimeAndMeta, args...);
+    }
+    if (LogFile())
+    {
+        if (logWithTimeAndMeta.empty())
+        {
+            logWithTimeAndMeta = AddTimeAndMetaData(function, file, line, "error", log);
+        }
+        fileLogger->error(logWithTimeAndMeta, args...);
+    }
+}
+
+template <class... ARGS>
+void __LOG_ERROR__AND__QUIT__(char const* function, char const* file, long line, const std::string& log, ARGS... args)
+{
+    std::string logMsg;
+    if (LogConsole())
+    {
+        logMsg = fmt::format(AddTimeAndMetaData(function, file, line, "error", log), args...);
+        consoleLogger->error(logMsg);
+    }
+    if (LogFile())
+    {
+        if (logMsg.empty())
+        {
+            logMsg = fmt::format(AddTimeAndMetaData(function, file, line, "error", log), args...);
+        }
+        fileLogger->error(logMsg);
+    }
+    throw std::runtime_error(logMsg);
+}
+
+#define LOG_ERROR_AND_QUIT(log, ...) __LOG_ERROR__AND__QUIT__(__func__, __FILE__, __LINE__, log, ##__VA_ARGS__)
+
+#define LOG_ERROR_ONCE(log, ...)                                         \
+    static bool firstTime = true;                                        \
+    if (firstTime)                                                       \
+    {                                                                    \
+        __LOG_ERROR__(__func__, __FILE__, __LINE__, log, ##__VA_ARGS__); \
+        firstTime = false;                                               \
+    }
+
+#define LOG_ERROR(log, ...) __LOG_ERROR__(__func__, __FILE__, __LINE__, log, ##__VA_ARGS__)
+
+#define LOG_WARN_ONCE(log, ...)                                         \
+    static bool firstTime = true;                                       \
+    if (firstTime)                                                      \
+    {                                                                   \
+        __LOG_WARN__(__func__, __FILE__, __LINE__, log, ##__VA_ARGS__); \
+        firstTime = false;                                              \
+    }
+
+#define LOG_WARN(log, ...) __LOG_WARN__(__func__, __FILE__, __LINE__, log, ##__VA_ARGS__)
+
+#define LOG_INFO(log, ...) __LOG_INFO__(__func__, __FILE__, __LINE__, log, ##__VA_ARGS__)
+
+#define LOG_DEBUG(log, ...) __LOG_DEBUG__(__func__, __FILE__, __LINE__, log, ##__VA_ARGS__)

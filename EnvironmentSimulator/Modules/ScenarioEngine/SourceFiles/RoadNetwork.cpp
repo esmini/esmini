@@ -12,6 +12,7 @@
 
 #include "RoadNetwork.hpp"
 #include "CommonMini.hpp"
+#include "logger.hpp"
 
 using namespace scenarioengine;
 
@@ -21,8 +22,8 @@ RoadNetwork::RoadNetwork()
 
 void RoadNetwork::Print()
 {
-    LOG("Logics: ");
+    LOG_INFO("Logics: ");
     logicFile.Print();
-    LOG("SceneGraph: %s");
+    LOG_INFO("SceneGraph: ");
     sceneGraphFile.Print();
 }

@@ -11,6 +11,7 @@
  */
 
 #include "OSCPosition.hpp"
+#include "logger.hpp"
 
 using namespace scenarioengine;
 
@@ -137,7 +138,7 @@ OSCPositionRoad::OSCPositionRoad(id_t roadId, double s, double t, OSCOrientation
 {
     if (position_.GetRoadById(roadId) == nullptr)
     {
-        LOG_AND_QUIT("Reffered road ID %d not available in road network", roadId);
+        LOG_ERROR_AND_QUIT("Reffered road ID {} not available in road network", roadId);
     }
 
     SetPositionModesGeneric(position_, nullptr, &orientation);

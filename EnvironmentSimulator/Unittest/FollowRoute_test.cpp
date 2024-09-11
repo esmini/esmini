@@ -7,6 +7,7 @@
 #include "pugixml.hpp"
 #include "simple_expr.h"
 #include "LaneIndependentRouter.hpp"
+#include "TestHelper.hpp"
 
 // Enable testing of the mega road network
 // #define ENABLE_LARGE_ROAD_NETWORK
@@ -776,7 +777,7 @@ int main(int argc, char** argv)
 #endif
 
     // testing::GTEST_FLAG(filter) = "*TestOptionHandling*";
-
+    ParseAndSetLoggerOptions(argc, argv);
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }
