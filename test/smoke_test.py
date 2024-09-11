@@ -1776,6 +1776,63 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^40.100, 0, ego, 358.970, -1.535, 0.000, 0.000, 0.000, 0.000, 1.000, 0.000, 4.314', csv, re.MULTILINE))
         self.assertTrue(re.search('^40.100, 1, actor_1, 385.150, -1.535, 0.000, 0.000, 0.000, 0.000, 1.000, 0.000, 2.527', csv, re.MULTILINE))
 
+    def test_ad_hoc_traffic(self):
+        # this test case exercises the action injection mechanism
+
+        log = run_scenario(esmini_arguments='--headless', application='code-examples-bin/ad_hoc_traffic')
+
+        # Check some initialization steps
+        self.assertTrue(re.search('Loading .*ad_hoc_traffic/empty_scenario.xosc', log)  is not None)
+
+        # Check some scenario events
+        self.assertTrue(re.search('\n0.000: my_manouver_group initState -> startTransition -> runningState', log)  is not None)
+        self.assertTrue(re.search('\n0.100: Creating new object "object_0" \\(id 0, timestamp 0.00\\)', log)  is not None)
+        self.assertTrue(re.search('\n1.500: Creating new object "object_1" \\(id 1, timestamp 0.00\\)', log)  is not None)
+        self.assertTrue(re.search('\n2.900: Creating new object "object_2" \\(id 2, timestamp 0.00\\)', log)  is not None)
+        self.assertTrue(re.search('\n4.400: Creating new object "object_3" \\(id 3, timestamp 0.00\\)', log)  is not None)
+        self.assertTrue(re.search('\n5.800: Creating new object "object_4" \\(id 4, timestamp 0.00\\)', log)  is not None)
+        self.assertTrue(re.search('\n7.200: Creating new object "object_5" \\(id 5, timestamp 0.00\\)', log)  is not None)
+        self.assertTrue(re.search('\n8.700: Creating new object "object_6" \\(id 6, timestamp 0.00\\)', log)  is not None)
+        self.assertTrue(re.search('\n10.100: Creating new object "object_7" \\(id 7, timestamp 0.00\\)', log)  is not None)
+        self.assertTrue(re.search('\n11.600: Creating new object "object_8" \\(id 8, timestamp 0.00\\)', log)  is not None)
+        self.assertTrue(re.search('\n13.000: Creating new object "object_9" \\(id 9, timestamp 0.00\\)', log)  is not None)
+        self.assertTrue(re.search('\n14.400: Creating new object "object_10" \\(id 10, timestamp 0.00\\)', log)  is not None)
+        self.assertTrue(re.search('\n15.900: Creating new object "object_11" \\(id 11, timestamp 0.00\\)', log)  is not None)
+        self.assertTrue(re.search('\n17.300: Creating new object "object_12" \\(id 12, timestamp 0.00\\)', log)  is not None)
+        self.assertTrue(re.search('\n18.800: Creating new object "object_13" \\(id 13, timestamp 0.00\\)', log)  is not None)
+        self.assertTrue(re.search('\n20.200: Creating new object "object_14" \\(id 14, timestamp 0.00\\)', log)  is not None)
+        self.assertTrue(re.search('\n21.600: Creating new object "object_15" \\(id 15, timestamp 0.00\\)', log)  is not None)
+        self.assertTrue(re.search('\n23.100: Creating new object "object_16" \\(id 16, timestamp 0.00\\)', log)  is not None)
+        self.assertTrue(re.search('\n24.500: Creating new object "object_17" \\(id 17, timestamp 0.00\\)', log)  is not None)
+        self.assertTrue(re.search('\n26.000: Creating new object "object_18" \\(id 18, timestamp 0.00\\)', log)  is not None)
+        self.assertTrue(re.search('\n27.400: Creating new object "object_19" \\(id 19, timestamp 0.00\\)', log)  is not None)
+        self.assertTrue(re.search('\n28.800: Creating new object "object_20" \\(id 20, timestamp 0.00\\)', log)  is not None)
+
+        # Check vehicle key positions
+        csv = generate_csv("empty_scenario.dat")
+
+        self.assertTrue(re.search('^0.200, 0, object_0, 2.778, -1.500, 0.000, 0.000, 0.000, 0.000, 27.778, 0.000, 0.000', csv, re.MULTILINE))
+        self.assertTrue(re.search('^1.500, 0, object_0, 38.889, -1.500, 0.000, 0.000, 0.000, 0.000, 27.778, 0.000, 0.000', csv, re.MULTILINE))
+        self.assertTrue(re.search('^1.600, 0, object_0, 41.667, -1.500, 0.000, 0.000, 0.000, 0.000, 27.778, 0.000, 0.000', csv, re.MULTILINE))
+        self.assertTrue(re.search('^1.600, 1, object_1, 2.778, -1.500, 0.000, 0.000, 0.000, 0.000, 27.778, 0.000, 0.000', csv, re.MULTILINE))
+        self.assertTrue(re.search('^1.700, 0, object_0, 44.444, -1.500, 0.000, 0.000, 0.000, 0.000, 27.778, 0.000, 0.000', csv, re.MULTILINE))
+        self.assertTrue(re.search('^1.700, 1, object_1, 5.556, -1.500, 0.000, 0.000, 0.000, 0.000, 27.778, 0.000, 0.000', csv, re.MULTILINE))
+        self.assertTrue(re.search('^19.500, 1, object_1, 500.000, -1.500, 0.000, 0.000, 0.000, 0.000, 27.778, 0.000, 0.000', csv, re.MULTILINE))
+        self.assertTrue(re.search('^19.500, 2, object_2, 461.111, -1.500, 0.000, 0.000, 0.000, 0.000, 27.778, 0.000, 0.000', csv, re.MULTILINE))
+        self.assertTrue(re.search('^19.500, 3, object_3, 419.444, -1.500, 0.000, 0.000, 0.000, 0.000, 27.778, 0.000, 0.000', csv, re.MULTILINE))
+        self.assertTrue(re.search('^19.500, 4, object_4, 380.556, -1.500, 0.000, 0.000, 0.000, 0.000, 27.778, 0.000, 0.000', csv, re.MULTILINE))
+        self.assertTrue(re.search('^19.500, 5, object_5, 341.667, -1.500, 0.000, 0.000, 0.000, 0.000, 27.778, 0.000, 0.000', csv, re.MULTILINE))
+        self.assertTrue(re.search('^19.500, 6, object_6, 300.000, -1.500, 0.000, 0.000, 0.000, 0.000, 27.778, 0.000, 0.000', csv, re.MULTILINE))
+        self.assertTrue(re.search('^19.500, 7, object_7, 261.111, -1.500, 0.000, 0.000, 0.000, 0.000, 27.778, 0.000, 0.000', csv, re.MULTILINE))
+        self.assertTrue(re.search('^19.500, 8, object_8, 219.444, -1.500, 0.000, 0.000, 0.000, 0.000, 27.778, 0.000, 0.000', csv, re.MULTILINE))
+        self.assertTrue(re.search('^19.500, 9, object_9, 180.556, -1.500, 0.000, 0.000, 0.000, 0.000, 27.778, 0.000, 0.000', csv, re.MULTILINE))
+        self.assertTrue(re.search('^19.500, 10, object_10, 141.667, -1.500, 0.000, 0.000, 0.000, 0.000, 27.778, 0.000, 0.000', csv, re.MULTILINE))
+        self.assertTrue(re.search('^19.500, 11, object_11, 100.000, -1.500, 0.000, 0.000, 0.000, 0.000, 27.778, 0.000, 0.000', csv, re.MULTILINE))
+        self.assertTrue(re.search('^19.500, 12, object_12, 61.111, -1.500, 0.000, 0.000, 0.000, 0.000, 27.778, 0.000, 0.000', csv, re.MULTILINE))
+        self.assertTrue(re.search('^19.500, 13, object_13, 19.444, -1.500, 0.000, 0.000, 0.000, 0.000, 27.778, 0.000, 0.000', csv, re.MULTILINE))
+        self.assertTrue(re.search('^19.600, 2, object_2, 463.889, -1.500, 0.000, 0.000, 0.000, 0.000, 27.778, 0.000, 0.000', csv, re.MULTILINE))
+        self.assertTrue(re.search('^19.600, 3, object_3, 422.222, -1.500, 0.000, 0.000, 0.000, 0.000, 27.778, 0.000, 0.000', csv, re.MULTILINE))
+
 if __name__ == "__main__":
     # execute only if run as a script
 

@@ -3288,7 +3288,6 @@ namespace roadmanager
         {
             return trajectory_;
         }
-        // void CopyTrajectory(const Position &position);
 
         void SetTrajectory(RMTrajectory *trajectory);
 

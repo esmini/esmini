@@ -325,11 +325,17 @@ int ScenarioEngine::step(double deltaSimTime)
             // Update wheel info, assuming first wheel is steering wheel on front axle
             if (o->dirty_ & Object::DirtyBit::WHEEL_ANGLE)
             {
-                obj->wheel_angle_ = o->state_.info.wheel_data[0].h;
+                if (o->state_.info.wheel_data.size() > 0)
+                {
+                    obj->wheel_angle_ = o->state_.info.wheel_data[0].h;
+                }
             }
             if (o->dirty_ & Object::DirtyBit::WHEEL_ROTATION)
             {
-                obj->wheel_rot_ = o->state_.info.wheel_data[0].p;
+                if (o->state_.info.wheel_data.size() > 0)
+                {
+                    obj->wheel_rot_ = o->state_.info.wheel_data[0].p;
+                }
             }
             o->clearDirtyBits();
         }
