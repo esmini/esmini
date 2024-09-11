@@ -57,6 +57,7 @@ Object::Object(Type type)
     state_old.h_rate = 0;
 
     trail_closest_pos_ = {0, 0, 0, 0, 0, 0, false};
+    trail_.SetInterpolationMode(PolyLineBase::InterpolationMode::INTERPOLATE_SEGMENT);
 
     // initialize override vector
     for (int i = 0; i < OVERRIDE_NR_TYPES; i++)

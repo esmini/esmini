@@ -4340,6 +4340,7 @@ namespace roadmanager
         TrajVertex *GetCurrentVertex();
         void        Reset(bool clear_vertices);
         int         Time2S(double time, double &s);
+        void        SetInterpolationMode(InterpolationMode mode);
 
         std::vector<TrajVertex> vertex_;
         int                     current_index_;

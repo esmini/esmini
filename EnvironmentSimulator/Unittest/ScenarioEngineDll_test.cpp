@@ -3088,6 +3088,7 @@ TEST(ExternalController, TestExternalDriver)
                         SE_GetRoadInfoGhostTrailTime(0, SE_GetSimulationTime(), &road_info2, &speed2);
                         EXPECT_NEAR(road_info2.global_pos_x, 206.716, 1e-3);
                         EXPECT_NEAR(road_info2.global_pos_y, 92.447, 1e-3);
+                        EXPECT_NEAR(roadInfo.trail_heading, 1.2158, 1e-3);
                     }
                 }
                 else if (abs(SE_GetSimulationTime() - 30.0f) < static_cast<float>(SMALL_NUMBER))
@@ -3103,6 +3104,7 @@ TEST(ExternalController, TestExternalDriver)
                         SE_GetRoadInfoGhostTrailTime(0, SE_GetSimulationTime(), &road_info3, &speed2);
                         EXPECT_NEAR(road_info3.global_pos_x, 388.217, 1e-3);
                         EXPECT_NEAR(road_info3.global_pos_y, 291.263, 1e-3);
+                        EXPECT_NEAR(roadInfo.trail_heading, 5.1278, 1e-3);
                     }
                 }
             }
@@ -3122,6 +3124,7 @@ TEST(ExternalController, TestExternalDriver)
                         SE_GetRoadInfoGhostTrailTime(0, SE_GetSimulationTime(), &road_info2, &speed3);
                         EXPECT_NEAR(road_info2.global_pos_x, 206.716, 1e-3);
                         EXPECT_NEAR(road_info2.global_pos_y, 92.447, 1e-3);
+                        EXPECT_NEAR(roadInfo.trail_heading, 1.2182, 1e-3);
                     }
                 }
                 else if (abs(SE_GetSimulationTime() - 30.0f) < static_cast<float>(SMALL_NUMBER))
@@ -3136,6 +3139,7 @@ TEST(ExternalController, TestExternalDriver)
                         SE_GetRoadInfoGhostTrailTime(0, SE_GetSimulationTime(), &road_info2, &speed3);
                         EXPECT_NEAR(road_info2.global_pos_x, 388.217, 1e-3);
                         EXPECT_NEAR(road_info2.global_pos_y, 291.263, 1e-3);
+                        EXPECT_NEAR(roadInfo.trail_heading, 5.1519, 1e-3);
                     }
                 }
             }

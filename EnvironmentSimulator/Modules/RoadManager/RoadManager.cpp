@@ -11239,6 +11239,11 @@ int PolyLineBase::Time2S(double time, double& s)
     return 0;
 }
 
+void PolyLineBase::SetInterpolationMode(InterpolationMode mode)
+{
+    interpolation_mode_ = mode;
+}
+
 int PolyLineBase::FindClosestPoint(double xin, double yin, TrajVertex& pos, int& index, int startAtIndex)
 {
     // look along the line segments
