@@ -3096,18 +3096,32 @@ Google sanitizers framework is utilized to detect memory related errors, for exa
 
 To run the sanitizer checks locally, on Ubuntu:
 
-1. Set the following environment variables, run from esmini root: +
-`export LSAN_OPTIONS="print_suppressions=false:suppressions=$(pwd)/scripts/LSAN.supp"`
-`export ASAN_OPTIONS="detect_invalid_pointer_pairs=1:strict_string_checks=1:detect_stack_use_after_return=1:check_initialization_order=1:strict_init_order=1:fast_unwind_on_malloc=0:suppressions=$(pwd)/scripts/ASAN.supp"`
+. Set the following environment variables, run from esmini root:
 
-2. Configure and build emsini with sanitizers enabled +
-`cd build` +
-`cmake -G Ninja -DUSE_OSG=FALSE -DCMAKE_BUILD_TYPE=RelWithDebInfo -DENABLE_SANITIZERS=TRUE ..` +
-`ninja install` +
-`cd ..`
+[source,console]
+----
+export LSAN_OPTIONS="print_suppressions=false:suppressions=$(pwd)/scripts/LSAN.supp"
+export ASAN_OPTIONS="detect_invalid_pointer_pairs=1:strict_string_checks=1:detect_stack_use_after_return=1:check_initialization_order=1:strict_init_order=1:fast_unwind_on_malloc=0:suppressions=$(pwd)/scripts/ASAN.supp"
+----
 
-3. Run the test suites, including both unit- and smoke tests, from esmini root: +
-`./scripts/run_tests.sh`
+[start=2]
+. Configure and build emsini with sanitizers enabled
+
+[source,console]
+----
+cd build
+cmake -G Ninja -DUSE_OSG=FALSE -DCMAKE_BUILD_TYPE=RelWithDebInfo -DENABLE_SANITIZERS=TRUE ..
+ninja install
+cd ..
+----
+
+[start=3]
+. Run the test suites, including both unit- and smoke tests, from esmini root:
+
+[source,console]
+----
+./scripts/run_tests.sh
+----
 
 == esmini lib programming
 

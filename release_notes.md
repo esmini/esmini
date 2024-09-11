@@ -6,7 +6,7 @@ Improvements and fixes:
 - Support InRoutePosition/FromRoadCoordinates
 - Support `pi` and `e` constants in expressions
 - Add support for trajectory coordinate system distance measurement
-- Add [Vector NCAP scenarios](https://github.com/vectorgrp/OSC-NCAP-scenarios) to CI smoke test suite
+- Add [Vector NCAP scenarios](https://github.com/vectorgrp/OSC-NCAP-scenarios) to CI smoke test suite ([issue #595](https://github.com/esmini/esmini/issues/595))
 - Add option to align lateral sign of route positions
   - `--align_routepositions`
   - consider route direction when evaluating sign of `laneId` and `t`
