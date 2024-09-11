@@ -3105,7 +3105,7 @@ export ASAN_OPTIONS="detect_invalid_pointer_pairs=1:strict_string_checks=1:detec
 ----
 
 [start=2]
-. Configure and build emsini with sanitizers enabled
+. Configure and build esmini with sanitizers enabled
 
 [source,console]
 ----
