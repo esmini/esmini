@@ -58,7 +58,7 @@ runs:
       run: 7z a esmini-demo_${{ runner.os }}.zip esmini-demo/*
 
     - name: Upload demo artifact
-      uses: actions/upload-artifact@v3.1.2
+      uses: actions/upload-artifact@v4.3.6
       with:
         name: esmini-demo_${{ runner.os }}
         path: esmini-demo_${{ runner.os }}.zip
