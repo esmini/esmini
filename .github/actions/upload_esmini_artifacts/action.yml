@@ -36,7 +36,7 @@ runs:
       run: 7z a esmini-bin_${{ runner.os }}.zip esmini/*
 
     - name: Upload release artifact
-      uses: actions/upload-artifact@v3.1.2
+      uses: actions/upload-artifact@v4.3.6
       with:
         name: esmini-bin_${{ runner.os }}
         path: esmini-bin_${{ runner.os }}.zip

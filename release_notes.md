@@ -23,7 +23,6 @@ Improvements and fixes:
   - unintentionally disabled in v2.38.0
 - Bugfix: Avoid route being disabled when position is reported via lib
 - Bugfix: Resolve variable value from parameters, not variables
-- Bugfix: Resolve variable value from parameters, not variables
 - Bugfix: Resolve position dependencies at synchronize start
 
 Build improvements:
