@@ -1,14 +1,30 @@
 ## esmini release notes
 
-### 2024-09-09 Version 2.38.4
+### 2024-09-11 Version 2.38.4
 
 Improvements and fixes:
-
+- Support InRoutePosition/FromRoadCoordinates
+- Support `pi` and `e` constants in expressions
+- Add support for trajectory coordinate system distance measurement
+- Add [Vector NCAP scenarios](https://github.com/vectorgrp/OSC-NCAP-scenarios) to CI smoke test suite
+- Add option to align lateral sign of route positions
+  - `--align_routepositions`
+  - consider route direction when evaluating sign of `laneId` and `t`
+  - use with NCAP scenarios to get it right
+- Change synchronize default distance tolerance from 1.0 to 0.0
+- Fix crash due to empty wheel data vector
+  - affecting e.g. ad_hoc_traffic code example
 - Fix crash due to swarm traffic inherit controllers ([issue #601](https://github.com/esmini/esmini/issues/601))
   - when no vehicle catalog available, central object is used for swarm
   - issue was that controller reference was reused and eventually deleted
   - now controller will be unassigned for the swarm copy vehicle
-
+- Bugfix: Restore heading interpolation
+  - interpolate heading along segments in object trails
+  - unintentionally disabled in v2.38.0
+- Bugfix: Avoid route being disabled when position is reported via lib
+- Bugfix: Resolve variable value from parameters, not variables
+- Bugfix: Resolve variable value from parameters, not variables
+- Bugfix: Resolve position dependencies at synchronize start
 
 Build improvements:
 - Add symbols to sanitizer build for increased readability
