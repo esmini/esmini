@@ -12,9 +12,8 @@ jobs:
   sanitize:
     strategy:
       matrix:
-        configuration: [Debug, Release]
+        configuration: [Release]
         os: [ubuntu-20.04]
-        #ubuntu-latest
 
     runs-on: ${{ matrix.os }}
 
@@ -36,13 +35,6 @@ jobs:
             externals/sumo
             resources/models
           key: ${{ runner.os }}-external-resources
-
-      # TODO: We need a way to not fetch existing dependencies because of cached ones. This command currently asks for user input
-      #- name: Fetch external dependencies/resources
-      #  run: python3 main.py fetch dependency
-
-      #- name: Generate OpenDrive interface
-      #  run: python3 main.py generate opendrive
 
       - name: CMake Configure - Ubuntu
         if: runner.os == 'Linux'
