@@ -1104,6 +1104,7 @@ extern "C"
                 Controller *ctrl          = InstantiateControllerExternal(&args);
                 if (ctrl != nullptr)
                 {
+                    player->scenarioEngine->scenarioReader->AddController(ctrl);
                     vehicle->AssignController(ctrl);
                     ctrl->Activate(ControlActivationMode::ON, ControlActivationMode::ON, ControlActivationMode::OFF, ControlActivationMode::OFF);
                 }
@@ -1154,6 +1155,12 @@ extern "C"
 
         if (player != nullptr)
         {
+            for (auto &ctrl : obj->controllers_)
+            {
+                obj->UnassignController(ctrl);
+                ctrl->UnlinkObject();
+                player->scenarioEngine->scenarioReader->RemoveController(ctrl);
+            }
             player->scenarioEngine->entities_.removeObject(object_id);
             player->scenarioGateway->removeObject(object_id);
             return 0;
