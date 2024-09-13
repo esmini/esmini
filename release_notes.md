@@ -1,5 +1,10 @@
 ## esmini release notes
 
+### 2024-09-13 Version 2.38.5
+
+Improvements and fixes:
+- Bugfix: Restore segment interpolation mode after ghost restart
+
 ### 2024-09-11 Version 2.38.4
 
 Improvements and fixes:
