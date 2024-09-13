@@ -1811,6 +1811,7 @@ void TeleportAction::Start(double simTime)
         SE_Env::Inst().SetGhostMode(GhostMode::RESTART);
 
         object_->trail_.Reset(true);
+        object_->trail_.SetInterpolationMode(roadmanager::PolyLineBase::InterpolationMode::INTERPOLATE_SEGMENT);
 
         // The following code will copy speed from the Ego that ghost relates to
         if (object_->ghost_Ego_ != nullptr)
