@@ -3123,6 +3123,31 @@ cd ..
 ./scripts/run_tests.sh
 ----
 
+==== Troubleshooting
+
+On Ubuntu some combination of gcc and sanitizer randomly cause sanitizer run failure with error message: AddressSanitizer:DEADLYSIGNAL.
+
+If this happens, try the following:
+
+[source,console]
+----
+setarch $(uname -m) -R
+bash
+----
+
+`setarch` will affect reported architecture from system to sanitizer. `bash` is to restore shell environment, it can of course be replaced by any shell program, e.g. tcsh.
+
+To revert settings, simply run:
+[source,console]
+----
+exit
+exit
+----
+
+First exit will escape the latter bash environment, the second reverts effect of the setarch command.
+
+Source of setarch tip: https://stackoverflow.com/questions/77894856/possible-bug-in-gcc-sanitizers
+
 == esmini lib programming
 
 === About the lib itself
