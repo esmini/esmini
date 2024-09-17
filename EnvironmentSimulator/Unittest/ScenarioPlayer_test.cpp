@@ -442,6 +442,68 @@ TEST(Controllers, TestSeparateControllersOnLatLong)
     delete player;
 }
 
+#ifdef _USE_OSI
+
+TEST(OSI, TestOrientation)
+{
+    const char* args[] =
+        {"esmini", "--osc", "../../../EnvironmentSimulator/Unittest/xosc/curve_slope_simple.xosc", "--headless", "--osi_file", "--disable_stdout"};
+    int             argc   = sizeof(args) / sizeof(char*);
+    double          dt     = 0.1f;
+    ScenarioPlayer* player = new ScenarioPlayer(argc, const_cast<char**>(args));
+
+    ASSERT_NE(player, nullptr);
+    int retval = player->Init();
+    ASSERT_EQ(retval, 0);
+
+    ScenarioEngine* se = player->scenarioEngine;
+    ASSERT_EQ(se->entities_.object_.size(), 1);
+    Object* obj = se->entities_.object_[0];
+
+    const osi3::GroundTruth* osi_gt_ptr = reinterpret_cast<const osi3::GroundTruth*>(player->osiReporter->GetOSIGroundTruthRaw());
+    ASSERT_NE(osi_gt_ptr, nullptr);
+
+    // OpenSCENARIO position
+    EXPECT_NEAR(obj->pos_.GetX(), 100.0576, 1e-3);
+    EXPECT_NEAR(obj->pos_.GetY(), 82.7423, 1e-3);
+    EXPECT_NEAR(obj->pos_.GetZ(), -0.8108, 1e-3);
+    EXPECT_NEAR(obj->pos_.GetH(), 1.4000, 1e-3);
+    EXPECT_NEAR(obj->pos_.GetP(), 0.0, 1e-3);
+    EXPECT_NEAR(obj->pos_.GetR(), 0.48599, 1e-3);
+
+    // OSI position
+    EXPECT_NEAR(osi_gt_ptr->moving_object(0).base().position().x(), 100.2955, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->moving_object(0).base().position().y(), 84.1220, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->moving_object(0).base().position().z(), -0.0608, 1e-3);
+    EXPECT_NEAR(GetAngleDifference(osi_gt_ptr->moving_object(0).base().orientation().yaw(), 1.4000), 0.0, 1e-3);
+    EXPECT_NEAR(GetAngleDifference(osi_gt_ptr->moving_object(0).base().orientation().pitch(), 0.0), 0.0, 1e-3);
+    EXPECT_NEAR(GetAngleDifference(osi_gt_ptr->moving_object(0).base().orientation().roll(), 0.48599), 0.0, 1e-3);
+
+    // move forward to the uphill part
+    obj->MoveAlongS(170.0);
+    player->Frame(dt);
+
+    // OpenSCENARIO position
+    EXPECT_NEAR(obj->pos_.GetX(), 6.8274, 1e-3);
+    EXPECT_NEAR(obj->pos_.GetY(), 201.3051, 1e-3);
+    EXPECT_NEAR(obj->pos_.GetZ(), 12.2125, 1e-3);
+    EXPECT_NEAR(obj->pos_.GetH(), 3.0742, 1e-3);
+    EXPECT_NEAR(obj->pos_.GetP(), 5.9978, 1e-3);
+    EXPECT_NEAR(obj->pos_.GetR(), 0.0, 1e-3);
+
+    // OSI position
+    EXPECT_NEAR(osi_gt_ptr->moving_object(0).base().position().x(), 5.4306, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->moving_object(0).base().position().y(), 201.3993, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->moving_object(0).base().position().z(), 12.9625, 1e-3);
+    EXPECT_NEAR(GetAngleDifference(osi_gt_ptr->moving_object(0).base().orientation().yaw(), 3.0742), 0.0, 1e-3);
+    EXPECT_NEAR(GetAngleDifference(osi_gt_ptr->moving_object(0).base().orientation().pitch(), 5.9978), 0.0, 1e-3);
+    EXPECT_NEAR(GetAngleDifference(osi_gt_ptr->moving_object(0).base().orientation().roll(), 0.0), 0.0, 1e-3);
+
+    delete player;
+}
+
+#endif  // _USE_OSI
+
 // #define LOG_TO_CONSOLE
 
 #ifdef LOG_TO_CONSOLE
