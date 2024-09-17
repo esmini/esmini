@@ -301,7 +301,7 @@ extern "C"
         return -1;
     }
 
-    RM_DLL_API int RM_GetIdOfRoadFromIndex(int index)
+    RM_DLL_API id_t RM_GetIdOfRoadFromIndex(int index)
     {
         if (odrManager != nullptr)
         {
@@ -309,11 +309,11 @@ extern "C"
         }
         else
         {
-            return -1;
+            return ID_UNDEFINED;
         }
     }
 
-    RM_DLL_API float RM_GetRoadLength(int id)
+    RM_DLL_API float RM_GetRoadLength(id_t id)
     {
         if (odrManager != nullptr)
         {
@@ -325,7 +325,7 @@ extern "C"
         }
     }
 
-    RM_DLL_API const char* RM_GetRoadIdString(int road_id)
+    RM_DLL_API const char* RM_GetRoadIdString(id_t road_id)
     {
         if (odrManager != nullptr)
         {
@@ -339,7 +339,7 @@ extern "C"
         return "";
     }
 
-    RM_DLL_API int RM_GetRoadIdFromString(const char* road_id_str)
+    RM_DLL_API id_t RM_GetRoadIdFromString(const char* road_id_str)
     {
         if (odrManager != nullptr)
         {
@@ -350,10 +350,10 @@ extern "C"
             }
         }
 
-        return -1;
+        return ID_UNDEFINED;
     }
 
-    RM_DLL_API const char* RM_GetJunctionIdString(int junction_id)
+    RM_DLL_API const char* RM_GetJunctionIdString(id_t junction_id)
     {
         if (odrManager != nullptr)
         {
@@ -367,7 +367,7 @@ extern "C"
         return "";
     }
 
-    RM_DLL_API int RM_GetJunctionIdFromString(const char* junction_id_str)
+    RM_DLL_API id_t RM_GetJunctionIdFromString(const char* junction_id_str)
     {
         if (odrManager != nullptr)
         {
@@ -378,10 +378,10 @@ extern "C"
             }
         }
 
-        return -1;
+        return ID_UNDEFINED;
     }
 
-    RM_DLL_API int RM_GetRoadNumberOfLanes(int roadId, float s)
+    RM_DLL_API int RM_GetRoadNumberOfLanes(id_t roadId, float s)
     {
         int numberOfDrivableLanes = 0;
 
@@ -426,11 +426,11 @@ extern "C"
         return pos->GetNumberOfRoadsOverlapping();
     }
 
-    RM_DLL_API int RM_GetOverlappingRoadId(int handle, int index)
+    RM_DLL_API id_t RM_GetOverlappingRoadId(int handle, int index)
     {
         if (odrManager == nullptr || handle >= static_cast<int>(position.size()) || handle < 0)
         {
-            return -1;
+            return ID_UNDEFINED;
         }
 
         roadmanager::Position* pos = &position[static_cast<unsigned int>(handle)];
@@ -438,7 +438,7 @@ extern "C"
         return pos->GetOverlappingRoadId(index);
     }
 
-    RM_DLL_API int RM_GetLaneIdByIndex(int roadId, int laneIndex, float s)
+    RM_DLL_API int RM_GetLaneIdByIndex(id_t roadId, int laneIndex, float s)
     {
         int numberOfDrivableLanes = 0;
 
@@ -470,7 +470,7 @@ extern "C"
         return 0;
     }
 
-    RM_DLL_API int RM_SetLanePosition(int handle, int roadId, int laneId, float laneOffset, float s, bool align)
+    RM_DLL_API int RM_SetLanePosition(int handle, id_t roadId, int laneId, float laneOffset, float s, bool align)
     {
         if (odrManager == nullptr || handle >= static_cast<int>(position.size()))
         {
@@ -612,7 +612,7 @@ extern "C"
         return -1;
     }
 
-    RM_DLL_API int RM_SetRoadId(int handle, int roadId)
+    RM_DLL_API int RM_SetRoadId(int handle, id_t roadId)
     {
         if (odrManager == nullptr || handle >= static_cast<int>(position.size()))
         {
@@ -767,7 +767,7 @@ extern "C"
         return static_cast<float>(road->GetLaneWidthByS(position[static_cast<unsigned int>(handle)].GetS(), lane_id));
     }
 
-    RM_DLL_API float RM_GetLaneWidthByRoadId(int road_id, int lane_id, float s)
+    RM_DLL_API float RM_GetLaneWidthByRoadId(id_t road_id, int lane_id, float s)
     {
         if (odrManager == nullptr)
         {
@@ -809,7 +809,7 @@ extern "C"
         return position[static_cast<unsigned int>(handle)].GetInLaneType();
     }
 
-    RM_DLL_API int RM_GetLaneTypeByRoadId(int road_id, int lane_id, float s)
+    RM_DLL_API int RM_GetLaneTypeByRoadId(id_t road_id, int lane_id, float s)
     {
         if (odrManager == nullptr)
         {
@@ -847,7 +847,7 @@ extern "C"
         }
     }
 
-    RM_DLL_API int RM_GetNumberOfRoadSigns(int road_id)
+    RM_DLL_API int RM_GetNumberOfRoadSigns(id_t road_id)
     {
         if (odrManager == nullptr)
         {
@@ -864,7 +864,7 @@ extern "C"
         return 0;
     }
 
-    RM_DLL_API int RM_GetRoadSign(int road_id, int index, RM_RoadSign* road_sign)
+    RM_DLL_API int RM_GetRoadSign(id_t road_id, int index, RM_RoadSign* road_sign)
     {
         if (odrManager == nullptr)
         {
@@ -906,7 +906,7 @@ extern "C"
         return -1;
     }
 
-    RM_DLL_API int RM_GetNumberOfRoadSignValidityRecords(int road_id, int index)
+    RM_DLL_API int RM_GetNumberOfRoadSignValidityRecords(id_t road_id, int index)
     {
         if (odrManager == nullptr)
         {
@@ -925,7 +925,7 @@ extern "C"
         return 0;
     }
 
-    RM_DLL_API int RM_GetRoadSignValidityRecord(int road_id, int signIndex, int validityIndex, RM_RoadObjValidity* validity)
+    RM_DLL_API int RM_GetRoadSignValidityRecord(id_t road_id, int signIndex, int validityIndex, RM_RoadObjValidity* validity)
     {
         if (odrManager != nullptr)
         {

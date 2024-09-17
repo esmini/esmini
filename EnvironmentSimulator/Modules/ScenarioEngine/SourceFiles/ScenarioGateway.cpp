@@ -147,7 +147,7 @@ ObjectState::ObjectState(int            id,
                          double         wheel_angle,
                          double         wheel_rot,
                          double         rear_axle_z_pos,
-                         int            roadId,
+                         id_t           roadId,
                          int            laneId,
                          double         laneOffset,
                          double         s)
@@ -193,7 +193,7 @@ ObjectState::ObjectState(int            id,
                          double         wheel_angle,
                          double         wheel_rot,
                          double         rear_axle_z_pos,
-                         int            roadId,
+                         id_t           roadId,
                          double         lateralOffset,
                          double         s)
 {
@@ -535,7 +535,7 @@ int ScenarioGateway::reportObject(int            id,
                                   double         wheel_angle,
                                   double         wheel_rot,
                                   double         rear_axle_z_pos,
-                                  int            roadId,
+                                  id_t           roadId,
                                   int            laneId,
                                   double         laneOffset,
                                   double         s)
@@ -596,7 +596,7 @@ int ScenarioGateway::reportObject(int            id,
                                   double         wheel_angle,
                                   double         wheel_rot,
                                   double         rear_axle_z_pos,
-                                  int            roadId,
+                                  id_t           roadId,
                                   double         lateralOffset,
                                   double         s)
 {
@@ -661,7 +661,7 @@ int ScenarioGateway::updateObjectPos(int id, double timestamp, roadmanager::Posi
     return 0;
 }
 
-int ScenarioGateway::updateObjectRoadPos(int id, double timestamp, int roadId, double lateralOffset, double s)
+int ScenarioGateway::updateObjectRoadPos(int id, double timestamp, id_t roadId, double lateralOffset, double s)
 {
     ObjectState* obj_state = getObjectStatePtrById(id);
 
@@ -682,7 +682,7 @@ int ScenarioGateway::updateObjectRoadPos(int id, double timestamp, int roadId, d
     return 0;
 }
 
-int ScenarioGateway::updateObjectLanePos(int id, double timestamp, int roadId, int laneId, double offset, double s)
+int ScenarioGateway::updateObjectLanePos(int id, double timestamp, id_t roadId, int laneId, double offset, double s)
 {
     ObjectState* obj_state = getObjectStatePtrById(id);
 

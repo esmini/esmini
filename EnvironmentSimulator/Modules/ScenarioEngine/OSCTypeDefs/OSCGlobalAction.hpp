@@ -224,7 +224,7 @@ namespace scenarioengine
         {
             int    vehicleID;
             int    outMidAreaCount;
-            int    roadID;
+            id_t   roadID;
             int    lane;
             double simTime;
         };

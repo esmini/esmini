@@ -107,7 +107,7 @@ RoadLink *LaneIndependentRouter::GetNextLink(Node *currentNode, Road *nextRoad)
     else if (currentNode->link->GetElementType() == RoadLink::ElementType::ELEMENT_TYPE_JUNCTION)
     {
         Junction *junction = Position::GetOpenDrive()->GetJunctionById(currentNode->link->GetElementId());
-        int       elementId;
+        id_t      elementId;
         if (junction && junction->GetType() == Junction::JunctionType::DIRECT)
         {
             elementId = junction->GetId();

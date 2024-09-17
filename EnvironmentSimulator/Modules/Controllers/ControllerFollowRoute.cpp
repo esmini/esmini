@@ -426,7 +426,7 @@ WaypointStatus ControllerFollowRoute::GetWaypointStatus(roadmanager::Position ve
         Junction *junction = odr_->GetJunctionById(link->GetElementId());
         for (size_t j = 0; j < static_cast<unsigned int>(junction->GetNoConnectionsFromRoadId(currentRoad->GetId())); j++)
         {
-            int roadId = junction->GetConnectingRoadIdFromIncomingRoadId(currentRoad->GetId(), static_cast<int>(j));
+            id_t roadId = junction->GetConnectingRoadIdFromIncomingRoadId(currentRoad->GetId(), static_cast<int>(j));
             possiblePreviousRoads.push_back(odr_->GetRoadById(roadId));
         }
     }

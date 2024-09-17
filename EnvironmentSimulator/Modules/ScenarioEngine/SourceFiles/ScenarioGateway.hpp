@@ -75,7 +75,7 @@ namespace scenarioengine
         float h;
         float p;
         float r;
-        int   roadId;
+        id_t  roadId;
         int   laneId;
         float offset;
         float t;
@@ -154,7 +154,7 @@ namespace scenarioengine
                     double         wheel_angle,
                     double         wheel_rot,
                     double         rear_axle_z_pos,
-                    int            roadId,
+                    id_t           roadId,
                     int            laneId,
                     double         laneOffset,
                     double         s);
@@ -173,7 +173,7 @@ namespace scenarioengine
                     double         wheel_angle,
                     double         wheel_rot,
                     double         rear_axle_z_pos,
-                    int            roadId,
+                    id_t           roadId,
                     double         lateralOffset,
                     double         s);
 
@@ -280,7 +280,7 @@ namespace scenarioengine
                          double         wheel_angle,
                          double         wheel_rot,
                          double         rear_axle_z_pos,
-                         int            roadId,
+                         id_t           roadId,
                          int            laneId,
                          double         laneOffset,
                          double         s);
@@ -300,13 +300,13 @@ namespace scenarioengine
                          double         wheel_angle,
                          double         wheel_rot,
                          double         rear_axle_z_pos,
-                         int            roadId,
+                         id_t           roadId,
                          double         lateralOffset,
                          double         s);
 
         int updateObjectPos(int id, double timestamp, roadmanager::Position *pos);
-        int updateObjectRoadPos(int id, double timestamp, int roadId, double lateralOffset, double s);
-        int updateObjectLanePos(int id, double timestamp, int roadId, int laneId, double offset, double s);
+        int updateObjectRoadPos(int id, double timestamp, id_t roadId, double lateralOffset, double s);
+        int updateObjectLanePos(int id, double timestamp, id_t roadId, int laneId, double offset, double s);
         int updateObjectWorldPos(int id, double timestamp, double x, double y, double z, double h, double p, double r);
         int updateObjectWorldPosMode(int id, double timestamp, double x, double y, double z, double h, double p, double r, int mode);
         int updateObjectWorldPosXYH(int id, double timestamp, double x, double y, double h);

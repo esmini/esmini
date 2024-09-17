@@ -502,7 +502,7 @@ int OSIReporter::UpdateOSIHostVehicleData(ObjectState *objectState)
     return 0;
 }
 
-int OSIReporter::UpdateOSIStationaryObjectODR(int road_id, roadmanager::RMObject *object)
+int OSIReporter::UpdateOSIStationaryObjectODR(id_t road_id, roadmanager::RMObject *object)
 {
     (void)road_id;
     // Create OSI Stationary Object
@@ -950,7 +950,7 @@ int OSIReporter::UpdateOSIIntersection()
 
     typedef struct
     {
-        int                     id;
+        id_t                    road_id;
         double                  length;
         int                     global_id;
         roadmanager::OSIPoints *osipoints;
@@ -989,7 +989,7 @@ int OSIReporter::UpdateOSIIntersection()
         std::vector<LaneLengthStruct> right_lane_lengths;
         std::vector<LaneLengthStruct> lane_lengths;
         std::vector<LaneLengthStruct> tmp_lane_lengths;
-        std::set<int>                 connected_roads;
+        std::set<id_t>                connected_roads;
         // //add check if it is an intersection or an highway exit/entry
         junction = opendrive->GetJunctionByIdx(i);
 
@@ -1012,7 +1012,7 @@ int OSIReporter::UpdateOSIIntersection()
                 // check if the connecting road has been used before
                 for (unsigned int l = 0; l < lane_lengths.size(); l++)
                 {
-                    if (lane_lengths[l].id == connecting_road->GetId())
+                    if (lane_lengths[l].road_id == connecting_road->GetId())
                     {
                         new_connecting_road = false;
                     }
@@ -1020,7 +1020,7 @@ int OSIReporter::UpdateOSIIntersection()
 
                 for (unsigned int l = 0; l < left_lane_lengths.size(); l++)
                 {
-                    if (left_lane_lengths[l].id == connecting_road->GetId())
+                    if (left_lane_lengths[l].road_id == connecting_road->GetId())
                     {
                         new_connecting_road = false;
                     }
@@ -1094,10 +1094,10 @@ int OSIReporter::UpdateOSIIntersection()
 
                 if (new_connecting_road)
                 {
-                    left_lane_struct.id      = connecting_road->GetId();
-                    left_lane_struct.length  = LARGE_NUMBER;
-                    right_lane_struct.id     = connecting_road->GetId();
-                    right_lane_struct.length = LARGE_NUMBER;
+                    left_lane_struct.road_id  = connecting_road->GetId();
+                    left_lane_struct.length   = LARGE_NUMBER;
+                    right_lane_struct.road_id = connecting_road->GetId();
+                    right_lane_struct.length  = LARGE_NUMBER;
 
                     for (int l_id = 1; l_id <= connecting_road->GetLaneSectionByS(0, 0)->GetNUmberOfLanesRight(); l_id++)
                     {
@@ -1990,7 +1990,7 @@ int OSIReporter::UpdateOSIRoadLane()
                         }
                         // Update lanes that connect with junctions that are not intersections
                         if (road->GetNumberOfRoadTypes() > 0 && road->GetRoadType(0)->road_type_ == roadmanager::Road::RoadType::ROADTYPE_MOTORWAY &&
-                            road->GetJunction() > 0)
+                            road->GetJunction() != ID_UNDEFINED)
                         {
                             roadmanager::LaneLink *link_predecessor = lane->GetLink(roadmanager::LinkType::PREDECESSOR);
                             roadmanager::LaneLink *link_successor   = lane->GetLink(roadmanager::LinkType::SUCCESSOR);
@@ -2010,10 +2010,6 @@ int OSIReporter::UpdateOSIRoadLane()
                                         predecessor_lane_section->GetS());
                                 }
                             }
-                            else
-                            {
-                                LOG("Failed to resolve Predecessor link of lane %d of road %d", lane->GetId(), road->GetId());
-                            }
 
                             if (link_successor)
                             {
@@ -2025,10 +2021,6 @@ int OSIReporter::UpdateOSIRoadLane()
                                         successorRoad->GetId(),
                                         successor_lane_section->GetS());
                                 }
-                            }
-                            else
-                            {
-                                LOG("Failed to resolve Successor link of lane %d of road %d", lane->GetId(), road->GetId());
                             }
 
                             for (int l = 0; l < obj_osi_internal.gt->lane_size(); ++l)

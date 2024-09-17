@@ -332,7 +332,7 @@ static int GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, S
     }
 
     roadmanager::Position pos;
-    if (trailPos.road_id >= 0)
+    if (trailPos.road_id != ID_UNDEFINED)
     {
         pos.XYZ2TrackPos(trailPos.x, trailPos.y, 0.0, roadmanager::Position::PosMode::UNDEFINED, false, trailPos.road_id, false);
     }
@@ -398,7 +398,7 @@ static int GetRoadInfoAtGhostTrailTime(int object_id, float time, SE_RoadInfo *r
     }
 
     roadmanager::Position pos;
-    if (trailPos.road_id >= 0)
+    if (trailPos.road_id != ID_UNDEFINED)
     {
         pos.XYZ2TrackPos(trailPos.x, trailPos.y, 0.0, roadmanager::Position::PosMode::UNDEFINED, false, trailPos.road_id, false);
     }
@@ -1208,7 +1208,7 @@ extern "C"
         return 0;
     }
 
-    SE_DLL_API int SE_ReportObjectRoadPos(int object_id, float timestamp, int roadId, int laneId, float laneOffset, float s)
+    SE_DLL_API int SE_ReportObjectRoadPos(int object_id, float timestamp, id_t roadId, int laneId, float laneOffset, float s)
     {
         Object *obj = nullptr;
         if (getObjectById(object_id, obj) == -1)
@@ -2233,7 +2233,7 @@ extern "C"
         StoryBoardElement::stateChangeCallback = fnPtr;
     }
 
-    SE_DLL_API int SE_GetNumberOfRoadSigns(int road_id)
+    SE_DLL_API int SE_GetNumberOfRoadSigns(id_t road_id)
     {
         if (player != nullptr)
         {
@@ -2246,7 +2246,7 @@ extern "C"
         return 0;
     }
 
-    SE_DLL_API int SE_GetRoadSign(int road_id, int index, SE_RoadSign *road_sign)
+    SE_DLL_API int SE_GetRoadSign(id_t road_id, int index, SE_RoadSign *road_sign)
     {
         static std::string returnString;
 
@@ -2287,7 +2287,7 @@ extern "C"
         return -1;
     }
 
-    SE_DLL_API int SE_GetNumberOfRoadSignValidityRecords(int road_id, int index)
+    SE_DLL_API int SE_GetNumberOfRoadSignValidityRecords(id_t road_id, int index)
     {
         if (player != nullptr)
         {
@@ -2302,7 +2302,7 @@ extern "C"
         return 0;
     }
 
-    SE_DLL_API int SE_GetRoadSignValidityRecord(int road_id, int signIndex, int validityIndex, SE_RoadObjValidity *validity)
+    SE_DLL_API int SE_GetRoadSignValidityRecord(id_t road_id, int signIndex, int validityIndex, SE_RoadObjValidity *validity)
     {
         if (player != nullptr)
         {
@@ -2322,7 +2322,7 @@ extern "C"
         return -1;
     }
 
-    SE_DLL_API const char *SE_GetRoadIdString(int road_id)
+    SE_DLL_API const char *SE_GetRoadIdString(id_t road_id)
     {
         if (player != nullptr)
         {
@@ -2336,7 +2336,7 @@ extern "C"
         return "";
     }
 
-    SE_DLL_API int SE_GetRoadIdFromString(const char *road_id_str)
+    SE_DLL_API id_t SE_GetRoadIdFromString(const char *road_id_str)
     {
         if (player != nullptr)
         {
@@ -2347,10 +2347,10 @@ extern "C"
             }
         }
 
-        return -1;
+        return ID_UNDEFINED;
     }
 
-    SE_DLL_API const char *SE_GetJunctionIdString(int junction_id)
+    SE_DLL_API const char *SE_GetJunctionIdString(id_t junction_id)
     {
         if (player != nullptr)
         {
@@ -2364,7 +2364,7 @@ extern "C"
         return "";
     }
 
-    SE_DLL_API int SE_GetJunctionIdFromString(const char *junction_id_str)
+    SE_DLL_API id_t SE_GetJunctionIdFromString(const char *junction_id_str)
     {
         if (player != nullptr)
         {
@@ -2375,7 +2375,7 @@ extern "C"
             }
         }
 
-        return -1;
+        return ID_UNDEFINED;
     }
 
     SE_DLL_API void SE_ViewerShowFeature(int featureType, bool enable)

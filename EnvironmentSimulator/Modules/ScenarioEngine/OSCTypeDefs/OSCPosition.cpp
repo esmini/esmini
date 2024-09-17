@@ -76,7 +76,7 @@ OSCPositionWorld::OSCPositionWorld(double x, double y, double z, double h, doubl
     position_.SetInertiaPosMode(x, y, z, h, p, r, None2Relative(position_.GetMode(roadmanager::Position::PosModeType::INIT)));
 }
 
-OSCPositionLane::OSCPositionLane(int roadId, int laneId, double s, double offset, OSCOrientation orientation) : OSCPosition(PositionType::LANE)
+OSCPositionLane::OSCPositionLane(id_t roadId, int laneId, double s, double offset, OSCOrientation orientation) : OSCPosition(PositionType::LANE)
 {
     SetPositionModesGeneric(position_, nullptr, &orientation);
 
@@ -133,7 +133,7 @@ OSCPositionLane::OSCPositionLane(int roadId, int laneId, double s, double offset
     position_.SetLanePosMode(roadId, laneId, s, offset, None2Relative(position_.GetMode(roadmanager::Position::PosModeType::INIT)));
 }
 
-OSCPositionRoad::OSCPositionRoad(int roadId, double s, double t, OSCOrientation orientation) : OSCPosition(PositionType::ROAD)
+OSCPositionRoad::OSCPositionRoad(id_t roadId, double s, double t, OSCOrientation orientation) : OSCPosition(PositionType::ROAD)
 {
     if (position_.GetRoadById(roadId) == nullptr)
     {

@@ -12,11 +12,17 @@
 
 #pragma once
 
+#include "stdint.h"
+
 #ifdef WIN32
 #define RM_DLL_API __declspec(dllexport)
 #else
 #define RM_DLL_API  // Leave empty on Mac
 #endif
+
+typedef uint32_t id_t;
+
+#define ID_UNDEFINED 0xFFFFFFFF
 
 typedef struct
 {
@@ -34,8 +40,8 @@ typedef struct
     float p;
     float r;
     float hRelative;
-    int   roadId;
-    int   junctionId;  // -1 if not in a junction
+    id_t  roadId;
+    id_t  junctionId;  // -1 if not in a junction
     int   laneId;
     float laneOffset;
     float s;
@@ -50,8 +56,8 @@ typedef struct
     float          width;
     float          curvature;
     float          speed_limit;
-    int            roadId;      // target position, road ID
-    int            junctionId;  // target position, junction ID. -1 if not in a junction.
+    id_t           roadId;      // target position, road ID
+    id_t           junctionId;  // target position, junction ID. -1 if not in a junction.
     int            laneId;      // target position, lane ID
     float          laneOffset;  // target position, lane offset (lateral distance from lane center)
     float          s;           // target position, s (longitudinal distance along reference line)
@@ -80,7 +86,7 @@ typedef struct
     float       z;            // global z coordinate of sign position
     float       z_offset;     // z offset from road level
     float       h;            // global heading of sign orientation
-    int         roadId;       // road id of sign road position
+    id_t        roadId;       // road id of sign road position
     float       s;            // longitudinal position along road
     float       t;            // lateral position from road reference line
     const char* name;         // sign name, typically used for 3D model filename
@@ -245,42 +251,42 @@ extern "C"
     @param index The index of the road
     @return The ID of the road, -1 on error
     */
-    RM_DLL_API int RM_GetIdOfRoadFromIndex(int index);
+    RM_DLL_API id_t RM_GetIdOfRoadFromIndex(int index);
 
     /**
     Get the lenght of road with specified ID
     @param id The road ID
     @return The length of the road if ID exists, else 0.0
     */
-    RM_DLL_API float RM_GetRoadLength(int id);
+    RM_DLL_API float RM_GetRoadLength(id_t id);
 
     /**
     Get original string ID associated with specified road
     @param road_id The integer ID road
     @return string ID, empty string if not found
     */
-    RM_DLL_API const char* RM_GetRoadIdString(int road_id);
+    RM_DLL_API const char* RM_GetRoadIdString(id_t road_id);
 
     /**
     Get integer road ID associated with specified road string ID
     @param road_id_str The road string ID
     @return road ID, -1 if not found
     */
-    RM_DLL_API int RM_GetRoadIdFromString(const char* road_id_str);
+    RM_DLL_API id_t RM_GetRoadIdFromString(const char* road_id_str);
 
     /**
     Get original string ID associated with specified junction
     @param road_id The integer ID junction
     @return string ID, empty string if not found
     */
-    RM_DLL_API const char* RM_GetJunctionIdString(int junction_id);
+    RM_DLL_API const char* RM_GetJunctionIdString(id_t junction_id);
 
     /**
     Get integer junction ID associated with specified junction string ID
     @param road_id_str The junction string ID
     @return junction ID, -1 if not found
     */
-    RM_DLL_API int RM_GetJunctionIdFromString(const char* junction_id_str);
+    RM_DLL_API id_t RM_GetJunctionIdFromString(const char* junction_id_str);
 
     /**
     Get the number of drivable lanes of specified road
@@ -288,7 +294,7 @@ extern "C"
     @param s The distance along the road at what point to check number of lanes (which can vary along the road)
     @return The number of drivable lanes, -1 indicates error e.g. no roadnetwork loaded
     */
-    RM_DLL_API int RM_GetRoadNumberOfLanes(int roadId, float s);
+    RM_DLL_API int RM_GetRoadNumberOfLanes(id_t roadId, float s);
 
     /**
     Get the number of roads overlapping the given position
@@ -303,7 +309,7 @@ extern "C"
     @parameter index Index of the total returned by GetNumberOfRoadsOverlapping()
     @return Id of specified overlapping road
     */
-    RM_DLL_API int RM_GetOverlappingRoadId(int handle, int index);
+    RM_DLL_API id_t RM_GetOverlappingRoadId(int handle, int index);
 
     /**
     Get the ID of the lane given by index
@@ -312,7 +318,7 @@ extern "C"
     @param s The distance along the road at what point to look up the lane ID
     @return The lane ID, -1 indicates error e.g. no roadnetwork loaded
     */
-    RM_DLL_API int RM_GetLaneIdByIndex(int roadId, int laneIndex, float s);
+    RM_DLL_API int RM_GetLaneIdByIndex(id_t roadId, int laneIndex, float s);
 
     /**
     Set position from road coordinates, world coordinates being calculated
@@ -324,7 +330,7 @@ extern "C"
     @param align If true the heading will be reset to the lane driving direction (typically only at initialization)
     @return >= 0 on success. For all codes see roadmanager.hpp::Position::enum class ReturnCode
     */
-    RM_DLL_API int RM_SetLanePosition(int handle, int roadId, int laneId, float laneOffset, float s, bool align);
+    RM_DLL_API int RM_SetLanePosition(int handle, id_t roadId, int laneId, float laneOffset, float s, bool align);
 
     /**
     Set s (distance) part of a lane position, world coordinates being calculated
@@ -393,7 +399,7 @@ extern "C"
     @param roadId Id of the road to belong to
     @return >= 0 on success. For all codes see roadmanager.hpp::Position::enum class ReturnCode
     */
-    RM_DLL_API int RM_SetRoadId(int handle, int roadId);
+    RM_DLL_API int RM_SetRoadId(int handle, id_t roadId);
 
     /**
     Move position forward along the road. Choose way randomly though any junctions.
@@ -458,7 +464,7 @@ extern "C"
     @param s Longitudinal position along the road
     @return Lane width or 0.0 if lane does not exists or any other error
     */
-    RM_DLL_API float RM_GetLaneWidthByRoadId(int road_id, int lane_id, float s);
+    RM_DLL_API float RM_GetLaneWidthByRoadId(id_t road_id, int lane_id, float s);
 
     /**
     Get type of lane with specified lane id, at current longitudinal position
@@ -489,7 +495,7 @@ extern "C"
     @param s Longitudinal position along the road
     @return Lane type or 0 if lane does not exists or any other error
     */
-    RM_DLL_API int RM_GetLaneTypeByRoadId(int road_id, int lane_id, float s);
+    RM_DLL_API int RM_GetLaneTypeByRoadId(id_t road_id, int lane_id, float s);
 
     /**
     Find out the difference between two position objects, i.e. delta distance (long and lat) and delta laneId
@@ -505,7 +511,7 @@ extern "C"
     @param road_id The road along which to look for signs
     @return Number of road signs, -1 on error
     */
-    RM_DLL_API int RM_GetNumberOfRoadSigns(int road_id);
+    RM_DLL_API int RM_GetNumberOfRoadSigns(id_t road_id);
 
     /**
             Get information on specifed road sign
@@ -514,7 +520,7 @@ extern "C"
             @param road_sign Pointer/reference to a SE_RoadSign struct to be filled in
             @return 0 if successful, -1 if not
     */
-    RM_DLL_API int RM_GetRoadSign(int road_id, int index, RM_RoadSign* road_sign);
+    RM_DLL_API int RM_GetRoadSign(id_t road_id, int index, RM_RoadSign* road_sign);
 
     /**
             Get the number of lane validity records of specified road object/sign
@@ -522,7 +528,7 @@ extern "C"
             @param index Index of the sign. Note: not ID
             @return Number of validity records of specified road sign, -1 if not
     */
-    RM_DLL_API int RM_GetNumberOfRoadSignValidityRecords(int road_id, int index);
+    RM_DLL_API int RM_GetNumberOfRoadSignValidityRecords(id_t road_id, int index);
 
     /**
             Get specified validity record of specifed road sign
@@ -532,7 +538,7 @@ extern "C"
             @param road_sign Pointer/reference to a SE_RoadObjValidity struct to be filled in
             @return 0 if successful, -1 if not
     */
-    RM_DLL_API int RM_GetRoadSignValidityRecord(int road_id, int signIndex, int validityIndex, RM_RoadObjValidity* validity);
+    RM_DLL_API int RM_GetRoadSignValidityRecord(id_t road_id, int signIndex, int validityIndex, RM_RoadObjValidity* validity);
 
     /**
             Get the xodr road file georeference

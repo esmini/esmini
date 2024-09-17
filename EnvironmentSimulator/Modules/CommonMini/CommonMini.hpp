@@ -39,6 +39,9 @@ typedef int64_t __int64;
 #define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
 #endif
 
+using id_t = uint32_t;
+
+#define ID_UNDEFINED                  0xFFFFFFFF
 #define SMALL_NUMBER                  (1E-6)
 #define SMALL_NUMBERF                 (1E-6f)
 #define LARGE_NUMBER                  (1E+10)
