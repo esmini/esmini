@@ -4990,7 +4990,7 @@ id_t Junction::GetConnectingRoadIdFromIncomingRoadId(id_t incomingRoadId, int in
             }
         }
     }
-    return -1;
+    return ID_UNDEFINED;
 }
 
 void Junction::Print() const
@@ -5903,45 +5903,59 @@ void OpenDrive::Print() const
     }
 }
 
-void OpenDrive::EstablishUniqueIds(pugi::xml_node& parent, std::string name, std::vector<std::pair<int, std::string>>& ids)
+void OpenDrive::EstablishUniqueIds(pugi::xml_node& parent, std::string name, std::vector<std::pair<id_t, std::string>>& ids)
 {
     // First loop through all roads to establish unique road ids
-    int next_id = 0;
-    int max_id  = -1;
+    id_t id_next    = 0;
+    id_t id_current = ID_UNDEFINED;
+
     for (auto node : parent.children(name.c_str()))
     {
         std::string id_str = node.attribute("id").value();
-        int         id     = -1;
 
-        if (IsNumber(id_str, 9))
+        uint64_t id_long = atoll(id_str.c_str());
+        if (IsNumber(id_str, 10) && id_long <= ID_MAX)
         {
-            id = atoi(id_str.c_str());
-
             // this id has priority, change any same id
+            id_current = static_cast<id_t>(id_long);
             for (size_t i = 0; i < ids.size(); i++)
             {
-                if (ids[i].first == id)
+                if (ids[i].first == id_current)
                 {
-                    ids[i].first = next_id;
+                    // conflict: replace previously assigned id with new one
+                    LOG("%s internal ID conflict, updating former %s -> %u with %u", name.c_str(), ids[i].second.c_str(), id_current, id_next);
+                    ids[i].first = id_next++;
                 }
+            }
+            if (id_current >= id_next)
+            {
+                id_next = id_current + 1;
             }
         }
         else
         {
-            id = max_id + 1;
-            LOG("Assign internal id %d for %s %s", id, name.c_str(), id_str.c_str());
+            // string ID not a valid integer number, assign new id
+            if (id_next <= ID_MAX)
+            {
+                if (id_long == ID_UNDEFINED)
+                {
+                    LOG("Found %s with reserved ID %u", name.c_str(), ID_UNDEFINED);
+                }
+                LOG("Assign internal id %d for %s %s", id_next, name.c_str(), id_str.c_str());
+            }
+            id_current = id_next++;
         }
 
-        if (id > max_id)
+        if (id_current > ID_MAX)
         {
-            max_id = id;
+            LOG_AND_QUIT("Error: Out of internal IDs while processing %s %s", name.c_str(), id_str.c_str());
         }
 
-        ids.push_back(std::make_pair(id, id_str));
+        ids.push_back(std::make_pair(id_current, id_str));
     }
 }
 
-id_t OpenDrive::LookupIdFromStr(std::vector<std::pair<int, std::string>>& ids, std::string id_str)
+id_t OpenDrive::LookupIdFromStr(std::vector<std::pair<id_t, std::string>>& ids, std::string id_str)
 {
     for (auto& id : ids)
     {
@@ -5951,12 +5965,12 @@ id_t OpenDrive::LookupIdFromStr(std::vector<std::pair<int, std::string>>& ids, s
         }
     }
 
-    return -1;
+    return ID_UNDEFINED;
 }
 
 id_t OpenDrive::LookupRoadIdFromStr(std::string id_str)
 {
-    int id = LookupIdFromStr(road_ids_, id_str);
+    id_t id = LookupIdFromStr(road_ids_, id_str);
 
     if (id == -1)
     {
@@ -5970,12 +5984,12 @@ id_t OpenDrive::LookupJunctionIdFromStr(std::string id_str)
 {
     if (id_str == "-1")
     {
-        return -1;
+        return ID_UNDEFINED;
     }
 
-    int id = LookupIdFromStr(junction_ids_, id_str);
+    id_t id = LookupIdFromStr(junction_ids_, id_str);
 
-    if (id == -1)
+    if (id == ID_UNDEFINED)
     {
         LOG("Failed to lookup junction id from string %s", id_str.c_str());
     }
@@ -10301,7 +10315,7 @@ bool Position::IsInJunction() const
     Road* road = GetOpenDrive()->GetRoadByIdx(track_idx_);
     if (road)
     {
-        return road->GetJunction() != -1;
+        return road->GetJunction() != ID_UNDEFINED;
     }
 
     return false;
@@ -10318,7 +10332,7 @@ id_t Position::GetOverlappingRoadId(int index) const
 {
     if (overlapping_roads.size() == 0 || index >= overlapping_roads.size() || index < 0)
     {
-        return -1;
+        return ID_UNDEFINED;
     }
 
     return overlapping_roads[index];

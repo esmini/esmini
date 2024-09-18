@@ -2875,25 +2875,25 @@ namespace roadmanager
         };
 
         id_t GenerateRoadId();
-        void EstablishUniqueIds(pugi::xml_node &parent, std::string name, std::vector<std::pair<int, std::string>> &ids);
+        void EstablishUniqueIds(pugi::xml_node &parent, std::string name, std::vector<std::pair<id_t, std::string>> &ids);
         id_t LookupRoadIdFromStr(std::string id_str);
         id_t LookupJunctionIdFromStr(std::string id_str);
 
     private:
-        pugi::xml_node                           root_node_;
-        std::vector<Road *>                      road_;
-        std::vector<Junction *>                  junction_;
-        std::vector<Controller>                  controller_;
-        GeoReference                             geo_ref_;
-        std::string                              odr_filename_;
-        std::map<std::string, std::string>       signals_types_;
-        SpeedUnit                                speed_unit_;  // First specified speed unit. MS is default. Undefined if no speed entries.
-        int                                      versionMajor_;
-        int                                      versionMinor_;
-        GlobalFriction                           friction_;
-        std::vector<std::pair<int, std::string>> road_ids_;
-        std::vector<std::pair<int, std::string>> junction_ids_;
-        id_t                                     LookupIdFromStr(std::vector<std::pair<int, std::string>> &ids, std::string id_str);
+        pugi::xml_node                            root_node_;
+        std::vector<Road *>                       road_;
+        std::vector<Junction *>                   junction_;
+        std::vector<Controller>                   controller_;
+        GeoReference                              geo_ref_;
+        std::string                               odr_filename_;
+        std::map<std::string, std::string>        signals_types_;
+        SpeedUnit                                 speed_unit_;  // First specified speed unit. MS is default. Undefined if no speed entries.
+        int                                       versionMajor_;
+        int                                       versionMinor_;
+        GlobalFriction                            friction_;
+        std::vector<std::pair<id_t, std::string>> road_ids_;
+        std::vector<std::pair<id_t, std::string>> junction_ids_;
+        id_t                                      LookupIdFromStr(std::vector<std::pair<id_t, std::string>> &ids, std::string id_str);
     };
 
     typedef struct

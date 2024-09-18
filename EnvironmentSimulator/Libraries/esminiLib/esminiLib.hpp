@@ -22,7 +22,7 @@
 
 typedef uint32_t id_t;
 
-#define ID_UNDEFINED       0xFFFFFFFF
+#define SE_ID_UNDEFINED    0xffffffff
 #define SE_PARAM_NAME_SIZE 32
 
 typedef struct
@@ -92,7 +92,7 @@ typedef struct
     float curvature;      // road curvature at steering target point
     float speed_limit;    // speed limit given by OpenDRIVE type entry
     id_t  roadId;         // target position, road ID
-    id_t  junctionId;     // target position, junction ID (ID_UNDEFINED if not in a junction)
+    id_t  junctionId;     // target position, junction ID (SE_ID_UNDEFINED if not in a junction)
     int   laneId;         // target position, lane ID
     float laneOffset;     // target position, lane offset (lateral distance from lane center)
     float s;              // target position, s (longitudinal distance along reference line)

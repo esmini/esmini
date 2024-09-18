@@ -41,7 +41,8 @@ typedef int64_t __int64;
 
 using id_t = uint32_t;
 
-#define ID_UNDEFINED                  0xFFFFFFFF
+#define ID_UNDEFINED                  0xffffffff
+#define ID_MAX                        0xfffffffe
 #define SMALL_NUMBER                  (1E-6)
 #define SMALL_NUMBERF                 (1E-6f)
 #define LARGE_NUMBER                  (1E+10)

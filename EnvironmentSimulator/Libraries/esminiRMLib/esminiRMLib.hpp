@@ -22,7 +22,7 @@
 
 typedef uint32_t id_t;
 
-#define ID_UNDEFINED 0xFFFFFFFF
+#define RM_ID_UNDEFINED 0xffffffff
 
 typedef struct
 {

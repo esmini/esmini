@@ -4268,6 +4268,117 @@ TEST(PositioningTest, TestElevationMapping)
     delete se;
 }
 
+TEST(StringIds, TestRoadStringIdsEdgeCases)
+{
+    pugi::xml_document  doc;
+    pugi::xml_node      parent = doc.append_child("parent");
+    pugi::xml_node      child1 = parent.append_child("road");
+    pugi::xml_node      child2 = parent.append_child("road");
+    pugi::xml_node      child3 = parent.append_child("road");
+    pugi::xml_attribute attr1  = child1.append_attribute("id");
+    pugi::xml_attribute attr2  = child2.append_attribute("id");
+    pugi::xml_attribute attr3  = child3.append_attribute("id");
+
+    std::vector<std::pair<id_t, std::string>> ids;
+    bool                                      exception_found = false;
+
+    // check overflow
+    attr1.set_value("4294967294");
+    attr2.set_value("4294967295");
+    attr3.set_value("5");
+    try
+    {
+        roadmanager::Position::GetOpenDrive()->EstablishUniqueIds(parent, "road", ids);
+    }
+    catch (const std::exception&)
+    {
+        exception_found = true;
+    }
+    EXPECT_EQ(ids.size(), 1);
+    EXPECT_EQ(ids[0].first, 4294967294);
+    EXPECT_EQ(exception_found, true);
+
+    // Another round with unique and valid numbers
+    ids.clear();
+    exception_found = false;
+    attr1.set_value("1000");
+    attr2.set_value("4294967294");
+    attr3.set_value("22");
+    try
+    {
+        roadmanager::Position::GetOpenDrive()->EstablishUniqueIds(parent, "road", ids);
+    }
+    catch (const std::exception&)
+    {
+        exception_found = true;
+    }
+    EXPECT_EQ(ids.size(), 3);
+    EXPECT_EQ(exception_found, false);
+    EXPECT_EQ(ids[0].first, 1000);
+    EXPECT_EQ(ids[1].first, 4294967294);
+    EXPECT_EQ(ids[2].first, 22);
+
+    // Check latest id wins
+    ids.clear();
+    exception_found = false;
+    attr1.set_value("4294967291");
+    attr2.set_value("4294967291");
+    attr3.set_value("44");
+    try
+    {
+        roadmanager::Position::GetOpenDrive()->EstablishUniqueIds(parent, "road", ids);
+    }
+    catch (const std::exception&)
+    {
+        exception_found = true;
+    }
+    EXPECT_EQ(ids.size(), 3);
+    EXPECT_EQ(exception_found, false);
+    EXPECT_EQ(ids[0].first, 4294967292);
+    EXPECT_EQ(ids[1].first, 4294967291);
+    EXPECT_EQ(ids[2].first, 44);
+
+    // Another round with unique but invalid numbers
+    ids.clear();
+    exception_found = false;
+    attr1.set_value("5");
+    attr2.set_value("12j12");
+    attr3.set_value("4");
+    try
+    {
+        roadmanager::Position::GetOpenDrive()->EstablishUniqueIds(parent, "road", ids);
+    }
+    catch (const std::exception&)
+    {
+        exception_found = true;
+    }
+    EXPECT_EQ(ids.size(), 3);
+    EXPECT_EQ(exception_found, false);
+    EXPECT_EQ(ids[0].first, 5);
+    EXPECT_EQ(ids[1].first, 6);
+    EXPECT_EQ(ids[2].first, 4);
+
+    // Check handling of reserved ID
+    ids.clear();
+    exception_found = false;
+    attr1.set_value("5");
+    attr2.set_value("4294967295");
+    attr3.set_value("3");
+    try
+    {
+        roadmanager::Position::GetOpenDrive()->EstablishUniqueIds(parent, "road", ids);
+    }
+    catch (const std::exception&)
+    {
+        exception_found = true;
+    }
+    EXPECT_EQ(ids.size(), 3);
+    EXPECT_EQ(exception_found, false);
+    EXPECT_EQ(ids[0].first, 5);
+    EXPECT_EQ(ids[1].first, 6);
+    EXPECT_EQ(ids[2].first, 3);
+}
+
 // Uncomment to print log output to console
 // #define LOG_TO_CONSOLE
 

@@ -2949,9 +2949,9 @@ TEST(RoadId, TestStringRoadId)
 
     EXPECT_EQ(odr->GetNumOfRoads(), 16);
 
-    EXPECT_EQ(odr->GetRoadByIdStr("Kalle")->GetId(), 2);
+    EXPECT_EQ(odr->GetRoadByIdStr("Kalle")->GetId(), 3);
     EXPECT_EQ(odr->GetRoadByIdStr("1")->GetId(), 1);
-    EXPECT_EQ(odr->GetRoadByIdStr("2Kalle3")->GetId(), 12);
+    EXPECT_EQ(odr->GetRoadByIdStr("2Kalle3")->GetId(), 128);
     EXPECT_EQ(odr->GetJunctionByIdStr("Junction4")->GetId(), 0);
 
     roadmanager::Position pos;
@@ -2962,15 +2962,15 @@ TEST(RoadId, TestStringRoadId)
     pos.SetLanePos(0, 1, 10.0, 0.0);
     EXPECT_EQ(pos.GetTrackId(), 0);
 
-    pos.SetLanePos(odr->GetRoadByIdStr("3")->GetId(), 1, 10.0, 0.0);
-    EXPECT_EQ(pos.GetTrackId(), 3);
+    pos.SetLanePos(odr->GetRoadByIdStr("2")->GetId(), 1, 10.0, 0.0);
+    EXPECT_EQ(pos.GetTrackId(), 2);
 
     pos.SetLanePos(odr->GetRoadByIdStr("Kalle")->GetId(), 1, 10.0, 0.0);
-    EXPECT_EQ(pos.GetTrackId(), 2);
+    EXPECT_EQ(pos.GetTrackId(), 3);
     EXPECT_EQ(pos.GetJunctionId(), -1);
 
     pos.SetLanePos(odr->GetRoadByIdStr("2Kalle3")->GetId(), 1, 10.0, 0.0);
-    EXPECT_EQ(pos.GetTrackId(), 12);
+    EXPECT_EQ(pos.GetTrackId(), 128);
     EXPECT_EQ(pos.GetJunctionId(), 0);
 
     odr->Clear();

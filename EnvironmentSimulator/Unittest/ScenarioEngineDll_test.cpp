@@ -4251,14 +4251,14 @@ TEST(StringIds, TestRoadStringIds)
         else if (test_state == 1 && SE_GetSimulationTime() > 1.25f)
         {
             SE_GetObjectState(SE_GetId(0), &obj_state);
-            EXPECT_EQ(obj_state.roadId, 9);
+            EXPECT_EQ(obj_state.roadId, 127);
             EXPECT_STREQ(SE_GetRoadIdString(obj_state.roadId), "ConnectingRoad9");
             test_state++;
         }
         else if (test_state == 2 && SE_GetSimulationTime() > 2.0f)
         {
             SE_GetObjectState(SE_GetId(0), &obj_state);
-            EXPECT_EQ(obj_state.roadId, 2);
+            EXPECT_EQ(obj_state.roadId, 3);
             EXPECT_STREQ(SE_GetRoadIdString(obj_state.roadId), "Kalle");
             test_state++;
         }
@@ -4270,15 +4270,31 @@ TEST(StringIds, TestRoadStringIds)
         else if (test_state == 4)
         {
             SE_GetObjectState(SE_GetId(0), &obj_state);
-            EXPECT_EQ(obj_state.roadId, 12);
+            EXPECT_EQ(obj_state.roadId, 128);
             EXPECT_STREQ(SE_GetRoadIdString(obj_state.roadId), "2Kalle3");
             EXPECT_NEAR(obj_state.x, 19.183f, 1e-3);
             EXPECT_NEAR(obj_state.y, -5.431f, 1e-3);
-            break;
+            test_state++;
         }
 
         SE_StepDT(0.1f);
     }
+
+    // check function getting internal ID from string ID
+    EXPECT_EQ(SE_GetRoadIdFromString("Kalle"), 3);
+    EXPECT_EQ(SE_GetRoadIdFromString("16"), 16);
+    EXPECT_EQ(SE_GetRoadIdFromString("4294967295"), 126);
+    EXPECT_EQ(SE_GetRoadIdFromString("ConnectingRoad9"), 127);
+    EXPECT_EQ(SE_GetRoadIdFromString("2Kalle3"), 128);
+    EXPECT_EQ(SE_GetRoadIdFromString("4294967296"), 129);
+    EXPECT_STREQ(SE_GetRoadIdString(3), "Kalle");
+    EXPECT_STREQ(SE_GetRoadIdString(16), "16");
+    EXPECT_STREQ(SE_GetRoadIdString(127), "ConnectingRoad9");
+    EXPECT_STREQ(SE_GetRoadIdString(128), "2Kalle3");
+    EXPECT_STREQ(SE_GetRoadIdString(129), "4294967296");
+
+    EXPECT_EQ(SE_GetJunctionIdFromString("Junction4"), 0);
+    EXPECT_STREQ(SE_GetJunctionIdString(0), "Junction4");
 
     SE_Close();
 }

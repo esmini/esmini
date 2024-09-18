@@ -309,7 +309,7 @@ extern "C"
         }
         else
         {
-            return ID_UNDEFINED;
+            return RM_ID_UNDEFINED;
         }
     }
 
@@ -350,7 +350,7 @@ extern "C"
             }
         }
 
-        return ID_UNDEFINED;
+        return RM_ID_UNDEFINED;
     }
 
     RM_DLL_API const char* RM_GetJunctionIdString(id_t junction_id)
@@ -378,7 +378,7 @@ extern "C"
             }
         }
 
-        return ID_UNDEFINED;
+        return RM_ID_UNDEFINED;
     }
 
     RM_DLL_API int RM_GetRoadNumberOfLanes(id_t roadId, float s)
@@ -430,7 +430,7 @@ extern "C"
     {
         if (odrManager == nullptr || handle >= static_cast<int>(position.size()) || handle < 0)
         {
-            return ID_UNDEFINED;
+            return RM_ID_UNDEFINED;
         }
 
         roadmanager::Position* pos = &position[static_cast<unsigned int>(handle)];
