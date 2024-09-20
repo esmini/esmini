@@ -70,15 +70,15 @@
                                                     <ParameterDeclarations/>
                                                     <Shape>
                                                         <ClothoidSpline>
-                                                            <Segment curvStart="${1.0/$ArcRadius}" length="$ArcLength">
+                                                            <ClothoidSplineSegment curvatureStart="${1.0/$ArcRadius}" curvatureEnd="${1.0/$ArcRadius}" length="$ArcLength">
                                                                 <PositionStart>
                                                                     <RelativeObjectPosition entityRef="Car" dx="0.0" dy="0.0">
                                                                         <Orientation type="relative" h="0.0"/>
                                                                     </RelativeObjectPosition>
                                                                 </PositionStart>
-                                                            </Segment>
-                                                            <Segment curvStart="0.0" length="$LineLength"/>
-                                                            <Segment curvStart="${-1.0/$ArcRadius}" length="$ArcLength"/>
+                                                            </ClothoidSplineSegment>
+                                                            <ClothoidSplineSegment curvatureStart="0.0" curvatureEnd="0.0" length="$LineLength"/>
+                                                            <ClothoidSplineSegment curvatureStart="${-1.0/$ArcRadius}" curvatureEnd="${-1.0/$ArcRadius}" length="$ArcLength"/>
                                                         </ClothoidSpline>
                                                     </Shape>
                                                 </Trajectory>
@@ -111,8 +111,8 @@
                                                     <ParameterDeclarations/>
                                                     <Shape>
                                                         <ClothoidSpline>
-                                                            <Segment curvStart="0.0" curvEnd="-0.08" length="5"/>
-                                                            <Segment curvStart="-0.08" curvEnd="0.12" length="10.5"/>
+                                                            <ClothoidSplineSegment curvatureStart="0.0" curvatureEnd="-0.08" length="5"/>
+                                                            <ClothoidSplineSegment curvatureStart="-0.08" curvatureEnd="0.12" length="10.5"/>
                                                         </ClothoidSpline>
                                                     </Shape>
                                                 </Trajectory>
@@ -145,21 +145,21 @@
                                                     <ParameterDeclarations/>
                                                     <Shape>
                                                         <ClothoidSpline>
-                                                            <Segment curvStart="-0.02" length="10.0">
+                                                            <ClothoidSplineSegment curvatureStart="-0.02" curvatureEnd="-0.02" length="10.0">
                                                                 <PositionStart>
-                                                                    <RelativeObjectPosition entityRef="Car">
+                                                                    <RelativeObjectPosition entityRef="Car" dx="0.0" dy="0.0">
                                                                         <Orientation type="relative" h="0.0"/>
                                                                     </RelativeObjectPosition>
                                                                 </PositionStart>
-                                                            </Segment>
-                                                            <Segment curvStart="0.0" length="2.0" hOffset="0.4">
+                                                            </ClothoidSplineSegment>
+                                                            <ClothoidSplineSegment curvatureStart="0.0" curvatureEnd="0.0" length="2.0" hOffset="0.4">
                                                                 <PositionStart>
                                                                     <RelativeObjectPosition entityRef="Car" dx="9.94" dy="-1.0">
                                                                         <Orientation type="relative" h="0.2"/>
                                                                     </RelativeObjectPosition>
                                                                 </PositionStart>
-                                                            </Segment>
-                                                            <Segment curvEnd="${-0.14}" length="8.9"/>
+                                                            </ClothoidSplineSegment>
+                                                            <ClothoidSplineSegment curvatureStart="0.0" curvatureEnd="-0.14" length="8.9"/>
                                                         </ClothoidSpline>
                                                     </Shape>
                                                 </Trajectory>
@@ -192,16 +192,16 @@
                                                     <ParameterDeclarations/>
                                                     <Shape>
                                                         <ClothoidSpline timeEnd="8.0">
-                                                            <Segment curvStart="0.02" length="10.0" timeStart="0.0">
+                                                            <ClothoidSplineSegment curvatureStart="0.02" curvatureEnd="0.02" length="10.0" timeStart="0.0">
                                                                 <PositionStart>
-                                                                    <RelativeObjectPosition entityRef="Car">
+                                                                    <RelativeObjectPosition entityRef="Car" dx="0.0" dy="0.0">
                                                                         <Orientation type="relative" h="0.0"/>
                                                                     </RelativeObjectPosition>
                                                                 </PositionStart>
-                                                            </Segment>
-                                                            <Segment curvStart="0.0" curvEnd="-0.05" length="14.0" timeStart="2.0"/>
-                                                            <Segment curStart="-0.05" curvEnd="0.05" length="10.0" timeStart="4.0"/>
-                                                            <Segment curvEnd="0.0" length="6.5" timeStart="7.0"/>
+                                                            </ClothoidSplineSegment>
+                                                            <ClothoidSplineSegment curvatureStart="0.0" curvatureEnd="-0.05" length="14.0" timeStart="2.0"/>
+                                                            <ClothoidSplineSegment curvatureStart="-0.05" curvatureEnd="0.05" length="10.0" timeStart="4.0"/>
+                                                            <ClothoidSplineSegment curvatureStart="0.05" curvatureEnd="0.0" length="6.5" timeStart="7.0"/>
                                                         </ClothoidSpline>
                                                     </Shape>
                                                 </Trajectory>

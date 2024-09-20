@@ -72,6 +72,77 @@ void VariableSetAction::Step(double simTime, double dt)
     OSCAction::Stop();
 }
 
+void VariableAddAction::Start(double simTime)
+{
+    OSCParameterDeclarations::ParameterStruct* ps = variables_->getParameterEntry(name_);
+    if (!ps)
+    {
+        return;
+    }
+
+    if (ps->type == OSCParameterDeclarations::ParameterType::PARAM_TYPE_INTEGER)
+    {
+        LOG("Add variable %s += %.0f", name_.c_str(), value_);
+        int v = 0;
+        variables_->getParameterValueInt(name_, v);
+        v += static_cast<int>(value_);
+        variables_->setParameterValue(name_, v);
+    }
+    else if (ps->type == OSCParameterDeclarations::ParameterType::PARAM_TYPE_DOUBLE)
+    {
+        LOG("Add variable %s += %f", name_.c_str(), value_);
+        double v = 0.0;
+        variables_->getParameterValueDouble(name_, v);
+        v += value_;
+        variables_->setParameterValue(name_, v);
+    }
+
+    OSCAction::Start(simTime);
+}
+
+void VariableAddAction::Step(double simTime, double dt)
+{
+    (void)simTime;
+    (void)dt;
+
+    OSCAction::Stop();
+}
+
+void VariableMultiplyByAction::Start(double simTime)
+{
+    OSCParameterDeclarations::ParameterStruct* ps = variables_->getParameterEntry(name_);
+    if (!ps)
+    {
+        return;
+    }
+
+    LOG("Multiply variable %s *= %f", name_.c_str(), value_);
+    if (ps->type == OSCParameterDeclarations::ParameterType::PARAM_TYPE_INTEGER)
+    {
+        int v = 0;
+        variables_->getParameterValueInt(name_, v);
+        v = static_cast<int>(v * value_);
+        variables_->setParameterValue(name_, v);
+    }
+    else if (ps->type == OSCParameterDeclarations::ParameterType::PARAM_TYPE_DOUBLE)
+    {
+        double v = 0.0;
+        variables_->getParameterValueDouble(name_, v);
+        v *= value_;
+        variables_->setParameterValue(name_, v);
+    }
+
+    OSCAction::Start(simTime);
+}
+
+void VariableMultiplyByAction::Step(double simTime, double dt)
+{
+    (void)simTime;
+    (void)dt;
+
+    OSCAction::Stop();
+}
+
 void AddEntityAction::Start(double simTime)
 {
     if (entity_ == nullptr)
@@ -278,13 +349,19 @@ void SwarmTrafficAction::Start(double simTime)
 
     if (vehicle_pool_.size() == 0)
     {
-        if (centralObject_->type_ == Object::Type::VEHICLE)
+        if (centralObject_ && centralObject_->type_ == Object::Type::VEHICLE)
         {
-            vehicle_pool_.push_back(static_cast<Vehicle*>(centralObject_));
+            // Create a copy of central object
+            Vehicle* vehicle = new Vehicle(*static_cast<Vehicle*>(centralObject_));
+
+            // remove any duplicate controller references
+            vehicle->controllers_.clear();
+
+            vehicle_pool_.push_back(vehicle);
         }
         else
         {
-            LOG_AND_QUIT("No vehicles available to populate swarm traffic. Vehicle catalog empty?");
+            LOG("TrafficSwarmAction: No vehicles available to populate swarm traffic. Missing both Vehicle catalog and central vehicle object");
         }
     }
 

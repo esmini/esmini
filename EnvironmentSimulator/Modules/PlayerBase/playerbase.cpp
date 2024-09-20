@@ -107,6 +107,12 @@ ScenarioPlayer::~ScenarioPlayer()
         }
     }
 #endif  // _USE_OSG
+
+    for (auto& s : sensor)
+    {
+        delete s;
+    }
+
     Logger::Inst().SetTimePtr(0);
     if (scenarioEngine)
     {
@@ -412,7 +418,7 @@ void ScenarioPlayer::ViewerFrame(bool init)
                 entity->routewaypoints_->SetWayPoints(obj->pos_.GetRoute());
                 obj->ClearDirtyBits(Object::DirtyBit::ROUTE);
             }
-            else if (entity->routewaypoints_->group_->getNumChildren() && obj->pos_.GetRoute() == nullptr)
+            else if (entity->routewaypoints_->group_all_wp_->getNumChildren() && obj->pos_.GetRoute() == nullptr)
             {
                 entity->routewaypoints_->SetWayPoints(nullptr);
             }
@@ -1273,6 +1279,7 @@ int ScenarioPlayer::Init()
     // use an ArgumentParser object to manage the program arguments.
     opt.AddOption("osc", "OpenSCENARIO filename (required) - if path includes spaces, enclose with \"\"", "filename");
     opt.AddOption("aa_mode", "Anti-alias mode=number of multisamples (subsamples, 0=off, 4=default)", "mode");
+    opt.AddOption("align_routepositions", "Align t-axis of route positions to the direction of the route");
     opt.AddOption("bounding_boxes", "Show entities as bounding boxes (toggle modes on key ',') ");
     opt.AddOption("capture_screen", "Continuous screen capture. Warning: Many jpeg files will be created");
     opt.AddOption(
@@ -1290,6 +1297,7 @@ int ScenarioPlayer::Init()
                   "Additional custom light source <x,y,z,intensity> intensity range 0..1 (multiple occurrences supported)",
                   "position and intensity");
     opt.AddOption("disable_controllers", "Disable controllers");
+    opt.AddOption("disable_pline_interpolation", "Do not apply orientation interpolation of polyline trajectories");
     opt.AddOption("disable_log", "Prevent logfile from being created");
     opt.AddOption("disable_stdout", "Prevent messages to stdout");
     opt.AddOption("enforce_generate_model", "Generate road 3D model even if SceneGraphFile is specified");

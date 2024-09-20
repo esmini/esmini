@@ -9,7 +9,7 @@ if(WIN32)
         FATAL_ERROR)
 else()
     cmake_minimum_required(
-        VERSION 2.8.12
+        VERSION 2.8.12...3.5
         FATAL_ERROR)
 endif()
 
@@ -90,6 +90,11 @@ set(ESMINI_BUILD_VERSION
     "N/A - client build"
     CACHE STRING
           "Esmini CI Build Version")
+
+set(CMAKE_BUILD_TYPE
+    "Release"
+    CACHE STRING
+          "build mode")
 
 # ############################### Setting project rules ############################################################
 
@@ -184,7 +189,7 @@ if(NOT
         googletest
         ${EXTERNALS_GOOGLETEST_PATH}
         ${EXTERNALS_GOOGLETEST_OS_SPECIFIC_PATH}
-        ${GTEST_PACKAGE_URL})
+        "${GTEST_PACKAGE_URL}")
 endif()
 
 # ############################### Loading external packages ##########################################################
@@ -222,7 +227,10 @@ add_subdirectory(EnvironmentSimulator)
 
 if(NOT
    EXISTS
-   "test/OSC-ALKS-scenarios/.git")
+   "test/OSC-ALKS-scenarios/.git"
+   OR NOT
+      EXISTS
+      "test/OSC-NCAP-scenarios/.git")
     execute_process(
         COMMAND git submodule update --init
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})

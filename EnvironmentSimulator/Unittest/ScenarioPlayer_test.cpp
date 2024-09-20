@@ -171,11 +171,13 @@ TEST(AlignmentTest, TestPositionAlignmentVariants)
     EXPECT_NEAR(player->scenarioEngine->entities_.object_[0]->pos_.GetZ(), 6.919, 1E-3);
 
     // Ensure absolute update mode preserves z level
-    player->scenarioEngine->entities_.object_[0]->pos_.SetMode(roadmanager::Position::PosModeType::UPDATE, roadmanager::Position::PosMode::Z_ABS);
+    player->scenarioGateway->setObjectPositionMode(0,
+                                                   static_cast<int>(roadmanager::Position::PosModeType::UPDATE),
+                                                   static_cast<int>(roadmanager::Position::PosMode::Z_ABS));
+    player->Frame(0.0);
     EXPECT_EQ(player->scenarioEngine->entities_.object_[0]->pos_.GetMode(roadmanager::Position::PosModeType::UPDATE) &
                   roadmanager::Position::PosMode::Z_MASK,
               roadmanager::Position::PosMode::Z_ABS);
-    player->Frame(0.0);
     player->scenarioGateway->updateObjectWorldPosMode(0, 0.0, 221.381, -22.974, 3.0, 5.575, 0.0, 0.0, roadmanager::Position::PosMode::Z_ABS);
     player->scenarioGateway->updateObjectSpeed(0, 0.0, 15.0);
     player->Frame(0.1);
@@ -235,7 +237,9 @@ TEST(AlignmentTest, TestPosMode)
     roadmanager::Position& pos  = player->scenarioEngine->entities_.object_[0]->pos_;
     roadmanager::Road*     road = player->GetODRManager()->GetRoadByIdx(0);
 
-    EXPECT_EQ(pos.GetMode(Position::PosModeType::SET), Position::GetModeDefault(Position::PosModeType::SET));
+    EXPECT_EQ(pos.GetMode(Position::PosModeType::SET),
+              roadmanager::Position::PosMode::Z_REL | roadmanager::Position::PosMode::H_ABS | roadmanager::Position::PosMode::P_REL |
+                  roadmanager::Position::PosMode::R_REL);
     EXPECT_EQ(pos.GetMode(Position::PosModeType::UPDATE), Position::GetModeDefault(Position::PosModeType::UPDATE));
 
     // Test some operations
@@ -280,9 +284,9 @@ TEST(AlignmentTest, TestPosMode)
     pos.SetRoll(0.1);
     pos.SetLanePos(road->GetId(), -1, 150.0, 0.0);
     player->scenarioEngine->entities_.object_[0]->SetSpeed(0.0);
-    EXPECT_NEAR(pos.GetH(), 1.5, 1e-3);
-    EXPECT_NEAR(pos.GetP(), 0.0, 1e-3);
-    EXPECT_NEAR(pos.GetR(), 0.1, 1e-3);
+    EXPECT_NEAR(GetAngleDifference(pos.GetH(), 1.5), 0.0, 1e-3);
+    EXPECT_NEAR(GetAngleDifference(pos.GetP(), 0.0), 0.0, 1e-3);
+    EXPECT_NEAR(GetAngleDifference(pos.GetR(), 0.1), 0.0, 1e-3);
     player->Frame(0.1);
 
     pos.SetLanePos(road->GetId(), -1, 140.0, 0.0);
@@ -435,8 +439,70 @@ TEST(Controllers, TestSeparateControllersOnLatLong)
         player->Frame(dt);
     }
 
-    delete se;
+    delete player;
 }
+
+#ifdef _USE_OSI
+
+TEST(OSI, TestOrientation)
+{
+    const char* args[] =
+        {"esmini", "--osc", "../../../EnvironmentSimulator/Unittest/xosc/curve_slope_simple.xosc", "--headless", "--osi_file", "--disable_stdout"};
+    int             argc   = sizeof(args) / sizeof(char*);
+    double          dt     = 0.1f;
+    ScenarioPlayer* player = new ScenarioPlayer(argc, const_cast<char**>(args));
+
+    ASSERT_NE(player, nullptr);
+    int retval = player->Init();
+    ASSERT_EQ(retval, 0);
+
+    ScenarioEngine* se = player->scenarioEngine;
+    ASSERT_EQ(se->entities_.object_.size(), 1);
+    Object* obj = se->entities_.object_[0];
+
+    const osi3::GroundTruth* osi_gt_ptr = reinterpret_cast<const osi3::GroundTruth*>(player->osiReporter->GetOSIGroundTruthRaw());
+    ASSERT_NE(osi_gt_ptr, nullptr);
+
+    // OpenSCENARIO position
+    EXPECT_NEAR(obj->pos_.GetX(), 100.0576, 1e-3);
+    EXPECT_NEAR(obj->pos_.GetY(), 82.7423, 1e-3);
+    EXPECT_NEAR(obj->pos_.GetZ(), -0.8108, 1e-3);
+    EXPECT_NEAR(obj->pos_.GetH(), 1.4000, 1e-3);
+    EXPECT_NEAR(obj->pos_.GetP(), 0.0, 1e-3);
+    EXPECT_NEAR(obj->pos_.GetR(), 0.48599, 1e-3);
+
+    // OSI position
+    EXPECT_NEAR(osi_gt_ptr->moving_object(0).base().position().x(), 100.6408, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->moving_object(0).base().position().y(), 84.0624, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->moving_object(0).base().position().z(), -0.1477, 1e-3);
+    EXPECT_NEAR(GetAngleDifference(osi_gt_ptr->moving_object(0).base().orientation().yaw(), 1.4000), 0.0, 1e-3);
+    EXPECT_NEAR(GetAngleDifference(osi_gt_ptr->moving_object(0).base().orientation().pitch(), 0.0), 0.0, 1e-3);
+    EXPECT_NEAR(GetAngleDifference(osi_gt_ptr->moving_object(0).base().orientation().roll(), 0.48599), 0.0, 1e-3);
+
+    // move forward to the uphill part
+    obj->MoveAlongS(170.0);
+    player->Frame(dt);
+
+    // OpenSCENARIO position
+    EXPECT_NEAR(obj->pos_.GetX(), 6.8274, 1e-3);
+    EXPECT_NEAR(obj->pos_.GetY(), 201.3051, 1e-3);
+    EXPECT_NEAR(obj->pos_.GetZ(), 12.2125, 1e-3);
+    EXPECT_NEAR(obj->pos_.GetH(), 3.0742, 1e-3);
+    EXPECT_NEAR(obj->pos_.GetP(), 5.9978, 1e-3);
+    EXPECT_NEAR(obj->pos_.GetR(), 0.0, 1e-3);
+
+    // OSI position
+    EXPECT_NEAR(osi_gt_ptr->moving_object(0).base().position().x(), 5.6977, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->moving_object(0).base().position().y(), 201.3813, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->moving_object(0).base().position().z(), 13.3263, 1e-3);
+    EXPECT_NEAR(GetAngleDifference(osi_gt_ptr->moving_object(0).base().orientation().yaw(), 3.0742), 0.0, 1e-3);
+    EXPECT_NEAR(GetAngleDifference(osi_gt_ptr->moving_object(0).base().orientation().pitch(), 5.9978), 0.0, 1e-3);
+    EXPECT_NEAR(GetAngleDifference(osi_gt_ptr->moving_object(0).base().orientation().roll(), 0.0), 0.0, 1e-3);
+
+    delete player;
+}
+
+#endif  // _USE_OSI
 
 // #define LOG_TO_CONSOLE
 

@@ -25,25 +25,23 @@ namespace scenarioengine
 
     struct ObjectInfoStruct
     {
-        int            id;
-        int            model_id;
-        std::string    model3d;
-        int            obj_type;      // 0=None, 1=Vehicle, 2=Pedestrian, 3=MiscObj (see Object::Type enum)
-        int            obj_category;  // sub type for vehicle, pedestrian and miscobj
-        int            obj_role;      // role for vehicle and pedestrian
-        int            ctrl_type;     // See Controller::Type enum
-        double         timeStamp;
-        char           name[NAME_LEN];
-        double         speed;
-        double         wheel_angle;       // Only used for vehicle
-        double         wheel_rot;         // Only used for vehicle
-        double         rear_axle_z_pos;   // z coordinate of the middle of rear axle under neutral load conditions
-        double         front_axle_x_pos;  // x coordinate of the middle of front axle under neutral load conditions
-        double         front_axle_z_pos;  // z coordinate of the middle of front axle under neutral load conditions
-        OSCBoundingBox boundingbox;
-        int            scaleMode;       // 0=None, 1=BoundingBoxToModel, 2=ModelToBoundingBox (see enum EntityScaleMode)
-        int            visibilityMask;  // bitmask according to Object::Visibility (1 = Graphics, 2 = Traffic, 4 = Sensors)
-        double         friction[4];     // friction coefficient for wheels front_left, rear_left, rear_right, front_right
+        int                    id;
+        int                    model_id;
+        std::string            model3d;
+        int                    obj_type;      // 0=None, 1=Vehicle, 2=Pedestrian, 3=MiscObj (see Object::Type enum)
+        int                    obj_category;  // sub type for vehicle, pedestrian and miscobj
+        int                    obj_role;      // role for vehicle and pedestrian
+        int                    ctrl_type;     // See Controller::Type enum
+        double                 timeStamp;
+        char                   name[NAME_LEN];
+        double                 speed;
+        double                 rear_axle_z_pos;   // z coordinate of the middle of rear axle under neutral load conditions
+        double                 front_axle_x_pos;  // x coordinate of the middle of front axle under neutral load conditions
+        double                 front_axle_z_pos;  // z coordinate of the middle of front axle under neutral load conditions
+        OSCBoundingBox         boundingbox;
+        int                    scaleMode;       // 0=None, 1=BoundingBoxToModel, 2=ModelToBoundingBox (see enum EntityScaleMode)
+        int                    visibilityMask;  // bitmask according to Object::Visibility (1 = Graphics, 2 = Traffic, 4 = Sensors)
+        std::vector<WheelData> wheel_data;      // make room for maximum number of wheels
     };
 
     struct ObjectStateStruct
@@ -77,7 +75,7 @@ namespace scenarioengine
         float h;
         float p;
         float r;
-        int   roadId;
+        id_t  roadId;
         int   laneId;
         float offset;
         float t;
@@ -156,7 +154,7 @@ namespace scenarioengine
                     double         wheel_angle,
                     double         wheel_rot,
                     double         rear_axle_z_pos,
-                    int            roadId,
+                    id_t           roadId,
                     int            laneId,
                     double         laneOffset,
                     double         s);
@@ -175,7 +173,7 @@ namespace scenarioengine
                     double         wheel_angle,
                     double         wheel_rot,
                     double         rear_axle_z_pos,
-                    int            roadId,
+                    id_t           roadId,
                     double         lateralOffset,
                     double         s);
 
@@ -282,7 +280,7 @@ namespace scenarioengine
                          double         wheel_angle,
                          double         wheel_rot,
                          double         rear_axle_z_pos,
-                         int            roadId,
+                         id_t           roadId,
                          int            laneId,
                          double         laneOffset,
                          double         s);
@@ -302,13 +300,13 @@ namespace scenarioengine
                          double         wheel_angle,
                          double         wheel_rot,
                          double         rear_axle_z_pos,
-                         int            roadId,
+                         id_t           roadId,
                          double         lateralOffset,
                          double         s);
 
         int updateObjectPos(int id, double timestamp, roadmanager::Position *pos);
-        int updateObjectRoadPos(int id, double timestamp, int roadId, double lateralOffset, double s);
-        int updateObjectLanePos(int id, double timestamp, int roadId, int laneId, double offset, double s);
+        int updateObjectRoadPos(int id, double timestamp, id_t roadId, double lateralOffset, double s);
+        int updateObjectLanePos(int id, double timestamp, id_t roadId, int laneId, double offset, double s);
         int updateObjectWorldPos(int id, double timestamp, double x, double y, double z, double h, double p, double r);
         int updateObjectWorldPosMode(int id, double timestamp, double x, double y, double z, double h, double p, double r, int mode);
         int updateObjectWorldPosXYH(int id, double timestamp, double x, double y, double h);
@@ -322,7 +320,7 @@ namespace scenarioengine
         int updateObjectWheelRotation(int id, double timestamp, double wheelRotation);
         int updateObjectVisibilityMask(int id, int visibilityMask);
         int updateObjectControllerType(int id, int controllerType);
-        int updateObjectFrictionCoefficients(int id, double friction[4]);
+        int updateObjectWheelData(int id, std::vector<WheelData> wheel_data);
 
         /**
         Specify if and how position object will align to the road. The setting is done for individual components:

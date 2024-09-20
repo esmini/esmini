@@ -1567,11 +1567,11 @@ TEST(RoadTest, RoadWidthDrivingLanes)
 TEST(TrajectoryTest, PolyLineBase_YawInterpolation)
 {
     PolyLineBase pline;
-    TrajVertex   v = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1, 0.0, 0.0, 0.0, 0.0, 0, 0};
+    TrajVertex   v = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, ID_UNDEFINED, 0.0, 0.0, 0.0, 0.0, 0};
 
     // Simple case - no interpolation
-    pline.AddVertex({0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1, 0.0, 0.0, 0.0, 0.0, Position::PosMode::H_ABS, 0});
-    pline.AddVertex({std::nan(""), 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, -1, 0.0, 0.0, 0.0, 0.0, Position::PosMode::H_ABS, 0});
+    pline.AddVertex({0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, ID_UNDEFINED, 0.0, 0.0, 0.0, 0.0, Position::PosMode::H_ABS});
+    pline.AddVertex({std::nan(""), 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, ID_UNDEFINED, 0.0, 0.0, 0.0, 0.0, Position::PosMode::H_ABS});
     pline.Evaluate(0.5, v);
 
     EXPECT_NEAR(v.x, 0.5, 1e-5);
@@ -1580,10 +1580,9 @@ TEST(TrajectoryTest, PolyLineBase_YawInterpolation)
 
     // Same but with interpolation
     pline.Reset(true);
-    pline.AddVertex(
-        {std::nan(""), 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1, 0.0, 0.0, 0.0, 0.0, Position::PosMode::H_ABS, InterpolationComponent::INTERPOLATE_HEADING});
-    pline.AddVertex(
-        {std::nan(""), 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, -1, 0.0, 0.0, 0.0, 0.0, Position::PosMode::H_ABS, InterpolationComponent::INTERPOLATE_HEADING});
+    pline.interpolation_mode_ = PolyLineBase::InterpolationMode::INTERPOLATE_SEGMENT;
+    pline.AddVertex({std::nan(""), 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, ID_UNDEFINED, 0.0, 0.0, 0.0, 0.0, Position::PosMode::H_ABS});
+    pline.AddVertex({std::nan(""), 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, ID_UNDEFINED, 0.0, 0.0, 0.0, 0.0, Position::PosMode::H_ABS});
     pline.Evaluate(0.5, v);
 
     EXPECT_NEAR(v.x, 0.5, 1e-5);
@@ -1592,22 +1591,9 @@ TEST(TrajectoryTest, PolyLineBase_YawInterpolation)
 
     // Wrap around case 1
     pline.Reset(true);
-    pline.AddVertex({std::nan(""),
-                     0.0,
-                     0.0,
-                     0.0,
-                     2 * M_PI - 0.01,
-                     0.0,
-                     0.0,
-                     -1,
-                     0.0,
-                     0.0,
-                     0.0,
-                     0.0,
-                     Position::PosMode::H_ABS,
-                     InterpolationComponent::INTERPOLATE_HEADING});
-    pline.AddVertex(
-        {std::nan(""), 1.0, 0.0, 0.0, 0.09, 0.0, 0.0, -1, 0.0, 0.0, 0.0, 0.0, Position::PosMode::H_ABS, InterpolationComponent::INTERPOLATE_HEADING});
+    pline.interpolation_mode_ = PolyLineBase::InterpolationMode::INTERPOLATE_SEGMENT;
+    pline.AddVertex({std::nan(""), 0.0, 0.0, 0.0, 2 * M_PI - 0.01, 0.0, 0.0, ID_UNDEFINED, 0.0, 0.0, 0.0, 0.0, Position::PosMode::H_ABS});
+    pline.AddVertex({std::nan(""), 1.0, 0.0, 0.0, 0.09, 0.0, 0.0, ID_UNDEFINED, 0.0, 0.0, 0.0, 0.0, Position::PosMode::H_ABS});
     pline.Evaluate(0.5, v);
 
     EXPECT_NEAR(v.x, 0.5, 1e-5);
@@ -1616,34 +1602,9 @@ TEST(TrajectoryTest, PolyLineBase_YawInterpolation)
 
     // Wrap around case 2
     pline.Reset(true);
-    pline.AddVertex({std::nan(""),
-                     10.0,
-                     10.0,
-                     0.0,
-                     0.1,
-                     0.0,
-                     0.0,
-                     -1,
-                     0.0,
-                     0.0,
-                     0.0,
-                     0.0,
-                     Position::PosMode::H_ABS,
-                     InterpolationComponent::INTERPOLATE_HEADING});
-    pline.AddVertex({std::nan(""),
-                     10.0,
-                     0.0,
-                     0.0,
-                     -0.5,
-                     0.0,
-                     0.0,
-                     -1,
-                     0.0,
-                     0.0,
-                     0.0,
-                     0.0,
-                     Position::PosMode::H_ABS,
-                     InterpolationComponent::INTERPOLATE_HEADING});
+    pline.interpolation_mode_ = PolyLineBase::InterpolationMode::INTERPOLATE_SEGMENT;
+    pline.AddVertex({std::nan(""), 10.0, 10.0, 0.0, 0.1, 0.0, 0.0, ID_UNDEFINED, 0.0, 0.0, 0.0, 0.0, Position::PosMode::H_ABS});
+    pline.AddVertex({std::nan(""), 10.0, 0.0, 0.0, -0.5, 0.0, 0.0, ID_UNDEFINED, 0.0, 0.0, 0.0, 0.0, Position::PosMode::H_ABS});
     pline.Evaluate(5.0, v);
 
     EXPECT_NEAR(v.x, 10.0, 1e-5);
@@ -1652,10 +1613,9 @@ TEST(TrajectoryTest, PolyLineBase_YawInterpolation)
 
     // Wrap around case 3
     pline.Reset(true);
-    pline.AddVertex(
-        {std::nan(""), 0.0, 0.0, 0.0, 0.1, 0.0, 0.0, -1, 0.0, 0.0, 0.0, 0.0, Position::PosMode::H_ABS, InterpolationComponent::INTERPOLATE_HEADING});
-    pline.AddVertex(
-        {std::nan(""), 0.0, 10.0, 0.0, 8.1, 0.0, 0.0, -1, 0.0, 0.0, 0.0, 0.0, Position::PosMode::H_ABS, InterpolationComponent::INTERPOLATE_HEADING});
+    pline.interpolation_mode_ = PolyLineBase::InterpolationMode::INTERPOLATE_SEGMENT;
+    pline.AddVertex({std::nan(""), 0.0, 0.0, 0.0, 0.1, 0.0, 0.0, ID_UNDEFINED, 0.0, 0.0, 0.0, 0.0, Position::PosMode::H_ABS});
+    pline.AddVertex({std::nan(""), 0.0, 10.0, 0.0, 8.1, 0.0, 0.0, ID_UNDEFINED, 0.0, 0.0, 0.0, 0.0, Position::PosMode::H_ABS});
     pline.Evaluate(5.0, v);
 
     EXPECT_NEAR(v.x, 0.0, 1e-5);
@@ -1818,9 +1778,9 @@ TEST(Route, TestAssignRoute)
     ASSERT_NE(odr, nullptr);
     EXPECT_EQ(odr->GetNumOfRoads(), 16);
 
-    const int              nrWaypoints = 6;
-    std::shared_ptr<Route> route       = std::make_shared<Route>();
-    Position               routepos[nrWaypoints];
+    const int nrWaypoints = 6;
+    Route    *route       = new Route;
+    Position  routepos[nrWaypoints];
     routepos[0].SetLanePos(0, 1, 10.0, 0);
     routepos[0].SetHeadingRelative(M_PI);
     routepos[1].SetLanePos(0, 1, 7.0, 0);  // Add extra waypoint on first road - should be removed
@@ -1831,7 +1791,7 @@ TEST(Route, TestAssignRoute)
     routepos[5].SetLanePos(1, -1, 1.0, 0);  // Add extra waypoint on same road - previous should be ignored
     for (int i = 0; i < nrWaypoints; i++)
     {
-        route->AddWaypoint(&routepos[i]);
+        route->AddWaypoint(routepos[i]);
     }
 
     EXPECT_EQ(route->minimal_waypoints_.size(), 3);
@@ -2989,9 +2949,9 @@ TEST(RoadId, TestStringRoadId)
 
     EXPECT_EQ(odr->GetNumOfRoads(), 16);
 
-    EXPECT_EQ(odr->GetRoadByIdStr("Kalle")->GetId(), 2);
+    EXPECT_EQ(odr->GetRoadByIdStr("Kalle")->GetId(), 3);
     EXPECT_EQ(odr->GetRoadByIdStr("1")->GetId(), 1);
-    EXPECT_EQ(odr->GetRoadByIdStr("2Kalle3")->GetId(), 12);
+    EXPECT_EQ(odr->GetRoadByIdStr("2Kalle3")->GetId(), 128);
     EXPECT_EQ(odr->GetJunctionByIdStr("Junction4")->GetId(), 0);
 
     roadmanager::Position pos;
@@ -3002,15 +2962,15 @@ TEST(RoadId, TestStringRoadId)
     pos.SetLanePos(0, 1, 10.0, 0.0);
     EXPECT_EQ(pos.GetTrackId(), 0);
 
-    pos.SetLanePos(odr->GetRoadByIdStr("3")->GetId(), 1, 10.0, 0.0);
-    EXPECT_EQ(pos.GetTrackId(), 3);
+    pos.SetLanePos(odr->GetRoadByIdStr("2")->GetId(), 1, 10.0, 0.0);
+    EXPECT_EQ(pos.GetTrackId(), 2);
 
     pos.SetLanePos(odr->GetRoadByIdStr("Kalle")->GetId(), 1, 10.0, 0.0);
-    EXPECT_EQ(pos.GetTrackId(), 2);
+    EXPECT_EQ(pos.GetTrackId(), 3);
     EXPECT_EQ(pos.GetJunctionId(), -1);
 
     pos.SetLanePos(odr->GetRoadByIdStr("2Kalle3")->GetId(), 1, 10.0, 0.0);
-    EXPECT_EQ(pos.GetTrackId(), 12);
+    EXPECT_EQ(pos.GetTrackId(), 128);
     EXPECT_EQ(pos.GetJunctionId(), 0);
 
     odr->Clear();

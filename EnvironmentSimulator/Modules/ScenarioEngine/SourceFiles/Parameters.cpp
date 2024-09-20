@@ -520,10 +520,6 @@ void Parameters::parseParameterDeclarations(pugi::xml_node declarationsNode, OSC
 
         if (type_str == "integer" || type_str == "int")
         {
-            if (type_str == "int")
-            {
-                LOG("INFO: int type should renamed into integer - accepting int this time.");
-            }
             param.type       = OSCParameterDeclarations::ParameterType::PARAM_TYPE_INTEGER;
             param.value._int = strtoi(param.value._string);
         }

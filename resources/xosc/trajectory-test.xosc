@@ -143,7 +143,7 @@
                                             <TimeReference>
                                                 <Timing domainAbsoluteRelative="relative" offset="0" scale="1"/>
                                             </TimeReference>
-                                            <TrajectoryFollowingMode followingMode="follow"/>
+                                            <TrajectoryFollowingMode followingMode="position"/>
                                         </FollowTrajectoryAction>
                                     </RoutingAction>
                                 </PrivateAction>
@@ -181,7 +181,7 @@
                                             <TimeReference>
                                                 <Timing domainAbsoluteRelative="relative" offset="0" scale="1"/>
                                             </TimeReference>
-                                            <TrajectoryFollowingMode followingMode="position"/>
+                                            <TrajectoryFollowingMode followingMode="follow"/>
                                         </FollowTrajectoryAction>
                                     </RoutingAction>
                                 </PrivateAction>
@@ -197,7 +197,7 @@
                                   </Condition>
                                </ConditionGroup>
                             </StartTrigger>
-                        </Event>                        
+                        </Event>
                         <Event maximumExecutionCount="1" name="FollowTrajectoryNurbsEvent" priority="overwrite">
                             <Action name="FollowTrajectoryNurbsAction">
                                 <PrivateAction>
@@ -226,12 +226,12 @@
                                                             <Position>
                                                                 <RelativeLanePosition dLane="-1" ds="180" entityRef="Target" offset="1.535"/>
                                                             </Position>
-                                                        </ControlPoint>                                                        
+                                                        </ControlPoint>
                                                         <ControlPoint time="12.2" weight="1.0">
                                                             <Position>
                                                                 <RelativeLanePosition dLane="-1" ds="220" entityRef="Target" offset="0.0"/>
                                                             </Position>
-                                                        </ControlPoint>                                                        
+                                                        </ControlPoint>
                                                         <Knot value="0.0" />
                                                         <Knot value="0.0" />
                                                         <Knot value="0.0" />
@@ -310,7 +310,7 @@
                                                      state="endTransition"/>
                  </ByValueCondition>
               </Condition>
-           </ConditionGroup>        
+           </ConditionGroup>
         </StopTrigger>
     </Storyboard>
 </OpenSCENARIO>

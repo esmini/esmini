@@ -6,18 +6,19 @@ on:
     # * is a special character in YAML so you have to quote this string
     - cron: '0 3 * * *'
 
+  workflow_dispatch:
+
 jobs:
   sanitize:
     strategy:
       matrix:
-        configuration: [Debug, Release]
+        configuration: [Release]
         os: [ubuntu-20.04]
-        #ubuntu-latest
 
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v3.3.0
+      - uses: actions/checkout@v4.1.7
         with:
           ref: dev
           submodules: true
@@ -25,7 +26,7 @@ jobs:
       - uses: ./.github/actions/setup_tools_shared
 
       - name: Cache
-        uses: actions/cache@v3.2.5
+        uses: actions/cache@v4.0.2
         with:
           path: |
             externals/googletest
@@ -35,27 +36,15 @@ jobs:
             resources/models
           key: ${{ runner.os }}-external-resources
 
-      # TODO: We need a way to not fetch existing dependencies because of cached ones. This command currently asks for user input
-      #- name: Fetch external dependencies/resources
-      #  run: python3 main.py fetch dependency
-
-      #- name: Generate OpenDrive interface
-      #  run: python3 main.py generate opendrive
-
       - name: CMake Configure - Ubuntu
         if: runner.os == 'Linux'
         shell: pwsh
         run: cmake "--preset=ci-sanitize-$("${{ matrix.os }}".split("-")[0])" -DCMAKE_BUILD_TYPE:STRING=${{ matrix.configuration }}
 
-      - name: CMake Configure - macOS
-        if: runner.os == 'macOS'
-        shell: pwsh
-        run: cmake "--preset=ci-sanitize-$("${{ matrix.os }}".split("-")[0])" -DCMAKE_BUILD_TYPE:STRING=${{ matrix.configuration }} -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
-
       - name: CMake Build
         run: cmake --build build --config ${{ matrix.configuration }} --target install -j 2
 
       - name: Run Tests
-        uses: GabrielBB/xvfb-action@v1.6
+        uses: coactions/setup-xvfb@v1.0.1
         with:
-          run: ./scripts/run_tests.sh ${{ matrix.configuration }} true
+          run: ./scripts/run_tests.sh ${{ matrix.configuration }} false 120  # extended timeout allowing for slow execution

@@ -292,6 +292,16 @@ void OSCPrivateAction::TransitionDynamics::UpdateRate()
     }
 }
 
+AssignRouteAction::~AssignRouteAction()
+{
+    object_->pos_.SetRoute(nullptr);
+    if (route_ != nullptr)
+    {
+        delete route_;
+        route_ = nullptr;
+    }
+}
+
 void AssignRouteAction::Start(double simTime)
 {
     route_->setObjName(object_->GetName());
@@ -336,7 +346,7 @@ void FollowTrajectoryAction::Start(double simTime)
     reverse_ = (object_->GetSpeed() < 0.0);
 
     traj_->Freeze(following_mode_, object_->GetSpeed(), &object_->pos_);
-    object_->pos_.SetTrajectory(traj_.get());
+    object_->pos_.SetTrajectory(traj_);
 
     object_->pos_.SetTrajectoryS(initialDistanceOffset_);
     time_ = traj_->GetTimeAtS(initialDistanceOffset_);
@@ -351,6 +361,15 @@ void FollowTrajectoryAction::Start(double simTime)
     }
 }
 
+FollowTrajectoryAction::~FollowTrajectoryAction()
+{
+    if (traj_)
+    {
+        delete traj_;
+        traj_ = nullptr;
+    }
+}
+
 void FollowTrajectoryAction::End()
 {
     OSCAction::End();
@@ -359,9 +378,6 @@ void FollowTrajectoryAction::End()
     {
         return;
     }
-
-    // Disconnect trajectory
-    object_->pos_.SetTrajectory(0);
 }
 
 void FollowTrajectoryAction::Step(double simTime, double dt)
@@ -496,27 +512,40 @@ void FollowTrajectoryAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
     }
     if (traj_->shape_->type_ == roadmanager::Shape::ShapeType::CLOTHOID)
     {
-        roadmanager::ClothoidShape* cl = static_cast<roadmanager::ClothoidShape*>(traj_->shape_.get());
+        roadmanager::ClothoidShape* cl = static_cast<roadmanager::ClothoidShape*>(traj_->shape_);
         cl->pos_.ReplaceObjectRefs(&obj1->pos_, &obj2->pos_);
     }
     else if (traj_->shape_->type_ == roadmanager::Shape::ShapeType::POLYLINE)
     {
-        roadmanager::PolyLineShape* pl = static_cast<roadmanager::PolyLineShape*>(traj_->shape_.get());
+        roadmanager::PolyLineShape* pl = static_cast<roadmanager::PolyLineShape*>(traj_->shape_);
         for (size_t i = 0; i < pl->vertex_.size(); i++)
         {
-            pl->vertex_[i].pos_.ReplaceObjectRefs(&obj1->pos_, &obj2->pos_);
+            pl->vertex_[i].pos_->ReplaceObjectRefs(&obj1->pos_, &obj2->pos_);
         }
+    }
+}
+
+AcquirePositionAction::~AcquirePositionAction()
+{
+    if (route_ != nullptr)
+    {
+        delete route_;
     }
 }
 
 void AcquirePositionAction::Start(double simTime)
 {
     // Resolve route
-    route_.reset(new roadmanager::Route);
+    if (route_ != nullptr)
+    {
+        delete route_;
+        route_ = nullptr;
+    }
+    route_ = new roadmanager::Route;
     route_->setName("AcquirePositionRoute");
     route_->setObjName(object_->GetName());
 
-    route_->AddWaypoint(&object_->pos_);
+    route_->AddWaypoint(object_->pos_);
     route_->AddWaypoint(target_position_);
 
     object_->pos_.SetRoute(route_);
@@ -696,7 +725,7 @@ void LatLaneChangeAction::Start(double simTime)
     else if (target_->type_ == Target::Type::RELATIVE_LANE)
     {
         // Find out target lane relative referred vehicle
-        Object* ref_entity = (static_cast<TargetRelative*>(target_.get()))->object_;
+        Object* ref_entity = (static_cast<TargetRelative*>(target_))->object_;
         if (ref_entity != nullptr)
         {
             target_lane_id_ = ref_entity->pos_.GetLaneId() + target_->value_ * (IsAngleForward(ref_entity->pos_.GetHRelative()) ? 1 : -1);
@@ -839,7 +868,6 @@ void LatLaneChangeAction::Step(double simTime, double dt)
         object_->pos_.SetHeadingRelativeRoadDirection((IsAngleForward(object_->pos_.GetHRelative()) ? 1 : -1) * SIGN(object_->pos_.GetLaneId()) *
                                                       heading_agnostic_);
     }
-    object_->pos_.EvaluateZHPR(object_->pos_.GetMode(roadmanager::Position::PosModeType::UPDATE));
 
     if (retval == roadmanager::Position::ReturnCode::ERROR_END_OF_ROAD)
     {
@@ -864,9 +892,9 @@ void LatLaneChangeAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
 
     if (target_->type_ == Target::Type::RELATIVE_LANE)
     {
-        if ((static_cast<TargetRelative*>(target_.get()))->object_ == obj1)
+        if ((static_cast<TargetRelative*>(target_))->object_ == obj1)
         {
-            (static_cast<TargetRelative*>(target_.get()))->object_ = obj2;
+            (static_cast<TargetRelative*>(target_))->object_ = obj2;
         }
     }
 }
@@ -1783,6 +1811,7 @@ void TeleportAction::Start(double simTime)
         SE_Env::Inst().SetGhostMode(GhostMode::RESTART);
 
         object_->trail_.Reset(true);
+        object_->trail_.SetInterpolationMode(roadmanager::PolyLineBase::InterpolationMode::INTERPOLATE_SEGMENT);
 
         // The following code will copy speed from the Ego that ghost relates to
         if (object_->ghost_Ego_ != nullptr)
@@ -1804,9 +1833,15 @@ void TeleportAction::Start(double simTime)
         return;  // position controlled by tow vehicle
     }
 
+    // layout trajectory if defined
+    if (position_.GetTrajectory() != nullptr)
+    {
+        position_.GetTrajectory()->Freeze(FollowingMode::POSITION, 0);
+    }
+
     // consider any assigned route for relative positions
-    position_->CopyRouteSharedPtr(&object_->pos_);
-    object_->pos_.TeleportTo(position_);
+    position_.CopyRoute(object_->pos_);
+    object_->pos_.TeleportTo(&position_);
 
     if (!object_->TowVehicle() && object_->TrailerVehicle())
     {
@@ -1835,7 +1870,7 @@ void TeleportAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
         object_ = obj2;
     }
 
-    position_->ReplaceObjectRefs(&obj1->pos_, &obj2->pos_);
+    position_.ReplaceObjectRefs(&obj1->pos_, &obj2->pos_);
 }
 
 void ConnectTrailerAction::Start(double simTime)
@@ -1998,6 +2033,9 @@ void SynchronizeAction::PrintStatus(const char* custom_msg)
 
 void SynchronizeAction::Start(double simTime)
 {
+    target_position_master_.EvaluateRelation();
+    target_position_.EvaluateRelation();
+
     // resolve steady state -> translate into dist
     if (steadyState_.type_ == SteadyStateType::STEADY_STATE_TIME)
     {
@@ -2008,7 +2046,7 @@ void SynchronizeAction::Start(double simTime)
     {
         // Find out distance between steady state position and final destination
         roadmanager::PositionDiff diff;
-        target_position_->Delta(steadyState_.pos_, diff);
+        target_position_.Delta(&steadyState_.pos_, diff);
         steadyState_.dist_ = diff.ds;
         steadyState_.type_ = SteadyStateType::STEADY_STATE_DIST;
     }
@@ -2019,6 +2057,24 @@ void SynchronizeAction::Start(double simTime)
     {
         // longitudinal motion controlled elsewhere
         return;
+    }
+}
+
+SynchronizeAction::~SynchronizeAction()
+{
+    if (target_position_master_.GetTrajectory() != nullptr)
+    {
+        delete target_position_master_.GetTrajectory();
+    }
+
+    if (target_position_.GetTrajectory() != nullptr)
+    {
+        delete target_position_.GetTrajectory();
+    }
+
+    if (steadyState_.type_ == SteadyStateType::STEADY_STATE_POS && steadyState_.pos_.GetTrajectory() != nullptr)
+    {
+        delete steadyState_.pos_.GetTrajectory();
     }
 }
 
@@ -2035,25 +2091,50 @@ void SynchronizeAction::Step(double simTime, double dt)
     }
 
     // Calculate distance along road/route
-    double                    masterDist, dist;
+    double                    masterDist = LARGE_NUMBER;
+    double                    dist       = LARGE_NUMBER;
     roadmanager::PositionDiff diff;
 
-    if (master_object_->pos_.GetTrajectory() || !master_object_->pos_.Delta(target_position_master_, diff))
+    int retval = -1;
+    if (master_object_->pos_.GetTrajectory())
     {
-        // No road network path between master vehicle and master target pos - using world coordinate distance
-        diff.ds = GetLengthOfLine2D(master_object_->pos_.GetX(),
-                                    master_object_->pos_.GetY(),
-                                    target_position_master_->GetX(),
-                                    target_position_master_->GetY());
+        retval = master_object_->pos_.Distance(&target_position_master_,
+                                               roadmanager::CoordinateSystem::CS_TRAJECTORY,
+                                               roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL,
+                                               masterDist);
     }
-    masterDist = fabs(diff.ds);
 
-    if (object_->pos_.GetTrajectory() || !object_->pos_.Delta(target_position_, diff))
+    if (retval == -1 || masterDist > LARGE_NUMBER - SMALL_NUMBER)
     {
-        // No road network path between action vehicle and action target pos - using world coordinate distance
-        diff.ds = GetLengthOfLine2D(object_->pos_.GetX(), object_->pos_.GetY(), target_position_->GetX(), target_position_->GetY());
+        if (!master_object_->pos_.Delta(&target_position_master_, diff))
+        {
+            // No road network path between master vehicle and master target pos - using world coordinate distance
+            diff.ds = GetLengthOfLine2D(master_object_->pos_.GetX(),
+                                        master_object_->pos_.GetY(),
+                                        target_position_master_.GetX(),
+                                        target_position_master_.GetY());
+        }
+        masterDist = fabs(diff.ds);
     }
-    dist = fabs(diff.ds);
+
+    retval = -1;
+    if (object_->pos_.GetTrajectory())
+    {
+        retval = object_->pos_.Distance(&target_position_,
+                                        roadmanager::CoordinateSystem::CS_TRAJECTORY,
+                                        roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL,
+                                        dist);
+    }
+
+    if (retval == -1 || dist > LARGE_NUMBER - SMALL_NUMBER)
+    {
+        if (!object_->pos_.Delta(&target_position_, diff))
+        {
+            // No road network path between action vehicle and action target pos - using world coordinate distance
+            diff.ds = GetLengthOfLine2D(object_->pos_.GetX(), object_->pos_.GetY(), target_position_.GetX(), target_position_.GetY());
+        }
+        dist = fabs(diff.ds);
+    }
 
     // Done when distance increases, indicating that destination just has been reached or passed
     if (dist < tolerance_ + SMALL_NUMBER)

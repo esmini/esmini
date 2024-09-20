@@ -23,6 +23,10 @@ elif sys.platform == "darwin":
     env['DYLD_LIBRARY_PATH'] = ':'.join([env.get('DYLD_LIBRARY_PATH', ''), os.path.join(ESMINI_PATH, 'bin')])
 
 
+def set_timeout(timeout):
+    global TIMEOUT
+    TIMEOUT = timeout
+
 def run_scenario(osc_filename = None, esmini_arguments = None, xosc_str = None, application = None):
 
     if os.path.exists(LOG_FILENAME):

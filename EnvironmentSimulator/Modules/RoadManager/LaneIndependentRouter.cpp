@@ -107,7 +107,7 @@ RoadLink *LaneIndependentRouter::GetNextLink(Node *currentNode, Road *nextRoad)
     else if (currentNode->link->GetElementType() == RoadLink::ElementType::ELEMENT_TYPE_JUNCTION)
     {
         Junction *junction = Position::GetOpenDrive()->GetJunctionById(currentNode->link->GetElementId());
-        int       elementId;
+        id_t      elementId;
         if (junction && junction->GetType() == Junction::JunctionType::DIRECT)
         {
             elementId = junction->GetId();
@@ -407,6 +407,7 @@ std::vector<Position> LaneIndependentRouter::GetWaypoints(std::vector<Node> path
     }
 
     waypoints.push_back(target);
+
     return waypoints;
 }
 
@@ -416,7 +417,7 @@ double RoadCalculations::CalcAverageSpeed(Road *road)
     if (roadTypeCount == 0)
     {
         // Assume road is rural
-        LOG("Warning: Road %d has no road types (and speed limit)", road->GetId());
+        // LOG("Info: Road %d has no road type and speed limit, assuming rural", road->GetId());
         return roadTypeToSpeed[Road::RoadType::ROADTYPE_RURAL];
     }
 

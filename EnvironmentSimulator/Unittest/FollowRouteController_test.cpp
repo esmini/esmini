@@ -28,6 +28,11 @@ TEST_F(FollowRouteControllerTest, PerformSingleLaneChange)
 {
     ScenarioEngine *se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/perform_single_lane_change.xosc");
     ASSERT_NE(se, nullptr);
+    if (se->GetInitStatus() != 0)
+    {
+        delete se;
+        GTEST_FAIL();
+    }
 
     Position start(0, -1, 10, 0);
     Position target(3, -2, 20, 0);
@@ -44,9 +49,9 @@ TEST_F(FollowRouteControllerTest, PerformSingleLaneChange)
     }
 
     Position finalPos = se->entities_.object_[0]->pos_;
-    ASSERT_EQ(target.GetTrackId(), finalPos.GetTrackId());
-    ASSERT_EQ(target.GetLaneId(), finalPos.GetLaneId());
-    ASSERT_NEAR(target.GetS(), finalPos.GetS(), 10);
+    EXPECT_EQ(target.GetTrackId(), finalPos.GetTrackId());
+    EXPECT_EQ(target.GetLaneId(), finalPos.GetLaneId());
+    EXPECT_NEAR(target.GetS(), finalPos.GetS(), 10);
 
     delete se;
 }
@@ -55,6 +60,11 @@ TEST_F(FollowRouteControllerTest, FollowRouteWithLaneChanges)
 {
     ScenarioEngine *se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/follow_route_with_lane_change.xosc");
     ASSERT_NE(se, nullptr);
+    if (se->GetInitStatus() != 0)
+    {
+        delete se;
+        GTEST_FAIL();
+    }
 
     Position target(2, -1, 20, 0);
 
@@ -79,6 +89,11 @@ TEST_F(FollowRouteControllerTest, FollowRouteWithCollisionRisk)
 {
     ScenarioEngine *se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/follow_route_collision_risk.xosc");
     ASSERT_NE(se, nullptr);
+    if (se->GetInitStatus() != 0)
+    {
+        delete se;
+        GTEST_FAIL();
+    }
 
     Position target(5, -3, 20, 0);
 
@@ -103,6 +118,11 @@ TEST_F(FollowRouteControllerTest, FollowRouteBlockedByCollisionRisk)
 {
     ScenarioEngine *se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/follow_route_blocked_by_collision_risk.xosc");
     ASSERT_NE(se, nullptr);
+    if (se->GetInitStatus() != 0)
+    {
+        delete se;
+        GTEST_FAIL();
+    }
 
     // Can't change lane due to collision
     // Vehicle stops when reached target road on wrong lane
@@ -128,6 +148,11 @@ TEST_F(FollowRouteControllerTest, FollowRouteMedium)
 {
     ScenarioEngine *se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/follow_route_controller_test_medium.xosc");
     ASSERT_NE(se, nullptr);
+    if (se->GetInitStatus() != 0)
+    {
+        delete se;
+        GTEST_FAIL();
+    }
 
     Position target(196, 1, 50, 0);
 
@@ -152,6 +177,11 @@ TEST_F(FollowRouteControllerTest, FollowRouteNoPath)
 {
     ScenarioEngine *se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/follow_route_no_path.xosc");
     ASSERT_NE(se, nullptr);
+    if (se->GetInitStatus() != 0)
+    {
+        delete se;
+        GTEST_FAIL();
+    }
 
     double dt = 0.1;
     // Perform one step so that the object position is set
@@ -182,6 +212,11 @@ TEST_F(FollowRouteControllerTest, FollowRouteMultipleScenarioWaypoints)
 {
     ScenarioEngine *se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/follow_route_multiple_scenario_waypoints.xosc");
     ASSERT_NE(se, nullptr);
+    if (se->GetInitStatus() != 0)
+    {
+        delete se;
+        GTEST_FAIL();
+    }
 
     std::vector<Position> scenarioWaypoints = {Position(284, -1, 10, 0), Position(196, 1, 10, 0), Position(202, 2, 40, 0)};
     std::vector<Position> passedPositions;
@@ -220,9 +255,15 @@ TEST_F(FollowRouteControllerTest, FollowRouteSetParameters)
 {
     ScenarioEngine *se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/follow_route_set_parameters.xosc");
     ASSERT_NE(se, nullptr);
+    if (se->GetInitStatus() != 0)
+    {
+        delete se;
+        GTEST_FAIL();
+    }
 
     scenarioengine::ControllerFollowRoute *controller = static_cast<scenarioengine::ControllerFollowRoute *>(
         se->entities_.object_[0]->GetAssignedControllerOftype(scenarioengine::Controller::Type::CONTROLLER_TYPE_FOLLOW_ROUTE));
+    ASSERT_NE(controller, nullptr);
     ASSERT_NEAR(controller->GetMinDistForCollision(), 69, 0.01);
     ASSERT_NEAR(controller->GetLaneChangeTime(), 420, 0.01);
 
@@ -248,7 +289,7 @@ int main(int argc, char **argv)
     }
 #endif
 
-    // testing::GTEST_FLAG(filter) = "*TestOptionHandling*";
+    // testing::GTEST_FLAG(filter) = "*PerformSingleLaneChange*";
 
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

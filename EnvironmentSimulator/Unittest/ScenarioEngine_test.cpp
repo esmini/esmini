@@ -5,11 +5,13 @@
 #include <stdexcept>
 #include <array>
 
+#include "CommonMini.hpp"
 #include "ScenarioEngine.hpp"
 #include "ScenarioReader.hpp"
 #include "ControllerUDPDriver.hpp"
 #include "ControllerLooming.hpp"
 #include "ControllerALKS_R157SM.hpp"
+#include "ControllerInteractive.hpp"
 #include "OSCParameterDistribution.hpp"
 #include "pugixml.hpp"
 #include "simple_expr.h"
@@ -38,12 +40,12 @@ TEST(DistanceTest, CalcDistanceVariations)
     EXPECT_NEAR(dist, 10.0, 1e-5);
 
     // same point but measure now in road coordinates
-    Object obj0(Object::Type::VEHICLE);
+    Vehicle obj0;
     obj0.boundingbox_.center_     = {1.0, 0.0, 0.0};
     obj0.boundingbox_.dimensions_ = {2.0, 2.0, 2.0};
     obj0.pos_                     = pos0;
 
-    Object obj1(Object::Type::VEHICLE);
+    Vehicle obj1;
     obj1.pos_                     = pos1;
     obj1.boundingbox_.center_     = {1.0, 0.0, 0.0};
     obj1.boundingbox_.dimensions_ = {2.0, 2.0, 2.0};
@@ -137,7 +139,7 @@ TEST(DistanceTest, CalcDistancePoint)
     Position pos0 = Position(0, -1, 400.0, 0);
     pos0.SetHeading(0.0);
 
-    Object obj0(Object::Type::VEHICLE);
+    Vehicle obj0;
     obj0.boundingbox_.center_     = {1.0, 0.0, 0.0};
     obj0.boundingbox_.dimensions_ = {2.0, 2.0, 2.0};
     obj0.pos_                     = pos0;
@@ -180,7 +182,7 @@ TEST(DistanceTest, CalcDistancePointAcrossIntersection)
     Position pos0 = Position(0, 1, 10.0, 0);
     pos0.SetHeading(0.0);
 
-    Object obj0(Object::Type::VEHICLE);
+    Vehicle obj0;
     obj0.boundingbox_.center_     = {1.0, 0.0, 0.0};
     obj0.boundingbox_.dimensions_ = {2.0, 2.0, 2.0};
     obj0.pos_                     = pos0;
@@ -205,13 +207,13 @@ TEST(DistanceTest, CalcEntityDistanceFreespace)
     ASSERT_NE(odr, nullptr);
     EXPECT_EQ(odr->GetNumOfRoads(), 1);
 
-    Object obj0(Object::Type::VEHICLE);
+    Vehicle obj0;
     obj0.boundingbox_.center_     = {1.5, 0.0, 0.0};
     obj0.boundingbox_.dimensions_ = {2.0, 5.0, 2.0};
     obj0.pos_.SetLanePos(1, -1, 20.0, 0);
     obj0.pos_.SetHeading(0.0);
 
-    Object obj1(Object::Type::VEHICLE);
+    Vehicle obj1;
     obj1.boundingbox_.center_     = {1.5, 0.0, 0.0};
     obj1.boundingbox_.dimensions_ = {2.0, 5.0, 2.0};
     obj1.pos_.SetLanePos(1, -1, 30.0, 0);
@@ -269,6 +271,370 @@ TEST(DistanceTest, CalcEntityDistanceFreespace)
     EXPECT_NEAR(latDist, 1.204715, 1e-5);
     EXPECT_NEAR(longDist, 4.64299, 1e-5);
     EXPECT_NEAR(dist = obj0.FreeSpaceDistance(&obj1, &latDist, &longDist), 5.876278, 1e-3);
+}
+
+TEST(DistanceTest, DistanceWithTrailers)
+{
+    double dt       = 0.1;
+    double distance = LARGE_NUMBER;
+
+    ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/distance_with_trailers.xosc");
+
+    ASSERT_NE(se, nullptr);
+    EXPECT_EQ(se->entities_.object_.size(), 7);
+
+    // initialize
+    se->step(0.0);
+    se->prepareGroundTruth(0.0);
+
+    ASSERT_EQ(se->entities_.object_[2]->GetType(), Object::Type::VEHICLE);
+    ASSERT_EQ(se->entities_.object_[0]->GetType(), Object::Type::VEHICLE);
+    ASSERT_EQ(se->entities_.object_[6]->GetType(), Object::Type::VEHICLE);
+    ASSERT_EQ(se->entities_.object_[3]->GetType(), Object::Type::VEHICLE);
+
+    Vehicle* car1            = static_cast<Vehicle*>(se->entities_.object_[2]);
+    Vehicle* truck1          = static_cast<Vehicle*>(se->entities_.object_[0]);
+    Vehicle* car2            = static_cast<Vehicle*>(se->entities_.object_[6]);
+    Vehicle* truck2          = static_cast<Vehicle*>(se->entities_.object_[3]);
+    Vehicle* truck2_trailer2 = static_cast<Vehicle*>(se->entities_.object_[5]);
+
+    // first check some reference point distance variants
+
+    // euclidian reference point distance between car1 and truck1
+    car1->Distance(truck1, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, false, distance);
+    EXPECT_NEAR(distance, 68.887, 1e-3);
+    truck1->Distance(car1, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, false, distance);
+    EXPECT_NEAR(distance, 68.887, 1e-3);
+
+    // longitudinal reference point distance, in entity coordinate system, between car1 and truck1
+    car1->Distance(truck1, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, false, distance);
+    EXPECT_NEAR(distance, 66.230, 1e-3);
+    truck1->Distance(car1, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, false, distance);
+    EXPECT_NEAR(distance, 67.207, 1e-3);
+
+    // longitudinal road reference point distance between car1 and truck1
+    car1->Distance(truck1, roadmanager::CoordinateSystem::CS_ROAD, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, false, distance);
+    EXPECT_NEAR(distance, 70.0, 1e-3);
+    truck1->Distance(car1, roadmanager::CoordinateSystem::CS_ROAD, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, false, distance);
+    EXPECT_NEAR(distance, 70.0, 1e-3);
+
+    // longitudinal lane reference point distance between car1 and truck1
+    car1->Distance(truck1, roadmanager::CoordinateSystem::CS_LANE, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, false, distance);
+    EXPECT_NEAR(distance, 70.0, 1e-3);
+    truck1->Distance(car1, roadmanager::CoordinateSystem::CS_LANE, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, false, distance);
+    EXPECT_NEAR(distance, 70.0, 1e-3);
+
+    // lateral road reference point distance between car1 and truck1
+    car1->Distance(truck1, roadmanager::CoordinateSystem::CS_ROAD, roadmanager::RelativeDistanceType::REL_DIST_LATERAL, false, distance);
+    EXPECT_NEAR(distance, -3.07, 1e-3);
+    truck1->Distance(car1, roadmanager::CoordinateSystem::CS_ROAD, roadmanager::RelativeDistanceType::REL_DIST_LATERAL, false, distance);
+    EXPECT_NEAR(distance, 3.07, 1e-3);
+
+    // lateral lane reference point distance between car1 and truck1
+    car1->Distance(truck1, roadmanager::CoordinateSystem::CS_LANE, roadmanager::RelativeDistanceType::REL_DIST_LATERAL, false, distance);
+    EXPECT_NEAR(distance, -3.07, 1e-3);
+    truck1->Distance(car1, roadmanager::CoordinateSystem::CS_LANE, roadmanager::RelativeDistanceType::REL_DIST_LATERAL, false, distance);
+    EXPECT_NEAR(distance, 3.07, 1e-3);
+
+    // then check some freespace variants
+
+    // euclidian freespace distance between car1 and truck1
+    car1->Distance(truck1, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, true, distance);
+    EXPECT_NEAR(distance, 59.6319, 1e-3);
+    truck1->Distance(car1, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, true, distance);
+    EXPECT_NEAR(distance, 59.6319, 1e-3);
+
+    // longitudinal freespace distance, in entity coordinate system, between car1 and truck1
+    car1->Distance(truck1, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    EXPECT_NEAR(distance, 57.2550, 1e-3);
+    truck1->Distance(car1, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    EXPECT_NEAR(distance, 58.2370, 1e-3);
+
+    // longitudinal road freespace distance between car1 and truck1
+    car1->Distance(truck1, roadmanager::CoordinateSystem::CS_ROAD, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    EXPECT_NEAR(distance, 60.9302, 1e-3);
+    truck1->Distance(car1, roadmanager::CoordinateSystem::CS_ROAD, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    EXPECT_NEAR(distance, 60.9302, 1e-3);
+
+    // longitudinal lane freespace distance between car1 and truck1
+    car1->Distance(truck1, roadmanager::CoordinateSystem::CS_LANE, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    EXPECT_NEAR(distance, 60.9302, 1e-3);
+    truck1->Distance(car1, roadmanager::CoordinateSystem::CS_LANE, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    EXPECT_NEAR(distance, 60.9302, 1e-3);
+
+    // lateral road freespace distance between car1 and truck1
+    car1->Distance(truck1, roadmanager::CoordinateSystem::CS_ROAD, roadmanager::RelativeDistanceType::REL_DIST_LATERAL, true, distance);
+    EXPECT_NEAR(distance, -0.692, 1e-3);
+    truck1->Distance(car1, roadmanager::CoordinateSystem::CS_ROAD, roadmanager::RelativeDistanceType::REL_DIST_LATERAL, true, distance);
+    EXPECT_NEAR(distance, 0.692, 1e-3);
+
+    // lateral lane freespace distance between car1 and truck1
+    car1->Distance(truck1, roadmanager::CoordinateSystem::CS_LANE, roadmanager::RelativeDistanceType::REL_DIST_LATERAL, true, distance);
+    EXPECT_NEAR(distance, -0.692, 1e-3);
+    truck1->Distance(car1, roadmanager::CoordinateSystem::CS_LANE, roadmanager::RelativeDistanceType::REL_DIST_LATERAL, true, distance);
+    EXPECT_NEAR(distance, 0.692, 1e-3);
+
+    // move forward in time a bit
+    while (se->getSimulationTime() < 1.2 - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }
+
+    EXPECT_NEAR(car1->pos_.GetX(), 513.193, 1e-3);
+    EXPECT_NEAR(car1->pos_.GetY(), 2.423, 1e-3);
+
+    // euclidian freespace distance between car1 and truck1
+    car1->Distance(truck1, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, true, distance);
+    EXPECT_NEAR(distance, 24.3254, 1e-3);
+    truck1->Distance(car1, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, true, distance);
+    EXPECT_NEAR(distance, 24.3254, 1e-3);
+
+    // longitudinal freespace distance, in entity coordinate system, between car1 and truck1
+    car1->Distance(truck1, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    EXPECT_NEAR(distance, 24.3250, 1e-3);
+    truck1->Distance(car1, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    EXPECT_NEAR(distance, 24.1240, 1e-3);
+
+    // move forward until car1 is very close to truck1
+    while (se->getSimulationTime() < 2.0 - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }
+
+    EXPECT_NEAR(car1->pos_.GetX(), 489.205, 1e-3);
+    EXPECT_NEAR(car1->pos_.GetY(), 1.535, 1e-3);
+
+    // euclidian freespace distance between car1 and truck1
+    car1->Distance(truck1, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, true, distance);
+    EXPECT_NEAR(distance, 0.8050, 1e-3);
+    truck1->Distance(car1, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, true, distance);
+    EXPECT_NEAR(distance, 0.8050, 1e-3);
+
+    // longitudinal freespace distance, in entity coordinate system, between car1 and truck1, should now be same since straight road segment
+    car1->Distance(truck1, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    EXPECT_NEAR(distance, 0.2349, 1e-3);
+    truck1->Distance(car1, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    EXPECT_NEAR(distance, 0.2349, 1e-3);
+
+    // move forward until car1 is overlapping truck1 longitudinally
+    while (se->getSimulationTime() < 2.1 - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }
+
+    // euclidian freespace distance between car1 and truck1
+    car1->Distance(truck1, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, true, distance);
+    EXPECT_NEAR(distance, 0.7700, 1e-3);
+    truck1->Distance(car1, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, true, distance);
+    EXPECT_NEAR(distance, 0.7700, 1e-3);
+
+    // longitudinal freespace distance, in entity coordinate system, between car1 and truck1
+    car1->Distance(truck1, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    EXPECT_NEAR(distance, 0.0, 1e-3);
+    truck1->Distance(car1, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    EXPECT_NEAR(distance, 0.0, 1e-3);
+
+    // move forward until car1 is behind truck1 longitudinally
+    while (se->getSimulationTime() < 2.7 - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }
+
+    // euclidian freespace distance between car1 and truck1
+    car1->Distance(truck1, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, true, distance);
+    EXPECT_NEAR(distance, -1.7937, 1e-3);
+    truck1->Distance(car1, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, true, distance);
+    EXPECT_NEAR(distance, -1.7937, 1e-3);
+
+    // longitudinal freespace distance, in entity coordinate system, between car1 and truck1
+    car1->Distance(truck1, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    EXPECT_NEAR(distance, -1.6200, 1e-3);
+    truck1->Distance(car1, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    EXPECT_NEAR(distance, -1.6200, 1e-3);
+
+    // move forward until car2 is close to truck2 longitudinally
+    while (se->getSimulationTime() < 3.0 - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }
+
+    // euclidian freespace distance between car2 and truck2
+    car2->Distance(truck2, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, true, distance);
+    EXPECT_NEAR(distance, 1.0500, 1e-3);
+    truck2->Distance(car2, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, true, distance);
+    EXPECT_NEAR(distance, 1.0500, 1e-3);
+
+    // longitudinal freespace distance, in entity coordinate system, between car2 and truck2
+    // image: https://drive.google.com/file/d/12FFP8DBfNpJgCpjdIpk7_kbd6xczWy79/view?usp=sharing
+    car2->Distance(truck2, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    EXPECT_NEAR(distance, 0.4782, 1e-3);
+    truck2->Distance(car2, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    EXPECT_NEAR(distance, 0.8017, 1e-3);
+
+    // move forward until car2 is overlapping truck2 longitudinally, and close laterally at corner of trailer
+    while (se->getSimulationTime() < 3.2 - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }
+
+    // euclidian freespace distance between car2 and truck2
+    car2->Distance(truck2, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, true, distance);
+    EXPECT_NEAR(distance, 0.6629, 1e-3);
+    truck2->Distance(car2, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, true, distance);
+    EXPECT_NEAR(distance, 0.6629, 1e-3);
+
+    // longitudinal freespace distance, in entity coordinate system, between car2 and truck2
+    car2->Distance(truck2, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    EXPECT_NEAR(distance, 0.0, 1e-3);
+    truck2->Distance(car2, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    EXPECT_NEAR(distance, 0.0, 1e-3);
+
+    // move forward until car2 is at longitudinal middle of trailer body, hence less close laterally since in curve
+    while (se->getSimulationTime() < 3.5 - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }
+
+    // euclidian freespace distance between car2 and truck2
+    car2->Distance(truck2, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, true, distance);
+    EXPECT_NEAR(distance, 1.0767, 1e-3);
+    truck2->Distance(car2, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, true, distance);
+    EXPECT_NEAR(distance, 1.0767, 1e-3);
+
+    // longitudinal freespace distance, in entity coordinate system, between car2 and truck2
+    car2->Distance(truck2, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    EXPECT_NEAR(distance, 0.0, 1e-3);
+    truck2->Distance(car2, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    EXPECT_NEAR(distance, 0.0, 1e-3);
+
+    // move forward until car2 is behind truck2
+    while (se->getSimulationTime() < 4.1 - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }
+
+    // euclidian freespace distance between car2 and truck2
+    car2->Distance(truck2, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, true, distance);
+    EXPECT_NEAR(distance, -1.9655, 1e-3);
+    truck2->Distance(car2, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, true, distance);
+    EXPECT_NEAR(distance, -1.9655, 1e-3);
+
+    // longitudinal freespace distance, in entity coordinate system, between car2 and truck2
+    car2->Distance(truck2, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    EXPECT_NEAR(distance, -0.9049, 1e-3);
+    truck2->Distance(car2, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    EXPECT_NEAR(distance, -1.0600, 1e-3);
+
+    // Finally test point distance with and without trailers involved
+    truck1->Distance(468.8, 1.53, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    EXPECT_NEAR(distance, -2.1450, 1e-3);
+    truck1->Distance(468.8, 1.53, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, true, distance);
+    EXPECT_NEAR(distance, -2.7778, 1e-3);
+    truck2->Distance(468.8, 1.53, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, true, distance);
+    EXPECT_NEAR(distance, 122.8735, 1e-3);
+    truck2->Distance(468.8, 1.53, roadmanager::CoordinateSystem::CS_ROAD, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    EXPECT_NEAR(distance, 132.2590, 1e-3);
+
+    truck2->Distance(597.83, 72.84, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, true, distance);
+    EXPECT_NEAR(distance, -3.3915, 1e-3);
+    truck2_trailer2
+        ->Distance(597.83, 72.84, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, true, distance);
+    EXPECT_NEAR(distance, -3.3915, 1e-3);
+
+    truck2
+        ->Distance(597.83, 72.84, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    EXPECT_NEAR(distance, -2.1645, 1e-3);
+    truck2_trailer2
+        ->Distance(597.83, 72.84, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    EXPECT_NEAR(distance, -2.1645, 1e-3);
+
+    truck2->Distance(597.83, 72.84, roadmanager::CoordinateSystem::CS_ROAD, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    EXPECT_NEAR(distance, -2.0509, 1e-3);
+    truck2_trailer2
+        ->Distance(597.83, 72.84, roadmanager::CoordinateSystem::CS_ROAD, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    EXPECT_NEAR(distance, -2.0509, 1e-3);
+
+    car1->Distance(300.0, 1.53, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    EXPECT_NEAR(distance, 122.2849, 1e-3);
+    car1->Distance(420.0, 1.53, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    EXPECT_NEAR(distance, 2.2849, 1e-3);
+
+    delete se;
+}
+
+TEST(DistanceTest, TestTrajectoryDistance)
+{
+    double dt = 0.1;
+
+    ScenarioEngine* se = new ScenarioEngine("../../../resources/xosc/lane-change_clothoid_based_trajectory.xosc");
+    ASSERT_NE(se, nullptr);
+    se->step(0.0);
+    se->prepareGroundTruth(0.0);
+
+    scenarioengine::Entities* entities = &se->entities_;
+    ASSERT_NE(entities, nullptr);
+    ASSERT_EQ(entities->object_.size(), 1);
+    Object* obj0 = entities->object_[0];
+
+    while (se->getSimulationTime() < 3.1 - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(0.0);
+    }
+
+    // Check car position at given time at end phase of the scenario
+    // Correct position indicates all trajectories have been evaluated correctly
+    EXPECT_NEAR(obj0->pos_.GetX(), 93.0109, 1E-3);
+    EXPECT_NEAR(obj0->pos_.GetY(), -0.5720, 1E-3);
+    EXPECT_NEAR(obj0->pos_.GetZ(), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(obj0->pos_.GetH(), 0.1388), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(obj0->pos_.GetP(), 0.0), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(obj0->pos_.GetR(), 0.0), 0.0, 1E-3);
+
+    Object obj1(Object::Type::VEHICLE);
+    obj1.pos_.SetTrackPos(1, 93, 0);
+
+    double dist = LARGE_NUMBER;
+    EXPECT_EQ(obj0->Distance(&obj1, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, false, dist), 0);
+    EXPECT_NEAR(dist, 0.5721, 1E-3);
+    EXPECT_EQ(
+        obj0->Distance(&obj1, roadmanager::CoordinateSystem::CS_TRAJECTORY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, false, dist),
+        0);
+    EXPECT_NEAR(dist, 0.0661, 1E-3);
+
+    // test with same trajectory in both objects
+    obj1.pos_.SetTrajectory(obj0->pos_.GetTrajectory());
+    obj1.pos_.SetTrajectoryS(obj0->pos_.GetTrajectoryS() + 0.9);
+    EXPECT_EQ(
+        obj0->Distance(&obj1, roadmanager::CoordinateSystem::CS_TRAJECTORY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, false, dist),
+        0);
+    EXPECT_NEAR(dist, 0.9, 1E-3);
+
+    obj1.pos_.SetTrajectory(nullptr);
+    obj1.pos_.MoveAlongS(2.0);
+    EXPECT_EQ(obj0->Distance(&obj1, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, false, dist), 0);
+    EXPECT_NEAR(dist, 2.8936, 1E-3);
+
+    // while obj1 has passed beyond the trajectory, it's trajectory related pos will be stuck at end of the trajectory
+    EXPECT_EQ(
+        obj0->Distance(&obj1, roadmanager::CoordinateSystem::CS_TRAJECTORY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, false, dist),
+        0);
+    EXPECT_NEAR(dist, 1.1111, 1E-3);
+
+    // trajectory distance with freespace not supported yet
+    EXPECT_EQ(
+        obj0->Distance(&obj1, roadmanager::CoordinateSystem::CS_TRAJECTORY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, dist),
+        -1);
+
+    delete se;
 }
 
 TEST(TrajectoryTest, EnsureContinuation)
@@ -550,6 +916,14 @@ TEST(ExpressionTest, EnsureResult)
     EXPECT_NEAR(eval_expr("abs(0.5)")._double, 0.5, 1e-5);
     EXPECT_NEAR(eval_expr("abs(2.9)")._double, 2.9, 1e-5);
     EXPECT_NEAR(eval_expr("abs(-2.9)")._double, 2.9, 1e-5);
+
+    // constants
+    EXPECT_NEAR(eval_expr("pi")._double, 3.141592, 1e-5);
+    EXPECT_NEAR(eval_expr("e")._double, 2.718281, 1e-5);
+    EXPECT_NEAR(eval_expr("2*pi")._double, 6.283185, 1e-5);
+    EXPECT_NEAR(eval_expr("2 * e")._double, 5.436563, 1e-5);
+    EXPECT_NEAR(eval_expr("2*pi*pi+e")._double, 22.457490, 1e-5);
+    EXPECT_NEAR(eval_expr("pow(pi,3) / e")._double, 11.406571, 1e-5);
 }
 
 TEST(OptionsTest, TestOptionHandling)
@@ -2001,7 +2375,7 @@ TEST_F(StraightRoadTest, TestObjectOverlap)
     EXPECT_EQ(ego.OverlappingFront(&target, 0.02), Object::OverlapType::PART);
 
     // Rotate ego 90 deg
-    ego.pos_.SetH(M_PI_2);
+    ego.pos_.SetHeading(M_PI_2, false);
     target.pos_.SetInertiaPos(0.0, 10.0, 0.0);
     EXPECT_EQ(ego.OverlappingFront(&target, 0.01), Object::OverlapType::INSIDE_AND_FULL);
 }
@@ -2489,8 +2863,8 @@ TEST(ConditionTest, TestTTC)
     Object obj(Object::Type::VEHICLE);
 
     TrigByTimeToCollision t;
-    t.object_                    = &obj;
-    t.triggering_entities_.rule_ = TrigByTimeToCollision::TriggeringEntitiesRule::ANY;
+    t.object_                 = &obj;
+    t.triggering_entity_rule_ = TrigByTimeToCollision::TriggeringEntitiesRule::ANY;
     t.triggering_entities_.entity_.push_back({&trig_obj});
     t.value_       = 3.0;
     t.freespace_   = false;
@@ -2882,9 +3256,9 @@ TEST(ClothoidSplineTest, TestTrajectoryShape)
     // Check car position at given time at end phase of the scenario
     // Correct position indicates all trajectories have been evaluated correctly
     EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 242.101, 1E-3);
-    EXPECT_NEAR(entities->object_[0]->pos_.GetY(), 1.087, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetY(), 1.085, 1E-3);
     EXPECT_NEAR(entities->object_[0]->pos_.GetZ(), 0.0, 1E-3);
-    EXPECT_NEAR(GetAngleDifference(entities->object_[0]->pos_.GetH(), -0.031), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[0]->pos_.GetH(), 6.262), 0.0, 1E-3);
     EXPECT_NEAR(GetAngleDifference(entities->object_[0]->pos_.GetP(), 0.0), 0.0, 1E-3);
     EXPECT_NEAR(GetAngleDifference(entities->object_[0]->pos_.GetR(), 0.0), 0.0, 1E-3);
 
@@ -2897,7 +3271,6 @@ TEST(RelativePositionRouting, TestRelativePositionWithRoutes)
     ASSERT_NE(se, nullptr);
     se->step(0.0);
     se->prepareGroundTruth(0.0);
-
     scenarioengine::Entities* entities = &se->entities_;
     ASSERT_NE(entities, nullptr);
     ASSERT_EQ(entities->object_.size(), 6);
@@ -3089,10 +3462,10 @@ TEST(Friction, TestFrictionPerWheel)
 
     // time = 0.0
     ObjectStateStruct* state = &gw->objectState_[0]->state_;
-    EXPECT_NEAR(state->info.friction[0], 1.0, 1E-3);
-    EXPECT_NEAR(state->info.friction[1], 1.0, 1E-3);
-    EXPECT_NEAR(state->info.friction[2], 1.0, 1E-3);
-    EXPECT_NEAR(state->info.friction[3], 1.0, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[0].friction_coefficient, 1.0, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[1].friction_coefficient, 1.0, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[2].friction_coefficient, 1.0, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[3].friction_coefficient, 1.0, 1E-3);
 
     while (se->getSimulationTime() < 1.8 + SMALL_NUMBER)
     {
@@ -3100,10 +3473,10 @@ TEST(Friction, TestFrictionPerWheel)
         se->prepareGroundTruth(0.0);
     }
     state = &gw->objectState_[0]->state_;
-    EXPECT_NEAR(state->info.friction[0], 1.0, 1E-3);
-    EXPECT_NEAR(state->info.friction[1], 1.0, 1E-3);
-    EXPECT_NEAR(state->info.friction[2], 1.0, 1E-3);
-    EXPECT_NEAR(state->info.friction[3], 1.0, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[0].friction_coefficient, 1.0, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[1].friction_coefficient, 1.0, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[2].friction_coefficient, 1.0, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[3].friction_coefficient, 1.0, 1E-3);
 
     while (se->getSimulationTime() < 1.9 + SMALL_NUMBER)
     {
@@ -3111,10 +3484,10 @@ TEST(Friction, TestFrictionPerWheel)
         se->prepareGroundTruth(0.0);
     }
     state = &gw->objectState_[0]->state_;
-    EXPECT_NEAR(state->info.friction[0], 1.0, 1E-3);
-    EXPECT_NEAR(state->info.friction[1], 0.8, 1E-3);
-    EXPECT_NEAR(state->info.friction[2], 1.0, 1E-3);
-    EXPECT_NEAR(state->info.friction[3], 1.0, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[0].friction_coefficient, 1.0, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[1].friction_coefficient, 0.8, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[2].friction_coefficient, 1.0, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[3].friction_coefficient, 1.0, 1E-3);
 
     while (se->getSimulationTime() < 3.9 + SMALL_NUMBER)
     {
@@ -3122,10 +3495,10 @@ TEST(Friction, TestFrictionPerWheel)
         se->prepareGroundTruth(0.0);
     }
     state = &gw->objectState_[0]->state_;
-    EXPECT_NEAR(state->info.friction[0], 1.0, 1E-3);
-    EXPECT_NEAR(state->info.friction[1], 1.0, 1E-3);
-    EXPECT_NEAR(state->info.friction[2], 1.0, 1E-3);
-    EXPECT_NEAR(state->info.friction[3], 1.0, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[0].friction_coefficient, 1.0, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[1].friction_coefficient, 1.0, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[2].friction_coefficient, 1.0, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[3].friction_coefficient, 1.0, 1E-3);
 
     while (se->getSimulationTime() < 4.0 + SMALL_NUMBER)
     {
@@ -3133,10 +3506,10 @@ TEST(Friction, TestFrictionPerWheel)
         se->prepareGroundTruth(0.0);
     }
     state = &gw->objectState_[0]->state_;
-    EXPECT_NEAR(state->info.friction[0], 1.0, 1E-3);
-    EXPECT_NEAR(state->info.friction[1], 1.0, 1E-3);
-    EXPECT_NEAR(state->info.friction[2], 1.0, 1E-3);
-    EXPECT_NEAR(state->info.friction[3], 0.8, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[0].friction_coefficient, 1.0, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[1].friction_coefficient, 1.0, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[2].friction_coefficient, 1.0, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[3].friction_coefficient, 0.8, 1E-3);
 
     while (se->getSimulationTime() < 12.1 + SMALL_NUMBER)
     {
@@ -3144,10 +3517,10 @@ TEST(Friction, TestFrictionPerWheel)
         se->prepareGroundTruth(0.0);
     }
     state = &gw->objectState_[0]->state_;
-    EXPECT_NEAR(state->info.friction[0], 0.4, 1E-3);
-    EXPECT_NEAR(state->info.friction[1], 0.4, 1E-3);
-    EXPECT_NEAR(state->info.friction[2], 1.0, 1E-3);
-    EXPECT_NEAR(state->info.friction[3], 1.0, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[0].friction_coefficient, 0.4, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[1].friction_coefficient, 0.4, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[2].friction_coefficient, 1.0, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[3].friction_coefficient, 1.0, 1E-3);
 
     while (se->getSimulationTime() < 13.7 + SMALL_NUMBER)
     {
@@ -3155,10 +3528,10 @@ TEST(Friction, TestFrictionPerWheel)
         se->prepareGroundTruth(0.0);
     }
     state = &gw->objectState_[0]->state_;
-    EXPECT_NEAR(state->info.friction[0], 0.4, 1E-3);
-    EXPECT_NEAR(state->info.friction[1], 0.4, 1E-3);
-    EXPECT_NEAR(state->info.friction[2], 1.0, 1E-3);
-    EXPECT_NEAR(state->info.friction[3], 0.4, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[0].friction_coefficient, 0.4, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[1].friction_coefficient, 0.4, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[2].friction_coefficient, 1.0, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[3].friction_coefficient, 0.4, 1E-3);
 
     while (se->getSimulationTime() < 20.0 + SMALL_NUMBER)
     {
@@ -3166,10 +3539,110 @@ TEST(Friction, TestFrictionPerWheel)
         se->prepareGroundTruth(0.0);
     }
     state = &gw->objectState_[0]->state_;
-    EXPECT_NEAR(state->info.friction[0], 1.0, 1E-3);
-    EXPECT_NEAR(state->info.friction[1], 1.0, 1E-3);
-    EXPECT_NEAR(state->info.friction[2], 1.0, 1E-3);
-    EXPECT_NEAR(state->info.friction[3], 1.0, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[0].friction_coefficient, 1.0, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[1].friction_coefficient, 1.0, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[2].friction_coefficient, 1.0, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[3].friction_coefficient, 1.0, 1E-3);
+
+    delete se;
+}
+
+TEST(WheelData, TestWheelData)
+{
+    ScenarioEngine* se = new ScenarioEngine("../../../resources/xosc/lane_change_crest.xosc");
+    ASSERT_NE(se, nullptr);
+    se->step(0.0);
+    se->prepareGroundTruth(0.0);
+
+    scenarioengine::Entities* entities = &se->entities_;
+    ASSERT_NE(entities, nullptr);
+    ASSERT_EQ(entities->object_.size(), 3);
+
+    ScenarioGateway* gw = se->getScenarioGateway();
+
+    // Check friction per wheel at some key time stamps
+
+    // time = 0.0
+    ObjectStateStruct* state = &gw->objectState_[0]->state_;
+    EXPECT_EQ(state->info.wheel_data[0].axle, 0);
+    EXPECT_EQ(state->info.wheel_data[1].axle, 0);
+    EXPECT_EQ(state->info.wheel_data[2].axle, 1);
+    EXPECT_EQ(state->info.wheel_data[3].axle, 1);
+
+    EXPECT_NEAR(state->info.wheel_data[0].h, 0.0, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[1].h, 0.0, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[2].h, 0.0, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[3].h, 0.0, 1E-3);
+
+    EXPECT_EQ(state->info.wheel_data[0].index, 0);
+    EXPECT_EQ(state->info.wheel_data[1].index, 1);
+    EXPECT_EQ(state->info.wheel_data[2].index, 0);
+    EXPECT_EQ(state->info.wheel_data[3].index, 1);
+
+    EXPECT_NEAR(state->info.wheel_data[0].p, 0.0, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[1].p, 0.0, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[2].p, 0.0, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[3].p, 0.0, 1E-3);
+
+    EXPECT_NEAR(state->info.wheel_data[0].x, 2.98, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[1].x, 2.98, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[2].x, 0.0, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[3].x, 0.0, 1E-3);
+
+    EXPECT_NEAR(state->info.wheel_data[0].y, -0.840, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[1].y, 0.840, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[2].y, -0.840, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[3].y, 0.840, 1E-3);
+
+    EXPECT_NEAR(state->info.wheel_data[0].z, 0.4, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[1].z, 0.4, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[2].z, 0.4, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[3].z, 0.4, 1E-3);
+
+    while (se->getSimulationTime() < 5.8 + SMALL_NUMBER)
+    {
+        se->step(0.1);
+        se->prepareGroundTruth(0.1);
+    }
+
+    // check overtaking car, some wheel heading expected
+    state = &gw->objectState_[2]->state_;
+
+    EXPECT_EQ(state->info.wheel_data[0].axle, 0);
+    EXPECT_EQ(state->info.wheel_data[1].axle, 0);
+    EXPECT_EQ(state->info.wheel_data[2].axle, 1);
+    EXPECT_EQ(state->info.wheel_data[3].axle, 1);
+
+    EXPECT_NEAR(state->info.wheel_data[0].h, 0.054, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[1].h, 0.054, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[2].h, 0.0, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[3].h, 0.0, 1E-3);
+
+    EXPECT_EQ(state->info.wheel_data[0].index, 0);
+    EXPECT_EQ(state->info.wheel_data[1].index, 1);
+    EXPECT_EQ(state->info.wheel_data[2].index, 0);
+    EXPECT_EQ(state->info.wheel_data[3].index, 1);
+
+    EXPECT_NEAR(state->info.wheel_data[0].p, 1.989, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[1].p, 1.989, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[2].p, 1.989, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[3].p, 1.989, 1E-3);
+
+    EXPECT_NEAR(state->info.wheel_data[0].x, 2.98, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[1].x, 2.98, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[2].x, 0.0, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[3].x, 0.0, 1E-3);
+
+    EXPECT_NEAR(state->info.wheel_data[0].y, -0.840, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[1].y, 0.840, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[2].y, -0.840, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[3].y, 0.840, 1E-3);
+
+    // ensure z=0 even when the car is on a crest
+    EXPECT_NEAR(state->info.wheel_data[0].z, 0.4, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[1].z, 0.4, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[2].z, 0.4, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[3].z, 0.4, 1E-3);
 
     delete se;
 }
@@ -3580,6 +4053,330 @@ TEST(ActionTest, TestInstantLaneChange)
     EXPECT_NEAR(entities->object_[0]->pos_.GetY(), 1.535, 1E-3);
 
     delete se;
+}
+
+TEST(RouteingTest, TestPositionOffRoute)
+{
+    ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/route_detour.xosc", true);
+    const double    dt = 0.05;
+    ASSERT_NE(se, nullptr);
+    se->step(0.0);
+    se->prepareGroundTruth(0.0);
+
+    scenarioengine::Entities* entities = &se->entities_;
+    ASSERT_NE(entities, nullptr);
+    ASSERT_EQ(entities->object_.size(), 1);
+
+    // Check expected position and orientation at some specific time stamps
+    EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 221.5, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetY(), 45.0, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetZ(), 0.0, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetH(), 1.5708, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetP(), 0.0, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetR(), 0.0, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->GetSpeed(), 40.0, 1E-3);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->currentPos_.GetTrackId(), 2);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->currentPos_.GetLaneId(), -1);
+    EXPECT_NEAR(entities->object_[0]->pos_.route_->currentPos_.GetS(), 25.0, 1E-3);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->OnRoute(), true);
+
+    while (se->getSimulationTime() < 1.0 + SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(0.0);
+    }
+    EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 216.982, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetY(), 86.012, 1E-3);
+    EXPECT_EQ(entities->object_[0]->pos_.GetTrackId(), 200);
+    EXPECT_EQ(entities->object_[0]->pos_.GetLaneId(), -1);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->currentPos_.GetTrackId(), 201);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->currentPos_.GetLaneId(), -1);
+    EXPECT_NEAR(entities->object_[0]->pos_.route_->currentPos_.GetS(), 16.012, 1E-3);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->OnRoute(), false);
+
+    while (se->getSimulationTime() < 3.15 + SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(0.0);
+    }
+    EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 132.565, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetY(), 91.5, 1E-3);
+    EXPECT_EQ(entities->object_[0]->pos_.GetTrackId(), 3);
+    EXPECT_EQ(entities->object_[0]->pos_.GetLaneId(), -1);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->currentPos_.GetTrackId(), 201);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->currentPos_.GetLaneId(), -1);
+    EXPECT_NEAR(entities->object_[0]->pos_.route_->currentPos_.GetS(), 21.5, 1E-3);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->OnRoute(), false);
+
+    while (se->getSimulationTime() < 3.20 + SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(0.0);
+    }
+    EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 130.565, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetY(), 91.5, 1E-3);
+    EXPECT_EQ(entities->object_[0]->pos_.GetTrackId(), 3);
+    EXPECT_EQ(entities->object_[0]->pos_.GetLaneId(), -1);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->currentPos_.GetTrackId(), 4);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->currentPos_.GetLaneId(), -1);
+    EXPECT_NEAR(entities->object_[0]->pos_.route_->currentPos_.GetS(), 150.851, 1E-3);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->OnRoute(), false);
+
+    while (se->getSimulationTime() < 5.75 + SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(0.0);
+    }
+    EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 28.565, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetY(), 91.5, 1E-3);
+    EXPECT_EQ(entities->object_[0]->pos_.GetTrackId(), 3);
+    EXPECT_EQ(entities->object_[0]->pos_.GetLaneId(), -1);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->currentPos_.GetTrackId(), 4);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->currentPos_.GetLaneId(), -1);
+    EXPECT_NEAR(entities->object_[0]->pos_.route_->currentPos_.GetS(), 252.851, 1E-3);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->OnRoute(), false);
+
+    while (se->getSimulationTime() < 5.8 + SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(0.0);
+    }
+    EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 26.565, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetY(), 91.5, 1E-3);
+    EXPECT_EQ(entities->object_[0]->pos_.GetTrackId(), 3);
+    EXPECT_EQ(entities->object_[0]->pos_.GetLaneId(), -1);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->currentPos_.GetTrackId(), 302);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->currentPos_.GetLaneId(), -1);
+    EXPECT_NEAR(entities->object_[0]->pos_.route_->currentPos_.GetS(), 18.5, 1E-3);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->OnRoute(), false);
+
+    while (se->getSimulationTime() < 8.0 + SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(0.0);
+    }
+    EXPECT_NEAR(entities->object_[0]->pos_.GetX(), -58.592, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetY(), 83.938, 1E-3);
+    EXPECT_EQ(entities->object_[0]->pos_.GetTrackId(), 301);
+    EXPECT_EQ(entities->object_[0]->pos_.GetLaneId(), -1);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->currentPos_.GetTrackId(), 302);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->currentPos_.GetLaneId(), -1);
+    EXPECT_NEAR(entities->object_[0]->pos_.route_->currentPos_.GetS(), 26.062, 1E-3);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->OnRoute(), false);
+
+    while (se->getSimulationTime() < 8.4 + SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(0.0);
+    }
+    EXPECT_NEAR(entities->object_[0]->pos_.GetX(), -61.500, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetY(), 68.564, 1E-3);
+    EXPECT_EQ(entities->object_[0]->pos_.GetTrackId(), 6);
+    EXPECT_EQ(entities->object_[0]->pos_.GetLaneId(), -1);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->currentPos_.GetTrackId(), 6);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->currentPos_.GetLaneId(), -1);
+    EXPECT_NEAR(entities->object_[0]->pos_.route_->currentPos_.GetS(), 1.435, 1E-3);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->OnRoute(), true);
+
+    while (se->getSimulationTime() < 11.25 + SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(0.0);
+    }
+    EXPECT_NEAR(entities->object_[0]->pos_.GetX(), -61.500, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetY(), -45.435, 1E-3);
+    EXPECT_EQ(entities->object_[0]->pos_.GetTrackId(), 5);
+    EXPECT_EQ(entities->object_[0]->pos_.GetLaneId(), -1);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetS(), 25.435, 1E-3);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->currentPos_.GetTrackId(), 5);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->currentPos_.GetLaneId(), -1);
+    EXPECT_NEAR(entities->object_[0]->pos_.route_->currentPos_.GetS(), 25.435, 1E-3);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->OnRoute(), true);
+
+    while (se->getSimulationTime() < 11.50 + SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(0.0);
+    }
+    EXPECT_NEAR(entities->object_[0]->pos_.GetX(), -61.500, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetY(), -55.435, 1E-3);
+    EXPECT_EQ(entities->object_[0]->pos_.GetTrackId(), 5);
+    EXPECT_EQ(entities->object_[0]->pos_.GetLaneId(), -1);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetS(), 35.435, 1E-3);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->currentPos_.GetTrackId(), 5);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->currentPos_.GetLaneId(), -1);
+    EXPECT_NEAR(entities->object_[0]->pos_.route_->currentPos_.GetS(), 30.0, 1E-3);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->OnRoute(), false);
+
+    while (se->getSimulationTime() < 11.60 + SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(0.0);
+    }
+    EXPECT_NEAR(entities->object_[0]->pos_.GetX(), -61.500, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetY(), -59.435, 1E-3);
+    EXPECT_EQ(entities->object_[0]->pos_.GetTrackId(), 5);
+    EXPECT_EQ(entities->object_[0]->pos_.GetLaneId(), -1);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetS(), 39.435, 1E-3);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->currentPos_.GetTrackId(), 5);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->currentPos_.GetLaneId(), -1);
+    EXPECT_NEAR(entities->object_[0]->pos_.route_->currentPos_.GetS(), 30.0, 1E-3);
+    EXPECT_EQ(entities->object_[0]->pos_.route_->OnRoute(), false);
+
+    delete se;
+}
+
+TEST(PositioningTest, TestElevationMapping)
+{
+    ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/test_elevation_mapping.xosc", false);
+    const double    dt = 0.1;
+    ASSERT_NE(se, nullptr);
+    se->step(0.0);
+    se->prepareGroundTruth(0.0);
+
+    scenarioengine::Entities* entities = &se->entities_;
+    ASSERT_NE(entities, nullptr);
+    ASSERT_EQ(entities->object_.size(), 1);
+
+    // Check expected position and orientation at some specific time stamps
+    EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 8.0, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetY(), -1.75, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetZ(), 3.0, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetH(), 0.0, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetP(), 0.0, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetR(), 0.0, 1E-3);
+
+    ControllerInteractive* ctrl = static_cast<ControllerInteractive*>(entities->object_[0]->GetController("interactiveDriver"));
+    ASSERT_NE(ctrl, nullptr);
+
+    // drive car forward, so that it reaches end of top road, dropping to the below road
+    while (se->getSimulationTime() < 1.0 + SMALL_NUMBER)
+    {
+        ctrl->ReportKeyEvent(static_cast<int>(KeyType::KEY_Up), true);
+        se->step(dt);
+        se->prepareGroundTruth(0.0);
+    }
+
+    // Verify that car has moved to lower road
+    EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 11.3, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetY(), -1.75, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetZ(), 0.0, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetH(), 0.0, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetP(), 0.0, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetR(), 0.0, 1E-3);
+
+    delete se;
+}
+
+TEST(StringIds, TestRoadStringIdsEdgeCases)
+{
+    pugi::xml_document  doc;
+    pugi::xml_node      parent = doc.append_child("parent");
+    pugi::xml_node      child1 = parent.append_child("road");
+    pugi::xml_node      child2 = parent.append_child("road");
+    pugi::xml_node      child3 = parent.append_child("road");
+    pugi::xml_attribute attr1  = child1.append_attribute("id");
+    pugi::xml_attribute attr2  = child2.append_attribute("id");
+    pugi::xml_attribute attr3  = child3.append_attribute("id");
+
+    std::vector<std::pair<id_t, std::string>> ids;
+    bool                                      exception_found = false;
+
+    // check overflow
+    attr1.set_value("4294967294");
+    attr2.set_value("4294967295");
+    attr3.set_value("5");
+    try
+    {
+        roadmanager::Position::GetOpenDrive()->EstablishUniqueIds(parent, "road", ids);
+    }
+    catch (const std::exception&)
+    {
+        exception_found = true;
+    }
+    EXPECT_EQ(ids.size(), 1);
+    EXPECT_EQ(ids[0].first, 4294967294);
+    EXPECT_EQ(exception_found, true);
+
+    // Another round with unique and valid numbers
+    ids.clear();
+    exception_found = false;
+    attr1.set_value("1000");
+    attr2.set_value("4294967294");
+    attr3.set_value("22");
+    try
+    {
+        roadmanager::Position::GetOpenDrive()->EstablishUniqueIds(parent, "road", ids);
+    }
+    catch (const std::exception&)
+    {
+        exception_found = true;
+    }
+    EXPECT_EQ(ids.size(), 3);
+    EXPECT_EQ(exception_found, false);
+    EXPECT_EQ(ids[0].first, 1000);
+    EXPECT_EQ(ids[1].first, 4294967294);
+    EXPECT_EQ(ids[2].first, 22);
+
+    // Check latest id wins
+    ids.clear();
+    exception_found = false;
+    attr1.set_value("4294967291");
+    attr2.set_value("4294967291");
+    attr3.set_value("44");
+    try
+    {
+        roadmanager::Position::GetOpenDrive()->EstablishUniqueIds(parent, "road", ids);
+    }
+    catch (const std::exception&)
+    {
+        exception_found = true;
+    }
+    EXPECT_EQ(ids.size(), 3);
+    EXPECT_EQ(exception_found, false);
+    EXPECT_EQ(ids[0].first, 4294967292);
+    EXPECT_EQ(ids[1].first, 4294967291);
+    EXPECT_EQ(ids[2].first, 44);
+
+    // Another round with unique but invalid numbers
+    ids.clear();
+    exception_found = false;
+    attr1.set_value("5");
+    attr2.set_value("12j12");
+    attr3.set_value("4");
+    try
+    {
+        roadmanager::Position::GetOpenDrive()->EstablishUniqueIds(parent, "road", ids);
+    }
+    catch (const std::exception&)
+    {
+        exception_found = true;
+    }
+    EXPECT_EQ(ids.size(), 3);
+    EXPECT_EQ(exception_found, false);
+    EXPECT_EQ(ids[0].first, 5);
+    EXPECT_EQ(ids[1].first, 6);
+    EXPECT_EQ(ids[2].first, 4);
+
+    // Check handling of reserved ID
+    ids.clear();
+    exception_found = false;
+    attr1.set_value("5");
+    attr2.set_value("4294967295");
+    attr3.set_value("3");
+    try
+    {
+        roadmanager::Position::GetOpenDrive()->EstablishUniqueIds(parent, "road", ids);
+    }
+    catch (const std::exception&)
+    {
+        exception_found = true;
+    }
+    EXPECT_EQ(ids.size(), 3);
+    EXPECT_EQ(exception_found, false);
+    EXPECT_EQ(ids[0].first, 5);
+    EXPECT_EQ(ids[1].first, 6);
+    EXPECT_EQ(ids[2].first, 3);
 }
 
 // Uncomment to print log output to console

@@ -17,11 +17,13 @@ on:
       - master
       - dev
 
+  workflow_dispatch:
+
 jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3.3.0
+      - uses: actions/checkout@v4.1.7
 
       - name: Install clang-format-15
         if: runner.os == 'Linux'
@@ -31,7 +33,7 @@ jobs:
           && sudo apt-get install -y -q clang-format-15
 
       - name: Install Python3.8 and dependencies
-        uses: actions/setup-python@v4.5.0
+        uses: actions/setup-python@v5.1.1
         with:
           python-version: '3.8'
           cache: 'pip'
@@ -61,7 +63,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v3.3.0
+      - uses: actions/checkout@v4.1.7
         with:
           submodules: true
 
@@ -71,7 +73,7 @@ jobs:
       - uses: ./.github/actions/generate_offset_run_number
 
       - name: Cache
-        uses: actions/cache@v3.2.5
+        uses: actions/cache@v4.0.2
         with:
           path: |
             externals/googletest
@@ -128,7 +130,7 @@ jobs:
 
       - name: Run Tests - Unix
         if: runner.os != 'Windows'
-        uses: GabrielBB/xvfb-action@v1.6
+        uses: coactions/setup-xvfb@v1.0.1
         with:
           run: ./scripts/run_tests.sh
 
@@ -158,14 +160,14 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v3.3.0
+      - uses: actions/checkout@v4.1.7
         with:
           submodules: true
 
       - uses: ./.github/actions/setup_tools_shared
 
       - name: Cache
-        uses: actions/cache@v3.2.5
+        uses: actions/cache@v4.0.2
         with:
           path: |
             externals/googletest
@@ -222,9 +224,9 @@ jobs:
 
       - name: Run Tests - Unix
         if: runner.os != 'Windows'
-        uses: GabrielBB/xvfb-action@v1.6
+        uses: coactions/setup-xvfb@v1.0.1
         with:
-          run: ./scripts/run_tests.sh ${{ matrix.configuration }} true
+          run: ./scripts/run_tests.sh ${{ matrix.configuration }} false
 
       - name: Run Tests - Windows
         if: runner.os == 'Windows'
@@ -232,7 +234,7 @@ jobs:
           GALLIUM_DRIVER: softpipe
           MESA_GL_VERSION_OVERRIDE: 4.5
         shell: bash
-        run: ./scripts/run_tests.sh ${{ matrix.configuration }} true
+        run: ./scripts/run_tests.sh ${{ matrix.configuration }} false
 
   release:
     needs: [test, test-no-external-modules]
@@ -245,7 +247,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v3.3.0
+      - uses: actions/checkout@v4.1.7
         with:
           submodules: true
           fetch-depth: 0
@@ -253,11 +255,11 @@ jobs:
       # Generate build number based on offset from former AppVeyor CI machine
       - uses: ./.github/actions/generate_offset_run_number
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4.1.7
         with:
           name: esmini-bin_${{ runner.os }}
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4.1.7
         with:
           name: esmini-demo_${{ runner.os }}
 

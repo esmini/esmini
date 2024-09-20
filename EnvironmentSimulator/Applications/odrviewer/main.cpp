@@ -57,7 +57,7 @@ double deltaSimTime;  // external - used by Viewer::RubberBandCamera
 
 struct Car
 {
-    int                   road_id_init;
+    id_t                  road_id_init;
     int                   lane_id_init;
     double                heading_init;
     double                s_init;
@@ -70,7 +70,7 @@ struct Car
 
 typedef struct
 {
-    int    roadId;
+    id_t   roadId;
     int    side;
     int    nLanes;
     double s;

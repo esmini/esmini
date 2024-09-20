@@ -696,22 +696,38 @@ void Trajectory::Disable()
 
 RouteWayPoints::RouteWayPoints(osg::ref_ptr<osg::Group> parent, osg::Vec4 color, Viewer* viewer) : parent_(parent)
 {
-    group_ = new osg::Group;
-    group_->setNodeMask(NodeMask::NODE_MASK_ROUTE_WAYPOINTS);
+    group_all_wp_      = new osg::Group;
+    group_scenario_wp_ = new osg::Group;
+    group_minimal_wp_  = new osg::Group;
+
+    group_all_wp_->setNodeMask(NodeMask::NODE_MASK_ROUTE_WAYPOINTS);
+    group_scenario_wp_->setNodeMask(NodeMask::NODE_MASK_ROUTE_WAYPOINTS);
+    group_minimal_wp_->setNodeMask(NodeMask::NODE_MASK_ROUTE_WAYPOINTS);
+
     viewer_ = viewer;
 
     // Finally attach a simple material for shading properties
     osg::ref_ptr<osg::Material> material_ = new osg::Material;
     material_->setDiffuse(osg::Material::FRONT_AND_BACK, color);
     material_->setAmbient(osg::Material::FRONT_AND_BACK, color);
-    group_->getOrCreateStateSet()->setAttributeAndModes(material_.get());
+    group_all_wp_->getOrCreateStateSet()->setAttributeAndModes(material_.get());
+    group_scenario_wp_->getOrCreateStateSet()->setAttributeAndModes(material_.get());
 
-    parent->addChild(group_);
+    osg::ref_ptr<osg::Material> material_dull_ = new osg::Material;
+    material_dull_->setDiffuse(osg::Material::FRONT_AND_BACK, color * 0.6);
+    material_dull_->setAmbient(osg::Material::FRONT_AND_BACK, color * 0.6);
+    group_minimal_wp_->getOrCreateStateSet()->setAttributeAndModes(material_dull_.get());
+
+    parent->addChild(group_all_wp_);
+    parent->addChild(group_scenario_wp_);
+    parent->addChild(group_minimal_wp_);
 }
 
 RouteWayPoints::~RouteWayPoints()
 {
-    group_->removeChildren(0, group_->getNumChildren());
+    group_all_wp_->removeChildren(0, group_all_wp_->getNumChildren());
+    group_scenario_wp_->removeChildren(0, group_scenario_wp_->getNumChildren());
+    group_minimal_wp_->removeChildren(0, group_minimal_wp_->getNumChildren());
 }
 
 osg::ref_ptr<osg::Geode> RouteWayPoints::CreateWayPointGeometry(double x, double y, double z, double h, double scale)
@@ -787,16 +803,38 @@ void RouteWayPoints::SetWayPoints(roadmanager::Route* route)
         return;
     }
 
-    group_->removeChildren(0, group_->getNumChildren());
+    group_all_wp_->removeChildren(0, group_all_wp_->getNumChildren());
+    group_scenario_wp_->removeChildren(0, group_scenario_wp_->getNumChildren());
+    group_minimal_wp_->removeChildren(0, group_minimal_wp_->getNumChildren());
 
     // First put all waypoints on ground
     for (int i = 0; i < static_cast<int>(route->all_waypoints_.size()); i++)
     {
-        group_->addChild(CreateWayPointGeometry(route->all_waypoints_[static_cast<unsigned int>(i)].GetX() - viewer_->origin_[0],
-                                                route->all_waypoints_[static_cast<unsigned int>(i)].GetY() - viewer_->origin_[1],
-                                                route->all_waypoints_[static_cast<unsigned int>(i)].GetZ(),
-                                                route->all_waypoints_[static_cast<unsigned int>(i)].GetH(),
-                                                1.0));
+        group_all_wp_->addChild(CreateWayPointGeometry(route->all_waypoints_[static_cast<unsigned int>(i)].GetX() - viewer_->origin_[0],
+                                                       route->all_waypoints_[static_cast<unsigned int>(i)].GetY() - viewer_->origin_[1],
+                                                       route->all_waypoints_[static_cast<unsigned int>(i)].GetZ(),
+                                                       route->all_waypoints_[static_cast<unsigned int>(i)].GetH(),
+                                                       0.75));
+    }
+
+    // Then add scenario waypoints
+    for (int i = 0; i < static_cast<int>(route->scenario_waypoints_.size()); i++)
+    {
+        group_scenario_wp_->addChild(CreateWayPointGeometry(route->scenario_waypoints_[static_cast<unsigned int>(i)].GetX() - viewer_->origin_[0],
+                                                            route->scenario_waypoints_[static_cast<unsigned int>(i)].GetY() - viewer_->origin_[1],
+                                                            route->scenario_waypoints_[static_cast<unsigned int>(i)].GetZ(),
+                                                            route->scenario_waypoints_[static_cast<unsigned int>(i)].GetH(),
+                                                            1.5));
+    }
+
+    // First put all minimal on ground
+    for (int i = 0; i < static_cast<int>(route->minimal_waypoints_.size()); i++)
+    {
+        group_minimal_wp_->addChild(CreateWayPointGeometry(route->minimal_waypoints_[static_cast<unsigned int>(i)].GetX() - viewer_->origin_[0],
+                                                           route->minimal_waypoints_[static_cast<unsigned int>(i)].GetY() - viewer_->origin_[1],
+                                                           route->minimal_waypoints_[static_cast<unsigned int>(i)].GetZ(),
+                                                           route->minimal_waypoints_[static_cast<unsigned int>(i)].GetH(),
+                                                           0.75));
     }
 
 #if 0  // Keeping code below in case need arise to visualize minimal wp set on top

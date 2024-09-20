@@ -57,6 +57,7 @@ Object::Object(Type type)
     state_old.h_rate = 0;
 
     trail_closest_pos_ = {0, 0, 0, 0, 0, 0, false};
+    trail_.SetInterpolationMode(PolyLineBase::InterpolationMode::INTERPOLATE_SEGMENT);
 
     // initialize override vector
     for (int i = 0; i < OVERRIDE_NR_TYPES; i++)
@@ -1029,27 +1030,112 @@ int Object::Distance(Object*                           target,
             relDistType == RelativeDistanceType::REL_DIST_CARTESIAN)
         {
             // Get Cartesian/Euclidian distance
-            dist = FreeSpaceDistance(target, &latDist, &longDist);
+
+            // check objects and any trailers for minimum distance
+            int     iterations       = 0;
+            Object* pivot_obj        = this;
+            Object* target_obj       = target;
+            Object* target_front_obj = target_obj;
+            struct
+            {
+                double dist;
+                double lat_dist;
+                double long_dist;
+            } candidate_info = {LARGE_NUMBER, LARGE_NUMBER, LARGE_NUMBER};
+
+            // start measuring from frontmost towing vehicle
+            while (pivot_obj->TowVehicle())
+            {
+                pivot_obj = pivot_obj->TowVehicle();
+            }
+            while (target_obj->TowVehicle())
+            {
+                target_front_obj = target_front_obj->TowVehicle();
+            }
+
+            while (pivot_obj && iterations < 100 && candidate_info.dist > 0.0)
+            {
+                target_obj = target_front_obj;
+                while (target_obj && iterations++ < 100 && fabs(candidate_info.dist) > 0.0)
+                {
+                    dist = pivot_obj->FreeSpaceDistance(target_obj, &latDist, &longDist);
+                    if (fabs(dist) < fabs(candidate_info.dist))
+                    {
+                        candidate_info.dist      = dist;
+                        candidate_info.lat_dist  = latDist;
+                        candidate_info.long_dist = longDist;
+                    }
+                    target_obj = target_obj->TrailerVehicle();
+                }
+                pivot_obj = pivot_obj->TrailerVehicle();
+            }
 
             // sign indicates target being in front (+) or behind (-)
-            dist *= SIGN(longDist);
+            dist = candidate_info.dist * SIGN(candidate_info.long_dist);
 
             if (cs == roadmanager::CoordinateSystem::CS_ENTITY)
             {
                 if (relDistType == roadmanager::RelativeDistanceType::REL_DIST_LATERAL)
                 {
-                    dist = latDist;
+                    dist = candidate_info.lat_dist;
                 }
                 else if (relDistType == roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL)
                 {
-                    dist = longDist;
+                    dist = candidate_info.long_dist;
                 }
             }
         }
         else if (cs == CoordinateSystem::CS_ROAD || cs == CoordinateSystem::CS_LANE)
         {
             roadmanager::PositionDiff pos_diff;
-            if (FreeSpaceDistanceObjectRoadLane(target, &pos_diff, cs) != 0)
+
+            // check objects and any trailers for minimum distance
+            int     iterations       = 0;
+            Object* pivot_obj        = this;
+            Object* target_obj       = target;
+            Object* target_front_obj = target_obj;
+            struct
+            {
+                int                       return_value = -1;
+                roadmanager::PositionDiff pos_diff     = {LARGE_NUMBER, LARGE_NUMBER, 0, 0.0, 0.0, false};
+            } candidate_info;
+
+            // start measuring from frontmost towing vehicle
+            while (pivot_obj->TowVehicle())
+            {
+                pivot_obj = pivot_obj->TowVehicle();
+            }
+            while (target_obj->TowVehicle())
+            {
+                target_front_obj = target_front_obj->TowVehicle();
+            }
+
+            while (pivot_obj && iterations < 100 &&
+                   ((relDistType == RelativeDistanceType::REL_DIST_LATERAL && fabs(candidate_info.pos_diff.dt) > 0.0) ||
+                    (relDistType == RelativeDistanceType::REL_DIST_LONGITUDINAL && fabs(candidate_info.pos_diff.ds) > 0.0)))
+            {
+                target_obj = target_front_obj;
+
+                while (target_obj && ++iterations < 100 &&
+                       ((relDistType == RelativeDistanceType::REL_DIST_LATERAL && fabs(candidate_info.pos_diff.dt) > 0.0) ||
+                        (relDistType == RelativeDistanceType::REL_DIST_LONGITUDINAL && fabs(candidate_info.pos_diff.ds) > 0.0)))
+                {
+                    int return_value = pivot_obj->FreeSpaceDistanceObjectRoadLane(target, &pos_diff, cs);
+                    if (return_value == 0)
+                    {
+                        if ((relDistType == RelativeDistanceType::REL_DIST_LATERAL && fabs(pos_diff.dt) < fabs(candidate_info.pos_diff.dt)) ||
+                            (relDistType == RelativeDistanceType::REL_DIST_LONGITUDINAL && fabs(pos_diff.ds) < fabs(candidate_info.pos_diff.ds)))
+                        {
+                            candidate_info.return_value = return_value;
+                            candidate_info.pos_diff     = pos_diff;
+                        }
+                    }
+                    target_obj = target_obj->TrailerVehicle();
+                }
+                pivot_obj = pivot_obj->TrailerVehicle();
+            }
+
+            if (candidate_info.return_value != 0)
             {
                 return -1;
             }
@@ -1057,11 +1143,11 @@ int Object::Distance(Object*                           target,
             {
                 if (relDistType == RelativeDistanceType::REL_DIST_LATERAL)
                 {
-                    dist = pos_diff.dt;
+                    dist = candidate_info.pos_diff.dt;
                 }
                 else if (relDistType == RelativeDistanceType::REL_DIST_LONGITUDINAL)
                 {
-                    dist = pos_diff.ds;
+                    dist = candidate_info.pos_diff.ds;
                 }
                 else
                 {
@@ -1100,26 +1186,87 @@ int Object::Distance(double                            x,
             relDistType == RelativeDistanceType::REL_DIST_CARTESIAN)
         {
             // Get Cartesian/Euclidian distance
-            dist = FreeSpaceDistancePoint(x, y, &latDist, &longDist);
+
+            // check objects and any trailers for minimum distance
+            int     iterations = 0;
+            Object* pivot_obj  = this;
+            struct
+            {
+                double dist      = LARGE_NUMBER;
+                double lat_dist  = LARGE_NUMBER;
+                double long_dist = LARGE_NUMBER;
+            } candidate_info;
+
+            // start measuring from frontmost towing vehicle
+            while (pivot_obj->TowVehicle())
+            {
+                pivot_obj = pivot_obj->TowVehicle();
+            }
+
+            while (pivot_obj && iterations++ < 100 && fabs(candidate_info.dist) > 0.0)
+            {
+                double tmp_dist = pivot_obj->FreeSpaceDistancePoint(x, y, &latDist, &longDist);
+                if (fabs(tmp_dist) < fabs(candidate_info.dist))
+                {
+                    candidate_info.dist      = tmp_dist;
+                    candidate_info.lat_dist  = latDist;
+                    candidate_info.long_dist = longDist;
+                }
+                pivot_obj = pivot_obj->TrailerVehicle();
+            }
 
             // sign indicates target being in front (+) or behind (-)
-            dist *= SIGN(longDist);
+            dist = candidate_info.dist * SIGN(candidate_info.long_dist);
 
             if (cs == roadmanager::CoordinateSystem::CS_ENTITY)
             {
                 if (relDistType == roadmanager::RelativeDistanceType::REL_DIST_LATERAL)
                 {
-                    dist = latDist;
+                    dist = candidate_info.lat_dist;
                 }
                 else if (relDistType == roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL)
                 {
-                    dist = longDist;
+                    dist = candidate_info.long_dist;
                 }
             }
         }
         else if (cs == CoordinateSystem::CS_ROAD || cs == CoordinateSystem::CS_LANE)
         {
-            if (FreeSpaceDistancePointRoadLane(x, y, &latDist, &longDist, cs) != 0)
+            // check objects and any trailers for minimum distance
+            int     iterations = 0;
+            Object* pivot_obj  = this;
+            struct
+            {
+                int    return_value = -1;
+                double lat_dist     = LARGE_NUMBER;
+                double long_dist    = LARGE_NUMBER;
+            } candidate_info;
+
+            // start measuring from frontmost towing vehicle
+            while (pivot_obj->TowVehicle())
+            {
+                pivot_obj = pivot_obj->TowVehicle();
+            }
+
+            while (pivot_obj && iterations++ < 100 &&
+                   ((relDistType == RelativeDistanceType::REL_DIST_LATERAL && fabs(candidate_info.lat_dist) > 0.0) ||
+                    (relDistType == RelativeDistanceType::REL_DIST_LONGITUDINAL && fabs(candidate_info.long_dist) > 0.0)))
+            {
+                int return_value = pivot_obj->FreeSpaceDistancePointRoadLane(x, y, &latDist, &longDist, cs);
+                if (return_value == 0)
+                {
+                    if ((relDistType == RelativeDistanceType::REL_DIST_LATERAL && fabs(latDist) < fabs(candidate_info.lat_dist)) ||
+                        (relDistType == RelativeDistanceType::REL_DIST_LONGITUDINAL && fabs(longDist) < fabs(candidate_info.long_dist)))
+                    {
+                        candidate_info.return_value = return_value;
+                        candidate_info.lat_dist     = latDist;
+                        candidate_info.long_dist    = longDist;
+                    }
+                }
+                pivot_obj = pivot_obj->TrailerVehicle();
+            }
+
+            if (candidate_info.return_value != 0)
             {
                 return -1;
             }
@@ -1127,11 +1274,11 @@ int Object::Distance(double                            x,
             {
                 if (relDistType == RelativeDistanceType::REL_DIST_LATERAL)
                 {
-                    dist = latDist;
+                    dist = candidate_info.lat_dist;
                 }
                 else if (relDistType == RelativeDistanceType::REL_DIST_LONGITUDINAL)
                 {
-                    dist = longDist;
+                    dist = candidate_info.long_dist;
                 }
                 else
                 {
@@ -1614,9 +1761,9 @@ std::string Vehicle::Category2String(int category)
     }
 }
 
-std::string Vehicle::Role2String(int role)
+std::string Object::Role2String(int role)
 {
-    switch (role)
+    switch (static_cast<Object::Role>(role))
     {
         case Role::AMBULANCE:
             return "AMBULANCE";

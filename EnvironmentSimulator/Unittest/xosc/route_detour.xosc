@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSCENARIO>
+    <FileHeader revMajor="1" revMinor="3" date="2024-08-21T10:00:00" description="Detour from route" author="esmini team"/>
+    <ParameterDeclarations/>
+    <CatalogLocations>
+        <VehicleCatalog>
+            <Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
+        </VehicleCatalog>
+        <ControllerCatalog>
+            <Directory path="../../../resources/xosc/Catalogs/Controllers"/>
+        </ControllerCatalog>
+    </CatalogLocations>
+    <RoadNetwork>
+        <LogicFile filepath="../xodr/route_strategy_test_road.xodr"/>
+    </RoadNetwork>
+    <Entities>
+        <ScenarioObject name="Ego">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+            <ObjectController>
+                <CatalogReference catalogName="ControllerCatalog" entryName="interactiveDriver"/>
+            </ObjectController>            
+        </ScenarioObject>
+    </Entities>
+    <Storyboard>
+        <Init>
+            <Actions>
+                <Private entityRef="Ego">
+                    <PrivateAction>
+                        <RoutingAction>
+                            <AssignRouteAction>
+                                <Route name="route" closed="false">
+                                    <Waypoint routeStrategy="shortest">
+                                        <Position>
+                                            <LanePosition roadId="5" laneId="-1" s="490.0" offset="0.0"/>
+                                        </Position>
+                                    </Waypoint>
+                                    <Waypoint routeStrategy="shortest">
+                                        <Position>
+                                            <LanePosition roadId="4" laneId="-1" s="200.0" offset="0.0"/>
+                                        </Position>
+                                    </Waypoint>
+                                    <Waypoint routeStrategy="shortest">
+                                        <Position>
+                                            <LanePosition roadId="5" laneId="-1" s="30.0" offset="0.0"/>
+                                        </Position>
+                                    </Waypoint>
+                                </Route>
+                            </AssignRouteAction>
+                        </RoutingAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="2" laneId="-1" offset="0" s="25"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <ActivateControllerAction longitudinal="true" lateral="true"/>
+                    </PrivateAction>                    
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="0.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="40.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                </Private>
+            </Actions>
+        </Init>
+        <Story name="MyStory">
+            <ParameterDeclarations/>
+            <Act name="MyAct">
+                <ManeuverGroup maximumExecutionCount="1" name="MySequence">
+                    <Actors selectTriggeringEntities="false">
+                        <EntityRef entityRef="Ego"/>
+                    </Actors>
+                    <Maneuver name="MyMoveManeuver">
+                        <Event name="MyMoveEvent1" priority="override">
+                            <Action name="MyMoveAction1">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <LanePosition roadId="200" laneId="-1" offset="0.0" s="1.0"/>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="MyMoveCondition" delay="0" conditionEdge="none">
+                                        <ByEntityCondition>
+                                            <TriggeringEntities triggeringEntitiesRule="any">
+                                                <EntityRef entityRef="Ego"/>
+                                            </TriggeringEntities>
+                                            <EntityCondition>
+                                                <DistanceCondition freespace="false" rule="lessOrEqual" value="1.0">
+                                                    <Position>
+                                                        <LanePosition roadId="201" laneId="-1" s="0.0"/>
+                                                    </Position>
+                                                </DistanceCondition>
+                                            </EntityCondition>
+                                        </ByEntityCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event name="MyMoveEvent2" priority="override">
+                            <Action name="MyMoveAction2">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <LanePosition roadId="301" laneId="-1" offset="0.0" s="1.0"/>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="MyMoveCondition" delay="0" conditionEdge="none">
+                                        <ByEntityCondition>
+                                            <TriggeringEntities triggeringEntitiesRule="any">
+                                                <EntityRef entityRef="Ego"/>
+                                            </TriggeringEntities>
+                                            <EntityCondition>
+                                                <DistanceCondition freespace="false" rule="lessOrEqual" value="1.0">
+                                                    <Position>
+                                                        <LanePosition roadId="301" laneId="-1" s="0.0"/>
+                                                    </Position>
+                                                </DistanceCondition>
+                                            </EntityCondition>
+                                        </ByEntityCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>                        
+                    </Maneuver>
+                </ManeuverGroup>
+            </Act>
+        </Story>
+        <StopTrigger>
+            <ConditionGroup>
+                <Condition name="stop_simulation_time_trigger" delay="0.0" conditionEdge="none">
+                    <ByValueCondition>
+                        <SimulationTimeCondition value="13.0" rule="greaterThan"/>
+                    </ByValueCondition>
+                </Condition>
+            </ConditionGroup>
+        </StopTrigger>
+    </Storyboard>
+</OpenSCENARIO>

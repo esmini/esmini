@@ -12,8 +12,14 @@ extern "C" {
 #include <stdlib.h>
 #include <string.h>
 
+#ifndef M_PI
+#define M_PI (3.14159265358979323846)
+#endif
+
 // Disable warning of some struct initializations
 #pragma warning(disable:4204)
+
+static int string_found = 0;
 
 // Portable string copy with enforced null termination
 // size_t = total size of dest buffer including null termination
@@ -302,7 +308,7 @@ struct expr_var_list {
   struct expr_var *head;
 };
 
-static struct expr_var *expr_var(struct expr_var_list *vars, const char *s,
+static struct expr_var *expr_add_var(struct expr_var_list *vars, const char *s,
                                  size_t len) {
   struct expr_var *v = NULL;
   if (len == 0 || !isfirstvarchr(*s)) {
@@ -324,6 +330,21 @@ static struct expr_var *expr_var(struct expr_var_list *vars, const char *s,
   v->name[len] = '\0';
   vars->head = v;
   return v;
+}
+
+static struct expr_var *expr_var(struct expr_var_list *vars, const char *s, size_t len)
+{
+  struct expr_var *v = NULL;
+  if (len == 0 || !isfirstvarchr(*s)) {
+    return NULL;
+  }
+  for (v = vars->head; v; v = v->next) {
+    if (strlen(v->name) == len && strncmp(v->name, s, len) == 0) {
+      return v;
+    }
+  }
+  string_found = 1;
+  return NULL;
 }
 
 static int to_int(double x) {
@@ -629,10 +650,11 @@ static struct expr *expr_create(const char *s, size_t len,
   struct expr_var *ev;
   const char *id = NULL;
   size_t idn = 0;
-  int string_found = 0;
   struct expr *result = NULL;
   char *str_expr = 0;
   const char *s_orig   = s;
+
+  string_found = 0;
 
   vec_expr_t es = vec_init();
   vec_str_t os = vec_init();
@@ -649,9 +671,6 @@ static struct expr *expr_create(const char *s, size_t len,
   for (;;) {
     int n = expr_next_token(s, len, &flags);
     if (n == 0) {
-      if (idn > 0) {
-        string_found = 1;
-      }
       break;
     } else if (n < 0) {
       if (n == -6) {
@@ -713,17 +732,17 @@ static struct expr *expr_create(const char *s, size_t len,
         } else {
           goto cleanup; /* invalid function name */
         }
-      } else if ((ev = expr_var(vars, id, idn)) != NULL) {
-#if 1  // Support strings instead of variables
-        free(ev->name);
-        free(ev);
-        string_found = 1;
-        break;
-#else  // original code
+      }
+      else if ((ev = expr_var(vars, id, idn)) != NULL)
+      {
         vec_push(&es, expr_varref(ev));
         paren = EXPR_PAREN_FORBIDDEN;
-#endif
       }
+#if 1  // Support strings
+      else {
+        break;
+      }
+#endif
       id = NULL;
       idn = 0;
     }
@@ -881,6 +900,13 @@ static struct expr *expr_create(const char *s, size_t len,
     paren = paren_next;
   }
 
+  if (idn > 0) {
+    struct expr_var *e = expr_var(vars, id, idn);
+    if (e != NULL) {
+      vec_push(&es, expr_varref(e));
+    }
+  }
+
   if (string_found)
   {
     // skip the previous expression brakedown
@@ -913,11 +939,6 @@ static struct expr *expr_create(const char *s, size_t len,
   }
   else
   {
-    if (idn > 0)
-    {
-        vec_push(&es, expr_varref(expr_var(vars, id, idn)));
-    }
-
     while (vec_len(&os) > 0) {
       struct expr_string rest = vec_pop(&os);
       if (rest.n == 1 && (*rest.s == '(' || *rest.s == ')')) {

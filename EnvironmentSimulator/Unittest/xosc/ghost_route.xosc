@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSCENARIO>
+    <FileHeader revMajor="1" revMinor="3" date="2024-09-02T14:00:00" description="Route with ghost controller" author="esmini team"/>
+    <ParameterDeclarations/>
+    <CatalogLocations>
+        <VehicleCatalog>
+            <Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
+        </VehicleCatalog>
+        <ControllerCatalog>
+            <Directory path="../../../resources/xosc/Catalogs/Controllers"/>
+        </ControllerCatalog>
+    </CatalogLocations>
+    <RoadNetwork>
+        <LogicFile filepath="../xodr/route_strategy_test_road.xodr"/>
+    </RoadNetwork>
+    <Entities>
+        <ScenarioObject name="Ego">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+            <ObjectController>
+                <CatalogReference catalogName="ControllerCatalog" entryName="followGhost"/>
+            </ObjectController>            
+        </ScenarioObject>
+    </Entities>
+    <Storyboard>
+        <Init>
+            <Actions>
+                <Private entityRef="Ego">
+                    <PrivateAction>
+                        <RoutingAction>
+                            <AssignRouteAction>
+                                <Route name="route" closed="false">
+                                    <Waypoint routeStrategy="shortest">
+                                        <Position>
+                                            <LanePosition roadId="5" laneId="-1" s="490.0" offset="0.0"/>
+                                        </Position>
+                                    </Waypoint>
+                                    <Waypoint routeStrategy="shortest">
+                                        <Position>
+                                            <LanePosition roadId="4" laneId="-1" s="200.0" offset="0.0"/>
+                                        </Position>
+                                    </Waypoint>
+                                    <Waypoint routeStrategy="shortest">
+                                        <Position>
+                                            <LanePosition roadId="5" laneId="-1" s="30.0" offset="0.0"/>
+                                        </Position>
+                                    </Waypoint>
+                                </Route>
+                            </AssignRouteAction>
+                        </RoutingAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="2" laneId="-1" offset="0" s="25"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <ActivateControllerAction longitudinal="true" lateral="true"/>
+                    </PrivateAction>                    
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="0.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="10.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                </Private>
+            </Actions>
+        </Init>
+        <StopTrigger>
+            <ConditionGroup>
+                <Condition name="stop_simulation_time_trigger" delay="0.0" conditionEdge="none">
+                    <ByValueCondition>
+                        <SimulationTimeCondition value="20.0" rule="greaterThan"/>
+                    </ByValueCondition>
+                </Condition>
+            </ConditionGroup>
+        </StopTrigger>
+    </Storyboard>
+</OpenSCENARIO>

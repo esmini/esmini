@@ -24,6 +24,26 @@
 
 namespace scenarioengine
 {
+
+    struct WheelData
+    {
+        double x = 0.0;  // x coordinate in vehicle coordinate system
+        double y = 0.0;  // y coordinate in vehicle coordinate system
+        double z = 0.0;  // z coordinate in vehicle coordinate system
+        double h = 0.0;  // heading/yaw in global coordinate system
+        double p = 0.0;  // pitch in global coordinate system
+        // double r;                     // roll in global coordinate system
+        // double width;                 // median width of the tire
+        // double wheel_radius;          // median radius of the wheel measured from the center of the wheel to the outer part of the tire
+        double friction_coefficient = 0.0;  // the value describes the kinetic friction of the tyre's contact point
+        // double rotation_rate;         // rotation rate of the wheel
+        // double rim_radius;  // 	median radius of the rim measured from the center to the outer, visible part of the rim
+        int axle  = -1;  // 0=front, 1=next axle from front and so on. -1 indicates wheel is not existing.
+        int index = -1;  // The index of the wheel on the axle, counting in the direction of positive-y, that is, right-to-left. -1 indicates wheel
+                         // not existing.
+        // std::string model_reference; // Opaque reference of an associated 3D model of the wheel
+    };
+
     class Controller;  // Forward declaration
     class OSCPrivateAction;
     class Event;
@@ -89,6 +109,18 @@ namespace scenarioengine
             OVERRIDE_NR_TYPES       = 6,
             OVERRIDE_UNDEFINED      = 7
         } OverrideType;
+
+        enum class Role
+        {
+            NONE             = 0,
+            AMBULANCE        = 1,
+            CIVIL            = 2,
+            FIRE             = 3,
+            MILITARY         = 4,
+            POLICE           = 5,
+            PUBLIC_TRANSPORT = 6,
+            ROAD_ASSISTANCE  = 7
+        };
 
         enum class OverrideGearType
         {
@@ -536,6 +568,42 @@ namespace scenarioengine
             dirty_ = 0;
         }
 
+        void SetRole(std::string role)
+        {
+            if (role == "ambulance")
+            {
+                role_ = static_cast<int>(Object::Role::AMBULANCE);
+            }
+            else if (role == "civil")
+            {
+                role_ = static_cast<int>(Object::Role::CIVIL);
+            }
+            else if (role == "fire")
+            {
+                role_ = static_cast<int>(Object::Role::FIRE);
+            }
+            else if (role == "military")
+            {
+                role_ = static_cast<int>(Object::Role::MILITARY);
+            }
+            else if (role == "police")
+            {
+                role_ = static_cast<int>(Object::Role::POLICE);
+            }
+            else if (role == "public_transport")
+            {
+                role_ = static_cast<int>(Object::Role::PUBLIC_TRANSPORT);
+            }
+            else if (role == "road_assistance")
+            {
+                role_ = static_cast<int>(Object::Role::ROAD_ASSISTANCE);
+            }
+            else
+            {
+                role_ = static_cast<int>(Object::Role::NONE);
+            }
+        }
+
         void SetActive(bool active)
         {
             is_active_ = active;
@@ -544,6 +612,7 @@ namespace scenarioengine
         Object*            TowVehicle();
         Object*            TrailerVehicle();
         static std::string Type2String(int type);
+        static std::string Role2String(int role);
 
     private:
         int  dirty_;
@@ -595,18 +664,6 @@ namespace scenarioengine
             TRAM        = 9
         } Category;
 
-        typedef enum
-        {
-            NONE             = 0,
-            AMBULANCE        = 1,
-            CIVIL            = 2,
-            FIRE             = 3,
-            MILITARY         = 4,
-            POLICE           = 5,
-            PUBLIC_TRANSPORT = 6,
-            ROAD_ASSISTANCE  = 7
-        } Role;
-
         Vehicle();
         Vehicle(const Vehicle& v);
         Vehicle& operator=(const Vehicle&) = default;
@@ -651,51 +708,50 @@ namespace scenarioengine
                 LOG("Vehicle category %s not supported yet", category.c_str());
             }
 
+            SetWheelData();
+
             return;
         }
 
-        void SetRole(std::string role)
+        void SetWheelData()
         {
-            if (role == "ambulance")
+            if (category_ == Category::CAR || category_ == Category::VAN || category_ == Category::TRUCK || category_ == Category::SEMITRAILER ||
+                category_ == Category::BUS || category_ == Category::TRAIN || category_ == Category::TRAM)
             {
-                role_ = static_cast<int>(Vehicle::Role::AMBULANCE);
+                WheelData frontrightwheel{front_axle_.positionX, -front_axle_.trackWidth / 2.0, front_axle_.positionZ, 0.0, 0.0, 1.0, 0, 0};
+                WheelData frontleftwheel{front_axle_.positionX, front_axle_.trackWidth / 2.0, front_axle_.positionZ, 0.0, 0.0, 1.0, 0, 1};
+                WheelData rearrightwheel{0.0, -rear_axle_.trackWidth / 2.0, rear_axle_.positionZ, 0.0, 0.0, 1.0, 1, 0};
+                WheelData rearleftwheel{0.0, rear_axle_.trackWidth / 2.0, rear_axle_.positionZ, 0.0, 0.0, 1.0, 1, 1};
+
+                // order according to OSI, front-to-rear and right-to-left
+                wheel_data = {frontrightwheel, frontleftwheel, rearrightwheel, rearleftwheel};
             }
-            else if (role == "civil")
+            else if (category_ == Category::MOTORBIKE || category_ == Category::BICYCLE)
             {
-                role_ = static_cast<int>(Vehicle::Role::CIVIL);
+                WheelData frontwheel{front_axle_.positionX, 0.0, front_axle_.positionZ, 0.0, 0.0, 1.0, 0, 0};
+                WheelData rearwheel{0.0, 0.0, rear_axle_.positionZ, 0.0, 0.0, 1.0, 1, 0};
+                wheel_data = {frontwheel, rearwheel};
             }
-            else if (role == "fire")
+            else if (category_ == Category::TRAILER)
             {
-                role_ = static_cast<int>(Vehicle::Role::FIRE);
-            }
-            else if (role == "military")
-            {
-                role_ = static_cast<int>(Vehicle::Role::MILITARY);
-            }
-            else if (role == "police")
-            {
-                role_ = static_cast<int>(Vehicle::Role::POLICE);
-            }
-            else if (role == "public_transport")
-            {
-                role_ = static_cast<int>(Vehicle::Role::PUBLIC_TRANSPORT);
-            }
-            else if (role == "road_assistance")
-            {
-                role_ = static_cast<int>(Vehicle::Role::ROAD_ASSISTANCE);
-            }
-            else
-            {
-                role_ = static_cast<int>(Vehicle::Role::NONE);
+                WheelData leftwheel{rear_axle_.positionX, -rear_axle_.trackWidth / 2.0, rear_axle_.positionZ, 0.0, 0.0, 1.0, 0, 1};
+                WheelData rightwheel{rear_axle_.positionX, rear_axle_.trackWidth / 2.0, rear_axle_.positionZ, 0.0, 0.0, 1.0, 0, 0};
+                wheel_data = {leftwheel, rightwheel};
             }
         }
+
+        std::vector<WheelData>& GetWheelData()
+        {
+            return wheel_data;
+        }
+
         int                             ConnectTrailer(Vehicle* trailer);
         int                             DisconnectTrailer();
         void                            AlignTrailers();
         static std::string              Category2String(int category);
-        static std::string              Role2String(int role);
         std::shared_ptr<TrailerCoupler> trailer_coupler_;  // mounting point to any tow vehicle
         std::shared_ptr<TrailerHitch>   trailer_hitch_;    // mounting point to any tow vehicle
+        std::vector<WheelData>          wheel_data;
     };
 
     class Pedestrian : public Object
@@ -708,12 +764,7 @@ namespace scenarioengine
             ANIMAL     = 2
         } Category;
 
-        double   mass_; /**< The mass of a pedestrian in kg. */
-        Vehicle* veh = new Vehicle();
-        void     setPedRole(std::string role)
-        {
-            veh->SetRole(role);
-        }
+        double mass_; /**< The mass of a pedestrian in kg. */
 
         Pedestrian() : Object(Object::Type::PEDESTRIAN), mass_(0.0)
         {

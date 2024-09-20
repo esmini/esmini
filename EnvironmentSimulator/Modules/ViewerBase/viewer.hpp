@@ -184,7 +184,9 @@ namespace viewer
     {
     public:
         osg::ref_ptr<osg::Group> parent_;
-        osg::ref_ptr<osg::Group> group_;
+        osg::ref_ptr<osg::Group> group_all_wp_;
+        osg::ref_ptr<osg::Group> group_scenario_wp_;
+        osg::ref_ptr<osg::Group> group_minimal_wp_;
         Viewer*                  viewer_;
 
         RouteWayPoints(osg::ref_ptr<osg::Group> parent, osg::Vec4 color, Viewer* viewer);

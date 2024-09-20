@@ -33,6 +33,8 @@ The code was initially a result from the Swedish collaborative research project 
 
 User guide: https://esmini.github.io
 
+Brief roadmap is published [here](https://docs.google.com/spreadsheets/d/e/2PACX-1vS83IWhiCWxVlDlx_51BsIZMihcy1mfZmC7YF-Mm6FyDA-ghMGaoZnmS207MaoxHdVoX2j4XKAH5u4T/pubhtml).
+
 For more information about the esmini software parts, see [Inner Workings of esmini](https://github.com/esmini/esmini/blob/master/docs/InnerWorkings.md).
 
 ## Background

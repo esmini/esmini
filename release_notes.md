@@ -1,5 +1,125 @@
 ## esmini release notes
 
+### 2024-09-13 Version 2.38.5
+
+Improvements and fixes:
+- Bugfix: Restore segment interpolation mode after ghost restart
+
+### 2024-09-11 Version 2.38.4
+
+Improvements and fixes:
+- Support InRoutePosition/FromRoadCoordinates
+- Support `pi` and `e` constants in expressions
+- Add support for trajectory coordinate system distance measurement
+- Add [Vector NCAP scenarios](https://github.com/vectorgrp/OSC-NCAP-scenarios) to CI smoke test suite ([issue #595](https://github.com/esmini/esmini/issues/595))
+- Add option to align lateral sign of route positions
+  - `--align_routepositions`
+  - consider route direction when evaluating sign of `laneId` and `t`
+  - use with NCAP scenarios to get it right
+- Change synchronize default distance tolerance from 1.0 to 0.0
+- Fix crash due to empty wheel data vector
+  - affecting e.g. ad_hoc_traffic code example
+- Fix crash due to swarm traffic inherit controllers ([issue #601](https://github.com/esmini/esmini/issues/601))
+  - when no vehicle catalog available, central object is used for swarm
+  - issue was that controller reference was reused and eventually deleted
+  - now controller will be unassigned for the swarm copy vehicle
+- Bugfix: Restore heading interpolation
+  - interpolate heading along segments in object trails
+  - unintentionally disabled in v2.38.0
+- Bugfix: Avoid route being disabled when position is reported via lib
+- Bugfix: Resolve variable value from parameters, not variables
+- Bugfix: Resolve position dependencies at synchronize start
+
+Build improvements:
+- Add symbols to sanitizer build for increased readability
+
+### 2024-09-02 Version 2.38.3
+
+Improvements and fixes:
+
+- Consider trailers for freespace distance calc ([issue #594](https://github.com/esmini/esmini/issues/594))
+- Add lib function ([SE_GetObjectGhostId()](https://github.com/esmini/esmini/blob/707c5b93e6158fca7d6fe0e9d9d6ca2dbc51f06c/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L1050-L1055)) to get ghost ID
+- Support UserDefinedAction in Init section
+  - previously only supported in storyboard
+- Adjust order of Init action execution according to OSC xsd sequence
+- Fix parsing bug causing wrong bounding box settings
+  - bug was introduced in v2.38.2 (previous version)
+
+### 2024-08-29 Version 2.38.2
+
+Improvements and fixes:
+- Add further wheel info, not only friction
+  - both in lib and OSI
+  - see [struct](https://github.com/esmini/esmini/blob/d6308edad511ee37a76009117c834619435960ac/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L55-L71) for what's populated
+  - see API [here](https://github.com/esmini/esmini/blob/d6308edad511ee37a76009117c834619435960ac/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L1099-L1113)
+- Add timestamp to ghost trail info
+  - as return argument to [SE_GetRoadInfoAlongGhostTrail()](https://github.com/esmini/esmini/blob/fac842e13679afcbc7897fc10d60ff9721ec2405/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L1147-L1156) function
+- Improve route handling
+  - always map position to closest point on route
+  - fix missing route position update, e.g. for externally reported positions
+  - refactor and simplify code
+  - add visuals for followRouteController waypoints (dim colored)
+  - indicate start and end waypoints by larger scaled visuals
+- Add a few functions for route info
+  - [SE_GetRouteTotalLength()](https://github.com/esmini/esmini/blob/d6308edad511ee37a76009117c834619435960ac/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L1703-L1708C60)
+  - [SE_GetObjectRouteStatus()](https://github.com/esmini/esmini/blob/d6308edad511ee37a76009117c834619435960ac/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L995C1-L1000C59)
+- Fix elevation mapping bug
+  - could cause entity to drop to lowest road, e.g. from bridge
+  - bug was introduced in v2.37.0 (Feb 2024)
+
+Build improvements:
+- Establish nightly sanitizer job
+- Add manual CI and sanitizer job triggers
+- Fix download issue for build dependent packages
+- Fix cmake version deprecation
+
+### 2024-08-16 Version 2.38.1
+
+Improvements and fixes:
+- Accept negative values for deceleration parameters in ALKS controller
+  - i.e. consider only absolute values of DriverDeceleration and AEBDeceleration
+- Increase test coverage by enabling all relevant tests also for non OSG builds in CI
+
+### 2024-08-15 Version 2.38.0
+
+Updated behaviors:
+- Polyline trajectory heading interpolation now purely depends on followingMode
+  - "position" -> interpolate only around corner
+  - "follow" -> interpolate along whole linear segment
+  - not considering whether heading was specified or not
+  - see updated table in [User guide - Trajectory interpolation and alignment](https://esmini.github.io/#_trajectory_interpolation_and_alignment)
+  - new [option](https://esmini.github.io/#_esmini), `--disable_pline_interpolation`, to skip interpolation altogether
+
+- Adapt Trailer implementation to OpenSCENARIO 1.3
+  - changes from previous prototype implementation:
+    - rename EntityRef element to TrailerRef
+    - Add Trailer parent element for inline and catalog trailers
+- VehicleCatalog updated to match OpenSCENARIO 1.3
+  - trailer configurations updated accordingly
+
+Improvements and fixes:
+- Refactor Position implementation and handling
+  - simplify and clarify relative/absolute mode handling in code
+  - reduce memory leaks
+
+NOTE: Unexpected side effects may have been introduced by the refactorization. Please raise issue if encountered.
+
+### 2024-08-13 Version 2.37.17
+
+Updated behaviors:
+- Update target speed for relative speed action continuously
+  - previously target speed was sampled only once (at start of action)
+
+Improvements and fixes:
+- Fix relative target speed not reset for repeated actions ([issue #589](https://github.com/esmini/esmini/issues/589))
+- Fix bug in condition group logging ([PR #587](https://github.com/esmini/esmini/pull/587))
+- Add [ref_point.xosc](https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Unittest/xosc/ref_point.xosc) demonstrating effect of various ref points ([issue #590](https://github.com/esmini/esmini/issues/590))
+- For injected actions, create unique name and replace ongoing similar action
+  - compose name of action type and action counter
+  - abort any ongoing action of same type and object
+- Fix SUMO controller elevation bug
+  - use SUMO z value as is (absolute, not relative)
+
 ### 2024-07-01 Version 2.37.16
 
 Fixes of bugs introduced in v2.37.15:
@@ -12,7 +132,7 @@ Improvements and fixes:
 - Support (partly) string IDs for roads and junctions
   - integer ID is generated and assigned for internal use
   - the integer ID is the one being logged and reported
-- Add arguments to ignore z, pitch and roll inputs ([PR #583](https://github.com/esmini/esmini/issues/583))
+- Add arguments to ignore z, pitch and roll inputs ([PR #583](https://github.com/esmini/esmini/pull/583))
   - aligning the vehicle to the road instead
 - Improve support for distant road networks
   - very high coordinates (>1+E6) previously resulted in shaky graphics

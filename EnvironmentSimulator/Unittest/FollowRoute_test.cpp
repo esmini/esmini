@@ -90,7 +90,7 @@ TEST_F(FollowRouteTestSmall, FindPathSmallInvalidPosition)
     // Check invalid target
     ASSERT_TRUE(path.empty());
 
-    start  = Position(-1, -1, 10, 0);
+    start  = Position(ID_UNDEFINED, -1, 10, 0);
     target = Position(5, -2, 20, 0);
 
     path = router.CalculatePath(start, target);

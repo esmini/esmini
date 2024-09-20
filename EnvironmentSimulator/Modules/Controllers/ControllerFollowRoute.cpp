@@ -60,6 +60,15 @@ ControllerFollowRoute::ControllerFollowRoute(InitArgs *args) : Controller(args),
     }
 }
 
+ControllerFollowRoute::~ControllerFollowRoute()
+{
+    if (laneChangeAction_ != nullptr)
+    {
+        delete laneChangeAction_;
+        laneChangeAction_ = nullptr;
+    }
+}
+
 void ControllerFollowRoute::Init()
 {
     // FollowRoute controller forced into additive mode - will perform scenario actions, except during lane changes
@@ -197,8 +206,8 @@ void ControllerFollowRoute::CalculateWaypoints()
 {
     roadmanager::LaneIndependentRouter router(odr_);
 
-    roadmanager::Position startPos  = object_->pos_;
-    roadmanager::Position targetPos = object_->pos_.GetRoute()->scenario_waypoints_[static_cast<unsigned int>(scenarioWaypointIndex_)];
+    roadmanager::Position startPos(object_->pos_);
+    roadmanager::Position targetPos(object_->pos_.GetRoute()->scenario_waypoints_[static_cast<unsigned int>(scenarioWaypointIndex_)]);
 
     // If start and target is on same road, set next waypoint as target
     if (startPos.GetTrackId() == targetPos.GetTrackId())
@@ -225,7 +234,8 @@ void ControllerFollowRoute::CalculateWaypoints()
 
         object_->pos_.GetRoute()->minimal_waypoints_.clear();
         object_->pos_.GetRoute()->minimal_waypoints_ = {waypoints_[0], waypoints_[1]};
-        object_->pos_.CalcRoutePosition();  // Reset route object according to new route waypoints and current position
+        object_->pos_.CalcRoutePosition();               // Reset route object according to new route waypoints and current position
+        object_->SetDirtyBits(Object::DirtyBit::ROUTE);  // Set dirty bit to notify that route has changed
         pathCalculated_ = true;
     }
 }
@@ -243,7 +253,7 @@ void ControllerFollowRoute::CreateLaneChange(int lane)
     LatLaneChangeAction::TargetAbsolute *target = new LatLaneChangeAction::TargetAbsolute;
     target->value_                              = lane;
 
-    action_lanechange->target_.reset(target);
+    action_lanechange->target_ = target;
 
     // Set lane change to be performed by ChangeLane function
     laneChangeAction_ = action_lanechange;
@@ -283,8 +293,6 @@ void ControllerFollowRoute::ChangeLane(double timeStep)
         vehicle_.posX_    = object_->pos_.GetX();
         vehicle_.posY_    = object_->pos_.GetY();
         vehicle_.heading_ = object_->pos_.GetH();
-
-        gateway_->updateObjectWorldPosXYH(object_->id_, 0.0, vehicle_.posX_, vehicle_.posY_, vehicle_.heading_);
     }
 }
 
@@ -418,7 +426,7 @@ WaypointStatus ControllerFollowRoute::GetWaypointStatus(roadmanager::Position ve
         Junction *junction = odr_->GetJunctionById(link->GetElementId());
         for (size_t j = 0; j < static_cast<unsigned int>(junction->GetNoConnectionsFromRoadId(currentRoad->GetId())); j++)
         {
-            int roadId = junction->GetConnectingRoadIdFromIncomingRoadId(currentRoad->GetId(), static_cast<int>(j));
+            id_t roadId = junction->GetConnectingRoadIdFromIncomingRoadId(currentRoad->GetId(), static_cast<int>(j));
             possiblePreviousRoads.push_back(odr_->GetRoadById(roadId));
         }
     }

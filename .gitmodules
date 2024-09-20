@@ -4,3 +4,6 @@
 [submodule "externals/fmi2"]
 	path = externals/fmi2
 	url = https://github.com/modelica/fmi-standard.git
+[submodule "test/OSC-NCAP-scenarios"]
+	path = test/OSC-NCAP-scenarios
+	url = https://github.com/vectorgrp/OSC-NCAP-scenarios

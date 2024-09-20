@@ -17,6 +17,7 @@
 #include "playerbase.hpp"
 #include "esminiLib.hpp"
 #include "IdealSensor.hpp"
+#include "Entities.hpp"
 #ifdef _USE_OSI
 #include "osi_sensordata.pb.h"
 #endif
@@ -155,9 +156,25 @@ static void copyStateFromScenarioGateway(SE_ScenarioObjectState *state, ObjectSt
     state->height         = gw_state->info.boundingbox.dimensions_.height_;
     state->objectType     = gw_state->info.obj_type;
     state->objectCategory = gw_state->info.obj_category;
-    state->wheel_angle    = static_cast<float>(gw_state->info.wheel_angle);
-    state->wheel_rot      = static_cast<float>(gw_state->info.wheel_rot);
+    // assume first wheel is on front axle and steering
+    state->wheel_angle    = gw_state->info.wheel_data.size() > 0 ? static_cast<float>(gw_state->info.wheel_data[0].h) : 0.0f;
+    state->wheel_rot      = gw_state->info.wheel_data.size() > 0 ? static_cast<float>(gw_state->info.wheel_data[0].p) : 0.0f;
     state->visibilityMask = gw_state->info.visibilityMask;
+}
+
+static void copyWheelDataFromScenarioGateway(SE_WheelData *wheeldata, ObjectStateStruct *gw_state, int wheel_index)
+{
+    if (wheel_index >= 0 && wheel_index < static_cast<int>(gw_state->info.wheel_data.size()))
+    {
+        wheeldata->x                    = static_cast<float>(gw_state->info.wheel_data[static_cast<unsigned int>(wheel_index)].x);
+        wheeldata->y                    = static_cast<float>(gw_state->info.wheel_data[static_cast<unsigned int>(wheel_index)].y);
+        wheeldata->z                    = static_cast<float>(gw_state->info.wheel_data[static_cast<unsigned int>(wheel_index)].z);
+        wheeldata->h                    = static_cast<float>(gw_state->info.wheel_data[static_cast<unsigned int>(wheel_index)].h);
+        wheeldata->p                    = static_cast<float>(gw_state->info.wheel_data[static_cast<unsigned int>(wheel_index)].p);
+        wheeldata->friction_coefficient = static_cast<float>(gw_state->info.wheel_data[static_cast<unsigned int>(wheel_index)].friction_coefficient);
+        wheeldata->axle                 = gw_state->info.wheel_data[static_cast<unsigned int>(wheel_index)].axle;
+        wheeldata->index                = gw_state->info.wheel_data[static_cast<unsigned int>(wheel_index)].index;
+    }
 }
 
 static int getObjectById(int object_id, Object *&obj)
@@ -267,7 +284,7 @@ static int GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_Roa
     return static_cast<int>(retval);
 }
 
-static int GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, SE_RoadInfo *r_data, float *speed_ghost)
+static int GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, SE_RoadInfo *r_data, float *speed_ghost, float *timestamp)
 {
     roadmanager::RoadProbeInfo s_data;
 
@@ -315,7 +332,7 @@ static int GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, S
     }
 
     roadmanager::Position pos;
-    if (trailPos.road_id >= 0)
+    if (trailPos.road_id != SE_ID_UNDEFINED)
     {
         pos.XYZ2TrackPos(trailPos.x, trailPos.y, 0.0, roadmanager::Position::PosMode::UNDEFINED, false, trailPos.road_id, false);
     }
@@ -330,6 +347,7 @@ static int GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, S
     r_data->trail_heading = static_cast<float>(trailPos.h);
 
     *speed_ghost = static_cast<float>(trailPos.speed);
+    *timestamp   = static_cast<float>(trailPos.time);
 
     // Update object sensor position for visualization
     if (obj->sensor_pos_)
@@ -380,7 +398,7 @@ static int GetRoadInfoAtGhostTrailTime(int object_id, float time, SE_RoadInfo *r
     }
 
     roadmanager::Position pos;
-    if (trailPos.road_id >= 0)
+    if (trailPos.road_id != SE_ID_UNDEFINED)
     {
         pos.XYZ2TrackPos(trailPos.x, trailPos.y, 0.0, roadmanager::Position::PosMode::UNDEFINED, false, trailPos.road_id, false);
     }
@@ -1086,6 +1104,7 @@ extern "C"
                 Controller *ctrl          = InstantiateControllerExternal(&args);
                 if (ctrl != nullptr)
                 {
+                    player->scenarioEngine->scenarioReader->AddController(ctrl);
                     vehicle->AssignController(ctrl);
                     ctrl->Activate(ControlActivationMode::ON, ControlActivationMode::ON, ControlActivationMode::OFF, ControlActivationMode::OFF);
                 }
@@ -1136,6 +1155,12 @@ extern "C"
 
         if (player != nullptr)
         {
+            for (auto &ctrl : obj->controllers_)
+            {
+                obj->UnassignController(ctrl);
+                ctrl->UnlinkObject();
+                player->scenarioEngine->scenarioReader->RemoveController(ctrl);
+            }
             player->scenarioEngine->entities_.removeObject(object_id);
             player->scenarioGateway->removeObject(object_id);
             return 0;
@@ -1183,7 +1208,7 @@ extern "C"
         return 0;
     }
 
-    SE_DLL_API int SE_ReportObjectRoadPos(int object_id, float timestamp, int roadId, int laneId, float laneOffset, float s)
+    SE_DLL_API int SE_ReportObjectRoadPos(int object_id, float timestamp, id_t roadId, int laneId, float laneOffset, float s)
     {
         Object *obj = nullptr;
         if (getObjectById(object_id, obj) == -1)
@@ -1424,12 +1449,40 @@ extern "C"
     SE_DLL_API int SE_GetObjectState(int object_id, SE_ScenarioObjectState *state)
     {
         scenarioengine::ObjectState obj_state;
+
+        if (player == nullptr)
+        {
+            return -1;
+        }
+
         if (player->scenarioGateway->getObjectStateById(object_id, obj_state) != -1)
         {
             copyStateFromScenarioGateway(state, &obj_state.state_);
             return 0;
         }
 
+        return -1;
+    }
+
+    SE_DLL_API int SE_GetObjectRouteStatus(int object_id)
+    {
+        if (player != nullptr)
+        {
+            Object *obj = player->scenarioEngine->entities_.GetObjectById(object_id);
+            if (obj == nullptr)
+            {
+                return -1;
+            }
+
+            if (obj->pos_.route_ == nullptr)
+            {
+                return 0;
+            }
+            else
+            {
+                return obj->pos_.route_->OnRoute() ? 2 : 1;
+            }
+        }
         return -1;
     }
 
@@ -1742,6 +1795,23 @@ extern "C"
         return obj->GetGhost() == nullptr ? 0 : 1;
     }
 
+    SE_DLL_API int SE_GetObjectGhostId(int object_id)
+    {
+        Object *obj = nullptr;
+        if (getObjectById(object_id, obj) == -1)
+        {
+            return -1;
+        }
+
+        Object *ghost = obj->GetGhost();
+        if (ghost != nullptr)
+        {
+            return ghost->GetId();
+        }
+
+        return -1;
+    }
+
     SE_DLL_API int SE_GetObjectGhostState(int object_id, SE_ScenarioObjectState *state)
     {
         Object *ghost = nullptr;
@@ -1862,6 +1932,36 @@ extern "C"
                 {
                     *acc_long = static_cast<float>(obj->pos_.GetAccLong());
                 }
+                return 0;
+            }
+        }
+
+        return -1;
+    }
+
+    SE_DLL_API int SE_GetObjectNumberOfWheels(int object_id)
+    {
+        scenarioengine::ObjectState gw_obj_state;
+
+        if (player->scenarioGateway->getObjectStateById(object_id, gw_obj_state) != -1)
+        {
+            return static_cast<int>(gw_obj_state.state_.info.wheel_data.size());
+        }
+
+        return -1;
+    }
+
+    SE_DLL_API int SE_GetObjectWheelData(int object_id, int wheel_index, SE_WheelData *wheeldata)
+    {
+        scenarioengine::ObjectState gw_obj_state;
+
+        if (player->scenarioGateway->getObjectStateById(object_id, gw_obj_state) != -1)
+        {
+            int number_of_wheels = static_cast<int>(gw_obj_state.state_.info.wheel_data.size());
+
+            if (wheel_index >= 0 && wheel_index < number_of_wheels)
+            {
+                copyWheelDataFromScenarioGateway(wheeldata, &gw_obj_state.state_, wheel_index);
                 return 0;
             }
         }
@@ -2029,7 +2129,7 @@ extern "C"
         return GetRoadInfoAtDistance(object_id, adjustedLookaheadDistance, data, lookAheadMode);
     }
 
-    SE_DLL_API int SE_GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, SE_RoadInfo *data, float *speed_ghost)
+    SE_DLL_API int SE_GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, SE_RoadInfo *data, float *speed_ghost, float *timestamp)
     {
         Object *obj = nullptr;
         if (getObjectById(object_id, obj) == -1)
@@ -2037,7 +2137,7 @@ extern "C"
             return -1;
         }
 
-        if (GetRoadInfoAlongGhostTrail(object_id, lookahead_distance, data, speed_ghost) != 0)
+        if (GetRoadInfoAlongGhostTrail(object_id, lookahead_distance, data, speed_ghost, timestamp) != 0)
         {
             return -1;
         }
@@ -2133,7 +2233,7 @@ extern "C"
         StoryBoardElement::stateChangeCallback = fnPtr;
     }
 
-    SE_DLL_API int SE_GetNumberOfRoadSigns(int road_id)
+    SE_DLL_API int SE_GetNumberOfRoadSigns(id_t road_id)
     {
         if (player != nullptr)
         {
@@ -2146,7 +2246,7 @@ extern "C"
         return 0;
     }
 
-    SE_DLL_API int SE_GetRoadSign(int road_id, int index, SE_RoadSign *road_sign)
+    SE_DLL_API int SE_GetRoadSign(id_t road_id, int index, SE_RoadSign *road_sign)
     {
         static std::string returnString;
 
@@ -2187,7 +2287,7 @@ extern "C"
         return -1;
     }
 
-    SE_DLL_API int SE_GetNumberOfRoadSignValidityRecords(int road_id, int index)
+    SE_DLL_API int SE_GetNumberOfRoadSignValidityRecords(id_t road_id, int index)
     {
         if (player != nullptr)
         {
@@ -2202,7 +2302,7 @@ extern "C"
         return 0;
     }
 
-    SE_DLL_API int SE_GetRoadSignValidityRecord(int road_id, int signIndex, int validityIndex, SE_RoadObjValidity *validity)
+    SE_DLL_API int SE_GetRoadSignValidityRecord(id_t road_id, int signIndex, int validityIndex, SE_RoadObjValidity *validity)
     {
         if (player != nullptr)
         {
@@ -2222,7 +2322,7 @@ extern "C"
         return -1;
     }
 
-    SE_DLL_API const char *SE_GetRoadIdString(int road_id)
+    SE_DLL_API const char *SE_GetRoadIdString(id_t road_id)
     {
         if (player != nullptr)
         {
@@ -2236,7 +2336,7 @@ extern "C"
         return "";
     }
 
-    SE_DLL_API int SE_GetRoadIdFromString(const char *road_id_str)
+    SE_DLL_API id_t SE_GetRoadIdFromString(const char *road_id_str)
     {
         if (player != nullptr)
         {
@@ -2247,10 +2347,10 @@ extern "C"
             }
         }
 
-        return -1;
+        return ID_UNDEFINED;
     }
 
-    SE_DLL_API const char *SE_GetJunctionIdString(int junction_id)
+    SE_DLL_API const char *SE_GetJunctionIdString(id_t junction_id)
     {
         if (player != nullptr)
         {
@@ -2264,7 +2364,7 @@ extern "C"
         return "";
     }
 
-    SE_DLL_API int SE_GetJunctionIdFromString(const char *junction_id_str)
+    SE_DLL_API id_t SE_GetJunctionIdFromString(const char *junction_id_str)
     {
         if (player != nullptr)
         {
@@ -2275,7 +2375,7 @@ extern "C"
             }
         }
 
-        return -1;
+        return ID_UNDEFINED;
     }
 
     SE_DLL_API void SE_ViewerShowFeature(int featureType, bool enable)
@@ -2664,30 +2764,55 @@ extern "C"
             return -1;
         }
 
-        if (route_index >= static_cast<int>(obj->pos_.GetRoute()->all_waypoints_.size()))
+        roadmanager::Route *route = obj->pos_.GetRoute();
+
+        if (route == nullptr)
         {
-            LOG("Requested waypoint index %d invalid, only %d registered", route_index, obj->pos_.GetRoute()->all_waypoints_.size());
+            LOG("Object %s (id %d) has currently no assigned route", obj->GetName().c_str(), object_id);
             return -1;
         }
 
-        roadmanager::Road *road =
-            player->odr_manager->GetRoadById(obj->pos_.GetRoute()->all_waypoints_[static_cast<unsigned int>(route_index)].GetTrackId());
+        if (route_index < 0 || route_index >= static_cast<int>(route->all_waypoints_.size()))
+        {
+            LOG("Requested waypoint index %d invalid, only %d registered", route_index, route->all_waypoints_.size());
+            return -1;
+        }
 
-        routeinfo->x          = static_cast<float>(obj->pos_.GetRoute()->all_waypoints_[static_cast<unsigned int>(route_index)].GetX());
-        routeinfo->y          = static_cast<float>(obj->pos_.GetRoute()->all_waypoints_[static_cast<unsigned int>(route_index)].GetY());
-        routeinfo->z          = static_cast<float>(obj->pos_.GetRoute()->all_waypoints_[static_cast<unsigned int>(route_index)].GetZ());
-        routeinfo->h          = static_cast<float>(obj->pos_.GetRoute()->all_waypoints_[static_cast<unsigned int>(route_index)].GetH());
-        routeinfo->roadId     = obj->pos_.GetRoute()->all_waypoints_[static_cast<unsigned int>(route_index)].GetTrackId();
-        routeinfo->junctionId = obj->pos_.GetRoute()->all_waypoints_[static_cast<unsigned int>(route_index)].GetJunctionId();
-        routeinfo->laneId     = obj->pos_.GetRoute()->all_waypoints_[static_cast<unsigned int>(route_index)].GetLaneId();
-        routeinfo->osiLaneId  = road->GetDrivingLaneById(obj->pos_.GetRoute()->all_waypoints_[static_cast<unsigned int>(route_index)].GetS(),
-                                                        obj->pos_.GetRoute()->all_waypoints_[static_cast<unsigned int>(route_index)].GetLaneId())
+        roadmanager::Road *road = player->odr_manager->GetRoadById(route->all_waypoints_[static_cast<unsigned int>(route_index)].GetTrackId());
+
+        routeinfo->x          = static_cast<float>(route->all_waypoints_[static_cast<unsigned int>(route_index)].GetX());
+        routeinfo->y          = static_cast<float>(route->all_waypoints_[static_cast<unsigned int>(route_index)].GetY());
+        routeinfo->z          = static_cast<float>(route->all_waypoints_[static_cast<unsigned int>(route_index)].GetZ());
+        routeinfo->h          = static_cast<float>(route->all_waypoints_[static_cast<unsigned int>(route_index)].GetH());
+        routeinfo->roadId     = route->all_waypoints_[static_cast<unsigned int>(route_index)].GetTrackId();
+        routeinfo->junctionId = route->all_waypoints_[static_cast<unsigned int>(route_index)].GetJunctionId();
+        routeinfo->laneId     = route->all_waypoints_[static_cast<unsigned int>(route_index)].GetLaneId();
+        routeinfo->osiLaneId  = road->GetDrivingLaneById(route->all_waypoints_[static_cast<unsigned int>(route_index)].GetS(),
+                                                        route->all_waypoints_[static_cast<unsigned int>(route_index)].GetLaneId())
                                    ->GetGlobalId();
-        routeinfo->laneOffset = static_cast<float>(obj->pos_.GetRoute()->all_waypoints_[static_cast<unsigned int>(route_index)].GetOffset());
-        routeinfo->s          = static_cast<float>(obj->pos_.GetRoute()->all_waypoints_[static_cast<unsigned int>(route_index)].GetS());
-        routeinfo->t          = static_cast<float>(obj->pos_.GetRoute()->all_waypoints_[static_cast<unsigned int>(route_index)].GetT());
+        routeinfo->laneOffset = static_cast<float>(route->all_waypoints_[static_cast<unsigned int>(route_index)].GetOffset());
+        routeinfo->s          = static_cast<float>(route->all_waypoints_[static_cast<unsigned int>(route_index)].GetS());
+        routeinfo->t          = static_cast<float>(route->all_waypoints_[static_cast<unsigned int>(route_index)].GetT());
 
         return 0;
+    }
+
+    SE_DLL_API float SE_GetRouteTotalLength(int object_id)
+    {
+        Object *obj = nullptr;
+        if (getObjectById(object_id, obj) == -1)
+        {
+            return -1;
+        }
+
+        roadmanager::Route *route = obj->pos_.GetRoute();
+
+        if (route != nullptr)
+        {
+            return static_cast<float>(route->GetLength());
+        }
+
+        return 0.0f;
     }
 
     SE_DLL_API void SE_InjectSpeedAction(SE_SpeedActionStruct *action)

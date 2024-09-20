@@ -314,7 +314,7 @@
         <surface>
         </surface>
     </road>
-    <road name="" length="1.1425949070763556e+02" id="3" junction="-1">
+    <road name="" length="1.1425949070763556e+02" id="2" junction="-1">
         <link>
             <successor elementType="junction" elementId="Junction4" />
         </link>
@@ -414,7 +414,7 @@
         <surface>
         </surface>
     </road>
-    <road name="" length="1.4705225500143696e+01" id="5" junction="Junction4">
+    <road name="" length="1.4705225500143696e+01" id="125" junction="Junction4">
         <link>
             <predecessor elementType="road" elementId="1" contactPoint="start" />
             <successor elementType="road" elementId="0" contactPoint="start" />
@@ -460,7 +460,7 @@
         <surface>
         </surface>
     </road>
-    <road name="" length="9.3301575614303687e+00" id="6" junction="Junction4">
+    <road name="" length="9.3301575614303687e+00" id="4294967295" junction="Junction4">
         <link>
             <predecessor elementType="road" elementId="1" contactPoint="start" />
             <successor elementType="road" elementId="Kalle" contactPoint="end" />
@@ -538,7 +538,7 @@
     <road name="" length="1.5338635364571706e+01" id="7" junction="Junction4">
         <link>
             <predecessor elementType="road" elementId="1" contactPoint="start" />
-            <successor elementType="road" elementId="3" contactPoint="end" />
+            <successor elementType="road" elementId="2" contactPoint="end" />
         </link>
         <planView>
             <geometry s="0.0000000000000000e+00" x="3.2803636236597036e+01" y="4.6722880153541468e-01" hdg="-2.9486133429723873e+00" length="1.5338635364571706e+01">
@@ -707,7 +707,7 @@
     <road name="" length="1.5058299990762263e+01" id="10" junction="Junction4">
         <link>
             <predecessor elementType="road" elementId="0" contactPoint="start" />
-            <successor elementType="road" elementId="3" contactPoint="end" />
+            <successor elementType="road" elementId="2" contactPoint="end" />
         </link>
         <planView>
             <geometry s="0.0000000000000000e+00" x="2.8956290811185873e+01" y="-9.8206009939376955e+00" hdg="1.7827334187422974e+00" length="1.4921205933107643e+01">
@@ -755,7 +755,7 @@
     </road>
     <road name="" length="9.7922380451809516e+00" id="11" junction="Junction4">
         <link>
-            <predecessor elementType="road" elementId="3" contactPoint="end" />
+            <predecessor elementType="road" elementId="2" contactPoint="end" />
             <successor elementType="road" elementId="0" contactPoint="start" />
         </link>
         <planView>
@@ -830,7 +830,7 @@
     </road>
     <road name="" length="1.5504008388748556e+01" id="2Kalle3" junction="Junction4">
         <link>
-            <predecessor elementType="road" elementId="3" contactPoint="end" />
+            <predecessor elementType="road" elementId="2" contactPoint="end" />
             <successor elementType="road" elementId="1" contactPoint="start" />
         </link>
         <planView>
@@ -876,7 +876,7 @@
     </road>
     <road name="" length="1.4869596549707827e+01" id="13" junction="Junction4">
         <link>
-            <predecessor elementType="road" elementId="3" contactPoint="end" />
+            <predecessor elementType="road" elementId="2" contactPoint="end" />
             <successor elementType="road" elementId="Kalle" contactPoint="end" />
         </link>
         <planView>
@@ -920,7 +920,7 @@
         <surface>
         </surface>
     </road>
-    <road name="" length="1.5474663187534015e+01" id="14" junction="Junction4">
+    <road name="" length="1.5474663187534015e+01" id="4294967296" junction="Junction4">
         <link>
             <predecessor elementType="road" elementId="Kalle" contactPoint="end" />
             <successor elementType="road" elementId="0" contactPoint="start" />
@@ -966,7 +966,7 @@
         <surface>
         </surface>
     </road>
-    <road name="" length="1.4864770982925403e+01" id="15" junction="Junction4">
+    <road name="" length="1.4864770982925403e+01" id="4294967294" junction="Junction4">
         <link>
             <predecessor elementType="road" elementId="Kalle" contactPoint="end" />
             <successor elementType="road" elementId="1" contactPoint="start" />
@@ -1018,7 +1018,7 @@
     <road name="" length="9.2432627200889943e+00" id="16" junction="Junction4">
         <link>
             <predecessor elementType="road" elementId="Kalle" contactPoint="end" />
-            <successor elementType="road" elementId="3" contactPoint="end" />
+            <successor elementType="road" elementId="2" contactPoint="end" />
         </link>
         <planView>
             <geometry s="0.0000000000000000e+00" x="2.2504870688215554e+01" y="4.6177624915068947e+00" hdg="-1.3883388098147114e+00" length="9.2432627200889943e+00">
@@ -1099,10 +1099,10 @@
         <connection id="2" incomingRoad="0" connectingRoad="10" contactPoint="start">
             <laneLink from="1" to="-1"/>
         </connection>
-        <connection id="3" incomingRoad="1" connectingRoad="5" contactPoint="start">
+        <connection id="3" incomingRoad="1" connectingRoad="125" contactPoint="start">
             <laneLink from="1" to="-1"/>
         </connection>
-        <connection id="4" incomingRoad="1" connectingRoad="6" contactPoint="start">
+        <connection id="4" incomingRoad="1" connectingRoad="4294967295" contactPoint="start">
             <laneLink from="1" to="-1"/>
             <laneLink from="2" to="-2"/>
             <laneLink from="3" to="-3"/>
@@ -1110,10 +1110,10 @@
         <connection id="5" incomingRoad="1" connectingRoad="7" contactPoint="start">
             <laneLink from="1" to="-1"/>
         </connection>
-        <connection id="6" incomingRoad="Kalle" connectingRoad="14" contactPoint="start">
+        <connection id="6" incomingRoad="Kalle" connectingRoad="4294967296" contactPoint="start">
             <laneLink from="-1" to="-1"/>
         </connection>
-        <connection id="7" incomingRoad="Kalle" connectingRoad="15" contactPoint="start">
+        <connection id="7" incomingRoad="Kalle" connectingRoad="4294967294" contactPoint="start">
             <laneLink from="-1" to="-1"/>
         </connection>
         <connection id="8" incomingRoad="Kalle" connectingRoad="16" contactPoint="start">
@@ -1121,15 +1121,15 @@
             <laneLink from="-2" to="-2"/>
             <laneLink from="-3" to="-3"/>
         </connection>
-        <connection id="9" incomingRoad="3" connectingRoad="11" contactPoint="start">
+        <connection id="9" incomingRoad="2" connectingRoad="11" contactPoint="start">
             <laneLink from="-1" to="-1"/>
             <laneLink from="-2" to="-2"/>
             <laneLink from="-3" to="-3"/>
         </connection>
-        <connection id="10" incomingRoad="3" connectingRoad="2Kalle3" contactPoint="start">
+        <connection id="10" incomingRoad="2" connectingRoad="2Kalle3" contactPoint="start">
             <laneLink from="-1" to="-1"/>
         </connection>
-        <connection id="11" incomingRoad="3" connectingRoad="13" contactPoint="start">
+        <connection id="11" incomingRoad="2" connectingRoad="13" contactPoint="start">
             <laneLink from="-1" to="-1"/>
         </connection>
     </junction>

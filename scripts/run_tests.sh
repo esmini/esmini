@@ -2,20 +2,26 @@
 
 arg1=$1
 arg2=$2
+arg3=$3
 
 buildConfiguration="Release"
 skipOpenGLTests=false
+timeout=40
 
 if ! [[ -z "$arg1" ]]; then
     if [[ "$arg1" = "Debug" ]]; then
         buildConfiguration="Debug"
-    fi 
+    fi
 fi
 
 if ! [[ -z "$arg2" ]]; then
     if [[ "$arg2" = true ]]; then
         skipOpenGLTests=true
-    fi 
+    fi
+fi
+
+if ! [[ -z "$arg3" ]]; then
+    timeout="$arg3"
 fi
 
 echo "$buildConfiguration - Skip OpenGL tests: $skipOpenGLTests"
@@ -115,7 +121,7 @@ if [[ "$skipOpenGLTests" == false ]]; then
 
     echo $'\n'Run smoke tests:
 
-    if ! ${PYTHON} smoke_test.py; then
+    if ! ${PYTHON} smoke_test.py "-t $timeout"; then
         exit_with_msg "smoke test failed"
     fi
 
@@ -123,6 +129,12 @@ fi
 
 echo $'\n'Run ALKS test suite:
 
-if ! ${PYTHON} alks_suite.py; then
+if ! ${PYTHON} alks_suite.py -t $timeout; then
     exit_with_msg "alks_suite test failed"
+fi
+
+echo $'\n'Run NCAP test suite:
+
+if ! ${PYTHON} ncap_suite.py -t $timeout; then
+    exit_with_msg "ncap_suite test failed"
 fi

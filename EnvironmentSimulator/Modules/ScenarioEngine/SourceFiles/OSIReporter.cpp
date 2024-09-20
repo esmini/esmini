@@ -16,6 +16,7 @@
 #include <cmath>
 #include <string>
 #include <utility>
+#include <array>
 
 #ifdef _WIN32
 #include <winsock2.h>
@@ -501,7 +502,7 @@ int OSIReporter::UpdateOSIHostVehicleData(ObjectState *objectState)
     return 0;
 }
 
-int OSIReporter::UpdateOSIStationaryObjectODR(int road_id, roadmanager::RMObject *object)
+int OSIReporter::UpdateOSIStationaryObjectODR(id_t road_id, roadmanager::RMObject *object)
 {
     (void)road_id;
     // Create OSI Stationary Object
@@ -766,35 +767,35 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState *objectState)
 #ifdef _OSI_VERSION_3_3_1
         LOG_ONCE("using OSI 3.3.1, skipping vehicle role attribute");
 #else
-        if (objectState->state_.info.obj_role == Vehicle::Role::AMBULANCE)
+        if (objectState->state_.info.obj_role == static_cast<int>(Object::Role::AMBULANCE))
         {
             obj_osi_internal.mobj->mutable_vehicle_classification()->set_role(osi3::MovingObject_VehicleClassification::ROLE_AMBULANCE);
         }
-        else if (objectState->state_.info.obj_role == Vehicle::Role::CIVIL)
+        else if (objectState->state_.info.obj_role == static_cast<int>(Object::Role::CIVIL))
         {
             obj_osi_internal.mobj->mutable_vehicle_classification()->set_role(osi3::MovingObject_VehicleClassification::ROLE_CIVIL);
         }
-        else if (objectState->state_.info.obj_role == Vehicle::Role::FIRE)
+        else if (objectState->state_.info.obj_role == static_cast<int>(Object::Role::FIRE))
         {
             obj_osi_internal.mobj->mutable_vehicle_classification()->set_role(osi3::MovingObject_VehicleClassification::ROLE_FIRE);
         }
-        else if (objectState->state_.info.obj_role == Vehicle::Role::MILITARY)
+        else if (objectState->state_.info.obj_role == static_cast<int>(Object::Role::MILITARY))
         {
             obj_osi_internal.mobj->mutable_vehicle_classification()->set_role(osi3::MovingObject_VehicleClassification::ROLE_MILITARY);
         }
-        else if (objectState->state_.info.obj_role == Vehicle::Role::POLICE)
+        else if (objectState->state_.info.obj_role == static_cast<int>(Object::Role::POLICE))
         {
             obj_osi_internal.mobj->mutable_vehicle_classification()->set_role(osi3::MovingObject_VehicleClassification::ROLE_POLICE);
         }
-        else if (objectState->state_.info.obj_role == Vehicle::Role::PUBLIC_TRANSPORT)
+        else if (objectState->state_.info.obj_role == static_cast<int>(Object::Role::PUBLIC_TRANSPORT))
         {
             obj_osi_internal.mobj->mutable_vehicle_classification()->set_role(osi3::MovingObject_VehicleClassification::ROLE_PUBLIC_TRANSPORT);
         }
-        else if (objectState->state_.info.obj_role == Vehicle::Role::ROAD_ASSISTANCE)
+        else if (objectState->state_.info.obj_role == static_cast<int>(Object::Role::ROAD_ASSISTANCE))
         {
             obj_osi_internal.mobj->mutable_vehicle_classification()->set_role(osi3::MovingObject_VehicleClassification::ROLE_ROAD_ASSISTANCE);
         }
-        else if (objectState->state_.info.obj_role == Vehicle::Role::NONE)
+        else if (objectState->state_.info.obj_role == static_cast<int>(Object::Role::NONE))
         {
             obj_osi_internal.mobj->mutable_vehicle_classification()->set_role(osi3::MovingObject_VehicleClassification::ROLE_UNKNOWN);
         }
@@ -858,12 +859,23 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState *objectState)
     obj_osi_internal.mobj->mutable_base()->mutable_dimension()->set_length(objectState->state_.info.boundingbox.dimensions_.length_);
 
     // Set OSI Moving Object Position
-    obj_osi_internal.mobj->mutable_base()->mutable_position()->set_x(
-        objectState->state_.pos.GetX() + static_cast<double>(objectState->state_.info.boundingbox.center_.x_) * cos(objectState->state_.pos.GetH()));
-    obj_osi_internal.mobj->mutable_base()->mutable_position()->set_y(
-        objectState->state_.pos.GetY() + static_cast<double>(objectState->state_.info.boundingbox.center_.x_) * sin(objectState->state_.pos.GetH()));
-    obj_osi_internal.mobj->mutable_base()->mutable_position()->set_z(
-        objectState->state_.pos.GetZ() + static_cast<double>(objectState->state_.info.boundingbox.dimensions_.height_) / 2.0);
+    // As OSI defines the origin of the object coordinates in the center of the bounding box and esmini (as OpenSCENARIO)
+    // at the center of the rear axle, the position needs to be transformed.
+    // For the transformation the orientation of the object has to be taken into account.
+    double x_rel, y_rel, z_rel;
+    RotateVec3d(objectState->state_.pos.GetH(),
+                objectState->state_.pos.GetP(),
+                objectState->state_.pos.GetR(),
+                objectState->state_.info.boundingbox.center_.x_,
+                objectState->state_.info.boundingbox.center_.y_,
+                objectState->state_.info.boundingbox.center_.z_,
+                x_rel,
+                y_rel,
+                z_rel);
+
+    obj_osi_internal.mobj->mutable_base()->mutable_position()->set_x(objectState->state_.pos.GetX() + x_rel);
+    obj_osi_internal.mobj->mutable_base()->mutable_position()->set_y(objectState->state_.pos.GetY() + y_rel);
+    obj_osi_internal.mobj->mutable_base()->mutable_position()->set_z(objectState->state_.pos.GetZ() + z_rel);
 
     // Set OSI Moving Object Orientation
     obj_osi_internal.mobj->mutable_base()->mutable_orientation()->set_roll(GetAngleInIntervalMinusPIPlusPI(objectState->state_.pos.GetR()));
@@ -891,44 +903,34 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState *objectState)
 
     // simplified wheel info, set nr wheels based on object type
     // can be improved by considering axels and actual wheel configuration
-    unsigned int n_wheels = 0;
+
     if (objectState->state_.info.obj_type == static_cast<int>(Object::Type::VEHICLE))
     {
-        if (objectState->state_.info.obj_category == static_cast<int>(Vehicle::Category::BICYCLE) ||
-            objectState->state_.info.obj_category == static_cast<int>(Vehicle::Category::MOTORBIKE) ||
-            objectState->state_.info.obj_category == static_cast<int>(Vehicle::Category::TRAILER))
+        // Set some data for each wheel
+        for (int i = 0; i < static_cast<int>(objectState->state_.info.wheel_data.size()); i++)
         {
-            n_wheels = 2;
-        }
-        else
-        {
-            n_wheels = 4;
-        }
-    }
+            if (objectState->state_.info.wheel_data[static_cast<unsigned int>(i)].axle > -1)
+            {
+                // create wheel data message
+                obj_osi_internal.mobj->mutable_vehicle_attributes()->add_wheel_data();
+                obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_wheel_data(i)->mutable_position()->set_x(
+                    objectState->state_.info.wheel_data[static_cast<unsigned int>(i)].x);
+                obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_wheel_data(i)->mutable_position()->set_y(
+                    objectState->state_.info.wheel_data[static_cast<unsigned int>(i)].y);
+                obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_wheel_data(i)->mutable_position()->set_z(
+                    objectState->state_.info.wheel_data[static_cast<unsigned int>(i)].z);
 
-    // Set some data for each wheel
-    for (int i = 0; i < static_cast<int>(n_wheels); i++)
-    {
-        // create wheel data message
-        obj_osi_internal.mobj->mutable_vehicle_attributes()->add_wheel_data();
-
-        obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_wheel_data(i)->mutable_orientation()->set_pitch(
-            objectState->state_.info.wheel_rot);
-        obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_wheel_data(i)->set_friction_coefficient(objectState->state_.info.friction[i]);
-        obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_wheel_data(i)->set_index(static_cast<unsigned int>(i) % 2);
-
-        if (i < static_cast<int>(n_wheels / 2))
-        {
-            // front wheel
-            obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_wheel_data(i)->set_axle(0);
-            obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_wheel_data(i)->mutable_orientation()->set_yaw(
-                objectState->state_.info.wheel_angle);
-        }
-        else
-        {
-            // rear wheel
-            obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_wheel_data(i)->set_axle(1);
-            obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_wheel_data(i)->mutable_orientation()->set_yaw(0.0);
+                obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_wheel_data(i)->mutable_orientation()->set_yaw(
+                    objectState->state_.info.wheel_data[static_cast<unsigned int>(i)].h);
+                obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_wheel_data(i)->mutable_orientation()->set_pitch(
+                    objectState->state_.info.wheel_data[static_cast<unsigned int>(i)].p);
+                obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_wheel_data(i)->set_friction_coefficient(
+                    objectState->state_.info.wheel_data[static_cast<unsigned int>(i)].friction_coefficient);
+                obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_wheel_data(i)->set_axle(
+                    static_cast<unsigned int>(objectState->state_.info.wheel_data[static_cast<unsigned int>(i)].axle));
+                obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_wheel_data(i)->set_index(
+                    static_cast<unsigned int>(objectState->state_.info.wheel_data[static_cast<unsigned int>(i)].index));  // Index along axis
+            }
         }
     }
 
@@ -948,7 +950,7 @@ int OSIReporter::UpdateOSIIntersection()
 
     typedef struct
     {
-        int                     id;
+        id_t                    road_id;
         double                  length;
         int                     global_id;
         roadmanager::OSIPoints *osipoints;
@@ -987,7 +989,7 @@ int OSIReporter::UpdateOSIIntersection()
         std::vector<LaneLengthStruct> right_lane_lengths;
         std::vector<LaneLengthStruct> lane_lengths;
         std::vector<LaneLengthStruct> tmp_lane_lengths;
-        std::set<int>                 connected_roads;
+        std::set<id_t>                connected_roads;
         // //add check if it is an intersection or an highway exit/entry
         junction = opendrive->GetJunctionByIdx(i);
 
@@ -1010,7 +1012,7 @@ int OSIReporter::UpdateOSIIntersection()
                 // check if the connecting road has been used before
                 for (unsigned int l = 0; l < lane_lengths.size(); l++)
                 {
-                    if (lane_lengths[l].id == connecting_road->GetId())
+                    if (lane_lengths[l].road_id == connecting_road->GetId())
                     {
                         new_connecting_road = false;
                     }
@@ -1018,7 +1020,7 @@ int OSIReporter::UpdateOSIIntersection()
 
                 for (unsigned int l = 0; l < left_lane_lengths.size(); l++)
                 {
-                    if (left_lane_lengths[l].id == connecting_road->GetId())
+                    if (left_lane_lengths[l].road_id == connecting_road->GetId())
                     {
                         new_connecting_road = false;
                     }
@@ -1092,10 +1094,10 @@ int OSIReporter::UpdateOSIIntersection()
 
                 if (new_connecting_road)
                 {
-                    left_lane_struct.id      = connecting_road->GetId();
-                    left_lane_struct.length  = LARGE_NUMBER;
-                    right_lane_struct.id     = connecting_road->GetId();
-                    right_lane_struct.length = LARGE_NUMBER;
+                    left_lane_struct.road_id  = connecting_road->GetId();
+                    left_lane_struct.length   = LARGE_NUMBER;
+                    right_lane_struct.road_id = connecting_road->GetId();
+                    right_lane_struct.length  = LARGE_NUMBER;
 
                     for (int l_id = 1; l_id <= connecting_road->GetLaneSectionByS(0, 0)->GetNUmberOfLanesRight(); l_id++)
                     {
@@ -1988,7 +1990,7 @@ int OSIReporter::UpdateOSIRoadLane()
                         }
                         // Update lanes that connect with junctions that are not intersections
                         if (road->GetNumberOfRoadTypes() > 0 && road->GetRoadType(0)->road_type_ == roadmanager::Road::RoadType::ROADTYPE_MOTORWAY &&
-                            road->GetJunction() > 0)
+                            road->GetJunction() != ID_UNDEFINED)
                         {
                             roadmanager::LaneLink *link_predecessor = lane->GetLink(roadmanager::LinkType::PREDECESSOR);
                             roadmanager::LaneLink *link_successor   = lane->GetLink(roadmanager::LinkType::SUCCESSOR);
@@ -2008,10 +2010,6 @@ int OSIReporter::UpdateOSIRoadLane()
                                         predecessor_lane_section->GetS());
                                 }
                             }
-                            else
-                            {
-                                LOG("Failed to resolve Predecessor link of lane %d of road %d", lane->GetId(), road->GetId());
-                            }
 
                             if (link_successor)
                             {
@@ -2023,10 +2021,6 @@ int OSIReporter::UpdateOSIRoadLane()
                                         successorRoad->GetId(),
                                         successor_lane_section->GetS());
                                 }
-                            }
-                            else
-                            {
-                                LOG("Failed to resolve Successor link of lane %d of road %d", lane->GetId(), road->GetId());
                             }
 
                             for (int l = 0; l < obj_osi_internal.gt->lane_size(); ++l)

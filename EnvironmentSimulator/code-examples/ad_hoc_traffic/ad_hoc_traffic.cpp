@@ -6,6 +6,7 @@
 #include "esminiLib.hpp"
 #include "stdio.h"
 #include <string>
+#include <string.h>
 #include <vector>
 
 typedef struct
@@ -19,9 +20,18 @@ int main(int argc, char* argv[])
     (void)argc;
     (void)argv;
 
+    int   enable_viewer = 1;
+    float dt            = 0.1f;
+
     SE_AddPath("../resources");
 
-    if (SE_Init("../EnvironmentSimulator/code-examples/ad_hoc_traffic/empty_scenario.xosc", 1, 1, 0, 0) != 0)
+    // provide headless mode option for smoke test
+    if (argc > 1 && !strcmp(argv[1], "--headless"))
+    {
+        enable_viewer = false;
+    }
+
+    if (SE_Init("../EnvironmentSimulator/code-examples/ad_hoc_traffic/empty_scenario.xosc", 1, enable_viewer, 0, 1) != 0)
     {
         SE_LogMessage("Failed to initialize the scenario, quit\n");
         return -1;
@@ -72,7 +82,16 @@ int main(int argc, char* argv[])
             }
         }
 
-        SE_Step();
+        if (enable_viewer)
+        {
+            // viewer, step with variable timestep to keep up with real time
+            SE_Step();
+        }
+        else
+        {
+            // headless, step with fixed timestep
+            SE_StepDT(dt);
+        }
         timestamp_old = timestamp_now;
         timestamp_now = SE_GetSimulationTime();
         if (counter == 4)

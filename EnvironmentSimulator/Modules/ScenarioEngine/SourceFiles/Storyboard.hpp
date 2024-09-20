@@ -47,10 +47,16 @@ namespace scenarioengine
             {
                 delete entry;
             }
+
+            for (auto* entry : user_defined_action_)
+            {
+                delete entry;
+            }
         }
 
-        std::vector<OSCPrivateAction*> private_action_;
-        std::vector<OSCGlobalAction*>  global_action_;
+        std::vector<OSCPrivateAction*>     private_action_;
+        std::vector<OSCGlobalAction*>      global_action_;
+        std::vector<OSCUserDefinedAction*> user_defined_action_;
     };
 
     class Event : public StoryBoardElement

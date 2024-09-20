@@ -14,39 +14,53 @@
 
 using namespace scenarioengine;
 
-static void SetPositionModesGeneric(roadmanager::Position &position, OSCOrientation &orientation, bool relative_object)
+static void SetPositionModesGeneric(roadmanager::Position &position, double *z, OSCOrientation *orientation)
 {
-    // Set how position will be initialized
-    // if set, then read or calculate absolute value
-    // if not set, indicate it should be aligned with road
-    // keep relative status for positions which relates to objects, to be resolved at a later time
-    position.SetModes(static_cast<int>(roadmanager::Position::PosModeType::SET) |
-                          (relative_object ? 0 : static_cast<int>(roadmanager::Position::PosModeType::INIT)),
-                      roadmanager::Position::PosMode::Z_REL |
-                          (std::isnan(orientation.h_) ? roadmanager::Position::PosMode::H_REL : roadmanager::Position::PosMode::H_ABS) |
-                          (std::isnan(orientation.p_) ? roadmanager::Position::PosMode::P_REL : roadmanager::Position::PosMode::P_ABS) |
-                          (std::isnan(orientation.r_) ? roadmanager::Position::PosMode::R_REL : roadmanager::Position::PosMode::R_ABS));
+    position.SetModeDefault(roadmanager::Position::PosModeType::SET);
+    position.SetModeDefault(roadmanager::Position::PosModeType::UPDATE);
+    position.SetModeBits(
+        roadmanager::Position::PosModeType::INIT,
+        ((z == nullptr || std::isnan(*z)) ? 0 : roadmanager::Position::PosMode::Z_ABS) |
 
-    // Set how position should be update wrt road
-    // if relative, object will be aligned with relative values
-    // if absolute, road geometry will be ignored
-    // if not set, then assume full alignment (relative value = 0)
-    position.SetModes(
-        static_cast<int>(roadmanager::Position::PosModeType::UPDATE) |
-            (relative_object ? static_cast<int>(roadmanager::Position::PosModeType::INIT) : 0),
-        roadmanager::Position::PosMode::Z_REL |
-            (std::isnan(orientation.h_)
-                 ? roadmanager::Position::PosMode::H_REL
-                 : (orientation.type_ == roadmanager::Position::OrientationType::ORIENTATION_RELATIVE ? roadmanager::Position::PosMode::H_REL
-                                                                                                      : roadmanager::Position::PosMode::H_ABS)) |
-            (std::isnan(orientation.p_)
-                 ? roadmanager::Position::PosMode::P_REL
-                 : (orientation.type_ == roadmanager::Position::OrientationType::ORIENTATION_RELATIVE ? roadmanager::Position::PosMode::P_REL
-                                                                                                      : roadmanager::Position::PosMode::P_ABS)) |
-            (std::isnan(orientation.r_)
-                 ? roadmanager::Position::PosMode::R_REL
-                 : (orientation.type_ == roadmanager::Position::OrientationType::ORIENTATION_RELATIVE ? roadmanager::Position::PosMode::R_REL
-                                                                                                      : roadmanager::Position::PosMode::R_ABS)));
+            (orientation == nullptr || std::isnan(orientation->h_)
+                 ? 0
+                 : (orientation->type_ == roadmanager::Position::OrientationType::ORIENTATION_ABSOLUTE ? roadmanager::Position::PosMode::H_ABS
+                                                                                                       : roadmanager::Position::PosMode::H_REL)) |
+            (orientation == nullptr || std::isnan(orientation->p_)
+                 ? 0
+                 : (orientation->type_ == roadmanager::Position::OrientationType::ORIENTATION_ABSOLUTE ? roadmanager::Position::PosMode::P_ABS
+                                                                                                       : roadmanager::Position::PosMode::P_REL)) |
+            (orientation == nullptr || std::isnan(orientation->r_)
+                 ? 0
+                 : (orientation->type_ == roadmanager::Position::OrientationType::ORIENTATION_ABSOLUTE ? roadmanager::Position::PosMode::R_ABS
+                                                                                                       : roadmanager::Position::PosMode::R_REL)));
+}
+
+static int None2Relative(int mode)
+{
+    int new_mode = mode;
+
+    if ((new_mode & roadmanager::Position::PosMode::Z_SET) == 0)
+    {
+        new_mode |= roadmanager::Position::PosMode::Z_REL;
+    }
+
+    if ((new_mode & roadmanager::Position::PosMode::H_SET) == 0)
+    {
+        new_mode |= roadmanager::Position::PosMode::H_REL;
+    }
+
+    if ((new_mode & roadmanager::Position::PosMode::P_SET) == 0)
+    {
+        new_mode |= roadmanager::Position::PosMode::P_REL;
+    }
+
+    if ((new_mode & roadmanager::Position::PosMode::R_SET) == 0)
+    {
+        new_mode |= roadmanager::Position::PosMode::R_REL;
+    }
+
+    return new_mode;
 }
 
 OSCPositionWorld::OSCPositionWorld(double x, double y, double z, double h, double p, double r, OSCPosition *base_on_pos)
@@ -57,85 +71,112 @@ OSCPositionWorld::OSCPositionWorld(double x, double y, double z, double h, doubl
         this->position_ = *base_on_pos->GetRMPos();
     }
 
-    // nan indicates value not set -> mark relative to align to road or curve
-    position_.SetMode(roadmanager::Position::PosModeType::ALL,
-                      (std::isnan(z) ? roadmanager::Position::PosMode::Z_REL : roadmanager::Position::PosMode::Z_ABS) |
-                          (std::isnan(h) ? roadmanager::Position::PosMode::H_REL : roadmanager::Position::PosMode::H_ABS) |
-                          (std::isnan(p) ? roadmanager::Position::PosMode::P_REL : roadmanager::Position::PosMode::P_ABS) |
-                          (std::isnan(r) ? roadmanager::Position::PosMode::R_REL : roadmanager::Position::PosMode::R_ABS));
-
-    position_.SetInertiaPosMode(x, y, z, h, p, r, position_.GetMode(roadmanager::Position::PosModeType::INIT));
+    OSCOrientation orientation(roadmanager::Position::OrientationType::ORIENTATION_ABSOLUTE, h, p, r);
+    SetPositionModesGeneric(position_, &z, &orientation);
+    position_.SetInertiaPosMode(x, y, z, h, p, r, None2Relative(position_.GetMode(roadmanager::Position::PosModeType::INIT)));
 }
 
-OSCPositionLane::OSCPositionLane(int roadId, int laneId, double s, double offset, OSCOrientation orientation) : OSCPosition(PositionType::LANE)
+OSCPositionLane::OSCPositionLane(id_t roadId, int laneId, double s, double offset, OSCOrientation orientation) : OSCPosition(PositionType::LANE)
 {
-    SetPositionModesGeneric(position_, orientation, false);
+    SetPositionModesGeneric(position_, nullptr, &orientation);
 
-    if (orientation.type_ == roadmanager::Position::OrientationType::ORIENTATION_RELATIVE)
+    if (!roadmanager::Position::GetOpenDrive())
     {
-        // Set temporary position to find out driving direction
-        position_.SetLanePos(roadId, laneId, s, offset);
+        LOG("No OpenDRIVE");
+        return;
+    }
 
+    roadmanager::Road *road = roadmanager::Position::GetOpenDrive()->GetRoadById(roadId);
+    if (!road)
+    {
+        LOG("No matching road with ID %d", roadId);
+        return;
+    }
+
+    if (orientation.type_ == roadmanager::Position::OrientationType::ORIENTATION_RELATIVE || std::isnan(orientation.h_))
+    {
         // Adjust heading to road direction also considering traffic rule (left/right hand traffic)
-        if (position_.GetDrivingDirectionRelativeRoad() > 0)
+        if ((laneId < 0 && road->GetRule() == roadmanager::Road::RoadRule::RIGHT_HAND_TRAFFIC) ||
+            (laneId > 0 && road->GetRule() == roadmanager::Road::RoadRule::LEFT_HAND_TRAFFIC))
         {
-            position_.SetHeadingRelative(std::isnan(orientation.h_) ? 0.0 : orientation.h_);
+            position_.SetHeadingRelative(std::isnan(orientation.h_) ? 0.0 : orientation.h_, false);
         }
         else
         {
-            position_.SetHeadingRelative(GetAngleSum(M_PI, std::isnan(orientation.h_) ? 0.0 : orientation.h_));
+            // turn heading 180 degrees around
+            position_.SetHeadingRelative(GetAngleSum(M_PI, std::isnan(orientation.h_) ? 0.0 : orientation.h_), false);
         }
-        position_.SetPitchRelative(std::isnan(orientation.p_) ? 0.0 : orientation.p_);
-        position_.SetRollRelative(std::isnan(orientation.r_) ? 0.0 : orientation.r_);
-    }
-    else if (orientation.type_ == roadmanager::Position::OrientationType::ORIENTATION_ABSOLUTE)
-    {
-        position_.SetH(std::isnan(orientation.h_) ? 0.0 : orientation.h_);
-        position_.SetP(std::isnan(orientation.p_) ? 0.0 : orientation.p_);
-        position_.SetR(std::isnan(orientation.r_) ? 0.0 : orientation.r_);
     }
     else
     {
-        LOG("Unexpected orientation type: %d", orientation.type_);
+        position_.SetHeading(std::isnan(orientation.h_) ? 0.0 : orientation.h_);
     }
 
-    position_.SetLanePosMode(roadId, laneId, s, offset, position_.GetMode(roadmanager::Position::PosModeType::UPDATE));
+    if (orientation.type_ == roadmanager::Position::OrientationType::ORIENTATION_RELATIVE || std::isnan(orientation.p_))
+    {
+        position_.SetPitchRelative(std::isnan(orientation.p_) ? 0.0 : orientation.p_, false);
+    }
+    else
+    {
+        position_.SetPitch(std::isnan(orientation.p_) ? 0.0 : orientation.p_, false);
+    }
+
+    if (orientation.type_ == roadmanager::Position::OrientationType::ORIENTATION_RELATIVE || std::isnan(orientation.r_))
+    {
+        position_.SetRollRelative(std::isnan(orientation.r_) ? 0.0 : orientation.r_, false);
+    }
+    else
+    {
+        position_.SetRoll(std::isnan(orientation.r_) ? 0.0 : orientation.r_, false);
+    }
+
+    position_.SetLanePosMode(roadId, laneId, s, offset, None2Relative(position_.GetMode(roadmanager::Position::PosModeType::INIT)));
 }
 
-OSCPositionRoad::OSCPositionRoad(int roadId, double s, double t, OSCOrientation orientation) : OSCPosition(PositionType::ROAD)
+OSCPositionRoad::OSCPositionRoad(id_t roadId, double s, double t, OSCOrientation orientation) : OSCPosition(PositionType::ROAD)
 {
     if (position_.GetRoadById(roadId) == nullptr)
     {
         LOG_AND_QUIT("Reffered road ID %d not available in road network", roadId);
     }
 
-    SetPositionModesGeneric(position_, orientation, false);
+    SetPositionModesGeneric(position_, nullptr, &orientation);
 
-    if (orientation.type_ == roadmanager::Position::OrientationType::ORIENTATION_RELATIVE)
+    if (orientation.type_ == roadmanager::Position::OrientationType::ORIENTATION_RELATIVE || std::isnan(orientation.h_))
     {
-        position_.SetHeadingRelative(std::isnan(orientation.h_) ? 0.0 : orientation.h_);
-        position_.SetPitchRelative(std::isnan(orientation.p_) ? 0.0 : orientation.p_);
-        position_.SetRollRelative(std::isnan(orientation.r_) ? 0.0 : orientation.r_);
-    }
-    else if (orientation.type_ == roadmanager::Position::OrientationType::ORIENTATION_ABSOLUTE)
-    {
-        position_.SetH(std::isnan(orientation.h_) ? 0.0 : orientation.h_);
-        position_.SetP(std::isnan(orientation.p_) ? 0.0 : orientation.p_);
-        position_.SetR(std::isnan(orientation.r_) ? 0.0 : orientation.r_);
+        position_.SetHeadingRelative(std::isnan(orientation.h_) ? 0.0 : orientation.h_, false);
     }
     else
     {
-        LOG("Unexpected orientation type: %d", orientation.type_);
+        position_.SetHeading(std::isnan(orientation.h_) ? 0.0 : orientation.h_, false);
     }
 
-    position_.SetTrackPosMode(roadId, s, t, position_.GetMode(roadmanager::Position::PosModeType::UPDATE));
+    if (orientation.type_ == roadmanager::Position::OrientationType::ORIENTATION_RELATIVE || std::isnan(orientation.p_))
+    {
+        position_.SetPitchRelative(std::isnan(orientation.p_) ? 0.0 : orientation.p_, false);
+    }
+    else
+    {
+        position_.SetPitch(std::isnan(orientation.p_) ? 0.0 : orientation.p_, false);
+    }
+
+    if (orientation.type_ == roadmanager::Position::OrientationType::ORIENTATION_RELATIVE || std::isnan(orientation.r_))
+    {
+        position_.SetRollRelative(std::isnan(orientation.r_) ? 0.0 : orientation.r_, false);
+    }
+    else
+    {
+        position_.SetRoll(std::isnan(orientation.r_) ? 0.0 : orientation.r_, false);
+    }
+
+    position_.SetTrackPosMode(roadId, s, t, None2Relative(position_.GetMode(roadmanager::Position::PosModeType::INIT)));
 }
 
 OSCPositionRelativeObject::OSCPositionRelativeObject(Object *object, double dx, double dy, double dz, OSCOrientation orientation)
     : OSCPosition(PositionType::RELATIVE_OBJECT),
       object_(object)
 {
-    SetPositionModesGeneric(position_, orientation, true);
+    SetPositionModesGeneric(position_, nullptr, &orientation);
 
     position_.relative_.dh = std::isnan(orientation.h_) ? 0.0 : orientation.h_;
     position_.relative_.dp = std::isnan(orientation.p_) ? 0.0 : orientation.p_;
@@ -157,7 +198,7 @@ OSCPositionRelativeWorld::OSCPositionRelativeWorld(Object *object, double dx, do
     : OSCPosition(PositionType::RELATIVE_WORLD),
       object_(object)
 {
-    SetPositionModesGeneric(position_, orientation, true);
+    SetPositionModesGeneric(position_, nullptr, &orientation);
 
     position_.relative_.dx = dx;
     position_.relative_.dy = dy;
@@ -184,7 +225,7 @@ OSCPositionRelativeLane::OSCPositionRelativeLane(Object                         
     : OSCPosition(PositionType::RELATIVE_LANE),
       object_(object)
 {
-    SetPositionModesGeneric(position_, orientation, true);
+    SetPositionModesGeneric(position_, nullptr, &orientation);
 
     position_.relative_.dLane  = dLane;
     position_.relative_.ds     = ds;
@@ -207,7 +248,7 @@ OSCPositionRelativeRoad::OSCPositionRelativeRoad(Object *object, double ds, doub
     : OSCPosition(PositionType::RELATIVE_ROAD),
       object_(object)
 {
-    SetPositionModesGeneric(position_, orientation, true);
+    SetPositionModesGeneric(position_, nullptr, &orientation);
 
     position_.relative_.ds = ds;
     position_.relative_.dt = dt;
@@ -224,7 +265,7 @@ void OSCPositionRelativeRoad::Print()
     object_->pos_.Print();
 }
 
-OSCPositionRoute::OSCPositionRoute(std::shared_ptr<roadmanager::Route> route, double s, int laneId, double laneOffset)
+OSCPositionRoute::OSCPositionRoute(roadmanager::Route *route, double s, int laneId, double laneOffset)
 {
     (void)s;
     (void)laneId;
@@ -256,16 +297,27 @@ void OSCPositionRoute::SetRouteRefLaneCoord(roadmanager::Route *route, double pa
     position_.SetRouteLanePosition(route, pathS, laneId, laneOffset);
 }
 
+void OSCPositionRoute::SetRouteRefRoadCoord(roadmanager::Route *route, double pathS, double t, OSCOrientation *orientation)
+{
+    position_.SetRouteRoadPosition(route, pathS, t);
+
+    // Adjust heading to road direction also considering traffic rule (left/right hand traffic)
+    position_.SetHeadingRelative(std::isnan(orientation->h_) ? 0.0 : orientation->h_);
+    position_.SetPitchRelative(std::isnan(orientation->p_) ? 0.0 : orientation->p_);
+    position_.SetRollRelative(std::isnan(orientation->r_) ? 0.0 : orientation->r_);
+}
+
+void OSCPositionRoute::SetRouteRefRoadCoord(roadmanager::Route *route, double pathS, double t)
+{
+    position_.SetRouteRoadPosition(route, pathS, t);
+}
+
 OSCPositionTrajectory::OSCPositionTrajectory(roadmanager::RMTrajectory *traj, double s, double t, OSCOrientation orientation)
 {
     (void)orientation;
     (void)t;
 
-    // do initial and temporary evaluation of the trajectory
-    // it will be recalculated when related action is triggered
-    // so that relative positions will be evaluated correctly
-    traj->shape_->CalculatePolyLine();
-
     position_.SetTrajectory(traj);
-    position_.SetTrajectoryS(s);
+    position_.SetTrajectoryS(s, false);
+    position_.SetTrajectoryT(t, false);
 }

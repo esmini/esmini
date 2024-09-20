@@ -394,35 +394,35 @@ TEST(RoadId, TestStringRoadId)
     ASSERT_EQ(RM_Init(odr_file), 0);
     ASSERT_EQ(RM_GetNumberOfRoads(), 16);
 
-    EXPECT_STREQ(RM_GetRoadIdString(2), "Kalle");
+    EXPECT_STREQ(RM_GetRoadIdString(3), "Kalle");
     EXPECT_STREQ(RM_GetRoadIdString(1), "1");
-    EXPECT_STREQ(RM_GetRoadIdString(12), "2Kalle3");
+    EXPECT_STREQ(RM_GetRoadIdString(128), "2Kalle3");
     EXPECT_STREQ(RM_GetRoadIdString(0), "0");
     EXPECT_STREQ(RM_GetJunctionIdString(0), "Junction4");
 
     int pos_handle = RM_CreatePosition();
 
-    RM_SetLanePosition(pos_handle, 3, -1, 0.0, 20, true);
+    RM_SetLanePosition(pos_handle, 2, -1, 0.0, 20, true);
     RM_GetPositionData(pos_handle, &pos_data);
-    EXPECT_EQ(pos_data.roadId, 3);
+    EXPECT_EQ(pos_data.roadId, 2);
 
     RM_SetLanePosition(pos_handle, 0, 1, 0.0, 10, true);
     RM_GetPositionData(pos_handle, &pos_data);
     EXPECT_EQ(pos_data.roadId, 0);
 
-    RM_SetLanePosition(pos_handle, RM_GetRoadIdFromString("3"), 1, 0.0, 10, true);
-    RM_GetPositionData(pos_handle, &pos_data);
-    EXPECT_EQ(pos_data.roadId, 3);
-    EXPECT_EQ(pos_data.junctionId, -1);
-
-    RM_SetLanePosition(pos_handle, RM_GetRoadIdFromString("Kalle"), 1, 0.0, 10, true);
+    RM_SetLanePosition(pos_handle, RM_GetRoadIdFromString("2"), 1, 0.0, 10, true);
     RM_GetPositionData(pos_handle, &pos_data);
     EXPECT_EQ(pos_data.roadId, 2);
     EXPECT_EQ(pos_data.junctionId, -1);
 
+    RM_SetLanePosition(pos_handle, RM_GetRoadIdFromString("Kalle"), 1, 0.0, 10, true);
+    RM_GetPositionData(pos_handle, &pos_data);
+    EXPECT_EQ(pos_data.roadId, 3);
+    EXPECT_EQ(pos_data.junctionId, -1);
+
     RM_SetLanePosition(pos_handle, RM_GetRoadIdFromString("2Kalle3"), 1, 0.0, 10, true);
     RM_GetPositionData(pos_handle, &pos_data);
-    EXPECT_EQ(pos_data.roadId, 12);
+    EXPECT_EQ(pos_data.roadId, 128);
     EXPECT_EQ(pos_data.junctionId, 0);
 
     EXPECT_EQ(RM_GetJunctionIdFromString("Junction4"), 0);

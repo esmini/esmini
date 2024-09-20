@@ -164,15 +164,15 @@ int ReportTrafficCommand(osi3::TrafficCommand *tc, OSCPrivateAction *action, dou
             ta->mutable_teleport_action()->mutable_action_header()->mutable_action_id()->set_value(action->GetId());
 
             TeleportAction *a = reinterpret_cast<TeleportAction *>(action);
-            a->position_->EvaluateRelation();
+            a->position_.EvaluateRelation();
 
-            ta->mutable_teleport_action()->mutable_position()->set_x(a->position_->GetX());
-            ta->mutable_teleport_action()->mutable_position()->set_y(a->position_->GetY());
-            ta->mutable_teleport_action()->mutable_position()->set_z(a->position_->GetZ());
+            ta->mutable_teleport_action()->mutable_position()->set_x(a->position_.GetX());
+            ta->mutable_teleport_action()->mutable_position()->set_y(a->position_.GetY());
+            ta->mutable_teleport_action()->mutable_position()->set_z(a->position_.GetZ());
 
-            ta->mutable_teleport_action()->mutable_orientation()->set_yaw(a->position_->GetH());
-            ta->mutable_teleport_action()->mutable_orientation()->set_pitch(a->position_->GetP());
-            ta->mutable_teleport_action()->mutable_orientation()->set_roll(a->position_->GetR());
+            ta->mutable_teleport_action()->mutable_orientation()->set_yaw(a->position_.GetH());
+            ta->mutable_teleport_action()->mutable_orientation()->set_pitch(a->position_.GetP());
+            ta->mutable_teleport_action()->mutable_orientation()->set_roll(a->position_.GetR());
 
             break;
         }

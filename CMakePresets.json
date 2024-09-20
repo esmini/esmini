@@ -52,7 +52,8 @@
       "name": "sanitize-build",
       "hidden": true,
       "cacheVariables": {
-        "ENABLE_SANITIZERS": "ON"
+        "ENABLE_SANITIZERS": "ON",
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
       }
     },
     {

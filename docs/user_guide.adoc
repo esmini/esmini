@@ -1580,20 +1580,18 @@ Missing angles will be handled according to the table below:
 |roll|No|road surface
 |===
 
-While moving along polylines, which tangent is not continuous, it's usually preferred to interpolate/smoothen orientation change at vertex corners.
+While moving along polylines, which tangent is not continuous, it's usually preferred to interpolate/smoothen orientation along whole linear segments or at least when passing vertex corners.
 
-The table below shows the result for combinations of input settings of polyline trajectories:
+The table below shows what interpolation method will be applied based on FollowingMode setting for the trajectory:
 
-[%autowidth, cols="2,2,3,2"]
+[%autowidth, cols="2,2"]
 |===
-2+|Input
-2+|Result
-|*Angle specified?*|*FollowingMode?*|*Interpolate angle along segment*|*Interpolate corners*
-|Yes|position|No|No
-|Yes|follow|Yes|No
-|No|position|No|Yes
-|No|follow|Yes|No
+|*FollowingMode*|*Interpolate mode*
+|position|corner
+|follow|segment
 |===
+
+Polyline trajectory orientation interpolation can be disabled altogether by setting the `disable_pline_interpolation` option (see esmini <<Launch commands>>).
 
 === Example
 There is a code and scenario example illustrating the various interpolation and position modes:
@@ -2577,6 +2575,66 @@ g tests for later post processing of resulting logs, data or OSI files.
 
 A common use-case is to run esmini quick/headless and then utilize the replayer for viewing the result. See more info here: <<Replay scenario>>
 
+==== Road and junction string IDs
+
+OpenDRIVE allows for non integer string IDs. Although commonly unsigned integer is used. The standard https://publications.pages.asam.net/standards/ASAM_OpenDRIVE/ASAM_OpenDRIVE_Specification/latest/specification/16_annexes/classes/road/top_cla_t_road.html[OpenDRIVE 1.8] states that IF the ID represents an integer number, it should comply to uint32_t and stay within the given range.
+
+esmini partly supports* string IDs, by mapping to internal integer IDs. The way it works:
+
+If the ID is a number in the range of 0..0xfffffffe (4 294 967 294), then: +
+map it to the same internal ID +
+Else, if the number is a string or a number out of range: +
+map it to a unique internal ID
+
+*Note*: 0xffffffff (4 294 967 295) is reserved for ID_UNDEFINED which is the default value and also used for error indication +
+
+Example: Assume an OpenDRIVE includes the following road (or junction) IDs:
+
+[source,console]
+----
+"0"
+"1"
+"124"
+"Kalle"
+"12k4"
+"4294967296"
+"4294967295"
+"4294967294"
+----
+
+The IDs will be mapped as follows:
+
+[source,console]
+----
+"0" -> 0
+"1" -> 1
+"124" -> 124
+"Kalle" -> 125
+"4294967296" -> 126 (too large)
+"4294967295" -> 127 (conflict with ID_UNDEFINED)
+"4294967294" -> 4294967294 (Ok, largest acceptable number)
+----
+
+Now, why not make use of available numbers between 1 and 124? It's because esmini is lazy, not spending effort (performance) to book-keep sorted list of IDs. Instead, only the largest number in use will be monitored.
+
+In addition, there are esmini lib API functions to lookup string and internal IDs:
+
+[source,c++]
+----
+const char *SE_GetRoadIdString(id_t road_id);
+id_t SE_GetRoadIdFromString(const char *road_id_str);
+
+const char *SE_GetJunctionIdString(id_t junction_id);
+id_t SE_GetJunctionIdFromString(const char *junction_id_str);
+----
+
+That way, a custom application can find out what internal IDs esmini has assigned to any non-number string IDs.
+
+Corresponding functions exist in esmini roadmanager lib.
+
+pass:[*] String ID support was introduced in v2.37.15. By v2.39.0 internal representation changed from 32 bit signed int to unsigned int. At that point also undefined ID changed from -1 to 0xffffffff.
+
+
 === Further issues at esmini GitHub page
 The https://github.com/esmini/esmini/issues[Issues tab at esmini GitHub page] is a valuable source of questions and answers. To search in all issues, make sure to set filter: `is:issue`.
 
@@ -3091,6 +3149,64 @@ For easy execution of all tests, both unit tests and smoke tests, run this main 
 `./scripts/run_tests.sh`
 
 Tip: On Windows, run it from GIT bash.
+
+=== Sanitizers
+
+Google sanitizers framework is utilized to detect memory related errors, for example memory leaks. It's executed nighly as a GitHub CI actions job on dev branch. The job can also be trigged manually, but will only run checks on dev branch. Sanitizers is currently only applied to Linux builds.
+
+To run the sanitizer checks locally, on Ubuntu:
+
+. Set the following environment variables, run from esmini root:
+
+[source,console]
+----
+export LSAN_OPTIONS="print_suppressions=false:suppressions=$(pwd)/scripts/LSAN.supp"
+export ASAN_OPTIONS="detect_invalid_pointer_pairs=1:strict_string_checks=1:detect_stack_use_after_return=1:check_initialization_order=1:strict_init_order=1:fast_unwind_on_malloc=0:suppressions=$(pwd)/scripts/ASAN.supp"
+----
+
+[start=2]
+. Configure and build esmini with sanitizers enabled
+
+[source,console]
+----
+cd build
+cmake -G Ninja -DUSE_OSG=FALSE -DCMAKE_BUILD_TYPE=RelWithDebInfo -DENABLE_SANITIZERS=TRUE ..
+ninja install
+cd ..
+----
+
+[start=3]
+. Run the test suites, including both unit- and smoke tests, from esmini root:
+
+[source,console]
+----
+./scripts/run_tests.sh
+----
+
+==== Troubleshooting
+
+On Ubuntu some combination of gcc and sanitizer randomly cause sanitizer run failure with error message: AddressSanitizer:DEADLYSIGNAL.
+
+If this happens, try the following:
+
+[source,console]
+----
+setarch $(uname -m) -R
+bash
+----
+
+`setarch` will affect reported architecture from system to sanitizer. `bash` is to restore shell environment, it can of course be replaced by any shell program, e.g. tcsh.
+
+To revert settings, simply run:
+[source,console]
+----
+exit
+exit
+----
+
+First exit will escape the latter bash environment, the second reverts effect of the setarch command.
+
+Source of setarch tip: https://stackoverflow.com/questions/77894856/possible-bug-in-gcc-sanitizers
 
 == esmini lib programming
 

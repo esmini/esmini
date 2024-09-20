@@ -18,6 +18,11 @@
 #define SE_DLL_API  // Leave empty on Mac
 #endif
 
+#include "stdint.h"
+
+typedef uint32_t id_t;
+
+#define SE_ID_UNDEFINED    0xffffffff
 #define SE_PARAM_NAME_SIZE 32
 
 typedef struct
@@ -32,8 +37,8 @@ typedef struct
     float h;               // heading/yaw in global coordinate system
     float p;               // pitch in global coordinate system
     float r;               // roll in global coordinate system
-    int   roadId;          // road ID
-    int   junctionId;      // Junction ID (-1 if not in a junction)
+    id_t  roadId;          // road ID
+    id_t  junctionId;      // Junction ID (-1 if not in a junction)
     float t;               // lateral position in road coordinate system
     int   laneId;          // lane ID
     float laneOffset;      // lateral offset from lane center
@@ -52,6 +57,24 @@ typedef struct
     int   visibilityMask;  // bitmask according to Object::Visibility (1 = Graphics, 2 = Traffic, 4 = Sensors)
 } SE_ScenarioObjectState;
 
+typedef struct
+{
+    float x;  // global x coordinate of position
+    float y;  // global y coordinate of position
+    float z;  // global z coordinate of position
+    float h;  // heading/yaw in global coordinate system
+    float p;  // pitch in global coordinate system
+    // float r;                     // roll in global coordinate system
+    // float width;                 // median width of the tire
+    float wheel_radius;          // median radius of the wheel measured from the center of the wheel to the outer part of the tire
+    float friction_coefficient;  // the value describes the kinetic friction of the tyre's contact point
+    // float rotation_rate;         // rotation rate of the wheel
+    // float rim_radius;  // 	median radius of the rim measured from the center to the outer, visible part of the rim
+    int axle;   // 0=front, 1=next axle from front and so on. -1 indicates wheel is not existing.
+    int index;  // The index of the wheel on the axle, counting in the direction of positive-y, that is, right-to-left. -1 indicates wheel
+    // not existing.
+} SE_WheelData;
+
 // asciidoc tag::SE_RoadInfo_struct[]
 typedef struct
 {
@@ -68,8 +91,8 @@ typedef struct
     float trail_heading;  // trail heading (only when used for trail lookups, else equals road_heading)
     float curvature;      // road curvature at steering target point
     float speed_limit;    // speed limit given by OpenDRIVE type entry
-    int   roadId;         // target position, road ID
-    int   junctionId;     // target position, junction ID (-1 if not in a junction)
+    id_t  roadId;         // target position, road ID
+    id_t  junctionId;     // target position, junction ID (SE_ID_UNDEFINED if not in a junction)
     int   laneId;         // target position, lane ID
     float laneOffset;     // target position, lane offset (lateral distance from lane center)
     float s;              // target position, s (longitudinal distance along reference line)
@@ -83,8 +106,8 @@ typedef struct
     float y;           // Route point in the global coordinate system
     float z;           // Route point in the global coordinate system
     float h;           // Route point, heading in the global coordinate system
-    int   roadId;      // Route point, road ID
-    int   junctionId;  // Route point, junction ID (-1 if not in a junction)
+    id_t  roadId;      // Route point, road ID
+    id_t  junctionId;  // Route point, junction ID (-1 if not in a junction)
     int   laneId;      // Route point, lane ID
     int   osiLaneId;   // Route point, osi lane ID
     float laneOffset;  // Route point, lane offset (lateral distance from lane center)
@@ -849,7 +872,7 @@ extern "C"
             @param s Longitudinal distance of the position along the specified road
             @return 0 if successful, -1 if not
     */
-    SE_DLL_API int SE_ReportObjectRoadPos(int object_id, float timestamp, int roadId, int laneId, float laneOffset, float s);
+    SE_DLL_API int SE_ReportObjectRoadPos(int object_id, float timestamp, id_t roadId, int laneId, float laneOffset, float s);
 
     /**
             Report object longitudinal speed. Useful for an external longitudinal controller.
@@ -976,6 +999,13 @@ extern "C"
     SE_DLL_API int SE_GetObjectState(int object_id, SE_ScenarioObjectState *state);
 
     /**
+            Get the object route status
+            @param object_id Id of the object
+            @return 0 if route not assigned, 1 if outside assigned route, 2 if on assigned route, -1 on error
+    */
+    SE_DLL_API int SE_GetObjectRouteStatus(int object_id);
+
+    /**
         Find out what lane type object is currently in, reference point projected on road
         Can be used for checking exact lane type or combinations by bitmask.
         Example 1: Check if on border lane: SE_GetObjectLaneType(id) == (1 << 6)
@@ -1022,6 +1052,13 @@ extern "C"
             @return 1 if ghost, 0 if not, -1 indicates error e.g. scenario not loaded
     */
     SE_DLL_API int SE_ObjectHasGhost(int object_id);
+
+    /**
+            Get ID of the ghost associated with given object
+            @param object_id Id of the ghost object
+            @return ghost object ID, -1 if ghost does not exist for given object
+    */
+    SE_DLL_API int SE_GetObjectGhostId(int object_id);
 
     /**
             Get the state of specified object's ghost (special purpose lead vehicle)
@@ -1073,6 +1110,22 @@ extern "C"
     SE_DLL_API int SE_GetObjectAccelerationLocalLatLong(int object_id, float *acc_lat, float *acc_long);
 
     /**
+            Get the number of wheels of an object
+            @param object_id Id of the object
+            @return number of wheels on object if successful, -1 if not
+    */
+    SE_DLL_API int SE_GetObjectNumberOfWheels(int object_id);
+
+    /**
+            Get wheel information of specified object
+            @param object_id Id of the object
+            @param wheeldata reference to a struct in which to return the wheeldata
+            @param wheel_index index of wheeldata to return
+            @return 0 if successful, -1 if not
+    */
+    SE_DLL_API int SE_GetObjectWheelData(int object_id, int wheel_index, SE_WheelData *wheeldata);
+
+    /**
             Get the unit of specified speed (in OpenDRIVE road type element).
             All roads will be looped in search for such an element. First found will be used.
             If speed is specified withouth the optional unit, SI unit m/s is assumed.
@@ -1110,9 +1163,10 @@ extern "C"
             @param lookahead_distance The distance, along the ghost trail, to the point from the current Ego vehicle location
             @param data Struct including all result values, see typedef for details
             @param speed_ghost reference to a variable returning the speed that the ghost had at this point along trail
+            @param timestamp reference to a variable returning the timestamp of this point along trail
             @return 0 if successful, -1 if not
     */
-    SE_DLL_API int SE_GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, SE_RoadInfo *data, float *speed_ghost);
+    SE_DLL_API int SE_GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, SE_RoadInfo *data, float *speed_ghost, float *timestamp);
 
     /**
             Get information suitable for driver modeling of a ghost vehicle driving ahead of the ego vehicle
@@ -1204,16 +1258,16 @@ extern "C"
             @param road_id The road along which to look for signs
             @return Number of road signs
     */
-    SE_DLL_API int SE_GetNumberOfRoadSigns(int road_id);
+    SE_DLL_API int SE_GetNumberOfRoadSigns(id_t road_id);
 
     /**
             Get information on specifed road sign
-            @param road_id The road of which to look for the sign
+            @param road_id The road of which to look for the signs
             @param index Index of the sign. Note: not ID
             @param road_sign Pointer/reference to a SE_RoadSign struct to be filled in
             @return 0 if successful, -1 if not
     */
-    SE_DLL_API int SE_GetRoadSign(int road_id, int index, SE_RoadSign *road_sign);
+    SE_DLL_API int SE_GetRoadSign(id_t road_id, int index, SE_RoadSign *road_sign);
 
     /**
             Get the number of lane validity records of specified road object/sign
@@ -1221,7 +1275,7 @@ extern "C"
             @param index Index of the sign. Note: not ID
             @return Number of validity records of specified road sign
     */
-    SE_DLL_API int SE_GetNumberOfRoadSignValidityRecords(int road_id, int index);
+    SE_DLL_API int SE_GetNumberOfRoadSignValidityRecords(id_t road_id, int index);
 
     /**
             Get specified validity record of specifed road sign
@@ -1231,35 +1285,35 @@ extern "C"
             @param road_sign Pointer/reference to a SE_RoadObjValidity struct to be filled in
             @return 0 if successful, -1 if not
     */
-    SE_DLL_API int SE_GetRoadSignValidityRecord(int road_id, int signIndex, int validityIndex, SE_RoadObjValidity *validity);
+    SE_DLL_API int SE_GetRoadSignValidityRecord(id_t road_id, int signIndex, int validityIndex, SE_RoadObjValidity *validity);
 
     /**
             Get original string ID asoociated with specified road
             @param road_id The integer ID road
             @return string ID, empty string if not found
     */
-    SE_DLL_API const char *SE_GetRoadIdString(int road_id);
+    SE_DLL_API const char *SE_GetRoadIdString(id_t road_id);
 
     /**
             Get integer road ID associated with specified road string ID
             @param road_id_str The road string ID
             @return road ID, -1 if not found
     */
-    SE_DLL_API int SE_GetRoadIdFromString(const char *road_id_str);
+    SE_DLL_API id_t SE_GetRoadIdFromString(const char *road_id_str);
 
     /**
             Get original string ID asoociated with specified junction
             @param road_id The integer ID junction
             @return string ID, empty string if not found
     */
-    SE_DLL_API const char *SE_GetJunctionIdString(int junction_id);
+    SE_DLL_API const char *SE_GetJunctionIdString(id_t junction_id);
 
     /**
             Get integer junction ID associated with specified junction string ID
             @param road_id_str The junction string ID
             @return junction ID, -1 if not found
     */
-    SE_DLL_API int SE_GetJunctionIdFromString(const char *junction_id_str);
+    SE_DLL_API id_t SE_GetJunctionIdFromString(const char *junction_id_str);
 
     // OSI interface
     //
@@ -1658,6 +1712,13 @@ extern "C"
             @return 0 if successful, -1 if not (e.g. wrong type)
     */
     SE_DLL_API int SE_GetRoutePoint(int object_id, int route_index, SE_RouteInfo *routeinfo);
+
+    /**
+        Get the total length of the route assigned to specified object
+        @param object_id Id of the object
+        @return Length (m) of route, 0.0 if no route is assigned
+    */
+    SE_DLL_API float SE_GetRouteTotalLength(int object_id);
 
     /**
             Inject a speed action

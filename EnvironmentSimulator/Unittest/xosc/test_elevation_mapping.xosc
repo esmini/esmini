@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSCENARIO>
+    <FileHeader revMajor="1" revMinor="2" date="2024-08-29T10:00:00" description="Test elevation mapping" author="esmini team"/>
+    <ParameterDeclarations/>
+    <CatalogLocations>
+        <VehicleCatalog>
+            <Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
+        </VehicleCatalog>
+        <ControllerCatalog>
+            <Directory path="../../../resources/xosc/Catalogs/Controllers"/>
+        </ControllerCatalog>
+    </CatalogLocations>
+    <RoadNetwork>
+        <LogicFile filepath="../xodr/two_roads_overhang.xodr"/>
+    </RoadNetwork>
+    <Entities>
+        <ScenarioObject name="Ego">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+            <ObjectController>
+                <CatalogReference catalogName="ControllerCatalog" entryName="interactiveDriver"/>
+            </ObjectController>
+        </ScenarioObject>
+    </Entities>
+    <Storyboard>
+        <Init>
+            <Actions>
+                <Private entityRef="Ego">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="0" laneId="-1" s="8.0"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <ActivateControllerAction longitudinal="true" lateral="true"/>
+                    </PrivateAction>
+                </Private>
+            </Actions>
+        </Init>
+        <StopTrigger>
+            <ConditionGroup>
+                <Condition name="TimeStopTrigger" delay="0.0" conditionEdge="none">
+                    <ByValueCondition>
+                        <SimulationTimeCondition value="10" rule="greaterThan"/>
+                    </ByValueCondition>
+                </Condition>
+            </ConditionGroup>
+        </StopTrigger>
+    </Storyboard>
+</OpenSCENARIO>
