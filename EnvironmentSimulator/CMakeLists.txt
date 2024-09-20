@@ -58,9 +58,6 @@ set_folder(
     ScenarioEngine
     ${ModulesFolder})
 set_folder(
-    Externals
-    ${ModulesFolder})
-set_folder(
     RoadManager
     ${ModulesFolder})
 set_folder(

@@ -7,3 +7,6 @@
 [submodule "test/OSC-NCAP-scenarios"]
 	path = test/OSC-NCAP-scenarios
 	url = https://github.com/vectorgrp/OSC-NCAP-scenarios
+[submodule "externals/spdlog"]
+	path = externals/spdlog
+	url = https://github.com/gabime/spdlog.git

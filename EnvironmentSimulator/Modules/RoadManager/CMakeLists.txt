@@ -55,7 +55,8 @@ target_include_directories(
     ${TARGET}
     SYSTEM
     PUBLIC ${EXTERNALS_PUGIXML_PATH}
-           ${ROAD_MANAGER_PATH})
+           ${ROAD_MANAGER_PATH}
+           ${EXTERNALS_SPDLOG_INCLUDES})
 
 disable_static_analysis(${TARGET})
 disable_iwyu(${TARGET})

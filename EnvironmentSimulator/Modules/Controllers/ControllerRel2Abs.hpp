@@ -43,12 +43,6 @@ namespace scenarioengine
             int                    dirtyBits;
         };
 
-        enum ctrl_mode
-        {
-            RELATIVE,
-            ABSOLUTE
-        };
-
         std::vector<PreSimData> data_vector;
         PreSimData              actualData;
         PreSimData              data;

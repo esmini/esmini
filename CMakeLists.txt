@@ -124,8 +124,22 @@ if(NOT
 endif()
 
 # ############################### Loading common packages ############################################################
-# Add spdlog include directory
-include_directories(${CMAKE_SOURCE_DIR}/externals/)
+
+set(SPDLOG_BUILD_SHARED
+    OFF)
+set(SPDLOG_BUILD_PIC
+    ON)
+add_subdirectory(externals/spdlog)
+set(SPDLOG_LIBRARIES
+    spdlog)
+
+if(LINUX)
+    # add link lib for missing filesystem functions in case gcc 7.5 is used
+    set(SPDLOG_LIBRARIES
+        ${SPDLOG_LIBRARIES}
+        "-lstdc++fs")
+endif()
+
 include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/common/color.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/common/locations.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/common/definitions.cmake)

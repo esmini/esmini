@@ -512,7 +512,7 @@ public:
     virtual ~ArcGeomTestFixture();
 
 protected:
-    Arc arc;
+    roadmanager::Arc arc;
 };
 
 ArcGeomTestFixture::ArcGeomTestFixture()
@@ -528,7 +528,7 @@ TEST_F(ArcGeomTestFixture, TestConstructorArgument)
     ASSERT_EQ(0.0, arc.GetCurvature());
     EXPECT_EQ(arc.GetType(), Geometry::GEOMETRY_TYPE_UNKNOWN);
 
-    Arc arc_second = Arc(2, -1, 1, 5 * M_PI, 4, 5);
+    roadmanager::Arc arc_second = roadmanager::Arc(2, -1, 1, 5 * M_PI, 4, 5);
     ASSERT_EQ(5.0, arc_second.GetCurvature());
     EXPECT_EQ(arc_second.GetType(), Geometry::GEOMETRY_TYPE_ARC);
 }
@@ -540,7 +540,7 @@ TEST_F(ArcGeomTestFixture, TestEvaluateCurvatureDS)
     ASSERT_EQ(arc.EvaluateCurvatureDS(100), 0.0);
     ASSERT_EQ(arc.EvaluateCurvatureDS(1000), 0.0);
 
-    Arc arc_second = Arc(2, -1, 1, 5 * M_PI, 4, 5);
+    roadmanager::Arc arc_second = roadmanager::Arc(2, -1, 1, 5 * M_PI, 4, 5);
 
     ASSERT_EQ(arc_second.EvaluateCurvatureDS(0), 5.0);
     ASSERT_EQ(arc_second.EvaluateCurvatureDS(10), 5.0);
@@ -550,10 +550,10 @@ TEST_F(ArcGeomTestFixture, TestEvaluateCurvatureDS)
 
 TEST_F(ArcGeomTestFixture, TestGetRadius)
 {
-    Arc arc_second = Arc(2, -1, 1, 5 * M_PI, 4, 5);
+    roadmanager::Arc arc_second = roadmanager::Arc(2, -1, 1, 5 * M_PI, 4, 5);
     ASSERT_EQ(arc_second.GetRadius(), 0.2);
 
-    Arc arc_third = Arc(2, -1, 1, 5 * M_PI, 4, -10);
+    roadmanager::Arc arc_third = roadmanager::Arc(2, -1, 1, 5 * M_PI, 4, -10);
     ASSERT_EQ(arc_third.GetRadius(), 0.1);
 }
 
@@ -561,7 +561,7 @@ class ArcGeomTestEvaluateDsCurvPositive : public testing::TestWithParam<std::tup
 {
 public:
 protected:
-    Arc arc{2.0, -1.0, 1.0, 5 * M_PI, 4.0, 1.0};
+    roadmanager::Arc arc{2.0, -1.0, 1.0, 5 * M_PI, 4.0, 1.0};
 };
 
 TEST_P(ArcGeomTestEvaluateDsCurvPositive, TestArcGeomEvaluateDsArgument)
@@ -591,7 +591,7 @@ class ArcGeomTestEvaluateDsCurvNegative : public testing::TestWithParam<std::tup
 {
 public:
 protected:
-    Arc arc{2.0, -1.0, 1.0, 5 * M_PI, 4.0, -1.0};
+    roadmanager::Arc arc{2.0, -1.0, 1.0, 5 * M_PI, 4.0, -1.0};
 };
 
 TEST_P(ArcGeomTestEvaluateDsCurvNegative, TestArcGeomEvaluateDsArgument)

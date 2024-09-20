@@ -3,9 +3,6 @@
 set(TARGET
     ScenarioEngine)
 
-set(EXTERNAL_TARGET
-    Externals)
-
 # ############################### Loading desired rules ##############################################################
 
 include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_static_analysis.cmake)
@@ -56,11 +53,6 @@ source_group(
 # ############################### Creating library ###################################################################
 
 add_library(
-    ${EXTERNAL_TARGET}
-    STATIC
-    ${SRC_ADDITIONAL})
-
-add_library(
     ${TARGET}
     STATIC
     ${SRC_OSCTYPEDEFS}
@@ -85,11 +77,8 @@ target_include_directories(
            ${EXTERNALS_OSI_INCLUDES}
            ${EXTERNALS_SUMO_INCLUDES}
            ${EXTERNALS_PUGIXML_PATH}
-           ${EXTERNALS_EXPR_PATH})
-
-target_link_libraries(
-    ${TARGET}
-    PRIVATE ${EXTERNAL_TARGET})
+           ${EXTERNALS_EXPR_PATH}
+           ${EXTERNALS_SPDLOG_INCLUDES})
 
 disable_static_analysis(${TARGET})
 disable_iwyu(${TARGET})

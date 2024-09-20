@@ -30,9 +30,15 @@ add_library(
     ${SOURCES}
     ${INCLUDES})
 
+target_include_directories(
+    ${TARGET}
+    PRIVATE project_options
+            SYSTEM
+    PUBLIC ${EXTERNALS_SPDLOG_INCLUDES})
+
 target_link_libraries(
     ${TARGET}
-    PRIVATE project_options)
+    PRIVATE ${SPDLOG_LIBRARIES})
 
 disable_static_analysis(${TARGET})
 disable_iwyu(${TARGET})

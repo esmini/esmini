@@ -71,6 +71,8 @@ macro(set_project_external_paths)
         ${EXTERNALS_PATH}/sumo)
     set(EXTERNALS_IMPLOT_PATH
         ${EXTERNALS_PATH}/implot)
+    set(EXTERNALS_SPDLOG_PATH
+        ${EXTERNALS_PATH}/spdlog)
     set(MODELS_PATH
         ${RESOURCES_PATH}/models)
 
@@ -162,6 +164,10 @@ macro(set_project_includes)
         ${EXTERNALS_IMPLOT_OS_SPECIFIC_PATH}/include/imgui
         ${EXTERNALS_IMPLOT_OS_SPECIFIC_PATH}/include/imgui/backends
         ${EXTERNALS_IMPLOT_OS_SPECIFIC_PATH}/include/glfw)
+    set(EXTERNALS_SPDLOG_INCLUDES
+        ${EXTERNALS_SPDLOG_PATH}/include)
+    # ${EXTERNALS_SPDLOG_PATH}/spdlog/cfg ${EXTERNALS_SPDLOG_PATH}/spdlog/fmt ${EXTERNALS_SPDLOG_PATH}/spdlog/fmt/bundled
+    # ${EXTERNALS_SPDLOG_PATH}/spdlog/sinks)
 
 endmacro()
 
