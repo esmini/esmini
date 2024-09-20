@@ -2805,12 +2805,17 @@ osg::Vec4 GetObjectColor(roadmanager::RMObject::ObjectType type)
     return color;
 }
 
-void Viewer::CreateOutlineModel(roadmanager::Outline& outline, osg::Vec4 color, osg::ref_ptr<osg::Geode> geode, bool UseLocalDim, bool IsForCopy)
+void Viewer::CreateOutlineModel(const roadmanager::Outline& outline,
+                                osg::Vec4                   color,
+                                osg::ref_ptr<osg::Geode>    geode,
+                                bool                        UseLocalDim,
+                                bool                        IsForCopy)
 {
-    bool roof = outline.GetAreaType() == roadmanager::Outline::CLOSED ? true : false;
+    roadmanager::Outline::AreaType areaType = outline.areaType_;
+    bool                           roof     = areaType == roadmanager::Outline::AreaType::CLOSED ? true : false;
 
     // nrPoints will be corners + 1 if the outline should be closed, reusing first corner as last
-    uint64_t nrPoints = outline.GetAreaType() == roadmanager::Outline::CLOSED ? outline.corner_.size() + 1 : outline.corner_.size();
+    uint64_t                     nrPoints       = roof ? outline.corner_.size() + 1 : outline.corner_.size();
     osg::ref_ptr<osg::Vec3Array> vertices_sides = new osg::Vec3Array(nrPoints * 2);  // one set at bottom and one at top
     osg::ref_ptr<osg::Vec3Array> vertices_top   = new osg::Vec3Array(nrPoints);      // one set at bottom and one at top
 
@@ -2842,7 +2847,7 @@ void Viewer::CreateOutlineModel(roadmanager::Outline& outline, osg::Vec4 color, 
     }
 
     // Close geometry
-    if (outline.GetAreaType() == roadmanager::Outline::CLOSED)
+    if (roof)
     {
         (*vertices_sides)[2 * nrPoints - 2].set((*vertices_sides)[0]);
         (*vertices_sides)[2 * nrPoints - 1].set((*vertices_sides)[1]);
@@ -3025,7 +3030,7 @@ int Viewer::CreateRoadSignals(osg::ref_ptr<osg::Group> objGroup, std::vector<roa
     return 0;
 }
 
-void Viewer::CreateOutlinesModel(std::vector<roadmanager::Outline>& Outlines, osg::Vec4 color, bool isMarkingAvailable)
+void Viewer::CreateOutlinesModel(const std::vector<roadmanager::Outline>& Outlines, osg::Vec4 color, bool isMarkingAvailable)
 {
     for (auto& outline : Outlines)
     {

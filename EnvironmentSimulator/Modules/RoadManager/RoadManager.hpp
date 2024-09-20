@@ -1858,9 +1858,10 @@ namespace roadmanager
         {
         }
 
-        ~Outline()
-        {
-        }
+        ~Outline();
+
+        // Move constructor
+        Outline(Outline &&other);
 
         void AddCorner(OutlineCorner *outlineCorner)
         {
@@ -2312,7 +2313,7 @@ namespace roadmanager
         // create and fill markings points in itself for the given object.
         void CreateMarkingsPoints(RMObject *object);
         // create and fill markings points in itself for the given outlines. e.g for non repeat outline object
-        void FillPointsFromOutlines(std::vector<Outline> &outlines);
+        void FillPointsFromOutlines(const std::vector<Outline> &outlines);
         // create and fill markings points in itself for the given Unique outlines. e.g repeat with atleast one road corner in any of outlines
         void FillPointsFromUniqueOutlines(std::vector<std::vector<Outline>> &outlines);
         // create and fill markings points in itself for the given Unique outlines. e.g repeat with all outline as local corner
@@ -2328,7 +2329,7 @@ namespace roadmanager
         // get points in world coordinates
         Point3D GetPoint(const Point2D &point, OutlineCorner::CornerType cornerType);
         // get reference to the corners for given corner reference id and outlines.
-        void GetCorners(std::vector<int> cornerReferenceIds, Outline &outline, std::vector<OutlineCorner *> &cornerReferences);
+        void GetCorners(std::vector<int> cornerReferenceIds, const Outline &outline, std::vector<OutlineCorner *> &cornerReferences);
 
         ~Marking()
         {
@@ -2583,7 +2584,7 @@ namespace roadmanager
         // outlines
         std::vector<std::vector<Outline>> &GetUniqueOutlines(Repeat &repeat);
         // Get or create unique outlines for repeat which shall be used to create model e.g  non outline repeat with zero distance
-        std::vector<Outline> &GetUniqueOutlinesZeroDistance(Repeat &repeat);
+        const std::vector<Outline> &GetUniqueOutlinesZeroDistance(Repeat &repeat);
 
         // create transformation info and store itself in given repeat
         int CreateRepeatDimensions(Repeat &repeat);

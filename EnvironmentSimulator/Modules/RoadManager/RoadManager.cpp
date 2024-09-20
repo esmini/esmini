@@ -2729,7 +2729,7 @@ void Marking::FillMarkingPoints(const Point2D& point1, const Point2D& point2, Ou
     }
 }
 
-void Marking::GetCorners(std::vector<int> cornerReferenceIds, Outline& outline, std::vector<OutlineCorner*>& cornerReferences)
+void Marking::GetCorners(std::vector<int> cornerReferenceIds, const Outline& outline, std::vector<OutlineCorner*>& cornerReferences)
 {
     for (const auto cornerReferenceId : cornerReferenceIds)
     {
@@ -2861,7 +2861,7 @@ void Marking::FillPointsFromObject(RMObject* object)
     }
 }
 
-void Marking::FillPointsFromOutlines(std::vector<Outline>& outlines)
+void Marking::FillPointsFromOutlines(const std::vector<Outline>& outlines)
 {
     for (auto& outline : outlines)
     {
@@ -3088,7 +3088,7 @@ int RMObject::CalculateUniqueOutlineZeroDistance(Repeat& rep)
     return 0;
 }
 
-std::vector<Outline>& RMObject::GetUniqueOutlinesZeroDistance(Repeat& repeat)
+const std::vector<Outline>& RMObject::GetUniqueOutlinesZeroDistance(Repeat& repeat)
 {
     if (GetNumberOfUniqueOutlinesZeroDistance(repeat) == 0)
     {
@@ -3233,7 +3233,7 @@ int RMObject::CalculateUniqueOutlines(Repeat& repeat)
             std::vector<Outline> outlineCopies;
             for (size_t i = 0; i < GetNumberOfOutlines(); i++)
             {
-                auto    outlineOriginal = GetOutline(i);
+                auto&   outlineOriginal = GetOutline(i);
                 Outline outline(k, Outline::FillType::FILL_TYPE_UNDEFINED, outlineOriginal.GetAreaType());  // new outline for each segment
                 for (size_t j = 0; j < outlineOriginal.corner_.size(); j++)
                 {
@@ -3543,6 +3543,25 @@ RMObject::Orientation RMObject::ParseOrientation(pugi::xml_node node, int road_i
     }
     return orientation;
 }
+
+Outline::~Outline()
+{
+    for (auto& corner : corner_)
+    {
+        delete (corner);
+    }
+    corner_.clear();
+}
+
+Outline::Outline(Outline&& other)
+{
+    corner_   = std::move(other.corner_);
+    fillType_ = other.fillType_;
+    id_       = other.id_;
+    areaType_ = other.areaType_;
+    other.corner_.clear();
+}
+
 void Outline::TransformRoadCornerToLocal(std::vector<Outline::point>& localPoints, bool RemoveMin)
 {
     for (const auto& corner : corner_)

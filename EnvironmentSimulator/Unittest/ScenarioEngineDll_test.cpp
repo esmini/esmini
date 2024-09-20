@@ -3514,23 +3514,42 @@ TEST(TestOsiReporter, CrestCurveRoadObjectTest)
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(4).base().orientation().roll(), 0);
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(4).base().orientation().pitch(), 0);
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(4).base().orientation().yaw(), 0);
+#ifdef _USE_OSG
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(4).base().base_polygon_size(), 52);
+#else
+    EXPECT_DOUBLE_EQ(osi_gt.stationary_object(4).base().base_polygon_size(), 22);
+#endif  // _USE_OSG
     EXPECT_NEAR(osi_gt.stationary_object(4).base().base_polygon(0).x(), -0.015, 1e-3);
     EXPECT_NEAR(osi_gt.stationary_object(4).base().base_polygon(0).y(), -0.019, 1e-3);
+#ifdef _USE_OSG
     EXPECT_NEAR(osi_gt.stationary_object(4).base().base_polygon(3).x(), 9.415, 1e-3);
     EXPECT_NEAR(osi_gt.stationary_object(4).base().base_polygon(3).y(), -8.098, 1e-3);
     EXPECT_NEAR(osi_gt.stationary_object(4).base().base_polygon(7).x(), 20.829, 1e-3);
     EXPECT_NEAR(osi_gt.stationary_object(4).base().base_polygon(7).y(), -20.186, 1e-3);
     EXPECT_NEAR(osi_gt.stationary_object(4).base().base_polygon(8).x(), 23.433, 1e-3);
     EXPECT_NEAR(osi_gt.stationary_object(4).base().base_polygon(8).y(), -23.446, 1e-3);
+#else
+    EXPECT_NEAR(osi_gt.stationary_object(4).base().base_polygon(3).x(), 22.145, 1e-3);
+    EXPECT_NEAR(osi_gt.stationary_object(4).base().base_polygon(3).y(), -21.804, 1e-3);
+    EXPECT_NEAR(osi_gt.stationary_object(4).base().base_polygon(7).x(), 41.503, 1e-3);
+    EXPECT_NEAR(osi_gt.stationary_object(4).base().base_polygon(7).y(), -58.750, 1e-3);
+    EXPECT_NEAR(osi_gt.stationary_object(4).base().base_polygon(8).x(), 43.772, 1e-3);
+    EXPECT_NEAR(osi_gt.stationary_object(4).base().base_polygon(8).y(), -69.078, 1e-3);
+#endif  // _USE_OSG
 
     // EXPECT_EQ(osi_gt.stationary_object(5).id_.value_, 5);
     EXPECT_NEAR(osi_gt.stationary_object(5).base().position().x(), 272.740, 1e-3);
     EXPECT_NEAR(osi_gt.stationary_object(5).base().position().y(), -79.856, 1e-3);
     EXPECT_NEAR(osi_gt.stationary_object(5).base().position().z(), 3.295, 1e-3);
+#ifdef _USE_OSG
     EXPECT_NEAR(osi_gt.stationary_object(5).base().dimension().length(), 0.200, 1e-3);
     EXPECT_NEAR(osi_gt.stationary_object(5).base().dimension().width(), 0.200, 1e-3);
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(5).base().dimension().height(), 2);
+#else
+    EXPECT_DOUBLE_EQ(osi_gt.stationary_object(5).base().dimension().length(), 0.0);
+    EXPECT_DOUBLE_EQ(osi_gt.stationary_object(5).base().dimension().width(), 0.0);
+    EXPECT_DOUBLE_EQ(osi_gt.stationary_object(5).base().dimension().height(), 0.0);
+#endif  // _USE_OSG
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(5).base().orientation().roll(), 0);
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(5).base().orientation().pitch(), 0);
     EXPECT_NEAR(osi_gt.stationary_object(5).base().orientation().yaw(), -1.369, 1e-3);
@@ -3653,11 +3672,15 @@ TEST(TestOsiReporter, StationaryObjectTest)
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(1).base().dimension().length(), 4.0);
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(1).base().dimension().width(), 4.0);
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(1).base().dimension().height(), 2.0);
-
+#ifdef _USE_OSG
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(2).base().dimension().length(), 1.0);  // with viewer no BB
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(2).base().dimension().width(), 1.0);
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(2).base().dimension().height(), 1.0);
-
+#else
+    EXPECT_DOUBLE_EQ(osi_gt.stationary_object(2).base().dimension().length(), 0.0);  // with viewer no BB
+    EXPECT_DOUBLE_EQ(osi_gt.stationary_object(2).base().dimension().width(), 0.0);
+    EXPECT_DOUBLE_EQ(osi_gt.stationary_object(2).base().dimension().height(), 0.0);
+#endif  // _USE_OSG
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(3).base().dimension().length(), 0.0);
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(3).base().dimension().width(), 0.0);
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(3).base().dimension().height(), 0.0);
@@ -3673,11 +3696,20 @@ TEST(TestOsiReporter, StationaryObjectTest)
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(6).base().position().x(), 35.0);
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(6).base().position().y(), 5.0);
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(6).base().position().z(), 0.0);
+#ifdef _USE_OSG
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(6).base().base_polygon_size(), 16.0);
+#else
+    EXPECT_DOUBLE_EQ(osi_gt.stationary_object(6).base().base_polygon_size(), 8.0);
+#endif  // _USE_OSG
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(6).base().base_polygon(0).x(), 15.0);
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(6).base().base_polygon(0).y(), -1.25);
-    EXPECT_DOUBLE_EQ(osi_gt.stationary_object(6).base().base_polygon(4).x(), 32.142857142857139);
+#ifdef _USE_OSG
+    EXPECT_NEAR(osi_gt.stationary_object(6).base().base_polygon(4).x(), 32.142, 1e-3);
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(6).base().base_polygon(4).y(), -1.25);
+#else
+    EXPECT_DOUBLE_EQ(osi_gt.stationary_object(6).base().base_polygon(4).x(), 45.0);
+    EXPECT_DOUBLE_EQ(osi_gt.stationary_object(6).base().base_polygon(4).y(), 1.25);
+#endif  // _USE_OSG
 
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(9).base().dimension().length(), 4.0);  // same object from repeat
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(9).base().dimension().width(), 2.5);

@@ -628,18 +628,18 @@ namespace viewer
         bool                             CreateRoadLines(Viewer* viewer, roadmanager::OpenDrive* od);
         bool                             CreateRoadMarkLines(roadmanager::OpenDrive* od);
         // Loop each outline and create outline shape model for each outline
-        void CreateOutlinesModel(std::vector<roadmanager::Outline>& Outlines, osg::Vec4 color, bool isMarkingAvailable);
+        void CreateOutlinesModel(const std::vector<roadmanager::Outline>& Outlines, osg::Vec4 color, bool isMarkingAvailable);
         // Loop each outline and create outline shape model for each outline e.g for atleast one corner as road corner in any of outlines
         void CreateUniqueModels(roadmanager::RMObject* object);
         // create one unique model and remaining as shallow copies
         void CreateShallowCopyModels(roadmanager::RMObject* object, osg::ref_ptr<osg::Group> objGroup);
         // create one unique model with local coordinates or world coordinates depends on UseLocalDim. IsForCopy shall decide model shall be aligned
         // to origin or not
-        void CreateOutlineModel(roadmanager::Outline&    outline,
-                                osg::Vec4                color,
-                                osg::ref_ptr<osg::Geode> geode,
-                                bool                     UseLocalDim,
-                                bool                     IsForCopy = false);
+        void CreateOutlineModel(const roadmanager::Outline& outline,
+                                osg::Vec4                   color,
+                                osg::ref_ptr<osg::Geode>    geode,
+                                bool                        UseLocalDim,
+                                bool                        IsForCopy = false);
         // change viewer object as wireframe for better marking view
         void ChangeModelAsWireFrame(osg::ref_ptr<osg::Geode> geode, bool isMarkingAvailable);
         // create marking for the object
