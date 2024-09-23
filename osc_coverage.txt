@@ -68,7 +68,7 @@ OpenSCENARIO
                                             ParameterModifyAction              No
                                         VariableAction (>= 1.2)
                                             VariableSetAction                  Yes
-                                            VariableModifyAction               No
+                                            VariableModifyAction               Yes
                                         Infrastructure                         No
                                         Traffic
                                             TrafficSourceAction                No
@@ -282,7 +282,6 @@ Common classes
             Controller                         No
         ByValue
             ParameterCondition                 Yes
-            VariableCondition                  Yes
             TimeOfDayCondition                 No
             SimulationTimeCondition            Yes
             StoryboardElementStateCondition	   yes
