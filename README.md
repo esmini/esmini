@@ -95,6 +95,9 @@ see [User Guide Hello-World tutorial](https://esmini.github.io/#_python_binding)
 ### ALKS scenarios
 [OSC-ALKS-scenarios](https://github.com/arauschert/OSC-ALKS-scenarios) is a collection of scenarios for Automated Lane Keeping System testing. "BMW has taken on the task of implementing the test scenarios from the ALKS regulation using OpenSCENARIO and OpenDRIVE resulting in a bundle of XML files executable with standard compliant simulators."
 
+### NCAP scenarios
+[OSC-NCAP-scenarios](https://github.com/vectorgrp/OSC-NCAP-scenarios) is a collection of scenarios based on Euro NCAP Test Protocols. "As the Euro NCAP scenarios are widely used, Vector decided to contribute the implementation of these scenarios using the ASAM standards."
+
 ### Online OpenDRIVE viewer
 [odrviewer.io](https://odrviewer.io/) is an excellent interactive online OpenDRIVE viewer. Move around, zoom and inspect elements of the road network like roadID, laneID, successor and predecessor.
 
