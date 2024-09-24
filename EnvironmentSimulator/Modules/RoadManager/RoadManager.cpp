@@ -3327,9 +3327,13 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
         std::string rname   = road_node.attribute("name").value();
         std::string rid_str = road_node.attribute("id").value();
 
-        double         roadlength  = atof(road_node.attribute("length").value());
-        int            junction_id = LookupJunctionIdFromStr(road_node.attribute("junction").value());
-        Road::RoadRule rrule       = Road::RoadRule::RIGHT_HAND_TRAFFIC;  // right hand traffic is default
+        double roadlength  = atof(road_node.attribute("length").value());
+        int    junction_id = -1;
+        if (!road_node.attribute("junction").empty())
+        {
+            junction_id = LookupJunctionIdFromStr(road_node.attribute("junction").value());
+        }
+        Road::RoadRule rrule = Road::RoadRule::RIGHT_HAND_TRAFFIC;  // right hand traffic is default
 
         if (!road_node.attribute("rule").empty())
         {
