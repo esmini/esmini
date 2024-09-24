@@ -1,5 +1,34 @@
 ## esmini release notes
 
+### 2024-09-24 Version 2.39.0
+
+New features:
+- Support VariableAddAction and VariableMultiplyByAction ([PR #597](https://github.com/esmini/esmini/pull/597))
+
+New behaviors:
+- Update road and junction ID type and default value ([issue #612](https://github.com/esmini/esmini/issues/612))
+  - from signed to unsigned 32 bit integer
+  - allows IDs from 0 to 4 294 967 294
+  - 0xffffffff (4 294 967 295) is reserved for ID_UNDEFINED
+  - ID_UNDEFINED indicates uninitialized or error (previously -1)
+
+Improvements and fixes:
+- Take full orientation into account in OSI MovingObject position ([PR #607](https://github.com/esmini/esmini/pull/607))
+- Add heading information to [SE_RouteInfo](https://github.com/esmini/esmini/blob/42c0f3c8cc597c1dbe74bca67d90264556378fe5/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L103-L116) ([PR #599](https://github.com/esmini/esmini/pull/599))
+- Handle visibility changes for vehicles spawned dynamically ([PR #603](https://github.com/esmini/esmini/pull/603))
+- Add a few missing functions to C# wrapper ([PR #604](https://github.com/esmini/esmini/pull/604))
+  - SE_RegisterStoryBoardElementStateChangeCallback()
+  - SE_ClearOSIGroundTruth()
+- Fix Road and Junction ID creator
+  - At ID conflict, replace old and keep latest
+  - String and conflict IDs replaced internally by generated number
+  - Generated number always increments from previous max value
+
+Other:
+- Add [link to brief roadmap](https://docs.google.com/spreadsheets/d/e/2PACX-1vS83IWhiCWxVlDlx_51BsIZMihcy1mfZmC7YF-Mm6FyDA-ghMGaoZnmS207MaoxHdVoX2j4XKAH5u4T/pubhtml) to [homepage README](https://github.com/esmini/esmini)
+- Add [reference](https://github.com/esmini/esmini/tree/master#ncap-scenarios) to NCAP scenarios
+- Add how to run sanitizers locally to [User guide - Sanitizers](https://esmini.github.io/#_sanitizers)
+
 ### 2024-09-13 Version 2.38.5
 
 Improvements and fixes:
