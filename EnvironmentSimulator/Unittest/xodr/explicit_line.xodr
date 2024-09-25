@@ -7,7 +7,6 @@
                 <line/>
             </geometry>
         </planView>
-        <elevationProfile/>
         <lateralProfile/>
         <lanes>
             <laneSection s="0">
@@ -45,7 +44,7 @@
                 <center>
                     <lane id="0" type="none" level="false">
                         <roadMark sOffset="0" type="broken broken" weight="standard" color="standard" height="0.02">
-                            <type name="broken broken" width="None">
+                            <type name="broken broken" width="0.0">
                                 <line length="3" space="3" tOffset="0.2" width="0.2" sOffset="0"/>
                                 <line length="3" space="3" tOffset="-0.2" width="0.2" sOffset="0"/>
                             </type>
@@ -128,7 +127,7 @@
                 <center>
                     <lane id="0" type="none" level="false">
                         <roadMark sOffset="0" type="broken broken" weight="standard" color="standard" height="0.02">
-                            <type name="broken broken" width="None">
+                            <type name="broken broken" width="0.0">
                                 <line length="3" space="3" tOffset="0.2" width="0.2" sOffset="4.0"/>
                                 <line length="3" space="3" tOffset="-0.2" width="0.2" sOffset="4.0"/>
                             </type>

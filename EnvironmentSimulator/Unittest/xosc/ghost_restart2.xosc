@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <OpenSCENARIO>
-    <FileHeader revMajor="1" revMinor="1" date="" description="" author="esmini-team"/>
+    <FileHeader revMajor="1" revMinor="1" date="2022-01-31T10:00:00" description="" author="esmini-team"/>
     <ParameterDeclarations>
         <ParameterDeclaration name="myparam" parameterType="integer" value="0"/>
     </ParameterDeclarations>

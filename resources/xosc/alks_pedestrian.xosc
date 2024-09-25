@@ -76,7 +76,7 @@
                     <PrivateAction>
                         <RoutingAction>
                             <FollowTrajectoryAction>
-                                <Trajectory closed="False" name="ped_traj">
+                                <Trajectory closed="false" name="ped_traj">
                                     <ParameterDeclarations/>
                                     <Shape>
                                         <Polyline>
@@ -115,7 +115,7 @@
                     <Actors selectTriggeringEntities="false">
                         <EntityRef entityRef="Pedestrian"/>
                     </Actors>
-                    <Maneuver>
+                    <Maneuver name="PedestrianWalkManeuver" >
                         <Event name="PedestrianWalkEvent" priority="overwrite">
                             <Action name="PedestrianWalkAction">
                                 <PrivateAction>

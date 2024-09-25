@@ -8,7 +8,7 @@
                author="esmini-team"/>
    <ParameterDeclarations>
       <ParameterDeclaration name="EgoVehicle" parameterType="string" value="car_white"/>
-      <ParameterDeclaration name="GhostMode" parameterType="bool" value="false"/>
+      <ParameterDeclaration name="GhostMode" parameterType="boolean" value="false"/>
    </ParameterDeclarations>
    <CatalogLocations>
       <VehicleCatalog>
@@ -30,12 +30,12 @@
                         <Property name="headstartTime" value="2" />
                     </Properties>
                 </Controller>
-          </ObjectController>      
+          </ObjectController>
           <!-- asciidoc end::ObjectController[] -->
       </ScenarioObject>
       <ScenarioObject name="Target">
          <CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>
-      </ScenarioObject>      
+      </ScenarioObject>
    </Entities>
    <Storyboard>
       <Init>
@@ -59,7 +59,7 @@
                             </SpeedActionTarget>
                         </SpeedAction>
                     </LongitudinalAction>
-                </PrivateAction>            
+                </PrivateAction>
                 <!-- asciidoc tag::ActivateController[] -->
                 <PrivateAction>
                       <ActivateControllerAction longitudinal="true" lateral="true" />
@@ -73,11 +73,11 @@
                         <LanePosition roadId="1" laneId="-1" offset="0" s="500"/>
                      </Position>
                   </TeleportAction>
-               </PrivateAction>            
-            </Private>          
+               </PrivateAction>
+            </Private>
          </Actions>
       </Init>
-      <Story>
+      <Story name="MyAct">
          <ParameterDeclarations/>
          <Act name="MyAct">
             <ManeuverGroup maximumExecutionCount="1" name="CutInAndBrakeSequence">
@@ -128,7 +128,7 @@
                      </Action>
                      <StartTrigger>
                         <ConditionGroup>
-                          <Condition name="AccelerateEventTtrigger" delay="0">
+                          <Condition name="AccelerateEventTtrigger" delay="0" conditionEdge="none">
                              <ByValueCondition>
                                 <SimulationTimeCondition value="12" rule="greaterThan"/>
                              </ByValueCondition>
@@ -151,14 +151,14 @@
                      </Action>
                      <StartTrigger>
                         <ConditionGroup>
-                          <Condition name="LaneChangeTrigger" delay="0">
+                          <Condition name="LaneChangeTrigger" delay="0" conditionEdge="none">
                              <ByValueCondition>
                                 <SimulationTimeCondition value="6" rule="greaterThan"/>
                              </ByValueCondition>
                           </Condition>
                         </ConditionGroup>
                      </StartTrigger>
-                  </Event>                 
+                  </Event>
                   <Event name="LaneChange2Event" priority="parallel" maximumExecutionCount="1">
                      <Action name="LaneChange2Action">
                         <PrivateAction>
@@ -174,31 +174,32 @@
                      </Action>
                      <StartTrigger>
                         <ConditionGroup>
-                          <Condition name="LaneChange2Trigger" delay="0">
+                          <Condition name="LaneChange2Trigger" delay="0" conditionEdge="none">
                              <ByValueCondition>
                                 <SimulationTimeCondition value="14" rule="greaterThan"/>
                              </ByValueCondition>
                           </Condition>
                         </ConditionGroup>
                      </StartTrigger>
-                  </Event>                        
+                  </Event>
                </Maneuver>
             </ManeuverGroup>
-			<StopTrigger>
-               <ConditionGroup>
-                    <Condition name="End Of Road condition" delay="0" conditionEdge="rising">
-                        <ByEntityCondition>
-                            <TriggeringEntities triggeringEntitiesRule="any">
-                                <EntityRef entityRef="Ego"/>
-                            </TriggeringEntities>                                
-                            <EntityCondition>
-                                <EndOfRoadCondition duration="0.0" rule="greaterThan"/>
-                            </EntityCondition>
-                        </ByEntityCondition>
-                   </Condition>
-               </ConditionGroup>
-            </StopTrigger>
+            <StartTrigger/>
          </Act>
       </Story>
+         <StopTrigger>
+            <ConditionGroup>
+               <Condition name="End Of Road condition" delay="0" conditionEdge="rising">
+                     <ByEntityCondition>
+                        <TriggeringEntities triggeringEntitiesRule="any">
+                           <EntityRef entityRef="Ego"/>
+                        </TriggeringEntities>
+                        <EntityCondition>
+                           <EndOfRoadCondition duration="0.0"/>
+                        </EntityCondition>
+                     </ByEntityCondition>
+               </Condition>
+            </ConditionGroup>
+         </StopTrigger>
    </Storyboard>
 </OpenSCENARIO>

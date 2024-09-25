@@ -3,6 +3,15 @@
 	<header revMajor="1" revMinor="4" name="" version="1.00" date="Tue Jun 30 14:55:47 2020" north="0.0000000000000000e+00" south="0.0000000000000000e+00" east="0.0000000000000000e+00" west="0.0000000000000000e+00"/>
 	<road name="" length="5.0000000000000000e+02" id="1" junction="-1">
 		<link/>
+		<type s="0.0" type="rural">
+			<speed unit="km/h" max="50"/>
+		</type>
+		<type s="100.0" type="town">
+			<speed unit="km/h" max="30"/>
+		</type>
+		<type s="200.0" type="town">
+			<speed unit="km/h" max="50"/>
+		</type>
 		<planView>
 			<geometry s="0.0000000000000000e+00" x="0.0000000000000000e+00" y="0.0000000000000000e+00" hdg="0.0000000000000000e+00" length="5.0000000000000000e+02">
 				<line/>
@@ -105,35 +114,26 @@
 			<object type="pole" name="pole" id="7" s="500.0" t="-3.57" zOffset="-0.2" validLength="0.0" orientation="+" length="0.06" width="0.06" radius="0.5" height="2.35" hdg="0.0" pitch="0.0" roll="0.0"/>
 		</objects>
 		<signals>
-			<signal s="0.0" t="3.57" id="0" name="de_274-50" dynamic="no" orientation="+" zOffset="1.7" type="101" country="de" subtype="" value="" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61">
+			<signal s="0.0" t="3.57" id="0" name="de_274-50" dynamic="no" orientation="+" zOffset="1.7" type="101" country="de" subtype="" value="0.0" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61">
                 <validity fromLane="-3" toLane="-1" />
                 <validity fromLane="1" toLane="3" />
             </signal>
-			<signal s="0.0" t="-3.57" id="1" name="de_274-50" dynamic="no" orientation="+" zOffset="1.7" type="101" country="de" subtype="" value="" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61"/>
+			<signal s="0.0" t="-3.57" id="1" name="de_274-50" dynamic="no" orientation="+" zOffset="1.7" type="101" country="de" subtype="" value="0.0" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61"/>
 			<signal s="100.0" t="3.57" id="2" name="de_274-30" dynamic="no" orientation="+" zOffset="1.7" type="101" country="de" subtype="" value="11" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61"/>
-			<signal s="100.0" t="-3.57" id="3" name="de_274-50" dynamic="no" orientation="+" zOffset="1.7" type="" country="de" subtype="" value="" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61"/>
-			<signal s="100.0" t="3.57" id="4" name="274-50" dynamic="no" orientation="-" zOffset="1.7" type="110" country="de" subtype="" value="" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61"/>
+			<signal s="100.0" t="-3.57" id="3" name="de_274-50" dynamic="no" orientation="+" zOffset="1.7" type="" country="de" subtype="" value="0.0" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61"/>
+			<signal s="100.0" t="3.57" id="4" name="274-50" dynamic="no" orientation="-" zOffset="1.7" type="110" country="de" subtype="" value="0.0" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61"/>
 			<signal s="100.0" t="-3.57" id="5" name="274-50" dynamic="no" orientation="-" zOffset="1.7" type="105" country="de" subtype="" value="10" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61"/>
 			<signal s="200.0" t="3.57" id="6" name="274-50" dynamic="no" orientation="+" zOffset="1.7" type="105" country="de" subtype="" value="20" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61"/>
-			<signal s="200.0" t="-3.57" id="7" name="274-50" dynamic="no" orientation="+" zOffset="1.7" type="" country="de" subtype="" value="" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61"/>
-			<signal s="200.0" t="3.57" id="8" name="274-50" dynamic="no" orientation="-" zOffset="1.7" type="" country="se" subtype="" value="" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61"/>
-			<signal s="200.0" t="-3.57" id="9" name="274-50" dynamic="no" orientation="-" zOffset="1.7" type="" country="de" subtype="" value="" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61">
+			<signal s="200.0" t="-3.57" id="7" name="274-50" dynamic="no" orientation="+" zOffset="1.7" type="" country="de" subtype="" value="0.0" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61"/>
+			<signal s="200.0" t="3.57" id="8" name="274-50" dynamic="no" orientation="-" zOffset="1.7" type="" country="se" subtype="" value="0.0" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61"/>
+			<signal s="200.0" t="-3.57" id="9" name="274-50" dynamic="no" orientation="-" zOffset="1.7" type="" country="de" subtype="" value="0.0" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61">
                 <validity fromLane="-3" toLane="-2" />
                 <validity fromLane="1" toLane="2" />
                 <validity fromLane="3" toLane="3" />
             </signal>
-			<signal s="500.0" t="3.57" id="10" name="speed_50_6" dynamic="no" orientation="-" zOffset="1.7" type="" country="de" subtype="" value="" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61"/>
-			<signal s="500.0" t="-3.57" id="11" name="speed_50_7" dynamic="no" orientation="-" zOffset="1.7" type="" country="de" subtype="" value="" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61"/>
+			<signal s="500.0" t="3.57" id="10" name="speed_50_6" dynamic="no" orientation="-" zOffset="1.7" type="" country="de" subtype="" value="0.0" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61"/>
+			<signal s="500.0" t="-3.57" id="11" name="speed_50_7" dynamic="no" orientation="-" zOffset="1.7" type="" country="de" subtype="" value="0.0" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61"/>
 		</signals>
 		<surface/>
-		<type s="0.0" type="rural">
-			<speed unit="km/h" max="50.0"/>
-		</type>
-		<type s="100.0" type="town">
-			<speed unit="km/h" max="30.0"/>
-		</type>
-		<type s="200.0" type="town">
-			<speed unit="km/h" max="50.0"/>
-		</type>
 	</road>
 </OpenDRIVE>

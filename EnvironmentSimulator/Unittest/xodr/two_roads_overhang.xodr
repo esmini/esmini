@@ -17,8 +17,8 @@
                     <lane id="0" type="none" level="false">
                         <roadMark sOffset="0" type="broken" weight="standard" color="standard" height="0.02">
                             <type name="broken" width="0.12" >
-                                <line length="2.5" space="5.0" width="0.12"/>
-                            </type>                        
+                                <line length="2.5" space="5.0" width="0.12" tOffset="0.0" sOffset="0.0"/>
+                            </type>
                         </roadMark>
                     </lane>
                 </center>
@@ -47,8 +47,8 @@
                     <lane id="0" type="none" level="false">
                         <roadMark sOffset="0" type="broken" weight="standard" color="standard" height="0.02">
                             <type name="broken" width="0.12" >
-                                <line length="2.5" space="5.0" width="0.12"/>
-                            </type>                        
+                                <line length="2.5" space="5.0" width="0.12" tOffset="0.0" sOffset="0.0"/>
+                            </type>
                         </roadMark>
                     </lane>
                 </center>

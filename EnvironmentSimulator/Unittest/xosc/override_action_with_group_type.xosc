@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <OpenSCENARIO>
    <FileHeader revMajor="1"
-               revMinor="2"
+               revMinor="3"
                date="2021-04-13T10:00:00"
                description="For OverrideAction unit test"
                author="esmini-team"/>
@@ -63,7 +63,7 @@
                                  <Brake value="0.7" active="true"/>
                                  <Clutch value="2.0" active="false"/>
                                  <SteeringWheel value="15.0" active="false"/>
-                                 <Gear value="7.8" active="true"/>
+                                 <Gear number="7.8" active="true"/>
                               </OverrideControllerValueAction>
                            </ControllerAction>
                         </PrivateAction>

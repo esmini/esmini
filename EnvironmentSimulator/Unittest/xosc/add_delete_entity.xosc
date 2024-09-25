@@ -37,7 +37,7 @@
                             <SpeedAction>
                                 <SpeedActionDynamics dynamicsShape="step" value="0.0" dynamicsDimension="time"/>
                                 <SpeedActionTarget>
-                                    <AbsoluteTargetSpeed value="${$Speed/3.6}/"/>
+                                    <AbsoluteTargetSpeed value="${$Speed/3.6}"/>
                                 </SpeedActionTarget>
                             </SpeedAction>
                         </LongitudinalAction>
@@ -48,8 +48,6 @@
         <Story name="MyStory">
             <ParameterDeclarations/>
             <Act name="MyAct">
-                <ParameterDeclarations>
-                </ParameterDeclarations>
                 <ManeuverGroup maximumExecutionCount="1" name="MGCar1">
                     <Actors selectTriggeringEntities="false">
                         <EntityRef entityRef="Car1"/>
@@ -101,7 +99,7 @@
                                     <EntityAction entityRef="Car1">
                                         <AddEntityAction>
                                             <Position>
-                                                <RelativeLanePosition entityRef="Car1" ds="220"/>
+                                                <RelativeLanePosition entityRef="Car1" ds="220" dLane="0"/>
                                                 <!-- <LanePosition roadId="1" laneId="-1" offset="0.0" s="440"/> -->
                                             </Position>
                                         </AddEntityAction>
@@ -134,7 +132,7 @@
                                                 <EntityRef entityRef="Car1"/>
                                             </TriggeringEntities>
                                             <EntityCondition>
-                                                <EndOfRoadCondition duration="0" rule="greaterOrEqual"/>
+                                                <EndOfRoadCondition duration="0"/>
                                             </EntityCondition>
                                         </ByEntityCondition>
                                     </Condition>
@@ -166,7 +164,7 @@
                                         <SpeedAction>
                                             <SpeedActionDynamics dynamicsShape="step" value="0.0" dynamicsDimension="time"/>
                                             <SpeedActionTarget>
-                                                <AbsoluteTargetSpeed value="${$Speed/3.6}/"/>
+                                                <AbsoluteTargetSpeed value="${$Speed/3.6}"/>
                                             </SpeedActionTarget>
                                         </SpeedAction>
                                     </LongitudinalAction>

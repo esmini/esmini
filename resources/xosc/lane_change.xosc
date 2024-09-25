@@ -108,7 +108,7 @@
                             <Action name="EgoGoOffRoadAction">
                                 <PrivateAction>
                                     <LateralAction>
-                                        <LaneOffsetAction>
+                                        <LaneOffsetAction continuous="false">
                                             <LaneOffsetActionDynamics dynamicsShape="sinusoidal" maxLateralAcc="3.5"/>
                                             <LaneOffsetTarget>
                                                 <AbsoluteTargetLaneOffset value="8"/>
@@ -148,7 +148,7 @@
                                                 <EntityRef entityRef="Ego"/>
                                             </TriggeringEntities>
                                             <EntityCondition>
-                                                <OffroadCondition duration="2.5" rule="greaterThan"/>
+                                                <OffroadCondition duration="2.5"/>
                                             </EntityCondition>
                                         </ByEntityCondition>
                                     </Condition>

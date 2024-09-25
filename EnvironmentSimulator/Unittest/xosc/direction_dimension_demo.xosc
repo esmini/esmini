@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Another cut-in variant on a simple straight road. In this -->
-<!-- case specifying rate of the lane change lateral movement  -->
+<!-- A simple lane change maneuver demonstrates the use of the direction attribute in conditions   -->
+<!-- When the host vehicle reaches a specified lateral acceleration threshold, it applies the brakes-->
+<!-- When the host vehicle's longitudinal speed decreases below a specified threshold, it accelerates. -->
+<!-- When the host vehicle's relative vertical speed to the overtaking vehicle reaches a specific value,it changes lanes.-->
 <OpenSCENARIO>
    <FileHeader revMajor="1"
-               revMinor="0"
-               date="2017-06-09T10:00:00"
-               description="Another variant of cut-in"
-               author="SimS"/>
+               revMinor="3"
+               date="2023-01-31T10:00:00"
+               description="demo of drection attribute in conditon"
+               author="esmini-team"/>
    <ParameterDeclarations>
       <ParameterDeclaration name="HostVehicle" parameterType="string" value="car_white"/>
       <ParameterDeclaration name="TargetVehicle" parameterType="string" value="car_red"/>
@@ -23,9 +25,29 @@
    </RoadNetwork>
    <Entities>
       <ScenarioObject name="Ego">
-         <CatalogReference catalogName="VehicleCatalog" entryName="$HostVehicle"/>
-            <Vehicle role="ambulance">
-            </Vehicle>
+         <Vehicle name="car_white" vehicleCategory="car" model3d="../models/car_white.osgb" role="ambulance">
+            <ParameterDeclarations>
+                <ParameterDeclaration name="EgoModelId" parameterType="integer" value="0"/>
+                <ParameterDeclaration name="ScaleMode" parameterType="string" value="None"/>
+                <ParameterDeclaration name="TrailerRef" parameterType="string" value=""/>
+                <ParameterDeclaration name="MaxSpeed" parameterType="double" value="${250/3.6}"/>
+                <ParameterDeclaration name="MaxDeceleration" parameterType="double" value="10"/>
+                <ParameterDeclaration name="MaxAcceleration" parameterType="double" value="5"/>
+            </ParameterDeclarations>
+            <BoundingBox>
+                <Center x="1.4" y="0.0" z="0.75"/>
+                <Dimensions width="2.0" length="5.04" height="1.5"/>
+            </BoundingBox>
+            <Performance maxSpeed="$MaxSpeed" maxDeceleration="$MaxDeceleration" maxAcceleration="$MaxAcceleration"/>
+            <Axles>
+                <FrontAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="2.98" positionZ="0.4"/>
+                <RearAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="0" positionZ="0.4"/>
+            </Axles>
+            <Properties>
+                <Property name="model_id" value="$EgoModelId"/>
+                <Property name="scaleMode" value="$ScaleMode"/>
+            </Properties>
+        </Vehicle>
       </ScenarioObject>
       <ScenarioObject name="OverTaker">
          <CatalogReference catalogName="VehicleCatalog" entryName="$TargetVehicle"/>
@@ -184,9 +206,9 @@
                      </StartTrigger>
                   </Event>
                </Maneuver>
-               <Maneuver name="EgoAccelRelManeuver">
-                  <Event name="EgoAccelRelEvent" priority="overwrite">
-                     <Action name="EgoAccelRelAction">
+               <Maneuver name="EgoLaneChangeManeuver">
+                  <Event name="EgoLaneChangeEvent" priority="overwrite">
+                     <Action name="EgoLaneChangeAction">
                         <PrivateAction>
                            <LateralAction>
                               <LaneChangeAction >
@@ -200,7 +222,7 @@
                      </Action>
                      <StartTrigger>
                         <ConditionGroup>
-                           <Condition name="EgoAccelRelCondition" delay="0" conditionEdge="rising">
+                           <Condition name="EgoLaneChangeCondition" delay="0" conditionEdge="rising">
                               <ByEntityCondition>
                                  <TriggeringEntities triggeringEntitiesRule="any">
                                     <EntityRef entityRef="OverTaker"/>

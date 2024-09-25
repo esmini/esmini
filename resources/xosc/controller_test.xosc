@@ -9,7 +9,7 @@
 <!-- time 30.0: SloppyDriver long domain, low sloppiness                                          -->
 <!-- time 40.0: DefaultController                                                                 -->
 <OpenSCENARIO>
-    <FileHeader revMajor="1" revMinor="0" date="2020-10-04T10:00:00" description="Demonstrate controller concept" author="esmini-team"/>
+    <FileHeader revMajor="1" revMinor="1" date="2020-10-04T10:00:00" description="Demonstrate controller concept" author="esmini-team"/>
     <ParameterDeclarations>
         <ParameterDeclaration name="EgoVehicle" parameterType="string" value="car_white"/>
     </ParameterDeclarations>

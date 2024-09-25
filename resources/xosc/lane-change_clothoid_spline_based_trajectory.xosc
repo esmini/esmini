@@ -5,7 +5,7 @@
 <!--   two clothoids with continuous tangent                                     -->
 <!--   two segments, discontinuous tangent by use of hOffset                     -->
 <OpenSCENARIO>
-    <FileHeader revMajor="1" revMinor="1" date="2023-09-19T20:00:00" description="Lane change with a single clothoid spline trajectory" author="esmini-team"/>
+    <FileHeader revMajor="1" revMinor="3" date="2023-09-19T20:00:00" description="Lane change with a single clothoid spline trajectory" author="esmini-team"/>
     <ParameterDeclarations>
         <ParameterDeclaration name="CarVehicle" parameterType="string" value="car_white"/>
         <ParameterDeclaration name="ArcRadius" parameterType="double" value="100"/>

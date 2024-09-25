@@ -3,7 +3,7 @@
 <!-- In this case the user controls the white car being overtaken  -->
 <OpenSCENARIO>
    <FileHeader revMajor="1"
-               revMinor="0"
+               revMinor="1"
                date="2020-10-09T10:00:00"
                description="Basic cut-in with interactive controller"
                author="esmini-team"/>
@@ -143,7 +143,7 @@
                      </Action>
                      <StartTrigger>
                         <ConditionGroup>
-                           <Condition name="CutInStartCondition" delay="0" conditionEdge="rising">
+                           <Condition name="CutInStartCondition" delay="0" conditionEdge="none">
                               <ByEntityCondition>
                                  <TriggeringEntities triggeringEntitiesRule="any">
                                     <EntityRef entityRef="Ego"/>
@@ -196,7 +196,7 @@
             </ManeuverGroup>
             <StartTrigger>
                <ConditionGroup>
-                  <Condition name="CutInActStart" delay="0">
+                  <Condition name="CutInActStart" delay="0" conditionEdge="rising">
                      <ByValueCondition>
                         <SimulationTimeCondition value="0" rule="greaterThan"/>
                      </ByValueCondition>

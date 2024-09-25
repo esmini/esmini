@@ -2,7 +2,7 @@
 <!-- Demonstrate how LaneOffsetAction can be used for overtaking maneuvers, giving -->
 <!-- explicit control over lateral offset in relation to original position.        -->
 <OpenSCENARIO>
-    <FileHeader revMajor="1" revMinor="0" date="2017-06-09T10:00:00" description="Cut-in" author="SimS"/>
+    <FileHeader revMajor="1" revMinor="1" date="2017-06-09T10:00:00" description="Cut-in" author="SimS"/>
     <ParameterDeclarations>
         <ParameterDeclaration name="HostVehicle" parameterType="string" value="car_white"/>
         <ParameterDeclaration name="EgoStartS" parameterType="double" value="150"/>
@@ -52,7 +52,7 @@
                     <PrivateAction>
                         <TeleportAction>
                             <Position>
-                                <LanePosition roadId="$RoadID" laneId="-1" s="${$EgoStartS-30}" offset="0" t="0.0"/>
+                                <LanePosition roadId="$RoadID" laneId="-1" s="${EgoStartS-30}" offset="0" />
                             </Position>
                         </TeleportAction>
                     </PrivateAction>

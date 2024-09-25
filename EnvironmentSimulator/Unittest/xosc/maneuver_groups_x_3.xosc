@@ -99,7 +99,7 @@
         </Story>
         <StopTrigger>
             <ConditionGroup>
-                <Condition name="StopCondition" delay="0">
+                <Condition name="StopCondition" delay="0" conditionEdge="none">
                     <ByValueCondition>
                         <SimulationTimeCondition value="8" rule="greaterThan"/>
                     </ByValueCondition>

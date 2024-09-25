@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <OpenSCENARIO>
-    <FileHeader revMajor="1" revMinor="1" date="2021-04-09T10:00:00" description="Basic cut-in" author="esmini-team"/>
+    <FileHeader revMajor="1" revMinor="3" date="2021-04-09T10:00:00" description="Basic cut-in" author="esmini-team"/>
     <ParameterDeclarations>
         <ParameterDeclaration name="Speed1" parameterType="double" value="10"/>
         <ParameterDeclaration name="Speed2" parameterType="double" value="4"/>
@@ -59,7 +59,7 @@
             </Actions>
         </Init>
         <Story name="TestDynamicsStory">
-            <Act name="TestDynamicsAct" maximumExecutionCount="1">
+            <Act name="TestDynamicsAct">
                 <ManeuverGroup maximumExecutionCount="1" name="LaneChange1ManeuverGroup">
                     <Actors selectTriggeringEntities="false">
                         <EntityRef entityRef="Car"/>

@@ -53,7 +53,7 @@
                                 </SpeedActionTarget>
                             </SpeedAction>
                         </LongitudinalAction>
-                    </PrivateAction>                    
+                    </PrivateAction>
                     <PrivateAction>
                         <ControllerAction>
                             <ActivateControllerAction longitudinal="true" lateral="true"/>
@@ -89,7 +89,7 @@
                         <EntityRef entityRef="Ego"/>
                     </Actors>
                     <Maneuver name="ControllerManeuver">
-                        <Event name="ActivateACCEvent" priority="overwrite" maximumExecutionCount="-1">
+                        <Event name="ActivateACCEvent" priority="overwrite" maximumExecutionCount="10000">
                             <Action name="AssignACCAction">
                                 <PrivateAction>
                                     <ControllerAction>
@@ -124,7 +124,7 @@
                                 </ConditionGroup>
                             </StartTrigger>
                         </Event>
-                        <Event name="ActivateInteractiveDriverEvent" priority="overwrite" maximumExecutionCount="-1">
+                        <Event name="ActivateInteractiveDriverEvent" priority="overwrite" maximumExecutionCount="10000">
                             <Action name="AssignInteractiveDriverAction">
                                 <PrivateAction>
                                     <ControllerAction>
@@ -208,7 +208,7 @@
                                     </Condition>
                                 </ConditionGroup>
                             </StartTrigger>
-                        </Event>                        
+                        </Event>
                     </Maneuver>
                 </ManeuverGroup>
                 <StartTrigger/>
@@ -222,7 +222,7 @@
                             <EntityRef entityRef="Target"/>
                         </TriggeringEntities>
                         <EntityCondition>
-                            <EndOfRoadCondition duration="2.5" rule="greaterThan"/>
+                            <EndOfRoadCondition duration="2.5"/>
                         </EntityCondition>
                     </ByEntityCondition>
                 </Condition>

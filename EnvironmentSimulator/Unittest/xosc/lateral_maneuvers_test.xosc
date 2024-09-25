@@ -88,7 +88,7 @@
                             <Action name="Lane offset action">
                                 <PrivateAction>
                                     <LateralAction>
-                                        <LaneOffsetAction>
+                                        <LaneOffsetAction continuous="false">
                                             <LaneOffsetActionDynamics dynamicsShape="linear" maxLateralAcc="2.0"/>
                                             <LaneOffsetTarget>
                                                 <AbsoluteTargetLaneOffset value="-3.07"/>

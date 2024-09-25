@@ -10,7 +10,7 @@
 
 <OpenSCENARIO>
    <FileHeader revMajor="1"
-               revMinor="0"
+               revMinor="1"
                date="2020-12-11T10:00:00"
                description="Synchronize with SteadyState provocing critical situation incl car and bike"
                author="esmini-team"/>
@@ -95,7 +95,7 @@
                               <CatalogReference catalogName="RoutesAtMultiIntersections" entryName="TargetStraightLeftToRight"/>
                            </RouteRef>
                            <InRoutePosition>
-                              <FromLaneCoordinates pathS="$TargetStartS" laneId="1" offset="-1.0"/>
+                              <FromLaneCoordinates pathS="$TargetStartS" laneId="1" laneOffset="-1.0"/>
                            </InRoutePosition>
                         </RoutePosition>
                      </Position>

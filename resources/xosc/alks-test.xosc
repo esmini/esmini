@@ -6,7 +6,7 @@
 
 <OpenSCENARIO>
    <FileHeader revMajor="1"
-               revMinor="1"
+               revMinor="3"
                date="2021-08-24T10:00:00"
                description="Demonstrate ALKS controller"
                author="esmini-team"/>

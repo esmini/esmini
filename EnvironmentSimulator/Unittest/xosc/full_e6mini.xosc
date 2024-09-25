@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
-<OpenSCENARIO xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceShemaLocation="OpenSccenario.xsd">
-    <FileHeader author="inatale" date="2020-08-11 10:27:09.988153" decription="full_e6mini" revMajor="1" revMinor="0"/>
+<OpenSCENARIO>
+    <FileHeader author="inatale" date="2020-08-11T10:27:09" description="full_e6mini" revMajor="1" revMinor="0"/>
     <ParameterDeclarations/>
     <CatalogLocations>
         <VehicleCatalog>
@@ -554,7 +554,7 @@
             <ParameterDeclarations/>
             <Act name="my_act">
                 <ManeuverGroup maximumExecutionCount="1" name="mangroup">
-                    <Actors selectTriggeringEntities="False">
+                    <Actors selectTriggeringEntities="false">
                         <EntityRef entityRef="vehicle1"/>
                     </Actors>
                 </ManeuverGroup>

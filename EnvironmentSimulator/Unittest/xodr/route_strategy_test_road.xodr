@@ -12,7 +12,6 @@
                 <line/>
             </geometry>
         </planView>
-        <elevationProfile/>
         <lateralProfile/>
         <lanes>
             <laneSection s="0">
@@ -67,7 +66,6 @@
                 <line/>
             </geometry>
         </planView>
-        <elevationProfile/>
         <lateralProfile/>
         <lanes>
             <laneSection s="0">
@@ -114,7 +112,6 @@
                 <line/>
             </geometry>
         </planView>
-        <elevationProfile/>
         <lateralProfile/>
         <lanes>
             <laneSection s="0">
@@ -173,7 +170,6 @@
                 <line/>
             </geometry>
         </planView>
-        <elevationProfile/>
         <lateralProfile/>
         <lanes>
             <laneSection s="0">
@@ -232,7 +228,6 @@
                 <line/>
             </geometry>
         </planView>
-        <elevationProfile/>
         <lateralProfile/>
         <lanes>
             <laneSection s="0">
@@ -279,7 +274,6 @@
                 <line/>
             </geometry>
         </planView>
-        <elevationProfile/>
         <lateralProfile/>
         <lanes>
             <laneSection s="0">
@@ -326,7 +320,6 @@
                 <line/>
             </geometry>
         </planView>
-        <elevationProfile/>
         <lateralProfile/>
         <lanes>
             <laneSection s="0">
@@ -386,7 +379,6 @@
                 <spiral curvStart="0.0690948457876379" curvEnd="9.999999994736442e-10"/>
             </geometry>
         </planView>
-        <elevationProfile/>
         <lateralProfile/>
         <lanes>
             <laneSection s="0">
@@ -450,7 +442,6 @@
                 <spiral curvStart="-0.06909484644623468" curvEnd="9.999999994736442e-10"/>
             </geometry>
         </planView>
-        <elevationProfile/>
         <lateralProfile/>
         <lanes>
             <laneSection s="0">
@@ -514,7 +505,6 @@
                 <spiral curvStart="-5.000000045924254e-10" curvEnd="1e-09"/>
             </geometry>
         </planView>
-        <elevationProfile/>
         <lateralProfile/>
         <lanes>
             <laneSection s="0">
@@ -578,7 +568,6 @@
                 <spiral curvStart="0.06909484578763792" curvEnd="9.999999994736442e-10"/>
             </geometry>
         </planView>
-        <elevationProfile/>
         <lateralProfile/>
         <lanes>
             <laneSection s="0">
@@ -636,7 +625,6 @@
                 <line/>
             </geometry>
         </planView>
-        <elevationProfile/>
         <lateralProfile/>
         <lanes>
             <laneSection s="0">
@@ -700,7 +688,6 @@
                 <spiral curvStart="0.0690948457876379" curvEnd="9.999999994736442e-10"/>
             </geometry>
         </planView>
-        <elevationProfile/>
         <lateralProfile/>
         <lanes>
             <laneSection s="0">
@@ -764,7 +751,6 @@
                 <spiral curvStart="-0.06909484644623465" curvEnd="9.999999994736442e-10"/>
             </geometry>
         </planView>
-        <elevationProfile/>
         <lateralProfile/>
         <lanes>
             <laneSection s="0">
@@ -828,7 +814,6 @@
                 <spiral curvStart="0.0690948457876379" curvEnd="9.999999994736442e-10"/>
             </geometry>
         </planView>
-        <elevationProfile/>
         <lateralProfile/>
         <lanes>
             <laneSection s="0">
@@ -892,7 +877,6 @@
                 <spiral curvStart="-5.000000045924254e-10" curvEnd="1e-09"/>
             </geometry>
         </planView>
-        <elevationProfile/>
         <lateralProfile/>
         <lanes>
             <laneSection s="0">
@@ -956,23 +940,22 @@
                 <spiral curvStart="-0.06909484644623465" curvEnd="9.999999994736442e-10"/>
             </geometry>
         </planView>
-        <elevationProfile/>
         <lateralProfile/>
         <lanes>
             <laneSection s="0">
                 <left>
                     <lane id="1" type="driving" level="false">
                         <link>
-                            <successor id="-1"/>
                             <predecessor id="-1"/>
+                            <successor id="-1"/>
                         </link>
                         <width a="3" b="0" c="0" d="0" sOffset="0"/>
                         <roadMark sOffset="0" type="broken" weight="standard" color="standard" height="0.02" width="0.2"/>
                     </lane>
                     <lane id="2" type="driving" level="false">
                         <link>
-                            <successor id="-2"/>
                             <predecessor id="-2"/>
+                            <successor id="-2"/>
                         </link>
                         <width a="3" b="0" c="0" d="0" sOffset="0"/>
                         <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>
@@ -986,16 +969,16 @@
                 <right>
                     <lane id="-1" type="driving" level="false">
                         <link>
-                            <successor id="1"/>
                             <predecessor id="1"/>
+                            <successor id="1"/>
                         </link>
                         <width a="3" b="0" c="0" d="0" sOffset="0"/>
                         <roadMark sOffset="0" type="broken" weight="standard" color="standard" height="0.02" width="0.2"/>
                     </lane>
                     <lane id="-2" type="driving" level="false">
                         <link>
-                            <successor id="2"/>
                             <predecessor id="2"/>
+                            <successor id="2"/>
                         </link>
                         <width a="3" b="0" c="0" d="0" sOffset="0"/>
                         <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>
@@ -1020,23 +1003,22 @@
                 <spiral curvStart="0.0690948457876379" curvEnd="9.999999994736442e-10"/>
             </geometry>
         </planView>
-        <elevationProfile/>
         <lateralProfile/>
         <lanes>
             <laneSection s="0">
                 <left>
                     <lane id="1" type="driving" level="false">
                         <link>
-                            <successor id="1"/>
                             <predecessor id="-1"/>
+                            <successor id="1"/>
                         </link>
                         <width a="3" b="0" c="0" d="0" sOffset="0"/>
                         <roadMark sOffset="0" type="broken" weight="standard" color="standard" height="0.02" width="0.2"/>
                     </lane>
                     <lane id="2" type="driving" level="false">
                         <link>
-                            <successor id="2"/>
                             <predecessor id="-2"/>
+                            <successor id="2"/>
                         </link>
                         <width a="3" b="0" c="0" d="0" sOffset="0"/>
                         <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>
@@ -1050,16 +1032,16 @@
                 <right>
                     <lane id="-1" type="driving" level="false">
                         <link>
-                            <successor id="-1"/>
                             <predecessor id="1"/>
+                            <successor id="-1"/>
                         </link>
                         <width a="3" b="0" c="0" d="0" sOffset="0"/>
                         <roadMark sOffset="0" type="broken" weight="standard" color="standard" height="0.02" width="0.2"/>
                     </lane>
                     <lane id="-2" type="driving" level="false">
                         <link>
-                            <successor id="-2"/>
                             <predecessor id="2"/>
+                            <successor id="-2"/>
                         </link>
                         <width a="3" b="0" c="0" d="0" sOffset="0"/>
                         <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>
@@ -1078,7 +1060,6 @@
                 <line/>
             </geometry>
         </planView>
-        <elevationProfile/>
         <lateralProfile/>
         <lanes>
             <laneSection s="0">

@@ -1,0 +1,905 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+ASAM OpenDRIVE V1.6.0
+
+© by ASAM e.V., 2020
+
+ASAM OpenDRIVE lane dsecription
+
+
+Any use is limited to the scope described in the ASAM license terms. 
+This file is distributable in accordance with the ASAM license terms. 
+See www.asam.net/license.html for further details.
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<xs:include schemaLocation="opendrive_16_core.xsd"/>
+	<xs:simpleType name="e_accessRestrictionType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="simulator"/>
+			<xs:enumeration value="autonomousTraffic"/>
+			<xs:enumeration value="pedestrian"/>
+			<xs:enumeration value="passengerCar"/>
+			<xs:enumeration value="bus"/>
+			<xs:enumeration value="delivery"/>
+			<xs:enumeration value="emergency"/>
+			<xs:enumeration value="taxi"/>
+			<xs:enumeration value="throughTraffic"/>
+			<xs:enumeration value="truck"/>
+			<xs:enumeration value="bicycle"/>
+			<xs:enumeration value="motorcycle"/>
+			<xs:enumeration value="none"/>
+			<xs:enumeration value="trucks"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="e_laneType">
+		<xs:annotation>
+			<xs:documentation>The lane type is defined per lane. A lane type defines the main purpose of a lane and its corresponding traffic rules. </xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="shoulder">
+				<xs:annotation>
+					<xs:documentation>Describes a soft shoulder  at the edge of the road</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="border">
+				<xs:annotation>
+					<xs:documentation>Describes a hard border at the edge of the road. has the same height as the drivable lane.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="driving">
+				<xs:annotation>
+					<xs:documentation>“normal” drivable road, which is not one of the other types</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="stop">
+				<xs:annotation>
+					<xs:documentation>Hard shoulder on motorways for emergency stops</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="none">
+				<xs:annotation>
+					<xs:documentation>"Invisible" lane. This lane is on the most ouside of the road. Its only purpose is for simulation, that there is still opendrive present in case the (human) driver leaves the road. </xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="restricted">
+				<xs:annotation>
+					<xs:documentation>Lane on which cars should not drive, but have the same height as the drivable lanes. Typically they are separated with lines and often there are additional striped lines on them. </xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="parking">
+				<xs:annotation>
+					<xs:documentation>Lane with parking spaces</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="median">
+				<xs:annotation>
+					<xs:documentation>Lane between driving lanes in oposite directions. Typically used in towns on large roads, to separate the traffic.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="biking">
+				<xs:annotation>
+					<xs:documentation>Lane reserved for Cyclists </xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="sidewalk">
+				<xs:annotation>
+					<xs:documentation>Lane on which pedestrians can walk savely</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="curb">
+				<xs:annotation>
+					<xs:documentation>Lane "curb" is used for curbstones. These have a different height compared to the drivable lanes.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="exit">
+				<xs:annotation>
+					<xs:documentation>Lane Type „exit“ is used for the sections which is parallel to the main road (meaning deceleration lanes) </xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="entry">
+				<xs:annotation>
+					<xs:documentation>Lane Type „entry“ is used for the sections which is parallel to the main road (meaning acceleration lanes</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="onRamp">
+				<xs:annotation>
+					<xs:documentation>A ramp leading to a motorway from rural/urban roads is an „onRamp“. </xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="offRamp">
+				<xs:annotation>
+					<xs:documentation>A ramp leading away from a motorway and onto rural/urban roads is an „offRamp”. </xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="connectingRamp">
+				<xs:annotation>
+					<xs:documentation>A ramp connecting two motorways is a „connectingRamp“ (e.g. motorway junction)</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="bidirectional">
+				<xs:annotation>
+					<xs:documentation>this lane type has two use cases:
+a) only driving lane on a narrow road which may be used in both directions;
+b) continuous two-way left turn lane on multi-lane roads – US road networks</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="special1"/>
+			<xs:enumeration value="special2"/>
+			<xs:enumeration value="special3"/>
+			<xs:enumeration value="roadWorks"/>
+			<xs:enumeration value="tram"/>
+			<xs:enumeration value="rail"/>
+			<xs:enumeration value="bus"/>
+			<xs:enumeration value="taxi"/>
+			<xs:enumeration value="HOV">
+				<xs:annotation>
+					<xs:documentation>high-occupancy vehicle / carpool vehicle</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="mwyEntry">
+				<xs:annotation>
+					<xs:documentation>entry (deprecated)</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="mwyExit">
+				<xs:annotation>
+					<xs:documentation>exit (deprecated)</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="e_road_lanes_laneSection_lcr_lane_roadMark_laneChange">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="increase"/>
+			<xs:enumeration value="decrease"/>
+			<xs:enumeration value="both"/>
+			<xs:enumeration value="none"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="e_road_lanes_laneSection_lr_lane_access_rule">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="allow"/>
+			<xs:enumeration value="deny"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="e_roadMarkColor">
+		<xs:annotation>
+			<xs:documentation>The known keywords for the road mark color information are:</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="standard">
+				<xs:annotation>
+					<xs:documentation>equivalent to "white"</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="blue"/>
+			<xs:enumeration value="green"/>
+			<xs:enumeration value="red"/>
+			<xs:enumeration value="white"/>
+			<xs:enumeration value="yellow"/>
+			<xs:enumeration value="orange"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="e_roadMarkRule">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="no passing"/>
+			<xs:enumeration value="caution"/>
+			<xs:enumeration value="none"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="e_roadMarkType">
+		<xs:annotation>
+			<xs:documentation>The known keywords for the simplified road mark type information are:</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="none"/>
+			<xs:enumeration value="solid"/>
+			<xs:enumeration value="broken"/>
+			<xs:enumeration value="solid solid">
+				<xs:annotation>
+					<xs:documentation>for double solid line</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="solid broken">
+				<xs:annotation>
+					<xs:documentation>from inside to outside, exception: center lane – from left to right</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="broken solid">
+				<xs:annotation>
+					<xs:documentation>from inside to outside, exception: center lane – from left to right</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="broken broken">
+				<xs:annotation>
+					<xs:documentation>from inside to outside, exception: center lane – from left to right</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="botts dots"/>
+			<xs:enumeration value="grass">
+				<xs:annotation>
+					<xs:documentation>meaning a grass edge</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="curb"/>
+			<xs:enumeration value="custom">
+				<xs:annotation>
+					<xs:documentation>if detailed description is given in child tags</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="edge">
+				<xs:annotation>
+					<xs:documentation>describing the limit of usable space on a road</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="e_roadMarkWeight">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="standard"/>
+			<xs:enumeration value="bold"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="t_bool">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="true"/>
+			<xs:enumeration value="false"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="t_road_lanes">
+		<xs:annotation>
+			<xs:documentation>Contains a series of lane section elements that define the characteristics of the road cross sections with respect to the lanes along the reference line.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence>
+					<xs:element name="laneOffset" type="t_road_lanes_laneOffset" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="laneSection" type="t_road_lanes_laneSection" minOccurs="1" maxOccurs="unbounded">
+						<!-- Key Constraints manually added from OpenDRIVE 1.5 -->
+						<xs:key name="k_road_lanes_laneSection_laneId">
+                            <xs:selector xpath="*/lane"/>
+                            <xs:field xpath="@id"/>
+                        </xs:key>
+					</xs:element>
+					<xs:group ref="g_additionalData" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="t_road_lanes_laneOffset">
+		<xs:annotation>
+			<xs:documentation>A lane offset may be used to shift the center lane away from the road reference line.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence/>
+				<xs:attribute name="s" use="required" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>s-coordinate of start position</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="a" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Polynom parameter a, offset at @s (ds=0)</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="b" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Polynom parameter b</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="c" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Polynom parameter c</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="d" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Polynom parameter d</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="t_road_lanes_laneSection">
+		<xs:annotation>
+			<xs:documentation>Lanes may be split into multiple lane sections. Each lane section contains a fixed number of lanes. Every time the number of lanes changes, a new lane section is required.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence>
+					<xs:element name="left" type="t_road_lanes_laneSection_left" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="center" type="t_road_lanes_laneSection_center" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="right" type="t_road_lanes_laneSection_right" minOccurs="0" maxOccurs="1"/>
+					<xs:group ref="g_additionalData" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+				<xs:attribute name="s" use="required" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>s-coordinate of start position</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="singleSide" use="optional" type="t_bool">
+					<xs:annotation>
+						<xs:documentation>Lane section element is valid for one side only (left, center, or right), depending on the child elements.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="t_road_lanes_laneSection_center">
+		<xs:annotation>
+			<xs:documentation>For easier navigation through an OpenDRIVE road description, the lanes within a lane section are grouped into left, center, and right lanes. Each lane section shall contain one &lt;center&gt; element and at least one &lt;right&gt; or &lt;left&gt; element.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence>
+					<xs:element name="lane" type="t_road_lanes_laneSection_center_lane" minOccurs="1" maxOccurs="unbounded"/>
+					<xs:group ref="g_additionalData" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="t_road_lanes_laneSection_center_lane">
+		<xs:annotation>
+			<xs:documentation>Lane elements are included in left/center/right elements. Lane elements should represent the lanes from left to right, that is, with descending ID.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="t_road_lanes_laneSection_lr_lane">
+				<xs:sequence/>
+				<xs:attribute name="id" use="required" fixed="0" type="xs:integer">
+					<xs:annotation>
+						<xs:documentation>ID of the lane</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="t_road_lanes_laneSection_lcr_lane_link">
+		<xs:annotation>
+			<xs:documentation>For links between lanes with an identical reference line, the lane predecessor and successor information provide the IDs of lanes on the preceding or following lane section. This element may only be omitted, if lanes end at a junction or have no physical link.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence>
+					<xs:element name="predecessor" type="t_road_lanes_laneSection_lcr_lane_link_predecessorSuccessor" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="successor" type="t_road_lanes_laneSection_lcr_lane_link_predecessorSuccessor" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:group ref="g_additionalData" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="t_road_lanes_laneSection_lcr_lane_link_predecessorSuccessor">
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence/>
+				<xs:attribute name="id" use="required" type="xs:integer">
+					<xs:annotation>
+						<xs:documentation>ID of the preceding / succeeding linked lane</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="t_road_lanes_laneSection_lcr_lane_roadMark">
+		<xs:annotation>
+			<xs:documentation>Defines the style of the line at the outer border of a lane. The style of the center line that separates left and right lanes is determined by the road mark element for the center lane.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence>
+					<xs:element name="sway" type="t_road_lanes_laneSection_lcr_lane_roadMark_sway" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="type" type="t_road_lanes_laneSection_lcr_lane_roadMark_type" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="explicit" type="t_road_lanes_laneSection_lcr_lane_roadMark_explicit" minOccurs="0" maxOccurs="1"/>
+					<xs:group ref="g_additionalData" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+				<xs:attribute name="sOffset" use="required" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>s-coordinate of start position of the &lt;roadMark&gt; element, relative to the position of the preceding &lt;laneSection&gt; element</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="type" use="required" type="e_roadMarkType">
+					<xs:annotation>
+						<xs:documentation>Type of the road mark. For values see UML model.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="weight" use="optional" type="e_roadMarkWeight">
+					<xs:annotation>
+						<xs:documentation>Weight of the road mark. This attribute is optional if detailed definition is given below. For values see UML model.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="color" use="required" type="e_roadMarkColor">
+					<xs:annotation>
+						<xs:documentation>Color of the road mark. For values see UML model.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="material" use="optional" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Material of the road mark. Identifiers to be defined by the user, use "standard" as default value.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="width" use="optional" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>Width of the road mark. This attribute is optional if detailed definition is given by &lt;line&gt; element. </xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="laneChange" use="optional" type="e_road_lanes_laneSection_lcr_lane_roadMark_laneChange">
+					<xs:annotation>
+						<xs:documentation>Allows a lane change in the indicated direction, taking into account that lanes are numbered in ascending order from right to left. If the attribute is missing, “both” is used as default. For values see UML model.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="height" use="optional" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Height of road mark above the road, i.e. thickness of the road mark.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="t_road_lanes_laneSection_lcr_lane_roadMark_explicit">
+		<xs:annotation>
+			<xs:documentation>Irregular road markings that cannot be described by repetitive line patterns may be described by individual road marking elements. These explicit definitions also contain &lt;line&gt; elements for the line definition, however, these lines will not be repeated automatically as in repetitive road marking types.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence>
+					<xs:element name="line" type="t_road_lanes_laneSection_lcr_lane_roadMark_explicit_line" minOccurs="1" maxOccurs="unbounded"/>
+					<xs:group ref="g_additionalData" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="t_road_lanes_laneSection_lcr_lane_roadMark_explicit_line">
+		<xs:annotation>
+			<xs:documentation>Specifies a single line in an explicit road mark definition.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence/>
+				<xs:attribute name="length" use="required" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Length of the visible line</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="tOffset" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Lateral offset from the lane border.
+If &lt;sway&gt; element is present, the lateral offset follows the sway.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="sOffset" use="required" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>Offset of start position of the &lt;line&gt; element, relative to the @sOffset  given in the &lt;roadMark&gt; element</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="rule" use="optional" type="e_roadMarkRule">
+					<xs:annotation>
+						<xs:documentation>Rule that must be observed when passing the line from inside, that is, from the lane with the lower absolute ID to the lane with the higher absolute ID. For values see UML Model.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="width" use="optional" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Line width. This attribute supersedes the definition in the &lt;roadMark&gt; element.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="t_road_lanes_laneSection_lcr_lane_roadMark_sway">
+		<xs:annotation>
+			<xs:documentation>Relocates the lateral reference position for the following (explicit) type definition and thus defines an offset. The sway offset is relative to the nominal reference position of the lane marking, meaning the lane border.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence/>
+				<xs:attribute name="ds" use="required" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>s-coordinate of start position of the &lt;sway&gt; element, relative to the @sOffset given in the &lt;roadMark&gt; element</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="a" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Polynom parameter a, sway value at @s (ds=0)</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="b" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Polynom parameter b</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="c" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Polynom parameter c</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="d" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Polynom parameter d</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="t_road_lanes_laneSection_lcr_lane_roadMark_type">
+		<xs:annotation>
+			<xs:documentation>Each type definition shall contain one or more line definitions with additional information about the lines that the road mark is composed of.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence>
+					<xs:element name="line" type="t_road_lanes_laneSection_lcr_lane_roadMark_type_line" minOccurs="1" maxOccurs="unbounded"/>
+					<xs:group ref="g_additionalData" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+				<xs:attribute name="name" use="required" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Name of the road mark type. May be chosen freely.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="width" use="required" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>Accumulated width of the road mark. In case of several &lt;line&gt; elements this @width is the sum of all @width of &lt;line&gt; elements and spaces in between, necessary to form the road mark. This attribute supersedes the definition in the &lt;roadMark&gt; element.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="t_road_lanes_laneSection_lcr_lane_roadMark_type_line">
+		<xs:annotation>
+			<xs:documentation>A road mark may consist of one or more elements. Multiple elements are usually positioned side-by-side. A line definition is valid for a given length of the lane and will be repeated automatically.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence/>
+				<xs:attribute name="length" use="required" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Length of the visible part</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="space" use="required" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>Length of the gap between the visible parts</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="tOffset" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Lateral offset from the lane border.
+If &lt;sway&gt; element is present, the lateral offset follows the sway.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="sOffset" use="required" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>Initial longitudinal offset of the line definition from the start of the road mark definition</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="rule" use="optional" type="e_roadMarkRule">
+					<xs:annotation>
+						<xs:documentation>Rule that must be observed when passing the line from inside, for example, from the lane with the lower absolute ID to the lane with the higher absolute ID. For values see UML Model.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="width" use="optional" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Line width</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="color" use="optional" type="e_roadMarkColor">
+					<xs:annotation>
+						<xs:documentation>Line color. If given, this attribute supersedes the definition in the &lt;roadMark&gt; element. For values see UML Model.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="t_road_lanes_laneSection_left">
+		<xs:annotation>
+			<xs:documentation>For easier navigation through an OpenDRIVE road description, the lanes within a lane section are grouped into left, center, and right lanes. Each lane section shall contain one &lt;center&gt; element and at least one &lt;right&gt; or &lt;left&gt; element.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence>
+					<xs:element name="lane" type="t_road_lanes_laneSection_left_lane" minOccurs="1" maxOccurs="unbounded"/>
+					<xs:group ref="g_additionalData" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="t_road_lanes_laneSection_left_lane">
+		<xs:annotation>
+			<xs:documentation>Lane elements are included in left/center/right elements. Lane elements should represent the lanes from left to right, that is, with descending ID.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="t_road_lanes_laneSection_lr_lane">
+				<xs:sequence/>
+				<xs:attribute name="id" use="required" type="xs:positiveInteger">
+					<xs:annotation>
+						<xs:documentation>ID of the lane</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="t_road_lanes_laneSection_lr_lane">
+		<xs:annotation>
+			<xs:documentation>Lane elements are included in left/center/right elements. Lane elements should represent the lanes from left to right, that is, with descending ID.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence>
+					<xs:element name="link" type="t_road_lanes_laneSection_lcr_lane_link" minOccurs="0" maxOccurs="1"/>
+					<xs:choice minOccurs="1" maxOccurs="unbounded">
+						<xs:element name="border" type="t_road_lanes_laneSection_lr_lane_border" minOccurs="0" maxOccurs="unbounded"/>
+						<xs:element name="width" type="t_road_lanes_laneSection_lr_lane_width" minOccurs="0" maxOccurs="unbounded"/>
+					</xs:choice>
+					<xs:element name="roadMark" type="t_road_lanes_laneSection_lcr_lane_roadMark" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="material" type="t_road_lanes_laneSection_lr_lane_material" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="speed" type="t_road_lanes_laneSection_lr_lane_speed" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="access" type="t_road_lanes_laneSection_lr_lane_access" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="height" type="t_road_lanes_laneSection_lr_lane_height" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="rule" type="t_road_lanes_laneSection_lr_lane_rule" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:group ref="g_additionalData" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+				<xs:attribute name="type" use="required" type="e_laneType">
+					<xs:annotation>
+						<xs:documentation>Type of the lane. For values see UML model.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="level" use="optional" type="t_bool">
+					<xs:annotation>
+						<xs:documentation>"true" = keep lane on level, that is, do not apply superelevation;
+"false" = apply superelevation to this lane (default, also used if attribute level is missing)</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="t_road_lanes_laneSection_lr_lane_access">
+		<xs:annotation>
+			<xs:documentation>Defines access restrictions for certain types of road users.
+Each element is valid in direction of the increasing s co-ordinate until a new element is defined. If multiple elements are defined, they must be listed in increasing order.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence/>
+				<xs:attribute name="sOffset" use="required" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>s-coordinate of start position, relative to the position of the preceding &lt;laneSection&gt; element</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="rule" use="optional" type="e_road_lanes_laneSection_lr_lane_access_rule">
+					<xs:annotation>
+						<xs:documentation>Specifies whether the participant given in the attribute @restriction is allowed or denied access to the given lane</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="restriction" use="required" type="e_accessRestrictionType">
+					<xs:annotation>
+						<xs:documentation>Identifier of the participant to whom the restriction applies. For values, see UML Model</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="t_road_lanes_laneSection_lr_lane_border">
+		<xs:annotation>
+			<xs:documentation>Lane borders are another method to describe the width of lanes. Instead of defining the width directly, lane borders describe the outer limits of a lane, independent of the parameters of their inner borders. In this case, inner lanes are defined as lanes which have the same sign for their ID as the lane currently defined, but with a smaller absolute value for their ID.
+Especially when road data is derived from automatic measurements, this type of definition is easier than specifying the lane width because it avoids creating many lane sections.
+Lane width and lane border elements are mutually exclusive within the same lane group. If both width and lane border elements are present for a lane section in the OpenDRIVE file, the application shall use the information from the &lt;width&gt; elements.
+In OpenDRIVE, lane borders are represented by the &lt;border&gt; element within the &lt;lane&gt; element.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence/>
+				<xs:attribute name="sOffset" use="required" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>s-coordinate of start position of the &lt;border&gt; element , relative to the position of the preceding &lt;laneSection&gt; element</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="a" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Polynom parameter a, border position at @s (ds=0)</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="b" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Polynom parameter b</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="c" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Polynom parameter c</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="d" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Polynom parameter d</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="t_road_lanes_laneSection_lr_lane_height">
+		<xs:annotation>
+			<xs:documentation>Lane height shall be defined along the h-coordinate. Lane height may be used to elevate a lane independent from the road elevation. Lane height is used to implement small-scale elevation such as raising pedestrian walkways. Lane height is specified as offset from the road (including elevation, superelevation, shape) in z direction.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence/>
+				<xs:attribute name="sOffset" use="required" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>s-coordinate of start position, relative to the position of the preceding &lt;laneSection&gt; element</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="inner" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Inner offset from road level</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="outer" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Outer offset from road level</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="t_road_lanes_laneSection_lr_lane_material">
+		<xs:annotation>
+			<xs:documentation>Stores information about the material of lanes. Each element is valid until a new element is defined. If multiple elements are defined, they must be listed in increasing order.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence/>
+				<xs:attribute name="sOffset" use="required" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>s-coordinate of start position, relative to the position of the preceding &lt;laneSection&gt; element</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="surface" use="optional" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Surface material code, depending on application</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="friction" use="required" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>Friction coefficient</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="roughness" use="optional" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>Roughness, for example, for sound and motion systems</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="t_road_lanes_laneSection_lr_lane_rule">
+		<xs:annotation>
+			<xs:documentation>Used to add rules that are not covered by any of the other lane attributes that are described in this specification.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence/>
+				<xs:attribute name="sOffset" use="required" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>s-coordinate of start position, relative to the position of the preceding &lt;laneSection&gt; element</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="value" use="required" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Free text; currently recommended values are
+"no stopping at any time"
+"disabled parking"
+"car pool"</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="t_road_lanes_laneSection_lr_lane_speed">
+		<xs:annotation>
+			<xs:documentation>Defines the maximum allowed speed on a given lane. Each element is valid in direction of the increasing s-coordinate until a new element is defined.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence/>
+				<xs:attribute name="sOffset" use="required" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>s-coordinate of start position, relative to the position of the preceding &lt;laneSection&gt; element</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="max" use="required" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>Maximum allowed speed. If the attribute unit is not specified, m/s is used as default. </xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="unit" use="optional" type="e_unitSpeed">
+					<xs:annotation>
+						<xs:documentation>Unit of the attribute max. For values, see UML Model</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="t_road_lanes_laneSection_lr_lane_width">
+		<xs:annotation>
+			<xs:documentation>The width of a lane is defined along the t-coordinate. The width of a lane may change within a lane section.
+Lane width and lane border elements are mutually exclusive within the same lane group. If both width and lane border elements are present for a lane section in the OpenDRIVE file, the application must use the information from the &lt;width&gt; elements.
+In OpenDRIVE, lane width is described by the &lt;width&gt; element within the &lt;lane&gt; element. </xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence/>
+				<xs:attribute name="sOffset" use="required" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>s-coordinate of start position of the &lt;width&gt; element, relative to the position of the preceding &lt;laneSection&gt; element</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="a" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Polynom parameter a, width at @s (ds=0)</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="b" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Polynom parameter b</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="c" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Polynom parameter c</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="d" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Polynom parameter d</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="t_road_lanes_laneSection_right">
+		<xs:annotation>
+			<xs:documentation>For easier navigation through an OpenDRIVE road description, the lanes within a lane section are grouped into left, center, and right lanes. Each lane section shall contain one &lt;center&gt; element and at least one &lt;right&gt; or &lt;left&gt; element.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence>
+					<xs:element name="lane" type="t_road_lanes_laneSection_right_lane" minOccurs="1" maxOccurs="unbounded"/>
+					<xs:group ref="g_additionalData" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="t_road_lanes_laneSection_right_lane">
+		<xs:annotation>
+			<xs:documentation>Lane elements are included in left/center/right elements. Lane elements should represent the lanes from left to right, that is, with descending ID.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="t_road_lanes_laneSection_lr_lane">
+				<xs:sequence/>
+				<xs:attribute name="id" use="required" type="xs:negativeInteger">
+					<xs:annotation>
+						<xs:documentation>ID of the lane</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="t_road_objects_object_laneValidity">
+		<xs:annotation>
+			<xs:documentation>May replace the default validity with explicit validity information for an object. Multiple validity elements may be defined per object.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence/>
+				<xs:attribute name="fromLane" use="required" type="xs:integer">
+					<xs:annotation>
+						<xs:documentation>Minimum ID of the lanes for which the object is valid</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="toLane" use="required" type="xs:integer">
+					<xs:annotation>
+						<xs:documentation>Maximum ID of the lanes for which the object is valid</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+</xs:schema>

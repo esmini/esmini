@@ -3,7 +3,8 @@
    <FileHeader revMajor="1"
                revMinor="0"
                date="2020-05-16T17:00:00"
-               author="SimS"/>
+               author="SimS"
+               description=""/>
    <Catalog name="RoutesAtFabriksgatan">
       <Route name="TargetStraightLeftToRight" closed="false">
          <Waypoint routeStrategy="shortest">

@@ -101,7 +101,7 @@
                 <ManeuverGroup maximumExecutionCount="3" name="CollisionSequence">
                     <Actors selectTriggeringEntities="true"/>
                     <Maneuver name="CollisionManeuver">
-                        <Event name="CollisionEvent" priority="overwrite" maximumExecutionCount="-1">
+                        <Event name="CollisionEvent" priority="overwrite" maximumExecutionCount="10000">
                             <Action name="CollisionAction"/>
                             <StartTrigger>
                                 <ConditionGroup>

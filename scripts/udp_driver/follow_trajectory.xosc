@@ -6,7 +6,7 @@
 
 <OpenSCENARIO>
    <FileHeader revMajor="1"
-               revMinor="0"
+               revMinor="3"
                date="2021-11-09T10:00:00"
                description="One car controlled by UDPDriver"
                author="esmini-team"/>
@@ -17,7 +17,7 @@
       </VehicleCatalog>
       <ControllerCatalog>
          <Directory path="../../resources/xosc/Catalogs/Controllers"/>
-      </ControllerCatalog>      
+      </ControllerCatalog>
    </CatalogLocations>
    <RoadNetwork>
       <SceneGraphFile filepath="../../resources/models/parking_lot.osgb"/>
@@ -36,7 +36,7 @@
       </ScenarioObject>
       <ScenarioObject name="Car1">
           <CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>
-      </ScenarioObject>      
+      </ScenarioObject>
    </Entities>
    <Storyboard>
       <Init>
@@ -61,13 +61,13 @@
                      </Position>
                   </TeleportAction>
                </PrivateAction>
-            </Private>            
+            </Private>
          </Actions>
       </Init>
 	  <Story name="FollowTrajectoryStory">
          <Act name="FollowTrajectoryAct">
             <ManeuverGroup maximumExecutionCount="1" name="FollowTrajectoryManeuvergroup">
-                <Actors selectTriggeringEntities="False">
+                <Actors selectTriggeringEntities="false">
                     <EntityRef entityRef="Car1"/>
                 </Actors>
                 <Maneuver name="FollowTrajectoryManeuver">
@@ -76,7 +76,7 @@
                             <PrivateAction>
                                 <RoutingAction>
                                     <FollowTrajectoryAction>
-                                        <Trajectory closed="False" name="TrajectoryPLine">
+                                        <Trajectory closed="false" name="TrajectoryPLine">
                                             <ParameterDeclarations/>
                                             <Shape>
                                                 <Polyline>
@@ -129,8 +129,8 @@
                     </Condition>
                 </ConditionGroup>
             </StartTrigger>
-            <StopTrigger/>         
-         </Act>	  
+            <StopTrigger/>
+         </Act>
       </Story>
    </Storyboard>
 </OpenSCENARIO>

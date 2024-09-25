@@ -44,7 +44,7 @@
                     <PrivateAction>
                         <TeleportAction>
                             <Position>
-                                <RelativeRoadPosition entityRef="car_0">
+                                <RelativeRoadPosition entityRef="car_0" ds="0" dt="0">
                                     <Orientation type="relative" h="$RelHeading"/>
                                 </RelativeRoadPosition>
                             </Position>
@@ -64,7 +64,7 @@
                     <PrivateAction>
                         <TeleportAction>
                             <Position>
-                                <RelativeRoadPosition entityRef="car_1">
+                                <RelativeRoadPosition entityRef="car_1" ds="0" dt="0">
                                     <Orientation type="relative" h="$RelHeading"/>
                                 </RelativeRoadPosition>
                             </Position>
@@ -84,7 +84,7 @@
                     <PrivateAction>
                         <TeleportAction>
                             <Position>
-                                <RelativeRoadPosition entityRef="car_2">
+                                <RelativeRoadPosition entityRef="car_2" ds="0" dt="0">
                                     <Orientation type="relative" h="$RelHeading"/>
                                 </RelativeRoadPosition>
                             </Position>
@@ -104,7 +104,7 @@
                     <PrivateAction>
                         <TeleportAction>
                             <Position>
-                                <RelativeRoadPosition entityRef="car_3">
+                                <RelativeRoadPosition entityRef="car_3" ds="0" dt="0">
                                     <Orientation type="relative" h="$RelHeading"/>
                                 </RelativeRoadPosition>
                             </Position>

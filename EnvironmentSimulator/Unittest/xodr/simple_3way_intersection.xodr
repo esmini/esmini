@@ -24,7 +24,6 @@
                 </left>
                 <center>
                     <lane id="0" type="none" level="false">
-                        <laneOffset a="3" b="0" c="0" d="0" s="0"/>
                         <roadMark sOffset="0" type="broken" weight="standard" color="standard" height="0.02" width="0.2"/>
                     </lane>
                 </center>
@@ -61,7 +60,6 @@
                 </left>
                 <center>
                     <lane id="0" type="none" level="false">
-                        <laneOffset a="3" b="0" c="0" d="0" s="0"/>
                         <roadMark sOffset="0" type="broken" weight="standard" color="standard" height="0.02" width="0.2"/>
                     </lane>
                 </center>
@@ -98,7 +96,6 @@
                 </left>
                 <center>
                     <lane id="0" type="none" level="false">
-                        <laneOffset a="3" b="0" c="0" d="0" s="0"/>
                         <roadMark sOffset="0" type="broken" weight="standard" color="standard" height="0.02" width="0.2"/>
                     </lane>
                 </center>
@@ -142,8 +139,7 @@
                 </left>
                 <center>
                     <lane id="0" type="none" level="false">
-                        <laneOffset a="3" b="0" c="0" d="0" s="0"/>
-                        <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>
+                    <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>
                     </lane>
                 </center>
                 <right>
@@ -189,8 +185,7 @@
                 </left>
                 <center>
                     <lane id="0" type="none" level="false">
-                        <laneOffset a="3" b="0" c="0" d="0" s="0"/>
-                        <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>
+                    <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>
                     </lane>
                 </center>
                 <right>
@@ -236,8 +231,7 @@
                 </left>
                 <center>
                     <lane id="0" type="none" level="false">
-                        <laneOffset a="3" b="0" c="0" d="0" s="0"/>
-                        <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>
+                    <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>
                     </lane>
                 </center>
                 <right>

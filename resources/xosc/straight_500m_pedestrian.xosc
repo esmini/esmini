@@ -8,16 +8,15 @@
    <ParameterDeclarations>
       <ParameterDeclaration name="TargetVehicle" parameterType="string" value="car_red"/>
    </ParameterDeclarations>
-   <RoadNetwork>
-      <LogicFile filepath="../xodr/straight_500m.xodr"/>
-      <SceneGraphFile filepath="../models/straight_500m.osgb"/>
-   </RoadNetwork>
    <CatalogLocations>
-      <RouteCatalog/>
       <VehicleCatalog>
          <Directory path="../xosc/Catalogs/Vehicles"/>
       </VehicleCatalog>
    </CatalogLocations>
+     <RoadNetwork>
+      <LogicFile filepath="../xodr/straight_500m.xodr"/>
+      <SceneGraphFile filepath="../models/straight_500m.osgb"/>
+   </RoadNetwork>
    <Entities>
       <ScenarioObject name="Ego">
          <Vehicle name="car_white" vehicleCategory="car">
@@ -25,7 +24,7 @@
                <Center x="1.4" y="0.0" z="0.9"/>
                <Dimensions width="2.0" length="5.0" height="1.8"/>
             </BoundingBox>
-            <Performance maxSpeed="69" maxDeceleration="30"/>
+            <Performance maxSpeed="69" maxDeceleration="30" maxAcceleration="10"/>
             <Axles>
                <FrontAxle maxSteering="30"
                           wheelDiameter="0.8"
@@ -39,9 +38,9 @@
                          positionZ="0.4"/>
             </Axles>
             <Properties>
-               <File filepath="../models/car_white.osgb"/>
                <Property name="model_id" value="0"/>
                <Property name="control" value="hybrid"/>
+               <File filepath="../models/car_white.osgb"/>
             </Properties>
          </Vehicle>
       </ScenarioObject>
@@ -54,7 +53,7 @@
                <Center x="0.0" y="0.0" z="0.8"/>
                <Dimensions width="0.3" length="1.5" height="1.6"/>
             </BoundingBox>
-            <Performance maxSpeed="30" maxDeceleration="5"/>
+            <Performance maxSpeed="30" maxDeceleration="5" maxAcceleration="10"/>
             <Axles>
                <FrontAxle maxSteering="30"
                           wheelDiameter="0.8"
@@ -68,8 +67,8 @@
                          positionZ="0.4"/>
             </Axles>
             <Properties>
-               <File filepath="../models/cyclist.osgb"/>
                <Property name="control" value="internal"/>
+               <File filepath="../models/cyclist.osgb"/>
             </Properties>
          </Vehicle>
       </ScenarioObject>
@@ -80,8 +79,8 @@
                <Dimensions width="0.9" length="0.25" height="1.8"/>
             </BoundingBox>
             <Properties>
-               <File filepath="../models/walkman.osgb"/>
                <Property name="control" value="internal"/>
+               <File filepath="../models/walkman.osgb"/>
             </Properties>
          </Pedestrian>
       </ScenarioObject>
@@ -93,7 +92,7 @@
                <PrivateAction>
                   <LongitudinalAction>
                      <SpeedAction>
-                        <SpeedActionDynamics dynamicsShape="step"/>
+                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
                         <SpeedActionTarget>
                            <AbsoluteTargetSpeed value="20"/>
                         </SpeedActionTarget>
@@ -112,7 +111,7 @@
                <PrivateAction>
                   <LongitudinalAction>
                      <SpeedAction>
-                        <SpeedActionDynamics dynamicsShape="step"/>
+                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
                         <SpeedActionTarget>
                            <AbsoluteTargetSpeed value="0"/>
                         </SpeedActionTarget>
@@ -131,7 +130,7 @@
                <PrivateAction>
                   <LongitudinalAction>
                      <SpeedAction>
-                        <SpeedActionDynamics dynamicsShape="step"/>
+                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
                         <SpeedActionTarget>
                            <AbsoluteTargetSpeed value="8"/>
                         </SpeedActionTarget>
@@ -150,7 +149,7 @@
                <PrivateAction>
                   <LongitudinalAction>
                      <SpeedAction>
-                        <SpeedActionDynamics dynamicsShape="step"/>
+                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
                         <SpeedActionTarget>
                            <AbsoluteTargetSpeed value="10"/>
                         </SpeedActionTarget>
@@ -167,9 +166,12 @@
             </Private>
          </Actions>
       </Init>
-      <Story>
+      <Story name="DummyStory">
          <Act name="DummyAct">
             <ManeuverGroup maximumExecutionCount="1" name="DummyManueverGroup">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="Ego"/>
+               </Actors>
             </ManeuverGroup>
             <StartTrigger>
                <ConditionGroup>
@@ -182,5 +184,14 @@
             </StartTrigger>
          </Act>   
       </Story>
+		<StopTrigger>
+		  <ConditionGroup>
+			 <Condition name="StopCondition" delay="0" conditionEdge="rising">
+				<ByValueCondition>
+					<SimulationTimeCondition value="30" rule="greaterThan"/>
+				</ByValueCondition>
+			 </Condition>
+		  </ConditionGroup>
+		</StopTrigger>
    </Storyboard>
 </OpenSCENARIO>

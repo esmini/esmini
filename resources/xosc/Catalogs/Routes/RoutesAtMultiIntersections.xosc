@@ -3,7 +3,8 @@
    <FileHeader revMajor="1"
                revMinor="0"
                date="2020-05-16T17:00:00"
-               author="SimS"/>
+               author="SimS"
+               description=""/>
    <Catalog name="RoutesAtMultiIntersections">
       <Route name="TargetStraightLeftToRight" closed="false">
          <Waypoint routeStrategy="shortest">
@@ -50,6 +51,6 @@
                <LanePosition roadId="197" laneId="-1" offset="0" s="20"/>
             </Position>
          </Waypoint>
-      </Route>      
+      </Route>
    </Catalog>
 </OpenSCENARIO>

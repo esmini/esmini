@@ -37,7 +37,9 @@
       <ScenarioObject name="Ego">
          <CatalogReference catalogName="VehicleCatalog" entryName="$HostVehicle"/>
          <ObjectController>
-            <Controller name="InteractiveController" />
+            <Controller name="InteractiveController">
+                 <Properties/>
+            </Controller>
          </ObjectController>         
       </ScenarioObject>
       <ScenarioObject name="NPC">
@@ -75,7 +77,7 @@
                <PrivateAction>
                   <LongitudinalAction>
                      <SpeedAction>
-                        <SpeedActionDynamics dynamicsShape="step"/>
+                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
                         <SpeedActionTarget>
                            <AbsoluteTargetSpeed value="$HostSpeed"/>
                         </SpeedActionTarget>
@@ -108,7 +110,7 @@
                <PrivateAction>
                   <LongitudinalAction>
                      <SpeedAction>
-                        <SpeedActionDynamics dynamicsShape="step"/>
+                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
                         <SpeedActionTarget>
                            <AbsoluteTargetSpeed value="$NPCInitialSpeed"/>
                         </SpeedActionTarget>

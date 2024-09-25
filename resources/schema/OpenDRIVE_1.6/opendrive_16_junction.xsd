@@ -1,0 +1,314 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+ASAM OpenDRIVE V1.6.0
+
+© by ASAM e.V., 2020
+
+ASAM OpenDRIVE junction description
+
+
+Any use is limited to the scope described in the ASAM license terms. 
+This file is distributable in accordance with the ASAM license terms. 
+See www.asam.net/license.html for further details.
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<xs:include schemaLocation="opendrive_16_core.xsd"/>
+	<xs:simpleType name="e_contactPoint">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="start"/>
+			<xs:enumeration value="end"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="e_elementDir">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="+"/>
+			<xs:enumeration value="-"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="e_junction_type">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="default"/>
+			<xs:enumeration value="virtual"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="e_junctionGroup_type">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="roundabout"/>
+			<xs:enumeration value="unknown"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="e_road_surface_CRG_mode">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="attached"/>
+			<xs:enumeration value="attached0"/>
+			<xs:enumeration value="genuine"/>
+			<xs:enumeration value="global"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="e_road_surface_CRG_purpose">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="elevation"/>
+			<xs:enumeration value="friction"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="t_junction">
+		<xs:annotation>
+			<xs:documentation>Contains information about all possible connections between roads meeting at a physical junction.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence>
+					<xs:element name="connection" type="t_junction_connection" minOccurs="1" maxOccurs="unbounded"/>
+					<xs:element name="priority" type="t_junction_priority" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="controller" type="t_junction_controller" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="surface" type="t_junction_surface" minOccurs="0" maxOccurs="1"/>
+					<xs:group ref="g_additionalData" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+				<xs:attribute name="name" use="optional" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Name of the junction. May be chosen freely.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="id" use="required" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Unique ID within database</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="type" use="optional" type="e_junction_type">
+					<xs:annotation>
+						<xs:documentation>Type of the junction; regular junctions are of type "default". The attribute is mandatory for virtual junctions</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="t_junction_connection">
+		<xs:annotation>
+			<xs:documentation>Provides information about a single connection within a junction.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence>
+					<xs:element name="predecessor" type="t_junction_predecessorSuccessor" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="successor" type="t_junction_predecessorSuccessor" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="laneLink" type="t_junction_connection_laneLink" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+				<xs:attribute name="id" use="required" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Unique ID within the junction</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="type" use="optional" type="e_junction_type">
+					<xs:annotation>
+						<xs:documentation>Type of the connection, regular connections are type “default” 
+mandatory attribute for virtual connections</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="incomingRoad" use="optional" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>ID of the incoming road</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="connectingRoad" use="optional" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>ID of the connecting road</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="contactPoint" use="optional" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Contact point on the connecting road. For values, see UML Model</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="t_junction_connection_laneLink">
+		<xs:annotation>
+			<xs:documentation>Provides information about the lanes that are linked between an incoming road and a connecting road. It is strongly recommended to provide this element. It is deprecated to omit the &lt;laneLink&gt; element.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence/>
+				<xs:attribute name="from" use="required" type="xs:integer">
+					<xs:annotation>
+						<xs:documentation>ID of the incoming lane</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="to" use="required" type="xs:integer">
+					<xs:annotation>
+						<xs:documentation>ID of the connection lane</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="t_junction_controller">
+		<xs:annotation>
+			<xs:documentation>Lists the controllers that are used for the management of a junction.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence/>
+				<xs:attribute name="id" use="required" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>ID of the controller</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="type" use="optional" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Type of control for this junction. Free text, depending on the application.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="sequence" use="optional" type="xs:nonNegativeInteger">
+					<xs:annotation>
+						<xs:documentation>Sequence number (priority) of this controller with respect to other controllers in the same junction</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="t_junction_predecessorSuccessor">
+		<xs:annotation>
+			<xs:documentation>Provides detailed information about the predecessor / successor road of a virtual connection. Currently, only the @elementType “road” is allowed.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence/>
+				<xs:attribute name="elementType" use="required" fixed="road" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Type of the linked element Currently only "road" is allowed.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="elementId" use="required" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>ID of the linked element</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="elementS" use="required" type="t_grZero">
+					<xs:annotation>
+						<xs:documentation>s-coordinate where the connection meets the preceding / succeding road.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="elementDir" use="required" type="e_elementDir">
+					<xs:annotation>
+						<xs:documentation>Direction, relative to the s-direction, of the connection on the preceding / succeding road</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="t_junction_priority">
+		<xs:annotation>
+			<xs:documentation>If an incoming road is linked to an outgoing road with multiple connection roads to represent several possible lane connections, then one of these connections may be prioritized. Assigning a priority is only required if the application is unable to derive priorities from signals before or inside a junction or from the lanes leading to a junction. At least one attribute must be given.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence/>
+				<xs:attribute name="high" use="optional" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>ID of the prioritized connecting road</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="low" use="optional" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>ID of the connecting road with lower priority</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="t_junction_surface">
+		<xs:annotation>
+			<xs:documentation>Used to describe the road elevation profile within a junction. When a &lt;junction&gt; element contains a &lt;surface&gt; element, the &lt;surface&gt; element supersedes all elevation data for connecting roads.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence>
+					<xs:element name="CRG" type="t_junction_surface_CRG" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:group ref="g_additionalData" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="t_junction_surface_CRG">
+		<xs:annotation>
+			<xs:documentation>Data described in OpenCRG are represented by the &lt;CRG&gt; element within the &lt;surface&gt; element.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence/>
+				<xs:attribute name="file" use="required" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Name of the file containing the CRG data</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="mode" use="required" fixed="global" type="e_road_surface_CRG_mode">
+					<xs:annotation>
+						<xs:documentation>Attachment mode for the surface data.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="purpose" use="optional" type="e_road_surface_CRG_purpose">
+					<xs:annotation>
+						<xs:documentation>Physical purpose of the data contained in the CRG file; if the attribute is missing, data will be interpreted as elevation data.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="zOffset" use="optional" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>z offset between CRG center line and inertial xy-plane
+(default = 0.0)</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="zScale" use="optional" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>z scale factor for the surface description (default = 1.0) </xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="t_junctionGroup">
+		<xs:annotation>
+			<xs:documentation>Two or more junctions may be grouped in junction groups to indicate that these junctions belong to the same roundabout.
+The &lt;junctionGroup&gt; element is split into a header element and a series of member elements.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence>
+					<xs:element name="junctionReference" type="t_junctionGroup_junctionReference" minOccurs="1" maxOccurs="unbounded"/>
+					<xs:group ref="g_additionalData" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+				<xs:attribute name="name" use="optional" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Name of the junction group. May be chosen freely.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="id" use="required" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Unique ID within database</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="type" use="required" type="e_junctionGroup_type">
+					<xs:annotation>
+						<xs:documentation>Type of junction group
+For values see UML Model</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="t_junctionGroup_junctionReference">
+		<xs:annotation>
+			<xs:documentation>References to existing junction elements.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence/>
+				<xs:attribute name="junction" use="required" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>ID of the junction</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+</xs:schema>

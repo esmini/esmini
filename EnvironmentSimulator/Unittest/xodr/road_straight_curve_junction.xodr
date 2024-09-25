@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <OpenDRIVE>
-    <header name="myroad" revMajor="1" revMinor="5" date="2023-02-17 10:24:05.147309" north="0.0" south="0.0" east="0.0" west="0.0"/>
+    <header name="myroad" revMajor="1" revMinor="6" date="2023-02-17 10:24:05.147309" north="0.0" south="0.0" east="0.0" west="0.0"/>
     <road rule="RHT" id="4" junction="-1" length="50">
         <link>
-            <successor elementType="junction" elementId="1"/>
             <predecessor elementType="road" elementId="3" contactPoint="end"/>
+            <successor elementType="junction" elementId="1"/>
         </link>
         <planView>
             <geometry s="0" x="0" y="0" hdg="0" length="50">
@@ -454,8 +454,8 @@
     </road>
     <road rule="RHT" id="1" junction="-1" length="107.1">
         <link>
-            <successor elementType="road" elementId="2" contactPoint="start"/>
             <predecessor elementType="road" elementId="0" contactPoint="end"/>
+            <successor elementType="road" elementId="2" contactPoint="start"/>
         </link>
         <planView>
             <geometry s="0" x="-266.76729168239575" y="19.733465858947824" hdg="18.43035592153876" length="57.1">
@@ -499,8 +499,8 @@
     </road>
     <road rule="RHT" id="2" junction="-1" length="70.1">
         <link>
-            <successor elementType="road" elementId="3" contactPoint="start"/>
             <predecessor elementType="road" elementId="1" contactPoint="end"/>
+            <successor elementType="road" elementId="3" contactPoint="start"/>
         </link>
         <planView>
             <geometry s="0" x="-161.70933109931042" y="12.236164571099737" hdg="12.721870614359172" length="26.0">
@@ -547,8 +547,8 @@
     </road>
     <road rule="RHT" id="3" junction="-1" length="93.1">
         <link>
-            <successor elementType="road" elementId="4" contactPoint="start"/>
             <predecessor elementType="road" elementId="2" contactPoint="end"/>
+            <successor elementType="road" elementId="4" contactPoint="start"/>
         </link>
         <planView>
             <geometry s="0" x="-92.32845634682802" y="9.113668003957262" hdg="6.062685307179584" length="39.0">
@@ -571,8 +571,8 @@
                 <left>
                     <lane id="1" type="driving" level="false">
                         <link>
-                            <successor id="1"/>
                             <predecessor id="1"/>
+                            <successor id="1"/>
                         </link>
                         <width a="3" b="0" c="0" d="0" sOffset="0"/>
                         <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>
@@ -586,8 +586,8 @@
                 <right>
                     <lane id="-1" type="driving" level="false">
                         <link>
-                            <successor id="-1"/>
                             <predecessor id="-1"/>
+                            <successor id="-1"/>
                         </link>
                         <width a="3" b="0" c="0" d="0" sOffset="0"/>
                         <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>

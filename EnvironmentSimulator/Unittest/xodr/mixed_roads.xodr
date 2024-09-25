@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <OpenDRIVE>
-    <header revMajor="1" revMinor="4" name="test" version="1" date="" north="" south="" east="" west="" />
+    <header revMajor="1" revMinor="6" name="test" version="1" date="" north="0.0" south="0.0" east="0.0" west="0.0"/>
     <road name="changingLaneWidth" length="50.0" id="0" junction="-1">
         <link />
         <planView>
@@ -118,7 +118,7 @@
         </lanes>
         <objects />
         <signals />
-    </road>    
+    </road>
     <road name="slope3" length="150" id="3" junction="-1">
         <link>
         </link>

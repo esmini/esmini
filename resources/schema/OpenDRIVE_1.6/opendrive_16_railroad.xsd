@@ -1,0 +1,230 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+ASAM OpenDRIVE V1.6.0
+
+© by ASAM e.V., 2020
+
+ASAM OpenDRIVE railroad description
+
+
+Any use is limited to the scope described in the ASAM license terms. 
+This file is distributable in accordance with the ASAM license terms. 
+See www.asam.net/license.html for further details.
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<xs:include schemaLocation="opendrive_16_junction.xsd"/>
+	<xs:include schemaLocation="opendrive_16_core.xsd"/>
+	<xs:simpleType name="e_road_railroad_switch_position">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="dynamic"/>
+			<xs:enumeration value="straight"/>
+			<xs:enumeration value="turn"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="e_station_platform_segment_side">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="left"/>
+			<xs:enumeration value="right"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="e_station_type">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="small"/>
+			<xs:enumeration value="medium"/>
+			<xs:enumeration value="large"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="t_road_railroad">
+		<xs:annotation>
+			<xs:documentation>Container for all railroad definitions that shall be applied along a road.
+The available set of railroad elements is currently limited to the definition of switches. All other entries shall be covered with the existing elements, for example, track definition by &lt;road&gt;, signal definition by &lt;signal&gt;, etc. Railroad-specific elements are defined against the background of streetcar applications.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence>
+					<xs:element name="switch" type="t_road_railroad_switch" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:group ref="g_additionalData" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="t_road_railroad_switch">
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence>
+					<xs:element name="mainTrack" type="t_road_railroad_switch_mainTrack" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="sideTrack" type="t_road_railroad_switch_sideTrack" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="partner" type="t_road_railroad_switch_partner" minOccurs="0" maxOccurs="1"/>
+					<xs:group ref="g_additionalData" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+				<xs:attribute name="name" use="required" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Unique name of the switch</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="id" use="required" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Unique ID of the switch; preferably an integer number, see uint32_t</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="position" use="required" type="e_road_railroad_switch_position">
+					<xs:annotation>
+						<xs:documentation>Either a switch can be operated (dynamic) or it is in a static position. For values see UML Model</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="t_road_railroad_switch_mainTrack">
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence>
+					<xs:group ref="g_additionalData" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+				<xs:attribute name="id" use="required" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Unique ID of the main track, that is, the &lt;road&gt; element. Must be consistent with parent containing this &lt;railroad&gt; element.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="s" use="required" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>s-coordinate of the switch, that is, the point where main track and side track meet</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="dir" use="required" type="e_elementDir">
+					<xs:annotation>
+						<xs:documentation>direction, relative to the s-direction, on the main track for entering the side track via the switch</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="t_road_railroad_switch_partner">
+		<xs:annotation>
+			<xs:documentation>Indicates the switch that leads out of a side track after it has been entered.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence>
+					<xs:group ref="g_additionalData" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+				<xs:attribute name="name" use="optional" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Unique name of the partner switch</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="id" use="required" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Unique ID of the partner switch</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="t_road_railroad_switch_sideTrack">
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence>
+					<xs:group ref="g_additionalData" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+				<xs:attribute name="id" use="required" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Unique ID of the side track, that is, the &lt;road&gt; element</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="s" use="required" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>s-coordinate of the switch on the side track </xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="dir" use="required" type="e_elementDir">
+					<xs:annotation>
+						<xs:documentation>direction, relative to the s-direction, on the side track for after entering it via the switch</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="t_station">
+		<xs:annotation>
+			<xs:documentation>Defines stations for tram and railroad applications and for automotive environments. May refer to multiple tracks and is therefore defined on the same level as junctions.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence>
+					<xs:element name="platform" type="t_station_platform" minOccurs="1" maxOccurs="unbounded"/>
+					<xs:group ref="g_additionalData" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+				<xs:attribute name="name" use="required" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Unique name of the station</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="id" use="required" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Unique ID within database</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="type" use="optional" type="e_station_type">
+					<xs:annotation>
+						<xs:documentation>Type of station. Free text, depending on the application.
+e.g.: small, medium, large</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="t_station_platform">
+		<xs:annotation>
+			<xs:documentation>Each station element must contain at least one platform element. Each platform element must contain at least one reference to a valid track segment.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence>
+					<xs:element name="segment" type="t_station_platform_segment" minOccurs="1" maxOccurs="unbounded"/>
+					<xs:group ref="g_additionalData" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+				<xs:attribute name="name" use="optional" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Name of the platform. May be chosen freely.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="id" use="required" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Unique ID within database</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="t_station_platform_segment">
+		<xs:annotation>
+			<xs:documentation>Each platform element is valid on one or more track segments. The &lt;segment&gt; element must be specified.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence/>
+				<xs:attribute name="roadId" use="required" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Unique ID of the &lt;road&gt; element (track) that accompanies the platform</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="sStart" use="required" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>Minimum s-coordinate on &lt;road&gt; element that has an adjacent platform</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="sEnd" use="required" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>Maximum s-coordiante on &lt;road&gt; element that has an adjacent platform</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="side" use="required" type="e_station_platform_segment_side">
+					<xs:annotation>
+						<xs:documentation>Side of track on which the platform is situated when going from sStart to sEnd. For values see UML Model</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+</xs:schema>

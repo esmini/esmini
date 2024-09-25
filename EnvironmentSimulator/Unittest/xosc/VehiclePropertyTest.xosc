@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <OpenSCENARIO>
    <FileHeader revMajor="1"
-               revMinor="0"
+               revMinor="1"
                date="2021-04-13T10:00:00"
                description="For OverrideAction unit test"
                author="esmini-team"/>
@@ -24,7 +24,7 @@
                <Center x="1.4" y="0.0" z="0.9"/>
                <Dimensions width="2.0" length="5.0" height="1.8"/>
             </BoundingBox>
-            <Performance maxSpeed="69" maxDeceleration="30"/>
+            <Performance maxSpeed="69" maxDeceleration="30" maxAcceleration="10"/>
             <Axles>
                <FrontAxle maxSteering="0.523598775598"
                           wheelDiameter="0.8"
@@ -38,10 +38,10 @@
                          positionZ="0.4"/>
             </Axles>
             <Properties>
-               <File filepath="../models/car_blue.osgb"/>
                <Property name="model_id" value="1"/>
                <Property name="dummy0_1" value="2"/>
                <Property name="dummy0_2" value="3"/>
+              <File filepath="../models/car_blue.osgb"/>
             </Properties>
          </Vehicle>
       </ScenarioObject>
@@ -51,7 +51,7 @@
                <Center x="1.4" y="0.0" z="0.9"/>
                <Dimensions width="2.0" length="5.0" height="1.8"/>
             </BoundingBox>
-            <Performance maxSpeed="69" maxDeceleration="30"/>
+            <Performance maxSpeed="69" maxDeceleration="30" maxAcceleration="10"/>
             <Axles>
                <FrontAxle maxSteering="0.523598775598"
                           wheelDiameter="0.8"
@@ -65,11 +65,11 @@
                          positionZ="0.4"/>
             </Axles>
             <Properties>
-               <File filepath="../models/car_red.osgb"/>
                <Property name="model_id" value="1"/>
                <Property name="dummy1_1" value="2"/>
                <Property name="dummy1_2" value="3"/>
                <Property name="dummy1_3" value="4"/>
+               <File filepath="../models/car_red.osgb"/>
             </Properties>
          </Vehicle>
       </ScenarioObject>
@@ -79,7 +79,7 @@
                <Center x="1.4" y="0.0" z="0.9"/>
                <Dimensions width="2.0" length="5.0" height="1.8"/>
             </BoundingBox>
-            <Performance maxSpeed="69" maxDeceleration="30"/>
+            <Performance maxSpeed="69" maxDeceleration="30" maxAcceleration="10"/>
             <Axles>
                <FrontAxle maxSteering="0.523598775598"
                           wheelDiameter="0.8"
@@ -105,7 +105,7 @@
                <PrivateAction>
                   <TeleportAction>
                      <Position>
-                        <LanePosition roadId="0" laneId="-1" offset="0" s="20"/>
+                        <LanePosition roadId="1" laneId="-1" offset="0" s="20"/>
                      </Position>
                   </TeleportAction>
                </PrivateAction>
@@ -124,7 +124,7 @@
                <PrivateAction>
                   <TeleportAction>
                      <Position>
-                        <LanePosition roadId="0" laneId="-1" offset="0" s="20"/>
+                        <LanePosition roadId="1" laneId="-1" offset="0" s="20"/>
                      </Position>
                   </TeleportAction>
                </PrivateAction>
@@ -133,7 +133,7 @@
                <PrivateAction>
                   <TeleportAction>
                      <Position>
-                        <LanePosition roadId="0" laneId="-1" offset="0" s="20"/>
+                        <LanePosition roadId="1" laneId="-1" offset="0" s="20"/>
                      </Position>
                   </TeleportAction>
                </PrivateAction>
@@ -153,9 +153,9 @@
                         <PrivateAction>
                            <ControllerAction>
                               <OverrideControllerValueAction>
-                                  <throttle value="0.5" active="true"/>
-                                  <brake value="0.7" active="false"/>
-                                  <clutch value="2.0" active="false"/>
+                                  <Throttle value="0.5" active="true"/>
+                                  <Brake value="0.7" active="false"/>
+                                  <Clutch value="2.0" active="false"/>
                               </OverrideControllerValueAction>
                            </ControllerAction>
                         </PrivateAction>
@@ -175,10 +175,10 @@
                         <PrivateAction>
                            <ControllerAction>
                               <OverrideControllerValueAction>
-                                  <clutch value="0.7" active="true"/>
-                                  <parkingBrake value="0.0" active="true"/>
-                                  <steeringWheel value="15.0" active="false"/>
-                                  <gear value="7.5" active="false"/>
+                                  <Clutch value="0.7" active="true"/>
+                                  <ParkingBrake value="0.0" active="true"/>
+                                  <SteeringWheel value="15.0" active="false"/>
+                                  <Gear number="7.5" active="false"/>
                               </OverrideControllerValueAction>
                            </ControllerAction>
                         </PrivateAction>

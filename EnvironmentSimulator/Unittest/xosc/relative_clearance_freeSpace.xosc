@@ -3,10 +3,10 @@
 in straight road with multiple vechicles.-->
 <OpenSCENARIO>
    <FileHeader revMajor="1"
-               revMinor="0"
+               revMinor="3"
                date="2017-06-09T10:00:00"
-               description="Another variant of cut-in"
-               author="SimS"/>
+               description="Relative clearance condition"
+               author="esmini-team"/>
    <ParameterDeclarations>
       <ParameterDeclaration name="HostVehicle" parameterType="string" value="car_white"/>
       <ParameterDeclaration name="TargetVehicle" parameterType="string" value="car_red"/>
@@ -189,11 +189,11 @@ in straight road with multiple vechicles.-->
                                  </TriggeringEntities>
                                  <EntityCondition>
                                     <RelativeClearanceCondition distanceForward="40" distanceBackward="30" freeSpace="$FreeSpace" oppositeLanes="false">
+                                       <RelativeLaneRange from="0" to="3"/>
                                        <EntityRef entityRef="Dummy1"/>
                                        <EntityRef entityRef="Target"/>
                                        <EntityRef entityRef="Dummy"/>
                                        <EntityRef entityRef="Dummy2"/>
-                                       <RelativeLaneRange from="0" to="3"/>
                                     </RelativeClearanceCondition>
                                  </EntityCondition>
                               </ByEntityCondition>

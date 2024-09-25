@@ -10,7 +10,6 @@
                 <line/>
             </geometry>
         </planView>
-        <elevationProfile/>
         <lateralProfile/>
         <lanes>
             <laneSection s="0">
@@ -42,23 +41,22 @@
     </road>
     <road rule="RHT" id="1" junction="-1" length="200">
         <link>
-            <successor elementType="road" elementId="0" contactPoint="end"/>
             <predecessor elementType="road" elementId="2" contactPoint="start"/>
+            <successor elementType="road" elementId="0" contactPoint="end"/>
         </link>
         <planView>
             <geometry s="0" x="400.0" y="0.0" hdg="3.141592653589793" length="200">
                 <line/>
             </geometry>
         </planView>
-        <elevationProfile/>
         <lateralProfile/>
         <lanes>
             <laneSection s="0">
                 <left>
                     <lane id="1" type="driving" level="false">
                         <link>
-                            <successor id="-1"/>
                             <predecessor id="-1"/>
+                            <successor id="-1"/>
                         </link>
                         <width a="3" b="0" c="0" d="0" sOffset="0"/>
                         <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>
@@ -72,8 +70,8 @@
                 <right>
                     <lane id="-1" type="driving" level="false">
                         <link>
-                            <successor id="1"/>
                             <predecessor id="1"/>
+                            <successor id="1"/>
                         </link>
                         <width a="3" b="0" c="0" d="0" sOffset="0"/>
                         <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>
@@ -91,7 +89,6 @@
                 <line/>
             </geometry>
         </planView>
-        <elevationProfile/>
         <lateralProfile/>
         <lanes>
             <laneSection s="0">
