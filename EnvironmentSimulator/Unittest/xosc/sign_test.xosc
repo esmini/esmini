@@ -17,13 +17,14 @@
    </RoadNetwork>
    <Entities/>
    <Storyboard>
-      <Init/>
+      <Init>
+         <Actions/>
+      </Init>
       <Story name="Story_DistTest">
          <ParameterDeclarations/>
          <Act name="Act_DistTest">
             <ManeuverGroup maximumExecutionCount="1" name="ManeuverGroup">
                <Actors selectTriggeringEntities="false"/>
-               <Maneuver name="Maneuver"/>
             </ManeuverGroup>
             <StartTrigger/>
          </Act>

@@ -121,7 +121,7 @@
                     <Actors selectTriggeringEntities="false">
                         <EntityRef entityRef="TargetCutOut"/>
                     </Actors>
-                    <Maneuver>
+                    <Maneuver name="CutOutManeuver">
                         <Event name="CutOutEvent" priority="overwrite">
                             <Action name="CutOutAction">
                                 <PrivateAction>

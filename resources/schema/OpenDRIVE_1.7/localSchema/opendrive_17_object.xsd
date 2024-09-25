@@ -1,0 +1,888 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+ASAM OpenDRIVE V1.7.0
+
+© by ASAM e.V., 2021
+
+ASAM OpenDRIVE object description
+
+
+Any use is limited to the scope described in the ASAM license terms. 
+This file is distributable in accordance with the ASAM license terms. 
+See www.asam.net/license.html for further details.
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<xs:include schemaLocation="opendrive_17_core.xsd"/>
+	<xs:include schemaLocation="opendrive_17_lane.xsd"/>
+	<xs:simpleType name="e_borderType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="concrete"/>
+			<xs:enumeration value="curb"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="e_bridgeType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="concrete"/>
+			<xs:enumeration value="steel"/>
+			<xs:enumeration value="brick"/>
+			<xs:enumeration value="wood"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="e_objectType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="none">
+				<xs:annotation>
+					<xs:documentation>i.e. unknown</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="obstacle">
+				<xs:annotation>
+					<xs:documentation>for anything that is not further categorized</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="car">
+				<xs:annotation>
+					<xs:documentation>deprecated</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="pole"/>
+			<xs:enumeration value="tree"/>
+			<xs:enumeration value="vegetation"/>
+			<xs:enumeration value="barrier"/>
+			<xs:enumeration value="building"/>
+			<xs:enumeration value="parkingSpace"/>
+			<xs:enumeration value="patch"/>
+			<xs:enumeration value="railing"/>
+			<xs:enumeration value="trafficIsland"/>
+			<xs:enumeration value="crosswalk"/>
+			<xs:enumeration value="streetLamp"/>
+			<xs:enumeration value="gantry"/>
+			<xs:enumeration value="soundBarrier"/>
+			<xs:enumeration value="van">
+				<xs:annotation>
+					<xs:documentation>deprecated</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="bus">
+				<xs:annotation>
+					<xs:documentation>deprecated</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="trailer">
+				<xs:annotation>
+					<xs:documentation>deprecated</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="bike">
+				<xs:annotation>
+					<xs:documentation>deprecated</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="motorbike">
+				<xs:annotation>
+					<xs:documentation>deprecated</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="tram">
+				<xs:annotation>
+					<xs:documentation>deprecated</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="train">
+				<xs:annotation>
+					<xs:documentation>deprecated</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="pedestrian">
+				<xs:annotation>
+					<xs:documentation>deprecated</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="wind">
+				<xs:annotation>
+					<xs:documentation>deprecated</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="roadMark"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="e_orientation">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="+"/>
+			<xs:enumeration value="-"/>
+			<xs:enumeration value="none"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="e_outlineFillType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="grass"/>
+			<xs:enumeration value="concrete"/>
+			<xs:enumeration value="cobble"/>
+			<xs:enumeration value="asphalt"/>
+			<xs:enumeration value="pavement"/>
+			<xs:enumeration value="gravel"/>
+			<xs:enumeration value="soil"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="e_road_objects_object_parkingSpace_access">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="all"/>
+			<xs:enumeration value="car"/>
+			<xs:enumeration value="women"/>
+			<xs:enumeration value="handicapped"/>
+			<xs:enumeration value="bus"/>
+			<xs:enumeration value="truck"/>
+			<xs:enumeration value="electric"/>
+			<xs:enumeration value="residents"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="e_sideType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="left"/>
+			<xs:enumeration value="right"/>
+			<xs:enumeration value="front"/>
+			<xs:enumeration value="rear"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="e_tunnelType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="standard"/>
+			<xs:enumeration value="underpass">
+				<xs:annotation>
+					<xs:documentation>i.e. sides are open for daylight</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:element name="t_road_objects" type="t_road_objects"/>
+	<xs:complexType name="t_road_objects">
+		<xs:annotation>
+			<xs:documentation>Container for all objects along a road.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence>
+					<xs:element name="object" type="t_road_objects_object" minOccurs="0" maxOccurs="unbounded">
+                    <!-- Key Constraints manually added from OpenDRIVE 1.5 -->
+						<xs:key name="k_road_objects_object_outlineId">
+                            <xs:selector xpath="outlines/outline"/>
+                            <xs:field xpath="@id"/>
+                        </xs:key>
+                        <!--xs:keyref name="r_road_objects_object_outline_cornerRoad" refer="k_road_objects_object_outlineId">
+                            <xs:selector xpath="outlines/outline/cornerRoad"/>
+                            <xs:field xpath="@id"/>
+                        </xs:keyref>
+                        <xs:keyref name="r_road_objects_object_outline_cornerLocal" refer="k_road_objects_object_outlineId">
+                            <xs:selector xpath="outlines/outline/cornerLocal"/>
+                            <xs:field xpath="@id"/>
+                        </xs:keyref-->
+                        <xs:keyref name="r_road_objects_object_borders_border" refer="k_road_objects_object_outlineId">
+                            <xs:selector xpath="borders/border"/>
+                            <xs:field xpath="@outlineId"/>
+                        </xs:keyref>
+					</xs:element>
+					<xs:element name="objectReference" type="t_road_objects_objectReference" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="tunnel" type="t_road_objects_tunnel" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="bridge" type="t_road_objects_bridge" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:group ref="g_additionalData" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="t_road_objects_bridge" type="t_road_objects_bridge"/>
+	<xs:complexType name="t_road_objects_bridge">
+		<xs:annotation>
+			<xs:documentation>Bridges are modeled as objects in ASAM OpenDRIVE. Bridges are valid for the whole cross section of a road unless a lane validity record with further restrictions is provided as child element.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence>
+					<xs:element name="validity" type="t_road_objects_object_laneValidity" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:group ref="g_additionalData" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+				<xs:attribute name="id" use="required" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Unique ID within database</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="length" use="required" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>Length of the bridge (in s-direction)</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="name" use="optional" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Name of the bridge. May be chosen freely.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="s" use="required" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>s-coordinate</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="type" use="required" type="e_bridgeType">
+					<xs:annotation>
+						<xs:documentation>Type of bridge</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="t_road_objects_object" type="t_road_objects_object"/>
+	<xs:complexType name="t_road_objects_object">
+		<xs:annotation>
+			<xs:documentation>Describes common 3D objects that have a reference to a given road. Objects are items that influence a road by expanding, delimiting, and supplementing its course. The most common examples are parking spaces, crosswalks, and traffic barriers.
+There are two ways to describe the bounding box of objects.
+	- For an angular object: definition of the width, length and height.
+	- For a circular object: definition of the radius and height.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence>
+					<xs:element name="repeat" type="t_road_objects_object_repeat" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="outline" type="t_road_objects_object_outlines_outline" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="outlines" type="t_road_objects_object_outlines" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="material" type="t_road_objects_object_material" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="validity" type="t_road_objects_object_laneValidity" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="parkingSpace" type="t_road_objects_object_parkingSpace" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="markings" type="t_road_objects_object_markings" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="borders" type="t_road_objects_object_borders" minOccurs="0" maxOccurs="1"/>
+					<xs:group ref="g_additionalData" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="surface" type="t_road_objects_object_surface" minOccurs="0" maxOccurs="1"/>
+				</xs:sequence>
+				<xs:attribute name="dynamic" use="optional" type="t_yesNo">
+					<xs:annotation>
+						<xs:documentation>Indicates whether the object is dynamic or static, default value is “no” (static). Dynamic object cannot change its position.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="hdg" use="optional" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Heading angle of the object relative to road direction</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="height" use="optional" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>Height of the object's bounding box. @height is defined in the local coordinate system u/v along the z-axis</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="id" use="required" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Unique ID within database</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="length" use="optional" type="t_grZero">
+					<xs:annotation>
+						<xs:documentation>Length of the object's bounding box, alternative to @radius.
+@length is defined in the local coordinate system u/v along the v-axis</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="name" use="optional" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Name of the object. May be chosen freely.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="orientation" use="optional" type="e_orientation">
+					<xs:annotation>
+						<xs:documentation>"+" = valid in positive s-direction
+"-" = valid in negative s-direction
+"none" = valid in both directions
+(does not affect the heading)</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="perpToRoad" use="optional" type="t_bool">
+					<xs:annotation>
+						<xs:documentation>Alternative to @pitch and @roll. If true, the object is vertically perpendicular to the road surface at all points and @pitch and @roll are ignored. Default is false.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="pitch" use="optional" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Pitch angle relative to the x/y-plane</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="radius" use="optional" type="t_grZero">
+					<xs:annotation>
+						<xs:documentation>radius of the circular object's bounding box, alternative to @length and @width. @radius is defined in the local coordinate system u/v</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="roll" use="optional" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Roll angle relative to the x/y-plane</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="s" use="required" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>s-coordinate of object's origin</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="subtype" use="optional" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Variant of a type</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="t" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>t-coordinate of object's origin</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="type" use="optional" type="e_objectType">
+					<xs:annotation>
+						<xs:documentation>Type of object. For a parking space, the &lt;parkingSpace&gt; element may be used additionally.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="validLength" use="optional" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>Validity of object along s-axis (0.0 for point object)</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="width" use="optional" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Width of the object's bounding box, alternative to @radius.
+@width is defined in the local coordinate system u/v along the u-axis</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="zOffset" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>z-offset of object's origin relative to the elevation of the reference line</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="t_road_objects_object_borders" type="t_road_objects_object_borders"/>
+	<xs:complexType name="t_road_objects_object_borders">
+		<xs:annotation>
+			<xs:documentation>Objects may have a border, that is, a frame of a defined width. Different border types are available.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence>
+					<xs:element name="border" type="t_road_objects_object_borders_border" minOccurs="1" maxOccurs="unbounded"/>
+					<xs:group ref="g_additionalData" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="t_road_objects_object_borders_border" type="t_road_objects_object_borders_border"/>
+	<xs:complexType name="t_road_objects_object_borders_border">
+		<xs:annotation>
+			<xs:documentation>Specifies a border along certain outline points.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence>
+					<xs:element name="cornerReference" type="t_road_objects_object_markings_marking_cornerReference" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:group ref="g_additionalData" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+				<xs:attribute name="outlineId" use="required" type="xs:nonNegativeInteger">
+					<xs:annotation>
+						<xs:documentation>ID of the outline to use</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="type" use="required" type="e_borderType">
+					<xs:annotation>
+						<xs:documentation>Appearance of border</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="useCompleteOutline" use="optional" type="t_bool">
+					<xs:annotation>
+						<xs:documentation>Use all outline points for border. “true” is used as default.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="width" use="required" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>Border width</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="t_road_objects_object_markings" type="t_road_objects_object_markings"/>
+	<xs:complexType name="t_road_objects_object_markings">
+		<xs:annotation>
+			<xs:documentation>Describes the appearance of the parking space with multiple marking elements.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence>
+					<xs:element name="marking" type="t_road_objects_object_markings_marking" minOccurs="1" maxOccurs="unbounded"/>
+					<xs:group ref="g_additionalData" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="t_road_objects_object_markings_marking" type="t_road_objects_object_markings_marking"/>
+	<xs:complexType name="t_road_objects_object_markings_marking">
+		<xs:annotation>
+			<xs:documentation>Specifies a marking that is either attached to one side of the object bounding box or referencing outline points.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence>
+					<xs:element name="cornerReference" type="t_road_objects_object_markings_marking_cornerReference" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:group ref="g_additionalData" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+				<xs:attribute name="color" use="required" type="e_roadMarkColor">
+					<xs:annotation>
+						<xs:documentation>Color of the marking</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="lineLength" use="required" type="t_grZero">
+					<xs:annotation>
+						<xs:documentation>Length of the visible part</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="side" use="optional" type="e_sideType">
+					<xs:annotation>
+						<xs:documentation>Side of the bounding box described in &lt;object&gt; element in the local coordinate system u/v</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="spaceLength" use="required" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>Length of the gap between the visible parts</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="startOffset" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Lateral offset in u-direction from start of bounding box side where the first marking starts</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="stopOffset" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Lateral offset in u-direction from end of bounding box side where the marking ends</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="weight" use="optional" type="e_roadMarkWeight">
+					<xs:annotation>
+						<xs:documentation>Optical "weight" of the marking</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="width" use="optional" type="t_grZero">
+					<xs:annotation>
+						<xs:documentation>Width of the marking</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="zOffset" use="optional" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>Height of road mark above the road, i.e. thickness of the road mark</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="t_road_objects_object_markings_marking_cornerReference" type="t_road_objects_object_markings_marking_cornerReference"/>
+	<xs:complexType name="t_road_objects_object_markings_marking_cornerReference">
+		<xs:annotation>
+			<xs:documentation>Specifies a point by referencing an existing outline point.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence/>
+				<xs:attribute name="id" use="required" type="xs:nonNegativeInteger">
+					<xs:annotation>
+						<xs:documentation>Identifier of the referenced outline point</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="t_road_objects_object_material" type="t_road_objects_object_material"/>
+	<xs:complexType name="t_road_objects_object_material">
+		<xs:annotation>
+			<xs:documentation>Describes the material properties of objects, for example, patches that are part of the road surface but deviate from the standard road material. Supersedes the material specified in the &lt;road material&gt; element and is valid only within the outline of the parent road object.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence/>
+				<xs:attribute name="friction" use="optional" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>Friction value, depending on application</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="roughness" use="optional" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>Roughness, for example, for sound and motion systems, depending on application</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="surface" use="optional" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Surface material code, depending on application</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="t_road_objects_object_outlines" type="t_road_objects_object_outlines"/>
+	<xs:complexType name="t_road_objects_object_outlines">
+		<xs:annotation>
+			<xs:documentation>An outline defines a series of corner points, including the height of the object relative to the road reference line. The inner area of the described outline may be filled with a filling type, such as grass, concrete, asphalt, or pavement.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence>
+					<xs:element name="outline" type="t_road_objects_object_outlines_outline" minOccurs="1" maxOccurs="unbounded"/>
+					<xs:group ref="g_additionalData" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="t_road_objects_object_outlines_outline" type="t_road_objects_object_outlines_outline"/>
+	<xs:complexType name="t_road_objects_object_outlines_outline">
+		<xs:annotation>
+			<xs:documentation>Defines a series of corner points, including the height of the object relative to the road reference line. For areas, the points should be listed in counter-clockwise order.
+An &lt;outline&gt; element shall be followed by one or more &lt;cornerRoad&gt; element or by one or more &lt;cornerLocal&gt; element.
+ASAM OpenDRIVE 1.4 outline definitions (without &lt;outlines&gt; parent element) shall still be supported.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence>
+					<xs:choice minOccurs="0" maxOccurs="1">
+						<xs:element name="cornerRoad" type="t_road_objects_object_outlines_outline_cornerRoad" minOccurs="0" maxOccurs="unbounded"/>
+						<xs:element name="cornerLocal" type="t_road_objects_object_outlines_outline_cornerLocal" minOccurs="0" maxOccurs="unbounded"/>
+					</xs:choice>
+					<xs:group ref="g_additionalData" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+				<xs:attribute name="closed" use="optional" type="t_bool">
+					<xs:annotation>
+						<xs:documentation>If true, the outline describes an area, not a linear feature</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="fillType" use="optional" type="e_outlineFillType">
+					<xs:annotation>
+						<xs:documentation>Type used to fill the area inside the outline</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="id" use="optional" type="xs:nonNegativeInteger">
+					<xs:annotation>
+						<xs:documentation>ID of the outline. Must be unique within one object.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="laneType" use="optional" type="e_laneType">
+					<xs:annotation>
+						<xs:documentation>Describes the lane type of the outline</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="outer" use="optional" type="t_bool">
+					<xs:annotation>
+						<xs:documentation>Defines if outline is an outer outline of the object</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="t_road_objects_object_outlines_outline_cornerLocal" type="t_road_objects_object_outlines_outline_cornerLocal"/>
+	<xs:complexType name="t_road_objects_object_outlines_outline_cornerLocal">
+		<xs:annotation>
+			<xs:documentation>Used to describe complex forms of objects. Defines a corner point on the object outline relative to the object pivot point in local u/v-coordinates. The insertion point and the orientation of the object are given by the @s, @t, @zOffset and @hdg attributes of the  element.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence/>
+				<xs:attribute name="height" use="required" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>Height of the object at this corner, along the z-axis</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="id" use="optional" type="xs:nonNegativeInteger">
+					<xs:annotation>
+						<xs:documentation>ID of the outline point. Shall be unique within one outline.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="u" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Local u-coordinate of the corner</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="v" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Local v-coordinate of the corner</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="z" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Local z-coordinate of the corner</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="t_road_objects_object_outlines_outline_cornerRoad" type="t_road_objects_object_outlines_outline_cornerRoad"/>
+	<xs:complexType name="t_road_objects_object_outlines_outline_cornerRoad">
+		<xs:annotation>
+			<xs:documentation>Defines a corner point on the object’s outline in road coordinates.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence/>
+				<xs:attribute name="dz" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>dz of the corner relative to road reference line</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="height" use="required" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>Height of the object at this corner, along the z-axis</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="id" use="optional" type="xs:nonNegativeInteger">
+					<xs:annotation>
+						<xs:documentation>ID of the outline point. Must be unique within one outline</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="s" use="required" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>s-coordinate of the corner</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="t" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>t-coordinate of the corner</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="t_road_objects_object_parkingSpace" type="t_road_objects_object_parkingSpace"/>
+	<xs:complexType name="t_road_objects_object_parkingSpace">
+		<xs:annotation>
+			<xs:documentation>Details for a parking space may be added to the &lt;object&gt; element.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence/>
+				<xs:attribute name="access" use="required" type="e_road_objects_object_parkingSpace_access">
+					<xs:annotation>
+						<xs:documentation>Access definitions for the parking space. Parking spaces tagged with "women" and "handicapped" are vehicles of type car.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="restrictions" use="optional" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Free text, depending on application</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="t_road_objects_object_repeat" type="t_road_objects_object_repeat"/>
+	<xs:complexType name="t_road_objects_object_repeat">
+		<xs:annotation>
+			<xs:documentation>To avoid lengthy XML code, objects of the same type may be repeated. Attributes of the repeated object shall overrule the attributes from the original object. If attributes are omitted in the repeated objects, the attributes from the original object apply.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence/>
+				<xs:attribute name="distance" use="required" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>Distance between two instances of the object;
+If this value is zero, then the object is treated like a continuous feature, for example, a guard rail, a wall, etc.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="heightEnd" use="required" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>Height of the object at @s + @length</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="heightStart" use="required" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>Height of the object at @s</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="length" use="required" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>Length of the repeat area, along the reference line in s-direction.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="lengthEnd" use="optional" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>Length of the object at @s + @length</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="lengthStart" use="optional" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>Length of the object at @s</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="radiusEnd" use="optional" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>Radius of the object at @s + @length</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="radiusStart" use="optional" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>Radius of the object at @s</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="s" use="required" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>s-coordinate of start position, overrides the corresponding argument in the original &lt;object&gt; record</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="tEnd" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Lateral offset of object's reference point at @s + @length</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="tStart" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Lateral offset of objects reference point at @s</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="widthEnd" use="optional" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>Width of the object at @s + @length</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="widthStart" use="optional" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>Width of the object at @s</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="zOffsetEnd" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>z-offset of the object at @s + @length, relative to the elevation of the reference line</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="zOffsetStart" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>z-offset of the object at @s, relative to the elevation of the reference line</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="t_road_objects_object_surface" type="t_road_objects_object_surface"/>
+	<xs:complexType name="t_road_objects_object_surface">
+		<xs:annotation>
+			<xs:documentation>Used to describe the road surface elevation of an object.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence>
+					<xs:element name="CRG" type="t_road_objects_object_surface_CRG" minOccurs="0" maxOccurs="1"/>
+                    <xs:group ref="g_additionalData" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="t_road_objects_object_surface_CRG" type="t_road_objects_object_surface_CRG"/>
+	<xs:complexType name="t_road_objects_object_surface_CRG">
+		<xs:annotation>
+			<xs:documentation>Elevation data described in {GLO_VAR_STA_ASAM_OpenCRG} are represented by the &lt;CRG&gt; element within the &lt;surface&gt; element.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence/>
+				<xs:attribute name="file" use="optional" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Name of the file containing the CRG data.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="hideRoadSurfaceCRG" use="optional" type="t_bool">
+					<xs:annotation>
+						<xs:documentation>Determines if the object CRG hides the road surface CRG. Default is true.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="zScale" use="optional" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>z-scale factor for the surface description (default = 1.0).</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="t_road_objects_objectReference" type="t_road_objects_objectReference"/>
+	<xs:complexType name="t_road_objects_objectReference">
+		<xs:annotation>
+			<xs:documentation>It is possible to link an object with one or more roads, signals or other objects using a &lt;objectReference&gt; element. The referenced objects require a unique ID. The object reference element consists of a main element and an optional lane validity element. The rules for validity elements are the same as for objects.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence>
+					<xs:element name="validity" type="t_road_objects_object_laneValidity" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:group ref="g_additionalData" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+				<xs:attribute name="id" use="required" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Unique ID of the referred object within the database</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="orientation" use="required" type="e_orientation">
+					<xs:annotation>
+						<xs:documentation>"+" = valid in positive s-direction
+"-" = valid in negative s-direction
+"none" = valid in both directions</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="s" use="required" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>s-coordinate</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="t" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>t-coordinate</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="validLength" use="optional" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>Validity of the object along s-axis
+(0.0 for point object)</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="zOffset" use="optional" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>z offset relative to the elevation of the reference line</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="t_road_objects_tunnel" type="t_road_objects_tunnel"/>
+	<xs:complexType name="t_road_objects_tunnel">
+		<xs:annotation>
+			<xs:documentation>Tunnels are modeled as objects in ASAM OpenDRIVE. Tunnels apply to the entire cross section of the road within the given range unless a lane validity element with further restrictions is provided as child element.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence>
+					<xs:element name="validity" type="t_road_objects_object_laneValidity" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:group ref="g_additionalData" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+				<xs:attribute name="daylight" use="optional" type="t_zeroOne">
+					<xs:annotation>
+						<xs:documentation>Degree of daylight intruding the tunnel. Depends on the application.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="id" use="required" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Unique ID within database</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="length" use="required" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>Length of the tunnel (in s-direction)</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="lighting" use="optional" type="t_zeroOne">
+					<xs:annotation>
+						<xs:documentation>Degree of artificial tunnel lighting. Depends on the application.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="name" use="optional" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Name of the tunnel. May be chosen freely.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="s" use="required" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>s-coordinate</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="type" use="required" type="e_tunnelType">
+					<xs:annotation>
+						<xs:documentation>Type of tunnel</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+</xs:schema>

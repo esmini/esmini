@@ -56,7 +56,7 @@
                <PrivateAction>
                   <LongitudinalAction>
                      <SpeedAction>
-                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" />
+                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time"  value="0"/>
                         <SpeedActionTarget>
                            <AbsoluteTargetSpeed value="30"/>
                         </SpeedActionTarget>
@@ -182,7 +182,7 @@
                   <Event name="VisibilityHideForSensorsEvent" priority="parallel">
                      <Action name="VisibilityHideForSensorsAction">
                         <PrivateAction>
-                           <VisibilityAction sensors="false" />
+                           <VisibilityAction sensors="false" graphics="true" traffic="true"/>
                         </PrivateAction>
                      </Action>
                      <StartTrigger>
@@ -198,7 +198,7 @@
                   <Event name="VisibilityHideEvent" priority="parallel">
                      <Action name="VisibilityHideAction">
                         <PrivateAction>
-                           <VisibilityAction graphics="false" sensors="true" />
+                           <VisibilityAction graphics="false" sensors="true" traffic="true"/>
                         </PrivateAction>
                      </Action>
                      <StartTrigger>
@@ -214,7 +214,7 @@
                   <Event name="VisibilityReappearEvent" priority="parallel">
                      <Action name="VisibilityReappearAction">
                         <PrivateAction>
-                           <VisibilityAction graphics="true" sensors="true" />
+                           <VisibilityAction graphics="true" sensors="true" traffic="true"/>
                         </PrivateAction>
                      </Action>
                      <StartTrigger>
@@ -231,7 +231,7 @@
             </ManeuverGroup>
             <StartTrigger>
                <ConditionGroup>
-                  <Condition name="CutInActStart" delay="0">
+                  <Condition name="CutInActStart" delay="0" conditionEdge="none">
                      <ByValueCondition>
                         <SimulationTimeCondition value="0" rule="greaterThan"/>
                      </ByValueCondition>

@@ -14,7 +14,9 @@
         <ScenarioObject name="Ego">
             <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
             <ObjectController>
-                <Controller name="ExternalController"/>
+                <Controller name="ExternalController">
+					<Properties/>
+				</Controller>
             </ObjectController>
         </ScenarioObject>
     </Entities>

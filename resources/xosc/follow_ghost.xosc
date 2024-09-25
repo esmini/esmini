@@ -4,7 +4,7 @@
 <!-- of the ghost autonomously using a simple driver model (FollowGhostController).               -->
 <OpenSCENARIO>
    <FileHeader revMajor="1"
-               revMinor="0"
+               revMinor="1"
                date="2020-10-07T10:00:00"
                description="basic demonstration of the ghost concept"
                author="esmini-team"/>
@@ -93,7 +93,7 @@
                      </Action>
                      <StartTrigger>
                         <ConditionGroup>
-                            <Condition name="FirstSpeedCondition" delay="0" edge="none">
+                            <Condition name="FirstSpeedCondition" delay="0" conditionEdge="none">
                                 <ByValueCondition>
                                     <StoryboardElementStateCondition 
                                         storyboardElementType="story" 
@@ -200,7 +200,7 @@
             </ManeuverGroup>
             <StartTrigger>
                <ConditionGroup>
-                  <Condition name="ActStart" delay="0">
+                  <Condition name="ActStart" delay="0" conditionEdge="none">
                     <ByValueCondition>
                         <StoryboardElementStateCondition 
                             storyboardElementType="story" 
@@ -214,7 +214,7 @@
       </Story>
       <StopTrigger>
          <ConditionGroup>
-              <Condition name="StopCondition" delay="6" edge="rising">
+             <Condition name="StopCondition" delay="6" conditionEdge="none">
                   <ByValueCondition>
                       <StoryboardElementStateCondition 
                           storyboardElementType="event" 

@@ -102,7 +102,7 @@
                     <Actors selectTriggeringEntities="false">
                         <EntityRef entityRef="TargetCutIn"/>
                     </Actors>
-                    <Maneuver>
+                    <Maneuver name="MyManeuver">
                         <Event name="CutInEvent" priority="overwrite">
                             <Action name="CutInAction">
                                 <PrivateAction>
@@ -124,7 +124,7 @@
                                                 <EntityRef entityRef="Ego"/>
                                             </TriggeringEntities>
                                             <EntityCondition>
-                                                <TimeToCollisionCondition entityRef="$owner" value="$TTC" freespace="true" coordinateSystem="road" relativeDistanceType="longitudinal" rule="lessThan">
+                                                <TimeToCollisionCondition value="$TTC" freespace="true" coordinateSystem="road" relativeDistanceType="longitudinal" rule="lessThan">
                                                     <TimeToCollisionConditionTarget>
                                                         <EntityRef entityRef="TargetCutIn"/>
                                                     </TimeToCollisionConditionTarget>

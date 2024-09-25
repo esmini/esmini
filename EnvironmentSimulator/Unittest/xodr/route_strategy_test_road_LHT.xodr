@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <OpenDRIVE>
-    <header name="myroad" revMajor="1" revMinor="5" date="2022-04-27 14:32:48.576045" north="0.0" south="0.0" east="0.0" west="0.0"/>
+    <header name="myroad" revMajor="1" revMinor="6" date="2022-04-27 14:32:48.576045" north="0.0" south="0.0" east="0.0" west="0.0"/>
     <road rule="LHT" id="1" junction="-1" length="200">
         <link>
             <predecessor elementType="road" elementId="7" contactPoint="end"/>
@@ -963,16 +963,16 @@
                 <left>
                     <lane id="1" type="driving" level="false">
                         <link>
-                            <successor id="-1"/>
                             <predecessor id="-1"/>
+                            <successor id="-1"/>
                         </link>
                         <width a="3" b="0" c="0" d="0" sOffset="0"/>
                         <roadMark sOffset="0" type="broken" weight="standard" color="standard" height="0.02" width="0.2"/>
                     </lane>
                     <lane id="2" type="driving" level="false">
                         <link>
-                            <successor id="-2"/>
                             <predecessor id="-2"/>
+                            <successor id="-2"/>
                         </link>
                         <width a="3" b="0" c="0" d="0" sOffset="0"/>
                         <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>
@@ -986,16 +986,16 @@
                 <right>
                     <lane id="-1" type="driving" level="false">
                         <link>
-                            <successor id="1"/>
                             <predecessor id="1"/>
+                            <successor id="1"/>
                         </link>
                         <width a="3" b="0" c="0" d="0" sOffset="0"/>
                         <roadMark sOffset="0" type="broken" weight="standard" color="standard" height="0.02" width="0.2"/>
                     </lane>
                     <lane id="-2" type="driving" level="false">
                         <link>
-                            <successor id="2"/>
                             <predecessor id="2"/>
+                            <successor id="2"/>
                         </link>
                         <width a="3" b="0" c="0" d="0" sOffset="0"/>
                         <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>
@@ -1027,16 +1027,16 @@
                 <left>
                     <lane id="1" type="driving" level="false">
                         <link>
-                            <successor id="1"/>
                             <predecessor id="-1"/>
+                            <successor id="1"/>
                         </link>
                         <width a="3" b="0" c="0" d="0" sOffset="0"/>
                         <roadMark sOffset="0" type="broken" weight="standard" color="standard" height="0.02" width="0.2"/>
                     </lane>
                     <lane id="2" type="driving" level="false">
                         <link>
-                            <successor id="2"/>
                             <predecessor id="-2"/>
+                            <successor id="2"/>
                         </link>
                         <width a="3" b="0" c="0" d="0" sOffset="0"/>
                         <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>
@@ -1050,16 +1050,16 @@
                 <right>
                     <lane id="-1" type="driving" level="false">
                         <link>
-                            <successor id="-1"/>
                             <predecessor id="1"/>
+                            <successor id="-1"/>
                         </link>
                         <width a="3" b="0" c="0" d="0" sOffset="0"/>
                         <roadMark sOffset="0" type="broken" weight="standard" color="standard" height="0.02" width="0.2"/>
                     </lane>
                     <lane id="-2" type="driving" level="false">
                         <link>
-                            <successor id="-2"/>
                             <predecessor id="2"/>
+                            <successor id="-2"/>
                         </link>
                         <width a="3" b="0" c="0" d="0" sOffset="0"/>
                         <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>

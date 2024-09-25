@@ -1,0 +1,655 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+ASAM OpenDRIVE V1.6.0
+
+© by ASAM e.V., 2020
+
+ASAM OpenDRIVE road description
+
+
+Any use is limited to the scope described in the ASAM license terms. 
+This file is distributable in accordance with the ASAM license terms. 
+See www.asam.net/license.html for further details.
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<xs:include schemaLocation="opendrive_16_junction.xsd"/>
+	<xs:include schemaLocation="opendrive_16_railroad.xsd"/>
+	<xs:include schemaLocation="opendrive_16_signal.xsd"/>
+	<xs:include schemaLocation="opendrive_16_object.xsd"/>
+	<xs:include schemaLocation="opendrive_16_lane.xsd"/>
+	<xs:include schemaLocation="opendrive_16_core.xsd"/>
+	<xs:simpleType name="e_countryCode">
+		<xs:union memberTypes="e_countryCode_iso3166alpha2 e_countryCode_iso3166alpha3_deprecated e_countryCode_deprecated"/>
+	</xs:simpleType>
+	<xs:simpleType name="e_countryCode_deprecated">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="OpenDRIVE"/>
+			<xs:enumeration value="Austria"/>
+			<xs:enumeration value="Brazil"/>
+			<xs:enumeration value="China"/>
+			<xs:enumeration value="France"/>
+			<xs:enumeration value="Germany"/>
+			<xs:enumeration value="Italy"/>
+			<xs:enumeration value="Switzerland"/>
+			<xs:enumeration value="USA"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="e_countryCode_iso3166alpha2">
+		<xs:restriction base="xs:string">
+			<xs:pattern value="[A-Z]{2}"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="e_countryCode_iso3166alpha3_deprecated">
+		<xs:restriction base="xs:string">
+			<xs:pattern value="[A-Z]{3}"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="e_direction">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="same"/>
+			<xs:enumeration value="opposite"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="e_maxSpeedString">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="no limit"/>
+			<xs:enumeration value="undefined"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="e_paramPoly3_pRange">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="arcLength"/>
+			<xs:enumeration value="normalized"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="e_road_link_elementType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="road"/>
+			<xs:enumeration value="junction"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="e_roadType">
+		<xs:annotation>
+			<xs:documentation>The known keywords for the road type information are:</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="unknown"/>
+			<xs:enumeration value="rural"/>
+			<xs:enumeration value="motorway"/>
+			<xs:enumeration value="town"/>
+			<xs:enumeration value="lowSpeed">
+				<xs:annotation>
+					<xs:documentation>In Germany, lowSpeed is equivalent to a 30km/h zone</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="pedestrian"/>
+			<xs:enumeration value="bicycle"/>
+			<xs:enumeration value="townExpressway"/>
+			<xs:enumeration value="townCollector"/>
+			<xs:enumeration value="townArterial"/>
+			<xs:enumeration value="townPrivate"/>
+			<xs:enumeration value="townLocal"/>
+			<xs:enumeration value="townPlayStreet"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="e_trafficRule">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="RHT"/>
+			<xs:enumeration value="LHT"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="t_maxSpeed">
+		<xs:union memberTypes="t_grEqZero e_maxSpeedString"/>
+	</xs:simpleType>
+	<xs:complexType name="t_road">
+		<xs:annotation>
+			<xs:documentation>In OpenDRIVE, the road network is represented by &lt;road&gt; elements. Each road runs along one road reference line. A road shall have at least one lane with a width larger than 0.
+OpenDRIVE roads may be roads in the real road network or artificial road network created for application use. Each road is described by one or more &lt;road&gt; elements. One &lt;road&gt; element may cover a long stretch of a road, shorter stretches between junctions, or even several roads. A new &lt;road&gt; element should only start if the properties of the road cannot be described within the previous &lt;road&gt; element or if a junction is required.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence>
+					<xs:element name="link" type="t_road_link" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="type" type="t_road_type" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="planView" type="t_road_planView" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="elevationProfile" type="t_road_elevationProfile" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="lateralProfile" type="t_road_lateralProfile" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="lanes" type="t_road_lanes" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="objects" type="t_road_objects" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="signals" type="t_road_signals" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="surface" type="t_road_surface" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="railroad" type="t_road_railroad" minOccurs="0" maxOccurs="1"/>
+					<xs:group ref="g_additionalData" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+				<xs:attribute name="name" use="optional" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Name of the road. May be chosen freely.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="length" use="required" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Total length of the reference line in the xy-plane. Change in length due to elevation is not considered</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="id" use="required" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Unique ID within the database. If it represents an integer number, it should comply to uint32_t and stay within the given range.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="junction" use="required" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>ID of the junction to which the road belongs as a connecting road (= -1 for none)</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="rule" use="optional" type="e_trafficRule">
+					<xs:annotation>
+						<xs:documentation>Basic rule for using the road; RHT=right-hand traffic, LHT=left-hand traffic. When this attribute is missing, RHT is assumed.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="t_road_elevationProfile">
+		<xs:annotation>
+			<xs:documentation>Defines the characteristics of the road elevation along the reference line.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence>
+					<xs:element name="elevation" type="t_road_elevationProfile_elevation" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:group ref="g_additionalData" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="t_road_elevationProfile_elevation">
+		<xs:annotation>
+			<xs:documentation>Defines an elevation element at a given position on the reference line. Elements shall be defined in increasing order along the reference line. The s length does not change with the elevation.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence/>
+				<xs:attribute name="s" use="required" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>s-coordinate of start position</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="a" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Polynom parameter a, elevation at @s (ds=0)</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="b" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Polynom parameter b</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="c" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Polynom parameter c</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="d" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Polynom parameter d</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="t_road_lateralProfile">
+		<xs:annotation>
+			<xs:documentation>Contains a series of superelevation elements that define the characteristics of the road surface's banking along the reference line.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence>
+					<xs:element name="superelevation" type="t_road_lateralProfile_superelevation" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="shape" type="t_road_lateralProfile_shape" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:group ref="g_additionalData" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="t_road_lateralProfile_shape">
+		<xs:annotation>
+			<xs:documentation>Defined as the road section’s surface relative to the reference plane. There may be several shape definitions at one s-position that have different t-values, thereby describing the curvy shape of the road.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence/>
+				<xs:attribute name="s" use="required" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>s-coordinate of start position</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="t" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>t-coordinate of start position </xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="a" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Polynom parameter a, relative height at @t (dt=0)</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="b" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Polynom parameter b</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="c" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Polynom parameter c</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="d" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Polynom parameter d</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="t_road_lateralProfile_superelevation">
+		<xs:annotation>
+			<xs:documentation>Defined as the road section’s roll angle around the s-axis. Elements must be defined in increasing order along the reference line. The parameters of an element are valid until the next element starts or the road reference line ends. Per default, the superelevation of a road is zero.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence/>
+				<xs:attribute name="s" use="required" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>s-coordinate of start position</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="a" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Polynom parameter a, superelevation at @s (ds=0)</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="b" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Polynom parameter b</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="c" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Polynom parameter c</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="d" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Polynom parameter d</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="t_road_link">
+		<xs:annotation>
+			<xs:documentation>Follows the road header if the road is linked to a successor, a predecessor, or a neighbor. Isolated roads may omit this element.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence>
+					<xs:element name="predecessor" type="t_road_link_predecessorSuccessor" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="successor" type="t_road_link_predecessorSuccessor" minOccurs="0" maxOccurs="1"/>
+					<xs:group ref="g_additionalData" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="t_road_link_predecessorSuccessor">
+		<xs:annotation>
+			<xs:documentation>For virtual and regular junctions, different attribute sets shall be used. @contactPoint shall be used for regular junctions; @elementS and @elementDir shall be used for virtual junctions.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence/>
+				<xs:attribute name="elementId" use="required" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>ID of the linked element</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="elementType" use="optional" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Type of the linked element</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="contactPoint" use="optional" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Contact point of link on the linked element</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="elementS" use="optional" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>Alternative to contactPoint for virtual junctions. Indicates a connection within the predecessor, meaning not at the start or end of the predecessor. Shall only be used for elementType "road"</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="elementDir" use="optional" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>To be provided when elementS is used for the connection definition. Indicates the direction on the predecessor from which the road is entered.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="t_road_planView">
+		<xs:annotation>
+			<xs:documentation>Contains geometry elements that define the layout of the road reference line in the x/y-plane (plan view).</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence>
+					<xs:element name="geometry" type="t_road_planView_geometry" minOccurs="1" maxOccurs="unbounded"/>
+					<xs:group ref="g_additionalData" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="t_road_planView_geometry">
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:choice>
+					<xs:element name="line" type="t_road_planView_geometry_line" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="spiral" type="t_road_planView_geometry_spiral" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="arc" type="t_road_planView_geometry_arc" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="poly3" type="t_road_planView_geometry_poly3" minOccurs="1" maxOccurs="1"/>
+					<xs:element name="paramPoly3" type="t_road_planView_geometry_paramPoly3" minOccurs="1" maxOccurs="1"/>
+					<xs:group ref="g_additionalData" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:choice>
+				<xs:attribute name="s" use="required" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>s-coordinate of start position</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="x" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Start position (x inertial)</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="y" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Start position (y inertial)</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="hdg" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Start orientation (inertial heading)</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="length" use="required" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Length of the element's reference line</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="t_road_planView_geometry_arc">
+		<xs:annotation>
+			<xs:documentation>An arc describes a road reference line with constant curvature. In OpenDRIVE, an arc is represented by an &lt;arc&gt; element within the &lt;geometry&gt; element.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence/>
+				<xs:attribute name="curvature" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Constant curvature throughout the element</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="t_road_planView_geometry_line">
+		<xs:annotation>
+			<xs:documentation>A straight line is the simplest geometry element. It contains no further attributes.
+In OpenDRIVE, a straight line is represented by a &lt;line&gt; element within the &lt;geometry&gt; element.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="t_road_planView_geometry_paramPoly3">
+		<xs:annotation>
+			<xs:documentation>In OpenDRIVE, parametric cubic curves are represented by &lt;paramPoly3&gt; elements within the &lt;geometry&gt; element.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence/>
+				<xs:attribute name="aU" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Polynom parameter a for u</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="bU" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Polynom parameter b for u</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="cU" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Polynom parameter c for u</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="dU" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Polynom parameter d for u</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="aV" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Polynom parameter a for v</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="bV" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Polynom parameter b for v</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="cV" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Polynom parameter c for v</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="dV" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Polynom parameter d for v</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="pRange" use="required" type="e_paramPoly3_pRange">
+					<xs:annotation>
+						<xs:documentation>Range of parameter p. 
+- Case arcLength: p in [0, @length of &lt;geometry&gt;]
+- Case normalized: p in [0, 1]</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="t_road_planView_geometry_poly3">
+		<xs:annotation>
+			<xs:documentation>
+In OpenDRIVE, a cubic polynom is represented by a &lt;poly3&gt; element within the &lt;geometry&gt; element.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence/>
+				<xs:attribute name="a" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Polynom parameter a</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="b" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Polynom parameter b</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="c" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Polynom parameter c</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="d" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Polynom parameter d</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="t_road_planView_geometry_spiral">
+		<xs:annotation>
+			<xs:documentation>In OpenDRIVE, a spiral is represented by a &lt;spiral&gt; element within the &lt;geometry&gt; element.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence/>
+				<xs:attribute name="curvStart" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Curvature at the start of the element</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="curvEnd" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Curvature at the end of the element</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="t_road_surface">
+		<xs:annotation>
+			<xs:documentation>In OpenDRIVE, the road surface is represented by the &lt;surface&gt; element within the &lt;road&gt; element.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence>
+					<xs:element name="CRG" type="t_road_surface_CRG" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:group ref="g_additionalData" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="t_road_surface_CRG">
+		<xs:annotation>
+			<xs:documentation>Data described in OpenCRG is represented by the &lt;CRG&gt; element within the &lt;surface&gt; element.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence/>
+				<xs:attribute name="file" use="required" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Name of the file containing the CRG data</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="sStart" use="required" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>Start of the application of CRG data
+(s-coordinate)</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="sEnd" use="required" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>End of the application of CRG
+(s-coordinate)</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="orientation" use="required" type="e_direction">
+					<xs:annotation>
+						<xs:documentation>Orientation of the CRG data set relative to the parent &lt;road&gt; element</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="mode" use="required" type="e_road_surface_CRG_mode">
+					<xs:annotation>
+						<xs:documentation>Attachment mode for the surface data, see specification.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="purpose" use="optional" type="e_road_surface_CRG_purpose">
+					<xs:annotation>
+						<xs:documentation>Physical purpose of the data contained in the CRG file; if the attribute is missing, data will be interpreted as elevation data.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="sOffset" use="optional" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>s-offset between CRG center line and reference line of the road 
+(default = 0.0)</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="tOffset" use="optional" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>t-offset between CRG center line and reference line of the road
+ (default = 0.0)</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="zOffset" use="optional" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>z-offset between CRG center line and reference line of the road 
+(default = 0.0)</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="zScale" use="optional" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>z-scale factor for the surface description (default = 1.0) </xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="hOffset" use="optional" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Heading offset between CRG center line and reference line of the road (required for mode genuine only, default = 0.0)</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="t_road_type">
+		<xs:annotation>
+			<xs:documentation>A road type element is valid for the entire cross section of a road. It is valid until a new road type element is provided or until the road ends.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence>
+					<xs:element name="speed" type="t_road_type_speed" minOccurs="0" maxOccurs="1"/>
+					<xs:group ref="g_additionalData" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+				<xs:attribute name="s" use="required" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>s-coordinate of start position</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="type" use="required" type="e_roadType">
+					<xs:annotation>
+						<xs:documentation>For supported types, for values see UML model.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="country" use="optional" type="e_countryCode">
+					<xs:annotation>
+						<xs:documentation>Country code of the road, see ISO 3166-1, alpha-2 codes.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="t_road_type_speed">
+		<xs:annotation>
+			<xs:documentation>Defines the default maximum speed allowed in conjunction with the specified road type.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence/>
+				<xs:attribute name="max" use="required" type="t_maxSpeed">
+					<xs:annotation>
+						<xs:documentation>Maximum allowed speed. Given as string (only "no limit" / "undefined") or numerical value in the respective unit (see attribute unit). If the attribute unit is not specified, m/s is used as default. </xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="unit" use="optional" type="e_unitSpeed">
+					<xs:annotation>
+						<xs:documentation>Unit of the attribute max. For values, see chapter “units”.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+</xs:schema>

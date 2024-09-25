@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <OpenSCENARIO>
-    <FileHeader revMajor="1" revMinor="1" date="2022-11-27T10.00" description="braking to standstill" author="esmini-team"/>
+    <FileHeader revMajor="1" revMinor="1" date="2022-11-27T10:00:00" description="braking to standstill" author="esmini-team"/>
     <ParameterDeclarations>
         <ParameterDeclaration name="SPEED1" parameterType="double" value="${100/3.6}"/>
         <ParameterDeclaration name="SPEED2" parameterType="double" value="${50/3.6}"/>
@@ -54,7 +54,7 @@
             <ParameterDeclarations/>
             <Act name="MyAct">
                 <ManeuverGroup name="MyMG" maximumExecutionCount="1">
-                    <Actors>
+                    <Actors selectTriggeringEntities="false">
                         <EntityRef entityRef="Target_lead"/>
                     </Actors>
                     <Maneuver name="breaking maneuver">

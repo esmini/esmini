@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <OpenDRIVE>
-    <header name="multi_roads" revMajor="1" revMinor="5" date="2021-06-14 12:48:13.169355" north="0.0" south="0.0" east="0.0" west="0.0"/>
+    <header name="multi_roads" revMajor="1" revMinor="6" date="2021-06-14 12:48:13.169355" north="0.0" south="0.0" east="0.0" west="0.0"/>
     <road id="0" junction="-1" length="50">
         <link>
             <successor elementType="road" elementId="1" contactPoint="start"/>
@@ -42,8 +42,8 @@
     </road>
     <road id="1" junction="-1" length="50">
         <link>
-            <successor elementType="road" elementId="2" contactPoint="start"/>
             <predecessor elementType="road" elementId="0" contactPoint="end"/>
+            <successor elementType="road" elementId="2" contactPoint="start"/>
         </link>
         <planView>
             <geometry s="0" x="50.0" y="0.0" hdg="0" length="50">
@@ -84,8 +84,8 @@
     </road>
     <road id="2" junction="-1" length="50">
         <link>
-            <successor elementType="road" elementId="3" contactPoint="start"/>
             <predecessor elementType="road" elementId="1" contactPoint="end"/>
+            <successor elementType="road" elementId="3" contactPoint="start"/>
         </link>
         <planView>
             <geometry s="0" x="100.0" y="0.0" hdg="0" length="50">

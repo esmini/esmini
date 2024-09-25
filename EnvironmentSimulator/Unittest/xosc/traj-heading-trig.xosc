@@ -92,7 +92,7 @@
                                 <PrivateAction>
                                     <TeleportAction>
                                         <Position>
-                                            <RelativeRoadPosition entityRef="Car0" />
+                                            <RelativeRoadPosition entityRef="Car0" ds="0" dt="0"/>
                                         </Position>
                                     </TeleportAction>
                                 </PrivateAction>
@@ -107,7 +107,7 @@
                                             <EntityCondition>
                                                 <ReachPositionCondition tolerance="1.5">
                                                     <Position>
-                                                        <RelativeLanePosition entityRef="Car0">
+                                                        <RelativeLanePosition entityRef="Car0" dLane="0">
                                                             <Orientation type="relative" h="0.1"/>
                                                         </RelativeLanePosition>
                                                     </Position>
@@ -141,7 +141,7 @@
                         <EntityCondition>
                             <ReachPositionCondition tolerance="1.0">
                                 <Position>
-                                    <RelativeLanePosition entityRef="Car0">
+                                    <RelativeLanePosition entityRef="Car0" dLane="0">
                                         <Orientation type="absolute" h="1.0"/>
                                     </RelativeLanePosition>
                                 </Position>

@@ -182,7 +182,7 @@
             </ManeuverGroup>
             <StartTrigger>
                <ConditionGroup>
-                  <Condition name="CutInActStart" delay="0">
+                  <Condition name="CutInActStart" delay="0" conditionEdge="rising">
                      <ByValueCondition>
                         <SimulationTimeCondition value="0" rule="greaterThan"/>
                      </ByValueCondition>

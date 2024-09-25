@@ -6,7 +6,7 @@
 
 <OpenSCENARIO>
    <FileHeader revMajor="1"
-               revMinor="0"
+               revMinor="3"
                date="2021-10-22T10:00:00"
                description="Two cars controlled by UDPDriver"
                author="esmini-team"/>
@@ -17,7 +17,7 @@
       </VehicleCatalog>
       <ControllerCatalog>
          <Directory path="../../resources/xosc/Catalogs/Controllers"/>
-      </ControllerCatalog>      
+      </ControllerCatalog>
    </CatalogLocations>
    <RoadNetwork>
       <SceneGraphFile filepath="../../resources/models/parking_lot.osgb"/>
@@ -76,9 +76,14 @@
             </Private>
          </Actions>
       </Init>
-	  <Story>
+      <Story name="DummyStory">
          <Act name="DummyAct">
-         </Act>	  
-      </Story>
+             <ManeuverGroup maximumExecutionCount="1" name="FollowTrajectoryManeuvergroup">
+                 <Actors selectTriggeringEntities="false">
+                     <EntityRef entityRef="Car0"/>
+                 </Actors>
+             </ManeuverGroup>
+         </Act>
+     </Story>
    </Storyboard>
 </OpenSCENARIO>

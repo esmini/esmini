@@ -2,7 +2,7 @@
 <OpenSCENARIO>
    <FileHeader revMajor="1"
                revMinor="0"
-               date="2020-10-204T10:00:00"
+               date="2020-10-24T10:00:00"
                description="Controller catalog"
                author="esmini-team"/>
     <Catalog name="ControllerCatalog">
@@ -79,11 +79,11 @@
         </Controller>
         <Controller name="cspas10s">
             <ParameterDeclarations>
-                <Property name="esminiController" value="ExternalController" />
                 <ParameterDeclaration name="UseGhost" parameterType="boolean" value="true" />
                 <ParameterDeclaration name="HeadStartTime" parameterType="double" value="10" />
             </ParameterDeclarations>
             <Properties>
+                <Property name="esminiController" value="ExternalController" />
                 <Property name="useGhost" value="$UseGhost" />
                 <Property name="headstartTime" value="$HeadStartTime" />
             </Properties>
@@ -116,9 +116,9 @@
         </Controller>
         <Controller name="followRoute">
             <ParameterDeclarations>
-                <ParameterDeclaration name="MinDistForCollision" parameterType="double" value="10" /> 
-                <ParameterDeclaration name="LaneChangeTime" parameterType="double" value="5" /> 
-                <ParameterDeclaration name="TestMode" parameterType="boolean" value="false" />                 
+                <ParameterDeclaration name="MinDistForCollision" parameterType="double" value="10" />
+                <ParameterDeclaration name="LaneChangeTime" parameterType="double" value="5" />
+                <ParameterDeclaration name="TestMode" parameterType="boolean" value="false" />
             </ParameterDeclarations>
             <Properties>
                 <Property name="esminiController" value="FollowRouteController" />
@@ -169,7 +169,7 @@
         </Controller>
         <Controller name="ECE_ALKS_RefDriverController">
             <ParameterDeclarations>
-                <ParameterDeclaration name="Logging" parameterType="bool" value="false" />
+                <ParameterDeclaration name="Logging" parameterType="boolean" value="false" />
             </ParameterDeclarations>
             <Properties>
                 <Property name="logging" value="$Logging" />
@@ -183,14 +183,14 @@
                 <!-- models: Regulation, ReferenceDriver, FSM, RSS -->
                 <ParameterDeclaration name="Model" parameterType="string" value="ReferenceDriver" />
                 <!-- cruise: false (no adaptive cruise control), true (use adaptive cruise control) -->
-                <ParameterDeclaration name="Cruise" parameterType="boolean" value="true" />                
+                <ParameterDeclaration name="Cruise" parameterType="boolean" value="true" />
                 <!-- perceptionDelayMode: Dist (0.72m), Time (0.4s default) (only applicable to ReferenceDriver) -->
                 <!-- time 0.4s can be overriden for pedestrians by setting PedestrianRiskEvaluationTime -->
                 <ParameterDeclaration name="CutInPerceptionDelayMode" parameterType="string" value="Dist" />
                 <!-- fullStop: "true" = decelerate to a full stop, "false" = decelerate until safe -->
-                <ParameterDeclaration name="FullStop" parameterType="boolean" value="false" />                
+                <ParameterDeclaration name="FullStop" parameterType="boolean" value="false" />
                 <!-- alwaysTrigOnScenario: "false" = only act if critical, "true" = take action also outside critical zone -->
-                <ParameterDeclaration name="AlwaysTrigOnScenario" parameterType="boolean" value="false" />                
+                <ParameterDeclaration name="AlwaysTrigOnScenario" parameterType="boolean" value="false" />
                 <!-- pedestrianRiskEvaluationTime: Time to perceive/evaluate a risk involving a pedestrian (ref driver only) -->
                 <ParameterDeclaration name="PedestrianRiskEvaluationTime" parameterType="double" value="0.4" />
                 <!-- aebTTC: TTC at which to trig AEB (ref driver only) -->
@@ -223,7 +223,7 @@
                 <Property name="aebDeceleration"  value="$AEBDeceleration" />
                 <Property name="aebAvailable"  value="$AEBAvailable" />
             </Properties>
-        </Controller>        
+        </Controller>
         <Controller name="UDPDriverController">
             <ParameterDeclarations>
                 <!-- port: port number [1, 65535] OR 0 to pick automatically starting at basePort (see below) -->
@@ -251,7 +251,7 @@
                 <ParameterDeclaration name="FollowEntity" parameterType="string" value="Ego" />
                 <ParameterDeclaration name="TargetDistance" parameterType="double" value="20.0" />
                 <ParameterDeclaration name="SteeringRate" parameterType="double" value="4.0" />
-                <ParameterDeclaration name="SpeedFactor" parameterType="double" value="1.0" />                
+                <ParameterDeclaration name="SpeedFactor" parameterType="double" value="1.0" />
             </ParameterDeclarations>
             <Properties>
                 <Property name="esminiController" value="OffroadFollower" />
@@ -260,6 +260,6 @@
                 <Property name="steeringRate" value="$SteeringRate" />
                 <Property name="speedFactor" value="$SpeedFactor" />
             </Properties>
-        </Controller>        
+        </Controller>
     </Catalog>
 </OpenSCENARIO>

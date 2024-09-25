@@ -98,7 +98,7 @@
          </ParameterDeclarations>
          <Act name="LTAPActNPC">
             <ManeuverGroup maximumExecutionCount="1" name="ped_mangroup">
-                <Actors selectTriggeringEntities="False">
+                <Actors selectTriggeringEntities="false">
                     <EntityRef entityRef="pedestrian_adult"/>
                 </Actors>
                 <Maneuver name="ped_maneuver">
@@ -119,7 +119,7 @@
                             <PrivateAction>
                                 <RoutingAction>
                                     <FollowTrajectoryAction>
-                                        <Trajectory closed="False" name="ped_traj">
+                                        <Trajectory closed="false" name="ped_traj">
                                             <ParameterDeclarations/>
                                             <Shape>
                                                 <Polyline>
@@ -221,7 +221,7 @@
                                  <EntityCondition>
                                     <TimeToCollisionCondition value="1.2"
                                                          freespace="true"
-                                                         coordinatSystem="road"
+                                                         coordinateSystem="entity"
                                                          relativeDistanceType="longitudinal"
                                                          rule="lessThan" >
                                         <TimeToCollisionConditionTarget >

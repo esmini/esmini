@@ -1,0 +1,1747 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="unqualified">
+
+    <xs:annotation>
+        <xs:documentation>
+            XML Schema 1.0 Definition for OpenDRIVE XML files - Rev. 1.5M, excluding SET records, (c)2019 by VIRES Simulationstechnologie GmbH, Germany
+        </xs:documentation>
+    </xs:annotation>
+    
+    
+    <!-- user defined data types -->
+    
+    <xs:simpleType name="t_grEqZero">
+        <xs:restriction base="xs:double">
+            <xs:minInclusive value="0.0"/>
+        </xs:restriction>
+    </xs:simpleType> <!-- end t_grEqZero -->
+    
+    <xs:simpleType name="t_grZero">
+        <xs:restriction base="xs:double">
+            <xs:minExclusive value="0.0"/>
+        </xs:restriction>
+    </xs:simpleType> <!-- end t_grZero -->
+    
+    <xs:simpleType name="t_zeroOne">
+        <xs:restriction base="xs:double">
+            <xs:minInclusive value="0.0"/>
+            <xs:maxInclusive value="1.0"/>
+        </xs:restriction>
+    </xs:simpleType> <!-- end t_zeroOne -->
+    
+    <xs:simpleType name="t_bool">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="true"/>
+            <xs:enumeration value="false"/>
+        </xs:restriction>
+    </xs:simpleType> <!-- end t_bool -->
+    
+    <xs:simpleType name="t_yesNo">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="yes"/>
+            <xs:enumeration value="no"/>
+        </xs:restriction>
+    </xs:simpleType> <!-- end t_yesNo -->
+    
+    <xs:simpleType name="t_header_Version">
+        <xs:restriction base="xs:float">
+            <xs:pattern value="\d\.\d{2}"/>
+        </xs:restriction>
+    </xs:simpleType> <!-- end t_header_Version -->
+    
+    <xs:simpleType name="t_maxSpeed">
+        <xs:union memberTypes="e_maxSpeedString t_grEqZero"/>
+    </xs:simpleType> <!-- end t_maxSpeed -->
+    
+        <xs:simpleType name="e_maxSpeedString">
+            <xs:restriction base="xs:string">
+                <xs:enumeration value="no limit"/>
+                <xs:enumeration value="undefined"/>
+            </xs:restriction>
+        </xs:simpleType> <!-- end e_maxSpeedString -->
+        
+    <xs:simpleType name="t_junction_id">
+        <xs:restriction base="xs:string">
+            <!-- <xs:pattern value="^(?!-1).*|^-1.+"/> -->   <!-- xmllint complains about that, QXmlValidator works fine -->
+            <xs:pattern value=".*"/> <!-- dummy entry which allows everything. If your validator knows the xpath expression above then uncomment it and remove this line -->
+        </xs:restriction>
+    </xs:simpleType> <!-- end t_junction_id -->
+    
+    <!-- end user defined data types -->
+    
+    
+    <!-- 5.1 Enclosing Tag -->
+    <xs:element name="OpenDRIVE">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="header"           type="t_header"         minOccurs="1"   maxOccurs="1"/>
+                <xs:element name="road"             type="t_road"           minOccurs="1"   maxOccurs="unbounded"/>
+                <xs:element name="controller"       type="t_controller"     minOccurs="0"   maxOccurs="unbounded"/>
+                <xs:element name="junction"         type="t_junction"       minOccurs="0"   maxOccurs="unbounded">
+                    <xs:key name="k_junction_connectionId">
+                        <xs:selector xpath="connection"/>
+                        <xs:field xpath="@id"/>
+                    </xs:key>
+                    <xs:key name="k_junction_controllerId">
+                        <xs:selector xpath="junction/controller"/>
+                        <xs:field xpath="@id"/>
+                    </xs:key>                    
+                    <xs:keyref name="r_junction_connection_master" refer="k_junction_connectionId">
+                        <xs:selector xpath="junction/connection"/>
+                        <xs:field xpath="@connectionMaster"/>
+                    </xs:keyref>
+                </xs:element>
+                <xs:element name="junctionGroup"    type="t_junctionGroup"  minOccurs="0"   maxOccurs="unbounded"/>
+                <xs:element name="station"          type="t_station"        minOccurs="0"   maxOccurs="unbounded"/>
+                <xs:group ref="g_additionalData"/>
+            </xs:sequence>
+        </xs:complexType>
+        
+        <xs:key name="k_roadId">
+            <xs:selector xpath="road"/>
+            <xs:field xpath="@id"/>
+        </xs:key>
+        <xs:key name="k_road_objects_objectId">
+            <xs:selector xpath="road/objects/object"/>
+            <xs:field xpath="@id"/>
+        </xs:key>
+        <xs:key name="k_road_objects_objectReferenceId">
+            <xs:selector xpath="road/objects/objectReference"/>
+            <xs:field xpath="@id"/>
+        </xs:key>
+        <xs:key name="k_road_objects_tunnel">
+            <xs:selector xpath="road/objects/tunnel"/>
+            <xs:field xpath="@id"/>
+        </xs:key>
+        <xs:key name="k_road_objects_bridge">
+            <xs:selector xpath="road/objects/bridge"/>
+            <xs:field xpath="@id"/>
+        </xs:key>
+        <xs:key name="k_road_signals_signalId">
+            <xs:selector xpath="road/signals/signal"/>
+            <xs:field xpath="@id"/>
+        </xs:key>
+        <xs:key name="k_road_railroad_switchId">
+            <xs:selector xpath="road/railroad/switch"/>
+            <xs:field xpath="@id"/>
+        </xs:key>
+        <xs:key name="k_road_railroad_switchName">
+            <xs:selector xpath="road/railroad/switch"/>
+            <xs:field xpath="@name"/>
+        </xs:key>
+        <xs:key name="k_controllerId">
+            <xs:selector xpath="controller"/>
+            <xs:field xpath="@id"/>
+        </xs:key>
+        <xs:key name="k_junctionId">
+            <xs:selector xpath="junction"/>
+            <xs:field xpath="@id"/>
+        </xs:key>
+        <xs:key name="k_junctionGroupId">
+            <xs:selector xpath="junctionGroup"/>
+            <xs:field xpath="@id"/>
+        </xs:key>
+        <xs:key name="k_stationId">
+            <xs:selector xpath="station"/>
+            <xs:field xpath="@id"/>
+        </xs:key>
+        <xs:key name="k_station_platformId">
+            <xs:selector xpath="station/platform"/>
+            <xs:field xpath="@id"/>
+        </xs:key>                
+        
+        <xs:keyref name="r_road_link_neighbor" refer="k_roadId">
+            <xs:selector xpath="road/link/neighbor"/>
+            <xs:field xpath="@id"/>
+        </xs:keyref>        
+        <xs:keyref name="r_road_objects_objectReference" refer="k_road_objects_objectId">
+            <xs:selector xpath="road/objects/objectReference"/>
+            <xs:field xpath="@outlineId"/>
+        </xs:keyref>        
+        <xs:keyref name="r_road_signals_signal_dependency" refer="k_road_signals_signalId">
+            <xs:selector xpath="road/signals/signal/dependency"/>
+            <xs:field xpath="@id"/>
+        </xs:keyref>
+        <xs:keyref name="r_road_signals_signal_positionRoad" refer="k_roadId">
+            <xs:selector xpath="road/signals/signal/positionRoad"/>
+            <xs:field xpath="@roadId"/>
+        </xs:keyref>
+        <xs:keyref name="r_road_signals_signalReference" refer="k_road_signals_signalId">
+            <xs:selector xpath="road/signals/signalReference"/>
+            <xs:field xpath="@id"/>
+        </xs:keyref>
+        <xs:keyref name="r_road_railroad_switch_mainTrack" refer="k_road_railroad_switchId">
+            <xs:selector xpath="road/railroad/switch/mainTrack"/>
+            <xs:field xpath="@id"/>
+        </xs:keyref>
+        <xs:keyref name="r_road_railroad_switch_sideTrack" refer="k_road_railroad_switchId">
+            <xs:selector xpath="road/railroad/switch/sideTrack"/>
+            <xs:field xpath="@id"/>
+        </xs:keyref>
+        <xs:keyref name="r_road_railroad_switch_partner" refer="k_road_railroad_switchId">
+            <xs:selector xpath="road/railroad/switch/partner"/>
+            <xs:field xpath="@id"/>
+        </xs:keyref>
+        <xs:keyref name="r_controller_control" refer="k_road_signals_signalId">
+            <xs:selector xpath="controller/control"/>
+            <xs:field xpath="@signalId"/>
+        </xs:keyref>
+        <xs:keyref name="r_junction_connection_incomingRoad" refer="k_roadId">
+            <xs:selector xpath="junction/connection"/>
+            <xs:field xpath="@incomingRoad"/>
+            <!-- <xs:field xpath="@connectingRoad"/> -->
+        </xs:keyref>
+        <xs:keyref name="r_junction_connection_connectingRoad" refer="k_roadId">
+            <xs:selector xpath="junction/connection"/>
+            <!-- <xs:field xpath="@incomingRoad"/> -->
+            <xs:field xpath="@connectingRoad"/>
+        </xs:keyref>
+        <xs:keyref name="r_station_platform_segment" refer="k_roadId">
+            <xs:selector xpath="station/platform/segment"/>
+            <xs:field xpath="@roadId"/>
+        </xs:keyref>
+        
+    </xs:element> <!-- end OpenDRIVE -->
+    
+        <!-- 5.2 Header -->
+        <xs:complexType name="t_header">
+            <xs:sequence>                
+                <xs:element name="geoReference"     type="t_header_GeoReference"    minOccurs="0"   maxOccurs="1"/>
+                <xs:element name="offset"           type="t_header_Offset"          minOccurs="0"   maxOccurs="1"/>
+                <xs:group ref="g_additionalData"/>
+            </xs:sequence>            
+            <xs:attribute name="revMajor" type="xs:integer" fixed="1" use="required"/>
+            <xs:attribute name="revMinor" type="xs:integer" fixed="5" use="required"/>
+            <xs:attribute name="name"     type="xs:string"            use="optional"/>
+            <xs:attribute name="version"  type="t_header_Version"     use="optional"/>
+            <xs:attribute name="date"     type="xs:string"            use="optional"/>  <!-- should be ISO 8601 -->
+            <xs:attribute name="north"    type="xs:double"            use="optional"/>
+            <xs:attribute name="south"    type="xs:double"            use="optional"/>
+            <xs:attribute name="east"     type="xs:double"            use="optional"/>
+            <xs:attribute name="west"     type="xs:double"            use="optional"/>
+            <xs:attribute name="vendor"   type="xs:string"            use="optional"/>
+        </xs:complexType> <!-- end t_header -->
+    
+            <!-- 5.2.1 Geo Reference -->
+            <xs:complexType name="t_header_GeoReference" mixed="true"> <!-- mixed="true" allows text content AND elements like userData -->
+                <xs:group ref="g_additionalData"/>
+            </xs:complexType> <!-- end t_headerGeoReference -->
+    
+            <!-- 5.2.2 Offset -->
+            <xs:complexType name="t_header_Offset">
+                <xs:group ref="g_additionalData"/>                
+                <xs:attribute name="x"   type="xs:double" use="required"/>
+                <xs:attribute name="y"   type="xs:double" use="required"/>
+                <xs:attribute name="z"   type="xs:double" use="required"/>
+                <xs:attribute name="hdg" type="xs:float"  use="required"/>
+            </xs:complexType> <!-- end t_headerOffset -->
+
+        <!-- 5.3.1 Road Header Record -->
+        <xs:complexType name="t_road">                        
+            <xs:sequence>                
+                <xs:element name="link"             type="t_road_link"              minOccurs="0"   maxOccurs="1"/>              
+                <xs:element name="type"             type="t_road_type"              minOccurs="0"   maxOccurs="unbounded"/>
+                <xs:element name="planView"         type="t_road_planView"          minOccurs="1"   maxOccurs="1"/>
+                <xs:element name="elevationProfile" type="t_road_elevationProfile"  minOccurs="0"   maxOccurs="1"/>
+                <xs:element name="lateralProfile"   type="t_road_lateralProfile"    minOccurs="0"   maxOccurs="1"/>
+                <xs:element name="lanes"            type="t_road_lanes"             minOccurs="1"   maxOccurs="1"/>
+                <xs:element name="objects"          type="t_road_objects"           minOccurs="0"   maxOccurs="1"/>
+                <xs:element name="signals"          type="t_road_signals"           minOccurs="0"   maxOccurs="1"/>
+                <xs:element name="surface"          type="t_road_surface"           minOccurs="0"   maxOccurs="1"/>
+                <xs:element name="railroad"         type="t_road_railroad"          minOccurs="0"   maxOccurs="1"/>
+                <xs:group ref="g_additionalData"/>
+            </xs:sequence>                        
+            <xs:attribute name="name"     type="xs:string"      use="optional"/>
+            <xs:attribute name="length"   type="t_grEqZero"     use="required"/>
+            <xs:attribute name="id"       type="xs:string"      use="required"/>
+            <xs:attribute name="junction" type="xs:string"      use="required"/>
+            <xs:attribute name="rule"     type="e_trafficRule"  use="optional"/> <!-- new in OpenDrive 1.5M -->
+        </xs:complexType> <!-- end t_road -->
+        
+            <xs:simpleType name="e_trafficRule">
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="RHT"/>
+                    <xs:enumeration value="LHT"/>
+                </xs:restriction>
+            </xs:simpleType> <!-- end e_trafficRule -->
+        
+            <!-- 5.3.2 Road Link Record -->
+            <xs:complexType name="t_road_link" >
+                <xs:sequence>                    
+                    <xs:element name="predecessor"  type="t_road_link_predecessorSuccessor" minOccurs="0" maxOccurs="1"/>
+                    <xs:element name="successor"    type="t_road_link_predecessorSuccessor" minOccurs="0" maxOccurs="1"/>
+                    <xs:element name="neighbor"     type="t_road_link_neighbor"             minOccurs="0" maxOccurs="2"/>
+                    <xs:group ref="g_additionalData"/>
+                </xs:sequence>
+            </xs:complexType> <!-- end t_road_link -->
+            
+                <!-- 5.3.2.1 Road Predecessor -->
+                <!-- 5.3.2.2 Road Successor -->
+                <xs:complexType name="t_road_link_predecessorSuccessor">
+                    <xs:group ref="g_additionalData"/>                    
+                    <xs:attribute name="elementType"    type="e_road_link_elementType"  use="required"/>
+                    <xs:attribute name="elementId"      type="xs:string"                use="required"/>
+                    <!-- <xs:attributeGroup> --> <!-- variant 1 -->
+                        <xs:attribute name="contactPoint"   type="e_contactPoint"       use="optional"/>
+                    <!-- </xs:attributeGroup> -->
+                    <!-- <xs:attributeGroup> --> <!-- variant 2-->
+                        <xs:attribute name="elementS"       type="t_grEqZero"           use="optional"/>
+                        <xs:attribute name="elementDir"     type="e_elementDir"         use="optional"/>
+                    <!-- </xs:attributeGroup> -->
+                </xs:complexType> <!-- end t_road_link_predecessorSuccessor -->
+                
+                    <xs:simpleType name="e_road_link_elementType">
+                        <xs:restriction base="xs:string">
+                            <xs:enumeration value="road"/>
+                            <xs:enumeration value="junction"/>
+                        </xs:restriction>
+                    </xs:simpleType> <!-- end e_road_link_elementType -->
+
+                <!-- 5.3.2.3 Road Neighbor -->
+                <xs:complexType name="t_road_link_neighbor">
+                    <xs:group ref="g_additionalData"/>                    
+                    <xs:attribute name="side"       type="e_road_link_neighbor_side"    use="required"/>
+                    <xs:attribute name="elementId"  type="xs:string"                    use="required"/>
+                    <xs:attribute name="direction"  type="e_direction"                  use="required"/>
+                </xs:complexType> <!-- end t_road_link_neighbor -->
+                
+                    <xs:simpleType name="e_road_link_neighbor_side">
+                        <xs:restriction base="xs:string">
+                            <xs:enumeration value="left"/>
+                            <xs:enumeration value="right"/>
+                        </xs:restriction>
+                    </xs:simpleType> <!-- end e_road_link_neighbor_side -->
+            
+            <!-- 5.3.3 Road Type Record -->
+            <xs:complexType name="t_road_type">
+                <xs:sequence>                    
+                    <xs:element name="speed"    type="t_road_type_speed"    minOccurs="0"   maxOccurs="1"/>
+                    <xs:group ref="g_additionalData"/>
+                </xs:sequence>                
+                <xs:attribute name="s"          type="t_grEqZero"       use="required"/>
+                <xs:attribute name="type"       type="e_roadType"       use="required"/>
+                <xs:attribute name="country"    type="e_countryCode"    use="optional"/> <!-- new in OpenDrive 1.5M -->
+            </xs:complexType> <!-- end t_road_type -->
+            
+                <!-- 5.3.3.1 Speed Record -->
+                <xs:complexType name="t_road_type_speed">
+                    <xs:group ref="g_additionalData"/>
+                    <xs:attribute name="max"    type="t_maxSpeed"   use="required"/>
+                    <xs:attribute name="unit"   type="e_unitSpeed"  use="optional"/>
+                </xs:complexType> <!-- end t_road_type_speed -->
+                
+            <!-- 5.3.4 Road Plan View Record -->
+            <xs:complexType name="t_road_planView">
+                <xs:sequence>                    
+                    <xs:element name="geometry" type="t_road_planView_geometry" minOccurs="1"   maxOccurs="unbounded"/>
+                    <xs:group ref="g_additionalData"/>
+                </xs:sequence>
+            </xs:complexType> <!-- end t_road_planView -->
+            
+                <!-- 5.3.4.1 Road Geometry Header Record -->
+                <xs:complexType name="t_road_planView_geometry">
+                    <xs:choice>                        
+                        <xs:element name="line"         type="t_road_planView_geometry_line"/>
+                        <xs:element name="spiral"       type="t_road_planView_geometry_spiral"/>
+                        <xs:element name="arc"          type="t_road_planView_geometry_arc"/>
+                        <xs:element name="poly3"        type="t_road_planView_geometry_poly3"/>
+                        <xs:element name="paramPoly3"   type="t_road_planView_geometry_paramPoly3"/>
+                        <xs:group ref="g_additionalData"/>
+                    </xs:choice>
+                    
+                    <xs:attribute name="s"      type="t_grEqZero"   use="required"/>
+                    <xs:attribute name="x"      type="xs:double"    use="required"/>
+                    <xs:attribute name="y"      type="xs:double"    use="required"/>
+                    <xs:attribute name="hdg"    type="xs:double"    use="required"/>
+                    <xs:attribute name="length" type="t_grEqZero"   use="required"/>
+                </xs:complexType> <!-- end t_road_planView_geometry -->
+                
+                    <!-- 5.3.4.1.1 Geometry, Line Record -->
+                    <xs:complexType name="t_road_planView_geometry_line">                                                                
+                        <xs:group ref="g_additionalData"/>
+                    </xs:complexType> <!-- end t_road_planView_geometry_line -->
+                    
+                    <!-- 5.3.4.1.2 Geometry, Spiral Record (Clothoids) -->
+                    <xs:complexType name="t_road_planView_geometry_spiral">
+                        <xs:group ref="g_additionalData"/>                        
+                        <xs:attribute name="curvStart"  type="xs:double"    use="required"/>
+                        <xs:attribute name="curvEnd"    type="xs:double"    use="required"/>
+                    </xs:complexType> <!-- end t_road_planView_geometry_spiral -->
+                    
+                    <!-- 5.3.4.1.3 Geometry, Arc Record -->
+                    <xs:complexType name="t_road_planView_geometry_arc">
+                        <xs:group ref="g_additionalData"/>                        
+                        <xs:attribute name="curvature"  type="xs:double"    use="required"/>
+                    </xs:complexType> <!-- end t_road_planView_geometry_arc -->
+                    
+                    <!-- 5.3.4.1.4 Geometry, Cubic Polynomial Record -->
+                    <xs:complexType name="t_road_planView_geometry_poly3">                                         
+                        <xs:group ref="g_additionalData"/>
+                        <xs:attribute name="a"  type="xs:double"    use="required"/>
+                        <xs:attribute name="b"  type="xs:double"    use="required"/>
+                        <xs:attribute name="c"  type="xs:double"    use="required"/>
+                        <xs:attribute name="d"  type="xs:double"    use="required"/>
+                    </xs:complexType> <!-- end t_road_planView_geometry_poly3 -->
+                    
+                    <!-- 5.3.4.1.5 Geometry, Parametric Cubic Curve Record -->
+                    <xs:complexType name="t_road_planView_geometry_paramPoly3">                                         
+                        <xs:group ref="g_additionalData"/>
+                        <xs:attribute name="aU"     type="xs:double"            use="required"/>
+                        <xs:attribute name="bU"     type="xs:double"            use="required"/>
+                        <xs:attribute name="cU"     type="xs:double"            use="required"/>
+                        <xs:attribute name="dU"     type="xs:double"            use="required"/>
+                        <xs:attribute name="aV"     type="xs:double"            use="required"/>
+                        <xs:attribute name="bV"     type="xs:double"            use="required"/>
+                        <xs:attribute name="cV"     type="xs:double"            use="required"/>
+                        <xs:attribute name="dV"     type="xs:double"            use="required"/>
+                        <xs:attribute name="pRange" type="e_paramPoly3_pRange"  use="required"/>
+                    </xs:complexType> <!-- end t_road_planView_geometry_paramPoly3 -->
+                    
+                        <xs:simpleType name="e_paramPoly3_pRange">
+                            <xs:restriction base="xs:string">
+                                <xs:enumeration value="arcLength"/>
+                                <xs:enumeration value="normalized"/>
+                            </xs:restriction>
+                        </xs:simpleType> <!-- end e_paramPoly3_pRange -->
+                    
+            <!-- 5.3.5 Road Elevation Profile Record -->
+            <xs:complexType name="t_road_elevationProfile">
+                <xs:sequence>                    
+                    <xs:element name="elevation"    type="t_road_elevationProfile_elevation"    minOccurs="1"   maxOccurs="unbounded"/>
+                    <xs:group ref="g_additionalData"/>
+                </xs:sequence>
+            </xs:complexType> <!-- end t_road_elevationProfile -->
+            
+                <!-- 5.3.5.1 Road Elevation Record -->
+                <xs:complexType name="t_road_elevationProfile_elevation">
+                    <xs:group ref="g_additionalData"/>
+                    <xs:attribute name="s"  type="t_grEqZero"   use="required"/>
+                    <xs:attribute name="a"  type="xs:double"    use="required"/>
+                    <xs:attribute name="b"  type="xs:double"    use="required"/>
+                    <xs:attribute name="c"  type="xs:double"    use="required"/>
+                    <xs:attribute name="d"  type="xs:double"    use="required"/>
+                </xs:complexType> <!-- end t_road_elevationProfile_elevation -->
+                
+            <!-- 5.3.6 Road Lateral Profile Record -->
+            <xs:complexType name="t_road_lateralProfile">
+                <xs:sequence>                    
+                    <xs:element name="superelevation"   type="t_road_lateralProfile_superelevation" minOccurs="0"   maxOccurs="unbounded"/>                    
+                    <xs:element name="crossfall"        type="t_road_lateralProfile_crossfall"      minOccurs="0"   maxOccurs="unbounded"/>                    
+                    <xs:element name="shape"            type="t_road_lateralProfile_shape"          minOccurs="0"   maxOccurs="unbounded"/>
+                    <xs:group ref="g_additionalData"/>
+                </xs:sequence>
+            </xs:complexType> <!-- end t_road_lateralProfile -->
+            
+                <!-- 5.3.6.1 Road Superelevation Record -->
+                <xs:complexType name="t_road_lateralProfile_superelevation">
+                    <xs:group ref="g_additionalData"/>
+                    <xs:attribute name="s"  type="t_grEqZero"   use="required"/>
+                    <xs:attribute name="a"  type="xs:double"    use="required"/>
+                    <xs:attribute name="b"  type="xs:double"    use="required"/>
+                    <xs:attribute name="c"  type="xs:double"    use="required"/>
+                    <xs:attribute name="d"  type="xs:double"    use="required"/>
+                </xs:complexType> <!-- end t_road_lateralProfile_superelevation -->
+                
+                <!-- 5.3.6.2 Crossfall Record -->
+                <xs:complexType name="t_road_lateralProfile_crossfall">
+                    <xs:group ref="g_additionalData"/>
+                    <xs:attribute name="side"   type="e_road_lateralProfile_crossfall_side" use="required"/>
+                    <xs:attribute name="s"      type="t_grEqZero"                           use="required"/>
+                    <xs:attribute name="a"      type="xs:double"                            use="required"/>
+                    <xs:attribute name="b"      type="xs:double"                            use="required"/>
+                    <xs:attribute name="c"      type="xs:double"                            use="required"/>
+                    <xs:attribute name="d"      type="xs:double"                            use="required"/>
+                </xs:complexType> <!-- end t_road_lateralProfile_crossfall -->
+                
+                    <xs:simpleType name="e_road_lateralProfile_crossfall_side">
+                        <xs:restriction base="xs:string">
+                            <xs:enumeration value="left"/>
+                            <xs:enumeration value="right"/>
+                            <xs:enumeration value="both"/>
+                        </xs:restriction>
+                    </xs:simpleType> <!-- end e_road_lateralProfile_crossfall_side -->
+                
+                <!-- 5.3.6.3 Road Shape Record -->
+                <xs:complexType name="t_road_lateralProfile_shape">
+                    <xs:group ref="g_additionalData"/>
+                    <xs:attribute name="s"      type="t_grEqZero"   use="required"/>
+                    <xs:attribute name="t"      type="xs:double"    use="required"/>
+                    <xs:attribute name="a"      type="xs:double"    use="required"/>
+                    <xs:attribute name="b"      type="xs:double"    use="required"/>
+                    <xs:attribute name="c"      type="xs:double"    use="required"/>
+                    <xs:attribute name="d"      type="xs:double"    use="required"/>
+                </xs:complexType> <!-- end t_road_lateralProfile_shape -->
+                
+            <!-- 5.3.7 Lanes Record -->
+            <xs:complexType name="t_road_lanes">
+                <xs:sequence>
+                    <xs:element name="laneOffset"   type="t_road_lanes_laneOffset"  minOccurs="0" maxOccurs="unbounded"/>                    
+                    <xs:element name="laneSection"  type="t_road_lanes_laneSection" minOccurs="1" maxOccurs="unbounded">
+                        <xs:key name="k_road_lanes_laneSection_laneId">
+                            <xs:selector xpath="*/lane"/>
+                            <xs:field xpath="@id"/>
+                        </xs:key>
+                    </xs:element>
+                    <xs:group ref="g_additionalData"/>
+                </xs:sequence>
+            </xs:complexType> <!-- end t_road_lanes -->
+            
+                <!-- 5.3.7.1 Lane Offset Record -->
+                <xs:complexType name="t_road_lanes_laneOffset">
+                    <xs:group ref="g_additionalData"/>
+                    <xs:attribute name="s"  type="t_grEqZero"   use="required"/>
+                    <xs:attribute name="a"  type="xs:double"    use="required"/>
+                    <xs:attribute name="b"  type="xs:double"    use="required"/>
+                    <xs:attribute name="c"  type="xs:double"    use="required"/>
+                    <xs:attribute name="d"  type="xs:double"    use="required"/>
+                </xs:complexType> <!-- end t_road_lanes_laneOffset -->
+                
+                <!-- 5.3.7.2 Lane Section Record -->
+                <xs:complexType name="t_road_lanes_laneSection" >
+                    <xs:sequence>                        
+                        <xs:element name="left"     type="t_road_lanes_laneSection_left"    minOccurs="0"   maxOccurs="1"/>
+                        <xs:element name="center"   type="t_road_lanes_laneSection_center"  minOccurs="0"   maxOccurs="1"/>
+                        <xs:element name="right"    type="t_road_lanes_laneSection_right"   minOccurs="0"   maxOccurs="1"/>
+                        <xs:group ref="g_additionalData"/>
+                    </xs:sequence>                    
+                    <xs:attribute name="s"          type="t_grEqZero"   use="required"/>
+                    <xs:attribute name="singleSide" type="t_bool"       use="optional"/>
+                </xs:complexType> <!-- end t_road_lanes_laneSection -->
+                
+                    <!-- 5.3.7.2.1 Left/Center/Right Records -->
+                    <xs:complexType name="t_road_lanes_laneSection_left">
+                        <xs:sequence>            
+                            <xs:element name="lane" type="t_road_lanes_laneSection_left_lane"   minOccurs="1"   maxOccurs="unbounded"/>
+                            <xs:group ref="g_additionalData"/>
+                        </xs:sequence>
+                    </xs:complexType> <!-- end t_road_lanes_laneSection_left -->
+                    
+                    <xs:complexType name="t_road_lanes_laneSection_center">
+                        <xs:sequence>            
+                            <xs:element name="lane" type="t_road_lanes_laneSection_center_lane" minOccurs="1"   maxOccurs="unbounded"/>
+                            <xs:group ref="g_additionalData"/>
+                        </xs:sequence>
+                    </xs:complexType> <!-- end t_road_lanes_laneSection_center -->
+                    
+                    <xs:complexType name="t_road_lanes_laneSection_right">
+                        <xs:sequence>            
+                            <xs:element name="lane" type="t_road_lanes_laneSection_right_lane"  minOccurs="1"   maxOccurs="unbounded"/>
+                            <xs:group ref="g_additionalData"/>
+                        </xs:sequence>
+                    </xs:complexType> <!-- end t_road_lanes_laneSection_right -->
+                    
+                        <!-- 5.3.7.2.1.1 Lane Record -->
+                        <xs:complexType name="t_road_lanes_laneSection_center_lane">
+                            <xs:sequence>                
+                                <xs:element name="link"         type="t_road_lanes_laneSection_lcr_lane_link"       minOccurs="0"   maxOccurs="1"/>
+                                <xs:element name="roadMark"     type="t_road_lanes_laneSection_lcr_lane_roadMark"   minOccurs="0"   maxOccurs="unbounded"/>                                    
+                                <xs:group ref="g_additionalData"/>
+                            </xs:sequence>            
+                            <xs:attribute name="id"     type="xs:integer"   fixed="0"   use="required"/>
+                            <xs:attribute name="type"   type="e_laneType"               use="required"/>
+                            <xs:attribute name="level"  type="t_bool"                   use="optional"/>
+                        </xs:complexType> <!-- end t_road_lanes_laneSection_center_lane -->
+                                                
+                        <xs:complexType name="t_road_lanes_laneSection_lr_lane">
+                            <xs:sequence>                
+                                <xs:element name="link"         type="t_road_lanes_laneSection_lcr_lane_link"       minOccurs="0"   maxOccurs="1"/>
+                                <xs:choice maxOccurs="unbounded">
+                                    <xs:element name="width"        type="t_road_lanes_laneSection_lr_lane_width"   minOccurs="1"   maxOccurs="unbounded"/>
+                                    <xs:element name="border"       type="t_road_lanes_laneSection_lr_lane_border"  minOccurs="1"   maxOccurs="unbounded"/>
+                                </xs:choice>
+                                <xs:element name="roadMark"     type="t_road_lanes_laneSection_lcr_lane_roadMark"   minOccurs="0"   maxOccurs="unbounded"/>                                    
+                                <xs:element name="material"     type="t_road_lanes_laneSection_lr_lane_material"    minOccurs="0"   maxOccurs="unbounded"/>                
+                                <xs:element name="visibility"   type="t_road_lanes_laneSection_lr_lane_visibility"  minOccurs="0"   maxOccurs="unbounded"/>                
+                                <xs:element name="speed"        type="t_road_lanes_laneSection_lr_lane_speed"       minOccurs="0"   maxOccurs="unbounded"/>                
+                                <xs:element name="access"       type="t_road_lanes_laneSection_lr_lane_access"      minOccurs="0"   maxOccurs="unbounded"/>                
+                                <xs:element name="height"       type="t_road_lanes_laneSection_lr_lane_height"      minOccurs="0"   maxOccurs="unbounded"/>                     
+                                <xs:element name="rule"         type="t_road_lanes_laneSection_lr_lane_rule"        minOccurs="0"   maxOccurs="unbounded"/>                
+                                <xs:group ref="g_additionalData"/>
+                            </xs:sequence>            
+                            <xs:attribute name="type"   type="e_laneType"   use="required"/>
+                            <xs:attribute name="level"  type="t_bool"       use="optional"/>
+                        </xs:complexType> <!-- end t_road_lanes_laneSection_lr_lane -->                        
+                        
+                        <xs:complexType name="t_road_lanes_laneSection_left_lane">
+                            <xs:complexContent>
+                                <xs:extension base="t_road_lanes_laneSection_lr_lane">
+                                    <xs:attribute name="id" type="xs:positiveInteger"   use="required"/>
+                                </xs:extension>
+                            </xs:complexContent>
+                        </xs:complexType> <!-- end t_road_lanes_laneSection_left_lane -->
+                        
+                        <xs:complexType name="t_road_lanes_laneSection_right_lane">
+                            <xs:complexContent>
+                                <xs:extension base="t_road_lanes_laneSection_lr_lane">
+                                    <xs:attribute name="id" type="xs:negativeInteger"   use="required"/>
+                                </xs:extension>
+                            </xs:complexContent>
+                        </xs:complexType> <!-- end t_road_lanes_laneSection_right_lane -->
+                    
+                            <!-- 5.3.7.2.1.1.1 Lane Link Record -->
+                            <xs:complexType name="t_road_lanes_laneSection_lcr_lane_link">
+                                <xs:sequence>
+                                    <xs:element name="predecessor"  type="t_road_lanes_laneSection_lcr_lane_link_predecessorSuccessor"  minOccurs="0"   maxOccurs="unbounded"/>
+                                    <xs:element name="successor"    type="t_road_lanes_laneSection_lcr_lane_link_predecessorSuccessor"  minOccurs="0"   maxOccurs="unbounded"/>
+                                    <xs:group ref="g_additionalData"/>
+                                </xs:sequence>
+                            </xs:complexType> <!-- end t_road_lanes_laneSection_lcr_lane_link -->
+                            
+                                <!-- 5.3.7.2.1.1.1.1 Lane Predecessor, 5.3.7.2.1.1.1.2 Lane Successor -->
+                                <xs:complexType name="t_road_lanes_laneSection_lcr_lane_link_predecessorSuccessor">
+                                    <xs:group ref="g_additionalData"/>        
+                                    <xs:attribute name="id" type="xs:integer"   use="required"/>
+                                </xs:complexType> <!-- end t_road_lanes_laneSection_lcr_lane_link_predecessorSuccessor -->
+
+                            <!-- 5.3.7.2.1.1.2 Lane Width Record -->
+                            <xs:complexType name="t_road_lanes_laneSection_lr_lane_width">
+                                <xs:group ref="g_additionalData"/>
+                                <xs:attribute name="sOffset"    type="t_grEqZero"   use="required"/>
+                                <xs:attribute name="a"          type="xs:double"    use="required"/>
+                                <xs:attribute name="b"          type="xs:double"    use="required"/>
+                                <xs:attribute name="c"          type="xs:double"    use="required"/>
+                                <xs:attribute name="d"          type="xs:double"    use="required"/>
+                            </xs:complexType> <!-- end t_road_lanes_laneSection_lr_lane_width -->
+                            
+                            <!-- 5.3.7.2.1.1.3 Lane Border Record -->
+                            <xs:complexType name="t_road_lanes_laneSection_lr_lane_border">
+                                <xs:group ref="g_additionalData"/>
+                                <xs:attribute name="sOffset"    type="t_grEqZero"   use="required"/>
+                                <xs:attribute name="a"          type="xs:double"    use="required"/>
+                                <xs:attribute name="b"          type="xs:double"    use="required"/>
+                                <xs:attribute name="c"          type="xs:double"    use="required"/>
+                                <xs:attribute name="d"          type="xs:double"    use="required"/>
+                            </xs:complexType> <!-- end t_road_lanes_laneSection_lr_lane_border -->
+                            
+                            <!-- 5.3.7.2.1.1.4 Road Mark Record -->
+                            <xs:complexType name="t_road_lanes_laneSection_lcr_lane_roadMark">
+                                <xs:sequence>                    
+                                    <xs:element name="sway"     type="t_road_lanes_laneSection_lcr_lane_roadMark_sway"      minOccurs="0"   maxOccurs="unbounded"/>                    
+                                    <xs:element name="type"     type="t_road_lanes_laneSection_lcr_lane_roadMark_type"      minOccurs="0"   maxOccurs="1"/>                        
+                                    <xs:element name="explicit" type="t_road_lanes_laneSection_lcr_lane_roadMark_explicit"  minOccurs="0"   maxOccurs="1"/>                    
+                                    <xs:group ref="g_additionalData"/>
+                                </xs:sequence>                
+                                <xs:attribute name="sOffset"        type="t_grEqZero"                                               use="required"/>
+                                <xs:attribute name="type"           type="e_roadMarkType"                                           use="required"/>
+                                <xs:attribute name="weight"         type="e_roadMarkWeight"                                         use="optional"/>
+                                <xs:attribute name="color"          type="e_roadMarkColor"                                          use="required"/>
+                                <xs:attribute name="material"       type="xs:string"                                                use="optional"/>
+                                <xs:attribute name="width"          type="t_grEqZero"                                               use="optional"/>
+                                <xs:attribute name="laneChange"     type="e_road_lanes_laneSection_lcr_lane_roadMark_laneChange"    use="optional"/>
+                                <xs:attribute name="height"         type="xs:double"                                                use="optional"/>
+                            </xs:complexType> <!-- end t_road_lanes_laneSection_lcr_lane_roadMark -->
+                            
+                                <xs:simpleType name="e_road_lanes_laneSection_lcr_lane_roadMark_laneChange">
+                                    <xs:restriction base="xs:string">
+                                        <xs:enumeration value="increase"/>
+                                        <xs:enumeration value="decrease"/>
+                                        <xs:enumeration value="both"/>
+                                        <xs:enumeration value="none"/>
+                                    </xs:restriction>
+                                </xs:simpleType> <!-- end e_road_lanes_laneSection_lcr_lane_roadMark_laneChange -->
+                            
+                                <!-- 5.3.7.2.1.1.4.1 Road Mark - Sway Definition (new in OpenDrive 1.5M) -->
+                                <xs:complexType name="t_road_lanes_laneSection_lcr_lane_roadMark_sway">
+                                    <xs:group ref="g_additionalData"/>
+                                    <xs:attribute name="ds" type="t_grEqZero"   use="required"/>
+                                    <xs:attribute name="a"  type="xs:double"    use="required"/>
+                                    <xs:attribute name="b"  type="xs:double"    use="required"/>
+                                    <xs:attribute name="c"  type="xs:double"    use="required"/>
+                                    <xs:attribute name="d"  type="xs:double"    use="required"/>
+                                </xs:complexType> <!-- end t_road_lanes_laneSection_lcr_lane_roadMark_sway -->
+                                
+                                <!-- 5.3.7.2.1.1.4.2 Road Mark Type -->
+                                <xs:complexType name="t_road_lanes_laneSection_lcr_lane_roadMark_type">
+                                    <xs:sequence>
+                                        <xs:element name="line" type="t_road_lanes_laneSection_lcr_lane_roadMark_type_line" minOccurs="1"   maxOccurs="unbounded"/>
+                                        <xs:group ref="g_additionalData"/>
+                                    </xs:sequence>                    
+                                    <xs:attribute name="name"   type="xs:string"    use="required"/>
+                                    <xs:attribute name="width"  type="t_grEqZero"   use="required"/>
+                                </xs:complexType> <!-- end t_road_lanes_laneSection_lcr_lane_roadMark_type -->
+                                
+                                    <!-- 5.3.7.2.1.1.4.2.1 Road Mark Type - Line Definition -->
+                                    <xs:complexType name="t_road_lanes_laneSection_lcr_lane_roadMark_type_line">
+                                        <xs:group ref="g_additionalData"/>
+                                        <xs:attribute name="length"     type="t_grEqZero"       use="required"/>
+                                        <xs:attribute name="space"      type="t_grEqZero"       use="required"/>
+                                        <xs:attribute name="tOffset"    type="xs:double"        use="required"/>
+                                        <xs:attribute name="sOffset"    type="t_grEqZero"       use="required"/>
+                                        <xs:attribute name="rule"       type="e_roadMarkRule"   use="optional"/>
+                                        <xs:attribute name="width"      type="t_grEqZero"       use="required"/>
+                                        <xs:attribute name="color"      type="e_roadMarkColor"  use="optional"/> <!-- new in OpenDrive 1.5M -->
+                                    </xs:complexType> <!-- end t_road_lanes_laneSection_lcr_lane_roadMark_type_line -->
+                                    
+                                <!-- 5.3.7.2.1.1.4.3 Explicit Road Mark Definition (new in OpenDrive 1.5M) -->
+                                <xs:complexType name="t_road_lanes_laneSection_lcr_lane_roadMark_explicit">
+                                    <xs:sequence>
+                                        <xs:element name="line" type="t_road_lanes_laneSection_lcr_lane_roadMark_explicit_line" minOccurs="1"   maxOccurs="unbounded"/>
+                                        <xs:group ref="g_additionalData"/>
+                                    </xs:sequence>
+                                </xs:complexType> <!-- end t_road_lanes_laneSection_lcr_lane_roadMark_explicit -->
+                                
+                                    <!-- 5.3.7.2.1.1.4.3.1 Explicit Road Mark Definition - Line Entry (new in OpenDrive 1.5M) -->
+                                    <xs:complexType name="t_road_lanes_laneSection_lcr_lane_roadMark_explicit_line">
+                                        <xs:group ref="g_additionalData"/>
+                                        <xs:attribute name="length"     type="t_grEqZero"       use="required"/>
+                                        <xs:attribute name="tOffset"    type="xs:double"        use="required"/>
+                                        <xs:attribute name="sOffset"    type="t_grEqZero"       use="required"/>
+                                        <xs:attribute name="rule"       type="e_roadMarkRule"   use="optional"/>
+                                        <xs:attribute name="width"      type="t_grEqZero"       use="required"/>
+                                    </xs:complexType> <!-- end t_road_lanes_laneSection_lcr_lane_roadMark_explicit_line -->
+                                    
+                            <!-- 5.3.7.2.1.1.5 Lane Material Record -->
+                            <xs:complexType name="t_road_lanes_laneSection_lr_lane_material">                                         
+                                <xs:group ref="g_additionalData"/>
+                                <xs:attribute name="sOffset"    type="t_grEqZero"   use="required"/>
+                                <xs:attribute name="surface"    type="xs:string"    use="optional"/>
+                                <xs:attribute name="friction"   type="t_grEqZero"   use="required"/>
+                                <xs:attribute name="roughness"  type="t_grEqZero"   use="optional"/>
+                            </xs:complexType> <!-- end t_road_lanes_laneSection_lr_lane_material -->
+                            
+                            <!-- 5.3.7.2.1.1.6 Lane Visibility Record -->
+                            <xs:complexType name="t_road_lanes_laneSection_lr_lane_visibility">
+                                <xs:group ref="g_additionalData"/>
+                                <xs:attribute name="sOffset"    type="t_grEqZero"   use="required"/>
+                                <xs:attribute name="forward"    type="t_grEqZero"   use="required"/>
+                                <xs:attribute name="back"       type="t_grEqZero"   use="required"/>
+                                <xs:attribute name="left"       type="t_grEqZero"   use="required"/>
+                                <xs:attribute name="right"      type="t_grEqZero"   use="required"/>
+                            </xs:complexType> <!-- end t_road_lanes_laneSection_lr_lane_visibility -->
+                            
+                            <!-- 5.3.7.2.1.1.7 Lane Speed Record -->
+                            <xs:complexType name="t_road_lanes_laneSection_lr_lane_speed">
+                                <xs:group ref="g_additionalData"/>
+                                <xs:attribute name="sOffset"    type="t_grEqZero"   use="required"/>
+                                <xs:attribute name="max"        type="t_grEqZero"   use="required"/>
+                                <xs:attribute name="unit"       type="e_unitSpeed"  use="optional"/>
+                            </xs:complexType> <!-- end t_road_lanes_laneSection_lr_lane_speed -->
+                            
+                            <!-- 5.3.7.2.1.1.8 Lane Access Record -->
+                            <xs:complexType name="t_road_lanes_laneSection_lr_lane_access" >
+                                <xs:group ref="g_additionalData"/>
+                                <xs:attribute name="sOffset"        type="t_grEqZero"                                   use="required"/>
+                                <xs:attribute name="rule"           type="e_road_lanes_laneSection_lr_lane_access_rule" use="required"/> <!-- new in OpenDrive 1.5M -->
+                                <xs:attribute name="restriction"    type="e_accessRestrictionType"                      use="required"/>
+                            </xs:complexType> <!-- end t_road_lanes_laneSection_lr_lane_access -->
+                            
+                                <xs:simpleType name="e_road_lanes_laneSection_lr_lane_access_rule">
+                                    <xs:restriction base="xs:string">
+                                        <xs:enumeration value="allow"/>
+                                        <xs:enumeration value="deny"/>
+                                    </xs:restriction>
+                                </xs:simpleType> <!-- end e_road_lanes_laneSection_lr_lane_access_rule -->
+                            
+                            <!-- 5.3.7.2.1.1.9 Lane Height Record -->
+                            <xs:complexType name="t_road_lanes_laneSection_lr_lane_height">
+                                <xs:group ref="g_additionalData"/>
+                                <xs:attribute name="sOffset"    type="t_grEqZero"   use="required"/>
+                                <xs:attribute name="inner"      type="xs:double"    use="required"/>
+                                <xs:attribute name="outer"      type="xs:double"    use="required"/>
+                            </xs:complexType> <!-- end t_road_lanes_laneSection_lr_lane_height -->
+                            
+                            <!-- 5.3.7.2.1.1.10 Lane Rule Record -->
+                            <xs:complexType name="t_road_lanes_laneSection_lr_lane_rule">
+                                <xs:group ref="g_additionalData"/>
+                                <xs:attribute name="sOffset"    type="t_grEqZero"   use="required"/>
+                                <xs:attribute name="value"      type="xs:string"    use="required"/>
+                            </xs:complexType> <!-- end t_road_lanes_laneSection_lr_lane_rule -->
+                
+            <!-- 5.3.8 Road Objects Record -->
+            <xs:complexType name="t_road_objects">
+                <xs:sequence>
+                    <xs:element name="object"           type="t_road_objects_object"            minOccurs="0" maxOccurs="unbounded">
+                        <xs:key name="k_road_objects_object_outlineId">
+                            <xs:selector xpath="outline"/>
+                            <xs:field xpath="@id"/>
+                        </xs:key>
+                        <xs:keyref name="r_road_objects_object_outline_cornerRoad" refer="k_road_objects_object_outlineId">
+                            <xs:selector xpath="outline/cornerRoad"/>
+                            <xs:field xpath="@id"/>
+                        </xs:keyref>
+                        <xs:keyref name="r_road_objects_object_outline_cornerLocal" refer="k_road_objects_object_outlineId">
+                            <xs:selector xpath="outline/cornerLocal"/>
+                            <xs:field xpath="@id"/>
+                        </xs:keyref>
+                        <xs:keyref name="r_road_objects_object_borders_border" refer="k_road_objects_object_outlineId">
+                            <xs:selector xpath="borders/border"/>
+                            <xs:field xpath="@outlineId"/>
+                        </xs:keyref>
+                    </xs:element>
+                    <xs:element name="objectReference"  type="t_road_objects_objectReference"   minOccurs="0" maxOccurs="unbounded"/>                    
+                    <xs:element name="tunnel"           type="t_road_objects_tunnel"            minOccurs="0" maxOccurs="unbounded"/>                    
+                    <xs:element name="bridge"           type="t_road_objects_bridge"            minOccurs="0" maxOccurs="unbounded"/>                    
+                    <xs:group ref="g_additionalData"/>
+                </xs:sequence>
+            </xs:complexType> <!-- end t_road_objects -->
+            
+                <!-- 5.3.8.1 Object Record -->
+                <xs:complexType name="t_road_objects_object">
+                    <xs:sequence>                        
+                        <xs:element name="repeat"       type="t_road_objects_object_repeat"             minOccurs="0"   maxOccurs="1"/>
+                        <xs:element name="outline"      type="t_road_objects_object_outlines_outline"   minOccurs="0"   maxOccurs="1"/> <!-- support for OpenDrive 1.4 -->
+                        <xs:element name="outlines"     type="t_road_objects_object_outlines"           minOccurs="0"   maxOccurs="1"/>
+                        <xs:element name="material"     type="t_road_objects_object_material"           minOccurs="0"   maxOccurs="unbounded"/>                        
+                        <xs:element name="validity"     type="t_road_objects_object_laneValidity"       minOccurs="0"   maxOccurs="unbounded"/>                        
+                        <xs:element name="parkingSpace" type="t_road_objects_object_parkingSpace"       minOccurs="0"   maxOccurs="1"/>                        
+                        <xs:element name="markings"     type="t_road_objects_object_markings"           minOccurs="0"   maxOccurs="1"/>                        
+                        <xs:element name="borders"      type="t_road_objects_object_borders"            minOccurs="0"   maxOccurs="1"/>
+                        <xs:group ref="g_additionalData"/>
+                    </xs:sequence>                    
+                    <xs:attribute name="type"           type="e_objectType"     use="optional"/>
+                    <xs:attribute name="subtype"        type="xs:string"        use="optional"/> <!-- new in OpenDrive 1.5M -->
+                    <xs:attribute name="dynamic"        type="t_yesNo"          use="required"/> <!-- new in OpenDrive 1.5M -->
+                    <xs:attribute name="name"           type="xs:string"        use="optional"/>
+                    <xs:attribute name="id"             type="xs:string"        use="required"/>
+                    <xs:attribute name="s"              type="t_grEqZero"       use="required"/>
+                    <xs:attribute name="t"              type="xs:double"        use="required"/>
+                    <xs:attribute name="zOffset"        type="xs:double"        use="required"/>
+                    <xs:attribute name="validLength"    type="t_grEqZero"       use="required"/>
+                    <xs:attribute name="orientation"    type="e_orientation"    use="required"/>
+                    <xs:attribute name="hdg"            type="xs:double"        use="required"/>
+                    <xs:attribute name="pitch"          type="xs:double"        use="required"/>
+                    <xs:attribute name="roll"           type="xs:double"        use="required"/>
+                    <xs:attribute name="height"         type="xs:double"        use="required"/>
+                    <!-- <xs:attributeGroup> --> <!-- variant 1 -->
+                        <xs:attribute name="length"     type="xs:double"        use="optional"/>
+                        <xs:attribute name="width"      type="xs:double"        use="optional"/>
+                    <!-- </xs:attributeGroup> -->
+                    <!-- <xs:attributeGroup> --> <!-- variant 2 (new in OpenDrive 1.5M) -->
+                        <xs:attribute name="radius"     type="xs:double"        use="optional"/>
+                    <!-- </xs:attributeGroup> -->
+                </xs:complexType> <!-- end t_road_objects_object -->
+                
+                    <!-- 5.3.8.1.1 Object Repeat Record -->
+                    <xs:complexType name="t_road_objects_object_repeat">                                         
+                        <xs:group ref="g_additionalData"/>
+                        <xs:attribute name="s"                  type="t_grEqZero"   use="required"/>
+                        <xs:attribute name="length"             type="t_grEqZero"   use="required"/>
+                        <xs:attribute name="distance"           type="t_grEqZero"   use="required"/>
+                        <xs:attribute name="tStart"             type="xs:double"    use="required"/>
+                        <xs:attribute name="tEnd"               type="xs:double"    use="required"/>
+                        <xs:attribute name="heightStart"        type="xs:double"    use="required"/>
+                        <xs:attribute name="heightEnd"          type="xs:double"    use="required"/>
+                        <xs:attribute name="zOffsetStart"       type="xs:double"    use="required"/>
+                        <xs:attribute name="zOffsetEnd"         type="xs:double"    use="required"/>
+                        <xs:attribute name="widthStart"         type="t_grEqZero"   use="required"/>
+                        <xs:attribute name="widthEnd"           type="t_grEqZero"   use="required"/>
+                        <!-- <xs:attributeGroup> --> <!-- variant 1 -->
+                            <xs:attribute name="lengthStart"    type="t_grEqZero"   use="optional"/>
+                            <xs:attribute name="lengthEnd"      type="t_grEqZero"   use="optional"/>
+                        <!-- </xs:attributeGroup> -->
+                            <!-- <xs:attributeGroup> --> <!-- variant 2 -->
+                            <xs:attribute name="radiusStart"    type="t_grEqZero"   use="optional"/>
+                            <xs:attribute name="radiusEnd"      type="t_grEqZero"   use="optional"/>
+                        <!-- </xs:attributeGroup> -->
+                    </xs:complexType> <!-- end t_road_objects_object_repeat -->
+                    
+                    <!-- 5.3.8.1.2 Outlines Record (new in OpenDrive 1.5M) -->
+                    <xs:complexType name="t_road_objects_object_outlines">
+                        <xs:sequence>
+                            <xs:element name="outline" type="t_road_objects_object_outlines_outline" minOccurs="1" maxOccurs="unbounded"/>
+                            <xs:group ref="g_additionalData"/>
+                        </xs:sequence>
+                    </xs:complexType> <!-- end t_road_objects_object_outlines -->
+                    
+                        <!-- 5.3.8.1.2.1 Object Outline Record (new in OpenDrive 1.5M) -->
+                        <xs:complexType name="t_road_objects_object_outlines_outline">
+                            <xs:sequence>                                
+                                <xs:element name="cornerRoad"   type="t_road_objects_object_outlines_outline_cornerRoad"    minOccurs="0"   maxOccurs="unbounded"/>                                
+                                <xs:element name="cornerLocal"  type="t_road_objects_object_outlines_outline_cornerLocal"   minOccurs="0"   maxOccurs="unbounded"/>
+                                <xs:group ref="g_additionalData"/>
+                            </xs:sequence>
+                            
+                            <xs:attribute name="id"         type="xs:nonNegativeInteger"    use="required"/>
+                            <xs:attribute name="fillType"   type="e_outlineFillType"        use="required"/>
+                            <xs:attribute name="outer"      type="t_bool"                   use="required"/>
+                            <xs:attribute name="closed"     type="t_bool"                   use="required"/>
+                            <xs:attribute name="laneType"   type="e_laneType"               use="required"/>
+                        </xs:complexType> <!-- end t_road_objects_object_outlines_outline -->
+                        
+                            <!-- 5.3.8.1.2.1.1 CornerRoad -->
+                            <xs:complexType name="t_road_objects_object_outlines_outline_cornerRoad">
+                                <xs:group ref="g_additionalData"/>
+                                <xs:attribute name="s"      type="t_grEqZero"               use="required"/>
+                                <xs:attribute name="t"      type="xs:double"                use="required"/>
+                                <xs:attribute name="dz"     type="xs:double"                use="required"/>
+                                <xs:attribute name="height" type="xs:double"                use="required"/>
+                                <xs:attribute name="id"     type="xs:nonNegativeInteger"    use="required"/> <!-- new in OpenDrive 1.5M -->
+                            </xs:complexType> <!-- end t_road_objects_object_outlines_outline_cornerRoad -->
+                            
+                            <!-- 5.3.8.1.2.1.2 CornerLocal -->
+                            <xs:complexType name="t_road_objects_object_outlines_outline_cornerLocal">                                         
+                                <xs:group ref="g_additionalData"/>
+                                <xs:attribute name="u"      type="xs:double"        use="required"/>
+                                <xs:attribute name="v"      type="xs:double"        use="required"/>
+                                <xs:attribute name="z"      type="xs:double"        use="required"/>
+                                <xs:attribute name="height" type="xs:double"        use="required"/>
+                                <xs:attribute name="id"     type="xs:nonNegativeInteger"    use="required"/> <!-- new in OpenDrive 1.5M -->
+                            </xs:complexType> <!-- end t_road_objects_object_outlines_outline_cornerLocal -->
+                            
+                    <!-- 5.3.8.1.3 Object Material Record -->
+                    <xs:complexType name="t_road_objects_object_material">                                         
+                        <xs:group ref="g_additionalData"/>
+                        <xs:attribute name="surface"    type="xs:string"    use="optional"/>
+                        <xs:attribute name="friction"   type="t_grEqZero"   use="optional"/>
+                        <xs:attribute name="roughness"  type="t_grEqZero"   use="optional"/>
+                    </xs:complexType> <!-- end t_road_objects_object_material -->
+                    
+                    <!-- 5.3.8.1.4 Lane Validity Record -->
+                    <xs:complexType name="t_road_objects_object_laneValidity">
+                        <xs:group ref="g_additionalData"/>
+                        <xs:attribute name="fromLane"   type="xs:integer"   use="required"/>
+                        <xs:attribute name="toLane"     type="xs:integer"   use="required"/>
+                    </xs:complexType> <!-- end t_road_objects_object_laneValidity -->
+                    
+                    <!-- 5.3.8.1.5 Parking Space Record -->
+                    <xs:complexType name="t_road_objects_object_parkingSpace">
+                        <xs:group ref="g_additionalData"/>
+                        <xs:attribute name="access"         type="e_road_objects_object_parkingSpace_access"    use="required"/>
+                        <xs:attribute name="restrictions"   type="xs:string"                                    use="optional"/>
+                    </xs:complexType> <!-- end t_road_objects_object_parkingSpace -->
+                    
+                        <xs:simpleType name="e_road_objects_object_parkingSpace_access">
+                            <xs:restriction base="xs:string">
+                                <xs:enumeration value="all"/>
+                                <xs:enumeration value="car"/>
+                                <xs:enumeration value="women"/>
+                                <xs:enumeration value="handicapped"/>
+                                <xs:enumeration value="bus"/>
+                                <xs:enumeration value="truck"/>
+                                <xs:enumeration value="electric"/>
+                                <xs:enumeration value="residents"/>
+                            </xs:restriction>
+                        </xs:simpleType> <!-- end e_road_objects_object_parkingSpace_access -->
+                    
+                    <!-- 5.3.8.1.6 Markings Record (new in OpenDrive 1.5M) -->
+                    <xs:complexType name="t_road_objects_object_markings">
+                        <xs:sequence>
+                            <xs:element name="marking" type="t_road_objects_object_markings_marking"    minOccurs="1"   maxOccurs="unbounded"/>                                
+                            <xs:group ref="g_additionalData"/>
+                        </xs:sequence>
+                    </xs:complexType> <!-- end t_road_objects_object_markings -->
+                    
+                        <!-- 5.3.8.1.6.1 Marking Record (new in OpenDrive 1.5M) -->
+                        <xs:complexType name="t_road_objects_object_markings_marking">
+                            <xs:sequence>                                
+                                <xs:element name="cornerReference" type="t_road_objects_object_markings_marking_cornerReference" minOccurs="2" maxOccurs="unbounded"/>        
+                                <xs:group ref="g_additionalData"/>
+                            </xs:sequence>                            
+                            <xs:attribute name="side"           type="e_sideType"       use="required"/>
+                            <xs:attribute name="weight"         type="e_roadMarkWeight" use="required"/>
+                            <xs:attribute name="width"          type="t_grEqZero"       use="optional"/>
+                            <xs:attribute name="color"          type="e_roadMarkColor"  use="required"/>
+                            <xs:attribute name="zOffset"        type="t_grEqZero"       use="optional"/>
+                            <xs:attribute name="spaceLength"    type="t_grEqZero"       use="required"/>
+                            <xs:attribute name="lineLength"     type="t_grEqZero"       use="required"/>
+                            <xs:attribute name="startOffset"    type="xs:double"        use="required"/>
+                            <xs:attribute name="stopOffset"     type="xs:double"        use="required"/>
+                        </xs:complexType> <!-- end t_road_objects_object_markings_marking -->
+                        
+                            <!-- 5.3.8.1.6.1.1 Corner Reference Record -->
+                            <xs:complexType name="t_road_objects_object_markings_marking_cornerReference">
+                                <xs:group ref="g_additionalData"/>
+                                <xs:attribute name="id" type="xs:nonNegativeInteger"    use="required"/>
+                            </xs:complexType> <!-- end t_road_objects_object_markings_marking_cornerReference -->
+                        
+                    <!-- 5.3.8.1.7 Borders Record (new in OpenDrive 1.5M) -->
+                    <xs:complexType name="t_road_objects_object_borders">
+                        <xs:sequence>
+                            <xs:element name="border"   type="t_road_objects_object_borders_border" minOccurs="1"   maxOccurs="unbounded"/>
+                            <xs:group ref="g_additionalData"/>
+                        </xs:sequence>
+                    </xs:complexType> <!-- end t_road_objects_object_borders -->
+                    
+                        <!-- 5.3.8.1.7.1 Border Record (new in OpenDrive 1.5M) -->
+                        <xs:complexType name="t_road_objects_object_borders_border">
+                            <xs:sequence>
+                                <xs:element name="cornerReference" type="t_road_objects_object_markings_marking_cornerReference" minOccurs="2" maxOccurs="unbounded"/>
+                                <xs:group ref="g_additionalData"/>
+                            </xs:sequence>                            
+                            <xs:attribute name="width"              type="t_grEqZero"               use="required"/>
+                            <xs:attribute name="type"               type="e_borderType"             use="required"/>
+                            <xs:attribute name="outlineId"          type="xs:nonNegativeInteger"    use="required"/>
+                            <xs:attribute name="useCompleteOutline" type="t_bool"                   use="optional"/>
+                        </xs:complexType> <!-- end t_road_objects_object_borders_border -->
+                        
+                <!-- 5.3.8.2 Object Reference Record -->
+                <xs:complexType name="t_road_objects_objectReference">
+                    <xs:sequence>
+                        <xs:element name="validity" type="t_road_objects_object_laneValidity" minOccurs="0" maxOccurs="unbounded"/>
+                        <xs:group ref="g_additionalData"/>
+                    </xs:sequence>                    
+                    <xs:attribute name="s"              type="t_grEqZero"       use="required"/>
+                    <xs:attribute name="t"              type="xs:double"        use="required"/>
+                    <xs:attribute name="id"             type="xs:string"        use="required"/>
+                    <xs:attribute name="zOffset"        type="xs:double"        use="required"/>
+                    <xs:attribute name="validLength"    type="t_grEqZero"       use="required"/>
+                    <xs:attribute name="orientation"    type="e_orientation"    use="required"/>
+                </xs:complexType> <!-- end t_road_objects_objectReference -->
+                
+                <!-- 5.3.8.3 Tunnel Record -->
+                <xs:complexType name="t_road_objects_tunnel">
+                    <xs:sequence>
+                        <xs:element name="validity" type="t_road_objects_object_laneValidity" minOccurs="0" maxOccurs="unbounded"/>                                                
+                        <xs:group ref="g_additionalData"/>
+                    </xs:sequence>                    
+                    <xs:attribute name="s"          type="t_grEqZero"   use="required"/>
+                    <xs:attribute name="length"     type="t_grEqZero"   use="required"/>
+                    <xs:attribute name="name"       type="xs:string"    use="optional"/>
+                    <xs:attribute name="id"         type="xs:string"    use="required"/>
+                    <xs:attribute name="type"       type="e_tunnelType" use="required"/>
+                    <xs:attribute name="lighting"   type="t_zeroOne"    use="optional"/>
+                    <xs:attribute name="daylight"   type="t_zeroOne"    use="optional"/>
+                </xs:complexType> <!-- end t_road_objects_tunnel -->
+                    
+                <!-- 5.3.8.4 Bridge Record -->
+                <xs:complexType name="t_road_objects_bridge">
+                    <xs:sequence>
+                        <xs:element name="validity" type="t_road_objects_object_laneValidity" minOccurs="0" maxOccurs="unbounded"/>
+                        <xs:group ref="g_additionalData"/>
+                    </xs:sequence>                    
+                    <xs:attribute name="s"          type="t_grEqZero"   use="required"/>
+                    <xs:attribute name="length"     type="t_grEqZero"   use="required"/>
+                    <xs:attribute name="name"       type="xs:string"    use="optional"/>
+                    <xs:attribute name="id"         type="xs:string"    use="required"/>
+                    <xs:attribute name="type"       type="e_bridgeType" use="required"/>
+                </xs:complexType> <!-- end t_road_objects_bridge -->
+                
+            <!-- 5.3.9 Road Signals Record -->
+            <xs:complexType name="t_road_signals">
+                <xs:sequence>                    
+                    <xs:element name="signal"           type="t_road_signals_signal"            minOccurs="0"   maxOccurs="unbounded"/>                    
+                    <xs:element name="signalReference"  type="t_road_signals_signalReference"   minOccurs="0"   maxOccurs="unbounded"/>                    
+                    <xs:group ref="g_additionalData"/>
+                </xs:sequence>
+            </xs:complexType> <!-- end t_road_signals -->
+            
+                <!-- 5.3.9.1 Signal Record -->
+                <xs:complexType name="t_road_signals_signal">
+                    <xs:sequence>                        
+                        <xs:element name="validity"     type="t_road_objects_object_laneValidity"   minOccurs="0"   maxOccurs="unbounded"/>
+                        <xs:element name="dependency"   type="t_road_signals_signal_dependency"     minOccurs="0"   maxOccurs="unbounded"/>                        
+                        <xs:element name="reference"    type="t_road_signals_signal_reference"      minOccurs="0"   maxOccurs="unbounded"/>                        
+                        <xs:choice minOccurs="0">
+                            <xs:element name="positionRoad"     type="t_road_signals_signal_positionRoad"/>
+                            <xs:element name="positionInertial" type="t_road_signals_signal_positionInertial"/>
+                        </xs:choice>                                                
+                        <xs:group ref="g_additionalData"/>
+                    </xs:sequence>                    
+                    <xs:attribute name="s"                  type="t_grEqZero"       use="required"/>
+                    <xs:attribute name="t"                  type="xs:double"        use="required"/>
+                    <xs:attribute name="id"                 type="xs:string"        use="required"/>
+                    <xs:attribute name="name"               type="xs:string"        use="optional"/>
+                    <xs:attribute name="dynamic"            type="t_yesNo"          use="required"/>
+                    <xs:attribute name="orientation"        type="e_orientation"    use="required"/>
+                    <xs:attribute name="zOffset"            type="xs:double"        use="required"/>
+                    <xs:attribute name="country"            type="e_countryCode"    use="optional"/>
+                    <xs:attribute name="countryRevision"    type="xs:string"        use="optional"/> <!-- new in OpenDrive 1.5M -->
+                    <xs:attribute name="type"               type="xs:string"        use="required"/>
+                    <xs:attribute name="subtype"            type="xs:string"        use="required"/>
+                    <xs:attribute name="value"              type="xs:double"        use="optional"/>
+                    <xs:attribute name="unit"               type="e_unit"           use="optional"/>
+                    <xs:attribute name="height"             type="t_grEqZero"       use="required"/>
+                    <xs:attribute name="width"              type="t_grEqZero"       use="required"/>
+                    <xs:attribute name="text"               type="xs:string"        use="optional"/>
+                    <xs:attribute name="hOffset"            type="xs:double"        use="optional"/>
+                    <xs:attribute name="pitch"              type="xs:double"        use="optional"/>
+                    <xs:attribute name="roll"               type="xs:double"        use="optional"/>
+                </xs:complexType> <!-- end t_road_signals_signal -->
+                
+                    <!-- 5.3.9.1.2 Signal Dependency Record -->
+                    <xs:complexType name="t_road_signals_signal_dependency">
+                        <xs:group ref="g_additionalData"/>
+                        <xs:attribute name="id"     type="xs:string"        use="required"/>
+                        <xs:attribute name="type"   type="xs:string"        use="optional"/>
+                    </xs:complexType> <!-- end t_road_signals_signal_dependency -->
+                    
+                    <!-- 5.3.9.1.3 Reference Record (new in OpenDrive 1.5M) -->
+                    <xs:complexType name="t_road_signals_signal_reference">
+                        <xs:group ref="g_additionalData"/>
+                        <xs:attribute name="elementType"    type="e_road_signals_signal_reference_elementType"  use="required"/>
+                        <xs:attribute name="elementId"      type="xs:string"                                    use="required"/>
+                        <xs:attribute name="type"           type="xs:string"                                    use="optional"/>
+                    </xs:complexType> <!-- end t_road_signals_signal_reference -->
+                    
+                        <xs:simpleType name="e_road_signals_signal_reference_elementType">
+                            <xs:restriction base="xs:string">
+                                <xs:enumeration value="object"/>
+                                <xs:enumeration value="signal"/>
+                            </xs:restriction>
+                        </xs:simpleType> <!-- end e_road_signals_signal_reference_elementType -->
+                    
+                    <!-- 5.3.9.1.4 Physical Signal Position Record, Road Co-ordinates (new in OpenDrive 1.5M) -->
+                    <xs:complexType name="t_road_signals_signal_positionRoad">
+                        <xs:group ref="g_additionalData"/>
+                        <xs:attribute name="roadId"     type="xs:string"    use="required"/>
+                        <xs:attribute name="s"          type="t_grEqZero"   use="required"/>
+                        <xs:attribute name="t"          type="xs:double"    use="required"/>
+                        <xs:attribute name="zOffset"    type="xs:double"    use="required"/>
+                        <xs:attribute name="hOffset"    type="xs:double"    use="required"/>
+                        <xs:attribute name="pitch"      type="xs:double"    use="optional"/>
+                        <xs:attribute name="roll"       type="xs:double"    use="optional"/>
+                    </xs:complexType> <!-- end t_road_signals_signal_positionRoad -->
+                    
+                    <!-- 5.3.9.1.5 Physical Signal Position Record, Inertial Co-ordinates (new in OpenDrive 1.5M) -->
+                    <xs:complexType name="t_road_signals_signal_positionInertial">
+                        <xs:group ref="g_additionalData"/>
+                        <xs:attribute name="x"      type="xs:double"    use="required"/>
+                        <xs:attribute name="y"      type="xs:double"    use="required"/>
+                        <xs:attribute name="z"      type="xs:double"    use="required"/>
+                        <xs:attribute name="hdg"    type="xs:double"    use="required"/>
+                        <xs:attribute name="pitch"  type="xs:double"    use="optional"/>
+                        <xs:attribute name="roll"   type="xs:double"    use="optional"/>
+                    </xs:complexType> <!-- end t_road_signals_signal_positionInertial -->
+                    
+                <!-- 5.3.9.2 Signal Reference Record -->
+                <xs:complexType name="t_road_signals_signalReference">
+                    <xs:sequence>                                   
+                        <xs:element name="validity" type="t_road_objects_object_laneValidity" minOccurs="0" maxOccurs="unbounded"/>
+                        <xs:group ref="g_additionalData"/>
+                    </xs:sequence>                    
+                    <xs:attribute name="s"              type="t_grEqZero"       use="required"/>
+                    <xs:attribute name="t"              type="xs:double"        use="required"/>
+                    <xs:attribute name="id"             type="xs:string"        use="required"/>
+                    <xs:attribute name="orientation"    type="e_orientation"    use="required"/>
+                </xs:complexType> <!-- end t_road_signals_signalReference -->
+                    
+            <!-- 5.3.10 Surface -->
+            <xs:complexType name="t_road_surface">
+                <xs:sequence>                               
+                    <xs:element name="CRG"  type="t_road_surface_CRG"   minOccurs="0"   maxOccurs="unbounded"/>
+                    <xs:group ref="g_additionalData"/>
+                </xs:sequence>
+            </xs:complexType> <!-- end t_road_surface -->
+            
+                <!-- 5.3.10.1 Curved Regular Grid Record -->
+                <xs:complexType name="t_road_surface_CRG">
+                    <xs:group ref="g_additionalData"/>
+                    <xs:attribute name="file"           type="xs:string"                    use="required"/>
+                    <xs:attribute name="sStart"         type="t_grEqZero"                   use="required"/>
+                    <xs:attribute name="sEnd"           type="t_grEqZero"                   use="required"/>
+                    <xs:attribute name="orientation"    type="e_direction"                  use="required"/>
+                    <xs:attribute name="mode"           type="e_road_surface_CRG_mode"      use="required"/>
+                    <xs:attribute name="purpose"        type="e_road_surface_CRG_purpose"   use="optional"/>
+                    <xs:attribute name="sOffset"        type="xs:double"                    use="optional"/>
+                    <xs:attribute name="tOffset"        type="xs:double"                    use="optional"/>
+                    <xs:attribute name="zOffset"        type="xs:double"                    use="optional"/>
+                    <xs:attribute name="zScale"         type="xs:double"                    use="optional"/>
+                    <xs:attribute name="hOffset"        type="xs:double"                    use="optional"/>
+                </xs:complexType> <!-- end t_road_surface_CRG -->
+                
+                    <xs:simpleType name="e_road_surface_CRG_purpose">
+                        <xs:restriction base="xs:string">
+                            <xs:enumeration value="elevation"/>
+                            <xs:enumeration value="friction"/>
+                        </xs:restriction>
+                    </xs:simpleType> <!-- end e_road_surface_CRG_purpose -->
+                    
+                    <xs:simpleType name="e_road_surface_CRG_mode">
+                        <xs:restriction base="xs:string">
+                            <xs:enumeration value="attached"/>
+                            <xs:enumeration value="attached0"/>
+                            <xs:enumeration value="genuine"/>
+                            <xs:enumeration value="global"/>            <!-- new in OpenDrive 1.5M -->
+                        </xs:restriction>
+                    </xs:simpleType> <!-- end e_road_surface_CRG_mode -->
+                
+            <!-- 5.3.11 Railroad Elements -->
+            <xs:complexType name="t_road_railroad">
+                <xs:sequence>
+                    <xs:element name="switch"   type="t_road_railroad_switch"   minOccurs="0"   maxOccurs="unbounded"/>
+                    <xs:group ref="g_additionalData"/>
+                </xs:sequence>
+            </xs:complexType> <!-- end t_road_railroad -->
+            
+                <!-- 5.3.11.1 Railroad Switches -->
+                <xs:complexType name="t_road_railroad_switch">
+                    <xs:sequence>                        
+                        <xs:element name="mainTrack"    type="t_road_railroad_switch_mainTrack" minOccurs="1"   maxOccurs="1"/>                        
+                        <xs:element name="sideTrack"    type="t_road_railroad_switch_sideTrack" minOccurs="1"   maxOccurs="1"/>
+                        <xs:element name="partner"      type="t_road_railroad_switch_partner"   minOccurs="0"   maxOccurs="1"/>
+                        <xs:group ref="g_additionalData"/>
+                    </xs:sequence>                    
+                    <xs:attribute name="name"       type="xs:string"                        use="required"/>
+                    <xs:attribute name="id"         type="xs:string"                        use="required"/>
+                    <xs:attribute name="position"   type="e_road_railroad_switch_position"  use="required"/>
+                </xs:complexType> <!-- end t_road_railroad_switch -->
+                
+                    <xs:simpleType name="e_road_railroad_switch_position">
+                        <xs:restriction base="xs:string">
+                            <xs:enumeration value="dynamic"/>
+                            <xs:enumeration value="straight"/>
+                            <xs:enumeration value="turn"/>
+                        </xs:restriction>
+                    </xs:simpleType> <!-- end e_road_railroad_switch_position -->
+                
+                    <!-- 5.3.11.1.1 Main Track -->
+                    <xs:complexType name="t_road_railroad_switch_mainTrack">
+                        <xs:group ref="g_additionalData"/>
+                        <xs:attribute name="id"     type="xs:string"    use="required"/>
+                        <xs:attribute name="s"      type="t_grEqZero"   use="required"/>
+                        <xs:attribute name="dir"    type="e_elementDir" use="required"/>
+                    </xs:complexType> <!-- end t_road_railroad_switch_mainTrack -->
+                    
+                    <!-- 5.3.11.1.2 Side Track -->
+                    <xs:complexType name="t_road_railroad_switch_sideTrack">
+                        <xs:group ref="g_additionalData"/>
+                        <xs:attribute name="id"     type="xs:string"    use="required"/>
+                        <xs:attribute name="s"      type="t_grEqZero"   use="required"/>
+                        <xs:attribute name="dir"    type="e_elementDir" use="required"/>
+                    </xs:complexType> <!-- end t_road_railroad_switch_sideTrack -->
+                    
+                    <!-- 5.3.11.1.3 Partner Switch -->
+                    <xs:complexType name="t_road_railroad_switch_partner">
+                        <xs:group ref="g_additionalData"/>
+                        <xs:attribute name="name"   type="xs:string"    use="optional"/>
+                        <xs:attribute name="id"     type="xs:string"    use="required"/>
+                    </xs:complexType> <!-- end t_road_railroad_switch_partner -->
+            
+        <!-- 5.4 Controller Record -->
+        <xs:complexType name="t_controller">
+            <xs:sequence>
+                <xs:element name="control"  type="t_controller_control"     minOccurs="1"   maxOccurs="unbounded"/>
+                <xs:group ref="g_additionalData"/>
+            </xs:sequence>            
+            <xs:attribute name="id"         type="xs:string"                use="required"/>
+            <xs:attribute name="name"       type="xs:string"                use="optional"/>
+            <xs:attribute name="sequence"   type="xs:nonNegativeInteger"    use="optional"/>
+        </xs:complexType> <!-- end t_controller -->
+        
+            <!-- 5.4.1 Control Entry Record -->
+            <xs:complexType name="t_controller_control">
+                <xs:group ref="g_additionalData"/>
+                <xs:attribute name="signalId"   type="xs:string"    use="required"/>
+                <xs:attribute name="type"       type="xs:string"    use="optional"/>
+            </xs:complexType> <!-- end t_controller_control -->
+                
+        <!-- 5.5 Junction Record -->
+        <xs:complexType name="t_junction">
+            <xs:sequence>                
+                <xs:element name="connection"   type="t_junction_connection"    minOccurs="1"   maxOccurs="unbounded"/>                
+                <xs:element name="priority"     type="t_junction_priority"      minOccurs="0"   maxOccurs="unbounded"/>                
+                <xs:element name="controller"   type="t_junction_controller"    minOccurs="0"   maxOccurs="unbounded"/>
+                <xs:element name="surface"      type="t_junction_surface"       minOccurs="0"   maxOccurs="1"/>
+                <xs:group ref="g_additionalData"/>
+            </xs:sequence>            
+            <xs:attribute name="name"   type="xs:string"        use="optional"/>
+            <xs:attribute name="id"     type="t_junction_id"    use="required"/>
+            <xs:attribute name="type"   type="e_junction_type"  use="optional"/> <!-- new in OpenDrive 1.5M -->
+        </xs:complexType> <!-- end t_junction -->
+        
+            <xs:simpleType name="e_junction_type">
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="default"/>
+                    <xs:enumeration value="virtual"/>
+                </xs:restriction>
+            </xs:simpleType> <!-- end e_junction_type -->
+        
+            <!-- 5.5.1 Connection Record -->
+            <xs:complexType name="t_junction_connection">
+                <xs:sequence>                    
+                    <xs:element name="predecessor"  type="t_junction_predecessorSuccessor"  minOccurs="0"   maxOccurs="1"/>
+                    <xs:element name="successor"    type="t_junction_predecessorSuccessor"  minOccurs="0"   maxOccurs="1"/>
+                    <xs:element name="laneLink"     type="t_junction_connection_laneLink"   minOccurs="0"   maxOccurs="unbounded"/>
+                    <xs:group ref="g_additionalData"/>
+                </xs:sequence>                
+                <xs:attribute name="id"                 type="xs:string"        use="required"/>
+                <xs:attribute name="incomingRoad"       type="xs:string"        use="required"/>
+                <xs:attribute name="connectingRoad"     type="xs:string"        use="required"/>
+                <xs:attribute name="contactPoint"       type="e_contactPoint"   use="required"/>
+                <xs:attribute name="connectionMaster"   type="xs:string"        use="optional"/> <!-- new in OpenDrive 1.5M -->
+                <xs:attribute name="type"               type="e_junction_type"  use="optional"/> <!-- new in OpenDrive 1.5M -->
+            </xs:complexType> <!-- end t_junction_connection -->
+            
+            <!-- 5.5.1.1 Junction Predecessor Record, 5.5.1.2 Junction Successor Record -->            
+            <xs:complexType name="t_junction_predecessorSuccessor">
+                <xs:group ref="g_additionalData"/>
+                <xs:attribute name="elementType"    type="xs:string"    fixed="road"    use="required"/>
+                <xs:attribute name="elementId"      type="xs:string"                    use="required"/>
+                <xs:attribute name="elementS"       type="t_grZero"                     use="required"/>
+                <xs:attribute name="elementDir"     type="e_elementDir"                 use="required"/>
+            </xs:complexType> <!-- end t_junction_predecessorSuccessor -->
+            
+                <!-- 5.5.1.3 Junction Lane Link Record -->
+                <xs:complexType name="t_junction_connection_laneLink" >           
+                    <xs:group ref="g_additionalData"/>
+                    <xs:attribute name="from"   type="xs:integer"   use="required"/>
+                    <xs:attribute name="to"     type="xs:integer"   use="required"/>
+                </xs:complexType> <!-- end t_junction_connection_laneLink -->
+            
+            <!-- 5.5.2 Junction Priority Record -->
+            <xs:complexType name="t_junction_priority">
+                <xs:group ref="g_additionalData"/>
+                <xs:attribute name="high"   type="xs:string"    use="optional"/>
+                <xs:attribute name="low"    type="xs:string"    use="optional"/>
+            </xs:complexType> <!-- end t_junction_priority -->
+            
+            <!-- 5.5.3 Junction Controller Record -->
+            <xs:complexType name="t_junction_controller">
+                <xs:group ref="g_additionalData"/>
+                <xs:attribute name="id"         type="xs:string"                use="required"/>
+                <xs:attribute name="type"       type="xs:string"                use="optional"/>
+                <xs:attribute name="sequence"   type="xs:nonNegativeInteger"    use="optional"/>
+            </xs:complexType> <!-- end t_junction_controller -->
+
+            <!-- 5.5.4 Surface (new in OpenDrive 1.5M) -->
+            <xs:complexType name="t_junction_surface">
+                <xs:sequence>                    
+                    <xs:element name="CRG"  type="t_junction_surface_CRG"   minOccurs="0"   maxOccurs="unbounded"/>      
+                    <xs:group ref="g_additionalData"/>
+                </xs:sequence>
+            </xs:complexType> <!-- end t_junction_surface -->
+            
+                <!-- 5.5.4.1 Curved Regular Grid Record (new in OpenDrive 1.5M) -->
+                <xs:complexType name="t_junction_surface_CRG">
+                    <xs:group ref="g_additionalData"/>
+                    <xs:attribute name="file"       type="xs:string"                                    use="required"/>
+                    <xs:attribute name="mode"       type="e_road_surface_CRG_mode"      fixed="global"  use="required"/>
+                    <xs:attribute name="purpose"    type="e_road_surface_CRG_purpose"                   use="optional"/>
+                    <xs:attribute name="zOffset"    type="xs:double"                                    use="optional"/>
+                    <xs:attribute name="zScale"     type="xs:double"                                    use="optional"/>
+                </xs:complexType> <!-- end t_junction_surface_CRG -->                        
+                
+        <!-- 5.6 Junction Group Record -->
+        <xs:complexType name="t_junctionGroup">
+            <xs:sequence>                
+                <xs:element name="junctionReference" type="t_junctionGroup_junctionReference" minOccurs="1" maxOccurs="unbounded"/>
+                <xs:group ref="g_additionalData"/>
+            </xs:sequence>            
+            <xs:attribute name="name"   type="xs:string"            use="optional"/>
+            <xs:attribute name="id"     type="xs:string"            use="required"/>
+            <xs:attribute name="type"   type="e_junctionGroup_type" use="required"/>
+        </xs:complexType> <!-- end t_junctionGroup -->
+        
+            <xs:simpleType name="e_junctionGroup_type">
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="roundabout"/>
+                    <xs:enumeration value="unknown"/>
+                </xs:restriction>
+            </xs:simpleType> <!-- end e_junctionGroup_type -->
+        
+            <!-- 5.6.1 Junction Reference Record -->
+            <xs:complexType name="t_junctionGroup_junctionReference">
+                <xs:group ref="g_additionalData"/>
+                <xs:attribute name="junction"   type="xs:string"    use="required"/>
+            </xs:complexType> <!-- end t_junctionGroup_junctionReference -->  
+    
+        <!-- 5.7 Stations -->
+        <xs:complexType name="t_station">
+            <xs:sequence>                
+                <xs:element name="platform" type="t_station_platform" minOccurs="1" maxOccurs="unbounded"/>    
+                <xs:group ref="g_additionalData"/>
+            </xs:sequence>            
+            <xs:attribute name="name"   type="xs:string"        use="required"/>
+            <xs:attribute name="id"     type="xs:string"        use="required"/>
+            <xs:attribute name="type"   type="e_station_type"   use="optional"/>
+        </xs:complexType> <!-- end t_station -->
+        
+            <xs:simpleType name="e_station_type">
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="small"/>
+                    <xs:enumeration value="medium"/>
+                    <xs:enumeration value="large"/>
+                </xs:restriction>
+            </xs:simpleType> <!-- end e_station_type -->
+        
+            <!-- 5.7.1 Platform Record -->
+            <xs:complexType name="t_station_platform">
+                <xs:sequence>                               
+                    <xs:element name="segment" type="t_station_platform_segment" minOccurs="1" maxOccurs="unbounded"/>
+                    <xs:group ref="g_additionalData"/>
+                </xs:sequence>                
+                <xs:attribute name="name"   type="xs:string"    use="optional"/>
+                <xs:attribute name="id"     type="xs:string"    use="required"/>
+            </xs:complexType> <!-- end t_station_platform -->
+            
+                <!-- 5.7.1.1 Segment Record -->
+                <xs:complexType name="t_station_platform_segment">
+                    <xs:group ref="g_additionalData"/>                    
+                    <xs:attribute name="roadId" type="xs:string"                        use="required"/>
+                    <xs:attribute name="sStart" type="t_grEqZero"                       use="required"/>
+                    <xs:attribute name="sEnd"   type="t_grEqZero"                       use="required"/>
+                    <xs:attribute name="side"   type="e_station_platform_segment_side"  use="required"/>
+                </xs:complexType> <!-- end t_station_platform_segment -->
+                
+                    <xs:simpleType name="e_station_platform_segment_side">
+                        <xs:restriction base="xs:string">
+                            <xs:enumeration value="left"/>
+                            <xs:enumeration value="right"/>
+                        </xs:restriction>
+                    </xs:simpleType> <!-- end e_station_platform_segment_side -->
+    
+        <!-- 5.8 Ancillary Data -->
+        <xs:complexType name="t_userData">
+            <xs:sequence>
+                <xs:any processContents="skip"  minOccurs="0"   maxOccurs="unbounded"/>
+            </xs:sequence>
+            <xs:attribute name="code"   type="xs:string"    use="required"/>
+            <xs:attribute name="value"  type="xs:string"    use="required"/>
+        </xs:complexType> <!-- end t_userData -->
+        
+        <!-- 5.9 Include Tag -->
+        <xs:complexType name="t_include">
+            <xs:attribute name="file" type="xs:string" use="required"/>
+        </xs:complexType> <!-- end t_include -->
+        
+        <!-- 5.11 Data Quality Description (new in OpenDrive 1.5M) -->
+        <xs:complexType name="t_dataQuality" >
+            <xs:sequence>                
+                <xs:element name="error"    type="t_dataQuality_Error"      minOccurs="0"   maxOccurs="1"/>                
+                <xs:element name="rawData"  type="t_dataQuality_RawData"    minOccurs="0"   maxOccurs="1"/>
+            </xs:sequence>
+        </xs:complexType> <!-- end t_dataQuality -->
+        
+        <!-- 5.11.1 Data Error Description (new in OpenDrive 1.5M) -->
+        <xs:complexType name="t_dataQuality_Error" >
+            <xs:attribute name="xyAbsolute" type="xs:double" use="required"/>
+            <xs:attribute name="zAbsolute"  type="xs:double" use="required"/>
+            <xs:attribute name="xyRelative" type="xs:double" use="required"/>
+            <xs:attribute name="zRelative"  type="xs:double" use="required"/>
+        </xs:complexType> <!-- end t_dataQuality_Error -->
+        
+        <!-- 5.11.2 Raw Data Description (new in OpenDrive 1.5M) -->
+        <xs:complexType name="t_dataQuality_RawData" >
+            <xs:attribute name="date"                  type="xs:string"                             use="required"/>
+            <xs:attribute name="source"                type="e_dataQuality_RawData_Source"          use="required"/>
+            <xs:attribute name="sourceComment"         type="xs:string"                             use="optional"/>
+            <xs:attribute name="postProcessing"        type="e_dataQuality_RawData_PostProcessing"  use="required"/>
+            <xs:attribute name="postProcessingComment" type="xs:string"                             use="optional"/>
+        </xs:complexType> <!-- end t_dataQuality_RawData -->
+        
+            <xs:simpleType name="e_dataQuality_RawData_Source">
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="sensor"/>
+                    <xs:enumeration value="cadaster"/>
+                    <xs:enumeration value="custom"/>
+                </xs:restriction>
+            </xs:simpleType> <!-- end e_dataQuality_RawData_Source -->
+            
+            <xs:simpleType name="e_dataQuality_RawData_PostProcessing">
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="raw"/>
+                    <xs:enumeration value="cleaned"/>
+                    <xs:enumeration value="processed"/>
+                    <xs:enumeration value="fused"/>
+                </xs:restriction>
+            </xs:simpleType> <!-- end e_dataQuality_RawData_PostProcessing -->
+            
+        <!-- group of tags that can appear anywhere in the document -->
+        <xs:group name="g_additionalData">
+            <xs:sequence>            
+                <xs:element name="userData"     type="t_userData"       minOccurs="0"   maxOccurs="unbounded"/>
+                <xs:element name="include"      type="t_include"        minOccurs="0"   maxOccurs="unbounded"/>
+                <xs:element name="dataQuality"  type="t_dataQuality"    minOccurs="0"   maxOccurs="1"/>
+            </xs:sequence>
+        </xs:group> <!-- end g_additionalData -->
+    
+    
+    <!-- enumerations -->
+    
+    <!-- unit enumerations -->
+    
+    <!-- 2.2 Units -->
+    <xs:simpleType name="e_unitDistance">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="m"/>
+            <xs:enumeration value="km"/>
+            <xs:enumeration value="ft"/>
+            <xs:enumeration value="mile"/>
+        </xs:restriction>
+    </xs:simpleType> <!-- end e_unitDistance -->
+    
+    <!-- 2.2 Units -->
+    <xs:simpleType name="e_unitSpeed">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="m/s"/>
+            <xs:enumeration value="mph"/>
+            <xs:enumeration value="km/h"/>
+        </xs:restriction>
+    </xs:simpleType> <!-- end e_unitSpeed -->
+    
+    <!-- 2.2 Units -->
+    <xs:simpleType name="e_unitMass">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="kg"/>
+            <xs:enumeration value="t"/>
+        </xs:restriction>
+    </xs:simpleType> <!-- end e_unitMass -->
+    
+    <!-- 2.2 Units -->
+    <xs:simpleType name="e_unitSlope">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="%"/>
+        </xs:restriction>
+    </xs:simpleType> <!-- end e_unitSlope -->
+    
+    <!-- 2.2 Units -->
+    <xs:simpleType name="e_unit">
+        <xs:union memberTypes="e_unitDistance e_unitSpeed e_unitMass e_unitSlope"/>
+    </xs:simpleType> <!-- end e_unit -->
+    
+    <!-- end unit enumerations -->
+    
+    <!-- OpenDrive constant enumerations -->
+        
+    <!-- 6.1 Road Type Information -->
+    <xs:simpleType name="e_roadType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="unknown"/>
+            <xs:enumeration value="rural"/>
+            <xs:enumeration value="motorway"/>
+            <xs:enumeration value="town"/>
+            <xs:enumeration value="lowSpeed"/>
+            <xs:enumeration value="pedestrian"/>
+            <xs:enumeration value="bicycle"/>
+            <xs:enumeration value="townExpressway"/>    <!-- new in OpenDrive 1.5M -->
+            <xs:enumeration value="townCollector"/>     <!-- new in OpenDrive 1.5M -->
+            <xs:enumeration value="townArterial"/>      <!-- new in OpenDrive 1.5M -->
+            <xs:enumeration value="townPrivate"/>       <!-- new in OpenDrive 1.5M -->
+            <xs:enumeration value="townLocal"/>         <!-- new in OpenDrive 1.5M -->
+            <xs:enumeration value="townPlayStreet"/>    <!-- new in OpenDrive 1.5M -->
+        </xs:restriction>
+    </xs:simpleType> <!-- end e_roadType -->
+    
+    <!-- 6.2 Road Mark Type Information -->
+    <xs:simpleType name="e_roadMarkType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="none"/>
+            <xs:enumeration value="solid"/>
+            <xs:enumeration value="broken"/>
+            <xs:enumeration value="solid solid"/>
+            <xs:enumeration value="solid broken"/>
+            <xs:enumeration value="broken solid"/>
+            <xs:enumeration value="broken broken"/>
+            <xs:enumeration value="botts dots"/>
+            <xs:enumeration value="grass"/>
+            <xs:enumeration value="curb"/>
+            <xs:enumeration value="custom"/>            <!-- new in OpenDrive 1.5M -->
+            <xs:enumeration value="edge"/>              <!-- new in OpenDrive 1.5M -->
+        </xs:restriction>
+    </xs:simpleType> <!-- end e_roadMarkType -->
+    
+    <!-- 6.3 Road Mark Weight Information -->
+    <xs:simpleType name="e_roadMarkWeight">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="standard"/>
+            <xs:enumeration value="bold"/>
+        </xs:restriction>
+    </xs:simpleType> <!-- end e_roadMarkWeight -->
+    
+    <!-- 6.4 Road Mark Color Information -->
+    <xs:simpleType name="e_roadMarkColor">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="standard"/>
+            <xs:enumeration value="blue"/>
+            <xs:enumeration value="green"/>
+            <xs:enumeration value="red"/>
+            <xs:enumeration value="white"/>
+            <xs:enumeration value="yellow"/>
+            <xs:enumeration value="orange"/>            <!-- new in OpenDrive 1.5M -->
+        </xs:restriction>
+    </xs:simpleType> <!-- end e_roadMarkColor -->
+    
+    <!-- 6.5 Lane Type Information -->
+    <xs:simpleType name="e_laneType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="none"/>
+            <xs:enumeration value="driving"/>
+            <xs:enumeration value="stop"/>
+            <xs:enumeration value="shoulder"/>
+            <xs:enumeration value="biking"/>
+            <xs:enumeration value="sidewalk"/>
+            <xs:enumeration value="border"/>
+            <xs:enumeration value="restricted"/>
+            <xs:enumeration value="parking"/>
+            <xs:enumeration value="bidirectional"/>
+            <xs:enumeration value="median"/>
+            <xs:enumeration value="special1"/>
+            <xs:enumeration value="special2"/>
+            <xs:enumeration value="special3"/>
+            <xs:enumeration value="roadWorks"/>
+            <xs:enumeration value="tram"/>
+            <xs:enumeration value="rail"/>
+            <xs:enumeration value="entry"/>
+            <xs:enumeration value="exit"/>
+            <xs:enumeration value="offRamp"/>
+            <xs:enumeration value="onRamp"/>
+            <xs:enumeration value="connectingRamp"/>    <!-- new in OpenDrive 1.5M -->
+            <xs:enumeration value="bus"/>               <!-- new in OpenDrive 1.5M -->
+            <xs:enumeration value="taxi"/>              <!-- new in OpenDrive 1.5M -->
+            <xs:enumeration value="HOV"/>               <!-- new in OpenDrive 1.5M -->
+            <xs:enumeration value="mwyEntry"/>          <!-- deprecated -->
+            <xs:enumeration value="mwyExit"/>           <!-- deprecated -->
+        </xs:restriction>
+    </xs:simpleType> <!-- end e_laneType -->
+    
+    <!-- 6.6 Object Types -->
+    <xs:simpleType name="e_objectType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="none"/>
+            <xs:enumeration value="obstacle"/>
+            <xs:enumeration value="car"/>               <!-- legacy -->
+            <xs:enumeration value="pole"/>
+            <xs:enumeration value="tree"/>
+            <xs:enumeration value="vegetation"/>
+            <xs:enumeration value="barrier"/>
+            <xs:enumeration value="building"/>
+            <xs:enumeration value="parkingSpace"/>
+            <xs:enumeration value="patch"/>
+            <xs:enumeration value="railing"/>           <!-- new in OpenDrive 1.5M -->
+            <xs:enumeration value="trafficIsland"/>
+            <xs:enumeration value="crosswalk"/>
+            <xs:enumeration value="streetLamp"/>
+            <xs:enumeration value="gantry"/>
+            <xs:enumeration value="soundBarrier"/>
+            <xs:enumeration value="truck"/>             <!-- legacy -->
+            <xs:enumeration value="van"/>               <!-- legacy -->
+            <xs:enumeration value="bus"/>               <!-- legacy -->
+            <xs:enumeration value="trailer"/>           <!-- legacy -->
+            <xs:enumeration value="bike"/>              <!-- legacy -->
+            <xs:enumeration value="motorbike"/>         <!-- legacy -->
+            <xs:enumeration value="tram"/>              <!-- legacy -->
+            <xs:enumeration value="train"/>             <!-- legacy -->
+            <xs:enumeration value="pedestrian"/>        <!-- legacy -->
+            <xs:enumeration value="wind"/>              <!-- legacy -->
+        </xs:restriction>
+    </xs:simpleType> <!-- end e_objectType -->
+    
+    <!-- 6.7 Tunnel Types -->
+    <xs:simpleType name="e_tunnelType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="standard"/>
+            <xs:enumeration value="underpass"/>
+        </xs:restriction>
+    </xs:simpleType> <!-- end e_tunnelType -->
+    
+    <!-- 6.8 Bridge Types -->
+    <xs:simpleType name="e_bridgeType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="concrete"/>
+            <xs:enumeration value="steel"/>
+            <xs:enumeration value="brick"/>
+            <xs:enumeration value="wood"/>
+        </xs:restriction>
+    </xs:simpleType> <!-- end e_bridgeType -->
+    
+    <!-- 6.9 Access Restriction Types -->
+    <xs:simpleType name="e_accessRestrictionType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="simulator"/>
+            <xs:enumeration value="autonomousTraffic"/>
+            <xs:enumeration value="pedestrian"/>
+            <xs:enumeration value="passengerCar"/>      <!-- new in OpenDrive 1.5M -->
+            <xs:enumeration value="bus"/>               <!-- new in OpenDrive 1.5M -->
+            <xs:enumeration value="delivery"/>          <!-- new in OpenDrive 1.5M -->
+            <xs:enumeration value="emergency"/>         <!-- new in OpenDrive 1.5M -->
+            <xs:enumeration value="taxi"/>              <!-- new in OpenDrive 1.5M -->
+            <xs:enumeration value="throughTraffic"/>    <!-- new in OpenDrive 1.5M -->
+            <xs:enumeration value="truck"/>             <!-- new in OpenDrive 1.5M -->
+            <xs:enumeration value="bicycle"/>           <!-- new in OpenDrive 1.5M -->
+            <xs:enumeration value="motorcycle"/>        <!-- new in OpenDrive 1.5M -->
+            <xs:enumeration value="none"/>
+            <xs:enumeration value="trucks"/>            <!-- legacy (??? was not listed in version 1.4 either) -->
+        </xs:restriction>
+    </xs:simpleType> <!-- end e_accessRestrictionType -->
+    
+    <!-- 6.10 Country Codes -->
+    <xs:simpleType name="e_countryCode">
+        <xs:union memberTypes="e_countryCode_deprecated e_countryCode_iso3166alpha3"/>
+    </xs:simpleType> <!-- end e_countryCode -->
+    
+        <xs:simpleType name="e_countryCode_deprecated">
+            <xs:restriction base="xs:string">
+                <xs:enumeration value="OpenDRIVE"/>
+                <xs:enumeration value="Austria"/>           <!-- deprecated -->
+                <xs:enumeration value="Brazil"/>            <!-- deprecated -->
+                <xs:enumeration value="China"/>             <!-- deprecated -->
+                <xs:enumeration value="France"/>            <!-- deprecated -->
+                <xs:enumeration value="Germany"/>           <!-- deprecated -->
+                <xs:enumeration value="Italy"/>             <!-- deprecated -->
+                <xs:enumeration value="Switzerland"/>       <!-- deprecated -->
+                <xs:enumeration value="USA"/>               <!-- deprecated -->
+            </xs:restriction>
+        </xs:simpleType> <!-- end e_countryCode_deprecated -->
+        
+        <xs:simpleType name="e_countryCode_iso3166alpha3">
+            <xs:restriction base="xs:string">
+                <xs:pattern value="[A-Z]{3}"/>
+            </xs:restriction>
+        </xs:simpleType> <!-- end e_countryCode_iso3166alpha3 -->
+    
+    <!-- 6.12 Side Types (new in OpenDrive 1.5M) -->
+    <xs:simpleType name="e_sideType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="left"/>
+            <xs:enumeration value="right"/>
+            <xs:enumeration value="front"/>
+            <xs:enumeration value="rear"/>
+        </xs:restriction>
+    </xs:simpleType> <!-- end e_sideType -->
+    
+    <!-- 6.13 Outline Fill Types (new in OpenDrive 1.5M) -->
+    <xs:simpleType name="e_outlineFillType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="grass"/>
+            <xs:enumeration value="concrete"/>
+            <xs:enumeration value="cobble"/>
+            <xs:enumeration value="asphalt"/>
+            <xs:enumeration value="pavement"/>
+            <xs:enumeration value="gravel"/>
+            <xs:enumeration value="soil"/>
+        </xs:restriction>
+    </xs:simpleType> <!-- end e_outlineFillType -->
+    
+    <!-- 6.14 Border Types (new in OpenDrive 1.5M) -->
+    <xs:simpleType name="e_borderType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="concrete"/>
+            <xs:enumeration value="curb"/>
+        </xs:restriction>
+    </xs:simpleType> <!-- end e_borderType -->
+    
+    <!-- end OpenDrive constant enumerations -->
+    
+    
+    <!-- other enumerations -->
+    
+    <xs:simpleType name="e_contactPoint">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="start"/>
+            <xs:enumeration value="end"/>
+        </xs:restriction>
+    </xs:simpleType> <!-- end e_contactPoint -->    
+    
+    <xs:simpleType name="e_elementDir">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="+"/>
+            <xs:enumeration value="-"/>
+        </xs:restriction>
+    </xs:simpleType> <!-- end e_elementDir -->
+    
+    <xs:simpleType name="e_direction">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="same"/>
+            <xs:enumeration value="opposite"/>
+        </xs:restriction>
+    </xs:simpleType> <!-- end e_direction -->
+    
+    <xs:simpleType name="e_roadMarkRule">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="no passing"/>
+            <xs:enumeration value="caution"/>
+            <xs:enumeration value="none"/>
+        </xs:restriction>
+    </xs:simpleType> <!-- end e_roadMarkRule -->
+    
+    <xs:simpleType name="e_orientation">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="+"/>
+            <xs:enumeration value="-"/>
+            <xs:enumeration value="none"/>
+        </xs:restriction>
+    </xs:simpleType> <!-- end e_orientation -->
+                                                              
+    <!-- end enumerations -->
+    
+</xs:schema> <!-- end schema -->

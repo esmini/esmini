@@ -3,7 +3,7 @@
 <!-- The purpose is to show how pitch and roll will be aligned to the road surface when     -->
 <!-- omitted in the message. See scripts/udp-driver-model/testUDPDriverModel.py how to run. -->
 <OpenSCENARIO>
-    <FileHeader revMajor="1" revMinor="0" date="2021-10-22T10:00:00" description="Two cars controlled by UDPDriver" author="esmini-team"/>
+    <FileHeader revMajor="1" revMinor="3" date="2021-10-22T10:00:00" description="Two cars controlled by UDPDriver" author="esmini-team"/>
     <ParameterDeclarations/>
     <CatalogLocations>
         <VehicleCatalog>
@@ -47,9 +47,14 @@
                 </Private>
             </Actions>
         </Init>
-        <Story>
+        <Story name="DummyStory">
             <Act name="DummyAct">
-         </Act>
+                <ManeuverGroup maximumExecutionCount="1" name="FollowTrajectoryManeuvergroup">
+                    <Actors selectTriggeringEntities="false">
+                        <EntityRef entityRef="Car0"/>
+                    </Actors>
+                </ManeuverGroup>
+            </Act>
         </Story>
     </Storyboard>
 </OpenSCENARIO>

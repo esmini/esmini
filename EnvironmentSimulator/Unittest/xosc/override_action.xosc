@@ -84,7 +84,7 @@
                                   <Clutch value="0.7" active="true"/>
                                   <ParkingBrake value="0.0" active="true"/>
                                   <SteeringWheel value="15.0" active="false"/>
-                                  <Gear value="7.8" active="true"/>
+                                  <Gear number="7.8" active="true"/>
                               </OverrideControllerValueAction>
                            </ControllerAction>
                         </PrivateAction>

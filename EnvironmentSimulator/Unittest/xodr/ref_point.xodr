@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <OpenDRIVE>
-    <header name="ref_point" revMajor="1" revMinor="5" date="2024-07-10 08:43:50.820657" north="0.0" south="0.0" east="0.0" west="0.0"/>
+    <header name="ref_point" revMajor="1" revMinor="6" date="2024-07-10 08:43:50.820657" north="0.0" south="0.0" east="0.0" west="0.0"/>
     <road rule="RHT" id="0" junction="-1" length="87.854">
         <link/>
         <planView>

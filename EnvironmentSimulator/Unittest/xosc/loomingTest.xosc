@@ -3,7 +3,7 @@
 <!-- A white car is driving with constant speed, set by init event -->
 <!-- The white car adapt steering for curve road -->
 <OpenSCENARIO>
-    <FileHeader revMajor="1" revMinor="1" date="2021-08-24T10:00:00" description="Demonstrate ACC controller" author="esmini-team"/>
+    <FileHeader revMajor="1" revMinor="1" date="2021-08-24T10:00:00" description="Demonstrate Looming controller" author="esmini-team"/>
     <ParameterDeclarations>
         <ParameterDeclaration name="HostVehicle" parameterType="string" value="car_white"/>
         <ParameterDeclaration name="EgoSpeed" parameterType="double" value="30.0"/>
@@ -74,6 +74,11 @@
         </Init>
         <Story name="empty">
             <Act name="empty">
+            <ManeuverGroup maximumExecutionCount="1" name="OverrideManeuverGroup">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="Ego"/>
+               </Actors>
+			</ManeuverGroup >
                 <StartTrigger>
                     <ConditionGroup>
                         <Condition name="SenarioStart" delay="0" conditionEdge="none">
@@ -93,7 +98,7 @@
                                 <EntityRef entityRef="Ego"/>
                             </TriggeringEntities>
                             <EntityCondition>
-                                <EndOfRoadCondition duration="0.0" rule="greaterThan"/>
+                                <EndOfRoadCondition duration="0.0" />
                             </EntityCondition>
                         </ByEntityCondition>
                 </Condition>

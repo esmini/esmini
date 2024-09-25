@@ -1,23 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <OpenSCENARIO>
    <FileHeader revMajor="1"
-               revMinor="0"
+               revMinor="1"
                date="2020-05-12T10:00:00"
                description="dummy"
                author="esmini"/>
    <ParameterDeclarations>
       <ParameterDeclaration name="TargetVehicle" parameterType="string" value="car_red"/>
    </ParameterDeclarations>
-   <RoadNetwork>
-      <LogicFile filepath="../xodr/straight_500m.xodr"/>
-      <SceneGraphFile filepath="../models/straight_500m.osgb"/>
-   </RoadNetwork>
    <CatalogLocations>
-      <RouteCatalog/>
       <VehicleCatalog>
          <Directory path="../xosc/Catalogs/Vehicles"/>
       </VehicleCatalog>
    </CatalogLocations>
+    <RoadNetwork>
+      <LogicFile filepath="../xodr/straight_500m.xodr"/>
+      <SceneGraphFile filepath="../models/straight_500m.osgb"/>
+   </RoadNetwork>
    <Entities>
       <ScenarioObject name="Ego">
          <Vehicle name="car_white" vehicleCategory="car" model3d="../models/car_white.osgb">
@@ -25,7 +24,7 @@
                <Center x="1.4" y="0.0" z="0.9"/>
                <Dimensions width="2.0" length="5.0" height="1.8"/>
             </BoundingBox>
-            <Performance maxSpeed="69" maxDeceleration="30"/>
+            <Performance maxSpeed="69" maxDeceleration="30" maxAcceleration="10"/>
             <Axles>
                <FrontAxle maxSteering="30"
                           wheelDiameter="0.8"
@@ -93,9 +92,12 @@
             </Private>
          </Actions>
       </Init>
-	  <Story>
+	  <Story name="MyStory">
          <Act name="DummyAct">
             <ManeuverGroup maximumExecutionCount="1" name="DummyManueverGroup">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="Ego"/>
+               </Actors>
             </ManeuverGroup>
             <StartTrigger>
                <ConditionGroup>
@@ -108,5 +110,14 @@
             </StartTrigger>
          </Act>	  
       </Story>
+		<StopTrigger>
+		  <ConditionGroup>
+			 <Condition name="StopCondition" delay="0" conditionEdge="rising">
+				<ByValueCondition>
+					<SimulationTimeCondition value="30" rule="greaterThan"/>
+				</ByValueCondition>
+			 </Condition>
+		  </ConditionGroup>
+		</StopTrigger>
    </Storyboard>
 </OpenSCENARIO>

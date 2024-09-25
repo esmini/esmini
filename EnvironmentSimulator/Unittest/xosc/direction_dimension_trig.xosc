@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Another cut-in variant on a simple straight road. In this -->
-<!-- case specifying rate of the lane change lateral movement  -->
+<!-- A simple lcut in maneuver demonstrates the use of the direction attribute in conditions   -->
+<!-- When the ego vehicle's relative longitudinal speed  with overtaker decreases below a specified threshold, it accelerates. -->
 <OpenSCENARIO>
    <FileHeader revMajor="1"
-               revMinor="0"
-               date="2017-06-09T10:00:00"
-               description="Another variant of cut-in"
-               author="SimS"/>
+               revMinor="2"
+               date="2023-01-31T10:00:00"
+               description="demo of drection attribute in conditon"
+               author="esmini-team"/>
    <ParameterDeclarations>
       <ParameterDeclaration name="HostVehicle" parameterType="string" value="car_white"/>
       <ParameterDeclaration name="TargetVehicle" parameterType="string" value="car_red"/>
@@ -46,7 +46,7 @@
                <PrivateAction>
                   <RoutingAction>
                         <FollowTrajectoryAction>
-                           <Trajectory closed="False" name="EgoTrajectory">
+                           <Trajectory closed="false" name="EgoTrajectory">
                               <ParameterDeclarations/>
                               <Shape>
                                  <Polyline>
@@ -91,7 +91,7 @@
                <PrivateAction>
                   <RoutingAction>
                         <FollowTrajectoryAction>
-                           <Trajectory closed="False" name="OverTakerTrajectory">
+                           <Trajectory closed="false" name="OverTakerTrajectory">
                               <ParameterDeclarations/>
                               <Shape>
                                  <Polyline>
