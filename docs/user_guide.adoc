@@ -2780,7 +2780,7 @@ https://github.com/esmini/esmini/blob/master/scripts/generate_osi_sumo_osg_libs.
 
 === Additional platform dependencies
 
-Linux Ubuntu 18.04
+Linux Ubuntu
 
 [source]
 ----
