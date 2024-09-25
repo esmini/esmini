@@ -3,8 +3,8 @@
 <!-- two separate trajectories into one consecutive path. The trajectory coordinates are specified    -->
 <!-- with relative positions which means that the actual location will be aligned to the referred     -->
 <!-- entity, in this case the Ego vehicle, at the very moment the event being triggered.              -->
-<OpenSCENARIO xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceShemaLocation="OpenSccenario.xsd">
-    <FileHeader author="esmini-team" date="2020-05-23 18:34:25.159274" decription="myscenario" revMajor="1" revMinor="0"/>
+<OpenSCENARIO>
+    <FileHeader author="esmini-team" date="2020-05-23T08:34:25" description="myscenario" revMajor="1" revMinor="0"/>
     <ParameterDeclarations>
         <ParameterDeclaration name="HostVehicle" parameterType="string" value="car_white"/>
         <ParameterDeclaration name="TargetVehicle" parameterType="string" value="car_red"/>
@@ -104,7 +104,7 @@
             </ParameterDeclarations>
             <Act name="my_act">
                 <ManeuverGroup maximumExecutionCount="1" name="mangroup">
-                    <Actors selectTriggeringEntities="False">
+                    <Actors selectTriggeringEntities="false">
                         <EntityRef entityRef="$owner"/>
                     </Actors>
                     <Maneuver name="my_maneuver">
@@ -113,7 +113,7 @@
                                 <PrivateAction>
                                     <RoutingAction>
                                         <FollowTrajectoryAction>
-                                            <Trajectory closed="False" name="TrajectoryPLine">
+                                            <Trajectory closed="false" name="TrajectoryPLine">
                                                 <ParameterDeclarations/>
                                                 <Shape>
                                                     <Polyline>
@@ -156,7 +156,7 @@
                                                 <EntityRef entityRef="Target"/>
                                             </TriggeringEntities>
                                             <EntityCondition>
-                                                <TimeHeadwayCondition alongRoute="True" entityRef="Ego" freespace="True" rule="lessThan" value="0.5"/>
+                                                <TimeHeadwayCondition alongRoute="false" entityRef="Ego" freespace="false" rule="lessThan" value="0.5"/>
                                             </EntityCondition>
                                         </ByEntityCondition>
                                     </Condition>
@@ -168,7 +168,7 @@
                                 <PrivateAction>
                                     <RoutingAction>
                                         <FollowTrajectoryAction>
-                                            <Trajectory closed="False" name="TrajectoryClothoid">
+                                            <Trajectory closed="false" name="TrajectoryClothoid">
                                                 <ParameterDeclarations/>
                                                 <Shape>
                                                     <Clothoid curvature="-0.1" curvatureDot="0.00036" length="70" startTime="0" stopTime="4">
@@ -203,7 +203,7 @@
                                 <PrivateAction>
                                     <RoutingAction>
                                         <FollowTrajectoryAction>
-                                            <Trajectory closed="False" name="TrajectoryNurbs">
+                                            <Trajectory closed="false" name="TrajectoryNurbs">
                                                 <ParameterDeclarations/>
                                                 <Shape>
                                                     <Nurbs order="3">
@@ -264,11 +264,11 @@
                             </StartTrigger>
                         </Event>
                         <Event maximumExecutionCount="1" name="AlignEvent" priority="overwrite">
-                            <Action>
+                            <Action name="AlignHeadingAction" >
                                 <PrivateAction>
                                     <TeleportAction>
                                         <Position>
-                                            <RelativeLanePosition entityRef="$owner" >
+                                            <RelativeLanePosition entityRef="$owner" dLane="0" ds="0" >
                                                 <Orientation type="relative" h="0.0" p="0.0" r="0.0" />
                                             </RelativeLanePosition>
                                         </Position>

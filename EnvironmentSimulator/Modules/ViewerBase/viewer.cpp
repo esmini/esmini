@@ -2891,7 +2891,7 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
                     filename += "_" + signal->GetSubType();
                 }
 
-                if (!signal->GetValueStr().empty())
+                if (!NEAR_NUMBERS(signal->GetValue(), -1.0))
                 {
                     filename += "-" + signal->GetValueStr();
                 }

@@ -77,7 +77,7 @@
                                                     <Shape>
                                                         <Clothoid curvature="${1.0/$ArcRadius}" curvaturePrime="0.0" length="$ArcLength">
                                                             <Position>
-                                                                <RelativeObjectPosition entityRef="Car"/>
+                                                                <RelativeObjectPosition entityRef="Car" dx="0" dy="0"/>
                                                             </Position>
                                                         </Clothoid>
                                                     </Shape>
@@ -112,7 +112,7 @@
                                                     <Shape>
                                                         <Clothoid curvature="0.0" curvaturePrime="0.0" length="$LineLength">
                                                             <Position>
-                                                                <RelativeObjectPosition entityRef="Car">
+                                                                <RelativeObjectPosition entityRef="Car" dx="0" dy="0">
                                                                     <Orientation type="relative" h="0.0"/>
                                                                 </RelativeObjectPosition>
                                                             </Position>
@@ -151,7 +151,7 @@
                                                     <Shape>
                                                         <Clothoid curvature="${-1.0/$ArcRadius}" curvaturePrime="0.0" length="$ArcLength">
                                                             <Position>
-                                                                <RelativeObjectPosition entityRef="Car">
+                                                                <RelativeObjectPosition entityRef="Car" dx="0" dy="0">
                                                                     <Orientation type="relative" h="0.0"/>
                                                                 </RelativeObjectPosition>
                                                             </Position>

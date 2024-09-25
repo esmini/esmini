@@ -112,7 +112,7 @@
                                         <EntityRef entityRef="Ego"/>
                                     </TriggeringEntities>
                                     <EntityCondition>
-                                        <EndOfRoadCondition duration="2.5" rule="greaterThan"/>
+                                        <EndOfRoadCondition duration="2.5"/>
                                     </EntityCondition>
                                 </ByEntityCondition>
                            </Condition>

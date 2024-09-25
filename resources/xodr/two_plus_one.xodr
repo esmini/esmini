@@ -8,7 +8,6 @@
                 <line/>
             </geometry>
         </planView>
-        <elevationProfile/>
         <lateralProfile/>
         <lanes>
             <laneOffset s="0.0" a="0.0" b="0.0" c="0.0" d="0.0"/>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <OpenSCENARIO>
    <FileHeader revMajor="1"
-               revMinor="0"
+               revMinor="3"
                date="2020-10-04T10:00:00"
                description="Cut-in"
                author="SimS"/>
@@ -29,6 +29,13 @@
    <Storyboard>
       <Init>
          <Actions>
+            <GlobalAction>
+               <TrafficAction>
+                  <TrafficSwarmAction innerRadius="200" semiMajorAxis="300" semiMinorAxis="500" numberOfVehicles="75" velocity="30" offset="0">
+                      <CentralObject entityRef="Ego" />
+                  </TrafficSwarmAction>
+               </TrafficAction>
+            </GlobalAction>
             <Private entityRef="Ego">
                <PrivateAction>
                   <TeleportAction>
@@ -59,17 +66,16 @@
                   </LongitudinalAction>
                </PrivateAction>
             </Private>
-            <GlobalAction>
-               <TrafficAction>
-                  <TrafficSwarmAction innerRadius="200" semiMajorAxis="300" semiMinorAxis="500" numberOfVehicles="75" velocity="30">
-                      <CentralObject entityRef="Ego" />
-                  </TrafficSwarmAction>
-               </TrafficAction>
-            </GlobalAction>               
          </Actions>
       </Init>
       <Story name="story">
-         <Act name="act" />
+         <Act name="act" >
+             <ManeuverGroup maximumExecutionCount="1" name="CutInAndBrakeSequence">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="Ego"/>
+               </Actors>
+			 </ManeuverGroup>
+		 </Act>
       </Story>
       <StopTrigger>
          <ConditionGroup>

@@ -4,7 +4,7 @@
 <!-- trig a brake maneuver.                                                      -->
 <OpenSCENARIO>
    <FileHeader revMajor="1"
-               revMinor="0"
+               revMinor="1"
                date="2020-10-02T10:00:00"
                description="Pedestrian involved in a critical situation"
                author="esmini-team"/>
@@ -113,7 +113,7 @@
          </ParameterDeclarations>
          <Act name="LTAPActNPC">
             <ManeuverGroup maximumExecutionCount="1" name="ped_mangroup">
-                <Actors selectTriggeringEntities="False">
+                <Actors selectTriggeringEntities="false">
                     <EntityRef entityRef="pedestrian_adult"/>
                 </Actors>
                 <Maneuver name="ped_maneuver">
@@ -128,10 +128,9 @@
                                         <WorldPosition x="$PSyncX" y="$PSyncY" h="3.3" />
                                     </TargetPosition>
                                     <FinalSpeed>
-                                        <AbsoluteSpeed value="$PedestrianSpeed" />
-                                        <SteadyState>
-                                            <TargetDistanceSteadyState distance="5" />
-                                        </SteadyState>
+                                        <AbsoluteSpeed value="$PedestrianSpeed" >
+											<TargetDistanceSteadyState distance="5" />
+										</AbsoluteSpeed>
                                     </FinalSpeed>
                                 </SynchronizeAction>
                              </PrivateAction>
@@ -142,7 +141,7 @@
                             <PrivateAction>
                                 <RoutingAction>
                                     <FollowTrajectoryAction>
-                                        <Trajectory closed="False" name="ped_traj">
+                                        <Trajectory closed="false" name="ped_traj">
                                             <ParameterDeclarations/>
                                             <Shape>
                                                 <Polyline>
@@ -167,6 +166,7 @@
                                         <TimeReference>
                                             <None/>
                                         </TimeReference>
+										<TrajectoryFollowingMode followingMode="follow"/>
                                     </FollowTrajectoryAction>
                                 </RoutingAction>
                             </PrivateAction>
@@ -217,7 +217,7 @@
                          <PrivateAction>
                              <RoutingAction>
                                  <FollowTrajectoryAction>
-                                     <Trajectory closed="False" name="ego_traj">
+                                     <Trajectory closed="false" name="ego_traj">
                                          <ParameterDeclarations/>
                                          <Shape>
                                              <Polyline>
@@ -242,6 +242,7 @@
                                      <TimeReference>
                                          <None/>
                                      </TimeReference>
+									 <TrajectoryFollowingMode followingMode="follow"/>
                                 </FollowTrajectoryAction>
                              </RoutingAction>
                          </PrivateAction>

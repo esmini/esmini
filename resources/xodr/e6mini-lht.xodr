@@ -104,7 +104,7 @@
                         <link>
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="6.0000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
-                        <userData code="viStyleDef">
+                        <userData code="viStyleDef" value="0.0000000000000000e+00">
                             <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
                             <fillet pos="none" style="none" id="0" />
                         </userData>
@@ -113,7 +113,7 @@
                         <link>
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="1.5000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
-                        <userData code="viStyleDef">
+                        <userData code="viStyleDef" value="0.0000000000000000e+00">
                             <style sOffset="0.000000" laneStyle="bo_std2grass" mapping="auto" />
                             <fillet pos="none" style="none" id="0" />
                         </userData>
@@ -122,7 +122,7 @@
                         <link>
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="2.8500000000000001e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
-                        <userData code="viStyleDef">
+                        <userData code="viStyleDef" value="0.0000000000000000e+00">
                             <style sOffset="0.000000" laneStyle="pav_no_dir" mapping="auto" />
                             <fillet pos="none" style="none" id="0" />
                         </userData>
@@ -136,7 +136,7 @@
                                 <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="no passing" width="2.9999999999999999e-01"/>
                             </type>
                         </roadMark>
-                        <userData code="viStyleDef">
+                        <userData code="viStyleDef" value="0.0000000000000000e+00">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
                             <fillet pos="none" style="none" id="0" />
                         </userData>
@@ -150,7 +150,7 @@
                                 <line length="6.0000000000000000e+00" space="1.2000000000000000e+01" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="caution" width="1.4999999999999999e-01"/>
                             </type>
                         </roadMark>
-                        <userData code="viStyleDef">
+                        <userData code="viStyleDef" value="0.0000000000000000e+00">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
                             <fillet pos="none" style="none" id="0" />
                         </userData>
@@ -164,7 +164,7 @@
                                 <line length="6.0000000000000000e+00" space="1.2000000000000000e+01" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="caution" width="1.4999999999999999e-01"/>
                             </type>
                         </roadMark>
-                        <userData code="viStyleDef">
+                        <userData code="viStyleDef" value="0.0000000000000000e+00">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
                             <fillet pos="none" style="none" id="0" />
                         </userData>
@@ -178,7 +178,7 @@
                                 <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="no passing" width="2.9999999999999999e-01"/>
                             </type>
                         </roadMark>
-                        <userData code="viStyleDef">
+                        <userData code="viStyleDef" value="0.0000000000000000e+00">
                             <style sOffset="0.000000" laneStyle="opp_bo_std2grs" mapping="auto" />
                             <fillet pos="none" style="none" id="0" />
                         </userData>
@@ -188,7 +188,7 @@
                     <lane id="0" type="driving" level= "false">
                         <link>
                         </link>
-                        <userData code="viStyleDef">
+                        <userData code="viStyleDef" value="0.0000000000000000e+00">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
                             <fillet pos="none" style="none" id="0" />
                         </userData>
@@ -204,7 +204,7 @@
                                 <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="no passing" width="2.9999999999999999e-01"/>
                             </type>
                         </roadMark>
-                        <userData code="viStyleDef">
+                        <userData code="viStyleDef" value="0.0000000000000000e+00">
                             <style sOffset="0.000000" laneStyle="opp_bo_std2grs" mapping="auto" />
                             <fillet pos="none" style="none" id="0" />
                         </userData>
@@ -218,7 +218,7 @@
                                 <line length="6.0000000000000000e+00" space="1.2000000000000000e+01" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="caution" width="1.4999999999999999e-01"/>
                             </type>
                         </roadMark>
-                        <userData code="viStyleDef">
+                        <userData code="viStyleDef" value="0.0000000000000000e+00">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
                             <fillet pos="none" style="none" id="0" />
                         </userData>
@@ -232,7 +232,7 @@
                                 <line length="6.0000000000000000e+00" space="1.2000000000000000e+01" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="caution" width="1.4999999999999999e-01"/>
                             </type>
                         </roadMark>
-                        <userData code="viStyleDef">
+                        <userData code="viStyleDef" value="0.0000000000000000e+00">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
                             <fillet pos="none" style="none" id="0" />
                         </userData>
@@ -246,7 +246,7 @@
                                 <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="no passing" width="2.9999999999999999e-01"/>
                             </type>
                         </roadMark>
-                        <userData code="viStyleDef">
+                        <userData code="viStyleDef" value="0.0000000000000000e+00">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
                             <fillet pos="none" style="none" id="0" />
                         </userData>
@@ -255,7 +255,7 @@
                         <link>
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="2.8500000000000001e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
-                        <userData code="viStyleDef">
+                        <userData code="viStyleDef" value="0.0000000000000000e+00">
                             <style sOffset="0.000000" laneStyle="pav_no_dir" mapping="auto" />
                             <fillet pos="none" style="none" id="0" />
                         </userData>
@@ -264,7 +264,7 @@
                         <link>
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="1.5000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
-                        <userData code="viStyleDef">
+                        <userData code="viStyleDef" value="0.0000000000000000e+00">
                             <style sOffset="0.000000" laneStyle="bo_std2grass" mapping="auto" />
                             <fillet pos="none" style="none" id="0" />
                         </userData>
@@ -273,7 +273,7 @@
                         <link>
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="6.0000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
-                        <userData code="viStyleDef">
+                        <userData code="viStyleDef" value="0.0000000000000000e+00">
                             <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
                             <fillet pos="none" style="none" id="0" />
                         </userData>

@@ -368,14 +368,14 @@ Ghost mode is a parameter of the external controller. Normally this is set in th
 
 [source,xml]
 ----
-<ParameterDeclaration name="GhostMode" parameterType="bool" value="false"/>
+<ParameterDeclaration name="GhostMode" parameterType="boolean" value="false"/>
 ----
 
 to:
 
 [source,xml]
 ----
-<ParameterDeclaration name="GhostMode" parameterType="bool" value="true"/>
+<ParameterDeclaration name="GhostMode" parameterType="boolean" value="true"/>
 ----
 
 However, in the example code this parameter is controlled by the ``paramDeclCB()`` callback. Once it's registered with ``SE_RegisterParameterDeclarationCallback()`` it will be called each time esmini is initialized (``SE_Init()``).

@@ -94,7 +94,7 @@
                     <Actors selectTriggeringEntities="false">
                         <EntityRef entityRef="TargetDecelerate"/>
                     </Actors>
-                    <Maneuver>
+                    <Maneuver name="DecelerateManeuver">
                         <Event name="DecelerateEvent" priority="overwrite">
                             <Action name="DecelerateAction">
                                 <PrivateAction>

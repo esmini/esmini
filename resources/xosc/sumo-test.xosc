@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!-- Demonstrate a way of integrating SUMO vehicles in esmini simulations -->
-<OpenSCENARIO xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceShemaLocation="OpenSccenario.xsd">
-    <FileHeader author="Mandolin" date="2020-08-14 08:57:00.756371" decription="adaptspeed_example" revMajor="1" revMinor="0"/>
+<OpenSCENARIO>
+    <FileHeader author="Mandolin" date="2020-08-14T08:57:00" description="adaptspeed_example" revMajor="1" revMinor="3"/>
     <ParameterDeclarations/>
     <CatalogLocations>
         <VehicleCatalog>
@@ -45,9 +45,8 @@
                             </Position>
                         </TeleportAction>
                     </PrivateAction>
-                    <PrivateAction>
-                        <!-- <ActivateControllerAction longitudinal="true" lateral="true" /> -->
-                    </PrivateAction>
+                    <!-- <PrivateAction/>
+                        <ActivateControllerAction longitudinal="true" lateral="true" /> -->
                     <PrivateAction>
                         <LongitudinalAction>
                             <SpeedAction>
@@ -63,7 +62,13 @@
         </Init>
         <Story name="mystory">
             <ParameterDeclarations/>
-            <Act/>
+            <Act name="act">
+                <ManeuverGroup name="maneuvuergroup_car_accelerate" maximumExecutionCount="1">
+                    <Actors selectTriggeringEntities="false">
+                        <EntityRef entityRef="Target"/>
+                    </Actors>
+				 </ManeuverGroup>
+			</Act>
         </Story>
         <StopTrigger>
             <ConditionGroup>

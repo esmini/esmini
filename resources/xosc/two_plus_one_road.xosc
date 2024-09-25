@@ -1,9 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
 <!-- Demonstrate and test 2+1 road (https://en.wikipedia.org/wiki/2%2B1_road) -->
 <!-- A white car is driving with constant speed, set by init event -->
 <!-- A red car is following, eager to overtake -->
 <!-- As soon as an additional lane appears on the left side, the red car overtakes -->
-<?xml version="1.0" encoding="utf-8"?>
-<OpenSCENARIO xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="OpenScenario.xsd">
+<OpenSCENARIO>
     <FileHeader description="" author="esmini team" revMajor="1" revMinor="2" date="2023-05-29T07:09:07.929577"/>
     <ParameterDeclarations>
         <ParameterDeclaration name="InitialEgoS" parameterType="double" value="70.0"/>
@@ -89,7 +89,7 @@
                                     </LongitudinalAction>
                                 </PrivateAction>
                             </Action>
-                            <Action>
+                            <Action name="OvertakeAction">
                                 <PrivateAction>
                                     <LateralAction>
                                         <LaneChangeAction>
@@ -141,7 +141,7 @@
                                             <EntityCondition>
                                                 <RelativeDistanceCondition 
                                                     entityRef="Target" 
-                                                    freeSpace="false" 
+                                                    freespace="false" 
                                                     rule="greaterThan" 
                                                     relativeDistanceType="longitudinal"
                                                     value="20.0" />

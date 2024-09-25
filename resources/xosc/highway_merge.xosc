@@ -160,7 +160,7 @@
                      <SpeedAction>
                         <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
                         <SpeedActionTarget>
-                           <RelativeTargetSpeed entityRef="A4" value="0.0" continuous="true"/>
+                           <RelativeTargetSpeed entityRef="A4" value="0.0" continuous="true" speedTargetValueType="delta"/>
                         </SpeedActionTarget>
                      </SpeedAction>
                   </LongitudinalAction>

@@ -2,7 +2,7 @@
 <!-- Two cars approaching from opposite directions. Both changing lane cross road -->
 <!-- reference line. Purpose is to validate esmini lane change functionality.     -->
 <OpenSCENARIO>
-    <FileHeader revMajor="1" revMinor="0" date="2019-06-09T10:00:00" description="Cut-in" author="esmini-team"/>
+    <FileHeader revMajor="1" revMinor="2" date="2019-06-09T10:00:00" description="Cut-in" author="esmini-team"/>
     <ParameterDeclarations>
         <ParameterDeclaration name="DummyParameter" parameterType="double" value="2"/>
         <ParameterDeclaration name="DummyParameter2" parameterType="boolean" value="false"/>

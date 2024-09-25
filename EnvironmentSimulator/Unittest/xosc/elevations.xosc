@@ -108,7 +108,15 @@
         </Init>
         <Story name="MyStory">
             <ParameterDeclarations/>
-            <Act name="MyAct"/>
+            <Act name="MyAct">
+                <ManeuverGroup name="MyMG" maximumExecutionCount="1">
+                    <Actors selectTriggeringEntities="false">
+                        <EntityRef entityRef="Car0"/>
+                    </Actors>
+				</ManeuverGroup>
+                <StartTrigger/>
+                <StopTrigger/>
+			</Act>
         </Story>
         <StopTrigger>
             <ConditionGroup>

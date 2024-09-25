@@ -92,7 +92,7 @@
          </ParameterDeclarations>
          <Act name="LTAPActNPC">
             <ManeuverGroup maximumExecutionCount="1" name="ped_mangroup">
-                <Actors selectTriggeringEntities="False">
+                <Actors selectTriggeringEntities="false">
                     <EntityRef entityRef="pedestrian_adult"/>
                 </Actors>
                 <Maneuver name="ped_maneuver">
@@ -113,46 +113,46 @@
                             <PrivateAction>
                                 <RoutingAction>
                                     <FollowTrajectoryAction>
-                                        <Trajectory closed="False" name="ped_traj">
+                                        <Trajectory closed="false" name="ped_traj">
                                             <ParameterDeclarations/>
                                             <Shape>
                                                 <Polyline>
-                                                    <Vertex>
+                                                    <Vertex time="0">
                                                         <Position>
                                                             <LanePosition laneId="3" offset="0.5" roadId="0" s="15" >
                                                                 <Orientation type="relative" h="0" p="0" r="0" />
                                                             </LanePosition>
                                                         </Position>
                                                     </Vertex>
-                                                    <Vertex>
+                                                    <Vertex time="0">
                                                         <Position>
                                                             <LanePosition laneId="3" offset="0.5" roadId="0" s="10.5" >
                                                                 <Orientation type="relative" h="0" p="0" r="0" />
                                                             </LanePosition>
                                                         </Position>
                                                     </Vertex>
-                                                    <Vertex>
+                                                    <Vertex time="0">
                                                         <Position>
                                                             <LanePosition laneId="3" offset="0.0" roadId="0" s="10" >
                                                                 <Orientation type="relative" h="1.57" p="0" r="0" />
                                                             </LanePosition>
                                                         </Position>
                                                     </Vertex>
-                                                    <Vertex>
+                                                    <Vertex time="0">
                                                         <Position>
                                                             <LanePosition laneId="-3" offset="0.0" roadId="0" s="10" >
                                                                 <Orientation type="relative" h="4.71" p="0" r="0" />
                                                             </LanePosition>
                                                         </Position>
                                                     </Vertex>
-                                                    <Vertex>
+                                                    <Vertex time="0">
                                                         <Position>
                                                             <LanePosition laneId="-3" offset="-0.5" roadId="0" s="9.5" >
                                                                 <Orientation type="relative" h="3.14" p="0" r="0" />
                                                             </LanePosition>
                                                         </Position>
                                                     </Vertex>
-                                                    <Vertex>
+                                                    <Vertex time="0">
                                                         <Position>
                                                             <LanePosition laneId="-3" offset="-0.5" roadId="0" s="0" >
                                                                 <Orientation type="relative" h="3.14" p="0" r="0" />

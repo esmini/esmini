@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <OpenSCENARIO>
-    <FileHeader revMajor="1" revMinor="1" date="2020-10-04T10:00:00" description="Just put a vehicle on the road and drive" author="esmini team"/>
+    <FileHeader revMajor="1" revMinor="3" date="2020-10-04T10:00:00" description="Just put a vehicle on the road and drive" author="esmini team"/>
     <ParameterDeclarations/>
     <CatalogLocations>
         <VehicleCatalog>
@@ -70,7 +70,7 @@
                             <EntityRef entityRef="Ego"/>
                         </TriggeringEntities>
                         <EntityCondition>
-                            <EndOfRoadCondition duration="0.0" rule="greaterOrEqual"/>
+                            <EndOfRoadCondition duration="0.0"/>
                         </EntityCondition>
                     </ByEntityCondition>
                 </Condition>

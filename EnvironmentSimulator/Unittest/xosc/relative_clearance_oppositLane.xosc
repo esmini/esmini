@@ -3,9 +3,9 @@
 in multiple road connected opposite direction.-->
 <OpenSCENARIO>
    <FileHeader revMajor="1"
-               revMinor="0"
+               revMinor="3"
                date="2017-06-09T10:00:00"
-               description="Another variant of cut-in"
+               description="Relative clearance opposite Lane"
                author="SimS"/>
    <ParameterDeclarations>
       <ParameterDeclaration name="HostVehicle" parameterType="string" value="car_white"/>
@@ -123,8 +123,8 @@ in multiple road connected opposite direction.-->
                                  </TriggeringEntities>
                                  <EntityCondition>
                                     <RelativeClearanceCondition distanceForward="100" distanceBackward="30" freeSpace="false" oppositeLanes="$OppositeLanes">
-                                       <EntityRef entityRef="Target"/>
                                        <RelativeLaneRange from= "-1" to = "3"/>
+                                       <EntityRef entityRef="Target"/>
                                     </RelativeClearanceCondition>
                                  </EntityCondition>
                               </ByEntityCondition>
