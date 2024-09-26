@@ -431,26 +431,22 @@ TEST(RoadId, TestStringRoadId)
     RM_Close();
 }
 
-// Uncomment to print log output to console
-// #define LOG_TO_CONSOLE
-
-#ifdef LOG_TO_CONSOLE
-static void log_callback(const char* str)
-{
-    printf("%s\n", str);
-}
-#endif
-
 int main(int argc, char** argv)
 {
-#ifdef LOG_TO_CONSOLE
-    if (!(Logger::Inst().IsCallbackSet()))
-    {
-        Logger::Inst().SetCallback(log_callback);
-    }
-#endif
-    ParseAndSetLoggerOptions(argc, argv);
-    // testing::GTEST_FLAG(filter) = "*check_GroundTruth_including_init_state*";
     testing::InitGoogleTest(&argc, argv);
+
+    if (!strcmp(argv[1], "--disable_stdout"))
+    {
+        RM_EnableConsoleLogging(false, true);
+        RM_SetLogFilePath("log-test.txt");
+    }
+
+    if (ParseAndSetLoggerOptions(argc, argv) != 0)
+    {
+        return -1;
+    }
+
+    // testing::GTEST_FLAG(filter) = "*check_GroundTruth_including_init_state*";
+
     return RUN_ALL_TESTS();
 }

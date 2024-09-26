@@ -514,9 +514,18 @@ extern "C"
 
     /**
             Enable or disable log to stdout/console
+            Deprecated, please use SE_EnableConsoleLogging instead
             @param mode true=enable, false=disable
     */
     SE_DLL_API void SE_LogToConsole(bool mode);
+
+    /**
+            Enable or disable log to stdout/console
+            Persistant or non-persistant (reset to default value by next init)
+            @param mode true=enable, false=disable
+            @param persistant true=persistant, false=non-persistant
+    */
+    SE_DLL_API void SE_EnableConsoleLogging(bool state, bool persistant);
 
     /**
     Enable or disable global collision detection

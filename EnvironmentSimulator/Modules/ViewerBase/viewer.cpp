@@ -1372,7 +1372,8 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     {
         // Viewer failed to create graphics context. Probably Anti Aliasing is not supported on executing platform.
         // Make another attempt without AA
-        LOG_ERROR("Failed to create window {} {} {} {}. Maybe the Anti Aliasing setting ({} multisamples) is not supported. Making another attempt without Anti-Alias and on first screen.",
+        LOG_ERROR(
+            "Failed to create window {} {} {} {}. Maybe the Anti Aliasing setting ({} multisamples) is not supported. Making another attempt without Anti-Alias and on first screen.",
             winDim_.x,
             winDim_.y,
             winDim_.w,
@@ -1393,11 +1394,15 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     osgViewer::GraphicsWindow* gw = dynamic_cast<osgViewer::GraphicsWindow*>(gc.get());
     if (!opt->GetOptionSet("headless") && gw == nullptr)
     {
-        LOG_ERROR("Failed to create viewer window {} {} {} {}. Try --headless option to run without window", winDim_.x, winDim_.y, winDim_.w, winDim_.h);
+        LOG_ERROR("Failed to create viewer window {} {} {} {}. Try --headless option to run without window",
+                  winDim_.x,
+                  winDim_.y,
+                  winDim_.w,
+                  winDim_.h);
         return;
     }
 
-    LOG("Window created at %d,%d with size %d,%d", MAX(0, traits->x), MAX(0, traits->y), traits->width, traits->height);
+    LOG_INFO("Window created at {},{} with size {},{}", MAX(0, traits->x), MAX(0, traits->y), traits->width, traits->height);
 
     osgViewer_ = new osgViewer::Viewer;
     if (osgViewer_ == nullptr)
@@ -1522,7 +1527,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
 
         if (i == file_name_candidates.size())
         {
-            LOG_ERROR("Failed to read environment model {!", modelFilename);
+            LOG_ERROR("Failed to read environment model {}", modelFilename);
         }
     }
 
@@ -2008,12 +2013,10 @@ EntityModel* Viewer::CreateEntityModel(std::string             modelFilepath,
         }
         else
         {
-            LOG_ERROR("Failed to load visual model %s. %s",
-                      modelFilepath.c_str(),
-                      file_name_candidates.size() > 1 ? "Also tried the following paths:" : "");
+            LOG_ERROR("Failed to load visual model {}. {}", modelFilepath, file_name_candidates.size() > 1 ? "Also tried the following paths:" : "");
             for (size_t i = 1; i < file_name_candidates.size(); i++)
             {
-                LOG_INFO("    %s", file_name_candidates[i].c_str());
+                LOG_INFO("    {}", file_name_candidates[i]);
             }
             LOG_WARN("Creating a dummy model instead");
         }

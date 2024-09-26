@@ -529,11 +529,7 @@ class _Command:
         command_name_list = ["  " + child.name for child in self.child_list]
         command_help_list = [child.help for child in self.child_list]
 
-        command_name_list = formatter.format_align(
-            command_name_list,
-            22,
-            5,
-        )
+        command_name_list = formatter.format_align(command_name_list, 22, 5)
 
         str_ = formatter.format_bold("<command> options:\n")
         for name, help in zip(  # pylint: disable=redefined-builtin
@@ -554,11 +550,7 @@ class _Command:
         command_name_list = ["  " + child.name for child in self.child_list]
         command_help_list = [child.help for child in self.child_list]
 
-        command_name_list = formatter.format_align(
-            command_name_list,
-            22,
-            5,
-        )
+        command_name_list = formatter.format_align(command_name_list, 22, 5)
 
         str_ = formatter.format_bold("optional <entry> options:\n")
         for name, help in zip(  # pylint: disable=redefined-builtin
@@ -591,9 +583,7 @@ class _Command:
 
         if example_command_str_list:
             example_command_str_list = formatter.format_align(
-                example_command_str_list,
-                22,
-                5,
+                example_command_str_list, 22, 5
             )
 
             complete_example_str_list = []
@@ -686,10 +676,7 @@ class CLI:
     """Build CLI from commands and parse CLI arguments"""
 
     def __init__(self):
-        self._root_command = _Command(
-            "main.py",
-            "ESMINI command line entry point",
-        )
+        self._root_command = _Command("main.py", "ESMINI command line entry point")
 
         self._init_setup()
         self._init_fetch()
@@ -706,9 +693,7 @@ class CLI:
         setup_cmd.add_example(["--clean"])
 
         setup_cmd.add_argument(
-            "--clean",
-            action="store_true",
-            help="setups from scratch in clean mode",
+            "--clean", action="store_true", help="setups from scratch in clean mode"
         )
 
     def _init_fetch(self):
@@ -727,13 +712,7 @@ class CLI:
             default="all",
             nargs="?",
             help="select the name of the dependency (default: %(default)s)",
-            choices=[
-                "osg",
-                "osi",
-                "sumo",
-                "googletest",
-                "models",
-            ],
+            choices=["osg", "osi", "sumo", "googletest", "models"],
             metavar="NAME",
         )
 
@@ -743,11 +722,7 @@ class CLI:
             default="google-drive",
             nargs="?",
             help="select the source for dependency (default: %(default)s)",
-            choices=[
-                "google-drive",
-                "dropbox",
-                "esmini",
-            ],
+            choices=["google-drive", "dropbox", "esmini"],
             metavar="SOURCE",
         )
 
@@ -769,13 +744,7 @@ class CLI:
             default="all",
             nargs="?",
             help="select the name of the dependency (default: %(default)s)",
-            choices=[
-                "osg",
-                "osi",
-                "sumo",
-                "googletest",
-                "models",
-            ],
+            choices=["osg", "osi", "sumo", "googletest", "models"],
             metavar="NAME",
         )
 
@@ -785,11 +754,7 @@ class CLI:
             default="google-drive",
             nargs="?",
             help="Select the source for dependency (default: %(default)s)",
-            choices=[
-                "google-drive",
-                "dropbox",
-                "esmini",
-            ],
+            choices=["google-drive", "dropbox", "esmini"],
             metavar="SOURCE",
         )
 

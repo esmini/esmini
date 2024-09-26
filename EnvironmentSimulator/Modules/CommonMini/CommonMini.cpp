@@ -893,10 +893,13 @@ std::string ToLower(const char* in_str)
 FILE* FileOpen(const char* filename, const char* mode)
 {
     FILE* file = nullptr;
-
 #ifdef _WIN32
-    if (fopen_s(&file, filename, mode) != 0)
+    int retval = fopen_s(&file, filename, mode);
+    if (retval != 0)
     {
+        char buffer[256];
+        strerror_s(buffer, sizeof(buffer), errno);
+        printf("%s\n", buffer);
         return nullptr;
     }
 #else
@@ -1379,17 +1382,6 @@ SE_Env& SE_Env::Inst()
     static SE_Env instance_;
     return instance_;
 }
-
-// void SE_Env::SetLogFilePath(std::string logFilePath)
-// {
-
-//     logFilePath_ = logFilePath;
-//     if (Logger::Inst().IsFileOpen())
-//     {
-//         // Probably user wants another logfile with a new name
-//         Logger::Inst().OpenLogfile(SE_Env::Inst().GetLogFilePath());
-//     }
-// }
 
 void SE_Env::SetDatFilePath(std::string datFilePath)
 {
@@ -1903,6 +1895,24 @@ int SE_Options::SetOptionValue(std::string opt, std::string value, bool add)
     option->set_ = true;
 
     return 0;
+}
+
+int SE_Options::UnsetOption(const std::string& opt)
+{
+    SE_Option* option = GetOption(opt);
+
+    // check that the option exists and that it's a pure option, without arguments
+    if (option != nullptr && option->opt_arg_.empty())
+    {
+        option->set_ = false;
+        option->arg_value_.clear();
+    }
+    return 0;
+}
+
+const std::vector<SE_Option>& SE_Options::GetAllOptions() const
+{
+    return option_;
 }
 
 int SE_Options::ParseArgs(int argc, const char* const argv[])

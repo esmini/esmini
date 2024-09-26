@@ -871,11 +871,13 @@ public:
     {
         return originalArgs_;
     }
-    bool IsInOriginalArgs(std::string opt);
-    bool HasUnknownArgs();
-    void Reset();
-    int  ChangeOptionArg(std::string opt, std::string new_value, int index = 0);
-    int  SetOptionValue(std::string opt, std::string value, bool add = false);
+    bool                          IsInOriginalArgs(std::string opt);
+    bool                          HasUnknownArgs();
+    void                          Reset();
+    int                           ChangeOptionArg(std::string opt, std::string new_value, int index = 0);
+    int                           SetOptionValue(std::string opt, std::string value, bool add = false);
+    int                           UnsetOption(const std::string& opt);
+    const std::vector<SE_Option>& GetAllOptions() const;
 
 private:
     std::vector<SE_Option>   option_;

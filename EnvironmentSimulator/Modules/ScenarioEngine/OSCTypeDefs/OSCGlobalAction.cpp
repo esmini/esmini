@@ -82,7 +82,7 @@ void VariableAddAction::Start(double simTime)
 
     if (ps->type == OSCParameterDeclarations::ParameterType::PARAM_TYPE_INTEGER)
     {
-        LOG("Add variable %s += %.0f", name_.c_str(), value_);
+        LOG_INFO("Add variable {} += {:.0f}", name_, value_);
         int v = 0;
         variables_->getParameterValueInt(name_, v);
         v += static_cast<int>(value_);
@@ -90,7 +90,7 @@ void VariableAddAction::Start(double simTime)
     }
     else if (ps->type == OSCParameterDeclarations::ParameterType::PARAM_TYPE_DOUBLE)
     {
-        LOG("Add variable %s += %f", name_.c_str(), value_);
+        LOG_INFO("Add variable {} += {}", name_, value_);
         double v = 0.0;
         variables_->getParameterValueDouble(name_, v);
         v += value_;
@@ -116,7 +116,7 @@ void VariableMultiplyByAction::Start(double simTime)
         return;
     }
 
-    LOG("Multiply variable %s *= %f", name_.c_str(), value_);
+    LOG_INFO("Multiply variable {} *= {}", name_, value_);
     if (ps->type == OSCParameterDeclarations::ParameterType::PARAM_TYPE_INTEGER)
     {
         int v = 0;

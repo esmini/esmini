@@ -155,7 +155,7 @@ class Run:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
             print(
                 formatter.format_green(
                     os.path.join(ESMINI_DIRECTORY_ROOT, ".clang-format")
-                    + " is selected as clang-format configuration",
+                    + " is selected as clang-format configuration"
                 )
             )
             os.chdir(root_dir)
@@ -179,7 +179,7 @@ class Run:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
             print(
                 formatter.format_green(
                     os.path.join(ESMINI_DIRECTORY_ROOT, ".cmake-format")
-                    + " is selected as cmake-format configuration",
+                    + " is selected as cmake-format configuration"
                 )
             )
             os.chdir(root_dir)
@@ -203,7 +203,7 @@ class Run:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
             print(
                 formatter.format_green(
                     os.path.join(ESMINI_DIRECTORY_ROOT, ".black-format")
-                    + "is selected as black-format configuration",
+                    + "is selected as black-format configuration"
                 )
             )
             print("─" * SEPARATOR)
@@ -214,7 +214,7 @@ class Run:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
                     "CONFIGURATION FILE "
                     + ".black-format "
                     + "DOES NOT EXIST UNDER "
-                    + ESMINI_DIRECTORY_ROOT,
+                    + ESMINI_DIRECTORY_ROOT
                 )
             )
 
@@ -331,7 +331,7 @@ class Run:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
                     file,
                     "-c",
                     os.path.join(ESMINI_DIRECTORY_ROOT, ".cmake-format"),
-                ],
+                ]
             )
 
             if len(stderr) == 0:

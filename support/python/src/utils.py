@@ -178,7 +178,6 @@ def download_entity(source, name, data):
         gdown.download(
             data["src"],
             output=os.path.join(
-                data["destination"],
-                name + "_" + get_os() + data["extension"],
+                data["destination"], name + "_" + get_os() + data["extension"]
             ),
         )

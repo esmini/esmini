@@ -83,14 +83,14 @@ OSCPositionLane::OSCPositionLane(id_t roadId, int laneId, double s, double offse
 
     if (!roadmanager::Position::GetOpenDrive())
     {
-        LOG("No OpenDRIVE");
+        LOG_ERROR("No OpenDRIVE");
         return;
     }
 
     roadmanager::Road *road = roadmanager::Position::GetOpenDrive()->GetRoadById(roadId);
     if (!road)
     {
-        LOG("No matching road with ID %d", roadId);
+        LOG_ERROR("No matching road with ID {}", roadId);
         return;
     }
 

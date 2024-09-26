@@ -1,3 +1,15 @@
+/*
+ * esmini - Environment Simulator Minimalistic
+ * https://github.com/esmini/esmini
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ * Copyright (c) partners of Simulation Scenarios
+ * https://sites.google.com/view/simulationscenarios
+ */
+
 #pragma once
 
 #include "CommonMini.hpp"
@@ -17,17 +29,26 @@ struct fmt::formatter<T, std::enable_if_t<std::is_enum_v<T>, char>> : fmt::forma
     }
 };
 
+enum class LOG_PERSISTANCE_STATE
+{
+    LPS_UNDEFINED,
+    LPS_TRUE,
+    LPS_FALSE
+};
+
 struct LoggerConfig
 {
-    std::string                     logFilePath_ = "log.txt";
+    static LoggerConfig&            Inst();
+    LOG_PERSISTANCE_STATE           persistedState_ = LOG_PERSISTANCE_STATE::LPS_UNDEFINED;
+    std::string                     logFilePath_    = "log.txt";
     std::unordered_set<std::string> enabledFiles_;
     std::unordered_set<std::string> disabledFiles_;
     double*                         time_ = nullptr;
+
+private:
+    LoggerConfig() = default;
 };
 
-static LoggerConfig       loggerConfig;
-void                      SetupLogger(const LoggerConfig& logConfig);
-void                      InitIndivisualLogger(std::shared_ptr<spdlog::logger>& logger);
 bool                      ShouldLogModule(char const* file);
 void                      LogVersion();
 std::string               AddTimeAndMetaData(char const* function, char const* file, long line, const std::string& level, const std::string& log);
@@ -38,9 +59,13 @@ bool                      LogConsole();
 bool                      LogFile(const std::string& filePath = "");
 void                      StopFileLogging();
 void                      StopConsoleLogging();
-void                      CreateNewFileForLogging(const std::string& filePath);
+void                      CreateNewFileForLogging(const std::string&);
+void                      EnableConsoleLogging(bool mode, bool persistant);
+
 extern std::shared_ptr<spdlog::logger> consoleLogger;
 extern std::shared_ptr<spdlog::logger> fileLogger;
+
+extern LoggerConfig loggerConfig;
 
 template <class... ARGS>
 void __LOG_DEBUG__(char const* function, char const* file, long line, const std::string& log, ARGS... args)

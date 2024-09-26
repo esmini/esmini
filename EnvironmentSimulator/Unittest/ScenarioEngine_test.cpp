@@ -4393,18 +4393,16 @@ static void log_callback(const char* str)
 
 int main(int argc, char** argv)
 {
-#ifdef LOG_TO_CONSOLE
-    if (!(Logger::Inst().IsCallbackSet()))
-    {
-        Logger::Inst().SetCallback(log_callback);
-    }
-#endif
-
 #if 0  // set to 1 and modify filter to run one single test
     testing::GTEST_FLAG(filter) = "*ALKS_R157_TestR157RegulationMinDist*";
     // Or make use of launch argument, e.g. --gtest_filter=*ALKS_R157_TestR157RegulationMinDist*
 #endif
-    ParseAndSetLoggerOptions(argc, argv);
     testing::InitGoogleTest(&argc, argv);
+
+    if (ParseAndSetLoggerOptions(argc, argv) != 0)
+    {
+        return -1;
+    }
+
     return RUN_ALL_TESTS();
 }

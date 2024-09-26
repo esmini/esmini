@@ -1,3 +1,15 @@
+/*
+ * esmini - Environment Simulator Minimalistic
+ * https://github.com/esmini/esmini
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ * Copyright (c) partners of Simulation Scenarios
+ * https://sites.google.com/view/simulationscenarios
+ */
+
 #include "logger.hpp"
 
 #include "spdlog/spdlog.h"
@@ -20,19 +32,43 @@ namespace fs = std::experimental::filesystem;
 
 std::shared_ptr<spdlog::logger> consoleLogger;
 std::shared_ptr<spdlog::logger> fileLogger;
-std::string                     strTime;
-std::string                     currentLogFileName;
+static std::string              strTime;
+static std::string              currentLogFileName;
+static std::string              defaultLogFileName = "log.txt";
+
+LoggerConfig& LoggerConfig::Inst()
+{
+    static LoggerConfig loggerConfig_;
+    return loggerConfig_;
+}
+
+void SetLoggerLevel(std::shared_ptr<spdlog::logger>& logger)
+{
+    if (!logger)
+    {
+        return;
+    }
+    if (SE_Env::Inst().GetOptions().IsOptionArgumentSet("log_level"))
+    {
+        logger->set_level(GetLogLevelFromStr(SE_Env::Inst().GetOptions().GetOptionArg("log_level")));
+    }
+    else
+    {
+        logger->set_level(spdlog::level::info);  // we keep info level as default
+    }
+}
 
 void CreateFileLogger(const std::string& path)
 {
-    // std::cout << "currentLogFileName: " << currentLogFileName << " new file path: " << path << std::endl;
-    if (path != currentLogFileName)
+    if ((path.empty() && currentLogFileName.empty()) || path != currentLogFileName)
     {
-        bool createNewFile = !SE_Env::Inst().GetOptions().GetOptionSet("log_append");
-        // std::cout << path << " ----------------------------------creating new file\n";
-        fileLogger = spdlog::basic_logger_mt("file", path, createNewFile);
-        InitIndivisualLogger(fileLogger);
-        currentLogFileName = path;
+        bool        appendFile = SE_Env::Inst().GetOptions().IsOptionArgumentSet("log_append");
+        std::string filePath   = path.empty() ? LoggerConfig::Inst().logFilePath_ : path;
+        fileLogger             = spdlog::basic_logger_mt("file", filePath, !appendFile);
+        SetLoggerLevel(fileLogger);
+        fileLogger->set_pattern("%v");
+        fileLogger->info(GetVersionInfoForLog());
+        currentLogFileName = path.empty() ? LoggerConfig::Inst().logFilePath_ : path;
     }
     else
     {
@@ -42,29 +78,16 @@ void CreateFileLogger(const std::string& path)
 
 bool LogConsole()
 {
-    bool consoleLoggerDisabled = SE_Env::Inst().GetOptions().GetOptionSet("disable_stdout");
-    if (consoleLogger)
+    bool stdoutDisabled = SE_Env::Inst().GetOptions().IsOptionArgumentSet("disable_stdout");
+    bool shouldLog      = LoggerConfig::Inst().persistedState_ != LOG_PERSISTANCE_STATE::LPS_FALSE && !stdoutDisabled;
+    if (shouldLog && !consoleLogger)
     {
-        if (consoleLoggerDisabled)
-        {
-            spdlog::drop("console");
-            consoleLogger.reset();
-            return false;
-        }
+        consoleLogger = spdlog::stdout_color_mt("console");
+        SetLoggerLevel(consoleLogger);
+        consoleLogger->set_pattern("%v");
+        consoleLogger->info(GetVersionInfoForLog());
     }
-    else  // no console logging currently available
-    {
-        if (consoleLoggerDisabled)
-        {
-            return false;
-        }
-        else
-        {
-            consoleLogger = spdlog::stdout_color_mt("console");
-            InitIndivisualLogger(consoleLogger);
-        }
-    }
-    return true;
+    return shouldLog;
 }
 
 bool LogFile(const std::string& providedPath)
@@ -75,7 +98,6 @@ bool LogFile(const std::string& providedPath)
     {
         if (fileLoggerDisabled)
         {
-            // std::cout << "deleting current file : " << currentLogFileName << " as logger disabled"<< std::endl;
             spdlog::drop("file");
             fileLogger.reset();
             currentLogFileName = "";
@@ -90,15 +112,8 @@ bool LogFile(const std::string& providedPath)
         }
         else
         {
-            // bool createNewFile = !SE_Env::Inst().GetOptions().GetOptionSet("log_append");
-
             if (!providedPath.empty())
             {
-                // std::cout << "currentLogFileName: " << currentLogFileName << " providedPath: " << providedPath << "
-                // -------------------------------------------------77----creating new file\n";
-                // fileLogger = spdlog::basic_logger_mt("file", providedPath, createNewFile);
-                // InitIndivisualLogger(fileLogger);
-                // currentLogFileName = providedPath;
                 CreateFileLogger(providedPath);
                 return true;
             }
@@ -108,27 +123,14 @@ bool LogFile(const std::string& providedPath)
             {
                 filePath = SE_Env::Inst().GetOptions().GetOptionArg("logfile_path");
 
-                if (filePath.empty())
-                {
-                    // printf("Custom logfile path empty, disable logfile\n");
-                }
-                else
+                if (!filePath.empty())
                 {
                     printf("Custom logfile path: %s\n", filePath.c_str());
-                    // std::cout << "currentLogFileName: " << currentLogFileName << " filePath: " << filePath << "
-                    // ------------------------------------------------95-----creating new file\n"; fileLogger = spdlog::basic_logger_mt("file",
-                    // filePath, createNewFile); InitIndivisualLogger(fileLogger); currentLogFileName = filePath;
                     CreateFileLogger(filePath);
                 }
             }
             else
             {
-                // std::cout << "Custom logfile path: log.txt new file flag " << createNewFile << std::endl;
-                // std::cout << "currentLogFileName: " << currentLogFileName << "
-                // -------------------------------------------103--log.txt--------creating new file\n";
-                // fileLogger = spdlog::basic_logger_mt("file", "log.txt", createNewFile);
-                // InitIndivisualLogger(fileLogger);
-                // currentLogFileName = "log.txt";
                 CreateFileLogger("log.txt");
             }
         }
@@ -138,14 +140,15 @@ bool LogFile(const std::string& providedPath)
 
 void CreateNewFileForLogging(const std::string& filePath)
 {
+    SetLoggerLevel(fileLogger);
+    SetLoggerLevel(consoleLogger);
+
     if (filePath.empty() || currentLogFileName == filePath)
     {
-        // In principle this shouldn't be true but edge cases make it happen :(
         return;
     }
     if (fileLogger)
     {
-        // std::cout << "deleting current file : " << currentLogFileName << " for new file : " << filePath << std::endl;
         spdlog::drop("file");
         fileLogger.reset();
         currentLogFileName = "";
@@ -155,12 +158,14 @@ void CreateNewFileForLogging(const std::string& filePath)
 
 void StopFileLogging()
 {
-    if (fileLogger && !SE_Env::Inst().GetOptions().GetOptionSet("log_append"))
+    //    if (fileLogger && !SE_Env::Inst().GetOptions().GetOptionSet("log_append"))
     {
-        // std::cout << "deleting current file : " << currentLogFileName << " as stop called" << std::endl;
         spdlog::drop("file");
         fileLogger.reset();
         currentLogFileName = "";
+        spdlog::shutdown();
+        LoggerConfig::Inst().enabledFiles_.clear();
+        LoggerConfig::Inst().disabledFiles_.clear();
     }
 }
 
@@ -201,9 +206,9 @@ bool ShouldLogModule(char const* file)
     // it may seem that checking emptiness is an overhead as find function does it optimmally
     // but checking emptiness helps to find if user has enabled any file or not, because if its empty
     // then user wants all logs i.e. no filtering
-    if (!loggerConfig.enabledFiles_.empty())
+    if (!LoggerConfig::Inst().enabledFiles_.empty())
     {
-        if (loggerConfig.enabledFiles_.find(fileName) == loggerConfig.enabledFiles_.end())
+        if (LoggerConfig::Inst().enabledFiles_.find(fileName) == LoggerConfig::Inst().enabledFiles_.end())
         {
             // not found in the list, which means user has not enabled this file for logging
             return false;
@@ -214,9 +219,9 @@ bool ShouldLogModule(char const* file)
             return true;
         }
     }
-    if (!loggerConfig.disabledFiles_.empty())
+    if (!LoggerConfig::Inst().disabledFiles_.empty())
     {
-        if (loggerConfig.disabledFiles_.find(fileName) == loggerConfig.disabledFiles_.end())
+        if (LoggerConfig::Inst().disabledFiles_.find(fileName) == LoggerConfig::Inst().disabledFiles_.end())
         {
             // not found in the list, which means this file is enabled for logging
             return true;
@@ -233,10 +238,9 @@ bool ShouldLogModule(char const* file)
 
 std::string AddTimeAndMetaData(char const* function, char const* file, long line, const std::string& level, const std::string& log)
 {
-    // std::cout << "Pointer value: " << loggerConfig.time_ << std::endl;
-    if (loggerConfig.time_ != nullptr)
+    if (LoggerConfig::Inst().time_ != nullptr)
     {
-        strTime = fmt::format("[{:.3f}]", *loggerConfig.time_);
+        strTime = fmt::format("[{:.3f}]", *LoggerConfig::Inst().time_);
     }
     else
     {
@@ -258,33 +262,7 @@ std::string AddTimeAndMetaData(char const* function, char const* file, long line
 
 void SetLoggerTime(double* ptr)
 {
-    loggerConfig.time_ = ptr;
-}
-
-void InitIndivisualLogger(std::shared_ptr<spdlog::logger>& logger)
-{
-    try
-    {
-        // std::cout << "initializing logger ..." << std::endl;
-        logger->set_pattern("%v");
-        logger->info(GetVersionInfoForLog());
-        if (SE_Env::Inst().GetOptions().IsOptionArgumentSet("log_level"))
-        {
-            logger->set_level(GetLogLevelFromStr(SE_Env::Inst().GetOptions().GetOptionArg("log_level")));
-        }
-        else
-        {
-            logger->set_level(spdlog::level::info);  // we keep info level as default
-        }
-    }
-    catch (const std::exception& e)
-    {
-        std::cout << e.what() << '\n';
-    }
-    catch (...)
-    {
-        std::cout << "generic error incurred" << std::endl;
-    }
+    LoggerConfig::Inst().time_ = ptr;
 }
 
 void LogVersion()
@@ -316,7 +294,31 @@ void LogTimeOnly()
     }
 }
 
-void SetupLogger(const LoggerConfig& logConfig)
+// we will override program option, discuss if there can be any issue in it
+void EnableConsoleLogging(bool state, bool persistant)
 {
-    loggerConfig = logConfig;
+    if (persistant)
+    {
+        if (state == true)
+        {
+            LoggerConfig::Inst().persistedState_ = LOG_PERSISTANCE_STATE::LPS_TRUE;
+        }
+        else
+        {
+            LoggerConfig::Inst().persistedState_ = LOG_PERSISTANCE_STATE::LPS_FALSE;
+        }
+    }
+    else
+    {
+        LoggerConfig::Inst().persistedState_ = LOG_PERSISTANCE_STATE::LPS_UNDEFINED;
+    }
+
+    if (state)
+    {
+        SE_Env::Inst().GetOptions().UnsetOption("disable_stdout");
+    }
+    else
+    {
+        SE_Env::Inst().GetOptions().SetOptionValue("disable_stdout", "");
+    }
 }

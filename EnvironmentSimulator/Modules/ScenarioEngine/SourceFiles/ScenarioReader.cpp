@@ -763,6 +763,7 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
                             {
                                 LOG_ERROR("Unexpected catalog type {} for trailer", entry->GetTypeAsStr());
                             }
+                        }
                     }
                     else if (trailer_trailer_child_node_name == "Vehicle")
                     {
@@ -1288,7 +1289,7 @@ roadmanager::RMTrajectory *ScenarioReader::parseTrajectory(pugi::xml_node node)
                     }
                     else
                     {
-                        LOG_AND_QUIT(("Unexpected/unsupported child element in ClothoidSpline: " + std::string(segmentNode.name())).c_str());
+                        LOG_ERROR_AND_QUIT("Unexpected/unsupported child element in ClothoidSpline: {}", segmentNode.name());
                     }
                 }
                 shape = clothoidspline;
@@ -1663,13 +1664,13 @@ static void CheckAndAdjustRoadSValue(const id_t road_id, double &s)
         if (s < 0 || s > road->GetLength())
         {
             double new_s = CLAMP(s, 0.0, road->GetLength());
-            LOG("Invalid s value %.5f for road %d of length %.5f, truncating to %.2f", s, road_id, road->GetLength(), new_s);
+            LOG_ERROR("Invalid s value {:.5f} for road {} of length {:.5f}, truncating to {:.2f}", s, road_id, road->GetLength(), new_s);
             s = new_s;
         }
     }
     else
     {
-        LOG("Error: Failed to find road %d", road_id);
+        LOG_ERROR("Error: Failed to find road {}", road_id);
     }
 }
 

@@ -204,8 +204,12 @@ TEST(MatrixOperations, TestMatrixInvert)
 int main(int argc, char **argv)
 {
     // testing::GTEST_FLAG(filter) = "*TestIsPointWithinSectorBetweenTwoLines*";
-    ParseAndSetLoggerOptions(argc, argv);
     testing::InitGoogleTest(&argc, argv);
+
+    if (ParseAndSetLoggerOptions(argc, argv) != 0)
+    {
+        return -1;
+    }
 
     return RUN_ALL_TESTS();
 }

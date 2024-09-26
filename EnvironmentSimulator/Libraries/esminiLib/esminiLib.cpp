@@ -38,8 +38,7 @@ static ScenarioPlayer *player = 0;
 static char                   **argv_ = 0;
 static int                      argc_ = 0;
 static std::vector<std::string> args_v;
-static bool                     logToConsole = true;
-static __int64                  time_stamp   = 0;
+static __int64                  time_stamp = 0;
 
 static struct
 {
@@ -60,14 +59,6 @@ static std::vector<SE_ObjCallback> objCallback;
 
 // List of 3D models populated from any found found model_ids.txt file
 static std::map<int, std::string> entity_model_map_;
-
-static void log_callback(const char *str)
-{
-    if (logToConsole)
-    {
-        printf("%s\n", str);
-    }
-}
 
 static void resetScenario(void)
 {
@@ -126,7 +117,6 @@ static void ConvertArguments()
         StrCopy(argv_[i], args_v[i].c_str(), static_cast<unsigned int>(args_v[i].size()) + 1);
         argument_list += std::string(" ") + argv_[i];
     }
-    LOG_INFO("Player arguments: {}", argument_list);
 }
 
 static void copyStateFromScenarioGateway(SE_ScenarioObjectState *state, ObjectStateStruct *gw_state)
@@ -431,20 +421,15 @@ static int InitScenario()
     // Harmonize parsing and printing of floating point numbers. I.e. 1.57e+4 == 15700.0 not 15,700.0 or 1 or 1.57
     std::setlocale(LC_ALL, "C.UTF-8");
 
-    Logger::Inst().SetCallback(log_callback);
-    // Logger::Inst().OpenLogfile(SE_Env::Inst().GetLogFilePath());
-    // Logger::Inst().LogVersion();
-    //  riz temp
-
-    LoggerConfig logConfig;
-    SE_Options  &opt = SE_Env::Inst().GetOptions();
+    // LoggerConfig logConfig;
+    SE_Options &opt = SE_Env::Inst().GetOptions();
     if (opt.IsOptionArgumentSet("log_only_modules"))
     {
         auto       arg_str  = opt.GetOptionArg("log_only_modules");
         const auto splitted = utils::SplitString(arg_str, ',');
         if (!splitted.empty())
         {
-            logConfig.enabledFiles_.insert(splitted.begin(), splitted.end());
+            LoggerConfig::Inst().enabledFiles_.insert(splitted.begin(), splitted.end());
         }
     }
 
@@ -454,12 +439,12 @@ static int InitScenario()
         const auto splitted = utils::SplitString(arg_str, ',');
         if (!splitted.empty())
         {
-            logConfig.disabledFiles_.insert(splitted.begin(), splitted.end());
+            LoggerConfig::Inst().disabledFiles_.insert(splitted.begin(), splitted.end());
         }
     }
-    SetupLogger(logConfig);
-    CreateNewFileForLogging(SE_Env::Inst().GetLogFilePath());
-    LogTimeOnly();
+
+    // SetupLogger(logConfig);
+
     ConvertArguments();
 
     // Create scenario engine
@@ -467,7 +452,7 @@ static int InitScenario()
     {
         // Initialize the scenario engine and viewer
         player     = new ScenarioPlayer(argc_, argv_);
-        int retval = player->Init(false);
+        int retval = player->Init();
         if (retval == -1)
         {
             LOG_ERROR("Failed to initialize scenario player");
@@ -509,7 +494,7 @@ extern "C"
     SE_DLL_API void SE_SetLogFilePath(const char *logFilePath)
     {
         // SE_Env::Inst().SetLogFilePath(logFilePath);
-        LOG_INFO("calling CreateNewFileForLogging");
+        // LOG_INFO("calling CreateNewFileForLogging");
         SE_SetOptionValue("--logfile_path", logFilePath);
         CreateNewFileForLogging(logFilePath);
     }
@@ -969,12 +954,17 @@ extern "C"
     {
         resetScenario();
         RegisterParameterDeclarationCallback(nullptr, nullptr);
+        StopFileLogging();
     }
 
     SE_DLL_API void SE_LogToConsole(bool mode)
     {
-        // SetOptions()
-        logToConsole = mode;
+        SE_EnableConsoleLogging(mode, false);
+    }
+
+    SE_DLL_API void SE_EnableConsoleLogging(bool state, bool persistant)
+    {
+        EnableConsoleLogging(state, persistant);
     }
 
     SE_DLL_API void SE_CollisionDetection(bool mode)
@@ -2798,14 +2788,14 @@ extern "C"
         roadmanager::Route *route = obj->pos_.GetRoute();
 
         if (route == nullptr)
-        {            
+        {
             LOG_ERROR("Object {} (id {}) has currently no assigned route", obj->GetName(), object_id);
             return -1;
         }
 
         if (route_index < 0 || route_index >= static_cast<int>(route->all_waypoints_.size()))
         {
-            LOG("Requested waypoint index %d invalid, only %d registered", route_index, route->all_waypoints_.size());
+            LOG_INFO("Requested waypoint index {} invalid, only {} registered", route_index, route->all_waypoints_.size());
             return -1;
         }
 

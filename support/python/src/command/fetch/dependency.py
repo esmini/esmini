@@ -2,10 +2,7 @@
 
 """
 
-from command.fetch.utils import (
-    fetch_from_given_source,
-    replace_from_given_source,
-)
+from command.fetch.utils import fetch_from_given_source, replace_from_given_source
 from globals import ESMINI_DEPENDENCY_EXTERNALS
 from utils import print_commands, get_os
 

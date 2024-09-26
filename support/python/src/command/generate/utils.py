@@ -34,9 +34,6 @@ def utils_get_all_external(externalpath):
     externals = os.listdir(externalpath)
     if len(externals) == 0:
         raise ValueError(
-            formatter.get_error_message(
-                "NO FOLDER FOUND UNDER",
-                externalpath,
-            )
+            formatter.get_error_message("NO FOLDER FOUND UNDER", externalpath)
         )
     return externals

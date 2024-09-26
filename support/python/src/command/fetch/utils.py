@@ -7,12 +7,7 @@ import os
 import shutil
 
 import formatter
-from utils import (
-    yes_or_no,
-    get_os,
-    download_entity,
-    subprocess_popen,
-)
+from utils import yes_or_no, get_os, download_entity, subprocess_popen
 from globals import SEPARATOR, ESMINI_DIRECTORY_EXTERNALS
 
 

@@ -273,7 +273,12 @@ TEST_F(FollowRouteControllerTest, FollowRouteSetParameters)
 int main(int argc, char **argv)
 {
     // testing::GTEST_FLAG(filter) = "*TestOptionHandling*";
-    ParseAndSetLoggerOptions(argc, argv);
     testing::InitGoogleTest(&argc, argv);
+
+    if (ParseAndSetLoggerOptions(argc, argv) != 0)
+    {
+        return -1;
+    }
+
     return RUN_ALL_TESTS();
 }

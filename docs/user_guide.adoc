@@ -70,7 +70,7 @@ On Linux, e.g. Ubuntu, some additional system tools and libraries are needed. Ru
 
 [source]
 ----
-sudo apt install build-essential gdb ninja-build git pkg-config libgl1-mesa-dev libpthread-stubs0-dev libjpeg-dev libxml2-dev libpng-dev libtiff5-dev libgdal-dev libpoppler-dev libdcmtk-dev libgstreamer1.0-dev libgtk2.0-dev libcairo2-dev libpoppler-glib-dev libxrandr-dev libxinerama-dev curl cmake
+sudo apt install build-essential gdb ninja-build git pkg-config libgl1-mesa-dev libpthread-stubs0-dev libjpeg-dev libxml2-dev libpng-dev libtiff5-dev libgdal-dev libpoppler-dev libdcmtk-dev libgstreamer1.0-dev libgtk2.0-dev libcairo2-dev libpoppler-glib-dev libxrandr-dev libxinerama-dev curl cmake black
 ----
 
 Now we're ready to build esmini. From esmini root folder:
@@ -382,9 +382,9 @@ For troubleshooting, the following command might give information about the grap
 esmini can produce log files in different formats and for different purposes, explained next.
 
 ==== The basic text log file
-By default esmini is creating a `log.txt` in the folder from which esmini is launched. In case of esminiLib it will end up in the folder that the application linking esminiLib was launched from.
+By default esmini is creating a `log.txt` in the folder from which esmini is launched. In case of esminiLib it will end up in the folder that the application linking esminiLib was launched from. The log filename can be customized. 
 
-The log.txt includes the same information normally seen in the terminal window (stdout).
+The log file includes the same information normally seen in the terminal window (stdout).
 
 To disable output to terminal: +
 ``./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/slow-lead-vehicle.xosc --disable_stdout``
@@ -392,7 +392,52 @@ To disable output to terminal: +
 To disable creation of the logfile (`log.txt`): +
 ``./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/slow-lead-vehicle.xosc --disable_log``
 
-Developer info: Define the symbol DEBUG_TRACE (either as compile flag or by uncomment https://github.com/esmini/esmini/blob/73390cc2c1b8cbb8403950c905515e304c861b8c/EnvironmentSimulator/Modules/CommonMini/CommonMini.cpp#L34[this code line]) to log more details, like what code module and line number is the origin of the log entry.
+esmini has enhanced logger from release v2.42.0 supporting log verbosity levels, log file appending, enabling/disabling meta data and filtering on module level logging. 
+
+===== Log verbosity
+There are four log verbosity levels:
+
+. error
+. warn
+. info
+. debug
+
+The log level can be set from command line argument. If not provided, then `info` level is set by default. Log verbosity goes from `error` (low) to `debug` (high). Log entries will be included from `error` up to the specified level.
+
+Example 1: Log level `debug` will include all entries (`error`, `warn`, `info` and `debug`) as the highest level has been selected. 
+
+Example 2: Log level `warn` will include `error` and `warn` entries only.
+
+Developers can use `LOG_ERROR`, `LOG_WARN`, `LOG_INFO` and `LOG_DEBUG` macros to effectively prioritize log messages.
+
+===== Log metadata
+Logger can add source code meta data with every logged entry, including:
+
+- file name
+- function/method name
+- line number
+
+indicating the location of the log entry in the source code.
+
+`--log_meta_data` is the command line parameter for enabling meta data.
+
+===== Log append
+`--log_append` is another command line option. Instead of overwriting any existing log file, entries will be appended to the same log file. In other words, logs of multiple scenarios will be put in the same single log file.
+
+===== Log filtering on modules
+If there is a need to gather log entries of any particular module(s) i.e. hpp/cpp file then `--log_only_modules` option can be set from the command line. It will create a filter for the logger to pick only log entries from specified modules, ignoring all others. Example:
+
+`--log_only_modules playerbase`
+
+will only log from `playerbase.hpp/cpp` files. All other log entries will be skipped. 
+
+Opposite to log only modules, there is an option to skip specific modules. Example:
+
+`--log_skip_modules playerbase,Replay`
+
+will skip all log entries from `playerbase.hpp/cpp` and `Replay.hpp/cpp` files. Entries from all other modules will be included.
+
+Note that `--log_only_modules` and `--log_skip_modules` are mutually exclusive. If a module is listed in both options, then priority is given to `--log_only_modules`. Hence logging will be enabled for specified module, ignoring its presence in `--log_skip_modules`.
 
 ==== Scenario recording (.dat)
 In addition esmini can save a `.dat` file which captures the state of all entities. This file can later be used either to replay (see <<Replay scenario>>) the scenario or converted to `.csv` for further analysis, e.g. in Excel.
@@ -2840,7 +2885,7 @@ Linux Ubuntu
 
 [source]
 ----
-sudo apt install build-essential gdb ninja-build git pkg-config libgl1-mesa-dev libpthread-stubs0-dev libjpeg-dev libxml2-dev libpng-dev libtiff5-dev libgdal-dev libpoppler-dev libdcmtk-dev libgstreamer1.0-dev libgtk2.0-dev libcairo2-dev libpoppler-glib-dev libxrandr-dev libxinerama-dev curl cmake
+sudo apt install build-essential gdb ninja-build git pkg-config libgl1-mesa-dev libpthread-stubs0-dev libjpeg-dev libxml2-dev libpng-dev libtiff5-dev libgdal-dev libpoppler-dev libdcmtk-dev libgstreamer1.0-dev libgtk2.0-dev libcairo2-dev libpoppler-glib-dev libxrandr-dev libxinerama-dev curl cmake black
 ----
 
 Also, g\++ version >= 5 is needed for c++14 code support.
@@ -3246,7 +3291,7 @@ validates all OpenSCENARIO files starting with "follow_route" and all OpenDRIVE 
 
 Google sanitizers framework is utilized to detect memory related errors, for example memory leaks. It's executed nighly as a GitHub CI actions job on dev branch. The job can also be trigged manually, but will only run checks on dev branch. Sanitizers is currently only applied to Linux builds.
 
-To run the sanitizer checks locally, on Ubuntu:
+You can also run the sanitizer checks locally (on any branch, even uncommitted code) on Ubuntu:
 
 . Set the following environment variables, run from esmini root:
 
