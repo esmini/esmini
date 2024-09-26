@@ -1833,6 +1833,27 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^19.600, 2, object_2, 463.889, -1.500, 0.000, 0.000, 0.000, 0.000, 27.778, 0.000, 0.000', csv, re.MULTILINE))
         self.assertTrue(re.search('^19.600, 3, object_3, 422.222, -1.500, 0.000, 0.000, 0.000, 0.000, 27.778, 0.000, 0.000', csv, re.MULTILINE))
 
+    def test_rising_edge(self):
+        # This test case checks rising condition edge. A car is accelerating from 0 up to 10m/s, then braking to a stop.
+        # Stop condition is speed < 1 on rising edge, which happens only after speed reach < 1 after being greater.
+
+        log = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/rising_edge.xosc'), COMMON_ESMINI_ARGS + "--fixed_timestep 0.1")
+
+        # Check some initialization steps
+        self.assertTrue(re.search('Loading .*rising_edge.xosc', log)  is not None)
+
+        # Check some scenario events
+        self.assertTrue(re.search('9.600: StopTrigger == true, speed: 0.80 < 1.00, edge: rising', log)  is not None)
+
+        # Check vehicle key positions
+        csv = generate_csv()
+
+        self.assertTrue(re.search('^4.900, 0, Ego, 64.500, -1.535, 0.000, 0.000, 0.000, 0.000, 9.800, 0.000, 0.885', csv, re.MULTILINE))
+        self.assertTrue(re.search('^5.000, 0, Ego, 65.500, -1.535, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 3.742', csv, re.MULTILINE))
+        self.assertTrue(re.search('^5.100, 0, Ego, 66.480, -1.535, 0.000, 0.000, 0.000, 0.000, 9.800, 0.000, 0.259', csv, re.MULTILINE))
+        self.assertTrue(re.search('^9.500, 0, Ego, 89.800, -1.535, 0.000, 0.000, 0.000, 0.000, 1.000, 0.000, 4.056', csv, re.MULTILINE))
+        self.assertTrue(re.search('^9.600, 0, Ego, 89.880, -1.535, 0.000, 0.000, 0.000, 0.000, 0.800, 0.000, 4.284', csv, re.MULTILINE))
+
 if __name__ == "__main__":
     # execute only if run as a script
 
