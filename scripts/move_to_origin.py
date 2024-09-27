@@ -17,17 +17,19 @@
 import os
 import xml.etree.ElementTree as etree
 import sys
+import argparse
+
+parser = argparse.ArgumentParser(prog=os.path.basename(sys.argv[0]), description='Move scenario and road network to origin')
+parser.add_argument('input_filename', help='required input OpenSCENARIO file')
+parser.add_argument('output_filename', nargs='?', help='optional output filename')
+args = parser.parse_args()
 
 def append_string_to_filename_stem(str, filename):
     stem, ext = os.path.splitext(filename)
     return stem + str + ext
 
-if len(sys.argv) != 2 or sys.argv[1] == '-h' or sys.argv[1] == '--help':
-    print('Usage:', os.path.basename(sys.argv[0]), '<OpenSCENARIO file>')
-    exit(-1)
-
 # Open OpenSCENARIO file to find out referenced OpenDRIVE file
-osc = sys.argv[1]
+osc = args.input_filename
 osc_tree = etree.parse(osc)
 odr_file_element = osc_tree.find('.//RoadNetwork/LogicFile')
 odr = odr_file_element.attrib['filepath']
@@ -72,7 +74,12 @@ for element in elements:
     element.attrib['x'] = str(float(element.attrib['x']) + offset[0])
     element.attrib['y'] = str(float(element.attrib['y']) + offset[1])
 
-# write the manipulated OpenSCENARIO file, adding "_offset_x_y" to the original filename
-osc_out_filename = append_string_to_filename_stem(offset_str, osc)
+if args.output_filename is not None:
+    osc_out_filename = args.output_filename
+else:
+    # add "_offset_x_y" to the original filename
+    osc_out_filename = append_string_to_filename_stem(offset_str, osc)
+
+# write the manipulated OpenSCENARIO file
 osc_tree.write(osc_out_filename)
 print('Updated OpenSCENARIO written to {0}'.format(osc_out_filename))
