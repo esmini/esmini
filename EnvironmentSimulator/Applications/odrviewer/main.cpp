@@ -730,26 +730,25 @@ int main(int argc, char **argv)
                         updateCar(odrManager, cars[i], deltaSimTime);
                     }
                 }
+            }
 
-                // Set info text
-                if (static_cast<int>(cars.size()) > 0 && viewer->currentCarInFocus_ >= 0 &&
-                    viewer->currentCarInFocus_ < static_cast<int>(cars.size()))
-                {
-                    Car *car = cars[static_cast<unsigned int>(viewer->currentCarInFocus_)];
-                    snprintf(str_buf,
-                             sizeof(str_buf),
-                             "entity[%d]: %.2fkm/h (%d, %d, %.2f, %.2f) / (%.2f, %.2f %.2f)",
-                             viewer->currentCarInFocus_,
-                             3.6 * car->pos.GetSpeedLimit() * car->speed_factor * global_speed_factor,
-                             car->pos.GetTrackId(),
-                             car->pos.GetLaneId(),
-                             fabs(car->pos.GetOffset()) < SMALL_NUMBER ? 0 : car->pos.GetOffset(),
-                             car->pos.GetS(),
-                             car->pos.GetX(),
-                             car->pos.GetY(),
-                             car->pos.GetH());
-                    viewer->SetInfoText(str_buf);
-                }
+            // Always update info text, since camera might jump between different entities also during pause
+            if (static_cast<int>(cars.size()) > 0 && viewer->currentCarInFocus_ >= 0 && viewer->currentCarInFocus_ < static_cast<int>(cars.size()))
+            {
+                Car *car = cars[static_cast<unsigned int>(viewer->currentCarInFocus_)];
+                snprintf(str_buf,
+                         sizeof(str_buf),
+                         "entity[%d]: %.2fkm/h (%d, %d, %.2f, %.2f) / (%.2f, %.2f %.2f)",
+                         viewer->currentCarInFocus_,
+                         3.6 * car->pos.GetSpeedLimit() * car->speed_factor * global_speed_factor,
+                         car->pos.GetTrackId(),
+                         car->pos.GetLaneId(),
+                         fabs(car->pos.GetOffset()) < SMALL_NUMBER ? 0 : car->pos.GetOffset(),
+                         car->pos.GetS(),
+                         car->pos.GetX(),
+                         car->pos.GetY(),
+                         car->pos.GetH());
+                viewer->SetInfoText(str_buf);
             }
 
             run_state.step = false;
