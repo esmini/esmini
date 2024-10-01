@@ -8,6 +8,10 @@
  *
  * Copyright (c) partners of Simulation Scenarios
  * https://sites.google.com/view/simulationscenarios
+ * 
+ * Contributed by dSPACE GmBH
+ * kduvnjak@dspace.hr
+ * mdransfeld@dspace.de
  */
 
 #ifndef OPENDRIVE_HH_
@@ -20,9 +24,87 @@
 #include <list>
 #include "pugixml.hpp"
 #include "CommonMini.hpp"
+#include "KdTree.h"
 
 #define PARAMPOLY3_STEPS 100
 #define FRICTION_DEFAULT 1.0
+
+
+namespace roadmanager
+{
+    class Road;
+
+    namespace RoadNetworkTreeConstants
+    {
+        constexpr double EXPAND_OSI_SEGMENT_BBOX = 1.0;
+    }  // namespace RoadNetworkTreeConstants
+
+    enum DashedLineType
+    {
+        DASH_UNDEFINED,
+        DASH_OTHER,
+        DASH_START,
+        DASH_END,
+        DASH_CONTINUE,
+        DASH_GAP
+    };
+
+    typedef struct
+    {
+        double s;
+        double x;
+        double y;
+        double z;
+        double h;
+    } PointStruct;
+
+    class BBoxAroundTwoOSIPoints
+    {
+    public:
+        KdTree::BoundingBox      bbox;
+        const roadmanager::Road *roadPtr;
+        PointStruct              sMin;
+        PointStruct              sMax;
+        double                   sMinSin;
+        double                   sMinCos;
+        double                   sMaxSin;
+        double                   sMaxCos;
+
+        bool operator==(const BBoxAroundTwoOSIPoints &other) const
+        {
+            return bbox == other.bbox && roadPtr == other.roadPtr;
+        }
+
+        bool operator<(const BBoxAroundTwoOSIPoints &other) const
+        {
+            if (roadPtr < other.roadPtr)
+            {
+                return true;
+            }
+            if (other.roadPtr < roadPtr)
+            {
+                return false;
+            }
+
+            return sMin.s < other.sMin.s;
+        }
+    };
+}  // namespace roadmanager
+
+namespace std
+{
+    template <>
+    struct hash<roadmanager::BBoxAroundTwoOSIPoints>
+    {
+        std::size_t operator()(const roadmanager::BBoxAroundTwoOSIPoints &k) const
+        {
+            std::size_t h1 = std::hash<KdTree::BoundingBox>()(k.bbox);
+            std::size_t h2 = std::hash<const roadmanager::Road *>()(k.roadPtr);
+            return h1 ^ (h2 << 1);  // Combine the hashes
+        }
+    };
+}  // namespace std
+
 
 namespace roadmanager
 {
@@ -102,15 +184,6 @@ namespace roadmanager
         double d_;
         double p_scale_;
     };
-
-    typedef struct
-    {
-        double s;
-        double x;
-        double y;
-        double z;
-        double h;
-    } PointStruct;
 
     class OSIPoints
     {
@@ -2879,6 +2952,17 @@ namespace roadmanager
         id_t LookupRoadIdFromStr(std::string id_str);
         id_t LookupJunctionIdFromStr(std::string id_str);
 
+        KdTree::TreeXY<BBoxAroundTwoOSIPoints>& GetRnTree()
+        {
+            return roadNetworkTree_;
+        }
+
+        const KdTree::TreeXY<BBoxAroundTwoOSIPoints> &GetRnTree() const
+        {
+            return roadNetworkTree_;
+        }
+
+
     private:
         pugi::xml_node                            root_node_;
         std::vector<Road *>                       road_;
@@ -2894,6 +2978,8 @@ namespace roadmanager
         std::vector<std::pair<id_t, std::string>> road_ids_;
         std::vector<std::pair<id_t, std::string>> junction_ids_;
         id_t                                      LookupIdFromStr(std::vector<std::pair<id_t, std::string>> &ids, std::string id_str);
+        KdTree::TreeXY<BBoxAroundTwoOSIPoints>    roadNetworkTree_;
+
     };
 
     typedef struct
@@ -3254,6 +3340,9 @@ namespace roadmanager
         @param along_route If true only roads along currently assigned route, if any, are considered
         @return Non zero return value indicates error of some kind
         */
+
+        ReturnCode XYZH2TrackPosTreeBased(double x3, double y3, double z3, double h3);
+
         ReturnCode XYZ2TrackPos(double x,
                                 double y,
                                 double z,
@@ -4020,6 +4109,50 @@ namespace roadmanager
         // route reference
         Route *route_;  // if pointer set, the position corresponds to a point along (s) the route
 
+        struct stAndBBox
+        {
+            double                 s;
+            double                 t;
+            BBoxAroundTwoOSIPoints bboxWRoadPtr;
+        };
+        struct CandidateWHints
+        {
+            std::optional<double> zOffset;
+            double                hdgOffset;
+            stAndBBox             candidate;
+
+            bool operator<(const CandidateWHints &other) const
+            {
+                if (zOffset.has_value())
+                {
+                    if (zOffset < other.zOffset)
+                        return true;
+                    if (zOffset > other.zOffset)
+                        return false;
+                }
+                if (hdgOffset < other.hdgOffset)
+                    return true;
+                if (hdgOffset > other.hdgOffset)
+                    return false;
+                return candidate.bboxWRoadPtr.roadPtr->GetId() < other.candidate.bboxWRoadPtr.roadPtr->GetId();
+            }
+            bool operator==(const CandidateWHints &other) const
+            {
+                return candidate.bboxWRoadPtr == other.candidate.bboxWRoadPtr;
+            }
+        };
+
+        std::optional<BBoxAroundTwoOSIPoints> bboxHint;
+        std::vector<BBoxAroundTwoOSIPoints>   resultBox;
+        std::optional<CandidateWHints>        candidatesOnRoad;
+        std::optional<CandidateWHints>        candidatesOffRoad;
+
+        std::optional<double> GetZHint() const {return zHint_;}
+        void SetZHint(double z) {zHint_ = z;}
+
+        double                GetHdgHint() const {return hdgHint_;}
+        double                SetHdgHint(double hdg) {hdgHint_ = hdg;}
+
     protected:
         void       Track2Lane();
         ReturnCode Track2XYZ(int mode);
@@ -4043,6 +4176,8 @@ namespace roadmanager
         // Control lane belonging
         bool lockOnLane_;  // if true then keep logical lane regardless of lateral position, default false
 
+        std::optional<double> zHint_;
+        double                hdgHint_ = 0;
         // trajectory reference
         RMTrajectory *trajectory_;  // if pointer set, the position corresponds to a point along (s) the trajectory
 
@@ -4612,6 +4747,10 @@ namespace roadmanager
         std::string name_;
         bool        closed_;
     };
+
+    // completely paves roads with kdtree::bounding boxes containing one OSI segments
+    // stores boxes in a tree to speed up road detection; bounding boxes offset can be expanded by 'expandOffset'
+    void GenerateApproximatedRoads2DTree(KdTree::TreeXY<BBoxAroundTwoOSIPoints> &tree);
 
 }  // namespace roadmanager
 
