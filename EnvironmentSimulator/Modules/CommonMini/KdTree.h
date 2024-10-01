@@ -1,5 +1,9 @@
 #pragma once
 
+// Contributed by dSPACE GmBH
+// kduvnjak@dspace.hr
+// mdransfeld@dspace.de
+
 #include "CommonMini.hpp"
 
 #include <optional>
@@ -166,7 +170,8 @@ namespace KdTree
             }
         }
 
-        void FillInTree(Node& currNode, const std::vector<ElementIdWBBox>::iterator& startIter, const std::vector<ElementIdWBBox>::iterator& endIter)
+        template<typename Iterator>
+        void FillInTree(Node& currNode, Iterator  startIter, Iterator endIter)
         {
             const size_t numElements = endIter - startIter;
             if (numElements == 1)
@@ -224,7 +229,7 @@ namespace KdTree
             indexedBoundingBoxes_.reserve(numElements);
 
             // store bounding boxes of elements together with index of the element
-            for_each(data.begin(), data.end(), [&](const T& element){indexedBoundingBoxes_.emplace_back(indexedBoundingBoxes_.size(), boundingBoxFunc(element));});
+            for_each(data.begin(), data.end(), [&](const T& element){indexedBoundingBoxes_.push_back({indexedBoundingBoxes_.size(), boundingBoxFunc(element)});});
 
             // start creating tree
             root_ = nodes_.emplace_back(Node{});

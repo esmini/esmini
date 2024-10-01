@@ -1384,3 +1384,5 @@ int SE_WriteTGA(const char* filename, int width, int height, const unsigned char
         @return 0 if OK, -1 if failed to open file
 */
 int SE_ReadCSVFile(const char* filename, std::vector<std::vector<std::string>>& content, int skip_lines = 0);
+
+bool IntervalsOverlap(double a0, double a1, double b0, double b1);

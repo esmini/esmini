@@ -8,6 +8,10 @@
  *
  * Copyright (c) partners of Simulation Scenarios
  * https://sites.google.com/view/simulationscenarios
+ *
+ * Contributed by dSPACE GmBH
+ * kduvnjak@dspace.hr
+ * mdransfeld@dspace.de
  */
 
 /*
@@ -479,6 +483,69 @@ int roadmanager::CheckOverlapingOSIPoints(OSIPoints* first_set, OSIPoints* secon
     }
 
     return retvalue;
+}
+
+void roadmanager::GenerateApproximatedRoads2DTree(KdTree::TreeXY<BBoxAroundTwoOSIPoints>& tree)
+{
+    constexpr double expandBBox = RoadNetworkTreeConstants::EXPAND_OSI_SEGMENT_BBOX;
+
+    std::vector<BBoxAroundTwoOSIPoints> data;
+    Position                            samplePos;
+
+    auto AddCornerPoint = [&samplePos](const roadmanager::Road* roadPtr, const double sVal, const double tVal, BBoxAroundTwoOSIPoints& bboxWPtr)
+    {
+        samplePos.SetTrackPos(roadPtr->GetId(), sVal, tVal);
+        bboxWPtr.bbox |= KdTree::Point{samplePos.GetX(), samplePos.GetY()};
+    };
+
+    auto DefineBBox =
+        [&AddCornerPoint, &data](const roadmanager::Road* roadPtr, const roadmanager::PointStruct& ptMin, const roadmanager::PointStruct& ptMax)
+    {
+        BBoxAroundTwoOSIPoints& osiSegmentBBox = data.emplace_back();
+
+        const double rightTValSMin = -(roadPtr->GetWidth(ptMin.s, -1)) - expandBBox;
+        const double leftTValSMin  = roadPtr->GetWidth(ptMin.s, 1) + expandBBox;
+
+        const double rightTValSMax = -(roadPtr->GetWidth(ptMax.s, -1)) - expandBBox;
+        const double leftTValSMax  = roadPtr->GetWidth(ptMax.s, 1) + expandBBox;
+
+        osiSegmentBBox.roadPtr = roadPtr;
+
+        AddCornerPoint(roadPtr, ptMin.s, rightTValSMin, osiSegmentBBox);
+        AddCornerPoint(roadPtr, ptMin.s, leftTValSMin, osiSegmentBBox);
+        AddCornerPoint(roadPtr, ptMax.s, rightTValSMax, osiSegmentBBox);
+        AddCornerPoint(roadPtr, ptMax.s, leftTValSMax, osiSegmentBBox);
+
+        osiSegmentBBox.sMin = ptMin;
+        osiSegmentBBox.sMax = ptMax;
+
+        osiSegmentBBox.sMinCos = std::cos(ptMin.h);
+        osiSegmentBBox.sMinSin = std::sin(ptMin.h);
+        osiSegmentBBox.sMaxCos = std::cos(ptMax.h);
+        osiSegmentBBox.sMaxSin = std::sin(ptMax.h);
+    };
+
+    for (size_t i = 0; i < roadmanager::Position::GetOpenDrive()->GetNumOfRoads(); i++)
+    {
+        const roadmanager::Road* roadPtr = roadmanager::Position::GetOpenDrive()->GetRoadByIdx(i);
+        for (size_t j = 0; j < roadPtr->GetNumberOfLaneSections(); j++)
+        {
+            const roadmanager::LaneSection* currLS = roadPtr->GetLaneSectionByIdx(j);
+
+            auto lane = currLS->GetLaneById(0);
+
+            for (size_t k = 0; k < lane->GetOSIPoints()->GetNumOfOSIPoints() - 1; k++)
+            {
+                const PointStruct& ptMin = lane->GetOSIPoints()->GetPoint(k);
+                const PointStruct& ptMax = lane->GetOSIPoints()->GetPoint(k + 1);
+                DefineBBox(roadPtr, ptMin, ptMax);
+            }
+        }
+    }
+
+    auto GetOSISegmentBBox = [](const BBoxAroundTwoOSIPoints& bboxWRoadPtr) -> KdTree::BoundingBox { return bboxWRoadPtr.bbox; };
+
+    tree = KdTree::TreeXY<BBoxAroundTwoOSIPoints>(data, GetOSISegmentBBox);
 }
 
 double Polynomial::Evaluate(double p) const
@@ -7495,6 +7562,248 @@ typedef struct
     PointStruct* osi_point;  // osi point reference
 } XYZHVertex;
 
+double OSIPtsToSVal(const double             x3,
+                    const double             y3,
+                    const PointStruct&       osip_closest,
+                    const PointStruct&       osip_first,
+                    const PointStruct&       osip_second,
+                    const roadmanager::Road* road)
+{
+    double closestS = 0;
+    {
+        // Find out what line the points projects to, starting or ending with closest point?
+        // Do this by comparing the angle to the position with the road normal at found point
+
+        double xTangent = cos(osip_closest.h);
+        double yTangent = sin(osip_closest.h);
+        double dotP     = GetDotProduct2D(xTangent, yTangent, x3 - osip_closest.x, y3 - osip_closest.y);
+
+        {
+            // Different points
+            double angleBetweenNormals, angleToPosition;
+            double normalIntersectionX, normalIntersectionY;
+            double sNorm = 0;
+
+            // closestPointInside = true;
+
+            // Check for straight line
+            if (std::abs(osip_first.h - osip_second.h) < 1e-5)  // Select threshold to avoid precision issues in calculations
+            {
+                double px, py;
+                ProjectPointOnLine2D(x3, y3, osip_first.x, osip_first.y, osip_second.x, osip_second.y, px, py);
+
+                // Find relative position of projected point on line segment
+                double l1 = GetLengthOfLine2D(osip_first.x, osip_first.y, px, py);
+                double l2 = GetLengthOfLine2D(osip_first.x, osip_first.y, osip_second.x, osip_second.y);
+                sNorm     = l1 / l2;
+            }
+            else
+            {
+                // Find normals at end points of line segment
+                double xn0, yn0, xn1, yn1;
+                RotateVec2D(cos(osip_first.h), sin(osip_first.h), M_PI_2, xn0, yn0);
+                RotateVec2D(cos(osip_second.h), sin(osip_second.h), M_PI_2, xn1, yn1);
+
+                // Find intersection of extended normals
+                GetIntersectionOfTwoLineSegments(osip_first.x,
+                                                 osip_first.y,
+                                                 osip_first.x + xn0,
+                                                 osip_first.y + yn0,
+                                                 osip_second.x,
+                                                 osip_second.y,
+                                                 osip_second.x + xn1,
+                                                 osip_second.y + yn1,
+                                                 normalIntersectionX,
+                                                 normalIntersectionY);
+
+                // Align normal vectors to direction from intersection towards line segment
+                NormalizeVec2D(osip_first.x - normalIntersectionX, osip_first.y - normalIntersectionY, xn0, yn0);
+                NormalizeVec2D(osip_second.x - normalIntersectionX, osip_second.y - normalIntersectionY, xn1, yn1);
+
+                // Find angle between normals
+                angleBetweenNormals = acos(GetDotProduct2D(-xn0, -yn0, -xn1, -yn1));
+
+                // Find angle between the two vectors:
+                // 1. line between normals intersection and the point of query
+                // 2. Normal in the first point of closest line segment (turned around to match direction of first line)
+                double lx       = normalIntersectionX - x3;
+                double ly       = normalIntersectionY - y3;
+                double lLength  = sqrt(lx * lx + ly * ly);
+                angleToPosition = acos(CLAMP(GetDotProduct2D(-xn0, -yn0, lx / lLength, ly / lLength), -1.0, 1.0));
+
+                // Finally calculate interpolation factor
+                if (std::abs(angleBetweenNormals) < SMALL_NUMBER)
+                {
+                    sNorm = 0.0;
+                }
+                else
+                {
+                    sNorm = angleToPosition / angleBetweenNormals;
+                }
+            }
+
+            closestS = (1 - sNorm) * osip_first.s + sNorm * osip_second.s;
+            closestS = CLAMP(closestS, 0, road->GetLength());
+        }
+    }
+    return closestS;
+}
+
+Position::ReturnCode roadmanager::Position::XYZH2TrackPosTreeBased(double x3, double y3, double z3, double h3)
+{
+    roadmanager::Road* roadMin  = nullptr;
+    ReturnCode         retvalue = ReturnCode::OK;
+    this->resultBox.reserve(40);
+
+    auto CollectOSISegmentsWithPointInside = [this, x3, y3](const BBoxAroundTwoOSIPoints& bboxWRoadPtr) -> bool
+    {
+        const double firstPtDot = GetDotProduct2D(bboxWRoadPtr.sMinCos, bboxWRoadPtr.sMinSin, x3 - bboxWRoadPtr.sMin.x, y3 - bboxWRoadPtr.sMin.y);
+        if (firstPtDot < 0)
+            return false;
+        const double secondPtDot = GetDotProduct2D(bboxWRoadPtr.sMaxCos, bboxWRoadPtr.sMaxSin, x3 - bboxWRoadPtr.sMax.x, y3 - bboxWRoadPtr.sMax.y);
+        if (secondPtDot >= 0)
+            return false;
+
+        resultBox.push_back(bboxWRoadPtr);
+
+        return false;
+    };
+
+    if (bboxHint.has_value())
+    {
+        CollectOSISegmentsWithPointInside(*bboxHint);
+    }
+
+    if (resultBox.empty())
+    {
+        bboxHint = std::nullopt;
+        GetOpenDrive()->GetRnTree().PointIntersects({x3, y3}, CollectOSISegmentsWithPointInside);
+    }
+
+    if (resultBox.empty())
+    {
+        return ReturnCode::ERROR_GENERIC;
+    }
+
+    auto CheckIfRoadBelongsToRoute = [this](const int currRoadId)
+    {
+        for (const auto& waypoint : route_->minimal_waypoints_)
+        {
+            if (waypoint.GetTrackId() == currRoadId)
+                return true;
+        }
+        return false;
+    };
+
+    for (const auto& bboxWRoadPtr : resultBox)
+    {
+        double resultSVal = 0;
+        double resultTVal = 0;
+
+        if (route_ && !CheckIfRoadBelongsToRoute(bboxWRoadPtr.roadPtr->GetId()))
+            continue;
+
+        resultSVal = OSIPtsToSVal(x3, y3, bboxWRoadPtr.sMin, bboxWRoadPtr.sMin, bboxWRoadPtr.sMax, bboxWRoadPtr.roadPtr);
+
+        // Set position exact on center line
+        SetTrackPos(bboxWRoadPtr.roadPtr->GetId(), resultSVal, 0, true);
+
+        // Find out actual lateral position
+        resultTVal = PointToLineDistance2DSigned(x3, y3, x_, y_, x_ + cos(GetHRoad()), y_ + sin(GetHRoad()));
+
+        const double rightWidth = -bboxWRoadPtr.roadPtr->GetWidth(resultSVal, -1);
+        const double leftWidth  = bboxWRoadPtr.roadPtr->GetWidth(resultSVal, 1);
+
+        const bool pointOnRoad = resultTVal > rightWidth && resultTVal < leftWidth;
+
+        std::optional<double> zOffsetOpt = std::nullopt;
+        if (zHint_.has_value())
+            zOffsetOpt = std::abs(*zHint_ - GetZ());
+
+        CandidateWHints currCandidate{zOffsetOpt,
+                                      GetAbsAngleDifference(GetAngleInInterval2PI(hdgHint_), GetHRoad()),
+                                      {resultSVal, resultTVal, bboxWRoadPtr}};
+        if (pointOnRoad)
+        {
+            if (candidatesOnRoad.has_value())
+            {
+                if (currCandidate < candidatesOnRoad)
+                    candidatesOnRoad = currCandidate;
+            }
+            else
+            {
+                candidatesOnRoad = currCandidate;
+            }
+        }
+        else
+        {
+            if (candidatesOffRoad.has_value())
+            {
+                if (currCandidate < candidatesOffRoad)
+                    candidatesOffRoad = currCandidate;
+            }
+            else
+            {
+                candidatesOffRoad = currCandidate;
+            }
+        }
+    }
+
+    if (!candidatesOnRoad.has_value() && !candidatesOffRoad.has_value())
+    {
+        return ReturnCode::ERROR_GENERIC;
+    }
+
+    // Candidates are allready sorted by z value then hdg offset value
+    const stAndBBox& result = candidatesOnRoad.has_value() ? candidatesOnRoad->candidate : candidatesOffRoad->candidate;
+    retvalue                = SetTrackPos(result.bboxWRoadPtr.roadPtr->GetId(), result.s, result.t, true);
+    roadMin                 = const_cast<roadmanager::Road*>(result.bboxWRoadPtr.roadPtr);
+
+    SetTrackPos(roadMin->GetId(), result.s, result.t, false);
+
+    this->track_idx_ = GetOpenDrive()->GetTrackIdxById(roadMin->GetId());
+
+    if (resultBox.size() > 1)
+    {
+        this->bboxHint = std::nullopt;
+        ;
+    }
+    else
+    {
+        this->bboxHint = result.bboxWRoadPtr;
+    }
+
+    resultBox.clear();
+    candidatesOnRoad.reset();
+    candidatesOffRoad.reset();
+
+    // Set specified position and heading
+    SetX(x3);
+    SetY(y3);
+    SetHeading(h3);
+
+   /* if (GetAlignModeZ() == Position::ALIGN_MODE::ALIGN_NONE)
+    {
+        SetZ(z3);
+    }
+    EvaluateRoadZPitchRoll();*/
+
+    if (GetS() > roadMin->GetLength())
+    {
+        // if outside road endpoint boundries, ignore road pitch
+        p_road_ = 0.0;
+        SetPitch(0.0);
+    }
+
+    // If on a route, calculate corresponding route position
+    if (route_ && route_->IsValid())
+    {
+        CalcRoutePosition();
+    }
+
+    return retvalue;
+}
+
 Position::ReturnCode
 Position::XYZ2TrackPos(double x3, double y3, double z3, int mode, bool connectedOnly, id_t roadId, bool check_overlapping_roads, bool along_route)
 {
@@ -8354,7 +8663,12 @@ void Position::RoadMark2Track()
 
 void Position::XYZ2Track(int mode)
 {
-    XYZ2TrackPos(x_, y_, z_, mode == PosMode::UNDEFINED ? GetMode(PosModeType::SET) : mode);
+    roadmanager::Position::ReturnCode retCode = XYZH2TrackPosTreeBased(x_, y_, z_, h_);
+    if (retCode != ReturnCode::OK)
+    {
+        XYZ2TrackPos(x_, y_, z_, mode == PosMode::UNDEFINED ? GetMode(PosModeType::SET) : mode);
+    }
+    
 }
 
 Position::ReturnCode Position::XYZ2Route(int mode)
@@ -9418,6 +9732,9 @@ int Position::SetInertiaPosMode(double x, double y, double z, double h, double p
             z = z_relative_;
         }
     }
+
+    zHint_   = z_;
+    hdgHint_ = h;
 
     if (updateTrackPos)
     {

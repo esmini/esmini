@@ -21,6 +21,7 @@
 #include <sstream>
 #include <locale>
 #include <array>
+#include <assert.h>
 
 // UDP network includes
 #ifndef _WIN32
@@ -2209,4 +2210,10 @@ int SE_ReadCSVFile(const char* filename, std::vector<std::vector<std::string>>& 
     }
 
     return 0;
+}
+
+bool IntervalsOverlap(double a0, double a1, double b0, double b1)
+{
+    assert(a0 <= a1 && b0 <= b1);
+    return (a0 <= b0) ? (b0 <= a1) : (a0 <= b1);
 }
