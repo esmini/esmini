@@ -3,6 +3,7 @@ import matplotlib.animation as anim
 import numpy as np
 import os
 import sys
+import struct
 import ctypes as ct
 
 # Add scripts root directory to module search path in order to find osi3
@@ -102,10 +103,40 @@ class View:
         ani = anim.FuncAnimation(self.fig, self.update, frames=range(100), init_func=self.init, blit=True)
         plt.show()
 
+class OSIFile:
+    def __init__(self, osi_filename):
+        try:
+            self.file = open(osi_filename, 'rb')
+        except OSError:
+            print('ERROR: Could not open file {} for reading'.format(osi_filename))
+            raise
+
+        self.filename = osi_filename
+        self.gt = GroundTruth()
+        self.read_next_message()
+
+        self.view = View()
+        self.view.add_static_content(self.gt)
+        self.view.add_dynamic_content()
+
+    def close(self):
+        self.file.close()
+
+    def read_next_message(self):
+        size_bin = self.file.read(4)
+        if len(size_bin) < 4:
+            return False
+        else:
+            msg_size = struct.unpack('I', size_bin)[0]
+            msg = self.file.read(msg_size)
+            self.gt.ParseFromString(msg)
+        return True
+
+    def run(self):
+        self.view.render()
 
 class Sim:
     def __init__(self, scenario):
-        gt2 = GroundTruth
         self.gt = GroundTruth()  # OSI groundtruth message
         self.gt_size = ct.c_int()
         if se.SE_Init(scenario, 0, 0, 0, 0) != 0:
@@ -146,7 +177,7 @@ class Sim:
                 o.base.orientation_acceleration.yaw))
 
 
-    def Run(self):
+    def run(self):
         self.view.render()
         # while se.SE_GetQuitFlag() != 1:
         #     se.SE_StepDT(0.05)
@@ -156,10 +187,18 @@ class Sim:
         se.SE_Close()
 
 if __name__ == '__main__':
-    # Execute when the module is not initialized from an import statement.
+    if len(sys.argv) > 1:
+        filename = sys.argv[1]
+    else:
+        print('Usage: {} <filename>'.format(os.path.basename(sys.argv[0])))
+        exit(-1)
 
-    sim = Sim(b"../resources/xosc/cut-in.xosc")
-    sim.Run()
+    if os.path.splitext(sys.argv[1])[1] == '.xosc':
+        sim = Sim(b"../resources/xosc/cut-in.xosc")
+        sim.run()
+    else:
+        osi_file = OSIFile(sys.argv[1])
+        osi_file.run()
 
-exit (0)
+    exit (0)
 
