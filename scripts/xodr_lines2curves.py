@@ -4,7 +4,7 @@
 ## The output is a modified OpenDRIVE file, "_curves" appended to input filename.
 ## The original file is preserved.
 ##
-## Usage: xodr_lines2curves.py <OpenDRIVE file>
+## usage: xodr_lines2curves.py [-h] input_filename [output_filename]
 ##
 ## Overall algorithm:
 ##  - remove duplicate roads, keep only last
@@ -305,6 +305,7 @@ else:
     odr_out_filename = append_string_to_filename_stem("_curves", odr)
 
 # write the manipulated OpenSCENARIO file
+etree.indent(odr_tree, space='   ', level=0)
 odr_tree.write(odr_out_filename)
 nr_roads_considered = 0
 for seq in road_sequences:
