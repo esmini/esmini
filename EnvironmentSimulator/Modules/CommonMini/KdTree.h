@@ -1,8 +1,10 @@
 #pragma once
-
-// Contributed by dSPACE GmBH
-// kduvnjak@dspace.hr
-// mdransfeld@dspace.de
+/*
+* Copyright 2024, dSPACE GmbH, All rights reserved.
+* SPDX-License-Identifier: MPL-2.0
+* kduvnjak@dspace.hr
+* mdransfeld@dspace.de
+*/
 
 #include "CommonMini.hpp"
 
