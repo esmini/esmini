@@ -4,7 +4,7 @@
 ## The output is a modified OpenDRIVE file, "_curves" appended to input filename.
 ## The original file is preserved.
 ##
-## Usage: xodr_lines2curves.py <OpenDRIVE file>
+## usage: xodr_lines2curves.py [-h] input_filename [output_filename]
 ##
 ## Overall algorithm:
 ##  - remove duplicate roads, keep only last

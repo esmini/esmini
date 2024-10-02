@@ -12,7 +12,7 @@
 ## Note: Any SceneGraphFile (3D model) specified in the OpenSCENARIO file will not be handled. See
 ## https://esmini.github.io/#_openscenegraph_and_3d_models for example how to translate 3D model files.
 ##
-## Usage: move_to_origin.py <OpenSCENARIO file>
+## usage: move_to_origin.py [-h] input_filename [output_filename]
 
 import os
 import xml.etree.ElementTree as etree
