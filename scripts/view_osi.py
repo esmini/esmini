@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import matplotlib.animation as anim
 import matplotlib.collections as mc
+import matplotlib.widgets as mw
 import numpy as np
 import os
 import sys
@@ -31,10 +32,13 @@ se.SE_GetOSIGroundTruth.argtypes = [ct.c_void_p]
 se.SE_StepDT.argtypes = [ct.c_float]
 
 class View:
-    def __init__(self):
+    def __init__(self, gt):
         # Create the figure and axis
         self.fig, self.ax = plt.subplots()
         self.canvas = self.fig.canvas
+        self.gt = gt
+        self.grid_enabled = -1
+
 
         # Static content: Labels, grids, etc.
         self.ax.set_title('OSI plot')
@@ -43,6 +47,26 @@ class View:
         self.ax.grid(True)
         self.ax.set_aspect('equal', 'datalim')
         self.canvas.mpl_connect('resize_event', self.on_resize)
+
+        self.add_static_content(self.gt)
+        self.add_dynamic_content()
+
+        self.ani = anim.FuncAnimation(self.fig, self.update, frames=range(100), blit=False, interval=50)
+
+        # Create check buttons
+        self.ax_button1 = plt.axes([0.1, 0.05, 0.2, 0.075])  # Position for sine wave button
+        self.ax_button2 = plt.axes([0.4, 0.05, 0.2, 0.075])  # Position for cosine wave button
+        self.ax_button3 = plt.axes([0.7, 0.05, 0.2, 0.075])  # Position for grid button
+
+        self.button_sine = mw.Button(self.ax_button1, 'Toggle Sine')
+        self.button_cosine = mw.Button(self.ax_button2, 'Toggle Cosine')
+        self.button_grid = mw.Button(self.ax_button3, 'Toggle Grid')
+
+        # Connect the buttons to their actions
+        self.button_sine.on_clicked(self.toggle_sine_wave)
+        self.button_cosine.on_clicked(self.toggle_cosine_wave)
+        self.button_grid.on_clicked(self.toggle_grid)
+
 
     # Adjust the axis margins (padding between the axis and the figure borders)
     def adjust_margins(self):
@@ -75,28 +99,35 @@ class View:
         elif type == 15: return 'SOUND_BARRIER'
         else: return 'UNSUPPORTED: {}'.format(type)
 
-    def add_static_content(self, gt):
-        # lines = []
-        # for lane in gt.lane:
-        #     clf=lane.classification
-        #     i=0
-        #     line=[]
-        #     while i < len(clf.centerline):
-        #         p0 = clf.centerline[i]
-        #         line += [(p0.x, p0.y)]
-        #         i += 1
-        #     lines.append(line)
-        # lc = mc.LineCollection(lines, color='#AAAAAA')
-        # self.ax.add_collection(lc)
+    # Callback function to handle visibility toggling
+    def toggle_visibility(self, label):
+        print("")
+        # if label == 'Sine':
+        #     line1.set_visible(not line1.get_visible())
+        # elif label == 'Cosine':
+        #     line2.set_visible(not line2.get_visible())
+        # plt.draw()
 
-        legends = []
-        legend_strings = []
+
+    def add_static_content(self, gt):
+        lines = []
+        for lane in gt.lane:
+            clf=lane.classification
+            i=0
+            line=[]
+            while i < len(clf.centerline):
+                p0 = clf.centerline[i]
+                line += [(p0.x, p0.y)]
+                i += 1
+            lines.append(line)
+        lc = mc.LineCollection(lines, label="CenterLine", color='#BBBBFF')
+        self.ax.add_collection(lc)
+        self.static_plots = []
+        no_line_type = False
+        unknown_line_type = False
         for l in gt.lane_boundary:
             i=0
             type = l.classification.type
-            if type not in legends:
-                legends.append(type)
-                legend_strings.append(self.rmtype2string(type))
             if type == 4:  # dashed line
                 points = []  # create one list for polyline
             else:
@@ -106,11 +137,11 @@ class View:
                 color = '#222222'
             else:
                 if type == 2:
-                    print('Boundary type {} plotted with light gray color'.format(self.rmtype2string(type)))
-                    color = '#EEEEEE'  # light yellow for NO_LINE
+                    color = '#EEEEEE'  # light gray for NO_LINE
+                    no_line_type = True
                 else:
-                    print('Unsupported lane boundary type: {} plotted with light red color'.format(self.rmtype2string(type)))
-                    color = '#FFAAAA'  # light gray as default for various unsupported line types
+                    color = '#FFAAAA'  # light red as default for various unsupported line types
+                    unknown_line_type = True
 
             while i < len(l.boundary_line):
                 if type == 4:  # dashed line
@@ -127,37 +158,42 @@ class View:
                     points[1].append(p.y)
                     i += 1
             if type == 4:  # dashed line
-                lc = mc.LineCollection(points, color=color)
-                self.ax.add_collection(lc)
+                lc = mc.LineCollection(points, label=self.rmtype2string(type), color=color)
+                plot = self.ax.add_collection(lc)
             else:  # solid line
-                self.ax.plot(points[0], points[1], color=color)
-        self.ax.legend(legend_strings)
+                plot, = self.ax.plot(points[0], points[1], label=self.rmtype2string(type), color=color)
+            self.static_plots.append(plot)
 
-        # for i, rm in enumerate(gt.road_marking):
-        #     self.x_roadmark = []
-        #     self.y_roadmark = []
-        #     bps = rm.base.base_polygon
-        #     for bp in bps:
-        #         self.x_roadmark.append(bps.x)
-        #         self.y_roadmark.append(bps.y)
-        #     self.ax.plot(self.x_roadmark, self.y_roadmark, color='#333333', label='LaneBoundary' if i==0 else '')
+        if no_line_type:
+            print('Boundary type {} plotted with light gray color'.format(self.rmtype2string(type)))
+        if unknown_line_type:
+            print('Unsupported lane boundary type: {} plotted with light red color'.format(self.rmtype2string(type)))
+
+
+        # Create legend with unique entries
+        handles, labels = self.ax.get_legend_handles_labels()
+        unique_labels = dict(zip(labels, handles))
+        self.ax.legend(unique_labels.values(), unique_labels.keys())
+
+        for i, rm in enumerate(gt.road_marking):
+            self.x_roadmark = []
+            self.y_roadmark = []
+            bps = rm.base.base_polygon
+            for bp in bps:
+                self.x_roadmark.append(bps.x)
+                self.y_roadmark.append(bps.y)
+            self.ax.plot(self.x_roadmark, self.y_roadmark, color='#333333', label='RoadMarking' if i==0 else '')
 
     def add_dynamic_content(self):
         # Dynamic content: Plot a dynamic line (that will update)
         self.dynamic_line, = self.ax.plot([], [], color='red', label='Dynamic Line', linewidth=2)
-
         # Set x and y limits for the dynamic line
-        self.ax.set
+        # self.ax.set
         # self.ax.set_xlim(0, 2*np.pi)
         # self.ax.set_ylim(-1.5, 1.5)
 
         # Show legend
         # self.ax.legend()
-
-    # Function to initialize the dynamic plot (blank at the beginning)
-    def init(self):
-        self.dynamic_line.set_data([], [])
-        return self.dynamic_line,
 
     # Function to update the dynamic plot (called repeatedly)
     def update(self, frame):
@@ -166,10 +202,22 @@ class View:
         self.dynamic_line.set_data(self.x_dynamic, self.y_dynamic)
         return self.dynamic_line,
 
-    def render(self):
-        # Blitting is enabled here to prevent full figure redraw
-        ani = anim.FuncAnimation(self.fig, self.update, frames=range(100), init_func=self.init, blit=True)
-        plt.show()
+    # Button action to toggle sine wave visibility
+    def toggle_sine_wave(self, event):
+        print("aisjdoisajd")
+        self.static_plots[0].set_visible(not self.static_plots[0].get_visible())  # Toggle sine wave visibility
+        plt.draw()
+
+    # Button action to toggle cosine wave visibility
+    def toggle_cosine_wave(self, event):
+        print("aisjdoisajd2")
+        self.static_plots[0].set_visible(not self.static_plots[0].get_visible())  # Toggle cosine wave visibility
+        plt.draw()
+
+    # Button action to toggle grid visibility
+    def toggle_grid(self, event):
+        self.ax.grid(not self.ax.xaxis._major_tick_kw['gridOn'])  # Toggle grid visibility
+        # plt.draw()
 
 class OSIFile:
     def __init__(self, osi_filename):
@@ -183,9 +231,8 @@ class OSIFile:
         self.gt = GroundTruth()
         self.read_next_message()
 
-        self.view = View()
-        self.view.add_static_content(self.gt)
-        self.view.add_dynamic_content()
+        self.view = View(self.gt)
+
 
     def close(self):
         self.file.close()
@@ -200,8 +247,6 @@ class OSIFile:
             self.gt.ParseFromString(msg)
         return True
 
-    def run(self):
-        self.view.render()
 
 class Sim:
     def __init__(self, scenario):
@@ -266,7 +311,7 @@ if __name__ == '__main__':
         sim.run()
     else:
         osi_file = OSIFile(sys.argv[1])
-        osi_file.run()
+        plt.show()
 
     exit (0)
 
