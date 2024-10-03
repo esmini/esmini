@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import matplotlib.animation as anim
+import matplotlib.collections as mc
 import numpy as np
 import os
 import sys
@@ -55,24 +56,91 @@ class View:
     def on_resize(self, event):
         self.adjust_margins()
 
-    def add_static_content(self, gt):
-        for i, lane in enumerate(gt.lane):
-            self.x_lanecenter = []
-            self.y_lanecenter = []
-            clf=lane.classification
-            for c_line in clf.centerline:
-                self.x_lanecenter.append(c_line.x)
-                self.y_lanecenter.append(c_line.y)
-            self.ax.plot(self.x_lanecenter, self.y_lanecenter, color='blue', label='Centerline')
+    def rmtype2string(self, type):
+        if type == 0: return 'UNKNOWN'
+        elif type == 1: return 'OTHER'
+        elif type == 2: return 'NO_LINE'
+        elif type == 3: return 'SOLID_LINE'
+        elif type == 4: return 'DASHED_LINE'
+        elif type == 5: return 'BOTTS_DOTS'
+        elif type == 6: return 'ROAD_EDGE'
+        elif type == 7: return 'SNOW_EDGE'
+        elif type == 8: return 'GRASS_EDGE'
+        elif type == 9: return 'GRAVEL_EDGE'
+        elif type == 10: return 'SOIL_EDGE'
+        elif type == 11: return 'GUARD_RAIL'
+        elif type == 12: return 'CURB'
+        elif type == 13: return 'STRUCTURE'
+        elif type == 14: return 'BARRIER'
+        elif type == 15: return 'SOUND_BARRIER'
+        else: return 'UNSUPPORTED: {}'.format(type)
 
-        # self.x_laneboundary = []
-        # self.y_laneboundary = []
-        # for i, l in enumerate(gt.lane_boundary):
-        #     lines = l.boundary_line
-        #     for line in lines:
-        #         self.x_laneboundary.append(line.position.x)
-        #         self.y_laneboundary.append(line.position.y)
-        # self.ax.plot(self.x_laneboundary, self.y_laneboundary, color='red', label='Centerline')
+    def add_static_content(self, gt):
+        # lines = []
+        # for lane in gt.lane:
+        #     clf=lane.classification
+        #     i=0
+        #     line=[]
+        #     while i < len(clf.centerline):
+        #         p0 = clf.centerline[i]
+        #         line += [(p0.x, p0.y)]
+        #         i += 1
+        #     lines.append(line)
+        # lc = mc.LineCollection(lines, color='#AAAAAA')
+        # self.ax.add_collection(lc)
+
+        legends = []
+        legend_strings = []
+        for l in gt.lane_boundary:
+            i=0
+            type = l.classification.type
+            if type not in legends:
+                legends.append(type)
+                legend_strings.append(self.rmtype2string(type))
+            if type == 4:  # dashed line
+                points = []  # create one list for polyline
+            else:
+                points = [[],[]]  # create lists for x and y data separately, for solid line plots
+
+            if type == 3 or type == 4 or type == 5:  # solid line or dashed line or botts dots
+                color = '#222222'
+            else:
+                if type == 2:
+                    print('Boundary type {} plotted with light gray color'.format(self.rmtype2string(type)))
+                    color = '#EEEEEE'  # light yellow for NO_LINE
+                else:
+                    print('Unsupported lane boundary type: {} plotted with light red color'.format(self.rmtype2string(type)))
+                    color = '#FFAAAA'  # light gray as default for various unsupported line types
+
+            while i < len(l.boundary_line):
+                if type == 4:  # dashed line
+                    p0 = l.boundary_line[i].position
+                    if i < len(l.boundary_line)-1:
+                        p1 = l.boundary_line[i+1].position
+                    else:
+                        p1 = l.boundary_line[i].position  # make a dot instead of line
+                    points.append([(p0.x, p0.y), (p1.x, p1.y)])
+                    i += 2
+                else:
+                    p = l.boundary_line[i].position
+                    points[0].append(p.x)
+                    points[1].append(p.y)
+                    i += 1
+            if type == 4:  # dashed line
+                lc = mc.LineCollection(points, color=color)
+                self.ax.add_collection(lc)
+            else:  # solid line
+                self.ax.plot(points[0], points[1], color=color)
+        self.ax.legend(legend_strings)
+
+        # for i, rm in enumerate(gt.road_marking):
+        #     self.x_roadmark = []
+        #     self.y_roadmark = []
+        #     bps = rm.base.base_polygon
+        #     for bp in bps:
+        #         self.x_roadmark.append(bps.x)
+        #         self.y_roadmark.append(bps.y)
+        #     self.ax.plot(self.x_roadmark, self.y_roadmark, color='#333333', label='LaneBoundary' if i==0 else '')
 
     def add_dynamic_content(self):
         # Dynamic content: Plot a dynamic line (that will update)
@@ -84,7 +152,7 @@ class View:
         # self.ax.set_ylim(-1.5, 1.5)
 
         # Show legend
-        self.ax.legend()
+        # self.ax.legend()
 
     # Function to initialize the dynamic plot (blank at the beginning)
     def init(self):
