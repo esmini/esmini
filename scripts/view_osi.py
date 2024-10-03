@@ -53,28 +53,29 @@ class View:
 
         self.ani = anim.FuncAnimation(self.fig, self.update, frames=range(100), blit=False, interval=50)
 
-        # Create check buttons
-        self.ax_button1 = plt.axes([0.1, 0.05, 0.2, 0.075])  # Position for sine wave button
-        self.ax_button2 = plt.axes([0.4, 0.05, 0.2, 0.075])  # Position for cosine wave button
-        self.ax_button3 = plt.axes([0.7, 0.05, 0.2, 0.075])  # Position for grid button
-
-        self.button_sine = mw.Button(self.ax_button1, 'Toggle Sine')
-        self.button_cosine = mw.Button(self.ax_button2, 'Toggle Cosine')
+        # Create grid toggle button
+        self.ax_button3 = plt.axes([0.05, 0.05, 0.2, 0.075])  # Position for grid button
         self.button_grid = mw.Button(self.ax_button3, 'Toggle Grid')
-
-        # Connect the buttons to their actions
-        self.button_sine.on_clicked(self.toggle_sine_wave)
-        self.button_cosine.on_clicked(self.toggle_cosine_wave)
         self.button_grid.on_clicked(self.toggle_grid)
+
+        # Create a CheckButtons widget
+        labels = list(self.static_plots.keys())
+        self.rax = self.ax.inset_axes([1.0, 0.5, 2.0, 0.04*len(labels)])  # Position of the checkbox area
+        self.check = mw.CheckButtons(self.rax, labels, [True]*len(labels))
+
+        # Attach the toggle function to the check buttons
+        self.check.on_clicked(self.toggle_visibility)
 
 
     # Adjust the axis margins (padding between the axis and the figure borders)
     def adjust_margins(self):
         self.screen_width, self.screen_height = self.canvas.get_width_height()
         self.fig.subplots_adjust(left=70.0/self.screen_width,
-                                 right=1.0-15.0/self.screen_width,
+                                 right=1.0-300.0/self.screen_width,
                                  top=1.0-25/self.screen_height,
                                  bottom=45/self.screen_height,)
+        self.rax.set_position([0.5, 0.5, 1.0, 0.04*len(self.static_plots.keys())])  # Position of the checkbox area
+
 
     # Resize event callback
     def on_resize(self, event):
@@ -99,17 +100,8 @@ class View:
         elif type == 15: return 'SOUND_BARRIER'
         else: return 'UNSUPPORTED: {}'.format(type)
 
-    # Callback function to handle visibility toggling
-    def toggle_visibility(self, label):
-        print("")
-        # if label == 'Sine':
-        #     line1.set_visible(not line1.get_visible())
-        # elif label == 'Cosine':
-        #     line2.set_visible(not line2.get_visible())
-        # plt.draw()
-
-
     def add_static_content(self, gt):
+        self.static_plots = {}
         lines = []
         for lane in gt.lane:
             clf=lane.classification
@@ -120,9 +112,11 @@ class View:
                 line += [(p0.x, p0.y)]
                 i += 1
             lines.append(line)
+
         lc = mc.LineCollection(lines, label="CenterLine", color='#BBBBFF')
-        self.ax.add_collection(lc)
-        self.static_plots = []
+        plot = self.ax.add_collection(lc)
+        self.static_plots["CenterLine"] = [plot]
+
         no_line_type = False
         unknown_line_type = False
         for l in gt.lane_boundary:
@@ -162,13 +156,16 @@ class View:
                 plot = self.ax.add_collection(lc)
             else:  # solid line
                 plot, = self.ax.plot(points[0], points[1], label=self.rmtype2string(type), color=color)
-            self.static_plots.append(plot)
+
+            # group plots by line type for visibility
+            if not self.rmtype2string(type) in self.static_plots:
+                self.static_plots[self.rmtype2string(type)] = []
+            self.static_plots[self.rmtype2string(type)].append(plot)
 
         if no_line_type:
             print('Boundary type {} plotted with light gray color'.format(self.rmtype2string(type)))
         if unknown_line_type:
             print('Unsupported lane boundary type: {} plotted with light red color'.format(self.rmtype2string(type)))
-
 
         # Create legend with unique entries
         handles, labels = self.ax.get_legend_handles_labels()
@@ -183,6 +180,10 @@ class View:
                 self.x_roadmark.append(bps.x)
                 self.y_roadmark.append(bps.y)
             self.ax.plot(self.x_roadmark, self.y_roadmark, color='#333333', label='RoadMarking' if i==0 else '')
+
+    def toggle_visibility(self, label):
+        for plot in self.static_plots[label]:
+            plot.set_visible(not plot.get_visible())
 
     def add_dynamic_content(self):
         # Dynamic content: Plot a dynamic line (that will update)
@@ -201,18 +202,6 @@ class View:
         self.y_dynamic = np.sin(self.x_dynamic + frame / 10.0)  # Dynamic change
         self.dynamic_line.set_data(self.x_dynamic, self.y_dynamic)
         return self.dynamic_line,
-
-    # Button action to toggle sine wave visibility
-    def toggle_sine_wave(self, event):
-        print("aisjdoisajd")
-        self.static_plots[0].set_visible(not self.static_plots[0].get_visible())  # Toggle sine wave visibility
-        plt.draw()
-
-    # Button action to toggle cosine wave visibility
-    def toggle_cosine_wave(self, event):
-        print("aisjdoisajd2")
-        self.static_plots[0].set_visible(not self.static_plots[0].get_visible())  # Toggle cosine wave visibility
-        plt.draw()
 
     # Button action to toggle grid visibility
     def toggle_grid(self, event):
