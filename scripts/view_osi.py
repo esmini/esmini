@@ -34,7 +34,8 @@ se.SE_StepDT.argtypes = [ct.c_float]
 class View:
     def __init__(self, gt):
         # Create the figure and axis
-        self.fig, self.ax = plt.subplots()
+        px = 1/plt.rcParams['figure.dpi']  # pixel size in inches
+        self.fig, self.ax = plt.subplots(figsize=(1200*px, 600*px))
         self.canvas = self.fig.canvas
         self.gt = gt
         self.grid_enabled = -1
@@ -54,28 +55,49 @@ class View:
         self.ani = anim.FuncAnimation(self.fig, self.update, frames=range(100), blit=False, interval=50)
 
         # Create grid toggle button
-        self.ax_button3 = plt.axes([0.05, 0.05, 0.2, 0.075])  # Position for grid button
-        self.button_grid = mw.Button(self.ax_button3, 'Toggle Grid')
+        self.gbax = plt.axes([0.05, 0.05, 0.2, 0.075])  # Position for grid button
+        self.button_grid = mw.Button(self.gbax, 'Toggle Grid')
         self.button_grid.on_clicked(self.toggle_grid)
 
-        # Create a CheckButtons widget
+        # Create a CheckButtons widget for visibility
         labels = list(self.static_plots.keys())
-        self.rax = self.ax.inset_axes([1.0, 0.5, 2.0, 0.04*len(labels)])  # Position of the checkbox area
-        self.check = mw.CheckButtons(self.rax, labels, [True]*len(labels))
+        self.cbax = plt.axes([1.0, 0.5, 2.0, 0.04*len(labels)])  # Position of the checkbox area
 
-        # Attach the toggle function to the check buttons
+        colors = []
+        for l in labels:
+            colors.append(self.plot_colors[l])
+        self.check = mw.CheckButtons(self.cbax, labels, [True]*len(labels), label_props={'color': colors})
         self.check.on_clicked(self.toggle_visibility)
 
+        self.tax = plt.axes([1.0, 0.5, 2.0, 20])  # Position of the checkbox area
+        self.text = mw.TextBox(self.tax, "", "Init")
 
     # Adjust the axis margins (padding between the axis and the figure borders)
     def adjust_margins(self):
+        menu_width = 200
+        margin = 10
+        cb_height = 20*len(self.static_plots.keys())
         self.screen_width, self.screen_height = self.canvas.get_width_height()
+        y = 25
         self.fig.subplots_adjust(left=70.0/self.screen_width,
-                                 right=1.0-300.0/self.screen_width,
-                                 top=1.0-25/self.screen_height,
+                                 right=1.0-(2*margin + menu_width)/self.screen_width,
+                                 top=1.0-y/self.screen_height,
                                  bottom=45/self.screen_height,)
-        self.rax.set_position([0.5, 0.5, 1.0, 0.04*len(self.static_plots.keys())])  # Position of the checkbox area
-
+        y += cb_height
+        self.cbax.set_position([1.0-(margin + menu_width)/self.screen_width,
+                               1-y/self.screen_height,
+                               menu_width/self.screen_width,
+                               cb_height/self.screen_height])
+        y += margin + 30
+        self.gbax.set_position([1.0-(margin + menu_width)/self.screen_width,
+                               1-y/self.screen_height,
+                               menu_width/self.screen_width,
+                               30/self.screen_height])
+        y += margin + 30
+        self.tax.set_position([1.0-(margin + menu_width)/self.screen_width,
+                               1-y/self.screen_height,
+                               menu_width/self.screen_width,
+                               30/self.screen_height])
 
     # Resize event callback
     def on_resize(self, event):
@@ -102,6 +124,7 @@ class View:
 
     def add_static_content(self, gt):
         self.static_plots = {}
+        self.plot_colors = {}
         lines = []
         for lane in gt.lane:
             clf=lane.classification
@@ -113,7 +136,8 @@ class View:
                 i += 1
             lines.append(line)
 
-        lc = mc.LineCollection(lines, label="CenterLine", color='#BBBBFF')
+        self.plot_colors["CenterLine"] = '#BBBBFF'
+        lc = mc.LineCollection(lines, label="CenterLine", color=self.plot_colors["CenterLine"])
         plot = self.ax.add_collection(lc)
         self.static_plots["CenterLine"] = [plot]
 
@@ -157,6 +181,8 @@ class View:
             else:  # solid line
                 plot, = self.ax.plot(points[0], points[1], label=self.rmtype2string(type), color=color)
 
+            self.plot_colors[self.rmtype2string(type)] = color
+
             # group plots by line type for visibility
             if not self.rmtype2string(type) in self.static_plots:
                 self.static_plots[self.rmtype2string(type)] = []
@@ -166,11 +192,6 @@ class View:
             print('Boundary type {} plotted with light gray color'.format(self.rmtype2string(type)))
         if unknown_line_type:
             print('Unsupported lane boundary type: {} plotted with light red color'.format(self.rmtype2string(type)))
-
-        # Create legend with unique entries
-        handles, labels = self.ax.get_legend_handles_labels()
-        unique_labels = dict(zip(labels, handles))
-        self.ax.legend(unique_labels.values(), unique_labels.keys())
 
         for i, rm in enumerate(gt.road_marking):
             self.x_roadmark = []
@@ -206,7 +227,6 @@ class View:
     # Button action to toggle grid visibility
     def toggle_grid(self, event):
         self.ax.grid(not self.ax.xaxis._major_tick_kw['gridOn'])  # Toggle grid visibility
-        # plt.draw()
 
 class OSIFile:
     def __init__(self, osi_filename):
