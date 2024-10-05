@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as anim
 import matplotlib.collections as mc
 import matplotlib.widgets as mw
+import matplotlib.lines as lines
 import numpy as np
 import os
 import sys
@@ -70,7 +71,12 @@ class View:
         self.check.on_clicked(self.toggle_visibility)
 
         self.tax = plt.axes([1.0, 0.5, 2.0, 20])  # Position of the checkbox area
-        self.text = mw.TextBox(self.tax, "", "Init")
+        self.text = mw.TextBox(self.tax, "", "")
+
+        # Define a function to handle the pick event
+        def on_pick(event):
+            if event.artist == line:
+                print(f"Picked point: {event.ind}")
 
     # Adjust the axis margins (padding between the axis and the figure borders)
     def adjust_margins(self):
@@ -137,7 +143,7 @@ class View:
             lines.append(line)
 
         self.plot_colors["CenterLine"] = '#BBBBFF'
-        lc = mc.LineCollection(lines, label="CenterLine", color=self.plot_colors["CenterLine"])
+        lc = mc.LineCollection(lines, picker=5, label="CenterLine", color=self.plot_colors["CenterLine"])
         plot = self.ax.add_collection(lc)
         self.static_plots["CenterLine"] = [plot]
 
@@ -155,10 +161,10 @@ class View:
                 color = '#222222'
             else:
                 if type == 2:
-                    color = '#EEEEEE'  # light gray for NO_LINE
+                    color = '#DDDDDD'  # light gray for NO_LINE
                     no_line_type = True
                 else:
-                    color = '#FFAAAA'  # light red as default for various unsupported line types
+                    color = '#FF9999'  # light red as default for various unsupported line types
                     unknown_line_type = True
 
             while i < len(l.boundary_line):
@@ -176,10 +182,11 @@ class View:
                     points[1].append(p.y)
                     i += 1
             if type == 4:  # dashed line
-                lc = mc.LineCollection(points, label=self.rmtype2string(type), color=color)
+                pass
+                lc = mc.LineCollection(points, label=self.rmtype2string(type), color=color, picker=5)
                 plot = self.ax.add_collection(lc)
             else:  # solid line
-                plot, = self.ax.plot(points[0], points[1], label=self.rmtype2string(type), color=color)
+                plot, = self.ax.plot(points[0], points[1], label=self.rmtype2string(type), color=color, picker=5)
 
             self.plot_colors[self.rmtype2string(type)] = color
 
@@ -200,7 +207,20 @@ class View:
             for bp in bps:
                 self.x_roadmark.append(bps.x)
                 self.y_roadmark.append(bps.y)
-            self.ax.plot(self.x_roadmark, self.y_roadmark, color='#333333', label='RoadMarking' if i==0 else '')
+            self.ax.plot(self.x_roadmark, self.y_roadmark, color='#333333', label='RoadMarking' if i==0 else '', picker=5)
+
+        # Connect the pick event
+        self.fig.canvas.mpl_connect('pick_event', self.on_pick)
+
+    # Function to handle picking events
+    def on_pick(self, event):
+        # Check if the picked artist is the LineCollection
+        if isinstance(event.artist, mc.LineCollection):
+            ind = event.ind  # Get the index of the segment that was clicked
+            self.text.set_val('LineCollection: {}'.format(event.ind[0]))
+        elif isinstance(event.artist, lines.Line2D):
+            ind = event.ind  # Get the index of the segment that was clicked
+            self.text.set_val('Line: {}'.format(event.ind[0]))
 
     def toggle_visibility(self, label):
         for plot in self.static_plots[label]:
