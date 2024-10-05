@@ -3,6 +3,8 @@ import matplotlib.animation as anim
 import matplotlib.collections as mc
 import matplotlib.widgets as mw
 import matplotlib.lines as lines
+import matplotlib.legend as legend
+import matplotlib.text as text
 import numpy as np
 import os
 import sys
@@ -55,20 +57,19 @@ class View:
 
         self.ani = anim.FuncAnimation(self.fig, self.update, frames=range(100), blit=False, interval=50)
 
+        # Create a CheckButtons widget for visibility
+        # labels = list(self.static_plots_by_type.keys())
+        # self.cbax = plt.axes([1.0, 0.5, 2.0, 0.04*len(labels)])  # Position of the checkbox area
+        # colors = []
+        # for l in labels:
+        #     colors.append(self.plot_colors[l])
+        # self.check = mw.CheckButtons(self.cbax, labels, [True]*len(labels), label_props={'color': colors})
+        # self.check.on_clicked(self.toggle_visibility)
+
         # Create grid toggle button
         self.gbax = plt.axes([0.05, 0.05, 0.2, 0.075])  # Position for grid button
         self.button_grid = mw.Button(self.gbax, 'Toggle Grid')
         self.button_grid.on_clicked(self.toggle_grid)
-
-        # Create a CheckButtons widget for visibility
-        labels = list(self.static_plots.keys())
-        self.cbax = plt.axes([1.0, 0.5, 2.0, 0.04*len(labels)])  # Position of the checkbox area
-
-        colors = []
-        for l in labels:
-            colors.append(self.plot_colors[l])
-        self.check = mw.CheckButtons(self.cbax, labels, [True]*len(labels), label_props={'color': colors})
-        self.check.on_clicked(self.toggle_visibility)
 
         self.tax = plt.axes([1.0, 0.5, 2.0, 20])  # Position of the checkbox area
         self.text = mw.TextBox(self.tax, "", "")
@@ -82,18 +83,23 @@ class View:
     def adjust_margins(self):
         menu_width = 200
         margin = 10
-        cb_height = 20*len(self.static_plots.keys())
+        cb_height = 20*len(self.static_plots_by_type.keys())
         self.screen_width, self.screen_height = self.canvas.get_width_height()
+
         y = 25
         self.fig.subplots_adjust(left=70.0/self.screen_width,
                                  right=1.0-(2*margin + menu_width)/self.screen_width,
                                  top=1.0-y/self.screen_height,
                                  bottom=45/self.screen_height,)
-        y += cb_height
-        self.cbax.set_position([1.0-(margin + menu_width)/self.screen_width,
-                               1-y/self.screen_height,
-                               menu_width/self.screen_width,
-                               cb_height/self.screen_height])
+
+        self.legend.set_bbox_to_anchor((1.0+(4.0/self.screen_width), 1.0+(8.0/self.screen_height)))
+
+        y += self.legend.get_window_extent().height + margin
+        # y += cb_height
+        # self.cbax.set_position([1.0-(margin + menu_width)/self.screen_width,
+        #                        1-y/self.screen_height,
+        #                        menu_width/self.screen_width,
+        #                        cb_height/self.screen_height])
         y += margin + 30
         self.gbax.set_position([1.0-(margin + menu_width)/self.screen_width,
                                1-y/self.screen_height,
@@ -104,6 +110,7 @@ class View:
                                1-y/self.screen_height,
                                menu_width/self.screen_width,
                                30/self.screen_height])
+
 
     # Resize event callback
     def on_resize(self, event):
@@ -129,9 +136,11 @@ class View:
         else: return 'UNSUPPORTED: {}'.format(type)
 
     def add_static_content(self, gt):
-        self.static_plots = {}
+        self.static_plots_by_type = {}
+        self.osi_ids_by_line_collection = {}
         self.plot_colors = {}
         lines = []
+        ids = []
         for lane in gt.lane:
             clf=lane.classification
             i=0
@@ -140,22 +149,21 @@ class View:
                 p0 = clf.centerline[i]
                 line += [(p0.x, p0.y)]
                 i += 1
+            ids.append(lane.id.value)
             lines.append(line)
 
         self.plot_colors["CenterLine"] = '#BBBBFF'
         lc = mc.LineCollection(lines, picker=5, label="CenterLine", color=self.plot_colors["CenterLine"])
+        self.osi_ids_by_line_collection[lc] = ids
         plot = self.ax.add_collection(lc)
-        self.static_plots["CenterLine"] = [plot]
+        self.static_plots_by_type["CenterLine"] = [plot]
 
         no_line_type = False
         unknown_line_type = False
         for l in gt.lane_boundary:
             i=0
             type = l.classification.type
-            if type == 4:  # dashed line
-                points = []  # create one list for polyline
-            else:
-                points = [[],[]]  # create lists for x and y data separately, for solid line plots
+            points = []  # create one list for polyline
 
             if type == 3 or type == 4 or type == 5:  # solid line or dashed line or botts dots
                 color = '#222222'
@@ -168,32 +176,29 @@ class View:
                     unknown_line_type = True
 
             while i < len(l.boundary_line):
+                p = l.boundary_line[i].position
                 if type == 4:  # dashed line
-                    p0 = l.boundary_line[i].position
                     if i < len(l.boundary_line)-1:
-                        p1 = l.boundary_line[i+1].position
+                        p2 = l.boundary_line[i+1].position
                     else:
-                        p1 = l.boundary_line[i].position  # make a dot instead of line
-                    points.append([(p0.x, p0.y), (p1.x, p1.y)])
+                        p2 = p  # make a dot instead of line
+                    points.append([(p.x, p.y), (p2.x, p2.y)])
                     i += 2
                 else:
-                    p = l.boundary_line[i].position
-                    points[0].append(p.x)
-                    points[1].append(p.y)
+                    if i==0:
+                        points.append([])
+                    points[0]+=([(p.x, p.y)])
                     i += 1
-            if type == 4:  # dashed line
-                pass
-                lc = mc.LineCollection(points, label=self.rmtype2string(type), color=color, picker=5)
-                plot = self.ax.add_collection(lc)
-            else:  # solid line
-                plot, = self.ax.plot(points[0], points[1], label=self.rmtype2string(type), color=color, picker=5)
 
+            lc = mc.LineCollection(points, label=self.rmtype2string(type), color=color, picker=5)
+            plot = self.ax.add_collection(lc)
+            self.osi_ids_by_line_collection[lc] = [l.id.value]
             self.plot_colors[self.rmtype2string(type)] = color
 
             # group plots by line type for visibility
-            if not self.rmtype2string(type) in self.static_plots:
-                self.static_plots[self.rmtype2string(type)] = []
-            self.static_plots[self.rmtype2string(type)].append(plot)
+            if not self.rmtype2string(type) in self.static_plots_by_type:
+                self.static_plots_by_type[self.rmtype2string(type)] = []
+            self.static_plots_by_type[self.rmtype2string(type)].append(plot)
 
         if no_line_type:
             print('Boundary type {} plotted with light gray color'.format(self.rmtype2string(type)))
@@ -209,6 +214,17 @@ class View:
                 self.y_roadmark.append(bps.y)
             self.ax.plot(self.x_roadmark, self.y_roadmark, color='#333333', label='RoadMarking' if i==0 else '', picker=5)
 
+        # Create legend with unique entries
+        handles, labels = self.ax.get_legend_handles_labels()
+        unique_labels = dict(zip(labels, handles))
+        self.legend = self.ax.legend(unique_labels.values(), unique_labels.keys(), loc='upper left', frameon=False)
+        self.legend_line_map = {}
+        for leg_line, label in zip(self.legend.get_lines(), unique_labels.keys()):
+            leg_line.set_linewidth(5.0)
+            leg_line.set_alpha(1.0)
+            leg_line.set_picker(5)  # Enable picking on the legend line.
+            self.legend_line_map[leg_line] = label
+
         # Connect the pick event
         self.fig.canvas.mpl_connect('pick_event', self.on_pick)
 
@@ -217,13 +233,19 @@ class View:
         # Check if the picked artist is the LineCollection
         if isinstance(event.artist, mc.LineCollection):
             ind = event.ind  # Get the index of the segment that was clicked
-            self.text.set_val('LineCollection: {}'.format(event.ind[0]))
+            self.text.set_val('{} {}'.format(event.artist.get_label(), self.osi_ids_by_line_collection[event.artist][event.ind[0]]))
         elif isinstance(event.artist, lines.Line2D):
-            ind = event.ind  # Get the index of the segment that was clicked
-            self.text.set_val('Line: {}'.format(event.ind[0]))
+            label = self.legend_line_map[event.artist]
+            visible = False if event.artist.get_alpha() == 1.0 else True
+            event.artist.set_alpha(1.0 if visible else 0.2)
+            event.artist.set_linewidth(5.0 if visible else 1.0)
+            for plot in self.static_plots_by_type[label]:
+                plot.set_visible(True if visible else False)
+        else:
+            self.text.set_val('Unknown')
 
     def toggle_visibility(self, label):
-        for plot in self.static_plots[label]:
+        for plot in self.static_plots_by_type[label]:
             plot.set_visible(not plot.get_visible())
 
     def add_dynamic_content(self):
