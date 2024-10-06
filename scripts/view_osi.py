@@ -71,6 +71,16 @@ class View:
         self.button_grid = mw.Button(self.gbax, 'Toggle Grid')
         self.button_grid.on_clicked(self.toggle_grid)
 
+        # Create a CheckButtons widget for visibility
+        labels = list(self.static_plots_by_type.keys())
+        self.cbax = plt.axes([1.0, 0.5, 2.0, 0.04*len(labels)], frameon=False)  # Position of the checkbox area
+
+        colors = []
+        for l in labels:
+            colors.append(self.plot_colors[l])
+        self.check = mw.CheckButtons(self.cbax, labels, [True]*len(labels), label_props={'color': colors})
+        self.check.on_clicked(self.toggle_visibility)
+
         self.tax = plt.axes([1.0, 0.5, 2.0, 20])  # Position of the checkbox area
         self.text = mw.TextBox(self.tax, "", "")
 
@@ -92,14 +102,11 @@ class View:
                                  top=1.0-y/self.screen_height,
                                  bottom=45/self.screen_height,)
 
-        self.legend.set_bbox_to_anchor((1.0+(4.0/self.screen_width), 1.0+(8.0/self.screen_height)))
-
-        y += self.legend.get_window_extent().height + margin
-        # y += cb_height
-        # self.cbax.set_position([1.0-(margin + menu_width)/self.screen_width,
-        #                        1-y/self.screen_height,
-        #                        menu_width/self.screen_width,
-        #                        cb_height/self.screen_height])
+        y += cb_height
+        self.cbax.set_position([1.0-(margin + menu_width)/self.screen_width,
+                               1-y/self.screen_height,
+                               menu_width/self.screen_width,
+                               cb_height/self.screen_height])
         y += margin + 30
         self.gbax.set_position([1.0-(margin + menu_width)/self.screen_width,
                                1-y/self.screen_height,
@@ -213,17 +220,6 @@ class View:
                 self.x_roadmark.append(bps.x)
                 self.y_roadmark.append(bps.y)
             self.ax.plot(self.x_roadmark, self.y_roadmark, color='#333333', label='RoadMarking' if i==0 else '', picker=5)
-
-        # Create legend with unique entries
-        handles, labels = self.ax.get_legend_handles_labels()
-        unique_labels = dict(zip(labels, handles))
-        self.legend = self.ax.legend(unique_labels.values(), unique_labels.keys(), loc='upper left', frameon=False)
-        self.legend_line_map = {}
-        for leg_line, label in zip(self.legend.get_lines(), unique_labels.keys()):
-            leg_line.set_linewidth(5.0)
-            leg_line.set_alpha(1.0)
-            leg_line.set_picker(5)  # Enable picking on the legend line.
-            self.legend_line_map[leg_line] = label
 
         # Connect the pick event
         self.fig.canvas.mpl_connect('pick_event', self.on_pick)
