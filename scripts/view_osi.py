@@ -42,6 +42,7 @@ class View:
         self.canvas = self.fig.canvas
         self.gt = gt
         self.grid_enabled = -1
+        self.highlight = None
 
 
         # Static content: Labels, grids, etc.
@@ -167,6 +168,7 @@ class View:
 
         no_line_type = False
         unknown_line_type = False
+        ids = []
         for l in gt.lane_boundary:
             i=0
             type = l.classification.type
@@ -229,7 +231,11 @@ class View:
         # Check if the picked artist is the LineCollection
         if isinstance(event.artist, mc.LineCollection):
             ind = event.ind  # Get the index of the segment that was clicked
-            self.text.set_val('{} {}'.format(event.artist.get_label(), self.osi_ids_by_line_collection[event.artist][event.ind[0]]))
+            self.text.set_val('{} {}/{}'.format(event.artist.get_label(), self.osi_ids_by_line_collection[event.artist][0],event.ind[0]))
+            lc = mc.LineCollection([event.artist.get_segments()[event.ind[0]]], colors=event.artist.get_colors(), linewidths=3.0)
+            if self.highlight:
+                self.highlight.remove()
+            self.highlight = self.ax.add_collection(lc)
         elif isinstance(event.artist, lines.Line2D):
             label = self.legend_line_map[event.artist]
             visible = False if event.artist.get_alpha() == 1.0 else True
