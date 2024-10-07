@@ -313,19 +313,59 @@ class View:
     def toggle_grid(self, event):
         self.ax.grid(not self.ax.xaxis._major_tick_kw['gridOn'])  # Toggle grid visibility
 
+class BBObject:
+    def __init__(self, id, x, y, h, width, height):
+        self.id = id
+        self.x = x
+        self.y = y
+        self.h = h
+        self.width = width
+        self.height = height
+        self.kf = []
+
+    def add_keyframe(self, timestamp, x, y, h):
+        self.kf.append((timestamp, x, y, h))
+
+    def draw(self, ax):
+        ax.add_patch(plt.Rectangle((self.x, self.y), self.width, self.height, fill=False, edgecolor='red', lw=1))
+
+class BBObjects:
+    def __init__(self):
+        self.bb_objects = []
+
+    def add_bb_object(self, bb_object):
+        self.bb_objects.append(bb_object)
+
+    def exists(self, id):
+        for bb in self.bb_objects:
+            if bb.id == id:
+                return True
+        return False
+
 class OSIFile:
     def __init__(self, osi_filename):
+        self.filename = osi_filename
+        self.bb_objects = BBObjects()
+        self.gt = GroundTruth()
+        self.view = None
         try:
-            self.file = open(osi_filename, 'rb')
+            self.file = open(self.filename, 'rb')
         except OSError:
-            print('ERROR: Could not open file {} for reading'.format(osi_filename))
+            print('ERROR: Could not open file {} for reading'.format(self.filename))
             raise
 
-        self.filename = osi_filename
-        self.gt = GroundTruth()
-        self.read_next_message()
+        while self.read_next_message():
+            if self.view is None:
+                # create viewer, which will extract the static data from ground-truth
+                self.view = View(self.gt)
 
-        self.view = View(self.gt)
+            if len(self.gt.moving_object) > 0:
+                for obj in self.gt.moving_object:
+                    if obj.HasField('base'):
+                        if not self.bb_objects.exists(obj.id.value):
+                            bb = BBObject(obj.id.value, obj.base.position.x, obj.base.position.y, obj.base.orientation.yaw, obj.base.dimension.length, obj.base.dimension.width)
+                            self.bb_objects.add_bb_object(bb)
+                            bb.draw(self.view.ax)
 
 
     def close(self):
