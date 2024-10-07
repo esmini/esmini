@@ -1052,17 +1052,14 @@ LaneWidth* Lane::GetWidthByIndex(int index) const
 
 LaneWidth* Lane::GetWidthByS(double s) const
 {
-    if (lane_width_.size() == 0)
+    if (lane_width_.empty())
     {
         return 0;  // No lanewidth defined
     }
-    for (int i = 0; i + 1 < (int)lane_width_.size(); i++)
-    {
-        if (s < lane_width_[i + 1]->GetSOffset())
-        {
-            return lane_width_[i];
-        }
-    }
+
+    auto iter = std::upper_bound(lane_width_.begin() + 1, lane_width_.end(), s, [](double s, LaneWidth* w) { return s < w->GetSOffset(); });
+    if (iter != lane_width_.end())
+        return *(iter - 1);
     return lane_width_.back();
 }
 
@@ -1113,19 +1110,14 @@ Lane::Material* Lane::GetMaterialByIdx(int idx) const
 
 Lane::Material* Lane::GetMaterialByS(double s) const
 {
-    if (lane_material_.size() == 0)
+    if (lane_material_.empty())
     {
         return 0;  // No lanewidth defined
     }
 
-    for (int i = 0; i + 1 < (int)lane_material_.size(); i++)
-    {
-        if (s < lane_material_[i + 1]->s_offset)
-        {
-            return lane_material_[i];
-        }
-    }
-
+    auto iter = std::upper_bound(lane_material_.begin() + 1, lane_material_.end(), s, [](double s, Lane::Material* m) { return s < m->s_offset; });
+    if (iter != lane_material_.end())
+        return *(iter - 1);
     return lane_material_.back();
 }
 
