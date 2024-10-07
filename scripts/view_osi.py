@@ -108,16 +108,16 @@ class View:
                                1-y/self.screen_height,
                                menu_width/self.screen_width,
                                cb_height/self.screen_height])
-        y += margin + 30
+        y += margin + 25
         self.gbax.set_position([1.0-(margin + menu_width)/self.screen_width,
                                1-y/self.screen_height,
                                menu_width/self.screen_width,
-                               30/self.screen_height])
-        y += margin + 30
+                               25/self.screen_height])
+        y += margin + 40
         self.tax.set_position([1.0-(margin + menu_width)/self.screen_width,
                                1-y/self.screen_height,
                                menu_width/self.screen_width,
-                               30/self.screen_height])
+                               40/self.screen_height])
 
 
     # Resize event callback
@@ -143,36 +143,52 @@ class View:
         elif type == 15: return 'SOUND_BARRIER'
         else: return 'UNSUPPORTED: {}'.format(type)
 
+    def unselect(self):
+        if self.highlight:
+            self.highlight.remove()
+            self.highlight = None
+        self.text.set_val('')
+
     def add_static_content(self, gt):
         self.static_plots_by_type = {}
-        self.osi_ids_by_line_collection = {}
+        self.osi_ids_by_collection = {}
+        self.osi_idx_by_collection = {}
         self.plot_colors = {}
         lines = []
         ids = []
-        for lane in gt.lane:
+        idx = []
+        for index, lane in enumerate(gt.lane):
             clf=lane.classification
-            i=0
-            line=[]
-            while i < len(clf.centerline):
-                p0 = clf.centerline[i]
-                line += [(p0.x, p0.y)]
-                i += 1
-            ids.append(lane.id.value)
-            lines.append(line)
+            if len(clf.centerline) > 0:
+                i=0
+                line=[]
+                while i < len(clf.centerline):
+                    p0 = clf.centerline[i]
+                    line += [(p0.x, p0.y)]
+                    i += 1
+                ids.append(lane.id.value)
+                idx.append(index)
+                lines.append(line)
+            else:
+                pass  # probably in junction, no centerline, only lane pairings
 
         self.plot_colors["CenterLine"] = '#BBBBFF'
-        lc = mc.LineCollection(lines, picker=5, label="CenterLine", color=self.plot_colors["CenterLine"])
-        self.osi_ids_by_line_collection[lc] = ids
-        plot = self.ax.add_collection(lc)
+        collection = mc.LineCollection(lines, picker=5, label="CenterLine", color=self.plot_colors["CenterLine"])
+        self.osi_ids_by_collection[collection] = ids
+        self.osi_idx_by_collection[collection] = idx
+        plot = self.ax.add_collection(collection)
         self.static_plots_by_type["CenterLine"] = [plot]
 
         no_line_type = False
         unknown_line_type = False
-        ids = []
-        for l in gt.lane_boundary:
+        for index, l in enumerate(gt.lane_boundary):
+            ids = []
+            indices = []
             i=0
             type = l.classification.type
             points = []  # create one list for polyline
+            scatter_points = [[],[]]
+            indices.append(index)
 
             if type == 3 or type == 4 or type == 5:  # solid line or dashed line or botts dots
                 color = '#222222'
@@ -186,28 +202,47 @@ class View:
 
             while i < len(l.boundary_line):
                 p = l.boundary_line[i].position
+                if type == 5:  # botts dots
+                    scatter_points[0].append(p.x)
+                    scatter_points[1].append(p.y)
                 if type == 4:  # dashed line
+                    # one polyline per collection dash segment
                     if i < len(l.boundary_line)-1:
                         p2 = l.boundary_line[i+1].position
                     else:
                         p2 = p  # make a dot instead of line
                     points.append([(p.x, p.y), (p2.x, p2.y)])
+                    ids.append(l.id.value)
+                    indices.append(index)
                     i += 2
                 else:
                     if i==0:
+                        # only one polyline per collection
+                        ids.append(l.id.value)
+                        indices.append(index)
                         points.append([])
                     points[0]+=([(p.x, p.y)])
                     i += 1
 
-            lc = mc.LineCollection(points, label=self.rmtype2string(type), color=color, picker=5)
-            plot = self.ax.add_collection(lc)
-            self.osi_ids_by_line_collection[lc] = [l.id.value]
+            if type == 5:  # botts dots
+                collection = self.ax.scatter(scatter_points[0], scatter_points[1], label=self.rmtype2string(type), color=color, s=3.0, picker=5)
+                plot = self.ax.add_collection(collection)
+            else:
+                collection = mc.LineCollection(points, label=self.rmtype2string(type), color=color, picker=5)
+                plot = self.ax.add_collection(collection)
+
+            ids.append(l.id.value)
+            indices.append(index)
             self.plot_colors[self.rmtype2string(type)] = color
 
             # group plots by line type for visibility
             if not self.rmtype2string(type) in self.static_plots_by_type:
                 self.static_plots_by_type[self.rmtype2string(type)] = []
             self.static_plots_by_type[self.rmtype2string(type)].append(plot)
+
+            self.osi_ids_by_collection[collection] = ids
+            self.osi_idx_by_collection[collection] = indices
+
 
         if no_line_type:
             print('Boundary type {} plotted with light gray color'.format(self.rmtype2string(type)))
@@ -225,24 +260,30 @@ class View:
 
         # Connect the pick event
         self.fig.canvas.mpl_connect('pick_event', self.on_pick)
+        self.fig.canvas.mpl_connect('button_press_event', self.on_click)
+
+    def on_click(self, event):
+        if event.button == 3:
+            self.unselect()
+
+    def update_pick_text(self, label, index, id, instance):
+        self.text.set_val('{} \nidx {} id {} # {}'.format(label, index, id, instance))
+
 
     # Function to handle picking events
     def on_pick(self, event):
-        # Check if the picked artist is the LineCollection
+        self.unselect()
+        index = self.osi_idx_by_collection[event.artist][event.ind[0]]
+        id = self.osi_ids_by_collection[event.artist][event.ind[0]]
+        self.update_pick_text(event.artist.get_label(), index, id, event.ind[0])
+
         if isinstance(event.artist, mc.LineCollection):
-            ind = event.ind  # Get the index of the segment that was clicked
-            self.text.set_val('{} {}/{}'.format(event.artist.get_label(), self.osi_ids_by_line_collection[event.artist][0],event.ind[0]))
             lc = mc.LineCollection([event.artist.get_segments()[event.ind[0]]], colors=event.artist.get_colors(), linewidths=3.0)
-            if self.highlight:
-                self.highlight.remove()
             self.highlight = self.ax.add_collection(lc)
-        elif isinstance(event.artist, lines.Line2D):
-            label = self.legend_line_map[event.artist]
-            visible = False if event.artist.get_alpha() == 1.0 else True
-            event.artist.set_alpha(1.0 if visible else 0.2)
-            event.artist.set_linewidth(5.0 if visible else 1.0)
-            for plot in self.static_plots_by_type[label]:
-                plot.set_visible(True if visible else False)
+        elif isinstance(event.artist, mc.PathCollection):
+            self.update_pick_text(event.artist.get_label(), self.osi_idx_by_collection[event.artist][0], self.osi_ids_by_collection[event.artist][0], event.ind[0])
+            offsets = event.artist.get_offsets()
+            self.highlight = self.ax.scatter(offsets[event.ind[0]][0], offsets[event.ind[0]][1], label=self.rmtype2string(type), s=18.0, color=event.artist.get_facecolors()[0])
         else:
             self.text.set_val('Unknown')
 
