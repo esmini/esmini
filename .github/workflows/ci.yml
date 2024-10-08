@@ -229,7 +229,7 @@ jobs:
       - name: Run schema validation
         if: runner.os == 'Unix'
         with:
-          run: python3 scripts/run_schema_comply.py `find . -name "*.xodr"` `find . -name "*.xosc"`
+          run: python3 ./scripts/run_scenrio_comply.py `find ./resources -name "*.xo??"`
 
       - name: Run Tests - Unix
         if: runner.os != 'Windows'
