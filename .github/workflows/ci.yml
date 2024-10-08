@@ -228,7 +228,7 @@ jobs:
       # 3. This configuration is faster so validation won't add to total CI run time
       - name: Run schema validation
         if: runner.os == 'Unix'
-        run: python3 scripts/run_schema_comply.py `find ./resources -name "*.xodr"`
+        run: python3 scripts/run_schema_comply.py "$(find ./resources -name "*.xodr")"
 
       - name: Run Tests - Unix
         if: runner.os != 'Windows'

@@ -102,6 +102,15 @@ class XmlValidation:
         except etree.XMLSyntaxError as e:
             print(f"XML Parsing Error: {e}")
 
+    def convert_arguments(self, args):
+
+        if len(args) == 1 and args[0].startswith('./'):
+            # If there's only one argument and it starts with './', it's likely in the first format
+            return args[0].split('\n')
+        else:
+            # If there are multiple arguments or the first argument doesn't start with './', assume it's already in the second format
+            return '\n'.join(args)
+
     def validate_argument(self, paths):
         for path in paths:
             path = Path(path)
@@ -122,23 +131,21 @@ class XmlValidation:
             path = Path(path)
             if os.path.isfile(path):
                 file_path = os.path.join(os.getcwd() + '/' + str(path))
-                if "/test/" in file_path:
-                    continue
                 self.set_xml_files(file_path)
             # Check if the path is a directory and walk through its files
             elif os.path.isdir(path):
                 for root, dirs, files in os.walk(path):
-                    if "/test/" in root:
-                        continue
                     for file in files:
                         # Only consider .xosc or .xodr files
                         if file.endswith(('.xosc', '.xodr')):
                             file_path = os.path.join(root, file)
                             self.set_xml_files(file_path)
 
+
     def main(self, arg):
-        self.validate_argument(arg)
-        self.set_xml_files_to_validate(arg)
+        paths = self.convert_arguments(arg)
+        self.validate_argument(paths)
+        self.set_xml_files_to_validate(paths)
         for file in self.get_xml_files_to_validate():
             revMinor = self.get_xml_header_minor_revision(file)
             self.validate(file, self.get_xsd_to_validate(revMinor, self.get_xml_type(file)))
