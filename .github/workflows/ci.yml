@@ -229,13 +229,13 @@ jobs:
       - name: Run schema validation
         if: runner.os == 'Unix'
         with:
-          run: ./scripts/run_scenrio_comply.py `find ./resources -name "*.xo??"`
+          run: ./scripts/run_schema_comply.py `find ./resources -name "*.xo??"`
 
       - name: Run Tests - Unix
         if: runner.os != 'Windows'
         uses: coactions/setup-xvfb@v1.0.1
         with:
-          run: ./scripts/run_schema_comply.py ${{ matrix.configuration }} false
+          run: ./scripts/run_tests.sh ${{ matrix.configuration }} false
 
       - name: Run Tests - Windows
         if: runner.os == 'Windows'
