@@ -1,4 +1,3 @@
-import xml.etree.ElementTree as ET
 import xmlschema
 from lxml import etree
 import argparse
@@ -48,11 +47,17 @@ class XmlValidation:
         return 'xodr' if file_path.endswith('.xodr') else  'xosc'
 
     def print_errors(self):
+        counter = 0
         for item in self.errors:
             print(item)
+            counter += 1
+        if counter > 0:
+            raise ValueError(
+                "Validate scheme failed. Check the log."
+            )
 
     def get_xml_header_minor_revision(self, file_path):
-        tree = ET.parse(file_path)
+        tree = etree.parse(file_path)
         root = tree.getroot()
         if self.get_xml_type(file_path) == 'xosc':
             header = root.findall('./FileHeader')
@@ -79,17 +84,16 @@ class XmlValidation:
             # Parse the XML document only once
             parser = etree.XMLParser(recover=False)
             document_tree = etree.parse(xml_file, parser)
+            errors = list(my_schema.iter_errors(document_tree))
 
-            # Iterate over errors and print them directly, avoiding an intermediate list
-            for error in my_schema.iter_errors(document_tree):
-                elem = error.elem
-                line_number = elem.sourceline if elem is not None else "unknown"
-                element_name = elem.tag if elem is not None else "unknown"
-                self.errors.append(f"{xml_file}:{line_number}: Schemas validity error : element '{element_name}' : {error.reason}")
-
-            # Print a summary message after all errors are processed
-            if self.errors:
-                print(f"{xml_file} fails to validates. Found {len(self.errors)} error(s):")
+            if not len(errors) == 0:
+                print(f"{xml_file} fails to validates")
+                # Iterate over errors and print them directly, avoiding an intermediate list
+                for error in errors:
+                    elem = error.elem
+                    line_number = elem.sourceline if elem is not None else "unknown"
+                    element_name = elem.tag if elem is not None else "unknown"
+                    self.errors.append(f"{xml_file}:{line_number}: Schemas validity error : element '{element_name}' : {error.reason}")
             else:
                 print(f"{xml_file} validates.")
 

@@ -1,0 +1,382 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+ASAM OpenDRIVE V1.7.0
+
+© by ASAM e.V., 2021
+
+ASAM OpenDRIVE signal dsecription
+
+
+Any use is limited to the scope described in the ASAM license terms. 
+This file is distributable in accordance with the ASAM license terms. 
+See www.asam.net/license.html for further details.
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<xs:include schemaLocation="opendrive_17_object.xsd"/>
+	<xs:include schemaLocation="opendrive_17_road.xsd"/>
+	<xs:include schemaLocation="opendrive_17_core.xsd"/>
+	<xs:include schemaLocation="opendrive_17_lane.xsd"/>
+	<xs:simpleType name="e_road_signals_signal_reference_elementType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="object"/>
+			<xs:enumeration value="signal"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:element name="t_controller" type="t_controller"/>
+	<xs:complexType name="t_controller">
+		<xs:annotation>
+			<xs:documentation>Controllers provides identical states for one or more dynamic signals. Controllers serve as wrappers for the behaviour of a group of signals. Controllers are used for dynamic speed control on motorways, and to control traffic light switching phases.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence>
+					<xs:element name="control" type="t_controller_control" minOccurs="1" maxOccurs="unbounded"/>
+					<xs:group ref="g_additionalData" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+				<xs:attribute name="id" use="required" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Unique ID within database</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="name" use="optional" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Name of the controller. May be chosen freely.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="sequence" use="optional" type="xs:nonNegativeInteger">
+					<xs:annotation>
+						<xs:documentation>Sequence number (priority) of this controller with respect to other controllers of same logical level</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="t_controller_control" type="t_controller_control"/>
+	<xs:complexType name="t_controller_control">
+		<xs:annotation>
+			<xs:documentation>Provides information about a single signal controlled by the corresponding controller.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence/>
+				<xs:attribute name="signalId" use="required" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>ID of the controlled signal</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="type" use="optional" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Type of control.
+Free Text, depends on the application.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="t_road_signals" type="t_road_signals"/>
+	<xs:complexType name="t_road_signals">
+		<xs:annotation>
+			<xs:documentation>The &lt;signals&gt; element is the container for all signals along a road.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence>
+					<xs:element name="signal" type="t_road_signals_signal" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="signalReference" type="t_road_signals_signalReference" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:group ref="g_additionalData" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="t_road_signals_signal" type="t_road_signals_signal"/>
+	<xs:complexType name="t_road_signals_signal">
+		<xs:annotation>
+			<xs:documentation>Used to provide information about signals along a road. Consists of a main element and an optional lane validity element. The element for a signal is &lt;signal&gt;.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence>
+					<xs:element name="validity" type="t_road_objects_object_laneValidity" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="dependency" type="t_road_signals_signal_dependency" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="reference" type="t_road_signals_signal_reference" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:choice minOccurs="0" maxOccurs="1">
+						<xs:element name="positionInertial" type="t_road_signals_signal_positionInertial" minOccurs="1" maxOccurs="1"/>
+						<xs:element name="positionRoad" type="t_road_signals_signal_positionRoad" minOccurs="1" maxOccurs="1"/>
+					</xs:choice>
+					<xs:group ref="g_additionalData" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+				<xs:attribute name="country" use="optional" type="e_countryCode">
+					<xs:annotation>
+						<xs:documentation>Country code of the road, see ISO 3166-1, alpha-2 codes.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="countryRevision" use="optional" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Defines the year of the applied traffic rules</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="dynamic" use="required" type="t_yesNo">
+					<xs:annotation>
+						<xs:documentation>Indicates whether the signal is dynamic or static. Example: traffic light is dynamic</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="height" use="optional" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>Height of the signal, measured from bottom edge of the signal</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="hOffset" use="optional" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Heading offset of the signal (relative to @orientation, if orientation is equal to “+” or “-“)
+Heading offset of the signal (relative to reference line, if orientation is equal to “none” )</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="id" use="required" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Unique ID of the signal within the OpenDRIVE file</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="name" use="optional" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Name of the signal. May be chosen freely.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="orientation" use="required" type="e_orientation">
+					<xs:annotation>
+						<xs:documentation>"+" = valid in positive s- direction
+"-" = valid in negative s- direction
+"none" = valid in both directions</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="pitch" use="optional" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Pitch angle of the signal, relative to the inertial system (xy-plane)</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="roll" use="optional" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Roll angle of the signal after applying pitch, relative to the inertial system (x’’y’’-plane) </xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="s" use="required" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>s-coordinate</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="subtype" use="required" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Subtype identifier according to country code or "-1" / "none"</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="t" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>t-coordinate</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="text" use="optional" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Additional text associated with the signal, for example, text on city limit "City\nBadAibling"</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="type" use="required" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Type identifier according to country code 
+or "-1" / "none". See extra document.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="unit" use="optional" type="e_unit">
+					<xs:annotation>
+						<xs:documentation>Unit of @value</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="value" use="optional" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Value of the signal, if value is given, unit is mandatory</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="width" use="optional" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>Width of the signal</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="zOffset" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>z offset from the road to bottom edge of the signal. This represents the vertical clearance of the object. Relative to the reference line.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="t_road_signals_signal_dependency" type="t_road_signals_signal_dependency"/>
+	<xs:complexType name="t_road_signals_signal_dependency">
+		<xs:annotation>
+			<xs:documentation>Signal dependency means that one signal controls the output of another signal. A signal may have multiple dependency elements.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence/>
+				<xs:attribute name="id" use="required" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>ID of the controlling signal</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="type" use="optional" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Type of the dependency, 
+Free text, depending on application</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="t_road_signals_signal_positionInertial" type="t_road_signals_signal_positionInertial"/>
+	<xs:complexType name="t_road_signals_signal_positionInertial">
+		<xs:annotation>
+			<xs:documentation>Describes the reference point of the physical position in inertial coordinates in cases where it deviates from the logical position. Defines the inertial position.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence/>
+				<xs:attribute name="hdg" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Heading of the signal, relative to the inertial system</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="pitch" use="optional" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Pitch angle of the signal after applying heading, relative to the inertial system (x’y’-plane)</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="roll" use="optional" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Roll angle of the signal after applying heading and pitch, relative to the inertial system (x’’y’’-plane)</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="x" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>x-coordinate</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="y" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>y-coordinate</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="z" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>z-coordinate</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="t_road_signals_signal_positionRoad" type="t_road_signals_signal_positionRoad"/>
+	<xs:complexType name="t_road_signals_signal_positionRoad">
+		<xs:annotation>
+			<xs:documentation>Describes the reference point of the physical position road coordinates in cases where it deviates from the logical position. Defines the position on the road.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence/>
+				<xs:attribute name="hOffset" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Heading offset of the signal (relative to @orientation)</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="pitch" use="optional" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Pitch angle of the signal after applying hOffset, relative to the inertial system (x’y’-plane)</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="roadId" use="required" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Unique ID of the referenced road</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="roll" use="optional" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Roll angle of the signal after applying hOffset and pitch, relative to the inertial system (x’’y’’-plane)</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="s" use="required" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>s-coordinate</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="t" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>t-coordinate</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="zOffset" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>z offset from road level to bottom edge of the signal</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="t_road_signals_signal_reference" type="t_road_signals_signal_reference"/>
+	<xs:complexType name="t_road_signals_signal_reference">
+		<xs:annotation>
+			<xs:documentation>Provides a means to link a signal to a series of other elements (for example, objects and signals).</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence/>
+				<xs:attribute name="elementId" use="required" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Unique ID of the linked element</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="elementType" use="required" type="e_road_signals_signal_reference_elementType">
+					<xs:annotation>
+						<xs:documentation>Type of the linked element</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="type" use="optional" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Type of the linkage 
+Free text, depending on application</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="t_road_signals_signalReference" type="t_road_signals_signalReference"/>
+	<xs:complexType name="t_road_signals_signalReference">
+		<xs:annotation>
+			<xs:documentation>Refers to the same, that is, identical signal from multiple roads. The referenced signals require a unique ID. The &lt;signalReference&gt; element consists of a main element and an optional lane validity element.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence>
+					<xs:element name="validity" type="t_road_objects_object_laneValidity" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:group ref="g_additionalData" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+				<xs:attribute name="id" use="required" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Unique ID of the referenced signal within the database</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="orientation" use="required" type="e_orientation">
+					<xs:annotation>
+						<xs:documentation>"+" = valid in positive s-direction
+"-" = valid in negative s-direction
+"none" = valid in both directions</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="s" use="required" type="t_grEqZero">
+					<xs:annotation>
+						<xs:documentation>s-coordinate</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="t" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>t-coordinate</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+</xs:schema>

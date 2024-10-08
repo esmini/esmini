@@ -48,6 +48,9 @@ jobs:
       - name: Run black-format lint
         run: python3 support/python/src/main.py run format --black_format_checker
 
+      - name: Run schema validation
+        run: python3 scripts/run_schema_comply.py `find . -name "*.xodr"` `find . -name "*.xosc"`
+
       # TODO: OpenDrive generation currently has too many pylint issues
       #- name: Run pylint lint
       #  run: python3 support/python/src/main.py run pylint

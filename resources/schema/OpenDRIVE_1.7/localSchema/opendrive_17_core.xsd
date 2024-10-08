@@ -1,0 +1,454 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+ASAM OpenDRIVE V1.7.0
+
+© by ASAM e.V., 2021
+
+ASAM OpenDRIVE defines a file format for the precise analytical description of road networks
+
+
+Any use is limited to the scope described in the ASAM license terms. 
+This file is distributable in accordance with the ASAM license terms. 
+See www.asam.net/license.html for further details.
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<xs:include schemaLocation="opendrive_17_object.xsd"/>
+	<xs:include schemaLocation="opendrive_17_railroad.xsd"/>
+	<xs:include schemaLocation="opendrive_17_junction.xsd"/>
+	<xs:include schemaLocation="opendrive_17_signal.xsd"/>
+	<xs:include schemaLocation="opendrive_17_road.xsd"/>
+	<xs:element name="OpenDRIVE">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="header" type="t_header" minOccurs="1" maxOccurs="1"/>
+				<xs:element name="road" type="t_road" minOccurs="1" maxOccurs="unbounded"/>
+				<xs:element name="controller" type="t_controller" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:element name="junction" type="t_junction" minOccurs="0" maxOccurs="unbounded">
+                    <!-- Key Constraints manually added from OpenDRIVE 1.5 -->
+                    <xs:key name="k_junction_connectionId">
+                        <xs:selector xpath="connection"/>
+                        <xs:field xpath="@id"/>
+                    </xs:key>
+                    <xs:key name="k_junction_controllerId">
+                        <xs:selector xpath="junction/controller"/>
+                        <xs:field xpath="@id"/>
+                    </xs:key>                    
+                    <xs:keyref name="r_junction_connection_master" refer="k_junction_connectionId">
+                        <xs:selector xpath="junction/connection"/>
+                        <xs:field xpath="@connectionMaster"/>
+                    </xs:keyref>
+                </xs:element>
+				<xs:element name="junctionGroup" type="t_junctionGroup" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:element name="station" type="t_station" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:group ref="g_additionalData" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+        <!-- Key Constraints manually added from OpenDRIVE 1.5 -->
+		<xs:key name="k_roadId">
+            <xs:selector xpath="road"/>
+            <xs:field xpath="@id"/>
+        </xs:key>
+        <xs:key name="k_road_objects_objectId">
+            <xs:selector xpath="road/objects/object"/>
+            <xs:field xpath="@id"/>
+        </xs:key>
+        <xs:key name="k_road_objects_objectReferenceId">
+            <xs:selector xpath="road/objects/objectReference"/>
+            <xs:field xpath="@id"/>
+        </xs:key>
+        <xs:key name="k_road_objects_tunnel">
+            <xs:selector xpath="road/objects/tunnel"/>
+            <xs:field xpath="@id"/>
+        </xs:key>
+        <xs:key name="k_road_objects_bridge">
+            <xs:selector xpath="road/objects/bridge"/>
+            <xs:field xpath="@id"/>
+        </xs:key>
+        <xs:key name="k_road_signals_signalId">
+            <xs:selector xpath="road/signals/signal"/>
+            <xs:field xpath="@id"/>
+        </xs:key>
+        <xs:key name="k_road_railroad_switchId">
+            <xs:selector xpath="road/railroad/switch"/>
+            <xs:field xpath="@id"/>
+        </xs:key>
+        <xs:key name="k_road_railroad_switchName">
+            <xs:selector xpath="road/railroad/switch"/>
+            <xs:field xpath="@name"/>
+        </xs:key>
+        <xs:key name="k_controllerId">
+            <xs:selector xpath="controller"/>
+            <xs:field xpath="@id"/>
+        </xs:key>
+        <xs:key name="k_junctionId">
+            <xs:selector xpath="junction"/>
+            <xs:field xpath="@id"/>
+        </xs:key>
+        <xs:key name="k_junctionGroupId">
+            <xs:selector xpath="junctionGroup"/>
+            <xs:field xpath="@id"/>
+        </xs:key>
+        <xs:key name="k_stationId">
+            <xs:selector xpath="station"/>
+            <xs:field xpath="@id"/>
+        </xs:key>
+        <xs:key name="k_station_platformId">
+            <xs:selector xpath="station/platform"/>
+            <xs:field xpath="@id"/>
+        </xs:key>                
+        
+        <xs:keyref name="r_road_link_neighbor" refer="k_roadId">
+            <xs:selector xpath="road/link/neighbor"/>
+            <xs:field xpath="@id"/>
+        </xs:keyref>        
+        <xs:keyref name="r_road_objects_objectReference" refer="k_road_objects_objectId">
+            <xs:selector xpath="road/objects/objectReference"/>
+            <xs:field xpath="@outlineId"/>
+        </xs:keyref>        
+        <xs:keyref name="r_road_signals_signal_dependency" refer="k_road_signals_signalId">
+            <xs:selector xpath="road/signals/signal/dependency"/>
+            <xs:field xpath="@id"/>
+        </xs:keyref>
+        <xs:keyref name="r_road_signals_signal_positionRoad" refer="k_roadId">
+            <xs:selector xpath="road/signals/signal/positionRoad"/>
+            <xs:field xpath="@roadId"/>
+        </xs:keyref>
+        <xs:keyref name="r_road_signals_signalReference" refer="k_road_signals_signalId">
+            <xs:selector xpath="road/signals/signalReference"/>
+            <xs:field xpath="@id"/>
+        </xs:keyref>
+        <xs:keyref name="r_road_railroad_switch_mainTrack" refer="k_roadId">
+            <xs:selector xpath="road/railroad/switch/mainTrack"/>
+            <xs:field xpath="@id"/>
+        </xs:keyref>
+        <xs:keyref name="r_road_railroad_switch_sideTrack" refer="k_roadId">
+            <xs:selector xpath="road/railroad/switch/sideTrack"/>
+            <xs:field xpath="@id"/>
+        </xs:keyref>
+        <xs:keyref name="r_road_railroad_switch_partner" refer="k_road_railroad_switchId">
+            <xs:selector xpath="road/railroad/switch/partner"/>
+            <xs:field xpath="@id"/>
+        </xs:keyref>
+        <xs:keyref name="r_controller_control" refer="k_road_signals_signalId">
+            <xs:selector xpath="controller/control"/>
+            <xs:field xpath="@signalId"/>
+        </xs:keyref>
+        <xs:keyref name="r_junction_connection_incomingRoad" refer="k_roadId">
+            <xs:selector xpath="junction/connection"/>
+            <xs:field xpath="@incomingRoad"/>
+            <!-- <xs:field xpath="@connectingRoad"/> -->
+        </xs:keyref>
+        <xs:keyref name="r_junction_connection_connectingRoad" refer="k_roadId">
+            <xs:selector xpath="junction/connection"/>
+            <!-- <xs:field xpath="@incomingRoad"/> -->
+            <xs:field xpath="@connectingRoad"/>
+        </xs:keyref>
+        <xs:keyref name="r_station_platform_segment" refer="k_roadId">
+            <xs:selector xpath="station/platform/segment"/>
+            <xs:field xpath="@roadId"/>
+        </xs:keyref>
+		
+	</xs:element>
+	<xs:simpleType name="e_dataQuality_RawData_PostProcessing">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="raw"/>
+			<xs:enumeration value="cleaned"/>
+			<xs:enumeration value="processed"/>
+			<xs:enumeration value="fused"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="e_dataQuality_RawData_Source">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="sensor"/>
+			<xs:enumeration value="cadaster"/>
+			<xs:enumeration value="custom"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="e_unit">
+		<xs:union memberTypes="e_unitDistance e_unitSpeed e_unitMass e_unitSlope"/>
+	</xs:simpleType>
+	<xs:simpleType name="e_unitDistance">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="m"/>
+			<xs:enumeration value="km"/>
+			<xs:enumeration value="ft"/>
+			<xs:enumeration value="mile"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="e_unitMass">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="kg"/>
+			<xs:enumeration value="t"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="e_unitSlope">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="%"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="e_unitSpeed">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="m/s"/>
+			<xs:enumeration value="mph"/>
+			<xs:enumeration value="km/h"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="t_grEqZero">
+		<xs:restriction base="xs:double">
+			<xs:minInclusive value="0.0"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="t_grZero">
+		<xs:restriction base="xs:double">
+			<xs:minExclusive value="0.0"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="t_yesNo">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="yes"/>
+			<xs:enumeration value="no"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="t_zeroOne">
+		<xs:restriction base="xs:double">
+			<xs:maxInclusive value="1.0"/>
+			<xs:minInclusive value="0.0"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:element name="_OpenDriveElement" type="_OpenDriveElement"/>
+	<xs:complexType name="_OpenDriveElement" abstract="true">
+		<xs:sequence>
+            <!-- For compatibility with XSD 1.0 the next line is commented out: -->
+            <!-- <xs:group ref="g_additionalData" minOccurs="0" maxOccurs="unbounded"/> -->
+            <!-- 
+				To ensure backward compatibility the "additionalData" is applied to each 
+				complex type explicitly to comply with the sequence order of earlier OpenDRIVE versions. 
+				Thus the extension according to the UML is implemented (only) formaly.
+			-->
+		</xs:sequence>
+	</xs:complexType>
+	<xs:element name="t_dataQuality" type="t_dataQuality"/>
+	<xs:complexType name="t_dataQuality">
+		<xs:annotation>
+			<xs:documentation>Raw data or data from external sources that is integrated in ASAM OpenDRIVE may be of varying quality. It is possible to describe quality and accuracy of external data in ASAM OpenDRIVE.
+The description of the data quality is represented by &lt;dataQuality&gt; elements. They may be stored at any position in ASAM OpenDRIVE.
+Measurement data derived from external sources like GPS that is integrated in ASAM OpenDRIVE may be inaccurate. The error range, given in [m], may be listed in the application.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="error" type="t_dataQuality_Error" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="rawData" type="t_dataQuality_RawData" minOccurs="0" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:element name="t_dataQuality_Error" type="t_dataQuality_Error"/>
+	<xs:complexType name="t_dataQuality_Error">
+		<xs:annotation>
+			<xs:documentation>The absolute or relative errors of road data are described by &lt;error&gt; elements within the &lt;dataQuality&gt; element.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence/>
+		<xs:attribute name="xyAbsolute" use="required" type="xs:double">
+			<xs:annotation>
+				<xs:documentation>Absolute error of the road data in x/y direction</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="xyRelative" use="required" type="xs:double">
+			<xs:annotation>
+				<xs:documentation>Relative error of the road data in x/y direction</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="zAbsolute" use="required" type="xs:double">
+			<xs:annotation>
+				<xs:documentation>Absolute error of the road data in z direction</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="zRelative" use="required" type="xs:double">
+			<xs:annotation>
+				<xs:documentation>Relative error of the road data in z direction</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:element name="t_dataQuality_RawData" type="t_dataQuality_RawData"/>
+	<xs:complexType name="t_dataQuality_RawData">
+		<xs:annotation>
+			<xs:documentation>Some basic metadata containing information about raw data included in ASAM OpenDRIVE is described by the &lt;rawData&gt; element within the &lt;dataQuality&gt; element. </xs:documentation>
+		</xs:annotation>
+		<xs:sequence/>
+		<xs:attribute name="date" use="required" type="xs:string">
+			<xs:annotation>
+				<xs:documentation>Date of the delivery of raw data, to be given in ISO 8601 notification (YYYY-MM-DDTHH:MM:SS) [9]. Time-of-day may be omitted</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="postProcessing" use="required" type="e_dataQuality_RawData_PostProcessing">
+			<xs:annotation>
+				<xs:documentation>Information about the kind of data handling before exporting data into the ASAM OpenDRIVE file</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="postProcessingComment" use="optional" type="xs:string">
+			<xs:annotation>
+				<xs:documentation>Comments concerning the postprocessing attribute. Free text, depending on the application</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="source" use="required" type="e_dataQuality_RawData_Source">
+			<xs:annotation>
+				<xs:documentation>Source that has been used for retrieving the raw data; further sources to be added in upcoming versions</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="sourceComment" use="optional" type="xs:string">
+			<xs:annotation>
+				<xs:documentation>Comments concerning the @source . Free text, depending on the application</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:element name="t_header" type="t_header"/>
+	<xs:complexType name="t_header">
+		<xs:annotation>
+			<xs:documentation>The &lt;header&gt; element is the very first element within the &lt;OpenDRIVE&gt; element.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence>
+					<xs:element name="geoReference" type="t_header_GeoReference" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="offset" type="t_header_Offset" minOccurs="0" maxOccurs="1"/>
+					<xs:group ref="g_additionalData" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+				<xs:attribute name="date" use="optional" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Time/date of database creation according to ISO 8601 (preference: YYYY-MM-DDThh:mm:ss)</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="east" use="optional" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Maximum inertial x value</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="name" use="optional" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Database name</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="north" use="optional" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Maximum inertial y value</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="revMajor" use="required" fixed="1" type="xs:integer">
+					<xs:annotation>
+						<xs:documentation>Major revision number of OpenDRIVE format </xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="revMinor" use="required" type="xs:integer">
+					<xs:annotation>
+						<xs:documentation>Minor revision number of OpenDRIVE format; 6 for OpenDrive 1.6 </xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="south" use="optional" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Minimum inertial y value</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="vendor" use="optional" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Vendor name</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="version" use="optional" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Version of this road network</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="west" use="optional" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Minimum inertial x value</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="t_header_GeoReference" type="t_header_GeoReference"/>
+	<xs:complexType name="t_header_GeoReference" mixed="true">
+		<xs:annotation>
+			<xs:documentation>Spatial reference systems are standardized by the European Petroleum Survey Group Geodesy (EPSG) and are defined by parameters describing the geodetic datum. A geodetic datum is a coordinate reference system for a collection of positions that are relative to an ellipsoid model of the earth.
+A geodetic datum is described by a projection string according to PROJ, that is, a format for the exchange of data between two coordinate systems. This data shall be marked as CDATA, because it may contain characters that interfere with the XML syntax of an element’s attribute.
+In ASAM OpenDRIVE, the information about the geographic reference of an ASAM OpenDRIVE dataset is represented by the &lt;geoReference&gt; element within the &lt;header&gt; element.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:group ref="g_additionalData" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:element name="t_header_Offset" type="t_header_Offset"/>
+	<xs:complexType name="t_header_Offset">
+		<xs:annotation>
+			<xs:documentation>To avoid large coordinates, an offset of the whole dataset may be applied using the &lt;offset&gt; element. It enables inertial relocation and re-orientation of datasets. The dataset is first translated by @x, @y, and @z. Afterwards, it is rotated by @hdg around the new origin. Rotation around the z-axis should be avoided. In ASAM OpenDRIVE, the offset of a database is represented by the &lt;offset&gt; element within the &lt;header&gt; element.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="_OpenDriveElement">
+				<xs:sequence>
+					<xs:group ref="g_additionalData" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+				<xs:attribute name="hdg" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Heading offset (rotation around resulting z-axis)</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="x" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Inertial x offset</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="y" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Inertial y offset</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="z" use="required" type="xs:double">
+					<xs:annotation>
+						<xs:documentation>Inertial z offset</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="t_include" type="t_include"/>
+	<xs:complexType name="t_include">
+		<xs:annotation>
+			<xs:documentation>ASAM OpenDRIVE allows including external files into the ASAM OpenDRIVE file. The processing of the files depends on the application.
+Included data is represented by &lt;include&gt; elements. They may be stored at any position in ASAM OpenDRIVE.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence/>
+		<xs:attribute name="file" use="required" type="xs:string">
+			<xs:annotation>
+				<xs:documentation>Location of the file that is to be included</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:element name="t_userData" type="t_userData"/>
+	<xs:complexType name="t_userData">
+		<xs:annotation>
+			<xs:documentation>Ancillary data should be described near the element it refers to. Ancillary data contains data that are not yet described in ASAM OpenDRIVE, or data that is needed by an application for a specific reason. Examples are different road textures.
+In ASAM OpenDRIVE, ancillary data is represented by &lt;userData&gt; elements. They may be stored at any element in ASAM OpenDRIVE.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:any processContents="skip" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+		<xs:attribute name="code" use="required" type="xs:string">
+			<xs:annotation>
+				<xs:documentation>Code for the user data. Free text, depending on application.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="value" use="optional" type="xs:string">
+			<xs:annotation>
+				<xs:documentation>User data. Free text, depending on application. </xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:group name="g_additionalData">
+		<xs:annotation>
+			<xs:documentation>ASAM OpenDRIVE offers the possibility to include external data. The processing of this data depends on the application.
+Additional data may be placed at any position in ASAM OpenDRIVE.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="dataQuality" type="t_dataQuality" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="include" type="t_include" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="userData" type="t_userData" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:group>
+</xs:schema>
