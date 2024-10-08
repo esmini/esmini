@@ -48,9 +48,6 @@ jobs:
       - name: Run black-format lint
         run: python3 support/python/src/main.py run format --black_format_checker
 
-      - name: Run schema validation
-        run: python3 scripts/run_schema_comply.py `find . -name "*.xodr"` `find . -name "*.xosc"`
-
       # TODO: OpenDrive generation currently has too many pylint issues
       #- name: Run pylint lint
       #  run: python3 support/python/src/main.py run pylint
@@ -224,6 +221,15 @@ jobs:
 
       - name: CMake Build
         run: cmake --build build --config ${{ matrix.configuration }} --target install -j 2
+
+      # run xml validation only here.
+      # 1. Only needs to run once
+      # 2. It's not dependent on configuration, so it can be run by any config
+      # 3. This configuration is faster so validation won't add to total CI run time
+      - name: Run schema validation
+        if: runner.os == 'Unix'
+        with:
+          run: python3 scripts/run_schema_comply.py `find . -name "*.xodr"` `find . -name "*.xosc"`
 
       - name: Run Tests - Unix
         if: runner.os != 'Windows'
