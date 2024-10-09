@@ -28,6 +28,7 @@ class XmlValidation:
         self.xsd_files_path = r"resources/schema/"
         self.errors = []
         self.count_of_files_validated = 0
+        self.count_of_files_failed = 0
 
     def is_xml11_needed(self):
         return self.use_xsd11
@@ -57,9 +58,9 @@ class XmlValidation:
                 print(f"Files failed to validate are:")
             print(item)
             counter += 1
-        if counter > 0:
+        if self.count_of_files_failed > 0:
             raise ValueError(
-                f"Validate scheme failed. {counter} files failed to validate. Check the log."
+                f"Validate scheme failed. {self.count_of_files_failed} files failed to validate. Check the log."
             )
         else:
             print(f"{self.get_count_of_files_validated()} Files validated")
@@ -101,6 +102,7 @@ class XmlValidation:
 
             if not len(errors) == 0:
                 print(f"{xml_file} fails to validates")
+                self.count_of_files_failed += 1
                 # Iterate over errors and print them directly, avoiding an intermediate list
                 for error in errors:
                     elem = error.elem
@@ -113,8 +115,6 @@ class XmlValidation:
 
         except xmlschema.validators.exceptions.XMLSchemaValidationError as e:
             print(f"An error occurred during validation: {e}")
-        except etree.XMLSyntaxError as e:
-            print(f"XML Parsing Error: {e}")
 
     def convert_arguments(self, args):
 
@@ -167,7 +167,6 @@ class XmlValidation:
 if __name__ == "__main__":
     validator = XmlValidation()
     if len(sys.argv) == 1:
-        # validator.main([os.getcwd()])
-        validator.main(['resources/xodr/straight_500m_signs.xodr'])
+        validator.main([os.getcwd()]) #validate all files
     else:
         validator.main(sys.argv[1:])

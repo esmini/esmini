@@ -139,7 +139,7 @@
 			<signal s="500.0" t="3.57" id="10" name="speed_50_6" dynamic="no" orientation="-" zOffset="1.7" type="274" country="de" subtype="" value="50" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61" width="0.61" />
 			<signal s="500.0" t="-3.57" id="11" name="speed_50_7" dynamic="no" orientation="-" zOffset="1.7" type="274" country="de" subtype="" value="50" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61" width="0.61"/>
 			<signal s="80.0" t="-3.57" id="12" name="construction_zone_s0" dynamic="no" orientation="+" zOffset="1.7" type="a" country="se" subtype="20" value="1" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61" width="0.61"/>
-			<signal s="80.0" t="3.57" id="13" name="construction_zone_s1" dynamic="no" orientation="+" zOffset="1.7" type="123" country="de" subtype="" value="" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61" width="0.61"/>
+			<signal s="80.0" t="3.57" id="13" name="construction_zone_s1" dynamic="no" orientation="+" zOffset="1.7" type="123" country="de" subtype="" value="-1.0" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61" width="0.61"/>
 		</signals>
 		<surface/>
 	</road>
