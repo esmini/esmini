@@ -53,7 +53,7 @@
                                 </SpeedActionTarget>
                             </SpeedAction>
                         </LongitudinalAction>
-                    </PrivateAction>                    
+                    </PrivateAction>
                     <PrivateAction>
                         <ControllerAction>
                             <ActivateControllerAction longitudinal="true" lateral="true"/>
@@ -89,7 +89,7 @@
                         <EntityRef entityRef="Ego"/>
                     </Actors>
                     <Maneuver name="ControllerManeuver">
-                        <Event name="ActivateACCEvent" priority="overwrite" maximumExecutionCount="10000">
+                        <Event name="ActivateACCEvent" priority="overwrite" maximumExecutionCount="-1">
                             <Action name="AssignACCAction">
                                 <PrivateAction>
                                     <ControllerAction>
@@ -208,7 +208,7 @@
                                     </Condition>
                                 </ConditionGroup>
                             </StartTrigger>
-                        </Event>                        
+                        </Event>
                     </Maneuver>
                 </ManeuverGroup>
                 <StartTrigger/>
