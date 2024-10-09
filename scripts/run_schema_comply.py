@@ -27,9 +27,13 @@ class XmlValidation:
         self.xml_file_names = []
         self.xsd_files_path = r"resources/schema/"
         self.errors = []
+        self.count_of_files_validated = 0
 
     def is_xml11_needed(self):
         return self.use_xsd11
+
+    def get_count_of_files_validated(self):
+        return self.count_of_files_validated
 
     def set_xml11_needed(self):
         self.use_xsd11 = True
@@ -49,22 +53,31 @@ class XmlValidation:
     def print_errors(self):
         counter = 0
         for item in self.errors:
+            if counter == 0:
+                print(f"Files failed to validate are:")
             print(item)
             counter += 1
         if counter > 0:
             raise ValueError(
-                "Validate scheme failed. Check the log."
+                f"Validate scheme failed. {counter} files failed to validate. Check the log."
             )
+        else:
+            print(f"{self.get_count_of_files_validated()} Files validated")
 
     def get_xml_header_minor_revision(self, file_path):
-        tree = etree.parse(file_path)
-        root = tree.getroot()
-        if self.get_xml_type(file_path) == 'xosc':
-            header = root.findall('./FileHeader')
-        else:
-            header = root.findall('./header')
-        revMinor = header[0].attrib['revMinor']
-        return revMinor
+        try:
+            tree = etree.parse(file_path)
+            root = tree.getroot()
+            if self.get_xml_type(file_path) == 'xosc':
+                header = root.findall('./FileHeader')
+            else:
+                header = root.findall('./header')
+            revMinor = header[0].attrib['revMinor']
+            return revMinor
+        except:
+            raise ValueError(
+                f"XML Parsing Error"
+            )
 
     def get_xsd_to_validate(self, revMinor, type_):
         if type_ in SCHEMA_MAPPINGS and revMinor in SCHEMA_MAPPINGS[type_]:
@@ -96,6 +109,7 @@ class XmlValidation:
                     self.errors.append(f"{xml_file}:{line_number}: Schemas validity error : element '{element_name}' : {error.reason}")
             else:
                 print(f"{xml_file} validates.")
+                self.count_of_files_validated += 1
 
         except xmlschema.validators.exceptions.XMLSchemaValidationError as e:
             print(f"An error occurred during validation: {e}")
@@ -105,11 +119,10 @@ class XmlValidation:
     def convert_arguments(self, args):
 
         if len(args) == 1 and args[0].startswith('./'):
-            # If there's only one argument and it starts with './', it's likely in the first format
+            # remove /n
             return args[0].split('\n')
         else:
-            # If there are multiple arguments or the first argument doesn't start with './', assume it's already in the second format
-            return '\n'.join(args)
+            return args
 
     def validate_argument(self, paths):
         for path in paths:
@@ -154,6 +167,7 @@ class XmlValidation:
 if __name__ == "__main__":
     validator = XmlValidation()
     if len(sys.argv) == 1:
-        validator.main([os.getcwd()])
+        # validator.main([os.getcwd()])
+        validator.main(['resources/xodr/straight_500m_signs.xodr'])
     else:
         validator.main(sys.argv[1:])
