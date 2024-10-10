@@ -49,16 +49,16 @@ class XmlValidation:
         return self.xsd_files_path
 
     def get_xml_type(self, file_path):
-        return 'xodr' if file_path.endswith('.xodr') else  'xosc'
+        return 'xodr' if file_path.endswith('.xodr') else 'xosc'
 
     def print_errors(self):
-        counter = 0
-        for item in self.errors:
-            if counter == 0:
-                print(f"Files failed to validate are:")
-            print(item)
-            counter += 1
         if self.count_of_files_failed > 0:
+            counter = 0
+            for item in self.errors:
+                if counter == 0:
+                    print(f"Files failed to validate are:")
+                print(item)
+                counter += 1
             raise ValueError(
                 f"Validate scheme failed. {self.count_of_files_failed} files failed to validate. Check the log."
             )
@@ -74,23 +74,25 @@ class XmlValidation:
             else:
                 header = root.findall('./header')
             revMinor = header[0].attrib['revMinor']
+            if self.get_xml_type(file_path) == 'xodr' and revMinor == "8":
+                self.set_xml11_needed()
             return revMinor
         except:
             raise ValueError(
-                f"XML Parsing Error"
+                f"XML Parsing Error found in {file_path}. Check log"
             )
 
     def get_xsd_to_validate(self, revMinor, type_):
         if type_ in SCHEMA_MAPPINGS and revMinor in SCHEMA_MAPPINGS[type_]:
             return os.path.join(self.xsd_files_path, SCHEMA_MAPPINGS[type_][revMinor])
         else:
-            print(f"Schema for type {type_} and revMinor {revMinor} not found")
             return None
 
     def validate(self, xml_file, schema_file):
         if schema_file is None:
-            print(f"Error: Schema file is not provided for {xml_file}")
-            return
+            raise ValueError(
+                f"Unknown header found in file {xml_file}. Check revisions"
+            )
         try:
             # Create the XMLSchema object once outside the loop
             my_schema = xmlschema.XMLSchema11(schema_file) if self.is_xml11_needed() else xmlschema.XMLSchema(schema_file)
@@ -101,7 +103,7 @@ class XmlValidation:
             errors = list(my_schema.iter_errors(document_tree))
 
             if not len(errors) == 0:
-                print(f"{xml_file} fails to validates")
+                print(f"{xml_file} \033[31m fails to validates. \033[0m")
                 self.count_of_files_failed += 1
                 # Iterate over errors and print them directly, avoiding an intermediate list
                 for error in errors:
@@ -110,15 +112,16 @@ class XmlValidation:
                     element_name = elem.tag if elem is not None else "unknown"
                     self.errors.append(f"{xml_file}:{line_number}: Schemas validity error : element '{element_name}' : {error.reason}")
             else:
-                print(f"{xml_file} validates.")
+                print(f"{xml_file} \033[32m validates.\033[0m")
                 self.count_of_files_validated += 1
 
         except xmlschema.validators.exceptions.XMLSchemaValidationError as e:
-            print(f"An error occurred during validation: {e}")
+            raise ValueError(
+                f"An error occurred during validation: {e}"
+            )
 
     def convert_arguments(self, args):
-
-        if len(args) == 1 and args[0].startswith('./'):
+        if len(args) == 1 and '\n' in args[0]:
             # remove /n
             return args[0].split('\n')
         else:
@@ -154,7 +157,6 @@ class XmlValidation:
                             file_path = os.path.join(root, file)
                             self.set_xml_files(file_path)
 
-
     def main(self, arg):
         paths = self.convert_arguments(arg)
         self.validate_argument(paths)
@@ -162,11 +164,8 @@ class XmlValidation:
         for file in self.get_xml_files_to_validate():
             revMinor = self.get_xml_header_minor_revision(file)
             self.validate(file, self.get_xsd_to_validate(revMinor, self.get_xml_type(file)))
-        self.print_errors()
 
 if __name__ == "__main__":
     validator = XmlValidation()
-    if len(sys.argv) == 1:
-        validator.main([os.getcwd()]) #validate all files
-    else:
-        validator.main(sys.argv[1:])
+    validator.main(sys.argv[1:])
+    validator.print_errors()
