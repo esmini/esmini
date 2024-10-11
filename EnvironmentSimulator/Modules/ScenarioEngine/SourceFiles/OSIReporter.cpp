@@ -587,7 +587,6 @@ int OSIReporter::UpdateOSIStationaryObjectODR(id_t road_id, roadmanager::RMObjec
                 {
                     double x, y, z;
                     outline->corner_[l]->GetPosLocal(x, y, z);
-                    // printf("outline corner %d, %d: %.2f %.2f\n", (int)k, (int)l, x, y);
                     osi3::Vector2d *vec = obj_osi_internal.sobj->mutable_base()->add_base_polygon();
                     vec->set_x(x);
                     vec->set_y(y);

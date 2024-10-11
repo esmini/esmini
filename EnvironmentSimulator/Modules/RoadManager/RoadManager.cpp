@@ -2488,9 +2488,8 @@ void OutlineCornerRoad::GetPosLocal(double& x, double& y, double& z)
     pref.SetTrackPos(roadId_, center_s_, center_t_);
     roadmanager::Position point;
     point.SetTrackPos(roadId_, s_, t_);
-    double total_heading = GetAngleSum(pref.GetH(), center_heading_);
 
-    Global2LocalCoordinates(point.GetX(), point.GetY(), pref.GetX(), pref.GetY(), total_heading, x, y);
+    Global2LocalCoordinates(point.GetX(), point.GetY(), pref.GetX(), pref.GetY(), 0.0, x, y);
 
     z = pref.GetZ() + dz_;
 }
@@ -2526,8 +2525,18 @@ void OutlineCornerLocal::GetPos(double& x, double& y, double& z)
 
 void OutlineCornerLocal::GetPosLocal(double& x, double& y, double& z)
 {
-    x = u_;
-    y = v_;
+    roadmanager::Position pref;
+    pref.SetTrackPosMode(roadId_,
+                         s_,
+                         t_,
+                         roadmanager::Position::PosMode::Z_REL | roadmanager::Position::PosMode::H_REL | roadmanager::Position::PosMode::P_REL |
+                             roadmanager::Position::PosMode::R_REL);
+    double total_heading = GetAngleSum(pref.GetH(), heading_);
+    double u2, v2;
+    RotateVec2D(u_, v_, total_heading, u2, v2);
+
+    x = u2;
+    y = v2;
     z = zLocal_;
 }
 
@@ -4425,10 +4434,10 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
 
                     if (obj == nullptr)
                     {
-                        // create object with position of first repeat object
-                        pos.SetTrackPos(r->GetId(), rs, t);
+                        // create object with position of main element
+                        pos.SetTrackPos(r->GetId(), s, t);
 
-                        obj = new RMObject(rs,
+                        obj = new RMObject(s,
                                            t,
                                            ids,
                                            name,
