@@ -1,3 +1,14 @@
+# esmini - Environment Simulator Minimalistic
+# https://github.com/esmini/esmini
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+#
+# Copyright (c) partners of Simulation Scenarios
+# https://sites.google.com/view/simulationscenarios
+
+
 import xmlschema
 from lxml import etree
 import argparse
@@ -6,20 +17,21 @@ import sys
 from pathlib import Path
 
 SCHEMA_MAPPINGS = {
-    'xosc': {
-        '0': 'OpenSCENARIOv1.0.xsd',
-        '1': 'OpenSCENARIOv1.1.1.xsd',
-        '2': 'OpenSCENARIOv1.2.xsd',
-        '3': 'OpenSCENARIOv1.3.xsd'
+    "xosc": {
+        "0": "OpenSCENARIOv1.0.xsd",
+        "1": "OpenSCENARIOv1.1.1.xsd",
+        "2": "OpenSCENARIOv1.2.xsd",
+        "3": "OpenSCENARIOv1.3.xsd",
     },
-    'xodr': {
-        '4': 'OpenDRIVE_1.4H.xsd',
-        '5': 'OpenDRIVE_1.5.xsd',
-        '6': 'OpenDRIVE_1.6/opendrive_16_core.xsd',
-        '7': 'OpenDRIVE_1.7/localSchema/opendrive_17_core.xsd',
-        '8': 'OpenDRIVE_1.8/local_schema/OpenDRIVE_Core.xsd',
-    }
+    "xodr": {
+        "4": "OpenDRIVE_1.4H.xsd",
+        "5": "OpenDRIVE_1.5.xsd",
+        "6": "OpenDRIVE_1.6/opendrive_16_core.xsd",
+        "7": "OpenDRIVE_1.7/localSchema/opendrive_17_core.xsd",
+        "8": "OpenDRIVE_1.8/local_schema/OpenDRIVE_Core.xsd",
+    },
 }
+
 
 class XmlValidation:
     def __init__(self):
@@ -49,7 +61,7 @@ class XmlValidation:
         return self.xsd_files_path
 
     def get_xml_type(self, file_path):
-        return 'xodr' if file_path.endswith('.xodr') else 'xosc'
+        return "xodr" if file_path.endswith(".xodr") else "xosc"
 
     def print_errors(self):
         if self.count_of_files_failed > 0:
@@ -69,18 +81,16 @@ class XmlValidation:
         try:
             tree = etree.parse(file_path)
             root = tree.getroot()
-            if self.get_xml_type(file_path) == 'xosc':
-                header = root.findall('./FileHeader')
+            if self.get_xml_type(file_path) == "xosc":
+                header = root.findall("./FileHeader")
             else:
-                header = root.findall('./header')
-            revMinor = header[0].attrib['revMinor']
-            if self.get_xml_type(file_path) == 'xodr' and revMinor == "8":
+                header = root.findall("./header")
+            revMinor = header[0].attrib["revMinor"]
+            if self.get_xml_type(file_path) == "xodr" and revMinor == "8":
                 self.set_xml11_needed()
             return revMinor
         except:
-            raise ValueError(
-                f"XML Parsing Error found in {file_path}. Check log"
-            )
+            raise ValueError(f"XML Parsing Error found in {file_path}. Check log")
 
     def get_xsd_to_validate(self, revMinor, type_):
         if type_ in SCHEMA_MAPPINGS and revMinor in SCHEMA_MAPPINGS[type_]:
@@ -95,7 +105,11 @@ class XmlValidation:
             )
         try:
             # Create the XMLSchema object once outside the loop
-            my_schema = xmlschema.XMLSchema11(schema_file) if self.is_xml11_needed() else xmlschema.XMLSchema(schema_file)
+            my_schema = (
+                xmlschema.XMLSchema11(schema_file)
+                if self.is_xml11_needed()
+                else xmlschema.XMLSchema(schema_file)
+            )
 
             # Parse the XML document only once
             parser = etree.XMLParser(recover=False)
@@ -110,20 +124,20 @@ class XmlValidation:
                     elem = error.elem
                     line_number = elem.sourceline if elem is not None else "unknown"
                     element_name = elem.tag if elem is not None else "unknown"
-                    self.errors.append(f"{xml_file}:{line_number}: Schemas validity error : element '{element_name}' : {error.reason}")
+                    self.errors.append(
+                        f"{xml_file}:{line_number}: Schemas validity error : element '{element_name}' : {error.reason}"
+                    )
             else:
                 print(f"{xml_file} \033[32m validates.\033[0m")
                 self.count_of_files_validated += 1
 
         except xmlschema.validators.exceptions.XMLSchemaValidationError as e:
-            raise ValueError(
-                f"An error occurred during validation: {e}"
-            )
+            raise ValueError(f"An error occurred during validation: {e}")
 
     def convert_arguments(self, args):
-        if len(args) == 1 and '\n' in args[0]:
+        if len(args) == 1 and "\n" in args[0]:
             # remove /n
-            return args[0].split('\n')
+            return args[0].split("\n")
         else:
             return args
 
@@ -133,27 +147,31 @@ class XmlValidation:
             # Check if it's a valid file or directory
             if path.is_file():
                 # Validate the file extension
-                if path.suffix in ['.xosc', '.xodr']:
+                if path.suffix in [".xosc", ".xodr"]:
                     return
                 else:
-                    raise argparse.ArgumentTypeError(f"File '{path}' has an unsupported extension. Only .xosc and .xodr are allowed.")
+                    raise argparse.ArgumentTypeError(
+                        f"File '{path}' has an unsupported extension. Only .xosc and .xodr are allowed."
+                    )
             elif path.is_dir():
                 return
             else:
-                raise argparse.ArgumentTypeError(f"'{path}' is neither a valid file nor a directory.")
+                raise argparse.ArgumentTypeError(
+                    f"'{path}' is neither a valid file nor a directory."
+                )
 
     def set_xml_files_to_validate(self, file_paths):
         for path in file_paths:
             path = Path(path)
             if os.path.isfile(path):
-                file_path = os.path.join(os.getcwd() + '/' + str(path))
+                file_path = os.path.join(os.getcwd() + "/" + str(path))
                 self.set_xml_files(file_path)
             # Check if the path is a directory and walk through its files
             elif os.path.isdir(path):
                 for root, dirs, files in os.walk(path):
                     for file in files:
                         # Only consider .xosc or .xodr files
-                        if file.endswith(('.xosc', '.xodr')):
+                        if file.endswith((".xosc", ".xodr")):
                             file_path = os.path.join(root, file)
                             self.set_xml_files(file_path)
 
@@ -163,7 +181,10 @@ class XmlValidation:
         self.set_xml_files_to_validate(paths)
         for file in self.get_xml_files_to_validate():
             revMinor = self.get_xml_header_minor_revision(file)
-            self.validate(file, self.get_xsd_to_validate(revMinor, self.get_xml_type(file)))
+            self.validate(
+                file, self.get_xsd_to_validate(revMinor, self.get_xml_type(file))
+            )
+
 
 if __name__ == "__main__":
     validator = XmlValidation()

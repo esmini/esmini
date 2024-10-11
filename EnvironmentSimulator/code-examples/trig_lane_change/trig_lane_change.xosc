@@ -56,7 +56,7 @@
                         <EntityRef entityRef="Ego"/>
                     </Actors>
                     <Maneuver name="MyManeuver">
-                        <Event name="ChangeLaneLeftEvent" priority="overwrite" maximumExecutionCount="-1">
+                        <Event name="ChangeLaneLeftEvent" priority="overwrite" maximumExecutionCount="10000">
                             <Action name="ChangeLaneLeftAction">
                                 <PrivateAction>
                                     <LateralAction>
