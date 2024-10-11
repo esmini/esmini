@@ -89,7 +89,7 @@
                         <EntityRef entityRef="Ego"/>
                     </Actors>
                     <Maneuver name="ControllerManeuver">
-                        <Event name="ActivateACCEvent" priority="overwrite" maximumExecutionCount="-1">
+                        <Event name="ActivateACCEvent" priority="overwrite" maximumExecutionCount="10000">
                             <Action name="AssignACCAction">
                                 <PrivateAction>
                                     <ControllerAction>
