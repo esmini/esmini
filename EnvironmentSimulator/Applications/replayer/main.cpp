@@ -91,7 +91,16 @@ int ShowGhosts(Replay* player, bool show)
     for (size_t j = 0; j < scenarioEntity.size(); j++)
     {
         ScenarioEntity* entity = &scenarioEntity[j];
-        state                  = player->GetState(entity->id);
+        if (entity == nullptr)
+        {
+            continue;
+        }
+
+        state = player->GetState(entity->id);
+        if (state == nullptr)
+        {
+            continue;
+        }
 
         if (entity->entityModel != nullptr && state->info.ctrl_type == GHOST_CTRL_TYPE)
         {
