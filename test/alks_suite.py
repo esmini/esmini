@@ -124,14 +124,14 @@ class TestSuite(unittest.TestCase):
 
         # Check some scenario events
         self.assertTrue(re.search('10.000.* VaryingSpeedStartCondition == true, 10.0000 >= 10.0000 edge: rising', log)  is not None)
-        self.assertTrue(re.search('25.200: VaryingSpeedEvent2Start == true, element: VaryingSpeedAction state: END_TRANSITION, edge: rising', log)  is not None)
+        self.assertTrue(re.search('25.000: VaryingSpeedEvent2Start == true, element: VaryingSpeedAction state: END_TRANSITION, edge: rising', log)  is not None)
 
         # Check vehicle state
         csv = generate_csv()
-        self.assertTrue(re.search('\n21.000, 0, Ego, 354.426, -8.000, 0.000, 0.000, 0.000, 0.000, 16.667, 0.000, 5.618', csv))
-        self.assertTrue(re.search('\n21.000, 1, LeadVehicle, 430.403, -8.000, 0.000, 0.000, 0.000, 0.000, 21.854, 0.000, 0.272', csv))
-        self.assertTrue(re.search('\n54.000, 0, Ego, 881.631, -8.000, 0.000, 0.000, 0.000, 0.000, 12.399, 0.000, 3.342', csv))
-        self.assertTrue(re.search('\n54.000, 1, LeadVehicle, 909.828, -8.000, 0.000, 0.000, 0.000, 0.000, 11.667, 0.000, 0.323', csv))
+        self.assertTrue(re.search('\n21.000, 0, Ego, 354.056, -8.000, 0.000, 0.000, 0.000, 0.000, 16.667, 0.000, 4.559', csv))
+        self.assertTrue(re.search('\n21.000, 1, LeadVehicle, 429.292, -8.000, 0.000, 0.000, 0.000, 0.000, 21.667, 0.000, 3.379', csv))
+        self.assertTrue(re.search('\n54.400, 0, Ego, 881.415, -8.000, 0.000, 0.000, 0.000, 0.000, 12.161, 0.000, 2.693', csv))
+        self.assertTrue(re.search('\n54.400, 1, LeadVehicle, 908.708, -8.000, 0.000, 0.000, 0.000, 0.000, 11.667, 0.000, 3.406', csv))
 
     def test_ALKS_Scenario_4_3_2_FollowLeadVehicleEmergencyBrake(self):
         log = run_scenario(os.path.join(ALKS_PREFIX + 'ALKS_Scenario_4.3_2_FollowLeadVehicleEmergencyBrake_TEMPLATE.xosc'), COMMON_ARGS)
@@ -144,11 +144,11 @@ class TestSuite(unittest.TestCase):
 
         # Check vehicle state
         csv = generate_csv()
-        self.assertTrue(re.search('\n9.900, 0, Ego, 172.081, -8.000, 0.000, 0.000, 0.000, 0.000, 16.938, 0.000, 6.174', csv))
+        self.assertTrue(re.search('\n9.900, 0, Ego, 170.000, -8.000, 0.000, 0.000, 0.000, 0.000, 16.667, 0.000, 0.190', csv))
         self.assertTrue(re.search('\n9.900, 1, LeadVehicle, 208.333, -8.000, 0.000, 0.000, 0.000, 0.000, 16.667, 0.000, 0.190', csv))
-        self.assertTrue(re.search('\n12.000, 0, Ego, 200.371, -8.000, 0.000, 0.000, 0.000, 0.000, 7.974, 0.000, 4.039', csv))
+        self.assertTrue(re.search('\n12.000, 0, Ego, 198.767, -8.000, 0.000, 0.000, 0.000, 0.000, 8.580, 0.000, 5.826', csv))
         self.assertTrue(re.search('\n12.000, 1, LeadVehicle, 223.741, -8.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.231', csv))
-        self.assertTrue(re.search('\n18.800, 0, Ego, 215.478, -8.000, 0.000, 0.000, 0.000, 0.000, 0.163, 0.000, 2.106', csv))
+        self.assertTrue(re.search('\n18.800, 0, Ego, 215.443, -8.000, 0.000, 0.000, 0.000, 0.000, 0.185, 0.000, 2.008', csv))
         self.assertTrue(re.search('\n18.800, 1, LeadVehicle, 223.741, -8.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.231', csv))
 
     def test_ALKS_Scenario_4_4_1_CutInNoCollision(self):
@@ -200,10 +200,10 @@ class TestSuite(unittest.TestCase):
 
         # Check vehicle state
         csv = generate_csv()
-        self.assertTrue(re.search('\n24.500, 0, Ego, 417.715, -8.000, 0.000, 0.000, 0.000, 0.000, 16.747, 0.000, 4.242', csv))
+        self.assertTrue(re.search('\n24.500, 0, Ego, 413.333, -8.000, 0.000, 0.000, 0.000, 0.000, 16.667, 0.000, 4.277', csv))
         self.assertTrue(re.search('\n24.500, 1, TargetBlocking, 500.000, -8.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
         self.assertTrue(re.search('\n24.500, 2, LeadVehicle, 451.666, -7.898, 0.000, 0.034, 0.000, 0.000, 16.667, 0.025, 4.277', csv))
-        self.assertTrue(re.search('\n30.000, 0, Ego, 485.199, -8.000, 0.000, 0.000, 0.000, 0.000, 4.379, 0.000, 0.508', csv))
+        self.assertTrue(re.search('\n30.000, 0, Ego, 483.918, -8.000, 0.000, 0.000, 0.000, 0.000, 4.994, 0.000, 3.219', csv))
         self.assertTrue(re.search('\n30.000, 1, TargetBlocking, 500.000, -8.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
         self.assertTrue(re.search('\n30.000, 2, LeadVehicle, 543.168, -4.500, 0.000, 0.000, 0.000, 0.000, 16.667, 0.000, 2.288', csv))
 
@@ -218,11 +218,11 @@ class TestSuite(unittest.TestCase):
 
         # Check vehicle state
         csv = generate_csv()
-        self.assertTrue(re.search('\n24.500, 0, Ego, 417.715, -8.000, 0.000, 0.000, 0.000, 0.000, 16.747, 0.000, 4.242', csv))
+        self.assertTrue(re.search('\n24.500, 0, Ego, 413.333, -8.000, 0.000, 0.000, 0.000, 0.000, 16.667, 0.000, 4.277', csv))
         self.assertTrue(re.search('\n24.500, 1, TargetBlocking, 500.000, -8.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
         self.assertTrue(re.search('\n24.500, 2, TargetBlocking2, 515.000, -8.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
         self.assertTrue(re.search('\n24.500, 3, LeadVehicle, 451.666, -7.898, 0.000, 0.034, 0.000, 0.000, 16.667, 0.025, 4.277', csv))
-        self.assertTrue(re.search('\n32.000, 0, Ego, 490.671, -8.000, 0.000, 0.000, 0.000, 0.000, 1.460, 0.000, 3.159', csv))
+        self.assertTrue(re.search('\n32.000, 0, Ego, 490.237, -8.000, 0.000, 0.000, 0.000, 0.000, 1.710, 0.000, 1.955', csv))
         self.assertTrue(re.search('\n32.000, 1, TargetBlocking, 500.000, -8.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
         self.assertTrue(re.search('\n32.000, 2, TargetBlocking2, 515.000, -8.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
         self.assertTrue(re.search('\n32.000, 3, LeadVehicle, 576.501, -4.500, 0.000, 0.000, 0.000, 0.000, 16.667, 0.000, 3.279', csv))

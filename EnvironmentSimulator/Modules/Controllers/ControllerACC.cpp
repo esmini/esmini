@@ -185,7 +185,9 @@ void ControllerACC::Step(double timeStep)
             acc = CLAMP(acc, -object_->GetMaxDeceleration(), object_->GetMaxAcceleration());
 
             currentSpeed_ += acc * timeStep;
-            currentSpeed_ = MAX(0.0, currentSpeed_);
+
+            // ensure positiove speed and not exceeding setSpeed
+            currentSpeed_ = MIN(MAX(0.0, currentSpeed_), setSpeed_);
         }
 
         object_->SetSensorPosition(entities_->object_[static_cast<unsigned int>(minObjIndex)]->pos_.GetX(),
