@@ -56,12 +56,28 @@ class XmlValidation:
     def get_xml_type(self, file_path):
         return "xodr" if file_path.endswith(".xodr") else "xosc"
 
+    def increase_files_failed_to_validate(self):
+        self.count_of_files_failed += 1
+
+    def get_count_of_files_failed_to_validate(self):
+        return self.count_of_files_failed
+
+    def log_error(self, error_msg, file):
+        print(f"[NOT OK] {file}", flush=True)
+        self.errors.append(error_msg)
+        self.increase_files_failed_to_validate()
+
     def print_errors(self):
-        if self.count_of_files_failed > 0:
+        if self.get_count_of_files_failed_to_validate() > 0:
             print(f"Issues:")
             for item in self.errors:
                 print(item)
-            print("{} files validated {} failed".format(self.get_count_of_files_validated(), self.count_of_files_failed))
+            print(
+                "{} files validated {} failed".format(
+                    self.get_count_of_files_validated(),
+                    self.get_count_of_files_failed_to_validate(),
+                )
+            )
         else:
             print(f"{self.get_count_of_files_validated()} files validated")
 
@@ -70,7 +86,16 @@ class XmlValidation:
             header = self.root.findall("./FileHeader")
         else:
             header = self.root.findall("./header")
-        revMinor = header[0].attrib["revMinor"]
+        if (
+            len(header) > 0 and "revMinor" in header[0].attrib
+        ):  # check header and revMinor attribute available
+            revMinor = header[0].attrib["revMinor"]
+        else:
+            error_msg = "{}: Check header, Either header or revMinor missing ".format(
+                file_path
+            )
+            self.log_error(error_msg, file_path)
+            return None
         return revMinor
 
     def get_xsd_to_validate(self, revMinor, file):
@@ -78,20 +103,24 @@ class XmlValidation:
         if type_ in SCHEMA_MAPPINGS and revMinor in SCHEMA_MAPPINGS[type_]:
             return os.path.join(self.xsd_files_path, SCHEMA_MAPPINGS[type_][revMinor])
         else:
-            print(f"[NOT OK] {file}", flush=True)
-            self.errors.append("{}: minor version {} found. Supported: {}".format(file, revMinor, ", ".join(str(key) for key in SCHEMA_MAPPINGS[type_].keys())))
-            self.count_of_files_failed += 1
+            error_msg = "{}: minor version {} found. Supported: {}".format(
+                file,
+                revMinor,
+                ", ".join(str(key) for key in SCHEMA_MAPPINGS[type_].keys()),
+            )
+            self.log_error(error_msg, file)
             return None
 
-    def validate(self, xml_file, schema_file):
+    def get_scheme(self, xml_file, schema_file):
         if schema_file is not None:
             try:
                 tmp_tree = etree.parse(schema_file)
             except etree.ParseError as e:
-                self.errors.append("{}: Schema {} parsing error: {}".format(xml_file, os.path.basename(schema_file), e.msg))
-                self.count_of_files_failed += 1
-                print(f"[NOT OK] {xml_file}", flush=True)
-                return
+                error_msg = "{}: Schema {} parsing error: {}".format(
+                    xml_file, os.path.basename(schema_file), e.msg
+                )
+                self.log_error(error_msg, xml_file)
+                return None
 
             try:
                 self.xml_version = tmp_tree.docinfo.xml_version
@@ -101,23 +130,29 @@ class XmlValidation:
                 elif self.xml_version == "1.1":
                     my_schema = xmlschema.XMLSchema11(schema_file)
                 else:
-                    self.errors.append("{}: Unsupported XML version: {}".format(xml_file, self.xml_version))
-                    self.count_of_files_failed += 1
-                    print(f"[NOT OK] {xml_file}", flush=True)
-                    return
+                    error_msg = "{}: Unsupported XML version: {}".format(
+                        xml_file, self.xml_version
+                    )
+                    self.log_error(error_msg, xml_file)
+                    return None
             except xmlschema.validators.exceptions.XMLSchemaParseError as e:
-                self.errors.append("{}: Schema error {}. Update xml version to 1.1?".format(xml_file, e.message))
-                self.count_of_files_failed += 1
-                print(f"[NOT OK] {xml_file}", flush=True)
-                return
-            # Parse the XML document only once
+                error_msg = "{}: Schema error {}. Update xml version to 1.1?".format(
+                    xml_file, e.message
+                )
+                self.log_error(error_msg, xml_file)
+                return None
+            return my_schema
+
+    def validate(self, xml_file, schema_file):
+        my_schema = self.get_scheme(xml_file, schema_file)
+        if my_schema is not None:
             parser = etree.XMLParser(recover=False)
             document_tree = etree.parse(xml_file, parser)
             errors = list(my_schema.iter_errors(document_tree))
 
             if not len(errors) == 0:
                 print(f"[NOT OK] {xml_file}", flush=True)
-                self.count_of_files_failed += 1
+                self.increase_files_failed_to_validate()
                 # Iterate over errors and print them directly, avoiding an intermediate list
                 for error in errors:
                     elem = error.elem
@@ -177,9 +212,7 @@ class XmlValidation:
             self.root = self.tree.getroot()
             return True
         except etree.ParseError as e:
-            print(f"[NOT OK] {file}", flush=True)
-            self.errors.append("{}: Parsing error: {}".format(file, e.msg))
-            self.count_of_files_failed += 1
+            self.log_error("{}: Parsing error: {}".format(file, e.msg), file)
             return False
 
     def main(self, arg):
@@ -196,14 +229,19 @@ class XmlValidation:
 if __name__ == "__main__":
 
     if len(sys.argv) < 2:
-        print("Usage: python run_schema_comply.py <path1> [path2] [path3] ...\n\n   path can be file or directory")
+        print(
+            "Usage: python run_schema_comply.py <path1> [path2] [path3] ...\n\n   path can be file or directory"
+        )
         exit(-1)
 
     validator = XmlValidation()
     validator.main(sys.argv[1:])
     validator.print_errors()
 
-    if validator.count_of_files_validated > 0 and validator.count_of_files_failed == 0:
+    if (
+        validator.get_count_of_files_validated() > 0
+        and validator.get_count_of_files_failed_to_validate() == 0
+    ):
         exit(0)  # at least one file has been validated and no failures
     else:
         exit(1)  # exit code 1 to indicate generic error from script
