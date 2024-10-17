@@ -3,106 +3,106 @@
 <!-- A white car is driving with constant speed, set by init event -->
 <!-- The white car adapt steering for curve road -->
 <OpenSCENARIO>
-    <FileHeader revMajor="1" revMinor="1" date="2021-08-24T10:00:00" description="Demonstrate Looming controller" author="esmini-team"/>
-    <ParameterDeclarations>
-        <ParameterDeclaration name="HostVehicle" parameterType="string" value="car_white"/>
-        <ParameterDeclaration name="EgoSpeed" parameterType="double" value="30.0"/>
-        <ParameterDeclaration name="EgoS" parameterType="double" value="0.0"/>
-    </ParameterDeclarations>
-    <CatalogLocations>
-        <VehicleCatalog>
-            <Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
-        </VehicleCatalog>
-        <ControllerCatalog>
-            <Directory path="../../../resources/xosc/Catalogs/Controllers"/>
-        </ControllerCatalog>
-    </CatalogLocations>
-    <RoadNetwork>
-        <!-- <LogicFile filepath="../../../scenariogeneration/straight_road_mixed.xodr"/> -->
-        <!-- <LogicFile filepath="../xodr/curve_road.xodr"/> -->
-        <LogicFile filepath="../xodr/curve_road_mixed.xodr"/>
-        <!-- <LogicFile filepath="../xodr/road_straight_curve_junction.xodr"/> -->
-        <!-- <LogicFile filepath="../../../scenariogeneration/lane_section_complex.xodr"/> -->
-        <!-- <LogicFile filepath="../../../scenariogeneration/lane_section.xodr"/> -->
-        <!-- <SceneGraphFile filepath="../models/straight_500m.osgb"/> -->
-        <!-- <LogicFile filepath="../../../scenariogeneration/straight_road.xodr"/> -->
-        <!-- <LogicFile filepath="../xodr/lane_number_change_merge.xodr"/> -->
-        <!-- <LogicFile filepath="../../../scenariogeneration/examples/xodr/lane_section_arc_1lanesection.xodr"/> -->
-        <!-- <LogicFile filepath="../../../scenariogeneration/lane_section_arc.xodr"/> -->
-    </RoadNetwork>
-    <Entities>
-        <ScenarioObject name="Ego">
-            <CatalogReference catalogName="VehicleCatalog" entryName="$HostVehicle"/>
-            <ObjectController>
-                <Controller name="LoomingController">
-                    <!-- <Controller name="ACCController"> -->
-                    <Properties>
-                        <Property name="timeGap" value="1.0"/>
-                        <Property name="mode" value="override"/>
-                        <Property name="setSpeed" value="${$EgoSpeed / 3.6}"/>
-                    </Properties>
-                </Controller>
-            </ObjectController>
-        </ScenarioObject>
-    </Entities>
-    <Storyboard>
-        <Init>
-            <Actions>
-                <Private entityRef="Ego">
-                    <PrivateAction>
-                        <TeleportAction>
-                            <Position>
-                                <LanePosition roadId="0" laneId="-1" offset="0" s="$EgoS"/>
-                            </Position>
-                        </TeleportAction>
-                    </PrivateAction>
-                    <PrivateAction>
-                        <LongitudinalAction>
-                            <SpeedAction>
-                                <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
-                                <SpeedActionTarget>
-                                    <AbsoluteTargetSpeed value="${$EgoSpeed / 3.6}"/>
-                                </SpeedActionTarget>
-                            </SpeedAction>
-                        </LongitudinalAction>
-                    </PrivateAction>
-                    <PrivateAction>
-                        <ActivateControllerAction longitudinal="true" lateral="false"/>
-                    </PrivateAction>
-                </Private>
-            </Actions>
-        </Init>
-        <Story name="empty">
-            <Act name="empty">
-            <ManeuverGroup maximumExecutionCount="1" name="OverrideManeuverGroup">
-               <Actors selectTriggeringEntities="false">
-                  <EntityRef entityRef="Ego"/>
-               </Actors>
-			</ManeuverGroup >
-                <StartTrigger>
-                    <ConditionGroup>
-                        <Condition name="SenarioStart" delay="0" conditionEdge="none">
-                            <ByValueCondition>
-                                <SimulationTimeCondition value="0" rule="greaterThan"/>
-                            </ByValueCondition>
-                        </Condition>
-                    </ConditionGroup>
-                </StartTrigger>
-            </Act>
-        </Story>
-        <StopTrigger>
-            <ConditionGroup>
-                    <Condition name="End Of Road condition" delay="0" conditionEdge="rising">
-                        <ByEntityCondition>
-                            <TriggeringEntities triggeringEntitiesRule="any">
-                                <EntityRef entityRef="Ego"/>
-                            </TriggeringEntities>
-                            <EntityCondition>
-                                <EndOfRoadCondition duration="0.0" />
-                            </EntityCondition>
-                        </ByEntityCondition>
-                </Condition>
-            </ConditionGroup>
-        </StopTrigger>
-    </Storyboard>
+	<FileHeader revMajor="1" revMinor="1" date="2021-08-24T10:00:00" description="Demonstrate Looming controller" author="esmini-team"/>
+	<ParameterDeclarations>
+		<ParameterDeclaration name="HostVehicle" parameterType="string" value="car_white"/>
+		<ParameterDeclaration name="EgoSpeed" parameterType="double" value="30.0"/>
+		<ParameterDeclaration name="EgoS" parameterType="double" value="0.0"/>
+	</ParameterDeclarations>
+	<CatalogLocations>
+		<VehicleCatalog>
+			<Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
+		</VehicleCatalog>
+		<ControllerCatalog>
+			<Directory path="../../../resources/xosc/Catalogs/Controllers"/>
+		</ControllerCatalog>
+	</CatalogLocations>
+	<RoadNetwork>
+		<!-- <LogicFile filepath="../../../scenariogeneration/straight_road_mixed.xodr"/> -->
+		<!-- <LogicFile filepath="../xodr/curve_road.xodr"/> -->
+		<LogicFile filepath="../xodr/curve_road_mixed.xodr"/>
+		<!-- <LogicFile filepath="../xodr/road_straight_curve_junction.xodr"/> -->
+		<!-- <LogicFile filepath="../../../scenariogeneration/lane_section_complex.xodr"/> -->
+		<!-- <LogicFile filepath="../../../scenariogeneration/lane_section.xodr"/> -->
+		<!-- <SceneGraphFile filepath="../models/straight_500m.osgb"/> -->
+		<!-- <LogicFile filepath="../../../scenariogeneration/straight_road.xodr"/> -->
+		<!-- <LogicFile filepath="../xodr/lane_number_change_merge.xodr"/> -->
+		<!-- <LogicFile filepath="../../../scenariogeneration/examples/xodr/lane_section_arc_1lanesection.xodr"/> -->
+		<!-- <LogicFile filepath="../../../scenariogeneration/lane_section_arc.xodr"/> -->
+	</RoadNetwork>
+	<Entities>
+		<ScenarioObject name="Ego">
+			<CatalogReference catalogName="VehicleCatalog" entryName="$HostVehicle"/>
+			<ObjectController>
+				<Controller name="LoomingController">
+					<!-- <Controller name="ACCController"> -->
+					<Properties>
+						<Property name="timeGap" value="1.0"/>
+						<Property name="mode" value="override"/>
+						<Property name="setSpeed" value="${$EgoSpeed / 3.6}"/>
+					</Properties>
+				</Controller>
+			</ObjectController>
+		</ScenarioObject>
+	</Entities>
+	<Storyboard>
+		<Init>
+			<Actions>
+				<Private entityRef="Ego">
+					<PrivateAction>
+						<TeleportAction>
+							<Position>
+								<LanePosition roadId="0" laneId="-1" offset="0" s="$EgoS"/>
+							</Position>
+						</TeleportAction>
+					</PrivateAction>
+					<PrivateAction>
+						<LongitudinalAction>
+							<SpeedAction>
+								<SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
+								<SpeedActionTarget>
+									<AbsoluteTargetSpeed value="${$EgoSpeed / 3.6}"/>
+								</SpeedActionTarget>
+							</SpeedAction>
+						</LongitudinalAction>
+					</PrivateAction>
+					<PrivateAction>
+						<ActivateControllerAction longitudinal="true" lateral="false"/>
+					</PrivateAction>
+				</Private>
+			</Actions>
+		</Init>
+		<Story name="empty">
+			<Act name="empty">
+				<ManeuverGroup maximumExecutionCount="1" name="OverrideManeuverGroup">
+					<Actors selectTriggeringEntities="false">
+						<EntityRef entityRef="Ego"/>
+					</Actors>
+				</ManeuverGroup>
+				<StartTrigger>
+					<ConditionGroup>
+						<Condition name="SenarioStart" delay="0" conditionEdge="none">
+							<ByValueCondition>
+								<SimulationTimeCondition value="0" rule="greaterThan"/>
+							</ByValueCondition>
+						</Condition>
+					</ConditionGroup>
+				</StartTrigger>
+			</Act>
+		</Story>
+		<StopTrigger>
+			<ConditionGroup>
+				<Condition name="End Of Road condition" delay="0" conditionEdge="rising">
+					<ByEntityCondition>
+						<TriggeringEntities triggeringEntitiesRule="any">
+							<EntityRef entityRef="Ego"/>
+						</TriggeringEntities>
+						<EntityCondition>
+							<EndOfRoadCondition duration="0.0"/>
+						</EntityCondition>
+					</ByEntityCondition>
+				</Condition>
+			</ConditionGroup>
+		</StopTrigger>
+	</Storyboard>
 </OpenSCENARIO>

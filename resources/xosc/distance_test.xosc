@@ -1,169 +1,154 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- This scenario demonstrates the keep distance action -->
 <OpenSCENARIO>
-   <FileHeader revMajor="1"
-               revMinor="1"
-               date="2021-07-27T10:00:00"
-               description="Keep distance"
-               author="esmini team"/>
-   <ParameterDeclarations>
-      <ParameterDeclaration name="Gap_dist1" parameterType="double" value="10"/>
-      <ParameterDeclaration name="Gap_dist2" parameterType="double" value="4"/>
-      <ParameterDeclaration name="Max_acc" parameterType="double" value="15"/>
-      <ParameterDeclaration name="Max_ret" parameterType="double" value="15"/>
-   </ParameterDeclarations>
-   <CatalogLocations>
-      <VehicleCatalog>
-         <Directory path="../xosc/Catalogs/Vehicles"/>
-      </VehicleCatalog>
-   </CatalogLocations>
-   <RoadNetwork>
-      <LogicFile filepath="../xodr/straight_500m_signs.xodr"/>
-      <SceneGraphFile filepath="../models/straight_500m.osgb"/>
-   </RoadNetwork>
-   <Entities>
-      <ScenarioObject name="Ego">
-         <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
-         <ObjectController>
-            <Controller name="InteractiveController">
-               <Properties>
-                  <Property name="esminiController" value="InteractiveController"/>
-               </Properties>
-            </Controller>
-         </ObjectController>
-      </ScenarioObject>
-      <ScenarioObject name="Dummy">
-         <CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>
-      </ScenarioObject>
-   </Entities>
-   <Storyboard>
-      <Init>
-         <Actions>
-            <Private entityRef="Ego">
-               <PrivateAction>
-                  <TeleportAction>
-                     <Position>
-                        <RoadPosition roadId="1" s="50.0" t="-1.5"/>
-                     </Position>
-                  </TeleportAction>
-               </PrivateAction>
-               <PrivateAction>
-                  <ControllerAction>
-                     <ActivateControllerAction longitudinal="true"/>
-                  </ControllerAction>
-               </PrivateAction>
-               <PrivateAction>
-                  <ControllerAction>
-                     <ActivateControllerAction lateral="true"/>
-                  </ControllerAction>
-               </PrivateAction>
-               <PrivateAction>
-                  <LongitudinalAction>
-                     <SpeedAction>
-                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
-                        <SpeedActionTarget>
-                           <AbsoluteTargetSpeed value="15"/>
-                        </SpeedActionTarget>
-                     </SpeedAction>
-                  </LongitudinalAction>
-               </PrivateAction>
-            </Private>
-            <Private entityRef="Dummy">
-               <PrivateAction>
-                  <TeleportAction>
-                     <Position>
-                        <LanePosition roadId="1" laneId="-1" offset="0.0" s="10.0"/>
-                     </Position>
-                  </TeleportAction>
-               </PrivateAction>
-               <PrivateAction>
-                  <LongitudinalAction>
-                     <SpeedAction>
-                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
-                        <SpeedActionTarget>
-                           <AbsoluteTargetSpeed value="15.0"/>
-                        </SpeedActionTarget>
-                     </SpeedAction>
-                  </LongitudinalAction>
-               </PrivateAction>
-            </Private>
-         </Actions>
-      </Init>
-      <Story name="Story_DistTest">
-         <ParameterDeclarations>
-            <ParameterDeclaration parameterType="string" name="owner" value="Dummy"/>
-         </ParameterDeclarations>
-         <Act name="Act_DistTest">
-            <ManeuverGroup maximumExecutionCount="1" name="NonContinuousDistManeuverGroup">
-               <Actors selectTriggeringEntities="false">
-                  <EntityRef entityRef="Dummy"/>
-               </Actors>
-               <Maneuver name="DistManeuver">
-                  <Event name="ContinuousDistEvent" priority="overwrite">
-                     <Action name="NonContinuousDistAction">
-                        <PrivateAction>
-                           <LongitudinalAction>
-                              <LongitudinalDistanceAction continuous="true"
-                                                          entityRef="Ego"
-                                                          distance="$Gap_dist1"
-                                                          freespace="true">
-                                 <DynamicConstraints maxAcceleration="$Max_acc" maxDeceleration="$Max_ret" maxSpeed="40"/>
-                              </LongitudinalDistanceAction>
-                           </LongitudinalAction>
-                        </PrivateAction>
-                     </Action>
-                     <StartTrigger/>
-                  </Event>
-                  <Event name="NonContinuousDistEvent" priority="overwrite">
-                     <Action name="NonContinuousDistAction">
-                        <PrivateAction>
-                           <LongitudinalAction>
-                              <LongitudinalDistanceAction continuous="false"
-                                                          entityRef="Ego"
-                                                          distance="$Gap_dist2"
-                                                          freespace="true"
-                                                          displacement="trailingReferencedEntity" >
-                                 <DynamicConstraints maxAcceleration="$Max_acc" maxDeceleration="$Max_ret" maxSpeed="40"/>
-                              </LongitudinalDistanceAction>
-                           </LongitudinalAction>
-                        </PrivateAction>
-                     </Action>
-                     <StartTrigger>
-                        <ConditionGroup>
-                           <Condition name="OverTakerStartSpeedCondition"
-                                      delay="0"
-                                      conditionEdge="none">
-                              <ByEntityCondition>
-                                 <TriggeringEntities triggeringEntitiesRule="any">
-                                    <EntityRef entityRef="Ego"/>
-                                 </TriggeringEntities>
-                                 <EntityCondition>
-                                    <ReachPositionCondition tolerance="2.0">
-                                       <Position>
-                                          <LanePosition roadId="1" laneId="-1" s="250.0"/>
-                                       </Position>
-                                    </ReachPositionCondition>
-                                 </EntityCondition>
-                              </ByEntityCondition>
-                           </Condition>
-                        </ConditionGroup>
-                     </StartTrigger>
-                  </Event>
-               </Maneuver>
-            </ManeuverGroup>
-            <StartTrigger/>
-         </Act>
-      </Story>
-      <StopTrigger>
-         <ConditionGroup>
-            <Condition name="QuitCondition" delay="4" conditionEdge="rising">
-               <ByValueCondition>
-                  <StoryboardElementStateCondition storyboardElementType="event"
-                                                   storyboardElementRef="NonContinuousDistEvent"
-                                                   state="endTransition"/>
-               </ByValueCondition>
-            </Condition>
-         </ConditionGroup>
-      </StopTrigger>
-   </Storyboard>
+	<FileHeader revMajor="1" revMinor="1" date="2021-07-27T10:00:00" description="Keep distance" author="esmini team"/>
+	<ParameterDeclarations>
+		<ParameterDeclaration name="Gap_dist1" parameterType="double" value="10"/>
+		<ParameterDeclaration name="Gap_dist2" parameterType="double" value="4"/>
+		<ParameterDeclaration name="Max_acc" parameterType="double" value="15"/>
+		<ParameterDeclaration name="Max_ret" parameterType="double" value="15"/>
+	</ParameterDeclarations>
+	<CatalogLocations>
+		<VehicleCatalog>
+			<Directory path="../xosc/Catalogs/Vehicles"/>
+		</VehicleCatalog>
+	</CatalogLocations>
+	<RoadNetwork>
+		<LogicFile filepath="../xodr/straight_500m_signs.xodr"/>
+		<SceneGraphFile filepath="../models/straight_500m.osgb"/>
+	</RoadNetwork>
+	<Entities>
+		<ScenarioObject name="Ego">
+			<CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+			<ObjectController>
+				<Controller name="InteractiveController">
+					<Properties>
+						<Property name="esminiController" value="InteractiveController"/>
+					</Properties>
+				</Controller>
+			</ObjectController>
+		</ScenarioObject>
+		<ScenarioObject name="Dummy">
+			<CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>
+		</ScenarioObject>
+	</Entities>
+	<Storyboard>
+		<Init>
+			<Actions>
+				<Private entityRef="Ego">
+					<PrivateAction>
+						<TeleportAction>
+							<Position>
+								<RoadPosition roadId="1" s="50.0" t="-1.5"/>
+							</Position>
+						</TeleportAction>
+					</PrivateAction>
+					<PrivateAction>
+						<ControllerAction>
+							<ActivateControllerAction longitudinal="true"/>
+						</ControllerAction>
+					</PrivateAction>
+					<PrivateAction>
+						<ControllerAction>
+							<ActivateControllerAction lateral="true"/>
+						</ControllerAction>
+					</PrivateAction>
+					<PrivateAction>
+						<LongitudinalAction>
+							<SpeedAction>
+								<SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
+								<SpeedActionTarget>
+									<AbsoluteTargetSpeed value="15"/>
+								</SpeedActionTarget>
+							</SpeedAction>
+						</LongitudinalAction>
+					</PrivateAction>
+				</Private>
+				<Private entityRef="Dummy">
+					<PrivateAction>
+						<TeleportAction>
+							<Position>
+								<LanePosition roadId="1" laneId="-1" offset="0.0" s="10.0"/>
+							</Position>
+						</TeleportAction>
+					</PrivateAction>
+					<PrivateAction>
+						<LongitudinalAction>
+							<SpeedAction>
+								<SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
+								<SpeedActionTarget>
+									<AbsoluteTargetSpeed value="15.0"/>
+								</SpeedActionTarget>
+							</SpeedAction>
+						</LongitudinalAction>
+					</PrivateAction>
+				</Private>
+			</Actions>
+		</Init>
+		<Story name="Story_DistTest">
+			<ParameterDeclarations>
+				<ParameterDeclaration parameterType="string" name="owner" value="Dummy"/>
+			</ParameterDeclarations>
+			<Act name="Act_DistTest">
+				<ManeuverGroup maximumExecutionCount="1" name="NonContinuousDistManeuverGroup">
+					<Actors selectTriggeringEntities="false">
+						<EntityRef entityRef="Dummy"/>
+					</Actors>
+					<Maneuver name="DistManeuver">
+						<Event name="ContinuousDistEvent" priority="overwrite">
+							<Action name="NonContinuousDistAction">
+								<PrivateAction>
+									<LongitudinalAction>
+										<LongitudinalDistanceAction continuous="true" entityRef="Ego" distance="$Gap_dist1" freespace="true">
+											<DynamicConstraints maxAcceleration="$Max_acc" maxDeceleration="$Max_ret" maxSpeed="40"/>
+										</LongitudinalDistanceAction>
+									</LongitudinalAction>
+								</PrivateAction>
+							</Action>
+							<StartTrigger/>
+						</Event>
+						<Event name="NonContinuousDistEvent" priority="overwrite">
+							<Action name="NonContinuousDistAction">
+								<PrivateAction>
+									<LongitudinalAction>
+										<LongitudinalDistanceAction continuous="false" entityRef="Ego" distance="$Gap_dist2" freespace="true" displacement="trailingReferencedEntity">
+											<DynamicConstraints maxAcceleration="$Max_acc" maxDeceleration="$Max_ret" maxSpeed="40"/>
+										</LongitudinalDistanceAction>
+									</LongitudinalAction>
+								</PrivateAction>
+							</Action>
+							<StartTrigger>
+								<ConditionGroup>
+									<Condition name="OverTakerStartSpeedCondition" delay="0" conditionEdge="none">
+										<ByEntityCondition>
+											<TriggeringEntities triggeringEntitiesRule="any">
+												<EntityRef entityRef="Ego"/>
+											</TriggeringEntities>
+											<EntityCondition>
+												<ReachPositionCondition tolerance="2.0">
+													<Position>
+														<LanePosition roadId="1" laneId="-1" s="250.0"/>
+													</Position>
+												</ReachPositionCondition>
+											</EntityCondition>
+										</ByEntityCondition>
+									</Condition>
+								</ConditionGroup>
+							</StartTrigger>
+						</Event>
+					</Maneuver>
+				</ManeuverGroup>
+				<StartTrigger/>
+			</Act>
+		</Story>
+		<StopTrigger>
+			<ConditionGroup>
+				<Condition name="QuitCondition" delay="4" conditionEdge="rising">
+					<ByValueCondition>
+						<StoryboardElementStateCondition storyboardElementType="event" storyboardElementRef="NonContinuousDistEvent" state="endTransition"/>
+					</ByValueCondition>
+				</Condition>
+			</ConditionGroup>
+		</StopTrigger>
+	</Storyboard>
 </OpenSCENARIO>

@@ -2,148 +2,144 @@
 <!-- Relative clearance condition with oppositLane on and off
 in multiple road connected opposite direction.-->
 <OpenSCENARIO>
-   <FileHeader revMajor="1"
-               revMinor="3"
-               date="2017-06-09T10:00:00"
-               description="Relative clearance opposite Lane"
-               author="SimS"/>
-   <ParameterDeclarations>
-      <ParameterDeclaration name="HostVehicle" parameterType="string" value="car_white"/>
-      <ParameterDeclaration name="TargetVehicle" parameterType="string" value="car_red"/>
-      <ParameterDeclaration name="TargetRef" parameterType="string" value="car_blue"/>
-      <ParameterDeclaration name="OppositeLanes" parameterType="boolean" value="false"/>
-   </ParameterDeclarations>
-   <CatalogLocations>
-      <VehicleCatalog>
-         <Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
-      </VehicleCatalog>
-   </CatalogLocations>
-   <RoadNetwork>
-            <LogicFile filepath="../../../EnvironmentSimulator/Unittest/xodr/oppositeLaneRoad.xodr"/>
-   </RoadNetwork>
-   <Entities>
-      <ScenarioObject name="Ego">
-         <CatalogReference catalogName="VehicleCatalog" entryName="$HostVehicle"/>
-      </ScenarioObject>
-      <ScenarioObject name="Target">
-         <CatalogReference catalogName="VehicleCatalog" entryName="$TargetVehicle"/>
-      </ScenarioObject>
-      <ScenarioObject name="TargetRef">
-         <CatalogReference catalogName="VehicleCatalog" entryName="$TargetRef"/>
-      </ScenarioObject>
-   </Entities>
-   <Storyboard>
-      <Init>
-         <Actions>
-            <Private entityRef="Ego">
-               <PrivateAction>
-                  <LongitudinalAction>
-                     <SpeedAction>
-                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
-                        <SpeedActionTarget>
-                           <AbsoluteTargetSpeed value="10"/>
-                        </SpeedActionTarget>
-                     </SpeedAction>
-                  </LongitudinalAction>
-               </PrivateAction>
-               <PrivateAction>
-                    <TeleportAction>
-                        <Position>
-                            <LanePosition roadId="0" laneId="-1" offset="0" s="80"/>
-                        </Position>
-                    </TeleportAction>
-               </PrivateAction>
-            </Private>
-            <Private entityRef="Target">
-               <PrivateAction>
-                  <LongitudinalAction>
-                     <SpeedAction>
-                        <SpeedActionDynamics dynamicsShape="linear" dynamicsDimension="time" value="0.0"/>
-                        <SpeedActionTarget>
-                           <AbsoluteTargetSpeed value="10"/>
-                        </SpeedActionTarget>
-                     </SpeedAction>
-                  </LongitudinalAction>
-               </PrivateAction>
-               <PrivateAction>
-                    <TeleportAction>
-                        <Position>
-                            <LanePosition roadId="1" laneId="-1" offset="0" s="190"/>
-                        </Position>
-                    </TeleportAction>
-               </PrivateAction>
-            </Private>
-            <Private entityRef="TargetRef">
-               <PrivateAction>
-                  <LongitudinalAction>
-                     <SpeedAction>
-                        <SpeedActionDynamics dynamicsShape="linear" dynamicsDimension="time" value="0.0"/>
-                        <SpeedActionTarget>
-                           <AbsoluteTargetSpeed value="10.5"/>
-                        </SpeedActionTarget>
-                     </SpeedAction>
-                  </LongitudinalAction>
-               </PrivateAction>
-               <PrivateAction>
-                    <TeleportAction>
-                        <Position>
-                            <LanePosition roadId="0" laneId="-1" offset="0" s="150"/>
-                        </Position>
-                    </TeleportAction>
-               </PrivateAction>
-            </Private>
-         </Actions>
-      </Init>
-      <Story name="RelativeClearanceStory">
-         <Act name="RelativeClearanceAct">
-            <ManeuverGroup maximumExecutionCount="1" name="TargetRefSequence">
-               <Actors selectTriggeringEntities="false">
-                  <EntityRef entityRef="TargetRef"/>
-               </Actors>
-               <Maneuver name="RelativeClearanceManeuver">
-                  <Event name="RelativeClearanceEvent" priority="overwrite">
-                     <Action name="RelativeClearanceAction">
-                        <PrivateAction>
-                           <LateralAction>
-                              <LaneChangeAction>
-                                 <LaneChangeActionDynamics dynamicsShape="cubic" value="3" dynamicsDimension="time"/>
-                                 <LaneChangeTarget>
-                                    <AbsoluteTargetLane value="1"/>
-                                 </LaneChangeTarget>
-                              </LaneChangeAction>
-                           </LateralAction>
-                        </PrivateAction>
-                     </Action>
-                     <StartTrigger>
-                        <ConditionGroup>
-                           <Condition name="RelativeClearanceCondition" delay="0" conditionEdge="none">
-                              <ByEntityCondition>
-                                 <TriggeringEntities triggeringEntitiesRule="all">
-                                    <EntityRef entityRef="TargetRef"/>
-                                 </TriggeringEntities>
-                                 <EntityCondition>
-                                    <RelativeClearanceCondition distanceForward="100" distanceBackward="30" freeSpace="false" oppositeLanes="$OppositeLanes">
-                                       <RelativeLaneRange from= "-1" to = "3"/>
-                                       <EntityRef entityRef="Target"/>
-                                    </RelativeClearanceCondition>
-                                 </EntityCondition>
-                              </ByEntityCondition>
-                           </Condition>
-                        </ConditionGroup>
-                     </StartTrigger>
-                  </Event>
-               </Maneuver>
-            </ManeuverGroup>
-         </Act>
-      </Story>
-      <StopTrigger>
-          <ConditionGroup>
-              <Condition conditionEdge="none" delay="0" name="simulationEndEventDone">
-                  <ByValueCondition>
-                      <SimulationTimeCondition rule="greaterThan" value="10"/>
-                  </ByValueCondition>
-              </Condition>
-          </ConditionGroup>
-      </StopTrigger>
-   </Storyboard>
+	<FileHeader revMajor="1" revMinor="3" date="2017-06-09T10:00:00" description="Relative clearance opposite Lane" author="SimS"/>
+	<ParameterDeclarations>
+		<ParameterDeclaration name="HostVehicle" parameterType="string" value="car_white"/>
+		<ParameterDeclaration name="TargetVehicle" parameterType="string" value="car_red"/>
+		<ParameterDeclaration name="TargetRef" parameterType="string" value="car_blue"/>
+		<ParameterDeclaration name="OppositeLanes" parameterType="boolean" value="false"/>
+	</ParameterDeclarations>
+	<CatalogLocations>
+		<VehicleCatalog>
+			<Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
+		</VehicleCatalog>
+	</CatalogLocations>
+	<RoadNetwork>
+		<LogicFile filepath="../../../EnvironmentSimulator/Unittest/xodr/oppositeLaneRoad.xodr"/>
+	</RoadNetwork>
+	<Entities>
+		<ScenarioObject name="Ego">
+			<CatalogReference catalogName="VehicleCatalog" entryName="$HostVehicle"/>
+		</ScenarioObject>
+		<ScenarioObject name="Target">
+			<CatalogReference catalogName="VehicleCatalog" entryName="$TargetVehicle"/>
+		</ScenarioObject>
+		<ScenarioObject name="TargetRef">
+			<CatalogReference catalogName="VehicleCatalog" entryName="$TargetRef"/>
+		</ScenarioObject>
+	</Entities>
+	<Storyboard>
+		<Init>
+			<Actions>
+				<Private entityRef="Ego">
+					<PrivateAction>
+						<LongitudinalAction>
+							<SpeedAction>
+								<SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
+								<SpeedActionTarget>
+									<AbsoluteTargetSpeed value="10"/>
+								</SpeedActionTarget>
+							</SpeedAction>
+						</LongitudinalAction>
+					</PrivateAction>
+					<PrivateAction>
+						<TeleportAction>
+							<Position>
+								<LanePosition roadId="0" laneId="-1" offset="0" s="80"/>
+							</Position>
+						</TeleportAction>
+					</PrivateAction>
+				</Private>
+				<Private entityRef="Target">
+					<PrivateAction>
+						<LongitudinalAction>
+							<SpeedAction>
+								<SpeedActionDynamics dynamicsShape="linear" dynamicsDimension="time" value="0.0"/>
+								<SpeedActionTarget>
+									<AbsoluteTargetSpeed value="10"/>
+								</SpeedActionTarget>
+							</SpeedAction>
+						</LongitudinalAction>
+					</PrivateAction>
+					<PrivateAction>
+						<TeleportAction>
+							<Position>
+								<LanePosition roadId="1" laneId="-1" offset="0" s="190"/>
+							</Position>
+						</TeleportAction>
+					</PrivateAction>
+				</Private>
+				<Private entityRef="TargetRef">
+					<PrivateAction>
+						<LongitudinalAction>
+							<SpeedAction>
+								<SpeedActionDynamics dynamicsShape="linear" dynamicsDimension="time" value="0.0"/>
+								<SpeedActionTarget>
+									<AbsoluteTargetSpeed value="10.5"/>
+								</SpeedActionTarget>
+							</SpeedAction>
+						</LongitudinalAction>
+					</PrivateAction>
+					<PrivateAction>
+						<TeleportAction>
+							<Position>
+								<LanePosition roadId="0" laneId="-1" offset="0" s="150"/>
+							</Position>
+						</TeleportAction>
+					</PrivateAction>
+				</Private>
+			</Actions>
+		</Init>
+		<Story name="RelativeClearanceStory">
+			<Act name="RelativeClearanceAct">
+				<ManeuverGroup maximumExecutionCount="1" name="TargetRefSequence">
+					<Actors selectTriggeringEntities="false">
+						<EntityRef entityRef="TargetRef"/>
+					</Actors>
+					<Maneuver name="RelativeClearanceManeuver">
+						<Event name="RelativeClearanceEvent" priority="overwrite">
+							<Action name="RelativeClearanceAction">
+								<PrivateAction>
+									<LateralAction>
+										<LaneChangeAction>
+											<LaneChangeActionDynamics dynamicsShape="cubic" value="3" dynamicsDimension="time"/>
+											<LaneChangeTarget>
+												<AbsoluteTargetLane value="1"/>
+											</LaneChangeTarget>
+										</LaneChangeAction>
+									</LateralAction>
+								</PrivateAction>
+							</Action>
+							<StartTrigger>
+								<ConditionGroup>
+									<Condition name="RelativeClearanceCondition" delay="0" conditionEdge="none">
+										<ByEntityCondition>
+											<TriggeringEntities triggeringEntitiesRule="all">
+												<EntityRef entityRef="TargetRef"/>
+											</TriggeringEntities>
+											<EntityCondition>
+												<RelativeClearanceCondition distanceForward="100" distanceBackward="30" freeSpace="false" oppositeLanes="$OppositeLanes">
+													<RelativeLaneRange from="-1" to="3"/>
+													<EntityRef entityRef="Target"/>
+												</RelativeClearanceCondition>
+											</EntityCondition>
+										</ByEntityCondition>
+									</Condition>
+								</ConditionGroup>
+							</StartTrigger>
+						</Event>
+					</Maneuver>
+				</ManeuverGroup>
+			</Act>
+		</Story>
+		<StopTrigger>
+			<ConditionGroup>
+				<Condition conditionEdge="none" delay="0" name="simulationEndEventDone">
+					<ByValueCondition>
+						<SimulationTimeCondition rule="greaterThan" value="10"/>
+					</ByValueCondition>
+				</Condition>
+			</ConditionGroup>
+		</StopTrigger>
+	</Storyboard>
 </OpenSCENARIO>

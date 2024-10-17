@@ -103,8 +103,8 @@
 		</lanes>
 		<objects>
 			<object type="pole" name="pole" id="0" s="0.0" t="3.57" zOffset="-0.2" validLength="0.0" orientation="+" length="0.06" width="0.06" radius="0.5" height="2.35" hdg="0.0" pitch="0.0" roll="0.0">
-                <validity fromLane="-3" toLane="3" />
-            </object>
+				<validity fromLane="-3" toLane="3"/>
+			</object>
 			<object type="pole" name="pole" id="1" s="0.0" t="-3.57" zOffset="-0.2" validLength="0.0" orientation="+" length="0.06" width="0.06" radius="0.5" height="2.35" hdg="0.0" pitch="0.0" roll="0.0"/>
 			<object type="pole" name="pole" id="2" s="100.0" t="3.57" zOffset="-0.2" validLength="0.0" orientation="+" length="0.06" width="0.06" radius="0.5" height="2.35" hdg="0.0" pitch="0.0" roll="0.0"/>
 			<object type="pole" name="pole" id="3" s="100.0" t="-3.57" zOffset="-0.2" validLength="0.0" orientation="+" length="0.06" width="0.06" radius="0.5" height="2.35" hdg="0.0" pitch="0.0" roll="0.0"/>
@@ -115,9 +115,9 @@
 		</objects>
 		<signals>
 			<signal s="0.0" t="3.57" id="0" name="de_274-50" dynamic="no" orientation="+" zOffset="1.7" type="101" country="de" subtype="" value="0.0" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61">
-                <validity fromLane="-3" toLane="-1" />
-                <validity fromLane="1" toLane="3" />
-            </signal>
+				<validity fromLane="-3" toLane="-1"/>
+				<validity fromLane="1" toLane="3"/>
+			</signal>
 			<signal s="0.0" t="-3.57" id="1" name="de_274-50" dynamic="no" orientation="+" zOffset="1.7" type="101" country="de" subtype="" value="0.0" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61"/>
 			<signal s="100.0" t="3.57" id="2" name="de_274-30" dynamic="no" orientation="+" zOffset="1.7" type="101" country="de" subtype="" value="11" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61"/>
 			<signal s="100.0" t="-3.57" id="3" name="de_274-50" dynamic="no" orientation="+" zOffset="1.7" type="" country="de" subtype="" value="0.0" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61"/>
@@ -127,10 +127,10 @@
 			<signal s="200.0" t="-3.57" id="7" name="274-50" dynamic="no" orientation="+" zOffset="1.7" type="" country="de" subtype="" value="0.0" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61"/>
 			<signal s="200.0" t="3.57" id="8" name="274-50" dynamic="no" orientation="-" zOffset="1.7" type="" country="se" subtype="" value="0.0" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61"/>
 			<signal s="200.0" t="-3.57" id="9" name="274-50" dynamic="no" orientation="-" zOffset="1.7" type="" country="de" subtype="" value="0.0" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61">
-                <validity fromLane="-3" toLane="-2" />
-                <validity fromLane="1" toLane="2" />
-                <validity fromLane="3" toLane="3" />
-            </signal>
+				<validity fromLane="-3" toLane="-2"/>
+				<validity fromLane="1" toLane="2"/>
+				<validity fromLane="3" toLane="3"/>
+			</signal>
 			<signal s="500.0" t="3.57" id="10" name="speed_50_6" dynamic="no" orientation="-" zOffset="1.7" type="" country="de" subtype="" value="0.0" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61"/>
 			<signal s="500.0" t="-3.57" id="11" name="speed_50_7" dynamic="no" orientation="-" zOffset="1.7" type="" country="de" subtype="" value="0.0" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61"/>
 		</signals>

@@ -1,114 +1,97 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <OpenSCENARIO>
-   <FileHeader revMajor="1"
-               revMinor="1"
-               date="2019-12-04T10:00:00"
-               description="Overtake and accelerate"
-               author="Emil Knabe"/>
-   <Catalog name="HWManeuvers">
-      <Maneuver name="Synchronize_NPC">
-         <ParameterDeclarations>
-            <ParameterDeclaration name="EgoTargetLaneId" parameterType="string" value="-3"/>
-            <ParameterDeclaration name="NPCTargetLaneId" parameterType="string" value="-2"/>
-            <ParameterDeclaration name="NPCFreeSpeed" parameterType="string" value="30"/>
-            <ParameterDeclaration name="MS1EgoS" parameterType="double" value="300"/>
-            <ParameterDeclaration name="MS2EgoS" parameterType="double" value="500"/>
-            <ParameterDeclaration name="MS1NPC" parameterType="double" value="100"/>
-         </ParameterDeclarations>
-         <Event name="Synchronize_NPC_Event" priority="overwrite">
-            <Action name="Synchronize_NPC_Action">
-				<PrivateAction>
-					<SynchronizeAction masterEntityRef="Ego" targetToleranceMaster="1.0" targetTolerance="1.0">
-						<TargetPositionMaster>
-							<LanePosition roadId="0" laneId="$EgoTargetLaneId" offset="0" s="$MS1EgoS" />
-						</TargetPositionMaster>    
-						<TargetPosition>
-							<LanePosition roadId="0" laneId="$NPCTargetLaneId" offset="0" s="$MS1NPC" />
-						</TargetPosition>    
-						<FinalSpeed>
-							<RelativeSpeedToMaster speedTargetValueType="delta" value="0" />
-						</FinalSpeed>
-					</SynchronizeAction>
-				</PrivateAction>
-			</Action>
-            <StartTrigger>
-               <ConditionGroup>
-                  <Condition name="Synchronize_NPC_Action_Condition"
-                             delay="0"
-                             conditionEdge="none">
-                     <ByValueCondition>
-                        <StoryboardElementStateCondition storyboardElementType="act"
-                                                         storyboardElementRef="Synchronize_Act"
-                                                         state="startTransition"/>
-                     </ByValueCondition>
-                  </Condition>
-               </ConditionGroup>
-            </StartTrigger>
-         </Event>
-         <Event name="Keep_Relative_Speed_Event_NPC" priority="overwrite">
-            <Action name="Keep_Relative_Speed_Action_NPC">
-               <PrivateAction>
-                  <LongitudinalAction>
-                     <SpeedAction>
-                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0"/>
-                        <SpeedActionTarget>
-                           <RelativeTargetSpeed entityRef="Ego"
-                                                value="0"
-                                                speedTargetValueType="delta"
-                                                continuous="true"/>
-                        </SpeedActionTarget>
-                     </SpeedAction>
-                  </LongitudinalAction>
-               </PrivateAction>
-            </Action>
-            <StartTrigger>
-               <ConditionGroup>
-                  <Condition name="Keep_Relative_Speed_Condition_NPC"
-                             delay="0"
-                             conditionEdge="none">
-                     <ByValueCondition>
-                        <StoryboardElementStateCondition storyboardElementType="event"
-                                                         storyboardElementRef="Synchronize_NPC_Event"
-                                                         state="completeState"/>
-                     </ByValueCondition>
-                  </Condition>
-               </ConditionGroup>
-            </StartTrigger>
-         </Event>
-         <Event name="Free_Speed_Event_NPC" priority="overwrite">
-            <Action name="Free_Speed_Action_NPC">
-               <PrivateAction>
-                  <LongitudinalAction>
-                     <SpeedAction>
-                        <SpeedActionDynamics dynamicsShape="sinusoidal"
-                                             value="$AccRate"
-                                             dynamicsDimension="rate"/>
-                        <SpeedActionTarget>
-                           <AbsoluteTargetSpeed value="$NPCFreeSpeed"/>
-                        </SpeedActionTarget>
-                     </SpeedAction>
-                  </LongitudinalAction>
-               </PrivateAction>
-            </Action>
-            <StartTrigger>
-               <ConditionGroup>
-                  <Condition name="Free_Speed_Condition_NPC" delay="0" conditionEdge="rising">
-                     <ByEntityCondition>
-                        <TriggeringEntities triggeringEntitiesRule="any">
-                           <EntityRef entityRef="Ego"/>
-                        </TriggeringEntities>
-                        <EntityCondition>
-                           <ReachPositionCondition tolerance="5.0">
-                              <Position>
-                                 <LanePosition roadId="0" laneId="$EgoTargetLaneId" s="$MS2EgoS"/>
-                              </Position>
-                           </ReachPositionCondition>
-                        </EntityCondition>
-                     </ByEntityCondition>
-                  </Condition>
-               </ConditionGroup>
-            </StartTrigger>
-         </Event>
-      </Maneuver>
-   </Catalog>
+	<FileHeader revMajor="1" revMinor="1" date="2019-12-04T10:00:00" description="Overtake and accelerate" author="Emil Knabe"/>
+	<Catalog name="HWManeuvers">
+		<Maneuver name="Synchronize_NPC">
+			<ParameterDeclarations>
+				<ParameterDeclaration name="EgoTargetLaneId" parameterType="string" value="-3"/>
+				<ParameterDeclaration name="NPCTargetLaneId" parameterType="string" value="-2"/>
+				<ParameterDeclaration name="NPCFreeSpeed" parameterType="string" value="30"/>
+				<ParameterDeclaration name="MS1EgoS" parameterType="double" value="300"/>
+				<ParameterDeclaration name="MS2EgoS" parameterType="double" value="500"/>
+				<ParameterDeclaration name="MS1NPC" parameterType="double" value="100"/>
+			</ParameterDeclarations>
+			<Event name="Synchronize_NPC_Event" priority="overwrite">
+				<Action name="Synchronize_NPC_Action">
+					<PrivateAction>
+						<SynchronizeAction masterEntityRef="Ego" targetToleranceMaster="1.0" targetTolerance="1.0">
+							<TargetPositionMaster>
+								<LanePosition roadId="0" laneId="$EgoTargetLaneId" offset="0" s="$MS1EgoS"/>
+							</TargetPositionMaster>
+							<TargetPosition>
+								<LanePosition roadId="0" laneId="$NPCTargetLaneId" offset="0" s="$MS1NPC"/>
+							</TargetPosition>
+							<FinalSpeed>
+								<RelativeSpeedToMaster speedTargetValueType="delta" value="0"/>
+							</FinalSpeed>
+						</SynchronizeAction>
+					</PrivateAction>
+				</Action>
+				<StartTrigger>
+					<ConditionGroup>
+						<Condition name="Synchronize_NPC_Action_Condition" delay="0" conditionEdge="none">
+							<ByValueCondition>
+								<StoryboardElementStateCondition storyboardElementType="act" storyboardElementRef="Synchronize_Act" state="startTransition"/>
+							</ByValueCondition>
+						</Condition>
+					</ConditionGroup>
+				</StartTrigger>
+			</Event>
+			<Event name="Keep_Relative_Speed_Event_NPC" priority="overwrite">
+				<Action name="Keep_Relative_Speed_Action_NPC">
+					<PrivateAction>
+						<LongitudinalAction>
+							<SpeedAction>
+								<SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0"/>
+								<SpeedActionTarget>
+									<RelativeTargetSpeed entityRef="Ego" value="0" speedTargetValueType="delta" continuous="true"/>
+								</SpeedActionTarget>
+							</SpeedAction>
+						</LongitudinalAction>
+					</PrivateAction>
+				</Action>
+				<StartTrigger>
+					<ConditionGroup>
+						<Condition name="Keep_Relative_Speed_Condition_NPC" delay="0" conditionEdge="none">
+							<ByValueCondition>
+								<StoryboardElementStateCondition storyboardElementType="event" storyboardElementRef="Synchronize_NPC_Event" state="completeState"/>
+							</ByValueCondition>
+						</Condition>
+					</ConditionGroup>
+				</StartTrigger>
+			</Event>
+			<Event name="Free_Speed_Event_NPC" priority="overwrite">
+				<Action name="Free_Speed_Action_NPC">
+					<PrivateAction>
+						<LongitudinalAction>
+							<SpeedAction>
+								<SpeedActionDynamics dynamicsShape="sinusoidal" value="$AccRate" dynamicsDimension="rate"/>
+								<SpeedActionTarget>
+									<AbsoluteTargetSpeed value="$NPCFreeSpeed"/>
+								</SpeedActionTarget>
+							</SpeedAction>
+						</LongitudinalAction>
+					</PrivateAction>
+				</Action>
+				<StartTrigger>
+					<ConditionGroup>
+						<Condition name="Free_Speed_Condition_NPC" delay="0" conditionEdge="rising">
+							<ByEntityCondition>
+								<TriggeringEntities triggeringEntitiesRule="any">
+									<EntityRef entityRef="Ego"/>
+								</TriggeringEntities>
+								<EntityCondition>
+									<ReachPositionCondition tolerance="5.0">
+										<Position>
+											<LanePosition roadId="0" laneId="$EgoTargetLaneId" s="$MS2EgoS"/>
+										</Position>
+									</ReachPositionCondition>
+								</EntityCondition>
+							</ByEntityCondition>
+						</Condition>
+					</ConditionGroup>
+				</StartTrigger>
+			</Event>
+		</Maneuver>
+	</Catalog>
 </OpenSCENARIO>
