@@ -79,7 +79,7 @@
                                 </ConditionGroup>
                             </StartTrigger>
                         </Event>
-                        <Event name="ChangeLaneRIghtEvent" priority="overwrite" maximumExecutionCount="-1">
+                        <Event name="ChangeLaneRIghtEvent" priority="overwrite" maximumExecutionCount="1000">
                             <Action name="ChangeLaneRightAction">
                                 <PrivateAction>
                                     <LateralAction>
