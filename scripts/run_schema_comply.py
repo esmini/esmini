@@ -195,8 +195,7 @@ class XmlValidation:
         for path in file_paths:
             path = Path(path)
             if os.path.isfile(path):
-                file_path = os.path.join(os.getcwd() + "/" + str(path))
-                self.set_xml_files(file_path)
+                self.set_xml_files(str(path))
             # Check if the path is a directory and walk through its files
             elif os.path.isdir(path):
                 for root, dirs, files in os.walk(path):
