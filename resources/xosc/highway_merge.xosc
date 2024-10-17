@@ -2,302 +2,288 @@
 <!-- This is a simple merge scenario. The lane change is triggered purely by -->
 <!-- the car reaching a specified road position, not considering other cars. -->
 <OpenSCENARIO>
-   <FileHeader revMajor="1"
-               revMinor="0"
-               date="2017-11-27T10:00:00"
-               description="A basic lane merge scenario"
-               author="SimS"/>
-   <ParameterDeclarations>
-      <ParameterDeclaration name="Gap1_time" parameterType="double" value="2.5"/>
-      <ParameterDeclaration name="Gap2_time" parameterType="double" value="3"/>
-      <ParameterDeclaration name="Max_acc" parameterType="double" value="2"/>
-      <ParameterDeclaration name="Max_ret" parameterType="double" value="5"/>
-      <ParameterDeclaration name="A1_speed" parameterType="double" value="25"/>
-   </ParameterDeclarations>
-   <CatalogLocations>
-      <VehicleCatalog>
-         <Directory path="../xosc/Catalogs/Vehicles"/>
-      </VehicleCatalog>
-   </CatalogLocations>
-   <RoadNetwork>
-      <LogicFile filepath="../xodr/soderleden.xodr"/>
-      <SceneGraphFile filepath="../models/soderleden.osgb"/>
-   </RoadNetwork>
-   <Entities>
-      <ScenarioObject name="Ego">
-         <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
-      </ScenarioObject>
-      <ScenarioObject name="A1">
-         <CatalogReference catalogName="VehicleCatalog" entryName="car_police"/>
-      </ScenarioObject>
-      <ScenarioObject name="A2">
-         <CatalogReference catalogName="VehicleCatalog" entryName="car_blue"/>
-      </ScenarioObject>
-      <ScenarioObject name="A3">
-         <CatalogReference catalogName="VehicleCatalog" entryName="car_yellow"/>
-      </ScenarioObject>
-      <ScenarioObject name="A4">
-         <CatalogReference catalogName="VehicleCatalog" entryName="scooter"/>
-      </ScenarioObject>
-      <ScenarioObject name="A5">
-         <CatalogReference catalogName="VehicleCatalog" entryName="bus_blue"/>
-      </ScenarioObject>
-   </Entities>
-   <Storyboard>
-      <Init>
-         <Actions>
-            <Private entityRef="Ego">
-               <PrivateAction>
-                  <TeleportAction>
-                     <Position>
-                        <LanePosition roadId="1" laneId="-1" offset="0.0" s="10.0"/>
-                     </Position>
-                  </TeleportAction>
-               </PrivateAction>
-               <PrivateAction>
-                  <LongitudinalAction>
-                     <SpeedAction>
-                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
-                        <SpeedActionTarget>
-                           <AbsoluteTargetSpeed value="25"/>
-                        </SpeedActionTarget>
-                     </SpeedAction>
-                  </LongitudinalAction>
-               </PrivateAction>
-            </Private>
-            <Private entityRef="A1">
-               <PrivateAction>
-                  <TeleportAction>
-                     <Position>
-                        <LanePosition roadId="2" laneId="-2" offset="0.0" s="130.0"/>
-                     </Position>
-                  </TeleportAction>
-               </PrivateAction>
-               <PrivateAction>
-                  <LongitudinalAction>
-                     <SpeedAction>
-                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
-                        <SpeedActionTarget>
-                           <AbsoluteTargetSpeed value="$A1_speed"/>
-                        </SpeedActionTarget>
-                     </SpeedAction>
-                  </LongitudinalAction>
-               </PrivateAction>
-            </Private>
-            <Private entityRef="A2">
-               <PrivateAction>
-                  <TeleportAction>
-                     <Position>
-                        <LanePosition roadId="2" laneId="-2" offset="0.0" s="70.0"/>
-                     </Position>
-                  </TeleportAction>
-               </PrivateAction>
-               <PrivateAction>
-                  <LongitudinalAction>
-                     <SpeedAction>
-                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
-                        <SpeedActionTarget>
-                           <RelativeTargetSpeed entityRef="A1"
-                                                value="0"
-                                                speedTargetValueType="delta"
-                                                continuous="false"/>
-                        </SpeedActionTarget>
-                     </SpeedAction>
-                  </LongitudinalAction>
-               </PrivateAction>
-            </Private>
-            <Private entityRef="A3">
-               <PrivateAction>
-                  <TeleportAction>
-                     <Position>
-                        <LanePosition roadId="2" laneId="-2" offset="0.0" s="20.0"/>
-                     </Position>
-                  </TeleportAction>
-               </PrivateAction>
-               <PrivateAction>
-                  <LongitudinalAction>
-                     <SpeedAction>
-                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
-                        <SpeedActionTarget>
-                           <RelativeTargetSpeed entityRef="A1"
-                                                value="0"
-                                                speedTargetValueType="delta"
-                                                continuous="false"/>
-                        </SpeedActionTarget>
-                     </SpeedAction>
-                  </LongitudinalAction>
-               </PrivateAction>
-            </Private>
-            <Private entityRef="A4">
-               <PrivateAction>
-                  <TeleportAction>
-                     <Position>
-                        <LanePosition roadId="2" laneId="-1" offset="0.0" s="60.0"/>
-                     </Position>
-                  </TeleportAction>
-               </PrivateAction>
-               <PrivateAction>
-                  <LongitudinalAction>
-                     <SpeedAction>
-                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
-                        <SpeedActionTarget>
-                           <AbsoluteTargetSpeed value="40.0"/>
-                        </SpeedActionTarget>
-                     </SpeedAction>
-                  </LongitudinalAction>
-               </PrivateAction>
-            </Private>
-            <Private entityRef="A5">
-               <PrivateAction>
-                  <TeleportAction>
-                     <Position>
-                        <LanePosition roadId="2" laneId="-1" offset="0.0" s="10.0"/>
-                     </Position>
-                  </TeleportAction>
-               </PrivateAction>
-               <PrivateAction>
-                  <LongitudinalAction>
-                     <SpeedAction>
-                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
-                        <SpeedActionTarget>
-                           <RelativeTargetSpeed entityRef="A4" value="0.0" continuous="true" speedTargetValueType="delta"/>
-                        </SpeedActionTarget>
-                     </SpeedAction>
-                  </LongitudinalAction>
-               </PrivateAction>
-            </Private>
-         </Actions>
-      </Init>
-      <Story name="Highway_Merge_Story">
-         <ParameterDeclarations>
-            <ParameterDeclaration parameterType="string" name="owner" value="Ego"/>
-         </ParameterDeclarations>
-         <Act name="Act1">
-            <ManeuverGroup maximumExecutionCount="1" name="Highway_Merge_SequenceEgo">
-               <Actors selectTriggeringEntities="false">
-                  <EntityRef entityRef="Ego"/>
-               </Actors>
-               <Maneuver name="EgoLaneChange">
-                  <Event name="EgoLaneChangeEvent" priority="overwrite">
-                     <Action name="EgoLaneChangeAction">
-                        <PrivateAction>
-                           <LateralAction>
-                              <LaneChangeAction>
-                                 <LaneChangeActionDynamics dynamicsShape="sinusoidal" value="2.8" dynamicsDimension="time"/>
-                                 <LaneChangeTarget>
-                                    <AbsoluteTargetLane value="-2"/>
-                                 </LaneChangeTarget>
-                              </LaneChangeAction>
-                           </LateralAction>
-                        </PrivateAction>
-                     </Action>
-                     <StartTrigger>
-                        <ConditionGroup>
-                           <Condition name="EgoLaneChangeCondition" delay="0.0" conditionEdge="none">
-                              <ByEntityCondition>
-                                 <TriggeringEntities triggeringEntitiesRule="any">
-                                    <EntityRef entityRef="Ego"/>
-                                 </TriggeringEntities>
-                                 <EntityCondition>
-                                    <ReachPositionCondition tolerance="1.0">
-                                       <Position>
-                                          <LanePosition roadId="0" laneId="-3" s="20.0"/>
-                                       </Position>
-                                    </ReachPositionCondition>
-                                 </EntityCondition>
-                              </ByEntityCondition>
-                           </Condition>
-                        </ConditionGroup>
-                     </StartTrigger>
-                  </Event>
-               </Maneuver>
-            </ManeuverGroup>
-            <ManeuverGroup maximumExecutionCount="1" name="Highway_Merge_SequenceA2">
-               <Actors selectTriggeringEntities="false">
-                  <EntityRef entityRef="A2"/>
-               </Actors>
-               <Maneuver name="A2DistManeuver">
-                  <Event name="A2DistEvent" priority="overwrite">
-                     <Action name="A2DistAction">
-                        <PrivateAction>
-                           <LongitudinalAction>
-                              <LongitudinalDistanceAction continuous="true" entityRef="A1" timeGap="1" freespace="true">
-                                 <DynamicConstraints maxAcceleration="2" maxDeceleration="5" maxSpeed="40"/>
-                              </LongitudinalDistanceAction>
-                           </LongitudinalAction>
-                        </PrivateAction>
-                     </Action>
-                     <StartTrigger>
-                        <ConditionGroup>
-                           <Condition name="A2DistCondition" delay="0.0" conditionEdge="none">
-                              <ByValueCondition>
-                                 <StoryboardElementStateCondition storyboardElementType="act"
-                                                                  storyboardElementRef="Act1"
-                                                                  state="startTransition"/>
-                              </ByValueCondition>
-                           </Condition>
-                        </ConditionGroup>
-                     </StartTrigger>
-                  </Event>
-               </Maneuver>
-            </ManeuverGroup>
-            <ManeuverGroup maximumExecutionCount="1" name="Highway_Merge_SequenceA3">
-               <Actors selectTriggeringEntities="false">
-                  <EntityRef entityRef="A3"/>
-               </Actors>
-               <Maneuver name="A3DistManuever">
-                  <Event name="A3DistEvent" priority="overwrite">
-                     <Action name="A3DistAction">
-                        <PrivateAction>
-                           <LongitudinalAction>
-                              <LongitudinalDistanceAction continuous="true" entityRef="A2" timeGap="1.5" freespace="true">
-                                 <DynamicConstraints maxAcceleration="2" maxDeceleration="5" maxSpeed="40"/>
-                              </LongitudinalDistanceAction>
-                           </LongitudinalAction>
-                        </PrivateAction>
-                     </Action>
-                     <StartTrigger>
-                        <ConditionGroup>
-                           <Condition name="A2DistCondition" delay="0.0" conditionEdge="none">
-                              <ByValueCondition>
-                                 <StoryboardElementStateCondition storyboardElementType="act"
-                                                                  storyboardElementRef="Act1"
-                                                                  state="startTransition"/>
-                              </ByValueCondition>
-                           </Condition>
-                        </ConditionGroup>
-                     </StartTrigger>
-                  </Event>
-               </Maneuver>
-            </ManeuverGroup>
-            <StartTrigger>
-               <ConditionGroup>
-                  <Condition name="" delay="0" conditionEdge="rising">
-                     <ByValueCondition>
-                        <SimulationTimeCondition value="0" rule="greaterThan"/>
-                     </ByValueCondition>
-                  </Condition>
-               </ConditionGroup>
-            </StartTrigger>
-         </Act>
-      </Story>
-      <StopTrigger>
-          <ConditionGroup>
-             <Condition name="StoryBoardStopCondition" delay="2" conditionEdge="rising">
-                <ByEntityCondition>
-                   <TriggeringEntities triggeringEntitiesRule="any">
-                      <EntityRef entityRef="Ego"/>
-                   </TriggeringEntities>
-                   <EntityCondition>
-                      <ReachPositionCondition tolerance="1.0">
-                         <Position>
-                            <LanePosition roadId="0" laneId="-2" s="150.0"/>
-                         </Position>
-                      </ReachPositionCondition>
-                   </EntityCondition>
-                </ByEntityCondition>
-             </Condition>
-          </ConditionGroup>
-      </StopTrigger>
-   </Storyboard>
+	<FileHeader revMajor="1" revMinor="0" date="2017-11-27T10:00:00" description="A basic lane merge scenario" author="SimS"/>
+	<ParameterDeclarations>
+		<ParameterDeclaration name="Gap1_time" parameterType="double" value="2.5"/>
+		<ParameterDeclaration name="Gap2_time" parameterType="double" value="3"/>
+		<ParameterDeclaration name="Max_acc" parameterType="double" value="2"/>
+		<ParameterDeclaration name="Max_ret" parameterType="double" value="5"/>
+		<ParameterDeclaration name="A1_speed" parameterType="double" value="25"/>
+	</ParameterDeclarations>
+	<CatalogLocations>
+		<VehicleCatalog>
+			<Directory path="../xosc/Catalogs/Vehicles"/>
+		</VehicleCatalog>
+	</CatalogLocations>
+	<RoadNetwork>
+		<LogicFile filepath="../xodr/soderleden.xodr"/>
+		<SceneGraphFile filepath="../models/soderleden.osgb"/>
+	</RoadNetwork>
+	<Entities>
+		<ScenarioObject name="Ego">
+			<CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+		</ScenarioObject>
+		<ScenarioObject name="A1">
+			<CatalogReference catalogName="VehicleCatalog" entryName="car_police"/>
+		</ScenarioObject>
+		<ScenarioObject name="A2">
+			<CatalogReference catalogName="VehicleCatalog" entryName="car_blue"/>
+		</ScenarioObject>
+		<ScenarioObject name="A3">
+			<CatalogReference catalogName="VehicleCatalog" entryName="car_yellow"/>
+		</ScenarioObject>
+		<ScenarioObject name="A4">
+			<CatalogReference catalogName="VehicleCatalog" entryName="scooter"/>
+		</ScenarioObject>
+		<ScenarioObject name="A5">
+			<CatalogReference catalogName="VehicleCatalog" entryName="bus_blue"/>
+		</ScenarioObject>
+	</Entities>
+	<Storyboard>
+		<Init>
+			<Actions>
+				<Private entityRef="Ego">
+					<PrivateAction>
+						<TeleportAction>
+							<Position>
+								<LanePosition roadId="1" laneId="-1" offset="0.0" s="10.0"/>
+							</Position>
+						</TeleportAction>
+					</PrivateAction>
+					<PrivateAction>
+						<LongitudinalAction>
+							<SpeedAction>
+								<SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
+								<SpeedActionTarget>
+									<AbsoluteTargetSpeed value="25"/>
+								</SpeedActionTarget>
+							</SpeedAction>
+						</LongitudinalAction>
+					</PrivateAction>
+				</Private>
+				<Private entityRef="A1">
+					<PrivateAction>
+						<TeleportAction>
+							<Position>
+								<LanePosition roadId="2" laneId="-2" offset="0.0" s="130.0"/>
+							</Position>
+						</TeleportAction>
+					</PrivateAction>
+					<PrivateAction>
+						<LongitudinalAction>
+							<SpeedAction>
+								<SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
+								<SpeedActionTarget>
+									<AbsoluteTargetSpeed value="$A1_speed"/>
+								</SpeedActionTarget>
+							</SpeedAction>
+						</LongitudinalAction>
+					</PrivateAction>
+				</Private>
+				<Private entityRef="A2">
+					<PrivateAction>
+						<TeleportAction>
+							<Position>
+								<LanePosition roadId="2" laneId="-2" offset="0.0" s="70.0"/>
+							</Position>
+						</TeleportAction>
+					</PrivateAction>
+					<PrivateAction>
+						<LongitudinalAction>
+							<SpeedAction>
+								<SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
+								<SpeedActionTarget>
+									<RelativeTargetSpeed entityRef="A1" value="0" speedTargetValueType="delta" continuous="false"/>
+								</SpeedActionTarget>
+							</SpeedAction>
+						</LongitudinalAction>
+					</PrivateAction>
+				</Private>
+				<Private entityRef="A3">
+					<PrivateAction>
+						<TeleportAction>
+							<Position>
+								<LanePosition roadId="2" laneId="-2" offset="0.0" s="20.0"/>
+							</Position>
+						</TeleportAction>
+					</PrivateAction>
+					<PrivateAction>
+						<LongitudinalAction>
+							<SpeedAction>
+								<SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
+								<SpeedActionTarget>
+									<RelativeTargetSpeed entityRef="A1" value="0" speedTargetValueType="delta" continuous="false"/>
+								</SpeedActionTarget>
+							</SpeedAction>
+						</LongitudinalAction>
+					</PrivateAction>
+				</Private>
+				<Private entityRef="A4">
+					<PrivateAction>
+						<TeleportAction>
+							<Position>
+								<LanePosition roadId="2" laneId="-1" offset="0.0" s="60.0"/>
+							</Position>
+						</TeleportAction>
+					</PrivateAction>
+					<PrivateAction>
+						<LongitudinalAction>
+							<SpeedAction>
+								<SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
+								<SpeedActionTarget>
+									<AbsoluteTargetSpeed value="40.0"/>
+								</SpeedActionTarget>
+							</SpeedAction>
+						</LongitudinalAction>
+					</PrivateAction>
+				</Private>
+				<Private entityRef="A5">
+					<PrivateAction>
+						<TeleportAction>
+							<Position>
+								<LanePosition roadId="2" laneId="-1" offset="0.0" s="10.0"/>
+							</Position>
+						</TeleportAction>
+					</PrivateAction>
+					<PrivateAction>
+						<LongitudinalAction>
+							<SpeedAction>
+								<SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
+								<SpeedActionTarget>
+									<RelativeTargetSpeed entityRef="A4" value="0.0" continuous="true" speedTargetValueType="delta"/>
+								</SpeedActionTarget>
+							</SpeedAction>
+						</LongitudinalAction>
+					</PrivateAction>
+				</Private>
+			</Actions>
+		</Init>
+		<Story name="Highway_Merge_Story">
+			<ParameterDeclarations>
+				<ParameterDeclaration parameterType="string" name="owner" value="Ego"/>
+			</ParameterDeclarations>
+			<Act name="Act1">
+				<ManeuverGroup maximumExecutionCount="1" name="Highway_Merge_SequenceEgo">
+					<Actors selectTriggeringEntities="false">
+						<EntityRef entityRef="Ego"/>
+					</Actors>
+					<Maneuver name="EgoLaneChange">
+						<Event name="EgoLaneChangeEvent" priority="overwrite">
+							<Action name="EgoLaneChangeAction">
+								<PrivateAction>
+									<LateralAction>
+										<LaneChangeAction>
+											<LaneChangeActionDynamics dynamicsShape="sinusoidal" value="2.8" dynamicsDimension="time"/>
+											<LaneChangeTarget>
+												<AbsoluteTargetLane value="-2"/>
+											</LaneChangeTarget>
+										</LaneChangeAction>
+									</LateralAction>
+								</PrivateAction>
+							</Action>
+							<StartTrigger>
+								<ConditionGroup>
+									<Condition name="EgoLaneChangeCondition" delay="0.0" conditionEdge="none">
+										<ByEntityCondition>
+											<TriggeringEntities triggeringEntitiesRule="any">
+												<EntityRef entityRef="Ego"/>
+											</TriggeringEntities>
+											<EntityCondition>
+												<ReachPositionCondition tolerance="1.0">
+													<Position>
+														<LanePosition roadId="0" laneId="-3" s="20.0"/>
+													</Position>
+												</ReachPositionCondition>
+											</EntityCondition>
+										</ByEntityCondition>
+									</Condition>
+								</ConditionGroup>
+							</StartTrigger>
+						</Event>
+					</Maneuver>
+				</ManeuverGroup>
+				<ManeuverGroup maximumExecutionCount="1" name="Highway_Merge_SequenceA2">
+					<Actors selectTriggeringEntities="false">
+						<EntityRef entityRef="A2"/>
+					</Actors>
+					<Maneuver name="A2DistManeuver">
+						<Event name="A2DistEvent" priority="overwrite">
+							<Action name="A2DistAction">
+								<PrivateAction>
+									<LongitudinalAction>
+										<LongitudinalDistanceAction continuous="true" entityRef="A1" timeGap="1" freespace="true">
+											<DynamicConstraints maxAcceleration="2" maxDeceleration="5" maxSpeed="40"/>
+										</LongitudinalDistanceAction>
+									</LongitudinalAction>
+								</PrivateAction>
+							</Action>
+							<StartTrigger>
+								<ConditionGroup>
+									<Condition name="A2DistCondition" delay="0.0" conditionEdge="none">
+										<ByValueCondition>
+											<StoryboardElementStateCondition storyboardElementType="act" storyboardElementRef="Act1" state="startTransition"/>
+										</ByValueCondition>
+									</Condition>
+								</ConditionGroup>
+							</StartTrigger>
+						</Event>
+					</Maneuver>
+				</ManeuverGroup>
+				<ManeuverGroup maximumExecutionCount="1" name="Highway_Merge_SequenceA3">
+					<Actors selectTriggeringEntities="false">
+						<EntityRef entityRef="A3"/>
+					</Actors>
+					<Maneuver name="A3DistManuever">
+						<Event name="A3DistEvent" priority="overwrite">
+							<Action name="A3DistAction">
+								<PrivateAction>
+									<LongitudinalAction>
+										<LongitudinalDistanceAction continuous="true" entityRef="A2" timeGap="1.5" freespace="true">
+											<DynamicConstraints maxAcceleration="2" maxDeceleration="5" maxSpeed="40"/>
+										</LongitudinalDistanceAction>
+									</LongitudinalAction>
+								</PrivateAction>
+							</Action>
+							<StartTrigger>
+								<ConditionGroup>
+									<Condition name="A2DistCondition" delay="0.0" conditionEdge="none">
+										<ByValueCondition>
+											<StoryboardElementStateCondition storyboardElementType="act" storyboardElementRef="Act1" state="startTransition"/>
+										</ByValueCondition>
+									</Condition>
+								</ConditionGroup>
+							</StartTrigger>
+						</Event>
+					</Maneuver>
+				</ManeuverGroup>
+				<StartTrigger>
+					<ConditionGroup>
+						<Condition name="" delay="0" conditionEdge="rising">
+							<ByValueCondition>
+								<SimulationTimeCondition value="0" rule="greaterThan"/>
+							</ByValueCondition>
+						</Condition>
+					</ConditionGroup>
+				</StartTrigger>
+			</Act>
+		</Story>
+		<StopTrigger>
+			<ConditionGroup>
+				<Condition name="StoryBoardStopCondition" delay="2" conditionEdge="rising">
+					<ByEntityCondition>
+						<TriggeringEntities triggeringEntitiesRule="any">
+							<EntityRef entityRef="Ego"/>
+						</TriggeringEntities>
+						<EntityCondition>
+							<ReachPositionCondition tolerance="1.0">
+								<Position>
+									<LanePosition roadId="0" laneId="-2" s="150.0"/>
+								</Position>
+							</ReachPositionCondition>
+						</EntityCondition>
+					</ByEntityCondition>
+				</Condition>
+			</ConditionGroup>
+		</StopTrigger>
+	</Storyboard>
 </OpenSCENARIO>

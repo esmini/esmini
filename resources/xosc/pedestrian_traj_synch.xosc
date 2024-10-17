@@ -3,290 +3,286 @@
 <!-- entity, in this case a pedestrian. TimeToCollision condition is utilized to -->
 <!-- trig a brake maneuver.                                                      -->
 <OpenSCENARIO>
-   <FileHeader revMajor="1"
-               revMinor="1"
-               date="2020-10-02T10:00:00"
-               description="Pedestrian involved in a critical situation"
-               author="esmini-team"/>
-   <ParameterDeclarations>
-      <ParameterDeclaration name="HostVehicle" parameterType="string" value="car_white"/>
-      <ParameterDeclaration name="HostSpeed" parameterType="double" value="10"/>
-      <ParameterDeclaration name="PedestrianSpeed" parameterType="double" value="1.5"/>
-      <ParameterDeclaration name="EX0" parameterType="double" value="43"/>
-      <ParameterDeclaration name="EY0" parameterType="double" value="-70"/>
-      <ParameterDeclaration name="EXEnd" parameterType="double" value="20"/>
-      <ParameterDeclaration name="EYEnd" parameterType="double" value="39"/>
-      <ParameterDeclaration name="ESyncX" parameterType="double" value="29.0"/>
-      <ParameterDeclaration name="ESyncY" parameterType="double" value="-10.5"/>
-      <ParameterDeclaration name="PX0" parameterType="double" value="40"/>
-      <ParameterDeclaration name="PY0" parameterType="double" value="-5"/>
-      <ParameterDeclaration name="PXEnd" parameterType="double" value="10"/>
-      <ParameterDeclaration name="PYEnd" parameterType="double" value="-10"/>
-      <ParameterDeclaration name="PSyncX" parameterType="double" value="28.5"/>
-      <ParameterDeclaration name="PSyncY" parameterType="double" value="-8.0"/>
-   </ParameterDeclarations>
-   <CatalogLocations>
-      <RouteCatalog>
-         <Directory path="../xosc/Catalogs/Routes"/>
-      </RouteCatalog>
-      <VehicleCatalog>
-         <Directory path="../xosc/Catalogs/Vehicles"/>
-      </VehicleCatalog>
-      <ControllerCatalog>
-         <Directory path="../xosc/Catalogs/Controllers"/>
-      </ControllerCatalog>
-   </CatalogLocations>
-   <RoadNetwork>
-      <LogicFile filepath="../xodr/fabriksgatan.xodr"/>
-      <SceneGraphFile filepath="../models/fabriksgatan.osgb"/>
-   </RoadNetwork>
-   <Entities>
-       <ScenarioObject name="Ego">
-           <CatalogReference catalogName="VehicleCatalog" entryName="$HostVehicle"/>
-        <ObjectController>
-            <CatalogReference catalogName="ControllerCatalog" entryName="interactiveDriver" />
-        </ObjectController>
-       </ScenarioObject>
-       <ScenarioObject name="pedestrian_adult">
-          <Pedestrian mass="80" model="EPTa" name="pedestrian_adult" pedestrianCategory="pedestrian">
-             <ParameterDeclarations/>
-             <BoundingBox>
-                <Center x="0.06" y="0.0" z="0.923"/>
-                <Dimensions height="1.8" length="0.6" width="0.5"/>
-             </BoundingBox>
-             <Properties>
-                <Property name="control" value="internal"/>
-                <File filepath="../models/walkman.osgb"/>
-             </Properties>
-          </Pedestrian>
-       </ScenarioObject>
-    </Entities>
-   <Storyboard>
-      <Init>
-         <Actions>
-            <Private entityRef="Ego">
-               <PrivateAction>
-                  <TeleportAction>
-                     <Position>
-                        <WorldPosition x="$EX0" y="$EY0" h="1.8" />
-                     </Position>
-                  </TeleportAction>
-               </PrivateAction>
-               <!-- <PrivateAction> -->
-                    <!-- <ActivateControllerAction longitudinal="true" lateral="true" /> -->
-               <!-- </PrivateAction> -->
-               <PrivateAction>
-                  <LongitudinalAction>
-                     <SpeedAction>
-                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0" />
-                        <SpeedActionTarget>
-                           <AbsoluteTargetSpeed value="$HostSpeed"/>
-                        </SpeedActionTarget>
-                     </SpeedAction>
-                  </LongitudinalAction>
-               </PrivateAction>
-            </Private>
-            <Private entityRef="pedestrian_adult">
-               <PrivateAction>
-                    <TeleportAction>
-                        <Position>
-                            <WorldPosition x="$PX0" y="$PY0" h="3.14" />
-                        </Position>
-                    </TeleportAction>
-               </PrivateAction>
-               <PrivateAction>
-                  <LongitudinalAction>
-                     <SpeedAction>
-                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0" />
-                        <SpeedActionTarget>
-                           <AbsoluteTargetSpeed value="0"/>
-                        </SpeedActionTarget>
-                     </SpeedAction>
-                  </LongitudinalAction>
-               </PrivateAction>
-            </Private>
-         </Actions>
-      </Init>
-      <Story name="LTAPStory">
-         <ParameterDeclarations>
-            <ParameterDeclaration parameterType="string" name="owner" value="NPC"/>
-         </ParameterDeclarations>
-         <Act name="LTAPActNPC">
-            <ManeuverGroup maximumExecutionCount="1" name="ped_mangroup">
-                <Actors selectTriggeringEntities="false">
-                    <EntityRef entityRef="pedestrian_adult"/>
-                </Actors>
-                <Maneuver name="ped_maneuver">
-                    <Event maximumExecutionCount="1" name="ped_synch_event" priority="parallel">
-                         <Action name="SyncAction">
-                            <PrivateAction>
-                                <SynchronizeAction masterEntityRef="Ego" targetToleranceMaster="1.0" targetTolerance="1.0" >
-                                    <TargetPositionMaster>
-                                        <WorldPosition x="$ESyncX" y="$ESyncY" h="3.3" />
-                                    </TargetPositionMaster>
-                                    <TargetPosition>
-                                        <WorldPosition x="$PSyncX" y="$PSyncY" h="3.3" />
-                                    </TargetPosition>
-                                    <FinalSpeed>
-                                        <AbsoluteSpeed value="$PedestrianSpeed" >
-											<TargetDistanceSteadyState distance="5" />
-										</AbsoluteSpeed>
-                                    </FinalSpeed>
-                                </SynchronizeAction>
-                             </PrivateAction>
-                         </Action>
-                    </Event>
-                    <Event maximumExecutionCount="1" name="ped_follow_trajectory" priority="parallel">
-                         <Action name="walk_trajectory">
-                            <PrivateAction>
-                                <RoutingAction>
-                                    <FollowTrajectoryAction>
-                                        <Trajectory closed="false" name="ped_traj">
-                                            <ParameterDeclarations/>
-                                            <Shape>
-                                                <Polyline>
-                                                     <Vertex>
-                                                         <Position>
-                                                             <WorldPosition x="$PX0" y="$PY0" h="3.3" />
-                                                         </Position>
-                                                     </Vertex>
-                                                     <Vertex>
-                                                         <Position>
-                                                             <WorldPosition x="$PSyncX" y="$PSyncY" h="3.3" />
-                                                         </Position>
-                                                     </Vertex>
-                                                     <Vertex>
-                                                         <Position>
-                                                             <WorldPosition x="$PXEnd" y="$PYEnd" h="3.3" />
-                                                         </Position>
-                                                     </Vertex>
-                                                </Polyline>
-                                            </Shape>
-                                        </Trajectory>
-                                        <TimeReference>
-                                            <None/>
-                                        </TimeReference>
-										<TrajectoryFollowingMode followingMode="follow"/>
-                                    </FollowTrajectoryAction>
-                                </RoutingAction>
-                            </PrivateAction>
-                         </Action>
-                         <!-- <Action name="walk_route"> -->
-                            <!-- <PrivateAction> -->
-                                <!-- <RoutingAction> -->
-                                    <!-- <AssignRouteAction> -->
-                                       <!-- <Route name="PedestrianRoute" closed="false"> -->
-                                          <!-- <Waypoint routeStrategy="shortest"> -->
-                                             <!-- <Position> -->
-                                                <!-- <LanePosition roadId="1" laneId="-1" s="16.9" > -->
-                                                    <!-- <Orientation type="relative" h="3.14" /> -->
-                                                <!-- </LanePosition> -->
-                                             <!-- </Position> -->
-                                          <!-- </Waypoint> -->
-                                          <!-- <Waypoint routeStrategy="shortest"> -->
-                                             <!-- <Position> -->
-                                                <!-- <LanePosition roadId="3" laneId="-1" s="0" > -->
-                                                    <!-- <Orientation type="relative" h="3.14" /> -->
-                                                <!-- </LanePosition> -->
-                                             <!-- </Position> -->
-                                          <!-- </Waypoint> -->
-                                       <!-- </Route> -->
-                                    <!-- </AssignRouteAction> -->
-                                <!-- </RoutingAction> -->
-                            <!-- </PrivateAction> -->
-                         <!-- </Action> -->
-                         <StartTrigger>
-                            <ConditionGroup>
-                               <Condition name="ped_follow_trajectory_condition" delay="0" conditionEdge="none">
-                                  <ByValueCondition>
-                                     <SimulationTimeCondition value="0" rule="greaterThan"/>
-                                  </ByValueCondition>
-                               </Condition>
-                            </ConditionGroup>
-                        </StartTrigger>
-                    </Event>
-                </Maneuver>
-            </ManeuverGroup>
-            <ManeuverGroup maximumExecutionCount="1" name="brake-for-ped_mangroup">
-               <Actors selectTriggeringEntities="false">
-                  <EntityRef entityRef="Ego"/>
-               </Actors>
-               <Maneuver name="drive_Maneuver">
-                  <Event name="drive_Event" priority="overwrite">
-                     <Action name="walk_route">
-                         <PrivateAction>
-                             <RoutingAction>
-                                 <FollowTrajectoryAction>
-                                     <Trajectory closed="false" name="ego_traj">
-                                         <ParameterDeclarations/>
-                                         <Shape>
-                                             <Polyline>
-                                                 <Vertex>
-                                                     <Position>
-                                                         <WorldPosition x="$EX0" y="$EY0" h="1.8" />
-                                                     </Position>
-                                                 </Vertex>
-                                                 <Vertex>
-                                                     <Position>
-                                                         <WorldPosition x="$ESyncX" y="$ESyncY" h="1.8" />
-                                                     </Position>
-                                                 </Vertex>
-                                                 <Vertex>
-                                                     <Position>
-                                                         <WorldPosition x="$EXEnd" y="$EYEnd" h="1.7" />
-                                                     </Position>
-                                                 </Vertex>
-                                             </Polyline>
-                                         </Shape>
-                                     </Trajectory>
-                                     <TimeReference>
-                                         <None/>
-                                     </TimeReference>
-									 <TrajectoryFollowingMode followingMode="follow"/>
-                                </FollowTrajectoryAction>
-                             </RoutingAction>
-                         </PrivateAction>
-                     </Action>
-                     <StartTrigger>
-                       <ConditionGroup>
-                          <Condition name="drive_ManeuverCondition" delay="0" conditionEdge="none">
-                             <ByValueCondition>
-                                <SimulationTimeCondition value="0" rule="greaterThan"/>
-                             </ByValueCondition>
-                          </Condition>
-                       </ConditionGroup>
-                     </StartTrigger>
-                  </Event>
-               </Maneuver>
-            </ManeuverGroup>
-            <StartTrigger>
-               <ConditionGroup>
-                  <Condition name="ActStartCondition" delay="0" conditionEdge="none">
-                     <ByValueCondition>
-                        <SimulationTimeCondition value="0" rule="greaterThan"/>
-                     </ByValueCondition>
-                  </Condition>
-               </ConditionGroup>
-            </StartTrigger>
-         </Act>
-      </Story>
-      <StopTrigger>
-         <ConditionGroup>
-             <Condition name="QuitCondition" delay="0" conditionEdge="rising">
-                <ByEntityCondition>
-                   <TriggeringEntities triggeringEntitiesRule="any">
-                      <EntityRef entityRef="Ego"/>
-                   </TriggeringEntities>
-                   <EntityCondition>
-                      <ReachPositionCondition tolerance="5.0">
-                         <Position>
-                            <WorldPosition x="$EXEnd" y="$EYEnd" h="3.14" />
-                         </Position>
-                      </ReachPositionCondition>
-                   </EntityCondition>
-                </ByEntityCondition>
-            </Condition>
-         </ConditionGroup>
-      </StopTrigger>
-   </Storyboard>
+	<FileHeader revMajor="1" revMinor="1" date="2020-10-02T10:00:00" description="Pedestrian involved in a critical situation" author="esmini-team"/>
+	<ParameterDeclarations>
+		<ParameterDeclaration name="HostVehicle" parameterType="string" value="car_white"/>
+		<ParameterDeclaration name="HostSpeed" parameterType="double" value="10"/>
+		<ParameterDeclaration name="PedestrianSpeed" parameterType="double" value="1.5"/>
+		<ParameterDeclaration name="EX0" parameterType="double" value="43"/>
+		<ParameterDeclaration name="EY0" parameterType="double" value="-70"/>
+		<ParameterDeclaration name="EXEnd" parameterType="double" value="20"/>
+		<ParameterDeclaration name="EYEnd" parameterType="double" value="39"/>
+		<ParameterDeclaration name="ESyncX" parameterType="double" value="29.0"/>
+		<ParameterDeclaration name="ESyncY" parameterType="double" value="-10.5"/>
+		<ParameterDeclaration name="PX0" parameterType="double" value="40"/>
+		<ParameterDeclaration name="PY0" parameterType="double" value="-5"/>
+		<ParameterDeclaration name="PXEnd" parameterType="double" value="10"/>
+		<ParameterDeclaration name="PYEnd" parameterType="double" value="-10"/>
+		<ParameterDeclaration name="PSyncX" parameterType="double" value="28.5"/>
+		<ParameterDeclaration name="PSyncY" parameterType="double" value="-8.0"/>
+	</ParameterDeclarations>
+	<CatalogLocations>
+		<RouteCatalog>
+			<Directory path="../xosc/Catalogs/Routes"/>
+		</RouteCatalog>
+		<VehicleCatalog>
+			<Directory path="../xosc/Catalogs/Vehicles"/>
+		</VehicleCatalog>
+		<ControllerCatalog>
+			<Directory path="../xosc/Catalogs/Controllers"/>
+		</ControllerCatalog>
+	</CatalogLocations>
+	<RoadNetwork>
+		<LogicFile filepath="../xodr/fabriksgatan.xodr"/>
+		<SceneGraphFile filepath="../models/fabriksgatan.osgb"/>
+	</RoadNetwork>
+	<Entities>
+		<ScenarioObject name="Ego">
+			<CatalogReference catalogName="VehicleCatalog" entryName="$HostVehicle"/>
+			<ObjectController>
+				<CatalogReference catalogName="ControllerCatalog" entryName="interactiveDriver"/>
+			</ObjectController>
+		</ScenarioObject>
+		<ScenarioObject name="pedestrian_adult">
+			<Pedestrian mass="80" model="EPTa" name="pedestrian_adult" pedestrianCategory="pedestrian">
+				<ParameterDeclarations/>
+				<BoundingBox>
+					<Center x="0.06" y="0.0" z="0.923"/>
+					<Dimensions height="1.8" length="0.6" width="0.5"/>
+				</BoundingBox>
+				<Properties>
+					<Property name="control" value="internal"/>
+					<File filepath="../models/walkman.osgb"/>
+				</Properties>
+			</Pedestrian>
+		</ScenarioObject>
+	</Entities>
+	<Storyboard>
+		<Init>
+			<Actions>
+				<Private entityRef="Ego">
+					<PrivateAction>
+						<TeleportAction>
+							<Position>
+								<WorldPosition x="$EX0" y="$EY0" h="1.8"/>
+							</Position>
+						</TeleportAction>
+					</PrivateAction>
+					<!-- <PrivateAction> -->
+					<!-- <ActivateControllerAction longitudinal="true" lateral="true" /> -->
+					<!-- </PrivateAction> -->
+					<PrivateAction>
+						<LongitudinalAction>
+							<SpeedAction>
+								<SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0"/>
+								<SpeedActionTarget>
+									<AbsoluteTargetSpeed value="$HostSpeed"/>
+								</SpeedActionTarget>
+							</SpeedAction>
+						</LongitudinalAction>
+					</PrivateAction>
+				</Private>
+				<Private entityRef="pedestrian_adult">
+					<PrivateAction>
+						<TeleportAction>
+							<Position>
+								<WorldPosition x="$PX0" y="$PY0" h="3.14"/>
+							</Position>
+						</TeleportAction>
+					</PrivateAction>
+					<PrivateAction>
+						<LongitudinalAction>
+							<SpeedAction>
+								<SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0"/>
+								<SpeedActionTarget>
+									<AbsoluteTargetSpeed value="0"/>
+								</SpeedActionTarget>
+							</SpeedAction>
+						</LongitudinalAction>
+					</PrivateAction>
+				</Private>
+			</Actions>
+		</Init>
+		<Story name="LTAPStory">
+			<ParameterDeclarations>
+				<ParameterDeclaration parameterType="string" name="owner" value="NPC"/>
+			</ParameterDeclarations>
+			<Act name="LTAPActNPC">
+				<ManeuverGroup maximumExecutionCount="1" name="ped_mangroup">
+					<Actors selectTriggeringEntities="false">
+						<EntityRef entityRef="pedestrian_adult"/>
+					</Actors>
+					<Maneuver name="ped_maneuver">
+						<Event maximumExecutionCount="1" name="ped_synch_event" priority="parallel">
+							<Action name="SyncAction">
+								<PrivateAction>
+									<SynchronizeAction masterEntityRef="Ego" targetToleranceMaster="1.0" targetTolerance="1.0">
+										<TargetPositionMaster>
+											<WorldPosition x="$ESyncX" y="$ESyncY" h="3.3"/>
+										</TargetPositionMaster>
+										<TargetPosition>
+											<WorldPosition x="$PSyncX" y="$PSyncY" h="3.3"/>
+										</TargetPosition>
+										<FinalSpeed>
+											<AbsoluteSpeed value="$PedestrianSpeed">
+												<TargetDistanceSteadyState distance="5"/>
+											</AbsoluteSpeed>
+										</FinalSpeed>
+									</SynchronizeAction>
+								</PrivateAction>
+							</Action>
+						</Event>
+						<Event maximumExecutionCount="1" name="ped_follow_trajectory" priority="parallel">
+							<Action name="walk_trajectory">
+								<PrivateAction>
+									<RoutingAction>
+										<FollowTrajectoryAction>
+											<Trajectory closed="false" name="ped_traj">
+												<ParameterDeclarations/>
+												<Shape>
+													<Polyline>
+														<Vertex>
+															<Position>
+																<WorldPosition x="$PX0" y="$PY0" h="3.3"/>
+															</Position>
+														</Vertex>
+														<Vertex>
+															<Position>
+																<WorldPosition x="$PSyncX" y="$PSyncY" h="3.3"/>
+															</Position>
+														</Vertex>
+														<Vertex>
+															<Position>
+																<WorldPosition x="$PXEnd" y="$PYEnd" h="3.3"/>
+															</Position>
+														</Vertex>
+													</Polyline>
+												</Shape>
+											</Trajectory>
+											<TimeReference>
+												<None/>
+											</TimeReference>
+											<TrajectoryFollowingMode followingMode="follow"/>
+										</FollowTrajectoryAction>
+									</RoutingAction>
+								</PrivateAction>
+							</Action>
+							<!-- <Action name="walk_route"> -->
+							<!-- <PrivateAction> -->
+							<!-- <RoutingAction> -->
+							<!-- <AssignRouteAction> -->
+							<!-- <Route name="PedestrianRoute" closed="false"> -->
+							<!-- <Waypoint routeStrategy="shortest"> -->
+							<!-- <Position> -->
+							<!-- <LanePosition roadId="1" laneId="-1" s="16.9" > -->
+							<!-- <Orientation type="relative" h="3.14" /> -->
+							<!-- </LanePosition> -->
+							<!-- </Position> -->
+							<!-- </Waypoint> -->
+							<!-- <Waypoint routeStrategy="shortest"> -->
+							<!-- <Position> -->
+							<!-- <LanePosition roadId="3" laneId="-1" s="0" > -->
+							<!-- <Orientation type="relative" h="3.14" /> -->
+							<!-- </LanePosition> -->
+							<!-- </Position> -->
+							<!-- </Waypoint> -->
+							<!-- </Route> -->
+							<!-- </AssignRouteAction> -->
+							<!-- </RoutingAction> -->
+							<!-- </PrivateAction> -->
+							<!-- </Action> -->
+							<StartTrigger>
+								<ConditionGroup>
+									<Condition name="ped_follow_trajectory_condition" delay="0" conditionEdge="none">
+										<ByValueCondition>
+											<SimulationTimeCondition value="0" rule="greaterThan"/>
+										</ByValueCondition>
+									</Condition>
+								</ConditionGroup>
+							</StartTrigger>
+						</Event>
+					</Maneuver>
+				</ManeuverGroup>
+				<ManeuverGroup maximumExecutionCount="1" name="brake-for-ped_mangroup">
+					<Actors selectTriggeringEntities="false">
+						<EntityRef entityRef="Ego"/>
+					</Actors>
+					<Maneuver name="drive_Maneuver">
+						<Event name="drive_Event" priority="overwrite">
+							<Action name="walk_route">
+								<PrivateAction>
+									<RoutingAction>
+										<FollowTrajectoryAction>
+											<Trajectory closed="false" name="ego_traj">
+												<ParameterDeclarations/>
+												<Shape>
+													<Polyline>
+														<Vertex>
+															<Position>
+																<WorldPosition x="$EX0" y="$EY0" h="1.8"/>
+															</Position>
+														</Vertex>
+														<Vertex>
+															<Position>
+																<WorldPosition x="$ESyncX" y="$ESyncY" h="1.8"/>
+															</Position>
+														</Vertex>
+														<Vertex>
+															<Position>
+																<WorldPosition x="$EXEnd" y="$EYEnd" h="1.7"/>
+															</Position>
+														</Vertex>
+													</Polyline>
+												</Shape>
+											</Trajectory>
+											<TimeReference>
+												<None/>
+											</TimeReference>
+											<TrajectoryFollowingMode followingMode="follow"/>
+										</FollowTrajectoryAction>
+									</RoutingAction>
+								</PrivateAction>
+							</Action>
+							<StartTrigger>
+								<ConditionGroup>
+									<Condition name="drive_ManeuverCondition" delay="0" conditionEdge="none">
+										<ByValueCondition>
+											<SimulationTimeCondition value="0" rule="greaterThan"/>
+										</ByValueCondition>
+									</Condition>
+								</ConditionGroup>
+							</StartTrigger>
+						</Event>
+					</Maneuver>
+				</ManeuverGroup>
+				<StartTrigger>
+					<ConditionGroup>
+						<Condition name="ActStartCondition" delay="0" conditionEdge="none">
+							<ByValueCondition>
+								<SimulationTimeCondition value="0" rule="greaterThan"/>
+							</ByValueCondition>
+						</Condition>
+					</ConditionGroup>
+				</StartTrigger>
+			</Act>
+		</Story>
+		<StopTrigger>
+			<ConditionGroup>
+				<Condition name="QuitCondition" delay="0" conditionEdge="rising">
+					<ByEntityCondition>
+						<TriggeringEntities triggeringEntitiesRule="any">
+							<EntityRef entityRef="Ego"/>
+						</TriggeringEntities>
+						<EntityCondition>
+							<ReachPositionCondition tolerance="5.0">
+								<Position>
+									<WorldPosition x="$EXEnd" y="$EYEnd" h="3.14"/>
+								</Position>
+							</ReachPositionCondition>
+						</EntityCondition>
+					</ByEntityCondition>
+				</Condition>
+			</ConditionGroup>
+		</StopTrigger>
+	</Storyboard>
 </OpenSCENARIO>

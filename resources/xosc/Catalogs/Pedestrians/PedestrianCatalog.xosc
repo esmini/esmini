@@ -1,46 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <OpenSCENARIO>
-   <FileHeader revMajor="1"
-               revMinor="1"
-               date="2020-10-06T17:00:00"
-               description="Pedestrian catalog"
-               author="esmini"/>
-   <Catalog name="PedestrianCatalog">
-      <Pedestrian mass="80" model="EPTa" name="pedestrian_adult" pedestrianCategory="pedestrian" model3d="../models/walkman.osgb">
-         <ParameterDeclarations/>
-         <BoundingBox>
-            <Center x="0.06" y="0.0" z="0.923"/>
-            <Dimensions height="1.8" length="0.6" width="0.5"/>
-         </BoundingBox>
-         <Properties>
-            <Property name="model_id" value="7"/>       
-            <!-- Scale modes: None, BBToModel, ModelToBB -->
-            <Property name="scaleMode" value="BBToModel"/>  
-         </Properties>
-      </Pedestrian>
-      <Pedestrian mass="70" model="EPTa" name="pedestrian_adult2" pedestrianCategory="pedestrian" model3d="../models/walkman.osgb">
-         <ParameterDeclarations/>
-         <BoundingBox>
-            <Center x="0.06" y="0.0" z="0.923"/>
-            <Dimensions height="1.8" length="0.6" width="0.5"/>
-         </BoundingBox>
-         <Properties>
-            <Property name="model_id" value="7"/>                    
-            <!-- Scale modes: None, BBToModel, ModelToBB -->
-            <Property name="scaleMode" value="BBToModel"/>  
-         </Properties>
-      </Pedestrian>
-      <Pedestrian mass="80" model="moose-standard-model" name="moose" pedestrianCategory="animal" model3d="../models/moose_cc0.osgb">
-         <ParameterDeclarations/>
-         <BoundingBox>
-            <Center x="0.06" y="0.0" z="0.923"/>
-            <Dimensions height="1.9" length="2.82" width="0.3"/>
-         </BoundingBox>
-         <Properties>
-            <Property name="model_id" value="8"/>            
-            <!-- Scale modes: None, BBToModel, ModelToBB -->
-            <Property name="scaleMode" value="BBToModel"/>  
-         </Properties>
-      </Pedestrian>
-   </Catalog>
+	<FileHeader revMajor="1" revMinor="1" date="2020-10-06T17:00:00" description="Pedestrian catalog" author="esmini"/>
+	<Catalog name="PedestrianCatalog">
+		<Pedestrian mass="80" model="EPTa" name="pedestrian_adult" pedestrianCategory="pedestrian" model3d="../models/walkman.osgb">
+			<ParameterDeclarations/>
+			<BoundingBox>
+				<Center x="0.06" y="0.0" z="0.923"/>
+				<Dimensions height="1.8" length="0.6" width="0.5"/>
+			</BoundingBox>
+			<Properties>
+				<Property name="model_id" value="7"/>
+				<!-- Scale modes: None, BBToModel, ModelToBB -->
+				<Property name="scaleMode" value="BBToModel"/>
+			</Properties>
+		</Pedestrian>
+		<Pedestrian mass="70" model="EPTa" name="pedestrian_adult2" pedestrianCategory="pedestrian" model3d="../models/walkman.osgb">
+			<ParameterDeclarations/>
+			<BoundingBox>
+				<Center x="0.06" y="0.0" z="0.923"/>
+				<Dimensions height="1.8" length="0.6" width="0.5"/>
+			</BoundingBox>
+			<Properties>
+				<Property name="model_id" value="7"/>
+				<!-- Scale modes: None, BBToModel, ModelToBB -->
+				<Property name="scaleMode" value="BBToModel"/>
+			</Properties>
+		</Pedestrian>
+		<Pedestrian mass="80" model="moose-standard-model" name="moose" pedestrianCategory="animal" model3d="../models/moose_cc0.osgb">
+			<ParameterDeclarations/>
+			<BoundingBox>
+				<Center x="0.06" y="0.0" z="0.923"/>
+				<Dimensions height="1.9" length="2.82" width="0.3"/>
+			</BoundingBox>
+			<Properties>
+				<Property name="model_id" value="8"/>
+				<!-- Scale modes: None, BBToModel, ModelToBB -->
+				<Property name="scaleMode" value="BBToModel"/>
+			</Properties>
+		</Pedestrian>
+	</Catalog>
 </OpenSCENARIO>

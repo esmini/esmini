@@ -4,144 +4,138 @@
 <!-- the start position and start over the maneuver. This will be repeated -->
 <!-- twice according to event maximumExecutionCount.                       -->
 <OpenSCENARIO>
-   <FileHeader revMajor="1"
-               revMinor="0"
-               date="2017-06-09T10:00:00"
-               description="Basic lane change repeated after reaching end-of-road"
-               author="esmini-team"/>
-   <ParameterDeclarations>
-      <ParameterDeclaration name="EgoVehicle" parameterType="string" value="car_white"/>
-   </ParameterDeclarations>
-   <CatalogLocations>
-      <VehicleCatalog>
-         <Directory path="../xosc/Catalogs/Vehicles"/>
-      </VehicleCatalog>
-   </CatalogLocations>
-   <RoadNetwork>
-      <LogicFile filepath="../xodr/curve_r100.xodr"/>
-      <!-- <SceneGraphFile filepath="../models/curve_r100.osgb"/> -->
-   </RoadNetwork>
-   <Entities>
-      <ScenarioObject name="Ego">
-         <CatalogReference catalogName="VehicleCatalog" entryName="$EgoVehicle"/>
-      </ScenarioObject>
-   </Entities>
-   <Storyboard>
-      <Init>
-         <Actions>
-            <Private entityRef="Ego">
-               <PrivateAction>
-                  <TeleportAction>
-                     <Position>
-                        <LanePosition roadId="0" laneId="-1" offset="0" s="20"/>
-                     </Position>
-                  </TeleportAction>
-               </PrivateAction>
-               <PrivateAction>
-                  <LongitudinalAction>
-                     <SpeedAction>
-                        <SpeedActionDynamics dynamicsShape="cubic" value="4" dynamicsDimension="time" />
-                        <SpeedActionTarget>
-                           <AbsoluteTargetSpeed value="25"/>
-                        </SpeedActionTarget>
-                     </SpeedAction>
-                  </LongitudinalAction>
-               </PrivateAction>
-            </Private>
-         </Actions>
-      </Init>
-      <Story name="Lane change story">
-         <ParameterDeclarations>
-            <ParameterDeclaration parameterType="string" name="owner" value="Ego"/>
-         </ParameterDeclarations>
-         <Act name="Lane change act">
-            <ManeuverGroup maximumExecutionCount="1" name="Lane change maneuver group">
-               <Actors selectTriggeringEntities="false">
-                  <EntityRef entityRef="$owner"/>
-               </Actors>
-               <Maneuver name="Lane change maneuver">
-                  <Event name="Lane change event" maximumExecutionCount="2" priority="overwrite">
-                     <Action name="Lane change action">
-                        <PrivateAction>
-                           <LateralAction>
-                              <LaneChangeAction>
-                                 <LaneChangeActionDynamics dynamicsShape="sinusoidal" value="4" dynamicsDimension="time"/>
-                                 <LaneChangeTarget>
-                                    <AbsoluteTargetLane value="1"/>
-                                 </LaneChangeTarget>
-                              </LaneChangeAction>
-                           </LateralAction>
-                        </PrivateAction>
-                     </Action>
-                     <StartTrigger>
-                        <ConditionGroup>
-                           <Condition name="Lane change condition" delay="0" conditionEdge="rising">
-                              <ByEntityCondition>
-                                 <TriggeringEntities triggeringEntitiesRule="any">
-                                    <EntityRef entityRef="Ego"/>
-                                 </TriggeringEntities>
-                                 <EntityCondition>
-                                    <ReachPositionCondition tolerance="1.0">
-                                       <Position>
-                                          <LanePosition roadId="0" laneId="-1" s="50.0"/>
-                                       </Position>
-                                    </ReachPositionCondition>
-                                 </EntityCondition>
-                              </ByEntityCondition>
-                           </Condition>
-                        </ConditionGroup>
-                     </StartTrigger>
-                  </Event>
-               </Maneuver>
-               <Maneuver name="End Of Road maneuver">
-                  <Event name="End Of Road event" maximumExecutionCount="3" priority="overwrite">
-                     <Action name="End Of Road action">
-                        <PrivateAction>
-                            <TeleportAction>
-                                <Position>
-                                    <LanePosition roadId="0" laneId="-1" offset="0" s="10"/>
-                                </Position>
-                            </TeleportAction>
-                        </PrivateAction>
-                     </Action>
-                     <StartTrigger>
-                        <ConditionGroup>
-                            <Condition name="End Of Road condition" delay="0" conditionEdge="rising">
-                                <ByEntityCondition>
-                                    <TriggeringEntities triggeringEntitiesRule="any">
-                                        <EntityRef entityRef="Ego"/>
-                                    </TriggeringEntities>
-                                    <EntityCondition>
-                                        <EndOfRoadCondition duration="2.5"/>
-                                    </EntityCondition>
-                                </ByEntityCondition>
-                           </Condition>
-                        </ConditionGroup>
-                     </StartTrigger>
-                  </Event>
-               </Maneuver>
-            </ManeuverGroup>
-            <StartTrigger>
-               <ConditionGroup>
-                  <Condition name="CutInActStart" delay="0" conditionEdge="risingOrFalling">
-                     <ByValueCondition>
-                        <SimulationTimeCondition value="0" rule="greaterThan"/>
-                     </ByValueCondition>
-                  </Condition>
-               </ConditionGroup>
-            </StartTrigger>
-         </Act>
-      </Story>
-      <StopTrigger>
-         <ConditionGroup>
-            <Condition name="QuitCondition" delay="4" conditionEdge="rising">
-               <ByValueCondition>
-                  <StoryboardElementStateCondition storyboardElementType="event"
-                                                   storyboardElementRef="End Of Road event"
-                                                   state="completeState"/>
-               </ByValueCondition>
-            </Condition>
-         </ConditionGroup>
-      </StopTrigger>
-   </Storyboard>
+	<FileHeader revMajor="1" revMinor="0" date="2017-06-09T10:00:00" description="Basic lane change repeated after reaching end-of-road" author="esmini-team"/>
+	<ParameterDeclarations>
+		<ParameterDeclaration name="EgoVehicle" parameterType="string" value="car_white"/>
+	</ParameterDeclarations>
+	<CatalogLocations>
+		<VehicleCatalog>
+			<Directory path="../xosc/Catalogs/Vehicles"/>
+		</VehicleCatalog>
+	</CatalogLocations>
+	<RoadNetwork>
+		<LogicFile filepath="../xodr/curve_r100.xodr"/>
+		<!-- <SceneGraphFile filepath="../models/curve_r100.osgb"/> -->
+	</RoadNetwork>
+	<Entities>
+		<ScenarioObject name="Ego">
+			<CatalogReference catalogName="VehicleCatalog" entryName="$EgoVehicle"/>
+		</ScenarioObject>
+	</Entities>
+	<Storyboard>
+		<Init>
+			<Actions>
+				<Private entityRef="Ego">
+					<PrivateAction>
+						<TeleportAction>
+							<Position>
+								<LanePosition roadId="0" laneId="-1" offset="0" s="20"/>
+							</Position>
+						</TeleportAction>
+					</PrivateAction>
+					<PrivateAction>
+						<LongitudinalAction>
+							<SpeedAction>
+								<SpeedActionDynamics dynamicsShape="cubic" value="4" dynamicsDimension="time"/>
+								<SpeedActionTarget>
+									<AbsoluteTargetSpeed value="25"/>
+								</SpeedActionTarget>
+							</SpeedAction>
+						</LongitudinalAction>
+					</PrivateAction>
+				</Private>
+			</Actions>
+		</Init>
+		<Story name="Lane change story">
+			<ParameterDeclarations>
+				<ParameterDeclaration parameterType="string" name="owner" value="Ego"/>
+			</ParameterDeclarations>
+			<Act name="Lane change act">
+				<ManeuverGroup maximumExecutionCount="1" name="Lane change maneuver group">
+					<Actors selectTriggeringEntities="false">
+						<EntityRef entityRef="$owner"/>
+					</Actors>
+					<Maneuver name="Lane change maneuver">
+						<Event name="Lane change event" maximumExecutionCount="2" priority="overwrite">
+							<Action name="Lane change action">
+								<PrivateAction>
+									<LateralAction>
+										<LaneChangeAction>
+											<LaneChangeActionDynamics dynamicsShape="sinusoidal" value="4" dynamicsDimension="time"/>
+											<LaneChangeTarget>
+												<AbsoluteTargetLane value="1"/>
+											</LaneChangeTarget>
+										</LaneChangeAction>
+									</LateralAction>
+								</PrivateAction>
+							</Action>
+							<StartTrigger>
+								<ConditionGroup>
+									<Condition name="Lane change condition" delay="0" conditionEdge="rising">
+										<ByEntityCondition>
+											<TriggeringEntities triggeringEntitiesRule="any">
+												<EntityRef entityRef="Ego"/>
+											</TriggeringEntities>
+											<EntityCondition>
+												<ReachPositionCondition tolerance="1.0">
+													<Position>
+														<LanePosition roadId="0" laneId="-1" s="50.0"/>
+													</Position>
+												</ReachPositionCondition>
+											</EntityCondition>
+										</ByEntityCondition>
+									</Condition>
+								</ConditionGroup>
+							</StartTrigger>
+						</Event>
+					</Maneuver>
+					<Maneuver name="End Of Road maneuver">
+						<Event name="End Of Road event" maximumExecutionCount="3" priority="overwrite">
+							<Action name="End Of Road action">
+								<PrivateAction>
+									<TeleportAction>
+										<Position>
+											<LanePosition roadId="0" laneId="-1" offset="0" s="10"/>
+										</Position>
+									</TeleportAction>
+								</PrivateAction>
+							</Action>
+							<StartTrigger>
+								<ConditionGroup>
+									<Condition name="End Of Road condition" delay="0" conditionEdge="rising">
+										<ByEntityCondition>
+											<TriggeringEntities triggeringEntitiesRule="any">
+												<EntityRef entityRef="Ego"/>
+											</TriggeringEntities>
+											<EntityCondition>
+												<EndOfRoadCondition duration="2.5"/>
+											</EntityCondition>
+										</ByEntityCondition>
+									</Condition>
+								</ConditionGroup>
+							</StartTrigger>
+						</Event>
+					</Maneuver>
+				</ManeuverGroup>
+				<StartTrigger>
+					<ConditionGroup>
+						<Condition name="CutInActStart" delay="0" conditionEdge="risingOrFalling">
+							<ByValueCondition>
+								<SimulationTimeCondition value="0" rule="greaterThan"/>
+							</ByValueCondition>
+						</Condition>
+					</ConditionGroup>
+				</StartTrigger>
+			</Act>
+		</Story>
+		<StopTrigger>
+			<ConditionGroup>
+				<Condition name="QuitCondition" delay="4" conditionEdge="rising">
+					<ByValueCondition>
+						<StoryboardElementStateCondition storyboardElementType="event" storyboardElementRef="End Of Road event" state="completeState"/>
+					</ByValueCondition>
+				</Condition>
+			</ConditionGroup>
+		</StopTrigger>
+	</Storyboard>
 </OpenSCENARIO>

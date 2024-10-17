@@ -1,58 +1,54 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <OpenSCENARIO>
-   <FileHeader revMajor="1"
-               revMinor="0"
-               date="2020-05-16T17:00:00"
-               author="SimS"
-               description=""/>
-   <Catalog name="RoutesAtFabriksgatan">
-      <Route name="TargetStraightLeftToRight" closed="false">
-         <Waypoint routeStrategy="shortest">
-            <Position>
-               <LanePosition roadId="3" laneId="-1" offset="0" s="70"/>
-            </Position>
-         </Waypoint>
-         <Waypoint routeStrategy="shortest">
-            <Position>
-               <LanePosition roadId="1" laneId="-1" offset="0" s="5"/>
-            </Position>
-         </Waypoint>
-      </Route>
-      <Route name="TargetLeftTurnRoute" closed="false">
-         <Waypoint routeStrategy="shortest">
-            <Position>
-               <LanePosition roadId="2" laneId="-1" offset="0" s="100"/>
-            </Position>
-         </Waypoint>
-         <Waypoint routeStrategy="shortest">
-            <Position>
-               <LanePosition roadId="1" laneId="-1" offset="0" s="5"/>
-            </Position>
-         </Waypoint>
-      </Route>
-      <Route name="TargetStraightRoute" closed="false">
-         <Waypoint routeStrategy="shortest">
-            <Position>
-               <LanePosition roadId="2" laneId="-1" offset="0" s="280"/>
-            </Position>
-         </Waypoint>
-         <Waypoint routeStrategy="shortest">
-            <Position>
-               <LanePosition roadId="0" laneId="-1" offset="0" s="5"/>
-            </Position>
-         </Waypoint>
-      </Route>
-      <Route name="HostStraightRoute" closed="false">
-         <Waypoint routeStrategy="shortest">
-            <Position>
-               <LanePosition roadId="0" laneId="1" offset="0" s="63"/>
-            </Position>
-         </Waypoint>
-         <Waypoint routeStrategy="shortest">
-            <Position>
-               <LanePosition roadId="2" laneId="1" offset="0" s="5"/>
-            </Position>
-         </Waypoint>
-      </Route>
-   </Catalog>
+	<FileHeader revMajor="1" revMinor="0" date="2020-05-16T17:00:00" author="SimS" description=""/>
+	<Catalog name="RoutesAtFabriksgatan">
+		<Route name="TargetStraightLeftToRight" closed="false">
+			<Waypoint routeStrategy="shortest">
+				<Position>
+					<LanePosition roadId="3" laneId="-1" offset="0" s="70"/>
+				</Position>
+			</Waypoint>
+			<Waypoint routeStrategy="shortest">
+				<Position>
+					<LanePosition roadId="1" laneId="-1" offset="0" s="5"/>
+				</Position>
+			</Waypoint>
+		</Route>
+		<Route name="TargetLeftTurnRoute" closed="false">
+			<Waypoint routeStrategy="shortest">
+				<Position>
+					<LanePosition roadId="2" laneId="-1" offset="0" s="100"/>
+				</Position>
+			</Waypoint>
+			<Waypoint routeStrategy="shortest">
+				<Position>
+					<LanePosition roadId="1" laneId="-1" offset="0" s="5"/>
+				</Position>
+			</Waypoint>
+		</Route>
+		<Route name="TargetStraightRoute" closed="false">
+			<Waypoint routeStrategy="shortest">
+				<Position>
+					<LanePosition roadId="2" laneId="-1" offset="0" s="280"/>
+				</Position>
+			</Waypoint>
+			<Waypoint routeStrategy="shortest">
+				<Position>
+					<LanePosition roadId="0" laneId="-1" offset="0" s="5"/>
+				</Position>
+			</Waypoint>
+		</Route>
+		<Route name="HostStraightRoute" closed="false">
+			<Waypoint routeStrategy="shortest">
+				<Position>
+					<LanePosition roadId="0" laneId="1" offset="0" s="63"/>
+				</Position>
+			</Waypoint>
+			<Waypoint routeStrategy="shortest">
+				<Position>
+					<LanePosition roadId="2" laneId="1" offset="0" s="5"/>
+				</Position>
+			</Waypoint>
+		</Route>
+	</Catalog>
 </OpenSCENARIO>
