@@ -601,8 +601,8 @@ namespace viewer
             double             scale_y;
             double             scale_z;
             ViewerObjectDetail copy(const roadmanager::RMObject* object, double scale_x, double scale_y, double scale_z);
-            ViewerObjectDetail copy(roadmanager::RMObject* object, const roadmanager::Repeat::RepeatTransformationInfoDimension repeatDimension);
-            ViewerObjectDetail copy(const roadmanager::Repeat::RepeatTransformationInfoDimension repeatDimension,
+            ViewerObjectDetail copy(roadmanager::RMObject* object, const RepeatTransformationInfoDimension repeatDimension);
+            ViewerObjectDetail copy(const RepeatTransformationInfoDimension repeatDimension,
                                     double                                                       dim_x,
                                     double                                                       dim_y,
                                     double                                                       dim_z);

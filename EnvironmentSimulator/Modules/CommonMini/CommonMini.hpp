@@ -162,6 +162,42 @@ enum class GhostMode
     RESTARTING  // ghost restart is ongoing, including the final restart timestep
 };
 
+struct Point2D
+{
+    double x = 0.0;
+    double y = 0.0;
+};
+
+struct Point3D : public Point2D
+{
+    double z = 0.0;
+};
+
+struct RepeatTransformationInfo
+{
+    double x;
+    double y;
+    double z;
+    double roll;
+    double pitch;
+    double heading;
+    double hOffset;
+};
+
+struct RepeatTransformationInfoDimension : public RepeatTransformationInfo
+{
+    double length;
+    double width;
+    double height;
+};
+
+struct RepeatTransformationInfoScale : public RepeatTransformationInfo
+{
+    double scale_x = 1;
+    double scale_y = 1;
+    double scale_z = 1;
+};
+
 class SE_Vector
 {
 public:
@@ -284,8 +320,6 @@ private:
     double y_;
 };
 
-bool IsEqualDouble(double val1, double val2);
-
 // Useful operations
 
 /**
@@ -359,16 +393,16 @@ double GetAngleBetweenVectors(double x1, double y1, double x2, double y2);
         returns 0 if intersection exists, else -1
         Note: does not (yet) calculate whether point is within one of the line segments or not
 */
-int GetIntersectionOfTwoLineSegments(double  ax1,
-                                     double  ay1,
-                                     double  ax2,
-                                     double  ay2,
-                                     double  bx1,
-                                     double  by1,
-                                     double  bx2,
-                                     double  by2,
-                                     double& x3,
-                                     double& y3);
+int  GetIntersectionOfTwoLineSegments(double  ax1,
+                                      double  ay1,
+                                      double  ax2,
+                                      double  ay2,
+                                      double  bx1,
+                                      double  by1,
+                                      double  bx2,
+                                      double  by2,
+                                      double& x3,
+                                      double& y3);
 
 /**
         Calculate distance between two 2D points
@@ -603,6 +637,8 @@ void RotateVec3d(const double h0,
 void SwapByteOrder(unsigned char* buf, int data_type_size, int buf_size);
 
 bool IsNumber(const std::string& str, int max_digits = -1);
+
+bool IsEqualDouble(double val1, double val2);
 
 #if (defined WINVER && WINVER == _WIN32_WINNT_WIN7)
 #else

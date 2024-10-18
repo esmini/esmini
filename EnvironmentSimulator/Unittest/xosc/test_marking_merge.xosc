@@ -8,11 +8,11 @@
     </ParameterDeclarations>
     <CatalogLocations>
       <VehicleCatalog>
-         <Directory path="../xosc/Catalogs/Vehicles"/>
+         <Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
       </VehicleCatalog>
    </CatalogLocations>
     <RoadNetwork>
-        <LogicFile filepath="../xodr/test_multiple_outline_with_multiple_repeat.xodr"/>
+        <LogicFile filepath="../xodr/test_marking_merge.xodr"/>
     </RoadNetwork>
     <Entities>
         <ScenarioObject name="Car">

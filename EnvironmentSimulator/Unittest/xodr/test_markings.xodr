@@ -114,14 +114,12 @@
             <object type="crosswalk" id="3" s="10.0" t="0.0" zOffset="0.0" orientation="none" length="10.0" width="7.0" hdg="0.0" pitch="0.0" roll="0.0">
                 <outlines>
                     <outline id="0" closed="true">
-                        <cornerRoad s="52.5" t="3.5" dz="0.0" height="0.0" id="0"/>
-                        <cornerRoad s="52.5" t="-3.5" dz="0.0" height="0.0" id="1"/>
-                        <cornerRoad s="57.5" t="-3.5" dz="0.0" height="0.0" id="2"/>
-                        <cornerRoad s="57.5" t="3.5" dz="0.0" height="0.0" id="3"/>
+                        <cornerRoad s="55.0" t="-3.0" dz="0.0" height="0.0" id="0"/>
+                        <cornerRoad s="55.0" t="3.0" dz="0.0" height="0.0" id="1"/>
                     </outline>
                 </outlines>
                 <markings>
-                    <marking side="left" width="5" color="white" zOffset="0.005" spaceLength ="0.4" lineLength ="0.5" startOffset="0.5" stopOffset="0.0">
+                    <marking side="left" width="4" color="white" zOffset="0.005" spaceLength ="0.5" lineLength ="0.5" startOffset="0.25" stopOffset="0.0">
                         <cornerReference id="0"/>
                         <cornerReference id="1"/>
                     </marking>
@@ -130,16 +128,14 @@
             <object type="crosswalk" id="4" s="255.0" t="0" zOffset="0.0" orientation="none" length="10.0" width="7.0" hdg="0.0" pitch="0.0" roll="0.0">
                 <outlines>
                     <outline id="0" closed="true">
-                        <cornerLocal u="0" v="3.5" z="0" height="0" id='0'/>
-                        <cornerLocal u="0" v="-3.5.0" z="0" height="0" id='1'/>
-                        <cornerLocal u="7" v="-3.5" z="0" height="0" id='2'/>
-                        <cornerLocal u="7" v="3.5" z="0" height="0" id='3'/>
+                        <cornerLocal u="4.8" v="3.0" z="0" height="0" id='0'/>
+                        <cornerLocal u="4.5" v="-3.0" z="0" height="0" id='1'/>
                     </outline>
                 </outlines>
                 <markings>
-                    <marking width="5" color="white" zOffset="0.02" spaceLength ="0.4" lineLength ="0.5" startOffset="0.0" stopOffset="0.0">
-                        <cornerReference id="1"/>
+                    <marking width="5" color="white" zOffset="0.02" spaceLength ="0.4" lineLength ="0.5" startOffset="0.15" stopOffset="0.0">
                         <cornerReference id="0"/>
+                        <cornerReference id="1"/>
                     </marking>
                 </markings>
             </object>

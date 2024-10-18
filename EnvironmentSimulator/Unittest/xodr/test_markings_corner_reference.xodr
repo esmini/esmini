@@ -1,0 +1,203 @@
+<?xml version="1.0" standalone="yes"?>
+<OpenDRIVE>
+    <header revMajor="1" revMinor="4" name="" version="1.00" date="Wed Jul  1 07:28:45 2020" north="0.0" south="0.0" east="0.0" west="0.0">
+    </header>
+    <road name="dummy road" rule="RHT" length="400" id="0" junction="-1">
+        <link>
+        </link>
+        <planView>
+            <geometry s="0.0" x="0.0" y="0.0" hdg="0.0" length="400">
+                <line/>
+            </geometry>
+        </planView>
+        <elevationProfile>
+		</elevationProfile>
+        <lateralProfile/>
+        <lanes>
+            <laneSection s="0">
+                <left>
+                    <lane id="2" type="border" level= "false">
+                        <link>
+                        </link>
+                        <width sOffset="0.0" a="50" b="0.0" c="0.0" d="0.0"/>
+                    </lane>
+                    <lane id="1" type="driving" level= "false">
+                        <link>
+                        </link>
+                        <width sOffset="0.0" a="3.2" b="0.0" c="0.0" d="0.0"/>
+                        <roadMark sOffset="0.0" type="solid" weight="standard" color="standard" width="0.12" laneChange="none" height="0.02">
+                            <type name="solid" width="0.12" >
+                                <line length="0.0" space="0.0" tOffset="0.0" sOffset="0.0" rule="no passing" width="0.12"/>
+                            </type>
+                        </roadMark>
+                    </lane>
+                </left>
+                <center>
+                    <lane id="0" type="driving" level= "false">
+                        <link>
+                        </link>
+                        <roadMark sOffset="0.0" type="broken" weight="standard" color="standard" width="0.12" laneChange="none" height="0.02">
+                            <type name="broken" width="0.12" >
+                                <line length="4.0" space="8.0" tOffset="0.0" sOffset="0.0" rule="caution" width="0.12"/>
+                            </type>
+                        </roadMark>
+                    </lane>
+                </center>
+                <right>
+                    <lane id="-1" type="driving" level= "false">
+                        <link>
+                        </link>
+                        <width sOffset="0.0" a="3.2" b="0.0" c="0.0" d="0.0"/>
+                       <roadMark sOffset="0.0" type="solid" weight="standard" color="standard" width="0.12" laneChange="none" height="0.02">
+                            <type name="solid" width="0.12" >
+                                <line length="0.0" space="0.0" tOffset="0.0" sOffset="0.0" rule="no passing" width="0.12"/>
+                            </type>
+                        </roadMark>
+                    </lane>
+                    <lane id="-2" type="border" level= "false">
+                        <link>
+                        </link>
+                        <width sOffset="0.0" a="30.0" b="0.0" c="0.0" d="0.0"/>
+                    </lane>
+                </right>
+            </laneSection>
+        </lanes>
+        <objects>
+            <!-- check internal and orginal corner ids-->
+            <object type="parking" name="parking" id="0" s="2.5" t="5.0">
+				<outlines>
+				  <outline id="0" fillType="" closed="true">
+                    <cornerRoad s="2.0" t="5.0" dz="0.0" height="4.0" id="10"/>
+                    <cornerRoad s="4.5" t="5.0" dz="0.0" height="4.0" id="30"/>
+                    <cornerRoad s="4.5" t="10.0" dz="0.0" height="4.0" id="12"/>
+                    <cornerRoad s="2.0" t="10.0" dz="0.0" height="4.0" id="1"/>
+                  </outline>
+				</outlines>
+                <markings>
+                    <marking width="0.1" color="white" zOffset="0.005" spaceLength ="0.0" lineLength ="5.5" startOffset="0.0" stopOffset="0.0">
+                        <cornerReference id="10"/>
+                        <cornerReference id="12"/>
+                    </marking>
+                </markings>
+            </object>
+            <!-- creating consective cornerReference ids like 1,2,3,0,1 -->
+            <object type="parking" name="parking" id="1" s="2.5" t="5.0">
+				<outlines>
+				  <outline id="0" fillType="" closed="true">
+                    <cornerRoad s="22.0" t="5.0" dz="0.0" height="4.0" id="0"/>
+                    <cornerRoad s="24.5" t="5.0" dz="0.0" height="4.0" id="1"/>
+                    <cornerRoad s="24.5" t="10.0" dz="0.0" height="4.0" id="2"/>
+                    <cornerRoad s="22.0" t="10.0" dz="0.0" height="4.0" id="3"/>
+                  </outline>
+				</outlines>
+                <markings>
+                    <marking width="0.1" color="white" zOffset="0.005" spaceLength ="0.0" lineLength ="5.5" startOffset="0.0" stopOffset="0.0">
+                        <cornerReference id="1"/>
+                        <cornerReference id="1"/>
+                    </marking>
+                </markings>
+            </object>
+            <!-- not unique cornerRoad id -->
+            <object type="parking" name="parking" id="2" s="2.5" t="5.0">
+				<outlines>
+				  <outline id="0" fillType="" closed="true">
+                    <cornerRoad s="42.0" t="5.0" dz="0.0" height="4.0" id="0"/>
+                    <cornerRoad s="44.5" t="5.0" dz="0.0" height="4.0" id="1"/>
+                    <cornerRoad s="44.5" t="10.0" dz="0.0" height="4.0" id="1"/>
+                    <cornerRoad s="42.0" t="10.0" dz="0.0" height="4.0" id="3"/>
+                  </outline>
+				</outlines>
+                <markings>
+                    <marking width="0.1" color="white" zOffset="0.005" spaceLength ="0.0" lineLength ="5.5" startOffset="0.0" stopOffset="0.0">
+                        <cornerReference id="1"/>
+                        <cornerReference id="1"/>
+                    </marking>
+                </markings>
+            </object>
+            <!-- unknown cornerReference in marking -->
+            <object type="parking" name="parking" id="3" s="2.5" t="5.0">
+				<outlines>
+				  <outline id="0" fillType="" closed="true">
+                    <cornerRoad s="62.0" t="5.0" dz="0.0" height="4.0" id="0"/>
+                    <cornerRoad s="64.5" t="5.0" dz="0.0" height="4.0" id="1"/>
+                    <cornerRoad s="64.5" t="10.0" dz="0.0" height="4.0" id="2"/>
+                    <cornerRoad s="62.0" t="10.0" dz="0.0" height="4.0" id="3"/>
+                  </outline>
+				</outlines>
+                <markings>
+                    <marking width="0.1" color="white" zOffset="0.005" spaceLength ="0.0" lineLength ="5.5" startOffset="0.0" stopOffset="0.0">
+                        <cornerReference id="1"/>
+                        <cornerReference id="7"/>
+                    </marking>
+                </markings>
+            </object>
+            <!-- two outline with one marking -->
+            <object type="parking" name="parking" id="4" s="2.5" t="5.0">
+				<outlines>
+				  <outline id="0" fillType="" closed="true">
+                    <cornerRoad s="82.0" t="5.0" dz="0.0" height="4.0" id="0"/>
+                    <cornerRoad s="84.5" t="5.0" dz="0.0" height="4.0" id="1"/>
+                    <cornerRoad s="84.5" t="10.0" dz="0.0" height="4.0" id="2"/>
+                    <cornerRoad s="82.0" t="10.0" dz="0.0" height="4.0" id="3"/>
+                  </outline>
+				  <outline id="0" fillType="" closed="true">
+                    <cornerRoad s="102.0" t="5.0" dz="0.0" height="4.0" id="0"/>
+                    <cornerRoad s="104.5" t="5.0" dz="0.0" height="4.0" id="1"/>
+                    <cornerRoad s="104.5" t="10.0" dz="0.0" height="4.0" id="2"/>
+                    <cornerRoad s="102.0" t="10.0" dz="0.0" height="4.0" id="3"/>
+                  </outline>
+				</outlines>
+                <markings>
+                    <marking width="0.1" color="white" zOffset="0.005" spaceLength ="0.0" lineLength ="5.5" startOffset="0.0" stopOffset="0.0">
+                        <cornerReference id="3"/>
+                        <cornerReference id="0"/>
+                    </marking>
+                </markings>
+            </object>
+            <!-- two outline with different corner ids -->
+            <object type="parking" name="parking" id="5" s="2.5" t="5.0">
+				<outlines>
+				  <outline id="0" fillType="" closed="true">
+                    <cornerRoad s="112.0" t="5.0" dz="0.0" height="4.0" id="0"/>
+                    <cornerRoad s="114.5" t="5.0" dz="0.0" height="4.0" id="1"/>
+                    <cornerRoad s="114.5" t="10.0" dz="0.0" height="4.0" id="2"/>
+                    <cornerRoad s="112.0" t="10.0" dz="0.0" height="4.0" id="3"/>
+                  </outline>
+				  <outline id="0" fillType="" closed="true">
+                    <cornerRoad s="122.0" t="5.0" dz="0.0" height="4.0" id="4"/>
+                    <cornerRoad s="124.5" t="5.0" dz="0.0" height="4.0" id="5"/>
+                    <cornerRoad s="124.5" t="10.0" dz="0.0" height="4.0" id="6"/>
+                    <cornerRoad s="122.0" t="10.0" dz="0.0" height="4.0" id="7"/>
+                  </outline>
+				</outlines>
+                <markings>
+                    <marking width="0.1" color="white" zOffset="0.005" spaceLength ="0.0" lineLength ="5.5" startOffset="0.0" stopOffset="0.0">
+                        <cornerReference id="1"/>
+                        <cornerReference id="2"/>
+                    </marking>
+                </markings>
+            </object>
+            <!-- cornerReference ids ordered in counterclosewise instead of 2 to 1. it is processed as 1 to 2 -->
+            <object type="parking" name="parking" id="6" s="2.5" t="5.0">
+				<outlines>
+				  <outline id="0" fillType="" closed="true">
+                    <cornerRoad s="142.0" t="5.0" dz="0.0" height="4.0" id="0"/>
+                    <cornerRoad s="144.5" t="5.0" dz="0.0" height="4.0" id="1"/>
+                    <cornerRoad s="144.5" t="10.0" dz="0.0" height="4.0" id="2"/>
+                    <cornerRoad s="142.0" t="10.0" dz="0.0" height="4.0" id="3"/>
+                  </outline>
+				</outlines>
+                <markings>
+                    <marking width="0.1" color="white" zOffset="0.005" spaceLength ="0.0" lineLength ="5.5" startOffset="0.0" stopOffset="0.0">
+                        <cornerReference id="2"/>
+                        <cornerReference id="1"/>
+                    </marking>
+                </markings>
+            </object>
+        </objects>
+        <signals>
+        </signals>
+        <surface>
+        </surface>
+    </road>
+</OpenDRIVE>

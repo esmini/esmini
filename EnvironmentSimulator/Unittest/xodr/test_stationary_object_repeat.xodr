@@ -75,16 +75,16 @@
                 <parkingSpace access="all"/>
                 <repeat distance = "0.0" lengthStart="3.5" lengthEnd="3.5" heightStart="4.0" heightEnd="4.0" widthStart="4" widthEnd="4" zOffsetEnd="0.0" zOffsetStart="0.0" tStart="-12.5" tEnd="-12.5" length="10" s="20.0"/>
                 <markings>
-                  <marking side="left" width="0.1" color="white" zOffset="0.005" spaceLength="0.0" lineLength="0.1" startOffset="0.0" stopOffset="0.0"/>
-                  <marking side="right" width="0.1" color="white" zOffset="0.005" spaceLength="0.0" lineLength="0.1" startOffset="0.0" stopOffset="0.0"/>
+                  <marking side="left" width="0.1" color="white" zOffset="0.005" spaceLength="0.0" lineLength="10.0" startOffset="0.0" stopOffset="0.0"/>
+                  <marking side="right" width="0.1" color="white" zOffset="0.005" spaceLength="0.0" lineLength="10.0" startOffset="0.0" stopOffset="0.0"/>
                 </markings>
             </object>
             <object type="parkingSpace" subtype="closed" id="12" s="13.54" t="-12.90" zOffset="0.0" orientation="none" length="3.5" pitch="0.0" roll="0.0">
                 <parkingSpace access="all"/>
                 <repeat distance = "5" lengthStart="3.5" lengthEnd="3.5" heightStart="4.0" heightEnd="4.0" widthStart="4" widthEnd="4" zOffsetEnd="0.0" zOffsetStart="0.0" tStart="-12.5" tEnd="-12.5" length="10" s="40.0"/>
                 <markings>
-                  <marking side="left" width="0.1" color="white" zOffset="0.005" spaceLength="0.0" lineLength="0.1" startOffset="0.0" stopOffset="0.0"/>
-                  <marking side="right" width="0.1" color="white" zOffset="0.005" spaceLength="0.0" lineLength="0.1" startOffset="0.0" stopOffset="0.0"/>
+                  <marking side="left" width="0.1" color="white" zOffset="0.005" spaceLength="0.0" lineLength="3.5" startOffset="0.0" stopOffset="0.0"/>
+                  <marking side="right" width="0.1" color="white" zOffset="0.005" spaceLength="0.0" lineLength="3.5" startOffset="0.0" stopOffset="0.0"/>
                 </markings>
             </object>
         </objects>

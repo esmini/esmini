@@ -2627,41 +2627,44 @@ bool Viewer::CreateRoadLines(Viewer* viewer, roadmanager::OpenDrive* od)
 
 int Viewer::DrawMarking(roadmanager::RMObject* object)
 {
-    for (auto& marking : object->GetMarkings())  // marking
+    for (auto& marking : object->GetMarkingsWithPoints())  // marking
     {
-        for (const auto& points : marking.GetMarkingsPoints(object))
+        for (auto& segment : marking.MarkingSegments_)  // marking points
         {
-            osg::ref_ptr<osg::Group>      group        = new osg::Group();
-            osg::ref_ptr<osg::Vec3dArray> vertices_top = new osg::Vec3dArray(points.size());  // one set at bottom and one at top
-
-            for (int i = 0; i < points.size(); i += 4)
+            for (auto& points : segment.GetAllPoints())  // marking point
             {
-                (*vertices_top)[i + 0].set(points[i + 0].x - origin_[0], points[i + 0].y - origin_[1], points[i + 0].z);
-                (*vertices_top)[i + 1].set(points[i + 1].x - origin_[0], points[i + 1].y - origin_[1], points[i + 1].z);
-                (*vertices_top)[i + 2].set(points[i + 2].x - origin_[0], points[i + 2].y - origin_[1], points[i + 2].z);
-                (*vertices_top)[i + 3].set(points[i + 3].x - origin_[0], points[i + 3].y - origin_[1], points[i + 3].z);
+                osg::ref_ptr<osg::Group>      group        = new osg::Group();
+                osg::ref_ptr<osg::Vec3dArray> vertices_top = new osg::Vec3dArray(points.size());  // one set at bottom and one at top
+
+                for (int i = 0; i < points.size(); i += 4)
+                {
+                    (*vertices_top)[i + 0].set(points[i + 0].x - origin_[0], points[i + 0].y - origin_[1], points[i + 0].z);
+                    (*vertices_top)[i + 1].set(points[i + 1].x - origin_[0], points[i + 1].y - origin_[1], points[i + 1].z);
+                    (*vertices_top)[i + 2].set(points[i + 2].x - origin_[0], points[i + 2].y - origin_[1], points[i + 2].z);
+                    (*vertices_top)[i + 3].set(points[i + 3].x - origin_[0], points[i + 3].y - origin_[1], points[i + 3].z);
+                }
+
+                // Finally create and add geometry
+                osg::ref_ptr<osg::Geode>    geode = new osg::Geode;
+                osg::ref_ptr<osg::Geometry> geom  = new osg::Geometry;
+
+                geom->setVertexArray(vertices_top.get());
+                geom->addPrimitiveSet(new osg::DrawArrays(GL_QUADS, 0, points.size()));
+
+                // osgUtil::SmoothingVisitor::smooth(*geom, 0.5);
+                geom->setDataVariance(osg::Object::STATIC);
+                geom->setUseDisplayList(true);
+                geode->addDrawable(geom);
+
+                osg::Vec4                   color     = ODR2OSGColor(marking.GetColor());
+                osg::ref_ptr<osg::Material> material_ = new osg::Material;
+                material_->setDiffuse(osg::Material::FRONT_AND_BACK, color);
+                material_->setAmbient(osg::Material::FRONT_AND_BACK, color);
+                geode->getOrCreateStateSet()->setAttributeAndModes(material_.get());
+
+                group->addChild(geode);
+                env_origin2odr_->addChild(group);
             }
-
-            // Finally create and add geometry
-            osg::ref_ptr<osg::Geode>    geode = new osg::Geode;
-            osg::ref_ptr<osg::Geometry> geom  = new osg::Geometry;
-
-            geom->setVertexArray(vertices_top.get());
-            geom->addPrimitiveSet(new osg::DrawArrays(GL_QUADS, 0, points.size()));
-
-            // osgUtil::SmoothingVisitor::smooth(*geom, 0.5);
-            geom->setDataVariance(osg::Object::STATIC);
-            geom->setUseDisplayList(true);
-            geode->addDrawable(geom);
-
-            osg::Vec4                   color     = ODR2OSGColor(marking.GetColor());
-            osg::ref_ptr<osg::Material> material_ = new osg::Material;
-            material_->setDiffuse(osg::Material::FRONT_AND_BACK, color);
-            material_->setAmbient(osg::Material::FRONT_AND_BACK, color);
-            geode->getOrCreateStateSet()->setAttributeAndModes(material_.get());
-
-            group->addChild(geode);
-            env_origin2odr_->addChild(group);
         }
     }
     return 0;
@@ -2703,7 +2706,7 @@ void Viewer::CreateOutlineModel(const roadmanager::Outline& outline,
     uint64_t                     nrPoints       = roof ? outline.corner_.size() + 1 : outline.corner_.size();
     osg::ref_ptr<osg::Vec3Array> vertices_sides = new osg::Vec3Array(nrPoints * 2);  // one set at bottom and one at top
     osg::ref_ptr<osg::Vec3Array> vertices_top   = new osg::Vec3Array(nrPoints);      // one set at bottom and one at top
-
+    // printf("from viewer\n");
     for (size_t i = 0; i < outline.corner_.size(); i++)
     {
         double                      x, y, z_bottom;
@@ -2792,6 +2795,7 @@ void Viewer::CreateShallowCopyModels(roadmanager::RMObject* object, osg::ref_ptr
         {
             // position mode relative for aligning to road heading
             osg::ref_ptr<osg::PositionAttitudeTransform> xform = new osg::PositionAttitudeTransform();
+            geode->getOrCreateStateSet()->setMode(GL_NORMALIZE, osg::StateAttribute::ON);
             xform->addChild(geode);
             xform->setScale(osg::Vec3d(repeatScale.scale_x, repeatScale.scale_y, repeatScale.scale_z));
             xform->setPosition(osg::Vec3d(repeatScale.x - origin_[0], repeatScale.y - origin_[1], repeatScale.z));
@@ -3053,7 +3057,7 @@ Viewer::ViewerObjectDetail Viewer::ViewerObjectDetail::copy(const roadmanager::R
 }
 
 Viewer::ViewerObjectDetail Viewer::ViewerObjectDetail::copy(roadmanager::RMObject*                                       object,
-                                                            const roadmanager::Repeat::RepeatTransformationInfoDimension repeatDimension)
+                                                            const RepeatTransformationInfoDimension repeatDimension)
 {
     ViewerObjectDetail detail;
     detail.scale_x = GetViewerDimension(repeatDimension.length) / GetViewerDimension(object->GetLength());
@@ -3069,7 +3073,7 @@ Viewer::ViewerObjectDetail Viewer::ViewerObjectDetail::copy(roadmanager::RMObjec
     return detail;
 }
 
-Viewer::ViewerObjectDetail Viewer::ViewerObjectDetail::copy(const roadmanager::Repeat::RepeatTransformationInfoDimension repeatDimension,
+Viewer::ViewerObjectDetail Viewer::ViewerObjectDetail::copy(const RepeatTransformationInfoDimension repeatDimension,
                                                             double                                                       dim_x,
                                                             double                                                       dim_y,
                                                             double                                                       dim_z)

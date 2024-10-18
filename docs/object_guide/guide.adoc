@@ -151,6 +151,9 @@ For detailed info of how objects are visualized, check the below flowchart
 
 image::ObjectAndMaringViewer.svg[]
 
+Limitation:
+Corner referrence IDs are sorted in the clockwise direction. (write about the limitation)
+
 === Working with Draw.io XML Files in AsciiDoc
 
 This section outlines the process for viewing, embedding, and version controlling Draw.io XML files within your AsciiDoc-based user guides.

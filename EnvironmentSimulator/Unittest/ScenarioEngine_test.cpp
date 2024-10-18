@@ -638,6 +638,190 @@ TEST(DistanceTest, TestTrajectoryDistance)
     delete se;
 }
 
+TEST(CornerReferenceTest, checkMarkingAndOutlineDetails)
+{
+    Position::GetOpenDrive()->LoadOpenDriveFile("../../../EnvironmentSimulator/Unittest/xodr/test_markings_corner_reference.xodr");
+    OpenDrive* odr = Position::GetOpenDrive();
+    ASSERT_NE(odr, nullptr);
+    Road* road = odr->GetRoadById(0);
+    ASSERT_NE(road, nullptr);
+    RMObject* obj = road->GetRoadObject(0);
+    // first object
+    Outline& outline = obj->GetOutline(0);
+    ASSERT_EQ(outline.corner_[0]->GetCornerId(), 0);
+    ASSERT_EQ(outline.corner_[0]->GetOriginalCornerId(), 10);
+    ASSERT_EQ(outline.corner_[1]->GetCornerId(), 1);
+    ASSERT_EQ(outline.corner_[1]->GetOriginalCornerId(), 30);
+    ASSERT_EQ(outline.corner_[2]->GetCornerId(), 2);
+    ASSERT_EQ(outline.corner_[2]->GetOriginalCornerId(), 12);
+    ASSERT_EQ(outline.corner_[3]->GetCornerId(), 3);
+    ASSERT_EQ(outline.corner_[3]->GetOriginalCornerId(), 1);
+
+    Marking& marking = obj->GetMarkings()[0];
+    ASSERT_EQ(marking.GetCornerReferenceIdsSize(), 2);
+    ASSERT_EQ(marking.GetCornerReferenceIds()[0], 10);
+    ASSERT_EQ(marking.GetCornerReferenceIds()[1], 12);
+
+    std::vector<OutlineCorner*> cornerReferences;
+    outline.GetCornersByIdx(marking.GetCornerReferenceIds(), cornerReferences);
+    ASSERT_EQ(cornerReferences.size(), 3);  // shall find 3 corners, consecutive corners
+    ASSERT_EQ(cornerReferences[0]->GetCornerId(), 0);
+    ASSERT_EQ(cornerReferences[0]->GetOriginalCornerId(), 10);
+    ASSERT_EQ(cornerReferences[1]->GetCornerId(), 1);
+    ASSERT_EQ(cornerReferences[1]->GetOriginalCornerId(), 30);
+    ASSERT_EQ(cornerReferences[2]->GetCornerId(), 2);
+    ASSERT_EQ(cornerReferences[2]->GetOriginalCornerId(), 12);
+
+    // second object
+    RMObject* obj1 = road->GetRoadObject(1);
+    Outline& outline1 = obj1->GetOutline(0);
+    ASSERT_EQ(outline1.corner_[0]->GetCornerId(), 0);
+    ASSERT_EQ(outline1.corner_[0]->GetOriginalCornerId(), 0);
+    ASSERT_EQ(outline1.corner_[1]->GetCornerId(), 1);
+    ASSERT_EQ(outline1.corner_[1]->GetOriginalCornerId(), 1);
+    ASSERT_EQ(outline1.corner_[2]->GetCornerId(), 2);
+    ASSERT_EQ(outline1.corner_[2]->GetOriginalCornerId(), 2);
+    ASSERT_EQ(outline1.corner_[3]->GetCornerId(), 3);
+    ASSERT_EQ(outline1.corner_[3]->GetOriginalCornerId(), 3);
+
+    Marking& marking1 = obj1->GetMarkings()[0];
+    ASSERT_EQ(marking1.GetCornerReferenceIdsSize(), 2);
+    ASSERT_EQ(marking1.GetCornerReferenceIds()[0], 1);
+    ASSERT_EQ(marking1.GetCornerReferenceIds()[1], 1);
+
+    std::vector<OutlineCorner*> cornerReferences1;
+    outline1.GetCornersByIdx(marking1.GetCornerReferenceIds(), cornerReferences1);
+    ASSERT_EQ(cornerReferences1.size(), 5);  // shall find 3 corners, consecutive corners
+    ASSERT_EQ(cornerReferences1[0]->GetCornerId(), 1);
+    ASSERT_EQ(cornerReferences1[0]->GetOriginalCornerId(), 1);
+    ASSERT_EQ(cornerReferences1[1]->GetCornerId(), 2);
+    ASSERT_EQ(cornerReferences1[1]->GetOriginalCornerId(), 2);
+    ASSERT_EQ(cornerReferences1[2]->GetCornerId(), 3);
+    ASSERT_EQ(cornerReferences1[2]->GetOriginalCornerId(), 3);
+    ASSERT_EQ(cornerReferences1[3]->GetCornerId(), 0);
+    ASSERT_EQ(cornerReferences1[3]->GetOriginalCornerId(), 0);
+    ASSERT_EQ(cornerReferences1[4]->GetCornerId(), 1);
+    ASSERT_EQ(cornerReferences1[4]->GetOriginalCornerId(), 1);
+
+    // third object, outline with a corner reference that is not unique. so this outline should not be added to the road object
+    // no marking shall be added to the road object since no outline is added to the road object and side is not defined for not outline object
+    RMObject* obj2 = road->GetRoadObject(2);
+    ASSERT_EQ(obj2->GetOutlines().size(), 0);
+    ASSERT_EQ(obj2->GetMarkings().size(), 0);
+
+    // fourth object
+    // no marking shall be added to the road object since no since unknown cornerReferenceId is used
+    RMObject* obj3 = road->GetRoadObject(3);
+    ASSERT_EQ(obj3->GetOutlines().size(), 1);
+    ASSERT_EQ(obj3->GetMarkings().size(), 0);
+
+    //  two outline with same corner id
+    RMObject* obj4 = road->GetRoadObject(4);
+    ASSERT_EQ(obj4->GetOutlines().size(), 2);
+    ASSERT_EQ(obj4->GetMarkings().size(), 1);
+
+    Outline& outline00 = obj4->GetOutline(0);
+    ASSERT_EQ(outline00.corner_[0]->GetCornerId(), 0);
+    ASSERT_EQ(outline00.corner_[0]->GetOriginalCornerId(), 0);
+    ASSERT_EQ(outline00.corner_[1]->GetCornerId(), 1);
+    ASSERT_EQ(outline00.corner_[1]->GetOriginalCornerId(), 1);
+    ASSERT_EQ(outline00.corner_[2]->GetCornerId(), 2);
+    ASSERT_EQ(outline00.corner_[2]->GetOriginalCornerId(), 2);
+    ASSERT_EQ(outline00.corner_[3]->GetCornerId(), 3);
+    ASSERT_EQ(outline00.corner_[3]->GetOriginalCornerId(), 3);
+
+    Outline& outline01 = obj4->GetOutline(1);
+    ASSERT_EQ(outline01.corner_[0]->GetCornerId(), 0);
+    ASSERT_EQ(outline01.corner_[0]->GetOriginalCornerId(), 0);
+    ASSERT_EQ(outline01.corner_[1]->GetCornerId(), 1);
+    ASSERT_EQ(outline01.corner_[1]->GetOriginalCornerId(), 1);
+    ASSERT_EQ(outline01.corner_[2]->GetCornerId(), 2);
+    ASSERT_EQ(outline01.corner_[2]->GetOriginalCornerId(), 2);
+    ASSERT_EQ(outline01.corner_[3]->GetCornerId(), 3);
+    ASSERT_EQ(outline01.corner_[3]->GetOriginalCornerId(), 3);
+
+    Marking& marking01 = obj4->GetMarkings()[0];
+    ASSERT_EQ(marking01.GetCornerReferenceIds().size(), 2);
+    ASSERT_EQ(marking01.GetCornerReferenceIds()[0], 3);
+    ASSERT_EQ(marking01.GetCornerReferenceIds()[1], 0);
+
+    std::vector<OutlineCorner*> cornerReferences00;
+    outline00.GetCornersByIdx(marking01.GetCornerReferenceIds(), cornerReferences00);
+    ASSERT_EQ(cornerReferences00.size(), 2);
+    ASSERT_EQ(cornerReferences00[0]->GetCornerId(), 3);
+    ASSERT_EQ(cornerReferences00[0]->GetOriginalCornerId(), 3);
+    ASSERT_EQ(cornerReferences00[1]->GetCornerId(), 0);
+    ASSERT_EQ(cornerReferences00[1]->GetOriginalCornerId(), 0);
+
+    std::vector<OutlineCorner*> cornerReferences01;
+    outline01.GetCornersByIdx(marking01.GetCornerReferenceIds(), cornerReferences01);
+    ASSERT_EQ(cornerReferences01.size(), 2);
+    ASSERT_EQ(cornerReferences01[0]->GetCornerId(), 3);
+    ASSERT_EQ(cornerReferences01[0]->GetOriginalCornerId(), 3);
+    ASSERT_EQ(cornerReferences01[1]->GetCornerId(), 0);
+    ASSERT_EQ(cornerReferences01[1]->GetOriginalCornerId(), 0);
+
+    //  two outline with different corner id
+    RMObject* obj5 = road->GetRoadObject(5);
+    ASSERT_EQ(obj5->GetOutlines().size(), 2);
+    ASSERT_EQ(obj5->GetMarkings().size(), 1);
+
+    Outline& outline10 = obj5->GetOutline(0);
+    ASSERT_EQ(outline10.corner_[0]->GetCornerId(), 0);
+    ASSERT_EQ(outline10.corner_[0]->GetOriginalCornerId(), 0);
+    ASSERT_EQ(outline10.corner_[1]->GetCornerId(), 1);
+    ASSERT_EQ(outline10.corner_[1]->GetOriginalCornerId(), 1);
+    ASSERT_EQ(outline10.corner_[2]->GetCornerId(), 2);
+    ASSERT_EQ(outline10.corner_[2]->GetOriginalCornerId(), 2);
+    ASSERT_EQ(outline10.corner_[3]->GetCornerId(), 3);
+    ASSERT_EQ(outline10.corner_[3]->GetOriginalCornerId(), 3);
+
+    Outline& outline11 = obj5->GetOutline(1);
+    ASSERT_EQ(outline11.corner_[0]->GetCornerId(), 0);
+    ASSERT_EQ(outline11.corner_[0]->GetOriginalCornerId(), 4);
+    ASSERT_EQ(outline11.corner_[1]->GetCornerId(), 1);
+    ASSERT_EQ(outline11.corner_[1]->GetOriginalCornerId(), 5);
+    ASSERT_EQ(outline11.corner_[2]->GetCornerId(), 2);
+    ASSERT_EQ(outline11.corner_[2]->GetOriginalCornerId(), 6);
+    ASSERT_EQ(outline11.corner_[3]->GetCornerId(), 3);
+    ASSERT_EQ(outline11.corner_[3]->GetOriginalCornerId(), 7);
+
+    Marking& marking11 = obj5->GetMarkings()[0];
+    ASSERT_EQ(marking11.GetCornerReferenceIdsSize(), 2);
+    ASSERT_EQ(marking11.GetCornerReferenceIds()[0], 1);
+    ASSERT_EQ(marking11.GetCornerReferenceIds()[1], 2);
+
+    std::vector<OutlineCorner*> cornerReferences10;
+    outline10.GetCornersByIdx(marking11.GetCornerReferenceIds(), cornerReferences10);
+    ASSERT_EQ(cornerReferences10.size(), 2);
+    ASSERT_EQ(cornerReferences10[0]->GetCornerId(), 1);
+    ASSERT_EQ(cornerReferences10[0]->GetOriginalCornerId(), 1);
+    ASSERT_EQ(cornerReferences10[1]->GetCornerId(), 2);
+    ASSERT_EQ(cornerReferences10[1]->GetOriginalCornerId(), 2);
+
+    std::vector<OutlineCorner*> cornerReferences11;
+    outline11.GetCornersByIdx(marking11.GetCornerReferenceIds(), cornerReferences11);
+    ASSERT_EQ(cornerReferences11.size(), 0);
+
+    // cornerReference ids ordered in counterclosewise instead of 2 to 1. it is processed as 1 to 2
+    RMObject* obj6 = road->GetRoadObject(6);
+    ASSERT_EQ(obj6->GetOutlines().size(), 1);
+    Outline& outline111 = obj6->GetOutline(0);
+    ASSERT_EQ(obj6->GetMarkings().size(), 1);
+    Marking& marking111 = obj6->GetMarkings()[0];
+    ASSERT_EQ(marking111.GetCornerReferenceIdsSize(), 2);
+    ASSERT_EQ(marking111.GetCornerReferenceIds()[0], 2);
+    ASSERT_EQ(marking111.GetCornerReferenceIds()[1], 1);
+
+    std::vector<OutlineCorner*> cornerReferences000;
+    outline111.GetCornersByIdx(marking111.GetCornerReferenceIds(), cornerReferences000);
+    ASSERT_EQ(cornerReferences000.size(), 2);
+    ASSERT_EQ(cornerReferences000[0]->GetCornerId(), 1);
+    ASSERT_EQ(cornerReferences000[0]->GetOriginalCornerId(), 1);
+    ASSERT_EQ(cornerReferences000[1]->GetCornerId(), 2);
+    ASSERT_EQ(cornerReferences000[1]->GetOriginalCornerId(), 2);
+
+}
 TEST(TrajectoryTest, EnsureContinuation)
 {
     double          dt = 0.01;
