@@ -7,57 +7,57 @@ macro(set_osi_libs)
     if(APPLE)
         if(DYN_PROTOBUF)
             set(OSI_LIBRARIES
-                ${EXTERNALS_OSI_LIBRARY_PATH}/libopen_simulation_interface.dylib
-                ${EXTERNALS_OSI_LIBRARY_PATH}/libprotobuf.dylib)
+                ${EXTERNALS_OSI_LIBRARY_PATH}/release/libopen_simulation_interface.dylib
+                ${EXTERNALS_OSI_LIBRARY_PATH}/release/libprotobuf.dylib)
         else()
             set(OSI_LIBRARIES
-                ${EXTERNALS_OSI_LIBRARY_PATH}/libopen_simulation_interface_pic.a
-                ${EXTERNALS_OSI_LIBRARY_PATH}/libprotobuf.a)
+                ${EXTERNALS_OSI_LIBRARY_PATH}/release/libopen_simulation_interface_pic.a
+                ${EXTERNALS_OSI_LIBRARY_PATH}/release/libprotobuf.a)
         endif()
 
     elseif(LINUX)
         if(DYN_PROTOBUF)
             set(OSI_LIBRARIES
                 optimized
-                ${EXTERNALS_OSI_LIBRARY_PATH}/libopen_simulation_interface.so
+                ${EXTERNALS_OSI_LIBRARY_PATH}/release/libopen_simulation_interface.so
                 optimized
-                ${EXTERNALS_OSI_LIBRARY_PATH}/libprotobuf.so
+                ${EXTERNALS_OSI_LIBRARY_PATH}/release/libprotobuf.so
                 debug
-                ${EXTERNALS_OSI_LIBRARY_PATH}/libopen_simulation_interfaced.so
+                ${EXTERNALS_OSI_LIBRARY_PATH}/debug/libopen_simulation_interface.so
                 debug
-                ${EXTERNALS_OSI_LIBRARY_PATH}/libprotobufd.so)
+                ${EXTERNALS_OSI_LIBRARY_PATH}/debug/libprotobufd.so)
         else()
             set(OSI_LIBRARIES
                 optimized
-                ${EXTERNALS_OSI_LIBRARY_PATH}/libopen_simulation_interface_pic.a
+                ${EXTERNALS_OSI_LIBRARY_PATH}/release/libopen_simulation_interface_pic.a
                 optimized
-                ${EXTERNALS_OSI_LIBRARY_PATH}/libprotobuf.a
+                ${EXTERNALS_OSI_LIBRARY_PATH}/release/libprotobuf.a
                 debug
-                ${EXTERNALS_OSI_LIBRARY_PATH}/libopen_simulation_interface_picd.a
+                ${EXTERNALS_OSI_LIBRARY_PATH}/debug/libopen_simulation_interface_pic.a
                 debug
-                ${EXTERNALS_OSI_LIBRARY_PATH}/libprotobufd.a)
+                ${EXTERNALS_OSI_LIBRARY_PATH}/debug/libprotobufd.a)
         endif()
     elseif(MSVC)
         if(DYN_PROTOBUF)
             set(OSI_LIBRARIES
                 optimized
-                ${EXTERNALS_OSI_LIBRARY_PATH}/open_simulation_interface_pic.lib
+                ${EXTERNALS_OSI_LIBRARY_PATH}/release/open_simulation_interface_pic.lib
                 optimized
-                ${EXTERNALS_OSI_LIBRARY_PATH}/libprotobuf.lib
+                ${EXTERNALS_OSI_LIBRARY_PATH}/release/libprotobuf.lib
                 debug
-                ${EXTERNALS_OSI_LIBRARY_PATH}/open_simulation_interface_picd.lib
+                ${EXTERNALS_OSI_LIBRARY_PATH}/debug/open_simulation_interface_pic.lib
                 debug
-                ${EXTERNALS_OSI_LIBRARY_PATH}/libprotobufd.lib)
+                ${EXTERNALS_OSI_LIBRARY_PATH}/debug/libprotobufd.lib)
         else()
             set(OSI_LIBRARIES
                 optimized
-                ${EXTERNALS_OSI_LIBRARY_PATH}/open_simulation_interface_pic.lib
+                ${EXTERNALS_OSI_LIBRARY_PATH}/release/open_simulation_interface_pic.lib
                 optimized
-                ${EXTERNALS_OSI_LIBRARY_PATH}/libprotobuf.lib
+                ${EXTERNALS_OSI_LIBRARY_PATH}/release/libprotobuf.lib
                 debug
-                ${EXTERNALS_OSI_LIBRARY_PATH}/open_simulation_interface_picd.lib
+                ${EXTERNALS_OSI_LIBRARY_PATH}/debug/open_simulation_interface_pic.lib
                 debug
-                ${EXTERNALS_OSI_LIBRARY_PATH}/libprotobufd.lib)
+                ${EXTERNALS_OSI_LIBRARY_PATH}/debug/libprotobufd.lib)
         endif()
     endif()
 endmacro()

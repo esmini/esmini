@@ -40,6 +40,14 @@ target_link_libraries(
             CommonMini
             ${TIME_LIB})
 
+# embed $origin (location of exe file) and linked lib dirs as execution dyn lib search paths
+set_target_properties(
+    ${TARGET}
+    PROPERTIES BUILD_WITH_INSTALL_RPATH
+               true
+               INSTALL_RPATH
+               $ORIGIN:${INSTALL_PATH})
+
 # ############################### Install ############################################################################
 
 install(

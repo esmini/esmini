@@ -48,6 +48,14 @@ foreach(
         PRIVATE project_options
                 esminiLib)
 
+    # embed $origin (location of exe file) and link dirs as execution dyn lib search paths
+    set_target_properties(
+        ${module_name}
+        PROPERTIES BUILD_WITH_INSTALL_RPATH
+                   true
+                   INSTALL_RPATH
+                   $ORIGIN:${INSTALL_PATH})
+
     set_folder(
         ${module_name}
         ${CodeExamplesFolder}/${TARGET})
