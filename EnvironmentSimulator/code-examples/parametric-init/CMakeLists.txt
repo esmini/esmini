@@ -49,6 +49,14 @@ foreach(
                 RoadManager
                 ${TIME_LIB})
 
+    # embed $origin (location of exe file) and linked lib dirs as execution dyn lib search paths
+    set_target_properties(
+        ${target}
+        PROPERTIES BUILD_WITH_INSTALL_RPATH
+                   true
+                   INSTALL_RPATH
+                   $ORIGIN:${INSTALL_PATH})
+
     set_folder(
         ${target}
         ${CodeExamplesFolder})

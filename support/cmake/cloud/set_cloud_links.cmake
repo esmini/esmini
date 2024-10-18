@@ -19,9 +19,9 @@ macro(set_cloud_links)
                 https://www.dropbox.com/s/m62v19gp0m73dte/osi_mac.7z?dl=1)
         else()
             set(OSI_PACKAGE_URL
-                https://esmini.asuscomm.com/AICLOUD766065121/libs/osi_3_5_0_mac_clang_1200.7z;
-                https://drive.usercontent.google.com/download?id=1Owvoy9N_PGXe-s9GUgDxg-4h2AhlQ_Pi&export=download&authuser=0&confirm=t;
-                https://www.dropbox.com/s/3pp3ijt9evvawep/osi_3_5_0_mac_clang_1200.7z?dl=1)
+                https://esmini.asuscomm.com/AICLOUD766065121/libs/osi_3_5_0_mac_clang_1500_v2.7z;
+                https://drive.usercontent.google.com/download?id=1iyOT2Y-bqWzxbE5Aeov0WAx2-ic8uFd3&export=download&authuser=0&confirm=t;
+                https://www.dropbox.com/scl/fi/5eu2fs2sqosfy3x528x5v/osi_3_5_0_mac_clang_1500_v2.7z?dl=1)
         endif()
         set(SUMO_PACKAGE_URL
             https://esmini.asuscomm.com/AICLOUD766065121/libs/sumo_mac.7z;
@@ -43,9 +43,9 @@ macro(set_cloud_links)
                 https://dl.dropboxusercontent.com/s/kwtdg0c1c8pawa1/osi_linux.7z?dl=1)
         else()
             set(OSI_PACKAGE_URL
-                https://esmini.asuscomm.com/AICLOUD766065121/libs/osi_3_5_0_linux_glibc_2_31_gcc_7_5_0.7z;
-                https://drive.usercontent.google.com/download?id=1Xq_zQ5xaszYuN6G_dgSFHchXdnDxN6hS&export=download&authuser=0&confirm=t;
-                https://www.dropbox.com/s/c7r04x85h92gw5z/osi_3_5_0_linux_glibc_2_31_gcc_7_5_0.7z?dl=1)
+                https://esmini.asuscomm.com/AICLOUD766065121/libs/osi_3_5_0_linux_glibc_2_31_gcc_7_5_0_v2.7z;
+                https://drive.usercontent.google.com/download?id=1TFCwpS6oxqeUx2DSTvMv6f9Ra6CDtYn0&export=download&authuser=0&confirm=t;
+                https://www.dropbox.com/scl/fi/h7luumzqokzp7g0ynqmsm/osi_3_5_0_linux_glibc_2_31_gcc_7_5_0_v2.7z?dl=1)
         endif()
         set(SUMO_PACKAGE_URL
             https://esmini.asuscomm.com/AICLOUD766065121/libs/sumo_linux.7z;
@@ -71,9 +71,9 @@ macro(set_cloud_links)
                 https://dl.dropboxusercontent.com/s/an58ckp2qfx5069/osi_v10.7z?dl=1)
         else()
             set(OSI_PACKAGE_URL
-                https://esmini.asuscomm.com/AICLOUD766065121/libs/osi_3_5_0_win_vs_sdk_142.7z;
-                https://drive.usercontent.google.com/download?id=1XssJjvqzpx8DUxca2yfge1sQaGmyCt95&export=download&authuser=0&confirm=t;
-                https://www.dropbox.com/scl/fi/l6lgpcr2b399ixwj9htg8/osi_3_5_0_win_vs_sdk_142.7z?rlkey=8x4aczrbs0iwndqfkxj1336fd&st=as1gp8yk&dl=1)
+                https://esmini.asuscomm.com/AICLOUD766065121/libs/osi_3_5_0_win_vs_sdk_142_v2.7z;
+                https://drive.usercontent.google.com/download?id=1F0kxK7feXVfZihesDYU0UjaxoHMQ4BI5&export=download&authuser=0&confirm=t;
+                https://www.dropbox.com/scl/fi/vcvz85nwqbta8zimkfku2/osi_3_5_0_win_vs_sdk_142_v2.7z?dl=1)
         endif()
         set(SUMO_PACKAGE_URL
             https://esmini.asuscomm.com/AICLOUD766065121/libs/sumo_v10.7z;
