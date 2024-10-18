@@ -223,6 +223,7 @@ function build {
         mkdir $INSTALL_OSI_LIB_DIR/include
 
         export PATH=$PATH:../../graphviz/release/bin:../../protobuf$folder_postfix/protobuf-install/bin
+        PROTOC_EXE="../../protobuf_$1/protobuf-install/bin/protoc"
 
         if [ $DYNAMIC_LINKING == "1" ]; then
             ADDITIONAL_CMAKE_PARAMETERS="-DCMAKE_CXX_FLAGS=-DPROTOBUF_USE_DLLS"
@@ -231,20 +232,19 @@ function build {
         fi
 
         if [[ "$OSTYPE" != "darwin"* ]]; then
-            cmake .. -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DCMAKE_INCLUDE_PATH=../protobuf$folder_postfix/protobuf-install/include -DFILTER_PROTO2CPP_PY_PATH=../../proto2cpp -DINSTALL_LIB_DIR=$INSTALL_OSI_LIB_DIR/lib -DINSTALL_INCLUDE_DIR=$INSTALL_OSI_LIB_DIR/include -DCMAKE_INSTALL_PREFIX=$INSTALL_OSI_LIB_DIR -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_BUILD_TYPE=Debug -DCMAKE_LIBRARY_PATH=../protobuf$folder_postfix/protobuf-install/lib -DCMAKE_CXX_STANDARD=11 $ADDITIONAL_CMAKE_PARAMETERS ..
+            cmake .. -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DCMAKE_INCLUDE_PATH=../protobuf$folder_postfix/protobuf-install/include -DFILTER_PROTO2CPP_PY_PATH=../../proto2cpp -DPROTOBUF_PROTOC_EXECUTABLE=$PROTOC_EXE -DINSTALL_LIB_DIR=$INSTALL_OSI_LIB_DIR/lib -DINSTALL_INCLUDE_DIR=$INSTALL_OSI_LIB_DIR/include -DCMAKE_INSTALL_PREFIX=$INSTALL_OSI_LIB_DIR -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_BUILD_TYPE=Debug -DCMAKE_LIBRARY_PATH=../protobuf$folder_postfix/protobuf-install/lib -DCMAKE_CXX_STANDARD=11 $ADDITIONAL_CMAKE_PARAMETERS ..
 
             # First bild OSI submodule separately since we need to rename the library before linking with the application
             cmake --build . $PARALLEL_ARG --config Debug --target install
-
             if [[ "$OSTYPE" == "linux-gnu"* ]]; then
                 if [ $DYNAMIC_LINKING == "1" ]; then
-                    mv $INSTALL_OSI_LIB_DIR/lib/osi3/libopen_simulation_interface.so $INSTALL_OSI_LIB_DIR/lib/osi3/libopen_simulation_interfaced.so
                     mv $INSTALL_OSI_LIB_DIR/lib/osi3/libopen_simulation_interface.so.$OSI_VERSION $INSTALL_OSI_LIB_DIR/lib/osi3/libopen_simulation_interfaced.so.$OSI_VERSION
+                    # fix soft link
+                    ln -sr $INSTALL_OSI_LIB_DIR/lib/osi3/libopen_simulation_interfaced.so.$OSI_VERSION $INSTALL_OSI_LIB_DIR/lib/osi3/libopen_simulation_interfaced.so
                 else
                     mv $INSTALL_OSI_LIB_DIR/lib/osi3/libopen_simulation_interface_pic.a $INSTALL_OSI_LIB_DIR/lib/osi3/libopen_simulation_interface_picd.a
                     mv $INSTALL_OSI_LIB_DIR/lib/osi3/libopen_simulation_interface_static.a $INSTALL_OSI_LIB_DIR/lib/osi3/libopen_simulation_interface_staticd.a
                 fi
-                touch $INSTALL_OSI_LIB_DIR/lib/osi3/kalle.txt
             elif [ "$OSTYPE" == "msys" ]; then
                 mv $INSTALL_OSI_LIB_DIR/lib/osi3/open_simulation_interface.dll $INSTALL_OSI_LIB_DIR/lib/osi3/open_simulation_interfaced.dll
                 mv $INSTALL_OSI_LIB_DIR/lib/osi3/open_simulation_interface_pic.lib $INSTALL_OSI_LIB_DIR/lib/osi3/open_simulation_interface_picd.lib
@@ -256,7 +256,7 @@ function build {
             ADDITIONAL_CMAKE_PARAMETERS+=" -DCMAKE_OSX_ARCHITECTURES=$macos_arch"
         fi
 
-        cmake .. -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DCMAKE_INCLUDE_PATH=../protobuf$folder_postfix/protobuf-install/include -DFILTER_PROTO2CPP_PY_PATH=../../proto2cpp -DINSTALL_LIB_DIR=$INSTALL_OSI_LIB_DIR/lib -DINSTALL_INCLUDE_DIR=$INSTALL_OSI_LIB_DIR/include -DCMAKE_INSTALL_PREFIX=$INSTALL_OSI_LIB_DIR -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_LIBRARY_PATH=../protobuf$folder_postfix/protobuf-install/lib -DCMAKE_CXX_STANDARD=11 $ADDITIONAL_CMAKE_PARAMETERS ..
+        cmake .. -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DCMAKE_INCLUDE_PATH=../protobuf$folder_postfix/protobuf-install/include -DFILTER_PROTO2CPP_PY_PATH=../../proto2cpp -DPROTOBUF_PROTOC_EXECUTABLE=$PROTOC_EXE -DINSTALL_LIB_DIR=$INSTALL_OSI_LIB_DIR/lib -DINSTALL_INCLUDE_DIR=$INSTALL_OSI_LIB_DIR/include -DCMAKE_INSTALL_PREFIX=$INSTALL_OSI_LIB_DIR -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_LIBRARY_PATH=../protobuf$folder_postfix/protobuf-install/lib -DCMAKE_CXX_STANDARD=11 $ADDITIONAL_CMAKE_PARAMETERS ..
 
         cmake --build . $PARALLEL_ARG --config Release --target install --clean-first
 
