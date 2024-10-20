@@ -218,7 +218,11 @@ function build {
         INSTALL_ROOT_DIR=../install
         INSTALL_INCLUDE_DIR=$INSTALL_ROOT_DIR/include
         export PATH=$PATH:../../graphviz/release/bin:../../protobuf$folder_postfix/protobuf-install/bin
-        PROTOC_EXE="../../protobuf_$1/protobuf-install/bin/protoc"
+        if [ "$OSTYPE" == "msys" ]; then
+            PROTOC_EXE="../../protobuf_$1/protobuf-install/bin/protoc.exe"
+        else
+            PROTOC_EXE="../../protobuf_$1/protobuf-install/bin/protoc"
+        fi
 
         if [ $DYNAMIC_LINKING == "1" ]; then
             ADDITIONAL_CMAKE_PARAMETERS="-DCMAKE_CXX_FLAGS=-DPROTOBUF_USE_DLLS"
@@ -230,22 +234,19 @@ function build {
         mkdir $INSTALL_ROOT_DIR/debug
         mkdir $INSTALL_ROOT_DIR/release
 
-        INSTALL_OSI_LIB_DIR=$INSTALL_ROOT_DIR/debug
+        COMMON_ARGS=".. -D CMAKE_INCLUDE_PATH=../protobuf$folder_postfix/protobuf-install/include -D PROTOBUF_SRC_ROOT_FOLDER=../../protobuf_$1/ -D Protobuf_PROTOC_EXECUTABLE=$PROTOC_EXE -D CMAKE_VERBOSE_MAKEFILE=ON -D CMAKE_LIBRARY_PATH=../protobuf$folder_postfix/protobuf-install/lib -D CMAKE_CXX_STANDARD=11"
 
         if [[ "$OSTYPE" != "darwin"* ]]; then
             # Build debug variant first
-            cmake .. -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DCMAKE_INCLUDE_PATH=../protobuf$folder_postfix/protobuf-install/include -DPROTOBUF_PROTOC_EXECUTABLE=$PROTOC_EXE -DCMAKE_INSTALL_PREFIX=$INSTALL_OSI_LIB_DIR -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_BUILD_TYPE=Debug -DCMAKE_LIBRARY_PATH=../protobuf$folder_postfix/protobuf-install/lib -DCMAKE_CXX_STANDARD=11 $ADDITIONAL_CMAKE_PARAMETERS ..
+            cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} $COMMON_ARGS -D CMAKE_BUILD_TYPE=Debug -D CMAKE_INSTALL_PREFIX=$INSTALL_ROOT_DIR/debug $ADDITIONAL_CMAKE_PARAMETERS ..
             cmake --build . $PARALLEL_ARG --config Debug --target install
             rm CMakeCache.txt
         else
             ADDITIONAL_CMAKE_PARAMETERS+=" -DCMAKE_OSX_ARCHITECTURES=$macos_arch"
         fi
 
-        INSTALL_OSI_LIB_DIR=$INSTALL_ROOT_DIR/release
-
-        cmake .. -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DCMAKE_INCLUDE_PATH=../protobuf$folder_postfix/protobuf-install/include -DPROTOBUF_PROTOC_EXECUTABLE=$PROTOC_EXE -DCMAKE_INSTALL_PREFIX=$INSTALL_OSI_LIB_DIR -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_LIBRARY_PATH=../protobuf$folder_postfix/protobuf-install/lib -DCMAKE_CXX_STANDARD=11 $ADDITIONAL_CMAKE_PARAMETERS ..
+        cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} $COMMON_ARGS -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=$INSTALL_ROOT_DIR/release $ADDITIONAL_CMAKE_PARAMETERS ..
         cmake --build . $PARALLEL_ARG --config Release --target install --clean-first
-
     else
         echo open-simulation-interface folder already exists, continue with next step...
     fi
@@ -314,7 +315,6 @@ function build {
                 fi
             fi
         fi
-
         # rm -f $target_lib_dir/libprotobuf-lite*
     done
 }
