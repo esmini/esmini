@@ -33,7 +33,7 @@ macro(set_osi_libs)
                 optimized
                 ${EXTERNALS_OSI_LIBRARY_PATH}/release/libprotobuf.a
                 debug
-                ${EXTERNALS_OSI_LIBRARY_PATH}/debug/libopen_simulation_interface_picd.a
+                ${EXTERNALS_OSI_LIBRARY_PATH}/debug/libopen_simulation_interface_pic.a
                 debug
                 ${EXTERNALS_OSI_LIBRARY_PATH}/debug/libprotobufd.a)
         endif()
@@ -45,7 +45,7 @@ macro(set_osi_libs)
                 optimized
                 ${EXTERNALS_OSI_LIBRARY_PATH}/release/libprotobuf.lib
                 debug
-                ${EXTERNALS_OSI_LIBRARY_PATH}/debug/open_simulation_interface_picd.lib
+                ${EXTERNALS_OSI_LIBRARY_PATH}/debug/open_simulation_interface_pic.lib
                 debug
                 ${EXTERNALS_OSI_LIBRARY_PATH}/debug/libprotobufd.lib)
         else()
@@ -55,7 +55,7 @@ macro(set_osi_libs)
                 optimized
                 ${EXTERNALS_OSI_LIBRARY_PATH}/release/libprotobuf.lib
                 debug
-                ${EXTERNALS_OSI_LIBRARY_PATH}/debug/open_simulation_interface_picd.lib
+                ${EXTERNALS_OSI_LIBRARY_PATH}/debug/open_simulation_interface_pic.lib
                 debug
                 ${EXTERNALS_OSI_LIBRARY_PATH}/debug/libprotobufd.lib)
         endif()
