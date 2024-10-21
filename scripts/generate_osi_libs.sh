@@ -70,7 +70,7 @@ elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
 elif [[ "$OSTYPE" == "darwin"* ]]; then
     target_dir="mac"
     zfilename="osi_mac.7z"
-    z_exe=7z
+    z_exe=7zz
     macos_arch="arm64;x86_64"
 else
     echo Unknown OSTYPE: $OSTYPE
@@ -268,6 +268,10 @@ function build {
     variants=("debug" "release")
     for variant in "${variants[@]}"; do
 
+	if [[ "$OSTYPE" == "darwin"* ]] && [[ $variant == "debug" ]]; then
+	    continue
+	fi
+
         target_lib_dir=$target_lib_dir_root/$variant
         mkdir $target_lib_dir
 
@@ -284,11 +288,11 @@ function build {
                     cp protobuf$folder_postfix/protobuf-install/bin/libprotobuf.dll $target_lib_dir
                 fi
             elif [[ "$OSTYPE" == "darwin"* ]]; then
-                cp -P open-simulation-interface$folder_postfix/install/$variant/lib/osi3/libopen_simulation_interface.dylib $target_lib_dir
+                cp -P open-simulation-interface$folder_postfix/install/$variant/lib/osi3/libopen_simulation_interface*.dylib $target_lib_dir
                 if [ $variant == "debug" ]; then
-                    cp -P protobuf$folder_postfix/protobuf-install/lib/libprotobufd.dylib $target_lib_dir
+                    cp -P protobuf$folder_postfix/protobuf-install/lib/libprotobufd*.dylib $target_lib_dir
                 else
-                    cp -P protobuf$folder_postfix/protobuf-install/lib/libprotobuf.dylib $target_lib_dir
+                    cp -P protobuf$folder_postfix/protobuf-install/lib/libprotobuf*.dylib $target_lib_dir
                 fi
             else
                 cp -P open-simulation-interface$folder_postfix/install/$variant/lib/osi3/libopen_simulation_interface.so* $target_lib_dir
@@ -315,14 +319,14 @@ function build {
                 fi
             fi
         fi
-        # rm -f $target_lib_dir/libprotobuf-lite*
+        rm -f $target_lib_dir/libprotobuf-lite*
     done
 }
 
 build static
 build dynamic
 
-"$z_exe" a -r $zfilename -m0=LZMA -bb1 -spf $target_dir/*
+"$z_exe" a -r $zfilename -m0=LZMA -bb1 -spf -snl $target_dir/*
 # unpack with: 7z x <filename>
 
 echo ------------------------ Done ------------------------------------
