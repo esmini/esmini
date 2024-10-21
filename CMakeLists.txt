@@ -31,6 +31,11 @@ set(ENABLE_WARNINGS_AS_ERRORS
     CACHE BOOL
           "Make compile warnings be treated as errors")
 
+set(FORCE_DOWNLOAD_BINARIES
+    OFF
+    CACHE BOOL
+          "Enable FORCE_DOWNLOAD_BINARIES")
+
 set(ENABLE_CCACHE
     OFF
     CACHE BOOL
@@ -156,30 +161,35 @@ download(
     osg
     ${EXTERNALS_OSG_PATH}
     ${EXTERNALS_OSG_OS_SPECIFIC_PATH}
+    "*"
     "${OSG_PACKAGE_URL}")
 
 download(
     osi
     ${EXTERNALS_OSI_PATH}
     ${EXTERNALS_OSI_OS_SPECIFIC_PATH}
+    "*"
     "${OSI_PACKAGE_URL}")
 
 download(
     sumo
     ${EXTERNALS_SUMO_PATH}
     ${EXTERNALS_SUMO_OS_SPECIFIC_PATH}
+    "*"
     "${SUMO_PACKAGE_URL}")
 
 download(
     implot
     ${EXTERNALS_IMPLOT_PATH}
     ${EXTERNALS_IMPLOT_OS_SPECIFIC_PATH}
+    "*"
     "${IMPLOT_PACKAGE_URL}")
 
 download(
     models
     ${RESOURCES_PATH}
     ${MODELS_PATH}
+    "models"
     "${MODELS_PACKAGE_URL}")
 
 if(NOT
@@ -189,6 +199,7 @@ if(NOT
         googletest
         ${EXTERNALS_GOOGLETEST_PATH}
         ${EXTERNALS_GOOGLETEST_OS_SPECIFIC_PATH}
+        "*"
         "${GTEST_PACKAGE_URL}")
 endif()
 

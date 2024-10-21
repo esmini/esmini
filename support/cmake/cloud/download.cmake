@@ -4,7 +4,8 @@ function(
     download_and_extract
     url
     target_folder
-    target_filename)
+    target_filename
+    clean_sub_folder)
 
     set(download_result
         1
@@ -41,7 +42,16 @@ function(
 
     execute_process(COMMAND sleep 1) # allow for file to be completely flushed
 
-    message(STATUS "Download OK. Extracting... ")
+    if(FORCE_DOWNLOAD_BINARIES)
+        message(STATUS "Download OK. Removing any old ${target_folder}/${clean_sub_folder}")
+        file(
+            REMOVE_RECURSE
+            ${target_folder}/${clean_sub_folder})
+        message(STATUS "Extracting new package... ")
+    else()
+        message(STATUS "Download OK. Extracting... ")
+    endif()
+
     execute_process(
         COMMAND ${CMAKE_COMMAND} -E tar xfz ${target_filename}
         WORKING_DIRECTORY ${target_folder}
@@ -68,6 +78,7 @@ function(
     entity_name
     path
     os_specific_path
+    clean_sub_folder
     urls)
 
     if(NOT
@@ -90,7 +101,8 @@ function(
         download_and_extract(
             ${url}
             ${path}
-            ${package_name})
+            ${package_name}
+            ${clean_sub_folder})
 
         if(${download_result}
            EQUAL
