@@ -36,7 +36,8 @@ SCHEMA_MAPPINGS = {
 class XmlValidation:
     def __init__(self):
         self.xml_file_names = []
-        self.xsd_files_path = r"resources/schema/"
+        # default location of schema files is under the resources folder, next to the script folder
+        self.xsd_files_path = os.path.join(os.path.dirname(__file__), "../resources/schema")
         self.errors = []
         self.count_of_files_validated = 0
         self.count_of_files_failed = 0
@@ -49,9 +50,6 @@ class XmlValidation:
 
     def set_xml_files(self, file_name):
         self.xml_file_names.append(file_name)
-
-    def get_xsd_files_path(self):
-        return self.xsd_files_path
 
     def get_xml_type(self, file_path):
         return "xodr" if file_path.endswith(".xodr") else "xosc"
