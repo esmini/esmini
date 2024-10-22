@@ -228,7 +228,7 @@ jobs:
       # 3. This configuration is faster so validation won't add to total CI run time
       - name: Run schema validation
         if: runner.os == 'Linux' && matrix.configuration == 'Release'
-        run: python3 scripts/run_schema_comply.py "$(find ./resources ./EnvironmentSimulator -name "*.xodr" -or -name "*.xosc")"
+        run: python3 scripts/run_schema_comply.py resources EnvironmentSimulator
 
       - name: Run Tests - Unix
         if: runner.os != 'Windows'

@@ -92,7 +92,8 @@ After successful build, the binaries will be copied into `esmini/bin` folder. Tr
 That's all. Details and variants, see <<Build guide>>.
 
 == Tools overview
-Applications:
+
+=== Applications
 
 [horizontal]
 *esmini*:: Play OpenSCENARIO file. Many options, e.g. view on screen, save images to file or just save log data for post processing. +
@@ -112,6 +113,9 @@ Example: +
 ``./bin/odrviewer --window 60 60 800 400 --odr ./resources/xodr/fabriksgatan.xodr``
 +
 image::odrviewer.png[]
+
+=== Scripts
+esmini comes with a collection of scripts for various purposes, like preprocessing of scenario files and plotting or conversion of simulation output files. The scripts are located in the `scripts` folder. A few examples:
 
 *odrplot*:: Simple 2D plot of OpenDRIVE road lanes with indicated road IDs, in a two step process. +
 Prerequisites: Python + https://matplotlib.org/[matplotlib] +
@@ -149,7 +153,26 @@ Example: +
 ``./scripts/osi2csv.py sim.osi`` (convert to .csv) +
 ``./scripts/plot_csv.py sim.csv --param ax`` will plot the x component of acceleration vector.
 
-Shared libraries:
+*dat2xosc.py*:: Convert any scenario to a fixed trajectory based scenario. See more info in https://github.com/esmini/esmini/blob/dev/scripts/dat2xosc.py[script].
+
+*move_to_origin.py*:: Translate a scenario to origin. Useful for scenarios with large coordinates causing precision issues. See more info in https://github.com/esmini/esmini/blob/dev/scripts/move_to_origin.py[script].
+
+*xodr_lines2curves.py*:: Smoothen polyline roads by converting them to parametric curves. See more info in  https://github.com/esmini/esmini/blob/dev/scripts/xodr_lines2curves.py[script].
+
+*run_schema_comply.py*:: Validate xosc and xodr scenario files for compliance with the XML schema of the corresponding standard. See more info in https://github.com/esmini/esmini/blob/dev/scripts/run_schema_comply.py[script] and section <<Run XML schema validation tests>>.
+
+*compile_osg_apps.sh*:: Compile OSG applications for viewing and converting OpenSceneGraph 3D models. See more info section <<Get osgconv>> / <<Build yourself>>.
+
+*run_repeat_compare.sh*:: Run a scenario multiple times and compare the results, expected to be identical. See more info in https://github.com/esmini/esmini/blob/dev/scripts/run_repeat_compare.sh[script].
+
+[[osiviewer]]
+*osiviewer.py*:: Visualize OSI trace files. Only supporting a small, limited subset of OSI content, e.g. lanes, stationary and moving objects. +
+Example: +
+``./scripts/osiviewer.py ground_truth.osi`` +
++
+image::osiviewer.png[]
+
+=== Shared libraries
 [horizontal]
 *esminiLib*:: High level API for running, controlling and monitoring scenarios +
 +
@@ -2405,6 +2428,20 @@ or
 
 - get the package from https://dl.dropboxusercontent.com/s/5gk8bvgzqiaaoco/models.7z?dl=1[here] and unpack files into `./resources/models`
 
+==== Update 3rd party prebuilt libraries
+
+There are a few external dependencies that takes long time to build from scratch. Instead they are provided in compressed packages including needed headerfiles and prebuilt libraries. The packages are available for Win, Mac and Linux. For Windows and Linux they include Debug mode binaries, in addition to the Release variant.
+
+The cmake script will check for the availability of these libraries, by simply checking for existence of corresponding folders, e.g. osg, osi, sumo, under esmini/externals. If missing, compressed packages will be downloaded and extracted.
+
+Not often, but at some points the prebuilt libraries needs to be updated. In most cases it affects the esmini build configuration and/or code. Hence, sometimes an update of esmini comes with a need to update the external libraries as well. Lack of automatic handling, such update needs to be done manually. One way is to delete the specific folder(s) and run ordinary cmake command again. But the simplest way is to enforce redownload of all packages:
+
+`cmake .. -D  FORCE_DOWNLOAD_BINARIES=TRUE`
+
+The FORCE_DOWNLOAD_BINARIES flag will be checked by the cmake script for enforced download of all packages. Upon successful download, the libraries will be replaced, one by one.
+
+Library updates are not detected by the esmini build dependencies, why a clean rebuild of esmini should be performed manually afterwards.
+
 ==== Entity does not appear
 In order to appear in the scenario, without need for AddEntity action, an entity must be represented in the Init section of the Storyboard. Common is to add actions to establish inital position and speed.
 
@@ -2429,27 +2466,6 @@ Example:
       </SpeedAction>
    </LongitudinalAction>
 </PrivateAction>
-----
-
-==== Failed to download 3rd party assets
-First time the cmake-script is run it will try to download pre-built libraries and model assets. If this step fails for some reason, e.g. "Couldn't resolve host name" or certificate failure, you can change to another location.
-
-Modify https://github.com/esmini/esmini/blob/master/CMakeLists.txt[esmini/CMakeLists.txt] (under esmini root), for example referring to dropbox instead of esmini:
-
-[source]
-----
-set(FILE_STORAGE
-    "dropbox") # "dropbox", "google", "esmini"  (limited GB/Day)
-set(MODEL_STORAGE
-    "dropbox") # "dropbox", "google", "esmini"  (limited GB/Day)
-----
-
-Then to apply settings:
-
-[source]
-----
-cd build
-cmake ..
 ----
 
 ==== Heading behavior in Road vs Lane Position
@@ -3149,6 +3165,42 @@ For easy execution of all tests, both unit tests and smoke tests, run this main 
 `./scripts/run_tests.sh`
 
 Tip: On Windows, run it from GIT bash.
+
+==== Run XML schema validation tests
+
+XML schema validation ensures scenario files (xosc and xodr) complies with the OpenSCENARIO and OpenDrive XSD schemas. The checks are done by the Python script `run_schema_comply.py` located in the `scripts` directory. The schema files are located in the `resources/schema` directory. From release v2.40, all esmini scenario files are validated against the schemas as part of CI.
+
+The script depends on the `xmlschema` and `lxml` Python packages. To install required packages, run:
+
+`pip install -r support/python/requirements.txt`
+
+Run the XML validation tests:
+
+`python3 ./scripts/run_schema_comply.py <path1> [path2] [path3] ...`
+
+where path can be an XML file or a directory. Any directory subfolders will be included recursively.
+
+Example 1, check single file:
+
+`python3 scripts/run_schema_comply.py resources/xosc/cut-in.xosc`
+
+Example 2, check two files:
+
+`python3 scripts/run_schema_comply.py resources/xosc/cut-in.xosc resources/xodr/two_plus_one.xodr`
+
+Example 3, check two directories:
+
+`python3 scripts/run_schema_comply.py resources EnvironmentSimulator`
+
+Example 4, check one file and one directory:
+
+`python3 scripts/run_schema_comply.py EnvironmentSimulator/Unittest/xosc/conflicting-domains.xosc resources`
+
+Tip: Use bash `find` command to apply finer filtering. Example:
+
+`python3 scripts/run_schema_comply.py $(find ./resources ./EnvironmentSimulator -name "follow_route*.xosc" -or -name "\*500*.xodr" -or -name "*signs.xodr")`
+
+validates all OpenSCENARIO files starting with "follow_route" and all OpenDRIVE files containing "500" or ending basename with "signs" or containing "500", in and under the `resource` and `EnvironmentSimulator` folders.
 
 === Sanitizers
 

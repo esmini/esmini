@@ -1,5 +1,31 @@
 ## esmini release notes
 
+### 2024-10-22 Version 2.40.0
+
+New features:
+- Script [run_schema_comply.py](https://github.com/esmini/esmini/blob/dev/scripts/run_schema_comply.py) for validation of OpenSCENARIO XML and OpenDRIVE files
+  - See [User guide - Run XML schema validation tests](https://esmini.github.io/#_run_xml_schema_validation_tests) how to use it.
+- Script [osiviewer.py](https://github.com/esmini/esmini/blob/dev/scripts/osiviewer.py) for visualizing OSI data
+  - experimental and limited, only a small subset of OSI content supported
+  - see brief info in [User guide - Scripts/osiviewer](https://esmini.github.io/#osiviewer)
+- Script [move_to_origin.py](https://github.com/esmini/esmini/blob/dev/scripts/move_to_origin.py) for translating scenarios to origin
+  - useful for scenarios with large coordinates causing precision issues
+  - moves the road network and updates scenario coordinates accordingly
+- Script [xodr_lines2curves.py](https://github.com/esmini/esmini/blob/dev/scripts/xodr_lines2curves.py) for smoothening polyline roads
+  - converts all line geometries into parametric curves achieving full continuity
+  - experimental with limitations, e.g. junctions not considered
+
+Improvements and fixes:
+- All xodr and xosc scenario files now complies with the XSD of the standards!
+- Fix issue preventing debugging of dynamically linked OSI library
+  - OSI prebuilt binaries have been updated
+  - solves faulty SONAME symbol within dynamic library after lib rename
+  - separate release and debug libs by folder structure instead
+- Update replayer on-screen info also during pause
+- Avoid replayer crash when pressing 'g' while inactive objects
+
+NOTE: The OSI lib update requires external dependencies to be updated. See [User guide - Update 3rd party prebuilt libraries](https://esmini.github.io/#_update_3rd_party_prebuilt_libraries).
+
 ### 2024-09-24 Version 2.39.0
 
 New features:
