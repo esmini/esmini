@@ -23,6 +23,9 @@ Improvements and fixes:
   - separate release and debug libs by folder structure instead
 - Update replayer on-screen info also during pause
 - Avoid replayer crash when pressing 'g' while inactive objects
+- Fix OSI stationary position issues
+  - reset start position of outlines created from repeats
+  - deliver outline local coordinates without rotation
 
 NOTE: The OSI lib update requires external dependencies to be updated. See [User guide - Update 3rd party prebuilt libraries](https://esmini.github.io/#_update_3rd_party_prebuilt_libraries).
 
