@@ -1,5 +1,14 @@
 ## esmini release notes
 
+### 2024-10-23 Version 2.40.1
+
+Improvements and fixes:
+- Respect ACC Controller set-speed as max speed ([issue #622](https://github.com/esmini/esmini/issues/622))
+- Optimize OpenDRIVE loading for densely segmented reference lines ([PR #620](https://github.com/esmini/esmini/pull/620))
+- Add missing entry to v2.40.0 release notes (Fix OSI stationary position issues)
+- Avoid repeated forced download of external dependencies
+  - apply only once by not storing flag in cmake cache
+
 ### 2024-10-22 Version 2.40.0
 
 New features:
