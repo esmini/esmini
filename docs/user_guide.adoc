@@ -2442,6 +2442,8 @@ The FORCE_DOWNLOAD_BINARIES flag will be checked by the cmake script for enforce
 
 Library updates are not detected by the esmini build dependencies, why a clean rebuild of esmini should be performed manually afterwards.
 
+Make sure to reset the FORCE_DOWNLOAD_BINARIES flag to FALSE for next cmake config command, else same binaries will be downloaded again.
+
 ==== Entity does not appear
 In order to appear in the scenario, without need for AddEntity action, an entity must be represented in the Init section of the Storyboard. Common is to add actions to establish inital position and speed.
 
