@@ -31,11 +31,6 @@ set(ENABLE_WARNINGS_AS_ERRORS
     CACHE BOOL
           "Make compile warnings be treated as errors")
 
-set(FORCE_DOWNLOAD_BINARIES
-    OFF
-    CACHE BOOL
-          "Enable FORCE_DOWNLOAD_BINARIES")
-
 set(ENABLE_CCACHE
     OFF
     CACHE BOOL
