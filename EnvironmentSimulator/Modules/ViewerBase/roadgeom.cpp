@@ -687,9 +687,11 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive* odr, osg::Vec3d origin)
                         for (; l < osiPoints.size(); l++)
                         {
                             // generate point at next OSI point s-value
+                            double t = road->GetLaneOffset(osiPoints[l].s)
+                                       + SIGN(lane->GetId()) * lsec->GetOuterOffset(osiPoints[l].s, lane->GetId());
                             pos.SetTrackPos(road->GetId(),
                                             osiPoints[l].s,
-                                            SIGN(lane->GetId()) * lsec->GetOuterOffset(osiPoints[l].s, lane->GetId()),
+                                            t,
                                             true);
 
                             // calculate horizontal error at this s value
@@ -800,7 +802,9 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive* odr, osg::Vec3d origin)
                     double friction   = mat != nullptr ? mat->friction : FRICTION_DEFAULT;
 
                     // retrieve position at s-value
-                    pos.SetTrackPos(road->GetId(), s_min, SIGN(lane_id) * lsec->GetOuterOffset(s_min, lane_id), true);
+                    double t = road->GetLaneOffset(s_min)
+                                       + SIGN(lane_id) * lsec->GetOuterOffset(s_min, lane_id);
+                    pos.SetTrackPos(road->GetId(), s_min, t, true);
                     GeomPoint gp = {pos.GetX(), pos.GetY(), pos.GetZ(), pos.GetH(), pos.GetZRoadPrim(), pos.GetS()};
 
                     if (counter == 1)
