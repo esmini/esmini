@@ -1124,10 +1124,17 @@ namespace roadmanager
         /**
         Get index of closest lane wrt given constraints
         @param s distance along the road segment
-        @param lane_id lane specifier, starting from center -1, -2, ... is on the right side, 1, 2... on the left
+        @param t distance to road reference line in lateral direction
+        @param lane_offset the lane offset for distance s
+        @param side -1 = left side, 1 = right side
+        @param offset resulting distance to inner lane boundary
+        @param noZeroWidth if true, lane with zero width are not considered
+        @param laneTypeMask the lane type mask
+        @return Index of closest lane
         */
         int GetClosestLaneIdx(double  s,
                               double  t,
+                              double  laneOffset,
                               int     side,
                               double &offset,
                               bool    noZeroWidth,
