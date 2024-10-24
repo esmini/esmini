@@ -358,6 +358,37 @@ TEST(ProgramOptions, TestMixOfPersistedAndNonPersisted)
     ASSERT_EQ(logFilePath, "my_test_error.txt");
 }
 
+TEST(LinearAlgebra, TestAngleBetweenVectors)
+{
+    double v1[2] = {1.0, 0.0};
+    double v2[2] = {1.0, 0.2};
+    EXPECT_NEAR(GetAngleBetweenVectors(v1[0], v1[1], v2[0], v2[1]), 0.197, 1E-3);
+
+    v1[0] = 0.0;
+    v1[1] = 10.0;
+    v2[0] = 0.0;
+    v2[1] = -10.0;
+    EXPECT_NEAR(GetAngleBetweenVectors(v1[0], v1[1], v2[0], v2[1]), M_PI, 1E-3);
+
+    v1[0] = -3.0;
+    v1[1] = 1.0;
+    v2[0] = 1.0;
+    v2[1] = 3.0;
+    EXPECT_NEAR(GetAngleBetweenVectors(v1[0], v1[1], v2[0], v2[1]), M_PI_2, 1E-3);
+
+    v1[0] = 1.0;
+    v1[1] = 3.0;
+    v2[0] = -3.0;
+    v2[1] = 1.0;
+    EXPECT_NEAR(GetAngleBetweenVectors(v1[0], v1[1], v2[0], v2[1]), M_PI_2, 1E-3);
+
+    v1[0] = -5.0;
+    v1[1] = 1.0;
+    v2[0] = 1.0;
+    v2[1] = -0.6;
+    EXPECT_NEAR(GetAngleBetweenVectors(v1[0], v1[1], v2[0], v2[1]), 2.798, 1E-3);
+}
+
 int main(int argc, char** argv)
 {
     // testing::GTEST_FLAG(filter) = "*TestIsPointWithinSectorBetweenTwoLines*";

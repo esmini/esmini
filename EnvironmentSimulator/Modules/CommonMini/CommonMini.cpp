@@ -924,6 +924,11 @@ double GetDotProduct2D(double x1, double y1, double x2, double y2)
     return x1 * x2 + y1 * y2;
 }
 
+double GetAngleBetweenVectors(double x1, double y1, double x2, double y2)
+{
+    return acos(GetDotProduct2D(x1, y1, x2, y2) / (GetLengthOfVector2D(x1, y1) * GetLengthOfVector2D(x2, y2)));
+}
+
 void NormalizeVec2D(double x, double y, double& xn, double& yn)
 {
     double len = sqrt(x * x + y * y);

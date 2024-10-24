@@ -29,7 +29,7 @@
 
 #define GEOM_TOLERANCE  (0.2 - SMALL_NUMBER)  // Minimum distance between two vertices along road s-axis
 #define TEXTURE_SCALE   0.5                   // Scale factor for asphalt and grass textures 1.0 means whole texture fits in 1 x 1 m square
-#define MAX_GEOM_ERROR  0.1                   // maximum distance from the 3D geometry to the OSI lines
+#define MAX_GEOM_ERROR  0.25                  // maximum distance from the 3D geometry to the OSI lines
 #define MAX_GEOM_LENGTH 50                    // maximum length of a road geometry mesh segment
 #define MIN_GEOM_LENGTH 0.1                   // minimum length of a road geometry mesh segment, adjust if possible
 
@@ -129,55 +129,11 @@ int RoadGeom::AddRoadMarks(roadmanager::Lane* lane, osg::Group* parent)
         for (int m = 0; m < lane_roadmark->GetNumberOfRoadMarkTypes(); m++)
         {
             roadmanager::LaneRoadMarkType* lane_roadmarktype = lane_roadmark->GetLaneRoadMarkTypeByIdx(m);
-            int                            inner_index       = -1;
-            if (lane_roadmark->GetType() == roadmanager::LaneRoadMark::RoadMarkType::BROKEN_SOLID ||
-                lane_roadmark->GetType() == roadmanager::LaneRoadMark::RoadMarkType::SOLID_BROKEN)
-            {
-                if (lane_roadmarktype->GetNumberOfRoadMarkTypeLines() < 2)
-                {
-                    break;
-                    std::runtime_error("You need to specify at least 2 line for broken solid or solid broken roadmark type");
-                }
-                std::vector<double> sort_solidbroken_brokensolid;
-                for (int q = 0; q < lane_roadmarktype->GetNumberOfRoadMarkTypeLines(); q++)
-                {
-                    sort_solidbroken_brokensolid.push_back(lane_roadmarktype->GetLaneRoadMarkTypeLineByIdx(q)->GetTOffset());
-                }
-
-                if (lane->GetId() < 0 || lane->GetId() == 0)
-                {
-                    inner_index = static_cast<int>(std::max_element(sort_solidbroken_brokensolid.begin(), sort_solidbroken_brokensolid.end()) -
-                                                   sort_solidbroken_brokensolid.begin());
-                }
-                else
-                {
-                    inner_index = static_cast<int>(std::min_element(sort_solidbroken_brokensolid.begin(), sort_solidbroken_brokensolid.end()) -
-                                                   sort_solidbroken_brokensolid.begin());
-                }
-            }
 
             for (int n = 0; n < lane_roadmarktype->GetNumberOfRoadMarkTypeLines(); n++)
             {
                 roadmanager::LaneRoadMarkTypeLine* lane_roadmarktypeline = lane_roadmarktype->GetLaneRoadMarkTypeLineByIdx(n);
                 roadmanager::OSIPoints*            curr_osi_rm           = lane_roadmarktypeline->GetOSIPoints();
-
-                bool broken = false;
-                if (lane_roadmark->GetType() == roadmanager::LaneRoadMark::RoadMarkType::BROKEN_SOLID)
-                {
-                    if (inner_index == n)
-                    {
-                        broken = true;
-                    }
-                }
-
-                if (lane_roadmark->GetType() == roadmanager::LaneRoadMark::RoadMarkType::SOLID_BROKEN)
-                {
-                    broken = true;
-                    if (inner_index == n)
-                    {
-                        broken = false;
-                    }
-                }
 
                 if (lane_roadmark->GetType() == roadmanager::LaneRoadMark::RoadMarkType::BOTTS_DOTS)
                 {
@@ -210,58 +166,7 @@ int RoadGeom::AddRoadMarks(roadmanager::Lane* lane, osg::Group* parent)
                         rm_group_->addChild(tx);
                     }
                 }
-                else if (lane_roadmark->GetType() == roadmanager::LaneRoadMark::RoadMarkType::BROKEN ||
-                         lane_roadmark->GetType() == roadmanager::LaneRoadMark::RoadMarkType::BROKEN_BROKEN || broken)
-                {
-                    for (unsigned int q = 0; q < curr_osi_rm->GetPoints().size(); q += 2)
-                    {
-                        roadmanager::PointStruct osi_point0 = curr_osi_rm->GetPoint(static_cast<int>(q));
-                        roadmanager::PointStruct osi_point1 = curr_osi_rm->GetPoint(static_cast<int>(q) + 1);
-
-                        osg::ref_ptr<osg::Vec3Array>        vertices = new osg::Vec3Array(4);
-                        osg::ref_ptr<osg::DrawElementsUInt> indices  = new osg::DrawElementsUInt(GL_TRIANGLE_STRIP, 4);
-
-                        // Find left points of roadmark
-                        double x0l, x1l, y0l, y1l;
-                        OffsetVec2D(osi_point0.x - origin_[0],
-                                    osi_point0.y - origin_[1],
-                                    osi_point1.x - origin_[0],
-                                    osi_point1.y - origin_[1],
-                                    -lane_roadmarktypeline->GetWidth() / 2,
-                                    x0l,
-                                    y0l,
-                                    x1l,
-                                    y1l);
-
-                        // Find right points of roadmark
-                        double x0r, x1r, y0r, y1r;
-                        OffsetVec2D(osi_point0.x - origin_[0],
-                                    osi_point0.y - origin_[1],
-                                    osi_point1.x - origin_[0],
-                                    osi_point1.y - origin_[1],
-                                    lane_roadmarktypeline->GetWidth() / 2,
-                                    x0r,
-                                    y0r,
-                                    x1r,
-                                    y1r);
-
-                        // Set vertices and indices
-                        (*vertices)[0].set(static_cast<float>(x0l), static_cast<float>(y0l), static_cast<float>(osi_point0.z + ROADMARK_Z_OFFSET));
-                        (*vertices)[1].set(static_cast<float>(x0r), static_cast<float>(y0r), static_cast<float>(osi_point0.z + ROADMARK_Z_OFFSET));
-                        (*vertices)[2].set(static_cast<float>(x1l), static_cast<float>(y1l), static_cast<float>(osi_point1.z + ROADMARK_Z_OFFSET));
-                        (*vertices)[3].set(static_cast<float>(x1r), static_cast<float>(y1r), static_cast<float>(osi_point1.z + ROADMARK_Z_OFFSET));
-
-                        (*indices)[0] = 0;
-                        (*indices)[1] = 1;
-                        (*indices)[2] = 2;
-                        (*indices)[3] = 3;
-
-                        // Finally create and add OSG geometries
-                        AddRoadMarkGeom(vertices, indices, lane_roadmarktypeline->GetColor());
-                    }
-                }
-                else if (lane_roadmark->GetType() == roadmanager::LaneRoadMark::RoadMarkType::SOLID ||
-                         lane_roadmark->GetType() == roadmanager::LaneRoadMark::RoadMarkType::SOLID_SOLID || !broken)
+                else
                 {
                     std::vector<roadmanager::PointStruct> osi_points = curr_osi_rm->GetPoints();
 
@@ -271,18 +176,19 @@ int RoadGeom::AddRoadMarks(roadmanager::Lane* lane, osg::Group* parent)
                         continue;
                     }
 
-                    osg::ref_ptr<osg::Vec3Array>        vertices = new osg::Vec3Array(static_cast<unsigned int>(osi_points.size() * 2));
-                    osg::ref_ptr<osg::DrawElementsUInt> indices =
-                        new osg::DrawElementsUInt(GL_TRIANGLE_STRIP, static_cast<unsigned int>(osi_points.size()) * 2);
+                    double l0p0l[2] = {0.0, 0.0};  // previous line, startpoint, left side
+                    double l0p0r[2] = {0.0, 0.0};  // previous line, startpoint, right side
+                    double l0p1l[2] = {0.0, 0.0};  // previous line, endpoint, left side
+                    double l0p1r[2] = {0.0, 0.0};  // previous line, endpoint, right side
+                    double l1p0l[2] = {0.0, 0.0};  // current line, startpoint, left side
+                    double l1p0r[2] = {0.0, 0.0};  // current line, startpoint, right side
+                    double l1p1l[2] = {0.0, 0.0};  // current line, endpoint, left side
+                    double l1p1r[2] = {0.0, 0.0};  // current line, endpoint, right side
 
-                    double l0p0l[2] = {0.0, 0.0};
-                    double l0p0r[2] = {0.0, 0.0};
-                    double l0p1l[2] = {0.0, 0.0};
-                    double l0p1r[2] = {0.0, 0.0};
-                    double l1p0l[2] = {0.0, 0.0};
-                    double l1p0r[2] = {0.0, 0.0};
-                    double l1p1l[2] = {0.0, 0.0};
-                    double l1p1r[2] = {0.0, 0.0};
+                    osg::ref_ptr<osg::Vec3Array>        vertices;
+                    osg::ref_ptr<osg::DrawElementsUInt> indices;
+
+                    int startpoint = 0;
 
                     for (size_t q = 0; q < osi_points.size(); q++)
                     {
@@ -290,6 +196,12 @@ int RoadGeom::AddRoadMarks(roadmanager::Lane* lane, osg::Group* parent)
                         // each line has two points, beginning and end
                         // from each point one left and one right point will be calculated based on width of marking
                         // l1 is current line, l0 is previous
+
+                        if (q == startpoint)
+                        {
+                            vertices = new osg::Vec3Array();
+                            indices  = new osg::DrawElementsUInt(GL_TRIANGLE_STRIP);
+                        }
 
                         if (q < osi_points.size() - 1)
                         {
@@ -312,26 +224,32 @@ int RoadGeom::AddRoadMarks(roadmanager::Lane* lane, osg::Group* parent)
                                         l1p1r[0],
                                         l1p1r[1]);
                         }
-
-                        if (q == 0)
+                        else if (!osi_points[q].endpoint)
                         {
-                            // First point, no adjustment needed
-                            (*vertices)[q * 2 + 0].set(static_cast<float>(l1p0l[0]),
-                                                       static_cast<float>(l1p0l[1]),
-                                                       static_cast<float>(osi_points[q].z + ROADMARK_Z_OFFSET));
-                            (*vertices)[q * 2 + 1].set(static_cast<float>(l1p0r[0]),
-                                                       static_cast<float>(l1p0r[1]),
-                                                       static_cast<float>(osi_points[q].z + ROADMARK_Z_OFFSET));
+                            printf("Unexpected last point without endpoint q %zd\n", q);
                         }
-                        else if (q == osi_points.size() - 1)
+
+                        if (q == startpoint)
                         {
-                            // Last point, no adjustment needed
-                            (*vertices)[q * 2 + 0].set(static_cast<float>(l1p1l[0]),
-                                                       static_cast<float>(l1p1l[1]),
-                                                       static_cast<float>(osi_points[q].z + ROADMARK_Z_OFFSET));
-                            (*vertices)[q * 2 + 1].set(static_cast<float>(l1p1r[0]),
-                                                       static_cast<float>(l1p1r[1]),
-                                                       static_cast<float>(osi_points[q].z + ROADMARK_Z_OFFSET));
+                            // First point in a line sequence, no adjustment needed
+                            (*vertices).push_back(osg::Vec3(static_cast<float>(l1p0l[0]),
+                                                            static_cast<float>(l1p0l[1]),
+                                                            static_cast<float>(osi_points[q].z + ROADMARK_Z_OFFSET)));
+                            (*vertices).push_back(osg::Vec3(static_cast<float>(l1p0r[0]),
+                                                            static_cast<float>(l1p0r[1]),
+                                                            static_cast<float>(osi_points[q].z + ROADMARK_Z_OFFSET)));
+                        }
+                        else if (osi_points[q].endpoint)
+                        {
+                            // Last point of a line sequence, no adjustment needed
+                            double* left  = (q < osi_points.size() - 1) ? l1p0l : l1p1l;
+                            double* right = (q < osi_points.size() - 1) ? l1p0r : l1p1r;
+                            (*vertices).push_back(osg::Vec3(static_cast<float>(left[0]),
+                                                            static_cast<float>(left[1]),
+                                                            static_cast<float>(osi_points[q].z + ROADMARK_Z_OFFSET)));
+                            (*vertices).push_back(osg::Vec3(static_cast<float>(right[0]),
+                                                            static_cast<float>(right[1]),
+                                                            static_cast<float>(osi_points[q].z + ROADMARK_Z_OFFSET)));
                         }
                         else
                         {
@@ -349,16 +267,16 @@ int RoadGeom::AddRoadMarks(roadmanager::Lane* lane, osg::Group* parent)
                                                                  isect[0],
                                                                  isect[1]) == 0)
                             {
-                                (*vertices)[q * 2 + 0].set(static_cast<float>(isect[0]),
-                                                           static_cast<float>(isect[1]),
-                                                           static_cast<float>(osi_points[q].z + ROADMARK_Z_OFFSET));
+                                (*vertices).push_back(osg::Vec3(static_cast<float>(isect[0]),
+                                                                static_cast<float>(isect[1]),
+                                                                static_cast<float>(osi_points[q].z + ROADMARK_Z_OFFSET)));
                             }
                             else
                             {
                                 // lines parallel, no adjustment needed
-                                (*vertices)[q * 2 + 0].set(static_cast<float>(l1p0l[0]),
-                                                           static_cast<float>(l1p0l[1]),
-                                                           static_cast<float>(osi_points[q].z + ROADMARK_Z_OFFSET));
+                                (*vertices).push_back(osg::Vec3(static_cast<float>(l1p0l[0]),
+                                                                static_cast<float>(l1p0l[1]),
+                                                                static_cast<float>(osi_points[q].z + ROADMARK_Z_OFFSET)));
                             }
 
                             if (GetIntersectionOfTwoLineSegments(l0p0r[0],
@@ -372,16 +290,16 @@ int RoadGeom::AddRoadMarks(roadmanager::Lane* lane, osg::Group* parent)
                                                                  isect[0],
                                                                  isect[1]) == 0)
                             {
-                                (*vertices)[q * 2 + 1].set(static_cast<float>(isect[0]),
-                                                           static_cast<float>(isect[1]),
-                                                           static_cast<float>(osi_points[q].z + ROADMARK_Z_OFFSET));
+                                (*vertices).push_back(osg::Vec3(static_cast<float>(isect[0]),
+                                                                static_cast<float>(isect[1]),
+                                                                static_cast<float>(osi_points[q].z + ROADMARK_Z_OFFSET)));
                             }
                             else
                             {
                                 // lines parallel, no adjustment needed
-                                (*vertices)[q * 2 + 1].set(static_cast<float>(l1p0r[0]),
-                                                           static_cast<float>(l1p0r[1]),
-                                                           static_cast<float>(osi_points[q].z + ROADMARK_Z_OFFSET));
+                                (*vertices).push_back(osg::Vec3(static_cast<float>(l1p0r[0]),
+                                                                static_cast<float>(l1p0r[1]),
+                                                                static_cast<float>(osi_points[q].z + ROADMARK_Z_OFFSET)));
                             }
                         }
 
@@ -395,154 +313,17 @@ int RoadGeom::AddRoadMarks(roadmanager::Lane* lane, osg::Group* parent)
                         }
 
                         // Set indices
-                        (*indices)[q * 2 + 0] = static_cast<unsigned int>(q) * 2 + 0;
-                        (*indices)[q * 2 + 1] = static_cast<unsigned int>(q) * 2 + 1;
-                    }
+                        (*indices).push_back(static_cast<unsigned int>(2 * (q - startpoint)));
+                        (*indices).push_back(static_cast<unsigned int>(2 * (q - startpoint) + 1));
 
-                    // Finally create and add OSG geometries
-                    AddRoadMarkGeom(vertices, indices, lane_roadmarktypeline->GetColor());
+                        if (osi_points[q].endpoint)
+                        {
+                            // create and add OSG geometry for the line sequence
+                            AddRoadMarkGeom(vertices, indices, lane_roadmarktypeline->GetColor());
+                            startpoint = q + 1;
+                        }
+                    }
                 }
-            }
-        }
-
-        // Explicit roadmarks
-
-        for (int m = 0; m < lane_roadmark->GetNumberOfRoadMarkExplicit(); m++)
-        {
-            roadmanager::LaneRoadMarkExplicit* lane_roadmarkexplicit = lane_roadmark->GetLaneRoadMarkExplicitByIdx(m);
-
-            for (int n = 0; n < lane_roadmarkexplicit->GetNumberOfLaneRoadMarkExplicitLines(); n++)
-            {
-                roadmanager::LaneRoadMarkExplicitLine* lane_roadmarkexplicitline = lane_roadmarkexplicit->GetLaneRoadMarkExplicitLineByIdx(n);
-                roadmanager::OSIPoints*                curr_osi_rm               = lane_roadmarkexplicitline->GetOSIPoints();
-
-                std::vector<roadmanager::PointStruct> osi_points = curr_osi_rm->GetPoints();
-
-                if (osi_points.size() < 2)
-                {
-                    // No line - skip
-                    continue;
-                }
-
-                osg::ref_ptr<osg::Vec3Array>        vertices = new osg::Vec3Array(static_cast<unsigned int>(osi_points.size() * 2));
-                osg::ref_ptr<osg::DrawElementsUInt> indices =
-                    new osg::DrawElementsUInt(GL_TRIANGLE_STRIP, static_cast<unsigned int>(osi_points.size()) * 2);
-
-                double l0p0l[2] = {0.0, 0.0};
-                double l0p0r[2] = {0.0, 0.0};
-                double l0p1l[2] = {0.0, 0.0};
-                double l0p1r[2] = {0.0, 0.0};
-                double l1p0l[2] = {0.0, 0.0};
-                double l1p0r[2] = {0.0, 0.0};
-                double l1p1l[2] = {0.0, 0.0};
-                double l1p1r[2] = {0.0, 0.0};
-
-                for (size_t q = 0; q < osi_points.size(); q++)
-                {
-                    // Find offset points of solid roadmark at each OSI point
-
-                    if (q < osi_points.size() - 1)
-                    {
-                        OffsetVec2D(osi_points[q].x - origin_[0],
-                                    osi_points[q].y - origin_[1],
-                                    osi_points[q + 1].x - origin_[0],
-                                    osi_points[q + 1].y - origin_[1],
-                                    -lane_roadmarkexplicitline->GetWidth() / 2,
-                                    l1p0l[0],
-                                    l1p0l[1],
-                                    l1p1l[0],
-                                    l1p1l[1]);
-                        OffsetVec2D(osi_points[q].x - origin_[0],
-                                    osi_points[q].y - origin_[1],
-                                    osi_points[q + 1].x - origin_[0],
-                                    osi_points[q + 1].y - origin_[1],
-                                    lane_roadmarkexplicitline->GetWidth() / 2,
-                                    l1p0r[0],
-                                    l1p0r[1],
-                                    l1p1r[0],
-                                    l1p1r[1]);
-                    }
-
-                    if (q == 0)
-                    {
-                        // First point, no adjustment needed
-                        (*vertices)[q * 2 + 0].set(static_cast<float>(l1p0l[0]), static_cast<float>(l1p0l[1]), static_cast<float>(osi_points[q].z));
-                        (*vertices)[q * 2 + 1].set(static_cast<float>(l1p0r[0]), static_cast<float>(l1p0r[1]), static_cast<float>(osi_points[q].z));
-                    }
-                    else if (q == osi_points.size() - 1)
-                    {
-                        // Last point, no adjustment needed
-                        (*vertices)[q * 2 + 0].set(static_cast<float>(l1p1l[0]), static_cast<float>(l1p1l[1]), static_cast<float>(osi_points[q].z));
-                        (*vertices)[q * 2 + 1].set(static_cast<float>(l1p1r[0]), static_cast<float>(l1p1r[1]), static_cast<float>(osi_points[q].z));
-                    }
-                    else
-                    {
-                        // Find intersection of non parallel lines
-                        double isect[2];
-
-                        if (GetIntersectionOfTwoLineSegments(l0p0l[0],
-                                                             l0p0l[1],
-                                                             l0p1l[0],
-                                                             l0p1l[1],
-                                                             l1p0l[0],
-                                                             l1p0l[1],
-                                                             l1p1l[0],
-                                                             l1p1l[1],
-                                                             isect[0],
-                                                             isect[1]) == 0)
-                        {
-                            (*vertices)[q * 2 + 0].set(static_cast<float>(isect[0]),
-                                                       static_cast<float>(isect[1]),
-                                                       static_cast<float>(osi_points[q].z));
-                        }
-                        else
-                        {
-                            // lines parallel, no adjustment needed
-                            (*vertices)[q * 2 + 0].set(static_cast<float>(l1p0l[0]),
-                                                       static_cast<float>(l1p0l[1]),
-                                                       static_cast<float>(osi_points[q].z));
-                        }
-
-                        if (GetIntersectionOfTwoLineSegments(l0p0r[0],
-                                                             l0p0r[1],
-                                                             l0p1r[0],
-                                                             l0p1r[1],
-                                                             l1p0r[0],
-                                                             l1p0r[1],
-                                                             l1p1r[0],
-                                                             l1p1r[1],
-                                                             isect[0],
-                                                             isect[1]) == 0)
-                        {
-                            (*vertices)[q * 2 + 1].set(static_cast<float>(isect[0]),
-                                                       static_cast<float>(isect[1]),
-                                                       static_cast<float>(osi_points[q].z));
-                        }
-                        else
-                        {
-                            // lines parallel, no adjustment needed
-                            (*vertices)[q * 2 + 1].set(static_cast<float>(l1p0r[0]),
-                                                       static_cast<float>(l1p0r[1]),
-                                                       static_cast<float>(osi_points[q].z));
-                        }
-                    }
-
-                    if (q < osi_points.size() - 1)
-                    {
-                        // Shift points one step forward
-                        memcpy(l0p0l, l1p0l, sizeof(l0p0l));
-                        memcpy(l0p0r, l1p0r, sizeof(l0p0r));
-                        memcpy(l0p1l, l1p1l, sizeof(l0p0l));
-                        memcpy(l0p1r, l1p1r, sizeof(l0p0r));
-                    }
-
-                    // Set indices
-                    (*indices)[q * 2 + 0] = static_cast<unsigned int>(q) * 2 + 0;
-                    (*indices)[q * 2 + 1] = static_cast<unsigned int>(q) * 2 + 1;
-                }
-
-                // Finally create and add OSG geometries
-                AddRoadMarkGeom(vertices, indices, lane_roadmark->GetColor());
             }
         }
     }
@@ -591,6 +372,25 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive* odr, osg::Vec3d origin)
     color_concrete->push_back(osg::Vec4(0.61f, 0.61f, 0.61f, 1.0f));
     color_border_inner->push_back(osg::Vec4(0.45f, 0.45f, 0.45f, 1.0f));
 
+    // algorithm:
+    // for each road and lane section:
+    // - establish first point of each lane at s value = 0, set to current
+    // - loop until reaching end of lane section:
+    //   - for each lane:
+    //     - find next OSI point along the lane, from the current section s value
+    //       - register s value as lane current and as candidate section current
+    //   - sort the list of section s value candidates
+    //   - for each candidate:
+    //     - for each lane:
+    //       - calculate point at candidate s value
+    //       - measure error from tangent of current section s-value point
+    //       - if error is too large:
+    //         - break
+    //       - else, if error is OK:
+    //         - register as new current section s value
+    //     - if no OK point was found, pick the first candiate (lowest s-value)
+    //   - establish points for all lanes at this s-value
+
     for (size_t i = 0; i < static_cast<unsigned int>(odr->GetNumOfRoads()); i++)
     {
         roadmanager::Road* road = odr->GetRoadByIdx(static_cast<int>(i));
@@ -632,13 +432,22 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive* odr, osg::Vec3d origin)
             struct GeomCacheEntry
             {
                 GeomPoint point;
-                int       osi_point_index = 0;
-                double    friction        = 1.0;
+                double    friction = 1.0;
             };
 
-            std::vector<std::vector<GeomPoint>> geom_points_list;  // one list of points per lane
-            std::vector<std::vector<GeomStrip>> geom_strips_list;  // one list of strips info per lane
-            std::vector<GeomCacheEntry>         geom_cache;        // one cache entry per lane
+            struct CandidatePos
+            {
+                double x;
+                double y;
+            };
+
+            std::vector<std::vector<GeomPoint>> geom_points_list;                              // one list of points per lane
+            std::vector<std::vector<GeomStrip>> geom_strips_list;                              // one list of strips info per lane
+            std::vector<GeomCacheEntry>         geom_cache(lsec->GetNumberOfLanes());          // one cache entry per lane
+            std::vector<int>                    lane_osi_index(lsec->GetNumberOfLanes());      // current osi point per lane
+            std::vector<double>                 s_value_candidates(lsec->GetNumberOfLanes());  // candidates for next current s-value
+            std::vector<CandidatePos>           candidates_pos(lsec->GetNumberOfLanes());      // candidates for next current s-value
+            double                              section_current_s = lsec->GetS();
 
             roadmanager::Position pos;  // used for calculating points along the road
 
@@ -660,119 +469,130 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive* odr, osg::Vec3d origin)
             friction_s_list.erase(std::unique(friction_s_list.begin(), friction_s_list.end(), compare_s_values), friction_s_list.end());
 
             // collect a list of s values where vertices are needed, considering all lanes
-            int  friction_s_list_index = friction_s_list.size() > 0 ? 1 : -1;
-            bool done_section          = false;
-            for (int counter = 1; !done_section && counter > 0; counter++)
-            {
-                double s_min = lsec->GetS() + lsec->GetLength();
-                done_section = true;
+            int                   friction_s_list_index = friction_s_list.size() > 0 ? 1 : -1;
+            bool                  done_section          = false;
+            roadmanager::Position pos2;
 
-                if (counter == 1)
+            for (int counter = 0; !done_section; counter++)
+            {
+                if (counter == 0)
                 {
                     // First add s = start of lane section, to set start of mesh
-                    s_min        = lsec->GetS();
                     done_section = false;
+                    for (size_t k = 0; k < static_cast<unsigned int>(lsec->GetNumberOfLanes()); k++)
+                    {
+                        lane_osi_index[k]     = 0;
+                        s_value_candidates[k] = lsec->GetS();
+                    }
                 }
                 else
                 {
-                    // find next s-value based on accumulated error of each lane
+                    // for each lane, find next s-value in and register it as candidate section current s-value
                     for (size_t k = 0; k < static_cast<unsigned int>(lsec->GetNumberOfLanes()); k++)
                     {
-                        lane                                               = lsec->GetLaneByIdx(static_cast<int>(k));
-                        std::vector<roadmanager::PointStruct> osiPoints    = lane->GetOSIPoints()->GetPoints();
-                        unsigned int                          l            = geom_cache[k].osi_point_index;
-                        double                                next_s       = s_min;
-                        bool                                  insert_point = false;
+                        lane                                            = lsec->GetLaneByIdx(static_cast<int>(k));
+                        std::vector<roadmanager::PointStruct> osiPoints = lane->GetOSIPoints()->GetPoints();
 
-                        // Find next s-value for this lane - go forward until error becomes too large
-                        for (; l < osiPoints.size(); l++)
+                        for (size_t l = lane_osi_index[k]; l < osiPoints.size(); l++)
                         {
-                            // generate point at next OSI point s-value
+                            if (osiPoints[l].s > section_current_s + SMALL_NUMBER)
+                            {
+                                lane_osi_index[k]     = l;
+                                s_value_candidates[k] = osiPoints[l].s;
+
+                                // generate point at osi index s-value
+                                lane = lsec->GetLaneByIdx(static_cast<int>(k));
+                                pos2.SetTrackPos(road->GetId(),
+                                                 s_value_candidates[k],
+                                                 SIGN(lane->GetId()) * lsec->GetOuterOffset(s_value_candidates[k], lane->GetId()),
+                                                 true);
+                                candidates_pos[k].x = pos2.GetX();
+                                candidates_pos[k].y = pos2.GetY();
+
+                                break;
+                            }
+                        }
+                    }
+
+                    // sort candidates
+                    std::sort(s_value_candidates.begin(), s_value_candidates.end());
+
+                    // find highest s-value not exceeding the tolerated error, over all lanes
+                    size_t k = 0;
+                    for (; k < s_value_candidates.size(); k++)
+                    {
+                        size_t l = 0;
+                        for (; l < static_cast<unsigned int>(lsec->GetNumberOfLanes()); l++)
+                        {
+                            lane                                            = lsec->GetLaneByIdx(static_cast<int>(l));
+                            std::vector<roadmanager::PointStruct> osiPoints = lane->GetOSIPoints()->GetPoints();
+
+                            // generate point at pivot s-value
                             pos.SetTrackPos(road->GetId(),
-                                            osiPoints[l].s,
-                                            SIGN(lane->GetId()) * lsec->GetOuterOffset(osiPoints[l].s, lane->GetId()),
+                                            s_value_candidates[k],
+                                            SIGN(lane->GetId()) * lsec->GetOuterOffset(s_value_candidates[k], lane->GetId()),
                                             true);
 
                             // calculate horizontal error at this s value
-                            double error_horizontal = DistanceFromPointToLine2DWithAngle(pos.GetX(),
-                                                                                         pos.GetY(),
-                                                                                         geom_cache[k].point.x,
-                                                                                         geom_cache[k].point.y,
-                                                                                         geom_cache[k].point.h);
+                            // find out heading of the previous calculated vertex point
+                            double h = lane_osi_index[l] > 0 ? GetAngleOfVector(candidates_pos[l].x - geom_cache[l].point.x,
+                                                                                candidates_pos[l].y - geom_cache[l].point.y)
+                                                             : geom_cache[l].point.h;
+                            double error_horizontal =
+                                DistanceFromPointToLine2DWithAngle(pos.GetX(), pos.GetY(), geom_cache[l].point.x, geom_cache[l].point.y, h);
 
                             // calculate vertical error at this s value
                             double error_vertical =
-                                abs((pos.GetZ() - geom_cache[k].point.z) - geom_cache[k].point.slope * (pos.GetS() - geom_cache[k].point.s));
+                                abs((pos.GetZ() - geom_cache[l].point.z) - geom_cache[l].point.slope * (pos.GetS() - geom_cache[l].point.s));
 
-                            if (NEAR_NUMBERS(next_s, osiPoints[l - 1].s) && (error_horizontal > MAX_GEOM_ERROR || error_vertical > MAX_GEOM_ERROR))
+                            if (error_horizontal > MAX_GEOM_ERROR || error_vertical > MAX_GEOM_ERROR)
                             {
-                                // the tested OSI point cause too large error, pick the previous one
-                                if (l > 0)
-                                {
-                                    if (static_cast<int>(l) - 1 > geom_cache[k].osi_point_index)
-                                    {
-                                        // make sure previous s-value before error exceeded threshold is included
-                                        l--;
-                                        next_s = osiPoints[l].s;
-                                    }
-                                    else
-                                    {
-                                        // avoid adding same value, accept adding s-value exceeding the threshold
-                                        next_s = osiPoints[l].s;
-                                    }
-                                }
-                                else
-                                {
-                                    LOG_ERROR("Unexpected l == 0\n");
-                                    next_s = osiPoints[l].s;
-                                }
-                                insert_point = true;
-                            }
-                            else
-                            {
-                                next_s = osiPoints[l].s;
-                            }
-
-                            // we have s-value of a OSI point, check if there is a new friction value before that
-                            // also check for maximum length
-                            double s_next_friction     = (friction_s_list_index > -1 && friction_s_list_index < friction_s_list.size())
-                                                             ? friction_s_list[friction_s_list_index]
-                                                             : lsec->GetS() + lsec->GetLength();
-                            double s_next_geom_max_len = geom_cache[k].point.s + MAX_GEOM_LENGTH;
-
-                            if (s_next_friction < next_s && s_next_friction < s_min &&
-                                s_next_friction < s_next_geom_max_len + MIN_GEOM_LENGTH)  // add min geom len to avoid mini patches
-                            {
-                                next_s = s_next_friction;
-                                friction_s_list_index++;
-                                insert_point = true;
-                            }
-                            else if (s_next_geom_max_len < next_s && s_next_geom_max_len < s_min &&
-                                     s_next_geom_max_len + MIN_GEOM_LENGTH < s_next_friction)  // add min geom len to avoid mini patches
-                            {
-                                next_s       = s_next_geom_max_len;
-                                insert_point = true;
-                            }
-
-                            if (insert_point)
-                            {
-                                done_section = false;
                                 break;
                             }
-
-                            if (next_s > s_min - SMALL_NUMBER)
-                            {
-                                break;  // no need to check this lane further
-                            }
                         }
 
-                        geom_cache[k].osi_point_index = l;
-
-                        if (next_s < s_min)
+                        if (l == static_cast<unsigned int>(lsec->GetNumberOfLanes()))
                         {
-                            s_min = next_s;
+                            // no error, register preliminary section current s value
+                            section_current_s = s_value_candidates[k];
+                        }
+                        else
+                        {
+                            // error too large, stop searching
+                            if (k == 0)
+                            {
+                                // no candidate was OK, pick the first one
+                                section_current_s = s_value_candidates[k];
+                            }
+                            break;
+                        }
+
+                        // we have s-value of a OSI point, check if there is a new friction value before that
+                        // also check for maximum length
+                        double s_next_friction     = (friction_s_list_index > -1 && friction_s_list_index < friction_s_list.size())
+                                                         ? friction_s_list[friction_s_list_index]
+                                                         : lsec->GetS() + lsec->GetLength();
+                        double s_next_geom_max_len = geom_cache[k].point.s + MAX_GEOM_LENGTH;
+
+                        if (s_next_friction < section_current_s &&
+                            s_next_friction < s_next_geom_max_len + MIN_GEOM_LENGTH)  // add min geom len to avoid mini patches
+                        {
+                            section_current_s = s_next_friction;
+                            friction_s_list_index++;
+                            break;
+                        }
+                        else if (s_next_geom_max_len < section_current_s - SMALL_NUMBER &&
+                                 s_next_geom_max_len + MIN_GEOM_LENGTH < s_next_friction)  // add min geom len to avoid mini patches
+                        {
+                            section_current_s = s_next_geom_max_len;
+                            break;
                         }
                     }
+                }
+
+                if (section_current_s > lsec->GetS() + lsec->GetLength() - SMALL_NUMBER)
+                {
+                    done_section = true;
                 }
 
                 // s-value for next point established, create vertices for each lane
@@ -797,14 +617,14 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive* odr, osg::Vec3d origin)
 
                     roadmanager::Lane* lane_for_friction;
                     lane_for_friction = lsec->GetLaneByIdx(static_cast<int>(friction_index));
-                    mat               = lane_for_friction->GetMaterialByS(s_min - lsec->GetS());
+                    mat               = lane_for_friction->GetMaterialByS(section_current_s - lsec->GetS());
                     double friction   = mat != nullptr ? mat->friction : FRICTION_DEFAULT;
 
                     // retrieve position at s-value
-                    pos.SetTrackPos(road->GetId(), s_min, SIGN(lane_id) * lsec->GetOuterOffset(s_min, lane_id), true);
+                    pos.SetTrackPos(road->GetId(), section_current_s, SIGN(lane_id) * lsec->GetOuterOffset(section_current_s, lane_id), true);
                     GeomPoint gp = {pos.GetX(), pos.GetY(), pos.GetZ(), pos.GetH(), pos.GetZRoadPrim(), pos.GetS()};
 
-                    if (counter == 1)
+                    if (counter == 0)
                     {
                         // add geometry and strip list for the lane to
                         std::vector<GeomPoint> geom_points;
@@ -814,7 +634,7 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive* odr, osg::Vec3d origin)
                         geom_strips_list.push_back(geom_strips);
                     }
 
-                    if (counter == 1 || !NEAR_NUMBERS(friction, geom_cache[k].friction))
+                    if (counter == 0 || !NEAR_NUMBERS(friction, geom_cache[k].friction))
                     {
                         // create initial strip or strip with new friction value
                         geom_strips_list[k].push_back({static_cast<int>(geom_points_list[k].size()), friction});
@@ -824,7 +644,7 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive* odr, osg::Vec3d origin)
 
                     if (geom_cache.size() <= k)
                     {
-                        geom_cache.push_back({{pos.GetX(), pos.GetY(), pos.GetZ(), pos.GetH(), pos.GetZRoadPrim(), pos.GetS()}, 1, friction});
+                        geom_cache.push_back({{pos.GetX(), pos.GetY(), pos.GetZ(), pos.GetH(), pos.GetZRoadPrim(), pos.GetS()}, friction});
                     }
                     else
                     {

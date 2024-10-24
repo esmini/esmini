@@ -79,16 +79,16 @@
         <objects />
         <signals />
     </road>
-    <road name="slope2" length="50.0" id="2" junction="-1">
+    <road name="slope2" length="30.0" id="2" junction="-1">
         <link />
         <planView>
-            <geometry s="0.0" x="0.0" y="-20.0" hdg="0.0" length="50">
-                <arc curvature="-0.005" />
+            <geometry s="0.0" x="0.0" y="-20.0" hdg="0.0" length="30">
+                <arc curvature="-0.03" />
             </geometry>
         </planView>
         <elevationProfile>
             <elevation s="0.0" a="0.0" b="0.0" c="0.0" d="0.0" />
-            <elevation s="20.0" a="2.0" b="0.0" c="0.0" d="0.0" />
+            <elevation s="13.5" a="2.0" b="0.0" c="0.0" d="0.0" />
         </elevationProfile>
         <lateralProfile />
         <lanes>

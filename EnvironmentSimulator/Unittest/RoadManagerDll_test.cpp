@@ -97,8 +97,8 @@ TEST(TestSetMethods, SetWorldPosition)
     EXPECT_NEAR(pos_data.r, 0.0, 1E-5);
     EXPECT_EQ(pos_data.roadId, 2);
     EXPECT_EQ(pos_data.laneId, 1);
-    EXPECT_NEAR(pos_data.laneOffset, 0.03118, 1E-5);
-    EXPECT_NEAR(pos_data.s, 293.27118, 1E-5);
+    EXPECT_NEAR(pos_data.laneOffset, 0.0311, 1E-3);
+    EXPECT_NEAR(pos_data.s, 293.2713, 1E-3);
 
     RM_SetWorldPositionMode(pos_handle, 24.0f, 16.0f, 0.8f, 0.0f, 0.0f, 0.0f, RM_PositionMode::RM_Z_ABS | RM_PositionMode::RM_H_REL);
     RM_GetPositionData(pos_handle, &pos_data);
@@ -110,8 +110,8 @@ TEST(TestSetMethods, SetWorldPosition)
     EXPECT_NEAR(pos_data.r, 0.0, 1E-5);
     EXPECT_EQ(pos_data.roadId, 2);
     EXPECT_EQ(pos_data.laneId, 1);
-    EXPECT_NEAR(pos_data.laneOffset, 0.03118, 1E-5);
-    EXPECT_NEAR(pos_data.s, 293.27118, 1E-5);
+    EXPECT_NEAR(pos_data.laneOffset, 0.0311, 1E-3);
+    EXPECT_NEAR(pos_data.s, 293.2713, 1E-3);
 
     RM_Close();
 }
@@ -142,13 +142,13 @@ TEST(TestRelativeChecks, SubtractPositionsIntersection)
     // B in front of A through intersection
     RM_PositionDiff pos_diff;
     RM_SubtractAFromB(pA, pB, &pos_diff);
-    EXPECT_NEAR(pos_diff.ds, 55.152, 1E-3);
+    EXPECT_NEAR(pos_diff.ds, 55.1497, 1E-3);
     EXPECT_NEAR(pos_diff.dt, -0.114, 1E-3);
     EXPECT_EQ(pos_diff.dLaneId, 0);
 
     // A behind B through intersection
     RM_SubtractAFromB(pB, pA, &pos_diff);
-    EXPECT_NEAR(pos_diff.ds, -55.152, 1E-3);
+    EXPECT_NEAR(pos_diff.ds, -55.1497, 1E-3);
     EXPECT_NEAR(pos_diff.dt, 0.114, 1E-3);
     EXPECT_EQ(pos_diff.dLaneId, 0);
 

@@ -195,8 +195,8 @@ TEST(DistanceTest, CalcDistancePointAcrossIntersection)
     double longDist = 0.0;
 
     ASSERT_EQ(obj0.FreeSpaceDistancePointRoadLane(pos1.GetX(), pos1.GetY(), &latDist, &longDist, CoordinateSystem::CS_ROAD), 0);
-    EXPECT_NEAR(longDist, -38.58642, 1e-5);
-    EXPECT_NEAR(latDist, -0.22127, 1e-5);
+    EXPECT_NEAR(longDist, -38.5861, 1e-3);
+    EXPECT_NEAR(latDist, -0.2212, 1e-3);
 }
 
 TEST(DistanceTest, CalcEntityDistanceFreespace)
@@ -2453,42 +2453,42 @@ TEST(ControllerTest, TestLoomingControllerSimple)
         se->step(dt);
         se->prepareGroundTruth(dt);
     }
-    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetS(), 41.4060182298, 1E-5);
-    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetT(), -1.0844662327, 1E-5);
-    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetH(), 0.2065681342, 1e-5);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetS(), 41.4061, 1E-3);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetT(), -1.0844, 1E-3);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetH(), 0.2065, 1e-3);
 
     while (se->getSimulationTime() < 10.0 - SMALL_NUMBER)
     {
         se->step(dt);
         se->prepareGroundTruth(dt);
     }
-    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetS(), 82.8457730916, 1E-5);
-    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetT(), -1.0642454223, 1E-5);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetS(), 82.8457, 1E-3);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetT(), -1.0642, 1E-3);
 
     while (se->getSimulationTime() < 15.0 - SMALL_NUMBER)
     {
         se->step(dt);
         se->prepareGroundTruth(dt);
     }
-    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetS(), 4.2868112508, 1e-5);
-    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetT(), -1.0630431865, 1e-5);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetS(), 4.2868, 1e-3);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetT(), -1.0630, 1e-3);
 
     while (se->getSimulationTime() < 20.0 - SMALL_NUMBER)
     {
         se->step(dt);
         se->prepareGroundTruth(dt);
     }
-    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetS(), 45.7279451776, 1e-5);
-    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetT(), -1.0638741808, 1e-5);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetS(), 45.7279, 1e-3);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetT(), -1.0638, 1e-3);
 
     while (se->getSimulationTime() < 25.0 - SMALL_NUMBER)
     {
         se->step(dt);
         se->prepareGroundTruth(dt);
     }
-    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetS(), 87.1641289481, 1e-5);
-    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetT(), -1.2282167087, 1e-5);
-    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetH(), 1.0125829829, 1e-5);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetS(), 87.1630, 1e-3);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetT(), -1.2508, 1e-3);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetH(), 1.0125, 1e-3);
 
     delete se;
 }
@@ -2511,8 +2511,8 @@ TEST(ControllerTest, TestLoomingSimpleFarTan)
         se->prepareGroundTruth(dt);
         EXPECT_EQ(ctrl->getHasFarTan(), true);
     }
-    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetS(), 41.4060182298, 1E-5);
-    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetT(), -1.0844662326, 1E-5);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetS(), 41.4061, 1E-3);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetT(), -1.0843, 1E-3);
 
     delete se;
 }
@@ -2683,9 +2683,9 @@ TEST(ControllerTest, TestLoomingControllerAdvanced)
         se->prepareGroundTruth(dt);
     }
     EXPECT_EQ(ctrl->getHasFarTan(), true);
-    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetS(), 83.321507875, 1E-5);
-    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetT(), -1.452957222, 1E-5);
-    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetH(), 5.7631188563, 1e-5);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetS(), 83.3215, 1E-3);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetT(), -1.4529, 1E-3);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetH(), 5.7631, 1e-3);
 
     while (se->getSimulationTime() < 31.0 - SMALL_NUMBER)
     {

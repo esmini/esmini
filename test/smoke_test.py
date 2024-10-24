@@ -361,7 +361,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^7.000, 0, Ego, 255.000, -4.500, 0.000, 0.000, 0.000, 0.000, 35.000', csv, re.MULTILINE))
         self.assertTrue(re.search('^7.000, 1, Target, 263.824, -6.702, 0.000, 6.250, 0.000, 0.000, 31.250, 0.001, 2.150', csv, re.MULTILINE))
         self.assertTrue(re.search('^11.500, 0, Ego, 412.500, -4.500, 0.000, 0.000, 0.000, 0.000, 35.000, 0.000, 0.177', csv, re.MULTILINE))
-        self.assertTrue(re.search('^11.500, 1, Target, 400.801, -30.940, 0.000, 5.933, 0.000, 0.000, 31.250, 0.000, 1.812', csv, re.MULTILINE))
+        self.assertTrue(re.search('^11.500, 1, Target, 400.801, -30.941, 0.000, 5.933, 0.000, 0.000, 31.250, 0.000, 1.812', csv, re.MULTILINE))
 
     def test_lane_change_clothoid(self):
         log = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/lane-change_clothoid_based_trajectory.xosc'), COMMON_ESMINI_ARGS)
@@ -1739,7 +1739,7 @@ class TestSuite(unittest.TestCase):
 
         self.assertTrue(re.search('^35.000, 0, Ego, 334.073, 343.129, 14.269, 5.907, 0.031, 0.000, 3.409, -0.038, 3.205', csv, re.MULTILINE))
         self.assertTrue(re.search('^35.000, 1, Target, 344.284, 338.329, 13.847, 5.787, 0.041, 0.000, 3.222, -0.032, 6.132', csv, re.MULTILINE))
-        self.assertTrue(re.search('^55.700, 0, Ego, 415.817, 225.261, 10.713, 5.154, 6.278, 0.000, 0.051, 0.015, 6.193', csv, re.MULTILINE))
+        self.assertTrue(re.search('^55.700, 0, Ego, 415.817, 225.261, 10.713, 5.154, 6.278, 0.000, 0.051, 0.015, 6.192', csv, re.MULTILINE))
 
     def test_repeats_and_relative_speed(self):
         # this test case exercises restarting events and maneuvers to maintain relative speed using SpeedAction without continuous flag.

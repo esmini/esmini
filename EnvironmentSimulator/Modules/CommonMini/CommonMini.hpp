@@ -347,6 +347,11 @@ double GetCrossProduct2D(double x1, double y1, double x2, double y2);
 double GetDotProduct2D(double x1, double y1, double x2, double y2);
 
 /**
+        Retrieve the angle between two vectors of any length
+*/
+double GetAngleBetweenVectors(double x1, double y1, double x2, double y2);
+
+/**
         Retrieve the intersection between two line segments/vectors a and b
         if found, x3 and x4 is the intersection point
         returns 0 if intersection exists, else -1
