@@ -1,0 +1,201 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
+
+cc_library(
+    name = "action",
+    srcs = [
+        "Action.cpp",
+    ],
+    hdrs = [
+        "Action.hpp",
+    ],
+    includes = ["."],
+    linkstatic = True,
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "catalogs",
+    srcs = [
+        "Catalogs.cpp",
+    ],
+    hdrs = [
+        "Catalogs.hpp",
+    ],
+    includes = ["."],
+    linkstatic = True,
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "entities",
+    srcs = [
+        "Entities.cpp",
+    ],
+    hdrs = [
+        "Entities.hpp",
+    ],
+    includes = ["."],
+    linkstatic = True,
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "ideal_sensor",
+    srcs = [
+        "IdealSensor.cpp",
+    ],
+    hdrs = [
+        "IdealSensor.hpp",
+    ],
+    includes = ["."],
+    linkstatic = True,
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "osi_reporter",
+    srcs = [
+        "OSIReporter.cpp",
+    ],
+    hdrs = [
+        "OSIReporter.hpp",
+    ],
+    includes = ["."],
+    linkstatic = True,
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "osi_traffic_command",
+    srcs = [
+        "OSITrafficCommand.cpp",
+    ],
+    hdrs = [
+        "OSITrafficCommand.hpp",
+    ],
+    includes = ["."],
+    linkstatic = True,
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "parameters",
+    srcs = [
+        "Parameters.cpp",
+    ],
+    hdrs = [
+        "Parameters.hpp",
+    ],
+    includes = ["."],
+    linkstatic = True,
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "road_network",
+    srcs = [
+        "RoadNetwork.cpp",
+    ],
+    hdrs = [
+        "RoadNetwork.hpp",
+    ],
+    includes = ["."],
+    linkstatic = True,
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "scenario_engine",
+    srcs = [
+        "ScenarioEngine.cpp",
+    ],
+    hdrs = [
+        "ScenarioEngine.hpp",
+    ],
+    includes = ["."],
+    linkstatic = True,
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "scenario_gateway",
+    srcs = [
+        "ScenarioGateway.cpp",
+    ],
+    hdrs = [
+        "ScenarioGateway.hpp",
+    ],
+    includes = ["."],
+    linkstatic = True,
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "scenario_reader",
+    srcs = [
+        "ScenarioReader.cpp",
+    ],
+    hdrs = [
+        "ScenarioReader.hpp",
+    ],
+    includes = ["."],
+    linkstatic = True,
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "server",
+    srcs = [
+        "Server.cpp",
+    ],
+    hdrs = [
+        "Server.hpp",
+    ],
+    includes = ["."],
+    linkstatic = True,
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "simple_expr",
+    srcs = [
+        "simple_expr.c",
+    ],
+    hdrs = [
+        "simple_expr.h",
+    ],
+    includes = ["."],
+    linkstatic = True,
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "story_board",
+    srcs = [
+        "Storyboard.cpp",
+    ],
+    hdrs = [
+        "Storyboard.hpp",
+    ],
+    includes = ["."],
+    linkstatic = True,
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "story_board_element",
+    srcs = [
+        "StoryboardElement.cpp",
+    ],
+    hdrs = [
+        "StoryboardElement.hpp",
+    ],
+    includes = ["."],
+    linkstatic = True,
+    visibility = ["//visibility:public"],
+)
+
+
+
+
+

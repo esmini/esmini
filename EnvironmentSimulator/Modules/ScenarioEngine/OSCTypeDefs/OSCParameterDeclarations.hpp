@@ -19,8 +19,6 @@
 #include <string>
 #include <vector>
 
-#include "CommonMini.hpp"
-
 namespace scenarioengine
 {
     class OSCParameterDeclarations

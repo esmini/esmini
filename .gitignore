@@ -39,3 +39,9 @@ pylint_report.txt
 CMakeUserPresets.json
 .DS_Store
 EnvironmentSimulator/Libraries/esminiJS/example/esmini.js
+# bazel
+/bazel-bin
+/bazel-out
+/bazel-esmini
+/bazel-testlogs
+MODULE.bazel.lock

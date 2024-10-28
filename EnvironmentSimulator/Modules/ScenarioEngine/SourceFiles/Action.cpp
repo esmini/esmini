@@ -11,7 +11,6 @@
  */
 
 #include "Action.hpp"
-#include "CommonMini.hpp"
 
 using namespace scenarioengine;
 

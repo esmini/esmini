@@ -1,0 +1,59 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
+
+cc_library(
+    name = "odrSpiral",
+    srcs = [
+        "odrSpiral.cpp",
+    ],
+    hdrs = [
+        "odrSpiral.h",
+    ],
+    includes = ["."],
+    linkstatic = True,
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "road_manager",
+    srcs = [
+        "RoadManager.cpp",
+    ],
+    hdrs = [
+        "RoadManager.hpp",
+    ],
+    copts = [
+        "-Wno-reorder",
+        "-Wno-sign-compare",
+        "-Wno-parentheses",
+        "-Wno-unused-but-set-variable",
+        "-Wno-unused-variable",
+    ],
+    includes = ["."],
+    linkstatic = True,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":odrSpiral",
+        "//EnvironmentSimulator/Modules/CommonMini:common_mini",
+        "//externals:pugixml",
+    ]
+)
+
+cc_library(#TODO: Melih
+    name = "lane_independent_router",
+    srcs = [
+        "LaneIndependentRouter.cpp",
+    ],
+    hdrs = [
+        "LaneIndependentRouter.hpp",
+    ],
+    copts = [
+        "-Wno-reorder",
+        "-Wno-sign-compare",
+    ],
+    includes = ["."],
+    linkstatic = True,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":road_manager",
+    ]
+)

@@ -16,9 +16,6 @@
 #include <string>
 #include <vector>
 #include <math.h>
-#include "OSCCommon.hpp"
-#include "CommonMini.hpp"
-// #include "Entities.hpp"
 
 namespace scenarioengine
 {

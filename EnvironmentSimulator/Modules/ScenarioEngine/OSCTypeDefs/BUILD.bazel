@@ -1,0 +1,182 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
+
+cc_library(#TODO: Melih
+    name = "osc_aabb_tree",
+    srcs = [
+        "OSCAABBTree.cpp",
+    ],
+    hdrs = [
+        "OSCAABBTree.hpp",
+    ],
+    includes = ["."],
+    linkstatic = True,
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "osc_bounding_box",
+    hdrs = [
+        "OSCBoundingBox.hpp",
+    ],
+    includes = ["."],
+    linkstatic = True,
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "osc_common",
+    hdrs = [
+        "OSCCommon.hpp",
+    ],
+    includes = ["."],
+    linkstatic = True,
+    visibility = ["//visibility:public"],
+)
+
+cc_library(#TODO: Melih
+    name = "osc_condition",
+    srcs = [
+        "OSCCondition.cpp",
+    ],
+    hdrs = [
+        "OSCCondition.hpp",
+    ],
+    includes = ["."],
+    linkstatic = True,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":osc_common",
+        "//EnvironmentSimulator/Modules/CommonMini:common_mini", #TODO: Melih
+    ]
+)
+
+cc_library(
+    name = "osc_directory",
+    hdrs = [
+        "OSCDirectory.hpp",
+    ],
+    includes = ["."],
+    linkstatic = True,
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "osc_file",
+    hdrs = [
+        "OSCFile.hpp",
+    ],
+    includes = ["."],
+    linkstatic = True,
+    visibility = ["//visibility:public"],
+)
+
+cc_library(#TODO: Melih
+    name = "osc_global_action",
+    srcs = [
+        "OSCGlobalAction.cpp",
+    ],
+    hdrs = [
+        "OSCGlobalAction.hpp",
+    ],
+    includes = ["."],
+    linkstatic = True,
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "osc_parameter_declarations",
+    hdrs = [
+        "OSCParameterDeclarations.hpp",
+    ],
+    includes = ["."],
+    linkstatic = True,
+    visibility = ["//visibility:public"],
+)
+
+cc_library(#TODO: Melih
+    name = "osc_parameter_distribution",
+    srcs = [
+        "OSCParameterDistribution.cpp",
+    ],
+    hdrs = [
+        "OSCParameterDistribution.hpp",
+    ],
+    includes = ["."],
+    linkstatic = True,
+    visibility = ["//visibility:public"],
+)
+
+cc_library(#TODO: Melih
+    name = "osc_position",
+    srcs = [
+        "OSCPosition.cpp",
+    ],
+    hdrs = [
+        "OSCPosition.hpp",
+    ],
+    includes = ["."],
+    linkstatic = True,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":osc_common",
+    ]
+)
+
+cc_library(#TODO: Melih
+    name = "osc_private_action",
+    srcs = [
+        "OSCPrivateAction.cpp",
+    ],
+    hdrs = [
+        "OSCPrivateAction.hpp",
+    ],
+    includes = ["."],
+    linkstatic = True,
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "osc_properties",
+    hdrs = [
+        "OSCProperties.hpp",
+    ],
+    includes = ["."],
+    linkstatic = True,
+    visibility = ["//visibility:public"],
+)
+
+cc_library(#TODO: Melih
+    name = "osc_swarm_traffic_geometry",
+    srcs = [
+        "OSCSwarmTrafficGeometry.cpp",
+    ],
+    hdrs = [
+        "OSCSwarmTrafficGeometry.hpp",
+    ],
+    includes = ["."],
+    linkstatic = True,
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "osc_triangle_2d",
+    hdrs = [
+        "OSCTriangle2D.hpp",
+    ],
+    includes = ["."],
+    linkstatic = True,
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "osc_utils",
+    hdrs = [
+        "OSCUtils.hpp",
+    ],
+    includes = ["."],
+    linkstatic = True,
+    visibility = ["//visibility:public"],
+)
+
+
+
