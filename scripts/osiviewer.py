@@ -737,7 +737,7 @@ class OSIFile:
         self.filename = osi_filename
         self.gt = GroundTruth()
         self.view = None
-        timestamp = 0.0
+        self.first_timestamp = 0.0
 
         try:
             self.file = open(self.filename, 'rb')
@@ -746,12 +746,14 @@ class OSIFile:
             exit(-1)
 
         while self.read_next_message():
+            timestamp = self.gt.timestamp.seconds + self.gt.timestamp.nanos * 1e-9
             if self.view is None:
                 # create viewer, which will extract the static data from ground-truth
+                self.first_timestamp = timestamp
                 self.view = View(self.gt)
             if len(self.gt.moving_object) > 0:
                 # retrieve timestamp
-                timestamp = self.gt.timestamp.seconds + self.gt.timestamp.nanos * 1e-9
+                timestamp = self.gt.timestamp.seconds + self.gt.timestamp.nanos * 1e-9 - self.first_timestamp
                 for obj in self.gt.moving_object:
                     if obj.HasField('base'):
                         bb = self.view.bb_objects.get_bb_object(obj.id.value)
