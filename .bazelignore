@@ -1,0 +1,4 @@
+bazel-esmini
+bazel-out
+bazel-bin
+bazel-testlogs

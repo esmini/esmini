@@ -1,0 +1,17 @@
+
+load("@rules_python//python:pip.bzl", "compile_pip_requirements")
+
+####################################################################################################
+
+filegroup(
+    name = "license",
+    srcs = ["LICENSE"],
+    visibility = ["//visibility:public"],
+)
+
+compile_pip_requirements(
+    name = "requirements",
+    src = "//support/bazel:requirements.in",
+    requirements_txt = "//support/bazel:requirements.txt",
+    tags = ["manual"],
+)
