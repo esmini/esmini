@@ -13,3 +13,13 @@ cc_library(
     linkstatic = True,
     visibility = ["//visibility:public"],
 )
+
+cc_library(
+    name = "expr",
+    hdrs = [
+        "expr/expr.h",
+    ],
+    includes = ["expr"],
+    linkstatic = True,
+    visibility = ["//visibility:public"],
+)

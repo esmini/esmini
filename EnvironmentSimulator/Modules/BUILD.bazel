@@ -1,0 +1,31 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
+
+cc_library(
+    name = "scenarioengine_controllers_playerbase",
+    srcs = glob([
+        "ScenarioEngine/**/*.cpp",
+        "ScenarioEngine/**/*.c",
+        "Controllers/**/*.cpp",
+        "PlayerBase/**/*.cpp",
+    ]),
+    hdrs = glob([
+        "ScenarioEngine/**/*.hpp",
+        "ScenarioEngine/**/*.h",
+        "Controllers/**/*.hpp",
+        "PlayerBase/**/*.hpp",
+    ]),
+    includes = [
+        "ScenarioEngine/OSCTypeDefs",
+        "ScenarioEngine/SourceFiles",
+        "Controllers",
+        "PlayerBase",
+    ],
+    linkstatic = True,
+    visibility = ["//visibility:public"],
+    deps = [
+        "//EnvironmentSimulator/Modules/CommonMini:udp",
+        "//EnvironmentSimulator/Modules/RoadManager:road_manager",
+        "//externals:pugixml",
+        "//externals:expr",
+    ]
+)
