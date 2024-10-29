@@ -1,8 +1,86 @@
+load("@bazel_skylib//lib:selects.bzl", "selects")
+
+####################################################################################################
+
+OSI_STATIC_DBG = [
+    "linux/lib/debug/libopen_simulation_interface_pic.a",
+    "linux/lib/debug/libprotobufd.a",
+]
+
+OSI_STATIC_OPT = [
+    "linux/lib/release/libopen_simulation_interface_pic.a",
+    "linux/lib/release/libprotobuf.a",
+]
+
+
+OSI_SHARED_DBG = [
+    "linux/lib-dyn/debug/libopen_simulation_interface.so",
+    "linux/lib-dyn/debug/libprotobufd.so",
+]
+
+OSI_SHARED_OPT = [
+    "linux/lib-dyn/release/libopen_simulation_interface.so",
+    "linux/lib-dyn/release/libprotobuf.so",
+]
+
+####################################################################################################
+
+selects.config_setting_group(
+    name = "static_dbg",
+    match_all = [
+        "@esmini//support/bazel/common:debug",
+        "@esmini//support/bazel/common:dyn_protobuf_disabled",
+    ],
+)
+
+selects.config_setting_group(
+    name = "static_opt",
+    match_all = [
+        "@esmini//support/bazel/common:optimized",
+        "@esmini//support/bazel/common:dyn_protobuf_disabled",
+    ],
+)
+
+selects.config_setting_group(
+    name = "shared_dbg",
+    match_all = [
+        "@esmini//support/bazel/common:debug",
+        "@esmini//support/bazel/common:dyn_protobuf_enabled",
+    ],
+)
+
+selects.config_setting_group(
+    name = "shared_opt",
+    match_all = [
+        "@esmini//support/bazel/common:optimized",
+        "@esmini//support/bazel/common:dyn_protobuf_enabled",
+    ],
+)
+
 ####################################################################################################
 
 filegroup(
-    name = "all_files",
-    srcs = glob(["**"]),
+    name = "osi_libs",
+    srcs = select({
+        ":static_dbg": OSI_STATIC_DBG,
+        ":static_opt": OSI_STATIC_OPT,
+        ":shared_dbg": OSI_SHARED_DBG,
+        ":shared_opt": OSI_SHARED_OPT,
+        "//conditions:default": OSI_STATIC_OPT,
+    }),
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "osi",
+    srcs = [
+        ":osi_libs",
+    ],
+    hdrs = glob([
+        "linux/include/**/*.h",
+        "linux/include/**/*.inc",
+    ]),
+    includes = ["linux/include"],
     visibility = ["//visibility:public"],
 )
 

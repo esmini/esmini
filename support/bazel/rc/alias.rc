@@ -1,6 +1,5 @@
 ####################################################################################################
-# IMPORT RC
+# ALIAS
 ####################################################################################################
 
-import %workspace%/support/bazel/rc/alias.rc
-import %workspace%/support/bazel/rc/general.rc
+build --flag_alias=dyn_protobuf=//support/bazel/common:dyn_protobuf

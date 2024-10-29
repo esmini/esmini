@@ -1,8 +1,86 @@
 ####################################################################################################
 
+SUMO_DBG = [
+    "linux/lib/liblibsumostaticd.a",
+    "linux/lib/libnetloadd.a",
+    "linux/lib/libtraciserverd.a",
+    "linux/lib/libutils_vehicled.a",
+    "linux/lib/libutils_distributiond.a",
+    "linux/lib/libutils_shapesd.a",
+    "linux/lib/libutils_optionsd.a",
+    "linux/lib/libutils_xmld.a",
+    "linux/lib/libutils_geomd.a",
+    "linux/lib/libutils_commond.a",
+    "linux/lib/libutils_iodevicesd.a",
+    "linux/lib/libutils_traction_wired.a",
+    "linux/lib/libutils_emissionsd.a",
+    "linux/lib/libmicrosim_engined.a",
+    "linux/lib/libmicrosim_lcmodelsd.a",
+    "linux/lib/libmicrosim_devicesd.a",
+    "linux/lib/libmicrosim_triggerd.a",
+    "linux/lib/libmicrosim_outputd.a",
+    "linux/lib/libmicrosim_transportablesd.a",
+    "linux/lib/libmicrosim_actionsd.a",
+    "linux/lib/libmicrosim_traffic_lightsd.a",
+    "linux/lib/libmicrosimd.a",
+    "linux/lib/libmesosimd.a",
+    "linux/lib/libforeign_phemlightd.a",
+    "linux/lib/libforeign_tcpipd.a",
+    "linux/lib/libmicrosim_cfmodelsd.a",
+    "linux/lib/libzlibstaticd.a",
+    "linux/lib/libxerces-c_3D.a",
+]
+
+SUMO_OPT = [
+    "linux/lib/liblibsumostatic.a",
+    "linux/lib/libnetload.a",
+    "linux/lib/libtraciserver.a",
+    "linux/lib/libutils_vehicle.a",
+    "linux/lib/libutils_distribution.a",
+    "linux/lib/libutils_shapes.a",
+    "linux/lib/libutils_options.a",
+    "linux/lib/libutils_xml.a",
+    "linux/lib/libutils_geom.a",
+    "linux/lib/libutils_common.a",
+    "linux/lib/libutils_iodevices.a",
+    "linux/lib/libutils_traction_wire.a",
+    "linux/lib/libutils_emissions.a",
+    "linux/lib/libmicrosim_engine.a",
+    "linux/lib/libmicrosim_lcmodels.a",
+    "linux/lib/libmicrosim_devices.a",
+    "linux/lib/libmicrosim_trigger.a",
+    "linux/lib/libmicrosim_output.a",
+    "linux/lib/libmicrosim_transportables.a",
+    "linux/lib/libmicrosim_actions.a",
+    "linux/lib/libmicrosim_traffic_lights.a",
+    "linux/lib/libmicrosim.a",
+    "linux/lib/libmesosim.a",
+    "linux/lib/libforeign_phemlight.a",
+    "linux/lib/libforeign_tcpip.a",
+    "linux/lib/libmicrosim_cfmodels.a",
+    "linux/lib/libzlibstatic.a",
+    "linux/lib/libxerces-c_3.a",
+]
+
 filegroup(
-    name = "all_files",
-    srcs = glob(["**"]),
+    name = "sumo_libs",
+    srcs = select({
+        "@esmini//support/bazel/common:debug": SUMO_DBG,
+        "@esmini//support/bazel/common:optimized": SUMO_OPT,
+        "//conditions:default": SUMO_OPT
+    }),
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "sumo",
+    srcs = [
+        ":sumo_libs",
+    ],
+    hdrs = glob([
+        "linux/include/**/*.h",
+    ]),
+    includes = ["linux/include"],
     visibility = ["//visibility:public"],
 )
 

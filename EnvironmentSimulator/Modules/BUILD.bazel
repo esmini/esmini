@@ -25,6 +25,7 @@ cc_library(
     deps = [
         "//EnvironmentSimulator/Modules/CommonMini:udp",
         "//EnvironmentSimulator/Modules/RoadManager:road_manager",
+        "//EnvironmentSimulator/Modules/RoadManager:lane_independent_router",
         "//externals:pugixml",
         "//externals:expr",
     ]

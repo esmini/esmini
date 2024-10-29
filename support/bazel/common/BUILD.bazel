@@ -1,0 +1,40 @@
+load(":settings.bzl", "dyn_protobuf")
+
+package(default_visibility = ["//visibility:public"])
+
+####################################################################################################
+
+config_setting(
+    name = "debug",
+    values = {
+        "compilation_mode": "dbg",
+    },
+)
+
+config_setting(
+    name = "optimized",
+    values = {
+        "compilation_mode": "opt",
+    },
+)
+
+####################################################################################################
+
+dyn_protobuf(
+    name = "dyn_protobuf",
+    build_setting_default = "off",
+)
+
+config_setting(
+    name = "dyn_protobuf_disabled",
+    flag_values = {
+        ":dyn_protobuf": "off",
+    },
+)
+
+config_setting(
+    name = "dyn_protobuf_enabled",
+    flag_values = {
+        ":dyn_protobuf": "on",
+    },
+)
