@@ -13,13 +13,14 @@ DUMMY = "dummy"
 # BAZEL DEPENDENCIES
 ####################################################################################################
 
+bazel_dep(name = "bazel_skylib", version = "1.7.1")
 bazel_dep(name = "rules_cc", version = "0.0.13")
 bazel_dep(name = "rules_python", version = "0.37.1")
 bazel_dep(name = "aspect_rules_py", version = "0.8.0")
 
-########################################################################################################################
+####################################################################################################
 # BAZEL - RULES PYTHON
-########################################################################################################################
+####################################################################################################
 
 python = use_extension("@rules_python//python/extensions:python.bzl", "python")
 python.toolchain(
@@ -35,3 +36,32 @@ pip.parse(
     requirements_lock = "//support/bazel:requirements.txt",
 )
 use_repo(pip, "esmini_pypi")
+
+####################################################################################################
+# NON-BAZEL DEPENDENCIES (HTTP) - PROJECTS
+####################################################################################################
+
+#
+models = use_extension("@esmini//support/bazel/external/extensions:models.bzl", "models")
+models.base()
+use_repo(models, "models")
+
+#
+osg = use_extension("@esmini//support/bazel/external/extensions:osg.bzl", "osg")
+osg.base()
+use_repo(osg, "osg")
+
+#
+osi = use_extension("@esmini//support/bazel/external/extensions:osi.bzl", "osi")
+osi.base()
+use_repo(osi, "osi")
+
+#
+sumo = use_extension("@esmini//support/bazel/external/extensions:sumo.bzl", "sumo")
+sumo.base()
+use_repo(sumo, "sumo")
+
+#
+implot = use_extension("@esmini//support/bazel/external/extensions:implot.bzl", "implot")
+implot.base()
+use_repo(implot, "implot")
