@@ -1,9 +1,40 @@
 ####################################################################################################
 
+IMPLOT_DBG = [
+    "linux/lib/libglfw3d.a",
+    "linux/lib/libimplotd.a",
+]
+
+IMPLOT_OPT = [
+    "linux/lib/libglfw3.a",
+    "linux/lib/libimplot.a",
+]
+
 filegroup(
-    name = "all_files",
-    srcs = glob(["**"]),
+    name = "implot_libs",
+    srcs = select({
+        "@esmini//support/bazel/common:debug": IMPLOT_DBG,
+        "@esmini//support/bazel/common:optimized": IMPLOT_OPT,
+        "//conditions:default": IMPLOT_OPT
+    }),
     visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "implot",
+    srcs = [
+        ":implot_libs",
+    ],
+    hdrs = glob([
+        "linux/include/**/*.h",
+    ]),
+    includes = ["linux/include"],
+    visibility = ["//visibility:public"],
+    linkopts = [
+        "-lGL",
+        "-lX11",
+        "-ldl",
+    ],
 )
 
 ####################################################################################################
