@@ -1,7 +1,7 @@
 load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
 load("@esmini//support/bazel/version:rules.bzl", "generate_version")
 
-########################################################################################################################
+####################################################################################################
 
 generate_version(
     name = "version_cpp",

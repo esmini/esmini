@@ -50,8 +50,12 @@ cc_library(
         ":osg_libs",
     ],
     hdrs = glob([
-        "linux/include/**/*.h",
+        "linux/include/**/*",
     ]),
+    defines = select({
+        "@esmini//support/bazel/common:osg_disabled": [],
+        "@esmini//support/bazel/common:osg_enabled": ["_USE_OSG"],
+    }),
     includes = ["linux/include"],
     visibility = ["//visibility:public"],
     linkopts = [

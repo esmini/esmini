@@ -12,9 +12,9 @@
 
 #include "OSISensorView.hpp"
 
-using namespace viewer;
-
 #ifdef _USE_OSI
+
+using namespace viewer;
 
 OSISensorDetection::OSISensorDetection(osg::ref_ptr<osg::Group> parent)
 {

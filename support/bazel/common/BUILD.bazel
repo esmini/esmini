@@ -1,4 +1,4 @@
-load(":settings.bzl", "dyn_protobuf")
+load(":settings.bzl", "dyn_protobuf", "implot", "osg", "osi", "sumo")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -38,3 +38,89 @@ config_setting(
         ":dyn_protobuf": "on",
     },
 )
+
+####################################################################################################
+
+implot(
+    name = "implot",
+    build_setting_default = "off",
+)
+
+config_setting(
+    name = "implot_disabled",
+    flag_values = {
+        ":implot": "off",
+    },
+)
+
+config_setting(
+    name = "implot_enabled",
+    flag_values = {
+        ":implot": "on",
+    },
+)
+
+####################################################################################################
+
+osg(
+    name = "osg",
+    build_setting_default = "off",
+)
+
+config_setting(
+    name = "osg_disabled",
+    flag_values = {
+        ":osg": "off",
+    },
+)
+
+config_setting(
+    name = "osg_enabled",
+    flag_values = {
+        ":osg": "on",
+    },
+)
+
+####################################################################################################
+
+osi(
+    name = "osi",
+    build_setting_default = "off",
+)
+
+config_setting(
+    name = "osi_disabled",
+    flag_values = {
+        ":osi": "off",
+    },
+)
+
+config_setting(
+    name = "osi_enabled",
+    flag_values = {
+        ":osi": "on",
+    },
+)
+
+####################################################################################################
+
+sumo(
+    name = "sumo",
+    build_setting_default = "off",
+)
+
+config_setting(
+    name = "sumo_disabled",
+    flag_values = {
+        ":sumo": "off",
+    },
+)
+
+config_setting(
+    name = "sumo_enabled",
+    flag_values = {
+        ":sumo": "on",
+    },
+)
+
+####################################################################################################

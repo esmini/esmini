@@ -1,19 +1,91 @@
 load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
 
-cc_library(
-    name = "scenarioengine_controllers_playerbase",
-    srcs = glob([
+####################################################################################################
+
+filegroup(
+    name = "scenario_engine_source_files",
+    srcs = glob(include = [
         "ScenarioEngine/**/*.cpp",
         "ScenarioEngine/**/*.c",
-        "Controllers/**/*.cpp",
-        "PlayerBase/**/*.cpp",
-    ]),
-    hdrs = glob([
+    ]) + select({
+        "@esmini//support/bazel/common:osi_disabled": glob(exclude = [
+            "ScenarioEngine/**/OSI*.cpp",
+            "ScenarioEngine/**/OSI*.c",
+        ]),
+        "@esmini//support/bazel/common:osi_enabled": [],
+    }),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "scenario_engine_header_files",
+    srcs = glob(include = [
         "ScenarioEngine/**/*.hpp",
         "ScenarioEngine/**/*.h",
-        "Controllers/**/*.hpp",
-        "PlayerBase/**/*.hpp",
-    ]),
+    ]) + select({
+        "@esmini//support/bazel/common:osi_disabled": glob(exclude = [
+            "ScenarioEngine/**/OSI*.hpp",
+            "ScenarioEngine/**/OSI*.h",
+        ]),
+        "@esmini//support/bazel/common:osi_enabled": [],
+    }),
+    visibility = ["//visibility:public"],
+)
+
+####################################################################################################
+
+filegroup(
+    name = "controllers_source_files",
+    srcs = glob(include = ["Controllers/**/*.cpp"]) + select({
+        "@esmini//support/bazel/common:sumo_disabled": glob(exclude = ["Controllers/**/*Sumo.cpp"]),
+        "@esmini//support/bazel/common:sumo_enabled": [],
+    }),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "controllers_header_files",
+    srcs = glob(include = ["Controllers/**/*.hpp"]) + select({
+        "@esmini//support/bazel/common:sumo_disabled": glob(exclude = ["Controllers/**/*Sumo.hpp"]),
+        "@esmini//support/bazel/common:sumo_enabled": [],
+    }),
+    visibility = ["//visibility:public"],
+)
+
+####################################################################################################
+
+filegroup(
+    name = "player_base_source_files",
+    srcs = glob(include = ["PlayerBase/**/*.cpp"]) + select({
+        "@esmini//support/bazel/common:implot_disabled": glob(exclude = ["Controllers/**/*Plot.cpp"]),
+        "@esmini//support/bazel/common:implot_enabled": [],
+    }),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "player_base_header_files",
+    srcs = glob(include = ["PlayerBase/**/*.hpp"]) + select({
+        "@esmini//support/bazel/common:implot_disabled": glob(exclude = ["Controllers/**/*Plot.hpp"]),
+        "@esmini//support/bazel/common:implot_enabled": [],
+    }),
+    visibility = ["//visibility:public"],
+)
+
+####################################################################################################
+
+cc_library(
+    name = "scenarioengine_controllers_playerbase",
+    srcs = [
+        ":scenario_engine_source_files",
+        ":controllers_source_files",
+        ":player_base_source_files",
+    ],
+    hdrs = [
+        ":scenario_engine_header_files",
+        ":controllers_header_files",
+        ":player_base_header_files",
+    ],
     includes = [
         "ScenarioEngine/OSCTypeDefs",
         "ScenarioEngine/SourceFiles",

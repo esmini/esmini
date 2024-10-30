@@ -3,3 +3,7 @@
 ####################################################################################################
 
 build --flag_alias=dyn_protobuf=//support/bazel/common:dyn_protobuf
+build --flag_alias=implot=//support/bazel/common:implot
+build --flag_alias=osg=//support/bazel/common:osg
+build --flag_alias=osi=//support/bazel/common:osi
+build --flag_alias=sumo=//support/bazel/common:sumo

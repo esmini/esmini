@@ -28,6 +28,10 @@ cc_library(
     hdrs = glob([
         "linux/include/**/*.h",
     ]),
+    defines = select({
+        "@esmini//support/bazel/common:implot_disabled": [],
+        "@esmini//support/bazel/common:implot_enabled": ["_USE_IMPLOT"],
+    }),
     includes = [
         "linux/include/implot",
         "linux/include/imgui",

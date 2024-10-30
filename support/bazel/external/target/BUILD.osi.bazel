@@ -80,6 +80,10 @@ cc_library(
         "linux/include/**/*.h",
         "linux/include/**/*.inc",
     ]),
+    defines = select({
+        "@esmini//support/bazel/common:osi_disabled": [],
+        "@esmini//support/bazel/common:osi_enabled": ["_USE_OSI"],
+    }),
     includes = ["linux/include"],
     visibility = ["//visibility:public"],
 )
