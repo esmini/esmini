@@ -1,0 +1,23 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
+
+####################################################################################################
+
+cc_library(
+    name = "esmini_lib",
+    srcs = [
+        "esminiLib.cpp",
+    ],
+    hdrs = [
+        "esminiLib.hpp",
+    ],
+    copts = [
+        "-Wno-address",
+    ],
+    includes = ["."],
+    linkstatic = True,
+    visibility = ["//visibility:public"],
+    deps = [
+        "//EnvironmentSimulator/Modules/CommonMini:common_mini",
+        "//EnvironmentSimulator/Modules:scenarioengine_controllers_playerbase",
+    ]
+)

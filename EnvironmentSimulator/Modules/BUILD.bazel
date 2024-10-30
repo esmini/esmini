@@ -4,30 +4,36 @@ load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
 
 filegroup(
     name = "scenario_engine_source_files",
-    srcs = glob(include = [
-        "ScenarioEngine/**/*.cpp",
-        "ScenarioEngine/**/*.c",
-    ]) + select({
-        "@esmini//support/bazel/common:osi_disabled": glob(exclude = [
+    srcs = select({
+        "@esmini//support/bazel/common:osi_disabled": glob([
+            "ScenarioEngine/**/*.cpp",
+            "ScenarioEngine/**/*.c",
+        ], exclude = [
             "ScenarioEngine/**/OSI*.cpp",
             "ScenarioEngine/**/OSI*.c",
         ]),
-        "@esmini//support/bazel/common:osi_enabled": [],
+        "@esmini//support/bazel/common:osi_enabled": glob([
+            "ScenarioEngine/**/*.cpp",
+            "ScenarioEngine/**/*.c",
+        ]),
     }),
     visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "scenario_engine_header_files",
-    srcs = glob(include = [
-        "ScenarioEngine/**/*.hpp",
-        "ScenarioEngine/**/*.h",
-    ]) + select({
-        "@esmini//support/bazel/common:osi_disabled": glob(exclude = [
+    srcs = select({
+        "@esmini//support/bazel/common:osi_disabled": glob([
+            "ScenarioEngine/**/*.hpp",
+            "ScenarioEngine/**/*.h",
+        ], exclude = [
             "ScenarioEngine/**/OSI*.hpp",
             "ScenarioEngine/**/OSI*.h",
         ]),
-        "@esmini//support/bazel/common:osi_enabled": [],
+        "@esmini//support/bazel/common:osi_enabled": glob([
+            "ScenarioEngine/**/*.hpp",
+            "ScenarioEngine/**/*.h",
+        ]),
     }),
     visibility = ["//visibility:public"],
 )
@@ -36,18 +42,30 @@ filegroup(
 
 filegroup(
     name = "controllers_source_files",
-    srcs = glob(include = ["Controllers/**/*.cpp"]) + select({
-        "@esmini//support/bazel/common:sumo_disabled": glob(exclude = ["Controllers/**/*Sumo.cpp"]),
-        "@esmini//support/bazel/common:sumo_enabled": [],
+    srcs = select({
+        "@esmini//support/bazel/common:osi_disabled": glob([
+            "Controllers/**/*.cpp",
+        ], exclude = [
+            "Controllers/**/*Sumo.cpp",
+        ]),
+        "@esmini//support/bazel/common:osi_enabled": glob([
+            "Controllers/**/*.cpp",
+        ]),
     }),
     visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "controllers_header_files",
-    srcs = glob(include = ["Controllers/**/*.hpp"]) + select({
-        "@esmini//support/bazel/common:sumo_disabled": glob(exclude = ["Controllers/**/*Sumo.hpp"]),
-        "@esmini//support/bazel/common:sumo_enabled": [],
+    srcs = select({
+        "@esmini//support/bazel/common:sumo_disabled": glob([
+            "Controllers/**/*.hpp",
+        ], exclude = [
+            "Controllers/**/*Sumo.hpp",
+        ]),
+        "@esmini//support/bazel/common:sumo_enabled": glob([
+            "Controllers/**/*.hpp",
+        ]),
     }),
     visibility = ["//visibility:public"],
 )
@@ -56,18 +74,30 @@ filegroup(
 
 filegroup(
     name = "player_base_source_files",
-    srcs = glob(include = ["PlayerBase/**/*.cpp"]) + select({
-        "@esmini//support/bazel/common:implot_disabled": glob(exclude = ["Controllers/**/*Plot.cpp"]),
-        "@esmini//support/bazel/common:implot_enabled": [],
+    srcs = select({
+        "@esmini//support/bazel/common:implot_disabled": glob([
+            "PlayerBase/**/*.cpp",
+        ], exclude = [
+            "PlayerBase/**/*Plot.cpp",
+        ]),
+        "@esmini//support/bazel/common:implot_enabled": glob([
+            "PlayerBase/**/*.cpp",
+        ]),
     }),
     visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "player_base_header_files",
-    srcs = glob(include = ["PlayerBase/**/*.hpp"]) + select({
-        "@esmini//support/bazel/common:implot_disabled": glob(exclude = ["Controllers/**/*Plot.hpp"]),
-        "@esmini//support/bazel/common:implot_enabled": [],
+    srcs = select({
+        "@esmini//support/bazel/common:implot_disabled": glob([
+            "PlayerBase/**/*.hpp",
+        ], exclude = [
+            "PlayerBase/**/*Plot.hpp",
+        ]),
+        "@esmini//support/bazel/common:implot_enabled": glob([
+            "PlayerBase/**/*.hpp",
+        ]),
     }),
     visibility = ["//visibility:public"],
 )
@@ -100,8 +130,14 @@ cc_library(
         "//EnvironmentSimulator/Modules/RoadManager:lane_independent_router",
         "//externals:pugixml",
         "//externals:expr",
-        "@sumo//:sumo",
-        "@implot//:implot",
-        "@osi//:osi",
-    ]
+    ] + select({
+        "@esmini//support/bazel/common:osi_disabled": [],
+        "@esmini//support/bazel/common:osi_enabled": ["@osi//:osi"],
+    }) + select({
+        "@esmini//support/bazel/common:implot_disabled": [],
+        "@esmini//support/bazel/common:implot_enabled": ["@implot//:implot"],
+    }) + select({
+        "@esmini//support/bazel/common:sumo_disabled": [],
+        "@esmini//support/bazel/common:sumo_enabled": ["@sumo//:sumo"],
+    })
 )
