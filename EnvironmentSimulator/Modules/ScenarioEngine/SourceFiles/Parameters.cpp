@@ -11,6 +11,7 @@
  */
 
 #include "Parameters.hpp"
+#include "CommonMini.hpp"
 #include "simple_expr.h"
 
 using namespace scenarioengine;

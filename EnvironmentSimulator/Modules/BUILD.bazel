@@ -28,5 +28,8 @@ cc_library(
         "//EnvironmentSimulator/Modules/RoadManager:lane_independent_router",
         "//externals:pugixml",
         "//externals:expr",
+        "@sumo//:sumo",
+        "@implot//:implot",
+        "@osi//:osi",
     ]
 )
