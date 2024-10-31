@@ -1,0 +1,85 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
+
+####################################################################################################
+
+cc_library(
+    name = "replayer_lib",
+    srcs = [
+        "Replay.cpp",
+        "helpText.hpp",
+        "collision.hpp",
+    ],
+    hdrs = [
+        "Replay.hpp",
+    ],
+    includes = ["."],
+    linkstatic = True,
+    visibility = ["//visibility:public"],
+    deps = [
+        "//EnvironmentSimulator/Libraries/esminiLib:esmini_lib",
+    ]
+)
+
+
+cc_binary(
+    name = "replayer",
+    srcs = [
+        "main.cpp",
+    ],
+    includes = ["."],
+    linkopts = ["-Wl,-rpath,$$ORIGIN"],
+    linkstatic = False,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":replayer_lib",
+    ],
+)
+
+####################################################################################################
+
+cc_library(
+    name = "dat2csv_lib",
+    srcs = [
+        "Replay.cpp",
+    ],
+    hdrs = [
+        "Replay.hpp",
+    ],
+    includes = ["."],
+    linkstatic = True,
+    visibility = ["//visibility:public"],
+    deps = [
+        "//EnvironmentSimulator/Libraries/esminiLib:esmini_lib",
+    ]
+)
+
+cc_binary(
+    name = "dat2csv",
+    srcs = [
+        "dat2csv.cpp",
+    ],
+    includes = ["."],
+    linkopts = ["-Wl,-rpath,$$ORIGIN"],
+    linkstatic = False,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":dat2csv_lib",
+    ],
+)
+
+####################################################################################################
+
+cc_binary(
+    name = "osi_receiver",
+    srcs = [
+        "osi_receiver.cpp",
+    ],
+    includes = ["."],
+    linkopts = ["-Wl,-rpath,$$ORIGIN"],
+    linkstatic = False,
+    visibility = ["//visibility:public"],
+    deps = select({
+        "@esmini//support/bazel/common:osi_disabled": [],
+        "@esmini//support/bazel/common:osi_enabled": ["@osi//:osi"],
+    })
+)
