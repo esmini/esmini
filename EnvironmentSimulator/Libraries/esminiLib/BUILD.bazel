@@ -19,8 +19,10 @@ cc_library(
     deps = [
         "//EnvironmentSimulator/Modules/CommonMini:common_mini",
         "//EnvironmentSimulator/Modules:scenarioengine_controllers_playerbase",
-        "//EnvironmentSimulator/Modules/ViewerBase:viewer_base",
-    ]
+    ] + select({
+        "@esmini//support/bazel/common:osg_disabled": [],
+        "@esmini//support/bazel/common:osg_enabled": ["//EnvironmentSimulator/Modules/ViewerBase:viewer_base"],
+    })
 )
 
 cc_binary(
@@ -43,6 +45,8 @@ cc_binary(
     deps = [
         "//EnvironmentSimulator/Modules/CommonMini:common_mini",
         "//EnvironmentSimulator/Modules:scenarioengine_controllers_playerbase",
-        "//EnvironmentSimulator/Modules/ViewerBase:viewer_base",
-    ]
+    ] + select({
+        "@esmini//support/bazel/common:osg_disabled": [],
+        "@esmini//support/bazel/common:osg_enabled": ["//EnvironmentSimulator/Modules/ViewerBase:viewer_base"],
+    })
 )
