@@ -104,23 +104,59 @@ filegroup(
 
 ####################################################################################################
 
+filegroup(
+    name = "viewer_base_source_files",
+    srcs = [
+        "ViewerBase/OSISensorView.cpp",
+        "ViewerBase/roadgeom.cpp",
+        "ViewerBase/RubberbandManipulator.cpp",
+        "ViewerBase/viewer.cpp",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "viewer_base_header_files",
+    srcs = [
+        "ViewerBase/OSISensorView.hpp",
+        "ViewerBase/roadgeom.hpp",
+        "ViewerBase/RubberbandManipulator.hpp",
+        "ViewerBase/viewer.hpp",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+####################################################################################################
+
 cc_library(
-    name = "scenarioengine_controllers_playerbase",
+    name = "scenarioengine_controllers_playerbase_viewer",
     srcs = [
         ":scenario_engine_source_files",
         ":controllers_source_files",
         ":player_base_source_files",
-    ],
+    ] + select({
+        "@esmini//support/bazel/common:osg_disabled": [],
+        "@esmini//support/bazel/common:osg_enabled": [":viewer_base_source_files"],
+    }),
     hdrs = [
         ":scenario_engine_header_files",
         ":controllers_header_files",
         ":player_base_header_files",
-    ],
+    ] + select({
+        "@esmini//support/bazel/common:osg_disabled": [],
+        "@esmini//support/bazel/common:osg_enabled": [":viewer_base_header_files"],
+    }),
     includes = [
         "ScenarioEngine/OSCTypeDefs",
         "ScenarioEngine/SourceFiles",
         "Controllers",
         "PlayerBase",
+        "ViewerBase",
+    ],
+    copts = [
+        "-Wno-reorder",
+        "-Wno-sign-compare",
+        "-Wno-parentheses",
     ],
     linkstatic = True,
     visibility = ["//visibility:public"],
@@ -139,5 +175,8 @@ cc_library(
     }) + select({
         "@esmini//support/bazel/common:sumo_disabled": [],
         "@esmini//support/bazel/common:sumo_enabled": ["@sumo//:sumo"],
+    }) + select({
+        "@esmini//support/bazel/common:osg_disabled": [],
+        "@esmini//support/bazel/common:osg_enabled": ["@osg//:osg"],
     })
 )

@@ -70,6 +70,29 @@ cc_test(
     deps = [
         "@googletest//:gtest",
         "@googletest//:gtest_main",
-        "//EnvironmentSimulator/Modules:scenarioengine_controllers_playerbase",
+        "//EnvironmentSimulator/Modules:scenarioengine_controllers_playerbase_viewer",
+    ],
+)
+
+####################################################################################################
+
+cc_test(
+    name = "scenario_player_test",
+    srcs = [
+        "ScenarioPlayer_test.cpp",
+    ],
+    data = [
+        "//resources:xodr_files",
+        "//resources:xosc_files",
+        "//resources:catalogs",
+        ":xosc_files",
+        ":xodr_files",
+    ],
+    defines = ["_USE_BAZEL"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+        "//EnvironmentSimulator/Modules:scenarioengine_controllers_playerbase_viewer",
     ],
 )

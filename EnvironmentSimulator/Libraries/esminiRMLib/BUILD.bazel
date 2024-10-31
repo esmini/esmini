@@ -37,6 +37,6 @@ cc_binary(
     visibility = ["//visibility:public"],
     deps = [
         "//EnvironmentSimulator/Modules/CommonMini:common_mini",
-        "//EnvironmentSimulator/Modules:scenarioengine_controllers_playerbase",
+        "//EnvironmentSimulator/Modules:scenarioengine_controllers_playerbase_viewer",
     ]
 )

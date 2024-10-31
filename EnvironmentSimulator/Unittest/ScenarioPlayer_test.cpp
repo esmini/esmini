@@ -13,8 +13,13 @@ using namespace scenarioengine;
 
 TEST(CustomCameraTest, TestCustomCameraVariants)
 {
+    char scenario_file[100] = "../../../resources/xosc/cut-in_cr.xosc";
+    #ifdef _USE_BAZEL
+        strcpy(scenario_file, "./resources/xosc/cut-in_cr.xosc");
+    #endif
+
     const char* args[] =
-        {"esmini", "--osc", "../../../resources/xosc/cut-in_cr.xosc", "--window", "60", "60", "800", "600", "--headless", "--disable_stdout"};
+        {"esmini", "--osc", scenario_file, "--window", "60", "60", "800", "600", "--headless", "--disable_stdout"};
     int             argc   = sizeof(args) / sizeof(char*);
     ScenarioPlayer* player = new ScenarioPlayer(argc, const_cast<char**>(args));
 
@@ -118,7 +123,12 @@ TEST(CustomCameraTest, TestCustomCameraVariants)
 
 TEST(AlignmentTest, TestPositionAlignmentVariants)
 {
-    const char*     args[] = {"esmini", "--osc", "../../../resources/xosc/lane_change_crest.xosc", "--headless", "--disable_stdout"};
+    char scenario_file[100] = "../../../resources/xosc/lane_change_crest.xosc";
+    #ifdef _USE_BAZEL
+        strcpy(scenario_file, "./resources/xosc/lane_change_crest.xosc");
+    #endif
+
+    const char*     args[] = {"esmini", "--osc", scenario_file, "--headless", "--disable_stdout"};
     int             argc   = sizeof(args) / sizeof(char*);
     ScenarioPlayer* player = new ScenarioPlayer(argc, const_cast<char**>(args));
 
@@ -202,9 +212,15 @@ TEST(AlignmentTest, TestPositionAlignmentVariants)
     delete player;
 }
 
+
 TEST(SensorTest, TestSensorFunctionsReturnValuesAndCounters)
 {
-    const char*     args[] = {"esmini", "--osc", "../../../resources/xosc/cut-in.xosc", "--headless", "--disable_stdout"};
+    char scenario_file[100] = "../../../resources/xosc/cut-in.xosc";
+    #ifdef _USE_BAZEL
+        strcpy(scenario_file, "./resources/xosc/cut-in.xosc");
+    #endif
+
+    const char*     args[] = {"esmini", "--osc", scenario_file, "--headless", "--disable_stdout"};
     int             argc   = sizeof(args) / sizeof(char*);
     ScenarioPlayer* player = new ScenarioPlayer(argc, const_cast<char**>(args));
 
@@ -226,7 +242,12 @@ TEST(SensorTest, TestSensorFunctionsReturnValuesAndCounters)
 
 TEST(AlignmentTest, TestPosMode)
 {
-    const char* args[] = {"esmini", "--headless", "--osc", "../../../EnvironmentSimulator/Unittest/xosc/curve_slope_simple.xosc", "--disable_stdout"};
+    char scenario_file[100] = "../../../EnvironmentSimulator/Unittest/xosc/curve_slope_simple.xosc";
+    #ifdef _USE_BAZEL
+        strcpy(scenario_file, "./EnvironmentSimulator/Unittest/xosc/curve_slope_simple.xosc");
+    #endif
+
+    const char* args[] = {"esmini", "--headless", "--osc", scenario_file, "--disable_stdout"};
     int         argc   = sizeof(args) / sizeof(char*);
     ScenarioPlayer* player = new ScenarioPlayer(argc, const_cast<char**>(args));
 
@@ -369,9 +390,14 @@ TEST(AlignmentTest, TestPosMode)
 
 TEST(Controllers, TestSeparateControllersOnLatLong)
 {
+    char scenario_file[100] = "../../../EnvironmentSimulator/Unittest/xosc/acc_with_interactive_steering.xosc";
+    #ifdef _USE_BAZEL
+        strcpy(scenario_file, "./EnvironmentSimulator/Unittest/xosc/acc_with_interactive_steering.xosc");
+    #endif
+
     const char*     args[] = {"esmini",
                               "--osc",
-                              "../../../EnvironmentSimulator/Unittest/xosc/acc_with_interactive_steering.xosc",
+                              scenario_file,
                               "--window",
                               "60",
                               "60",
@@ -446,8 +472,13 @@ TEST(Controllers, TestSeparateControllersOnLatLong)
 
 TEST(OSI, TestOrientation)
 {
+    char scenario_file[100] = "../../../EnvironmentSimulator/Unittest/xosc/curve_slope_simple.xosc";
+    #ifdef _USE_BAZEL
+        strcpy(scenario_file, "./EnvironmentSimulator/Unittest/xosc/curve_slope_simple.xosc");
+    #endif
+
     const char* args[] =
-        {"esmini", "--osc", "../../../EnvironmentSimulator/Unittest/xosc/curve_slope_simple.xosc", "--headless", "--osi_file", "--disable_stdout"};
+        {"esmini", "--osc", scenario_file, "--headless", "--osi_file", "--disable_stdout"};
     int             argc   = sizeof(args) / sizeof(char*);
     double          dt     = 0.1f;
     ScenarioPlayer* player = new ScenarioPlayer(argc, const_cast<char**>(args));
