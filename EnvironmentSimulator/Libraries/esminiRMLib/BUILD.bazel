@@ -18,3 +18,25 @@ cc_library(
         "//EnvironmentSimulator/Modules/RoadManager:road_manager",
     ]
 )
+
+cc_binary(
+    name = "libesminiRMLib.so",
+    srcs = [
+        "esminiRMLib.cpp",
+        "esminiRMLib.hpp",
+    ],
+    copts = [
+        "-fPIC",
+    ],
+    includes = ["."],
+    linkopts = [
+        "-Wl,-rpath,$$ORIGIN",
+        "-Wl,-soname,libesminiRMLib.so",
+    ],
+    linkshared = True,
+    visibility = ["//visibility:public"],
+    deps = [
+        "//EnvironmentSimulator/Modules/CommonMini:common_mini",
+        "//EnvironmentSimulator/Modules:scenarioengine_controllers_playerbase",
+    ]
+)
