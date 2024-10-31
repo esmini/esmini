@@ -1,35 +1,35 @@
 ####################################################################################################
 
 OSG_DBG = [
-    "linux/lib/libosgd.a",
     "linux/lib/libosgViewerd.a",
-    "linux/lib/libosgDBd.a",
     "linux/lib/osgPlugins-3.6.5/libosgdb_serializers_osgsimd.a",
     "linux/lib/osgPlugins-3.6.5/libosgdb_serializers_osgd.a",
     "linux/lib/libosgGAd.a",
-    "linux/lib/libosgTextd.a",
     "linux/lib/libosgSimd.a",
     "linux/lib/osgPlugins-3.6.5/libosgdb_osgd.a",
     "linux/lib/osgPlugins-3.6.5/libosgdb_jpegd.a",
     "linux/lib/libosgUtild.a",
     "linux/lib/libosgAnimationd.a",
+    "linux/lib/libosgTextd.a",
+    "linux/lib/libosgDBd.a",
+    "linux/lib/libosgd.a",
     "linux/lib/libOpenThreadsd.a",
     "linux/lib/libjpegd.a",
 ]
 
 OSG_OPT = [
-    "linux/lib/libosg.a",
     "linux/lib/libosgViewer.a",
-    "linux/lib/libosgDB.a",
     "linux/lib/osgPlugins-3.6.5/libosgdb_serializers_osgsim.a",
     "linux/lib/osgPlugins-3.6.5/libosgdb_serializers_osg.a",
     "linux/lib/libosgGA.a",
-    "linux/lib/libosgText.a",
     "linux/lib/libosgSim.a",
     "linux/lib/osgPlugins-3.6.5/libosgdb_osg.a",
     "linux/lib/osgPlugins-3.6.5/libosgdb_jpeg.a",
     "linux/lib/libosgUtil.a",
     "linux/lib/libosgAnimation.a",
+    "linux/lib/libosgText.a",
+    "linux/lib/libosgDB.a",
+    "linux/lib/libosg.a",
     "linux/lib/libOpenThreads.a",
     "linux/lib/libjpeg.a",
 ]
