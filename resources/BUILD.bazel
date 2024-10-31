@@ -5,3 +5,17 @@ filegroup(
     srcs = glob(["xodr/*.xodr"]),
     visibility = ["//visibility:public"],
 )
+
+####################################################################################################
+
+filegroup(
+    name = "xosc_files",
+    srcs = glob(["xosc/*.xosc"]),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "catalogs",
+    srcs = glob(["xosc/Catalogs/**/*"]),
+    visibility = ["//visibility:public"],
+)

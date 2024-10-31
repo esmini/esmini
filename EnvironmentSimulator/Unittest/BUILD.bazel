@@ -10,6 +10,14 @@ filegroup(
 
 ####################################################################################################
 
+filegroup(
+    name = "xosc_files",
+    srcs = glob(["xosc/*.xosc"]),
+    visibility = ["//visibility:public"],
+)
+
+####################################################################################################
+
 cc_test(
     name = "operating_system_test",
     srcs = [
@@ -39,5 +47,29 @@ cc_test(
         "@googletest//:gtest",
         "@googletest//:gtest_main",
         "//EnvironmentSimulator/Modules/RoadManager:road_manager",
+    ],
+)
+
+####################################################################################################
+
+cc_test(
+    name = "scenario_engine_test",
+    srcs = [
+        "ScenarioEngine_test.cpp",
+    ],
+    data = [
+        "//resources:xodr_files",
+        "//resources:xosc_files",
+        "//resources:catalogs",
+        ":xosc_files",
+        ":xodr_files",
+        "//scripts/udp_driver:xosc_files",
+    ],
+    defines = ["_USE_BAZEL"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+        "//EnvironmentSimulator/Modules:scenarioengine_controllers_playerbase",
     ],
 )
