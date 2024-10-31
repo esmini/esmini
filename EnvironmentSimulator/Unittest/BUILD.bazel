@@ -1,0 +1,43 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+
+####################################################################################################
+
+filegroup(
+    name = "xodr_files",
+    srcs = glob(["xodr/*.xodr"]),
+    visibility = ["//visibility:public"],
+)
+
+####################################################################################################
+
+cc_test(
+    name = "operating_system_test",
+    srcs = [
+        "OperatingSystem_test.cpp",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+####################################################################################################
+
+cc_test(
+    name = "road_manager_test",
+    srcs = [
+        "RoadManager_test.cpp",
+    ],
+    data = [
+        "//resources:xodr_files",
+        ":xodr_files",
+    ],
+    defines = ["_USE_BAZEL"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+        "//EnvironmentSimulator/Modules/RoadManager:road_manager",
+    ],
+)

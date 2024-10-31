@@ -1,0 +1,7 @@
+####################################################################################################
+
+filegroup(
+    name = "xodr_files",
+    srcs = glob(["xodr/*.xodr"]),
+    visibility = ["//visibility:public"],
+)
