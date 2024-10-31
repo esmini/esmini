@@ -11,7 +11,7 @@
  */
 
 #include "playerbase.hpp"
-#include "CommonMini.cpp"
+#include "CommonMini.hpp"
 #include "OSCParameterDistribution.hpp"
 #include "Plot.hpp"
 #include <osgViewer/ViewerEventHandlers>

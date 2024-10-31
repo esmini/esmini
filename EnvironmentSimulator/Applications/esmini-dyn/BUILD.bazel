@@ -1,0 +1,17 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
+
+####################################################################################################
+
+cc_binary(
+    name = "esmini_dyn",
+    srcs = [
+        "main.cpp",
+    ],
+    includes = ["."],
+    linkopts = ["-Wl,-rpath,$$ORIGIN"],
+    linkstatic = False,
+    visibility = ["//visibility:public"],
+    deps = [
+        "//EnvironmentSimulator/Libraries/esminiLib:esmini_lib",
+    ],
+)
