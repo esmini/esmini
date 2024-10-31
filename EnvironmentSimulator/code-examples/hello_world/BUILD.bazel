@@ -1,0 +1,136 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
+
+####################################################################################################
+
+cc_binary(
+    name = "action_injection",
+    srcs = [
+        "action_injection.cpp",
+    ],
+    linkopts = ["-Wl,-rpath,$$ORIGIN"],
+    linkstatic = False,
+    visibility = ["//visibility:public"],
+    deps = [
+        "//EnvironmentSimulator/Libraries/esminiLib:esmini_lib",
+    ],
+)
+
+####################################################################################################
+
+cc_binary(
+    name = "dual_controllers",
+    srcs = [
+        "dual_controllers.cpp",
+    ],
+    linkopts = ["-Wl,-rpath,$$ORIGIN"],
+    linkstatic = False,
+    visibility = ["//visibility:public"],
+    deps = [
+        "//EnvironmentSimulator/Libraries/esminiLib:esmini_lib",
+    ],
+)
+
+####################################################################################################
+
+cc_binary(
+    name = "hw2_arguments",
+    srcs = [
+        "hw2_arguments.cpp",
+    ],
+    linkopts = ["-Wl,-rpath,$$ORIGIN"],
+    linkstatic = False,
+    visibility = ["//visibility:public"],
+    deps = [
+        "//EnvironmentSimulator/Libraries/esminiLib:esmini_lib",
+    ],
+)
+
+####################################################################################################
+
+cc_binary(
+    name = "hw3_fetch_states",
+    srcs = [
+        "hw3_fetch_states.cpp",
+    ],
+    linkopts = ["-Wl,-rpath,$$ORIGIN"],
+    linkstatic = False,
+    visibility = ["//visibility:public"],
+    deps = [
+        "//EnvironmentSimulator/Libraries/esminiLib:esmini_lib",
+    ],
+)
+
+####################################################################################################
+
+cc_binary(
+    name = "hw4_external_ego_control",
+    srcs = [
+        "hw4_external_ego_control.cpp",
+    ],
+    linkopts = ["-Wl,-rpath,$$ORIGIN"],
+    linkstatic = False,
+    visibility = ["//visibility:public"],
+    deps = [
+        "//EnvironmentSimulator/Libraries/esminiLib:esmini_lib",
+    ],
+)
+
+####################################################################################################
+
+cc_binary(
+    name = "hw5_control_controllers_enabled",
+    srcs = [
+        "hw5_control_controllers_enabled.cpp",
+    ],
+    linkopts = ["-Wl,-rpath,$$ORIGIN"],
+    linkstatic = False,
+    visibility = ["//visibility:public"],
+    deps = [
+        "//EnvironmentSimulator/Libraries/esminiLib:esmini_lib",
+    ],
+)
+
+####################################################################################################
+
+cc_binary(
+    name = "hw6_control_controllers_disabled",
+    srcs = [
+        "hw6_control_controllers_disabled.cpp",
+    ],
+    linkopts = ["-Wl,-rpath,$$ORIGIN"],
+    linkstatic = False,
+    visibility = ["//visibility:public"],
+    deps = [
+        "//EnvironmentSimulator/Libraries/esminiLib:esmini_lib",
+    ],
+)
+
+####################################################################################################
+
+cc_binary(
+    name = "hw7_ideal_sensors",
+    srcs = [
+        "hw7_ideal_sensors.cpp",
+    ],
+    linkopts = ["-Wl,-rpath,$$ORIGIN"],
+    linkstatic = False,
+    visibility = ["//visibility:public"],
+    deps = [
+        "//EnvironmentSimulator/Libraries/esminiLib:esmini_lib",
+    ],
+)
+
+####################################################################################################
+
+cc_binary(
+    name = "hw8_collision_detection",
+    srcs = [
+        "hw8_collision_detection.cpp",
+    ],
+    linkopts = ["-Wl,-rpath,$$ORIGIN"],
+    linkstatic = False,
+    visibility = ["//visibility:public"],
+    deps = [
+        "//EnvironmentSimulator/Libraries/esminiLib:esmini_lib",
+    ],
+)

@@ -1,0 +1,16 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
+
+####################################################################################################
+
+cc_binary(
+    name = "access_odr",
+    srcs = [
+        "access-odr.cpp",
+    ],
+    linkopts = ["-Wl,-rpath,$$ORIGIN"],
+    linkstatic = False,
+    visibility = ["//visibility:public"],
+    deps = [
+        "//EnvironmentSimulator/Libraries/esminiLib:esmini_lib",
+    ],
+)

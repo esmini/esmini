@@ -1,0 +1,17 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
+
+####################################################################################################
+
+cc_binary(
+    name = "rm_se",
+    srcs = [
+        "rm-se.cpp",
+    ],
+    linkopts = ["-Wl,-rpath,$$ORIGIN"],
+    linkstatic = False,
+    visibility = ["//visibility:public"],
+    deps = [
+        "//EnvironmentSimulator/Libraries/esminiRMLib:esmini_rm_lib",
+        "//EnvironmentSimulator/Libraries/esminiLib:esmini_lib",
+    ],
+)
