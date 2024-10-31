@@ -28,7 +28,7 @@ cc_library(
         "//EnvironmentSimulator/Modules/RoadManager:road_manager",
         "//EnvironmentSimulator/Modules:scenarioengine_controllers_playerbase",
     ] + select({
-        "@esmini//support/bazel/common:osg_disabled": []
+        "@esmini//support/bazel/common:osg_disabled": [],
         "@esmini//support/bazel/common:osg_enabled": ["@osg//:osg"],
     })
 )

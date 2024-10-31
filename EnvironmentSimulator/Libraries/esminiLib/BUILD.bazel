@@ -19,5 +19,30 @@ cc_library(
     deps = [
         "//EnvironmentSimulator/Modules/CommonMini:common_mini",
         "//EnvironmentSimulator/Modules:scenarioengine_controllers_playerbase",
+        "//EnvironmentSimulator/Modules/ViewerBase:viewer_base",
+    ]
+)
+
+cc_binary(
+    name = "libesminiLib.so",
+    srcs = [
+        "esminiLib.cpp",
+        "esminiLib.hpp",
+    ],
+    copts = [
+        "-Wno-address",
+        "-fPIC",
+    ],
+    includes = ["."],
+    linkopts = [
+        "-Wl,-rpath,$$ORIGIN",
+        "-Wl,-soname,libesminiLib.so",
+    ],
+    linkshared = True,
+    visibility = ["//visibility:public"],
+    deps = [
+        "//EnvironmentSimulator/Modules/CommonMini:common_mini",
+        "//EnvironmentSimulator/Modules:scenarioengine_controllers_playerbase",
+        "//EnvironmentSimulator/Modules/ViewerBase:viewer_base",
     ]
 )

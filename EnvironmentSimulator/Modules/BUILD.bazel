@@ -43,12 +43,12 @@ filegroup(
 filegroup(
     name = "controllers_source_files",
     srcs = select({
-        "@esmini//support/bazel/common:osi_disabled": glob([
+        "@esmini//support/bazel/common:sumo_disabled": glob([
             "Controllers/**/*.cpp",
         ], exclude = [
             "Controllers/**/*Sumo.cpp",
         ]),
-        "@esmini//support/bazel/common:osi_enabled": glob([
+        "@esmini//support/bazel/common:sumo_enabled": glob([
             "Controllers/**/*.cpp",
         ]),
     }),
