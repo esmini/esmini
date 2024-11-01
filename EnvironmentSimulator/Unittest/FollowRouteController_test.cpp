@@ -13,6 +13,15 @@
 
 #define TRIG_ERR_MARGIN 0.001
 
+inline std::string getRunfilesDir() {
+    std::string runfiles_dir = "../../../";
+    #ifdef _USE_BAZEL
+        runfiles_dir = std::getenv("RUNFILES_DIR");
+        runfiles_dir = runfiles_dir + "/_main/";
+    #endif
+    return runfiles_dir;
+}
+
 using namespace roadmanager;
 using namespace scenarioengine;
 class FollowRouteControllerTest : public ::testing::Test
@@ -20,13 +29,14 @@ class FollowRouteControllerTest : public ::testing::Test
 public:
     static void SetUpTestSuite()
     {
-        SE_Env::Inst().AddPath("../../../resources/traffic_signals");
+
+        SE_Env::Inst().AddPath((std::string(getRunfilesDir().c_str()) + "resources/traffic_signals").c_str());
     }
 };
 
 TEST_F(FollowRouteControllerTest, PerformSingleLaneChange)
 {
-    ScenarioEngine *se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/perform_single_lane_change.xosc");
+    ScenarioEngine *se = new ScenarioEngine((std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xosc/perform_single_lane_change.xosc").c_str());
     ASSERT_NE(se, nullptr);
     if (se->GetInitStatus() != 0)
     {
@@ -58,7 +68,7 @@ TEST_F(FollowRouteControllerTest, PerformSingleLaneChange)
 
 TEST_F(FollowRouteControllerTest, FollowRouteWithLaneChanges)
 {
-    ScenarioEngine *se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/follow_route_with_lane_change.xosc");
+    ScenarioEngine *se = new ScenarioEngine((std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xosc/follow_route_with_lane_change.xosc").c_str());
     ASSERT_NE(se, nullptr);
     if (se->GetInitStatus() != 0)
     {
@@ -87,7 +97,7 @@ TEST_F(FollowRouteControllerTest, FollowRouteWithLaneChanges)
 
 TEST_F(FollowRouteControllerTest, FollowRouteWithCollisionRisk)
 {
-    ScenarioEngine *se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/follow_route_collision_risk.xosc");
+    ScenarioEngine *se = new ScenarioEngine((std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xosc/follow_route_collision_risk.xosc").c_str());
     ASSERT_NE(se, nullptr);
     if (se->GetInitStatus() != 0)
     {
@@ -116,7 +126,7 @@ TEST_F(FollowRouteControllerTest, FollowRouteWithCollisionRisk)
 
 TEST_F(FollowRouteControllerTest, FollowRouteBlockedByCollisionRisk)
 {
-    ScenarioEngine *se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/follow_route_blocked_by_collision_risk.xosc");
+    ScenarioEngine *se = new ScenarioEngine((std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xosc/follow_route_blocked_by_collision_risk.xosc").c_str());
     ASSERT_NE(se, nullptr);
     if (se->GetInitStatus() != 0)
     {
@@ -146,7 +156,7 @@ TEST_F(FollowRouteControllerTest, FollowRouteBlockedByCollisionRisk)
 
 TEST_F(FollowRouteControllerTest, FollowRouteMedium)
 {
-    ScenarioEngine *se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/follow_route_controller_test_medium.xosc");
+    ScenarioEngine *se = new ScenarioEngine((std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xosc/follow_route_controller_test_medium.xosc").c_str());
     ASSERT_NE(se, nullptr);
     if (se->GetInitStatus() != 0)
     {
@@ -175,7 +185,7 @@ TEST_F(FollowRouteControllerTest, FollowRouteMedium)
 
 TEST_F(FollowRouteControllerTest, FollowRouteNoPath)
 {
-    ScenarioEngine *se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/follow_route_no_path.xosc");
+    ScenarioEngine *se = new ScenarioEngine((std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xosc/follow_route_no_path.xosc").c_str());
     ASSERT_NE(se, nullptr);
     if (se->GetInitStatus() != 0)
     {
@@ -210,7 +220,7 @@ TEST_F(FollowRouteControllerTest, FollowRouteNoPath)
 
 TEST_F(FollowRouteControllerTest, FollowRouteMultipleScenarioWaypoints)
 {
-    ScenarioEngine *se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/follow_route_multiple_scenario_waypoints.xosc");
+    ScenarioEngine *se = new ScenarioEngine((std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xosc/follow_route_multiple_scenario_waypoints.xosc").c_str());
     ASSERT_NE(se, nullptr);
     if (se->GetInitStatus() != 0)
     {
@@ -253,7 +263,7 @@ TEST_F(FollowRouteControllerTest, FollowRouteMultipleScenarioWaypoints)
 
 TEST_F(FollowRouteControllerTest, FollowRouteSetParameters)
 {
-    ScenarioEngine *se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/follow_route_set_parameters.xosc");
+    ScenarioEngine *se = new ScenarioEngine((std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xosc/follow_route_set_parameters.xosc").c_str());
     ASSERT_NE(se, nullptr);
     if (se->GetInitStatus() != 0)
     {

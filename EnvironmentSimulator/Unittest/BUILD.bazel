@@ -173,3 +173,25 @@ cc_test(
         "//EnvironmentSimulator/Modules:scenarioengine_controllers_playerbase_viewer",
     ],
 )
+
+####################################################################################################
+
+cc_test(
+    name = "follow_route_controller_test",
+    srcs = [
+        "FollowRouteController_test.cpp",
+    ],
+    data = [
+        "//resources:all_files",
+        ":xosc_files",
+        ":xodr_files",
+    ],
+    defines = ["_USE_BAZEL"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+        "//EnvironmentSimulator/Modules/RoadManager:road_manager",
+        "//EnvironmentSimulator/Modules:scenarioengine_controllers_playerbase_viewer",
+    ],
+)
