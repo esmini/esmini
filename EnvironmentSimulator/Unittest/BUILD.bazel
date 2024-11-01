@@ -112,7 +112,30 @@ cc_test(
     deps = [
         "@googletest//:gtest",
         "@googletest//:gtest_main",
-        "//EnvironmentSimulator/Modules:scenarioengine_controllers_playerbase_viewer",
+        "//EnvironmentSimulator/Libraries/esminiLib:esmini_lib",
         "//EnvironmentSimulator/Applications/replayer:replayer_lib",
+    ],
+)
+
+####################################################################################################
+
+cc_test(
+    name = "road_manager_dll_test",
+    srcs = [
+        "RoadManagerDll_test.cpp",
+    ],
+    data = [
+        "//resources:all_files",
+        ":xosc_files",
+        ":xodr_files",
+        "//EnvironmentSimulator/code-examples/test-driver:test_driver_xosc",
+        "//EnvironmentSimulator/code-examples/position-mode:skater_xosc",
+    ],
+    defines = ["_USE_BAZEL"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+        "//EnvironmentSimulator/Libraries/esminiRMLib:esmini_rm_lib",
     ],
 )

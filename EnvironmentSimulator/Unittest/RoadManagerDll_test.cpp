@@ -3,11 +3,18 @@
 #include "esminiRMLib.hpp"
 #include "CommonMini.hpp"
 
+inline std::string getRunfilesDir() {
+    std::string runfiles_dir = "../../../";
+    #ifdef _USE_BAZEL
+        runfiles_dir = std::getenv("RUNFILES_DIR");
+        runfiles_dir = runfiles_dir + "/_main/";
+    #endif
+    return runfiles_dir;
+}
+
 TEST(TestSetMethods, SetRoadId)
 {
-    const char* odr_file = "../../../resources/xodr/fabriksgatan.xodr";
-
-    ASSERT_EQ(RM_Init(odr_file), 0);
+    ASSERT_EQ(RM_Init((std::string(getRunfilesDir().c_str()) + "resources/xodr/fabriksgatan.xodr").c_str()), 0);
 
     int pos_handle = RM_CreatePosition();
 
@@ -39,9 +46,7 @@ TEST(TestSetMethods, SetRoadId)
 
 TEST(TestSetMethods, SetWorldPosition)
 {
-    const char* odr_file = "../../../resources/xodr/fabriksgatan.xodr";
-
-    ASSERT_EQ(RM_Init(odr_file), 0);
+    ASSERT_EQ(RM_Init((std::string(getRunfilesDir().c_str()) + "resources/xodr/fabriksgatan.xodr").c_str()), 0);
 
     int pos_handle = RM_CreatePosition();
 
@@ -118,9 +123,7 @@ TEST(TestSetMethods, SetWorldPosition)
 
 TEST(TestRelativeChecks, SubtractPositionsIntersection)
 {
-    const char* odr_file = "../../../resources/xodr/fabriksgatan.xodr";
-
-    ASSERT_EQ(RM_Init(odr_file), 0);
+    ASSERT_EQ(RM_Init((std::string(getRunfilesDir().c_str()) + "resources/xodr/fabriksgatan.xodr").c_str()), 0);
 
     int             pA = RM_CreatePosition();
     int             pB = RM_CreatePosition();
@@ -169,9 +172,7 @@ TEST(TestRelativeChecks, SubtractPositionsIntersection)
 
 TEST(TestRelativeChecks, SubtractPositionsHW)
 {
-    const char* odr_file = "../../../EnvironmentSimulator/Unittest/xodr/mw_100m.xodr";
-
-    ASSERT_EQ(RM_Init(odr_file), 0);
+    ASSERT_EQ(RM_Init((std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xodr/mw_100m.xodr").c_str()), 0);
 
     int             pA = RM_CreatePosition();
     int             pB = RM_CreatePosition();
@@ -246,9 +247,7 @@ TEST(TestRelativeChecks, SubtractPositionsHW)
 
 TEST(TestProbe, TestSimpleProbe)
 {
-    const char* odr_file = "../../../resources/xodr/straight_500m.xodr";
-
-    ASSERT_EQ(RM_Init(odr_file), 0);
+    ASSERT_EQ(RM_Init((std::string(getRunfilesDir().c_str()) + "resources/xodr/straight_500m.xodr").c_str()), 0);
 
     int pos_handle = RM_CreatePosition();
 
@@ -298,9 +297,7 @@ TEST(TestProbe, TestSimpleProbe)
 
 TEST(TestLaneType, TestDetailedLaneType)
 {
-    const char* odr_file = "../../../EnvironmentSimulator/Unittest/xodr/mw_100m.xodr";
-
-    ASSERT_EQ(RM_Init(odr_file), 0);
+    ASSERT_EQ(RM_Init((std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xodr/mw_100m.xodr").c_str()), 0);
 
     int pos_handle = RM_CreatePosition();
 
@@ -345,11 +342,16 @@ TEST(TestLaneType, TestDetailedLaneType)
 
 TEST(TestLaneDirection, TestLaneDirectionByRule)
 {
-    const char* odr_file[2] = {"../../../resources/xodr/e6mini.xodr", "../../../resources/xodr/e6mini-lht.xodr"};
-
     for (int i = 0; i < 2; i++)
     {
-        ASSERT_EQ(RM_Init(odr_file[i]), 0);
+        if (i == 0)
+        {
+            ASSERT_EQ(RM_Init((std::string(getRunfilesDir().c_str()) + "resources/xodr/e6mini.xodr").c_str()), 0);
+        }
+        else
+        {
+            ASSERT_EQ(RM_Init((std::string(getRunfilesDir().c_str()) + "resources/xodr/e6mini-lht.xodr").c_str()), 0);
+        }
 
         int             pos_handle = RM_CreatePosition();
         RM_PositionData r_data;
@@ -388,10 +390,9 @@ TEST(TestLaneDirection, TestLaneDirectionByRule)
 
 TEST(RoadId, TestStringRoadId)
 {
-    const char*     odr_file = "../../../EnvironmentSimulator/Unittest/xodr/fabriksgatan_mixed_id_types.xodr";
     RM_PositionData pos_data;
 
-    ASSERT_EQ(RM_Init(odr_file), 0);
+    ASSERT_EQ(RM_Init((std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xodr/fabriksgatan_mixed_id_types.xodr").c_str()), 0);
     ASSERT_EQ(RM_GetNumberOfRoads(), 16);
 
     EXPECT_STREQ(RM_GetRoadIdString(3), "Kalle");
@@ -439,6 +440,8 @@ static void log_callback(const char* str)
     printf("%s\n", str);
 }
 #endif
+
+
 
 int main(int argc, char** argv)
 {
