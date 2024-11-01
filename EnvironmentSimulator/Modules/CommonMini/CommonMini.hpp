@@ -832,7 +832,8 @@ public:
     bool                     set_;
     std::vector<std::string> arg_value_;
     std::string              default_value_;
-
+    bool                     persistent_ = false;
+    /*
     SE_Option(std::string opt_str, std::string opt_desc, std::string opt_arg = "")
         : opt_str_(opt_str),
           opt_desc_(opt_desc),
@@ -840,8 +841,8 @@ public:
           set_(false)
     {
     }
-
-    SE_Option(std::string opt_str, std::string opt_desc, std::string opt_arg, std::string default_value)
+    */
+    SE_Option(std::string opt_str, std::string opt_desc, std::string opt_arg = "", std::string default_value = "")
         : opt_str_(opt_str),
           opt_desc_(opt_desc),
           opt_arg_(opt_arg),
@@ -858,8 +859,8 @@ class SE_Options
 #define OPT_PREFIX "--"
 
 public:
-    void AddOption(std::string opt_str, std::string opt_desc, std::string opt_arg = "");
-    void AddOption(std::string opt_str, std::string opt_desc, std::string opt_arg, std::string opt_arg_default_value);
+    // void AddOption(std::string opt_str, std::string opt_desc, std::string opt_arg = "");
+    void AddOption(std::string opt_str, std::string opt_desc, std::string opt_arg = "", std::string opt_arg_default_value = "");
 
     void                      PrintUsage();
     void                      PrintUnknownArgs(std::string message = "Unrecognized arguments:");
@@ -871,11 +872,12 @@ public:
     {
         return originalArgs_;
     }
+
     bool                          IsInOriginalArgs(std::string opt);
     bool                          HasUnknownArgs();
     void                          Reset();
     int                           ChangeOptionArg(std::string opt, std::string new_value, int index = 0);
-    int                           SetOptionValue(std::string opt, std::string value, bool add = false);
+    int                           SetOptionValue(std::string opt, std::string value, bool add = false, bool persistent = false);
     int                           UnsetOption(const std::string& opt);
     const std::vector<SE_Option>& GetAllOptions() const;
 

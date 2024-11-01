@@ -1764,17 +1764,21 @@ void SE_Option::Usage()
     }
     printf("\n      %s\n", opt_desc_.c_str());
 }
-
+/*
 void SE_Options::AddOption(std::string opt_str, std::string opt_desc, std::string opt_arg)
 {
     SE_Option opt(opt_str, opt_desc, opt_arg);
     option_.push_back(opt);
 }
-
+*/
 void SE_Options::AddOption(std::string opt_str, std::string opt_desc, std::string opt_arg, std::string default_value)
 {
-    SE_Option opt(opt_str, opt_desc, opt_arg, default_value);
-    option_.push_back(opt);
+    SE_Option* option = GetOption(opt_str);
+    if (!option)
+    {
+        SE_Option opt(opt_str, opt_desc, opt_arg, default_value);
+        option_.push_back(opt);
+    }
 }
 
 void SE_Options::PrintUsage()
@@ -1865,7 +1869,7 @@ int SE_Options::ChangeOptionArg(std::string opt, std::string new_value, int inde
     return 0;
 }
 
-int SE_Options::SetOptionValue(std::string opt, std::string value, bool add)
+int SE_Options::SetOptionValue(std::string opt, std::string value, bool add, bool persistent)
 {
     SE_Option* option = GetOption(opt);
 
@@ -1892,7 +1896,8 @@ int SE_Options::SetOptionValue(std::string opt, std::string value, bool add)
         }
     }
 
-    option->set_ = true;
+    option->persistent_ = persistent;
+    option->set_        = true;
 
     return 0;
 }
@@ -2006,9 +2011,13 @@ void SE_Options::Reset()
 {
     for (size_t i = 0; i < option_.size(); i++)
     {
-        option_[i].arg_value_.clear();
+        if (!option_[i].persistent_)
+        {
+            option_[i].arg_value_.clear();
+            option_[i].set_ = false;
+        }
     }
-    option_.clear();
+    // option_.clear();
     originalArgs_.clear();
 }
 

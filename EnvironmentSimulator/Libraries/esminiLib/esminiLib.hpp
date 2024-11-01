@@ -387,6 +387,11 @@ extern "C"
     SE_DLL_API int SE_SetOption(const char *name);
     SE_DLL_API int SE_SetOptionValue(const char *name, const char *value);
 
+    SE_DLL_API int SE_SetOptionPersistent(const char *name);
+    SE_DLL_API int SE_SetOptionValuePersistent(const char *name, const char *value);
+
+    SE_DLL_API const char *SE_GetOptionValue(const char *name);
+
     /**
     Set window position and size. Must be called prior to SE_Init.
     @param x Screen coordinate in pixels for left side of window
