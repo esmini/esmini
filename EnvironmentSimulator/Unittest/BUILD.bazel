@@ -38,7 +38,7 @@ cc_test(
         "RoadManager_test.cpp",
     ],
     data = [
-        "//resources:xodr_files",
+        "//resources:all_files",
         ":xodr_files",
     ],
     defines = ["_USE_BAZEL"],
@@ -58,9 +58,7 @@ cc_test(
         "ScenarioEngine_test.cpp",
     ],
     data = [
-        "//resources:xodr_files",
-        "//resources:xosc_files",
-        "//resources:catalogs",
+        "//resources:all_files",
         ":xosc_files",
         ":xodr_files",
         "//scripts/udp_driver:xosc_files",
@@ -82,9 +80,7 @@ cc_test(
         "ScenarioPlayer_test.cpp",
     ],
     data = [
-        "//resources:xodr_files",
-        "//resources:xosc_files",
-        "//resources:catalogs",
+        "//resources:all_files",
         ":xosc_files",
         ":xodr_files",
     ],
@@ -94,5 +90,29 @@ cc_test(
         "@googletest//:gtest",
         "@googletest//:gtest_main",
         "//EnvironmentSimulator/Modules:scenarioengine_controllers_playerbase_viewer",
+    ],
+)
+
+####################################################################################################
+
+cc_test(
+    name = "scenario_engine_dll_test",
+    srcs = [
+        "ScenarioEngineDll_test.cpp",
+    ],
+    data = [
+        "//resources:all_files",
+        ":xosc_files",
+        ":xodr_files",
+        "//EnvironmentSimulator/code-examples/test-driver:test_driver_xosc",
+        "//EnvironmentSimulator/code-examples/position-mode:skater_xosc",
+    ],
+    defines = ["_USE_BAZEL"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+        "//EnvironmentSimulator/Modules:scenarioengine_controllers_playerbase_viewer",
+        "//EnvironmentSimulator/Applications/replayer:replayer_lib",
     ],
 )

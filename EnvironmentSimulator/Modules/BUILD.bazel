@@ -154,9 +154,11 @@ cc_library(
         "ViewerBase",
     ],
     copts = [
-        "-Wno-reorder",
         "-Wno-sign-compare",
         "-Wno-parentheses",
+    ],
+    cxxopts = [
+        "-Wno-reorder",
     ],
     linkstatic = True,
     visibility = ["//visibility:public"],
@@ -178,5 +180,5 @@ cc_library(
     }) + select({
         "@esmini//support/bazel/common:osg_disabled": [],
         "@esmini//support/bazel/common:osg_enabled": ["@osg//:osg"],
-    })
+    }),
 )

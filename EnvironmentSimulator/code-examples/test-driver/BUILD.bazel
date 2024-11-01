@@ -2,6 +2,16 @@ load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
 
 ####################################################################################################
 
+####################################################################################################
+
+filegroup(
+    name = "test_driver_xosc",
+    srcs = [
+        "test-driver.xosc",
+    ],
+    visibility = ["//visibility:public"],
+)
+
 cc_binary(
     name = "test_driver",
     srcs = [

@@ -708,7 +708,6 @@ int ScenarioPlayer::InitViewer()
                                  exe_path_.c_str(),
                                  arguments,
                                  &opt);
-
     if (viewer_->osgViewer_ == 0)
     {
         viewerState_ = ViewerState::VIEWER_STATE_FAILED;

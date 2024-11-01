@@ -2,6 +2,14 @@ load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
 
 ####################################################################################################
 
+filegroup(
+    name = "skater_xosc",
+    srcs = [
+        "skater.xosc",
+    ],
+    visibility = ["//visibility:public"],
+)
+
 cc_binary(
     name = "position_mode",
     srcs = [

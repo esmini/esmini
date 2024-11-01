@@ -10,11 +10,9 @@ def generate_version(in_args):
 
     git_commit = re.findall(r"GIT_COMMIT.*", version_data, re.DOTALL)
     commit_id = git_commit[0].split(" ")[1]
-    print(commit_id)
 
     git_tag = re.findall(r"GIT_TAG.*", version_data, re.DOTALL)
     tag = git_tag[0].split(" ")[1].split("\n")[0]
-    print(tag)
 
     version_cpp = f'const char* ESMINI_GIT_REV       = "{tag}-{commit_id}"; \n\
 const char* ESMINI_GIT_TAG       = "{tag}"; \n\
