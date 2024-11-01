@@ -126,10 +126,7 @@ cc_test(
     ],
     data = [
         "//resources:all_files",
-        ":xosc_files",
         ":xodr_files",
-        "//EnvironmentSimulator/code-examples/test-driver:test_driver_xosc",
-        "//EnvironmentSimulator/code-examples/position-mode:skater_xosc",
     ],
     defines = ["_USE_BAZEL"],
     visibility = ["//visibility:public"],
@@ -137,5 +134,42 @@ cc_test(
         "@googletest//:gtest",
         "@googletest//:gtest_main",
         "//EnvironmentSimulator/Libraries/esminiRMLib:esmini_rm_lib",
+    ],
+)
+
+####################################################################################################
+
+cc_test(
+    name = "common_mini_test",
+    srcs = [
+        "CommonMini_test.cpp",
+    ],
+    defines = ["_USE_BAZEL"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+        "//EnvironmentSimulator/Modules/CommonMini:common_mini",
+    ],
+)
+
+####################################################################################################
+
+cc_test(
+    name = "follow_route_test",
+    srcs = [
+        "FollowRoute_test.cpp",
+    ],
+    data = [
+        "//resources:all_files",
+        ":xodr_files",
+    ],
+    defines = ["_USE_BAZEL"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+        "//EnvironmentSimulator/Modules/RoadManager:road_manager",
+        "//EnvironmentSimulator/Modules:scenarioengine_controllers_playerbase_viewer",
     ],
 )

@@ -13,6 +13,15 @@
 
 #define TRIG_ERR_MARGIN 0.001
 
+inline std::string getRunfilesDir() {
+    std::string runfiles_dir = "../../../";
+    #ifdef _USE_BAZEL
+        runfiles_dir = std::getenv("RUNFILES_DIR");
+        runfiles_dir = runfiles_dir + "/_main/";
+    #endif
+    return runfiles_dir;
+}
+
 using namespace roadmanager;
 
 class FollowRouteTestSmall : public ::testing::Test
@@ -20,7 +29,7 @@ class FollowRouteTestSmall : public ::testing::Test
 protected:
     static void SetUpTestSuite()
     {
-        Position::LoadOpenDrive("../../../EnvironmentSimulator/Unittest/xodr/highway_example_with_merge_and_split.xodr");
+        Position::LoadOpenDrive((std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xodr/highway_example_with_merge_and_split.xodr").c_str());
     }
 };
 
@@ -29,18 +38,19 @@ class FollowRouteTestMedium : public ::testing::Test
 protected:
     static void SetUpTestSuite()
     {
-        SE_Env::Inst().AddPath("../../../resources/traffic_signals");
-        Position::LoadOpenDrive("../../../resources/xodr/multi_intersections.xodr");
+        SE_Env::Inst().AddPath((std::string(getRunfilesDir().c_str()) + "resources/traffic_signals").c_str());
+        Position::LoadOpenDrive((std::string(getRunfilesDir().c_str()) + "resources/xodr/multi_intersections.xodr").c_str());
     }
 };
+
 
 class FollowRouteTestMediumChangedSpeeds : public ::testing::Test
 {
 protected:
     static void SetUpTestSuite()
     {
-        SE_Env::Inst().AddPath("../../../resources/traffic_signals");
-        Position::LoadOpenDrive("../../../EnvironmentSimulator/Unittest/xodr/multi_intersections_changed_speeds.xodr");
+        SE_Env::Inst().AddPath((std::string(getRunfilesDir().c_str()) + "resources/traffic_signals").c_str());
+        Position::LoadOpenDrive((std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xodr/multi_intersections_changed_speeds.xodr").c_str());
     }
 };
 
@@ -49,8 +59,8 @@ class FollowRouteTestLarge : public ::testing::Test
 protected:
     static void SetUpTestSuite()
     {
-        SE_Env::Inst().AddPath("../../../resources/traffic_signals");
-        Position::LoadOpenDrive("../../../resources/xodr/large.xodr");
+        SE_Env::Inst().AddPath((std::string(getRunfilesDir().c_str()) + "resources/traffic_signals").c_str());
+        Position::LoadOpenDrive((std::string(getRunfilesDir().c_str()) + "resources/xodr/large.xodr").c_str());
     }
 };
 
@@ -59,7 +69,7 @@ class FollowRouteTestRouteTest : public ::testing::Test
 protected:
     static void SetUpTestSuite()
     {
-        Position::LoadOpenDrive("../../../EnvironmentSimulator/Unittest/xodr/route_strategy_test_road.xodr");
+        Position::LoadOpenDrive((std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xodr/route_strategy_test_road.xodr").c_str());
     }
 };
 
@@ -68,7 +78,7 @@ class FollowRouteTestRouteTestLHT : public ::testing::Test
 protected:
     static void SetUpTestSuite()
     {
-        Position::LoadOpenDrive("../../../EnvironmentSimulator/Unittest/xodr/route_strategy_test_road_LHT.xodr");
+        Position::LoadOpenDrive((std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xodr/route_strategy_test_road_LHT.xodr").c_str());
     }
 };
 
@@ -76,8 +86,7 @@ TEST_F(FollowRouteTestSmall, FindPathSmallInvalidPosition)
 {
     ASSERT_NE(Position::GetOpenDrive(), nullptr);
     ASSERT_EQ(Position::GetOpenDrive()->GetOpenDriveFilename(),
-              "../../../EnvironmentSimulator/Unittest/xodr/highway_example_with_merge_and_split.xodr");
-
+              (std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xodr/highway_example_with_merge_and_split.xodr").c_str());
     // Set start pos and the driving direction (heading)
     // PI = against road dir,   0 = road dir
     Position start(0, -1, 10, 0);
@@ -102,7 +111,7 @@ TEST_F(FollowRouteTestSmall, FindPathSmall1)
 {
     ASSERT_NE(Position::GetOpenDrive(), nullptr);
     ASSERT_EQ(Position::GetOpenDrive()->GetOpenDriveFilename(),
-              "../../../EnvironmentSimulator/Unittest/xodr/highway_example_with_merge_and_split.xodr");
+              (std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xodr/highway_example_with_merge_and_split.xodr").c_str());
 
     // Set start pos and the driving direction (heading)
     // PI = against road dir,   0 = road dir
@@ -122,7 +131,7 @@ TEST_F(FollowRouteTestSmall, FindPathSmall2)
 {
     ASSERT_NE(Position::GetOpenDrive(), nullptr);
     ASSERT_EQ(Position::GetOpenDrive()->GetOpenDriveFilename(),
-              "../../../EnvironmentSimulator/Unittest/xodr/highway_example_with_merge_and_split.xodr");
+             (std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xodr/highway_example_with_merge_and_split.xodr").c_str());
 
     // Set start pos and the driving direction (heading)
     // PI = against road dir,   0 = road dir
@@ -142,7 +151,7 @@ TEST_F(FollowRouteTestSmall, CreateWaypointSmall1)
 {
     ASSERT_NE(Position::GetOpenDrive(), nullptr);
     ASSERT_EQ(Position::GetOpenDrive()->GetOpenDriveFilename(),
-              "../../../EnvironmentSimulator/Unittest/xodr/highway_example_with_merge_and_split.xodr");
+             (std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xodr/highway_example_with_merge_and_split.xodr").c_str());
 
     std::vector<Position> expectedWaypoints = {Position(0, -4, 125, 0), Position(4, -1, 50, 0), Position(2, -1, 20, 0)};
     // Set start pos and the driving direction (heading)
@@ -171,7 +180,7 @@ TEST_F(FollowRouteTestSmall, CreateWaypointSmall2)
 {
     ASSERT_NE(Position::GetOpenDrive(), nullptr);
     ASSERT_EQ(Position::GetOpenDrive()->GetOpenDriveFilename(),
-              "../../../EnvironmentSimulator/Unittest/xodr/highway_example_with_merge_and_split.xodr");
+             (std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xodr/highway_example_with_merge_and_split.xodr").c_str());
 
     std::vector<Position> expectedWaypoints = {Position(0, -3, 10, 0),
                                                Position(3, -3, 25, 0),
@@ -204,7 +213,7 @@ TEST_F(FollowRouteTestSmall, CreateWaypointSmall2)
 TEST_F(FollowRouteTestMedium, FindPathMedium1)
 {
     ASSERT_NE(Position::GetOpenDrive(), nullptr);
-    ASSERT_EQ(Position::GetOpenDrive()->GetOpenDriveFilename(), "../../../resources/xodr/multi_intersections.xodr");
+    ASSERT_EQ(Position::GetOpenDrive()->GetOpenDriveFilename(), (std::string(getRunfilesDir().c_str()) + "resources/xodr/multi_intersections.xodr").c_str());
 
     // Set start pos and the driving direction (heading)
     // PI = against road dir,   0 = road dir
@@ -223,7 +232,7 @@ TEST_F(FollowRouteTestMedium, FindPathMedium1)
 TEST_F(FollowRouteTestMedium, FindPathMedium2)
 {
     ASSERT_NE(Position::GetOpenDrive(), nullptr);
-    ASSERT_EQ(Position::GetOpenDrive()->GetOpenDriveFilename(), "../../../resources/xodr/multi_intersections.xodr");
+    ASSERT_EQ(Position::GetOpenDrive()->GetOpenDriveFilename(), (std::string(getRunfilesDir().c_str()) + "resources/xodr/multi_intersections.xodr").c_str());
 
     // Set start pos and the driving direction (heading)
     // PI = against road dir,   0 = road dir
@@ -242,7 +251,7 @@ TEST_F(FollowRouteTestMedium, FindPathMedium2)
 TEST_F(FollowRouteTestMedium, FindPathTimeMedium)
 {
     ASSERT_NE(Position::GetOpenDrive(), nullptr);
-    ASSERT_EQ(Position::GetOpenDrive()->GetOpenDriveFilename(), "../../../resources/xodr/multi_intersections.xodr");
+    ASSERT_EQ(Position::GetOpenDrive()->GetOpenDriveFilename(), (std::string(getRunfilesDir().c_str()) + "resources/xodr/multi_intersections.xodr").c_str());
 
     // Set start pos and the driving direction (heading)
     // PI = against road dir,   0 = road dir
@@ -261,7 +270,7 @@ TEST_F(FollowRouteTestMedium, FindPathTimeMedium)
 TEST_F(FollowRouteTestMedium, CreateWaypointMedium)
 {
     ASSERT_NE(Position::GetOpenDrive(), nullptr);
-    ASSERT_EQ(Position::GetOpenDrive()->GetOpenDriveFilename(), "../../../resources/xodr/multi_intersections.xodr");
+    ASSERT_EQ(Position::GetOpenDrive()->GetOpenDriveFilename(), (std::string(getRunfilesDir().c_str()) + "resources/xodr/multi_intersections.xodr").c_str());
 
     std::vector<Position> expectedWaypoints = {Position(266, 1, 50, 0),
                                                Position(258, -1, 8.85, 0),
@@ -298,7 +307,7 @@ TEST_F(FollowRouteTestMedium, CreateWaypointMedium)
 TEST_F(FollowRouteTestLarge, FindPathLarge1)
 {
     ASSERT_NE(Position::GetOpenDrive(), nullptr);
-    ASSERT_EQ(Position::GetOpenDrive()->GetOpenDriveFilename(), "../../../resources/xodr/large.xodr");
+    ASSERT_EQ(Position::GetOpenDrive()->GetOpenDriveFilename(), (std::string(getRunfilesDir().c_str()) + "resources/xodr/large.xodr").c_str());
 
     // Set start pos and the driving direction (heading)
     // PI = against road dir,   0 = road dir
@@ -317,7 +326,7 @@ TEST_F(FollowRouteTestLarge, FindPathLarge1)
 TEST_F(FollowRouteTestLarge, FindPathLarge2)
 {
     ASSERT_NE(Position::GetOpenDrive(), nullptr);
-    ASSERT_EQ(Position::GetOpenDrive()->GetOpenDriveFilename(), "../../../resources/xodr/large.xodr");
+    ASSERT_EQ(Position::GetOpenDrive()->GetOpenDriveFilename(), (std::string(getRunfilesDir().c_str()) + "resources/xodr/large.xodr").c_str());
 
     // Set start pos and the driving direction (heading)
     // PI = against road dir,   0 = road dir
@@ -336,7 +345,7 @@ TEST_F(FollowRouteTestLarge, FindPathLarge2)
 TEST_F(FollowRouteTestLarge, FindPathLarge3)
 {
     ASSERT_NE(Position::GetOpenDrive(), nullptr);
-    ASSERT_EQ(Position::GetOpenDrive()->GetOpenDriveFilename(), "../../../resources/xodr/large.xodr");
+    ASSERT_EQ(Position::GetOpenDrive()->GetOpenDriveFilename(), (std::string(getRunfilesDir().c_str()) + "resources/xodr/large.xodr").c_str());
 
     // Set start pos and the driving direction (heading)
     // PI = against road dir,   0 = road dir
@@ -355,7 +364,7 @@ TEST_F(FollowRouteTestLarge, FindPathLarge3)
 TEST_F(FollowRouteTestLarge, FindPathLarge4)
 {
     ASSERT_NE(Position::GetOpenDrive(), nullptr);
-    ASSERT_EQ(Position::GetOpenDrive()->GetOpenDriveFilename(), "../../../resources/xodr/large.xodr");
+    ASSERT_EQ(Position::GetOpenDrive()->GetOpenDriveFilename(), (std::string(getRunfilesDir().c_str()) + "resources/xodr/large.xodr").c_str());
 
     // Set start pos and the driving direction (heading)
     // PI = against road dir,   0 = road dir
@@ -374,7 +383,7 @@ TEST_F(FollowRouteTestLarge, FindPathLarge4)
 TEST_F(FollowRouteTestLarge, FindPathTimeLarge)
 {
     ASSERT_NE(Position::GetOpenDrive(), nullptr);
-    ASSERT_EQ(Position::GetOpenDrive()->GetOpenDriveFilename(), "../../../resources/xodr/large.xodr");
+    ASSERT_EQ(Position::GetOpenDrive()->GetOpenDriveFilename(), (std::string(getRunfilesDir().c_str()) + "resources/xodr/large.xodr").c_str());
 
     // Set start pos and the driving direction (heading)
     // PI = against road dir,   0 = road dir
@@ -393,7 +402,7 @@ TEST_F(FollowRouteTestLarge, FindPathTimeLarge)
 TEST_F(FollowRouteTestLarge, CreateWaypointLarge)
 {
     ASSERT_NE(Position::GetOpenDrive(), nullptr);
-    ASSERT_EQ(Position::GetOpenDrive()->GetOpenDriveFilename(), "../../../resources/xodr/large.xodr");
+    ASSERT_EQ(Position::GetOpenDrive()->GetOpenDriveFilename(), (std::string(getRunfilesDir().c_str()) + "resources/xodr/large.xodr").c_str());
 
     std::vector<Position> expectedWaypoints = {Position(5219, -2, 226.8, 0),
                                                Position(8264, -2, 11, 0),
@@ -431,7 +440,7 @@ TEST_F(FollowRouteTestLarge, CreateWaypointLarge)
 TEST_F(FollowRouteTestRouteTest, FindPathShortest)
 {
     ASSERT_NE(Position::GetOpenDrive(), nullptr);
-    ASSERT_EQ(Position::GetOpenDrive()->GetOpenDriveFilename(), "../../../EnvironmentSimulator/Unittest/xodr/route_strategy_test_road.xodr");
+    ASSERT_EQ(Position::GetOpenDrive()->GetOpenDriveFilename(), (std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xodr/route_strategy_test_road.xodr").c_str());
 
     // Set start pos and the driving direction (heading)
     // PI = against road dir,   0 = road dir
@@ -455,7 +464,7 @@ TEST_F(FollowRouteTestRouteTest, FindPathShortest)
 TEST_F(FollowRouteTestRouteTest, FindPathFastest)
 {
     ASSERT_NE(Position::GetOpenDrive(), nullptr);
-    ASSERT_EQ(Position::GetOpenDrive()->GetOpenDriveFilename(), "../../../EnvironmentSimulator/Unittest/xodr/route_strategy_test_road.xodr");
+    ASSERT_EQ(Position::GetOpenDrive()->GetOpenDriveFilename(), (std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xodr/route_strategy_test_road.xodr").c_str());
 
     // Set start pos and the driving direction (heading)
     // PI = against road dir,   0 = road dir
@@ -479,7 +488,7 @@ TEST_F(FollowRouteTestRouteTest, FindPathFastest)
 TEST_F(FollowRouteTestRouteTest, FindPathMinIntersections)
 {
     ASSERT_NE(Position::GetOpenDrive(), nullptr);
-    ASSERT_EQ(Position::GetOpenDrive()->GetOpenDriveFilename(), "../../../EnvironmentSimulator/Unittest/xodr/route_strategy_test_road.xodr");
+    ASSERT_EQ(Position::GetOpenDrive()->GetOpenDriveFilename(), (std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xodr/route_strategy_test_road.xodr").c_str());
 
     // Set start pos and the driving direction (heading)
     // PI = against road dir,   0 = road dir
@@ -503,7 +512,7 @@ TEST_F(FollowRouteTestRouteTest, FindPathMinIntersections)
 TEST_F(FollowRouteTestRouteTestLHT, FindPathShortestLHT)
 {
     ASSERT_NE(Position::GetOpenDrive(), nullptr);
-    ASSERT_EQ(Position::GetOpenDrive()->GetOpenDriveFilename(), "../../../EnvironmentSimulator/Unittest/xodr/route_strategy_test_road_LHT.xodr");
+    ASSERT_EQ(Position::GetOpenDrive()->GetOpenDriveFilename(), (std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xodr/route_strategy_test_road_LHT.xodr").c_str());
 
     // Set start pos and the driving direction (heading)
     // PI = against road dir,   0 = road dir
@@ -527,8 +536,7 @@ TEST_F(FollowRouteTestRouteTestLHT, FindPathShortestLHT)
 TEST_F(FollowRouteTestMediumChangedSpeeds, LogWaypointMedium)
 {
     ASSERT_NE(Position::GetOpenDrive(), nullptr);
-    ASSERT_EQ(Position::GetOpenDrive()->GetOpenDriveFilename(),
-              "../../../EnvironmentSimulator/Unittest/xodr/multi_intersections_changed_speeds.xodr");
+    ASSERT_EQ(Position::GetOpenDrive()->GetOpenDriveFilename(), (std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xodr/multi_intersections_changed_speeds.xodr").c_str());
 
     std::vector<Position::RouteStrategy> routeStrategies = {Position::RouteStrategy::SHORTEST,
                                                             Position::RouteStrategy::FASTEST,
@@ -554,7 +562,7 @@ TEST_F(FollowRouteTestMediumChangedSpeeds, LogWaypointMedium)
     }
 
     std::ofstream ofs;
-    ofs.open("../../../follow_route_log.csv", std::ofstream::trunc);
+    ofs.open((std::string(getRunfilesDir().c_str()) + "follow_route_log.csv").c_str(), std::ofstream::trunc);
 
     LaneIndependentRouter router(Position::GetOpenDrive());
 

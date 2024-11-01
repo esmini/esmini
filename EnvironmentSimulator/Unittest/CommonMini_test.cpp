@@ -1,7 +1,6 @@
 #include <gtest/gtest.h>
 
 #include "CommonMini.hpp"
-#include "esminiLib.hpp"
 
 struct Coordinate2D
 {
