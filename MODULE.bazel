@@ -20,6 +20,12 @@ bazel_dep(name = "aspect_rules_py", version = "0.8.0")
 bazel_dep(name = "googletest", version = "1.15.2")
 
 ####################################################################################################
+# BAZEL CUSTOM DEPENDENCIES
+####################################################################################################
+
+bazel_dep(name = "hedron_compile_commands", dev_dependency = True)
+
+####################################################################################################
 # BAZEL - RULES PYTHON
 ####################################################################################################
 
@@ -37,6 +43,16 @@ pip.parse(
     requirements_lock = "//support/bazel:requirements.txt",
 )
 use_repo(pip, "esmini_pypi")
+
+####################################################################################################
+# BAZEL - HEDRON COMPILE COMMANDS
+####################################################################################################
+
+git_override(
+    module_name = "hedron_compile_commands",
+    commit = "1e08f8e0507b6b6b1f4416a9a22cf5c28beaba93",
+    remote = "https://github.com/hedronvision/bazel-compile-commands-extractor.git",
+)
 
 ####################################################################################################
 # NON-BAZEL DEPENDENCIES (HTTP) - PROJECTS

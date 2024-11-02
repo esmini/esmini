@@ -1,4 +1,5 @@
 
+load("@hedron_compile_commands//:refresh_compile_commands.bzl", "refresh_compile_commands")
 load("@rules_python//python:pip.bzl", "compile_pip_requirements")
 
 ####################################################################################################
@@ -14,4 +15,11 @@ compile_pip_requirements(
     src = "//support/bazel:requirements.in",
     requirements_txt = "//support/bazel:requirements.txt",
     tags = ["manual"],
+)
+
+refresh_compile_commands(
+    name = "refresh_compile_commands",
+    exclude_external_sources = True,
+    exclude_headers = "external",
+    targets = "//EnvironmentSimulator/Applications/esmini:esmini",
 )
