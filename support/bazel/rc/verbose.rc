@@ -1,7 +1,9 @@
 ####################################################################################################
-# IMPORT RC
+# VERBOSE
 ####################################################################################################
 
-import %workspace%/support/bazel/rc/alias.rc
-import %workspace%/support/bazel/rc/general.rc
-import %workspace%/support/bazel/rc/verbose.rc
+common:verbose --curses=no
+common:verbose --sandbox_debug
+common:verbose --keep_going
+common:verbose --verbose_failures
+common:verbose -s
