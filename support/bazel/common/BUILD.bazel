@@ -43,7 +43,7 @@ config_setting(
 
 implot(
     name = "implot",
-    build_setting_default = "off",
+    build_setting_default = "on",
 )
 
 config_setting(
@@ -85,7 +85,7 @@ config_setting(
 
 osi(
     name = "osi",
-    build_setting_default = "off",
+    build_setting_default = "on",
 )
 
 config_setting(
