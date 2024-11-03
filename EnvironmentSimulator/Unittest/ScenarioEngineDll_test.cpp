@@ -21,8 +21,7 @@
 inline std::string getRunfilesDir() {
     std::string runfiles_dir = "../../../";
     #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
+        runfiles_dir = "./";
     #endif
     return runfiles_dir;
 }

@@ -10,6 +10,14 @@ using namespace roadmanager;
 
 #define TRIG_ERR_MARGIN 0.001
 
+inline std::string getRunfilesDir() {
+    std::string runfiles_dir = "../../../";
+    #ifdef _USE_BAZEL
+        runfiles_dir = "./";
+    #endif
+    return runfiles_dir;
+}
+
 //////////////////////////////////////////////////////////////////////
 ////////// TESTS FOR CLASS -> Polynomial //////////
 //////////////////////////////////////////////////////////////////////
@@ -1530,13 +1538,7 @@ TEST_F(LaneTestFixture, TestLaneGetLineGlobalIds)
 
 TEST(RoadTest, RoadWidthAllLanes)
 {
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
-
-    ASSERT_EQ(roadmanager::Position::LoadOpenDrive((std::string(runfiles_dir.c_str()) + "resources/xodr/soderleden.xodr").c_str()), true);
+    ASSERT_EQ(roadmanager::Position::LoadOpenDrive((std::string(getRunfilesDir().c_str()) + "resources/xodr/soderleden.xodr").c_str()), true);
     roadmanager::OpenDrive *odr = Position::GetOpenDrive();
     ASSERT_NE(odr, nullptr);
 
@@ -1555,13 +1557,7 @@ TEST(RoadTest, RoadWidthAllLanes)
 
 TEST(RoadTest, RoadWidthDrivingLanes)
 {
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
-
-    roadmanager::OpenDrive *odr = new OpenDrive((std::string(runfiles_dir.c_str()) + "resources/xodr/soderleden.xodr").c_str());
+    roadmanager::OpenDrive *odr = new OpenDrive((std::string(getRunfilesDir().c_str()) + "resources/xodr/soderleden.xodr").c_str());
 
     ASSERT_NE(odr, nullptr);
     EXPECT_EQ(odr->GetNumOfRoads(), 5);
@@ -1637,14 +1633,8 @@ TEST(TrajectoryTest, PolyLineBase_YawInterpolation)
 
 TEST(DistanceTest, CalcDistanceLong)
 {
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
-
     double dist = 0.0;
-    Position::GetOpenDrive()->LoadOpenDriveFile((std::string(runfiles_dir.c_str()) + "resources/xodr/fabriksgatan.xodr").c_str());
+    Position::GetOpenDrive()->LoadOpenDriveFile((std::string(getRunfilesDir().c_str()) + "resources/xodr/fabriksgatan.xodr").c_str());
     OpenDrive *odr = Position::GetOpenDrive();
 
     ASSERT_NE(odr, nullptr);
@@ -1791,13 +1781,7 @@ TEST(NurbsTest, TestNurbsPosition)
 
 TEST(Route, TestAssignRoute)
 {
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
-
-    Position::GetOpenDrive()->LoadOpenDriveFile((std::string(runfiles_dir.c_str()) + "resources/xodr/fabriksgatan.xodr").c_str());
+    Position::GetOpenDrive()->LoadOpenDriveFile((std::string(getRunfilesDir().c_str()) + "resources/xodr/fabriksgatan.xodr").c_str());
     OpenDrive *odr = Position::GetOpenDrive();
     ASSERT_NE(odr, nullptr);
     EXPECT_EQ(odr->GetNumOfRoads(), 16);
@@ -1842,13 +1826,7 @@ TEST(Route, TestAssignRoute)
 
 TEST(GeoReferenceTest, TestNoGeoReferenceSimpleRoad)
 {
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
-
-    Position::GetOpenDrive()->LoadOpenDriveFile((std::string(runfiles_dir.c_str()) + "resources/xodr/straight_500m_signs.xodr").c_str());
+    Position::GetOpenDrive()->LoadOpenDriveFile((std::string(getRunfilesDir().c_str()) + "resources/xodr/straight_500m_signs.xodr").c_str());
     OpenDrive *odr = Position::GetOpenDrive();
     ASSERT_NE(odr, nullptr);
     EXPECT_EQ(odr->GetNumOfRoads(), 1);
@@ -1873,13 +1851,7 @@ TEST(GeoReferenceTest, TestNoGeoReferenceSimpleRoad)
 
 TEST(GeoReferenceTest, TestGeoReferenceSimpleRoad)
 {
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
-
-    Position::GetOpenDrive()->LoadOpenDriveFile((std::string(runfiles_dir.c_str()) + "resources/xodr/curve_r100.xodr").c_str());
+    Position::GetOpenDrive()->LoadOpenDriveFile((std::string(getRunfilesDir().c_str()) + "resources/xodr/curve_r100.xodr").c_str());
 
     OpenDrive *odr = Position::GetOpenDrive();
     ASSERT_NE(odr, nullptr);
@@ -1905,13 +1877,7 @@ TEST(GeoReferenceTest, TestGeoReferenceSimpleRoad)
 
 TEST(ProbeTest, TestProbeSimpleRoad)
 {
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
-
-    Position::GetOpenDrive()->LoadOpenDriveFile((std::string(runfiles_dir.c_str()) + "resources/xodr/curve_r100.xodr").c_str());
+    Position::GetOpenDrive()->LoadOpenDriveFile((std::string(getRunfilesDir().c_str()) + "resources/xodr/curve_r100.xodr").c_str());
     OpenDrive *odr = Position::GetOpenDrive();
     ASSERT_NE(odr, nullptr);
     EXPECT_EQ(odr->GetNumOfRoads(), 1);
@@ -1973,13 +1939,7 @@ TEST(ProbeTest, TestProbeSimpleRoad)
 
 TEST(ProbeTest, TestProbeComplexRoad)
 {
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
-
-    Position::GetOpenDrive()->LoadOpenDriveFile((std::string(runfiles_dir.c_str()) + "resources/xodr/fabriksgatan.xodr").c_str());
+    Position::GetOpenDrive()->LoadOpenDriveFile((std::string(getRunfilesDir().c_str()) + "resources/xodr/fabriksgatan.xodr").c_str());
     OpenDrive *odr = Position::GetOpenDrive();
     ASSERT_NE(odr, nullptr);
     EXPECT_EQ(odr->GetNumOfRoads(), 16);
@@ -2010,13 +1970,7 @@ TEST(ProbeTest, TestProbeComplexRoad)
 
 TEST(DeltaTest, TestDelta)
 {
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
-
-    Position::GetOpenDrive()->LoadOpenDriveFile((std::string(runfiles_dir.c_str()) + "resources/xodr/fabriksgatan.xodr").c_str());
+    Position::GetOpenDrive()->LoadOpenDriveFile((std::string(getRunfilesDir().c_str()) + "resources/xodr/fabriksgatan.xodr").c_str());
     OpenDrive *odr = Position::GetOpenDrive();
     ASSERT_NE(odr, nullptr);
     EXPECT_EQ(odr->GetNumOfRoads(), 16);
@@ -2058,13 +2012,7 @@ TEST(DeltaTest, TestDelta)
 
 TEST(PositionTest, TestJunctionId)
 {
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
-
-    Position::GetOpenDrive()->LoadOpenDriveFile((std::string(runfiles_dir.c_str()) + "resources/xodr/fabriksgatan.xodr").c_str());
+    Position::GetOpenDrive()->LoadOpenDriveFile((std::string(getRunfilesDir().c_str()) + "resources/xodr/fabriksgatan.xodr").c_str());
     OpenDrive *odr = Position::GetOpenDrive();
     ASSERT_NE(odr, nullptr);
     EXPECT_EQ(odr->GetNumOfRoads(), 16);
@@ -2102,13 +2050,7 @@ TEST(PositionTest, TestJunctionId)
 
 TEST(ControllerTest, TestControllers)
 {
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
-
-    Position::GetOpenDrive()->LoadOpenDriveFile((std::string(runfiles_dir.c_str()) + "resources/xodr/multi_intersections.xodr").c_str());
+    Position::GetOpenDrive()->LoadOpenDriveFile((std::string(getRunfilesDir().c_str()) + "resources/xodr/multi_intersections.xodr").c_str());
     OpenDrive *odr = Position::GetOpenDrive();
     ASSERT_NE(odr, nullptr);
     EXPECT_EQ(odr->GetNumOfRoads(), 63);
@@ -2151,13 +2093,7 @@ TEST(ControllerTest, TestControllers)
 
 TEST(EdgeCaseTest, TestSTruncation)
 {
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
-
-    Position::GetOpenDrive()->LoadOpenDriveFile((std::string(runfiles_dir.c_str()) + "resources/xodr/fabriksgatan.xodr").c_str());
+    Position::GetOpenDrive()->LoadOpenDriveFile((std::string(getRunfilesDir().c_str()) + "resources/xodr/fabriksgatan.xodr").c_str());
     OpenDrive *odr = Position::GetOpenDrive();
     ASSERT_NE(odr, nullptr);
     EXPECT_EQ(odr->GetNumOfRoads(), 16);
@@ -2194,13 +2130,7 @@ TEST(EdgeCaseTest, TestSTruncation)
 
 TEST(LaneInfoTest, TestLaneWidthAndType)
 {
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
-
-    Position::GetOpenDrive()->LoadOpenDriveFile((std::string(runfiles_dir.c_str()) + "EnvironmentSimulator/Unittest/xodr/highway_exit.xodr").c_str());
+    Position::GetOpenDrive()->LoadOpenDriveFile((std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xodr/highway_exit.xodr").c_str());
     OpenDrive *odr = Position::GetOpenDrive();
     ASSERT_NE(odr, nullptr);
     EXPECT_EQ(odr->GetNumOfRoads(), 5);
@@ -2220,13 +2150,7 @@ TEST(LaneInfoTest, TestLaneWidthAndType)
 
 TEST(LaneInfoTest, TestDetailedLaneType)
 {
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
-
-    Position::GetOpenDrive()->LoadOpenDriveFile((std::string(runfiles_dir.c_str()) + "EnvironmentSimulator/Unittest/xodr/mw_100m.xodr").c_str());
+    Position::GetOpenDrive()->LoadOpenDriveFile((std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xodr/mw_100m.xodr").c_str());
 
     OpenDrive *odr = Position::GetOpenDrive();
     ASSERT_NE(odr, nullptr);
@@ -2282,13 +2206,7 @@ TEST(RoadInfoTest, TestGetNrRoadsOverlappingPos)
     int road_id_2[] = {2};
     int n           = 0;
 
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
-
-    Position::GetOpenDrive()->LoadOpenDriveFile((std::string(runfiles_dir.c_str()) + "resources/xodr/fabriksgatan.xodr").c_str());
+    Position::GetOpenDrive()->LoadOpenDriveFile((std::string(getRunfilesDir().c_str()) + "resources/xodr/fabriksgatan.xodr").c_str());
     OpenDrive *odr = Position::GetOpenDrive();
     ASSERT_NE(odr, nullptr);
     EXPECT_EQ(odr->GetNumOfRoads(), 16);
@@ -2346,13 +2264,7 @@ TEST(RoadInfoTest, TestGetNrRoadsOverlappingPos)
 
 TEST(RoadPosTest, TestPrioStraightRoadInJunction)
 {
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
-
-    Position::GetOpenDrive()->LoadOpenDriveFile((std::string(runfiles_dir.c_str()) + "resources/xodr/fabriksgatan.xodr").c_str());
+    Position::GetOpenDrive()->LoadOpenDriveFile((std::string(getRunfilesDir().c_str()) + "resources/xodr/fabriksgatan.xodr").c_str());
     OpenDrive *odr = Position::GetOpenDrive();
     ASSERT_NE(odr, nullptr);
     EXPECT_EQ(odr->GetNumOfRoads(), 16);
@@ -2401,13 +2313,7 @@ protected:
 
 StarRoadTestFixture::StarRoadTestFixture() : lane_width(3.5)
 {
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
-
-    Position::GetOpenDrive()->LoadOpenDriveFile((std::string(runfiles_dir.c_str()) + "EnvironmentSimulator/Unittest/xodr/star.xodr").c_str());
+    Position::GetOpenDrive()->LoadOpenDriveFile((std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xodr/star.xodr").c_str());
 }
 
 void StarRoadTestFixture::Check(double x, double y, double h, double p_road, double p)
@@ -2464,13 +2370,7 @@ TEST_F(StarRoadTestFixture, TestRelativeRoadPos)
 
 TEST(OSIPointTest, MixedRoads)
 {
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
-
-    ASSERT_EQ(roadmanager::Position::LoadOpenDrive((std::string(runfiles_dir.c_str()) + "EnvironmentSimulator/Unittest/xodr/mixed_roads.xodr").c_str()), true);    roadmanager::OpenDrive *odr = Position::GetOpenDrive();
+    ASSERT_EQ(roadmanager::Position::LoadOpenDrive((std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xodr/mixed_roads.xodr").c_str()), true);    roadmanager::OpenDrive *odr = Position::GetOpenDrive();
     ASSERT_NE(odr, nullptr);
 
     EXPECT_EQ(odr->GetNumOfRoads(), 4);
@@ -2540,13 +2440,7 @@ TEST(OSIPointTest, MixedRoads)
 
 TEST(RoadEdgeTest, TestRoadEdge)
 {
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
-
-    ASSERT_EQ(roadmanager::Position::LoadOpenDrive((std::string(runfiles_dir.c_str()) + "EnvironmentSimulator/Unittest/xodr/highway_example_with_merge_and_split.xodr").c_str()), true);    roadmanager::OpenDrive *odr = Position::GetOpenDrive();
+    ASSERT_EQ(roadmanager::Position::LoadOpenDrive((std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xodr/highway_example_with_merge_and_split.xodr").c_str()), true);    roadmanager::OpenDrive *odr = Position::GetOpenDrive();
     ASSERT_NE(odr, nullptr);
 
     EXPECT_EQ(odr->GetNumOfRoads(), 9);
@@ -2591,7 +2485,7 @@ TEST(RoadEdgeTest, TestRoadEdge)
 
     odr->Clear();
 
-    ASSERT_EQ(roadmanager::Position::LoadOpenDrive((std::string(runfiles_dir.c_str()) + "resources/xodr/jolengatan.xodr").c_str()), true);
+    ASSERT_EQ(roadmanager::Position::LoadOpenDrive((std::string(getRunfilesDir().c_str()) + "resources/xodr/jolengatan.xodr").c_str()), true);
     odr = Position::GetOpenDrive();
     ASSERT_NE(odr, nullptr);
 
@@ -2613,13 +2507,7 @@ TEST(RoadEdgeTest, TestRoadEdge)
 
 TEST(ExplicitLineTest, TestExplicitRoadMark)
 {
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
-
-    ASSERT_EQ(roadmanager::Position::LoadOpenDrive((std::string(runfiles_dir.c_str()) + "EnvironmentSimulator/Unittest/xodr/explicit_line.xodr").c_str()), true);
+    ASSERT_EQ(roadmanager::Position::LoadOpenDrive((std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xodr/explicit_line.xodr").c_str()), true);
     roadmanager::OpenDrive *odr = Position::GetOpenDrive();
     ASSERT_NE(odr, nullptr);
 
@@ -2680,13 +2568,7 @@ TEST(ExplicitLineTest, TestExplicitRoadMark)
 
 TEST(PositionModeTest, TestModeBitmasks)
 {
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
-
-    ASSERT_EQ(roadmanager::Position::LoadOpenDrive((std::string(runfiles_dir.c_str()) + "EnvironmentSimulator/Unittest/xodr/straight_500_superelevation_elevation_curve.xodr").c_str()), true);
+    ASSERT_EQ(roadmanager::Position::LoadOpenDrive((std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xodr/straight_500_superelevation_elevation_curve.xodr").c_str()), true);
 
     roadmanager::OpenDrive *odr = Position::GetOpenDrive();
     ASSERT_NE(odr, nullptr);
@@ -2816,13 +2698,7 @@ TEST(PositionModeTest, TestModeBitmasks)
 
 TEST(PositionModeTest, TestPositionTypes)
 {
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
-
-    ASSERT_EQ(roadmanager::Position::LoadOpenDrive((std::string(runfiles_dir.c_str()) + "EnvironmentSimulator/Unittest/xodr/straight_500_superelevation_elevation_curve.xodr").c_str()), true);
+    ASSERT_EQ(roadmanager::Position::LoadOpenDrive((std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xodr/straight_500_superelevation_elevation_curve.xodr").c_str()), true);
 
     roadmanager::OpenDrive *odr = Position::GetOpenDrive();
     ASSERT_NE(odr, nullptr);
@@ -2905,13 +2781,7 @@ TEST(LaneId, TestLaneIdDeltaCalculation)
 // Verifies that relative orientation are correctly calculated from the absolute values
 TEST(RotationTest, TestFindOutRelativeOrientation)
 {
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
-
-    ASSERT_EQ(roadmanager::Position::LoadOpenDrive((std::string(runfiles_dir.c_str()) + "EnvironmentSimulator/Unittest/xodr/slope_up_slope_down.xodr").c_str()), true);
+    ASSERT_EQ(roadmanager::Position::LoadOpenDrive((std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xodr/slope_up_slope_down.xodr").c_str()), true);
     roadmanager::OpenDrive *odr = Position::GetOpenDrive();
     ASSERT_NE(odr, nullptr);
 
@@ -3026,13 +2896,7 @@ TEST(RotationTest, TestFindOutRelativeOrientation)
 
 TEST(LaneMaterialTest, TestGlobalFriction)
 {
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
-
-    ASSERT_EQ(roadmanager::Position::LoadOpenDrive((std::string(runfiles_dir.c_str()) + "EnvironmentSimulator/Unittest/xodr/straight_road.xodr").c_str()), true);
+    ASSERT_EQ(roadmanager::Position::LoadOpenDrive((std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xodr/straight_road.xodr").c_str()), true);
 
     roadmanager::OpenDrive *odr = Position::GetOpenDrive();
     ASSERT_NE(odr, nullptr);
@@ -3040,7 +2904,7 @@ TEST(LaneMaterialTest, TestGlobalFriction)
     EXPECT_EQ(odr->GetNumOfRoads(), 1);
     EXPECT_EQ(odr->GetFriction(), 0.5);  // multiple friction values
 
-    ASSERT_EQ(roadmanager::Position::LoadOpenDrive((std::string(runfiles_dir.c_str()) + "EnvironmentSimulator/Unittest/xodr/straight_2x100m_opposite.xodr").c_str()), true);
+    ASSERT_EQ(roadmanager::Position::LoadOpenDrive((std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xodr/straight_2x100m_opposite.xodr").c_str()), true);
     odr = Position::GetOpenDrive();
     ASSERT_NE(odr, nullptr);
 
@@ -3050,13 +2914,7 @@ TEST(LaneMaterialTest, TestGlobalFriction)
 
 TEST(LaneMaterialTest, TestLaneFriction)
 {
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
-
-    ASSERT_EQ(roadmanager::Position::LoadOpenDrive((std::string(runfiles_dir.c_str()) + "EnvironmentSimulator/Unittest/xodr/straight_highway_500m.xodr").c_str()), true);
+    ASSERT_EQ(roadmanager::Position::LoadOpenDrive((std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xodr/straight_highway_500m.xodr").c_str()), true);
 
     roadmanager::OpenDrive *odr = Position::GetOpenDrive();
     ASSERT_NE(odr, nullptr);
@@ -3095,13 +2953,7 @@ TEST(LaneMaterialTest, TestLaneFriction)
 
 TEST(RoadId, TestStringRoadId)
 {
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
-
-    ASSERT_EQ(roadmanager::Position::LoadOpenDrive((std::string(runfiles_dir.c_str()) + "EnvironmentSimulator/Unittest/xodr/fabriksgatan_mixed_id_types.xodr").c_str()), true);
+    ASSERT_EQ(roadmanager::Position::LoadOpenDrive((std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xodr/fabriksgatan_mixed_id_types.xodr").c_str()), true);
 
     roadmanager::OpenDrive *odr = Position::GetOpenDrive();
     ASSERT_NE(odr, nullptr);

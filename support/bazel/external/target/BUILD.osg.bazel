@@ -39,7 +39,7 @@ filegroup(
     srcs = select({
         "@esmini//support/bazel/common:debug": OSG_DBG,
         "@esmini//support/bazel/common:optimized": OSG_OPT,
-        "//conditions:default": OSG_OPT
+        "//conditions:default": OSG_DBG
     }),
     visibility = ["//visibility:public"],
 )

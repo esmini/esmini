@@ -21,15 +21,17 @@ using namespace scenarioengine;
 
 #define TRIG_ERR_MARGIN 0.001
 
-TEST(DistanceTest, CalcDistanceVariations)
-{
+inline std::string getRunfilesDir() {
     std::string runfiles_dir = "../../../";
     #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
+        runfiles_dir = "./";
     #endif
+    return runfiles_dir;
+}
 
-    Position::GetOpenDrive()->LoadOpenDriveFile((std::string(runfiles_dir.c_str()) + "resources/xodr/curve_r100.xodr").c_str());
+TEST(DistanceTest, CalcDistanceVariations)
+{
+    Position::GetOpenDrive()->LoadOpenDriveFile((std::string(getRunfilesDir().c_str()) + "resources/xodr/curve_r100.xodr").c_str());
 
     double dist = 0.0;
     OpenDrive* odr = Position::GetOpenDrive();
@@ -137,13 +139,7 @@ TEST(DistanceTest, CalcDistanceVariations)
 
 TEST(DistanceTest, CalcDistancePoint)
 {
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
-
-    Position::GetOpenDrive()->LoadOpenDriveFile((std::string(runfiles_dir.c_str()) + "resources/xodr/curve_r100.xodr").c_str());
+    Position::GetOpenDrive()->LoadOpenDriveFile((std::string(getRunfilesDir().c_str()) + "resources/xodr/curve_r100.xodr").c_str());
 
     OpenDrive* odr = Position::GetOpenDrive();
 
@@ -187,13 +183,7 @@ TEST(DistanceTest, CalcDistancePoint)
 
 TEST(DistanceTest, CalcDistancePointAcrossIntersection)
 {
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
-
-    Position::GetOpenDrive()->LoadOpenDriveFile((std::string(runfiles_dir.c_str()) + "resources/xodr/fabriksgatan.xodr").c_str());
+    Position::GetOpenDrive()->LoadOpenDriveFile((std::string(getRunfilesDir().c_str()) + "resources/xodr/fabriksgatan.xodr").c_str());
 
     OpenDrive* odr = Position::GetOpenDrive();
 
@@ -222,13 +212,7 @@ TEST(DistanceTest, CalcDistancePointAcrossIntersection)
 
 TEST(DistanceTest, CalcEntityDistanceFreespace)
 {
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
-
-    Position::GetOpenDrive()->LoadOpenDriveFile((std::string(runfiles_dir.c_str()) + "resources/xodr/straight_500m.xodr").c_str());
+    Position::GetOpenDrive()->LoadOpenDriveFile((std::string(getRunfilesDir().c_str()) + "resources/xodr/straight_500m.xodr").c_str());
 
     OpenDrive* odr = Position::GetOpenDrive();
 
@@ -303,16 +287,10 @@ TEST(DistanceTest, CalcEntityDistanceFreespace)
 
 TEST(DistanceTest, DistanceWithTrailers)
 {
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
-
     double dt       = 0.1;
     double distance = LARGE_NUMBER;
 
-    ScenarioEngine* se = new ScenarioEngine((std::string(runfiles_dir.c_str()) + "EnvironmentSimulator/Unittest/xosc/distance_with_trailers.xosc").c_str());
+    ScenarioEngine* se = new ScenarioEngine((std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xosc/distance_with_trailers.xosc").c_str());
 
     ASSERT_NE(se, nullptr);
     EXPECT_EQ(se->entities_.object_.size(), 7);
@@ -608,13 +586,8 @@ TEST(DistanceTest, TestTrajectoryDistance)
 {
     double dt = 0.1;
 
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
 
-    ScenarioEngine* se = new ScenarioEngine((std::string(runfiles_dir.c_str()) + "resources/xosc/lane-change_clothoid_based_trajectory.xosc").c_str());
+    ScenarioEngine* se = new ScenarioEngine((std::string(getRunfilesDir().c_str()) + "resources/xosc/lane-change_clothoid_based_trajectory.xosc").c_str());
 
     ASSERT_NE(se, nullptr);
     se->step(0.0);
@@ -682,13 +655,7 @@ TEST(TrajectoryTest, EnsureContinuation)
 {
     double          dt = 0.01;
 
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
-
-    ScenarioEngine* se = new ScenarioEngine((std::string(runfiles_dir.c_str()) + "EnvironmentSimulator/Unittest/xosc/trajectory-continuity.xosc").c_str());
+    ScenarioEngine* se = new ScenarioEngine((std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xosc/trajectory-continuity.xosc").c_str());
     ASSERT_NE(se, nullptr);
 
     for (int i = 0; i < static_cast<int>(1.0 / dt); i++)
@@ -731,13 +698,7 @@ TEST(TrajectoryTest, PolyLineContinuosSpeed)
 {
     double          dt = 0.05;
 
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
-
-    ScenarioEngine* se = new ScenarioEngine((std::string(runfiles_dir.c_str()) + "EnvironmentSimulator/Unittest/xosc/brake_by_trajectory_100-0.xosc").c_str());
+    ScenarioEngine* se = new ScenarioEngine((std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xosc/brake_by_trajectory_100-0.xosc").c_str());
 
     ASSERT_NE(se, nullptr);
 
@@ -796,13 +757,7 @@ TEST(TrajectoryTest, FollowTrajectoryReverse)
 {
     double          dt = 0.05;
 
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
-
-    ScenarioEngine* se = new ScenarioEngine((std::string(runfiles_dir.c_str()) + "EnvironmentSimulator/Unittest/xosc/follow_trajectory_reverse.xosc").c_str());
+    ScenarioEngine* se = new ScenarioEngine((std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xosc/follow_trajectory_reverse.xosc").c_str());
 
     ASSERT_NE(se, nullptr);
 
@@ -1113,12 +1068,6 @@ TEST(ParameterTest, ParseParameterTest)
 
 TEST(JunctionTest, JunctionSelectorTest)
 {
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
-
     double dt = 0.01;
 
     double angles[]    = {3 * M_PI_2, -M_PI_2, 0.0, M_PI_2};
@@ -1127,7 +1076,7 @@ TEST(JunctionTest, JunctionSelectorTest)
 
     for (int i = 0; i < static_cast<int>(sizeof(angles) / sizeof(double)); i++)
     {
-        ScenarioEngine* se = new ScenarioEngine((std::string(runfiles_dir.c_str()) + "EnvironmentSimulator/Unittest/xosc/junction-selector.xosc").c_str());
+        ScenarioEngine* se = new ScenarioEngine((std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xosc/junction-selector.xosc").c_str());
         se->step(0.0);
         se->prepareGroundTruth(0.0);
         ASSERT_NE(se, nullptr);
@@ -1146,12 +1095,6 @@ TEST(JunctionTest, JunctionSelectorTest)
 
 TEST(ConditionTest, CollisionTest)
 {
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
-
     double dt           = 0.01;
     double timestamps[] = {5.24, 5.25, 6.25, 6.26, 7.10, 8.78};
 
@@ -1160,7 +1103,7 @@ TEST(ConditionTest, CollisionTest)
     SE_Env::Inst().SetCollisionDetection(true);
 
     // Initialize the scenario and disable interactive controller
-    ScenarioEngine* se = new ScenarioEngine((std::string(runfiles_dir.c_str()) + "EnvironmentSimulator/Unittest/xosc/test-collision-detection.xosc").c_str(), true);
+    ScenarioEngine* se = new ScenarioEngine((std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xosc/test-collision-detection.xosc").c_str(), true);
     se->step(0.0);
     se->prepareGroundTruth(0.0);
     ASSERT_NE(se, nullptr);
@@ -1241,13 +1184,7 @@ TEST(ControllerTest, UDPDriverModelTestAsynchronous)
 {
     double dt = 0.01;
 
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
-
-    ScenarioEngine* se = new ScenarioEngine((std::string(runfiles_dir.c_str()) + "scripts/udp_driver/two_cars_in_open_space.xosc").c_str());
+    ScenarioEngine* se = new ScenarioEngine((std::string(getRunfilesDir().c_str()) + "scripts/udp_driver/two_cars_in_open_space.xosc").c_str());
     ASSERT_NE(se, nullptr);
     ASSERT_EQ(se->entities_.object_.size(), 2);
 
@@ -1340,13 +1277,7 @@ TEST(ControllerTest, UDPDriverModelTestSynchronous)
 {
     double dt = 0.01;
 
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
-
-    ScenarioEngine* se = new ScenarioEngine((std::string(runfiles_dir.c_str()) + "scripts/udp_driver/two_cars_in_open_space.xosc").c_str());
+    ScenarioEngine* se = new ScenarioEngine((std::string(getRunfilesDir().c_str()) + "scripts/udp_driver/two_cars_in_open_space.xosc").c_str());
     ASSERT_NE(se, nullptr);
     ASSERT_EQ(se->entities_.object_.size(), 2);
 
@@ -1468,13 +1399,7 @@ TEST(RoadOrientationTest, TestElevationPitchRoll)
 {
     double dt = 0.1;
 
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
-
-    ScenarioEngine* se = new ScenarioEngine((std::string(runfiles_dir.c_str()) + "EnvironmentSimulator/Unittest/xosc/elevations.xosc").c_str());
+    ScenarioEngine* se = new ScenarioEngine((std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xosc/elevations.xosc").c_str());
 
     ASSERT_NE(se, nullptr);
     ASSERT_EQ(se->entities_.object_.size(), 4);
@@ -1773,13 +1698,7 @@ TEST(ActionDynamicsTest, TestDynamicsRateDimension)
 
 TEST(OrientationTest, TestRelativeRoadHeading)
 {
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
-
-    ScenarioEngine* se = new ScenarioEngine((std::string(runfiles_dir.c_str()) + "EnvironmentSimulator/Unittest/xosc/four_roads.xosc").c_str());
+    ScenarioEngine* se = new ScenarioEngine((std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xosc/four_roads.xosc").c_str());
 
     ASSERT_NE(se, nullptr);
 
@@ -2134,13 +2053,7 @@ TEST(ControllerTest, ALKS_R157_TestR157RegulationMinDist)
 {
     double dt = 0.01;
 
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
-
-    ScenarioEngine* se = new ScenarioEngine((std::string(runfiles_dir.c_str()) + "EnvironmentSimulator/Unittest/xosc/alks_r157_test.xosc").c_str());
+    ScenarioEngine* se = new ScenarioEngine((std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xosc/alks_r157_test.xosc").c_str());
     ASSERT_NE(se, nullptr);
     ASSERT_EQ(se->entities_.object_.size(), 2);
 
@@ -2221,17 +2134,11 @@ TEST(ControllerTest, ALKS_R157_TestR157RefDriverBrakeRate)
     double dt               = 0.05;
     bool   aeb_available[2] = {true, false};
 
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
-
     // Run first with AEB enabled, then without
     for (int i = 0; i < 2; i++)
     {
         RegisterParameterDeclarationCallback(alksRefDriverParamDeclCallback, &(aeb_available[i]));
-        ScenarioEngine* se = new ScenarioEngine((std::string(runfiles_dir.c_str()) + "EnvironmentSimulator/Unittest/xosc/alks_r157_quick_stop_test.xosc").c_str());
+        ScenarioEngine* se = new ScenarioEngine((std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xosc/alks_r157_quick_stop_test.xosc").c_str());
         ASSERT_NE(se, nullptr);
         ASSERT_EQ(se->entities_.object_.size(), 3);
         Object* obj = se->entities_.object_[0];
@@ -2401,13 +2308,8 @@ class StraightRoadTest : public testing::Test
 protected:
     static void SetUpTestSuite()
     {
-        std::string runfiles_dir = "../../../";
-        #ifdef _USE_BAZEL
-            runfiles_dir = std::getenv("RUNFILES_DIR");
-            runfiles_dir = runfiles_dir + "/_main/";
-        #endif
 
-        ASSERT_EQ(roadmanager::Position::LoadOpenDrive((std::string(runfiles_dir.c_str()) + "resources/xodr/straight_500m.xodr").c_str()), true);
+        ASSERT_EQ(roadmanager::Position::LoadOpenDrive((std::string(getRunfilesDir().c_str()) + "resources/xodr/straight_500m.xodr").c_str()), true);
         static OpenDrive* odr = Position::GetOpenDrive();
         ASSERT_NE(odr, nullptr);
         EXPECT_EQ(odr->GetNumOfRoads(), 1);
@@ -2433,13 +2335,8 @@ TEST(DistributionTest, TestDeterministicDistribution)
 {
     OSCParameterDistribution& dist = OSCParameterDistribution::Inst();
 
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
 
-    EXPECT_EQ(dist.Load((std::string(runfiles_dir.c_str()) + "resources/xosc/cut-in_parameter_set.xosc").c_str()), 0);
+    EXPECT_EQ(dist.Load((std::string(getRunfilesDir().c_str()) + "resources/xosc/cut-in_parameter_set.xosc").c_str()), 0);
 
     dist.SetIndex(0);
     EXPECT_EQ(dist.GetNumParameters(), 4);
@@ -2510,13 +2407,8 @@ TEST_F(StraightRoadTest, TestObjectOverlap)
 TEST(SpeedTest, TestAbsoluteSpeed)
 {
     double          dt = 0.05;
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
 
-    ScenarioEngine* se = new ScenarioEngine((std::string(runfiles_dir.c_str()) + "EnvironmentSimulator/Unittest/xosc/lateral_maneuvers_test.xosc").c_str());
+    ScenarioEngine* se = new ScenarioEngine((std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xosc/lateral_maneuvers_test.xosc").c_str());
     ASSERT_NE(se, nullptr);
 
     double time = 0.0;
@@ -2577,13 +2469,8 @@ TEST(SpeedTest, TestChangeSpeedOverDistance)
 TEST(ControllerTest, TestLoomingControllerSimple)
 {
     double          dt = 0.05;
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
 
-    ScenarioEngine* se = new ScenarioEngine((std::string(runfiles_dir.c_str()) + "EnvironmentSimulator/Unittest/xosc/loomingTest.xosc").c_str());
+    ScenarioEngine* se = new ScenarioEngine((std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xosc/loomingTest.xosc").c_str());
     ASSERT_NE(se, nullptr);
 
     while (se->getSimulationTime() < 5.0 - SMALL_NUMBER)
@@ -2635,13 +2522,7 @@ TEST(ControllerTest, TestLoomingSimpleFarTan)
 {
     double          dt = 0.05;
 
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
-
-    ScenarioEngine* se = new ScenarioEngine((std::string(runfiles_dir.c_str()) + "EnvironmentSimulator/Unittest/xosc/loomingTest.xosc").c_str());
+    ScenarioEngine* se = new ScenarioEngine((std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xosc/loomingTest.xosc").c_str());
 
     ASSERT_NE(se, nullptr);
 
@@ -2679,16 +2560,11 @@ static void clearanceFreeSpaceParamDeclCallback(void*)
 TEST(RelativeClearanceTest, TestRelativeClearanceFreeSpace)
 {
     double dt = 0.05;
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
 
     RegisterParameterDeclarationCallback(clearanceFreeSpaceParamDeclCallback, 0);
     for (int i = 0; i < 2; i++)
     {
-        ScenarioEngine* se = new ScenarioEngine((std::string(runfiles_dir.c_str()) + "EnvironmentSimulator/Unittest/xosc/relative_clearance_freeSpace.xosc").c_str());
+        ScenarioEngine* se = new ScenarioEngine((std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xosc/relative_clearance_freeSpace.xosc").c_str());
         ASSERT_NE(se, nullptr);
 
         while (se->getSimulationTime() < 5.0 - SMALL_NUMBER)
@@ -2725,13 +2601,7 @@ TEST(TwoPlusOneRoadTest, TestTwoPlusOneRoad)
 {
     double          dt = 0.05;
 
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
-
-    ScenarioEngine* se = new ScenarioEngine((std::string(runfiles_dir.c_str()) + "resources/xosc/two_plus_one_road.xosc").c_str());
+    ScenarioEngine* se = new ScenarioEngine((std::string(getRunfilesDir().c_str()) + "resources/xosc/two_plus_one_road.xosc").c_str());
     struct
     {
         double time;
@@ -2779,17 +2649,12 @@ static void clearanceParamDeclCallback(void*)
 TEST(RelativeClearanceTest, TestRelativeClearanceOppositeLane)
 {
     double dt = 0.05;
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
 
     RegisterParameterDeclarationCallback(clearanceParamDeclCallback, 0);
 
     for (int i = 0; i < 2; i++)
     {
-        ScenarioEngine* se = new ScenarioEngine((std::string(runfiles_dir.c_str()) + "EnvironmentSimulator/Unittest/xosc/relative_clearance_oppositLane.xosc").c_str());
+        ScenarioEngine* se = new ScenarioEngine((std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xosc/relative_clearance_oppositLane.xosc").c_str());
         ASSERT_NE(se, nullptr);
 
         while (se->getSimulationTime() < 1.6 - SMALL_NUMBER)
@@ -2824,13 +2689,8 @@ TEST(RelativeClearanceTest, TestRelativeClearanceOppositeLane)
 TEST(ControllerTest, TestLoomingControllerAdvanced)
 {
     double          dt = 0.05;
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
 
-    ScenarioEngine* se = new ScenarioEngine((std::string(runfiles_dir.c_str()) + "EnvironmentSimulator/Unittest/xosc/loomingAdvancedTest.xosc").c_str());
+    ScenarioEngine* se = new ScenarioEngine((std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xosc/loomingAdvancedTest.xosc").c_str());
     ASSERT_NE(se, nullptr);
 
     // Get handle to first controller, which we know is a looming controller
@@ -3071,16 +2931,11 @@ static void TTCAndLateralDistParamDeclCallback(void*)
 TEST(ConditionTest, TestTTCAndLateralDist)
 {
     double dt = 0.05;
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
 
     RegisterParameterDeclarationCallback(TTCAndLateralDistParamDeclCallback, 0);
     for (int i = 0; i < 2; i++)
     {
-        ScenarioEngine* se = new ScenarioEngine((std::string(runfiles_dir.c_str()) + "EnvironmentSimulator/Unittest/xosc/ttc_condition.xosc").c_str());
+        ScenarioEngine* se = new ScenarioEngine((std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xosc/ttc_condition.xosc").c_str());
         ASSERT_NE(se, nullptr);
         ASSERT_EQ(se->entities_.object_[0]->GetName(), "Ego");
         ASSERT_EQ(se->entities_.object_[1]->GetName(), "Target");
@@ -3109,13 +2964,7 @@ TEST(ActionTest, TestRelativeLaneChangeAction)
 {
     double dt = 0.1;
 
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
-
-    ScenarioEngine* se = new ScenarioEngine((std::string(runfiles_dir.c_str()) + "EnvironmentSimulator/Unittest/xosc/relative_lane_change.xosc").c_str());
+    ScenarioEngine* se = new ScenarioEngine((std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xosc/relative_lane_change.xosc").c_str());
     ASSERT_NE(se, nullptr);
     ASSERT_EQ(se->entities_.object_[0]->GetName(), "Ego");
     ASSERT_EQ(se->entities_.object_[1]->GetName(), "Target1");
@@ -3160,13 +3009,7 @@ TEST(ActionTest, TestRelativeLaneOffsetAction)
 {
     double dt = 0.1;
 
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
-
-    ScenarioEngine* se = new ScenarioEngine((std::string(runfiles_dir.c_str()) + "EnvironmentSimulator/Unittest/xosc/relative_lane_offset.xosc").c_str());
+    ScenarioEngine* se = new ScenarioEngine((std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xosc/relative_lane_offset.xosc").c_str());
     ASSERT_NE(se, nullptr);
     ASSERT_EQ(se->entities_.object_[0]->GetName(), "Ego");
     ASSERT_EQ(se->entities_.object_[1]->GetName(), "Target1");
@@ -3218,13 +3061,7 @@ TEST(ActionTest, TestRelativeLanePosition)
                               {17.8, 289.722, 5.250, 289.695, 2.690},
                               {20.5, 207.222, 5.250, 207.195, 7.810}};
 
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
-
-    ScenarioEngine* se = new ScenarioEngine((std::string(runfiles_dir.c_str()) + "EnvironmentSimulator/Unittest/xosc/relative_lane_pos_trajectories.xosc").c_str());
+    ScenarioEngine* se = new ScenarioEngine((std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xosc/relative_lane_pos_trajectories.xosc").c_str());
     ASSERT_NE(se, nullptr);
     ASSERT_EQ(se->entities_.object_[0]->GetName(), "Ego");
     ASSERT_EQ(se->entities_.object_[1]->GetName(), "Target");
@@ -3261,13 +3098,7 @@ TEST(ActionTest, TestRelativeLaneOffsetPosition)
                               {17.8, 289.722, 5.250, 289.695, 2.690},
                               {20.5, 207.222, 5.250, 207.195, 7.810}};
 
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
-
-    ScenarioEngine* se = new ScenarioEngine((std::string(runfiles_dir.c_str()) + "EnvironmentSimulator/Unittest/xosc/relative_lane_pos_offset_trajectories.xosc").c_str());
+    ScenarioEngine* se = new ScenarioEngine((std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xosc/relative_lane_pos_offset_trajectories.xosc").c_str());
     ASSERT_NE(se, nullptr);
     ASSERT_EQ(se->entities_.object_[0]->GetName(), "Ego");
     ASSERT_EQ(se->entities_.object_[1]->GetName(), "Target");
@@ -3296,13 +3127,7 @@ TEST(PositionTest, TestPositionMode)
 {
     double dt = 0.1;
 
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
-
-    ScenarioEngine* se = new ScenarioEngine((std::string(runfiles_dir.c_str()) + "EnvironmentSimulator/Unittest/xosc/positioning_slope_up_leaning_right.xosc").c_str());
+    ScenarioEngine* se = new ScenarioEngine((std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xosc/positioning_slope_up_leaning_right.xosc").c_str());
     ASSERT_NE(se, nullptr);
     EXPECT_EQ(se->entities_.object_[0]->GetName(), "Ego");
 
@@ -3376,13 +3201,7 @@ TEST(PositionTest, TestPositionTypes)
 {
     double dt = 0.1;
 
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
-
-    ScenarioEngine* se = new ScenarioEngine((std::string(runfiles_dir.c_str()) + "EnvironmentSimulator/Unittest/xosc/position_types.xosc").c_str());
+    ScenarioEngine* se = new ScenarioEngine((std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xosc/position_types.xosc").c_str());
     ASSERT_NE(se, nullptr);
 
     se->step(0.0);
@@ -3450,13 +3269,7 @@ TEST(ClothoidSplineTest, TestTrajectoryShape)
 {
     double dt = 0.05;
 
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
-
-    ScenarioEngine* se = new ScenarioEngine((std::string(runfiles_dir.c_str()) + "resources/xosc/lane-change_clothoid_spline_based_trajectory.xosc").c_str());
+    ScenarioEngine* se = new ScenarioEngine((std::string(getRunfilesDir().c_str()) + "resources/xosc/lane-change_clothoid_spline_based_trajectory.xosc").c_str());
     ASSERT_NE(se, nullptr);
     se->step(0.0);
     se->prepareGroundTruth(0.0);
@@ -3486,13 +3299,7 @@ TEST(ClothoidSplineTest, TestTrajectoryShape)
 
 TEST(RelativePositionRouting, TestRelativePositionWithRoutes)
 {
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
-
-    ScenarioEngine* se = new ScenarioEngine((std::string(runfiles_dir.c_str()) + "EnvironmentSimulator/Unittest/xosc/relative_pos_over_intersection.xosc").c_str());
+    ScenarioEngine* se = new ScenarioEngine((std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xosc/relative_pos_over_intersection.xosc").c_str());
     ASSERT_NE(se, nullptr);
     se->step(0.0);
     se->prepareGroundTruth(0.0);
@@ -3672,13 +3479,7 @@ TEST(StoryboardTest, TestStoryboardElementNaming)
 
 TEST(Friction, TestFrictionPerWheel)
 {
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
-
-    ScenarioEngine* se = new ScenarioEngine((std::string(runfiles_dir.c_str()) + "EnvironmentSimulator/Unittest/xosc/friction_and_lane_change_edge_case.xosc").c_str());
+    ScenarioEngine* se = new ScenarioEngine((std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xosc/friction_and_lane_change_edge_case.xosc").c_str());
 
     ASSERT_NE(se, nullptr);
     se->step(0.0);
@@ -3781,13 +3582,7 @@ TEST(Friction, TestFrictionPerWheel)
 
 TEST(WheelData, TestWheelData)
 {
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
-
-    ScenarioEngine* se = new ScenarioEngine((std::string(runfiles_dir.c_str()) + "resources/xosc/lane_change_crest.xosc").c_str());
+    ScenarioEngine* se = new ScenarioEngine((std::string(getRunfilesDir().c_str()) + "resources/xosc/lane_change_crest.xosc").c_str());
     ASSERT_NE(se, nullptr);
     se->step(0.0);
     se->prepareGroundTruth(0.0);
@@ -3887,13 +3682,7 @@ TEST(WheelData, TestWheelData)
 
 TEST(LaneChange, TestLaneChangeEdgeCase)
 {
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
-
-    ScenarioEngine* se = new ScenarioEngine((std::string(runfiles_dir.c_str()) + "EnvironmentSimulator/Unittest/xosc/friction_and_lane_change_edge_case.xosc").c_str());
+    ScenarioEngine* se = new ScenarioEngine((std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xosc/friction_and_lane_change_edge_case.xosc").c_str());
     ASSERT_NE(se, nullptr);
     se->step(0.0);
     se->prepareGroundTruth(0.0);
@@ -4014,13 +3803,7 @@ TEST(LaneChange, TestLaneChangeEdgeCase)
 
 TEST(Trajectory, TestOrientationInterpolation)
 {
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
-
-    ScenarioEngine* se = new ScenarioEngine((std::string(runfiles_dir.c_str()) + "EnvironmentSimulator/Unittest/xosc/bike_tilt_smooth.xosc").c_str());
+    ScenarioEngine* se = new ScenarioEngine((std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xosc/bike_tilt_smooth.xosc").c_str());
     const double    dt = 0.05;
     ASSERT_NE(se, nullptr);
     se->step(0.0);
@@ -4094,13 +3877,7 @@ TEST(Trajectory, TestOrientationInterpolation)
 
 TEST(PositionTest, TestRelativePositionPhases)
 {
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
-
-    ScenarioEngine* se = new ScenarioEngine((std::string(runfiles_dir.c_str()) + "EnvironmentSimulator/Unittest/xosc/relative_speed_phases.xosc").c_str());
+    ScenarioEngine* se = new ScenarioEngine((std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xosc/relative_speed_phases.xosc").c_str());
     const double    dt = 0.05;
     ASSERT_NE(se, nullptr);
     se->step(0.0);
@@ -4244,13 +4021,7 @@ TEST(PositionTest, TestRelativePositionPhases)
 
 TEST(ActionTest, TestInstantLaneChange)
 {
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
-
-    ScenarioEngine* se = new ScenarioEngine((std::string(runfiles_dir.c_str()) + "EnvironmentSimulator/Unittest/xosc/instant_lane_change.xosc").c_str());
+    ScenarioEngine* se = new ScenarioEngine((std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xosc/instant_lane_change.xosc").c_str());
     const double    dt = 0.05;
     ASSERT_NE(se, nullptr);
     se->step(0.0);
@@ -4319,13 +4090,7 @@ TEST(ActionTest, TestInstantLaneChange)
 
 TEST(RouteingTest, TestPositionOffRoute)
 {
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
-
-    ScenarioEngine* se = new ScenarioEngine((std::string(runfiles_dir.c_str()) + "EnvironmentSimulator/Unittest/xosc/route_detour.xosc").c_str(), true);
+    ScenarioEngine* se = new ScenarioEngine((std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xosc/route_detour.xosc").c_str(), true);
     const double    dt = 0.05;
     ASSERT_NE(se, nullptr);
     se->step(0.0);
@@ -4496,13 +4261,7 @@ TEST(RouteingTest, TestPositionOffRoute)
 
 TEST(PositioningTest, TestElevationMapping)
 {
-    std::string runfiles_dir = "../../../";
-    #ifdef _USE_BAZEL
-        runfiles_dir = std::getenv("RUNFILES_DIR");
-        runfiles_dir = runfiles_dir + "/_main/";
-    #endif
-
-    ScenarioEngine* se = new ScenarioEngine((std::string(runfiles_dir.c_str()) + "EnvironmentSimulator/Unittest/xosc/test_elevation_mapping.xosc").c_str(), false);
+    ScenarioEngine* se = new ScenarioEngine((std::string(getRunfilesDir().c_str()) + "EnvironmentSimulator/Unittest/xosc/test_elevation_mapping.xosc").c_str(), false);
     const double    dt = 0.1;
     ASSERT_NE(se, nullptr);
     se->step(0.0);

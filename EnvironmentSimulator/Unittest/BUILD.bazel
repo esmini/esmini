@@ -84,6 +84,9 @@ cc_test(
         ":xosc_files",
         ":xodr_files",
     ],
+    env = {
+        "DISPLAY": ":1",
+    },
     defines = ["_USE_BAZEL"],
     visibility = ["//visibility:public"],
     deps = [

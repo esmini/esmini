@@ -11,7 +11,6 @@ using namespace scenarioengine;
 
 #ifdef _USE_OSG
 
-// TODO: Melih: In general in this file if --window is passed, tests fail
 TEST(CustomCameraTest, TestCustomCameraVariants)
 {
     char scenario_file[100] = "../../../resources/xosc/cut-in_cr.xosc";
