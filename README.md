@@ -58,7 +58,7 @@ The easiest way of integrating esmini in your custom application is to link the 
 See [User Guide "Hello World" tutorial](https://esmini.github.io/#_hello_world_programming_tutorial) on how to create a minimalistic application based on it.
 
 ### OSI support
-In addition to internal API ([example](https://esmini.github.io/#_fetch_state_of_scenario_objects)) for getting information about the ongoing simulation, e.g. road width and road user position, esmini collects everything into an [OSI](https://opensimulationinterface.github.io/osi-documentation/index.html) [groundtruth structure](https://opensimulationinterface.github.io/open-simulation-interface/structosi3_1_1GroundTruth.html). This structure can be 1. stored in an OSI trace-file, 2. retrieved via UDP and/or 3. retrieved directly via API (see [esminiLib.hpp](https://github.com/esmini/esmini/blob/3af727a3f95825bfcf8b1cbd7becf68ea26cf08e/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L473)).
+In addition to internal API ([example](https://esmini.github.io/#_fetch_state_of_scenario_objects)) for getting information about the ongoing simulation, e.g. road width and road user position, esmini collects everything into an [OSI](https://github.com/OpenSimulationInterface) :: [groundtruth structure](https://opensimulationinterface.github.io/osi-antora-generator/asamosi/V3.5.0/gen/structosi3_1_1GroundTruth.html). This structure can be 1. stored in an OSI trace-file, 2. retrieved via UDP and/or 3. retrieved directly via API (see [esminiLib.hpp](https://github.com/esmini/esmini/blob/3af727a3f95825bfcf8b1cbd7becf68ea26cf08e/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L473)).
 
   **Note**: Only parts of OSI groundthruth is populated.
 
