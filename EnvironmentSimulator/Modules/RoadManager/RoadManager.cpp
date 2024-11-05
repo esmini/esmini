@@ -6651,7 +6651,7 @@ void OpenDrive::SetLaneOSIPoints()
         else
         {
             Junction* junction = GetJunctionById(road->GetJunction());
-            if (junction && GetJunctionById(junction->IsOsiIntersection()))
+            if (junction && junction->IsOsiIntersection())
             {
                 osiintersection = GetJunctionById(road->GetJunction())->GetGlobalId();
             }
