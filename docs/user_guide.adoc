@@ -1124,7 +1124,7 @@ will give `cut-in_1_of_6.xosc`...
 
 To view all results in parallel, make use of replayer like this:
 
-`./bin/esmini --headless --fixed_timestep 0.05 --osc ./resources/xosc/cut-in.xosc --param_dist ./resources/xosc/cut-in_parameter_set.xosc --record sim.dat ; ./bin/replayer.exe --window 60 60 800 400 --res_path ./resources/ --file sim_ --dir .`
+`./bin/esmini --headless --fixed_timestep 0.05 --osc ./resources/xosc/cut-in.xosc --param_dist ./resources/xosc/cut-in_parameter_set.xosc --record sim.dat ; ./bin/replayer --window 60 60 800 400 --res_path ./resources/ --file sim_ --dir .`
 
 .View all permutations in parallel
 image::param_dist0.jpg[]
@@ -1153,7 +1153,7 @@ but the windows will open on top of each other at the same location on the scree
 
 Putting it all together, execute the scenario permutations in parallel and then view the result in replayer:
 
-`python ./scripts/run_distribution.py --osc ./resources/xosc/cut-in.xosc --param_dist ./resources/xosc/cut-in_parameter_set.xosc --fixed_timestep 0.05 --headless --record sim.dat ; ./bin/replayer.exe --window 60 60 800 400 --res_path ./resources/ --file sim_ --dir .`
+`python ./scripts/run_distribution.py --osc ./resources/xosc/cut-in.xosc --param_dist ./resources/xosc/cut-in_parameter_set.xosc --fixed_timestep 0.05 --headless --record sim.dat ; ./bin/replayer --window 60 60 800 400 --res_path ./resources/ --file sim_ --dir .`
 
 ==== Finding out number of permutations
 
