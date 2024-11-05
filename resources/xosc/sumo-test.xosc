@@ -45,8 +45,6 @@
                             </Position>
                         </TeleportAction>
                     </PrivateAction>
-                    <!-- <PrivateAction/>
-                        <ActivateControllerAction longitudinal="true" lateral="true" /> -->
                     <PrivateAction>
                         <LongitudinalAction>
                             <SpeedAction>
@@ -60,16 +58,6 @@
                 </Private>
             </Actions>
         </Init>
-        <Story name="mystory">
-            <ParameterDeclarations/>
-            <Act name="act">
-                <ManeuverGroup name="maneuvuergroup_car_accelerate" maximumExecutionCount="1">
-                    <Actors selectTriggeringEntities="false">
-                        <EntityRef entityRef="Target"/>
-                    </Actors>
-				 </ManeuverGroup>
-			</Act>
-        </Story>
         <StopTrigger>
             <ConditionGroup>
                 <Condition conditionEdge="rising" delay="0" name="stop_simulation">
