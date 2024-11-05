@@ -37,6 +37,7 @@
                 <Property name="model_id" value="$EgoModelId"/>
                 <!-- Scale modes: None, BBToModel, ModelToBB -->
                 <Property name="scaleMode" value="$ScaleMode"/>
+                <Property name="refPoint" value="1.38" />
             </Properties>
         </Vehicle>
 

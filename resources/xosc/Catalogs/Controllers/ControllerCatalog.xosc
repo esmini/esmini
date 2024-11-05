@@ -159,6 +159,37 @@
                 <Property name="virtual"  value="$Virtual" />
             </Properties>
         </Controller>
+        <Controller name="NaturalDriver">
+            <ParameterDeclarations>
+                <ParameterDeclaration name="DesiredDistance" parameterType="double" value="5"/>
+                <ParameterDeclaration name="DesiredSpeed" parameterType="double" value="50"/>
+                <ParameterDeclaration name="LaneChangeDuration" parameterType="double" value="3"/>
+                <ParameterDeclaration name="LookAheadDistance" parameterType="double" value="30"/>
+                <ParameterDeclaration name="MaxDec" parameterType="double" value="-4.0"/>
+                <ParameterDeclaration name="MaxAcc" parameterType="double" value="2.0"/>
+                <ParameterDeclaration name="LaneChangeDelay" parameterType="double" value="5.0"/>
+                <ParameterDeclaration name="Thw" parameterType="double" value="1.5"/>
+                <ParameterDeclaration name="MaxImposedBraking" parameterType="double" value="3.0"/>
+                <ParameterDeclaration name="Route" parameterType="integer" value="-2"/>
+                <ParameterDeclaration name="LaneChangeAccGain" parameterType="double" value="0.3"/>
+                <ParameterDeclaration name="Politeness" parameterType="double" value="0.1"/>
+            </ParameterDeclarations>
+            <Properties>
+                <Property name="desiredDistance" value="$DesiredDistance" />
+                <Property name="desiredSpeed" value="$DesiredSpeed"/>
+                <Property name="laneChangeDuration" value="$LaneChangeDuration" />
+                <Property name="lookAheadDistance" value="$LookAheadDistance" />
+                <Property name="maxDec" value="$MaxDec" />
+                <Property name="maxAcc" value="$MaxAcc" />
+                <Property name="laneChangeDelay" value="$LaneChangeDelay" />
+                <Property name="thw" value="$Thw" />
+                <Property name="maxImposedBraking" value="$MaxImposedBraking" />
+                <Property name="route" value="$Route" />
+                <Property name="laneChangeAccGain" value="$LaneChangeAccGain" />
+                <Property name="politeness" value="$Politeness" />
+                <Property name="mode" value="override" />
+            </Properties>
+        </Controller>
         <Controller name="ALKSController">
             <ParameterDeclarations>
                 <ParameterDeclaration name="SetSpeed" parameterType="double" value="50" />

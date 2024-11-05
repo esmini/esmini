@@ -1301,6 +1301,26 @@ int Object::Distance(double                            x,
     return 0;
 }
 
+int Object::TimeHeadway(Object*                           target,
+                        roadmanager::CoordinateSystem     cs,
+                        roadmanager::RelativeDistanceType relDistType,
+                        bool                              freeSpace,
+                        double&                           thw,
+                        double                            maxDist)
+{
+    double rel_dist;
+    if (this->Distance(target, cs, relDistType, freeSpace, rel_dist, maxDist) != 0)
+    {
+        rel_dist = LARGE_NUMBER;
+    }
+
+    // Headway time not defined for cases:
+    //  - when target object is behind
+    //  - when object is still or going reverse
+    (rel_dist < 0 || this->GetSpeed() < SMALL_NUMBER) ? thw = -1 : thw = fabs(rel_dist / this->GetSpeed());
+
+    return 0;
+}
 Object::OverlapType Object::OverlappingFront(Object* target, double tolerance)
 {
     // Strategy:

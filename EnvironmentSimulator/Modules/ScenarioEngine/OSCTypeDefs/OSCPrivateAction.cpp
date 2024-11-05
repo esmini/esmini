@@ -792,7 +792,7 @@ void LatLaneChangeAction::Start(double simTime)
     transition_.SetStartVal(SIGN(object_->pos_.GetLaneId()) * object_->pos_.GetOffset());
     transition_.SetTargetVal(SIGN(target_lane_id_) * target_lane_offset_);
 
-    // Force back object to its original lane id
+    // Assign lane_id back to original lane_id, avoid assigned lane id spiking during start of lane change
     object_->pos_.ForceLaneId(org_lane_id);
 }
 

@@ -44,6 +44,7 @@ namespace scenarioengine
             CONTROLLER_TYPE_SUMO,
             CONTROLLER_TYPE_REL2ABS,
             CONTROLLER_TYPE_ACC,
+            CONTROLLER_TYPE_NATURAL_DRIVER,
             CONTROLLER_TYPE_ALKS,
             CONTROLLER_TYPE_UDP_DRIVER,
             CONTROLLER_TYPE_ECE_ALKS_REF_DRIVER,

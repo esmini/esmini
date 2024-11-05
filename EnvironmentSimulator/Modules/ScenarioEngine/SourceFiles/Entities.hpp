@@ -357,6 +357,13 @@ namespace scenarioengine
                      double&                           dist,
                      double                            maxDist = LARGE_NUMBER);
 
+        int TimeHeadway(Object*                           target,
+                        roadmanager::CoordinateSystem     cs,
+                        roadmanager::RelativeDistanceType relDistType,
+                        bool                              freeSpace,
+                        double&                           thw,
+                        double                            maxDist = LARGE_NUMBER);
+
         enum class OverlapType
         {
             NONE            = 0,             // object is not overlapping Ego front projection
@@ -752,6 +759,7 @@ namespace scenarioengine
         std::shared_ptr<TrailerCoupler> trailer_coupler_;  // mounting point to any tow vehicle
         std::shared_ptr<TrailerHitch>   trailer_hitch_;    // mounting point to any tow vehicle
         std::vector<WheelData>          wheel_data;
+        double                          ref_point_offset;
     };
 
     class Pedestrian : public Object
