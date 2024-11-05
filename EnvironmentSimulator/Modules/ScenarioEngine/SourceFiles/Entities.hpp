@@ -357,6 +357,13 @@ namespace scenarioengine
                      double&                           dist,
                      double                            maxDist = LARGE_NUMBER);
 
+        int TimeHeadway(Object*                           target,
+                        roadmanager::CoordinateSystem     cs,
+                        roadmanager::RelativeDistanceType relDistType,
+                        bool                              freeSpace,
+                        double&                           thw,
+                        double                            maxDist = LARGE_NUMBER);
+
         enum class OverlapType
         {
             NONE            = 0,             // object is not overlapping Ego front projection

@@ -2371,6 +2371,20 @@ Below is a video clip showing the controller in action on an open paved area. Th
 
 video::uHqdsORPsGE[youtube,width=854,height=480,opts="autoplay,nocontrols,loop"]
 
+==== NaturalDriverController
+
+A controller designed to drive naturally on highways and urban roads, with a driver which tries to keep its desired lane, while keeping the distance to a target in front and, if the conditions are correct, will make a lane change to overtake a lead vehicle.
+
+The desired lane for the controller vehicle is set with a parameter (named "Route"), the driver will strive to reach and maintain this lane. The driver will follow the car in front following the IDM (Intelligent Driver Model) logic, https://en.wikipedia.org/wiki/Intelligent_driver_model. The driver will change lane according to MOBIL (General Lane-Changing Model for Car-Following Models), https://mtreiber.de/publications/MOBIL_TRB.pdf. The lane changing doesn't take traffic density or ramps / junctions into account, and thus the model is only suitable on roads without such geomitries.
+
+The model is fully parameterized to suit the desired need of each simulation. For all properties see `NaturalDriver` in https://github.com/esmini/esmini/blob/master/resources/xosc/Catalogs/Controllers/ControllerCatalog.xosc[Controllers/ControllerCatalog.xosc].
+
+Example usage can be found in https://github.com/esmini/esmini/blob/master/scripts/scenario_scripts/generate_traffic.py
+
+Demo (running scenario https://github.com/esmini/esmini/blob/master/resources/xosc/highway_driver.xosc):
+
+video::JV31gvCCe3Y[youtube,width=854,height=480,opts="autoplay,nocontrols,loop"]
+
 ===  How to add a new controller
 
 Below are the steps to add new controller in esmini:

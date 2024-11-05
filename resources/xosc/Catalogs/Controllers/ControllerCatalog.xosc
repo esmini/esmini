@@ -159,6 +159,49 @@
                 <Property name="virtual"  value="$Virtual" />
             </Properties>
         </Controller>
+        <Controller name="NaturalDriver">
+            <ParameterDeclarations>
+                <!-- Desired distance to keep to target in front, rough freespace (IDM "s0") -->
+                <ParameterDeclaration name="DesiredDistance" parameterType="double" value="5"/>
+                <!-- Desired speed that the vehicle  wants to keep (IDM "v0") [kph] -->
+                <ParameterDeclaration name="DesiredSpeed" parameterType="double" value="50"/>
+                <!-- Duration of the lane change -->
+                <ParameterDeclaration name="LaneChangeDuration" parameterType="double" value="3"/>
+                <!-- How far the vehicle should look ahead (and behind) for other vehicles -->
+                <ParameterDeclaration name="LookAheadDistance" parameterType="double" value="30"/>
+                <!-- The vehicles comfortable deceleration (IDM "b") -->
+                <ParameterDeclaration name="MaxDec" parameterType="double" value="-4.0"/>
+                <!-- The vehicles maximum acceleration (IDM "a") -->
+                <ParameterDeclaration name="MaxAcc" parameterType="double" value="2.0"/>
+                <!-- The time the vehicle has to wait before initating another lane change -->
+                <ParameterDeclaration name="LaneChangeDelay" parameterType="double" value="5.0"/>
+                <!-- The minimum possible time to the car in front (IDM "T") -->
+                <ParameterDeclaration name="Thw" parameterType="double" value="1.5"/>
+                <!-- How much predicted braking is acceptable to impose to neighbor vehicle if doing a lane-change -->
+                <ParameterDeclaration name="MaxImposedBraking" parameterType="double" value="3.0"/>
+                <!-- How much can the vehicle accelerate if changing lane -->
+                <ParameterDeclaration name="LaneChangeAccGain" parameterType="double" value="0.3"/>
+                <!-- Scaling factor for imposed acceleration, acceleration gain if doing a lane-change -->
+                <ParameterDeclaration name="Politeness" parameterType="double" value="0.1"/>
+                <!-- Which lane-id to aim to keep -->
+                <ParameterDeclaration name="Route" parameterType="integer" value="-2"/>
+            </ParameterDeclarations>
+            <Properties>
+                <Property name="desiredDistance" value="$DesiredDistance" />
+                <Property name="desiredSpeed" value="$DesiredSpeed"/>
+                <Property name="laneChangeDuration" value="$LaneChangeDuration" />
+                <Property name="lookAheadDistance" value="$LookAheadDistance" />
+                <Property name="maxDec" value="$MaxDec" />
+                <Property name="maxAcc" value="$MaxAcc" />
+                <Property name="laneChangeDelay" value="$LaneChangeDelay" />
+                <Property name="thw" value="$Thw" />
+                <Property name="maxImposedBraking" value="$MaxImposedBraking" />
+                <Property name="laneChangeAccGain" value="$LaneChangeAccGain" />
+                <Property name="politeness" value="$Politeness" />
+                <Property name="route" value="$Route" />
+                <Property name="mode" value="override" />
+            </Properties>
+        </Controller>
         <Controller name="ALKSController">
             <ParameterDeclarations>
                 <ParameterDeclaration name="SetSpeed" parameterType="double" value="50" />
