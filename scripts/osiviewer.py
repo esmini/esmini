@@ -384,8 +384,13 @@ class View:
             index = self.osi_idx_by_collection[event.artist][event.ind[0]]
             id = self.osi_ids_by_collection[event.artist][event.ind[0]]
             if isinstance(event.artist, mc.LineCollection):
-                lc = mc.LineCollection([event.artist.get_segments()[event.ind[0]]], colors=event.artist.get_colors(), linewidths=3.0)
+                linewidth = event.artist.get_linewidths()[0] + 2
+                lc = mc.LineCollection([event.artist.get_segments()[event.ind[0]]], colors=event.artist.get_colors(), linewidth = linewidth)
                 self.highlight = self.ax.add_collection(lc)
+                for isect in self.intersection_ids:
+                    if id in isect[1]:
+                        self.update_pick_text("{} (isect {})".format(event.artist.get_label(), isect[0]), index, id, event.ind[0])
+                        return
                 self.update_pick_text(event.artist.get_label(), index, id, event.ind[0])
             elif isinstance(event.artist, mc.PathCollection):
                 self.update_pick_text(event.artist.get_label(), self.osi_idx_by_collection[event.artist][0], self.osi_ids_by_collection[event.artist][0], event.ind[0])
@@ -551,9 +556,20 @@ class View:
         lines = []
         ids = []
         idx = []
+        self.intersection_ids = []
+
+        # First register intersections
         for index, lane in enumerate(gt.lane):
             clf=lane.classification
-            if len(clf.centerline) > 0:
+            if clf.type == clf.TYPE_INTERSECTION:
+                self.intersection_ids.append((lane.id.value, [a.value for a in clf.free_lane_boundary_id]))
+                continue
+
+        for index, lane in enumerate(gt.lane):
+            clf=lane.classification
+            if clf.type == clf.TYPE_INTERSECTION:
+                continue
+            elif len(clf.centerline) > 0:
                 i=0
                 line=[]
                 while i < len(clf.centerline):
@@ -564,7 +580,7 @@ class View:
                 idx.append(index)
                 lines.append(line)
             else:
-                pass  # probably in junction, no centerline, only lane pairings
+                print('skipping lane of type {} with id {}'.format(clf.type, lane.id.value))
 
         self.plot_colors["CenterLine"] = '#BBBBFF'
         collection = mc.LineCollection(lines, picker=5, label="CenterLine", color=self.plot_colors["CenterLine"])
@@ -618,24 +634,30 @@ class View:
                     points[0]+=([(p.x, p.y)])
                     i += 1
 
-            if type == 5:  # botts dots
-                collection = self.ax.scatter(scatter_points[0], scatter_points[1], label=self.rmtype2string(type), color=color, s=3.0, picker=5)
-                plot = self.ax.add_collection(collection)
-            else:
-                collection = mc.LineCollection(points, label=self.rmtype2string(type), color=color, picker=5)
-                plot = self.ax.add_collection(collection)
+            vals = [(self.rmtype2string(type), color, 1.0, 3.0)]
+            for i_id in self.intersection_ids:
+                if (l.id.value in i_id[1]):
+                    vals.append(('INTERSECTION', '#CCCC44', 3.0, 6.0))
 
-            ids.append(l.id.value)
-            indices.append(index)
-            self.plot_colors[self.rmtype2string(type)] = color
+            for val in vals:
+                if type == 5:  # botts dots
+                    collection = self.ax.scatter(scatter_points[0], scatter_points[1], label=val[0], color=val[1], s=val[3], picker=5)
+                    plot = self.ax.add_collection(collection)
+                else:
+                    collection = mc.LineCollection(points, label=val[0], color=val[1], picker=5, linewidths=val[2])
+                    plot = self.ax.add_collection(collection)
 
-            # group plots by line type for visibility
-            if not self.rmtype2string(type) in self.static_plots_by_type:
-                self.static_plots_by_type[self.rmtype2string(type)] = []
-            self.static_plots_by_type[self.rmtype2string(type)].append(plot)
+                ids.append(l.id.value)
+                indices.append(index)
+                self.plot_colors[val[0]] = val[1]
 
-            self.osi_ids_by_collection[collection] = ids
-            self.osi_idx_by_collection[collection] = indices
+                # group plots by line type for visibility
+                if not val[0] in self.static_plots_by_type:
+                    self.static_plots_by_type[val[0]] = []
+                self.static_plots_by_type[val[0]].append(plot)
+
+                self.osi_ids_by_collection[collection] = ids
+                self.osi_idx_by_collection[collection] = indices
 
         if no_line_type:
             print('Boundary type {} plotted with light gray color'.format(self.rmtype2string(type)))
@@ -645,19 +667,12 @@ class View:
         # road markings
         for i, rm in enumerate(gt.road_marking):
             bps = rm.base.base_polygon
-            # self.x_roadmark = []
-            # self.y_roadmark = []
-            # for bp in bps:
-            #     self.x_roadmark.append(bp.x)
-            #     self.y_roadmark.append(bp.y)
-            # self.ax.plot(self.x_roadmark, self.y_roadmark, color='#000088', label='RoadMarking' if i==0 else '', picker=5)
             vertices = []
             for bp in bps:
                 vertices.append((bp.x, bp.y))
             patch = self.ax.add_patch(patches.Polygon(vertices, label="road_marking".format(rm.id.value, index), facecolor='#FFFFFF', edgecolor='black', linewidth=1, picker=5))
             self.osi_ids_by_stationary[patch] = rm.id.value
             self.osi_idx_by_stationary[patch] = i
-            print('vertices:', vertices)
 
         # stationary objects
         for index, s in enumerate(gt.stationary_object):
