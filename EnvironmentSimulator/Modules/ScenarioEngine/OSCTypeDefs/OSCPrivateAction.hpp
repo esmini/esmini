@@ -1053,7 +1053,7 @@ namespace scenarioengine
                                static_cast<unsigned int>(ControlDomains::DOMAIN_LAT_AND_LONG))
         {
             SetName(action.GetName());
-            traj_                  = action.traj_;
+            traj_                  = action.traj_->Copy();
             timing_domain_         = action.timing_domain_;
             timing_scale_          = action.timing_scale_;
             timing_offset_         = action.timing_offset_;

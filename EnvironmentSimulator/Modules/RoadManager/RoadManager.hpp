@@ -4379,8 +4379,9 @@ namespace roadmanager
         Shape(ShapeType type) : type_(type), following_mode_(FollowingMode::POSITION), initial_speed_(0.0)
         {
         }
-        virtual ~Shape() = default;
-        virtual int Evaluate(double p, TrajectoryParamType ptype, TrajVertex &pos)
+        virtual ~Shape()      = default;
+        virtual Shape *Copy() = 0;
+        virtual int    Evaluate(double p, TrajectoryParamType ptype, TrajVertex &pos)
         {
             return -1;
         };
@@ -4443,6 +4444,7 @@ namespace roadmanager
         {
             return pline_.length_;
         }
+        Shape *Copy();
         double GetStartTime();
         double GetDuration();
 
@@ -4463,6 +4465,7 @@ namespace roadmanager
         }
         double GetStartTime();
         double GetDuration();
+        Shape *Copy();
 
         Position            pos_;
         roadmanager::Spiral spiral_;  // make use of the OpenDRIVE clothoid definition
@@ -4530,6 +4533,7 @@ namespace roadmanager
         {
             return static_cast<int>(segments_.size());
         }
+        Shape *Copy();
 
     private:
         std::vector<Segment>             segments_;
@@ -4585,6 +4589,7 @@ namespace roadmanager
         }
         double GetStartTime();
         double GetDuration();
+        Shape *Copy();
 
     private:
         double CoxDeBoor(double x, int i, int p, const std::vector<double> &t);
@@ -4605,10 +4610,11 @@ namespace roadmanager
         {
             return shape_->GetLength();
         }
-        double GetTimeAtS(double s);
-        double GetSpeedAtS(double s);
-        double GetStartTime();
-        double GetDuration();
+        double        GetTimeAtS(double s);
+        double        GetSpeedAtS(double s);
+        double        GetStartTime();
+        double        GetDuration();
+        RMTrajectory *Copy();
 
         Shape      *shape_;
         std::string name_;

@@ -11835,6 +11835,22 @@ double PolyLineShape::GetStartTime()
     return pline_.vertex_[0].time;
 }
 
+Shape* PolyLineShape::Copy()
+{
+    PolyLineShape* shape   = new PolyLineShape();
+    shape->following_mode_ = following_mode_;
+    shape->initial_speed_  = initial_speed_;
+    shape->vertex_.clear();
+    for (auto& v : vertex_)
+    {
+        shape->vertex_.emplace_back(new Position(*v.pos_), v.time_);
+    }
+    shape->pline_ = pline_;
+    shape->pline_.Reset(false);  // Reset polyline, as it is not copied, but recreated in CalculatePolyLine
+    shape->CalculatePolyLine();
+    return shape;
+}
+
 double PolyLineShape::GetDuration()
 {
     if (vertex_.size() == 0)
@@ -12099,6 +12115,21 @@ int ClothoidSplineShape::EvaluateInternal(double s, int segment_idx, TrajVertex&
     }
 
     return 0;
+}
+
+Shape* ClothoidSplineShape::Copy()
+{
+    ClothoidSplineShape* shape = new ClothoidSplineShape();
+    shape->following_mode_     = following_mode_;
+    shape->initial_speed_      = initial_speed_;
+    shape->segments_.clear();
+    for (auto& s : segments_)
+    {
+        shape->AddSegment(s.posStart_ != nullptr ? new Position(*s.posStart_) : nullptr, s.curvStart_, s.curvEnd_, s.length_, s.h_offset_, s.time_);
+    }
+    shape->spirals_ = spirals_;
+    shape->CalculatePolyLine();
+    return shape;
 }
 
 double NurbsShape::CoxDeBoor(double x, int i, int k, const std::vector<double>& t)
@@ -12471,6 +12502,26 @@ double NurbsShape::GetDuration()
     return ctrlPoint_.back().time_ - ctrlPoint_[0].time_;
 }
 
+Shape* NurbsShape::Copy()
+{
+    NurbsShape* shape      = new NurbsShape(order_);
+    shape->following_mode_ = following_mode_;
+    shape->initial_speed_  = initial_speed_;
+    shape->knot_           = knot_;
+    shape->ctrlPoint_.clear();
+    shape->d_          = d_;
+    shape->dPeakT_     = dPeakT_;
+    shape->dPeakValue_ = dPeakValue_;
+    shape->length_     = length_;
+    shape->order_      = order_;
+    for (auto& cp : ctrlPoint_)
+    {
+        shape->ctrlPoint_.emplace_back(cp.pos_, cp.time_, cp.weight_);
+    }
+    shape->CalculatePolyLine();
+    return shape;
+}
+
 ClothoidShape::ClothoidShape(roadmanager::Position pos, double curv, double curvPrime, double len, double tStart, double tEnd)
     : Shape(ShapeType::CLOTHOID),
       pos_(pos),
@@ -12595,6 +12646,15 @@ double ClothoidShape::GetStartTime()
 double ClothoidShape::GetDuration()
 {
     return t_end_ - t_start_;
+}
+
+Shape* ClothoidShape::Copy()
+{
+    ClothoidShape* shape   = new ClothoidShape(pos_, spiral_.GetCurvStart(), spiral_.GetCDot(), spiral_.GetLength(), t_start_, t_end_);
+    shape->following_mode_ = following_mode_;
+    shape->initial_speed_  = initial_speed_;
+    shape->CalculatePolyLine();
+    return shape;
 }
 
 int Position::MoveTrajectoryDS(double ds)
@@ -13662,6 +13722,14 @@ double RMTrajectory::GetStartTime()
 double RMTrajectory::GetDuration()
 {
     return shape_->GetDuration();
+}
+
+RMTrajectory* RMTrajectory::Copy()
+{
+    RMTrajectory* traj = new RMTrajectory();
+    traj->shape_       = shape_->Copy();
+
+    return traj;
 }
 
 int Shape::FindClosestPoint(double xin, double yin, TrajVertex& pos, int& index, int startAtIndex)
