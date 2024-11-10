@@ -885,7 +885,8 @@ void ScenarioEngine::prepareGroundTruth(double dt)
                                                obj->GetSpeed(),
                                                obj->pos_.GetAcc(),
                                                0.0,
-                                               roadmanager::Position::PosMode::H_REL});
+                                               roadmanager::Position::PosMode::H_REL,
+                                               0.0});
                     }
                 }
             }

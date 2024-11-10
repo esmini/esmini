@@ -6289,7 +6289,6 @@ void Position::Init()
     track_id_               = ID_UNDEFINED;
     lane_id_                = 0;
     s_                      = 0.0;
-    s_trajectory_           = 0.0;
     t_trajectory_           = 0.0;
     t_                      = 0.0;
     offset_                 = 0.0;
@@ -6499,7 +6498,6 @@ void Position::Duplicate(const Position& from)
     snapToLaneTypes_ = from.snapToLaneTypes_;
     lockOnLane_      = from.lockOnLane_;
     rel_pos_         = from.rel_pos_;
-    s_trajectory_    = from.s_trajectory_;
     t_trajectory_    = from.t_trajectory_;
 }
 
@@ -11200,6 +11198,7 @@ int PolyLineBase::EvaluateSegmentByLocalS(int i, double local_s, double cornerRa
         pos.acc      = vp0->acc;
         pos.param    = vp0->param;
         pos.pos_mode = vp0->pos_mode;
+        pos.h_true   = vp0->h_true;
     }
     else if (i >= 0)
     {
@@ -11220,6 +11219,7 @@ int PolyLineBase::EvaluateSegmentByLocalS(int i, double local_s, double cornerRa
         pos.speed    = (1 - a) * vp0->speed + a * vp1->speed;
         pos.acc      = (1 - a) * vp0->acc + a * vp1->acc;
         pos.param    = (1 - a) * vp0->param + a * vp1->param;
+        pos.h_true   = vp0->h_true;
         pos.pos_mode = vp0->pos_mode;
 
         for (int j = 0; j < 3; j++)
@@ -11333,6 +11333,7 @@ void PolyLineBase::AddVertex(TrajVertex v)
             v.s = 0.0;
         }
     }
+
     vertex_.push_back(v);
 }
 
@@ -11388,19 +11389,24 @@ int PolyLineBase::Evaluate(double s, TrajVertex& pos)
     return Evaluate(s, pos, 0.0, 0);
 }
 
+int PolyLineBase::Evaluate(double s)
+{
+    return Evaluate(s, current_val_, 0.0, current_index_);
+}
+
 int PolyLineBase::Time2S(double time, double& s)
 {
     int step = 1;
+
     if (GetNumberOfVertices() < 1 || time < vertex_[0].time)
     {
         s = 0.0;
-        return 0;
+        return -1;
     }
 
     if (GetNumberOfVertices() == 1)
     {
-        current_index_ = 0;
-        current_s_     = vertex_[0].s;
+        s = vertex_[0].s;
         return 0;
     }
 
@@ -11416,11 +11422,9 @@ int PolyLineBase::Time2S(double time, double& s)
     {
         if (vertex_[i].time <= time && vertex_[i + 1].time > time)
         {
-            double w       = (time - vertex_[i].time) / (vertex_[i + 1].time - vertex_[i].time);
-            s              = vertex_[i].s + w * (vertex_[i + 1].s - vertex_[i].s);
-            current_index_ = i;
-            current_s_     = s;
-            return 0;
+            double w = (time - vertex_[i].time) / (vertex_[i + 1].time - vertex_[i].time);
+            s        = vertex_[i].s + w * (vertex_[i + 1].s - vertex_[i].s);
+            return i;
         }
 
         i += step;
@@ -11438,7 +11442,7 @@ int PolyLineBase::Time2S(double time, double& s)
     // s seems out of range, grab last element
     s = GetVertex(-1)->s;
 
-    return 0;
+    return static_cast<int>(vertex_.size()) - 1;
 }
 
 void PolyLineBase::SetInterpolationMode(InterpolationMode mode)
@@ -11543,7 +11547,7 @@ int PolyLineBase::FindPointAhead(double s_start, double distance, TrajVertex& po
 int PolyLineBase::FindPointAtTime(double time, TrajVertex& pos, int& index, int startAtIndex)
 {
     double s = 0;
-    if (Time2S(time, s) != 0)
+    if (Time2S(time, s) == -1)
     {
         return -1;
     }
@@ -11604,9 +11608,10 @@ void PolyLineBase::Reset(bool clear_vertices)
     {
         vertex_.clear();
     }
-    current_index_      = 0;
-    current_s_          = 0.0;
-    length_             = 0;
+    current_index_ = 0;
+    length_        = 0.0;
+    // current_val_.s      = 0.0;
+    current_val_.time   = 0.0;
     interpolation_mode_ = PolyLineBase::InterpolationMode::INTERPOLATE_NONE;
 }
 
@@ -11634,6 +11639,12 @@ void PolyLineShape::AddVertex(Position* pos, double time)
 
 void PolyLineShape::CalculatePolyLine()
 {
+    if (pline_.vertex_.size() == 0)
+    {
+        LOG("Unexpected: No vertices in PolyLineShape polyline");
+        return;
+    }
+
     pline_.Reset(false);
     double speed = initial_speed_;
 
@@ -11655,6 +11666,7 @@ void PolyLineShape::CalculatePolyLine()
         pline_.interpolation_mode_ = PolyLineBase::InterpolationMode::INTERPOLATE_NONE;
     }
 
+    // Copy data from trajectory vertices to polyline
     for (size_t i = 0; i < vertex_.size(); i++)
     {
         TrajVertex* pv = &pline_.vertex_[i];
@@ -11680,52 +11692,106 @@ void PolyLineShape::CalculatePolyLine()
         pv->pos_mode = v->pos_->GetMode(Position::PosModeType::INIT);
         pv->param    = 0.0;  // skip p, s or time is used instead.
         pv->time     = v->time_;
+    }
 
-        if (i > 0)
+    // calculate true heading of vertices based on delta to next vertex
+    double heading_current = pline_.vertex_[0].h;
+    double pitch_current   = pline_.vertex_[0].pitch;
+
+    // calculate distance, i.e. s values for each vertex
+    for (size_t i = 0; i < vertex_.size(); i++)
+    {
+        if (i == 0)
         {
-            TrajVertex* pvp = &pline_.vertex_[i - 1];
+            pline_.vertex_[0].s = 0.0;  // start at 0
+        }
+        else
+        {
+            TrajVertex* pv      = &pline_.vertex_[i - 1];
+            TrajVertex* pvn     = &pline_.vertex_[i];
+            pline_.vertex_[i].s = pline_.vertex_[i - 1].s + PointDistance2D(pvn->x, pvn->y, pv->x, pv->y);
+        }
+    }
 
-            // Update polyline length
-            double dist = PointDistance2D(pv->x, pv->y, pvp->x, pvp->y);
-            pv->s       = pvp->s + dist;
+    // find the first pair of vertices with some distance enabling calculation of true heading and pitch
+    for (size_t i = 0; i < vertex_.size() - 1; i++)
+    {
+        TrajVertex* pv  = &pline_.vertex_[i];
+        TrajVertex* pvn = &pline_.vertex_[i + 1];
 
-            if ((pv->pos_mode & Position::PosMode::H_MASK) == 0)  // heading not set
+        if (pvn->s - pv->s > SMALL_NUMBER)
+        {
+            heading_current = GetAngleOfVector(pvn->x - pv->x, pvn->y - pv->y);
+            if (NEAR_ZERO(pvn->s - pv->s))
             {
-                // Calulate heading from line segment between this and previous vertices
-                if (PointDistance2D(pv->x, pv->y, pvp->x, pvp->y) < SMALL_NUMBER)
-                {
-                    // If points conside, use heading of previous vertex
-                    pv->h = pvp->h;
-                }
-                else
-                {
-                    pv->h = GetAngleInInterval2PI(atan2(pv->y - pvp->y, pv->x - pvp->x));
-                }
-
-                // Update heading of previous vertex now that outgoing line segment is known
-                pvp->h = pv->h;
+                LOG("Unexpected: vertex positions differ, but not s values");
+                return;
             }
+            pitch_current = GetAngleInInterval2PI(-atan2(pvn->z - pv->z, pvn->s - pv->s));
+            break;
+        }
+    }
 
-            if ((pv->pos_mode & Position::PosMode::P_MASK) == 0)  // not set
+    // update the heading and pitch values for all vertices
+    for (int i = 0; i < static_cast<int>(vertex_.size()); i++)
+    {
+        TrajVertex* pv = &pline_.vertex_[i];
+
+        // calculate true heading of current vertex based on delta to next vertex
+        // also set calculated heading and pitch if not specified in the vertices
+        pv->h_true = heading_current;
+
+        if ((pv->pos_mode & Position::PosMode::H_MASK) == 0)
+        {
+            pv->h = heading_current;
+        }
+
+        if ((pv->pos_mode & Position::PosMode::P_MASK) == 0)
+        {
+            pv->pitch = pitch_current;
+        }
+
+        if (i < vertex_.size() - 2)
+        {
+            // calculate next values
+            pv              = &pline_.vertex_[i + 1];
+            TrajVertex* pvn = &pline_.vertex_[i + 2];
+
+            if (pvn->s - pv->s > SMALL_NUMBER)
             {
-                pv->pitch = GetAngleInInterval2PI(-atan2(pv->z - pvp->z, pv->s - pvp->s));
-
-                // Update heading of previous vertex now that outgoing line segment is known
-                pvp->pitch = pv->pitch;
+                // calculate only when points differ, else re-use previous values
+                heading_current = GetAngleOfVector(pvn->x - pv->x, pvn->y - pv->y);
+                if (NEAR_ZERO(pvn->s - pv->s))
+                {
+                    LOG("Unexpected: vertex positions differ, but not s values");
+                    return;
+                }
+                pitch_current = GetAngleInInterval2PI(-atan2(pvn->z - pv->z, pvn->s - pv->s));
             }
+        }
+    }
 
-            // apply constant acceleration on the segment from current position
-            //  s = v0 * t + 1/2 * acc * t^2
-            //  v0 and s (dist) is known, acc and final v1 is unknown
-            //  acc = 2 * (s - v0 * t) / t^2
-            //  v1 = v0 + acc * t
-            double acc = 0.0;
+    // speed and acceleration
+    for (size_t i = 0; i < vertex_.size(); i++)
+    {
+        // apply constant acceleration on the segment from current position
+        //  s = v0 * t + 1/2 * acc * t^2
+        //  v0 and s (dist) is known, acc and final v1 is unknown
+        //  acc = 2 * (s - v0 * t) / t^2
+        //  v1 = v0 + acc * t
+        double acc = 0.0;
 
-            double ds = pline_.vertex_[i].s - pline_.vertex_[i - 1].s;
-            double dt = pline_.vertex_[i].time - pline_.vertex_[i - 1].time;
-
-            if (following_mode_ == FollowingMode::FOLLOW)
+        if (following_mode_ == FollowingMode::FOLLOW)
+        {
+            if (i == 0)
             {
+                pline_.vertex_[i].speed   = initial_speed_;
+                pline_.vertex_.back().acc = 0.0;
+            }
+            else
+            {
+                double ds = pline_.vertex_[i].s - pline_.vertex_[i - 1].s;
+                double dt = pline_.vertex_[i].time - pline_.vertex_[i - 1].time;
                 if (abs(ds) > SMALL_NUMBER)
                 {
                     acc = 2 * (ds - speed * dt) / pow(dt, 2);
@@ -11748,9 +11814,19 @@ void PolyLineShape::CalculatePolyLine()
                     speed = 0.0;
                 }
                 pline_.vertex_[i - 1].acc = acc;
+                pline_.vertex_[i].speed   = speed;
             }
-            else  // position mode
+        }
+        else  // position mode
+        {
+            if (i == pline_.vertex_.size() - 1)
             {
+                pline_.vertex_[i - 1].speed = speed;  // last vertex get same speed as second last
+            }
+            else
+            {
+                double ds = pline_.vertex_[i + 1].s - pline_.vertex_[i].s;
+                double dt = pline_.vertex_[i + 1].time - pline_.vertex_[i].time;
                 if (dt > SMALL_NUMBER)
                 {
                     speed = ds / dt;
@@ -11759,14 +11835,8 @@ void PolyLineShape::CalculatePolyLine()
                 {
                     speed = 0.0;
                 }
-                pline_.vertex_[i - 1].speed = speed;
+                pline_.vertex_[i].speed = speed;
             }
-            pline_.vertex_[i].speed = speed;
-        }
-        else if (i == 0)
-        {
-            pv->s     = 0;
-            pv->speed = speed;
         }
     }
 
@@ -11825,6 +11895,11 @@ int PolyLineShape::Evaluate(double p, TrajectoryParamType ptype, TrajVertex& pos
     return 0;
 }
 
+int PolyLineShape::Evaluate(double p, TrajectoryParamType ptype)
+{
+    return Evaluate(p, ptype, current_val_);
+}
+
 double PolyLineShape::GetStartTime()
 {
     if (vertex_.size() == 0)
@@ -11859,6 +11934,11 @@ double PolyLineShape::GetDuration()
     }
 
     return vertex_.back().time_ - vertex_[0].time_;
+}
+
+bool PolyLineShape::IsHSetExplicitly()
+{
+    return (current_val_.pos_mode & Position::PosMode::H_MASK) != 0;
 }
 
 ClothoidSplineShape::~ClothoidSplineShape()
@@ -11980,6 +12060,11 @@ int ClothoidSplineShape::Evaluate(double p, TrajectoryParamType ptype, TrajVerte
     return 0;
 }
 
+int ClothoidSplineShape::Evaluate(double p, TrajectoryParamType ptype)
+{
+    return Evaluate(p, ptype, current_val_);
+}
+
 double ClothoidSplineShape::GetStartTime()
 {
     if (segments_.size() == 0)
@@ -11998,6 +12083,11 @@ double ClothoidSplineShape::GetDuration()
     }
 
     return GetEndTime() - segments_.front().time_;
+}
+
+bool ClothoidSplineShape::IsHSetExplicitly()
+{
+    return (current_val_.pos_mode & Position::PosMode::H_MASK) != 0;
 }
 
 void ClothoidSplineShape::Freeze(Position* ref_pos)
@@ -12482,6 +12572,11 @@ int NurbsShape::Evaluate(double p, TrajectoryParamType ptype, TrajVertex& pos)
     return 0;
 }
 
+int NurbsShape::Evaluate(double p, TrajectoryParamType ptype)
+{
+    return Evaluate(p, ptype, current_val_);
+}
+
 double NurbsShape::GetStartTime()
 {
     if (ctrlPoint_.size() == 0)
@@ -12500,6 +12595,11 @@ double NurbsShape::GetDuration()
     }
 
     return ctrlPoint_.back().time_ - ctrlPoint_[0].time_;
+}
+
+bool NurbsShape::IsHSetExplicitly()
+{
+    return (current_val_.pos_mode & Position::PosMode::H_MASK) != 0;
 }
 
 Shape* NurbsShape::Copy()
@@ -12600,9 +12700,11 @@ void ClothoidShape::CalculatePolyLine()
 
 int ClothoidShape::EvaluateInternal(double s, TrajVertex& pos)
 {
+    // for spirals, the heading is always aligned with tangent of the curve
     spiral_.EvaluateDS(s, &pos.x, &pos.y, &pos.h);
 
     pos.pos_mode = pos_.GetMode(Position::PosModeType::INIT);
+    pos.h_true   = pos.h;
 
     return 0;
 }
@@ -12638,6 +12740,11 @@ int ClothoidShape::Evaluate(double p, TrajectoryParamType ptype, TrajVertex& pos
     return 0;
 }
 
+int ClothoidShape::Evaluate(double p, TrajectoryParamType ptype)
+{
+    return Evaluate(p, ptype, current_val_);
+}
+
 double ClothoidShape::GetStartTime()
 {
     return t_start_;
@@ -12646,6 +12753,11 @@ double ClothoidShape::GetStartTime()
 double ClothoidShape::GetDuration()
 {
     return t_end_ - t_start_;
+}
+
+bool ClothoidShape::IsHSetExplicitly()
+{
+    return false;
 }
 
 Shape* ClothoidShape::Copy()
@@ -12664,10 +12776,9 @@ int Position::MoveTrajectoryDS(double ds)
         return -1;
     }
 
-    TrajVertex v;
-    trajectory_->shape_->Evaluate(s_trajectory_ + ds, Shape::TrajectoryParamType::TRAJ_PARAM_TYPE_S, v);
+    trajectory_->SetS(trajectory_->GetS() + ds);
 
-    return UpdateTrajectoryPos(v);
+    return UpdateTrajectoryPos();
 }
 
 int Position::SetTrajectoryPosByTime(double time)
@@ -12677,27 +12788,28 @@ int Position::SetTrajectoryPosByTime(double time)
         return -1;
     }
 
-    TrajVertex v;
-    trajectory_->shape_->Evaluate(time, Shape::TrajectoryParamType::TRAJ_PARAM_TYPE_TIME, v);
+    trajectory_->shape_->Evaluate(time, Shape::TrajectoryParamType::TRAJ_PARAM_TYPE_TIME);
 
-    return UpdateTrajectoryPos(v);
+    return UpdateTrajectoryPos();
+}
+
+double Position::GetTrajectoryS() const
+{
+    return trajectory_ ? trajectory_->GetS() : 0.0;
 }
 
 int Position::SetTrajectoryS(double s, bool update)
 {
-    s_trajectory_ = s;
+    if (!trajectory_)
+    {
+        return -1;
+    }
+
+    trajectory_->SetS(s, update);
 
     if (update)
     {
-        if (!trajectory_)
-        {
-            return -1;
-        }
-
-        TrajVertex v;
-        trajectory_->shape_->Evaluate(s, Shape::TrajectoryParamType::TRAJ_PARAM_TYPE_S, v);
-
-        return UpdateTrajectoryPos(v);
+        return UpdateTrajectoryPos();
     }
 
     return 0;
@@ -12714,35 +12826,38 @@ int Position::SetTrajectoryT(double trajectory_t, bool update)
             return -1;
         }
 
-        TrajVertex v;
-        trajectory_->shape_->Evaluate(GetTrajectoryS(), Shape::TrajectoryParamType::TRAJ_PARAM_TYPE_S, v);
+        trajectory_->shape_->Evaluate(GetTrajectoryS(), Shape::TrajectoryParamType::TRAJ_PARAM_TYPE_S);
 
-        UpdateTrajectoryPos(v);
+        UpdateTrajectoryPos();
     }
     return 0;
 }
 
-int Position::UpdateTrajectoryPos(TrajVertex v)
+int Position::UpdateTrajectoryPos()
 {
     if (!trajectory_)
     {
         return -1;
     }
 
+    double x = trajectory_->shape_->current_val_.x;
+    double y = trajectory_->shape_->current_val_.y;
+
     // First adjust lateral offset
     if (!NEAR_ZERO(t_trajectory_))
     {
         double p[2] = {0.0, 0.0};
-        RotateVec2D(0.0, t_trajectory_, v.h, p[0], p[1]);
-        v.x += p[0];
-        v.y += p[1];
+
+        RotateVec2D(0.0, t_trajectory_, trajectory_->shape_->current_val_.h, p[0], p[1]);
+        x += p[0];
+        y += p[1];
     }
 
-    int pos_mode = v.pos_mode;
+    int pos_mode = trajectory_->shape_->current_val_.pos_mode;
 
     // Trajectory position mode is handled a bit different
     // absolute z means that position z was specified and trajectory is detached from the road surface
-    if ((v.pos_mode & PosMode::Z_MASK) == PosMode::Z_ABS)
+    if ((pos_mode & PosMode::Z_MASK) == PosMode::Z_ABS)
     {
         pos_mode = PosMode::Z_ABS | PosMode::H_ABS | PosMode::P_ABS | PosMode::R_ABS;
     }
@@ -12751,16 +12866,14 @@ int Position::UpdateTrajectoryPos(TrajVertex v)
         pos_mode = PosMode::Z_REL | PosMode::H_ABS | PosMode::P_REL | PosMode::R_REL;
     }
 
-    SetInertiaPosMode(v.x,
-                      v.y,
-                      (pos_mode & PosMode::Z_MASK) == PosMode::Z_REL ? 0.0 : v.z,
-                      (pos_mode & PosMode::H_MASK) == PosMode::H_REL ? 0.0 : v.h,
-                      (pos_mode & PosMode::P_MASK) == PosMode::P_REL ? 0.0 : v.pitch,
-                      (pos_mode & PosMode::R_MASK) == PosMode::R_REL ? 0.0 : v.r,
+    SetInertiaPosMode(x,
+                      y,
+                      (pos_mode & PosMode::Z_MASK) == PosMode::Z_REL ? 0.0 : trajectory_->shape_->current_val_.z,
+                      (pos_mode & PosMode::H_MASK) == PosMode::H_REL ? 0.0 : trajectory_->shape_->current_val_.h,
+                      (pos_mode & PosMode::P_MASK) == PosMode::P_REL ? 0.0 : trajectory_->shape_->current_val_.pitch,
+                      (pos_mode & PosMode::R_MASK) == PosMode::R_REL ? 0.0 : trajectory_->shape_->current_val_.r,
                       pos_mode,
                       true);
-
-    s_trajectory_ = v.s;
 
     return 0;
 }
@@ -12805,8 +12918,12 @@ void Position::EvaluateRelation(bool release)
 {
     if (trajectory_ != nullptr)
     {
+        // evaluate trajectory layout
         trajectory_->Freeze(FollowingMode::POSITION, 0.0);
-        SetTrajectoryS(s_trajectory_);
+        // evaluate position along trajectory based on current s-value
+        trajectory_->Evaluate();
+        // transfer info from trajectory to parent position container
+        UpdateTrajectoryPos();
     }
 
     if (rel_pos_ == nullptr || GetType() == Position::PositionType::NORMAL || GetType() == Position::PositionType::ROUTE)
@@ -13696,22 +13813,36 @@ void RMTrajectory::Freeze(FollowingMode following_mode, double current_speed, Po
     }
 }
 
-double RMTrajectory::GetTimeAtS(double s)
+double RMTrajectory::GetTime()
 {
-    // Find out corresponding time-value using polyline representation
-    TrajVertex v;
-    shape_->pline_.Evaluate(s, v);
-
-    return v.time;
+    return shape_ ? shape_->current_val_.time : 0.0;
 }
 
-double RMTrajectory::GetSpeedAtS(double s)
+double RMTrajectory::GetSpeed()
 {
-    // Find out corresponding time-value using polyline representation
-    TrajVertex v;
-    shape_->pline_.Evaluate(s, v);
+    return shape_ ? shape_->current_val_.speed : 0.0;
+}
 
-    return v.speed;
+int RMTrajectory::GetPosMode()
+{
+    return shape_ ? shape_->current_val_.pos_mode : 0;
+}
+
+double RMTrajectory::GetS()
+{
+    return shape_ ? shape_->current_val_.s : 0.0;
+}
+
+void RMTrajectory::SetS(double s, bool evaluate)
+{
+    if (evaluate)
+    {
+        shape_->Evaluate(s, Shape::TRAJ_PARAM_TYPE_S);
+    }
+    else
+    {
+        shape_->current_val_.s = s;
+    }
 }
 
 double RMTrajectory::GetStartTime()
@@ -13722,6 +13853,26 @@ double RMTrajectory::GetStartTime()
 double RMTrajectory::GetDuration()
 {
     return shape_->GetDuration();
+}
+
+double RMTrajectory::GetHTrue()
+{
+    return shape_ ? shape_->current_val_.h_true : 0.0;
+}
+
+bool RMTrajectory::IsHSetExplicitly()
+{
+    return shape_->IsHSetExplicitly();
+}
+
+double RMTrajectory::GetH()
+{
+    return shape_ ? shape_->current_val_.h : 0.0;
+}
+
+void RMTrajectory::Evaluate()
+{
+    shape_->Evaluate();
 }
 
 RMTrajectory* RMTrajectory::Copy()

@@ -1197,6 +1197,46 @@ When FollowMode is `position` esmini will:
 . For world coordinates, apply whatever heading is specified in the vertices (note that 0.0 is default). Lane and road coordinates will align to road direction as default.
 . For each segment, calculate constant speed needed to reach next vertex on time. This approach results in a discontinuous speed profile.
 
+==== Trajectory moving and driving direction
+
+The driving direction and entity direction can be controlled by trajectory configuration combined with entity speed and heading. It's possible to follow trajectory in opposite direction and also to drive forward or reverse along the trajectory. The table below lists some combinations and possibilities.
+
+[cols="2,2,2,2,1,2,2,2", stripes=even]
+|===
+|trajectory type|specified heading|time-stamps|speed sign|⇒|entity heading|moving direction|entity (in tc)
+
+|clothoid|n/a|-|1||1|1|bicycle1
+|clothoid|n/a|-|-1||-1|1|scooter1
+|polyline/nurbs|-|-|1||1|1|car_white
+|polyline/nurbs|-|-|-1||-1|1|car_red
+|polyline/nurbs|-|yes|1 *||1|1|car_blue
+|polyline/nurbs|1|-|1||1|1|car_yellow
+|polyline/nurbs|1|-|-1||1|-1|van_red
+|polyline/nurbs|1|yes|1 *||1|1|motorbike
+|polyline/nurbs|-1|-|1||-1|-1|car_trailer
+|polyline/nurbs|-1|-|-1||-1|1|semi_tractor
+|polyline/nurbs|-1|yes|-1 *||-1|1|truck_yellow
+|===
+pass:[*] calculated based on entity heading sign
+
+[horizontal]
+*specified heading*:: explicit heading (optionally supported by some shape types) in trajectory control points pointing forward (-90 < heading < 90 deg along trajectory s axis) or backwards. n/a indicates not supported, "-" not specified, 1 forward, -1 backwards.
+*timestamps*:: "-" indicates not specified or timeReference == None, "yes" indicates specified heading and timeReference != None
+*speed sign*:: 1 for speed >= 0, -1 for speed < 0. For timestamp mode, the magnitude of speed and overall motion direction is given by trajectory control point's timestamps and heading. Allowing for reversing, the initial heading of the entity, if specified, affects whether speed is positive (driving forward) or negative (reversing).
+*entity heading*:: Entity heading relative trajectory s-axis direction (heading/tangent). 1: facing along s, -1: facing away from s. When not specified, entity heading will be aligned forward (1) or backwards (-1) according to the speed sign. Interpolation will be applied based on specified followingMode, see previous section.
+*moving direction*:: reference point motion along trajectory s-axis or opposite direction, given by: speed sign * entity heading
+*entity (in tc)*:: Corresponding entity in the smoke test scenario https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/Unittest/xosc/trajectory_speed.xosc[trajectory_speed.xosc], which checks the various trajectory configurations.
+
+===== Example scenarios
+
+The following test cases cover the various cases and beyond.
+
+.test case scenario https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Unittest/xosc/trajectory_speed.xosc[trajectory_speed.xosc]
+image::traj_heading_test.png[]
+
+.scenario https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Unittest/xosc/trajectory_special_cases.xosc[trajectory_special_cases.xosc] including example how to transition between reverse and forward driving
+image::traj_special_cases.png[]
+
 === Friction
 
 From v2.37.0 esmini supports road friction defined in https://publications.pages.asam.net/standards/ASAM_OpenDRIVE/ASAM_OpenDRIVE_Specification/latest/specification/11_lanes/11_07_lane_properties.html#sec-8345bf25-d584-4a5b-8fa7-e15c920ab219[OpenDRIVE lane material].

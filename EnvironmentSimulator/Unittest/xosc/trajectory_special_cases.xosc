@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSCENARIO>
+    <FileHeader author="esmini-team" revMajor="1" revMinor="3" date="2024-11-21T09:00:00" description="Show a way to control driving direction"/>
+    <ParameterDeclarations>
+        <ParameterDeclaration name="x1" parameterType="double" value="0.0"/>
+        <ParameterDeclaration name="x2" parameterType="double" value="-10.0"/>
+        <ParameterDeclaration name="x3" parameterType="double" value="-17.07"/>
+        <ParameterDeclaration name="x4" parameterType="double" value="-17.07"/>
+        <ParameterDeclaration name="x5" parameterType="double" value="-17.07"/>
+        <ParameterDeclaration name="y1" parameterType="double" value="0.0"/>
+        <ParameterDeclaration name="y2" parameterType="double" value="0.0"/>
+        <ParameterDeclaration name="y3" parameterType="double" value="-7.07"/>
+        <ParameterDeclaration name="y4" parameterType="double" value="-17.07"/>
+        <ParameterDeclaration name="y5" parameterType="double" value="2.0"/>
+        <ParameterDeclaration name="offsetX" parameterType="double" value="-12"/>
+        <ParameterDeclaration name="offsetY" parameterType="double" value="15"/>
+        <ParameterDeclaration name="speed" parameterType="double" value="8"/>
+        <ParameterDeclaration name="pause" parameterType="double" value="1"/>
+    </ParameterDeclarations>
+    <CatalogLocations>
+        <VehicleCatalog>
+            <Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
+        </VehicleCatalog>
+    </CatalogLocations>
+    <RoadNetwork/>
+    <Entities>
+        <ScenarioObject name="car_white">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="car_red">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>
+        </ScenarioObject>
+    </Entities>
+    <Storyboard>
+        <Init>
+            <Actions>
+                <Private entityRef="car_white">
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="$speed"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <RoutingAction>
+                            <FollowTrajectoryAction>
+                                <TimeReference>
+                                    <None/>
+                                </TimeReference>
+                                <TrajectoryFollowingMode followingMode="position"/>
+                                <TrajectoryRef>
+                                    <Trajectory name="trajectory_car_white" closed="false">
+                                        <Shape>
+                                            <Polyline>
+                                                <Vertex>
+                                                    <Position>
+                                                        <WorldPosition x="${$x1 + (0 * $offsetX)}" y="${$y1 + (0 * $offsetY)}"/>
+                                                    </Position>
+                                                </Vertex>
+                                                <Vertex>
+                                                    <Position>
+                                                        <WorldPosition x="${$x2 + (0 * $offsetX)}" y="${$y2 + (0 * $offsetY)}"/>
+                                                    </Position>
+                                                </Vertex>
+                                                <Vertex>
+                                                    <Position>
+                                                        <WorldPosition x="${$x3 + (0 * $offsetX)}" y="${$y3 + (0 * $offsetY)}"/>
+                                                    </Position>
+                                                </Vertex>
+                                                <Vertex>
+                                                    <Position>
+                                                        <WorldPosition x="${$x4 + (0 * $offsetX)}" y="${$y4 + (0 * $offsetY)}"/>
+                                                    </Position>
+                                                </Vertex>
+                                                <Vertex>
+                                                    <Position>
+                                                        <WorldPosition x="${$x5 + (0 * $offsetX)}" y="${$y5 + (0 * $offsetY)}"/>
+                                                    </Position>
+                                                </Vertex>
+                                            </Polyline>
+                                        </Shape>
+                                    </Trajectory>
+                                </TrajectoryRef>
+                            </FollowTrajectoryAction>
+                        </RoutingAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="car_red">
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="$speed"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <RoutingAction>
+                            <FollowTrajectoryAction>
+                                <TimeReference>
+                                    <Timing domainAbsoluteRelative="relative" scale="1.0" offset="0.0"/>
+                                </TimeReference>
+                                <TrajectoryFollowingMode followingMode="position"/>
+                                <TrajectoryRef>
+                                    <Trajectory name="trajectory_car_red" closed="false">
+                                        <Shape>
+                                            <Polyline>
+                                                <Vertex time="0.0">
+                                                    <Position>
+                                                        <WorldPosition x="${$x1 + (1 * $offsetX)}" y="${$y1 + (1 * $offsetY)}" h="0.0"/>
+                                                    </Position>
+                                                </Vertex>
+                                                <Vertex time="${10/$speed}">
+                                                    <Position>
+                                                        <WorldPosition x="${$x2 + (1 * $offsetX)}" y="${$y2 + (1 * $offsetY)}" h="0.79"/>
+                                                    </Position>
+                                                </Vertex>
+                                                <Vertex time="${20/$speed}">
+                                                    <Position>
+                                                        <WorldPosition x="${$x3 + (1 * $offsetX)}" y="${$y3 + (1 * $offsetY)}" h="1.57"/>
+                                                    </Position>
+                                                </Vertex>
+                                                <Vertex time="${30/$speed}">
+                                                    <Position>
+                                                        <WorldPosition x="${$x4 + (1 * $offsetX)}" y="${$y4 + (1 * $offsetY)}" h="1.57"/>
+                                                    </Position>
+                                                </Vertex>
+                                                <Vertex time="${30/$speed + $pause}">
+                                                    <Position>
+                                                        <WorldPosition x="${$x4 + (1 * $offsetX)}" y="${$y4 + (1 * $offsetY)}" h="1.57"/>
+                                                    </Position>
+                                                </Vertex>
+                                                <Vertex time="${30/$speed + $pause + 19.07/$speed}">
+                                                    <Position>
+                                                        <WorldPosition x="${$x5 + (1 * $offsetX)}" y="${$y5 + (1 * $offsetY)}" h="1.57"/>
+                                                    </Position>
+                                                </Vertex>
+                                            </Polyline>
+                                        </Shape>
+                                    </Trajectory>
+                                </TrajectoryRef>
+                            </FollowTrajectoryAction>
+                        </RoutingAction>
+                    </PrivateAction>
+                </Private>
+            </Actions>
+        </Init>
+        <StopTrigger>
+            <ConditionGroup>
+                <Condition name="StopCondition" conditionEdge="none" delay="0.0">
+                    <ByValueCondition>
+                        <SimulationTimeCondition value="8.0" rule="greaterThan"/>
+                    </ByValueCondition>
+                </Condition>
+            </ConditionGroup>
+        </StopTrigger>
+    </Storyboard>
+</OpenSCENARIO>

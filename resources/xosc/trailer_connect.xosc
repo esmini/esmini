@@ -138,7 +138,7 @@
                                 <PrivateAction>
                                     <RoutingAction>
                                         <FollowTrajectoryAction>
-                                            <Trajectory closed="false" name="TrajectoryReverse">
+                                            <Trajectory closed="false" name="TrajectoryForward">
                                                 <ParameterDeclarations/>
                                                 <Shape>
                                                     <Clothoid curvature="${-1.0/$TrajRadius}" curvatureDot="0.001" length="25.0">

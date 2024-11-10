@@ -66,7 +66,12 @@ namespace scenarioengine
         SE_SimulationTimer timer_;
         ConditionState     state_;
 
-        OSCCondition(ConditionType base_type) : base_type_(base_type), last_result_(false), edge_(ConditionEdge::NONE), state_(ConditionState::IDLE)
+        OSCCondition(ConditionType base_type)
+            : base_type_(base_type),
+              delay_(0.0),
+              last_result_(false),
+              edge_(ConditionEdge::NONE),
+              state_(ConditionState::IDLE)
         {
         }
         virtual ~OSCCondition() = default;

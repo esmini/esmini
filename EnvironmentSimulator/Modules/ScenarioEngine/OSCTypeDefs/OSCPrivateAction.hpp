@@ -1030,7 +1030,8 @@ namespace scenarioengine
         double                     timing_offset_;
         double                     time_;
         double                     initialDistanceOffset_;
-        bool                       reverse_;
+        int                        initialHeadingSign_;
+        int                        movingDirection_;
 
         FollowTrajectoryAction(StoryBoardElement* parent)
             : OSCPrivateAction(OSCPrivateAction::ActionType::FOLLOW_TRAJECTORY,
@@ -1043,7 +1044,8 @@ namespace scenarioengine
               timing_offset_(0),
               time_(0),
               initialDistanceOffset_(0),
-              reverse_(false)
+              initialHeadingSign_(1),
+              movingDirection_(1)
         {
         }
 
@@ -1059,8 +1061,9 @@ namespace scenarioengine
             timing_offset_         = action.timing_offset_;
             initialDistanceOffset_ = action.timing_offset_;
             following_mode_        = action.following_mode_;
-            reverse_               = action.reverse_;
             time_                  = 0;
+            initialHeadingSign_    = action.initialHeadingSign_;
+            movingDirection_       = action.movingDirection_;
         }
 
         ~FollowTrajectoryAction();

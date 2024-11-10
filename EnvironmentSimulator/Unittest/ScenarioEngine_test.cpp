@@ -611,7 +611,7 @@ TEST(DistanceTest, TestTrajectoryDistance)
     EXPECT_NEAR(dist, 0.0661, 1E-3);
 
     // test with same trajectory in both objects
-    obj1.pos_.SetTrajectory(obj0->pos_.GetTrajectory());
+    obj1.pos_.SetTrajectory(obj0->pos_.GetTrajectory()->Copy());
     obj1.pos_.SetTrajectoryS(obj0->pos_.GetTrajectoryS() + 0.9);
     EXPECT_EQ(
         obj0->Distance(&obj1, roadmanager::CoordinateSystem::CS_TRAJECTORY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, false, dist),

@@ -2970,6 +2970,7 @@ namespace roadmanager
         double acc      = 0;  // acceleration along the segment
         double param    = 0;
         int    pos_mode = 0;  // resolved alignment bitmask after calculation, see Position::PosMode enum
+        double h_true   = 0;  // true trajectory heading, calculated based on polyline approximation
     };
 
     class Position
@@ -3360,10 +3361,7 @@ namespace roadmanager
         /**
         Retrieve the S-value of the current trajectory position
         */
-        double GetTrajectoryS() const
-        {
-            return s_trajectory_;
-        }
+        double GetTrajectoryS() const;
 
         /**
         Move current position to specified T-value along the trajectory
@@ -4037,10 +4035,9 @@ namespace roadmanager
 
         /**
         Update trajectory position
-        @param v Trajectory vertex
         @return Non zero return value indicates error of some kind
         */
-        int UpdateTrajectoryPos(TrajVertex v);
+        int UpdateTrajectoryPos();
 
         // Control lane belonging
         bool lockOnLane_;  // if true then keep logical lane regardless of lateral position, default false
@@ -4058,8 +4055,7 @@ namespace roadmanager
         double h_offset_;      // local heading offset given by lane width and offset
         double h_relative_;    // heading relative to the road (h_ = h_road_ + h_relative_)
         double z_relative_;    // z relative to the road
-        double s_trajectory_;  // longitudinal point/distance along the trajectory
-        double t_trajectory_;  // longitudinal point/distance along the trajectory
+        double t_trajectory_;  // lateral point/distance along the trajectory
         double curvature_;
         double p_relative_;   // pitch relative to the road (h_ = h_road_ + h_relative_)
         double r_relative_;   // roll relative to the road (h_ = h_road_ + h_relative_)
@@ -4294,7 +4290,7 @@ namespace roadmanager
             INTERPOLATE_CORNER  = 2
         };
 
-        PolyLineBase() : length_(0), current_index_(0), current_s_(0.0)
+        PolyLineBase() : length_(0), current_index_(0)
         {
         }
 
@@ -4312,14 +4308,15 @@ namespace roadmanager
         int Evaluate(double s, TrajVertex &pos, double cornerRadius);
         int Evaluate(double s, TrajVertex &pos, int startAtIndex);
         int Evaluate(double s, TrajVertex &pos);
+        int Evaluate(double s);
         int FindClosestPoint(double xin, double yin, TrajVertex &pos, int &index, int startAtIndex = 0);
         int FindPointAhead(double s_start, double distance, TrajVertex &pos, int &index, int startAtIndex = 0);
 
         /**
          * Get ghost state at a point in time
          * @param time Simulation time (subtracting headstart time, i.e. time=0 gives the initial state)
-         * @param pos Returns state including position, heading, speed. See TrajVertex type.
-         * @param index Returns the index of matching trajectory segment
+         * @param pos Trajectory position info including position, heading, speed. See TrajVertex type.
+         * @param index Returns the index of matching trajectory segment, -1 on error
          * @param startAtIndex Start search for segment (e.g. index returned by previous call)
          */
         int FindPointAtTime(double time, TrajVertex &pos, int &index, int startAtIndex = 0);
@@ -4328,7 +4325,7 @@ namespace roadmanager
          * Get ghost state at a point in time
          * @param time Time offset from first timestamp
          * @param pos Returns state including position, heading, speed. See TrajVertex type.
-         * @param index Returns the index of matching trajectory segment
+         * @param index Returns the index of matching trajectory segment, -1 on error
          * @param startAtIndex Start search for segment (e.g. index returned by previous call)
          */
         int FindPointAtTimeRelative(double time, TrajVertex &pos, int &index, int startAtIndex = 0);
@@ -4340,12 +4337,20 @@ namespace roadmanager
         TrajVertex *GetVertex(int index);
         TrajVertex *GetCurrentVertex();
         void        Reset(bool clear_vertices);
-        int         Time2S(double time, double &s);
-        void        SetInterpolationMode(InterpolationMode mode);
+
+        /**
+         * Get s value for given time value
+         * @param time Time offset from first timestamp
+         * @param s Return s value
+         * @param index Returns the index of matching trajectory segment
+         * @return the index of matching trajectory segment, -1 on error
+         */
+        int  Time2S(double time, double &s);
+        void SetInterpolationMode(InterpolationMode mode);
 
         std::vector<TrajVertex> vertex_;
         int                     current_index_;
-        double                  current_s_;
+        TrajVertex              current_val_;
         double                  length_;
         InterpolationMode       interpolation_mode_ = InterpolationMode::INTERPOLATE_NONE;
 
@@ -4386,6 +4391,16 @@ namespace roadmanager
             return -1;
         };
 
+        virtual int Evaluate(double p, TrajectoryParamType ptype)
+        {
+            return -1;
+        };
+
+        int Evaluate()
+        {
+            return Evaluate(current_val_.s, Shape::TRAJ_PARAM_TYPE_S);
+        };
+
         virtual void CalculatePolyLine()
         {
         }
@@ -4413,10 +4428,14 @@ namespace roadmanager
         {
             return 0.0;
         }
+
+        virtual bool IsHSetExplicitly() = 0;
+
         ShapeType     type_;
         FollowingMode following_mode_;
         double        initial_speed_;
         PolyLineBase  pline_;  // approximation of shape, used for calculations and visualization
+        TrajVertex    current_val_;
     };
 
     class PolyLineShape : public Shape
@@ -4439,6 +4458,7 @@ namespace roadmanager
 
         void   AddVertex(Position *pos, double time);
         int    Evaluate(double p, TrajectoryParamType ptype, TrajVertex &pos);
+        int    Evaluate(double p, TrajectoryParamType ptype);
         void   CalculatePolyLine() override;
         double GetLength()
         {
@@ -4447,6 +4467,7 @@ namespace roadmanager
         Shape *Copy();
         double GetStartTime();
         double GetDuration();
+        bool   IsHSetExplicitly();
 
         std::vector<Vertex> vertex_;
     };
@@ -4457,6 +4478,7 @@ namespace roadmanager
         ClothoidShape(roadmanager::Position pos, double curv, double curvDot, double len, double tStart, double tEnd);
 
         int    Evaluate(double p, TrajectoryParamType ptype, TrajVertex &pos);
+        int    Evaluate(double p, TrajectoryParamType ptype);
         int    EvaluateInternal(double s, TrajVertex &pos);
         void   CalculatePolyLine() override;
         double GetLength()
@@ -4466,6 +4488,7 @@ namespace roadmanager
         double GetStartTime();
         double GetDuration();
         Shape *Copy();
+        bool   IsHSetExplicitly();
 
         Position            pos_;
         roadmanager::Spiral spiral_;  // make use of the OpenDRIVE clothoid definition
@@ -4512,6 +4535,7 @@ namespace roadmanager
 
         void   AddSegment(Position *posStart, double curvStart, double curvEnd, double length, double h_offset, double time);
         int    Evaluate(double p, TrajectoryParamType ptype, TrajVertex &pos);
+        int    Evaluate(double p, TrajectoryParamType ptype);
         int    EvaluateInternal(double s, int segment_idx, TrajVertex &pos);
         void   CalculatePolyLine();
         double GetLength()
@@ -4533,6 +4557,7 @@ namespace roadmanager
         {
             return static_cast<int>(segments_.size());
         }
+        bool   IsHSetExplicitly();
         Shape *Copy();
 
     private:
@@ -4570,10 +4595,12 @@ namespace roadmanager
 
         ~NurbsShape();
 
-        void AddControlPoint(Position pos, double time, double weight);
-        void AddKnots(std::vector<double> knots);
-        int  Evaluate(double p, TrajectoryParamType ptype, TrajVertex &pos);
-        int  EvaluateInternal(double s, TrajVertex &pos);
+        void   AddControlPoint(Position pos, double time, double weight);
+        void   AddKnots(std::vector<double> knots);
+        int    Evaluate(double p, TrajectoryParamType ptype, TrajVertex &pos);
+        int    Evaluate(double p, TrajectoryParamType ptype);
+        int    EvaluateInternal(double s, TrajVertex &pos);
+        double EvaluateTrueHeading(double s);
 
         unsigned int              order_;
         std::vector<ControlPoint> ctrlPoint_;
@@ -4589,6 +4616,7 @@ namespace roadmanager
         }
         double GetStartTime();
         double GetDuration();
+        bool   IsHSetExplicitly();
         Shape *Copy();
 
     private:
@@ -4610,10 +4638,17 @@ namespace roadmanager
         {
             return shape_->GetLength();
         }
-        double        GetTimeAtS(double s);
-        double        GetSpeedAtS(double s);
+        double        GetTime();
+        double        GetSpeed();
+        int           GetPosMode();
+        double        GetS();
+        void          SetS(double s, bool evaluate = true);
         double        GetStartTime();
         double        GetDuration();
+        double        GetHTrue();
+        bool          IsHSetExplicitly();
+        double        GetH();
+        void          Evaluate();  // evaluate for current s-value
         RMTrajectory *Copy();
 
         Shape      *shape_;

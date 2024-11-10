@@ -64,6 +64,7 @@ using id_t = uint32_t;
 #define LOG_FILENAME                  "log.txt"
 #define DAT_FILENAME                  "sim.dat"
 #define GHOST_TRAIL_SAMPLE_TIME       0.2
+#define LOGICAL_OR(X, Y)              ((X || Y) && !(X && Y))
 
 #define LOG(...)       Logger::Inst().Log(false, false, __FILENAME__, __FUNCTION__, __LINE__, __VA_ARGS__)
 #define LOG_TRACE(...) Logger::Inst().Log(false, true, __FILENAME__, __FUNCTION__, __LINE__, __VA_ARGS__)

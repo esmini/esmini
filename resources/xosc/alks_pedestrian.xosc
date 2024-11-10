@@ -101,7 +101,7 @@
                                 <TimeReference>
                                     <None/>
                                 </TimeReference>
-                                <TrajectoryFollowingMode followingMode="follow"/>
+                                <TrajectoryFollowingMode followingMode="position"/>
                             </FollowTrajectoryAction>
                         </RoutingAction>
                     </PrivateAction>

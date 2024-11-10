@@ -343,21 +343,51 @@ void FollowTrajectoryAction::Start(double simTime)
         return;
     }
 
-    reverse_ = (object_->GetSpeed() < 0.0);
-
     traj_->Freeze(following_mode_, object_->GetSpeed(), &object_->pos_);
     object_->pos_.SetTrajectory(traj_);
 
+    // establish initial position along trajectory (s) and register initial time
     object_->pos_.SetTrajectoryS(initialDistanceOffset_);
-    time_ = traj_->GetTimeAtS(initialDistanceOffset_);
+    time_ = traj_->GetTime();
 
-    // establish initial position
-    Move(simTime, 0.0);
+    // establigh speed sign / driving direction
+    double speedSign;
+    if (timing_domain_ == TimingDomain::NONE)
+    {
+        speedSign = SIGN(object_->GetSpeed());
+    }
+    else
+    {
+        // for timestamp mode, speed sign is given by heading íf set
+        if (traj_->IsHSetExplicitly())
+        {
+            speedSign = GetAbsAngleDifference(traj_->GetH(), traj_->GetHTrue()) > M_PI_2 + SMALL_NUMBER ? -1 : 1;
+        }
+        else
+        {
+            // else default to driving forward
+            speedSign = 1;
+        }
+    }
+
+    // establish initial heading
+    if (traj_->IsHSetExplicitly())
+    {
+        object_->pos_.SetHeading(traj_->GetH());
+    }
+    else
+    {
+        // heading not specified: align with trajectory, forward or backwards according to speed sign
+        object_->pos_.SetHeading(GetAngleInInterval2PI(traj_->GetHTrue() + (speedSign < 0 ? M_PI : 0.0)));
+    }
+
+    // register initial heading direction - it will be applied in case heading is not set explicitly
+    initialHeadingSign_ = GetAbsAngleDifference(object_->pos_.GetH(), traj_->GetHTrue()) > M_PI_2 + SMALL_NUMBER ? -1 : 1;
 
     // establish initial speed if time reference is defined
     if (timing_domain_ != TimingDomain::NONE)
     {
-        object_->SetSpeed(traj_->GetSpeedAtS(object_->pos_.GetTrajectoryS()));
+        object_->SetSpeed(speedSign * traj_->GetSpeed());
     }
 }
 
@@ -399,7 +429,6 @@ void FollowTrajectoryAction::Step(double simTime, double dt)
         return;
     }
 
-    int    dir   = reverse_ ? -1 : 1;
     double old_s = object_->pos_.GetTrajectoryS();
 
     // Adjust absolute time for any ghost headstart
@@ -414,16 +443,17 @@ void FollowTrajectoryAction::Step(double simTime, double dt)
     // Trajectories with time stamps:
     //     always ends when time >= trajectory duration (last timestamp)
     if (((timing_domain_ == TimingDomain::NONE && !traj_->closed_) && dt > 0.0 &&
-         ((dir * object_->GetSpeed() > 0.0 && object_->pos_.GetTrajectoryS() > (traj_->GetLength() - SMALL_NUMBER)) ||
-          (dir * object_->GetSpeed() < 0.0 && object_->pos_.GetTrajectoryS() < SMALL_NUMBER))) ||
+         ((movingDirection_ * fabs(object_->GetSpeed()) > 0.0 && object_->pos_.GetTrajectoryS() > (traj_->GetLength() - SMALL_NUMBER)) ||
+          (movingDirection_ * fabs(object_->GetSpeed()) < 0.0 && object_->pos_.GetTrajectoryS() < SMALL_NUMBER))) ||
         (timing_domain_ != TimingDomain::NONE && time_ + timeOffset >= traj_->GetStartTime() + traj_->GetDuration()))
     {
-        // Reached end of trajectory
+        // Reached end, or start, of trajectory
         double remaningDistance = 0.0;
-        if (timing_domain_ == TimingDomain::NONE && !traj_->closed_ && object_->pos_.GetTrajectoryS() > (traj_->GetLength() - SMALL_NUMBER))
+        if (timing_domain_ == TimingDomain::NONE && !traj_->closed_ &&
+            (object_->pos_.GetTrajectoryS() > (traj_->GetLength() - SMALL_NUMBER) || (object_->pos_.GetTrajectoryS() < SMALL_NUMBER)))
         {
             // Move the remaning distance along road at current lane offset
-            remaningDistance = object_->speed_ * dt - (object_->pos_.GetTrajectoryS() - old_s);
+            remaningDistance = fabs(object_->speed_) * dt - fabs(object_->pos_.GetTrajectoryS() - old_s);
         }
         else if (timing_domain_ != TimingDomain::NONE && time_ + timeOffset >= traj_->GetStartTime() + traj_->GetDuration())
         {
@@ -433,8 +463,8 @@ void FollowTrajectoryAction::Step(double simTime, double dt)
         }
 
         // Move the remainder of distance along the current heading
-        double dx = remaningDistance * cos(object_->pos_.GetH());
-        double dy = remaningDistance * sin(object_->pos_.GetH());
+        double dx = remaningDistance * cos(traj_->GetH());
+        double dy = remaningDistance * sin(traj_->GetH());
 
         object_->pos_.SetInertiaPos(object_->pos_.GetX() + dx,
                                     object_->pos_.GetY() + dy,
@@ -449,11 +479,13 @@ void FollowTrajectoryAction::Step(double simTime, double dt)
 
 void scenarioengine::FollowTrajectoryAction::Move(double simTime, double dt)
 {
-    int    dir   = reverse_ ? -1 : 1;
     double old_s = object_->pos_.GetTrajectoryS();
 
     // Adjust absolute time for any ghost headstart
     double timeOffset = (timing_domain_ == TimingDomain::TIMING_ABSOLUTE && object_->IsGhost()) ? object_->GetHeadstartTime() : 0.0;
+
+    movingDirection_     = 1;  // init to forward motion, will be re-evalutated for non-timestamp modes
+    int headingDirection = (GetAbsAngleDifference(object_->pos_.GetH(), traj_->GetHTrue()) > M_PI_2 + SMALL_NUMBER) ? -1 : 1;
 
     // Move along trajectory
     if (
@@ -462,7 +494,8 @@ void scenarioengine::FollowTrajectoryAction::Move(double simTime, double dt)
         // Speed is controlled elsewhere - just follow trajectory with current speed
         (object_->IsControllerModeOnDomains(ControlOperationMode::MODE_OVERRIDE, static_cast<unsigned int>(ControlDomains::DOMAIN_LONG))))
     {
-        object_->pos_.MoveTrajectoryDS(dir * object_->speed_ * dt);
+        movingDirection_ = SIGN(object_->GetSpeed()) * headingDirection;
+        object_->pos_.MoveTrajectoryDS(movingDirection_ * fabs(object_->speed_) * dt);
     }
     else if (timing_domain_ == TimingDomain::TIMING_RELATIVE)
     {
@@ -475,7 +508,7 @@ void scenarioengine::FollowTrajectoryAction::Move(double simTime, double dt)
         {
             if (dt > SMALL_NUMBER)  // only update speed if some time has passed
             {
-                object_->SetSpeed((object_->pos_.GetTrajectoryS() - old_s) / dt);
+                object_->SetSpeed(movingDirection_ * headingDirection * fabs(object_->pos_.GetTrajectoryS() - old_s) / dt);
             }
         }
     }
@@ -493,14 +526,17 @@ void scenarioengine::FollowTrajectoryAction::Move(double simTime, double dt)
         {
             // don't calculate and update actual speed when reached end of trajectory,
             // since the movement is based on remaining length of trajectory, not speed
-            object_->SetSpeed((object_->pos_.GetTrajectoryS() - old_s) / MAX(SMALL_NUMBER, dt));
+            object_->SetSpeed(movingDirection_ * headingDirection * fabs(object_->pos_.GetTrajectoryS() - old_s) / dt);
         }
     }
 
-    // align heading to driving direction
-    if (reverse_)
+    if (!traj_->IsHSetExplicitly())
     {
-        object_->pos_.SetHeading(GetAngleInInterval2PI(object_->pos_.GetH() + M_PI));
+        // adjust entity heading
+        if (initialHeadingSign_ < 0)
+        {
+            object_->pos_.SetHeading(GetAngleInInterval2PI(object_->pos_.GetH() + M_PI));
+        }
     }
 }
 
