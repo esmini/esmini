@@ -1,5 +1,17 @@
 ## esmini release notes
 
+### 2024-11-11 Version 2.40.2
+
+Improvements and fixes:
+- Add osiviewer intersection support
+- support start time > 0 in osiviewer
+- Fix bug causing wrong OSI intersection classification
+- Rename cspas controller ([PR #630](https://github.com/esmini/esmini/pull/630))
+- Restore sumo-test scenario (bug introduced in v2.40.0)
+
+Build improvements:
+- Bump to macOS v13 for github actions
+
 ### 2024-10-23 Version 2.40.1
 
 Improvements and fixes:
