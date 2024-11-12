@@ -4941,9 +4941,14 @@ void Junction::SetGlobalId()
 
 bool Junction::IsOsiIntersection() const
 {
-    if (connection_.size() > 0 && connection_[0]->GetIncomingRoad() && connection_[0]->GetIncomingRoad() &&
-        connection_[0]->GetIncomingRoad()->GetRoadType(0) != 0)
+    if (type_ == JunctionType::DIRECT)
     {
+        return false;  // direct junction has no area -> no free lane boundaries
+    }
+    else if (connection_.size() > 0 && connection_[0]->GetIncomingRoad() && connection_[0]->GetIncomingRoad() &&
+             connection_[0]->GetIncomingRoad()->GetRoadType(0) != 0)
+    {
+        // check if the first road is of type highway, then assumes it is not a intersection
         if (connection_[0]->GetIncomingRoad()->GetRoadType(0)->road_type_ == Road::RoadType::ROADTYPE_MOTORWAY)
         {
             return false;
@@ -5699,45 +5704,48 @@ int OpenDrive::CheckJunctionConnection(Junction* junction, Connection* connectio
                     return -1;
                 }
 
-                // Create counter connections, treating linkedRoad as incomingRoad
-                // Find out contact point for original incoming road
-                ContactPointType new_contact_point = ContactPointType::CONTACT_POINT_UNDEFINED;
-                if (connection->GetIncomingRoad()->GetLink(LinkType::SUCCESSOR) &&
-                    connection->GetIncomingRoad()->GetLink(LinkType::SUCCESSOR)->GetElementId() == junction->GetId())
+                if (link[i]->GetContactPointType() == ContactPointType::CONTACT_POINT_JUNCTION && link[i]->GetElementId() == junction->GetId())
                 {
-                    new_contact_point = ContactPointType::CONTACT_POINT_END;
-                }
-                else if (connection->GetIncomingRoad()->GetLink(LinkType::PREDECESSOR) &&
-                         connection->GetIncomingRoad()->GetLink(LinkType::PREDECESSOR)->GetElementId() == junction->GetId())
-                {
-                    new_contact_point = ContactPointType::CONTACT_POINT_START;
-                }
-                else
-                {
-                    LOG("Failed to find out contactpoint of direct junction incoming road");
-                    return -1;
-                }
+                    // Create counter connections, treating linkedRoad as incomingRoad
+                    // Find out contact point for original incoming road
+                    ContactPointType new_contact_point = ContactPointType::CONTACT_POINT_UNDEFINED;
+                    if (connection->GetIncomingRoad()->GetLink(LinkType::SUCCESSOR) &&
+                        connection->GetIncomingRoad()->GetLink(LinkType::SUCCESSOR)->GetElementId() == junction->GetId())
+                    {
+                        new_contact_point = ContactPointType::CONTACT_POINT_END;
+                    }
+                    else if (connection->GetIncomingRoad()->GetLink(LinkType::PREDECESSOR) &&
+                             connection->GetIncomingRoad()->GetLink(LinkType::PREDECESSOR)->GetElementId() == junction->GetId())
+                    {
+                        new_contact_point = ContactPointType::CONTACT_POINT_START;
+                    }
+                    else
+                    {
+                        LOG("Failed to find out contactpoint of direct junction incoming road");
+                        return -1;
+                    }
 
-                // Check that it does not already exist
-                Connection* new_connection = 0;
-                for (size_t k = 0; k < junction->GetNumberOfConnections(); k++)
-                {
-                    if (junction->GetConnectionByIdx((int)k)->GetIncomingRoad() == connection->GetConnectingRoad() &&
-                        junction->GetConnectionByIdx((int)k)->GetConnectingRoad() == road)
+                    // Check that it does not already exist
+                    Connection* new_connection = 0;
+                    for (size_t k = 0; k < junction->GetNumberOfConnections(); k++)
                     {
-                        new_connection = junction->GetConnectionByIdx((int)k);
-                        break;
+                        if (junction->GetConnectionByIdx((int)k)->GetConnectingRoad() == connection->GetIncomingRoad() &&
+                            junction->GetConnectionByIdx((int)k)->GetIncomingRoad() == connection->GetConnectingRoad())
+                        {
+                            new_connection = junction->GetConnectionByIdx((int)k);
+                            break;
+                        }
                     }
-                }
-                if (!new_connection)
-                {
-                    new_connection = new Connection(connection->GetConnectingRoad(), connection->GetIncomingRoad(), new_contact_point);
-                    for (size_t j = 0; j < connection->GetNumberOfLaneLinks(); j++)
+                    if (!new_connection)
                     {
-                        JunctionLaneLink* tmp_link = connection->GetLaneLink((int)j);
-                        new_connection->AddJunctionLaneLink(tmp_link->to_, tmp_link->from_);
+                        new_connection = new Connection(connection->GetConnectingRoad(), connection->GetIncomingRoad(), new_contact_point);
+                        for (size_t j = 0; j < connection->GetNumberOfLaneLinks(); j++)
+                        {
+                            JunctionLaneLink* tmp_link = connection->GetLaneLink((int)j);
+                            new_connection->AddJunctionLaneLink(tmp_link->to_, tmp_link->from_);
+                        }
+                        junction->AddConnection(new_connection);
                     }
-                    junction->AddConnection(new_connection);
                 }
             }
             else

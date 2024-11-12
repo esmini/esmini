@@ -981,7 +981,7 @@ int OSIReporter::UpdateOSIIntersection()
     roadmanager::OSIPoints *osipoints;
 
     static roadmanager::OpenDrive *opendrive = roadmanager::Position::GetOpenDrive();
-    osi3::Lane                    *osi_lane;
+    osi3::Lane                    *osi_lane  = nullptr;
     for (int i = 0; i < opendrive->GetNumOfJunctions(); i++)
     {
         std::vector<LaneLengthStruct> left_lane_lengths;
@@ -989,11 +989,41 @@ int OSIReporter::UpdateOSIIntersection()
         std::vector<LaneLengthStruct> lane_lengths;
         std::vector<LaneLengthStruct> tmp_lane_lengths;
         std::set<id_t>                connected_roads;
-        // //add check if it is an intersection or an highway exit/entry
+        // add check if it is an intersection or an highway exit/entry
         junction = opendrive->GetJunctionByIdx(i);
 
-        // check if the first road is of type highway, then assumes it is not a intersection
-        if (junction->IsOsiIntersection())
+        if (junction->GetType() == roadmanager::Junction::JunctionType::DIRECT)
+        {
+            // resolve direct junction connections
+            osi3::Lane_Classification_LanePairing *lane_pairing = nullptr;
+            for (auto &c : junction->GetConnections())
+            {
+                roadmanager::Road        *road_in          = c->GetIncomingRoad();
+                roadmanager::Road        *road_out         = c->GetConnectingRoad();
+                roadmanager::LaneSection *lane_section_in  = road_in->GetLaneSectionByIdx(road_in->GetNumberOfLaneSections() - 1);
+                roadmanager::LaneSection *lane_section_out = road_out->GetLaneSectionByIdx(0);
+                for (int l = 0; l < c->GetNumberOfLaneLinks(); l++)
+                {
+                    roadmanager::JunctionLaneLink *ll             = c->GetLaneLink(l);
+                    int                            from_lane_id   = ll->from_;
+                    int                            to_lane_id     = ll->to_;
+                    int                            from_global_id = lane_section_in->GetLaneGlobalIdById(from_lane_id);
+                    int                            to_global_id   = lane_section_out->GetLaneGlobalIdById(to_lane_id);
+
+                    for (unsigned int jj = 0; jj < obj_osi_internal.ln.size(); jj++)
+                    {
+                        if (obj_osi_internal.ln[jj]->mutable_id()->value() == static_cast<unsigned int>(from_global_id))
+                        {
+                            osi_lane     = obj_osi_internal.ln[jj];
+                            lane_pairing = osi_lane->mutable_classification()->add_lane_pairing();
+                            lane_pairing->mutable_successor_lane_id()->set_value(to_global_id);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        else if (junction->IsOsiIntersection())
         {
             // genereric data for the junction
             osi_lane = obj_osi_internal.gt->add_lane();
@@ -1315,7 +1345,9 @@ int OSIReporter::UpdateOSIIntersection()
                         free_lane_id->set_value(static_cast<unsigned int>(lane_lengths[j].global_id));
                     }
                 }
-                LOG("Issues with the Intersection %i for the osi free lane boundary, none will be added.", junction->GetId());
+                LOG("Issues with the Intersection %i (global id %d) for the osi free lane boundary, not all lanes added.",
+                    junction->GetId(),
+                    junction->GetGlobalId());
             }
         }
     }
@@ -1670,7 +1702,7 @@ int OSIReporter::UpdateOSIRoadLane()
             {
                 predecessorRoad = opendrive->GetRoadById(roadLink->GetElementId());
             }
-            if (roadLink->GetElementType() == roadmanager::RoadLink::ElementType::ELEMENT_TYPE_JUNCTION)
+            else if (roadLink->GetElementType() == roadmanager::RoadLink::ElementType::ELEMENT_TYPE_JUNCTION)
             {
                 predecessorJunction = opendrive->GetJunctionById(roadLink->GetElementId());
             }
@@ -1987,9 +2019,10 @@ int OSIReporter::UpdateOSIRoadLane()
                             }
                             lane_pairing->mutable_successor_lane_id()->set_value(static_cast<unsigned int>(global_successor_junction_id));
                         }
+                        roadmanager::Junction *junction = opendrive->GetJunctionById(road->GetJunction());
+
                         // Update lanes that connect with junctions that are not intersections
-                        if (road->GetNumberOfRoadTypes() > 0 && road->GetRoadType(0)->road_type_ == roadmanager::Road::RoadType::ROADTYPE_MOTORWAY &&
-                            road->GetJunction() != ID_UNDEFINED)
+                        if (junction && !junction->IsOsiIntersection())
                         {
                             roadmanager::LaneLink *link_predecessor = lane->GetLink(roadmanager::LinkType::PREDECESSOR);
                             roadmanager::LaneLink *link_successor   = lane->GetLink(roadmanager::LinkType::SUCCESSOR);
