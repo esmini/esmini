@@ -502,6 +502,51 @@ TEST(OSI, TestOrientation)
     delete player;
 }
 
+TEST(OSI, TestDirectJunctions)
+{
+    const char* args[] =
+        {"esmini", "--osc", "../../../EnvironmentSimulator/Unittest/xosc/direct_junction.xosc", "--headless", "--osi_file", "--disable_stdout"};
+    int             argc   = sizeof(args) / sizeof(char*);
+    ScenarioPlayer* player = new ScenarioPlayer(argc, const_cast<char**>(args));
+
+    ASSERT_NE(player, nullptr);
+    int retval = player->Init();
+    ASSERT_EQ(retval, 0);
+
+    ScenarioEngine* se = player->scenarioEngine;
+    ASSERT_EQ(se->entities_.object_.size(), 1);
+
+    const osi3::GroundTruth* osi_gt_ptr = reinterpret_cast<const osi3::GroundTruth*>(player->osiReporter->GetOSIGroundTruthRaw());
+    ASSERT_NE(osi_gt_ptr, nullptr);
+
+    // direct junction connections - both ways
+    EXPECT_EQ(osi_gt_ptr->lane(1).classification().lane_pairing_size(), 1);
+    EXPECT_EQ(osi_gt_ptr->lane(1).id().value(), 2);
+    EXPECT_EQ(osi_gt_ptr->lane(1).classification().lane_pairing(0).successor_lane_id().value(), 8);
+
+    EXPECT_EQ(osi_gt_ptr->lane(2).classification().lane_pairing_size(), 1);
+    EXPECT_EQ(osi_gt_ptr->lane(2).id().value(), 3);
+    EXPECT_EQ(osi_gt_ptr->lane(2).classification().lane_pairing(0).successor_lane_id().value(), 9);
+
+    EXPECT_EQ(osi_gt_ptr->lane(3).classification().lane_pairing_size(), 1);
+    EXPECT_EQ(osi_gt_ptr->lane(3).id().value(), 4);
+    EXPECT_EQ(osi_gt_ptr->lane(3).classification().lane_pairing(0).successor_lane_id().value(), 11);
+
+    EXPECT_EQ(osi_gt_ptr->lane(6).classification().lane_pairing_size(), 2);
+    EXPECT_EQ(osi_gt_ptr->lane(6).id().value(), 8);
+    EXPECT_EQ(osi_gt_ptr->lane(6).classification().lane_pairing(1).successor_lane_id().value(), 2);
+
+    EXPECT_EQ(osi_gt_ptr->lane(7).classification().lane_pairing_size(), 2);
+    EXPECT_EQ(osi_gt_ptr->lane(7).id().value(), 9);
+    EXPECT_EQ(osi_gt_ptr->lane(7).classification().lane_pairing(1).successor_lane_id().value(), 3);
+
+    EXPECT_EQ(osi_gt_ptr->lane(8).classification().lane_pairing_size(), 1);
+    EXPECT_EQ(osi_gt_ptr->lane(8).id().value(), 11);
+    EXPECT_EQ(osi_gt_ptr->lane(8).classification().lane_pairing(0).successor_lane_id().value(), 4);
+
+    delete player;
+}
+
 #endif  // _USE_OSI
 
 // #define LOG_TO_CONSOLE
