@@ -1016,7 +1016,7 @@ int OSIReporter::UpdateOSIIntersection()
                         {
                             osi_lane     = obj_osi_internal.ln[jj];
                             lane_pairing = osi_lane->mutable_classification()->add_lane_pairing();
-                            lane_pairing->mutable_successor_lane_id()->set_value(to_global_id);
+                            lane_pairing->mutable_successor_lane_id()->set_value(static_cast<unsigned int>(to_global_id));
                             break;
                         }
                     }
