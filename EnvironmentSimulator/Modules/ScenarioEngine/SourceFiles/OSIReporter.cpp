@@ -913,11 +913,11 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState *objectState)
                 // create wheel data message
                 obj_osi_internal.mobj->mutable_vehicle_attributes()->add_wheel_data();
                 obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_wheel_data(i)->mutable_position()->set_x(
-                    objectState->state_.info.wheel_data[static_cast<unsigned int>(i)].x);
+                    objectState->state_.info.wheel_data[static_cast<unsigned int>(i)].x - objectState->state_.info.boundingbox.center_.x_);
                 obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_wheel_data(i)->mutable_position()->set_y(
-                    objectState->state_.info.wheel_data[static_cast<unsigned int>(i)].y);
+                    objectState->state_.info.wheel_data[static_cast<unsigned int>(i)].y - objectState->state_.info.boundingbox.center_.y_);
                 obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_wheel_data(i)->mutable_position()->set_z(
-                    objectState->state_.info.wheel_data[static_cast<unsigned int>(i)].z);
+                    objectState->state_.info.wheel_data[static_cast<unsigned int>(i)].z - objectState->state_.info.boundingbox.center_.z_);
 
                 obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_wheel_data(i)->mutable_orientation()->set_yaw(
                     objectState->state_.info.wheel_data[static_cast<unsigned int>(i)].h);
