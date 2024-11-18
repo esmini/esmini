@@ -3303,7 +3303,8 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                 "",
                 "",
                 std::numeric_limits<double>::quiet_NaN(),
-                std::numeric_limits<int>::quiet_NaN()};
+                std::numeric_limits<int>::quiet_NaN(),
+                ""};
 
     pugi::xml_node header_node = node.child("header");
     if (node != NULL)
@@ -6057,6 +6058,11 @@ GeoReference* OpenDrive::GetGeoReference()
     return &geo_ref_;
 }
 
+std::string OpenDrive::GetGeoReferenceOriginalString() const
+{
+    return geo_ref_.orig_georef_str_;
+}
+
 std::string OpenDrive::GetGeoReferenceAsString() const
 {
     std::ostringstream out;
@@ -6074,9 +6080,12 @@ void OpenDrive::ParseGeoLocalization(const std::string& geoLocalization)
     char                               space_char     = ' ';
     char                               asignment_char = '=';
 
+    // store complete original string as is
+    geo_ref_.orig_georef_str_ = geoLocalization;
+
+    // Get each attribute of geoReference
     std::stringstream sstream(geoLocalization);
     std::string       attribute = "";
-    // Get each attribute of geoReference
     while (std::getline(sstream, attribute, space_char))
     {
         std::stringstream sstream_attrib(attribute);

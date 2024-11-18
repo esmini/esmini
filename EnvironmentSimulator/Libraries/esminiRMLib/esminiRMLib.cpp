@@ -956,26 +956,27 @@ extern "C"
             }
             else
             {
-                rmGeoReference->a_            = static_cast<float>((geoReference->a_));
-                rmGeoReference->axis_         = geoReference->axis_.c_str();
-                rmGeoReference->b_            = static_cast<float>((geoReference->b_));
-                rmGeoReference->ellps_        = geoReference->ellps_.c_str();
-                rmGeoReference->k_            = static_cast<float>((geoReference->k_));
-                rmGeoReference->k_0_          = static_cast<float>((geoReference->k_0_));
-                rmGeoReference->lat_0_        = static_cast<float>((geoReference->lat_0_));
-                rmGeoReference->lon_0_        = static_cast<float>((geoReference->lon_0_));
-                rmGeoReference->lon_wrap_     = static_cast<float>((geoReference->lon_wrap_));
-                rmGeoReference->over_         = static_cast<float>((geoReference->over_));
-                rmGeoReference->pm_           = geoReference->pm_.c_str();
-                rmGeoReference->proj_         = geoReference->proj_.c_str();
-                rmGeoReference->units_        = geoReference->units_.c_str();
-                rmGeoReference->vunits_       = geoReference->vunits_.c_str();
-                rmGeoReference->x_0_          = static_cast<float>((geoReference->x_0_));
-                rmGeoReference->y_0_          = static_cast<float>((geoReference->y_0_));
-                rmGeoReference->datum_        = geoReference->datum_.c_str();
-                rmGeoReference->geo_id_grids_ = geoReference->geo_id_grids_.c_str();
-                rmGeoReference->zone_         = static_cast<float>((geoReference->zone_));
-                rmGeoReference->towgs84_      = geoReference->towgs84_;
+                rmGeoReference->a_                   = static_cast<float>((geoReference->a_));
+                rmGeoReference->axis_                = geoReference->axis_.c_str();
+                rmGeoReference->b_                   = static_cast<float>((geoReference->b_));
+                rmGeoReference->ellps_               = geoReference->ellps_.c_str();
+                rmGeoReference->k_                   = static_cast<float>((geoReference->k_));
+                rmGeoReference->k_0_                 = static_cast<float>((geoReference->k_0_));
+                rmGeoReference->lat_0_               = static_cast<float>((geoReference->lat_0_));
+                rmGeoReference->lon_0_               = static_cast<float>((geoReference->lon_0_));
+                rmGeoReference->lon_wrap_            = static_cast<float>((geoReference->lon_wrap_));
+                rmGeoReference->over_                = static_cast<float>((geoReference->over_));
+                rmGeoReference->pm_                  = geoReference->pm_.c_str();
+                rmGeoReference->proj_                = geoReference->proj_.c_str();
+                rmGeoReference->units_               = geoReference->units_.c_str();
+                rmGeoReference->vunits_              = geoReference->vunits_.c_str();
+                rmGeoReference->x_0_                 = static_cast<float>((geoReference->x_0_));
+                rmGeoReference->y_0_                 = static_cast<float>((geoReference->y_0_));
+                rmGeoReference->datum_               = geoReference->datum_.c_str();
+                rmGeoReference->geo_id_grids_        = geoReference->geo_id_grids_.c_str();
+                rmGeoReference->zone_                = static_cast<float>((geoReference->zone_));
+                rmGeoReference->towgs84_             = geoReference->towgs84_;
+                rmGeoReference->original_georef_str_ = geoReference->orig_georef_str_.c_str();
 
                 return 0;
             }

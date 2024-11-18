@@ -2710,6 +2710,7 @@ namespace roadmanager
         std::string geo_id_grids_;
         double      zone_;
         int         towgs84_;
+        std::string orig_georef_str_;
     } GeoReference;
 
     class OpenDrive
@@ -2824,6 +2825,7 @@ namespace roadmanager
         }
 
         GeoReference *GetGeoReference();
+        std::string   GetGeoReferenceOriginalString() const;
         std::string   GetGeoReferenceAsString() const;
         void          ParseGeoLocalization(const std::string &geoLocalization);
 

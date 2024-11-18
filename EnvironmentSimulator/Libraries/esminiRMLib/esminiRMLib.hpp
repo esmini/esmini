@@ -124,6 +124,7 @@ typedef struct
     const char* geo_id_grids_;
     float       zone_;
     int         towgs84_;
+    const char* original_georef_str_;
 } RM_GeoReference;
 
 // Modes for interpret Z, Head, Pitch, Roll coordinate value as absolute or relative
