@@ -1,5 +1,15 @@
 ## esmini release notes
 
+### 2024-11-18 Version 2.40.3
+
+Improvements and fixes:
+- Add OSI support for direct junctions
+- Fix OSI position of wheels ([PR #634](https://github.com/esmini/esmini/pull/634))
+- Communicate original OpenDRIVE geoReference string
+  - In OSI as `proj_string`
+  - In esminiRMLib as [`RM_GeoReference.original_georef_str_`](https://github.com/esmini/esmini/blob/175740cdc1bb153150fb0565cbc035e6ab6a68fb/EnvironmentSimulator/Libraries/esminiRMLib/esminiRMLib.hpp#L127)\
+    Note: The struct has been extended with this field
+
 ### 2024-11-11 Version 2.40.2
 
 Improvements and fixes:
