@@ -9105,7 +9105,7 @@ double Position::DistanceToDS(double ds)
         if (curvature * offset > 1.0 - SMALL_NUMBER)
         {
             // Radius not large enough for offset, probably being closer to another road segment
-            XYZ2TrackPos(GetX(), GetY(), GetY(), PosMode::UNDEFINED, true);
+            XYZ2TrackPos(GetX(), GetY(), GetZ(), PosMode::Z_REL | PosMode::H_REL | PosMode::P_REL | PosMode::R_REL, true);
             SetHeadingRelative(GetHRelative());
             curvature = GetCurvature();
             offset    = GetT();
@@ -9850,6 +9850,13 @@ void Position::EvaluateZHPR()
 
 void Position::EvaluateZHPR(int mode)
 {
+    double h          = 0.0;
+    double p          = 0.0;
+    double r          = 0.0;
+    double h_relative = 0.0;
+    double p_relative = 0.0;
+    double r_relative = 0.0;
+
     if (CheckBitsEqual(mode, PosMode::H_MASK, PosMode::H_REL) || CheckBitsEqual(mode, PosMode::P_MASK, PosMode::P_REL) ||
         CheckBitsEqual(mode, PosMode::R_MASK, PosMode::R_REL))
     {
@@ -9886,11 +9893,29 @@ void Position::EvaluateZHPR(int mode)
     }
     else
     {
-        h_ = GetH();
-        p_ = GetP();
-        r_ = GetR();
+        h = GetH();
+        p = GetP();
+        r = GetR();
 
-        CalcRelAnglesFromRoadAndAbsAngles(GetHRoad(), GetPRoad(), GetRRoad(), h_, p_, r_, h_relative_, p_relative_, r_relative_);
+        CalcRelAnglesFromRoadAndAbsAngles(GetHRoad(), GetPRoad(), GetRRoad(), h, p, r, h_relative, p_relative, r_relative);
+
+        if (CheckBitsEqual(mode, PosMode::H_MASK, PosMode::H_ABS))
+        {
+            h_          = h;
+            h_relative_ = h_relative;
+        }
+
+        if (CheckBitsEqual(mode, PosMode::P_MASK, PosMode::P_ABS))
+        {
+            p_          = p;
+            p_relative_ = p_relative;
+        }
+
+        if (CheckBitsEqual(mode, PosMode::R_MASK, PosMode::R_ABS))
+        {
+            r_          = r;
+            r_relative_ = r_relative;
+        }
     }
 
     if (CheckBitsEqual(mode, PosMode::Z_MASK, PosMode::Z_REL))
