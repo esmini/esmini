@@ -1888,7 +1888,7 @@ int OSIReporter::UpdateOSIRoadLane()
                             class_type    = osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_NONDRIVING;
                             subclass_type = osi3::Lane_Classification_Subtype::Lane_Classification_Subtype_SUBTYPE_RESTRICTED;
                         }
-                        else if (lanetype == roadmanager::Lane::LaneType::LANE_TYPE_ROADMARKS)
+                        else if (lanetype == roadmanager::Lane::LaneType::LANE_TYPE_ROADWORKS)
                         {
                             class_type    = osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_NONDRIVING;
                             subclass_type = osi3::Lane_Classification_Subtype::Lane_Classification_Subtype_SUBTYPE_OTHER;

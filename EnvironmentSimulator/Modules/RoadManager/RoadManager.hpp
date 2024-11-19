@@ -931,7 +931,7 @@ namespace roadmanager
             LANE_TYPE_SPECIAL1        = (1 << 11),  // 2048
             LANE_TYPE_SPECIAL2        = (1 << 12),  // 4096
             LANE_TYPE_SPECIAL3        = (1 << 13),  // 8192
-            LANE_TYPE_ROADMARKS       = (1 << 14),  // 16384
+            LANE_TYPE_ROADWORKS       = (1 << 14),  // 16384
             LANE_TYPE_TRAM            = (1 << 15),  // 32768
             LANE_TYPE_RAIL            = (1 << 16),  // 65536
             LANE_TYPE_ENTRY           = (1 << 17),  // 131072

@@ -76,7 +76,7 @@ static int g_Laneb_id;
 
 const char* object_type_str[] = {"barrier",   "bike",     "building",     "bus",          "car",           "crosswalk",  "gantry",
                                  "motorbike", "none",     "obstacle",     "parkingSpace", "patch",         "pedestrian", "pole",
-                                 "railing",   "roadmark", "soundbarrier", "streetlamp",   "trafficisland", "trailer",    "train",
+                                 "railing",   "roadmark", "soundBarrier", "streetLamp",   "trafficIsland", "trailer",    "train",
                                  "tram",      "tree",     "van",          "vegetation",   "wind"};
 
 const std::map<std::string, Signal::OSIType> Signal::types_mapping_ = {
@@ -3708,9 +3708,9 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                             {
                                 lane_type = Lane::LANE_TYPE_SPECIAL3;
                             }
-                            else if (lane_type_str == "roadmarks")
+                            else if (lane_type_str == "roadWorks")
                             {
-                                lane_type = Lane::LANE_TYPE_ROADMARKS;
+                                lane_type = Lane::LANE_TYPE_ROADWORKS;
                             }
                             else if (lane_type_str == "tram")
                             {
