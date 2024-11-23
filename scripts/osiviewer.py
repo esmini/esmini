@@ -113,12 +113,13 @@ class BBObjects:
             bb.set_time(current_time, interpolate)
 
 class View:
-    def __init__(self, gt):
+    def __init__(self, gt, filename):
 
         # settings
         self.empty_select_string = ''
         self.grid_enabled = True
         self.font_size = 9
+        self.filename = filename
 
         # initialize variables
         self.gt = gt
@@ -240,7 +241,7 @@ class View:
         self.fig.canvas.mpl_connect('scroll_event', self.on_scroll)
         self.fig.canvas.mpl_connect('motion_notify_event', self.on_motion)
 
-        self.fig.canvas.manager.set_window_title('OSI viewer')
+        self.fig.canvas.manager.set_window_title('OSI viewer: {}'.format(os.path.basename(self.filename)))
 
     def add_bb_object(self, bb_object):
         self.bb_objects.add_bb_object(bb_object)
@@ -762,7 +763,7 @@ class OSIFile:
             if self.view is None:
                 # create viewer, which will extract the static data from ground-truth
                 self.first_timestamp = timestamp
-                self.view = View(self.gt)
+                self.view = View(self.gt, self.filename)
             if len(self.gt.moving_object) > 0:
                 # retrieve timestamp
                 timestamp = self.gt.timestamp.seconds + self.gt.timestamp.nanos * 1e-9 - self.first_timestamp
