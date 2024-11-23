@@ -402,11 +402,8 @@ class View:
 
     def set_last_timestamp(self, timestamp):
         self.last_timestamp = timestamp
-        if self.last_timestamp == 0:
-            self.time_slider.ax.set_xlim(0, None)
-        else:
-            self.time_slider.ax.set_xlim(0, self.last_timestamp)
-            self.time_slider.valmax = self.last_timestamp
+        self.time_slider.ax.set_xlim(0, self.last_timestamp + 1e-5)
+        self.time_slider.valmax = self.last_timestamp
 
     def set_slider_time(self, val, pause=True):
         if pause:
