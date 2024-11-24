@@ -131,7 +131,8 @@
     {
       "name": "ci-sanitize-ubuntu",
       "inherits": [
-        "ci-ubuntu_release",
+        "ci-build",
+        "ci-unix",
         "disable-osg",
         "sanitize-build"
       ]
@@ -139,7 +140,8 @@
     {
       "name": "ci-sanitize-macos",
       "inherits": [
-        "ci-ubuntu_release",
+        "ci-build",
+        "ci-unix",
         "disable-osg",
         "sanitize-build"
       ]

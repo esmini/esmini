@@ -12,7 +12,7 @@ jobs:
   sanitize:
     strategy:
       matrix:
-        configuration: [Release]
+        configuration: [RelWithDebInfo]
         os: [ubuntu-20.04]
 
     runs-on: ${{ matrix.os }}
@@ -20,8 +20,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4.1.7
         with:
-          ref: dev
+          ref: ${{ github.event.ref }}
           submodules: true
+          fetch-depth: 0  # Fetch all history for proper branch switching
+
+      - name: Conditional Checkout
+        run: |
+          if [ "${{ github.ref }}" == "refs/heads/master" ]; then
+            git checkout dev
+          fi
 
       - uses: ./.github/actions/setup_tools_shared
 

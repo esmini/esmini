@@ -618,6 +618,7 @@ TEST(DistanceTest, TestTrajectoryDistance)
         0);
     EXPECT_NEAR(dist, 0.9, 1E-3);
 
+    delete (obj1.pos_.GetTrajectory());  // normally deleted by followTrajectoryAction destructor
     obj1.pos_.SetTrajectory(nullptr);
     obj1.pos_.MoveAlongS(2.0);
     EXPECT_EQ(obj0->Distance(&obj1, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, false, dist), 0);
