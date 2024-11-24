@@ -520,29 +520,43 @@ TEST(OSI, TestDirectJunctions)
     ASSERT_NE(osi_gt_ptr, nullptr);
 
     // direct junction connections - both ways
-    EXPECT_EQ(osi_gt_ptr->lane(1).classification().lane_pairing_size(), 1);
     EXPECT_EQ(osi_gt_ptr->lane(1).id().value(), 2);
+    EXPECT_EQ(osi_gt_ptr->lane(1).classification().lane_pairing_size(), 1);
+    EXPECT_EQ(osi_gt_ptr->lane(1).classification().lane_pairing(0).has_antecessor_lane_id(), false);
+    EXPECT_EQ(osi_gt_ptr->lane(1).classification().lane_pairing(0).has_successor_lane_id(), true);
     EXPECT_EQ(osi_gt_ptr->lane(1).classification().lane_pairing(0).successor_lane_id().value(), 8);
 
-    EXPECT_EQ(osi_gt_ptr->lane(2).classification().lane_pairing_size(), 1);
     EXPECT_EQ(osi_gt_ptr->lane(2).id().value(), 3);
+    EXPECT_EQ(osi_gt_ptr->lane(2).classification().lane_pairing_size(), 1);
+    EXPECT_EQ(osi_gt_ptr->lane(2).classification().lane_pairing(0).has_antecessor_lane_id(), false);
+    EXPECT_EQ(osi_gt_ptr->lane(2).classification().lane_pairing(0).has_successor_lane_id(), true);
     EXPECT_EQ(osi_gt_ptr->lane(2).classification().lane_pairing(0).successor_lane_id().value(), 9);
 
-    EXPECT_EQ(osi_gt_ptr->lane(3).classification().lane_pairing_size(), 1);
     EXPECT_EQ(osi_gt_ptr->lane(3).id().value(), 4);
+    EXPECT_EQ(osi_gt_ptr->lane(3).classification().lane_pairing_size(), 1);
+    EXPECT_EQ(osi_gt_ptr->lane(3).classification().lane_pairing(0).has_antecessor_lane_id(), false);
+    EXPECT_EQ(osi_gt_ptr->lane(3).classification().lane_pairing(0).has_successor_lane_id(), true);
     EXPECT_EQ(osi_gt_ptr->lane(3).classification().lane_pairing(0).successor_lane_id().value(), 11);
 
-    EXPECT_EQ(osi_gt_ptr->lane(6).classification().lane_pairing_size(), 2);
     EXPECT_EQ(osi_gt_ptr->lane(6).id().value(), 8);
-    EXPECT_EQ(osi_gt_ptr->lane(6).classification().lane_pairing(1).successor_lane_id().value(), 2);
+    EXPECT_EQ(osi_gt_ptr->lane(6).classification().lane_pairing_size(), 1);
+    EXPECT_EQ(osi_gt_ptr->lane(6).classification().lane_pairing(0).has_antecessor_lane_id(), true);
+    EXPECT_EQ(osi_gt_ptr->lane(6).classification().lane_pairing(0).antecessor_lane_id().value(), 2);
+    EXPECT_EQ(osi_gt_ptr->lane(6).classification().lane_pairing(0).has_successor_lane_id(), true);
+    EXPECT_EQ(osi_gt_ptr->lane(6).classification().lane_pairing(0).successor_lane_id().value(), 15);
 
-    EXPECT_EQ(osi_gt_ptr->lane(7).classification().lane_pairing_size(), 2);
     EXPECT_EQ(osi_gt_ptr->lane(7).id().value(), 9);
-    EXPECT_EQ(osi_gt_ptr->lane(7).classification().lane_pairing(1).successor_lane_id().value(), 3);
+    EXPECT_EQ(osi_gt_ptr->lane(7).classification().lane_pairing_size(), 1);
+    EXPECT_EQ(osi_gt_ptr->lane(7).classification().lane_pairing(0).has_antecessor_lane_id(), true);
+    EXPECT_EQ(osi_gt_ptr->lane(7).classification().lane_pairing(0).antecessor_lane_id().value(), 3);
+    EXPECT_EQ(osi_gt_ptr->lane(7).classification().lane_pairing(0).has_successor_lane_id(), true);
+    EXPECT_EQ(osi_gt_ptr->lane(7).classification().lane_pairing(0).successor_lane_id().value(), 16);
 
-    EXPECT_EQ(osi_gt_ptr->lane(8).classification().lane_pairing_size(), 1);
     EXPECT_EQ(osi_gt_ptr->lane(8).id().value(), 11);
-    EXPECT_EQ(osi_gt_ptr->lane(8).classification().lane_pairing(0).successor_lane_id().value(), 4);
+    EXPECT_EQ(osi_gt_ptr->lane(8).classification().lane_pairing_size(), 1);
+    EXPECT_EQ(osi_gt_ptr->lane(8).classification().lane_pairing(0).has_antecessor_lane_id(), true);
+    EXPECT_EQ(osi_gt_ptr->lane(8).classification().lane_pairing(0).antecessor_lane_id().value(), 4);
+    EXPECT_EQ(osi_gt_ptr->lane(8).classification().lane_pairing(0).has_successor_lane_id(), false);
 
     delete player;
 }

@@ -1001,7 +1001,6 @@ int OSIReporter::UpdateOSIIntersection()
         if (junction->GetType() == roadmanager::Junction::JunctionType::DIRECT)
         {
             // resolve direct junction connections
-            osi3::Lane_Classification_LanePairing *lane_pairing = nullptr;
             for (auto &c : junction->GetConnections())
             {
                 roadmanager::Road        *road_in          = c->GetIncomingRoad();
@@ -1016,13 +1015,43 @@ int OSIReporter::UpdateOSIIntersection()
                     int                            from_global_id = lane_section_in->GetLaneGlobalIdById(from_lane_id);
                     int                            to_global_id   = lane_section_out->GetLaneGlobalIdById(to_lane_id);
 
+                    // locate outgoing lane and register incoming lane
                     for (unsigned int jj = 0; jj < obj_osi_internal.ln.size(); jj++)
                     {
-                        if (obj_osi_internal.ln[jj]->mutable_id()->value() == static_cast<unsigned int>(from_global_id))
+                        if (obj_osi_internal.ln[jj]->mutable_id()->value() == static_cast<unsigned int>(to_global_id))
                         {
-                            osi_lane     = obj_osi_internal.ln[jj];
-                            lane_pairing = osi_lane->mutable_classification()->add_lane_pairing();
-                            lane_pairing->mutable_successor_lane_id()->set_value(static_cast<unsigned int>(to_global_id));
+                            osi_lane                                            = obj_osi_internal.ln[jj];
+                            osi3::Lane_Classification_LanePairing *lane_pairing = nullptr;
+
+                            if (osi_lane->mutable_classification()->mutable_lane_pairing()->size() == 0)
+                            {
+                                // create lane pairing element to add first connection to one of the ends
+                                lane_pairing = osi_lane->mutable_classification()->add_lane_pairing();
+                            }
+                            else
+                            {
+                                if (osi_lane->mutable_classification()->mutable_lane_pairing()->size() > 1)
+                                {
+                                    LOG("Unexpected lane pairing size for osi lane %d", to_global_id);
+                                }
+                                // reuse existing lane pairing element to add connection for the other end
+                                lane_pairing = osi_lane->mutable_classification()->mutable_lane_pairing(0);
+                            }
+
+                            // all connections are mutual, i.e. any incoming->outgoing pair exists twice, one for each direction.
+                            // Hence, register only one way here. Register if for the to-lane, since that direction is known.
+                            if (c->GetContactPoint() == roadmanager::ContactPointType::CONTACT_POINT_END)
+                            {
+                                lane_pairing->mutable_successor_lane_id()->set_value(static_cast<unsigned int>(from_global_id));
+                            }
+                            else if (c->GetContactPoint() == roadmanager::ContactPointType::CONTACT_POINT_START)
+                            {
+                                lane_pairing->mutable_antecessor_lane_id()->set_value(static_cast<unsigned int>(from_global_id));
+                            }
+                            else
+                            {
+                                LOG("Unexpected direct junction lane link contact point (junction %d)", junction->GetId());
+                            }
                             break;
                         }
                     }
