@@ -3062,6 +3062,14 @@ TEST(TestGetAndSet, OverrideActionTest)
     EXPECT_EQ(list.steeringWheel.active, false);
     EXPECT_NEAR(list.steeringWheel.value, 2 * M_PI, 0.01);
 
+    for (; t < 7.1f; t += dt)
+    {
+        SE_StepDT(dt);
+    }
+    EXPECT_EQ(SE_GetOverrideActionStatus(0, &list), 0);
+    EXPECT_EQ(list.throttle.active, false);
+    EXPECT_DOUBLE_EQ(list.throttle.value, 0.1);
+
     SE_Close();
 }
 

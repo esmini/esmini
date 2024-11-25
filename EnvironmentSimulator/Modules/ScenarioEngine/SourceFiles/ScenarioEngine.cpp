@@ -276,7 +276,7 @@ int ScenarioEngine::step(double deltaSimTime)
             {
                 action->Start(simulationTime_);
             }
-            else
+            if (action->GetCurrentState() == StoryBoardElement::State::RUNNING)
             {
                 action->Step(simulationTime_, deltaSimTime);
             }
