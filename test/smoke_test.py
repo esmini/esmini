@@ -1667,9 +1667,9 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('.4.350.* LaneOffsetAction_0 runningState -> endTransition -> completeState', log)  is not None)
         self.assertTrue(re.search('.7.010.* Adding action LaneChangeAction_1', log)  is not None)
         self.assertTrue(re.search('.9.510.* Adding action SpeedAction_2', log)  is not None)
+        self.assertTrue(re.search('.10.020.* Injected action LaneChangeAction_1 finished', log)  is not None)
         self.assertTrue(re.search('.11.010.* Adding action SpeedAction_3', log)  is not None)
         self.assertTrue(re.search('.11.010.* Action SpeedAction_2 of type SpeedAction already ongoing for Ego, stopping it', log)  is not None)
-        self.assertTrue(re.search('.10.020.* Injected action LaneChangeAction_1 finished', log)  is not None)
         self.assertTrue(re.search('.14.660.* SpeedAction_3 runningState -> endTransition -> completeState', log)  is not None)
 
         # Check vehicle key positions

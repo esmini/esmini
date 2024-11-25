@@ -784,12 +784,16 @@ void LatLaneChangeAction::Start(double simTime)
     object_->pos_.SetRollRelative(0.0);
 
     // Set initial state
+    auto org_lane_id = object_->pos_.GetLaneId();
     object_->pos_.ForceLaneId(target_lane_id_);
     internal_pos_ = object_->pos_;
 
     // Make offsets agnostic to lane sign
     transition_.SetStartVal(SIGN(object_->pos_.GetLaneId()) * object_->pos_.GetOffset());
     transition_.SetTargetVal(SIGN(target_lane_id_) * target_lane_offset_);
+
+    // Force back object to its original lane id
+    object_->pos_.ForceLaneId(org_lane_id);
 }
 
 void LatLaneChangeAction::Step(double simTime, double dt)

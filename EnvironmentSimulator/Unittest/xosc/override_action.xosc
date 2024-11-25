@@ -104,6 +104,7 @@
                         <PrivateAction>
                            <ControllerAction>
                               <OverrideControllerValueAction>
+                                  <Throttle value="0.1" active="false"/>
                                   <Gear number="100" active="true"/>
                               </OverrideControllerValueAction>
                            </ControllerAction>
