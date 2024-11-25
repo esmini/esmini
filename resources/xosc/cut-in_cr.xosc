@@ -52,7 +52,7 @@
                     <PrivateAction>
                         <TeleportAction>
                             <Position>
-                                <LanePosition roadId="$RoadID" laneId="-1" s="${EgoStartS-30}" offset="0" />
+                                <LanePosition roadId="$RoadID" laneId="-1" s="${$EgoStartS-30}" offset="0" />
                             </Position>
                         </TeleportAction>
                     </PrivateAction>
