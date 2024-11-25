@@ -1,5 +1,25 @@
 ## esmini release notes
 
+### 2024-11-25 Version 2.40.4
+
+Improvements and fixes:
+- Fix direct junction OSI lane pairing issue
+  - register correct direction (antecessor/successor)
+- Extend support for trajectory reversing
+  - considering object heading, speed sign and trajectory headings
+  - see more info in [User guide - Trajectory moving and driving direction](https://esmini.github.io/#_trajectory_moving_and_driving_direction)
+- Fix OpenDRIVE parsing typos
+  - a few object types ([issue #635](https://github.com/esmini/esmini/issues/635))
+  - roadWorks lane type ([issue #636](https://github.com/esmini/esmini/issues/636))
+- Fix sharp curve bug
+  - affects special case when reaching curve with radius near zero
+  - maintain relative heading and fix wrong z value being set
+- Add loaded filename to osiviewer window title
+
+Build improvements:
+  - Add debug info to sanitizer builds for increased report readability
+  - Allow sanitizer job to be manually triggered on any pushed branch
+
 ### 2024-11-18 Version 2.40.3
 
 Improvements and fixes:
