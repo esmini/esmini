@@ -76,7 +76,7 @@ static int g_Laneb_id;
 
 const char* object_type_str[] = {"barrier",   "bike",     "building",     "bus",          "car",           "crosswalk",  "gantry",
                                  "motorbike", "none",     "obstacle",     "parkingSpace", "patch",         "pedestrian", "pole",
-                                 "railing",   "roadmark", "soundBarrier", "streetLamp",   "trafficIsland", "trailer",    "train",
+                                 "railing",   "roadMark", "soundBarrier", "streetLamp",   "trafficIsland", "trailer",    "train",
                                  "tram",      "tree",     "van",          "vegetation",   "wind"};
 
 const std::map<std::string, Signal::OSIType> Signal::types_mapping_ = {
