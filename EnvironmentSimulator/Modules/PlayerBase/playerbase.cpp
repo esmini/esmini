@@ -1302,6 +1302,7 @@ int ScenarioPlayer::Init()
                   "Additional custom light source <x,y,z,intensity> intensity range 0..1 (multiple occurrences supported)",
                   "position and intensity");
     opt.AddOption("disable_controllers", "Disable controllers");
+    opt.AddOption("disable_ghost_triggering", "Do not use ghost vehicle to trigger actions");
     opt.AddOption("disable_pline_interpolation", "Do not apply orientation interpolation of polyline trajectories");
     opt.AddOption("disable_log", "Prevent logfile from being created");
     opt.AddOption("disable_stdout", "Prevent messages to stdout");
@@ -1542,6 +1543,11 @@ int ScenarioPlayer::Init()
     {
         disable_controllers_ = true;
         LOG("Disable entity controllers");
+    }
+
+    if (opt.GetOptionSet("disable_ghost_triggering"))
+    {
+        LOG("Not using ghost vehicle to trigger actions");
     }
 
     if (opt.GetOptionSet("ignore_z"))

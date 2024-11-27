@@ -1085,65 +1085,69 @@ void ScenarioEngine::SetupGhost(Object* object)
         }
     }
 
-    for (size_t i = 0; i < storyBoard.story_.size(); i++)
+    // move relevant actions to the ghost vehicle, if not explicitly disabled
+    if (!SE_Env::Inst().GetOptions().GetOptionSet("disable_ghost_triggering"))
     {
-        Story* story = storyBoard.story_[i];
-
-        for (size_t j = 0; j < story->act_.size(); j++)
+        for (size_t i = 0; i < storyBoard.story_.size(); i++)
         {
-            Act* act = story->act_[j];
-            ReplaceObjectInTrigger(act->start_trigger_, object, ghost, -ghost->GetHeadstartTime());
-            for (size_t k = 0; k < act->maneuverGroup_.size(); k++)
+            Story* story = storyBoard.story_[i];
+
+            for (size_t j = 0; j < story->act_.size(); j++)
             {
-                ManeuverGroup* mg = act->maneuverGroup_[k];
-                for (size_t l = 0; l < mg->actor_.size(); l++)
+                Act* act = story->act_[j];
+                ReplaceObjectInTrigger(act->start_trigger_, object, ghost, -ghost->GetHeadstartTime());
+                for (size_t k = 0; k < act->maneuverGroup_.size(); k++)
                 {
-                    if (mg->actor_[l]->object_ == object)
+                    ManeuverGroup* mg = act->maneuverGroup_[k];
+                    for (size_t l = 0; l < mg->actor_.size(); l++)
                     {
-                        // Replace actor
-                        mg->actor_[l]->object_ = ghost;
-                    }
-                }
-                for (size_t l = 0; l < act->maneuverGroup_[k]->maneuver_.size(); l++)
-                {
-                    Maneuver* maneuver = act->maneuverGroup_[k]->maneuver_[l];
-                    for (size_t m = 0; m < maneuver->event_.size(); m++)
-                    {
-                        Event* event        = maneuver->event_[m];
-                        bool   ghostIsActor = false;
-                        for (size_t n = 0; n < event->action_.size(); n++)
+                        if (mg->actor_[l]->object_ == object)
                         {
-                            OSCAction* action = event->action_[n];
-                            if (action->GetBaseType() == OSCAction::BaseType::PRIVATE)
+                            // Replace actor
+                            mg->actor_[l]->object_ = ghost;
+                        }
+                    }
+                    for (size_t l = 0; l < act->maneuverGroup_[k]->maneuver_.size(); l++)
+                    {
+                        Maneuver* maneuver = act->maneuverGroup_[k]->maneuver_[l];
+                        for (size_t m = 0; m < maneuver->event_.size(); m++)
+                        {
+                            Event* event        = maneuver->event_[m];
+                            bool   ghostIsActor = false;
+                            for (size_t n = 0; n < event->action_.size(); n++)
                             {
-                                OSCPrivateAction* pa = static_cast<OSCPrivateAction*>(action);
-                                pa->scenarioEngine_  = this;
-                                if (pa->object_ == object)
+                                OSCAction* action = event->action_[n];
+                                if (action->GetBaseType() == OSCAction::BaseType::PRIVATE)
                                 {
-                                    // If at least one of the event actions is of relevant subset of action types
-                                    // then move the action to the ghost object instance, and also make needed
-                                    // changes to the event trigger
-                                    if (pa->action_type_ == OSCPrivateAction::ActionType::LONG_SPEED ||
-                                        pa->action_type_ == OSCPrivateAction::ActionType::LONG_SPEED_PROFILE ||
-                                        pa->action_type_ == OSCPrivateAction::ActionType::LAT_LANE_CHANGE ||
-                                        pa->action_type_ == OSCPrivateAction::ActionType::LAT_LANE_OFFSET ||
-                                        pa->action_type_ == OSCPrivateAction::ActionType::SYNCHRONIZE_ACTION ||
-                                        pa->action_type_ == OSCPrivateAction::ActionType::FOLLOW_TRAJECTORY ||
-                                        pa->action_type_ == OSCPrivateAction::ActionType::ASSIGN_ROUTE ||
-                                        pa->action_type_ == OSCPrivateAction::ActionType::TELEPORT)
+                                    OSCPrivateAction* pa = static_cast<OSCPrivateAction*>(action);
+                                    pa->scenarioEngine_  = this;
+                                    if (pa->object_ == object)
                                     {
-                                        // Replace object
-                                        pa->ReplaceObjectRefs(object, ghost);
-                                        ghostIsActor = true;
+                                        // If at least one of the event actions is of relevant subset of action types
+                                        // then move the action to the ghost object instance, and also make needed
+                                        // changes to the event trigger
+                                        if (pa->action_type_ == OSCPrivateAction::ActionType::LONG_SPEED ||
+                                            pa->action_type_ == OSCPrivateAction::ActionType::LONG_SPEED_PROFILE ||
+                                            pa->action_type_ == OSCPrivateAction::ActionType::LAT_LANE_CHANGE ||
+                                            pa->action_type_ == OSCPrivateAction::ActionType::LAT_LANE_OFFSET ||
+                                            pa->action_type_ == OSCPrivateAction::ActionType::SYNCHRONIZE_ACTION ||
+                                            pa->action_type_ == OSCPrivateAction::ActionType::FOLLOW_TRAJECTORY ||
+                                            pa->action_type_ == OSCPrivateAction::ActionType::ASSIGN_ROUTE ||
+                                            pa->action_type_ == OSCPrivateAction::ActionType::TELEPORT)
+                                        {
+                                            // Replace object
+                                            pa->ReplaceObjectRefs(object, ghost);
+                                            ghostIsActor = true;
+                                        }
                                     }
                                 }
                             }
+                            if (ghostIsActor)
+                            {
+                                ReplaceObjectInTrigger(event->start_trigger_, object, ghost, -ghost->GetHeadstartTime(), event);
+                            }
+                            ghost->addEvent(event);
                         }
-                        if (ghostIsActor)
-                        {
-                            ReplaceObjectInTrigger(event->start_trigger_, object, ghost, -ghost->GetHeadstartTime(), event);
-                        }
-                        ghost->addEvent(event);
                     }
                 }
             }
