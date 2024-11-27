@@ -2,7 +2,6 @@
 #include <gmock/gmock.h>
 #include "esminiRMLib.hpp"
 #include "CommonMini.hpp"
-#include "TestHelper.hpp"
 
 TEST(TestSetMethods, SetRoadId)
 {
@@ -435,15 +434,21 @@ int main(int argc, char** argv)
 {
     testing::InitGoogleTest(&argc, argv);
 
-    if (!strcmp(argv[1], "--disable_stdout"))
+    if (argc > 1)
     {
-        RM_EnableConsoleLogging(false, true);
-        RM_SetLogFilePath("log-test.txt");
-    }
+        if (!strcmp(argv[1], "--disable_stdout"))
+        {
+            //  disable logging to stdout from the esminiRMLib
+            RM_SetOptionPersistent("disable_stdout");
 
-    if (ParseAndSetLoggerOptions(argc, argv) != 0)
-    {
-        return -1;
+            // disable logging to stdout from the test cases
+            SE_Env::Inst().GetOptions().SetOptionValue("disable_stdout", "", false, true);
+        }
+        else
+        {
+            printf("Usage: %s [--disable_stout] [google test options...]\n", argv[0]);
+            return -1;
+        }
     }
 
     // testing::GTEST_FLAG(filter) = "*check_GroundTruth_including_init_state*";

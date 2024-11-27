@@ -110,7 +110,7 @@ ScenarioPlayer::~ScenarioPlayer()
     {
         delete s;
     }
-    SetLoggerTime(0);
+    TxtLogger::Inst().SetLoggerTime(0);
     if (scenarioEngine)
     {
         delete scenarioEngine;
@@ -140,7 +140,8 @@ void ScenarioPlayer::SetOSIFileStatus(bool is_on, const char* filename)
             {
                 filename = DEFAULT_OSI_TRACE_FILENAME;
             }
-
+            std::string strFileName = esmini::common::ValidateAndCreateFilePath(filename, DEFAULT_OSI_TRACE_FILENAME, "osi");
+            filename                = strFileName.c_str();
             if (OSCParameterDistribution::Inst().GetNumPermutations() > 0)
             {
                 osiReporter->OpenOSIFile(OSCParameterDistribution::Inst().AddInfoToFilepath(filename).c_str());
@@ -1207,12 +1208,6 @@ void ScenarioPlayer::PrintUsage()
 
 int ScenarioPlayer::Init()
 {
-    // Use logger callback
-    // if (!(Logger::Inst().IsCallbackSet()))
-    // {
-    //     Logger::Inst().SetCallback(log_callback);
-    // }
-
     std::string arg_str;
 
     SE_Options& opt = SE_Env::Inst().GetOptions();
@@ -1243,7 +1238,7 @@ int ScenarioPlayer::Init()
     opt.AddOption("disable_stdout", "Prevent messages to stdout");
     opt.AddOption("enforce_generate_model", "Generate road 3D model even if SceneGraphFile is specified");
     opt.AddOption("fixed_timestep", "Run simulation decoupled from realtime, with specified timesteps", "timestep");
-    opt.AddOption("follow_object", "Set index of intial object for camera to follow (change with Tab/shift-Tab)", "index");
+    opt.AddOption("follow_object", "Set index of initial object for camera to follow (change with Tab/shift-Tab)", "index");
     opt.AddOption("generate_no_road_objects", "Do not generate any OpenDRIVE road objects (e.g. when part of referred 3D model)");
     opt.AddOption("generate_without_textures", "Do not apply textures on any generated road model (set colors instead as for missing textures)");
     opt.AddOption("ground_plane", "Add a large flat ground surface");
@@ -1256,18 +1251,18 @@ int ScenarioPlayer::Init()
     opt.AddOption("ignore_r", "Ignore provided roll values from OSC file and place vehicle relative to road");
     opt.AddOption("info_text", "Show on-screen info text (toggle key 'i') mode 0=None 1=current (default) 2=per_object 3=both", "mode");
     opt.AddOption("log_append", "log all scenarios in the same txt file");
-    opt.AddOption("logfile_path", "logfile path/filename, e.g. \"../esmini.log\" (default: log.txt)", "path");
+    opt.AddOption("logfile_path", "logfile path/filename, e.g. \"../esmini.log\"", "path", LOG_FILENAME, true);
     opt.AddOption("log_meta_data", "log file name, function name and line number");
     opt.AddOption("log_level", "log level debug, info, warn, error", "mode");
-    opt.AddOption("log_only_modules", "log from only these modules. Overrides logSkip_Modules", "modulename(s)");
+    opt.AddOption("log_only_modules", "log from only these modules. Overrides log_skip_modules", "modulename(s)");
     opt.AddOption("log_skip_modules", "skip log from these modules, all remaining modules will be logged.", "modulename(s)");
     opt.AddOption("osc_str", "OpenSCENARIO XML string", "string");
     opt.AddOption("osg_screenshot_event_handler", "Revert to OSG default jpg images ('c'/'C' keys handler)");
 #ifdef _USE_OSI
     opt.AddOption("osi_file", "save osi trace file", "filename", DEFAULT_OSI_TRACE_FILENAME);
-    opt.AddOption("osi_freq", "relative frequence for writing the .osi file e.g. --osi_freq=2 -> we write every two simulation steps", "frequence");
+    opt.AddOption("osi_freq", "relative frequency for writing the .osi file e.g. --osi_freq=2 -> we write every two simulation steps", "frequency");
     opt.AddOption("osi_lines", "Show OSI road lines (toggle during simulation by press 'u') ");
-    opt.AddOption("osi_points", "Show OSI road pointss (toggle during simulation by press 'y') ");
+    opt.AddOption("osi_points", "Show OSI road points (toggle during simulation by press 'y') ");
     opt.AddOption("osi_receiver_ip", "IP address where to send OSI UDP packages", "IP address");
 #endif
     opt.AddOption("param_dist", "Run variations of the scenario according to specified parameter distribution file", "filename");
@@ -1278,7 +1273,7 @@ int ScenarioPlayer::Init()
 #ifdef _USE_IMPLOT
     opt.AddOption("plot", "Show window with line-plots of interesting data", "mode (asynchronous|synchronous)", "asynchronous");
 #endif
-    opt.AddOption("record", "Record position data into a file for later replay", "filename");
+    opt.AddOption("record", "Record position data into a file for later replay", "filename", DAT_FILENAME, false);
     opt.AddOption("road_features", "Show OpenDRIVE road features (\"on\", \"off\"  (default)) (toggle during simulation by press 'o') ", "mode");
     opt.AddOption("return_nr_permutations", "Return number of permutations without executing the scenario (-1 = error)");
     opt.AddOption("save_generated_model", "Save generated 3D model (n/a when a scenegraph is loaded)");
@@ -1300,11 +1295,8 @@ int ScenarioPlayer::Init()
         PrintUsage();
         return -2;
     }
-    CreateNewFileForLogging(SE_Env::Inst().GetLogFilePath());
-    LogTimeOnly();
 
     std::string strAllSetOptions;
-
     for (const auto& option : opt.GetAllOptions())
     {
         if (option.set_)
@@ -1321,7 +1313,13 @@ int ScenarioPlayer::Init()
             strAllSetOptions = fmt::format("{}--{}{} ", strAllSetOptions, option.opt_str_, currentOptionValue);
         }
     }
-    LOG_INFO("Player options: {}", strAllSetOptions);
+
+    std::string logFilePathOptionValue = TxtLogger::Inst().CreateLogFilePath();
+    if (opt.IsOptionArgumentSet("param_dist"))
+    {
+        // deferring the creation of log file as name of it will be changed afterwards due to permutation distribution
+        opt.ClearOption("logfile_path");
+    }
 
     if (opt.GetOptionSet("help"))
     {
@@ -1329,62 +1327,15 @@ int ScenarioPlayer::Init()
         return -2;
     }
 
-    if (opt.GetOptionSet("disable_stdout"))
-    {
-        Logger::Inst().SetCallback(0);
-    }
-
-    if (opt.IsOptionArgumentSet("disable_stdout"))
-    {
-        opt.SetOptionValue("--disable_stdout", opt.GetOptionArg("disable_stdout"));
-    }
-    else
-    {
-        // default there will be no console logging by logger itself
-        // player activates it explicitly
-        opt.SetOptionValue("--disable_stdout", "no");
-    }
-
-    // Setup logger
-    std::string log_filename = SE_Env::Inst().GetLogFilePath();
-    // LoggerConfig logConfig;
-    if (opt.GetOptionSet("disable_log"))
-    {
-        log_filename = "";
-        printf("Disable logfile\n");
-    }
-    else if (opt.IsOptionArgumentSet("logfile_path"))
-    {
-        arg_str = opt.GetOptionArg("logfile_path");
-
-        if (!arg_str.empty())
-        {
-            if (IsDirectoryName(arg_str))
-            {
-                log_filename = arg_str + LOG_FILENAME;
-            }
-            else
-            {
-                log_filename = arg_str;
-            }
-        }
-
-        if (arg_str.empty())
-        {
-            printf("Custom logfile path empty, disable logfile\n");
-        }
-        else
-        {
-            printf("Custom logfile path: %s\n", log_filename.c_str());
-        }
-    }
+    TxtLogger::Inst().SetMetaDataEnabled(opt.IsOptionArgumentSet("log_meta_data"));
     if (opt.IsOptionArgumentSet("log_only_modules"))
     {
         arg_str             = opt.GetOptionArg("log_only_modules");
         const auto splitted = utils::SplitString(arg_str, ',');
         if (!splitted.empty())
         {
-            LoggerConfig::Inst().enabledFiles_.insert(splitted.begin(), splitted.end());
+            std::unordered_set<std::string> logOnlyModules(splitted.begin(), splitted.end());
+            TxtLogger::Inst().SetLogOnlyModules(logOnlyModules);
         }
     }
     if (opt.IsOptionArgumentSet("log_skip_modules"))
@@ -1393,22 +1344,15 @@ int ScenarioPlayer::Init()
         const auto splitted = utils::SplitString(arg_str, ',');
         if (!splitted.empty())
         {
-            LoggerConfig::Inst().disabledFiles_.insert(splitted.begin(), splitted.end());
+            std::unordered_set<std::string> logSkipModules(splitted.begin(), splitted.end());
+            TxtLogger::Inst().SetLogSkipModules(logSkipModules);
         }
     }
 
-    // SetupLogger(logConfig);
-
     if (opt.GetOptionSet("version"))
     {
-        // Logger::Inst().LogVersion();
-        LogVersion();
+        TxtLogger::Inst().LogVersion();
         return -2;
-    }
-
-    if (opt.GetOptionSet("use_signs_in_external_model"))
-    {
-        LOG_INFO("Use sign models in external scene graph model, skip creating sign models");
     }
 
     OSCParameterDistribution& dist = OSCParameterDistribution::Inst();
@@ -1444,7 +1388,7 @@ int ScenarioPlayer::Init()
         {
             if (permutation_index >= static_cast<int>(dist.GetNumPermutations()) || permutation_index < 0)
             {
-                LOG_INFO("Requested permutation {} out of range [{} .. {}]", permutation_index, 0, dist.GetNumPermutations() - 1);
+                LOG_ERROR("Requested permutation {} out of range [{} .. {}]", permutation_index, 0, dist.GetNumPermutations() - 1);
                 return -1;
             }
             else
@@ -1475,10 +1419,19 @@ int ScenarioPlayer::Init()
 
     if (dist.GetNumPermutations() > 0)
     {
-        log_filename = dist.AddInfoToFilepath(log_filename);
+        logFilePathOptionValue = dist.AddInfoToFilepath(logFilePathOptionValue);
+        opt.SetOptionValue("logfile_path", logFilePathOptionValue);
     }
 
-    CreateNewFileForLogging(log_filename);
+    TxtLogger::Inst().SetLogFilePath(logFilePathOptionValue);
+    TxtLogger::Inst().LogTimeOnly();
+    LOG_INFO("Player options: {}", strAllSetOptions);
+
+    if (opt.GetOptionSet("use_signs_in_external_model"))
+    {
+        LOG_INFO("Use sign models in external scene graph model, skip creating sign models");
+    }
+
     if (dist.GetNumPermutations() > 0)
     {
         LOG_INFO("Using parameter distribution file: {}", dist.GetFilename());
@@ -1597,7 +1550,7 @@ int ScenarioPlayer::Init()
             SE_Env::Inst().AddPath(DirNameOf(arg_str));  // add scenario directory to list pf paths
             scenarioEngine = new ScenarioEngine(arg_str, disable_controllers_);
             Logger::Inst().SetTimePtr(scenarioEngine->GetSimulationTimePtr());
-            SetLoggerTime(scenarioEngine->GetSimulationTimePtr());
+            TxtLogger::Inst().SetLoggerTime(scenarioEngine->GetSimulationTimePtr());
         }
         else if ((arg_str = opt.GetOptionArg("osc_str")) != "")
         {
@@ -1610,7 +1563,7 @@ int ScenarioPlayer::Init()
             }
             scenarioEngine = new ScenarioEngine(doc, disable_controllers_);
             Logger::Inst().SetTimePtr(scenarioEngine->GetSimulationTimePtr());
-            SetLoggerTime(scenarioEngine->GetSimulationTimePtr());
+            TxtLogger::Inst().SetLoggerTime(scenarioEngine->GetSimulationTimePtr());
         }
         else
         {
@@ -1741,7 +1694,7 @@ int ScenarioPlayer::Init()
         {
             filename = SE_Env::Inst().GetDatFilePath();
         }
-
+        filename = esmini::common::ValidateAndCreateFilePath(filename, DAT_FILENAME, ".dat");
         if (dist.GetNumPermutations() > 0)
         {
             filename = dist.AddInfoToFilepath(filename);

@@ -228,8 +228,6 @@ void ControllerALKS_R157SM::Init()
 
 void ControllerALKS_R157SM::Step(double timeStep)
 {
-    // LOG_INFO("ALKS_R157SM step called with {:.2f}", timeStep);
-    // LOG_ERROR_AND_QUIT("I m qutting {} {} {} {}", 1, 2, 3, "go");
     double speed = model_->Step(timeStep);
 
     if (mode_ == ControlOperationMode::MODE_OVERRIDE)

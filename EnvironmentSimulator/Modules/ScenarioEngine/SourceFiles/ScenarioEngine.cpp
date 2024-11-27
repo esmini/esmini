@@ -125,7 +125,7 @@ ScenarioEngine::~ScenarioEngine()
     delete scenarioReader;
     scenarioReader = 0;
     LOG_INFO("Closing");
-    StopFileLogging();
+    TxtLogger::Inst().Stop();
 }
 
 void ScenarioEngine::UpdateGhostMode()

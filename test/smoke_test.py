@@ -1854,20 +1854,20 @@ class TestSuite(unittest.TestCase):
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*trajectory_heading.xosc', log)  is not None)
-        self.assertTrue(re.search('8.900: Init bicycle1 RoutingAction runningState -> endTransition -> completeState', log)  is not None)
-        self.assertTrue(re.search('8.900: Init scooter1 RoutingAction runningState -> endTransition -> completeState', log)  is not None)
-        self.assertTrue(re.search('8.900: Init car_white RoutingAction runningState -> endTransition -> completeState', log)  is not None)
-        self.assertTrue(re.search('8.900: Init car_red RoutingAction runningState -> endTransition -> completeState', log)  is not None)
-        self.assertTrue(re.search('8.900: Init car_yellow RoutingAction runningState -> endTransition -> completeState', log)  is not None)
-        self.assertTrue(re.search('8.900: Init van_red RoutingAction runningState -> endTransition -> completeState', log)  is not None)
-        self.assertTrue(re.search('8.900: Init car_trailer RoutingAction runningState -> endTransition -> completeState', log)  is not None)
-        self.assertTrue(re.search('8.900: Init semi_tractor RoutingAction runningState -> endTransition -> completeState', log)  is not None)
-        self.assertTrue(re.search('8.900: Init truck_yellow RoutingAction runningState -> endTransition -> completeState', log)  is not None)
-        self.assertTrue(re.search('9.000: Init car_blue RoutingAction runningState -> endTransition -> completeState', log)  is not None)
-        self.assertTrue(re.search('9.000: Init motorbike RoutingAction runningState -> endTransition -> completeState', log)  is not None)
+        self.assertTrue(re.search('.8.900.* Init bicycle1 RoutingAction runningState -> endTransition -> completeState', log)  is not None)
+        self.assertTrue(re.search('.8.900.* Init scooter1 RoutingAction runningState -> endTransition -> completeState', log)  is not None)
+        self.assertTrue(re.search('.8.900.* Init car_white RoutingAction runningState -> endTransition -> completeState', log)  is not None)
+        self.assertTrue(re.search('.8.900.* Init car_red RoutingAction runningState -> endTransition -> completeState', log)  is not None)
+        self.assertTrue(re.search('.8.900.* Init car_yellow RoutingAction runningState -> endTransition -> completeState', log)  is not None)
+        self.assertTrue(re.search('.8.900.* Init van_red RoutingAction runningState -> endTransition -> completeState', log)  is not None)
+        self.assertTrue(re.search('.8.900.* Init car_trailer RoutingAction runningState -> endTransition -> completeState', log)  is not None)
+        self.assertTrue(re.search('.8.900.* Init semi_tractor RoutingAction runningState -> endTransition -> completeState', log)  is not None)
+        self.assertTrue(re.search('.8.900.* Init truck_yellow RoutingAction runningState -> endTransition -> completeState', log)  is not None)
+        self.assertTrue(re.search('.9.000.* Init car_blue RoutingAction runningState -> endTransition -> completeState', log)  is not None)
+        self.assertTrue(re.search('.9.000.* Init motorbike RoutingAction runningState -> endTransition -> completeState', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('10.100: StopCondition == true, 10.1000 > 10.0000 edge: none', log)  is not None)
+        self.assertTrue(re.search('.10.100.* StopCondition == true, 10.1000 > 10.0000 edge: none', log)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv()
@@ -1942,20 +1942,20 @@ class TestSuite(unittest.TestCase):
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*trajectory_speed.xosc', log)  is not None)
-        self.assertTrue(re.search('9.000: Init car_blue RoutingAction runningState -> endTransition -> completeState', log)  is not None)
-        self.assertTrue(re.search('9.000: Init motorbike RoutingAction runningState -> endTransition -> completeState', log)  is not None)
-        self.assertTrue(re.search('13.200: Init bicycle1 RoutingAction runningState -> endTransition -> completeState', log)  is not None)
-        self.assertTrue(re.search('13.200: Init scooter1 RoutingAction runningState -> endTransition -> completeState', log)  is not None)
-        self.assertTrue(re.search('13.200: Init car_white RoutingAction runningState -> endTransition -> completeState', log)  is not None)
-        self.assertTrue(re.search('13.200: Init car_red RoutingAction runningState -> endTransition -> completeState', log)  is not None)
-        self.assertTrue(re.search('13.200: Init car_yellow RoutingAction runningState -> endTransition -> completeState', log)  is not None)
-        self.assertTrue(re.search('13.200: Init van_red RoutingAction runningState -> endTransition -> completeState', log)  is not None)
-        self.assertTrue(re.search('13.200: Init car_trailer RoutingAction runningState -> endTransition -> completeState', log)  is not None)
-        self.assertTrue(re.search('13.200: Init semi_tractor RoutingAction runningState -> endTransition -> completeState', log)  is not None)
-        self.assertTrue(re.search('13.200: Init truck_yellow RoutingAction runningState -> endTransition -> completeState', log)  is not None)
+        self.assertTrue(re.search('.9.000.* Init car_blue RoutingAction runningState -> endTransition -> completeState', log)  is not None)
+        self.assertTrue(re.search('.9.000.* Init motorbike RoutingAction runningState -> endTransition -> completeState', log)  is not None)
+        self.assertTrue(re.search('.13.200.* Init bicycle1 RoutingAction runningState -> endTransition -> completeState', log)  is not None)
+        self.assertTrue(re.search('.13.200.* Init scooter1 RoutingAction runningState -> endTransition -> completeState', log)  is not None)
+        self.assertTrue(re.search('.13.200.* Init car_white RoutingAction runningState -> endTransition -> completeState', log)  is not None)
+        self.assertTrue(re.search('.13.200.* Init car_red RoutingAction runningState -> endTransition -> completeState', log)  is not None)
+        self.assertTrue(re.search('.13.200.* Init car_yellow RoutingAction runningState -> endTransition -> completeState', log)  is not None)
+        self.assertTrue(re.search('.13.200.* Init van_red RoutingAction runningState -> endTransition -> completeState', log)  is not None)
+        self.assertTrue(re.search('.13.200.* Init car_trailer RoutingAction runningState -> endTransition -> completeState', log)  is not None)
+        self.assertTrue(re.search('.13.200.* Init semi_tractor RoutingAction runningState -> endTransition -> completeState', log)  is not None)
+        self.assertTrue(re.search('.13.200.* Init truck_yellow RoutingAction runningState -> endTransition -> completeState', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('15.100: StopCondition == true, 15.1000 > 15.0000 edge: none', log)  is not None)
+        self.assertTrue(re.search('.15.100.* StopCondition == true, 15.1000 > 15.0000 edge: none', log)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv()
@@ -2020,11 +2020,11 @@ class TestSuite(unittest.TestCase):
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*trajectory_special_cases.xosc', log)  is not None)
-        self.assertTrue(re.search('6.100: Init car_white RoutingAction runningState -> endTransition -> completeState', log)  is not None)
-        self.assertTrue(re.search('7.100: Init car_red RoutingAction runningState -> endTransition -> completeState', log)  is not None)
+        self.assertTrue(re.search('.6.100.* Init car_white RoutingAction runningState -> endTransition -> completeState', log)  is not None)
+        self.assertTrue(re.search('.7.100.* Init car_red RoutingAction runningState -> endTransition -> completeState', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('8.100: StopCondition == true, 8.1000 > 8.0000 edge: none', log)  is not None)
+        self.assertTrue(re.search('.8.100.* StopCondition == true, 8.1000 > 8.0000 edge: none', log)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv()

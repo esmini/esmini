@@ -27,7 +27,6 @@
 #include "OSCCondition.hpp"
 #include "Storyboard.hpp"
 #include "OSCParameterDistribution.hpp"
-#include "Utils.h"
 
 using namespace scenarioengine;
 
@@ -420,31 +419,6 @@ static int InitScenario()
 {
     // Harmonize parsing and printing of floating point numbers. I.e. 1.57e+4 == 15700.0 not 15,700.0 or 1 or 1.57
     std::setlocale(LC_ALL, "C.UTF-8");
-
-    // LoggerConfig logConfig;
-    SE_Options &opt = SE_Env::Inst().GetOptions();
-    if (opt.IsOptionArgumentSet("log_only_modules"))
-    {
-        auto       arg_str  = opt.GetOptionArg("log_only_modules");
-        const auto splitted = utils::SplitString(arg_str, ',');
-        if (!splitted.empty())
-        {
-            LoggerConfig::Inst().enabledFiles_.insert(splitted.begin(), splitted.end());
-        }
-    }
-
-    if (opt.IsOptionArgumentSet("log_skip_modules"))
-    {
-        auto       arg_str  = opt.GetOptionArg("log_skip_modules");
-        const auto splitted = utils::SplitString(arg_str, ',');
-        if (!splitted.empty())
-        {
-            LoggerConfig::Inst().disabledFiles_.insert(splitted.begin(), splitted.end());
-        }
-    }
-
-    // SetupLogger(logConfig);
-
     ConvertArguments();
 
     // Create scenario engine
@@ -493,10 +467,8 @@ extern "C"
 
     SE_DLL_API void SE_SetLogFilePath(const char *logFilePath)
     {
-        // SE_Env::Inst().SetLogFilePath(logFilePath);
-        // LOG_INFO("calling CreateNewFileForLogging");
-        SE_SetOptionValue("--logfile_path", logFilePath);
-        CreateNewFileForLogging(logFilePath);
+        SE_SetOptionValuePersistent("logfile_path", logFilePath);
+        // TxtLogger::Inst().SetLogFilePath(logFilePath);
     }
 
     SE_DLL_API void SE_SetDatFilePath(const char *datFilePath)
@@ -519,6 +491,11 @@ extern "C"
         return SE_Env::Inst().GetOptions().SetOptionValue(name, "");
     }
 
+    SE_DLL_API int SE_UnsetOption(const char *name)
+    {
+        return SE_Env::Inst().GetOptions().UnsetOption(name);
+    }
+
     SE_DLL_API int SE_SetOptionValue(const char *name, const char *value)
     {
         return SE_Env::Inst().GetOptions().SetOptionValue(name, value);
@@ -538,11 +515,23 @@ extern "C"
     {
         if (!SE_Env::Inst().GetOptions().IsOptionArgumentSet(name))
         {
-            return "";
+            return 0;
         }
         static std::string val;
         val = SE_Env::Inst().GetOptions().GetOptionArg(name);
         return val.c_str();
+    }
+
+    SE_DLL_API int SE_GetOptionSet(const char *name)
+    {
+        if (!SE_Env::Inst().GetOptions().IsOptionArgumentSet(name))
+        {
+            return 0;
+        }
+        else
+        {
+            return 1;
+        }
     }
 
     SE_DLL_API int SE_SetParameterDistribution(const char *filename)
@@ -584,8 +573,6 @@ extern "C"
 
     SE_DLL_API int SE_InitWithArgs(int argc, const char *argv[])
     {
-        resetScenario();
-
         if (argv && !strncmp(argv[0], "--", 2))
         {
             // Application name argument missing. Add something.
@@ -655,8 +642,6 @@ extern "C"
             LOG_ERROR("use_viewer flag set, but no viewer available (compiled without -D _USE_OSG");
         }
 #endif
-        resetScenario();
-
         AddArgument("esmini(lib)");  // name of application
         AddArgument("--osc_str");
         AddArgument(oscAsXMLString, false);
@@ -685,8 +670,6 @@ extern "C"
             LOG_ERROR("use_viewer flag set, but no viewer available (compiled without -D _USE_OSG");
         }
 #endif
-        resetScenario();
-
         AddArgument("esmini(lib)");  // name of application
         AddArgument("--osc");
         AddArgument(oscFilename, false);
@@ -975,17 +958,19 @@ extern "C"
     {
         resetScenario();
         RegisterParameterDeclarationCallback(nullptr, nullptr);
-        StopFileLogging();
+        TxtLogger::Inst().Stop();
     }
 
     SE_DLL_API void SE_LogToConsole(bool mode)
     {
-        SE_EnableConsoleLogging(mode, false);
-    }
-
-    SE_DLL_API void SE_EnableConsoleLogging(bool state, bool persistant)
-    {
-        EnableConsoleLogging(state, persistant);
+        if (mode)
+        {
+            SE_Env::Inst().GetOptions().UnsetOption("disable_stdout");
+        }
+        else
+        {
+            SE_Env::Inst().GetOptions().SetOptionValue("disable_stdout", "");
+        }
     }
 
     SE_DLL_API void SE_CollisionDetection(bool mode)
@@ -1822,8 +1807,7 @@ extern "C"
 
     SE_DLL_API void SE_CloseLogFile()
     {
-        // Logger::Inst().CloseLogFile();
-        StopFileLogging();
+        TxtLogger::Inst().StopFileLogging();
     }
 
     SE_DLL_API int SE_ObjectHasGhost(int object_id)

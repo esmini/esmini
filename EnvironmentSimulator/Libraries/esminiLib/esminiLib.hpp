@@ -384,13 +384,56 @@ extern "C"
     */
     SE_DLL_API void SE_SetSeed(unsigned int seed);
 
+    /**
+    Set option non-persistent. The option's value will be unset on next scenario run. If persistence is required check SE_SetOptionPersistent.
+    @param name is the name of the option whose value is being set
+    @return 0 if setting the option value is successful otherwise its non zero value
+    */
     SE_DLL_API int SE_SetOption(const char *name);
+
+    /**
+    Unset option
+    @param name is the name of the option whose value is being unset
+    @return 0 if unsetting the option is successful otherwise its non zero value
+    */
+    SE_DLL_API int SE_UnsetOption(const char *name);
+
+    /**
+    Set option value. The option's value will be unset on next scenario run. If persistence is required check SE_SetOptionValuePersistent
+    @param name is the name of the option whose value is being set
+    @param value is the value to assigned to the option
+    @return 0 if setting options's value is successful otherwise its non zero value
+    */
     SE_DLL_API int SE_SetOptionValue(const char *name, const char *value);
 
+    /**
+    Set option persistent until esminiLib is not reloaded. The option's value will remain same within multiple scenario runs.
+    @param name is the name of the option whose value is being set
+    @return 0 if setting option's value is successful otherwise its non zero value
+    */
     SE_DLL_API int SE_SetOptionPersistent(const char *name);
+
+    /**
+    Set option value persistent until esminiLib is not reloaded. The option value's will remain same within multiple scenario runs.
+    @param name is the name of the option who value is being set
+    @param value is the value to assigned to the option
+    @return 0 if setting option's value is successful otherwise its non zero value
+    */
     SE_DLL_API int SE_SetOptionValuePersistent(const char *name, const char *value);
 
+    /**
+    Get option value
+    @param name is the name of the option whose value is fetch
+    @return value of the option
+    */
     SE_DLL_API const char *SE_GetOptionValue(const char *name);
+
+    /**
+     Get option set status
+     @param name is the name of the option whose value is fetch
+     @return Returns 1 if the option is set otherwise 0
+     */
+    SE_DLL_API int SE_GetOptionSet(const char *name);
 
     /**
     Set window position and size. Must be called prior to SE_Init.
@@ -519,18 +562,11 @@ extern "C"
 
     /**
             Enable or disable log to stdout/console
-            Deprecated, please use SE_EnableConsoleLogging instead
+            Deprecated, use SE_SetOption() / SE_UnsetOption() with "disable_stdout" instead
+            which also allows for persistant setting
             @param mode true=enable, false=disable
     */
     SE_DLL_API void SE_LogToConsole(bool mode);
-
-    /**
-            Enable or disable log to stdout/console
-            Persistant or non-persistant (reset to default value by next init)
-            @param mode true=enable, false=disable
-            @param persistant true=persistant, false=non-persistant
-    */
-    SE_DLL_API void SE_EnableConsoleLogging(bool state, bool persistant);
 
     /**
     Enable or disable global collision detection

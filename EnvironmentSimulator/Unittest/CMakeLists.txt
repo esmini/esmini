@@ -14,10 +14,6 @@ if(USE_OSG)
         ViewerBase)
 endif()
 
-set(UNITTEST_COMMON_SRC
-    TestHelper.hpp
-    TestHelper.cpp)
-
 set(OperatingSystem_test_sources
     OperatingSystem_test.cpp)
 

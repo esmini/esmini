@@ -18,8 +18,6 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
-#include "TestHelper.hpp"
-
 class GetNumberOfObjectsTest : public ::testing::TestWithParam<std::tuple<std::string, int>>
 {
 };
@@ -72,7 +70,6 @@ TEST(LoggerTests, check_verbosity_level_warn)
     }
 
     SE_Close();
-    StopFileLogging();
 
     FILE* file = FileOpen("log.txt", "r");
     ASSERT_NE(file, nullptr);
@@ -104,7 +101,6 @@ TEST(LoggerTests, check_verbosity_level_info)
     }
 
     SE_Close();
-    StopFileLogging();
 
     FILE* file = FileOpen("log.txt", "r");
     ASSERT_NE(file, nullptr);
@@ -133,7 +129,6 @@ TEST(LoggerTests, check_meta_data)
     }
 
     SE_Close();
-    StopFileLogging();
 
     FILE* file = FileOpen("log.txt", "r");
     ASSERT_NE(file, nullptr);
@@ -164,7 +159,6 @@ TEST(LoggerTests, check_log_skip_modules)
     }
 
     SE_Close();
-    StopFileLogging();
 
     FILE* file = FileOpen("log.txt", "r");
     ASSERT_NE(file, nullptr);
@@ -2808,6 +2802,8 @@ TEST(TestOsiReporter, AssignRoleTest)
     EXPECT_EQ(osi_gt->moving_object(1).vehicle_classification().role(), osi3::MovingObject_VehicleClassification_Role_ROLE_POLICE);
 
     EXPECT_EQ(strcmp(SE_GetObjectModelFileName(1), "car_police.osgb"), 0);
+
+    SE_Close();
 }
 #endif
 
@@ -4684,16 +4680,21 @@ int main(int argc, char** argv)
 	testing::GTEST_FLAG(filter) = "*AssignRoleTest*";
 	// Or make use of launch argument, e.g. --gtest_filter=TestFetchImage*
 #else
-    CreateNewFileForLogging("log-test.txt");
-    // SE_SetLogFilePath("log-test.txt");
+    // TxtLogger::Inst().SetLogFilePath("log-test.txt");
+
     if (argc > 1)
     {
         if (!strcmp(argv[1], "--disable_stdout"))
         {
-            SE_EnableConsoleLogging(false, true);
+            //  disable logging to stdout from the esminiLib
+            SE_SetOptionPersistent("disable_stdout");
+
+            // disable logging to stdout from the test cases
+            SE_Env::Inst().GetOptions().SetOptionValue("disable_stdout", "", false, true);
         }
-        if (ParseAndSetLoggerOptions(argc, argv) != 0)
+        else
         {
+            printf("Usage: %s [--disable_stout] [google test options...]\n", argv[0]);
             return -1;
         }
     }

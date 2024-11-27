@@ -7,7 +7,6 @@
 #include "pugixml.hpp"
 #include "simple_expr.h"
 #include "LaneIndependentRouter.hpp"
-#include "TestHelper.hpp"
 
 // Enable testing of the mega road network
 // #define ENABLE_LARGE_ROAD_NETWORK
@@ -762,9 +761,18 @@ int main(int argc, char** argv)
     // testing::GTEST_FLAG(filter) = "*TestOptionHandling*";
     testing::InitGoogleTest(&argc, argv);
 
-    if (ParseAndSetLoggerOptions(argc, argv) != 0)
+    if (argc > 1)
     {
-        return -1;
+        if (!strcmp(argv[1], "--disable_stdout"))
+        {
+            // disable logging to stdout from the test cases
+            SE_Env::Inst().GetOptions().SetOptionValue("disable_stdout", "", false, true);
+        }
+        else
+        {
+            printf("Usage: %s [--disable_stout] [google test options...]\n", argv[0]);
+            return -1;
+        }
     }
 
     return RUN_ALL_TESTS();

@@ -1032,7 +1032,7 @@ int OSIReporter::UpdateOSIIntersection()
                             {
                                 if (osi_lane->mutable_classification()->mutable_lane_pairing()->size() > 1)
                                 {
-                                    LOG("Unexpected lane pairing size for osi lane %d", to_global_id);
+                                    LOG_ERROR("Unexpected lane pairing size for osi lane {}", to_global_id);
                                 }
                                 // reuse existing lane pairing element to add connection for the other end
                                 lane_pairing = osi_lane->mutable_classification()->mutable_lane_pairing(0);
@@ -1050,7 +1050,7 @@ int OSIReporter::UpdateOSIIntersection()
                             }
                             else
                             {
-                                LOG("Unexpected direct junction lane link contact point (junction %d)", junction->GetId());
+                                LOG_ERROR("Unexpected direct junction lane link contact point (junction {})", junction->GetId());
                             }
                             break;
                         }
@@ -1381,8 +1381,8 @@ int OSIReporter::UpdateOSIIntersection()
                     }
                 }
                 LOG_WARN("Issues with the Intersection {} (global id {}) for the osi free lane boundary, not all lanes added.",
-                    junction->GetId(),
-                    junction->GetGlobalId());
+                         junction->GetId(),
+                         junction->GetGlobalId());
             }
         }
     }

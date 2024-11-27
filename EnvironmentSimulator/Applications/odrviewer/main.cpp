@@ -375,8 +375,6 @@ int main(int argc, char **argv)
     SE_Options &opt = SE_Env::Inst().GetOptions();
     opt.Reset();
 
-    EnableConsoleLogging(true, true);
-
     SE_Env::Inst().AddPath(DirNameOf(argv[0]));  // Add location of exe file to search paths
 
     std::vector<std::string> args;
@@ -404,10 +402,10 @@ int main(int argc, char **argv)
     opt.AddOption("ground_plane", "Add a large flat ground surface");
     opt.AddOption("headless", "Run without viewer window");
     opt.AddOption("log_append", "log all scenarios in the same txt file");
-    opt.AddOption("logfile_path", "logfile path/filename, e.g. \"../esmini.log\" (default: log.txt)", "path");
+    opt.AddOption("logfile_path", "logfile path/filename, e.g. \"../esmini.log\"", "path", LOG_FILENAME, true);
     opt.AddOption("log_meta_data", "log file name, function name and line number");
-    opt.AddOption("log_level", "log level debug, info, warn, error", "mode");
-    opt.AddOption("log_only_modules", "log from only these modules. Overrides logSkip_Modules", "modulename(s)");
+    opt.AddOption("log_level", "log level debug, info, warn, error", "mode", "info");
+    opt.AddOption("log_only_modules", "log from only these modules. Overrides log_skip_modules", "modulename(s)");
     opt.AddOption("log_skip_modules", "skip log from these modules, all remaining modules will be logged.", "modulename(s)");
     opt.AddOption("model", "3D Model filename", "model_filename");
     opt.AddOption("osg_screenshot_event_handler", "Revert to OSG default jpg images ('c'/'C' keys handler)");
@@ -432,7 +430,6 @@ int main(int argc, char **argv)
 
     if (opt.GetOptionSet("version"))
     {
-        // Logger::Inst().LogVersion();
         return 0;
     }
 
@@ -448,13 +445,12 @@ int main(int argc, char **argv)
     if ((arg_str = opt.GetOptionArg("fixed_timestep")) != "")
     {
         fixed_timestep = atof(arg_str.c_str());
-        printf("Run simulation decoupled from realtime, with fixed timestep: %.2f", fixed_timestep);
+        LOG_INFO("Run simulation decoupled from realtime, with fixed timestep: {:.3f}", fixed_timestep);
     }
-    // LoggerConfig logConfig;
 
     if (opt.GetOptionSet("disable_log"))
     {
-        printf("Disable logfile\n");
+        // printf("Disable logfile\n");
     }
     else if (opt.IsOptionArgumentSet("logfile_path"))
     {
@@ -467,8 +463,9 @@ int main(int argc, char **argv)
         {
             printf("Custom logfile path: %s\n", arg_str.c_str());
         }
-        LoggerConfig::Inst().logFilePath_ = arg_str;
     }
+
+    TxtLogger::Inst().SetMetaDataEnabled(opt.IsOptionArgumentSet("log_meta_data"));
 
     if (opt.IsOptionArgumentSet("log_only_modules"))
     {
@@ -476,7 +473,9 @@ int main(int argc, char **argv)
         const auto splitted = utils::SplitString(arg_str, ',');
         if (!splitted.empty())
         {
-            LoggerConfig::Inst().enabledFiles_.insert(splitted.begin(), splitted.end());
+            std::unordered_set<std::string> logOnlyModules;
+            logOnlyModules.insert(splitted.begin(), splitted.end());
+            TxtLogger::Inst().SetLogOnlyModules(logOnlyModules);
         }
     }
 
@@ -486,16 +485,12 @@ int main(int argc, char **argv)
         const auto splitted = utils::SplitString(arg_str, ',');
         if (!splitted.empty())
         {
-            LoggerConfig::Inst().disabledFiles_.insert(splitted.begin(), splitted.end());
+            std::unordered_set<std::string> logSkipModules;
+            logSkipModules.insert(splitted.begin(), splitted.end());
+            TxtLogger::Inst().SetLogSkipModules(logSkipModules);
         }
     }
-    if (!SE_Env::Inst().GetLogFilePath().empty())
-    {
-        LoggerConfig::Inst().logFilePath_ = SE_Env::Inst().GetLogFilePath();
-    }
-    // vSetupLogger(logConfig);
-    // LOG_INFO("calling CreateNewFileForLogging");
-    CreateNewFileForLogging(SE_Env::Inst().GetLogFilePath());
+
     if ((arg_str = opt.GetOptionArg("path")) != "")
     {
         SE_Env::Inst().AddPath(arg_str);

@@ -11641,7 +11641,7 @@ void PolyLineShape::CalculatePolyLine()
 {
     if (pline_.vertex_.size() == 0)
     {
-        LOG("Unexpected: No vertices in PolyLineShape polyline");
+        LOG_ERROR("Unexpected: No vertices in PolyLineShape polyline");
         return;
     }
 
@@ -11724,7 +11724,7 @@ void PolyLineShape::CalculatePolyLine()
             heading_current = GetAngleOfVector(pvn->x - pv->x, pvn->y - pv->y);
             if (NEAR_ZERO(pvn->s - pv->s))
             {
-                LOG("Unexpected: vertex positions differ, but not s values");
+                LOG_ERROR("Unexpected: vertex positions differ, but not s values");
                 return;
             }
             pitch_current = GetAngleInInterval2PI(-atan2(pvn->z - pv->z, pvn->s - pv->s));
@@ -11763,7 +11763,7 @@ void PolyLineShape::CalculatePolyLine()
                 heading_current = GetAngleOfVector(pvn->x - pv->x, pvn->y - pv->y);
                 if (NEAR_ZERO(pvn->s - pv->s))
                 {
-                    LOG("Unexpected: vertex positions differ, but not s values");
+                    LOG_ERROR("Unexpected: vertex positions differ, but not s values");
                     return;
                 }
                 pitch_current = GetAngleInInterval2PI(-atan2(pvn->z - pv->z, pvn->s - pv->s));

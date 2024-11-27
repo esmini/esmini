@@ -187,7 +187,6 @@ std::string Controller::Mode2Str(ControlOperationMode mode)
     }
     else
     {
-        // LOG_ERROR("Unexpected mode \"{}\"", mode);
         LOG_ERROR("Unexpected mode \"{}\"", std::to_string(static_cast<int>(mode)));
         return "invalid mode";
     }
