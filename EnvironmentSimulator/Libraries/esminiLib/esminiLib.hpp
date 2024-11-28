@@ -385,45 +385,45 @@ extern "C"
     SE_DLL_API void SE_SetSeed(unsigned int seed);
 
     /**
-    Set option non-persistent. The option's value will be unset on next scenario run. If persistence is required check SE_SetOptionPersistent.
-    @param name is the name of the option whose value is being set
-    @return 0 if setting the option value is successful otherwise its non zero value
+    Set option. The option will be unset on next scenario run. If persistence is required check SE_SetOptionPersistent.
+    @param name the name of the option to be set
+    @return 0 if successful, -1 if not
     */
     SE_DLL_API int SE_SetOption(const char *name);
 
     /**
     Unset option
-    @param name is the name of the option whose value is being unset
-    @return 0 if unsetting the option is successful otherwise its non zero value
+    @param name the name of the option to be unset
+    @return 0 if successful, -1 if not
     */
     SE_DLL_API int SE_UnsetOption(const char *name);
 
     /**
     Set option value. The option's value will be unset on next scenario run. If persistence is required check SE_SetOptionValuePersistent
-    @param name is the name of the option whose value is being set
-    @param value is the value to assigned to the option
-    @return 0 if setting options's value is successful otherwise its non zero value
+    @param name the name of the option to be set
+    @param value the value to assign to the option
+    @return 0 if successful, -1 if not
     */
     SE_DLL_API int SE_SetOptionValue(const char *name, const char *value);
 
     /**
-    Set option persistent until esminiLib is not reloaded. The option's value will remain same within multiple scenario runs.
-    @param name is the name of the option whose value is being set
-    @return 0 if setting option's value is successful otherwise its non zero value
+    Set option persistently. The option will remain over multiple scenario runs, until lib is reloaded.
+    @param name the name of the option to be set
+    @return 0 if successful, -1 if not
     */
     SE_DLL_API int SE_SetOptionPersistent(const char *name);
 
     /**
-    Set option value persistent until esminiLib is not reloaded. The option value's will remain same within multiple scenario runs.
-    @param name is the name of the option who value is being set
-    @param value is the value to assigned to the option
-    @return 0 if setting option's value is successful otherwise its non zero value
+    Set option value persistently. The option value will remain over multiple scenario runs, until lib is reloaded.
+    @param name the name of the option to be set
+    @param value the value to assign to the option
+    @return 0 if successful, -1 if not
     */
     SE_DLL_API int SE_SetOptionValuePersistent(const char *name, const char *value);
 
     /**
     Get option value
-    @param name is the name of the option whose value is fetch
+    @param name the name of the option whose value to fetch
     @return value of the option
     */
     SE_DLL_API const char *SE_GetOptionValue(const char *name);
@@ -431,9 +431,9 @@ extern "C"
     /**
      Get option set status
      @param name is the name of the option whose value is fetch
-     @return Returns 1 if the option is set otherwise 0
-     */
-    SE_DLL_API int SE_GetOptionSet(const char *name);
+     @return Returns true if the option is set otherwise false
+    */
+    SE_DLL_API bool SE_GetOptionSet(const char *name);
 
     /**
     Set window position and size. Must be called prior to SE_Init.

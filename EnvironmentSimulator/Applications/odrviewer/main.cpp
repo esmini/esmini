@@ -31,7 +31,6 @@
 #include "CommonMini.hpp"
 #include "helpText.hpp"
 #include "logger.hpp"
-#include "Utils.h"
 
 #define ROAD_MIN_LENGTH 30.0
 #define SIGN(X)         ((X < 0) ? -1 : 1)
@@ -384,7 +383,7 @@ int main(int argc, char **argv)
     // use an ArgumentParser object to manage the program arguments.
     opt.AddOption("help", "Show this help message");
     opt.AddOption("odr", "OpenDRIVE filename (required)", "odr_filename");
-    opt.AddOption("aa_mode", "Anti-alias mode=number of multisamples (subsamples, 0=off, 4=default)", "mode");
+    opt.AddOption("aa_mode", "Anti-alias mode=number of multisamples (subsamples, 0=off)", "mode", "4");
     opt.AddOption("capture_screen", "Continuous screen capture. Warning: Many .tga files will be created");
     opt.AddOption("custom_fixed_camera",
                   "Additional custom camera position <x,y,z>[,h,p] (multiple occurrences supported)",
@@ -401,23 +400,25 @@ int main(int argc, char **argv)
     opt.AddOption("generate_without_textures", "Do not apply textures on any generated road model (set colors instead as for missing textures)");
     opt.AddOption("ground_plane", "Add a large flat ground surface");
     opt.AddOption("headless", "Run without viewer window");
-    opt.AddOption("log_append", "log all scenarios in the same txt file");
-    opt.AddOption("logfile_path", "logfile path/filename, e.g. \"../esmini.log\"", "path", LOG_FILENAME, true);
-    opt.AddOption("log_meta_data", "log file name, function name and line number");
-    opt.AddOption("log_level", "log level debug, info, warn, error", "mode", "info");
-    opt.AddOption("log_only_modules", "log from only these modules. Overrides log_skip_modules", "modulename(s)");
-    opt.AddOption("log_skip_modules", "skip log from these modules, all remaining modules will be logged.", "modulename(s)");
+    opt.AddOption("log_append", "Log all scenarios in the same txt file");
+    opt.AddOption("logfile_path", "Logfile path/filename, e.g. \"../my_log.txt\"", "path", LOG_FILENAME, true);
+    opt.AddOption("log_meta_data", "Log file name, function name and line number");
+    opt.AddOption("log_level", "Log level debug, info, warn, error", "mode", "info", true);
+    opt.AddOption("log_only_modules", "Log from only these modules. Overrides log_skip_modules. See User guide for more info", "modulename(s)");
+    opt.AddOption("log_skip_modules",
+                  "Skip log from these modules, all remaining modules will be logged. See User guide for more info",
+                  "modulename(s)");
     opt.AddOption("model", "3D Model filename", "model_filename");
     opt.AddOption("osg_screenshot_event_handler", "Revert to OSG default jpg images ('c'/'C' keys handler)");
-    opt.AddOption("osi_lines", "Show OSI road lines (toggle during simulation by press 'u') ");
-    opt.AddOption("osi_points", "Show OSI road points (toggle during simulation by press 'y') ");
-    opt.AddOption("path", "Search path prefix for assets, e.g. car and sign model files", "path");
-    opt.AddOption("road_features", "Show OpenDRIVE road features (toggle during simulation by press 'o') ");
+    opt.AddOption("osi_lines", "Show OSI road lines. Toggle key 'u'");
+    opt.AddOption("osi_points", "Show OSI road points. Toggle key 'y'");
+    opt.AddOption("path", "Search path prefix for assets, e.g. OpenDRIVE files. Multiple occurrences of option supported", "path");
+    opt.AddOption("road_features", "Show OpenDRIVE road features. Modes: on, off. Toggle key 'o'", "mode", "on");
     opt.AddOption("save_generated_model", "Save generated 3D model (n/a when a scenegraph is loaded)");
     opt.AddOption("seed", "Specify seed number for random generator", "number");
     opt.AddOption("speed_factor", "speed_factor <number>", "speed_factor", std::to_string(global_speed_factor));
     opt.AddOption("stop_at_end_of_road", "Instead of respawning elsewhere, stop when no connection exists");
-    opt.AddOption("text_scale", "Scale screen overlay text", "factor", "1.0");
+    opt.AddOption("text_scale", "Scale screen overlay text", "size factor", "1.0", true);
     opt.AddOption("traffic_rule", "Enforce left or right hand traffic, regardless OpenDRIVE rule attribute (default: right)", "rule (right/left)");
     opt.AddOption("use_signs_in_external_model", "When external scenegraph 3D model is loaded, skip creating signs from OpenDRIVE");
     opt.AddOption("version", "Show version and quit");
@@ -470,7 +471,7 @@ int main(int argc, char **argv)
     if (opt.IsOptionArgumentSet("log_only_modules"))
     {
         arg_str             = opt.GetOptionArg("log_only_modules");
-        const auto splitted = utils::SplitString(arg_str, ',');
+        const auto splitted = SplitString(arg_str, ',');
         if (!splitted.empty())
         {
             std::unordered_set<std::string> logOnlyModules;
@@ -482,7 +483,7 @@ int main(int argc, char **argv)
     if (opt.IsOptionArgumentSet("log_skip_modules"))
     {
         arg_str             = opt.GetOptionArg("log_skip_modules");
-        const auto splitted = utils::SplitString(arg_str, ',');
+        const auto splitted = SplitString(arg_str, ',');
         if (!splitted.empty())
         {
             std::unordered_set<std::string> logSkipModules;
@@ -607,7 +608,7 @@ int main(int argc, char **argv)
 
             while ((arg_str = opt.GetOptionArg("custom_fixed_camera", counter)) != "")
             {
-                const auto splitted = utils::SplitString(arg_str, ',');
+                const auto splitted = SplitString(arg_str, ',');
 
                 if (splitted.size() == 3)
                 {
@@ -645,7 +646,7 @@ int main(int argc, char **argv)
 
             while ((arg_str = opt.GetOptionArg("custom_fixed_top_camera", counter)) != "")
             {
-                const auto splitted = utils::SplitString(arg_str, ',');
+                const auto splitted = SplitString(arg_str, ',');
                 if (splitted.size() != 4)
                 {
                     LOG_ERROR_AND_QUIT("Expected custom_fixed_top_camera <x,y,z,rot>. Got {} values instead of 4", splitted.size());

@@ -23,7 +23,6 @@
 #include "helpText.hpp"
 #include "OSCParameterDistribution.hpp"
 #include "logger.hpp"
-#include "Utils.h"
 
 #ifdef _USE_OSG
 #include "viewer.hpp"
@@ -779,7 +778,7 @@ int ScenarioPlayer::InitViewer()
 
         while ((arg_str = opt.GetOptionArg("custom_camera", counter)) != "")
         {
-            const auto splitted = utils::SplitString(arg_str, ',');
+            const auto splitted = SplitString(arg_str, ',');
 
             if (splitted.size() == 3)
             {
@@ -812,7 +811,7 @@ int ScenarioPlayer::InitViewer()
 
         while ((arg_str = opt.GetOptionArg("custom_fixed_camera", counter)) != "")
         {
-            const auto splitted = utils::SplitString(arg_str, ',');
+            const auto splitted = SplitString(arg_str, ',');
 
             if (splitted.size() == 3)
             {
@@ -844,7 +843,7 @@ int ScenarioPlayer::InitViewer()
 
         while ((arg_str = opt.GetOptionArg("custom_fixed_top_camera", counter)) != "")
         {
-            const auto splitted = utils::SplitString(arg_str, ',');
+            const auto splitted = SplitString(arg_str, ',');
             if (splitted.size() != 4)
             {
                 LOG_ERROR_AND_QUIT("Expected custom_fixed_top_camera <x,y,z,rot>. Got {} values instead of 4", splitted.size());
@@ -863,7 +862,7 @@ int ScenarioPlayer::InitViewer()
 
         while ((arg_str = opt.GetOptionArg("custom_light", counter)) != "")
         {
-            const auto splitted = utils::SplitString(arg_str, ',');
+            const auto splitted = SplitString(arg_str, ',');
             if (splitted.size() != 4)
             {
                 LOG_ERROR_AND_QUIT("Expected custom_light <x,y,z,intensity>. Got {} values instead of 4", splitted.size());
@@ -1214,15 +1213,16 @@ int ScenarioPlayer::Init()
 
     // use an ArgumentParser object to manage the program arguments.
     opt.AddOption("osc", "OpenSCENARIO filename (required) - if path includes spaces, enclose with \"\"", "filename");
-    opt.AddOption("aa_mode", "Anti-alias mode=number of multisamples (subsamples, 0=off, 4=default)", "mode");
+    opt.AddOption("aa_mode", "Anti-alias mode=number of multisamples (subsamples, 0=off)", "mode", "4");
     opt.AddOption("align_routepositions", "Align t-axis of route positions to the direction of the route");
-    opt.AddOption("bounding_boxes", "Show entities as bounding boxes (toggle modes on key ',') ");
+    opt.AddOption("bounding_boxes", "Show entities as bounding boxes. Toggle key ','");
     opt.AddOption("capture_screen", "Continuous screen capture. Warning: Many jpeg files will be created");
-    opt.AddOption(
-        "camera_mode",
-        "Initial camera mode (\"orbit\" (default), \"fixed\", \"flex\", \"flex-orbit\", \"top\", \"driver\", \"custom\") (swith with key 'k') ",
-        "mode");
-    opt.AddOption("csv_logger", "Log data for each vehicle in ASCII csv format", "csv_filename");
+    opt.AddOption("camera_mode",
+                  "Initial camera mode (\"orbit\", \"fixed\", \"flex\", \"flex-orbit\", \"top\", \"driver\", \"custom\") (swith with key 'k') ",
+                  "mode",
+                  "orbit",
+                  true);
+    opt.AddOption("csv_logger", "Log data for each vehicle in ASCII csv format", "csv_filename", "log.csv");
     opt.AddOption("collision", "Enable global collision detection, potentially reducing performance");
     opt.AddOption("custom_camera", "Additional custom camera position <x,y,z>[,h,p] (multiple occurrences supported)", "position");
     opt.AddOption("custom_fixed_camera",
@@ -1238,52 +1238,54 @@ int ScenarioPlayer::Init()
     opt.AddOption("disable_stdout", "Prevent messages to stdout");
     opt.AddOption("enforce_generate_model", "Generate road 3D model even if SceneGraphFile is specified");
     opt.AddOption("fixed_timestep", "Run simulation decoupled from realtime, with specified timesteps", "timestep");
-    opt.AddOption("follow_object", "Set index of initial object for camera to follow (change with Tab/shift-Tab)", "index");
+    opt.AddOption("follow_object", "Set index of initial object for camera to follow (change with Tab/shift-Tab)", "index", "0", true);
     opt.AddOption("generate_no_road_objects", "Do not generate any OpenDRIVE road objects (e.g. when part of referred 3D model)");
     opt.AddOption("generate_without_textures", "Do not apply textures on any generated road model (set colors instead as for missing textures)");
     opt.AddOption("ground_plane", "Add a large flat ground surface");
     opt.AddOption("headless", "Run without viewer window");
     opt.AddOption("help", "Show this help message");
-    opt.AddOption("hide_route_waypoints", "Disable route waypoint visualization (toggle with key 'R')");
-    opt.AddOption("hide_trajectories", "Hide trajectories from start (toggle with key 'n')");
+    opt.AddOption("hide_route_waypoints", "Disable route waypoint visualization. Toggle key 'R'");
+    opt.AddOption("hide_trajectories", "Hide trajectories from start. Toggle key 'n'");
     opt.AddOption("ignore_z", "Ignore provided z values from OSC file and place vehicle relative to road");
     opt.AddOption("ignore_p", "Ignore provided pitch values from OSC file and place vehicle relative to road");
     opt.AddOption("ignore_r", "Ignore provided roll values from OSC file and place vehicle relative to road");
-    opt.AddOption("info_text", "Show on-screen info text (toggle key 'i') mode 0=None 1=current (default) 2=per_object 3=both", "mode");
-    opt.AddOption("log_append", "log all scenarios in the same txt file");
-    opt.AddOption("logfile_path", "logfile path/filename, e.g. \"../esmini.log\"", "path", LOG_FILENAME, true);
-    opt.AddOption("log_meta_data", "log file name, function name and line number");
-    opt.AddOption("log_level", "log level debug, info, warn, error", "mode");
-    opt.AddOption("log_only_modules", "log from only these modules. Overrides log_skip_modules", "modulename(s)");
-    opt.AddOption("log_skip_modules", "skip log from these modules, all remaining modules will be logged.", "modulename(s)");
+    opt.AddOption("info_text", "Show on-screen info text. Modes: 0=None 1=current 2=per_object 3=both. Toggle key 'i'", "mode", "1", true);
+    opt.AddOption("log_append", "Log all scenarios in the same txt file");
+    opt.AddOption("logfile_path", "Logfile path/filename, e.g. \"../my_log.txt\"", "path", LOG_FILENAME, true);
+    opt.AddOption("log_meta_data", "Log file name, function name and line number");
+    opt.AddOption("log_level", "Log level debug, info, warn, error", "mode", "info", true);
+    opt.AddOption("log_only_modules", "Log from only these modules. Overrides log_skip_modules. See User guide for more info", "modulename(s)");
+    opt.AddOption("log_skip_modules",
+                  "Skip log from these modules, all remaining modules will be logged. See User guide for more info",
+                  "modulename(s)");
     opt.AddOption("osc_str", "OpenSCENARIO XML string", "string");
     opt.AddOption("osg_screenshot_event_handler", "Revert to OSG default jpg images ('c'/'C' keys handler)");
 #ifdef _USE_OSI
-    opt.AddOption("osi_file", "save osi trace file", "filename", DEFAULT_OSI_TRACE_FILENAME);
-    opt.AddOption("osi_freq", "relative frequency for writing the .osi file e.g. --osi_freq=2 -> we write every two simulation steps", "frequency");
-    opt.AddOption("osi_lines", "Show OSI road lines (toggle during simulation by press 'u') ");
-    opt.AddOption("osi_points", "Show OSI road points (toggle during simulation by press 'y') ");
-    opt.AddOption("osi_receiver_ip", "IP address where to send OSI UDP packages", "IP address");
+    opt.AddOption("osi_file", "Save osi trace file", "filename", DEFAULT_OSI_TRACE_FILENAME);
+    opt.AddOption("osi_freq", "Decrease OSI file entries, e.g. --osi_freq 2 -> OSI written every two simulation steps", "frequency");
+    opt.AddOption("osi_lines", "Show OSI road lines. Toggle key 'u'");
+    opt.AddOption("osi_points", "Show OSI road points. Toggle key 'y'");
+    opt.AddOption("osi_receiver_ip", "IP address where to send OSI UDP packages", "IP address", "127.0.0.1");
 #endif
     opt.AddOption("param_dist", "Run variations of the scenario according to specified parameter distribution file", "filename");
-    opt.AddOption("param_permutation", "Run specific permutation of parameter distribution", "index (0 .. NumberOfPermutations-1)");
+    opt.AddOption("param_permutation", "Run specific permutation of parameter distribution, index in range (0 .. NumberOfPermutations-1)", "index");
     opt.AddOption("pause", "Pause simulation after initialization");
-    opt.AddOption("path", "Search path prefix for assets, e.g. OpenDRIVE files (multiple occurrences supported)", "path");
+    opt.AddOption("path", "Search path prefix for assets, e.g. OpenDRIVE files. Multiple occurrences of option supported", "path");
     opt.AddOption("player_server", "Launch UDP server for action/command injection");
 #ifdef _USE_IMPLOT
-    opt.AddOption("plot", "Show window with line-plots of interesting data", "mode (asynchronous|synchronous)", "asynchronous");
+    opt.AddOption("plot", "Show window with line-plots of interesting data. Modes: asynchronous, synchronous", "mode", "asynchronous");
 #endif
-    opt.AddOption("record", "Record position data into a file for later replay", "filename", DAT_FILENAME, false);
-    opt.AddOption("road_features", "Show OpenDRIVE road features (\"on\", \"off\"  (default)) (toggle during simulation by press 'o') ", "mode");
+    opt.AddOption("record", "Record position data into a file for later replay", "filename", DAT_FILENAME);
+    opt.AddOption("road_features", "Show OpenDRIVE road features. Modes: on, off. Toggle key 'o'", "mode", "on");
     opt.AddOption("return_nr_permutations", "Return number of permutations without executing the scenario (-1 = error)");
     opt.AddOption("save_generated_model", "Save generated 3D model (n/a when a scenegraph is loaded)");
     opt.AddOption("save_xosc", "Save OpenSCENARIO file with any populated parameter values (from distribution)");
     opt.AddOption("seed", "Specify seed number for random generator", "number");
-    opt.AddOption("sensors", "Show sensor frustums (toggle during simulation by press 'r') ");
+    opt.AddOption("sensors", "Show sensor frustums. Toggle key 'r'");
     opt.AddOption("server", "Launch server to receive state of external Ego simulator");
-    opt.AddOption("text_scale", "Scale screen overlay text", "factor", "1.0");
+    opt.AddOption("text_scale", "Scale screen overlay text", "size factor", "1.0", true);
     opt.AddOption("threads", "Run viewer in a separate thread, parallel to scenario engine");
-    opt.AddOption("trail_mode", "Show trail lines and/or dots (toggle key 'j') mode 0=None 1=lines 2=dots 3=both", "mode");
+    opt.AddOption("trail_mode", "Show trail lines and/or dots. Modes: 0=None 1=lines 2=dots 3=both. Toggle key 'j'", "mode", "0");
     opt.AddOption("use_signs_in_external_model", "When external scenegraph 3D model is loaded, skip creating signs from OpenDRIVE");
     opt.AddOption("version", "Show version and quit");
 
@@ -1331,7 +1333,7 @@ int ScenarioPlayer::Init()
     if (opt.IsOptionArgumentSet("log_only_modules"))
     {
         arg_str             = opt.GetOptionArg("log_only_modules");
-        const auto splitted = utils::SplitString(arg_str, ',');
+        const auto splitted = SplitString(arg_str, ',');
         if (!splitted.empty())
         {
             std::unordered_set<std::string> logOnlyModules(splitted.begin(), splitted.end());
@@ -1341,7 +1343,7 @@ int ScenarioPlayer::Init()
     if (opt.IsOptionArgumentSet("log_skip_modules"))
     {
         arg_str             = opt.GetOptionArg("log_skip_modules");
-        const auto splitted = utils::SplitString(arg_str, ',');
+        const auto splitted = SplitString(arg_str, ',');
         if (!splitted.empty())
         {
             std::unordered_set<std::string> logSkipModules(splitted.begin(), splitted.end());

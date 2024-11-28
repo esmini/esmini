@@ -759,20 +759,25 @@ double SE_getSimTimeStep(__int64& time_stamp, double min_time_step, double max_t
     return dt;
 }
 
-std::vector<std::string> SplitString(const std::string& s, char separator)
+std::vector<std::string> SplitString(const std::string& str, char delimiter)
 {
-    std::vector<std::string> output;
-    std::string::size_type   prev_pos = 0, pos = 0;
-
-    while ((pos = s.find(separator, pos)) != std::string::npos)
+    if (str.empty())
     {
-        std::string substring(s.substr(prev_pos, pos - prev_pos));
-        output.push_back(substring);
-        prev_pos = ++pos;
+        return {};
     }
-    output.push_back(s.substr(prev_pos, pos - prev_pos));  // Last word
+    std::vector<std::string> result;
+    size_t                   start = 0, end = 0;
 
-    return output;
+    while ((end = str.find(delimiter, start)) != std::string_view::npos)
+    {
+        result.emplace_back(str.substr(start, end - start));
+        start = end + 1;
+    }
+
+    // Add the last segment
+    result.emplace_back(str.substr(start));
+
+    return result;
 }
 
 std::string DirNameOf(const std::string& fname)

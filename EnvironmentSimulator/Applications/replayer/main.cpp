@@ -30,7 +30,7 @@
 #include "helpText.hpp"
 #include "collision.hpp"
 #include "logger.hpp"
-#include "Utils.h"
+
 #include <signal.h>
 
 using namespace scenarioengine;
@@ -378,11 +378,12 @@ int main(int argc, char** argv)
     opt.Reset();
 
     opt.AddOption("file", "Simulation recording data file (.dat)", "filename");
-    opt.AddOption("aa_mode", "Anti-alias mode=number of multisamples (subsamples, 0=off, 4=default)", "mode");
-    opt.AddOption(
-        "camera_mode",
-        "Initial camera mode (\"orbit\" (default), \"fixed\", \"flex\", \"flex-orbit\", \"top\", \"driver\") (toggle during simulation by press 'k') ",
-        "mode");
+    opt.AddOption("aa_mode", "Anti-alias mode=number of multisamples (subsamples, 0=off)", "mode", "4");
+    opt.AddOption("camera_mode",
+                  "Initial camera mode (\"orbit\", \"fixed\", \"flex\", \"flex-orbit\", \"top\", \"driver\", \"custom\") (swith with key 'k') ",
+                  "mode",
+                  "orbit",
+                  true);
     opt.AddOption("capture_screen", "Continuous screen capture. Warning: Many jpeg files will be created");
     opt.AddOption("collision", "Detect collisions and optionally pauses the replay <pause/continue> (pause is default)", "mode", "pause");
     opt.AddOption("custom_camera", "Additional custom camera position <x,y,z>[,h,p] (multiple occurrences supported)", "position");
@@ -397,21 +398,21 @@ int main(int argc, char** argv)
     opt.AddOption("generate_without_textures", "Do not apply textures on any generated road model (set colors instead as for missing textures)");
     opt.AddOption("headless", "Run without viewer window");
     opt.AddOption("hide_trajectories", "Hide trajectories from start (toggle with key 'n')");
-    opt.AddOption("info_text", "Show on-screen info text (toggle key 'i') mode 0=None 1=current (default) 2=per_object 3=both", "mode");
-    opt.AddOption("logfile_path", "logfile path/filename, e.g. \"../esmini.log\"", "path", LOG_FILENAME, false);
+    opt.AddOption("info_text", "Show on-screen info text. Modes: 0=None 1=current 2=per_object 3=both. Toggle key 'i'", "mode", "1", true);
+    opt.AddOption("logfile_path", "Logfile path/filename, e.g. \"../my_log.txt\"", "path", LOG_FILENAME, true);
     opt.AddOption("no_ghost", "Remove ghost entities");
     opt.AddOption("no_ghost_model", "Remove only ghost model, show trajectory (toggle with key 'g')");
     opt.AddOption("osg_screenshot_event_handler", "Revert to OSG default jpg images ('c'/'C' keys handler)");
-    opt.AddOption("path", "Search path prefix for assets, e.g. model_ids.txt file (multiple occurrences supported)", "path");
+    opt.AddOption("path", "Search path prefix for assets, e.g. OpenDRIVE files. Multiple occurrences of option supported", "path");
     opt.AddOption("quit_at_end", "Quit application when reaching end of scenario");
     opt.AddOption("remove_object", "Remove object(s). Multiple ids separated by comma, e.g. 2,3,4.", "id");
     opt.AddOption("repeat", "loop scenario");
     opt.AddOption("res_path", "Path to resources root folder - relative or absolut", "path");
-    opt.AddOption("road_features", "Show OpenDRIVE road features");
+    opt.AddOption("road_features", "Show OpenDRIVE road features. Modes: on, off. Toggle key 'o'", "mode", "on");
     opt.AddOption("save_merged", "Save merged data into one dat file, instead of viewing", "filename");
     opt.AddOption("start_time", "Start playing at timestamp", "ms");
     opt.AddOption("stop_time", "Stop playing at timestamp (set equal to time_start for single frame)", "ms");
-    opt.AddOption("text_scale", "Scale screen overlay text", "factor", "1.0");
+    opt.AddOption("text_scale", "Scale screen overlay text", "size factor", "1.0", true);
     opt.AddOption("time_scale", "Playback speed scale factor (1.0 == normal)", "factor");
     opt.AddOption("view_mode", "Entity visualization: \"model\"(default)/\"boundingbox\"/\"both\"", "view_mode");
     opt.AddOption("use_signs_in_external_model", "When external scenegraph 3D model is loaded, skip creating signs from OpenDRIVE");
@@ -591,7 +592,7 @@ int main(int argc, char** argv)
 
             while ((arg_str = opt.GetOptionArg("custom_camera", counter)) != "")
             {
-                const auto splitted = utils::SplitString(arg_str, ',');
+                const auto splitted = SplitString(arg_str, ',');
 
                 if (splitted.size() == 3)
                 {
@@ -630,7 +631,7 @@ int main(int argc, char** argv)
 
             while ((arg_str = opt.GetOptionArg("custom_fixed_camera", counter)) != "")
             {
-                const auto splitted = utils::SplitString(arg_str, ',');
+                const auto splitted = SplitString(arg_str, ',');
 
                 if (splitted.size() == 3)
                 {
@@ -668,7 +669,7 @@ int main(int argc, char** argv)
 
             while ((arg_str = opt.GetOptionArg("custom_fixed_top_camera", counter)) != "")
             {
-                const auto splitted = utils::SplitString(arg_str, ',');
+                const auto splitted = SplitString(arg_str, ',');
                 if (splitted.size() != 4)
                 {
                     LOG_ERROR_AND_QUIT("Expected custom_fixed_top_camera <x,y,z,rot>. Got {} values instead of 4", splitted.size());

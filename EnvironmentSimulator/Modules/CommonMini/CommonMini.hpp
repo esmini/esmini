@@ -701,7 +701,7 @@ private:
     bool flag;
 };
 
-std::vector<std::string> SplitString(const std::string& s, char separator);
+std::vector<std::string> SplitString(const std::string& str, char delimiter);
 std::string              DirNameOf(const std::string& fname);
 std::string              FileNameOf(const std::string& fname);
 bool                     IsDirectoryName(const std::string& string);

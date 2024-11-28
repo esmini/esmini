@@ -313,20 +313,20 @@ TEST(ProgramOptions, TestMixOfPersistedAndNonPersisted)
     ASSERT_EQ(optionValue, "my_test.txt");
 
     // check log_meta_data if its set
-    int isSet = SE_GetOptionSet("log_meta_data");
-    EXPECT_EQ(isSet, 1);
+    bool isSet = SE_GetOptionSet("log_meta_data");
+    EXPECT_TRUE(isSet);
 
     isSet = SE_GetOptionSet("log_append");
-    EXPECT_EQ(isSet, 1);
+    EXPECT_TRUE(isSet);
 
     isSet = SE_GetOptionSet("log_level");
-    EXPECT_EQ(isSet, 0);
+    EXPECT_FALSE(isSet);
 
     isSet = SE_GetOptionSet("osi_file");
-    EXPECT_EQ(isSet, 0);
+    EXPECT_FALSE(isSet);
 
     isSet = SE_GetOptionSet("fixed_timestep");
-    EXPECT_EQ(isSet, 0);
+    EXPECT_FALSE(isSet);
 
     value = SE_GetOptionValue("log_level");
     ASSERT_EQ(value, nullptr);

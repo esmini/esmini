@@ -547,45 +547,45 @@ extern "C"
     RM_DLL_API int RM_GetOpenDriveGeoReference(RM_GeoReference* rmGeoReference);
 
     /**
-    Set option non-persistent. The option's value will be unset on next scenario run. If persistence is required check SE_SetOptionPersistent.
-    @param name is the name of the option whose value is being set
-    @return 0 if setting the option value is successful otherwise its non zero value
+    Set option. The option will be unset on next scenario run. If persistence is required check SE_SetOptionPersistent.
+    @param name the name of the option to be set
+    @return 0 if successful, -1 if not
     */
     RM_DLL_API int RM_SetOption(const char* name);
 
     /**
     Unset option
-    @param name is the name of the option whose value is being unset
-    @return 0 if unsetting the option is successful otherwise its non zero value
+    @param name the name of the option to be unset
+    @return 0 if successful, -1 if not
     */
     RM_DLL_API int RM_UnsetOption(const char* name);
 
     /**
     Set option value. The option's value will be unset on next scenario run. If persistence is required check SE_SetOptionValuePersistent
-    @param name is the name of the option whose value is being set
-    @param value is the value to assigned to the option
-    @return 0 if setting options's value is successful otherwise its non zero value
+    @param name the name of the option to be set
+    @param value the value to assign to the option
+    @return 0 if successful, -1 if not
     */
     RM_DLL_API int RM_SetOptionValue(const char* name, const char* value);
 
     /**
-    Set option persistent until esminiRMLib is not reloaded. The option's value will remain same within multiple scenario runs.
-    @param name is the name of the option whose value is being set
-    @return 0 if setting option's value is successful otherwise its non zero value
+    Set option persistently. The option will remain over multiple scenario runs, until lib is reloaded.
+    @param name the name of the option to be set
+    @return 0 if successful, -1 if not
     */
     RM_DLL_API int RM_SetOptionPersistent(const char* name);
 
     /**
-    Set option value persistent until esminiRMLib is not reloaded. The option value's will remain same within multiple scenario runs.
-    @param name is the name of the option who value is being set
-    @param value is the value to assigned to the option
-    @return 0 if setting option's value is successful otherwise its non zero value
+    Set option value persistently. The option value will remain over multiple scenario runs, until lib is reloaded.
+    @param name the name of the option to be set
+    @param value the value to assign to the option
+    @return 0 if successful, -1 if not
     */
     RM_DLL_API int RM_SetOptionValuePersistent(const char* name, const char* value);
 
     /**
     Get option value
-    @param name is the name of the option whose value is fetch
+    @param name the name of the option whose value to fetch
     @return value of the option
     */
     RM_DLL_API const char* RM_GetOptionValue(const char* name);
@@ -593,9 +593,9 @@ extern "C"
     /**
      Get option set status
      @param name is the name of the option whose value is fetch
-     @return Returns 1 if the option is set otherwise 0
-     */
-    RM_DLL_API int RM_GetOptionSet(const char* name);
+     @return Returns true if the option is set otherwise false
+    */
+    RM_DLL_API bool RM_GetOptionSet(const char* name);
 
 #ifdef __cplusplus
 }

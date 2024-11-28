@@ -1017,15 +1017,8 @@ extern "C"
         return val.c_str();
     }
 
-    RM_DLL_API int RM_GetOptionSet(const char* name)
+    RM_DLL_API bool RM_GetOptionSet(const char* name)
     {
-        if (!SE_Env::Inst().GetOptions().IsOptionArgumentSet(name))
-        {
-            return 0;
-        }
-        else
-        {
-            return 1;
-        }
+        return SE_Env::Inst().GetOptions().IsOptionArgumentSet(name);
     }
 }
