@@ -111,14 +111,18 @@ void ControllerFollowGhost::Step(double timeStep)
     }
 
     double currentTime = scenarioEngine_->getSimulationTime();
+    int    ret_val     = 0;
 
     if (follow_mode_ == FollowMode::FOLLOW_MODE_POSITION)
     {
-        if (object_->GetGhost()->trail_.FindClosestPoint(object_->pos_.GetX(),
-                                                         object_->pos_.GetY(),
-                                                         object_->trail_closest_pos_,
-                                                         object_->trail_follow_index_,
-                                                         object_->trail_follow_index_) == 0)
+        ret_val = object_->GetGhost()->trail_.FindClosestPoint(object_->pos_.GetX(),
+                                                               object_->pos_.GetY(),
+                                                               object_->trail_closest_pos_,
+                                                               object_->trail_follow_index_,
+                                                               object_->trail_follow_index_);
+
+        if (ret_val != static_cast<int>(roadmanager::PolyLineBase::GhostTrailReturnCode::GHOST_TRAIL_NO_VERTICES) &&
+            ret_val != static_cast<int>(roadmanager::PolyLineBase::GhostTrailReturnCode::GHOST_TRAIL_ERROR))
         {
             object_->trail_closest_pos_.z = object_->pos_.GetZ();
         }
@@ -136,7 +140,6 @@ void ControllerFollowGhost::Step(double timeStep)
     roadmanager::TrajVertex steering_target_point, speed_point;
 
     // Locate a point at given distance from own vehicle along the ghost trajectory
-    int ret_val = 0;
     if (follow_mode_ == FollowMode::FOLLOW_MODE_POSITION)
     {
         // Set steering target point at a distance ahead proportional to the speed
@@ -148,14 +151,14 @@ void ControllerFollowGhost::Step(double timeStep)
                                                              index_out,
                                                              object_->trail_follow_index_);
 
-        if (ret_val == 0)
+        if (ret_val != static_cast<int>(roadmanager::PolyLineBase::GhostTrailReturnCode::GHOST_TRAIL_NO_VERTICES) &&
+            ret_val != static_cast<int>(roadmanager::PolyLineBase::GhostTrailReturnCode::GHOST_TRAIL_ERROR))
         {
             probe_target_distance = MAX(min_lookahead_steering_, lookahead_steering_ * object_->speed_);
 
             ret_val = object_->GetGhost()->trail_.FindPointAhead(object_->trail_closest_pos_.s,
                                                                  probe_target_distance,
                                                                  steering_target_point,
-                                                                 index_out,
                                                                  object_->trail_follow_index_);
         }
     }
@@ -163,29 +166,24 @@ void ControllerFollowGhost::Step(double timeStep)
     {
         ret_val = object_->GetGhost()->trail_.FindPointAtTime(currentTime - headstart_time_ + MAX(min_lookahead_speed_, lookahead_speed_),
                                                               speed_point,
-                                                              index_out,
                                                               object_->trail_follow_index_);
 
-        if (ret_val == 0)
+        if (ret_val != static_cast<int>(roadmanager::PolyLineBase::GhostTrailReturnCode::GHOST_TRAIL_NO_VERTICES) &&
+            ret_val != static_cast<int>(roadmanager::PolyLineBase::GhostTrailReturnCode::GHOST_TRAIL_ERROR))
         {
             ret_val = object_->GetGhost()->trail_.FindPointAtTime(currentTime - headstart_time_ + MAX(min_lookahead_steering_, lookahead_steering_),
                                                                   steering_target_point,
-                                                                  index_out,
                                                                   object_->trail_follow_index_);
         }
     }
 
-    if (ret_val != 0)
+    if (ret_val == static_cast<int>(roadmanager::PolyLineBase::GhostTrailReturnCode::GHOST_TRAIL_NO_VERTICES) ||
+        ret_val == static_cast<int>(roadmanager::PolyLineBase::GhostTrailReturnCode::GHOST_TRAIL_ERROR))
     {
         steering_target_point.x = static_cast<float>(object_->pos_.GetX());
         steering_target_point.y = static_cast<float>(object_->pos_.GetY());
         steering_target_point.z = static_cast<float>(object_->pos_.GetZ());
         speed_point.speed       = 0;
-    }
-    else if (follow_mode_ == FollowMode::FOLLOW_MODE_TIME)
-    {
-        // For time based ghost follow, register last trail index for next search
-        object_->trail_follow_index_ = index_out;
     }
 
     // Update object sensor position for visualization

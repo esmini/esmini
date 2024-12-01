@@ -281,14 +281,14 @@ static int GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, S
     Object *obj = nullptr;
     if (getObjectById(object_id, obj) == -1)
     {
-        return -1;
+        return SE_GHOST_TRAIL_ERROR;
     }
 
     Object *ghost = obj->GetGhost();
     if (ghost == 0)
     {
-        LOG_ERROR("Ghost object not available for object id {}", object_id);
-        return -1;
+        LOG_ERROR("Ghost object not available for object id %d", object_id);
+        return SE_GHOST_TRAIL_ERROR;
     }
 
     double x{};
@@ -316,9 +316,12 @@ static int GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, S
     roadmanager::TrajVertex trailPos;
     trailPos.h =
         static_cast<float>(obj->pos_.GetH());  // Set default trail heading aligned with road - in case trail is less than two points (no heading)
-    if (ghost->trail_.FindPointAhead(obj->trail_closest_pos_.s, lookahead_distance, trailPos, index_out, obj->trail_follow_index_) != 0)
+
+    int returncode = ghost->trail_.FindPointAhead(obj->trail_closest_pos_.s, lookahead_distance, trailPos, index_out, obj->trail_follow_index_);
+
+    if (returncode == SE_GHOST_TRAIL_ERROR)
     {
-        return -1;
+        return returncode;
     }
 
     roadmanager::Position pos;
@@ -347,7 +350,7 @@ static int GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, S
         obj->sensor_pos_[2] = trailPos.z;
     }
 
-    return 0;
+    return returncode;
 }
 
 static int GetRoadInfoAtGhostTrailTime(int object_id, float time, SE_RoadInfo *r_data, float *speed_ghost)
@@ -357,7 +360,7 @@ static int GetRoadInfoAtGhostTrailTime(int object_id, float time, SE_RoadInfo *r
     Object *obj = nullptr;
     if (getObjectById(object_id, obj) == -1)
     {
-        return -1;
+        return SE_GHOST_TRAIL_ERROR;
     }
 
     Object *ghost = obj->GetGhost();
@@ -365,26 +368,22 @@ static int GetRoadInfoAtGhostTrailTime(int object_id, float time, SE_RoadInfo *r
     {
         LOG_ERROR("Ghost object not available for object id {}", object_id);
 
-        return -1;
+        return SE_GHOST_TRAIL_ERROR;
     }
-
-    int index_out;
 
     roadmanager::TrajVertex trailPos;
     trailPos.h =
         static_cast<float>(obj->pos_.GetH());  // Set default trail heading aligned with road - in case trail is less than two points (no heading)
 
-    if (ghost->trail_.FindPointAtTime(static_cast<double>(time) - ghost->GetHeadstartTime(), trailPos, index_out, obj->trail_follow_index_) != 0)
+    int returncode = ghost->trail_.FindPointAtTime(static_cast<double>(time) - ghost->GetHeadstartTime(), trailPos, obj->trail_follow_index_);
+
+    if (returncode == SE_GHOST_TRAIL_NO_VERTICES || returncode == SE_GHOST_TRAIL_ERROR)
     {
-        LOG_ERROR("Failed to lookup point at time {:.2f} (time arg = {:.2f}) along ghost ({}) trail",
+        LOG_ERROR("Failed to lookup point at time %.2f (time arg = %.2f) along ghost (%d) trail",
                   player->scenarioEngine->getSimulationTime() - ghost->GetHeadstartTime() + static_cast<double>(time),
                   static_cast<double>(time),
                   ghost->GetId());
-        return -1;
-    }
-    else
-    {
-        obj->trail_follow_index_ = index_out;
+        return returncode;
     }
 
     roadmanager::Position pos;
@@ -412,7 +411,7 @@ static int GetRoadInfoAtGhostTrailTime(int object_id, float time, SE_RoadInfo *r
         obj->sensor_pos_[2] = trailPos.z;
     }
 
-    return 0;
+    return returncode;
 }
 
 static int InitScenario()
@@ -2155,12 +2154,7 @@ extern "C"
             return -1;
         }
 
-        if (GetRoadInfoAlongGhostTrail(object_id, lookahead_distance, data, speed_ghost, timestamp) != 0)
-        {
-            return -1;
-        }
-
-        return 0;
+        return GetRoadInfoAlongGhostTrail(object_id, lookahead_distance, data, speed_ghost, timestamp);
     }
 
     SE_DLL_API int SE_GetRoadInfoGhostTrailTime(int object_id, float time, SE_RoadInfo *data, float *speed_ghost)
@@ -2171,12 +2165,7 @@ extern "C"
             return -1;
         }
 
-        if (GetRoadInfoAtGhostTrailTime(object_id, time, data, speed_ghost) != 0)
-        {
-            return -1;
-        }
-
-        return 0;
+        return GetRoadInfoAtGhostTrailTime(object_id, time, data, speed_ghost);
     }
 
     SE_DLL_API int SE_GetDistanceToObject(int object_a_id, int object_b_id, bool free_space, SE_PositionDiff *pos_diff)

@@ -2414,8 +2414,26 @@ TEST(ExternalControlTest, TestTimings)
 
         while (SE_GetSimulationTime() < duration && SE_GetQuitFlag() != 1)
         {
+            // After ghost restart, check polyline returnvalues
+            if (j == 1 && NEAR_NUMBERS(SE_GetSimulationTimeDouble(), 2.2))
+            {
+                // try too small timestamp not preset in ghost trail which is now defined between 2.25 and 5.1
+                EXPECT_EQ(SE_GetRoadInfoGhostTrailTime(0, 2.25f - SMALL_NUMBERF, &road_info, &ghost_speed),
+                          SE_GhostTrailReturnCode::SE_GHOST_TRAIL_TIME_PRIOR);
+
+                // try too large timestamp
+                EXPECT_EQ(SE_GetRoadInfoGhostTrailTime(0, 5.10f + SMALL_NUMBERF, &road_info, &ghost_speed),
+                          SE_GhostTrailReturnCode::SE_GHOST_TRAIL_TIME_PAST);
+
+                // try non existing ghost
+                EXPECT_EQ(SE_GetRoadInfoGhostTrailTime(1, 5.10f + SMALL_NUMBERF, &road_info, &ghost_speed),
+                          SE_GhostTrailReturnCode::SE_GHOST_TRAIL_ERROR);
+            }
+
             // Copy position and heading from ghost at next timestamp
-            SE_GetRoadInfoGhostTrailTime(0, SE_GetSimulationTime() + dt, &road_info, &ghost_speed);
+            EXPECT_EQ(SE_GetRoadInfoGhostTrailTime(0, SE_GetSimulationTime() + dt, &road_info, &ghost_speed),
+                      SE_GhostTrailReturnCode::SE_GHOST_TRAIL_OK);
+
             ego_state.x = road_info.global_pos_x + 100;
             ego_state.y = road_info.global_pos_y;
             ego_state.h = road_info.trail_heading;

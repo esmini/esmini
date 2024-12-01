@@ -311,6 +311,15 @@ typedef enum
     SE_UPDATE = 2   // Used by controllers updating the position
 } SE_PositionModeType;
 
+typedef enum
+{
+    SE_GHOST_TRAIL_OK          = 0,   // success
+    SE_GHOST_TRAIL_ERROR       = -1,  // generic error
+    SE_GHOST_TRAIL_NO_VERTICES = -2,  // ghost trail trajectory has no vertices
+    SE_GHOST_TRAIL_TIME_PRIOR  = -3,  // given time < first timestamp in trajectory, snapped to start of trajectory
+    SE_GHOST_TRAIL_TIME_PAST   = -4,  // given time > last timestamp in trajectory, snapped to end of trajectory
+} SE_GhostTrailReturnCode;            // mirror roadmanager::GhostTrailReturnCode
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -1214,7 +1223,7 @@ extern "C"
             @param data Struct including all result values, see typedef for details
             @param speed_ghost reference to a variable returning the speed that the ghost had at this point along trail
             @param timestamp reference to a variable returning the timestamp of this point along trail
-            @return 0 if successful, -1 if not
+            @return 0 if successful, < 0 see SE_GhostTrailReturnCode enum for error/information codes
     */
     SE_DLL_API int SE_GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, SE_RoadInfo *data, float *speed_ghost, float *timestamp);
 
@@ -1224,7 +1233,7 @@ extern "C"
             @param time Simulation time (subtracting headstart time, i.e. time=0 gives the initial state)
             @param data Struct including all result values, see typedef for details
             @param speed_ghost reference to a variable returning the speed that the ghost had at this point along trail
-            @return 0 if successful, -1 if not
+            @return 0 if successful, < 0 see SE_GhostTrailReturnCode enum for error/information codes
     */
     SE_DLL_API int SE_GetRoadInfoGhostTrailTime(int object_id, float time, SE_RoadInfo *data, float *speed_ghost);
 

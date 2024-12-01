@@ -4291,6 +4291,15 @@ namespace roadmanager
             INTERPOLATE_CORNER  = 2
         };
 
+        enum class GhostTrailReturnCode
+        {
+            GHOST_TRAIL_OK          = 0,   // success
+            GHOST_TRAIL_ERROR       = -1,  // generic error
+            GHOST_TRAIL_NO_VERTICES = -2,  // ghost trail trajectory has no vertices
+            GHOST_TRAIL_TIME_PRIOR  = -3,  // given time < first timestamp in trajectory, snapped to start of trajectory
+            GHOST_TRAIL_TIME_PAST   = -4,  // given time > last timestamp in trajectory, snapped to end of trajectory
+        };
+
         PolyLineBase() : length_(0), current_index_(0)
         {
         }
@@ -4305,31 +4314,50 @@ namespace roadmanager
         {
             length_ = 0.0;
         }
-        int Evaluate(double s, TrajVertex &pos, double cornerRadius, int startAtIndex);
-        int Evaluate(double s, TrajVertex &pos, double cornerRadius);
+
+        /**
+         * Evaluate and return position along the polyline, allow specifying start index for segment lookup
+         * @param s Distance along the polyline
+         * @param pos Return trajectory position info including position, heading, speed. See TrajVertex type.
+         * @param startAtIndex If >= 0 start search at this index, -1 use cached value
+         * @return 0 if successful, -1 if not
+         */
         int Evaluate(double s, TrajVertex &pos, int startAtIndex);
+
+        /**
+         * Evaluate and return position along the polyline
+         * @param s Distance along the polyline
+         * @param pos Trajectory position info including position, heading, speed. See TrajVertex type.
+         * @return 0 if successful, -1 if not
+         */
         int Evaluate(double s, TrajVertex &pos);
+
+        /**
+         * Evaluate position along the polyline, result registered internally only
+         * @param s Distance along the polyline
+         * @return 0 if successful, -1 if not
+         */
         int Evaluate(double s);
+
         int FindClosestPoint(double xin, double yin, TrajVertex &pos, int &index, int startAtIndex = 0);
+
         int FindPointAhead(double s_start, double distance, TrajVertex &pos, int &index, int startAtIndex = 0);
 
         /**
          * Get ghost state at a point in time
          * @param time Simulation time (subtracting headstart time, i.e. time=0 gives the initial state)
          * @param pos Trajectory position info including position, heading, speed. See TrajVertex type.
-         * @param index Returns the index of matching trajectory segment, -1 on error
-         * @param startAtIndex Start search for segment (e.g. index returned by previous call)
+         * @param index In: If >= 0 start search at given index. Out: Returns the index of matching trajectory segment, -1 on error
          */
-        int FindPointAtTime(double time, TrajVertex &pos, int &index, int startAtIndex = 0);
+        int FindPointAtTime(double time, TrajVertex &pos, int &index);
 
         /**
          * Get ghost state at a point in time
          * @param time Time offset from first timestamp
          * @param pos Returns state including position, heading, speed. See TrajVertex type.
-         * @param index Returns the index of matching trajectory segment, -1 on error
-         * @param startAtIndex Start search for segment (e.g. index returned by previous call)
+         * @param index In: If >= 0 start search at given index. Out: Returns the index of matching trajectory segment, -1 on error
          */
-        int FindPointAtTimeRelative(double time, TrajVertex &pos, int &index, int startAtIndex = 0);
+        int FindPointAtTimeRelative(double time, TrajVertex &pos, int &index);
 
         int GetNumberOfVertices() const
         {
@@ -4338,16 +4366,16 @@ namespace roadmanager
         TrajVertex *GetVertex(int index);
         TrajVertex *GetCurrentVertex();
         void        Reset(bool clear_vertices);
+        void        SetInterpolationMode(InterpolationMode mode);
 
         /**
          * Get s value for given time value
          * @param time Time offset from first timestamp
          * @param s Return s value
-         * @param index Returns the index of matching trajectory segment
-         * @return the index of matching trajectory segment, -1 on error
+         * @param index If >= 0, start search from this index (-1 use cached value), returns index of matching trajectory segment
+         * @return 0 if successful, < 0 see GhostTrailReturnCode enum for error/information codes
          */
-        int  Time2S(double time, double &s);
-        void SetInterpolationMode(InterpolationMode mode);
+        GhostTrailReturnCode Time2S(double time, double &s, int &index);
 
         std::vector<TrajVertex> vertex_;
         int                     current_index_;
@@ -4356,7 +4384,7 @@ namespace roadmanager
         InterpolationMode       interpolation_mode_ = InterpolationMode::INTERPOLATE_NONE;
 
     protected:
-        int EvaluateSegmentByLocalS(int i, double local_s, double cornerRadius, TrajVertex &pos);
+        int EvaluateSegmentByLocalS(int i, double local_s, TrajVertex &pos);
     };
 
     // Trajectory stuff

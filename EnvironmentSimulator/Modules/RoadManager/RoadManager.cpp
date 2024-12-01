@@ -11179,7 +11179,7 @@ int Position::SetRouteRoadPosition(Route* route, double path_s, double t)
     return 0;
 }
 
-int PolyLineBase::EvaluateSegmentByLocalS(int i, double local_s, double cornerRadius, TrajVertex& pos)
+int PolyLineBase::EvaluateSegmentByLocalS(int i, double local_s, TrajVertex& pos)
 {
     TrajVertex* vp0 = &vertex_[i];
 
@@ -11337,10 +11337,10 @@ void PolyLineBase::AddVertex(TrajVertex v)
     vertex_.push_back(v);
 }
 
-int PolyLineBase::Evaluate(double s, TrajVertex& pos, double cornerRadius, int startAtIndex)
+int PolyLineBase::Evaluate(double s, TrajVertex& pos, int startAtIndex)
 {
     double s_local = 0;
-    int    i       = CLAMP(0, startAtIndex, GetNumberOfVertices() - 1);
+    int    i       = CLAMP(startAtIndex, 0, GetNumberOfVertices() - 1);
 
     if (GetNumberOfVertices() < 1)
     {
@@ -11368,50 +11368,68 @@ int PolyLineBase::Evaluate(double s, TrajVertex& pos, double cornerRadius, int s
     double s0 = vertex_[i].s;
     s_local   = s - s0;
 
-    EvaluateSegmentByLocalS(i, s_local, cornerRadius, pos);
+    if (EvaluateSegmentByLocalS(i, s_local, pos) == 0)
+    {
+        if (i >= 0)
+        {
+            current_index_ = i;  // update cached index position
+        }
+    }
+
     pos.s = s;
 
     return i;
 }
 
-int PolyLineBase::Evaluate(double s, TrajVertex& pos, double cornerRadius)
-{
-    return Evaluate(s, pos, cornerRadius, 0);
-}
-
-int PolyLineBase::Evaluate(double s, TrajVertex& pos, int startAtIndex)
-{
-    return Evaluate(s, pos, 0.0, startAtIndex);
-}
-
 int PolyLineBase::Evaluate(double s, TrajVertex& pos)
 {
-    return Evaluate(s, pos, 0.0, 0);
+    return Evaluate(s, pos, 0);
 }
 
 int PolyLineBase::Evaluate(double s)
 {
-    return Evaluate(s, current_val_, 0.0, current_index_);
+    return Evaluate(s, current_val_, current_index_);
 }
 
-int PolyLineBase::Time2S(double time, double& s)
+PolyLineBase::GhostTrailReturnCode PolyLineBase::Time2S(double time, double& s, int& index)
 {
     int step = 1;
 
-    if (GetNumberOfVertices() < 1 || time < vertex_[0].time)
+    if (GetNumberOfVertices() < 1)
     {
-        s = 0.0;
-        return -1;
+        s     = 0.0;
+        index = -1;
+        return GhostTrailReturnCode::GHOST_TRAIL_NO_VERTICES;
+    }
+    else if (GetNumberOfVertices() == 1)
+    {
+        s     = 0;
+        index = 0;
+        return GhostTrailReturnCode::GHOST_TRAIL_OK;
+    }
+    else if (time < vertex_[0].time)
+    {
+        s     = 0.0;
+        index = 0;
+        return GhostTrailReturnCode::GHOST_TRAIL_TIME_PRIOR;
+    }
+    else if (time > vertex_.back().time)
+    {
+        s     = vertex_.back().s;
+        index = static_cast<int>(vertex_.size() - 1);
+        return GhostTrailReturnCode::GHOST_TRAIL_TIME_PAST;
     }
 
-    if (GetNumberOfVertices() == 1)
-    {
-        s = vertex_[0].s;
-        return 0;
-    }
-
-    // start looking from current index
+    // start looking from current index by default
     int i = current_index_;
+    if (index >= 0)
+    {
+        // if specified start at given index, if valid
+        if (index < GetNumberOfVertices() && index >= 0)
+        {
+            i = index;
+        }
+    }
 
     if (time < vertex_[i].time)
     {
@@ -11424,7 +11442,8 @@ int PolyLineBase::Time2S(double time, double& s)
         {
             double w = (time - vertex_[i].time) / (vertex_[i + 1].time - vertex_[i].time);
             s        = vertex_[i].s + w * (vertex_[i + 1].s - vertex_[i].s);
-            return i;
+            index    = i;
+            return GhostTrailReturnCode::GHOST_TRAIL_OK;
         }
 
         i += step;
@@ -11440,9 +11459,10 @@ int PolyLineBase::Time2S(double time, double& s)
     }
 
     // s seems out of range, grab last element
-    s = GetVertex(-1)->s;
+    s     = vertex_.back().s;
+    index = static_cast<int>(vertex_.size() - 1);
 
-    return static_cast<int>(vertex_.size()) - 1;
+    return GhostTrailReturnCode::GHOST_TRAIL_TIME_PAST;
 }
 
 void PolyLineBase::SetInterpolationMode(InterpolationMode mode)
@@ -11527,7 +11547,7 @@ int PolyLineBase::FindClosestPoint(double xin, double yin, TrajVertex& pos, int&
 
     if (distMin < LARGE_NUMBER)
     {
-        EvaluateSegmentByLocalS(iMin, sLocalMin, 0.0, pos);
+        EvaluateSegmentByLocalS(iMin, sLocalMin, pos);
         index = iMin;
         return 0;
     }
@@ -11544,35 +11564,36 @@ int PolyLineBase::FindPointAhead(double s_start, double distance, TrajVertex& po
     return 0;
 }
 
-int PolyLineBase::FindPointAtTime(double time, TrajVertex& pos, int& index, int startAtIndex)
+int PolyLineBase::FindPointAtTime(double time, TrajVertex& pos, int& index)
 {
     double s = 0;
-    if (Time2S(time, s) == -1)
+
+    GhostTrailReturnCode returncode = Time2S(time, s, index);
+
+    if (returncode == GhostTrailReturnCode::GHOST_TRAIL_ERROR)
     {
-        return -1;
+        return static_cast<int>(returncode);
     }
 
-    index = Evaluate(s, pos, startAtIndex);
+    index = Evaluate(s, pos, index);
 
-    return 0;
+    return static_cast<int>(returncode);
 }
 
-int PolyLineBase::FindPointAtTimeRelative(double time, TrajVertex& pos, int& index, int startAtIndex)
+int PolyLineBase::FindPointAtTimeRelative(double time, TrajVertex& pos, int& index)
 {
     double s = 0;
-    if (vertex_.size() == 0)
+
+    GhostTrailReturnCode returncode = Time2S(vertex_[0].time + time, s, index);
+
+    if (returncode == GhostTrailReturnCode::GHOST_TRAIL_ERROR)
     {
-        return -1;
+        return static_cast<int>(returncode);
     }
 
-    if (Time2S(vertex_[0].time + time, s) != 0)
-    {
-        return -1;
-    }
+    index = Evaluate(s, pos, index);
 
-    index = Evaluate(s, pos, startAtIndex);
-
-    return 0;
+    return static_cast<int>(returncode);
 }
 
 TrajVertex* PolyLineBase::GetVertex(int index)
@@ -12562,7 +12583,7 @@ int NurbsShape::Evaluate(double p, TrajectoryParamType ptype, TrajVertex& pos)
 
     if (ptype == TRAJ_PARAM_TYPE_TIME)
     {
-        pline_.Time2S(p, s);
+        pline_.Time2S(p, s, pline_.current_index_);
     }
 
     pline_.Evaluate(s, pos, pline_.current_index_);
