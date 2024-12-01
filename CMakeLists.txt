@@ -125,21 +125,6 @@ endif()
 
 # ############################### Loading common packages ############################################################
 
-set(SPDLOG_BUILD_SHARED
-    OFF)
-set(SPDLOG_BUILD_PIC
-    ON)
-add_subdirectory(externals/spdlog)
-set(SPDLOG_LIBRARIES
-    spdlog)
-
-if(LINUX)
-    # add link lib for missing filesystem functions in case gcc 7.5 is used
-    set(SPDLOG_LIBRARIES
-        ${SPDLOG_LIBRARIES}
-        "-lstdc++fs")
-endif()
-
 include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/common/color.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/common/locations.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/common/definitions.cmake)
@@ -240,22 +225,39 @@ if(USE_IMPLOT)
     set_implot_libs()
 endif()
 
-# ############################### Compiling targets ##################################################################
-
-add_subdirectory(EnvironmentSimulator)
-
-# ############################### OTHERS #############################################################################
+# ############################### Resolve submodules #################################################################
 
 if(NOT
    EXISTS
    "test/OSC-ALKS-scenarios/.git"
    OR NOT
       EXISTS
-      "test/OSC-NCAP-scenarios/.git")
+      "test/OSC-NCAP-scenarios/.git"
+   OR NOT
+      EXISTS
+      "externals/spdlog/.git")
     execute_process(
         COMMAND git submodule update --init
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 endif()
+
+# ############################### Add submodules #####################################################################
+
+set(SPDLOG_BUILD_SHARED
+    OFF)
+set(SPDLOG_BUILD_PIC
+    ON)
+set(SPDLOG_LIBRARIES
+    spdlog)
+add_subdirectory(externals/spdlog)
+if(LINUX)
+    # add link lib for missing filesystem functions in case gcc 7.5 is used
+    set(SPDLOG_LIBRARIES
+        ${SPDLOG_LIBRARIES}
+        "-lstdc++fs")
+endif()
+
+# ############################### OTHERS #############################################################################
 
 # Add variables to global scope, e.g. when esmini is used as submodule
 set(EXTERNALS_PUGIXML_PATH
@@ -266,3 +268,7 @@ set(EXTERNALS_EXPR_PATH
     ${EXTERNALS_EXPR_PATH}
     CACHE INTERNAL
           "")
+
+# ############################### Compiling targets ##################################################################
+
+add_subdirectory(EnvironmentSimulator)
