@@ -2714,6 +2714,15 @@ namespace roadmanager
         std::string orig_georef_str_;
     } GeoReference;
 
+    typedef struct
+    {
+        double      x_;
+        double      y_;
+        double      z_;
+        double      hdg_;
+        std::string orig_geooffset_str_;
+    } GeoOffset;  // Only available in OSI 3.7.0
+
     class OpenDrive
     {
     public:
@@ -2827,8 +2836,11 @@ namespace roadmanager
 
         GeoReference *GetGeoReference();
         std::string   GetGeoReferenceOriginalString() const;
+        std::string   GetGeoOffsetOriginalString() const;
         std::string   GetGeoReferenceAsString() const;
         void          ParseGeoLocalization(const std::string &geoLocalization);
+
+        void ParseGeoOffset(const std::string &geo_offset);
 
         bool LoadSignalsByCountry(const std::string &country);
 
@@ -2888,6 +2900,7 @@ namespace roadmanager
         std::vector<Junction *>                   junction_;
         std::vector<Controller>                   controller_;
         GeoReference                              geo_ref_;
+        GeoOffset                                 geo_offset_;
         std::string                               odr_filename_;
         std::map<std::string, std::string>        signals_types_;
         SpeedUnit                                 speed_unit_;  // First specified speed unit. MS is default. Undefined if no speed entries.

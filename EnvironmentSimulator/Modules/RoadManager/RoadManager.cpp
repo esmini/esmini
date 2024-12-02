@@ -3292,7 +3292,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
         return false;
     }
 
-    // Initialize GeoRef structure
+    // Initialize GeoRef and GeoOffset structure
     geo_ref_ = {std::numeric_limits<double>::quiet_NaN(),
                 "",
                 std::numeric_limits<double>::quiet_NaN(),
@@ -3315,18 +3315,42 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                 std::numeric_limits<int>::quiet_NaN(),
                 ""};
 
+    geo_offset_ = {std::numeric_limits<double>::quiet_NaN(),
+                   std::numeric_limits<double>::quiet_NaN(),
+                   std::numeric_limits<double>::quiet_NaN(),
+                   std::numeric_limits<double>::quiet_NaN(),
+                   ""};
+
     pugi::xml_node header_node = node.child("header");
     if (node != NULL)
     {
         versionMajor_ = strtoi(header_node.attribute("revMajor").value());
         versionMinor_ = strtoi(header_node.attribute("revMinor").value());
 
-        if (header_node.child("geoReference") != NULL)
+        for (pugi::xml_node child : header_node.children())
         {
-            // Get the string to parse, geoReference tag is just a string with the data separated by spaces and each attribute start with a +
-            // character
-            std::string geo_ref_str = header_node.child_value("geoReference");
-            ParseGeoLocalization(geo_ref_str);
+            if (std::strcmp(child.name(), "geoReference") == 0)
+            {
+                // Get the string to parse, geoReference tag is just a string with the data separated by spaces and each attribute start with a +
+                // character
+                std::string geo_ref_str = header_node.child_value("geoReference");
+                ParseGeoLocalization(geo_ref_str);
+            }
+            else if (std::strcmp(child.name(), "offset") == 0)
+            {
+                geo_offset_.x_   = child.attribute("x").as_double();
+                geo_offset_.y_   = child.attribute("y").as_double();
+                geo_offset_.z_   = child.attribute("z").as_double();
+                geo_offset_.hdg_ = child.attribute("hdg").as_double();
+
+                std::ostringstream offset_stream;
+                offset_stream << "offset x=" << child.attribute("x").value() << " "
+                              << "y=" << child.attribute("y").value() << " "
+                              << "z=" << child.attribute("z").value() << " "
+                              << "hdg=" << child.attribute("hdg").value();
+
+                geo_offset_.orig_geooffset_str_ = offset_stream.str();
+            }
         }
     }
 
@@ -6205,6 +6229,11 @@ void OpenDrive::ParseGeoLocalization(const std::string& geoLocalization)
         geo_ref_.lat_0_ = 0.0;
         geo_ref_.lon_0_ = 0.0;
     }
+}
+
+std::string OpenDrive::GetGeoOffsetOriginalString() const
+{
+    return geo_offset_.orig_geooffset_str_;
 }
 
 bool OpenDrive::LoadSignalsByCountry(const std::string& country)

@@ -410,7 +410,13 @@ int OSIReporter::UpdateOSIStaticGroundTruth(const std::vector<std::unique_ptr<Ob
     obj_osi_external.gt->set_map_reference(opendrive->GetGeoReferenceAsString());
 
     // also set the original geo reference string as is
-    obj_osi_external.gt->set_proj_string(opendrive->GetGeoReferenceOriginalString().c_str());
+    std::string proj_string_delimiter = "";
+    if (!opendrive->GetGeoReferenceOriginalString().empty() && !opendrive->GetGeoOffsetOriginalString().empty())
+    {
+        proj_string_delimiter = ";";
+    }
+    obj_osi_external.gt->set_proj_string(
+        (opendrive->GetGeoReferenceOriginalString() + proj_string_delimiter + opendrive->GetGeoOffsetOriginalString()).c_str());
 
     obj_osi_external.gt->mutable_stationary_object()->CopyFrom(*obj_osi_internal.gt->mutable_stationary_object());
     obj_osi_external.gt->mutable_lane()->CopyFrom(*obj_osi_internal.gt->mutable_lane());
