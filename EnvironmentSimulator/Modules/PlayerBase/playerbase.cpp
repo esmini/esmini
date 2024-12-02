@@ -1410,7 +1410,7 @@ int ScenarioPlayer::Init()
         {
             if (dist.SetIndex(static_cast<unsigned int>(dist.GetRequestedIndex())) != 0)
             {
-                LOG_ERROR_AND_QUIT("Failed to set requested index %d", dist.GetRequestedIndex());
+                LOG_ERROR_AND_QUIT("Failed to set requested index {}", dist.GetRequestedIndex());
             }
         }
         else

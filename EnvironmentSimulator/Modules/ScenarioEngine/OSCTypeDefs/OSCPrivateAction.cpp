@@ -358,7 +358,7 @@ void FollowTrajectoryAction::Start(double simTime)
     }
     else
     {
-        // for timestamp mode, speed sign is given by heading íf set
+        // for timestamp mode, speed sign is given by heading ï¿½f set
         if (traj_->IsHSetExplicitly())
         {
             speedSign = GetAbsAngleDifference(traj_->GetH(), traj_->GetHTrue()) > M_PI_2 + SMALL_NUMBER ? -1 : 1;
@@ -712,7 +712,7 @@ void ActivateControllerAction::Start(double simTime)
             if (light_activation_mode_ == ControlActivationMode::ON &&
                 (ctrl = object_->GetControllerActiveOnDomain(ControlDomains::DOMAIN_LIGHT)) != nullptr)
             {
-                LOG_WARN("Deactivating conflicting ctrl %s on domain %s",
+                LOG_WARN("Deactivating conflicting ctrl {} on domain {}",
                          ctrl->GetName(),
                          ControlDomain2Str(static_cast<unsigned int>(ControlDomains::DOMAIN_LIGHT)));
                 ctrl->DeactivateDomains(static_cast<unsigned int>(ControlDomains::DOMAIN_LIGHT));

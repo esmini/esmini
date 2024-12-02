@@ -61,7 +61,7 @@ std::vector<StoryBoardElement*> StoryBoardElement::FindChildByTypeAndName(Elemen
 
 void Story::Print()
 {
-    LOG_INFO("Story: %s", GetName().c_str());
+    LOG_INFO("Story: {}", GetName());
 }
 
 void StoryBoard::Print()

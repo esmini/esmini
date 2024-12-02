@@ -3410,7 +3410,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                                     // No upper limit
                                     if (value < 0.0)
                                     {
-                                        LOG_WARN("Unexpected negative brake force %.2f - ignoring, set to 0", value);
+                                        LOG_WARN("Unexpected negative brake force {:.2f} - ignoring, set to 0", value);
                                         overrideStatus.value = 0.0;
                                     }
                                     else
@@ -3485,7 +3485,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                                 }
                                 else
                                 {
-                                    LOG_ERROR("Unexpected OverrideControllerValueAction subelement: %s", controllerDefNode.name());
+                                    LOG_ERROR("Unexpected OverrideControllerValueAction subelement: {}", controllerDefNode.name());
                                     delete override_action;
                                     return 0;
                                 }
@@ -3577,7 +3577,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                 }
                 else
                 {
-                    LOG_ERROR("Unexpected ControllerAction subelement: %s", controllerChild.name());
+                    LOG_ERROR("Unexpected ControllerAction subelement: {}", controllerChild.name());
                 }
             }
         }

@@ -265,7 +265,7 @@ namespace scenarioengine
             return;
         }
 
-        LOG_INFO("PlayerServer listening on port %d", ESMINI_DEFAULT_ACTION_INPORT);
+        LOG_INFO("PlayerServer listening on port {}", ESMINI_DEFAULT_ACTION_INPORT);
 
         state = SERV_RUNNING;
 

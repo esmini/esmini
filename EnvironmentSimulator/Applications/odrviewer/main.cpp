@@ -665,7 +665,7 @@ int main(int argc, char **argv)
             opt.PrintUsage();
         }
 
-        LOG_INFO("osi_features: lines %s points %s",
+        LOG_INFO("osi_features: lines {} points {}",
                  viewer->GetNodeMaskBit(viewer::NodeMask::NODE_MASK_OSI_LINES) ? "on" : "off",
                  viewer->GetNodeMaskBit(viewer::NodeMask::NODE_MASK_OSI_POINTS) ? "on" : "off");
 
@@ -673,7 +673,7 @@ int main(int argc, char **argv)
         {
             return 4;
         }
-        LOG_INFO("%d cars added", static_cast<int>(cars.size()));
+        LOG_INFO("{} cars added", static_cast<int>(cars.size()));
 
         __int64 now            = 0;
         __int64 lastTimeStamp  = 0;

@@ -1586,7 +1586,7 @@ int Road::GetLaneInfoByS(double s, int start_lane_section_idx, int start_lane_id
                 }
 
                 lane_info.lane_id_ = lane_section->GetLaneByIdx(new_lane_index)->GetId();
-                LOG_INFO("GetLaneInfoByS: Moved to %d", lane_info.lane_id_);
+                LOG_INFO("GetLaneInfoByS: Moved to {}", lane_info.lane_id_);
             }
         }
     }
@@ -2242,7 +2242,7 @@ RoadLink::RoadLink(LinkType type, pugi::xml_node node) : contact_point_type_(Con
     }
     else
     {
-        LOG_ERROR("Unsupported element type: %s", element_type.c_str());
+        LOG_ERROR("Unsupported element type: {}", element_type);
         element_type_ = ELEMENT_TYPE_UNKNOWN;
     }
 }
@@ -3643,7 +3643,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                         {
                             if (strcmp(lane_node->name(), "lane"))
                             {
-                                LOG_ERROR("Unexpected element: %s, expected \"lane\"", lane_node->name());
+                                LOG_ERROR("Unexpected element: {}, expected \"lane\"", lane_node->name());
                                 continue;
                             }
 
@@ -3978,7 +3978,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                                                 }
                                                 else
                                                 {
-                                                    LOG_ERROR("unknown lane road mark type line rule: %s (road id=%d)",
+                                                    LOG_ERROR("unknown lane road mark type line rule: {} (road id={})",
                                                               line.attribute("rule").value(),
                                                               r->GetId());
                                                 }
@@ -4921,7 +4921,7 @@ LaneRoadLaneConnection Junction::GetRoadConnectionByIdx(id_t roadId, int laneId,
                         }
                         else if (!(lane->GetLaneType() & laneTypeMask))
                         {
-                            LOG_WARN("OpenDrive::GetJunctionConnection target lane not driving! from %d, %d to %d, %d",
+                            LOG_WARN("OpenDrive::GetJunctionConnection target lane not driving! from {}, {} to {}, {}",
                                      roadId,
                                      laneId,
                                      connection->GetConnectingRoad()->GetId(),
@@ -5956,7 +5956,7 @@ void OpenDrive::EstablishUniqueIds(pugi::xml_node& parent, std::string name, std
             {
                 if (id_long == ID_UNDEFINED)
                 {
-                    LOG_INFO("Found %s with reserved ID %u", name.c_str(), ID_UNDEFINED);
+                    LOG_INFO("Found {} with reserved ID {}", name, ID_UNDEFINED);
                 }
                 LOG_INFO("Assign internal id {} for {} {}", id_next, name, id_str);
             }
@@ -8997,7 +8997,7 @@ Position::ReturnCode Position::MoveToConnectingRoad(RoadLink* road_link, Contact
 
     if (new_lane_id == 0)
     {
-        LOG_WARN("No connection from rid %d lid %d -> rid %d eltype %d - trying move to closest lane",
+        LOG_WARN("No connection from rid {} lid {} -> rid {} eltype {} - trying move to closest lane",
                  road->GetId(),
                  lane->GetId(),
                  road_link->GetElementId(),

@@ -287,7 +287,7 @@ static int GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, S
     Object *ghost = obj->GetGhost();
     if (ghost == 0)
     {
-        LOG_ERROR("Ghost object not available for object id %d", object_id);
+        LOG_ERROR("Ghost object not available for object id {}", object_id);
         return SE_GHOST_TRAIL_ERROR;
     }
 
@@ -379,7 +379,7 @@ static int GetRoadInfoAtGhostTrailTime(int object_id, float time, SE_RoadInfo *r
 
     if (returncode == SE_GHOST_TRAIL_NO_VERTICES || returncode == SE_GHOST_TRAIL_ERROR)
     {
-        LOG_ERROR("Failed to lookup point at time %.2f (time arg = %.2f) along ghost (%d) trail",
+        LOG_ERROR("Failed to lookup point at time {:.2f} (time arg = {:.2f}) along ghost ({}) trail",
                   player->scenarioEngine->getSimulationTime() - ghost->GetHeadstartTime() + static_cast<double>(time),
                   static_cast<double>(time),
                   ghost->GetId());

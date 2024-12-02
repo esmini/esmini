@@ -583,7 +583,7 @@ int main(int argc, char** argv)
             }
             else
             {
-                LOG_WARN("Unsupported camera mode: %s - using default (orbit)", arg_str.c_str());
+                LOG_WARN("Unsupported camera mode: {} - using default (orbit)", arg_str);
             }
         }
         if (opt.GetOptionSet("custom_camera") == true)
