@@ -65,6 +65,7 @@ using id_t = uint32_t;
 #define DAT_FILENAME                  "sim.dat"
 #define GHOST_TRAIL_SAMPLE_TIME       0.2
 #define LOGICAL_OR(X, Y)              ((X || Y) && !(X && Y))
+constexpr double DEFAULT_MIN_DIM = 0.01;
 
 // Time functions
 __int64 SE_getSystemTime();
@@ -171,31 +172,6 @@ struct Point2D
 struct Point3D : public Point2D
 {
     double z = 0.0;
-};
-
-struct RepeatTransformationInfo
-{
-    double x;
-    double y;
-    double z;
-    double roll;
-    double pitch;
-    double heading;
-    double hOffset;
-};
-
-struct RepeatTransformationInfoDimension : public RepeatTransformationInfo
-{
-    double length;
-    double width;
-    double height;
-};
-
-struct RepeatTransformationInfoScale : public RepeatTransformationInfo
-{
-    double scale_x = 1;
-    double scale_y = 1;
-    double scale_z = 1;
 };
 
 class SE_Vector
@@ -336,6 +312,11 @@ bool FileExists(const char* fileName);
         Concatenate a directory path and a file path
 */
 std::string CombineDirectoryPathAndFilepath(std::string dir_path, std::string file_path);
+
+/**
+        Retrun zero if value is NaN otherwise return value
+ */
+double      GetValueOrZero(double value);
 
 /**
         Retrieve the angle of a vector

@@ -197,6 +197,14 @@ bool FileExists(const char* fileName)
     return infile.good();
 }
 
+double GetValueOrZero(double value)
+{
+    if (std::isnan(value))
+    {
+        return 0.0;
+    }
+    return value;
+}
 std::string CombineDirectoryPathAndFilepath(std::string dir_path, std::string file_path)
 {
     std::string path = file_path;

@@ -18,6 +18,7 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
+
 class GetNumberOfObjectsTest : public ::testing::TestWithParam<std::tuple<std::string, int>>
 {
 };
@@ -523,7 +524,7 @@ TEST(OSIintersections, multilane)
 TEST(GetOSIRoadLaneTest, lane_no_obj)
 {
     struct stat fileStatus;
-    std::string scenario_file = "../../../resources/xosc/cut-in.xosc";
+    std::string scenario_file = "../resources/xosc/cut-in.xosc";
     const char* Scenario_file = scenario_file.c_str();
 
     SE_Init(Scenario_file, 0, 0, 0, 0);
@@ -536,7 +537,7 @@ TEST(GetOSIRoadLaneTest, lane_no_obj)
     SE_UpdateOSIGroundTruth();
     SE_FlushOSIFile();
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 83968);  // initial OSI size, including static content
+    EXPECT_EQ(fileStatus.st_size, 146685);  // initial OSI size, including static content
 
     int road_lane_size;
 
@@ -549,13 +550,13 @@ TEST(GetOSIRoadLaneTest, lane_no_obj)
     SE_UpdateOSIGroundTruth();
     SE_FlushOSIFile();
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 85261);  // slight growth due to only dynamic updates
+    EXPECT_EQ(fileStatus.st_size, 147978);  // slight growth due to only dynamic updates
 
     SE_StepDT(0.001f);  // Step for write another frame to osi file
     SE_UpdateOSIGroundTruth();
     SE_FlushOSIFile();
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 86555);  // slight growth due to only dynamic updates
+    EXPECT_EQ(fileStatus.st_size, 149272);  // slight growth due to only dynamic updates
 
     SE_DisableOSIFile();
     SE_Close();
@@ -3126,10 +3127,10 @@ TEST(TestOsiReporter, MarkingTest)
 
     EXPECT_EQ(osi_gt.road_marking(4).base().base_polygon_size(), 24);
 
-    EXPECT_DOUBLE_EQ(osi_gt.road_marking(4).base().base_polygon(8).x(), 57.0);
+    EXPECT_DOUBLE_EQ(osi_gt.road_marking(4).base().base_polygon(8).x(), 53.0);
     EXPECT_DOUBLE_EQ(osi_gt.road_marking(4).base().base_polygon(8).y(), -0.75);
 
-    EXPECT_DOUBLE_EQ(osi_gt.road_marking(4).base().base_polygon(23).x(), 57.0);
+    EXPECT_DOUBLE_EQ(osi_gt.road_marking(4).base().base_polygon(23).x(), 53.0);
     EXPECT_DOUBLE_EQ(osi_gt.road_marking(4).base().base_polygon(23).y(), 2.75);
 
     EXPECT_EQ(osi_gt.road_marking(5).base().base_polygon_size(), 28);
@@ -3299,10 +3300,10 @@ TEST(TestOsiReporter, MarkingTest)
 
     EXPECT_EQ(osi_gt.road_marking(4).base().base_polygon_size(), 24);
 
-    EXPECT_DOUBLE_EQ(osi_gt.road_marking(4).base().base_polygon(8).x(), 57.0);
+    EXPECT_DOUBLE_EQ(osi_gt.road_marking(4).base().base_polygon(8).x(), 53.0);
     EXPECT_DOUBLE_EQ(osi_gt.road_marking(4).base().base_polygon(8).y(), -0.75);
 
-    EXPECT_DOUBLE_EQ(osi_gt.road_marking(4).base().base_polygon(23).x(), 57.0);
+    EXPECT_DOUBLE_EQ(osi_gt.road_marking(4).base().base_polygon(23).x(), 53.0);
     EXPECT_DOUBLE_EQ(osi_gt.road_marking(4).base().base_polygon(23).y(), 2.75);
 
     EXPECT_EQ(osi_gt.road_marking(5).base().base_polygon_size(), 28);
@@ -3593,7 +3594,6 @@ TEST(TestOsiReporter, StationaryObjectWithRepeatTest)
     EXPECT_EQ(osi_gt.stationary_object(2).base().position().x(), 45);
     EXPECT_EQ(osi_gt.stationary_object(2).base().position().y(), -12.5);
     EXPECT_EQ(osi_gt.stationary_object(2).base().position().z(), 0.0);
-
 }
 
 TEST(TestOsiReporter, CrestCurveRoadObjectTest)
@@ -3750,6 +3750,7 @@ TEST(TestOsiReporter, CrestCurveRoadObjectTest)
 
 TEST(TestOsiReporter, StationaryObjectTest)
 {
+    //without viewer
     std::string scenario_file = "../EnvironmentSimulator/Unittest/xosc/test_stationary_objects.xosc";
     const char* Scenario_file = scenario_file.c_str();
     int         i_init        = SE_Init(Scenario_file, 0, 0, 0, 0);
@@ -3769,9 +3770,9 @@ TEST(TestOsiReporter, StationaryObjectTest)
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(0).base().position().x(), 5.0);
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(0).base().position().y(), 4.0);
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(0).base().position().z(), 0.0);
-    EXPECT_DOUBLE_EQ(osi_gt.stationary_object(0).base().dimension().length(), 0);
-    EXPECT_DOUBLE_EQ(osi_gt.stationary_object(0).base().dimension().width(), 0);
-    EXPECT_DOUBLE_EQ(osi_gt.stationary_object(0).base().dimension().height(), 0.0);
+    EXPECT_DOUBLE_EQ(osi_gt.stationary_object(0).base().dimension().length(), DEFAULT_MIN_DIM);
+    EXPECT_DOUBLE_EQ(osi_gt.stationary_object(0).base().dimension().width(), DEFAULT_MIN_DIM);
+    EXPECT_DOUBLE_EQ(osi_gt.stationary_object(0).base().dimension().height(), DEFAULT_MIN_DIM);
 
     const auto id1 = osi_gt.stationary_object(1).id().value();
     EXPECT_EQ(id1, 2);
@@ -3787,9 +3788,9 @@ TEST(TestOsiReporter, StationaryObjectTest)
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(2).base().position().x(), 20.0);
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(2).base().position().y(), 5.0);
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(2).base().position().z(), 0.0);
-    EXPECT_DOUBLE_EQ(osi_gt.stationary_object(2).base().dimension().length(), 0.0); // check this is correct TODo
-    EXPECT_DOUBLE_EQ(osi_gt.stationary_object(2).base().dimension().width(), 0.0);
-    EXPECT_DOUBLE_EQ(osi_gt.stationary_object(2).base().dimension().height(), 0.0);
+    EXPECT_DOUBLE_EQ(osi_gt.stationary_object(2).base().dimension().length(), DEFAULT_MIN_DIM);
+    EXPECT_DOUBLE_EQ(osi_gt.stationary_object(2).base().dimension().width(), DEFAULT_MIN_DIM);
+    EXPECT_DOUBLE_EQ(osi_gt.stationary_object(2).base().dimension().height(), DEFAULT_MIN_DIM);
 
     const auto id4 = osi_gt.stationary_object(3).id().value();
     EXPECT_EQ(id4, 4);
@@ -3805,7 +3806,7 @@ TEST(TestOsiReporter, StationaryObjectTest)
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(4).base().position().x(), 30.0);
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(4).base().position().y(), 5.0);
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(4).base().position().z(), 0.0);
-    EXPECT_DOUBLE_EQ(osi_gt.stationary_object(4).base().dimension().length(), 0.0); // check this is correct TODo
+    EXPECT_DOUBLE_EQ(osi_gt.stationary_object(4).base().dimension().length(), DEFAULT_MIN_DIM);
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(4).base().dimension().width(), 2.0);
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(4).base().dimension().height(), 6.0);
 
@@ -3856,6 +3857,7 @@ TEST(TestOsiReporter, StationaryObjectTest)
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(13).base().position().y(), 5.0);
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(13).base().position().z(), 0.0);
 
+    //with viewer
     const char* args[] = {"--osc",
                           "../../../EnvironmentSimulator/Unittest/xosc/test_stationary_objects.xosc",
                           "--window",
@@ -3873,8 +3875,8 @@ TEST(TestOsiReporter, StationaryObjectTest)
     osi_gt.ParseFromArray(gt1, sv_size);
 
     EXPECT_EQ(osi_gt.mutable_stationary_object()->size(), 16);
-    EXPECT_DOUBLE_EQ(osi_gt.stationary_object(0).base().dimension().length(), 0);
-    EXPECT_DOUBLE_EQ(osi_gt.stationary_object(0).base().dimension().width(), 0);
+    EXPECT_DOUBLE_EQ(osi_gt.stationary_object(0).base().dimension().length(), DEFAULT_MIN_DIM);
+    EXPECT_DOUBLE_EQ(osi_gt.stationary_object(0).base().dimension().width(), DEFAULT_MIN_DIM);
 
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(1).base().dimension().length(), 4.0);
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(1).base().dimension().width(), 4.0);
@@ -3884,7 +3886,7 @@ TEST(TestOsiReporter, StationaryObjectTest)
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(2).base().dimension().width(), 1.0);
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(2).base().dimension().height(), 1.0);
 #else
-    EXPECT_DOUBLE_EQ(osi_gt.stationary_object(2).base().dimension().length(), 0.0);  // with viewer no BB
+    EXPECT_DOUBLE_EQ(osi_gt.stationary_object(2).base().dimension().length(), 0.0);
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(2).base().dimension().width(), 0.0);
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(2).base().dimension().height(), 0.0);
 #endif  // _USE_OSG
@@ -3892,8 +3894,11 @@ TEST(TestOsiReporter, StationaryObjectTest)
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(3).base().dimension().length(), 2.0);
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(3).base().dimension().width(), 2.0);
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(3).base().dimension().height(), 3.0);
-
+#ifdef _USE_OSG
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(4).base().dimension().length(), 1.0);
+#else
+    EXPECT_DOUBLE_EQ(osi_gt.stationary_object(4).base().dimension().length(), 0.0);
+#endif  // _USE_OSG
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(4).base().dimension().width(), 2.0);
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(4).base().dimension().height(), 6.0);
 
@@ -3915,7 +3920,7 @@ TEST(TestOsiReporter, StationaryObjectTest)
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(5).base().base_polygon(4).y(), 1.25);
 #endif  // _USE_OSG
 
-    EXPECT_DOUBLE_EQ(osi_gt.stationary_object(8).base().dimension().length(), 4.0);  // same object from repeat
+    EXPECT_DOUBLE_EQ(osi_gt.stationary_object(8).base().dimension().length(), 4.0);
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(8).base().dimension().width(), 2.5);
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(8).base().dimension().height(), 2.0);
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(8).base().position().x(), 85.0);
@@ -3939,7 +3944,7 @@ TEST(TestOsiReporter, StationaryObjectTest)
 
 TEST(TestOsiReporter, OutlineInSharpCurve)
 {
-    std::string scenario_file = "../EnvironmentSimulator/Unittest/xosc/test_outline_in_sharp_curve.xosc";
+    std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/test_outline_in_sharp_curve.xosc";
     const char* Scenario_file = scenario_file.c_str();
     int         i_init        = SE_Init(Scenario_file, 0, 0, 0, 0);
     ASSERT_EQ(i_init, 0);
@@ -3954,22 +3959,22 @@ TEST(TestOsiReporter, OutlineInSharpCurve)
 
     EXPECT_EQ(osi_gt.mutable_stationary_object()->size(), 8);
     EXPECT_EQ(osi_gt.stationary_object(0).base().base_polygon_size(), 4.0);
-    EXPECT_NEAR(osi_gt.stationary_object(0).base().base_polygon(0).x(), 15.340, 1e-3);
-    EXPECT_NEAR(osi_gt.stationary_object(0).base().base_polygon(0).y(), -9.230, 1e-3);
-    EXPECT_NEAR(osi_gt.stationary_object(0).base().base_polygon(3).x(), 11.784, 1e-3);
-    EXPECT_NEAR(osi_gt.stationary_object(0).base().base_polygon(3).y(), -5.715, 1e-3);
+    EXPECT_NEAR(osi_gt.stationary_object(0).base().base_polygon(0).x(), 8.243, 1e-3);
+    EXPECT_NEAR(osi_gt.stationary_object(0).base().base_polygon(0).y(), -15.948, 1e-3);
+    EXPECT_NEAR(osi_gt.stationary_object(0).base().base_polygon(3).x(), 5.846, 1e-3);
+    EXPECT_NEAR(osi_gt.stationary_object(0).base().base_polygon(3).y(), -11.560, 1e-3);
 
     EXPECT_EQ(osi_gt.stationary_object(2).base().base_polygon_size(), 4.0);
-    EXPECT_NEAR(osi_gt.stationary_object(2).base().base_polygon(0).x(), -1.516, 1e-3);
-    EXPECT_NEAR(osi_gt.stationary_object(2).base().base_polygon(0).y(), 9.884, 1e-3);
-    EXPECT_NEAR(osi_gt.stationary_object(2).base().base_polygon(3).x(), -6.507, 1e-3);
-    EXPECT_NEAR(osi_gt.stationary_object(2).base().base_polygon(3).y(), 9.571, 1e-3);
+    EXPECT_NEAR(osi_gt.stationary_object(2).base().base_polygon(0).x(), 36.554, 1e-3);
+    EXPECT_NEAR(osi_gt.stationary_object(2).base().base_polygon(0).y(), 15.100, 1e-3);
+    EXPECT_NEAR(osi_gt.stationary_object(2).base().base_polygon(3).x(), 31.604, 1e-3);
+    EXPECT_NEAR(osi_gt.stationary_object(2).base().base_polygon(3).y(), 14.395, 1e-3);
 
     EXPECT_EQ(osi_gt.stationary_object(3).base().base_polygon_size(), 4.0);
-    EXPECT_NEAR(osi_gt.stationary_object(3).base().base_polygon(0).x(), -22.177, 1e-3);
-    EXPECT_NEAR(osi_gt.stationary_object(3).base().base_polygon(0).y(), 17.674, 1e-3);
-    EXPECT_NEAR(osi_gt.stationary_object(3).base().base_polygon(3).x(), -26.855, 1e-3);
-    EXPECT_NEAR(osi_gt.stationary_object(3).base().base_polygon(3).y(), 19.438, 1e-3);
+    EXPECT_NEAR(osi_gt.stationary_object(3).base().base_polygon(0).x(), 32.835, 1e-3);
+    EXPECT_NEAR(osi_gt.stationary_object(3).base().base_polygon(0).y(), 36.795, 1e-3);
+    EXPECT_NEAR(osi_gt.stationary_object(3).base().base_polygon(3).x(), 29.168, 1e-3);
+    EXPECT_NEAR(osi_gt.stationary_object(3).base().base_polygon(3).y(), 33.3968, 1e-3);
 
     EXPECT_EQ(osi_gt.stationary_object(7).base().base_polygon_size(), 4.0);
     EXPECT_NEAR(osi_gt.stationary_object(7).base().base_polygon(0).x(), 1.484, 1e-3);
@@ -4026,7 +4031,7 @@ TEST(TestOsiReporter, OutlinesWithChangingBB)
     EXPECT_EQ(osi_gt.stationary_object(30).base().base_polygon_size(), 3);
     EXPECT_NEAR(osi_gt.stationary_object(30).base().base_polygon(0).x(), 14.999, 1e-3);
     EXPECT_NEAR(osi_gt.stationary_object(30).base().base_polygon(0).y(), -32.500, 1e-3);
-    EXPECT_NEAR(osi_gt.stationary_object(30).base().base_polygon(1).x(), 19.999, 1e-3);
+    EXPECT_NEAR(osi_gt.stationary_object(30).base().base_polygon(1).x(), 20.000, 1e-3);
     EXPECT_NEAR(osi_gt.stationary_object(30).base().base_polygon(1).y(), -27.5, 1e-3);
     EXPECT_NEAR(osi_gt.stationary_object(30).base().base_polygon(2).x(), 14.999, 1e-3);
     EXPECT_NEAR(osi_gt.stationary_object(30).base().base_polygon(2).y(), -27.500, 1e-3);

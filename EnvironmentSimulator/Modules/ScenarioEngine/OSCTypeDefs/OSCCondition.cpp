@@ -1503,7 +1503,7 @@ bool TrigByRelativeClearance::CheckCondition(double sim_time)
 
         Object* refObject_;
         result = false;
-
+    
         // First check all entities within lane range
         for (size_t j = 0; j < storyBoard_->entities_->object_.size(); j++)
         {

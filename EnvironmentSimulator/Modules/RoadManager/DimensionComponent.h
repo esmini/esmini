@@ -24,6 +24,12 @@ namespace esmini
             return 0;
         }
 
+        // Returns raw value
+        double GetRawValue() const
+        {
+            return value_;
+        }
+
         // Sets value
         void Set(double value)
         {
