@@ -103,7 +103,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/../E
 link_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/../bin
-    ${CMAKE_CURRENT_SOURCE_DIR}/../externals/osi/${EXT_INCL_DIR}/lib
+    ${CMAKE_CURRENT_SOURCE_DIR}/../externals/osi/${EXT_INCL_DIR}/lib/release
     ${CMAKE_CURRENT_SOURCE_DIR}/../externals/sumo/${EXT_INCL_DIR}/lib
     ${CMAKE_CURRENT_SOURCE_DIR}/../externals/osg/${EXT_INCL_DIR}/lib
     ${CMAKE_CURRENT_SOURCE_DIR}/../externals/osg/${EXT_INCL_DIR}/lib/osgPlugins-3.6.5
