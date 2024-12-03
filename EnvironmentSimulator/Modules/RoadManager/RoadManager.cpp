@@ -3315,12 +3315,6 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                 std::numeric_limits<int>::quiet_NaN(),
                 ""};
 
-    geo_offset_ = {std::numeric_limits<double>::quiet_NaN(),
-                   std::numeric_limits<double>::quiet_NaN(),
-                   std::numeric_limits<double>::quiet_NaN(),
-                   std::numeric_limits<double>::quiet_NaN(),
-                   ""};
-
     pugi::xml_node header_node = node.child("header");
     if (node != NULL)
     {
@@ -3499,10 +3493,18 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
             for (pugi::xml_node geometry = plan_view.child("geometry"); geometry; geometry = geometry.next_sibling())
             {
                 double s       = atof(geometry.attribute("s").value());
-                double x       = atof(geometry.attribute("x").value());
-                double y       = atof(geometry.attribute("y").value());
-                double hdg     = atof(geometry.attribute("hdg").value());
+                double x0      = atof(geometry.attribute("x").value());
+                double y0      = atof(geometry.attribute("y").value());
+                double hdg0    = atof(geometry.attribute("hdg").value());
                 double glength = atof(geometry.attribute("length").value());
+
+                // tranform according to offset specification
+                double x1 = x0 + geo_offset_.x_;
+                double y1 = y0 + geo_offset_.y_;
+                double x, y;
+
+                RotateVec2D(x1, y1, geo_offset_.hdg_, x, y);
+                double hdg = GetAngleInInterval2PI(hdg0 + geo_offset_.hdg_);
 
                 pugi::xml_node type = geometry.last_child();
                 if (type != NULL)
@@ -3582,7 +3584,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                 double c = atof(elevation.attribute("c").value());
                 double d = atof(elevation.attribute("d").value());
 
-                Elevation* ep = new Elevation(s, a, b, c, d);
+                Elevation* ep = new Elevation(s, a + geo_offset_.z_, b, c, d);
                 if (ep != NULL)
                 {
                     r->AddElevation(ep);

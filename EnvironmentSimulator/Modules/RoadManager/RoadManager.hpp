@@ -2714,14 +2714,14 @@ namespace roadmanager
         std::string orig_georef_str_;
     } GeoReference;
 
-    typedef struct
+    struct GeoOffset  // Only available in OSI 3.7.0
     {
-        double      x_;
-        double      y_;
-        double      z_;
-        double      hdg_;
+        double      x_   = 0.0;
+        double      y_   = 0.0;
+        double      z_   = 0.0;
+        double      hdg_ = 0.0;
         std::string orig_geooffset_str_;
-    } GeoOffset;  // Only available in OSI 3.7.0
+    };
 
     class OpenDrive
     {

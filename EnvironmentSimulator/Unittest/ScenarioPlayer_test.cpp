@@ -561,6 +561,39 @@ TEST(OSI, TestDirectJunctions)
     delete player;
 }
 
+TEST(OSI, TestGeoOffset)
+{
+    const char* args[] =
+        {"esmini", "--osc", "../../../EnvironmentSimulator/Unittest/xosc/geo_pos.xosc", "--headless", "--osi_file", "--disable_stdout"};
+    int             argc   = sizeof(args) / sizeof(char*);
+    ScenarioPlayer* player = new ScenarioPlayer(argc, const_cast<char**>(args));
+
+    ASSERT_NE(player, nullptr);
+    int retval = player->Init();
+    ASSERT_EQ(retval, 0);
+
+    ScenarioEngine* se = player->scenarioEngine;
+    ASSERT_EQ(se->entities_.object_.size(), 0);
+
+    const osi3::GroundTruth* osi_gt_ptr = reinterpret_cast<const osi3::GroundTruth*>(player->osiReporter->GetOSIGroundTruthRaw());
+    ASSERT_NE(osi_gt_ptr, nullptr);
+
+    // verify that proj_string includes the offset values, and that the missing z value is omitted
+    EXPECT_STREQ(osi_gt_ptr->proj_string().c_str(), "offset x=-1000 y=-500 z=0.0 hdg=0.959931");
+
+    // verify correct location of some lane OSI points after offset transformation
+    EXPECT_EQ(osi_gt_ptr->lane(1).id().value(), 2);
+    EXPECT_EQ(osi_gt_ptr->lane(0).classification().centerline().size(), 3);
+    EXPECT_NEAR(osi_gt_ptr->lane(0).classification().centerline(0).x(), -139.5333, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->lane(0).classification().centerline(0).y(), -23.0803, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->lane(0).classification().centerline(1).x(), -90.2929, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->lane(0).classification().centerline(1).y(), -14.3979, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->lane(0).classification().centerline(2).x(), -41.0525, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->lane(0).classification().centerline(2).y(), -5.7155, 1e-3);
+
+    delete player;
+}
+
 #endif  // _USE_OSI
 
 // #define LOG_TO_CONSOLE
