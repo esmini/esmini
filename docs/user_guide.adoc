@@ -382,7 +382,7 @@ For troubleshooting, the following command might give information about the grap
 esmini can produce log files in different formats and for different purposes, explained next.
 
 ==== The basic text log file
-By default esmini is creating a `log.txt` in the folder from which esmini is launched. In case of esminiLib it will end up in the folder that the application linking esminiLib was launched from. The log filename can be customized. 
+By default esmini is creating a `log.txt` in the folder from which esmini is launched. In case of esminiLib it will end up in the folder that the application linking esminiLib was launched from. The log filename can be customized.
 
 The log file includes the same information normally seen in the terminal window (stdout).
 
@@ -392,7 +392,7 @@ To disable output to terminal: +
 To disable creation of the logfile (`log.txt`): +
 ``./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/slow-lead-vehicle.xosc --disable_log``
 
-esmini has enhanced logger from release v2.42.0 supporting log verbosity levels, log file appending, enabling/disabling meta data and filtering on module level logging. 
+esmini has enhanced logger from release v2.41.0 supporting log verbosity levels, log file appending, enabling/disabling meta data and filtering on module level logging.
 
 ===== Log verbosity
 There are four log verbosity levels:
@@ -404,9 +404,9 @@ There are four log verbosity levels:
 
 The log level can be set from command line argument. If not provided, then `info` level is set by default. Log verbosity goes from `error` (low) to `debug` (high). Log entries will be included from `error` up to the specified level.
 
-Example 1: Log level `debug` will include all entries (`error`, `warn`, `info` and `debug`) as the highest level has been selected. 
+Example 1: `--log_level debug` will include all entries (`error`, `warn`, `info` and `debug`) as the highest level has been selected.
 
-Example 2: Log level `warn` will include `error` and `warn` entries only.
+Example 2: `--log_level warn` will include `error` and `warn` entries only.
 
 Developers can use `LOG_ERROR`, `LOG_WARN`, `LOG_INFO` and `LOG_DEBUG` macros to effectively prioritize log messages.
 
@@ -429,7 +429,7 @@ If there is a need to gather log entries of any particular module(s) i.e. hpp/cp
 
 `--log_only_modules playerbase`
 
-will only log from `playerbase.hpp/cpp` files. All other log entries will be skipped. 
+will only log from `playerbase.hpp/cpp` files. All other log entries will be skipped.
 
 Opposite to log only modules, there is an option to skip specific modules. Example:
 
@@ -438,6 +438,42 @@ Opposite to log only modules, there is an option to skip specific modules. Examp
 will skip all log entries from `playerbase.hpp/cpp` and `Replay.hpp/cpp` files. Entries from all other modules will be included.
 
 Note that `--log_only_modules` and `--log_skip_modules` are mutually exclusive. If a module is listed in both options, then priority is given to `--log_only_modules`. Hence logging will be enabled for specified module, ignoring its presence in `--log_skip_modules`.
+
+===== Log use case example
+
+Assume you're only interested in storyboard events, like actions and triggers. First step is to run a representative scenario to find out what modules you're interested in. Example:
+
+`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in.xosc --log_meta_data`
+
+It will show all log entries up to `info` level, including meta data. Look for the module names in the log entries. Then run the scenario again with module filter. Example:
+
+`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in.xosc --log_only_modules Storyboard,StoryboardElement,OSCCondition`
+
+It will show only log entries relating to storyboard, including triggering. Example excerpt:
+
+[source, text]
+----
+...
+[0.001] [info] OverTakerStartSpeedEvent standbyState -> startTransition -> runningState
+[0.001] [info] OverTakerStartSpeedAction initState -> startTransition -> runningState
+[6.179] [info] Trigger /------------------------------------------------
+[6.179] [info] CutInStartCondition == true, HWT: 0.40 > 0.40, edge rising
+[6.179] [info] Triggering entity 0: Ego
+[6.179] [info] Trigger  ------------------------------------------------/
+[6.179] [info] OverTakerStartSpeedAction runningState -> endTransition -> completeState
+[6.179] [info] OverTakerStartSpeedEvent complete after 1 execution
+[6.179] [info] OverTakerStartSpeedEvent runningState -> endTransition -> completeState
+[6.179] [info] Event OverTakerStartSpeedEvent ended, overwritten by event CutInEvent
+[6.179] [info] CutInEvent standbyState -> startTransition -> runningState
+[6.179] [info] CutInAction initState -> startTransition -> runningState
+[7.696] [info] Trigger /------------------------------------------------
+[7.696] [info] BrakeCondition_HWT_0.7 == true, HWT: 0.70 > 0.70, edge rising
+[7.696] [info] Triggering entity 0: Ego
+[7.696] [info] Trigger  ------------------------------------------------/
+[7.696] [info] Other events ongoing, OvertakerBrakeEvent will run in parallel
+[7.696] [info] OvertakerBrakeEvent standbyState -> startTransition -> runningState
+...
+----
 
 ==== Scenario recording (.dat)
 In addition esmini can save a `.dat` file which captures the state of all entities. This file can later be used either to replay (see <<Replay scenario>>) the scenario or converted to `.csv` for further analysis, e.g. in Excel.
@@ -3520,6 +3556,7 @@ An exception is when OSI file or UDP receiver is specified by corrsponding launc
 The purpose of this explicit OSI update control is to support use cases where esmini is running at much higher frequency than needed for OSI data (e.g. for vehicle dynamics purposes). To optimize performance, OSI update can then be skipped most frames and only run when needed.
 
 BTW: Any additional explicit calls to `SE_UpdateOSIGroundTruth()` will be ignored. Which means that the programmer does not have to worry about additional performance penalty introduced by multiple calls to this function.
+====
 
 ==== Program Options
 

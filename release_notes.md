@@ -1,5 +1,28 @@
 ## esmini release notes
 
+### 2024-12-04 Version 2.41.0
+
+New features:
+- Extend logger functionality:
+  - verbosity levels
+  - code meta data (module, class, line number)
+  - module filter
+  - more info in User guide [User guide - Logging](https://esmini.github.io/#_logging)
+- Support persistent option setting, remaining across scenario runs
+  - applies to lib usage
+  - more info in User guide [User guide - Program Options](https://esmini.github.io/#_program_options)
+- Support OpenDRIVE Offset and append to OSI proj_string
+  - road network is transformed accordingly
+  - proj_string will contain any geoRef and offset
+  - if both are defined, they are separated by semicolon ";"
+
+Improvements and fixes:
+- Fix typo roadmark -> roadMark ([issue #635](https://github.com/esmini/esmini/issues/635))
+- Add detailed ghost trail return code
+  - see relevant lib API [functions](https://github.com/esmini/esmini/blob/8569e0c71018943ad6b5188db528046c88529b6c/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L1219C1-L1238C115)
+- Align osi lib path in OSMP_FMU build config to new structure from v2.40.0
+- Add spdlog as OSMP_FMU submodule for static build ([issue #638](https://github.com/esmini/esmini/issues/638))
+
 ### 2024-11-25 Version 2.40.4
 
 Improvements and fixes:
