@@ -1027,8 +1027,6 @@ void viewer_thread(void* args)
         return;
     }
 
-    player->InitControllersPostPlayer();
-
     player->viewer_init_semaphore.Release();
     player->player_init_semaphore.Wait();
 
@@ -1757,8 +1755,6 @@ int ScenarioPlayer::Init()
                 LOG_ERROR("Viewer initialization failed");
                 return -1;
             }
-
-            InitControllersPostPlayer();
         }
 
 #else
@@ -1770,6 +1766,8 @@ int ScenarioPlayer::Init()
         PrintUsage();
         LOG_ERROR_AND_QUIT("Capture screen requires a window to be specified!");
     }
+
+    InitControllersPostPlayer();
 
     if (opt.HasUnknownArgs())
     {
