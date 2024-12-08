@@ -111,7 +111,6 @@ namespace roadmanager
         double y;
         double z;
         double h;
-        bool   endpoint;
     } PointStruct;
 
     class OSIPoints
@@ -127,11 +126,11 @@ namespace roadmanager
         {
             point_ = points;
         }
-        std::vector<PointStruct> &GetPoints()
+        const std::vector<PointStruct> &GetPoints() const
         {
             return point_;
         }
-        PointStruct &GetPoint(int i);
+        const PointStruct &GetPoint(int i) const;
         double       GetXfromIdx(int i) const;
         double       GetYfromIdx(int i) const;
         double       GetZfromIdx(int i) const;
@@ -616,11 +615,11 @@ namespace roadmanager
         {
             return width_;
         }
-        OSIPoints *GetOSIPoints()
+        const std::vector<OSIPoints>& GetOSIPoints() const
         {
-            return &osi_points_;
+            return osi_points_;
         }
-        OSIPoints osi_points_;
+        std::vector<OSIPoints> osi_points_;
         void      SetGlobalId();
         int       GetGlobalId() const
         {
@@ -972,9 +971,9 @@ namespace roadmanager
         Lane::Material *GetMaterialByS(double s) const;
 
         RoadMarkInfo GetRoadMarkInfoByS(id_t track_id, int lane_id, double s) const;
-        OSIPoints   *GetOSIPoints()
+        const OSIPoints &GetOSIPoints() const
         {
-            return &osi_points_;
+            return osi_points_;
         }
         std::vector<int> GetLineGlobalIds() const;
         LaneBoundaryOSI *GetLaneBoundary() const

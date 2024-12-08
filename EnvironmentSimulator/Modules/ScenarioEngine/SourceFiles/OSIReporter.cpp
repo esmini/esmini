@@ -990,7 +990,7 @@ int OSIReporter::UpdateOSIIntersection()
     double                  length;
     bool                    new_connecting_road;
     int                     g_id;
-    roadmanager::OSIPoints *osipoints;
+    const std::vector<roadmanager::OSIPoints> *osipoints = nullptr;
 
     static roadmanager::OpenDrive *opendrive = roadmanager::Position::GetOpenDrive();
     osi3::Lane                    *osi_lane  = nullptr;
@@ -1183,7 +1183,7 @@ int OSIReporter::UpdateOSIIntersection()
                             }
                             else
                             {
-                                osipoints = connecting_road->GetLaneSectionByS(0, 0)
+                                osipoints = &connecting_road->GetLaneSectionByS(0, 0)
                                                 ->GetLaneById(-l_id)
                                                 ->GetLaneRoadMarkByIdx(0)
                                                 ->GetLaneRoadMarkTypeByIdx(0)

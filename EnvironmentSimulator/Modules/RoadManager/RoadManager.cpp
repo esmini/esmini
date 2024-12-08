@@ -512,7 +512,7 @@ void Polynomial::Set(double a, double b, double c, double d, double p_scale)
     p_scale_ = p_scale;
 }
 
-PointStruct& OSIPoints::GetPoint(int i)
+const PointStruct& OSIPoints::GetPoint(int i) const
 {
     if (point_.size() <= i || point_.size() == 0)
     {
@@ -6634,12 +6634,12 @@ int OpenDrive::CheckAndAddOSIPoint(Position&                 pos_pivot,
             pos_last_ok.GetS() > osi_point.back().s + SMALL_NUMBER)
         {
             // add last good point
-            p = {pos_last_ok.GetS(), pos_last_ok.GetX(), pos_last_ok.GetY(), pos_last_ok.GetZ(), pos_last_ok.GetHRoad(), false};
+            p = {pos_last_ok.GetS(), pos_last_ok.GetX(), pos_last_ok.GetY(), pos_last_ok.GetZ(), pos_last_ok.GetHRoad()};
         }
         else
         {
             // add candidate
-            p           = {pos_candidate.GetS(), pos_candidate.GetX(), pos_candidate.GetY(), pos_candidate.GetZ(), pos_candidate.GetHRoad(), false};
+            p           = {pos_candidate.GetS(), pos_candidate.GetX(), pos_candidate.GetY(), pos_candidate.GetZ(), pos_candidate.GetHRoad()};
             pos_last_ok = pos_candidate;
         }
 
@@ -7022,7 +7022,7 @@ void OpenDrive::SetRoadMarkOSIPoints()
 
     int                      number_of_lane_sections, number_of_lanes, number_of_roadmarks, number_of_roadmarktypes, number_of_roadmarklines;
     double                   lsec_end, s_roadmark, s_end_roadmark, s_end_roadmarkline;
-    std::vector<double>      x0, y0, x1, y1;
+    std::vector<double>      x0(3), y0(3), x1(3), y1(3);
     std::vector<PointStruct> osi_point;
     bool                     osi_requirement;
 
@@ -7098,8 +7098,7 @@ void OpenDrive::SetRoadMarkOSIPoints()
                                                              pos_candidate.GetX(),
                                                              pos_candidate.GetY(),
                                                              pos_candidate.GetZ(),
-                                                             pos_candidate.GetHRoad(),
-                                                             true};
+                                                             pos_candidate.GetHRoad()};
                                             osi_point.push_back(p);
 
                                             s_roadmark_point += lane_roadMarkTypeLine->GetSpace();
@@ -7241,8 +7240,6 @@ void OpenDrive::SetRoadMarkOSIPoints()
 
                                             if (s > s_end_roadmarkline - SMALL_NUMBER || lane_roadMarkTypeLine->GetRepeat() == false)
                                             {
-                                                osi_point.back().endpoint = true;
-
                                                 if (lane_roadMarkTypeLine->GetRepeat() == false)
                                                 {
                                                     break;
@@ -7254,7 +7251,7 @@ void OpenDrive::SetRoadMarkOSIPoints()
                                     }
 
                                     // Set all collected osi points for the current lane rpadmarkline
-                                    lane_roadMarkTypeLine->osi_points_.Set(osi_point);
+                                    lane_roadMarkTypeLine->osi_points_.push_back(osi_point);
 
                                     // Clear osi collectors for roadmarks for next iteration
                                     osi_point.clear();
@@ -7416,7 +7413,7 @@ typedef struct
     SE_Vector    n;          // normal
     double       h;          // heading
     double       z;          // height
-    PointStruct* osi_point;  // osi point reference
+    const PointStruct* osi_point;  // osi point reference
 } XYZHVertex;
 
 Position::ReturnCode
@@ -7623,7 +7620,7 @@ Position::XYZ2TrackPos(double x3, double y3, double z3, int mode, bool connected
                         {
                             startLaneSecIdx--;
                             startOSIPointIdx =
-                                road->GetLaneSectionByIdx(startLaneSecIdx)->GetLaneById(0)->GetOSIPoints()->GetNumOfOSIPoints() - n_points;
+                                road->GetLaneSectionByIdx(startLaneSecIdx)->GetLaneById(0)->GetOSIPoints().GetNumOfOSIPoints() - n_points;
                             if (startOSIPointIdx < 0)
                             {
                                 n_points         = -startOSIPointIdx;
@@ -7656,11 +7653,11 @@ Position::XYZ2TrackPos(double x3, double y3, double z3, int mode, bool connected
 
         for (int j = startLaneSecIdx; (i != -2 || counter < search_win) && j < road->GetNumberOfLaneSections() && !search_done; j++)
         {
-            OSIPoints* osiPoints = road->GetLaneSectionByIdx(j)->GetLaneById(0)->GetOSIPoints();
+            OSIPoints osiPoints = road->GetLaneSectionByIdx(j)->GetLaneById(0)->GetOSIPoints();
 
             // add two loops at last lane section to handle calculations at last segments. Skip last point on intermediate segments, since
             // it's duplicated by first in following segment
-            int n_iter = (j == road->GetNumberOfLaneSections() - 1) ? osiPoints->GetNumOfOSIPoints() + 2 : osiPoints->GetNumOfOSIPoints() - 1;
+            int n_iter = (j == road->GetNumberOfLaneSections() - 1) ? osiPoints.GetNumOfOSIPoints() + 2 : osiPoints.GetNumOfOSIPoints() - 1;
             for (int k = (j == startLaneSecIdx ? startOSIPointIdx : 0); (i != -2 || counter < search_win) && k < n_iter; k++, counter++)
             {
                 double distTmp      = 0.0;
@@ -7675,16 +7672,16 @@ Position::XYZ2TrackPos(double x3, double y3, double z3, int mode, bool connected
                 l2 = l1;
                 l1 = l0;
 
-                if (k < osiPoints->GetNumOfOSIPoints())
+                if (k < osiPoints.GetNumOfOSIPoints())
                 {
                     l0 = (l0 + 1) % 3;
 
                     v[l0].k         = k;
                     v[l0].lsec_idx  = j;
-                    v[l0].osi_point = &(osiPoints->GetPoint(k));
+                    v[l0].osi_point = &osiPoints.GetPoint(k);
 
                     if (j == 0 && k == 0 ||                                                                       // first segment
-                        (j == road->GetNumberOfLaneSections() - 1) && (k == osiPoints->GetNumOfOSIPoints() - 1))  // last segment
+                        (j == road->GetNumberOfLaneSections() - 1) && (k == osiPoints.GetNumOfOSIPoints() - 1))  // last segment
                     {
                         if (j == 0 && k == 0)
                         {
@@ -7712,7 +7709,7 @@ Position::XYZ2TrackPos(double x3, double y3, double z3, int mode, bool connected
                     }
                 }
 
-                if (counter > 0 && !((j == road->GetNumberOfLaneSections() - 1) && (k > osiPoints->GetNumOfOSIPoints() - 1)))
+                if (counter > 0 && !((j == road->GetNumberOfLaneSections() - 1) && (k > osiPoints.GetNumOfOSIPoints() - 1)))
                 {
                     // All vertex headings, except the last one, are based on osi points
                     v[l1].h = GetAngleOfVector(v[l0].p.x() - v[l1].p.x(), v[l0].p.y() - v[l1].p.y());
@@ -7722,7 +7719,7 @@ Position::XYZ2TrackPos(double x3, double y3, double z3, int mode, bool connected
                 {
                     continue;  // skip first two rounds, wait until needed data collected
                 }
-                else if (!((j == road->GetNumberOfLaneSections() - 1) && (k > osiPoints->GetNumOfOSIPoints() - 1)))
+                else if (!((j == road->GetNumberOfLaneSections() - 1) && (k > osiPoints.GetNumOfOSIPoints() - 1)))
                 {
                     // Calculate normal of previous segment based on mean heading of previous two osi segments.
                     // Except last vertex where actual normal is used
@@ -7889,7 +7886,7 @@ Position::XYZ2TrackPos(double x3, double y3, double z3, int mode, bool connected
         // Do this by comparing the angle to the position with the road normal at found point
 
         PointStruct osip_closest, osip_first, osip_second;
-        osip_closest = roadMin->GetLaneSectionByIdx(jMin)->GetLaneById(0)->GetOSIPoints()->GetPoint(kMin);
+        osip_closest = roadMin->GetLaneSectionByIdx(jMin)->GetLaneById(0)->GetOSIPoints().GetPoint(kMin);
 
         double xTangent = cos(osip_closest.h);
         double yTangent = sin(osip_closest.h);
@@ -7904,7 +7901,7 @@ Position::XYZ2TrackPos(double x3, double y3, double z3, int mode, bool connected
             jFirst     = jMin;
             kFirst     = kMin;
 
-            if (kMin < roadMin->GetLaneSectionByIdx(jMin)->GetLaneById(0)->GetOSIPoints()->GetNumOfOSIPoints() - 1)
+            if (kMin < roadMin->GetLaneSectionByIdx(jMin)->GetLaneById(0)->GetOSIPoints().GetNumOfOSIPoints() - 1)
             {
                 jSecond = jMin;
                 kSecond = kMin + 1;
@@ -7914,7 +7911,7 @@ Position::XYZ2TrackPos(double x3, double y3, double z3, int mode, bool connected
                 if (jMin < roadMin->GetNumberOfLaneSections() - 1)
                 {
                     jSecond = jMin + 1;
-                    if (roadMin->GetLaneSectionByIdx(jSecond)->GetLaneById(0)->GetOSIPoints()->GetNumOfOSIPoints() > 1)
+                    if (roadMin->GetLaneSectionByIdx(jSecond)->GetLaneById(0)->GetOSIPoints().GetNumOfOSIPoints() > 1)
                     {
                         kSecond = 1;  // Skip first point, it's the same as last in last lane section
                     }
@@ -7930,7 +7927,7 @@ Position::XYZ2TrackPos(double x3, double y3, double z3, int mode, bool connected
                     kSecond = kMin;
                 }
             }
-            osip_second = roadMin->GetLaneSectionByIdx(jSecond)->GetLaneById(0)->GetOSIPoints()->GetPoint(kSecond);
+            osip_second = roadMin->GetLaneSectionByIdx(jSecond)->GetLaneById(0)->GetOSIPoints().GetPoint(kSecond);
         }
         else
         {
@@ -7949,15 +7946,15 @@ Position::XYZ2TrackPos(double x3, double y3, double z3, int mode, bool connected
                 if (jMin > 0)
                 {
                     jFirst = jMin - 1;
-                    if (roadMin->GetLaneSectionByIdx(jFirst)->GetLaneById(0)->GetOSIPoints()->GetNumOfOSIPoints() > 1)
+                    if (roadMin->GetLaneSectionByIdx(jFirst)->GetLaneById(0)->GetOSIPoints().GetNumOfOSIPoints() > 1)
                     {
                         // Skip last point, it's the same as first in successor lane section
-                        kFirst = roadMin->GetLaneSectionByIdx(jFirst)->GetLaneById(0)->GetOSIPoints()->GetNumOfOSIPoints() - 2;
+                        kFirst = roadMin->GetLaneSectionByIdx(jFirst)->GetLaneById(0)->GetOSIPoints().GetNumOfOSIPoints() - 2;
                     }
                     else
                     {
                         // Only one point available in lane section - don't go further
-                        kFirst = roadMin->GetLaneSectionByIdx(jFirst)->GetLaneById(0)->GetOSIPoints()->GetNumOfOSIPoints() - 1;
+                        kFirst = roadMin->GetLaneSectionByIdx(jFirst)->GetLaneById(0)->GetOSIPoints().GetNumOfOSIPoints() - 1;
                     }
                 }
                 else
@@ -7967,7 +7964,7 @@ Position::XYZ2TrackPos(double x3, double y3, double z3, int mode, bool connected
                     kFirst = kMin;
                 }
             }
-            osip_first = roadMin->GetLaneSectionByIdx(jFirst)->GetLaneById(0)->GetOSIPoints()->GetPoint(kFirst);
+            osip_first = roadMin->GetLaneSectionByIdx(jFirst)->GetLaneById(0)->GetOSIPoints().GetPoint(kFirst);
         }
 
         if (jFirst == jSecond && kFirst == kSecond)
