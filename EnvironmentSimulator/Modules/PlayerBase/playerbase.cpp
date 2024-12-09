@@ -660,25 +660,6 @@ void ScenarioPlayer::CloseViewer()
     viewerState_ = ScenarioPlayer::ViewerState::VIEWER_STATE_DONE;
 }
 
-void ScenarioPlayer::InitControllersPostPlayer()
-{
-    if (!scenarioEngine->GetDisableControllersFlag())
-    {
-        //  Create relation between controllers and player
-        for (size_t i = 0; i < scenarioEngine->entities_.object_.size(); i++)
-        {
-            if (scenarioEngine->entities_.object_[i]->controllers_.size() > 0)
-            {
-                for (auto ctrl : scenarioEngine->entities_.object_[i]->controllers_)
-                {
-                    ctrl->SetPlayer(this);
-                    ctrl->InitPostPlayer();
-                }
-            }
-        }
-    }
-}
-
 int ScenarioPlayer::InitViewer()
 {
     std::string arg_str;
@@ -1041,6 +1022,25 @@ void viewer_thread(void* args)
 }
 
 #endif
+
+void ScenarioPlayer::InitControllersPostPlayer()
+{
+    if (!scenarioEngine->GetDisableControllersFlag())
+    {
+        //  Create relation between controllers and player
+        for (size_t i = 0; i < scenarioEngine->entities_.object_.size(); i++)
+        {
+            if (scenarioEngine->entities_.object_[i]->controllers_.size() > 0)
+            {
+                for (auto ctrl : scenarioEngine->entities_.object_[i]->controllers_)
+                {
+                    ctrl->SetPlayer(this);
+                    ctrl->InitPostPlayer();
+                }
+            }
+        }
+    }
+}
 
 int ScenarioPlayer::AddObjectSensor(Object* obj, double x, double y, double z, double h, double near_dist, double far_dist, double fovH, int maxObj)
 {
