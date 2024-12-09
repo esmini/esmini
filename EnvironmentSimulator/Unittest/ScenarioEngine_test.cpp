@@ -2587,10 +2587,10 @@ TEST(TwoPlusOneRoadTest, TestTwoPlusOneRoad)
         double h;
         int    lane_id;
     } exp_values[5] = {{4.0, 115.0, -1.75, 0.0, -1},
-                       {5.25, 134.19, -1.789, 0.054, -2},
-                       {7.0, 168.89, -2.154, 0.05, -1},
-                       {9.0, 218.22, -1.75, 0.0, -1},
-                       {11.25, 274.39, -4.118, 6.20, -2}};
+                       {5.25, 134.19, -1.478, 0.054, -2},
+                       {7.0, 168.89, 1.201, 0.05, -1},
+                       {9.0, 218.22, 1.75, 0.0, -1},
+                       {11.25, 274.39, -0.617, 6.20, -2}};
 
     ASSERT_NE(se, nullptr);
 
@@ -4077,6 +4077,261 @@ TEST(PositionTest, TestRelativePositionPhases)
     EXPECT_NEAR(entities->object_[1]->GetSpeed(), 0.0, 1E-3);
 
     delete se;
+}
+
+class LaneOffsetIntersectionTest : public ::testing::Test
+{
+protected:
+    LaneOffsetIntersectionTest()
+    {
+        se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/lane_offset_intersection.xosc");
+    }
+
+    ~LaneOffsetIntersectionTest()
+    {
+        delete se;
+    }
+
+    ScenarioEngine* se = nullptr;
+};
+
+TEST_F(LaneOffsetIntersectionTest, AssertInitialization)
+{
+    ASSERT_NE(se, nullptr);
+    ASSERT_EQ(se->entities_.object_.size(), 6);
+    ASSERT_EQ(se->entities_.object_[0]->GetName(), "RoadUser1");
+    ASSERT_EQ(se->entities_.object_[1]->GetName(), "RoadUser2");
+    ASSERT_EQ(se->entities_.object_[2]->GetName(), "RoadUser3");
+    ASSERT_EQ(se->entities_.object_[3]->GetName(), "RoadUser4");
+    ASSERT_EQ(se->entities_.object_[4]->GetName(), "RoadUser5");
+    ASSERT_EQ(se->entities_.object_[5]->GetName(), "RoadUser6");
+}
+
+TEST_F(LaneOffsetIntersectionTest, TestLaneOffsetOfMovingObjects)
+{
+    se->step(0.0);
+    se->prepareGroundTruth(0.0);
+
+    // Check initial positions
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), -68.0103, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), -14.4175, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetH(), 0.5300, 1E-3);
+    EXPECT_EQ(se->entities_.object_[0]->pos_.GetTrackId(), 6);
+    EXPECT_EQ(se->entities_.object_[0]->pos_.GetLaneId(), -2);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetOffset(), 0.0, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetT(), -1.7500, 1E-3);
+
+    EXPECT_NEAR(se->entities_.object_[1]->pos_.GetX(), -77.6025, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[1]->pos_.GetY(), -17.8277, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[1]->pos_.GetH(), 0.5593, 1E-3);
+    EXPECT_EQ(se->entities_.object_[1]->pos_.GetTrackId(), 6);
+    EXPECT_EQ(se->entities_.object_[1]->pos_.GetLaneId(), -1);
+    EXPECT_NEAR(se->entities_.object_[1]->pos_.GetOffset(), 0.0, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[1]->pos_.GetT(), 0.1575, 1E-3);
+
+    EXPECT_NEAR(se->entities_.object_[2]->pos_.GetX(), 2.3015, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[2]->pos_.GetY(), -1.3783, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[2]->pos_.GetH(), 2.6030, 1E-3);
+    EXPECT_EQ(se->entities_.object_[2]->pos_.GetTrackId(), 1);
+    EXPECT_EQ(se->entities_.object_[2]->pos_.GetLaneId(), -2);
+    EXPECT_NEAR(se->entities_.object_[2]->pos_.GetOffset(), 0.0, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[2]->pos_.GetT(), -1.75, 1E-3);
+
+    EXPECT_NEAR(se->entities_.object_[3]->pos_.GetX(), -7.6699, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[3]->pos_.GetY(), 1.4288, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[3]->pos_.GetH(), 2.6937, 1E-3);
+    EXPECT_EQ(se->entities_.object_[3]->pos_.GetTrackId(), 1);
+    EXPECT_EQ(se->entities_.object_[3]->pos_.GetLaneId(), -1);
+    EXPECT_NEAR(se->entities_.object_[3]->pos_.GetOffset(), 0.0, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[3]->pos_.GetT(), 0.9539, 1E-3);
+
+    EXPECT_NEAR(se->entities_.object_[4]->pos_.GetX(), -36.3563, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[4]->pos_.GetY(), 55.7786, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[4]->pos_.GetH(), 4.8018, 1E-3);
+    EXPECT_EQ(se->entities_.object_[4]->pos_.GetTrackId(), 7);
+    EXPECT_EQ(se->entities_.object_[4]->pos_.GetLaneId(), -2);
+    EXPECT_NEAR(se->entities_.object_[4]->pos_.GetOffset(), 0.0, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[4]->pos_.GetT(), -1.75, 1E-3);
+
+    EXPECT_NEAR(se->entities_.object_[5]->pos_.GetX(), -33.1141, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[5]->pos_.GetY(), 46.0291, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[5]->pos_.GetH(), 4.8676, 1E-3);
+    EXPECT_EQ(se->entities_.object_[5]->pos_.GetTrackId(), 7);
+    EXPECT_EQ(se->entities_.object_[5]->pos_.GetLaneId(), -1);
+    EXPECT_NEAR(se->entities_.object_[5]->pos_.GetOffset(), 0.0, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[5]->pos_.GetT(), 0.6087, 1E-3);
+
+    while (se->getSimulationTime() < 3.0 - SMALL_NUMBER)
+    {
+        se->step(0.1);
+        se->prepareGroundTruth(0.1);
+    }
+
+    // At time=3.0, three vehicles are in the intersection
+    EXPECT_NEAR(se->entities_.object_[2]->pos_.GetX(), -19.1442, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[2]->pos_.GetY(), 11.4437, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[2]->pos_.GetH(), 2.5871, 1E-3);
+    EXPECT_EQ(se->entities_.object_[2]->pos_.GetTrackId(), 9);
+    EXPECT_EQ(se->entities_.object_[2]->pos_.GetLaneId(), -1);
+    EXPECT_NEAR(se->entities_.object_[2]->pos_.GetOffset(), 0.0, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[2]->pos_.GetT(), -1.75, 1E-3);
+
+    EXPECT_NEAR(se->entities_.object_[3]->pos_.GetX(), -30.2390, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[3]->pos_.GetY(), 12.1042, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[3]->pos_.GetH(), 3.0023, 1E-3);
+    EXPECT_EQ(se->entities_.object_[3]->pos_.GetTrackId(), 10);
+    EXPECT_EQ(se->entities_.object_[3]->pos_.GetLaneId(), -1);
+    EXPECT_NEAR(se->entities_.object_[3]->pos_.GetOffset(), 0.0, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[3]->pos_.GetT(), -1.75, 1E-3);
+
+    EXPECT_NEAR(se->entities_.object_[5]->pos_.GetX(), -29.7425, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[5]->pos_.GetY(), 21.2292, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[5]->pos_.GetH(), 4.8049, 1E-3);
+    EXPECT_EQ(se->entities_.object_[5]->pos_.GetTrackId(), 13);
+    EXPECT_EQ(se->entities_.object_[5]->pos_.GetLaneId(), -1);
+    EXPECT_NEAR(se->entities_.object_[5]->pos_.GetOffset(), 0.0, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[5]->pos_.GetT(), -1.75, 1E-3);
+
+    while (se->getSimulationTime() < 9.0 - SMALL_NUMBER)
+    {
+        se->step(0.1);
+        se->prepareGroundTruth(0.1);
+    }
+
+    // At time=9.0, all vehicles has passed through the intersection
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), -0.7407, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), -4.1387, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetH(), 5.8709, 1E-3);
+    EXPECT_EQ(se->entities_.object_[0]->pos_.GetTrackId(), 1);
+    EXPECT_EQ(se->entities_.object_[0]->pos_.GetLaneId(), 1);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetOffset(), 0.0, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetT(), 2.1799, 1E-3);
+
+    EXPECT_NEAR(se->entities_.object_[1]->pos_.GetX(), -27.2357, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[1]->pos_.GetY(), 29.7535, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[1]->pos_.GetH(), 1.7347, 1E-3);
+    EXPECT_EQ(se->entities_.object_[1]->pos_.GetTrackId(), 7);
+    EXPECT_EQ(se->entities_.object_[1]->pos_.GetLaneId(), 1);
+    EXPECT_NEAR(se->entities_.object_[1]->pos_.GetOffset(), 0.0, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[1]->pos_.GetT(), 5.0103, 1E-3);
+
+    EXPECT_NEAR(se->entities_.object_[2]->pos_.GetX(), -33.0036, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[2]->pos_.GetY(), 58.2209, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[2]->pos_.GetH(), 1.6991, 1E-3);
+    EXPECT_EQ(se->entities_.object_[2]->pos_.GetTrackId(), 7);
+    EXPECT_EQ(se->entities_.object_[2]->pos_.GetLaneId(), 1);
+    EXPECT_NEAR(se->entities_.object_[2]->pos_.GetOffset(), 0.0, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[2]->pos_.GetT(), 1.8074, 1E-3);
+
+    EXPECT_NEAR(se->entities_.object_[3]->pos_.GetX(), -72.9814, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[3]->pos_.GetY(), -12.3456, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[3]->pos_.GetH(), 3.7546, 1E-3);
+    EXPECT_EQ(se->entities_.object_[3]->pos_.GetTrackId(), 6);
+    EXPECT_EQ(se->entities_.object_[3]->pos_.GetLaneId(), 1);
+    EXPECT_NEAR(se->entities_.object_[3]->pos_.GetOffset(), 0.0, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[3]->pos_.GetT(), 2.5509, 1E-3);
+
+    EXPECT_NEAR(se->entities_.object_[4]->pos_.GetX(), -62.1094, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[4]->pos_.GetY(), -4.5303, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[4]->pos_.GetH(), 3.7672, 1E-3);
+    EXPECT_EQ(se->entities_.object_[4]->pos_.GetTrackId(), 6);
+    EXPECT_EQ(se->entities_.object_[4]->pos_.GetLaneId(), 1);
+    EXPECT_NEAR(se->entities_.object_[4]->pos_.GetOffset(), 0.0, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[4]->pos_.GetT(), 3.7968, 1E-3);
+
+    EXPECT_NEAR(se->entities_.object_[5]->pos_.GetX(), 6.3723, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[5]->pos_.GetY(), -7.8872, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[5]->pos_.GetH(), 5.7446, 1E-3);
+    EXPECT_EQ(se->entities_.object_[5]->pos_.GetTrackId(), 3);
+    EXPECT_EQ(se->entities_.object_[5]->pos_.GetLaneId(), -1);
+    EXPECT_NEAR(se->entities_.object_[5]->pos_.GetOffset(), 0.0, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[5]->pos_.GetT(), -1.75, 1E-3);
+}
+
+TEST_F(LaneOffsetIntersectionTest, TestLaneOffsetOfSomeLocations)
+{
+    // check a few specific locations with and without lane offset
+    // correlation between track and interial coordinates should be close
+    // not perfect since the X,Y to S,T conversion is based on OSI points
+    // first point is outside intersection, non zero lane offset
+    double point1[2] = {-43.8969, 3.7701};
+    se->entities_.object_[0]->pos_.SetTrackPos(6, 50.0, 1.75);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), point1[0], 1E-3);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), point1[1], 1E-3);
+    EXPECT_EQ(se->entities_.object_[0]->pos_.GetTrackId(), 6);
+    EXPECT_EQ(se->entities_.object_[0]->pos_.GetLaneId(), -1);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetOffset(), 0.0279, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetT(), 1.75, 1E-3);
+
+    se->entities_.object_[0]->pos_.SetInertiaPos(point1[0], point1[1], 0.0);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), point1[0], 1E-3);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), point1[1], 1E-3);
+    EXPECT_EQ(se->entities_.object_[0]->pos_.GetTrackId(), 6);
+    EXPECT_EQ(se->entities_.object_[0]->pos_.GetLaneId(), -1);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetOffset(), 0.0, 0.05);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetS(), 50.0, 0.05);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetT(), 1.75, 0.05);
+
+    // second point is inside intersection, zero lane offset
+    double point2[2] = {-36.0975, 8.3355};
+    se->entities_.object_[0]->pos_.SetTrackPos(12, 5.0, -1.75);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), point2[0], 1E-3);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), point2[1], 1E-3);
+    EXPECT_EQ(se->entities_.object_[0]->pos_.GetTrackId(), 12);
+    EXPECT_EQ(se->entities_.object_[0]->pos_.GetLaneId(), -1);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetOffset(), 0.0, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetT(), -1.75, 1E-3);
+
+    se->entities_.object_[0]->pos_.SetInertiaPos(point2[0], point2[1], 0.0);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), point2[0], 1E-3);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), point2[1], 1E-3);
+    EXPECT_EQ(se->entities_.object_[0]->pos_.GetTrackId(), 12);
+    EXPECT_EQ(se->entities_.object_[0]->pos_.GetLaneId(), -1);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetOffset(), 0.0, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetS(), 5.0, 0.07);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetT(), -1.75, 0.05);
+}
+
+TEST_F(LaneOffsetIntersectionTest, TestGetClosestLaneIdx)
+{
+    // finally, exercise GetClosestLaneIdx() with this road involving lane offset
+    Road*        road         = Position::GetOpenDrive()->GetRoadById(6);
+    LaneSection* lane_section = road->GetLaneSectionByIdx(0);
+    double       offset       = 0.0;
+    double       s            = 50.0;
+    int          lane_idx     = -1;
+
+    lane_idx = lane_section->GetClosestLaneIdx(s, -0.1, road->GetLaneOffset(s), -1, offset, true);
+    EXPECT_EQ(lane_section->GetLaneIdByIdx(lane_idx), -2);
+    EXPECT_NEAR(offset, 1.65, 1e-3);
+
+    lane_idx = lane_section->GetClosestLaneIdx(s, -1.75, road->GetLaneOffset(s), -1, offset, true);
+    EXPECT_EQ(lane_section->GetLaneIdByIdx(lane_idx), -2);
+    EXPECT_NEAR(offset, 0.0, 1e-3);
+
+    lane_idx = lane_section->GetClosestLaneIdx(s, 0.1, road->GetLaneOffset(s), -1, offset, true);
+    EXPECT_EQ(lane_section->GetLaneIdByIdx(lane_idx), -1);
+    EXPECT_NEAR(offset, -1.6220, 1e-3);
+
+    lane_idx = lane_section->GetClosestLaneIdx(s, 1.7, road->GetLaneOffset(s), -1, offset, true);
+    EXPECT_EQ(lane_section->GetLaneIdByIdx(lane_idx), -1);
+    EXPECT_NEAR(offset, -0.022, 1e-3);
+
+    lane_idx = lane_section->GetClosestLaneIdx(s, 3.4, road->GetLaneOffset(s), -1, offset, true);
+    EXPECT_EQ(lane_section->GetLaneIdByIdx(lane_idx), -1);
+    EXPECT_NEAR(offset, 1.6779, 1e-3);
+
+    lane_idx = lane_section->GetClosestLaneIdx(s, 3.6, road->GetLaneOffset(s), -1, offset, true);
+    EXPECT_EQ(lane_section->GetLaneIdByIdx(lane_idx), -1);
+    EXPECT_NEAR(offset, 1.8779, 1e-3);
+
+    lane_idx = lane_section->GetClosestLaneIdx(s, 3.6, road->GetLaneOffset(s), 0, offset, true);
+    EXPECT_EQ(lane_section->GetLaneIdByIdx(lane_idx), 1);
+    EXPECT_NEAR(offset, -1.5941, 1e-3);
+
+    lane_idx = lane_section->GetClosestLaneIdx(s, 3.6, road->GetLaneOffset(s), 1, offset, true);
+    EXPECT_EQ(lane_section->GetLaneIdByIdx(lane_idx), 1);
+    EXPECT_NEAR(offset, -1.5941, 1e-3);
 }
 
 TEST(ActionTest, TestInstantLaneChange)

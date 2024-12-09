@@ -55,7 +55,7 @@ float color_green[3]      = {0.2f, 0.6f, 0.3f};
 float color_gray[3]       = {0.7f, 0.7f, 0.7f};
 float color_dark_gray[3]  = {0.5f, 0.5f, 0.5f};
 float color_light_gray[3] = {0.7f, 0.7f, 0.7f};
-float color_red[3]        = {0.73f, 0.26f, 0.26f};
+float color_red[3]        = {0.8f, 0.3f, 0.3f};
 float color_black[3]      = {0.2f, 0.2f, 0.2f};
 float color_blue[3]       = {0.25f, 0.38f, 0.7f};
 float color_yellow[3]     = {0.75f, 0.7f, 0.4f};
@@ -2518,11 +2518,11 @@ bool Viewer::CreateRoadLines(Viewer* viewer, roadmanager::OpenDrive* od)
             if (i < road->GetNumberOfGeometries())
             {
                 geom = road->GetGeometry(i);
-                pos.SetTrackPos(road->GetId(), geom->GetS(), 0);
+                pos.SetTrackPos(road->GetId(), geom->GetS(), 0.0);
             }
             else
             {
-                pos.SetTrackPos(road->GetId(), geom->GetS() + geom->GetLength(), 0);
+                pos.SetTrackPos(road->GetId(), geom->GetS() + geom->GetLength(), 0.0);
             }
 
             point.set(static_cast<float>(pos.GetX() - origin_[0]),
@@ -2557,13 +2557,11 @@ bool Viewer::CreateRoadLines(Viewer* viewer, roadmanager::OpenDrive* od)
             {
                 roadmanager::Lane* lane = lane_section->GetLaneByIdx(j);
 
-                // visualize both lane center and lane boundary
+                // visualize both lane boundary and lane center and
                 for (int k = 0; k < 2; k++)
                 {
                     // skip lane center for all non driving lanes except center lane
-                    if ((k == 0 && lane->GetId() != 0 && !lane->IsDriving()) ||
-                        // skip lane boundary for center lane
-                        (k == 1 && lane->GetId() == 0))
+                    if ((k == 1 && lane->GetId() != 0) && !lane->IsDriving())
                     {
                         continue;
                     }
@@ -2571,37 +2569,65 @@ bool Viewer::CreateRoadLines(Viewer* viewer, roadmanager::OpenDrive* od)
                     // osg references for drawing lines on the lane center using osi points
                     osg::ref_ptr<osg::Vec3Array> vertices = new osg::Vec3Array;
 
-                    if (k == 0)
+                    if (k == 0 && lane->GetId() == 0)
                     {
-                        curr_osi = lane->GetOSIPoints();
+                        // visualize road reference line
+                        roadmanager::OSIPoints ref_line_osi_points = lane_section->GetRefLineOSIPoints();
+                        for (const auto& ref_line_point : ref_line_osi_points.GetPoints())
+                        {
+                            vertices->push_back(osg::Vec3(static_cast<float>(ref_line_point.x - origin_[0]),
+                                                          static_cast<float>(ref_line_point.y - origin_[1]),
+                                                          static_cast<float>(ref_line_point.z + z_offset)));
+                        }
                     }
                     else
                     {
-                        if (lane->GetLaneBoundary() != nullptr)
+                        if (k == 1)
                         {
-                            curr_osi = lane->GetLaneBoundary()->GetOSIPoints();
+                            curr_osi = lane->GetOSIPoints();
                         }
-                    }
+                        else
+                        {
+                            if (lane->GetLaneBoundary() != nullptr)
+                            {
+                                curr_osi = lane->GetLaneBoundary()->GetOSIPoints();
+                            }
+                        }
 
-                    if (curr_osi == 0)
-                    {
-                        continue;
-                    }
+                        if (curr_osi == 0)
+                        {
+                            continue;
+                        }
 
-                    for (int m = 0; m < static_cast<int>(curr_osi->GetPoints().size()); m++)
-                    {
-                        roadmanager::PointStruct osi_point_s = curr_osi->GetPoint(m);
-                        vertices->push_back(osg::Vec3(static_cast<float>(osi_point_s.x - origin_[0]),
-                                                      static_cast<float>(osi_point_s.y - origin_[1]),
-                                                      static_cast<float>(osi_point_s.z + z_offset)));
+                        for (const auto& osi_point_s : curr_osi->GetPoints())
+                        {
+                            vertices->push_back(osg::Vec3(static_cast<float>(osi_point_s.x - origin_[0]),
+                                                          static_cast<float>(osi_point_s.y - origin_[1]),
+                                                          static_cast<float>(osi_point_s.z + z_offset)));
+                        }
                     }
 
                     PolyLine* pline = nullptr;
                     if (lane->GetId() == 0)
                     {
-                        pline = AddPolyLine(viewer, odrLines_, vertices, osg::Vec4(color_red[0], color_red[1], color_red[2], 1.0), 4.0, OSI_DOT_SIZE);
+                        if (k == 0)
+                        {
+                            // reference line
+                            pline = AddPolyLine(viewer,
+                                                odrLines_,
+                                                vertices,
+                                                osg::Vec4(color_yellow[0], color_yellow[1], color_yellow[2], 1.0),
+                                                2.0,
+                                                OSI_DOT_SIZE);
+                        }
+                        else
+                        {
+                            // center lane
+                            pline =
+                                AddPolyLine(viewer, odrLines_, vertices, osg::Vec4(color_red[0], color_red[1], color_red[2], 1.0), 6.0, OSI_DOT_SIZE);
+                        }
                     }
-                    else if (k == 0)
+                    else if (k == 1)
                     {
                         pline =
                             AddPolyLine(viewer, odrLines_, vertices, osg::Vec4(color_blue[0], color_blue[1], color_blue[2], 1.0), 1.5, OSI_DOT_SIZE);

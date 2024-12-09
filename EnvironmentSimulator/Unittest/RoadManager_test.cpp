@@ -2346,7 +2346,6 @@ TEST(RoadPosTest, TestPrioStraightRoadInJunction)
 
     Position pos;
     pos.SetMode(Position::PosModeType::UPDATE,
-
                 roadmanager::Position::PosMode::Z_REL | roadmanager::Position::PosMode::H_ABS | roadmanager::Position::PosMode::P_REL |
                     roadmanager::Position::PosMode::R_REL);
     pos.SetLanePos(0, 1, 0, 0.0);
@@ -2443,14 +2442,31 @@ TEST_F(StarRoadTestFixture, TestRelativeRoadPos)
     Check(lane_width / 2.0, -20.0, M_PI / 2, -0.55, 0.55);
 }
 
-TEST(OSIPointTest, MixedRoads)
+class MixedRoadsFixture : public testing::Test
 {
-    ASSERT_EQ(roadmanager::Position::LoadOpenDrive("../../../EnvironmentSimulator/Unittest/xodr/mixed_roads.xodr"), true);
-    roadmanager::OpenDrive *odr = Position::GetOpenDrive();
+protected:
+    MixedRoadsFixture()
+    {
+        roadmanager::Position::LoadOpenDrive("../../../EnvironmentSimulator/Unittest/xodr/mixed_roads.xodr");
+        odr = Position::GetOpenDrive();
+    }
+
+    ~MixedRoadsFixture()
+    {
+        odr->Clear();
+    }
+
+    roadmanager::OpenDrive *odr = nullptr;
+};
+
+TEST_F(MixedRoadsFixture, CheckInitialization)
+{
     ASSERT_NE(odr, nullptr);
+    EXPECT_EQ(odr->GetNumOfRoads(), 5);
+}
 
-    EXPECT_EQ(odr->GetNumOfRoads(), 4);
-
+TEST_F(MixedRoadsFixture, OSIPointTest)
+{
     Road *road = odr->GetRoadByIdx(0);
     EXPECT_EQ(road->GetId(), 0);
     EXPECT_NEAR(road->GetLaneSectionByIdx(0)->GetLaneByIdx(0)->GetOSIPoints()->GetPoint(0).x, 0.0, 1e-3);
@@ -2511,7 +2527,89 @@ TEST(OSIPointTest, MixedRoads)
     EXPECT_NEAR(road->GetLaneSectionByIdx(0)->GetLaneByIdx(2)->GetOSIPoints()->GetPoint(21).y, -41.5, 1e-3);
     EXPECT_NEAR(road->GetLaneSectionByIdx(0)->GetLaneByIdx(2)->GetOSIPoints()->GetPoint(21).z, 9.5198, 1e-3);
 
-    odr->Clear();
+    road = odr->GetRoadByIdx(4);
+    EXPECT_EQ(road->GetId(), 4);
+    EXPECT_NEAR(road->GetLaneSectionByIdx(0)->GetRefLineOSIPoints().GetPoint(0).x, 0.0, 1e-3);
+    EXPECT_NEAR(road->GetLaneSectionByIdx(0)->GetRefLineOSIPoints().GetPoint(0).y, -50.0, 1e-3);
+    EXPECT_NEAR(road->GetLaneSectionByIdx(0)->GetRefLineOSIPoints().GetPoint(1).x, 20.0, 1e-3);
+    EXPECT_NEAR(road->GetLaneSectionByIdx(0)->GetRefLineOSIPoints().GetPoint(1).y, -50.0, 1e-3);
+    EXPECT_NEAR(road->GetLaneSectionByIdx(1)->GetRefLineOSIPoints().GetPoint(0).x, 20.0, 1e-3);
+    EXPECT_NEAR(road->GetLaneSectionByIdx(1)->GetRefLineOSIPoints().GetPoint(0).y, -50.0, 1e-3);
+    EXPECT_NEAR(road->GetLaneSectionByIdx(1)->GetRefLineOSIPoints().GetPoint(1).x, 50.0, 1e-3);
+    EXPECT_NEAR(road->GetLaneSectionByIdx(1)->GetRefLineOSIPoints().GetPoint(1).y, -50.0, 1e-3);
+    EXPECT_NEAR(road->GetLaneSectionByIdx(0)->GetLaneByIdx(0)->GetOSIPoints()->GetPoint(0).x, 0.0, 1e-3);
+    EXPECT_NEAR(road->GetLaneSectionByIdx(0)->GetLaneByIdx(0)->GetOSIPoints()->GetPoint(0).y, -50.0, 1e-3);
+    EXPECT_NEAR(road->GetLaneSectionByIdx(0)->GetLaneByIdx(0)->GetOSIPoints()->GetPoint(1).x, 20.0, 1e-3);
+    EXPECT_NEAR(road->GetLaneSectionByIdx(0)->GetLaneByIdx(0)->GetOSIPoints()->GetPoint(1).y, -50.0, 1e-3);
+    EXPECT_NEAR(road->GetLaneSectionByIdx(0)->GetLaneByIdx(1)->GetOSIPoints()->GetPoint(0).x, 0.0, 1e-3);
+    EXPECT_NEAR(road->GetLaneSectionByIdx(0)->GetLaneByIdx(1)->GetOSIPoints()->GetPoint(0).y, -51.5, 1e-3);
+    EXPECT_NEAR(road->GetLaneSectionByIdx(0)->GetLaneByIdx(1)->GetOSIPoints()->GetPoint(1).x, 20.0, 1e-3);
+    EXPECT_NEAR(road->GetLaneSectionByIdx(0)->GetLaneByIdx(1)->GetOSIPoints()->GetPoint(1).y, -51.5, 1e-3);
+    EXPECT_NEAR(road->GetLaneSectionByIdx(1)->GetLaneByIdx(0)->GetOSIPoints()->GetPoint(0).x, 20.0, 1e-3);
+    EXPECT_NEAR(road->GetLaneSectionByIdx(1)->GetLaneByIdx(0)->GetOSIPoints()->GetPoint(0).y, -50.0, 1e-3);
+    EXPECT_NEAR(road->GetLaneSectionByIdx(1)->GetLaneByIdx(0)->GetOSIPoints()->GetPoint(1).x, 30.0, 0.125);
+    EXPECT_NEAR(road->GetLaneSectionByIdx(1)->GetLaneByIdx(0)->GetOSIPoints()->GetPoint(1).y, -47.0, 0.05);
+    EXPECT_NEAR(road->GetLaneSectionByIdx(1)->GetLaneByIdx(0)->GetOSIPoints()->GetPoint(2).x, 50.0, 1e-3);
+    EXPECT_NEAR(road->GetLaneSectionByIdx(1)->GetLaneByIdx(0)->GetOSIPoints()->GetPoint(2).y, -47.0, 1e-3);
+    EXPECT_NEAR(road->GetLaneSectionByIdx(1)->GetLaneByIdx(1)->GetOSIPoints()->GetPoint(0).x, 20.0, 1e-3);
+    EXPECT_NEAR(road->GetLaneSectionByIdx(1)->GetLaneByIdx(1)->GetOSIPoints()->GetPoint(0).y, -50.0, 1e-3);
+    EXPECT_NEAR(road->GetLaneSectionByIdx(1)->GetLaneByIdx(1)->GetOSIPoints()->GetPoint(1).x, 30.0, 0.125);
+    EXPECT_NEAR(road->GetLaneSectionByIdx(1)->GetLaneByIdx(1)->GetOSIPoints()->GetPoint(1).y, -48.5, 0.05);
+    EXPECT_NEAR(road->GetLaneSectionByIdx(1)->GetLaneByIdx(1)->GetOSIPoints()->GetPoint(2).x, 50.0, 0.125);
+    EXPECT_NEAR(road->GetLaneSectionByIdx(1)->GetLaneByIdx(1)->GetOSIPoints()->GetPoint(2).y, -48.5, 0.05);
+    EXPECT_NEAR(road->GetLaneSectionByIdx(1)->GetLaneByIdx(2)->GetOSIPoints()->GetPoint(0).x, 20.0, 1e-3);
+    EXPECT_NEAR(road->GetLaneSectionByIdx(1)->GetLaneByIdx(2)->GetOSIPoints()->GetPoint(0).y, -51.5, 1e-3);
+    EXPECT_NEAR(road->GetLaneSectionByIdx(1)->GetLaneByIdx(2)->GetOSIPoints()->GetPoint(1).x, 50.0, 1e-3);
+    EXPECT_NEAR(road->GetLaneSectionByIdx(1)->GetLaneByIdx(2)->GetOSIPoints()->GetPoint(1).y, -51.5, 1e-3);
+}
+
+TEST_F(MixedRoadsFixture, TestGetClosestLaneIdx)
+{
+    Road *road = odr->GetRoadById(4);
+
+    ASSERT_EQ(road->GetNumberOfLaneSections(), 2);
+
+    double       offset       = 0.0;
+    double       s            = 0.0;
+    LaneSection *lane_section = nullptr;
+    int          lane_idx     = -1;
+
+    // check side -1, 0 (any) and 1
+    // side -1 and 0 should give same result, while +1 will snap to 0 as leftmost lane
+    for (int i = -1; i < 2; i++)
+    {
+        lane_section = road->GetLaneSectionByIdx(0);
+        s            = 5.0;
+        lane_idx     = lane_section->GetClosestLaneIdx(s, 0.0, road->GetLaneOffset(s), i, offset, true);
+        EXPECT_EQ(lane_section->GetLaneIdByIdx(lane_idx), i < 1 ? -1 : 0);
+        EXPECT_NEAR(offset, i < 1 ? 1.5 : 0.0, 1e-3);
+
+        lane_idx = lane_section->GetClosestLaneIdx(s, -1.5, road->GetLaneOffset(s), i, offset, true);
+        EXPECT_EQ(lane_section->GetLaneIdByIdx(lane_idx), i < 1 ? -1 : 0);
+        EXPECT_NEAR(offset, i < 1 ? 0.0 : -1.5, 1e-3);
+
+        lane_idx = lane_section->GetClosestLaneIdx(s, -2.5, road->GetLaneOffset(s), i, offset, true);
+        EXPECT_EQ(lane_section->GetLaneIdByIdx(lane_idx), i < 1 ? -1 : 0);
+        EXPECT_NEAR(offset, i < 1 ? -1.0 : -2.5, 1e-3);
+
+        lane_section = road->GetLaneSectionByIdx(1);
+        s            = 40.0;
+        lane_idx     = lane_section->GetClosestLaneIdx(s, -0.1, road->GetLaneOffset(s), i, offset, true);
+        EXPECT_EQ(lane_section->GetLaneIdByIdx(lane_idx), i < 1 ? -2 : 0);
+        EXPECT_NEAR(offset, i < 1 ? 1.4 : -3.1, 1e-3);
+
+        lane_idx = lane_section->GetClosestLaneIdx(s, 0.1, road->GetLaneOffset(s), i, offset, true);
+        EXPECT_EQ(lane_section->GetLaneIdByIdx(lane_idx), i < 1 ? -1 : 0);
+        EXPECT_NEAR(offset, i < 1 ? -1.4 : -2.9, 1e-3);
+
+        lane_idx = lane_section->GetClosestLaneIdx(s, -2.5, road->GetLaneOffset(s), i, offset, true);
+        EXPECT_EQ(lane_section->GetLaneIdByIdx(lane_idx), i < 1 ? -2 : 0);
+        EXPECT_NEAR(offset, i < 1 ? -1.0 : -5.5, 1e-3);
+
+        lane_idx = lane_section->GetClosestLaneIdx(s, 3.5, road->GetLaneOffset(s), i, offset, true);
+        EXPECT_EQ(lane_section->GetLaneIdByIdx(lane_idx), i < 1 ? -1 : 0);
+        EXPECT_NEAR(offset, i < 1 ? 2.0 : 0.5, 1e-3);
+    }
 }
 
 TEST(RoadEdgeTest, TestRoadEdge)

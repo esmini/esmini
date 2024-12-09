@@ -1848,7 +1848,8 @@ double LaneSection::GetWidth(double s, int lane_id) const
 {
     if (lane_id == 0)
     {
-        return 0.0;  // reference lane has no width
+        // Center lane (0) has no width
+        return 0.0;
     }
 
     // Enforce s within range of section
@@ -1898,7 +1899,7 @@ double LaneSection::GetCenterOffset(double s, int lane_id) const
 {
     if (lane_id == 0)
     {
-        // Reference lane (0) has no width
+        // Center lane (0) has no width
         return 0.0;
     }
     double outer_offset = GetOuterOffset(s, lane_id);
@@ -1912,7 +1913,8 @@ double LaneSection::GetOuterOffsetHeading(double s, int lane_id) const
 {
     if (lane_id == 0)
     {
-        return 0.0;  // reference lane has no width
+        // Center lane (0) has no width
+        return 0.0;
     }
 
     Lane* lane = GetLaneById(lane_id);
@@ -2025,6 +2027,11 @@ double LaneSection::GetOffsetBetweenLanes(int lane_id1, int lane_id2, double s) 
     double laneCenter1 = GetCenterOffset(s, lane_id1) * SIGN(lane_id1);
     double laneCenter2 = GetCenterOffset(s, lane_id2) * SIGN(lane_id2);
     return (laneCenter2 - laneCenter1);
+}
+
+OSIPoints& LaneSection::GetRefLineOSIPoints()
+{
+    return osi_points_ref_line_;
 }
 
 // Offset from closest left road mark to current position
@@ -6792,18 +6799,46 @@ void OpenDrive::SetLaneOSIPoints()
             }
 
             // Looping through each lane
-            number_of_lanes = lsec->GetNumberOfLanes();
-            for (int k = 0; k < number_of_lanes; k++)
+            number_of_lanes        = lsec->GetNumberOfLanes();
+            double lane_offset_max = 0.0;
+            for (int k = 0; k < number_of_lanes + 1; k++)  // +1 for center lane
             {
                 std::vector<double> x0, y0, x1, y1;
 
-                lane        = lsec->GetLaneByIdx(k);
+                if (k < number_of_lanes)
+                {
+                    lane = lsec->GetLaneByIdx(k);
+                }
+                else
+                {
+                    lane = lsec->GetLaneById(0);
+                    if (lane_offset_max < SMALL_NUMBER)
+                    {
+                        // no lane offset, reference line identical to center lane
+                        lsec->GetRefLineOSIPoints().Set(lane->GetOSIPoints()->GetPoints());
+                        continue;
+                    }
+                    else
+                    {
+                        // create unique points for reference line
+                    }
+                }
                 int counter = 0;
 
                 // [XO, YO] = Real position with no tolerance
-                if (pos_pivot.SetLanePos(road->GetId(), lane->GetId(), lsec->GetS(), 0, j) != Position::ReturnCode::OK)
+                if (k < number_of_lanes)
                 {
-                    break;
+                    if (pos_pivot.SetLanePos(road->GetId(), lane->GetId(), lsec->GetS(), 0, j) != Position::ReturnCode::OK)
+                    {
+                        break;
+                    }
+                }
+                else
+                {
+                    if (pos_pivot.SetTrackPos(road->GetId(), lsec->GetS(), 0.0) != Position::ReturnCode::OK)
+                    {
+                        break;
+                    }
                 }
 
                 // Add the starting point of each lane as osi point
@@ -6812,7 +6847,14 @@ void OpenDrive::SetLaneOSIPoints()
                 pos_last_ok = pos_pivot;
 
                 // [XO, YO] = closest position with given (-) tolerance
-                pos_tmp.SetLanePos(road->GetId(), lane->GetId(), MAX(0, lsec->GetS() - OSI_TANGENT_LINE_TOLERANCE), 0, j);
+                if (k < number_of_lanes)
+                {
+                    pos_tmp.SetLanePos(road->GetId(), lane->GetId(), MAX(0, lsec->GetS() - OSI_TANGENT_LINE_TOLERANCE), 0, j);
+                }
+                else
+                {
+                    pos_tmp.SetTrackPos(road->GetId(), MAX(0, lsec->GetS() - OSI_TANGENT_LINE_TOLERANCE), 0.0);
+                }
                 x0.push_back(pos_tmp.GetX());
                 y0.push_back(pos_tmp.GetY());
 
@@ -6821,7 +6863,14 @@ void OpenDrive::SetLaneOSIPoints()
                 y0.push_back(pos_pivot.GetY());
 
                 // [XO, YO] = closest position with given (+) tolerance
-                pos_tmp.SetLanePos(road->GetId(), lane->GetId(), MIN(lsec->GetS() + OSI_TANGENT_LINE_TOLERANCE, lsec_end), 0, j);
+                if (k < number_of_lanes)
+                {
+                    pos_tmp.SetLanePos(road->GetId(), lane->GetId(), MIN(lsec->GetS() + OSI_TANGENT_LINE_TOLERANCE, lsec_end), 0, j);
+                }
+                else
+                {
+                    pos_tmp.SetTrackPos(road->GetId(), MIN(lsec->GetS() + OSI_TANGENT_LINE_TOLERANCE, lsec_end), 0.0);
+                }
                 x0.push_back(pos_tmp.GetX());
                 y0.push_back(pos_tmp.GetY());
 
@@ -6836,11 +6885,30 @@ void OpenDrive::SetLaneOSIPoints()
                     // Make sure we stay within lane section length
                     double s = MIN(pos_candidate.GetS() + step, lsec_end - SMALL_NUMBER / 2);
 
+                    if (lane->GetId() == 0)  // center lane
+                    {
+                        lane_offset_max = MAX(lane_offset_max, fabs(road->GetLaneOffset(s)));
+                    }
+
                     // [X1, Y1] = Real position with no tolerance
-                    pos_candidate.SetLanePos(road->GetId(), lane->GetId(), s, 0, j);
+                    if (k < number_of_lanes)
+                    {
+                        pos_candidate.SetLanePos(road->GetId(), lane->GetId(), s, 0, j);
+                    }
+                    else
+                    {
+                        pos_candidate.SetTrackPos(road->GetId(), s, 0.0);
+                    }
 
                     // [X1, Y1] = closest position with given (-) tolerance
-                    pos_tmp.SetLanePos(road->GetId(), lane->GetId(), MAX(s - OSI_TANGENT_LINE_TOLERANCE, 0), 0, j);
+                    if (k < number_of_lanes)
+                    {
+                        pos_tmp.SetLanePos(road->GetId(), lane->GetId(), MAX(s - OSI_TANGENT_LINE_TOLERANCE, 0), 0, j);
+                    }
+                    else
+                    {
+                        pos_tmp.SetTrackPos(road->GetId(), MAX(s - OSI_TANGENT_LINE_TOLERANCE, 0), 0.0);
+                    }
                     x1.push_back(pos_tmp.GetX());
                     y1.push_back(pos_tmp.GetY());
 
@@ -6848,7 +6916,15 @@ void OpenDrive::SetLaneOSIPoints()
                     y1.push_back(pos_candidate.GetY());
 
                     // [X1, Y1] = closest position with given (+) tolerance
-                    pos_tmp.SetLanePos(road->GetId(), lane->GetId(), MIN(s + OSI_TANGENT_LINE_TOLERANCE, lsec_end), 0, j);
+                    if (k < number_of_lanes)
+                    {
+                        pos_tmp.SetLanePos(road->GetId(), lane->GetId(), MIN(s + OSI_TANGENT_LINE_TOLERANCE, lsec_end), 0, j);
+                    }
+                    else
+                    {
+                        pos_tmp.SetTrackPos(road->GetId(), MIN(s + OSI_TANGENT_LINE_TOLERANCE, lsec_end), 0.0);
+                    }
+
                     x1.push_back(pos_tmp.GetX());
                     y1.push_back(pos_tmp.GetY());
 
@@ -6874,9 +6950,17 @@ void OpenDrive::SetLaneOSIPoints()
                     }
                 }
 
-                // Set all collected osi points for the current lane
-                lane->osi_points_.Set(osi_point);
-                lane->SetOSIIntersection(osiintersection);
+                if (k < number_of_lanes)
+                {
+                    // Set all collected osi points for the current lane
+                    lane->osi_points_.Set(osi_point);
+                    lane->SetOSIIntersection(osiintersection);
+                }
+                else
+                {
+                    // Set collected osi points for the reference line
+                    lsec->GetRefLineOSIPoints().Set(osi_point);
+                }
 
                 // Clear osi collectors for next iteration
                 osi_point.clear();
@@ -7308,7 +7392,7 @@ bool OpenDrive::SetRoadOSI()
 
 int LaneSection::GetClosestLaneIdx(double s, double t, double laneOffset, int side, double& offset, bool noZeroWidth, int laneTypeMask) const
 {
-    double min_offset         = t;  // Initial offset relates to reference line
+    double min_offset         = t - laneOffset;  // Initial offset relates to center lane
     int    candidate_lane_idx = -1;
 
     for (int i = 0; i < GetNumberOfLanes(); i++)  // Search through all lanes
@@ -7322,15 +7406,15 @@ int LaneSection::GetClosestLaneIdx(double s, double t, double laneOffset, int si
             (side == 0 || SIGN(lane_id) == SIGN(side)))
         {
             // If position is within a lane, we can return it without further checks
-            if (fabs(t + laneOffset - laneCenterOffset) < (GetWidth(s, lane_id) / 2.))
+            if (fabs(t - laneOffset - laneCenterOffset) < (GetWidth(s, lane_id) / 2.))
             {
-                min_offset         = t + laneOffset - laneCenterOffset;
+                min_offset         = t - laneOffset - laneCenterOffset;
                 candidate_lane_idx = i;
                 break;
             }
             if (candidate_lane_idx == -1 || fabs(t + laneOffset - laneCenterOffset) < fabs(min_offset))
             {
-                min_offset         = t + laneOffset - laneCenterOffset;
+                min_offset         = t - laneOffset - laneCenterOffset;
                 candidate_lane_idx = i;
             }
         }
@@ -7705,15 +7789,16 @@ Position::XYZ2TrackPos(double x3, double y3, double z3, int mode, bool connected
                         if (j == 0 && k == 0)
                         {
                             // road startpoint, pick actual road heading (relative h=0)
-                            pos.SetTrackPosMode(road->GetId(), 0.0, 0.0, PosMode::Z_REL | PosMode::H_REL | PosMode::P_REL | PosMode::R_REL);
+                            pos.SetLanePosMode(road->GetId(), 0, 0.0, 0.0, PosMode::Z_REL | PosMode::H_REL | PosMode::P_REL | PosMode::R_REL);
                         }
                         else
                         {
                             // road endpoint, pick actual road heading (relative h=0)
-                            pos.SetTrackPosMode(road->GetId(),
-                                                road->GetLength(),
-                                                0.0,
-                                                PosMode::Z_REL | PosMode::H_REL | PosMode::P_REL | PosMode::R_REL);
+                            pos.SetLanePosMode(road->GetId(),
+                                               0,
+                                               road->GetLength(),
+                                               0.0,
+                                               PosMode::Z_REL | PosMode::H_REL | PosMode::P_REL | PosMode::R_REL);
                             v[l0].h = pos.GetH();
                         }
                         v[l0].p.Set(pos.GetX(), pos.GetY());
@@ -7757,6 +7842,8 @@ Position::XYZ2TrackPos(double x3, double y3, double z3, int mode, bool connected
                 inside = (inside && s_norm >= 0.0);
 
                 // Find out distance from the point projected at (extended) osi segment. We're only interested in the orthogonal distance
+                // distTmp = DistanceFromPointToLine2D(x3, y3, v[l2].p.x(), v[l2].p.y(), v[l1].p.x(), v[l1].p.y(), 0, 0) -
+                // road->GetLaneOffset(s_norm);
                 distTmp = DistanceFromPointToLine2D(x3, y3, v[l2].p.x(), v[l2].p.y(), v[l1].p.x(), v[l1].p.y(), 0, 0);
 
                 // Find closest point of the two
@@ -8102,7 +8189,7 @@ Position::XYZ2TrackPos(double x3, double y3, double z3, int mode, bool connected
         }
     }
 
-    // Set position exact on center line
+    // Set position exact on reference line
     ReturnCode retvalue = SetTrackPosMode(roadMin->GetId(), closestS, 0.0, 0, true, false);  // skip z, h, p, r
 
     double xCenterLine = x_;
@@ -8234,9 +8321,9 @@ void Position::LaneBoundary2Track()
     {
         LaneSection* lane_section = road->GetLaneSectionByIdx(lane_section_idx_);
 
-        if (lane_section != 0 && lane_id_ != 0)
+        if (lane_section != 0)
         {
-            t_        = offset_ + lane_section->GetOuterOffset(s_, lane_id_) * (lane_id_ < 0 ? -1 : 1);
+            t_        = road->GetLaneOffset(s_) + offset_ + lane_section->GetOuterOffset(s_, lane_id_) * (lane_id_ < 0 ? -1 : 1);
             h_offset_ = lane_section->GetOuterOffsetHeading(s_, lane_id_) * (lane_id_ < 0 ? -1 : 1);
         }
     }
@@ -8268,9 +8355,9 @@ void Position::RoadMark2Track()
     {
         LaneSection* lane_section = road->GetLaneSectionByIdx(lane_section_idx_);
 
-        if (lane_section != 0 && lane_id_ != 0)
+        if (lane_section != 0)
         {
-            t_        = offset_ + lane_section->GetOuterOffset(s_, lane_id_) * (lane_id_ < 0 ? -1 : 1);
+            t_        = offset_ + road->GetLaneOffset(s_) + lane_section->GetOuterOffset(s_, lane_id_) * (lane_id_ < 0 ? -1 : 1);
             h_offset_ = lane_section->GetOuterOffsetHeading(s_, lane_id_) * (lane_id_ < 0 ? -1 : 1);
         }
 
@@ -8973,41 +9060,44 @@ Position::ReturnCode Position::MoveAlongS(double            ds,
         }
         else if (ret_val2 >= ReturnCode::OK)
         {
-            // Check if lane has narrowed down to zero width
-            LaneInfo li;
-            if (road->GetLaneInfoByS(GetS(), lane_section_idx_, lane_id_, li, snapToLaneTypes_) != 0)
+            // Check if lane has narrowed down to zero width, except still on lane 0
+            if (lane_id_ != 0)
             {
-                ret_val = ReturnCode::ERROR_GENERIC;
-            }
-            else if (road->GetLaneWidthByS(GetS(), li.lane_id_) < SMALL_NUMBER)
-            {
-                double offset       = 0;
-                double lane_offset  = road->GetLaneOffset(GetS());
-                int    old_lane_id  = lane_id_;
-                int    new_lane_idx = road->GetLaneSectionByIdx(li.lane_section_idx_)
-                                       ->GetClosestLaneIdx(GetS(), GetT(), lane_offset, SIGN(lane_id_), offset, true, snapToLaneTypes_);
-                if (new_lane_idx < 0)
+                LaneInfo li;
+                if (road->GetLaneInfoByS(GetS(), lane_section_idx_, lane_id_, li, snapToLaneTypes_) != 0)
                 {
                     ret_val = ReturnCode::ERROR_GENERIC;
                 }
-                else
+                else if (road->GetLaneWidthByS(GetS(), li.lane_id_) < SMALL_NUMBER)
                 {
-                    int new_lane_id = road->GetLaneSectionByIdx(li.lane_section_idx_)->GetLaneByIdx(new_lane_idx)->GetId();
-                    if (new_lane_id == 0 && GetSnapLaneTypes() != Lane::LaneType::LANE_TYPE_ANY)
+                    double offset       = 0;
+                    double lane_offset  = road->GetLaneOffset(GetS());
+                    int    old_lane_id  = lane_id_;
+                    int    new_lane_idx = road->GetLaneSectionByIdx(li.lane_section_idx_)
+                                           ->GetClosestLaneIdx(GetS(), GetT(), lane_offset, SIGN(lane_id_), offset, true, snapToLaneTypes_);
+                    if (new_lane_idx < 0)
                     {
-                        LOG_ERROR("MoveAlongS Lane {} on road {} is or became zero width. Failed to move to a close lane with matching type 0x{}",
-                                  road->GetId(),
-                                  old_lane_id,
-                                  GetSnapLaneTypes());
                         ret_val = ReturnCode::ERROR_GENERIC;
                     }
                     else
                     {
-                        SetLanePos(track_id_, new_lane_id, GetS(), 0);
-                        LOG_INFO("MoveAlongS Lane {} on road {} is or became zero width, moved to closest available lane: {}",
-                                 old_lane_id,
-                                 road->GetId(),
-                                 GetLaneId());
+                        int new_lane_id = road->GetLaneSectionByIdx(li.lane_section_idx_)->GetLaneByIdx(new_lane_idx)->GetId();
+                        if (new_lane_id == 0 && GetSnapLaneTypes() != Lane::LaneType::LANE_TYPE_ANY)
+                        {
+                            LOG_ERROR("MoveAlongS Lane {} on road {} is or became zero width. Failed to move to a close lane with matching type 0x{}",
+                                      road->GetId(),
+                                      old_lane_id,
+                                      GetSnapLaneTypes());
+                            ret_val = ReturnCode::ERROR_GENERIC;
+                        }
+                        else
+                        {
+                            SetLanePos(track_id_, new_lane_id, GetS(), 0);
+                            LOG_INFO("MoveAlongS Lane {} on road {} is or became zero width, moved to closest available lane: {}",
+                                     old_lane_id,
+                                     road->GetId(),
+                                     GetLaneId());
+                        }
                     }
                 }
             }
@@ -9192,12 +9282,6 @@ Position::ReturnCode Position::SetLaneBoundaryPos(id_t track_id, int lane_id, do
     {
         h_relative_ = GetAngleSum(h_relative_, M_PI);
     }
-
-    // If moved over to opposite driving direction, then turn relative heading 180 degrees
-    // if (old_lane_id != 0 && lane_id_ != 0 && SIGN(lane_id_) != SIGN(old_lane_id))
-    //{
-    //	h_relative_ = GetAngleSum(h_relative_, M_PI);
-    //}
 
     // Lane2Track();
     LaneBoundary2Track();
@@ -10622,13 +10706,7 @@ Position::ReturnCode Position::GetProbeInfo(double lookahead_distance, RoadProbe
 
     target.Duplicate(*this);
 
-    if (lookAheadMode == LookAheadMode::LOOKAHEADMODE_AT_ROAD_CENTER)
-    {
-        // Look along reference lane requested, move pivot position to t=0 plus a small number in order to
-        // fall into the right direction
-        retval = target.SetTrackPos(target.GetTrackId(), target.GetS(), SMALL_NUMBER * SIGN(GetLaneId()));
-    }
-    else if (lookAheadMode == LookAheadMode::LOOKAHEADMODE_AT_LANE_CENTER)
+    if (lookAheadMode == LookAheadMode::LOOKAHEADMODE_AT_LANE_CENTER)
     {
         // Look along current lane center requested, move pivot position accordingly
         retval = target.SetLanePos(target.GetTrackId(), target.GetLaneId(), target.GetS(), 0);
@@ -10642,6 +10720,12 @@ Position::ReturnCode Position::GetProbeInfo(double lookahead_distance, RoadProbe
                                    lookAheadMode == LookAheadMode::LOOKAHEADMODE_AT_LANE_CENTER,
                                    Position::MoveDirectionMode::HEADING_DIRECTION,
                                    true);
+    }
+
+    if (lookAheadMode == LookAheadMode::LOOKAHEADMODE_AT_ROAD_CENTER)
+    {
+        // Look along center lane requested, adjust offset to end up on center lane
+        retval = target.SetLanePos(target.GetTrackId(), target.GetLaneId(), target.GetS(), -target.GetT() + SMALL_NUMBER * SIGN(GetLaneId()));
     }
 
     if (retval != ReturnCode::ERROR_GENERIC)

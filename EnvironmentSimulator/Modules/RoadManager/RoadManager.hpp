@@ -1059,13 +1059,13 @@ namespace roadmanager
 
         /**
         Get index of closest lane wrt given constraints
-        @param s distance along the road segment
-        @param t distance to road reference line in lateral direction
-        @param lane_offset the lane offset for distance s
+        @param s Distance along the road segment
+        @param t Distance to road reference line in lateral direction
+        @param lane_offset The lane offset for distance s
         @param side -1 = left side, 1 = right side
-        @param offset resulting distance to inner lane boundary
-        @param noZeroWidth if true, lane with zero width are not considered
-        @param laneTypeMask the lane type mask
+        @param offset Resulting signed distance to lane center
+        @param noZeroWidth If true, lane with zero width are not considered
+        @param laneTypeMask The lane type mask
         @return Index of closest lane
         */
         int GetClosestLaneIdx(double  s,
@@ -1103,15 +1103,17 @@ namespace roadmanager
         {
             length_ = length;
         }
-        int    GetConnectingLaneId(int incoming_lane_id, LinkType link_type) const;
-        double GetWidthBetweenLanes(int lane_id1, int lane_id2, double s) const;
-        double GetOffsetBetweenLanes(int lane_id1, int lane_id2, double s) const;
-        void   Print() const;
+        int        GetConnectingLaneId(int incoming_lane_id, LinkType link_type) const;
+        double     GetWidthBetweenLanes(int lane_id1, int lane_id2, double s) const;
+        double     GetOffsetBetweenLanes(int lane_id1, int lane_id2, double s) const;
+        OSIPoints &GetRefLineOSIPoints();
+        void       Print() const;
 
     private:
         double              s_;
         double              length_;
         std::vector<Lane *> lane_;
+        OSIPoints           osi_points_ref_line_;
     };
 
     enum ContactPointType

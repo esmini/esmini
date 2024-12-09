@@ -19,6 +19,7 @@ TEST(TestSetMethods, SetRoadId)
     EXPECT_NEAR(pos_data.h, 1.79437, 1E-5);
     EXPECT_NEAR(pos_data.x, 31.11617, 1E-5);
     EXPECT_NEAR(pos_data.y, -19.56364, 1E-5);
+    EXPECT_EQ(pos_data.roadId, 0);
     EXPECT_EQ(pos_data.laneId, 1);
     EXPECT_NEAR(pos_data.laneOffset, 0.0, 1E-5);
     EXPECT_NEAR(pos_data.s, 10.0, 1E-5);
