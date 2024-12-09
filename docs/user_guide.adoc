@@ -3016,7 +3016,7 @@ So, for example, to cut dependency to OSG and SUMO, run:  +
 ``cmake .. -D USE_OSG=False -D USE_SUMO=False``
 
 To disable OSG, SUMO, OSI and googletest, run:  +
-``cmake .. -D USE_OSG=False -D USE_SUMO=False -D USE_OSI=False -D USE_GTEST=False USE_IMPLOT=False``
+``cmake .. -D USE_OSG=False -D USE_SUMO=False -D USE_OSI=False -D USE_GTEST=False -D USE_IMPLOT=False``
 
 All options are enabled/True as default.
 
