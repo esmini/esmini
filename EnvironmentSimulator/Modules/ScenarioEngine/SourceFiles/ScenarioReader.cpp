@@ -3161,8 +3161,10 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
         {
             if (disable_controllers_)
             {
+                LOG_INFO("Skipping ActivateControllerAction for object {} due to --disable_controllers", object->GetName());
                 continue;
             }
+
             if (GetVersionMajor() == 1 && GetVersionMinor() == 1)
             {
                 LOG_WARN("In OSC 1.1 ActivateControllerAction should be placed under ControllerAction. Accepting anyway.");
@@ -3174,13 +3176,14 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
         }
         else if (actionChild.name() == std::string("ControllerAction"))
         {
-            if (disable_controllers_)
-            {
-                continue;
-            }
-
             for (pugi::xml_node controllerChild = actionChild.first_child(); controllerChild; controllerChild = controllerChild.next_sibling())
             {
+                if (disable_controllers_)
+                {
+                    LOG_INFO("Skipping {} for object {} due to --disable_controllers", controllerChild.name(), object->GetName());
+                    continue;
+                }
+
                 if (controllerChild.name() == std::string("AssignControllerAction"))
                 {
                     std::string ctrl_name;
@@ -4580,10 +4583,6 @@ void ScenarioReader::parseOSCManeuver(Maneuver *maneuver, pugi::xml_node maneuve
                                     {
                                         mGroup->actor_[i]->object_->addEvent(event);
                                     }
-                                }
-                                else
-                                {
-                                    LOG_ERROR("Failed to parse event {} - continue regardless", event->GetName());
                                 }
                             }
 

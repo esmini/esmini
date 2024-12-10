@@ -153,13 +153,13 @@ void AddEntityAction::Start(double simTime)
 
     if (entities_->activateObject(entity_) != 0)
     {
-        LOG_ERROR("AddEntityAction: Entity already active. Skipping action.");
+        LOG_WARN("AddEntityAction: Entity already active. Skipping action.");
         return;
     }
 
     entity_->pos_.TeleportTo(pos_);
 
-    LOG_ERROR("Added entity {}", entity_->GetName());
+    LOG_INFO("Added entity {}", entity_->GetName());
 
     OSCAction::Start(simTime);
 }
@@ -188,7 +188,7 @@ void DeleteEntityAction::Start(double simTime)
 
     gateway_->removeObject(entity_->name_);
 
-    LOG_WARN("Deleted entity {}", entity_->GetName());
+    LOG_INFO("Deleted entity {}", entity_->GetName());
 
     OSCAction::Start(simTime);
 }
