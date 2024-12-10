@@ -1565,6 +1565,11 @@ void LongSpeedProfileAction::Step(double simTime, double dt)
         SpeedSegment* s = &segment_[static_cast<unsigned int>(cur_index_)];
 
         speed_ = s->v + s->k * (time - s->t) + 0.5 * s->j * pow(time - s->t, 2);
+        if (NEAR_ZERO(speed_))
+        {
+            // avoid random jumping between positive and negative zero
+            speed_ = 0.0;
+        }
     }
 
     elapsed_ = MAX(0.0, time - segment_[0].t);
