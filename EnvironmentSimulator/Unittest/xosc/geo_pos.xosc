@@ -1,15 +1,45 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <OpenSCENARIO>
-    <FileHeader revMajor="1" revMinor="3" date="2024-12-03T16:00:00" description="For geo offset test" author="esmini team"/>
+    <FileHeader revMajor="1" revMinor="3" date="2024-12-11T16:00:00" description="For geo offset test" author="esmini team"/>
     <ParameterDeclarations/>
-    <CatalogLocations/>
+	<CatalogLocations>
+		<VehicleCatalog>
+			<Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
+		</VehicleCatalog>
+	</CatalogLocations>
     <RoadNetwork>
         <LogicFile filepath="../xodr/offset.xodr"/>
     </RoadNetwork>
-    <Entities/>
+    <Entities>
+        <ScenarioObject name="car_offset">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="car_ignore_offset">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+    </Entities>
     <Storyboard>
         <Init>
-            <Actions/>
+            <Actions>
+                <Private entityRef="car_offset">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <WorldPosition x="908.1317271" y="593.9895912" h="5.497787"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="car_ignore_offset">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <WorldPosition x="-129.6852442" y="-21.34385728" h="0.1745326928"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                </Private>
+            </Actions>
         </Init>
-    </Storyboard>    
+    </Storyboard>
 </OpenSCENARIO>

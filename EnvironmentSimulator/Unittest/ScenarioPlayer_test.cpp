@@ -573,7 +573,7 @@ TEST(OSI, TestGeoOffset)
     ASSERT_EQ(retval, 0);
 
     ScenarioEngine* se = player->scenarioEngine;
-    ASSERT_EQ(se->entities_.object_.size(), 0);
+    ASSERT_EQ(se->entities_.object_.size(), 2);
 
     const osi3::GroundTruth* osi_gt_ptr = reinterpret_cast<const osi3::GroundTruth*>(player->osiReporter->GetOSIGroundTruthRaw());
     ASSERT_NE(osi_gt_ptr, nullptr);
@@ -590,6 +590,54 @@ TEST(OSI, TestGeoOffset)
     EXPECT_NEAR(osi_gt_ptr->lane(0).classification().centerline(1).y(), -14.3979, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->lane(0).classification().centerline(2).x(), -41.0525, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->lane(0).classification().centerline(2).y(), -5.7155, 1e-3);
+
+    // check world position specified for car_offset
+    EXPECT_NEAR(osi_gt_ptr->moving_object(0).base().position().x(), -128.3065, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->moving_object(0).base().position().y(), -21.1007, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->moving_object(0).base().orientation().yaw(), 0.1745, 1e-3);
+
+    delete player;
+}
+
+TEST(OSI, TestGeoOffsetIgnoreODROffset)
+{
+    const char*     args[] = {"esmini",
+                              "--osc",
+                              "../../../EnvironmentSimulator/Unittest/xosc/geo_pos.xosc",
+                              "--headless",
+                              "--osi_file",
+                              "--disable_stdout",
+                              "--ignore_odr_offset"};
+    int             argc   = sizeof(args) / sizeof(char*);
+    ScenarioPlayer* player = new ScenarioPlayer(argc, const_cast<char**>(args));
+
+    ASSERT_NE(player, nullptr);
+    int retval = player->Init();
+    ASSERT_EQ(retval, 0);
+
+    ScenarioEngine* se = player->scenarioEngine;
+    ASSERT_EQ(se->entities_.object_.size(), 2);
+
+    const osi3::GroundTruth* osi_gt_ptr = reinterpret_cast<const osi3::GroundTruth*>(player->osiReporter->GetOSIGroundTruthRaw());
+    ASSERT_NE(osi_gt_ptr, nullptr);
+
+    // verify that proj_string includes the offset values, and that the missing z value is omitted
+    EXPECT_STREQ(osi_gt_ptr->proj_string().c_str(), "offset x=-1000 y=-500 z=0.0 hdg=0.959931");
+
+    // verify correct location of some lane OSI points after offset transformation
+    EXPECT_EQ(osi_gt_ptr->lane(1).id().value(), 2);
+    EXPECT_EQ(osi_gt_ptr->lane(0).classification().centerline().size(), 3);
+    EXPECT_NEAR(osi_gt_ptr->lane(0).classification().centerline(0).x(), -139.5333, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->lane(0).classification().centerline(0).y(), -23.0803, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->lane(0).classification().centerline(1).x(), -90.2929, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->lane(0).classification().centerline(1).y(), -14.3979, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->lane(0).classification().centerline(2).x(), -41.0525, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->lane(0).classification().centerline(2).y(), -5.7155, 1e-3);
+
+    // check world position specified for car_ignore_offset
+    EXPECT_NEAR(osi_gt_ptr->moving_object(1).base().position().x(), -128.3065, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->moving_object(1).base().position().y(), -21.1007, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->moving_object(1).base().orientation().yaw(), 0.1745, 1e-3);
 
     delete player;
 }

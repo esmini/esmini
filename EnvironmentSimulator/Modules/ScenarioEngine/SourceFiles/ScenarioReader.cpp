@@ -1676,9 +1676,9 @@ static void CheckAndAdjustRoadSValue(const id_t road_id, double &s)
 
 OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPosition *base_on_pos)
 {
-    OSCPosition *pos_return = 0;
-
-    pugi::xml_node positionChild = positionNode.first_child();
+    OSCPosition            *pos_return    = 0;
+    roadmanager::OpenDrive *odr           = roadmanager::Position::GetOpenDrive();
+    pugi::xml_node          positionChild = positionNode.first_child();
 
     std::string positionChildName(positionChild.name());
 
@@ -1695,25 +1695,46 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPo
         {
             x = strtod(parameters.ReadAttribute(positionChild, "x", true));
         }
+
         if (positionChild.attribute("y"))
         {
             y = strtod(parameters.ReadAttribute(positionChild, "y", true));
         }
+
         if (!SE_Env::Inst().GetOptions().GetOptionSet("ignore_z") && !positionChild.attribute("z").empty())
         {
             z = strtod(parameters.ReadAttribute(positionChild, "z", true));
+            if (odr)
+            {
+                z += odr->GetGeoOffset().z_;
+            }
         }
+
         if (!positionChild.attribute("h").empty())
         {
             h = strtod(parameters.ReadAttribute(positionChild, "h", true));
         }
+
         if (!SE_Env::Inst().GetOptions().GetOptionSet("ignore_p") && !positionChild.attribute("p").empty())
         {
             p = strtod(parameters.ReadAttribute(positionChild, "p", true));
         }
+
         if (!SE_Env::Inst().GetOptions().GetOptionSet("ignore_r") && !positionChild.attribute("r").empty())
         {
             r = strtod(parameters.ReadAttribute(positionChild, "r", true));
+        }
+
+        if (odr && !SE_Env::Inst().GetOptions().GetOptionSet("ignore_odr_offset"))
+        {
+            // Apply any global offset specified in the OpenDRIVE file header
+            const roadmanager::GeoOffset *geo_offset = &odr->GetGeoOffset();
+
+            double x1 = x + geo_offset->x_;
+            double y1 = y + geo_offset->y_;
+
+            RotateVec2D(x1, y1, geo_offset->hdg_, x, y);
+            h = GetAngleInInterval2PI(h + geo_offset->hdg_);
         }
 
         if (std::isnan(x) || std::isnan(y))

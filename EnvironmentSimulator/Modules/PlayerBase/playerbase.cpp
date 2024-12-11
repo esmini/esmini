@@ -1244,6 +1244,7 @@ int ScenarioPlayer::Init()
     opt.AddOption("help", "Show this help message");
     opt.AddOption("hide_route_waypoints", "Disable route waypoint visualization. Toggle key 'R'");
     opt.AddOption("hide_trajectories", "Hide trajectories from start. Toggle key 'n'");
+    opt.AddOption("ignore_odr_offset", "Ignore any offset specified in the OpenDRIVE file header");
     opt.AddOption("ignore_z", "Ignore provided z values from OSC file and place vehicle relative to road");
     opt.AddOption("ignore_p", "Ignore provided pitch values from OSC file and place vehicle relative to road");
     opt.AddOption("ignore_r", "Ignore provided roll values from OSC file and place vehicle relative to road");

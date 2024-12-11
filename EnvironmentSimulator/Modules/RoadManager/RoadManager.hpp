@@ -2825,6 +2825,11 @@ namespace roadmanager
             return friction_.Set(friction);
         }
 
+        const GeoOffset &GetGeoOffset() const
+        {
+            return geo_offset_;
+        }
+
         void Print() const;
 
         // used for optimization when single friction value throughout the whole road network
