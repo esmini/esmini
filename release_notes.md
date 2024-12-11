@@ -1,5 +1,22 @@
 ## esmini release notes
 
+### 2024-12-11 Version 2.41.1
+
+New behaviors:
+- Apply any OpenDRIVE offset also to scenario world positions
+  - skip with option `--ignore_odr_offset`
+
+Improvements and fixes:
+- Improve tesselation of road surfaces and roadmarks
+  - dashed roadmarks also bend with lane curvature
+  - add support for all combined lane mark variants
+  - respect OpenDRIVE inner->outer rule for combined marks
+- Fix bug causing wrong trajectory driving direction
+  - root cause: when speed is 0, floating point could become -0
+- Call InitPostPlayer also when running without viewer
+- Fix initial wrong lane id when injecting LaneChangeAction
+
+
 ### 2024-12-04 Version 2.41.0
 
 New features:
