@@ -203,8 +203,6 @@ fmi2Status EsminiOsiSource::doExitInitializationMode()
     return fmi2Error;
   }
 
-  SE_UpdateOSIGroundTruth();
-
   return fmi2OK;
 }
 
