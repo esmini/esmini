@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-set(TARGET EsminiOsiSource)
+set(TARGET esmini)
 project(${TARGET})
 
 execute_process(
@@ -117,7 +117,7 @@ link_directories(
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../externals/fmi2/headers)
 
-add_library(${TARGET} SHARED EsminiOsiSource.cpp)
+add_library(${TARGET} SHARED esmini.cpp)
 set_target_properties(${TARGET} PROPERTIES PREFIX "")
 target_compile_definitions(${TARGET} PRIVATE "FMU_SHARED_OBJECT")
 
@@ -175,6 +175,6 @@ add_custom_command(
     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${TARGET}> $<$<PLATFORM_ID:Windows>:$<$<CONFIG:Debug>:$<TARGET_PDB_FILE:${TARGET}>>>
             "${CMAKE_CURRENT_BINARY_DIR}/buildfmu/binaries/${FMI_BINARIES_PLATFORM}"
     COMMAND
-        ${CMAKE_COMMAND} -E chdir "${CMAKE_CURRENT_BINARY_DIR}/buildfmu" ${CMAKE_COMMAND} -E tar "cfv" "../EsminiOsiSource.fmu" --format=zip
+        ${CMAKE_COMMAND} -E chdir "${CMAKE_CURRENT_BINARY_DIR}/buildfmu" ${CMAKE_COMMAND} -E tar "cfv" "../esmini.fmu" --format=zip
         "modelDescription.xml" "${CMAKE_CURRENT_BINARY_DIR}/buildfmu/sources"
         "${CMAKE_CURRENT_BINARY_DIR}/buildfmu/binaries/${FMI_BINARIES_PLATFORM}")
