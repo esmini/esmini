@@ -1216,7 +1216,7 @@ int ScenarioPlayer::Init()
     opt.AddOption("bounding_boxes", "Show entities as bounding boxes. Toggle key ','");
     opt.AddOption("capture_screen", "Continuous screen capture. Warning: Many jpeg files will be created");
     opt.AddOption("camera_mode",
-                  "Initial camera mode (\"orbit\", \"fixed\", \"flex\", \"flex-orbit\", \"top\", \"driver\", \"custom\") (swith with key 'k') ",
+                  "Initial camera mode (\"orbit\", \"fixed\", \"flex\", \"flex-orbit\", \"top\", \"driver\", \"custom\"). Toggle key 'k'",
                   "mode",
                   "orbit",
                   true);

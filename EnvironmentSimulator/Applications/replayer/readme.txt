@@ -6,13 +6,13 @@ Usage: replayer [options]
 Options:
   --file <filename>
       Simulation recording data file (.dat)
-  --aa_mode <mode>
-      Anti-alias mode=number of multisamples (subsamples, 0=off, 4=default)
-  --camera_mode <mode>
-      Initial camera mode ("orbit" (default), "fixed", "flex", "flex-orbit", "top", "driver") (toggle during simulation by press 'k')
+  --aa_mode [mode]  (default if value omitted: 4)
+      Anti-alias mode=number of multisamples (subsamples, 0=off)
+  --camera_mode [mode]  (default if option or value omitted: orbit)
+      Initial camera mode ("orbit", "fixed", "flex", "flex-orbit", "top", "driver", "custom"). Toggle key 'k'
   --capture_screen
       Continuous screen capture. Warning: Many jpeg files will be created
-  --collision [mode]  (default = pause)
+  --collision [mode]  (default if value omitted: pause)
       Detect collisions and optionally pauses the replay <pause/continue> (pause is default)
   --custom_camera <position>
       Additional custom camera position <x,y,z>[,h,p] (multiple occurrences supported)
@@ -30,8 +30,10 @@ Options:
       Run without viewer window
   --hide_trajectories
       Hide trajectories from start (toggle with key 'n')
-  --info_text <mode>
-      Show on-screen info text (toggle key 'i') mode 0=None 1=current (default) 2=per_object 3=both
+  --info_text [mode]  (default if option or value omitted: 1)
+      Show on-screen info text. Modes: 0=None 1=current 2=per_object 3=both. Toggle key 'i'
+  --logfile_path [path]  (default if option or value omitted: log.txt)
+      Logfile path/filename, e.g. "../my_log.txt"
   --no_ghost
       Remove ghost entities
   --no_ghost_model
@@ -39,7 +41,7 @@ Options:
   --osg_screenshot_event_handler
       Revert to OSG default jpg images ('c'/'C' keys handler)
   --path <path>
-      Search path prefix for assets, e.g. model_ids.txt file (multiple occurrences supported)
+      Search path prefix for assets, e.g. OpenDRIVE files. Multiple occurrences of option supported
   --quit_at_end
       Quit application when reaching end of scenario
   --remove_object <id>
@@ -48,15 +50,15 @@ Options:
       loop scenario
   --res_path <path>
       Path to resources root folder - relative or absolut
-  --road_features
-      Show OpenDRIVE road features
+  --road_features [mode]  (default if value omitted: on)
+      Show OpenDRIVE road features. Modes: on, off. Toggle key 'o'
   --save_merged <filename>
       Save merged data into one dat file, instead of viewing
   --start_time <ms>
       Start playing at timestamp
   --stop_time <ms>
       Stop playing at timestamp (set equal to time_start for single frame)
-  --text_scale [factor]  (default = 1.0)
+  --text_scale [size factor]  (default if option or value omitted: 1.0)
       Scale screen overlay text
   --time_scale <factor>
       Playback speed scale factor (1.0 == normal)

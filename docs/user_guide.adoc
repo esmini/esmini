@@ -3700,6 +3700,10 @@ With some limitations (see details https://github.com/esmini/esmini/blob/master/
 == About this document
 The https://github.com/esmini/esmini/blob/master/docs/user_guide.adoc[source] of this document is written in the https://asciidoc-py.github.io/index.html[asciidoc] format. The html is generated with https://asciidoctor.org/[asciidoctor]. Code snippets, images and other resources are included in the process. Also the version numbers are automatically inserted to avoid "human errors".
 
+The final HTML document is published in this repo: https://github.com/esmini/esmini.github.io
+
+Access URL: https://esmini.github.io/
+
 Install tools:
 [horizontal]
 *Linux*::
@@ -3712,7 +3716,12 @@ Install tools:
   ** Install it. In the end you can leave "Run 'rid install' to setup MSYS2 and development toolchain" un-checked +
 * Then run: +
 ``gem install asciidoctor`` +
-``gem install coderay``
+``gem install coderay`` +
++
+Troubleshooting: If you get an error like +
+`Unable to download data from https://rubygems.org/ - SSL_connect ...` +
+try update RubyGems as follows: +
+``gem update --system``
 
 Generate html: ``asciidoctor user_guide.adoc``
 

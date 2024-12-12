@@ -2,17 +2,17 @@ Usage: esmini [options]
 Options:
   --osc <filename>
       OpenSCENARIO filename (required) - if path includes spaces, enclose with ""
-  --aa_mode <mode>
-      Anti-alias mode=number of multisamples (subsamples, 0=off, 4=default)
+  --aa_mode [mode]  (default if value omitted: 4)
+      Anti-alias mode=number of multisamples (subsamples, 0=off)
   --align_routepositions
       Align t-axis of route positions to the direction of the route
   --bounding_boxes
-      Show entities as bounding boxes (toggle modes on key ',')
+      Show entities as bounding boxes. Toggle key ','
   --capture_screen
       Continuous screen capture. Warning: Many jpeg files will be created
-  --camera_mode <mode>
-      Initial camera mode ("orbit" (default), "fixed", "flex", "flex-orbit", "top", "driver", "custom") (swith with key 'k')
-  --csv_logger <csv_filename>
+  --camera_mode [mode]  (default if option or value omitted: orbit)
+      Initial camera mode ("orbit", "fixed", "flex", "flex-orbit", "top", "driver", "custom"). Toggle key 'k'
+  --csv_logger [csv_filename]  (default if value omitted: log.csv)
       Log data for each vehicle in ASCII csv format
   --collision
       Enable global collision detection, potentially reducing performance
@@ -36,8 +36,8 @@ Options:
       Generate road 3D model even if SceneGraphFile is specified
   --fixed_timestep <timestep>
       Run simulation decoupled from realtime, with specified timesteps
-  --follow_object <index>
-      Set index of intial object for camera to follow (change with Tab/shift-Tab)
+  --follow_object [index]  (default if option or value omitted: 0)
+      Set index of initial object for camera to follow (change with Tab/shift-Tab)
   --generate_no_road_objects
       Do not generate any OpenDRIVE road objects (e.g. when part of referred 3D model)
   --generate_without_textures
@@ -49,49 +49,61 @@ Options:
   --help
       Show this help message
   --hide_route_waypoints
-      Disable route waypoint visualization (toggle with key 'R')
+      Disable route waypoint visualization. Toggle key 'R'
   --hide_trajectories
-      Hide trajectories from start (toggle with key 'n')
+      Hide trajectories from start. Toggle key 'n'
+  --ignore_odr_offset
+      Ignore any offset specified in the OpenDRIVE file header
   --ignore_z
       Ignore provided z values from OSC file and place vehicle relative to road
   --ignore_p
       Ignore provided pitch values from OSC file and place vehicle relative to road
   --ignore_r
       Ignore provided roll values from OSC file and place vehicle relative to road
-  --info_text <mode>
-      Show on-screen info text (toggle key 'i') mode 0=None 1=current (default) 2=per_object 3=both
-  --logfile_path <path>
-      logfile path/filename, e.g. "../esmini.log" (default: log.txt)
+  --info_text [mode]  (default if option or value omitted: 1)
+      Show on-screen info text. Modes: 0=None 1=current 2=per_object 3=both. Toggle key 'i'
+  --log_append
+      Log all scenarios in the same txt file
+  --logfile_path [path]  (default if option or value omitted: log.txt)
+      Logfile path/filename, e.g. "../my_log.txt"
+  --log_meta_data
+      Log file name, function name and line number
+  --log_level [mode]  (default if option or value omitted: info)
+      Log level debug, info, warn, error
+  --log_only_modules <modulename(s)>
+      Log from only these modules. Overrides log_skip_modules. See User guide for more info
+  --log_skip_modules <modulename(s)>
+      Skip log from these modules, all remaining modules will be logged. See User guide for more info
   --osc_str <string>
       OpenSCENARIO XML string
   --osg_screenshot_event_handler
       Revert to OSG default jpg images ('c'/'C' keys handler)
-  --osi_file [filename]  (default = ground_truth.osi)
-      save osi trace file
-  --osi_freq <frequence>
-      relative frequence for writing the .osi file e.g. --osi_freq=2 -> we write every two simulation steps
+  --osi_file [filename]  (default if value omitted: ground_truth.osi)
+      Save osi trace file
+  --osi_freq <frequency>
+      Decrease OSI file entries, e.g. --osi_freq 2 -> OSI written every two simulation steps
   --osi_lines
-      Show OSI road lines (toggle during simulation by press 'u')
+      Show OSI road lines. Toggle key 'u'
   --osi_points
-      Show OSI road pointss (toggle during simulation by press 'y')
-  --osi_receiver_ip <IP address>
+      Show OSI road points. Toggle key 'y'
+  --osi_receiver_ip [IP address]  (default if value omitted: 127.0.0.1)
       IP address where to send OSI UDP packages
   --param_dist <filename>
       Run variations of the scenario according to specified parameter distribution file
-  --param_permutation <index (0 .. NumberOfPermutations-1)>
-      Run specific permutation of parameter distribution
+  --param_permutation <index>
+      Run specific permutation of parameter distribution, index in range (0 .. NumberOfPermutations-1)
   --pause
       Pause simulation after initialization
   --path <path>
-      Search path prefix for assets, e.g. OpenDRIVE files (multiple occurrences supported)
+      Search path prefix for assets, e.g. OpenDRIVE files. Multiple occurrences of option supported
   --player_server
       Launch UDP server for action/command injection
-  --plot [mode (asynchronous|synchronous)]  (default = asynchronous)
-      Show window with line-plots of interesting data
-  --record <filename>
+  --plot [mode]  (default if value omitted: asynchronous)
+      Show window with line-plots of interesting data. Modes: asynchronous, synchronous
+  --record [filename]  (default if value omitted: sim.dat)
       Record position data into a file for later replay
-  --road_features <mode>
-      Show OpenDRIVE road features ("on", "off"  (default)) (toggle during simulation by press 'o')
+  --road_features [mode]  (default if value omitted: on)
+      Show OpenDRIVE road features. Modes: on, off. Toggle key 'o'
   --return_nr_permutations
       Return number of permutations without executing the scenario (-1 = error)
   --save_generated_model
@@ -101,15 +113,15 @@ Options:
   --seed <number>
       Specify seed number for random generator
   --sensors
-      Show sensor frustums (toggle during simulation by press 'r')
+      Show sensor frustums. Toggle key 'r'
   --server
       Launch server to receive state of external Ego simulator
-  --text_scale [factor]  (default = 1.0)
+  --text_scale [size factor]  (default if option or value omitted: 1.0)
       Scale screen overlay text
   --threads
       Run viewer in a separate thread, parallel to scenario engine
-  --trail_mode <mode>
-      Show trail lines and/or dots (toggle key 'j') mode 0=None 1=lines 2=dots 3=both
+  --trail_mode [mode]  (default if value omitted: 0)
+      Show trail lines and/or dots. Modes: 0=None 1=lines 2=dots 3=both. Toggle key 'j'
   --use_signs_in_external_model
       When external scenegraph 3D model is loaded, skip creating signs from OpenDRIVE
   --version

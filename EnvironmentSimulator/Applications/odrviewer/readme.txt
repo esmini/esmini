@@ -10,15 +10,15 @@ Options:
       Show this help message
   --odr <odr_filename>
       OpenDRIVE filename (required)
-  --aa_mode <mode>
-      Anti-alias mode=number of multisamples (subsamples, 0=off, 4=default)
+  --aa_mode [mode]  (default if value omitted: 4)
+      Anti-alias mode=number of multisamples (subsamples, 0=off)
   --capture_screen
       Continuous screen capture. Warning: Many .tga files will be created
   --custom_fixed_camera <position and optional orientation>
       Additional custom camera position <x,y,z>[,h,p] (multiple occurrences supported)
   --custom_fixed_top_camera <position and rotation>
       Additional custom top camera <x,y,z,rot> (multiple occurrences supported)
-  --density [density]  (default = 1.000000)
+  --density [density]  (default if value omitted: 1.000000)
       density (cars / 100 m)
   --enforce_generate_model
       Generate road 3D model even if --model is specified
@@ -40,29 +40,39 @@ Options:
       Add a large flat ground surface
   --headless
       Run without viewer window
-  --logfile_path <path>
-      logfile path/filename, e.g. "../esmini.log" (default: log.txt)
+  --log_append
+      Log all scenarios in the same txt file
+  --logfile_path [path]  (default if option or value omitted: log.txt)
+      Logfile path/filename, e.g. "../my_log.txt"
+  --log_meta_data
+      Log file name, function name and line number
+  --log_level [mode]  (default if option or value omitted: info)
+      Log level debug, info, warn, error
+  --log_only_modules <modulename(s)>
+      Log from only these modules. Overrides log_skip_modules. See User guide for more info
+  --log_skip_modules <modulename(s)>
+      Skip log from these modules, all remaining modules will be logged. See User guide for more info
   --model <model_filename>
       3D Model filename
   --osg_screenshot_event_handler
       Revert to OSG default jpg images ('c'/'C' keys handler)
   --osi_lines
-      Show OSI road lines (toggle during simulation by press 'u')
+      Show OSI road lines. Toggle key 'u'
   --osi_points
-      Show OSI road points (toggle during simulation by press 'y')
+      Show OSI road points. Toggle key 'y'
   --path <path>
-      Search path prefix for assets, e.g. car and sign model files
-  --road_features
-      Show OpenDRIVE road features (toggle during simulation by press 'o')
+      Search path prefix for assets, e.g. OpenDRIVE files. Multiple occurrences of option supported
+  --road_features [mode]  (default if value omitted: on)
+      Show OpenDRIVE road features. Modes: on, off. Toggle key 'o'
   --save_generated_model
       Save generated 3D model (n/a when a scenegraph is loaded)
   --seed <number>
       Specify seed number for random generator
-  --speed_factor [speed_factor]  (default = 1.000000)
+  --speed_factor [speed_factor]  (default if value omitted: 1.000000)
       speed_factor <number>
   --stop_at_end_of_road
       Instead of respawning elsewhere, stop when no connection exists
-  --text_scale [factor]  (default = 1.0)
+  --text_scale [size factor]  (default if option or value omitted: 1.0)
       Scale screen overlay text
   --traffic_rule <rule (right/left)>
       Enforce left or right hand traffic, regardless OpenDRIVE rule attribute (default: right)
