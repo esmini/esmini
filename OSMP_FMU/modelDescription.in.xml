@@ -3,18 +3,18 @@
   fmiVersion="2.0"
   modelName="esmini"
   guid="@FMUGUID@"
-  description="esmini scnario player packaged as OSMP FMU outputting an osi3::SensorView with GoundTruth from the scenario and osi3::TrafficCommand with actions from OpenScenario"
+  description="esmini scenario player packaged as OSMP FMU outputting an osi3::SensorView with GroundTruth from the scenario and osi3::TrafficCommand with actions from OpenSCENARIO"
   author="Persival GmbH"
   version="@VERSION@"
   generationTool="manual"
   generationDateAndTime="@FMUTIMESTAMP@"
   variableNamingConvention="structured">
   <CoSimulation
-    modelIdentifier="EsminiOsiSource"
+    modelIdentifier="esmini"
     canHandleVariableCommunicationStepSize="true"
     canNotUseMemoryManagementFunctions="true">
     <SourceFiles>
-      <File name="EsminiOsiSource.cpp"/>
+      <File name="esmini.cpp"/>
     </SourceFiles>
   </CoSimulation>
   <LogCategories>

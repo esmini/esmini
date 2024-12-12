@@ -11,7 +11,7 @@
 #include "osi_groundtruth.pb.h"
 #include "osi_trafficupdate.pb.h"
 
-#include "EsminiOsiSource.h"
+#include "esmini.h"
 
 /*
  * Debug Breaks
