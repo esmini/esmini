@@ -3214,7 +3214,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
 {
     if (replace)
     {
-        Clear();
+        Reset();
     }
 
     odr_filename_ = filename;
@@ -5485,6 +5485,17 @@ RoadPath::~RoadPath()
 OpenDrive::~OpenDrive()
 {
     Clear();
+}
+
+void OpenDrive::Init()
+{
+    speed_unit_ = SpeedUnit::UNDEFINED;
+}
+
+void OpenDrive::Reset()
+{
+    Clear();
+    Init();
 }
 
 int OpenDrive::GetTrackIdxById(id_t id) const
@@ -11368,12 +11379,105 @@ PolyLineShape::~PolyLineShape()
     vertex_.clear();
 }
 
+bool PolyLineShape::VerticesUnique(const Vertex& a, const Vertex& b, double dist_threshold, double heading_threshold) const
+{
+    if (a.pos_->GetType() != Position::PositionType::NORMAL || b.pos_->GetType() != Position::PositionType::NORMAL)
+    {
+        // can't resolve relative positions
+        return true;
+    }
+
+    if ((PointDistance2D(a.pos_->GetX(), a.pos_->GetY(), b.pos_->GetX(), b.pos_->GetY()) < dist_threshold + SMALL_NUMBER) &&
+        (GetAngleDifference(a.pos_->GetH(), b.pos_->GetH()) < heading_threshold + SMALL_NUMBER))
+    {
+        return false;
+    }
+    return true;
+}
+
 void PolyLineShape::AddVertex(Position* pos, double time)
 {
     Position* pos_copy = new Position(*pos);
     pos_copy->SetTrajectory(pos->GetTrajectory());
+
+    // append new point
     vertex_.emplace_back(pos_copy, time);
-    pline_.AddVertex(TrajVertex());  // Add one polyline vertex per trajectory vertex
+}
+
+void PolyLineShape::FinalizeVertices()
+{
+    double filter_time    = 1.0;  // seconds
+    double filter_heading = 0.1;  // radians
+
+    // Filter strategy:
+    //   - keep first and last points as is
+    //   - keep only other points that are unique in time, space and heading
+    //   - preserve stand-still phases, fixate position and heading
+
+    size_t a_idx = 0;
+    size_t b_idx = 1;
+    size_t c_idx = 2;
+
+    if (vertex_.size() > 2)  // only apply filter on more than 2 points
+    {
+        double filter_radius = strtod(SE_Env::Inst().GetOptions().GetOptionArg("traj_filter"));
+
+        if (filter_radius > SMALL_NUMBER)
+        {
+            while (c_idx < vertex_.size())
+            {
+                if (!VerticesUnique(vertex_[a_idx], vertex_[b_idx], filter_radius, filter_heading))
+                {
+                    if (!VerticesUnique(vertex_[a_idx], vertex_[c_idx], filter_radius, filter_heading))
+                    {
+                        // B and C both close to A, merge B and C
+                        delete vertex_[b_idx].pos_;
+                        vertex_[b_idx] = vertex_[c_idx++];
+                    }
+                    else
+                    {
+                        // C unique
+                        if (vertex_[c_idx].time_ - vertex_[a_idx].time_ < filter_time + SMALL_NUMBER)
+                        {
+                            // no stand-still phase needed, skip B. C is new A.
+                            delete vertex_[b_idx].pos_;
+                            vertex_[++a_idx] = vertex_[c_idx];
+                        }
+                        else
+                        {
+                            // stand-still phase detected, copy pos from A to B. C is new A
+                            vertex_[b_idx].pos_->Duplicate(*vertex_[a_idx].pos_);
+                            vertex_[++a_idx] = vertex_[b_idx];
+                            vertex_[++a_idx] = vertex_[c_idx];
+                        }
+                        b_idx = c_idx + 1;
+                        c_idx = c_idx + 2;
+                    }
+                }
+                else
+                {
+                    // Keep B as new A
+                    vertex_[++a_idx] = vertex_[b_idx++];
+                    c_idx++;
+                }
+            }
+
+            // add final vertex
+            if (b_idx < vertex_.size())
+            {
+                vertex_[++a_idx] = vertex_[b_idx];
+            }
+
+            vertex_.erase(vertex_.begin() + a_idx + 1, vertex_.end());
+        }
+    }
+
+    // make room for common shape polyline vertices
+    pline_.vertex_.reserve(vertex_.size());
+    for (size_t i = 0; i < vertex_.size(); i++)
+    {
+        pline_.AddVertex(TrajVertex());
+    }
 }
 
 void PolyLineShape::CalculatePolyLine()

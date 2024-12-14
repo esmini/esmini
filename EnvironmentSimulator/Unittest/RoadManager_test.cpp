@@ -1623,6 +1623,91 @@ TEST(TrajectoryTest, PolyLineBase_YawInterpolation)
     EXPECT_NEAR(v.h, 0.958407, 1e-5);
 }
 
+TEST(TrajectoryTest, PolyLineShape_Filter)
+{
+    PolyLineShape shape;
+    Position      pos;
+
+    SE_Env::Inst().GetOptions().SetOptionValue("traj_filter", "0.1");
+
+    pos.SetInertiaPos(0.01, 0.0, 0.0);
+    shape.AddVertex(&pos, 0.0);
+
+    pos.SetInertiaPos(0.06, 0.0, 0.0);
+    shape.AddVertex(&pos, 0.5);
+
+    pos.SetInertiaPos(0.12, 0.0, 0.0);
+    shape.AddVertex(&pos, 1.0);
+
+    pos.SetInertiaPos(0.18, 0.0, 0.0);
+    shape.AddVertex(&pos, 1.5);
+
+    // add a few more vertices for some duration (standing still)
+    shape.AddVertex(&pos, 2.0);
+    shape.AddVertex(&pos, 2.5);
+    shape.AddVertex(&pos, 3.0);
+
+    // add another vertex at some distance from last one
+    pos.SetInertiaPos(0.3, 0.0, 0.0);
+    shape.AddVertex(&pos, 3.5);
+
+    // add another point close to previous, check that both are kept
+    pos.SetInertiaPos(0.303, 0.0, 0.0);
+    shape.AddVertex(&pos, 3.6);
+
+    // add another point close to previous two, check that previous two are merged
+    pos.SetInertiaPos(0.306, 0.0, 0.0);
+    shape.AddVertex(&pos, 3.7);
+
+    // add another point close to previous three, check that previous three are merged into two
+    pos.SetInertiaPos(0.309, 0.0, 0.0);
+    shape.AddVertex(&pos, 3.8);
+
+    // add another point close to previous three, check that previous three are merged into two
+    pos.SetInertiaPos(0.4, 0.0, 0.0);
+    shape.AddVertex(&pos, 3.9);
+
+    // add another distant point, check stand still duration is preserved
+    pos.SetInertiaPos(0.6, 0.0, 0.0);
+    shape.AddVertex(&pos, 5.0);
+
+    // add a few close points close in time followed by a distant one
+    // check that no stand still is preserved
+    pos.SetInertiaPos(0.61, 0.0, 0.0);
+    shape.AddVertex(&pos, 5.1);
+    pos.SetInertiaPos(0.62, 0.0, 0.0);
+    shape.AddVertex(&pos, 5.2);
+    pos.SetInertiaPos(0.63, 0.0, 0.0);
+    shape.AddVertex(&pos, 5.3);
+    pos.SetInertiaPos(0.64, 0.0, 0.0);
+    shape.AddVertex(&pos, 5.4);
+    pos.SetInertiaPos(0.65, 0.0, 0.0);
+    shape.AddVertex(&pos, 5.5);
+    pos.SetInertiaPos(0.85, 0.0, 0.0);
+    shape.AddVertex(&pos, 5.6);
+
+    shape.FinalizeVertices();
+
+    // check that the stand still phase is captured by two vertices with same position
+    EXPECT_EQ(shape.vertex_.size(), 7);
+    EXPECT_NEAR(shape.vertex_[0].pos_->GetX(), 0.0100, 1e-3);
+    EXPECT_NEAR(shape.vertex_[0].time_, 0.0, 1e-3);
+    EXPECT_NEAR(shape.vertex_[1].pos_->GetX(), 0.1200, 1e-3);
+    EXPECT_NEAR(shape.vertex_[1].time_, 1.0, 1e-3);
+    EXPECT_NEAR(shape.vertex_[2].pos_->GetX(), 0.1200, 1e-3);
+    EXPECT_NEAR(shape.vertex_[2].time_, 3.0, 1e-3);
+    EXPECT_NEAR(shape.vertex_[3].pos_->GetX(), 0.3000, 1e-3);
+    EXPECT_NEAR(shape.vertex_[3].time_, 3.5, 1e-3);
+    EXPECT_NEAR(shape.vertex_[4].pos_->GetX(), 0.3000, 1e-3);
+    EXPECT_NEAR(shape.vertex_[4].time_, 3.9, 1e-3);
+    EXPECT_NEAR(shape.vertex_[5].pos_->GetX(), 0.6000, 1e-3);
+    EXPECT_NEAR(shape.vertex_[5].time_, 5.0, 1e-3);
+    EXPECT_NEAR(shape.vertex_[6].pos_->GetX(), 0.8500, 1e-3);
+    EXPECT_NEAR(shape.vertex_[6].time_, 5.6, 1e-3);
+
+    SE_Env::Inst().GetOptions().Reset();  // clean up
+}
+
 TEST(DistanceTest, CalcDistanceLong)
 {
     double dist = 0.0;

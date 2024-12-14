@@ -2663,9 +2663,14 @@ namespace roadmanager
     class OpenDrive
     {
     public:
-        OpenDrive() : speed_unit_(SpeedUnit::UNDEFINED), versionMajor_(0), versionMinor_(0){};
+        OpenDrive() : speed_unit_(SpeedUnit::UNDEFINED), versionMajor_(0), versionMinor_(0)
+        {
+            Init();
+        }
         OpenDrive(const char *filename);
         ~OpenDrive();
+        void Reset();
+        void Init();
 
         /**
                 Clear all allocated data and reset counters
@@ -3072,8 +3077,13 @@ namespace roadmanager
         Position &operator=(const Position &other);
         Position &operator=(Position &&other);
         ~Position();
+
+        // Duplicate the position from other position object
         void Duplicate(const Position &other);
+
+        // Copy only location data from other position object
         void CopyLocation(const Position &from);
+
         void Clean();
 
         void              Init();
@@ -3898,15 +3908,6 @@ namespace roadmanager
             return snapToLaneTypes_;
         }
 
-        /**
-        Copy selected content of another position object
-        basically everything except vel, acc, snap settings and route
-        @param from Position object to copy from
-        @param deep skip (false) or include (true) acc, vel and route, fields true = copy all fields including making a unique copy of any route
-        @return -
-        */
-        void CopyRMPos(const Position *from, bool deep = false);
-
         void PrintTrackPos() const;
         void PrintLanePos() const;
         void PrintInertialPos() const;
@@ -4452,7 +4453,9 @@ namespace roadmanager
         }
         ~PolyLineShape();
 
+        bool   VerticesUnique(const Vertex &a, const Vertex &b, double dist_threshold, double heading_threshold) const;
         void   AddVertex(Position *pos, double time);
+        void   FinalizeVertices();
         int    Evaluate(double p, TrajectoryParamType ptype, TrajVertex &pos);
         int    Evaluate(double p, TrajectoryParamType ptype);
         void   CalculatePolyLine() override;

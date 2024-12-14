@@ -1200,6 +1200,7 @@ roadmanager::RMTrajectory *ScenarioReader::parseTrajectory(pugi::xml_node node)
                     double                       time   = strtod(parameters.ReadAttribute(vertexNode, "time"));
                     pline->AddVertex(rm_pos, time);
                 }
+                pline->FinalizeVertices();
                 shape = pline;
             }
             else if (shapeType == "Clothoid")
