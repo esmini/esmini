@@ -1329,6 +1329,55 @@ TEST(GetMiscObjFromGroundTruth, receive_miscobj)
     SE_Close();
 }
 
+TEST(GetMiscObjsAndStationaryObjsFromGroundTruth, receive_objs_ids)
+{
+    int               sv_size = 0;
+    osi3::GroundTruth osi_gt;
+
+    SE_Init("../../../EnvironmentSimulator/Unittest/xosc/miscobj_mix.xosc", 0, 0, 0, 0);
+
+    SE_StepDT(0.001f);
+
+    SE_UpdateOSIGroundTruth();
+
+    const char* gt = SE_GetOSIGroundTruth(&sv_size);
+    osi_gt.ParseFromArray(gt, sv_size);
+
+    int n_miscobjects = osi_gt.mutable_stationary_object()->size();
+
+    uint64_t miscobj_0_id = osi_gt.mutable_stationary_object(0)->mutable_id()->value();
+    uint64_t miscobj_1_id = osi_gt.mutable_stationary_object(1)->mutable_id()->value();
+    uint64_t miscobj_2_id = osi_gt.mutable_stationary_object(2)->mutable_id()->value();
+    uint64_t miscobj_3_id = osi_gt.mutable_stationary_object(3)->mutable_id()->value();
+    uint64_t miscobj_4_id = osi_gt.mutable_stationary_object(4)->mutable_id()->value();
+    uint64_t miscobj_5_id = osi_gt.mutable_stationary_object(5)->mutable_id()->value();
+
+    osi3::StationaryObject_Classification_Type miscobj_0_type = osi_gt.mutable_stationary_object(0)->mutable_classification()->type();
+    osi3::StationaryObject_Classification_Type miscobj_1_type = osi_gt.mutable_stationary_object(1)->mutable_classification()->type();
+    osi3::StationaryObject_Classification_Type miscobj_2_type = osi_gt.mutable_stationary_object(2)->mutable_classification()->type();
+    osi3::StationaryObject_Classification_Type miscobj_3_type = osi_gt.mutable_stationary_object(3)->mutable_classification()->type();
+    osi3::StationaryObject_Classification_Type miscobj_4_type = osi_gt.mutable_stationary_object(4)->mutable_classification()->type();
+    osi3::StationaryObject_Classification_Type miscobj_5_type = osi_gt.mutable_stationary_object(5)->mutable_classification()->type();
+
+    EXPECT_EQ(n_miscobjects, 6);
+
+    EXPECT_EQ(miscobj_0_id, 0);
+    EXPECT_EQ(miscobj_1_id, 1);
+    EXPECT_EQ(miscobj_2_id, 2);
+    EXPECT_EQ(miscobj_3_id, 3);
+    EXPECT_EQ(miscobj_4_id, 4);
+    EXPECT_EQ(miscobj_5_id, 5);
+
+    EXPECT_EQ(miscobj_0_type, osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_POLE);
+    EXPECT_EQ(miscobj_1_type, osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_POLE);
+    EXPECT_EQ(miscobj_2_type, osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_OTHER);
+    EXPECT_EQ(miscobj_3_type, osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_BARRIER);
+    EXPECT_EQ(miscobj_4_type, osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_OTHER);
+    EXPECT_EQ(miscobj_5_type, osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_OTHER);
+
+    SE_Close();
+}
+
 TEST(TestGetAndSet, SetOSITimestampTest)
 {
     const osi3::GroundTruth* osi_gt;

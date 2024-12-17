@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Demonstrate and test ACC controller -->
+<!-- A white car is driving with constant speed, set by init event -->
+<!-- The white car approaches a red leading car -->
+<!-- The red leading car will perform some maneuvers to exercise the ACC function -->
+
+<OpenSCENARIO>
+   <FileHeader revMajor="1"
+               revMinor="2"
+               date="2021-08-24T10:00:00"
+               description="Demonstrate Highway Driver"
+               author="esmini-team"/>
+   <ParameterDeclarations>
+      <ParameterDeclaration name="HostVehicle" parameterType="string" value="car_red"/>
+      <ParameterDeclaration name="TargetVehicle" parameterType="string" value="car_white"/>
+   </ParameterDeclarations>
+   <CatalogLocations>
+      <VehicleCatalog>
+         <Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
+      </VehicleCatalog>
+      <MiscObjectCatalog>
+	     <Directory path="../../../resources/xosc/Catalogs/MiscObjects"/>
+	  </MiscObjectCatalog>
+   </CatalogLocations>
+   <RoadNetwork>
+      <LogicFile filepath="../xodr/straight_500m_signs.xodr"/>
+   </RoadNetwork>
+   <Entities>
+      <ScenarioObject name="Ego">
+        <CatalogReference catalogName="VehicleCatalog" entryName="$HostVehicle"/>
+      </ScenarioObject>
+      <ScenarioObject name="Box">
+        <CatalogReference catalogName="MiscObjectCatalog" entryName="box"/>
+      </ScenarioObject>
+      <ScenarioObject name="Wall">
+        <CatalogReference catalogName="MiscObjectCatalog" entryName="wall"/>
+      </ScenarioObject>
+      <ScenarioObject name="Cone-45">
+        <CatalogReference catalogName="MiscObjectCatalog" entryName="cone-45"/>
+      </ScenarioObject>
+      <ScenarioObject name="Cone-100">
+        <CatalogReference catalogName="MiscObjectCatalog" entryName="cone-100"/>
+      </ScenarioObject>
+   </Entities>
+   <Storyboard>
+      <Init>
+         <Actions>
+            <Private entityRef="Ego">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="1" laneId="-1" offset="0" s="5"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="rate" value="1"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="${50 / 3.6}"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+            </Private>
+            <Private entityRef="Box">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="1" laneId="1" offset="0" s="100"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+            </Private>
+            <Private entityRef="Wall">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="1" laneId="-1" offset="-4" s="100"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+            </Private>
+            <Private entityRef="Cone-45">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="1" laneId="1" offset="0.6" s="98.0"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+            </Private>
+            <Private entityRef="Cone-100">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="1" laneId="1" offset="-0.9" s="98.0"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+            </Private>
+         </Actions>
+      </Init>
+      <StopTrigger>
+          <ConditionGroup>
+                <Condition name="stop_trigger " delay="0" conditionEdge="none">
+                    <ByValueCondition>
+                        <SimulationTimeCondition value="55" rule="greaterThan"/>
+                    </ByValueCondition>
+                </Condition>
+          </ConditionGroup>
+      </StopTrigger>
+   </Storyboard>
+</OpenSCENARIO>

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSCENARIO>
+    <FileHeader
+        description="MiscObject Catalog"
+        revMajor="1"
+        revMinor="1"
+        date="2024-12-17T08:00:00"
+        author="esmini" />
+    <Catalog name="MiscObject">
+        <MiscObject name="box" mass="1000" miscObjectCategory="obstacle" model3d="../models/box_cc_by.osgb">
+            <BoundingBox>
+                <Center x="0.0" y="0.0" z="0.5" />
+                <Dimensions width="1.0" length="1.0" height="1.0" />
+            </BoundingBox>
+            <Properties>
+                <Property name="scaleMode" value="ModelToBB" />
+                <Property name="model_id" value="100" />
+            </Properties>
+        </MiscObject>
+        <MiscObject name="wall" mass="100.0" miscObjectCategory="barrier">
+            <BoundingBox>
+                <Center x="0.0" y="0.0" z="2.0"/>
+                <Dimensions height="4" length="200" width="1"/>
+            </BoundingBox>
+            <Properties>
+                <Property name="model_id" value="101" />
+            </Properties>
+        </MiscObject>
+        <MiscObject name="cone-45" mass="1" miscObjectCategory="obstacle" model3d="../models/cone-45.osgb">
+            <BoundingBox>
+                <Center x="0.0" y="0.0" z="0.225" />
+                <Dimensions width="0.2" length="0.2" height="0.45" />
+            </BoundingBox>
+            <Properties>
+                <Property name="scaleMode" value="ModelToBB" />
+                <Property name="model_id" value="102" />
+            </Properties>
+        </MiscObject>
+        <MiscObject name="cone-100" mass="1" miscObjectCategory="obstacle" model3d="../models/cone-100.osgb">
+            <BoundingBox>
+                <Center x="0.0" y="0.0" z="0.5" />
+                <Dimensions width="0.4" length="0.4" height="1.0" />
+            </BoundingBox>
+            <Properties>
+                <Property name="scaleMode" value="ModelToBB" />
+                <Property name="model_id" value="103" />
+            </Properties>
+        </MiscObject>
+    </Catalog>
+</OpenSCENARIO>
