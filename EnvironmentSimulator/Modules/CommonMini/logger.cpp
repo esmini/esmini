@@ -309,15 +309,8 @@ namespace esmini::common
 
     void TxtLogger::LogVersion()
     {
-        std::string esminiVersion = GetVersionInfoForLog();
-        if (ShouldLogToConsole())
-        {
-            consoleLogger->error(esminiVersion);
-        }
-        if (ShouldLogToFile())
-        {
-            fileLogger->error(esminiVersion);
-        }
+        ShouldLogToConsole();
+        ShouldLogToFile();
     }
 
     void TxtLogger::LogTimeOnly()

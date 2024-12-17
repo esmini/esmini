@@ -401,7 +401,7 @@ int main(int argc, char **argv)
     opt.AddOption("ground_plane", "Add a large flat ground surface");
     opt.AddOption("headless", "Run without viewer window");
     opt.AddOption("log_append", "Log all scenarios in the same txt file");
-    opt.AddOption("logfile_path", "Logfile path/filename, e.g. \"../my_log.txt\"", "path", LOG_FILENAME, true);
+    opt.AddOption("logfile_path", "Logfile path/filename, e.g. \"../my_log.txt\"", "path", ODRVIEWER_LOG_FILENAME, true);
     opt.AddOption("log_meta_data", "Log file name, function name and line number");
     opt.AddOption("log_level", "Log level debug, info, warn, error", "mode", "info", true);
     opt.AddOption("log_only_modules", "Log from only these modules. Overrides log_skip_modules. See User guide for more info", "modulename(s)");
@@ -460,12 +460,10 @@ int main(int argc, char **argv)
         {
             printf("Custom logfile path empty, disable logfile\n");
         }
-        else
-        {
-            printf("Custom logfile path: %s\n", arg_str.c_str());
-        }
     }
 
+    TxtLogger::Inst().SetLogFilePath(TxtLogger::Inst().CreateLogFilePath());
+    TxtLogger::Inst().LogTimeOnly();
     TxtLogger::Inst().SetMetaDataEnabled(opt.IsOptionArgumentSet("log_meta_data"));
 
     if (opt.IsOptionArgumentSet("log_only_modules"))

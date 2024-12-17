@@ -62,6 +62,8 @@ using id_t = uint32_t;
 #define OSI_MAX_LONGITUDINAL_DISTANCE 50
 #define OSI_MAX_LATERAL_DEVIATION     0.05
 #define LOG_FILENAME                  "log.txt"
+#define ODRVIEWER_LOG_FILENAME        "odrviewer_log.txt"
+#define REPLAYER_LOG_FILENAME         "replayer_log.txt"
 #define DAT_FILENAME                  "sim.dat"
 #define GHOST_TRAIL_SAMPLE_TIME       0.2
 #define LOGICAL_OR(X, Y)              ((X || Y) && !(X && Y))
