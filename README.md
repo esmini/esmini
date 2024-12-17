@@ -100,19 +100,17 @@ see [User Guide Hello-World tutorial](https://esmini.github.io/#_python_binding)
 ### NCAP scenarios
 [OSC-NCAP-scenarios](https://github.com/vectorgrp/OSC-NCAP-scenarios) is a collection of scenarios based on Euro NCAP Test Protocols. "As the Euro NCAP scenarios are widely used, Vector decided to contribute the implementation of these scenarios using the ASAM standards."
 
-### Online OpenDRIVE viewer
-[odrviewer.io](https://odrviewer.io/) is an excellent interactive online OpenDRIVE viewer. Move around, zoom and inspect elements of the road network like roadID, laneID, successor and predecessor.
-
-### OpenDRIVE Editors
-[Truevision Designer](https://github.com/truevisionai/designer) Fully featured editor for xodr files, you can create/edit/export OpenDRIVE maps.
-
 ### OpenDRIVE plugin for Unreal Engine
 [brifsttar/OpenDRIVE](https://github.com/brifsttar/OpenDRIVE) plugin allows you to manipulate OpenDRIVE road networks in Unreal Engine. It's based on esmini RoadManager (esminiRMLib).
 
+### Online OpenDRIVE viewer
+[odrviewer.io](https://odrviewer.io/) is an excellent interactive online OpenDRIVE viewer. Move around, zoom and inspect elements of the road network like roadID, laneID, successor and predecessor.
 
 ### Editors
 
 [Blender Driving Scenario Creator add-on](https://github.com/johschmitz/blender-driving-scenario-creator) lets you create OpenDRIVE and OpenSCENARIO based scenarios.
+
+[Truevision Designer](https://github.com/truevisionai/designer) Fully featured editor for xodr files, you can create/edit/export OpenDRIVE maps. Free and commercial versions available.
 
 ### Carla Simulator
 [Carla](http://carla.org/) is an [Unreal](https://www.unrealengine.com/) based open source simulator worth to check out.
