@@ -10773,6 +10773,11 @@ double Position::GetZ() const
     return z_;
 }
 
+double Position::GetZRelative() const
+{
+    return z_relative_;
+}
+
 double Position::GetH() const
 {
     return h_;
@@ -10986,7 +10991,7 @@ int PolyLineBase::EvaluateSegmentByLocalS(int i, double local_s, TrajVertex& pos
                 angle_current  = vp0->r;
                 angle_next     = vp1->r;
                 angle_previous = i > 0 ? vertex_[i - 1].r : 0.0;
-                if ((pos.pos_mode & Position::PosMode::H_MASK) == 0)
+                if ((pos.pos_mode & Position::PosMode::R_MASK) == 0)
                 {
                     specified = false;
                 }
@@ -11525,16 +11530,37 @@ void PolyLineShape::CalculatePolyLine()
             return;
         }
 
+        pv->pos_mode = v->pos_->GetMode(Position::PosModeType::INIT);
         pv->x        = v->pos_->GetX();
         pv->y        = v->pos_->GetY();
         pv->z        = v->pos_->GetZ();
         pv->h        = v->pos_->GetH();
-        pv->pitch    = v->pos_->GetP();
-        pv->r        = v->pos_->GetR();
-        pv->road_id  = v->pos_->GetTrackId();
-        pv->pos_mode = v->pos_->GetMode(Position::PosModeType::INIT);
-        pv->param    = 0.0;  // skip p, s or time is used instead.
-        pv->time     = v->time_;
+
+        if ((pv->pos_mode & Position::PosMode::Z_MASK) == 0 && (pv->pos_mode & Position::PosMode::P_MASK) == 0)
+        {
+            // if no z or pitch is specified, use calculated values relative the road surface
+            pv->pos_mode = (pv->pos_mode & ~Position::PosMode::P_MASK) | Position::PosMode::P_REL;
+            pv->pitch    = v->pos_->GetPRelative();
+        }
+        else
+        {
+            pv->pitch = v->pos_->GetP();
+        }
+
+        if ((pv->pos_mode & Position::PosMode::Z_MASK) == 0 && (pv->pos_mode & Position::PosMode::R_MASK) == 0)
+        {
+            // if no z or roll is specified, use calculated values relative the road surface
+            pv->pos_mode = (pv->pos_mode & ~Position::PosMode::R_MASK) | Position::PosMode::R_REL;
+            pv->r        = v->pos_->GetRRelative();
+        }
+        else
+        {
+            pv->r = v->pos_->GetR();
+        }
+
+        pv->road_id = v->pos_->GetTrackId();
+        pv->param   = 0.0;  // skip p, s or time is used instead.
+        pv->time    = v->time_;
     }
 
     // calculate true heading of vertices based on delta to next vertex
@@ -12174,12 +12200,14 @@ void NurbsShape::CalculatePolyLine()
             {
                 if ((pos.pos_mode & Position::PosMode::H_MASK) == 0)  // not set
                 {
+                    // heading not specified -> align pitch with trajectory
                     pos.h =
                         GetAngleInInterval2PI((i < nSteps) ? atan2(tmppos.y - pos.y, tmppos.x - pos.x) : atan2(pos.y - tmppos.y, pos.x - tmppos.x));
                 }
 
-                if ((pos.pos_mode & Position::PosMode::P_MASK) == 0)  // not set
+                if ((pos.pos_mode & Position::PosMode::Z_MASK) != 0 && (pos.pos_mode & Position::PosMode::P_MASK) == 0)  // not set
                 {
+                    // detached from ground and pitch not specified -> align pitch with trajectory
                     pos.pitch =
                         GetAngleInInterval2PI(i < nSteps ? -atan2(tmppos.z - pos.z, tmppos.s - pos.s) : -atan2(pos.z - tmppos.z, pos.s - tmppos.s));
                 }
@@ -12192,7 +12220,7 @@ void NurbsShape::CalculatePolyLine()
                     pos.h = std::nan("");
                 }
 
-                if ((pos.pos_mode & Position::PosMode::P_MASK) == 0)  // not set
+                if ((pos.pos_mode & Position::PosMode::Z_MASK) != 0 && (pos.pos_mode & Position::PosMode::P_MASK) == 0)  // not set
                 {
                     pos.pitch = std::nan("");
                 }
@@ -12205,7 +12233,8 @@ void NurbsShape::CalculatePolyLine()
             {
                 pos.h = pline_.vertex_[i - 1].h;
             }
-            if (std::isnan(pline_.vertex_[i - 1].pitch) && (pos.pos_mode & Position::PosMode::P_MASK) == 0)
+            if (std::isnan(pline_.vertex_[i - 1].pitch) && (pos.pos_mode & Position::PosMode::Z_MASK) != 0 &&
+                (pos.pos_mode & Position::PosMode::P_MASK) == 0)
             {
                 pos.pitch = pline_.vertex_[i - 1].pitch;
             }
@@ -12217,7 +12246,7 @@ void NurbsShape::CalculatePolyLine()
             {
                 pos.h = std::nan("");
             }
-            if ((pos.pos_mode & Position::PosMode::P_MASK) == 0)
+            if ((pos.pos_mode & Position::PosMode::Z_MASK) != 0 && (pos.pos_mode & Position::PosMode::P_MASK) == 0)
             {
                 pos.pitch = std::nan("");
             }
@@ -12699,22 +12728,48 @@ int Position::UpdateTrajectoryPos()
     int pos_mode = trajectory_->shape_->current_val_.pos_mode;
 
     // Trajectory position mode is handled a bit different
-    // absolute z means that position z was specified and trajectory is detached from the road surface
     if ((pos_mode & PosMode::Z_MASK) == PosMode::Z_ABS)
     {
-        pos_mode = PosMode::Z_ABS | PosMode::H_ABS | PosMode::P_ABS | PosMode::R_ABS;
+        // absolute z means that z value has been specified and trajectory is detached from the road surface
+        // adjust unset z, pitch and roll to calculated absolute values (while heading is already calculated)
+        if ((pos_mode & PosMode::P_MASK) == 0)
+        {
+            pos_mode = (pos_mode & ~PosMode::P_MASK) | PosMode::P_ABS;
+        }
+
+        if ((pos_mode & PosMode::R_MASK) == 0)
+        {
+            pos_mode = (pos_mode & ~PosMode::R_MASK) | PosMode::R_ABS;
+        }
     }
     else
     {
-        pos_mode = PosMode::Z_REL | PosMode::H_ABS | PosMode::P_REL | PosMode::R_REL;
+        // unset or relative z means that trajectory will be related to road surface
+        // align unset z, pitch and roll to road surface (while heading is already calculated)
+        if ((pos_mode & PosMode::Z_MASK) == 0)
+        {
+            pos_mode = (pos_mode & ~PosMode::Z_MASK) | PosMode::Z_REL;
+        }
+
+        if ((pos_mode & PosMode::P_MASK) == 0)
+        {
+            pos_mode = (pos_mode & ~PosMode::P_MASK) | PosMode::P_REL;
+        }
+
+        if ((pos_mode & PosMode::R_MASK) == 0)
+        {
+            pos_mode = (pos_mode & ~PosMode::R_MASK) | PosMode::R_REL;
+        }
     }
+
+    pos_mode = (pos_mode & ~PosMode::H_MASK) | PosMode::H_ABS;
 
     SetInertiaPosMode(x,
                       y,
-                      (pos_mode & PosMode::Z_MASK) == PosMode::Z_REL ? 0.0 : trajectory_->shape_->current_val_.z,
-                      (pos_mode & PosMode::H_MASK) == PosMode::H_REL ? 0.0 : trajectory_->shape_->current_val_.h,
-                      (pos_mode & PosMode::P_MASK) == PosMode::P_REL ? 0.0 : trajectory_->shape_->current_val_.pitch,
-                      (pos_mode & PosMode::R_MASK) == PosMode::R_REL ? 0.0 : trajectory_->shape_->current_val_.r,
+                      (pos_mode & PosMode::Z_MASK) == PosMode::Z_ABS ? trajectory_->shape_->current_val_.z : 0.0,
+                      trajectory_->shape_->current_val_.h,
+                      trajectory_->shape_->current_val_.pitch,
+                      trajectory_->shape_->current_val_.r,
                       pos_mode,
                       true);
 

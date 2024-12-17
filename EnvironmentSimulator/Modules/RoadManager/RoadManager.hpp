@@ -3540,6 +3540,11 @@ namespace roadmanager
         double GetZ() const;
 
         /**
+        Retrieve the world coordinate Z-value relative to road surface
+        */
+        double GetZRelative() const;
+
+        /**
         Retrieve the road Z-value
         */
         double GetZRoad() const

@@ -3235,6 +3235,93 @@ TEST(PositionTest, TestPositionTypes)
     delete se;
 }
 
+TEST(PositionTest, TestTrajectoryLanePosRoll)
+{
+    double dt = 0.1;
+
+    ScenarioEngine* se = new ScenarioEngine("../../../resources/xosc/bicycle_fall_over.xosc");
+    ASSERT_NE(se, nullptr);
+
+    se->step(0.0);
+    se->prepareGroundTruth(0.0);
+    scenarioengine::Entities* entities = &se->entities_;
+
+    ASSERT_NE(entities, nullptr);
+    EXPECT_EQ(entities->object_.size(), 1);
+
+    while (se->getSimulationTime() < 2.0 - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(0.0);
+    }
+
+    EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 120.0, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetY(), -1.535, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetZ(), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[0]->pos_.GetH(), 0.0), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[0]->pos_.GetP(), 0.0), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[0]->pos_.GetR(), 0.0), 0.0, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->GetSpeed(), 10.0, 1E-3);
+
+    while (se->getSimulationTime() < 2.3 - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(0.0);
+    }
+
+    EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 123.0, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetY(), -1.535, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetZ(), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[0]->pos_.GetH(), 0.0), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[0]->pos_.GetP(), 0.0), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[0]->pos_.GetR(), 0.9), 0.0, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->GetSpeed(), 10.0, 1E-3);
+
+    while (se->getSimulationTime() < 2.5 - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(0.0);
+    }
+
+    EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 125.0, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetY(), -1.535, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetZ(), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[0]->pos_.GetH(), 0.0), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[0]->pos_.GetP(), 0.0), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[0]->pos_.GetR(), 1.5), 0.0, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->GetSpeed(), 10.0, 1E-3);
+
+    while (se->getSimulationTime() < 3.4 - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(0.0);
+    }
+
+    EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 129.95, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetY(), -1.535, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetZ(), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[0]->pos_.GetH(), 0.0), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[0]->pos_.GetP(), 0.0), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[0]->pos_.GetR(), 1.5), 0.0, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->GetSpeed(), 1.5, 1E-3);
+
+    while (se->getSimulationTime() < 3.6 - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(0.0);
+    }
+
+    EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 130.0, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetY(), -1.535, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetZ(), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[0]->pos_.GetH(), 0.0), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[0]->pos_.GetP(), 0.0), 0.0, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[0]->pos_.GetR(), 1.5), 0.0, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->GetSpeed(), 0.0, 1E-3);
+
+    delete se;
+}
+
 TEST(ClothoidSplineTest, TestTrajectoryShape)
 {
     double dt = 0.05;
@@ -4379,16 +4466,6 @@ TEST(StringIds, TestRoadStringIdsEdgeCases)
     EXPECT_EQ(ids[1].first, 6);
     EXPECT_EQ(ids[2].first, 3);
 }
-
-// Uncomment to print log output to console
-// #define LOG_TO_CONSOLE
-
-#ifdef LOG_TO_CONSOLE
-static void log_callback(const char* str)
-{
-    printf("%s\n", str);
-}
-#endif
 
 int main(int argc, char** argv)
 {

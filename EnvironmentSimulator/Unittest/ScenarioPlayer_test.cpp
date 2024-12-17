@@ -644,15 +644,6 @@ TEST(OSI, TestGeoOffsetIgnoreODROffset)
 
 #endif  // _USE_OSI
 
-// #define LOG_TO_CONSOLE
-
-#ifdef LOG_TO_CONSOLE
-static void log_callback(const char* str)
-{
-    printf("%s\n", str);
-}
-#endif
-
 int main(int argc, char** argv)
 {
     // testing::GTEST_FLAG(filter) = "*TestCustomCameraVariants*";

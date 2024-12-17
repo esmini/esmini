@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSCENARIO>
+    <FileHeader revMajor="1" revMinor="3" date="2024-12-18T10:00:00" description="Bicycle suddenly falls over" author="esmini"/>
+    <ParameterDeclarations/>
+    <CatalogLocations>
+        <VehicleCatalog>
+            <Directory path="../xosc/Catalogs/Vehicles"/>
+        </VehicleCatalog>
+    </CatalogLocations>
+    <RoadNetwork>
+        <LogicFile filepath="../xodr/straight_500m.xodr"/>
+    </RoadNetwork>
+    <Entities>
+        <ScenarioObject name="Cyclist">
+            <CatalogReference catalogName="VehicleCatalog" entryName="bicycle"/>
+        </ScenarioObject>
+    </Entities>
+    <Storyboard>
+        <Init>
+            <Actions>
+                <Private entityRef="Cyclist">
+					<PrivateAction>
+						<LongitudinalAction>
+							<SpeedAction>
+								<SpeedActionDynamics dynamicsShape="step" value="0.0" dynamicsDimension="time"/>
+								<SpeedActionTarget>
+									<AbsoluteTargetSpeed value="10"/>
+								</SpeedActionTarget>
+							</SpeedAction>
+						</LongitudinalAction>
+					</PrivateAction>				
+                    <PrivateAction>
+                        <RoutingAction>
+                            <FollowTrajectoryAction>
+                                <Trajectory closed="false" name="bicycle_trajectory">
+                                    <ParameterDeclarations/>
+                                    <Shape>
+                                        <Polyline>
+                                            <Vertex time="0">
+                                                <Position>
+                                                    <LanePosition roadId="1" laneId="-1" s="100.0">
+														<Orientation type="relative" r="0.0"/>
+													</LanePosition>
+                                                </Position>
+                                            </Vertex>
+                                            <Vertex time="2">
+                                                <Position>
+                                                    <LanePosition roadId="1" laneId="-1" s="120.0">
+														<Orientation type="relative" r="0.0"/>
+													</LanePosition>
+                                                </Position>
+                                            </Vertex>
+                                            <Vertex time="2.5">
+                                                <Position>
+                                                    <LanePosition roadId="1" laneId="-1" s="125.0">
+														<Orientation type="relative" r="1.5"/>
+													</LanePosition>
+                                                </Position>
+                                            </Vertex>
+                                            <Vertex time="3.5">
+                                                <Position>
+                                                    <LanePosition roadId="1" laneId="-1" s="130.0">
+														<Orientation type="relative" r="1.5"/>
+													</LanePosition>
+                                                </Position>
+                                            </Vertex>
+                                            <Vertex time="4">
+                                                <Position>
+                                                    <LanePosition roadId="1" laneId="-1" s="130.0">
+														<Orientation type="relative" r="1.5"/>
+													</LanePosition>
+                                                </Position>
+                                            </Vertex>
+                                        </Polyline>
+                                    </Shape>
+                                </Trajectory>
+                                <TimeReference>
+                                    <Timing domainAbsoluteRelative="relative" offset="0" scale="1"/>
+                                </TimeReference>
+                                <TrajectoryFollowingMode followingMode="follow"/>
+                            </FollowTrajectoryAction>
+                        </RoutingAction>
+                    </PrivateAction>
+                </Private>
+            </Actions>
+        </Init>
+        <StopTrigger>
+            <ConditionGroup>
+                <Condition name="StopTrigger" delay="0" conditionEdge="none">
+                    <ByValueCondition>
+                        <SimulationTimeCondition value="6" rule="greaterThan"/>
+                    </ByValueCondition>
+                </Condition>
+            </ConditionGroup>
+        </StopTrigger>
+    </Storyboard>
+</OpenSCENARIO>
