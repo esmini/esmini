@@ -78,6 +78,7 @@ namespace scenarioengine
         double           min_lookahead_speed_;
         double           lookahead_steering_;
         double           min_lookahead_steering_;
+        double           steering_speed_inertia_;
     };
 
     Controller* InstantiateControllerFollowGhost(void* args);

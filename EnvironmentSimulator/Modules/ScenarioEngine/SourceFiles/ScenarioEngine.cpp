@@ -1061,28 +1061,34 @@ void ScenarioEngine::SetupGhost(Object* object)
     ghost->name_ += "_ghost";
     ghost->ghost_     = 0;
     ghost->ghost_Ego_ = object;
-    ghost->UnassignControllers();
+
     ghost->isGhost_ = true;
     ghost->SetHeadstartTime(object->headstart_time_);
     entities_.addObject(ghost, true);
     object->SetHeadstartTime(0);
 
-    int numberOfInitActions = static_cast<int>(storyBoard.init_.private_action_.size());
-    for (int i = 0; i < numberOfInitActions; i++)
+    // remove all init actions from ghost, then create unique copies from object
+    ghost->initActions_.clear();
+
+    // move all controllers from object to ghost, except the first one (which is assumed to be a ghost controller)
+    object->controllers_.erase(object->controllers_.begin() + 1, object->controllers_.end());
+    ghost->controllers_.erase(ghost->controllers_.begin());
+    for (auto& ctrl : ghost->controllers_)
     {
-        OSCPrivateAction* action = storyBoard.init_.private_action_[static_cast<unsigned int>(i)];
+        ctrl->LinkObject(ghost);
+    }
+
+    // Copy all init actions
+    for (auto& action : object->initActions_)
+    {
         if (action->object_ == object)
         {
-            // Copy all actions except ActivateController
-            if (action->action_type_ != OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER)
-            {
-                OSCPrivateAction* newAction = action->Copy();
-                newAction->SetName(action->GetName() + "_ghost-copy");
-                newAction->object_ = ghost;
-                newAction->SetScenarioEngine(this);
-                storyBoard.init_.private_action_.push_back(newAction);
-                ghost->initActions_.push_back(newAction);
-            }
+            OSCPrivateAction* newAction = action->Copy();
+            newAction->SetName(action->GetName() + "_ghost-copy");
+            newAction->object_ = ghost;
+            newAction->SetScenarioEngine(this);
+            storyBoard.init_.private_action_.push_back(newAction);
+            ghost->initActions_.push_back(newAction);
         }
     }
 

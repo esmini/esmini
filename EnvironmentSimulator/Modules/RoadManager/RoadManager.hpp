@@ -4093,7 +4093,7 @@ namespace roadmanager
     class Route
     {
     public:
-        Route() : invalid_route_(false), active_(false), waypoint_idx_(-1), path_s_(0), length_(0), on_route_(false)
+        Route() : invalid_route_(false), waypoint_idx_(-1), path_s_(0), length_(0), on_route_(false)
         {
         }
 
@@ -4198,7 +4198,6 @@ namespace roadmanager
         std::string           name_;
         std::string           obj_name_;
         bool                  invalid_route_;
-        bool                  active_;
         double                path_s_;
         Position              currentPos_;
         double                length_;

@@ -106,6 +106,11 @@ namespace vehicle
         {
             return steering_return_factor_;
         }
+
+        /**
+        Set steering inertia related to vehicle speed
+        @param steering_scale Steering inertia factor, default = 0.02
+        */
         void SetSteeringScale(double steering_scale)
         {
             steering_scale_ = steering_scale;

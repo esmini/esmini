@@ -10874,7 +10874,7 @@ Position::ReturnCode Position::MoveRouteDS(double ds, double* remaining_dist, bo
 
     if (retval == ReturnCode::ERROR_END_OF_ROUTE)
     {
-        LOG_ERROR("End of route at road_id={}, lane_id={}, s={:.2f}", GetTrackId(), GetLaneId(), GetS());
+        LOG_INFO("End of route at road_id={}, lane_id={}, s={:.2f}", GetTrackId(), GetLaneId(), GetS());
     }
 
     return retval;
@@ -13232,31 +13232,36 @@ Position::ReturnCode Route::SetTrackS(id_t trackId, double s, bool update_state)
             }
 
             // need to adjust s value, on first or last wp?
+            // also check if out of route bounds
+            info_for_closest_wp.retval = Position::ReturnCode::OK;
+            bool out_of_bounds         = false;
             if (info_for_closest_wp.wp_index == 0)
             {
-                if (route_direction > 0)
+                if (route_direction > 0 && s < minimal_waypoints_[i].GetS() || route_direction < 0 && s > minimal_waypoints_[i].GetS())
                 {
-                    info_for_closest_wp.s = MAX(s, minimal_waypoints_[i].GetS());
-                }
-                else
-                {
-                    info_for_closest_wp.s = MIN(s, minimal_waypoints_[i].GetS());
+                    // reached the beginning of the route
+                    info_for_closest_wp.s = minimal_waypoints_[i].GetS();
+                    if (all_waypoints_[0].GetTrackId() == trackId)
+                    {
+                        // reached the beginning of the route
+                        out_of_bounds = true;
+                    }
                 }
             }
             else if (info_for_closest_wp.wp_index == minimal_waypoints_.size() - 1)
             {
-                if (route_direction > 0)
+                if (route_direction > 0 && s > minimal_waypoints_[i].GetS() || route_direction < 0 && s < minimal_waypoints_[i].GetS())
                 {
-                    info_for_closest_wp.s = MIN(s, minimal_waypoints_[i].GetS());
-                }
-                else
-                {
-                    info_for_closest_wp.s = MAX(s, minimal_waypoints_[i].GetS());
+                    info_for_closest_wp.s = minimal_waypoints_[i].GetS();
+                    if (all_waypoints_.back().GetTrackId() == trackId)
+                    {
+                        // reached the end of the route
+                        out_of_bounds = true;
+                    }
                 }
             }
 
-            if (info_for_closest_wp.dist_along_route_at_wp > GetLength() + SMALL_NUMBER ||
-                info_for_closest_wp.dist_along_route_at_wp < 0.0 - SMALL_NUMBER)
+            if (out_of_bounds)
             {
                 if (!OnRoute())
                 {
@@ -13266,10 +13271,6 @@ Position::ReturnCode Route::SetTrackS(id_t trackId, double s, bool update_state)
                 {
                     info_for_closest_wp.retval = Position::ReturnCode::ERROR_END_OF_ROUTE;
                 }
-            }
-            else
-            {
-                info_for_closest_wp.retval = Position::ReturnCode::OK;
             }
         }
     }
@@ -13291,7 +13292,7 @@ Position::ReturnCode Route::SetTrackS(id_t trackId, double s, bool update_state)
             {
                 if (OnRoute() && info_for_closest_wp.retval == Position::ReturnCode::ERROR_END_OF_ROUTE)
                 {
-                    LOG_INFO("{}{}moved out of route at roadId={}, s={:.2f} (SetTrackS())",
+                    LOG_INFO("{}{} moved out of route at roadId={}, s={:.2f} (SetTrackS())",
                              getObjName().empty() ? "Position " : "Entity ",
                              getObjName().empty() ? "" : getObjName().c_str(),
                              trackId,
@@ -13434,7 +13435,7 @@ Position::ReturnCode Route::SetPathS(double s, double* remaining_dist, bool upda
             {
                 if (update_state)
                 {
-                    LOG_INFO("{}{}moved out of route at roadId={}, s={:.2f} (SetPathS())",
+                    LOG_INFO("{}{} moved out of route at roadId={}, s={:.2f} (SetPathS())",
                              getObjName().empty() ? "Position " : "Entity ",
                              getObjName().empty() ? "" : getObjName(),
                              GetWaypoint(waypoint_idx_)->GetTrackId(),

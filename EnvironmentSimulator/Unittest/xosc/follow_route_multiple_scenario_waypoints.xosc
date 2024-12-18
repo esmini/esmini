@@ -81,7 +81,7 @@
                                                 </Waypoint>
                                                 <Waypoint routeStrategy="fastest">
                                                     <Position>
-                                                        <LanePosition roadId="202" laneId="2" s="40.0" offset="0.0"/>
+                                                        <LanePosition roadId="202" laneId="2" s="50.0" offset="0.0"/>
                                                     </Position>
                                                 </Waypoint>
                                             </Route>
@@ -117,7 +117,7 @@
             <ConditionGroup>
                 <Condition name="stop_simulation" delay="0" conditionEdge="rising">
                     <ByValueCondition>
-                        <SimulationTimeCondition value="500" rule="greaterThan"/>
+                        <SimulationTimeCondition value="70" rule="greaterThan"/>
                     </ByValueCondition>
                 </Condition>
             </ConditionGroup>

@@ -224,7 +224,7 @@ TEST_F(FollowRouteControllerTest, FollowRouteMultipleScenarioWaypoints)
     double dt = 0.1;
 
     // Fast forward
-    while (se->getSimulationTime() < (100 - SMALL_NUMBER))
+    while (se->getSimulationTime() < (70 - SMALL_NUMBER))
     {
         Position p = se->entities_.object_[0]->pos_;
         passedPositions.push_back(p);
@@ -266,6 +266,53 @@ TEST_F(FollowRouteControllerTest, FollowRouteSetParameters)
     ASSERT_NE(controller, nullptr);
     ASSERT_NEAR(controller->GetMinDistForCollision(), 69, 0.01);
     ASSERT_NEAR(controller->GetLaneChangeTime(), 420, 0.01);
+
+    delete se;
+}
+
+TEST_F(FollowRouteControllerTest, FollowRouteGhostStartingOnRoute)
+{
+    ScenarioEngine *se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/follow_route_ghost_starting_on_route.xosc");
+    ASSERT_NE(se, nullptr);
+    if (se->GetInitStatus() != 0)
+    {
+        delete se;
+        GTEST_FAIL();
+    }
+
+    std::vector<Position> scenarioWaypoints = {
+        Position(202, 2, 50, 0),
+        Position(284, -1, 10, 0),
+        Position(196, 1, 90, 0),
+    };
+    std::vector<Position> passedPositions;
+
+    double dt = 0.1;
+
+    // Fast forward
+    while (se->getSimulationTime() < (53 - SMALL_NUMBER))
+    {
+        Position p = se->entities_.object_[0]->pos_;
+        passedPositions.push_back(p);
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }
+
+    for (Position &scenarioWp : scenarioWaypoints)
+    {
+        bool hasPassedWaypoint = std::find_if(passedPositions.begin(),
+                                              passedPositions.end(),
+                                              [&](const Position &p) {
+                                                  return p.GetTrackId() == scenarioWp.GetTrackId() && p.GetLaneId() == scenarioWp.GetLaneId() &&
+                                                         abs(p.GetS() - scenarioWp.GetS()) < 5;
+                                              }) != passedPositions.end();
+        ASSERT_TRUE(hasPassedWaypoint);
+    }
+
+    Position finalPos = se->entities_.object_[0]->pos_;
+    ASSERT_EQ(scenarioWaypoints.back().GetTrackId(), finalPos.GetTrackId());
+    ASSERT_EQ(scenarioWaypoints.back().GetLaneId(), finalPos.GetLaneId());
+    ASSERT_NEAR(scenarioWaypoints.back().GetS(), finalPos.GetS(), 10);
 
     delete se;
 }

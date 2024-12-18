@@ -42,7 +42,8 @@ ControllerFollowGhost::ControllerFollowGhost(InitArgs* args)
       lookahead_speed_(0.1),
       min_lookahead_speed_(0.1),
       lookahead_steering_(1.0),
-      min_lookahead_steering_(1.0)
+      min_lookahead_steering_(1.0),
+      steering_speed_inertia_(0.01)
 {
     if (args->properties->ValueExists("headstartTime"))
     {
@@ -85,6 +86,11 @@ ControllerFollowGhost::ControllerFollowGhost(InitArgs* args)
     if (args->properties->ValueExists("minLookaheadSteering"))
     {
         min_lookahead_steering_ = strtod(args->properties->GetValueStr("minLookaheadSteering"));
+    }
+
+    if (args->properties->ValueExists("steeringSpeedInertia"))
+    {
+        steering_speed_inertia_ = strtod(args->properties->GetValueStr("steeringSpeedInertia"));
     }
 }
 
@@ -250,6 +256,7 @@ int ControllerFollowGhost::Activate(ControlActivationMode lat_activation_mode,
         vehicle_.speed_ = object_->GetSpeed();
         vehicle_.SetMaxSpeed(100);  // just set a random high value
         vehicle_.SetMaxAcc(10.0);
+        vehicle_.SetSteeringScale(steering_speed_inertia_);
 
         object_->sensor_pos_[0] = object_->pos_.GetX();
         object_->sensor_pos_[1] = object_->pos_.GetY();

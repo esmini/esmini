@@ -185,7 +185,8 @@ void ControllerFollowRoute::UpdateWaypoints(roadmanager::Position vehiclePos, ro
 
             object_->pos_.GetRoute()->minimal_waypoints_.clear();
             object_->pos_.GetRoute()->minimal_waypoints_ = {vehiclePos, waypoints_[static_cast<unsigned int>(currentWaypointIndex_)]};
-            object_->pos_.CalcRoutePosition();  // Reset route object according to new route waypoints and current position
+            object_->pos_.CalcRoutePosition();               // Reset route object according to new route waypoints and current position
+            object_->SetDirtyBits(Object::DirtyBit::ROUTE);  // Set dirty bit to notify that route has changed
 
             return;
         }
@@ -210,17 +211,33 @@ void ControllerFollowRoute::CalculateWaypoints()
     roadmanager::Position startPos(object_->pos_);
     roadmanager::Position targetPos(object_->pos_.GetRoute()->scenario_waypoints_[static_cast<unsigned int>(scenarioWaypointIndex_)]);
 
-    // If start and target is on same road, set next waypoint as target
-    if (startPos.GetTrackId() == targetPos.GetTrackId())
+    // If current road is found along route, set successor waypoint as target
+    unsigned int i = 0;
+    unsigned int j = 0;
+    for (auto &scwp : object_->pos_.GetRoute()->all_waypoints_)
     {
-        scenarioWaypointIndex_++;
-        if (static_cast<unsigned int>(scenarioWaypointIndex_) >= object_->pos_.GetRoute()->scenario_waypoints_.size())
+        if (scwp.GetTrackId() == object_->pos_.GetRoute()->scenario_waypoints_[j].GetTrackId())
         {
-            LOG_ERROR("Error: start and target on same road, scenarioWaypointIndex out of bounds, deactivating controller");
-            Deactivate();
-            return;
+            // j represents the index of the next scenario waypoint corresponding to the pivot detailed waypoint
+            j++;
         }
-        targetPos = object_->pos_.GetRoute()->scenario_waypoints_[static_cast<unsigned int>(scenarioWaypointIndex_)];
+
+        if (scwp.GetTrackId() == startPos.GetTrackId())
+        {
+            // found the detailed waypoint at startpos road
+            // check whether the startpos is on route (not past last waypoint)
+            bool drivingWithRoadDirection = startPos.GetDrivingDirectionRelativeRoad() == 1;
+            if ((i < object_->pos_.GetRoute()->all_waypoints_.size() - 1) ||
+                ((drivingWithRoadDirection && startPos.GetS() < scwp.GetS() - SMALL_NUMBER) ||
+                 (!drivingWithRoadDirection && object_->pos_.GetS() > scwp.GetS() + SMALL_NUMBER)))
+            {
+                // either we can pick next scenario waypoint, or the last since it is ahead
+                scenarioWaypointIndex_ = MIN(static_cast<int>(j), static_cast<int>(object_->pos_.GetRoute()->scenario_waypoints_.size() - 1));
+                targetPos              = object_->pos_.GetRoute()->scenario_waypoints_[MAX(0, static_cast<unsigned int>(scenarioWaypointIndex_))];
+                break;
+            }
+        }
+        i++;
     }
 
     std::vector<roadmanager::Node> pathToGoal = router.CalculatePath(startPos, targetPos);
@@ -382,6 +399,7 @@ void ControllerFollowRoute::Deactivate()
         gateway_->updateObjectSpeed(object_->GetId(), 0.0, 0.0);
     }
     LOG_INFO("ControllerFollowRoute - Deactivated");
+    object_->pos_.SetRoute(nullptr);
     Controller::Deactivate();
 }
 
@@ -392,8 +410,8 @@ WaypointStatus ControllerFollowRoute::GetWaypointStatus(roadmanager::Position ve
     bool sameRoad                 = waypoint.GetTrackId() == vehiclePos.GetTrackId();
     bool sameLane                 = waypoint.GetLaneId() == vehiclePos.GetLaneId();
 
-    if (sameRoad &&
-        ((drivingWithRoadDirection && vehiclePos.GetS() > waypoint.GetS()) || (!drivingWithRoadDirection && vehiclePos.GetS() < waypoint.GetS())))
+    if (sameRoad && ((drivingWithRoadDirection && vehiclePos.GetS() > waypoint.GetS() - SMALL_NUMBER) ||
+                     (!drivingWithRoadDirection && vehiclePos.GetS() < waypoint.GetS() + SMALL_NUMBER)))
     {
         return sameLane ? PASSED_WAYPOINT : MISSED_WAYPOINT;
     }
