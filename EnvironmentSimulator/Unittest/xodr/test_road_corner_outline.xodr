@@ -111,7 +111,6 @@
                         <cornerRoad s="10" t="2.5" dz="0.0" height="4.0" id="3"/>
                         <cornerRoad s="25" t="2.5" dz="0.0" height="4.0" id="2"/>
                         <cornerRoad s="25" t="-2.5" dz="0.0" height="4.0" id="1"/>
-
                     </outline>
                 </outlines>
                 <repeat s="45" length="25" distance ="0.0" tStart="7.0" tEnd="7.0"/>

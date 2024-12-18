@@ -629,7 +629,8 @@ void AddOSIStationaryObject(roadmanager::RMObject *object, bool isRepeat = false
     // Create OSI Stationary Object
     obj_osi_internal.sobj = obj_osi_internal.gt->add_stationary_object();
     // Set OSI Stationary Object Mutable ID
-    obj_osi_internal.sobj->mutable_id()->set_value(static_cast<unsigned int>(object->GetId()));
+    int sobj_size = obj_osi_internal.gt->mutable_stationary_object()->size();
+    obj_osi_internal.sobj->mutable_id()->set_value(static_cast<unsigned int>(sobj_size - 1));
     // Set OSI Stationary Object Type and Classification
     UpdateOSIStationaryObjectODRType(object->GetType(), object->GetParkingSpace().GetRestrictions(), isRepeat);
 }
@@ -648,7 +649,7 @@ void AddPolygonToOSIStationaryObject(const roadmanager::Outline &outline)
     for (const auto &corner : outline.GetCorners())
     {
         double x, y, z;
-        corner->GetPos(x, y, z);
+        corner->GetPosLocal(x, y, z);
         // printf("reporter corner points osi %.2f %.2f %.2f\n", x, y, z);
         osi3::Vector2d *vec = obj_osi_internal.sobj->mutable_base()->add_base_polygon();
         vec->set_x(x);
@@ -664,7 +665,7 @@ int OSIReporter::CreateOSIStationaryObjectODR(roadmanager::RMObject *object, boo
     {
         for (const auto &outline : object->GetOutlines())
         {
-            AddOSIStationaryObject(object, isRepeat);  // each outline is separate object
+            AddOSIStationaryObjectAtPosition(object, isRepeat);  // each outline is separate object
             AddPolygonToOSIStationaryObject(outline);
         }
     }

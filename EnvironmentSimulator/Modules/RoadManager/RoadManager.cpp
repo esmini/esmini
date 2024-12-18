@@ -3672,7 +3672,7 @@ std::vector<roadmanager::RMObject*> roadmanager::RMObject::GetRepeatedObjects(Re
             }
             else
             {
-                for (auto& outline : CreateOutlinesFromRepeat(repeat, cur_s, factor))
+                for (auto& outline : CreateOutlinesFromRepeat(repeat, cur_s, factor, pos))
                 {
                     obj->AddOutline(std::move(outline));
                 }
@@ -3771,7 +3771,7 @@ RMObject* roadmanager::RMObject::CreateObjectFromRepeat(const Repeat& repeat, do
     return obj;
 }
 
-std::vector<Outline> roadmanager::RMObject::CreateOutlinesFromRepeat(const Repeat& repeat, double cur_s, double factor)
+std::vector<Outline> roadmanager::RMObject::CreateOutlinesFromRepeat(const Repeat& repeat, double cur_s, double factor, Position& pos)
 {
     double       scale_u = 1.0;
     double       scale_v = 1.0;
@@ -3825,9 +3825,9 @@ std::vector<Outline> roadmanager::RMObject::CreateOutlinesFromRepeat(const Repea
                                                                 start_t,
                                                                 start_z,
                                                                 start_h,
-                                                                repeat.GetS(),
-                                                                repeat.GetTWithFactor(factor),
-                                                                GetHOffset(),
+                                                                pos.GetX(),
+                                                                pos.GetY(),
+                                                                pos.GetH(),
                                                                 corner_original->GetOriginalCornerId()));
             }
             else
