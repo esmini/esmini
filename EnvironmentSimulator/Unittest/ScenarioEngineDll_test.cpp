@@ -18,7 +18,6 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
-
 class GetNumberOfObjectsTest : public ::testing::TestWithParam<std::tuple<std::string, int>>
 {
 };
@@ -3059,7 +3058,7 @@ TEST(TestOsiReporter, OutlineInCurveRoad)
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(43).base().dimension().height(), 4);
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(43).base().base_polygon_size(), 4);
     EXPECT_NEAR(osi_gt.stationary_object(43).base().base_polygon(0).x(), 131.526, 1E-3);
-    EXPECT_NEAR(osi_gt.stationary_object(43).base().base_polygon(0).y(),  7.350, 1E-3);
+    EXPECT_NEAR(osi_gt.stationary_object(43).base().base_polygon(0).y(), 7.350, 1E-3);
     SE_Close();
 }
 
@@ -3604,14 +3603,7 @@ TEST(TestOsiReporter, StationaryObjectWithRepeatTest)
 
 TEST(TestOsiReporter, CrestCurveRoadObjectTest)
 {
-    const char* args[] = {"--osc",
-                          "../EnvironmentSimulator/Unittest/xosc/test_crest-curve.xosc",
-                          "--window",
-                          "60",
-                          "60",
-                          "800",
-                          "400",
-                          "--headless"};
+    const char* args[] = {"--osc", "../EnvironmentSimulator/Unittest/xosc/test_crest-curve.xosc", "--window", "60", "60", "800", "400", "--headless"};
     ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
 
     SE_StepDT(0.001f);
@@ -3757,7 +3749,7 @@ TEST(TestOsiReporter, CrestCurveRoadObjectTest)
 
 TEST(TestOsiReporter, StationaryObjectTest)
 {
-    //without viewer
+    // without viewer
     std::string scenario_file = "../EnvironmentSimulator/Unittest/xosc/test_stationary_objects.xosc";
     const char* Scenario_file = scenario_file.c_str();
     int         i_init        = SE_Init(Scenario_file, 0, 0, 0, 0);
@@ -3865,15 +3857,9 @@ TEST(TestOsiReporter, StationaryObjectTest)
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(13).base().position().z(), 0.0);
     SE_Close();
 
-    //with viewer
-    const char* args[] = {"--osc",
-                          "../../../EnvironmentSimulator/Unittest/xosc/test_stationary_objects.xosc",
-                          "--window",
-                          "60",
-                          "60",
-                          "800",
-                          "400",
-                          "--headless"};
+    // with viewer
+    const char* args[] =
+        {"--osc", "../../../EnvironmentSimulator/Unittest/xosc/test_stationary_objects.xosc", "--window", "60", "60", "800", "400", "--headless"};
     ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
 
     SE_StepDT(0.001f);
@@ -4192,7 +4178,7 @@ TEST(TestOsiReporter, LocalCornerOutline)
     EXPECT_NEAR(osi_gt.stationary_object(3).base().base_polygon(3).x(), 2.000, 1e-3);
     EXPECT_NEAR(osi_gt.stationary_object(3).base().base_polygon(3).y(), -2.500, 1e-3);
     const auto id4 = osi_gt.stationary_object(4).id().value();
-    EXPECT_EQ(id4, 4); // used same object id
+    EXPECT_EQ(id4, 4);  // used same object id
     EXPECT_NEAR(osi_gt.stationary_object(4).base().position().x(), 14.000, 1e-3);
     EXPECT_NEAR(osi_gt.stationary_object(4).base().position().y(), -7.000, 1e-3);
     EXPECT_NEAR(osi_gt.stationary_object(4).base().position().z(), 0.000, 1e-3);
@@ -4226,7 +4212,7 @@ TEST(TestOsiReporter, LocalCornerOutline)
     EXPECT_NEAR(osi_gt.stationary_object(5).base().base_polygon(3).x(), 5.000, 1e-3);
     EXPECT_NEAR(osi_gt.stationary_object(5).base().base_polygon(3).y(), -2.500, 1e-3);
     const auto id6 = osi_gt.stationary_object(6).id().value();
-    EXPECT_EQ(id6, 6); // used same object id
+    EXPECT_EQ(id6, 6);  // used same object id
     EXPECT_NEAR(osi_gt.stationary_object(6).base().position().x(), 110.000, 1e-3);
     EXPECT_NEAR(osi_gt.stationary_object(6).base().position().y(), -7.000, 1e-3);
     EXPECT_NEAR(osi_gt.stationary_object(6).base().position().z(), 0.000, 1e-3);

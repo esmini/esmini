@@ -316,7 +316,7 @@ std::string CombineDirectoryPathAndFilepath(std::string dir_path, std::string fi
 /**
         Retrun zero if value is NaN otherwise return value
  */
-double      GetValueOrZero(double value);
+double GetValueOrZero(double value);
 
 /**
         Retrieve the angle of a vector
@@ -374,16 +374,16 @@ double GetAngleBetweenVectors(double x1, double y1, double x2, double y2);
         returns 0 if intersection exists, else -1
         Note: does not (yet) calculate whether point is within one of the line segments or not
 */
-int  GetIntersectionOfTwoLineSegments(double  ax1,
-                                      double  ay1,
-                                      double  ax2,
-                                      double  ay2,
-                                      double  bx1,
-                                      double  by1,
-                                      double  bx2,
-                                      double  by2,
-                                      double& x3,
-                                      double& y3);
+int GetIntersectionOfTwoLineSegments(double  ax1,
+                                     double  ay1,
+                                     double  ax2,
+                                     double  ay2,
+                                     double  bx1,
+                                     double  by1,
+                                     double  bx2,
+                                     double  by2,
+                                     double& x3,
+                                     double& y3);
 
 /**
         Calculate distance between two 2D points

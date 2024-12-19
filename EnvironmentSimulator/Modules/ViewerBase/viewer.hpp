@@ -593,7 +593,12 @@ namespace viewer
         // Get bounding box from the given 3D model node
         const osg::BoundingBox GetBoundingBox(osg::Node* node);
         // Update model from given original object and repeated object eg. Set position, scale, rotation
-        void UpdateModel(roadmanager::RMObject* repeatedObject, double scale_x, double scale_y, double scale_z, osg::ref_ptr<osg::PositionAttitudeTransform> clone, bool isShallowCopy = false);
+        void UpdateModel(roadmanager::RMObject*                       repeatedObject,
+                         double                                       scale_x,
+                         double                                       scale_y,
+                         double                                       scale_z,
+                         osg::ref_ptr<osg::PositionAttitudeTransform> clone,
+                         bool                                         isShallowCopy = false);
         // Add model to the given graphics group
         void AddModel(roadmanager::RMObject* object, osg::ref_ptr<osg::PositionAttitudeTransform> tx, osg::ref_ptr<osg::Group> objGroup);
         // validate and throw warning only if viewer default value used
@@ -609,21 +614,21 @@ namespace viewer
         bool                             CreateRoadLines(Viewer* viewer, roadmanager::OpenDrive* od);
         bool                             CreateRoadMarkLines(roadmanager::OpenDrive* od);
         // create one outline model
-        void CreateOutlineModel(const roadmanager::Outline& outline,
-                                osg::Vec4                   color,
-                                osg::ref_ptr<osg::Geode>    geode,
-                                bool isShallowCopy = false);
+        void CreateOutlineModel(const roadmanager::Outline& outline, osg::Vec4 color, osg::ref_ptr<osg::Geode> geode, bool isShallowCopy = false);
         // change viewer object as wireframe for better marking view
         void ChangeModelAsWireFrame(osg::ref_ptr<osg::Group> objGroup);
         // create marking for the object
         int DrawMarking(roadmanager::RMObject* object);
         // load and return the model for this given model name
-        osg::ref_ptr<osg::PositionAttitudeTransform> GetModel(std::string filename);
+        osg::ref_ptr<osg::PositionAttitudeTransform> GetModel(std::string filename, roadmanager::RMObject* object);
         osg::ref_ptr<osg::PositionAttitudeTransform> LoadRoadFeature(std::string filename);
         int                                          CreateRoadSignsAndObjects(roadmanager::OpenDrive* od);
         // Create signal and add it into group
         int  CreateRoadSignals(osg::ref_ptr<osg::Group> objGroup_, const std::vector<roadmanager::Signal*> signals);
-        bool CreateRepeats(roadmanager::RMObject* object, osg::ref_ptr<osg::PositionAttitudeTransform> tx, osg::ref_ptr<osg::Group> OutlineGroup, osg::ref_ptr<osg::Group> objGroup);
+        bool CreateRepeats(roadmanager::RMObject*                       object,
+                           osg::ref_ptr<osg::PositionAttitudeTransform> tx,
+                           osg::ref_ptr<osg::Group>                     OutlineGroup,
+                           osg::ref_ptr<osg::Group>                     objGroup);
         int  InitTraits(osg::ref_ptr<osg::GraphicsContext::Traits> traits,
                         int                                        x,
                         int                                        y,

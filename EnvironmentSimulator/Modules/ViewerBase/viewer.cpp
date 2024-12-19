@@ -51,7 +51,6 @@
 #define ORTHO_FOV                          1.0
 #define DEFAULT_LENGTH_FOR_CONTINUOUS_OBJS 10.0
 
-
 float color_green[3]      = {0.2f, 0.6f, 0.3f};
 float color_gray[3]       = {0.7f, 0.7f, 0.7f};
 float color_dark_gray[3]  = {0.5f, 0.5f, 0.5f};
@@ -2692,12 +2691,9 @@ osg::Vec4 GetObjectColor(roadmanager::RMObject::ObjectType type)
     return color;
 }
 
-void Viewer::CreateOutlineModel(const roadmanager::Outline& outline,
-                                osg::Vec4                   color,
-                                osg::ref_ptr<osg::Geode>    geode,
-                                bool                       isShallowCopy)
+void Viewer::CreateOutlineModel(const roadmanager::Outline& outline, osg::Vec4 color, osg::ref_ptr<osg::Geode> geode, bool isShallowCopy)
 {
-    bool roof     = outline.GetAreaType() == roadmanager::Outline::AreaType::CLOSED ? true : false;
+    bool roof = outline.GetAreaType() == roadmanager::Outline::AreaType::CLOSED ? true : false;
 
     // nrPoints will be corners + 1 if the outline should be closed, reusing first corner as last
     uint64_t                     nrPoints       = roof ? outline.GetNumberOfCorners() + 1 : outline.GetNumberOfCorners();
@@ -2708,8 +2704,8 @@ void Viewer::CreateOutlineModel(const roadmanager::Outline& outline,
     {
         double                      x, y, z_bottom;
         roadmanager::OutlineCorner* corner = outline.GetCornerByIndex(i);
-        double z_top = 0.0;
-        if(isShallowCopy)
+        double                      z_top  = 0.0;
+        if (isShallowCopy)
         {
             corner->GetPosLocal(x, y, z_bottom);
             z_top = z_bottom + corner->GetHeight();
@@ -2889,7 +2885,7 @@ double Viewer::GetViewerDimension(const double val)
 }
 
 // search, load and return trandform node for the given filename
-osg::ref_ptr<osg::PositionAttitudeTransform> Viewer::GetModel(std::string filename)
+osg::ref_ptr<osg::PositionAttitudeTransform> Viewer::GetModel(std::string filename, roadmanager::RMObject* object)
 {
     osg::ref_ptr<osg::PositionAttitudeTransform> tx = nullptr;
     // Assume name is representing a 3D model filename
@@ -2904,7 +2900,7 @@ osg::ref_ptr<osg::PositionAttitudeTransform> Viewer::GetModel(std::string filena
 
         if (tx == nullptr)
         {
-            LOG_WARN("Failed to load road object model file: {} ({}). Creating a bounding box as stand in.", filename);
+            LOG_WARN("Failed to load road object model file: {} ( in object id {}). Creating a bounding box as stand in.", filename, object->GetId());
         }
     }
     return tx;
@@ -2914,15 +2910,15 @@ void Viewer::ValidateDimensionsForViewing(roadmanager::RMObject* object) const
 {
     if (IsEqualDouble(object->GetLength().Get(), 0.0))
     {
-        LOG_WARN("Object {} missing length, set to bounding box length {}", object->GetName(), DEFAULT_MIN_DIM);
+        LOG_WARN("Object {} missing length, set to bounding box length {}", object->GetId(), DEFAULT_MIN_DIM);
     }
     if (IsEqualDouble(object->GetWidth().Get(), 0.0))
     {
-        LOG_WARN("Object {} missing width, set to bounding box width {}", object->GetName(), DEFAULT_MIN_DIM);
+        LOG_WARN("Object {} missing width, set to bounding box width {}", object->GetId(), DEFAULT_MIN_DIM);
     }
     if (IsEqualDouble(object->GetHeight().Get(), 0.0))
     {
-        LOG_WARN("Object {} missing height, set to bounding box height {}", object->GetName(), DEFAULT_MIN_DIM);
+        LOG_WARN("Object {} missing height, set to bounding box height {}", object->GetId(), DEFAULT_MIN_DIM);
     }
 }
 
@@ -2976,14 +2972,24 @@ osg::ref_ptr<osg::ShapeDrawable> Viewer::GetBoxShapeModel(roadmanager::RMObject*
 }
 
 // create object from given object and repeat dimension
-void Viewer::UpdateModel(roadmanager::RMObject* object, double scale_x, double scale_y, double scale_z, osg::ref_ptr<osg::PositionAttitudeTransform> clone, bool isShallowCopy)
+void Viewer::UpdateModel(roadmanager::RMObject*                       object,
+                         double                                       scale_x,
+                         double                                       scale_y,
+                         double                                       scale_z,
+                         osg::ref_ptr<osg::PositionAttitudeTransform> clone,
+                         bool                                         isShallowCopy)
 {
-    double   orientation  = object->GetOrientation() == roadmanager::Signal::Orientation::NEGATIVE ? M_PI : 0.0;
+    double orientation = object->GetOrientation() == roadmanager::Signal::Orientation::NEGATIVE ? M_PI : 0.0;
     clone->getOrCreateStateSet()->setMode(GL_NORMALIZE, osg::StateAttribute::ON);
     clone->setScale(osg::Vec3d(scale_x, scale_y, scale_z));
     clone->setPosition(osg::Vec3d(object->GetX() - origin_[0], object->GetY() - origin_[1], object->GetZ() + object->GetZOffset()));
     // First align to road orientation
-    osg::Quat quatRoad(osg::Quat(object->GetR() , osg::X_AXIS, object->GetP(), osg::Y_AXIS, object->GetH(), osg::Z_AXIS)); // tobe check r, p, h are combination of pos and object .
+    osg::Quat quatRoad(osg::Quat(object->GetR(),
+                                 osg::X_AXIS,
+                                 object->GetP(),
+                                 osg::Y_AXIS,
+                                 object->GetH(),
+                                 osg::Z_AXIS));  // tobe check r, p, h are combination of pos and object .
     // Specified local rotation
     osg::Quat quatLocal(object->GetHOffset() + orientation, osg::Vec3(osg::Z_AXIS));  // Heading
     // Combine
@@ -3009,21 +3015,21 @@ void Viewer::AddModel(roadmanager::RMObject* object, osg::ref_ptr<osg::PositionA
     }
 }
 
-bool viewer::Viewer::CreateRepeats(roadmanager::RMObject*                        object,
+bool viewer::Viewer::CreateRepeats(roadmanager::RMObject*                       object,
                                    osg::ref_ptr<osg::PositionAttitudeTransform> tx,
                                    osg::ref_ptr<osg::Group>                     OutlineGroup,
                                    osg::ref_ptr<osg::Group>                     objGroup)
 {
-    bool repeatAdded = false;
-    double scale_x = 1.0, scale_y = 1.0, scale_z = 1.0;
-    osg::Vec4          color = GetObjectColor(object->GetType());
+    bool      repeatAdded = false;
+    double    scale_x = 1.0, scale_y = 1.0, scale_z = 1.0;
+    osg::Vec4 color = GetObjectColor(object->GetType());
     for (auto& repeat : object->GetRepeats())
     {
         for (auto& repeatedObj : object->GetRepeatedObjects(repeat, roadmanager::Repeat::ZeroDistanceRepeatStrategy::MULTIPLE_OBJECTS))
         {
             if (tx != nullptr)
             {
-                if(repeatedObj->GetNumberOfOutlines() > 0)
+                if (repeatedObj->GetNumberOfOutlines() > 0)
                 {
                     osg::ref_ptr<osg::Geode> geodeNew = new osg::Geode;
                     CreateOutlineModel(repeatedObj->GetOutline(0), color, geodeNew);  // zero distance outlie. only one outline shall be avilable
@@ -3074,17 +3080,17 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
     for (auto& road : od->GetRoads())
     {
         CreateRoadSignals(objGroup, road->GetSignals());
-        for (auto& object : road->GetRoadObjects()) // always create viewer object
+        for (auto& object : road->GetRoadObjects())  // always create viewer object
         {
-            osg::Vec4          color = GetObjectColor(object->GetType());
-            osg::ref_ptr<osg::Geode> geode = new osg::Geode;
-            osg::ref_ptr<osg::Group> OutlineGroup = new osg::Group();
-            osg::ref_ptr<osg::PositionAttitudeTransform> tx = nullptr;
-            double scale_x = 1.0, scale_y = 1.0, scale_z = 1.0;
+            osg::Vec4                                    color        = GetObjectColor(object->GetType());
+            osg::ref_ptr<osg::Geode>                     geode        = new osg::Geode;
+            osg::ref_ptr<osg::Group>                     OutlineGroup = new osg::Group();
+            osg::ref_ptr<osg::PositionAttitudeTransform> tx           = nullptr;
+            double                                       scale_x = 1.0, scale_y = 1.0, scale_z = 1.0;
             if (object->GetNumberOfOutlines() == 0)  // non outlines
             {
-                tx = GetModel(object->GetName());  // Get the 3d model
-                if (tx == nullptr) // no model loaded
+                tx = GetModel(object->GetName(), object);  // Get the 3d model
+                if (tx == nullptr)                         // no model loaded
                 {
                     // create a bounding box to represent the object
                     tx = new osg::PositionAttitudeTransform;
@@ -3104,10 +3110,12 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
                 {
                     CreateOutlineModel(outline, color, geode, object->GetNumberOfRepeats() > 0);  // create outline model
                     OutlineGroup->addChild(geode);
-                    LOG_INFO("Created outline geometry for object %s.\n if it looks strange, e.g.faces too dark or light color \n check that corners are defined counter-clockwise (as OpenGL default).", object->GetName());
+                    LOG_INFO(
+                        "Created outline geometry for object {}.\n if it looks strange, e.g.faces too dark or light color \n check that corners are defined counter-clockwise (as OpenGL default).",
+                        object->GetId());
                 }
             }
-            if(!CreateRepeats(object, tx, OutlineGroup, objGroup))
+            if (!CreateRepeats(object, tx, OutlineGroup, objGroup))
             {
                 if (tx != nullptr)
                 {
@@ -3119,7 +3127,7 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
                     objGroup->addChild(OutlineGroup);
                 }
             }
-            if(object->GetNumberOfMarkings() > 0)
+            if (object->GetNumberOfMarkings() > 0)
             {
                 ChangeModelAsWireFrame(objGroup);
             }

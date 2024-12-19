@@ -97,7 +97,7 @@
 				  </outline>
 				</outlines>
             </object>
-            <object type="barrier" name="../models/fence_plank_and_pole.osgb" id="4" s="200.0" t="5.0" orientation="none" hdg="0.0" pitch="0.0" roll="0.0">
+            <object type="barrier" name="../models/fence_plank_and_pole.osgb" id="4" s="200.0" t="5.0" zOffset="0.0" orientation="none" hdg="0.0" pitch="0.0" roll="0.0">
                 <repeat s="200" length="100" distance="0.0" tStart="5.0" tEnd="5.0" heightStart="2.0" heightEnd="2.0" zOffsetStart="0.0" zOffsetEnd="0.0"/>
             </object>
             <object type="obstacle" name="../models/fence_pole.osgb" id="5" s="302.7" t="5.0" zOffset="0.0" orientation="none" hdg="0.0" pitch="0.0" roll="0.0"/>

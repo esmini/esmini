@@ -1,6 +1,6 @@
 <?xml version="1.0" standalone="yes"?>
 <OpenDRIVE>
-    <header revMajor="1" revMinor="4" name="" version="1.00" date="Wed Jul  1 07:28:45 2020" north="0.0" south="0.0" east="0.0" west="0.0">
+    <header revMajor="1" revMinor="8" name="" version="1.00" date="2024-12-19 13:59:00.864624" north="0.0" south="0.0" east="0.0" west="0.0">
     </header>
     <road name="dummy road" length="400" id="0" junction="-1">
         <link>
@@ -72,16 +72,16 @@
         </lanes>
         <objects>
             <object type="parkingSpace" subtype="closed" id="11" s="13.54" t="-12.90" zOffset="0.0" orientation="none" length="3.5" pitch="0.0" roll="0.0">
-                <parkingSpace access="all"/>
                 <repeat distance = "0.0" lengthStart="3.5" lengthEnd="3.5" heightStart="4.0" heightEnd="4.0" widthStart="4" widthEnd="4" zOffsetEnd="0.0" zOffsetStart="0.0" tStart="-12.5" tEnd="-12.5" length="10" s="20.0"/>
+                <parkingSpace access="all"/>
                 <markings>
                   <marking side="left" width="0.1" color="white" zOffset="0.005" spaceLength="0.0" lineLength="10.0" startOffset="0.0" stopOffset="0.0"/>
                   <marking side="right" width="0.1" color="white" zOffset="0.005" spaceLength="0.0" lineLength="10.0" startOffset="0.0" stopOffset="0.0"/>
                 </markings>
             </object>
             <object type="parkingSpace" subtype="closed" id="12" s="13.54" t="-12.90" zOffset="0.0" orientation="none" length="3.5" pitch="0.0" roll="0.0">
-                <parkingSpace access="all"/>
                 <repeat distance = "5" lengthStart="3.5" lengthEnd="3.5" heightStart="4.0" heightEnd="4.0" widthStart="4" widthEnd="4" zOffsetEnd="0.0" zOffsetStart="0.0" tStart="-12.5" tEnd="-12.5" length="10" s="40.0"/>
+                <parkingSpace access="all"/>
                 <markings>
                   <marking side="left" width="0.1" color="white" zOffset="0.005" spaceLength="0.0" lineLength="3.5" startOffset="0.0" stopOffset="0.0"/>
                   <marking side="right" width="0.1" color="white" zOffset="0.005" spaceLength="0.0" lineLength="3.5" startOffset="0.0" stopOffset="0.0"/>

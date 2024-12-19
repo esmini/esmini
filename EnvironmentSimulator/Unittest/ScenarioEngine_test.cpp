@@ -673,8 +673,8 @@ TEST(CornerReferenceTest, checkMarkingAndOutlineDetails)
     ASSERT_EQ(cornerReferences[2]->GetOriginalCornerId(), 12);
 
     // second object
-    RMObject* obj1 = road->GetRoadObject(1);
-    Outline& outline1 = obj1->GetOutline(0);
+    RMObject* obj1     = road->GetRoadObject(1);
+    Outline&  outline1 = obj1->GetOutline(0);
     ASSERT_EQ(outline1.GetCornerByIndex(0)->GetCornerId(), 0);
     ASSERT_EQ(outline1.GetCornerByIndex(0)->GetOriginalCornerId(), 0);
     ASSERT_EQ(outline1.GetCornerByIndex(1)->GetCornerId(), 1);
@@ -820,7 +820,6 @@ TEST(CornerReferenceTest, checkMarkingAndOutlineDetails)
     ASSERT_EQ(cornerReferences000[0]->GetOriginalCornerId(), 1);
     ASSERT_EQ(cornerReferences000[1]->GetCornerId(), 2);
     ASSERT_EQ(cornerReferences000[1]->GetOriginalCornerId(), 2);
-
 }
 TEST(TrajectoryTest, EnsureContinuation)
 {

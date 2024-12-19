@@ -88,7 +88,7 @@ public:
     /**
     create Stationary Object from the OpenDRIVE description to fill up the osi message
     */
-    int CreateOSIStationaryObjectODR(roadmanager::RMObject *object, bool isRepeat = false);
+    int CreateOSIStationaryObjectODR(roadmanager::RMObject* object, bool isRepeat = false);
     /**
     Fills up the osi message with Stationary Object
     */

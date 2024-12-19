@@ -1,6 +1,6 @@
 <?xml version="1.0" standalone="yes"?>
 <OpenDRIVE>
-    <header revMajor="1" revMinor="7" name="" version="1.00" date="Wed Feb 26 17:41:13 2020" north="0.0000000000000000e+00" south="0.0000000000000000e+00" east="0.0000000000000000e+00" west="0.0000000000000000e+00">
+    <header revMajor="1" revMinor="8" name="" version="1.00" date="Wed Feb 26 17:41:13 2020" north="0.0000000000000000e+00" south="0.0000000000000000e+00" east="0.0000000000000000e+00" west="0.0000000000000000e+00">
     </header>
     <road name="" length="2.0000000000000000e+02" id="1" junction="-1" rule="RHT">
         <link>
@@ -26,9 +26,9 @@
                         <link>
                         </link>
                         <width sOffset="0.0" a="6.0" b="0.0" c="0.0" d="0.0"/>
-                        <width sOffset="13.0" a="6.0" b="-1.07" c="0.0" d="0.0"/>
+                        <width sOffset="13.0" a="6.0" b="-1.0" c="0.0" d="0.0"/>
                         <width sOffset="18.35" a="0.65" b="0.0" c="0.0" d="0.0"/>
-                        <width sOffset="64.65" a="0.65" b="+1.07" c="0.0" d="0.0"/>
+                        <width sOffset="64.65" a="0.65" b="+1.0" c="0.0" d="0.0"/>
                         <width sOffset="70.00" a="6.0" b="0.0" c="0.0" d="0.0"/>
                         <width sOffset="85.0" a="6.0" b="-1.0" c="0.0" d="0.0"/>
                         <width sOffset="90.0" a="1.0" b="0.0" c="0.0" d="0.0"/>
@@ -43,9 +43,9 @@
                         <link>
                         </link>
                         <width sOffset="0.0" a="0.0" b="0.0" c="0.0" d="0.0"/>
-                        <width sOffset="13.0" a="0.0" b="1.07" c="0.0" d="0.0"/>
+                        <width sOffset="13.0" a="0.0" b="1.0" c="0.0" d="0.0"/>
                         <width sOffset="18.35" a="5.35" b="0.0" c="0.0" d="0.0"/>
-                        <width sOffset="64.65" a="5.35" b="-1.07" c="0.0" d="0.0"/>
+                        <width sOffset="64.65" a="5.35" b="-1.0" c="0.0" d="0.0"/>
                         <width sOffset="70.00" a="0.0" b="0.0" c="0.0" d="0.0"/>
                         <width sOffset="85.0" a="0.0" b="1.0" c="0.0" d="0.0"/>
                         <width sOffset="90.0" a="5.0" b="0.0" c="0.0" d="0.0"/>
@@ -142,13 +142,13 @@
                     </outline>
                 </outlines>
                 <markings>
-                    <marking side="left" width="5" color="white" zOffset="0.005" spaceLength ="0.5" lineLength ="0.5" startOffset="0.25" stopOffset="0.0">
+                    <marking width="5" color="white" zOffset="0.005" spaceLength ="0.5" lineLength ="0.5" startOffset="0.25" stopOffset="0.0">
                         <cornerReference id="0"/>
                         <cornerReference id="1"/>
                     </marking>
                 </markings>
             </object>
-            <object type="crosswalk" id="3" s="152.0" t="0.0" hdg="1.5707964">
+            <object type="crosswalk" id="3" s="152.0" t="0.0" hdg="1.5707964" zOffset="0.0">
                 <outlines>
                     <outline id="0" closed="true">
                         <cornerLocal u="-3.2" v="-2.0" z="0.0" height="4.0" id="0"/>
@@ -168,16 +168,16 @@
                     </marking>
                 </markings>
             </object>
-            <object type="parkingSpace" name="parkingSpace" id="4" s="2.5" t="0.0">
+            <object type="parkingSpace" name="parkingSpace" id="4" s="2.5" t="0.0" zOffset="0.0">
+                <repeat distance ="3.53" tStart="3.25" tEnd="3.25" length="45" s="20" heightStart="4.0" heightEnd="4.0" zOffsetEnd="0.0" zOffsetStart="0.0" />
 				<outlines>
-                    <outline id="0" fillType="" closed="true">
+                    <outline id="0" closed="true">
                         <cornerLocal u="3.53" v="0.0" z="0.0" height="4.0" id="0"/>
                         <cornerLocal u="-1.77" v="5.3" z="0.0" height="4.0" id="1"/>
                         <cornerLocal u="-3.53" v="3.53" z="0.0" height="4.0" id="2"/>
                         <cornerLocal u="0.0" v="0.0" z="0.0" height="4.0" id="3"/>
                     </outline>
 				</outlines>
-                <repeat distance ="3.53" tStart="3.25" tEnd="3.25" length="45" s="20"/>
                 <markings>
                     <marking width="0.1" color="white" zOffset="0.005" spaceLength ="0.0" lineLength ="0.1" startOffset="0.0" stopOffset="0.0">
                         <cornerReference id="0"/>
@@ -185,16 +185,16 @@
                     </marking>
                 </markings>
             </object>
-            <object type="parkingSpace" name="parkingSpace" id="5" s="2.5" t="-2.0">
+            <object type="parkingSpace" name="parkingSpace" id="5" s="2.5" t="-2.0" zOffset="0.0">
+                <repeat distance ="0" tStart="3.25" tEnd="3.25" length="5" s="65.85" heightStart="4.0" heightEnd="4.0" zOffsetEnd="0.0" zOffsetStart="0.0"/>
 				<outlines>
-                    <outline id="0" fillType="" closed="true">
+                    <outline id="0" closed="true">
                         <cornerLocal u="3.53" v="0.0" z="0.0" height="4.0" id="0"/>
                         <cornerLocal u="-1.77" v="5.3" z="0.0" height="4.0" id="1"/>
                         <cornerLocal u="-3.53" v="3.53" z="0.0" height="4.0" id="2"/>
                         <cornerLocal u="0.0" v="0.0" z="0.0" height="4.0" id="3"/>
                     </outline>
 				</outlines>
-                <repeat distance ="0" tStart="3.25" tEnd="3.25" length="5" s="65.85"/>
                 <markings>
                     <marking width="0.1" color="white" zOffset="0.005" spaceLength ="0.0" lineLength ="0.1" startOffset="0.0" stopOffset="0.0">
                         <cornerReference id="0"/>
@@ -202,16 +202,16 @@
                     </marking>
                 </markings>
             </object>
-            <object type="parkingSpace" name="parkingSpace" id="6" s="2.5" t="0.0">
+            <object type="parkingSpace" name="parkingSpace" id="6" s="2.5" t="0.0" zOffset="0.0">
+                <repeat distance ="0" lengthStart="2.5" lengthEnd="2.5" heightStart="4.0" heightEnd="4.0" widthStart="5" widthEnd="5" zOffsetEnd="0.0" zOffsetStart="0.0" tStart="5.75" tEnd="5.75" length="46" s="92.5"/>
 				<outlines>
-                    <outline id="0" fillType="" closed="true">
+                    <outline id="0" closed="true">
                       <cornerRoad s="2.5" t="-2.5" dz="0.0" height="4.0" id="0"/>
                       <cornerRoad s="2.5" t="2.5" dz="0.0" height="4.0" id="1"/>
                       <cornerRoad s="0.0" t="2.5" dz="0.0" height="4.0" id="2"/>
                       <cornerRoad s="0.0" t="-2.5" dz="0.0" height="4.0" id="3"/>
                     </outline>
                   </outlines>
-                <repeat distance ="0" lengthStart="2.5" lengthEnd="2.5" heightStart="4.0" heightEnd="4.0" widthStart="5" widthEnd="5" zOffsetEnd="0.0" zOffsetStart="0.0" tStart="5.75" tEnd="5.75" length="46" s="92.5"/>
                 <markings>
                     <marking width="0.1" color="white" zOffset="0.005" spaceLength ="0.0" lineLength ="0.1" startOffset="0.05" stopOffset="0.0">
                         <cornerReference id="1"/>
@@ -223,16 +223,16 @@
                     </marking>
                 </markings>
             </object>
-            <object type="parkingSpace" name="parkingSpace" id="7" s="2.5" t="0.0">
+            <object type="parkingSpace" name="parkingSpace" id="7" s="2.5" t="0.0" zOffset="0.0">
+                <repeat distance ="0" lengthStart="2.5" lengthEnd="2.5" heightStart="4.0" heightEnd="4.0" widthStart="5.0" widthEnd="5.0" zOffsetEnd="0.0" zOffsetStart="0.0" tStart="5.75" tEnd="5.75" length="2" s="140.0"/>
 				<outlines>
-                    <outline id="0" fillType="" closed="true">
+                    <outline id="0" closed="true">
                       <cornerRoad s="2.5" t="-2.5" dz="0.0" height="4.0" id="0"/>
                       <cornerRoad s="2.5" t="2.5" dz="0.0" height="4.0" id="1"/>
                       <cornerRoad s="0.0" t="2.5" dz="0.0" height="4.0" id="2"/>
                       <cornerRoad s="0.0" t="-2.5" dz="0.0" height="4.0" id="3"/>
                     </outline>
                   </outlines>
-                <repeat distance ="0" lengthStart="2.5" lengthEnd="2.5" heightStart="4.0" heightEnd="4.0" widthStart="5.0" widthEnd="5.0" zOffsetEnd="0.0" zOffsetStart="0.0" tStart="5.75" tEnd="5.75" length="2" s="140.0"/>
                 <markings>
                     <marking width="0.1" color="white" zOffset="0.005" spaceLength ="0.0" lineLength ="0.1" startOffset="0.0" stopOffset="0.0">
                         <cornerReference id="0"/>
@@ -240,16 +240,16 @@
                     </marking>
                 </markings>
             </object>
-            <object type="parkingSpace" name="parkingSpace" id="8" s="2.5" t="0.0">
+            <object type="parkingSpace" name="parkingSpace" id="8" s="2.5" t="0.0" zOffset="0.0">
+                <repeat distance ="0" lengthStart="6.0" lengthEnd="6.0" heightStart="4.0" heightEnd="4.0" widthStart="2.0" widthEnd="2.0" zOffsetEnd="0.0" zOffsetStart="0.0" tStart="4.5" tEnd="4.5" length="18" s="173"/>
 				<outlines>
-                    <outline id="0" fillType="" closed="true">
+                    <outline id="0" closed="true">
                         <cornerRoad s="0.0" t="-1.25" dz="0.0" height="4.0" id="0"/>
                         <cornerRoad s="6.0" t="-1.25" dz="0.0" height="4.0" id="1"/>
                         <cornerRoad s="6.0" t="1.25" dz="0.0" height="4.0" id="2"/>
                         <cornerRoad s="0.0" t="1.25" dz="0.0" height="4.0" id="3"/>
                       </outline>
 				</outlines>
-                <repeat distance ="0" lengthStart="6.0" lengthEnd="6.0" heightStart="4.0" heightEnd="4.0" widthStart="2.0" widthEnd="2.0" zOffsetEnd="0.0" zOffsetStart="0.0" tStart="4.5" tEnd="4.5" length="18" s="173"/>
                 <markings>
                     <marking width="0.1" color="white" zOffset="0.005" spaceLength ="0.0" lineLength ="6.0" startOffset="0.0" stopOffset="0.0">
                         <cornerReference id="2"/>

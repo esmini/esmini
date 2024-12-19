@@ -1,6 +1,6 @@
 <?xml version="1.0" standalone="yes"?>
 <OpenDRIVE>
-    <header revMajor="1" revMinor="4" name="" version="1.00" date="Wed Jul  1 07:28:45 2020" north="0.0" south="0.0" east="0.0" west="0.0">
+    <header revMajor="1" revMinor="8" name="" version="1.00" date="2024-12-19 13:59:00.864624" north="0.0" south="0.0" east="0.0" west="0.0">
     </header>
     <road name="dummy road" length="400" id="0" junction="-1">
         <link>
@@ -63,20 +63,20 @@
             </laneSection>
         </lanes>
         <objects>
-            <object type="obstacle" id="1" s="5" t="4">
+            <object type="obstacle" id="1" s="5" t="4" zOffset="0.0">
             </object>
-            <object type="obstacle" id="2" s="10" t="8" length="4" width="4" height="2">
+            <object type="obstacle" id="2" s="10" t="8" length="4" width="4" height="2" zOffset="0.0">
             </object>
-            <object type="obstacle" id="3" name="../../../resources/models/box_cc_by.osgb" s="20" t="5.0" orientation="none" hdg="0.0" pitch="0.0" roll="0.0">
+            <object type="obstacle" id="3" name="../../../resources/models/box_cc_by.osgb" s="20" t="5.0" zOffset="0.0" orientation="none" hdg="0.0" pitch="0.0" roll="0.0">
             </object>
-            <object type="obstacle" id="4" name="../../../resources/models/box_cc_by.osgb" s="25" t="5.0" length="2" width="2" height="3" orientation="none" hdg="0.0" pitch="0.0" roll="0.0">
+            <object type="obstacle" id="4" name="../../../resources/models/box_cc_by.osgb" s="25" t="5.0" zOffset="0.0" length="2" width="2" height="3" orientation="none" hdg="0.0" pitch="0.0" roll="0.0">
             </object>
-            <object type="obstacle" id="5" name="../../../resources/models/box_cc_by.osgb" s="30" t="5.0" width="2" height="6" orientation="none" hdg="0.0" pitch="0.0" roll="0.0">
+            <object type="obstacle" id="5" name="../../../resources/models/box_cc_by.osgb" s="30" t="5.0" zOffset="0.0" width="2" height="6" orientation="none" hdg="0.0" pitch="0.0" roll="0.0">
             </object>
-            <object type="barrier"  id="6" name="../../../resources/models/fence_plank_and_pole.osgb" s="20.0" t="5.0" orientation="none" hdg="0.0" pitch="0.0" roll="0.0">
+            <object type="barrier"  id="6" name="../../../resources/models/fence_plank_and_pole.osgb" s="20.0" t="5.0" zOffset="0.0" orientation="none" hdg="0.0" pitch="0.0" roll="0.0">
                 <repeat s="35" length="30" distance="0.0" tStart="5.0" tEnd="5.0" widthStart="2.5" widthEnd="2.5" heightStart="2.0" heightEnd="2.0" zOffsetStart="0.0" zOffsetEnd="0.0"/>
             </object>
-            <object type="obstacle" id="7" s="30" t="5.0" length="4" width="2" height="6" orientation="none" hdg="0.0" pitch="0.0" roll="0.0">
+            <object type="obstacle" id="7" s="30" t="5.0" zOffset="0.0" length="4" width="2" height="6" orientation="none" hdg="0.0" pitch="0.0" roll="0.0">
                 <repeat s="75" length="30" distance="5.0" tStart="5.0" tEnd="5.0" widthStart="2.5" widthEnd="2.5" heightStart="2.0" heightEnd="2.0" zOffsetStart="0.0" zOffsetEnd="0.0"/>
                 <repeat s="200" length="20" distance="5.0" tStart="5.0" tEnd="5.0" widthStart="2.5" widthEnd="2.5" heightStart="2.0" heightEnd="2.0" zOffsetStart="0.0" zOffsetEnd="0.0"/>
             </object>

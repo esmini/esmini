@@ -1,6 +1,6 @@
 <?xml version="1.0" standalone="yes"?>
 <OpenDRIVE>
-    <header revMajor="1" revMinor="4" name="" version="1.00" date="Wed Jul  1 07:28:45 2020" north="0.0" south="0.0" east="0.0" west="0.0">
+    <header revMajor="1" revMinor="8" name="" version="1.00" date="2024-12-19 13:59:00.864624" north="0.0" south="0.0" east="0.0" west="0.0">
     </header>
     <road name="dummy road" length="150" id="0" junction="-1">
         <link>
@@ -63,7 +63,10 @@
             </laneSection>
         </lanes>
         <objects>
-            <object type="barrier" id="0" s="0" t="0">
+            <object type="barrier" id="0" s="0" t="0" zOffset="0.0">
+                <repeat s="0" length="100" distance ="15.0" zOffsetEnd="0.0" zOffsetStart="0.0" tStart="-7.0" tEnd="-7.0" lengthStart="6" lengthEnd="15" widthStart="5" widthEnd="5" heightStart="4.0" heightEnd="4.0"/>
+                <repeat s="0" length="100" distance ="15.0" zOffsetEnd="0.0" zOffsetStart="0.0" tStart="-18.0" tEnd="-18.0" lengthStart="6" lengthEnd="6" widthStart="5" widthEnd="15" heightStart="4.0" heightEnd="4.0"/>
+                <repeat s="0" length="100" distance ="15.0" zOffsetEnd="0.0" zOffsetStart="0.0" tStart="-30.0" tEnd="-30.0" lengthStart="6" lengthEnd="6" widthStart="5" widthEnd="5" heightStart="4.0" heightEnd="14.0"/>
                 <outlines>
                     <outline id="0" closed="true">
                         <cornerLocal u="0" v="-2.5" z="0.0" height="4.0" id="0"/>
@@ -76,11 +79,11 @@
                         <cornerLocal u="1" v="-2.5" z="0.0" height="4.0" id="2"/>
                     </outline>
                 </outlines>
-                <repeat s="0" length="100" distance ="15.0" tStart="-7.0" tEnd="-7.0" lengthStart="6" lengthEnd="15" widthStart="5" widthEnd="5" heightStart="4.0" heightEnd="4.0"/>
-                <repeat s="0" length="100" distance ="15.0" tStart="-18.0" tEnd="-18.0" lengthStart="6" lengthEnd="6" widthStart="5" widthEnd="15" heightStart="4.0" heightEnd="4.0"/>
-                <repeat s="0" length="100" distance ="15.0" tStart="-30.0" tEnd="-30.0" lengthStart="6" lengthEnd="6" widthStart="5" widthEnd="5" heightStart="4.0" heightEnd="14.0"/>
             </object>
-            <object type="barrier" id="1" s="0" t="0">
+            <object type="barrier" id="1" s="0" t="0" zOffset="0.0">
+                <repeat s="0" length="100" distance ="15.0" zOffsetEnd="0.0" zOffsetStart="0.0" tStart="7.0" tEnd="7.0" lengthStart="5" lengthEnd="15" widthStart="5" widthEnd="5" heightStart="4.0" heightEnd="4.0"/>
+                <repeat s="0" length="100" distance ="15.0" zOffsetEnd="0.0" zOffsetStart="0.0" tStart="18.0" tEnd="18.0" lengthStart="6" lengthEnd="6" widthStart="5" widthEnd="15" heightStart="4.0" heightEnd="4.0"/>
+                <repeat s="0" length="100" distance ="15.0" zOffsetEnd="0.0" zOffsetStart="0.0" tStart="30.0" tEnd="30.0" lengthStart="6" lengthEnd="6" widthStart="5" widthEnd="5" heightStart="4.0" heightEnd="14.0"/>
                 <outlines>
                     <outline id="0" closed="true">
                         <cornerRoad s="0" t="-2.5" dz="0.0" height="4.0" id="0"/>
@@ -93,9 +96,6 @@
                         <cornerRoad s="1" t="-2.5" dz="0.0" height="4.0" id="2"/>
                     </outline>
                 </outlines>
-                <repeat s="0" length="100" distance ="15.0" tStart="7.0" tEnd="7.0" lengthStart="5" lengthEnd="15" widthStart="5" widthEnd="5" heightStart="4.0" heightEnd="4.0"/>
-                <repeat s="0" length="100" distance ="15.0" tStart="18.0" tEnd="18.0" lengthStart="6" lengthEnd="6" widthStart="5" widthEnd="15" heightStart="4.0" heightEnd="4.0"/>
-                <repeat s="0" length="100" distance ="15.0" tStart="30.0" tEnd="30.0" lengthStart="6" lengthEnd="6" widthStart="5" widthEnd="5" heightStart="4.0" heightEnd="14.0"/>
             </object>
         </objects>
         <signals>

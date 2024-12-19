@@ -1,6 +1,6 @@
 <?xml version="1.0" standalone="yes"?>
 <OpenDRIVE>
-    <header revMajor="1" revMinor="4" name="" version="1.00" date="Wed Jul  1 07:28:45 2020" north="0.0" south="0.0" east="0.0" west="0.0">
+    <header revMajor="1" revMinor="8" name="" version="1.00" date="2024-12-19 13:59:00.864624" north="0.0" south="0.0" east="0.0" west="0.0">
     </header>
     <road name="dummy road" rule="RHT" length="400" id="0" junction="-1">
         <link>
@@ -64,9 +64,9 @@
         </lanes>
         <objects>
             <!-- check internal and orginal corner ids-->
-            <object type="parking" name="parking" id="0" s="2.5" t="5.0">
+            <object type="parkingSpace" name="parking" id="0" s="2.5" t="5.0" zOffset="0.0">
 				<outlines>
-				  <outline id="0" fillType="" closed="true">
+				  <outline id="0" closed="true">
                     <cornerRoad s="2.0" t="5.0" dz="0.0" height="4.0" id="10"/>
                     <cornerRoad s="4.5" t="5.0" dz="0.0" height="4.0" id="30"/>
                     <cornerRoad s="4.5" t="10.0" dz="0.0" height="4.0" id="12"/>
@@ -81,9 +81,9 @@
                 </markings>
             </object>
             <!-- creating consective cornerReference ids like 1,2,3,0,1 -->
-            <object type="parking" name="parking" id="1" s="2.5" t="5.0">
+            <object type="parkingSpace" name="parking" id="1" s="2.5" t="5.0" zOffset="0.0">
 				<outlines>
-				  <outline id="0" fillType="" closed="true">
+				  <outline id="0" closed="true">
                     <cornerRoad s="22.0" t="5.0" dz="0.0" height="4.0" id="0"/>
                     <cornerRoad s="24.5" t="5.0" dz="0.0" height="4.0" id="1"/>
                     <cornerRoad s="24.5" t="10.0" dz="0.0" height="4.0" id="2"/>
@@ -98,9 +98,9 @@
                 </markings>
             </object>
             <!-- not unique cornerRoad id -->
-            <object type="parking" name="parking" id="2" s="2.5" t="5.0">
+            <object type="parkingSpace" name="parking" id="2" s="2.5" t="5.0" zOffset="0.0">
 				<outlines>
-				  <outline id="0" fillType="" closed="true">
+				  <outline id="0" closed="true">
                     <cornerRoad s="42.0" t="5.0" dz="0.0" height="4.0" id="0"/>
                     <cornerRoad s="44.5" t="5.0" dz="0.0" height="4.0" id="1"/>
                     <cornerRoad s="44.5" t="10.0" dz="0.0" height="4.0" id="1"/>
@@ -115,9 +115,9 @@
                 </markings>
             </object>
             <!-- unknown cornerReference in marking -->
-            <object type="parking" name="parking" id="3" s="2.5" t="5.0">
+            <object type="parkingSpace" name="parking" id="3" s="2.5" t="5.0" zOffset="0.0">
 				<outlines>
-				  <outline id="0" fillType="" closed="true">
+				  <outline id="0" closed="true">
                     <cornerRoad s="62.0" t="5.0" dz="0.0" height="4.0" id="0"/>
                     <cornerRoad s="64.5" t="5.0" dz="0.0" height="4.0" id="1"/>
                     <cornerRoad s="64.5" t="10.0" dz="0.0" height="4.0" id="2"/>
@@ -132,15 +132,15 @@
                 </markings>
             </object>
             <!-- two outline with one marking -->
-            <object type="parking" name="parking" id="4" s="2.5" t="5.0">
+            <object type="parkingSpace" name="parking" id="4" s="2.5" t="5.0" zOffset="0.0">
 				<outlines>
-				  <outline id="0" fillType="" closed="true">
+				  <outline id="0" closed="true">
                     <cornerRoad s="82.0" t="5.0" dz="0.0" height="4.0" id="0"/>
                     <cornerRoad s="84.5" t="5.0" dz="0.0" height="4.0" id="1"/>
                     <cornerRoad s="84.5" t="10.0" dz="0.0" height="4.0" id="2"/>
                     <cornerRoad s="82.0" t="10.0" dz="0.0" height="4.0" id="3"/>
                   </outline>
-				  <outline id="0" fillType="" closed="true">
+				  <outline id="0" closed="true">
                     <cornerRoad s="102.0" t="5.0" dz="0.0" height="4.0" id="0"/>
                     <cornerRoad s="104.5" t="5.0" dz="0.0" height="4.0" id="1"/>
                     <cornerRoad s="104.5" t="10.0" dz="0.0" height="4.0" id="2"/>
@@ -155,15 +155,15 @@
                 </markings>
             </object>
             <!-- two outline with different corner ids -->
-            <object type="parking" name="parking" id="5" s="2.5" t="5.0">
+            <object type="parkingSpace" name="parking" id="5" s="2.5" t="5.0" zOffset="0.0">
 				<outlines>
-				  <outline id="0" fillType="" closed="true">
+				  <outline id="0" closed="true">
                     <cornerRoad s="112.0" t="5.0" dz="0.0" height="4.0" id="0"/>
                     <cornerRoad s="114.5" t="5.0" dz="0.0" height="4.0" id="1"/>
                     <cornerRoad s="114.5" t="10.0" dz="0.0" height="4.0" id="2"/>
                     <cornerRoad s="112.0" t="10.0" dz="0.0" height="4.0" id="3"/>
                   </outline>
-				  <outline id="0" fillType="" closed="true">
+				  <outline id="0" closed="true">
                     <cornerRoad s="122.0" t="5.0" dz="0.0" height="4.0" id="4"/>
                     <cornerRoad s="124.5" t="5.0" dz="0.0" height="4.0" id="5"/>
                     <cornerRoad s="124.5" t="10.0" dz="0.0" height="4.0" id="6"/>
@@ -178,9 +178,9 @@
                 </markings>
             </object>
             <!-- cornerReference ids ordered in counterclosewise instead of 2 to 1. it is processed as 1 to 2 -->
-            <object type="parking" name="parking" id="6" s="2.5" t="5.0">
+            <object type="parkingSpace" name="parking" id="6" s="2.5" t="5.0" zOffset="0.0">
 				<outlines>
-				  <outline id="0" fillType="" closed="true">
+				  <outline id="0" closed="true">
                     <cornerRoad s="142.0" t="5.0" dz="0.0" height="4.0" id="0"/>
                     <cornerRoad s="144.5" t="5.0" dz="0.0" height="4.0" id="1"/>
                     <cornerRoad s="144.5" t="10.0" dz="0.0" height="4.0" id="2"/>

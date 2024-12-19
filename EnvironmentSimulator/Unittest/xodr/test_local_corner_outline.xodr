@@ -1,6 +1,6 @@
 <?xml version="1.0" standalone="yes"?>
 <OpenDRIVE>
-    <header revMajor="1" revMinor="4" name="" version="1.00" date="Wed Jul  1 07:28:45 2020" north="0.0" south="0.0" east="0.0" west="0.0">
+    <header revMajor="1" revMinor="8" name="" version="1.00" date="2024-12-19 13:59:00.864624" north="0.0" south="0.0" east="0.0" west="0.0">
     </header>
     <road name="dummy road" rule="RHT" length="200" id="0" junction="-1">
         <link>
@@ -63,7 +63,7 @@
             </laneSection>
         </lanes>
         <objects>
-            <object type="barrier" id="0" s="50" t="-7.0">
+            <object type="barrier" id="0" s="50" t="-7.0" zOffset="0.0">
                 <outlines>
                     <outline id="0" closed="true">
                         <cornerLocal u="-10.0" v="-2.5" z="0.0" height="4.0" id="0"/>
@@ -74,7 +74,8 @@
                 </outlines>
             </object>
             <!-- repeat with no length, width, height, z. Those value shall be used from outline -->
-            <object type="barrier" id="1" s="50" t="-7.0">
+            <object type="barrier" id="1" s="50" t="-7.0" zOffset="0.0">
+                <repeat s="60" length="20" distance ="0.0" tStart="7.0" tEnd="7.0" heightStart="4.0" heightEnd="4.0" zOffsetEnd="0.0" zOffsetStart="0.0"/>
                 <outlines>
                     <outline id="0" closed="true">
                         <cornerLocal u="-10.0" v="-2.5" z="0.0" height="4.0" id="0"/>
@@ -83,10 +84,10 @@
                         <cornerLocal u="10.0" v="-2.5" z="0.0" height="4.0" id="1"/>
                     </outline>
                 </outlines>
-                <repeat s="60" length="20" distance ="0.0" tStart="7.0" tEnd="7.0"/>
             </object>
             <!-- repeat with only length(end and start), repeat length start and length end shall be used as object length -->
-            <object type="barrier" id="2" s="50" t="-7.0">
+            <object type="barrier" id="2" s="50" t="-7.0" zOffset="0.0">
+                <repeat s="10" length="4" distance ="0.0" lengthStart="4" lengthEnd="4" tStart="7.0" tEnd="7.0" heightStart="4.0" heightEnd="4.0" zOffsetEnd="0.0" zOffsetStart="0.0"/>
                 <outlines>
                     <outline id="0" closed="true">
                         <cornerLocal u="-10.0" v="-2.5" z="0.0" height="4.0" id="0"/>
@@ -95,10 +96,10 @@
                         <cornerLocal u="10.0" v="-2.5" z="0.0" height="4.0" id="1"/>
                     </outline>
                 </outlines>
-                <repeat s="10" length="4" distance ="0.0" lengthStart="4" lengthEnd="4" tStart="7.0" tEnd="7.0"/>
             </object>
             <!-- same as above object expect repeat length changed -->
-            <object type="barrier" id="3" s="50" t="7.0">
+            <object type="barrier" id="3" s="50" t="7.0" zOffset="0.0">
+                 <repeat s="10" length="8" distance ="0.0" lengthStart="4" lengthEnd="4" tStart="-7.0" tEnd="-7.0" heightStart="4.0" heightEnd="4.0" zOffsetEnd="0.0" zOffsetStart="0.0"/>
                 <outlines>
                     <outline id="0" closed="true">
                         <cornerLocal u="-10.0" v="-2.5" z="0.0" height="4.0" id="0"/>
@@ -107,10 +108,10 @@
                         <cornerLocal u="10.0" v="-2.5" z="0.0" height="4.0" id="1"/>
                     </outline>
                 </outlines>
-                <repeat s="10" length="8" distance ="0.0" lengthStart="4" lengthEnd="4" tStart="-7.0" tEnd="-7.0"/>
             </object>
             <!-- object expect two outline, second outline size is half size of first outline and total repeat length is 15, repeat bb length is 20 -->
-            <object type="barrier" id="4" s="50" t="7.0">
+            <object type="barrier" id="4" s="50" t="7.0" zOffset="0.0">
+                <repeat s="110" length="15" distance ="0.0" lengthStart="20" lengthEnd="20" tStart="-7.0" tEnd="-7.0" heightStart="4.0" heightEnd="4.0" zOffsetEnd="0.0" zOffsetStart="0.0"/>
                 <outlines>
                     <outline id="0" closed="true">
                         <cornerLocal u="-10.0" v="-2.5" z="0.0" height="4.0" id="0"/>
@@ -125,7 +126,6 @@
                         <cornerLocal u="30.0" v="-2.5" z="0.0" height="4.0" id="1"/>
                     </outline>
                 </outlines>
-                <repeat s="110" length="15" distance ="0.0" lengthStart="20" lengthEnd="20" tStart="-7.0" tEnd="-7.0"/>
             </object>
         </objects>
         <signals>

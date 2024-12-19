@@ -512,13 +512,13 @@ int OSIReporter::UpdateOSIHostVehicleData(ObjectState *objectState)
     return 0;
 }
 
-int UpdateOSIStationaryObjectODRMarking(std::vector<std::vector<Point3D>>& points)
+int UpdateOSIStationaryObjectODRMarking(std::vector<std::vector<Point3D>> &points)
 {
     obj_osi_internal.rm = obj_osi_internal.gt->add_road_marking();
     obj_osi_internal.rm->mutable_classification()->set_type(osi3::RoadMarking_Classification_Type::RoadMarking_Classification_Type_TYPE_OTHER);
-    for(const auto& allPoints : points)
+    for (const auto &allPoints : points)
     {
-        for (const auto& point : allPoints)
+        for (const auto &point : allPoints)
         {
             osi3::Vector2d *vec = obj_osi_internal.rm->mutable_base()->add_base_polygon();
             vec->set_x(point.x);
@@ -584,7 +584,7 @@ int UpdateOSIStationaryObjectODRType(roadmanager::RMObject::ObjectType type, std
     {
         obj_osi_internal.sobj->mutable_classification()->set_type(
             osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_UNKNOWN);
-        if(!isRepeat) // only log once for repeated objects
+        if (!isRepeat)  // only log once for repeated objects
         {
             LOG_ERROR("OSIReporter::UpdateOSIStationaryObjectODR -> Unsupported stationary object category");
         }
@@ -594,7 +594,7 @@ int UpdateOSIStationaryObjectODRType(roadmanager::RMObject::ObjectType type, std
 
 double GetReporterDimension(const double val)
 {
-    if(!std::isnan(val))
+    if (!std::isnan(val))
     {
         return val;
     }
@@ -680,11 +680,11 @@ int OSIReporter::CreateOSIStationaryObjectODR(roadmanager::RMObject *object, boo
 int OSIReporter::UpdateOSIStationaryObjectODR(roadmanager::RMObject *object)
 {
     bool isRepeat = false;
-    for (auto& repeat : object->GetRepeats())
+    for (auto &repeat : object->GetRepeats())
     {
         // std::vector<roadmanager::RMObject*> repeatedObjs = object->GetRepeatedObjects(repeat);
         // for (const auto& repeatedObj : repeatedObjs);
-        for (auto& repeatedObj : object->GetRepeatedObjects(repeat, roadmanager::Repeat::ZeroDistanceRepeatStrategy::ONE_OBJECT))
+        for (auto &repeatedObj : object->GetRepeatedObjects(repeat, roadmanager::Repeat::ZeroDistanceRepeatStrategy::ONE_OBJECT))
         {
             // roadmanager::RMObject* repeatedObj = repeatedObjs[j];
             CreateOSIStationaryObjectODR(repeatedObj, isRepeat);
@@ -696,9 +696,9 @@ int OSIReporter::UpdateOSIStationaryObjectODR(roadmanager::RMObject *object)
         CreateOSIStationaryObjectODR(object);
     }
 
-    for (auto& marking : object->GetMarkingsWithPoints())  // marking
+    for (auto &marking : object->GetMarkingsWithPoints())  // marking
     {
-        for (auto& segment : marking.GetMarkingSegments())  // marking points
+        for (auto &segment : marking.GetMarkingSegments())  // marking points
         {
             UpdateOSIStationaryObjectODRMarking(segment.GetAllPoints());
         }

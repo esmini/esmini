@@ -1,6 +1,6 @@
 <?xml version="1.0" standalone="yes"?>
 <OpenDRIVE>
-    <header revMajor="1" revMinor="4" name="" version="1.00" date="Wed Jul  1 07:28:45 2020" north="0.0" south="0.0" east="0.0" west="0.0">
+    <header revMajor="1" revMinor="8" name="" version="1.00" date="2024-12-19 13:59:00.864624" north="0.0" south="0.0" east="0.0" west="0.0">
     </header>
     <road name="dummy road" length="500" id="0" junction="-1">
         <link>
@@ -63,16 +63,16 @@
             </laneSection>
         </lanes>
         <objects>
-            <object type="parking" name="parking" id="0" s="2.5" t="0.0">
+            <object type="parkingSpace" name="parking" id="0" s="2.5" t="0.0" zOffset="0.0">
+                <repeat distance ="0" lengthStart="20.5" lengthEnd="20.5" heightStart="4.0" heightEnd="4.0" widthStart="5" widthEnd="5" zOffsetEnd="0.0" zOffsetStart="0.0" tStart="-10.0" tEnd="-10.0" length="5" s="10"/>
 				<outlines>
-				  <outline id="0" fillType="" closed="true">
+				  <outline id="0" closed="true">
                     <cornerRoad s="2.0" t="-2.5" dz="0.0" height="4.0" id="0"/>
                     <cornerRoad s="4.5" t="-2.5" dz="0.0" height="4.0" id="1"/>
                     <cornerRoad s="4.5" t="2.5" dz="0.0" height="4.0" id="2"/>
                     <cornerRoad s="2.0" t="2.5" dz="0.0" height="4.0" id="3"/>
                   </outline>
 				</outlines>
-                <repeat distance ="0" lengthStart="20.5" lengthEnd="20.5" heightStart="4.0" heightEnd="4.0" widthStart="5" widthEnd="5" zOffsetEnd="0.0" zOffsetStart="0.0" tStart="-10.0" tEnd="-10.0" length="5" s="10"/>
                 <markings>
                     <marking width="0.1" color="white" zOffset="0.005" spaceLength ="0.0" lineLength ="5.5" startOffset="0.0" stopOffset="0.0">
                         <cornerReference id="0"/>
@@ -80,16 +80,16 @@
                     </marking>
                 </markings>
             </object>
-            <object type="parking" name="parking" id="1" s="2.5" t="0.0">
+            <object type="parkingSpace" name="parking" id="1" s="2.5" t="0.0" zOffset="0.0">
+                <repeat distance ="0" lengthStart="20.5" lengthEnd="20.5" heightStart="4.0" heightEnd="4.0" widthStart="5" widthEnd="5" zOffsetEnd="0.0" zOffsetStart="0.0" tStart="-10.0" tEnd="-10.0" length="5" s="60"/>
 				<outlines>
-				  <outline id="0" fillType="" closed="true">
+				  <outline id="0" closed="true">
                     <cornerRoad s="2.0" t="-2.5" dz="0.0" height="4.0" id="0"/>
                     <cornerRoad s="4.5" t="-2.5" dz="0.0" height="4.0" id="1"/>
                     <cornerRoad s="4.5" t="2.5" dz="0.0" height="4.0" id="2"/>
                     <cornerRoad s="2.0" t="2.5" dz="0.0" height="4.0" id="3"/>
                   </outline>
 				</outlines>
-                <repeat distance ="0" lengthStart="20.5" lengthEnd="20.5" heightStart="4.0" heightEnd="4.0" widthStart="5" widthEnd="5" zOffsetEnd="0.0" zOffsetStart="0.0" tStart="-10.0" tEnd="-10.0" length="5" s="60"/>
                 <markings>
                     <marking width="0.1" color="white" zOffset="0.005" spaceLength ="0.0" lineLength ="5.5" startOffset="0.0" stopOffset="0.0">
                         <cornerReference id="0"/>
@@ -109,16 +109,16 @@
                     </marking>
                 </markings>
             </object>
-            <object type="parking" name="parking" id="2" s="2.5" t="0.0">
+            <object type="parkingSpace" name="parking" id="2" s="2.5" t="0.0" zOffset="0.0">
+                <repeat distance ="0" lengthStart="20.5" lengthEnd="20.5" heightStart="4.0" heightEnd="4.0" widthStart="5" widthEnd="5" zOffsetEnd="0.0" zOffsetStart="0.0" tStart="10.0" tEnd="10.0" length="5" s="10"/>
 				<outlines>
-				  <outline id="0" fillType="" closed="true">
+				  <outline id="0" closed="true">
                     <cornerRoad s="2.0" t="-2.5" dz="0.0" height="4.0" id="0"/>
                     <cornerRoad s="4.5" t="-2.5" dz="0.0" height="4.0" id="1"/>
                     <cornerRoad s="4.5" t="2.5" dz="0.0" height="4.0" id="2"/>
                     <cornerRoad s="2.0" t="2.5" dz="0.0" height="4.0" id="3"/>
                   </outline>
 				</outlines>
-                <repeat distance ="0" lengthStart="20.5" lengthEnd="20.5" heightStart="4.0" heightEnd="4.0" widthStart="5" widthEnd="5" zOffsetEnd="0.0" zOffsetStart="0.0" tStart="10.0" tEnd="10.0" length="5" s="10"/>
                 <markings>
                     <marking width="0.1" color="white" zOffset="0.005" spaceLength ="0.0" lineLength ="5.5" startOffset="0.0" stopOffset="0.0">
                         <cornerReference id="0"/>
@@ -130,22 +130,22 @@
                     </marking>
                 </markings>
             </object>
-            <object type="parking" name="parking" id="3" s="2.5" t="0.0">
+            <object type="parkingSpace" name="parking" id="3" s="2.5" t="0.0" zOffset="0.0">
+                <repeat distance ="0" lengthStart="20.5" lengthEnd="20.5" heightStart="4.0" heightEnd="4.0" widthStart="5" widthEnd="5" zOffsetEnd="0.0" zOffsetStart="0.0" tStart="10.0" tEnd="10.0" length="5" s="60"/>
 				<outlines>
-				  <outline id="0" fillType="" closed="true">
+				  <outline id="0" closed="true">
                     <cornerRoad s="2.0" t="-2.5" dz="0.0" height="4.0" id="0"/>
                     <cornerRoad s="4.5" t="-2.5" dz="0.0" height="4.0" id="1"/>
                     <cornerRoad s="4.5" t="2.5" dz="0.0" height="4.0" id="2"/>
                     <cornerRoad s="2.0" t="2.5" dz="0.0" height="4.0" id="3"/>
                   </outline>
-				  <outline id="1" fillType="" closed="true">
+				  <outline id="1" closed="true">
                     <cornerRoad s="20.0" t="-2.5" dz="0.0" height="4.0" id="0"/>
                     <cornerRoad s="22.5" t="-2.5" dz="0.0" height="4.0" id="1"/>
                     <cornerRoad s="22.5" t="2.5" dz="0.0" height="4.0" id="2"/>
                     <cornerRoad s="20.0" t="2.5" dz="0.0" height="4.0" id="3"/>
                   </outline>
 				</outlines>
-                <repeat distance ="0" lengthStart="20.5" lengthEnd="20.5" heightStart="4.0" heightEnd="4.0" widthStart="5" widthEnd="5" zOffsetEnd="0.0" zOffsetStart="0.0" tStart="10.0" tEnd="10.0" length="5" s="60"/>
                 <markings>
                     <marking width="0.1" color="white" zOffset="0.005" spaceLength ="0.0" lineLength ="5.5" startOffset="0.0" stopOffset="0.0">
                         <cornerReference id="0"/>
@@ -166,9 +166,9 @@
                 </markings>
             </object>
             <!-- this object merged in all corner -->
-            <object type="parking" name="parking" id="4" s="100" t="10.0">
+            <object type="parkingSpace" name="parking" id="4" s="100" t="10.0" zOffset="0.0">
 				<outlines>
-				  <outline id="0" fillType="" closed="true">
+				  <outline id="0" closed="true">
                     <cornerRoad s="102.0" t="-12.5" dz="0.0" height="4.0" id="0"/>
                     <cornerRoad s="104.5" t="-12.5" dz="0.0" height="4.0" id="1"/>
                     <cornerRoad s="104.5" t="-7.5" dz="0.0" height="4.0" id="2"/>
@@ -183,9 +183,9 @@
                 </markings>
             </object>
             <!-- this object merged included space length -->
-            <object type="parking" name="parking" id="5" s="100" t="10.0">
+            <object type="parkingSpace" name="parking" id="5" s="100" t="10.0" zOffset="0.0">
 				<outlines>
-				  <outline id="0" fillType="" closed="true">
+				  <outline id="0" closed="true">
                     <cornerRoad s="102.0" t="7.5" dz="0.0" height="4.0" id="0"/>
                     <cornerRoad s="104.5" t="7.5" dz="0.0" height="4.0" id="1"/>
                     <cornerRoad s="104.5" t="12.5" dz="0.0" height="4.0" id="2"/>
@@ -204,9 +204,9 @@
                 </markings>
             </object>
             <!-- this object not merged for corners with startoffset and endoffset -->
-            <object type="parking" name="parking" id="6" s="130" t="10.0">
+            <object type="parkingSpace" name="parking" id="6" s="130" t="10.0" zOffset="0.0">
 				<outlines>
-				  <outline id="0" fillType="" closed="true">
+				  <outline id="0" closed="true">
                     <cornerLocal u="0.0" v="-2.5" z="0.0" height="4.0" id="0"/>
                     <cornerLocal u="2.5" v="-2.5" z="0.0" height="4.0" id="1"/>
                     <cornerLocal u="2.5" v="2.5" z="0.0" height="4.0" id="2"/>

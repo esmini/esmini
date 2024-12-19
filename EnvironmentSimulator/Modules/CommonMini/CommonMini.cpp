@@ -348,7 +348,6 @@ int GetIntersectionOfTwoLineSegments(double  ax1,
     return 0;
 }
 
-
 bool PointInBetweenVectorEndpoints(double x3, double y3, double x1, double y1, double x2, double y2, double& sNorm)
 {
     bool inside;

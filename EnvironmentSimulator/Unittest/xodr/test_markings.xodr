@@ -1,6 +1,6 @@
 <?xml version="1.0" standalone="yes"?>
 <OpenDRIVE>
-    <header revMajor="1" revMinor="4" name="" version="1.00" date="Wed Jul  1 07:28:45 2020" north="0.0" south="0.0" east="0.0" west="0.0">
+    <header revMajor="1" revMinor="8" name="" version="1.00" date="2024-12-19 13:59:00.864624" north="0.0" south="0.0" east="0.0" west="0.0">
     </header>
     <road name="dummy road" length="400" id="0" junction="-1">
         <link>
@@ -139,7 +139,8 @@
                     </marking>
                 </markings>
             </object>
-            <object type="box" id="5" s="50" t="-10">
+            <object type="obstacle" id="5" s="50" t="-10" zOffset="0.0">
+                <repeat s="240" length="20" distance ="7.0" tStart="13.0" tEnd="13.0" lengthStart="5" lengthEnd="5" widthStart="5" widthEnd="5" heightStart="4.0" heightEnd="4.0" zOffsetEnd="0.0" zOffsetStart="0.0"/>
                 <outlines>
                     <outline id="1" closed="true">
                         <cornerRoad s="10" t="-2.5" dz="0.0" height="4.0" id="0"/>
@@ -148,7 +149,6 @@
                         <cornerRoad s="15" t="-2.5" dz="0.0" height="4.0" id="3"/>
                     </outline>
                 </outlines>
-                <repeat s="240" length="20" distance ="7.0" tStart="13.0" tEnd="13.0" lengthStart="5" lengthEnd="5" widthStart="5" widthEnd="5" heightStart="4.0" heightEnd="4.0"/>
                 <markings>
                     <marking width="0.2" color="white" zOffset="0.005" spaceLength ="0.4" lineLength ="0.5" startOffset="0.0" stopOffset="0.0">
                         <cornerReference id="0"/>
@@ -160,7 +160,8 @@
                     </marking>
                 </markings>
             </object>
-            <object type="box" id="6" s="10" t="-13">
+            <object type="obstacle" id="6" s="10" t="-13" zOffset="0.0">
+                <repeat s="20" length="80" distance ="0.0" tStart="-13.0" tEnd="-13.0" heightStart="4.0" heightEnd="4.0" zOffsetEnd="0.0" zOffsetStart="0.0"/>
                 <outlines>
                     <outline id="0" closed="true">
                         <cornerLocal u="-10.0" v="-2.5" z="0.0" height="4.0" id="0"/>
@@ -169,7 +170,6 @@
                         <cornerLocal u="10.0" v="-2.5" z="0.0" height="4.0" id="3"/>
                     </outline>
                 </outlines>
-                <repeat s="20" length="80" distance ="0.0" tStart="-13.0" tEnd="-13.0"/>
                 <markings>
                     <marking width="0.2" color="white" zOffset="0.005" spaceLength ="0.4" lineLength ="0.5" startOffset="0.0" stopOffset="0.0">
                         <cornerReference id="0"/>
@@ -181,25 +181,25 @@
                     </marking>
                 </markings>
             </object>
-            <object type="obstacle" id="7" s="5" t="4">
+            <object type="obstacle" id="7" s="5" t="4" zOffset="0.0">
                 <markings>
                     <marking side="right" width="0.1" color="white" zOffset="0.005" spaceLength="0.0" lineLength="1.0" startOffset="0.0" stopOffset="0.0" />
                     <marking side="left" width="0.1" color="white" zOffset="0.005" spaceLength="0.0" lineLength="1.0" startOffset="0.0" stopOffset="0.0" />
                 </markings>
             </object>
-            <object type="obstacle" id="8" s="10" t="8" length="4" width="4" height="2">
+            <object type="obstacle" id="8" s="10" t="8" length="4" width="4" height="2" zOffset="0.0">
                 <markings>
                     <marking side="right" width="0.1" color="white" zOffset="0.005" spaceLength="0.0" lineLength="1.0" startOffset="0.0" stopOffset="0.0" />
                     <marking side="left" width="0.1" color="white" zOffset="0.005" spaceLength="0.0" lineLength="1.0" startOffset="0.0" stopOffset="0.0" />
                 </markings>
             </object>
-            <object type="obstacle" id="9" name="../models/box_cc_b.osgb" s="25" t="5.0" length="2" width="2" height="3" orientation="none" hdg="0.0" pitch="0.0" roll="0.0">
+            <object type="obstacle" id="9" name="../models/box_cc_b.osgb" s="25" t="5.0" length="2" width="2" height="3" orientation="none" hdg="0.0" pitch="0.0" roll="0.0" zOffset="0.0">
                 <markings>
                     <marking side="right" width="0.1" color="white" zOffset="0.005" spaceLength="0.0" lineLength="0.1" startOffset="0.0" stopOffset="0.0" />
                     <marking side="left" width="0.1" color="white" zOffset="0.005" spaceLength="0.0" lineLength="0.1" startOffset="0.0" stopOffset="0.0" />
                 </markings>
             </object>
-            <object type="obstacle" id="10" name="../models/box_cc_by.osgb" s="30" t="5.0" length="4" width="2" height="6" orientation="none" hdg="0.0" pitch="0.0" roll="0.0">
+            <object type="obstacle" id="10" name="../models/box_cc_by.osgb" s="30" t="5.0" length="4" width="2" height="6" orientation="none" hdg="0.0" pitch="0.0" roll="0.0" zOffset="0.0">
                 <markings>
                     <marking side="right" width="0.1" color="white" zOffset="0.005" spaceLength="0.0" lineLength="0.1" startOffset="0.0" stopOffset="0.0" />
                     <marking side="left" width="0.1" color="white" zOffset="0.005" spaceLength="0.0" lineLength="0.1" startOffset="0.0" stopOffset="0.0" />
