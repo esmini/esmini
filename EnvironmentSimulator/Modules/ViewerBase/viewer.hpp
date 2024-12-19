@@ -597,7 +597,7 @@ namespace viewer
         // Add model to the given graphics group
         void AddModel(roadmanager::RMObject* object, osg::ref_ptr<osg::PositionAttitudeTransform> tx, osg::ref_ptr<osg::Group> objGroup);
         // validate and throw warning only if viewer default value used
-        void ValidateDimensionsForViewing(roadmanager::RMObject& object) const;
+        void ValidateDimensionsForViewing(roadmanager::RMObject* object) const;
         // Update RM object and get scale only if RM object cant be updated. eg. respect RM object dimension
         void UpdateObjectDimensionsAndGetScale(const osg::BoundingBox& boundingBox,
                                                roadmanager::RMObject*  object,

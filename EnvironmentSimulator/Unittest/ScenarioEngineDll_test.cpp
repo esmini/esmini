@@ -537,7 +537,7 @@ TEST(GetOSIRoadLaneTest, lane_no_obj)
     SE_UpdateOSIGroundTruth();
     SE_FlushOSIFile();
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 147409);  // initial OSI size, including static content
+    EXPECT_EQ(fileStatus.st_size, 148188);  // initial OSI size, including static content
 
     int road_lane_size;
 
@@ -550,13 +550,13 @@ TEST(GetOSIRoadLaneTest, lane_no_obj)
     SE_UpdateOSIGroundTruth();
     SE_FlushOSIFile();
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 148702);  // slight growth due to only dynamic updates
+    EXPECT_EQ(fileStatus.st_size, 149481);  // slight growth due to only dynamic updates
 
     SE_StepDT(0.001f);  // Step for write another frame to osi file
     SE_UpdateOSIGroundTruth();
     SE_FlushOSIFile();
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 149996);  // slight growth due to only dynamic updates
+    EXPECT_EQ(fileStatus.st_size, 150775);  // slight growth due to only dynamic updates
 
     SE_DisableOSIFile();
     SE_Close();
@@ -2996,6 +2996,7 @@ TEST(TestOsiReporter, OutlineWithRepeat)
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(7).base().base_polygon(0).y(), -2.5);
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(7).base().base_polygon(1).y(), -2.5);
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(7).base().base_polygon(2).y(), 2.5);
+    SE_Close();
 }
 
 TEST(TestOsiReporter, OutlineInCurveRoad)
@@ -3059,11 +3060,12 @@ TEST(TestOsiReporter, OutlineInCurveRoad)
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(43).base().base_polygon_size(), 4);
     EXPECT_NEAR(osi_gt.stationary_object(43).base().base_polygon(0).x(), 131.526, 1E-3);
     EXPECT_NEAR(osi_gt.stationary_object(43).base().base_polygon(0).y(),  7.350, 1E-3);
+    SE_Close();
 }
 
 TEST(TestOsiReporter, MarkingTest)
 {
-    std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/test_markings.xosc";
+    std::string scenario_file = "../EnvironmentSimulator/Unittest/xosc/test_markings.xosc";
     const char* Scenario_file = scenario_file.c_str();
     int         i_init        = SE_Init(Scenario_file, 0, 0, 0, 0);
     ASSERT_EQ(i_init, 0);
@@ -3230,6 +3232,7 @@ TEST(TestOsiReporter, MarkingTest)
     EXPECT_NEAR(osi_gt.road_marking(25).base().base_polygon(1).y(), 4.000, 1e-3);
     EXPECT_NEAR(osi_gt.road_marking(25).base().base_polygon(2).x(), 27.949, 1e-3);
     EXPECT_NEAR(osi_gt.road_marking(25).base().base_polygon(2).y(), 6.000, 1e-3);
+    SE_Close();
 
     const char* args[] = {"--osc",
                           "../../../EnvironmentSimulator/Unittest/xosc/test_markings.xosc",
@@ -3403,6 +3406,7 @@ TEST(TestOsiReporter, MarkingTest)
     EXPECT_NEAR(osi_gt.road_marking(25).base().base_polygon(1).y(), 4.000, 1e-3);
     EXPECT_NEAR(osi_gt.road_marking(25).base().base_polygon(2).x(), 27.949, 1e-3);
     EXPECT_NEAR(osi_gt.road_marking(25).base().base_polygon(2).y(), 6.000, 1e-3);
+    SE_Close();
 }
 
 TEST(TestOsiReporter, TestMarkingMerge)
@@ -3514,7 +3518,7 @@ TEST(TestOsiReporter, TestMarkingMerge)
     EXPECT_NEAR(osi_gt.road_marking(29).base().base_polygon(osi_gt.road_marking(0).base().base_polygon_size() - 1).y(), 11.500, 1e-3);
     EXPECT_NEAR(osi_gt.road_marking(29).base().base_polygon(osi_gt.road_marking(0).base().base_polygon_size() - 2).x(), 129.950, 1e-3);
     EXPECT_NEAR(osi_gt.road_marking(29).base().base_polygon(osi_gt.road_marking(0).base().base_polygon_size() - 2).y(), 11.500, 1e-3);
-
+    SE_Close();
 }
 
 TEST(TestOsiReporter, TestMarkingsCircularRoad)
@@ -3548,6 +3552,7 @@ TEST(TestOsiReporter, TestMarkingsCircularRoad)
     EXPECT_NEAR(osi_gt.road_marking(1).base().base_polygon(1).y(), -0.160, 1e-3);
     EXPECT_NEAR(osi_gt.road_marking(1).base().base_polygon(2).x(), -10.638, 1e-3);
     EXPECT_NEAR(osi_gt.road_marking(1).base().base_polygon(2).y(), 1.245, 1e-3);
+    SE_Close();
 }
 
 TEST(TestOsiReporter, StationaryObjectWithRepeatTest)
@@ -3594,6 +3599,7 @@ TEST(TestOsiReporter, StationaryObjectWithRepeatTest)
     EXPECT_EQ(osi_gt.stationary_object(2).base().position().x(), 45);
     EXPECT_EQ(osi_gt.stationary_object(2).base().position().y(), -12.5);
     EXPECT_EQ(osi_gt.stationary_object(2).base().position().z(), 0.0);
+    SE_Close();
 }
 
 TEST(TestOsiReporter, CrestCurveRoadObjectTest)
@@ -3746,6 +3752,7 @@ TEST(TestOsiReporter, CrestCurveRoadObjectTest)
     EXPECT_NEAR(osi_gt.stationary_object(8).base().base_polygon(3).y(), 11.546, 1e-3);
     EXPECT_NEAR(osi_gt.stationary_object(8).base().base_polygon(18).x(), 31.586, 1e-3);
     EXPECT_NEAR(osi_gt.stationary_object(8).base().base_polygon(18).y(), 11.636, 1e-3);
+    SE_Close();
 }
 
 TEST(TestOsiReporter, StationaryObjectTest)
@@ -3856,6 +3863,7 @@ TEST(TestOsiReporter, StationaryObjectTest)
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(13).base().position().x(), 205.0);
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(13).base().position().y(), 5.0);
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(13).base().position().z(), 0.0);
+    SE_Close();
 
     //with viewer
     const char* args[] = {"--osc",
@@ -3940,6 +3948,7 @@ TEST(TestOsiReporter, StationaryObjectTest)
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(10).base().position().x(), 95.0);
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(10).base().position().y(), 5.0);
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(10).base().position().z(), 0.0);
+    SE_Close();
 }
 
 TEST(TestOsiReporter, OutlineInSharpCurve)
@@ -3981,7 +3990,7 @@ TEST(TestOsiReporter, OutlineInSharpCurve)
     EXPECT_NEAR(osi_gt.stationary_object(7).base().base_polygon(0).y(), 6.860, 1e-3);
     EXPECT_NEAR(osi_gt.stationary_object(7).base().base_polygon(3).x(), 17.690, 1e-3);
     EXPECT_NEAR(osi_gt.stationary_object(7).base().base_polygon(3).y(), 3.499, 1e-3);
-
+    SE_Close();
 }
 
 TEST(TestOsiReporter, OutlinesWithChangingBB)
@@ -4095,6 +4104,7 @@ TEST(TestOsiReporter, OutlinesWithChangingBB)
     EXPECT_NEAR(osi_gt.stationary_object(80).base().base_polygon(1).y(), 2.5, 1e-3);
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(80).base().base_polygon(2).x(), 0);
     EXPECT_NEAR(osi_gt.stationary_object(80).base().base_polygon(2).y(), 2.5, 1e-3);
+    SE_Close();
 }
 
 TEST(TestOsiReporter, LocalCornerOutline)
@@ -4230,7 +4240,7 @@ TEST(TestOsiReporter, LocalCornerOutline)
     EXPECT_NEAR(osi_gt.stationary_object(6).base().base_polygon(2).y(), 2.500, 1e-3);
     EXPECT_NEAR(osi_gt.stationary_object(6).base().base_polygon(3).x(), 15.000, 1e-3);
     EXPECT_NEAR(osi_gt.stationary_object(6).base().base_polygon(3).y(), -2.500, 1e-3);
-
+    SE_Close();
 }
 
 TEST(TestOsiReporter, RoadCornerOutline)
@@ -4363,6 +4373,7 @@ TEST(TestOsiReporter, RoadCornerOutline)
     EXPECT_NEAR(osi_gt.stationary_object(6).base().base_polygon(2).y(), 2.500, 1e-3);
     EXPECT_NEAR(osi_gt.stationary_object(6).base().base_polygon(3).x(), 22.500, 1e-3);
     EXPECT_NEAR(osi_gt.stationary_object(6).base().base_polygon(3).y(), -2.500, 1e-3);
+    SE_Close();
 }
 
 #endif  // _USE_OSI

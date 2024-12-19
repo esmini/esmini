@@ -3707,7 +3707,7 @@ Outline roadmanager::RMObject::GetZeroDistanceOutline(Repeat& rep, Position& pos
     double segment_length = GetValueOrZero(GetRepeatedObjLengthWithFactor(rep, 1)); // get length for factor 1
     if (IsEqualDouble(segment_length, 0.0))
     {
-        LOG_ONCE("Default object Length %.2f used, Since no length found from repeat and object ",  max_segment_length);
+        LOG_WARN("Default object Length {} used, Since no length found from repeat and object ",  max_segment_length);
         segment_length = max_segment_length;
     }
     unsigned int n_segments = static_cast<int>((MAX(1.0, rep.GetLength() / segment_length)));
@@ -6034,7 +6034,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                 double s, t;
                 if (const auto& val = object.attribute("s"); val.empty())
                 {
-                    LOG("Attribute object s value missing, Using zero. Please validate the XML road file");
+                    LOG_WARN("Attribute object s value missing, Using zero. Please validate the XML road file");
                     s = 0.0;
 
                 }
@@ -6044,7 +6044,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                 }
                 if (const auto& val = object.attribute("t"); val.empty())
                 {
-                    LOG("Attribute object t value missing, Using zero. Please validate the XML road file");
+                    LOG_WARN("Attribute object t value missing, Using zero. Please validate the XML road file");
                     t = 0.0;
 
                 }
@@ -6108,7 +6108,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                     double      rs;
                     if (const auto& val = repeat_node.attribute("s"); val.empty())
                     {
-                        LOG("Attribute repeat s value missing, Using s from object.  Please validate the XML road file");
+                        LOG_WARN("Attribute repeat s value missing, Using s from object.  Please validate the XML road file");
                         rs = s;
                     }
                     else
@@ -6120,7 +6120,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                     const auto& valEnd = repeat_node.attribute("tEnd");
                     if (valStart.empty() || valEnd.empty())
                     {
-                        LOG("Attribute repeat tStart or tEnd value missing, Using t from object. Please validate the XML road file");
+                        LOG_WARN("Attribute repeat tStart or tEnd value missing, Using t from object. Please validate the XML road file");
                         rtStart = t;
                         rtEnd = t;
                     }
@@ -6217,13 +6217,13 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                             // check if all corner ids are unique and same type of corners are present
                             if(foundLocalCorner && foundRoadcorner)
                             {
-                                LOG("skiping outline, Mixed corners found in outline id %d", outline.GetId());
+                                LOG_ERROR("skiping outline, Mixed corners found in outline id {}", outline.GetId());
                                 isValidOutline = false;
                                 break;
                             }
                             if( cornerId != -1 && cornerIds.find(cornerId) != cornerIds.end())
                             {
-                                LOG("skiping outline, Corner id %d is not unique in outline id %d", cornerId, outline.GetId());
+                                LOG_ERROR("skiping outline, Corner id {} is not unique in outline id {}", cornerId, outline.GetId());
                                 isValidOutline = false;
                                 break;
                             }
@@ -6273,7 +6273,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                                 }
                                 else
                                 {
-                                    LOG("skiping marking, Side attribute is mandatory in marking with no outline");
+                                    LOG_ERROR("skiping marking, Side attribute is mandatory in marking with no outline");
                                     isValidMarking = false;
                                     break;
                                 }
@@ -6303,21 +6303,21 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                                     }
                                     else
                                     {
-                                        LOG("Skiping marking, CornerReference id %d not found in any of outline in object %d", id, obj->GetId());
+                                        LOG_ERROR("Skiping marking, CornerReference id {} not found in any of outline in object {}", id, obj->GetId());
                                         isValidMarking = false;
                                         break;
                                     }
                                 }
                                 else
                                 {
-                                    LOG("Skiping marking, CornerReference id is mandatory");
+                                    LOG_ERROR("Skiping marking, CornerReference id is mandatory");
                                     isValidMarking = false;
                                     break;
                                 }
                             }
                             if (isValidMarking && marking.GetCornerReferenceIdsSize() < 2)
                             {
-                                LOG("Skiping marking, Atleast two <cornerReference> elements are mandatory, Skiping");
+                                LOG_ERROR("Skiping marking, Atleast two <cornerReference> elements are mandatory, Skiping");
                                 break;
                             }
                         }

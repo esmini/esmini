@@ -2859,7 +2859,7 @@ int Viewer::CreateRoadSignals(osg::ref_ptr<osg::Group> objGroup, std::vector<roa
             }
             else
             {
-                LOG("Failed to load signal %s / %s - use simple bounding box", (filename + ".osgb").c_str(), (signal->GetName() + ".osgb").c_str());
+                LOG_ERROR("Failed to load signal {}.osgb / {}.osgb - use simple bounding box", filename, signal->GetName());
                 osg::ref_ptr<osg::PositionAttitudeTransform> obj_standin =
                     dynamic_cast<osg::PositionAttitudeTransform*>(tx_bb->clone(osg::CopyOp::DEEP_COPY_ALL));
                 obj_standin->setNodeMask(NODE_MASK_SIGN);
@@ -2910,19 +2910,19 @@ osg::ref_ptr<osg::PositionAttitudeTransform> Viewer::GetModel(std::string filena
     return tx;
 }
 
-void Viewer::ValidateDimensionsForViewing(roadmanager::RMObject& object) const
+void Viewer::ValidateDimensionsForViewing(roadmanager::RMObject* object) const
 {
-    if (IsEqualDouble(object.GetLength().Get(), 0.0))
+    if (IsEqualDouble(object->GetLength().Get(), 0.0))
     {
-        LOG_WARN("Object {} missing length, set to bounding box length {:.2f}", object->GetName(), DEFAULT_MIN_DIM);
+        LOG_WARN("Object {} missing length, set to bounding box length {}", object->GetName(), DEFAULT_MIN_DIM);
     }
-    if (IsEqualDouble(object.GetWidth().Get(), 0.0))
+    if (IsEqualDouble(object->GetWidth().Get(), 0.0))
     {
-        LOG_WARN("Object {} missing width, set to bounding box width {:.2f}", object->GetName(), DEFAULT_MIN_DIM);
+        LOG_WARN("Object {} missing width, set to bounding box width {}", object->GetName(), DEFAULT_MIN_DIM);
     }
-    if (IsEqualDouble(object.GetHeight().Get(), 0.0))
+    if (IsEqualDouble(object->GetHeight().Get(), 0.0))
     {
-        LOG_WARN("Object {} missing height, set to bounding box height {:.2f}", object->GetName(), DEFAULT_MIN_DIM);
+        LOG_WARN("Object {} missing height, set to bounding box height {}", object->GetName(), DEFAULT_MIN_DIM);
     }
 }
 
@@ -3096,18 +3096,16 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
                     osg::BoundingBox boundingBox = GetBoundingBox(tx.get());
                     UpdateObjectDimensionsAndGetScale(boundingBox, object, scale_x, scale_y, scale_z);
                 }
-                ValidateDimensionsForViewing(*object);
+                ValidateDimensionsForViewing(object);
             }
             else  // outlines
             {
                 for (auto& outline : object->GetOutlines())
                 {
                     CreateOutlineModel(outline, color, geode, object->GetNumberOfRepeats() > 0);  // create outline model
-                    LOG_INFO("Created outline geometry for object {}.", object->GetName());
-                    LOG_INFO("  if it looks strange, e.g.faces too dark or light color, ");
-                    LOG_INFO("  check that corners are defined counter-clockwise (as OpenGL default).");
+                    OutlineGroup->addChild(geode);
+                    LOG_INFO("Created outline geometry for object %s.\n if it looks strange, e.g.faces too dark or light color \n check that corners are defined counter-clockwise (as OpenGL default).", object->GetName());
                 }
-                LOG("Created outline geometry for object %s.\n if it looks strange, e.g.faces too dark or light color \n check that corners are defined counter-clockwise (as OpenGL default).", object->GetName().c_str());
             }
             if(!CreateRepeats(object, tx, OutlineGroup, objGroup))
             {
