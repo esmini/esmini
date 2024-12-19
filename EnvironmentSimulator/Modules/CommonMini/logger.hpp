@@ -34,7 +34,7 @@ namespace esmini::common
     // this function can be used for any file type i.e. txt, sim, dat, etc.
     // checks if the parent directory exists for the path
     // if the path is directory then appends default file name.
-    // if the extension is missing then replcaes it with default extension
+    // if the extension is missing then replaces it with default extension
     std::string ValidateAndCreateFilePath(const std::string& path, const std::string& defaultFileName, const std::string& defaultExtension);
 
     class TxtLogger
@@ -46,7 +46,7 @@ namespace esmini::common
         // logs esmini version
         void LogVersion();
 
-        // converts string to verbosirty level if doesn't succeed then returns verbosity level INFO as default
+        // converts string to verbosity level if doesn't succeed then returns verbosity level INFO as default
         spdlog::level::level_enum GetVerbosityLevelFromStr(const std::string& str);
 
         // puts one line in log with time only

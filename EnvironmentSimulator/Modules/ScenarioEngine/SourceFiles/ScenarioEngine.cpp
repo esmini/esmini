@@ -38,11 +38,13 @@ namespace scenarioengine
 ScenarioEngine::ScenarioEngine(std::string oscFilename, bool disable_controllers)
 {
     init_status_ = InitScenario(oscFilename, disable_controllers);
+    TxtLogger::Inst().SetLoggerTime(GetSimulationTimePtr());
 }
 
 ScenarioEngine::ScenarioEngine(const pugi::xml_document& xml_doc, bool disable_controllers)
 {
     init_status_ = InitScenario(xml_doc, disable_controllers);
+    TxtLogger::Inst().SetLoggerTime(GetSimulationTimePtr());
 }
 
 void ScenarioEngine::InitScenarioCommon(bool disable_controllers)
