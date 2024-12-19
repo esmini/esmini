@@ -1253,6 +1253,9 @@ TEST(ControllerTest, UDPDriverModelTestAsynchronous)
 
     delete se;
     delete udpClient;
+
+    // make a pause before launcing next test to allow socket port to be fully released
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
 }
 
 TEST(ControllerTest, UDPDriverModelTestSynchronous)
@@ -1374,6 +1377,8 @@ TEST(ControllerTest, UDPDriverModelTestSynchronous)
     delete se;
     delete udpClient;
     delete udpClient2;
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
 }
 
 TEST(RoadOrientationTest, TestElevationPitchRoll)
