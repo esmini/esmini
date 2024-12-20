@@ -642,6 +642,96 @@ TEST(OSI, TestGeoOffsetIgnoreODROffset)
     delete player;
 }
 
+TEST(OSI, TestStationaryObjects)
+{
+    const char* args[] =
+        {"esmini", "--osc", "../../../EnvironmentSimulator/Unittest/xosc/stationary_objects.xosc", "--headless", "--osi_file", "--disable_stdout"};
+    int             argc   = sizeof(args) / sizeof(char*);
+    ScenarioPlayer* player = new ScenarioPlayer(argc, const_cast<char**>(args));
+
+    ASSERT_NE(player, nullptr);
+    int retval = player->Init();
+    ASSERT_EQ(retval, 0);
+
+    ScenarioEngine* se = player->scenarioEngine;
+    ASSERT_EQ(se->entities_.object_.size(), 1);
+
+    const osi3::GroundTruth* osi_gt_ptr = reinterpret_cast<const osi3::GroundTruth*>(player->osiReporter->GetOSIGroundTruthRaw());
+    ASSERT_NE(osi_gt_ptr, nullptr);
+
+    // verify correct location of OpenDRIVE stationary object with polygon
+    EXPECT_EQ(osi_gt_ptr->stationary_object(0).id().value(), 0);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().dimension().length(), 0.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().dimension().width(), 0.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().dimension().height(), 2.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().position().x(), 20.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().position().y(), -7.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().position().z(), 8.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().orientation().yaw(), 0.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().orientation().pitch(), 0.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().orientation().roll(), 0.0, 1e-3);
+
+    EXPECT_EQ(osi_gt_ptr->stationary_object(0).base().base_polygon_size(), 4);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().base_polygon().at(0).x(), -2.3574, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().base_polygon().at(0).y(), 1.5627, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().base_polygon().at(1).x(), -1.3641, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().base_polygon().at(1).y(), -3.3375, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().base_polygon().at(2).x(), 7.8405, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().base_polygon().at(2).y(), 1.5893, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().base_polygon().at(3).x(), 4.5029, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().base_polygon().at(3).y(), 2.9534, 1e-3);
+
+    // verify correct location of OpenDRIVE second stationary object
+    EXPECT_EQ(osi_gt_ptr->stationary_object(1).id().value(), 1);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(1).base().dimension().length(), 4.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(1).base().dimension().width(), 4.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(1).base().dimension().height(), 10.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(1).base().position().x(), 40.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(1).base().position().y(), -7.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(1).base().position().z(), 4.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(1).base().orientation().yaw(), 0.7800, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(1).base().orientation().pitch(), 0.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(1).base().orientation().roll(), 0.0, 1e-3);
+
+    // verify correct location of OpenDRIVE sign pole object
+    EXPECT_EQ(osi_gt_ptr->stationary_object(2).id().value(), 2);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(2).base().dimension().length(), 0.06, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(2).base().dimension().width(), 0.06, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(2).base().dimension().height(), 2.35, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(2).base().position().x(), 5.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(2).base().position().y(), 0.5, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(2).base().position().z(), 0.975, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(2).base().orientation().yaw(), 0.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(2).base().orientation().pitch(), 0.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(2).base().orientation().roll(), 0.0, 1e-3);
+
+    // verify correct location of OSC box object
+    EXPECT_EQ(osi_gt_ptr->stationary_object(3).id().value(), 3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(3).base().dimension().length(), 2.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(3).base().dimension().width(), 1.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(3).base().dimension().height(), 2.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(3).base().position().x(), 10.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(3).base().position().y(), -5.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(3).base().position().z(), 1.5, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(3).base().orientation().yaw(), 0.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(3).base().orientation().pitch(), 0.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(3).base().orientation().roll(), 0.0, 1e-3);
+
+    // verify correct location of OpenDRIVE traffic sign
+    EXPECT_EQ(osi_gt_ptr->traffic_sign(0).id().value(), 1);
+    EXPECT_NEAR(osi_gt_ptr->traffic_sign(0).main_sign().base().dimension().length(), 0.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->traffic_sign(0).main_sign().base().dimension().width(), 0.6, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->traffic_sign(0).main_sign().base().dimension().height(), 0.6, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->traffic_sign(0).main_sign().base().position().x(), 5.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->traffic_sign(0).main_sign().base().position().y(), 0.5, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->traffic_sign(0).main_sign().base().position().z(), 2.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->traffic_sign(0).main_sign().base().orientation().yaw(), 3.1415, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->traffic_sign(0).main_sign().base().orientation().pitch(), 0.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->traffic_sign(0).main_sign().base().orientation().roll(), 0.0, 1e-3);
+
+    delete player;
+}
+
 #endif  // _USE_OSI
 
 int main(int argc, char** argv)

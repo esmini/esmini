@@ -582,7 +582,7 @@ int OSIReporter::UpdateOSIStationaryObjectODR(id_t road_id, roadmanager::RMObjec
     // Set OSI Stationary Object Position
     obj_osi_internal.sobj->mutable_base()->mutable_position()->set_x(object->GetX());
     obj_osi_internal.sobj->mutable_base()->mutable_position()->set_y(object->GetY());
-    obj_osi_internal.sobj->mutable_base()->mutable_position()->set_z(object->GetZ() + object->GetZOffset());
+    obj_osi_internal.sobj->mutable_base()->mutable_position()->set_z(object->GetZ() + object->GetZOffset() + object->GetHeight() / 2.0);
 
     if (object->GetNumberOfOutlines() > 0)
     {
@@ -701,7 +701,8 @@ int OSIReporter::UpdateOSIStationaryObject(ObjectState *objectState)
         objectState->state_.pos.GetX() + static_cast<double>(objectState->state_.info.boundingbox.center_.x_) * cos(objectState->state_.pos.GetH()));
     obj_osi_internal.sobj->mutable_base()->mutable_position()->set_y(
         objectState->state_.pos.GetY() + static_cast<double>(objectState->state_.info.boundingbox.center_.x_) * sin(objectState->state_.pos.GetH()));
-    obj_osi_internal.sobj->mutable_base()->mutable_position()->set_z(objectState->state_.pos.GetZ());
+    obj_osi_internal.sobj->mutable_base()->mutable_position()->set_z(
+        objectState->state_.pos.GetZ() + static_cast<double>(objectState->state_.info.boundingbox.dimensions_.height_) / 2.0);
 
     // Set OSI Stationary Object Orientation
     obj_osi_internal.sobj->mutable_base()->mutable_orientation()->set_roll(GetAngleInIntervalMinusPIPlusPI(objectState->state_.pos.GetR()));
@@ -2327,7 +2328,7 @@ int OSIReporter::UpdateTrafficSignals()
 
                     trafficLight->mutable_base()->mutable_position()->set_x(signal->GetX());
                     trafficLight->mutable_base()->mutable_position()->set_y(signal->GetY());
-                    trafficLight->mutable_base()->mutable_position()->set_z(signal->GetZ() + signal->GetZOffset());
+                    trafficLight->mutable_base()->mutable_position()->set_z(signal->GetZ() + signal->GetZOffset() + signal->GetHeight() / 2.0);
                 }
                 else
                 {
@@ -2416,7 +2417,8 @@ int OSIReporter::UpdateTrafficSignals()
                     // Set X, Y, Z based on s, t, and zOffset
                     trafficSign->mutable_main_sign()->mutable_base()->mutable_position()->set_x(signal->GetX());
                     trafficSign->mutable_main_sign()->mutable_base()->mutable_position()->set_y(signal->GetY());
-                    trafficSign->mutable_main_sign()->mutable_base()->mutable_position()->set_z(signal->GetZ() + signal->GetZOffset());
+                    trafficSign->mutable_main_sign()->mutable_base()->mutable_position()->set_z(signal->GetZ() + signal->GetZOffset() +
+                                                                                                signal->GetHeight() / 2.0);
                 }
             }
         }

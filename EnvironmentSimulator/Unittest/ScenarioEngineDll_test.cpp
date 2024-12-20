@@ -1319,7 +1319,7 @@ TEST(GetMiscObjFromGroundTruth, receive_miscobj)
 
     EXPECT_EQ(miscobj_x, 110);
     EXPECT_EQ(miscobj_y, -10);
-    EXPECT_EQ(miscobj_z, 0.0);  // adjusted to the road z
+    EXPECT_EQ(miscobj_z, 2.0);  // adjusted to the road z
 
     // Angles in OSI should be in range [-PI, PI]
     EXPECT_NEAR(miscobj_roll, 0.2, 1e-3);   // Aligned to the road (so if road roll is 1.0 total roll will be 6.0)

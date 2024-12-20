@@ -3207,6 +3207,13 @@ void OpenDrive::Clear()
     junction_.clear();
 
     SetSpeedUnit(SpeedUnit::UNDEFINED);
+
+    geo_offset_.hdg_                = 0.0;
+    geo_offset_.orig_geooffset_str_ = "";
+    geo_offset_.x_                  = 0.0;
+    geo_offset_.y_                  = 0.0;
+    geo_offset_.z_                  = 0.0;
+
     friction_.Reset();
 }
 

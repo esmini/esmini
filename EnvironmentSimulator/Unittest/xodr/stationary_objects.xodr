@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<OpenDRIVE>
+    <header name="myroad" revMajor="1" revMinor="6" date="2023-03-16 07:28:14.108429" north="0.0" south="0.0" east="0.0" west="0.0"/>
+    <road rule="RHT" id="0" junction="-1" length="50.0">
+        <link>
+            <successor elementType="road" elementId="1" contactPoint="start"/>
+        </link>
+        <planView>
+            <geometry s="0" x="0" y="0" hdg="0" length="50">
+                <line/>
+            </geometry>
+        </planView>
+        <lateralProfile/>
+        <lanes>
+            <laneSection s="0">
+                <center>
+                    <lane id="0" type="none" level="false">
+                        <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>
+                    </lane>
+                </center>
+                <right>
+                    <lane id="-1" type="driving" level="false">
+                        <link>
+                            <successor id="-1"/>
+                        </link>
+                        <width a="3.0" b="0" c="0" d="0" sOffset="0"/>
+                        <roadMark sOffset="0" type="broken" weight="standard" color="standard" height="0.02" width="0.2"/>
+                    </lane>
+                </right>
+            </laneSection>
+        </lanes>
+        <objects>
+            <object type="building" name="Box1" dynamic="no" id="1" s="20" t="-7" zOffset="3.0" orientation="none" length="25.0" width="10.0" height="10.0" hdg="0.2" pitch="0.0" roll="0.0" validLength="25.0">
+                <outlines>
+                    <outline id="52" fillType="grass" closed="true" outer="false" laneType="none">
+                        <cornerLocal id="0" u="-2.0" v="2.0" z="-0.5" height="2.0"/>
+                        <cornerLocal id="1" u="-2.0" v="-3.0" z="-0.5" height="2.0"/>
+                        <cornerLocal id="2" u="8.0" v="0.0" z="-0.5" height="2.0"/>
+                        <cornerLocal id="3" u="5.0" v="2.0" z="-0.5" height="2.0"/>
+                    </outline>
+                </outlines>
+            </object>
+            <object type="building" name="Box2" dynamic="no" id="8" s="40" t="-7" zOffset="-1.0" orientation="none" length="4.0" width="4.0" height="10.0" hdg="0.78" pitch="0.0" roll="0.0" validLength="25.0">
+            </object>
+            <object type="pole" name="pole" dynamic="no" id="5" s="5.0" t="0.5" zOffset="-0.2" validLength="0.06" orientation="+" length="0.06" width="0.06" radius="0.5" height="2.35" hdg="0.0" pitch="0.0" roll="0.0"/>
+        </objects>
+        <signals>
+            <signal s="5.0" t="0.5" id="1" name="speed_50_1" dynamic="no" orientation="+" zOffset="1.7" type="c" country="SE" subtype="31" value="5" hOffset="0.0" pitch="0.0" roll="0.0" height="0.6" width="0.6"/>
+        </signals>
+    </road>
+</OpenDRIVE>

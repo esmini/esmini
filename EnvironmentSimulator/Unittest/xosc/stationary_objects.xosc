@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSCENARIO>
+    <FileHeader revMajor="1" revMinor="3" date="2024-12-20T10:00:00" description="Some stationary objects for test" author="esmini team"/>
+    <ParameterDeclarations/>
+    <CatalogLocations/>
+    <RoadNetwork>
+        <LogicFile filepath="../xodr/stationary_objects.xodr"/>
+    </RoadNetwork>
+    <Entities>
+        <ScenarioObject name="Box3">
+            <MiscObject name="box3" miscObjectCategory="obstacle" mass="200.0">
+                <ParameterDeclarations/>
+                <BoundingBox>
+                    <Center x="0.0" y="0.0" z="1.0"/>
+                    <Dimensions width="1.0" length="2.0" height="2.0"/>
+                </BoundingBox>
+                <Properties>
+                    <Property name="scaleMode" value="ModelToBB"/>
+                    <Property name="model_id" value="15"/>
+                </Properties>
+            </MiscObject>
+        </ScenarioObject>
+    </Entities>
+    <Storyboard>
+        <Init>
+            <Actions>
+                <Private entityRef="Box3">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <WorldPosition x="10.0" y="-5.0" h="0.0" z="0.5"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                </Private>
+            </Actions>
+        </Init>
+    </Storyboard>
+</OpenSCENARIO>

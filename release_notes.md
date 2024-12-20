@@ -1,5 +1,30 @@
 ## esmini release notes
 
+### 2024-12-20 Version 2.42.0
+
+New features:
+- Add simple trajectory filter
+  - add option to set radius
+  - disable by setting radius = 0.0
+
+Updated behaviors:
+- Ensure unique OSI IDs for all static objects
+ - regardless of OpenDRIVE or OpenSCENARIO origin
+- Fix OSI z-value to center of bounding box instead of bottom
+- Rename OSMP_FMU EsminiOsiSource to esmini ([PR #643](https://github.com/esmini/esmini/pull/643))
+
+Improvements and fixes:
+- Add example Misc object catalog
+- Fix OSMP_FMU missing static data ([PR #643](https://github.com/esmini/esmini/pull/643))
+- Allow orientation in road trajectories
+  - for floating trajectories (z specified) head and pitch is either specified or
+    calculated to align with trajectory itself
+  - for road trajectories (z unspecified, trajectory projected on road),
+    any specified pitch and roll is now respected as well for all pos
+    types
+  - for example, a bike can roll over using lane positions
+
+
 ### 2024-12-11 Version 2.41.1
 
 New behaviors:
