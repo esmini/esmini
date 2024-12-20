@@ -2048,6 +2048,13 @@ video::time_headway.mp4?raw=true[opts="loop,autoplay"]
 Note that the strategy results in desired behavior in probably the majority of cases, but not all. There might be exceptions where another behavior is expected or required. The manipulation described above is handled by the methods `SetupGhost()` and `ReplaceObjectInTrigger()` in https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/Modules/ScenarioEngine/SourceFiles/ScenarioEngine.cpp[ScenarioEngine.cpp] which can be modified to fit custom needs.
 
 [discrete]
+==== Controllers and ghost
+
+OpenSCENARIO 1.2 onwards supports multiple assigned controllers. All except the first controller will be handed over to the ghost. Hence make sure to put the ghost controller first, since it will stick to the "Ego". 
+
+Example scenario, where ghost is utilizing the followRoute controller: https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Unittest/xosc/follow_route_ghost_starting_on_route.xosc[follow_route_ghost_starting_on_route.xosc].
+
+[discrete]
 ==== Additional notes on using the ghost feature
 
 Timestamps in log are always of same reference. Whenever a ghost is involved the time will start at -`headStartTime`, in order for the actual scenario to start at simulationTime = 0. Example: Assuming `headStartTime = 3s`, a log message for an Ego action like:

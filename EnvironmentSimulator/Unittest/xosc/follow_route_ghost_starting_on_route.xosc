@@ -1,139 +1,139 @@
 <?xml version="1.0" encoding="utf-8"?>
 <OpenSCENARIO xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="OpenScenario.xsd">
-	<FileHeader description="follow route ctrl assigned to ghost" author="esmini team" revMajor="1" revMinor="3" date="2024-12-19T10:00:00"/>
-	<ParameterDeclarations/>
-	<CatalogLocations>
-		<VehicleCatalog>
-			<Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
-		</VehicleCatalog>
-		<ControllerCatalog>
-			<Directory path="../../../resources/xosc/Catalogs/Controllers"/>
-		</ControllerCatalog>
-	</CatalogLocations>
-	<RoadNetwork>
-		<LogicFile filepath="../xodr/multi_intersections.xodr"/>
-	</RoadNetwork>
-	<Entities>
-		<ScenarioObject name="Ego">
-			<CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
-			<ObjectController>
-				<CatalogReference catalogName="ControllerCatalog" entryName="followGhost">
-					<ParameterAssignments>
-						<ParameterAssignment parameterRef="HeadStartTime" value="2.5"/>
-						<ParameterAssignment parameterRef="FollowMode" value="time"/>
-						<ParameterAssignment parameterRef="LookaheadSpeed" value="2.0"/>
-						<ParameterAssignment parameterRef="MinLookaheadSpeed" value="1.0"/>
-						<ParameterAssignment parameterRef="LookaheadSteering" value="0.5"/>
-						<ParameterAssignment parameterRef="MinLookaheadSteering" value="0.2"/>
-						<ParameterAssignment parameterRef="SteeringSpeedInertia" value="0.005"/>
-					</ParameterAssignments>
-				</CatalogReference>
-			</ObjectController>
-			<ObjectController>
-				<CatalogReference catalogName="ControllerCatalog" entryName="followRoute">
-					<ParameterAssignments>
-						<ParameterAssignment parameterRef="TestMode" value="true"/>
-					</ParameterAssignments>
-				</CatalogReference>
-			</ObjectController>
-		</ScenarioObject>
-	</Entities>
-	<Storyboard>
-		<Init>
-			<Actions>
-				<Private entityRef="Ego">
-					<PrivateAction>
-						<TeleportAction>
-							<Position>
-								<LanePosition roadId="222" laneId="-1" s="90.0" offset="0.0"/>
-							</Position>
-						</TeleportAction>
-					</PrivateAction>
-					<PrivateAction>
-						<LongitudinalAction>
-							<SpeedAction>
-								<SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
-								<SpeedActionTarget>
-									<AbsoluteTargetSpeed value="20"/>
-								</SpeedActionTarget>
-							</SpeedAction>
-						</LongitudinalAction>
-					</PrivateAction>
-					<PrivateAction>
-						<ControllerAction>
-							<ActivateControllerAction lateral="true" longitudinal="true"/>
-						</ControllerAction>
-					</PrivateAction>
-				</Private>
-			</Actions>
-		</Init>
-		<Story name="story_act_maneuvuergroup_ego_man">
-			<ParameterDeclarations/>
-			<Act name="act_maneuvuergroup_ego_man">
-				<ManeuverGroup name="maneuvuergroup_ego_man" maximumExecutionCount="1">
-					<Actors selectTriggeringEntities="false">
-						<EntityRef entityRef="Ego"/>
-					</Actors>
-					<Maneuver name="ego_man">
-						<Event name="ego_event" priority="overwrite" maximumExecutionCount="1">
-							<Action name="ego_route">
-								<PrivateAction>
-									<RoutingAction>
-										<AssignRouteAction>
-											<Route name="ego_route" closed="false">
-												<ParameterDeclarations/>
-												<Waypoint routeStrategy="fastest">
-													<Position>
-														<LanePosition roadId="202" laneId="2" s="35.0" offset="0.0"/>
-													</Position>
-												</Waypoint>
-												<Waypoint routeStrategy="fastest">
-													<Position>
-														<LanePosition roadId="284" laneId="-1" s="10.0" offset="0.0"/>
-													</Position>
-												</Waypoint>
-												<Waypoint routeStrategy="fastest">
-													<Position>
-														<LanePosition roadId="196" laneId="1" s="70.0" offset="0.0"/>
-													</Position>
-												</Waypoint>
-											</Route>
-										</AssignRouteAction>
-									</RoutingAction>
-								</PrivateAction>
-							</Action>
-							<StartTrigger>
-								<ConditionGroup>
-									<Condition name="target_start" delay="0" conditionEdge="none">
-										<ByValueCondition>
-											<SimulationTimeCondition value="0" rule="greaterThan"/>
-										</ByValueCondition>
-									</Condition>
-								</ConditionGroup>
-							</StartTrigger>
-						</Event>
-					</Maneuver>
-				</ManeuverGroup>
-				<StartTrigger>
-					<ConditionGroup>
-						<Condition name="act_start" delay="0" conditionEdge="rising">
-							<ByValueCondition>
-								<SimulationTimeCondition value="0" rule="greaterThan"/>
-							</ByValueCondition>
-						</Condition>
-					</ConditionGroup>
-				</StartTrigger>
-				<StopTrigger/>
-			</Act>
-		</Story>
-		<StopTrigger>
-			<ConditionGroup>
-				<Condition name="stop_simulation" delay="0" conditionEdge="rising">
-					<ByValueCondition>
-						<SimulationTimeCondition value="53" rule="greaterThan"/>
-					</ByValueCondition>
-				</Condition>
-			</ConditionGroup>
-		</StopTrigger>
-	</Storyboard>
+   <FileHeader description="follow route ctrl assigned to ghost" author="esmini team" revMajor="1" revMinor="3" date="2024-12-19T10:00:00"/>
+   <ParameterDeclarations/>
+   <CatalogLocations>
+      <VehicleCatalog>
+         <Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
+      </VehicleCatalog>
+      <ControllerCatalog>
+         <Directory path="../../../resources/xosc/Catalogs/Controllers"/>
+      </ControllerCatalog>
+   </CatalogLocations>
+   <RoadNetwork>
+      <LogicFile filepath="../xodr/multi_intersections.xodr"/>
+   </RoadNetwork>
+   <Entities>
+      <ScenarioObject name="Ego">
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+         <ObjectController>
+            <CatalogReference catalogName="ControllerCatalog" entryName="followGhost">
+               <ParameterAssignments>
+                  <ParameterAssignment parameterRef="HeadStartTime" value="2.5"/>
+                  <ParameterAssignment parameterRef="FollowMode" value="time"/>
+                  <ParameterAssignment parameterRef="LookaheadSpeed" value="2.0"/>
+                  <ParameterAssignment parameterRef="MinLookaheadSpeed" value="1.0"/>
+                  <ParameterAssignment parameterRef="LookaheadSteering" value="0.5"/>
+                  <ParameterAssignment parameterRef="MinLookaheadSteering" value="0.2"/>
+                  <ParameterAssignment parameterRef="SteeringSpeedInertia" value="0.005"/>
+               </ParameterAssignments>
+            </CatalogReference>
+         </ObjectController>
+         <ObjectController>
+            <CatalogReference catalogName="ControllerCatalog" entryName="followRoute">
+               <ParameterAssignments>
+                  <ParameterAssignment parameterRef="TestMode" value="true"/>
+               </ParameterAssignments>
+            </CatalogReference>
+         </ObjectController>
+      </ScenarioObject>
+   </Entities>
+   <Storyboard>
+      <Init>
+         <Actions>
+            <Private entityRef="Ego">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="222" laneId="-1" s="90.0" offset="0.0"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="20"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <ControllerAction>
+                     <ActivateControllerAction lateral="true" longitudinal="true"/>
+                  </ControllerAction>
+               </PrivateAction>
+            </Private>
+         </Actions>
+      </Init>
+      <Story name="story_act_maneuvuergroup_ego_man">
+         <ParameterDeclarations/>
+         <Act name="act_maneuvuergroup_ego_man">
+            <ManeuverGroup name="maneuvuergroup_ego_man" maximumExecutionCount="1">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="Ego"/>
+               </Actors>
+               <Maneuver name="ego_man">
+                  <Event name="ego_event" priority="overwrite" maximumExecutionCount="1">
+                     <Action name="ego_route">
+                        <PrivateAction>
+                           <RoutingAction>
+                              <AssignRouteAction>
+                                 <Route name="ego_route" closed="false">
+                                    <ParameterDeclarations/>
+                                    <Waypoint routeStrategy="fastest">
+                                       <Position>
+                                          <LanePosition roadId="202" laneId="2" s="35.0" offset="0.0"/>
+                                       </Position>
+                                    </Waypoint>
+                                    <Waypoint routeStrategy="fastest">
+                                       <Position>
+                                          <LanePosition roadId="284" laneId="-1" s="10.0" offset="0.0"/>
+                                       </Position>
+                                    </Waypoint>
+                                    <Waypoint routeStrategy="fastest">
+                                       <Position>
+                                          <LanePosition roadId="196" laneId="1" s="70.0" offset="0.0"/>
+                                       </Position>
+                                    </Waypoint>
+                                 </Route>
+                              </AssignRouteAction>
+                           </RoutingAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="target_start" delay="0" conditionEdge="none">
+                              <ByValueCondition>
+                                 <SimulationTimeCondition value="0" rule="greaterThan"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+            </ManeuverGroup>
+            <StartTrigger>
+               <ConditionGroup>
+                  <Condition name="act_start" delay="0" conditionEdge="rising">
+                     <ByValueCondition>
+                        <SimulationTimeCondition value="0" rule="greaterThan"/>
+                     </ByValueCondition>
+                  </Condition>
+               </ConditionGroup>
+            </StartTrigger>
+            <StopTrigger/>
+         </Act>
+      </Story>
+      <StopTrigger>
+         <ConditionGroup>
+            <Condition name="stop_simulation" delay="0" conditionEdge="rising">
+               <ByValueCondition>
+                  <SimulationTimeCondition value="53" rule="greaterThan"/>
+               </ByValueCondition>
+            </Condition>
+         </ConditionGroup>
+      </StopTrigger>
+   </Storyboard>
 </OpenSCENARIO>

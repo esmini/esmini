@@ -42,7 +42,7 @@ Options:
       Run without viewer window
   --log_append
       Log all scenarios in the same txt file
-  --logfile_path [path]  (default if option or value omitted: log.txt)
+  --logfile_path [path]  (default if value omitted: odrviewer_log.txt)
       Logfile path/filename, e.g. "../my_log.txt"
   --log_meta_data
       Log file name, function name and line number

@@ -32,7 +32,7 @@ Options:
       Hide trajectories from start (toggle with key 'n')
   --info_text [mode]  (default if option or value omitted: 1)
       Show on-screen info text. Modes: 0=None 1=current 2=per_object 3=both. Toggle key 'i'
-  --logfile_path [path]  (default if option or value omitted: log.txt)
+  --logfile_path [path]  (default if value omitted: replayer_log.txt)
       Logfile path/filename, e.g. "../my_log.txt"
   --no_ghost
       Remove ghost entities

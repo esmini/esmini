@@ -3,8 +3,8 @@
 ### 2024-12-20 Version 2.42.0
 
 New features:
-- Add simple trajectory filter
-  - add option to set radius
+- Add simple trajectory filter merging close points
+  - add option to set filter radius (0.1 default)
   - disable by setting radius = 0.0
 
 Updated behaviors:
@@ -14,16 +14,17 @@ Updated behaviors:
 - Rename OSMP_FMU EsminiOsiSource to esmini ([PR #643](https://github.com/esmini/esmini/pull/643))
 
 Improvements and fixes:
+- Disable creation of odrviewer and replayer log files as default
+- Set unique default filenames for odrviewer and replayer logs
+- Improve followRoute controller
+  - Fix missing visualization of some waypoints
+  - allow for starting anywhere along the route
+- Hand over controllers to ghost (except first, which will stick to "host")
 - Add example Misc object catalog
 - Fix OSMP_FMU missing static data ([PR #643](https://github.com/esmini/esmini/pull/643))
-- Allow orientation in road trajectories
-  - for floating trajectories (z specified) head and pitch is either specified or
-    calculated to align with trajectory itself
-  - for road trajectories (z unspecified, trajectory projected on road),
-    any specified pitch and roll is now respected as well for all pos
-    types
-  - for example, a bike can roll over using lane positions
-
+- Allow any orientation in trajectory road- and lane coordinates
+  - old behavior aligned pitch and roll to road surface
+  - now entities can fall over (see [video clip](https://youtu.be/4c2av2Y8d1E))
 
 ### 2024-12-11 Version 2.41.1
 
@@ -40,7 +41,6 @@ Improvements and fixes:
   - root cause: when speed is 0, floating point could become -0
 - Call InitPostPlayer also when running without viewer
 - Fix initial wrong lane id when injecting LaneChangeAction
-
 
 ### 2024-12-04 Version 2.41.0
 
