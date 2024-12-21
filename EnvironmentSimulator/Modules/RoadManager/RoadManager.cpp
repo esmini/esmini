@@ -12052,7 +12052,8 @@ void ClothoidSplineShape::CalculatePolyLine()
         // Resolve road coordinates to get elevation at point since the clothoid only provides 2D
         Position pos;
         pos.SetInertiaPos(v.x, v.y, v.h, true);
-        v.z = pos.GetZ();
+        v.z      = pos.GetZ();
+        v.h_true = v.h;
 
         v.param = v.s = i * stepLen;
         v.time        = segments_.front().time_ + (i * stepLen / length_) * segments_.back().time_;
@@ -12387,9 +12388,10 @@ int NurbsShape::EvaluateInternal(double t, TrajVertex& pos)
         }
     }
 
-    pos.h     = GetAngleInInterval2PI(pos.h);
-    pos.pitch = GetAngleInInterval2PI(pos.pitch);
-    pos.r     = GetAngleInInterval2PI(pos.r);
+    pos.h      = GetAngleInInterval2PI(pos.h);
+    pos.h_true = pos.h;
+    pos.pitch  = GetAngleInInterval2PI(pos.pitch);
+    pos.r      = GetAngleInInterval2PI(pos.r);
 
     if (ctrlPoint_.size() > 0)
     {
