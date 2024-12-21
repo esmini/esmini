@@ -1573,7 +1573,7 @@ int ScenarioPlayer::Init()
             return -1;
         }
     }
-    catch (std::logic_error& e)
+    catch (std::exception& e)
     {
         LOG_ERROR(std::string("Exception: ").append(e.what()));
         return -1;

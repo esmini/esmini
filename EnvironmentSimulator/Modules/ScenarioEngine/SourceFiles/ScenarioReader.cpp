@@ -1848,8 +1848,12 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPo
     {
         std::string road_id_str = parameters.ReadAttribute(positionChild, "roadId");
         id_t        road_id     = roadmanager::Position::GetOpenDrive()->LookupRoadIdFromStr(parameters.ReadAttribute(positionChild, "roadId"));
-        double      s           = strtod(parameters.ReadAttribute(positionChild, "s"));
-        double      t           = strtod(parameters.ReadAttribute(positionChild, "t"));
+        if (road_id == ID_UNDEFINED)
+        {
+            LOG_ERROR_AND_QUIT("Failed to resolve road id {}", road_id_str);
+        }
+        double s = strtod(parameters.ReadAttribute(positionChild, "s"));
+        double t = strtod(parameters.ReadAttribute(positionChild, "t"));
 
         CheckAndAdjustRoadSValue(road_id, s);
 
@@ -1872,8 +1876,12 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPo
     {
         std::string road_id_str = parameters.ReadAttribute(positionChild, "roadId");
         id_t        road_id     = roadmanager::Position::GetOpenDrive()->LookupRoadIdFromStr(parameters.ReadAttribute(positionChild, "roadId"));
-        int         lane_id     = strtoi(parameters.ReadAttribute(positionChild, "laneId"));
-        double      s           = strtod(parameters.ReadAttribute(positionChild, "s"));
+        if (road_id == ID_UNDEFINED)
+        {
+            LOG_ERROR_AND_QUIT("Failed to resolve road id {}", road_id_str);
+        }
+        int    lane_id = strtoi(parameters.ReadAttribute(positionChild, "laneId"));
+        double s       = strtod(parameters.ReadAttribute(positionChild, "s"));
 
         CheckAndAdjustRoadSValue(road_id, s);
 

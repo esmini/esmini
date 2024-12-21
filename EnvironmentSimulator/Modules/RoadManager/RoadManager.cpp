@@ -6012,11 +6012,6 @@ id_t OpenDrive::LookupRoadIdFromStr(std::string id_str)
 {
     id_t id = LookupIdFromStr(road_ids_, id_str);
 
-    if (id == -1)
-    {
-        LOG_ERROR("Failed to lookup road id from string {}", id_str);
-    }
-
     return id;
 }
 
