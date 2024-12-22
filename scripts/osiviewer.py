@@ -126,7 +126,9 @@ class View:
         self.highlight = None
         self.selected_object = None
         self.playing = True
-        self.pan_start = None
+        self.pan_data_start = [0,0]
+        self.pan = [0.0, 0.0]
+        self.pan_delta = [0.0, 0.0]
         self.y_start = None
         self.follow_object_index = -1
         self.mod = {'shift': False}
@@ -249,17 +251,6 @@ class View:
             self.select_object(index=0)
             self.zoom_radius(bb_object.x, bb_object.y, radius=25.0)
 
-
-    def pan(self, x, y):
-        if self.pan_start is not None:
-            dx = x - self.pan_start[0]
-            dy = y - self.pan_start[1]
-            xlim = self.ax.get_xlim()
-            ylim = self.ax.get_ylim()
-            self.ax.set_xlim((xlim[0] - dx, xlim[1] - dx))
-            self.ax.set_ylim((ylim[0] - dy, ylim[1] - dy))
-            self.redraw()
-
     def zoom_radius(self, x, y, radius):
         self.ax.set_xlim((x - radius, x + radius))
         self.ax.set_ylim((y - radius, y + radius))
@@ -286,15 +277,22 @@ class View:
         self.redraw()
 
     def on_motion(self, event):
-        if event.xdata is None or event.ydata is None:
+        if event.xdata is None or event.ydata is None or not self.ax.bbox.contains(event.x, event.y):
+            # mouse pointer is outside plot area
             return
+
         if event.button == 2:
-            self.pan(event.xdata, event.ydata)
+            # find delta from previous mouse location, in terms of data coordinates
+            self.pan_data_start = self.ax.transData.inverted().transform(self.pan_display_start)
+            self.pan_delta =    [event.xdata - self.pan_data_start[0], event.ydata - self.pan_data_start[1]]
+            self.update_view()
+            # update pivot mouse location, in display coordinates
+            self.pan_display_start = (event.x, event.y)
         elif event.button == 3:
             if self.selected_object is not None:
                 center = (self.bb_objects.bb_objects[self.follow_object_index].x, self.bb_objects.bb_objects[self.follow_object_index].y)
             else:
-                center = (self.pan_start[0], self.pan_start[1])
+                center = (self.pan_display_start[0], self.pan_display_start[1])
             self.zoom_factor(1.0 - 0.0025*(self.y_start - event.y), center=center)
             self.y_start = event.y
 
@@ -357,13 +355,13 @@ class View:
         if event.xdata is None or event.ydata is None:
             return
         if event.button == 2 or event.button == 3:
-            self.pan_start = (event.xdata, event.ydata)
-            if event.button == 3 :
+            self.pan_display_start = (event.x, event.y)
+            if event.button == 3:
                 self.y_start = event.y
 
     def on_release(self, event):
-        if event.button == 2:
-            self.pan_start = None
+        if event.button == 2 or event.button == 3:
+            pass
         elif event.button == 1 and event.inaxes == self.ax and not self.picked:
             self.unselect()
             self.unselect_object()
@@ -428,14 +426,22 @@ class View:
         self.set_slider_time(frame[0], pause=True)
 
     def update_view(self):
+        xlim = self.ax.get_xlim()
+        ylim = self.ax.get_ylim()
         if self.follow_object_index >= 0:
+            obj = self.bb_objects.bb_objects[self.follow_object_index]
+            self.pan[0] += self.pan_delta[0]
+            self.pan[1] += self.pan_delta[1]
+            self.ax.set_xlim(obj.x - self.pan[0] - (xlim[1] - xlim[0])/2, obj.x - self.pan[0] + (xlim[1] - xlim[0])/2)
+            self.ax.set_ylim(obj.y - self.pan[1] - (ylim[1] - ylim[0])/2, obj.y - self.pan[1] + (ylim[1] - ylim[0])/2)
+        elif (abs(self.pan_delta[0]) > 0.0 or abs(self.pan_delta[1]) > 0.0):
             xlim = self.ax.get_xlim()
             ylim = self.ax.get_ylim()
-            obj = self.bb_objects.bb_objects[self.follow_object_index]
-            self.ax.set_xlim(obj.x - (xlim[1] - xlim[0])/2, obj.x + (xlim[1] - xlim[0])/2)
-            self.ax.set_ylim(obj.y - (ylim[1] - ylim[0])/2, obj.y + (ylim[1] - ylim[0])/2)
+            self.ax.set_xlim((xlim[0] - self.pan_delta[0], xlim[1] - self.pan_delta[0]))
+            self.ax.set_ylim((ylim[0] - self.pan_delta[1], ylim[1] - self.pan_delta[1]))
         if not self.fig.stale:
             self.redraw()
+        self.pan_delta = [0.0, 0.0]
 
     def pause(self):
         if self.playing:
@@ -533,6 +539,7 @@ class View:
 
     def unselect_object(self):
         if self.selected_object:
+            self.pan = [0.0, 0.0]
             self.selected_object.set_linewidth(1.0)
             self.selected_object = None
             self.follow_object_index = -1
@@ -720,6 +727,7 @@ class View:
                         if obj.patch == artist:
                             self.follow_object_index = i
         self.update_follow_text()
+        self.pan = [0.0, 0.0]
         self.redraw()
 
     def toggle_visibility(self, label):
