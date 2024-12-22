@@ -44,6 +44,7 @@ resources/xosc/alks_r157_cut_in_quick_brake.xosc \
 resources/xosc/two_plus_one_road.xosc \
 resources/xosc/truck_with_rotating_axle.xosc \
 resources/xosc/trailer_connect.xosc \
+resources/xosc/bicycle_fall_over.xosc \
 resources/xosc/Catalogs/Maneuvers/*.* \
 resources/xosc/Catalogs/Routes/*.* \
 resources/xosc/Catalogs/Vehicles/*.* \

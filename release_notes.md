@@ -1,5 +1,16 @@
 ## esmini release notes
 
+### 2024-12-22 Version 2.42.1
+
+Improvements and fixes:
+- Catch all exceptions and quit more gracefully on error
+- Fix issue causing some trajectory actions to end immediately
+  - applies to nurbs and clothoidSpline shapes
+  - bug introduced in v2.40.4
+- Improve osiviewer panning
+  - also works when moving object is selected
+- Add falling bicycle scenario to demo pack
+
 ### 2024-12-20 Version 2.42.0
 
 New features:
