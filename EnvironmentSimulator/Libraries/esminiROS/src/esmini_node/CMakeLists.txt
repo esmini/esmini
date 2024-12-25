@@ -25,6 +25,50 @@ set_project_library_paths()
 include(${SUPPORT_PATH}/cmake/common/definitions.cmake)
 set_definitions()
 
+# ############################### Downloading cloud packages #########################################################
+
+include(${SUPPORT_PATH}/cmake/cloud/set_cloud_links.cmake)
+set_cloud_links()
+
+include(${SUPPORT_PATH}/cmake/cloud/download.cmake)
+
+message(STATUS "Downloading dependencies...")
+
+download(
+    osg
+    ${EXTERNALS_OSG_PATH}
+    ${EXTERNALS_OSG_OS_SPECIFIC_PATH}
+    "*"
+    "${OSG_PACKAGE_URL}")
+
+download(
+    osi
+    ${EXTERNALS_OSI_PATH}
+    ${EXTERNALS_OSI_OS_SPECIFIC_PATH}
+    "*"
+    "${OSI_PACKAGE_URL}")
+
+download(
+    sumo
+    ${EXTERNALS_SUMO_PATH}
+    ${EXTERNALS_SUMO_OS_SPECIFIC_PATH}
+    "*"
+    "${SUMO_PACKAGE_URL}")
+
+download(
+    implot
+    ${EXTERNALS_IMPLOT_PATH}
+    ${EXTERNALS_IMPLOT_OS_SPECIFIC_PATH}
+    "*"
+    "${IMPLOT_PACKAGE_URL}")
+
+download(
+    models
+    ${RESOURCES_PATH}
+    ${MODELS_PATH}
+    "models"
+    "${MODELS_PACKAGE_URL}")
+
 find_package(
     catkin
     REQUIRED
@@ -80,9 +124,16 @@ if(USE_OSG)
         VIEWER_SOURCES
         "${VIEWER_BASE_PATH}/*.cpp")
 
-    if(NOT USE_OSI)
-        list(REMOVE_ITEM VIEWER_BASE_PATH "${VIEWER_BASE_PATH}/OSISensorView.hpp")
-        list(REMOVE_ITEM VIEWER_SOURCES "${VIEWER_BASE_PATH}/OSISensorView.cpp")
+    if(NOT
+       USE_OSI)
+        list(
+            REMOVE_ITEM
+            VIEWER_BASE_PATH
+            "${VIEWER_BASE_PATH}/OSISensorView.hpp")
+        list(
+            REMOVE_ITEM
+            VIEWER_SOURCES
+            "${VIEWER_BASE_PATH}/OSISensorView.cpp")
     endif()
 
     list(
@@ -148,8 +199,7 @@ target_link_libraries(
 if(USE_IMPLOT)
     target_link_libraries(
         esmini_ros_node
-        ${IMPLOT_LIBRARIES}
-    )
+        ${IMPLOT_LIBRARIES})
 endif()
 
 if(USE_OSG)
