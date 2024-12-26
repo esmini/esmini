@@ -753,6 +753,42 @@ int ScenarioPlayer::InitViewer()
         viewer_->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_OBJECT_SENSORS);
     }
 
+    if ((arg_str = opt.GetOptionArg("camera_mode")) != "")
+    {
+        if (arg_str == "orbit")
+        {
+            viewer_->SetCameraMode(osgGA::RubberbandManipulator::RB_MODE_ORBIT);
+        }
+        else if (arg_str == "fixed")
+        {
+            viewer_->SetCameraMode(osgGA::RubberbandManipulator::RB_MODE_FIXED);
+        }
+        else if (arg_str == "flex")
+        {
+            viewer_->SetCameraMode(osgGA::RubberbandManipulator::RB_MODE_RUBBER_BAND);
+        }
+        else if (arg_str == "flex-orbit")
+        {
+            viewer_->SetCameraMode(osgGA::RubberbandManipulator::RB_MODE_RUBBER_BAND_ORBIT);
+        }
+        else if (arg_str == "top")
+        {
+            viewer_->SetCameraMode(osgGA::RubberbandManipulator::RB_MODE_TOP);
+        }
+        else if (arg_str == "driver")
+        {
+            viewer_->SetCameraMode(osgGA::RubberbandManipulator::RB_MODE_DRIVER);
+        }
+        else if (arg_str == "custom")
+        {
+            viewer_->SetCameraMode(osgGA::RubberbandManipulator::RB_MODE_CUSTOM);
+        }
+        else
+        {
+            LOG_INFO("Unsupported camera mode: {} - using default (orbit)", arg_str);
+        }
+    }
+
     if (opt.GetOptionSet("custom_camera") == true)
     {
         int counter = 0;
@@ -863,42 +899,6 @@ int ScenarioPlayer::InitViewer()
                          splitted[3]);
             }
             counter++;
-        }
-    }
-
-    if ((arg_str = opt.GetOptionArg("camera_mode")) != "")
-    {
-        if (arg_str == "orbit")
-        {
-            viewer_->SetCameraMode(osgGA::RubberbandManipulator::RB_MODE_ORBIT);
-        }
-        else if (arg_str == "fixed")
-        {
-            viewer_->SetCameraMode(osgGA::RubberbandManipulator::RB_MODE_FIXED);
-        }
-        else if (arg_str == "flex")
-        {
-            viewer_->SetCameraMode(osgGA::RubberbandManipulator::RB_MODE_RUBBER_BAND);
-        }
-        else if (arg_str == "flex-orbit")
-        {
-            viewer_->SetCameraMode(osgGA::RubberbandManipulator::RB_MODE_RUBBER_BAND_ORBIT);
-        }
-        else if (arg_str == "top")
-        {
-            viewer_->SetCameraMode(osgGA::RubberbandManipulator::RB_MODE_TOP);
-        }
-        else if (arg_str == "driver")
-        {
-            viewer_->SetCameraMode(osgGA::RubberbandManipulator::RB_MODE_DRIVER);
-        }
-        else if (arg_str == "custom")
-        {
-            viewer_->SetCameraMode(osgGA::RubberbandManipulator::RB_MODE_CUSTOM);
-        }
-        else
-        {
-            LOG_INFO("Unsupported camera mode: {} - using default (orbit)", arg_str);
         }
     }
 
