@@ -17,7 +17,6 @@ ESMiniNode::ESMiniNode(int argc, char *argv[]) : nh_("~")
     SE_ScenarioObjectState ego_state;
     SE_GetObjectState(ego_id_, &ego_state);
     ego_handle_ = SE_SimpleVehicleCreate(ego_state.x, ego_state.y, ego_state.h, ego_state.length, ego_state.speed);
-    SE_SimpleVehicleSetThrottleDisabled(ego_handle_, true);
 
     accel_sub_    = nh_.subscribe<std_msgs::Float64>("/esmini/accel", 1, &ESMiniNode::accelCallback, this, ros::TransportHints().tcpNoDelay());
     steering_sub_ = nh_.subscribe<std_msgs::Float64>("/esmini/steering", 1, &ESMiniNode::steeringCallback, this, ros::TransportHints().tcpNoDelay());
@@ -69,10 +68,10 @@ void ESMiniNode::timerCallback(const ros::TimerEvent &e)
         tf2::Quaternion q;
         q.setRPY(state.r, state.p, state.h);
         obj_state_msg.pose.orientation = tf2::toMsg(q);
-        obj_state_msg.speed  = state.speed;
-        obj_state_msg.length = state.length;
-        obj_state_msg.width  = state.width;
-        obj_state_msg.height = state.height;
+        obj_state_msg.speed            = state.speed;
+        obj_state_msg.length           = state.length;
+        obj_state_msg.width            = state.width;
+        obj_state_msg.height           = state.height;
 
         obj_state_msg.wheel_angle = state.wheel_angle;
 
@@ -84,10 +83,22 @@ void ESMiniNode::timerCallback(const ros::TimerEvent &e)
 
 void ESMiniNode::accelCallback(const std_msgs::Float64::ConstPtr &msg)
 {
-    accel_ = msg->data;
+    if (msg->data > 0)
+    {
+        accel_ = msg->data / MAX_ACC_DEFAULT;
+    }
+    else if (msg->data < 0)
+    {
+        accel_ = msg->data / MAX_DEC_DEFAULT;
+    }
+    else
+    {
+        accel_ = 0;
+    }
 }
 
 void ESMiniNode::steeringCallback(const std_msgs::Float64::ConstPtr &msg)
 {
-    steering_ = msg->data;
+
+    steering_ = msg->data / STEERING_MAX_ANGLE;
 }
