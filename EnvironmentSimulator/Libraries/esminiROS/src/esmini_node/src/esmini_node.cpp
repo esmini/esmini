@@ -99,6 +99,5 @@ void ESMiniNode::accelCallback(const std_msgs::Float64::ConstPtr &msg)
 
 void ESMiniNode::steeringCallback(const std_msgs::Float64::ConstPtr &msg)
 {
-
     steering_ = msg->data / STEERING_MAX_ANGLE;
 }
