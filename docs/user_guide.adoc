@@ -333,6 +333,19 @@ To change framerate of the output video, use the fps filter. E.g. from input 30 
 
 ``ffmpeg -f image2 -framerate 30 -i screen_shot_%5d.tga -c:v libx264 -vf format=yuv420p,fps=15 -crf 20 out.mp4``
 
+To concatenate multiple files, first create a text file listing the input files. Example:
+
+`video_list.txt`:
+```
+file 'no_features_10.mkv'
+file 'features_10.mkv'
+```
+
+Then run the ffmpeg command, like:
+``ffmpeg -f concat -i video_list.txt -c copy merged.mkv``
+
+*Note:* The input files must be same timebase and resolution to work well.
+
 
 Get ffmpeg: http://ffmpeg.org/download.html
 
@@ -1772,6 +1785,35 @@ In the image below two cars, red and blue, are being positioned by means of `Rel
 
 .Relative positioning with and without own route
 image::relative_position_routing.jpg[]
+
+=== Reference line and center lane
+
+In https://www.asam.net/index.php?eID=dumpFile&t=f&f=4422&token=e590561f3c39aa2260e5442e29e93f6693d1cccd#top-05e95dfd-ce05-40c8-af93-d065229e6968[`OpenDRIVE definition of laneOffset`]: A lane offset may be used to shift the center lane away from the road reference line.
+
+image::lane_offset_standard_way.png[]
+
+https://en.wikipedia.org/wiki/2%2B1_road[2+1 roads] can be defined utilizing lane offset:
+
+image::lane_offset_two_plus_one.jpg[]
+
+`lane id` relates to reference lane. `lane offset` relates to the current lane. `t` relates to reference line.
+[%autowidth, options=header]
+|===
+||white car|red car
+|*lane id*|-2|-1
+|*lane offset*|0.0|0.0
+|*t*|-1.75|1.75
+|===
+
+A 2+1 example example scenario is found here: https://github.com/esmini/esmini/blob/master/resources/xosc/two_plus_one_road.xosc[resources/xosc/two_plus_one_road.xosc]
+
+*Note*: In esmini versions prior to 2.43 the reference line was incorrectly affected by lane offset as well. The `t`-values in the table then became -5.25 for the white car and -1.75 for the red car.
+
+==== Visualization
+esmini can indicate various road features; toggle key 'o' or launch option `--road_features`.
+The center lane is indicated by thick red line and reference line is indicated by semi-thick yellow line.
+
+image::two_plus_one_road_features.jpg[]
 
 == Controllers
 
@@ -3705,7 +3747,10 @@ With some limitations (see details https://github.com/esmini/esmini/blob/master/
 ``./bin/esmini --window 60 60 800 400 --osc c:/stuff/openscenario-v1.1.0/Examples/DoubleLaneChanger.xosc``
 
 == About this document
-The https://github.com/esmini/esmini/blob/master/docs/user_guide.adoc[source] of this document is written in the https://asciidoc-py.github.io/index.html[asciidoc] format. The html is generated with https://asciidoctor.org/[asciidoctor]. Code snippets, images and other resources are included in the process. Also the version numbers are automatically inserted to avoid "human errors".
+The https://github.com/esmini/esmini/blob/master/docs/user_guide.adoc[source] of this document is written in the https://asciidoc-py.github.io/index.html[asciidoc] format.
+
+=== How to generate HTML from AsciiDoc
+The html is generated with https://asciidoctor.org/[asciidoctor]. Code snippets, images and other resources are included in the process. Also the version numbers are automatically inserted to avoid "human errors".
 
 The final HTML document is published in this repo: https://github.com/esmini/esmini.github.io
 
@@ -3730,11 +3775,20 @@ Troubleshooting: If you get an error like +
 try update RubyGems as follows: +
 ``gem update --system``
 
-Generate html: ``asciidoctor user_guide.adoc``
+Generate html: ``asciidoctor user_guide.adoc -o index.html``
+
+=== How to view previous versions
+Full commit history is found https://github.com/esmini/esmini.github.io/commits/main[here]
+
+To view a previous version, utilizing https://htmlpreview.github.io/[htmlpreview.github.io], either refer to a https://github.com/esmini/esmini.github.io/tags[tag], like this:
+
+`https://htmlpreview.github.io/?https://raw.githubusercontent.com/esmini/esmini.github.io/refs/tags/v2.42.0/index.html`
+
+or refer to any commit, like this:
+
+`https://htmlpreview.github.io/?https://raw.githubusercontent.com/esmini/esmini.github.io/47a9267a5935d0bd2648950e4d9d3e23f1e8ff3a/index.html`
 
 == Version
 [%hardbreaks]
 include::../version.txt[lines=2..2]
 include::../version.txt[lines=1..1]
-
-Full commit history is found https://github.com/esmini/esmini.github.io/commits/main[here]
