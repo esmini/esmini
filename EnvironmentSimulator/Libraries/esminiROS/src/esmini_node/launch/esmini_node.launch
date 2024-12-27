@@ -1,0 +1,7 @@
+<launch>
+  <arg name="osc" default="$(find esmini)/../../../../../resources/xosc/cut-in_external.xosc"/>
+
+  <node name="esmini_node" pkg="esmini" type="esmini_ros_node" output="screen">
+    <param name="osc" value="$(arg osc)"/>
+  </node>
+</launch>
