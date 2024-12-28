@@ -24,6 +24,12 @@ catkin_init_workspace
 catkin build -DUSE_OSG=True
 ```
 
+3. Install python packages (for keyboard controller)
+```
+cd ${esmini workspace}/EnvironmentSimulator/Libraries/esminiROS
+pip install -r requirements.txt
+```
+
 ## Usage
 1. Source package:
 ```
