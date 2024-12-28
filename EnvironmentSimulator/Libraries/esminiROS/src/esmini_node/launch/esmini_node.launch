@@ -1,7 +1,13 @@
 <launch>
-  <arg name="osc" default="$(find esmini)/../../../../../resources/xosc/cut-in_external.xosc"/>
+  <arg name="osc" default="$(find esmini)/../../../../../resources/xosc/cut-in.xosc"/>
+
+  <param name="use_sim_time" value="True"/>
 
   <node name="esmini_node" pkg="esmini" type="esmini_ros_node" output="screen">
     <param name="osc" value="$(arg osc)"/>
+  </node>
+
+  <node name="clock_publisher" pkg="esmini" type="clock_publisher">
+    <param name="hz" value="100"/>
   </node>
 </launch>
