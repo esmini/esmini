@@ -206,6 +206,13 @@ target_link_libraries(
     esmini_ros_node
     ${catkin_LIBRARIES})
 
+add_executable(
+    clock_publisher
+    src/clock_publisher.cpp)
+target_link_libraries(
+    clock_publisher
+    ${catkin_LIBRARIES})
+
 if(USE_IMPLOT)
     target_link_libraries(
         esmini_ros_node
