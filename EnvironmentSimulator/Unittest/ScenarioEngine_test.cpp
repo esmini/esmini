@@ -1170,6 +1170,19 @@ TEST(ControllerTest, UDPDriverModelTestAsynchronous)
     ASSERT_NE(se, nullptr);
     ASSERT_EQ(se->entities_.object_.size(), 2);
 
+    // unique ports to prevent conflicts between CI images and runs
+    unsigned short base_port = 61900;
+#ifdef _WIN32
+    base_port = 61902;
+#elif defined __APPLE__
+    base_port = 61904;
+#elif defined __linux__
+    base_port = 61906;
+#endif
+#ifdef _DEBUG
+    base_port += static_cast<unsigned short>(1);
+#endif
+
     // Replace controllers
     for (size_t i = 0; i < 2; i++)
     {
@@ -1184,7 +1197,7 @@ TEST(ControllerTest, UDPDriverModelTestAsynchronous)
         property.value_ = std::to_string(0);
         args.properties->property_.push_back(property);
         property.name_  = "basePort";
-        property.value_ = std::to_string(61900);
+        property.value_ = std::to_string(base_port);
         args.properties->property_.push_back(property);
         property.name_  = "inputMode";
         property.value_ = "vehicleStateXYH";
@@ -1206,7 +1219,7 @@ TEST(ControllerTest, UDPDriverModelTestAsynchronous)
     se->step(dt);
 
     // stimulate driver input
-    UDPClient* udpClient = new UDPClient(61900, "127.0.0.1");
+    UDPClient* udpClient = new UDPClient(base_port, "127.0.0.1");
 
     ControllerUDPDriver::DMMessage msg;
 
@@ -1266,6 +1279,19 @@ TEST(ControllerTest, UDPDriverModelTestSynchronous)
     ASSERT_NE(se, nullptr);
     ASSERT_EQ(se->entities_.object_.size(), 2);
 
+    // unique ports to prevent conflicts between CI images and runs
+    unsigned short base_port = 61910;
+#ifdef _WIN32
+    base_port = 61914;
+#elif defined __APPLE__
+    base_port = 61918;
+#elif defined __linux__
+    base_port = 61922;
+#endif
+#ifdef _DEBUG
+    base_port += static_cast<unsigned short>(2);
+#endif
+
     // Replace controllers
     for (size_t i = 0; i < 2; i++)
     {
@@ -1283,7 +1309,7 @@ TEST(ControllerTest, UDPDriverModelTestSynchronous)
         property.value_ = std::to_string(0);
         args.properties->property_.push_back(property);
         property.name_  = "basePort";
-        property.value_ = std::to_string(61910);
+        property.value_ = std::to_string(base_port);
         args.properties->property_.push_back(property);
         property.name_  = "inputMode";
         property.value_ = "vehicleStateXYZHPR";
@@ -1308,7 +1334,7 @@ TEST(ControllerTest, UDPDriverModelTestSynchronous)
     se->step(dt);
 
     // stimulate driver input
-    UDPClient* udpClient = new UDPClient(61910, "127.0.0.1");
+    UDPClient* udpClient = new UDPClient(base_port, "127.0.0.1");
 
     ControllerUDPDriver::DMMessage msg;
 
@@ -1349,7 +1375,7 @@ TEST(ControllerTest, UDPDriverModelTestSynchronous)
     EXPECT_DOUBLE_EQ(se->entities_.object_[1]->pos_.GetY(), 6.5);
 
     // Create a sender for second vehicle as well
-    UDPClient* udpClient2 = new UDPClient(61911, "127.0.0.1");
+    UDPClient* udpClient2 = new UDPClient(static_cast<unsigned short>(base_port + 1), "127.0.0.1");
 
     msg.header.frameNumber = 0;
     msg.header.version     = 1;
