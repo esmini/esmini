@@ -1337,6 +1337,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     bool decoration               = true;
     int  screenNum                = -1;
     stand_in_model_               = false;
+    time_                         = 0.0;
 
     int aa_mode = DEFAULT_AA_MULTISAMPLES;
     if (opt && (arg_str = opt->GetOptionArg("aa_mode")) != "")
@@ -1682,7 +1683,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     terrainManipulator = new osgGA::TerrainManipulator();
     terrainManipulator->setWheelZoomFactor(-1 * terrainManipulator->getWheelZoomFactor());  // inverse scroll wheel
 
-    rubberbandManipulator_ = new osgGA::RubberbandManipulator(static_cast<unsigned int>(camMode_), origin_);
+    rubberbandManipulator_ = new osgGA::RubberbandManipulator(static_cast<unsigned int>(camMode_), origin_, time_);
     SetCameraTrackNode(envGroup_, true);
 
     {
@@ -3609,8 +3610,10 @@ void Viewer::SetOffScreenActive(bool state)
     }
 }
 
-void Viewer::Frame()
+void Viewer::Frame(double time)
 {
+    time_ = time;
+
     if (IsOffScreenRequested())
     {
         renderSemaphore.Set();  // Raise semaphore to flag rendering ongoing

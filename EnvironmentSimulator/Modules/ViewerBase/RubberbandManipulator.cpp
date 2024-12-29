@@ -40,7 +40,8 @@ const float orbitCameraRotation = -14.0f;
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
-RubberbandManipulator::RubberbandManipulator(unsigned int mode, osg::Vec3d origin)
+RubberbandManipulator::RubberbandManipulator(unsigned int mode, osg::Vec3d origin, double& time_ref) : time_ref_(time_ref)
+
 {
     _cameraAngle    = orbitCameraAngle;
     _cameraDistance = orbitCameraDistance;
@@ -252,24 +253,26 @@ bool RubberbandManipulator::handle(const GUIEventAdapter& ea, GUIActionAdapter& 
         }
         case (GUIEventAdapter::FRAME):
         {
-            static double old_frametime = 0;
-#if 1
-            double current_frame_time = ea.getTime();
-            double dt                 = current_frame_time - old_frametime;
-            old_frametime             = current_frame_time;
+            static double old_simulation_time = 0.0;
+            static double old_system_time     = 0.0;
 
-#else
-            double current_frame_time = elapsedTime();
-#endif
-
-            if (dt > 1)
+            double dt = minimum(time_ref_ - old_simulation_time, 0.1);
+            if (dt < 1e-6)
             {
-                dt = 0.1;
+                // If simulation time is not updated, use system time
+                dt = minimum(ea.getTime() - old_system_time, 0.1);
             }
 
+            old_simulation_time = time_ref_;
+            old_system_time     = ea.getTime();
+
             addEvent(ea);
+
             if (calcMovement(dt, false))
+            {
                 us.requestRedraw();
+            }
+
             return false;
         }
 

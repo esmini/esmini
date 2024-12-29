@@ -583,7 +583,7 @@ namespace viewer
             return osg_screenshot_event_handler_;
         }
 
-        void Frame();
+        void Frame(double time);
 
     private:
         bool                                         CreateRoadLines(Viewer* viewer, roadmanager::OpenDrive* od);
@@ -612,6 +612,7 @@ namespace viewer
         osg::ref_ptr<FetchImage>              fetch_image_;
         osgViewer::ViewerBase::ThreadingModel initialThreadingModel_;
         bool                                  stand_in_model_;
+        double                                time_;
 
         struct
         {

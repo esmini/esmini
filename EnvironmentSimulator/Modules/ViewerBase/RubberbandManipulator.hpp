@@ -87,7 +87,7 @@ namespace osgGA
             bool       ortho_;
         };
 
-        RubberbandManipulator(unsigned int mode = RB_MODE_RUBBER_BAND_ORBIT, osg::Vec3d origin = {0.0, 0.0, 0.0});
+        RubberbandManipulator(unsigned int mode, osg::Vec3d origin, double& time_ref);
 
         virtual const char* className() const
         {
@@ -184,6 +184,7 @@ namespace osgGA
 
         unsigned int _mode;
         bool         fix_camera_;
+        double&      time_ref_;
 
         std::vector<CustomCamera> customCamera_;
     };

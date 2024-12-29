@@ -338,9 +338,6 @@ void ScenarioPlayer::ViewerFrame(bool init)
         return;
     }
 
-    static double last_dot_time = scenarioEngine->getSimulationTime();
-    (void)last_dot_time;
-
     mutex.Lock();
 
     // remove deleted cars
@@ -521,7 +518,7 @@ void ScenarioPlayer::ViewerFrame(bool init)
 
     if (!init)
     {
-        viewer_->Frame();
+        viewer_->Frame(scenarioEngine->getSimulationTime());
     }
 }
 
