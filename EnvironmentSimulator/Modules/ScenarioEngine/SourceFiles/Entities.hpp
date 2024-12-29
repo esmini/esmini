@@ -759,7 +759,6 @@ namespace scenarioengine
         std::shared_ptr<TrailerCoupler> trailer_coupler_;  // mounting point to any tow vehicle
         std::shared_ptr<TrailerHitch>   trailer_hitch_;    // mounting point to any tow vehicle
         std::vector<WheelData>          wheel_data;
-        double                          ref_point_offset;
     };
 
     class Pedestrian : public Object

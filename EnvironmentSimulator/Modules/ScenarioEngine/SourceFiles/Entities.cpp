@@ -1321,6 +1321,7 @@ int Object::TimeHeadway(Object*                           target,
 
     return 0;
 }
+
 Object::OverlapType Object::OverlappingFront(Object* target, double tolerance)
 {
     // Strategy:
