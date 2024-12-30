@@ -16,6 +16,7 @@ else()
 endif()
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/locations.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/version.cmake)
 set_project_internal_paths()
 set_project_external_paths()
 set_project_os_specific_paths()
@@ -192,6 +193,7 @@ include_directories(
     ${ROAD_MANAGER_PATH}
     ${SCENARIO_ENGINE_PATH}/OSCTypeDefs
     ${SCENARIO_ENGINE_PATH}/SourceFiles
+    ${EXTERNALS_SPDLOG_INCLUDES}
     ${EXTERNALS_PUGIXML_PATH}
     ${EXTERNALS_EXPR_PATH}
     ${ESMINI_LIB_PATH}
@@ -201,6 +203,7 @@ add_executable(
     esmini_ros_node
     src/main.cpp
     src/esmini_node.cpp
+    src/version.cpp
     ${ESMINI_SOURCES})
 target_link_libraries(
     esmini_ros_node
