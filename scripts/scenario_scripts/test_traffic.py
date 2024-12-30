@@ -23,7 +23,7 @@ class Scenario(ScenarioGenerator):
     def __init__(self):
         ScenarioGenerator.__init__(self)
         self.road_name = ""
-    
+
     def road(self, **kwargs):
         road = xodr.create_road([xodr.Line(500)], id=0, left_lanes=2, right_lanes=2, lane_width=3.5)
 
@@ -66,12 +66,12 @@ class Scenario(ScenarioGenerator):
         entities.add_scenario_object(
             egoname, xosc.CatalogReference("VehicleCatalog", "car_white")
         )
-        
+
         init = xosc.Init()
         step_time = xosc.TransitionDynamics(
             xosc.DynamicsShapes.step, xosc.DynamicsDimension.rate, 1
         )
-        
+
         ego_s = 200
         ego_t = 0
         ego_lid = -2
@@ -86,7 +86,7 @@ class Scenario(ScenarioGenerator):
         init.add_init_action(egoname, egostart)
         init.add_init_action(egoname, egospeed)
         init.add_init_action(egoname, xosc.ActivateControllerAction(lateral=False, longitudinal=True))
-        
+
         vehicles = get_vehicle_positions(roadfile=os.path.join("resources", "xodr", self.road_name),
                                          ego_pos=ego_start,
                                          density=1.0,
@@ -139,7 +139,7 @@ class Scenario(ScenarioGenerator):
             man_group.add_maneuver(deactivate_controller_maneuver)
             man_group.add_maneuver(delete_entity_maneuver)
             sb.add_maneuver_group(man_group)
-                    
+
         sb.init = init
 
         ## return the scenario
@@ -157,4 +157,4 @@ if __name__ == "__main__":
     # Run script from esmini root
     s = Scenario()
     s.generate("resources/")
-    esmini(s, ".")
+    esmini(s, ".", timestep=None)  # timestep=None for real-time
