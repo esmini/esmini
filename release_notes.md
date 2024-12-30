@@ -1,5 +1,25 @@
 ## esmini release notes
 
+### 2024-12-30 Version 2.43.0
+
+Improvements and fixes:
+- Implement correct OpenDRIVE laneOffset handling ([PR #626](https://github.com/esmini/esmini/pull/626))
+  - see [User guide - Reference line and center lane](https://esmini.github.io/#_reference_line_and_center_lane)
+  - [video clip](https://youtu.be/zGrH35kjyqI) showing intersection utilizing laneOffset
+  - for reference, see previous behavior [here](https://htmlpreview.github.io/?https://raw.githubusercontent.com/esmini/esmini.github.io/refs/tags/v2.42.0/index.html#_reference_line_and_center_lane_while_using_laneoffset)
+- Restore auto-activate any specified custom camera mode
+  - bug introduced in 2.41.0
+- Smoothen `flex-orbit` camera mode
+  - track simulation time instead of system time
+- Fix missing transparency ([issue #651](https://github.com/esmini/esmini/issues/651))
+- User guide updates:
+  - add info on video concatenation [here](https://esmini.github.io/#_create_video_clip_of_a_scenario)
+  - add info on viewing previous versions [here](https://esmini.github.io/#_how_to_view_previous_versions)
+- Update [README](https://github.com/esmini/esmini/blob/dev/README.md) clarifying OpenSCENARIO *XML* support
+
+Build improvements:
+- Ensure unique UDP ports for CI tests, preventing hick-ups
+
 ### 2024-12-22 Version 2.42.1
 
 Improvements and fixes:
