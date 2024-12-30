@@ -12,10 +12,32 @@ It allows users to leverage the power of esmini's OpenSCENARIO player while util
 ## Installation
 Tested on Linux (Ubuntu 20.04) with ROS 1 noetic
 
-1. Install ROS
+1. [Install ROS 1](https://wiki.ros.org/noetic/Installation/Ubuntu)
+
+You can install it by simply running the commands below.
+```
+sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
+sudo apt-get install curl
+curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | sudo apt-key add -
+sudo apt-get update
+
+# ros-base is enough
+sudo apt-get install ros-noetic-ros-base
+
+echo "source /opt/ros/noetic/setup.bash" >> ~/.bashrc
+source ~/.bashrc
+
+sudo apt-get install python3-rosdep python3-rosinstall python3-rosinstall-generator python3-wstool build-essential
+sudo rosdep init
+rosdep update
+
+sudo apt-get install ros-noetic-tf2-geometry-msgs
+```
+
 
 2. Build esminiROS workspace
 ```
+sudo apt install python3-catkin-tools
 sudo apt-get install catkin-tools
 cd ${esmini workspace}/EnvironmentSimulator/Libraries/esminiROS
 catkin_init_workspace
@@ -26,6 +48,7 @@ catkin build -DUSE_OSG=True
 
 3. Install python packages (for keyboard controller)
 ```
+sudo apt install python3-pip
 cd ${esmini workspace}/EnvironmentSimulator/Libraries/esminiROS
 pip install -r requirements.txt
 ```
@@ -54,7 +77,7 @@ rostopic echo /esmini/object_states
 Run the controller script in another terminal:
 ```
 cd ${esmini workspace}/EnvironmentSimulator/Libraries/esminiROS
-python scripts/keyboard_controller.py
+python3 scripts/keyboard_controller.py
 ```
 
 Keyboard input provides acceleration and steering control via ROS topics.
