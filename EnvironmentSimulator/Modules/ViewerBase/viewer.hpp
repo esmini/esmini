@@ -24,6 +24,7 @@
 #include <osg/BlendColor>
 #include <osg/ShapeDrawable>
 #include <osg/Point>
+#include <osg/BlendFunc>
 #include <osgGA/StateSetManipulator>
 #include <string>
 
@@ -299,6 +300,7 @@ namespace viewer
         std::unique_ptr<RouteWayPoints> routewaypoints_;
         Viewer*                         viewer_;
         OnScreenText                    on_screen_info_;
+        osg::ref_ptr<osg::BlendFunc>    blend_func_;
     };
 
     class MovingModel : public EntityModel

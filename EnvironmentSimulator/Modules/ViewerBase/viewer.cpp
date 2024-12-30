@@ -15,7 +15,6 @@
 #include <osgDB/ReadFile>
 #include <osg/ComputeBoundsVisitor>
 #include <osg/LineWidth>
-#include <osg/BlendFunc>
 #include <osg/BlendColor>
 #include <osg/Geode>
 #include <osg/Group>
@@ -1127,12 +1126,21 @@ void MovingModel::ShowRouteSensor(bool mode)
 
 void EntityModel::SetTransparency(double factor)
 {
-    if (factor < 0 || factor > 1)
+    if (factor < 0.0 || factor > 1.0)
     {
         LOG_INFO("Clamping transparency factor {:.2f} to [0:1]", factor);
-        factor = CLAMP(factor, 0, 1);
+        factor = CLAMP(factor, 0.0, 1.0);
     }
-    blend_color_->setConstantColor(osg::Vec4(1.0f, 1.0f, 1.0f, 1.0f - static_cast<float>(factor)));
+
+    if (factor < SMALL_NUMBER)
+    {
+        blend_func_->setFunction(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    }
+    else
+    {
+        blend_func_->setFunction(GL_CONSTANT_ALPHA, GL_ONE_MINUS_CONSTANT_ALPHA);
+        blend_color_->setConstantColor(osg::Vec4(1.0f, 1.0f, 1.0f, 1.0f - static_cast<float>(factor)));
+    }
 }
 
 Viewer::FetchImage::FetchImage(Viewer* viewer)
@@ -2189,10 +2197,12 @@ EntityModel* Viewer::CreateEntityModel(std::string             modelFilepath,
 
     emodel->blend_color_ = new osg::BlendColor(osg::Vec4(1, 1, 1, 1));
     emodel->blend_color_->setDataVariance(osg::Object::DYNAMIC);
+    emodel->blend_func_ = new osg::BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     emodel->state_set_ = emodel->lod_->getOrCreateStateSet();  // Creating material
-    osg::BlendFunc* bf = new osg::BlendFunc(osg::BlendFunc::CONSTANT_ALPHA, osg::BlendFunc::ONE_MINUS_CONSTANT_ALPHA);
     emodel->state_set_->setAttributeAndModes(emodel->blend_color_);
-    emodel->state_set_->setAttributeAndModes(bf);
+    emodel->state_set_->setAttributeAndModes(emodel->blend_func_);
+
     emodel->state_set_->setMode(GL_DEPTH_TEST, osg::StateAttribute::ON);
     emodel->state_set_->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
 
