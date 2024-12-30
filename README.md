@@ -1,6 +1,6 @@
 # Environment Simulator Minimalistic (esmini)
 
-*esmini* is a basic OpenSCENARIO player
+*esmini* is a basic OpenSCENARIO XML player
 
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL%202.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
 [![Build status](https://github.com/esmini/esmini/actions/workflows/ci.yml/badge.svg)](https://github.com/esmini/esmini/actions)
@@ -10,12 +10,12 @@
 It contains the following main libraries:
 
 - RoadManager (esminiRMLib). A library providing an interface to road networks described in the OpenDRIVE format.
-- ScenarioEngine (esminiLib). The main library providing a viewer and API interface to traffic scenarios described in the OpenSCENARIO format. This library includes RoadManager.
+- ScenarioEngine (esminiLib). The main library providing a viewer and API interface to traffic scenarios described in the OpenSCENARIO XML format. This library includes RoadManager.
 
 and a few applications that can be used as is or provide ideas for customized solutions:
 
 - esmini. A scenario player application linking esmini modules statically.
-- esmini-dyn. A minimalistic example using the esminiLib to play OpenSCENARIO files.
+- esmini-dyn. A minimalistic example using the esminiLib to play OpenSCENARIO XML files.
 - odrplot. Produces a data file from OpenDRIVE for plotting the road network in Python.
 - odrviewer. Visualize OpenDRIVE road network with populated dummy traffic.
 - replayer. Re-play previously executed scenarios.
@@ -25,11 +25,11 @@ Repository: <https://github.com/esmini/esmini>
 
 Pre-built demo packages are available [here](https://github.com/esmini/esmini/releases/latest). Unzip, navigate to "esmini\run\esmini" and run any of the example scripts. See more info below under [Binaries and demos](#binaries-and-demos).
 
-esmini supports OpenSCENARIO v1.1 (from esmini v2.7) and v1.0 (from esmini v1.5). In order to run older versions (i.e. v0.9.1) ASAM provides a transformation scheme (migration0_9_1to1_0.xslt, part of the OpenSCENARIO release bundle) that can be used with tools for automatic migration of XML files.
+esmini supports OpenSCENARIO XML v1.0 - v1.3. However, please note that feature [coverage](https://github.com/esmini/esmini/blob/master/osc_coverage.txt) is limited. The functionalty grows slow but steady, based on need and contributions.
 
-Please note that the OpenSCENARIO [coverage](https://github.com/esmini/esmini/blob/master/osc_coverage.txt) is limited, which means that not all features of OpenSCENARIO are supported. The functionalty grows slow but steady, based on need and contributions.
+There is currently no plan to support OpenSCENARIO DSL.
 
-The code was initially a result from the Swedish collaborative research project [Simulation Scenarios](https://sites.google.com/view/simulationscenarios), and is now further developed based on users need and OpenSCENARIO development.
+The code was initially a result from the Swedish collaborative research project [Simulation Scenarios](https://sites.google.com/view/simulationscenarios), and is now further developed based on users need and OpenSCENARIO XML development.
 
 User guide: https://esmini.github.io
 
@@ -39,16 +39,16 @@ For more information about the esmini software parts, see [Inner Workings of esm
 
 ## Background
 
-The purpose of this implementation (started 2018) was initially to explore and get familiar with the emerging [OpenSCENARIO](https://www.asam.net/standards/detail/openscenario/) data format. The development aimed at supporting various platforms such as Windows, Mac, Linux, and Android. Tool integration and portability were high priorities. It should be easy to use for native C++ applications as well as other frameworks like Unity3D (C#) and MATLAB/Simulink, among many others. Initially, focus was more on features than quality.
+The purpose of this implementation (started 2018) was initially to explore and get familiar with the emerging [OpenSCENARIO XML](https://www.asam.net/standards/detail/openscenario-xml/) data format. The development aimed at supporting various platforms such as Windows, Mac, Linux, and Android. Tool integration and portability were high priorities. It should be easy to use for native C++ applications as well as other frameworks like Unity3D (C#) and MATLAB/Simulink, among many others. Initially, focus was more on features than quality.
 
-Since then the purpose has grown, contributing to the spread and harmonization of OpenSCENARIO. esmini is also being used in other applications and test platforms. It grows slowly but steady, both in terms of functionality and quality, e.g. documentation, code refactorizations, continuous integration including static code analysis, and test coverage on both unit and application levels.
+Since then the purpose has grown, contributing to the spread and harmonization of OpenSCENARIO XML. esmini is also being used in other applications and test platforms. It grows slowly but steady, both in terms of functionality and quality, e.g. documentation, code refactorizations, continuous integration including static code analysis, and test coverage on both unit and application levels.
 
 ## Binaries and demos
 Windows, Linux and Mac supported
 
 Latest release including source, binaries and demo packages is found here: https://github.com/esmini/esmini/releases/latest
 
-3D models used by the example scenarios are included in the demo packages. They are also available [here](https://dl.dropboxusercontent.com/s/5gk8bvgzqiaaoco/models.7z?dl=0). Unpack into esmini/resources. These assets works on all platforms.
+Some example scenarios make use of pre-created 3D models, which are included in the demo packages. They are also available [here](https://dl.dropboxusercontent.com/s/5gk8bvgzqiaaoco/models.7z?dl=0). Unpack into esmini/resources. These assets works on all platforms.
 Environment models (roads, landscape, buildings...) have been created using [VIRES Road Network Editor](https://vires.mscsoftware.com/solutions/3d-environment-road-network).
 
 See [User Guide](https://esmini.github.io) for more information.
@@ -74,7 +74,7 @@ In addition to internal API ([example](https://esmini.github.io/#_fetch_state_of
 esmini shared library works fine also in Unity (Win, Linux, Mac). A simple example can be downloaded from [here](https://www.dropbox.com/s/sj53hz0zesxa681/esmini-player.unitypackage?dl=1). The package contains everything needed to get going:
 - esmini library C# wrapper
 - a generic scenario player script
-- a few example scenarios (OpenSCENARIO + OpenDRIVE) including 3D models
+- a few example scenarios (OpenSCENARIO XML + OpenDRIVE) including 3D models
 - plugins for all platforms (can be updated of course)
 - and finally a scene connecting the player script to a game object
 
@@ -121,5 +121,5 @@ see [User Guide Hello-World tutorial](https://esmini.github.io/#_python_binding)
 [OpenDRIVE](https://www.asam.net/standards/detail/opendrive/)
 describes the road network, the static part of a scenario.
 
-[OpenSCENARIO](https://www.asam.net/standards/detail/openscenario/)
+[OpenSCENARIO XML](https://www.asam.net/standards/detail/openscenario-xml/)
 describes the dynamic content on top of a road network, e.g. traffic maneuvers and weather conditions.

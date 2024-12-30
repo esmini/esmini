@@ -18,7 +18,7 @@
 image:https://avatars.githubusercontent.com/u/49203938[160, 160]
 
 == Introduction
-esmini is a software tool to play OpenSCENARIO files. It's provided both as a stand alone application and as a shared library for linking with custom applications. In addition some tools have been developed to support design and analysis of traffic scenarios.
+esmini is a software tool to play OpenSCENARIO XML files. It's provided both as a stand alone application and as a shared library for linking with custom applications. In addition some tools have been developed to support design and analysis of traffic scenarios.
 
 The scope of this user guide is to provide examples on how to use the tools. It also includes a programming tutorial on how to use esmini in custom applications.
 
@@ -2092,7 +2092,7 @@ Note that the strategy results in desired behavior in probably the majority of c
 [discrete]
 ==== Controllers and ghost
 
-OpenSCENARIO 1.2 onwards supports multiple assigned controllers. All except the first controller will be handed over to the ghost. Hence make sure to put the ghost controller first, since it will stick to the "Ego". 
+OpenSCENARIO 1.2 onwards supports multiple assigned controllers. All except the first controller will be handed over to the ghost. Hence make sure to put the ghost controller first, since it will stick to the "Ego".
 
 Example scenario, where ghost is utilizing the followRoute controller: https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Unittest/xosc/follow_route_ghost_starting_on_route.xosc[follow_route_ghost_starting_on_route.xosc].
 
