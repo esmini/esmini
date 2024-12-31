@@ -215,6 +215,9 @@ add_executable(
 target_link_libraries(
     clock_publisher
     ${catkin_LIBRARIES})
+add_dependencies(
+    clock_publisher
+    ${catkin_EXPORTED_TARGETS})
 
 if(USE_IMPLOT)
     target_link_libraries(
@@ -239,6 +242,11 @@ if(USE_SUMO)
         esmini_ros_node
         ${SUMO_LIBRARIES})
 endif()
+
+add_dependencies(
+    esmini_ros_node
+    ${${PROJECT_NAME}_EXPORTED_TARGETS}
+    ${catkin_EXPORTED_TARGETS})
 
 install(
     TARGETS esmini_ros_node
