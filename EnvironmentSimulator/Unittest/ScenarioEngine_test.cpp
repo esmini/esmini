@@ -2962,6 +2962,27 @@ TEST(ConditionTest, TestTTCAndLateralDist)
     RegisterParameterDeclarationCallback(nullptr, 0);
 }
 
+TEST(ConditionTest, TestConditionDelay)
+{
+    double dt = 0.1;
+
+    ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/condition_delay.xosc");
+    ASSERT_NE(se, nullptr);
+    ASSERT_EQ(se->entities_.object_.size(), 1);
+    ASSERT_EQ(se->entities_.object_[0]->GetName(), "Ego");
+
+    while (se->getSimulationTime() < 8.5 - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }
+
+    // expect the lane change to have been triggered by now
+    EXPECT_GT(se->entities_.object_[0]->pos_.GetY(), 0.0);
+
+    delete se;
+}
+
 TEST(ActionTest, TestRelativeLaneChangeAction)
 {
     double dt = 0.1;
