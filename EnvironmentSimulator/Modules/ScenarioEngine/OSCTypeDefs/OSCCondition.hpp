@@ -29,6 +29,29 @@ namespace scenarioengine
     class StoryBoard;
     class StoryBoardElement;
 
+    class ConditionDelay
+    {
+    public:
+        /**
+            Register condition trig status at a specific time
+            @param time: time to register the condition status
+            @param value: condition status
+            @return true if the value was registered, false otherwise
+        */
+        bool   RegisterValue(double time, bool value);
+        void   Reset();
+        bool   GetValueAtTime(double time);
+        size_t GetNumberOfEntries() const;
+
+    private:
+        struct ConditionValue
+        {
+            double time_;
+            bool   value_;
+        };
+        std::vector<ConditionValue> values_;
+    };
+
     class OSCCondition
     {
     public:
@@ -37,9 +60,7 @@ namespace scenarioengine
         enum class ConditionState
         {
             IDLE,
-            EVALUATED,
-            TIMER,
-            TRIGGERED
+            EVALUATED
         };
 
         typedef enum
@@ -58,30 +79,34 @@ namespace scenarioengine
             UNDEFINED
         } ConditionEdge;
 
-        ConditionType      base_type_;
-        std::string        name_;
-        double             delay_;
-        bool               last_result_;  // result from last evaluation
-        ConditionEdge      edge_;
-        SE_SimulationTimer timer_;
-        ConditionState     state_;
+        ConditionType  base_type_;
+        std::string    name_;
+        double         delay_;
+        bool           last_result_;  // result from last evaluation at current time
+        ConditionEdge  edge_;
+        ConditionState state_;
+        ConditionDelay history_;
+        bool           cond_value_;
 
         OSCCondition(ConditionType base_type)
             : base_type_(base_type),
               delay_(0.0),
               last_result_(false),
               edge_(ConditionEdge::NONE),
-              state_(ConditionState::IDLE)
+              state_(ConditionState::IDLE),
+              cond_value_(false)
         {
         }
         virtual ~OSCCondition() = default;
 
-        bool         Evaluate(double sim_time);
-        virtual bool CheckCondition(double sim_time) = 0;
-        virtual void Log();
-        bool         CheckEdge(bool new_value, bool old_value, OSCCondition::ConditionEdge edge);
-        std::string  Edge2Str();
-        virtual void Reset();
+        bool                Evaluate(double sim_time);
+        virtual bool        CheckCondition(double sim_time) = 0;
+        void                Log(bool trig, bool full = false);
+        virtual std::string GetAdditionalLogInfo() = 0;
+        bool                GetValue();
+        bool                CheckEdge(bool new_value, bool old_value, OSCCondition::ConditionEdge edge);
+        std::string         Edge2Str();
+        virtual void        Reset();
     };
 
     class ConditionGroup
@@ -190,7 +215,7 @@ namespace scenarioengine
         TrigByTimeHeadway() : TrigByEntity(TrigByEntity::EntityConditionType::TIME_HEADWAY), hwt_(0)
         {
         }
-        void Log();
+        std::string GetAdditionalLogInfo() override;
     };
 
     class TrigByTimeToCollision : public TrigByEntity
@@ -209,7 +234,7 @@ namespace scenarioengine
         TrigByTimeToCollision() : TrigByEntity(TrigByEntity::EntityConditionType::TIME_TO_COLLISION), object_(0), ttc_(-1)
         {
         }
-        void Log();
+        std::string GetAdditionalLogInfo() override;
     };
 
     class TrigByReachPosition : public TrigByEntity
@@ -230,7 +255,7 @@ namespace scenarioengine
               checkOrientation_(false)
         {
         }
-        void Log();
+        std::string GetAdditionalLogInfo() override;
     };
 
     class TrigByDistance : public TrigByEntity
@@ -254,7 +279,7 @@ namespace scenarioengine
               dist_(0)
         {
         }
-        void Log();
+        std::string GetAdditionalLogInfo() override;
     };
 
     class TrigByTraveledDistance : public TrigByEntity
@@ -267,7 +292,7 @@ namespace scenarioengine
         TrigByTraveledDistance() : TrigByEntity(TrigByEntity::EntityConditionType::TRAVELED_DISTANCE), value_(0), odom_(0)
         {
         }
-        void Log();
+        std::string GetAdditionalLogInfo() override;
     };
 
     class TrigByRelativeDistance : public TrigByEntity
@@ -285,7 +310,7 @@ namespace scenarioengine
         TrigByRelativeDistance() : TrigByEntity(TrigByEntity::EntityConditionType::RELATIVE_DISTANCE), object_(0), value_(0.0), rel_dist_(0)
         {
         }
-        void Log();
+        std::string GetAdditionalLogInfo() override;
     };
 
     class TrigByCollision : public TrigByEntity
@@ -313,7 +338,7 @@ namespace scenarioengine
         TrigByCollision() : TrigByEntity(TrigByEntity::EntityConditionType::COLLISION), object_(0), type_(Object::Type::TYPE_NONE), storyBoard_(0)
         {
         }
-        void Log();
+        std::string GetAdditionalLogInfo() override;
     };
 
     class TrigByEndOfRoad : public TrigByEntity
@@ -328,7 +353,7 @@ namespace scenarioengine
         TrigByEndOfRoad() : TrigByEntity(TrigByEntity::EntityConditionType::END_OF_ROAD), current_duration_(0)
         {
         }
-        void Log();
+        std::string GetAdditionalLogInfo() override;
 
     private:
         double elapsed_time_;
@@ -346,7 +371,7 @@ namespace scenarioengine
         TrigByOffRoad() : TrigByEntity(TrigByEntity::EntityConditionType::OFF_ROAD), current_duration_(0)
         {
         }
-        void Log();
+        std::string GetAdditionalLogInfo() override;
 
     private:
         double elapsed_time_;
@@ -368,7 +393,7 @@ namespace scenarioengine
               current_acceleration_(0)
         {
         }
-        void Log();
+        std::string GetAdditionalLogInfo() override;
     };
 
     class TrigBySpeed : public TrigByEntity
@@ -387,7 +412,7 @@ namespace scenarioengine
               current_speed_(0)
         {
         }
-        void Log();
+        std::string GetAdditionalLogInfo() override;
     };
 
     class TrigByRelativeSpeed : public TrigByEntity
@@ -407,7 +432,7 @@ namespace scenarioengine
               current_rel_speed_(0)
         {
         }
-        void Log();
+        std::string GetAdditionalLogInfo() override;
     };
 
     class TrigByRelativeClearance : public TrigByEntity
@@ -436,8 +461,9 @@ namespace scenarioengine
         {
         }
         roadmanager::Position* pos_;
-        void                   Log();
+        std::string            GetAdditionalLogInfo() override;
     };
+
     class TrigByStandStill : public TrigByEntity
     {
     public:
@@ -450,7 +476,7 @@ namespace scenarioengine
         TrigByStandStill() : TrigByEntity(TrigByEntity::EntityConditionType::STAND_STILL), current_duration_(0)
         {
         }
-        void Log();
+        std::string GetAdditionalLogInfo() override;
 
     private:
         double elapsed_time_;
@@ -496,7 +522,8 @@ namespace scenarioengine
         void        RegisterStateChange(StoryBoardElement* element, StoryBoardElement::State state, StoryBoardElement::Transition transition);
         bool        CheckState(StateChange state_change);
         std::string CondElementState2Str(CondElementState state);
-        void        Log();
+        std::string StateChangeToStr(StateChange state_change);
+        std::string GetAdditionalLogInfo() override;
         void        Reset();
     };
 
@@ -530,7 +557,7 @@ namespace scenarioengine
         TrigBySimulationTime() : TrigByValue(TrigByValue::Type::SIMULATION_TIME), sim_time_(0)
         {
         }
-        void Log();
+        std::string GetAdditionalLogInfo() override;
     };
 
     class TrigByParameter : public TrigByValue
@@ -541,13 +568,12 @@ namespace scenarioengine
         std::string value_;
         Rule        rule_;
         Parameters* parameters_;
-        std::string current_value_str_;
 
         bool CheckCondition(double sim_time);
         TrigByParameter() : TrigByValue(TrigByValue::Type::PARAMETER)
         {
         }
-        void Log();
+        std::string GetAdditionalLogInfo() override;
     };
 
     class TrigByVariable : public TrigByValue
@@ -558,13 +584,12 @@ namespace scenarioengine
         std::string value_;
         Rule        rule_;
         Parameters* variables_;
-        std::string current_value_str_;
 
         bool CheckCondition(double sim_time);
         TrigByVariable() : TrigByValue(TrigByValue::Type::VARIABLE)
         {
         }
-        void Log();
+        std::string GetAdditionalLogInfo() override;
     };
 
 }  // namespace scenarioengine

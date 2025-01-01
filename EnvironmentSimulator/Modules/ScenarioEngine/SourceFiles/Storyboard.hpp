@@ -223,11 +223,6 @@ namespace scenarioengine
         }
 
         OSCParameterDeclarations parameter_declarations_;
-        Act*                     FindActByName(std::string name);
-        ManeuverGroup*           FindManeuverGroupByName(std::string name);
-        Maneuver*                FindManeuverByName(std::string name);
-        Event*                   FindEventByName(std::string name);
-        OSCAction*               FindActionByName(std::string name);
         void                     Print();
 
         std::vector<StoryBoardElement*>* GetChildren() override
@@ -252,17 +247,12 @@ namespace scenarioengine
                 delete entry;
             }
         }
-        Story*         FindStoryByName(std::string name);
-        Act*           FindActByName(std::string name);
-        ManeuverGroup* FindManeuverGroupByName(std::string name);
-        Maneuver*      FindManeuverByName(std::string name);
-        Event*         FindEventByName(std::string name);
-        OSCAction*     FindActionByName(std::string name);
-        Init           init_;
-        Entities*      entities_;
-        void           Print();
-        void           Start(double simTime) override;
-        void           Step(double simTime, double dt) override;
+
+        Init      init_;
+        Entities* entities_;
+        void      Print();
+        void      Start(double simTime) override;
+        void      Step(double simTime, double dt) override;
 
         std::vector<StoryBoardElement*>* GetChildren() override
         {

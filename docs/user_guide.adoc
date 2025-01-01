@@ -1008,6 +1008,39 @@ image::speed-profile10.png[]
 ==== More info
 To get more understanding of the implementation, see a few slides https://drive.google.com/file/d/1DmjVHftcsbU71Ce_GASZ6IArcPA6teNF/view?usp=sharing[here].
 
+=== Condition delay
+
+Conditions can be delayed individually. A simple use case is to delay the closure of a scenario run, for example three seconds after any collision.
+
+It gets more flexible, and complex, when combining delay with grouping, which is a way to represent AND and OR logical operations, see https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/07_components_scenario/07_06_conditions_triggers.html#_triggers_and_condition_groups[OpenSCENARIO XML v1.3 User guide - Triggers and condition groups].
+
+Consider the following example, based on the test scenario https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Unittest/xosc/condition_delay.xosc[condition_delay.xosc] (used by test case TestConditionDelay in https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Unittest/ScenarioEngine_test.cpp[ScenarioEngine_test]).
+
+The scenario is basically one car accelerating linearly from 50 to 100 km/h (13.9 - 27.8 m/s) during two seconds, and then decelerating back to 50 km/h, again over two seconds. The speed is greater than 25 m/s in the time window 3.2 - 4.8 seconds. By 6.0 seconds the speed has decreased to 20.8 m/s.
+
+There is one event including a LaneChange action and a StartTrigger containing three condition groups:
+
+[%autowidth, cols="1,1,1,1"]
+|===
+||*condition*|*delay*|*edge*
+|*Group1*|C1: SimulationTime ≥ 6.0|0.0|none
+||C2: Speed ≥ 25.0|0.0|none
+|*Group2*|C3: SimulationTime ≥ 6.0|0.0|none
+||C4: Speed ≥ 25.0|2.0|rising
+|*Group3*|C5: SimulationTime ≥ 6.0|0.0|none
+||C6: Speed ≥ 25.0|4.0|none
+|===
+
+Briefly, the action will happen whenever all (two) conditions within any of the three groups becomes true. It can be illustrated as below.
+
+image::condition_delay.png[]
+
+The solid blue curve represents the speed profile. The two dashed curves represents the speed profile as interpreted by the two delayed speed conditions. The yellow area above the horizontal thick line represents speed ≥ 25 m/s. The blue area to the right of the vertical thick line represents time ≥ 6.0 s.
+
+The first gray pyramid illustrates when condition C2 evaluates true. The gray dot represents when C4 evaluates true. The red pyramid represents C6 = true. Only the red pyramid is in the blue area (time ≥ 6s). In summary, only group 3 will evaluate to true. More specifically, it will become true as soon as speed becomes greater than 25 m/s, which happens at 7.2 seconds, which is passed 6 seconds.
+
+Hopefully the above example gives some idea how condition delay works and how it can be utilized.
+
 === Road signs
 (framework updated in esmini v2.25.0)
 

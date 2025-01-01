@@ -367,6 +367,16 @@ void StoryBoardElement::Reset(State state)
 
     ResetState(state);
     ResetTransition();
+
+    if (start_trigger_ != nullptr)
+    {
+        start_trigger_->Reset();
+    }
+
+    if (stop_trigger_ != nullptr)
+    {
+        stop_trigger_->Reset();
+    }
 }
 
 void StoryBoardElement::SetName(std::string name)
