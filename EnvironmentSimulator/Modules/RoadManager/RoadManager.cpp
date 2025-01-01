@@ -6875,7 +6875,7 @@ void OpenDrive::SetLaneOSIPoints()
                 y0.push_back(pos_tmp.GetY());
 
                 bool   insert = false;
-                double step   = OSI_POINT_CALC_STEPSIZE;
+                double step   = MIN(OSI_POINT_CALC_STEPSIZE, lsec->GetLength());
 
                 pos_candidate = pos_pivot;
 
@@ -7045,7 +7045,7 @@ void OpenDrive::SetLaneBoundaryPoints()
                     y0.push_back(pos_tmp.GetY());
 
                     bool   insert = false;
-                    double step   = OSI_POINT_CALC_STEPSIZE;
+                    double step   = MIN(OSI_POINT_CALC_STEPSIZE, lsec->GetLength());
 
                     pos_candidate = pos_pivot;
 
@@ -7264,7 +7264,7 @@ void OpenDrive::SetRoadMarkOSIPoints()
                                             y0.push_back(pos_tmp.GetY());
 
                                             bool   insert = false;
-                                            double step   = OSI_POINT_CALC_STEPSIZE;
+                                            double step   = MIN(OSI_POINT_CALC_STEPSIZE, lsec->GetLength());
 
                                             pos_candidate = pos_pivot;
 
