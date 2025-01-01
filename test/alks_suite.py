@@ -90,7 +90,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('.*Loading .*ALKS_Scenario_4.2_3', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('.25.900.* CrossStartCondition == true, HWT: 3.55 < 3.60, edge rising', log)  is not None)
+        self.assertTrue(re.search('.25.900.* CrossStartCondition: true, delay: 0.00, HWT: 3.55 < 3.60, edge rising', log)  is not None)
 
         # Check vehicle state
         csv = generate_csv()
@@ -123,8 +123,9 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('.*Loading .*ALKS_Scenario_4.3_1', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('10.000.* VaryingSpeedStartCondition == true, 10.0000 >= 10.0000 edge: rising', log)  is not None)
-        self.assertTrue(re.search('25.000.* VaryingSpeedEvent2Start == true, element: VaryingSpeedAction state: END_TRANSITION, edge: rising', log)  is not None)
+        self.assertTrue(re.search('10.000.* VaryingSpeedStartCondition: true, delay: 0.00, 10.0000 >= 10.0000, edge: rising', log)  is not None)
+        self.assertTrue(re.search('15.000.* VaryingSpeedEvent2Start: true, delay: 10.00, VaryingSpeedAction, COMPLETE / END_TRANSITION == END_TRANSITION, edge: rising', log)  is not None)
+        self.assertTrue(re.search('25.000.* VaryingSpeedEvent2Start: true\\n', log)  is not None)
 
         # Check vehicle state
         csv = generate_csv()
@@ -140,7 +141,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('.*Loading .*ALKS_Scenario_4.3_2', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('10.000.* BrakeStartCondition == true, 10.0000 >= 10.0000 edge: rising', log)  is not None)
+        self.assertTrue(re.search('10.000.* BrakeStartCondition: true, delay: 0.00, 10.0000 >= 10.0000, edge: rising', log)  is not None)
 
         # Check vehicle state
         csv = generate_csv()
@@ -158,7 +159,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('.*Loading .*ALKS_Scenario_4.4_1', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('9.100.* CutInStartCondition == true, rel_dist: 30.00 < 30.00, edge: rising', log)  is not None)
+        self.assertTrue(re.search('9.100.* CutInStartCondition: true, delay: 0.00, rel_dist: 30.00 < 30.00, edge: rising', log)  is not None)
 
         # Check vehicle state
         csv = generate_csv()
@@ -176,7 +177,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('.*Loading .*ALKS_Scenario_4.4_2', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('9.10.* CutInStartCondition == true, rel_dist: 10.00 < 10.00, edge: rising', log)  is not None)
+        self.assertTrue(re.search('9.10.* CutInStartCondition: true, delay: 0.00, rel_dist: 10.00 < 10.00, edge: rising', log)  is not None)
 
         # Check vehicle state
         csv = generate_csv()
@@ -196,7 +197,8 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('.*Loading .*ALKS_Scenario_4.5_1', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('.24.200.* CutOutStartCondition == true, rel_dist: 49.43 < 50.00, edge: rising', log)  is not None)
+        self.assertTrue(re.search('.24.200.* CutOutStartCondition: true, delay: 0.00, rel_dist: 49.43 < 50.00, edge: rising', log)  is not None)
+        self.assertTrue(re.search('.24.200.* CutOutStartCondition: true\\n', log)  is not None)
 
         # Check vehicle state
         csv = generate_csv()
@@ -214,7 +216,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('.*Loading .*ALKS_Scenario_4.5_2', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('.24.200.* CutOutStartCondition == true, rel_dist: 49.43 < 50.00, edge: rising', log)  is not None)
+        self.assertTrue(re.search('.24.200.* CutOutStartCondition: true, delay: 0.00, rel_dist: 49.43 < 50.00, edge: rising', log)  is not None)
 
         # Check vehicle state
         csv = generate_csv()
@@ -245,7 +247,8 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('.*Loading .*ALKS_Scenario_4.6_2', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('10.00.* SwerveEventStart == true, 10.0000 >= 10.0000 edge: rising', log)  is not None)
+        self.assertTrue(re.search('10.00.* SwerveEventStart: true, delay: 0.00, 10.0000 >= 10.0000, edge: rising', log)  is not None)
+        self.assertTrue(re.search('10.00.* SwerveEventStart: true\\n', log)  is not None)
         self.assertTrue(re.search('10.00.* SwerveAction initState -> startTransition -> runningState', log)  is not None)
         self.assertTrue(re.search('26.10.* SwerveEvent runningState -> endTransition -> completeState', log)  is not None)
 

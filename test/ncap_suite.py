@@ -21,7 +21,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('.*Loading .*NCAP_AEB_C2C_CCR_2023', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('\n.4.250.* collision 0 between Ego and GVT', log)  is not None)
+        self.assertTrue(re.search('\n.4.250.* DetectCollision: true, delay: 0.00, 1 collision\\(s\\): Ego and GVT, edge: none', log)  is not None)
         self.assertTrue(re.search('\n.4.250.* AtCollision standbyState -> startTransition -> runningState', log)  is not None)
         self.assertTrue(re.search('\n.4.250.* Set_Variables complete after 1 execution', log)  is not None)
 
@@ -40,8 +40,8 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('.*Loading .*NCAP_AEB_VRU_CBFA_2023', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('\n.0.000.* EgoSpeedReached == true, speed: 8.33 > 8.17, edge: none', log)  is not None)
-        self.assertTrue(re.search('\n.6.750.* collision 0 between Ego and VRU', log)  is not None)
+        self.assertTrue(re.search('\n.0.000.* EgoSpeedReached: true, delay: 0.00, speed: 8.33 > 8.17, edge: none', log)  is not None)
+        self.assertTrue(re.search('\n.6.750.* DetectCollision: true, delay: 0.00, 1 collision\\(s\\): Ego and VRU, edge: none', log)  is not None)
         self.assertTrue(re.search('\n.7.800.* storyBoard runningState -> stopTransition -> completeState', log)  is not None)
 
         # Check vehicle state
@@ -64,9 +64,9 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('.*Loading .*NCAP_AEB_VRU_CBLA_2023', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('\n.5.450.* AtEgoApproaching == true, rel_dist: 26.78 <= 26.83, edge: rising', log)  is not None)
-        self.assertTrue(re.search('\n.13.600.* collision 0 between Ego and VRU', log)  is not None)
-        self.assertTrue(re.search('\n.14.650.* StopAfterCollision timer expired at 1.00 seconds', log)  is not None)
+        self.assertTrue(re.search('\n.5.450.* AtEgoApproaching: true, delay: 0.00, rel_dist: 26.78 <= 26.83, edge: rising', log)  is not None)
+        self.assertTrue(re.search('\n.13.600.* DetectCollision: true, delay: 0.00, 1 collision\\(s\\): Ego and VRU, edge: none', log)  is not None)
+        self.assertTrue(re.search('\n.14.650.* StopAfterCollision: true\\n', log)  is not None)
 
         # Check vehicle state
         csv = generate_csv()
@@ -89,8 +89,8 @@ class TestSuite(unittest.TestCase):
         # Check some scenario events
         self.assertTrue(re.search('\n.0.000.* VRU_SynchronizeEvent standbyState -> startTransition -> runningState', log)  is not None)
         self.assertTrue(re.search('\n.9.400.* Synchronize masterTimeToDest \\(0.010\\) reached within this timestep \\(0.050\\)', log)  is not None)
-        self.assertTrue(re.search('\n.9.450.* collision 0 between Ego and VRU', log)  is not None)
-        self.assertTrue(re.search('\n.10.500.* StopAfterCollision timer expired at 1.00 seconds', log)  is not None)
+        self.assertTrue(re.search('\n.9.450.* DetectCollision: true, delay: 0.00, 1 collision\\(s\\): Ego and VRU, edge: none', log)  is not None)
+        self.assertTrue(re.search('\n.10.500.* StopAfterCollision: true\\n', log)  is not None)
 
         # Check vehicle state
         csv = generate_csv()
@@ -112,7 +112,7 @@ class TestSuite(unittest.TestCase):
 
         # Check some scenario events
         self.assertTrue(re.search('\n.6.950.* Synchronize masterTimeToDest \\(0.026\\) reached within this timestep \\(0.050\\)', log)  is not None)
-        self.assertTrue(re.search('\n.7.000.* collision 0 between Ego and VRU', log)  is not None)
+        self.assertTrue(re.search('\n.7.000.* DetectCollision: true, delay: 0.00, 1 collision\\(s\\): Ego and VRU, edge: none', log)  is not None)
         self.assertTrue(re.search('\n.8.050.* storyBoard runningState -> stopTransition -> completeState', log)  is not None)
 
         # Check vehicle state
@@ -135,8 +135,9 @@ class TestSuite(unittest.TestCase):
 
         # Check some scenario events
         self.assertTrue(re.search('\n.5.500.* Synchronize masterTimeToDest \\(0.047\\) reached within this timestep \\(0.050\\)', log)  is not None)
-        self.assertTrue(re.search('\n.5.550.* collision 0 between Ego and VRU', log)  is not None)
-        self.assertTrue(re.search('\n.6.600.* StopAfterCollision timer expired at 1.00 seconds', log)  is not None)
+        self.assertTrue(re.search('\n.5.550.* DetectCollision: true, delay: 0.00, 1 collision\\(s\\): Ego and VRU, edge: none', log)  is not None)
+        self.assertTrue(re.search('\n.5.600.* StopAfterCollision: true, delay: 1.00, variable collisionDetected true == true, edge: none', log)  is not None)
+        self.assertTrue(re.search('\n.6.600.* StopAfterCollision: true', log)  is not None)
 
         # Check vehicle state
         csv = generate_csv()
@@ -154,7 +155,7 @@ class TestSuite(unittest.TestCase):
 
         # Check some scenario events
         self.assertTrue(re.search('\n.3.400.* Entering Stead State according to criteria but not enough time to reach destination', log)  is not None)
-        self.assertTrue(re.search('\n.5.600.* collision 0 between Ego and VRU', log)  is not None)
+        self.assertTrue(re.search('\n.5.600.* DetectCollision: true, delay: 0.00, 1 collision\\(s\\): Ego and VRU, edge: none', log)  is not None)
 
         # Check vehicle state
         csv = generate_csv()
@@ -176,7 +177,7 @@ class TestSuite(unittest.TestCase):
 
         # Check some scenario events
         self.assertTrue(re.search('\n.21.350.* Entering Stead State according to criteria but not enough time to reach destination', log)  is not None)
-        self.assertTrue(re.search('\n.27.500.* collision 0 between Ego and VRU', log)  is not None)
+        self.assertTrue(re.search('\n.27.500.* DetectCollision: true, delay: 0.00, 1 collision\\(s\\): Ego and VRU, edge: none', log)  is not None)
         self.assertTrue(re.search('\n.27.500.* Synchronization_CollisionDetection runningState -> endTransition -> completeState', log)  is not None)
 
         # Check vehicle state

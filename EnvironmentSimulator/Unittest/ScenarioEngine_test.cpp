@@ -2962,6 +2962,51 @@ TEST(ConditionTest, TestTTCAndLateralDist)
     RegisterParameterDeclarationCallback(nullptr, 0);
 }
 
+// tag::tc_TestConditionDelay[]
+TEST(ConditionTest, TestConditionDelay)
+{
+    double dt = 0.1;
+
+    ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/condition_delay.xosc");
+    ASSERT_NE(se, nullptr);
+    ASSERT_EQ(se->entities_.object_.size(), 1);
+    ASSERT_EQ(se->entities_.object_[0]->GetName(), "Ego");
+    StoryBoardElement* event = se->storyBoard.FindChildByTypeAndName(StoryBoardElement::ElementType::EVENT, "LaneChangeEvent")[0];
+    ASSERT_NE(event, nullptr);
+    EXPECT_EQ(event->GetName(), "LaneChangeEvent");
+
+    while (se->getSimulationTime() < 7.2 - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }
+
+    // expect the lane change to not have been triggered yet
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), -1.535, 1e-3);
+    EXPECT_EQ(event->GetCurrentState(), StoryBoardElement::State::STANDBY);
+
+    // do another step
+    se->step(dt);
+    se->prepareGroundTruth(dt);
+
+    // expect the lane change to have been triggered by now
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), -1.5161, 1e-3);
+    EXPECT_EQ(event->GetCurrentState(), StoryBoardElement::State::RUNNING);
+
+    while (se->getSimulationTime() < 9.2 - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }
+
+    // expect the lane change to be completed by now
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), 1.535, 1e-3);
+    EXPECT_EQ(event->GetCurrentState(), StoryBoardElement::State::COMPLETE);
+
+    delete se;
+}
+// end::tc_TestConditionDelay[]
+
 TEST(ActionTest, TestRelativeLaneChangeAction)
 {
     double dt = 0.1;

@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSCENARIO>
+   <FileHeader revMajor="1" revMinor="3" date="2024-12-26T10:00:00" description="for testing condition delay" author="esmini team"/>
+   <!-- speed is larger than 25 m/s between time 3.2s and 4.8s                  -->
+   <!-- the combined conditions A "speed > 25" AND B "simulation time > 6"      -->
+   <!-- should become true if A is delayed more than 1.2 seconds                -->
+   <!-- in condition group 1 A is delayed only 1.2s - not enough                -->
+   <!-- in condition group 2 A is delayed 2s, rising edge occurs at 5.2s < 6s   -->
+   <!-- in condition group 3 A is delayed 4s, trigger happens at 3.2 + 4 = 7.2s -->
+   <!-- => condition group 3 will trig while 1 and 2 will not trig              -->
+   <ParameterDeclarations/>
+   <CatalogLocations>
+      <VehicleCatalog>
+         <Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
+      </VehicleCatalog>
+   </CatalogLocations>
+   <RoadNetwork>
+      <LogicFile filepath="../../../resources/xodr/straight_500m.xodr"/>
+   </RoadNetwork>
+   <Entities>
+      <ScenarioObject name="Ego">
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+      </ScenarioObject>
+   </Entities>
+   <Storyboard>
+      <Init>
+         <Actions>
+            <Private entityRef="Ego">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="1" laneId="-1" s="10"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedProfileAction followingMode="position">
+                        <SpeedProfileEntry speed="${50.0/3.6}" time="0.0"/>
+                        <SpeedProfileEntry speed="${100.0/3.6}" time="4.0"/>
+                        <SpeedProfileEntry speed="${50.0/3.6}" time="4.0"/>
+                     </SpeedProfileAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+            </Private>
+         </Actions>
+      </Init>
+      <Story name="Story">
+         <Act name="Act">
+            <ManeuverGroup maximumExecutionCount="1" name="ManueverGroup">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="Ego"/>
+               </Actors>
+               <Maneuver name="LaneChangeManuever">
+                  <Event name="LaneChangeEvent" maximumExecutionCount="1" priority="override">
+                     <Action name="LaneChangeAction">
+                        <PrivateAction>
+                           <LateralAction>
+                              <LaneChangeAction>
+                                 <LaneChangeActionDynamics dynamicsShape="sinusoidal" value="2.0" dynamicsDimension="time"/>
+                                 <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="1"/>
+                                 </LaneChangeTarget>
+                              </LaneChangeAction>
+                           </LateralAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="LaneChangeSimulationTimeCondition1" delay="0" conditionEdge="none">
+                              <ByValueCondition>
+                                 <SimulationTimeCondition value="6.0" rule="greaterOrEqual"/>
+                              </ByValueCondition>
+                           </Condition>
+                           <Condition name="LaneChangeSpeedCondition1" delay="1.1" conditionEdge="none">
+                              <ByEntityCondition>
+                                 <TriggeringEntities triggeringEntitiesRule="any">
+                                    <EntityRef entityRef="Ego"/>
+                                 </TriggeringEntities>
+                                 <EntityCondition>
+                                    <SpeedCondition value="25.0" rule="greaterOrEqual"/>
+                                 </EntityCondition>
+                              </ByEntityCondition>
+                           </Condition>
+                        </ConditionGroup>
+                        <ConditionGroup>
+                           <Condition name="LaneChangeSimulationTimeCondition2" delay="0" conditionEdge="none">
+                              <ByValueCondition>
+                                 <SimulationTimeCondition value="6.0" rule="greaterOrEqual"/>
+                              </ByValueCondition>
+                           </Condition>
+                           <Condition name="LaneChangeSpeedCondition2" delay="2.0" conditionEdge="rising">
+                              <ByEntityCondition>
+                                 <TriggeringEntities triggeringEntitiesRule="any">
+                                    <EntityRef entityRef="Ego"/>
+                                 </TriggeringEntities>
+                                 <EntityCondition>
+                                    <SpeedCondition value="25.0" rule="greaterOrEqual"/>
+                                 </EntityCondition>
+                              </ByEntityCondition>
+                           </Condition>
+                        </ConditionGroup>                               
+                        <ConditionGroup>
+                           <Condition name="LaneChangeSimulationTimeCondition3" delay="0" conditionEdge="none">
+                              <ByValueCondition>
+                                 <SimulationTimeCondition value="6.0" rule="greaterOrEqual"/>
+                              </ByValueCondition>
+                           </Condition>
+                           <Condition name="LaneChangeSpeedCondition3" delay="4.0" conditionEdge="none">
+                              <ByEntityCondition>
+                                 <TriggeringEntities triggeringEntitiesRule="any">
+                                    <EntityRef entityRef="Ego"/>
+                                 </TriggeringEntities>
+                                 <EntityCondition>
+                                    <SpeedCondition value="25.0" rule="greaterOrEqual"/>
+                                 </EntityCondition>
+                              </ByEntityCondition>
+                           </Condition>
+                        </ConditionGroup>
+                 
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+            </ManeuverGroup>
+         </Act>
+      </Story>
+      <StopTrigger>
+         <ConditionGroup>
+            <Condition name="stop_trigger " delay="0" conditionEdge="none">
+               <ByValueCondition>
+                  <SimulationTimeCondition value="10" rule="greaterThan"/>
+               </ByValueCondition>
+            </Condition>
+         </ConditionGroup>
+      </StopTrigger>
+   </Storyboard>
+</OpenSCENARIO>
