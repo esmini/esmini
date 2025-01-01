@@ -29,6 +29,27 @@ namespace scenarioengine
     class StoryBoard;
     class StoryBoardElement;
 
+    class ConditionDelay
+    {
+    public:
+        /**
+            Register condition trig status at a specific time
+            @param time: time to register the condition status
+            @param value: condition status
+            @return true if the value was registered, false otherwise
+        */
+        bool RegisterValue(double time, bool value);
+        void Reset();
+        bool GetValueAtTime(double time);
+    private:
+        struct ConditionValue
+        {
+            double time_;
+            bool   value_;
+        };
+        std::vector<ConditionValue> values_;
+    };
+
     class OSCCondition
     {
     public:
@@ -38,7 +59,6 @@ namespace scenarioengine
         {
             IDLE,
             EVALUATED,
-            TIMER,
             TRIGGERED
         };
 
@@ -61,10 +81,10 @@ namespace scenarioengine
         ConditionType      base_type_;
         std::string        name_;
         double             delay_;
-        bool               last_result_;  // result from last evaluation
+        bool               last_result_;  // result from last evaluation at current time
         ConditionEdge      edge_;
-        SE_SimulationTimer timer_;
         ConditionState     state_;
+        ConditionDelay     history_;
 
         OSCCondition(ConditionType base_type)
             : base_type_(base_type),
@@ -79,6 +99,7 @@ namespace scenarioengine
         bool         Evaluate(double sim_time);
         virtual bool CheckCondition(double sim_time) = 0;
         virtual void Log();
+        bool         GetResult();
         bool         CheckEdge(bool new_value, bool old_value, OSCCondition::ConditionEdge edge);
         std::string  Edge2Str();
         virtual void Reset();
@@ -438,6 +459,7 @@ namespace scenarioengine
         roadmanager::Position* pos_;
         void                   Log();
     };
+
     class TrigByStandStill : public TrigByEntity
     {
     public:

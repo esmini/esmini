@@ -186,7 +186,19 @@ bool EvaluateRule(bool a, bool b, Rule rule)
 
 void OSCCondition::Log()
 {
-    LOG_INFO("{} result: {}", name_, last_result_);
+    if (delay_ > SMALL_NUMBER)
+    {
+        LOG_INFO("{} result: {} after delay: {:.2f}", name_, GetResult(), delay_);
+    }
+    else
+    {
+        LOG_INFO("{} result: {}", name_, GetResult());
+    }
+}
+
+bool OSCCondition::GetResult()
+{
+    return state_ == ConditionState::TRIGGERED;
 }
 
 bool OSCCondition::CheckEdge(bool new_value, bool old_value, OSCCondition::ConditionEdge edge)
@@ -262,35 +274,11 @@ bool EvalDone(bool result, TrigByEntity::TriggeringEntitiesRule rule)
 
 void OSCCondition::Reset()
 {
-    timer_.Reset();
+    history_.Reset();
 }
 
 bool OSCCondition::Evaluate(double sim_time)
 {
-    (void)sim_time;
-
-    if (state_ == ConditionState::TIMER)
-    {
-        if (timer_.Expired(sim_time))
-        {
-            LOG_INFO("{} timer expired at {:.2f} seconds", name_, timer_.Elapsed(sim_time));
-            timer_.Reset();
-            state_ = ConditionState::TRIGGERED;
-
-            // Trigger the global condition callback
-            if (conditionCallback != nullptr)
-            {
-                conditionCallback(name_.c_str(), sim_time);
-            }
-
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
     bool result  = CheckCondition(sim_time);
     bool trig    = CheckEdge(result, last_result_, edge_);
     last_result_ = result;
@@ -300,14 +288,14 @@ bool OSCCondition::Evaluate(double sim_time)
         state_ = ConditionState::EVALUATED;
     }
 
-    if (delay_ > 0 && trig && state_ < ConditionState::TIMER)
+    if (history_.RegisterValue(sim_time, trig) &&
+        trig)
     {
-        timer_.Start(sim_time, delay_);
-        state_ = ConditionState::TIMER;
-        LOG_INFO("{} timer {:.2f}s started", name_, delay_);
-        return false;
+        Log();
     }
 
+    // adjust trig status based on delay
+    trig = history_.GetValueAtTime(sim_time - delay_);
     if (trig)
     {
         state_ = ConditionState::TRIGGERED;
@@ -485,7 +473,7 @@ void TrigByState::Log()
 {
     LOG_INFO("{} == {}, element: {} state: {}, edge: {}",
              name_,
-             last_result_ ? "true" : "false",
+             GetResult(),
              element_->GetName(),
              CondElementState2Str(target_element_state_),
              Edge2Str());
@@ -558,7 +546,7 @@ bool TrigBySimulationTime::CheckCondition(double sim_time)
 
 void TrigBySimulationTime::Log()
 {
-    LOG_INFO("{} == {}, {:.4f} {} {:.4f} edge: {}", name_, last_result_ ? "true" : "false", sim_time_, Rule2Str(rule_), value_, Edge2Str());
+    LOG_INFO("{} == {}, {:.4f} {} {:.4f} edge: {}", name_, GetResult(), sim_time_, Rule2Str(rule_), value_, Edge2Str());
 }
 
 bool TrigByParameter::CheckCondition(double sim_time)
@@ -707,7 +695,7 @@ bool TrigByTimeHeadway::CheckCondition(double sim_time)
 
 void TrigByTimeHeadway::Log()
 {
-    LOG_INFO("{} == {}, HWT: {:.2f} {} {:.2f}, edge {}", name_, last_result_ ? "true" : "false", hwt_, Rule2Str(rule_), value_, Edge2Str());
+    LOG_INFO("{} == {}, HWT: {:.2f} {} {:.2f}, edge {}", name_, GetResult(), hwt_, Rule2Str(rule_), value_, Edge2Str());
 }
 
 bool TrigByTimeToCollision::CheckCondition(double sim_time)
@@ -827,11 +815,11 @@ void TrigByTimeToCollision::Log()
 {
     if (ttc_ < 0)
     {
-        LOG_INFO("{} == {}, TTC: {} {} {:.2f}, edge {}", name_, last_result_ ? "true" : "false", "Inf", Rule2Str(rule_), value_, Edge2Str());
+        LOG_INFO("{} == {}, TTC: {} {} {:.2f}, edge {}", name_, GetResult(), "Inf", Rule2Str(rule_), value_, Edge2Str());
     }
     else
     {
-        LOG_INFO("{} == {}, TTC: {:.2f} {} {:.2f}, edge {}", name_, last_result_ ? "true" : "false", ttc_, Rule2Str(rule_), value_, Edge2Str());
+        LOG_INFO("{} == {}, TTC: {:.2f} {} {:.2f}, edge {}", name_, GetResult(), ttc_, Rule2Str(rule_), value_, Edge2Str());
     }
 }
 
@@ -901,7 +889,7 @@ void TrigByReachPosition::Log()
     {
         LOG_INFO("{} == {}, distance {:.2f} < tolerance ({:.2f}), orientation [{:.2f}, {:.2f}, {:.2f}] (tolerance {:.2f}), edge: {}",
                  name_,
-                 last_result_ ? "true" : "false",
+                 GetResult(),
                  dist_,
                  tolerance_,
                  triggered_by_entities_[0]->pos_.GetH(),
@@ -912,7 +900,7 @@ void TrigByReachPosition::Log()
     }
     else
     {
-        LOG_INFO("{} == {}, distance {:.2f} < tolerance ({:.2f}), edge: {}", name_, last_result_ ? "true" : "false", dist_, tolerance_, Edge2Str());
+        LOG_INFO("{} == {}, distance {:.2f} < tolerance ({:.2f}), edge: {}", name_, GetResult(), dist_, tolerance_, Edge2Str());
     }
 }
 
@@ -963,7 +951,7 @@ bool TrigByDistance::CheckCondition(double sim_time)
 
 void TrigByDistance::Log()
 {
-    LOG_INFO("{} == {}, dist: {:.2f} {} {:.2f}, edge: {}", name_, last_result_ ? "true" : "false", dist_, Rule2Str(rule_), value_, Edge2Str());
+    LOG_INFO("{} == {}, dist: {:.2f} {} {:.2f}, edge: {}", name_, GetResult(), dist_, Rule2Str(rule_), value_, Edge2Str());
 }
 
 bool TrigByRelativeDistance::CheckCondition(double sim_time)
@@ -1014,7 +1002,7 @@ void TrigByRelativeDistance::Log()
 {
     LOG_INFO("{} == {}, rel_dist: {:.2f} {} {:.2f}, edge: {}",
              name_,
-             last_result_ ? "true" : "false",
+             GetResult(),
              rel_dist_,
              Rule2Str(rule_),
              value_,
@@ -1104,7 +1092,7 @@ void TrigByCollision::Log()
     {
         LOG_INFO("collision {} between {} and {}", i, collision_pair_[i].object0->name_, collision_pair_[i].object1->name_);
     }
-    LOG_INFO("{} == {} edge: {}", name_, last_result_ ? "true" : "false", Edge2Str());
+    LOG_INFO("{} == {} edge: {}", name_, GetResult(), Edge2Str());
 }
 
 bool TrigByTraveledDistance::CheckCondition(double sim_time)
@@ -1142,7 +1130,7 @@ bool TrigByTraveledDistance::CheckCondition(double sim_time)
 
 void TrigByTraveledDistance::Log()
 {
-    LOG_INFO("{} == {}, traveled_dist: {:.2f} >= {:.2f}, edge: {}", name_, last_result_ ? "true" : "false", odom_, value_, Edge2Str());
+    LOG_INFO("{} == {}, traveled_dist: {:.2f} >= {:.2f}, edge: {}", name_, GetResult(), odom_, value_, Edge2Str());
 }
 
 bool TrigByEndOfRoad::CheckCondition(double sim_time)
@@ -1185,7 +1173,7 @@ void TrigByEndOfRoad::Log()
 {
     LOG_INFO("{} == {}, end_of_road duration: {:.2f} >= {:.2f}, edge: {}",
              name_,
-             last_result_ ? "true" : "false",
+             GetResult(),
              current_duration_,
              duration_,
              Edge2Str());
@@ -1231,7 +1219,7 @@ void TrigByStandStill::Log()
 {
     LOG_INFO("{} == {}, stand_still duration: {:.2f} >= {:.2f}, edge: {}",
              name_,
-             last_result_ ? "true" : "false",
+             GetResult(),
              current_duration_,
              duration_,
              Edge2Str());
@@ -1277,7 +1265,7 @@ void TrigByOffRoad::Log()
 {
     LOG_INFO("{} == {}, off road duration: {:.2f} >= {:.2f}, edge: {}",
              name_,
-             last_result_ ? "true" : "false",
+             GetResult(),
              current_duration_,
              duration_,
              Edge2Str());
@@ -1335,7 +1323,7 @@ void TrigByAcceleration::Log()
 {
     LOG_INFO("{} == {}, acceleration: {:.2f} {} {:.2f}, edge: {}",
              name_,
-             last_result_ ? "true" : "false",
+             GetResult(),
              current_acceleration_,
              Rule2Str(rule_),
              value_,
@@ -1394,7 +1382,7 @@ void TrigBySpeed::Log()
 {
     LOG_INFO("{} == {}, speed: {:.2f} {} {:.2f}, edge: {}",
              name_,
-             last_result_ ? "true" : "false",
+             GetResult(),
              current_speed_,
              Rule2Str(rule_),
              value_,
@@ -1472,7 +1460,7 @@ void TrigByRelativeSpeed::Log()
 {
     LOG_INFO("{} == {}, relative_speed: {:.2f} {} {:.2f}, edge: {}",
              name_,
-             last_result_ ? "true" : "false",
+             GetResult(),
              current_rel_speed_,
              Rule2Str(rule_),
              value_,
@@ -1593,5 +1581,81 @@ bool TrigByRelativeClearance::CheckCondition(double sim_time)
 
 void TrigByRelativeClearance::Log()
 {
-    LOG_INFO("{} == {}, edge: {}", name_, last_result_ ? "true" : "false", Edge2Str());
+    LOG_INFO("{} == {}, edge: {}", name_, GetResult(), Edge2Str());
+}
+
+bool ConditionDelay::RegisterValue(double time, bool value)
+{
+    if (values_.empty())
+    {
+        // add first value
+        values_.push_back({time, value});
+        return true;
+    }
+    else if (time < values_.back().time_)
+    {
+        LOG_ERROR("Unexpected time value {:.2f} < lastest registered {:.2f}", time, values_.back().time_);
+    }
+    else if (time < values_.back().time_ + SMALL_NUMBER)
+    {
+        // ignore value at already registered time
+        if (value != values_.back().value_)
+        {
+            LOG_ERROR("Ignoring unexpected value changed ({} -> {}) at same time value {:.2f}",
+                      values_.back().value_,
+                      value,
+                      values_.back().time_);
+        }
+    }
+    else if (value != values_.back().value_)
+    {
+        // register new value at given time
+        values_.push_back({time, value});
+        return true;
+    }
+
+    return false;
+}
+
+void ConditionDelay::Reset()
+{
+    values_.clear();
+}
+
+bool ConditionDelay::GetValueAtTime(double time)
+{
+    if (values_.empty())
+    {
+        return false;
+    }
+
+    auto it = std::lower_bound(values_.begin(), values_.end(), time, [](const ConditionValue& p, double t) { return p.time_ < t + SMALL_NUMBER; });
+
+    // Handle edge cases:
+    if (it == values_.begin())
+    {
+        if (time < it->time_ + SMALL_NUMBER)
+        {
+            // Query time is before the first data point
+            return false;
+        }
+        else
+        {
+            // Return the value of the first data point
+            LOG_WARN("Unexpected hit condition first time value {:.2f} with {:.2f}", it->time_, time);
+            return it->value_;
+        }
+    }
+    else if (it == values_.end())
+    {
+        // Query time is after the last data point
+        return values_.back().value_;  // Or handle this case appropriately
+    }
+    else
+    {
+        // Return the value of the closest data point
+        return (it - 1)->value_;
+    }
+
+    return false;
 }
