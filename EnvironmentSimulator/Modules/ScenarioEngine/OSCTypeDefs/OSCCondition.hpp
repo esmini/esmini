@@ -86,7 +86,7 @@ namespace scenarioengine
         ConditionEdge  edge_;
         ConditionState state_;
         ConditionDelay history_;
-        bool           value_;
+        bool           cond_value_;
 
         OSCCondition(ConditionType base_type)
             : base_type_(base_type),
@@ -94,7 +94,7 @@ namespace scenarioengine
               last_result_(false),
               edge_(ConditionEdge::NONE),
               state_(ConditionState::IDLE),
-              value_(false)
+              cond_value_(false)
         {
         }
         virtual ~OSCCondition() = default;
@@ -522,6 +522,7 @@ namespace scenarioengine
         void        RegisterStateChange(StoryBoardElement* element, StoryBoardElement::State state, StoryBoardElement::Transition transition);
         bool        CheckState(StateChange state_change);
         std::string CondElementState2Str(CondElementState state);
+        std::string StateChangeToStr(StateChange state_change);
         std::string GetAdditionalLogInfo() override;
         void        Reset();
     };
@@ -567,7 +568,6 @@ namespace scenarioengine
         std::string value_;
         Rule        rule_;
         Parameters* parameters_;
-        std::string current_value_str_;
 
         bool CheckCondition(double sim_time);
         TrigByParameter() : TrigByValue(TrigByValue::Type::PARAMETER)
@@ -584,7 +584,6 @@ namespace scenarioengine
         std::string value_;
         Rule        rule_;
         Parameters* variables_;
-        std::string current_value_str_;
 
         bool CheckCondition(double sim_time);
         TrigByVariable() : TrigByValue(TrigByValue::Type::VARIABLE)

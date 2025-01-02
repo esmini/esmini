@@ -198,7 +198,7 @@ void OSCCondition::Log(bool trig, bool full)
 
 bool OSCCondition::GetValue()
 {
-    return value_;
+    return cond_value_;
 }
 
 bool OSCCondition::CheckEdge(bool new_value, bool old_value, OSCCondition::ConditionEdge edge)
@@ -298,7 +298,7 @@ bool OSCCondition::Evaluate(double sim_time)
 
     // adjust value based on delay
     bool adjusted_value = history_.GetValueAtTime(sim_time - delay_);
-    if (adjusted_value && adjusted_value != value_)
+    if (adjusted_value && adjusted_value != cond_value_)
     {
         // Whenever value changes to true, trigger the global condition callback
         if (conditionCallback != nullptr)
@@ -307,9 +307,9 @@ bool OSCCondition::Evaluate(double sim_time)
         }
     }
 
-    value_ = adjusted_value;
+    cond_value_ = adjusted_value;
 
-    return value_;
+    return cond_value_;
 }
 
 bool ConditionGroup::Evaluate(double sim_time)
@@ -396,6 +396,9 @@ bool TrigByState::CheckCondition(double sim_time)
     (void)sim_time;
     bool result = false;
 
+    // reset any registered transition, which is only valid for one frame
+    latest_state_change_.transition = StoryBoardElement::Transition::UNDEFINED_ELEMENT_TRANSITION;
+
     if (element_ == nullptr)
     {
         return false;
@@ -417,19 +420,64 @@ bool TrigByState::CheckCondition(double sim_time)
             else
             {
                 result = CheckState(state_change);
+                if (result == true)
+                {
+                    break;
+                }
             }
         }
 
         // register latest state change
         latest_state_change_ = state_change_.back();
 
-        // but reset the transition, which is only valid for one frame, keep only state and element
-        latest_state_change_.transition = StoryBoardElement::Transition::UNDEFINED_ELEMENT_TRANSITION;
-
         state_change_.clear();
     }
 
     return result;
+}
+
+std::string TrigByState::StateChangeToStr(StateChange state_change)
+{
+    std::string str;
+    if (state_change.state == StoryBoardElement::State::STANDBY)
+    {
+        str = "STANDBY / ";
+    }
+    else if (state_change.state == StoryBoardElement::State::RUNNING)
+    {
+        str = "RUNNING / ";
+    }
+    else if (state_change.state == StoryBoardElement::State::COMPLETE)
+    {
+        str = "COMPLETE / ";
+    }
+    else
+    {
+        str = "UNDEFINED_STATE / ";
+    }
+
+    if (state_change.transition == StoryBoardElement::Transition::END_TRANSITION)
+    {
+        str += "END_TRANSITION";
+    }
+    else if (state_change.transition == StoryBoardElement::Transition::SKIP_TRANSITION)
+    {
+        str += "SKIP_TRANSITION";
+    }
+    else if (state_change.transition == StoryBoardElement::Transition::START_TRANSITION)
+    {
+        str += "START_TRANSITION";
+    }
+    else if (state_change.transition == StoryBoardElement::Transition::STOP_TRANSITION)
+    {
+        str += "STOP_TRANSITION";
+    }
+    else
+    {
+        str += "UNDEFINED_TRANSITION";
+    }
+
+    return str;
 }
 
 bool TrigByState::CheckState(StateChange state_change)
@@ -472,10 +520,9 @@ bool TrigByState::CheckState(StateChange state_change)
 
 std::string TrigByState::GetAdditionalLogInfo()
 {
-    return fmt::format("{} == {}, element: {} state: {}, edge: {}",
-                       name_,
-                       GetValue(),
+    return fmt::format("{}, {} == {}, edge: {}",
                        element_->GetName(),
+                       StateChangeToStr(latest_state_change_),
                        CondElementState2Str(target_element_state_),
                        Edge2Str());
 }
@@ -553,8 +600,7 @@ std::string TrigBySimulationTime::GetAdditionalLogInfo()
 bool TrigByParameter::CheckCondition(double sim_time)
 {
     (void)sim_time;
-    bool result        = false;
-    current_value_str_ = "";
+    bool result = false;
 
     OSCParameterDeclarations::ParameterStruct* pe = parameters_->getParameterEntry(name_);
     if (pe == 0)
@@ -566,7 +612,6 @@ bool TrigByParameter::CheckCondition(double sim_time)
         return result;
     }
 
-    current_value_str_ = std::to_string(pe->value._int).c_str();
     if (pe->type == OSCParameterDeclarations::ParameterType::PARAM_TYPE_INTEGER)
     {
         result = EvaluateRule(pe->value._int, strtoi(value_), rule_);
@@ -593,14 +638,14 @@ bool TrigByParameter::CheckCondition(double sim_time)
 
 std::string TrigByParameter::GetAdditionalLogInfo()
 {
-    return fmt::format("parameter {} {} {} {} edge: {}", name_, current_value_str_, Rule2Str(rule_), value_, Edge2Str());
+    OSCParameterDeclarations::ParameterStruct* pe = parameters_->getParameterEntry(name_);
+    return fmt::format("{} {} {} {} edge: {}", name_, pe ? pe->value._string : "NOT_FOUND", Rule2Str(rule_), value_, Edge2Str());
 }
 
 bool TrigByVariable::CheckCondition(double sim_time)
 {
     (void)sim_time;
-    bool result        = false;
-    current_value_str_ = "";
+    bool result = false;
 
     OSCParameterDeclarations::ParameterStruct* pe = variables_->getParameterEntry(name_);
     if (pe == 0)
@@ -612,7 +657,6 @@ bool TrigByVariable::CheckCondition(double sim_time)
         return result;
     }
 
-    current_value_str_ = std::to_string(pe->value._int).c_str();
     if (pe->type == OSCParameterDeclarations::ParameterType::PARAM_TYPE_INTEGER)
     {
         result = EvaluateRule(pe->value._int, strtoi(value_), rule_);
@@ -639,7 +683,8 @@ bool TrigByVariable::CheckCondition(double sim_time)
 
 std::string TrigByVariable::GetAdditionalLogInfo()
 {
-    return fmt::format("variable {} {} {} {} edge: {}", name_, current_value_str_, Rule2Str(rule_), value_, Edge2Str());
+    OSCParameterDeclarations::ParameterStruct* ve = variables_->getParameterEntry(name_);
+    return fmt::format("variable {} {} {} {} edge: {}", name_, ve ? ve->value._string : "NOT_FOUND", Rule2Str(rule_), value_, Edge2Str());
 }
 
 bool TrigByTimeHeadway::CheckCondition(double sim_time)
@@ -696,7 +741,7 @@ bool TrigByTimeHeadway::CheckCondition(double sim_time)
 
 std::string TrigByTimeHeadway::GetAdditionalLogInfo()
 {
-    return fmt::format("{} == {}, HWT: {:.2f} {} {:.2f}, edge {}", name_, GetValue(), hwt_, Rule2Str(rule_), value_, Edge2Str());
+    return fmt::format("HWT: {:.2f} {} {:.2f}, edge {}", hwt_, Rule2Str(rule_), value_, Edge2Str());
 }
 
 bool TrigByTimeToCollision::CheckCondition(double sim_time)
@@ -816,11 +861,11 @@ std::string TrigByTimeToCollision::GetAdditionalLogInfo()
 {
     if (ttc_ < 0)
     {
-        return fmt::format("{} == {}, TTC: {} {} {:.2f}, edge {}", name_, GetValue(), "Inf", Rule2Str(rule_), value_, Edge2Str());
+        return fmt::format("TTC: {} {} {:.2f}, edge {}", "Inf", Rule2Str(rule_), value_, Edge2Str());
     }
     else
     {
-        return fmt::format("{} == {}, TTC: {:.2f} {} {:.2f}, edge {}", name_, GetValue(), ttc_, Rule2Str(rule_), value_, Edge2Str());
+        return fmt::format("TTC: {:.2f} {} {:.2f}, edge {}", ttc_, Rule2Str(rule_), value_, Edge2Str());
     }
 }
 
@@ -888,9 +933,7 @@ std::string TrigByReachPosition::GetAdditionalLogInfo()
 {
     if (checkOrientation_)
     {
-        return fmt::format("{} == {}, distance {:.2f} < tolerance ({:.2f}), orientation [{:.2f}, {:.2f}, {:.2f}] (tolerance {:.2f}), edge: {}",
-                           name_,
-                           GetValue(),
+        return fmt::format("distance {:.2f} < tolerance ({:.2f}), orientation [{:.2f}, {:.2f}, {:.2f}] (tolerance {:.2f}), edge: {}",
                            dist_,
                            tolerance_,
                            triggered_by_entities_[0]->pos_.GetH(),
@@ -901,7 +944,7 @@ std::string TrigByReachPosition::GetAdditionalLogInfo()
     }
     else
     {
-        return fmt::format("{} == {}, distance {:.2f} < tolerance ({:.2f}), edge: {}", name_, GetValue(), dist_, tolerance_, Edge2Str());
+        return fmt::format("distance {:.2f} < tolerance ({:.2f}), edge: {}", dist_, tolerance_, Edge2Str());
     }
 }
 
@@ -952,7 +995,7 @@ bool TrigByDistance::CheckCondition(double sim_time)
 
 std::string scenarioengine::TrigByDistance::GetAdditionalLogInfo()
 {
-    return fmt::format("{} == {}, dist: {:.2f} {} {:.2f}, edge: {}", name_, GetValue(), dist_, Rule2Str(rule_), value_, Edge2Str());
+    return fmt::format("dist: {:.2f} {} {:.2f}, edge: {}", dist_, Rule2Str(rule_), value_, Edge2Str());
 }
 
 bool TrigByRelativeDistance::CheckCondition(double sim_time)
@@ -1001,7 +1044,7 @@ bool TrigByRelativeDistance::CheckCondition(double sim_time)
 
 std::string TrigByRelativeDistance::GetAdditionalLogInfo()
 {
-    return fmt::format("{} == {}, rel_dist: {:.2f} {} {:.2f}, edge: {}", name_, GetValue(), rel_dist_, Rule2Str(rule_), value_, Edge2Str());
+    return fmt::format("rel_dist: {:.2f} {} {:.2f}, edge: {}", rel_dist_, Rule2Str(rule_), value_, Edge2Str());
 }
 
 bool TrigByCollision::CheckCondition(double sim_time)
@@ -1085,11 +1128,16 @@ std::string TrigByCollision::GetAdditionalLogInfo()
 {
     std::string str;
 
+    if (!collision_pair_.empty())
+    {
+        str = fmt::format("{} collision(s): ", collision_pair_.size(), collision_pair_.size());
+    }
+
     for (size_t i = 0; i < collision_pair_.size(); i++)
     {
-        str += fmt::format("collision {} between {} and {}", i, collision_pair_[i].object0->name_, collision_pair_[i].object1->name_);
+        str += fmt::format("{} and {}, ", collision_pair_[i].object0->name_, collision_pair_[i].object1->name_);
     }
-    str += fmt::format("{} == {} edge: {}", name_, GetValue(), Edge2Str());
+    str += fmt::format("edge: {}", Edge2Str());
 
     return str;
 }
@@ -1129,7 +1177,7 @@ bool TrigByTraveledDistance::CheckCondition(double sim_time)
 
 std::string TrigByTraveledDistance::GetAdditionalLogInfo()
 {
-    return fmt::format("traveled_dist: {:.2f}", odom_);
+    return fmt::format("traveled_dist: {:.2f} >= {:.2f}, edge: {}", odom_, value_, Edge2Str());
 }
 
 bool TrigByEndOfRoad::CheckCondition(double sim_time)
@@ -1170,7 +1218,7 @@ bool TrigByEndOfRoad::CheckCondition(double sim_time)
 
 std::string TrigByEndOfRoad::GetAdditionalLogInfo()
 {
-    return fmt::format("{} == {}, end_of_road duration: {:.2f} >= {:.2f}, edge: {}", name_, GetValue(), current_duration_, duration_, Edge2Str());
+    return fmt::format("end_of_road duration: {:.2f} >= {:.2f}, edge: {}", current_duration_, duration_, Edge2Str());
 }
 
 bool TrigByStandStill::CheckCondition(double sim_time)
@@ -1211,7 +1259,7 @@ bool TrigByStandStill::CheckCondition(double sim_time)
 
 std::string TrigByStandStill::GetAdditionalLogInfo()
 {
-    return fmt::format("{} == {}, stand_still duration: {:.2f} >= {:.2f}, edge: {}", name_, GetValue(), current_duration_, duration_, Edge2Str());
+    return fmt::format("stand_still duration: {:.2f} >= {:.2f}, edge: {}", current_duration_, duration_, Edge2Str());
 }
 
 bool TrigByOffRoad::CheckCondition(double sim_time)
@@ -1252,7 +1300,7 @@ bool TrigByOffRoad::CheckCondition(double sim_time)
 
 std::string TrigByOffRoad::GetAdditionalLogInfo()
 {
-    return fmt::format("{} == {}, off road duration: {:.2f} >= {:.2f}, edge: {}", name_, GetValue(), current_duration_, duration_, Edge2Str());
+    return fmt::format("off road duration: {:.2f} >= {:.2f}, edge: {}", current_duration_, duration_, Edge2Str());
 }
 
 bool TrigByAcceleration::CheckCondition(double sim_time)
@@ -1305,13 +1353,7 @@ bool TrigByAcceleration::CheckCondition(double sim_time)
 
 std::string TrigByAcceleration::GetAdditionalLogInfo()
 {
-    return fmt::format("{} == {}, acceleration: {:.2f} {} {:.2f}, edge: {}",
-                       name_,
-                       GetValue(),
-                       current_acceleration_,
-                       Rule2Str(rule_),
-                       value_,
-                       Edge2Str());
+    return fmt::format("acceleration: {:.2f} {} {:.2f}, edge: {}", current_acceleration_, Rule2Str(rule_), value_, Edge2Str());
 }
 
 bool TrigBySpeed::CheckCondition(double sim_time)
@@ -1436,13 +1478,7 @@ bool TrigByRelativeSpeed::CheckCondition(double sim_time)
 
 std::string TrigByRelativeSpeed::GetAdditionalLogInfo()
 {
-    return fmt::format("{} == {}, relative_speed: {:.2f} {} {:.2f}, edge: {}",
-                       name_,
-                       GetValue(),
-                       current_rel_speed_,
-                       Rule2Str(rule_),
-                       value_,
-                       Edge2Str());
+    return fmt::format("relative_speed: {:.2f} {} {:.2f}, edge: {}", current_rel_speed_, Rule2Str(rule_), value_, Edge2Str());
 }
 
 bool TrigByRelativeClearance::CheckCondition(double sim_time)
@@ -1559,7 +1595,7 @@ bool TrigByRelativeClearance::CheckCondition(double sim_time)
 
 std::string TrigByRelativeClearance::GetAdditionalLogInfo()
 {
-    return fmt::format("{} == {}, edge: {}", name_, GetValue(), Edge2Str());
+    return fmt::format("edge: {}", Edge2Str());
 }
 
 bool ConditionDelay::RegisterValue(double time, bool value)

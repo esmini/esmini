@@ -88,7 +88,7 @@
                             </Action>
                             <StartTrigger>
                                 <ConditionGroup>
-                                    <Condition conditionEdge="none" delay="0.0" name="event_reach_same_speed_trigger">
+                                    <Condition conditionEdge="none" delay="0.0" name="event_reach_same_speed_trigger1">
                                         <ByEntityCondition>
                                             <TriggeringEntities triggeringEntitiesRule="any">
                                                 <EntityRef entityRef="ego"/>
@@ -100,7 +100,7 @@
                                     </Condition>
                                 </ConditionGroup>
                                 <ConditionGroup>
-                                    <Condition conditionEdge="none" delay="0.0" name="event_reach_same_speed_trigger">
+                                    <Condition conditionEdge="none" delay="0.0" name="event_reach_same_speed_trigger2">
                                         <ByEntityCondition>
                                             <TriggeringEntities triggeringEntitiesRule="any">
                                                 <EntityRef entityRef="ego"/>
