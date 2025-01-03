@@ -3835,7 +3835,7 @@ Here follows a few scenario examples highlighting various useful features.
 To run the examples, grab and unzip the latest esmini *demo* (not bin) package, from https://github.com/esmini/esmini/releases/latest[here]. The run instructions assume you’re located in esmini root folder.
 
 ==== Example 1: scenario_nurb_straight_road
-Scenariofile: https://github.com/esmini/esmini/blob/dev/scenario_construct_examples/scenario_nurb_straight_road.xosc[scenario_nurb_straight_road.xosc]
+Scenariofile: https://github.com/esmini/esmini/blob/dev/resources/scenario_construct_examples/scenario_nurb_straight_road.xosc[scenario_nurb_straight_road.xosc]
 
 Target car (blue) cutting in, in front of Ego
 
@@ -3854,7 +3854,7 @@ Run as:
 `./bin/esmini --window 60 60 800 400 --osc ./resources/scenario_construct_examples/scenario_nurb_straight_road.xosc`
 
 ==== Example 2: scenario_nurb_curved_road
-Scenariofile: https://github.com/esmini/esmini/blob/dev/scenario_construct_examples/scenario_nurb_curved_road.xosc[scenario_nurb_curved_road.xosc]
+Scenariofile: https://github.com/esmini/esmini/blob/dev/resources/scenario_construct_examples/scenario_nurb_curved_road.xosc[scenario_nurb_curved_road.xosc]
 
 Same as above, but now with a curved road, demonstrating the adaptiveness of the lane change trajectory.
 
@@ -3865,7 +3865,7 @@ Run as:
 `./bin/esmini --window 60 60 800 400 --osc ./resources/scenario_construct_examples/scenario_nurb_curved_road.xosc`
 
 ==== Example 3: scenario_runner_with_acts
-Scenariofile: https://github.com/esmini/esmini/blob/dev/scenario_construct_examples/scenario_runner_with_acts.xosc[scenario_runner_with_acts.xosc]
+Scenariofile: https://github.com/esmini/esmini/blob/dev/resources/scenario_construct_examples/scenario_runner_with_acts.xosc[scenario_runner_with_acts.xosc]
 
 Another cut-in scenario. This example demonstrates how scenarios can refer to maneuvers in external catalogs.
 
