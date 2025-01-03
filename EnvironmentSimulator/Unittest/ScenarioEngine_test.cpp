@@ -2962,7 +2962,6 @@ TEST(ConditionTest, TestTTCAndLateralDist)
     RegisterParameterDeclarationCallback(nullptr, 0);
 }
 
-// tag::tc_TestConditionDelay[]
 TEST(ConditionTest, TestConditionDelay)
 {
     double dt = 0.1;
@@ -3005,7 +3004,6 @@ TEST(ConditionTest, TestConditionDelay)
 
     delete se;
 }
-// end::tc_TestConditionDelay[]
 
 TEST(ActionTest, TestRelativeLaneChangeAction)
 {

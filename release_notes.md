@@ -1,5 +1,19 @@
 ## esmini release notes
 
+### 2025-01-03 Version 2.44.0
+
+Fixed behavior:
+- Implement correct condition delay handling ([issue #371](https://github.com/esmini/esmini/issues/371))
+  - full condition evaluation history instead of simple timer
+  - now works with condition AND/OR grouping
+  - see more info [User guide - Condition delay](https://esmini.github.io/#_condition_delay)
+
+Improvements and fixes:
+- Fix no-response with some OpenDRIVE files ([issue #652](https://github.com/esmini/esmini/issues/652))
+
+Documentation:
+- Add new section [User guide - Scenario construction tips](https://esmini.github.io/#_scenario_construction_tips)
+
 ### 2024-12-30 Version 2.43.0
 
 Improvements and fixes:

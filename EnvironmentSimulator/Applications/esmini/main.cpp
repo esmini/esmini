@@ -49,14 +49,7 @@ static int execute_scenario(int argc, char* argv[])
         {
             return -1;
         }
-        printf("x %.2f y %.2f rid %d s %.2f t %.2f lid %d offset %.2f\n",
-               player->scenarioEngine->entities_.object_[0]->pos_.GetX(),
-               player->scenarioEngine->entities_.object_[0]->pos_.GetY(),
-               player->scenarioEngine->entities_.object_[0]->pos_.GetTrackId(),
-               player->scenarioEngine->entities_.object_[0]->pos_.GetS(),
-               player->scenarioEngine->entities_.object_[0]->pos_.GetT(),
-               player->scenarioEngine->entities_.object_[0]->pos_.GetLaneId(),
-               player->scenarioEngine->entities_.object_[0]->pos_.GetOffset());
+
         if (opt.GetOptionSet("return_nr_permutations"))
         {
             // Skip scenario, return immediately
