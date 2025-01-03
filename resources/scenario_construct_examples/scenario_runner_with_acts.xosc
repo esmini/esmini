@@ -1,0 +1,132 @@
+<OpenSCENARIO xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="OpenScenario.xsd">
+   <FileHeader description="reusable" author="Mandolin" revMajor="1" revMinor="2" date="2023-12-20T14:10:50.292001"/>
+   <CatalogLocations>
+      <VehicleCatalog>
+         <Directory path="../xosc/Catalogs/Vehicles"/>
+      </VehicleCatalog>
+      <ManeuverCatalog>
+         <Directory path="Catalogs/Maneuvers"/>
+      </ManeuverCatalog>
+   </CatalogLocations>
+   <RoadNetwork>
+      <LogicFile filepath="scenario_runner_with_acts.xodr"/>
+   </RoadNetwork>
+   <Entities>
+      <ScenarioObject name="Ego">
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>
+      </ScenarioObject>
+      <ScenarioObject name="Target">
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_blue"/>
+      </ScenarioObject>
+   </Entities>
+   <Storyboard>
+      <Init>
+         <Actions>
+            <Private entityRef="Ego">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="2" laneId="1" s="500.0" offset="0.0"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step" value="0.0" dynamicsDimension="distance"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="7.0"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+            </Private>
+            <Private entityRef="Target">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="2" laneId="2" s="530.0" offset="0.0"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step" value="0.0" dynamicsDimension="distance"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="12.0"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+            </Private>
+         </Actions>
+      </Init>
+      <Story name="story_target act">
+         <Act name="target act">
+            <ManeuverGroup name="target_man_gr" maximumExecutionCount="1">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="Target"/>
+               </Actors>
+               <CatalogReference catalogName="my_trajectory_catalog" entryName="full trajectory">
+                  <ParameterAssignments>
+                     <ParameterAssignment parameterRef="$lane_width" value="3"/>
+                     <ParameterAssignment parameterRef="$traj_length" value="25"/>
+                     <ParameterAssignment parameterRef="$entity_name" value="Target"/>
+                     <ParameterAssignment parameterRef="$cutin_direction" value="1"/>
+                     <ParameterAssignment parameterRef="$target_init_speed" value="12"/>
+                  </ParameterAssignments>
+               </CatalogReference>
+            </ManeuverGroup>
+            <StartTrigger>
+               <ConditionGroup>
+                  <Condition name="Target_distance" delay="0.0" conditionEdge="none">
+                     <ByEntityCondition>
+                        <TriggeringEntities triggeringEntitiesRule="any">
+                           <EntityRef entityRef="Target"/>
+                        </TriggeringEntities>
+                        <EntityCondition>
+                           <RelativeDistanceCondition value="2" freespace="true" entityRef="Ego" rule="greaterThan" relativeDistanceType="longitudinal" coordinateSystem="entity"/>
+                        </EntityCondition>
+                     </ByEntityCondition>
+                  </Condition>
+                  <Condition name="Target_headway" delay="0.0" conditionEdge="none">
+                     <ByEntityCondition>
+                        <TriggeringEntities triggeringEntitiesRule="any">
+                           <EntityRef entityRef="Ego"/>
+                        </TriggeringEntities>
+                        <EntityCondition>
+                           <TimeHeadwayCondition entityRef="Target" value="0.0" relativeDistanceType="longitudinal" coordinateSystem="road" freespace="true" rule="greaterThan"/>
+                        </EntityCondition>
+                     </ByEntityCondition>
+                  </Condition>
+               </ConditionGroup>
+            </StartTrigger>
+            <StopTrigger/>
+         </Act>
+      </Story>
+      <StopTrigger>
+         <ConditionGroup>
+            <Condition name="endtrigger" delay="3.0" conditionEdge="none">
+               <ByValueCondition>
+                  <StoryboardElementStateCondition storyboardElementType="act" storyboardElementRef="target act" state="completeState"/>
+               </ByValueCondition>
+            </Condition>
+         </ConditionGroup>
+         <ConditionGroup>
+            <Condition name="target_collision_condition" delay="0.5" conditionEdge="none">
+               <ByEntityCondition>
+                  <TriggeringEntities triggeringEntitiesRule="any">
+                     <EntityRef entityRef="Target"/>
+                  </TriggeringEntities>
+                  <EntityCondition>
+                     <CollisionCondition>
+                        <EntityRef entityRef="Ego"/>
+                     </CollisionCondition>
+                  </EntityCondition>
+               </ByEntityCondition>
+            </Condition>
+         </ConditionGroup>
+      </StopTrigger>
+   </Storyboard>
+</OpenSCENARIO>

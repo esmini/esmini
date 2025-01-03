@@ -1,0 +1,209 @@
+<OpenSCENARIO xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="OpenScenario.xsd">
+   <FileHeader description="trajectory_example" author="Mandolin" revMajor="1" revMinor="2" date="2023-12-20T14:13:41.020578"/>
+   <CatalogLocations>
+      <VehicleCatalog>
+         <Directory path="../xosc/Catalogs/Vehicles"/>
+      </VehicleCatalog>
+   </CatalogLocations>
+   <RoadNetwork>
+      <LogicFile filepath="scenario_nurb_curved_road.xodr"/>
+   </RoadNetwork>
+   <Entities>
+      <ScenarioObject name="Ego">
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>
+      </ScenarioObject>
+      <ScenarioObject name="Target">
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_blue"/>
+      </ScenarioObject>
+   </Entities>
+   <Storyboard>
+      <Init>
+         <Actions>
+            <Private entityRef="Ego">
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="28.0"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="0" laneId="-3" s="200.0" offset="0.0"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+            </Private>
+            <Private entityRef="Target">
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="40.0"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="0" laneId="-2" s="200.0" offset="0.0"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+            </Private>
+         </Actions>
+      </Init>
+      <Story name="story_act_maneuvuergroup_full trajectory">
+         <Act name="act_maneuvuergroup_full trajectory">
+            <ManeuverGroup name="maneuvuergroup_full trajectory" maximumExecutionCount="1">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="Target"/>
+               </Actors>
+               <Maneuver name="full trajectory">
+                  <ParameterDeclarations>
+                     <ParameterDeclaration name="lane_width" parameterType="double" value="3"/>
+                     <ParameterDeclaration name="traj_length" parameterType="double" value="100"/>
+                     <ParameterDeclaration name="entity_name" parameterType="string" value="Target"/>
+                     <ParameterDeclaration name="cutin_direction" parameterType="double" value="-1"/>
+                     <ParameterDeclaration name="target_init_speed" parameterType="double" value="40"/>
+                  </ParameterDeclarations>
+                  <Event name="${$entity_name + trajectory event}" priority="overwrite" maximumExecutionCount="1">
+                     <Action name="${$entity_name + trajectory action}">
+                        <PrivateAction>
+                           <RoutingAction>
+                              <FollowTrajectoryAction>
+                                 <TrajectoryRef>
+                                    <Trajectory name="trajectory" closed="false">
+                                       <Shape>
+                                          <Nurbs order="4">
+                                             <ControlPoint weight="1.0">
+                                                <Position>
+                                                   <RelativeLanePosition entityRef="$entity_name" dsLane="0.0" offset="0.0" dLane="0"/>
+                                                </Position>
+                                             </ControlPoint>
+                                             <ControlPoint weight="1.0">
+                                                <Position>
+                                                   <RelativeLanePosition entityRef="$entity_name" dsLane="${$traj_length*0.2}" offset="${$cutin_direction*$lane_width*0.1}" dLane="0"/>
+                                                </Position>
+                                             </ControlPoint>
+                                             <ControlPoint weight="1.0">
+                                                <Position>
+                                                   <RelativeLanePosition entityRef="$entity_name" dsLane="${$traj_length*0.6}" offset="${$cutin_direction*$lane_width*0.5}" dLane="0"/>
+                                                </Position>
+                                             </ControlPoint>
+                                             <ControlPoint weight="1.0">
+                                                <Position>
+                                                   <RelativeLanePosition entityRef="$entity_name" dsLane="${$traj_length*0.8}" offset="${$cutin_direction*$lane_width*0.9}" dLane="0"/>
+                                                </Position>
+                                             </ControlPoint>
+                                             <ControlPoint weight="1.0">
+                                                <Position>
+                                                   <RelativeLanePosition entityRef="$entity_name" dsLane="${$traj_length}" offset="${$cutin_direction*$lane_width}" dLane="0"/>
+                                                </Position>
+                                             </ControlPoint>
+                                             <Knot value="0"/>
+                                             <Knot value="0"/>
+                                             <Knot value="0"/>
+                                             <Knot value="0"/>
+                                             <Knot value="0.5"/>
+                                             <Knot value="1"/>
+                                             <Knot value="1"/>
+                                             <Knot value="1"/>
+                                             <Knot value="1"/>
+                                          </Nurbs>
+                                       </Shape>
+                                    </Trajectory>
+                                 </TrajectoryRef>
+                                 <TimeReference>
+                                    <None/>
+                                 </TimeReference>
+                                 <TrajectoryFollowingMode followingMode="position"/>
+                              </FollowTrajectoryAction>
+                           </RoutingAction>
+                        </PrivateAction>
+                     </Action>
+                     <Action name="${$entity_name + speed profile}">
+                        <PrivateAction>
+                           <LongitudinalAction>
+                              <SpeedProfileAction followingMode="position">
+                                 <SpeedProfileEntry speed="${1*$target_init_speed}" time="${0*$traj_length/$target_init_speed}"/>
+                                 <SpeedProfileEntry speed="${0.8*$target_init_speed}" time="${0.3666666666666667*$traj_length/$target_init_speed}"/>
+                                 <SpeedProfileEntry speed="${0.7*$target_init_speed}" time="${0.44*$traj_length/$target_init_speed}"/>
+                                 <SpeedProfileEntry speed="${0.8*$target_init_speed}" time="${0.4533333333333333*$traj_length/$target_init_speed}"/>
+                              </SpeedProfileAction>
+                           </LongitudinalAction>
+                        </PrivateAction>
+                     </Action>
+                  </Event>
+                  <Event name="${$entity_name + straightening event}" priority="override" maximumExecutionCount="1">
+                     <Action name="${$entity_name + straightening}">
+                        <PrivateAction>
+                           <RoutingAction>
+                              <FollowTrajectoryAction>
+                                 <TrajectoryRef>
+                                    <Trajectory name="${$entity_name + straightening trajectory}" closed="false">
+                                       <Shape>
+                                          <Polyline>
+                                             <Vertex>
+                                                <Position>
+                                                   <RelativeLanePosition entityRef="$entity_name" dsLane="0.0" offset="0.0" dLane="0"/>
+                                                </Position>
+                                             </Vertex>
+                                             <Vertex>
+                                                <Position>
+                                                   <RelativeLanePosition entityRef="$entity_name" dsLane="0.1" offset="0.0" dLane="0"/>
+                                                </Position>
+                                             </Vertex>
+                                          </Polyline>
+                                       </Shape>
+                                    </Trajectory>
+                                 </TrajectoryRef>
+                                 <TimeReference>
+                                    <None/>
+                                 </TimeReference>
+                                 <TrajectoryFollowingMode followingMode="position"/>
+                              </FollowTrajectoryAction>
+                           </RoutingAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="${$entity_name + straigening trigger}" delay="0.0" conditionEdge="none">
+                              <ByValueCondition>
+                                 <StoryboardElementStateCondition storyboardElementType="event" storyboardElementRef="${$entity_name + trajectory event}" state="completeState"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+            </ManeuverGroup>
+            <StartTrigger>
+               <ConditionGroup>
+                  <Condition name="act_start" delay="0.0" conditionEdge="rising">
+                     <ByValueCondition>
+                        <SimulationTimeCondition value="0.0" rule="greaterThan"/>
+                     </ByValueCondition>
+                  </Condition>
+               </ConditionGroup>
+            </StartTrigger>
+            <StopTrigger/>
+         </Act>
+      </Story>
+      <StopTrigger>
+         <ConditionGroup>
+            <Condition name="endtrigger" delay="0.0" conditionEdge="none">
+               <ByValueCondition>
+                  <SimulationTimeCondition value="10.0" rule="greaterThan"/>
+               </ByValueCondition>
+            </Condition>
+         </ConditionGroup>
+      </StopTrigger>
+   </Storyboard>
+</OpenSCENARIO>

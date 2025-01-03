@@ -3767,6 +3767,154 @@ from Linux terminal or Windows PowerShell: +
 == Hello World programming tutorial
 include::../Hello-World_coding-example/tutorial.adoc[leveloffset=+1, lines=3..-1]
 
+== Scenario construction tips
+
+We often get questions regarding construction of scenarios. We also have seen many scenarios that could be improved in various ways.
+
+As long as a scenario validates (try https://github.com/esmini/esmini/blob/dev/scripts/run_schema_comply.py[run_schema_comply.py]) and runs as expected, the scenario does the job. One beauty of OpenSCENARIO XML and OpenDRIVE is the low threshold to get started.
+
+For example, consider recorded scenarios: Roads can be represented in OpenDRIVE by a sequence of line segments, connecting measure points. Similarly, recorded driving data can easily be converted into OpenSCENARIO XML polyline trajectories.
+
+Although the above approach is easy, it results in inefficient (large data), non precise (line segments approximating the real world scenario). Also, the line-segments approach results in gaps and/or discontinuities which might cause trouble for sensor models.
+
+In this section we present a few learnings and ideas on how scenarios can be designed in a way unlocking the full potential of the standards in terms of quality, flexibility, efficiency, and control.
+
+=== OpenDRIVE
+
+- The tangent of the road geometry should be continuous. So, curves should not be implemented as piecewise linear segments. For inspiration how to create curves from linear segments, see script example https://github.com/esmini/esmini/blob/dev/scripts/xodr_lines2curves.py[xodr_lines2curves.py].
+
+- For constructed roads it works well with line and/or arc segments, connected by clothoid segments ensuring continuous curvature change-rate. See steering wheel figure in
+https://publications.pages.asam.net/standards/ASAM_OpenDRIVE/ASAM_OpenDRIVE_Specification/latest/specification/09_geometries/09_01_introduction.html[OpenDRIVE geometry section].
+
+- For measured roads it's typically better to use parametric curves, https://publications.pages.asam.net/standards/ASAM_OpenDRIVE/ASAM_OpenDRIVE_Specification/latest/specification/09_geometries/09_06_param_poly3.html[paramPoly3].
+
+- Connected roads needs to be without gaps and overlaps. See https://publications.pages.asam.net/standards/ASAM_OpenDRIVE/ASAM_OpenDRIVE_Specification/latest/specification/10_roads/10_03_road_linkage.html[Road Linkage].
+
+- Longer geometries, lane sections and road elements are preferred. Variations along the road, for example adding or removing lanes, can be done with https://publications.pages.asam.net/standards/ASAM_OpenDRIVE/ASAM_OpenDRIVE_Specification/latest/specification/11_lanes/11_03_lane_sections.html[lane sections] rather than separate road segments.
+
+=== OpenSCENARIO XML
+- Whenever possible, make use of OpenSCENARIO XML https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/LongitudinalAction.html[longitudinal] and https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/LateralAction.html[lateral] actions. When that's not feasible, it’s useful to define https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/FollowTrajectoryAction.html[trajectories].
+
+- The shape within the trajectory element should be selected with care. For smooth trajectories, e.g. lane changes, we recommend https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/Nurbs.html[NURBS], with as sparse control points as feasible.
+
+- In general, we encourage to use https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/LanePosition.html[LanePosition] (road, lane, s, laneOffset), or when plausible, https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/RoadPosition.html[RoadPosition] (road, s, t) in favor of https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/WorldPosition.html[WorldPosition] (X, Y). Then actions and trajectories can be parameterized more easily and adapted to various roads, including various curvatures. For inspiration how X, Y positions can be converted into LanePositions, see script example https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/code-examples/convert_position_type/manipulate_positions.py[manipulate_positions.py].
+
+- Make sure the reference point for vehicles is mid rear axle, projected on ground, as defined https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/06_general_concepts/06_03_coordinate_systems.html#_vehicle_coordinate_system_xv_yv_zv[here] by the standard.
+
+We also get questions what are the most important actions and conditions. It's hard to rank, but here follows a few ones we found useful.
+
+==== Actions
+- https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/TeleportAction.html[TeleportAction] (most often used to establish entity initial position)
+- All basic https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/LongitudinalAction.html[longitudinal] and https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/LateralAction.html[lateral] actions
+- https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/AssignRouteAction.html[AssignRouteAction] (to ensure expected and deterministic choices in junctions)
+- https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/FollowTrajectoryAction.html[FollowTrajectoryAction]
+- https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/SpeedProfileAction.html[SpeedProfileAction] (sometimes useful for defining speed while follow trajectory, provides detailed control of speed)
+- https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/SynchronizeAction.html[SynchronizeAction] (useful in NCAP scenarios, for example. See https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/07_components_scenario/07_04_actions.html#_types_of_private_action[here] for further description)
+- https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/EntityAction.html[EntityAction] (Useful for recorded scenarios where road users enters and exits the scene)
+- https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/ControllerAction.html[ControllerAction] (hand over control to  external function, driver model, driver-in-the-loop...)
+
+==== Conditions
+Make use of the AND/OR logics based on combination of conditions and condition groups as described https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/07_components_scenario/07_06_conditions_triggers.html#_triggers_and_condition_groups[here].
+
+Commonly used conditions are:
+
+- https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/RelativeDistanceCondition.html[RelativeDistanceCondition]
+- https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/DistanceCondition.html[DistanceCondition]
+- https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/TimeHeadwayCondition.html[TimeHeadwayCondition]
+- https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/TimeToCollisionCondition.html[TimeToCollisionCondition]
+- https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/TraveledDistanceCondition.html[TraveledDistanceCondition]
+- https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/SimulationTimeCondition.html[SimulationTimeCondition]
+- https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/StoryboardElementStateCondition.html[StoryboardElementStateCondition]
+- https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/VariableCondition.html[VariableCondition]
+
+[[_scenario_creation_tips_examples]]
+=== Examples
+
+Here follows a few scenario examples highlighting various useful features.
+
+To run the examples, grab and unzip the latest esmini *demo* (not bin) package, from https://github.com/esmini/esmini/releases/latest[here]. The run instructions assume you’re located in esmini root folder.
+
+==== Example 1: scenario_nurb_straight_road
+Scenariofile: https://github.com/esmini/esmini/blob/dev/scenario_construct_examples/scenario_nurb_straight_road.xosc[scenario_nurb_straight_road.xosc]
+
+Target car (blue) cutting in, in front of Ego
+
+video::BnlQYsGqP-k[youtube,width=800,height=450,opts="autoplay,nocontrols,loop"]
+
+===== About the lane change action
+Based on NURBS curve makes it smooth in multiple degrees, and cheap in terms of storage (just a few control points compared to polylines, which typically results in non-continuous tangent and large files due to many vertices).
+
+Position of each control points is defined in terms of road coordinates (s, t), which makes it adapt to whatever road geometry. In other words, it works for any curvature. Further the `s` and `t` coordinates are parametric which makes it easy to customize the characteristics of the lane chance, e.g. duration and adapt to various lane widths.
+
+===== About the speed profile
+Compared to a sequence of individual SpeedActions, the SpeedProfile allows for any number of timestamped speed targets within one single action. Additionally, it offers much better control of the resulting profile curve (speed over time). E.g. user can specify max acceleration and jerk avoiding discontinuities.
+
+Run as:
+
+`./bin/esmini --window 60 60 800 400 --osc ./resources/scenario_construct_examples/scenario_nurb_straight_road.xosc`
+
+==== Example 2: scenario_nurb_curved_road
+Scenariofile: https://github.com/esmini/esmini/blob/dev/scenario_construct_examples/scenario_nurb_curved_road.xosc[scenario_nurb_curved_road.xosc]
+
+Same as above, but now with a curved road, demonstrating the adaptiveness of the lane change trajectory.
+
+video::p8YqZmDfLbM[youtube,width=800,height=450,opts="autoplay,nocontrols,loop"]
+
+Run as:
+
+`./bin/esmini --window 60 60 800 400 --osc ./resources/scenario_construct_examples/scenario_nurb_curved_road.xosc`
+
+==== Example 3: scenario_runner_with_acts
+Scenariofile: https://github.com/esmini/esmini/blob/dev/scenario_construct_examples/scenario_runner_with_acts.xosc[scenario_runner_with_acts.xosc]
+
+Another cut-in scenario. This example demonstrates how scenarios can refer to maneuvers in external catalogs.
+
+video::vpmcrKPz5eU[youtube,width=800,height=450,opts="autoplay,nocontrols,loop"]
+
+This scenario also makes use of headway time and relative distance conditions to create a combined condition that trigger only when target is ahead of Ego (distance measurements are absolute in OpenSCENARIO). The measurements are performed in road longitudinal coordinates, taking any curvature into account hence making the scenario fit any road geometry.
+
+Run as:
+
+`./bin/esmini --window 60 60 800 400 --osc ./resources/scenario_construct_examples/scenario_runner_with_acts.xosc`
+
+==== Example 4: ltap-od
+Scenariofile: https://github.com/esmini/esmini/blob/dev/resources/xosc/ltap-od.xosc[ltap-od.xosc]
+
+Ego and target approaching intersection from opposites directions. Ego plan to go straight, target plan to turn left. To enforce a critical situation target is assigned a SynchronizeAction which will adapt its speed so that it arrives at the intersection whenever Ego is.
+
+video::PQ3dZJ8wpuI[youtube,width=800,height=450,opts="autoplay,nocontrols,loop"]
+
+In this example an interactive controller is assigned to Ego, allowing the user to control it with the arrow keys. The controller can be removed or disabled.
+
+Run as:
+
+`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/ltap-od.xosc`
+
+Drive Ego with arrow keys.
+
+Disable controller:
+
+`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/ltap-od.xosc --disable_controllers`
+
+==== Example 5: cut-in
+Scenariofile: https://github.com/esmini/esmini/blob/dev/resources/xosc/cut-in.xosc[cut-in.xosc]
+
+video::9qvDUpq7XM4[youtube,width=800,height=450,opts="autoplay,nocontrols,loop"]
+
+Red target car drives 20% faster than Ego, so the overtake is inevitable. Target will then perform lane change and brake maneuvers triggered by different HWT conditions.
+
+This scenario demonstrates how SpeedAction can operate in a continuous mode, maintaining a relative speed specified either as offset or factor.
+
+Run as:
+
+`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in.xosc`
+
+Interactive variant:
+
+`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in_interactive.xosc`
+
+Drive with arrow keys, notice how the red car adapts to Ego speed.
+
 == Run ASAM OpenSCENARIO examples
 
 With some limitations (see details https://github.com/esmini/esmini/blob/master/osc_coverage.txt[here]) esmini can play the example scenarios provided with the ASAM OpenSCENARIO v1.1 release bundle.

@@ -1,0 +1,83 @@
+<OpenDRIVE>
+   <header name="my parametrized road" revMajor="1" revMinor="5" date="2023-12-20 14:10:50.289704" north="0.0" south="0.0" east="0.0" west="0.0"/>
+   <road rule="RHT" id="2" junction="-1" length="1200.0">
+      <link/>
+      <planView>
+         <geometry s="0" x="0" y="0" hdg="0" length="400">
+            <line/>
+         </geometry>
+         <geometry s="400" x="400.0" y="0.0" hdg="0" length="150.0">
+            <spiral curvStart="1e-07" curvEnd="0.01"/>
+         </geometry>
+         <geometry s="550.0" x="541.7791538023043" y="36.020698119124276" hdg="0.7500075" length="100.0">
+            <arc curvature="0.01"/>
+         </geometry>
+         <geometry s="650.0" x="572.0131900353208" y="127.01441732928653" hdg="1.7500075000000002" length="150.0">
+            <spiral curvStart="0.01" curvEnd="1e-07"/>
+         </geometry>
+         <geometry s="800.0" x="479.9834049653875" y="240.72166338629205" hdg="2.5000150000000003" length="400">
+            <line/>
+         </geometry>
+      </planView>
+      <lateralProfile/>
+      <lanes>
+         <laneSection s="0">
+            <left>
+               <lane id="3" type="driving" level="false">
+                  <link/>
+                  <width a="3.0" b="0.0" c="-0.0" d="0.0" sOffset="0"/>
+                  <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>
+               </lane>
+               <lane id="2" type="driving" level="false">
+                  <link/>
+                  <width a="3.0" b="0.0" c="-0.0" d="0.0" sOffset="0"/>
+                  <roadMark sOffset="0" type="broken" weight="standard" color="standard" height="0.02" width="0.2">
+                     <type name="broken" width="0.2">
+                        <line length="3" space="9" tOffset="0" width="0.15" sOffset="0"/>
+                     </type>
+                  </roadMark>
+               </lane>
+               <lane id="1" type="driving" level="false">
+                  <link/>
+                  <width a="3.0" b="0.0" c="-0.0" d="0.0" sOffset="0"/>
+                  <roadMark sOffset="0" type="broken" weight="standard" color="standard" height="0.02" width="0.2">
+                     <type name="broken" width="0.2">
+                        <line length="3" space="9" tOffset="0" width="0.15" sOffset="0"/>
+                     </type>
+                  </roadMark>
+               </lane>
+            </left>
+            <center>
+               <lane id="0" type="none" level="false">
+                  <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>
+               </lane>
+            </center>
+            <right>
+               <lane id="-1" type="driving" level="false">
+                  <link/>
+                  <width a="3.0" b="0.0" c="-0.0" d="0.0" sOffset="0"/>
+                  <roadMark sOffset="0" type="broken" weight="standard" color="standard" height="0.02" width="0.2">
+                     <type name="broken" width="0.2">
+                        <line length="3" space="9" tOffset="0" width="0.15" sOffset="0"/>
+                     </type>
+                  </roadMark>
+               </lane>
+               <lane id="-2" type="driving" level="false">
+                  <link/>
+                  <width a="3.0" b="0.0" c="-0.0" d="0.0" sOffset="0"/>
+                  <roadMark sOffset="0" type="broken" weight="standard" color="standard" height="0.02" width="0.2">
+                     <type name="broken" width="0.2">
+                        <line length="3" space="9" tOffset="0" width="0.15" sOffset="0"/>
+                     </type>
+                  </roadMark>
+               </lane>
+               <lane id="-3" type="driving" level="false">
+                  <link/>
+                  <width a="3.0" b="0.0" c="-0.0" d="0.0" sOffset="0"/>
+                  <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>
+               </lane>
+            </right>
+         </laneSection>
+      </lanes>
+   </road>
+</OpenDRIVE>
