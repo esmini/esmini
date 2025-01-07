@@ -149,7 +149,7 @@ image::Object_and_Marking_parsing_no_source.svg[]
 
 For detailed info of how objects are visualized, check the below flowchart
 
-image::ObjectAndMaringViewer.svg[]
+image::Object_Viewer_flowchart.svg[]
 
 Limitation:
 Corner referrence IDs are sorted in the clockwise direction. (write about the limitation)

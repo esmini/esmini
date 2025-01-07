@@ -3378,7 +3378,7 @@ void MarkingGenerator::GenerateMarkingSegmentFromOutlines(const std::vector<Outl
         MarkingSegment segment;
         Point2D        start;
         Point2D        end;
-        double         z1, z2;
+        double         z1 = 0.0, z2 = 0.0;
         if (marking_.GetCornerReferenceIdsSize() > 0)  // corner ids
         {
             std::vector<OutlineCorner*> cornerReferences;
@@ -3554,8 +3554,8 @@ void roadmanager::RMObject::GetCompoundOutlinesBB(double& length, double& width,
     }
     // Find max, min x and y,z and height
     // Initialize with first element's x value for clarity
-    double x, y, zTemp, heightTemp;
-    GetOutline(0).GetCornerByIndex(0)->GetPosLocal(x, y, z);
+    double x = 0.0, y = 0.0, zTemp = 0.0, heightTemp = 0.0;
+    GetOutline(0).GetCornerByIndex(0)->GetPosLocal(x, y, zTemp);
     double minX = x;
     double maxX = x;
     double minY = y;
@@ -3785,7 +3785,7 @@ std::vector<Outline> roadmanager::RMObject::CreateOutlinesFromRepeat(const Repea
         Outline outline(outlineId, Outline::FillType::FILL_TYPE_UNDEFINED, outlineOriginal.GetAreaType());  // new outline for each segment
         for (const auto& corner_original : outlineOriginal.GetCorners())
         {
-            double u, v, z;
+            double u = 0.0, v = 0.0, z = 0.0;
             corner_original->GetPosLocal(u, v, z);
             // calculate how much to add based on local dimension
             double x_to_add = GetValueOrZero(GetRepeatedObjLengthWithFactor(repeat, factor));
