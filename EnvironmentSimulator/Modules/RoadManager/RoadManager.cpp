@@ -4295,7 +4295,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                     value        = signal.attribute("value").value();
                     int osi_type = static_cast<int>(Signal::OSIType::TYPE_UNKNOWN);
 
-                    if (!type.empty())
+                    if (!type.empty() && type != "-1" && type != "none")
                     {
                         std::string type_to_find = Signal::GetCombinedTypeSubtypeValueStr(type, subtype, value);
 
@@ -4315,7 +4315,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                             }
                             if (osi_type == static_cast<int>(Signal::OSIType::TYPE_UNKNOWN))
                             {
-                                LOG_WARN("Signal Type {} doesn't exists for country {}", type_to_find, country);
+                                LOG_INFO("Signal Type {} doesn't exists for country {}", type_to_find, country);
                             }
                         }
                     }

@@ -2830,7 +2830,7 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
                 }
                 else
                 {
-                    LOG_ERROR("Failed to load signal {}.osgb / {}.osgb - use simple bounding box", filename, signal->GetName());
+                    LOG_DEBUG("Failed to load signal {}.osgb / {}.osgb - use simple bounding box", filename, signal->GetName());
                     osg::ref_ptr<osg::PositionAttitudeTransform> obj_standin =
                         dynamic_cast<osg::PositionAttitudeTransform*>(tx_bb->clone(osg::CopyOp::DEEP_COPY_ALL));
                     obj_standin->setNodeMask(NODE_MASK_SIGN);
