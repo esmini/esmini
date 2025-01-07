@@ -241,6 +241,11 @@ if(USE_SUMO)
         ${SUMO_LIBRARIES})
 endif()
 
+# add lib for missing filesystem functions in case g++ 7.5 is used
+target_link_libraries(
+    esmini_ros_node
+    "stdc++fs")
+
 add_dependencies(
     esmini_ros_node
     ${${PROJECT_NAME}_EXPORTED_TARGETS}
