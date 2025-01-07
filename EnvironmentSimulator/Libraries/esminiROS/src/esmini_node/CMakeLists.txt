@@ -16,7 +16,6 @@ else()
 endif()
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/locations.cmake)
-include(${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/version.cmake)
 set_project_internal_paths()
 set_project_external_paths()
 set_project_os_specific_paths()
@@ -203,7 +202,6 @@ add_executable(
     esmini_ros_node
     src/main.cpp
     src/esmini_node.cpp
-    src/version.cpp
     ${ESMINI_SOURCES})
 target_link_libraries(
     esmini_ros_node
