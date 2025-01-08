@@ -4368,7 +4368,7 @@ TEST_F(LaneOffsetIntersectionTest, TestGetClosestLaneIdx)
     LaneSection* lane_section = road->GetLaneSectionByIdx(0);
     double       offset       = 0.0;
     double       s            = 50.0;
-    int          lane_idx     = -1;
+    idx_t        lane_idx     = IDX_UNDEFINED;
 
     lane_idx = lane_section->GetClosestLaneIdx(s, -0.1, road->GetLaneOffset(s), -1, offset, true);
     EXPECT_EQ(lane_section->GetLaneIdByIdx(lane_idx), -2);

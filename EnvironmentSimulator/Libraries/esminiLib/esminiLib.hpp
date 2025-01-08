@@ -23,6 +23,7 @@
 typedef uint32_t id_t;
 
 #define SE_ID_UNDEFINED    0xffffffff
+#define SE_IDX_UNDEFINED   0xffffffff
 #define SE_PARAM_NAME_SIZE 32
 
 typedef struct
@@ -117,10 +118,10 @@ typedef struct
 
 typedef struct
 {
-    int far_left_lb_id;
-    int left_lb_id;
-    int right_lb_id;
-    int far_right_lb_id;
+    id_t far_left_lb_id;
+    id_t left_lb_id;
+    id_t right_lb_id;
+    id_t far_right_lb_id;
 } SE_LaneBoundaryId;
 
 typedef struct

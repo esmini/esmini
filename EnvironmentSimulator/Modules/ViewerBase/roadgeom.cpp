@@ -117,7 +117,7 @@ void RoadGeom::AddRoadMarkGeom(osg::ref_ptr<osg::Vec3Array> vertices, osg::ref_p
 int RoadGeom::AddRoadMarks(roadmanager::Lane* lane, osg::Group* parent)
 {
     (void)parent;
-    for (size_t i = 0; i < static_cast<unsigned int>(lane->GetNumberOfRoadMarks()); i++)
+    for (unsigned int i = 0; i < lane->GetNumberOfRoadMarks(); i++)
     {
         roadmanager::LaneRoadMark* lane_roadmark = lane->GetLaneRoadMarkByIdx(static_cast<int>(i));
 
@@ -126,11 +126,11 @@ int RoadGeom::AddRoadMarks(roadmanager::Lane* lane, osg::Group* parent)
             continue;
         }
 
-        for (int m = 0; m < lane_roadmark->GetNumberOfRoadMarkTypes(); m++)
+        for (unsigned int m = 0; m < lane_roadmark->GetNumberOfRoadMarkTypes(); m++)
         {
             roadmanager::LaneRoadMarkType* lane_roadmarktype = lane_roadmark->GetLaneRoadMarkTypeByIdx(m);
 
-            for (int n = 0; n < lane_roadmarktype->GetNumberOfRoadMarkTypeLines(); n++)
+            for (unsigned int n = 0; n < lane_roadmarktype->GetNumberOfRoadMarkTypeLines(); n++)
             {
                 roadmanager::LaneRoadMarkTypeLine* lane_roadmarktypeline = lane_roadmarktype->GetLaneRoadMarkTypeLineByIdx(n);
                 roadmanager::OSIPoints*            curr_osi_rm           = lane_roadmarktypeline->GetOSIPoints();
@@ -156,7 +156,7 @@ int RoadGeom::AddRoadMarks(roadmanager::Lane* lane, osg::Group* parent)
                             dot->addDrawable(shape);
                         }
 
-                        roadmanager::PointStruct osi_point0 = curr_osi_rm->GetPoint(static_cast<int>(q));
+                        roadmanager::PointStruct osi_point0 = curr_osi_rm->GetPoint(q);
 
                         osg::ref_ptr<osg::PositionAttitudeTransform> tx = new osg::PositionAttitudeTransform;
                         tx->setPosition(osg::Vec3(static_cast<float>(osi_point0.x - origin_[0]),
@@ -188,9 +188,9 @@ int RoadGeom::AddRoadMarks(roadmanager::Lane* lane, osg::Group* parent)
                     osg::ref_ptr<osg::Vec3Array>        vertices;
                     osg::ref_ptr<osg::DrawElementsUInt> indices;
 
-                    int startpoint = 0;
+                    unsigned int startpoint = 0;
 
-                    for (size_t q = 0; q < osi_points.size(); q++)
+                    for (unsigned int q = 0; q < static_cast<unsigned int>(osi_points.size()); q++)
                     {
                         // Find offset points of solid roadmark at each OSI point
                         // each line has two points, beginning and end
@@ -226,7 +226,7 @@ int RoadGeom::AddRoadMarks(roadmanager::Lane* lane, osg::Group* parent)
                         }
                         else if (!osi_points[q].endpoint)
                         {
-                            printf("Unexpected last point without endpoint q %zd\n", q);
+                            LOG_INFO("Unexpected last point without endpoint q {}", q);
                         }
 
                         if (q == startpoint)

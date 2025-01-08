@@ -443,9 +443,9 @@ WaypointStatus ControllerFollowRoute::GetWaypointStatus(roadmanager::Position ve
     else if (link->GetElementType() == RoadLink::ElementType::ELEMENT_TYPE_JUNCTION)
     {
         Junction *junction = odr_->GetJunctionById(link->GetElementId());
-        for (size_t j = 0; j < static_cast<unsigned int>(junction->GetNoConnectionsFromRoadId(currentRoad->GetId())); j++)
+        for (unsigned j = 0; j < junction->GetNoConnectionsFromRoadId(currentRoad->GetId()); j++)
         {
-            id_t roadId = junction->GetConnectingRoadIdFromIncomingRoadId(currentRoad->GetId(), static_cast<int>(j));
+            id_t roadId = junction->GetConnectingRoadIdFromIncomingRoadId(currentRoad->GetId(), j);
             possiblePreviousRoads.push_back(odr_->GetRoadById(roadId));
         }
     }
