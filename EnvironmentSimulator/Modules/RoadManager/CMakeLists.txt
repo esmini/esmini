@@ -20,12 +20,9 @@ set(SOURCES
     odrSpiral.cpp
     LaneIndependentRouter.cpp)
 
-set(SRC_ADDITIONAL
+add_library(
+    pugixml_lib
     ${EXTERNALS_PUGIXML_PATH}/pugixml.cpp)
-
-source_group(
-    "External Libraries"
-    FILES ${SRC_ADDITIONAL})
 
 set(INCLUDES
     RoadManager.hpp
@@ -44,8 +41,8 @@ add_library(
 target_link_libraries(
     ${TARGET}
     PRIVATE CommonMini
-            # project_options
-)
+            pugixml_lib
+            project_options)
 
 target_include_directories(
     ${TARGET}

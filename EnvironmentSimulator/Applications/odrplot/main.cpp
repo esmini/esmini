@@ -73,26 +73,26 @@ int main(int argc, char *argv[])
 
     OpenDrive *od = Position::GetOpenDrive();
 
-    for (int r = 0; r < od->GetNumOfRoads(); r++)
+    for (unsigned int r = 0; r < od->GetNumOfRoads(); r++)
     {
         Road *road = od->GetRoadByIdx(r);
 
-        for (int i = 0; i < road->GetNumberOfLaneSections(); i++)
+        for (unsigned int i = 0; i < road->GetNumberOfLaneSections(); i++)
         {
             LaneSection *lane_section = road->GetLaneSectionByIdx(i);
             double       s_start      = lane_section->GetS();
             double       s_end        = s_start + lane_section->GetLength();
-            int          steps        = MAX(1, static_cast<int>((s_end - s_start) / step_length_target));
+            unsigned int steps        = MAX(1, static_cast<unsigned int>((s_end - s_start) / step_length_target));
             double       step_length  = steps > 0 ? (s_end - s_start) / steps : s_end - s_start;
 
-            for (int j = 0; j < lane_section->GetNumberOfLanes(); j++)
+            for (unsigned int j = 0; j < lane_section->GetNumberOfLanes(); j++)
             {
                 Lane *lane = lane_section->GetLaneByIdx(j);
 
                 file << "lane, " << road->GetId() << ", " << i << ", " << lane->GetId() << (lane->IsDriving() ? ", driving" : ", no-driving")
                      << std::endl;
 
-                for (int k = 0; k < steps + 1; k++)
+                for (unsigned int k = 0; k < steps + 1; k++)
                 {
                     double s = MIN(s_end - SMALL_NUMBER, s_start + k * step_length);
 

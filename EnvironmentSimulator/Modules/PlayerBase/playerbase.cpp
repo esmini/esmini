@@ -444,11 +444,11 @@ void ScenarioPlayer::ViewerFrame(bool init)
                 }
             }
 
-            if (entity->trail_->pline_vertex_data_->size() > static_cast<unsigned int>(obj->trail_.GetNumberOfVertices()))
+            if (entity->trail_->pline_vertex_data_->size() > obj->trail_.GetNumberOfVertices())
             {
                 // Reset the trail, probably there has been a ghost restart
                 entity->trail_->Reset();
-                for (size_t j = 0; j < static_cast<unsigned int>(obj->trail_.GetNumberOfVertices()); j++)
+                for (unsigned int j = 0; j < obj->trail_.GetNumberOfVertices(); j++)
                 {
                     entity->trail_->AddPoint(obj->trail_.vertex_[j].x,
                                              obj->trail_.vertex_[j].y,
@@ -456,7 +456,7 @@ void ScenarioPlayer::ViewerFrame(bool init)
                 }
             }
 
-            if (static_cast<unsigned int>(obj->trail_.GetNumberOfVertices()) > entity->trail_->pline_vertex_data_->size())
+            if (obj->trail_.GetNumberOfVertices() > entity->trail_->pline_vertex_data_->size())
             {
                 entity->trail_->AddPoint(obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ() + (obj->GetId() + 1) * TRAIL_Z_OFFSET);
             }

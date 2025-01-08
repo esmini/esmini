@@ -409,11 +409,11 @@ void SwarmTrafficAction::Step(double simTime, double dt)
 
 void SwarmTrafficAction::createRoadSegments(BBoxVec& vec)
 {
-    for (int i = 0; i < odrManager_->GetNumOfRoads(); i++)
+    for (unsigned int i = 0; i < odrManager_->GetNumOfRoads(); i++)
     {
         roadmanager::Road* road = odrManager_->GetRoadByIdx(i);
 
-        for (int j = 0; j < road->GetNumberOfGeometries(); j++)
+        for (unsigned int j = 0; j < road->GetNumberOfGeometries(); j++)
         {
             roadmanager::Geometry* gm = road->GetGeometry(j);
 
@@ -503,17 +503,17 @@ inline void SwarmTrafficAction::sampleRoads(int minN, int maxN, Solutions& sols,
         return;
     }
 
-    int nCarsToSpawn = SE_Env::Inst().GetRand().GetNumberBetween(minN, maxN - 1);
+    unsigned int nCarsToSpawn = static_cast<unsigned int>(SE_Env::Inst().GetRand().GetNumberBetween(minN, maxN - 1));
     if (nCarsToSpawn <= 0)
     {
         return;
     }
 
-    info.reserve(static_cast<unsigned int>(nCarsToSpawn));
+    info.reserve(nCarsToSpawn);
     info.clear();
     // We have more points than number of vehicles to spawn.
     // We sample the selected number and each point will be assigned a lane
-    if (static_cast<unsigned int>(nCarsToSpawn) <= sols.size() && nCarsToSpawn > 0)
+    if (nCarsToSpawn <= sols.size() && nCarsToSpawn > 0)
     {
         // Shuffle and randomly select the points
         // Solutions selected(nCarsToSpawn);
@@ -521,7 +521,7 @@ inline void SwarmTrafficAction::sampleRoads(int minN, int maxN, Solutions& sols,
         std::shuffle(sols.begin(), sols.end(), SE_Env::Inst().GetRand().GetGenerator());
         sample(sols.begin(), sols.end(), selected, nCarsToSpawn, SE_Env::Inst().GetRand().GetGenerator());
 
-        for (int i = 0; i < nCarsToSpawn; i++)
+        for (unsigned int i = 0; i < nCarsToSpawn; i++)
         {
             Point& pt = selected[i];
             // Find road
@@ -546,24 +546,24 @@ inline void SwarmTrafficAction::sampleRoads(int minN, int maxN, Solutions& sols,
         // We use all the spawnable points and we ensure that each obtains
         // a lane at least. The remaining ones will be randomly distributed.
         // The algorithms does not ensure to saturate the selected number of vehicles.
-        int lanesLeft = nCarsToSpawn - static_cast<int>(sols.size());
+        unsigned int lanesLeft = nCarsToSpawn - static_cast<unsigned int>(sols.size());
         for (Point pt : sols)
         {
             roadmanager::Position pos(pt.x, pt.y, 0.0, pt.h, 0.0, 0.0);
             // pos.XYZH2TrackPos(pt.x, pt.y, 0, pt.h);
 
             roadmanager::Road* road          = odrManager_->GetRoadById(pos.GetTrackId());
-            int                nDrivingLanes = road->GetNumberOfDrivingLanes(pos.GetS());
+            unsigned int       nDrivingLanes = road->GetNumberOfDrivingLanes(pos.GetS());
             if (nDrivingLanes == 0)
             {
                 lanesLeft++;
                 continue;
             }
 
-            int lanesN;
+            unsigned int lanesN;
             if (lanesLeft > 0)
             {
-                std::uniform_int_distribution<int> laneDist(0, std::min(lanesLeft, nDrivingLanes));
+                std::uniform_int_distribution<unsigned int> laneDist(0, std::min(lanesLeft, nDrivingLanes));
                 lanesN = laneDist(SE_Env::Inst().GetRand().GetGenerator());
                 lanesN = (lanesN == 0 ? 0 : lanesN - 1);
             }
@@ -593,15 +593,15 @@ void SwarmTrafficAction::spawn(Solutions sols, int replace, double simTime)
 
     for (SelectInfo inf : info)
     {
-        int        lanesNo = MIN(MAX_LANES, inf.road->GetNumberOfDrivingLanes(inf.pos.GetS()));
-        static int elements[MAX_LANES];
+        unsigned int        lanesNo = MIN(MAX_LANES, inf.road->GetNumberOfDrivingLanes(inf.pos.GetS()));
+        static unsigned int elements[MAX_LANES];
         std::iota(elements, elements + lanesNo, 0);
 
-        static int lanes[MAX_LANES];
+        static idx_t lanes[MAX_LANES];
 
         sample(elements, elements + lanesNo, lanes, MIN(MAX_LANES, inf.nLanes), SE_Env::Inst().GetRand().GetGenerator());
 
-        for (int i = 0; i < MIN(MAX_LANES, inf.nLanes); i++)
+        for (unsigned int i = 0; i < MIN(MAX_LANES, inf.nLanes); i++)
         {
             auto Lane = inf.road->GetDrivingLaneByIdx(inf.pos.GetS(), lanes[i]);
             int  laneID;

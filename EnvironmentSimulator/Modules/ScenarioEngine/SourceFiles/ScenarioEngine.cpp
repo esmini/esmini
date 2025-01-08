@@ -863,14 +863,14 @@ void ScenarioEngine::prepareGroundTruth(double dt)
 
             if (!(obj->IsGhost() && SE_Env::Inst().GetGhostMode() == GhostMode::RESTART))  // skip ghost sample during restart
             {
-                if (obj->trail_.GetNumberOfVertices() == 0 || simulationTime_ - obj->trail_.GetVertex(-1)->time > GHOST_TRAIL_SAMPLE_TIME)
+                if (obj->trail_.GetNumberOfVertices() == 0 || simulationTime_ - obj->trail_.GetVertices().back().time > GHOST_TRAIL_SAMPLE_TIME)
                 {
                     // Only add trail vertex when speed is not stable at 0
-                    if (obj->trail_.GetNumberOfVertices() == 0 || fabs(obj->trail_.GetVertex(-1)->speed) > SMALL_NUMBER ||
+                    if (obj->trail_.GetNumberOfVertices() == 0 || fabs(obj->trail_.GetVertices().back().speed) > SMALL_NUMBER ||
                         fabs(obj->GetSpeed()) > SMALL_NUMBER)
                     {
                         // If considerable time has passed, copy previous steady-state sample
-                        if (obj->trail_.vertex_.size() > 0 && simulationTime_ - obj->trail_.GetVertex(-1)->time > 2 * GHOST_TRAIL_SAMPLE_TIME)
+                        if (obj->trail_.vertex_.size() > 0 && simulationTime_ - obj->trail_.GetVertices().back().time > 2 * GHOST_TRAIL_SAMPLE_TIME)
                         {
                             obj->trail_.AddVertex(obj->trail_.vertex_.back());
                             // with modified timestamp

@@ -280,7 +280,7 @@ extern "C"
     {
         if (odrManager != nullptr)
         {
-            return odrManager->GetNumOfRoads();
+            return static_cast<int>(odrManager->GetNumOfRoads());
         }
         else
         {
@@ -298,7 +298,7 @@ extern "C"
         return -1;
     }
 
-    RM_DLL_API id_t RM_GetIdOfRoadFromIndex(int index)
+    RM_DLL_API id_t RM_GetIdOfRoadFromIndex(unsigned int index)
     {
         if (odrManager != nullptr)
         {
@@ -394,9 +394,9 @@ extern "C"
             if (road)
             {
                 roadmanager::LaneSection* laneSection = road->GetLaneSectionByS(s);
-                for (size_t i = 0; static_cast<int>(i) < laneSection->GetNumberOfLanes(); i++)
+                for (unsigned int i = 0; i < laneSection->GetNumberOfLanes(); i++)
                 {
-                    if (laneSection->GetLaneByIdx(static_cast<int>(i))->IsDriving())
+                    if (laneSection->GetLaneByIdx(i)->IsDriving())
                     {
                         numberOfDrivableLanes++;
                     }
@@ -420,10 +420,10 @@ extern "C"
 
         roadmanager::Position* pos = &position[static_cast<unsigned int>(handle)];
 
-        return pos->GetNumberOfRoadsOverlapping();
+        return static_cast<int>(pos->GetNumberOfRoadsOverlapping());
     }
 
-    RM_DLL_API id_t RM_GetOverlappingRoadId(int handle, int index)
+    RM_DLL_API id_t RM_GetOverlappingRoadId(int handle, unsigned int index)
     {
         if (odrManager == nullptr || handle >= static_cast<int>(position.size()) || handle < 0)
         {
@@ -449,13 +449,13 @@ extern "C"
 
             // Consider only drivable lanes
             roadmanager::LaneSection* laneSection = road->GetLaneSectionByS(s);
-            for (size_t i = 0; static_cast<int>(i) < laneSection->GetNumberOfLanes(); i++)
+            for (unsigned int i = 0; i < laneSection->GetNumberOfLanes(); i++)
             {
-                if (laneSection->GetLaneByIdx(static_cast<int>(i))->IsDriving())
+                if (laneSection->GetLaneByIdx(i)->IsDriving())
                 {
                     if (numberOfDrivableLanes == laneIndex)
                     {
-                        return laneSection->GetLaneByIdx(static_cast<int>(i))->GetId();
+                        return laneSection->GetLaneByIdx(i)->GetId();
                     }
                     else
                     {
@@ -855,13 +855,13 @@ extern "C"
 
         if (road != NULL)
         {
-            return road->GetNumberOfSignals();
+            return static_cast<int>(road->GetNumberOfSignals());
         }
 
         return 0;
     }
 
-    RM_DLL_API int RM_GetRoadSign(id_t road_id, int index, RM_RoadSign* road_sign)
+    RM_DLL_API int RM_GetRoadSign(id_t road_id, unsigned int index, RM_RoadSign* road_sign)
     {
         if (odrManager == nullptr)
         {
@@ -903,7 +903,7 @@ extern "C"
         return -1;
     }
 
-    RM_DLL_API int RM_GetNumberOfRoadSignValidityRecords(id_t road_id, int index)
+    RM_DLL_API int RM_GetNumberOfRoadSignValidityRecords(id_t road_id, unsigned int index)
     {
         if (odrManager == nullptr)
         {
@@ -922,7 +922,7 @@ extern "C"
         return 0;
     }
 
-    RM_DLL_API int RM_GetRoadSignValidityRecord(id_t road_id, int signIndex, int validityIndex, RM_RoadObjValidity* validity)
+    RM_DLL_API int RM_GetRoadSignValidityRecord(id_t road_id, unsigned int signIndex, unsigned int validityIndex, RM_RoadObjValidity* validity)
     {
         if (odrManager != nullptr)
         {
@@ -930,10 +930,10 @@ extern "C"
             if (road != NULL)
             {
                 roadmanager::Signal* s = road->GetSignal(signIndex);
-                if (validityIndex >= 0 && validityIndex < static_cast<int>(s->validity_.size()))
+                if (validityIndex < s->validity_.size())
                 {
-                    validity->fromLane = s->validity_[static_cast<unsigned int>(validityIndex)].fromLane_;
-                    validity->toLane   = s->validity_[static_cast<unsigned int>(validityIndex)].toLane_;
+                    validity->fromLane = s->validity_[validityIndex].fromLane_;
+                    validity->toLane   = s->validity_[validityIndex].toLane_;
                     return 0;
                 }
             }

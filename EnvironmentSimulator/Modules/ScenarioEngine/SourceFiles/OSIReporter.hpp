@@ -140,11 +140,11 @@ public:
     const char*       GetOSITrafficCommandRaw();
     const char*       GetOSIRoadLane(const std::vector<std::unique_ptr<ObjectState>>& objectState, int* size, int object_id);
     const char*       GetOSIRoadLaneBoundary(int* size, int global_id);
-    void              GetOSILaneBoundaryIds(const std::vector<std::unique_ptr<ObjectState>>& objectState, std::vector<int>& ids, int object_id);
+    void              GetOSILaneBoundaryIds(const std::vector<std::unique_ptr<ObjectState>>& objectState, std::vector<id_t>& ids, int object_id);
     const char*       GetOSISensorDataRaw();
     osi3::SensorView* GetSensorView();
     bool              IsCentralOSILane(int lane_idx);
-    int               GetLaneIdxfromIdOSI(int lane_id);
+    idx_t             GetLaneIdxfromIdOSI(id_t lane_id);
     SE_SOCKET         OpenSocket(std::string ipaddr);
     int               GetUDPClientStatus()
     {

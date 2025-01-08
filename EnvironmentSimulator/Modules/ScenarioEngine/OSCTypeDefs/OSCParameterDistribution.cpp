@@ -427,7 +427,7 @@ int OSCParameterDistribution::SetRequestedIndex(unsigned int index)
     if (index >= GetNumPermutations())
     {
         LOG_ERROR("requested permutation index {} out of range (0..{})", index, GetNumPermutations() - 1);
-        return 0;
+        return -1;
     }
 
     requested_index_ = static_cast<int>(index);

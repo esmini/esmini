@@ -634,7 +634,7 @@ TEST(FollowRouteTest, CalcWeightMinIntersections)
     RoadCalculations roadCalc;
     Road             road1(1, "1", "test");
     road1.SetLength(200);
-    RoadLink plink(LinkType::SUCCESSOR, RoadLink::ELEMENT_TYPE_JUNCTION, "1", ContactPointType::CONTACT_POINT_UNDEFINED);
+    RoadLink plink(LinkType::SUCCESSOR, RoadLink::ELEMENT_TYPE_JUNCTION, 1, ContactPointType::CONTACT_POINT_UNDEFINED);
     Node     pNode;
     pNode.link    = &plink;
     double weigth = roadCalc.CalcWeight(&pNode, Position::RouteStrategy::MIN_INTERSECTIONS, road1.GetLength(), &road1);
@@ -642,7 +642,7 @@ TEST(FollowRouteTest, CalcWeightMinIntersections)
 
     Road road2(2, "2", "test");
     road1.SetLength(200);
-    RoadLink plink2(LinkType::SUCCESSOR, RoadLink::ELEMENT_TYPE_ROAD, "1", ContactPointType::CONTACT_POINT_UNDEFINED);
+    RoadLink plink2(LinkType::SUCCESSOR, RoadLink::ELEMENT_TYPE_ROAD, 1, ContactPointType::CONTACT_POINT_UNDEFINED);
     Node     pNode2;
     pNode2.link    = &plink2;
     double weigth2 = roadCalc.CalcWeight(&pNode2, Position::RouteStrategy::MIN_INTERSECTIONS, road1.GetLength(), &road1);

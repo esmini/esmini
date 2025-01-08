@@ -171,7 +171,7 @@ namespace scenarioengine
         double      wheel_rot_;
         std::string model3d_;
         int         ghost_trail_s_;       // closest point on ghost trail
-        int         trail_follow_index_;  // Index of closest segment
+        idx_t       trail_follow_index_;  // Index of closest segment
         double      odometer_;
         double      end_of_road_timestamp_;
         double      off_road_timestamp_;

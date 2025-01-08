@@ -552,9 +552,9 @@ bool ControllerNaturalDriver::AdjacentLanesAvailable()
     auto ls                      = road->GetLaneSectionByS(current_s);
     auto driving_lanes_available = ls->GetNumberOfDrivingLanesSide(current_lane);
 
-    if (driving_lanes_available == 1)
+    if (driving_lanes_available <= 1)
     {
-        // Only 1 lane in current direction
+        // no additional lanes available in current direction
         lane_ids_available_[0] = 0;
         lane_ids_available_[1] = 0;
 
@@ -564,21 +564,21 @@ bool ControllerNaturalDriver::AdjacentLanesAvailable()
     int left_lane_id  = current_lane - SIGN(current_lane);
     int right_lane_id = current_lane + SIGN(current_lane);
 
-    int current_lane_idx = ls->GetLaneIdxById(current_lane);
-    int max_lane_idx     = ls->GetNumberOfLanes() - 1;
+    idx_t current_lane_idx = ls->GetLaneIdxById(current_lane);
+    idx_t max_lane_idx     = ls->GetNumberOfLanes() - 1;
 
     bool left_driving, right_driving;
     if (SIGN(current_lane) == -1)
     {
-        int left_lanes = ls->GetNUmberOfLanesLeft();
+        unsigned int left_lanes = ls->GetNUmberOfLanesLeft();
         (current_lane_idx == max_lane_idx) ? right_driving = false : right_driving = ls->GetLaneById(right_lane_id)->IsDriving();
         (current_lane_idx == max_lane_idx - left_lanes) ? left_driving = false : left_driving = ls->GetLaneById(left_lane_id)->IsDriving();
     }
     else
     {
-        int right_lanes = ls->GetNUmberOfLanesRight();
+        unsigned int right_lanes = ls->GetNUmberOfLanesRight();
         (current_lane_idx == 0) ? right_driving = false : right_driving = ls->GetLaneById(right_lane_id)->IsDriving();
-        (current_lane_idx == right_lanes - 1) ? left_driving = false : left_driving = ls->GetLaneById(left_lane_id)->IsDriving();
+        (current_lane_idx + 1 == right_lanes) ? left_driving = false : left_driving = ls->GetLaneById(left_lane_id)->IsDriving();
     }
 
     if (!left_driving && right_driving)  // Lane to the left is not driveable, but right lane is.

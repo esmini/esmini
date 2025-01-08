@@ -273,20 +273,20 @@ TEST(GetOSILaneBoundaryIdsTest, lane_boundary_ids)
     SE_StepDT(0.001f);
     SE_UpdateOSIGroundTruth();
 
-    std::vector<std::vector<int>> lane_bound = {{-1, 8, 9, 10},
-                                                {8, 9, 10, 0},
-                                                {9, 10, 0, 1},
-                                                {10, 0, 1, 2},
-                                                {0, 1, 2, 3},
-                                                {1, 2, 3, 11},
-                                                {2, 3, 11, 4},
-                                                {3, 11, 4, 5},  // right side start
-                                                {11, 4, 5, 6},
-                                                {4, 5, 6, 7},
-                                                {5, 6, 7, 12},
-                                                {6, 7, 12, 13},
-                                                {7, 12, 13, 14},
-                                                {12, 13, 14, -1}};
+    std::vector<std::vector<id_t>> lane_bound = {{ID_UNDEFINED, 8, 9, 10},
+                                                 {8, 9, 10, 0},
+                                                 {9, 10, 0, 1},
+                                                 {10, 0, 1, 2},
+                                                 {0, 1, 2, 3},
+                                                 {1, 2, 3, 11},
+                                                 {2, 3, 11, 4},
+                                                 {3, 11, 4, 5},  // right side start
+                                                 {11, 4, 5, 6},
+                                                 {4, 5, 6, 7},
+                                                 {5, 6, 7, 12},
+                                                 {6, 7, 12, 13},
+                                                 {7, 12, 13, 14},
+                                                 {12, 13, 14, ID_UNDEFINED}};
 
     std::vector<int> veh_id = {13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
     for (size_t i = 0; i < lane_bound.size(); i++)
@@ -318,7 +318,7 @@ TEST(GetOSILaneBoundaryIdsTest, lane_boundary_ids_no_obj)
     SE_UpdateOSIGroundTruth();
 
     SE_LaneBoundaryId ids;
-    SE_LaneBoundaryId right_lanes_id = {-1, -1, -1, -1};
+    SE_LaneBoundaryId right_lanes_id = {ID_UNDEFINED, ID_UNDEFINED, ID_UNDEFINED, ID_UNDEFINED};
 
     SE_GetOSILaneBoundaryIds(10, &ids);
     EXPECT_EQ(ids.far_left_lb_id, right_lanes_id.far_left_lb_id);
@@ -4367,7 +4367,7 @@ TEST(ParamDistTest, TestRunAll)
 
     EXPECT_EQ(SE_GetNumberOfPermutations(), 12);
 
-    for (int i = 0; i < SE_GetNumberOfPermutations(); i++)
+    for (unsigned int i = 0; i < SE_GetNumberOfPermutations(); i++)
     {
         SE_Init(scenario_file.c_str(), 0, 0, 0, 1);
 
@@ -4390,7 +4390,7 @@ TEST(ParamDistTest, TestRunAll)
     EXPECT_EQ(SE_GetNumberOfPermutations(), 12);
 
     // Check that files have been created as expected
-    for (size_t i = 0; i < static_cast<size_t>(SE_GetNumberOfPermutations()); i++)
+    for (unsigned int i = 0; i < SE_GetNumberOfPermutations(); i++)
     {
 #ifdef _USE_OSI
         EXPECT_EQ(stat(gt[i].c_str(), &fileStatus), 0);
@@ -4430,7 +4430,7 @@ TEST(ParamDistTest, TestRunAll)
         SE_DisableOSIFile();
         SE_Close();
 
-    } while (SE_GetPermutationIndex() < SE_GetNumberOfPermutations() - 1);
+    } while (SE_GetPermutationIndex() >= 0 && static_cast<unsigned int>(SE_GetPermutationIndex()) + 1 < SE_GetNumberOfPermutations());
 
     // The first 3 files should be untouched, while the last 3 should be updated
     // check two samples, one from each category
@@ -4714,7 +4714,7 @@ TEST(RoutingTest, TestRoutePointsWithGhost)
     EXPECT_EQ(n_wp, 9);
 
     SE_RouteInfo ri[2];
-    for (int i = 0; i < n_wp; i++)
+    for (unsigned int i = 0; i < static_cast<unsigned int>(n_wp); i++)
     {
         SE_GetRoutePoint(SE_GetId(0), i, &ri[0]);
         SE_GetRoutePoint(ghost_id, i, &ri[1]);

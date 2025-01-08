@@ -1565,7 +1565,7 @@ bool TrigByRelativeClearance::CheckCondition(double sim_time)
             // check at location of current position (road, lane and s)
             result = false;
 
-            for (int j = 0; j < road->GetNumberOfDrivingLanes(entityObject->pos_.GetS()); j++)
+            for (unsigned int j = 0; j < road->GetNumberOfDrivingLanes(entityObject->pos_.GetS()); j++)
             {
                 int lane_id = road->GetDrivingLaneByIdx(entityObject->pos_.GetS(), j)->GetId();
                 if (IS_IN_SPAN(lane_id, entityObject->pos_.GetLaneId() + from_, entityObject->pos_.GetLaneId() + to_) &&  // lane is within range
