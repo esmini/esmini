@@ -1732,7 +1732,7 @@ idx_t LaneSection::GetLaneIdxById(int id) const
     return IDX_UNDEFINED;
 }
 
-int LaneSection::GetLaneGlobalIdByIdx(unsigned int idx) const
+id_t LaneSection::GetLaneGlobalIdByIdx(idx_t idx) const
 {
     if (idx >= lane_.size())
     {
@@ -1744,7 +1744,7 @@ int LaneSection::GetLaneGlobalIdByIdx(unsigned int idx) const
         return (lane_[idx]->GetGlobalId());
     }
 }
-idx_t LaneSection::GetLaneGlobalIdById(int id) const
+id_t LaneSection::GetLaneGlobalIdById(int id) const
 {
     for (size_t i = 0; i < (int)lane_.size(); i++)
     {
@@ -2560,13 +2560,13 @@ int Road::GetNumberOfDrivingLanes(double s) const
     return 0;
 }
 
-Lane* Road::GetDrivingLaneByIdx(double s, int idx) const
+Lane* Road::GetDrivingLaneByIdx(double s, idx_t idx) const
 {
-    int count = 0;
+   unsigned int count = 0;
 
     LaneSection* ls = GetLaneSectionByS(s);
 
-    for (int i = 0; i < ls->GetNumberOfLanes(); i++)
+    for (unsigned int i = 0; i < ls->GetNumberOfLanes(); i++)
     {
         if (ls->GetLaneByIdx(i)->IsDriving())
         {
@@ -2580,13 +2580,13 @@ Lane* Road::GetDrivingLaneByIdx(double s, int idx) const
     return 0;
 }
 
-Lane* Road::GetDrivingLaneSideByIdx(double s, int side, int idx) const
+Lane* Road::GetDrivingLaneSideByIdx(double s, int side, idx_t idx) const
 {
-    int count = 0;
+    unsigned int count = 0;
 
     LaneSection* ls = GetLaneSectionByS(s);
 
-    for (int i = 0; i < ls->GetNumberOfLanes(); i++)
+    for (unsigned int i = 0; i < ls->GetNumberOfLanes(); i++)
     {
         Lane* lane = ls->GetLaneByIdx(i);
         if (lane->IsDriving() && SIGN(lane->GetId()) == side)
@@ -2615,7 +2615,7 @@ Lane* Road::GetDrivingLaneById(double s, int id) const
 
 int Road::GetNumberOfDrivingLanesSide(double s, int side) const
 {
-    int i;
+    unsigned int i;
 
     for (i = 0; i < GetNumberOfLaneSections() - 1; i++)
     {
@@ -2655,7 +2655,7 @@ int Road::GetConnectedLaneIdAtS(int lane_id, double s_start, double s_target) co
             double s           = s_start;
             if (s_target > s_start - SMALL_NUMBER)
             {
-                for (int j = lsec_idx; lane_id_tmp != 0 && j < GetNumberOfLaneSections() - 1 && s < s_target; j++)
+                for (unsigned int j = lsec_idx; lane_id_tmp != 0 && j < GetNumberOfLaneSections() - 1 && s < s_target; j++)
                 {
                     // find connecting lane id
                     lsec        = GetLaneSectionByIdx(j);
@@ -2795,7 +2795,7 @@ double Road::GetWidth(double s, int side, int laneTypeMask) const
 {
     double offset0 = 0;
     double offset1 = 0;
-    int    i       = 0;
+    unsigned int    i       = 0;
     int    index   = 0;
 
     for (; i < GetNumberOfLaneSections() - 1; i++)
@@ -3060,15 +3060,15 @@ Junction* roadmanager::OpenDrive::GetJunctionByIdStr(std::string id_str) const
     return nullptr;
 }
 
-Geometry* OpenDrive::GetGeometryByIdx(int road_idx, int geom_idx) const
+Geometry* OpenDrive::GetGeometryByIdx(idx_t road_idx, idx_t geom_idx) const
 {
-    if (road_idx >= 0 && road_idx < (int)road_.size())
+    if (road_idx < road_.size())
     {
         return road_[road_idx]->GetGeometry(geom_idx);
     }
     else
     {
-        return 0;
+        return nullptr;
     }
 }
 
@@ -4122,7 +4122,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                     int last_road_lane_left_id  = 0;
 
                     int lastLaneId = 0;
-                    for (int i = 0; i < lane_section->GetNumberOfLanes(); i++)
+                    for (unsigned int i = 0; i < lane_section->GetNumberOfLanes(); i++)
                     {
                         Lane* lane = lane_section->GetLaneByIdx(i);
 
@@ -4975,7 +4975,7 @@ unsigned int Junction::GetNoConnectionsFromRoadId(id_t incomingRoadId) const
 
 id_t Junction::GetConnectingRoadIdFromIncomingRoadId(id_t incomingRoadId, unsigned int index) const
 {
-    int counter = 0;
+    unsigned int counter = 0;
 
     for (int i = 0; i < GetNumberOfConnections(); i++)
     {
@@ -5608,7 +5608,7 @@ bool OpenDrive::IsIndirectlyConnected(id_t road1_id, id_t road2_id, id_t*& conne
                             LOG_ERROR("Error lane section == 0");
                             return false;
                         }
-                        for (int j = 0; j < lane_section->GetNumberOfLanes(); j++)
+                        for (unsigned int j = 0; j < lane_section->GetNumberOfLanes(); j++)
                         {
                             Lane*     lane                  = lane_section->GetLaneByIdx(j);
                             LaneLink* lane_link_predecessor = lane->GetLink(PREDECESSOR);
@@ -5806,7 +5806,7 @@ int OpenDrive::CheckJunctionConnection(Junction* junction, Connection* connectio
 
                                     // Add lane links - assume only one lane section in the connecting road
                                     LaneSection* ls = newConnection->GetConnectingRoad()->GetLaneSectionByIdx(0);
-                                    for (int l = 0; l < ls->GetNumberOfLanes(); l++)
+                                    for (unsigned int l = 0; l < ls->GetNumberOfLanes(); l++)
                                     {
                                         Lane* lane = ls->GetLaneByIdx(l);
                                         if (lane->GetLink(newLinkType))
@@ -7363,7 +7363,7 @@ unsigned int LaneSection::GetClosestLaneIdx(double s, double t, double laneOffse
     double min_offset         = t - laneOffset;  // Initial offset relates to center lane
     unsigned int    candidate_lane_idx = 0xffffffff;
 
-    for (int i = 0; i < GetNumberOfLanes(); i++)  // Search through all lanes
+    for (unsigned int i = 0; i < GetNumberOfLanes(); i++)  // Search through all lanes
     {
         int lane_id = GetLaneIdByIdx(i);
 
@@ -7507,7 +7507,7 @@ Position::XYZ2TrackPos(double x3, double y3, double z3, int mode, bool connected
     double            curvature         = 0;
     bool              search_done       = false;
     double            closestS          = 0;
-    int               jMin = -1, kMin = -1;
+    idx_t               jMin = IDX_UNDEFINED, kMin = IDX_UNDEFINED;
     double            closestPointDist              = INFINITY;
     bool              closestPointInside            = false;
     bool              insideCurrentRoad             = false;  // current postion projects on current road
@@ -7564,7 +7564,7 @@ Position::XYZ2TrackPos(double x3, double y3, double z3, int mode, bool connected
         nrOfRoads    = 0;
     }
 
-    for (int i = -2; !search_done && i < (int)nrOfRoads; i++)
+    for (int i = -2; !search_done && i < static_cast<int>(nrOfRoads); i++)
     {
         // i == -2: Check limited point window around last known point
         // i == -1: Check current road
@@ -7670,7 +7670,7 @@ Position::XYZ2TrackPos(double x3, double y3, double z3, int mode, bool connected
         // First find distance from current position
         double distFromCurrentPos = GetLengthOfLine2D(x3, y3, GetX(), GetY());
 
-        int startLaneSecIdx  = 0;
+        idx_t startLaneSecIdx  = 0;
         int startOSIPointIdx = 0;
         int search_win       = 10;
 
@@ -7724,14 +7724,14 @@ Position::XYZ2TrackPos(double x3, double y3, double z3, int mode, bool connected
         int        jMinLocal = startLaneSecIdx;   // keep track of "best" lane section candidate
         int        kMinLocal = startOSIPointIdx;  // keep track of "best" osi point candidate (on given lane section)
 
-        for (int j = startLaneSecIdx; (i != -2 || counter < search_win) && j < road->GetNumberOfLaneSections() && !search_done; j++)
+        for (unsigned int j = startLaneSecIdx; (i != -2 || counter < search_win) && j < road->GetNumberOfLaneSections() && !search_done; j++)
         {
             OSIPoints* osiPoints = road->GetLaneSectionByIdx(j)->GetLaneById(0)->GetOSIPoints();
 
             // add two loops at last lane section to handle calculations at last segments. Skip last point on intermediate segments, since
             // it's duplicated by first in following segment
-            int n_iter = (j == road->GetNumberOfLaneSections() - 1) ? osiPoints->GetNumOfOSIPoints() + 2 : osiPoints->GetNumOfOSIPoints() - 1;
-            for (int k = (j == startLaneSecIdx ? startOSIPointIdx : 0); (i != -2 || counter < search_win) && k < n_iter; k++, counter++)
+            unsigned int n_iter = (j == road->GetNumberOfLaneSections() - 1) ? osiPoints->GetNumOfOSIPoints() + 2 : osiPoints->GetNumOfOSIPoints() - 1;
+            for (unsigned int k = (j == startLaneSecIdx ? startOSIPointIdx : 0); (i != -2 || counter < search_win) && k < n_iter; k++, counter++)
             {
                 double distTmp      = 0.0;
                 double weightedDist = 0.0;
@@ -7956,7 +7956,7 @@ Position::XYZ2TrackPos(double x3, double y3, double z3, int mode, bool connected
         return ReturnCode::ERROR_GENERIC;
     }
 
-    if (jMin != -1 && kMin != -1)
+    if (jMin != IDX_UNDEFINED && kMin != IDX_UNDEFINED)
     {
         // Find out what line the points projects to, starting or ending with closest point?
         // Do this by comparing the angle to the position with the road normal at found point
@@ -8221,7 +8221,7 @@ Position::XYZ2TrackPos(double x3, double y3, double z3, int mode, bool connected
 
 bool Position::EvaluateRoadZHPR(int mode)
 {
-    if (track_id_ < 0)
+    if (track_id_ == ID_UNDEFINED)
     {
         return false;
     }
@@ -8357,17 +8357,14 @@ Position::ReturnCode Position::SetLongitudinalTrackPos(id_t track_id, double s)
 {
     Road* road;
 
-    if (GetOpenDrive()->GetNumOfRoads() == 0)
+    if (GetOpenDrive()->GetNumOfRoads() == 0 || track_id == ID_UNDEFINED)
     {
         return ReturnCode::ERROR_GENERIC;
     }
 
-    if ((road = GetOpenDrive()->GetRoadById(track_id)) == 0)
+    if ((road = GetOpenDrive()->GetRoadById(track_id)) == nullptr)
     {
-        if (track_id >= 0)
-        {
-            LOG_ERROR("Position::Set Error: track {} not found", track_id);
-        }
+        LOG_ERROR("Position::Set Error: track {} not found", track_id);
 
         // Just hard code values and return
         track_id_ = track_id;
@@ -9722,7 +9719,7 @@ double Position::GetCurvature() const
 
 int Position::GetDrivingDirectionRelativeRoad() const
 {
-    if (GetTrackId() >= 0 && GetRoadById(GetTrackId()) != nullptr)
+    if (GetTrackId() != ID_UNDEFINED && GetRoadById(GetTrackId()) != nullptr)
     {
         // Consider road rule (left hand or right hand traffic)
         if (GetLaneId() < 0 && GetRoadById(GetTrackId())->GetRule() == Road::RoadRule::LEFT_HAND_TRAFFIC ||
@@ -9928,7 +9925,7 @@ void Position::SetModeBits(PosModeType type, int bits)
     }
 }
 
-const int Position::GetModeDefault(PosModeType type)
+int Position::GetModeDefault(PosModeType type)
 {
     if (type == PosModeType::SET)
     {
@@ -12930,7 +12927,7 @@ void Position::EvaluateRelation(bool release)
         double new_offset  = GetOffset();
         if (type_ == PositionType::RELATIVE_LANE)
         {
-            if (GetTrackId() >= 0)
+            if (GetTrackId() != ID_UNDEFINED)
             {
                 Road* road = GetRoadById(GetTrackId());
                 if (road != nullptr)

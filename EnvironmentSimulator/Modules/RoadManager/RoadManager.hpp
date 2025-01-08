@@ -1046,13 +1046,13 @@ namespace roadmanager
         {
             return s_;
         }
-        Lane  *GetLaneByIdx(unsigned int idx) const;
+        Lane  *GetLaneByIdx(idx_t idx) const;
         Lane  *GetLaneById(int id) const;
-        int    GetLaneIdByIdx(unsigned int idx) const;
+        int    GetLaneIdByIdx(idx_t idx) const;
         idx_t  GetLaneIdxById(int id) const;
         bool   IsOSILaneById(int id) const;
-        int    GetLaneGlobalIdByIdx(unsigned int idx) const;
-        int    GetLaneGlobalIdById(unsigned int id) const;
+        id_t   GetLaneGlobalIdByIdx(idx_t idx) const;
+        id_t   GetLaneGlobalIdById(int id) const;
         double GetOuterOffset(double s, int lane_id) const;
         double GetWidth(double s, int lane_id) const;
 
@@ -1111,7 +1111,7 @@ namespace roadmanager
     private:
         double              s_;
         double              length_;
-        std::vector<Lane *> lane_;
+        std::vector<Lane*>  lane_;
         OSIPoints           osi_points_ref_line_;
     };
 
@@ -2295,8 +2295,8 @@ namespace roadmanager
         double GetLaneOffsetPrim(double s) const;
         int    GetNumberOfLanes(double s) const;
         int    GetNumberOfDrivingLanes(double s) const;
-        Lane  *GetDrivingLaneByIdx(double s, int idx) const;
-        Lane  *GetDrivingLaneSideByIdx(double s, int side, int idx) const;
+        Lane  *GetDrivingLaneByIdx(double s, idx_t idx) const;
+        Lane  *GetDrivingLaneSideByIdx(double s, int side, idx_t idx) const;
         Lane  *GetDrivingLaneById(double s, int idx) const;
         int    GetNumberOfDrivingLanesSide(double s, int side) const;  // side = -1 right, 1 left
 
@@ -2739,7 +2739,7 @@ namespace roadmanager
         Road     *GetRoadByIdx(int idx) const;
         Road     *GetRoadByIdStr(std::string id_str) const;
         Junction *GetJunctionByIdStr(std::string id_str) const;
-        Geometry *GetGeometryByIdx(unsigned int road_idx, int geom_idx) const;
+        Geometry *GetGeometryByIdx(idx_t road_idx, idx_t geom_idx) const;
         int       GetTrackIdxById(id_t id) const;
         id_t      GetTrackIdByIdx(int idx) const;
         int       GetNumOfRoads() const
