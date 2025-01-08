@@ -346,7 +346,8 @@ Signal::Signal(double      s,
                double      y,
                double      z,
                double      h)
-    : s_(s),
+    : RoadObject(x, y, z, h),
+      s_(s),
       t_(t),
       id_(id),
       name_(name),
@@ -362,12 +363,10 @@ Signal::Signal(double      s,
       height_(height),
       width_(width),
       depth_(depth),
-      length_(0.0),
       text_(text),
       h_offset_(h_offset),
       pitch_(pitch),
-      roll_(roll),
-      RoadObject(x, y, z, h)
+      roll_(roll)
 {
     value_ = strtod(value_str);
 }
@@ -471,7 +470,7 @@ int roadmanager::CheckOverlapingOSIPoints(OSIPoints* first_set, OSIPoints* secon
                                         second_set->GetPoint(second_set->GetNumOfOSIPoints() - 1).x,
                                         second_set->GetPoint(second_set->GetNumOfOSIPoints() - 1).y));
 
-    for (int i = 0; i < distances.size(); i++)
+    for (unsigned int i = 0; i < distances.size(); i++)
     {
         if (distances[i] < tolerance)
         {
@@ -512,15 +511,11 @@ void Polynomial::Set(double a, double b, double c, double d, double p_scale)
     p_scale_ = p_scale;
 }
 
-PointStruct& OSIPoints::GetPoint(int i)
+PointStruct& OSIPoints::GetPoint(unsigned int i)
 {
-    if (point_.size() <= i || point_.size() == 0)
+    if (i >= point_.size() || point_.size() == 0)
     {
         throw std::runtime_error("OSIPoints::GetPoint(int i) -> exceeds index");
-    }
-    else if (i < 0)
-    {
-        throw std::runtime_error("OSIPoints::GetXFromIdx(int i) -> index must be larger than 0");
     }
     else
     {
@@ -528,15 +523,11 @@ PointStruct& OSIPoints::GetPoint(int i)
     }
 }
 
-double OSIPoints::GetXfromIdx(int i) const
+double OSIPoints::GetXfromIdx(unsigned int i) const
 {
-    if (point_.size() <= i || point_.size() == 0)
+    if (i >= point_.size() || point_.size() == 0)
     {
         throw std::runtime_error("OSIPoints::GetXFromIdx(int i) -> exceeds index");
-    }
-    else if (i < 0)
-    {
-        throw std::runtime_error("OSIPoints::GetXFromIdx(int i) -> index must be larger than 0");
     }
     else
     {
@@ -544,15 +535,11 @@ double OSIPoints::GetXfromIdx(int i) const
     }
 }
 
-double OSIPoints::GetYfromIdx(int i) const
+double OSIPoints::GetYfromIdx(unsigned int i) const
 {
-    if (point_.size() <= i || point_.size() == 0)
+    if (i >= point_.size() || point_.size() == 0)
     {
         throw std::runtime_error("OSIPoints::GetYFromIdx(int i) -> exceeds index");
-    }
-    else if (i < 0)
-    {
-        throw std::runtime_error("OSIPoints::GetYFromIdx(int i) -> index must be larger than 0");
     }
     else
     {
@@ -560,15 +547,11 @@ double OSIPoints::GetYfromIdx(int i) const
     }
 }
 
-double OSIPoints::GetZfromIdx(int i) const
+double OSIPoints::GetZfromIdx(unsigned int i) const
 {
-    if (point_.size() <= i || point_.size() == 0)
+    if (i >= point_.size() || point_.size() == 0)
     {
         throw std::runtime_error("OSIPoints::GetZFromIdx(int i) -> exceeds index");
-    }
-    else if (i < 0)
-    {
-        throw std::runtime_error("OSIPoints::GetZFromIdx(int i) -> index must be larger than 0");
     }
     else
     {
@@ -576,15 +559,15 @@ double OSIPoints::GetZfromIdx(int i) const
     }
 }
 
-int OSIPoints::GetNumOfOSIPoints() const
+unsigned int OSIPoints::GetNumOfOSIPoints() const
 {
-    return (int)point_.size();
+    return static_cast<unsigned int>(point_.size());
 }
 
 double OSIPoints::GetLength() const
 {
     double length = 0;
-    for (int i = 0; i < point_.size() - 1; i++)
+    for (unsigned int i = 0; i < point_.size() - 1; i++)
     {
         length += PointDistance2D(point_[i].x, point_[i].y, point_[i + 1].x, point_[i + 1].y);
     }
@@ -673,14 +656,9 @@ void Arc::EvaluateDS(double ds, double* x, double* y, double* h) const
 
 Spiral::Spiral(double s, double x, double y, double hdg, double length, double curv_start, double curv_end)
     : Geometry(s, x, y, hdg, length, GEOMETRY_TYPE_SPIRAL),
+      clothoid_type_(CLOTHOID),
       curv_start_(curv_start),
-      curv_end_(curv_end),
-      c_dot_(0.0),
-      x0_(0.0),
-      y0_(0.0),
-      h0_(0.0),
-      s0_(0.0),
-      clothoid_type_(CLOTHOID)
+      curv_end_(curv_end)
 {
     SetCDot((curv_end_ - curv_start_) / length_);
 
@@ -984,10 +962,10 @@ void ParamPoly3::calcS2PMap(PRangeType p_range)
     double scale_factor;
     scale_factor = length_ / len;
 
-    for (size_t i = 0; i < PARAMPOLY3_STEPS + 1; i++)
+    for (unsigned int i = 0; i < PARAMPOLY3_STEPS + 1; i++)
     {
         s2p_map_[i][0] *= scale_factor;
-        s2p_map_[i][1] = i * length_ / PARAMPOLY3_STEPS;
+        s2p_map_[i][1] = i * length_ / static_cast<double>(PARAMPOLY3_STEPS);
     }
 }
 
@@ -1029,15 +1007,11 @@ void LaneRoadMarkTypeLine::SetGlobalId()
     global_id_ = GetNewGlobalLaneBoundaryId();
 }
 
-LaneWidth* Lane::GetWidthByIndex(int index) const
+LaneWidth* Lane::GetWidthByIndex(unsigned int index) const
 {
     if (lane_width_.size() <= index || lane_width_.size() == 0)
     {
         throw std::runtime_error("Lane::GetWidthByIndex(int index) -> exceeds index");
-    }
-    else if (lane_width_.size() < 0)
-    {
-        throw std::runtime_error("Lane::GetWidthByIndex(int index) -> index must be larger than 0");
     }
     else
     {
@@ -1052,7 +1026,7 @@ LaneWidth* Lane::GetWidthByS(double s) const
         return 0;  // No lanewidth defined
     }
 
-    auto iter = std::upper_bound(lane_width_.begin() + 1, lane_width_.end(), s, [](double s, LaneWidth* w) { return s < w->GetSOffset(); });
+    auto iter = std::upper_bound(lane_width_.begin() + 1, lane_width_.end(), s, [](double stmp, LaneWidth* w) { return stmp < w->GetSOffset(); });
     if (iter != lane_width_.end())
         return *(iter - 1);
     return lane_width_.back();
@@ -1062,7 +1036,7 @@ void Lane::AddLaneWidth(LaneWidth* lane_width)
 {
     if (lane_width_.size() > 0 && lane_width->GetSOffset() < lane_width_.back()->GetSOffset())
     {
-        for (size_t i = 0; i < lane_width_.size(); i++)
+        for (unsigned int i = 0; i < lane_width_.size(); i++)
         {
             if (lane_width->GetSOffset() < lane_width_[i]->GetSOffset())
             {
@@ -1079,7 +1053,7 @@ void Lane::AddLaneRoadMark(LaneRoadMark* lane_roadMark)
 {
     if (lane_roadMark_.size() > 0 && lane_roadMark->GetSOffset() < lane_roadMark_.back()->GetSOffset())
     {
-        for (size_t i = 0; i < lane_roadMark_.size(); i++)
+        for (unsigned int i = 0; i < lane_roadMark_.size(); i++)
         {
             if (lane_roadMark->GetSOffset() < lane_roadMark_[i]->GetSOffset())
             {
@@ -1092,7 +1066,7 @@ void Lane::AddLaneRoadMark(LaneRoadMark* lane_roadMark)
     lane_roadMark_.push_back(lane_roadMark);
 }
 
-Lane::Material* Lane::GetMaterialByIdx(int idx) const
+Lane::Material* Lane::GetMaterialByIdx(unsigned int idx) const
 {
     if (lane_material_.size() <= idx || lane_material_.size() == 0)
     {
@@ -1110,7 +1084,7 @@ Lane::Material* Lane::GetMaterialByS(double s) const
         return 0;  // No lanewidth defined
     }
 
-    auto iter = std::upper_bound(lane_material_.begin() + 1, lane_material_.end(), s, [](double s, Lane::Material* m) { return s < m->s_offset; });
+    auto iter = std::upper_bound(lane_material_.begin() + 1, lane_material_.end(), s, [](double stmp, Lane::Material* m) { return stmp < m->s_offset; });
     if (iter != lane_material_.end())
         return *(iter - 1);
     return lane_material_.back();
@@ -1120,7 +1094,7 @@ void Lane::AddLaneMaterial(Lane::Material* lane_material)
 {
     if (lane_material_.size() > 0 && lane_material->s_offset < lane_material_.back()->s_offset)
     {
-        for (size_t i = 0; i < lane_material_.size(); i++)
+        for (unsigned int i = 0; i < lane_material_.size(); i++)
         {
             if (NEAR_NUMBERS(lane_material->s_offset, lane_material_[i]->s_offset))
             {
@@ -1150,7 +1124,7 @@ void Lane::AddLaneMaterial(Lane::Material* lane_material)
 
 LaneLink* Lane::GetLink(LinkType type) const
 {
-    for (int i = 0; i < (int)link_.size(); i++)
+    for (unsigned int i = 0; i < link_.size(); i++)
     {
         LaneLink* l = link_[i];
         if (l->GetType() == type)
@@ -1171,9 +1145,9 @@ void LaneWidth::Print() const
              poly3_.GetD());
 }
 
-LaneRoadMark* Lane::GetLaneRoadMarkByIdx(int idx) const
+LaneRoadMark* Lane::GetLaneRoadMarkByIdx(unsigned int idx) const
 {
-    if (idx < 0 || idx >= lane_roadMark_.size())
+    if (idx >= lane_roadMark_.size())
     {
         LOG_ERROR("Requested roadmark index ({}) out of range [{}, {}]", idx, 0, static_cast<int>(lane_roadMark_.size() - 1));
         return nullptr;
@@ -1187,14 +1161,14 @@ LaneRoadMark* Lane::GetLaneRoadMarkByIdx(int idx) const
 std::vector<int> Lane::GetLineGlobalIds() const
 {
     std::vector<int> line_ids;
-    for (int i = 0; i < GetNumberOfRoadMarks(); i++)
+    for (unsigned int i = 0; i < GetNumberOfRoadMarks(); i++)
     {
         LaneRoadMark* laneroadmark = GetLaneRoadMarkByIdx(i);
-        for (int j = 0; j < laneroadmark->GetNumberOfRoadMarkTypes(); j++)
+        for (unsigned int j = 0; j < laneroadmark->GetNumberOfRoadMarkTypes(); j++)
         {
             LaneRoadMarkType* laneroadmarktype = laneroadmark->GetLaneRoadMarkTypeByIdx(j);
 
-            for (int h = 0; h < laneroadmarktype->GetNumberOfRoadMarkTypeLines(); h++)
+            for (unsigned int h = 0; h < laneroadmarktype->GetNumberOfRoadMarkTypeLines(); h++)
             {
                 LaneRoadMarkTypeLine* laneroadmarktypeline = laneroadmarktype->GetLaneRoadMarkTypeLineByIdx(h);
                 line_ids.push_back(laneroadmarktypeline->GetGlobalId());
@@ -1291,9 +1265,9 @@ std::string LaneRoadMark::RoadMarkColor2Str(RoadMarkColor color)
     return "Unrecognized color id: " + std::to_string(static_cast<int>(color));
 }
 
-LaneRoadMarkType* LaneRoadMark::GetLaneRoadMarkTypeByIdx(int idx) const
+LaneRoadMarkType* LaneRoadMark::GetLaneRoadMarkTypeByIdx(unsigned int idx) const
 {
-    if (idx < (int)lane_roadMarkType_.size())
+    if (idx < lane_roadMarkType_.size())
     {
         return lane_roadMarkType_[idx].get();
     }
@@ -1306,9 +1280,9 @@ void LaneRoadMark::AddType(std::shared_ptr<LaneRoadMarkType> lane_roadMarkType)
     lane_roadMarkType_.push_back(lane_roadMarkType);
 }
 
-LaneRoadMarkTypeLine* LaneRoadMarkType::GetLaneRoadMarkTypeLineByIdx(int idx) const
+LaneRoadMarkTypeLine* LaneRoadMarkType::GetLaneRoadMarkTypeLineByIdx(unsigned int idx) const
 {
-    if (idx < (int)lane_roadMarkTypeLine_.size())
+    if (idx < lane_roadMarkTypeLine_.size())
     {
         return lane_roadMarkTypeLine_[idx].get();
     }
@@ -1322,7 +1296,7 @@ void LaneRoadMarkType::AddLine(std::shared_ptr<LaneRoadMarkTypeLine> lane_roadMa
 
     if (lane_roadMarkTypeLine_.size() > 0 && lane_roadMarkTypeLine->GetSOffset() < lane_roadMarkTypeLine_.back()->GetSOffset())
     {
-        for (size_t i = 0; i < lane_roadMarkTypeLine_.size(); i++)
+        for (unsigned int i = 0; i < lane_roadMarkTypeLine_.size(); i++)
         {
             if (lane_roadMarkTypeLine->GetSOffset() < lane_roadMarkTypeLine_[i]->GetSOffset())
             {
@@ -1364,7 +1338,7 @@ double LaneOffset::GetLaneOffsetPrim(double s) const
 
 void Lane::Print() const
 {
-    LOG_INFO("Lane: {}, type: {}, level: {}", id_, type_, level_);
+    LOG_INFO("Lane: {}, type: {}", id_, type_);
 
     for (size_t i = 0; i < link_.size(); i++)
     {
@@ -1408,9 +1382,9 @@ bool Lane::IsDriving()
     return bool(type_ & Lane::LaneType::LANE_TYPE_ANY_DRIVING);
 }
 
-LaneSection* Road::GetLaneSectionByIdx(int idx) const
+LaneSection* Road::GetLaneSectionByIdx(unsigned int idx) const
 {
-    if (idx >= 0 && idx < lane_section_.size())
+    if (idx < lane_section_.size())
     {
         return lane_section_[idx];
     }
@@ -1420,22 +1394,26 @@ LaneSection* Road::GetLaneSectionByIdx(int idx) const
     }
 }
 
-int Road::GetLaneSectionIdxByS(double s, int start_at) const
+unsigned int Road::GetLaneSectionIdxByS(double s, unsigned int start_at) const
 {
-    if (start_at < 0 || start_at > lane_section_.size() - 1)
+    if (lane_section_.empty())
     {
-        return -1;
+        return 0;
+    }
+    else if (start_at > lane_section_.size() - 1)
+    {
+        return static_cast<unsigned int>(lane_section_.size() - 1);
     }
 
     LaneSection* lane_section = lane_section_[start_at];
-    size_t       i            = start_at;
+    unsigned int       i            = start_at;
 
     if (s < lane_section->GetS() && start_at > 0)
     {
         // Look backwards
         for (i = start_at - 1; i > 0; i--)  // No need to check the first one
         {
-            lane_section = GetLaneSectionByIdx((int)i);
+            lane_section = GetLaneSectionByIdx(i);
             if (s > lane_section->GetS())
             {
                 break;
@@ -1447,7 +1425,7 @@ int Road::GetLaneSectionIdxByS(double s, int start_at) const
         // look forward
         for (i = start_at; i < GetNumberOfLaneSections() - 1; i++)  // No need to check the last one
         {
-            lane_section = GetLaneSectionByIdx((int)i);
+            lane_section = GetLaneSectionByIdx(i);
             if (s < lane_section->GetS() + lane_section->GetLength())
             {
                 break;
@@ -1455,15 +1433,15 @@ int Road::GetLaneSectionIdxByS(double s, int start_at) const
         }
     }
 
-    return (int)i;
+    return i;
 }
 
-int Road::GetLaneInfoByS(double s, int start_lane_section_idx, int start_lane_id, LaneInfo& lane_info, int laneTypeMask) const
+int Road::GetLaneInfoByS(double s, unsigned int start_lane_section_idx, int start_lane_id, LaneInfo& lane_info, int laneTypeMask) const
 {
     lane_info.lane_section_idx_ = start_lane_section_idx;
     lane_info.lane_id_          = start_lane_id;
 
-    if (lane_info.lane_section_idx_ >= (int)lane_section_.size() || lane_info.lane_section_idx_ < 0)
+    if (lane_info.lane_section_idx_ >= lane_section_.size())
     {
         LOG_ERROR("Error idx {} > n_lane_sections {}", lane_info.lane_section_idx_, lane_section_.size());
     }
@@ -1526,14 +1504,7 @@ int Road::GetLaneInfoByS(double s, int start_lane_section_idx, int start_lane_id
                 }
 
                 double lane_offset    = GetLaneOffset(s);
-                int    new_lane_index = lane_section->GetClosestLaneIdx(s, t, lane_offset, 0, offset, true, laneTypeMask);
-
-                if (new_lane_index < 0)
-                {
-                    LOG_WARN("Failed to find a closest snapping lane - fall back to reference lane (id 0)");
-                    lane_info.lane_id_ = 0;
-                    return -1;
-                }
+                unsigned int new_lane_index = lane_section->GetClosestLaneIdx(s, t, lane_offset, 0, offset, true, laneTypeMask);
 
                 lane_info.lane_id_ = lane_section->GetLaneByIdx(new_lane_index)->GetId();
                 LOG_INFO("GetLaneInfoByS: Moved to {}", lane_info.lane_id_);
@@ -1548,7 +1519,7 @@ int Road::GetConnectingLaneId(RoadLink* road_link, int fromLaneId, id_t connecti
 {
     Lane* lane;
 
-    if (road_link->GetElementId() == -1)
+    if (road_link->GetElementId() == ID_UNDEFINED)
     {
         LOG_ERROR("No connecting road or junction at rid {} link_type {}", GetId(), OpenDrive::LinkType2Str(road_link->GetType()).c_str());
         return 0;
@@ -1681,14 +1652,11 @@ Lane::Material* Road::GetLaneMaterialByS(double s, int lane_id) const
     return nullptr;
 }
 
-Geometry* Road::GetGeometry(int idx) const
+Geometry* Road::GetGeometry(unsigned int idx) const
 {
-    if (idx < 0 || idx + 1 > (int)geometry_.size())
+    if (idx >= geometry_.size())
     {
-        if (idx != 0)  // skip error message for index 0, probably caused by empty road
-        {
-            LOG_ERROR("Road::GetGeometry index {} out of range [0:{}]", idx, geometry_.size());
-        }
+        LOG_ERROR("Road::GetGeometry index {} out of range [0:{}]", idx, geometry_.size());
         return nullptr;
     }
     return geometry_[idx];
@@ -1704,9 +1672,9 @@ void LaneSection::Print() const
     }
 }
 
-Lane* LaneSection::GetLaneByIdx(int idx) const
+Lane* LaneSection::GetLaneByIdx(unsigned int idx) const
 {
-    if (idx < (int)lane_.size())
+    if (idx < lane_.size())
     {
         return lane_[idx];
     }
@@ -1739,9 +1707,9 @@ Lane* LaneSection::GetLaneById(int id) const
     return 0;
 }
 
-int LaneSection::GetLaneIdByIdx(int idx) const
+int LaneSection::GetLaneIdByIdx(unsigned int idx) const
 {
-    if (idx > (int)lane_.size() - 1)
+    if (idx >= lane_.size())
     {
         LOG_ERROR("LaneSection::GetLaneIdByIdx Error: index {}, only {} lanes", idx, lane_.size());
         return 0;
@@ -1752,21 +1720,21 @@ int LaneSection::GetLaneIdByIdx(int idx) const
     }
 }
 
-int LaneSection::GetLaneIdxById(int id) const
+idx_t LaneSection::GetLaneIdxById(int id) const
 {
-    for (int i = 0; i < (int)lane_.size(); i++)
+    for (unsigned int i = 0; i < lane_.size(); i++)
     {
         if (lane_[i]->GetId() == id)
         {
             return i;
         }
     }
-    return -1;
+    return IDX_UNDEFINED;
 }
 
-int LaneSection::GetLaneGlobalIdByIdx(int idx) const
+int LaneSection::GetLaneGlobalIdByIdx(unsigned int idx) const
 {
-    if (idx < 0 || idx > (int)lane_.size() - 1)
+    if (idx >= lane_.size())
     {
         LOG_ERROR("LaneSection::GetLaneIdByIdx Error: index {}, only {} lanes", idx, lane_.size());
         return 0;
@@ -1776,7 +1744,7 @@ int LaneSection::GetLaneGlobalIdByIdx(int idx) const
         return (lane_[idx]->GetGlobalId());
     }
 }
-int LaneSection::GetLaneGlobalIdById(int id) const
+idx_t LaneSection::GetLaneGlobalIdById(int id) const
 {
     for (size_t i = 0; i < (int)lane_.size(); i++)
     {
@@ -1785,7 +1753,7 @@ int LaneSection::GetLaneGlobalIdById(int id) const
             return lane_[i]->GetGlobalId();
         }
     }
-    return -1;
+    return IDX_UNDEFINED;
 }
 
 int LaneSection::GetNumberOfDrivingLanes() const
@@ -2914,7 +2882,7 @@ double Road::GetCenterOffset(double s, int lane_id) const
     return 0.0;
 }
 
-Road::RoadTypeEntry* Road::GetRoadType(int idx) const
+Road::RoadTypeEntry* Road::GetRoadType(unsigned int idx) const
 {
     if (type_.size() > 0)
     {
@@ -4989,7 +4957,7 @@ bool Junction::IsOsiIntersection() const
     }
 }
 
-int Junction::GetNoConnectionsFromRoadId(id_t incomingRoadId) const
+unsigned int Junction::GetNoConnectionsFromRoadId(id_t incomingRoadId) const
 {
     int counter = 0;
 
@@ -5005,7 +4973,7 @@ int Junction::GetNoConnectionsFromRoadId(id_t incomingRoadId) const
     return counter;
 }
 
-id_t Junction::GetConnectingRoadIdFromIncomingRoadId(id_t incomingRoadId, int index) const
+id_t Junction::GetConnectingRoadIdFromIncomingRoadId(id_t incomingRoadId, unsigned int index) const
 {
     int counter = 0;
 
@@ -7390,10 +7358,10 @@ bool OpenDrive::SetRoadOSI()
     return false;
 }
 
-int LaneSection::GetClosestLaneIdx(double s, double t, double laneOffset, int side, double& offset, bool noZeroWidth, int laneTypeMask) const
+unsigned int LaneSection::GetClosestLaneIdx(double s, double t, double laneOffset, int side, double& offset, bool noZeroWidth, int laneTypeMask) const
 {
     double min_offset         = t - laneOffset;  // Initial offset relates to center lane
-    int    candidate_lane_idx = -1;
+    unsigned int    candidate_lane_idx = 0xffffffff;
 
     for (int i = 0; i < GetNumberOfLanes(); i++)  // Search through all lanes
     {
@@ -7412,7 +7380,7 @@ int LaneSection::GetClosestLaneIdx(double s, double t, double laneOffset, int si
                 candidate_lane_idx = i;
                 break;
             }
-            if (candidate_lane_idx == -1 || fabs(t + laneOffset - laneCenterOffset) < fabs(min_offset))
+            if (candidate_lane_idx == 0xffffffff || fabs(t - laneOffset - laneCenterOffset) < fabs(min_offset))
             {
                 min_offset         = t - laneOffset - laneCenterOffset;
                 candidate_lane_idx = i;
@@ -7422,9 +7390,11 @@ int LaneSection::GetClosestLaneIdx(double s, double t, double laneOffset, int si
 
     offset = min_offset;
 
-    if (candidate_lane_idx == -1)
+    if (candidate_lane_idx == 0xffffffff)
     {
         // Fall back to reference lane
+        LOG_DEBUG("Failed to find a closest snapping lane - fall back to reference lane (id 0)");
+
         candidate_lane_idx = GetLaneIdxById(0);
     }
 

@@ -44,7 +44,7 @@ add_library(
 target_link_libraries(
     ${TARGET}
     PRIVATE CommonMini
-            # project_options
+            project_options
 )
 
 target_include_directories(
