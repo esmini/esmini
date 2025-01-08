@@ -23,6 +23,7 @@
 typedef uint32_t id_t;
 
 #define SE_ID_UNDEFINED    0xffffffff
+#define SE_IDX_UNDEFINED   0xffffffff
 #define SE_PARAM_NAME_SIZE 32
 
 typedef struct
@@ -117,10 +118,10 @@ typedef struct
 
 typedef struct
 {
-    int far_left_lb_id;
-    int left_lb_id;
-    int right_lb_id;
-    int far_right_lb_id;
+    id_t far_left_lb_id;
+    id_t left_lb_id;
+    id_t right_lb_id;
+    id_t far_right_lb_id;
 } SE_LaneBoundaryId;
 
 typedef struct
@@ -487,15 +488,15 @@ extern "C"
 
     /**
             Get the number of parameter value permutations. Call AFTER SE_Init.
-            @return -1 on error else number of permutations
+            @return number of permutations
     */
-    SE_DLL_API int SE_GetNumberOfPermutations();
+    SE_DLL_API unsigned int SE_GetNumberOfPermutations();
 
     /**
             Select parameter value permutation. Call BEFORE SE_Init, e.g. during or after preceding run.
             @return -1 on error else number of permutations
     */
-    SE_DLL_API int SE_SelectPermutation(int index);
+    SE_DLL_API int SE_SelectPermutation(unsigned int index);
 
     /**
             Get current parameter permutation index.
@@ -626,7 +627,7 @@ extern "C"
 
     /**
             Get the number of named parameters within the current scenario
-            @return number of parameters
+            @return number of parameters, -1 on error
     */
     SE_DLL_API int SE_GetNumberOfParameters();
 
@@ -640,7 +641,7 @@ extern "C"
 
     /**
             Get the number of named variables within the current scenario
-            @return number of variables
+            @return number of variables, -1 on error
     */
     SE_DLL_API int SE_GetNumberOfVariables();
 
@@ -1130,7 +1131,7 @@ extern "C"
     /**
             Get the number of collisions the specified object currently is involved in
             @param object_id Id of the object
-            @return Number of objects that specified object currently is overlapping/colliding with. -1 if unsuccessful.
+            @return Number of objects that specified object currently is overlapping/colliding with. -1 on error.
     */
     SE_DLL_API int SE_GetObjectNumberOfCollisions(int object_id);
 
@@ -1317,7 +1318,7 @@ extern "C"
             @param road_id The road along which to look for signs
             @return Number of road signs
     */
-    SE_DLL_API int SE_GetNumberOfRoadSigns(id_t road_id);
+    SE_DLL_API unsigned int SE_GetNumberOfRoadSigns(id_t road_id);
 
     /**
             Get information on specifed road sign
@@ -1326,7 +1327,7 @@ extern "C"
             @param road_sign Pointer/reference to a SE_RoadSign struct to be filled in
             @return 0 if successful, -1 if not
     */
-    SE_DLL_API int SE_GetRoadSign(id_t road_id, int index, SE_RoadSign *road_sign);
+    SE_DLL_API int SE_GetRoadSign(id_t road_id, unsigned int index, SE_RoadSign *road_sign);
 
     /**
             Get the number of lane validity records of specified road object/sign
@@ -1334,7 +1335,7 @@ extern "C"
             @param index Index of the sign. Note: not ID
             @return Number of validity records of specified road sign
     */
-    SE_DLL_API int SE_GetNumberOfRoadSignValidityRecords(id_t road_id, int index);
+    SE_DLL_API unsigned int SE_GetNumberOfRoadSignValidityRecords(id_t road_id, unsigned int index);
 
     /**
             Get specified validity record of specifed road sign
@@ -1344,7 +1345,7 @@ extern "C"
             @param road_sign Pointer/reference to a SE_RoadObjValidity struct to be filled in
             @return 0 if successful, -1 if not
     */
-    SE_DLL_API int SE_GetRoadSignValidityRecord(id_t road_id, int signIndex, int validityIndex, SE_RoadObjValidity *validity);
+    SE_DLL_API int SE_GetRoadSignValidityRecord(id_t road_id, unsigned int signIndex, unsigned int validityIndex, SE_RoadObjValidity *validity);
 
     /**
             Get original string ID asoociated with specified road
@@ -1760,7 +1761,7 @@ extern "C"
     /**
             Get the number Route points assigned for a specific vehicle
             @param object_id The index of the vehicle
-            @return number of Route points (0 means no route assigned)
+            @return number of Route points (0 means no route assigned), -1 on error
     */
     SE_DLL_API int SE_GetNumberOfRoutePoints(int object_id);
 
@@ -1770,7 +1771,7 @@ extern "C"
             @param route_index The index of Route point
             @return 0 if successful, -1 if not (e.g. wrong type)
     */
-    SE_DLL_API int SE_GetRoutePoint(int object_id, int route_index, SE_RouteInfo *routeinfo);
+    SE_DLL_API int SE_GetRoutePoint(int object_id, unsigned int route_index, SE_RouteInfo *routeinfo);
 
     /**
         Get the total length of the route assigned to specified object

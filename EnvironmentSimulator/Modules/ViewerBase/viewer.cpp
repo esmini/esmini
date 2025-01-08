@@ -671,7 +671,7 @@ void Trajectory::SetActiveRMTrajectory(roadmanager::RMTrajectory* RMTrajectory)
         return;
     }
 
-    for (int i = 0; i < RMTrajectory->shape_->pline_.GetNumberOfVertices(); i++)
+    for (unsigned int i = 0; i < RMTrajectory->shape_->pline_.GetNumberOfVertices(); i++)
     {
         roadmanager::TrajVertex& v = RMTrajectory->shape_->pline_.vertex_[static_cast<unsigned int>(i)];
 
@@ -2394,23 +2394,23 @@ bool Viewer::CreateRoadMarkLines(roadmanager::OpenDrive* od)
     double    z_offset = 0.10;
     osg::Vec3 point(0, 0, 0);
 
-    for (int r = 0; r < od->GetNumOfRoads(); r++)
+    for (unsigned int r = 0; r < od->GetNumOfRoads(); r++)
     {
         roadmanager::Road* road = od->GetRoadByIdx(r);
-        for (int i = 0; i < road->GetNumberOfLaneSections(); i++)
+        for (unsigned int i = 0; i < road->GetNumberOfLaneSections(); i++)
         {
             roadmanager::LaneSection* lane_section = road->GetLaneSectionByIdx(i);
-            for (int j = 0; j < lane_section->GetNumberOfLanes(); j++)
+            for (unsigned int j = 0; j < lane_section->GetNumberOfLanes(); j++)
             {
                 roadmanager::Lane* lane = lane_section->GetLaneByIdx(j);
-                for (int k = 0; k < lane->GetNumberOfRoadMarks(); k++)
+                for (unsigned int k = 0; k < lane->GetNumberOfRoadMarks(); k++)
                 {
                     roadmanager::LaneRoadMark* lane_roadmark = lane->GetLaneRoadMarkByIdx(k);
-                    for (int m = 0; m < lane_roadmark->GetNumberOfRoadMarkTypes(); m++)
+                    for (unsigned int m = 0; m < lane_roadmark->GetNumberOfRoadMarkTypes(); m++)
                     {
                         roadmanager::LaneRoadMarkType* lane_roadmarktype = lane_roadmark->GetLaneRoadMarkTypeByIdx(m);
 
-                        for (int n = 0; n < lane_roadmarktype->GetNumberOfRoadMarkTypeLines(); n++)
+                        for (unsigned int n = 0; n < lane_roadmarktype->GetNumberOfRoadMarkTypeLines(); n++)
                         {
                             roadmanager::LaneRoadMarkTypeLine* lane_roadmarktypeline = lane_roadmarktype->GetLaneRoadMarkTypeLineByIdx(n);
                             roadmanager::OSIPoints*            curr_osi_rm           = lane_roadmarktypeline->GetOSIPoints();
@@ -2508,7 +2508,7 @@ bool Viewer::CreateRoadLines(Viewer* viewer, roadmanager::OpenDrive* od)
 
     roadmanager::OSIPoints* curr_osi = nullptr;
 
-    for (int r = 0; r < od->GetNumOfRoads(); r++)
+    for (unsigned int r = 0; r < od->GetNumOfRoads(); r++)
     {
         roadmanager::Road* road = od->GetRoadByIdx(r);
 
@@ -2524,7 +2524,7 @@ bool Viewer::CreateRoadLines(Viewer* viewer, roadmanager::OpenDrive* od)
         osg::ref_ptr<osg::Point>     kp_point  = new osg::Point();
 
         roadmanager::Geometry* geom = nullptr;
-        for (int i = 0; i < road->GetNumberOfGeometries() + 1; i++)
+        for (unsigned int i = 0; i < road->GetNumberOfGeometries() + 1; i++)
         {
             if (i < road->GetNumberOfGeometries())
             {
@@ -2561,15 +2561,15 @@ bool Viewer::CreateRoadLines(Viewer* viewer, roadmanager::OpenDrive* od)
 
         odrLines_->addChild(kp_geom);
 
-        for (int i = 0; i < road->GetNumberOfLaneSections(); i++)
+        for (unsigned int i = 0; i < road->GetNumberOfLaneSections(); i++)
         {
             roadmanager::LaneSection* lane_section = road->GetLaneSectionByIdx(i);
-            for (int j = 0; j < lane_section->GetNumberOfLanes(); j++)
+            for (unsigned int j = 0; j < lane_section->GetNumberOfLanes(); j++)
             {
                 roadmanager::Lane* lane = lane_section->GetLaneByIdx(j);
 
                 // visualize both lane boundary and lane center and
-                for (int k = 0; k < 2; k++)
+                for (unsigned int k = 0; k < 2; k++)
                 {
                     // skip lane center for all non driving lanes except center lane
                     if ((k == 1 && lane->GetId() != 0) && !lane->IsDriving())
@@ -2774,14 +2774,14 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
 
     roadmanager::Position pos;
 
-    for (int r = 0; r < od->GetNumOfRoads(); r++)
+    for (unsigned int r = 0; r < od->GetNumOfRoads(); r++)
     {
         roadmanager::Road* road = od->GetRoadByIdx(r);
 
-        for (size_t s = 0; s < static_cast<unsigned int>(road->GetNumberOfSignals()); s++)
+        for (unsigned int s = 0; s < road->GetNumberOfSignals(); s++)
         {
             tx                          = nullptr;
-            roadmanager::Signal* signal = road->GetSignal(static_cast<int>(s));
+            roadmanager::Signal* signal = road->GetSignal(s);
 
             // create a bounding for the sign
             osg::ref_ptr<osg::PositionAttitudeTransform> tx_bb = new osg::PositionAttitudeTransform;
@@ -2849,9 +2849,9 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
             objGroup->addChild(tx_bb);
         }
 
-        for (size_t o = 0; o < static_cast<unsigned int>(road->GetNumberOfObjects()); o++)
+        for (unsigned int o = 0; o < road->GetNumberOfObjects(); o++)
         {
-            roadmanager::RMObject* object = road->GetRoadObject(static_cast<int>(o));
+            roadmanager::RMObject* object = road->GetRoadObject(o);
             osg::Vec4              color;
             tx = nullptr;
 
@@ -2879,7 +2879,7 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
             {
                 for (size_t j = 0; j < static_cast<unsigned int>(object->GetNumberOfOutlines()); j++)
                 {
-                    roadmanager::Outline* outline = object->GetOutline(static_cast<int>(j));
+                    roadmanager::Outline* outline = object->GetOutline(j);
                     CreateOutlineObject(outline, color);
                 }
                 LOG_INFO("Created outline geometry for object {}.", object->GetName());
@@ -2925,9 +2925,9 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
                         // use outline, if exists
                         if (object->GetNumberOfOutlines() > 0)
                         {
-                            for (size_t j = 0; j < static_cast<unsigned int>(object->GetNumberOfOutlines()); j++)
+                            for (unsigned int j = 0; j < object->GetNumberOfOutlines(); j++)
                             {
-                                roadmanager::Outline* outline = object->GetOutline(static_cast<int>(j));
+                                roadmanager::Outline* outline = object->GetOutline(j);
                                 CreateOutlineObject(outline, color);
                             }
                             continue;

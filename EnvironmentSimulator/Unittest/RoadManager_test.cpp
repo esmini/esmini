@@ -284,9 +284,6 @@ TEST_F(OSIPointsTestFixture, TestSetGet)
 
 TEST_F(OSIPointsTestFixture, TestGetFromIdxEmpty)
 {
-    ASSERT_THROW(osi_points.GetXfromIdx(-1), std::runtime_error);
-    ASSERT_THROW(osi_points.GetYfromIdx(-1), std::runtime_error);
-    ASSERT_THROW(osi_points.GetZfromIdx(-1), std::runtime_error);
     ASSERT_THROW(osi_points.GetXfromIdx(0), std::runtime_error);
     ASSERT_THROW(osi_points.GetYfromIdx(0), std::runtime_error);
     ASSERT_THROW(osi_points.GetZfromIdx(0), std::runtime_error);
@@ -1260,12 +1257,12 @@ TEST_F(LaneTestFixture, TestLaneBaseGetConstructor)
 {
     ASSERT_EQ(lane.GetId(), 0);
     ASSERT_EQ(lane.GetLaneType(), Lane::LaneType::LANE_TYPE_NONE);
-    ASSERT_EQ(lane.GetGlobalId(), 0.0);
+    ASSERT_EQ(lane.GetGlobalId(), ID_UNDEFINED);
 
     Lane lane_second = Lane(1, Lane::LaneType::LANE_TYPE_DRIVING);
     ASSERT_EQ(lane_second.GetId(), 1);
     ASSERT_EQ(lane_second.GetLaneType(), Lane::LaneType::LANE_TYPE_DRIVING);
-    ASSERT_EQ(lane_second.GetGlobalId(), 0.0);
+    ASSERT_EQ(lane_second.GetGlobalId(), ID_UNDEFINED);
 }
 
 TEST_F(LaneTestFixture, TestLaneAddFunctions)
@@ -1319,7 +1316,6 @@ TEST_F(LaneTestFixture, TestLaneGetWidth)
     lane.AddLaneWidth(lanewidth);
     lane.AddLaneWidth(lanewidth_second);
 
-    ASSERT_THROW(lane.GetWidthByIndex(-1), std::runtime_error);
     ASSERT_THROW(lane.GetWidthByIndex(2), std::runtime_error);
     ASSERT_THROW(lane.GetWidthByIndex(3), std::runtime_error);
 
@@ -1374,7 +1370,6 @@ TEST_F(LaneTestFixture, TestLaneGetRoadMark)
                                                   2.0);
     lane.AddLaneRoadMark(laneroadmark);
 
-    EXPECT_EQ(lane.GetLaneRoadMarkByIdx(-1), nullptr);
     EXPECT_EQ(lane.GetLaneRoadMarkByIdx(1), nullptr);
     EXPECT_EQ(lane.GetLaneRoadMarkByIdx(2), nullptr);
 
@@ -1401,7 +1396,6 @@ TEST_F(LaneTestFixture, TestLaneGetRoadMark2)
                                                   2.0);
     lane.AddLaneRoadMark(laneroadmark);
 
-    EXPECT_EQ(lane.GetLaneRoadMarkByIdx(-1), nullptr);
     EXPECT_EQ(lane.GetLaneRoadMarkByIdx(1), nullptr);
     EXPECT_EQ(lane.GetLaneRoadMarkByIdx(2), nullptr);
 
@@ -1421,7 +1415,6 @@ TEST_F(LaneTestFixture, TestLaneGetRoadMark3)
                                                   2.0);
     lane.AddLaneRoadMark(laneroadmark);
 
-    EXPECT_EQ(lane.GetLaneRoadMarkByIdx(-1), nullptr);
     EXPECT_EQ(lane.GetLaneRoadMarkByIdx(1), nullptr);
     EXPECT_EQ(lane.GetLaneRoadMarkByIdx(2), nullptr);
 
@@ -1441,7 +1434,6 @@ TEST_F(LaneTestFixture, TestLaneGetRoadMark4)
                                                   2.0);
     lane.AddLaneRoadMark(laneroadmark);
 
-    EXPECT_EQ(lane.GetLaneRoadMarkByIdx(-1), nullptr);
     EXPECT_EQ(lane.GetLaneRoadMarkByIdx(1), nullptr);
     EXPECT_EQ(lane.GetLaneRoadMarkByIdx(2), nullptr);
 
@@ -1518,7 +1510,7 @@ TEST_F(LaneTestFixture, TestLaneGetLineGlobalIds)
     laneRoadMarktypeline->SetGlobalId();
     laneRoadMarktypeline_second->SetGlobalId();
 
-    std::vector<int> all_glob_ids = lane.GetLineGlobalIds();
+    std::vector<id_t> all_glob_ids = lane.GetLineGlobalIds();
 
     ASSERT_THAT(all_glob_ids.size(), 3);
     ASSERT_THAT(laneroadmarktype->GetLaneRoadMarkTypeLineByIdx(0)->GetGlobalId(), 0);
@@ -2138,8 +2130,8 @@ TEST(ControllerTest, TestControllers)
 
     controller = odr->GetControllerByIdx(0);
     EXPECT_EQ(controller->GetName(), "ctrl001");
-    int signalIds1[] = {294, 295, 287, 288};
-    for (int i = 0; i < controller->GetNumberOfControls(); i++)
+    unsigned int signalIds1[] = {294, 295, 287, 288};
+    for (unsigned int i = 0; i < controller->GetNumberOfControls(); i++)
     {
         EXPECT_EQ(controller->GetControl(i)->signalId_, signalIds1[i]);
     }
@@ -2147,7 +2139,7 @@ TEST(ControllerTest, TestControllers)
     controller = odr->GetControllerByIdx(22);
     EXPECT_EQ(controller->GetName(), "ctrl027");
     int signalIds2[] = {33617, 33618};
-    for (int i = 0; i < controller->GetNumberOfControls(); i++)
+    for (unsigned int i = 0; i < controller->GetNumberOfControls(); i++)
     {
         EXPECT_EQ(controller->GetControl(i)->signalId_, signalIds2[i]);
     }
@@ -2156,7 +2148,7 @@ TEST(ControllerTest, TestControllers)
     Junction           *junction = odr->GetJunctionByIdx(1);
     EXPECT_EQ(junction->GetNumberOfControllers(), 5);
     int controllerIds[] = {7, 9, 10, 8, 6};
-    for (int i = 0; i < junction->GetNumberOfControllers(); i++)
+    for (unsigned int i = 0; i < junction->GetNumberOfControllers(); i++)
     {
         jcontroller = junction->GetJunctionControllerByIdx(i);
         EXPECT_EQ(jcontroller->id_, controllerIds[i]);
@@ -2276,10 +2268,10 @@ TEST(LaneInfoTest, TestDetailedLaneType)
 
 TEST(RoadInfoTest, TestGetNrRoadsOverlappingPos)
 {
-    int road_id_0[] = {5, 9, 10, 12, 15};
-    int road_id_1[] = {16, 7, 10};
-    int road_id_2[] = {2};
-    int n           = 0;
+    id_t         road_id_0[] = {5, 9, 10, 12, 15};
+    id_t         road_id_1[] = {16, 7, 10};
+    id_t         road_id_2[] = {2};
+    unsigned int n           = 0;
 
     Position::GetOpenDrive()->LoadOpenDriveFile("../../../resources/xodr/fabriksgatan.xodr");
     OpenDrive *odr = Position::GetOpenDrive();
@@ -2291,7 +2283,7 @@ TEST(RoadInfoTest, TestGetNrRoadsOverlappingPos)
     pos.SetLanePos(5, -1, 7.2, -0.2);
     n = pos.GetNumberOfRoadsOverlapping();
     EXPECT_EQ(n, sizeof(road_id_0) / sizeof(int));
-    for (int i = 0; i < n; i++)
+    for (unsigned int i = 0; i < n; i++)
     {
         EXPECT_EQ(pos.GetOverlappingRoadId(i), road_id_0[i]);
     }
@@ -2299,7 +2291,7 @@ TEST(RoadInfoTest, TestGetNrRoadsOverlappingPos)
     pos.SetLanePos(16, -1, 9.0, -0.2);
     n = pos.GetNumberOfRoadsOverlapping();
     EXPECT_EQ(n, sizeof(road_id_1) / sizeof(int));
-    for (int i = 0; i < n; i++)
+    for (unsigned int i = 0; i < n; i++)
     {
         EXPECT_EQ(pos.GetOverlappingRoadId(i), road_id_1[i]);
     }
@@ -2307,7 +2299,7 @@ TEST(RoadInfoTest, TestGetNrRoadsOverlappingPos)
     pos.SetLanePos(2, 1, 50.0, 0.5);
     n = pos.GetNumberOfRoadsOverlapping();
     EXPECT_EQ(n, sizeof(road_id_2) / sizeof(int));
-    for (int i = 0; i < n; i++)
+    for (unsigned int i = 0; i < n; i++)
     {
         EXPECT_EQ(pos.GetOverlappingRoadId(i), road_id_2[i]);
     }
@@ -2315,7 +2307,7 @@ TEST(RoadInfoTest, TestGetNrRoadsOverlappingPos)
     pos.SetLanePos(2, 3, 50.0, 0.95);
     n = pos.GetNumberOfRoadsOverlapping();
     EXPECT_EQ(n, sizeof(road_id_2) / sizeof(int));
-    for (int i = 0; i < n; i++)
+    for (unsigned int i = 0; i < n; i++)
     {
         EXPECT_EQ(pos.GetOverlappingRoadId(i), road_id_2[i]);
     }
@@ -2324,7 +2316,7 @@ TEST(RoadInfoTest, TestGetNrRoadsOverlappingPos)
     pos.SetTrackPos(2, 50.0, right_side_width - 0.05);
     n = pos.GetNumberOfRoadsOverlapping();
     EXPECT_EQ(n, sizeof(road_id_2) / sizeof(int));
-    for (int i = 0; i < n; i++)
+    for (unsigned int i = 0; i < n; i++)
     {
         EXPECT_EQ(pos.GetOverlappingRoadId(i), road_id_2[i]);
     }
@@ -2572,7 +2564,7 @@ TEST_F(MixedRoadsFixture, TestGetClosestLaneIdx)
     double       offset       = 0.0;
     double       s            = 0.0;
     LaneSection *lane_section = nullptr;
-    int          lane_idx     = -1;
+    idx_t        lane_idx     = IDX_UNDEFINED;
 
     // check side -1, 0 (any) and 1
     // side -1 and 0 should give same result, while +1 will snap to 0 as leftmost lane

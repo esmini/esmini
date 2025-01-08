@@ -306,7 +306,7 @@ namespace scenarioengine
         {
             roadmanager::Position pos;
             roadmanager::Road*    road;
-            int                   nLanes;
+            unsigned int          nLanes;
         } SelectInfo;
 
         SwarmTrafficAction(StoryBoardElement* parent);

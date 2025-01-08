@@ -142,7 +142,7 @@ void ControllerFollowGhost::Step(double timeStep)
     }
 
     // Find out a steering target along ghost vehicle trail
-    int                     index_out;
+    idx_t                   index_out;
     roadmanager::TrajVertex steering_target_point, speed_point;
 
     // Locate a point at given distance from own vehicle along the ghost trajectory

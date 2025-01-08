@@ -291,34 +291,12 @@ static int GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, S
         return SE_GHOST_TRAIL_ERROR;
     }
 
-    double x{};
-    double y{};
-    double z{};
-    int    index_out;
-
-    if (ghost->trail_
-            .FindClosestPoint(obj->pos_.GetX(), obj->pos_.GetY(), obj->trail_closest_pos_, obj->trail_follow_index_, obj->trail_follow_index_) == 0)
-    {
-        z = obj->pos_.GetZ();
-    }
-    else
-    {
-        // Failed find point along trail, copy entity position
-        x = obj->pos_.GetX();
-        y = obj->pos_.GetY();
-        z = obj->pos_.GetZ();
-    }
-
-    (void)x;
-    (void)y;
-    (void)z;
+    ghost->trail_.FindClosestPoint(obj->pos_.GetX(), obj->pos_.GetY(), obj->trail_closest_pos_, obj->trail_follow_index_, obj->trail_follow_index_);
 
     roadmanager::TrajVertex trailPos;
-    trailPos.h =
-        static_cast<float>(obj->pos_.GetH());  // Set default trail heading aligned with road - in case trail is less than two points (no heading)
-
+    idx_t                   index_out = IDX_UNDEFINED;
+    trailPos.h     = obj->pos_.GetH();  // Set default trail heading aligned with road - in case trail is less than two points (no heading)
     int returncode = ghost->trail_.FindPointAhead(obj->trail_closest_pos_.s, lookahead_distance, trailPos, index_out, obj->trail_follow_index_);
-
     if (returncode == SE_GHOST_TRAIL_ERROR)
     {
         return returncode;
@@ -535,14 +513,14 @@ extern "C"
         OSCParameterDistribution::Inst().Reset();
     }
 
-    SE_DLL_API int SE_GetNumberOfPermutations()
+    SE_DLL_API unsigned int SE_GetNumberOfPermutations()
     {
-        return static_cast<int>(OSCParameterDistribution::Inst().GetNumPermutations());
+        return OSCParameterDistribution::Inst().GetNumPermutations();
     }
 
-    SE_DLL_API int SE_SelectPermutation(int index)
+    SE_DLL_API int SE_SelectPermutation(unsigned int index)
     {
-        return OSCParameterDistribution::Inst().SetRequestedIndex(static_cast<unsigned int>(index));
+        return OSCParameterDistribution::Inst().SetRequestedIndex(index);
     }
 
     SE_DLL_API int SE_GetPermutationIndex()
@@ -1684,7 +1662,7 @@ extern "C"
 #ifdef _USE_OSI
         if (player != nullptr)
         {
-            std::vector<int> ids_vector;
+            std::vector<id_t> ids_vector;
             player->osiReporter->GetOSILaneBoundaryIds(player->scenarioGateway->objectState_, ids_vector, object_id);
             if (!ids_vector.empty())
             {
@@ -2240,7 +2218,7 @@ extern "C"
         StoryBoardElement::stateChangeCallback = fnPtr;
     }
 
-    SE_DLL_API int SE_GetNumberOfRoadSigns(id_t road_id)
+    SE_DLL_API unsigned int SE_GetNumberOfRoadSigns(id_t road_id)
     {
         if (player != nullptr)
         {
@@ -2253,7 +2231,7 @@ extern "C"
         return 0;
     }
 
-    SE_DLL_API int SE_GetRoadSign(id_t road_id, int index, SE_RoadSign *road_sign)
+    SE_DLL_API int SE_GetRoadSign(id_t road_id, unsigned int index, SE_RoadSign *road_sign)
     {
         static std::string returnString;
 
@@ -2294,7 +2272,7 @@ extern "C"
         return -1;
     }
 
-    SE_DLL_API int SE_GetNumberOfRoadSignValidityRecords(id_t road_id, int index)
+    SE_DLL_API unsigned int SE_GetNumberOfRoadSignValidityRecords(id_t road_id, unsigned int index)
     {
         if (player != nullptr)
         {
@@ -2302,14 +2280,14 @@ extern "C"
             if (road != nullptr)
             {
                 roadmanager::Signal *s = road->GetSignal(index);
-                return static_cast<int>(s->validity_.size());
+                return static_cast<unsigned int>(s->validity_.size());
             }
         }
 
         return 0;
     }
 
-    SE_DLL_API int SE_GetRoadSignValidityRecord(id_t road_id, int signIndex, int validityIndex, SE_RoadObjValidity *validity)
+    SE_DLL_API int SE_GetRoadSignValidityRecord(id_t road_id, unsigned int signIndex, unsigned int validityIndex, SE_RoadObjValidity *validity)
     {
         if (player != nullptr)
         {
@@ -2317,10 +2295,10 @@ extern "C"
             if (road != NULL)
             {
                 roadmanager::Signal *s = road->GetSignal(signIndex);
-                if (validityIndex >= 0 && validityIndex < static_cast<int>(s->validity_.size()))
+                if (validityIndex < s->validity_.size())
                 {
-                    validity->fromLane = s->validity_[static_cast<unsigned int>(validityIndex)].fromLane_;
-                    validity->toLane   = s->validity_[static_cast<unsigned int>(validityIndex)].toLane_;
+                    validity->fromLane = s->validity_[validityIndex].fromLane_;
+                    validity->toLane   = s->validity_[validityIndex].toLane_;
                     return 0;
                 }
             }
@@ -2763,7 +2741,7 @@ extern "C"
         }
     }
 
-    SE_DLL_API int SE_GetRoutePoint(int object_id, int route_index, SE_RouteInfo *routeinfo)
+    SE_DLL_API int SE_GetRoutePoint(int object_id, unsigned int route_index, SE_RouteInfo *routeinfo)
     {
         Object *obj = nullptr;
         if (getObjectById(object_id, obj) == -1)
@@ -2779,27 +2757,26 @@ extern "C"
             return -1;
         }
 
-        if (route_index < 0 || route_index >= static_cast<int>(route->all_waypoints_.size()))
+        if (route_index >= route->all_waypoints_.size())
         {
             LOG_INFO("Requested waypoint index {} invalid, only {} registered", route_index, route->all_waypoints_.size());
             return -1;
         }
 
-        roadmanager::Road *road = player->odr_manager->GetRoadById(route->all_waypoints_[static_cast<unsigned int>(route_index)].GetTrackId());
+        roadmanager::Road *road = player->odr_manager->GetRoadById(route->all_waypoints_[route_index].GetTrackId());
 
-        routeinfo->x          = static_cast<float>(route->all_waypoints_[static_cast<unsigned int>(route_index)].GetX());
-        routeinfo->y          = static_cast<float>(route->all_waypoints_[static_cast<unsigned int>(route_index)].GetY());
-        routeinfo->z          = static_cast<float>(route->all_waypoints_[static_cast<unsigned int>(route_index)].GetZ());
-        routeinfo->h          = static_cast<float>(route->all_waypoints_[static_cast<unsigned int>(route_index)].GetH());
-        routeinfo->roadId     = route->all_waypoints_[static_cast<unsigned int>(route_index)].GetTrackId();
-        routeinfo->junctionId = route->all_waypoints_[static_cast<unsigned int>(route_index)].GetJunctionId();
-        routeinfo->laneId     = route->all_waypoints_[static_cast<unsigned int>(route_index)].GetLaneId();
-        routeinfo->osiLaneId  = road->GetDrivingLaneById(route->all_waypoints_[static_cast<unsigned int>(route_index)].GetS(),
-                                                        route->all_waypoints_[static_cast<unsigned int>(route_index)].GetLaneId())
-                                   ->GetGlobalId();
-        routeinfo->laneOffset = static_cast<float>(route->all_waypoints_[static_cast<unsigned int>(route_index)].GetOffset());
-        routeinfo->s          = static_cast<float>(route->all_waypoints_[static_cast<unsigned int>(route_index)].GetS());
-        routeinfo->t          = static_cast<float>(route->all_waypoints_[static_cast<unsigned int>(route_index)].GetT());
+        routeinfo->x          = static_cast<float>(route->all_waypoints_[route_index].GetX());
+        routeinfo->y          = static_cast<float>(route->all_waypoints_[route_index].GetY());
+        routeinfo->z          = static_cast<float>(route->all_waypoints_[route_index].GetZ());
+        routeinfo->h          = static_cast<float>(route->all_waypoints_[route_index].GetH());
+        routeinfo->roadId     = route->all_waypoints_[route_index].GetTrackId();
+        routeinfo->junctionId = route->all_waypoints_[route_index].GetJunctionId();
+        routeinfo->laneId     = route->all_waypoints_[route_index].GetLaneId();
+        routeinfo->osiLaneId  = static_cast<int>(
+            road->GetDrivingLaneById(route->all_waypoints_[route_index].GetS(), route->all_waypoints_[route_index].GetLaneId())->GetGlobalId());
+        routeinfo->laneOffset = static_cast<float>(route->all_waypoints_[route_index].GetOffset());
+        routeinfo->s          = static_cast<float>(route->all_waypoints_[route_index].GetS());
+        routeinfo->t          = static_cast<float>(route->all_waypoints_[route_index].GetT());
 
         return 0;
     }

@@ -504,8 +504,9 @@ TEST(OSI, TestOrientation)
 
 TEST(OSI, TestDirectJunctions)
 {
-    const char* args[] =
-        {"esmini", "--osc", "../../../EnvironmentSimulator/Unittest/xosc/direct_junction.xosc", "--headless", "--osi_file", "--disable_stdout"};
+    // const char* args[] =
+    //     {"esmini", "--osc", "../../../EnvironmentSimulator/Unittest/xosc/direct_junction.xosc", "--headless", "--osi_file", "--disable_stdout"};
+    const char*     args[] = {"esmini", "--osc", "../../../EnvironmentSimulator/Unittest/xosc/direct_junction.xosc", "--headless", "--osi_file"};
     int             argc   = sizeof(args) / sizeof(char*);
     ScenarioPlayer* player = new ScenarioPlayer(argc, const_cast<char**>(args));
 

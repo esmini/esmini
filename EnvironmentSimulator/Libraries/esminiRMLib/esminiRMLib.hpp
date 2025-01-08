@@ -252,7 +252,7 @@ extern "C"
     @param index The index of the road
     @return The ID of the road, -1 on error
     */
-    RM_DLL_API id_t RM_GetIdOfRoadFromIndex(int index);
+    RM_DLL_API id_t RM_GetIdOfRoadFromIndex(unsigned int index);
 
     /**
     Get the lenght of road with specified ID
@@ -310,7 +310,7 @@ extern "C"
     @parameter index Index of the total returned by GetNumberOfRoadsOverlapping()
     @return Id of specified overlapping road
     */
-    RM_DLL_API id_t RM_GetOverlappingRoadId(int handle, int index);
+    RM_DLL_API id_t RM_GetOverlappingRoadId(int handle, unsigned int index);
 
     /**
     Get the ID of the lane given by index
@@ -521,7 +521,7 @@ extern "C"
             @param road_sign Pointer/reference to a SE_RoadSign struct to be filled in
             @return 0 if successful, -1 if not
     */
-    RM_DLL_API int RM_GetRoadSign(id_t road_id, int index, RM_RoadSign* road_sign);
+    RM_DLL_API int RM_GetRoadSign(id_t road_id, unsigned int index, RM_RoadSign* road_sign);
 
     /**
             Get the number of lane validity records of specified road object/sign
@@ -529,7 +529,7 @@ extern "C"
             @param index Index of the sign. Note: not ID
             @return Number of validity records of specified road sign, -1 if not
     */
-    RM_DLL_API int RM_GetNumberOfRoadSignValidityRecords(id_t road_id, int index);
+    RM_DLL_API int RM_GetNumberOfRoadSignValidityRecords(id_t road_id, unsigned int index);
 
     /**
             Get specified validity record of specifed road sign
@@ -539,7 +539,7 @@ extern "C"
             @param road_sign Pointer/reference to a SE_RoadObjValidity struct to be filled in
             @return 0 if successful, -1 if not
     */
-    RM_DLL_API int RM_GetRoadSignValidityRecord(id_t road_id, int signIndex, int validityIndex, RM_RoadObjValidity* validity);
+    RM_DLL_API int RM_GetRoadSignValidityRecord(id_t road_id, unsigned int signIndex, unsigned int validityIndex, RM_RoadObjValidity* validity);
 
     /**
             Get the xodr road file georeference
