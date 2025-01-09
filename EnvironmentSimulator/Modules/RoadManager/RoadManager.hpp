@@ -27,8 +27,8 @@
 
 namespace roadmanager
 {
-    int GetNewGlobalLaneId();
-    int GetNewGlobalLaneBoundaryId();
+    id_t GetNewGlobalLaneId();
+    id_t GetNewGlobalLaneBoundaryId();
 
     /**
             Add offset to a laneId to find a relative landId considering reference lane 0
@@ -532,12 +532,12 @@ namespace roadmanager
     class LaneBoundaryOSI
     {
     public:
-        LaneBoundaryOSI(int gbid) : global_id_(gbid)
+        LaneBoundaryOSI(id_t gbid) : global_id_(gbid)
         {
         }
         ~LaneBoundaryOSI(){};
         void SetGlobalId();
-        int  GetGlobalId() const
+        id_t GetGlobalId() const
         {
             return global_id_;
         }
@@ -548,13 +548,13 @@ namespace roadmanager
         OSIPoints osi_points_;
 
     private:
-        int global_id_;  // Unique ID for OSI
+        id_t global_id_;  // Unique ID for OSI
     };
 
     struct RoadMarkInfo
     {
-        int roadmark_idx_;
-        int roadmarkline_idx_;
+        idx_t roadmark_idx_;
+        idx_t roadmarkline_idx_;
     };
 
     enum class RoadMarkColor
@@ -622,7 +622,7 @@ namespace roadmanager
         }
         OSIPoints osi_points_;
         void      SetGlobalId();
-        int       GetGlobalId() const
+        id_t       GetGlobalId() const
         {
             return global_id_;
         }
@@ -646,7 +646,7 @@ namespace roadmanager
         double               s_offset_;
         RoadMarkTypeLineRule rule_;
         double               width_;
-        int                  global_id_;      // Unique ID for OSI
+        id_t                  global_id_;      // Unique ID for OSI
         RoadMarkColor        color_;          // if set, supersedes setting in <RoadMark>
         bool                 repeat_ = true;  // false for explicit road marks
     };
@@ -932,7 +932,7 @@ namespace roadmanager
         {
             return type_;
         }
-        int GetGlobalId() const
+        id_t GetGlobalId() const
         {
             return global_id_;
         }
@@ -976,12 +976,12 @@ namespace roadmanager
         {
             return &osi_points_;
         }
-        std::vector<int> GetLineGlobalIds() const;
-        LaneBoundaryOSI *GetLaneBoundary() const
+        std::vector<id_t> GetLineGlobalIds() const;
+        LaneBoundaryOSI* GetLaneBoundary() const
         {
             return lane_boundary_;
         }
-        int GetLaneBoundaryGlobalId() const;
+        id_t GetLaneBoundaryGlobalId() const;
 
         // Set Functions
         void SetGlobalId();
@@ -1016,7 +1016,7 @@ namespace roadmanager
 
     private:
         int                          id_ = 0;               // center = 0, left > 0, right < 0
-        int                          global_id_ = 0;        // Unique ID for OSI
+        id_t                          global_id_ = 0;        // Unique ID for OSI
         int                          osiintersection_ = -1;  // flag to see if the lane is part of an osi-lane section or not
         LaneType                     type_ = LaneType::LANE_TYPE_NONE;
         std::vector<LaneLink*>       link_;
@@ -1094,10 +1094,10 @@ namespace roadmanager
         {
             return static_cast<unsigned int>(lane_.size());
         }
-        int  GetNumberOfDrivingLanes() const;
-        int  GetNumberOfDrivingLanesSide(int side) const;
-        int  GetNUmberOfLanesRight() const;
-        int  GetNUmberOfLanesLeft() const;
+        unsigned int  GetNumberOfDrivingLanes() const;
+        unsigned int  GetNumberOfDrivingLanesSide(int side) const;
+        unsigned int  GetNUmberOfLanesRight() const;
+        unsigned int  GetNUmberOfLanesLeft() const;
         void SetLength(double length)
         {
             length_ = length;
@@ -1646,7 +1646,7 @@ namespace roadmanager
         }
 
     private:
-        int    roadId_;
+        id_t    roadId_;
         double s_, t_, dz_, height_, center_s_, center_t_, center_heading_;
     };
 
@@ -1662,7 +1662,7 @@ namespace roadmanager
         }
 
     private:
-        int    roadId_;
+        id_t    roadId_;
         double s_, t_, u_, v_, zLocal_, height_, heading_;
     };
 
@@ -2274,15 +2274,15 @@ namespace roadmanager
         void           AddLaneOffset(LaneOffset *lane_offset);
         void           AddSignal(Signal *signal);
         void           AddObject(RMObject *object);
-        Elevation     *GetElevation(int idx) const;
-        Elevation     *GetSuperElevation(int idx) const;
-        int            GetNumberOfSignals() const;
-        Signal        *GetSignal(int idx) const;
-        int            GetNumberOfObjects() const
+        Elevation     *GetElevation(idx_t idx) const;
+        Elevation     *GetSuperElevation(idx_t idx) const;
+        unsigned int            GetNumberOfSignals() const;
+        Signal        *GetSignal(idx_t idx) const;
+        unsigned int            GetNumberOfObjects() const
         {
-            return static_cast<int>(object_.size());
+            return static_cast<unsigned int>(object_.size());
         }
-        RMObject *GetRoadObject(int idx) const;
+        RMObject *GetRoadObject(idx_t idx) const;
         int       GetNumberOfElevations() const
         {
             return static_cast<int>(elevation_profile_.size());
@@ -2293,12 +2293,12 @@ namespace roadmanager
         }
         double GetLaneOffset(double s) const;
         double GetLaneOffsetPrim(double s) const;
-        int    GetNumberOfLanes(double s) const;
-        int    GetNumberOfDrivingLanes(double s) const;
+        unsigned int    GetNumberOfLanes(double s) const;
+        unsigned int    GetNumberOfDrivingLanes(double s) const;
         Lane  *GetDrivingLaneByIdx(double s, idx_t idx) const;
         Lane  *GetDrivingLaneSideByIdx(double s, int side, idx_t idx) const;
         Lane  *GetDrivingLaneById(double s, int idx) const;
-        int    GetNumberOfDrivingLanesSide(double s, int side) const;  // side = -1 right, 1 left
+        unsigned int    GetNumberOfDrivingLanesSide(double s, int side) const;  // side = -1 right, 1 left
 
         /**
                 Given a lane id, get connected lane id at another longitudinal location at the same road
@@ -2365,15 +2365,15 @@ namespace roadmanager
         id_t        junction_;
         RoadRule    rule_;
 
-        std::vector<RoadTypeEntry *> type_;
-        std::vector<RoadLink *>      link_;
-        std::vector<Geometry *>      geometry_;
-        std::vector<Elevation *>     elevation_profile_;
-        std::vector<Elevation *>     super_elevation_profile_;
-        std::vector<LaneSection *>   lane_section_;
-        std::vector<LaneOffset *>    lane_offset_;
-        std::vector<Signal *>        signal_;
-        std::vector<RMObject *>      object_;
+        std::vector<RoadTypeEntry*> type_;
+        std::vector<RoadLink*>      link_;
+        std::vector<Geometry*>      geometry_;
+        std::vector<Elevation*>     elevation_profile_;
+        std::vector<Elevation*>     super_elevation_profile_;
+        std::vector<LaneSection*>   lane_section_;
+        std::vector<LaneOffset*>    lane_offset_;
+        std::vector<Signal*>        signal_;
+        std::vector<RMObject*>      object_;
     };
 
     class LaneRoadLaneConnection
