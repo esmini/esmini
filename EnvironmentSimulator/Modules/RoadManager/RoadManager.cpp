@@ -7412,7 +7412,7 @@ int LaneSection::GetClosestLaneIdx(double s, double t, double laneOffset, int si
                 candidate_lane_idx = i;
                 break;
             }
-            if (candidate_lane_idx == -1 || fabs(t + laneOffset - laneCenterOffset) < fabs(min_offset))
+            if (candidate_lane_idx == -1 || fabs(t - laneOffset - laneCenterOffset) < fabs(min_offset))
             {
                 min_offset         = t - laneOffset - laneCenterOffset;
                 candidate_lane_idx = i;
