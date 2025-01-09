@@ -995,11 +995,11 @@ namespace roadmanager
         {
             return osiintersection_ > 0;
         }
-        void SetOSIIntersection(int is_osi_intersection)
+        void SetOSIIntersection(id_t osi_intersection)
         {
-            osiintersection_ = is_osi_intersection;
+            osiintersection_ = osi_intersection;
         }
-        int GetOSIIntersectionId()
+        id_t GetOSIIntersectionId()
         {
             return osiintersection_;
         }
@@ -1017,7 +1017,7 @@ namespace roadmanager
     private:
         int                          id_ = 0;               // center = 0, left > 0, right < 0
         id_t                          global_id_ = 0;        // Unique ID for OSI
-        int                          osiintersection_ = -1;  // flag to see if the lane is part of an osi-lane section or not
+        id_t                          osiintersection_ = ID_UNDEFINED;  // flag to see if the lane is part of an osi-lane section or not
         LaneType                     type_ = LaneType::LANE_TYPE_NONE;
         std::vector<LaneLink*>       link_;
         std::vector<LaneWidth*>      lane_width_;
@@ -2223,8 +2223,8 @@ namespace roadmanager
         Lane::LaneType  GetLaneTypeByS(double s, int lane_id) const;
         Lane::Material *GetLaneMaterialByS(double s, int lane_id) const;
         double          GetSpeedByS(double s) const;
-        bool            GetZAndPitchByS(double s, double *z, double *z_prim, double *z_primPrim, double *pitch, int *index) const;
-        bool            UpdateZAndRollBySAndT(double s, double t, double *z, double *roadSuperElevationPrim, double *roll, int *index);
+        bool            GetZAndPitchByS(double s, double *z, double *z_prim, double *z_primPrim, double *pitch, idx_t *index) const;
+        bool            UpdateZAndRollBySAndT(double s, double t, double *z, double *roadSuperElevationPrim, double *roll, idx_t *index);
         unsigned int             GetNumberOfLaneSections() const
         {
             return static_cast<unsigned int>(lane_section_.size());
@@ -2283,13 +2283,13 @@ namespace roadmanager
             return static_cast<unsigned int>(object_.size());
         }
         RMObject *GetRoadObject(idx_t idx) const;
-        int       GetNumberOfElevations() const
+        unsigned int       GetNumberOfElevations() const
         {
-            return static_cast<int>(elevation_profile_.size());
+            return static_cast<unsigned int>(elevation_profile_.size());
         }
-        int GetNumberOfSuperElevations() const
+        unsigned int GetNumberOfSuperElevations() const
         {
-            return static_cast<int>(super_elevation_profile_.size());
+            return static_cast<unsigned int>(super_elevation_profile_.size());
         }
         double GetLaneOffset(double s) const;
         double GetLaneOffsetPrim(double s) const;
@@ -2438,9 +2438,9 @@ namespace roadmanager
     public:
         Connection(Road *incoming_road, Road *connecting_road, ContactPointType contact_point);
         ~Connection();
-        int GetNumberOfLaneLinks() const
+        unsigned int GetNumberOfLaneLinks() const
         {
-            return static_cast<int>(lane_link_.size());
+            return static_cast<unsigned int>(lane_link_.size());
         }
         JunctionLaneLink *GetLaneLink(unsigned int idx) const
         {
@@ -2481,7 +2481,7 @@ namespace roadmanager
         Controller() : id_(0), name_(""), sequence_(0)
         {
         }
-        Controller(int id, std::string name, int sequence = 0) : id_(id), name_(name), sequence_(sequence)
+        Controller(id_t id, std::string name, int sequence = 0) : id_(id), name_(name), sequence_(sequence)
         {
         }
 
@@ -2498,7 +2498,7 @@ namespace roadmanager
             return (index < control_.size()) ? &control_[index] : nullptr;
         }
 
-        int GetId() const
+        id_t GetId() const
         {
             return id_;
         }
@@ -2512,7 +2512,7 @@ namespace roadmanager
         }
 
     private:
-        int                  id_;
+        id_t                 id_;
         std::string          name_;
         int                  sequence_;
         std::vector<Control> control_;
@@ -2520,7 +2520,7 @@ namespace roadmanager
 
     typedef struct
     {
-        int         id_;
+        id_t        id_;
         std::string type_;
         int         sequence_;
     } JunctionController;
@@ -2554,28 +2554,28 @@ namespace roadmanager
         {
             return name_;
         }
-        int GetNumberOfConnections() const
+        unsigned int GetNumberOfConnections() const
         {
-            return static_cast<int>(connection_.size());
+            return static_cast<unsigned int>(connection_.size());
         }
-        int                    GetNumberOfRoadConnections(id_t roadId, int laneId) const;
+        unsigned int GetNumberOfRoadConnections(id_t roadId, int laneId) const;
         LaneRoadLaneConnection GetRoadConnectionByIdx(id_t roadId,
                                                       int  laneId,
-                                                      int  idx,
+                                                      idx_t idx,
                                                       int  laneTypeMask = Lane::LaneType::LANE_TYPE_ANY_DRIVING) const;
         void                   AddConnection(Connection *connection)
         {
             connection_.push_back(connection);
         }
         unsigned int GetNoConnectionsFromRoadId(id_t incomingRoadId) const;
-        Connection *GetConnectionByIdx(unsigned int idx) const
+        Connection *GetConnectionByIdx(idx_t idx) const
         {
             return connection_[idx];
         }
         id_t GetConnectingRoadIdFromIncomingRoadId(id_t incomingRoadId, unsigned int index) const;
         void Print() const;
         bool IsOsiIntersection() const;
-        int  GetGlobalId() const
+        id_t  GetGlobalId() const
         {
             return global_id_;
         }
@@ -2584,7 +2584,7 @@ namespace roadmanager
         {
             return static_cast<int>(controller_.size());
         }
-        JunctionController *GetJunctionControllerByIdx(int index);
+        JunctionController *GetJunctionControllerByIdx(idx_t index);
         void                AddController(JunctionController controller)
         {
             controller_.push_back(controller);
@@ -2617,7 +2617,7 @@ namespace roadmanager
         std::vector<JunctionController> controller_;
         id_t                            id_;
         std::string                     id_str_;
-        int                             global_id_;
+        id_t                            global_id_;
         std::string                     name_;
         JunctionType                    type_;
     };
@@ -2736,18 +2736,18 @@ namespace roadmanager
                 ...
                 @param idx index into the vector of roads
         */
-        Road     *GetRoadByIdx(int idx) const;
+        Road     *GetRoadByIdx(idx_t idx) const;
         Road     *GetRoadByIdStr(std::string id_str) const;
         Junction *GetJunctionByIdStr(std::string id_str) const;
         Geometry *GetGeometryByIdx(idx_t road_idx, idx_t geom_idx) const;
-        int       GetTrackIdxById(id_t id) const;
-        id_t      GetTrackIdByIdx(int idx) const;
-        int       GetNumOfRoads() const
+        idx_t       GetTrackIdxById(id_t id) const;
+        id_t      GetTrackIdByIdx(idx_t idx) const;
+        unsigned int       GetNumOfRoads() const
         {
-            return static_cast<int>(road_.size());
+            return static_cast<unsigned int>(road_.size());
         }
         Junction *GetJunctionById(id_t id) const;
-        Junction *GetJunctionByIdx(int idx) const;
+        Junction *GetJunctionByIdx(idx_t idx) const;
 
         int GetNumOfJunctions() const
         {
@@ -2757,7 +2757,7 @@ namespace roadmanager
         bool IsIndirectlyConnected(id_t   road1_id,
                                    id_t   road2_id,
                                    id_t *&connecting_road_id,
-                                   id_t *&connecting_lane_id,
+                                   int  *&connecting_lane_id,
                                    int    lane1_id = 0,
                                    int    lane2_id = 0) const;
 
@@ -2775,12 +2775,12 @@ namespace roadmanager
         static std::string ElementType2Str(RoadLink::ElementType type);
         static std::string LinkType2Str(LinkType link_type);
 
-        int GetNumberOfControllers() const
+        unsigned int GetNumberOfControllers() const
         {
-            return static_cast<int>(controller_.size());
+            return static_cast<unsigned int>(controller_.size());
         }
-        Controller *GetControllerByIdx(int index);
-        Controller *GetControllerById(int id);
+        Controller *GetControllerByIdx(idx_t index);
+        Controller *GetControllerById(id_t id);
         void        AddController(Controller controller)
         {
             controller_.push_back(controller);
@@ -3121,7 +3121,7 @@ namespace roadmanager
         @param lane_section_idx Optional index of lane section to start search from
         @return Non zero return value indicates error of some kind
         */
-        ReturnCode SetLanePos(id_t track_id, int lane_id, double s, double offset, int lane_section_idx = -1);
+        ReturnCode SetLanePos(id_t track_id, int lane_id, double s, double offset, idx_t lane_section_idx = ID_UNDEFINED);
 
         /**
         Specify position by lane coordinate (road_id, lane_id, s, lane offset) with specified mode
@@ -3136,15 +3136,15 @@ namespace roadmanager
         */
         ReturnCode SetLanePosMode(id_t track_id, int lane_id, double s, double offset, int mode, int lane_section_idx = -1);
 
-        Position::ReturnCode SetLaneBoundaryPos(id_t track_id, int lane_id, double s, double offset, int lane_section_idx = -1);
+        Position::ReturnCode SetLaneBoundaryPos(id_t track_id, int lane_id, double s, double offset, idx_t lane_section_idx = IDX_UNDEFINED);
         void                 SetRoadMarkPos(id_t   track_id,
                                             int    lane_id,
-                                            int    roadmark_idx,
-                                            int    roadmarktype_idx,
-                                            int    roadmarkline_idx,
+                                            idx_t  roadmark_idx,
+                                            idx_t  roadmarktype_idx,
+                                            idx_t  roadmarkline_idx,
                                             double s,
                                             double offset,
-                                            int    lane_section_idx = -1);
+                                            idx_t  lane_section_idx = IDX_UNDEFINED);
 
         /**
         Specify position by cartesian x, y, z and heading, pitch, roll using current SET mode
