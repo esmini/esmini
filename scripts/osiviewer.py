@@ -690,7 +690,7 @@ class View:
                     for p in b.base_polygon:
                         vertices.append((p.x, p.y))
                     patch = self.ax.add_patch(patches.Polygon(vertices, label="stationary_polygon".format(s.id.value, index), facecolor='#CCCCCC', edgecolor='black', linewidth=1, picker=5, fill=True, zorder=2))
-                    patch.set_transform(transforms.Affine2D().rotate_deg(np.rad2deg(0)).translate(b.position.x, b.position.y) + self.ax.transData)
+                    patch.set_transform(transforms.Affine2D().rotate_deg(np.rad2deg(hdg)).translate(b.position.x, b.position.y) + self.ax.transData)
                 else:
                     w = b.dimension.width
                     l = b.dimension.length

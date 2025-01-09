@@ -594,11 +594,11 @@ int OSIReporter::UpdateOSIStationaryObjectODR(id_t road_id, roadmanager::RMObjec
                 double height = 0;
                 for (size_t l = 0; l < outline->corner_.size(); l++)
                 {
-                    double x, y, z;
-                    outline->corner_[l]->GetPosLocal(x, y, z);
+                    double u, v, z;
+                    outline->corner_[l]->GetPosLocal(u, v, z);
                     osi3::Vector2d *vec = obj_osi_internal.sobj->mutable_base()->add_base_polygon();
-                    vec->set_x(x);
-                    vec->set_y(y);
+                    vec->set_x(u);
+                    vec->set_y(v);
                     height += outline->corner_[l]->GetHeight() / static_cast<double>(outline->corner_.size());
                 }
                 obj_osi_internal.sobj->mutable_base()->mutable_dimension()->set_height(height);
@@ -612,13 +612,11 @@ int OSIReporter::UpdateOSIStationaryObjectODR(id_t road_id, roadmanager::RMObjec
         obj_osi_internal.sobj->mutable_base()->mutable_dimension()->set_width(object->GetWidth());
         obj_osi_internal.sobj->mutable_base()->mutable_dimension()->set_length(object->GetLength());
         // only bounding box
-
-        // Set OSI Stationary Object Orientation
-        obj_osi_internal.sobj->mutable_base()->mutable_orientation()->set_roll(GetAngleInIntervalMinusPIPlusPI(object->GetRoll()));
-        obj_osi_internal.sobj->mutable_base()->mutable_orientation()->set_pitch(GetAngleInIntervalMinusPIPlusPI(object->GetPitch()));
-        obj_osi_internal.sobj->mutable_base()->mutable_orientation()->set_yaw(GetAngleInIntervalMinusPIPlusPI(object->GetH() + object->GetHOffset()));
     }
-
+    // Set OSI Stationary Object Orientation
+    obj_osi_internal.sobj->mutable_base()->mutable_orientation()->set_roll(GetAngleInIntervalMinusPIPlusPI(object->GetRoll()));
+    obj_osi_internal.sobj->mutable_base()->mutable_orientation()->set_pitch(GetAngleInIntervalMinusPIPlusPI(object->GetPitch()));
+    obj_osi_internal.sobj->mutable_base()->mutable_orientation()->set_yaw(GetAngleInIntervalMinusPIPlusPI(object->GetH() + object->GetHOffset()));
     return 0;
 }
 
