@@ -11364,14 +11364,14 @@ int PolyLineBase::FindClosestPoint(double xin, double yin, TrajVertex& pos, idx_
     }
 }
 
-int PolyLineBase::FindPointAhead(double s_start, double distance, TrajVertex& pos, int& index, int startAtIndex)
+int PolyLineBase::FindPointAhead(double s_start, double distance, TrajVertex& pos, idx_t& index, idx_t startAtIndex)
 {
     index = Evaluate(s_start + distance, pos, startAtIndex);
 
     return 0;
 }
 
-int PolyLineBase::FindPointAtTime(double time, TrajVertex& pos, int& index)
+int PolyLineBase::FindPointAtTime(double time, TrajVertex& pos, idx_t& index)
 {
     double s = 0;
 
@@ -11387,7 +11387,7 @@ int PolyLineBase::FindPointAtTime(double time, TrajVertex& pos, int& index)
     return static_cast<int>(returncode);
 }
 
-int PolyLineBase::FindPointAtTimeRelative(double time, TrajVertex& pos, int& index)
+int PolyLineBase::FindPointAtTimeRelative(double time, TrajVertex& pos, idx_t& index)
 {
     double s = 0;
 
@@ -11410,7 +11410,7 @@ std::vector<TrajVertex>& PolyLineBase::GetVertices()
 
 TrajVertex* PolyLineBase::GetCurrentVertex()
 {
-    if (GetNumberOfVertices() < 1 || current_index_ < 0 || current_index_ >= vertex_.size())
+    if (GetNumberOfVertices() < 1 || current_index_ == IDX_UNDEFINED || current_index_ >= vertex_.size())
     {
         return nullptr;
     }
@@ -11480,9 +11480,9 @@ void PolyLineShape::FinalizeVertices()
     //   - keep only other points that are unique in time, space and heading
     //   - preserve stand-still phases, fixate position and heading
 
-    size_t a_idx = 0;
-    size_t b_idx = 1;
-    size_t c_idx = 2;
+    unsigned int a_idx = 0;
+    unsigned int b_idx = 1;
+    unsigned int c_idx = 2;
 
     if (vertex_.size() > 2)  // only apply filter on more than 2 points
     {
@@ -11644,7 +11644,7 @@ void PolyLineShape::CalculatePolyLine()
     }
 
     // find the first pair of vertices with some distance enabling calculation of true heading and pitch
-    for (size_t i = 0; i < vertex_.size() - 1; i++)
+    for (unsigned int i = 0; i < vertex_.size() - 1; i++)
     {
         TrajVertex* pv  = &pline_.vertex_[i];
         TrajVertex* pvn = &pline_.vertex_[i + 1];
@@ -11663,7 +11663,7 @@ void PolyLineShape::CalculatePolyLine()
     }
 
     // update the heading and pitch values for all vertices
-    for (int i = 0; i < static_cast<int>(vertex_.size()); i++)
+    for (unsigned int i = 0; i < vertex_.size(); i++)
     {
         TrajVertex* pv = &pline_.vertex_[i];
 
@@ -11779,24 +11779,24 @@ void PolyLineShape::CalculatePolyLine()
 int PolyLineShape::Evaluate(double p, TrajectoryParamType ptype, TrajVertex& pos)
 {
     double s = 0;
-    int    i = 0;
+    unsigned int    i = 0;
 
     if (pline_.GetNumberOfVertices() < 1)
     {
         return -1;
     }
 
-    if (ptype == TrajectoryParamType::TRAJ_PARAM_TYPE_S && p > pline_.GetVertices().back().s ||
-        ptype == TrajectoryParamType::TRAJ_PARAM_TYPE_TIME && p > pline_.GetVertices().back().time)
+    if ((ptype == TrajectoryParamType::TRAJ_PARAM_TYPE_S && p > pline_.GetVertices().back().s) ||
+        (ptype == TrajectoryParamType::TRAJ_PARAM_TYPE_TIME && p > pline_.GetVertices().back().time))
     {
         // end of trajectory
         s = GetLength();
-        i = (int)vertex_.size() - 1;
+        i = static_cast<unsigned int>(vertex_.size() - 1);
     }
     else
     {
-        for (; i < vertex_.size() - 1 && (ptype == TrajectoryParamType::TRAJ_PARAM_TYPE_S && pline_.vertex_[i + 1].s < p ||
-                                          ptype == TrajectoryParamType::TRAJ_PARAM_TYPE_TIME && pline_.vertex_[i + 1].time < p);
+        for (; i < vertex_.size() - 1 && ((ptype == TrajectoryParamType::TRAJ_PARAM_TYPE_S && pline_.vertex_[i + 1].s < p) ||
+                                          (ptype == TrajectoryParamType::TRAJ_PARAM_TYPE_TIME && pline_.vertex_[i + 1].time < p));
              i++)
             ;
 
@@ -11983,7 +11983,7 @@ int ClothoidSplineShape::Evaluate(double p, TrajectoryParamType ptype, TrajVerte
         p = 0.0;
     }
 
-    pline_.Evaluate(p, pos, static_cast<int>(i));
+    pline_.Evaluate(p, pos, i);
 
     pos.s = p;
 
@@ -12071,7 +12071,7 @@ void ClothoidSplineShape::CalculatePolyLine()
 {
     // Create polyline placeholder representation
     double stepLen = 1.0;
-    int    steps   = (int)(length_ / stepLen);
+    unsigned int    steps   = static_cast<unsigned int>(length_ / stepLen);
     pline_.Reset(true);
     pline_.interpolation_mode_ = PolyLineBase::InterpolationMode::INTERPOLATE_SEGMENT;
     TrajVertex v;
@@ -12082,10 +12082,10 @@ void ClothoidSplineShape::CalculatePolyLine()
         return;
     }
 
-    size_t j          = 0;
+    unsigned j          = 0;
     double length_sum = 0;
 
-    for (size_t i = 0; i < steps + 1; i++)
+    for (unsigned int i = 0; i < steps + 1; i++)
     {
         if (i < steps)
         {
@@ -12095,12 +12095,12 @@ void ClothoidSplineShape::CalculatePolyLine()
                 length_sum += segments_[j].length_;
                 j++;
             }
-            EvaluateInternal(i * stepLen - length_sum, static_cast<int>(j), v);
+            EvaluateInternal(i * stepLen - length_sum, j, v);
         }
         else
         {
             // Add endpoint of last clothoid
-            EvaluateInternal(length_ - length_sum, static_cast<int>(spirals_.size() - 1), v);
+            EvaluateInternal(length_ - length_sum, static_cast<unsigned int>(segments_.size() - 1), v);
         }
 
         // Resolve road coordinates to get elevation at point since the clothoid only provides 2D
@@ -12116,9 +12116,9 @@ void ClothoidSplineShape::CalculatePolyLine()
     }
 }
 
-int ClothoidSplineShape::EvaluateInternal(double s, int segment_idx, TrajVertex& pos)
+int ClothoidSplineShape::EvaluateInternal(double s, idx_t segment_idx, TrajVertex& pos)
 {
-    if (segment_idx >= 0 && segment_idx < static_cast<int>(spirals_.size()))
+    if (segment_idx != IDX_UNDEFINED && segment_idx < spirals_.size())
     {
         spirals_[segment_idx].EvaluateDS(s, &pos.x, &pos.y, &pos.h);
     }
@@ -12153,7 +12153,7 @@ Shape* ClothoidSplineShape::Copy()
     return shape;
 }
 
-double NurbsShape::CoxDeBoor(double x, int i, int k, const std::vector<double>& t)
+double NurbsShape::CoxDeBoor(double x, idx_t i, idx_t k, const std::vector<double>& t)
 {
     // Inspiration: Nurbs Curve Example @
     // https://nccastaff.bournemouth.ac.uk/jmacey/OldWeb/RobTheBloke/www/opengl_programming.html
@@ -12213,7 +12213,7 @@ void NurbsShape::CalculatePolyLine()
 
     // Calculate arc length
     double     t_max     = knot_.back();
-    int        nSteps    = (int)(1 + length_ / steplen);
+    unsigned int        nSteps    = static_cast<unsigned int>(1 + length_ / steplen);
     double     p_steplen = t_max / nSteps;
     TrajVertex pos;
     TrajVertex oldpos;
@@ -12223,7 +12223,7 @@ void NurbsShape::CalculatePolyLine()
     pline_.interpolation_mode_ = PolyLineBase::InterpolationMode::INTERPOLATE_SEGMENT;
     pline_.vertex_.reserve(nSteps);
 
-    for (int i = 0; i < nSteps + 1; i++)
+    for (unsigned int i = 0; i < nSteps + 1; i++)
     {
         double t = i * p_steplen;
 
@@ -12315,7 +12315,7 @@ void NurbsShape::CalculatePolyLine()
         }
 
         // Find max contributing controlpoint for time interpolation
-        for (int j = 0; j < ctrlPoint_.size(); j++)
+        for (unsigned int j = 0; j < ctrlPoint_.size(); j++)
         {
             if (d_[j] > dPeakValue_[j])
             {
@@ -12340,12 +12340,12 @@ void NurbsShape::CalculatePolyLine()
         LOG_WARN("No valid pitch in nurbs, set to zero");
         pline_.vertex_.back().pitch = 0.0;
     }
-    int currentCtrlPoint = 0;
-    for (int i = 0; i < pline_.vertex_.size(); i++)
+    unsigned int currentCtrlPoint = 0;
+    for (unsigned int i = 0; i < pline_.vertex_.size(); i++)
     {
         if (pline_.vertex_[i].param >= dPeakT_[currentCtrlPoint + 1])
         {
-            currentCtrlPoint = MIN(currentCtrlPoint + 1, (int)(ctrlPoint_.size()) - 2);
+            currentCtrlPoint = MIN(currentCtrlPoint + 1, static_cast<unsigned int>(MAX(2, ctrlPoint_.size()) - 2));
         }
         double w = (pline_.vertex_[i].param - dPeakT_[currentCtrlPoint]) / (dPeakT_[currentCtrlPoint + 1] - dPeakT_[currentCtrlPoint]);
         pline_.vertex_[i].time =
@@ -12375,22 +12375,22 @@ int NurbsShape::EvaluateInternal(double t, TrajVertex& pos)
 {
     pos.x = pos.y = 0.0;
 
-    int cur_ctrlp_index = -1;
+    idx_t cur_ctrlp_index = IDX_UNDEFINED;
 
     // Find knot span
     t = CLAMP(t, knot_[0], knot_.back() - SMALL_NUMBER);
 
     double rationalWeight = 0.0;
 
-    for (size_t i = 0; i < ctrlPoint_.size(); i++)
+    for (unsigned i = 0; i < ctrlPoint_.size(); i++)
     {
         // calculate the effect of this point on the curve
-        d_[i] = CoxDeBoor(t, (int)i, order_, knot_);
+        d_[i] = CoxDeBoor(t, i, order_, knot_);
         rationalWeight += d_[i] * ctrlPoint_[i].weight_;
 
-        if (cur_ctrlp_index < 0 && t > ctrlPoint_[i].t_ - SMALL_NUMBER)
+        if (cur_ctrlp_index == IDX_UNDEFINED && t > ctrlPoint_[i].t_ - SMALL_NUMBER)
         {
-            cur_ctrlp_index = static_cast<int>(i);
+            cur_ctrlp_index = i;
             pos.pos_mode    = ctrlPoint_[i].pos_.GetMode(Position::PosModeType::INIT);
         }
     }
@@ -12412,7 +12412,7 @@ int NurbsShape::EvaluateInternal(double t, TrajVertex& pos)
         pos.r = 0.0;
     }
 
-    for (size_t i = 0; i < ctrlPoint_.size(); i++)
+    for (unsigned int i = 0; i < ctrlPoint_.size(); i++)
     {
         if (d_[i] > SMALL_NUMBER)
         {
@@ -12571,7 +12571,7 @@ void ClothoidShape::CalculatePolyLine()
 {
     // Create polyline representation
     double stepLen = 1.0;
-    int    steps   = (int)(spiral_.GetLength() / stepLen);
+    unsigned int    steps   = static_cast<unsigned int>(spiral_.GetLength() / stepLen);
     pline_.Reset(true);
     pline_.interpolation_mode_ = PolyLineBase::InterpolationMode::INTERPOLATE_SEGMENT;
     pline_.vertex_.reserve(steps);
@@ -12579,11 +12579,11 @@ void ClothoidShape::CalculatePolyLine()
 
     TrajVertex v;
     TrajVertex v_tmp;
-    for (size_t i = 0; i < steps + 1; i++)
+    for (unsigned int i = 0; i < steps + 1; i++)
     {
         if (i < steps)
         {
-            EvaluateInternal((double)i, v);
+            EvaluateInternal(static_cast<double>(i), v);
         }
         else
         {
@@ -12849,16 +12849,9 @@ Position::ReturnCode Position::SetRouteS(double route_s)
     }
 
     retval = route_->SetPathS(route_s);
-    if ((int)retval < 0 && retval != ReturnCode::ERROR_END_OF_ROUTE)
+    if (retval < ReturnCode::OK && retval != ReturnCode::ERROR_END_OF_ROUTE)
     {
         return retval;
-    }
-
-    // Register current driving direction
-    int driving_direction = 1;
-    if (GetAbsAngleDifference(GetH(), GetDrivingDirection()) > M_PI_2)
-    {
-        driving_direction = -1;
     }
 
     double offset_dir_neutral = offset_ * SIGN(GetLaneId());
@@ -13132,7 +13125,7 @@ int Route::AddWaypoint(const Position& wp_pos)
             if (nodes.size() > 1)
             {
                 // Add internal waypoints, one for each road along the path
-                for (int i = (int)nodes.size() - 1; i >= 1; i--)
+                for (unsigned int i = static_cast<unsigned int>(nodes.size() - 1); i >= 1; i--)
                 {
                     // Find out lane ID of the connecting road and add the waypoint at 1/3 of the road length
                     Position connected_pos;
@@ -13152,7 +13145,7 @@ int Route::AddWaypoint(const Position& wp_pos)
                     all_waypoints_.push_back(connected_pos);
                     minimal_waypoints_.push_back(connected_pos);
                     LOG_INFO("Route::AddWaypoint Added intermediate waypoint {} roadId {} laneId {}",
-                             (int)minimal_waypoints_.size() - 1,
+                             minimal_waypoints_.size() - 1,
                              connected_pos.GetTrackId(),
                              nodes[i - 1]->fromLaneId);
                 }
@@ -13179,7 +13172,7 @@ int Route::AddWaypoint(const Position& wp_pos)
         all_waypoints_.push_back(wp_pos);
 
         LOG_INFO("Route::AddWaypoint Added waypoint {}: {}, {}, {:.2f}",
-                 (int)all_waypoints_.size() - 1,
+                 all_waypoints_.size() - 1,
                  wp_pos.GetTrackId(),
                  wp_pos.GetLaneId(),
                  wp_pos.GetS());
@@ -13197,7 +13190,7 @@ int Route::AddWaypoint(const Position& wp_pos)
     else
     {
         LOG_ERROR("Route::AddWaypoint Failed to add waypoint {}: {}, {}, {:.2f}",
-                  (int)minimal_waypoints_.size() - 1,
+                  minimal_waypoints_.size() - 1,
                   wp_pos.GetTrackId(),
                   wp_pos.GetLaneId(),
                   wp_pos.GetS());
@@ -13222,25 +13215,25 @@ Position::ReturnCode Route::SetTrackS(id_t trackId, double s, bool update_state)
     double local_s;
     struct
     {
-        int                  wp_index;
+        idx_t                wp_index;
         double               dist_to_wp;
         double               dist_along_route_at_wp;
         Position::ReturnCode retval;
         double               s;
-    } info_for_closest_wp = {-1, LARGE_NUMBER, 0.0, Position::ReturnCode::ERROR_NOT_ON_ROUTE, 0.0};
+    } info_for_closest_wp = {IDX_UNDEFINED, LARGE_NUMBER, 0.0, Position::ReturnCode::ERROR_NOT_ON_ROUTE, 0.0};
 
     if (minimal_waypoints_.size() == 0)
     {
         path_s_       = 0.0;
-        waypoint_idx_ = -1;
+        waypoint_idx_ = IDX_UNDEFINED;
         currentPos_.SetTrackPos(ID_UNDEFINED, 0.0, 0.0);
 
         return Position::ReturnCode::ERROR_END_OF_ROUTE;
     }
 
-    for (size_t i = 0; i < minimal_waypoints_.size(); i++)
+    for (unsigned int i = 0; i < minimal_waypoints_.size(); i++)
     {
-        int route_direction = GetWayPointDirection((int)i);
+        int route_direction = GetWayPointDirection(i);
 
         if (route_direction == 0)
         {
@@ -13279,7 +13272,7 @@ Position::ReturnCode Route::SetTrackS(id_t trackId, double s, bool update_state)
             }
 
             info_for_closest_wp.s          = s;
-            info_for_closest_wp.wp_index   = static_cast<int>(i);
+            info_for_closest_wp.wp_index   = i;
             info_for_closest_wp.dist_to_wp = fabs(distance_to_waypoint);
 
             // current position is at the road of this waypoint - i.e. along the route
@@ -13300,7 +13293,7 @@ Position::ReturnCode Route::SetTrackS(id_t trackId, double s, bool update_state)
             bool out_of_bounds         = false;
             if (info_for_closest_wp.wp_index == 0)
             {
-                if (route_direction > 0 && s < minimal_waypoints_[i].GetS() || route_direction < 0 && s > minimal_waypoints_[i].GetS())
+                if ((route_direction > 0 && s < minimal_waypoints_[i].GetS()) || (route_direction < 0 && s > minimal_waypoints_[i].GetS()))
                 {
                     // reached the beginning of the route
                     info_for_closest_wp.s = minimal_waypoints_[i].GetS();
@@ -13313,7 +13306,7 @@ Position::ReturnCode Route::SetTrackS(id_t trackId, double s, bool update_state)
             }
             else if (info_for_closest_wp.wp_index == minimal_waypoints_.size() - 1)
             {
-                if (route_direction > 0 && s > minimal_waypoints_[i].GetS() || route_direction < 0 && s < minimal_waypoints_[i].GetS())
+                if ((route_direction > 0 && s > minimal_waypoints_[i].GetS()) || (route_direction < 0 && s < minimal_waypoints_[i].GetS()))
                 {
                     info_for_closest_wp.s = minimal_waypoints_[i].GetS();
                     if (all_waypoints_.back().GetTrackId() == trackId)
@@ -13338,7 +13331,7 @@ Position::ReturnCode Route::SetTrackS(id_t trackId, double s, bool update_state)
         }
     }
 
-    if (info_for_closest_wp.wp_index >= 0)
+    if (info_for_closest_wp.wp_index != IDX_UNDEFINED)
     {
         path_s_       = CLAMP(info_for_closest_wp.dist_along_route_at_wp, 0.0, GetLength());
         local_s       = info_for_closest_wp.s;
@@ -13349,7 +13342,7 @@ Position::ReturnCode Route::SetTrackS(id_t trackId, double s, bool update_state)
         if (info_for_closest_wp.retval == Position::ReturnCode::ERROR_END_OF_ROUTE ||
             info_for_closest_wp.retval == Position::ReturnCode::ERROR_NOT_ON_ROUTE)
         {
-            waypoint_idx_ = -1;
+            waypoint_idx_ = IDX_UNDEFINED;
 
             if (update_state)
             {
@@ -13381,7 +13374,7 @@ Position::ReturnCode Route::SetTrackS(id_t trackId, double s, bool update_state)
     else
     {
         // Failed to map current position to the current route
-        waypoint_idx_ = -1;
+        waypoint_idx_ = IDX_UNDEFINED;
         if (update_state)
         {
             if (on_route_)
@@ -13427,9 +13420,9 @@ Position::ReturnCode Route::SetPathS(double s, double* remaining_dist, bool upda
         return Position::ReturnCode::OK;
     }
 
-    for (size_t i = 0; i < minimal_waypoints_.size(); i++)
+    for (unsigned int i = 0; i < minimal_waypoints_.size(); i++)
     {
-        int route_direction = GetWayPointDirection((int)i);
+        int route_direction = GetWayPointDirection(i);
 
         if (route_direction == 0)
         {
@@ -13507,13 +13500,13 @@ Position::ReturnCode Route::SetPathS(double s, double* remaining_dist, bool upda
                 }
             }
 
-            waypoint_idx_ = static_cast<int>(i);
+            waypoint_idx_ = i;
 
             currentPos_.SetLanePos(GetWaypoint(waypoint_idx_)->GetTrackId(), GetWaypoint(waypoint_idx_)->GetLaneId(), local_s, 0.0);
 
             if (retval == Position::ReturnCode::ERROR_END_OF_ROUTE)
             {
-                waypoint_idx_ = -1;
+                waypoint_idx_ = IDX_UNDEFINED;
                 if (s < 0)
                 {
                     path_s_ = 0.0;
@@ -13548,14 +13541,14 @@ Position::ReturnCode Route::SetPathS(double s, double* remaining_dist, bool upda
                 path_s_ = 0.0;
             }
 
-            currentPos_.SetLanePos(GetWaypoint(waypoint_idx_)->GetTrackId(), GetWaypoint(static_cast<int>(i))->GetLaneId(), local_s, 0.0);
+            currentPos_.SetLanePos(GetWaypoint(waypoint_idx_)->GetTrackId(), GetWaypoint(i)->GetLaneId(), local_s, 0.0);
 
             if (remaining_dist)
             {
                 *remaining_dist = s < 0.0 ? -s : s - GetLength();
             }
             LOG_ERROR("Entity {} moved passed route at roadId={}, s={:.2f}", getObjName(), minimal_waypoints_[i].GetTrackId(), local_s);
-            waypoint_idx_ = -1;
+            waypoint_idx_ = IDX_UNDEFINED;
             return Position::ReturnCode::ERROR_END_OF_ROUTE;
         }
     }
@@ -13563,14 +13556,14 @@ Position::ReturnCode Route::SetPathS(double s, double* remaining_dist, bool upda
     return Position::ReturnCode::ERROR_GENERIC;  // not expected
 }
 
-Position* Route::GetWaypoint(int index)
+Position* Route::GetWaypoint(idx_t index)
 {
-    if (index == -1)  // Get current
+    if (index == IDX_UNDEFINED)  // Get current
     {
         index = waypoint_idx_;
     }
 
-    if (minimal_waypoints_.size() == 0 || index < 0 || index >= minimal_waypoints_.size())
+    if (minimal_waypoints_.size() == 0 || index == IDX_UNDEFINED || index >= minimal_waypoints_.size())
     {
         LOG_ERROR("Waypoint index {} out of range ({})", index, minimal_waypoints_.size());
         return 0;
@@ -13642,9 +13635,9 @@ Road* Route::GetRoadAtOtherEndOfConnectingRoad(Road* incoming_road) const
     return junction->GetRoadAtOtherEndOfConnectingRoad(connecting_road, incoming_road);
 }
 
-int Route::GetWayPointDirection(int index)
+int Route::GetWayPointDirection(idx_t index)
 {
-    if (minimal_waypoints_.size() == 0 || index < 0 || index >= minimal_waypoints_.size())
+    if (minimal_waypoints_.size() == 0 || index == IDX_UNDEFINED || index >= minimal_waypoints_.size())
     {
         LOG_ERROR("Waypoint index {} out of range ({})", index, minimal_waypoints_.size());
         return 0;
@@ -13668,8 +13661,8 @@ int Route::GetWayPointDirection(int index)
     {
         // Not at last waypoint, so look at next waypoint for direction
         pos2 = GetWaypoint(index + 1);
-        if (direction == 1 && road->IsSuccessor(Position::GetOpenDrive()->GetRoadById(pos2->GetTrackId())) ||
-            direction == -1 && road->IsPredecessor(Position::GetOpenDrive()->GetRoadById(pos2->GetTrackId())))
+        if ((direction == 1 && road->IsSuccessor(Position::GetOpenDrive()->GetRoadById(pos2->GetTrackId()))) ||
+            (direction == -1 && road->IsPredecessor(Position::GetOpenDrive()->GetRoadById(pos2->GetTrackId()))))
         {
             // Expected case, route direction aligned with waypoint headings
             return direction;
@@ -13685,8 +13678,8 @@ int Route::GetWayPointDirection(int index)
         // At last waypoint, so look at previous waypoint
         pos2 = GetWaypoint(index - 1);
 
-        if (direction == -1 && road->IsSuccessor(Position::GetOpenDrive()->GetRoadById(pos2->GetTrackId())) ||
-            direction == 1 && road->IsPredecessor(Position::GetOpenDrive()->GetRoadById(pos2->GetTrackId())))
+        if ((direction == -1 && road->IsSuccessor(Position::GetOpenDrive()->GetRoadById(pos2->GetTrackId()))) ||
+            (direction == 1 && road->IsPredecessor(Position::GetOpenDrive()->GetRoadById(pos2->GetTrackId()))))
         {
             // Expected case, route direction aligned with waypoint headings
             return direction;
@@ -13844,7 +13837,7 @@ RMTrajectory* RMTrajectory::Copy()
     return traj;
 }
 
-int Shape::FindClosestPoint(double xin, double yin, TrajVertex& pos, int& index, int startAtIndex)
+int Shape::FindClosestPoint(double xin, double yin, TrajVertex& pos, idx_t& index, idx_t startAtIndex)
 {
     if (pline_.vertex_.size() > 0)
     {

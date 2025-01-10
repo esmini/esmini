@@ -4105,7 +4105,7 @@ namespace roadmanager
         @param index Index of the waypoint
         @return 1 if route is aligned with road direction, else -1
         */
-        int GetWayPointDirection(int index);
+        int GetWayPointDirection(idx_t index);
 
         void        setName(std::string name);
         std::string getName() const;
@@ -4149,7 +4149,13 @@ namespace roadmanager
         {
             return currentPos_.GetTrackId();
         }
-        Position *GetWaypoint(int index = -1);  // -1 means current
+
+        /**
+        Get waypoint
+        @param index Index of the waypoint, omit or set IDX_UNDEFINED for current
+        @return Waypoint position object
+         */
+        Position *GetWaypoint(idx_t index = IDX_UNDEFINED);  // -1 means current
         Road     *GetRoadAtOtherEndOfIncomingRoad(Junction *junction, Road *incoming_road) const;
         Road     *GetRoadAtOtherEndOfConnectingRoad(Road *incoming_road) const;
         Position *GetCurrentPosition()
@@ -4197,7 +4203,7 @@ namespace roadmanager
         double                path_s_ = 0.0;
         Position              currentPos_;
         double                length_ = 0.0;
-        int                   waypoint_idx_ = -1;
+        idx_t                 waypoint_idx_ = IDX_UNDEFINED;
         bool                  on_route_ = false;
     };
 
@@ -4627,7 +4633,7 @@ namespace roadmanager
         Shape *Copy();
 
     private:
-        double CoxDeBoor(double x, int i, int p, const std::vector<double> &t);
+        double CoxDeBoor(double x, idx_t i, idx_t p, const std::vector<double> &t);
         double length_ = 0.0;
     };
 
