@@ -24,7 +24,6 @@
 
 static bool quit = false;
 
-
 static void TestYaml()
 {
     YAML::Node config = YAML::LoadFile("config.yaml");
