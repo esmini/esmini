@@ -1394,13 +1394,13 @@ LaneSection* Road::GetLaneSectionByIdx(unsigned int idx) const
     }
 }
 
-unsigned int Road::GetLaneSectionIdxByS(double s, unsigned int start_at) const
+unsigned int Road::GetLaneSectionIdxByS(double s, idx_t start_at) const
 {
     if (lane_section_.empty())
     {
         return 0;
     }
-    else if (start_at > lane_section_.size() - 1)
+    else if (start_at > lane_section_.size() - 1 && start_at != IDX_UNDEFINED)
     {
         return static_cast<unsigned int>(lane_section_.size() - 1);
     }
@@ -1408,7 +1408,7 @@ unsigned int Road::GetLaneSectionIdxByS(double s, unsigned int start_at) const
     LaneSection* lane_section = lane_section_[start_at];
     unsigned int       i            = start_at;
 
-    if (s < lane_section->GetS() && start_at > 0)
+    if (s < lane_section->GetS() && start_at != IDX_UNDEFINED)
     {
         // Look backwards
         for (i = start_at - 1; i > 0; i--)  // No need to check the first one
@@ -1707,7 +1707,7 @@ Lane* LaneSection::GetLaneById(int id) const
     return 0;
 }
 
-int LaneSection::GetLaneIdByIdx(unsigned int idx) const
+int LaneSection::GetLaneIdByIdx(idx_t idx) const
 {
     if (idx >= lane_.size())
     {
@@ -6339,13 +6339,13 @@ void Position::Init()
     lockOnLane_             = false;
 
     z_road_              = 0.0;
-    track_idx_           = -1;
-    geometry_idx_        = -1;
-    lane_section_idx_    = -1;
-    lane_idx_            = -1;
-    elevation_idx_       = -1;
-    super_elevation_idx_ = -1;
-    osi_point_idx_       = -1;
+    track_idx_           = IDX_UNDEFINED;
+    geometry_idx_        = IDX_UNDEFINED;
+    lane_section_idx_    = IDX_UNDEFINED;
+    lane_idx_            = IDX_UNDEFINED;
+    elevation_idx_       = IDX_UNDEFINED;
+    super_elevation_idx_ = IDX_UNDEFINED;
+    osi_point_idx_       = IDX_UNDEFINED;
     route_               = 0;
     trajectory_          = 0;
 
@@ -7093,7 +7093,7 @@ void OpenDrive::SetRoadMarkOSIPoints()
     LaneRoadMarkType*     lane_roadMarkType;
     LaneRoadMarkTypeLine* lane_roadMarkTypeLine;
 
-    int                      number_of_lane_sections, number_of_lanes, number_of_roadmarks, number_of_roadmarktypes, number_of_roadmarklines;
+    unsigned int                      number_of_lane_sections, number_of_lanes, number_of_roadmarks, number_of_roadmarktypes, number_of_roadmarklines;
     double                   lsec_end, s_roadmark, s_end_roadmark, s_end_roadmarkline;
     std::vector<double>      x0, y0, x1, y1;
     std::vector<PointStruct> osi_point;
@@ -7104,13 +7104,13 @@ void OpenDrive::SetRoadMarkOSIPoints()
     pos_candidate.SetMode(Position::PosModeType::SET, Position::PosMode::H_REL);
 
     // Looping through each road
-    for (int i = 0; i < road_.size(); i++)
+    for (unsigned int i = 0; i < road_.size(); i++)
     {
         road = road_[i];
 
         // Looping through each lane section
         number_of_lane_sections = road_[i]->GetNumberOfLaneSections();
-        for (int j = 0; j < number_of_lane_sections; j++)
+        for (unsigned int j = 0; j < number_of_lane_sections; j++)
         {
             // Get the ending position of the current lane section
             lsec = road->GetLaneSectionByIdx(j);
@@ -7125,7 +7125,7 @@ void OpenDrive::SetRoadMarkOSIPoints()
 
             // Looping through each lane
             number_of_lanes = lsec->GetNumberOfLanes();
-            for (int k = 0; k < number_of_lanes; k++)
+            for (unsigned int k = 0; k < number_of_lanes; k++)
             {
                 lane = lsec->GetLaneByIdx(k);
 
@@ -7133,7 +7133,7 @@ void OpenDrive::SetRoadMarkOSIPoints()
                 number_of_roadmarks = lane->GetNumberOfRoadMarks();
                 if (number_of_roadmarks != 0)
                 {
-                    for (int m = 0; m < number_of_roadmarks; m++)
+                    for (unsigned int m = 0; m < number_of_roadmarks; m++)
                     {
                         lane_roadMark = lane->GetLaneRoadMarkByIdx(m);
                         s_roadmark    = lsec->GetS() + lane_roadMark->GetSOffset();
@@ -7154,7 +7154,7 @@ void OpenDrive::SetRoadMarkOSIPoints()
                             number_of_roadmarklines = lane_roadMarkType->GetNumberOfRoadMarkTypeLines();
 
                             // Looping through each roadmark line under roadmark
-                            for (int n = 0; n < number_of_roadmarklines; n++)
+                            for (unsigned int n = 0; n < number_of_roadmarklines; n++)
                             {
                                 lane_roadMarkTypeLine = lane_roadMarkType->GetLaneRoadMarkTypeLineByIdx(n);
                                 if (lane_roadMarkTypeLine != 0)
@@ -7207,7 +7207,8 @@ void OpenDrive::SetRoadMarkOSIPoints()
                                                              pos_pivot.GetX(),
                                                              pos_pivot.GetY(),
                                                              pos_pivot.GetZ(),
-                                                             pos_pivot.GetHRoad()};
+                                                             pos_pivot.GetHRoad(),
+                                                             false};
                                             osi_point.push_back(p);
 
                                             // [XO, YO] = closest position with given (-) tolerance
@@ -7365,7 +7366,7 @@ bool OpenDrive::SetRoadOSI()
     return false;
 }
 
-unsigned int LaneSection::GetClosestLaneIdx(double s, double t, double laneOffset, int side, double& offset, bool noZeroWidth, int laneTypeMask) const
+idx_t LaneSection::GetClosestLaneIdx(double s, double t, double laneOffset, int side, double& offset, bool noZeroWidth, int laneTypeMask) const
 {
     double min_offset         = t - laneOffset;  // Initial offset relates to center lane
     unsigned int    candidate_lane_idx = 0xffffffff;
@@ -7427,9 +7428,9 @@ int Position::GotoClosestDrivingLaneAtCurrentPosition()
 
     double offset;
     double lane_offset = road->GetLaneOffset(s_);
-    int    lane_idx    = lane_section->GetClosestLaneIdx(s_, t_, lane_offset, 0, offset, true, snapToLaneTypes_);
+    idx_t    lane_idx    = lane_section->GetClosestLaneIdx(s_, t_, lane_offset, 0, offset, true, snapToLaneTypes_);
 
-    if (lane_idx == -1)
+    if (lane_idx == IDX_UNDEFINED)
     {
         LOG_ERROR("Failed to find a valid drivable lane");
         return -1;
@@ -7459,7 +7460,7 @@ void Position::Track2Lane()
     }
 
     // Find LaneSection according to s, starting from current
-    int          lane_section_idx = road->GetLaneSectionIdxByS(s_, lane_section_idx_);
+    idx_t          lane_section_idx = road->GetLaneSectionIdxByS(s_, lane_section_idx_);
     LaneSection* lane_section     = road->GetLaneSectionByIdx(lane_section_idx);
     if (lane_section == 0)
     {
@@ -7470,9 +7471,9 @@ void Position::Track2Lane()
     // Find the closest driving lane within the lane section
     double offset;
     double lane_offset = road->GetLaneOffset(s_);
-    int    lane_idx    = lane_section->GetClosestLaneIdx(s_, t_, lane_offset, 0, offset, true, snapToLaneTypes_);
+    idx_t    lane_idx    = lane_section->GetClosestLaneIdx(s_, t_, lane_offset, 0, offset, true, snapToLaneTypes_);
 
-    if (lane_idx == -1)
+    if (lane_idx == IDX_UNDEFINED)
     {
         LOG_ERROR("Failed find closest lane");
         return;
@@ -7487,8 +7488,8 @@ void Position::Track2Lane()
 
 typedef struct
 {
-    int          lsec_idx;   // lane section index
-    int          k;          // osi point index (on given lane section)
+    idx_t        lsec_idx;   // lane section index
+    idx_t        k;          // osi point index (on given lane section)
     SE_Vector    p;          // position (x, y)
     SE_Vector    n;          // normal
     double       h;          // heading
@@ -7615,11 +7616,11 @@ Position::XYZ2TrackPos(double x3, double y3, double z3, int mode, bool connected
         {
             if (along_route && route_ && route_->IsValid())
             {
-                road = GetOpenDrive()->GetRoadById(route_->minimal_waypoints_[i].GetTrackId());
+                road = GetOpenDrive()->GetRoadById(route_->minimal_waypoints_[static_cast<unsigned int>(i)].GetTrackId());
             }
             else
             {
-                road = GetOpenDrive()->GetRoadByIdx(i);
+                road = GetOpenDrive()->GetRoadByIdx(static_cast<unsigned int>(i));
             }
 
             if (current_road && current_road == road)
@@ -7678,19 +7679,19 @@ Position::XYZ2TrackPos(double x3, double y3, double z3, int mode, bool connected
         double distFromCurrentPos = GetLengthOfLine2D(x3, y3, GetX(), GetY());
 
         idx_t startLaneSecIdx  = 0;
-        int startOSIPointIdx = 0;
-        int search_win       = 10;
+        idx_t startOSIPointIdx = 0;
+        unsigned int search_win       = 10;
 
         // If new point is close to current/old, then look at the 10 closest osi points surrounding current one
         if (i == -2)
         {
-            if (osi_point_idx_ > -1 && distFromCurrentPos < 5.0 && lane_section_idx_ > -1)
+            if (osi_point_idx_ != IDX_UNDEFINED && distFromCurrentPos < 5.0 && lane_section_idx_ != IDX_UNDEFINED)
             {
                 startLaneSecIdx  = lane_section_idx_;
                 startOSIPointIdx = osi_point_idx_ - search_win / 2;
-                int n_points     = search_win / 2;
+                unsigned int n_points     = search_win / 2;
 
-                if (startOSIPointIdx < 0)
+                if (startOSIPointIdx == IDX_UNDEFINED)
                 {
                     n_points = -startOSIPointIdx;
                     if (startLaneSecIdx > 0)
@@ -7701,7 +7702,7 @@ Position::XYZ2TrackPos(double x3, double y3, double z3, int mode, bool connected
                             startLaneSecIdx--;
                             startOSIPointIdx =
                                 road->GetLaneSectionByIdx(startLaneSecIdx)->GetLaneById(0)->GetOSIPoints()->GetNumOfOSIPoints() - n_points;
-                            if (startOSIPointIdx < 0)
+                            if (startOSIPointIdx == IDX_UNDEFINED)
                             {
                                 n_points         = -startOSIPointIdx;
                                 startOSIPointIdx = 0;
@@ -7726,10 +7727,10 @@ Position::XYZ2TrackPos(double x3, double y3, double z3, int mode, bool connected
 
         XYZHVertex v[3];                       // circular buffer for osi points and additional info
         int        l0 = -1, l1 = -2, l2 = -3;  // circular buffer indices
-        int        counter   = 0;              // only for potential first (i==-2) limited search round
+        unsigned int        counter   = 0;              // only for potential first (i==-2) limited search round
         double     s_norm    = -1.0;
-        int        jMinLocal = startLaneSecIdx;   // keep track of "best" lane section candidate
-        int        kMinLocal = startOSIPointIdx;  // keep track of "best" osi point candidate (on given lane section)
+        idx_t        jMinLocal = startLaneSecIdx;   // keep track of "best" lane section candidate
+        idx_t        kMinLocal = startOSIPointIdx;  // keep track of "best" osi point candidate (on given lane section)
 
         for (unsigned int j = startLaneSecIdx; (i != -2 || counter < search_win) && j < road->GetNumberOfLaneSections() && !search_done; j++)
         {
@@ -7760,8 +7761,8 @@ Position::XYZ2TrackPos(double x3, double y3, double z3, int mode, bool connected
                     v[l0].lsec_idx  = j;
                     v[l0].osi_point = &(osiPoints->GetPoint(k));
 
-                    if (j == 0 && k == 0 ||                                                                       // first segment
-                        (j == road->GetNumberOfLaneSections() - 1) && (k == osiPoints->GetNumOfOSIPoints() - 1))  // last segment
+                    if ((j == 0 && k == 0) ||                                                                       // first segment
+                        ((j == road->GetNumberOfLaneSections() - 1) && (k == osiPoints->GetNumOfOSIPoints() - 1)))  // last segment
                     {
                         if (j == 0 && k == 0)
                         {
@@ -7975,7 +7976,7 @@ Position::XYZ2TrackPos(double x3, double y3, double z3, int mode, bool connected
         double yTangent = sin(osip_closest.h);
         double dotP     = GetDotProduct2D(xTangent, yTangent, x3 - osip_closest.x, y3 - osip_closest.y);
 
-        int jFirst, jSecond, kFirst, kSecond;
+        unsigned int jFirst, jSecond, kFirst, kSecond;
 
         if (dotP > 0)
         {
@@ -8161,7 +8162,7 @@ Position::XYZ2TrackPos(double x3, double y3, double z3, int mode, bool connected
             // Now find cloest lane at that lateral position, at updated s value
             double offset;
             double lane_offset = current_road->GetLaneOffset(closestS);
-            int    lane_idx    = lsec->GetClosestLaneIdx(closestS, fixedLaneOffset, lane_offset, 0, offset, true, snapToLaneTypes_);
+            idx_t    lane_idx    = lsec->GetClosestLaneIdx(closestS, fixedLaneOffset, lane_offset, 0, offset, true, snapToLaneTypes_);
             fixedLaneId        = lsec->GetLaneIdByIdx(lane_idx);
         }
     }
@@ -8402,7 +8403,7 @@ Position::ReturnCode Position::SetLongitudinalTrackPos(id_t track_id, double s)
     // check if still on same geometry
     if (s > geometry->GetS() + geometry->GetLength())
     {
-        while (s > geometry->GetS() + geometry->GetLength() && geometry_idx_ < road->GetNumberOfGeometries() - 1)
+        while ((s > geometry->GetS() + geometry->GetLength()) && (geometry_idx_ < road->GetNumberOfGeometries() - 1))
         {
             // Move to next geometry
             geometry = road->GetGeometry(++geometry_idx_);
@@ -8436,8 +8437,8 @@ Position::ReturnCode Position::SetLongitudinalTrackPos(id_t track_id, double s)
         s_ = s;
     }
 
-    if (s_ < SMALL_NUMBER && road->GetLink(LinkType::PREDECESSOR) == nullptr ||
-        s_ > road->GetLength() - SMALL_NUMBER && road->GetLink(LinkType::SUCCESSOR) == nullptr)
+    if ((s_ < SMALL_NUMBER && road->GetLink(LinkType::PREDECESSOR) == nullptr) ||
+        (s_ > road->GetLength() - SMALL_NUMBER && (road->GetLink(LinkType::SUCCESSOR) == nullptr)))
     {
         status_ |= static_cast<int>(PositionStatusMode::POS_STATUS_END_OF_ROAD);
     }
@@ -8465,7 +8466,7 @@ Position::ReturnCode Position::SetTrackPosMode(id_t track_id, double s, double t
         if (UpdateXY)
         {
             ReturnCode retval_lat = Track2XYZ(mode);
-            if ((int)retval_lat < 0)
+            if (static_cast<int>(retval_lat) < 0)
             {
                 return retval_lat;
             }
@@ -8484,7 +8485,7 @@ Position::ReturnCode Position::SetTrackPosMode(id_t track_id, double s, double t
 
 void Position::ForceLaneId(int lane_id)
 {
-    if (lane_idx_ < 0 || lane_section_idx_ < 0)
+    if (lane_idx_ == IDX_UNDEFINED || lane_section_idx_ == IDX_UNDEFINED)
     {
         return;
     }
@@ -8560,7 +8561,7 @@ std::string OpenDrive::LinkType2Str(LinkType type)
     }
     else
     {
-        return std::string("Unknown link type: " + std::to_string(type));
+        return std::string("Unknown link type: " + type);
     }
 }
 
@@ -8622,7 +8623,7 @@ Position::ReturnCode Position::MoveToConnectingRoad(RoadLink* road_link, Contact
         return ReturnCode::ERROR_GENERIC;
     }
 
-    if (road_link->GetElementId() == -1)
+    if (road_link->GetElementId() == ID_UNDEFINED)
     {
         LOG_ERROR("No connecting road or junction at rid {} link_type {}", road->GetId(), OpenDrive::LinkType2Str(road_link->GetType()));
         return ReturnCode::ERROR_GENERIC;
@@ -8678,8 +8679,8 @@ Position::ReturnCode Position::MoveToConnectingRoad(RoadLink* road_link, Contact
             return ReturnCode::ERROR_GENERIC;
         }
 
-        int connection_idx = 0;
-        int n_connections  = junction->GetNumberOfRoadConnections(road->GetId(), lane->GetId());
+        idx_t connection_idx = 0;
+        unsigned int n_connections  = junction->GetNumberOfRoadConnections(road->GetId(), lane->GetId());
 
         if (n_connections == 0)
         {
@@ -8702,8 +8703,8 @@ Position::ReturnCode Position::MoveToConnectingRoad(RoadLink* road_link, Contact
                 // Find next road in route
                 Road* outgoing_road_target = r->GetRoadAtOtherEndOfIncomingRoad(junction, road);
 
-                int optimal_connection_idx = -1;
-                for (int i = 0; i < n_connections; i++)
+                idx_t optimal_connection_idx = IDX_UNDEFINED;
+                for (unsigned int i = 0; i < n_connections; i++)
                 {
                     LaneRoadLaneConnection lane_road_lane_connection =
                         junction->GetRoadConnectionByIdx(road->GetId(), lane->GetId(), i, snapToLaneTypes_);
@@ -8721,7 +8722,7 @@ Position::ReturnCode Position::MoveToConnectingRoad(RoadLink* road_link, Contact
                         }
                     }
                 }
-                if (optimal_connection_idx != -1)
+                if (optimal_connection_idx != IDX_UNDEFINED)
                 {
                     connection_idx = optimal_connection_idx;
                 }
@@ -8729,9 +8730,9 @@ Position::ReturnCode Position::MoveToConnectingRoad(RoadLink* road_link, Contact
             else if (junctionSelectorAngle >= 0.0)
             {
                 // Find the link best matching selected angle
-                int    best_road_index  = 0;
+                idx_t    best_road_index  = 0;
                 double min_heading_diff = 1E10;  // set huge number
-                for (int i = 0; i < n_connections; i++)
+                for (unsigned int i = 0; i < n_connections; i++)
                 {
                     LaneRoadLaneConnection lane_road_lane_connection =
                         junction->GetRoadConnectionByIdx(road->GetId(), lane->GetId(), i, snapToLaneTypes_);
@@ -8771,7 +8772,7 @@ Position::ReturnCode Position::MoveToConnectingRoad(RoadLink* road_link, Contact
             }
             else  // randomize
             {
-                connection_idx = SE_Env::Inst().GetRand().GetNumberBetween(0, n_connections - 1);
+                connection_idx = static_cast<idx_t>(SE_Env::Inst().GetRand().GetNumberBetween(0, static_cast<int>(n_connections) - 1));
             }
         }
 
@@ -8810,7 +8811,7 @@ Position::ReturnCode Position::MoveToConnectingRoad(RoadLink* road_link, Contact
         }
         else
         {
-            LOG_ERROR("MoveToConnectingRoad: Unexpected contact point type: {}", (int)contact_point_type);
+            LOG_ERROR("MoveToConnectingRoad: Unexpected contact point type: {}", contact_point_type);
             return ReturnCode::ERROR_GENERIC;
         }
 
@@ -8913,7 +8914,6 @@ Position::ReturnCode Position::MoveAlongS(double            ds,
     ContactPointType contact_point_type;
     ReturnCode       ret_val = ReturnCode::OK;
     Road*            road    = nullptr;
-    const double     max_ds  = 5.0;
 
     // find out ds along road s-axis
     double ds_road = ds;
@@ -8941,8 +8941,7 @@ Position::ReturnCode Position::MoveAlongS(double            ds,
 
     if (updateRoute && route_ && route_->IsValid())
     {
-        double     remaining_dist = 0.0;
-        ReturnCode route_status   = MoveRouteDS(ds_road, &remaining_dist, false);
+        ReturnCode route_status   = MoveRouteDS(ds_road, false);
 
         if (route_status == ReturnCode::ERROR_END_OF_ROUTE)
         {
@@ -8959,7 +8958,7 @@ Position::ReturnCode Position::MoveAlongS(double            ds,
         }
     }
 
-    if (GetOpenDrive()->GetNumOfRoads() == 0 || track_idx_ < 0)
+    if (GetOpenDrive()->GetNumOfRoads() == 0 || track_idx_ == IDX_UNDEFINED)
     {
         // No roads available or current track undefined
         return Position::ReturnCode::OK;
@@ -8998,7 +8997,7 @@ Position::ReturnCode Position::MoveAlongS(double            ds,
         if (!done)
         {
             // If link is OK then move to the start- or endpoint of the connected road, depending on contact point
-            if (link == 0 || link->GetElementId() == -1 ||
+            if (link == 0 || link->GetElementId() == ID_UNDEFINED ||
                 static_cast<int>((ret_val = MoveToConnectingRoad(link, contact_point_type, junctionSelectorAngle))) < 0)
             {
                 // Failed to find a connection, stay at end of current road
@@ -9047,9 +9046,9 @@ Position::ReturnCode Position::MoveAlongS(double            ds,
                     double offset       = 0;
                     double lane_offset  = road->GetLaneOffset(GetS());
                     int    old_lane_id  = lane_id_;
-                    int    new_lane_idx = road->GetLaneSectionByIdx(li.lane_section_idx_)
+                    idx_t    new_lane_idx = road->GetLaneSectionByIdx(li.lane_section_idx_)
                                            ->GetClosestLaneIdx(GetS(), GetT(), lane_offset, SIGN(lane_id_), offset, true, snapToLaneTypes_);
-                    if (new_lane_idx < 0)
+                    if (new_lane_idx == IDX_UNDEFINED)
                     {
                         ret_val = ReturnCode::ERROR_GENERIC;
                     }
@@ -9090,8 +9089,8 @@ Position::ReturnCode Position::MoveAlongS(double            ds,
 
     if (road)
     {
-        if (s_ < SMALL_NUMBER && road->GetLink(LinkType::PREDECESSOR) == nullptr ||
-            s_ > road->GetLength() - SMALL_NUMBER && road->GetLink(LinkType::SUCCESSOR) == nullptr)
+        if ((s_ < SMALL_NUMBER && road->GetLink(LinkType::PREDECESSOR) == nullptr) ||
+            (s_ > road->GetLength() - SMALL_NUMBER && road->GetLink(LinkType::SUCCESSOR) == nullptr))
         {
             status_ |= static_cast<int>(Position::PositionStatusMode::POS_STATUS_END_OF_ROAD);
         }
@@ -9118,7 +9117,7 @@ Position::ReturnCode Position::SetLanePos(id_t track_id, int lane_id, double s, 
     return SetLanePosMode(track_id, lane_id, s, offset, GetMode(PosModeType::UPDATE), lane_section_idx);
 }
 
-Position::ReturnCode Position::SetLanePosMode(id_t track_id, int lane_id, double s, double offset, int mode, int lane_section_idx)
+Position::ReturnCode Position::SetLanePosMode(id_t track_id, int lane_id, double s, double offset, int mode, idx_t lane_section_idx)
 {
     offset_             = offset;
     ReturnCode retvalue = ReturnCode::OK;
@@ -9146,7 +9145,7 @@ Position::ReturnCode Position::SetLanePosMode(id_t track_id, int lane_id, double
     }
 
     LaneSection* lane_section = 0;
-    if (lane_section_idx > -1)  // If lane section was specified or reset
+    if (lane_section_idx != IDX_UNDEFINED)  // If lane section was specified or reset
     {
         lane_section_idx_ = lane_section_idx;
         lane_section      = road->GetLaneSectionByIdx(lane_section_idx_);
@@ -9170,7 +9169,7 @@ Position::ReturnCode Position::SetLanePosMode(id_t track_id, int lane_id, double
     if (lane_section != 0)
     {
         lane_idx_ = lane_section->GetLaneIdxById(lane_id_);
-        if (lane_idx_ == -1)
+        if (lane_idx_ == IDX_UNDEFINED)
         {
             LOG_ERROR("lane_idx {} fail for lane id {}", lane_idx_, lane_id_);
             lane_idx_ = 0;
@@ -9195,7 +9194,7 @@ Position::ReturnCode Position::SetLaneBoundaryPos(id_t track_id, int lane_id, do
     id_t       old_track_id = track_id_;
     ReturnCode retval;
 
-    if ((int)(retval = SetLongitudinalTrackPos(track_id, s)) < 0)
+    if ((retval = SetLongitudinalTrackPos(track_id, s)) < ReturnCode::OK)
     {
         lane_id_ = lane_id;
         offset_  = offset;
@@ -9211,14 +9210,14 @@ Position::ReturnCode Position::SetLaneBoundaryPos(id_t track_id, int lane_id, do
         return ReturnCode::ERROR_GENERIC;
     }
 
-    if (lane_id != lane_id_ && lane_section_idx == -1)
+    if ((lane_id != lane_id_) && (lane_section_idx == IDX_UNDEFINED))
     {
         // New lane ID might indicate a discreet jump to a new, distant position, reset lane section, if not specified in func parameter)
         lane_section_idx = road->GetLaneSectionIdxByS(s);
     }
 
     LaneSection* lane_section = 0;
-    if (lane_section_idx > -1)  // If lane section was specified or reset
+    if (lane_section_idx != IDX_UNDEFINED)  // If lane section was specified or reset
     {
         lane_section_idx_ = lane_section_idx;
         lane_section      = road->GetLaneSectionByIdx(lane_section_idx_);
@@ -9240,7 +9239,7 @@ Position::ReturnCode Position::SetLaneBoundaryPos(id_t track_id, int lane_id, do
     if (lane_section != 0)
     {
         lane_idx_ = lane_section->GetLaneIdxById(lane_id_);
-        if (lane_idx_ == -1)
+        if (lane_idx_ == IDX_UNDEFINED)
         {
             LOG_ERROR("lane_idx {} fail for lane id {}", lane_idx_, lane_id_);
             lane_idx_ = 0;
@@ -9266,15 +9265,15 @@ Position::ReturnCode Position::SetLaneBoundaryPos(id_t track_id, int lane_id, do
 
 void Position::SetRoadMarkPos(id_t   track_id,
                               int    lane_id,
-                              int    roadmark_idx,
-                              int    roadmarktype_idx,
-                              int    roadmarkline_idx,
+                              idx_t    roadmark_idx,
+                              idx_t    roadmarktype_idx,
+                              idx_t    roadmarkline_idx,
                               double s,
                               double offset,
-                              int    lane_section_idx)
+                              idx_t    lane_section_idx)
 {
     offset_           = offset;
-    int  old_lane_id  = lane_id_;
+    int old_lane_id  = lane_id_;
     id_t old_track_id = track_id_;
 
     Road* road = GetOpenDrive()->GetRoadById(track_id);
@@ -9292,7 +9291,7 @@ void Position::SetRoadMarkPos(id_t   track_id,
         s = road->GetLength();
     }
 
-    if ((int)SetLongitudinalTrackPos(track_id, s) < 0)
+    if (SetLongitudinalTrackPos(track_id, s) < ReturnCode::OK)
     {
         lane_id_          = lane_id;
         offset_           = offset;
@@ -9302,14 +9301,14 @@ void Position::SetRoadMarkPos(id_t   track_id,
         return;
     }
 
-    if (lane_id != lane_id_ && lane_section_idx == -1)
+    if (lane_id != lane_id_ && lane_section_idx == IDX_UNDEFINED)
     {
         // New lane ID might indicate a discreet jump to a new, distant position, reset lane section, if not specified in func parameter)
         lane_section_idx = road->GetLaneSectionIdxByS(s);
     }
 
     LaneSection* lane_section = 0;
-    if (lane_section_idx > -1)  // If lane section was specified or reset
+    if (lane_section_idx != IDX_UNDEFINED)  // If lane section was specified or reset
     {
         lane_section_idx_ = lane_section_idx;
         lane_section      = road->GetLaneSectionByIdx(lane_section_idx_);
@@ -9331,7 +9330,7 @@ void Position::SetRoadMarkPos(id_t   track_id,
     if (lane_section != 0)
     {
         lane_idx_ = lane_section->GetLaneIdxById(lane_id_);
-        if (lane_idx_ == -1)
+        if (lane_idx_ == IDX_UNDEFINED)
         {
             LOG_ERROR("lane_idx {} fail for lane id {}", lane_idx_, lane_id_);
             lane_idx_ = 0;
@@ -9498,15 +9497,15 @@ int Position::SetInertiaPos(double x, double y, double h, bool updateTrackPos)
     return SetInertiaPosMode(x,
                              y,
                              h,
-                             static_cast<int>((GetMode(PosModeType::SET) & PosMode::H_MASK) |
-                                              (GetMode(PosModeType::UPDATE) & (PosMode::Z_MASK | PosMode::P_MASK | PosMode::R_MASK))),
+                             (GetMode(PosModeType::SET) & PosMode::H_MASK) |
+                                              (GetMode(PosModeType::UPDATE) & (PosMode::Z_MASK | PosMode::P_MASK | PosMode::R_MASK)),
                              updateTrackPos);
 }
 
 int Position::SetInertiaPosMode(double x, double y, double h, int mode, bool updateTrackPos)
 {
     // Apply default modes aligning z, p, r to road
-    return SetInertiaPosMode(x, y, 0.0, h, 0.0, 0.0, mode);
+    return SetInertiaPosMode(x, y, 0.0, h, 0.0, 0.0, mode, updateTrackPos);
 }
 
 void Position::SetHeading(double heading, bool evaluate)
@@ -9729,8 +9728,8 @@ int Position::GetDrivingDirectionRelativeRoad() const
     if (GetTrackId() != ID_UNDEFINED && GetRoadById(GetTrackId()) != nullptr)
     {
         // Consider road rule (left hand or right hand traffic)
-        if (GetLaneId() < 0 && GetRoadById(GetTrackId())->GetRule() == Road::RoadRule::LEFT_HAND_TRAFFIC ||
-            GetLaneId() > 0 && GetRoadById(GetTrackId())->GetRule() == Road::RoadRule::RIGHT_HAND_TRAFFIC)
+        if ((GetLaneId() < 0 && GetRoadById(GetTrackId())->GetRule() == Road::RoadRule::LEFT_HAND_TRAFFIC) ||
+            (GetLaneId() > 0 && GetRoadById(GetTrackId())->GetRule() == Road::RoadRule::RIGHT_HAND_TRAFFIC))
         {
             return -1;
         }
@@ -10157,9 +10156,9 @@ int Position::GetNumberOfRoadsOverlapping()
     return static_cast<int>(overlapping_roads.size());
 }
 
-id_t Position::GetOverlappingRoadId(int index) const
+id_t Position::GetOverlappingRoadId(idx_t index) const
 {
-    if (overlapping_roads.size() == 0 || index >= overlapping_roads.size() || index < 0)
+    if (overlapping_roads.size() == 0 || index >= overlapping_roads.size() || index == IDX_UNDEFINED)
     {
         return ID_UNDEFINED;
     }
@@ -10401,7 +10400,7 @@ int Position::Distance(Position* pos_b, CoordinateSystem cs, RelativeDistanceTyp
             {
                 // treat pos_b as a position outside trajectory, first find it's closest point on trajectory
                 TrajVertex v;
-                int        index = 0;
+                idx_t        index = 0;
                 double     dx, dy;
                 if (GetTrajectory()->shape_->FindClosestPoint(pos_b->GetX(), pos_b->GetY(), v, index) == 0)
                 {
@@ -10485,7 +10484,7 @@ int Position::Distance(double x, double y, CoordinateSystem cs, RelativeDistance
             {
                 // treat pos_b as a position outside trajectory, first find it's closest point on trajectory
                 TrajVertex v;
-                int        index = 0;
+                idx_t        index = 0;
                 double     dx, dy;
                 if (GetTrajectory()->shape_->FindClosestPoint(x, y, v, index) == 0)
                 {
@@ -10608,7 +10607,7 @@ int Position::GetRoadLaneInfo(double lookahead_distance, RoadLaneInfo* data, Loo
 
     if (fabs(lookahead_distance) > SMALL_NUMBER)
     {
-        if ((int)target.MoveAlongS(lookahead_distance, 0.0, 0.0, true, MoveDirectionMode::HEADING_DIRECTION, true) < 0)
+        if (target.MoveAlongS(lookahead_distance, 0.0, 0.0, true, MoveDirectionMode::HEADING_DIRECTION, true) < ReturnCode::OK)
         {
             return -1;
         }
@@ -10746,16 +10745,16 @@ int Position::GetLaneId() const
     return lane_id_;
 }
 
-int Position::GetLaneGlobalId() const
+id_t Position::GetLaneGlobalId() const
 {
     Road* road = GetRoadById(GetTrackId());
     if (road == 0)
     {
         // No road
-        return -1;
+        return ID_UNDEFINED;
     }
 
-    if (road->GetJunction() != -1)
+    if (road->GetJunction() != ID_UNDEFINED)
     {
         if (GetOpenDrive()->GetJunctionById(road->GetJunction())->IsOsiIntersection())
         {
@@ -10768,17 +10767,17 @@ int Position::GetLaneGlobalId() const
     if (lane_section == 0)
     {
         LOG_WARN("No lane section for idx {} - keeping current lane setting", lane_section_idx_);
-        return -2;
+        return ID_UNDEFINED;
     }
 
     double offset;
     double lane_offset = road->GetLaneOffset(s_);
-    int    lane_idx    = lane_section->GetClosestLaneIdx(s_, t_, lane_offset, 0, offset, false, Lane::LaneType::LANE_TYPE_ANY);
+    idx_t    lane_idx    = lane_section->GetClosestLaneIdx(s_, t_, lane_offset, 0, offset, false, Lane::LaneType::LANE_TYPE_ANY);
 
-    if (lane_idx == -1)
+    if (lane_idx == IDX_UNDEFINED)
     {
         LOG_ERROR("Failed to find a valid drivable lane");
-        return -3;
+        return ID_UNDEFINED;
     }
 
     // Check if it is not a center lane
@@ -10895,7 +10894,7 @@ double Position::GetRouteS() const
     return route_->GetPathS();
 }
 
-Position::ReturnCode Position::MoveRouteDS(double ds, double* remaining_dist, bool actualDistance)
+Position::ReturnCode Position::MoveRouteDS(double ds, bool actualDistance)
 {
     Position::ReturnCode retval = ReturnCode::OK;
 
@@ -10969,7 +10968,7 @@ int Position::SetRouteRoadPosition(Route* route, double path_s, double t)
     return 0;
 }
 
-int PolyLineBase::EvaluateSegmentByLocalS(int i, double local_s, TrajVertex& pos)
+int PolyLineBase::EvaluateSegmentByLocalS(idx_t i, double local_s, TrajVertex& pos)
 {
     TrajVertex* vp0 = &vertex_[i];
 
@@ -10990,7 +10989,7 @@ int PolyLineBase::EvaluateSegmentByLocalS(int i, double local_s, TrajVertex& pos
         pos.pos_mode = vp0->pos_mode;
         pos.h_true   = vp0->h_true;
     }
-    else if (i >= 0)
+    else if (i != IDX_UNDEFINED)
     {
         TrajVertex* vp1 = &vertex_[i + 1];
 
@@ -11018,17 +11017,12 @@ int PolyLineBase::EvaluateSegmentByLocalS(int i, double local_s, TrajVertex& pos
             double  angle_previous = 0.0;
             double  angle_next     = 0.0;
             double* angle          = nullptr;
-            bool    specified      = true;
             if (j == 0)
             {
                 angle          = &pos.h;
                 angle_current  = vp0->h;
                 angle_next     = vp1->h;
                 angle_previous = i > 0 ? vertex_[i - 1].h : 0.0;
-                if ((pos.pos_mode & Position::PosMode::H_MASK) == 0)
-                {
-                    specified = false;
-                }
             }
             else if (j == 1)
             {
@@ -11036,10 +11030,6 @@ int PolyLineBase::EvaluateSegmentByLocalS(int i, double local_s, TrajVertex& pos
                 angle_current  = vp0->pitch;
                 angle_next     = vp1->pitch;
                 angle_previous = i > 0 ? vertex_[i - 1].pitch : 0.0;
-                if ((pos.pos_mode & Position::PosMode::P_MASK) == 0)
-                {
-                    specified = false;
-                }
             }
             else if (j == 2)
             {
@@ -11047,10 +11037,6 @@ int PolyLineBase::EvaluateSegmentByLocalS(int i, double local_s, TrajVertex& pos
                 angle_current  = vp0->r;
                 angle_next     = vp1->r;
                 angle_previous = i > 0 ? vertex_[i - 1].r : 0.0;
-                if ((pos.pos_mode & Position::PosMode::R_MASK) == 0)
-                {
-                    specified = false;
-                }
             }
 
             if (angle != nullptr)
@@ -11127,17 +11113,17 @@ void PolyLineBase::AddVertex(TrajVertex v)
     vertex_.push_back(v);
 }
 
-int PolyLineBase::Evaluate(double s, TrajVertex& pos, int startAtIndex)
+idx_t PolyLineBase::Evaluate(double s, TrajVertex& pos, idx_t startAtIndex)
 {
     double s_local = 0;
-    int    i       = CLAMP(startAtIndex, 0, GetNumberOfVertices() - 1);
+    unsigned int    i       = CLAMP(startAtIndex, 0, GetNumberOfVertices() - 1);
 
     if (GetNumberOfVertices() < 1)
     {
-        return -1;
+        return IDX_UNDEFINED;
     }
 
-    if (s > GetVertex(-1)->s)
+    if (s > GetVertices().back().s)
     {
         // end of trajectory
         s       = length_;
@@ -11160,10 +11146,7 @@ int PolyLineBase::Evaluate(double s, TrajVertex& pos, int startAtIndex)
 
     if (EvaluateSegmentByLocalS(i, s_local, pos) == 0)
     {
-        if (i >= 0)
-        {
             current_index_ = i;  // update cached index position
-        }
     }
 
     pos.s = s;
@@ -11171,24 +11154,24 @@ int PolyLineBase::Evaluate(double s, TrajVertex& pos, int startAtIndex)
     return i;
 }
 
-int PolyLineBase::Evaluate(double s, TrajVertex& pos)
+idx_t PolyLineBase::Evaluate(double s, TrajVertex& pos)
 {
     return Evaluate(s, pos, 0);
 }
 
-int PolyLineBase::Evaluate(double s)
+idx_t PolyLineBase::Evaluate(double s)
 {
     return Evaluate(s, current_val_, current_index_);
 }
 
-PolyLineBase::GhostTrailReturnCode PolyLineBase::Time2S(double time, double& s, int& index)
+PolyLineBase::GhostTrailReturnCode PolyLineBase::Time2S(double time, double& s, idx_t& index)
 {
-    int step = 1;
+    int direction = 1;
 
     if (GetNumberOfVertices() < 1)
     {
         s     = 0.0;
-        index = -1;
+        index = IDX_UNDEFINED;
         return GhostTrailReturnCode::GHOST_TRAIL_NO_VERTICES;
     }
     else if (GetNumberOfVertices() == 1)
@@ -11206,24 +11189,22 @@ PolyLineBase::GhostTrailReturnCode PolyLineBase::Time2S(double time, double& s, 
     else if (time > vertex_.back().time)
     {
         s     = vertex_.back().s;
-        index = static_cast<int>(vertex_.size() - 1);
+        index = vertex_.size() > 0 ? static_cast<unsigned int>(vertex_.size()) - 1 : IDX_UNDEFINED;
         return GhostTrailReturnCode::GHOST_TRAIL_TIME_PAST;
     }
 
     // start looking from current index by default
-    int i = current_index_;
-    if (index >= 0)
+    idx_t i = current_index_;
+
+    // override with any specified start index
+    if (index != IDX_UNDEFINED && index < GetNumberOfVertices())
     {
-        // if specified start at given index, if valid
-        if (index < GetNumberOfVertices() && index >= 0)
-        {
-            i = index;
-        }
+        i = index;
     }
 
     if (time < vertex_[i].time)
     {
-        step = -1;  // Search backwards
+        direction = -1;  // Search backwards
     }
 
     for (size_t j = 0; j < GetNumberOfVertices(); j++)
@@ -11236,21 +11217,35 @@ PolyLineBase::GhostTrailReturnCode PolyLineBase::Time2S(double time, double& s, 
             return GhostTrailReturnCode::GHOST_TRAIL_OK;
         }
 
-        i += step;
-        if (i >= GetNumberOfVertices() - 1)
+        if (direction < 0)
         {
-            // Reached end of buffer, continue from start
-            i = 0;
+            if (i > 0)
+            {
+                i--;
+            }
+            else
+            {
+                // wrap from start to end
+                i = GetNumberOfVertices() - 1;
+            }
         }
-        else if (i < 0)
+        else
         {
-            i = GetNumberOfVertices() - 1;
+            if (i < GetNumberOfVertices() - 1)
+            {
+                i++;
+            }
+            else
+            {
+                // wrap from end to start
+                i = 0;
+            }
         }
     }
 
     // s seems out of range, grab last element
     s     = vertex_.back().s;
-    index = static_cast<int>(vertex_.size() - 1);
+    index = static_cast<unsigned int>(vertex_.size() - 1);
 
     return GhostTrailReturnCode::GHOST_TRAIL_TIME_PAST;
 }
@@ -11260,16 +11255,16 @@ void PolyLineBase::SetInterpolationMode(InterpolationMode mode)
     interpolation_mode_ = mode;
 }
 
-int PolyLineBase::FindClosestPoint(double xin, double yin, TrajVertex& pos, int& index, int startAtIndex)
+int PolyLineBase::FindClosestPoint(double xin, double yin, TrajVertex& pos, idx_t& index, idx_t startAtIndex)
 {
     // look along the line segments
     TrajVertex tmpPos;
     double     sLocal    = 0.0;
     double     sLocalMin = 0.0;
-    int        iMin      = startAtIndex;
+    idx_t      iMin      = startAtIndex;
     double     distMin   = LARGE_NUMBER;
-    int        i         = 0;
-    int        step      = 1;
+    unsigned int        i         = 0;
+    int        direction = 1;
 
     // If a teleportation is made by the Ghost, a reset of trajectory has been made. Hence, we can't look from the usual point. Set startAtIndex =
     // 0
@@ -11280,12 +11275,12 @@ int PolyLineBase::FindClosestPoint(double xin, double yin, TrajVertex& pos, int&
     }
     else
     {
-        i = startAtIndex < 0 ? 0 : startAtIndex;
+        i = startAtIndex == IDX_UNDEFINED ? 0 : startAtIndex;
     }
 
     // Find closest line segment
 
-    while (i >= 0 && i < GetNumberOfVertices() - 1)
+    while (i != IDX_UNDEFINED && i < GetNumberOfVertices() - 1)
     {
         ProjectPointOnLine2D(xin, yin, vertex_[i].x, vertex_[i].y, vertex_[i + 1].x, vertex_[i + 1].y, tmpPos.x, tmpPos.y);
         double distTmp = PointDistance2D(xin, yin, tmpPos.x, tmpPos.y);
@@ -11313,7 +11308,7 @@ int PolyLineBase::FindClosestPoint(double xin, double yin, TrajVertex& pos, int&
 
         if (distTmp < distMin)
         {
-            iMin      = (int)i;
+            iMin      = i;
             sLocalMin = sLocal;
             distMin   = distTmp;
         }
@@ -11322,17 +11317,39 @@ int PolyLineBase::FindClosestPoint(double xin, double yin, TrajVertex& pos, int&
             // Look for a local minimum distance
             // Distance is increasing
             // After looking in forward direction, go backwards from the start index
-            if (step == 1)
+            if (direction == 1)
             {
                 i    = startAtIndex;  // go back to start index
-                step = -1;            // and continue search in other direction
+                direction = -1;            // and continue search in other direction
             }
             else
             {
                 break;  // Now give up
             }
         }
-        i += step;
+
+        if (direction < 0)
+        {
+            if (i > 0)
+            {
+                i--;
+            }
+            else
+            {
+                break;
+            }
+        }
+        else
+        {
+            if (i < GetNumberOfVertices() - 1)
+            {
+                i++;
+            }
+            else
+            {
+                break;
+            }
+        }
     }
 
     if (distMin < LARGE_NUMBER)
@@ -11386,21 +11403,9 @@ int PolyLineBase::FindPointAtTimeRelative(double time, TrajVertex& pos, int& ind
     return static_cast<int>(returncode);
 }
 
-TrajVertex* PolyLineBase::GetVertex(int index)
+std::vector<TrajVertex>& PolyLineBase::GetVertices()
 {
-    if (GetNumberOfVertices() < 1)
-    {
-        return nullptr;
-    }
-
-    if (index == -1)
-    {
-        return &vertex_.back();
-    }
-    else
-    {
-        return &vertex_[index];
-    }
+    return vertex_;
 }
 
 TrajVertex* PolyLineBase::GetCurrentVertex()
@@ -11781,8 +11786,8 @@ int PolyLineShape::Evaluate(double p, TrajectoryParamType ptype, TrajVertex& pos
         return -1;
     }
 
-    if (ptype == TrajectoryParamType::TRAJ_PARAM_TYPE_S && p > pline_.GetVertex(-1)->s ||
-        ptype == TrajectoryParamType::TRAJ_PARAM_TYPE_TIME && p > pline_.GetVertex(-1)->time)
+    if (ptype == TrajectoryParamType::TRAJ_PARAM_TYPE_S && p > pline_.GetVertices().back().s ||
+        ptype == TrajectoryParamType::TRAJ_PARAM_TYPE_TIME && p > pline_.GetVertices().back().time)
     {
         // end of trajectory
         s = GetLength();

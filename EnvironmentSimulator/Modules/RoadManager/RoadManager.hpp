@@ -2173,9 +2173,9 @@ namespace roadmanager
             name_ = name;
         }
         Geometry *GetGeometry(unsigned int idx) const;
-        int       GetNumberOfGeometries() const
+        unsigned int       GetNumberOfGeometries() const
         {
-            return static_cast<int>(geometry_.size());
+            return static_cast<unsigned int>(geometry_.size());
         }
 
         /**
@@ -2193,13 +2193,13 @@ namespace roadmanager
         Retrieve the lanesection index at specified s-value
         @param s distance along the road segment
         */
-        unsigned int GetLaneSectionIdxByS(double s, unsigned int start_at = 0) const;
+        unsigned int GetLaneSectionIdxByS(double s, idx_t start_at = 0) const;
 
         /**
         Retrieve the lanesection at specified s-value
         @param s distance along the road segment
         */
-        LaneSection *GetLaneSectionByS(double s, unsigned int start_at = 0) const
+        LaneSection *GetLaneSectionByS(double s, idx_t start_at = 0) const
         {
             return GetLaneSectionByIdx(GetLaneSectionIdxByS(s, start_at));
         }
@@ -3134,7 +3134,7 @@ namespace roadmanager
         @param lane_section_idx Optional index of lane section to start search from
         @return Non zero return value indicates error of some kind
         */
-        ReturnCode SetLanePosMode(id_t track_id, int lane_id, double s, double offset, int mode, int lane_section_idx = -1);
+        ReturnCode SetLanePosMode(id_t track_id, int lane_id, double s, double offset, int mode, idx_t lane_section_idx = IDX_UNDEFINED);
 
         Position::ReturnCode SetLaneBoundaryPos(id_t track_id, int lane_id, double s, double offset, idx_t lane_section_idx = IDX_UNDEFINED);
         void                 SetRoadMarkPos(id_t   track_id,
@@ -3292,7 +3292,7 @@ namespace roadmanager
         @param actualDistance Distance considering lateral offset and curvature (true/default) or along centerline (false)
         @return Non zero return value indicates error of some kind, most likely End Of Route
         */
-        ReturnCode MoveRouteDS(double ds, double *remaining_distance = nullptr, bool actualDistance = true);
+        ReturnCode MoveRouteDS(double ds, bool actualDistance = true);
 
         /**
         Move current position to specified S-value along the route
@@ -3496,7 +3496,7 @@ namespace roadmanager
         Retrieve the global lane ID from the position object
         @return lane ID
         */
-        int GetLaneGlobalId() const;
+        id_t GetLaneGlobalId() const;
 
         /**
         Retrieve a road segment specified by road ID
@@ -3933,7 +3933,7 @@ namespace roadmanager
         @parameter index Index of the total returned by GetNumberOfRoadsOverlapping()
         @return Id of specified overlapping road
         */
-        id_t GetOverlappingRoadId(int index) const;
+        id_t GetOverlappingRoadId(idx_t index) const;
 
         void ReplaceObjectRefs(Position *pos1, Position *pos2)
         {
@@ -4069,16 +4069,16 @@ namespace roadmanager
         double roadSuperElevationPrim_;  // rate of change of the road superelevation/lateral inclination
 
         // keep track for fast incremental updates of the position
-        int track_idx_;            // road index
-        int lane_idx_;             // lane index
-        int roadmark_idx_;         // laneroadmark index
-        int roadmarktype_idx_;     // laneroadmark index
-        int roadmarkline_idx_;     // laneroadmarkline index
-        int lane_section_idx_;     // lane section
-        int geometry_idx_;         // index of the segment within the track given by track_idx
-        int elevation_idx_;        // index of the current elevation entry
-        int super_elevation_idx_;  // index of the current super elevation entry
-        int osi_point_idx_;        // index of the current closest OSI road point
+        idx_t track_idx_;            // road index
+        idx_t lane_idx_;             // lane index
+        idx_t roadmark_idx_;         // laneroadmark index
+        idx_t roadmarktype_idx_;     // laneroadmark index
+        idx_t roadmarkline_idx_;     // laneroadmarkline index
+        idx_t lane_section_idx_;     // lane section
+        idx_t geometry_idx_;         // index of the segment within the track given by track_idx
+        idx_t elevation_idx_;        // index of the current elevation entry
+        idx_t super_elevation_idx_;  // index of the current super elevation entry
+        idx_t osi_point_idx_;        // index of the current closest OSI road point
 
         // RouteStrategy for a position, used for waypoints
         RouteStrategy routeStrategy_ = RouteStrategy::SHORTEST;
@@ -4288,28 +4288,28 @@ namespace roadmanager
          * @param s Distance along the polyline
          * @param pos Return trajectory position info including position, heading, speed. See TrajVertex type.
          * @param startAtIndex If >= 0 start search at this index, -1 use cached value
-         * @return 0 if successful, -1 if not
+         * @return Index of the segment corresponding to given s, IDX_UNDEFINED on error
          */
-        int Evaluate(double s, TrajVertex &pos, int startAtIndex);
+        idx_t Evaluate(double s, TrajVertex &pos, idx_t startAtIndex);
 
         /**
          * Evaluate and return position along the polyline
          * @param s Distance along the polyline
          * @param pos Trajectory position info including position, heading, speed. See TrajVertex type.
-         * @return 0 if successful, -1 if not
+         * @return Index of the segment corresponding to given s, IDX_UNDEFINED on error
          */
-        int Evaluate(double s, TrajVertex &pos);
+        idx_t Evaluate(double s, TrajVertex &pos);
 
         /**
          * Evaluate position along the polyline, result registered internally only
          * @param s Distance along the polyline
-         * @return 0 if successful, -1 if not
+         * @return Index of the segment corresponding to given s, IDX_UNDEFINED on error
          */
-        int Evaluate(double s);
+        idx_t Evaluate(double s);
 
-        int FindClosestPoint(double xin, double yin, TrajVertex &pos, int &index, int startAtIndex = 0);
+        int FindClosestPoint(double xin, double yin, TrajVertex &pos, idx_t &index, idx_t startAtIndex = 0);
 
-        int FindPointAhead(double s_start, double distance, TrajVertex &pos, int &index, int startAtIndex = 0);
+        int FindPointAhead(double s_start, double distance, TrajVertex &pos, idx_t &index, idx_t startAtIndex = 0);
 
         /**
          * Get ghost state at a point in time
@@ -4317,7 +4317,7 @@ namespace roadmanager
          * @param pos Trajectory position info including position, heading, speed. See TrajVertex type.
          * @param index In: If >= 0 start search at given index. Out: Returns the index of matching trajectory segment, -1 on error
          */
-        int FindPointAtTime(double time, TrajVertex &pos, int &index);
+        int FindPointAtTime(double time, TrajVertex &pos, idx_t &index);
 
         /**
          * Get ghost state at a point in time
@@ -4325,14 +4325,14 @@ namespace roadmanager
          * @param pos Returns state including position, heading, speed. See TrajVertex type.
          * @param index In: If >= 0 start search at given index. Out: Returns the index of matching trajectory segment, -1 on error
          */
-        int FindPointAtTimeRelative(double time, TrajVertex &pos, int &index);
+        int FindPointAtTimeRelative(double time, TrajVertex &pos, idx_t &index);
 
-        int GetNumberOfVertices() const
+        unsigned int GetNumberOfVertices() const
         {
-            return static_cast<int>(vertex_.size());
+            return static_cast<unsigned int>(vertex_.size());
         }
-        TrajVertex *GetVertex(int index);
-        TrajVertex *GetCurrentVertex();
+        std::vector<TrajVertex>& GetVertices();
+        TrajVertex* GetCurrentVertex();
         void        Reset(bool clear_vertices);
         void        SetInterpolationMode(InterpolationMode mode);
 
@@ -4343,16 +4343,16 @@ namespace roadmanager
          * @param index If >= 0, start search from this index (-1 use cached value), returns index of matching trajectory segment
          * @return 0 if successful, < 0 see GhostTrailReturnCode enum for error/information codes
          */
-        GhostTrailReturnCode Time2S(double time, double &s, int &index);
+        GhostTrailReturnCode Time2S(double time, double &s, idx_t &index);
 
         std::vector<TrajVertex> vertex_;
-        int                     current_index_ = 0;
+        idx_t                   current_index_ = 0;
         TrajVertex              current_val_;
         double                  length_ = 0.0;
         InterpolationMode       interpolation_mode_ = InterpolationMode::INTERPOLATE_NONE;
 
     protected:
-        int EvaluateSegmentByLocalS(int i, double local_s, TrajVertex &pos);
+        int EvaluateSegmentByLocalS(idx_t i, double local_s, TrajVertex &pos);
     };
 
     // Trajectory stuff
@@ -4419,7 +4419,7 @@ namespace roadmanager
                 @param startAtIndex: <= 0: Search global minimum along the whole path, > 0: Look for local minimum around this index.
                 @return 0 if successful, else -1 indicating error, e.g. empty shape
         */
-        virtual int FindClosestPoint(double xin, double yin, TrajVertex &pos, int &index, int startAtIndex = 0);
+        virtual int FindClosestPoint(double xin, double yin, TrajVertex &pos, idx_t &index, idx_t startAtIndex = 0);
 
         virtual double GetLength()
         {
@@ -4543,7 +4543,7 @@ namespace roadmanager
         void   AddSegment(Position *posStart, double curvStart, double curvEnd, double length, double h_offset, double time);
         int    Evaluate(double p, TrajectoryParamType ptype, TrajVertex &pos);
         int    Evaluate(double p, TrajectoryParamType ptype);
-        int    EvaluateInternal(double s, int segment_idx, TrajVertex &pos);
+        int    EvaluateInternal(double s, idx_t segment_idx, TrajVertex &pos);
         void   CalculatePolyLine();
         double GetLength()
         {
