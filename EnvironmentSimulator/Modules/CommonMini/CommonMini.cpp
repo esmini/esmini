@@ -35,6 +35,8 @@
 #endif
 
 #include "CommonMini.hpp"
+#include "Defines.hpp"
+#include "ConfigParser.hpp"
 
 // #define DEBUG_TRACE
 
@@ -189,6 +191,43 @@ std::string ControlDomain2Str(unsigned int domains)
     }
 
     return str;
+}
+
+void AppendArgcArgv(int& argc, char**& argv, int appendIndex, const std::vector<std::string>& prefixArgs)
+{
+    int    newArgc = argc + prefixArgs.size();
+    char** newArgv = new char*[newArgc + 1];  // +1 for the null terminator
+
+    int i;
+    // firstly, copy the original arguments before the appendIndex
+    for (i = 0; i < appendIndex; ++i)
+    {
+        newArgv[i] = new char[std::strlen(argv[i]) + 1];
+        std::strcpy(newArgv[i], argv[i]);
+    }
+    // secondly, copy the prefix arguments
+    for (const auto& arg : prefixArgs)
+    {
+        newArgv[i] = new char[arg.length() + 1];
+        std::strcpy(newArgv[i], arg.c_str());
+        ++i;
+    }
+    // thirdly, copy the original arguments from the appendIndex
+    for (int j = appendIndex; j < argc; ++j)
+    {
+        newArgv[i] = new char[std::strlen(argv[j]) + 1];
+        std::strcpy(newArgv[i], argv[j]);
+        ++i;
+    }
+    newArgv[newArgc] = nullptr;  // null terminate the array
+    argc             = newArgc;
+    argv             = newArgv;
+
+    std::cout << "New argc: " << newArgc << std::endl;
+    for (int k = 0; k < argc; ++k)
+    {
+        std::cout << "New argv[" << k << "]: " << argv[k] << std::endl;
+    }
 }
 
 bool FileExists(const char* fileName)
@@ -1724,7 +1763,7 @@ void SE_Mutex::Unlock()
 #endif
 }
 
-void SE_Option::Usage()
+void SE_Option::Usage() const
 {
     if (!default_value_.empty())
     {
@@ -1746,22 +1785,28 @@ void SE_Option::Usage()
     printf("\n      %s\n", opt_desc_.c_str());
 }
 
-void SE_Options::AddOption(std::string opt_str, std::string opt_desc, std::string opt_arg, std::string default_value, bool autoApply)
+void SE_Options::AddOption(std::string opt_str,
+                           std::string opt_desc,
+                           std::string opt_arg,
+                           std::string default_value,
+                           bool        autoApply,
+                           bool        shouldHaveOnlyOneValue)
 {
     SE_Option* option = GetOption(opt_str);
     if (option)
     {
         // there can be option already added, maybe the api has done it. which don't have values for str, desc, arg, default value, auto apply
-        option->opt_str_       = opt_str;
-        option->opt_desc_      = opt_desc;
-        option->opt_arg_       = opt_arg;
-        option->default_value_ = default_value;
-        option->autoApply_     = autoApply;
+        option->opt_str_                = opt_str;
+        option->opt_desc_               = opt_desc;
+        option->opt_arg_                = opt_arg;
+        option->default_value_          = default_value;
+        option->autoApply_              = autoApply;
+        option->shouldHaveOnlyOneValue_ = shouldHaveOnlyOneValue;
     }
     else
     {
-        SE_Option opt(opt_str, opt_desc, opt_arg, default_value, autoApply);
-        option_.push_back(opt);
+        SE_Option opt(opt_str, opt_desc, opt_arg, default_value, autoApply, shouldHaveOnlyOneValue);
+        option_.insert(std::make_pair(opt_str, opt));
     }
 }
 
@@ -1769,10 +1814,15 @@ void SE_Options::PrintUsage()
 {
     printf("\nUsage: %s [options]\n", app_name_.c_str());
     printf("Options: \n");
-    for (size_t i = 0; i < option_.size(); i++)
+    for (const auto& [key, option] : option_)
     {
-        option_[i].Usage();
+        [[maybe_unused]] const auto& unused_key = key;
+        option.Usage();
     }
+    // for (size_t i = 0; i < option_.size(); i++)
+    // {
+    //     option_[i].Usage();
+    // }
     printf("\n");
 }
 
@@ -1801,12 +1851,24 @@ bool SE_Options::GetOptionSet(std::string opt)
 
 bool SE_Options::IsOptionArgumentSet(std::string opt)
 {
-    if (GetOption(opt) != nullptr)
+    if (const auto option = GetOption(opt); option != nullptr)
     {
-        return GetOption(opt)->set_;
+        return option->set_;
     }
 
     return false;
+}
+
+std::vector<std::string> SE_Options::GetOptionArgs(std::string opt)
+{
+    SE_Option* option = GetOption(opt);
+
+    if (option == nullptr)
+    {
+        return {};
+    }
+
+    return option->arg_value_;
 }
 
 std::string SE_Options::GetOptionArg(std::string opt, int index)
@@ -1867,7 +1929,7 @@ int SE_Options::SetOptionValue(std::string opt, std::string value, bool add, boo
     {
         if (!option->opt_arg_.empty())
         {
-            if (!add)
+            if (!add || option->shouldHaveOnlyOneValue_)
             {
                 option->arg_value_.clear();
             }
@@ -1912,7 +1974,7 @@ int SE_Options::ClearOption(const std::string& opt)
     return 0;
 }
 
-const std::vector<SE_Option>& SE_Options::GetAllOptions() const
+const std::unordered_map<std::string, SE_Option>& SE_Options::GetAllOptions() const
 {
     return option_;
 }
@@ -1948,6 +2010,10 @@ int SE_Options::ParseArgs(int argc, const char* const argv[])
             {
                 if (i < static_cast<unsigned int>(argc - 1) && strncmp(args[i + 1], "--", 2))
                 {
+                    if (option->shouldHaveOnlyOneValue_)
+                    {
+                        option->arg_value_.clear();
+                    }
                     option->arg_value_.push_back(args[i + 1]);
                     i++;
                 }
@@ -1981,8 +2047,9 @@ int SE_Options::ParseArgs(int argc, const char* const argv[])
 
 void SE_Options::ApplyDefaultValues()
 {
-    for (auto& opt : option_)
+    for (auto& [key, opt] : option_)
     {
+        [[maybe_unused]] const auto& unused_key = key;
         if (opt.arg_value_.empty() && !opt.default_value_.empty())
         {
             if ((!opt.autoApply_ && opt.set_) || (opt.autoApply_ && !opt.set_))
@@ -1996,14 +2063,19 @@ void SE_Options::ApplyDefaultValues()
 
 SE_Option* SE_Options::GetOption(std::string opt)
 {
-    for (size_t i = 0; i < option_.size(); i++)
+    if (auto itr = option_.find(opt); itr != option_.end())
     {
-        if (opt == option_[i].opt_str_)
-        {
-            return &option_[i];
-        }
+        return &itr->second;
     }
-    return 0;
+    return nullptr;
+    // for (size_t i = 0; i < option_.size(); i++)
+    // {
+    //     if (opt == option_[i].opt_str_)
+    //     {
+    //         return &option_[i];
+    //     }
+    // }
+    // return 0;
 }
 
 bool SE_Options::IsInOriginalArgs(std::string opt)
@@ -2023,15 +2095,24 @@ bool SE_Options::HasUnknownArgs()
 
 void SE_Options::Reset()
 {
-    for (size_t i = 0; i < option_.size(); i++)
+    for (auto& [key, option] : option_)
     {
-        if (!option_[i].persistent_)
+        [[maybe_unused]] const auto& unused_key = key;
+        if (!option.persistent_)
         {
-            option_[i].arg_value_.clear();
-            option_[i].set_ = false;
+            option.arg_value_.clear();
+            option.set_ = false;
         }
     }
-    // option_.clear();
+    // for (size_t i = 0; i < option_.size(); i++)
+    // {
+    //     if (!option_[i].persistent_)
+    //     {
+    //         option_[i].arg_value_.clear();
+    //         option_[i].set_ = false;
+    //     }
+    // }
+
     originalArgs_.clear();
 }
 
