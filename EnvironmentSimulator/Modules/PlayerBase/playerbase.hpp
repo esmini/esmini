@@ -90,6 +90,7 @@ namespace scenarioengine
         @return -1 on failure, 0 on success
         */
         int  Init();
+        void HandleConfigurations();
         void PrintUsage();
         bool IsQuitRequested()
         {

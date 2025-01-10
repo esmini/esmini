@@ -80,6 +80,10 @@ target_include_directories(
            ${EXTERNALS_EXPR_PATH}
            ${EXTERNALS_SPDLOG_INCLUDES})
 
+target_link_libraries(
+    ${TARGET}
+    PRIVATE CommonMini)
+
 disable_static_analysis(${TARGET})
 disable_iwyu(${TARGET})
 enable_fpic(${TARGET})

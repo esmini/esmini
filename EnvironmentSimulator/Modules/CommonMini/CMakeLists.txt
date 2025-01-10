@@ -15,12 +15,18 @@ set(SOURCES
     CommonMini.cpp
     UDP.cpp
     version.cpp
-    logger.cpp)
+    logger.cpp
+    Config.cpp
+    ConfigParser.cpp
+    DefaultPathFinder.cpp)
 
 set(INCLUDES
     CommonMini.hpp
     UDP.hpp
-    logger.hpp)
+    logger.hpp
+    Config.hpp
+    ConfigParser.hpp
+    DefaultPathFinder.hpp)
 
 # ############################### Creating library ###################################################################
 
@@ -34,11 +40,26 @@ target_include_directories(
     ${TARGET}
     PRIVATE project_options
             SYSTEM
-    PUBLIC ${EXTERNALS_SPDLOG_INCLUDES})
+    PUBLIC ${EXTERNALS_SPDLOG_INCLUDES}
+           ${EXTERNALS_RYML_INCLUDES})
 
 target_link_libraries(
     ${TARGET}
-    PRIVATE ${SPDLOG_LIBRARIES})
+    PRIVATE ${SPDLOG_LIBRARIES}
+            ${RYML_LIBRARIES})
+
+if(NOT
+   MSVC)
+    target_link_libraries(
+        ${TARGET}
+        PRIVATE dl)
+endif(
+    NOT
+    MSVC)
+
+install(
+    TARGETS ${TARGET}
+    DESTINATION "${INSTALL_PATH}")
 
 disable_static_analysis(${TARGET})
 disable_iwyu(${TARGET})
