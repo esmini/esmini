@@ -17,10 +17,19 @@
 #include <osgViewer/ViewerEventHandlers>
 #include <signal.h>
 
+#include <yaml-cpp/yaml.h>
+
 #define MIN_TIME_STEP 0.01
 #define MAX_TIME_STEP 0.1
 
 static bool quit = false;
+
+
+static void TestYaml()
+{
+    YAML::Node config = YAML::LoadFile("config.yaml");
+    std::cout << "Config: " << config << std::endl;
+}
 
 static void signal_handler(int s)
 {
@@ -113,6 +122,7 @@ static int execute_scenario(int argc, char* argv[])
 
 int main(int argc, char* argv[])
 {
+    TestYaml();
     OSCParameterDistribution& dist   = OSCParameterDistribution::Inst();
     int                       retval = 0;
 

@@ -76,6 +76,8 @@ target_link_libraries(
             ${TIME_LIB}
             ${SOCK_LIB})
 
+target_link_libraries(esmini PUBLIC yaml-cpp::yaml-cpp) # This is how you link against the yaml-cpp library
+
 if(USE_OSG)
     target_link_libraries(
         ${TARGET}
