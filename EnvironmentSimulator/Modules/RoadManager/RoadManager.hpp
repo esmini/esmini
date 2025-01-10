@@ -2054,13 +2054,13 @@ namespace roadmanager
             return repeat_;
         }
 
-        int GetNumberOfOutlines() const
+        unsigned int GetNumberOfOutlines() const
         {
-            return static_cast<int>(outlines_.size());
+            return static_cast<unsigned int>(outlines_.size());
         }
-        int GetNumberOfRepeats() const
+        unsigned int GetNumberOfRepeats() const
         {
-            return static_cast<int>(repeats_.size());
+            return static_cast<unsigned int>(repeats_.size());
         }
 
         Outline *GetOutline(unsigned int i) const
@@ -2749,9 +2749,9 @@ namespace roadmanager
         Junction *GetJunctionById(id_t id) const;
         Junction *GetJunctionByIdx(idx_t idx) const;
 
-        int GetNumOfJunctions() const
+        unsigned int GetNumOfJunctions() const
         {
-            return static_cast<int>(junction_.size());
+            return static_cast<unsigned int>(junction_.size());
         }
 
         bool IsIndirectlyConnected(id_t   road1_id,

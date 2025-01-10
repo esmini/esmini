@@ -143,9 +143,9 @@ void ControllerLooming::Step(double timeStep)
 
             road_counter++;
             double dist_lsec = 0.0;
-            for (int n = 0; !hasFarTan && dist + dist_lsec < farPointDistance && n < roadTemp->GetNumberOfLaneSections(); n++)
+            for (unsigned int n = 0; !hasFarTan && dist + dist_lsec < farPointDistance && n < roadTemp->GetNumberOfLaneSections(); n++)
             {
-                int current_laneSec_idx = n;
+                idx_t current_laneSec_idx = n;
                 if (direction == -1)
                 {  // switch lanesec index according to direction of ego
                     current_laneSec_idx = roadTemp->GetNumberOfLaneSections() - 1 - n;
