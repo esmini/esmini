@@ -29,6 +29,27 @@
 
 static bool quit = false;
 
+static void CreateConfigFile(const std::string& filename)
+{
+    std::ofstream file(filename);
+    if (!file)
+    {
+        std::cerr << "Failed to create file: " << filename << std::endl;
+        return;
+    }
+    // Write YAML content
+    file << "esmini: \n";
+    file << "  window: 60 60 800 400\n";
+    file << "  logfile_path: kalle.txt\n";
+    file << "  window: 60 60 800 400\n";
+    file << "  osc: ../../../../resources/xosc/cut-in.xosc\n";
+    file << "\n";
+    file << "replayer:\n";
+    file << "  tesselation_factor: 1.1";
+
+    file.close();
+}
+
 static void signal_handler(int s)
 {
     if (s == SIGINT)
@@ -124,6 +145,12 @@ static int execute_scenario(int argc, char* argv[])
 
 int main(int argc, char* argv[])
 {
+    CreateConfigFile("config.yml");
+
+    // esmini::common::Config config("esmini");
+    // const auto configs = config.GetConfig();
+    // std::cout << "Config size: " << configs.size() << std::endl;
+
     OSCParameterDistribution& dist   = OSCParameterDistribution::Inst();
     int                       retval = 0;
 
