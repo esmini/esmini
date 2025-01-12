@@ -9505,7 +9505,7 @@ int Position::SetInertiaPos(double x, double y, double h, bool updateTrackPos)
 int Position::SetInertiaPosMode(double x, double y, double h, int mode, bool updateTrackPos)
 {
     // Apply default modes aligning z, p, r to road
-    // return SetInertiaPosMode(x, y, 0.0, h, 0.0, 0.0, mode, updateTrackPos);
+    (void)updateTrackPos;
     return SetInertiaPosMode(x, y, 0.0, h, 0.0, 0.0, mode);
 }
 
