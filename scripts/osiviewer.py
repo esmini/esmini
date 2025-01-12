@@ -9,6 +9,15 @@
 # https://sites.google.com/view/simulationscenarios
 
 
+# This script visualizes OSI trace file
+# Limited OSI feature support
+#
+# Dependencies:
+#
+# pip install matplotlib
+# pip install protobuf==3.20.2
+
+
 import matplotlib.pyplot as plt
 import matplotlib.animation as anim
 import matplotlib.collections as mc
@@ -127,6 +136,8 @@ class View:
         self.selected_object = None
         self.playing = True
         self.pan_data_start = [0,0]
+        self.pan_display_start = [0,0]
+        self.zoom_data_start = [0,0]
         self.pan = [0.0, 0.0]
         self.pan_delta = [0.0, 0.0]
         self.y_start = None
@@ -292,7 +303,7 @@ class View:
             if self.selected_object is not None:
                 center = (self.bb_objects.bb_objects[self.follow_object_index].x, self.bb_objects.bb_objects[self.follow_object_index].y)
             else:
-                center = (self.pan_display_start[0], self.pan_display_start[1])
+                center = self.zoom_data_start
             self.zoom_factor(1.0 - 0.0025*(self.y_start - event.y), center=center)
             self.y_start = event.y
 
@@ -356,6 +367,7 @@ class View:
             return
         if event.button == 2 or event.button == 3:
             self.pan_display_start = (event.x, event.y)
+            self.zoom_data_start = (event.xdata, event.ydata)
             if event.button == 3:
                 self.y_start = event.y
 
@@ -439,7 +451,7 @@ class View:
             ylim = self.ax.get_ylim()
             self.ax.set_xlim((xlim[0] - self.pan_delta[0], xlim[1] - self.pan_delta[0]))
             self.ax.set_ylim((ylim[0] - self.pan_delta[1], ylim[1] - self.pan_delta[1]))
-        if not self.fig.stale:
+        if not self.fig.stale or self.pan_delta != [0.0, 0.0]:
             self.redraw()
         self.pan_delta = [0.0, 0.0]
 
