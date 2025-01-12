@@ -280,7 +280,7 @@ extern "C"
     {
         if (odrManager != nullptr)
         {
-            return odrManager->GetNumOfRoads();
+            return static_cast<int>(odrManager->GetNumOfRoads());
         }
         else
         {
@@ -302,7 +302,7 @@ extern "C"
     {
         if (odrManager != nullptr)
         {
-            return odrManager->GetRoadByIdx(index)->GetId();
+            return odrManager->GetRoadByIdx(static_cast<unsigned int>(index))->GetId();
         }
         else
         {
@@ -394,9 +394,9 @@ extern "C"
             if (road)
             {
                 roadmanager::LaneSection* laneSection = road->GetLaneSectionByS(s);
-                for (size_t i = 0; static_cast<int>(i) < laneSection->GetNumberOfLanes(); i++)
+                for (unsigned int i = 0; i < laneSection->GetNumberOfLanes(); i++)
                 {
-                    if (laneSection->GetLaneByIdx(static_cast<int>(i))->IsDriving())
+                    if (laneSection->GetLaneByIdx(i)->IsDriving())
                     {
                         numberOfDrivableLanes++;
                     }
@@ -420,7 +420,7 @@ extern "C"
 
         roadmanager::Position* pos = &position[static_cast<unsigned int>(handle)];
 
-        return pos->GetNumberOfRoadsOverlapping();
+        return static_cast<int>(pos->GetNumberOfRoadsOverlapping());
     }
 
     RM_DLL_API id_t RM_GetOverlappingRoadId(int handle, int index)
@@ -432,7 +432,7 @@ extern "C"
 
         roadmanager::Position* pos = &position[static_cast<unsigned int>(handle)];
 
-        return pos->GetOverlappingRoadId(index);
+        return pos->GetOverlappingRoadId(static_cast<unsigned int>(index));
     }
 
     RM_DLL_API int RM_GetLaneIdByIndex(id_t roadId, int laneIndex, float s)
@@ -449,13 +449,13 @@ extern "C"
 
             // Consider only drivable lanes
             roadmanager::LaneSection* laneSection = road->GetLaneSectionByS(s);
-            for (size_t i = 0; static_cast<int>(i) < laneSection->GetNumberOfLanes(); i++)
+            for (unsigned int i = 0; i < laneSection->GetNumberOfLanes(); i++)
             {
-                if (laneSection->GetLaneByIdx(static_cast<int>(i))->IsDriving())
+                if (laneSection->GetLaneByIdx(i)->IsDriving())
                 {
                     if (numberOfDrivableLanes == laneIndex)
                     {
-                        return laneSection->GetLaneByIdx(static_cast<int>(i))->GetId();
+                        return laneSection->GetLaneByIdx(i)->GetId();
                     }
                     else
                     {
@@ -855,7 +855,7 @@ extern "C"
 
         if (road != NULL)
         {
-            return road->GetNumberOfSignals();
+            return static_cast<int>(road->GetNumberOfSignals());
         }
 
         return 0;
@@ -872,7 +872,7 @@ extern "C"
 
         if (road != NULL)
         {
-            roadmanager::Signal* s = road->GetSignal(index);
+            roadmanager::Signal* s = road->GetSignal(static_cast<unsigned int>(index));
 
             if (s)
             {
@@ -914,7 +914,7 @@ extern "C"
             roadmanager::Road* road = odrManager->GetRoadById(road_id);
             if (road != NULL)
             {
-                roadmanager::Signal* s = road->GetSignal(index);
+                roadmanager::Signal* s = road->GetSignal(static_cast<unsigned int>(index));
                 return static_cast<int>(s->validity_.size());
             }
         }
@@ -929,7 +929,7 @@ extern "C"
             roadmanager::Road* road = odrManager->GetRoadById(road_id);
             if (road != NULL)
             {
-                roadmanager::Signal* s = road->GetSignal(signIndex);
+                roadmanager::Signal* s = road->GetSignal(static_cast<unsigned int>(signIndex));
                 if (validityIndex >= 0 && validityIndex < static_cast<int>(s->validity_.size()))
                 {
                     validity->fromLane = s->validity_[static_cast<unsigned int>(validityIndex)].fromLane_;

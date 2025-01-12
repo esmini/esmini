@@ -2489,9 +2489,9 @@ namespace roadmanager
         {
             control_.push_back(ctrl);
         }
-        int GetNumberOfControls() const
+        unsigned int GetNumberOfControls() const
         {
-            return static_cast<int>(control_.size());
+            return static_cast<unsigned int>(control_.size());
         }
         Control *GetControl(unsigned int index)
         {
@@ -2580,9 +2580,9 @@ namespace roadmanager
             return global_id_;
         }
         void SetGlobalId();
-        int  GetNumberOfControllers() const
+        unsigned int  GetNumberOfControllers() const
         {
-            return static_cast<int>(controller_.size());
+            return static_cast<unsigned int>(controller_.size());
         }
         JunctionController *GetJunctionControllerByIdx(idx_t index);
         void                AddController(JunctionController controller)
@@ -3926,7 +3926,7 @@ namespace roadmanager
         Get the number of roads overlapping the position
         @return Number of roads overlapping the position
         */
-        int GetNumberOfRoadsOverlapping();
+        unsigned int GetNumberOfRoadsOverlapping();
 
         /**
         Get the id of an overlapping road

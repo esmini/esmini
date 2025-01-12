@@ -294,7 +294,7 @@ static int GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, S
     double x{};
     double y{};
     double z{};
-    int    index_out;
+    unsigned int index_out;
 
     if (ghost->trail_
             .FindClosestPoint(obj->pos_.GetX(), obj->pos_.GetY(), obj->trail_closest_pos_, obj->trail_follow_index_, obj->trail_follow_index_) == 0)
@@ -1684,7 +1684,7 @@ extern "C"
 #ifdef _USE_OSI
         if (player != nullptr)
         {
-            std::vector<int> ids_vector;
+            std::vector<unsigned int> ids_vector;
             player->osiReporter->GetOSILaneBoundaryIds(player->scenarioGateway->objectState_, ids_vector, object_id);
             if (!ids_vector.empty())
             {
@@ -2247,7 +2247,7 @@ extern "C"
             roadmanager::Road *road = player->odr_manager->GetRoadById(road_id);
             if (road != NULL)
             {
-                return road->GetNumberOfSignals();
+                return static_cast<int>(road->GetNumberOfSignals());
             }
         }
         return 0;
@@ -2262,7 +2262,7 @@ extern "C"
             roadmanager::Road *road = player->odr_manager->GetRoadById(road_id);
             if (road != NULL)
             {
-                roadmanager::Signal *s = road->GetSignal(index);
+                roadmanager::Signal *s = road->GetSignal(static_cast<unsigned int>(index));
 
                 if (s)
                 {
@@ -2301,7 +2301,7 @@ extern "C"
             roadmanager::Road *road = player->odr_manager->GetRoadById(road_id);
             if (road != nullptr)
             {
-                roadmanager::Signal *s = road->GetSignal(index);
+                roadmanager::Signal *s = road->GetSignal(static_cast<unsigned int>(index));
                 return static_cast<int>(s->validity_.size());
             }
         }
@@ -2316,7 +2316,7 @@ extern "C"
             roadmanager::Road *road = player->odr_manager->GetRoadById(road_id);
             if (road != NULL)
             {
-                roadmanager::Signal *s = road->GetSignal(signIndex);
+                roadmanager::Signal *s = road->GetSignal(static_cast<unsigned int>(signIndex));
                 if (validityIndex >= 0 && validityIndex < static_cast<int>(s->validity_.size()))
                 {
                     validity->fromLane = s->validity_[static_cast<unsigned int>(validityIndex)].fromLane_;
@@ -2794,9 +2794,9 @@ extern "C"
         routeinfo->roadId     = route->all_waypoints_[static_cast<unsigned int>(route_index)].GetTrackId();
         routeinfo->junctionId = route->all_waypoints_[static_cast<unsigned int>(route_index)].GetJunctionId();
         routeinfo->laneId     = route->all_waypoints_[static_cast<unsigned int>(route_index)].GetLaneId();
-        routeinfo->osiLaneId  = road->GetDrivingLaneById(route->all_waypoints_[static_cast<unsigned int>(route_index)].GetS(),
+        routeinfo->osiLaneId  = static_cast<int>(road->GetDrivingLaneById(route->all_waypoints_[static_cast<unsigned int>(route_index)].GetS(),
                                                         route->all_waypoints_[static_cast<unsigned int>(route_index)].GetLaneId())
-                                   ->GetGlobalId();
+                                   ->GetGlobalId());
         routeinfo->laneOffset = static_cast<float>(route->all_waypoints_[static_cast<unsigned int>(route_index)].GetOffset());
         routeinfo->s          = static_cast<float>(route->all_waypoints_[static_cast<unsigned int>(route_index)].GetS());
         routeinfo->t          = static_cast<float>(route->all_waypoints_[static_cast<unsigned int>(route_index)].GetT());

@@ -73,7 +73,7 @@ typedef struct
 {
     id_t   roadId;
     int    side;
-    int    nLanes;
+    unsigned int   nLanes;
     double s;
 } OpenEnd;
 
@@ -124,7 +124,7 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
         return 0;
     }
 
-    for (int r = 0; r < odrManager->GetNumOfRoads(); r++)
+    for (unsigned int r = 0; r < odrManager->GetNumOfRoads(); r++)
     {
         roadmanager::Road *road             = odrManager->GetRoadByIdx(r);
         double             average_distance = 100.0 / density;
@@ -170,11 +170,11 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
                  s += average_distance + 0.2 * average_distance * SE_Env::Inst().GetRand().GetReal())
             {
                 // Pick lane by random
-                int                n_lanes = road->GetNumberOfDrivingLanes(s);
+                unsigned int                n_lanes = road->GetNumberOfDrivingLanes(s);
                 roadmanager::Lane *lane    = nullptr;
                 if (n_lanes > 0)
                 {
-                    int lane_idx = SE_Env::Inst().GetRand().GetNumberBetween(0, n_lanes - 1);
+                    idx_t lane_idx = static_cast<unsigned int>(SE_Env::Inst().GetRand().GetNumberBetween(0, static_cast<int>(n_lanes - 1)));
                     lane         = road->GetDrivingLaneByIdx(s, lane_idx);
                     if (lane == nullptr)
                     {
@@ -333,7 +333,7 @@ void updateCar(roadmanager::OpenDrive *odrManager, Car *car, double dt)
             int      oeIndex = SE_Env::Inst().GetRand().GetNumberBetween(0, static_cast<int>(openEnds.size()) - 1);
             OpenEnd *oe      = &openEnds[static_cast<unsigned int>(oeIndex)];
             // Choose random lane
-            int                laneIndex = SE_Env::Inst().GetRand().GetNumberBetween(0, oe->nLanes - 1);
+            idx_t                laneIndex = static_cast<unsigned int>(SE_Env::Inst().GetRand().GetNumberBetween(0, static_cast<int>(oe->nLanes - 1)));
             roadmanager::Road *road      = odrManager->GetRoadById(oe->roadId);
             roadmanager::Lane *lane      = road->GetDrivingLaneSideByIdx(oe->s, oe->side, laneIndex);
 

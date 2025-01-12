@@ -273,7 +273,7 @@ TEST(GetOSILaneBoundaryIdsTest, lane_boundary_ids)
     SE_StepDT(0.001f);
     SE_UpdateOSIGroundTruth();
 
-    std::vector<std::vector<int>> lane_bound = {{-1, 8, 9, 10},
+    std::vector<std::vector<id_t>> lane_bound = {{ID_UNDEFINED, 8, 9, 10},
                                                 {8, 9, 10, 0},
                                                 {9, 10, 0, 1},
                                                 {10, 0, 1, 2},
@@ -286,7 +286,7 @@ TEST(GetOSILaneBoundaryIdsTest, lane_boundary_ids)
                                                 {5, 6, 7, 12},
                                                 {6, 7, 12, 13},
                                                 {7, 12, 13, 14},
-                                                {12, 13, 14, -1}};
+                                                {12, 13, 14, ID_UNDEFINED}};
 
     std::vector<int> veh_id = {13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
     for (size_t i = 0; i < lane_bound.size(); i++)
@@ -318,7 +318,7 @@ TEST(GetOSILaneBoundaryIdsTest, lane_boundary_ids_no_obj)
     SE_UpdateOSIGroundTruth();
 
     SE_LaneBoundaryId ids;
-    SE_LaneBoundaryId right_lanes_id = {-1, -1, -1, -1};
+    SE_LaneBoundaryId right_lanes_id = {ID_UNDEFINED, ID_UNDEFINED, ID_UNDEFINED, ID_UNDEFINED};
 
     SE_GetOSILaneBoundaryIds(10, &ids);
     EXPECT_EQ(ids.far_left_lb_id, right_lanes_id.far_left_lb_id);

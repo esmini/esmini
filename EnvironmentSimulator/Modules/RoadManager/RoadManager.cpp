@@ -10149,11 +10149,11 @@ bool Position::IsInJunction() const
     return false;
 }
 
-int Position::GetNumberOfRoadsOverlapping()
+unsigned int Position::GetNumberOfRoadsOverlapping()
 {
     XYZ2TrackPos(GetX(), GetY(), GetZ(), PosMode::UNDEFINED, false, ID_UNDEFINED, true);
 
-    return static_cast<int>(overlapping_roads.size());
+    return static_cast<unsigned int>(overlapping_roads.size());
 }
 
 id_t Position::GetOverlappingRoadId(idx_t index) const

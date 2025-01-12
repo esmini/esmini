@@ -9,6 +9,15 @@
 # https://sites.google.com/view/simulationscenarios
 
 
+# This script visualizes OSI trace file
+# Limited OSI feature support
+#
+# Dependecies:
+#
+# pip install matplotlib
+# pip install protobuf==3.20.2
+
+
 import matplotlib.pyplot as plt
 import matplotlib.animation as anim
 import matplotlib.collections as mc
