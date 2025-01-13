@@ -23,6 +23,7 @@ namespace ESMini
 {
 
     [StructLayout(LayoutKind.Sequential)]
+    [Serializable]
     public struct ScenarioObjectState
     {
         public int id;          // Automatically generated unique object id
@@ -56,6 +57,7 @@ namespace ESMini
     };
 
     [StructLayout(LayoutKind.Sequential)]
+    [Serializable]
     public struct RoadInfo
     {
         public float global_pos_x;     // steering target position, in global coordinate system
@@ -80,6 +82,7 @@ namespace ESMini
     };
 
     [StructLayout(LayoutKind.Sequential)]
+    [Serializable]
     public struct SimpleVehicleState
     {
         public float x;
@@ -93,6 +96,7 @@ namespace ESMini
     };
 
     [StructLayout(LayoutKind.Sequential)]
+    [Serializable]
     public struct LaneBoundaryId
     {
         public int far_left_lb_id;
@@ -102,6 +106,7 @@ namespace ESMini
     };
 
     [StructLayout(LayoutKind.Sequential)]
+    [Serializable]
     public struct PositionDiff
     {
         public float ds;            // delta s (longitudinal distance)
@@ -113,6 +118,7 @@ namespace ESMini
     };
 
     [StructLayout(LayoutKind.Sequential)]
+    [Serializable]
     public struct Center
     {
         public float x_;            // Center offset in x direction.
@@ -121,6 +127,7 @@ namespace ESMini
     };
 
     [StructLayout(LayoutKind.Sequential)]
+    [Serializable]
     public struct Dimensions
     {
         public float width_;            // Width of the entity's bounding box. Unit: m; Range: [0..inf[.
@@ -129,6 +136,7 @@ namespace ESMini
     };
 
     [StructLayout(LayoutKind.Sequential)]
+    [Serializable]
     public struct OSCBoundingBox
     {
         public Center center_;           // Represents the geometrical center of the bounding box
@@ -182,7 +190,7 @@ namespace ESMini
         /// </summary>
         /// <param name="cc">The callback function to be invoked</param>
         public static extern void SE_RegisterConditionCallback(ConditionCallback cc);
-    
+
 	public delegate void StateChangeCallback(string name, int type, int state, string full_path);
         [DllImport(LIB_NAME, EntryPoint = "SE_RegisterStoryBoardElementStateChangeCallback")]
         /// <summary>
@@ -669,8 +677,8 @@ namespace ESMini
 
         [DllImport(LIB_NAME, EntryPoint = "SE_ClearOSIGroundTruth")]
         /// <summary>
-        /// The SE_ClearOSIGroundTruth clears the certain groundtruth data. 
-        /// This function should only be used together with SE_UpdateOSIStaticGroundTruth and SE_UpdateOSIDynamicGroundTruth 
+        /// The SE_ClearOSIGroundTruth clears the certain groundtruth data.
+        /// This function should only be used together with SE_UpdateOSIStaticGroundTruth and SE_UpdateOSIDynamicGroundTruth
         /// </summary>
         public static extern int SE_ClearOSIGroundTruth();
     }

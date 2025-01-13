@@ -26,6 +26,7 @@ namespace OpenDRIVE
 {
 
     [StructLayout(LayoutKind.Sequential)]
+    [Serializable]
     public struct OpenDrivePositionData
     {
         public float x;
@@ -43,6 +44,7 @@ namespace OpenDRIVE
     };
 
     [StructLayout(LayoutKind.Sequential)]
+    [Serializable]
     public struct PositionXYZ
     {
         public float x;
@@ -51,6 +53,7 @@ namespace OpenDRIVE
     };
 
     [StructLayout(LayoutKind.Sequential)]
+    [Serializable]
     public struct RoadLaneInfo
     {
         public PositionXYZ pos;        // position, in global coordinate system
@@ -68,6 +71,8 @@ namespace OpenDRIVE
         public float t;                // t (lateral distance from reference line)
     };
 
+    [StructLayout(LayoutKind.Sequential)]
+    [Serializable]
     public struct RoadProbeInfo
     {
         public RoadLaneInfo laneInfo;    // Road info at probe location
@@ -76,6 +81,7 @@ namespace OpenDRIVE
     }
 
     [StructLayout(LayoutKind.Sequential)]
+    [Serializable]
     public struct PositionDiff
     {
         public float ds;                    // delta s (longitudinal distance)
@@ -84,6 +90,7 @@ namespace OpenDRIVE
     };
 
     [StructLayout(LayoutKind.Sequential)]
+    [Serializable]
     public struct RoadSign
     {
         public int id;            // just an unique identifier of the sign
@@ -103,6 +110,7 @@ namespace OpenDRIVE
     };
 
     [StructLayout(LayoutKind.Sequential)]
+    [Serializable]
     public struct GeoReference
     {
         // doc reference: https://proj.org/usage/projections.html
