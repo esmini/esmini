@@ -4363,7 +4363,7 @@ TEST_F(LaneOffsetIntersectionTest, TestLaneOffsetOfSomeLocations)
 
 TEST_F(LaneOffsetIntersectionTest, TestGetClosestLaneIdx)
 {
-    // finally, exercise GetClosestLaneIdx() with this road involving lane offset
+    // Exercise GetClosestLaneIdx() with this road involving lane offset
     Road*        road         = Position::GetOpenDrive()->GetRoadById(6);
     LaneSection* lane_section = road->GetLaneSectionByIdx(0);
     double       offset       = 0.0;
@@ -4401,6 +4401,21 @@ TEST_F(LaneOffsetIntersectionTest, TestGetClosestLaneIdx)
     lane_idx = lane_section->GetClosestLaneIdx(s, 3.6, road->GetLaneOffset(s), 1, offset, true);
     EXPECT_EQ(lane_section->GetLaneIdByIdx(lane_idx), 1);
     EXPECT_NEAR(offset, -1.5941, 1e-3);
+}
+
+TEST_F(LaneOffsetIntersectionTest, TestRoadMarkTypeNone)
+{
+    // Verify that also roadmarks of type none is included for road border detection
+    Road*        road         = Position::GetOpenDrive()->GetRoadById(1);
+    LaneSection* lane_section = road->GetLaneSectionByIdx(0);
+    Lane*        lane         = lane_section->GetLaneById(-3);
+
+    EXPECT_EQ(lane->GetOSIPoints()->GetNumOfOSIPoints(), 2);
+    ASSERT_EQ(lane->GetNumberOfRoadMarks(), 1);
+    EXPECT_EQ(lane->GetLaneRoadMarkByIdx(0)->GetType(), roadmanager::LaneRoadMark::RoadMarkType::NONE_TYPE);
+    ASSERT_EQ(lane->GetLaneRoadMarkByIdx(0)->GetNumberOfRoadMarkTypes(), 1);
+    ASSERT_EQ(lane->GetLaneRoadMarkByIdx(0)->GetLaneRoadMarkTypeByIdx(0)->GetNumberOfRoadMarkTypeLines(), 1);
+    EXPECT_EQ(lane->GetLaneRoadMarkByIdx(0)->GetLaneRoadMarkTypeByIdx(0)->GetLaneRoadMarkTypeLineByIdx(0)->GetOSIPoints()->GetNumOfOSIPoints(), 2);
 }
 
 TEST(ActionTest, TestInstantLaneChange)

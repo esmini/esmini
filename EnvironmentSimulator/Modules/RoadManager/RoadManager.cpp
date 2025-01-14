@@ -7211,7 +7211,7 @@ void OpenDrive::SetRoadMarkOSIPoints()
                                             }
                                         }
                                     }
-                                    else if (lane_roadMark->GetType() != LaneRoadMark::RoadMarkType::NONE_TYPE)
+                                    else
                                     {
                                         int counter = 0;
 
