@@ -1,5 +1,22 @@
 ## esmini release notes
 
+### 2025-01-14 Version 2.44.1
+
+New features:
+- Add ROS 1 support ([PR #648](https://github.com/esmini/esmini/pull/648))
+  - esmini node communicating with ROS 1 using esminiLib
+  - see [esminiROS/README.md](https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Libraries/esminiROS/README.md) for info
+
+Improvements and fixes:
+- Process also road marks of type none
+  - solves missing OSI lane edge (bug introduced in v2.41.1)
+- Reduce log verbosity for unresolved signal types and models ([issue #629](https://github.com/esmini/esmini/issues/629))
+- Fix osiviewer pan and zoom issues when no selection
+- Enable serialization of structs in esminiRMLib C# wrapper
+
+Documentation:
+- Add reference to [Truevision Designer](https://github.com/truevisionai/designer) under [Related work](https://github.com/palhimanshu1991/esmini/blob/0fe0c2d5379c5e899ca736d5e79f078290c63dfa/README.md#related-work) ([PR #644](https://github.com/esmini/esmini/pull/644))
+
 ### 2025-01-03 Version 2.44.0
 
 Fixed behavior:
