@@ -650,7 +650,6 @@ void AddPolygonToOSIStationaryObject(const roadmanager::Outline &outline)
     {
         double x, y, z;
         corner->GetPosLocal(x, y, z);
-        // printf("reporter corner points osi %.2f %.2f %.2f\n", x, y, z);
         osi3::Vector2d *vec = obj_osi_internal.sobj->mutable_base()->add_base_polygon();
         vec->set_x(x);
         vec->set_y(y);

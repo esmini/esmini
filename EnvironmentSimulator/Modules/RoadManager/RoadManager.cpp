@@ -2567,34 +2567,11 @@ void OutlineCornerLocal::GetPos(double& x, double& y, double& z)
     }
 }
 
-void OutlineCornerLocal::GetPosLocal(double& x, double& y, double& z)
+void OutlineCornerLocal::GetPosLocal(double& u, double& v, double& z)
 {
-    if (IsPosLocalCalculated())
-    {
-        x = xPosLocal_;
-        y = yPosLocal_;
-        z = zPosLocal_;
-    }
-    else
-    {
-        roadmanager::Position pref;
-        pref.SetTrackPosMode(roadId_,
-                             s_,
-                             t_,
-                             roadmanager::Position::PosMode::Z_REL | roadmanager::Position::PosMode::H_REL | roadmanager::Position::PosMode::P_REL |
-                                 roadmanager::Position::PosMode::R_REL);
-        double total_heading = GetAngleSum(pref.GetH(), heading_);
-        double u2, v2;
-        RotateVec2D(u_, v_, total_heading, u2, v2);
-
-        x = u2;
-        y = v2;
-        z = zLocal_;
-
-        xPosLocal_ = x;
-        yPosLocal_ = y;
-        zPosLocal_ = z;
-    }
+    u = u_;
+    v = v_;
+    z = zLocal_;
 }
 
 double OutlineCornerLocal::GetHeight()
@@ -3724,7 +3701,7 @@ Outline roadmanager::RMObject::GetZeroDistanceOutline(Repeat& rep, Position& pos
                                                        std::max(GetValueOrZero(GetRepeatedObjHeightWithFactor(rep, factor)), min_dim),
                                                        pos.GetX(),
                                                        pos.GetY(),
-                                                       pos.GetH(),
+                                                       GetHOffset(),
                                                        j + (i * n_segments)));
 
             outline.AddCorner(corner);
@@ -3735,9 +3712,8 @@ Outline roadmanager::RMObject::GetZeroDistanceOutline(Repeat& rep, Position& pos
 
 RMObject* roadmanager::RMObject::CreateObjectFromRepeat(const Repeat& repeat, double cur_s, double factor, Position& pos)
 {
-    double orientation = GetOrientation() == Signal::Orientation::NEGATIVE ? M_PI : 0.0;
-    double s           = repeat.GetS() + cur_s;
-    double t           = repeat.GetTWithFactor(factor);
+    double s = repeat.GetS() + cur_s;
+    double t = repeat.GetTWithFactor(factor);
     // position mode relative for aligning to road heading
     pos.SetTrackPosMode(GetRoadId(),
                         s,
@@ -3750,13 +3726,13 @@ RMObject* roadmanager::RMObject::CreateObjectFromRepeat(const Repeat& repeat, do
                                  GetName(),
                                  GetRepeatedObjZOffsetWithFactor(repeat, factor),
                                  GetType(),
-                                 heading_,
+                                 GetHOffset(),
                                  GetPitch(),
                                  GetRoll(),
                                  pos.GetX(),
                                  pos.GetY(),
                                  pos.GetZ(),
-                                 pos.GetH(),
+                                 pos.GetHRoad(),
                                  pos.GetP(),
                                  pos.GetR());
     obj->SetLength(GetRepeatedObjLengthWithFactor(repeat, factor));
@@ -3813,11 +3789,12 @@ std::vector<Outline> roadmanager::RMObject::CreateOutlinesFromRepeat(const Repea
                 scale_h  = abs(GetValueOrZero(GetRepeatedObjHeightWithFactor(repeat, factor)) / heightBb);
             }
 
-            double         start_s = repeat.GetS() + cur_s + x_to_add;
-            double         start_t = repeat.GetTWithFactor(factor) + y_to_add;
-            double         start_z = z_to_add;
-            double         start_h = h_to_add;
-            OutlineCorner* corner  = 0;
+            double start_s = repeat.GetS() + cur_s + x_to_add;
+            double start_t = repeat.GetTWithFactor(factor) + y_to_add;
+            double start_z = z_to_add;
+            double start_h = h_to_add;
+
+            OutlineCorner* corner = 0;
             if (corner_original->GetCornerType() == OutlineCorner::CornerType::ROAD_CORNER)
             {
                 corner = (OutlineCorner*)(new OutlineCornerRoad(GetRoadId(),
@@ -3827,7 +3804,7 @@ std::vector<Outline> roadmanager::RMObject::CreateOutlinesFromRepeat(const Repea
                                                                 start_h,
                                                                 pos.GetX(),
                                                                 pos.GetY(),
-                                                                pos.GetH(),
+                                                                GetHOffset(),
                                                                 corner_original->GetOriginalCornerId()));
             }
             else
@@ -6082,7 +6059,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                                         pos.GetX(),
                                         pos.GetY(),
                                         pos.GetZ(),
-                                        pos.GetH(),
+                                        pos.GetHRoad(),
                                         pos.GetP(),
                                         pos.GetR());
 

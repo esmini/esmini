@@ -597,8 +597,7 @@ namespace viewer
                          double                                       scale_x,
                          double                                       scale_y,
                          double                                       scale_z,
-                         osg::ref_ptr<osg::PositionAttitudeTransform> clone,
-                         bool                                         isShallowCopy = false);
+                         osg::ref_ptr<osg::PositionAttitudeTransform> clone);
         // Add model to the given graphics group
         void AddModel(roadmanager::RMObject* object, osg::ref_ptr<osg::PositionAttitudeTransform> tx, osg::ref_ptr<osg::Group> objGroup);
         // validate and throw warning only if viewer default value used

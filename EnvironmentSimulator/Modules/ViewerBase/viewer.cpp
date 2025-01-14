@@ -2631,15 +2631,23 @@ int Viewer::DrawMarking(roadmanager::RMObject* object)
         {
             for (auto& points : segment.GetAllPoints())  // marking point
             {
-                osg::ref_ptr<osg::Group>      group        = new osg::Group();
-                osg::ref_ptr<osg::Vec3dArray> vertices_top = new osg::Vec3dArray(points.size());  // one set at bottom and one at top
+                osg::ref_ptr<osg::Group>     group        = new osg::Group();
+                osg::ref_ptr<osg::Vec3Array> vertices_top = new osg::Vec3Array(points.size());  // one set at bottom and one at top
 
                 for (int i = 0; i < points.size(); i += 4)
                 {
-                    (*vertices_top)[i + 0].set(points[i + 0].x - origin_[0], points[i + 0].y - origin_[1], points[i + 0].z);
-                    (*vertices_top)[i + 1].set(points[i + 1].x - origin_[0], points[i + 1].y - origin_[1], points[i + 1].z);
-                    (*vertices_top)[i + 2].set(points[i + 2].x - origin_[0], points[i + 2].y - origin_[1], points[i + 2].z);
-                    (*vertices_top)[i + 3].set(points[i + 3].x - origin_[0], points[i + 3].y - origin_[1], points[i + 3].z);
+                    (*vertices_top)[i + 0].set(static_cast<float>(points[i + 0].x - origin_[0]),
+                                               static_cast<float>(points[i + 0].y - origin_[1]),
+                                               static_cast<float>(points[i + 0].z));
+                    (*vertices_top)[i + 1].set(static_cast<float>(points[i + 1].x - origin_[0]),
+                                               static_cast<float>(points[i + 1].y - origin_[1]),
+                                               static_cast<float>(points[i + 1].z));
+                    (*vertices_top)[i + 2].set(static_cast<float>(points[i + 2].x - origin_[0]),
+                                               static_cast<float>(points[i + 2].y - origin_[1]),
+                                               static_cast<float>(points[i + 2].z));
+                    (*vertices_top)[i + 3].set(static_cast<float>(points[i + 3].x - origin_[0]),
+                                               static_cast<float>(points[i + 3].y - origin_[1]),
+                                               static_cast<float>(points[i + 3].z));
                 }
 
                 // Finally create and add geometry
@@ -2976,8 +2984,7 @@ void Viewer::UpdateModel(roadmanager::RMObject*                       object,
                          double                                       scale_x,
                          double                                       scale_y,
                          double                                       scale_z,
-                         osg::ref_ptr<osg::PositionAttitudeTransform> clone,
-                         bool                                         isShallowCopy)
+                         osg::ref_ptr<osg::PositionAttitudeTransform> clone)
 {
     double orientation = object->GetOrientation() == roadmanager::Signal::Orientation::NEGATIVE ? M_PI : 0.0;
     clone->getOrCreateStateSet()->setMode(GL_NORMALIZE, osg::StateAttribute::ON);
@@ -3057,7 +3064,7 @@ bool viewer::Viewer::CreateRepeats(roadmanager::RMObject*                       
                         outline.GetScale(scale_x, scale_y, scale_z);
                         osg::ref_ptr<osg::PositionAttitudeTransform> xform = new osg::PositionAttitudeTransform();
                         xform->addChild(OutlineGroup->getChild(i));
-                        UpdateModel(repeatedObj, scale_x, scale_y, scale_z, xform, true);
+                        UpdateModel(repeatedObj, scale_x, scale_y, scale_z, xform);
                         AddModel(repeatedObj, xform, objGroup);
                     }
                     else

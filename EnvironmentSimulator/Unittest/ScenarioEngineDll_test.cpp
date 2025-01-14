@@ -3050,8 +3050,8 @@ TEST(TestOsiReporter, OutlineInCurveRoad)
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(42).base().position().z(), 0);
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(42).base().dimension().height(), 4);
     EXPECT_EQ(osi_gt.stationary_object(42).base().base_polygon_size(), 3);
-    EXPECT_NEAR(osi_gt.stationary_object(42).base().base_polygon(0).x(), -2.021, 1E-3);
-    EXPECT_NEAR(osi_gt.stationary_object(42).base().base_polygon(0).y(), 1.471, 1E-3);
+    EXPECT_NEAR(osi_gt.stationary_object(42).base().base_polygon(0).x(), 0.0, 1E-3);
+    EXPECT_NEAR(osi_gt.stationary_object(42).base().base_polygon(0).y(), -2.5, 1E-3);
     EXPECT_NEAR(osi_gt.stationary_object(43).base().position().x(), 168.722, 1E-3);
     EXPECT_NEAR(osi_gt.stationary_object(43).base().position().y(), -100.022, 1E-3);
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(43).base().position().z(), 0);
@@ -3654,8 +3654,8 @@ TEST(TestOsiReporter, CrestCurveRoadObjectTest)
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(2).base().base_polygon_size(), 4);
     EXPECT_NEAR(osi_gt.stationary_object(2).base().base_polygon(0).x(), 0.0, 1e-3);
     EXPECT_NEAR(osi_gt.stationary_object(2).base().base_polygon(0).y(), 0.0, 1e-3);
-    EXPECT_NEAR(osi_gt.stationary_object(2).base().base_polygon(3).x(), 15.540, 1e-3);
-    EXPECT_NEAR(osi_gt.stationary_object(2).base().base_polygon(3).y(), -19.583, 1e-3);
+    EXPECT_NEAR(osi_gt.stationary_object(2).base().base_polygon(3).x(), 25.0, 1e-3);
+    EXPECT_NEAR(osi_gt.stationary_object(2).base().base_polygon(3).y(), 0.0, 1e-3);
 
     const auto id3 = osi_gt.stationary_object(3).id().value();
     EXPECT_EQ(id3, 3);
@@ -3954,22 +3954,22 @@ TEST(TestOsiReporter, OutlineInSharpCurve)
 
     EXPECT_EQ(osi_gt.mutable_stationary_object()->size(), 8);
     EXPECT_EQ(osi_gt.stationary_object(0).base().base_polygon_size(), 4.0);
-    EXPECT_NEAR(osi_gt.stationary_object(0).base().base_polygon(0).x(), -7.577, 1e-3);
-    EXPECT_NEAR(osi_gt.stationary_object(0).base().base_polygon(0).y(), -6.988, 1e-3);
-    EXPECT_NEAR(osi_gt.stationary_object(0).base().base_polygon(3).x(), -9.974, 1e-3);
-    EXPECT_NEAR(osi_gt.stationary_object(0).base().base_polygon(3).y(), -2.600, 1e-3);
+    EXPECT_NEAR(osi_gt.stationary_object(0).base().base_polygon(0).x(), -10.0, 1e-3);
+    EXPECT_NEAR(osi_gt.stationary_object(0).base().base_polygon(0).y(), -2.5, 1e-3);
+    EXPECT_NEAR(osi_gt.stationary_object(0).base().base_polygon(3).x(), -10.0, 1e-3);
+    EXPECT_NEAR(osi_gt.stationary_object(0).base().base_polygon(3).y(), 2.5, 1e-3);
 
     EXPECT_EQ(osi_gt.stationary_object(2).base().base_polygon_size(), 4.0);
-    EXPECT_NEAR(osi_gt.stationary_object(2).base().base_polygon(0).x(), 3.883, 1e-3);
-    EXPECT_NEAR(osi_gt.stationary_object(2).base().base_polygon(0).y(), -9.548, 1e-3);
-    EXPECT_NEAR(osi_gt.stationary_object(2).base().base_polygon(3).x(), -1.066, 1e-3);
-    EXPECT_NEAR(osi_gt.stationary_object(2).base().base_polygon(3).y(), -10.252, 1e-3);
+    EXPECT_NEAR(osi_gt.stationary_object(2).base().base_polygon(0).x(), -10.0, 1e-3);
+    EXPECT_NEAR(osi_gt.stationary_object(2).base().base_polygon(0).y(), -2.5, 1e-3);
+    EXPECT_NEAR(osi_gt.stationary_object(2).base().base_polygon(3).x(), -10.0, 1e-3);
+    EXPECT_NEAR(osi_gt.stationary_object(2).base().base_polygon(3).y(), 2.5, 1e-3);
 
     EXPECT_EQ(osi_gt.stationary_object(3).base().base_polygon_size(), 4.0);
-    EXPECT_NEAR(osi_gt.stationary_object(3).base().base_polygon(0).x(), 8.630, 1e-3);
-    EXPECT_NEAR(osi_gt.stationary_object(3).base().base_polygon(0).y(), -5.635, 1e-3);
-    EXPECT_NEAR(osi_gt.stationary_object(3).base().base_polygon(3).x(), 4.963, 1e-3);
-    EXPECT_NEAR(osi_gt.stationary_object(3).base().base_polygon(3).y(), -9.033, 1e-3);
+    EXPECT_NEAR(osi_gt.stationary_object(3).base().base_polygon(0).x(), -10.0, 1e-3);
+    EXPECT_NEAR(osi_gt.stationary_object(3).base().base_polygon(0).y(), -2.5, 1e-3);
+    EXPECT_NEAR(osi_gt.stationary_object(3).base().base_polygon(3).x(), -10.0, 1e-3);
+    EXPECT_NEAR(osi_gt.stationary_object(3).base().base_polygon(3).y(), 2.5, 1e-3);
 
     EXPECT_EQ(osi_gt.stationary_object(7).base().base_polygon_size(), 4.0);
     EXPECT_NEAR(osi_gt.stationary_object(7).base().base_polygon(0).x(), 15.743, 1e-3);

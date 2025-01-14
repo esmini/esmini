@@ -91,7 +91,7 @@ From the above figure, Object reference point is (30,0) and the repeat reference
 
 Limitation:
 
-- In case of multiple outlines within a single object, esmini interpretation of the OSI standard is to report each outline as a separate object, all with the same ID, type and position. Further, each vertex (x, y value pair) will be reported as a separate base_polygon (although it would make sense to group all vertices within one base_polygon).
+- In case of multiple outlines within a single object, esmini interpretation of the OSI standard is to report each outline as a separate object. Further, each vertex (x, y value pair) will be reported as a separate base_polygon (although it would make sense to group all vertices within one base_polygon).
 - For repeating objects, the next object's reference point is simply the object's length away from the previous object's reference point. This creates a consistent linear movement for straight road. For straight and curve road, In case of pervious object referrence point is in straight raod and next object referrence point may in curve raod. Length is calulated considered only pervious object referrence point curvature, As a consequence the next object referrence point simply object's length.
 
 ==== Object markings
