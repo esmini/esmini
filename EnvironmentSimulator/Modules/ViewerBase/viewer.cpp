@@ -2593,6 +2593,8 @@ bool Viewer::CreateRoadLines(Viewer* viewer, roadmanager::OpenDrive* od)
                     }
                     else
                     {
+                        curr_osi = nullptr;
+
                         if (k == 1)
                         {
                             curr_osi = lane->GetOSIPoints();
@@ -2605,7 +2607,7 @@ bool Viewer::CreateRoadLines(Viewer* viewer, roadmanager::OpenDrive* od)
                             }
                         }
 
-                        if (curr_osi == 0)
+                        if (curr_osi == nullptr)
                         {
                             continue;
                         }
