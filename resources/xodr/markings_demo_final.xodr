@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <OpenDRIVE>
-    <header name="myroad" revMajor="1" revMinor="5" date="2025-01-11 09:31:21.161369" north="0.0" south="0.0" east="0.0" west="0.0"/>
+    <header name="myroad" revMajor="1" revMinor="7" date="2025-01-11 09:31:21.161369" north="0.0" south="0.0" east="0.0" west="0.0"/>
     <road rule="RHT" id="1" junction="-1" length="200.0">
         <link>
             <successor elementType="road" elementId="2" contactPoint="start"/>
@@ -404,7 +404,7 @@
             </laneSection>
         </lanes>
         <objects>
-            <object type="parkingSpace" name="parking1" id="0" s="0.0" t="0.0" zOffset="0.0">
+            <object type="parkingSpace" name="parking1" id="9" s="0.0" t="0.0" zOffset="0.0">
                 <repeat distance ="2.55" heightStart="4.0" heightEnd="4.0" zOffsetEnd="0.0" zOffsetStart="0.0" tStart="-9.95" tEnd="-9.95" length="27.45" s="0.05"/>
                 <outlines>
                     <outline id="0" closed="true">
@@ -421,7 +421,7 @@
                     </marking>
                 </markings>
             </object>
-            <object type="parkingSpace" name="parking1" id="1" s="28.1" t="-9.95" zOffset="0.0">
+            <object type="parkingSpace" name="parking1" id="10" s="28.1" t="-9.95" zOffset="0.0">
                 <outlines>
                     <outline id="0" closed="true">
                         <cornerLocal u="0.0" v="0.0" z="0.0" height="4.0" id="0"/>
@@ -437,7 +437,7 @@
                     </marking>
                 </markings>
             </object>
-            <object type="parkingSpace" name="parking" id="2" s="0.0" t="0.0" zOffset="0.0">
+            <object type="parkingSpace" name="parking" id="11" s="0.0" t="0.0" zOffset="0.0">
                 <repeat distance ="2.55" heightStart="4.0" heightEnd="4.0" zOffsetEnd="0.0" zOffsetStart="0.0" tStart="9.95" tEnd="9.95" length="27.45" s="0.05"/>
                 <outlines>
                     <outline id="0" closed="false">
@@ -454,7 +454,7 @@
                     </marking>
                 </markings>
             </object>
-            <object type="parkingSpace" name="parking" id="3" s="28.1" t="9.95" zOffset="0.0">
+            <object type="parkingSpace" name="parking" id="12" s="28.1" t="9.95" zOffset="0.0">
                 <outlines>
                     <outline id="0" closed="false">
                         <cornerLocal u="2.5" v="0.0" z="0.0" height="4.0" id="0"/>
