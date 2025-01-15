@@ -9424,6 +9424,24 @@ int Position::SetInertiaPosMode(double x, double y, double z, double h, double p
     {
         XYZ2TrackPos(x, y, z, mode);
     }
+    else
+    {
+        // update only the world position coordinates
+        SetX(x);
+        SetY(y);
+
+        if (mode & PosMode::Z_SET)
+        {
+            if ((mode & PosMode::Z_MASK) == PosMode::Z_REL)
+            {
+                SetZRelative(z);
+            }
+            else if ((mode & PosMode::Z_MASK) == PosMode::Z_ABS)
+            {
+                SetZ(z);
+            }
+        }
+    }
 
     // Apply absolute mode as default, i.e. also when only _DEFAULT bit is set
     if ((mode & PosMode::Z_MASK) == PosMode::Z_DEFAULT)
@@ -9504,9 +9522,8 @@ int Position::SetInertiaPos(double x, double y, double h, bool updateTrackPos)
 
 int Position::SetInertiaPosMode(double x, double y, double h, int mode, bool updateTrackPos)
 {
-    // Apply default modes aligning z, p, r to road
-    (void)updateTrackPos;
-    return SetInertiaPosMode(x, y, 0.0, h, 0.0, 0.0, mode);
+    // Apply zero z, p, r to be aligned according to specified mode
+    return SetInertiaPosMode(x, y, 0.0, h, 0.0, 0.0, mode, updateTrackPos);
 }
 
 void Position::SetHeading(double heading, bool evaluate)
