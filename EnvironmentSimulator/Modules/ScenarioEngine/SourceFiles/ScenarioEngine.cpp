@@ -1139,7 +1139,8 @@ void ScenarioEngine::SetupGhost(Object* object)
                                         pa->action_type_ == OSCPrivateAction::ActionType::SYNCHRONIZE_ACTION ||
                                         pa->action_type_ == OSCPrivateAction::ActionType::FOLLOW_TRAJECTORY ||
                                         pa->action_type_ == OSCPrivateAction::ActionType::ASSIGN_ROUTE ||
-                                        pa->action_type_ == OSCPrivateAction::ActionType::TELEPORT)
+                                        pa->action_type_ == OSCPrivateAction::ActionType::TELEPORT ||
+                                        pa->action_type_ == OSCPrivateAction::ActionType::ACQUIRE_POSITION)
                                     {
                                         // Replace object
                                         pa->ReplaceObjectRefs(object, ghost);

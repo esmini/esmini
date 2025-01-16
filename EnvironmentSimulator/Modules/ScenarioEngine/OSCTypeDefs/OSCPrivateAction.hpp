@@ -1098,13 +1098,13 @@ namespace scenarioengine
         ~AcquirePositionAction();
 
         AcquirePositionAction(StoryBoardElement* parent)
-            : OSCPrivateAction(OSCPrivateAction::ActionType::Acquire_POSITION, parent, static_cast<unsigned int>(ControlDomains::DOMAIN_LONG)),
+            : OSCPrivateAction(OSCPrivateAction::ActionType::ACQUIRE_POSITION, parent, static_cast<unsigned int>(ControlDomains::DOMAIN_LONG)),
               route_(0)
         {
         }
 
         AcquirePositionAction(const AcquirePositionAction& action)
-            : OSCPrivateAction(OSCPrivateAction::ActionType::Acquire_POSITION,
+            : OSCPrivateAction(OSCPrivateAction::ActionType::ACQUIRE_POSITION,
                                action.parent_,
                                static_cast<unsigned int>(ControlDomains::DOMAIN_LONG)),
               route_(0)
