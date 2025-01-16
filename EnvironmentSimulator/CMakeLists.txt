@@ -29,9 +29,9 @@ add_subdirectory(Libraries/esminiRMLib)
 add_subdirectory(Applications/esmini)
 add_subdirectory(Applications/esmini-dyn)
 
-if(USE_OSG)
+if(BUILD_ODRVIEWER)
     add_subdirectory(Applications/odrviewer)
-endif(USE_OSG)
+endif(BUILD_ODRVIEWER)
 
 add_subdirectory(Applications/odrplot)
 add_subdirectory(Applications/replayer)
@@ -96,13 +96,17 @@ set_folder(
 set_folder(
     odrplot
     ${ApplicationsFolder})
-if(USE_OSG)
+if(BUILD_REPLAYER)
     set_folder(
         replayer
         ${ApplicationsFolder})
+endif(BUILD_REPLAYER)
+if(BUILD_ODRVIEWER)
     set_folder(
         odrviewer
         ${ApplicationsFolder})
+endif(BUILD_ODRVIEWER)
+if(USE_OSG)
     set_folder(
         ViewerBase
         ${ModulesFolder})
